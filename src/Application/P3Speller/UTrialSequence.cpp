@@ -32,7 +32,7 @@ char    line[512];
  targets=new TARGETLIST();
 
  /*shidong starts*/
- strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 37 3 % % 1 A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V B 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ _ 1 0 0 100 // Target Definition Matrix");
+ strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 36 3 A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V B 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ _ 1 0 0 100 // Target Definition Matrix");
  /*shidong ends*/
  plist->AddParameter2List(line,strlen(line));
  strcpy(line,"P3Speller int OnTime= 4 10 0 5000 // Duration of intensification in units of SampleBlocks");
@@ -142,13 +142,23 @@ int TRIALSEQUENCE::LoadPotentialTargets(const int col, const int row)
 /*shidong starts*/
 TARGET  *cur_target;
 int     targetID, targettype;
+
 // if we already have a list of potential targets, delete this list
 if (targets) delete targets;
 targets = new TARGETLIST();
 
+cur_target = new TARGET(0);    //assign targetID
+cur_target->Caption = "";
+cur_target->IconFile = "";
+cur_target->CharDisplayInMatrix="";
+cur_target->CharDisplayInResult="";
+cur_target->FontSizeFactor=1;
+cur_target->targettype=TARGETTYPE_NOTYPE;
+targets->Add(cur_target);
+
 for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
 {
-        targetID = i;
+        targetID = i+1;
         cur_target = new TARGET(targetID);    //assign targetID
         cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0)) ;
        //assign caption to character display in column 1
