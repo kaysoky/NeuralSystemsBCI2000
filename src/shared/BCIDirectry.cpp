@@ -7,8 +7,9 @@
 #pragma hdrstop
 
 #include "BCIDirectry.h"
-#include "stdlib.h"
-#include "errno.h"
+#include <stdlib.h>
+#include <dir.h>
+#include <errno.h>
 
 //--------------------------------------------------
 
