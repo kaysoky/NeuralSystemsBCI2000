@@ -131,21 +131,6 @@ namespace SOURCEID
 # define SOURCEID_EMALGLOG        (SOURCEID::EMALGLOG)
 #endif // _OLD_NAMES
 
-namespace DATATYPE
-{
-  enum
-  {
-    INTEGER = 0,
-    FLOAT,
-  };
-};
-
-// Backward compatibility.
-#ifdef _OLD_NAMES
-# define DATATYPE_INTEGER        (DATATYPE::INTEGER)
-# define DATATYPE_FLOAT          (DATATYPE::FLOAT)
-#endif // _OLD_NAMES
-
 #undef _OLD_NAMES
 
 typedef unsigned char uint8;
