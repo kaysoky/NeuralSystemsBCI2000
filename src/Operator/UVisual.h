@@ -18,7 +18,7 @@
 //          Rewrote VISUAL as a class hierarchy.
 //
 //          June 10, 2003, jm:
-//          Added the polyline3d/colorfield display types for a graph to support
+//          Added the field2d display type for a graph to support
 //          FFT data.
 //
 //          Nov 20, 2003, jm:
@@ -120,7 +120,6 @@ class VISUAL
     };
     static config_container visconfigs;
     virtual void SetConfig( config_settings& );
-    void UserChangedWindowBounds() const;
   };
 
   // A VCL form with a WM_MOVE handler.
@@ -164,7 +163,7 @@ class VISUAL
     enum DisplayMode
     {
       polyline = 0,
-      colorfield,
+      field2d,
       /* ... */
       numDisplayModes
     } displayMode;

@@ -238,7 +238,8 @@ void
 __fastcall
 VISUAL::VISUAL_BASE::FormMove( TObject* )
 {
-  UserChangedWindowBounds();
+  visconfigs[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
+  visconfigs[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
 }
 
 void
@@ -247,14 +248,6 @@ VISUAL::VISUAL_BASE::FormResize( TObject* Sender )
 {
   TForm* Form = static_cast<TForm*>( Sender );
   Form->Invalidate();
-  UserChangedWindowBounds();
-}
-
-void
-VISUAL::VISUAL_BASE::UserChangedWindowBounds() const
-{
-  visconfigs[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
-  visconfigs[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
   visconfigs[ sourceID ].Put( CFGID::Width, form->Width, UserDefined );
   visconfigs[ sourceID ].Put( CFGID::Height, form->Height, UserDefined );
 }
@@ -325,8 +318,8 @@ VISUAL::VISUAL_GRAPH::SetConfig( config_settings& inConfig )
     case CFGID::polyline:
       displayMode = polyline;
       break;
-    case CFGID::colorfield:
-      displayMode = colorfield;
+    case CFGID::field2d:
+      displayMode = field2d;
       break;
   }
   inConfig.Get( CFGID::showBaselines, showBaselines );
@@ -405,7 +398,7 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
       case polyline:
         numDisplayGroups = min( numDisplayGroups, maxDisplayGroups );
         break;
-      case colorfield:
+      case field2d:
       default:
         break;
     }
@@ -441,7 +434,7 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
       firstInvalidPixel = SampleLeft( firstInvalidSample - 1 );
       firstValidPixel = SampleLeft( firstValidSample + 1 );
       break;
-    case colorfield:
+    case field2d:
       firstInvalidPixel = SampleLeft( firstInvalidSample );
       firstValidPixel = SampleLeft( firstValidSample );
       break;
@@ -579,7 +572,7 @@ VISUAL::VISUAL_GRAPH::ToggleColor()
 bool
 VISUAL::VISUAL_GRAPH::ToggleColor_Enabled() const
 {
-  return displayMode == polyline;
+  return displayMode == polyline || displayMode == field2d;
 }
 
 bool
@@ -638,12 +631,17 @@ VISUAL::VISUAL_GRAPH::ChooseColors_Enabled() const
 void
 VISUAL::VISUAL_GRAPH::EnlargeSignal()
 {
+#if 0
   float offset = ( minValue + maxValue ) / 2,
         unit = maxValue - offset;
   unit /= 2;
-  ++mUserScaling;
   minValue = offset - unit;
   maxValue = offset + unit;
+#else
+  minValue /= 2;
+  maxValue /= 2;
+#endif
+  ++mUserScaling;
   form->Invalidate();
 }
 
@@ -656,12 +654,17 @@ VISUAL::VISUAL_GRAPH::EnlargeSignal_Enabled() const
 void
 VISUAL::VISUAL_GRAPH::ReduceSignal()
 {
+#if 0
   float offset = ( minValue + maxValue ) / 2,
         unit = maxValue - offset;
   unit *= 2;
-  --mUserScaling;
   minValue = offset - unit;
   maxValue = offset + unit;
+#else
+  minValue *= 2;
+  maxValue *= 2;
+#endif
+  --mUserScaling;
   form->Invalidate();
 }
 
@@ -884,12 +887,23 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
       }
     } break;
 
-    case colorfield:
+    case field2d:
     {
       for( size_t i = 0; i < numDisplayChannels; ++i )
         for( size_t j = 0; j < numSamples; ++j )
         {
-          LONG color = RGBColor::HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomGroup * channelGroupSize, j ) ), 1.0, 1.0 );
+          float dataValue = NormData( i + bottomGroup * channelGroupSize, j );
+          if( dataValue < 0.0 )
+            dataValue = 0.0;
+          else if( dataValue > 1.0 )
+            dataValue = 1.0;
+            
+          LONG color;
+          if( displayColors )
+            color = RGBColor::HSVColor( dataValue - 1.0 / 3.0, 1.0, dataValue );
+          else
+            color = RGBColor::HSVColor( 0.0, 0.0, dataValue );
+
           HBRUSH brush = ::CreateSolidBrush( color );
           RECT dotRect =
           {
@@ -937,7 +951,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   // Ticks on the y axis.
   switch( displayMode )
   {
-    case colorfield:
+    case field2d:
       break;
     case polyline:
       {
@@ -1017,7 +1031,12 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   ::FillRect( dc, &yAxis, gdi[ axisBrush ] );
 
   // Copy the data from the buffer onto the screen.
+#if TEST_UPDATE_REGIONS
+  Form->Canvas->Brush->Color = random( 0x1000000 );
+  Form->Canvas->FillRect( Form->ClientRect );
+#else
   Form->Canvas->Draw( 0, Form->ClientHeight - offscreenBitmap->Height, offscreenBitmap );
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

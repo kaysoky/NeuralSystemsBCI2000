@@ -166,7 +166,7 @@ bool    ok;
  // is it any command we don't know ?
  if (!ok)
     {
-    sprintf(buf, "%s: Error in scriptfile on line %d: Syntax Error", filename, cur_line, line);
+    sprintf(buf, "%s: Error in scriptfile on line %d: Syntax Error", filename, cur_line);
     syslog->AddSysLogEntry(buf);
     return(0);
     }
