@@ -1,107 +1,108 @@
-//---------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+//
+// File: SWFilter.h
+//
+// Description: Slow Wave Class Definition
+//              written by Dr. Thilo Hinterberger 2000-2001
+//              Copyright University of Tuebingen, Germany
+//
+// Changes:     2003, juergen.mellinger@uni-tuebingen.de: some bugs fixed.
+//              Feb 8, 2004, jm: Adaptations to changes in BCI2000 framework,
+//              minor reformulations, reformatting.
+//
+////////////////////////////////////////////////////////////////////////////////
 #ifndef SWFilterH
 #define SWFilterH
-#endif
+
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-//------------------ Slow Wave Class Definition ------------------------
-//                  programed by Dr. Thilo Hinterberger 2000
-//--------------------------------------------------------------------------------------------------
-
-  class TSetBaseline : public GenericFilter {
-  private:
-        STATEVECTOR *statevector;
-        int BaseBegin, BaseEnd;
-    // BL variables
-        std::vector<float> mBLSamples;
-        int NumChan;
-        bool OldBLState;
-        bool* BaseChList;
-        GenericSignal *BLSignal;     
-        int PosInTrial;
-        bool Initialized;
-        bool visualize;
-        GenericVisualization *vis;
+class TSetBaseline : public GenericFilter
+{
   public:
-        TSetBaseline();
-    virtual ~TSetBaseline();
+                   TSetBaseline();
+    virtual        ~TSetBaseline() {}
+
+    virtual void   Preflight( const SignalProperties&, SignalProperties& ) const;
+    virtual void   Initialize();
+    virtual void   Process( const GenericSignal* InputSignal, GenericSignal* );
+
+  private:
+    int                  mVisualize,
+                         mLastBaselineState;
+    GenericVisualization mVis;
+
+    // BL variables.
+    std::vector<float>   mBLSamples;
+    std::vector<bool>    mBaseChList;
+    GenericSignal        mBLSignal;
+};
+
+class TFBArteCorrection : public GenericFilter
+{
+  public:
+                 TFBArteCorrection();
+    virtual      ~TFBArteCorrection() {}
     virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
     virtual void Initialize();
-    virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
-        GenericSignal* GetBLSignal();
-  };
+    virtual void Process( const GenericSignal* InputSignal, GenericSignal* );
 
-  class TFBArteCorrection : public GenericFilter {
   private:
-        STATEVECTOR *statevector;
-        bool Initialized;
-        short ArteMode;
-        short NumChan;
-        short *ArteChList; // list of input channels assigned with the corresponding ArteCh
-        float *ArteFactorList; // list of input channels assigned with the corresponding correction factor
-        bool visualize;
-        GenericVisualization *vis;
+    int                  mVisualize;
+    GenericVisualization mVis;
+    
+    enum ArteMode
+    {
+      off = 0,
+      linearSubtraction,
+      subtractionIfSupporting,
+      subtractionWithAbort,
+    }                    mArteMode;
+    std::vector<int>     mArteChList;     // list of input channels assigned with the corresponding ArteCh
+    std::vector<float>   mArteFactorList; // correction factor for channel n
+};
+
+class TSW : public GenericFilter
+{
   public:
-        TFBArteCorrection();
-    virtual ~TFBArteCorrection();
+                 TSW();
+    virtual      ~TSW() {}
+    
     virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
     virtual void Initialize();
-    virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
-  };
+    virtual void Process( const GenericSignal* InputSignal, GenericSignal* OutputSignal );
 
-  class TSW : public GenericFilter {
   private:
-        bool Initialized;
-        STATEVECTOR *statevector;
-        int PosInTrial;
+    int                  mVisualize;
+    GenericVisualization mVis;
+
+    int mLastItiState;
+
     // SW variables
-        int BufferOffset; // trial starts at this buffer position
-        int PosInBuffer;  // actual position related to bufferzero
-        unsigned int SamplingRate;
-        unsigned int BlocksInTrial;  // only necessary for AvgBufferSize
-        unsigned int BlockSize;      // internal BlockSize
-        unsigned int AvgSpan;
-        short SWCh;             // number of SW channels
-        short* SWInChList;        // contains list of incoming data channels
-        short* SWOutChList;      // contains list of outging data channels
+    int mBufferOffset; // trial starts at this buffer position
+    int mPosInBuffer;  // actual position related to bufferzero
+    unsigned int mBlocksInTrial;  // only necessary for AvgBufferSize
+    unsigned int mBlockSize;      // internal BlockSize
+    unsigned int mAvgSpan;
+    short mSWCh;             // number of SW channels
+    std::vector<int> mSWInChList,        // contains list of incoming data channels
+                     mSWOutChList;      // contains list of outging data channels
     // buffer and data variables
-        int AvgBufferSize;
-        GenericSignal* AvgBlockBuffer; // AvgBlockBuffer[short SWCh][int AvgBufferSize]
+    int mAvgBufferSize;
+    GenericSignal mAvgBlockBuffer; // AvgBlockBuffer[short SWCh][int AvgBufferSize]
     // Tc-correction variables
-        float Tc;
-        double* TcAk; // TcAk[SWCh+ArteCh]
-        float TcFactor;
+    float mTcFactor;
+    std::vector<double> mTcAk; // TcAk[SWCh+ArteCh]
     // artefact variables
-        float* ThresholdAmp; // ThresholdAmp[short SWCh
-        float* MinValue;     // MinValue[short SWCh]
-        float* MaxValue;     // MaxValue[short SWCh]
+    std::vector<float> mThresholdAmp, // ThresholdAmp[short SWCh ]
+                       mMinValue,     // MinValue[short SWCh]
+                       mMaxValue;     // MaxValue[short SWCh]
     // SW calculation functions
-        void AvgToBuffer(const GenericSignal *InputSignal);  // first average: adds to AvgBlockBuffer
-        void CorrectTc();
-        void AvgToSW(GenericSignal *OutputSignal);      // second average: adds to SWValue
-        void CheckArtefacts(GenericSignal *OutputSignal);
-        void NewTrial();
-        void InitBuffers(unsigned int, unsigned int, short);  // reallocates Buffers
-        bool visualize;
-        GenericVisualization *vis;
+    void AvgToBuffer( const GenericSignal& InputSignal );  // first average: adds to AvgBlockBuffer
+    void CorrectTc();
+    void AvgToSW( GenericSignal& OutputSignal );      // second average: adds to SWValue
+    void CheckArtefacts( const GenericSignal& OutputSignal );
+    void NewTrial();
+};
 
-  public:
-        TSW();
-    virtual ~TSW();
-    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-    virtual void Initialize();
-    // data related functions
-    virtual void Process(const GenericSignal *InputSignal, GenericSignal *OutputSignal);
-        float GetAvgBlockValue(short SWCh, int Position);
-        GenericSignal* GetAvgBlockBuffer();
-   // parameter related functions
-        int GetPosInTrial();
-        int GetPosInBuffer();
-        int GetAvgBufferSize();
-    // buffer variables
-        void SetAvgSpan(unsigned int NewAvgSpan) {AvgSpan=NewAvgSpan; }
-  };
-
-//---------------------------------------------------------------------------
-
+#endif // SWFilterH
