@@ -81,15 +81,10 @@ TfMain::TfMain( TComponent* Owner )
   mMutex = ::CreateMutex( NULL, TRUE, appTitle );
   if( ::GetLastError() == ERROR_ALREADY_EXISTS )
   {
-    if( mMutex != NULL )
-      ::CloseHandle( mMutex );
     Application->Title = "";
     HWND runningApp = ::FindWindow( "TApplication", appTitle );
     if( runningApp != NULL )
-    {
-      ::SendMessage( runningApp, WM_SYSCOMMAND, SC_RESTORE, 0 );
       ::SetForegroundWindow( runningApp );
-    }
     Application->Terminate();
     return;
   }
@@ -126,8 +121,11 @@ TfMain::~TfMain( void )
   ShutdownSystem();
   delete mpStatevector;
   Terminate();
-  ::ReleaseMutex( mMutex );
-  ::CloseHandle( mMutex );
+  if( mMutex != NULL )
+  {
+    ::ReleaseMutex( mMutex );
+    ::CloseHandle( mMutex );
+  }
 }
 
 bool
