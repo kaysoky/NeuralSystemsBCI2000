@@ -16,6 +16,7 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <iostream>
 #include <iomanip>
 #include <time.h>
+#include <cmath>
 #include <assert>
 
 using namespace std;
@@ -69,7 +70,6 @@ TTask::TTask()
   trial( 0 ),
   run( 0 ),
   timepassed( 0 ),
-  CurrentStimulusTime( 0 ),
   mTaskLog( ".apl" ),
   mVis( SOURCEID::TASKLOG )
 {
@@ -93,11 +93,17 @@ TTask::TTask()
     "UsrTask int RestingPeriod= 0 0 0 1 // "
         "1 defines a rest period of data acquisition",
     "UsrTask matrix Announcements= "
-      " { 0 1 2 } { Task Result } "
-      "     %      % "
-      "     %      % "
-      "     %      % "
-      "// Wave files for auditory announcements",
+      " { 0 1 2 } { Task Result Cursor } "
+      "     %      %      % "
+      "     %      %      % "
+      "     %      %      % "
+      "// Sound files for auditory announcements",
+    "UsrTask matrix CursorVolume= "
+      " { 0 1 2 } { min max } "
+      "  0.5 1.0 "
+      "  0.5 1.0 "
+      "  0.5 1.0 "
+      " 1.0 1.0 0.0 1.0 // Volume ranges for cursor announcement",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -149,13 +155,25 @@ TTask::Preflight( const SignalProperties& inputProperties,
                         SignalProperties& outputProperties ) const
 {
   TWavePlayer preflightPlayer;
+  bool        checkedVolumeAdjustment = true;
   for( size_t i = 0; i < Parameter( "Announcements" )->GetNumValuesDimension1(); ++i )
     for( size_t j = 0; j < Parameter( "Announcements" )->GetNumValuesDimension2(); ++j )
   {
     string soundFile = static_cast<const char*>( Parameter( "Announcements", i, j ) );
     if( soundFile != "" )
+    {
       if( preflightPlayer.AttachFile( soundFile.c_str() ) != TWavePlayer::noError )
         bcierr << "Could not open " << soundFile << " for audio playback" << endl;
+      if( !checkedVolumeAdjustment
+          && Parameter( "Announcements" )->ColumnLabels()[ j ] == "Cursor" )
+      {
+        if( preflightPlayer.SetVolume( Parameter( "CursorVolume" ) ) != TWavePlayer::noError )
+          bcierr << "Could not adjust volume for audio output device"
+                 << " -- cursor announcement will not work properly"
+                 << endl;
+        checkedVolumeAdjustment = true;
+      }
+    }
   }
   mTaskLog.Preflight();
   outputProperties = SignalProperties( 0, 0 );
@@ -178,10 +196,16 @@ void TTask::Initialize()
 
   mTaskAnnouncements.resize( Ntargets + 1 );
   mResultAnnouncements.resize( Ntargets + 1 );
+  mCursorAnnouncements.resize( Ntargets + 1 );
+  mCursorVolumeOffsets.resize( Ntargets + 1 );
+  mCursorVolumeSlopes.resize( Ntargets + 1 );
   for( int i = 0; i <= Ntargets; ++i )
   {
     mTaskAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Task" ) );
     mResultAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Result" ) );
+    mCursorAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Cursor" ) );
+    mCursorVolumeOffsets[ i ] = Parameter( "CursorVolume", i, "min" );
+    mCursorVolumeSlopes[ i ] = Parameter( "CursorVolume", i, "max" ) - mCursorVolumeOffsets[ i ];
   }
 
   mTaskLog.Initialize();
@@ -205,7 +229,7 @@ void TTask::Initialize()
   cursor_x_start= limit_left;
   cursor_y_start= ( limit_top + limit_bottom ) /2;
 
-  ReadStateValues( Statevector );
+  ReadStateValues();
 
   CurrentTarget= 0;
   TargetTime= 0;
@@ -236,40 +260,37 @@ void TTask::Initialize()
   Misses= 0;
   User->PutO(false);
 
-  WriteStateValues( Statevector );
+  WriteStateValues();
 }
 
-void TTask::ReadStateValues(STATEVECTOR *statevector)
+void TTask::ReadStateValues()
 {
-        CurrentTarget=       statevector->GetStateValue("TargetCode");
-        CurrentOutcome=      statevector->GetStateValue("ResultCode");
-        CurrentStimulusTime= statevector->GetStateValue("StimulusTime");
-        CurrentFeedback=     statevector->GetStateValue("Feedback");
-        CurrentIti=          statevector->GetStateValue("IntertrialInterval");
-        CurrentRunning=      statevector->GetStateValue("Running");
-                if( CurRunFlag == 1 )     // 0 must cycle through at least once
-                {
-                        if( CurrentRunning == 1 ) CurrentRunning = 0;
-                        else                      CurRunFlag= 0;
-                }
-
-        CurrentRest=         statevector->GetStateValue("RestPeriod");
-
+  CurrentTarget = State( "TargetCode" );
+  CurrentOutcome = State( "ResultCode" );
+  CurrentFeedback = State( "Feedback" );
+  CurrentIti = State( "IntertrialInterval" );
+  CurrentRunning = State( "Running" );
+  if( CurRunFlag == 1 )     // 0 must cycle through at least once
+  {
+    if( CurrentRunning == 1 )
+      CurrentRunning = 0;
+    else
+      CurRunFlag= 0;
+  }
+  CurrentRest = State( "RestPeriod" );
 }
 
-void TTask::WriteStateValues(STATEVECTOR *statevector)
+void TTask::WriteStateValues()
 {
-        CurrentStimulusTime= BCITIME::GetBCItime_ms();   // time stamp
-        statevector->SetStateValue("StimulusTime",CurrentStimulusTime);
-
-        statevector->SetStateValue("TargetCode",CurrentTarget);
-        statevector->SetStateValue("ResultCode",CurrentOutcome);
-        statevector->SetStateValue("Feedback",CurrentFeedback);
-        statevector->SetStateValue("IntertrialInterval",CurrentIti);
-        statevector->SetStateValue("Running",CurrentRunning);
-        statevector->SetStateValue("RestPeriod",CurrentRest);
-        statevector->SetStateValue("CursorPosX",(int)x_pos*User->scale_x );
-        statevector->SetStateValue("CursorPosY",(int)y_pos*User->scale_y );
+  State( "StimulusTime" ) = BCITIME::GetBCItime_ms(); // time stamp
+  State( "TargetCode" ) = CurrentTarget;
+  State( "ResultCode" ) = CurrentOutcome;
+  State( "Feedback" ) = CurrentFeedback;
+  State( "IntertrialInterval" ) = CurrentIti;
+  State( "Running" ) = CurrentRunning;
+  State( "RestPeriod" ) = CurrentRest;
+  State( "CursorPosX" ) = int( x_pos * User->scale_x );
+  State( "CursorPosY" ) = int( y_pos * User->scale_y );
 }
 
 void TTask::ComputeTargets( int ntargs )
@@ -558,18 +579,46 @@ void TTask::Ptp( void )
 
 void TTask::Feedback( short sig_x, short sig_y )
 {
-
-        x_pos+= sig_x;
-        y_pos+= sig_y;
-        User->PutCursor( x_pos, y_pos, CURSOR_ON );
-        TestCursorLocation( x_pos, y_pos );
+  x_pos += sig_x;
+  y_pos += sig_y;
+  User->PutCursor( x_pos, y_pos, CURSOR_ON );
+  TestCursorLocation( x_pos, y_pos );
+  if( CurrentFeedback )
+  {
+    float pos = y_pos * User->scale_y;
+    if( pos < User->targy[ 1 ] )
+      pos = User->targy[ 1 ];
+    if( pos > User->targy_btm[ Ntargets ] )
+      pos = User->targy_btm[ Ntargets ];
+    pos -= User->targy[ 1 ];
+    pos /= ( User->targy_btm[ Ntargets ] - User->targy[ 1 ] );
+    for( size_t i = 1; i <= Ntargets; ++i )
+    {
+      float targetPos = ( i - 1 ) / float( Ntargets - 1 ),
+            volume = 1.0;
+      if( pos < targetPos )
+        volume = mCursorVolumeOffsets[ i ] + mCursorVolumeSlopes[ i ] * ( pos / targetPos );
+      else if( pos > targetPos )
+        volume = mCursorVolumeOffsets[ i ] + mCursorVolumeSlopes[ i ] * ( 1 - pos ) / ( 1 - targetPos );
+      if( volume > 1.0 )
+        volume = 1.0;
+      else if( volume < 0.0 )
+        volume = 0.0;
+      mCursorAnnouncements[ i ].SetVolume( volume );
+      if( !mCursorAnnouncements[ i ].IsPlaying() )
+        mCursorAnnouncements[ i ].Play();
+    }
+  }
+  else
+    for( size_t i = 0; i < mCursorAnnouncements.size(); ++i )
+      mCursorAnnouncements[ i ].Stop();
 }
 
 
 void TTask::Outcome()
 {
         OutcomeTime++;
-        User->Outcome( OutcomeTime, CurrentOutcome );                   // flash outcome when YES/NO
+        User->Outcome( OutcomeTime, CurrentOutcome ); // flash outcome when YES/NO
 
         if( OutcomeTime >= OutcomeDuration-1 )
         {
@@ -612,20 +661,26 @@ void TTask::Rest( void )
 
 void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
-        ReadStateValues( Statevector );
+  ReadStateValues();
 
-        if( CurrentRunning > 0 )
-        {
-                if(CurrentRest > 0 )             Rest();
-                else if (CurrentPri > 0)         Pri();
-                else if (CurrentIti > 0)         Iti();
-                else if (CurrentFeedback > 0 )   Feedback( ( *Input )( 1, 0 ), ( *Input )( 0, 0 ) );
-                else if (CurrentOutcome  > 0 )   Outcome();
-                else if (CurrentTarget   > 0 )   Ptp();
-        }
+  if( CurrentRunning > 0 )
+  {
+    if( CurrentRest > 0 )
+      Rest();
+    else if( CurrentPri > 0 )
+      Pri();
+    else if( CurrentIti > 0 )
+      Iti();
+    else if( CurrentFeedback > 0 )
+      Feedback( ( *Input )( 1, 0 ), ( *Input )( 0, 0 ) );
+    else if( CurrentOutcome  > 0 )
+      Outcome();
+    else if( CurrentTarget   > 0 )
+      Ptp();
+  }
 
-        UpdateDisplays();
-        WriteStateValues( Statevector );
+  UpdateDisplays();
+  WriteStateValues();
 }
 
 

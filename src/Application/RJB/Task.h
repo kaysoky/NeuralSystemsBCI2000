@@ -72,8 +72,6 @@ private:
         int trial, run;
         float timepassed;
 
-        unsigned short CurrentStimulusTime;
-
         void ShuffleTargs( int ntargs );
         void Rest( void );
         void Pri( void );
@@ -83,7 +81,7 @@ private:
         void Outcome( void );
         void TestCursorLocation( float, float );
         void ComputeTargets( int ntargets );
-        int GetTargetNo( int ntargs );
+        int  GetTargetNo( int ntargs );
         void UpdateDisplays( void );
         void UpdateSummary( void );
         
@@ -91,7 +89,10 @@ private:
         LogFile              mTaskLog;
         GenericVisualization mVis;
         std::vector<TWavePlayer> mTaskAnnouncements,
-                                 mResultAnnouncements;
+                                 mResultAnnouncements,
+                                 mCursorAnnouncements;
+        std::vector<float>       mCursorVolumeOffsets,
+                                 mCursorVolumeSlopes;
 
 public:
           TTask();
@@ -100,8 +101,8 @@ public:
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
-          void ReadStateValues(STATEVECTOR *);
-          void WriteStateValues(STATEVECTOR *);
+          void ReadStateValues();
+          void WriteStateValues();
 
 } ;
 
