@@ -11,6 +11,8 @@
 #include "ClassFilter.h"
 #include "UBCIError.h"
 
+using namespace std;
+
 #ifdef USE_LOGFILE
 FILE *classfile;
 #endif // USE_LOGFILE
@@ -107,8 +109,15 @@ void ClassFilter::Initialize()
 {
   samples=Parameter( "SampleBlockSize" );
   visualize= ( int )Parameter( "VisualizeClassFiltering" );
-  n_vmat= Parameter( "MUD" )->GetNumValuesDimension1();
   class_mode= Parameter( "ClassMode" );
+  n_vmat= Parameter( "MUD" )->GetNumValuesDimension1();
+
+  vc1.resize( n_vmat );
+  vf1.resize( n_vmat );
+  vc2.resize( n_vmat );
+  vf2.resize( n_vmat );
+  wtmat[ 0 ].resize( n_vmat );
+  feature[ 0 ].resize( n_vmat );
 
   for(int i=0;i<n_vmat;i++)
   {
@@ -131,6 +140,13 @@ void ClassFilter::Initialize()
   }
 
   n_hmat= Parameter( "MLR" )->GetNumValuesDimension1();
+  
+  hc1.resize( n_hmat );
+  hf1.resize( n_hmat );
+  hc2.resize( n_hmat );
+  hf2.resize( n_hmat );
+  wtmat[ 1 ].resize( n_hmat );
+  feature[ 1 ].resize( n_hmat );
 
   for(int i=0;i<n_hmat;i++)
   {
