@@ -4,7 +4,7 @@
 %     IMPORTANT: Set "Increment trial # if state" to "Flashing" and "1"
 %
 % (2) call this function
-%     syntax: [res1ch, res2ch, ressqch] = p3(subject, samplefreq, channel, triallength,
+%     syntax: [res1ch, res2ch, ressqch] = p3(subject, samplefreq, channel, triallength, rorrsqu, 
 %                                            plotthis, topotime, eloc_file, moviefilename)
 %
 %             [input]
@@ -12,6 +12,7 @@
 %             samplefreq ... the data's sampling rate (e.g., 240)
 %             channel    ... channel of interest (e.g., 15 or 11)
 %             triallength .. length of the displayed waveform in ms
+%             rorrsq     ... if 1, calculates r^2 values; if 0, calculates r
 %             plotthis   ... if 1, plots results; if 0, does not plot
 %             topotimes_ms . a list of times to create topographies (if [], no topography will be plotted) (times in ms)
 %             topogrid   ... the layout for the topographies (e.g., [4 3] for a 4x3 matrix of topographies)
@@ -30,7 +31,7 @@
 % V1.00 - first version (09/2002)
 % V1.10 - can now plot a number of topographies
 
-function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channel, triallength, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
+function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channel, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
 
 %channel=11;
 %samplefreq=240;
@@ -44,7 +45,7 @@ function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, chann
 topotimes_samples=round(topotimes_ms*samplefreq/1000);				% convert from ms into samples
 triallength=round(triallength*samplefreq/1000);                     % convert from ms into samples
 
-fprintf(1, 'BCI2000 P3 Analysis Routine V1.10\n');
+fprintf(1, 'BCI2000 P3 Analysis Routine V1.20\n');
 fprintf(1, '(C) 2002-03 Gerwin Schalk\n');
 fprintf(1, '=================================\n');
 
@@ -104,7 +105,7 @@ res1ch=res1(:, channel);
 res2ch=res2(:, channel);
 
 % calculate rsqu for each channel and each sample between up and down target
-ressq = calc_rsqu(avgdata1, avgdata2);
+ressq = calc_rsqu(avgdata1, avgdata2, rorrsqu);
 ressqch = ressq(:, channel);
 
 timems=[1:triallength]/samplefreq*1000;
@@ -150,21 +151,23 @@ if (plotthis == 1)
     end
    end
    % plot averaged responses for each of the 36 grid positions
-   figure(5);
-   clf;
-   for x=1:6
-    for y=1:6
-     h=subplot(6, 6, x+(y-1)*6);
-     avgresponse=mean(stimulusdata([x (y-1)+7], :), 1);   % targetID is calculated wrong !!!
-     plot(timems, avgresponse);
-     axis([min(timems) max(timems) displaymin displaymax]);
-     %set(h, 'XGrid', 'on');
-     set(h, 'XTick', []);
-     set(h, 'XTickLabel', []);
-     %set(h, 'YGrid', 'on');
-     set(h, 'YTick', []);
-     set(h, 'YTickLabel', []);
-    end
+   if (max_stimuluscode == 12)  % then assume the speller
+      figure(5);
+      clf;
+      for x=1:6
+       for y=1:6
+        h=subplot(6, 6, x+(y-1)*6);
+        avgresponse=mean(stimulusdata([x (y-1)+7], :), 1);   % targetID is calculated wrong !!!
+        plot(timems, avgresponse);
+        axis([min(timems) max(timems) displaymin displaymax]);
+        %set(h, 'XGrid', 'on');
+        set(h, 'XTick', []);
+        set(h, 'XTickLabel', []);
+        %set(h, 'YGrid', 'on');
+        set(h, 'YTick', []);
+        set(h, 'YTickLabel', []);
+       end
+      end
    end
 end
 
@@ -177,11 +180,20 @@ end
 if (num_topos > 0)
    figure(2);
    clf;
-   % plot all topographies
+   displaymin=1000;
+   displaymax=-1000;
+   for cur_topo=1:num_topos
+     if (min(ressq(topotimes_samples(cur_topo), :)) < displaymin)
+        displaymin=min(ressq(topotimes_samples(cur_topo), :));
+     end
+     if (max(ressq(topotimes_samples(cur_topo), :)) > displaymax)
+        displaymax=max(ressq(topotimes_samples(cur_topo), :));
+     end
+   end   % plot all topographies
    for cur_topo=1:num_topos
      subplot(topogrid(2), topogrid(1), cur_topo);
      data2plot=ressq(topotimes_samples(cur_topo), :);
-     topoplot(data2plot, eloc_file, 'maplimits', [min(min(data2plot)), max(max(data2plot))], 'style', 'straight');
+     topoplot(data2plot, eloc_file, 'maplimits', [displaymin, displaymax], 'style', 'straight');
      titletxt=sprintf('r^2 at %.1f ms', topotimes_ms(cur_topo));
      title(titletxt); 
      colorbar;

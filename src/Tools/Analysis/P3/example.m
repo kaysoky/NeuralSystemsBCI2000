@@ -20,4 +20,4 @@
 %
 % (C) Gerwin Schalk 10/02
 
-[res1ch, res2ch, ressqch, stimdata] = p3('aa1.mat', 240, 11, 650, 1, [270 310 350 390 430 470], [3 2], 'eloc64.txt', '');
+[res1ch, res2ch, ressqch, stimdata] = p3('aa1.mat', 240, 11, 650, 1, 1, [270 310 350 390 430 470], [3 2], 'eloc64.txt', '');
