@@ -21,23 +21,23 @@ FFTFilter::FFTFilter()
   mFFTWindow( eNone )
 {
  BEGIN_PARAMETER_DEFINITIONS
-   "Visualize int VisualizeFFT= 0 "
-     "0 0 1 // 1 Visualize FFT Power Spectra",
-   "Visualize float FFTMaxValue= 16000 "
-     "16000 0 0 // FFT visualization max value",
-   SECTION " int FFTOutputSignal= 0 "
-     "0 0 1 // Signal provided to the next filter: "
+   SECTION " int FFTOutputSignal= 0"
+     " 0 0 1 // Signal provided to the next filter: "
               "0: Input Signal, "
               "1: Power Spectra of selected Channels",
-   SECTION " intlist FFTInputChannels= 1 1 "
-     "0 0 0 // Input Channels the FFT is performed on",
-   SECTION " int FFTSize= 256 "
-     "0 0 0 // Number of Samples over which the FFT is computed",
-   SECTION " int FFTWindow= 3 "
-     "0 0 3 // Type of Sidelobe Suppression Window "
+   SECTION " intlist FFTInputChannels= 1 1"
+     " 0 0 0 // Input Channels the FFT is performed on",
+   SECTION " int FFTSize= 256"
+     " 0 0 0 // Number of Samples over which the FFT is computed",
+   SECTION " int FFTWindow= 3"
+     " 0 0 3 // Type of Sidelobe Suppression Window "
               "1: Hamming, "
               "2: Hann, "
               "3: Blackman",
+   "Visualize int VisualizeFFT= 0"
+     " 0 0 1 // 1 Visualize FFT Power Spectra",
+   "Visualize float FFTMaxValue= 4000"
+     " 4000 0 0 // FFT visualization max value",
  END_PARAMETER_DEFINITIONS
 }
 

@@ -77,6 +77,8 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
                                     SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+  PreflightCondition( Parameter( "NumControlSignals" ) == 2 );
+  /* The LR_A etc. parameters don't allow for any generalization here. */
 
   // Resource availability checks.
   /* The normalizer filter seems not to depend on external resources. */
@@ -86,7 +88,7 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
     PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
 
   // Requested output signal properties.
-  outSignalProperties = inSignalProperties;
+  outSignalProperties = SignalProperties( Parameter( "NumControlSignals" ), 1 );
 }
 
 // **************************************************************************

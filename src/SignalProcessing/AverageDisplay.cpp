@@ -105,7 +105,7 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
   size_t targetCode = State( "TargetCode" );
 
   // The BCI2000 standard suggests that target codes be 0 outside of trials.
-  // The following lines work around modules that don't really follow the standard.
+  // The following lines work around modules that don't quite follow that standard.
   if( OptionalState( "BeginOfTrial" ) )
     mITI = false;
   else if( OptionalState( "EndOfTrial" ) )
@@ -202,16 +202,16 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
     for( size_t i = 0; i < mChannelIndices.size(); ++i )
     {
       size_t signalCursorPos = mSignalOfCurrentRun[ i ].size();
-      mSignalOfCurrentRun[ i ].resize( signalCursorPos + signal.GetElements( mChannelIndices[ i ] ) );
-      for( size_t j = 0; j < signal.GetElements( mChannelIndices[ i ] ); ++j )
+      mSignalOfCurrentRun[ i ].resize( signalCursorPos + signal.GetNumElements( mChannelIndices[ i ] ) );
+      for( size_t j = 0; j < signal.GetNumElements( mChannelIndices[ i ] ); ++j )
         mSignalOfCurrentRun[ i ][ signalCursorPos + j ] = signal( mChannelIndices[ i ], j );
     }
 #ifdef SET_BASELINE
     if( OptionalState( "BaselineInterval" ) || OptionalState( "Baseline" ) )
       for( size_t i = 0; i < mChannelIndices.size(); ++i )
       {
-        mBaselineSamples[ i ] += signal.GetElements( mChannelIndices[ i ] );
-        for( size_t j = 0; j < signal.GetElements( mChannelIndices[ i ] ); ++j )
+        mBaselineSamples[ i ] += signal.GetNumElements( mChannelIndices[ i ] );
+        for( size_t j = 0; j < signal.GetNumElements( mChannelIndices[ i ] ); ++j )
           mBaselines[ i ] += signal( mChannelIndices[ i ], j );
       }
 #endif // SET_BASELINE
