@@ -5,10 +5,12 @@
 
 #include <stdio.h>
 
-#include "UBCItime.h"
-
+#include "UParameter.h"
+#include "UState.h"
 #include "UCoreComm.h"
 #include "UCoreMessage.h"
+#include "UBCItime.h"
+
 #pragma package(smart_init)
 //---------------------------------------------------------------------------
 
@@ -49,13 +51,13 @@ __fastcall CORECOMM::~CORECOMM()
 //---------------------------------------------------------------------------
 
 
-TClientWinSocket *CORECOMM::GetSocket()
+TClientWinSocket *CORECOMM::GetSocket() const
 {
  return(CoreSocket->Socket);
 }
 
 
-bool CORECOMM::Connected()
+bool CORECOMM::Connected() const
 {
  if (!CoreSocket) return(false);
  if (!CoreSocket->Socket->Connected) return(false);
@@ -188,7 +190,7 @@ void CORECOMM::StopSendingParameters()
 // Returns:    1 ... if successful
 //             0 ... on error
 // **************************************************************************
-int CORECOMM::PublishParameter(PARAM *param)
+int CORECOMM::PublishParameter(const PARAM *param) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -227,7 +229,7 @@ int             i;
 // Returns:    1 ... if successful
 //             0 ... on error
 // **************************************************************************
-int CORECOMM::PublishParameters(PARAMLIST *paramlist)
+int CORECOMM::PublishParameters(const PARAMLIST *paramlist)
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -271,7 +273,7 @@ PARAM           *cur_param;
 // Returns:    1 ... if successful
 //             0 ... on error
 // **************************************************************************
-int CORECOMM::PublishStates(STATELIST *statelist)
+int CORECOMM::PublishStates(const STATELIST *statelist) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -318,7 +320,7 @@ STATE           *cur_state;
 // Returns:    1 ... no error
 //             0 ... error
 // **************************************************************************
-int CORECOMM::SendStatus(char *line)
+int CORECOMM::SendStatus(const char *line) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -351,7 +353,7 @@ COREMESSAGE     *coremessage;
 // Returns:    true  ... no error
 //             false ... error
 // **************************************************************************
-bool CORECOMM::SendData2CoreModule(GenericIntSignal *my_signal, PARAM *channellistparam)
+bool CORECOMM::SendData2CoreModule(const GenericIntSignal *my_signal, const PARAM *channellistparam) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -427,7 +429,7 @@ int     s, t, channelnum;
 // Returns:    true  ... no error
 //             false ... error
 // **************************************************************************
-bool CORECOMM::SendStateVector2CoreModule(STATEVECTOR *statevector)
+bool CORECOMM::SendStateVector2CoreModule(const STATEVECTOR *statevector) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -462,7 +464,7 @@ COREMESSAGE     *coremessage;
 // Returns:    true  ... no error
 //             false ... error
 // **************************************************************************
-void CORECOMM::SendSysCommand(char *syscmdbuf)
+void CORECOMM::SendSysCommand(const char *syscmdbuf) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE             *coremessage;
