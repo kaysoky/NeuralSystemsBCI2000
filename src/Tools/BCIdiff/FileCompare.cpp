@@ -155,7 +155,7 @@ bool FileCompare::stateListsDiffer()
 }
 
 
-bool FileCompare::currentStatesDiffer(bool compareTimes)
+bool FileCompare::currentStatesDiffer(bool omitTimes)
 {
         bool differ=false;
 
@@ -165,7 +165,7 @@ bool FileCompare::currentStatesDiffer(bool compareTimes)
 
         for(int i=0;i<stateL1->GetNumStates();++i)
         {
-                if(string(stateL1->GetStatePtr(i)->GetName())!="SourceTime"&&string(stateL1->GetStatePtr(i)->GetName())!="StimulusTime")
+                if((string(stateL1->GetStatePtr(i)->GetName())!="SourceTime"&&string(stateL1->GetStatePtr(i)->GetName())!="StimulusTime")||!omitTimes)
                 {
                         if(stateV1->GetStateValue(stateL1->GetStatePtr(i)->GetName())!=stateV2->GetStateValue(stateL1->GetStatePtr(i)->GetName()))
                         {
@@ -179,7 +179,7 @@ bool FileCompare::currentStatesDiffer(bool compareTimes)
         return differ;
 }
 
-bool FileCompare::valuesDiffer(bool compareStates, bool compareTimes)
+bool FileCompare::valuesDiffer(bool compareStates, bool omitTimes)
 {
         bool differ=false;
         int num_vals_same=0;
@@ -196,7 +196,7 @@ bool FileCompare::valuesDiffer(bool compareStates, bool compareTimes)
                                 {
                                         mFile1->readStateVector(mom_sample);
                                         mFile2->readStateVector(mom_sample);
-                                        if(currentStatesDiffer(compareTimes))
+                                        if(currentStatesDiffer(omitTimes))
                                                 differ=true;
                                         else
                                                 ++num_vals_same;

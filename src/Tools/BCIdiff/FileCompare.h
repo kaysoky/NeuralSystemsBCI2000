@@ -14,11 +14,11 @@ public:
         bool numSamplesDiffer();
         bool paramsDiffer();
         bool stateListsDiffer();
-        bool valuesDiffer(bool compareStates, bool compareTimes);
+        bool valuesDiffer(bool compareStates, bool omitTimes);
 
 private:
         bool stateVectorLengthsDiffer();
-        bool currentStatesDiffer(bool compareTimes);
+        bool currentStatesDiffer(bool omitTimes);
         class FileReader* mFile1, * mFile2;
 };
 #endif
