@@ -35,22 +35,11 @@
 // Returns:    N/A
 // **************************************************************************
 COREMESSAGE::COREMESSAGE()
-{
- length=0;
- descriptor=0;
-}
-
-
-// **************************************************************************
-// Function:   ~COREMESSAGE
-// Purpose:    the destructor for the COREMESSAGE object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-COREMESSAGE::~COREMESSAGE()
+: length( 0 ),
+  descriptor( 0 ),
+  supp_descriptor( 0 )
 {
 }
-
 
 // **************************************************************************
 // Function:   SetDescriptor
@@ -82,7 +71,7 @@ void COREMESSAGE::SetSuppDescriptor(BYTE newsuppdescriptor)
 // Parameters: N/A
 // Returns:    descriptor
 // **************************************************************************
-BYTE COREMESSAGE::GetDescriptor()
+BYTE COREMESSAGE::GetDescriptor() const
 {
  return(descriptor);
 }
@@ -94,7 +83,7 @@ BYTE COREMESSAGE::GetDescriptor()
 // Parameters: N/A
 // Returns:    supplemental descriptor
 // **************************************************************************
-BYTE COREMESSAGE::GetSuppDescriptor()
+BYTE COREMESSAGE::GetSuppDescriptor() const
 {
  return(supp_descriptor);
 }
@@ -109,7 +98,7 @@ BYTE COREMESSAGE::GetSuppDescriptor()
 // Parameters: N/A
 // Returns:    length of the core message
 // **************************************************************************
-unsigned short COREMESSAGE::GetLength()
+unsigned short COREMESSAGE::GetLength() const
 {
  return(length);
 }

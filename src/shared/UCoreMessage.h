@@ -42,7 +42,6 @@ private:	// User declarations
         int     ReceiveBufBytes(TWinSocketStream *stream, char *buf, int length);
 public:		// User declarations
         COREMESSAGE::COREMESSAGE();
-        COREMESSAGE::~COREMESSAGE();
         PARAM   param;
         STATE   state;
         STATUS  status;
@@ -51,10 +50,10 @@ public:		// User declarations
         int     ParseMessage();
         void    SetDescriptor(BYTE descriptor);
         void    SetSuppDescriptor(BYTE newsuppdescriptor);
-        BYTE    GetDescriptor();
-        BYTE    GetSuppDescriptor();
+        BYTE    GetDescriptor() const;
+        BYTE    GetSuppDescriptor() const;
         void    SetLength(unsigned short newlength);
-        unsigned short GetLength();
+        unsigned short GetLength() const;
         char    *GetBufPtr();
         int     ReceiveCoreMessage(TCustomWinSocket *Socket);
         int     ReceiveCoreMessage(TWinSocketStream *stream);
