@@ -63,16 +63,16 @@ TOOLSINSTALLDIR = ${INSTALLDIR}\${TOOLSBINDIR}
 all docinfo prepare clean install update pdf:
   attrib -r ${MKNAM}
   ${EMPTYMK}
-  echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file. >>${MKNAM}
-  echo ^#INSTALLDIR=      ^# The root directory for "make install".     >>${MKNAM}
+  echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.   >>${MKNAM}
+  echo ^#INSTALLDIR=      ^# The root directory for "make install".       >>${MKNAM}
   echo ^#TOOLSINSTALLDIR= ^# Optionally, a separate tools destination\
-                             directory for "make install".              >>${MKNAM}
-  echo MAKEFILES =\                                                     >>${MKNAM}
-  -for /R %i in (*.bpr) do echo ^"%~di%~pi%~ni.mak^" \                  >>${MKNAM}
-  echo.                                                                 >>${MKNAM}
-  echo LATEXDOCS =\                                                     >>${MKNAM}
-  -for /R %i in (*.tex) do grep \\documentclass %i ${AND} echo ^"%i^" \ >>${MKNAM}
-  echo.                                                                 >>${MKNAM}
+                             directory for "make install".                >>${MKNAM}
+  echo MAKEFILES =\                                                       >>${MKNAM}
+  -for /R %i in (*.bpr) do echo ^"%~di%~pi%~ni.mak^" \                    >>${MKNAM}
+  echo.                                                                   >>${MKNAM}
+  echo LATEXDOCS =\                                                       >>${MKNAM}
+  -for /R %i in (*.tex) do grep \\documentclass "%i" ${AND} echo ^"%i^" \ >>${MKNAM}
+  echo.                                                                   >>${MKNAM}
   ${MAKE} -${MAKEFLAGS} $@
 
 !else # !ifndef MAKEFILES
@@ -92,15 +92,15 @@ docinfo: ${MAKEFILES:.mak=.docinfo}
 
 # Prepare source files for opening projects without confusing the Borland IDE.
 prepare: ${MAKEFILES:.mak=.prepare}
-  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i
+  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r "%i"
 !ifndef DONTCLEANME
-  -${SHELL} attrib -r ${MKNAM}
+  -${SHELL} attrib -r "${MKNAM}"
 !endif
   ${DONE}
 
 # Cleanup.
 clean: prepare ${MAKEFILES:.mak=.clean}
-  -${SHELL} for /R %i in (${GARBAGE}) do del %i
+  -${SHELL} for /R %i in (${GARBAGE}) do del "%i"
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
@@ -126,26 +126,26 @@ pdf: ${LATEXDOCS:.tex=.pdf}
 .bpr.mak:
   (bpr2mak $<) & echo.
   # Add our own additional targets to the makefile created by bpr2mak.
-  @echo.                                                             >>$@
-  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                     >>$@
-  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                   >>$@
-  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\           >>$@
-  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES)    >>$@
-  @echo ^^ -_$^^(PROJECT) ^^>$^^(PROJECT:.exe=.info)                 >>$@
-  @echo ^^ -del _$^^(PROJECT)                                        >>$@
-  @echo ^^ -del _*.tds                                               >>$@
-  @echo prepare:                                                     >>$@
-  @echo ^^ -attrib -r $^^(PROJECT)                                   >>$@
-  @echo ^^ if not exist obj mkdir obj                                >>$@
-  @echo install: $^^(PROJECT)                                        >>$@
-  @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"      >>$@
-  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                    >>$@
-  @echo update: $^^(PROJECT)                                         >>$@
+  @echo.                                                          >>$@
+  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                  >>$@
+  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                >>$@
+  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\        >>$@
+  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES) >>$@
+  @echo ^^ -_$^^(PROJECT) ^^>$^^(PROJECT:.exe=.info)              >>$@
+  @echo ^^ -del _$^^(PROJECT)                                     >>$@
+  @echo ^^ -del _*.tds                                            >>$@
+  @echo prepare:                                                  >>$@
+  @echo ^^ -attrib -r $^^(PROJECT)                                >>$@
+  @echo ^^ if not exist obj mkdir obj                             >>$@
+  @echo install: $^^(PROJECT)                                     >>$@
+  @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"   >>$@
+  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                 >>$@
+  @echo update: $^^(PROJECT)                                      >>$@
   @echo ^^ if exist ^^"$^(DESTDIR)^" \
-            xcopy /d /u /y $^^(PROJECT) ^^"$^(DESTDIR)^"             >>$@
-  @echo clean:                                                       >>$@
-  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                           >>$@
-  @echo.                                                             >>$@
+            xcopy /d /u /y $^^(PROJECT) ^^"$^(DESTDIR)^"          >>$@
+  @echo clean:                                                    >>$@
+  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                        >>$@
+  @echo.                                                          >>$@
   # We cannot tolerate absolute paths in makefiles.
   @${SHELL} \
   ( \
