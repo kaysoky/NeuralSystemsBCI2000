@@ -174,6 +174,9 @@ TTask::Preflight( const SignalProperties& inputProperties,
     }
   }
   mTaskLog.Preflight();
+  // TTask::Process() implies that the input signal has at least two integer channels
+  // with one element each.
+  PreflightCondition( inputProperties >= SignalProperties( 2, 1, 2 ) );
   outputProperties = SignalProperties( 0, 0 );
 }
 

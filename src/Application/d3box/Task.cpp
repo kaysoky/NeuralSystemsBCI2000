@@ -17,11 +17,12 @@ Task.cpp for the d3box task
 
 //#define  DATAGLOVE
 
+RegisterFilter( TTask, 3 );
+
 /*shidong starts*/
 FILE *b;        //debug file used to track the function flow in this file
 bool printFlow;
-/*shidong ends*/RegisterFilter( TTask, 3 );
-
+/*shidong ends*/
 
 TTask::TTask()
 : run( 0 ),
@@ -368,9 +369,9 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
   State( "IntertrialInterval" );
   State( "Running" );
 
-  // TTask::Process() implies that the input signal has at least one channel
-  // with two elements.
-  PreflightCondition( inputProperties >= SignalProperties( 2, 1 ) );
+  // TTask::Process() implies that the input signal has at least two integer channels
+  // with one element each.
+  PreflightCondition( inputProperties >= SignalProperties( 2, 1, 2 ) );
 
   /*shidong starts*/
   //Parameter checking

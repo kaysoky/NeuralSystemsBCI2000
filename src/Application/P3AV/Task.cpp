@@ -248,7 +248,7 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   if( ::waveOutGetNumDevs() == 0 )
     bcierr << "Sound card is missing." << endl;
 
-  PreflightCondition( inputProperties >= SignalProperties( 1, 1 ) );
+  PreflightCondition( inputProperties >= SignalProperties( 1, 1, 2 ) );
   outputProperties = SignalProperties( 0, 0 );
 } // Preflight
 
@@ -338,7 +338,7 @@ bool TTask::ErrorLoadingVideoFile( const string& sVideoFile ) const
 // **************************************************************************
 // Function:   Initialize
 // Purpose:    Initializes the task, e.g., resets the user env dispatcher, etc.
-// Parameters: 
+// Parameters:
 // Returns:    N/A
 // **************************************************************************
 void TTask::Initialize()
