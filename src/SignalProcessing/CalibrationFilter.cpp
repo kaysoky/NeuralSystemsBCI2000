@@ -4,6 +4,10 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
+// **************************************************************************
+// * 04/19/2004 - Introduced SourceChTimeOffset parameter (GS)              *
+// **************************************************************************
+
 #include "CalibrationFilter.h"
 #include "UParameter.h"
 #include "UGenericVisualization.h"
@@ -42,6 +46,7 @@ CalibrationFilter::CalibrationFilter()
     "0.003 0.003 0.003 0.003 "
     "0.003 0.003 0.003 0.003 "
     "0.003 -500 500 // gain for each channel (A/D units -> muV)",
+  "Filtering floatlist SourceChTimeOffset= 1 -1 0 0 1 // time offset for all source channels (not used if -1)",
   "Filtering int AlignChannels= 0 0 0 1 "
     "// align channels in time (0=no, 1=yes)",
   "Visualize int VisualizeCalibration= 1 0 0 1 "
@@ -89,6 +94,16 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
   PreflightCondition( Parameter( "SourceChOffset" )->GetNumValues() ==
                                  Parameter( "SourceChGain" )->GetNumValues() );
 
+  // check the SourceChTimeOffset; only check if we do not use the default value
+  if (Parameter( "SourceChTimeOffset", 0 ) >= 0)
+     {
+     // we need to have as many entries in SourceChTimeOffset as we have digitized channels
+     PreflightCondition( Parameter( "SourceChTimeOffset" )->GetNumValues() == Parameter( "SoftwareCh" ) );
+     // each value in SourceChTimeOffset has to be >= 0 and < 1
+     for( size_t i = 0; i < Parameter( "SourceChTimeOffset" )->GetNumValues(); ++i )
+      PreflightCondition( (Parameter( "SourceChTimeOffset", i ) >= 0) && (Parameter( "SourceChTimeOffset", i ) < 1) );
+     }
+
   // Resource availability checks.
   /* The calibration filter seems not to depend on external resources. */
 
@@ -131,19 +146,33 @@ void CalibrationFilter::Initialize()
   align = ( Parameter( "AlignChannels" ) == 1 );
   if( align )
   {
-    delta= (float)recordedChans;
-    delta= 1/delta;
-
-    for(int i=0;i<transmittedChans;i++)   // get original channel position
-    {
-      int origchan= Parameter("TransmitChList",i);
-      w2[i]= delta * (float)origchan;
-      w1[i]= 1.0 - w2[i];
-      old[i]= 0;
-#ifdef USE_LOGFILE
-      fprintf(calibf,"Chan= %3d OrigChan = %3d \n",i,origchan);
-#endif // USE_LOGFILE
-    }
+    // calculate the weight values if we do not use the default value
+    // if we do use the default value, assume that all sampled channels are evenly distributed in time
+    if (Parameter("SourceChTimeOffset", 0) >= 0)
+       {
+       for(int i=0;i<transmittedChans;i++)   // get original channel position
+        {
+        int origchan= Parameter("TransmitChList",i);
+        w2[i]= Parameter("SourceChTimeOffset", origchan - 1 );
+        w1[i]= 1.0 - w2[i];
+        old[i]= 0;
+        }
+       }
+    else // assume that all sampled channels are evenly distributed in time
+       {
+       delta= (float)recordedChans;
+       delta= 1/delta;
+       for(int i=0;i<transmittedChans;i++)   // get original channel position
+        {
+        int origchan= Parameter("TransmitChList",i);
+        w2[i]= delta * (float)(origchan-1);
+        w1[i]= 1.0 - w2[i];
+        old[i]= 0;
+        #ifdef USE_LOGFILE
+        fprintf(calibf,"Chan= %3d OrigChan = %3d \n",i,origchan);
+        #endif // USE_LOGFILE
+        }
+       }
   }
 
   // do we want to visualize ?
