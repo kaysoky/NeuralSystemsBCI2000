@@ -132,10 +132,7 @@ TfMain::HandleSTATEVECTOR( istream& is )
   if( mpStatevector->ReadBinary( is ) )
   {
 #if( MODTYPE == EEGSRC )
-    // In the EEG source, we mask out the "Running" state for the state vector
-    // arriving from the application module.
-    if( mResting )
-      mpStatevector->SetStateValue( "Running", false );
+    mpStatevector->CommitStateChanges();
 #endif // EEGSRC
     bool running = mpStatevector->GetStateValue( "Running" );
     if( running && !mLastRunning )
@@ -193,11 +190,20 @@ TfMain::HandleSTATE( istream& is )
     if( mpStatevector )
     {
 #if( MODTYPE == EEGSRC )
+      // Changing a state's value via mpStatevector->PostStateChange()
+      // will buffer the change, and postpone it until the next call to
+      // mpStatevector->CommitStateChanges(). That call happens
+      // after arrival of a STATEVECTOR message to make sure that
+      // changes are not overwritten with the content of the previous
+      // state vector when it arrives from the application module.
+      mpStatevector->PostStateChange( s.GetName(), s.GetValue() );
+      
+      // For the "Running" state, the module will undergo a more complex
+      // state transition than for other states.
       if( string( "Running" ) == s.GetName() )
       {
         bool running = mpStatevector->GetStateValue( "Running" ),
              nextRunning = s.GetValue();
-        mpStatevector->SetStateValue( "Running", nextRunning );
         if( running && !nextRunning )
           mResting = true;
         else if( !running && nextRunning )
@@ -207,8 +213,6 @@ TfMain::HandleSTATE( istream& is )
           Process( NULL );
         }
       }
-      else
-        bcierr << "Unexpectedly received a STATE message" << endl;
 #else // EEGSRC
       bcierr << "Unexpectedly received a STATE message" << endl;
 #endif // EEGSRC
@@ -233,6 +237,7 @@ TfMain::HandleSYSCMD( istream& is )
       delete mpStatevector;
       // This is the first initialization.
       mpStatevector = new STATEVECTOR( &mStatelist );
+      mpStatevector->CommitStateChanges();
       InitializeConnections();
       Initialize();
 #if( MODTYPE == EEGSRC )
