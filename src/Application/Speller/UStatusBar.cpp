@@ -30,7 +30,8 @@ STATUSBAR::STATUSBAR(TForm *form)
 
  goaltext="Goal";
  resulttext="";
- Color=clGreen;
+ // Color=clGreen;
+ Color=clBlack;
 }
 
 
@@ -92,6 +93,7 @@ float   scalex, scaley;
  scaledtextsize=(int)((float)TextHeight*scaley);
  form->Canvas->Font->Height=-scaledtextsize;
  form->Canvas->Font->Name="Arial";
+ form->Canvas->Font->Style=TFontStyles() << fsBold;
 
  // render the rectangle
  background->Brush->Color=clWhite;
@@ -116,6 +118,7 @@ float   scalex, scaley;
  goal->Font->Color=Color;
  goal->Font->Height=-scaledtextsize;
  goal->Font->Name="Arial";
+ goal->Font->Style=TFontStyles() << fsBold;
  scaledtextposx=(int)((float)GoalPosX*scalex+(float)destrect.Left);
  scaledtextposy=(int)((float)GoalPosY*scaley+(float)destrect.Top-goal->Height/2);
  goal->Caption=goaltext;
@@ -129,6 +132,7 @@ float   scalex, scaley;
  result->Font->Color=Color;
  result->Font->Height=-scaledtextsize;
  result->Font->Name="Arial";
+ result->Font->Style=TFontStyles() << fsBold;
  scaledtextposx=(int)((float)ResultPosX*scalex+(float)destrect.Left);
  scaledtextposy=(int)((float)ResultPosY*scaley+(float)destrect.Top-result->Height/2);
  result->Caption=resulttext;

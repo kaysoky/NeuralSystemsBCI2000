@@ -538,6 +538,7 @@ float   scalex, scaley;
  scaledtextsize=(int)((float)TextHeight*scaley);
  form->Canvas->Font->Height=-scaledtextsize;
  form->Canvas->Font->Name="Arial";
+ form->Canvas->Font->Style=TFontStyles() << fsBold;
 
  // create the rectangle, if it not already exists
  if ((!shape) && (IconFile == ""))
@@ -599,6 +600,7 @@ float   scalex, scaley;
     caption->Font->Color=TextColor;
     caption->Font->Height=-scaledtextsize;
     caption->Font->Name="Arial";
+    caption->Font->Style=TFontStyles() << fsBold;
     scaledtextposx=abs((scaledleft+scaledright)/2-form->Canvas->TextWidth(Caption)/2);
     scaledtextposy=(scaledbottom+scaledtop)/2-caption->Height/2;
     caption->Left=scaledtextposx;

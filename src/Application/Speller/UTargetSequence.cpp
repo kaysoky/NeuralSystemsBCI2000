@@ -62,6 +62,8 @@ int ret;
      prediction=true;
   // load and create all potential targets
   ret=LoadPotentialTargets();
+  // possibly replace this with something better
+  if (ret == 0) Application->MessageBox("Could not find target definition file. Wrong directory ?", "Error", MB_OK);
   if (ret == 0) return(0);
 
   ret=dictionary->LoadDictionary(plist->GetParamPtr("DictionaryFile")->GetValue(), true);
@@ -69,6 +71,9 @@ int ret;
   if (ret == 1)
      AddDictionary2PotentialTargets();
  } catch(...) {ret=0;}
+
+ // possibly replace this with something better
+ if (ret == 0) Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);
 
  return(ret);
 }
@@ -135,7 +140,10 @@ TARGET  *cur_target;
 
  // load the tree file to go with the list of targets
  if (tree->LoadTree("tree.cfg") == 0)
+    {
+    Application->MessageBox("Could not find tree definition file. Wrong directory ?", "Error", MB_OK);
     return(0);
+    }
 
  return(1);
 }
@@ -195,7 +203,8 @@ bool    *populated;
  target=targets->GetTargetPtr(targetID);
  new_target=target->CloneTarget();
  new_target->Color=clYellow;
- new_target->TextColor=clGreen;
+ // new_target->TextColor=clGreen;
+ new_target->TextColor=clBlack;
  new_target->parentID=cur_parentID;
  new_target->targetposition=backuppos;
  populated[new_target->targetposition]=true;            // mark that target as being occupied
@@ -208,7 +217,8 @@ bool    *populated;
   new_target=target->CloneTarget();
   new_target->parentID=cur_parentID;
   new_target->Color=clYellow;
-  new_target->TextColor=clGreen;
+  // new_target->TextColor=clGreen;
+  new_target->TextColor=clBlack;
   new_target->targetposition=offset+(BYTE)i;
   populated[new_target->targetposition]=true;           // mark that target as being occupied
   new_list->Add(new_target);
@@ -226,7 +236,8 @@ bool    *populated;
      new_target=target->CloneTarget();
      new_target->parentID=cur_parentID;
      new_target->Color=clYellow;
-     new_target->TextColor=clGreen;
+     // new_target->TextColor=clGreen;
+     new_target->TextColor=clBlack;
      new_target->targetposition=i;
      new_list->Add(new_target);
      }
@@ -300,7 +311,8 @@ BYTE    offset;
      // add to active targets
      new_target=target->CloneTarget();
      new_target->Color=clYellow;
-     new_target->TextColor=clGreen;
+     // new_target->TextColor=clGreen;
+     new_target->TextColor=clBlack;
      new_target->parentID=cur_parentID;
      // if the current targetID is "BLANK" or "BACKUP" choose the defined displayposition
      // otherwise, choose the displayposition stored in the tree, offset by whether or not BACKUP is the first or last target
