@@ -13,6 +13,7 @@
 #define MAXCHANS 65
 #define MAXPOINTS 3200
 #define MAXSTATES 8
+#define MAXOUT 512
 
 class BCIOutput
 {
@@ -36,10 +37,10 @@ class BCIOutput
                 int maxpoint;
                 int maxstate;
                 int statistics;
-                char inf[64];
+                char inf[MAXOUT];
                 int achans;
                 int buf_lth;
-                char outf_base[64];
+                char outf_base[MAXOUT];
 
                 int wintype;          // type of windowing  0 is all data in one window
                 int wblocksz;         // window block size

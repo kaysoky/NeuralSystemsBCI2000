@@ -329,7 +329,7 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
         double r;
         double sum[NGROUPS], ss[NGROUPS], sxy[NGROUPS];
         int nn[NGROUPS];
-        char outf[96];
+        char outf[MAXOUT];
         char suf[16];
         int feedflag;
 
