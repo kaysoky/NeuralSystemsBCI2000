@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
         {
                 if(string(argv[i])=="--help")
                 {
-                        cerr<<usage<<'\n';
-                        return -1;
+                        cout<<usage<<'\n';
+                        return 0;
                 }
                 else if(string(argv[i])=="--no-parameters")
                         omitParameters=true;
