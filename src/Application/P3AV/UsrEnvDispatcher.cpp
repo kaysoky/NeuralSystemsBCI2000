@@ -414,7 +414,8 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       if (m_ePhaseInSequence == PHASE_FINISH)
          {
          const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
-         pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
+         if (displayresults)                                   // 3/29/05 GS
+            pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
          State("SelectedStimulus")=iPickedStimulusID;
          }
       if (m_ePhaseInSequence == PHASE_FINISH_WO_RESULT)        // 1/28/04 GS
