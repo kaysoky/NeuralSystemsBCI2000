@@ -1,0 +1,4 @@
+UsrTask int WinXpos= 1024 0 0 1 // User Window X location
+UsrTask int WinYpos= 0 0 0 1 // User Window Y location
+UsrTask int WinWidth= 1024 0 0 1 // User Window Width
+UsrTask int WinHeight= 768 0 0 1 // User Window Height

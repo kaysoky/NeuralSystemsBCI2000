@@ -1,0 +1,88 @@
+Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
+System string ApplicationIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0. // this module's listening IP
+System string ApplicationPort= 1033 4200 1024 32768 // this module's listening port
+P3AV_Stimulus int AudioSwitch= 1 1 0 1 // Whether audio files will be presented (will not be presented individually if not defined)
+P3AV_Stimulus float AudioVolume= 100 1 0 1 // Volume for audio playback
+Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at initialize
+Source string BoardName= BCI_IN 0 0 0 // this is the name of the AD board
+Source string BoardName2= none 0 0 0 // the name of the 2nd AD board or 'none' if not present
+P3AV_Stimulus string CaptionColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // Color of stimulus caption text in hex (0x00BBGGRR)
+P3AV_Stimulus int CaptionHeight= 0 0 0 100 // Height of stimulus caption text in percent of screen height
+P3AV_Stimulus int CaptionSwitch= 0 1 0 1 // Whether captions will be presented (will not be presented individually if not defined)
+Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction
+System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string EEGsourcePort= 1029 4200 1024 32768 // this module's listening port
+Visualize float ERPMaxDispVal= 300 300 -16383 16384 // Maximum value for ERP display
+Visualize float ERPMinDispVal= 0 0 -16383 16384 // Minimum value for ERP display
+Storage string FileInitials= c:\bci2000\data\test a z 0 // Initials of file name
+FIRFilter int FIRDetrend= 0 0 0 2 // Detrend data?  0=no 1=mean 2= linear
+FIRFilter int FIRFilteredChannels= 1 1 1 64 // Number of FIR Filtered Filtered Channels
+FIRFilter matrix FIRFilterKernal= 1 1 1 64 -100 100 // Fir Filter Kernal Weights
+FIRFilter int FIRUniqueCoeffs= 0 0 0 1 // 0 for common coeffs and 1 for channel unique coeffs
+FIRFilter int FIRWindows= 1 1 1 8 // FIR- number of input blocks
+P3AV_Stimuli matrix FocusOn= { caption icon audio } { focuson } % \AVScreening\Blank.bmp \AVScreening\Blank.wav 0 0 0 // initial announcement what to focus on
+FIRFilter int Integration= 0 0 0 1 // FIR result Integration 0 = none 1 = mean 2 = rms
+P3AV_Stimuli int InterpretMode= 2 0 0 2 // Classification of results can be in none(0), free(1) or copy(2) mode
+P3AV_Stimuli matrix Matrix= { caption icon audio } { stimulus1 stimulus2 } % % AVScreening\Hands.bmp AVScreening\Feet.bmp AVScreening\hands.wav AVScreening\feet.wav 0 0 0 // captions and icons to be displayed, sounds to be played for different stimuli
+Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
+Filtering int MaxElements= 256 10 1 256 // maximum number of elements in signals B,C
+P3AV_Stimulus int MaxInterTime= 0 3 3 3 // Maximum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks
+P3AV_Stimulus int MinInterTime= 0 0 0 0 // Minimum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks
+Filtering matrix MLR= 2 5 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Left / Right Weights
+Filtering matrix MUD= { 1 2 3 4 5 6 6 7 8 9 10 11 } { chan point weight } 1 35 -10 1 36 -10 1 37 -10 1 38 -10 1 39 -10 1 40 -10 1 67 10 1 68 10 1 69 10 1 70 10 1 71 10 1 72 10 64 0 100 // Class Filter Additive Up / Down Weights
+P3AV_Stimuli int NumberOfSeq= 2 1 0 100 // How many times the sequence will be played
+Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
+P3SignalProcessing int NumERPsToAverage= 2 15 0 1000 // Number of ERPs to average before doing DF
+P3SignalProcessing int NumSamplesInERP= 160 144 0 1000 // Number of samples stored for each response
+P3AV_Stimulus int OffTime= 80 10 0 5000 // Duration of an inter-stimulus interval following stimulus in units of SampleBlocks
+P3AV_Stimulus int OnTime= 80 10 0 5000 // Duration during which the stimulus is presented in units of SampleBlocks
+P3AV_Stimulus int PostSequenceTime= 200 30 0 5000 // Duration of an inter-stimulus interval following stimulus in units of SampleBlocks
+P3AV_Stimulus int PreSequenceTime= 200 30 0 5000 // Duration during which the stimulus is presented in units of SampleBlocks
+P3AV_Stimuli matrix Result= { caption icon audio } { result } % \AVScreening\Blank.bmp AVScreening\Blank.wav 0 0 0 // final result announcement 
+Source int SampleBlockSize= 8 5 1 128 // this is the number of samples transmitted at a time
+Source int SamplingRate= 160 128 1 4000 // this is the sample rate
+Storage int SavePrmFile= 0 1 0 1 // 0: don't save additional parameter file 1: save additional parameter file
+P3AV_Stimuli intlist Sequence= 6 1 2 1 1 2 2 1 1 1000 // Sequence in which stimuli are presented (deterministic mode)/ Stimulus frequencies for each stimulus (random mode)
+P3AV_Stimuli int SequenceType= 0 0 0 1 // Sequence of stimuli can be deterministic(0) or random(1)
+System string SignalProcessingIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string SignalProcessingPort= 1031 4200 1024 32768 // this module's listening port
+Source int SoftwareCh= 64 64 1 128 // this is the number of digitized channels
+Source int SoftwareChBoard1= 64 64 1 128 // # channels board1 (ignored when only one board)
+Source int SoftwareChBoard2= 64 64 1 128 // # channels board2 (ignored when only one board)
+Filtering floatlist SourceChGain= 64 0.00682 0.00699 0.00719 0.00721 0.00724 0.00717 0.00730 0.00719 0.00728 0.00713 0.00717 0.00693 0.00733 0.00731 0.00735 0.00715 0.00722 0.00706 0.00723 0.00741 0.00723 0.00731 0.00730 0.00703 0.00776 0.00767 0.00703 0.00720 0.00777 0.00682 0.00713 0.00725 0.00766 0.00738 0.00739 0.00786 0.00710 0.00686 0.00736 0.00713 0.00676 0.00699 0.00720 0.00712 0.00681 0.00720 0.00714 0.00722 0.00727 0.00724 0.00712 0.00726 0.00693 0.00729 0.00716 0.00709 0.00711 0.00719 0.00728 0.00721 0.00737 0.00728 0.00699 0.00730 0.003 -500 500 // gain for each channel (A/D units -> muV)
+Filtering floatlist SourceChOffset= 64 -780 -319 -1398 -1013 -407 -177 -539 -411 51 -106 -814 -787 -219 192 -453 149 -437 -364 9 -103 -144 -343 -465 -29 -671 -2456 1745 -299 -2477 -1367 551 -546 -2628 -267 242 -1090 641 1325 -1178 -404 1785 613 -1720 -16 1521 -516 -29 179 -158 -237 -77 -362 -451 -59 -156 -412 -126 -179 -381 -164 -133 -305 -190 -92 0 -500 500 // offset for channels in A/D units
+Visualize int SourceMax= 8092 8092 0 16386 // raw signal vsi Max Value
+Visualize int SourceMin= 0 0 -8092 0 // raw signal vis Min Value
+Filtering int SpatialFilteredChannels= 1 2 1 64 // Number of Spatially Filtered Channels
+Filtering matrix SpatialFilterKernal= 1 1 1 64 -100 100 // Spatial Filter Kernal Weights
+System int StateVectorLength= 9 16 1 30 // length of the state vector in bytes
+P3AV_Stimulus int StimulusWidth= 100 0 0 100 // StimulusWidth in percent of screen width
+Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
+Storage string SubjectName= test Name a z // subject alias
+Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)
+Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
+P3SignalProcessing int TargetERPChannel= 1 1 0 128 // Target Channel for ERP Display in order of SigProc transfer
+P3AV_Stimuli intlist ToBeCopied= 1 2 1 1 1000 // Sequence in which stimuli need to be copied (only used in copy mode)
+Source int TransmitCh= 1 5 1 128 // this is the number of transmitted channels
+Source intlist TransmitChList= 1 11 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
+P3AV_Stimuli string UserComment= Hands_Feet your comment here // User comments for a specific run
+P3AV_Stimulus int VideoSwitch= 1 1 0 1 // Whether icons files will be presented (will not be presented individually if not defined)
+Visualize int VisualizeCalibration= 0 0 0 1 // visualize calibrated channels (0=no, 1=yes)
+Visualize int VisualizeClassFiltering= 0 0 0 1 // visualize Class filtered signals (0=no 1=yes)
+Visualize int VisualizeFIRFiltering= 1 0 0 1 // visualize FIR filtered signals (0=no 1=yes)
+Visualize int VisualizeNormalFiltering= 0 0 0 1 // visualize Normal filtered signals (0=no 1=yes)
+Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 // visualize Temporal filtered signals (0=no 1=yes)
+Visualize int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes)
+Visualize int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes)
+Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw brain signal
+Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization
+Visualize int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatial filtered signals (0=no 1=yes)
+P3AV_Window string WinBackgroundColor= 0x00000000 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)
+P3AV_Window int WinHeight= 760 512 0 2000 // User Window Height
+P3AV_Window int WinWidth= 1000 512 0 2000 // User Window Width
+P3AV_Window int WinXpos= 1035 0 0 5000 // User Window X location
+P3AV_Window int WinYpos= 10 0 0 5000 // User Window Y location
+Statistics float XGain= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Statistics float XMean= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Statistics float YGain= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
+Statistics float YMean= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
