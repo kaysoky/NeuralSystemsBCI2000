@@ -348,7 +348,12 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
  // Don't do anything if this is not a matrix parameter.
  if( type == "matrix" && inDimension2 > 0 )
  {
+#ifdef LABEL_INDEXING
+   dim1_index.resize( inDimension1 );
+   dim2_index.resize( inDimension2 );
+#else
    dimension2 = inDimension2;
+#endif
    SetNumValues( inDimension1 * inDimension2 );
  }
 }
@@ -360,7 +365,10 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM()
-: dimension2( 1 ),
+:
+#ifndef LABEL_INDEXING
+  dimension2( 1 ),
+#endif
   valid( false ),
   archive( false ),
   tag( false )
@@ -377,7 +385,10 @@ PARAM::PARAM( const char* inName, const char* inSection,
               const char* inType, const char* inValue,
               const char* inDefaultvalue, const char* inLowrange,
               const char* inHighrange, const char* inComment )
-: dimension2( 1 ),
+:
+#ifndef LABEL_INDEXING
+  dimension2( 1 ),
+#endif
   defaultvalue( inDefaultvalue ),
   lowrange( inLowrange ),
   highrange( inHighrange ),
@@ -386,11 +397,11 @@ PARAM::PARAM( const char* inName, const char* inSection,
   archive( false ),
   tag( false )
 {
- SetName( inName );
- SetSection( inSection );
- SetType( inType );
- SetValue( inValue );
- valid = inName && inSection && inType && inValue;
+  SetName( inName );
+  SetSection( inSection );
+  SetType( inType );
+  SetValue( inValue );
+  valid = inName && inSection && inType && inValue;
 }
 
 // **************************************************************************
@@ -401,7 +412,10 @@ PARAM::PARAM( const char* inName, const char* inSection,
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM( const char* paramstring )
-: dimension2( 0 ),
+:
+#ifndef LABEL_INDEXING
+  dimension2( 0 ),
+#endif
   valid( false ),
   archive( false ),
   tag( false )
@@ -720,32 +734,56 @@ PARAM::ReadFromStream( istream& is )
   linestream.clear();
   // Parse the parameter's definition.
   linestream.str( definition );
+#ifndef LABEL_INDEXING
   size_t dimension1;
+#endif
   if( type == "matrix" )
   {
+#ifdef LABEL_INDEXING
+    linestream >> dim1_index >> dim2_index;
+#else
     linestream >> dimension1 >> dimension2;
+#endif
   }
   else if( type.find( "list" ) != type.npos )
   {
+#ifdef LABEL_INDEXING
+    linestream >> dim1_index;
+    dim2_index.resize( 1 );
+#else
     linestream >> dimension1;
     dimension2 = 1;
+#endif
   }
   else
   {
+#ifdef LABEL_INDEXING
+    dim1_index.resize( 1 );
+    dim2_index.resize( 1 );
+#else
     dimension1 = 1;
     dimension2 = 1;
+#endif
   }
   if( !linestream )
     is.setstate( ios::failbit );
 
   linestream >> value;
+#ifdef LABEL_INDEXING
+  while( linestream && values.size() < dim1_index.size() * dim2_index.size() )
+#else
   while( linestream && values.size() < dimension1 * dimension2 )
+#endif
   {
     values.push_back( value );
     linestream >> value;
   }
   // Not all matrix/list entries are required for a parameter definition.
+#ifdef LABEL_INDEXING
+  values.resize( dim1_index.size() * dim2_index.size(), "0" );
+#else
   values.resize( dimension1 * dimension2, "0" );
+#endif
 
   // These entries are not required for a parameter definition.
   encodedString* finalEntries[] =
@@ -785,9 +823,17 @@ PARAM::WriteToStream( ostream& os ) const
 {
   os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
   if( type == "matrix" )
+#ifdef LABEL_INDEXING
+    os << LabelsDimension1() << ' ' << LabelsDimension2() << ' ';
+#else
     os << GetNumValuesDimension1() << ' ' << GetNumValuesDimension2() << ' ';
+#endif
   else if( type.find( "list" ) != type.npos )
+#ifdef LABEL_INDEXING
+    os << Labels() << ' ';
+#else
     os << GetNumValues() << ' ';
+#endif
   for( size_t i = 0; i < GetNumValues(); ++i )
     os << encodedString( GetValue( i ) ) << ' ';
   os << defaultvalue << ' '
@@ -823,7 +869,12 @@ PARAM::operator=( const PARAM& p )
     if( comment.empty() )
       comment = p.comment;
 
+#ifdef LABEL_INDEXING
+    dim1_index = p.dim1_index;
+    dim2_index = p.dim2_index;
+#else
     dimension2 = p.dimension2;
+#endif
     values = p.values;
 
     valid = p.valid;
@@ -910,3 +961,156 @@ PARAM::encodedString::WriteToStream( ostream& os ) const
   }
   os << oss.str();
 }
+
+#ifdef LABEL_INDEXING
+/////////////////////////////////////////////////////////////////////////////
+// labelIndexer definitions                                                //
+/////////////////////////////////////////////////////////////////////////////
+
+// Whatever we accept as delimiting single-character symbol pairs for our
+// index list in a parameter line.
+// The first entry is the default pair (used for output).
+const char* bracketPairs[] = { "{}", "()", "[]", "<>" };
+
+// **************************************************************************
+// Function:   operator[]
+// Purpose:    Maps string labels to numerical indices.
+// Parameters: String label.
+// Returns:    Numerical index associated with the label.
+// **************************************************************************
+PARAM::indexer_base::mapped_type
+PARAM::labelIndexer::operator[]( const string& label ) const
+{
+  if( needSync )
+  {
+    for( size_t i = 0; i < reverseIndex.size(); ++i )
+      forwardIndex[ reverseIndex[ i ] ] = i;
+    needSync = false;
+  }
+  
+  indexer_base::mapped_type retIndex = 0;
+  indexer_base::iterator i = forwardIndex.find( label );
+  if( i != forwardIndex.end() )
+    retIndex = i->second;
+  return retIndex;
+}
+
+// **************************************************************************
+// Function:   operator[]
+// Purpose:    Maps numerical indices to string labels.
+// Parameters: String label.
+// Returns:    String label associated with the index.
+// **************************************************************************
+const string&
+PARAM::labelIndexer::operator[]( size_t index ) const
+{
+  const string* retString = &string( "N/A" );
+  if( index < reverseIndex.size() )
+    retString = &reverseIndex[ index ];
+  return *retString;
+}
+
+string&
+PARAM::labelIndexer::operator[]( size_t index )
+{
+  needSync = true;
+  return reverseIndex.at( index );
+}
+
+// **************************************************************************
+// Function:   resize
+// Purpose:    Changes the number of labels managed by this indexer and
+//             fills the index with default labels.
+//             We don't bother deleting labels from the forward index.
+// Parameters: New size.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::labelIndexer::resize( size_t newSize )
+{
+  if( forwardIndex.size() > 0 )
+    needSync = true;
+  while( reverseIndex.size() < newSize )
+  {
+    ostringstream oss;
+    oss << reverseIndex.size();
+    forwardIndex[ oss.str() ] = reverseIndex.size();
+    reverseIndex.push_back( oss.str() );
+  }
+  reverseIndex.resize( newSize );
+}
+
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             parameter.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::labelIndexer::ReadFromStream( istream& is )
+{
+  if( is >> ws )
+  {
+    // Check if the first character is an opening bracket.
+    char possibleDelimiter = is.peek();
+    const char* endDelimiter = NULL;
+    size_t i = 0;
+    while( endDelimiter == NULL && i < sizeof( bracketPairs ) / sizeof( *bracketPairs ) )
+    {
+      if( possibleDelimiter == bracketPairs[ i ][ 0 ] )
+        endDelimiter = &bracketPairs[ i ][ 1 ];
+      ++i;
+    }
+    // The first character is an opening bracket,
+    // Get the line up to the matching closing bracket.
+    if( endDelimiter != NULL )
+    {
+      string labelsList;
+      if( getline( is, labelsList, *endDelimiter ) )
+      {
+        istringstream labels( labelsList );
+        size_t currentIndex = 0;
+        indexer_base::key_type currentToken;
+        while( labels >> currentToken )
+          forwardIndex[ currentToken ] = currentIndex++;
+      }
+    }
+    // There is no bracket, so let's read a plain number.
+    else
+    {
+      size_t size;
+      if( is >> size )
+        resize( size );
+    }
+  }
+}
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             parameter.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::labelIndexer::WriteToStream( ostream& os ) const
+{
+#ifdef TODO
+#error Check for trivial indices
+#endif // TODO
+  if( needSync || forwardIndex.size() > 0 )
+  {
+    os << bracketPairs[ 0 ][ 0 ] << ' ';
+    for( size_t i = 0; i < reverseIndex.size(); ++i )
+      os << reverseIndex[ i ] << ' ';
+    os << bracketPairs[ 0 ][ 1 ];
+  }
+  else
+    os << size();
+}
+#endif // LABEL_INDEXING

@@ -51,12 +51,42 @@ void TfEditMatrix::UpdateDisplay()
  StringGrid->RowCount=cRowsMax->Value+1;
  StringGrid->ColCount=cColumnsMax->Value+1;
  StringGrid->ScrollBars=ssBoth;
+ StringGrid->FixedCols = 1;
+ StringGrid->FixedRows = 1;
 
  // set the columns' and rows' title
+#ifdef LABEL_INDEXING
+ {
+   StringGrid->Cells[ 0 ][ 0 ] = "";
+   size_t col = 0;
+   while( col < matrix_param->GetNumValuesDimension2() )
+   {
+     StringGrid->Cells[ col + 1 ][ 0 ] = matrix_param->LabelsDimension2()[ col ].c_str();
+     ++col;
+   }
+   while( ( int )col < fEditMatrix->StringGrid->ColCount - 1 )
+   {
+     StringGrid->Cells[ col + 1 ][ 0 ] = IntToStr( col );
+     ++col;
+   }
+   size_t row = 0;
+   while( row < matrix_param->GetNumValuesDimension1() )
+   {
+      StringGrid->Cells[ 0 ][ row + 1 ] = matrix_param->LabelsDimension1()[ row ].c_str();
+      ++row;
+   }
+   while( ( int )row < fEditMatrix->StringGrid->RowCount - 1 )
+   {
+     StringGrid->Cells[ 0 ][ row + 1 ] = IntToStr( row );
+     ++row;
+   }
+ }
+#else
  for (int col=1; col<fEditMatrix->StringGrid->ColCount; col++)
   StringGrid->Cells[col][0] = IntToStr(col);
  for (int row=1; row<fEditMatrix->StringGrid->RowCount; row++)
   StringGrid->Cells[0][row] = IntToStr(row);
+#endif
 
  // set the values in the spreadsheet
  for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
@@ -80,6 +110,16 @@ void __fastcall TfEditMatrix::FormClose(TObject *Sender, TCloseAction &Action)
  try{    // matrix parameter could have been changed
  // update the matrix parameter's size
  matrix_param->SetDimensions(StringGrid->RowCount-1, StringGrid->ColCount-1);
+ 
+#ifdef LABEL_INDEXING
+ // set the column and row labels
+ for( size_t col = 0; col < matrix_param->GetNumValuesDimension2(); ++col )
+   if( matrix_param->LabelsDimension2()[ col ] != StringGrid->Cells[ col + 1 ][ 0 ].c_str() )
+     matrix_param->LabelsDimension2()[ col ] = StringGrid->Cells[ col + 1 ][ 0 ].c_str();
+ for( size_t row = 0; row < matrix_param->GetNumValuesDimension1(); ++row )
+   if( matrix_param->LabelsDimension1()[ row ] != StringGrid->Cells[ 0 ][ row + 1 ].c_str() )
+     matrix_param->LabelsDimension1()[ row ] = StringGrid->Cells[ 0 ][ row + 1 ].c_str();
+#endif
 
  // set the values in the parameter according to the values in the spreadsheet
  for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
@@ -90,4 +130,18 @@ void __fastcall TfEditMatrix::FormClose(TObject *Sender, TCloseAction &Action)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TfEditMatrix::StringGridDblClick(TObject *Sender)
+{
+  if( StringGrid->FixedCols || StringGrid->FixedRows )
+  {
+    StringGrid->FixedCols = 0;
+    StringGrid->FixedRows = 0;
+  }
+  else
+  {
+    StringGrid->FixedCols = 1;
+    StringGrid->FixedRows = 1;
+  }
+}
+//---------------------------------------------------------------------------
 

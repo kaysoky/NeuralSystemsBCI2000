@@ -37,6 +37,8 @@
 #include <sstream>
 #include <stdlib.h>
 
+#undef LABEL_INDEXING
+
 class PARAM
 {
   friend class PARAMLIST;
@@ -63,6 +65,37 @@ class PARAM
      void ReadFromStream( std::istream& );
    };
 
+#ifdef LABEL_INDEXING
+   // A helper class to handle string labels for indexing matrices
+   // and lists.
+   typedef std::map<encodedString, size_t> indexer_base;
+   typedef std::vector<indexer_base::key_type> indexer_reverse;
+   class labelIndexer
+   {
+     public:
+      labelIndexer() : needSync( false ) { resize( 1 ); }
+      // Forward lookup.
+      indexer_base::mapped_type operator[]( const std::string& ) const;
+      // A reverse lookup operator.
+      const std::string& operator[]( size_t ) const;
+      std::string& operator[]( size_t index );
+
+      void resize( size_t );
+      size_t size() const { return reverseIndex.size(); }
+      
+      // Stream I/O.
+      void WriteToStream( std::ostream& ) const;
+      void ReadFromStream( std::istream& );
+      
+     private:
+      // This is the maintained index.
+      indexer_reverse reverseIndex;
+      // This is a cache for the most probable lookup direction.
+      mutable bool needSync;
+      mutable indexer_base forwardIndex;
+   };
+#endif // LABEL_INDEXING
+
  private:
           encodedString section,
                         name,
@@ -71,7 +104,12 @@ class PARAM
                         lowrange,
                         highrange;
           std::string   comment;
+#ifdef LABEL_INDEXING
+          labelIndexer  dim1_index,
+                        dim2_index;
+#else // LABEL_INDEXING
           size_t        dimension2;
+#endif // LABEL_INDEXING
           std::vector<encodedString> values;
 
  public:
@@ -103,7 +141,7 @@ class PARAM
                 { SetValue( s, 0 ); }
         void    SetValue( const std::string&, size_t );
         void    SetValue( const std::string& s, size_t n, size_t m )
-                { SetValue( s, n * dimension2 + m ); }
+                { SetValue( s, n * GetNumValuesDimension2() + m ); }
         void    SetNumValues( size_t n )
                 { values.resize( n, "0" ); }
   const char*   GetSection() const
@@ -123,15 +161,42 @@ class PARAM
         size_t  GetNumValues() const
                 { return values.size(); }
         size_t  GetNumValuesDimension1() const
-                { return GetNumValues() / dimension2; }
+                { return GetNumValues() / GetNumValuesDimension2(); }
+#ifdef LABEL_INDEXING
+        size_t  GetNumValuesDimension2() const
+                { return dim2_index.size(); }
+#else // LABEL_INDEXING
         size_t  GetNumValuesDimension2() const
                 { return dimension2; }
+#endif // LABEL_INDEXING
         void    SetDimensions( size_t, size_t );
   const char*   GetValue() const
                 { return GetValue( 0 ); }
   const char*   GetValue( size_t ) const;
   const char*   GetValue( size_t n, size_t m ) const
-                { return GetValue( n * dimension2 + m ); }
+                { return GetValue( n * GetNumValuesDimension2() + m ); }
+#ifdef LABEL_INDEXING
+  const char*   GetValue( const std::string& label ) const
+                { return GetValue( dim1_index[ label ] ); }
+  const char*   GetValue( const std::string& label_dim2, const std::string& label_dim1 ) const
+                { return GetValue( dim2_index[ label_dim2 ], dim1_index[ label_dim1 ] ); }
+  const char*   GetValue( size_t index_dim2, const std::string& label_dim1  ) const
+                { return GetValue( index_dim2, dim1_index[ label_dim1 ] ); }
+  const char*   GetValue( const std::string& label_dim2, size_t index_dim1 ) const
+                { return GetValue( dim2_index[ label_dim2 ], index_dim1 ); }
+  labelIndexer& LabelsDimension1()
+                { return dim1_index; }
+  const labelIndexer& LabelsDimension1() const
+                { return dim1_index; }
+  labelIndexer& LabelsDimension2()
+                { return dim2_index; }
+  const labelIndexer& LabelsDimension2() const
+                { return dim2_index; }
+  labelIndexer& Labels()
+                { return dim1_index; }
+  const labelIndexer& Labels() const
+                { return dim1_index; }
+#endif // LABEL_INDEXING
         bool    Valid()
                 { return valid; }
 
@@ -269,6 +334,20 @@ class PARAMLIST : public param_container
         void    CloneParameter2List( const PARAM* );
         void    MoveParameter2List( PARAM* );
 };
+
+#ifdef LABEL_INDEXING
+inline std::ostream& operator<<( std::ostream& s, const PARAM::labelIndexer& i )
+{
+  i.WriteToStream( s );
+  return s;
+}
+
+inline std::istream& operator>>( std::istream& s, PARAM::labelIndexer& i )
+{
+  i.ReadFromStream( s );
+  return s;
+}
+#endif // LABEL_INDEXING
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e )
 {

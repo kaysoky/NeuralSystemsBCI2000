@@ -54,6 +54,7 @@ object fEditMatrix: TfEditMatrix
     DefaultRowHeight = 16
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goEditing]
     TabOrder = 0
+    OnDblClick = StringGridDblClick
   end
   object cColumnsMax: TCSpinEdit
     Left = 8
