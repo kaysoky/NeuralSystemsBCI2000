@@ -42,7 +42,7 @@ TTask::~TTask( void )
 {
         if( vis ) delete vis;
         vis= NULL;
-        fclose( appl );
+        if( appl ) fclose( appl );
 }
 
 
