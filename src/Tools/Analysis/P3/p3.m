@@ -4,13 +4,13 @@
 %     IMPORTANT: Set "Increment trial # if state" to "Flashing" and "1"
 %
 % (2) call this function
-%     syntax: [res1ch, res2ch, ressqch] = p3(subject, samplefreq, channel, triallength, rorrsqu, 
+%     syntax: [res1ch, res2ch, ressqch] = p3(subject, samplefreq, channels, triallength, rorrsqu, 
 %                                            plotthis, topotime, eloc_file, moviefilename)
 %
 %             [input]
 %             subject    ... data file name (with .mat extension)
 %             samplefreq ... the data's sampling rate (e.g., 240)
-%             channel    ... channel of interest (e.g., 15 or 11)
+%             channels   ... channels of interest (e.g., [15 11])
 %             triallength .. length of the displayed waveform in ms
 %             rorrsq     ... if 1, calculates r^2 values; if 0, calculates r
 %             plotthis   ... if 1, plots results; if 0, does not plot
@@ -25,13 +25,14 @@
 %             ressqch      ... r-squared between standard and oddball condition for each point in time for desired channel
 %             stimulusdata ... average waveforms for each stimulus
 %
-% (C) Gerwin Schalk 2002-03
+% (C) Gerwin Schalk 2002-04
 %     Wadsworth Center, NYSDOH
 %
 % V1.00 - first version (09/2002)
 % V1.10 - can now plot a number of topographies
+% V1.20 - speed increased; can now also plot a number of traces
 
-function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channel, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
+function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channels, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
 
 %channel=11;
 %samplefreq=240;
@@ -45,8 +46,8 @@ function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, chann
 topotimes_samples=round(topotimes_ms*samplefreq/1000);				% convert from ms into samples
 triallength=round(triallength*samplefreq/1000);                     % convert from ms into samples
 
-fprintf(1, 'BCI2000 P3 Analysis Routine V1.20\n');
-fprintf(1, '(C) 2002-03 Gerwin Schalk\n');
+fprintf(1, 'BCI2000 P3 Analysis Routine V1.30\n');
+fprintf(1, '(C) 2002-04 Gerwin Schalk\n');
 fprintf(1, '=================================\n');
 
 % load session
@@ -54,13 +55,31 @@ fprintf(1, 'Loading data file\n');
 loadcmd=sprintf('load %s', subject);
 eval(loadcmd);
 
-
-avgdata1=[];
-avgdata2=[];
+% determine the number of target and non-target stimuli
+% so that we can pre-allocate the avgdata arrays
+count_stimtype0=0;
+count_stimtype1=0;
 trials=unique(trialnr);
+fprintf(1, 'Determining number of target/non-target stimuli: ');
+for cur_trial=min(trials)+1:max(trials)-1
+ trialidx=find(trialnr == cur_trial);
+ cur_stimulustype=max(StimulusType(trialidx));
+ if (cur_stimulustype == 0)
+    count_stimtype0=count_stimtype0+1;
+ else
+    count_stimtype1=count_stimtype1+1;
+ end
+end
+fprintf(1, '%d/%d\n', count_stimtype0, count_stimtype1);
+
+num_chans=size(signal, 2);
+avgdata1=zeros(triallength, num_chans, count_stimtype0);
+avgdata2=zeros(triallength, num_chans, count_stimtype1);
 max_stimuluscode=max(StimulusCode);
 stimulusdata=zeros(max_stimuluscode, triallength);
 stimuluscount=zeros(max_stimuluscode);
+count0=1;
+count1=1;
 fprintf(1, 'Processing all trials (i.e., stimuli)\n');
 for cur_trial=min(trials)+1:max(trials)-1
  if (mod(cur_trial+1, 50) == 0)
@@ -79,13 +98,14 @@ for cur_trial=min(trials)+1:max(trials)-1
  % trialdata=trialdata-reference;
  cur_stimulustype=max(StimulusType(trialidx));
  cur_stimuluscode=max(StimulusCode(trialidx));
- stimulusdata(cur_stimuluscode, :)=stimulusdata(cur_stimuluscode, :)+trialdata(:, channel)';
+ stimulusdata(cur_stimuluscode, :)=stimulusdata(cur_stimuluscode, :)+trialdata(:, channels(1))';
  stimuluscount(cur_stimuluscode)=stimuluscount(cur_stimuluscode)+1;
  if (cur_stimulustype == 0)
-    avgdata1=cat(3, avgdata1, double(trialdata));
- end
- if (cur_stimulustype == 1)
-    avgdata2=cat(3, avgdata2, double(trialdata));
+    avgdata1(:, :, count0, :)=double(trialdata);
+    count0=count0+1;
+ else
+    avgdata2(:, :, count1, :)=double(trialdata);
+    count1=count1+1;
  end
 end % session
 
@@ -101,12 +121,12 @@ end
 % calculate average trials for each condition and each channel
 res1=mean(avgdata1, 3);
 res2=mean(avgdata2, 3);
-res1ch=res1(:, channel);
-res2ch=res2(:, channel);
+res1ch=res1(:, channels(1));
+res2ch=res2(:, channels(1));
 
 % calculate rsqu for each channel and each sample between up and down target
 ressq = calc_rsqu(avgdata1, avgdata2, rorrsqu);
-ressqch = ressq(:, channel);
+ressqch = ressq(:, channels(1));
 
 timems=[1:triallength]/samplefreq*1000;
 
@@ -115,17 +135,41 @@ fprintf(1, 'Plotting results\n');
 if (plotthis == 1)    
    figure(1);
    clf;
-   subplot(2, 1, 1);
-   plot(timems, res1(:, channel), 'r');
-   hold on;
-   plot(timems, res2(:, channel), 'b:');
-   title('Time Course of P300 Amplitude');
-   legend('standard', 'oddball');
-   subplot(2, 1, 2);
-   plot(timems, ressq(:, channel));
-   title('Time Course of P300 r2');
-   xlabel('Time After Stimulus (ms)');	%Added by Eric 8/20/02
-   ylabel('Prop r2');						%Added by Eric 8/20/02
+   % determine the axis scaling (should be same for all channels)
+   min_res=1e5;
+   max_res=-1e5;
+   max_r2=-1;
+   for cur_ch=1:length(channels)
+    cur_min=min([min(res1(:, channels(cur_ch))) min(res2(:, channels(cur_ch)))]);
+    cur_max=max([max(res1(:, channels(cur_ch))) max(res2(:, channels(cur_ch)))]);
+    cur_maxr2=max([max(ressq(:, channels(cur_ch))) max(ressq(:, channels(cur_ch)))]);
+    if (cur_min < min_res)
+       min_res=cur_min;
+    end
+    if (cur_max > max_res)
+       max_res=cur_max;
+    end
+    if (cur_maxr2 > max_r2)
+       max_r2=cur_maxr2;
+    end
+   end
+   for cur_ch=1:length(channels)
+    subplot(2, length(channels), cur_ch);
+    plot(timems, res1(:, channels(cur_ch)), 'r');
+    hold on;
+    plot(timems, res2(:, channels(cur_ch)), 'b:');
+    titletxt=sprintf('Time Course of P300 Amplitude (ch%02d)', channels(cur_ch));
+    title(titletxt);
+    legend('standard', 'oddball');
+    axis([min(timems) max(timems) min_res max_res]);
+    subplot(2, length(channels), length(channels)+cur_ch);
+    plot(timems, ressq(:, channels(cur_ch)));
+    titletxt=sprintf('Time Course of P300 r2 (ch%02d)', channels(cur_ch));
+    title(titletxt);
+    xlabel('Time After Stimulus (ms)');	%Added by Eric 8/20/02
+    ylabel('Prop r2');						%Added by Eric 8/20/02
+    axis([min(timems) max(timems) 0 max_r2]);
+   end
    figure(3);
    surf(timems, [1:size(ressq, 2)], ressq');
    axis([min(timems) max(timems) 1 size(ressq, 2)]);
@@ -147,7 +191,8 @@ if (plotthis == 1)
     labeltxt=sprintf('Stim %d', stim);
     ylabel(labeltxt);
     if (stim == 1)
-       title('ERP Responses To Each of 12 Stimuli');
+       titletxt=sprintf('ERP Responses To Each of 12 Stimuli (ch%02d)', channels(1));
+       title(titletxt);
     end
    end
    % plot averaged responses for each of the 36 grid positions
@@ -193,10 +238,12 @@ if (num_topos > 0)
    for cur_topo=1:num_topos
      subplot(topogrid(2), topogrid(1), cur_topo);
      data2plot=ressq(topotimes_samples(cur_topo), :);
-     topoplot(data2plot, eloc_file, 'maplimits', [displaymin, displaymax], 'style', 'straight');
+     topoplot(data2plot, eloc_file, 'maplimits', [displaymin, displaymax], 'style', 'straight', 'gridscale', 100);
      titletxt=sprintf('r^2 at %.1f ms', topotimes_ms(cur_topo));
      title(titletxt); 
-     colorbar;
+     if (cur_topo == num_topos)
+        colorbar;
+     end
    end
 end % if any topography
 
