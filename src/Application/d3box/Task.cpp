@@ -123,7 +123,12 @@ TTask::TTask()
         "User Window X location",
     "UsrTask int WinYpos= 5 0 0 1 // "
         "User Window Y location",
-
+    "UsrTask int WindowFullScreen = 0 0 0 1 // "
+        "Full screen mode (0=no, 1=yes) (boolean)",
+    "UsrTask int DisplayMonitor = 0 0 0 1 // "
+        "Check for secondary display, uncheck for primary display(0=no, 1=yes) (boolean)",
+    "UsrTask int ChangeResolution = 0 0 0 1 // "
+        "Apply changes in screen resolution (0=no, 1=yes) (boolean)",
 
   #ifdef DATAGLOVE
     "JoyStick string GloveCOMport= COM2 0 % % // "
@@ -224,16 +229,20 @@ TTask::TTask()
 
   SetUsr( Parameters, States );
 
-  /*shidong starts   */
-  if (  (b = fopen("TTaskFlow.txt", "w")) == NULL )
+  printFlow=false;
+  if(printFlow)
   {
-        printFlow = false;
-        bcierr << "Could not open TTaskFlow.txt for writing" << std::endl;
+          /*shidong starts   */
+          if (  (b = fopen("TTaskFlow.txt", "w")) == NULL )
+          {
+                printFlow = false;
+                bcierr << "Could not open TTaskFlow.txt for writing" << std::endl;
+          }
+          else
+          {
+                printFlow = true;
+          }
   }
-  else
-  {
-        printFlow = true;
- }
  /*  shidong ends*/
 if(printFlow) fprintf(b, "In TTask::Constructor.\n");
 }
@@ -637,6 +646,9 @@ TEMPORARY_ENVIRONMENT_GLUE
         LightSourceColorG       = Parameter( "LightSourceColorG");
         LightSourceColorB       = Parameter( "LightSourceColorB");
         LightSourceIntensity    = Parameter( "LightSourceIntensity");
+        WindowFullScreen        = Parameter( "WindowFullScreen");
+        DisplayMonitor          = Parameter( "DisplayMonitor");
+        ChangeResolution        = Parameter( "ChangeResolution");
 
         TrackingTarget=false;
         if (Parameter("UseTracking") == 1)
@@ -757,7 +769,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         User->setCursor(CursorStartX, CursorStartY, CursorStartZ, CursorRadius, 0,1,0,255, cursorTexture);
         User->setTarget(tmat, Ntargets, m_tmat, targetTexture, borderTexture, WorkspaceBoundaryVisible);
         User->open3D();
-        User->setWindow(WinWidth, WinHeight, WinXpos, WinYpos);
+        User->setWindow(WinWidth, WinHeight, WinXpos, WinYpos, WindowFullScreen, DisplayMonitor, ChangeResolution);
         User->setCameraLight(CameraX, CameraY, CameraZ, CameraAimX, CameraAimY, CameraAimZ, LightSourceX, LightSourceY, LightSourceZ, LightSourceColorR, LightSourceColorG, LightSourceColorB, LightSourceIntensity);
 
 /*shidong ends*/

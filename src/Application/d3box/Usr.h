@@ -90,7 +90,11 @@ public:		// User declarations
         int WinWidth;
         int WinXpos;
         int WinYpos;
-        void setWindow(int h, int w, int x, int y);
+        int WindowFullScreen;
+        int oldFullScreen;              //use it to keep track the change of the fullscreen variable
+        int DisplayMonitor;
+        int ChangeResolution;           //track if the user request a resultion change on the GL window
+        void setWindow(int h, int w, int x, int y, int wndow, int display, int ChangeResolution);
 
         //camera and light
         int CameraX;

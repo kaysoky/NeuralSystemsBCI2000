@@ -106,6 +106,9 @@ private:
         int WinWidth;
         int WinXpos;
         int WinYpos;
+        int WindowFullScreen;
+        int DisplayMonitor;
+        int ChangeResolution;
         /*shidong ends*/
 
 

@@ -98,9 +98,14 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
        /*shidong starts*/      //User->Show();
 
         borderTexture = (border.c_str());
-        targetTexture = (target.c_str());;
-        cursorTexture = (cursor.c_str());;
+        targetTexture = (target.c_str());
+        cursorTexture = (cursor.c_str());
      /*   */
+
+     debug = false;
+
+     if(debug)
+     {
        if(a)   {}
         else
         {        a = fopen("TaskLog.txt", "w");         }
@@ -116,7 +121,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
         if (a==NULL )bcierr << "Could not open TaskLog.txt for writing" << std::endl;
         if (f==NULL )bcierr << "Could not open APIlog.txt for writing" << std::endl;
         if (g==NULL )bcierr << "Could not open APIprocess.txt for writing" << std::endl;
-      debug = true;
+    }//open file if debug is true
 
 
         if(debug) fprintf(a, "In Usr->Initialize.\n");
@@ -180,7 +185,8 @@ void TUser::setCameraLight(
                 camLig.setCamAim((float)CameraAimX/32767*BORDER, (float)CameraAimY/32767*BORDER, (float)CameraAimZ/32767*BORDER);
                 camLig.setCamViewPoint((float)CameraX/32767*BORDER, (float)CameraY/32767*BORDER, (float)CameraZ/32767*BORDER);
                 camLig.setLight((float)LightSourceX/32767*BORDER, (float)LightSourceY/32767*BORDER, (float)LightSourceZ/32767*BORDER);
-                camLig.setLightColor((float)LightSourceColorR/32767*BORDER, (float)LightSourceColorG/32767*BORDER, (float)LightSourceColorB/32767*BORDER);
+                //camLig.setLightColor((float)LightSourceColorR/32767*BORDER, (float)LightSourceColorG/32767*BORDER, (float)LightSourceColorB/32767*BORDER);
+                camLig.setLightColor((float)LightSourceColorR, (float)LightSourceColorG, (float)LightSourceColorB);
                 camLig.setLightBri((float)LightSourceIntensity);
                 camLig.setAmbLightBri((float)LightSourceIntensity);
                 //reset the camera control
@@ -634,13 +640,34 @@ try
         bool done = false;      // bool variable to exit loop
 
 
-        fullscreen = false;       // Windowed mode
+        if(User->WindowFullScreen == 1)
+        {
+                User->oldFullScreen = User->WindowFullScreen;
+                fullscreen = true;      // Full screen mode
+                // Create our OpenGL window
+        	if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, 0, 0, User->DisplayMonitor))
+	        {
+		        return;               // Quit if window was not created
+        	}
+                if(fullscreen == false)  //failed to make full screen
+                {
+                        User->WindowFullScreen = 0;     //set fullscreen to false;
+                        User->oldFullScreen = 0;
+                }
+        }//full screen mode
 
-	// Create our OpenGL window
-	if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos))
-	{
-		return;               // Quit if window was not created
-	}
+
+        if(User->WindowFullScreen == 0)
+        {
+                User->oldFullScreen = User->WindowFullScreen;
+                fullscreen = false;     // Windowed mode
+                if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos, User->DisplayMonitor))
+        	{
+	        	return;               // Quit if window was not created
+        	}
+        }//window mode
+
+
 
         //Time measurement for debug prupose
         LARGE_INTEGER   S1, S2, prectimebase, overhead, aa, bb;
@@ -671,6 +698,66 @@ try
                 {
                         cuboidsVec[0].setStatus(false);
                 }
+
+
+
+                //Check for full screen parameter changes, if changed, oldFullscreen would not equal to current WindowFullScreen
+                if(User->WindowFullScreen == 1 && User->oldFullScreen != User->WindowFullScreen)
+                {
+                        User->oldFullScreen = User->WindowFullScreen;       //tracking the change
+                        KillGLWindow();         // Kill window before change the fullscreen variable
+                        fullscreen = true;      // Full screen mode
+                        // Create our OpenGL window
+        	        if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, 0, 0, User->DisplayMonitor))
+        	        {
+	        	        return;               // Quit if window was not created
+        	        }
+
+                        if(fullscreen == false)  //failed to make full screen
+                        {
+                                User->WindowFullScreen = 0;     //set fullscreen to false;
+                                User->oldFullScreen = 0;
+                        }
+                }//full screen mode
+
+                //Check for full screen parameter changes, if changed, oldFullscreen would not equal to current WindowFullScreen
+                if(User->WindowFullScreen == 0 && User->oldFullScreen != User->WindowFullScreen)
+                {
+                        User->oldFullScreen = User->WindowFullScreen;       //tracking the change
+                        KillGLWindow();         // Kill window before change the fullscreen variable
+                        fullscreen = false;     // Windowed mode
+                        // Create our OpenGL window
+                        if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos, User->DisplayMonitor))
+                	{
+	                	return;               // Quit if window was not created
+                	}
+                }//window mode
+
+                if(User->ChangeResolution==1)   //if user request change screen resolution
+                {
+                        if(fullscreen == true)
+                        {
+                                KillGLWindow();
+                                if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, 0,0, User->DisplayMonitor))
+                        	{
+	                        	return;               // Quit if window was not created
+                	        }
+                                if(fullscreen == false)  //failed to make full screen
+                                {
+                                        User->WindowFullScreen = 0;     //set fullscreen to false;
+                                        User->oldFullScreen = 0;
+                                }
+                        }//if it's full screen
+                        else
+                        {
+                                KillGLWindow();
+                                if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos, User->DisplayMonitor))
+                        	{
+	                        	return;               // Quit if window was not created
+                        	}
+                        }
+                        User->ChangeResolution = 0;
+                }//change screen resolution
 
 
 		if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))	// Is there a message waiting?
@@ -738,6 +825,67 @@ try
 				}
 				else                            // Not time to quit, Update screen
 				{
+
+                        //makes T looks brighter
+                        if (threeDTextVec[0].getStatus() == true)
+                        {
+                                // glDisable(GL_LIGHTING);
+                                camLig.setLightColor(0.5f,0.5f, 0.5f);
+                                camLig.setAmbLightBri(170);
+                                GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
+                                GLfloat ligBri = (GLfloat)camLig.getLightBri()/255;
+
+        if (abmBri >= 1)
+                abmBri = 1.0f;
+        if (ligBri >=1 )
+                ligBri = 1.0f;
+
+        GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
+        GLfloat spec[] = {ligBri*camLig.getLightColorX(), ligBri*camLig.getLightColorY(), ligBri*camLig.getLightColorZ(), 1.0f};
+        GLfloat lightPosition[] = {camLig.getLightX(), camLig.getLightY(),  camLig.getLightZ(), 0.0f};
+
+        glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
+        glLightfv(GL_LIGHT1, GL_AMBIENT, abmLight);		// Setup The Ambient Light
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, spec);		        // Setup The Specular Light
+        glLightfv(GL_LIGHT1, GL_SPECULAR, spec);		// Setup The Specular Light
+        glLightfv(GL_LIGHT1, GL_POSITION,lightPosition);	// Position The Lig
+
+
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, abmLight);
+        glMaterialf(GL_FRONT, GL_SHININESS, 128.0);
+
+        glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
+        glEnable(GL_COLOR_MATERIAL );
+
+
+	glEnable(GL_LIGHT1);                                    // Enable light one
+
+                        }
+                        else
+                        {
+                             //   glEnable(GL_LIGHTING);		// Enable Lighting
+                             camLig.setLightColor(0.5f,0.5f, 0.5f);
+                             camLig.setAmbLightBri(255);
+                             GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
+                                if (abmBri >= 1)
+                                abmBri = 1.0f;
+                             GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
+                             glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
+                             glDisable(GL_LIGHT1);
+                             glEnable(GL_LIGHT0);
+                        }
+
+
+
+
+
+
+
+
+
+
 //fream rate measurement
 QueryPerformanceCounter(&S1);
 				       DrawScreen();          // Draw the scene
@@ -752,24 +900,16 @@ if(timeinms<frameRate)
 {
 Sleep(frameRate-timeinms);
 }
-
-
-
 				}//else
 			}//if
 
-			if (keys[VK_F1])                        // Is F1 being pressed?
-			{
-				keys[VK_F1] = false;            // If so make key false
-				KillGLWindow();                 // Kill our current window
-				fullscreen =! fullscreen;       // Toggle fullscreen / windowed mode
-				// Recreate our OpenGL window
-				if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos))
-				{
-					return;               // Quit if window was not created
-				}
-			} //F1 key
-//Change Camera View
+
+
+
+
+
+
+
                         if (keys[VK_PRIOR])
 			{
 				z -= 0.2f;
@@ -833,56 +973,6 @@ Sleep(frameRate-timeinms);
                                 hp=FALSE;				// If So, lp Becomes FALSE
                         }
 
-                        //makes T looks brighter
-                        if (threeDTextVec[0].getStatus() == true)
-                        {
-                                // glDisable(GL_LIGHTING);
-                                camLig.setLightColor(0.5f,0.5f, 0.5f);
-                                camLig.setAmbLightBri(170);
-                                GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
-                                GLfloat ligBri = (GLfloat)camLig.getLightBri()/255;
-
-        if (abmBri >= 1)
-                abmBri = 1.0f;
-        if (ligBri >=1 )
-                ligBri = 1.0f;
-
-        GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
-        GLfloat spec[] = {ligBri*camLig.getLightColorX(), ligBri*camLig.getLightColorY(), ligBri*camLig.getLightColorZ(), 1.0f};
-        GLfloat lightPosition[] = {camLig.getLightX(), camLig.getLightY(),  camLig.getLightZ(), 0.0f};
-
-        glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
-        glLightfv(GL_LIGHT1, GL_AMBIENT, abmLight);		// Setup The Ambient Light
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, spec);		        // Setup The Specular Light
-        glLightfv(GL_LIGHT1, GL_SPECULAR, spec);		// Setup The Specular Light
-        glLightfv(GL_LIGHT1, GL_POSITION,lightPosition);	// Position The Lig
-
-
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-        glMaterialfv(GL_FRONT, GL_AMBIENT, abmLight);
-        glMaterialf(GL_FRONT, GL_SHININESS, 128.0);
-
-        glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
-        glEnable(GL_COLOR_MATERIAL );
-        
-
-	glEnable(GL_LIGHT1);                                    // Enable light one
-
-                        }
-                        else
-                        {
-                             //   glEnable(GL_LIGHTING);		// Enable Lighting
-                             camLig.setLightColor(0.5f,0.5f, 0.5f);
-                             camLig.setAmbLightBri(255);
-                             GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
-                                if (abmBri >= 1)
-                                abmBri = 1.0f;
-                             GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
-                             glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
-                             glDisable(GL_LIGHT1);
-                             glEnable(GL_LIGHT0);
-                        }
 
 
 
@@ -894,7 +984,7 @@ Sleep(frameRate-timeinms);
                                 firstRun = false;
                         }
 
-		}//else
+		}//else  no message
 	}//while
         KillGLWindow();         // Kill the window
 
@@ -978,6 +1068,7 @@ void TUser::suspend()
         }
 
         sphereVec[0].setStatus(false);          //cursor
+        sphereVec[1].setStatus(false);
 }//suspend
 
 
@@ -1091,7 +1182,7 @@ void TUser::setCursor(float posX, float posY, float posZ, float radius, float cl
                    sphereVec[1].setColor(posX, clG, clB);
                    sphereVec[1].setPrimitveID(1);
                    sphereVec[1].setRotPointPosition(0.0f, 0.0f, 0.0f);
-                   sphereVec[1].setStatus(true);
+                   sphereVec[1].setStatus(false);       //Initial screen is T screen, so cursor should be initialized to false until program  start
                    sphereVec[1].setBrightness(bright);
                    sphereVec[1].setTransparency(255);
                    sphereVec[1].setHasTexture(false);
@@ -1114,12 +1205,15 @@ void TUser::setCursor(float posX, float posY, float posZ, float radius, float cl
 
 
 //----------------------------------------------------------------------------
-void TUser::setWindow(int h, int w, int x, int y)
+void TUser::setWindow(int h, int w, int x, int y, int window, int display, int change)
 {
 User->WinHeight =h;
 User->WinWidth = w;
 User->WinXpos = x;
 User->WinYpos = y;
+User->WindowFullScreen = window;
+User->DisplayMonitor = display;
+User->ChangeResolution = change;
 }
 
 

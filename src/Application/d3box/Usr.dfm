@@ -1,10 +1,10 @@
 object User: TUser
-  Left = 0
-  Top = 0
+  Left = 1
+  Top = 1
   BorderStyle = bsNone
   Caption = 'Usr'
-  ClientHeight = 700
-  ClientWidth = 1016
+  ClientHeight = 530
+  ClientWidth = 790
   Color = clNone
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
