@@ -44,7 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define ADC_DTADC
+#define ADC_DTADC
 
 #include "UCoreComm.h"
 #include "..\shared\defines.h"
