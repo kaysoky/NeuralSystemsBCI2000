@@ -104,9 +104,9 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
   for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
   {
     currentFilter = *i;
-    // This will implicitly create the output signal if it does not exist.
     SignalProperties currentOutput;
     currentFilter->Preflight( *currentInput, currentOutput );
+    // The output signal will be created here if it does not exist.
     OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
     currentInput = &OwnedSignals()[ currentFilter ];
   }
