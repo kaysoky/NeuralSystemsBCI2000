@@ -14,7 +14,7 @@ PROJECTS = LittleDemoApp.exe Oddball.exe P3Speller.exe RJB.exe Screen.exe \
   NISource.exe RDAClient.exe RandomNumber.exe operat.exe ARSignalProcessing.exe \
   FIRProcessing.exe P3SignalProcessing.exe PeakDetectSignalProcessing.exe \
   SignalProcessing.exe DummySignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe \
-  calibgen.exe maxifred.exe getparams.exe
+  calibgen.exe maxifred.exe getparams.exe BrainVisionImporter.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -120,6 +120,10 @@ P3AVTask.exe: Application\P3AV\P3AVTask.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 getparams.exe: EEGsource\RDAClient\getparams\getparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BrainVisionImporter.exe: Tools\BrainVisionImporter\BrainVisionImporter.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
