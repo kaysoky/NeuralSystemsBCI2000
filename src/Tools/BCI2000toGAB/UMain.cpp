@@ -16,38 +16,70 @@
 #pragma link "CGAUGES"
 #pragma resource "*.dfm"
 
-using namespace std;
+#define VERSION "0.4"
 
-template<typename From, typename To> bool convert_num( const From& f, To& t )
-{
-  bool overflow = false;
-  if( numeric_limits<To>::is_integer ) // asymmetry in numeric_limits::min()
-    overflow = ( numeric_limits<To>::max() < f ) || ( f < numeric_limits<To>::min() );
-  else
-    overflow = ( numeric_limits<To>::max() < f ) || ( f < -numeric_limits<To>::max() );
-  t = To( f );
-  return overflow;
-}
+using namespace std;
 
 TfMain *fMain;
 
+template<typename From, typename To> float convert_num( const From& f, To& t )
+{
+  bool overflow = false;
+  if( numeric_limits<To>::max() < f )
+  {
+    overflow = true;
+    t = numeric_limits<To>::max();
+  }
+  else if( numeric_limits<To>::is_integer && f < numeric_limits<To>::min() )
+  {
+    overflow = true;
+    t = numeric_limits<To>::min();
+  }
+  else if( !numeric_limits<To>::is_integer && f < -numeric_limits<To>::max() )
+  {
+    overflow = true;
+    t = -numeric_limits<To>::max();
+  }
+  else
+    t = To( f );
+  float ratio = 0.0;
+  if( overflow )
+    ratio = float( f ) / ( float( t ) + numeric_limits<float>::epsilon() );
+  return ratio;
+}
+
+void TfMain::UserMessage( const AnsiString& msg, TfMain::msgtypes type ) const
+{
+  bool actuallyShowIt = !autoMode;
+  const char* msgtype = "Message";
+  long msgflags = MB_OK;
+  switch( type )
+  {
+    case Warning:
+      msgflags |= MB_ICONWARNING;
+      msgtype = "Warning";
+      break;
+    case Error:
+      msgflags |= MB_ICONERROR;
+      msgtype = "Error";
+      actuallyShowIt = true;
+      break;
+  }
+  if( actuallyShowIt )
+    Application->MessageBox( msg.c_str(), msgtype, msgflags );
+}
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
         : TForm(Owner),
           gabTargets( NULL ),
-          autoMode( false )
+          autoMode( false ),
+          bci2000data( NULL )
 {
-  Caption = Caption + "("__DATE__")";
+  Caption = Caption + " " VERSION " ("__DATE__")";
   Constraints->MinHeight = Height;
   Constraints->MinWidth = Width;
   mSourceFiles->WordWrap = false;
-  bConvert->Caption = "Convert";
-  Continue->Visible = false;
-  frun->Visible = false;
-  lrun->Visible = false;
-  Label3->Visible = false;
-  Label4->Visible = false;
   
   if( Application->OnIdle == NULL )
     Application->OnIdle = DoStartupProcessing;
@@ -93,8 +125,6 @@ void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
     }
     if( bConvert->Enabled )
       bConvert->Click();
-    if( Continue->Enabled )
-      Continue->Click();
     Application->Terminate();
   }
 }
@@ -122,9 +152,8 @@ void __fastcall TfMain::CheckCalibrationFile( void )
       }
     }
     else
-      Application->MessageBox( ( AnsiString( "Could not open calibration file \"" )
-                                    + ParameterFile->Text + "\"." ).c_str(),
-                                "Error", MB_OK | MB_ICONERROR );
+      UserMessage( "Could not open parameter file \""
+                   + ParameterFile->Text + "\".", Error );
   }
   else
     paramlistPtr = bci2000data->GetParamListPtr();
@@ -155,10 +184,9 @@ void __fastcall TfMain::CheckCalibrationFile( void )
   }
   if( numberTargets > numberTargetsMax )
   {
-    Application->MessageBox(
-                 "Target type heuristics failed. "
+    UserMessage( "Target type heuristics failed. "
                  "Target conversion is likely to be unusable.",
-                 "Warning", MB_OK | MB_ICONWARNING );
+                 Warning );
     gabTargets = NULL;
   }
 }
@@ -167,7 +195,8 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 
 void __fastcall TfMain::bConvertClick(TObject *Sender)
 {
- Continue->Enabled= false;
+ offset.clear();
+ gain.clear();
 
  bool errorOccurred = false;
  for( int i = 0; i < mSourceFiles->Lines->Count; ++i )
@@ -177,19 +206,20 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
         != BCI2000ERR_NOERR )
    {
       errorOccurred = true;
-      Application->MessageBox( ( AnsiString( "Error opening input file \"" )
-                               + mSourceFiles->Lines->Strings[ i ] + "\"" ).c_str(),
-                               "Error", MB_OK | MB_ICONERROR );
+      UserMessage( "Error opening input file \""
+                   + mSourceFiles->Lines->Strings[ i ] + "\"",
+                   Error );
    }
  }
  if( errorOccurred )
    return;
 
+ delete bci2000data;
  bci2000data=new BCI2000DATA;
  ret=bci2000data->Initialize(mSourceFiles->Lines->Strings[ 0 ].c_str(), 50000);
  if (ret != BCI2000ERR_NOERR)
     {
-    Application->MessageBox("Error opening input file", "Error", MB_OK);
+    UserMessage( "Error opening input file", Error );
     delete bci2000data;
     return;
     }
@@ -197,41 +227,22 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  fp=fopen(eDestinationFile->Text.c_str(), "wb");
  if (!fp)
     {
-    Application->MessageBox("Error opening output file", "Error", MB_OK);
+    UserMessage( "Error opening output file", Error );
     delete bci2000data;
     return;
     }
 
-    CheckCalibrationFile();
-#if 0
- firstrun=bci2000data->GetFirstRunNumber();
- lastrun=bci2000data->GetLastRunNumber();
+ CheckCalibrationFile();
 
- frun->Text= firstrun;
- lrun->Text= lastrun;
- Continue->Enabled= true;
-#else
- ContinueClick( Sender );
-#endif
- }
-
- 
- void __fastcall TfMain::ContinueClick(TObject *Sender)
-{
-#if 0
- firstrun= atoi( frun->Text.c_str() );
- lastrun= atoi( lrun->Text.c_str() );
-#else
  firstrun = 1;
  lastrun = mSourceFiles->Lines->Count;
-#endif
- 
+
  channels=bci2000data->GetNumChannels();
  dummy=1;
  samplingrate=bci2000data->GetSampleFrequency();
 
- bool overflowOccurred = false;
- 
+ float maxRatio = 0.0;
+
  // write the header
  fwrite(&channels, 2, 1, fp);
  fwrite(&dummy, 2, 1, fp);
@@ -240,16 +251,12 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  // go through each run
  Gauge->MinValue=0;
  Gauge->Progress=0;
- Gauge->MaxValue=Gauge->Width;// lastrun;
+ Gauge->MaxValue=Gauge->Width;
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
-#if 0
-  bci2000data->SetRun(cur_run);
-#else
   delete bci2000data;
   bci2000data = new BCI2000DATA;
   bci2000data->Initialize( mSourceFiles->Lines->Strings[ cur_run - 1 ].c_str(), 50000 );
-#endif
   numsamples=bci2000data->GetNumSamples();
 
   // go through all samples in each run
@@ -269,7 +276,9 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
        cur_value=bci2000data->ReadValue(channel, sample);
        val= (float)cur_value;
        val= gain[channel] * ( val - offset[channel] ) / 0.003;
-       overflowOccurred |= convert_num( val, cur_value );
+       float ratio = convert_num( val, cur_value );
+       if( maxRatio < ratio )
+         maxRatio = ratio;
        fwrite(&cur_value, 2, 1, fp);
      }
    }
@@ -277,7 +286,9 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      for( channel = 0; channel < channels; ++channel )
      {
        val = bci2000data->Value( channel, sample ) / 0.003;
-       overflowOccurred |= convert_num( val, cur_value );
+       float ratio = convert_num( val, cur_value );
+       if( maxRatio < ratio )
+         maxRatio = ratio;
        fwrite( &cur_value, sizeof( cur_value ), 1, fp );
      }
 
@@ -296,15 +307,15 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
 
  fclose(fp);
 
- if( overflowOccurred )
-   Application->MessageBox(
-               "Numeric overflow occurred during conversion.\n"
-               "Conversion process finished.",
-               "Warning", MB_OK | MB_ICONWARNING );
- else if( !autoMode )
-   Application->MessageBox(
-               "Conversion process finished successfully",
-               "Message", MB_OK | MB_ICONASTERISK );
+ if( maxRatio > 1.0 )
+   UserMessage( "Numeric overflow occurred during conversion.\n"
+                "Input data exceeded the numeric range by a ratio of "
+                + FloatToStr( maxRatio ) + ".\n"
+                "Conversion process finished.",
+                Warning );
+ else
+   UserMessage( "Conversion process finished successfully",
+                Message );
  Gauge->Progress=0;
 }
 //---------------------------------------------------------------------------
@@ -364,8 +375,8 @@ static short cur_targetcode=-1;
 void __fastcall TfMain::bOpenFileClick(TObject *Sender)
 {
  OpenDialog->Options << ofAllowMultiSelect;
- if (OpenDialog->Execute())
-    mSourceFiles->Lines=OpenDialog->Files;
+ if( OpenDialog->Execute() )
+    mSourceFiles->Lines = OpenDialog->Files;
 }
 //---------------------------------------------------------------------------
 

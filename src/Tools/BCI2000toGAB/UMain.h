@@ -24,21 +24,15 @@ __published:	// IDE-managed Components
         TButton *bOpenFile;
         TButton *Button1;
         TSaveDialog *SaveDialog;
-        TButton *Continue;
-        TLabel *Label3;
-        TEdit *frun;
-        TLabel *Label4;
-        TEdit *lrun;
         TButton *Button2;
         TEdit *ParameterFile;
         TLabel *Label5;
         TOpenDialog *OpenParameter;
-    TMemo *mSourceFiles;
+        TMemo *mSourceFiles;
 
         void __fastcall bConvertClick(TObject *Sender);
         void __fastcall bOpenFileClick(TObject *Sender);
         void __fastcall Button1Click(TObject *Sender);
-        void __fastcall ContinueClick(TObject *Sender);
         void __fastcall Button2Click(TObject *Sender);
 private:	// User declarations
         BCI2000DATA *bci2000data;
@@ -54,7 +48,9 @@ private:	// User declarations
         void __fastcall CheckCalibrationFile( void );
         void __fastcall DoStartupProcessing( TObject*, bool& );
         bool autoMode;
-      
+        typedef enum { Message, Warning, Error } msgtypes;
+        void UserMessage( const AnsiString&, msgtypes ) const;
+
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         __int16 ConvertState(BCI2000DATA *bci2000data);

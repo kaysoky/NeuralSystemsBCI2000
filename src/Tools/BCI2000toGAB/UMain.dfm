@@ -2,8 +2,8 @@ object fMain: TfMain
   Left = 583
   Top = 279
   Width = 425
-  Height = 353
-  Caption = 'BCI2000toGAB  v0.3 '
+  Height = 343
+  Caption = 'BCI2000toGAB'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -39,12 +39,12 @@ object fMain: TfMain
   Position = poScreenCenter
   DesignSize = (
     417
-    326)
+    316)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
-    Left = 40
-    Top = 32
+    Left = 48
+    Top = 8
     Width = 89
     Height = 16
     Caption = 'BCI2000 File(s)'
@@ -56,12 +56,12 @@ object fMain: TfMain
     ParentFont = False
   end
   object Label2: TLabel
-    Left = 40
-    Top = 160
-    Width = 53
+    Left = 48
+    Top = 134
+    Width = 94
     Height = 16
     Anchors = [akLeft, akBottom]
-    Caption = 'GAB File'
+    Caption = 'Output GAB File'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -70,35 +70,19 @@ object fMain: TfMain
     ParentFont = False
   end
   object Gauge: TCGauge
-    Left = 40
-    Top = 277
+    Left = 48
+    Top = 243
     Width = 353
     Height = 25
     Anchors = [akLeft, akRight, akBottom]
   end
-  object Label3: TLabel
-    Left = 272
-    Top = 48
-    Width = 34
-    Height = 13
-    Anchors = [akTop, akRight]
-    Caption = 'first run'
-  end
-  object Label4: TLabel
-    Left = 272
-    Top = 80
-    Width = 34
-    Height = 13
-    Anchors = [akTop, akRight]
-    Caption = 'last run'
-  end
   object Label5: TLabel
-    Left = 40
-    Top = 216
-    Width = 155
+    Left = 48
+    Top = 182
+    Width = 139
     Height = 16
     Anchors = [akLeft, akBottom]
-    Caption = 'Calibration Parameter File'
+    Caption = 'External Parameter File'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -108,26 +92,27 @@ object fMain: TfMain
   end
   object bConvert: TButton
     Left = 328
-    Top = 8
+    Top = 280
     Width = 75
     Height = 25
-    Anchors = [akTop, akRight]
-    Caption = 'Load List'
+    Anchors = [akRight, akBottom]
+    Caption = 'Convert'
+    Default = True
     TabOrder = 0
     OnClick = bConvertClick
   end
   object eDestinationFile: TEdit
-    Left = 40
-    Top = 176
-    Width = 201
+    Left = 48
+    Top = 150
+    Width = 353
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 1
     Text = 'c:\shared\raw\em180.raw'
   end
   object bOpenFile: TButton
-    Left = 0
-    Top = 48
+    Left = 8
+    Top = 24
     Width = 33
     Height = 21
     Caption = 'File(s)'
@@ -135,8 +120,8 @@ object fMain: TfMain
     OnClick = bOpenFileClick
   end
   object Button1: TButton
-    Left = 0
-    Top = 176
+    Left = 8
+    Top = 150
     Width = 33
     Height = 21
     Anchors = [akLeft, akBottom]
@@ -144,76 +129,50 @@ object fMain: TfMain
     TabOrder = 3
     OnClick = Button1Click
   end
-  object Continue: TButton
-    Left = 328
-    Top = 112
-    Width = 75
-    Height = 25
-    Anchors = [akTop, akRight]
-    Caption = 'Convert'
-    Enabled = False
-    TabOrder = 4
-    OnClick = ContinueClick
-  end
-  object frun: TEdit
-    Left = 320
-    Top = 48
-    Width = 89
-    Height = 21
-    Anchors = [akTop, akRight]
-    TabOrder = 5
-    Text = 'firstr'
-  end
-  object lrun: TEdit
-    Left = 320
-    Top = 80
-    Width = 89
-    Height = 21
-    Anchors = [akTop, akRight]
-    TabOrder = 6
-    Text = 'lastr'
-  end
   object Button2: TButton
-    Left = 0
-    Top = 232
+    Left = 8
+    Top = 198
     Width = 33
     Height = 21
     Anchors = [akLeft, akBottom]
     Caption = 'File'
-    TabOrder = 7
+    TabOrder = 4
     OnClick = Button2Click
   end
   object ParameterFile: TEdit
-    Left = 40
-    Top = 232
-    Width = 201
+    Left = 48
+    Top = 198
+    Width = 353
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     Enabled = False
-    TabOrder = 8
+    TabOrder = 5
     Text = '<none>'
   end
   object mSourceFiles: TMemo
-    Left = 40
-    Top = 48
-    Width = 201
-    Height = 105
+    Left = 48
+    Top = 24
+    Width = 353
+    Height = 95
     Anchors = [akLeft, akTop, akRight, akBottom]
     Lines.Strings = (
       'c:\shared\raw\em180.dat')
     ScrollBars = ssVertical
-    TabOrder = 9
+    TabOrder = 6
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Top = 72
+    Left = 8
+    Top = 40
   end
   object SaveDialog: TSaveDialog
-    Top = 200
+    Left = 8
+    Top = 168
   end
   object OpenParameter: TOpenDialog
     Filter = '*.prm|*.prm|all files|*.*'
-    Top = 256
+    Left = 8
+    Top = 216
   end
 end
