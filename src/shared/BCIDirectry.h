@@ -7,6 +7,10 @@
 
 #define OLD_BCIDTRY
 
+#ifdef OLD_BCIDTRY
+# include <stdlib.h>
+#endif
+
 #include <string>
 
 class BCIDirectory
