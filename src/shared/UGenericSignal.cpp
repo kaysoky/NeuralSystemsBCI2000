@@ -28,14 +28,32 @@
 #include "UGenericSignal.h"
 
 #include "LengthField.h"
-#include "defines.h" // for DATATYPE::FLOAT / DATATYPE::INTEGER
 #include <iostream>
 #include <iomanip>
+#include <limits>
 #include <math.h>
+
+#include <assert>
 
 #if( sizeof( signed short ) != 2 || sizeof( signed char ) != 1 )
 # error This file depends on 2-byte shorts and 1-byte chars.
 #endif
+
+#if( sizeof( unsigned int ) != 4 && sizeof( float ) != 4 )
+# error This file assumes a size of 4 bytes for unsigned int and float.
+#endif
+
+namespace DATATYPE
+{
+  enum
+  {
+    INTEGER = 0,
+    FLOAT = 1,
+    FLOAT32 = 2,
+  };
+};
+
+using namespace std;
 
 bool
 SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
@@ -49,13 +67,13 @@ SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
 }
 
 void
-SignalProperties::WriteToStream( std::ostream& os ) const
+SignalProperties::WriteToStream( ostream& os ) const
 {
   os << Channels() << " " << MaxElements() << " " << GetDepth();
 }
 
-std::ostream&
-SignalProperties::WriteBinary( std::ostream& os ) const
+ostream&
+SignalProperties::WriteBinary( ostream& os ) const
 {
   LengthField<2>( Channels() ).WriteBinary( os );
   LengthField<2>( MaxElements() ).WriteBinary( os );
@@ -63,8 +81,8 @@ SignalProperties::WriteBinary( std::ostream& os ) const
   return os;
 }
 
-std::istream&
-SignalProperties::ReadBinary( std::istream& is )
+istream&
+SignalProperties::ReadBinary( istream& is )
 {
   LengthField<2> channels,
                  maxElem;
@@ -102,13 +120,6 @@ SignalProperties::operator<=( const SignalProperties& sp ) const
   return true;
 }
 
-void
-GenericSignal::SetChannel( const short *inSource, size_t inChannel )
-{
-  for( size_t i = 0; i < elements.at( inChannel ); ++i )
-    Value[ inChannel ][ i ] = ( float )inSource[ i ];
-}
-
 const GenericSignal&
 GenericSignal::operator=( const GenericIntSignal& inRHS )
 {
@@ -120,21 +131,21 @@ GenericSignal::operator=( const GenericIntSignal& inRHS )
 }
 
 void
-GenericSignal::WriteToStream( std::ostream& os ) const
+GenericSignal::WriteToStream( ostream& os ) const
 {
   int indent = os.width();
-  os << '\n' << std::setw( indent ) << ""
+  os << '\n' << setw( indent ) << ""
      << "SignalProperties { ";
   SignalProperties::WriteToStream( os );
-  os << '\n' << std::setw( indent ) << ""
+  os << '\n' << setw( indent ) << ""
      << "}";
-  os << std::setprecision( 7 );
+  os << setprecision( 7 );
   for( size_t j = 0; j < MaxElements(); ++j )
   {
-    os << '\n' << std::setw( indent ) << "";
+    os << '\n' << setw( indent ) << "";
     for( size_t i = 0; i < Value.size(); ++i )
     {
-      os << std::setw( 14 );
+      os << setw( 14 );
       if( j < GetNumElements( i ) )
         os << GetValue( i, j );
       else
@@ -144,10 +155,28 @@ GenericSignal::WriteToStream( std::ostream& os ) const
   }
 }
 
-std::ostream&
-GenericSignal::WriteBinary( std::ostream& os ) const
+ostream&
+GenericSignal::WriteBinary( ostream& os ) const
 {
-  int datatype = ( depth >= sizeof( float ) ? DATATYPE::FLOAT : DATATYPE::INTEGER );
+  int datatype = DATATYPE::FLOAT;
+  switch( depth )
+  {
+    case 0:
+    case 1:
+    case 2:
+      datatype = DATATYPE::INTEGER;
+      break;
+    case 3:
+      datatype = DATATYPE::FLOAT;
+      break;
+#ifdef BCI_TOOL // Remove the #ifdef once the protocol allows for it.
+    case 4:
+      datatype = DATATYPE::FLOAT32;
+      break;
+#endif // BCI_TOOL
+    default:
+      datatype = DATATYPE::FLOAT;
+  }
   os.put( datatype );
   LengthField<1>( Channels() ).WriteBinary( os );
   LengthField<2>( MaxElements() ).WriteBinary( os );
@@ -188,15 +217,31 @@ GenericSignal::WriteBinary( std::ostream& os ) const
           os.put( exponent & 0xff );
         }
       break;
-      
+
+    case DATATYPE::FLOAT32:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < MaxElements(); ++j )
+        {
+          assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+          unsigned int value = 0;
+          if( j < GetNumElements( i ) )
+            value = *reinterpret_cast<const unsigned int*>( &GetValue( i, j ) );
+          for( int i = 0; i < sizeof( value ); ++i )
+          {
+            os.put( value & 0xff );
+            value >>= 8;
+          }
+        }
+      break;
+
     default:
       os.setstate( os.failbit );
   }
   return os;
 }
 
-std::istream&
-GenericSignal::ReadBinary( std::istream& is )
+istream&
+GenericSignal::ReadBinary( istream& is )
 {
   int datatype = is.get();
   LengthField<1> channels;
@@ -217,7 +262,7 @@ GenericSignal::ReadBinary( std::istream& is )
       break;
 
     case DATATYPE::FLOAT:
-      SetProperties( SignalProperties( channels, maxElem, sizeof( float ) ) );
+      SetProperties( SignalProperties( channels, maxElem, 3 ) );
       for( size_t i = 0; i < channels; ++i )
         for( size_t j = 0; j < maxElem; ++j )
         {
@@ -227,7 +272,20 @@ GenericSignal::ReadBinary( std::istream& is )
           SetValue( i, j, mantissa * ::pow10( exponent ) );
         }
       break;
-      
+
+    case DATATYPE::FLOAT32:
+      SetProperties( SignalProperties( channels, maxElem, 4 ) );
+      for( size_t i = 0; i < channels; ++i )
+        for( size_t j = 0; j < maxElem; ++j )
+        {
+          assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+          unsigned int value = 0;
+          for( int i = 0; i < sizeof( value ); ++i )
+            value |= is.get() << ( i * 8 );
+          SetValue( i, j, *reinterpret_cast<float*>( &value ) );
+        }
+      break;
+
     default:
       is.setstate( is.failbit );
   }
