@@ -4,3 +4,4 @@
 # Board names are as displayed by the InstaCal program.
 DEMO-BOARD
 PC-CARD-DAS16/16
+PCM-DAS16S/16
