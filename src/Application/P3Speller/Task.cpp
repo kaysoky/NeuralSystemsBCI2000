@@ -51,12 +51,22 @@ char line[512];
  plist->AddParameter2List(line,strlen(line));
  strcpy(line, "P3Speller int NumberOfSequences= 15 15 0 100 // Number of sets of 12 intensifications");
  plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int InterSetInterval= 1500 1500 0 10000 // Time between sets of n intensifications");
+ strcpy(line, "P3Speller int PostSetInterval= 60 60 0 10000 // Duration after set of n intensifications in units of SampleBlocks");
+ plist->AddParameter2List(line,strlen(line));
+ strcpy(line, "P3Speller int PreSetInterval= 60 60 0 10000 // Duration before set of n intensifications in units of SampleBlocks");
  plist->AddParameter2List(line,strlen(line));
 
+ slist->AddState2List("SelectedTarget 7 0 0 0\n");
+ slist->AddState2List("SelectedRow 3 0 0 0\n");
+ slist->AddState2List("SelectedColumn 3 0 0 0\n");
+ slist->AddState2List("PhaseInSequence 2 0 0 0\n");
  slist->AddState2List("StimulusTime 16 17528 0 0\n");
+
  bcitime=new BCITIME();
  logfile=NULL;
+
+ // this keeps track of the current run number and will be set to 0 only here
+ cur_runnr=0;
 }
 
 //-----------------------------------------------------------------------------
@@ -100,7 +110,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
 char    memotext[256], FName[256];
-int     ret;
+int     ret, numerpsamples, sampleblocksize;
 BCIDtry *bcidtry;
 
  corecomm=new_corecomm;
@@ -124,7 +134,10 @@ BCIDtry *bcidtry;
   userdisplay->StatusBarSize=atof(plist->GetParamPtr("StatusBarSize")->GetValue());
   userdisplay->StatusBarTextHeight=atof(plist->GetParamPtr("StatusBarTextHeight")->GetValue());
   numberofsequences=atoi(plist->GetParamPtr("NumberOfSequences")->GetValue());
-  intersetinterval=atoi(plist->GetParamPtr("InterSetInterval")->GetValue());
+  postsetinterval=atoi(plist->GetParamPtr("PostSetInterval")->GetValue());
+  presetinterval=atoi(plist->GetParamPtr("PreSetInterval")->GetValue());
+  numerpsamples=atoi(plist->GetParamPtr("NumSamplesInERP")->GetValue());
+  sampleblocksize=atoi(plist->GetParamPtr("SampleBlockSize")->GetValue());
   FInit= AnsiString (plist->GetParamPtr("FileInitials")->GetValue());
   SSes = AnsiString (plist->GetParamPtr("SubjectSession")->GetValue());
   SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
@@ -138,8 +151,15 @@ BCIDtry *bcidtry;
   Wy=5;
   Wxl=512;
   Wyl=512;
-  intersetinterval=1500;
+  postsetinterval=60;
+  presetinterval=60;
+  corecomm->SendStatus("303 One of the parameters needed by the task not found");
   }
+
+ // we have to make sure that we wait long enough after a set of n intensifications
+ // to get all the responses
+ if (postsetinterval*sampleblocksize <= numerpsamples)
+    corecomm->SendStatus("302 PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)");
 
  // open an output file for the task log
  bcidtry= new BCIDtry();
@@ -155,6 +175,7 @@ BCIDtry *bcidtry;
  delete bcidtry;
 
  statevector=new_svect;
+ statevector->SetStateValue("PhaseInSequence", 0);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
@@ -182,8 +203,11 @@ int     i;
   responsecount[i]=0;
   response[i]=0;
   }
-  
+
  postsequence=false;
+ presequence=false;
+ if (presetinterval > 0) presequence=true;
+ presequencecount=0;
 }
 
 
@@ -233,12 +257,42 @@ float   maxval;
 
  // from row and column, determine the targetID
  pickedtargetID=pickedrow*6+pickedcol+1;
+ statevector->SetStateValue("SelectedTarget", pickedtargetID);
+ statevector->SetStateValue("SelectedRow", pickedrow+1);
+ statevector->SetStateValue("SelectedColumn", pickedcol+1);
  pickedtargetptr=userdisplay->activetargets->GetTargetPtr(pickedtargetID);
  if (!pickedtargetptr)
     return("Did not find target");
 
  // finally, return the selected character
  return(pickedtargetptr->Caption);
+}
+
+
+// **************************************************************************
+// Function:   ProcessPreSequence
+// Purpose:    We just count how long we are in the pre-sequence period    
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TTask::ProcessPreSequence()
+{
+ // don't process anything if we are in the pre-sequence period
+ if (presequence)
+    {
+    statevector->SetStateValue("PhaseInSequence", 1);
+    if (presequencecount == 0)
+       {
+       // display the matrix, etc.
+       trialsequence->GetReadyForTrial();
+       }
+    if (presequencecount >= presetinterval)
+       {
+       presequence=false;
+       presequencecount=0;
+       }
+    presequencecount++;
+    }
 }
 
 
@@ -257,9 +311,8 @@ int     i;
 
  if (postsequence)
     {
-    // let's wait one second
-    cur_time=bcitime->GetBCItime_ms();
-    if (bcitime->TimeDiff(postseqtime, cur_time) > intersetinterval)
+    statevector->SetStateValue("PhaseInSequence", 3);
+    if (postsequencecount > postsetinterval)
        {
        // determine predicted character
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
@@ -292,6 +345,7 @@ int     i;
 
        postsequence=false;
        }
+    postsequencecount++;
     }
 }
 
@@ -332,18 +386,31 @@ int     ret;
  running=statevector->GetStateValue("Running");
  // don't do anything if running is not 1
  if ((running == 0) && (oldrunning == 1))
+    {
     trialsequence->SuspendTrial();
+    statevector->SetStateValue("PhaseInSequence", 0);
+    statevector->SetStateValue("SelectedTarget", 0);
+    statevector->SetStateValue("SelectedRow", 0);
+    statevector->SetStateValue("SelectedColumn", 0);
+    }
  if (running == 0) return;
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
+    cur_runnr++;
     ResetTaskSequence();
+    vis->SendMemo2Operator("******************************\r");
     if (trialsequence->onlinemode)
-       sprintf(memotext, "Start of this run in online mode\r");
+       sprintf(memotext, "Start of run %d in online mode\r", cur_runnr);
     else
-       sprintf(memotext, "Start of this run in offline mode\r");
+       sprintf(memotext, "Start of run %d in offline mode\r", cur_runnr);
     vis->SendMemo2Operator(memotext);
+    fprintf(logfile, "******************************\r\n%s\n", memotext);
+    trialsequence->SetUserDisplayTexts();
     }
+
+ // if we have a period before the sequence, we have to process it
+ ProcessPreSequence();
 
  // do statistics on the results from signal processing
  ProcessSigProcResults(signals);
@@ -352,11 +419,12 @@ int     ret;
  // to let the final ERP results to come in
  ProcessPostSequence();
 
- // skip processing the trial if we are in the process of turning the task off
- if ((running == 0) || (postsequence)) goto skipprocess;
+ // skip processing the trial if we are in the pre- or post sequence period (i.e., matrix visible, but no flashing)
+ if ((running == 0) || (postsequence) || (presequence)) goto skipprocess;
 
  // use the current control signal to proceed within the trial sequence
  ret=trialsequence->Process(signals);
+ statevector->SetStateValue("PhaseInSequence", 2);
 
  // whenever the trialsequence returns 1, a trial (i.e., one intensification), is over
  if (ret == 1)
@@ -367,7 +435,7 @@ int     ret;
     if (cur_sequence >= numberofsequences*NUM_STIMULI)
        {
        postsequence=true;
-       postseqtime=bcitime->GetBCItime_ms();
+       postsequencecount=0;
        }
     }
 

@@ -27,16 +27,19 @@ private:
         BCITIME         *cur_time;
         int             cur_sequence, oldrunning, running;
         int             numberofsequences;              // how many sets of 12 intensifications ?
-        int             intersetinterval;               // how much time after each set of numberofsequences sequences ? 
+        int             postsetinterval;                // how much time after each set of numberofsequences sequences ?
+        int             presetinterval;                 // how much time before each set of numberofsequences sequences ?
         void            ProcessSigProcResults( short *signals );
         int             responsecount[NUM_STIMULI];
         float           response[NUM_STIMULI];
         void            ResetTaskSequence();
         void            ProcessPostSequence();
-        bool            postsequence;
-        unsigned short  postseqtime;
+        void            ProcessPreSequence();
+        bool            postsequence, presequence;
+        int             postsequencecount, presequencecount;
         AnsiString      DeterminePredictedCharacter();
         FILE            *logfile;
+        int             cur_runnr;
 public:
         TTask::TTask(PARAMLIST *plist, STATELIST *slist);
         TTask::~TTask( void );

@@ -46,5 +46,7 @@ public:		// User declarations
         int             GetRandomStimulusCode();
         short           IntensifyTargets(int stimuluscode, bool intensify);
         void            SuspendTrial();
+        void            GetReadyForTrial();
+        void            SetUserDisplayTexts();
 };
 #endif

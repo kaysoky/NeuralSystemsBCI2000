@@ -136,6 +136,8 @@ int     ret;
  // userdisplay->DisplayCursor();
  userdisplay->DisplayMessage("Waiting to start ...");
 
+ oldrunning=0;
+
  // reset the trial's sequence
  ResetTrialSequence();
 
@@ -266,8 +268,10 @@ char    line[256];
  cur_on=false;
 
  selectedtarget=NULL;
- oldrunning=0;
  cur_stimuluscode=0;
+
+ // initialize block randomized numbers
+ InitializeBlockRandomizedNumber();
 
  statevector->SetStateValue("StimulusCode", 0);
  statevector->SetStateValue("StimulusType", 0);
@@ -286,10 +290,6 @@ int     num;
 
  num=GetBlockRandomizedNumber(NUM_STIMULI);
 
- /* FILE *fp=fopen("c:\\test.dat", "ab");
- fprintf(fp, "%d\r\n", num);
- fclose(fp); */
-
 return(num);
 }
 
@@ -297,6 +297,7 @@ return(num);
 // **************************************************************************
 // Function:   SuspendTrial
 // Purpose:    Turn off display when trial gets suspended
+//             also, turn off all the states so that they are not 'carried over' to the next run
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
@@ -304,6 +305,10 @@ void TRIALSEQUENCE::SuspendTrial()
 {
  userdisplay->HideActiveTargets();           // hide all active targets
  userdisplay->HideStatusBar();               // hide the status bar
+
+ statevector->SetStateValue("StimulusCode", 0);
+ statevector->SetStateValue("StimulusType", 0);
+ statevector->SetStateValue("Flashing", 0);
 
  userdisplay->DisplayMessage("TIME OUT !!!");      // display the "TIME OUT" message
 }
@@ -365,6 +370,37 @@ short   thisisit;
 
 
 // **************************************************************************
+// Function:   GetReadyForTrial
+// Purpose:    Show matrix, etc.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TRIALSEQUENCE::GetReadyForTrial()
+{
+ userdisplay->HideMessage();                 // hide any message that's there
+ userdisplay->DisplayStatusBar();
+ userdisplay->DisplayActiveTargets();           // display all active targets
+}
+
+
+// **************************************************************************
+// Function:   SetUserDisplayTexts
+// Purpose:    Set goal and result text on userdisplay
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TRIALSEQUENCE::SetUserDisplayTexts()
+{
+ if (!onlinemode)
+    userdisplay->statusbar->goaltext=chartospell;
+ else
+    userdisplay->statusbar->goaltext="";
+ userdisplay->statusbar->resulttext="";
+}
+
+
+
+// **************************************************************************
 // Function:   Process
 // Purpose:    Processes the control signal provided by the task
 // Parameters: controlsignal - pointer to the vector of control signals
@@ -372,8 +408,8 @@ short   thisisit;
 // **************************************************************************
 int TRIALSEQUENCE::Process(const short *controlsignal)
 {
-int     ret;
 unsigned short running, within;
+int     ret;
 
  running=statevector->GetStateValue("Running");
 
@@ -384,20 +420,13 @@ unsigned short running, within;
     oldrunning=0;
     }
 
- // when we (re)start the system, reset the trial's sequence
+ // when we just started with this character,
+ // then show the matrix and reset the trial sequence
  if ((running == 1) && (oldrunning == 0))
     {
     ResetTrialSequence();
-    userdisplay->HideMessage();                 // hide any message that's there
-    if (!onlinemode)
-       userdisplay->statusbar->goaltext=chartospell;
-    else
-       userdisplay->statusbar->goaltext="";
-    userdisplay->statusbar->resulttext="";
-    userdisplay->DisplayStatusBar();
-    userdisplay->DisplayActiveTargets();           // display all active targets
+    GetReadyForTrial();
     }
-
 
  // are we at the end of the intensification period ?
  // if yes, turn off the row/column
