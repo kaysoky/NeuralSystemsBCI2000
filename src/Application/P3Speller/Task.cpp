@@ -1,4 +1,4 @@
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <dir.h>
@@ -13,62 +13,60 @@
 
 #include "Task.h"
 
+RegisterFilter( TTask, 3 );
+
 // **************************************************************************
 // Function:   TASK
 // Purpose:    This is the constructor for the TASK class
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+TTask::TTask()
+: vis( NULL ),
+  trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
+  userdisplay( new USERDISPLAY ),
+  cur_time( new BCITIME ),
+  bcitime( new BCITIME ),
+  logfile( NULL ),
+  // this keeps track of the current run number and will be set to 0 only here
+  cur_runnr( 0 )
 {
-char line[512];
+ BEGIN_PARAMETER_DEFINITIONS
+  "P3Speller int WinXpos= 5 0 0 5000 // "
+      "User Window X location",
+  "P3Speller int WinYpos= 5 0 0 5000 // "
+      "User Window Y location",
+  "P3Speller int WinWidth= 512 512 0 2000 // "
+      "User Window Width",
+  "P3Speller int WinHeight= 512 512 0 2000 // "
+      "User Window Height",
+  "P3Speller int TargetWidth= 5 0 0 100 // "
+      "TargetWidth in percent of screen width",
+  "P3Speller int TargetHeight= 5 0 0 100 // "
+      "TargetHeight in percent of screen height",
+  "P3Speller int TargetTextHeight= 10 0 0 100 // "
+      "Height of target labels in percent of screen height",
+  "P3Speller int StatusBarSize= 10 0 0 100 // "
+      "Size of status bar in percent of screen height",
+  "P3Speller int StatusBarTextHeight= 8 0 0 100 // "
+      "Size of status bar text in percent of screen height",
+  "P3Speller string BackgroundColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // "
+      "Background Color in hex (0x00BBGGRR)",
+  "P3Speller int NumberOfSequences= 15 15 0 100 // "
+      "Number of sets of 12 intensifications",
+  "P3Speller int PostSetInterval= 60 60 0 10000 // "
+      "Duration after set of n intensifications in units of SampleBlocks",
+  "P3Speller int PreSetInterval= 60 60 0 10000 // "
+      "Duration before set of n intensifications in units of SampleBlocks",
+ END_PARAMETER_DEFINITIONS
 
- corecomm=NULL;
- vis=NULL;
-
- trialsequence=new TRIALSEQUENCE(plist, slist);
- userdisplay=new USERDISPLAY;
- cur_time=new BCITIME;
-
- strcpy(line,"P3Speller int WinXpos= 5 0 0 5000 // User Window X location");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int WinYpos= 5 0 0 5000 // User Window Y location");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int WinWidth= 512 512 0 2000 // User Window Width");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int WinHeight= 512 512 0 2000 // User Window Height");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int TargetWidth= 5 0 0 100 // TargetWidth in percent of screen width");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller int TargetHeight= 5 0 0 100 // TargetHeight in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller int TargetTextHeight= 10 0 0 100 // Height of target labels in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int StatusBarSize= 10 0 0 100 // Size of status bar in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int StatusBarTextHeight= 8 0 0 100 // Size of status bar text in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
-
- strcpy(line,"P3Speller string BackgroundColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int NumberOfSequences= 15 15 0 100 // Number of sets of 12 intensifications");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int PostSetInterval= 60 60 0 10000 // Duration after set of n intensifications in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "P3Speller int PreSetInterval= 60 60 0 10000 // Duration before set of n intensifications in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line));
-
- slist->AddState2List("SelectedTarget 7 0 0 0\n");
- slist->AddState2List("SelectedRow 3 0 0 0\n");
- slist->AddState2List("SelectedColumn 3 0 0 0\n");
- slist->AddState2List("PhaseInSequence 2 0 0 0\n");
- slist->AddState2List("StimulusTime 16 17528 0 0\n");
-
- bcitime=new BCITIME();
- logfile=NULL;
-
- // this keeps track of the current run number and will be set to 0 only here
- cur_runnr=0;
+ BEGIN_STATE_DEFINITIONS
+  "SelectedTarget 7 0 0 0",
+  "SelectedRow 3 0 0 0",
+  "SelectedColumn 3 0 0 0",
+  "PhaseInSequence 2 0 0 0",
+  "StimulusTime 16 17528 0 0",
+ END_STATE_DEFINITIONS
 }
 
 //-----------------------------------------------------------------------------
@@ -82,21 +80,13 @@ char line[512];
 // **************************************************************************
 TTask::~TTask( void )
 {
- if (vis)               delete vis;
- if (trialsequence)     delete trialsequence;
- if (userdisplay)       delete userdisplay;
- if (cur_time)          delete cur_time;
- if (bcitime)           delete bcitime;
- if (logfile)           fclose(logfile);
-
- vis=NULL;
- cur_time=NULL;
- trialsequence=NULL;
- userdisplay=NULL;
- bcitime=NULL;
- logfile=NULL;
+  delete vis;
+  delete trialsequence;
+  delete userdisplay;
+  delete cur_time;
+  delete bcitime;
+  fclose(logfile);
 }
-
 
 // **************************************************************************
 // Function:   current_directory
@@ -121,7 +111,7 @@ char *current_directory(char *path)
 //             applic       - pointer to the current application
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
+void TTask::Initialize()
 {
 AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
@@ -129,36 +119,34 @@ char    memotext[256], FName[256], cur_dir[MAXPATH];
 int     ret, numerpsamples, sampleblocksize;
 BCIDtry *bcidtry;
 
- corecomm=new_corecomm;
-
- if (vis) delete vis;
- vis= new GenericVisualization( plist, corecomm );
+ delete vis;
+ vis= new GenericVisualization;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
  try
   {
-  Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
-  Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
-  Wxl= atoi(plist->GetParamPtr("WinWidth")->GetValue());
-  Wyl= atoi(plist->GetParamPtr("WinHeight")->GetValue());
+  Wx=  Parameter( "WinXpos" );
+  Wy=  Parameter( "WinYpos" );
+  Wxl= Parameter( "WinWidth" );
+  Wyl= Parameter( "WinHeight" );
 
-  BackgroundColor=(TColor)strtol(plist->GetParamPtr("BackgroundColor")->GetValue(), NULL, 16);
-  userdisplay->TargetWidth=atof(plist->GetParamPtr("TargetWidth")->GetValue());
-  userdisplay->TargetHeight=atof(plist->GetParamPtr("TargetHeight")->GetValue());
-  userdisplay->TargetTextHeight=atof(plist->GetParamPtr("TargetTextHeight")->GetValue());
-  userdisplay->StatusBarSize=atof(plist->GetParamPtr("StatusBarSize")->GetValue());
-  userdisplay->StatusBarTextHeight=atof(plist->GetParamPtr("StatusBarTextHeight")->GetValue());
-  numberofsequences=atoi(plist->GetParamPtr("NumberOfSequences")->GetValue());
-  postsetinterval=atoi(plist->GetParamPtr("PostSetInterval")->GetValue());
-  presetinterval=atoi(plist->GetParamPtr("PreSetInterval")->GetValue());
-  numerpsamples=atoi(plist->GetParamPtr("NumSamplesInERP")->GetValue());
-  sampleblocksize=atoi(plist->GetParamPtr("SampleBlockSize")->GetValue());
-  FInit= AnsiString (plist->GetParamPtr("FileInitials")->GetValue());
-  SSes = AnsiString (plist->GetParamPtr("SubjectSession")->GetValue());
-  SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
+  BackgroundColor=(TColor)strtol(Parameter("BackgroundColor"), NULL, 16);
+  userdisplay->TargetWidth=Parameter("TargetWidth");
+  userdisplay->TargetHeight=Parameter("TargetHeight");
+  userdisplay->TargetTextHeight=Parameter("TargetTextHeight");
+  userdisplay->StatusBarSize=Parameter("StatusBarSize");
+  userdisplay->StatusBarTextHeight=Parameter("StatusBarTextHeight");
+  numberofsequences=Parameter("NumberOfSequences");
+  postsetinterval=Parameter("PostSetInterval");
+  presetinterval=Parameter("PreSetInterval");
+  numerpsamples=Parameter("NumSamplesInERP");
+  sampleblocksize=Parameter("SampleBlockSize");
+  FInit= (const char*)Parameter("FileInitials");
+  SSes = (const char*)Parameter("SubjectSession");
+  SName= (const char*)Parameter("SubjectName");
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   BackgroundColor=clDkGray;
   userdisplay->TargetWidth=5;
@@ -169,13 +157,13 @@ BCIDtry *bcidtry;
   Wyl=512;
   postsetinterval=60;
   presetinterval=60;
-  corecomm->SendStatus("303 One of the parameters needed by the task not found");
+  Corecomm->SendStatus("303 One of the parameters needed by the task not found");
   }
 
  // we have to make sure that we wait long enough after a set of n intensifications
  // to get all the responses
  if (postsetinterval*sampleblocksize <= numerpsamples)
-    corecomm->SendStatus("302 PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)");
+    Corecomm->SendStatus("302 PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)");
 
  // open an output file for the task log
  current_directory(cur_dir);    // store current directory
@@ -192,14 +180,13 @@ BCIDtry *bcidtry;
  delete bcidtry;
  ChDir(AnsiString(cur_dir));    // restore current directory
 
- statevector=new_svect;
- statevector->SetStateValue("PhaseInSequence", 0);
+ State( "PhaseInSequence" ) = 0;
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(plist, statevector, new_corecomm, userdisplay);
+ trialsequence->Initialize( Parameters, Statevector, Corecomm, userdisplay);
 
  // show the user window
  userdisplay->form->Show();
@@ -276,9 +263,9 @@ float   maxval;
 
  // from row and column, determine the targetID
  pickedtargetID=pickedrow*6+pickedcol+1;
- statevector->SetStateValue("SelectedTarget", pickedtargetID);
- statevector->SetStateValue("SelectedRow", pickedrow+1);
- statevector->SetStateValue("SelectedColumn", pickedcol+1);
+ State( "SelectedTarget" ) = pickedtargetID;
+ State( "SelectedRow" ) = pickedrow + 1;
+ State( "SelectedColumn" ) = pickedcol + 1;
  pickedtargetptr=userdisplay->activetargets->GetTargetPtr(pickedtargetID);
  if (!pickedtargetptr)
     return("Did not find target");
@@ -299,7 +286,7 @@ void TTask::ProcessPreSequence()
  // don't process anything if we are in the pre-sequence period
  if (presequence)
     {
-    statevector->SetStateValue("PhaseInSequence", 1);
+    State( "PhaseInSequence" ) = 1;
     if (presequencecount == 0)
        {
        // display the matrix, etc.
@@ -330,7 +317,7 @@ int     i;
 
  if (postsequence)
     {
-    statevector->SetStateValue("PhaseInSequence", 3);
+    State( "PhaseInSequence" ) = 3;
     if ((postsequencecount > postsetinterval) && (!postpostsequence))
        {
        // determine predicted character
@@ -377,7 +364,7 @@ int     i;
           {
           postpostsequence=false;
           postsequence=false;
-          statevector->SetStateValue("Running", 0);
+          State( "Running" ) = 0;
           running=0;
           trialsequence->SuspendTrial();
           }
@@ -398,8 +385,8 @@ void TTask::ProcessSigProcResults( const std::vector<float>& signals )
 unsigned short cur_stimuluscoderes, cur_stimulustyperes;
 
  // did we get a resulting classification from Signal Processing ?
- cur_stimuluscoderes=statevector->GetStateValue("StimulusCodeRes");
- cur_stimulustyperes=statevector->GetStateValue("StimulusTypeRes");
+ cur_stimuluscoderes=State("StimulusCodeRes");
+ cur_stimulustyperes=State("StimulusTypeRes");
  // we got one if StimulusCodeRes > 0
  if (cur_stimuluscoderes > 0)
     {
@@ -422,20 +409,20 @@ const std::vector< float >& signals = Input->GetChannel( 0 );
 char    memotext[256];
 int     ret;
 
- running=statevector->GetStateValue("Running");
+ running=State("Running");
  // don't do anything if running is not 1
  if ((running == 0) && (oldrunning == 1))
     {
     trialsequence->SuspendTrial();
-    statevector->SetStateValue("PhaseInSequence", 0);
+    State("PhaseInSequence" ) = 0;
     }
  if (running == 0) return;
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
-    statevector->SetStateValue("SelectedTarget", 0);
-    statevector->SetStateValue("SelectedRow", 0);
-    statevector->SetStateValue("SelectedColumn", 0);
+    State( "SelectedTarget" ) = 0;
+    State( "SelectedRow" ) = 0;
+    State( "SelectedColumn" ) = 0;
     postpostsequence=false;
     cur_runnr++;
     ResetTaskSequence();
@@ -466,7 +453,7 @@ int     ret;
 
  // use the current control signal to proceed within the trial sequence
  ret=trialsequence->Process(signals);
- statevector->SetStateValue("PhaseInSequence", 2);
+ State( "PhaseInSequence" ) = 2;
 
  // whenever the trialsequence returns 1, a trial (i.e., one intensification), is over
  if (ret == 1)
@@ -484,7 +471,7 @@ int     ret;
  skipprocess:
 
  // write the current time, i.e., the "StimulusTime" into the state vector
- statevector->SetStateValue("StimulusTime", cur_time->GetBCItime_ms());
+ State( "StimulusTime" ) = cur_time->GetBCItime_ms();
  oldrunning=running;
 }
 

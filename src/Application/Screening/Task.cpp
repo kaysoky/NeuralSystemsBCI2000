@@ -1,7 +1,7 @@
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdlib.h>
@@ -15,62 +15,59 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "Usr.h"
 #include "Task.h"
 
+RegisterFilter( TTask, 3 );
 
-TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+TTask::TTask()
+: run( 0 ),
+  vis( NULL ),
+  appl( NULL ),
+  OldRunning( 0 ),
+  OldCurrentTarget( 0 )
 {
-        char line[512];
+ BEGIN_PARAMETER_DEFINITIONS
+  "UsrTask int TargetDuration= 20 0 0 1 // "
+      "Duration of Target in cursor update units",
+  "UsrTask int ItiDuration= 10 0 0 1 // "
+      "Duration of Intertrial Interval",
+  "UsrTask int RewardDuration= 10 0 0 1 // "
+      "Duration of PostTrial Feedback",
+  "UsrTask int NumberTargets= 2 0 0 1 // "
+      "Number of Targets",
+  "UsrTask int TargetOrientation= 1 0 0 1 // "
+      "Orientation 1= Vertical 2= Horizontal 3= Both",
+  "UsrTask float TargetWidth= 25 0 0 1 // "
+      "Width of Targets in Pixels",
+  "UsrTask float TargetHeight= 25 0 0 1 // "
+      "Height of Targets in Pixels",
+  "UsrTask int TimeLimit= 180 180 0 1000 // "
+      "Time Limit for Runs in seconds",
+  "UsrTask int RestingPeriod= 0 0 0 1   // "
+      "1 defines a rest period of data acquisition",
+ END_PARAMETER_DEFINITIONS
 
-        run= 0;
+ BEGIN_STATE_DEFINITIONS
+  "TargetCode 5 0 0 0",
+  "ResultCode 5 0 0 0",
+  "StimulusTime 16 17528 0 0",
+  "Feedback 2 0 0 0",
+  "IntertrialInterval 2 1 0 0",
+  "RestPeriod 2 0 0 0",
+ END_STATE_DEFINITIONS
 
-        vis= NULL;
-        appl= NULL;
-
-        strcpy(line,"UsrTask int TargetDuration= 20 0 0 1 // Duration of Target in cursor update units");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int ItiDuration= 10 0 0 1 // Duration of Intertrial Interval");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int RewardDuration= 10 0 0 1 // Duration of PostTrial Feedback");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int NumberTargets= 2 0 0 1 // Number of Targets");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int TargetOrientation= 1 0 0 1 // Orientation 1= Vertical 2= Horizontal 3= Both");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask float TargetWidth= 25 0 0 1 // Width of Targets in Pixels");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask float TargetHeight= 25 0 0 1 // Height of Targets in Pixels");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int RestingPeriod= 0 0 0 1   //  1 defines a rest periuod of data acquisition");
-        plist->AddParameter2List(line,strlen(line));
-
-        slist->AddState2List("TargetCode 5 0 0 0\n");
-        slist->AddState2List("ResultCode 5 0 0 0\n");
-        slist->AddState2List("StimulusTime 16 17528 0 0\n");
-        slist->AddState2List("Feedback 2 0 0 0\n");
-        slist->AddState2List("IntertrialInterval 2 1 0 0\n");
-        slist->AddState2List("RestPeriod 2 0 0 0\n");
-
-        User->SetUsr( plist, slist );
-
-        OldRunning=0;
-        OldCurrentTarget=0;
-
+ User->SetUsr( Parameters, States );
 }
 
 //-----------------------------------------------------------------------------
 
 TTask::~TTask( void )
 {
-        if( vis ) delete vis;
-        vis= NULL;
-        fclose( appl );
+  delete vis;
+  fclose( appl );
 }
 
 
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
+void TTask::Initialize()
 {
-        STATELIST       *slist;
         AnsiString FInit,SSes,SName,AName;
         BCIDtry *bcidtry;
         char FName[120];
@@ -78,21 +75,19 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         time_t ctime;
         struct tm *tblock;
 
-        corecomm=new_corecomm;
+        TargetDuration=         Parameter("TargetDuration");
+        ItiDuration=            Parameter("ItiDuration");
+        Ntargets=               Parameter("NumberTargets");
+        TargetOrien=            Parameter("TargetOrientation");
+        TargetWidth=            Parameter("TargetWidth");
+        TargetHeight=           Parameter("TargetHeight");
+        Resting=                Parameter("RestingPeriod");
 
-        TargetDuration=         atoi(plist->GetParamPtr("TargetDuration")->GetValue());
-        ItiDuration=            atoi(plist->GetParamPtr("ItiDuration")->GetValue());
-        Ntargets=               atoi(plist->GetParamPtr("NumberTargets")->GetValue());
-        TargetOrien=            atoi(plist->GetParamPtr("TargetOrientation")->GetValue());
-        TargetWidth=            atof(plist->GetParamPtr("TargetWidth")->GetValue());
-        TargetHeight=           atof(plist->GetParamPtr("TargetHeight")->GetValue());
-        Resting=                atoi(plist->GetParamPtr("RestingPeriod")->GetValue());
+        timelimit=              Parameter("TimeLimit");
 
-        timelimit=              atof(plist->GetParamPtr("TimeLimit")->GetValue());
-
-        FInit= AnsiString (plist->GetParamPtr("FileInitials")->GetValue());
-        SSes = AnsiString (plist->GetParamPtr("SubjectSession")->GetValue());
-        SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
+        FInit= (const char*)Parameter("FileInitials");
+        SSes = (const char*)Parameter("SubjectSession");
+        SName= (const char*)Parameter("SubjectName");
 
 
         if( appl == NULL )
@@ -128,15 +123,13 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         bitrate.Initialize(Ntargets);
 
         trial=1;
-        svect=new_svect;
-        slist=svect->GetStateListPtr();
 
-        if (vis) delete vis;
-        vis= new GenericVisualization( plist, corecomm );
+        delete vis;
+        vis= new GenericVisualization;
         vis->SetSourceID(SOURCEID_TASKLOG);
         vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
-        User->Initialize( plist, slist );
+        User->Initialize( Parameters, States );
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
 
         ComputeTargets( Ntargets );
@@ -146,7 +139,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         time( &ctime );
         randseed= -ctime;
 
-        ReadStateValues( svect );
+        ReadStateValues( Statevector );
 
         CurrentTargetDuration= 0;
         CurrentTarget= 0;
@@ -162,7 +155,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         CurrentRest= Resting;
         User->PutO(false);
 
-        WriteStateValues( svect );
+        WriteStateValues( Statevector );
 }
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
@@ -421,7 +414,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
         const std::vector< float >& signals = Input->GetChannel( 0 );
 
-        ReadStateValues( svect );
+        ReadStateValues( Statevector );
 
         if( CurrentRunning > 0 )
         {
@@ -431,7 +424,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
         }
 
         UpdateDisplays();
-        WriteStateValues( svect );
+        WriteStateValues( Statevector );
 }
 
 

@@ -16,7 +16,6 @@
 class TTask : public GenericFilter
 {
  private:
-        STATEVECTOR           *svect;
         GenericVisualization  *vis;
         int             AcousticMode;
         int             MakeMusic(short controlsignal);
@@ -26,11 +25,12 @@ class TTask : public GenericFilter
         TLineSeries     *series;
 
  public:
-          TTask( PARAMLIST*, STATELIST* );
+          TTask();
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 
-#endif
+#endif // TaskH

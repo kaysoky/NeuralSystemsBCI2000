@@ -1,9 +1,10 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
-#pragma hdrstop
-
 #include "UTarget.h"
+
+#include "UBCIError.h"
 
 //---------------------------------------------------------------------------
 
@@ -578,12 +579,24 @@ float   scalex, scaley;
     icon->Top=scaledtop+1;
     icon->Width=scaledright-scaledleft-2;
     icon->Height=scaledbottom-scaledtop-2;
-    try {icon->Picture->LoadFromFile(IconFile);}
-    catch(...)
-         {
-         delete icon;
-         icon=NULL;
-         }
+    bool err = false;
+    try
+      {
+      icon->Picture->LoadFromFile(IconFile);
+      }
+    catch( EInOutError& )
+      {
+      err = true;
+      }
+    catch( EInvalidGraphic& )
+      {
+      err = true;
+      }
+    if( err )
+      {
+      delete icon;
+      icon=NULL;
+      }
     }
 
  // write the text, if any

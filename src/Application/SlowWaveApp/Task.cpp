@@ -1,7 +1,7 @@
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <vector>
@@ -9,24 +9,22 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "UState.h"
 #include "Task.h"
 
-class TfMain;
-extern TfMain *fMain;
+RegisterFilter( TTask, 3 );
 
 //------------------ Status Class Definition ------------------------
 //                  programed by Dr. Thilo Hinterberger 2000
 //--------------------------------------------------------------------------------------------------
 
-TTask::TTask(PARAMLIST *paramlist, STATELIST *statelist )
+TTask::TTask()
+: status( new TSTATUS ),
+  ClassSequencer( new TClassSequencer( Parameters, States ) ),
+  Decider( new TDecider( Parameters, States ) ),
+  TaskManager( new TTaskManager( Parameters, States ) ),
+  SessionManager( new TSessionManager( Parameters, States ) )
 {
-         status = new TSTATUS();
-
-         ClassSequencer = new TClassSequencer(paramlist, statelist);
-         Decider = new TDecider(paramlist, statelist);
-         TaskManager = new TTaskManager(paramlist, statelist);
-         SessionManager = new TSessionManager(paramlist, statelist);
-         FBForm = new TFBForm((TComponent*)fMain);
-         FBForm->Show();
-         FBForm->SetFBForm(paramlist, statelist);
+  FBForm = new TFBForm( ( TComponent* )NULL );
+  FBForm->Show();
+  FBForm->SetFBForm( Parameters, States );
 }
 
 //-----------------------------------------------------------------------------
@@ -39,13 +37,10 @@ TTask::~TTask( void )
  delete SessionManager;
  delete status;
  delete FBForm;
-
- // if( vis ) delete vis;
- //    vis= NULL;
 }
 
 
-void TTask::Initialize( PARAMLIST *paramlist, STATEVECTOR *statevector, CORECOMM *new_corecomm)
+void TTask::Initialize()
 {
 #ifdef BCI2000_STRICT
   // TSTATUS does not have an Initialize() member but needs to be
@@ -71,16 +66,14 @@ void TTask::Initialize( PARAMLIST *paramlist, STATEVECTOR *statevector, CORECOMM
     };
     const int numStatesToReset = sizeof( statesToReset ) / sizeof( *statesToReset );
     for( int i = 0; i < numStatesToReset; ++i )
-      statevector->SetStateValue( ( char* )statesToReset[ i ], 0 );
+      Statevector->SetStateValue( statesToReset[ i ], 0 );
   }
 #endif // BCI2000_STRICT
-  STATELIST *slist;
-  svect = statevector;
-  FBForm->Initialize(statevector);
-  ClassSequencer->Initialize(paramlist, statevector);
-  Decider->Initialize(paramlist, statevector);
-  TaskManager->Initialize(paramlist, statevector);
-  SessionManager->Initialize(paramlist, statevector, status);
+  FBForm->Initialize(Statevector);
+  ClassSequencer->Initialize(Parameters, Statevector);
+  Decider->Initialize(Parameters, Statevector);
+  TaskManager->Initialize(Parameters, Statevector);
+  SessionManager->Initialize(Parameters, Statevector, status);
 }
 
 void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
@@ -90,7 +83,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
   {
     // Static is ok because there is only one instance anyway.
     static short lastRunning = 0;
-    short curRunning = svect->GetStateValue( "Running" );
+    short curRunning = Statevector->GetStateValue( "Running" );
     if( lastRunning && !curRunning )
         FBForm->LeaveRunningState();
     lastRunning = curRunning;
@@ -104,7 +97,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 #endif // BCI2000_STRICT
    switch (status->SysStatus) {
        case STOP: {
-                     if (svect->GetStateValue("Recording")==1) status->SysStatus=START;
+                     if (Statevector->GetStateValue("Recording")==1) status->SysStatus=START;
                      if (status->RecStatus>1) status->RecStatus = NOSTORAGE;
                   }; break;
        case START: {

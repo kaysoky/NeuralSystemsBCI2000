@@ -1,12 +1,12 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <stdio.h>
 
 #include "UTargetSequence.h"
 
+#include "UBCIError.h"
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
@@ -75,7 +75,7 @@ int ret;
   // if there was no error, add the dictionary to the potential targets
   if (ret == 1)
      AddDictionary2PotentialTargets();
- } catch(...) {ret=0;}
+ } catch( TooGeneralCatch& ) {ret=0;}
 
  // possibly replace this with something better
  if (ret == 0) Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);

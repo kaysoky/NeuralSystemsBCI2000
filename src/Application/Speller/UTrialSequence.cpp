@@ -1,7 +1,6 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <stdio.h>
 
@@ -105,7 +104,7 @@ int     ret;
   else
      highlightcorrecttarget=true;
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   ret=0;
   max_ititime=10;

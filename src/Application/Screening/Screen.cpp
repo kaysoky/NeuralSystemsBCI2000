@@ -1,6 +1,7 @@
-//---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+#include <vcl.h>
+//---------------------------------------------------------------------------
 USEFORM("Usr.cpp", User);
 USEFORM("..\UMain.cpp", fMain);
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
@@ -12,9 +13,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "Application";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TUser), &User);
-                 Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
-                 Application->Run();
+         Application->CreateForm(__classid(TUser), &User);
+         Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
+         Application->Run();
         }
         catch (Exception &exception)
         {

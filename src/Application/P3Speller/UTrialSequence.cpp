@@ -1,7 +1,7 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
-#pragma hdrstop
 
 #include <stdio.h>
 
@@ -113,7 +113,7 @@ int     ret;
   else
      onlinemode=false;
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   ret=0;
   ontime=10;

@@ -1,4 +1,4 @@
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "Task.h"
@@ -8,6 +8,7 @@
 #include <time.h>
 #include <dos.h>
 
+RegisterFilter( TTask, 3 );
 
 // **************************************************************************
 // Function:   TASK
@@ -15,40 +16,38 @@
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+TTask::TTask()
+: vis( NULL ),
+  targetsequence( new TARGETSEQUENCE( Parameters, States ) ),
+  trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
+  userdisplay( new USERDISPLAY ),
+  cur_time( new BCITIME )
 {
-char line[512];
 
- corecomm=NULL;
- vis=NULL;
+ BEGIN_PARAMETER_DEFINITIONS
+   "Oddball int WinXpos= 5 0 0 5000 // "
+       "User Window X location",
+   "Oddball int WinYpos= 5 0 0 5000 // "
+       "User Window Y location",
+   "Oddball int WinWidth= 512 512 0 2000 // "
+       "User Window Width",
+   "Oddball int WinHeight= 512 512 0 2000 // "
+       "User Window Height",
+   "Oddball int TargetWidth= 5 0 0 100 // "
+       "TargetWidth in percent of screen width",
+   "Oddball int TargetHeight= 5 0 0 100 // "
+       "TargetHeight in percent of screen height",
+   "Oddball int TargetTextHeight= 10 0 0 100 // "
+       "Height of target labels in percent of screen height",
+   "Oddball string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
+       "Background Color in hex (0x00BBGGRR)",
+   "Oddball int NumberTargets= 4 4 0 100 // "
+       "Number of Targets ... NOT USED YET",
+ END_PARAMETER_DEFINITIONS
 
- targetsequence=new TARGETSEQUENCE(plist, slist);
- trialsequence=new TRIALSEQUENCE(plist, slist);
- userdisplay=new USERDISPLAY;
- cur_time=new BCITIME;
-
- strcpy(line,"Oddball int WinXpos= 5 0 0 5000 // User Window X location");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Oddball int WinYpos= 5 0 0 5000 // User Window Y location");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Oddball int WinWidth= 512 512 0 2000 // User Window Width");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Oddball int WinHeight= 512 512 0 2000 // User Window Height");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Oddball int TargetWidth= 5 0 0 100 // TargetWidth in percent of screen width");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"Oddball int TargetHeight= 5 0 0 100 // TargetHeight in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"Oddball int TargetTextHeight= 10 0 0 100 // Height of target labels in percent of screen height");
- plist->AddParameter2List(line,strlen(line));
-
- strcpy(line,"Oddball string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)");
- plist->AddParameter2List(line,strlen(line));
-
- strcpy(line, "Oddball int NumberTargets= 4 4 0 100 // Number of Targets ... NOT USED YET");
- plist->AddParameter2List(line,strlen(line));
-
- slist->AddState2List("StimulusTime 16 17528 0 0\n");
+ BEGIN_STATE_DEFINITIONS
+   "StimulusTime 16 17528 0 0",
+ END_STATE_DEFINITIONS
 }
 
 //-----------------------------------------------------------------------------
@@ -67,12 +66,6 @@ TTask::~TTask()
  delete trialsequence;
  delete userdisplay;
  delete cur_time;
-
- vis=NULL;
- cur_time=NULL;
- targetsequence=NULL;
- trialsequence=NULL;
- userdisplay=NULL;
 }
 
 
@@ -85,30 +78,30 @@ TTask::~TTask()
 //             applic       - pointer to the current application
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM* new_corecomm)
+void TTask::Initialize()
 {
 TColor  BackgroundColor;
 char    memotext[256];
 int     ret;
 
  delete vis;
- vis= new GenericVisualization( plist, corecomm );
+ vis= new GenericVisualization;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
  try
   {
-  Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
-  Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
-  Wxl= atoi(plist->GetParamPtr("WinWidth")->GetValue());
-  Wyl= atoi(plist->GetParamPtr("WinHeight")->GetValue());
+  Wx=  Parameter( "WinXpos" );
+  Wy=  Parameter( "WinYpos" );
+  Wxl= Parameter( "WinWidth" );
+  Wyl= Parameter( "WinHeight" );
 
-  BackgroundColor=(TColor)strtol(plist->GetParamPtr("BackgroundColor")->GetValue(), NULL, 16);
-  userdisplay->TargetWidth=atof(plist->GetParamPtr("TargetWidth")->GetValue());
-  userdisplay->TargetHeight=atof(plist->GetParamPtr("TargetHeight")->GetValue());
-  userdisplay->TargetTextHeight=atof(plist->GetParamPtr("TargetTextHeight")->GetValue());
+  BackgroundColor=( TColor )strtol( Parameter( "BackgroundColor" ), NULL, 16 );
+  userdisplay->TargetWidth=Parameter( "TargetWidth" );
+  userdisplay->TargetHeight=Parameter( "TargetHeight" );
+  userdisplay->TargetTextHeight=Parameter( "TargetTextHeight" );
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   BackgroundColor=clDkGray;
   userdisplay->TargetWidth=5;
@@ -119,13 +112,11 @@ int     ret;
   Wyl=512;
   }
 
- statevector=new_svect;
-
  // initialize the between-trial sequence
- targetsequence->Initialize(plist);
+ targetsequence->Initialize(Parameters);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(plist, statevector, new_corecomm, userdisplay);
+ trialsequence->Initialize(Parameters, Statevector, Corecomm, userdisplay);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
@@ -180,6 +171,6 @@ void TTask::Process( const GenericSignal* Input,
  if (selected) HandleSelected(selected);
 
  // write the current time, i.e., the "StimulusTime" into the state vector
- statevector->SetStateValue("StimulusTime", cur_time->GetBCItime_ms());
+ State( "StimulusTime" ) = cur_time->GetBCItime_ms();
 }
 

@@ -84,17 +84,16 @@ private:
         void UpdateDisplays( void );
         void UpdateSummary( void );
         FILE *appl;
-        STATEVECTOR             *svect;
         GenericVisualization    *vis;
-        CORECOMM        *corecomm;
         BITRATE         bitrate;
         BCITIME         *bcitime;
         TApplication    *Applic;
 public:
-          TTask( PARAMLIST*, STATELIST* );
+          TTask();
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
           void ReadStateValues(STATEVECTOR *);
           void WriteStateValues(STATEVECTOR *);

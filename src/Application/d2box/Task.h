@@ -128,12 +128,13 @@ private:
         BCITIME         *bcitime;
         TApplication    *Applic;
 public:
-        TTask(PARAMLIST*, STATELIST*);
+        TTask();
         virtual ~TTask();
         
         void ReadStateValues(STATEVECTOR *);
         void WriteStateValues(STATEVECTOR *);
-        virtual void Initialize(PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL);
+        virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+        virtual void Initialize();
         virtual void Process( const GenericSignal * Input, GenericSignal * Output );
 
 } ;

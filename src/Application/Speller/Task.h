@@ -18,12 +18,10 @@ class TTask : public GenericFilter
 private:
         GenericVisualization    *vis;
         TARGETLIST      *targets, oldactivetargets;
-        USERDISPLAY     *userdisplay;    
+        USERDISPLAY     *userdisplay;
         TARGETSEQUENCE  *targetsequence;
         TRIALSEQUENCE   *trialsequence;
-        CORECOMM        *corecomm;
         int             Wx, Wy, Wxl, Wyl;
-        STATEVECTOR     *statevector;
         void            HandleSelected(TARGET *selected);
         int             DetermineCorrectTargetID();
         BCITIME         *cur_time;
@@ -34,10 +32,11 @@ private:
         AnsiString      DetermineCurrentPrefix(AnsiString resulttext);
         AnsiString      DetermineDesiredWord(AnsiString resulttext, AnsiString spelledtext);
 public:
-          TTask( PARAMLIST*, STATELIST* );
+          TTask();
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 #endif

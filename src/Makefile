@@ -14,8 +14,8 @@
 #         Use "make clean && make all" to do a clean rebuild after updating
 #         files from SourceSafe.
 #
-#         Use "make prepare" to keep the Borland IDE from crashing because
-#         of write protected files.
+#         Use "make prepare" to avoid Borland IDE problems with write protected
+#         project files.
 #
 #         This makefile depends on the existence of a file called ".makefiles" 
 #         in the same directory which is either empty or contains
@@ -38,7 +38,7 @@ EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
 # Extensions of files that need to be always writeable.
 FORCEWRITE = *.bpr *.res *.mak
 # Extensions of files that will be deleted by 'make clean'.
-GARBAGE = *.obj *.tds *.csm *.~* *.\#*
+GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 # How to report when we are done with a target.
 DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 
@@ -54,7 +54,7 @@ OR = ||
 # Bootstrapping: Create list of subproject makefiles
 #
 ##################################################################################
-all prepare clean:
+all docinfo prepare clean:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.>>${MKNAM}
@@ -66,15 +66,19 @@ all prepare clean:
 !else # !ifndef MAKEFILES
 ##################################################################################
 #
-# End-user targets
+# User targets
 #
 ##################################################################################
 
 # Make all subprojects
 all: ${MAKEFILES:.mak=.all}
   ${DONE}
+  
+# Do some automatic documentation.
+docinfo: ${MAKEFILES:.mak=.docinfo}
+  ${DONE}
 
-# Prepare source files for opening projects without crashing(!) the Borland IDE.
+# Prepare source files for opening projects without confusing the Borland IDE.
 prepare: ${MAKEFILES:.mak=.prepare}
   -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i
 !ifndef DONTCLEANME
@@ -97,12 +101,20 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 ##################################################################################
 .bpr.mak:
   (bpr2mak $<) & echo.
-  @echo.                                   >>$@
-  @echo prepare:                           >>$@
-  @echo ^^ -attrib -r $^^(PROJECT)         >>$@
-  @echo clean:                             >>$@
-  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES) >>$@
-  @echo.                                   >>$@
+  # Add our own additional targets to the makefile created by bpr2mak.
+  @echo.                                                          >>$@
+  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                  >>$@
+  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                >>$@
+  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\        >>$@
+  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES) >>$@
+  @echo ^^ -_$^^(PROJECT)                                         >>$@
+  @echo ^^ -del _$^^(PROJECT)                                     >>$@
+  @echo ^^ -del _*.tds                                            >>$@
+  @echo prepare:                                                  >>$@
+  @echo ^^ -attrib -r $^^(PROJECT)                                >>$@
+  @echo clean:                                                    >>$@
+  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                        >>$@
+  @echo.                                                          >>$@
   # We cannot tolerate absolute paths in makefiles.
   @${SHELL} \
   ( \
@@ -116,8 +128,13 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 
 .mak.all:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS}
+  -del shared\obj\bci2000.csm shared\obj\bci2000.^#*
   ${DONE}
   
+.mak.docinfo:
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} docinfo 
+  ${DONE}
+
 .mak.prepare:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} prepare
   ${DONE}

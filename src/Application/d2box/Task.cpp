@@ -14,8 +14,12 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <time.h>
 #include <dos.h>
 
-TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+RegisterFilter( TTask, 3 );
+
+
+TTask::TTask()
 {
+TEMPORARY_ENVIRONMENT_GLUE
         char line[512];
 
         run= 0;
@@ -54,7 +58,7 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
 
         strcpy(line,"Targets matrix TargetPos= 7 4 25 25 0 90 0 90 25 25 50 50 10 10 10 10 50 50 0 0 -1 1 -1 1 0 0 0 0 0 0 // Target Position Matrix - Values are 0-100");
         plist->AddParameter2List(line,strlen(line));
-         
+
 
         slist->AddState2List("TargetCode 5 0 0 0\n");
         slist->AddState2List("ResultCode 5 0 0 0\n");
@@ -88,10 +92,29 @@ TTask::~TTask( void )
 
 }
 
-
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm ) // , TApplication *applic)
+void TTask::Preflight( const SignalProperties& inputProperties,
+                             SignalProperties& outputProperties ) const
 {
-        STATELIST *slist;
+  // External parameters.
+  Parameter( "FileInitials" );
+  Parameter( "SubjectSession" );
+  Parameter( "SubjectName" );
+
+  // External states.
+  State( "IntertrialInterval" );
+  State( "Running" );
+
+  // TTask::Process() implies that the input signal has at least one channel
+  // with two elements.
+  PreflightCondition( inputProperties >= SignalProperties( 1, 2 ) );
+
+  // We don't use an output signal.
+  outputProperties = SignalProperties( 0, 0 );
+}
+
+void TTask::Initialize()
+{
+TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
         BCIDtry *bcidtry;
         char FName[120];
@@ -99,10 +122,6 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         time_t ctime;
         struct tm *tblock;
         int i,j;
-
-    //    Applic= applic;
-
-        corecomm= new_corecomm;
 
         PtpDuration=       atoi(plist->GetParamPtr("PreTrialPause")->GetValue());
         ItiDuration=       atoi(plist->GetParamPtr("ItiDuration")->GetValue());
@@ -169,11 +188,10 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         bitrate.Initialize(Ntargets);
 
         trial=1;
-        svect=new_svect;
         slist=svect->GetStateListPtr();
 
         if (vis) delete vis;
-        vis= new GenericVisualization( plist, corecomm );
+        vis= new GenericVisualization;
         vis->SetSourceID(SOURCEID_TASKLOG);
         vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
@@ -720,6 +738,7 @@ void TTask::Rest( void )
 
 void TTask::Process( const GenericSignal * Input, GenericSignal * Output )
 {
+TEMPORARY_ENVIRONMENT_GLUE
         const std::vector<float>& signals = Input->GetChannel( 0 );
 
         ReadStateValues( svect );

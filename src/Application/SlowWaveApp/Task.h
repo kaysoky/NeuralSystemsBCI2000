@@ -16,9 +16,7 @@ Task.h is the header file for the Right Justified Boxes task
 class TTask : public GenericFilter
 {
 private:
-        STATEVECTOR             *svect;
         GenericVisualization    *vis;
-        CORECOMM        *corecomm;
         TSTATUS *status;
         TDecider *Decider;
         TTaskManager *TaskManager;
@@ -26,10 +24,11 @@ private:
         TClassSequencer *ClassSequencer;
 
 public:
-          TTask( PARAMLIST*, STATELIST* );
+          TTask();
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 } ;
 

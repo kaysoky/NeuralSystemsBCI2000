@@ -9,7 +9,8 @@
       obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\UTarget.obj obj\UCursor.obj obj\UStatusBar.obj obj\UGenericFilter.obj"/>
+      obj\UTarget.obj obj\UCursor.obj obj\UStatusBar.obj obj\UGenericFilter.obj 
+      obj\UEnvironment.obj obj\UBCIError.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -20,7 +21,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -37,7 +38,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+    <CFLAG1 value="-Od -H=..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
       -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -74,6 +75,8 @@
       <FILE FILENAME="..\shared\UCursor.cpp" FORMNAME="" UNITNAME="UCursor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UStatusBar.cpp" FORMNAME="" UNITNAME="UStatusBar" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -107,13 +110,13 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=26
 Item0=..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=..;..\shared;..\..\shared;..\Speller;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item2=..;..\shared;..\..\shared;..\Speller;$(BCB)\include;$(BCB)\include\vcl
 Item3=..\shared;..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
 Item4=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
 Item5=..\;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
@@ -141,8 +144,8 @@ Item25=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.
 [HistoryLists\hlLibraryPath]
 Count=26
 Item0=..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..;..\shared;..\..\shared;..\Speller;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..;..\shared;..\..\shared;..\Speller;$(BCB)\lib\obj;$(BCB)\lib
 Item3=..\shared;..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
 Item4=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
 Item5=..\;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib

@@ -2,6 +2,8 @@
 
 #ifndef UStatusBarH
 #define UStatusBarH
+
+#include <vcl.h>
 //---------------------------------------------------------------------------
 
 class STATUSBAR

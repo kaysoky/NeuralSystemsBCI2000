@@ -20,10 +20,8 @@ class TTask : public GenericFilter
         TARGETLIST      *targets, oldactivetargets;
         USERDISPLAY     *userdisplay;
         TRIALSEQUENCE   *trialsequence;
-        CORECOMM        *corecomm;
         BCITIME         *bcitime;
         int             Wx, Wy, Wxl, Wyl;
-        STATEVECTOR     *statevector;
         void            HandleSelected(TARGET *selected);
         BCITIME         *cur_time;
         int             cur_sequence, oldrunning, running;
@@ -42,10 +40,11 @@ class TTask : public GenericFilter
         FILE            *logfile;
         int             cur_runnr;
  public:
-          TTask( PARAMLIST*, STATELIST* );
+          TTask();
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 #endif

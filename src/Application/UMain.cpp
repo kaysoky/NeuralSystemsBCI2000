@@ -31,7 +31,7 @@
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -72,6 +72,8 @@ class TReceivingThread : public  TServerClientThread
   public:
     __fastcall TReceivingThread( bool CreateSuspended, TServerClientWinSocket* ASocket);
     void __fastcall ClientExecute( void );
+  private:
+    bool errorOccurred;
 };
 
 
@@ -85,7 +87,8 @@ class TReceivingThread : public  TServerClientThread
 __fastcall TReceivingThread::TReceivingThread(bool CreateSuspended, TServerClientWinSocket* ASocket)
 : TServerClientThread( CreateSuspended, ASocket ),
   controlsignals( NULL ),
-  pStream( NULL )
+  pStream( NULL ),
+  errorOccurred( false )
 {
 }
 //---------------------------------------------------------------------------
@@ -121,13 +124,15 @@ int     ret;
      }
 
   Synchronize(InitializeTask);
+  if( !errorOccurred )
+    fMain->corecomm->SendStatus("202 Application module initialized");
 
   delete controlsignals;
   delete pStream;
 
   pStream=new TWinSocketStream(ClientSocket, 5000);
   controlsignals=new GenericSignal( 1, numcontrolsignals );
-  if ((!controlsignals) || (!pStream)) ret=0;
+  if ((!controlsignals) || (!pStream) || errorOccurred ) ret=0;
 
  return(ret);
 }
@@ -177,7 +182,7 @@ int     trycount;
        delete coremessage;
        }
     } // end try
-   catch(...)
+   catch( TooGeneralCatch& )
     {
     Terminate();
     }
@@ -208,7 +213,9 @@ int     trycount;
 // **************************************************************************
 void __fastcall TReceivingThread::ProcessTask(void)
 {
+ Environment::EnterProcessingPhase( &fMain->paramlist, &fMain->statelist, statevector, fMain->corecomm );
  fMain->Task->Process( controlsignals, NULL );
+ Environment::EnterNonaccessPhase();
 }
 
 
@@ -222,7 +229,18 @@ void __fastcall TReceivingThread::ProcessTask(void)
 // **************************************************************************
 void __fastcall TReceivingThread::InitializeTask(void)
 {
-  fMain->Task->Initialize(&(fMain->paramlist), statevector, fMain->corecomm);
+  Environment::EnterPreflightPhase( &fMain->paramlist, &fMain->statelist, statevector, fMain->corecomm );
+  SignalProperties sp_in( 1, numcontrolsignals ), sp_out;
+  fMain->Task->Preflight( sp_in, sp_out );
+  errorOccurred = ( __bcierr.flushes() > 0 );
+  Environment::EnterNonaccessPhase();
+  if( !errorOccurred )
+  {
+    Environment::EnterInitializationPhase( &fMain->paramlist, &fMain->statelist, statevector, fMain->corecomm );
+    fMain->Task->Initialize();
+    errorOccurred |= ( __bcierr.flushes() > 0 );
+    Environment::EnterNonaccessPhase();
+  }
 }
 
 
@@ -334,21 +352,21 @@ void TfMain::ShutdownConnections()
   if (ReceivingSocket->Socket->ActiveConnections > 0)
      if (ReceivingSocket->Socket->Connections[0])
         ReceivingSocket->Socket->Connections[0]->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (ReceivingSocket->Active) ReceivingSocket->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (sendingcomm)
      if (sendingcomm->Connected()) sendingcomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (corecomm)
      if (corecomm->Connected()) corecomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
 }
 
 
@@ -462,7 +480,9 @@ char    paramstring[255];
  eReceivingPort->Text=AnsiString(ReceivingSocket->Socket->LocalPort);
  eReceivingIP->Text=ReceivingSocket->Socket->LocalHost;
 
- Task= new TTask( &paramlist, &statelist );
+ Environment::EnterConstructionPhase( &paramlist, &statelist, NULL, NULL );
+ Task= new TTask;
+ Environment::EnterNonaccessPhase();
 
  // add parameters for socket connection
  // my receiving socket port number
@@ -518,7 +538,9 @@ int     destport, res;
     rSendingConnected->Checked=true;
     eSendingIP->Text=destIP;
     eSendingPort->Text=AnsiString(destport);
+#if 0
     corecomm->SendStatus("202 Application module initialized");
+#endif
     }
  else
     return(ERR_NOSOCKPARAM);

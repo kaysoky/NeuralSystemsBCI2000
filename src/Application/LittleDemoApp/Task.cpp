@@ -1,32 +1,30 @@
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "UState.h"
 #include "Task.h"
+#include "UState.h"
 #include "UBCITime.h"
 
+RegisterFilter( TTask, 3 );
 
-TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+TTask::TTask()
 : vis( NULL ),
-  svect( NULL ),
   AcousticMode( 0 ),
   form( NULL ),
   progressbar( NULL ),
   chart( NULL ),
   series( NULL )
 {
- const char* params[] =
- {
+ BEGIN_PARAMETER_DEFINITIONS
    "NeuralMusic int AcousticMode= 10 0 0 1 // Achin's Acoustic Mode :-)",
    // has to be in there
    "NeuralMusic int NumberTargets= 10 0 0 1 // not used",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 
- slist->AddState2List("Pitch 8 0 0 0\n");
- slist->AddState2List("StimulusTime 16 17528 0 0\n");
+ BEGIN_STATE_DEFINITIONS
+   "Pitch 8 0 0 0",
+   "StimulusTime 16 17528 0 0",
+ END_STATE_DEFINITIONS
 
  form=new TForm( ( TComponent* )NULL );
  form->Caption="Neural Music Test";
@@ -71,15 +69,12 @@ TTask::~TTask( void )
  delete form;
 }
 
-
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM* corecomm )
+void TTask::Initialize()
 {
- AcousticMode=atoi(plist->GetParamPtr("AcousticMode")->GetValue());
-
- svect=new_svect;
+ AcousticMode = Parameter( "AcousticMode" );
 
  delete vis;
- vis= new GenericVisualization( plist, corecomm );
+ vis= new GenericVisualization;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
@@ -112,21 +107,21 @@ int     pitch;
 
 void TTask::Process( const GenericSignal* Input, GenericSignal* )
 {
-  const std::vector< float >& signals = Input->GetChannel( 0 );
+  const GenericSignal& InputSignal = *Input;
   int cur_pitch, cur_running;
 
-  cur_pitch=svect->GetStateValue("Pitch");
+  cur_pitch = State( "Pitch" );
 
-  cur_running=svect->GetStateValue("Running");
+  cur_running = State( "Running" );
   if (cur_running > 0)
     {
     // make music
-    cur_pitch=MakeMusic( signals[ 0 ] );
+    cur_pitch=MakeMusic( InputSignal( 0, 0 ) );
     }
 
-  svect->SetStateValue("Pitch", 23);
+  State( "Pitch" ) = cur_pitch;
   // time stamp the data
-  svect->SetStateValue("StimulusTime", BCITIME::GetBCItime_ms());
+  State( "StimulusTime" )= BCITIME::GetBCItime_ms();
 }
 
 

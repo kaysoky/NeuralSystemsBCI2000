@@ -1,6 +1,4 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -83,7 +81,7 @@ int     ret;
   ontime=atoi(plist->GetParamPtr("OnTime")->GetValue());
   offtime=atoi(plist->GetParamPtr("OffTime")->GetValue());
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   ret=0;
   ontime=10;

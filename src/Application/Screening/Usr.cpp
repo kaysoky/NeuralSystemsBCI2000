@@ -1,7 +1,7 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
-#pragma hdrstop
 
 #include "Usr.h"
 #include "UParameter.h"
