@@ -83,7 +83,8 @@ private:	// User declarations
         __int16 samplingrate, channels;
         // float val;
         FILE *cf;
-        
+        void ApplyParamFile( const char* inParamFile );
+
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         __fastcall ~TfMain( void );

@@ -38,6 +38,64 @@ __fastcall TfMain::TfMain(TComponent* Owner)
         bci2000data(NULL),
         mem(NULL)
 {
+  AnsiString programName = ExtractFileName( ChangeFileExt( ParamStr( 0 ), "" ) );
+  const char* messageMode = "error";
+
+  for( int i = 1; i < ParamCount(); ++i )
+  {
+    char* option = new char[ ParamStr( i ).Length() + 1 ];
+    ::strcpy( option, ParamStr( i ).c_str() );
+    switch( *option )
+    {
+      case '\0':
+        break;
+
+      case '-':
+        switch( *++option )
+        {
+          case 'p':
+          case 'P':
+            vParmFile->Text = ++option;
+            ApplyParamFile( option );
+            break;
+
+          case 'o':
+          case 'O':
+            eDestinationFile->Text = ++option;
+            break;
+
+          case 'c':
+          case 'C':
+            vCalibrationFile->Text = ++option;
+            FileType->Checked = ( *option != '\0' );
+            break;
+
+          case 'h':
+          case 'H':
+          case '?':
+            messageMode = "help";
+            /* no break */
+          default:
+            Application->MessageBox(
+              "The following parameters are accepted:\n\n"
+              " -h\t                 \tshow this help\n"
+              " -o<output file>      \toutput file name\n"
+              " -p<parameter file>   \tload named parameter file at startup\n"
+              " -c<calibration file> \tcalibration file name\n"
+              " <file1> <file2> ...  \tany number of input file names\n",
+              ( programName + " command line " + messageMode ).c_str(),
+              MB_OK | MB_ICONINFORMATION
+            );
+            Application->Terminate();
+        }
+        break;
+
+      default:
+        eSourceFile->Text = option;
+        FileList->Items->Add( option );
+    }
+    delete[] option;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -432,16 +490,20 @@ void __fastcall TfMain::Button5Click(TObject *Sender)
 
 void __fastcall TfMain::Button4Click(TObject *Sender)
 {
+        if( OpenParameterFile->Execute() )
+        {
+          vParmFile->Text= OpenParameterFile->FileName;
+          ApplyParamFile( vParmFile->Text.c_str() );
+        }
+}
+
+//---------------------------------------------------------------------------
+void TfMain::ApplyParamFile( const char* inParamFile )
+{
         FILE *getIO;
-
-        OpenParameterFile->Execute();
-        vParmFile->Text= OpenParameterFile->FileName;
-
-        // pario= new ParIO;
-
         ParIO pario;
 
-        if( ( getIO= fopen( vParmFile->Text.c_str(), "r" )) == NULL )
+        if( ( getIO= fopen( inParamFile, "r" )) == NULL )
         {
                 Application->MessageBox("Error","Opening Parameter File ",MB_OK);
                 return;

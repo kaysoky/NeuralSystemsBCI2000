@@ -1,9 +1,9 @@
 object fMain: TfMain
-  Left = 271
-  Top = 132
+  Left = 513
+  Top = 210
   Width = 550
   Height = 517
-  Caption = 'BCI TimeFrequency 3/19/04'
+  Caption = 'BCI TimeFrequency 3/22/04'
   Color = clSkyBlue
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
