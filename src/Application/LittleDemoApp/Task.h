@@ -5,6 +5,8 @@
 #include <ComCtrls.hpp>
 
 #include <stdio.h>
+#include <map>
+
 #include "UBitRate.h"
 #include "UCoreComm.h"
 #include "UGenericVisualization.h"
@@ -25,8 +27,9 @@ class TTask : public GenericFilter
         TProgressBar    *progressbar;
         TChart          *chart;
         TLineSeries     *series;
-        TWavePlayer     wavePlayer;
         TMidiPlayer     midiPlayer;
+        typedef std::map<std::string, TWavePlayer> WavePlayerContainer;
+        WavePlayerContainer wavePlayers;
 
  public:
           TTask();
@@ -35,6 +38,7 @@ class TTask : public GenericFilter
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
+  virtual void Halt();
 };
 
 #endif // TaskH

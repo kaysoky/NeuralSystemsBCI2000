@@ -20,8 +20,14 @@ TTask::TTask()
  BEGIN_PARAMETER_DEFINITIONS
    "NeuralMusic int AcousticMode= 1 "
      "0 0 2 // 0: no sound, 1: MIDI, 2: WAV -- Achin's Acoustic Mode :-)",
-   "NeuralMusic string WaveFile= % "
-     "% % % // sound file in case of WAV mode",
+   "NeuralMusic matrix Sounds= "
+     "{ MIDI WAV } " // row labels
+
+     "{     ultra%20low     low              medium            high              ultra%20high } " // column labels
+/* MIDI */ "45              52               59                66                73 "
+/* WAV  */ "sounds\\pig.wav sounds\\frog.wav sounds\\train.wav sounds\\uh-uh.wav sounds\\whistle.wav "
+
+     " // sounds to be played for different ranges of the feedback signal",
    // has to be in there
    "NeuralMusic int NumberTargets= 10 "
      "0 0 10 // not used",
@@ -83,23 +89,28 @@ void TTask::Preflight( const SignalProperties& inputProperties,
     case 0: // none
       break;
     case 1: // Midi
+      // We believe our MIDI player handles any input.
       break;
     case 2: // WAV
       {
+        std::string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+        bool genError = false;
         TWavePlayer testPlayer;
-        switch( testPlayer.AttachFile( Parameter( "WaveFile" ) ) )
+        for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
         {
-          case TWavePlayer::noError:
-            break;
-          case TWavePlayer::fileOpeningError:
-            bcierr << "Could not open "
-                   << ( const char* )Parameter( "WaveFile" )
-                   << " as a wave sound file"
-                   << std::endl;
-            break;
-          default:
-            bcierr << "Some general error prevents wave audio playback"
-                   << std::endl;
+          std::string fileName = applicationPath + ( const char* )Parameter( "Sounds", "WAV", i );
+          TWavePlayer::Error err = testPlayer.AttachFile( fileName.c_str() );
+          if( err == TWavePlayer::fileOpeningError )
+              bcierr << "Could not open \""
+                     << fileName
+                     << "\" as a wave sound file"
+                     << std::endl;
+          else if( err != TWavePlayer::noError )
+          {
+              bcierr << "Some general error prevents wave audio playback"
+                     << std::endl;
+              genError = true;
+          }
         }
       }
       break;
@@ -120,7 +131,14 @@ void TTask::Initialize()
    case 1: // MIDI
      break;
    case 2: // WAV
-     wavePlayer.AttachFile( Parameter( "WaveFile" ) );
+     {
+      std::string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+      for( size_t i = 0; i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
+      {
+        std::string fileName = applicationPath + ( const char* )Parameter( "Sounds", "WAV", i );
+        wavePlayers[ Parameter( "Sounds" )->LabelsDimension2()[ i ] ].AttachFile( fileName.c_str() );
+      }
+     }
      break;
    default:
      assert( false );
@@ -147,23 +165,34 @@ int     pitch;
  progressbar->Position=pitch;
  // add the current control signal value to the chart
  series->AddY((double)controlsignal, "", (TColor)clTeeColor);
- // update the display
- Application->ProcessMessages();
 
  // send the current pitch to the operator as well
  sprintf(memotext, "Current Pitch: %d\r", pitch);
  vis->SendMemo2Operator(memotext);
 
+ const char* pitchLabel = "";
+
+ if( pitch < 51 )
+   pitchLabel = "ultra low";
+ else if( pitch < 102 )
+   pitchLabel = "low";
+ else if( pitch < 153 )
+   pitchLabel = "medium";
+ else if( pitch < 204 )
+   pitchLabel = "high";
+ else
+   pitchLabel = "ultra high";
+   
  switch( AcousticMode )
  {
    case 0: // none
      break;
    case 1: // MIDI
-     midiPlayer.Play( pitch );
+     midiPlayer.Play( Parameter( "Sounds", "MIDI", pitchLabel ) );
      break;
    case 2: // WAV
-     if( pitch > 128 )
-       wavePlayer.Play();
+     if( !wavePlayers[ pitchLabel ].IsPlaying() )
+       wavePlayers[ pitchLabel ].Play();
      break;
    default:
      assert( false );
@@ -189,7 +218,12 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* )
 
   State( "Pitch" ) = cur_pitch;
   // time stamp the data
-  State( "StimulusTime" )= BCITIME::GetBCItime_ms();
+  State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
 }
 
-
+void TTask::Halt()
+{
+  midiPlayer.StopSequence();
+  for( WavePlayerContainer::iterator i = wavePlayers.begin(); i != wavePlayers.end(); ++i )
+    i->second.Stop();
+}
