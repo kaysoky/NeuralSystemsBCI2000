@@ -1,0 +1,83 @@
+Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes) (does NOT work yet)
+System string ApplicationIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0. // this module's listening IP
+System string ApplicationPort= 1593 4200 1024 32768 // this module's listening port
+Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)
+Oddball string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)
+Statistics matrix BaselineCfg= 4 4 TargetCode 1 Feedback 1 TargetCode 2 Feedback 1 TargetCode 3 Feedback 1 TargetCode 4 Feedback 1 0 0 1 // states to watch for baseline
+Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
+MEMFilter float deltaMem= 0.2 0.2 0.02 2.00 // Resolution (line density)
+Statistics float DesiredPixelsPerSec= 15 70 0 400 // 
+System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string EEGsourcePort= 1589 4200 1024 32768 // this module's listening port
+Storage string FileInitials= d:\bci2000data TD a z // Initials of file name (max. 8 characters)
+Statistics int InterceptControl= 1 0 0 1 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri
+Statistics int InterceptLength= 3 0 0 1 // Length of time for running average
+Statistics float InterceptProportion= 1.0000 0.0 0.0 2.0 // 
+Statistics float LinTrendLrnRt= -0.001 0 -0.010 0.010 // Rate of Learning for Linear Trend Control
+Filtering float LR_A= -10 0.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float LR_B= 1 10.0 0.0 100.0 // Normal Filter Left/Right Slope
+Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
+Filtering int MaxElements= 256 10 1 256 // maximum number of elements in signals B,C
+MEMFilter float MemBandWidth= 3.0 3.0 0.5 32.0 // Spectral Bandwidth in Hz
+MEMFilter int MemDetrend= 0 0 0 2 // Detrend data?  0=no 1=mean 2= linear
+MEMFilter int MemModelOrder= 10 10 2 32 // AR model order
+MEMFilter int MemWindows= 6 2 1 8 // AR- number of input blocks
+Filtering matrix MLR= 10 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Left / Right Weights
+Source int ModulateAmplitude= 1 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
+Filtering matrix MUD= 10 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Up / Down Weights
+Source int NoiseMaxAmplitude= 3000 3000 -32767 32767 // the maximum output value for noise
+Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value for noise
+Oddball int NumberTargets= 4 4 0 100 // Number of Targets ... NOT USED YET
+Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
+Oddball int OddballProbability= 10 10 0 100 // Probability for oddball icon
+Oddball int OffTime= 3 10 0 5000 // Invisible duration of icon in units of SampleBlocks
+Oddball int OnTime= 10 10 0 5000 // Visible duration of icon in units of SampleBlocks
+Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Rate of Learning for Linear Trend Control
+Source int SampleBlockSize= 16 5 1 128 // the number of samples transmitted at a time
+Source int SamplingRate= 384 128 1 4000 // the sample rate
+Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file
+System string SignalProcessingIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string SignalProcessingPort= 1591 4200 1024 32768 // this module's listening port
+Source int SineChannel= 0 0 0 128 // channel number of sinewave (0=all)
+Source float SineFrequency= 10 10 0 100 // frequency of the sine wave
+Source int SineMaxAmplitude= 10000 20000 -32767 32767 // the maximum output value for sine
+Source int SineMinAmplitude= -10000 0 -32767 32767 // the minimal output value for sine
+Source int SoftwareCh= 16 16 1 128 // the number of digitized and stored channels
+Filtering floatlist SourceChGain= 16 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 -500 500 // gain for each channel (A/D units -> muV)
+Filtering floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -500 500 // offset for channels in A/D units
+Visualize int SourceMax= 8092 8092 0 16386 // raw EEG vsi Max Value
+Visualize int SourceMin= 0 0 -8092 0 // raw EEG vis Min Value
+Filtering int SpatialFilteredChannels= 4 4 1 64 // Number of Spatially Filtered Channels
+Filtering matrix SpatialFilterKernal= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 64 -100 // Spatial Filter Kernal Weights
+MEMFilter float StartMem= 0.0 0.0 0.0 512.0 // Start of Spectrum in Hz
+System int StateVectorLength= 5 16 1 30 // length of the state vector in bytes
+MEMFilter float StopMem= 30.0 30.0 0.0 512.0 // End of Spectrum in Hz
+Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
+Storage string SubjectName= test Name a z // subject alias (max. 8 characters)
+Storage string SubjectRun= 01 00 0 99 // digit run number (max. 3 characters)
+Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
+Oddball string TargetDefinitionFile= oddballtargets.cfg 0 0 100 // Target definition file
+Oddball int TargetHeight= 35 0 0 100 // TargetHeight in percent of screen height
+Oddball int TargetTextHeight= 5.5 0 0 100 // Height of target labels in percent of screen height
+Oddball int TargetWidth= 35 0 0 100 // TargetWidth in percent of screen width
+Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
+Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
+Statistics int TrendControl= 0 0 0 1 // Online adaption of % Correct Trend 1= Lin 2 = Quad
+Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window
+Filtering float UD_A= 105.98 10.0 -100.0 100.0 // 
+Filtering float UD_B= 0.1 10.0 -100.0 100.0 // 
+Visualize int VisualizeCalibration= 0 0 0 1 // visualize calibrated channels (0=no, 1=yes)
+Visualize int VisualizeClassFiltering= 0 0 0 1 // visualize Class filtered signals (0=no 1=yes)
+Visualize int VisualizeNormalFiltering= 0 0 0 1 // visualize Normal filtered signals (0=no 1=yes)
+Visualize int VisualizeRoundtrip= 0 1 0 1 // visualize roundtrip time (0=no, 1=yes)
+Visualize int VisualizeSource= 1 1 0 1 // visualize raw EEG (0=no, 1=yes)
+Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw EEG
+Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization
+Visualize int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatial filtered signals (0=no 1=yes)
+Visualize int VisualizeStatFiltering= 0 0 0 1 // visualize Stat filtered signals (0=no 1=yes)
+Visualize int VisualizeTemporalFiltering= 0 0 0 1 // visualize Temporal filtered signals (0=no 1=yes)
+Oddball int WinHeight= 512 512 0 2000 // User Window Height
+Oddball int WinWidth= 512 512 0 2000 // User Window Width
+Oddball int WinXpos= 5 0 0 5000 // User Window X location
+Oddball int WinYpos= 5 0 0 5000 // User Window Y location
+Filtering matrix XUD= 10 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 // Class Filter Multiplicative Up / Down Weights

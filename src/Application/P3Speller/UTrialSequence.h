@@ -13,19 +13,21 @@
 #define SEQ_OUTCOME             4
 #define SEQ_CONGRATULATIONS     5
 
+#define NUM_STIMULI     12      // in this case, we have 12 stimuli (6 columns and 6 rows)
+
 class TRIALSEQUENCE
 {
 private: 	// User declarations
         int     ontime, offtime;                   // in units of SampleBlocks
         bool    cur_on;   
-        int     cur_sequence;                           // current sequence
+        int     cur_trialsequence;                 // current sequence within trial
+        int     cur_sequence;                      // how many total intensifications did we have
         CORECOMM        *corecomm;
         USERDISPLAY     *userdisplay;
         STATEVECTOR     *statevector;
         GenericVisualization    *vis;
         unsigned short oldrunning;
         TARGET  *selectedtarget;
-        void    SuspendTrial();
         TColor  TextColor, TextColorIntensified;
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
@@ -35,7 +37,7 @@ public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
-        TARGET  *Process(const short * );
+        int     Process(const short * );
         void    ResetTrialSequence();
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)
         int             LoadPotentialTargets(const char *targetdeffilename);
@@ -43,5 +45,6 @@ public:		// User declarations
         TARGETLIST      *targets;                                       // all the potential targets
         int             GetRandomStimulusCode();
         short           IntensifyTargets(int stimuluscode, bool intensify);
+        void            SuspendTrial();
 };
 #endif

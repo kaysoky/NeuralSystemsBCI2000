@@ -150,7 +150,7 @@ int     res, returnval;
      error.CopyError(&(tempfilter->error));
      }
   MD= tempfilter->numchannels;
-  ND= tempfilter->numsamplesinerp;
+  ND= tempfilter->numsamplesinERP;
 
   // initialize the classifier
   res= classfilter->Initialize(plist, svector, corecomm, ND);

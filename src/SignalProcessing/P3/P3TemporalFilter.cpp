@@ -32,6 +32,8 @@ int     cur_buf;
  plist->AddParameter2List( line, strlen(line) );
  strcpy(line, "P3SignalProcessing int NumERPsToAverage= 15 15 0 1000  // Number of ERPs to average before doing DF");
  plist->AddParameter2List( line, strlen(line) );
+ strcpy(line, "P3SignalProcessing int TargetERPChannel= 1 1 0 128  // Target Channel for ERP Display in order of SigProc transfer");
+ plist->AddParameter2List( line, strlen(line) );
 
  strcpy(line, "Visualize float ERPMinDispVal= 0 0 -16383 16384  // Minimum value for ERP display");
  plist->AddParameter2List( line, strlen(line) );
@@ -53,6 +55,7 @@ int     cur_buf;
   }
 
  vis=NULL;
+ vissignal=NULL;
 }
 
 
@@ -68,6 +71,8 @@ P3TemporalFilter::~P3TemporalFilter()
 
  if (vis) delete vis;
  vis=NULL;
+ if (vissignal) delete vissignal;
+ vissignal=NULL;
 }
 
 
@@ -92,14 +97,19 @@ char    cur_buf[256];
  try // in case one of the parameters is not defined (should always be, since we requested them)
   {
   visualizeyn= atoi(paramlist->GetParamPtr("VisualizeP3TemporalFiltering")->GetValue() );
-  numsamplesinerp= atoi(paramlist->GetParamPtr("NumSamplesInERP")->GetValue() );
-  numerpsnecessary= atoi(paramlist->GetParamPtr("NumERPsToAverage")->GetValue() );
+  targetERPchannel= atoi(paramlist->GetParamPtr("TargetERPChannel")->GetValue() );
+  numsamplesinERP= atoi(paramlist->GetParamPtr("NumSamplesInERP")->GetValue() );
+  numERPsnecessary= atoi(paramlist->GetParamPtr("NumERPsToAverage")->GetValue() );
   numchannels= atoi(paramlist->GetParamPtr("SpatialFilteredChannels")->GetValue() );
   mindispval= atof(paramlist->GetParamPtr("ERPMinDispVal")->GetValue() );
   maxdispval= atof(paramlist->GetParamPtr("ERPMaxDispVal")->GetValue() );
   }
  catch(...)
   { return(0); }
+
+ // we can't average 0 ERPs or have 0 samples in an ERP
+ if ((numERPsnecessary == 0) || (numsamplesinERP == 0))
+    return(0);
 
 
  if ( visualizeyn == 1 )
@@ -108,7 +118,7 @@ char    cur_buf[256];
     if (vis) delete vis;
     vis= new GenericVisualization( paramlist, corecomm );
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_WINDOWTITLE, "ERP");
-    sprintf(cur_buf, "%d", numsamplesinerp);
+    sprintf(cur_buf, "%d", numsamplesinERP);
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
     sprintf(cur_buf, "%f", mindispval);
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MINVALUE, cur_buf);
@@ -123,6 +133,20 @@ char    cur_buf[256];
 
  DeleteAllERPBuffers();
 
+ // create a signal that will display the ERPs (on a particular target channel)
+ // for each of the twelve StimulusCodes
+ if (vissignal) delete vissignal;
+ vissignal=new GenericSignal(12, numsamplesinERP);
+ for (i=0; i<12; i++)
+  for (j=0; j<numsamplesinERP; j++)
+   vissignal->SetValue(i, j, 0);
+
+ if ( visualize )
+    {
+    vis->SetSourceID(SOURCEID_TEMPORALFILT);
+    vis->Send2Operator(vissignal);
+    }
+
  return(1);
 }
 
@@ -136,6 +160,8 @@ char    cur_buf[256];
 void P3TemporalFilter::DeleteAllERPBuffers()
 {
 int     cur_buf;
+
+ maxstimuluscode=0;
 
  // delete all erp buffer variables
  for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
@@ -193,6 +219,9 @@ bool    ret;
 
  ret=false;
 
+ if (StimulusCode > maxstimuluscode)
+    maxstimuluscode=StimulusCode;
+
  // look for an empty spot and allocate it
  for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
   {
@@ -215,7 +244,7 @@ bool    ret;
 // **************************************************************************
 // Function:   AppendToERPBuffers
 // Purpose:    This functions appends the current input signal to all ERP signal buffers
-//             until the number of samples in a given buffer reached numsamplesinerp
+//             until the number of samples in a given buffer reached numsamplesinERP
 //             subsequent procedures need to ensure that full buffers are processed and deleted
 // Parameters: input - input signal from the spatial filter to be appended to our buffers
 // Returns:    N/A
@@ -235,7 +264,7 @@ float   oldvalue;
      // go through all samples and append them if we have not stored enough
      for (samples=0; samples<(int)input->MaxElements(); samples++)
       {
-      if (ERPBufSampleCount[cur_buf] < numsamplesinerp)
+      if (ERPBufSampleCount[cur_buf] < numsamplesinERP)
          {
          for (ch=0; ch<(int)input->Channels(); ch++)
           {
@@ -262,26 +291,74 @@ float   oldvalue;
 int P3TemporalFilter::ProcessERPBuffers(GenericSignal *output)
 {
 int     cur_buf, samples, ch;
+int     stimuluscode, stimulustype, count;
+float   cur_output;
 
- // go through all buffers that contain ERP signals
- for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
+ // check, for each stimulus code, whether we have enough completed waveforms
+ // in the matrix, we have 12 different stimuli, but we know the maximum stimulus code that we observed so far
+ for (stimuluscode=1; stimuluscode<=maxstimuluscode; stimuluscode++)
   {
-  // does this buffer slot contain data, is the buffer filled with a complete waveform, and do we have enough waveforms accumulated ?
-  // if yes, process it
-  // if ((ERPBufCode[cur_buf] != ERPBUFCODE_EMPTY) && (ERPBufSampleCount[cur_buf] == numsamplesinerp) && (ERPBufAvgCount[cur_buf] == numerpsnecessary))
-  if ((ERPBufCode[cur_buf] != ERPBUFCODE_EMPTY) && (ERPBufSampleCount[cur_buf] == numsamplesinerp))
+  count=0;
+  // count the number of completed ERP waveforms for this StimulusCode
+  for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
+   if ((ERPBufCode[cur_buf] == stimuluscode) && (ERPBufSampleCount[cur_buf] == numsamplesinERP))
+      count++;
+  // if we have enough waveforms of this type (i.e., StimulusCode)
+  // calculate the average signal and assign it to the output signal
+  if (count == numERPsnecessary)
      {
-     // set the output signal to the content of the ERP waveform buffer
+     // set the contents of the output signal to 0
      for (ch=0; ch<numchannels; ch++)
-      for (samples=0; samples<numsamplesinerp; samples++)
-       output->SetValue(ch, samples, ERPBufSamples[cur_buf]->GetValue(ch, samples));
+      for (samples=0; samples<numsamplesinERP; samples++)
+       output->SetValue(ch, samples, 0);
+     // now, accumulate the ERP waveforms in the output signal
+     // this should be done count times
+     for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
+      {
+      if ((ERPBufCode[cur_buf] == stimuluscode) && (ERPBufSampleCount[cur_buf] == numsamplesinERP))
+         {
+         stimulustype=ERPBufType[cur_buf];
+         for (ch=0; ch<numchannels; ch++)
+          for (samples=0; samples<numsamplesinERP; samples++)
+           {
+           cur_output=output->GetValue(ch, samples);
+           output->SetValue(ch, samples, cur_output+ERPBufSamples[cur_buf]->GetValue(ch, samples));
+           }
+         }
+      }
+     // this writes the averaged waveforms to files
+     // there is a program p3test.m that compares these files to offline results (results should obviously be identical)
+     /* char filename[256];
+     sprintf(filename, "c:\\temp\\test%d.dat", stimuluscode);
+     FILE *fp=fopen(filename, "ab"); */
+
+     // now, calculate the AVERAGE output waveform and stick it into the output signal
+     for (ch=0; ch<numchannels; ch++)
+      {
+      for (samples=0; samples<numsamplesinERP; samples++)
+       {
+       cur_output=output->GetValue(ch, samples)/(float)numERPsnecessary;
+       output->SetValue(ch, samples, cur_output);
+       // set the visualization output for this StimulusType to the TargetChannel's average waveform
+       if (ch == targetERPchannel-1)
+          {
+          vissignal->SetValue(stimuluscode-1, samples, cur_output);
+          // fprintf(fp, "%.2f ", cur_output);
+          }
+       }
+      }
+     // also, update the ERP display at the operator
+     if ( visualize ) vis->Send2Operator(vissignal);
+     // fprintf(fp, "\r\n");
+     // fclose(fp);
      // at the same time, communicate the code and type of this ERP waveform
-     statevector->SetStateValue("StimulusCodeRes", (unsigned short)ERPBufCode[cur_buf]);
-     statevector->SetStateValue("StimulusTypeRes", (unsigned short)ERPBufType[cur_buf]);
-     // after we have processed a buffer, we need to clear it
-     // only one buffer for each call (-> break;)
-     DeleteERPBuffer(cur_buf);
-     break;
+     statevector->SetStateValue("StimulusCodeRes", (unsigned short)stimuluscode);
+     statevector->SetStateValue("StimulusTypeRes", (unsigned short)stimulustype);
+     // finally, we have to delete the ERP waveform buffers
+     for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
+      if ((ERPBufCode[cur_buf] == stimuluscode) && (ERPBufSampleCount[cur_buf] == numsamplesinERP))
+         DeleteERPBuffer(cur_buf);
+     break;     // only one at a time
      }
   }
 
@@ -310,7 +387,7 @@ bool    cur_buf;
  // check whether we are starting to get a response for a certain StimulusCode
  if ((CurrentStimulusCode > 0) && (OldStimulusCode == 0))
     {
-    cur_buf=ApplyForNewERPBuffer(CurrentStimulusCode, CurrentStimulusType, numchannels, numsamplesinerp);
+    cur_buf=ApplyForNewERPBuffer(CurrentStimulusCode, CurrentStimulusType, numchannels, numsamplesinERP);
     if (!cur_buf)
        {
        error.SetErrorMsg("P3 Temporal Filter: Inconsistency or ran out of buffers");
@@ -328,12 +405,6 @@ bool    cur_buf;
  statevector->SetStateValue("StimulusCodeRes", 0);
  statevector->SetStateValue("StimulusTypeRes", 0);
  ret=ProcessERPBuffers(output);
-
- if ( visualize )
-    {
-    vis->SetSourceID(SOURCEID_TEMPORALFILT);
-    vis->Send2Operator(output);
-    }
 
  OldStimulusCode=CurrentStimulusCode;
  OldRunning=CurrentRunning;

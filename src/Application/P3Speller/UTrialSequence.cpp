@@ -49,6 +49,7 @@ char    line[512];
 
  slist->AddState2List("StimulusCode 5 0 0 0\n");
  slist->AddState2List("StimulusType 3 0 0 0\n");
+ slist->AddState2List("Flashing 1 0 0 0\n");
 }
 
 
@@ -103,7 +104,7 @@ int     ret;
   TextColorIntensified=(TColor)strtol(plist->GetParamPtr("TextColorIntensified")->GetValue(), NULL, 16);
   TextToSpell=AnsiString(plist->GetParamPtr("TextToSpell")->GetValue());
   chartospell=TextToSpell;  // in case one wanted to step through all characters of TextToSpell
-  if (atoi(plist->GetParamPtr("OnTime")->GetValue()) == 1)
+  if (atoi(plist->GetParamPtr("CopySpelling")->GetValue()) == 1)
      copyspelling=true;
   else
      copyspelling=false;
@@ -256,11 +257,12 @@ void TRIALSEQUENCE::ResetTrialSequence()
 {
 char    line[256];
 
- cur_sequence=0;
+ cur_trialsequence=0;
  cur_on=false;
 
  selectedtarget=NULL;
  oldrunning=0;
+ cur_stimuluscode=0;
 
  statevector->SetStateValue("StimulusCode", 0);
  statevector->SetStateValue("StimulusType", 0);
@@ -276,15 +278,14 @@ char    line[256];
 int TRIALSEQUENCE::GetRandomStimulusCode()
 {
 int     num;
-FILE    *fp;
 
- fp=fopen("c:\\titi.asc", "ab");
- num=GetBlockRandomizedNumber(12);
+ num=GetBlockRandomizedNumber(NUM_STIMULI);
+
+ /* FILE *fp=fopen("c:\\test.dat", "ab");
  fprintf(fp, "%d\r\n", num);
- fclose(fp);
+ fclose(fp); */
 
 return(num);
-// return(GetBlockRandomizedNumber(12));                // from UTaskUtil.cpp
 }
 
 
@@ -304,7 +305,7 @@ void TRIALSEQUENCE::SuspendTrial()
 
 
 // this (dis)intensifies a row/column and returns
-// 0 if the text to spell is within this row/column
+// 1 if the character to spell is within this row/column
 short TRIALSEQUENCE::IntensifyTargets(int stimuluscode, bool intensify)
 {
 TARGET  *cur_target, *chartospellptr;
@@ -364,12 +365,10 @@ short   thisisit;
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-TARGET *TRIALSEQUENCE::Process(const short *controlsignal)
+int TRIALSEQUENCE::Process(const short *controlsignal)
 {
-TARGET   *selected;
+int     ret;
 unsigned short running, within;
-
- selected=NULL;
 
  running=statevector->GetStateValue("Running");
 
@@ -379,9 +378,6 @@ unsigned short running, within;
     SuspendTrial();
     oldrunning=0;
     }
-
- // don't do anything if running is not 1
- if (running == 0) return(NULL);
 
  // when we (re)start the system, reset the trial's sequence
  if ((running == 1) && (oldrunning == 0))
@@ -395,30 +391,34 @@ unsigned short running, within;
 
 
  // are we at the end of the intensification period ?
- if (cur_on && (cur_sequence == ontime))
+ // if yes, turn off the row/column
+ if (cur_on && (cur_trialsequence == ontime))
     {
     cur_on=false;
-    cur_sequence=0;
+    cur_trialsequence=0;
     IntensifyTargets(cur_stimuluscode, false);
     cur_stimuluscode=0;
     statevector->SetStateValue("StimulusType", 0);
+    statevector->SetStateValue("Flashing", 0);
+    ret=1;
     }
 
  // are we at the end of the "dis-intensification" period ?
  // if yes, intensify the next row/column
- if (!cur_on && (cur_sequence == offtime))
+ if (!cur_on && (cur_trialsequence == offtime))
     {
     cur_on=true;
-    cur_sequence=0;
+    cur_trialsequence=0;
     cur_stimuluscode=GetRandomStimulusCode();
     within=IntensifyTargets(cur_stimuluscode, true);
     statevector->SetStateValue("StimulusType", within);
+    statevector->SetStateValue("Flashing", 1);
     }
 
  statevector->SetStateValue("StimulusCode", cur_stimuluscode);
 
  oldrunning=running;
- cur_sequence++;
- return(selected);
+ cur_trialsequence++;
+ return(ret);
 }
 
