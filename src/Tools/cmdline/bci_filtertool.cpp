@@ -33,7 +33,7 @@ string ToolInfo[] =
     "applies the " FILTER_NAME ", "
     "and writes its output to the standard "
     "output as a BCI2000 compliant binary stream.",
-  "-o <file>, --operator <file>\tdirect visualization messages to <file>",
+  "-o<file>, --operator<file>\tdirect visualization messages to <file>",
   "                            \tinstead of /dev/null",
   ""
 };
@@ -131,6 +131,8 @@ FilterWrapper::HandleSTATE( istream& arIn )
 {
   if( mpStatevector != NULL )
   {
+    if( mpFilter )
+      mpFilter->StopRun();
     delete mpStatevector;
     mpStatevector = NULL;
   }
@@ -145,16 +147,14 @@ bool
 FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
+  {
     mpStatevector = new STATEVECTOR( &mStatelist, true );
+    if( mpFilter )
+      mpFilter->StartRun();
+  }
   bool wasRunning = mpStatevector->GetStateValue( "Running" );
   mpStatevector->ReadBinary( arIn );
   bool isRunning = mpStatevector->GetStateValue( "Running" );
-#if 0
-  if( !wasRunning && isRunning )
-    mpFilter->Initialize();
-#endif
-  if( wasRunning && !isRunning )
-    mpFilter->Resting();
   return true;
 }
 
