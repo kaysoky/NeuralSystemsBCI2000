@@ -386,13 +386,14 @@ AnsiString valueline;
   {
     TControl* bottomControl = ParamUserLevel[ count - 1 ];
     if( bottomControl == NULL )
-      bottomControl = ParamValue[ count - 1 ];
-    if( bottomControl == NULL )
-      bottomControl = ParamButton[ 0 ][ count - 1 ];
-    int bottomDiff = bottomControl->Top + bottomControl->Height
-                     - CfgTabControl->DisplayRect.Bottom;
-    if( bottomDiff > 0 )
-      CfgTabControl->Height = CfgTabControl->Height + bottomDiff;
+      bottomControl = ParamLabel[ count - 1 ];
+    if( bottomControl )
+    {
+      int bottomDiff = bottomControl->Top + bottomControl->Height
+                       - CfgTabControl->DisplayRect.Bottom;
+      if( bottomDiff > 0 )
+        CfgTabControl->Height = CfgTabControl->Height + bottomDiff;
+    }
   }
 #endif // jm 5/03
 
