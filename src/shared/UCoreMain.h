@@ -113,9 +113,9 @@ public:      // User declarations
 private:     // User declarations
         void __fastcall  ApplicationIdleHandler( TObject*, bool& );
 
-        void             Initialize();
-        void             Process( const class GenericSignal* );
-        void             Resting();
+        void             InitializeFilters();
+        void             ProcessFilters( const class GenericSignal* );
+        void             RestingFilters();
 
         void             Startup( AnsiString connectto );
         void             Terminate() { mTerminated = true; }
@@ -124,6 +124,7 @@ private:     // User declarations
         void             ShutdownSystem();
         void             EnterRunningState();
         void             EnterSuspendedState();
+        void             ResetStatevector();
         void             ProcessBCIAndWindowsMessages();
         void             HandleResting();
 
@@ -132,6 +133,7 @@ private:     // User declarations
         PARAMLIST        mParamlist;
         STATELIST        mStatelist;
         STATEVECTOR*     mpStatevector;
+        std::string      mInitialStatevector;
         SignalProperties mInputProperties;
         GenericSignal    mOutputSignal;
         client_tcpsocket mOperatorSocket,

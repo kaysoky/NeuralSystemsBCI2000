@@ -51,6 +51,10 @@
 #include "UBCIError.h"
 #include "MeasurementUnits.h"
 
+#include <string>
+#include <sstream>
+#include <assert>
+
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
@@ -151,7 +155,7 @@ TfMain::HandleSTATEVECTOR( istream& is )
                        // Process() one last time.
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
-      Process( NULL );
+      ProcessFilters( NULL );
 #endif // EEGSRC
     mLastRunning = running;
   }
@@ -165,7 +169,7 @@ TfMain::HandleVisSignal( istream& is )
   if( s.ReadBinary( is ) && s.GetSourceID() == 0 )
   {
     const GenericSignal& inputSignal = s;
-    Process( &inputSignal );
+    ProcessFilters( &inputSignal );
   }
   return is;
 }
@@ -205,13 +209,11 @@ TfMain::HandleSTATE( istream& is )
       {
         bool running = mpStatevector->GetStateValue( "Running" ),
              nextRunning = s.GetValue();
-        if( running && !nextRunning )
-          mResting = true;
-        else if( !running && nextRunning )
+        if( !running && nextRunning )
         {
           mLastRunning = true;
           EnterRunningState();
-          Process( NULL );
+          ProcessFilters( NULL );
         }
       }
 #else // EEGSRC
@@ -238,9 +240,12 @@ TfMain::HandleSYSCMD( istream& is )
       delete mpStatevector;
       // This is the first initialization.
       mpStatevector = new STATEVECTOR( &mStatelist );
+      ostringstream oss;
+      mpStatevector->WriteBinary( oss );
+      mInitialStatevector = oss.str();
       mpStatevector->CommitStateChanges();
       InitializeConnections();
-      Initialize();
+      InitializeFilters();
 #if( MODTYPE == EEGSRC )
       mResting = ( __bcierr.flushes() == 0 );
 #endif // EEGSRC
@@ -250,7 +255,7 @@ TfMain::HandleSYSCMD( istream& is )
       // This happens for subsequent initializations.
       if( mpStatevector != NULL )
       {
-        Initialize();
+        InitializeFilters();
 #if( MODTYPE == EEGSRC )
         mResting = ( __bcierr.flushes() == 0 );
 #endif // EEGSRC
@@ -271,7 +276,7 @@ TfMain::HandleSYSCMD( istream& is )
 void
 TfMain::HandleResting()
 {
-  Resting();
+  RestingFilters();
 #if( MODTYPE != EEGSRC ) // For non-source modules, Resting() is called once
                          // after the Running state drops to 0.
   mResting = false;
@@ -283,7 +288,7 @@ TfMain::EnterRunningState()
 {
   // Filters may have changed parameters when executing GenericFilter::Resting(),
   // so we need to do an initialize every time we enter the Running state.
-  Initialize();
+  InitializeFilters();
   MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " running", 201 + 2 * MODTYPE ) );
   mResting = false;
 }
@@ -299,15 +304,30 @@ TfMain::EnterSuspendedState()
 }
 
 void
-TfMain::Initialize()
+TfMain::ResetStatevector()
+{
+  // State "Running" is the actual memory for the module's running state,
+  // so we may not reset it.
+  short running = mpStatevector->GetStateValue( "Running" ),
+        sourceTime = mpStatevector->GetStateValue( "SourceTime" ),
+        stimulusTime = mpStatevector->GetStateValue( "StimulusTime" );
+  mpStatevector->ReadBinary( istringstream( mInitialStatevector ) );
+  mpStatevector->SetStateValue( "Running", running );
+  mpStatevector->SetStateValue( "SourceTime", sourceTime );
+  mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
+}
+
+void
+TfMain::InitializeFilters()
 {
   GenericFilter::HaltFilters();
-#if( MODTYPE == EEGSRC )
+#if 1//( MODTYPE == EEGSRC )
   // The first state vector written to disk is not the one
-  // received in response to the first EEG data block. Without re-initializing
-  // it, there would be state information from the end of the (possibly
+  // received in response to the first EEG data block. Without resetting it
+  // to its initial value,
+  // there would be state information from the end of the (possibly
   // interrupted) previous run written with the first EEG data block.
-  mpStatevector->Initialize_StateVector( true );
+  ResetStatevector();
 #endif // EEGSRC
 
   float samplingRate,
@@ -357,7 +377,7 @@ TfMain::Initialize()
 }
 
 void
-TfMain::Process( const GenericSignal* input )
+TfMain::ProcessFilters( const GenericSignal* input )
 {
   Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   if( input && ( *input != mInputProperties ) )
@@ -381,7 +401,7 @@ TfMain::Process( const GenericSignal* input )
 }
 
 void
-TfMain::Resting()
+TfMain::RestingFilters()
 {
   Environment::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::RestingFilters();
