@@ -17,6 +17,7 @@
 #define TARGETTYPE_CHARACTERS   2
 #define TARGETTYPE_CHARACTER    3
 #define TARGETTYPE_CONTROL      4
+#define TARGETTYPE_DELETE       5
 
 #define MODE_NORMAL             1
 #define MODE_PREDICTION         2
