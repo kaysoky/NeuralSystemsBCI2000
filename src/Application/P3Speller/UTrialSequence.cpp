@@ -31,7 +31,9 @@ char    line[512];
 
  targets=new TARGETLIST();
 
- strcpy(line, "P3Speller string TargetDefinitionFile= p3targets.cfg 0 0 100 // Target definition file");
+ /*shidong starts*/
+ strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 36 3 A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V V 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ <BACKSPACE> 1 0 0 100 // Target Definition Matrix");
+ /*shidong ends*/
  plist->AddParameter2List(line,strlen(line));
  strcpy(line,"P3Speller int OnTime= 4 10 0 5000 // Duration of intensification in units of SampleBlocks");
  plist->AddParameter2List(line,strlen(line) );
@@ -86,7 +88,9 @@ int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDIS
 int     ret;
 
  // load and create all potential targets
- ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionFile")->GetValue());
+ /*shidong starts*/
+ ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionMatrix")->GetNumColumns(), plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows());
+ /*shidong ends*/
  if (ret == 0)
     {
     bcierr << "P3 Speller: Could not open target definition file" << std::endl;
@@ -133,8 +137,42 @@ int     ret;
 }
 
 
-int TRIALSEQUENCE::LoadPotentialTargets(const char *targetdeffilename)
+int TRIALSEQUENCE::LoadPotentialTargets(const int col, const int row)
 {
+/*shidong starts*/
+TARGET  *cur_target;
+int     targetID, targettype;
+// if we already have a list of potential targets, delete this list
+if (targets) delete targets;
+targets = new TARGETLIST();
+
+for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
+{
+        targetID = i;
+        cur_target = new TARGET(targetID);    //assign targetID
+        cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0)) ;
+       //assign caption to character display in column 1
+
+        cur_target->IconFile = "";
+        cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0));
+        cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 1));        //assign display result in column 2
+        cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix", i, 2));//assign font size factor in column 3
+        targettype=TARGETTYPE_NOTYPE;
+        if ((targetID == TARGETID_BLANK) || (targetID == TARGETID_BACKUP) || (targetID == TARGETID_ROOT))
+                targettype=TARGETTYPE_CONTROL;
+        if ((targetID >= TARGETID_A) && (targetID <= TARGETID__))
+                targettype=TARGETTYPE_CHARACTER;
+        if ((targetID >= TARGETID_ABCDEFGHI) && (targetID <= TARGETID_YZ_))
+                targettype=TARGETTYPE_CHARACTERS;
+        cur_target->targettype=targettype;
+        targets->Add(cur_target);
+}//for
+
+        return(1);
+
+
+/*shidong ends*/
+/*
 char    buf[256], line[256];
 FILE    *fp;
 int     targetID, parentID, displaypos, ptr, targettype;
@@ -147,6 +185,7 @@ TARGET  *cur_target;
  // read the target definition file
  fp=fopen(targetdeffilename, "rb");
  if (!fp) return(0);
+
 
  while (!feof(fp))
   {
@@ -176,10 +215,10 @@ TARGET  *cur_target;
      }
   }
  fclose(fp);
+*/
 
- return(1);
-}
 
+}//LoadPotentialTargets
 
 // gets new targets, given a certain rootID
 // i.e., the targetID of the last selected target

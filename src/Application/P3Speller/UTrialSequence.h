@@ -40,8 +40,9 @@ public:		// User declarations
         void    ResetTrialSequence();
         bool    onlinemode;
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)
-        int             LoadPotentialTargets(const char *targetdeffilename);
-        int             Initialize(PARAMLIST *plist);
+        /*shidong starts*/
+        int     LoadPotentialTargets(const int matrixColumn, const int matrixRow);
+        /*shidong ends*/int             Initialize(PARAMLIST *plist);
         TARGETLIST      *targets;                                       // all the potential targets
         int             GetRandomStimulusCode();
         short           IntensifyTargets(int stimuluscode, bool intensify);

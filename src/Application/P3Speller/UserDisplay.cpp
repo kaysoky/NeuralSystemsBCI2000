@@ -92,6 +92,10 @@ int     i, numtargetsx, numtargetsy;
 int     matrixwidth, matrixheight, targetspacingx, targetspacingy;
 int     numtargets, totalheight;
 
+/*shidong starts*/
+FILE *f;
+f = fopen("debug.txt", "w");
+/*shidong ends*/
  totalheight=65536-StatusBarSize*655.36;                        // remaining height of the screen
  numtargets=activetargets->GetNumTargets();
  numtargetsx=6;
@@ -108,11 +112,16 @@ int     numtargets, totalheight;
   cur_target=activetargets->GetTargetPtr(i+1);
   if (cur_target)
      {
-     cur_target->Width=(int)(TargetWidth*655.36);                  // width of target
-     cur_target->Height=(int)(TargetHeight*655.36);
+
+     cur_target->Width=(int)(TargetWidth*655.36 );                  // width of target
+     cur_target->Height=(int)(TargetHeight*655.36 );
      cur_target->Top=StatusBarSize*655.36+totalheight/2-matrixheight/2+(i/numtargetsx)*(cur_target->Height+targetspacingy);
      cur_target->Left=65536/2-matrixwidth/2+(i%numtargetsx)*(cur_target->Width+targetspacingx);
-     cur_target->TextHeight=(int)(TargetTextHeight*655.36);        // height of text
+     /*shidong starts*/
+     cur_target->TextHeight=(int)(TargetTextHeight*655.36*((float)(cur_target->FontSizeFactor)));        // height of text
+     fprintf(f, "CurTarget ID is %d, caption is %s, displayResult is %s, fontfactor is %f.\n", cur_target->targetID, cur_target->Caption, cur_target->CharDisplayInResult, ((float)(cur_target->FontSizeFactor)));
+     /*shidong ends*/
+     
      }
   }
 }

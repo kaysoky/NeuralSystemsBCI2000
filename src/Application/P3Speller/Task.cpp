@@ -251,6 +251,12 @@ float   maxval;
     return("Error");
 
  // from row and column, determine the targetID
+ /*shidong starts*/
+ /*DEBUG
+ pickedtargetID = random(36);
+ pickedtargetID ++;     //avoid id == 0
+ /*shidong ends*/
+
  pickedtargetID=pickedrow*6+pickedcol+1;
  State( "SelectedTarget" ) = pickedtargetID;
  State( "SelectedRow" ) = pickedrow + 1;
@@ -260,7 +266,16 @@ float   maxval;
     return("Did not find target");
 
  // finally, return the selected character
- return(pickedtargetptr->Caption);
+ /*shidong starts
+// return(pickedtargetptr->Caption);
+char    memotext[256];
+sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
+        pickedtargetID, pickedtargetptr->CharDisplayInMatrix, pickedtargetptr->CharDisplayInResult);
+
+  mVis.Send( memotext ); */
+
+ return(pickedtargetptr->CharDisplayInResult);
+ /*shidong ends*/
 }
 
 
@@ -311,8 +326,24 @@ int     i;
        {
        // determine predicted character
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
-       userdisplay->statusbar->resulttext += predchar;
-       trialsequence->char2spellidx++;
+       /*shidong starts*/
+       if (predchar == "<BS>")
+       {
+        trialsequence->char2spellidx -= 1;
+        if (trialsequence->char2spellidx < 1)           //if 1st predchar is <BS>
+                trialsequence->char2spellidx = 1;
+        userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
+       }
+       else
+       {
+        /*sprintf(memotext, "Adding  char2spellidx %d.\r", trialsequence->char2spellidx);
+        mVis.Send(memotext);  */
+        trialsequence->char2spellidx += 1;
+        userdisplay->statusbar->resulttext += predchar;
+       }
+       //userdisplay->statusbar->resulttext += predchar;
+       /*shidong ends*/
+       
        trialsequence->SetUserDisplayTexts();
        userdisplay->DisplayStatusBar();
 
@@ -322,16 +353,20 @@ int     i;
           fprintf(logfile, "This is the end of this sequence: %d total intensifications\r\n", cur_sequence);
           fprintf(logfile, "Responses for each stimulus:\r\n");
           for (i=0; i<NUM_STIMULI; i++)
-           fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
+          fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
           fprintf(logfile, "Predicted character: %s\r\n", predchar.c_str());
           }
 
        // send the results to the operator log
        sprintf(memotext, "This is the end of this sequence: %d total intensifications\r", cur_sequence);
        mVis.Send( memotext );
+
        sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
        mVis.Send( memotext );
-
+       /*shidong starts
+       sprintf(memotext, "The char2spellidx is %d.\r", trialsequence->char2spellidx);
+       mVis.Send(memotext); */
+       /*shidong ends*/
        // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
        // if we are in online mode, just reset the task sequence and continue
        if (!trialsequence->onlinemode)
