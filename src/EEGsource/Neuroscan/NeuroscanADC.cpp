@@ -401,7 +401,7 @@ bool          retval;
        {
        assert((int)(pMsg->m_dwSize) == (int)(num_channels+num_markerchannels)*blocksize*(bitspersample/8));
        assert(samplingrate > 0);        // if -1, this means we have not received the info block prior to a data block
-       int *sample=(int *)pMsg->m_pBody;
+       int *sample=(int *)pMsg->m_pBody, cur_sample;
        // process raw 32 bit data
        for (int samp=0; samp<blocksize; samp++)
         {
@@ -409,7 +409,12 @@ bool          retval;
          {
          // now, write all the samples into the output signal
          if (((unsigned int)samp < signal->MaxElements()) && ((unsigned int)ch < signal->Channels()))
-            signal->SetValue(ch, samp, (short)((sample[samp*(num_channels+num_markerchannels)+ch])&0xffff));
+            {
+            cur_sample=sample[samp*(num_channels+num_markerchannels)+ch];
+            if (cur_sample > +32767) cur_sample=+32767;         // simply saturate at the highest or smallest value
+            if (cur_sample < -32768) cur_sample=-32768;
+            signal->SetValue(ch, samp, (short)cur_sample);
+            }
          }
         }
        // we also write the event marker channel into a state variable
