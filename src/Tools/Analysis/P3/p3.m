@@ -13,7 +13,8 @@
 %             channel    ... channel of interest (e.g., 15 or 11)
 %             triallength .. length of the displayed waveform in ms
 %             plotthis   ... if 1, plots results; if 0, does not plot
-%             topotime   ... if > 0, does topography at time 'topotime' (time in ms)
+%             topotimes_ms . a list of times to create topographies (if [], no topography will be plotted) (times in ms)
+%             topogrid   ... the layout for the topographies (e.g., [4 3] for a 4x3 matrix of topographies)
 %             eloc_file  ... file that contains the electrode positions (e.g., eloc64.txt, eloc16.txt)
 %             moviefilename. if not '', specifies the filename of the avi movie file
 %
@@ -23,10 +24,13 @@
 %             ressqch      ... r-squared between standard and oddball condition for each point in time for desired channel
 %             stimulusdata ... average waveforms for each stimulus
 %
-% (C) Gerwin Schalk 2002
+% (C) Gerwin Schalk 2002-03
 %     Wadsworth Center, NYSDOH
 %
-function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channel, triallength, plotthis, topotime, eloc_file, moviefilename)
+% V1.00 - first version (09/2002)
+% V1.10 - can now plot a number of topographies
+
+function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channel, triallength, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
 
 %channel=11;
 %samplefreq=240;
@@ -37,13 +41,18 @@ function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, chann
 %moviefilename='d:\TV001P3.avi';
 %moviefilename=[];
 
-%topotime=81;
-topotime=round(topotime*samplefreq/1000);				% convert from ms into samples
-triallength=round(triallength*samplefreq/1000);    % convert from ms into samples
+topotimes_samples=round(topotimes_ms*samplefreq/1000);				% convert from ms into samples
+triallength=round(triallength*samplefreq/1000);                     % convert from ms into samples
+
+fprintf(1, 'BCI2000 P3 Analysis Routine V1.10\n');
+fprintf(1, '(C) 2002-03 Gerwin Schalk\n');
+fprintf(1, '=================================\n');
 
 % load session
+fprintf(1, 'Loading data file\n');
 loadcmd=sprintf('load %s', subject);
 eval(loadcmd);
+
 
 avgdata1=[];
 avgdata2=[];
@@ -51,6 +60,7 @@ trials=unique(trialnr);
 max_stimuluscode=max(StimulusCode);
 stimulusdata=zeros(max_stimuluscode, triallength);
 stimuluscount=zeros(max_stimuluscode);
+fprintf(1, 'Processing all trials (i.e., stimuli)\n');
 for cur_trial=min(trials)+1:max(trials)-1
  if (mod(cur_trial+1, 50) == 0)
     fprintf(1, '%03d ', cur_trial+1);
@@ -80,6 +90,8 @@ end % session
 
 fprintf(1, '\r');
 
+fprintf(1, 'Calculating statistics\n');
+
 % calculate average responses for each of the stimuli
 for stim=1:max_stimuluscode
  stimulusdata(stim, :)=stimulusdata(stim, :)/stimuluscount(stim);
@@ -96,6 +108,8 @@ ressq = calc_rsqu(avgdata1, avgdata2);
 ressqch = ressq(:, channel);
 
 timems=[1:triallength]/samplefreq*1000;
+
+fprintf(1, 'Plotting results\n');
 
 if (plotthis == 1)    
    figure(1);
@@ -155,12 +169,25 @@ if (plotthis == 1)
 end
 
 % if we want to create a topography
-if (topotime > 0)
-   figure(2);
-   data2plot=ressq(topotime, :);
-   topoplot(data2plot, eloc_file, 'maplimits', [min(min(data2plot)), max(max(data2plot))], 'style', 'straight');
-   colorbar;
+num_topos=max(size(topotimes_samples));
+if (num_topos > topogrid(1)*topogrid(2))
+   fprintf(1, 'Warning: Number of topographies to be plotted exceeds size of topo matrix');
+   num_topos=topogrid(1)*topogrid(2);
 end
+if (num_topos > 0)
+   figure(2);
+   clf;
+   % plot all topographies
+   for cur_topo=1:num_topos
+     subplot(topogrid(2), topogrid(1), cur_topo);
+     data2plot=ressq(topotimes_samples(cur_topo), :);
+     topoplot(data2plot, eloc_file, 'maplimits', [min(min(data2plot)), max(max(data2plot))], 'style', 'straight');
+     titletxt=sprintf('r^2 at %.1f ms', topotimes_ms(cur_topo));
+     title(titletxt); 
+     colorbar;
+   end
+end % if any topography
+
 
 % if we want, generate a movie
 if (~isempty(moviefilename))

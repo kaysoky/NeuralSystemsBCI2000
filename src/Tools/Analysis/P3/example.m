@@ -8,7 +8,7 @@
 % 1) A difference between standard and oddball responses (i.e., responses to rows/columns that do or do not contain 'P')
 %    See the two averaged waveforms (at Channel 11/Cz) and their statistical difference (in r2) in Figure 1
 %
-% 2) The topographical distribution of the P300 potential (measured in r2 between standard and oddball) at 310 ms (electrode 17/CP1 bad); Figure 2
+% 2) The topographical distribution of the P300 potential (measured in r2 between standard and oddball) at multiple times (electrode 17/CP1 bad); Figure 2
 %
 % 3) The discriminability between standard and oddball as a function of time and channels - Figure 3
 %
@@ -20,4 +20,4 @@
 %
 % (C) Gerwin Schalk 10/02
 
-[res1ch, res2ch, ressqch, stimdata] = p3('aa1.mat', 240, 11, 650, 1, 310, 'eloc64.txt', '');
+[res1ch, res2ch, ressqch, stimdata] = p3('aa1.mat', 240, 11, 650, 1, [270 310 350 390 430 470], [3 2], 'eloc64.txt', '');
