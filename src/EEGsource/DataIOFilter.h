@@ -34,7 +34,6 @@ class DataIOFilter: public GenericFilter
 
  private:
   void        ResetQueue();
-  std::string ConstructFileName() const;
   void        StartNewRecording();
 
   GenericFilter*                    mADC;

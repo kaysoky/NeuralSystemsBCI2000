@@ -100,7 +100,14 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
   PreflightCondition( Parameter( "VisualizeSourceDecimation" ) > 0 );
 
   // File accessibility.
-  string baseFileName = ConstructFileName();
+  string baseFileName = BCIDirectory()
+    .SubjectDirectory( Parameter( "FileInitials" ) )
+    .SubjectName( Parameter( "SubjectName" ) )
+    .SessionNumber( Parameter( "SubjectSession" ) )
+    .RunNumber( Parameter( "SubjectRun" ) )
+    .CreatePath()
+    .FilePath();
+
   {
     string dataFileName = baseFileName + bciDataExtension;
 
@@ -155,7 +162,12 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
 
 void DataIOFilter::StartNewRecording()
 {
-  string baseFileName = ConstructFileName(),
+  string baseFileName = BCIDirectory()
+                        .SubjectDirectory( Parameter( "FileInitials" ) )
+                        .SubjectName( Parameter( "SubjectName" ) )
+                        .SessionNumber( Parameter( "SubjectSession" ) )
+                        .RunNumber( Parameter( "SubjectRun" ) )
+                        .FilePath(),
          dataFileName = baseFileName + bciDataExtension;
   mOutputFile.close();
   mOutputFile.clear();
@@ -284,30 +296,5 @@ void DataIOFilter::Halt()
   mOutputFile.clear();
   mSignalQueue = signalqueue_type();
   mADC->Halt();
-}
-
-string
-DataIOFilter::ConstructFileName() const
-{
-  BCIDtry bcidtry;
-  bcidtry.SetDir( Parameter( "FileInitials" ) );
-  bcidtry.SetName( Parameter( "SubjectName" ) );
-  ostringstream subjectSession;
-  subjectSession << setw( 3 ) << setfill( '0' ) << ( int )Parameter( "SubjectSession" );
-  bcidtry.SetSession( subjectSession.str().c_str() );
-
-  string dirName = bcidtry.ProcSubDir(),
-         fileName = string( Parameter( "SubjectName" ) ) + "S"
-                    + string( Parameter( "SubjectSession" ) ) + "R";
-  int existingMaxRun = bcidtry.GetLargestRun( dirName.c_str() ),
-      newRun = Parameter( "SubjectRun" );
-  if( newRun <= existingMaxRun )
-    newRun = existingMaxRun + 1;
-  Parameter( "SubjectRun" ) = newRun;
-
-  ostringstream subjectRun;
-  subjectRun << setw( 2 ) << setfill( '0' ) << newRun;
-  fileName += subjectRun.str();
-  return dirName + BCIDtry::DirSeparator + fileName;
 }
 
