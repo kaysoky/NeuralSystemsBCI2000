@@ -437,7 +437,7 @@ char            buf[2048];
       }
      if (param)
       {
-        if( param->GetNumValues() > 1 )
+        if( string( param->GetType() ).find( "list" ) != string::npos )
         {
         ptr=0;
         u=0;

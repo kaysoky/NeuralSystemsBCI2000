@@ -61,7 +61,7 @@ class PARAM
      encodedString() {}
      encodedString( const std::string& s ) : std::string( s ) {}
      encodedString( const char* s ) : std::string( s ) {}
-     void WriteToStream( std::ostream& ) const;
+     void WriteToStream( std::ostream&, const std::string& = "" ) const;
      void ReadFromStream( std::istream& );
    };
 
@@ -151,8 +151,7 @@ class PARAM
         void    SetValue( const std::string&, size_t );
         void    SetValue( const std::string& s, size_t n, size_t m )
                 { SetValue( s, n * GetNumValuesDimension2() + m ); }
-        void    SetNumValues( size_t n )
-                { values.resize( n, "0" ); }
+        void    SetNumValues( size_t n );
 #ifdef LABEL_INDEXING
         void    SetValue( const std::string& s,
                           const std::string& label )
@@ -234,7 +233,17 @@ class PARAM
 
   static int get_argument(int ptr, char *buf, const char *line, int maxlen);
 
+#ifdef PUSH_PARAMS
+ public:
+        bool    Changed() const
+                { return value_changed; }
+        void    Published()
+                { value_changed = false; }
+ private:
+        bool    value_changed;
+#else
  public: // These will become private.
+#endif // PUSH_PARAMS
         bool    valid;
         bool    archive;
         bool    tag;  // important for parameter save/load filters

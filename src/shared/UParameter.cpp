@@ -351,7 +351,7 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
  if( type == "matrix" && inDimension2 > 0 )
  {
 #ifdef LABEL_INDEXING
-   dim1_index.resize( inDimension1 );
+   // dim1_index will be resized by SetNumValues().
    dim2_index.resize( inDimension2 );
 #else
    dimension2 = inDimension2;
@@ -371,6 +371,9 @@ PARAM::PARAM()
 #ifndef LABEL_INDEXING
   dimension2( 1 ),
 #endif
+#ifdef PUSH_PARAMS
+  value_changed( false ),
+#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -395,6 +398,9 @@ PARAM::PARAM( const char* inName, const char* inSection,
   lowrange( inLowrange ),
   highrange( inHighrange ),
   comment( inComment ),
+#ifdef PUSH_PARAMS
+  value_changed( false ),
+#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -418,6 +424,9 @@ PARAM::PARAM( const char* paramstring )
 #ifndef LABEL_INDEXING
   dimension2( 0 ),
 #endif
+#ifdef PUSH_PARAMS
+  value_changed( false ),
+#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -459,7 +468,20 @@ PARAM::PARAM( const char* paramstring )
 // Parameters: new number of values in this parameter
 // Returns:    N/A
 // **************************************************************************
-// Now defined inline.
+void
+PARAM::SetNumValues( size_t n )
+{
+  values.resize( n, "0" );
+#ifdef LABEL_INDEXING
+  // dim2_index will always have a size > 0.
+  // If n is not a multiple of dim2_index' size something is logically wrong.
+  // But it has not been an error up to now.
+  dim1_index.resize( n / dim2_index.size() );
+#endif // LABEL_INDEXING
+#ifdef PUSH_PARAMS
+  value_changed = true;
+#endif // PUSH_PARAMS
+}
 
 // **************************************************************************
 // Function:   GetDimension1
@@ -566,6 +588,9 @@ PARAM::SetValue( const string& value, size_t idx )
 #else
   values[ idx ] = value;
 #endif
+#ifdef PUSH_PARAMS
+  value_changed = true;
+#endif // PUSH_PARAMS
 }
 
 // **************************************************************************
@@ -707,6 +732,9 @@ PARAM::ParseParameter( const char* paramline, size_t length )
 void
 PARAM::ReadFromStream( istream& is )
 {
+#ifdef PUSH_PARAMS
+  value_changed = false;
+#endif // PUSH_PARAMS
   valid = false;
   archive = false;
   tag = false;
@@ -883,6 +911,9 @@ PARAM::operator=( const PARAM& p )
 #endif
     values = p.values;
 
+#ifdef PUSH_PARAMS
+    value_changed = false;
+#endif // PUSH_PARAMS
     valid = p.valid;
     archive = p.archive;
     tag = p.tag;
@@ -947,7 +978,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
 // Returns:    N/A
 // **************************************************************************
 void
-PARAM::encodedString::WriteToStream( ostream& os ) const
+PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars ) const
 {
   if( empty() )
     os << specialChar;
@@ -958,7 +989,9 @@ PARAM::encodedString::WriteToStream( ostream& os ) const
     oss << hex;
     for( size_t pos = 0; pos < size(); ++pos )
     {
-      if( ::isprint( self[ pos ] ) && !::isspace( self[ pos ] ) )
+      if( ::isprint( self[ pos ] )
+          && !::isspace( self[ pos ] )
+          && forbiddenChars.find( self[ pos ] ) == npos )
       {
         oss << self[ pos ];
         if( self[ pos ] == specialChar )
@@ -1163,7 +1196,10 @@ PARAM::labelIndexer::WriteToStream( ostream& os ) const
   {
     os << bracketPairs[ 0 ][ 0 ] << ' ';
     for( size_t i = 0; i < reverseIndex.size(); ++i )
-      os << reverseIndex[ i ] << ' ';
+    {
+      reverseIndex[ i ].WriteToStream( os, &bracketPairs[ 0 ][ 1 ] );
+      os << ' ';
+    }
     os << bracketPairs[ 0 ][ 1 ];
   }
 }
