@@ -45,6 +45,12 @@ ClassFilter::ClassFilter()
      "// visualize Class filtered signals (0=no 1=yes)",
  END_PARAMETER_DEFINITIONS
 
+ for (int i=0; i<cNumControlSignals; i++)
+  {
+  wtmat[i]=NULL;
+  feature[i]=NULL;
+  }
+
 #ifdef USE_LOGFILE
  classfile= fopen("Classifier.asc","w+");
 #endif // USE_LOGFILE
@@ -60,6 +66,13 @@ ClassFilter::ClassFilter()
 ClassFilter::~ClassFilter()
 {
  delete vis;
+
+ for (int i=0; i<cNumControlSignals; i++)
+  {
+  delete [] wtmat[i];
+  delete [] feature[i];
+  }
+
 #ifdef USE_LOGFILE
  if( classfile != NULL )
    fclose( classfile );
