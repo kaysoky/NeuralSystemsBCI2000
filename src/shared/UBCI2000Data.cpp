@@ -336,7 +336,7 @@ int BCI2000DATA::GetSampleFrequency() const
 int BCI2000DATA::GetFirstRunNumber() const
 {
 FILE *fp;
-char cur_run[256], cur_filename[256], prefix[256];
+char cur_run[1024], cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, runnr, firstrun;
 
  if (!initialized) return(0);
@@ -393,7 +393,7 @@ int  pos, idx, cur_runnr, runnr, firstrun;
 int BCI2000DATA::GetLastRunNumber() const
 {
 FILE *fp;
-char cur_run[256], cur_filename[256], prefix[256];
+char cur_run[1024], cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, runnr, lastrun;
 
  if (!initialized) return(0);
@@ -448,7 +448,7 @@ int  pos, idx, cur_runnr, runnr, lastrun;
 int BCI2000DATA::SetRun(int runnr)
 {
 FILE *fp;
-char cur_run[256], cur_filename[256], prefix[256];
+char cur_run[1024], cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, lastrun, res;
 
  if (!initialized) return(0);

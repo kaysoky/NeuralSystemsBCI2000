@@ -25,7 +25,7 @@ private: 	// User declarations
         unsigned long   sample_number_run[999];         // samples in a particular run
         unsigned long   sample_number_total;            // samples in this dataset
         int     buffer_size;
-        char    filename[256];
+        char    filename[1024];
         bool    initialized, initializedtotal;
         int     channels;
         int     headerlength;
