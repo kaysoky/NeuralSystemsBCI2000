@@ -22,14 +22,14 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="TRY_PARAM_INTERPRETATION;_DEBUG"/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="operat.cpp"/>
     <INCLUDEPATH value="..;..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -112,9 +112,6 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlIncludePath]
 Count=28
 Item0=..;..\shared;$(BCB)\include;$(BCB)\include\vcl
@@ -182,14 +179,14 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=11
-Item0=TRY_PARAM_INTERPRETATION;_DEBUG
-Item1=TRY_PARAM_INTERPRETATION;PUSH_PARAMS;_DEBUG
-Item2=PUSH_PARAMS;_DEBUG
-Item3=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS;_DEBUG
-Item4=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
-Item5=_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
-Item6=_DEBUG;NEW_DOUBLEBUF_SCHEME
-Item7=_DEBUG
+Item0=_DEBUG
+Item1=TRY_PARAM_INTERPRETATION;_DEBUG
+Item2=TRY_PARAM_INTERPRETATION;PUSH_PARAMS;_DEBUG
+Item3=PUSH_PARAMS;_DEBUG
+Item4=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS;_DEBUG
+Item5=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
+Item6=_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
+Item7=_DEBUG;NEW_DOUBLEBUF_SCHEME
 Item8=_DEBUG;NEW_DOUBLEBUF
 Item9=_DEBUG;VCL_DOUBLEBUF
 Item10=_DEBUG;SIGNAL_BACK_COMPAT
@@ -217,5 +214,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
