@@ -369,6 +369,7 @@ void TTask::UpdateSummary( void )
         fprintf(appl,"Bits= %7.2f \n",bitrate.TotalBitsTransferred() );
         fprintf(appl,"Time Passed (sec)=%7.2f \n",timepassed);
         fprintf(appl,"..........................................................\n\n");
+        fflush( appl );
 }
 
 void TTask::UpdateDisplays( void )
