@@ -67,11 +67,12 @@ void
 TSWFilter::Preflight( const SignalProperties& Input,
                       SignalProperties& Output ) const
 {
+#if 0
   if( Parameter( "YMean" ) != 0 )
     bciout << "YMean should be set to zero for Slow Waves" << endl;
   if( Parameter( "YGain" ) < 300 || Parameter( "YGain" ) > 400 )
     bciout << "YGain should be set to 327.68 for Slow Waves" << endl;
-
+#endif
   PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
   Parameter( "FeedbackEnd" );
   State( itiStateName );
@@ -85,7 +86,7 @@ TSWFilter::Preflight( const SignalProperties& Input,
     PreflightCondition( Parameter( "SWOutChList", i ) > 0 && Parameter( "SWOutChList", i ) <= Input.Channels() );
   PreflightCondition( MeasurementUnits::ReadAsTime( Parameter( "Tc" ) ) >= 0.0 );
   PreflightCondition( Parameter( "SpatialFilteredChannels" ) == Input.Channels() );
-  Output = Input;
+  Output = SignalProperties( Input.Channels(), 1 );
 }
 
 void
@@ -142,7 +143,6 @@ TSWFilter::Initialize()
 void
 TSWFilter::Process( const GenericSignal* InputSignal, GenericSignal* OutputSignal )
 {
-  *OutputSignal = *InputSignal;
   if( mPosInBuffer < mAvgBufferSize - 1 )
     ++mPosInBuffer;
   if( State( itiStateName ) - mLastItiState == -1 )
