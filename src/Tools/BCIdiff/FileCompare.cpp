@@ -24,6 +24,10 @@ void FileCompare::setFiles(FileReader* file1, FileReader* file2)
         mFile2=file2;
 }
 
+void FileCompare::setQuietOption(bool beQuiet)
+{
+        mBeQuiet=beQuiet;
+}
 
 bool FileCompare::headerLengthsDiffer()
 {
@@ -31,9 +35,11 @@ bool FileCompare::headerLengthsDiffer()
                 return false;
         else
         {
-                cout<<"Headerlength is "<<mFile1->getHeaderLength()<<" in file "
-                        <<mFile1->getFileName()<<" and "<<mFile2->getHeaderLength()
-                        <<" in file "<<mFile2->getFileName()<<'\n';
+                if(!mBeQuiet){
+                  cout<<"Headerlength is "<<mFile1->getHeaderLength()<<" in file "
+                          <<mFile1->getFileName()<<" and "<<mFile2->getHeaderLength()
+                          <<" in file "<<mFile2->getFileName()<<'\n';
+                }
                 return true;
         }
 }
@@ -44,9 +50,11 @@ bool FileCompare::stateVectorLengthsDiffer()
                 return false;
         else
         {
-                cout<<"Statevectorlength is "<<mFile1->getStateVectorLength()<<" in file "
-                        <<mFile1->getFileName()<<" and "<<mFile2->getStateVectorLength()
-                        <<" in file "<<mFile2->getFileName()<<'\n';
+                if(!mBeQuiet){
+                  cout<<"Statevectorlength is "<<mFile1->getStateVectorLength()<<" in file "
+                          <<mFile1->getFileName()<<" and "<<mFile2->getStateVectorLength()
+                          <<" in file "<<mFile2->getFileName()<<'\n';
+                }
                 return true;
         }
 }
@@ -57,9 +65,11 @@ bool FileCompare::numChannelsDiffer()
                 return false;
         else
         {
-                cout<<"Number of channels is "<<mFile1->getNumChannels()<<" in file "
-                        <<mFile1->getFileName()<<" and "<<mFile2->getNumChannels()
-                        <<" in file "<<mFile2->getFileName()<<'\n';
+                if(!mBeQuiet){
+                  cout<<"Number of channels is "<<mFile1->getNumChannels()<<" in file "
+                          <<mFile1->getFileName()<<" and "<<mFile2->getNumChannels()
+                          <<" in file "<<mFile2->getFileName()<<'\n';
+                }
                 return true;
         }
 }
@@ -70,9 +80,11 @@ bool FileCompare::sampleFrequenciesDiffer()
                 return false;
         else
         {
-                cout<<"Samplefrequency is "<<mFile1->getSampleFrequency()<<" in file "
-                        <<mFile1->getFileName()<<" and "<<mFile2->getSampleFrequency()
-                        <<" in file "<<mFile2->getFileName()<<'\n';
+                if(!mBeQuiet){
+                  cout<<"Samplefrequency is "<<mFile1->getSampleFrequency()<<" in file "
+                          <<mFile1->getFileName()<<" and "<<mFile2->getSampleFrequency()
+                          <<" in file "<<mFile2->getFileName()<<'\n';
+                }
                 return true;
         }
 }
@@ -83,9 +95,11 @@ bool FileCompare::numSamplesDiffer()
                 return false;
         else
         {
-                cout<<"Number of samples is "<<mFile1->getNumSamples()<<" in file "
-                        <<mFile1->getFileName()<<" and "<<mFile2->getNumSamples()
-                        <<" in file "<<mFile2->getFileName()<<'\n';
+                if(!mBeQuiet){
+                  cout<<"Number of samples is "<<mFile1->getNumSamples()<<" in file "
+                          <<mFile1->getFileName()<<" and "<<mFile2->getNumSamples()
+                          <<" in file "<<mFile2->getFileName()<<'\n';
+                }
                 return true;
         }
 }
@@ -109,17 +123,21 @@ bool FileCompare::paramsDiffer()
                 {
                         if((string)(para1->GetParamPtr(i->c_str())->GetValue())!=para2->GetParamPtr(i->c_str())->GetValue())
                         {
-                                cout<<"Parameter "<<*i<<" differs."<<'\n';
-                                cout<<*i<<" in "<<mFile1->getFileName()<<" has value "<< para1->GetParamPtr(i->c_str())->GetValue()<<".\n";
-                                cout<<*i<<" in "<<mFile2->getFileName()<<" has value "<< para2->GetParamPtr(i->c_str())->GetValue()<<".\n";
-                                cout<<'\n';
+                                if(!mBeQuiet){
+                                  cout<<"Parameter "<<*i<<" differs."<<'\n';
+                                  cout<<*i<<" in "<<mFile1->getFileName()<<" has value "<< para1->GetParamPtr(i->c_str())->GetValue()<<".\n";
+                                  cout<<*i<<" in "<<mFile2->getFileName()<<" has value "<< para2->GetParamPtr(i->c_str())->GetValue()<<".\n";
+                                  cout<<'\n';
+                                }
                                 differ=true;
                         }
                 }
                 else
                 {
-                        cout<<"Parameter "<<*i<<" does not exist in both files."<<'\n';
-                        cout<<'\n';
+                        if(!mBeQuiet){
+                          cout<<"Parameter "<<*i<<" does not exist in both files."<<'\n';
+                          cout<<'\n';
+                        }
                         differ=true;
                 }
         }
@@ -134,7 +152,8 @@ bool FileCompare::stateListsDiffer()
 
         if(stateL1->GetNumStates()!=stateL2->GetNumStates())
         {
-                cout<<"Number of states differs. \n";
+                if(!mBeQuiet)
+                        cout<<"Number of states differs. \n";
                 return true;
         }
 
@@ -149,9 +168,11 @@ bool FileCompare::stateListsDiffer()
                 }
                 if(!containedInOtherList)
                 {
-                        cout<<"State "<<i<<" has name "<<stateL1->GetStatePtr(i)->GetName()
-                                <<" in file "<<mFile1->getFileName()<<" and ist not contained "
-                                <<"in file "<<mFile2->getFileName()<<'\n';
+                        if(!mBeQuiet){
+                          cout<<"State "<<i<<" has name "<<stateL1->GetStatePtr(i)->GetName()
+                                  <<" in file "<<mFile1->getFileName()<<" and ist not contained "
+                                  <<"in file "<<mFile2->getFileName()<<'\n';
+                        }
                         differ=true;
                 }
                 else
@@ -176,9 +197,11 @@ bool FileCompare::stateListsDiffer()
                 }
                 if(!containedInOtherList)
                 {
-                        cout<<"State "<<i<<" has name "<<stateL2->GetStatePtr(i)->GetName()
-                                <<" in file "<<mFile2->getFileName()<<" and ist not contained "
-                                <<"in file "<<mFile1->getFileName()<<'\n';
+                        if(!mBeQuiet){
+                          cout<<"State "<<i<<" has name "<<stateL2->GetStatePtr(i)->GetName()
+                                  <<" in file "<<mFile2->getFileName()<<" and ist not contained "
+                                  <<"in file "<<mFile1->getFileName()<<'\n';
+                        }
                         differ=true;
                 }
                 else
@@ -202,9 +225,11 @@ bool FileCompare::currentStatesDiffer(bool omitTimes)
                 {
                         if(stateV1->GetStateValue(stateL1->GetStatePtr(i)->GetName())!=stateV2->GetStateValue(stateL1->GetStatePtr(i)->GetName()))
                         {
-                                cout<<"State "<<stateL1->GetStatePtr(i)->GetName()<<" has value " << stateV1->GetStateValue(stateL1->GetStatePtr(i)->GetName())
-                                        <<" in "<<mFile1->getFileName()<<", whereas "<<stateL1->GetStatePtr(i)->GetName()<<" has value "
-                                        << stateV2->GetStateValue(stateL1->GetStatePtr(i)->GetName()) <<" in "<<mFile2->getFileName()<<". \n";
+                                if(!mBeQuiet){
+                                  cout<<"State "<<stateL1->GetStatePtr(i)->GetName()<<" has value " << stateV1->GetStateValue(stateL1->GetStatePtr(i)->GetName())
+                                          <<" in "<<mFile1->getFileName()<<", whereas "<<stateL1->GetStatePtr(i)->GetName()<<" has value "
+                                          << stateV2->GetStateValue(stateL1->GetStatePtr(i)->GetName()) <<" in "<<mFile2->getFileName()<<". \n";
+                                }
                                 differ=true;
                         }
                 }
@@ -226,9 +251,11 @@ bool FileCompare::valuesDiffer(bool omitData, bool omitStates, bool omitTimes)
                 {
                         if(mFile1->readValue(mom_channel, mom_sample)!=mFile2->readValue(mom_channel, mom_sample)&&!omitData)
                         {
-                                cout<<"Sample "<<mom_sample<<" on channel "<<mom_channel<<" has value "
-                                        <<mFile1->readValue(mom_channel, mom_sample)<<" in file one and value "
-                                        <<mFile2->readValue(mom_channel, mom_sample)<<" in file two. \n";
+                                if(!mBeQuiet){
+                                  cout<<"Sample "<<mom_sample<<" on channel "<<mom_channel<<" has value "
+                                          <<mFile1->readValue(mom_channel, mom_sample)<<" in file one and value "
+                                          <<mFile2->readValue(mom_channel, mom_sample)<<" in file two. \n";
+                                }
                                 differ=true;
                         }
                         else
@@ -246,10 +273,11 @@ bool FileCompare::valuesDiffer(bool omitData, bool omitStates, bool omitTimes)
                                 ++num_states_same;
                 }
         }
-
-        cout<<"The files "<<mFile1->getFileName()<<" and "<<mFile2->getFileName()<<" had "
-                <<num_vals_same<<" of "<<max_num_samples*max_num_channels<<" compared sample values and that were the same. \n";
-        cout<<'\n';
+        if(!mBeQuiet){
+          cout<<"The files "<<mFile1->getFileName()<<" and "<<mFile2->getFileName()<<" had "
+                  <<num_vals_same<<" of "<<max_num_samples*max_num_channels<<" compared sample values and that were the same. \n";
+          cout<<'\n';
+        }
         return differ;
 }
 

@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
         bool omitStates=false;
         bool omitData=false;
         bool omitTimes=true;
+        bool beQuiet=false;
         for(int i=1;i<argc;++i)
         {
                 if(string(argv[i])=="--help")
@@ -48,6 +49,8 @@ int main(int argc, char* argv[])
                         omitData=true;
                 else if(string(argv[i])=="--comp-times")
                         omitTimes=false;
+                else if(string(argv[i])=="--quiet")
+                        beQuiet=true;
                 else if(i>=argc-2&&argv[i][0]!='-'&&argv[i][1]!='-')
                         ++fileNameCount;
                 else
@@ -84,19 +87,19 @@ int main(int argc, char* argv[])
         fileC1.setFiles(fileR1,fileR2);
 
         bool filesDiffer=false;
-
         filesDiffer|=fileC1.headerLengthsDiffer();
         filesDiffer|=fileC1.numChannelsDiffer();
         filesDiffer|=fileC1.sampleFrequenciesDiffer();
         filesDiffer|=fileC1.numSamplesDiffer();
+
         if(!omitParameters)
                 filesDiffer|=fileC1.paramsDiffer();
 
-        bool compareStateVectors=false;
+        //bool compareStateVectors=false;
         if(!omitInitStates)
         {
                 omitStates==fileC1.stateListsDiffer();
-                filesDiffer|=!compareStateVectors;
+          //      filesDiffer|=!compareStateVectors;
         }
 
         if(!omitData||!omitStates)

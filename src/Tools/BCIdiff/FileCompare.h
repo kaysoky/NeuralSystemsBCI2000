@@ -7,6 +7,7 @@ public:
         ~FileCompare();
 
         void setFiles(class FileReader* file1, class FileReader* file2);
+        void setQuietOption(bool beQuiet);
 
         bool headerLengthsDiffer();
         bool numChannelsDiffer();
@@ -20,5 +21,6 @@ private:
         bool stateVectorLengthsDiffer();
         bool currentStatesDiffer(bool omitTimes);
         class FileReader* mFile1, * mFile2;
+        bool mBeQuiet;
 };
 #endif
