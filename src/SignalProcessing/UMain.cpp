@@ -1,5 +1,5 @@
 /******************************************************************************
- * Program:   SignalProcessing.EXE                                            *
+ * Program:   PeakDetectSignalProcessing.EXE                                  *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The SignalProcessing module for BCI2000                         *
  * Version:   0.23                                                            *
