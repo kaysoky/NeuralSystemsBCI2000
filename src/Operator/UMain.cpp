@@ -2,7 +2,7 @@
  * Program:   OPERAT.EXE                                                      *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The main module of the operator program in BCI2000              *
- * Version:   0.23                                                            *
+ * Version:   0.24                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -41,6 +41,7 @@
  *         06/28/2001 - dramatically sped up charting by replacing            *
  *                      TeeChart with our own code                            *
  * V0.23 - 08/15/2001 - added color scheme to output graph                    *
+ * V0.24 - 01/03/2002 - minor stability improvements                          *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -631,9 +632,21 @@ int     sample, channel, i, j;
     // the operator receiving status messages from all core modules marks the end of the initialization phase
     if (sysstatus.SystemState == STATE_INITIALIZATION)
        {
-       if (module == COREMODULE_EEGSOURCE)   sysstatus.EEGsourceINI=true;
-       if (module == COREMODULE_SIGPROC)     sysstatus.SigProcINI=true;
-       if (module == COREMODULE_APPLICATION) sysstatus.ApplicationINI=true;
+       if (module == COREMODULE_EEGSOURCE)
+          {
+          sysstatus.EEGsourceINI=true;
+          syslog->AddSysLogEntry("EEG Source confirmed new parameters ...");
+          }
+       if (module == COREMODULE_SIGPROC)
+          {
+          sysstatus.SigProcINI=true;
+          syslog->AddSysLogEntry("Signal Processing confirmed new parameters ...");
+          }
+       if (module == COREMODULE_APPLICATION)
+          {
+          sysstatus.ApplicationINI=true;
+          syslog->AddSysLogEntry("User Application confirmed new parameters ...");
+          }
 
        if ((sysstatus.EEGsourceINI) && (sysstatus.SigProcINI) && (sysstatus.ApplicationINI))
           {
@@ -1079,6 +1092,9 @@ void __fastcall TfMain::bConfigClick(TObject *Sender)
 
 void __fastcall TfMain::bSetConfigClick(TObject *Sender)
 {
+ // disable the set config and start button
+ bSetConfig->Enabled=false;
+
  // if the config window is visible, update the parameters for the current tab sheet
  if (fConfig->Visible == true)
     fConfig->Close();
@@ -1100,6 +1116,9 @@ void __fastcall TfMain::bSetConfigClick(TObject *Sender)
     // after broadcasting the states, we are now in the Initialization Phase
     sysstatus.SystemState=STATE_INITIALIZATION;
     }
+
+ // enable the set config
+ bSetConfig->Enabled=true;
 }
 //---------------------------------------------------------------------------
 

@@ -38,13 +38,15 @@ char slash[2];
 
 slash[0]= 0x5c;
 slash[1]= 0;
+NewRunNo= 0;
 
  // data storage should have very low priority
  Priority=tpLowest;
 
+ useflag= 1;
+
  FName = new char [255];
 
- bcidtry=NULL;
  event=new TEvent(NULL, false, false, "");
 
  for (i=0; i<MAX_BUFFERS; i++)
@@ -63,7 +65,7 @@ slash[1]= 0;
   paramlist->AddParameter2List(line, strlen(line));
   strcpy(line, "Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)");
   paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage string SubjectRun= 01 01 0 99 // digit run number (max. 3 characters)");
+  strcpy(line, "Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)");
   paramlist->AddParameter2List(line, strlen(line));
   strcpy(line, "Storage string StorageTime= 16:15 Time a z // time of beginning of data storage");
   paramlist->AddParameter2List(line, strlen(line));
@@ -71,7 +73,7 @@ slash[1]= 0;
   paramlist->AddParameter2List(line, strlen(line));
   strcpy(line, "Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file");
   paramlist->AddParameter2List(line, strlen(line));
-  AlreadyIncremented = true;
+  AlreadyIncremented = false;
   OldRunNo = 0;
 }
 //---------------------------------------------------------------------------
@@ -93,11 +95,11 @@ int     i;
 
  delete [] FName;
 
- if (bcidtry) delete bcidtry;
- bcidtry=NULL;
-
  if (event) delete event;
  event=NULL;
+
+ if(bcidtry) delete bcidtry;
+ bcidtry= NULL;
 
  for (i=0; i<MAX_BUFFERS; i++)
   {
@@ -148,7 +150,6 @@ FILE    *fp;
 
 void TDataStorage::Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector)
 {
-static int NewRunNo=1;
 FILE    *fp;
 int     i;
 
@@ -170,8 +171,10 @@ int     i;
  else
     saveprmfile=false;
 
- // incrementing run no. or not
+    bcidtry= new BCIDtry();
 
+    // incrementing run no. or not
+/*
     NewRunNo = atoi(paramlist->GetParamPtr("SubjectRun")->GetValue());
     if( NewRunNo < OldRunNo ) NewRunNo= OldRunNo;
     if( ( NewRunNo == OldRunNo ) && ( AlreadyIncremented == false ) )
@@ -181,16 +184,22 @@ int     i;
         paramlist->GetParamPtr("SubjectRun")->SetValue(FName);
         AlreadyIncremented = true;
     }
+*/
 
- CreateFileName();
- OldRunNo = NewRunNo;
+  if( useflag > 0 )
+         CreateFileName( bcidtry );
+
+ //  OldRunNo = NewRunNo;
 
  // determine whether we have to write the header
  // can't write a buffer at the same time
  for (i=0; i<MAX_BUFFERS; i++)
    critsec[i]->Acquire();
+
  if( (fp = fopen(FName, "ab") ) == NULL )
-         Application->MessageBox("In Initialize: Could not open data file ", "Error", MB_OK);
+ {
+        bcidtry->FileError( Application, FName );
+ }
 
  if (fp)
     {
@@ -202,25 +211,26 @@ int     i;
        }
     fclose(fp);
     }
+
+    delete bcidtry;
+    bcidtry= NULL;
+
  // release the locks
  for (i=0; i<MAX_BUFFERS; i++)
    critsec[i]->Release();
 }
 
 
-void TDataStorage::CreateFileName()
+void TDataStorage::CreateFileName( BCIDtry *bcidtry )
 {
- if (bcidtry) delete bcidtry;
- bcidtry= new BCIDtry();
-
+    //    bcidtry= new BCIDtry();
         char path[160];
         char slash[2];
         slash[0]= 0x5c;
         slash[1]= 0;
 
         AnsiString FInit = AnsiString (paramlist->GetParamPtr("FileInitials")->GetValue());
-        AnsiString SRun = AnsiString (atoi(paramlist->GetParamPtr("SubjectRun")->GetValue()));
-        if (SRun.Length()==1) SRun = "0" + SRun;
+
         AnsiString SSes = AnsiString (atoi(paramlist->GetParamPtr("SubjectSession")->GetValue()));
         if (SSes.Length()==1) SSes = "00" + SSes;
         if (SSes.Length()==2) SSes = "0" + SSes;
@@ -233,12 +243,27 @@ void TDataStorage::CreateFileName()
         bcidtry->SetSession( SSes.c_str() );
 
         strcpy( FName, bcidtry->ProcSubDir() );
-        strcat( FName,slash);
+
+        AnsiString SRun = AnsiString (atoi(paramlist->GetParamPtr("SubjectRun")->GetValue()));
+        NewRunNo= atoi( SRun.c_str() );
+
+        OldRunNo= bcidtry->GetLargestRun( FName );
+
+        if( NewRunNo < OldRunNo ) NewRunNo= OldRunNo;
+        if( (NewRunNo == OldRunNo ) && (AlreadyIncremented == false ) )
+        {
+                NewRunNo++;
+                sprintf(SRun.c_str(),"%d",NewRunNo);
+                paramlist->GetParamPtr("SubjectRun")->SetValue(SRun.c_str() );
+                AlreadyIncremented = true;
+        }
+
+        if (SRun.Length()==1) SRun = "0" + SRun;
 
         AnsiString AName = SName + "S" + SSes + "R" + SRun + ".dat";
-
-        strcat(FName, AName.c_str());
-
+        strcat( FName, slash);
+        strcat( FName, AName.c_str());
+        useflag= 0;
 }
 
 
@@ -352,6 +377,6 @@ char    *cur_ptr;
 
  // notify the main loop that data is in buffer
  event->SetEvent();
-
+ useflag= 1;
  return(true);
 }

@@ -19,5 +19,6 @@ public:		// User declarations
         int     LoadTree(char *filename);
         int     DetermineTargetID(int parentID, int displaypos);
         bool    DoesLeadTo(int cur_parentID, int cur_targetID);
+        bool    HasChildren(int cur_parentID);
 };
 #endif

@@ -23,7 +23,7 @@
 #define PANEL_APPLICATION       3
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
-#define TXT_OPERATOR_VERSION    "V0.23"
+#define TXT_OPERATOR_VERSION    "V0.24"
 #define TXT_OPERATOR_SUSPENDED  "Suspended"
 #define TXT_OPERATOR_RUNNING    "Running"
 

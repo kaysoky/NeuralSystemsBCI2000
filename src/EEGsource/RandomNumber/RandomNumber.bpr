@@ -4,15 +4,15 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="RandomNumber.exe"/>
-    <OBJFILES value="RandomNumber.obj ..\GenericADC.obj ..\UStorage.obj 
-      ..\..\shared\UVisConfig.obj ..\..\shared\UBCI2000Data.obj 
-      ..\..\shared\UBCItime.obj ..\..\shared\UBitRate.obj 
-      ..\..\shared\UCoreComm.obj ..\..\shared\UCoreMessage.obj 
-      ..\..\shared\UGenericFilter.obj ..\..\shared\UGenericSignal.obj 
-      ..\..\shared\UGenericVisualization.obj ..\..\shared\UParameter.obj 
-      ..\..\shared\UState.obj ..\..\shared\UStatus.obj 
-      ..\..\shared\USysCommand.obj ..\..\shared\BCIDirectry.obj 
-      RandomNumberADC.obj ..\UMain.obj"/>
+    <OBJFILES value="RandomNumber.obj ..\GenericADC.obj ..\..\shared\UVisConfig.obj 
+      ..\..\shared\UBCI2000Data.obj ..\..\shared\UBCItime.obj 
+      ..\..\shared\UBitRate.obj ..\..\shared\UCoreComm.obj 
+      ..\..\shared\UCoreMessage.obj ..\..\shared\UGenericFilter.obj 
+      ..\..\shared\UGenericSignal.obj ..\..\shared\UGenericVisualization.obj 
+      ..\..\shared\UParameter.obj ..\..\shared\UState.obj 
+      ..\..\shared\UStatus.obj ..\..\shared\USysCommand.obj 
+      ..\..\shared\BCIDirectry.obj RandomNumberADC.obj ..\UMain.obj 
+      ..\UStorage.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>

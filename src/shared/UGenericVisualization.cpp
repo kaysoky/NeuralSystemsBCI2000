@@ -676,10 +676,8 @@ void __fastcall VISUAL::FormResize(TObject *Sender)
     bitmap=new Graphics::TBitmap();
     bitmap->Width=form->ClientWidth;
     bitmap->Height=form->ClientHeight;
-    critsec->Release();
 
     // update the display
-    critsec->Acquire();
     RenderGraph(0, displaychannels-1, 0, displaysamples-1);
     critsec->Release();
 
@@ -862,9 +860,6 @@ allwindow=Rect(0, 0, form->ClientWidth, form->ClientHeight);
  // the main thread from interfering
  // DO NOT ASK ME WHY THIS DIDN'T WORK (at least didn't work all the time)
  // in fMain, there is a Windows message that invokes a message handler that blits the double buffer
- // form->Canvas->Lock();
- // form->Canvas->CopyRect(Rect(0, 0, form->ClientWidth, form->ClientHeight), bitmap->Canvas, Rect(0, 0, form->ClientWidth, form->ClientHeight));
- // form->Canvas->Unlock();
 }
 
 
@@ -878,6 +873,7 @@ void VISUAL::RenderData(GenericIntSignal *signal)
 {
 int     channels, samples, ch, samp, i;
 char    buf[256];
+bool    recreate;
 
  // if ((!signal) || (!chart)) return;
  if (!signal) return;
@@ -885,12 +881,16 @@ char    buf[256];
  critsec->Acquire();
  channels=signal->Channels;
  samples=cur_samples=signal->MaxElements;
+ recreate=false;
  if (samples > displaysamples)
+    {
     displaysamples=samples;
+    recreate=true;
+    }
 
  // if the current number of channels in the chart does not match the
  // number of channels, delete the old ones and set new ones up
- if (total_displaychannels != channels)
+ if ((total_displaychannels != channels) || (recreate))
     {
     total_displaychannels=channels;
     displaychannels=channels;

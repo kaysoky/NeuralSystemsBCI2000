@@ -37,7 +37,7 @@ private:
 	char SubjSession[80];
 	char SubjPath[120];
 public:
-	int CheckPath( char * );
+       	int CheckPath( char * );
 	int MakePath( char * );
 	int CheckSubDir( char * );
 	int MakeSubDir( char * );
@@ -47,4 +47,5 @@ public:
         int ProcPath( void );
         char *ProcSubDir( void );
         void FileError( TApplication *, char * );
+        int GetLargestRun( char * );
 } ;

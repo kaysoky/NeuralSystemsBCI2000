@@ -20,6 +20,7 @@ class TDataStorage : public TThread
 {
 private:
         BCIDtry *bcidtry;
+        int useflag;            // code for use of filename
 protected:
         void __fastcall Execute();
         TCriticalSection *critsec[MAX_BUFFERS];
@@ -34,13 +35,14 @@ protected:
         TEvent  *event;
         bool    AlreadyIncremented;
         int     OldRunNo;
+        int     NewRunNo;
         bool    saveprmfile;
         int     Channels, StateVectorLen;
 public:
         __fastcall TDataStorage::TDataStorage(PARAMLIST *paramlist);
         __fastcall TDataStorage::~TDataStorage();
         void TDataStorage::Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector);
-        void TDataStorage::CreateFileName();
+        void TDataStorage::CreateFileName( BCIDtry * );
         char *TDataStorage::GetFileName();
         void TDataStorage::WriteHeader();
         bool TDataStorage::Write2Disk(GenericIntSignal *StoreSignal);

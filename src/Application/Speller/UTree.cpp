@@ -133,6 +133,28 @@ int     i, ret;
 
 
 // **************************************************************************
+// Function:   HasChildren
+// Purpose:    Determines whether or not a given parent ID has any children
+// Parameters: cur_parentID   - target ID of the parent of the subtree
+// Returns:    false - this target has no children
+//             true - this target has at least one child
+// **************************************************************************
+bool TREE::HasChildren(int cur_parentID)
+{
+int     branch, targetID;
+
+ for (branch=0; branch<MAX_BRANCHES; branch++)
+  {
+  targetID=DetermineTargetID(cur_parentID, branch);
+  if ((targetID != TARGETID_NOID) && (targetID != TARGETID_BACKUP))
+     return(true);
+  }
+
+ return(false);
+}
+
+
+// **************************************************************************
 // Function:   DoesLeadTo
 // Purpose:    determines whether the tree (given the current parent ID)
 //             can lead to a specific target_ID
