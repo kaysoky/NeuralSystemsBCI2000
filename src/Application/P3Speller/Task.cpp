@@ -34,7 +34,8 @@ TTask::TTask()
   bcitime( new BCITIME ),
   logfile( NULL ),
   // this keeps track of the current run number and will be set to 0 only here
-  cur_runnr( 0 )
+  cur_runnr( 0 ),
+  f( NULL )
 {
  BEGIN_PARAMETER_DEFINITIONS
   "P3Speller int WinXpos= 5 0 0 5000 // "
@@ -178,6 +179,7 @@ int     ret, numerpsamples, sampleblocksize;
    .SubjectDirectory( Parameter( "FileInitials" ) )
    .SubjectName( Parameter( "SubjectName" ) )
    .SessionNumber( Parameter( "SubjectSession" ) )
+   .CreatePath()
    .FilePath()
    + ".log";
   if (logfile) fclose(logfile);
