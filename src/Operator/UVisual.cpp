@@ -42,14 +42,92 @@
 #include <Registry.hpp>
 #include <math.h>
 #include <algorithm>
+#include <sstream>
+#include <vcl.h>
+#include <grids.hpp>
 
 #pragma package( smart_init )
 
 using namespace std;
 
+const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
+
 VISUAL::VISUAL_BASE::vis_container VISUAL::VISUAL_BASE::visuals;
 VISUAL::VISUAL_BASE::config_container VISUAL::VISUAL_BASE::visconfigs;
-const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
+
+////////////////////////////////////////////////////////////////////////////////
+const char* cfgid_prefix = "CFGID"; // const AnsiString cfgid_prefix = "CFGID"; won't work.
+
+void
+VISUAL::VISUAL_BASE::config_container::Save()
+{
+  AnsiString as_cfgid_prefix = cfgid_prefix;
+
+  for( iterator i = begin(); i != end(); ++i )
+  {
+    AnsiString key = key_base + AnsiString( i->first );
+    TRegistry* reg = new TRegistry( KEY_WRITE );
+    if( reg->OpenKey( key, true ) )
+    {
+      TStringList* valueNames = new TStringList;
+      reg->GetValueNames( valueNames );
+      for( int j = 0; j < valueNames->Count; ++j )
+        reg->DeleteValue( valueNames->Strings[ j ] );
+
+      reg->WriteString( "Title", i->second[ CFGID::WINDOWTITLE ].c_str() );
+      for( config_settings::iterator j = i->second.begin(); j != i->second.end(); ++j )
+        if( i->second.State( j->first ) == UserDefined )
+          try
+          {
+            reg->WriteString( as_cfgid_prefix + AnsiString( j->first ), j->second.c_str() );
+          }
+          catch( ERegistryException& ) {}
+      delete valueNames;
+    }
+    delete reg;
+  }
+}
+
+void
+VISUAL::VISUAL_BASE::config_container::Restore()
+{
+  AnsiString as_cfgid_prefix = cfgid_prefix;
+
+  TRegistry* reg = new TRegistry( KEY_READ );
+  if( reg->OpenKeyReadOnly( key_base ) )
+  {
+     TStringList* keys = new TStringList;
+     reg->GetKeyNames( keys );
+     for( int i = 0; i < keys->Count; ++i )
+     {
+       AnsiString key = key_base + keys->Strings[ i ];
+       id_type visID = ::atoi( keys->Strings[ i ].c_str() );
+       if( reg->OpenKeyReadOnly( key ) && visID != 0 )
+       {
+         TStringList* valueNames = new TStringList;
+         reg->GetValueNames( valueNames );
+         for( int j = 0; j < valueNames->Count; ++j )
+         {
+
+           if( valueNames->Strings[ j ].SubString( 0, as_cfgid_prefix.Length() ) == as_cfgid_prefix )
+           {
+             id_type cfgID = ::atoi( valueNames->Strings[ j ].c_str() + as_cfgid_prefix.Length() );
+             try
+             {
+               ( *this )[ visID ].Put( cfgID,
+                                       reg->ReadString( valueNames->Strings[ j ] ).c_str(),
+                                       OnceUserDefined );
+             }
+             catch( ERegistryException& ) {}
+           }
+         }
+         delete valueNames;
+       }
+     }
+     delete keys;
+  }
+  delete reg;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 VISUAL::VISUAL_BASE::VISUAL_BASE( id_type inSourceID )
@@ -82,45 +160,51 @@ VISUAL::VISUAL_BASE::SetConfig( config_settings& inConfig )
     form->Caption = AnsiString( title.c_str() ) + " (" + AnsiString( sourceID ) + ")";
   else
     form->Caption = AnsiString( sourceID );
+
+  // The static variables make each new window appear a little down right
+  // to the previous one.
+  static int newTop = 10,
+             newLeft = 10;
+  int formTop = 10,
+      formLeft = 10,
+      formHeight = 100,
+      formWidth = 100;
+  bool gotPosition = inConfig.Get( CFGID::Top, formTop )
+                  && inConfig.Get( CFGID::Left, formLeft )
+                  && inConfig.Get( CFGID::Height, formHeight )
+                  && inConfig.Get( CFGID::Width, formWidth );
+  if( !gotPosition )
+  {
+      formTop = newTop;
+      newTop += 10;
+      formLeft = newLeft;
+      newLeft += 10;
+  }
+  form->Top = formTop;
+  form->Left = formLeft;
+  form->Height = formHeight;
+  form->Width = formWidth;
+  if( !PtInRect( form->ClientRect, TPoint( 10, 10 ) ) )
+  {
+    form->Height = 100;
+    form->Width = 100;
+  }
+  if( !PtInRect( Screen->DesktopRect, form->ClientOrigin ) )
+  {
+    form->Top = newTop;
+    newTop += 10;
+    form->Left = newLeft;
+    newLeft += 10;
+  }
 }
 
 void
 VISUAL::VISUAL_BASE::Restore()
 {
   assert( form != NULL );
-
   form->BorderStyle = bsSizeToolWin;
-
-  AnsiString key = key_base + AnsiString( sourceID );
-  TRegistry* reg = new TRegistry( KEY_READ );
-  if( reg->OpenKeyReadOnly( key ) )
-  {
-    try
-    {
-      form->Top = reg->ReadInteger( "Top" );
-      form->Left = reg->ReadInteger( "Left" );
-      form->Width = reg->ReadInteger( "Width" );
-      form->Height = reg->ReadInteger( "Height" );
-    }
-    catch( ERegistryException& )
-    {
-      static int top = 10,
-                 left = 10;
-      form->Top = top;
-      top += 10;
-      form->Left = left;
-      left += 10;
-      form->Height = 100;
-      form->Width = 100;
-    }
-  }
-  delete reg;
-
-  if( !::Types::PtInRect( form->ClientRect, TPoint( 10, 10 ) ) )
-  {
-    form->Height = 100;
-    form->Width = 100;
-  }
+  form->OnMove = FormMove;
+  form->OnResize = FormResize;
   SetConfig( visconfigs[ sourceID ] );
 }
 
@@ -128,27 +212,6 @@ void
 VISUAL::VISUAL_BASE::Save() const
 {
   assert( form != NULL );
-
-  AnsiString key = key_base + AnsiString( sourceID );
-  TRegistry* reg = new TRegistry( KEY_WRITE );
-  if( reg->OpenKey( key, true ) )
-  {
-    try
-    {
-      reg->WriteInteger( "Top", form->Top );
-      reg->WriteInteger( "Left", form->Left );
-      reg->WriteInteger( "Width", form->Width );
-      reg->WriteInteger( "Height", form->Height );
-      // This is just for the user to recognize the registry entry for
-      // manual editing.
-      if( title != "" )
-        reg->WriteString( "WindowTitle", title.c_str() );
-    }
-    catch( ERegistryException& )
-    {
-    }
-  }
-  delete reg;
 }
 
 bool
@@ -164,14 +227,49 @@ VISUAL::VISUAL_BASE::HandleMessage( istream& is )
   string value;
   if( getline( is >> ws, value, '\0' ) )
   {
-    visconfigs[ sourceID ][ cfgID ] = value;
+    visconfigs[ sourceID ].Put( cfgID, value, MessageDefined );
     if( visuals[ sourceID ] != NULL )
       visuals[ sourceID ]->SetConfig( visconfigs[ sourceID ] );
   }
   return is;
 }
 
+void
+__fastcall
+VISUAL::VISUAL_BASE::FormMove( TObject* )
+{
+  UserChangedWindowBounds();
+}
+
+void
+__fastcall
+VISUAL::VISUAL_BASE::FormResize( TObject* Sender )
+{
+  TForm* Form = static_cast<TForm*>( Sender );
+  Form->Invalidate();
+  UserChangedWindowBounds();
+}
+
+void
+VISUAL::VISUAL_BASE::UserChangedWindowBounds() const
+{
+  visconfigs[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
+  visconfigs[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
+  visconfigs[ sourceID ].Put( CFGID::Width, form->Width, UserDefined );
+  visconfigs[ sourceID ].Put( CFGID::Height, form->Height, UserDefined );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+const RGBColor VISUAL::VISUAL_GRAPH::channelColorsDefault[] =
+{
+  White,
+  White,
+  White,
+  White,
+  Yellow,
+  Colorlist::End
+};
+
 VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
 : VISUAL_BASE( inSourceID ),
   showCursor( false ),
@@ -188,7 +286,9 @@ VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
   maxValue( maxValueDefault ),
   displayMode( polyline ),
   redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
-  offscreenBitmap( new Graphics::TBitmap )
+  offscreenBitmap( new Graphics::TBitmap ),
+  channelColors( channelColorsDefault ),
+  mUserScaling( 0 )
 {
   Restore();
 }
@@ -204,30 +304,33 @@ void
 VISUAL::VISUAL_GRAPH::SetConfig( config_settings& inConfig )
 {
   VISUAL_BASE::SetConfig( inConfig );
-  if( inConfig[ CFGID::MINVALUE ] != "" )
-    minValue = ::atof( inConfig[ CFGID::MINVALUE ].c_str() );
-  if( inConfig[ CFGID::MAXVALUE ] != "" )
-    maxValue = ::atof( inConfig[ CFGID::MAXVALUE ].c_str() );
-  if( inConfig[ CFGID::NUMSAMPLES ] != "" )
-    numSamples = ::atof( inConfig[ CFGID::NUMSAMPLES ].c_str() );
-  if( inConfig[ CFGID::channelGroupSize ] != "" )
+
+  int userScaling = mUserScaling;
+  mUserScaling = 0;
+  inConfig.Get( CFGID::MINVALUE, minValue );
+  inConfig.Get( CFGID::MAXVALUE, maxValue );
+  for( int i = 0; i < userScaling; ++i )
+    EnlargeSignal();
+  for( int i = 0; i > userScaling; --i )
+    ReduceSignal();
+
+  inConfig.Get( CFGID::NUMSAMPLES, numSamples );
+  inConfig.Get( CFGID::channelGroupSize, channelGroupSize );
+  if( channelGroupSize < 1 )
+    channelGroupSize = numeric_limits<size_t>::max();
+  int graphType = CFGID::polyline;
+  inConfig.Get( CFGID::graphType, graphType );
+  switch( graphType )
   {
-    channelGroupSize = ::atoi( inConfig[ CFGID::channelGroupSize ].c_str() );
-    if( channelGroupSize < 1 )
-      channelGroupSize = numeric_limits<size_t>::max();
+    case CFGID::polyline:
+      displayMode = polyline;
+      break;
+    case CFGID::colorfield:
+      displayMode = colorfield;
+      break;
   }
-  if( inConfig[ CFGID::graphType ] != "" )
-    switch( ::atoi( inConfig[ CFGID::graphType ].c_str() ) )
-    {
-      case CFGID::polyline:
-        displayMode = polyline;
-        break;
-      case CFGID::colorfield:
-        displayMode = colorfield;
-        break;
-    }
-  if( inConfig[ CFGID::showBaselines ] != "" )
-    showBaselines = ::atoi( inConfig[ CFGID::showBaselines ].c_str() );
+  inConfig.Get( CFGID::showBaselines, showBaselines );
+  inConfig.Get( CFGID::channelColors, channelColors );
 
   // Sanity checks.
   if( minValue == maxValue )
@@ -244,12 +347,11 @@ VISUAL::VISUAL_GRAPH::Restore()
 {
   if( form == NULL )
   {
-    form = new TVisForm;
+    form = new TVisGraphForm;
     BuildContextMenu();
   }
   VISUAL_BASE::Restore();
   form->OnKeyUp = FormKeyUp;
-  form->OnResize = FormResize;
   form->OnPaint = FormPaint;
   form->Show();
 }
@@ -288,10 +390,15 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
   if( newData.Channels() < 1 || newData.MaxElements() < 1 )
     return true;
 
-  if( !( data >= newData ) )
+  // Any changes in the signal size that we must react to?
+  bool reconfigure = false;
+  if( newData.MaxElements() > numSamples )
   {
-    if( newData.MaxElements() > numSamples )
-      numSamples = newData.MaxElements();
+    numSamples = newData.MaxElements();
+    reconfigure = true;
+  }
+  if( newData.Channels() != data.Channels() )
+  {
     numDisplayGroups = ( newData.Channels() - 1 ) / channelGroupSize + 1;
     switch( displayMode )
     {
@@ -303,6 +410,10 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
         break;
     }
     numDisplayChannels = min( newData.Channels(), numDisplayGroups * channelGroupSize );
+    reconfigure = true;
+  }
+  if( reconfigure )
+  {
     data = GenericSignal( newData.Channels(), numSamples );
     sampleCursor = 0;
     form->Invalidate();
@@ -385,6 +496,7 @@ struct VISUAL::VISUAL_GRAPH::MenuItemEntry VISUAL::VISUAL_GRAPH::sMenuItems[] =
   { NULL, NULL, NULL, "-" },
   { ToggleDisplayMode, NULL, NULL, "Toggle Display Mode" },
   { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
+  { ChooseColors, ChooseColors_Enabled, NULL, "Choose Channel Colors..." },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
 };
 
@@ -441,6 +553,7 @@ void
 VISUAL::VISUAL_GRAPH::ToggleBaselines()
 {
   showBaselines = !showBaselines;
+  visconfigs[ sourceID ].Put( CFGID::showBaselines, showBaselines, UserDefined );
   form->Invalidate();
 }
 
@@ -476,11 +589,59 @@ VISUAL::VISUAL_GRAPH::ToggleColor_Checked() const
 }
 
 void
+VISUAL::VISUAL_GRAPH::ChooseColors()
+{
+  // The dialog's "custom colors" are used to hold the user colors.
+  // Maybe this should be changed in the future.
+  const numCustomColors = 16;
+  COLORREF customColors[ numCustomColors ];
+  for( int i = 0; i < ::min<int>( channelColors.size(), numCustomColors ); ++i )
+    customColors[ i ] = channelColors[ i ];
+  for( int i = channelColors.size(); i < numCustomColors; ++i )
+    customColors[ i ] = Black;
+  CHOOSECOLOR chooserParams =
+  {
+    sizeof( CHOOSECOLOR ),
+    form->Handle,
+    NULL,
+    0x0,
+    customColors,
+    CC_FULLOPEN,
+    NULL,
+    NULL,
+    NULL
+  };
+  if( ::ChooseColor( &chooserParams ) )
+  {
+    int numUserColors = 0;
+    while( numUserColors < numCustomColors && customColors[ numUserColors ] != Black )
+      ++numUserColors;
+    if( numUserColors == 0 )
+      channelColors.resize( 1, White );
+    else
+    {
+      channelColors.resize( numUserColors );
+      for( int i = 0; i < numUserColors; ++i )
+        channelColors[ i ] = customColors[ i ];
+    }
+    visconfigs[ sourceID ].Put( CFGID::channelColors, channelColors, UserDefined );
+    form->Invalidate();
+  }
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ChooseColors_Enabled() const
+{
+  return displayColors && displayMode == polyline;
+}
+
+void
 VISUAL::VISUAL_GRAPH::EnlargeSignal()
 {
   float offset = ( minValue + maxValue ) / 2,
         unit = maxValue - offset;
   unit /= 2;
+  ++mUserScaling;
   minValue = offset - unit;
   maxValue = offset + unit;
   form->Invalidate();
@@ -489,7 +650,7 @@ VISUAL::VISUAL_GRAPH::EnlargeSignal()
 bool
 VISUAL::VISUAL_GRAPH::EnlargeSignal_Enabled() const
 {
-  return maxValue > 1 && minValue < -1;
+  return mUserScaling < maxUserScaling;
 }
 
 void
@@ -498,6 +659,7 @@ VISUAL::VISUAL_GRAPH::ReduceSignal()
   float offset = ( minValue + maxValue ) / 2,
         unit = maxValue - offset;
   unit *= 2;
+  --mUserScaling;
   minValue = offset - unit;
   maxValue = offset + unit;
   form->Invalidate();
@@ -506,7 +668,7 @@ VISUAL::VISUAL_GRAPH::ReduceSignal()
 bool
 VISUAL::VISUAL_GRAPH::ReduceSignal_Enabled() const
 {
-  return maxValue < 1 << 16 && maxValue > -( 1 << 16 );
+  return mUserScaling > -maxUserScaling;
 }
 
 void
@@ -591,14 +753,6 @@ VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
 
 void
 __fastcall
-VISUAL::VISUAL_GRAPH::FormResize( TObject* Sender )
-{
-  TForm* Form = static_cast<TForm*>( Sender );
-  Form->Invalidate();
-}
-
-void
-__fastcall
 VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 {
   enum
@@ -649,17 +803,11 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 
   // Signal properties
   if( displayColors )
-  {
-    const TColor signalColors[] =
-    { clWhite, clWhite, clWhite, clWhite, clYellow };
-    size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
     for( size_t i = 0; i < data.Channels(); ++i )
     {
-      int colorIndex = i % numColors;
-      signalPens[ i ] = ::CreatePen( PS_SOLID, 0, signalColors[ colorIndex ] );
-      signalBrushes[ i ] = ::CreateSolidBrush( signalColors[ colorIndex ] );
+      signalPens[ i ] = ::CreatePen( PS_SOLID, 0, ChannelColor( i ) );
+      signalBrushes[ i ] = ::CreateSolidBrush( ChannelColor( i ) );
     }
-  }
   else
   {
     HGDIOBJ pen = ::CreatePen( PS_SOLID, 0, clWhite );
@@ -738,60 +886,10 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 
     case colorfield:
     {
-      struct // A wrapper to locally define a function (which is not possible otherwise).
-      {
-        COLORREF operator()( float H, float S, float V )
-        {
-          // According to Foley and VanDam.
-          // All input components range from 0 to 1 - EPS.
-          float h = 6.0 * ::fmod( H, 1.0 );
-          if( h < 0.0 )
-            h += 6.0;
-          int i = ::floor( h );
-          float f = h - i;
-          if( !( i % 2 ) )
-            f = 1.0 - f;
-          unsigned int m = ( V * ( 1.0 - S ) ) * 0x100,
-                       n = ( V * ( 1.0 - S * f ) ) * 0x100,
-                       v = V * 0x100;
-          if( m > 0xff )
-            m = 0xff;
-          if( n > 0xff )
-            n = 0xff;
-          if( v > 0xff )
-            v = 0xff;
-          COLORREF rgb = RGB( 0, 0, 0 );
-          switch( i )
-          {
-            case 0:
-              rgb = RGB( v, n, m );
-              break;
-            case 1:
-              rgb = RGB( n, v, m );
-              break;
-            case 2:
-              rgb = RGB( m, v, n );
-              break;
-            case 3:
-              rgb = RGB( m, n, v );
-              break;
-            case 4:
-              rgb = RGB( n, m, v );
-              break;
-            case 5:
-              rgb = RGB( v, m, n );
-              break;
-            default:
-              assert( false );
-          }
-          return rgb;
-        };
-      } HSVColor;
-
       for( size_t i = 0; i < numDisplayChannels; ++i )
         for( size_t j = 0; j < numSamples; ++j )
         {
-          LONG color = HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomGroup * channelGroupSize, j ) ), 1.0, 1.0 );
+          LONG color = RGBColor::HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomGroup * channelGroupSize, j ) ), 1.0, 1.0 );
           HBRUSH brush = ::CreateSolidBrush( color );
           RECT dotRect =
           {
@@ -941,8 +1039,7 @@ void
 VISUAL::VISUAL_MEMO::SetConfig( config_settings& inConfig )
 {
   VISUAL_BASE::SetConfig( inConfig );
-  if( inConfig[ CFGID::numLines ] != "" )
-    numLines = ::atoi( inConfig[ CFGID::numLines ].c_str() );
+  inConfig.Get( CFGID::numLines, numLines );
   if( numLines < 1 )
     numLines = numeric_limits<int>::max();
 }
@@ -951,7 +1048,7 @@ void
 VISUAL::VISUAL_MEMO::Restore()
 {
   if( form == NULL )
-    form = new TForm( ( TComponent* )NULL );
+    form = new TVisForm();
   VISUAL_BASE::Restore();
   form->Show();
   memo->Visible = false;
@@ -967,6 +1064,7 @@ void
 VISUAL::VISUAL_MEMO::Save() const
 {
   VISUAL_BASE::Save();
+  visconfigs[ sourceID ].Put( CFGID::numLines, numLines, MessageDefined );
 }
 
 bool

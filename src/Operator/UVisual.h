@@ -26,6 +26,9 @@
 //          display properties.
 //          Introduced colorized y axis ticks.
 //
+//          Dec 12, 2003, jm:
+//          Introduced bookkeeping for configuration settings.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UVisualH
 #define UVisualH
@@ -34,6 +37,7 @@
 #include <iostream>
 #include <map>
 #include <algorithm>
+#include "Color.h"
 #include "UGenericSignal.h"
 
 #include "UGenericVisualization.h"
@@ -45,6 +49,7 @@ class VISUAL
   typedef BYTE id_type;
   static bool HandleMessage( std::istream& );
   static void clear() { VISUAL_BASE::clear(); }
+  class TVisForm;
 
  private:
   class VISUAL_BASE
@@ -61,9 +66,13 @@ class VISUAL
     virtual void Restore();
     virtual void Save() const;
 
+   private:
+    void __fastcall FormMove( TObject* );
+    void __fastcall FormResize( TObject* );
+
    protected:
     id_type sourceID;
-    TForm* form;
+    TVisForm* form;
    private:
     std::string title;
 
@@ -76,20 +85,64 @@ class VISUAL
       void clear();
     } visuals;
 
-    // The following container mess is needed because the protocol
-    // does not factor out properties and types of
-    // visualizations properly. Previously, the role of these objects
-    // was played by the registry, with additional potential for trouble.
-    // The protocol should be re-defined and this stuff should go away.
+   public:
+    enum config_state  // Possible states of properties ("configs").
+    {
+      Default = 0,     // May be overridden by a message or by user settings.
+      OnceUserDefined, // A previous user setting. Will become user defined if modified
+                       // by either MessageDefined or UserDefined information.
+      MessageDefined,  // Set by a message, user may override.
+      UserDefined,     // Set by the user, no override by a message.
+    };
 
+   protected:
     // configID->value
-    typedef std::map< id_type, std::string > config_settings;
+    typedef std::map< id_type, std::string > config_settings_base;
+    class config_settings : public config_settings_base
+    {
+      public:
+        template<typename T> bool Get( id_type id, T& t, config_state minState = Default );
+        template<typename T> bool Put( id_type id, const T& t, config_state state );
+        config_state& State( id_type id ) { return mStates[ id ]; }
+
+      private:
+        std::map< id_type, config_state > mStates;
+    };
 
     // sourceID->config information
-    typedef std::map< id_type, config_settings > config_container;
+    class config_container : public std::map< id_type, config_settings >
+    {
+      public:
+        config_container()  { Restore(); }
+        ~config_container() { Save(); }
+        void Save();
+        void Restore();
+    };
     static config_container visconfigs;
     virtual void SetConfig( config_settings& );
+    void UserChangedWindowBounds() const;
   };
+
+  // A VCL form with a WM_MOVE handler.
+  class TVisForm : public TForm
+  {
+   public:
+    HRGN    updateRgn;
+    TNotifyEvent OnMove;
+
+    TVisForm()
+    : TForm( ( TComponent* )NULL, 1 ),
+      OnMove( NULL ) {}
+    void __fastcall WMMove( TMessage& )
+    {
+      if( OnMove )
+        OnMove( this );
+    }
+    BEGIN_MESSAGE_MAP
+      VCL_MESSAGE_HANDLER( WM_MOVE, TMessage, WMMove )
+    END_MESSAGE_MAP( TForm )
+  };
+
 
  private:
   class VISUAL_GRAPH : public VISUAL_BASE
@@ -98,11 +151,12 @@ class VISUAL
     static const numSamplesDefault = 128,
                  minValueDefault = - 1 << 15,
                  maxValueDefault = 1 << 16 - 1;
+    static const RGBColor channelColorsDefault[];
     enum
     {
       channelBase = 1, // displayed number of first channel
       sampleBase = 0,  // displayed number of first sample
-      labelWidth = 20,
+      labelWidth = 25,
       maxDisplayGroups = 16,
     };
 
@@ -130,6 +184,7 @@ class VISUAL
    private:
     struct MenuItemEntry
     {
+      // The typedefs declare pointers to class instance member functions.
       typedef void ( VISUAL::VISUAL_GRAPH::*MenuAction )();
       typedef bool ( VISUAL::VISUAL_GRAPH::*MenuStateGetter )();
       MenuAction       mAction;
@@ -145,6 +200,9 @@ class VISUAL
 
     void ReduceSignal();
     bool ReduceSignal_Enabled() const;
+    enum { maxUserScaling = 4 }; // The maximum number of scaling steps a user
+                                 // can take from the default.
+    int  mUserScaling;
 
     void MoreChannels();
     bool MoreChannels_Enabled() const;
@@ -161,6 +219,9 @@ class VISUAL
     void ToggleColor();
     bool ToggleColor_Enabled() const;
     bool ToggleColor_Checked() const;
+
+    void ChooseColors();
+    bool ChooseColors_Enabled() const;
 
     void SetDisplayGroups( int );
     void SetBottomGroup( int );
@@ -194,19 +255,23 @@ class VISUAL
     float NormData( size_t i, size_t j )
     { return ( data( i, j ) - minValue ) / ( maxValue - minValue ); }
 
+    RGBColor ChannelColor( int ch )
+    { return channelColors[ ch % channelColors.size() ]; }
+
    private:
-    bool   showCursor,
-           wrapAround,
-           showBaselines,
-           displayColors;
-    size_t numSamples,
-           sampleCursor,
-           numDisplayGroups,
-           numDisplayChannels,
-           bottomGroup,
-           channelGroupSize;
-    float  minValue,
-           maxValue;
+    bool      showCursor,
+              wrapAround,
+              showBaselines,
+              displayColors;
+    size_t    numSamples,
+              sampleCursor,
+              numDisplayGroups,
+              numDisplayChannels,
+              bottomGroup,
+              channelGroupSize;
+    float     minValue,
+              maxValue;
+    Colorlist channelColors;
     GenericSignal data;
 
    // VCL/Win32 Graphics details.
@@ -226,20 +291,18 @@ class VISUAL
       POINT* p;
       size_t s;
     } signalPoints;
-    void __fastcall FormResize( TObject* );
     void __fastcall FormPaint( TObject* );
     void __fastcall FormKeyUp( TObject*, WORD&, TShiftState );
     void __fastcall PopupMenuPopup( TObject* );
     void __fastcall PopupMenuItemClick( TObject* );
-    class TVisForm : public TForm
+    class TVisGraphForm : public TVisForm
     {
      public:
       HRGN    updateRgn;
 
-      TVisForm()
-      : TForm( ( TComponent* )NULL, 1 ),
-        updateRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ) {}
-      __fastcall ~TVisForm()
+      TVisGraphForm()
+      : updateRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ) {}
+      __fastcall ~TVisGraphForm()
       {
         ::DeleteObject( updateRgn );
       }
@@ -256,6 +319,7 @@ class VISUAL
       BEGIN_MESSAGE_MAP
         VCL_MESSAGE_HANDLER( WM_PAINT, TWMPaint, WMPaint )
         VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
+        VCL_MESSAGE_HANDLER( WM_MOVE, TMessage, WMMove )
       END_MESSAGE_MAP( TForm )
     };
   };
@@ -279,5 +343,41 @@ class VISUAL
   };
 
 };
+
+template<typename T>
+bool
+VISUAL::VISUAL_BASE::config_settings::Get( id_type id, T& t, config_state minState )
+{
+  const_iterator i = find( id );
+  if( i == end() )
+    return false;
+  if( State( id ) < minState )
+    return false;
+  istringstream is( i->second );
+  if( is.str() != "" )
+  {
+    T value;
+    if( is >> value )
+      t = value;
+  }
+  return !is.fail();
+}
+
+template<typename T>
+bool
+VISUAL::VISUAL_BASE::config_settings::Put( id_type id, const T& t, config_state state )
+{
+  if( State( id ) > state )
+    return false;
+  if( State( id ) == OnceUserDefined )
+    State( id ) = UserDefined;
+  else
+    State( id ) = state;
+  stringstream os;
+  os << t;
+  ( *this )[ id ] = os.str();
+  return !os.fail();
+}
+
 
 #endif // UVisualH
