@@ -32,8 +32,12 @@ class WindowingFunction
     {
       Window      mWindow;
       const char* mName;
-      NumType     mGenerationCoeffs[ 2 ];
+      NumType     ( *mComputeValue )( NumType );
     } sWindowProperties[];
+    static NumType ComputeNone( NumType );
+    static NumType ComputeHamming( NumType );
+    static NumType ComputeHann( NumType );
+    static NumType ComputeBlackman( NumType );
 
   // Instance-related information.
   public:

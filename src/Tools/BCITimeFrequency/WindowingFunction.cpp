@@ -17,15 +17,40 @@
   if( ( i ) < 0 || ( i ) >= sizeof( sWindowProperties ) / sizeof( *sWindowProperties ) ) \
     throw "Unknown Window type in " __FUNC__;
 
-#define ENTRY( x )  (x),#x
+#define ENTRY( x )  (x),#x,Compute##x
 const struct WindowingFunction::WindowProperties
 WindowingFunction::sWindowProperties[] =
 {
-  { ENTRY( None ),     { 0,    0   } },
-  { ENTRY( Hamming ),  { 0.46, 0   } },
-  { ENTRY( Hann ),     { 0.5,  0   } },
-  { ENTRY( Blackman ), { 0.5, 0.08 } },
+  { ENTRY( None ) },
+  { ENTRY( Hamming ) },
+  { ENTRY( Hann ) },
+  { ENTRY( Blackman ) },
 };
+
+WindowingFunction::NumType
+WindowingFunction::ComputeNone( NumType )
+{
+  return 1.0;
+}
+
+WindowingFunction::NumType
+WindowingFunction::ComputeHamming( NumType inWhere )
+{
+  return 1.0 - 0.46 + 0.46 * ::cos( M_PI * inWhere );
+}
+
+WindowingFunction::NumType
+WindowingFunction::ComputeHann( NumType inWhere )
+{
+  return 1.0 - 0.5 + 0.5 * ::cos( M_PI * inWhere );
+}
+
+WindowingFunction::NumType
+WindowingFunction::ComputeBlackman( NumType inWhere )
+{
+  return 1.0 - 0.5 - 0.08 + 0.5 * ::cos( M_PI * inWhere ) + 0.08 * ::cos( 2 * M_PI * inWhere );
+}
+
 
 const char*
 WindowingFunction::WindowNames( int i )
@@ -56,9 +81,7 @@ WindowingFunction::Value( WindowingFunction::NumType inWhere ) const
 {
   if( inWhere < 0.0 || inWhere >= 1.0 )
     throw "Argument out of range in " __FUNC__;
-    
-  const NumType& a1 = sWindowProperties[ mWindow ].mGenerationCoeffs[ 0 ],
-               & a2 = sWindowProperties[ mWindow ].mGenerationCoeffs[ 1 ];
-  return 1.0 - a1 - a2 + a1 * ::cos( M_PI * inWhere ) + a2 * ::cos( 2 * M_PI * inWhere );
+
+  return sWindowProperties[ mWindow ].mComputeValue( inWhere );  
 }
 
