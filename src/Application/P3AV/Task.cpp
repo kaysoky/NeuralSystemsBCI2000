@@ -77,10 +77,10 @@ TTask::TTask()
   BEGIN_PARAMETER_DEFINITIONS
     "P3AV_Stimuli matrix Matrix= "
      "{ caption icon audio } " // row labels
-     "{ stimulus1 stimulus2 stimulus3 stimulus4 } " // column labels
-     " Snack Drink Meal Dessert "
-     "icons\\snack.bmp icons\\drink.bmp icons\\meal.bmp icons\\dessert.bmp "
-     "sounds\\frog.wav sounds\\pig.wav sounds\\train.wav sounds\\uh-uh.wav "
+     "{ stimulus1 stimulus2 stimulus3 stimulus4 stimulus5 stimulus6 } " // column labels
+     " One Two Three Four Five Six "
+     "icons\\1.bmp icons\\2.bmp icons\\3.bmp icons\\4.bmp icons\\5.bmp icons\\6.bmp "
+     "sounds\\1.wav sounds\\2.wav sounds\\3.wav sounds\\4.wav sounds\\5.wav sounds\\6.wav  "
      " // captions and icons to be displayed, sounds to be played for different stimuli",
 
     "P3AV_Stimuli matrix FocusOn= "
@@ -88,7 +88,7 @@ TTask::TTask()
      "{ focuson } " // column labels
      "Please%20focus%20on "     // caption
      "icons\\focuson.bmp " // video
-     "sounds\\focuson.wav "  // audio
+     "sounds\\uh-uh.wav  "  // audio
      " // initial announcement what to focus on",
 
     "P3AV_Stimuli matrix Result= "
@@ -96,7 +96,7 @@ TTask::TTask()
      "{ result } " // column labels
      "The%20result%20was "     // caption
      "icons\\result.bmp " // video
-     "sounds\\result.wav "  // audio
+     "sounds\\uh-uh.wav "  // audio
      " // final result announcement ",
 
     "P3AV_Stimuli intlist Sequence= 4 1 3 4 2 1 1 1000 // "
