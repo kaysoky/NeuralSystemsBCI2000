@@ -13,8 +13,10 @@ public:
   /// Sets and Gets
   // Get and Set for Icon file name
   void SetIconFileName(const AnsiString & asIconFile);
+  void CloneIcon(const UsrElementVideo *src);
   const AnsiString & GetIconFileName(void) const;
-  
+  const TImage * GetIconImage(void) const;
+
   /// Member functions
   virtual UsrElement * GetClone() const;
   virtual void Render(TForm * form, const TRect & destRect);

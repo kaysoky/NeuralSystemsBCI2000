@@ -13,6 +13,7 @@ UsrElementAudio::UsrElementAudio(const unsigned int & uElementID) : UsrElement(u
 {
   m_pAudio = NULL;
   m_asAudioFile = "";
+  cloned=false;                 // cloned UsrElementAudio only "borrowed" the WavePlayer and don't delete it in the destructor
 } // UsrElementAudio
 
 
@@ -24,7 +25,9 @@ UsrElementAudio::UsrElementAudio(const unsigned int & uElementID) : UsrElement(u
 // **************************************************************************
 UsrElementAudio::~UsrElementAudio()
 {
-  if (m_pAudio != NULL)
+  // if an element was cloned using CloneAudio(), it uses the WavePlayer from the source element
+  // thus, this assumes that the source element is not deleted before the cloned element
+  if ((m_pAudio != NULL) && (!cloned))
   {
     delete m_pAudio;
     m_pAudio = NULL;
@@ -35,6 +38,7 @@ UsrElementAudio::~UsrElementAudio()
 // **************************************************************************
 // Function:   GetClone
 // Purpose:    This function clones a particular element by "deep-copying" the old one
+//             This version of cloning loads the audio file in the clone process (as opposed to CloneAudio())
 // Parameters: N/A
 // Returns:    pointer to the cloned element
 // **************************************************************************
@@ -57,17 +61,10 @@ UsrElement * UsrElementAudio::GetClone(void) const
 // **************************************************************************
 void UsrElementAudio::Render(TForm * form, const TRect & destRect)
 {
-  // create the audio object, if not already exists
-  if ((m_asAudioFile != "") && (m_pAudio == NULL))
-  {
-    m_pAudio = new TWavePlayer();
-  }
-
   // plays the audio
   if (m_pAudio != NULL)
   {
     Hide();
-    m_pAudio->AttachFile(m_asAudioFile.c_str());
     m_pAudio->Play();
   }
 }   // Render
@@ -89,7 +86,7 @@ void UsrElementAudio::Hide(void)
 
 
 // **************************************************************************
-// Function:   SetIconFileName
+// Function:   SetAudioFileName
 // Purpose:    This function sets the audio file name
 // Parameters: asAudioFile - file name
 // Returns:    N/A
@@ -97,7 +94,14 @@ void UsrElementAudio::Hide(void)
 void UsrElementAudio::SetAudioFileName(const AnsiString & asAudioFile)
 {
   m_asAudioFile = asAudioFile;
-} // SetIconFileName
+
+  // create the audio object, if not already exists
+  if ((m_asAudioFile != "") && (m_pAudio == NULL))
+  {
+    m_pAudio = new TWavePlayer();
+    if (m_pAudio) m_pAudio->AttachFile(m_asAudioFile.c_str());
+  }
+} // SetAudioFileName
 
 
 // **************************************************************************
@@ -109,6 +113,39 @@ void UsrElementAudio::SetAudioFileName(const AnsiString & asAudioFile)
 const AnsiString & UsrElementAudio::GetAudioFileName(void) const
 {
   return m_asAudioFile;
-} // GetIconFileName
+} // GetAudioFileName
+
+
+// **************************************************************************
+// Function:   GetAudioWavePlayer
+// Purpose:    This function returns a pointer to the wave player
+// Parameters: N/A
+// Returns:    ptr to wave player
+// **************************************************************************
+const TWavePlayer * UsrElementAudio::GetAudioWavePlayer(void) const
+{
+  return m_pAudio;
+} // GetAudioWavePlayer
+
+
+// **************************************************************************
+// Function:   CloneAudio
+// Purpose:    This function clones a specified UsrElementAudio element
+//             The cloned element contains a pointer to the original
+//             TWavePlayer; when an element is cloned, this TWavePlayer is
+//             NOT deleted. However, this assumes that the "original"
+//             UsrElementAudio element will not be deleted before the cloned element
+// Parameters: UsrElementAudio *src = pointer to the source element
+// Returns:    N/A
+// **************************************************************************
+void UsrElementAudio::CloneAudio(const UsrElementAudio *src)
+{
+ SetCoordsRect(src->GetCoordsRect());
+
+ m_asAudioFile=src->GetAudioFileName();
+ m_pAudio=(TWavePlayer *)src->GetAudioWavePlayer();
+ cloned=true;
+} // CloneAudio
+
 
 

@@ -13,11 +13,13 @@ public:
   UsrElementAudio::UsrElementAudio(const unsigned int & uElementID);
   virtual UsrElementAudio::~UsrElementAudio();
   
-  /// Sets and Gets
+  /// sets and gets
   // Get and Set for audio file name
   void SetAudioFileName(const AnsiString & asAudioFile);
-  const AnsiString & GetAudioFileName(void) const;
-  
+  const AnsiString  & GetAudioFileName(void) const;
+  const TWavePlayer * GetAudioWavePlayer(void) const;
+  void  CloneAudio(const UsrElementAudio *src);
+
   /// Member functions
   virtual UsrElement * GetClone() const;
   virtual void Render(TForm * form, const TRect & destRect);
@@ -27,7 +29,7 @@ private:
 
   TWavePlayer * m_pAudio;
   AnsiString m_asAudioFile;
+  bool  cloned;
 };
-
 #endif
 

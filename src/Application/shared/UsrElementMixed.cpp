@@ -40,8 +40,10 @@ UsrElement * UsrElementMixed::GetClone(void) const
   pClonedElement->SetCoordsRect(this->GetCoordsRect());
   pClonedElement->SetCaptionAttributes(this->GetCaptionBkgdColor(), this->GetCaptionText(),
                                 this->GetCaptionTextColor(), this->GetCaptionTextHeight());
-  pClonedElement->SetIconFileName(this->GetIconFileName());
-  pClonedElement->SetAudioFileName(this->GetAudioFileName());
+  // pClonedElement->SetIconFileName(this->GetIconFileName());    // DO NOT READ FROM DISC WHEN CLONING!!!
+  pClonedElement->CloneIcon(this);
+  // pClonedElement->SetAudioFileName(this->GetAudioFileName());  // DO NOT READ FROM DISC WHEN CLONING!!!
+  pClonedElement->CloneAudio(this);
 
   return pClonedElement;
 }

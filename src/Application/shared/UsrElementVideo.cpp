@@ -38,7 +38,8 @@ UsrElementVideo::~UsrElementVideo()
 UsrElement * UsrElementVideo::GetClone(void) const
 {
   UsrElementVideo * pClonedElement = new UsrElementVideo(this->GetID());
-  pClonedElement->SetIconFileName(this->GetIconFileName());
+  // pClonedElement->SetIconFileName(this->GetIconFileName());          // DO NOT READ FROM DISC WHEN CLONING!!!
+  pClonedElement->CloneIcon(this);
   pClonedElement->SetCoordsRect(this->GetCoordsRect());
 
   return pClonedElement;
@@ -126,6 +127,42 @@ void UsrElementVideo::SetIconFileName(const AnsiString & asIconFile)
 
 
 // **************************************************************************
+// Function:   CloneIcon
+// Purpose:    This function clones the icon from another UsrElementVideo
+// Parameters: UsrElementVideo * - ptr to another UsrElementVideo
+// Returns:    N/A
+// **************************************************************************
+void UsrElementVideo::CloneIcon(const UsrElementVideo *src)
+{
+  m_asIconFile = src->GetIconFileName();
+  // create the icon, if not already exists
+  if ((m_asIconFile != "") && (m_pIcon == NULL))
+     m_pIcon= new TImage(Application);
+  // set the icon's properties
+  if (m_pIcon)
+  {
+    try
+    {
+      m_pIcon->Picture->Assign((TPersistent *)(src->GetIconImage()->Picture));
+    }
+    catch(...)
+    {
+      delete m_pIcon;
+      m_pIcon = NULL;
+    }
+    // change coordinates of the element according to aspect ration
+    float fAspectRatio(0.0f);
+    if (m_pIcon)
+       {
+       if (m_pIcon->Picture->Width != 0)
+         fAspectRatio = (float)m_pIcon->Picture->Height / (float)m_pIcon->Picture->Width;
+       SetCoordsRect(GetCoordsRect().Width(), fAspectRatio, true);
+       }
+  }
+} // CloneIcon
+
+
+// **************************************************************************
 // Function:   GetIconFileName
 // Purpose:    This function returns the icon file name
 // Parameters: N/A
@@ -136,3 +173,14 @@ const AnsiString & UsrElementVideo::GetIconFileName(void) const
   return m_asIconFile;
 } // GetIconFileName
 
+
+// **************************************************************************
+// Function:   GetIconPicture
+// Purpose:    This function returns the icon picture (i.e., TImage property)
+// Parameters: N/A
+// Returns:    pointer to this icon's TImage
+// **************************************************************************
+const TImage * UsrElementVideo::GetIconImage(void) const
+{
+  return m_pIcon;
+} // GetIconPicture
