@@ -79,7 +79,7 @@ Because redirection is a feature of the program's execution environment
 simple, avoiding handling of file names and associated I/O errors.
 
 The following example command line will extract the ``sampling rate'' 
-parameter from the BCI2000 data file \texttt{mydata.dat} file, and display 
+parameter from the BCI2000 data file \texttt{mydata.dat}, and display 
 the result on the text console:
 \begin{verbatim}
 bci_dat2stream < mydata.dat | bci_stream2prm | grep SamplingRate
@@ -91,7 +91,7 @@ you need to do this manually.
 On the Windows NT shell, change to the \texttt{BCI2000/Tools/cmdline} directory,
 and execute \texttt{make all} from there.
 
-To use the tools from any directory, you will need to add the 
+To use the tools from any directory, you will need to add the full path to the
 \texttt{BCI2000/Tools/cmdline} directory to your system's PATH environment variable. 
 Please consult your operating system's documentation on how to do this.
 
@@ -126,9 +126,11 @@ bci_dat2stream < myfile.dat | bci_stream2asc | more
 (\texttt{dat}) file into a stream.
 \paragraph{Options} The \texttt{--transmit} option may be used to select states, 
 parameters, and data for transmission, as in\\
-\verb|bci_dat2stream --transmit-sp < myfile.dat|
-\\ Only states and parameters but no data will be contained in the resulting stream.
+\verb|bci_dat2stream --transmit-sp < myfile.dat|\\
+In the above example, only states and parameters but no data will be contained in 
+the resulting stream.
 ``Data'' comprises signal and state vector data.
+By default, all information contained in the \texttt{dat} file will be transmitted.
 
 \subsubsection{\texttt{bci\_prm2stream}}
 \texttt{bci\_prm2stream} converts a BCI2000 parameter (\texttt{prm}) file into a stream.
@@ -141,17 +143,18 @@ human readable format.
 
 \subsubsection{\texttt{bci\_stream2asc}}
 \texttt{bci\_stream2asc} converts a stream into a human readable format.´
-Each object contained in the stream will appear as its type name, followed by an 
+Each object contained in the stream will appear as its C++ type name, followed by an 
 opening brace, its content, and a closing brace.
 The content will appear as defined by the stream inserter \texttt{operator>>} for 
 the object's type.
 
-Each state will appear on its own line, thus values of certain states may be easily 
-extracted using the \texttt{grep} program.
+In the output of BCI2000 state vector information, each state will appear on its 
+own line, thus values of certain states may be easily extracted using the 
+\texttt{grep} program.
 
 \subsubsection{\texttt{bci\_stream2table}}
 \texttt{bci\_stream2table} converts a stream into a tab-separated table containing 
-states and signal values in ASCII format.
+state and signal values in ASCII format.
 Each state, and each entry of the signal, has its own column.
 The first line of output begins with a \texttt{\#} comment character, and contains 
 a tab-separated list of column headers.
@@ -163,20 +166,18 @@ A filter defined in a file \texttt{MyFilter.cpp} may be compiled and linked into
 its own executable by executing\\
 \verb|make MyFilter.exe|\\
 from the Windows command prompt when in \texttt{BCI2000/Tools/cmdline}.
-For this to work, it is necessary that the path to the filter's \texttt{cpp}
-file is contained in the makefile's \texttt{SIGPROC} variable; you may have to 
-adapt it to fit your needs.
+For this to work, it is necessary that the directory containing the filter's 
+\texttt{cpp} file is contained in the makefile's \texttt{SIGPROC} variable; you may 
+have to adapt it to fit your needs.
 
 If the filter's code depends on code not contained within its \texttt{cpp} file,
 you will get linker complaints about unresolved externals.
 To solve the problem, add the missing \texttt{cpp} files to the makefile's 
 \texttt{BCIOBJ} variable, and execute\\
 \verb|make clean && make MyFilter.exe|\\
-
 To check whether the executable works, enter \\
 \verb|MyFilter --help|\\
-You should get a message that the program applies your filter to its input, or 
-otherwise a hint pointing you towards fixing it.
+You should get a message that the program applies the ``MyFilter'' filter to its input.
 
 \subsection{Off-line only filters}
 For off-line analysis, data must often be partitioned into ``segments'' before
@@ -203,7 +204,7 @@ Although the BCI2000 command line tools cannot be compiled with \texttt{gcc} the
 work fine when called from \textit{cygwin}.
 
 \subsection{Extracting parameters}
-To extract parameters from a data file, one convert it into a stream using 
+To extract parameters from a data file, convert it into a stream using 
 \texttt{bci\_dat2stream --transmit-p}, and convert the stream into a parameter file
 using \texttt{bci\_stream2prm} as in
 \begin{verbatim}
@@ -213,8 +214,8 @@ bci_dat2stream < mydata.dat | bci_stream2prm > myprms.prm
 \subsection{Processing data with parameters different from the ones 
 contained in the file}
 To combine a data file with parameters other than those contained in it, use 
-\texttt{bci\_dat2stream}'s transmit option to suppress parameters, and combine 
-its output with \texttt{bci\_prm2stream}'s into a single stream. 
+\texttt{bci\_dat2stream}'s \texttt{--transmit} option to suppress parameters, 
+and combine its output with \texttt{bci\_prm2stream}'s into a single stream. 
 To affect processing, parameters must precede the data in the stream.
 Combining the output is effected by the \texttt{( ... \&\& ... )} construct.
 \begin{verbatim}
@@ -226,11 +227,11 @@ Combining the output is effected by the \texttt{( ... \&\& ... )} construct.
 \subsection{Exporting BCI2000 data into a table suitable for import into 
 external applications (MS Excel, Matlab, SPSS)}
 To process data with the filters used in the mu-training on-line system, 
-and save the AR spectrum as a table in ASCII format, execute
+saving the AR spectrum as a table in ASCII format, execute
 \begin{verbatim}
 bci_dat2stream < mydata.dat | TransmissionFilter | 
   CalibrationFilter | SpatialFilter | ARFilter | 
-  bci_stream2table > mytable.asc
+  bci_stream2table > mytable.txt
 \end{verbatim}
 
 \subsection{Testing a modified filter on existing data}
@@ -257,5 +258,14 @@ ARFilter < test.bcistream | bci_stream2asc > ARresult.txt &&
 comp /a /l prev_ARresult.txt ARresult.txt | more
 \end{verbatim}
 \end{enumerate}
+
+\section{Further information}
+\begin{itemize}
+\item A comprehensive and up-to-date description of a number of command line shells, and
+their scripting, is provided at \texttt{http://www.ss64.com/}.
+\item The \textit{cygwin} Win32 port of GNU tools can be downloaded at
+\texttt{http://www.cygwin.com/}.
+\end{itemize}
+
 
 \end{document}
