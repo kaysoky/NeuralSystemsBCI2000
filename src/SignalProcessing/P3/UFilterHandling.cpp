@@ -19,7 +19,7 @@
 
 Filter( CalibrationFilter, 2.A );
 Filter( SpatialFilter, 2.B );
-Filter( FIRFilter, 2.C );
+// Filter( FIRFilter, 2.C );
 Filter( P3TemporalFilter, 2.C2 );
 Filter( ClassFilter, 2.D );
 Filter( NormalFilter, 2.E );
