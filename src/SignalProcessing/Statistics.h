@@ -6,6 +6,8 @@
 #define MAX_SAMPLESPERTRIAL     500
 #define MAX_TRIALS              30
 
+#include <stdio.h>
+
 
 
 class TRIALSTAT
@@ -54,15 +56,19 @@ private:
         CIRCBUF *targbuf[MAX_BLSTATES];
         float   CurAvg[MAX_CONTROLSIG];
         float   CurStdDev[MAX_CONTROLSIG];
+        float   current_intercept;
+        FILE *sfile;
 public:
         STATISTICS::STATISTICS();
         STATISTICS::~STATISTICS();
         void    ProcRunningAvg(int, int, float, TRIALSTAT *);           // do whole proceedure
         void    ProcTrendControl(int, int, int, int, TRIALSTAT *, float, float);    // do whole proceedure
+        void    ProcWeightControl( int, int, int, int, int, float *, float *, float, int );            // weight control
         void    SetNumMaxTrials(int trials);                            // sets the maximum number of trials, i.e., the length of the running average
         void    SetDTWinMaxTrials( int trials );
         void    SetIntercept(int controlsigno, float intercept);        // sets the current intercept for this controlsignal
         void    SetGain(int controlsigno, float gain);                  // sets the current gain for this controlsignal
+        void    SetWeightControl( FILE * );
         int     GetNumBLstates(int controlsigno);
         int     GetNumTrendstates();
 };

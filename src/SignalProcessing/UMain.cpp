@@ -1,8 +1,8 @@
 /******************************************************************************
- * Program:   SignalProcessing.EXE                                            *
+ * Program:   PeakDetectSignalProcessing.EXE                                  *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The SignalProcessing module for BCI2000                         *
- * Version:   0.24                                                            *
+ * Version:   0.23                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -27,8 +27,6 @@
  * V0.21 - 05/15/2001 - removed some bugs in various filters                  *
  * V0.22 - 06/07/2001 - upgraded to shared libraries V0.17                    *
  * V0.23 - 07/16/2001 - accumulated bug fixes of V0.22x                       *
- * V0.24 - 04/11/2002 - updated to Borland C++ Builder 6.0                    *
- *                      improved error handling                               *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -40,7 +38,6 @@
 #include <math.h>
 
 #include "..\shared\defines.h"
-#include "UBCI2000Error.h"
 #include "CalibrationFilter.h"
 #include "UFilterHandling.h"
 #include "UGenericVisualization.h"
@@ -103,7 +100,6 @@ TReceivingThread  *receiving_thread;
 // **************************************************************************
 int TReceivingThread::InitializeSignalProcessing()
 {
-char    errmsg[1024];
 int     ret, res;
 
   // determine the size of the transmitted content by looking at the system parameters
@@ -117,23 +113,19 @@ int     ret, res;
    numcontrolsignals=atoi(fMain->paramlist.GetParamPtr("NumControlSignals")->GetValue());
    if (!statevector)
       {
-      fMain->corecomm->SendStatus("412 Signal Processing: state vector is not defined ! ");
+      Application->MessageBox("StateVector not defined", "Error", MB_OK);
       ret=0;
       }
    if (statevector->GetStateVectorLength() != statevectorlength) ret=0;
    }
   catch(...)
-   {
-   fMain->corecomm->SendStatus("413 Signal Processing: Exception thrown in TReceivingThread::InitializeSignalProcessing()");
-   ret=0;
-   }
+   { ret=0; }
 
   // now, let's initialize all filters and all signals
   res=filters->Initialize(&(fMain->paramlist), statevector, fMain->corecomm);
   if (res == 0)
      {
-     sprintf(errmsg, "408 %s", filters->error.GetErrorMsg());
-     fMain->corecomm->SendStatus(errmsg);
+     fMain->corecomm->SendStatus("408 Error initializing filters");
      ret=0;
      }
 
@@ -469,10 +461,10 @@ int  res, ret;
  if (filters) delete filters;
  filters=new FILTERS(&paramlist, &statelist);
  if (filters == NULL)
-    corecomm->SendStatus("407 Error on constructor of FILTERS() ...");
+    corecomm->SendStatus("407 Error creating filters ...");
  else
-    if (filters->was_error)
-       corecomm->SendStatus("407 Error on constructor of FILTERS() ...");
+    if (filters->error)
+       corecomm->SendStatus("407 Error creating filters ...");
 
  // add parameters for socket connection
  // my receiving socket port number

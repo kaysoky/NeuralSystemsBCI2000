@@ -6,6 +6,7 @@
 
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
+#include "ClassFilter.h"
 #include "NormalFilter.h"
 #include "Statistics.h"
 
@@ -21,6 +22,8 @@ private:
        int Trend_Win_Lth;               // length of window for trend control
        float LinTrend_Lrn_Rt;           // rate of learning for linear trend control
        float QuadTrend_Lrn_Rt;          // rate of learning for quadratic trend control
+       int WtControl;                   // control of Classifier weights
+       float WtRate;                    // Learning rate for Classifier control
        float ud_intercept;
        float ud_gain;
        float lr_intercept;
@@ -36,7 +39,11 @@ private:
 
        int trend_flag;
        int intercept_flag;
+       int weight_flag;
        char FName[128];
+       char OName[128];
+       FILE *Statfile;
+       FILE *Sfile;
 
        STATELIST *statelist;
        PARAMLIST *paramlist;
@@ -49,12 +56,12 @@ public:
        StatFilter(PARAMLIST *plist, STATELIST *slist);
        StatFilter(PARAMLIST *plist, STATELIST *slist, int instance);
        ~StatFilter();
-       int Resting( void );
+       int Resting( ClassFilter * );
        int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
        int Process(    //	CalibrationFilter *Calf,
 		       //	SpatialFilter *Sf,
 		       //	TemporalFilter *Tf,
-		       //	ClassFilter *Clsf,
+		       	ClassFilter *,
                         GenericSignal *SignalE,
 			NormalFilter *nf,
                         GenericSignal *SignalF

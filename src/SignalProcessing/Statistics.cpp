@@ -2,7 +2,7 @@
 #include "Statistics.h"
 
 #include <math.h>
-#include <stdio.h>
+// #include <stdio.h>
 
 // FILE *sfile;
 
@@ -248,7 +248,7 @@ int     i, t, u;
   for(i=0;i<MAX_BLSTATES;i++)
         targbuf[i]= new CIRCBUF;        // buffers for target % Correct
 
-    //  sfile= fopen("Statistics.asc","w+");
+    current_intercept= 0;
 }
 
 
@@ -270,7 +270,7 @@ int     i, t, u;
                 delete targbuf[i];
                 targbuf[i]= NULL;
         }
-     //   fclose(sfile);
+        fclose(sfile);
 }
 
 
@@ -438,7 +438,112 @@ float   accavg, accstddev;
  if( trialstat->Intercept > 0 ) sign= +1;
  else                           sign= -1;
 
+ current_intercept= trialstat->Intercept;
+
  return;
+}
+
+void STATISTICS::SetWeightControl( FILE *filehndl )
+{
+        sfile= filehndl;
+}
+
+void STATISTICS::ProcWeightControl(     int ntargs,             // number of targets
+                                        int targ,
+                                        int feedback,
+                                        int nh,                 // # horizontal elements
+                                        int ctr,                // control mode
+                                        float *elements,        // pointer to lineq
+                                        float *wts,             // pointer to weights
+                                        float rate,
+                                        int use                 // use of wts
+                                  )
+{
+        static int oldfeedback= 0;
+        static float wt_buf[128];
+        int i;
+        int target;
+        float predicted;
+        float err;
+        static float mean= 0;
+        static int use_flag= 0;
+        static int count= 0;
+
+        switch( ntargs )                      //  target should have 0 mean?
+        {
+                case 2:
+                        if( targ == 1 )     target= -1;
+                        else if( targ == 2 )target=  1;
+                        else target= 0;
+                        break;
+                case 3:
+                        if( targ == 1 )      target= -1;
+                        else if( targ == 2 ) target=  0;
+                        else if( targ == 3 ) target=  1;
+                        else targ= 0;
+                        break;
+                case 4:
+                        if( targ == 1 )      target= -2;
+                        else if( targ == 2 ) target= -1;
+                        else if( targ == 3 ) target=  1;
+                        else if( targ == 4 ) target=  2;
+                        else target= 0;
+                        break;
+                default:    return;
+        }
+
+
+        if( use_flag == 0 )
+        {
+                for(i=0;i<nh;i++)                // transfer weights
+                        wt_buf[i]= wts[i];
+
+                use_flag= 1;
+        }
+
+        if(feedback == 1 )
+        {
+                if( oldfeedback == 0 )
+                {
+
+                }
+
+                predicted= 0;
+
+                for( i=0;i<nh;i++)       // apply filter
+                {
+                        predicted+=  wt_buf[i] * elements[i];
+                }
+
+                predicted-= mean;         // include mean in model
+
+                err= (float)target - predicted;
+
+                for(i=0;i<nh;i++)         // update weights
+                {
+                        wt_buf[i]+= elements[i] * err * rate;
+                }
+                mean= current_intercept;  // += 1.0 * err * rate;        // update mean
+
+                                                                        // Print to file
+                fprintf(sfile,"%5d %2d %2d %8.4f ",count,use,target,err);
+                count++;
+                for(i=0;i<nh;i++)
+                {
+                        fprintf(sfile," %7.3f  %7.4f ",elements[i],wt_buf[i]);
+                }
+                fprintf(sfile,"%8.4f \n",mean);                  // mean and linefeed
+
+          }
+          else if( feedback == 0 )
+          {
+                if( (oldfeedback == 1) &&  (use == 2 ) )      // reset weights at trial end
+                {
+                        for(i=0;i<nh;i++)
+                                wts[i]= wt_buf[i];
+                }
+          }
+          oldfeedback= feedback;
 }
 
 

@@ -24,21 +24,19 @@ FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 {
 char line[512];
 
- error.SetErrorMsg("");
-
- was_error=false;
+ error=false;
  calfilter=new CalibrationFilter(plist, slist);
- if (!calfilter) was_error=true;
+ if (!calfilter) error=true;
  spatfilter= new SpatialFilter(plist, slist);
- if(!spatfilter) was_error=true;
+ if(!spatfilter) error=true;
  tempfilter= new TemporalFilter(plist, slist);
- if(!tempfilter) was_error= true;
+ if(!tempfilter) error= true;
  classfilter= new ClassFilter(plist, slist );
- if(!classfilter) was_error= true;
+ if(!classfilter) error= true;
  normalfilter= new NormalFilter( plist, slist );
- if(!normalfilter) was_error= true;
+ if(!normalfilter) error= true;
  statfilter= new StatFilter( plist, slist );
- if(!statfilter) was_error= true;
+ if(!statfilter) error= true;
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128    // the number of transmitted control signals");
  plist->AddParameter2List(line, strlen(line));
@@ -123,58 +121,20 @@ int     res, returnval;
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
 
-  //
-  // now, here place the code to initalize your filter(s)
-  //
 
-  // initialize the calibration filter
-  res= calfilter->Initialize(plist, svector, corecomm);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(calfilter->error));
-     }
-
-  // initialize the spatial filter
-  res= spatfilter->Initialize(plist, svector, corecomm);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(spatfilter->error));
-     }
-
-  // initialize the temporal filter
-  res= tempfilter->Initialize(plist, svector, corecomm);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(tempfilter->error));
-     }
-  ND= tempfilter->nBins;
-
-  // initialize the classifier
-  res= classfilter->Initialize(plist, svector, corecomm, ND);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(classfilter->error));
-     }
-
-  // initialize the normalizer
-  res= normalfilter->Initialize( plist, svector, corecomm);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(normalfilter->error));
-     }
-
-  // initialize statistics
-  res= statfilter->Initialize( plist, svector, corecomm);
-  if (res == 0)
-     {
-     returnval= 0;
-     error.CopyError(&(statfilter->error));
-     }
+  // now, here place the code to initalize your filter
+ res= calfilter->Initialize(plist, svector, corecomm);
+ if( res==0) returnval= 0;
+ res= spatfilter->Initialize(plist, svector, corecomm);
+ if (res == 0) returnval=0;
+ res= tempfilter->Initialize(plist, svector, corecomm);
+ if(res == 0 ) returnval= 0;
+ ND= tempfilter->nBins;
+ res= classfilter->Initialize(plist, svector, corecomm, ND);
+ if( res == 0 ) returnval= 0;
+ res= normalfilter->Initialize( plist, svector, corecomm);
+ if( res == 0 ) returnval= 0;
+ res= statfilter->Initialize( plist, svector, corecomm);
 
   SignalD=new GenericSignal(MD, ND);
   SignalE=new GenericSignal(ME, 1);
@@ -187,17 +147,10 @@ int     res, returnval;
   SignalC->MaxElements= NC;
   }
  catch(...)
-  {
-  error.SetErrorMsg("Signal Processing: FILTERS::Initialize() threw an exception");
-  returnval=0;
-  }
+  { returnval=0; }
 
- // in case we could not generate any of these five signals
  if (!SignalB || !SignalC || !SignalD || !SignalE || !SignalF)
-    {
-    error.SetErrorMsg("Signal Processing: Could not create SignalB, C, D, E, or F");
-    returnval= 0;
-    }
+    returnval=0;
 
  return(returnval);
 }
@@ -205,7 +158,7 @@ int     res, returnval;
 
 int FILTERS::Resting( char *buf)
 {
- statfilter->Resting();
+ statfilter->Resting( classfilter );
 
  return(0);
 }
@@ -231,48 +184,18 @@ int res, returnval;
  returnval=1;
 
  // now, here place the code to let your filters process the signals
-
  res=calfilter->Process(SignalA, SignalB);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(calfilter->error));
-    }
-
+ if (res == 0) returnval=0;
  res=spatfilter->Process(SignalB, SignalC);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(spatfilter->error));
-    }
-
+ if( res == 0) returnval= 0;
  res=tempfilter->Process(SignalC, SignalD);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(tempfilter->error));
-    }
-
+ if( res == 0 ) returnval= 0;
  res=classfilter->Process(SignalD, SignalE);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(classfilter->error));
-    }
-
+ if( res == 0 ) returnval= 0;
  res= normalfilter->Process(SignalE, SignalF);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(normalfilter->error));
-    }
-
- res= statfilter->Process(SignalE, normalfilter, SignalF);
- if (res == 0)
-    {
-    returnval= 0;
-    error.CopyError(&(statfilter->error));
-    }
+ if( res == 0 ) returnval= 0;
+ res= statfilter->Process( classfilter, SignalE, normalfilter, SignalF);
+ if( res == 0 ) returnval= 0;
 
  return(returnval);
 }

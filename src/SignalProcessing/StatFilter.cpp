@@ -9,9 +9,9 @@
 
 #include <math.h>
 
-#include <stdio.h>
+// #include <stdio.h>
 #include <stdlib.h>
-FILE *Statfile;
+// FILE *Statfile;
 
 // FILE *estat;
 
@@ -71,22 +71,31 @@ cur_stat.NumT= 0;
  strcpy(line, "Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window");
  plist->AddParameter2List( line, strlen(line) );
 
- strcpy(line, "Statistics float LinTrendLrnRt= 0.001 0 0.000 0.010 // Rate of Learning for Linear Trend Control");
+ strcpy(line, "Statistics float LinTrendLrnRt= 0.001 0 0.000 0.010 // Learning Rate for Linear Trend Control");
  plist->AddParameter2List( line, strlen(line) );
 
- strcpy(line, "Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Rate of Learning for Linear Trend Control");
+ strcpy(line, "Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Learning Rate for Linear Trend Control");
  plist->AddParameter2List( line, strlen(line) );
 
- strcpy(line, "Storage string FileInitials= TD TD a z // Initials of file name (max. 8 characters)");
+ strcpy(line,"Statistics int WeightControl= 0 0 0 1 // Classifier Adaptation 0= no  1= Compute  2= use");
+ plist->AddParameter2List( line, strlen(line) );
+
+ strcpy(line,"Statistics float WtLrnRt= 0.001 0 0.000 0.010 // Rate of Learning for Classifier ");
+ plist->AddParameter2List( line, strlen( line ) );
+
+
+ /*
+ strcpy(line, "Storage string FileInitials= Data Data a z // Initials of file name (max. 8 characters)");
  plist->AddParameter2List(line, strlen(line));
  strcpy(line, "Storage string SubjectName= Name Name a z // subject alias (max. 8 characters)");
  plist->AddParameter2List(line, strlen(line));
  strcpy(line, "Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)");
  plist->AddParameter2List(line, strlen(line));
+ */
 
  statelist->AddState2List("IntCompute 2 0 0 0 \n");
 
- // estat= fopen("EStat.asc","w+");
+// estat= fopen("EStat.asc","w+");
 
 }
 
@@ -125,17 +134,16 @@ StatFilter::~StatFilter()
 // **************************************************************************
 int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
-AnsiString AName, SName, SSes, FInit;
-int     visualizeyn;
-char    slash[2];
-char    numbuf[16];
-char    errmsg[1024];
-BCIDtry *bcidtry;
+        AnsiString AName,SName,SSes,FInit;
+        int visualizeyn;
+        char slash[2];
+        char numbuf[16];
+        BCIDtry *bcidtry;
 
-static int init_flag= 0;
-
- trend_flag= 0;
- intercept_flag= 0;
+        static int init_flag= 0;
+        trend_flag= 0;
+        intercept_flag= 0;
+        weight_flag= 0;
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -159,16 +167,16 @@ static int init_flag= 0;
        visualizeyn= atoi(paramlist->GetParamPtr("VisualizeStatFiltering")->GetValue() );
        Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
 
+       WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
+       WtRate= atof(plist->GetParamPtr("WtLrnRt")->GetValue() );
+
        FInit= AnsiString (paramlist->GetParamPtr("FileInitials")->GetValue());
        SSes = AnsiString (paramlist->GetParamPtr("SubjectSession")->GetValue());
        SName= AnsiString (paramlist->GetParamPtr("SubjectName")->GetValue());
 
   }
  catch(...)
-  {
-  error.SetErrorMsg("One of the following parameters is not defined: InterceptControl, InterceptLength, InterceptProportion, UD_A, UD_B, LR_A, LR_B, TrendControl, TrendWinLth, LinTrendLrnRt, QuadTrendLrnRt, DesiredPixelsPerSec, VisualizeStatFiltering, VisualizeStatFiltering, NumberTargets");
-  return(0);
-  }
+  { return(0); }
 
   bcidtry= new BCIDtry();
 
@@ -184,17 +192,13 @@ static int init_flag= 0;
   strcat(FName,slash);
 
   AName= SName + "S" + SSes + ".sta";
-  strcat(FName, AName.c_str() );         // CAT vs CPY
+  strcpy(OName,FName);
+  strcat(OName, AName.c_str() );         // CAT vs CPY
   if (Statfile) fclose(Statfile);
-  Statfile= fopen(FName,"a+");
-  if (!Statfile)
-     {
-     sprintf(errmsg, "Could not open statistics file %s", FName);
-     error.SetErrorMsg(errmsg);
-     return(0);
-     }
+  Statfile= fopen(OName,"a+");
 
- if( InterceptEstMode > 0 && init_flag < 1 )               // need to update if different targets
+
+ if( ( (InterceptEstMode>0)||(Trend_Control>0)||(WtControl>0) ) && init_flag < 1 )               // need to update if different targets
  {
         if (stat) delete stat;
         stat= new STATISTICS;
@@ -214,6 +218,17 @@ static int init_flag= 0;
         {
                 stat->SetDTWinMaxTrials( Trend_Win_Lth );
         }
+
+        if( WtControl > 0 )
+        {
+                AName= SName + "S" + SSes + ".lms";
+                strcpy(OName,FName);
+                strcat(OName, AName.c_str() );         // CAT vs CPY
+                if (Sfile) fclose(Sfile);
+                Sfile= fopen(OName,"a+");
+                stat->SetWeightControl( Sfile );
+        }
+
         init_flag++;
  }
 
@@ -283,7 +298,7 @@ int     match;
 
                 if ( !(statevector->GetStateValue(statename) == stateval) )
                             match= 0;                  //    all must match
-
+                            
 // fprintf(Statfile,"i= %d j= %d match= %d  name %s val %d \n",i,j,match,statename,stateval);
          }
          if( match == 1 ) CurrentBaseline= i;
@@ -296,11 +311,12 @@ int     match;
 // Purpose:    This function operates when the state running = 0
 // **************************************************************************
 
-int StatFilter::Resting( void )
+int StatFilter::Resting( ClassFilter *clsf )
 {
         char memotext[256];
+        int i;
 
-        if( intercept_flag > 0 )               // return  operator
+        if( intercept_flag > 0 )               // return to operator
         {
                 intercept_flag= 0;
 
@@ -340,6 +356,20 @@ int StatFilter::Resting( void )
 
                 corecomm->StopSendingParameters();
         }
+        if( weight_flag > 0 )            // return wieghts to operator
+        {
+
+                weight_flag= 0;
+                for(i=0;i<clsf->n_vmat;i++)
+                {
+                        sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
+                        paramlist->GetParamPtr("MUD")->SetValue(memotext,i,4);   // 4th value is the weight
+                }
+                corecomm->StartSendingParameters();
+                corecomm->PublishParameter( paramlist->GetParamPtr("MUD") );
+                corecomm->StopSendingParameters();
+
+        }
 
         return(0);              // no errors?
 }
@@ -355,7 +385,8 @@ int StatFilter::Resting( void )
 int StatFilter::Process(      //  CalibrationFilter       *calf,
                               //  SpatialFilter           *sf
                               //  TemporalFilter          *tf,
-                              //  ClassFilter             *clsf,
+
+                                ClassFilter   *clsf,
                                 GenericSignal *SignalE,
                                 NormalFilter  *nf,
                                 GenericSignal *SignalF
@@ -373,9 +404,6 @@ static int oldtarget, oldoutcome;
 
      GetStates();
 
-   //  fprintf(Statfile,"CurrentTarget= %2d  CurrentBaseline= %2d \n", CurrentTarget, CurrentBaseline );
-
-
      if( InterceptEstMode >0 )
      {
         sample= 0;
@@ -390,24 +418,9 @@ static int oldtarget, oldoutcome;
             ud_intercept=cur_stat.Intercept;
             if (cur_stat.StdDev != 0)
                ud_gain=desiredpix/cur_stat.StdDev;
-       /*
-            if (( visualize ) && (cur_stat.update_flag > 0 ) ) //((ud_intercept != old_ud_intercept) || (ud_gain != old_ud_gain)))
-               {
-               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f\r", ud_intercept, ud_gain);
-               // vis->SendMemo2Operator(memotext);
 
-               for(i=0;i<Ntargets;i++)
-                      output->SetValue( 1,i pwr[j] );
-
-               vis->SetSourceID(59);
-               vis->Send2Operator(StatSignal);
-
-               cur_stat.update_flag= 0;
-               }
-              */
                old_ud_intercept= ud_intercept;
                old_ud_gain= ud_gain;
-      //      fprintf(Statfile, "CurrentUDIntercept= %.2f  CurrentUDGain= %.2f\n", ud_intercept, ud_gain);
             }
 
          intercept_flag= 1;
@@ -421,7 +434,7 @@ static int oldtarget, oldoutcome;
                lr_intercept=cur_stat.Intercept;
                if (cur_stat.StdDev != 0)
                   lr_gain=desiredpix/cur_stat.StdDev;
-       //  else    lr_gain=1;
+
                if (( visualize ) && ((lr_intercept != old_lr_intercept) || (lr_gain != old_lr_gain)))
                {
                   //rintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f\r", lr_intercept, lr_gain);
@@ -436,13 +449,9 @@ static int oldtarget, oldoutcome;
          {
               stat->ProcTrendControl(Ntargets, CurrentBaseline, CurrentTarget, CurrentOutcome, &cur_stat, LinTrend_Lrn_Rt, QuadTrend_Lrn_Rt);
 
-            //  fprintf(estat,"CB= %2d CT= %2d CO= %2d cstf= %2d \n",CurrentBaseline,CurrentTarget,CurrentOutcome,cur_stat.trial_flag);
-
               ud_intercept *= cur_stat.aper;
               if (cur_stat.StdDev != 0)
                        ud_gain=cur_stat.pix/cur_stat.StdDev;
-
-            //  ud_gain      *= cur_stat.bper;
 
               trend_flag= 1;
 
@@ -451,7 +460,7 @@ static int oldtarget, oldoutcome;
                 fprintf(Statfile,"%4d ",recno++);
                 for(i=0;i<Ntargets;i++)       //  was   cur_stat.NumT;i++)
                         fprintf(Statfile,"%4.2f ",cur_stat.TargetPC[i]);
-                fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f\n",CurrentTarget,CurrentOutcome,cur_stat.aper,cur_stat.pix,ud_intercept,ud_gain);
+                fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_stat.aper,cur_stat.pix,ud_intercept,ud_gain);
                 fflush( Statfile );
              }
          }
@@ -465,8 +474,6 @@ static int oldtarget, oldoutcome;
 
         if (( visualize ) && (cur_stat.update_flag > 0 ) ) //((ud_intercept != old_ud_intercept) || (ud_gain != old_ud_gain)))
                {
-               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f\r", ud_intercept, ud_gain);
-               // vis->SendMemo2Operator(memotext);
 
                for(i=0;i<Ntargets;i++)
                       StatSignal->SetValue( 0 ,i,  cur_stat.TargetPC[i] );
@@ -479,13 +486,28 @@ static int oldtarget, oldoutcome;
 
       }
 
-
-
       // store the old values
       old_ud_intercept=ud_intercept;
       old_ud_gain=ud_gain;
       old_lr_intercept=lr_intercept;
       old_lr_gain=lr_gain;
+
+      if( WtControl > 0 )
+      {
+        // control Weight !!
+
+        stat->ProcWeightControl(        Ntargets,
+                                        CurrentTarget,
+                                        CurrentFeedback,
+                                        clsf->n_vmat,     // # vertical control elements
+                                        WtControl,        // control mode (1 vs 2 dim)
+                                        clsf->feature[0], // pointer to linear equation matrx
+                                        clsf->wtmat[0],   // matrix of weights
+                                        WtRate,
+                                        WtControl
+                               ) ;
+         weight_flag= 1;
+      }
       return(1);
 }
 

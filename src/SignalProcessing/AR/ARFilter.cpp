@@ -32,7 +32,7 @@ char line[512];
 
   //      tempfile= fopen("tempfile.asc","w+");
 
-        strcpy(line,"MEMFilter float StartMem= -0.5 0.0 0.0  512.0   // Start of Spectrum in Hz");
+        strcpy(line,"MEMFilter float StartMem= -1.5 0.0 0.0  512.0   // Start of Spectrum in Hz");
         plist->AddParameter2List(line,strlen(line) );
         strcpy(line,"MEMFilter float StopMem= 30.0 30.0 0.0 512.0   // End of Spectrum in Hz");
         plist->AddParameter2List(line,strlen(line) );
@@ -132,7 +132,7 @@ int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevecto
         sprintf(cur_buf, "%d", nBins);
         vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
         vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MINVALUE, "0");
-        vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, "40");
+        vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, "10");
         for (i=0; i<nBins; i++)
          {
          sprintf(cur_buf, "%03d %.0f", i, (float)start+(float)i*(float)bandwidth);

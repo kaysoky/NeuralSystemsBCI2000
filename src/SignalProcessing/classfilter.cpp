@@ -6,6 +6,7 @@
 #include "ClassFilter.h"
 
 #include <stdio.h>
+
 // FILE *classfile;
 
 
@@ -32,17 +33,16 @@ char line[512];
 
  vis=NULL;
 
- strcpy(line,"Filtering matrix MUD= 10 2  0 0 0 0 0 0 -1 -1 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Additive Up / Down Weights");
+ strcpy(line,"Filtering matrix MUD= 2 5 1 5 0 0 -1 2 5 0 0 -1 64  0 100  // Class Filter Additive Up / Down Weights");
  plist->AddParameter2List(line,strlen(line) );
 
- strcpy(line,"Filtering matrix XUD= 10 2  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Multiplicative Up / Down Weights");
- plist->AddParameter2List(line,strlen(line) );
-
- strcpy(line,"Filtering matrix MLR= 10 2  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Left / Right Weights");
+ strcpy(line,"Filtering matrix MLR= 2 5 0 0 0 0 0 0 0 0 0 0   64  0 100  // Class Filter Left / Right Weights");
  plist->AddParameter2List(line,strlen(line) );
 
  strcpy(line, "Visualize int VisualizeClassFiltering= 1 0 0 1  // visualize Class filtered signals (0=no 1=yes)");
  plist->AddParameter2List( line, strlen(line) );
+
+ // classfile= fopen("Classifier.asc","w+");
 
 }
 
@@ -57,6 +57,8 @@ ClassFilter::~ClassFilter()
 {
  if( vis ) delete vis;
  vis= NULL;
+
+ // fclose( classfile );
 }
 
 
@@ -72,8 +74,9 @@ ClassFilter::~ClassFilter()
 int ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm, int nbins)
 {
 int     i,j;
-int     visualizeyn;
-float   stop, start, bandwidth;
+int visualizeyn;
+float stop,start,bandwidth;
+
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -81,37 +84,31 @@ float   stop, start, bandwidth;
  try // in case one of the parameters is not defined (should always be, since we requested them)
   {
         samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-      // n_mat= atoi(paramlist->GetParamPtr("TransmitCh")->GetValue());
-      //  m_mat= atoi(paramlist->GetParamPtr("ClassFilteredChannels")->GetValue());
-        m_mat= atoi(paramlist->GetParamPtr("SpatialFilteredChannels")->GetValue());
         visualizeyn= atoi(paramlist->GetParamPtr("VisualizeClassFiltering")->GetValue() );
+        n_vmat= paramlist->GetParamPtr("MUD")->GetNumValuesDimension1();
 
-  // there should be a parameter for n bins- otherwise this classifier is specific to mem
-
-  //      start=       atof(paramlist->GetParamPtr( "StartMem" )->GetValue());
-  //      stop=        atof(paramlist->GetParamPtr( "StopMem" )->GetValue() );
-  //      bandwidth=   atof(paramlist->GetParamPtr( "MemBandWidth" )->GetValue() );
-  //      n_mat= (int)(( stop - start ) / bandwidth) + 1;
-
-        n_mat=  nbins;
-
-  }
- catch(...)
-  {
-  error.SetErrorMsg("Either SampleBlockSize, SpatialFilteredChannels, or VisualizeClassFiltering is not defined");
-  return(0);
-  }
-
-  for(i=0;i<n_mat;i++)
-  {
-        for(j=0;j<m_mat;j++)
+        for(i=0;i<n_vmat;i++)
         {
-                mat_ud[i][j]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,j) );
-                xat_ud[i][j]= atof( paramlist->GetParamPtr("XUD")->GetValue(i,j) );
-                mat_lr[i][j]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,j) );
+                vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
+                vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
+                vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
+                vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+                wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
+        }
 
+        n_hmat= paramlist->GetParamPtr("MLR")->GetNumValuesDimension1();
+
+        for(i=0;i<n_hmat;i++)
+        {
+                hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
+                hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
+                hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
+                hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+                wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
         }
   }
+ catch(...)
+  { return(0); }
 
 
  if( visualizeyn == 1 )
@@ -144,44 +141,52 @@ int ClassFilter::Process(GenericSignal *input, GenericSignal *output)
 int     in_channel, out_channel,sample;
 float   val_ud;
 float   val_lr;
-float   value;
-float   prod;
-int prodflag;
+
+float term1,term2;
+
+int i;
 
  // actually perform the Class Filtering on the input and write it into the output signal
 
         val_ud= 0;
         val_lr= 0;
 
-        for(sample=0; sample<input->MaxElements; sample++)
+
+        for(i=0;i<n_vmat;i++)       // need to get vmat - number of vertical classifying functions
         {
-            for(in_channel=0; in_channel<input->Channels; in_channel++)
-            {
-                value= input->GetValue(in_channel, sample);
-                val_ud+=  value * mat_ud[sample][in_channel];
-                val_lr+=  value * mat_lr[sample][in_channel];
-            }
+                term1= input->GetValue( vc1[i]-1, vf1[i]-1 );
+
+                if( ( vc2[i] > 0  ) && ( vf2[i] > 0 ) )
+                        term2= input->GetValue( vc2[i]-1, vf2[i]-1 );
+                else    term2= 1.0;
+
+                feature[0][i]= term1 * term2;
+
+                val_ud+= feature[0][i] * wtmat[0][i];
+
+// fprintf(classfile,"%2d %2d %2d %7.3f %7.3f %7.2f ",i,vc1[i],vf1[i],val_ud,feature[0][i],wtmat[0][i]);
+
+                //  solution= // need to transmit each result to statistics for LMS
         }
+// fprintf(classfile,"\n");        
 
-        prod= 1;
-        prodflag= 0;
-
-        for(in_channel=0; in_channel<input->Channels; in_channel++)
+        for(i=0;i<n_hmat;i++)
         {
 
-            for(sample=0; sample<input->MaxElements; sample++)
-            {
-                value= input->GetValue(in_channel, sample);
-                if( xat_ud[sample][in_channel] == 0 )  ;
-                else
-                {
-                        prodflag++;
-                        prod*=  value * xat_ud[sample][in_channel];
-                }
-            }
-        }
+                if( ( hc1[i]>0 ) && (hf1[i] > 0 ) )
+                        term1= input->GetValue( hc1[i]-1, hf1[i]-1 );
+                else term1= 0;
 
-        if( prodflag > 0 ) val_ud+= prod;
+                if( ( hc2[i] > 0  ) && ( hf2[i] > 0 ) )
+                        term2= input->GetValue( hc2[i]-1, hf2[i]-1 );
+                else    term2= 1.0;
+
+                feature[1][i]=  term1 * term2;
+
+                val_lr+= feature[1][i] * wtmat[1][i];
+
+                //  solution= // need to transmit each result to statistics for LMS
+        }
 
         output->SetValue( 0, 0, val_ud );
         output->SetValue( 1, 0, val_lr );

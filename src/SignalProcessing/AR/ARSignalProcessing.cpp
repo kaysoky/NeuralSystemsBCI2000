@@ -9,7 +9,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "SignalProcessing";
+                 Application->Title = "MXSignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
                  Application->Run();

@@ -36,7 +36,7 @@ char line[512];
  plist->AddParameter2List(line, strlen(line));
  strcpy(line, "Filtering floatlist SourceChGain= 16 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 -500 500  // gain for each channel (A/D units -> muV)");
  plist->AddParameter2List(line, strlen(line));
- strcpy(line, "Filtering int AlignChannels= 0 0 0 1  // align channels in time (0=no, 1=yes) (does NOT work yet?)");
+ strcpy(line, "Filtering int AlignChannels= 0 0 0 1  // align channels in time (0=no, 1=yes)");
  plist->AddParameter2List(line, strlen(line));
  strcpy(line, "Visualize int VisualizeCalibration= 1 0 0 1  // visualize calibrated channels (0=no, 1=yes)");
  plist->AddParameter2List(line, strlen(line));
@@ -89,19 +89,16 @@ int origchan;
 
   recordedChans= atoi( paramlist->GetParamPtr("SoftwareCh")->GetValue() );
   transmittedChans= atoi( paramlist->GetParamPtr("TransmitCh")->GetValue() );
+
+  //      paramlist.GetParamPtr("TransmitChList")->GetNumValues()
+  //      paramlist.GetParamPtr("TransmitCh")->GetValue()
+
   }
  catch(...)
-  {
-  error.SetErrorMsg("Some of the parameters AlignChannels, VisualizeCalibration, SourceChOffset, SoftwareCh, TransmitCh, don't seem to exist");
-  return(0);
-  }
+  { return(0); }
 
  // if the number of channels does not match for offset and gain, exit with an error
- if (numchoffset != numchgain)
-    {
-    error.SetErrorMsg("The number of channels does not match for offset and gain (SourceChOffset, SourceChGain)");
-    return(0);
-    }
+ if (numchoffset != numchgain) return(0);
 
  // allocate arrays for offsets and gains
  // we don't always want to query parameters
