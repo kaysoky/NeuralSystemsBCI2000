@@ -16,6 +16,7 @@
 %             plotthis   ... if 1, plots results; if 0, does not plot
 %             topotimes_ms . a list of times to create topographies (if [], no topography will be plotted) (times in ms)
 %             topogrid   ... the layout for the topographies (e.g., [4 3] for a 4x3 matrix of topographies)
+%             baseline_ms .. duration of the baseline period in ms (e.g., [0 100]) or [] if no baseline correction requested
 %             eloc_file  ... file that contains the electrode positions (e.g., eloc64.txt, eloc16.txt)
 %             moviefilename. if not '', specifies the filename of the avi movie file
 %
@@ -28,27 +29,42 @@
 % (C) Gerwin Schalk 2002-04
 %     Wadsworth Center, NYSDOH
 %
-% V1.00 - first version (09/2002)
-% V1.10 - can now plot a number of topographies
-% V1.20 - speed increased; can now also plot a number of traces
+% V1.00 - 09/2002 - first version
+% V1.10 -           can now plot a number of topographies
+% V1.30 - 10/2004 - speed increased; can now also plot a number of traces
+% V1.40 - 12/2004 - can now perform baseline correction
 
-function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channels, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, eloc_file, moviefilename)
-
-%channel=11;
-%samplefreq=240;
-
-%subject='D:\\BCI2000DATA\\tv\\tv002\\tv1_8.mat'; 
-%session=1;
-%triallength=144;
-%moviefilename='d:\TV001P3.avi';
-%moviefilename=[];
+function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channels, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, baseline_ms, eloc_file, moviefilename)
 
 topotimes_samples=round(topotimes_ms*samplefreq/1000);				% convert from ms into samples
 triallength=round(triallength*samplefreq/1000);                     % convert from ms into samples
 
-fprintf(1, 'BCI2000 P3 Analysis Routine V1.30\n');
+fprintf(1, 'BCI2000 P3 Analysis Routine V1.40\n');
 fprintf(1, '(C) 2002-04 Gerwin Schalk\n');
 fprintf(1, '=================================\n');
+
+res1ch=[];
+res2ch=[];
+ressqch=[];
+stimulusdata=[];
+
+% sanity checks
+if ((length(baseline_ms) ~= 2) & (isempty(baseline_ms) == 0))
+   fprintf(1, 'baseline correction option has to specify either [] or two numbers in ms (e.g., [0 100]). Aborting.\n');
+   return;
+end
+if (isempty(baseline_ms) == 0)
+   if (baseline_ms(1) >= baseline_ms(2))
+      fprintf(1, 'Second number in baseline definition has to be larger than the first number. Aborting.\n');
+      return;
+   end
+end
+
+baseline_samples=round(baseline_ms*samplefreq/1000);				% convert from ms into samples
+% if we specify [0 100], we have to convert the 0 to sample 1
+if (isempty(baseline_samples) == 0)
+   baseline_samples(find(baseline_samples < 1))=1;
+end
 
 % load session
 fprintf(1, 'Loading data file\n');
@@ -93,6 +109,13 @@ for cur_trial=min(trials)+1:max(trials)-1
  % get the data for these samples
  %trialdata=signal(min(trialidx):min(trialidx)+triallength-1, cat(2, [1:16], [19:64]));
  trialdata=signal(min(trialidx):min(trialidx)+triallength-1, :);
+ % apply baseline correction, if requested
+ if (isempty(baseline_samples) == 0)
+    baseline=mean(trialdata([min(baseline_samples):max(baseline_samples)], :), 1);
+    for ch=1:size(trialdata, 2)
+     trialdata(:, ch)=trialdata(:, ch)-baseline(ch);
+    end
+ end
  % apply a 'spatial' filter, i.e., subtract the average of 5 electrodes
  % reference=mean((trialdata(:, 1)+trialdata(:, 2)+trialdata(:, 10)+trialdata(:, 16)+trialdata(:, 9))/5);
  % trialdata=trialdata-reference;
