@@ -35,15 +35,15 @@
     <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="ARSignalProcessing.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\shared;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin&quot;;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\shared;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\shared;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin&quot;;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\shared;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=d:\PROGRA~1\borland\CBUILD~1\lib\vcl60.csm -Hc -Vx -Ve -xf -xp -X- 
-      -r- -a8 -5 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -xf -xp -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>

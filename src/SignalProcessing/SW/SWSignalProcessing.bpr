@@ -35,15 +35,15 @@
     <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SignalProcessing.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=&quot;d:\PROGRAM FILES\borland\CBUILDER6\lib\vcl60.csm&quot; -Hc -Vx -Ve -xf 
-      -xp -X- -r- -a8 -5 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -xf -xp -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
