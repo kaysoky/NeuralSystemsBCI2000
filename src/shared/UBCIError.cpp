@@ -80,6 +80,8 @@ bci_ostream::bci_stringbuf::sync()
 void
 BCIError::Warning( const string& message )
 {
+  if( message.length() > 1 )
+    cerr << message << endl;
 }
 
 void
