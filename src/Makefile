@@ -36,7 +36,7 @@ MKNAM = .makefiles
 # How to zero the subproject makefile list.
 EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
 # Extensions of files that need to be always writeable.
-FORCEWRITE = *.bpr *.res *.mak
+FORCEWRITE = *.bpr *.res *.mak *.pdf
 # Extensions of files that will be deleted by 'make clean'.
 GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 # How to report when we are done with a target.
@@ -54,12 +54,15 @@ OR = ||
 # Bootstrapping: Create list of subproject makefiles
 #
 ##################################################################################
-all docinfo prepare clean:
+all docinfo prepare clean pdf:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.>>${MKNAM}
   echo MAKEFILES =\                                                    >>${MKNAM}
   -for /R %i in (*.bpr) do echo %~di%~pi%~ni.mak \                     >>${MKNAM}
+  echo.                                                                >>${MKNAM}
+  echo LATEXDOCS =\                                                    >>${MKNAM}
+  -for /R %i in (*.tex) do grep \\documentclass %i ${AND} echo %i \    >>${MKNAM}
   echo.                                                                >>${MKNAM}
   ${MAKE} -${MAKEFLAGS} $@
 
@@ -92,6 +95,10 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
+  ${DONE}
+  
+# Create pdfs from tex files
+pdf: ${LATEXDOCS:.tex=.pdf}
   ${DONE}
 
 ##################################################################################
@@ -142,6 +149,11 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 .mak.clean:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} clean
   del $<
+  ${DONE}
+  
+.tex.pdf:
+  # We run pdflatex twice to get the references right.
+  ${SHELL} cd ${<D} ${AND} pdflatex ${<F} ${AND} pdflatex ${<F}
   ${DONE}
   
 !endif # !ifndef MAKEFILES
