@@ -347,7 +347,6 @@ int STATE::GetBitLocation() const
 void STATE::SetByteLocation(int loc)
 {
  byteloc=loc;
- modified = true;
 }
 
 
@@ -360,7 +359,6 @@ void STATE::SetByteLocation(int loc)
 void STATE::SetBitLocation(int loc)
 {
  bitloc=loc;
- modified = true;
 }
 
 
@@ -441,6 +439,7 @@ char    *buf;
  length=atoi(buf);
  ptr=get_argument(ptr, buf, line, statelength);
  value=atoi(buf);
+ modified = true;
  ptr=get_argument(ptr, buf, line, statelength);
  byteloc=atoi(buf);
  ptr=get_argument(ptr, buf, line, statelength);
@@ -449,7 +448,6 @@ char    *buf;
  free(buf);
  // delete buf;
  valid=true;
- modified = true;
  return(ERRSTATE_NOERR);
 }
 
