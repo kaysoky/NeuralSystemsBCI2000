@@ -41,7 +41,6 @@ class StreamToTable : public MessageHandler
   typedef set<string> StringSet; // A set is a sorted container of unique values.
   StringSet           mStateNames;
 
-
   virtual bool HandleSTATE(       istream& );
   virtual bool HandleVisSignal(   istream& );
   virtual bool HandleSTATEVECTOR( istream& );
@@ -89,7 +88,7 @@ StreamToTable::HandleVisSignal( istream& arIn )
   VisSignal v;
   v.ReadBinary( arIn );
   const GenericSignal& s = v;
-  // Print a header line before the first data.
+  // Print a header line before the first line of data.
   if( mSignalProperties == SignalProperties( 0, 0, 0 ) )
   {
     mSignalProperties = s;
