@@ -125,6 +125,7 @@ TfMain::CoreConnection::~CoreConnection()
 
 __fastcall TfMain::~TfMain()
 {
+  mTerminated = true;
   OperatorUtils::SaveControl( this );
   delete mpReceivingThread;
 }
@@ -194,10 +195,15 @@ void
 __fastcall
 TfMain::ProcessBCIMessages()
 {
-  for( SetOfConnections::iterator i = mCoreConnections.begin();
+  // This function might be called from the VCL Synchronize() queue even after
+  // destruction of the other windows.
+  if( !mTerminated )
+  {
+    for( SetOfConnections::iterator i = mCoreConnections.begin();
                                                i != mCoreConnections.end(); ++i )
-    ( *i )->ProcessBCIMessages();
-  UpdateDisplay();
+      ( *i )->ProcessBCIMessages();
+    UpdateDisplay();
+  }
 }
 
 
