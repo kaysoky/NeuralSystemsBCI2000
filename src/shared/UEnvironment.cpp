@@ -174,7 +174,7 @@ Environment::State( const char* name ) const
       length = state->GetLength();
     }
   }
-  return STATEVECTOR::type_adapter( Statevector, bitLocation, byteLocation, length );
+  return STATEVECTOR::type_adapter( Statevector, byteLocation, bitLocation, length );
 }
 
 // Read access to an optional state by its name.
@@ -206,7 +206,7 @@ Environment::OptionalState( short defaultValue, const char* name ) const
       length = state->GetLength();
     }
   }
-  return STATEVECTOR::type_adapter( statevector, bitLocation, byteLocation, length, defaultValue );
+  return STATEVECTOR::type_adapter( statevector, byteLocation, bitLocation, length, defaultValue );
 }
 
 // Called to prevent access.

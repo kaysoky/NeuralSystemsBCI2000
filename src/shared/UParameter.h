@@ -23,7 +23,9 @@
  * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
- * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
+ * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists     *
+ * V0.21 - 05/08/2003 - Assignment operator controls behavior of certain      *
+ *                      elements to avoid changes of e.g. ranges entries      *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -85,6 +87,8 @@ class PARAM
         PARAM( const char* paramstring );
         ~PARAM() {}
 
+        PARAM& operator=( const PARAM& );
+
         void    SetSection( const std::string& s )
                 { section = s; }
         void    SetType( const std::string& s )
@@ -134,7 +138,10 @@ class PARAM
         void    WriteToStream( std::ostream& ) const;
         void    ReadFromStream( std::istream& );
 
-  const char*   GetParamLine() const;
+#if 1 // Changed return type to a copied string value to avoid multithreading trouble.
+      // In the future, this function needs to be replaced by using stream i/o.
+  std::string   GetParamLine() const;
+#endif
         int     ParseParameter( const char* line, size_t length );
 
   static int get_argument(int ptr, char *buf, const char *line, int maxlen);

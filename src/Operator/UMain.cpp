@@ -309,7 +309,7 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
   cur_param=paramlist.GetParamPtr(i);
   if (cur_param)
      {
-     paramline=cur_param->GetParamLine();
+     paramline=cur_param->GetParamLine().c_str();
 
      coremessage->SetLength((unsigned short)strlen(paramline.c_str()));
      strncpy(coremessage->GetBufPtr(), paramline.c_str(), strlen(paramline.c_str()));

@@ -206,7 +206,7 @@ int             i;
  pStream=new TWinSocketStream(CoreSocket->Socket, 5000);
  if (!pStream) return(0);
 
- strcpy(line, param->GetParamLine());                          // copy its ASCII representation to variable line
+ strcpy(line, param->GetParamLine().c_str());                  // copy its ASCII representation to variable line
  strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
  coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
  coremessage->SendCoreMessage(pStream);                        // and send it out
@@ -247,7 +247,7 @@ const PARAM     *cur_param;
  for (size_t i=0; i<paramlist->GetNumParameters(); i++)
   {
   cur_param=paramlist->GetParamPtr(i);                          // get the i'th parameter
-  strcpy(line, cur_param->GetParamLine());                      // copy its ASCII representation to variable line
+  strcpy(line, cur_param->GetParamLine().c_str());              // copy its ASCII representation to variable line
   strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
   coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
   coremessage->SendCoreMessage(pStream);                        // and send it out
@@ -291,7 +291,7 @@ STATE           *cur_state;
  for (i=0; i<statelist->GetNumStates(); i++)
   {
   cur_state=statelist->GetStatePtr(i);                          // get the i'th state
-  strcpy(line, cur_state->GetStateLine());                      // copy its ASCII representation to variable line
+  strcpy(line, cur_state->GetStateLine().c_str());              // copy its ASCII representation to variable line
   strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
   coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
   coremessage->SendCoreMessage(pStream);                        // and send it out

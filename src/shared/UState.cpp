@@ -19,7 +19,8 @@
 
 #include <stdio.h>
 #include <assert>
-
+#include <sstream>
+using namespace std;
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
@@ -231,7 +232,9 @@ STATE::STATE()
   valid( false ),
   modified( false )
 {
+#if 0
   buffer[ 0 ] = '\0';
+#endif
   name[ 0 ] = '\0';
 }
 
@@ -255,10 +258,11 @@ STATE::~STATE()
 // Parameters: N/A
 // Returns:    a pointer to the state line
 // **************************************************************************
-const char *STATE::GetStateLine() const
+std::string STATE::GetStateLine() const
 {
- ConstructStateLine();
- return(buffer);
+ ostringstream oss;
+ oss << name << " " << length << " " << value << " " << byteloc << " " << bitloc;
+ return oss.str();
 }
 
 
@@ -389,7 +393,7 @@ int STATE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
  return(ptr);
 }
 
-
+#if 0
 // **************************************************************************
 // Function:   ConstructStateLine
 // Purpose:    Construct a state line, based upon the current values
@@ -402,7 +406,7 @@ int STATE::ConstructStateLine() const
  sprintf(buffer, "%s %d %d %d %d", name, length, value, byteloc, bitloc);
  return(ERRSTATE_NOERR);
 }
-
+#endif
 
 // **************************************************************************
 // Function:   ParseState

@@ -14,23 +14,22 @@
 #define LENGTH_STATELINE        512
 
 #include <vcl.h>
+#include <string>
 
 class STATE
 {
   friend class STATEVECTOR;
-  friend class STATELIST; // calls GetValue() which is to be omitted
+  friend class STATELIST; // calls GetValue()
 
 private:    // User declarations
-        mutable char    buffer[LENGTH_STATELINE];
         int     length;
         char    name[LENGTH_NAME];
-        unsigned short value; // will be renamed writeCache if GetValue can be omitted
+        unsigned short value;
         int     byteloc;
         int     bitloc;
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         bool    valid;
         bool    modified;
-        int     ConstructStateLine() const;
         void    SetByteLocation(int loc);
         void    SetBitLocation(int loc);
 protected:
@@ -44,7 +43,10 @@ public:     // User declarations
         void    SetValue(unsigned short new_value);
         int     GetByteLocation() const;
         int     GetBitLocation() const;
-        const char    *GetStateLine() const;
+#if 1 // Changed return type to a copied string value to avoid multithreading trouble.
+      // In the future, this function should be replaced by using stream i/o.
+        std::string GetStateLine() const;
+#endif
         int     ParseState(const char *line, int length);
         bool    Valid() const { return valid; }
 };
@@ -98,16 +100,16 @@ class STATEVECTOR
     type_adapter& operator=( const type_adapter& );
    public:
     type_adapter()
-    : p( NULL ), bit( 0 ), byte( 0 ), length( 0 ), defVal( 0 ) {}
-    type_adapter( STATEVECTOR* inStatevector, int inBit, int inByte, int inLength, short inDefval = 0 )
-    : p( inStatevector ), bit( inBit ), byte( inByte ), length( inLength ), defVal( inDefval ) {}
+    : p( NULL ), byte( 0 ), bit( 0 ), length( 0 ), defVal( 0 ) {}
+    type_adapter( STATEVECTOR* inStatevector, int inByte, int inBit, int inLength, short inDefval = 0 )
+    : p( inStatevector ), byte( inByte ), bit( inBit ), length( inLength ), defVal( inDefval ) {}
     const type_adapter& operator=( int i )
     { p && p->SetStateValue( byte, bit, length, i ); return *this; }
     operator int() const
     { return p ? p->GetStateValue( byte, bit, length ) : defVal; }
    private:
     STATEVECTOR* p;
-    int bit, byte, length;
+    int byte, bit, length;
     short defVal;
   };
 };

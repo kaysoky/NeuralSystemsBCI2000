@@ -246,6 +246,8 @@ AnsiString valueline;
         ParamComment[count]->Left=COMMENT_OFFSETX;
         ParamComment[count]->Top=COMMENT_OFFSETY+count*COMMENT_SPACINGY;
         ParamComment[count]->Caption=cur_param->GetComment();
+        ParamComment[count]->Hint = cur_param->GetComment();
+        ParamComment[count]->ShowHint = true;
         ParamComment[count]->Font->Style = TFontStyles()<< fsItalic;
         ParamComment[count]->Visible=true;
         ParamComment[count]->Parent=CfgTabControl;
@@ -335,12 +337,27 @@ AnsiString valueline;
      }
   }
 
+#if 0 // jm 5/03
  if (count > 0)
     if (ParamLabel[count-1]->Top+ParamLabel[count-1]->Height > CfgTabControl->Height)
        {
        CfgTabControl->Height=ParamLabel[count-1]->Top+ParamLabel[count-1]->Height+15;
        // fConfig->Width=CfgTabControl->Width+40;
        }
+#else
+  if( count > 0 )
+  {
+    TControl* bottomControl = ParamUserLevel[ count - 1 ];
+    if( bottomControl == NULL )
+      bottomControl = ParamValue[ count - 1 ];
+    if( bottomControl == NULL )
+      bottomControl = ParamButton[ 0 ][ count - 1 ];
+    int bottomDiff = bottomControl->Top + bottomControl->Height
+                     - CfgTabControl->DisplayRect.Bottom;
+    if( bottomDiff > 0 )
+      CfgTabControl->Height = CfgTabControl->Height + bottomDiff;
+  }
+#endif // jm 5/03
 
  cur_numparamsrendered=count;
  return(0);

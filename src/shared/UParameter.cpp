@@ -639,14 +639,12 @@ int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
 // **************************************************************************
-const char*
+string
 PARAM::GetParamLine() const
 {
- static string buffer;
  ostringstream paramline;
  paramline << *this << ends;
- buffer = paramline.str();
- return buffer.c_str();
+ return paramline.str();
 }
 
 // **************************************************************************
@@ -798,6 +796,43 @@ PARAM::WriteToStream( ostream& os ) const
      << commentSeparator << ' ' << comment;
 }
 
+// **************************************************************************
+// Function:   operator=
+// Purpose:    Assignment operator to prevent setting of certain properties
+//             from e.g. parameter files.
+// Parameters: PARAM instance to be copied into *this.
+// Returns:    *this.
+// **************************************************************************
+PARAM&
+PARAM::operator=( const PARAM& p )
+{
+  if( this != &p )
+  {
+    if( section.empty() )
+      section = p.section;
+    if( name.empty() )
+      name = p.name;
+    if( type.empty() )
+      type = p.type;
+    if( defaultvalue.empty() )
+      defaultvalue = p.defaultvalue;
+    if( lowrange.empty() )
+      lowrange = p.lowrange;
+    if( highrange.empty() )
+      highrange = p.highrange;
+    if( comment.empty() )
+      comment = p.comment;
+
+    dimension2 = p.dimension2;
+    values = p.values;
+
+    valid = p.valid;
+    archive = p.archive;
+    tag = p.tag;
+  }
+  return *this;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // encodedString definitions                                               //
 /////////////////////////////////////////////////////////////////////////////
@@ -814,19 +849,19 @@ const char specialChar = '%';
 void
 PARAM::encodedString::ReadFromStream( istream& is )
 {
-  string& self = *this;
-  if( is >> self )
+  string newContent;
+  if( is >> newContent )
   {
-    size_t pos = find( specialChar, 0 );
+    size_t pos = newContent.find( specialChar, 0 );
     while( pos != npos )
     {
-      erase( pos, 1 );
+      newContent.erase( pos, 1 );
 
       size_t numDigits = 0;
       char curDigit;
       int hexValue = 0;
-      while( pos + numDigits < size() && numDigits <= 2
-             && ::isxdigit( curDigit = self[ pos + numDigits ] ) )
+      while( pos + numDigits < newContent.size() && numDigits <= 2
+             && ::isxdigit( curDigit = newContent[ pos + numDigits ] ) )
       {
         if( !::isdigit( curDigit ) )
           curDigit = ::toupper( curDigit ) - 'A' + 10;
@@ -835,12 +870,13 @@ PARAM::encodedString::ReadFromStream( istream& is )
         hexValue = ( hexValue << 4 ) + curDigit;
         ++numDigits;
       }
-      erase( pos, numDigits );
+      newContent.erase( pos, numDigits );
       if( hexValue > 0 )
-        insert( pos, 1, ( char )hexValue );
+        newContent.insert( pos, 1, ( char )hexValue );
 
-      pos = find( specialChar, pos + 1 );
+      pos = newContent.find( specialChar, pos + 1 );
     }
+    *this = newContent;
   }
 }
 
