@@ -121,7 +121,7 @@ short   num_channels, dummy, sample_freq;
 void TfMain::ReadBCI2000Header(SOURCECONFIG *sourceconfig)
 {
 FILE    *fp;
-char    buf[10000], element[255];
+char    buf[50000], element[255];
 int     idx;
 AnsiString      header;
 

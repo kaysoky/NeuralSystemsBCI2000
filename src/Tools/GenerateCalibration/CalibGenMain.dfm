@@ -2,7 +2,7 @@ object fMain: TfMain
   Left = 372
   Top = 272
   BorderStyle = bsSingle
-  Caption = 'BCI2000 Calibration Generator V1.1 ... Gerv '#39'01'
+  Caption = 'BCI2000 Calibration Generator V1.2 ... Gerwin Schalk '#39'01'#39'04'
   ClientHeight = 317
   ClientWidth = 456
   Color = clBtnFace
