@@ -4,7 +4,7 @@ object fAbout: TfAbout
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'About BCI2000 ...'
-  ClientHeight = 261
+  ClientHeight = 291
   ClientWidth = 330
   Color = clMoneyGreen
   Font.Charset = DEFAULT_CHARSET
@@ -168,8 +168,8 @@ object fAbout: TfAbout
     IsControl = True
   end
   object Copyright: TLabel
-    Left = 119
-    Top = 80
+    Left = 125
+    Top = 64
     Width = 81
     Height = 13
     Caption = '(C) 2000-2004'
@@ -182,15 +182,15 @@ object fAbout: TfAbout
     IsControl = True
   end
   object Label1: TLabel
-    Left = 57
+    Left = 52
     Top = 104
-    Width = 205
+    Width = 226
     Height = 13
-    Caption = 'Wadsworth Center/NYSDOH, Albany, USA'
+    Caption = 'Wadsworth Center/NYSDOH, Albany, NY, USA'
     IsControl = True
   end
   object Label3: TLabel
-    Left = 17
+    Left = 23
     Top = 128
     Width = 285
     Height = 13
@@ -198,7 +198,7 @@ object fAbout: TfAbout
     IsControl = True
   end
   object Label4: TLabel
-    Left = 44
+    Left = 49
     Top = 144
     Width = 232
     Height = 13
@@ -207,7 +207,7 @@ object fAbout: TfAbout
   end
   object Label2: TLabel
     Left = 11
-    Top = 184
+    Top = 216
     Width = 26
     Height = 13
     Caption = 'Web:'
@@ -215,7 +215,7 @@ object fAbout: TfAbout
   end
   object Label5: TLabel
     Left = 11
-    Top = 200
+    Top = 232
     Width = 29
     Height = 13
     Caption = 'EMail:'
@@ -223,7 +223,7 @@ object fAbout: TfAbout
   end
   object Label7: TLabel
     Left = 59
-    Top = 200
+    Top = 232
     Width = 84
     Height = 13
     Caption = 'info@bci2000.org'
@@ -231,7 +231,7 @@ object fAbout: TfAbout
   end
   object Label6: TLabel
     Left = 59
-    Top = 184
+    Top = 216
     Width = 114
     Height = 13
     Caption = 'http://www.bci2000.org'
@@ -242,7 +242,7 @@ object fAbout: TfAbout
     Top = 54
     Width = 33
     Height = 16
-    Caption = 'V1.30'
+    Caption = 'V1.40'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -251,9 +251,32 @@ object fAbout: TfAbout
     ParentFont = False
     IsControl = True
   end
+  object Label8: TLabel
+    Left = 94
+    Top = 168
+    Width = 142
+    Height = 13
+    Caption = 'Computer Information Systems'
+    IsControl = True
+  end
+  object Label9: TLabel
+    Left = 64
+    Top = 184
+    Width = 202
+    Height = 13
+    Caption = 'Georgia State University, Atlanta, GA, USA'
+  end
+  object Label10: TLabel
+    Left = 18
+    Top = 88
+    Width = 295
+    Height = 13
+    Caption = 'Brain-Computer Interface Research and Development Program'
+    IsControl = True
+  end
   object OKButton: TButton
-    Left = 134
-    Top = 224
+    Left = 128
+    Top = 256
     Width = 75
     Height = 29
     Caption = 'Close'
