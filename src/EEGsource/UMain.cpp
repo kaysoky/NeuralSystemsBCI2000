@@ -316,7 +316,7 @@ char    cur_buf[256];
 int     samplefreq, i, displaysamples;
 int     display_min= 0;
 int     display_max= 8192;
-int     visdecim;
+int     visdecim, displayseconds;
 
  // unique source ID for this visualization
  vis->SetSourceID(SOURCEID_EEGDISP);
@@ -329,14 +329,16 @@ int     visdecim;
   display_min= atoi(paramlist.GetParamPtr("SourceMin")->GetValue());
   display_max= atoi(paramlist.GetParamPtr("SourceMax")->GetValue());
   visdecim=atoi(paramlist.GetParamPtr("VisualizeSourceDecimation")->GetValue());
+  displayseconds=atoi(paramlist.GetParamPtr("VisualizeSourceTime")->GetValue());
   } catch(...)
    {
    samplefreq=128;
    visdecim=1;
+   displayseconds=2;
    }
 
  // EEG display shall be two seconds long
- displaysamples=2*samplefreq/visdecim;
+ displaysamples=displayseconds*samplefreq/visdecim;
 
  // properties for EEG visualization
  sprintf(cur_buf, "%03d", displaysamples);
@@ -684,6 +686,8 @@ int     ret;
  sprintf(paramstring, "Visualize int VisualizeSource= 1 1 0 1 // visualize raw EEG (0=no, 1=yes)\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
  sprintf(paramstring, "Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw EEG\n");
+ paramlist.AddParameter2List(paramstring, strlen(paramstring));
+ sprintf(paramstring, "Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
  sprintf(paramstring, "Visualize int SourceMin= 0 0 -8092 0 // raw EEG vis Min Value\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
