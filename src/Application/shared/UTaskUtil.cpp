@@ -16,6 +16,7 @@
 
 int     rannumbers[MAX_BLOCKSIZE];
 time_t  randseed;
+int     rannumbers_count=-1;
 
 //--------------------------------------------------------------------
 // Random # generator ran1() from Press et. al.
@@ -84,26 +85,31 @@ float   rval;
 
 int GetBlockRandomizedNumber( int blocksize )
 {
-static  int numbercount=-1;
 int     retval;
 
  // the first time, get a new seed
- if (numbercount == -1)
+ if (rannumbers_count == -1)
     {
     time( &randseed );
     randseed= -randseed;
-    numbercount=0;
+    rannumbers_count=0;
     }
 
- if (numbercount == 0)
+ if (rannumbers_count == 0)
     ShuffleBlocks( blocksize );
 
- retval= rannumbers[numbercount];
+ retval= rannumbers[rannumbers_count];
 
- numbercount++;
- if (numbercount > (blocksize-1))
-    numbercount= 0;
+ rannumbers_count++;
+ if (rannumbers_count > (blocksize-1))
+    rannumbers_count= 0;
 
  return( retval );
+}
+
+
+void InitializeBlockRandomizedNumber()
+{
+ rannumbers_count=-1;
 }
 
