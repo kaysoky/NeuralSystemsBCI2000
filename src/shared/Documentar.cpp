@@ -71,13 +71,26 @@ class Table : public ostringstream
         if( cells[ row ][ col ].length() > maxLengths[ col ] )
           maxLengths[ col ] = cells[ row ][ col ].length();
 
+#ifdef LATEXOUTPUT
+    os << '\n'
+       << cells[ 0 ][ 0 ];
+    for( size_t col = 1; col < cells[ 0 ].size(); ++col )
+      os << " & " << cells[ 0 ][ col ];
+    os << "\\\\ \\hline \n";
+    for( size_t row = 1; row < cells.size(); ++row )
+    {
+      os << '\n'
+         << cells[ row ][ 0 ];
+      for( size_t col = 1; col < cells[ row ].size(); ++col )
+        os << " & " << cells[ row ][ col ];
+      os << "\\\\ \n";
+    }
+#else // LATEXTOUTPUT
     os << '\n';
     for( size_t col = 0; col < cells[ 0 ].size(); ++col )
-    {
-      string display = cells[ 0 ][ col ];
-      display.resize( maxLengths[ col ], ' ' );
-      os << ' ' << display;
-    }
+      os << ' '
+         << cells[ 0 ][ col ]
+         << string( maxLengths[ col ] - cells[ 0 ][ col ].length(), ' ' );
     os << '\n';
     for( size_t col = 0; col < cells[ 0 ].size(); ++col )
       os << ' ' << string( maxLengths[ col ], '-' );
@@ -85,12 +98,11 @@ class Table : public ostringstream
     {
       os << '\n';
       for( size_t col = 0; col < cells[ row ].size(); ++col )
-      {
-        string display = cells[ row ][ col ];
-        display.resize( maxLengths[ col ], ' ' );
-        os << ' ' << display;
-      }
+      os << ' '
+         << cells[ row ][ col ]
+         << string( maxLengths[ col ] - cells[ row ][ col ].length(), ' ' );
     }
+#endif // LATEXOUTPUT
   }
 };
 
@@ -158,23 +170,23 @@ int Documentar::operator()( int argc, const char** argv )
     cout << "No filters registered." << newl;
   else
   {
-	  cout << "Filter sequence:" << newl;
+      cout << "Filter sequence:" << newl;
 
-	  table << "Position" << tab << "Filter Name" << newl;
+      table << "Position" << tab << "Filter Name" << newl;
 
-	  string currentPos;
-	  for( GenericFilter::registrarSet::iterator i
-				 = GenericFilter::Registrar::registrars.begin();
-				 i != GenericFilter::Registrar::registrars.end(); ++i )
-	  {
-		if( currentPos != ( *i )->GetPosition() )
-		{
-		  currentPos = ( *i )->GetPosition();
-		  table << currentPos;
-		}
-		table << tab << ( *i )->GetTypeid().name() << newl;
-	  }
-	  cout << table << newl;
+      string currentPos;
+      for( GenericFilter::registrarSet::iterator i
+                 = GenericFilter::Registrar::registrars.begin();
+                 i != GenericFilter::Registrar::registrars.end(); ++i )
+      {
+        if( currentPos != ( *i )->GetPosition() )
+        {
+          currentPos = ( *i )->GetPosition();
+          table << currentPos;
+        }
+        table << tab << ( *i )->GetTypeid().name() << newl;
+      }
+      cout << table << newl;
   }
 
   PARAMLIST allParams;

@@ -23,6 +23,7 @@
  * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
+ * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -48,16 +49,28 @@ class PARAM
      ERRPARAM_INVALIDPARAM = 2,
    };
 
+   // A string class that allows for transparent handling of
+   // character codes using the % sign.
+   class encodedString : public std::string
+   {
+    public:
+     encodedString() {}
+     encodedString( const std::string& s ) : std::string( s ) {}
+     encodedString( const char* s ) : std::string( s ) {}
+     void WriteToStream( std::ostream& ) const;
+     void ReadFromStream( std::istream& );
+   };
+
  private:
-          std::string section,
-                      name,
-                      type,
-                      defaultvalue,
-                      lowrange,
-                      highrange,
-                      comment;
-          size_t      dimension2;
-          std::vector<std::string> values;
+          encodedString section,
+                        name,
+                        type,
+                        defaultvalue,
+                        lowrange,
+                        highrange;
+          std::string   comment;
+          size_t        dimension2;
+          std::vector<encodedString> values;
 
  public:
         PARAM();
@@ -243,13 +256,24 @@ class PARAMLIST : public param_container
         void    ReadFromStream( std::istream& );
 
   // These are for compatibility.
-        void    Sort()
-                {}
+        void    Sort() {}
         PARAM*  GetParamPtr( size_t );
   const PARAM*  GetParamPtr( size_t ) const;
         void    CloneParameter2List( const PARAM* );
         void    MoveParameter2List( PARAM* );
 };
+
+inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e )
+{
+  e.WriteToStream( s );
+  return s;
+}
+
+inline std::istream& operator>>( std::istream& s, PARAM::encodedString& e )
+{
+  e.ReadFromStream( s );
+  return s;
+}
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM& p )
 {

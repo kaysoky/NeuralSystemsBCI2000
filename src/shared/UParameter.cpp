@@ -23,6 +23,7 @@
  * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
+ * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -706,7 +707,7 @@ PARAM::ReadFromStream( istream& is )
   }
   // Parse the parameter's declaration.
   istringstream linestream( declaration );
-  string value;
+  encodedString value;
   linestream >> value;
   SetSection( value );
   linestream >> value;
@@ -749,7 +750,7 @@ PARAM::ReadFromStream( istream& is )
   values.resize( dimension1 * dimension2, "0" );
 
   // These entries are not required for a parameter definition.
-  string* finalEntries[] =
+  encodedString* finalEntries[] =
   {
     &defaultvalue,
     &lowrange,
@@ -790,10 +791,86 @@ PARAM::WriteToStream( ostream& os ) const
   else if( type.find( "list" ) != type.npos )
     os << GetNumValues() << ' ';
   for( size_t i = 0; i < GetNumValues(); ++i )
-    os << GetValue( i ) << ' ';
+    os << encodedString( GetValue( i ) ) << ' ';
   os << defaultvalue << ' '
      << lowrange << ' '
      << highrange << ' '
      << commentSeparator << ' ' << comment;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// encodedString definitions                                               //
+/////////////////////////////////////////////////////////////////////////////
+const char specialChar = '%';
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             parameter.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::encodedString::ReadFromStream( istream& is )
+{
+  string& self = *this;
+  if( is >> self )
+  {
+    size_t pos = find( specialChar, 0 );
+    while( pos != npos )
+    {
+      erase( pos, 1 );
+
+      size_t numDigits = 0;
+      char curDigit;
+      int hexValue = 0;
+      while( pos + numDigits < size() && numDigits <= 2
+             && ::isxdigit( curDigit = self[ pos + numDigits ] ) )
+      {
+        if( !::isdigit( curDigit ) )
+          curDigit = ::toupper( curDigit ) - 'A' + 10;
+        else
+          curDigit -= '0';
+        hexValue = ( hexValue << 4 ) + curDigit;
+        ++numDigits;
+      }
+      erase( pos, numDigits );
+      if( hexValue > 0 )
+        insert( pos, 1, ( char )hexValue );
+
+      pos = find( specialChar, pos + 1 );
+    }
+  }
+}
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             parameter.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::encodedString::WriteToStream( ostream& os ) const
+{
+  const string& self = *this;
+  ostringstream oss;
+  oss << hex;
+  for( size_t pos = 0; pos < size(); ++pos )
+  {
+    if( ::isprint( self[ pos ] ) && !::isspace( self[ pos ] ) )
+    {
+      oss << self[ pos ];
+      if( self[ pos ] == specialChar )
+        oss << specialChar;
+    }
+    else
+      oss << specialChar
+          << int( self[ pos ] >> 4 )
+          << int( self[ pos ] & 0x0f );
+  }
+  os << oss.str();
+}
