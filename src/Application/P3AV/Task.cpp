@@ -213,9 +213,13 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   if( Parameter( "MinInterTime" ) > Parameter( "MaxInterTime" ) )
     bcierr << "MinInterTime parameter can not be larger than MaxInterTime parameter" << endl;
 
-  if( Parameter( "PreSequenceTime" ) < 2 * Parameter( "OnTime" )
-      || Parameter( "PostSequenceTime" ) < 2 * Parameter( "OnTime" ) )
-    bcierr << "PreSequenceTime and PostSequenceTime parameters must be"
+  // The PostSequenceTime needs to be long enough so that the last stimulus classification
+  // result makes it to the application. The info about when the classification is made
+  // is defined in a parameter in the P3SigProc, and thus within the domain of a
+  // different module. Since we are not supposed to create module interdependencies,
+  // we here check it against some arbitrary time.
+  if( Parameter( "PostSequenceTime" ) < 2 * Parameter( "OnTime" ) )
+    bcierr << "PostSequenceTime parameters must be"
               " at least 2 times larger than OnTime parameter" << endl;
 
   // check stimuli matrix , FocusOn matrix, Result matrix
