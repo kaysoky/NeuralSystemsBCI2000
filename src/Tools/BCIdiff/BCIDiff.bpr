@@ -28,8 +28,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL;_RTLDLL;USEPACKAGES"/>
     <MAINSOURCE value="BCIDiff.bpf"/>
-    <INCLUDEPATH value="..\..\shared;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared;$(BCB)\Projects\Lib;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared;.;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared;$(BCB)\Projects\Lib;.;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -93,12 +93,16 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=1
-Item0=D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=..\..\shared;.;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\shared;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\include;$(BCB)\include\vcl
+Item2=D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..\..\shared;$(BCB)\Projects\Lib;.;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\shared;$(BCB)\Projects\Lib;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\lib\obj;$(BCB)\lib
+Item2=D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
