@@ -78,7 +78,7 @@ void SYSLOG::ShowSysLog()
 // Parameters: text - pointer to the text to add to the log
 // Returns:    N/A
 // **************************************************************************
-void SYSLOG::AddSysLogEntry(char *text)
+void SYSLOG::AddSysLogEntry(const char *text)
 {
 TDateTime       cur_time;
 
@@ -97,7 +97,7 @@ TDateTime       cur_time;
 //                           SYSLOGENTRYMODE_ERROR   (attributes for an error message)
 // Returns:    N/A
 // **************************************************************************
-void SYSLOG::AddSysLogEntry(char *text, int mode)
+void SYSLOG::AddSysLogEntry(const char *text, int mode)
 {
 TDateTime       cur_time;
 

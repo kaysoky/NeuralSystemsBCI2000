@@ -23,8 +23,8 @@ public:		// User declarations
         SYSLOG::~SYSLOG();
         void    SYSLOG::ShowSysLog();
         bool    SYSLOG::Close( bool force = false );
-        void    SYSLOG::AddSysLogEntry(char *text);
-        void    SYSLOG::AddSysLogEntry(char *text, int mode);
+        void    SYSLOG::AddSysLogEntry(const char *text);
+        void    SYSLOG::AddSysLogEntry(const char *text, int mode);
 };
 #endif
 
