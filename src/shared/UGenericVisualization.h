@@ -10,9 +10,6 @@
 //          Introduced clipping to reduce the amount of time spent blitting
 //          graphics data.
 //
-//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
-//          from the "Conditional defines" in the project options.
-//
 //          May 27, 2003, jm:
 //          Separated VISUAL and VISCFGLIST into a file belonging to
 //          the operator module.
@@ -22,6 +19,7 @@
 #define UGenericVisualizationH
 
 #include <ScktComp.hpp>
+#include <sstream>
 #include "defines.h"
 
 class GenericIntSignal;
@@ -47,8 +45,7 @@ public:
     // Some convenience declarations.
     bool Send( CFGID::CFGID cfgID, const char* cfgString )
              { return SendCfg2Operator( sourceID, cfgID, cfgString ); }
-    bool Send( CFGID::CFGID cfgID, int cfgValue )
-             { return SendCfg2Operator( sourceID, cfgID, cfgValue ); }
+    template<typename T> bool Send( CFGID::CFGID cfgID, const T& cfgValue );
     bool Send( const char* memoString )
              { return SendMemo2Operator( memoString ); }
     bool Send( GenericSignal* signal )
@@ -66,7 +63,7 @@ public:
         int     Send2Operator(const GenericSignal *signal, const PARAM *channellistparam);
         bool    SendMemo2Operator(const char *string);
         bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString);
-        bool    SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgValue );
+        bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, int cfgValue);
         void    ParseVisualization(const char *buffer, int length);
         void    SetSourceID(BYTE my_sourceID);
         BYTE    GetSourceID() const;
@@ -78,6 +75,15 @@ public:
         BYTE    GetVisualizationType() const { return vis_type; }
         bool    valid;
 };
+
+template<typename T>
+bool
+GenericVisualization::Send( CFGID::CFGID cfgID, const T& cfgValue )
+{
+  std::ostringstream oss;
+  oss << cfgValue;
+  return Send( cfgID, oss.str().c_str() );
+}
 
 #endif // UGenericVisualizationH
 

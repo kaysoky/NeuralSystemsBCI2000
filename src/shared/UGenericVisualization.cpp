@@ -10,12 +10,14 @@
 //          Introduced clipping to reduce the amount of time spent blitting
 //          graphics data.
 //
-//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
-//          from the "Conditional defines" in the project options.
-//
 //          May 27, 2003, jm:
 //          Separated VISUAL and VISCFGLIST into a file belonging to
 //          the operator module.
+//
+//          Dec 10, 2003, jm:
+//          Introduced a RGB color type that reads and writes itself to a
+//          stream to allow for transmitting color lists for
+//          CFGID::channelColors.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

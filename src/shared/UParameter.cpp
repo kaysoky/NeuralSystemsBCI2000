@@ -643,9 +643,6 @@ PARAM::SetValue( const string& value, size_t idx )
 // Purpose:    Returns a parameter line in ASCII format
 //             Tis parameter line is constructed, based upon the current
 //             values in the PARAM object
-// Note:
-// Calling GetParamLine() may invalidate its previous return value.
-// jm
 //
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
@@ -654,7 +651,7 @@ string
 PARAM::GetParamLine() const
 {
  ostringstream paramline;
- paramline << *this << ends;
+ paramline << *this;
  return paramline.str();
 }
 
@@ -701,10 +698,17 @@ PARAM::ReadFromStream( istream& is )
   archive = false;
   tag = false;
   values.clear();
-  string declaration,
-         definition;
+  string declaration;
   getline( is, declaration, '=' );
-  getline( is, definition );
+  string definition;
+  {
+    int i = is.peek();
+    while( i != '\r' && i != '\n' && i != EOF )
+    {
+      definition += is.get();
+      i = is.peek();
+    }
+  }
   size_t commentSepPos = definition.rfind( commentSeparator );
   if( commentSepPos != definition.npos )
   {
@@ -853,14 +857,11 @@ PARAM::WriteToStream( ostream& os ) const
 istream&
 PARAM::ReadBinary( istream& is )
 {
-  string line;
-  if( getline( is, line, '\x0a' ) )
-  {
-    istringstream linestream( line );
-    ReadFromStream( linestream );
-    if( !linestream )
-      is.setstate( ios::failbit );
-  }
+  ReadFromStream( is );
+  if( is && ( is.get() != '\r' ) )
+    is.setstate( ios::failbit );
+  if( is && ( is.get() != '\n' ) )
+    is.setstate( ios::failbit );
   return is;
 }
 
@@ -875,7 +876,7 @@ ostream&
 PARAM::WriteBinary( ostream& os ) const
 {
   WriteToStream( os );
-  os << "\x0d\x0a";
+  os.put( '\r' ).put( '\n' );
   return os;
 }
 
@@ -927,7 +928,7 @@ const char escapeChar = '%';
 // **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
-//             parameter.
+//             string value.
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
@@ -970,7 +971,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
 // **************************************************************************
 // Function:   WriteToStream
 // Purpose:    Member function for formatted stream output of a single
-//             parameter.
+//             encoded string value.
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
@@ -1120,8 +1121,11 @@ PARAM::labelIndexer::TrivialLabel( size_t index )
   {
     // This should be the only place where a statement
     // is made about how a trivial label is formed.
+    const int trivialBase = 1; // Channels are counted from 1,
+                               // so trivial labels should start with 1 to avoid
+                               // user confusion.
     ostringstream oss;
-    oss << index;
+    oss << index + trivialBase;
     labelBuffer[ index ] = oss.str();
   }
   return labelBuffer[ index ];

@@ -33,9 +33,11 @@ RGBColor::WriteToStream( std::ostream& os ) const
 void
 RGBColor::ReadFromStream( std::istream& is )
 {
-  is >> mValue;
+  ios_base::fmtflags flags = is.flags();
+  is >> hex >> showbase >> mValue;
   if( mValue & 0xff000000 )
     is.setstate( ios::failbit );
+  is.flags( flags );
 }
 
 RGBColor

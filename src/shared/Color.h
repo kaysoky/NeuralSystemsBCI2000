@@ -16,32 +16,32 @@
 #include <iostream>
 #include <vector>
 
+enum ColorNames
+{
+  NullColor = 0xff000000,
+  Black = 0x0,
+  Maroon = 0x80,
+  Green = 0x8000,
+  Olive = 0x8080,
+  Navy = 0x800000,
+  Purple = 0x800080,
+  Teal = 0x808000,
+  Gray = 0x808080,
+  Silver = 0xc0c0c0,
+  Red = 0xff,
+  Lime = 0xff00,
+  Yellow = 0xffff,
+  Blue = 0xff0000,
+  Fuchsia = 0xff00ff,
+  Aqua = 0xffff00,
+  LtGray = 0xc0c0c0,
+  DkGray = 0x808080,
+  White = 0xffffff,
+};
+
 class RGBColor
 {
   public:
-    enum
-    {
-      NullColor = 0xff000000,
-      Black = 0x0,
-      Maroon = 0x80,
-      Green = 0x8000,
-      Olive = 0x8080,
-      Navy = 0x800000,
-      Purple = 0x800080,
-      Teal = 0x808000,
-      Gray = 0x808080,
-      Silver = 0xc0c0c0,
-      Red = 0xff,
-      Lime = 0xff00,
-      Yellow = 0xffff,
-      Blue = 0xff0000,
-      Fuchsia = 0xff00ff,
-      Aqua = 0xffff00,
-      LtGray = 0xc0c0c0,
-      DkGray = 0x808080,
-      White = 0xffffff,
-    };
-    
     RGBColor() : mValue( 0 ) {}
     RGBColor( int value ) : mValue( value ) {}
     RGBColor( char r, char g, char b ) : mValue( r << 16 + g << 8 + b ) {}
@@ -63,7 +63,7 @@ class Colorlist: public std::vector<RGBColor>
     // must be Colorlist::End.
     enum
     {
-      End = RGBColor::NullColor,
+      End = NullColor,
     };
     
     Colorlist() {}

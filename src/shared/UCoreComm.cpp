@@ -247,7 +247,7 @@ const PARAM     *cur_param;
   {
   cur_param=paramlist->GetParamPtr(i);                          // get the i'th parameter
   std::string line = cur_param->GetParamLine();
-  strcpy(coremessage->GetBufPtr(line.length()), line.c_str());   // copy line into the coremessage
+  strncpy(coremessage->GetBufPtr(line.length()), line.c_str(), line.length());   // copy line into the coremessage
   coremessage->SetLength((unsigned short)line.length());         // set the length of the coremessage
   coremessage->SendCoreMessage(pStream);                        // and send it out
   }

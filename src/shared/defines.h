@@ -52,6 +52,10 @@ namespace CFGID
 {
   enum CFGID
   {
+    Top = -4,
+    Left = -3,
+    Width = -2,
+    Height = -1,
     WINDOWTITLE = 1,
 
       // Graph options
