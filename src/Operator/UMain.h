@@ -82,7 +82,9 @@ class TfMain : public TForm
 
   void EnterState( SYSSTATUS::State );
   void BroadcastParameters();
+  void BroadcastEndOfParameter();
   void BroadcastStates();
+  void BroadcastEndOfState();
   void QuitOperator();
   void UpdateDisplay();
   void SetFunctionButtons();
@@ -113,11 +115,9 @@ class TfMain : public TForm
       ~CoreConnection();
 
       void ProcessBCIMessages();
-      void BroadcastParameters();
-      void BroadcastStates();
-
       template<typename T> bool PutMessage( const T& t )
       { return MessageHandler::PutMessage<T>( mStream, t ).flush(); }
+      MessageOrigin Origin() const { return mOrigin; }
 
     private:
       virtual bool HandleSTATUS(    std::istream& );

@@ -242,7 +242,7 @@ TfMain::CoreConnection::OnAccept()
         + AnsiString( mSocket.port() );
 }
 
-// When a connection is closed, close the associated stream, and update the
+// When a connection is closed, close the associated stream, and update
 // the information in its SYSSTATUS::Address[] entry.
 void
 TfMain::CoreConnection::OnDisconnect()
@@ -256,45 +256,52 @@ TfMain::CoreConnection::OnDisconnect()
 void
 TfMain::BroadcastParameters()
 {
+  int numParams = mParameters.GetNumParameters();
   for( SetOfConnections::iterator i = mCoreConnections.begin();
                                                i != mCoreConnections.end(); ++i )
-    ( *i )->BroadcastParameters();
+    if( ( *i )->PutMessage( mParameters ) )
+    {
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ ( *i )->Origin() ] += numParams;
+      mSysstatus.NumParametersSent[ ( *i )->Origin() ] += numParams;
+    }
 }
-
 
 void
-TfMain::CoreConnection::BroadcastParameters()
+TfMain::BroadcastEndOfParameter()
 {
-  int numParams = mParent.mParameters.GetNumParameters();
-  mParent.mSysstatus.INI[ mOrigin ] = false;
-  if( PutMessage( mParent.mParameters ) )
+  for( SetOfConnections::iterator i = mCoreConnections.begin();
+                                               i != mCoreConnections.end(); ++i )
   {
-    ::Sleep( 0 );
-    mParent.mSysstatus.NumMessagesSent[ mOrigin ] += numParams + 1;
-    mParent.mSysstatus.NumParametersSent[ mOrigin ] += numParams;
+    mSysstatus.INI[ ( *i )->Origin() ] = false;
+    if( ( *i )->PutMessage( SYSCMD::EndOfParameter ) )
+      ++mSysstatus.NumMessagesSent[ ( *i )->Origin() ];
   }
 }
-
 
 void
 TfMain::BroadcastStates()
 {
+  int numStates = mStates.GetNumStates();
   for( SetOfConnections::iterator i = mCoreConnections.begin();
                                                i != mCoreConnections.end(); ++i )
-    ( *i )->BroadcastStates();
+  {
+    if( ( *i )->PutMessage( mStates ) )
+    {
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ ( *i )->Origin() ] += numStates + 1;
+      mSysstatus.NumStatesSent[ ( *i )->Origin() ] += numStates;
+    }
+  }
 }
 
-
 void
-TfMain::CoreConnection::BroadcastStates()
+TfMain::BroadcastEndOfState()
 {
-  int numStates = mParent.mStates.GetNumStates();
-  if( PutMessage( mParent.mStates ) )
-  {
-    ::Sleep( 0 );
-    mParent.mSysstatus.NumMessagesSent[ mOrigin ] += numStates + 1;
-    mParent.mSysstatus.NumStatesSent[ mOrigin ] += numStates;
-  }
+  for( SetOfConnections::iterator i = mCoreConnections.begin();
+                                               i != mCoreConnections.end(); ++i )
+    if( ( *i )->PutMessage( SYSCMD::EndOfState ) )
+      ++mSysstatus.NumMessagesSent[ ( *i )->Origin() ];
 }
 
 // Here we list the actions to be taken for the allowed state transitions.
@@ -331,7 +338,9 @@ TfMain::EnterState( SYSSTATUS::State inState )
 
     case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Initialization ):
       BroadcastParameters();
+      BroadcastEndOfParameter();
       BroadcastStates();
+      BroadcastEndOfState();
       // Send a system command 'Start' to the EEGsource (currently, it will be ignored).
       if( mEEGSource.PutMessage( SYSCMD::Start ) )
       {
@@ -348,6 +357,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Resting ):
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Resting ):
       BroadcastParameters();
+      BroadcastEndOfParameter();
       mSyslog.AddSysLogEntry( "Operator set configuration" );
       break;
 
@@ -628,6 +638,8 @@ TfMain::CoreConnection::HandleSYSCMD( istream& is )
     }
     else if( syscmd == SYSCMD::EndOfParameter )
     {
+      if( mParent.mSysstatus.SystemState == SYSSTATUS::Suspended )
+        mParent.BroadcastParameters(); // without EndOfParameter
     }
     // The operator receiving 'EndOfState' marks the end of the publishing phase.
     else if( syscmd == SYSCMD::EndOfState )
