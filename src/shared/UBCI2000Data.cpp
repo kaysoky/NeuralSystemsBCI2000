@@ -62,7 +62,7 @@ BCI2000DATA::~BCI2000DATA()
 //             BCI2000ERR_MALFORMEDHEADER ... not the correct file type ?
 //             BCI2000ERR_NOBUFMEM        ... could not allocate buffer
 // **************************************************************************
-int BCI2000DATA::Initialize(char *new_filename, int buf_size)
+int BCI2000DATA::Initialize(const char *new_filename, int buf_size)
 {
 int     ret;
 
@@ -145,7 +145,7 @@ ULONG BCI2000DATA::GetNumSamples()
 //             BCI2000ERR_MALFORMEDHEADER ... not the correct file type ?
 //             BCI2000ERR_NOBUFMEM        ... could not allocate buffer
 // **************************************************************************
-int BCI2000DATA::InitializeTotal(char *new_filename, int buf_size)
+int BCI2000DATA::InitializeTotal(const char *new_filename, int buf_size)
 {
 int     ret, firstrun, lastrun, cur_run;
 ULONG   totalsamples;
@@ -184,7 +184,7 @@ ULONG   totalsamples;
 // Returns:    number of samples in this dataset, or
 //             0, if there was an error (e.g., not initialized)
 // **************************************************************************
-ULONG BCI2000DATA::GetNumSamplesTotal()
+ULONG BCI2000DATA::GetNumSamplesTotal() const
 {
  if (!initializedtotal) return(0);
 
@@ -198,7 +198,7 @@ ULONG BCI2000DATA::GetNumSamplesTotal()
 // Parameters: N/A
 // Returns:    true or false
 // **************************************************************************
-bool BCI2000DATA::Initialized()
+bool BCI2000DATA::Initialized() const
 {
  return(initialized);
 }
@@ -210,7 +210,7 @@ bool BCI2000DATA::Initialized()
 // Parameters: N/A
 // Returns:    true or false
 // **************************************************************************
-bool BCI2000DATA::InitializedTotal()
+bool BCI2000DATA::InitializedTotal() const
 {
  return(initializedtotal);
 }
@@ -223,7 +223,7 @@ bool BCI2000DATA::InitializedTotal()
 // Returns:    pointer to the list of parameters
 //             NULL, if not initialized
 // **************************************************************************
-PARAMLIST *BCI2000DATA::GetParamListPtr()
+const PARAMLIST *BCI2000DATA::GetParamListPtr() const
 {
  if (!initialized) return(NULL);
 
@@ -238,7 +238,7 @@ PARAMLIST *BCI2000DATA::GetParamListPtr()
 // Returns:    pointer to the statevector
 //             NULL, if not initialized
 // **************************************************************************
-STATEVECTOR *BCI2000DATA::GetStateVectorPtr()
+const STATEVECTOR *BCI2000DATA::GetStateVectorPtr() const
 {
  if (!initialized) return(NULL);
 
@@ -253,7 +253,7 @@ STATEVECTOR *BCI2000DATA::GetStateVectorPtr()
 // Returns:    pointer to the list of states
 //             NULL, if not initialized
 // **************************************************************************
-STATELIST *BCI2000DATA::GetStateListPtr()
+const STATELIST *BCI2000DATA::GetStateListPtr() const
 {
  if (!initialized) return(NULL);
 
@@ -268,7 +268,7 @@ STATELIST *BCI2000DATA::GetStateListPtr()
 // Returns:    length of the header, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetHeaderLength()
+int BCI2000DATA::GetHeaderLength() const
 {
  if (!initialized) return(0);
 
@@ -283,7 +283,7 @@ int BCI2000DATA::GetHeaderLength()
 // Returns:    length of the state vector, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetStateVectorLength()
+int BCI2000DATA::GetStateVectorLength() const
 {
  if (!initialized) return(0);
 
@@ -298,7 +298,7 @@ int BCI2000DATA::GetStateVectorLength()
 // Returns:    number of channels in the file, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetNumChannels()
+int BCI2000DATA::GetNumChannels() const
 {
  if (!initialized) return(0);
 
@@ -314,7 +314,7 @@ int BCI2000DATA::GetNumChannels()
 // Returns:    sampling frequency, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetSampleFrequency()
+int BCI2000DATA::GetSampleFrequency() const
 {
  if (!initialized) return(0);
 
@@ -332,7 +332,7 @@ int BCI2000DATA::GetSampleFrequency()
 //             (e.g., not yet initialized, file names don't follow the
 //             nameRxx.dat, etc.)
 // **************************************************************************
-int BCI2000DATA::GetFirstRunNumber()
+int BCI2000DATA::GetFirstRunNumber() const
 {
 FILE *fp;
 char cur_run[256], cur_filename[256], prefix[256];
@@ -389,7 +389,7 @@ int  pos, idx, cur_runnr, runnr, firstrun;
 //             (e.g., not yet initialized, file names don't follow the
 //             nameRxx.dat, etc.)
 // **************************************************************************
-int BCI2000DATA::GetLastRunNumber()
+int BCI2000DATA::GetLastRunNumber() const
 {
 FILE *fp;
 char cur_run[256], cur_filename[256], prefix[256];
@@ -643,7 +643,7 @@ short BCI2000DATA::ReadValueTotal(int channel, ULONG sample)
 //             sample - sample number
 // Returns:    value requested
 // **************************************************************************
-short BCI2000DATA::ReadValue(int channel, ULONG sample)
+short BCI2000DATA::ReadValue(int channel, unsigned long sample)
 {
 FILE   *fp;
 long   file_ptr;
@@ -679,7 +679,7 @@ char   *cur_bufptr;
 // Returns:    value requested
 //             it returns 0 on error
 // **************************************************************************
-short BCI2000DATA::ReadValue(int channel, ULONG sample, int run)
+short BCI2000DATA::ReadValue(int channel, unsigned long sample, int run)
 {
  if (SetRun(run) == 0) return(0);
 
@@ -743,7 +743,7 @@ void BCI2000DATA::ReadStateVector(ULONG sample, int run)
 //             dest ... buffer for the output string
 // Returns:    N/A
 // **************************************************************************
-void BCI2000DATA::get_next_string(char *buf, int *start_idx, char *dest)
+void BCI2000DATA::get_next_string(const char *buf, int *start_idx, char *dest) const
 {
 int     idx;
 

@@ -21,9 +21,9 @@ private: 	// User declarations
         STATEVECTOR     *statevector;
         __int16         *buf_mem;
         long    buf_mem_start;
-        ULONG   sample_number;                  // samples in this run
-        ULONG   sample_number_run[999];         // samples in a particular run
-        ULONG   sample_number_total;            // samples in this dataset
+        unsigned long   sample_number;                  // samples in this run
+        unsigned long   sample_number_run[999];         // samples in a particular run
+        unsigned long   sample_number_total;            // samples in this dataset
         int     buffer_size;
         char    filename[256];
         bool    initialized, initializedtotal;
@@ -31,36 +31,36 @@ private: 	// User declarations
         int     headerlength;
         int     statevectorlength;
         int     sample_freq;
-        void    get_next_string(char *buf, int *start_idx, char *dest);
+        void    get_next_string(const char *buf, int *start_idx, char *dest) const;
         void    InvalidateBuffer();
         void    CalculateSampleNumber();
 public:		// User declarations
         BCI2000DATA::BCI2000DATA();
         BCI2000DATA::~BCI2000DATA();
-        int     Initialize(char *filename, int);
-        int     GetFirstRunNumber();
-        int     GetLastRunNumber();
+        int     Initialize(const char *filename, int);
+        int     GetFirstRunNumber() const;
+        int     GetLastRunNumber() const;
         int     SetRun(int);
-        int     GetHeaderLength();
-        int     GetStateVectorLength();
-        int     GetNumChannels();
-        int     GetSampleFrequency();
+        int     GetHeaderLength() const;
+        int     GetStateVectorLength() const;
+        int     GetNumChannels() const;
+        int     GetSampleFrequency() const;
         int     ReadHeader();
-        ULONG   GetNumSamples();
-        bool    Initialized();
-        PARAMLIST   *GetParamListPtr();
-        STATELIST   *GetStateListPtr();
-        STATEVECTOR *GetStateVectorPtr();
-        short   ReadValue(int channel, ULONG sample);
-        short   ReadValue(int channel, ULONG sample, int run);
-        void    ReadStateVector(ULONG sample);
-        void    ReadStateVector(ULONG sample, int run);
+        unsigned long   GetNumSamples();
+        bool    Initialized() const;
+        const PARAMLIST   *GetParamListPtr() const;
+        const STATELIST   *GetStateListPtr() const;
+        const STATEVECTOR *GetStateVectorPtr() const;
+        short   ReadValue(int channel, unsigned long sample);
+        short   ReadValue(int channel, unsigned long sample, int run);
+        void    ReadStateVector(unsigned long sample);
+        void    ReadStateVector(unsigned long sample, int run);
         // the following are functions that make the underlying file structure transparent to the programmer
         // they all look at the whole dataset as one contigous block, rather than different files
-        ULONG   GetNumSamplesTotal();
-        bool    InitializedTotal();
-        int     InitializeTotal(char *new_filename, int buf_size);
-        int     DetermineRunNumber(ULONG sample);
+        unsigned long   GetNumSamplesTotal() const;
+        bool    InitializedTotal() const;
+        int     InitializeTotal(const char *new_filename, int buf_size);
+        int     DetermineRunNumber(unsigned long sample);
 };
 
 #endif
