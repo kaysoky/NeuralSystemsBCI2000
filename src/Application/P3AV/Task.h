@@ -2,7 +2,9 @@
 #define TaskH
 
 #include "UGenericFilter.h"
-#include "UsrEnv.h";
+#include "UsrEnv.h"
+#include "UCoreComm.h"
+#include "UCoreMessage.h"
 
 /// forward declarations
 class GenericVisualization;
