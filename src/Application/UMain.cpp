@@ -567,7 +567,7 @@ COREMESSAGE     *coremessage;
        coremessage=new COREMESSAGE;
        coremessage->SetDescriptor(COREMSG_STATUS);
        coremessage->SetLength((unsigned short)strlen(line));
-       strncpy(coremessage->GetBufPtr(), line, strlen(line));
+       strncpy(coremessage->GetBufPtr(strlen(line)), line, strlen(line));
        coremessage->SendCoreMessage((TCustomWinSocket *)Socket);
        delete coremessage;
        }
