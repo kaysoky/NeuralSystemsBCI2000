@@ -66,6 +66,7 @@ namespace CFGID
         polyline,
           // Polyline options
           showBaselines,
+          channelColors,
         colorfield,
 
       // Memo options
@@ -98,7 +99,7 @@ namespace SOURCEID
     SPELLERTRIALSEQ,
     Average,
     FFT = Average + 10,
-    SW,
+    SW = FFT + 64,
     Baseline,
     Artefact,
   };
