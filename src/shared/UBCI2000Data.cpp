@@ -10,6 +10,8 @@
  *                                                                            *
  * V0.01 - 04/17/2001 - First try                                             *
  * V0.02 - 05/03/2001 - Added support for multiple runs                       *
+ * V0.03 - 06/26/2003 - Added the Value() member to access calibrated         *
+ *                      data, jm                                              *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -85,6 +87,23 @@ int     ret;
  if (ret == BCI2000ERR_NOERR) initialized=true;
 
  CalculateSampleNumber();
+
+ const float defaultOffset = 0.0;
+ sourceOffsets.clear();
+ const PARAM* sourceChOffset = paramlist.GetParamPtr( "SourceChOffset" );
+ if( sourceChOffset != NULL )
+   for( size_t i = 0; i < sourceChOffset->GetNumValues(); ++i )
+     sourceOffsets.push_back( ::atof( sourceChOffset->GetValue( i ) ) );
+ sourceOffsets.resize( channels, defaultOffset );
+
+ const float defaultGain = 0.033;
+ sourceGains.clear();
+ const PARAM* sourceChGain = paramlist.GetParamPtr( "SourceChGain" );
+ if( sourceChGain != NULL )
+   for( size_t i = 0; i < sourceChGain->GetNumValues(); ++i )
+     sourceGains.push_back( ::atof( sourceChGain->GetValue( i ) ) );
+ sourceGains.resize( channels, defaultGain ); 
+
  return(ret);
 }
 
@@ -635,6 +654,21 @@ short BCI2000DATA::ReadValueTotal(int channel, ULONG sample)
  return(retval);
 } */
 
+
+// **************************************************************************
+// Function:   Value
+// Purpose:    Returns the sample value in the .raw file for a given sample
+//             and channel number that is, the sample in the current run,
+//             in units of 1e-6 V, i.e. honouring the calibration parameters
+//             present in the file.
+// Parameters: channel - channel number
+//             sample - sample number
+// Returns:    value requested
+// **************************************************************************
+float BCI2000DATA::Value( int channel, unsigned long sample )
+{
+  return ( ReadValue( channel, sample ) - sourceOffsets[ channel ] ) * sourceGains[ channel ];
+}
 
 // **************************************************************************
 // Function:   ReadValue

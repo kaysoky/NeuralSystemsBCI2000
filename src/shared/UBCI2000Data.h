@@ -7,6 +7,8 @@
 #include "UParameter.h"
 #include "UState.h"
 
+#include <vector>
+
 #define BCI2000ERR_NOERR                0
 #define BCI2000ERR_FILENOTFOUND         1
 #define BCI2000ERR_MALFORMEDHEADER      2
@@ -28,6 +30,7 @@ private: 	// User declarations
         char    filename[1024];
         bool    initialized, initializedtotal;
         int     channels;
+        std::vector<float> sourceOffsets, sourceGains;
         int     headerlength;
         int     statevectorlength;
         int     sample_freq;
@@ -51,6 +54,7 @@ public:		// User declarations
         const PARAMLIST   *GetParamListPtr() const;
         const STATELIST   *GetStateListPtr() const;
         const STATEVECTOR *GetStateVectorPtr() const;
+        float   Value( int channel, unsigned long sample ) /* const */;
         short   ReadValue(int channel, unsigned long sample);
         short   ReadValue(int channel, unsigned long sample, int run);
         void    ReadStateVector(unsigned long sample);
