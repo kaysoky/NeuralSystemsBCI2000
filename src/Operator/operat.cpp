@@ -10,7 +10,6 @@ USEFORM("UOperatorCfg.cpp", fConfig);
 USEFORM("UPreferences.cpp", fPreferences);
 USEFORM("UShowParameters.cpp", fShowParameters);
 USEFORM("UShowStates.cpp", fShowStates);
-USEFORM("..\shared\UVisConfig.cpp", fVisConfig);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -26,7 +25,6 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
          Application->CreateForm(__classid(TfPreferences), &fPreferences);
          Application->CreateForm(__classid(TfShowParameters), &fShowParameters);
          Application->CreateForm(__classid(TfShowStates), &fShowStates);
-         Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
          Application->Run();
         }
         catch (Exception &exception)
