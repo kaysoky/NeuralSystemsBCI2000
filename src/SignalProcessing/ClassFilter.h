@@ -17,8 +17,9 @@ private:
        int samples;
        int n_mat;                   // dimension of filter kernal = TransmitCh
        int m_mat;                   // dimension of filter kernal = output channels
-       float mat_ud[MAX_M][MAX_N];     // filter kernal matrix
-       float mat_lr[MAX_M][MAX_N];     // filter kernal matrix
+       float mat_ud[MAX_M][MAX_N];  // additive filter kernal matrix
+       float xat_ud[MAX_M][MAX_N];  // multiplicative filter matrix
+       float mat_lr[MAX_M][MAX_N];  // filter kernal matrix
        bool visualize;
        GenericVisualization *vis;
 public:

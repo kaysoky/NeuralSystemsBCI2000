@@ -6,7 +6,7 @@
 #include "ClassFilter.h"
 
 #include <stdio.h>
-//FILE *classfile;
+// FILE *classfile;
 
 
 //---------------------------------------------------------------------------
@@ -32,7 +32,10 @@ char line[512];
 
  vis=NULL;
 
- strcpy(line,"Filtering matrix MUD= 10 2  0 0 0 0 0 0 -1 -1 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Up / Down Weights");
+ strcpy(line,"Filtering matrix MUD= 10 2  0 0 0 0 0 0 -1 -1 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Additive Up / Down Weights");
+ plist->AddParameter2List(line,strlen(line) );
+
+ strcpy(line,"Filtering matrix XUD= 10 2  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Multiplicative Up / Down Weights");
  plist->AddParameter2List(line,strlen(line) );
 
  strcpy(line,"Filtering matrix MLR= 10 2  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  64  0 100  // Class Filter Left / Right Weights");
@@ -102,6 +105,7 @@ float stop,start,bandwidth;
         for(j=0;j<m_mat;j++)
         {
                 mat_ud[i][j]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,j) );
+                xat_ud[i][j]= atof( paramlist->GetParamPtr("XUD")->GetValue(i,j) );
                 mat_lr[i][j]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,j) );
 
         }
@@ -139,6 +143,8 @@ int     in_channel, out_channel,sample;
 float   val_ud;
 float   val_lr;
 float   value;
+float   prod;
+int prodflag;
 
  // actually perform the Class Filtering on the input and write it into the output signal
 
@@ -154,6 +160,27 @@ float   value;
                 val_lr+=  value * mat_lr[sample][in_channel];
             }
         }
+
+        prod= 1;
+        prodflag= 0;
+
+        for(in_channel=0; in_channel<input->Channels; in_channel++)
+        {
+
+            for(sample=0; sample<input->MaxElements; sample++)
+            {
+                value= input->GetValue(in_channel, sample);
+                if( xat_ud[sample][in_channel] == 0 )  ;
+                else
+                {
+                        prodflag++;
+                        prod*=  value * xat_ud[sample][in_channel];
+                }
+            }
+        }
+
+        if( prodflag > 0 ) val_ud+= prod;
+
         output->SetValue( 0, 0, val_ud );
         output->SetValue( 1, 0, val_lr );
 
