@@ -11,7 +11,7 @@
       obj\BCIDirectry.obj obj\SWFilter.obj obj\Statistics.obj 
       obj\classfilter.obj obj\Normalfilter.obj obj\SpatialFilter.obj 
       obj\CalibrationFilter.obj obj\StatFilter.obj obj\UGenericFilter.obj 
-      obj\UBCIError.obj obj\UEnvironment.obj obj\FFTFilter.obj"/>
+      obj\UBCIError.obj obj\UEnvironment.obj obj\AverageDisplay.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -79,7 +79,7 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\FFTFilter.cpp" FORMNAME="" UNITNAME="FFTFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\AverageDisplay.cpp" FORMNAME="" UNITNAME="AverageDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
