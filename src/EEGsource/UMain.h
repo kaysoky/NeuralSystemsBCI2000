@@ -74,20 +74,11 @@ public:		// User declarations
         void    ShutdownSystem();
         void    MainDataAcqLoop();
         int     StartupDataAcquisition(AnsiString connectto);
-        void    UpdateStateVector();
         int     ParametersConsistent();
         void    SetEEGDisplayProperties();
         int     resetrequest, visdecim;
         TEvent  *statevectorupdate;
-        #ifdef ADC_DTADC
-         DTADC               *adc;
-        #endif
-        #ifdef ADC_RANDOM
-         RandomNumberADC     *adc;
-        #endif
-        #ifdef ADC_DAS1402H
-         TDASSource          *adc;
-        #endif
+        GenericADC*          adc;
         GenericVisualization *vis, *roundtripvis;
         TDataStorage         *tds;
         CORECOMM             *corecomm, *sendingcomm;

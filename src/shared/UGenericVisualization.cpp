@@ -20,36 +20,28 @@
 
 
 GenericVisualization::GenericVisualization()
+: intsignal( NULL ),
+  signal( NULL ),
+  corecomm( NULL ),
+  new_samples( -1 )
 {
- intsignal=NULL;
- signal=NULL;
- corecomm=NULL;
- new_samples=-1;
 }
 
 
 GenericVisualization::GenericVisualization(PARAMLIST *paramlist, CORECOMM *new_corecomm)
+: intsignal( NULL ),
+  signal( NULL ),
+  corecomm( NULL ),
+  new_samples( -1 )
 {
-char line[256];
-
- intsignal=NULL;
- signal=NULL;
- corecomm=new_corecomm;
- new_samples=-1;
-
- // strcpy(line, "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize");
- // paramlist->AddParameter2List(line, strlen(line));
+ paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
 }
 
 
 GenericVisualization::~GenericVisualization()
 {
- if (intsignal) delete intsignal;
- if (signal)    delete signal;
-
- intsignal=NULL;
- signal=NULL;
- corecomm=NULL;
+ delete intsignal;
+ delete signal;
 }
 
 
@@ -83,25 +75,25 @@ void GenericVisualization::SetVisualizationType(BYTE my_vistype)
 }
 
 
-GenericIntSignal *GenericVisualization::GetIntSignal()
+const GenericIntSignal *GenericVisualization::GetIntSignal() const
 {
  return(intsignal);
 }
 
 
-GenericSignal *GenericVisualization::GetSignal()
+const GenericSignal *GenericVisualization::GetSignal() const
 {
  return(signal);
 }
 
 
-char *GenericVisualization::GetMemoText()
+const char *GenericVisualization::GetMemoText() const
 {
  return(memotext);
 }
 
 
-bool GenericVisualization::SendMemo2Operator(char *string)
+bool GenericVisualization::SendMemo2Operator(const char *string)
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -135,7 +127,7 @@ int     s, t;
 
 
 // send signal to operator with decimation
-bool GenericVisualization::Send2Operator(GenericIntSignal *my_signal, int decimation)
+bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal, int decimation)
 {
 unsigned short    new_channels;
 GenericIntSignal  *new_signal;
@@ -176,7 +168,7 @@ int     ch, samp, count;
 }
 
 
-bool GenericVisualization::Send2Operator(GenericIntSignal *my_signal)
+bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal)
 {
 TWinSocketStream        *pStream;
 unsigned short  *short_dataptr;
@@ -222,7 +214,7 @@ int     s, t;
 }
 
 
-bool GenericVisualization::Send2Operator(GenericSignal *my_signal)
+bool GenericVisualization::Send2Operator(const GenericSignal *my_signal)
 {
 TWinSocketStream        *pStream;
 unsigned short  *short_dataptr;
@@ -283,7 +275,7 @@ float   value, value2;
 }
 
 
-bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, char *cfgString)
+bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString)
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
@@ -319,7 +311,7 @@ float   value, value2;
 }
 
 
-void  GenericVisualization::ParseVisualization(char *buffer, int length)
+void  GenericVisualization::ParseVisualization(const char *buffer, int length)
 {
 int     i, t;
 BYTE    channels, cfgID;
@@ -398,9 +390,9 @@ char    buf[256];
 
 
 VISCFGLIST::VISCFGLIST()
+: vis_list( new TList ),
+  critsec( new TCriticalSection )
 {
- vis_list=new TList;
- critsec=new TCriticalSection;
 }
 
 
@@ -655,7 +647,7 @@ int ch;
 }
 
 
-void VISUAL::RenderMemo(char *memotext)
+void VISUAL::RenderMemo(const char *memotext)
 {
  if (!memotext) return;
 
@@ -869,7 +861,7 @@ allwindow=Rect(0, 0, form->ClientWidth, form->ClientHeight);
 // a subsequent call to RenderGraph then renders these values into a double buffer
 // a windows message subsequently (in fMain) then invokes a message handler
 // (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
-void VISUAL::RenderData(GenericIntSignal *signal)
+void VISUAL::RenderData(const GenericIntSignal *signal)
 {
 int     channels, samples, ch, samp, i;
 char    buf[256];
@@ -935,7 +927,7 @@ bool    recreate;
 // a subsequent call to RenderGraph then renders these values into a double buffer
 // a windows message subsequently (in fMain) then invokes a message handler
 // (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
-void VISUAL::RenderData(GenericSignal *signal)
+void VISUAL::RenderData(const GenericSignal *signal)
 {
 char    buf[256];
 int     channels, samples, ch, samp, i;

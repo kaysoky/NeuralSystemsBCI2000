@@ -28,15 +28,15 @@ GenericADC::GenericADC()
 : signal( NULL ),
   samplerate( 0 )
 {
-  //error.SetErrorMsg("");
+  error.SetErrorMsg("");
 }
-
 
 GenericADC::~GenericADC()
 {
   delete signal;
 }
 
+#if 0
 // **************************************************************************
 // Function:   GetSampleRate
 // Purpose:    returns the sample rate that this ADC samples at
@@ -47,4 +47,4 @@ int GenericADC::GetSampleRate() const
 {
  return(samplerate);
 }
-
+#endif

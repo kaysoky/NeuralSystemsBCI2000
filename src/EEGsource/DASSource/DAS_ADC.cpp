@@ -11,6 +11,23 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
+// **************************************************************************
+// Function:   GetNewADC
+// Purpose:    This static member function of the GenericADC class is meant to
+//             be implemented along with a subclass of GenericADC.
+//             Its sole purpose is to make subclassing transparent for the
+//             code in EEGSource/UMain.cpp .
+// Parameters: Pointers to parameter and state lists.
+// Returns:    A generic pointer to an instance of the respective default
+//             ADC class.
+// **************************************************************************
+GenericADC*
+GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+{
+  return new TDASSource( inParamList, inStateList );
+}
+
+
 TDASSource::TDASSource(PARAMLIST *my_paramlist, STATELIST *statelist) : signal( NULL )
 {
  char line[255];
@@ -32,16 +49,17 @@ TDASSource::TDASSource(PARAMLIST *my_paramlist, STATELIST *statelist) : signal( 
  BlockSize = 16;
  Channels = 8;
  // source variables
-    strcpy(line, "Source int SoftwareCh= 8 8 1 64 // number of digitized channels");
-    paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Source int SampleBlockSize= 16 16 1 1024 // Size of Blocks in Samples");
-    paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Source int SamplingRate= 256 256 1 10000 // sampling rate in S/s");
-    paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Source int ADGain= 10 10 1 10 // Gain of A/D Board");
-    paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Source intlist SourceChList= 8 0 1 2 3 4 5 6 7 1 0 63 // Assignment of Source channels");
-    paramlist->AddParameter2List(line, strlen(line));
+ const char* params[] =
+ {
+   "Source int SoftwareCh= 8 8 1 64 // number of digitized channels",
+   "Source int SampleBlockSize= 16 16 1 1024 // Size of Blocks in Samples",
+   "Source int SamplingRate= 256 256 1 10000 // sampling rate in S/s",
+   "Source int ADGain= 10 10 1 10 // Gain of A/D Board",
+   "Source intlist SourceChList= 8 0 1 2 3 4 5 6 7 1 0 63 // Assignment of Source channels",
+ };
+ const size_t numParams = sizeof( params ) / sizeof( *params );
+ for( size_t i = 0; i < numParams; ++i )
+   paramlist->AddParameter2List( params[ i ] );
 
  Initialized = false;
 }

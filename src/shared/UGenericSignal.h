@@ -7,7 +7,8 @@
 //   template argument.
 //   Two classes, GenericSignal and GenericIntSignal, are derived from a float
 //   and int instantiation of this template. With a compatibility flag defined
-//   (SIGNAL_BACK_COMPAT) old code should compile without changes.
+//   (SIGNAL_BACK_COMPAT) old code should compile with minimal changes.
+//
 //   For the future, the following name transitions might be considered:
 //     BasicSignal --> GenericSignal
 //     GenericSignal --> FloatSignal

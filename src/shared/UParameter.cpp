@@ -352,9 +352,12 @@ PARAM   dummyparam;
 void PARAMLIST::AddParameter2List(const char *paramstring, int paramlen)
 {
 PARAM   *new_param;
+int lengthToConsider = paramlen;
+ if( lengthToConsider == 0 )
+  lengthToConsider = strlen( paramstring );
 
  new_param=new PARAM();
- new_param->ParseParameter(paramstring, paramlen);
+ new_param->ParseParameter(paramstring, lengthToConsider);
  if (new_param->valid)
     CloneParameter2List(new_param);                        // it clones the newly created parameter to the list
 

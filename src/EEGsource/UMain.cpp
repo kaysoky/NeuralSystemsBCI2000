@@ -53,15 +53,6 @@
 #include "UCoreMessage.h"
 #include "UParameter.h"
 #include "GenericADC.h"
-#ifdef ADC_DTADC
- #include "DTADC\DTADC.h"
-#endif
-#ifdef ADC_RANDOM
- #include "RandomNumber\RandomNumberADC.h"
-#endif
-#ifdef ADC_DAS1402H
- #include "Computerboard\DAS1402.h"
-#endif
 #include "UStorage.h"
 
 #include "UMain.h"
@@ -219,29 +210,6 @@ int     modID;
     Close();
     }
 }
-
-
-void TfMain::UpdateStateVector()
-{
-#if 0 // jm 6/27/02
-int     i;
-STATE   *cur_state;
-
- for (i=0; i<statelist.GetNumStates(); i++)
-  {
-  cur_state=statelist.GetStatePtr(i);
-  if (cur_state)
-     if (cur_state->modified)
-        {
-        statevector->SetStateValue(cur_state->GetName(), cur_state->GetValue());
-        cur_state->modified=false;
-        }
-  }
-#else
-  statevector->CommitStateChanges();
-#endif
-}
-
 
 // **************************************************************************
 // Function:   Write2SignalProc
@@ -508,7 +476,7 @@ int     x, y, res;
         corecomm->SendStatus(errmsg);
         }
      critsec_statevector->Acquire();
-     UpdateStateVector();
+     statevector->CommitStateChanges();
      critsec_statevector->Release();
      }
 
@@ -542,7 +510,7 @@ int     x, y, res;
   if (running == 1) statevector->SetStateValue("Recording", 1);
   oldrunning=running;
 
-  res=Write2SignalProc(adc->signal, statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
+  res=Write2SignalProc(adc->Signal(), statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
   if (res == 0)
      {
      sprintf(errmsg, "411 Error in Source: Could not send data to Signal Processing !");
@@ -553,7 +521,7 @@ int     x, y, res;
 
   if ((tds) && (statevector->GetStateValue("Recording") == 1))
      {
-     if (!(tds->Write2Disk(adc->signal)))
+     if (!(tds->Write2Disk(adc->Signal())))
         {
         sprintf(errmsg, "411 Error in Source: %s", tds->error.GetErrorMsg());
         corecomm->SendStatus(errmsg);
@@ -573,7 +541,7 @@ int     x, y, res;
 
   // send the whole signal to the operator
   if ((visualize) && (vis))
-     vis->Send2Operator(adc->signal, visdecim);
+     vis->Send2Operator(adc->Signal(), visdecim);
 
   // give the main thread time to process all the messages,
   // e.g., in order to receive the messages from the operator
@@ -759,17 +727,8 @@ int     ret;
  eReceivingIP->Text=ReceivingSocket->Socket->LocalHost;
 
  // create an instance of our ADC board class
- // in this case, we create an instance of the RandomNumberADC class
  // the constructor in this object will fill up the parameter and state lists
- #ifdef ADC_DTADC
-  adc=new DTADC(&paramlist, &statelist);
- #endif
- #ifdef ADC_RANDOM
-  adc=new RandomNumberADC(&paramlist, &statelist);
- #endif
- #ifdef ADC_DAS1402H
-  adc=new TDASSource(&paramlist, &statelist);
- #endif
+ adc = GenericADC::GetNewADC( &paramlist, &statelist );
  // create an instance of GenericVisualization
  // it will handle the visualization to the operator
  vis=new GenericVisualization(&paramlist, corecomm);
@@ -911,9 +870,6 @@ STATE   *cur_state;
        {
        // now, add the state to the list of states
        statelist.AddState2List(&(coremessage->state));
-#if 0 // jm 6/27/02
-       statelist.GetStatePtr(coremessage->state.GetName())->modified=true;
-#endif
        }
     }
 

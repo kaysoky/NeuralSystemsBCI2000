@@ -47,7 +47,7 @@ public:
         BCI2000ERROR   error;
         int     Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector);
         void    WriteHeader();
-        bool    Write2Disk(GenericIntSignal *StoreSignal);
+        bool    Write2Disk(const GenericIntSignal *StoreSignal);
 };
 //---------------------------------------------------------------------------
 #endif

@@ -34,10 +34,7 @@ __fastcall TDataStorage::TDataStorage(PARAMLIST *paramlist) : TThread(true)
 {
 int     i;
 char    line[255];
-char slash[2];
 
-slash[0]= 0x5c;
-slash[1]= 0;
 NewRunNo= 0;
 
  // data storage should have very low priority
@@ -57,23 +54,20 @@ NewRunNo= 0;
   length[i]=0;
   }
 
-  strcpy(line, "Storage string FileInitials= c:");
-  strcat(line,slash);
-  strcat(line,"data a z // Initials of file name (max. 8 characters)");
+  const char* params[] =
+  {
+    "Storage string FileInitials= c:\\data a z // Initials of file name (max. 8 characters)",
+    "Storage string SubjectName= Name Name a z // subject alias (max. 8 characters)",
+    "Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)",
+    "Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)",
+    "Storage string StorageTime= 16:15 Time a z // time of beginning of data storage",
+    "Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)",
+    "Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file",
+  };
+  const size_t numParams = sizeof( params ) / sizeof( *params );
+  for( size_t i = 0; i < numParams; ++i )
+    paramlist->AddParameter2List( params[ i ] );
 
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage string SubjectName= Name Name a z // subject alias (max. 8 characters)");
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)");
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)");
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage string StorageTime= 16:15 Time a z // time of beginning of data storage");
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)");
-  paramlist->AddParameter2List(line, strlen(line));
-  strcpy(line, "Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file");
-  paramlist->AddParameter2List(line, strlen(line));
   AlreadyIncremented = false;
   OldRunNo = 0;
 }
@@ -339,7 +333,7 @@ if (saveprmfile)
 // ----------------- main storing procedure -------------------------------------
 // --- stores the whole signal block to the disk --------------------------------
 // --- the file is opened and closed with every call ----------------------------
-bool TDataStorage::Write2Disk(GenericIntSignal *my_signal)
+bool TDataStorage::Write2Disk(const GenericIntSignal *my_signal)
 {
 int     i, ptr, s, t;
 char    *cur_ptr;

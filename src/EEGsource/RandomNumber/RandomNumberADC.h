@@ -7,6 +7,13 @@
 
 class RandomNumberADC : public GenericADC
 {
+public:
+                RandomNumberADC(PARAMLIST *, STATELIST *);
+    virtual     ~RandomNumberADC();
+    virtual int ADInit();
+    virtual int ADReadDataBlock();
+    virtual int ADShutdown();
+
 protected:
         PARAMLIST       *paramlist;
         STATELIST       *statelist;
@@ -17,10 +24,4 @@ protected:
         short           sinechannel;
         bool            modulateamplitude;
         //char            multstate[256];
-public:
-        RandomNumberADC::RandomNumberADC(PARAMLIST *, STATELIST *);
-        RandomNumberADC::~RandomNumberADC();
-        int     ADInit();
-        int     ADReadDataBlock();
-        int     ADShutdown();
 };

@@ -31,6 +31,21 @@
 
 #pragma package(smart_init)
 
+// **************************************************************************
+// Function:   GetNewADC
+// Purpose:    This static member function of the GenericADC class is meant to
+//             be implemented along with a subclass of GenericADC.
+//             Its sole purpose is to make subclassing transparent for the
+//             code in EEGSource/UMain.cpp .
+// Parameters: Pointers to parameter and state lists.
+// Returns:    A generic pointer to an instance of the respective default
+//             ADC class.
+// **************************************************************************
+GenericADC*
+GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+{
+  return new RandomNumberADC( inParamList, inStateList );
+}
 
 // **************************************************************************
 // Function:   ADInit
@@ -167,11 +182,6 @@ int RandomNumberADC::ADShutdown()
 // **************************************************************************
 RandomNumberADC::RandomNumberADC(PARAMLIST *plist, STATELIST *slist)
 {
-FILE            *fp;
-char            line[512];
-
- signal=NULL;
-
  // store the pointer to the parameter list and state list
  // we need the lists later on, e.g., in ADInit()
  // of course, we then can't meanwhile destroy the paramlist object
@@ -179,30 +189,24 @@ char            line[512];
  statelist=slist;
 
  // add all the parameters that this ADC requests to the parameter list
- strcpy(line, "Source int SoftwareCh=      16 16 1 128        // the number of digitized and stored channels\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int SampleBlockSize= 32 5 1 128         // the number of samples transmitted at a time\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int ModulateAmplitude= 0 0 0 1          // modulate the amplitude with the mouse (0=no, 1=yes)\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int SamplingRate=    256 128 1 4000     // the sample rate\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int SineChannel=    0 0 0 128           // channel number of sinewave (0=all)\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source float SineFrequency=    10 10 0 100           // frequency of the sine wave\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int SineMinAmplitude=    -10000 0 -32767 32767           // the minimal output value for sine\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int SineMaxAmplitude=    10000 20000 -32767 32767   // the maximum output value for sine\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int NoiseMinAmplitude=    -3000 0 -32767 32767           // the minimal output value for noise\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int NoiseMaxAmplitude=    3000 3000 -32767 32767   // the maximum output value for noise\n");
- paramlist->AddParameter2List(line, strlen(line));
- strcpy(line, "Source int DCoffset=   0 0 -32767 32767   // DC offset (common to all channels)\n");
- paramlist->AddParameter2List(line, strlen(line));
- //strcpy(line, "Source string MultiplierState=   -1 -1 0 0   // State to use as signal multiplier (-1 == don't use multiplier)\n");
- //paramlist->AddParameter2List(line, strlen(line));
+ const char* params[] =
+ {
+   "Source int SoftwareCh=      16 16 1 128        // the number of digitized and stored channels\n",
+   "Source int SampleBlockSize= 32 5 1 128         // the number of samples transmitted at a time\n",
+   "Source int ModulateAmplitude= 0 0 0 1          // modulate the amplitude with the mouse (0=no, 1=yes)\n",
+   "Source int SamplingRate=    256 128 1 4000     // the sample rate\n",
+   "Source int SineChannel=    0 0 0 128           // channel number of sinewave (0=all)\n",
+   "Source float SineFrequency=    10 10 0 100           // frequency of the sine wave\n",
+   "Source int SineMinAmplitude=    -10000 0 -32767 32767           // the minimal output value for sine\n",
+   "Source int SineMaxAmplitude=    10000 20000 -32767 32767   // the maximum output value for sine\n",
+   "Source int NoiseMinAmplitude=    -3000 0 -32767 32767           // the minimal output value for noise\n",
+   "Source int NoiseMaxAmplitude=    3000 3000 -32767 32767   // the maximum output value for noise\n",
+   "Source int DCoffset=   0 0 -32767 32767   // DC offset (common to all channels)\n",
+ //"Source string MultiplierState=   -1 -1 0 0   // State to use as signal multiplier (-1 == don't use multiplier)\n",
+ };
+ const size_t numParams = sizeof( params ) / sizeof( *params );
+ for( size_t i = 0; i < numParams; ++i )
+   paramlist->AddParameter2List( params[ i ] );
 
  // add all states that this ADC requests to the list of states
  // this is just an example (here, we don't really need all these states)
@@ -213,7 +217,9 @@ char            line[512];
 
 RandomNumberADC::~RandomNumberADC()
 {
+#if 0 // This is done by the base class destructor.
  if (signal) delete signal;
  signal=NULL;
+#endif
 }
 

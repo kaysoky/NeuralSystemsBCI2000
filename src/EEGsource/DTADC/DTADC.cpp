@@ -31,6 +31,22 @@
 DTFUN dtfun;
 
 // **************************************************************************
+// Function:   GetNewADC
+// Purpose:    This static member function of the GenericADC class is meant to
+//             be implemented along with a subclass of GenericADC.
+//             Its sole purpose is to make subclassing transparent for the
+//             code in EEGSource/UMain.cpp .
+// Parameters: Pointers to parameter and state lists.
+// Returns:    A generic pointer to an instance of the respective default
+//             ADC class.
+// **************************************************************************
+GenericADC*
+GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+{
+  return new DTADC( inParamList, inStateList );
+}
+
+// **************************************************************************
 // Function:   ADInit
 // Purpose:    This function parameterizes the DTADC
 //             It is called each time the operator first starts,

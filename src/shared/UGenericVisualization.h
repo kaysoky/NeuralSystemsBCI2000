@@ -21,7 +21,7 @@ class GenericVisualization
 {
 protected:
         CORECOMM *corecomm;
-        int     SendBufBytes(TCustomWinSocket *Socket, char *buf, int length);
+        int     SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length);
         GenericIntSignal *intsignal;
         GenericSignal    *signal;
         char   memotext[512];
@@ -35,23 +35,23 @@ public:
 	GenericVisualization::~GenericVisualization();
 
         // sends the whole signal to the operator
-        bool    Send2Operator(GenericIntSignal *signal);
+        bool    Send2Operator(const GenericIntSignal *signal);
         // sends only certain channels, as defined in the parameter, to the operator
-        int     Send2Operator(GenericIntSignal *signal, PARAM *channellistparam);
-        bool    Send2Operator(GenericIntSignal *my_signal, int decimation);
+        int     Send2Operator(const GenericIntSignal *signal, const PARAM *channellistparam);
+        bool    Send2Operator(const GenericIntSignal *my_signal, int decimation);
         // the same functions for GenericSignals
-        bool    Send2Operator(GenericSignal *signal);
-        int     Send2Operator(GenericSignal *signal, PARAM *channellistparam);
-        bool    SendMemo2Operator(char *string);
-        bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, char *cfgString);
-        void    ParseVisualization(char *buffer, int length);
+        bool    Send2Operator(const GenericSignal *signal);
+        int     Send2Operator(const GenericSignal *signal, const PARAM *channellistparam);
+        bool    SendMemo2Operator(const char *string);
+        bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString);
+        void    ParseVisualization(const char *buffer, int length);
         void    SetSourceID(BYTE my_sourceID);
         BYTE    GetSourceID();
         void    SetDataType(BYTE my_datatype);
         BYTE    GetDataType();
-        GenericIntSignal *GetIntSignal();
-        GenericSignal    *GetSignal();
-        char    *GetMemoText();
+        const GenericIntSignal *GetIntSignal() const;
+        const GenericSignal    *GetSignal() const;
+        const char *GetMemoText() const;
         void    SetVisualizationType(BYTE my_vistype);
         bool    valid;
 };
@@ -85,9 +85,9 @@ public:		// User declarations
         // TChart *chart;
         TMemo  *memo;
         int    startsample;
-        void   RenderData(GenericIntSignal *signal);
-        void   RenderData(GenericSignal *signal);
-        void   RenderMemo(char *memo);
+        void   RenderData(const GenericIntSignal *signal);
+        void   RenderData(const GenericSignal *signal);
+        void   RenderMemo(const char *memo);
 };
 
 
