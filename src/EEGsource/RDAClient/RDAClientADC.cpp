@@ -25,6 +25,8 @@
 
 using namespace std;
 
+const float eps = 1e-20; // Smaller values are considered zero.
+
 // Register the source class with the framework.
 RegisterFilter( RDAClientADC, 1 );
 
@@ -84,21 +86,28 @@ void RDAClientADC::Preflight( const SignalProperties&,
              << ")"
              << endl;
 
-    float sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
-    if( Parameter( "SamplingRate" ) != sourceSamplingRate )
-      bcierr << "The SamplingRate parameter must match "
-             << "the setting in the recording software "
-             << "(" << sourceSamplingRate << ")"
+    if( preflightQueue.info().samplingInterval < eps )
+      bcierr << "The recording software reports an infinite sampling rate "
+             << "-- make sure it shows a running signal in its window"
              << endl;
-             
-    // Check whether block sizes are sub-optimal.
-    size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
-           sourceBlockSize =
-      preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval;
-    if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
-      bciout << "Non-integral ratio in source and system block sizes. "
-             << "This will cause interference jitter"
-             << endl;
+    else
+    {
+      float sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
+      if( Parameter( "SamplingRate" ) != sourceSamplingRate )
+        bcierr << "The SamplingRate parameter must match "
+               << "the setting in the recording software "
+               << "(" << sourceSamplingRate << ")"
+               << endl;
+
+      // Check whether block sizes are sub-optimal.
+      size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
+             sourceBlockSize =
+        preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval;
+      if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
+        bciout << "Non-integral ratio in source and system block sizes. "
+               << "This will cause interference jitter"
+               << endl;
+    }
   }
 
   // Requested output signal properties.
