@@ -1,10 +1,10 @@
 Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
-System string ApplicationIP= 131.96.64.15 127.0.0.1 127.0.0.1 127.0.0.1 // the Application module's listening IP
-System string ApplicationPort= 4020 4200 1024 32768 // the Application module's listening port
+System string ApplicationIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the Application module's listening IP
+System string ApplicationPort= 2959 4200 1024 32768 // the Application module's listening port
 Statistics matrix BaselineCfg= 2 2 TargetCode 1 TargetCode 2 0 0 0 // states to watch for baseline
 Statistics matrix BaselineHits= 2 2 1 0.50 2 0.50 0 0 0 // proportion correct for each target
 UsrTask int BaselineInterval= 1 0 0 2 // Intercept Computation 1 = targets 2 = ITI
-UsrTask string BorderTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z 0 // Path of border texture
+UsrTask string BorderTexture= c:\bci2000\src\Application\shared\3DAPI\texture\Glass.bmp a z 0 // Path of border texture
 3DEnvironment int CameraAimX= 0 0 0 32767 // Camera Aim X coordinate in the unit of +- 32767
 3DEnvironment int CameraAimY= 0 0 0 32767 // Camera Aim Y coordinate in the unit of +- 32767
 3DEnvironment int CameraAimZ= 0 0 0 32767 // Camera Aim Z coordinate in the unit of +- 32767
@@ -15,12 +15,12 @@ Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction
 UsrTask int CursorColorBack= 0x000000 0x000000 0x000000 0xFFFFFF // Cursor color when it is at the front of the workspace in the format of 0xRRGGBB
 UsrTask int CursorColorFront= 0xFFFFFF 0x000000 0x000000 0xFFFFFF // Cursor color when it is at the front of the workspace in the format of 0xRRGGBB
 UsrTask float CursorSize= 3 0 0 1 // User Window Cursor Size
-UsrTask string CursorTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z 0 // Path of cursor texture
+UsrTask string CursorTexture= c:\bci2000\src\Application\shared\3DAPI\texture\Glass.bmp a z 0 // Path of cursor texture
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
 MEMFilter float deltaMem= 0.2 0.2 0.02 2.00 // Resolution (line density)
 Source int DoTrueRandom= 0 0 0 1 // Generate truely random sequence (0=no, 1=yes)
-System string EEGSourceIP= 131.96.64.15 127.0.0.1 127.0.0.1 127.0.0.1 // the EEGSource module's listening IP
-System string EEGSourcePort= 4017 4200 1024 32768 // the EEGSource module's listening port
+System string EEGSourceIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the EEGSource module's listening IP
+System string EEGSourcePort= 2957 4200 1024 32768 // the EEGSource module's listening port
 UsrTask int FeedbackDuration= 20000 0 0 0 // Max Trial Duration
 Storage string FileInitials= ..\data\ a z 0 // path to top level data directory
 Targets int IncludeAllTargets= 0 0 0 1 // Test all target positions? 1=test all targets. 0=test only the visible current target
@@ -53,8 +53,8 @@ UsrTask int RewardDuration= 10 0 0 0 // Duration of PostTrial Feedback
 Source int SampleBlockSize= 8 5 1 128 // the number of samples transmitted at a time
 Source int SamplingRate= 256 128 1 4000 // the sample rate
 Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file
-System string SignalProcessingIP= 131.96.64.15 127.0.0.1 127.0.0.1 127.0.0.1 // the SignalProcessing module's listening IP
-System string SignalProcessingPort= 4018 4200 1024 32768 // the SignalProcessing module's listening port
+System string SignalProcessingIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the SignalProcessing module's listening IP
+System string SignalProcessingPort= 2961 4200 1024 32768 // the SignalProcessing module's listening port
 Statistics int SignalWinLth= 3 0 0 1000 // Trials in Signal Running Average
 Source int SineChannel= 4 0 0 128 // channel number of sinewave for y (0=all)
 Source int SineChannelX= 1 0 0 128 // channel number of sinewave for x
@@ -80,7 +80,7 @@ Storage string SubjectName= test Name a z // subject alias
 Storage string SubjectRun= 01 00 0 0 // two-digit run number
 Storage string SubjectSession= 001 001 0 0 // three-digit session number
 Targets matrix TargetPos= 10 6 35 65 35 65 100 0 35 35 65 65 100 0 50 50 50 50 100 0 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 -1 1 -1 1 0 0 -1 -1 1 1 0 0 0 0 0 0 0 0 2 2 2 2 0 0 0 0 0 // 
-UsrTask string TargetTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Cube.bmp a z 0 // Path of target texture
+UsrTask string TargetTexture= c:\bci2000\src\Application\shared\3DAPI\texture\Cube.bmp a z 0 // Path of target texture
 Statistics int TargetWinLth= 20 0 0 100 // Length of Target % Window
 UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
