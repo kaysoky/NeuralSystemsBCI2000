@@ -209,6 +209,7 @@ TfMain::HandleSTATE( istream& is )
              nextRunning = s.GetValue();
         if( !running && nextRunning )
         {
+          mpStatevector->SetStateValue( "Running", true );
           mLastRunning = true;
           EnterRunningState();
           ProcessFilters( NULL );
