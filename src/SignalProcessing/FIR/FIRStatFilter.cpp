@@ -305,10 +305,16 @@ void FIRStatFilter::Resting( void )
 
                 // change the value of the parameter
 
-                sprintf(memotext, "%.2f\r", ud_intercept);
+                // jm: removed probably unwanted trailing \r characters from parameter values
+                // (they would show up in the operator if the "Config" button was pressed
+                // after "Suspend").
+                // Instead the two lines, one might consider writing
+                // Parameter( "UD_A" ) = ud_intercept;
+                // and do the rounding before the output.
+                sprintf(memotext, "%.2f", ud_intercept);
                 Parameter("UD_A") = memotext;
 
-                sprintf(memotext, "%.2f\r", ud_gain);
+                sprintf(memotext, "%.2f", ud_gain);
                 Parameter("UD_B") = memotext;
 
 
@@ -323,12 +329,12 @@ void FIRStatFilter::Resting( void )
         {
                 trend_flag= 0;
 
-                sprintf(memotext, "%.4f\r", cur_stat.aper);
+                sprintf(memotext, "%.4f", cur_stat.aper);
                 Parameter("InterceptProportion") = memotext;
 
 
-    //     sprintf(memotext, "%.2f\r", cur_stat.bper * desiredpix);
-                sprintf(memotext, "%.2f\r", cur_stat.pix);
+    //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
+                sprintf(memotext, "%.2f", cur_stat.pix);
                 Parameter("DesiredPixelsPerSec") = memotext;
 
 
@@ -389,7 +395,7 @@ static int oldtarget, oldoutcome;
        /*
             if (( visualize ) && (cur_stat.update_flag > 0 ) ) //((ud_intercept != old_ud_intercept) || (ud_gain != old_ud_gain)))
                {
-               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f\r", ud_intercept, ud_gain);
+               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f", ud_intercept, ud_gain);
                // vis->SendMemo2Operator(memotext);
 
                for(i=0;i<Ntargets;i++)
@@ -420,7 +426,7 @@ static int oldtarget, oldoutcome;
        //  else    lr_gain=1;
                if (( visualize ) && ((lr_intercept != old_lr_intercept) || (lr_gain != old_lr_gain)))
                {
-                  //rintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f\r", lr_intercept, lr_gain);
+                  //rintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f", lr_intercept, lr_gain);
                   //s->SendMemo2Operator(memotext);
                }
              }
@@ -461,7 +467,7 @@ static int oldtarget, oldoutcome;
 
         if (( visualize ) && (cur_stat.update_flag > 0 ) ) //((ud_intercept != old_ud_intercept) || (ud_gain != old_ud_gain)))
                {
-               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f\r", ud_intercept, ud_gain);
+               // sprintf(memotext, "Adjusted CH0 intercept to %.2f and slope to %.2f", ud_intercept, ud_gain);
                // vis->SendMemo2Operator(memotext);
 
                for(i=0;i<Ntargets;i++)

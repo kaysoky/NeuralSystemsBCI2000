@@ -399,16 +399,22 @@ void StatFilter::Resting()
 
     // change the value of the parameter
 
-    sprintf(memotext, "%.2f\r", ud_intercept);
+    // jm: removed probably unwanted trailing \r characters from parameter values
+    // (they would show up in the operator if the "Config" button was pressed
+    // after "Suspend").
+    // Instead the two lines, one might consider writing
+    // Parameter( "UD_A" ) = ud_intercept;
+    // and do the rounding before the output.
+    sprintf(memotext, "%.2f", ud_intercept);
     Parameter( "UD_A" ) = memotext;
 
-    sprintf(memotext, "%.2f\r", ud_gain);
+    sprintf(memotext, "%.2f", ud_gain);
     Parameter( "UD_B" ) = memotext;
 
-    sprintf(memotext, "%.2f\r", lr_intercept);
+    sprintf(memotext, "%.2f", lr_intercept);
     Parameter( "LR_A" ) = memotext;
 
-    sprintf(memotext, "%.2f\r", lr_gain);
+    sprintf(memotext, "%.2f", lr_gain);
     Parameter( "LR_B" ) = memotext;
 
     Corecomm->StartSendingParameters();
@@ -425,28 +431,28 @@ void StatFilter::Resting()
   {
     trend_flag= 0;
 
-    sprintf(memotext, "%.4f\r", cur_stat.aper);
+    sprintf(memotext, "%.4f", cur_stat.aper);
     Parameter( "InterceptProportion" ) = memotext;
 
-    sprintf(memotext, "%.4f\r",cur_lr_stat.aper);
+    sprintf(memotext, "%.4f",cur_lr_stat.aper);
     Parameter( "HorInterceptProp" ) = memotext;
 
 
-    //     sprintf(memotext, "%.2f\r", cur_stat.bper * desiredpix);
-    sprintf(memotext, "%.2f\r", cur_stat.pix);
+    //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
+    sprintf(memotext, "%.2f", cur_stat.pix);
     Parameter( "DesiredPixelsPerSec" ) = memotext;
 
-    sprintf(memotext, "%.2f\r", cur_lr_stat.pix);
+    sprintf(memotext, "%.2f", cur_lr_stat.pix);
     Parameter( "LRPixelsPerSec" ) = memotext;
 
     Parameter( "BaselineHits" )->SetDimensions( cur_stat.NumT, 2 );
 
     for(int i=0; i< cur_stat.NumT; i++)
     {
-      sprintf(memotext, "%d\r", BaseNum[i]);
+      sprintf(memotext, "%d", BaseNum[i]);
       Parameter( "BaselineHits", i, 0) = memotext;
 
-      sprintf(memotext, "%.2f\r", cur_stat.TargetPC[i]);
+      sprintf(memotext, "%.2f", cur_stat.TargetPC[i]);
       Parameter( "BaselineHits", i, 1 ) = memotext;
     }
 
@@ -544,7 +550,7 @@ void StatFilter::Process( const GenericSignal *SignalE,
           if (( visualize ) && ((lr_intercept != old_lr_intercept) || (lr_gain != old_lr_gain)))
           {
             //char memotext[512];
-            //sprintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f\r", lr_intercept, lr_gain);
+            //sprintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f", lr_intercept, lr_gain);
             //s->SendMemo2Operator(memotext);
           }
         }
