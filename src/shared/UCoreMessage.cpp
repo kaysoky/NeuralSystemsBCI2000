@@ -210,36 +210,43 @@ int     bytessent, count=0;
 //             buf - the buffer that has been allocated to hold the data
 //             length - the number of byes to read from the socket connection
 // Returns:    length ... on success
-//             0 ... on error
+//             -1 ... on error
 // **************************************************************************
 int COREMESSAGE::ReceiveBufBytes(TCustomWinSocket *Socket, char *buf, int length)
 {
-int     bytesread, count=0;
+  const int maxZeroReads = 10;
+  int       numZeroReads = 0,
+            count = 0;
 
- if (length == 0) return(0);
- while (count < length)
+  while( count < length && numZeroReads < maxZeroReads )
   {
-  try
-   {
-   if (!(Socket->Connected)) return(0);
-   bytesread=Socket->ReceiveBuf(buf, length-count);
-   }
-  catch( TooGeneralCatch& )
-   {
-   return(0);
-   }
-  if (bytesread != -1)
-     {
-     count += bytesread;
-     buf += bytesread;
-     }
-  // if we haven't read everything on the first try, just pause for 1ms
-  // we should give the system some time to run some errands
-  if (bytesread < length)
-     Sleep(1);
-  }
+    if( !Socket->Connected )
+      return -1;
 
- return(length);
+    int bytesread;
+    try
+    {
+      bytesread = Socket->ReceiveBuf( buf, length - count );
+    }
+    catch( ESocketError& )
+    {
+      return -1;
+    }
+    if( bytesread > 0 )
+    {
+      count += bytesread;
+      buf += bytesread;
+    }
+    else if( bytesread == 0 )
+      ++numZeroReads;
+    else
+      return -1;
+    // if we haven't read everything on the first try, just pause for 1ms
+    // we should give the system some time to run some errands
+    if( count < length )
+      Sleep(1);
+  }
+  return count;
 }
 
 
@@ -252,37 +259,40 @@ int     bytesread, count=0;
 //             buf - the buffer that has been allocated to hold the data
 //             length - the number of byes to read from the socket connection
 // Returns:    length ... on success
-//             0 ... on error
+//             -1 ... on error
 // **************************************************************************
 int COREMESSAGE::ReceiveBufBytes(TWinSocketStream *stream, char *buf, int length)
 {
-int     bytesread, count=0;
+  const int maxZeroReads = 10;
+  int       numZeroReads = 0,
+            count=0;
 
- if (length == 0) return(0);
- while (count < length)
+  while( count < length && numZeroReads < maxZeroReads )
   {
-  try
-   {
-   bytesread=stream->Read(buf, length-count);
-   }
-  catch( ESocketError& )
-   {
-   return(0);
-   }
-  if (bytesread != 0)
-     {
-     count += bytesread;
-     buf += bytesread;
-     }
-  else
-     return(0);
-  // if we haven't read everything on the first try, just pause for 1ms
-  // we should give the system some time to run some errands
-  if (bytesread < length)
-     Sleep(1);
+    int bytesread;
+    try
+    {
+      bytesread = stream->Read( buf, length - count );
+    }
+    catch( ESocketError& )
+    {
+      return -1;
+    }
+    if( bytesread > 0 )
+    {
+      count += bytesread;
+      buf += bytesread;
+    }
+    else if( bytesread == 0 )
+      ++numZeroReads;
+    else
+      return -1;
+    // if we haven't read everything on the first try, just pause for 1ms
+    // we should give the system some time to run some errands
+    if( count < length )
+      Sleep(1);
   }
-
- return(length);
+  return count;
 }
 
 
@@ -313,7 +323,7 @@ int             ret1, ret2, ret3, ret4;
  SetLength(length);
  ret4=ReceiveBufBytes(Socket, GetBufPtr(length), length);        // write directly into the buffer
 
- if ((ret1 == 0) || (ret2 == 0) || (ret3 == 0) || (ret4 == 0))
+ if ((ret1 < 1) || (ret2 < 1) || (ret3 < 2) || (ret4 < length))
     return(ERRCORE_RECEIVEBUFBYTES);
 
  return(ERRCORE_NOERR);
@@ -339,16 +349,16 @@ unsigned short  length;
 int             bytesread;
 
  bytesread=ReceiveBufBytes(stream, (char *)&descriptor, 1);
- if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
+ if (bytesread < 1) return(ERRCORE_RECEIVEBUFBYTES);
  SetDescriptor(descriptor);
  bytesread=ReceiveBufBytes(stream, (char *)&supp_descriptor, 1);
- if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
+ if (bytesread < 1) return(ERRCORE_RECEIVEBUFBYTES);
  SetSuppDescriptor(supp_descriptor);
  bytesread=ReceiveBufBytes(stream, (char *)&length, 2);
- if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
+ if (bytesread < 2) return(ERRCORE_RECEIVEBUFBYTES);
  SetLength(length);
  bytesread=ReceiveBufBytes(stream, GetBufPtr(length), length);        // write directly into the buffer
- if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
+ if (bytesread < length) return(ERRCORE_RECEIVEBUFBYTES);
 
  return(ERRCORE_NOERR);
 }
