@@ -76,7 +76,7 @@ TfMain::TfMain( TComponent* Owner )
 {
   // Make sure there is only one instance of each module running at a time.
   // We achieve this by creating a mutex -- if it exists, there is
-  // another instance running, we bring it to the front and exit.
+  // another instance running, and we move that instance to the front and exit.
   const char appTitle[] = THISMODULE " Module";
   mMutex = ::CreateMutex( NULL, TRUE, appTitle );
   if( ::GetLastError() == ERROR_ALREADY_EXISTS )
@@ -138,9 +138,9 @@ TfMain::HandleSTATEVECTOR( istream& is )
 #endif // EEGSRC
     bool running = mpStatevector->GetStateValue( "Running" );
     if( running && !mLastRunning )
-      EnterRunningState();
+      StartRunFilters();
     else if( !running && mLastRunning )
-      EnterSuspendedState();
+      StopRunFilters();
 #if( MODTYPE == EEGSRC )
     // The EEG source does not receive a signal, so handling must take place
     // on arrival of a STATEVECTOR message.
@@ -209,9 +209,8 @@ TfMain::HandleSTATE( istream& is )
              nextRunning = s.GetValue();
         if( !running && nextRunning )
         {
-          mpStatevector->SetStateValue( "Running", true );
           mLastRunning = true;
-          EnterRunningState();
+          StartRunFilters();
           ProcessFilters( NULL );
         }
       }
@@ -283,26 +282,6 @@ TfMain::HandleResting()
 }
 
 void
-TfMain::EnterRunningState()
-{
-  // Filters may have changed parameters when executing GenericFilter::Resting(),
-  // so we need to do an initialize every time we enter the Running state.
-  InitializeFilters();
-  MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " running", 201 + 2 * MODTYPE ) );
-  mResting = false;
-}
-
-void
-TfMain::EnterSuspendedState()
-{
-#if( MODTYPE == EEGSRC ) // The operator wants an extra invitation from the source module.
-  MessageHandler::PutMessage( mOperator, SYSCMD::Suspend );
-#endif // EEGSRC
-  MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " suspended", 202 + 2 * MODTYPE ) );
-  mResting = true;
-}
-
-void
 TfMain::ResetStatevector()
 {
   // State "Running" is the actual memory for the module's running state,
@@ -322,15 +301,6 @@ TfMain::InitializeFilters()
   __bcierr.clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( __bcierr.flushes() > 0 );
-#if 1//( MODTYPE == EEGSRC )
-  // The first state vector written to disk is not the one
-  // received in response to the first EEG data block. Without resetting it
-  // to its initial value,
-  // there would be state information from the end of the (possibly
-  // interrupted) previous run written with the first EEG data block.
-  ResetStatevector();
-#endif // EEGSRC
-
   float samplingRate,
         sampleBlockSize;
   PARAM* param = mParamlist.GetParamPtr( "SamplingRate" );
@@ -374,6 +344,42 @@ TfMain::InitializeFilters()
   }
   if( !errorOccurred )
     MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " initialized", 199 + MODTYPE ) );
+}
+
+void
+TfMain::StartRunFilters()
+{
+  // The first state vector written to disk is not the one
+  // received in response to the first EEG data block. Without resetting it
+  // to its initial value,
+  // there would be state information from the end of the (possibly
+  // interrupted) previous run written with the first EEG data block.
+  ResetStatevector();
+
+  Environment::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  GenericFilter::StartRunFilters();
+  Environment::EnterNonaccessPhase();
+  if( __bcierr.flushes() == 0 )
+  {
+    MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " running", 201 + 2 * MODTYPE ) );
+    mResting = false;
+  }
+}
+
+void
+TfMain::StopRunFilters()
+{
+  Environment::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  GenericFilter::StopRunFilters();
+  Environment::EnterNonaccessPhase();
+  if( __bcierr.flushes() == 0 )
+  {
+#if( MODTYPE == EEGSRC ) // The operator wants an extra invitation from the source module.
+    MessageHandler::PutMessage( mOperator, SYSCMD::Suspend );
+#endif // EEGSRC
+    MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " suspended", 202 + 2 * MODTYPE ) );
+    mResting = true;
+  }
 }
 
 void

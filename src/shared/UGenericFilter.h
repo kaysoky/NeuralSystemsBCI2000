@@ -75,7 +75,14 @@ class GenericFilter : protected Environment
   virtual ~GenericFilter() { AllFilters().remove( this ); }
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
+  // Initialize() performs initialization required when parameter settings
+  // have changed.
   virtual void Initialize() = 0;
+  // StartRun() performs initialization required when starting a new run.
+  virtual void StartRun()  { Initialize(); }
+  // StopRun() performs actions required when a run ends.
+  virtual void StopRun()   { Resting(); }
+
   virtual void Process( const GenericSignal* Input,
                               GenericSignal* Output ) = 0;
   virtual void Resting() {}
@@ -154,11 +161,13 @@ class GenericFilter : protected Environment
   static void DisposeFilters();
   // Apply the single filter functions to all filters instantiated and not passed
   // to another filter with PassFilter<>().
-  static void InitializeFilters();
   static void PreflightFilters( const SignalProperties& Input,
                                       SignalProperties& Output );
+  static void InitializeFilters();
+  static void StartRunFilters();
   static void ProcessFilters( const GenericSignal* Input,
                                     GenericSignal* Output );
+  static void StopRunFilters();
   static void RestingFilters();
   static void HaltFilters();
 

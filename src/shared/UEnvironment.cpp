@@ -334,6 +334,8 @@ EnvironmentBase::State( const char* name ) const
       bitLocation = state->GetBitLocation();
       byteLocation = state->GetByteLocation();
       length = state->GetLength();
+      if( length < 1 )
+        _bcierr << "State \"" << name << "\" has zero length." << endl;
     }
   }
   return STATEVECTOR::type_adapter( Statevector, byteLocation, bitLocation, length );
@@ -366,6 +368,8 @@ EnvironmentBase::OptionalState( short defaultValue, const char* name ) const
       bitLocation = state->GetBitLocation();
       byteLocation = state->GetByteLocation();
       length = state->GetLength();
+      if( length < 1 )
+        _bcierr << "State \"" << name << "\" has zero length." << endl;
     }
   }
   return STATEVECTOR::type_adapter( statevector, byteLocation, bitLocation, length, defaultValue );
@@ -459,6 +463,23 @@ void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
     ( *i )->Initialize();
 }
 
+// Called before any call to GenericFilter::StartRun().
+void EnvironmentBase::EnterStartRunPhase( PARAMLIST*   inParamList,
+                                          STATELIST*   inStateList,
+                                          STATEVECTOR* inStateVector,
+                                          ostream*     inOperator )
+{
+  __bcierr.SetFlushHandler( BCIError::RuntimeError );
+  __bciout.SetFlushHandler( BCIError::Warning );
+  _phase = initialization;
+  _paramlist = inParamList;
+  _statelist = inStateList;
+  _statevector = inStateVector;
+  _operator = inOperator;
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->StartRun();
+}
+
 // Called before any call to GenericFilter::Process().
 void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
                                             STATELIST*   inStateList,
@@ -474,6 +495,25 @@ void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
   _operator = inOperator;
   for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
     ( *i )->Process();
+}
+
+// Called before any call to GenericFilter::StopRun().
+void EnvironmentBase::EnterStopRunPhase( PARAMLIST*   inParamList,
+                                         STATELIST*   inStateList,
+                                         STATEVECTOR* inStateVector,
+                                         ostream*     inOperator )
+{
+  __bcierr.SetFlushHandler( BCIError::RuntimeError );
+  __bciout.SetFlushHandler( BCIError::Warning );
+  _phase = resting;
+  _paramlist = inParamList;
+  _statelist = inStateList;
+  _statevector = inStateVector;
+  _operator = inOperator;
+  for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
+    i->second.Unchanged();
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->StopRun();
 }
 
 // Called before any call to GenericFilter::Resting().

@@ -96,13 +96,6 @@ GenericFilter::DisposeFilters()
 }
 
 void
-GenericFilter::InitializeFilters()
-{
-  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
-    ( *i )->Initialize();
-}
-
-void
 GenericFilter::PreflightFilters( const SignalProperties& Input,
                                        SignalProperties& Output )
 {
@@ -124,6 +117,20 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
 }
 
 void
+GenericFilter::InitializeFilters()
+{
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+    ( *i )->Initialize();
+}
+
+void
+GenericFilter::StartRunFilters()
+{
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+    ( *i )->StartRun();
+}
+
+void
 GenericFilter::ProcessFilters( const GenericSignal* Input,
                                      GenericSignal* Output )
 {
@@ -140,6 +147,13 @@ GenericFilter::ProcessFilters( const GenericSignal* Input,
     *Output = OwnedSignals()[ currentFilter ];
   else
     *Output = *Input;
+}
+
+void
+GenericFilter::StopRunFilters()
+{
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
+    ( *i )->StopRun();
 }
 
 void

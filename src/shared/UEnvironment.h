@@ -211,6 +211,8 @@ class EnvironmentBase
     construction,
     preflight,
     initialization,
+    startRun,
+    stopRun,
     processing,
     resting
   };
@@ -236,8 +238,18 @@ class EnvironmentBase
                                         STATELIST*,
                                         STATEVECTOR*,
                                         std::ostream* );
+  // Called before any call to GenericFilter::StartRun().
+  static void EnterStartRunPhase(       PARAMLIST*,
+                                        STATELIST*,
+                                        STATEVECTOR*,
+                                        std::ostream* );
   // Called before any call to GenericFilter::Process().
   static void EnterProcessingPhase(     PARAMLIST*,
+                                        STATELIST*,
+                                        STATEVECTOR*,
+                                        std::ostream* );
+  // Called before any call to GenericFilter::StopRun().
+  static void EnterStopRunPhase(        PARAMLIST*,
                                         STATELIST*,
                                         STATEVECTOR*,
                                         std::ostream* );
@@ -299,6 +311,8 @@ class EnvironmentExtension : protected EnvironmentBase
    virtual void Publish() = 0;
    virtual void Preflight() const = 0;
    virtual void Initialize() = 0;
+   virtual void StartRun() { Initialize(); }
+   virtual void StopRun() { Resting(); }
    virtual void Process() = 0;
    virtual void Resting() {}
 };
