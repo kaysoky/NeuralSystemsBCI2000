@@ -41,7 +41,7 @@ __fastcall TfMain::TfMain(TComponent* Owner)
   AnsiString programName = ExtractFileName( ChangeFileExt( ParamStr( 0 ), "" ) );
   const char* messageMode = "error";
 
-  for( int i = 1; i < ParamCount(); ++i )
+  for( int i = 1; i <= ParamCount(); ++i )
   {
     char* option = new char[ ParamStr( i ).Length() + 1 ];
     ::strcpy( option, ParamStr( i ).c_str() );
