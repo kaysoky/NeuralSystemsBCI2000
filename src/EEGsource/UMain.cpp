@@ -120,7 +120,7 @@ void __fastcall TReceivingThread::ClientExecute(void)
 {
 TWinSocketStream        *pStream;
 COREMESSAGE             *coremessage;
-PARAM   *paramptr;
+const PARAM             *paramptr;
 int     statevectorlength;
 int     trycount, ret;
 
@@ -227,6 +227,7 @@ int     modID;
 
 void TfMain::UpdateStateVector()
 {
+#if 0 // jm 6/27/02
 int     i;
 STATE   *cur_state;
 
@@ -240,6 +241,9 @@ STATE   *cur_state;
         cur_state->modified=false;
         }
   }
+#else
+  statevector->CommitStateChanges();
+#endif
 }
 
 
@@ -254,7 +258,7 @@ STATE   *cur_state;
 // Returns:    0 - error
 //             1 - OK
 // **************************************************************************
-int TfMain::Write2SignalProc(GenericIntSignal *signal, STATEVECTOR *statevector, PARAM *listprm)
+int TfMain::Write2SignalProc(const GenericIntSignal *signal, const STATEVECTOR *statevector, const PARAM *listprm)
 {
 int  channel, channelnum;
 bool ret1, ret2;
@@ -379,7 +383,7 @@ int     displayseconds;
 // **************************************************************************
 int TfMain::ConfigureSource()
 {
-PARAM   *visparam;
+const PARAM   *visparam;
 char    errmsg[1024];
 int     res;
 
@@ -891,7 +895,7 @@ STATE   *cur_state;
  if (coremessage->GetDescriptor() == COREMSG_PARAMETER)
     {
     // now, add the parameter to the list of parameters
-    if (coremessage->param.valid)
+    if (coremessage->param.Valid())
        {
        // if the statevector does exist, only add/modify a parameter, if state "Running" is 0
        if (statevector)
@@ -907,11 +911,13 @@ STATE   *cur_state;
  // we received a state
  if (coremessage->GetDescriptor() == COREMSG_STATE)
     {
-    if (coremessage->state.valid)
+    if (coremessage->state.Valid())
        {
        // now, add the state to the list of states
        statelist.AddState2List(&(coremessage->state));
+#if 0 // jm 6/27/02
        statelist.GetStatePtr(coremessage->state.GetName())->modified=true;
+#endif
        }
     }
 

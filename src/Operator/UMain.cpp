@@ -618,7 +618,7 @@ int     sample, channel, i, j;
     {
     // now, add the parameter to the list of parameters
     // (if it is a valid parameter
-    if (message->param.valid)
+    if (message->param.Valid())
        {
        paramlist.CloneParameter2List(&(message->param));
        // refresh this parameter on the screen (in case the cfg window is open)
@@ -704,7 +704,7 @@ int     sample, channel, i, j;
  // it is a state message
  if (message->GetDescriptor() == COREMSG_STATE)
     {
-    if (message->state.valid)
+    if (message->state.Valid())
        {
        // if we received any state and we are in STATE_IDLE, switch to publishing phase
        if (sysstatus.SystemState == STATE_IDLE)

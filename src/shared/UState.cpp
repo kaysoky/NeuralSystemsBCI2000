@@ -16,6 +16,7 @@
 #pragma hdrstop
 
 #include <stdio.h>
+#include <assert>
 
 #include "defines.h"
 
@@ -24,89 +25,6 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-
-
-// **************************************************************************
-// Function:   UpdateState
-// Purpose:    Send an updated state to a destination module
-// Parameters: statename - name of the state to modify
-//             newvalue - new value for this state
-// Returns:    ERR_NOERR - if everything OK
-//             ERR_STATENOTFOUND - if the state was not found
-//             ERR_SOURCENOTCONNECTED - if the socket is not connected;
-// **************************************************************************
-int STATELIST::UpdateState(char *statename, unsigned short newvalue, TCustomWinSocket *socket)
-{
-COREMESSAGE     *coremessage;
-char            statelinebuf[LENGTH_STATELINE];
-int             ret;
-STATE           *cur_state;
-
- // is the destination connected ?
- try {
- if ((!socket) || (!socket->Connected))
-    return(ERR_SOURCENOTCONNECTED);
- } catch(...) { return(ERR_SOURCENOTCONNECTED); }
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_STATE);
-
- ret=ERR_NOERR;
-
- cur_state=GetStatePtr(statename);
- if (cur_state)
-    {
-    sprintf(statelinebuf, "%s %d %d %d %d\r\n", statename, cur_state->GetLength(), newvalue, cur_state->GetByteLocation(), cur_state->GetBitLocation());
-    coremessage->SetLength((unsigned short)strlen(statelinebuf));
-    strncpy(coremessage->GetBufPtr(), statelinebuf, strlen(statelinebuf));
-    coremessage->SendCoreMessage(socket);
-    }
- else
-    ret=ERR_STATENOTFOUND;
-
- delete coremessage;
- return(ret);
-}
-
-
-// **************************************************************************
-// Function:   PublishStates
-// Purpose:    this method publishes this module's states
-// Parameters: statelist - filled list of states
-//             Socket - socket descriptor for the connection to the operator
-// Returns:    always 0
-// **************************************************************************
-int STATELIST::PublishStates(TCustomWinSocket *Socket)
-{
-COREMESSAGE     *coremessage;
-char            line[512];
-int             i;
-STATE           *cur_state;
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_STATE);
-
- // now, let's publish the list of states
- // that the ADC board has requested so far ...
- for (i=0; i<GetNumStates(); i++)
-  {
-  cur_state=GetStatePtr(i);                                     // get the i'th state
-  strcpy(line, cur_state->GetStateLine());                      // copy its ASCII representation to variable line
-  strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
-  coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
-  coremessage->SendCoreMessage((TCustomWinSocket *)Socket);     // and send it out
-  }
-
- // the system command "EndOfState" terminates the list of states
- coremessage->SetDescriptor(COREMSG_SYSCMD);
- strcpy(line, "EndOfState");
- coremessage->SetLength((unsigned short)strlen(line));
- strncpy(coremessage->GetBufPtr(), line, strlen(line));
- coremessage->SendCoreMessage((TCustomWinSocket *)Socket);
-
- delete coremessage;
- return(0);
-}
 
 
 // **************************************************************************
@@ -119,7 +37,6 @@ STATELIST::STATELIST()
 {
  state_list=new TList;
 }
-
 
 // **************************************************************************
 // Function:   ~STATELIST
@@ -141,7 +58,7 @@ STATELIST::~STATELIST()
 // Parameters: N/A
 // Returns:    the number of states
 // **************************************************************************
-int STATELIST::GetNumStates()
+int STATELIST::GetNumStates() const
 {
 return(state_list->Count);
 }
@@ -175,7 +92,7 @@ STATE   *cur_state;
 // Returns:    pointer to a STATE object or
 //             NULL, if the specified index is out of range
 // **************************************************************************
-STATE *STATELIST::GetStatePtr(int idx)
+STATE *STATELIST::GetStatePtr(int idx)  const
 {
  if ((idx < state_list->Count) && (idx >= 0))
     return((STATE *)state_list->Items[idx]);
@@ -191,10 +108,10 @@ STATE *STATELIST::GetStatePtr(int idx)
 // Returns:    pointer to a STATE object or
 //             NULL, if no state with this name exists in the list
 // **************************************************************************
-STATE *STATELIST::GetStatePtr(char *name)
+STATE *STATELIST::GetStatePtr(const char *name) const
 {
-char    *statename;
-int     i;
+const char* statename;
+int         i;
 
  for (i=0; i<state_list->Count; i++)
   {
@@ -207,6 +124,7 @@ int     i;
 }
 
 
+#if 0
 // **************************************************************************
 // Function:   GetListPtr
 // Purpose:    Returns a pointer to this state's list of values
@@ -217,6 +135,7 @@ TList *STATELIST::GetListPtr()
 {
 return(state_list);
 }
+#endif
 
 
 // **************************************************************************
@@ -228,9 +147,10 @@ return(state_list);
 //                           defining this new state
 // Returns:    N/A
 // **************************************************************************
-void STATELIST::AddState2List(char *statestring)
+void STATELIST::AddState2List(const char *statestring)
 {
-STATE   *new_state, *existing_state;
+STATE* new_state,
+     * existing_state;
 
  new_state=new STATE();
  new_state->ParseState(statestring, strlen(statestring));
@@ -251,7 +171,7 @@ STATE   *new_state, *existing_state;
 // Parameters: name - name of the state
 // Returns:    N/A
 // **************************************************************************
-void STATELIST::DeleteState(char *name)
+void STATELIST::DeleteState(const char *name)
 {
 int     i;
 STATE   *cur_state;
@@ -279,7 +199,7 @@ STATE   *cur_state;
 // Parameters: state - pointer to an existing STATE object
 // Returns:    N/A
 // **************************************************************************
-void STATELIST::AddState2List(STATE *state)
+void STATELIST::AddState2List(const STATE *state)
 {
 STATE           *newstate;
 
@@ -289,10 +209,14 @@ STATE           *newstate;
     DeleteState(state->GetName());
 
  // create a new state and copy the content of the other one
+#if 0 // jm 6/27/02
  newstate=new STATE;
  memcpy(newstate, state, sizeof(STATE));
+#else
+  newstate = new STATE( *state );
+#endif
 
- GetListPtr()->Add(newstate);
+ state_list->Add(newstate);
 }
 
 
@@ -303,10 +227,18 @@ STATE           *newstate;
 // Returns:    N/A
 // **************************************************************************
 STATE::STATE()
+: length( 0 ),
+  value( 0 ),
+  byteloc( 0 ),
+  bitloc( 0 ),
+  valid( false ),
+  modified( false )
 {
+  buffer[ 0 ] = '\0';
+  name[ 0 ] = '\0';
 }
 
-
+#if 0
 // **************************************************************************
 // Function:   ~STATE
 // Purpose:    the destructor for the STATE object
@@ -316,7 +248,7 @@ STATE::STATE()
 STATE::~STATE()
 {
 }
-
+#endif
 
 // **************************************************************************
 // Function:   GetStateLine
@@ -326,7 +258,7 @@ STATE::~STATE()
 // Parameters: N/A
 // Returns:    a pointer to the state line
 // **************************************************************************
-char *STATE::GetStateLine()
+const char *STATE::GetStateLine() const
 {
  ConstructStateLine();
  return(buffer);
@@ -339,7 +271,7 @@ char *STATE::GetStateLine()
 // Parameters: N/A
 // Returns:    a pointer to the state's name
 // **************************************************************************
-char *STATE::GetName()
+const char *STATE::GetName() const
 {
  return(name);
 }
@@ -351,7 +283,7 @@ char *STATE::GetName()
 // Parameters: N/A
 // Returns:    this state's length
 // **************************************************************************
-int STATE::GetLength()
+int STATE::GetLength() const
 {
  return(length);
 }
@@ -363,7 +295,7 @@ int STATE::GetLength()
 // Parameters: N/A
 // Returns:    this state's value
 // **************************************************************************
-unsigned short STATE::GetValue()
+unsigned short STATE::GetValue() const
 {
  return(value);
 }
@@ -378,6 +310,7 @@ unsigned short STATE::GetValue()
 void STATE::SetValue(unsigned short new_value)
 {
  value=new_value;
+ modified = true;
 }
 
 
@@ -387,7 +320,7 @@ void STATE::SetValue(unsigned short new_value)
 // Parameters: N/A
 // Returns:    this state's byte location
 // **************************************************************************
-int STATE::GetByteLocation()
+int STATE::GetByteLocation() const
 {
  return(byteloc);
 }
@@ -399,7 +332,7 @@ int STATE::GetByteLocation()
 // Parameters: N/A
 // Returns:    this state's bit location
 // **************************************************************************
-int STATE::GetBitLocation()
+int STATE::GetBitLocation() const
 {
  return(bitloc);
 }
@@ -414,6 +347,7 @@ int STATE::GetBitLocation()
 void STATE::SetByteLocation(int loc)
 {
  byteloc=loc;
+ modified = true;
 }
 
 
@@ -426,6 +360,7 @@ void STATE::SetByteLocation(int loc)
 void STATE::SetBitLocation(int loc)
 {
  bitloc=loc;
+ modified = true;
 }
 
 
@@ -441,7 +376,7 @@ void STATE::SetBitLocation(int loc)
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int STATE::get_argument(int ptr, char *buf, char *line, int maxlen)
+int STATE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
@@ -467,7 +402,7 @@ int STATE::get_argument(int ptr, char *buf, char *line, int maxlen)
 // Parameters: N/A
 // Returns:    always ERRPARAM_NOERR 
 // **************************************************************************
-int STATE::ConstructStateLine()
+int STATE::ConstructStateLine() const
 {
  sprintf(buffer, "%s %d %d %d %d", name, length, value, byteloc, bitloc);
  return(ERRSTATE_NOERR);
@@ -485,7 +420,7 @@ int STATE::ConstructStateLine()
 // Returns:    ERRSTATE_INVALIDSTATE if the state line is invalid, or
 //             ERRSTATE_NOERR
 // **************************************************************************
-int STATE::ParseState(char *line, int statelength)
+int STATE::ParseState(const char *line, int statelength)
 {
 int     ptr;
 char    *buf;
@@ -514,9 +449,28 @@ char    *buf;
  free(buf);
  // delete buf;
  valid=true;
+ modified = true;
  return(ERRSTATE_NOERR);
 }
 
+// **************************************************************************
+// Function:   STATE::Commit
+// Purpose:    if the write cache has been modified, write its content into
+//             the given state vector and clear the "modified" flag
+// Parameters: stateVector - the state vector that calls this function
+// Returns:    N/A
+// **************************************************************************
+void
+STATE::Commit( STATEVECTOR* stateVector )
+{
+  if( modified )
+  {
+    assert( stateVector != NULL );
+    int err = stateVector->SetStateValue( byteloc, bitloc, length, value );
+    assert( err == ERRSTATEVEC_NOERR );
+    modified = false;
+  }
+}
 
 /*
 // **************************************************************************
@@ -635,7 +589,7 @@ STATEVECTOR::~STATEVECTOR()
 // Returns:    ERRSTATEVEC_NOSTATE on error (e.g., location outside range)
 //             the value of the state otherwise
 // **************************************************************************
-unsigned short STATEVECTOR::GetStateValue(int byteloc, int bitloc, int length)
+unsigned short STATEVECTOR::GetStateValue(int byteloc, int bitloc, int length) const
 {
 int     i, dest_byte, dest_bit;
 char    buf[2];
@@ -679,7 +633,7 @@ unsigned short *result;
 // Returns:    the value of the state
 //             0 on error (e.g., state not found)
 // **************************************************************************
-unsigned short STATEVECTOR::GetStateValue(char *statename)
+unsigned short STATEVECTOR::GetStateValue(const char *statename) const
 {
 int     i, value;
 STATE   *cur_state;
@@ -746,7 +700,7 @@ char    *valueptr;
 // Returns:    ERRSTATEVEC_NOSTATE on error (e.g., did not recognize state name)
 //             ERRSTATEVEC_NOERR otherwise
 // **************************************************************************
-int STATEVECTOR::SetStateValue(char *statename, unsigned short stateval)
+int STATEVECTOR::SetStateValue(const char *statename, unsigned short stateval)
 {
 int     i, value;
 STATE   *cur_state;
@@ -772,7 +726,7 @@ STATE   *cur_state;
 // Parameters: N/A
 // Returns:    the length of the state vector in bytes
 // **************************************************************************
-int STATEVECTOR::GetStateVectorLength()
+int STATEVECTOR::GetStateVectorLength() const
 {
 return(state_vector_length);
 }
@@ -784,11 +738,19 @@ return(state_vector_length);
 // Parameters: N/A
 // Returns:    a pointer to the state vector data
 // **************************************************************************
-BYTE *STATEVECTOR::GetStateVectorPtr()
+// Having the same function with different const types may look stupid
+// but actually makes some sense.
+BYTE*
+STATEVECTOR::GetStateVectorPtr()
 {
 return(state_vector);
 }
 
+const BYTE*
+STATEVECTOR::GetStateVectorPtr() const
+{
+return(state_vector);
+}
 
 // **************************************************************************
 // Function:   GetStateList
@@ -796,9 +758,29 @@ return(state_vector);
 // Parameters: N/A
 // Returns:    pointer to the list of states
 // **************************************************************************
-STATELIST *STATEVECTOR::GetStateListPtr()
+const STATELIST *STATEVECTOR::GetStateListPtr() const
 {
 return(state_list);
+}
+
+// **************************************************************************
+// Function:   CommitStateChanges
+// Purpose:    have all states commit their changes, if any
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void
+STATEVECTOR::CommitStateChanges()
+{
+  if( !state_list )
+    return;
+
+  for( int i = 0; i < state_list->GetNumStates(); ++i )
+  {
+    STATE* state = state_list->GetStatePtr( i );
+    assert( state != NULL );
+    state->Commit( this );
+  }
 }
 
 

@@ -97,7 +97,7 @@ TReceivingThread  *receiving_thread;
 // **************************************************************************
 int TReceivingThread::InitializeApplication()
 {
-PARAM   *paramptr1, *paramptr2;
+const PARAM   *paramptr1, *paramptr2;
 int     ret;
 
   ret=1;
@@ -563,14 +563,14 @@ void TfMain::HandleCoreMessage(COREMESSAGE *coremessage)
  if (coremessage->GetDescriptor() == COREMSG_PARAMETER)
     {
     // now, add the parameter to the list of parameters
-    if (coremessage->param.valid)
+    if (coremessage->param.Valid())
        paramlist.CloneParameter2List(&(coremessage->param));
     }
 
  // we received a state
  if (coremessage->GetDescriptor() == COREMSG_STATE)
     {
-    if (coremessage->state.valid)
+    if (coremessage->state.Valid())
        {
        // now, add the state to the list of states
        statelist.AddState2List(&(coremessage->state));
