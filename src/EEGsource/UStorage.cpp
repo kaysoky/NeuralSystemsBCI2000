@@ -118,29 +118,45 @@ void __fastcall TDataStorage::Execute()
 int     i;
 short   value;
 FILE    *fp;
+bool    atleastone;
 
  while (!Terminated)
   {
   // critsec_event->Acquire();
   event->WaitFor(100);
   // critsec_event->Release();
-  // go through all the buffers and store the ones that hold data
+
+  // do we have at least one buffer with content ?
+  atleastone=false;
   for (i=0; i<MAX_BUFFERS; i++)
    {
    critsec[i]->Acquire();       // acquire a lock for this buffer
    // buffer present ?
    if (length[i] > 0)
-      {
-      fp=fopen(FName, "ab");
-      fwrite(buffer[i], length[i], 1, fp);
-      fclose(fp);
-      delete [] buffer[i];
-      buffer[i]=NULL;
-      length[i]=0;
-      AlreadyIncremented = false;
-      }
-   critsec[i]->Release();       // release the lock for this buffer
+      atleastone=true;
+   critsec[i]->Release();
    }
+
+  // go through all the buffers and store the ones that hold data
+  if (atleastone)
+     {
+     fp=fopen(FName, "ab");
+     for (i=0; i<MAX_BUFFERS; i++)
+      {
+      critsec[i]->Acquire();       // acquire a lock for this buffer
+      // buffer present ?
+      if (length[i] > 0)
+         {
+         fwrite(buffer[i], length[i], 1, fp);
+         delete [] buffer[i];
+         buffer[i]=NULL;
+         length[i]=0;
+         AlreadyIncremented = false;
+         }
+      critsec[i]->Release();       // release the lock for this buffer
+      }
+     fclose(fp);
+     }
   }
 
  ReturnValue=1;
