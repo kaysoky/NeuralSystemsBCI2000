@@ -363,7 +363,6 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Running ):
-      mSyslog.AddSysLogEntry( "Operator resumed operation" );
       // Execute the on-resume script ...
       if( mPreferences.Script[ PREFERENCES::OnResume ] != "" )
       {
@@ -371,10 +370,10 @@ TfMain::EnterState( SYSSTATUS::State inState )
         mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnResume ].c_str() );
       }
       mStarttime = TDateTime::CurrentDateTime();
+      mSyslog.AddSysLogEntry( "Operator resumed operation" );
       break;
 
     case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Suspended ):
-      mSyslog.AddSysLogEntry( "Operator suspended operation" );
       // Execute the on-suspend script ...
       if( mPreferences.Script[ PREFERENCES::OnSuspend ] != "" )
       {
@@ -382,6 +381,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
         mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnSuspend ].c_str() );
       }
       mStarttime = TDateTime::CurrentDateTime();
+      mSyslog.AddSysLogEntry( "Operator suspended operation" );
       break;
 
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
