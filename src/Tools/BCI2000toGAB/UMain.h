@@ -49,6 +49,7 @@ private:	// User declarations
         float val;
         FILE *cf;
         std::vector<float> offset, gain;
+        const short* gabTargets;
         bool CalibFromFile() { return gain.size() != 0; }
         void __fastcall CheckCalibrationFile( void );
       

@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include <stdio.h>
+#include <vector>
 
 #include "UBCI2000DATA.h"
 #include "UParameter.h"
@@ -14,12 +15,15 @@
 #pragma link "CGAUGES"
 #pragma resource "*.dfm"
 
+using namespace std;
+
 TfMain *fMain;
 
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
-        : TForm(Owner)
+        : TForm(Owner),
+          gabTargets( NULL )
 {
 
 }
@@ -85,6 +89,39 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
 
  frun->Text= firstrun;
  lrun->Text= lastrun;
+
+ gabTargets = NULL;
+ static const short ud[] = { 11, 15 },
+                    lr[] = { 13, 17 },
+                    udlr[] = { 10, 12, 14, 16 },
+                    *newGabTargets = NULL;
+ const PARAMLIST* paramlist = bci2000data->GetParamListPtr();
+ const PARAM* param = paramlist->GetParamPtr( "NumberTargets" );
+ int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
+ param = paramlist->GetParamPtr( "TargetOrientation" );
+ int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 ),
+     numberTargetsMax = 0;
+ switch( targetOrientation )
+ {
+   case 0:
+   case 3: // Both
+     newGabTargets = udlr;
+     numberTargetsMax = sizeof( udlr ) / sizeof( *udlr );
+     break;
+   case 1: // Vertical
+     newGabTargets = ud;
+     numberTargetsMax = sizeof( ud ) / sizeof( *ud );
+     break;
+   case 2: // Horizontal
+     newGabTargets = lr;
+     numberTargetsMax = sizeof( lr ) / sizeof( *lr );
+     break;
+ }
+ if( numberTargets > numberTargetsMax )
+   Application->MessageBox( "Target type heuristics failed. "
+                 "Target conversion is likely to be unusable.", "Warning", MB_OK );
+ else
+   gabTargets = newGabTargets;
 
  Continue->Enabled= true;
 
@@ -188,13 +225,19 @@ static short cur_targetcode=-1;
     }
 
  // target on the screen
- if (targetcode > 0)
-    {
-    if (feedback == 0)                  // no cursor -> pre-trial pause
-       return(2+targetcode-1);
-    else
-       return(10+targetcode-1);         // cursor on the screen
-    }
+ if (targetcode > 0 )
+ {
+   if( gabTargets != NULL )
+     return gabTargets[ targetcode - 1 ];
+   else
+   {
+      if (feedback == 0)                  // no cursor -> pre-trial pause
+         return(2+targetcode-1);
+      else
+         return(10+targetcode-1);         // cursor on the screen
+   }
+ }
+
   if( restperiod == 1 )
         return( 24 );  
 
