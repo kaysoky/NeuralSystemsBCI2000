@@ -86,6 +86,11 @@ void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
     else
       m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
 
+    // 03/09/05 GS
+    displayresults = false;
+    if (Parameter("DisplayResults") == 1)
+       displayresults = true;
+
     // figure out whether a stimulus to appear in a sequence
     m_vStimulusPresent.clear();
     m_vStimulusPresent.resize(pUsrEnv->GetElements()->GetCollectionSize());
@@ -358,11 +363,15 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       PhaseInSequenceEnum ePhaseInSequence = (PhaseInSequenceEnum)pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence);
       // this will display 'result is' message
-      if (ePhaseInSequence == PHASE_FINISH)
+      // if (ePhaseInSequence == PHASE_FINISH) // this was incorrect 03/09/05 GS
+                                               // 'result is' shall be rendered after every sequence, not just on the last one
+                                               // when we are in no-interpret mode, then there won't be any active elements, and thus the command below won't do anything
+                                               // now we're having a switch to simply show the results or not
+      if (displayresults)
          pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
 
       if ((ePhaseInSequence == PHASE_FINISH) || (ePhaseInSequence == PHASE_FINISH_WO_RESULT))
-        m_ePhaseInSequence = ePhaseInSequence;
+         m_ePhaseInSequence = ePhaseInSequence;
 
       State("SelectedStimulus")=0;
       State("PhaseInSequence")=3;
@@ -389,7 +398,8 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
-      pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
+      if (displayresults)   // 03/09/05 GS
+         pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
 
       State("SelectedStimulus")=iPickedStimulusID;
     } // else

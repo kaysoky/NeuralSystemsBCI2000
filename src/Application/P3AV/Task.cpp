@@ -114,6 +114,9 @@ TTask::TTask()
     "P3AV_Stimuli int InterpretMode= 0 0 0 2 // "
       "Classification of results: 0 none, 1 free mode, 2 copy mode (enumeration)",
 
+    "P3AV_Stimuli int DisplayResults= 1 1 0 1 // "
+      "Display results of copy/free spelling: 0=no, 1=yes (boolean)",
+
     "P3AV_Stimuli intlist ToBeCopied= 3 1 2 3 1 1 1000 // "
       "Sequence in which stimuli need to be copied (only used in copy mode)",
 
@@ -217,10 +220,11 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   // result makes it to the application. The info about when the classification is made
   // is defined in a parameter in the P3SigProc, and thus within the domain of a
   // different module. Since we are not supposed to create module interdependencies,
-  // we here check it against some arbitrary time.
-  if( Parameter( "PostSequenceTime" ) < 2 * Parameter( "OnTime" ) )
+  // we here check it against some arbitrary time, i.e., 1 second.
+  int blockspersecond=(int)(Parameter("SamplingRate")/Parameter("SampleBlockSize"));
+  if( Parameter( "PostSequenceTime" ) < blockspersecond )
     bcierr << "PostSequenceTime parameters must be"
-              " at least 2 times larger than OnTime parameter" << endl;
+              " at least 1 second long, i.e., " << blockspersecond << " blocks." << endl;
 
   // check stimuli matrix , FocusOn matrix, Result matrix
   ErrorReadingMatrix("Matrix");

@@ -366,9 +366,9 @@ const unsigned int UsrEnvAlgorithmP3AV::GenerateActiveElements(UsrElementCollect
         // in that case we want to proceed with the next sequence but before we need to
         // announce the results
         if (m_eInterpretMode != INTERPRETATION_NONE) // add to active targets element: the result is...
-          AddToActiveElements(pActiveUsrElementColl, dynamic_cast<UsrElement *>(m_pResultElement));
+           AddToActiveElements(pActiveUsrElementColl, dynamic_cast<UsrElement *>(m_pResultElement));
         if (m_eInterpretMode == INTERPRETATION_COPYMODE)
-          ++m_uNumOfTimesCopied;
+           ++m_uNumOfTimesCopied;
         if (m_uNumOfTimesCopied == m_uNumOfTimesToCopy && m_eInterpretMode == INTERPRETATION_COPYMODE)
            iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_FINISH;
         else
