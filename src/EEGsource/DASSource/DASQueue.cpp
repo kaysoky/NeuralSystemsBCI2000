@@ -67,16 +67,16 @@ DASQueue::open( const DASInfo& inInfo )
   int result = ::cbGetRevision( &ignored, &ignored );
   if( result == NOERRORS )
   {
-    int ADRange = DASUtils::GetADRangeCode( inInfo.adRangeMin, inInfo.adRangeMax ),
+    int adRange = DASUtils::GetADRangeCode( inInfo.adRangeMin, inInfo.adRangeMax ),
         hwRange = NOTUSED;
     result = ::cbGetConfig( BOARDINFO, mBoardNumber, 0, BIRANGE, &hwRange );
     if( result == NOERRORS )
     {
-      if( hwRange != NOTUSED && hwRange != ADRange )
+      if( !DASUtils::ADRangeCompatible( hwRange, inInfo.adRangeMin, inInfo.adRangeMax ) )
       {
         bcierr << "The specified A/D range does not match the associated "
                   "hardware switch setting" << endl;
-        ADRange = hwRange;
+        adRange = hwRange;
       }
 
       mHWChannels = 0;
@@ -104,14 +104,17 @@ DASQueue::open( const DASInfo& inInfo )
 
         // For large hardware buffers, we need to increase the sampling rate to
         // obtain the block update rate implied by the parameters.
-        mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
+        if( hwBlockSize == 1 )
+          mFreqMultiplier = 1.0;
+        else
+          mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
         mDataBufferSize = cBlocksInBuffer * hwBlockSize;
 
         long hwSamplingRate = inInfo.samplingRate * mFreqMultiplier;
         int  options = CONTINUOUS | BACKGROUND;
         result = DASUtils::GetBoardOptions( mBoardNumber, mHWChannels,
                                             mDataBufferSize, hwSamplingRate,
-                                            ADRange, options );
+                                            adRange, options );
         if( result == NOERRORS )
         {
           // The board may have changed the sample rate.
@@ -125,7 +128,7 @@ DASQueue::open( const DASInfo& inInfo )
           mWriteCursor = 0;
           result = DASUtils::BackgroundScan( mBoardNumber, 0, mHWChannels - 1,
                                              mDataBufferSize, hwSamplingRate,
-                                             ADRange, mDataBuffer, options,
+                                             adRange, mDataBuffer, options,
                                              BoardEventCallback, this );
           if( result == NOERRORS )
             ReceiveData();
