@@ -15,14 +15,14 @@
 class TTask : public GenericFilter
 {
  private:
-        GenericVisualization    *vis;
+        GenericVisualization mVis;
         TARGETLIST      *targets, oldactivetargets;
         USERDISPLAY     *userdisplay;
         TRIALSEQUENCE   *trialsequence;
-        BCITIME         *bcitime;
         int             Wx, Wy, Wxl, Wyl;
         void            HandleSelected(TARGET *selected);
-        BCITIME         *cur_time;
+        BCITIME         *cur_time,
+                        *bcitime;
         int             cur_sequence, oldrunning, running;
         int             numberofsequences;              // how many sets of 12 intensifications ?
         int             postsetinterval;                // how much time after each set of numberofsequences sequences ?

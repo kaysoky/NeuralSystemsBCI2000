@@ -15,6 +15,8 @@
 
 #include "Task.h"
 
+using namespace std;
+
 RegisterFilter( TTask, 3 );
 
 // **************************************************************************
@@ -24,7 +26,7 @@ RegisterFilter( TTask, 3 );
 // Returns:    N/A
 // **************************************************************************
 TTask::TTask()
-: vis( NULL ),
+: mVis( SOURCEID_TASKLOG ),
   trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
   userdisplay( new USERDISPLAY ),
   cur_time( new BCITIME ),
@@ -90,7 +92,6 @@ TTask::TTask()
 // **************************************************************************
 TTask::~TTask( void )
 {
-  delete vis;
   delete trialsequence;
   delete userdisplay;
   delete cur_time;
@@ -123,15 +124,11 @@ char *current_directory(char *path)
 // **************************************************************************
 void TTask::Initialize()
 {
-AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
-char    memotext[256], FName[256], cur_dir[MAXPATH];
+char    memotext[256], cur_dir[MAXPATH];
 int     ret, numerpsamples, sampleblocksize;
 
- delete vis;
- vis= new GenericVisualization;
- vis->SetSourceID(SOURCEID_TASKLOG);
- vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+  mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
   Wx=  Parameter( "WinXpos" );
   Wy=  Parameter( "WinYpos" );
@@ -149,45 +146,40 @@ int     ret, numerpsamples, sampleblocksize;
   presetinterval=Parameter("PreSetInterval");
   numerpsamples=Parameter("NumSamplesInERP");
   sampleblocksize=Parameter("SampleBlockSize");
-  FInit= (const char*)Parameter("FileInitials");
-  SSes = (const char*)Parameter("SubjectSession");
-  SName= (const char*)Parameter("SubjectName");
 
- // we have to make sure that we wait long enough after a set of n intensifications
- // to get all the responses
- if (postsetinterval*sampleblocksize <= numerpsamples)
+  // we have to make sure that we wait long enough after a set of n intensifications
+  // to get all the responses
+  if (postsetinterval*sampleblocksize <= numerpsamples)
     bciout << "PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)"
-           << std::endl;
+           << endl;
 
- // open an output file for the task log
- current_directory(cur_dir);    // store current directory
- BCIDtry bcidtry;
- bcidtry.SetDir( FInit.c_str() );
- bcidtry.ProcPath();
- bcidtry.SetName( SName.c_str() );
- bcidtry.SetSession( SSes.c_str() );
- strcpy(FName, bcidtry.ProcSubDir() );
- strcat(FName, "\\");
- strcat(FName, (SName + "S" + SSes + ".log").c_str() );         // CAT vs CPY
- if (logfile) fclose(logfile);
- logfile= fopen(FName, "a+");
- if( !logfile )
-   bcierr << "Could not open " << FName << " for writing" << std::endl;
- ChDir(AnsiString(cur_dir));    // restore current directory
+  // open an output file for the task log
+  current_directory(cur_dir);    // store current directory
+  string FName = BCIDirectory()
+   .SubjectDirectory( Parameter( "FileInitials" ) )
+   .SubjectName( Parameter( "SubjectName" ) )
+   .SessionNumber( Parameter( "SubjectSession" ) )
+   .FilePath()
+   + ".log";
+  if (logfile) fclose(logfile);
+    logfile= fopen(FName.c_str(), "a+");
+  if( !logfile )
+    bcierr << "Could not open " << FName << " for writing" << std::endl;
+  ChDir(AnsiString(cur_dir));    // restore current directory
 
- State( "PhaseInSequence" ) = 0;
+  State( "PhaseInSequence" ) = 0;
 
- // set the window position, size, and background color
- userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
+  // set the window position, size, and background color
+  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
 
- // initialize the within-trial sequence
- trialsequence->Initialize( Parameters, Statevector, userdisplay);
+  // initialize the within-trial sequence
+  trialsequence->Initialize( Parameters, Statevector, userdisplay);
 
- // show the user window
- userdisplay->form->Show();
+  // show the user window
+  userdisplay->form->Show();
 
- cur_sequence=0;
- oldrunning=0;
+  cur_sequence=0;
+  oldrunning=0;
 }
 
 
@@ -334,9 +326,9 @@ int     i;
 
        // send the results to the operator log
        sprintf(memotext, "This is the end of this sequence: %d total intensifications\r", cur_sequence);
-       vis->SendMemo2Operator(memotext);
+       mVis.Send( memotext );
        sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
-       vis->SendMemo2Operator(memotext);
+       mVis.Send( memotext );
 
        // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
        // if we are in online mode, just reset the task sequence and continue
@@ -424,12 +416,12 @@ int     ret;
     postpostsequence=false;
     cur_runnr++;
     ResetTaskSequence();
-    vis->SendMemo2Operator("******************************\r");
+    mVis.Send( "******************************" );
     if (trialsequence->onlinemode)
        sprintf(memotext, "Start of run %d in online mode\r", cur_runnr);
     else
        sprintf(memotext, "Start of run %d in offline mode\r", cur_runnr);
-    vis->SendMemo2Operator(memotext);
+    mVis.Send( memotext );
     if (logfile) fprintf(logfile, "******************************\r\n%s\n", memotext);
     trialsequence->char2spellidx=1;
     userdisplay->statusbar->resulttext="";
