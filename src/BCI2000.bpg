@@ -10,8 +10,8 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = LittleDemoApp.exe Oddball.exe P3Speller.exe RJB.exe Screen.exe \
-  SWApp.exe Speller.exe D2Box.exe DASSource.exe DT2000.exe NISource.exe \
-  RDAClient.exe RandomNumber.exe operat.exe ARSignalProcessing.exe \
+  SWApp.exe Speller.exe D2Box.exe P3AVTask.exe DASSource.exe DT2000.exe \
+  NISource.exe RDAClient.exe RandomNumber.exe operat.exe ARSignalProcessing.exe \
   FIRProcessing.exe P3SignalProcessing.exe PeakDetectSignalProcessing.exe \
   SignalProcessing.exe DummySignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe \
   calibgen.exe maxifred.exe
@@ -112,6 +112,10 @@ D2Box.exe: Application\d2box\D2Box.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 DummySignalProcessing.exe: SignalProcessing\Dummy\DummySignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+P3AVTask.exe: Application\P3AV\P3AVTask.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
