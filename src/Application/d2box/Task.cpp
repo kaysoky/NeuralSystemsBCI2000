@@ -15,7 +15,7 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <dos.h>
 #include <math.h>
 
-#define  DATAGLOVE
+// #define  DATAGLOVE
 
 RegisterFilter( TTask, 3 );
 
