@@ -2,8 +2,15 @@
 #include <vcl.h>
 #pragma hdrstop
 USEFORM("..\UMain.cpp", fMain);
-USEFORM("Usr.cpp", User);
+USEUNIT("UTrialSequence.cpp");
 USEUNIT("Task.cpp");
+USEUNIT("UCursor.cpp");
+USEUNIT("UDictionary.cpp");
+USEUNIT("UserDisplay.cpp");
+USEUNIT("UStatusBar.cpp");
+USEUNIT("UTarget.cpp");
+USEUNIT("UTargetSequence.cpp");
+USEUNIT("UTree.cpp");
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
 USEUNIT("..\..\shared\UBCI2000Data.cpp");
 USEUNIT("..\..\shared\UBCItime.cpp");
@@ -26,7 +33,6 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "RJB Task";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TUser), &User);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
                  Application->Run();
         }

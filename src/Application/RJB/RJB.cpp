@@ -1,30 +1,30 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-USEFORM("UMain.cpp", fMain);
-USEUNIT("Task.cpp");
+USEFORM("..\UMain.cpp", fMain);
 USEFORM("Usr.cpp", User);
-USEFORM("..\..\shared\V0.17\UVisConfig.cpp", fVisConfig);
-USEUNIT("..\..\shared\V0.17\UBCItime.cpp");
-USEUNIT("..\..\shared\V0.17\UBitRate.cpp");
-USEUNIT("..\..\shared\V0.17\UCoreComm.cpp");
-USEUNIT("..\..\shared\V0.17\UCoreMessage.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericFilter.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericSignal.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericVisualization.cpp");
-USEUNIT("..\..\shared\V0.17\UParameter.cpp");
-USEUNIT("..\..\shared\V0.17\UState.cpp");
-USEUNIT("..\..\shared\V0.17\UStatus.cpp");
-USEUNIT("..\..\shared\V0.17\USysCommand.cpp");
-USEUNIT("..\..\shared\V0.17\UBCI2000Data.cpp");
-USEUNIT("..\..\shared\V0.17\BCIDirectry.cpp");
+USEUNIT("Task.cpp");
+USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
+USEUNIT("..\..\shared\UBCI2000Data.cpp");
+USEUNIT("..\..\shared\UBCItime.cpp");
+USEUNIT("..\..\shared\UBitRate.cpp");
+USEUNIT("..\..\shared\UCoreComm.cpp");
+USEUNIT("..\..\shared\UCoreMessage.cpp");
+USEUNIT("..\..\shared\UGenericFilter.cpp");
+USEUNIT("..\..\shared\UGenericSignal.cpp");
+USEUNIT("..\..\shared\UGenericVisualization.cpp");
+USEUNIT("..\..\shared\UParameter.cpp");
+USEUNIT("..\..\shared\UState.cpp");
+USEUNIT("..\..\shared\UStatus.cpp");
+USEUNIT("..\..\shared\USysCommand.cpp");
+USEUNIT("..\..\shared\BCIDirectry.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
         try
         {
                  Application->Initialize();
-                 Application->Title = "Application";
+                 Application->Title = "RJB Task";
                  Application->CreateForm(__classid(TfMain), &fMain);
                  Application->CreateForm(__classid(TUser), &User);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);

@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 #include "UGenericVisualization.h"
 #include "UCoreMessage.h"
 #include "UMain.h"
