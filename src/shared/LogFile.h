@@ -20,7 +20,7 @@
 class LogFile: public std::ofstream, Environment
 {
   public:
-    //LogFile() : mExtension( ".log" ) {}
+    LogFile() : mExtension( ".log" ) {}
     explicit LogFile( const char* extension ) : mExtension( extension ) {}
 
   private:
