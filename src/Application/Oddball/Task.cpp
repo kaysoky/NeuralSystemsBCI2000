@@ -2,6 +2,7 @@
 #pragma hdrstop
 
 #include "Task.h"
+#include "Localization.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +49,12 @@ TTask::TTask()
  BEGIN_STATE_DEFINITIONS
    "StimulusTime 16 17528 0 0",
  END_STATE_DEFINITIONS
+
+ LANGUAGES "German",
+ BEGIN_LOCALIZED_STRINGS
+   "Waiting to start ...",
+           "Warte ...",
+ END_LOCALIZED_STRINGS
 }
 
 //-----------------------------------------------------------------------------
@@ -126,7 +133,7 @@ int     ret;
  // set the initial position/sizes of the current targets, status bar, cursor
  userdisplay->InitializeActiveTargetPosition();
  // userdisplay->DisplayCursor();
- userdisplay->DisplayMessage("Waiting to start ...");
+ userdisplay->DisplayMessage( ( char* )LocalizableString( "Waiting to start ..." ) );
 
  // show the user window
  userdisplay->form->Show();
