@@ -9,6 +9,7 @@
 #include "UTarget.h"
 
 
+
 class USERDISPLAY
 {
 private:	// User declarations
@@ -30,5 +31,9 @@ public:		// User declarations
         TForm   *form;
         float   TargetWidth, TargetHeight, TargetTextHeight;
         float   StatusBarSize, StatusBarTextHeight;
+        /*shidong starts*/
+        int     displayRow;
+        int     displayCol;
+        /*shidong ends*/
 };
 #endif

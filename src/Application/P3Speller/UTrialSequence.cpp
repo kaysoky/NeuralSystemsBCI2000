@@ -32,9 +32,18 @@ char    line[512];
  targets=new TARGETLIST();
 
  /*shidong starts*/
- strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 36 3 A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V B 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ _ 1 0 0 100 // Target Definition Matrix");
- /*shidong ends*/
+ 
+ debug = false;
+ if(debug) f = fopen("debug2.txt", "w");
+ strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 36 {Display Enter Display%20Size } A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V B 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ _ 1 0 0 100 // Target Definition Matrix");
  plist->AddParameter2List(line,strlen(line));
+ strcpy(line,"P3Speller int NumMatrixColumns= 6 6 0 6 // Display Matrix's Column Number");
+ plist->AddParameter2List(line,strlen(line) );
+ strcpy(line,"P3Speller int NumMatrixRows= 6 6 0 6 // Display Matrix's Row Number");
+ plist->AddParameter2List(line,strlen(line) );
+
+ /*shidong ends*/
+
  strcpy(line,"P3Speller int OnTime= 4 10 0 5000 // Duration of intensification in units of SampleBlocks");
  plist->AddParameter2List(line,strlen(line) );
  strcpy(line,"P3Speller int OffTime= 1 10 0 5000 // Interval between intensification in units of SampleBlocks");
@@ -70,6 +79,9 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
  vis=NULL;
  if (targets) delete targets;
  targets=NULL;
+ /*shidong starts*/
+ fclose(f);        
+ /*shidong ends*/
 }
 
 
@@ -90,6 +102,9 @@ int     ret;
  // load and create all potential targets
  /*shidong starts*/
  ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionMatrix")->GetNumColumns(), plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows());
+ NumMatrixColumns = Parameter("NumMatrixColumns");
+ NumMatrixRows = Parameter("NumMatrixRows");
+ NUM_STIMULI = NumMatrixColumns + NumMatrixRows;
  /*shidong ends*/
  if (ret == 0)
     {
@@ -116,6 +131,12 @@ int     ret;
  // get the active targets as a subset of all the potential targets
  if (userdisplay->activetargets) delete userdisplay->activetargets;
  userdisplay->activetargets=GetActiveTargets();       // get the targets that are on the screen first
+
+ /*shidong starts*/
+        //tell the userdisplay the number of rows and columns
+        userdisplay->displayCol = NumMatrixColumns;
+        userdisplay->displayRow = NumMatrixRows;
+ /*shidong ends*/
 
  // set the initial position/sizes of the current targets, status bar, cursor
  userdisplay->InitializeActiveTargetPosition();
@@ -241,8 +262,9 @@ int             targetID;
 
  new_list=new TARGETLIST;                                               // the list of active targets
  new_list->parentID=0;
-
- for (targetID=1; targetID<=36; targetID++)
+ /*shidong starts*/
+ for (targetID=1; targetID<=NumMatrixColumns * NumMatrixRows; targetID++)
+ /*shidong ends*/
   {
   target=targets->GetTargetPtr(targetID);
   if ((targetID >= 0) && (target))
@@ -367,12 +389,16 @@ short   thisisit;
     chartospellID=0;
  thisisit=0;
 
- // do we want to flash a column (stimuluscode 1..6) ?
- if ((stimuluscode > 0) && (stimuluscode <= 6))
+ // do we want to flash a column (stimuluscode 1..NumMatrixColumns) ?
+ /*shidong starts*/
+ if ((stimuluscode > 0) && (stimuluscode <= NumMatrixColumns))
     {
     for (i=0; i<userdisplay->activetargets->GetNumTargets(); i++)
      {
-     if (i%6+1 == stimuluscode)
+     /*shidong starts*/
+     //if (i%6+1 == stimuluscode)
+     if (i%NumMatrixColumns + 1 == stimuluscode)
+     /*shidong ends*/
         {
         cur_target=userdisplay->activetargets->GetTargetPtr(i+1);
         if (intensify)
@@ -385,13 +411,16 @@ short   thisisit;
      }
     }
 
- // do we want to flash a row (stimuluscode 7..12) ?
- if ((stimuluscode > 6) && (stimuluscode <= 12))
+ // do we want to flash a row (stimuluscode NumMatrixColumns..NUM_STIMULI) ?
+ if ((stimuluscode > NumMatrixColumns) && (stimuluscode <= NUM_STIMULI ))
     {
-    for (i=0; i<6; i++)
+    /*shidong starts*/
+    for (i=0; i<NumMatrixColumns; i++)
      {
-     cur_row=stimuluscode-6;
-     cur_targetID=(cur_row-1)*6+i+1;
+//     cur_row=stimuluscode-6;
+  //   cur_targetID=(cur_row-1)*6+i+1;
+        cur_row=stimuluscode-NumMatrixColumns;
+        cur_targetID=(cur_row-1)*NumMatrixColumns+i+1;
      cur_target=userdisplay->activetargets->GetTargetPtr(cur_targetID);
      if (intensify)
         cur_target->SetTextColor(TextColorIntensified);
@@ -400,8 +429,9 @@ short   thisisit;
      if ((cur_targetID == chartospellID) && (intensify))
         thisisit=1;
      }
+     /*shidong ends*/
     }
-
+ /*shidong ends*/
  return(thisisit);
 }
 
@@ -450,7 +480,9 @@ int TRIALSEQUENCE::Process(const std::vector<float>& controlsignal)
 {
 unsigned short running, within;
 int     ret;
-
+    /*shidong starts*/
+    if (debug) fprintf( f, "The  cur_stimuluscode is %d.\t", cur_stimuluscode);
+    /*shidong ends*/
  running=statevector->GetStateValue("Running");
 
  // when we suspend the system, show the "TIME OUT" message
@@ -488,6 +520,9 @@ int     ret;
     cur_on=true;
     cur_trialsequence=0;
     cur_stimuluscode=GetRandomStimulusCode();
+    /*shidong starts*/
+    if (debug) fprintf(f,  "The  cur_stimuluscode is %d.\n", cur_stimuluscode);
+    /*shidong ends*/
     within=IntensifyTargets(cur_stimuluscode, true);
     // in the online mode, we do not know whether this is standard or oddball
     if (onlinemode)

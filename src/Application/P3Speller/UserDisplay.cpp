@@ -92,18 +92,26 @@ int     i, numtargetsx, numtargetsy;
 int     matrixwidth, matrixheight, targetspacingx, targetspacingy;
 int     numtargets, totalheight;
 
-/*shidong starts*/
+/*shidong starts
 FILE *f;
 f = fopen("debug.txt", "w");
 /*shidong ends*/
  totalheight=65536-StatusBarSize*655.36;                        // remaining height of the screen
  numtargets=activetargets->GetNumTargets();
- numtargetsx=6;
- numtargetsy=(numtargets-1)/numtargetsx+1;
+
+
+/*shidong starts*/
+ numtargetsx    =       displayCol;
+ numtargetsy    =       displayRow;         //(numtargets-1)/numtargetsx+1;
+/*shidong ends*/
 
  targetspacingx=1000;
  targetspacingy=1000;
-
+     /*shidong starts
+     fprintf(f, "numtargetsx is %d.\n", numtargetsx);
+     fprintf(f, "numtargetsy is %d.\n", numtargetsy);
+     fprintf(f, "numtargets is %d.\n", numtargets);
+     /*shidong ends*/ 
  matrixwidth=numtargetsx*(int)(TargetWidth*655.36)+(numtargetsx-1)*targetspacingx;
  matrixheight=numtargetsy*(int)(TargetHeight*655.36)+(numtargetsy-1)*targetspacingy;
 
@@ -119,9 +127,9 @@ f = fopen("debug.txt", "w");
      cur_target->Left=65536/2-matrixwidth/2+(i%numtargetsx)*(cur_target->Width+targetspacingx);
      /*shidong starts*/
      cur_target->TextHeight=(int)(TargetTextHeight*655.36*((float)(cur_target->FontSizeFactor)));        // height of text
-     fprintf(f, "CurTarget ID is %d, caption is %s, displayResult is %s, fontfactor is %f.\n", cur_target->targetID, cur_target->Caption, cur_target->CharDisplayInResult, ((float)(cur_target->FontSizeFactor)));
-     /*shidong ends*/
-     
+    /* fprintf(f, "CurTarget ID is %d, caption is %s, displayResult is %s, fontfactor is %f.\n", cur_target->targetID, cur_target->Caption, cur_target->CharDisplayInResult, ((float)(cur_target->FontSizeFactor)));
+     shidong ends*/
+
      }
   }
 }

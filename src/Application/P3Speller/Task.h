@@ -28,8 +28,12 @@ class TTask : public GenericFilter
         int             postsetinterval;                // how much time after each set of numberofsequences sequences ?
         int             presetinterval;                 // how much time before each set of numberofsequences sequences ?
         void            ProcessSigProcResults( const std::vector<float>& signals );
-        int             responsecount[NUM_STIMULI];
-        float           response[NUM_STIMULI];
+        /*shidong starts*/
+        int             responsecount[MAX_STIMULI];
+        float           response[MAX_STIMULI];
+        FILE            *f;
+        bool            debug;
+        /*shidong ends*/
         void            ResetTaskSequence();
         void            ProcessPostSequence();
         void            ProcessPreSequence();

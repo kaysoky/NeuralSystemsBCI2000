@@ -15,7 +15,9 @@
 #define SEQ_OUTCOME             4
 #define SEQ_CONGRATULATIONS     5
 
-#define NUM_STIMULI     12      // in this case, we have 12 stimuli (6 columns and 6 rows)
+/*shidong starts*/
+#define MAX_STIMULI     100      
+/*shidong ends*/
 
 class TRIALSEQUENCE : public Environment
 {
@@ -42,6 +44,11 @@ public:		// User declarations
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)
         /*shidong starts*/
         int     LoadPotentialTargets(const int matrixColumn, const int matrixRow);
+        int     NumMatrixColumns;
+        int     NumMatrixRows;
+        int     NUM_STIMULI;      // in this case, we have 12 stimuli (6 columns and 6 rows)
+        FILE    *f;
+        bool    debug;
         /*shidong ends*/int             Initialize(PARAMLIST *plist);
         TARGETLIST      *targets;                                       // all the potential targets
         int             GetRandomStimulusCode();

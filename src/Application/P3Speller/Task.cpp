@@ -79,6 +79,12 @@ TTask::TTask()
   "Waiting to start ...",
            "Warte ...",
  END_LOCALIZED_STRINGS
+
+ /*shidong starts*/
+ debug = false;
+ if(debug) f = fopen ("TaskDebug.txt", "w");
+ 
+ /*shidong ends*/
 }
 
 //-----------------------------------------------------------------------------
@@ -97,7 +103,7 @@ TTask::~TTask( void )
   delete cur_time;
   delete bcitime;
   if( logfile ) fclose(logfile);
-
+  if( f ) fclose(f);
   userdisplay=NULL;
 }
 
@@ -129,6 +135,11 @@ void TTask::Initialize()
 TColor  BackgroundColor;
 char    memotext[256], cur_dir[MAXPATH];
 int     ret, numerpsamples, sampleblocksize;
+
+
+/*shidong starts*/
+  PreflightCondition( Parameter("NumMatrixColumns")*Parameter("NumMatrixRows") ==  Parameter("TargetDefinitionMatrix")->GetNumRows() );
+/*shidong ends*/
 
   mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
@@ -192,7 +203,7 @@ int     i;
  cur_sequence=0;       // this counts the total number of intensifications
 
  // reset the statistics for the results of the different stimuli
- for (i=0; i<NUM_STIMULI; i++)
+ for (i=0; i<trialsequence->NUM_STIMULI; i++)
   {
   responsecount[i]=0;
   response[i]=0;
@@ -224,8 +235,12 @@ float   maxval;
 
  // get the column with the highest classification result
  maxval=-9999999999999999;
- for (i=0; i<6; i++)
+ /*shidong starts*/
+// for (i=0; i<6; i++)
+ for (i=0; i<trialsequence->NumMatrixColumns; i++)
   {
+        //if(debug)fprintf(f, "responsecount[%d] is %d.\n", i, responsecount[i]);
+        //if(debug)fprintf(f, "response[%d] is %d.\n", i, response[i]);
   if (responsecount[i] > 0)
      if (response[i]/(float)responsecount[i] > maxval)
         {
@@ -234,30 +249,40 @@ float   maxval;
         }
   }
 
+        if(debug)fprintf(f, "From 0 ~ 6 columns, picked column is %d. maxval is %f.\n", pickedcol+1, maxval);
+
  // get the row with the highest classification result
  maxval=-9999999999999999;
- for (i=6; i<12; i++)
+ //for (i=6; i<12; i++)
+ for (i=trialsequence->NumMatrixColumns; i< (trialsequence->NumMatrixColumns+trialsequence->NumMatrixRows); i++)
   {
+        //if(debug)fprintf(f, "responsecount[%d] is %d.\n", i, responsecount[i]);
+        //if(debug)fprintf(f, "response[%d] is %d.\n", i, response[i]);
   if (responsecount[i] > 0)
      if (response[i]/(float)responsecount[i] > maxval)
         {
         maxval=response[i]/(float)responsecount[i];
-        pickedrow=i-6;
+        pickedrow=i-trialsequence->NumMatrixColumns;
+        //if(debug)fprintf(f, "In row, maxval is %d and pickedrow is %d and i is %d.\n", maxval, pickedrow, i);
         }
   }
+
+        if(debug)fprintf(f, "From 6 ~ 12 rows, picked row is %d. maxval is %f.\n", pickedrow+1, maxval);
+ /*shidong ends*/
 
   // sanity check
  if ((pickedrow == -1) || (pickedcol == -1))
     return("Error");
 
  // from row and column, determine the targetID
+
+ pickedtargetID=pickedrow*(trialsequence->NumMatrixColumns)+pickedcol+1;
  /*shidong starts*/
- /*DEBUG
+ /*DEBUG 
  pickedtargetID = random(36);
  pickedtargetID ++;     //avoid id == 0
- /*shidong ends*/
+*/ /*shidong ends*/
 
- pickedtargetID=pickedrow*6+pickedcol+1;
  State( "SelectedTarget" ) = pickedtargetID;
  State( "SelectedRow" ) = pickedrow + 1;
  State( "SelectedColumn" ) = pickedcol + 1;
@@ -273,6 +298,7 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
         pickedtargetID, pickedtargetptr->CharDisplayInMatrix, pickedtargetptr->CharDisplayInResult);
 
   mVis.Send( memotext ); */
+if(debug)fprintf(f, "pickedtargetID is %d, pickedrow is %d, pickedcol is %d, result is %s.\n", pickedtargetID, pickedrow+1, pickedcol+1, pickedtargetptr->CharDisplayInResult);
 
  return(pickedtargetptr->CharDisplayInResult);
  /*shidong ends*/
@@ -352,7 +378,7 @@ int     i;
           {
           fprintf(logfile, "This is the end of this sequence: %d total intensifications\r\n", cur_sequence);
           fprintf(logfile, "Responses for each stimulus:\r\n");
-          for (i=0; i<NUM_STIMULI; i++)
+          for (i=0; i<trialsequence->NUM_STIMULI; i++)
           fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
           fprintf(logfile, "Predicted character: %s\r\n", predchar.c_str());
           }
@@ -363,9 +389,9 @@ int     i;
 
        sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
        mVis.Send( memotext );
-       /*shidong starts
-       sprintf(memotext, "The char2spellidx is %d.\r", trialsequence->char2spellidx);
-       mVis.Send(memotext); */
+       /*shidong starts  
+       sprintf(memotext, "The cur_stimuluscode is %d.\r", trialsequence->c);
+       mVis.Send(memotext);  */
        /*shidong ends*/
        // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
        // if we are in online mode, just reset the task sequence and continue
@@ -418,7 +444,12 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
  if (cur_stimuluscoderes > 0)
     {
     responsecount[cur_stimuluscoderes-1]++;
-    response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
+    //response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
+    /*shidong debug starts*/
+    response[cur_stimuluscoderes-1] +=  (float)rand();
+    if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
+    /*shidong debug ends*/
+
     }
 }
 
@@ -488,7 +519,7 @@ int     ret;
     cur_sequence++;
     // did we have enough total intensifications ?
     // then end this run
-    if (cur_sequence >= numberofsequences*NUM_STIMULI)
+    if (cur_sequence >= numberofsequences*trialsequence->NUM_STIMULI)
        {
        postsequence=true;
        postsequencecount=0;
