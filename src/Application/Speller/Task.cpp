@@ -2,6 +2,7 @@
 #pragma hdrstop
 
 #include "Task.h"
+#include "Localization.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -55,6 +56,20 @@ TTask::TTask()
  BEGIN_STATE_DEFINITIONS
   "StimulusTime 16 17528 0 0",
  END_STATE_DEFINITIONS
+
+ LANGUAGES "German",
+ BEGIN_LOCALIZED_STRINGS
+   "Goal",
+           "Ziel",
+   "Waiting to start ...",
+           "Warte ...",
+   "CONGRATULATIONS !!!",
+           "GL" Uuml "CKWUNSCH!!!",
+   "TIME OUT ...",
+           "ZEIT ABGELAUFEN",
+   "TIME OUT !!!",
+           "ZEIT ABGELAUFEN!!!",
+ END_LOCALIZED_STRINGS
 }
 
 //-----------------------------------------------------------------------------
@@ -127,7 +142,7 @@ int     ret;
   userdisplay->TargetWidth=5;
   userdisplay->TargetTextHeight=10;
   userdisplay->StatusBarTextHeight=10;
-  userdisplay->statusbar->goaltext="Gerv";
+  userdisplay->statusbar->goaltext= LocalizableString( "Gerv" );
   Wx=5;
   Wy=5;
   Wxl=512;
@@ -157,7 +172,7 @@ int     ret;
  userdisplay->DisplayStatusBar();
  // userdisplay->DisplayActiveTargets();
  // userdisplay->DisplayCursor();
- userdisplay->DisplayMessage("Waiting to start ...");
+ userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "Waiting to start ..." ) ) );
  // tell the trial sequence what the correct target ID is
  trialsequence->correcttargetID=DetermineCorrectTargetID();
  // show the user window

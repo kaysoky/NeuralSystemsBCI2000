@@ -10,6 +10,7 @@
 #include "UTargetSequence.h"
 #include "UTrialSequence.h"
 #include "UBCIError.h"
+#include "Localization.h"
 
 //---------------------------------------------------------------------------
 
@@ -380,7 +381,7 @@ char memotext[256];
  if (congrattime % 2 == 1)
     userdisplay->HideMessage();
  else
-    userdisplay->DisplayMessage("CONGRATULATIONS !!!");      // display the congratulations message
+    userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "CONGRATULATIONS !!!" ) ) ); // display the congratulations message
 
  // if we exceeded the maximum time in this period, switch to the next part in the sequence
  // also, when the outcome period ends, we return the selected target
@@ -390,7 +391,7 @@ char memotext[256];
     cur_sequence=SEQ_ITI;
     // end this run
     userdisplay->HideMessage();
-    userdisplay->DisplayMessage("TIME OUT ...");
+    userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT ..." ) ) );
     statevector->SetStateValue("Running", 0);
     }
 }
@@ -423,7 +424,7 @@ void TRIALSEQUENCE::SuspendTrial()
  userdisplay->HideStatusBar();               // hide the status bar
  userdisplay->HideCursor();                  // hide the cursor
 
- userdisplay->DisplayMessage("TIME OUT !!!");      // display the "TIME OUT" message
+ userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT !!!" ) ) ); // display the "TIME OUT" message
 }
 
 
