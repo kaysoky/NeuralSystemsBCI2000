@@ -1,6 +1,8 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include <dir.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -97,6 +99,20 @@ TTask::~TTask( void )
 
 
 // **************************************************************************
+// Function:   current_directory
+// Purpose:    Gets the current directory, including drive letter
+// Parameters: path ... pointer to buffer of length MAXPATH
+// Returns:    pointer to buffer that includes current directory
+// **************************************************************************
+char *current_directory(char *path)
+{
+  strcpy(path, "X:\\");      /* fill string with form of response: X:\ */
+  path[0] = 'A' + getdisk();    /* replace X with current drive letter */
+  getcurdir(0, path+3);  /* fill rest of string with current directory */
+  return(path);
+}
+
+// **************************************************************************
 // Function:   Initialize
 // Purpose:    Initializes the task, e.g., resets the trial sequence, etc.
 // Parameters: plist        - pointer to the parameter list
@@ -109,7 +125,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 {
 AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
-char    memotext[256], FName[256];
+char    memotext[256], FName[256], cur_dir[MAXPATH];
 int     ret, numerpsamples, sampleblocksize;
 BCIDtry *bcidtry;
 
@@ -162,6 +178,7 @@ BCIDtry *bcidtry;
     corecomm->SendStatus("302 PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)");
 
  // open an output file for the task log
+ current_directory(cur_dir);    // store current directory
  bcidtry= new BCIDtry();
  bcidtry->SetDir( FInit.c_str() );
  bcidtry->ProcPath();
@@ -173,6 +190,7 @@ BCIDtry *bcidtry;
  if (logfile) fclose(logfile);
  logfile= fopen(FName, "a+");
  delete bcidtry;
+ ChDir(AnsiString(cur_dir));    // restore current directory
 
  statevector=new_svect;
  statevector->SetStateValue("PhaseInSequence", 0);
