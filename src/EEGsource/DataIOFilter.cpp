@@ -49,6 +49,31 @@ DataIOFilter::DataIOFilter()
     bcierr << "Expected an ADC filter instance to be present" << endl;
 
   BEGIN_PARAMETER_DEFINITIONS
+    // Parameters required to interpret a data file are listed here
+    // to enforce their presence:
+    "Source int SoftwareCh= 16 "
+       "16 1 128 // the number of digitized and stored channels",
+    "Source int SampleBlockSize= 32 "
+       "5 1 128 // the number of samples transmitted at a time",
+    "Source int SamplingRate= 256 "
+       "128 1 4000 // the sample rate",
+    "Filtering floatlist SourceChOffset= 16 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 0 0 0 "
+      "0 -500 500 // offset for channels in A/D units",
+    "Filtering floatlist SourceChGain= 16 "
+      "0.003 0.003 0.003 0.003 "
+      "0.003 0.003 0.003 0.003 "
+      "0.003 0.003 0.003 0.003 "
+      "0.003 0.003 0.003 0.003 "
+      "0.003 -500 500 // gain for each channel (A/D units -> muV)",
+    "Filtering floatlist SourceChTimeOffset= 1 "
+      "-1 "
+      "0 0 1 // time offset for all source channels (not used if -1)",
+
+    // Storage related parameters:
     "Storage string FileInitials= c:\\data a z "
       "// Initials of file name",
     "Storage string SubjectName= Name Name a z "
@@ -66,6 +91,7 @@ DataIOFilter::DataIOFilter()
     "Storage int SavePrmFile= 0 1 0 1 "
       "// 0/1: don't save/save additional parameter file",
 
+    // Visualization of data as far as managed by the DataIOFilter:
     "Visualize int VisualizeRoundtrip= 1 1 0 1 "
       "// visualize roundtrip time (0=no, 1=yes)",
     "Visualize int VisualizeSource= 1 1 0 1 "
