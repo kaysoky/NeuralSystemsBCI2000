@@ -143,7 +143,9 @@ int     trycount, ret;
        // read the statevector
        coremessage=new COREMESSAGE();
        ret=coremessage->ReceiveCoreMessage(pStream);
-       if (ret == ERRCORE_NOERR)
+       if (ret != ERRCORE_NOERR)
+         Terminate();
+       else
           {
           coremessage->ParseMessage();
           if (coremessage->GetDescriptor() == COREMSG_SYSCMD)
