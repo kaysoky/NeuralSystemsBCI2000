@@ -206,7 +206,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
                                STATEVECTOR * pStateVector, GenericVisualization * pGenericVisualization)
 {
   if (pStateVector == NULL || pUsrEnv == NULL || pGenericVisualization == NULL) return;
-  
+
   bool bIsStillRunning(false);
   if (pStateVector != NULL)
     bIsStillRunning = pStateVector->GetStateValue("Running");
@@ -326,7 +326,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
     // get the next active elements as a subset of all the potential elements
     m_ePhaseInSequence = (PhaseInSequenceEnum)pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence);
-      
+
     pStateVector->SetStateValue("SelectedStimulus", 0);
     pStateVector->SetStateValue("PhaseInSequence", 0);
     pStateVector->SetStateValue("StimulusCode", 0);
@@ -385,7 +385,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       m_iCurrentPhaseDuration = 0;
       m_ePhaseInSequence = PHASE_START;
       m_bWaiting = true;
-      
+
       pUsrEnv->HideElements(UsrEnv::COLL_ALL);
       pUsrEnv->GenerateActiveElements((unsigned int)PHASE_PRIORSEQUENCE);
 
@@ -438,6 +438,12 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
 
 const int UsrEnvDispatcher::ProcessResult(GenericVisualization * pGenericVisualization)
 {
+  for (unsigned int i = 0; i < m_vStimulusPresent.size(); ++i)
+  {
+    // report error
+    if (m_vStimulusPresent[i] == true && m_vResultCounts[i] == 0)
+      bcierr << "Signal processing module didnt send a result for stimulus number " << AnsiString(i + 1).c_str() << std::endl;
+  }
   // process the results
   float fMaxValue = - std::numeric_limits<float>::max();
   int iPickedStimulusID(0);
