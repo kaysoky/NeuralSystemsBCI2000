@@ -188,7 +188,7 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
   Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
   }
  catch(...)
-  { Ntargets=4; }
+  { Ntargets=2; }
 
   bcidtry= new BCIDtry();
 
