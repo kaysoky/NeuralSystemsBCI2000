@@ -26,8 +26,6 @@
 #include "UVisConfig.h"
 #include "UGenericVisualization.h"
 
-//#pragma link "CSPIN"
-
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
@@ -368,6 +366,13 @@ void __fastcall VISUAL::FormPaint( TObject* Sender )
 #endif // NEW_DOUBLEBUF_SCHEME
 //---------------------------------------------------------------------------
 
+#ifdef NEW_DOUBLEBUF_SCHEME
+void VISUAL::SetStartChannel( int inStartChannel )
+{
+  startchannel = inStartChannel;
+  form->Invalidate();
+}
+#endif // NEW_DOUBLEBUF_SCHEME
 
 void __fastcall VISUAL::FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift)
 {
@@ -380,14 +385,22 @@ void __fastcall VISUAL::FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift)
     if ((displaychannels < total_displaychannels) && (Key == 38) && (startchannel+displaychannels <= total_displaychannels))
        {
        critsec->Acquire();
+#ifdef NEW_DOUBLEBUF_SCHEME
+       SetStartChannel( startchannel + displaychannels / 2 );
+#else
        startchannel+=displaychannels/2;
+#endif // NEW_DOUBLEBUF_SCHEME
        RenderGraph(0, displaychannels-1, 0, displaysamples-1);
        critsec->Release();
        }
     if ((displaychannels < total_displaychannels) && (Key == 40) && (startchannel >= 0))
        {
        critsec->Acquire();
+#ifdef NEW_DOUBLEBUF_SCHEME
+       SetStartChannel( startchannel - displaychannels / 2 );
+#else
        startchannel-=displaychannels/2;
+#endif // NEW_DOUBLEBUF_SCHEME
        RenderGraph(0, displaychannels-1, 0, displaysamples-1);
        critsec->Release();
        }

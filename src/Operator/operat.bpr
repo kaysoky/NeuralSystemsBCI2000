@@ -30,7 +30,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;NEW_DOUBLEBUF_SCHEME"/>
+    <USERDEFINES value="_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="operat.cpp"/>
     <INCLUDEPATH value="..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -179,12 +179,13 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=5
-Item0=_DEBUG;NEW_DOUBLEBUF_SCHEME
-Item1=_DEBUG
-Item2=_DEBUG;NEW_DOUBLEBUF
-Item3=_DEBUG;VCL_DOUBLEBUF
-Item4=_DEBUG;SIGNAL_BACK_COMPAT
+Count=6
+Item0=_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
+Item1=_DEBUG;NEW_DOUBLEBUF_SCHEME
+Item2=_DEBUG
+Item3=_DEBUG;NEW_DOUBLEBUF
+Item4=_DEBUG;VCL_DOUBLEBUF
+Item5=_DEBUG;SIGNAL_BACK_COMPAT
 
 [HistoryLists\hlIntOutputDir]
 Count=1

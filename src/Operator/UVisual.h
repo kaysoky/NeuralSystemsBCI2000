@@ -70,6 +70,7 @@ public:     // User declarations
 private:
         HRGN invalidRgn, redrawRgn;
         void PaintGraph(int startch, int endch, int startsample, int endsample);
+        void SetStartChannel( int );
         class TVisForm : public TForm
         {
          public:
