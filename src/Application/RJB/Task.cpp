@@ -4,19 +4,17 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <vector>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <dos.h>
-
+#include "Task.h"
+#include "Usr.h"
 #include "UState.h"
 #include "BCIDirectry.h"
 #include "UBCIError.h"
-#include "Usr.h"
-#include "Task.h"
 #include "Localization.h"
 
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <time.h>
 #include <assert>
 
 using namespace std;
@@ -25,8 +23,7 @@ RegisterFilter( TTask, 3 );
 
 TTask::TTask()
 : run( 0 ),
-  vis( NULL ),
-  appl( NULL ),
+  mVis( SOURCEID_TASKLOG ),
   OldRunning( 0 ),
   OldCurrentTarget( 0 )
 {
@@ -93,14 +90,13 @@ TTask::TTask()
 
 TTask::~TTask( void )
 {
-  delete vis;
-  if( appl ) fclose( appl );
 }
 
 void
 TTask::Preflight( const SignalProperties& inputProperties,
                         SignalProperties& outputProperties ) const
 {
+  mTaskLog.Preflight();
   outputProperties = SignalProperties( 0, 0 );
 }
 
@@ -109,11 +105,6 @@ TTask::Preflight( const SignalProperties& inputProperties,
 void TTask::Initialize()
 {
         ApplyLocalizations( User );
-
-        AnsiString FInit,SSes,SName,AName;
-        char FName[256];
-        time_t ctime;
-        struct tm *tblock;
 
         PreRunInterval=         Parameter("PreRunInterval");
         PtpDuration=            Parameter("PreTrialPause");
@@ -126,47 +117,18 @@ void TTask::Initialize()
 
         timelimit=              Parameter("TimeLimit");
 
-        FInit= (const char*)Parameter("FileInitials");
-        SSes = (const char*)Parameter("SubjectSession");
-        SName= (const char*)Parameter("SubjectName");
+        mTaskLog.Initialize();
+        mTaskLog << mTaskLog.FilePath() << '\n';
 
-
-        if( appl == NULL )
-        {
-                BCIDtry bcidtry;
-
-                bcidtry.SetDir( FInit.c_str() );
-                bcidtry.ProcPath();
-                bcidtry.SetName( SName.c_str() );
-                bcidtry.SetSession( SSes.c_str() );
-
-                strcpy(FName, bcidtry.ProcSubDir() );
-
-                strcat(FName,"\\");
-
-                AName= SName + "S" + SSes + ".apl";
-                strcat(FName, AName.c_str() );               // cpy vs cat
-
-                if( (appl= fopen(FName,"a+")) != NULL)       // don't crash if NULL
-                {
-                  fprintf(appl,"%s \n",AName.c_str() );
-
-                  ctime= time(NULL);
-                  tblock= localtime(&ctime);
-                  fprintf(appl,"%s \n", asctime( tblock ) );
-                }
-                else
-                  bcierr << "Could not open " << FName << " for writing" << std::endl;
-        }
+        time_t ctime= time(NULL);
+        struct tm* tblock= localtime(&ctime);
+        mTaskLog << asctime( tblock ) << '\n';
 
         bitrate.Initialize(Ntargets);
 
         trial=1;
 
-        delete vis;
-        vis= new GenericVisualization;
-        vis->SetSourceID(SOURCEID_TASKLOG);
-        vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+        mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
         User->Initialize( Parameters, States );
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
@@ -235,9 +197,7 @@ void TTask::ReadStateValues(STATEVECTOR *statevector)
 
 void TTask::WriteStateValues(STATEVECTOR *statevector)
 {
-        bcitime=new BCITIME;
-        CurrentStimulusTime= bcitime->GetBCItime_ms();                   // time stamp
-        delete bcitime;
+        CurrentStimulusTime= BCITIME::GetBCItime_ms();   // time stamp
         statevector->SetStateValue("StimulusTime",CurrentStimulusTime);
 
         statevector->SetStateValue("TargetCode",CurrentTarget);
@@ -364,12 +324,15 @@ void TTask::UpdateSummary( void )
         if( Hits+Misses > 0 )    pc= 100.0 * Hits / (Hits+Misses);
         else                     pc= -1.0;
 
-        fprintf(appl,"Run %2d   Hits=%3d  Total=%3d  Percent=%6.2f \n",run,Hits,Hits+Misses,pc);
-        fprintf(appl,"Number of Targets=%2d \n",Ntargets);
-        fprintf(appl,"Bits= %7.2f \n",bitrate.TotalBitsTransferred() );
-        fprintf(appl,"Time Passed (sec)=%7.2f \n",timepassed);
-        fprintf(appl,"..........................................................\n\n");
-        fflush( appl );
+        mTaskLog << "Run " << run
+                 << "  Hits=" << Hits
+                 << "  Total=" << Hits + Misses
+                 << "  Percent=" << setprecision( 2 ) << pc << " \n"
+                 << "Number of Targets=" << Ntargets << " \n"
+                 << "Bits= " << bitrate.TotalBitsTransferred() << " \n"
+                 << "Time Passed (sec)=" << timepassed << " \n"
+                 << "..........................................................\n"
+                 << endl;
 }
 
 void TTask::UpdateDisplays( void )
@@ -402,8 +365,8 @@ char            memotext[256];
        // ITI period just started
        if (ItiTime == 0)
           {
-          sprintf(memotext, "Run: %d; ITI -> new trial: %d\r", run, trial);
-          vis->SendMemo2Operator(memotext);
+          sprintf(memotext, "Run: %d; ITI -> new trial: %d", run, trial);
+          mVis.Send( memotext );
           trial++;
           }
             // in case the run was longer than x seconds
@@ -415,25 +378,25 @@ char            memotext[256];
                CurRunFlag= 1;
                if (Hits+Misses > 0)
                   {
-                  sprintf(memotext, "Run %d - %.1f%% correct\r", run, (float)Hits*100/((float)Hits+(float)Misses));
-                  vis->SendMemo2Operator(memotext);
+                  sprintf(memotext, "Run %d - %.1f%% correct", run, (float)Hits*100/((float)Hits+(float)Misses));
+                  mVis.Send( memotext );
               //    fprintf( appl,"%s \n",memotext);
                   }
                else
                   {
-                  vis->SendMemo2Operator("No statistics for this run\r");
-                  vis->SendMemo2Operator("There were no trials\r");
+                  mVis.Send( "No statistics for this run" );
+                  mVis.Send( "There were no trials" );
                   }
-               sprintf(memotext, "Total Bits transferred: %.2f\r", bitrate.TotalBitsTransferred());
-               vis->SendMemo2Operator(memotext);
+               sprintf(memotext, "Total Bits transferred: %.2f", bitrate.TotalBitsTransferred());
+               mVis.Send( memotext );
             //   fprintf( appl,"%s \n",memotext);
-               sprintf(memotext, "Average Bits/Trial: %.2f\r", bitrate.BitsPerTrial());
-               vis->SendMemo2Operator(memotext);
+               sprintf(memotext, "Average Bits/Trial: %.2f", bitrate.BitsPerTrial());
+               mVis.Send( memotext );
            //    fprintf( appl,"%s \n",memotext);
-               sprintf(memotext, "Average Bits/Minute: %.2f\r", bitrate.BitsPerMinute());
-               vis->SendMemo2Operator(memotext);
+               sprintf(memotext, "Average Bits/Minute: %.2f", bitrate.BitsPerMinute());
+               mVis.Send( memotext );
             //   fprintf( appl,"%s \n",memotext);
-               vis->SendMemo2Operator("**************************\r");
+               mVis.Send( "**************************" );
              //  fprintf( appl,"**************************\r\n");
                User->Clear();
                User->PutT(true);
@@ -446,8 +409,8 @@ char            memotext[256];
             // trial just ended ...
             if (OutcomeTime == 0)
                {
-               sprintf(memotext, "%d hits %d missed\r", Hits, Misses);
-               vis->SendMemo2Operator(memotext);
+               sprintf(memotext, "%d hits %d missed", Hits, Misses);
+               mVis.Send( memotext );
                bitrate.Push(HitOrMiss);
                }
 
@@ -457,8 +420,8 @@ char            memotext[256];
  // new trial just started
  if ((CurrentTarget > 0) && (OldCurrentTarget == 0))
     {
-    sprintf(memotext, "Target: %d\r", CurrentTarget);
-    vis->SendMemo2Operator(memotext);
+    sprintf(memotext, "Target: %d", CurrentTarget);
+    mVis.Send( memotext );
     }
 
  OldRunning=CurrentRunning;

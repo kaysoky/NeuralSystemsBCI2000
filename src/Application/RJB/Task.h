@@ -9,6 +9,7 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
 #include "UBCItime.h"
+#include "TaskLogFile.h"
 
 #define NTARGS  8
 
@@ -82,11 +83,9 @@ private:
         int GetTargetNo( int ntargs );
         void UpdateDisplays( void );
         void UpdateSummary( void );
-        FILE *appl;
-        GenericVisualization    *vis;
-        BITRATE         bitrate;
-        BCITIME         *bcitime;
-        TApplication    *Applic;
+        TaskLogFile          mTaskLog;
+        GenericVisualization mVis;
+        BITRATE              bitrate;
 public:
           TTask();
   virtual ~TTask();
