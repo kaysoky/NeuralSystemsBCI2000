@@ -15,6 +15,11 @@
 #include "USysStatus.h"
 #include "UPreferences.h"
 
+#ifdef TRY_PARAM_INTERPRETATION
+# include <vector>
+# include <string> 
+#endif // TRY_PARAM_INTERPRETATION
+
 #define MAX_PARAMPERSECTION     300
 #define LABELS_OFFSETX          30
 #define LABELS_OFFSETY          50
@@ -64,6 +69,9 @@ private:	// User declarations
       	TLabel	*ParamLabel[MAX_PARAMPERSECTION];
       	TLabel	*ParamComment[MAX_PARAMPERSECTION];
       	TEdit	*ParamValue[MAX_PARAMPERSECTION];
+#ifdef TRY_PARAM_INTERPRETATION
+        TComboBox* ParamComboBox[MAX_PARAMPERSECTION];
+#endif
       	TButton	*ParamButton[3][MAX_PARAMPERSECTION];
       	TTrackBar *ParamUserLevel[MAX_PARAMPERSECTION];
         int     cur_numparamsrendered;
@@ -80,6 +88,24 @@ public:		// User declarations
         int     LoadMatrix(AnsiString matfilename, PARAM *mat_param);
         int     GetUserLevel(PARAM *param);
         void    SetUserLevel(PARAM *param, int cur_userlevel);
+#ifdef TRY_PARAM_INTERPRETATION
+private:
+        class ParamInterpretation
+        {
+          typedef std::vector<std::string> EnumValues_type;
+
+          public:
+            ParamInterpretation( const PARAM& );
+            const bool             IsEnum() const     { return mEnumValues.size() > 0; }
+            const int              IndexBase() const  { return mIndexBase; }
+            const EnumValues_type& EnumValues() const { return mEnumValues; }
+            const std::string&     EnumTitle() const  { return mEnumTitle; }
+          private:
+            int             mIndexBase;
+            EnumValues_type mEnumValues;
+            std::string     mEnumTitle;
+        };
+#endif // TRY_PARAM_INTERPRETATION
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfConfig *fConfig;

@@ -7,23 +7,22 @@
     <OBJFILES value="obj\operat.obj obj\UMain.obj obj\USysStatus.obj obj\UAbout.obj 
       obj\UConnectionInfo.obj obj\UEditMatrix.obj obj\UOperatorCfg.obj 
       obj\UPreferences.obj obj\UScript.obj obj\UShowParameters.obj 
-      obj\UShowStates.obj obj\USysLog.obj obj\UVisConfig.obj obj\UBCItime.obj 
-      obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
-      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
-      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\UShowStates.obj obj\USysLog.obj obj\UBCItime.obj obj\UBitRate.obj 
+      obj\UCoreComm.obj obj\UCoreMessage.obj obj\UGenericSignal.obj 
+      obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
+      obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
       obj\UOperatorUtils.obj obj\UVisual.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm UAbout.dfm UConnectionInfo.dfm UEditMatrix.dfm 
-      UOperatorCfg.dfm UPreferences.dfm UShowParameters.dfm UShowStates.dfm 
-      ..\shared\UVisConfig.dfm"/>
+      UOperatorCfg.dfm UPreferences.dfm UShowParameters.dfm UShowStates.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value="tee.lib vclx.lib bcbsmp.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>

@@ -149,6 +149,10 @@ int     i, t;
   ParamComment[i]=NULL;
   ParamValue[i]=NULL;
   ParamUserLevel[i]=NULL;
+#ifdef TRY_PARAM_INTERPRETATION
+  delete ParamComboBox[ i ];
+  ParamComboBox[ i ] = NULL;
+#endif // TRY_PARAM_INTERPRETATION
   }
 }
 
@@ -248,6 +252,8 @@ AnsiString valueline;
         ParamLabel[count]->Font->Style = TFontStyles()<< fsBold;
         ParamLabel[count]->Visible=true;
         ParamLabel[count]->Parent=CfgTabControl;
+        ParamLabel[count]->Hint = cur_param->GetComment();
+        ParamLabel[count]->ShowHint = true;
         // render the parameter's comment
         ParamComment[count]=new TLabel(this);
         ParamComment[count]->Left=COMMENT_OFFSETX;
@@ -328,6 +334,27 @@ AnsiString valueline;
            ParamValue[count]->Visible=true;
            ParamValue[count]->Parent=CfgTabControl;
            }
+#ifdef TRY_PARAM_INTERPRETATION
+        else
+        {
+          ParamInterpretation interpretation( *cur_param );
+          if( interpretation.IsEnum() )
+          {
+            TComboBox* comboBox = new TComboBox( this );
+            ParamComboBox[ count ] = comboBox;
+            comboBox->Left = VALUE_OFFSETX;
+            comboBox->Top= VALUE_OFFSETY + count * VALUE_SPACINGY;
+            comboBox->Width = VALUE_WIDTHX;
+            comboBox->Visible = true;
+            comboBox->Sorted = false;
+            comboBox->Style = csDropDownList;
+            comboBox->Parent = CfgTabControl;
+            for( size_t i = 0; i < interpretation.EnumValues().size(); ++i )
+              comboBox->Items->Add( interpretation.EnumValues()[ i ].c_str() );
+            comboBox->ItemIndex = ::atoi( cur_param->GetValue() ) - interpretation.IndexBase();
+            ParamComment[ count ]->Caption = interpretation.EnumTitle().c_str();
+          }
+#endif // TRY_PARAM_INTERPRETATION
         else
            {
            ParamValue[count]=new TEdit(this);
@@ -339,6 +366,9 @@ AnsiString valueline;
            ParamValue[count]->Visible=true;
            ParamValue[count]->Parent=CfgTabControl;
            }
+#ifdef TRY_PARAM_INTERPRETATION
+         }
+#endif // TRY_PARAM_INTERPRETATION
         count++;
         }
      }
@@ -397,6 +427,11 @@ int     count, t;
             }
            ParamValue[count]->Text=oss.str().c_str();
         }
+#ifdef TRY_PARAM_INTERPRETATION
+     else if( ParamComboBox[ count ] )
+       ParamComboBox[ count ]->ItemIndex = atoi( cur_param->GetValue() )
+                                - ParamInterpretation( *cur_param ).IndexBase();
+#endif // TRY_PARAM_INTERPRETATION
   }
 
  // in case we have a matrix on the screen, update the display, too
@@ -425,38 +460,47 @@ char            buf[2048];
         count++;
   }
 
- // go through all parameters on the sheet
- // and update the parameters in the parameter list accordingly
- for (i=0; i<count; i++)
+  // go through all parameters on the sheet
+  // and update the parameters in the parameter list accordingly
+  for (i=0; i<count; i++)
   {
-  paramname=ParamLabel[i]->Caption;
-  if (ParamValue[i])    // if we did not have an edit field, we had, e.g., a matrix and that is already updated
-     {
-     paramvalue=ParamValue[i]->Text.Trim();
-     param=NULL;
-     // search for the parameter with the same name in the parameterlist
-     for (t=0; t<num_param; t++)
-      {
-      cur_param=paramlist->GetParamPtr(t);
-      if (cur_param)
-         if (paramname == cur_param->GetName())
-            param=cur_param;
-      }
-     if (param)
-      {
-        if( string( param->GetType() ).find( "list" ) != string::npos )
-        {
-          istringstream is( paramvalue.c_str() );
-          PARAM::encodedString value;
-          int index = 0;
-          while( is >> value )
-            param->SetValue( value, index++ );
-          param->SetNumValues( index );
-        }
-        else
-          param->SetValue( paramvalue.c_str() );
-      }
-     }
+    paramname=ParamLabel[i]->Caption;
+    if (ParamValue[i])    // if we did not have an edit field, we had, e.g., a matrix and that is already updated
+    {
+       paramvalue=ParamValue[i]->Text.Trim();
+       param=NULL;
+       // search for the parameter with the same name in the parameterlist
+       for (t=0; t<num_param; t++)
+       {
+        cur_param=paramlist->GetParamPtr(t);
+        if (cur_param)
+           if (paramname == cur_param->GetName())
+              param=cur_param;
+       }
+       if (param)
+       {
+          if( string( param->GetType() ).find( "list" ) != string::npos )
+          {
+            istringstream is( paramvalue.c_str() );
+            PARAM::encodedString value;
+            int index = 0;
+            while( is >> value )
+              param->SetValue( value, index++ );
+            param->SetNumValues( index );
+          }
+          else
+            param->SetValue( paramvalue.c_str() );
+       }
+    }
+#ifdef TRY_PARAM_INTERPRETATION
+    else if( ParamComboBox[ i ] )
+    {
+      PARAM* param = paramlist->GetParamPtr( paramname.c_str() );
+      if( param )
+        param->SetValue( AnsiString( ParamComboBox[ i ]->ItemIndex
+                         + ParamInterpretation( *param ).IndexBase() ).c_str() );
+    }
+#endif // TRY_PARAM_INTERPRETATION
   }
 
  return(0);
@@ -776,3 +820,96 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+#ifdef TRY_PARAM_INTERPRETATION
+TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
+: mIndexBase( 0 )
+{
+  // Only int type parameters can be enumerations.
+  const string requestedType = "int";
+  if( p.GetType() != requestedType )
+    return;
+
+  // Enumerations need a finite range.
+  int lowRange = ::atoi( p.GetLowRange() ),
+      highRange = ::atoi( p.GetHighRange() ),
+      paramValue = ::atoi( p.GetValue() );
+  if( lowRange != 0 && lowRange != 1
+      || highRange <= lowRange
+      || paramValue < lowRange
+      || paramValue > highRange )
+    return;
+
+  // Examine the comment: Does it contain an enumeration of all possible values?
+  string comment = p.GetComment();
+  // Replace all punctuation marks with white space.
+  const string punctuationChars = ",;:=()[]";
+  int punctuationPos = comment.find_first_of( punctuationChars );
+  while( punctuationPos != string::npos )
+  {
+    comment[ punctuationPos ] = ' ';
+    punctuationPos = comment.find_first_of( punctuationChars );
+  }
+
+  map<int, int> histogram;
+  istringstream is( comment );
+  unsigned int intValue;
+  string       stringValue;
+  string*      currentLabel = &mEnumTitle;
+  while( is )
+  {
+    is >> intValue;
+    if( !is.fail() )
+    {
+      unsigned int index = intValue - lowRange;
+      histogram[ index ]++;
+      if( mEnumValues.size() <= index )
+        mEnumValues.resize( index + 1 );
+      currentLabel = &mEnumValues[ index ];
+    }
+    else
+    {
+      is.clear();
+      if( is >> stringValue )
+        *currentLabel += stringValue + " ";
+    }
+  }
+
+  bool isEnum = is.eof();
+
+  // Each non-null value must be explained in the comment, thus appear exactly
+  // once -- if in doubt, let's better return.
+  for( size_t i = 1; isEnum && i < mEnumValues.size(); ++i )
+    if( histogram[ i ] != 1 )
+      isEnum = false;
+
+  if( isEnum )
+  {
+    // We consider this a boolean parameter.
+    if( lowRange == 0 && highRange == 1 && histogram[ 0 ] == 0 )
+    {
+      if( mEnumValues.size() > 1 )
+        mEnumTitle = mEnumValues[ 1 ];
+      mEnumValues.resize( 2 );
+      mEnumValues[ 0 ] = "no";
+      mEnumValues[ 1 ] = "yes";
+    }
+    else if( histogram[ 0 ] != 1 )
+      isEnum = false;
+  }
+  if( mEnumValues.size() != size_t( highRange - lowRange + 1 ) )
+    isEnum = false;
+
+  // Each label must now be non-empty.
+  for( size_t i = 0; isEnum && i < mEnumValues.size(); ++i )
+    if( mEnumValues[ i ].empty() )
+      isEnum = false;
+
+  if( isEnum )
+    mIndexBase = lowRange;
+  else
+  {
+    mEnumValues.clear();
+    mEnumTitle.clear();
+  }
+}
+#endif // TRY_PARAM_INTERPRETATION
