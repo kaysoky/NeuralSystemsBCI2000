@@ -1,36 +1,39 @@
 #ifndef TaskH
 #define TaskH
 
-#include <stdio.h>
-
-#include "UBCITime.h"
-#include "UCoreComm.h"
-#include "UGenericVisualization.h"
 #include "UGenericFilter.h"
-#include "UTarget.h"
+#include "UsrEnv.h";
 
-#include "UserDisplay.h"
-#include "UTargetSequence.h"
-#include "UTrialSequence.h"
+/// forward declarations
+class GenericVisualization;
+class UsrEnv;
+class BCITIME;
+class UsrEnvDispatcher;
 
 class TTask : public GenericFilter
 {
- private:
-        GenericVisualization    *vis;
-        TARGETLIST      *targets, oldactivetargets;
-        USERDISPLAY     *userdisplay;
-        TARGETSEQUENCE  *targetsequence;
-        TRIALSEQUENCE   *trialsequence;
-        int             Wx, Wy, Wxl, Wyl;
-        void            HandleSelected(TARGET *selected);
-        BCITIME         *cur_time;
-
- public:
-          TTask();
+ friend class UsrEnvAlgorithmP3AV;
+public:
+  /// Constructors and Destructors
+  TTask();
   virtual ~TTask();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
-  virtual void Initialize();
-  virtual void Process( const GenericSignal* Input, GenericSignal* Output );
+  /// Virtual Member functions
+  virtual void Preflight(const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize(void);
+  virtual void Process(const GenericSignal * pInput, GenericSignal * pOutput );
+
+  /// Member functions
+  const bool ErrorReadingMatrix(const AnsiString asMatrixName) const;
+  const bool ErrorLoadingAudioFile(std::string sAudioFile) const;
+  const bool ErrorLoadingVideoFile(std::string sVideoFile) const;
+
+private:
+  /// Member variables
+  GenericVisualization * m_pGenericVisualization;
+  UsrEnv * m_pUsrEnv;
+  UsrEnvDispatcher * m_pUsrEnvDispatcher;
+  BCITIME * m_pBCITime;
 };
+
 #endif

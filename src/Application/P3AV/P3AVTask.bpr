@@ -4,13 +4,16 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="P3AVTask.exe"/>
-    <OBJFILES value="obj\P3AVTask.obj obj\UMain.obj obj\UTrialSequence.obj obj\Task.obj 
-      obj\UserDisplay.obj obj\UTargetSequence.obj obj\UVisConfig.obj 
+    <OBJFILES value="obj\P3AVTask.obj obj\UMain.obj obj\Task.obj obj\UVisConfig.obj 
       obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\UTarget.obj obj\UCursor.obj obj\UStatusBar.obj obj\UGenericFilter.obj 
-      obj\UEnvironment.obj obj\UBCIError.obj"/>
+      obj\UCursor.obj obj\UStatusBar.obj obj\UGenericFilter.obj 
+      obj\UEnvironment.obj obj\UBCIError.obj obj\UsrEnvAlgorithm.obj 
+      obj\UsrEnv.obj obj\UsrElement.obj obj\UsrElementAudio.obj 
+      obj\UsrElementCaption.obj obj\UsrElementCollection.obj 
+      obj\UsrElementVideo.obj obj\WavePlayer.obj obj\UsrEnvAlgorithmP3AV.obj 
+      obj\UsrEnvDispatcher.obj obj\UsrElementMixed.obj obj\UTaskUtil.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -21,7 +24,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -55,10 +58,7 @@
   <FILELIST>
       <FILE FILENAME="P3AVTask.cpp" FORMNAME="" UNITNAME="P3AVTask" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UTrialSequence.cpp" FORMNAME="" UNITNAME="UTrialSequence" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Task.cpp" FORMNAME="" UNITNAME="Task" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UserDisplay.cpp" FORMNAME="" UNITNAME="UserDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UTargetSequence.cpp" FORMNAME="" UNITNAME="UTargetSequence" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -71,12 +71,23 @@
       <FILE FILENAME="..\..\shared\UStatus.cpp" FORMNAME="" UNITNAME="UStatus" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UTarget.cpp" FORMNAME="" UNITNAME="UTarget" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UCursor.cpp" FORMNAME="" UNITNAME="UCursor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UStatusBar.cpp" FORMNAME="" UNITNAME="UStatusBar" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UsrEnvAlgorithm.cpp" FORMNAME="" UNITNAME="UsrEnvAlgorithm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UsrEnv.cpp" FORMNAME="" UNITNAME="UsrEnv" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElement.cpp" FORMNAME="" UNITNAME="UsrElement" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElementAudio.cpp" FORMNAME="" UNITNAME="UsrElementAudio" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElementCaption.cpp" FORMNAME="" UNITNAME="UsrElementCaption" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElementCollection.cpp" FORMNAME="" UNITNAME="UsrElementCollection" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElementVideo.cpp" FORMNAME="" UNITNAME="UsrElementVideo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UsrEnvAlgorithmP3AV.cpp" FORMNAME="" UNITNAME="UsrEnvAlgorithmP3AV" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UsrEnvDispatcher.cpp" FORMNAME="" UNITNAME="UsrEnvDispatcher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UsrElementMixed.cpp" FORMNAME="" UNITNAME="UsrElementMixed" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UTaskUtil.cpp" FORMNAME="" UNITNAME="UTaskUtil" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
