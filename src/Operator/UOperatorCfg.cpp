@@ -59,26 +59,25 @@ AnsiString      tabname;
    {
    cur_param=paramlist->GetParamPtr(i);
    if (cur_param)
-      if (cur_param->Valid())
-         {
-         // parameter has not been 'touched' yet and it's user level is smaller than the operator's user level
-         if ((cur_param->archive == false)
-           && (OperatorUtils::GetUserLevel(cur_param->GetName()) <= preferences->UserLevel))
-            {
-            // a 'new' Section name ?
-            if (tabname == " ")
-               {
-               tabname=cur_param->GetSection();
-               cur_param->archive=true;
-               }
-            else
-               {
-               // 'touch' all parameters with the same section name
-               if (tabname == cur_param->GetSection())
-                  cur_param->archive=true;
-               }
-            }
-         }
+     {
+     // parameter has not been 'touched' yet and it's user level is smaller than the operator's user level
+     if ((cur_param->archive == false)
+       && (OperatorUtils::GetUserLevel(cur_param->GetName()) <= preferences->UserLevel))
+        {
+        // a 'new' Section name ?
+        if (tabname == " ")
+           {
+           tabname=cur_param->GetSection();
+           cur_param->archive=true;
+           }
+        else
+           {
+           // 'touch' all parameters with the same section name
+           if (tabname == cur_param->GetSection())
+              cur_param->archive=true;
+           }
+        }
+     }
    }
   // create a new tab with the section name
   if (tabname != " ")
