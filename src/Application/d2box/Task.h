@@ -8,6 +8,7 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UBitRate.h"
 #include "UCoreComm.h"
 #include "UGenericVisualization.h"
+#include "UDataGlove.h"
 #include "UGenericFilter.h"
 #include "UBCItime.h"
 
@@ -48,6 +49,13 @@ private:
         short targx_adapt[NTARGS+1];
         short targy_adapt[NTARGS+1];
         short targ_adaptcode[NTARGS+1];
+
+        // weights for glove control
+        float GloveControlX[3][MAX_GLOVESENSORS];
+        float GloveControlY[3][MAX_GLOVESENSORS];
+
+        // offset for joystick/glove
+        float XOffset, YOffset;
 
         int Ntargets;
         int targetcount;
@@ -111,6 +119,7 @@ private:
 
         int TestTarget( float, float, int );
         void GetJoy( void );
+        void GetGlove( );
         void ShuffleTargs( int ntargs );
         void Rest( void );
         void Iti( void );
@@ -129,6 +138,7 @@ private:
         BITRATE         bitrate;
         BCITIME         *bcitime;
         TApplication    *Applic;
+        DataGlove       *my_glove;
 public:
         TTask();
         virtual ~TTask();

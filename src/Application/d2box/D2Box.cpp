@@ -10,11 +10,11 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "RJB Task";
+                 Application->Title = "2-dimensional box task";
                  Application->CreateForm(__classid(TfMain), &fMain);
-         Application->CreateForm(__classid(TUser), &User);
-         Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
-         Application->Run();
+                 Application->CreateForm(__classid(TUser), &User);
+                 Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
+                 Application->Run();
         }
         catch (Exception &exception)
         {

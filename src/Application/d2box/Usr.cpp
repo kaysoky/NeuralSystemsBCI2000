@@ -26,7 +26,7 @@ _fastcall TUser::~TUser()
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
+void SetUsr( PARAMLIST *plist, STATELIST *slist )
 {
         char line[512];
 

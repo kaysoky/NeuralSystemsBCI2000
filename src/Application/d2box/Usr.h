@@ -10,6 +10,7 @@
 #include "UGenericFilter.h"
 #include <ExtCtrls.hpp>
 
+void SetUsr( PARAMLIST *plist, STATELIST *slist);
 
 //---------------------------------------------------------------------------
 class TUser : public TForm
@@ -48,7 +49,6 @@ public:		// User declarations
         void PutT(bool);
         void PutO(bool);
         void Clear( void );
-        void __fastcall SetUsr( PARAMLIST *plist, STATELIST *slist);
         void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist);
         __fastcall TUser(TComponent* Owner);
         __fastcall ~TUser();

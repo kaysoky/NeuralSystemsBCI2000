@@ -13,6 +13,9 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <string.h>
 #include <time.h>
 #include <dos.h>
+#include <math.h>
+
+// #define  DATAGLOVE
 
 RegisterFilter( TTask, 3 );
 
@@ -20,7 +23,7 @@ RegisterFilter( TTask, 3 );
 TTask::TTask()
 {
 TEMPORARY_ENVIRONMENT_GLUE
-        char line[512];
+        char line[1024];
 
         run= 0;
 
@@ -44,11 +47,23 @@ TEMPORARY_ENVIRONMENT_GLUE
         strcpy(line,"UsrTask int RestingPeriod= 0 0 0 1   //  1 defines a rest periuod of data acquisition");
         plist->AddParameter2List(line,strlen(line));
 
-        strcpy(line,"JoyStick int UseJoyStick= 0 0 0 1    // 1 to use Joystick Input");
+        #ifdef DATAGLOVE
+        strcpy(line,"JoyStick string GloveCOMport= COM2 0 0 1    // COM port for 5DT glove");
         plist->AddParameter2List(line,strlen(line));
+        strcpy(line,"JoyStick int UseJoyStick= 0 0 0 1    // 0=brain signals; 1=Joystick; 2=Glove");
+        plist->AddParameter2List(line,strlen(line));
+        #endif
+        #ifndef DATAGLOVE
+        strcpy(line,"JoyStick int UseJoyStick= 0 0 0 1    // 0=brain signals; 1=Joystick");
+        plist->AddParameter2List(line,strlen(line));
+        #endif
         strcpy(line,"JoyStick float JoyXgain= 1.0 0 -1000.0 1000.0 // Horizontal gain");
         plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"JoyStick float JoyYgain= 1.0 0 -1000.0 1000.0 // Horizontal gain");
+        strcpy(line,"JoyStick float JoyYgain= 1.0 0 -1000.0 1000.0 // Vertical gain");
+        plist->AddParameter2List(line,strlen(line));
+        strcpy(line,"JoyStick float XOffset= 0 0 -1000.0 1000.0 // horizontal offset for joystick/glove");
+        plist->AddParameter2List(line,strlen(line));
+        strcpy(line,"JoyStick float YOffset= 0 0 -1000.0 1000.0 // horizontal offset for joystick/glove");
         plist->AddParameter2List(line,strlen(line));
 
         strcpy(line,"Targets int NumberTargets= 4 0 0 1 // Number of Targets");
@@ -62,6 +77,32 @@ TEMPORARY_ENVIRONMENT_GLUE
         strcpy(line,"Targets matrix TargetPos= 7 4 25 25 0 90 0 90 25 25 50 50 10 10 10 10 50 50 0 0 -1 1 -1 1 0 0 0 0 0 0 // Target Position Matrix - Values are 0-100");
         plist->AddParameter2List(line,strlen(line));
 
+        #ifdef DATAGLOVE
+        strcpy(line, "JoyStick matrix GloveControlX= "
+                     "{t-1 t sign} " // row labels
+                     "{ thumb index middle ring little pitch roll } " // column labels
+                     " -1 0 0 0 0 0 0 "
+                     "  1 0 0 0 0 0 0 "
+                     "  1 1 1 1 1 1 1 "
+                     " // glove sensor weights for horizontal movement");
+        plist->AddParameter2List(line,strlen(line));
+
+        strcpy(line, "JoyStick matrix GloveControlY= "
+                     "{t-1 t sign} " // row labels
+                     "{ thumb index middle ring little pitch roll } " // column labels
+                     " 0 0 -1 0 0 0 0 "
+                     " 0 0  1 0 0 0 0 "
+                     " 1 1  1 1 1 1 1 "
+                     " // glove sensor weights for vertical movement");
+        plist->AddParameter2List(line,strlen(line));
+        slist->AddState2List("GloveSensor1 8 0 0 0\n");
+        slist->AddState2List("GloveSensor2 8 0 0 0\n");
+        slist->AddState2List("GloveSensor3 8 0 0 0\n");
+        slist->AddState2List("GloveSensor4 8 0 0 0\n");
+        slist->AddState2List("GloveSensor5 8 0 0 0\n");
+        slist->AddState2List("GloveSensor6 8 0 0 0\n");
+        slist->AddState2List("GloveSensor7 8 0 0 0\n");
+        #endif
 
         slist->AddState2List("TargetCode 5 0 0 0\n");
         slist->AddState2List("ResultCode 5 0 0 0\n");
@@ -76,13 +117,14 @@ TEMPORARY_ENVIRONMENT_GLUE
         slist->AddState2List("Yadapt 16 0 0 0\n");
         slist->AddState2List("AdaptCode 5 0 0 0 \n");
 
+        #ifdef DATAGLOVE
+        my_glove=new DataGlove();
+        #endif
 
-
-        User->SetUsr( plist, slist );
+        SetUsr( plist, slist );
 
         OldRunning=0;
         OldCurrentTarget=0;
-
 }
 
 //-----------------------------------------------------------------------------
@@ -90,8 +132,11 @@ TEMPORARY_ENVIRONMENT_GLUE
 TTask::~TTask( void )
 {
         if( vis ) delete vis;
+        #ifdef DATAGLOVE
+        delete my_glove;
+        #endif
         vis= NULL;
-        fclose( appl );
+        if (appl) fclose( appl );
 
 }
 
@@ -111,15 +156,29 @@ void TTask::Preflight( const SignalProperties& inputProperties,
   // with two elements.
   PreflightCondition( inputProperties >= SignalProperties( 1, 2 ) );
 
+  #ifdef DATAGLOVE
+  // test for presence of glove if we want to use the glove
+  if (Parameter( "UseJoystick" ) == 2)
+     {
+     PreflightCondition( my_glove->GlovePresent(AnsiString((const char *)Parameter("GloveCOMport"))) );
+     PreflightCondition( Parameter("GloveControlX")->GetNumValuesDimension1() == 3);
+     PreflightCondition( Parameter("GloveControlX")->GetNumValuesDimension2() == MAX_GLOVESENSORS);
+     PreflightCondition( Parameter("GloveControlY")->GetNumValuesDimension1() == 3);
+     PreflightCondition( Parameter("GloveControlY")->GetNumValuesDimension2() == MAX_GLOVESENSORS);
+     }
+  #endif
+
   // We don't use an output signal.
   outputProperties = SignalProperties( 0, 0 );
 }
+
 
 void TTask::Initialize()
 {
 TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
-        BCIDtry *bcidtry;
+        BCIDtry *bcidtry=NULL;
+        AnsiString COMport;
         char FName[120];
         char slash[2];
         time_t ctime;
@@ -144,8 +203,36 @@ TEMPORARY_ENVIRONMENT_GLUE
         SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
 
         useJoy= atoi(plist->GetParamPtr("UseJoyStick")->GetValue());
+        #ifdef DATAGLOVE
+        if ((useJoy < 0) || (useJoy > 2))
+        bcierr << "UseJoyStick has to be 0, 1, or 2" << std::endl;
+        #else
+        if ((useJoy < 0) || (useJoy > 1))
+        bcierr << "UseJoyStick has to be 0, or 1" << std::endl;
+        #endif
+
+        #ifdef DATAGLOVE
+        // transfer the weights for glove into local variables
+        if (useJoy == 2)
+           {
+           COMport=AnsiString(plist->GetParamPtr("GloveCOMport")->GetValue());
+           for (int sensor=0; sensor<MAX_GLOVESENSORS; sensor++)
+            {
+            for (int i=0; i<3; i++)
+             {
+             GloveControlX[i][sensor]=atof(Parameter("GloveControlX")->GetValue(i, sensor));
+             GloveControlY[i][sensor]=atof(Parameter("GloveControlY")->GetValue(i, sensor));
+             }
+            AnsiString glovestatename="GloveSensor"+AnsiString(sensor+1);
+            State(glovestatename.c_str())=0;
+            }
+           }
+        #endif
+
         joy_xgain= atof(plist->GetParamPtr("JoyXgain")->GetValue());
         joy_ygain= atof(plist->GetParamPtr("JoyYgain")->GetValue());
+        XOffset= atof(plist->GetParamPtr("XOffset")->GetValue());
+        YOffset= atof(plist->GetParamPtr("YOffset")->GetValue());
 
         n_tmat= Ntargets;
         m_tmat= 7;              // was 4;   - now includes width and height  and adaptation code
@@ -238,14 +325,24 @@ TEMPORARY_ENVIRONMENT_GLUE
         totalfeedbacktime= 0;
         feedflag= 0;
 
-
         CurrentXadapt= 0;
         CurrentYadapt= 0;
         CurrentAdaptCode= 0;
 
         User->PutO(false);
 
+        #ifdef DATAGLOVE
+        // if we want glove input, start streaming values from the joystick
+        if (useJoy == 2)
+           {
+           delete my_glove;
+           my_glove=new DataGlove();            // have to create it new; once stopped streaming, thread is terminated
+           my_glove->StartStreaming(COMport);
+           }
+        #endif
+
         WriteStateValues( svect );
+        if (bcidtry) delete bcidtry;
 }
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
@@ -632,9 +729,13 @@ void TTask::Ptp( void )
 
                 if( useJoy == 1 )   // try && (PtpTime == 1) )
                 {
-                         mmres= joyGetPos( JOYSTICKID1, &joyi );
-                         jx_cntr= joyi.wXpos;
-                         jy_cntr= joyi.wYpos;
+                         // center the joystick based on the current joystick position
+                         // mmres= joyGetPos( JOYSTICKID1, &joyi );
+                         // jx_cntr= joyi.wXpos-32768;
+                         // jy_cntr= joyi.wYpos-32768;
+                         // center the joystick based on user-defined parameters;
+                         jx_cntr=(int)XOffset;
+                         jy_cntr=(int)YOffset;
                 }
         }
 
@@ -650,8 +751,8 @@ void TTask::GetJoy( )
 
         mmres= joyGetPos( JOYSTICKID1, &joyi );
 
-        tx= (float)(joyi.wXpos)  - (float)(jx_cntr);
-        ty= (float)(joyi.wYpos)  - (float)(jy_cntr);
+        tx= (float)(joyi.wXpos)-32768  - (float)(jx_cntr);
+        ty= (float)(joyi.wYpos)-32768  - (float)(jy_cntr);
 
         tx= tx / (float)jhalf;
         ty= ty / (float)jhalf;
@@ -660,14 +761,49 @@ void TTask::GetJoy( )
         y_pos+= ty * joy_ygain;
 }
 
+
+#ifdef DATAGLOVE
+void TTask::GetGlove( )
+{
+float cur_glovevalx, cur_glovevaly;
+
+        cur_glovevalx=0;
+        cur_glovevaly=0;
+        // we are doing the following transformation:
+        // deltax=sum(abs(sensor(t)*weight1(t)+sensor(t-1)*weight2(t-1))*sign) with sign determined by the parameter's third row
+        for (int i=0; i<MAX_GLOVESENSORS; i++)
+            {
+            float old_sensorval=(float)my_glove->GetSensorValOld(i);
+            float cur_sensorval=(float)my_glove->GetSensorVal(i);
+            float cur_signx, cur_signy;
+            if (GloveControlX[2][i] >= 0) cur_signx=1;
+            else cur_signx=-1;
+            if (GloveControlY[2][i] >= 0) cur_signy=1;
+            else cur_signy=-1;
+            cur_glovevalx += fabs(GloveControlX[0][i]*old_sensorval+GloveControlX[1][i]*cur_sensorval)*cur_signx;
+            cur_glovevaly += fabs(GloveControlY[0][i]*old_sensorval+GloveControlY[1][i]*cur_sensorval)*cur_signy;
+            AnsiString glovestatename="GloveSensor"+AnsiString(i+1);
+            State(glovestatename.c_str())=(unsigned short)my_glove->GetSensorVal(i);
+            }
+        // my_glove->ReadSensorsFromGlove("COM2");
+        x_pos+= (cur_glovevalx-XOffset) * joy_xgain;
+        y_pos+= (cur_glovevaly-YOffset) * joy_ygain;
+        if (my_glove->GetGloveErr() != GLOVE_ERR_NOERR)
+           Application->MessageBox("Glove Error", MB_OK);
+}
+#endif
+
 void TTask::Feedback( short sig_x, short sig_y )
 {
-        if( useJoy==1 ) GetJoy();
-        else
+        if(useJoy == 0)
         {
                 x_pos+= (float)sig_x * User->scalex;
                 y_pos+= (float)sig_y * User->scaley;
         }
+        if(useJoy == 1) GetJoy();
+        #ifdef DATAGLOVE
+        if(useJoy == 2) GetGlove();
+        #endif
 
         User->PutCursor( &x_pos, &y_pos, clRed );
         TestCursorLocation( x_pos, y_pos );
