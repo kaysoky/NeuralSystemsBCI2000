@@ -1,0 +1,67 @@
+NeuralMusic int AcousticMode= 2 0 0 2 // 0: no sound, 1: MIDI, 2: WAV -- Achin's Acoustic Mode :-)
+Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
+System string ApplicationIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0. // this module's listening IP
+System string ApplicationPort= 1239 4200 1024 32768 // this module's listening port
+SWFilter intlist ArteChList= 2 1 -1 2 -1 63 // Assignment of artefact channels, -1: no artifact channel
+SWFilter floatlist ArteFactorList= 2 0.15 0 0 -1 1 // Influence of artefact channel on input channel, -1: no artifact channel
+SWFilter int ArteMode= 0 1 0 3 // Artefact correction mode, 0 off, 1 continuous, 2 conditioned
+Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)
+SWFilter float BaseBegin= 1.9 1.9 0 60 // Begin of Baseline in s
+SWFilter intlist BaseChList= 2 1 1 0 0 1 // 1 to mark that BL is subtracted
+SWFilter float BaseEnd= 2.0 2.0 0 60 // End of Baseline in s
+Sequencer float BIPts= 2.0 2.0 0 60 // Baseline-Intervall in s
+Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
+System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string EEGsourcePort= 1235 4200 1024 32768 // this module's listening port
+Storage string FileInitials= c:\data a z 0 // Initials of file name (max. 8 characters)
+Sequencer float FIPts= 5.0 5.0 0 60 // Feedback-Intervall in s
+Filtering float LR_A= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float LR_B= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
+Filtering int MaxElements= 256 16 1 256 // maximum number of elements in signals B,C
+Source int ModulateAmplitude= 1 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
+Source int NoiseMaxAmplitude= 3000 3000 -32767 32767 // the maximum output value for noise
+Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value for noise
+NeuralMusic int NumberTargets= 10 0 0 10 // not used
+Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
+Source int SampleBlockSize= 32 5 1 128 // the number of samples transmitted at a time
+Source int SamplingRate= 256 128 1 4000 // the sample rate
+Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file
+System string SignalProcessingIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
+System string SignalProcessingPort= 1237 4200 1024 32768 // this module's listening port
+Source int SineChannel= 0 0 0 128 // channel number of sinewave (0=all)
+Source float SineFrequency= 10 10 0 100 // frequency of the sine wave
+Source int SineMaxAmplitude= 10000 20000 -32767 32767 // the maximum output value for sine
+Source int SineMinAmplitude= -10000 0 -32767 32767 // the minimal output value for sine
+Source int SoftwareCh= 16 16 1 128 // the number of digitized and stored channels
+NeuralMusic matrix Sounds= { MIDI WAV } { ultra%20low low medium high ultra%20high } 45 52 59 66 73 sounds\pig.wav sounds\frog.wav sounds\train.wav sounds\uh-uh.wav sounds\whistle.wav 0 0 0 // sounds to be played for different ranges of the feedback signal
+Filtering floatlist SourceChGain= 16 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 -500 500 // gain for each channel (A/D units -> muV)
+Filtering floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -500 500 // offset for channels in A/D units
+Visualize int SourceMax= 8092 8092 0 16386 // raw signal vsi Max Value
+Visualize int SourceMin= 0 0 -8092 0 // raw signal vis Min Value
+Filtering int SpatialFilteredChannels= 2 2 1 64 // Number of Spatially Filtered Channels
+Filtering matrix SpatialFilterKernal= 2 4 1 0 0 0 0 1 0 0 64 -100 100 // Spatial Filter Kernal Weights
+System int StateVectorLength= 6 16 1 30 // length of the state vector in bytes
+Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
+Storage string SubjectName= Name Name a z // subject alias (max. 8 characters)
+Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)
+Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
+SWFilter float SWAvgSpan= 0.5 0.5 0 10 // Averaging window in s
+SWFilter intlist SWInChList= 2 0 1 0 0 63 // Channel index of input signal (include artifact channel!)
+SWFilter intlist SWOutChList= 2 0 1 0 0 63 // Channel index of output signal (include artifact channel!)
+SWFilter float Tc= 16 16 0 1024 // Time constant filter settings in s
+SWFilter floatlist ThresholdAmp= 2 200 800 200 -2000 2000 // Threshold for invalid Trial in uV
+Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
+Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
+Filtering float UD_A= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
+Filtering float UD_B= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
+Visualize int VisualizeBaselineFiltering= 1 0 0 1 // visualize baseline filtered signals (0=no 1=yes)
+Visualize int VisualizeCalibration= 1 0 0 1 // visualize calibrated channels (0=no, 1=yes)
+Visualize int VisualizeFBArteCorFiltering= 1 0 0 1 // visualize FBArte corrected signals (0=no 1=yes)
+Visualize int VisualizeNormalFiltering= 1 0 0 1 // visualize Normal filtered signals (0=no 1=yes)
+Visualize int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes)
+Visualize int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes)
+Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw brain signal
+Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization
+Visualize int VisualizeSpatialFiltering= 1 0 0 1 // visualize spatial filtered signals (0=no 1=yes)
+Visualize int VisualizeSWFiltering= 1 0 0 1 // visualize SW filtered signals (0=no 1=yes)
