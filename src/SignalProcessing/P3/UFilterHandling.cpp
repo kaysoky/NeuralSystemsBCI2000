@@ -3,7 +3,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "StatFilter.h"
+// #include "StatFilter.h"
 #include "UFilterHandling.h"
 #include <assert>
 
@@ -36,8 +36,8 @@ char line[512];
  if(!classfilter) was_error= true;
  normalfilter= new NormalFilter();
  if(!normalfilter) was_error= true;
- statfilter= new StatFilter();
- if(!statfilter) was_error= true;
+ // statfilter= new StatFilter();
+ // if(!statfilter) was_error= true;
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128    // the number of transmitted control signals");
  plist->AddParameter2List(line, strlen(line));
@@ -68,8 +68,8 @@ FILTERS::~FILTERS()
  classfilter= NULL;
  if(normalfilter) delete normalfilter;
  normalfilter= NULL;
- if(statfilter) delete statfilter;
- statfilter= NULL;
+ // if(statfilter) delete statfilter;
+ // statfilter= NULL;
 
  if (SignalA) delete SignalA;
  if (SignalC) delete SignalC;
@@ -124,7 +124,7 @@ int     res, returnval;
   SignalE = new GenericSignal( sp );
   normalfilter->Preflight( *SignalE, sp );
   SignalF = new GenericSignal( sp );
-  statfilter->Preflight( *SignalE, sp );
+  // statfilter->Preflight( *SignalE, sp );
   errorOccurred |= ( __bcierr.flushes() > 0 );
   Environment::EnterNonaccessPhase();
 
@@ -136,7 +136,7 @@ int     res, returnval;
     tempfilter->Initialize();
     classfilter->Initialize();
     normalfilter->Initialize();
-    statfilter->Initialize();
+    // statfilter->Initialize();
     errorOccurred |= ( __bcierr.flushes() > 0 );
     Environment::EnterNonaccessPhase();
   }
@@ -181,7 +181,7 @@ int     res, returnval;
   normalfilter->Initialize( plist, svector, corecomm);
 
   // initialize statistics
-  statfilter->Initialize( plist, svector, corecomm);
+  // statfilter->Initialize( plist, svector, corecomm);
 
   SignalD=new GenericSignal(MD, ND);
   SignalE=new GenericSignal(ME, 1);
@@ -231,7 +231,7 @@ int FILTERS::Resting( char *buf)
   tempfilter->Resting();
   classfilter->Resting();
   normalfilter->Resting();
-  statfilter->Resting();
+  // statfilter->Resting();
 
  return(0);
 }
@@ -265,7 +265,7 @@ int res, returnval;
  tempfilter->Process(SignalC, SignalD);
  classfilter->Process(SignalD, SignalE);
  normalfilter->Process(SignalE, SignalF);
- statfilter->Process(SignalE, SignalF);
+ // statfilter->Process(SignalE, SignalF);
 
  return(returnval);
 }

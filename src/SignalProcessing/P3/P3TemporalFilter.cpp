@@ -370,8 +370,8 @@ float   cur_output;
      // fprintf(fp, "\r\n");
      // fclose(fp);
      // at the same time, communicate the code and type of this ERP waveform
-     statevector->SetStateValue("StimulusCodeRes", (unsigned short)stimuluscode);
-     statevector->SetStateValue("StimulusTypeRes", (unsigned short)stimulustype);
+     State("StimulusCodeRes")=(unsigned short)stimuluscode;
+     State("StimulusTypeRes")=(unsigned short)stimulustype;
      // finally, we have to delete the ERP waveform buffers
      for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
       if ((ERPBufCode[cur_buf] == stimuluscode) && (ERPBufSampleCount[cur_buf] == numsamplesinERP))
@@ -419,8 +419,8 @@ bool    cur_buf;
  // process the ERP buffers
  // send out an ERP buffer, in case it has been filled
  // in this case, also set the right states; before, clear the states
- statevector->SetStateValue("StimulusCodeRes", 0);
- statevector->SetStateValue("StimulusTypeRes", 0);
+ State("StimulusCodeRes")=0;
+ State("StimulusTypeRes")=0;
  if( ProcessERPBuffers(output) != noError )
    bcierr << "ERPBuffer processing error" << endl;
 

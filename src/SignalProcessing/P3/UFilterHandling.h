@@ -11,7 +11,7 @@
 #include "SpatialFilter.h"
 #include "ClassFilter.h"
 #include "NormalFilter.h"
-#include "StatFilter.h"
+// #include "StatFilter.h"
 
 class FILTERS
 {
@@ -31,7 +31,7 @@ public:
        P3TemporalFilter   *tempfilter;
        ClassFilter        *classfilter;
        NormalFilter       *normalfilter;
-       StatFilter         *statfilter;
+       // StatFilter         *statfilter;
        GenericSignal      *SignalA, *SignalB, *SignalC, *SignalD, *SignalE, *SignalF;
 };
 #endif

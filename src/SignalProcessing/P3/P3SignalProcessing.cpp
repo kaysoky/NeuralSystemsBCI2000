@@ -10,10 +10,10 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "MXSignalProcessing";
+                 Application->Title = "P3SignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
-         Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
-         Application->Run();
+                 Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
+                 Application->Run();
         }
         catch (Exception &exception)
         {
