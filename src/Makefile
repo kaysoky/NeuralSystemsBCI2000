@@ -29,20 +29,23 @@
 #
 ###################################################################################
 
-# How to execute commands -- Borland make does not automatically honor the SHELL macro.
-SHELL = cmd /c @prompt $g && 
-# Name of file that contains list of subproject makefiles:
+# How to execute commands.
+SHELL = cmd /c @prompt $s && 
+# Name of file that contains list of subproject makefiles.
 MKNAM = .makefiles
-# How to zero the subproject makefile list:
+# How to zero the subproject makefile list.
 EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
 # Extensions of files that need to be always writeable.
 FORCEWRITE = *.bpr *.res *.mak
 # Extensions of files that will be deleted by 'make clean'.
 GARBAGE = *.obj *.tds *.csm *.~* *.\#*
+# How to report when we are done with a target.
+DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 
 # Workaround macros to access shell operators.
 AND = &&
 OR = ||
+QUIET =# >nul 2>&1
 
 !include ${MKNAM}
 
@@ -69,21 +72,24 @@ all prepare clean:
 ##################################################################################
 
 # Make all subprojects
-all: ${MAKEFILES:.mak=.makeall}
+all: ${MAKEFILES:.mak=.all}
+  ${DONE}
 
 # Prepare source files for opening projects without crashing(!) the Borland IDE.
-prepare: ${MAKEFILES:.mak=.makeprepare}
-  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i
+prepare: ${MAKEFILES:.mak=.prepare}
+  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i ${QUIET}
 !ifndef DONTCLEANME
   -${SHELL} attrib -r ${MKNAM}
 !endif
+  ${DONE}
 
 # Cleanup
-clean: prepare ${MAKEFILES:.mak=.makeclean}
-  -${SHELL} for /R %i in (${GARBAGE}) do del %i
+clean: prepare ${MAKEFILES:.mak=.clean}
+  -${SHELL} for /R %i in (${GARBAGE}) do del %i ${QUIET}
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
+  ${DONE}
 
 ##################################################################################
 #
@@ -91,23 +97,33 @@ clean: prepare ${MAKEFILES:.mak=.makeclean}
 #
 ##################################################################################
 .bpr.mak:
-  bpr2mak $<
-  echo.                                    >>$@
-  echo prepare:                            >>$@
-  echo " " -attrib -r \$\(PROJECT)         >>$@
-  echo clean:                              >>$@
-  echo " " -del \$\(PROJECT) \$\(OBJFILES) >>$@
-  echo.                                    >>$@
+  (bpr2mak $<) & echo.
+  @echo.                                              >>$@
+  @echo prepare:                                      >>$@
+  @echo " " -attrib -r \$\(PROJECT) "${QUIET}"        >>$@
+  @echo clean:                                        >>$@
+  @echo " " -del \$\(PROJECT) \$\(OBJFILES) "${QUIET}">>$@
+  @echo.                                              >>$@
+  # We cannot tolerate absolute paths in makefiles.
+  @${SHELL} (grep "^[A-Z]*PATH[A-Z]*.*:" $@) \
+    ${AND} (echo Found absolute path^^(s^^) in makefile -- sorry, aborting. & \
+            echo Fix paths in $< using the IDE. & \
+            false & exit) \
+    ${OR} true
+  ${DONE}
 
-.mak.makeall:
+.mak.all:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS}
+  ${DONE}
   
-.mak.makeprepare:
+.mak.prepare:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} prepare
+  ${DONE}
 
-.mak.makeclean:
+.mak.clean:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} clean
   del $<
+  ${DONE}
   
 !endif # !ifndef MAKEFILES
 
