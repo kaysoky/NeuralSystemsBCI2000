@@ -5,6 +5,7 @@ Task.h is the header file for the Right Justified Boxes task
 #define TaskH
 
 #include <vcl.h>
+#include <ComCtrls.hpp>
 
 #include <stdio.h>
 #include "UBitRate.h"
