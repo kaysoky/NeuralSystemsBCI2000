@@ -1,35 +1,27 @@
-//---------------------------------------------------------------------------
-#ifndef DAS1402H
-#define DAS1402H
+////////////////////////////////////////////////////////////////////////////////
+//
+// File: DAS_ADC.h
+//
+// Author: juergen.mellinger@uni-tuebingen.de
+//         original version by thilo.hinterberger@uni-tuebingen.de
+//
+// Date: Sep 18, 2003
+//
+// Description: A source class that interfaces to the
+//              ComputerBoards/Measurement Computing Universal Library.
+//
+////////////////////////////////////////////////////////////////////////////////
+#ifndef DAS_ADCH
+#define DAS_ADCH
 
-#include "UGenericSignal.h"
 #include "GenericADC.h"
+#include "DASQueue.h"
 
-class TDASSource : public GenericADC
+class TDAS_ADC : public GenericADC
 {
- protected:
-  int BlockSize;
-  int Channels;
-  long Samplerate;
-  int BoardNum;
-  int ULStat;
-  int Gain;
-  short Status;
-  long CurCount;
-  long CurIndex;
-  long BufLen;
-  unsigned Options;
-  unsigned int BBeg;
-  unsigned int BEnd;
-  int SamplesLeft;
-  bool Initialized;
-  WORD *ADData;
-  short *RandomData;
-  char *BoardName;
-
  public:
-  TDASSource();
-  virtual ~TDASSource();
+  TDAS_ADC();
+  virtual ~TDAS_ADC(){}
   virtual void Initialize();
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const;
@@ -37,9 +29,8 @@ class TDASSource : public GenericADC
                                 GenericSignal* );
   virtual void Halt();
 
-  int ADDataAvailable();
-//int ReadRandomDataBlock(GenericIntSignal *SourceSignal);
+ private:
+  DASQueue inputQueue;
 };
 
-//---------------------------------------------------------------------------
-#endif
+#endif // DAS_ADCH
