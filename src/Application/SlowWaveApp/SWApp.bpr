@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="SWApp.exe"/>
+    <OBJFILES value="obj\SWApp.obj obj\Task.obj obj\SWUser.obj obj\AppManager.obj obj\UMain.obj 
+      obj\UVisConfig.obj obj\UBCI2000Error.obj obj\UBCItime.obj obj\UBitRate.obj 
+      obj\UCoreComm.obj obj\UCoreMessage.obj obj\UGenericFilter.obj 
+      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
+      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj"/>
+    <RESFILES value="SWApp.res"/>
+    <IDLFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) SWUser.dfm ..\UMain.dfm ..\..\SHARED\UVisConfig.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib"/>
+    <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
+      vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
+      TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="SWApp.cpp"/>
+    <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par -w-8027 -w-8026"/>
+    <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="SWApp.cpp" FORMNAME="" UNITNAME="SWApp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SWApp.res" FORMNAME="" UNITNAME="SWApp.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Task.cpp" FORMNAME="" UNITNAME="Task" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SWUser.cpp" FORMNAME="FBForm" UNITNAME="SWUser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="AppManager.cpp" FORMNAME="" UNITNAME="AppManager" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UBCI2000Error.cpp" FORMNAME="" UNITNAME="UBCI2000Error.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UCoreMessage.cpp" FORMNAME="" UNITNAME="UCoreMessage.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UGenericVisualization.cpp" FORMNAME="" UNITNAME="UGenericVisualization.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UState.cpp" FORMNAME="" UNITNAME="UState.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UStatus.cpp" FORMNAME="" UNITNAME="UStatus.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlIncludePath]
+Count=18
+Item0=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..\..\SHARED;..;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\SHARED;..\;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\SHARED;..\;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item5=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item6=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
+Item9=..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
+Item10=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
+Item12=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item13=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item14=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item15=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item16=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item17=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=18
+Item0=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\SHARED;..;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\SHARED;..\;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\..\SHARED;..\;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item5=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item6=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
+Item10=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
+Item12=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item13=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item14=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item15=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item16=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item17=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=3
+Item0=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
+Item1=_DEBUG;BCI2000_STRICT
+Item2=_DEBUG;BCI2000
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=obj
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=AUTOSTART 127.0.0.1
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>
