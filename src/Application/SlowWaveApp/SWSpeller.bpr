@@ -4,33 +4,33 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="SWSpeller.exe"/>
-    <OBJFILES value="SWSpeller_obj\SWSpeller.obj SWSpeller_obj\Task.obj 
-      SWSpeller_obj\UBCItime.obj SWSpeller_obj\UGenericSignal.obj 
-      SWSpeller_obj\UGenericVisualization.obj SWSpeller_obj\UParameter.obj 
-      SWSpeller_obj\UState.obj SWSpeller_obj\UStatus.obj 
-      SWSpeller_obj\USysCommand.obj SWSpeller_obj\BCIDirectry.obj 
-      SWSpeller_obj\UGenericFilter.obj SWSpeller_obj\UEnvironment.obj 
-      SWSpeller_obj\UBCIError.obj SWSpeller_obj\MeasurementUnits.obj 
-      SWSpeller_obj\WavePlayer.obj SWSpeller_obj\MidiPlayer.obj 
-      SWSpeller_obj\TrialStatistics.obj SWSpeller_obj\TargetSeq.obj 
-      SWSpeller_obj\PresErrors.obj SWSpeller_obj\PresParams.obj 
-      SWSpeller_obj\SpellerDict.obj SWSpeller_obj\SpellerTree.obj 
-      SWSpeller_obj\StateAccessor.obj SWSpeller_obj\ParamDecl.obj 
-      SWSpeller_obj\PresModel.obj SWSpeller_obj\PresSpellerModel.obj 
-      SWSpeller_obj\Util.obj SWSpeller_obj\GUITextDialog.obj 
-      SWSpeller_obj\TextProperties.obj SWSpeller_obj\BackgroundView.obj 
-      SWSpeller_obj\FeedbackView.obj SWSpeller_obj\GUI.obj 
-      SWSpeller_obj\MarkerView.obj SWSpeller_obj\ReinforcementView.obj 
-      SWSpeller_obj\ScoreView.obj SWSpeller_obj\StimulusView.obj 
-      SWSpeller_obj\TargetView.obj SWSpeller_obj\TextFrame.obj 
-      SWSpeller_obj\ArtifactView.obj SWSpeller_obj\GUIArtifactView.obj 
-      SWSpeller_obj\GUITextProperties.obj SWSpeller_obj\GUITextFrame.obj 
-      SWSpeller_obj\GUITargetView.obj SWSpeller_obj\GUIStimulusView.obj 
-      SWSpeller_obj\GUIScoreView.obj SWSpeller_obj\GUIReinforcementView.obj 
-      SWSpeller_obj\GUIMarkerView.obj SWSpeller_obj\GUIFeedbackView.obj 
-      SWSpeller_obj\GUIBackgroundView.obj SWSpeller_obj\GUIView.obj 
-      SWSpeller_obj\TCPStream.obj SWSpeller_obj\MessageHandler.obj 
-      SWSpeller_obj\UCoreMain.obj SWSpeller_obj\LogFile.obj"/>
+    <OBJFILES value="SWSpeller.obj\SWSpeller.obj SWSpeller.obj\Task.obj 
+      SWSpeller.obj\UBCItime.obj SWSpeller.obj\UGenericSignal.obj 
+      SWSpeller.obj\UGenericVisualization.obj SWSpeller.obj\UParameter.obj 
+      SWSpeller.obj\UState.obj SWSpeller.obj\UStatus.obj 
+      SWSpeller.obj\USysCommand.obj SWSpeller.obj\BCIDirectry.obj 
+      SWSpeller.obj\UGenericFilter.obj SWSpeller.obj\UEnvironment.obj 
+      SWSpeller.obj\UBCIError.obj SWSpeller.obj\MeasurementUnits.obj 
+      SWSpeller.obj\WavePlayer.obj SWSpeller.obj\MidiPlayer.obj 
+      SWSpeller.obj\TrialStatistics.obj SWSpeller.obj\TargetSeq.obj 
+      SWSpeller.obj\PresErrors.obj SWSpeller.obj\PresParams.obj 
+      SWSpeller.obj\SpellerDict.obj SWSpeller.obj\SpellerTree.obj 
+      SWSpeller.obj\StateAccessor.obj SWSpeller.obj\ParamDecl.obj 
+      SWSpeller.obj\PresModel.obj SWSpeller.obj\PresSpellerModel.obj 
+      SWSpeller.obj\Util.obj SWSpeller.obj\GUITextDialog.obj 
+      SWSpeller.obj\TextProperties.obj SWSpeller.obj\BackgroundView.obj 
+      SWSpeller.obj\FeedbackView.obj SWSpeller.obj\GUI.obj 
+      SWSpeller.obj\MarkerView.obj SWSpeller.obj\ReinforcementView.obj 
+      SWSpeller.obj\ScoreView.obj SWSpeller.obj\StimulusView.obj 
+      SWSpeller.obj\TargetView.obj SWSpeller.obj\TextFrame.obj 
+      SWSpeller.obj\ArtifactView.obj SWSpeller.obj\GUIArtifactView.obj 
+      SWSpeller.obj\GUITextProperties.obj SWSpeller.obj\GUITextFrame.obj 
+      SWSpeller.obj\GUITargetView.obj SWSpeller.obj\GUIStimulusView.obj 
+      SWSpeller.obj\GUIScoreView.obj SWSpeller.obj\GUIReinforcementView.obj 
+      SWSpeller.obj\GUIMarkerView.obj SWSpeller.obj\GUIFeedbackView.obj 
+      SWSpeller.obj\GUIBackgroundView.obj SWSpeller.obj\GUIView.obj 
+      SWSpeller.obj\TCPStream.obj SWSpeller.obj\MessageHandler.obj 
+      SWSpeller.obj\UCoreMain.obj SWSpeller.obj\LogFile.obj"/>
     <RESFILES value="SWSpeller.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -60,10 +60,10 @@
   <OPTIONS>
     <CFLAG1 value="-Od -H=..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
       -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2SWSpeller_obj -N0SWSpeller_obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <PFLAGS value="-N2SWSpeller.obj -N0SWSpeller.obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-ISWSpeller_obj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <LFLAGS value="-ISWSpeller.obj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -220,8 +220,8 @@ Item8=_DEBUG;BCI2000
 
 [HistoryLists\hlIntOutputDir]
 Count=3
-Item0=SWSpeller_obj
-Item1=SWSpeller.obj
+Item0=SWSpeller.obj
+Item1=SWSpeller_obj
 Item2=obj
 
 [Debugging]
