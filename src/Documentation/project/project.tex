@@ -432,13 +432,19 @@ requested visualization type. The only currently defined types are 1 (a graph of
 Figure \ref{visualizationprotocol_type1} illustrates the protocol when the 
 visualization type is 1. The source identifier defines a unique number 
 identifying the process/filter that generated the data. The data type can be 
-either 0 (for integers in little endian format) or 1 (for floating-point 
-values); the number of channels and samples are self explanatory. Floating point 
-values are transmitted as three bytes each. The first two bytes (i.e., A) define 
+\begin{itemize}
+\item 0 \texttt{(SignalType::int16)} for integers in little endian format.
+\item 1 \texttt{(SignalType::float24)} for 3-byte floating-point values:
+The first two bytes (i.e., A) define 
 the mantissa (signed two-byte integers in little endian format) and the third 
 byte (i.e., B) defines the exponent (signed one-byte integer). The actual floating 
-point value is then calculated as follows: $value=A*10^{B}$. Figure 
-\ref{visualization_type1} illustrates how the data is transferred.
+point value is then calculated as follows: $value=A*10^{B}$.
+\item 2 \texttt{(SignalType::float32)} for 4-byte floating-point values in IEEE 754 format transmitted in little endian byte order.
+\item 3 \texttt{(SignalType::int32)} for 4-byte signed integer values transmitted in little endian byte order.
+\end{itemize}
+
+The number of channels and samples are self explanatory.
+Figure \ref{visualization_type1} illustrates how the data is transferred.
 
 \begin{figure}[ht]
  \centerline{\includegraphics{figures/visualization_type1}}
