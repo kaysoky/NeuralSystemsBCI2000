@@ -258,6 +258,16 @@ int     consistent;
   // number of TransmitCh != number of values in the list of channels to transmit
   if (fMain->paramlist.GetParamPtr("TransmitChList")->GetNumValues() != (size_t)atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()))
      consistent=0;
+  size_t maxCh = 0,
+         softwareCh = ::atoi( paramlist.GetParamPtr( "SoftwareCh" )->GetValue() );
+  PARAM* transmitChList = paramlist.GetParamPtr( "TransmitChList" );
+  for( size_t i = 0; i < transmitChList->GetNumValues(); ++i )
+  {
+    size_t curCh = ::atoi( transmitChList->GetValue( i ) );
+    if( curCh > maxCh )
+      maxCh = curCh;
+  }
+  consistent = consistent && ( maxCh <= softwareCh );
   // we do not want to transmit anything to signal processing, if either the transmitchlist is empty, or TransmitCh==0
   // but in these case, the parameters should be called consistent
   /* if (((fMain->paramlist.GetParamPtr("TransmitChList")->GetValue(0))[0] == '\0') || (atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()) == 0))
@@ -477,7 +487,9 @@ int     x, y, res;
   for( size_t i = 0; i < sourceSignal.Channels(); ++i )
     for( size_t j = 0; j < sourceSignal.GetNumElements( i ); ++j )
       sourceIntSignal( i, j ) = sourceSignal( i, j );
-#if 0
+  if( __bcierr.flushes() > 0 )
+    res = 0;
+    
   // if there is a problem, suspend the system
   if (res == 0)
      {
@@ -486,7 +498,6 @@ int     x, y, res;
      running=0;
      Sleep(500);
      }
-#endif
   // update the state vector
   // we have to acquire a lock first (since the receiving thread might overwrite it with the one returned from the application)
   // of course, we only have to do this in case the receiving thread hasn't been terminated
