@@ -20,7 +20,7 @@ class RandomNumberADC : public GenericADC
   short  noiseminamplitude, noisemaxamplitude;
   float  sinefrequency;
   short  DCoffset;
-  size_t sinechannel;
+  size_t sinechannel, sinechannelx;
   bool   modulateamplitude;
 };
 

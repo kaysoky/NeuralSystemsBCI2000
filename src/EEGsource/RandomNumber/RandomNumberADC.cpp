@@ -47,6 +47,7 @@ RandomNumberADC::RandomNumberADC()
   sinefrequency( 0 ),
   DCoffset( 0 ),
   sinechannel( 0 ),
+  sinechannelx( 0 ),
   modulateamplitude( 0 )
 {
  // add all the parameters that this ADC requests to the parameter list
@@ -60,7 +61,9 @@ RandomNumberADC::RandomNumberADC()
    "Source int SamplingRate=    256 128 1 4000 "
        "// the sample rate",
    "Source int SineChannel=    0 0 0 128 "
-       "// channel number of sinewave (0=all)",
+       "// channel number of sinewave for y (0=all)",
+   "Source int SineChannelX=    0 0 0 128 "
+       "// channel number of sinewave for x",
    "Source float SineFrequency=    10 10 0 100 "
        "// frequency of the sine wave",
    "Source int SineMinAmplitude=    -10000 0 -32767 32767 "
@@ -143,6 +146,7 @@ void RandomNumberADC::Initialize()
   modulateamplitude = ( ( int )Parameter( "ModulateAmplitude" ) != 0 );
   DCoffset = Parameter( "DCoffset" );
   sinechannel = Parameter( "SineChannel" );
+  sinechannelx = Parameter( "SineChannelX" );
 }
 
 
@@ -166,7 +170,7 @@ int     value, noise;
 long    longvalue;
 double  t;
 STATE   *stateptr;
-int     stateval, cursorpos;
+int     stateval, cursorpos, cursorposx;
 
  // well, we don't want to spit out data continously; thus, wait around 100ms
  float sr = samplerate;
@@ -184,22 +188,33 @@ int     stateval, cursorpos;
  for (sample=0; sample<signal->MaxElements(); sample++)
   {
   cursorpos=Mouse->CursorPos.y/70+1;
+  cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
   for (channel=0; channel<signal->Channels(); channel++)
    {
    t=(double)(count+sample)/(double)samplerate*(double)sinefrequency;
    value=0;
-   // create the signal on all channels, or on the one channel selected
+   // create the signal (for Y) on all channels, or on the one channel selected
    if ((sinechannel == 0) || (sinechannel == channel+1))
-   {
-     if( sinefrequency == 0 && modulateamplitude )
-       value = ( sinevalrange * ( Screen->Height / 2 - Mouse->CursorPos.y ) ) / Screen->Height + sineminamplitude;
-     else
-       value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
+      {
+      if( sinefrequency == 0 && modulateamplitude )
+        value = ( sinevalrange * ( Screen->Height / 2 - Mouse->CursorPos.y ) ) / Screen->Height + sineminamplitude;
+      else
+        value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
+      if (sinefrequency != 0 && modulateamplitude)
+         value=(int)((float)value/(float)cursorpos);
    }
+   // create the signal on the channel selected for X
+   if (sinechannelx == channel+1)
+      {
+      if( sinefrequency == 0 && modulateamplitude )
+        value = ( sinevalrange * ( Screen->Width / 2 - Mouse->CursorPos.x ) ) / Screen->Width + sineminamplitude;
+      else
+        value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
+      if (sinefrequency != 0 && modulateamplitude)
+         value=(int)((float)value/(float)cursorposx);
+      }
    if (noisevalrange > 1)
      noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
-   if (sinefrequency != 0 && modulateamplitude)
-     value=(int)((float)value/(float)cursorpos);
    value+= noise;         // add noise after modulating sine wave
    value+=DCoffset;
    const maxvalue = 1 << 15 - 1,
