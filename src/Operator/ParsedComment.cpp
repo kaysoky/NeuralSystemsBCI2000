@@ -64,7 +64,7 @@ ParsedComment::ParsedComment( const PARAM& p )
       break;
 
     case singleEntryBoolean:
-      if( !( ExtractEnumValues( p ) && IsBooleanEnum() ) )
+      if( ExtractEnumValues( p ) && !IsBooleanEnum() )
         mKind = singleEntryGeneric;
       break;
 
