@@ -248,8 +248,8 @@ property checking.
 For an actual implementation, its declaration would be as follows:
 \begin{verbatim}
 void GenericFilter::Preflight(
-   const SignalProperties* inSignalProperties,
-         SignalProperties* outSignalProperties ) const;
+   const SignalProperties& inSignalProperties,
+         SignalProperties& outSignalProperties ) const;
 \end{verbatim}
 
 For a filter class derived from
@@ -257,6 +257,10 @@ For a filter class derived from
 parameter checking as described in section~\ref{secParamcheck}.
 Instead of returning an error value, it writes possible error
 messages into \texttt{bcierr}.
+Furthermore, it communicates dimensions of its output signal
+which it guarantees not to exceed, and it does so by adjusting
+the properties of the second SignalProperties object in its
+argument list.
 The \texttt{const} declaration for its \texttt{this} pointer
 prohibits initialization functionality from
 \texttt{GenericFilter::Initialize()} entering into
@@ -379,23 +383,35 @@ condition in the code following the detection of an error.
 \begin{flushleft}
 \begin{itemize}
 \item \textit{Mellinger:} Remove references to current preliminary error handling
-object from code. \textit{done Oct 21, 2002}
+object from code.
+  \textit{done Oct 21, 2002}
 \item \textit{Mellinger:} Introduce \texttt{GenericFilter} inheritance into all
 existing filter classes.
+  \textit{done Mar 20, 2003}
 \item \textit{Mellinger:} Create headers and dummy implementation for error stream
 objects in framework code to allow for using error handling from
 filter code; add virtual function \texttt{GenericFilter::Preflight}
 and a dummy implementation to allow for existing code to compile.
+  \textit{done Mar 21, 2003}
 \item \textit{Mellinger:} Introduce calls to \texttt{GenericFilter::Preflight} into
 framework code.
+  \textit{done Apr 10, 2003}
 \item \textit{Mellinger:} Implement display of error messages in operator module.
+  \textit{done using the status message/operator log mechanism created by} Schalk 
 \item \textit{Mellinger:} Write actual implementation for error stream objects that
 sends errors to operator.
-\item \textit{Existing filters' authors:} Add implementation of \texttt{GenericFilter::Preflight} to
-existing filters.
+  \textit{done Apr 16, 2003}
+\item \textit{Existing filters' authors:} Add implementation of \texttt{GenericFilter::Preflight} to existing filters.
+  \textit{done Apr 16, 2003, Mellinger}
+\item \textit{Mellinger:} Remove \texttt{GenericFilter::Preflight} dummy default implementation from \texttt{GenericFilter.}
+  \textit{done Apr 25, 2003, Mellinger}
 \item \textit{Mellinger:} Write top level exception handler that diverts exceptions
-occurring in modules to the operator module and remove \texttt{GenericFilter::Preflight} dummy default implementation from
-\texttt{GenericFilter.}
+occurring in modules to the operator module.
+\item \textit{Existing filters' authors:} Fill in actual low range and high range 
+values into parameter declarations; work out preliminary preflight implementations 
+into complete checking.
+\item \textit{Mellinger:} Enable automatic range checking for parameters; re-work operator and module logic to actually keep the system from running when a preflight error is
+reported, and introduce a graceful system halt in case of a runtime error.
 \end{itemize}
 \end{flushleft}
 \end{document}
