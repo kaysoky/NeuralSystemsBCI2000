@@ -4,12 +4,15 @@ Task.h is the header file for the Right Justified Boxes task
 #ifndef TaskH
 #define TaskH
 
-#include <stdio.h>
+#include <vector>
+
 #include "UBitRate.h"
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
 #include "UBCItime.h"
 #include "LogFile.h"
+#include "WavePlayer.h"
+
 
 #define NTARGS  8
 
@@ -83,9 +86,13 @@ private:
         int GetTargetNo( int ntargs );
         void UpdateDisplays( void );
         void UpdateSummary( void );
+        
+        BITRATE              bitrate;
         LogFile              mTaskLog;
         GenericVisualization mVis;
-        BITRATE              bitrate;
+        std::vector<TWavePlayer> mTaskAnnouncements,
+                                 mResultAnnouncements;
+
 public:
           TTask();
   virtual ~TTask();

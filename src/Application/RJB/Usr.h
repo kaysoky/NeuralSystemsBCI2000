@@ -7,8 +7,9 @@
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
-#include "UGenericFilter.h"
 #include <ExtCtrls.hpp>
+
+#include "UGenericFilter.h"
 
 #define TARGET_OFF      0
 #define TARGET_ON       1

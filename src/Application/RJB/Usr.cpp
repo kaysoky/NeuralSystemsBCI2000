@@ -23,7 +23,7 @@ __fastcall TUser::TUser(TComponent* Owner)
 //--------------------------------------------------------------
 _fastcall TUser::~TUser()
 {
-        User->Close();
+        Close();
        
 }
 //---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
 
 //------------------------------------------------------------------------
 
-void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
+void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
 {
        Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
        Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
@@ -96,10 +96,10 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
           }
 
        // set size of user window
-       User->ClientWidth=  Wxl;
-       User->ClientHeight= Wyl;
-       User->Left=         Wx;
-       User->Top=          Wy;
+       ClientWidth=  Wxl;
+       ClientHeight= Wyl;
+       Left=         Wx;
+       Top=          Wy;
        Cursor->Height=     CursorSize;
        Cursor->Width=      CursorSize;
 
@@ -139,7 +139,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
        limit_left= HalfCursorSize;  //  0; CursorSize/2;
        limit_right= Wxl - HalfCursorSize; // - CursorSize/2;
 
-       User->Show();
+       Show();
 }
 //----------------------------------------------------------------------------
 //

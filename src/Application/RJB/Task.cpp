@@ -10,6 +10,7 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "BCIDirectry.h"
 #include "UBCIError.h"
 #include "Localization.h"
+#include "MeasurementUnits.h"
 
 #include <vector>
 #include <iostream>
@@ -47,6 +48,12 @@ TTask::TTask()
         "Time Limit for Runs in seconds",
     "UsrTask int RestingPeriod= 0 0 0 1 // "
         "1 defines a rest period of data acquisition",
+    "UsrTask matrix Announcements= "
+      " { 0 1 2 } { Task Result } "
+      "     %      % "
+      "     %      % "
+      "     %      % "
+      "// Wave files for auditory announcements",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -97,80 +104,95 @@ void
 TTask::Preflight( const SignalProperties& inputProperties,
                         SignalProperties& outputProperties ) const
 {
+  TWavePlayer preflightPlayer;
+  for( size_t i = 0; i < Parameter( "Announcements" )->GetNumValuesDimension1(); ++i )
+    for( size_t j = 0; j < Parameter( "Announcements" )->GetNumValuesDimension2(); ++j )
+  {
+    string soundFile = static_cast<const char*>( Parameter( "Announcements", i, j ) );
+    if( soundFile != "" )
+      if( preflightPlayer.AttachFile( soundFile.c_str() ) != TWavePlayer::noError )
+        bcierr << "Could not open " << soundFile << " for audio playback" << endl;
+  }
   mTaskLog.Preflight();
   outputProperties = SignalProperties( 0, 0 );
 }
 
-
-
 void TTask::Initialize()
 {
-        ApplyLocalizations( User );
+  ApplyLocalizations( User );
 
-        PreRunInterval=         Parameter("PreRunInterval");
-        PtpDuration=            Parameter("PreTrialPause");
-        ItiDuration=            Parameter("ItiDuration");
-        OutcomeDuration=        Parameter("RewardDuration");
-        Ntargets=               Parameter("NumberTargets");
-        TargetWidth=            Parameter("TargetWidth");
-        BaselineInterval=       Parameter("BaselineInterval");
-        Resting=                Parameter("RestingPeriod");
+  PreRunInterval =   MeasurementUnits::ReadAsTime( Parameter( "PreRunInterval" ) );
+  PtpDuration =      MeasurementUnits::ReadAsTime( Parameter( "PreTrialPause" ) );
+  ItiDuration =      MeasurementUnits::ReadAsTime( Parameter( "ItiDuration" ) );
+  OutcomeDuration =  MeasurementUnits::ReadAsTime( Parameter( "RewardDuration" ) );
+  Ntargets =         Parameter("NumberTargets");
+  TargetWidth =      Parameter( "TargetWidth" );
+  BaselineInterval = Parameter( "BaselineInterval" );
+  Resting =          Parameter( "RestingPeriod" );
 
-        timelimit=              Parameter("TimeLimit");
+  timelimit =        Parameter( "TimeLimit" );
 
-        mTaskLog.Initialize();
-        bitrate.Initialize(Ntargets);
+  mTaskAnnouncements.resize( Ntargets + 1 );
+  mResultAnnouncements.resize( Ntargets + 1 );
+  for( int i = 0; i <= Ntargets; ++i )
+  {
+    mTaskAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Task" ) );
+    mResultAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Result" ) );
+  }
 
-        trial=1;
+  mTaskLog.Initialize();
+  bitrate.Initialize(Ntargets);
 
-        mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
+  trial=1;
 
-        User->Initialize( Parameters, States );
-        User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
-        User->Scale( (float)0x7fff, (float)0x7fff );
-        ComputeTargets( Ntargets );
-        targetcount= 0;
-        ranflag= 0;
+  mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
-        time_t ctime= time(NULL);
-        time( &ctime );
-        randseed= -ctime;
+  User->Initialize( Parameters, States );
+  User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
+  User->Scale( (float)0x7fff, (float)0x7fff );
+  ComputeTargets( Ntargets );
+  targetcount= 0;
+  ranflag= 0;
 
-        cursor_x_start= limit_left;
-        cursor_y_start= ( limit_top + limit_bottom ) /2;
+  time_t ctime= time(NULL);
+  time( &ctime );
+  randseed= -ctime;
 
-        ReadStateValues( Statevector );
+  cursor_x_start= limit_left;
+  cursor_y_start= ( limit_top + limit_bottom ) /2;
 
-        CurrentTarget= 0;
-        TargetTime= 0;
-        CurrentBaseline= 0;
-        BaselineTime= 0;
-        CurrentFeedback= 0;
-        FeedbackTime= 0;
-        // if there is no PreRunInterval (i.e., it is 0), switch to ITI directly
-        if (PreRunInterval > 0)
-           {
-           CurrentPri= 1;
-           CurrentIti= 0;
-           }
-        else
-           {
-           CurrentPri= 0;
-           CurrentIti= 1;
-           }
-        PriTime= 0;
-        ItiTime= 0;
-        CurrentFeedback= 0;
-        FeedbackTime= 0;
-        CurrentOutcome= 0;
-        OutcomeTime= 0;
-        CurrentRest= Resting;
-        CurRunFlag= 0;
-        Hits= 0;
-        Misses= 0;
-        User->PutO(false);
+  ReadStateValues( Statevector );
 
-        WriteStateValues( Statevector );
+  CurrentTarget= 0;
+  TargetTime= 0;
+  CurrentBaseline= 0;
+  BaselineTime= 0;
+  CurrentFeedback= 0;
+  FeedbackTime= 0;
+  // if there is no PreRunInterval (i.e., it is 0), switch to ITI directly
+  if (PreRunInterval > 0)
+     {
+     CurrentPri= 1;
+     CurrentIti= 0;
+     }
+  else
+     {
+     CurrentPri= 0;
+     CurrentIti= 1;
+     }
+  PriTime= 0;
+  ItiTime= 0;
+  CurrentFeedback= 0;
+  FeedbackTime= 0;
+  CurrentOutcome= 0;
+  OutcomeTime= 0;
+  CurrentRest= Resting;
+  CurRunFlag= 0;
+  Hits= 0;
+  Misses= 0;
+  User->PutO(false);
+
+  WriteStateValues( Statevector );
 }
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
@@ -405,6 +427,7 @@ char            memotext[256];
             // trial just ended ...
             if (OutcomeTime == 0)
                {
+               mResultAnnouncements[ CurrentOutcome ].Play();
                sprintf(memotext, "%d hits %d missed", Hits, Misses);
                mVis.Send( memotext );
                bitrate.Push(HitOrMiss);
@@ -460,6 +483,7 @@ void TTask::Iti( void )
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
                 User->PutTarget(CurrentTarget, TARGET_ON );
+                mTaskAnnouncements[ CurrentTarget ].Play();
 
                 if( BaselineInterval == 1 )
                         CurrentBaseline= 1;
