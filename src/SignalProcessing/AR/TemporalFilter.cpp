@@ -3,9 +3,6 @@
 #include <vcl.h>
 #pragma hdrstop
 
-//  #include <stdio.h>
-//  FILE *tempfile;
-
 #include "TemporalFilter.h"
 
 //---------------------------------------------------------------------------
@@ -23,14 +20,7 @@
 // **************************************************************************
 TemporalFilter::TemporalFilter(PARAMLIST *plist, STATELIST *slist)
 {
-         char line[512];
-
-  //      vis= NULL;
-  //      mem= NULL;
-
-  //     instance=my_instance;
-
-  //      tempfile= fopen("tempfile.asc","w+");
+        char line[512];
 
         strcpy(line,"Filtering float StartMem= 0.0 0.0 0.0  512.0   // Start of Spectrum in Hz");
         plist->AddParameter2List(line,strlen(line) );
@@ -49,7 +39,6 @@ TemporalFilter::TemporalFilter(PARAMLIST *plist, STATELIST *slist)
 
         strcpy(line, "Visualize int VisualizeTemporalFiltering= 1 0 0 1  // visualize Temporal filtered signals (0=no 1=yes)");
         plist->AddParameter2List( line, strlen(line) );
-
 }
 
 
@@ -61,14 +50,7 @@ TemporalFilter::TemporalFilter(PARAMLIST *plist, STATELIST *slist)
 // **************************************************************************
 TemporalFilter::~TemporalFilter()
 {
- /*
-       if( vis ) delete vis;
-       vis= NULL;
-       if( mem ) delete mem;
-       mem= NULL;
- */
-  //      fclose( tempfile );
- }
+}
 
 
 // **************************************************************************
@@ -88,7 +70,7 @@ int visualizeyn;
  statevector=new_statevector;
  corecomm=new_corecomm;
 
-   mem= new MEM();
+  mem= new MEM();
 
  try // in case one of the parameters is not defined (should always be, since we requested them)
   {
@@ -104,7 +86,9 @@ int visualizeyn;
         hz=          atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
   }
  catch(...)
-  { return(0); }
+  {
+  error.SetErrorMsg("One of the following parameters is NOT defined: SampleBlockSize, StartMem, StopMem, deltaMem, MemBandWidth, MemModelOrder, MemWindows, MemDetrend, VisualizeTemporalFiltering, SamplingRate");
+  return(0); }
 
   mem->setStart( start );
   mem->setStop( stop );
@@ -139,21 +123,16 @@ int visualizeyn;
 // **************************************************************************
 int TemporalFilter::Process(GenericSignal *input, GenericSignal *output)
 {
-int   out_channel;
-
-float pwr[MAXBINS];
-
-int ocount,ncount;
-int i,j,k;
-
-static count= 0;
+int     out_channel;
+float   pwr[MAXBINS];
+int     ocount,ncount;
+int     i, j, k;
+static  count= 0;
 
  // actually perform the Temporal Filtering on the input and write it into the output signal
+ count++;
 
-    //    fprintf(tempfile,"%5d ",count);
-        count++;
-
-        winlgth= datawindows * input->MaxElements;
+ winlgth= datawindows * input->MaxElements;
 
         for(i=0;i<input->Channels;i++)
         {

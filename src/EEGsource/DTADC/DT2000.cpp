@@ -9,7 +9,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "EEGsource V0.241";
+                 Application->Title = "EEGsource V0.25";
                  Application->CreateForm(__classid(TfMain), &fMain);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
                  Application->Run();

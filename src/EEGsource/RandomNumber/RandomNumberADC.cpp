@@ -98,7 +98,7 @@ static long count=0;
 int     sample, channel, time2wait;
 int     sinevalrange, noisevalrange;
 TMouse  *cur_mouse;
-int     value;
+int     value, noise;
 long    longvalue;
 double  t;
 STATE   *stateptr;
@@ -113,7 +113,7 @@ int     stateval, cursorpos;
 
  cur_mouse=new TMouse();
 
- // generate the noisy sine wave and write it into the signal
+// generate the noisy sine wave and write it into the signal
  for (sample=0; sample<signal->MaxElements; sample++)
   {
   cursorpos=cur_mouse->CursorPos.y/70+1;
@@ -126,9 +126,10 @@ int     stateval, cursorpos;
       {
       value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (noisevalrange > 1)
-         value+=(int)(rand() % noisevalrange + (int)noiseminamplitude);
+         noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
       if (modulateamplitude)
          value=(int)((float)value/(float)cursorpos);
+      value+= noise;            // add noise after modulating sine wave
       }
    value+=DCoffset;
    signal->SetValue(channel, sample, (short)value);

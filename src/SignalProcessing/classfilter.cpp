@@ -72,9 +72,8 @@ ClassFilter::~ClassFilter()
 int ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm, int nbins)
 {
 int     i,j;
-int visualizeyn;
-float stop,start,bandwidth;
-
+int     visualizeyn;
+float   stop, start, bandwidth;
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -98,7 +97,10 @@ float stop,start,bandwidth;
 
   }
  catch(...)
-  { return(0); }
+  {
+  error.SetErrorMsg("Either SampleBlockSize, SpatialFilteredChannels, or VisualizeClassFiltering is not defined");
+  return(0);
+  }
 
   for(i=0;i<n_mat;i++)
   {

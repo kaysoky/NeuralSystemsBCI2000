@@ -148,21 +148,30 @@ int TfConfig::GetUserLevel(PARAM *param)
 TRegistry       *my_registry;
 AnsiString      keyname;
 int             ret;
+TStringList     *value_names;
 
  my_registry=new TRegistry();
+ value_names=new TStringList();
 
  keyname=AnsiString(KEY_BCI2000)+AnsiString(KEY_OPERATOR)+AnsiString(KEY_PARAMETERS)+"\\"+AnsiString(param->GetName());
  ret=USERLEVEL_ADVANCED;
  if (my_registry->OpenKey(keyname, false))
     {
-    try
-     {
-     ret=my_registry->ReadInteger("UserLevel");
-     }
-    catch(...) {;}
+    my_registry->GetValueNames(value_names);
+    // let's check whether the value "UserLevel" actually exists
+    // (so that we don't throw many exceptions)
+    if (value_names->IndexOf("UserLevel") > -1)
+       {
+       try  // if it gets here, it should actually exist
+        {
+        ret=my_registry->ReadInteger("UserLevel");
+        }
+       catch(...) {;}
+       }
     }
 
  delete my_registry;
+ delete value_names;
  return(ret);
 }
 

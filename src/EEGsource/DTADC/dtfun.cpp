@@ -25,10 +25,14 @@ DTFUN::~DTFUN( void )
 //---------------------------------------------------------------------------
 __fastcall DTFUN::Start( void )
 {
-         ECODE status;
+int     ret;
+ECODE   status;
 
-        status= olDaStart( lphDass );
-        return( status );
+ status= olDaStart( lphDass );
+ ret=1;
+ if (status != OLNOERROR) ret=0;
+
+ return(ret);
 }
 
 //----------------------------------------------------------------------------
@@ -209,14 +213,12 @@ void __fastcall DTFUN::Add_to_data(short lphBuf[], ULNG samples)
 
 void __fastcall DTFUN::SetFunction(  void )
 {
-        ECODE errc;
-        OLNOTIFYPROC lpfnNotifyProc;
+OLNOTIFYPROC    lpfnNotifyProc;
+ECODE           errc;
 
-        lpfnNotifyProc= &BufferDone;
-
-        errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, lParam );
-
-        bdone= new TEvent(NULL,false,false,"");
+ lpfnNotifyProc= &BufferDone;
+ errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, lParam );
+ bdone= new TEvent(NULL,false,false,"");
 }
 
 //----------------------------------------------------------------
@@ -259,6 +261,7 @@ HDASS   lphDass;
 
  // notify ADReadDataBlock() that data is here
  dtfun.bdone->SetEvent();
+ return(0);
 }
 
 

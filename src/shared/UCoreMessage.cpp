@@ -2,7 +2,7 @@
  * Program:   BCI2000                                                         *
  * Module:    UCoreMessage.cpp                                                *
  * Comment:   This unit provides support for the core communication           *
- * Version:   0.11                                                            *
+ * Version:   0.16                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -11,6 +11,8 @@
  * V0.08 - 03/30/2000 - First commented version                               *
  * V0.11 - 06/13/2000 - Support for visualization data                        *
  * V0.15 - 03/29/2001 - Added support for SYSCOMMAND                          *
+ * V0.16 - 04/11/2002 - Added a little pause to send and receive functions    *
+ *                      (so that processor load doesn't go to 100%)           *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -95,7 +97,7 @@ BYTE COREMESSAGE::GetDescriptor()
 BYTE COREMESSAGE::GetSuppDescriptor()
 {
  return(supp_descriptor);
-}             
+}
 
 
 // **************************************************************************
@@ -172,6 +174,10 @@ int     bytessent, count=0;
      count += bytessent;
      buf += bytessent;
      }
+  // if we haven't sent everything on the first try, just pause for 1ms
+  // we should give the system some time to run some errands
+  if (bytessent < length)
+     Sleep(1);
   }
 
  return(length);
@@ -210,6 +216,10 @@ int     bytesread, count=0;
      count += bytesread;
      buf += bytesread;
      }
+  // if we haven't read everything on the first try, just pause for 1ms
+  // we should give the system some time to run some errands
+  if (bytesread < length)
+     Sleep(1);
   }
 
  return(length);
@@ -249,6 +259,10 @@ int     bytesread, count=0;
      }
   else
      return(0);
+  // if we haven't read everything on the first try, just pause for 1ms
+  // we should give the system some time to run some errands
+  if (bytesread < length)
+     Sleep(1);
   }
 
  return(length);

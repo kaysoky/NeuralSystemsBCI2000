@@ -75,12 +75,25 @@ int ret;
  if (CoreSocket) delete CoreSocket;
  CoreSocket = new TClientSocket(Application);
 
+ // first, try to use destIP as an IP address
+ // if this does not work, try to use it as a host name
  CoreSocket->Address=destIP;
  CoreSocket->Port=destPort;
  CoreSocket->ClientType=ctBlocking;
  try{
   CoreSocket->Open();
-  } catch(...) {ret=0;}
+  } catch(...)
+    {
+    CoreSocket->Host=destIP;
+    try{
+     CoreSocket->Open();
+     } catch(...)                               // now if using it as a host address (i.e., www.cnn.com), then give up
+      {
+      if (CoreSocket) delete CoreSocket;
+      CoreSocket=NULL;
+      ret=0;
+      }
+    }
 
  sendingparameters=false;
  FreeOnTerminate=true;                  // this automatically destroys the object on termination
@@ -101,7 +114,7 @@ COREMESSAGE             *coremessage;
   {
   try
    {
-    if (pStream->WaitForData(1000))
+    if (pStream->WaitForData(100))
        {
        coremessage=new COREMESSAGE;
        if (coremessage->ReceiveCoreMessage(pStream) != ERRCORE_NOERR)

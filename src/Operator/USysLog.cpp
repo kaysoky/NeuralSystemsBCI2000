@@ -20,10 +20,12 @@ SYSLOG::SYSLOG()
 {
  form=new TForm(Application);
  form->Caption="System Log";
+ form->Width=600;
+ form->Height=250;
  // form->BorderIcons >> biSystemMenu;
  // form->BorderStyle=bsSizeable;
 
- log=new TMemo(form);
+ log=new TRichEdit(form);
  log->Visible=false;
  log->Parent=form;
  log->Left=0;
@@ -73,6 +75,38 @@ void SYSLOG::ShowSysLog()
 void SYSLOG::AddSysLogEntry(char *text)
 {
 TDateTime       cur_time;
+
+ cur_time=cur_time.CurrentDateTime();
+ log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));
+}
+
+// **************************************************************************
+// Function:   AddSysLogEntry
+// Purpose:    Adds an entry to the system log with a special attribute
+// Parameters: text - pointer to the text to add to the log
+//             mode - either SYSLOGENTRYMODE_NORMAL  (normal attributes)
+//                           SYSLOGENTRYMODE_WARNING (attributes for a warning message)
+//                           SYSLOGENTRYMODE_ERROR   (attributes for an error message)
+// Returns:    N/A
+// **************************************************************************
+void SYSLOG::AddSysLogEntry(char *text, int mode)
+{
+TDateTime       cur_time;
+
+ // is this a warning message ?
+ if (mode == SYSLOGENTRYMODE_WARNING)
+    {
+    log->SelAttributes->Color = clGreen;
+    log->SelAttributes->Height += 2;
+    log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
+    }
+ // is this an error message ?
+ if (mode == SYSLOGENTRYMODE_ERROR)
+    {
+    log->SelAttributes->Color = clRed;
+    log->SelAttributes->Height += 2;
+    log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
+    }
 
  cur_time=cur_time.CurrentDateTime();
  log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));

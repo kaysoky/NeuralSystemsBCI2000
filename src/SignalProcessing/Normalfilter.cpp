@@ -100,7 +100,10 @@ int visualizeyn;
 
   }
  catch(...)
-  { return(0); }
+  {
+  error.SetErrorMsg("Either UD_A, UD_B, LR_A, LR_B, or VisualiNormalFiltering NOT defined");
+  return(0);
+  }
 
  if( visualizeyn == 1 )
  {

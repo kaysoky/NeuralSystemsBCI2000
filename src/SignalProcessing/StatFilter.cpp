@@ -125,15 +125,17 @@ StatFilter::~StatFilter()
 // **************************************************************************
 int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
-        AnsiString AName,SName,SSes,FInit;
-        int visualizeyn;
-        char slash[2];
-        char numbuf[16];
-        BCIDtry *bcidtry;
+AnsiString AName, SName, SSes, FInit;
+int     visualizeyn;
+char    slash[2];
+char    numbuf[16];
+char    errmsg[1024];
+BCIDtry *bcidtry;
 
-        static int init_flag= 0;
-        trend_flag= 0;
-        intercept_flag= 0;
+static int init_flag= 0;
+
+ trend_flag= 0;
+ intercept_flag= 0;
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -163,7 +165,10 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
 
   }
  catch(...)
-  { return(0); }
+  {
+  error.SetErrorMsg("One of the following parameters is not defined: InterceptControl, InterceptLength, InterceptProportion, UD_A, UD_B, LR_A, LR_B, TrendControl, TrendWinLth, LinTrendLrnRt, QuadTrendLrnRt, DesiredPixelsPerSec, VisualizeStatFiltering, VisualizeStatFiltering, NumberTargets");
+  return(0);
+  }
 
   bcidtry= new BCIDtry();
 
@@ -182,6 +187,12 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
   strcat(FName, AName.c_str() );         // CAT vs CPY
   if (Statfile) fclose(Statfile);
   Statfile= fopen(FName,"a+");
+  if (!Statfile)
+     {
+     sprintf(errmsg, "Could not open statistics file %s", FName);
+     error.SetErrorMsg(errmsg);
+     return(0);
+     }
 
  if( InterceptEstMode > 0 && init_flag < 1 )               // need to update if different targets
  {
@@ -272,7 +283,7 @@ int     match;
 
                 if ( !(statevector->GetStateValue(statename) == stateval) )
                             match= 0;                  //    all must match
-                            
+
 // fprintf(Statfile,"i= %d j= %d match= %d  name %s val %d \n",i,j,match,statename,stateval);
          }
          if( match == 1 ) CurrentBaseline= i;
@@ -361,7 +372,7 @@ static int oldtarget, oldoutcome;
  // actually perform the Stat Filtering on the NormalFilter output signal
 
      GetStates();
-     
+
    //  fprintf(Statfile,"CurrentTarget= %2d  CurrentBaseline= %2d \n", CurrentTarget, CurrentBaseline );
 
 
@@ -399,7 +410,7 @@ static int oldtarget, oldoutcome;
       //      fprintf(Statfile, "CurrentUDIntercept= %.2f  CurrentUDGain= %.2f\n", ud_intercept, ud_gain);
             }
 
-         intercept_flag= 1;   
+         intercept_flag= 1;
 
          if (InterceptEstMode > 1)
          {

@@ -11,6 +11,7 @@
  * V0.01 - 05/11/2000 - First start                                           *
  *         05/23/2000 - completed first start and documented                  *
  *         05/24/2000 - Data Translation Driver Added                         *
+ *         04/11/2002 - Included error reporting                              *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -22,13 +23,12 @@
 
 #include "GenericADC.h"
 #include "DTADC.h"
-#include "MsgWin1.h"
 
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
 
-// FILE *dttest;
+DTFUN dtfun;
 
 // **************************************************************************
 // Function:   ADInit
@@ -41,44 +41,39 @@
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-
-
-DTFUN dtfun;
-
 int DTADC::ADInit()
 {
 int     i;
 bool    flag;
 
+ channels=atoi(paramlist->GetParamPtr("SoftwareCh")->GetValue());
+ blocksize=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
+ samplerate=atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
+ strcpy( dtfun.BoardName, paramlist->GetParamPtr("BoardName")->GetValue() );
 
-        channels=atoi(paramlist->GetParamPtr("SoftwareCh")->GetValue());
-        blocksize=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-        samplerate=atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
-        strcpy( dtfun.BoardName, paramlist->GetParamPtr("BoardName")->GetValue() );
+ dtfun.InitBoard();
 
-        dtfun.InitBoard();
+ // set notification window - but we use a callback function now -> don't need this
+ // MsgWin->Show();
+ // dtfun.SetWindow( MsgWin->Msgw );
 
-        // MsgWin->Show();
-        //   dtfun.SetWindow( MsgWin->Msgw );
+ dtfun.SetFunction( );
+ ADConfig();
 
-
-        dtfun.SetFunction( );
-        ADConfig();
-
-        StartFlag= 0;
+ StartFlag= 0;
 
  if ((!paramlist->GetParamPtr("SamplingRate")) || (!paramlist->GetParamPtr("TransmitCh")) || (!paramlist->GetParamPtr("SampleBlockSize")))
+    {
+    error.SetErrorMsg("SamplingRate, TransmitCh, or SampleBlockSize not defined !!");
     return(0);
+    }
 
-        if( signal ) delete signal;
-
-
-
+ if( signal ) delete signal;
  signal= new GenericIntSignal( channels, blocksize );
-
 
  return(1);
 }
+
 
 int DTADC::ADConfig()
 {
@@ -112,16 +107,23 @@ int DTADC::ADConfig()
 int DTADC::ADReadDataBlock()
 {
 int     sample, channel, count;
-int     value, i, buffersize;
+int     value, i, buffersize, time2wait;
 
- if ( StartFlag == 0 )
+ if (StartFlag == 0)
     {
-    dtfun.Start();
-    StartFlag= 1;
+    if (dtfun.Start() == 0)
+       {
+       error.SetErrorMsg("Could not start up data acquisition. Wrong board name ?");
+       return(0);
+       }
+    else
+       StartFlag= 1;
     }
 
  // wait until we are notified that data is there
- dtfun.bdone->WaitFor(3000);
+ // let's wait five times longer than what we are supposed to wait
+ time2wait=5*(1000*blocksize)/samplerate;
+ dtfun.bdone->WaitFor(time2wait);
 
  // we do not want simultaneous access to dtfun.data[]
  // in case the driver notifies us twice in a row that data is there

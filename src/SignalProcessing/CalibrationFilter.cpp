@@ -89,16 +89,19 @@ int origchan;
 
   recordedChans= atoi( paramlist->GetParamPtr("SoftwareCh")->GetValue() );
   transmittedChans= atoi( paramlist->GetParamPtr("TransmitCh")->GetValue() );
-
-  //      paramlist.GetParamPtr("TransmitChList")->GetNumValues()
-  //      paramlist.GetParamPtr("TransmitCh")->GetValue()
-
   }
  catch(...)
-  { return(0); }
+  {
+  error.SetErrorMsg("Some of the parameters AlignChannels, VisualizeCalibration, SourceChOffset, SoftwareCh, TransmitCh, don't seem to exist");
+  return(0);
+  }
 
  // if the number of channels does not match for offset and gain, exit with an error
- if (numchoffset != numchgain) return(0);
+ if (numchoffset != numchgain)
+    {
+    error.SetErrorMsg("The number of channels does not match for offset and gain (SourceChOffset, SourceChGain)");
+    return(0);
+    }
 
  // allocate arrays for offsets and gains
  // we don't always want to query parameters

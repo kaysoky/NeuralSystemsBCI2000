@@ -1,25 +1,8 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-USEUNIT("..\GenericADC.cpp");
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
-USEUNIT("..\..\shared\UBCI2000Data.cpp");
-USEUNIT("..\..\shared\UBCItime.cpp");
-USEUNIT("..\..\shared\UBitRate.cpp");
-USEUNIT("..\..\shared\UCoreComm.cpp");
-USEUNIT("..\..\shared\UCoreMessage.cpp");
-USEUNIT("..\..\shared\UGenericFilter.cpp");
-USEUNIT("..\..\shared\UGenericSignal.cpp");
-USEUNIT("..\..\shared\UGenericVisualization.cpp");
-USEUNIT("..\..\shared\UParameter.cpp");
-USEUNIT("..\..\shared\UState.cpp");
-USEUNIT("..\..\shared\UStatus.cpp");
-USEUNIT("..\..\shared\USysCommand.cpp");
-USEUNIT("..\..\shared\BCIDirectry.cpp");
-USEUNIT("RandomNumberADC.cpp");
 USEFORM("..\UMain.cpp", fMain);
-USEUNIT("..\UStorage.cpp");
-USE("..\Storage.h", File);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

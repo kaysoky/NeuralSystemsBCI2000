@@ -16,6 +16,7 @@
 #include <AppEvnts.hpp>
 #include "Trayicon.h"
 #include <Menus.hpp>
+#include "trayicon.h"
 
 #define PANEL_SYSSTATUS         0
 #define PANEL_EEGSOURCE         1

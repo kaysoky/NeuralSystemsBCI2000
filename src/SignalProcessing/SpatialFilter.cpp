@@ -84,15 +84,21 @@ int visualizeyn;
 
   }
  catch(...)
-  { return(0); }
-
-  for(i=0;i<m_mat;i++)
   {
-        for(j=0;j<n_mat;j++)
-        {
-                mat[i][j]= atof( paramlist->GetParamPtr("SpatialFilterKernal")->GetValue(i,j) );
-        }
+  error.SetErrorMsg("One (or more) of the following parameters is NOT defined: SampleBlockSize, TransmitCh, SpatialFilteredChannels, VisualizeSpatialFiltering");
+  return(0);
   }
+
+  try{
+   for(i=0;i<m_mat;i++)
+    for(j=0;j<n_mat;j++)
+     mat[i][j]= atof( paramlist->GetParamPtr("SpatialFilterKernal")->GetValue(i,j) );
+   }
+   catch(...)
+      {
+      error.SetErrorMsg("SpatialFilterKernal is NOT defined");
+      return(0);
+      }
 
 
  if( visualizeyn == 1 )

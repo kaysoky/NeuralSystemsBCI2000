@@ -84,6 +84,7 @@ char *BCIDtry::ProcSubDir( void )
         return( SubjPath );
 }
 
+
 void BCIDtry::FileError( TApplication *appl, char *badpath )
 {
         char line[120];
@@ -98,39 +99,38 @@ void BCIDtry::FileError( TApplication *appl, char *badpath )
 
 int BCIDtry::GetLargestRun( char *path )
 {
-        struct ffblk ffblk;
-        int done;
-        int res;
-        int lth;
-        int max;
-        int current;
-        int i;
-        int lastr;
-        char str[16];
+struct ffblk ffblk;
+int done;
+int lth;
+int max;
+int current;
+int i;
+int lastr;
+char str[16];
 
-        res= chdir( path );
+ chdir( path );
 
-        done= findfirst("*.dat", &ffblk, FA_ARCH);
+ done= findfirst("*.dat", &ffblk, FA_ARCH);
 
-        max= 0;
+ max= 0;
+ while ( !done )
+  {
+  lth= strlen( ffblk.ff_name );
 
-        while( !done )
-        {
-                lth= strlen( ffblk.ff_name );
+  for(i=0;i<lth;i++)     // find last "r"
+   if( ffblk.ff_name[i] == 0x52 ) lastr= i;
+  str[ 0 ] = ffblk.ff_name[lastr+1];
+  str[ 1 ] = ffblk.ff_name[lastr+2];
+  str[ 2 ] = 0;
 
-                for(i=0;i<lth;i++)     // find last "r"
-                        if( ffblk.ff_name[i] == 0x52 ) lastr= i;
-                str[ 0 ] = ffblk.ff_name[lastr+1];
-                str[ 1 ] = ffblk.ff_name[lastr+2];
-                str[ 2 ] = 0;
+  current= atoi( str );
+  if( current > max ) max= current;
+  done= findnext( &ffblk );
+  }
 
-                current= atoi( str );
-                if( current > max ) max= current;
-
-                done= findnext( &ffblk );
-        }
-        return( max );
+ return( max );
 }
+
 
 __fastcall TFEForm::TFEForm( TApplication *appl, char *path ): TForm(appl,0)
 {

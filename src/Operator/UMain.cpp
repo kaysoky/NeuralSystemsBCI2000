@@ -44,6 +44,8 @@
  * V0.24 - 01/03/2002 - minor stability improvements                          *
  * V0.25 - 01/11/2002 - fixed concurrency issues (i.e., can't send or receive *
  *                      to core modules at the same time)                     *
+ * V0.26 - 04/11/2002 - Updated to Borland C++ Builder 6.0                    *
+ *                      improved error handling                               *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -71,6 +73,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "Trayicon"
+#pragma link "trayicon"
 #pragma resource "*.dfm"
 
 TfMain *fMain;
@@ -554,8 +557,8 @@ int     sample, channel, i, j;
           {
           // if we did not receive anything from this source yet, open another window
           // we send a message to the main thread that will open the window
-          // well, don't ask me why I have to do this - something gets screwed up, if I open
-          // a window here directly; must have to do with the different threads
+          // we have to send a message, since this code is executed in a separate thread,
+          // and VCL components have to be dealt with in the main thread
           // it only works, if I open the window in a message handler
           // I think that it should also work, if I used Synchronize(OpenVisual()), but haven't tried it yet
           vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
@@ -639,6 +642,18 @@ int     sample, channel, i, j;
  // it is a status message
  if (message->GetDescriptor() == COREMSG_STATUS)
     {
+    // if we receive a warning message, add a line to the system log and bring it to front
+    if ((message->status.GetCode() >= 300) && (message->status.GetCode() < 400))
+       {
+       syslog->AddSysLogEntry(message->status.GetStatus(), SYSLOGENTRYMODE_WARNING);
+       syslog->ShowSysLog();
+       }
+    // if we receive an error message, add a line to the system log and bring it to front
+    if ((message->status.GetCode() >= 400) && (message->status.GetCode() < 500))
+       {
+       syslog->AddSysLogEntry(message->status.GetStatus(), SYSLOGENTRYMODE_ERROR);
+       syslog->ShowSysLog();
+       }
     if (module == COREMODULE_EEGSOURCE)
        {
        sysstatus.EEGsourceStatus=message->status.GetStatus();
@@ -655,13 +670,14 @@ int     sample, channel, i, j;
        sysstatus.ApplicationStatusReceived=true;
        }
 
-    // the operator receiving status messages from all core modules marks the end of the initialization phase
-    if (sysstatus.SystemState == STATE_INITIALIZATION)
+    // if the operator received successful status messages from
+    // all core modules, then this is the end of the initialization phase
+    if ((sysstatus.SystemState == STATE_INITIALIZATION) && (message->status.GetCode() < 300))
        {
        if (module == COREMODULE_EEGSOURCE)
           {
           sysstatus.EEGsourceINI=true;
-          syslog->AddSysLogEntry("EEG Source confirmed new parameters ...");
+          syslog->AddSysLogEntry("Source confirmed new parameters ...");
           }
        if (module == COREMODULE_SIGPROC)
           {
@@ -693,7 +709,7 @@ int     sample, channel, i, j;
        if (sysstatus.SystemState == STATE_IDLE)
           sysstatus.SystemState=STATE_PUBLISHING;
 
-       // it comes from the EEG source module
+       // it comes from the source module
        if (module == COREMODULE_EEGSOURCE)
           sysstatus.NumStatesRecv1++;
        // it comes from the signal processing module
@@ -1031,6 +1047,7 @@ void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
  ShutdownSystem();
 
  if (sendrecv_critsec) delete sendrecv_critsec;
+ sendrecv_critsec=NULL;
 }
 //---------------------------------------------------------------------------
 
@@ -1335,6 +1352,8 @@ void __fastcall TfMain::bFunction4Click(TObject *Sender)
  script.ExecuteCommand(preferences.Button4_Cmd);
 }
 //---------------------------------------------------------------------------
+
+
 
 
 
