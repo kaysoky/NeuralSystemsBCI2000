@@ -34,9 +34,9 @@
 
 #include "WavePlayer.h"
 
-LPDIRECTSOUND           TWavePlayer::sPDS = NULL;
-LPDIRECTSOUNDBUFFER     TWavePlayer::sPrimarySoundBuffer = NULL;
-int                     TWavePlayer::sNumInstances = 0;
+LPDIRECTSOUND       TWavePlayer::sPDS = NULL;
+LPDIRECTSOUNDBUFFER TWavePlayer::sPrimarySoundBuffer = NULL;
+int                 TWavePlayer::sNumInstances = 0;
 
 
 TWavePlayer::TWavePlayer()
@@ -46,7 +46,7 @@ TWavePlayer::TWavePlayer()
   mPlaying( false ),
   mSecondaryBuffer( NULL )
 {
-    Construct();
+  Construct();
 }
 
 TWavePlayer::TWavePlayer( const TWavePlayer& inOriginal )
@@ -122,12 +122,9 @@ TWavePlayer::Construct()
 void
 TWavePlayer::Destruct()
 {
+  DetachFile();
+
   --sNumInstances;
-  if(mSecondaryBuffer!=NULL)
-  {
-        mSecondaryBuffer->Release();
-        mSecondaryBuffer=NULL;
-  }
   if(sNumInstances<1)
   {
     if(sPrimarySoundBuffer!=NULL)
@@ -141,7 +138,6 @@ TWavePlayer::Destruct()
       sPDS=NULL;
     }
   }
-  DetachFile();
 }
 
 void
@@ -176,115 +172,115 @@ TWavePlayer::AttachFile( const char* inFileName )
 
   if( err == noError )
   {
-      // Read the chunks we need to play the file.
-      parentChunkInfo.fccType = mmioFOURCC( 'W', 'A', 'V', 'E' );
-      sysErr = mmioDescend( fileHandle, &parentChunkInfo, NULL, MMIO_FINDRIFF );
-      if( sysErr != MMSYSERR_NOERROR )
-          // The file doesn't contain a WAVE chunk.
-          err = fileOpeningError;
+    // Read the chunks we need to play the file.
+    parentChunkInfo.fccType = mmioFOURCC( 'W', 'A', 'V', 'E' );
+    sysErr = mmioDescend( fileHandle, &parentChunkInfo, NULL, MMIO_FINDRIFF );
+    if( sysErr != MMSYSERR_NOERROR )
+      // The file doesn't contain a WAVE chunk.
+      err = fileOpeningError;
   }
 
   if( err == noError )
   {
-      childChunkInfo.ckid = mmioFOURCC( 'f', 'm', 't', ' ' );
-      sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
-      if( sysErr != MMSYSERR_NOERROR )
-          // The file doesn't contain a fmt chunk.
-          err = fileOpeningError;
+    childChunkInfo.ckid = mmioFOURCC( 'f', 'm', 't', ' ' );
+    sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
+    if( sysErr != MMSYSERR_NOERROR )
+      // The file doesn't contain a fmt chunk.
+      err = fileOpeningError;
   }
 
   // Read the fmt chunk into a WAVEFORMATEX structure.
   WAVEFORMATEX fileFormat;
-  
+
   if( err == noError )
   {
-      fileFormat.cbSize = 0;
-      if( childChunkInfo.cksize > sizeof( fileFormat ) )
-          // The chunk does not fit into the WAVEFORMATEX structure.
-          err = fileOpeningError;
+    fileFormat.cbSize = 0;
+    if( childChunkInfo.cksize > sizeof( fileFormat ) )
+      // The chunk does not fit into the WAVEFORMATEX structure.
+      err = fileOpeningError;
   }
 
   if( err == noError )
   {
-      if( mmioRead( fileHandle, ( char* )&fileFormat, childChunkInfo.cksize ) != ( long )childChunkInfo.cksize )
-          // There is not enough data in the file.
-          err = fileOpeningError;
+    if( mmioRead( fileHandle, ( char* )&fileFormat, childChunkInfo.cksize ) != ( long )childChunkInfo.cksize )
+      // There is not enough data in the file.
+      err = fileOpeningError;
   }
 
   if( err == noError )
   {
-      mmioAscend( fileHandle, &childChunkInfo, 0 );
-      // Get to the data chunk.
-      childChunkInfo.ckid = mmioFOURCC( 'd', 'a', 't', 'a' );
-      sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
-      if( sysErr != MMSYSERR_NOERROR )
-          // The file doesn't contain a data chunk.
-          err = fileOpeningError;
+    mmioAscend( fileHandle, &childChunkInfo, 0 );
+    // Get to the data chunk.
+    childChunkInfo.ckid = mmioFOURCC( 'd', 'a', 't', 'a' );
+    sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
+    if( sysErr != MMSYSERR_NOERROR )
+      // The file doesn't contain a data chunk.
+      err = fileOpeningError;
   }
 
-  long    dataLength = childChunkInfo.cksize;
+  long dataLength = childChunkInfo.cksize;
 
   if( err == noError )
   {
-      // Resize the file buffer to contain all data.
-      sysErr = mmioSetBuffer( fileHandle, NULL, dataLength, 0 );
-      if( sysErr != MMSYSERR_NOERROR )
-          // The new buffer size could not be set. Should not happen
-          // in a WIN32 environment if virtual memory is configured
-          // reasonably.
-          err = fileOpeningError;
-  }
-
-  if( err == noError )
-  {
-      // Make sure the data is in the buffer.
-      sysErr = mmioAdvance( fileHandle, NULL, MMIO_READ );
-      if( sysErr != MMSYSERR_NOERROR )
-          err = fileOpeningError;
+    // Resize the file buffer to contain all data.
+    sysErr = mmioSetBuffer( fileHandle, NULL, dataLength, 0 );
+    if( sysErr != MMSYSERR_NOERROR )
+      // The new buffer size could not be set. Should not happen
+      // in a WIN32 environment if virtual memory is configured
+      // reasonably.
+      err = fileOpeningError;
   }
 
   if( err == noError )
   {
-      // Get a pointer to the buffer and enter it into the WAVEHDR structure.
-      sysErr = mmioGetInfo( fileHandle, &info, 0 );
-      if( sysErr != MMSYSERR_NOERROR )
-          err = fileOpeningError;
+    // Make sure the data is in the buffer.
+    sysErr = mmioAdvance( fileHandle, NULL, MMIO_READ );
+    if( sysErr != MMSYSERR_NOERROR )
+      err = fileOpeningError;
   }
 
   if( err == noError )
   {
-      assert( info.cchBuffer == dataLength );
-      mSoundHeader.lpData = info.pchBuffer;
-      mSoundHeader.dwBufferLength = dataLength;
-      mSoundHeader.dwBytesRecorded = 0;
-      mSoundHeader.dwUser = 0;
-      mSoundHeader.dwFlags = 0;
-      mSoundHeader.dwLoops = 0;
-      mSoundHeader.lpNext = NULL;
-      mSoundHeader.reserved = 0;
+    // Get a pointer to the buffer and enter it into the WAVEHDR structure.
+    sysErr = mmioGetInfo( fileHandle, &info, 0 );
+    if( sysErr != MMSYSERR_NOERROR )
+      err = fileOpeningError;
+  }
 
-      mSamplingRate = fileFormat.nSamplesPerSec;
-      mBitsPerSample = fileFormat.wBitsPerSample;
+  if( err == noError )
+  {
+    assert( info.cchBuffer == dataLength );
+    mSoundHeader.lpData = info.pchBuffer;
+    mSoundHeader.dwBufferLength = dataLength;
+    mSoundHeader.dwBytesRecorded = 0;
+    mSoundHeader.dwUser = 0;
+    mSoundHeader.dwFlags = 0;
+    mSoundHeader.dwLoops = 0;
+    mSoundHeader.lpNext = NULL;
+    mSoundHeader.reserved = 0;
 
-      DSBUFFERDESC bufdesc;
-      memset (&bufdesc, 0, sizeof(DSBUFFERDESC));
-      bufdesc.dwSize = sizeof(DSBUFFERDESC);
+    mSamplingRate = fileFormat.nSamplesPerSec;
+    mBitsPerSample = fileFormat.wBitsPerSample;
 
-      bufdesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN|DSBCAPS_GLOBALFOCUS;
-      bufdesc.dwBufferBytes = childChunkInfo.cksize;
-      bufdesc.lpwfxFormat = &fileFormat;
+    DSBUFFERDESC bufdesc;
+    memset (&bufdesc, 0, sizeof(DSBUFFERDESC));
+    bufdesc.dwSize = sizeof(DSBUFFERDESC);
 
-      sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL );
-      void *write1 = 0, *write2 = 0;
-      unsigned long length1,length2;
-      mSecondaryBuffer->Lock (0, childChunkInfo.cksize, &write1, &length1, &write2, &length2, 0);
-      if(write1 > 0)
-      mmioRead (fileHandle, (char*)write1, length1);
-      if (write2 > 0)
-      mmioRead (fileHandle, (char*)write2, length2);
-      mSecondaryBuffer->Unlock (write1, length1, write2, length2);
+    bufdesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN|DSBCAPS_GLOBALFOCUS;
+    bufdesc.dwBufferBytes = childChunkInfo.cksize;
+    bufdesc.lpwfxFormat = &fileFormat;
 
-      mmioClose (fileHandle, 0);
+    sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL );
+    void *write1 = 0, *write2 = 0;
+    unsigned long length1,length2;
+    mSecondaryBuffer->Lock (0, childChunkInfo.cksize, &write1, &length1, &write2, &length2, 0);
+    if(write1 > 0)
+    mmioRead (fileHandle, (char*)write1, length1);
+    if (write2 > 0)
+    mmioRead (fileHandle, (char*)write2, length2);
+    mSecondaryBuffer->Unlock (write1, length1, write2, length2);
+
+    mmioClose (fileHandle, 0);
   }
 
   if( err != noError )
@@ -299,12 +295,12 @@ void
 TWavePlayer::DetachFile()
 {
   if(IsPlaying())
-        Stop();
+    Stop();
 
   if(mSecondaryBuffer!=NULL)
   {
-        mSecondaryBuffer->Release();
-        mSecondaryBuffer=NULL;
+    mSecondaryBuffer->Release();
+    mSecondaryBuffer=NULL;
   }
 
   mCurrentFileName = "";
@@ -326,37 +322,37 @@ TWavePlayer::Error
 TWavePlayer::SetVolume( float inVolume )
 {
   if(inVolume<0||inVolume>1)
-        return invalidParams;
+    return invalidParams;
 
   if(mSecondaryBuffer==NULL)
-        return initError;
+    return initError;
 
   if(DS_OK!=mSecondaryBuffer->SetVolume(DSBVOLUME_MIN+(inVolume)*(DSBVOLUME_MAX-DSBVOLUME_MIN)))
-        return genError;
+    return genError;
   else
-        return noError;
+    return noError;
 }
 
 TWavePlayer::Error
 TWavePlayer::SetPan(float inPan)
 {
   if(inPan<-1||inPan>1)
-        return invalidParams;
+    return invalidParams;
 
   if(mSecondaryBuffer==NULL)
-        return initError;
+    return initError;
 
   if(DS_OK!=mSecondaryBuffer->SetPan(DSBPAN_CENTER+(inPan)*(DSBPAN_RIGHT-DSBPAN_CENTER)))
-        return genError;
+    return genError;
   else
-        return noError;
+    return noError;
 }
 
 void
 TWavePlayer::Stop()
 {
   if(mSecondaryBuffer!=NULL&&IsPlaying())
-      mSecondaryBuffer->Stop();
+    mSecondaryBuffer->Stop();
   mPlaying=false;
 }
 
@@ -366,7 +362,7 @@ TWavePlayer::IsPlaying() const
   unsigned long retval=-1;
   if(mSecondaryBuffer!=NULL)
   {
-          mSecondaryBuffer->GetStatus(&retval);
+    mSecondaryBuffer->GetStatus(&retval);
   }
   return (retval==DSBSTATUS_PLAYING);
 }
@@ -375,14 +371,14 @@ float
 TWavePlayer::GetPos() const
 {
   if( !IsPlaying()||(mSecondaryBuffer==NULL))
-      return 0.0;
+    return 0.0;
 
   unsigned long       pos;
   float               result;
 
   mSecondaryBuffer->GetCurrentPosition(&pos,NULL);
 
-  result=(pos*8)/((float)mSamplingRate*(float)mBitsPerSample);
+  result=(pos*8)/(mSamplingRate*mBitsPerSample);
 
   return result*1000;
 }
