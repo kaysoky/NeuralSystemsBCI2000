@@ -21,6 +21,8 @@ Filter( CalibrationFilter, 2.A );
 Filter( SpatialFilter, 2.B );
 Filter( ARTemporalFilter, 2.C );
 Filter( ClassFilter, 2.D );
-Filter( StatFilter, 2.E1 );
-Filter( NormalFilter, 2.E2 );
+
+Filter( NormalFilter, 2.E1 );
+
+Filter( StatFilter, 2.E2 );
 
