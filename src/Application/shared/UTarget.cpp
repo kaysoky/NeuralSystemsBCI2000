@@ -630,29 +630,17 @@ void TARGET::HideTarget()
 }
 
 
+
 // **************************************************************************
-// Function:   HighlightTarget
-// Purpose:    This function highlights this target
+// Function:   SetTextColor
+// Purpose:    This function sets the text color of this target
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void TARGET::HighlightTarget()
+void TARGET::SetTextColor(TColor new_color)
 {
-TColor  new_Color;
-long    red, green, blue;
-
- red=((long)Color)&0x000000FF;
- green=(((long)Color)&0x0000FF00)>>8;
- blue=(((long)Color)&0x00FF0000)>>16;
-
- // take the complement color
- red=255-red;
- green=255-green;
- blue=255-blue;
-
- new_Color=(TColor)(red+green*256+blue*65536);
- if (shape) shape->Brush->Color=new_Color;
+ // set the text color, if the text exists
+ if (caption) caption->Font->Color=new_color;
 }
-
 
 

@@ -47,6 +47,7 @@ public:		// User declarations
         void    RenderTarget(TForm *form, TRect destrect);
         void    HideTarget();
         void    HighlightTarget();
+        void    SetTextColor(TColor new_color);
 };
 
 
