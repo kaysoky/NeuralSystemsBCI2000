@@ -9,7 +9,7 @@
 
 %\pagestyle{empty}
 
-\title{BCI 2000 Error Handling: A Proposal}
+\title{BCI 2000 Error Handling}
 %\date{}
 \author{J\"urgen Mellinger, Gerwin Schalk}
 
@@ -43,11 +43,11 @@ has no write permission).
 
 Parameter setup errors, when unhandled, become runtime errors.
 
-\subsubsection{Proposed Strategies}
+\subsubsection{Strategies}
 \label{secParamcheck}
 
 As a guideline for approaching Parameter Setup Errors
-we propose the adoption of the following principle: ``Whatever a
+we adopt the following principle: ``Whatever a
 user does from within an application program should never
 make that application crash.''
 
@@ -97,14 +97,14 @@ inconsistencies when trying to fix others.
 
 The user interface for Parameter Setup Error handling is,
 along with the parameter setup dialog, part of the operator
-module. A first implementation of a GUI based user interface might
-consist in a floating, non-modal error window popping up from the operator
-module that would present a list of error related textual
+module. A first implementation of a GUI based user interface
+consists in a floating, non-modal error window popping up from the operator
+module that presents a list of error related textual
 messages to the user, allowing for browsing error messages
 while changing respective parameters via the parameter setup
-dialog. After the next parameter check, the operator module would close
+dialog. After the next parameter check, the operator module will close
 that window or replace its contents based on the result of the check.
-Parameter checking would occur when the user clicks the "SetConfig"
+Parameter checking occurs when the user clicks the ``SetConfig''
 button in the operator main window, followed by actually applying
 parameters in case the check was successful.
 
@@ -119,12 +119,10 @@ underlying system required for proper operation
 (i.e., not due to a programming error).
 Assuming that parameter checking has been implemented
 properly as outlined above, we can narrow the term
-'Runtime Error' to cases for which the following statement
+`Runtime Error' to cases for which the following statement
 holds: A runtime error occurs whenever the system runs
 out of resources that were still available during parameter
 checking.
-
-\ 
 
 Typical reasons for this kind of error are
 \begin{itemize}
@@ -137,7 +135,7 @@ Runtime errors, when unhandled, become logic errors because
 the code implies assumptions that no longer hold once a
 runtime error has occurred.
 
-\subsubsection{Proposed Strategies}
+\subsubsection{Strategies}
 
 In a properly designed and implemented system, runtime errors
 in the restricted sense described above will not occur 
@@ -171,7 +169,7 @@ Logic, or programming, errors in general are faults of
 a programmer who, in his or her code, implicitly or explicitly
 makes assumptions that do not always hold.
 
-\subsubsection{Proposed Strategies}
+\subsubsection{Strategies}
 
 Programming errors are not supposed to occur at all in
 a tested version of an application. Therefore, instead
@@ -188,7 +186,7 @@ logic errors in the first place.
 \subsubsection{User Interface Details}
 
 As programming errors are nothing a user can do anything
-about, and as their occurrence with a user is an embarrassing
+about, and as their occurrence with a user is some sort of
 glitch anyway, simply aborting the program or module with
 an error message seems appropriate.
 
@@ -201,26 +199,30 @@ an error message seems appropriate.
 
 For a simple and general way to provide
 user communication and error reporting means to a module's
-programmer, we propose the introduction of two global
-objects derived from \texttt{std::ostream} and named, e.g.,
+programmer, there exist two global
+objects derived from \texttt{std::ostream}, named
 \texttt{bciout} and \texttt{bcierr}, in analogy to
 \texttt{std::cout} and \texttt{std::cerr}, where \texttt{bciout}
 is used to transfer general messages and warnings while
-\texttt{bcierr} takes actual errors. \footnote{The introduction
-of error numbers seems not necessary at this point;
-however, if error codes are preferred, they should
-be implemented as an enumerated type, not spelled
-out explicitly in strings.}
+\texttt{bcierr} takes actual errors.
+%\footnote{The introduction
+%of error numbers seems not necessary at this point;
+%however, if error codes are preferred, they should
+%be implemented as an enumerated type, not spelled
+%out explicitly in strings.}
 
-A code example would then look like this:
+A code example then looks like this:
 \begin{verbatim}
+using namespace std;
 ...
-if( myParamValue < 0 || myParamValue >= 10 )
+ofstream outputStream( fileName );
+if( !outputStream.is_open() )
 {
-  bcierr << "'myParam' is out of range." << endl;
-  errorOccurred = true;
+  bcierr << "Cannot open the file \""
+         << fileName
+         << "\" for output"
+         << endl;
 }
-...
 \end{verbatim}
 
 Furthermore, for handling runtime errors difficult to recover
@@ -245,7 +247,7 @@ that does the actual processing, takes input and output signal
 representatives as parameters, thus allowing for signal
 property checking.
 
-For an actual implementation, its declaration would be as follows:
+For the actual implementation, its declaration is as follows:
 \begin{verbatim}
 void GenericFilter::Preflight(
    const SignalProperties& inSignalProperties,
@@ -260,123 +262,189 @@ messages into \texttt{bcierr}.
 Furthermore, it communicates dimensions of its output signal
 which it guarantees not to exceed, and it does so by adjusting
 the properties of the second SignalProperties object in its
-argument list.
+argument list, e.g.
+\begin{verbatim}
+outSignalProperties
+  = SignalProperties( inSignalProperties.Channels(), 1 );
+\end{verbatim}
+or
+\begin{verbatim}
+outSignalProperties = SignalProperties( 0, 0 );
+\end{verbatim}
+if it declares not to use its output signal.
+
 The \texttt{const} declaration for its \texttt{this} pointer
 prohibits initialization functionality from
 \texttt{GenericFilter::Initialize()} entering into
 \texttt{Preflight()}; this is unwanted because it would
 corrupt the idea of performing a \textit{complete} parameter check
-before actually altering the state of \textit{any}
-filter object.
+before actually \textit{altering} the state of a filter object.
+
+A necessary condition for a correct implementation of the
+\texttt{Preflight()} function is that any parameter, as well as any
+state that will be accessed during the processing phase, be accessed
+from \texttt{Preflight()} at least once. For parameters and states
+defined by the filter itself (i.e. inside its constructor), range
+and accessibility checks are automatically performed by the framework;
+parameters and states defined by other filters must be explicitly accessed
+from \texttt{Preflight()}. If a \texttt{GenericFilter} descendant fails to
+access an externally defined parameter or state during \texttt{Preflight()},
+the first access during the processing phase will result in a runtime error.
+
+\subsubsection{Accessing Environment Objects}
+Parameters and states are considered to constitute an ``environment'', and a
+\texttt{GenericFilter} descendant to live in that environment, in analogy to
+the concept of environment variables found in some operating systems.
+Internally, access to the environment is mediated through a mix-in-class named
+\texttt{Environment} that provides accessor symbols to a filter programmer.
+
+\paragraph{Low Level Access to Environment Objects}
+is provided by the following symbols:
+
+\begin{itemize}
+\item \texttt{Parameters} syntactically behaves like a \texttt{PARAMLIST*},
+\item \texttt{States} behaves like a \texttt{STATELIST*},
+\item \texttt{Statevector} behaves like a \texttt{STATEVECTOR*},
+\item and \texttt{Corecomm} behaves like a \texttt{CORECOMM*}.
+\end{itemize}
+As an example, take
+\begin{verbatim}
+float  myParameterValue = 0.0;
+PARAM* param = Parameters->GetParamPtr( "MyParameter" );
+if( param )
+  myParameterValue = atof( param->GetValue() );
+else
+  bcierr << "Could not access \"MyParameter\"" << endl;
+\end{verbatim}
+Unlike true pointers, these symbols cannot be assigned any values,
+cannot be assigned to variables, nor other manipulating operators applied.
+E.g., the lines
+\begin{verbatim}
+delete Parameters;
+Parameters = new PARAMLIST;
+PARAMLIST* someParamlistPointer = Parameters;
+\end{verbatim}
+will all result in compiler errors.\footnote{In the current (preliminary)
+implementation, assignments from these symbols as in the last example are
+allowed to ease the transition process.}
+
+\paragraph{Convenient Access to Environment Objects}
+is possible through a number of symbols which offer 
+built-in checking and error reporting:
+
+\begin{itemize}
+\item {\texttt{Parameter(Name[, Index 1[, Index 2]])}}
+
+This symbol stands for the value of the named parameter. 
+Indices may be given in numerical or textual form; if omitted,
+they default to 0.
+The type of the symbol \texttt{Parameter()} may be numerical or
+a string type, depending on its use.\footnote{If the compiler
+complains about ambiguities, use explicit typecasts as in the
+second example.}
+If a parameter with the given name does not
+exist, an error message is written into \texttt{bcierr}.
+If the specified indices do not exist,
+no error is reported. In both cases, on read access, the
+string constant \texttt{"0"} resp. the number 0 is returned.
+
+Examples:
+\begin{verbatim}
+int myValue = Parameter( "MyParam" );
+string myOtherValue = ( const char* )Parameter( "MyOtherParam" );
+Parameter( "My3rdParam", 2, 3 ) = my3rdValue; 
+\end{verbatim}
+
+\item \texttt{OptionalParameter(Default Value, Name[, Index 1[, Index 2]])}
+
+This symbol behaves like the symbol \texttt{Parameter()} but will not report
+an error if the parameter does not exist. Instead, it will return the
+default value given in its first argument. Assignments to this symbol are
+not possible.
+
+\item \texttt{State(Name)}
+
+This symbol allows for reading a state's value by assigning from it, and
+setting a state's value by assigning to it. Trying to access a state that
+is not accessible will result in an error reported via \texttt{bcierr}.
+
+Examples:
+\begin{verbatim}
+short currentStateOfAffairs = State( "OfAffairs" );
+State( "OfAffairs" ) = nextStateOfAffairs;
+\end{verbatim}
+
+\item \texttt{OptionalState(Default Value, Name)}
+
+In analogy to \texttt{OptionalParameter()} this symbol does not report
+an error if the specified state does not exist but returns the given default
+value. Assignments to this symbol are not possible.
+
+\item \texttt{PreflightCondition(Condition)}
+
+This symbol is meant to be used inside implementations of 
+\texttt{GenericFilter::Preflight()}. If the boolean condition given as its
+argument is false, it will output an error message into \texttt{bcierr} containing
+the condition given in its argument.
+
+Example:
+\begin{verbatim}
+PreflightCondition(
+  Parameter( "TransmitCh" ) <= Parameter( "SourceCh" ) );
+\end{verbatim}
+If TransmitCh is greater than SourceCh, a message will be sent to \texttt{bcierr} and
+displayed to the user, stating:\footnote{In future versions, the error may be reported
+in natural language form generated from the boolean expression.}
+\begin{verbatim}
+Condition not fulfilled:
+  Parameter( "TransmitCh" ) <= Parameter( "SourceCh" )
+\end{verbatim}
+
+\end{itemize}
 
 \subsection{Implementation on the Framework Side}
 \label{secImpl}
 
 The operator module's behaviour in response to an error
-message arriving from one of the modules would depend
+message arriving from one of the modules depends
 on its context, i.e. on the execution phase the system is in.
 That way, no additional programming interface elements
 visible to a filter/module programmer
-would be needed to implement an error handling scheme as
+are needed to implement an error handling scheme as
 described in section~\ref{secHandl}. 
 
-During the \textbf{preflight phase,} errors would be {Parameter
+During the \textbf{preflight phase,} errors are {Parameter
 Setup Errors.} A module's framework code behind
-\texttt{bcierr} would just collect error
-messages; on return from the preflight function, it would
-send those messages to the operator module which would then,
+\texttt{bcierr} just collects error
+messages; on return from the preflight function, it
+sends those messages to the operator module which then,
 from the contents of the message (i.e. whether it was empty
-or not), determine whether the preflight was successful;
+or not), determines whether the preflight was successful;
 on not receiving any message after some timeout\footnote{
 For now, a simple timeout scheme with a fixed timeout
 interval of 5~s seems appropriate. In the future, one might consider
 a module requesting additional timeout periods if it expects 
 lengthy calculations.}
-it would assume a broken connection or a crashed module.
+it assumes a broken connection or a crashed module.
 
 During all \textbf{other phases,} the code behind \texttt{bcierr}
-would immediately (i.e., on flushing the \texttt{std::ostream})
-send its message buffer to a log file as well as to
+immediately (i.e., on flushing the \texttt{std::ostream})
+sends its message buffer to a log file as well as to
 the operator module, indicating a {Runtime Error} 
-to the operator module which would, in turn, halt the system,
+to the operator module which will, in turn, halt the system,
 shut down the other modules, and display the message to the
 user.
 
 In addition, the top level exception handling code
-of each module would contain similar functionality,
+of each module contains similar functionality,
 sending an exception's associated description string into
 a log file and to the operator module, if possible, then
 quitting the module in which the exception occurred.
-This would not only ensure
+This not only ensures
 a proper general handling of exceptions within the framework but
-also allow a programmer to handle {Runtime Errors} by raising
+also allows a programmer to handle {Runtime Errors} by raising
 her own exceptions, eliminating the need to take care of the error
 condition in the code following the detection of an error.
-
-%\subsection{Appendix: Using the \texttt{assert()} Macro
-%to deal with Logic errors}
-%
-%We propose using the \texttt{assert()} macro as a valuable
-%tool to make implicit assumptions explicit, as in the
-%following examples:
-%\begin{verbatim}
-%#include <assert>
-%...
-%
-%void DoSomething( int someArg )
-%{
-%  // We implicitly assume someArg to be smaller that 10.
-%  // So, let's make that assumption explicit and be sure
-%  // we'll notice whenever it is violated.
-%  assert( someArg < 10 );
-%  ...
-%}
-%
-%void DoSomethingElse( someEnumeratedType someArg )
-%{
-%  switch( someArg )
-%  {
-%    case firstExpectedValue:
-%      DoWhatever1();
-%      break;
-%
-%    case secondExpectedValue:
-%      DoWhatever2();
-%      break;
-%
-%    // Catch all unexpected cases.
-%    default:
-%      // We could just write assert( false ) but the following
-%      // trick gives us a more useful error message.
-%      assert( !"Unexpected value of someArg\n" );
-%  }
-%}
-%
-%float ComputeSomeFunction( float x )
-%{
-%  assert( x != 0.0 );
-%  return 1.0 / x * ( pow( x, 2 ) + x );
-%}
-%
-%// Or, even better because more general and more simple
-%// (sorry for the stupid example):
-%float ComputeSomeFunction( float x )
-%{
-%  // No implicit assumption, no assert().
-%  // And a more precise result, too.
-%  return x + 1.0;
-%}
-%\end{verbatim}
-%
-%Whenever the argument of \texttt{assert()} becomes \texttt{false},
-%the program will be aborted with an error message. When the code
-%is compiled with the symbol \texttt{NDEBUG} being \texttt{\#define}d
-%via a compiler option, all occurrences of \texttt{assert()} and its
-%arguments will be ignored.
-%
-%\textbf{Caveat:} Don't use any function calls
-%with side effects inside \texttt{assert()} because they won't be
-%called in the final \texttt{NDEBUG} version! 
 
 \pagebreak
 \section{Error Handling Roadmap}
@@ -414,4 +482,165 @@ into complete checking.
 reported, and introduce a graceful system halt in case of a runtime error.
 \end{itemize}
 \end{flushleft}
+
+%\pagebreak
+%\appendix
+%\section{Appendix: Coding Strategies}
+%
+%The following code snippets are examples of minor negligences that
+%do not constitute mistakes but, in the opinion of the author,
+%unnecessarily introduce complexity and/or possible error conditions
+%into the resulting program.
+%All examples are taken from actual code.
+%
+%\subsection{Arithmetics}
+%\subsubsection{Division by Zero}
+%\begin{verbatim}
+%float f( float a, float b, float c )
+%{
+%  return a / ( b / c );
+%}
+%\end{verbatim}
+%This will result in a Division by Zero runtime error if any of
+%$b$ or $c$ becomes zero. However, the $c=0$
+%case is perfectly valid, and by rearranging operands we obtain a
+%version that will handle that case correctly:
+%\begin{verbatim}
+%  return a * c / b;
+%\end{verbatim}
+%
+%\subsubsection{Integer Division}
+%\begin{verbatim}
+%int f( int a, int b, int c )
+%{
+%  return (int)( (float)a * ( (float)b / (float)c ) );
+%}
+%\end{verbatim}
+%More or less disguised, this kind of code happens often if $b/c$ as a ratio
+%constitutes an entity in its own right. However, the conversions introduce
+%unneeded complexity, and numerical subtleties may lead to results difficult
+%to understand.
+%The intended result is obtained by writing
+%\begin{verbatim}
+%  return ( a * b ) / c;
+%\end{verbatim}
+%
+%\subsection{Erring Security}
+%\begin{verbatim}
+%class SomeClass
+%{
+% private:
+%  SomeOtherClass* somePointer;
+%  
+% public:
+%  SomeClass()
+%  {
+%  }
+%  ~SomeClass()
+%  {
+%    if( somePointer )
+%    {
+%      delete somePointer;
+%      somePointer = NULL;
+%    }
+%  }
+%  void SomeMemberFunction()
+%  {
+%    if( somePointer )
+%      delete somePointer;
+%    somePointer = new SomeOtherClass;
+%  }
+%};
+%\end{verbatim}
+%Checking \texttt{somePointer} before deleting the object it points to
+%looks good. However, deleting a \texttt{NULL} pointer does not constitute
+%an error condition but simply does nothing; the \texttt{if} clause is already
+%built into the \texttt{delete} operator.
+%What really matters is to make sure that the pointer is zero when it is
+%not pointing to a valid object. For the example class, this means that we
+%properly initialize \texttt{somePointer}.
+%\begin{verbatim}
+%class SomeClass
+%{
+% private:
+%  SomeOtherClass* somePointer;
+%  
+% public:
+%  SomeClass()
+%  : somePointer( NULL )
+%  {
+%  }
+%  ~SomeClass()
+%  {
+%    delete somePointer;
+%  }
+%  void SomeMemberFunction()
+%  {
+%    delete somePointer;
+%    somePointer = new SomeOtherClass;
+%  }
+%};
+%\end{verbatim}
+%
+%If \texttt{SomeClass} can be accessed by multiple threads, we must make sure
+%that places in the code where \texttt{somePointer} points to an invalid
+%memory location are protected from interruption, using some locking mechanism:
+%\begin{verbatim}
+%  void SomeMemberFunction()
+%  {
+%    AcquireLock();
+%    delete somePointer;
+%    somePointer = new SomeOtherClass;
+%    ReleaseLock();
+%  }
+%\end{verbatim}
+%Why shouldn't we protect the destructor by writing the following?
+%\begin{verbatim}
+%  ~SomeClass()
+%  {
+%    AcquireLock();
+%    delete somePointer;
+%    somePointer = NULL;
+%    ReleaseLock();
+%  }
+%\end{verbatim}
+%The only context in which this code ever made a difference was if one thread accessed
+%an instance of \texttt{SomeClass} while this instance was being deleted by another
+%thread. Such a situation, however, can only be due to a really bad mistake which we
+%definitely don't want to cover up that way. Instead, we do want a crash to
+%tell us we got something wrong on a more fundamental level.
+%
+%\subsection{Tries and Catches}
+%What's wrong with the following code?
+%\begin{verbatim}
+%try
+%{
+%  x = MyReadXFromFile( fileName );
+%}
+%catch(...)
+%{
+%  x = myDefaultValue;
+%}
+%\end{verbatim}
+%The \texttt{catch} says we expect something not to work. Why don't we handle
+%it inside \texttt{MyReadXFromFile()}? There may be good reasons for this. But then,
+%a lot of things might go wrong inside the \texttt{try} block, most of which we
+%don't expect. We might happily believe everything works fine, but there might be
+%a Division By Zero exception in \texttt{MyReadXFromFile()} each time we call it,
+%resulting in \texttt{x} always having \texttt{myDefaultValue}. So if we write
+%\begin{verbatim}
+%try
+%{
+%  x = MyReadXFromFile( fileName );
+%}
+%catch( EInOutError& )
+%{
+%  x = myDefaultValue;
+%}
+%\end{verbatim}
+%we know that the Division By Zero exception will show up, notifying us of a
+%programming error we certainly need to fix, while any VCL exception from accessing
+%the file will result in a silently applied default value.
+
+
 \end{document}
