@@ -25,8 +25,6 @@
 #         broken and/or unneeded subprojects. If doing so, uncomment
 #         the line defining DONTCLEANME to protect your changes.
 #
-# Changes:
-#
 ###################################################################################
 
 # How to execute commands.
@@ -41,6 +39,8 @@ FORCEWRITE = *.bpr *.res *.mak *.pdf *.exe
 GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 # How to report when we are done with a target.
 DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
+# Where to put binaries below the installation root.
+BINDIR = prog
 
 # Workaround macros to access shell operators.
 AND = &&
@@ -54,7 +54,7 @@ OR = ||
 # Bootstrapping: Create list of subproject makefiles
 #
 ##################################################################################
-all docinfo prepare clean pdf:
+all docinfo prepare clean install update pdf:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.>>${MKNAM}
@@ -73,7 +73,7 @@ all docinfo prepare clean pdf:
 #
 ##################################################################################
 
-# Make all subprojects
+# Make all subprojects.
 all: ${MAKEFILES:.mak=.all}
   ${DONE}
   
@@ -89,7 +89,7 @@ prepare: ${MAKEFILES:.mak=.prepare}
 !endif
   ${DONE}
 
-# Cleanup
+# Cleanup.
 clean: prepare ${MAKEFILES:.mak=.clean}
   -${SHELL} for /R %i in (${GARBAGE}) do del %i
 !ifndef DONTCLEANME
@@ -97,10 +97,18 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 !endif
   ${DONE}
   
-# Create pdfs from tex files
-pdf: ${LATEXDOCS:.tex=.pdf}
+# Install executables.
+install: ${MAKEFILES:.mak=.install}
   ${DONE}
 
+# Replace installed executables with current versions.
+update: ${MAKEFILES:.mak=.update}
+  ${DONE}
+
+# Create pdfs from tex files.
+pdf: ${LATEXDOCS:.tex=.pdf}
+  ${DONE}
+  
 ##################################################################################
 #
 # Suffix rules for creating and executing makefiles
@@ -109,19 +117,26 @@ pdf: ${LATEXDOCS:.tex=.pdf}
 .bpr.mak:
   (bpr2mak $<) & echo.
   # Add our own additional targets to the makefile created by bpr2mak.
-  @echo.                                                          >>$@
-  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                  >>$@
-  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                >>$@
-  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\        >>$@
-  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES) >>$@
-  @echo ^^ -_$^^(PROJECT)                                         >>$@
-  @echo ^^ -del _$^^(PROJECT)                                     >>$@
-  @echo ^^ -del _*.tds                                            >>$@
-  @echo prepare:                                                  >>$@
-  @echo ^^ -attrib -r $^^(PROJECT)                                >>$@
-  @echo clean:                                                    >>$@
-  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                        >>$@
-  @echo.                                                          >>$@
+  @echo.                                                             >>$@
+  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                     >>$@
+  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                   >>$@
+  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\           >>$@
+  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES)    >>$@
+  @echo ^^ -_$^^(PROJECT)                                            >>$@
+  @echo ^^ -del _$^^(PROJECT)                                        >>$@
+  @echo ^^ -del _*.tds                                               >>$@
+  @echo prepare:                                                     >>$@
+  @echo ^^ -attrib -r $^^(PROJECT)                                   >>$@
+  @echo install: $^^(PROJECT)                                        >>$@
+  @echo ^^ if not exist ^^"$^(INSTALLDIR)\$(BINDIR)^" \
+             mkdir ^^"$^(INSTALLDIR)\$(BINDIR)^"                     >>$@
+  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(INSTALLDIR)\$(BINDIR)^"       >>$@
+  @echo update: $^^(PROJECT)                                         >>$@
+  @echo ^^ if exist ^^"$^(INSTALLDIR)\$(BINDIR)^" \
+            xcopy /d /u /y $^^(PROJECT) ^^"$^(INSTALLDIR)\$(BINDIR)^">>$@
+  @echo clean:                                                       >>$@
+  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                           >>$@
+  @echo.                                                             >>$@
   # We cannot tolerate absolute paths in makefiles.
   @${SHELL} \
   ( \
@@ -151,6 +166,30 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   del $<
   ${DONE}
   
+.mak.install:
+!ifdef INSTALLDIR
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                            -DINSTALLDIR="${INSTALLDIR}" install
+  ${DONE}
+!else  # !ifdef INSTALLDIR
+  @echo.
+  @echo Please specify a root directory to install into, as in
+  @echo make -DINSTALLDIR="c:\program files\bci2000" install
+  @exit 1
+!endif # !ifdef INSTALLDIR
+
+.mak.update:
+!ifdef INSTALLDIR
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                            -DINSTALLDIR="${INSTALLDIR}" update
+  ${DONE}
+!else  # !ifdef INSTALLDIR
+  @echo.
+  @echo Please specify a root directory to install into, as in
+  @echo make -DINSTALLDIR="c:\program files\bci2000" update
+  @exit 1
+!endif # !ifdef INSTALLDIR
+
 .tex.pdf:
   # We run pdflatex twice to get the references right.
   ${SHELL} cd ${<D} ${AND} pdflatex ${<F} ${AND} pdflatex ${<F}
