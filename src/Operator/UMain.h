@@ -25,7 +25,7 @@
 #define PANEL_APPLICATION       3
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
-#define TXT_OPERATOR_VERSION    "V1.22"
+#define TXT_OPERATOR_VERSION    "V1.30"
 #define TXT_OPERATOR_SUSPENDED  "Suspended"
 #define TXT_OPERATOR_RUNNING    "Running"
 
@@ -33,7 +33,7 @@
 class TfMain : public TForm
 {
   friend class TCoreRecvThread;
-  
+
 protected:
     void __fastcall DoResetOperator(TMessage &Message);
     BEGIN_MESSAGE_MAP

@@ -172,7 +172,7 @@ object fAbout: TfAbout
     Top = 80
     Width = 81
     Height = 13
-    Caption = '(C) 2000-2003'
+    Caption = '(C) 2000-2004'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -242,7 +242,7 @@ object fAbout: TfAbout
     Top = 54
     Width = 33
     Height = 16
-    Caption = 'V1.22'
+    Caption = 'V1.30'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
