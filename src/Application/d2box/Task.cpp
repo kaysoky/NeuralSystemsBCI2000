@@ -116,6 +116,7 @@ TTask::TTask()
 
     "TargetCode 5 0 0 0",
     "ResultCode 5 0 0 0",
+    "ResponseTime 8 0 0 0",
     "StimulusTime 16 17528 0 0",
     "Feedback 2 0 0 0",
     "IntertrialInterval 2 1 0 0",
@@ -310,7 +311,6 @@ TEMPORARY_ENVIRONMENT_GLUE
         CurrentIti= 1;
         ItiTime= 0;
         CurrentFeedback= 0;
-        FeedbackTime= 0;
         CurrentOutcome= 0;
         OutcomeTime= 0;
         CurrentRest= Resting;
@@ -375,6 +375,7 @@ void TTask::WriteStateValues(STATEVECTOR *statevector)
 
         statevector->SetStateValue("TargetCode",CurrentTarget);
         statevector->SetStateValue("ResultCode",CurrentOutcome);
+        statevector->SetStateValue("ResponseTime",FeedbackTime);
         statevector->SetStateValue("Feedback",CurrentFeedback);
         statevector->SetStateValue("IntertrialInterval",CurrentIti);
         statevector->SetStateValue("Running",CurrentRunning);
@@ -556,7 +557,7 @@ void TTask::UpdateSummary( void )
 {
         float pc;
 
-        fprintf(appl," @ D2Box @ \n");
+        fprintf(appl," @ D2Box @   Number of Targets=%2d \n",Ntargets);
 
         if( targetInclude == 0 )
         {
@@ -570,7 +571,6 @@ void TTask::UpdateSummary( void )
                 else                     pc= -1.0;
 
                 fprintf(appl,"Run %2d   Hits=%3d  Total=%3d  Percent=%6.2f \n",run,Hits,Hits+Misses,pc);
-                fprintf(appl,"Number of Targets=%2d \n",Ntargets);
                 fprintf(appl,"Bits= %7.2f \n",bitrate.TotalBitsTransferred() );
         }
 
@@ -681,6 +681,7 @@ void TTask::Iti( void )
 
         if( ItiTime > ItiDuration )
         {
+                FeedbackTime= 0;
                 CurrentIti = 0;
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
@@ -808,9 +809,10 @@ void TTask::Feedback( short sig_x, short sig_y )
         TestCursorLocation( x_pos, y_pos );
 
         FeedbackTime++;
+
         if( FeedbackTime > FeedbackDuration )
         {
-                FeedbackTime= 0;
+                //   FeedbackTime= 0;
                 CurrentFeedback= 0;
                 CurrentOutcome= 0;
                 CurrentIti= 1;

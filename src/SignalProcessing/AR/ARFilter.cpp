@@ -8,10 +8,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifdef USE_LOGFILE
-FILE* tempfile;
-#endif // USE_LOGFILE
-
 RegisterFilter( ARTemporalFilter, 2.C );
 
 // **************************************************************************
@@ -27,9 +23,6 @@ ARTemporalFilter::ARTemporalFilter()
 : vis( NULL ),
   mem( NULL )
 {
-#ifdef USE_LOGFILE
-  tempfile= fopen("tempfile.asc","w+");
-#endif // USE_LOGFILE
 
  BEGIN_PARAMETER_DEFINITIONS
   "MEMFilter float StartMem= 0.0 0.0 0.0 512.0 "
@@ -61,9 +54,6 @@ ARTemporalFilter::~ARTemporalFilter()
 {
   delete vis;
   delete mem;
-#ifdef USE_LOGFILE
-  if( tempfile ) fclose( tempfile );
-#endif // USE_LOGFILE
 }
 
 // **************************************************************************
@@ -183,9 +173,6 @@ static count= 0;
 
  // actually perform the Temporal Filtering on the input and write it into the output signal
 
-#ifdef USE_LOGFILE
-        fprintf(tempfile,"%5d ",count);
-#endif // USE_LOGFILE
         count++;
 
         winlgth= datawindows * samples;
@@ -218,23 +205,12 @@ static count= 0;
                 mem->get_mem();
                 out_channel= mem->get_pwr( pwr );
 
-#ifdef USE_LOGFILE
-                fprintf(tempfile,"Output Channels = %4d MaxElements= %5d \n",output->Channels,output->MaxElements);
-#endif // USE_LOGFILE
-
                 for(j=0;j<out_channel;j++)
                 {
                       output->SetValue( i, j, pwr[j] );
 
                 }
-#ifdef USE_LOGFILE
-               fprintf(tempfile,"v= %8.3f p= %8.3f  ",value[0],pwr[16]);
-#endif // USE_LOGFILE
         }
-
-#ifdef USE_LOGFILE
-        fprintf(tempfile,"\n");
-#endif // USE_LOGFILE
 
         if( visualize )
         {

@@ -15,7 +15,7 @@ Task.h is the header file for the Right Justified Boxes task
 #include <mmsystem.h>
 
 #define jhalf 32767
-#define NTARGS  8
+#define NTARGS  24
 
 class TTask : public GenericFilter
 {
@@ -91,7 +91,7 @@ private:
         unsigned short CurrentIti;              // value of state - internal
         unsigned short CurrentRunning;          // value of state - internal
         unsigned short CurRunFlag;              // special flag to prevent auto restart
-       // int Resting;                            // value of parameter for resting data acquisition period
+       // int Resting;                          // value of parameter for resting data acquisition period
         unsigned short CurrentRest;             // value of state- internal
         int Resting;
         int ItiTime;                            // Counter - internal
