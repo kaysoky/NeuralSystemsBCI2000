@@ -320,7 +320,7 @@ There is a separate class, \texttt{SignalProperties}, for expressing those
 values, and determining whether a given signal ``fits" into another one, i.e.\ 
 whether the values contained in one signal may be copied into another 
 signal without loss of information.
-\texttt{GenericFilter} inherits from \texttt{SignalProperties}.
+\texttt{GenericSignal} inherits from \texttt{SignalProperties}.
 
 \subsection{The \texttt{GenericFilter} class}
 
@@ -435,15 +435,25 @@ MyFilter::Process( const GenericSignal* inputSignal,
 \end{itemize}
 
 Other member functions are \textit{optional;} you may decide whether you
-override their (empty) default implementation with your own version, 
+override their default implementation with your own version, 
 depending on what your filter needs to do:
 \begin{itemize}
 
- \item \texttt{Resting} is called instead of \texttt{Process} when the system
-       is in suspended state. This is also the only function from which
-       a filter may change a parameter value. Any parameter changes inside
-       \texttt{Resting} will propagate to the other modules without any 
-       explicit request from your side.
+ \item \texttt{StartRun} is called when the system enters the running state.
+       By default, \texttt{StartRun} calls \texttt{Initialize} to make sure
+       that intermittent parameter changes are applied. If you provide your own
+       \texttt{StartRun} function, you will probably want to call
+       \texttt{Initialize} from there as well.
+       
+ \item \texttt{StopRun} is called each time the system
+       leaves the running state, entering the suspended state.
+       This is also the only function from which
+       a filter may change a parameter value.
+       Any parameter changes inside \texttt{StopRun} will propagate to the
+       other modules without any explicit request from your side.
+       
+ \item \texttt{Resting} is called instead of \texttt{Process} while the system
+       is in suspended state.
        
  \item The \texttt{Halt} function is called before any re-configuration of 
        the system takes place. If your filter initiates asynchronous operations
@@ -846,7 +856,7 @@ execution of our filter code. Scanning through the \texttt{Process} and
       longer guaranteed to be finite, and a numeric overflow may occur.
 \item Input and output signal pointers are assumed to point to valid locations
       in memory.
-\item The output signal is assumed to hold at least as much data as the input
+\item The output signal is assumed to hold at least as much data as the 
       input signal contains.
 \end{enumerate}
 
