@@ -9,6 +9,7 @@
 #include <Forms.hpp>
 #include "CSPIN.h"
 #include <Grids.hpp>
+#include <SyncObjs.hpp>
 #include "UParameter.h"
 
 //---------------------------------------------------------------------------
@@ -22,14 +23,25 @@ __published:	// IDE-managed Components
         TLabel *Label2;
         TButton *bChangeMatrixSize;
         TLabel *tComment;
+        TButton *bToggleEditing;
         void __fastcall bChangeMatrixSizeClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-    void __fastcall StringGridDblClick(TObject *Sender);
 private:	// User declarations
+        PARAM   *matrix_param;
+        AnsiString matrix_param_name;
+        TCriticalSection* lock;
+        void    UpdateDisplay();
+        void    AdaptColumnWidths();
+        void    Lock()   { lock->Acquire(); }
+        void    Unlock() { lock->Release(); }
+        void __fastcall ToggleLabelEditing( TObject* );
+        void    EditLabels();
+        void    EditEntries();
 public:		// User declarations
         __fastcall TfEditMatrix(TComponent* Owner);
-        PARAM   *matrix_param;
-        void    UpdateDisplay();
+        __fastcall ~TfEditMatrix();
+        void       SetDisplayedParam( PARAM* );
+        AnsiString GetDisplayedParamName() const;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfEditMatrix *fEditMatrix;

@@ -45,12 +45,46 @@ Environment::Environment()
                "outside construction phase.";
 }
 
+PARAM*
+Environment::GetParamPtr( const string& name ) const
+{
+#ifdef TODO
+# error Check for Preflight access before Initialize/Process access
+#endif // TODO
+  PARAM* param = NULL;
+
+  if( Parameters == NULL )
+    _bcierr << "Tried parameter access during non-access phase."
+            << endl;
+  else
+  {
+    param = Parameters->GetParamPtr( name.c_str() );
+    if( param == NULL )
+      _bcierr << "Parameter \"" << name << "\" is inaccessible."
+              << endl;
+  }
+  return param;
+}
+
+PARAM*
+Environment::GetOptionalParamPtr( const string& name ) const
+{
+  PARAM* param = NULL;
+
+  if( Parameters == NULL )
+    _bcierr << "Tried parameter access during non-access phase."
+            << endl;
+  else
+    param = Parameters->GetParamPtr( name.c_str() );
+  return param;
+}
+
 void
 Environment::CheckRange( const PARAM* param,
                          size_t row, size_t column ) const
 {
 #ifdef TODO
-# error Ensure reasonable ranges and backward compatibility before enabling the range check.
+# error Ensure reasonable ranges before enabling the range check.
 #endif // TODO
 #if 0
   if( row > param->GetNumValuesDimension1() || column > param->GetNumValuesDimension2() )
@@ -71,65 +105,186 @@ Environment::CheckRange( const PARAM* param,
 // Convenient accessor functions.
 // Read/write access a parameter by its name and indices, if applicable.
 PARAM::type_adapter
-Environment::Parameter( const char* name,
+Environment::Parameter( const string& name,
                         size_t row, size_t column ) const
 {
 #ifdef TODO
 # error Range Check for all values of a parameter if row == column == 0
-# error Check for Preflight access before Initialize/Process access
 #endif // TODO
-  PARAM* param = NULL;
+  PARAM* param = GetParamPtr( name );
+  if( param != NULL )
+      CheckRange( param, row, column );
+  return PARAM::type_adapter( param, row, column );
+}
 
-  if( Parameters == NULL )
-    _bcierr << "Tried parameter access during non-access phase."
-            << endl;
+#ifdef LABEL_INDEXING
+PARAM::type_adapter
+Environment::Parameter( const string& name,
+                        const string& rowLabel, size_t column ) const
+{
+  PARAM* param = GetParamPtr( name );
+  size_t row = 0;
+  if( param != NULL )
+  {
+      row = param->LabelsDimension1()[ rowLabel ];
+      CheckRange( param, row, column );
+  }
+  return PARAM::type_adapter( param, row, column );
+}
+
+PARAM::type_adapter
+Environment::Parameter( const string& name,
+                        size_t row, const string& columnLabel ) const
+{
+  PARAM* param = GetParamPtr( name );
+  size_t column = 0;
+  if( param != NULL )
+  {
+      column = param->LabelsDimension2()[ columnLabel ];
+      CheckRange( param, row, column );
+  }
+  return PARAM::type_adapter( param, row, column );
+}
+
+PARAM::type_adapter
+Environment::Parameter( const string& name,
+                        const string& rowLabel, const string& columnLabel ) const
+{
+  PARAM* param = GetParamPtr( name );
+  size_t row = 0,
+         column = 0;
+  if( param != NULL )
+  {
+      row = param->LabelsDimension1()[ rowLabel ];
+      column = param->LabelsDimension2()[ columnLabel ];
+      CheckRange( param, row, column );
+  }
+  return PARAM::type_adapter( param, row, column );
+}
+#endif // LABEL_INDEXING
+
+const PARAM::type_adapter
+Environment::OptionalParameter( double defaultValue,
+                                PARAM* param,
+                                size_t row, size_t column ) const
+{
+  ostringstream os;
+  os << defaultValue;
+  return OptionalParameter( os.str(), param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( const string& defaultValue,
+                                PARAM* inParam,
+                                size_t row, size_t column ) const
+{
+  static PARAM defaultParam;
+  PARAM* param = &defaultParam;
+  if( inParam == NULL )
+    defaultParam.SetValue( defaultValue, row, column );
   else
   {
-    param = Parameters->GetParamPtr( name );
-    if( param == NULL )
-      _bcierr << "Parameter \"" << name << "\" is inaccessible."
-              << endl;
-    else
-      CheckRange( param, row, column );
+    param = inParam;
+    CheckRange( param, row, column );
   }
   return PARAM::type_adapter( param, row, column );
 }
 
 const PARAM::type_adapter
 Environment::OptionalParameter( double defaultValue,
-                                const char* name,
-                                size_t row, size_t column ) const
+                                const string& name,
+                                size_t row,
+                                size_t column ) const
 {
-  ostringstream os;
-  os << defaultValue;
-  return OptionalParameter( os.str().c_str(), name, row, column );
+  return OptionalParameter( defaultValue, GetOptionalParamPtr( name ), row, column );
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( const char* defaultValue,
-                                const char* name,
-                                size_t row, size_t column ) const
+Environment::OptionalParameter( const string& name,
+                                size_t row,
+                                size_t column ) const
 {
-  static PARAM defaultParam;
-  PARAM* param = NULL;
-
-  if( Parameters == NULL )
-    _bcierr << "Tried parameter access in non-access phase."
-            << endl;
-  else
-  {
-    param = Parameters->GetParamPtr( name );
-    if( param == NULL )
-    {
-      defaultParam.SetValue( defaultValue, row, column );
-      param = &defaultParam;
-    }
-    else
-      CheckRange( param, row, column );
-  }
-  return PARAM::type_adapter( param, row, column );
+  return OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
 }
 
+#ifdef LABEL_INDEXING
+const PARAM::type_adapter
+Environment::OptionalParameter( const string& name,
+                                const string& rowLabel, size_t column ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t row = 0;
+  if( param != NULL )
+      row = param->LabelsDimension1()[ rowLabel ];
+  return OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( const string& name,
+                                size_t row, const string& columnLabel ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t column = 0;
+  if( param != NULL )
+      column = param->LabelsDimension2()[ columnLabel ];
+  return OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( const string& name,
+                                const string& rowLabel, const string& columnLabel ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t row = 0,
+         column = 0;
+  if( param != NULL )
+  {
+      row = param->LabelsDimension1()[ rowLabel ];
+      column = param->LabelsDimension2()[ columnLabel ];
+  }
+  return OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( double defaultValue,
+                                const string& name,
+                                const string& rowLabel, size_t column ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t row = 0;
+  if( param != NULL )
+      row = param->LabelsDimension1()[ rowLabel ];
+  return OptionalParameter( defaultValue, param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( double defaultValue,
+                                const string& name,
+                                size_t row, const string& columnLabel ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t column = 0;
+  if( param != NULL )
+      column = param->LabelsDimension2()[ columnLabel ];
+  return OptionalParameter( defaultValue, param, row, column );
+}
+
+const PARAM::type_adapter
+Environment::OptionalParameter( double defaultValue,
+                                const string& name,
+                                const string& rowLabel, const string& columnLabel ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  size_t row = 0,
+         column = 0;
+  if( param != NULL )
+  {
+      row = param->LabelsDimension1()[ rowLabel ];
+      column = param->LabelsDimension2()[ columnLabel ];
+  }
+  return OptionalParameter( defaultValue, param, row, column );
+}
+#endif // LABEL_INDEXING
 
 bool
 Environment::_PreflightCondition( const char* inConditionString,

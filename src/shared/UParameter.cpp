@@ -557,8 +557,13 @@ PARAM::SetValue( const string& value, size_t idx )
 {
   if( GetNumValues() <= idx )
     SetNumValues( idx + 1 );
+#if 0 // Now that an empty string value can be represented in formatted I/O,
+      // we accept empty values.
   if( value != "" )
     values[ idx ] = value;
+#else
+  values[ idx ] = value;
+#endif
 }
 
 // **************************************************************************
@@ -623,6 +628,7 @@ PARAM::SetValue( const string& value, size_t idx )
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
+#if 1
 int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
 {
  // skip trailing spaces, if any
@@ -640,6 +646,7 @@ int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
  *buf=0;
  return(ptr);
 }
+#endif
 
 // **************************************************************************
 // Function:   GetParamLine
@@ -735,7 +742,7 @@ PARAM::ReadFromStream( istream& is )
   // Parse the parameter's definition.
   linestream.str( definition );
 #ifndef LABEL_INDEXING
-  size_t dimension1;
+  size_t dimension1 = 1;
 #endif
   if( type == "matrix" )
   {
@@ -911,7 +918,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
       size_t numDigits = 0;
       char curDigit;
       int hexValue = 0;
-      while( pos + numDigits < newContent.size() && numDigits <= 2
+      while( pos + numDigits < newContent.size() && numDigits < 2
              && ::isxdigit( curDigit = newContent[ pos + numDigits ] ) )
       {
         if( !::isdigit( curDigit ) )
@@ -956,8 +963,8 @@ PARAM::encodedString::WriteToStream( ostream& os ) const
     }
     else
       oss << specialChar
-          << int( self[ pos ] >> 4 )
-          << int( self[ pos ] & 0x0f );
+          << ( int )( ( self[ pos ] >> 4 ) & 0x0f )
+          << ( int )( self[ pos ] & 0x0f );
   }
   os << oss.str();
 }
@@ -981,13 +988,7 @@ const char* bracketPairs[] = { "{}", "()", "[]", "<>" };
 PARAM::indexer_base::mapped_type
 PARAM::labelIndexer::operator[]( const string& label ) const
 {
-  if( needSync )
-  {
-    for( size_t i = 0; i < reverseIndex.size(); ++i )
-      forwardIndex[ reverseIndex[ i ] ] = i;
-    needSync = false;
-  }
-  
+  sync();
   indexer_base::mapped_type retIndex = 0;
   indexer_base::iterator i = forwardIndex.find( label );
   if( i != forwardIndex.end() )
@@ -1004,7 +1005,8 @@ PARAM::labelIndexer::operator[]( const string& label ) const
 const string&
 PARAM::labelIndexer::operator[]( size_t index ) const
 {
-  const string* retString = &string( "N/A" );
+  static string naString( "N/A" );
+  const string* retString = &naString;
   if( index < reverseIndex.size() )
     retString = &reverseIndex[ index ];
   return *retString;
@@ -1028,22 +1030,73 @@ PARAM::labelIndexer::operator[]( size_t index )
 void
 PARAM::labelIndexer::resize( size_t newSize )
 {
-  if( forwardIndex.size() > 0 )
+  if( forwardIndex.size() > 0 && newSize > reverseIndex.size() )
     needSync = true;
   while( reverseIndex.size() < newSize )
-  {
-    ostringstream oss;
-    oss << reverseIndex.size();
-    forwardIndex[ oss.str() ] = reverseIndex.size();
-    reverseIndex.push_back( oss.str() );
-  }
+    reverseIndex.push_back( TrivialLabel( reverseIndex.size() ) );
   reverseIndex.resize( newSize );
+}
+
+// **************************************************************************
+// Function:   sync
+// Purpose:    Rebuilds the forward index if the needSync flag is set.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::labelIndexer::sync() const
+{
+  if( needSync )
+  {
+    forwardIndex.clear();
+    for( size_t i = 0; i < reverseIndex.size(); ++i )
+      forwardIndex[ reverseIndex[ i ] ] = i;
+    needSync = false;
+  }
+}
+
+// **************************************************************************
+// Function:   TrivialLabel
+// Purpose:    Return a trivial label associated with a given numerical index.
+// Parameters: Numerical Index.
+// Returns:    Label.
+// **************************************************************************
+const string&
+PARAM::labelIndexer::TrivialLabel( size_t index )
+{
+  typedef map<size_t, string> buffer;
+  static buffer labelBuffer;
+  if( labelBuffer[ index ] == "" )
+  {
+    // This should be the only place where a statement
+    // is made about how a trivial label is formed.
+    ostringstream oss;
+    oss << index;
+    labelBuffer[ index ] = oss.str();
+  }
+  return labelBuffer[ index ];
+}
+
+// **************************************************************************
+// Function:   IsTrivial
+// Purpose:    Check if the labels actually contain information.
+// Parameters: N/A
+// Returns:    bool
+// **************************************************************************
+bool
+PARAM::labelIndexer::IsTrivial() const
+{
+  sync();
+  bool trivial = true;
+  for( size_t i = 0; trivial && i < reverseIndex.size(); ++i )
+    trivial &= ( reverseIndex[ i ] == TrivialLabel( i ) );
+  return trivial;
 }
 
 // **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
-//             parameter.
+//             label indexer.
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
@@ -1064,23 +1117,23 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
         endDelimiter = &bracketPairs[ i ][ 1 ];
       ++i;
     }
-    // The first character is an opening bracket,
-    // Get the line up to the matching closing bracket.
     if( endDelimiter != NULL )
-    {
+    { // The first character is an opening bracket,
+      // Get the line up to the matching closing bracket.
+      is.get();
       string labelsList;
       if( getline( is, labelsList, *endDelimiter ) )
       {
+        reverseIndex.clear();
         istringstream labels( labelsList );
-        size_t currentIndex = 0;
         indexer_base::key_type currentToken;
         while( labels >> currentToken )
-          forwardIndex[ currentToken ] = currentIndex++;
+          reverseIndex.push_back( currentToken );
+        needSync = true;
       }
     }
-    // There is no bracket, so let's read a plain number.
     else
-    {
+    { // There is no bracket, so let's read a plain number.
       size_t size;
       if( is >> size )
         resize( size );
@@ -1091,7 +1144,7 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
 // **************************************************************************
 // Function:   WriteToStream
 // Purpose:    Member function for formatted stream output of a single
-//             parameter.
+//             label indexer.
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
@@ -1100,17 +1153,14 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
 void
 PARAM::labelIndexer::WriteToStream( ostream& os ) const
 {
-#ifdef TODO
-#error Check for trivial indices
-#endif // TODO
-  if( needSync || forwardIndex.size() > 0 )
+  if( IsTrivial() )
+    os << size();
+  else
   {
     os << bracketPairs[ 0 ][ 0 ] << ' ';
     for( size_t i = 0; i < reverseIndex.size(); ++i )
       os << reverseIndex[ i ] << ' ';
     os << bracketPairs[ 0 ][ 1 ];
   }
-  else
-    os << size();
 }
 #endif // LABEL_INDEXING

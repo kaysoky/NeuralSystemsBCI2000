@@ -11,11 +11,37 @@
 TfEditMatrix *fEditMatrix;
 //---------------------------------------------------------------------------
 __fastcall TfEditMatrix::TfEditMatrix(TComponent* Owner)
-        : TForm(Owner)
+: TForm(Owner),
+  lock( new TCriticalSection )
 {
+#ifdef LABEL_INDEXING
+  bToggleEditing->OnClick = ToggleLabelEditing;
+#else
+  bToggleEditing->Visible = false;
+#endif
+  EditEntries();
 }
 //---------------------------------------------------------------------------
+__fastcall TfEditMatrix::~TfEditMatrix()
+{
+  delete lock;
+}
 
+void TfEditMatrix::SetDisplayedParam( PARAM* inParam )
+{
+  Lock();
+  matrix_param = inParam;
+  matrix_param_name = matrix_param->GetName();
+  cRowsMax->Value = matrix_param->GetNumValuesDimension1();
+  cColumnsMax->Value = matrix_param->GetNumValuesDimension2();
+  UpdateDisplay();
+  Unlock();
+}
+
+AnsiString TfEditMatrix::GetDisplayedParamName() const
+{
+  return matrix_param_name;
+}
 
 void __fastcall TfEditMatrix::bChangeMatrixSizeClick(TObject *Sender)
 {
@@ -26,11 +52,28 @@ int res, row, col;
     {
     // set the values in the spreadsheet
     // if there is no input, set it to "0"
+#ifdef LABEL_INDEXING
+       StringGrid->RowCount=cRowsMax->Value+1;
+       StringGrid->ColCount=cColumnsMax->Value+1;
+       for( row=1; row<StringGrid->RowCount; ++row )
+       {
+         if( StringGrid->Cells[ 0 ][ row ] == "" )
+           StringGrid->Cells[ 0 ][ row ] = PARAM::labelIndexer::TrivialLabel( row - 1 ).c_str();
+         for( col = 1; col < StringGrid->ColCount; ++col )
+           if( StringGrid->Cells[ col ][ row ] == "" )
+             StringGrid->Cells[ col ][ row ]= "0";
+       }
+       for( col = 1; col < StringGrid->ColCount; ++col )
+         if( StringGrid->Cells[ col ][ 0 ] == "" )
+            StringGrid->Cells[ col ][ 0 ] = PARAM::labelIndexer::TrivialLabel( col - 1 ).c_str();
+       EditEntries();
+#else
     for (row=0; row<cRowsMax->Value+1; row++)
      for (col=0; col<cColumnsMax->Value+1; col++)
       if (StringGrid->Cells[col][row] == "")
          StringGrid->Cells[col][row]="0";
     UpdateDisplay();
+#endif
     }
  else
     {
@@ -43,6 +86,7 @@ int res, row, col;
 
 void TfEditMatrix::UpdateDisplay()
 {
+ Lock();
  // set the window title and comment
  Caption="Edit Matrix "+AnsiString(matrix_param->GetName());
  tComment->Caption=AnsiString(matrix_param->GetComment());
@@ -51,10 +95,8 @@ void TfEditMatrix::UpdateDisplay()
  StringGrid->RowCount=cRowsMax->Value+1;
  StringGrid->ColCount=cColumnsMax->Value+1;
  StringGrid->ScrollBars=ssBoth;
- StringGrid->FixedCols = 1;
- StringGrid->FixedRows = 1;
 
- // set the columns' and rows' title
+ // set the columns' and rows' titles
 #ifdef LABEL_INDEXING
  {
    StringGrid->Cells[ 0 ][ 0 ] = "";
@@ -66,7 +108,7 @@ void TfEditMatrix::UpdateDisplay()
    }
    while( ( int )col < fEditMatrix->StringGrid->ColCount - 1 )
    {
-     StringGrid->Cells[ col + 1 ][ 0 ] = IntToStr( col );
+     StringGrid->Cells[ col + 1 ][ 0 ] = PARAM::labelIndexer::TrivialLabel( col ).c_str();
      ++col;
    }
    size_t row = 0;
@@ -77,7 +119,7 @@ void TfEditMatrix::UpdateDisplay()
    }
    while( ( int )row < fEditMatrix->StringGrid->RowCount - 1 )
    {
-     StringGrid->Cells[ 0 ][ row + 1 ] = IntToStr( row );
+     StringGrid->Cells[ 0 ][ row + 1 ] = PARAM::labelIndexer::TrivialLabel( row ).c_str();
      ++row;
    }
  }
@@ -92,6 +134,10 @@ void TfEditMatrix::UpdateDisplay()
  for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
   for (size_t col=0; col<matrix_param->GetNumValuesDimension2(); col++)
    StringGrid->Cells[col+1][row+1]=matrix_param->GetValue(row, col);
+
+ EditEntries();
+
+ Unlock();
 }
 
 
@@ -106,42 +152,73 @@ void __fastcall TfEditMatrix::FormClose(TObject *Sender, TCloseAction &Action)
 {
  // Application->MessageBox("Do you want to use the changes you made ?"
 
+ Lock();
 
- try{    // matrix parameter could have been changed
  // update the matrix parameter's size
  matrix_param->SetDimensions(StringGrid->RowCount-1, StringGrid->ColCount-1);
  
 #ifdef LABEL_INDEXING
  // set the column and row labels
  for( size_t col = 0; col < matrix_param->GetNumValuesDimension2(); ++col )
-   if( matrix_param->LabelsDimension2()[ col ] != StringGrid->Cells[ col + 1 ][ 0 ].c_str() )
-     matrix_param->LabelsDimension2()[ col ] = StringGrid->Cells[ col + 1 ][ 0 ].c_str();
+   matrix_param->LabelsDimension2()[ col ] = StringGrid->Cells[ col + 1 ][ 0 ].c_str();
  for( size_t row = 0; row < matrix_param->GetNumValuesDimension1(); ++row )
-   if( matrix_param->LabelsDimension1()[ row ] != StringGrid->Cells[ 0 ][ row + 1 ].c_str() )
-     matrix_param->LabelsDimension1()[ row ] = StringGrid->Cells[ 0 ][ row + 1 ].c_str();
+   matrix_param->LabelsDimension1()[ row ] = StringGrid->Cells[ 0 ][ row + 1 ].c_str();
 #endif
 
  // set the values in the parameter according to the values in the spreadsheet
  for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
   for (size_t col=0; col<matrix_param->GetNumValuesDimension2(); col++)
    matrix_param->SetValue(StringGrid->Cells[col+1][row+1].c_str(), row, col);
- } catch( TooGeneralCatch& ) { };
 
+ Unlock();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfEditMatrix::StringGridDblClick(TObject *Sender)
+void __fastcall TfEditMatrix::ToggleLabelEditing( TObject* Sender )
 {
-  if( StringGrid->FixedCols || StringGrid->FixedRows )
+    bool currentlyEditingLabels = StringGrid->FixedCols == 0 || StringGrid->FixedRows == 0;
+    if( currentlyEditingLabels )
+      EditEntries();
+    else
+      EditLabels();
+}
+
+void TfEditMatrix::EditLabels()
+{
+  StringGrid->FixedCols = 0;
+  StringGrid->FixedRows = 0;
+  bToggleEditing->Caption = "lock labels";
+}
+
+void TfEditMatrix::EditEntries()
+{
+  StringGrid->FixedCols = 1;
+  StringGrid->FixedRows = 1;
+  bToggleEditing->Caption = "unlock labels";
+  AdaptColumnWidths();
+}
+
+void TfEditMatrix::AdaptColumnWidths()
+{
+  StringGrid->Canvas->Font = StringGrid->Font;
+  int additionalSpace = StringGrid->Canvas->TextWidth( "  " );
+
+  for( int col = 0; col < StringGrid->ColCount; ++col )
   {
-    StringGrid->FixedCols = 0;
-    StringGrid->FixedRows = 0;
-  }
-  else
-  {
-    StringGrid->FixedCols = 1;
-    StringGrid->FixedRows = 1;
+    int colMaxWidth = 0;
+    for( int row = 0; row < StringGrid->RowCount; ++row )
+    {
+      int curLabelWidth = StringGrid->Canvas->TextWidth( StringGrid->Cells[ col ][ row ] );
+      if( curLabelWidth > colMaxWidth )
+        colMaxWidth = curLabelWidth;
+    }
+    colMaxWidth += additionalSpace;
+    if( colMaxWidth > StringGrid->DefaultColWidth )
+      StringGrid->ColWidths[ col ] = colMaxWidth;
+    else
+      StringGrid->ColWidths[ col ] = StringGrid->DefaultColWidth;
   }
 }
-//---------------------------------------------------------------------------
+
+
 

@@ -52,7 +52,7 @@ class Environment
   static class paramlistAccessor
   {
    private:
-    operator&()             { return NULL; }
+    operator&();
    public:
     operator PARAMLIST*()   { return _paramlist; }
     PARAMLIST* operator->() { return _paramlist; }
@@ -63,7 +63,7 @@ class Environment
   static class statelistAccessor
   {
    private:
-    operator&()             { return NULL; }
+    operator&();
    public:
     operator STATELIST*()   { return _statelist; }
     STATELIST* operator->() { return _statelist; }
@@ -74,7 +74,7 @@ class Environment
   static class statevectorAccessor
   {
    private:
-    operator&()               { return NULL; }
+    operator&();
    public:
     operator STATEVECTOR*()   { return _statevector; }
     STATEVECTOR* operator->() { return _statevector; }
@@ -85,7 +85,7 @@ class Environment
   static class corecommAccessor
   {
    private:
-    operator&()            { return NULL; }
+    operator&();
    public:
     operator CORECOMM*()   { return _corecomm; }
     CORECOMM* operator->() { return _corecomm; }
@@ -102,20 +102,71 @@ class Environment
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
  protected:
+  // Helper functions that include testing and reporting of error conditions.
+  PARAM* GetParamPtr( const std::string& ) const;
+  PARAM* GetOptionalParamPtr( const std::string& ) const;
   void CheckRange( const PARAM*, size_t, size_t ) const;
+  
   // Read/write access to a parameter by its name and indices, if applicable.
-  PARAM::type_adapter Parameter( const char*, size_t = 0, size_t = 0 ) const;
+  PARAM::type_adapter Parameter( const std::string& name,
+                                 size_t index1 = 0,
+                                 size_t index2 = 0 ) const;
+#ifdef LABEL_INDEXING
+  PARAM::type_adapter Parameter( const std::string& name,
+                                 const std::string& label1,
+                                 const std::string& label2 ) const;
+  PARAM::type_adapter Parameter( const std::string& name,
+                                 const std::string& label1,
+                                 size_t index2 = 0 ) const;
+  PARAM::type_adapter Parameter( const std::string& name,
+                                 size_t index1,
+                                 const std::string& label2 ) const;
+#endif // LABEL_INDEXING
   // Read-only access to parameters that need not be there.
-  // The first argument is a default value.
-  const PARAM::type_adapter OptionalParameter( const char*,
-                                               const char*,
-                                               size_t = 0, size_t = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( double,
-                                               const char*,
-                                               size_t = 0, size_t = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( const char* name,
-                                               size_t row = 0, size_t col = 0 ) const
-  { return OptionalParameter( "", name, row, col ); }
+  const PARAM::type_adapter OptionalParameter( double defaultValue,
+                                               const std::string& name,
+                                               size_t index1 = 0,
+                                               size_t index2 = 0 ) const;
+  // A version with an empty default value, as often appropriate.
+  const PARAM::type_adapter OptionalParameter( const std::string& name,
+                                               size_t index1 = 0,
+                                               size_t index2 = 0 ) const;
+
+ private:
+  const PARAM::type_adapter OptionalParameter(  const std::string& defaultValue,
+                                                PARAM* param,
+                                                size_t index1,
+                                                size_t index2 ) const;
+  const PARAM::type_adapter OptionalParameter(  double defaultValue,
+                                                PARAM* param,
+                                                size_t index1,
+                                                size_t index2 ) const;
+ protected:
+#ifdef LABEL_INDEXING
+  const PARAM::type_adapter OptionalParameter( double defaultValue,
+                                               const std::string& name,
+                                               const std::string& label1,
+                                               const std::string& label2 ) const;
+  const PARAM::type_adapter OptionalParameter( double defaultValue,
+                                               const std::string& name,
+                                               const std::string& label1,
+                                               size_t index2 = 0 ) const;
+  const PARAM::type_adapter OptionalParameter( double defaultValue,
+                                               const std::string& name,
+                                               size_t index1,
+                                               const std::string& label2 ) const;
+
+  // Versions with empty default values.
+  const PARAM::type_adapter OptionalParameter( const std::string& name,
+                                               const std::string& label1,
+                                               const std::string& label2 ) const;
+  const PARAM::type_adapter OptionalParameter( const std::string& name,
+                                               const std::string& label1,
+                                               size_t index2 = 0 ) const;
+  const PARAM::type_adapter OptionalParameter( const std::string& name,
+                                               size_t index1,
+                                               const std::string& label2 ) const;
+#endif // LABEL_INDEXING
 
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (_PreflightCondition(#x,double(x)))

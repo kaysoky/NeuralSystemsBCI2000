@@ -1,6 +1,6 @@
 object fEditMatrix: TfEditMatrix
-  Left = 328
-  Top = 259
+  Left = 534
+  Top = 252
   Width = 280
   Height = 355
   Caption = 'Edit Matrix'
@@ -33,7 +33,7 @@ object fEditMatrix: TfEditMatrix
   end
   object tComment: TLabel
     Left = 8
-    Top = 8
+    Top = 5
     Width = 52
     Height = 13
     Caption = 'Comment'
@@ -54,7 +54,6 @@ object fEditMatrix: TfEditMatrix
     DefaultRowHeight = 16
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goEditing]
     TabOrder = 0
-    OnDblClick = StringGridDblClick
   end
   object cColumnsMax: TCSpinEdit
     Left = 8
@@ -84,5 +83,13 @@ object fEditMatrix: TfEditMatrix
     Caption = 'set new matrix size'
     TabOrder = 3
     OnClick = bChangeMatrixSizeClick
+  end
+  object bToggleEditing: TButton
+    Left = 144
+    Top = 24
+    Width = 97
+    Height = 22
+    Caption = 'n/a'
+    TabOrder = 4
   end
 end

@@ -394,11 +394,8 @@ int     count, t;
 
  // in case we have a matrix on the screen, update the display, too
  // here, it can happen that we changed the matrix parameter, but it is being overwritten by the incoming matrix
- if ((fEditMatrix->Visible) && (stricmp(fEditMatrix->matrix_param->GetName(), cur_param->GetName()) == 0))
-    {
-    fEditMatrix->matrix_param=cur_param;
-    fEditMatrix->UpdateDisplay();
-    }
+ if ((fEditMatrix->Visible) && (fEditMatrix->GetDisplayedParamName() == cur_param->GetName()))
+    fEditMatrix->SetDisplayedParam( cur_param );
 }
 
 
@@ -584,11 +581,7 @@ int     i;
     return;
     }
 
- fEditMatrix->matrix_param=matrix_param;
- fEditMatrix->cRowsMax->Value=matrix_param->GetNumValuesDimension1();
- fEditMatrix->cColumnsMax->Value=matrix_param->GetNumValuesDimension2();
- fEditMatrix->UpdateDisplay();
-
+ fEditMatrix->SetDisplayedParam( matrix_param );
  fEditMatrix->ShowModal();
 }
 

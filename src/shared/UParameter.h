@@ -37,7 +37,7 @@
 #include <sstream>
 #include <stdlib.h>
 
-#undef LABEL_INDEXING
+#define LABEL_INDEXING
 
 class PARAM
 {
@@ -72,21 +72,30 @@ class PARAM
    typedef std::vector<indexer_base::key_type> indexer_reverse;
    class labelIndexer
    {
-     public:
+     friend class PARAM;
+     private:
       labelIndexer() : needSync( false ) { resize( 1 ); }
+      ~labelIndexer() {}
+      
+     public:
       // Forward lookup.
       indexer_base::mapped_type operator[]( const std::string& ) const;
       // A reverse lookup operator.
       const std::string& operator[]( size_t ) const;
-      std::string& operator[]( size_t index );
+      std::string& operator[]( size_t );
 
-      void resize( size_t );
-      size_t size() const { return reverseIndex.size(); }
-      
+      bool IsTrivial() const;
+      static const std::string& TrivialLabel( size_t );
+
       // Stream I/O.
       void WriteToStream( std::ostream& ) const;
       void ReadFromStream( std::istream& );
-      
+
+     private:
+      void resize( size_t );
+      size_t size() const { return reverseIndex.size(); }
+      void sync() const;
+
      private:
       // This is the maintained index.
       indexer_reverse reverseIndex;
@@ -144,6 +153,20 @@ class PARAM
                 { SetValue( s, n * GetNumValuesDimension2() + m ); }
         void    SetNumValues( size_t n )
                 { values.resize( n, "0" ); }
+#ifdef LABEL_INDEXING
+        void    SetValue( const std::string& s,
+                          const std::string& label )
+                { return SetValue( s, dim1_index[ label ] ); }
+        void    SetValue( const std::string& s,
+                          const std::string& label_dim2, const std::string& label_dim1 )
+                { return SetValue( s, dim2_index[ label_dim2 ], dim1_index[ label_dim1 ] ); }
+        void    SetValue( const std::string& s,
+                          size_t index_dim2, const std::string& label_dim1  )
+                { return SetValue( s, index_dim2, dim1_index[ label_dim1 ] ); }
+        void    SetValue( const std::string& s,
+                          const std::string& label_dim2, size_t index_dim1 )
+                { return SetValue( s, dim2_index[ label_dim2 ], index_dim1 ); }
+#endif // LABEL_INDEXING
   const char*   GetSection() const
                 { return section.c_str(); }
   const char*   GetType() const
@@ -209,7 +232,9 @@ class PARAM
 #endif
         int     ParseParameter( const char* line, size_t length );
 
+#if 1
   static int get_argument(int ptr, char *buf, const char *line, int maxlen);
+#endif
 
  public: // These will become private.
         bool    valid;
