@@ -314,8 +314,9 @@ void TfMain::SetEEGDisplayProperties()
 {
 char    cur_buf[256];
 int     samplefreq, i, displaysamples;
-int display_min= 0;
-int display_max= 8192;
+int     display_min= 0;
+int     display_max= 8192;
+int     visdecim;
 
  // unique source ID for this visualization
  vis->SetSourceID(SOURCEID_EEGDISP);
@@ -327,10 +328,15 @@ int display_max= 8192;
   samplefreq=atoi(paramlist.GetParamPtr("SamplingRate")->GetValue());
   display_min= atoi(paramlist.GetParamPtr("SourceMin")->GetValue());
   display_max= atoi(paramlist.GetParamPtr("SourceMax")->GetValue());
-  } catch(...) {samplefreq=128;}
+  visdecim=atoi(paramlist.GetParamPtr("VisualizeSourceDecimation")->GetValue());
+  } catch(...)
+   {
+   samplefreq=128;
+   visdecim=1;
+   }
 
  // EEG display shall be two seconds long
- displaysamples=2*samplefreq;
+ displaysamples=2*samplefreq/visdecim;
 
  // properties for EEG visualization
  sprintf(cur_buf, "%03d", displaysamples);
