@@ -250,15 +250,6 @@ TWavePlayer::AttachFile( const char* inFileName )
   if( err == noError )
   {
     assert( info.cchBuffer == dataLength );
-    mSoundHeader.lpData = info.pchBuffer;
-    mSoundHeader.dwBufferLength = dataLength;
-    mSoundHeader.dwBytesRecorded = 0;
-    mSoundHeader.dwUser = 0;
-    mSoundHeader.dwFlags = 0;
-    mSoundHeader.dwLoops = 0;
-    mSoundHeader.lpNext = NULL;
-    mSoundHeader.reserved = 0;
-
     mSamplingRate = fileFormat.nSamplesPerSec;
     mBitsPerSample = fileFormat.wBitsPerSample;
 
@@ -275,9 +266,9 @@ TWavePlayer::AttachFile( const char* inFileName )
     unsigned long length1,length2;
     mSecondaryBuffer->Lock (0, childChunkInfo.cksize, &write1, &length1, &write2, &length2, 0);
     if(write1 > 0)
-    mmioRead (fileHandle, (char*)write1, length1);
+      mmioRead (fileHandle, (char*)write1, length1);
     if (write2 > 0)
-    mmioRead (fileHandle, (char*)write2, length2);
+      mmioRead (fileHandle, (char*)write2, length2);
     mSecondaryBuffer->Unlock (write1, length1, write2, length2);
 
     mmioClose (fileHandle, 0);

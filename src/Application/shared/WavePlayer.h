@@ -80,16 +80,13 @@ class TWavePlayer
                 std::string mCurrentFileName;
 
         // OS specific members go here.
+        static  int                 sNumInstances;
 #ifdef _WIN32
-                WAVEHDR         mSoundHeader;
-                DWORD           mSamplingRate;
-                DWORD           mBitsPerSample;
-
-        static  int             sNumInstances;
-
-                LPDIRECTSOUNDBUFFER         mSecondaryBuffer;
-        static  LPDIRECTSOUND               sPDS;
-        static  LPDIRECTSOUNDBUFFER         sPrimarySoundBuffer;
+                DWORD               mSamplingRate;
+                DWORD               mBitsPerSample;
+                LPDIRECTSOUNDBUFFER mSecondaryBuffer;
+        static  LPDIRECTSOUND       sPDS;
+        static  LPDIRECTSOUNDBUFFER sPrimarySoundBuffer;
 #endif // WIN32
 
 };
