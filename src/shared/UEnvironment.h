@@ -25,6 +25,29 @@ class std::ostream;
 class SignalProperties;
 class EnvironmentExtension;
 
+// Some utility macros for better readable constructors.
+#define BEGIN_PARAMETER_DEFINITIONS                                    \
+{                                                                      \
+  const char* _params[] =                                              \
+  {
+
+#define END_PARAMETER_DEFINITIONS                                      \
+  };                                                                   \
+  for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
+    Parameters->AddParameter2List( _params[ i ] );                     \
+};
+
+#define BEGIN_STATE_DEFINITIONS                                        \
+{                                                                      \
+  const char* _states[] =                                              \
+  {
+
+#define END_STATE_DEFINITIONS                                          \
+  };                                                                   \
+  for( size_t i = 0; i < sizeof( _states ) / sizeof( *_states ); ++i ) \
+    States->AddState2List( _states[ i ] );                             \
+};
+
 // This base class channels access to Parameter, State, and Communication
 // related objects that used to be arguments of member functions.
 // "GenericFilter" inherits this class' "passive" accessor functions;
@@ -35,9 +58,7 @@ class EnvironmentBase
 {
  // Friends from framework classes.
  friend class GenericVisualization;
- //friend class TReceivingThread;
  friend class TfMain;
- //friend class FILTERS;
 
  friend class CoreModule;
  friend class Documentar;

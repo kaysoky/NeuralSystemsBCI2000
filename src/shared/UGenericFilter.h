@@ -33,29 +33,6 @@
 #include "UGenericSignal.h"
 #include "UBCIError.h"
 
-// Some utility macros for more readable filter constructors.
-#define BEGIN_PARAMETER_DEFINITIONS                                    \
-{                                                                      \
-  const char* _params[] =                                              \
-  {
-
-#define END_PARAMETER_DEFINITIONS                                      \
-  };                                                                   \
-  for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
-    Parameters->AddParameter2List( _params[ i ] );                     \
-};
-
-#define BEGIN_STATE_DEFINITIONS                                        \
-{                                                                      \
-  const char* _states[] =                                              \
-  {
-
-#define END_STATE_DEFINITIONS                                          \
-  };                                                                   \
-  for( size_t i = 0; i < sizeof( _states ) / sizeof( *_states ); ++i ) \
-    States->AddState2List( _states[ i ] );                             \
-};
-
 #if( MODTYPE == 2 ) // Compiling for a Signal Processing module
 # define RegisterFilter( name, pos )
 # define Filter( name, pos )          _RegisterFilter( name, pos )
