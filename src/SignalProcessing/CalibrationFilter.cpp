@@ -169,8 +169,8 @@ float   value;
 float   temp;
 
  // actually perform the calibration on the input and write it into the output signal
- for(channel=0; channel<input->Channels; channel++)
-  for(sample=0; sample<input->MaxElements; sample++)
+ for(channel=0; channel<input->Channels(); channel++)
+  for(sample=0; sample<input->MaxElements(); sample++)
    {
    value=(input->GetValue(channel, sample)-offset[channel])*gain[channel];
 

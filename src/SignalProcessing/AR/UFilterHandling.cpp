@@ -180,11 +180,13 @@ int     res, returnval;
   SignalE=new GenericSignal(ME, 1);
   SignalF=new GenericSignal(MF, 1);
 
+#if 0 // jm 6/28/02
   SignalB->Channels= MB;
   SignalB->MaxElements= NB;
 
   SignalC->Channels= MC;
   SignalC->MaxElements= NC;
+#endif
   }
  catch(...)
   {
@@ -225,8 +227,10 @@ int res, returnval;
  // dynamically create Signal A from the input
  if (SignalA) delete SignalA;
  SignalA=CreateGenericSignal(MA, NA, buf);
+#if 0 // jm 6/28/02
  SignalA->Channels= MA;
  SignalA->MaxElements= NA;
+#endif
 
  returnval=1;
 

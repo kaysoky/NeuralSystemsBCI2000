@@ -124,45 +124,29 @@ void __fastcall TDataStorage::Execute()
 int     i;
 short   value;
 FILE    *fp;
-bool    atleastone;
 
  while (!Terminated)
   {
   // critsec_event->Acquire();
   event->WaitFor(100);
   // critsec_event->Release();
-
-  // do we have at least one buffer with content ?
-  atleastone=false;
+  // go through all the buffers and store the ones that hold data
   for (i=0; i<MAX_BUFFERS; i++)
    {
    critsec[i]->Acquire();       // acquire a lock for this buffer
    // buffer present ?
    if (length[i] > 0)
-      atleastone=true;
-   critsec[i]->Release();
-   }
-
-  // go through all the buffers and store the ones that hold data
-  if (atleastone)
-     {
-     fp=fopen(FName, "ab");
-     for (i=0; i<MAX_BUFFERS; i++)
       {
-      critsec[i]->Acquire();       // acquire a lock for this buffer
-      // buffer present ?
-      if (length[i] > 0)
-         {
-         fwrite(buffer[i], length[i], 1, fp);
-         delete [] buffer[i];
-         buffer[i]=NULL;
-         length[i]=0;
-         AlreadyIncremented = false;
-         }
-      critsec[i]->Release();       // release the lock for this buffer
+      fp=fopen(FName, "ab");
+      fwrite(buffer[i], length[i], 1, fp);
+      fclose(fp);
+      delete [] buffer[i];
+      buffer[i]=NULL;
+      length[i]=0;
+      AlreadyIncremented = false;
       }
-     fclose(fp);
-     }
+   critsec[i]->Release();       // release the lock for this buffer
+   }
   }
 
  ReturnValue=1;
@@ -388,14 +372,14 @@ char    *cur_ptr;
 
  critsec[i]->Acquire();       // acquire a lock for this buffer
  // determine the buffer size
- length[i]=my_signal->Channels*my_signal->MaxElements*sizeof(short)+StateVectorLen*my_signal->MaxElements;
+ length[i]=my_signal->Channels()*my_signal->MaxElements()*sizeof(short)+StateVectorLen*my_signal->MaxElements();
  // length[i]=my_signal->Channels*my_signal->MaxElements*sizeof(short)+2*my_signal->MaxElements;
  buffer[i]=new char[length[i]];
  cur_ptr=buffer[i];
  // write the actual data into the buffer
- for (s=0; s<my_signal->MaxElements; s++)
+ for (s=0; s<my_signal->MaxElements(); s++)
   {
-  for (t=0; t<my_signal->Channels; t++)
+  for (t=0; t<my_signal->Channels(); t++)
    {
    // write the samples into memory
    *((short *)cur_ptr)=my_signal->GetValue(t, s);

@@ -173,7 +173,7 @@ static count= 0;
 
         winlgth= datawindows * samples;
 
-        for(i=0;i<input->Channels;i++)
+        for(i=0;i<input->Channels();i++)
         {
                
                 for(j=datawindows-1;j>0;j--)

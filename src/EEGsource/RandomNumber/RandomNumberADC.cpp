@@ -105,7 +105,7 @@ STATE   *stateptr;
 int     stateval, cursorpos;
 
  // well, we don't want to spit out data continously; thus, wait around 100ms
- time2wait=(int)((float)1000/((float)samplerate/(float)signal->MaxElements))-5;   // just calculate a rough estimate on how long to wait
+ time2wait=(int)((float)1000/((float)samplerate/(float)signal->MaxElements()))-5;   // just calculate a rough estimate on how long to wait
  Sleep(time2wait);
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
@@ -114,10 +114,10 @@ int     stateval, cursorpos;
  cur_mouse=new TMouse();
 
 // generate the noisy sine wave and write it into the signal
- for (sample=0; sample<signal->MaxElements; sample++)
+ for (sample=0; sample<signal->MaxElements(); sample++)
   {
   cursorpos=cur_mouse->CursorPos.y/70+1;
-  for (channel=0; channel<signal->Channels; channel++)
+  for (channel=0; channel<signal->Channels(); channel++)
    {
    t=(double)(count+sample)/(double)samplerate*(double)sinefrequency;
    value=0;
@@ -137,7 +137,7 @@ int     stateval, cursorpos;
   }
 
  delete cur_mouse;
- count=count+signal->MaxElements;
+ count=count+signal->MaxElements();
  return(1);
 }
 

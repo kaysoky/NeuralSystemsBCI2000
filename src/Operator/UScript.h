@@ -8,6 +8,8 @@
 #include "UState.h"
 #include "USysLog.h"
 
+#include <scktcomp.hpp>
+
 class SCRIPT
 {
 private:	// User declarations

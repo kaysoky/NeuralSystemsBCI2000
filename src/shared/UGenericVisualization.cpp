@@ -145,16 +145,16 @@ int     ch, samp, count;
  // determine how many samples the decimated signal has
  // there might be a better way of doing this :-(
  // only do this in the beginning or if decimation or signal size changes
- if ((new_samples == -1) || (my_signal->MaxElements != stored_maxelements) || (decimation != stored_decimation))
+ if ((new_samples == -1) || (my_signal->MaxElements() != stored_maxelements) || (decimation != stored_decimation))
     {
     new_samples=0;
-    for (samp=0; samp<my_signal->MaxElements; samp+=decimation)
+    for (samp=0; samp<my_signal->MaxElements(); samp+=decimation)
      new_samples++;
-    stored_maxelements=my_signal->MaxElements;
+    stored_maxelements=my_signal->MaxElements();
     stored_decimation=decimation;
     }
 
- new_channels=my_signal->Channels;
+ new_channels=my_signal->Channels();
  // new_samples=my_signal->MaxElements/decimation;
  // create the new signal
  new_signal=new GenericIntSignal((unsigned short)new_channels, new_samples);
@@ -162,7 +162,7 @@ int     ch, samp, count;
  for (ch=0; ch<new_channels; ch++)
   {
   count=0;
-  for (samp=0; samp<my_signal->MaxElements; samp+=decimation)
+  for (samp=0; samp<my_signal->MaxElements(); samp+=decimation)
    {
    new_signal->SetValue(ch, count, my_signal->GetValue(ch, samp));
    count++;
@@ -186,32 +186,32 @@ BYTE    *dataptr;
 int     s, t;
 
  // error and consistency checking
- if (my_signal->Channels > 255)      return(false);       // Channels > 255
- if (my_signal->MaxElements > 65535) return(false);       // samples per channel > 65535
+ if (my_signal->Channels() > 255)      return(false);       // Channels > 255
+ if (my_signal->MaxElements() > 65535) return(false);       // samples per channel > 65535
  if (!corecomm)                      return(false);       // core communication not defined
  if (!corecomm->Connected())         return(false);       // no connection to the core module
- if ((long)my_signal->Channels*(long)my_signal->MaxElements+9 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
+ if ((long)my_signal->Channels()*(long)my_signal->MaxElements()+9 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
 
  pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_DATA);
  coremessage->SetSuppDescriptor(VISTYPE_GRAPH);
- coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels*(unsigned short)my_signal->MaxElements+5);         // set the length of the coremessage
+ coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
  dataptr=(BYTE *)coremessage->GetBufPtr();
  // construct the header of the core message
  dataptr[0]=sourceID;                   // write the source ID into the coremessage
  dataptr[1]=DATATYPE_INTEGER;           // write the datatype into the coremessage
- dataptr[2]=(BYTE)my_signal->Channels;  // write the # of channels into the coremessage
+ dataptr[2]=(BYTE)my_signal->Channels();// write the # of channels into the coremessage
  short_dataptr=(unsigned short *)&dataptr[3];
- *short_dataptr=(unsigned short)my_signal->MaxElements; // write the # of samples into the coremessage
+ *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
  // write the actual data into the coremessage
- for (t=0; t<my_signal->Channels; t++)
-  for (s=0; s<my_signal->MaxElements; s++)
+ for (t=0; t<my_signal->Channels(); t++)
+  for (s=0; s<my_signal->MaxElements(); s++)
    {
    valueptr=(short *)&dataptr[5];
-   valueptr[t*my_signal->MaxElements+s]=my_signal->GetValue(t, s);
+   valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(t, s);
    }
 
  coremessage->SendCoreMessage(pStream);     // and send it out
@@ -233,29 +233,29 @@ signed char exponent;
 float   value, value2;
 
  // error and consistency checking
- if (my_signal->Channels > 255)      return(false);       // Channels > 255
- if (my_signal->MaxElements > 65535) return(false);       // samples per channel > 65535
+ if (my_signal->Channels() > 255)      return(false);       // Channels > 255
+ if (my_signal->MaxElements() > 65535) return(false);       // samples per channel > 65535
  if (!corecomm)                      return(false);       // core communication not defined
  if (!corecomm->Connected())         return(false);       // no connection to the core module
- if ((long)my_signal->Channels*(long)my_signal->MaxElements+8 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
+ if ((long)my_signal->Channels()*(long)my_signal->MaxElements()+8 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
 
  pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_DATA);
  coremessage->SetSuppDescriptor(VISTYPE_GRAPH);
- coremessage->SetLength(3*(unsigned short)my_signal->Channels*(unsigned short)my_signal->MaxElements+5);         // set the length of the coremessage
+ coremessage->SetLength(3*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
  dataptr=(BYTE *)coremessage->GetBufPtr();
  // construct the header of the core message
  dataptr[0]=sourceID;                   // write the source ID into the coremessage
  dataptr[1]=DATATYPE_FLOAT;             // write the datatype into the coremessage
- dataptr[2]=(BYTE)my_signal->Channels;  // write the # of channels into the coremessage
+ dataptr[2]=(BYTE)my_signal->Channels();  // write the # of channels into the coremessage
  short_dataptr=(unsigned short *)&dataptr[3];
- *short_dataptr=(unsigned short)my_signal->MaxElements; // write the # of samples into the coremessage
+ *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
  // write the actual data into the coremessage
- for (t=0; t<my_signal->Channels; t++)
-  for (s=0; s<my_signal->MaxElements; s++)
+ for (t=0; t<my_signal->Channels(); t++)
+  for (s=0; s<my_signal->MaxElements(); s++)
    {
    value=my_signal->GetValue(t, s);
    if (value != 0)
@@ -270,7 +270,7 @@ float   value, value2;
       value2=0;
       exponent=1;
       }
-   dataptr2=&dataptr[5+3*t*my_signal->MaxElements+3*s];
+   dataptr2=&dataptr[5+3*t*my_signal->MaxElements()+3*s];
    *((short *)&dataptr2[0])=(short)value2;
    *((signed char *)&dataptr2[2])=exponent;
    }
@@ -879,8 +879,8 @@ bool    recreate;
  if (!signal) return;
 
  critsec->Acquire();
- channels=signal->Channels;
- samples=cur_samples=signal->MaxElements;
+ channels=signal->Channels();
+ samples=cur_samples=signal->MaxElements();
  recreate=false;
  if (samples > displaysamples)
     {
@@ -944,8 +944,8 @@ int     channels, samples, ch, samp, i;
  if (!signal) return;
 
  critsec->Acquire();
- channels=signal->Channels;
- samples=cur_samples=signal->MaxElements;
+ channels=signal->Channels();
+ samples=cur_samples=signal->MaxElements();
  if (samples > displaysamples)
     displaysamples=samples;
 

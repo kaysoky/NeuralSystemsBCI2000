@@ -51,7 +51,7 @@
     }
    // allocating BL variables
     BaseChList = new bool[NumChan];
-    BLSignal = new GenericSignal(NumChan, InputSignal->MaxElements);
+    BLSignal = new GenericSignal(NumChan, InputSignal->MaxElements());
     for (unsigned short n=0; n<NumChan; n++) BLSignal->SetElements(n, InputSignal->GetElements(n));
     for (int m=0; m<NumChan; m++) {
         BaseChList[m] = false;
@@ -112,7 +112,7 @@
         BLBlocks = 0;
    }
    int BChannels = NumChan;
-   if (InputSignal->Channels<NumChan) BChannels = InputSignal->Channels;
+   if (InputSignal->Channels()<NumChan) BChannels = InputSignal->Channels();
    if (BLState) {
         for (short m=0; m<BChannels; m++) {
             if (BaseChList[m]) {
@@ -216,7 +216,7 @@
    float ArteSignal;
 
    for (short m=0; m<NumChan; m++) {
-        if ((ArteChList[m]>=0) && (ArteChList[m]<InputSignal->Channels)) {  // valid channel
+        if ((ArteChList[m]>=0) && (ArteChList[m]<InputSignal->Channels())) {  // valid channel
             for (short n=0; n<InputSignal->GetElements(m); n++) {
                  ControlSignal = InputSignal->Value[m][n];
                  ArteSignal = InputSignal->Value[ArteChList[m]][n]*ArteFactorList[m];

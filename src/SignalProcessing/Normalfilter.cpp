@@ -140,7 +140,7 @@ float   value;
 
      sample= 0;
 
-     for(in_channel=0; in_channel<input->Channels; in_channel++)
+     for(in_channel=0; in_channel<input->Channels(); in_channel++)
      {
                 value= input->GetValue(in_channel, sample);
                 if( in_channel == 0 ) val_ud=  ( value - ud_a ) * ud_b;

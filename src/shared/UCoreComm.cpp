@@ -236,7 +236,7 @@ TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
 char            line[512];
 int             i;
-PARAM           *cur_param;
+const PARAM     *cur_param;
 
  if (!CoreSocket) return(0);
  if (!CoreSocket->Socket->Connected) return(0);
@@ -364,10 +364,10 @@ BYTE    *dataptr;
 int     s, t, channelnum;
 
  // error and consistency checking
- if (my_signal->Channels > 255)      return(false);       // Channels > 255
- if (my_signal->MaxElements > 65535) return(false);       // samples per channel > 65536
+ if (my_signal->Channels() > 255)      return(false);       // Channels > 255
+ if (my_signal->MaxElements() > 65535) return(false);       // samples per channel > 65536
  if (!Connected())                   return(false);       // no connection to the core module
- if ((long)my_signal->Channels*(long)my_signal->MaxElements+9 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
+ if ((long)my_signal->Channels()*(long)my_signal->MaxElements()+9 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
 
  // if the list does not contain a value (i.e., the first value does not contain a number
  // if (channellistparam)
@@ -380,26 +380,26 @@ int     s, t, channelnum;
  coremessage->SetDescriptor(COREMSG_DATA);
  coremessage->SetSuppDescriptor(VISTYPE_GRAPH);
  if (!channellistparam)
-    coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels*(unsigned short)my_signal->MaxElements+5);                      // set the length of the coremessage
+    coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);                      // set the length of the coremessage
  else
-    coremessage->SetLength(sizeof(unsigned short)*(unsigned short)channellistparam->GetNumValues()*(unsigned short)my_signal->MaxElements+5);         // set the length of the coremessage
+    coremessage->SetLength(sizeof(unsigned short)*(unsigned short)channellistparam->GetNumValues()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
  dataptr=(BYTE *)coremessage->GetBufPtr();
  // construct the header of the core message
  dataptr[0]=0;                          // sourceID is 0 for data transfer
  dataptr[1]=DATATYPE_INTEGER;           // write the datatype into the coremessage
- dataptr[2]=(BYTE)my_signal->Channels;  // write the # of channels into the coremessage
+ dataptr[2]=(BYTE)my_signal->Channels();  // write the # of channels into the coremessage
  short_dataptr=(unsigned short *)&dataptr[3];
- *short_dataptr=(unsigned short)my_signal->MaxElements; // write the # of samples into the coremessage
+ *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
  // write the actual data into the coremessage
  // if no channellistparameter is defined, send everything
  if (!channellistparam)
     {
-    for (t=0; t<my_signal->Channels; t++)
-     for (s=0; s<my_signal->MaxElements; s++)
+    for (t=0; t<my_signal->Channels(); t++)
+     for (s=0; s<my_signal->MaxElements(); s++)
       {
       valueptr=(short *)&dataptr[5];
-      valueptr[t*my_signal->MaxElements+s]=my_signal->GetValue(t, s);
+      valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(t, s);
       }
     }
  else           // if we defined a channellist, only send the channels we are interested in
@@ -407,10 +407,10 @@ int     s, t, channelnum;
     for (t=0; t<channellistparam->GetNumValues(); t++)
      {
      channelnum=atoi(channellistparam->GetValue(t))-1;
-     for (s=0; s<my_signal->MaxElements; s++)
+     for (s=0; s<my_signal->MaxElements(); s++)
       {
       valueptr=(short *)&dataptr[5];
-      valueptr[t*my_signal->MaxElements+s]=my_signal->GetValue(channelnum, s);
+      valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(channelnum, s);
       }
      }
     }

@@ -16,7 +16,7 @@
 #ifndef UOperatorUtilsH
 #define UOperatorUtilsH
 
-class Scktcomp::TCustomWinSocket;
+namespace Scktcomp { class TCustomWinSocket; };
 class STATELIST;
 
 namespace OperatorUtils
@@ -32,10 +32,10 @@ namespace OperatorUtils
 //             ERR_STATENOTFOUND - if the state was not found
 //             ERR_SOURCENOTCONNECTED - if the socket is not connected;
 // **************************************************************************
-  int     UpdateState( const STATELIST*   statelist,
-                       const char*        statename,
-                       unsigned short     newvalue,
-                       TCustomWinSocket*  socket );
+  int     UpdateState( const STATELIST*             statelist,
+                       const char*                  statename,
+                       unsigned short               newvalue,
+                       Scktcomp::TCustomWinSocket*  socket );
 };
 
 #endif
