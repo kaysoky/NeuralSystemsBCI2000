@@ -46,7 +46,7 @@ gUSBampADC::gUSBampADC()
        "// number of digitized channels per device",
    "Source int SampleBlockSize= 8 5 1 128 "
        "// number of samples per block",
-   "Source int DeviceIDMaster= 1 1 1 16"
+   "Source string DeviceIDMaster= auto 1 1 16"
        "// deviceID for the device whose SYNC goes to the slaves",
    "Source int SamplingRate=    128 128 1 40000 "
        "// the signal sampling rate",
@@ -70,8 +70,8 @@ gUSBampADC::gUSBampADC()
        "// filter model order for notch filter",
    "Source int NotchType= 1 1 1 2"
        "// filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)",
-   "Source intlist DeviceIDs= 1 1"
-       "// list of USBamps to be used ",
+   "Source list DeviceIDs= 1 auto"
+       "// list of USBamps to be used (or auto)",
  END_PARAMETER_DEFINITIONS
 
  // add all states that this ADC requests to the list of states
@@ -151,6 +151,57 @@ const size_t signalDepth = 2;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
    PreflightCondition((int)(Parameter("SoftwareChDevices", dev)*Parameter("SampleBlockSize")*sizeof(float))%512 == 0 );
 
+  //
+  // From here down, determine device settings and verify if OK
+  //
+  // if we have one device ID, and it's set to 'auto' check whether we can proceed in auto mode
+  if ((Parameter("DeviceIDs")->GetNumValues() == 1) && (strcmp((const char *)Parameter("DeviceIDs"), "auto") == 0))
+     PreflightCondition(DetectAutoMode() >= 0);
+  else // if we defined more than one device or not auto mode, try to open and test all devices
+     {
+     int numdevices=Parameter("DeviceIDs")->GetNumValues();
+     // test to open all devices and to set the sampling rate
+     for (int dev=0; dev<numdevices; dev++)
+      {
+      HANDLE hdev = GT_OpenDeviceEx((char *)Parameter("DeviceIDs")->GetValue(dev));
+      if (!hdev)
+         bcierr << "Could not open device " << string(Parameter("DeviceIDs")->GetValue(dev)) << endl;
+      else
+         {
+         // let's check whether the driver complains if we use a wrong sampling rate
+         // according to the documentation, it should
+         // it looks like in practise, it does not
+         int samplerate=Parameter("SamplingRate");
+         if (!GT_SetSampleRate(hdev, samplerate))
+            bcierr << "Could not set sampling rate on device " << string(Parameter("DeviceIDs")->GetValue(dev)) << endl;
+         WORD wErrorCode;
+         char LastError[512];
+         bool status = GT_GetLastError(&wErrorCode, LastError);
+         GT_CloseDevice(&hdev);
+         // thus, let's do the check that the driver is supposed to do again here
+         if ((samplerate != 32) &&
+             (samplerate != 64) &&
+             (samplerate != 128) &&
+             (samplerate != 256) &&
+             (samplerate != 512) &&
+             (samplerate != 600) &&
+             (samplerate != 2400) &&
+             (samplerate != 4800))
+            bciout << "Warning: Sampling rate does not seem to be supported. Be aware of your limited Karma!" << endl;
+         }
+      }
+     }
+
+  // check pass band filter settings
+  if (Parameter("FilterEnabled") == 1)
+     if (DetermineFilterNumber() == -1)
+        bciout << "Could not find appropriate pass band filter in gUSBamp. Use gUSBampgetinfo tool." << endl;
+
+  // check notch filter settings
+  if (Parameter("NotchEnabled") == 1)
+     if (DetermineNotchNumber() == -1)
+        bciout << "Could not find appropriate notch filter in gUSBamp. Use gUSBampgetinfo tool." << endl;
+
   // Resource availability checks.
   /* The random source does not depend on external resources. */
 
@@ -175,12 +226,11 @@ const size_t signalDepth = 2;
 // **************************************************************************
 void gUSBampADC::Initialize()
 {
-int     nof;
-FILT    *filt;
 bool    ret;
 int     filternumber, notchnumber;
 GND     CommonGround;
 REF     CommonReference;
+bool    autoconfigure;
 
  // let's buffer up to 5 times as much data as we'll collect (using GetData)
  // this way, it is possible to be too slow to pick up data but still not lose data
@@ -190,6 +240,12 @@ REF     CommonReference;
 
  int samplingrate=Parameter("SamplingRate");
  MasterDeviceID=string(Parameter("DeviceIDMaster"));
+
+ // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
+ if ((Parameter("DeviceIDs")->GetNumValues() == 1) && (strcmp((const char *)Parameter("DeviceIDs"), "auto") == 0))
+    autoconfigure=true;
+ else // otherwise configure the usual way (i.e., using serial numbers)
+    autoconfigure=false;
 
  for (unsigned int dev=0; dev<pBuffer.size(); dev++)
   if (pBuffer.at(dev)) delete [] pBuffer.at(dev);
@@ -204,39 +260,15 @@ REF     CommonReference;
  filternumber=notchnumber=-1;
  if (Parameter("FilterEnabled") == 1)
     {
-    GT_GetNumberOfFilter(&nof);
-    filt = new _FILT[nof];
-    for (int no_filt=0; no_filt<nof; no_filt++)
-     {
-     GT_GetFilterSpec(filt);
-     if ((fabs(filt[no_filt].fu-Parameter("FilterHighPass")) < 0.0001) &&
-         (fabs(filt[no_filt].fo-Parameter("FilterLowPass")) < 0.0001) &&
-         (filt[no_filt].fs == samplingrate) &&
-         (filt[no_filt].order == Parameter("FilterModelOrder")) &&
-         (filt[no_filt].type == Parameter("FilterType")))
-        filternumber=no_filt;
-     }
-    delete filt;
-    if (filternumber == -1) bciout << "Could not find appropriate pass band filter in gUSBamp. Use gUSBampgetinfo tool." << endl;
+    filternumber=DetermineFilterNumber();
+    assert (filternumber >= 0);
     }
 
  // get notch filter settings if notch is turned on
  if (Parameter("NotchEnabled") == 1)
     {
-    GT_GetNumberOfNotch(&nof);
-    filt = new _FILT[nof];
-    for (int no_filt=0; no_filt<nof; no_filt++)
-     {
-     GT_GetNotchSpec(filt);
-     if ((fabs(filt[no_filt].fu-Parameter("NotchHighPass")) < 0.0001) &&
-         (fabs(filt[no_filt].fo-Parameter("NotchLowPass")) < 0.0001) &&
-         (filt[no_filt].fs == samplingrate) &&
-         (filt[no_filt].order == Parameter("NotchModelOrder")) &&
-         (filt[no_filt].type == Parameter("NotchType")))
-        notchnumber=no_filt;
-     }
-    delete filt;
-    if (notchnumber == -1) bciout << "Could not find appropriate notch filter in gUSBamp. Use gUSBampgetinfo tool." << endl;
+    notchnumber=DetermineNotchNumber();
+    assert(notchnumber >= 0);
     }
 
  // set the GND structure; connect the GNDs on all four blocks to common ground
@@ -252,10 +284,10 @@ REF     CommonReference;
 
  //
  // at the moment, we CANNOT determine whether we've lost some data
- // thus, we set the timeout to be small, e.g., 3 times the size of
+ // thus, we set the timeout to be small, e.g., 1.5 times the size of
  // one sample block and simply give a warning
  // this is not perfect but I simply can't do it better at the moment
- timeoutms=(int)((Parameter("SampleBlockSize")/Parameter("SamplingRate"))*1000*3);
+ timeoutms=(int)((Parameter("SampleBlockSize")/Parameter("SamplingRate"))*1000*1.5);
 
  // determine the number of devices and allocate the buffers accordingly
  numdevices=Parameter("DeviceIDs")->GetNumValues();
@@ -275,13 +307,21 @@ REF     CommonReference;
   UCHAR *channels=new UCHAR[numchans.at(dev)];
   pBuffer.at(dev)=new BYTE[buffersize.at(dev)];
   // pBuffer.at(dev)=new BYTE[pointsinbuffer*sizeof(float)*numberofbuffers+HEADER_SIZE];  // if we have one buffer, it equals buffersize.at(dev)
-  DeviceIDs.at(dev)=string(Parameter("DeviceIDs", dev));
-  hdev.at(dev) = GT_OpenDeviceEx((char *)DeviceIDs.at(dev).c_str());
-  if (!hdev.at(dev))
+  // determine the serial number either automatically (if autoconfigure mode) or from DeviceID parameter
+  if (autoconfigure)
      {
-     bcierr << "Could not open device " << DeviceIDs.at(dev) << endl;
-     break;
+     char serialnr[16];
+     HANDLE hdev=GT_OpenDevice(DetectAutoMode());
+     assert(hdev); // better safe than sorry ;-)
+     GT_GetSerial(hdev, (LPSTR)serialnr, 16);     // 16 according to documentation
+     GT_CloseDevice(&hdev);
+     DeviceIDs.at(dev)=string(serialnr);
+     MasterDeviceID=DeviceIDs.at(dev);
      }
+  else
+     DeviceIDs.at(dev)=string(Parameter("DeviceIDs", dev));
+  hdev.at(dev) = GT_OpenDeviceEx((char *)DeviceIDs.at(dev).c_str());
+  assert(hdev.at(dev));
 
   ret=GT_SetBufferSize(hdev.at(dev), buffersize.at(dev));
   // set all devices to slave except the one master
@@ -371,7 +411,7 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
      // throw;
      }
   GetOverlappedResult(hdev.at(dev), &ov, &dwBytesReceived, FALSE);
-  for (int sample=0; sample<signal->MaxElements(); sample++)
+  for (int sample=0; sample<(int)signal->MaxElements(); sample++)
    {
    for (int channel=0; channel<numchans.at(dev); channel++)
     {
@@ -418,7 +458,100 @@ void gUSBampADC::Halt()
   }
 }
 
+// **************************************************************************
+// Function:   DetectAutoMode
+// Purpose:    This function determines whether the system can be configured automatically.
+//             This is the case when there is exactly one amplifier connected.
+// Parameters: N/A
+// Returns:    0..15 ... USB ID of the one connected amplifier
+//             -1 ... no amplifier detected
+//             -2 ... more than one amplifier detected
+// **************************************************************************
+int gUSBampADC::DetectAutoMode()
+{
+ int numdetected=0, USBport=-1;
+
+ for (int cur_USBport=0; cur_USBport<16; cur_USBport++)
+  {
+  HANDLE hdev = GT_OpenDevice(cur_USBport);
+  if (hdev)
+     {
+     numdetected++;
+     GT_CloseDevice(&hdev);
+     USBport=cur_USBport;
+     }
+  }
+
+ if (numdetected > 1)  return(-2);
+ if (numdetected == 0) return(-1);
+ return(USBport);
+}
 
 
+// **************************************************************************
+// Function:   DetermineFilterNumber
+// Purpose:    This routine determines the pass band filter number that
+//             a particular parameter setting corresponds to
+// Parameters: N/A
+// Returns:    >=0: pass band filter number
+//             -1 filter number not found
+// **************************************************************************
+int gUSBampADC::DetermineFilterNumber()
+{
+int     nof;
+FILT    *filt;
 
+ int samplingrate=Parameter("SamplingRate");
+ int filternumber;
+
+ GT_GetNumberOfFilter(&nof);
+ filt = new _FILT[nof];
+ for (int no_filt=0; no_filt<nof; no_filt++)
+  {
+  GT_GetFilterSpec(filt);
+  if ((fabs(filt[no_filt].fu-Parameter("FilterHighPass")) < 0.0001) &&
+      (fabs(filt[no_filt].fo-Parameter("FilterLowPass")) < 0.0001) &&
+      (filt[no_filt].fs == samplingrate) &&
+      (filt[no_filt].order == Parameter("FilterModelOrder")) &&
+      (filt[no_filt].type == Parameter("FilterType")))
+     filternumber=no_filt;
+  }
+ delete filt;
+
+ return(filternumber);
+}
+
+
+// **************************************************************************
+// Function:   DetermineNotchNumber
+// Purpose:    This routine determines the notch filter number that
+//             a particular parameter setting corresponds to
+// Parameters: N/A
+// Returns:    >=0: notch filter number
+//             -1 filter number not found
+// **************************************************************************
+int gUSBampADC::DetermineNotchNumber()
+{
+int     nof;
+FILT    *filt;
+
+ int samplingrate=Parameter("SamplingRate");
+ int notchnumber;
+
+ GT_GetNumberOfNotch(&nof);
+ filt = new _FILT[nof];
+ for (int no_filt=0; no_filt<nof; no_filt++)
+  {
+  GT_GetNotchSpec(filt);
+  if ((fabs(filt[no_filt].fu-Parameter("NotchHighPass")) < 0.0001) &&
+      (fabs(filt[no_filt].fo-Parameter("NotchLowPass")) < 0.0001) &&
+      (filt[no_filt].fs == samplingrate) &&
+      (filt[no_filt].order == Parameter("NotchModelOrder")) &&
+      (filt[no_filt].type == Parameter("NotchType")))
+     notchnumber=no_filt;
+  }
+ delete filt;
+
+ return(notchnumber);
+}
 
