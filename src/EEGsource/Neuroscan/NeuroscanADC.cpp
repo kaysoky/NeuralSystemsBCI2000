@@ -2,20 +2,14 @@
  * Program:   EEGsource.EXE                                                   *
  * Module:    NeuroscanADC.CPP                                                *
  * Comment:   Definition for the GenericADC class                             *
- * Version:   0.05                                                            *
+ * Version:   1.00                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
  *                                                                            *
- * V0.01 - 05/11/2000 - First start                                           *
- *         05/23/2000 - completed first start and documented                  *
- * V0.02 - 05/26/2000 - changed **RawEEG to *GenericIntSignal                 *
- * V0.03 - 07/25/2000 - made it a waveform generator                          *
- * V0.04 - 03/23/2001 - made the waveform generator more powerful             *
- * V0.05 - 09/28/2001 - can modulate samples based on mouse                   *
- * V0.06 - 03/28/2003 - juergen.mellinger@uni-tuebingen.de:                   *
- *                      now derived from GenericFilter                        *
+ * V1.00 - 04/28/2004 - First working version                                 *
+ * V1.10 - 05/17/2004 - Now includes support for 32bit data                   *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -192,7 +186,7 @@ float LSB;
   PreflightCondition( Parameter( "SoftwareCh" ) == num_channels );
   PreflightCondition( Parameter( "SampleBlockSize" ) == blocksize );
   PreflightCondition( Parameter( "SamplingRate" ) == samplingrate );
-  PreflightCondition( bitspersample == 16 );                            // currently, we only support 16 bit data
+  // PreflightCondition( bitspersample == 16 );                            // currently, we only support 16 bit data
 
   // also cross check SourceChGain and SourceChOffset
   for (int ch=0; ch<Parameter( "SoftwareCh" ); ch++)
@@ -394,13 +388,39 @@ bool          retval;
        LSB=m_BasicInfo.fResolution;                   // microvolts per LSB
        // we have cross-checked these values in Preflight() before,
        // thus, do not need to cross-check again
-       // now, do remember these values for later 
+       // now, do remember these values for later
        }
     }
  else if (pMsg->m_wCode == DataType_EegData)
     {
+    if ((pMsg->m_wRequest != DataTypeRaw16bit) && (pMsg->m_wRequest != DataTypeRaw32bit))
+       bcierr << "Unrecognized EEG data type." << endl;
+    // 32 bit data received
+    // for BCI2000, take bits 1-16 (no good plan yet what to do with bits 17-22)
     if (pMsg->m_wRequest == DataTypeRaw32bit)
-       bcierr << "NeuroscanADC does not currently support 32 bit data" << endl;
+       {
+       assert((int)(pMsg->m_dwSize) == (int)(num_channels+num_markerchannels)*blocksize*(bitspersample/8));
+       assert(samplingrate > 0);        // if -1, this means we have not received the info block prior to a data block
+       int *sample=(int *)pMsg->m_pBody;
+       // process raw 32 bit data
+       for (int samp=0; samp<blocksize; samp++)
+        {
+        for (int ch=0; ch<(num_channels+num_markerchannels); ch++)
+         {
+         // now, write all the samples into the output signal
+         if (((unsigned int)samp < signal->MaxElements()) && ((unsigned int)ch < signal->Channels()))
+            signal->SetValue(ch, samp, (short)((sample[samp*(num_channels+num_markerchannels)+ch])&0xffff));
+         }
+        }
+       // we also write the event marker channel into a state variable
+       // in the current implementation of BCI2000, we can only have one event marker
+       // per sample block, not per sample
+       // let's use the event marker of the first sample for the whole sample block
+       if (num_markerchannels > 0)
+          State("NeuroscanEvent1")=(unsigned char)(sample[num_channels]&0xFF); // mask out lower 8 bits
+       retval=true;
+       }
+    // 16 bit data received
     if (pMsg->m_wRequest == DataTypeRaw16bit)
        {
        assert((int)(pMsg->m_dwSize) == (int)(num_channels+num_markerchannels)*blocksize*(bitspersample/8));
