@@ -170,8 +170,6 @@ GenericSignal::ReadBinary( std::istream& is )
   get( is, channels );
   get( is, maxElem );
   SetProperties( SignalProperties( channels, maxElem, sizeof( value_type ) ) );
-  // Note that the Channels/Samples loops are different for
-  // DATATYPE_INTEGER and DATATYPE_FLOAT.
   switch( datatype )
   {
     case DATATYPE_INTEGER:

@@ -219,7 +219,7 @@ BasicSignal< T >::SetProperties( const SignalProperties& inSp )
 
 template<class T>
 std::ostream&
-WriteBinary( std::ostream& os )
+BasicSignal< T >::WriteBinary( std::ostream& os )
 {
   SignalProperties::WriteBinary( os );
   for( size_t j = 0; j < MaxElements(); ++j )
@@ -228,17 +228,17 @@ WriteBinary( std::ostream& os )
       if( j >= Value[ i ].size() )
       {
         static T null = T( 0 );
-        os.write( &null, GetDepth() );
+        os.write( ( const char* )&null, GetDepth() );
       }
       else
-        os.write( &Value[ i ][ j ], GetDepth() );
+        os.write( ( const char* )&Value[ i ][ j ], GetDepth() );
     }
   return os;
 }
 
 template<class T>
 std::istream&
-ReadBinary( std::istream& is )
+BasicSignal< T >::ReadBinary( std::istream& is )
 {
   SignalProperties::ReadBinary( is );
   SetProperties( *this );
@@ -246,7 +246,7 @@ ReadBinary( std::istream& is )
     for( size_t i = 0; i < Value.size(); ++i )
     {
       if( j < Value[ i ].size() )
-        os.read( &Value[ i ][ j ], GetDepth() );
+        os.read( ( char* )&Value[ i ][ j ], GetDepth() );
     }
   return is;
 }

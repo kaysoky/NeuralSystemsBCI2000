@@ -14,6 +14,7 @@
 //
 // Changes: Apr 16, 2003: Replaced dummy implementations by objects that
 //          actually hold messages.
+//          Jul 22, 2003: Added implementations for command line tools.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -21,8 +22,12 @@
 
 #include "UBCIError.h"
 
-#include "UCoreComm.h"
-#include "UEnvironment.h"
+#ifdef BCI_TOOL
+# include <iostream>
+#else
+# include "UCoreComm.h"
+# include "UEnvironment.h"
+#endif
 
 using namespace std;
 using namespace BCIError;
@@ -71,6 +76,7 @@ bci_ostream::bci_stringbuf::sync()
   return r;
 }
 
+#ifndef BCI_TOOL
 // A preliminary implementation of the error display/error handling mechanism
 // on the core module side.
 struct StatusMessage
@@ -118,4 +124,30 @@ BCIError::LogicError( const std::string& message )
   if( message.length() > 1 )
     StatusMessage( 499, message.substr( 0, message.length() - 1 ) );
 }
+#else // implementation for a command line tool
+void
+BCIError::Warning( const std::string& message )
+{
+}
 
+void
+BCIError::ConfigurationError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Configuration Error: " << message << endl;
+}
+
+void
+BCIError::RuntimeError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Runtime Error: " << message << endl;
+}
+
+void
+BCIError::LogicError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Logic Error: " << message << endl;
+}
+#endif // BCI_TOOL

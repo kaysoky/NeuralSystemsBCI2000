@@ -3,13 +3,16 @@
  * Module:    UState.cpp                                                      *
  * Comment:   This unit provides support for system-wide states,              *
  *            lists of states, and the state vector                           *
- * Version:   0.08                                                            *
+ * Version:   0.09                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
  *                                                                            *
  * V0.08 - 03/30/2000 - First commented version                               *
+ * V0.09 - 07/22/2003 - Replaced VCL's TList with STL's std::vector<>         *
+ *                      to avoid linking against the VCL in command line      *
+ *                      tools using the STATELIST class, jm                   *
  ******************************************************************************/
 //---------------------------------------------------------------------------
 #include "PCHIncludes.h"
@@ -33,7 +36,9 @@ using namespace std;
 // **************************************************************************
 STATELIST::STATELIST()
 {
+#ifndef NO_VCL
  state_list=new TList;
+#endif
 }
 
 // **************************************************************************
@@ -46,7 +51,9 @@ STATELIST::STATELIST()
 STATELIST::~STATELIST()
 {
  ClearStateList();
+#ifndef NO_VCL
  delete state_list;
+#endif
 }
 
 
@@ -58,7 +65,11 @@ STATELIST::~STATELIST()
 // **************************************************************************
 int STATELIST::GetNumStates() const
 {
+#ifdef NO_VCL
+  return state_list.size();
+#else
 return(state_list->Count);
+#endif
 }
 
 
@@ -70,6 +81,12 @@ return(state_list->Count);
 // **************************************************************************
 void STATELIST::ClearStateList()
 {
+#ifdef NO_VCL
+  for( _state_list::const_iterator i = state_list.begin();
+          i != state_list.end(); ++i )
+    delete *i;
+  state_list.clear();
+#else
 int     i;
 STATE   *cur_state;
 
@@ -80,6 +97,7 @@ STATE   *cur_state;
    delete cur_state;
    }
   state_list->Clear();
+#endif // NO_VCL
 }
 
 
@@ -92,12 +110,35 @@ STATE   *cur_state;
 // **************************************************************************
 STATE *STATELIST::GetStatePtr(int idx)  const
 {
+#ifdef NO_VCL
+  return ( idx < GetNumStates() && idx > 0 ) ? state_list[ idx ] : NULL;
+#else
  if ((idx < state_list->Count) && (idx >= 0))
     return((STATE *)state_list->Items[idx]);
  else
     return(NULL);
+#endif
 }
 
+#ifdef NO_VCL
+// **************************************************************************
+// Function:   GetStateIndex
+// Purpose:    given a state's name, returns the index to an appropriate
+//             element in the vector
+// Parameters: name - name of the state
+// Returns:    index of the first pointer to a state with the given name,
+//             or state_list.size(), if no state with this name exists in the
+//             vector
+// **************************************************************************
+STATELIST::_state_list::size_type STATELIST::GetStateIndex( const char *name ) const
+{
+  string s_name( name );
+  _state_list::size_type i = 0;
+  while( i < state_list.size() && s_name != state_list[ i ]->GetName() )
+    ++i;
+  return i;
+}
+#endif // NO_VCL
 
 // **************************************************************************
 // Function:   GetStatePtr
@@ -108,6 +149,9 @@ STATE *STATELIST::GetStatePtr(int idx)  const
 // **************************************************************************
 STATE *STATELIST::GetStatePtr(const char *name) const
 {
+#ifdef NO_VCL
+  return GetStatePtr( GetStateIndex( name ) );
+#else
 const char* statename;
 int         i;
 
@@ -119,6 +163,7 @@ int         i;
   }
 
  return(NULL);
+#endif
 }
 
 
@@ -162,7 +207,7 @@ STATE* new_state,
 
 
 // **************************************************************************
-// Function:   DeleteParam
+// Function:   DeleteState
 // Purpose:    deletes a state of a given name in the list of states
 //             it also frees the memory for this particular state
 //             it does not do anything, if the state does not exist
@@ -171,6 +216,14 @@ STATE* new_state,
 // **************************************************************************
 void STATELIST::DeleteState(const char *name)
 {
+#ifdef NO_VCL
+  size_t i = GetStateIndex( name );
+  if( i < state_list.size() )
+  {
+    delete state_list[ i ];
+    state_list.erase( state_list.begin() + i );
+  }
+#else // NO_VCL
 int     i;
 STATE   *cur_state;
 
@@ -184,6 +237,7 @@ STATE   *cur_state;
      delete cur_state;
      }
   }
+#endif // NO_VCL
 }
 
 
@@ -199,6 +253,10 @@ STATE   *cur_state;
 // **************************************************************************
 void STATELIST::AddState2List(const STATE *state)
 {
+#ifdef NO_VCL
+  DeleteState( state->GetName() );
+  state_list.push_back( new STATE( *state ) );
+#else // NO_VCL
 STATE           *newstate;
 
  // if we can find a state with the same name, delete the old state and
@@ -215,6 +273,7 @@ STATE           *newstate;
 #endif
 
  state_list->Add(newstate);
+#endif // NO_VCL
 }
 
 

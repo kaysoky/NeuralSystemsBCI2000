@@ -33,6 +33,7 @@ class Environment
  friend class TfMain;
  friend class Documentar;
  friend class StatusMessage;
+ friend class ToolWrapper;
  friend class FILTERS;
 
  // Protecting the constructor prevents instantiation of this class

@@ -13,8 +13,14 @@
 #define LENGTH_NAME             30
 #define LENGTH_STATELINE        512
 
-#include <vcl.h>
+#ifdef NO_VCL
+# include <vector>
+#else
+# include <vcl.h>
+#endif // NO_VCL
 #include <string>
+
+typedef unsigned char BYTE;
 
 class STATE
 {
@@ -55,7 +61,13 @@ public:     // User declarations
 class STATELIST
 {
 private:    // User declarations
+#ifdef NO_VCL
+        typedef std::vector<STATE*> _state_list;
+        _state_list state_list;
+        _state_list::size_type GetStateIndex( const char* name ) const;
+#else
         class TList *state_list;
+#endif
 public:     // User declarations
         STATELIST::STATELIST();
         STATELIST::~STATELIST();
