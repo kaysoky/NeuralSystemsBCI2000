@@ -26,7 +26,7 @@
 
 %\include{title}
 \title{BCI2000-Compatible Audio-Visual P3 Task}
-\author{J\"{u}rgen Mellinger, Gerwin Schalk}
+\author{Gerwin Schalk, J\"{u}rgen Mellinger, Dennis Mc Farland}
 \maketitle
 
 \tableofcontents
@@ -48,52 +48,78 @@ selected stimulus in either a copy or a free mode.
 
 \subsection{Stimulus Definition}
 
-Stimuli are defined in a Windows\texttrademark{} ini-file. This file defines the 
-total number of stimuli, as well as the details of each stimulus. Each 
-stimulus is defined by the following properties:
+Stimuli are set up through a parameter defined by the application module. This
+implicitly defines the total number of stimuli as well as the details of each stimulus.
+Each stimulus is defined by the following properties:
 \begin{enumerate}
  \item Caption
  \item Icon file
  \item Audio file
 \end{enumerate}
 
-In addition to stimuli, the file contains definition for a stimulus that 
+In addition to stimuli, the parameter contains a definition for a stimulus that 
 announces what to focus on, and a stimulus that announces the result. These
 stimuli are only used when the task is set to copy or free mode.
 
-The following is an example of a stimulus definition file with two stimuli:
+The following table contains an example definition of two stimuli;
+for clarity, the parameter line defining the associated parameter is also given:
+\footnote{
+  The line's parameter format contains to newly introduced extensions:
+  \begin{itemize}
+  \item In the place of a dimension value there may be a list of string labels
+        that may be used instead of numerical indices, delimited by a matching
+        pair of any of \{\},[],().
+  \item A \texttt{\%} character followed by up to two hexadecimal digits represents
+        a byte value in hexadecimal notation, thus \texttt{\%20} represents a
+        space character, and \texttt{\%}, \texttt{\%0}, and \texttt{\%00} all
+        represent an empty string value; \texttt{\%\%} represents the \texttt{\%}
+        character itself.
+  \end{itemize}
+}
+
+\begin{center}
+\begin{tiny}
+\begin{tabular}{r|llll}
+           & focuson & result & stimulus1 & stimulus2 \\ \hline
+   caption & Please focus on
+           & The result was
+           & Donkey
+           & \\
+      icon & \verb|icons\focus on.bmp|
+           & \verb|icons\result.bmp|
+           & \verb|icons\donkey.bmp|
+           & \verb|icons\elefant.bmp|\\
+     audio & \verb|wav\focus on.wav|
+           & \verb|wav\result.wav|
+           & \verb|wav\snicker.wav|
+           & \verb|wav\trumpet.wav|\\	
+\end{tabular}
+\end{tiny}
+\end{center}
+\label{tab:stimuli_example}
+
 \begin{verbatim}
-[global]
-numstimuli      = 2
-
-[focuson]
-caption         = Please focus on
-icon            = icons\focus on.bmp
-audio           = wav\focus on.wav
-
-[result]
-caption         = The result was
-icon            = icons\result.bmp
-audio           = wav\result.wav
-
-[stimulus1]
-caption         = Donkey
-icon            = icons\donkey.bmp
-audio           = wav\snicker.wav
-
-[stimulus2]
-caption         =
-icon            = icons\elefant.bmp
-audio           = wav\trumpet.wav
+"P3AV matrix Stimuli= "
+      "{caption icon audio} "                  // row labels
+      "{focuson result stimulus1 stimulus2} "  // column labels
+      
+      // focuson
+      "Please%20focus%20on icons\\focus%20on.bmp wav\\focus%20on.wav "
+      // result
+      "The%20result%20was icons\\result.bmp wav\\result.wav "
+      // stimulus1
+      "Donkey icons\\donkey.bmp wav\\snicker.wav "
+      // stimulus2
+      "% icons\\elefant.bmp wav\\trumpet.wav "
 \end{verbatim}
 
 \emph{Comments:} The stimulus properties might contain white spaces. A 
 caption/icon/audio file are not being presented, if they are not defined (e.g., 
-see caption in stimulus2). The stimulus definition file does \emph{not} contain 
-a description on how the stimuli are presented. Stimulus numbers start at 1. For 
-each run, the ini-file will be copied to the same location as the actual data 
-file. For example, if the data file is "JJS007R03.dat," and the ini-file is 
-"stimdefs.ini," then the ini-file will be copied and named "JJS007R03.ini."
+see caption in stimulus2). The stimulus definition parameter does \emph{not} contain 
+a description on how the stimuli are presented. Stimulus numbers start at 1.
+Relative paths are interpreted relative to the application module's executable
+location.\footnote{Which, in general, is not the application module's
+working directory at runtime but the path portion of the first argument to \texttt{main()}.}
 
 \subsection{Stimulus Sequence}
 
@@ -108,17 +134,27 @@ entering a list of stimulus IDs to be presented. As an example:
 defines a sequence in which stimulus 1 is first presented, followed by 
 stimulus 5, etc.
 
-\subsubsection{Random Sequence:}The investigator defines the stimulus 
-probabilities for each stimulus. Stimulus probabilities do not have to
-add up to 100\%. (The sum of all probabilities will define 100\%).
+\subsubsection{Random Sequence:}The investigator defines absolute stimulus 
+frequencies for each stimulus, with the sum $N$ of those values equaling the total
+number of stimulus presentations in the final sequence. The resulting random
+sequence is obtained by applying a random permutation to an arbitrary sequence
+that reproduces the given frequencies, with all $N!$ index permutations being
+equally probable (Block Randomization).
+\footnote{Block randomization routines, as well as a pseudo random generator better
+than the one available via \texttt{rand()}, are available in the P3 Speller module.}
+
 As an example: 
 \begin{verbatim} 
-60 20 20
+6 2 3
 \end{verbatim} 
-defines a probability of 60\% for stimulus 1, and 20\% each for stimuli 2 and 3.
+defines a sequence of 11 stimulus presentations with stimulus 1 being presented 6
+times, stimulus 2 2 times, and stimulus 3 3 times. The resulting sequence $S_1$ will
+be a permutation of $S_0 = [1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3]$, and the probability
+for $S_1$ to equal $S_0$ will be
+$\frac{6!\times2!\times3!}{(6+2+3)!}=1/4620$.
 
-A sequence can be played multiple times. The investigator can define how many 
-times sequences are played.
+Multiple sequences can be generated from the given frequencies.
+The investigator can define how many sequences are generated and played.
 
 \subsection{Stimulus Delivery}
 
@@ -133,21 +169,29 @@ An investigator can specify:
 \begin{itemize}
  \item Size and position of the target window (using the same scheme/parameters 
        as used by the RJB task, Oddball paradigm, or P3 speller).
- \item Width and height of caption and icon in percent of screen width/height
+ \item Width and height of caption and icon in percent of screen
+       width/height\footnote{Using, e.g., the \texttt{TImage::Stretch} property for scaling.}
  \item Whether captions, icons, or audio files will be presented
        (i.e., a global switch -- for each stimulus, captions/icons/wave files
        will not be presented individually, if not defined)
- \item The volume for audio playback
- \item Window background color in RGB
+ \item The volume for audio playback as a float value between 0 and 1
+ \item Window background color in RGB\footnote{For convenience, RGB values
+       may be entered in hexadecimal notation, e.g. \texttt{0xff0000} for red.}
  \item Caption color in RGB
- \item The duration during which a stimulus is presented (in units of SampleBlocks)
- \item The inter-stimulus interval that follows completed stimulus presentation \footnote{During 
-       the inter-stimulus interval, the screen is blank and audio is turned off.}
+ \item The duration during which a stimulus is presented (in units of
+       SampleBlocks)\footnote{Playback of audio extending above the specified duration 
+       will be muted.}
+ \item The duration of an inter-stimulus interval following stimulus presentation
+       (in units of SampleBlocks)\footnote{During the inter-stimulus interval, the
+       screen is blank and audio is turned off.}
  \item A minimum and maximum time (in units of SampleBlocks) that will be added randomly
-       to the inter-stimulus interval. If these variables are both set to 0,
-       the actual inter-stimulus interval will always be exactly as defined above.
+       to the inter-stimulus interval, with probability distributed uniformly over time
+       intervals.
+       If these variables are both set to 0, the actual inter-stimulus interval will
+       always be exactly as defined above.
        If these variables are set to, for example, 0 and 3, inter-stimulus intervals
-       will randomly be longer by between 0 and 3 units.
+       will randomly be longer by between 0 and 3 units, with a probability of $1/4$
+       for the occurrence of any one of the four time intervals possible.
  \item A Comment. A user can enter comments to the specific run in a string parameter.
 \end{itemize}
 
@@ -175,7 +219,7 @@ Processing's classification is announced. The final classification result is
 the stimulus with the highest classification result.
 
 In order to deliver this announcement, the system uses the stimulus defined in 
-the \texttt{[result]} section of the stimulus ini-file. This announcement is 
+the \texttt{result} column of the stimuli parameter. This announcement is 
 followed by delivery of the determined stimulus. In other words, after a 
 sequence of stimulus delivery, the system might play a .wav file that says: "the 
 result is," followed by a .wav file that says "yes." (assuming "yes" represents
@@ -196,7 +240,7 @@ attend to stimulus 3 for the first sequence, 5 for the second sequence, etc.
 In addition to an announcement of the result, in copy mode the delivery of 
 stimuli is preceded by an announcement that describes which stimulus the user
 has to attend to. This announcement uses the stimulus that is defined in the
-\texttt{[focuson]} section of the ini-file. This announcement is followed by
+\texttt{focuson} column of the stimuli parameter. This announcement is followed by
 delivery of the desired target stimulus. As an example, the system might say
 "Please focus now on" ... "yes," before it starts with the sequence of
 stimulus delivery.
@@ -212,7 +256,7 @@ Fill in the parameters incl. description, once completed.
 \section{States}
 
 The time line of stimulus delivery is encoded in state variables as defined in
-Table \ref{tab:states}.
+Table~\ref{tab:states}.
 \begin{table}
 \begin{center}
 \begin{tabular}[ht]{|l|l|l|}
