@@ -33,8 +33,8 @@ class SignalProperties
 {
   public:
     SignalProperties()
-    : elements( 0, 0 ), maxElements( 0 ), depth( 0 ) {}
-    SignalProperties( size_t inChannels, size_t inMaxElements, size_t inDepth = 0 )
+    : elements( 0, 0 ), maxElements( 0 ), depth( sizeof( float ) ) {}
+    SignalProperties( size_t inChannels, size_t inMaxElements, size_t inDepth = sizeof( float ) )
     : elements( inChannels, inMaxElements ), maxElements( inMaxElements ), depth( inDepth ) {}
     virtual ~SignalProperties() {}
 

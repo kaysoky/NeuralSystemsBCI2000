@@ -79,6 +79,8 @@ SignalProperties::ReadBinary( std::istream& is )
 bool
 SignalProperties::operator>=( const SignalProperties& sp ) const
 {
+  if( depth < sp.depth )
+    return false;
   if( elements.size() < sp.elements.size() )
     return false;
   for( size_t i = 0; i < sp.elements.size(); ++i )
@@ -90,6 +92,8 @@ SignalProperties::operator>=( const SignalProperties& sp ) const
 bool
 SignalProperties::operator<=( const SignalProperties& sp ) const
 {
+  if( sp.depth < depth )
+    return false;
   if( sp.elements.size() < elements.size() )
     return false;
   for( size_t i = 0; i < elements.size(); ++i )
