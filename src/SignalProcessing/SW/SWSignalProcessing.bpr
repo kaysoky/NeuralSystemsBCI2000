@@ -11,7 +11,7 @@
       obj\BCIDirectry.obj obj\SWFilter.obj obj\Statistics.obj 
       obj\classfilter.obj obj\Normalfilter.obj obj\SpatialFilter.obj 
       obj\CalibrationFilter.obj obj\StatFilter.obj obj\UGenericFilter.obj 
-      obj\UBCIError.obj obj\UEnvironment.obj"/>
+      obj\UBCIError.obj obj\UEnvironment.obj obj\FFTFilter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -22,7 +22,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..;..;..;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..;..;..;..\..\shared;..\..\shared;..\..\shared;.."/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -32,8 +32,8 @@
     <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SignalProcessing.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -79,6 +79,7 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\FFTFilter.cpp" FORMNAME="" UNITNAME="FFTFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

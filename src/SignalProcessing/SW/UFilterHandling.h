@@ -28,6 +28,7 @@ public:
        bool     was_error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
+       class TFFTFilter*  FFTFilter;
        ClassFilter        *classfilter;
        NormalFilter       *normalfilter;
        StatFilter         *statfilter;

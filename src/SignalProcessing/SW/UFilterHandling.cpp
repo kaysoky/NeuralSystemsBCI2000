@@ -5,6 +5,7 @@
 
 #include "StatFilter.h"
 #include "UFilterHandling.h"
+#include "FFTFilter.h"
 
 //---------------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ char line[512];
  calfilter=new CalibrationFilter;
  spatfilter= new SpatialFilter;
 // tempfilter= new TemporalFilter(plist, slist);
+ FFTFilter = new TFFTFilter;
  SWFilter = new TSW;
  SetBaseline = new TSetBaseline;
  FBArteCorrection = new TFBArteCorrection;
@@ -59,6 +61,7 @@ FILTERS::~FILTERS()
  calfilter=NULL;
  if(spatfilter) delete spatfilter;
  spatfilter=NULL;
+ delete FFTFilter;
  // if(tempfilter) delete tempfilter;
  // tempfilter= NULL;
  if (SWFilter) delete SWFilter;
@@ -122,6 +125,7 @@ int     maxchannels, maxelements;
    // now, here place the code to initalize your filter
  calfilter->Initialize();
  spatfilter->Initialize();
+ FFTFilter->Initialize();
 // res= tempfilter->Initialize(plist, svector, corecomm);
 // if(res == 0 ) returnval= 0;
  SWFilter->Initialize();
@@ -188,6 +192,7 @@ int res, returnval;
  // now, here place the code to let your filters process the signals
  calfilter->Process(SignalA, SignalB);
  spatfilter->Process(SignalB, SignalC);
+ FFTFilter->Process( SignalC, NULL );
  SWFilter->Process(SignalC, SignalD);
  SetBaseline->Process(NULL,SignalD);
  FBArteCorrection->Process(NULL,SignalD);

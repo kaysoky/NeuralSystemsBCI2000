@@ -9,6 +9,7 @@
 #include <math.h>
 #include "UState.h"
 #include "SWFilter.h"
+#include "UBCIError.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -360,7 +361,8 @@ TEMPORARY_ENVIRONMENT_GLUE
     else XBlockSize = 16;
 
     int XSWCh = paramlist->GetParamPtr("SWInChList")->GetNumValues();
-    if (paramlist->GetParamPtr("SWOutChList")->GetNumValues()!=XSWCh) Application->MessageBox("Number of incoming and outgoing channels are different!", "SW setup error", MB_OK);
+    if (paramlist->GetParamPtr("SWOutChList")->GetNumValues()!=XSWCh)
+      bcierr << "SW setup error: Number of incoming and outgoing channels are different!" << std::endl;
     int BS = SamplingRate/XBlockSize;
     int BIPts = atof(paramlist->GetParamPtr("BIPts")->GetValue())*BS;
     int FIPts = atof(paramlist->GetParamPtr("FIPts")->GetValue())*BS;
