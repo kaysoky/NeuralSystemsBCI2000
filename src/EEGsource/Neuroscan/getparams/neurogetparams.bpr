@@ -16,9 +16,7 @@
       teedb.bpi tee.bpi teeqr.bpi ibxpress.bpi visualclx.bpi visualdbclx.bpi 
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
-      indy.bpi bcb2kaxserver.bpi frontend.bpi OpenWirePkgCB6.bpi 
-      SignalLabBasicPkgCB6.bpi VideoLabPkgCB6.bpi AudioLabBasicPkgCB6.bpi 
-      SignalLabScopePkgCB6.bpi SignalLabPkgCB6.bpi"/>
+      indy.bpi bcb2kaxserver.bpi frontend.bpi"/>
     <PATHCPP value=".;..\..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
