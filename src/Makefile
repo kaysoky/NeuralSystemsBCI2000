@@ -38,7 +38,7 @@ FORCEWRITE = *.bpr *.res *.mak *.pdf *.exe
 # Extensions of files that will be deleted by 'make clean'.
 GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 # How to report when we are done with a target.
-DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
+DONE = @${SHELL} echo. && echo Done with target $@. && echo.
 # Where to put binaries below the installation root.
 BINDIR = prog
 # Where to put tools below the installation root if no separate tools directory is specified.
