@@ -3,7 +3,7 @@
  * Module:    UParameter.cpp                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.16                                                            *
+ * Version:   0.17                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -18,6 +18,7 @@
  * V0.13 - 08/09/2000 - Parameter supports datatype matrix                    *
  * V0.14 - 09/25/2000 - load and save parameter files                         *
  * V0.16 - 04/30/2001 - sorting of parameter lists; numerous other changes    *
+ * V0.17 - 01/31/2003 - fixed bug in SaveParameterList()                      *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -253,7 +254,7 @@ FILE        *fp;
 
  for (i=0; i<GetNumParameters(); i++)
   {
-  if (usetags && !GetParamPtr(i)->tag)
+  if ((usetags && !GetParamPtr(i)->tag) || (!usetags))
      {
      paramline=GetParamPtr(i)->GetParamLine();
      if (fprintf(fp, "%s\r\n", paramline) == EOF)
