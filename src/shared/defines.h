@@ -108,6 +108,8 @@ namespace SOURCEID
     SPELLERTRIALSEQ,
     Average,
     FFT = Average + 10,
+    EMALG = Average + 20,
+    EMALGLOG = Average + 21,
     SW = FFT + 64,
     Baseline,
     Artefact,
@@ -125,6 +127,8 @@ namespace SOURCEID
 # define SOURCEID_TASKLOG         (SOURCEID::TASKLOG)
 # define SOURCEID_ROUNDTRIP       (SOURCEID::ROUNDTRIP)
 # define SOURCEID_SPELLERTRIALSEQ (SOURCEID::SPELLERTRIALSEQ)
+# define SOURCEID_EMALG           (SOURCEID::EMALG)
+# define SOURCEID_EMALGLOG        (SOURCEID::EMALGLOG)
 #endif // _OLD_NAMES
 
 namespace DATATYPE
