@@ -58,6 +58,7 @@ private:
         int FeedbackTime;
         unsigned short CurrentIti;              // value of state - internal
         unsigned short CurrentRunning;          // value of state - internal
+        unsigned short CurRunFlag;              // special flag to prevent auto restart
        // int Resting;                            // value of parameter for resting data acquisition period
         unsigned short CurrentRest;             // value of state- internal
         int Resting;

@@ -161,6 +161,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         CurrentOutcome= 0;
         OutcomeTime= 0;
         CurrentRest= Resting;
+        CurRunFlag= 0;
         Hits= 0;
         Misses= 0;
         User->PutO(false);
@@ -176,6 +177,12 @@ void TTask::ReadStateValues(STATEVECTOR *statevector)
         CurrentFeedback=     statevector->GetStateValue("Feedback");
         CurrentIti=          statevector->GetStateValue("IntertrialInterval");
         CurrentRunning=      statevector->GetStateValue("Running");
+                if( CurRunFlag == 1 )     // 0 must cycle through at least once
+                {
+                        if( CurrentRunning == 1 ) CurrentRunning = 0;
+                        else                      CurRunFlag= 0;
+                }
+
         CurrentRest=         statevector->GetStateValue("RestPeriod");
         
 }
@@ -357,6 +364,7 @@ char            memotext[256];
             if (timepassed > timelimit)
                {
                CurrentRunning=0;
+               CurRunFlag= 1;
                if (Hits+Misses > 0)
                   {
                   sprintf(memotext, "Run %d - %.1f%% correct\r", run, (float)Hits*100/((float)Hits+(float)Misses));
