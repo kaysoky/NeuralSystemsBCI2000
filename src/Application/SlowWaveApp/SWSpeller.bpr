@@ -3,24 +3,33 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="SWApp.exe"/>
-    <OBJFILES value="obj\SWApp.obj obj\Task.obj obj\UMain.obj obj\UBCItime.obj 
-      obj\UCoreComm.obj obj\UCoreMessage.obj obj\UGenericSignal.obj 
-      obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
-      obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj 
-      obj\TargetSeq.obj obj\PresParams.obj obj\PresErrors.obj obj\WavePlayer.obj 
-      obj\MidiPlayer.obj obj\StateAccessor.obj obj\PresTaskModel.obj 
-      obj\ArtifactView.obj obj\TextProperties.obj obj\FeedbackView.obj 
-      obj\GUI.obj obj\MarkerView.obj obj\ReinforcementView.obj obj\ScoreView.obj 
-      obj\StimulusView.obj obj\TargetView.obj obj\BackgroundView.obj 
-      obj\GUIStimulusView.obj obj\GUIView.obj obj\GUIBackgroundView.obj 
-      obj\GUIFeedbackView.obj obj\GUIMarkerView.obj obj\GUIReinforcementView.obj 
-      obj\GUIScoreView.obj obj\GUITargetView.obj obj\GUITextProperties.obj 
-      obj\GUIArtifactView.obj obj\GUITextDialog.obj obj\Util.obj 
-      obj\ParamDecl.obj obj\PresModel.obj obj\TaskLogFile.obj 
-      obj\TrialStatistics.obj obj\MeasurementUnits.obj"/>
-    <RESFILES value="SWApp.res Presentation\src\Views\Win32\Views.res"/>
+    <PROJECT value="SWSpeller.exe"/>
+    <OBJFILES value="SWSpeller.obj\SWSpeller.obj SWSpeller.obj\Task.obj SWSpeller.obj\UMain.obj 
+      SWSpeller.obj\UBCItime.obj SWSpeller.obj\UCoreComm.obj 
+      SWSpeller.obj\UCoreMessage.obj SWSpeller.obj\UGenericSignal.obj 
+      SWSpeller.obj\UGenericVisualization.obj SWSpeller.obj\UParameter.obj 
+      SWSpeller.obj\UState.obj SWSpeller.obj\UStatus.obj 
+      SWSpeller.obj\USysCommand.obj SWSpeller.obj\BCIDirectry.obj 
+      SWSpeller.obj\UGenericFilter.obj SWSpeller.obj\UEnvironment.obj 
+      SWSpeller.obj\UBCIError.obj SWSpeller.obj\PresParams.obj 
+      SWSpeller.obj\PresErrors.obj SWSpeller.obj\WavePlayer.obj 
+      SWSpeller.obj\MidiPlayer.obj SWSpeller.obj\StateAccessor.obj 
+      SWSpeller.obj\ArtifactView.obj SWSpeller.obj\TextProperties.obj 
+      SWSpeller.obj\TextFrame.obj SWSpeller.obj\FeedbackView.obj 
+      SWSpeller.obj\GUI.obj SWSpeller.obj\MarkerView.obj 
+      SWSpeller.obj\ReinforcementView.obj SWSpeller.obj\ScoreView.obj 
+      SWSpeller.obj\TargetView.obj SWSpeller.obj\BackgroundView.obj 
+      SWSpeller.obj\GUIView.obj SWSpeller.obj\GUIBackgroundView.obj 
+      SWSpeller.obj\GUIFeedbackView.obj SWSpeller.obj\GUIMarkerView.obj 
+      SWSpeller.obj\GUIReinforcementView.obj SWSpeller.obj\GUIScoreView.obj 
+      SWSpeller.obj\GUITargetView.obj SWSpeller.obj\GUITextProperties.obj 
+      SWSpeller.obj\GUIArtifactView.obj SWSpeller.obj\GUITextFrame.obj 
+      SWSpeller.obj\GUITextDialog.obj SWSpeller.obj\Util.obj 
+      SWSpeller.obj\ParamDecl.obj SWSpeller.obj\PresModel.obj 
+      SWSpeller.obj\TaskLogFile.obj SWSpeller.obj\TrialStatistics.obj 
+      SWSpeller.obj\PresSpellerModel.obj SWSpeller.obj\SpellerTree.obj 
+      SWSpeller.obj\SpellerDict.obj SWSpeller.obj\MeasurementUnits.obj"/>
+    <RESFILES value="SWSpeller.res Presentation\src\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\UMain.dfm"/>
@@ -30,16 +39,16 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;Presentation\src;Presentation\src;Presentation\src;..\shared;..\shared;Presentation\src;Presentation\src\Models;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Utils\BCI2000;Presentation\src\Utils;Presentation\src;Presentation\src\Models;..\shared;..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;Presentation\src;Presentation\src;..\shared;..\shared;Presentation\src;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Utils\BCI2000;Presentation\src\Utils;Presentation\src;Presentation\src\Models;..\shared;..\shared;Presentation\src\Models;Presentation\src;Presentation\src;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;BCI2000;PERUVIAN_BRIGHTNESS_HACK"/>
+    <USERDEFINES value="_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK"/>
     <SYSDEFINES value="NO_STRICT"/>
-    <MAINSOURCE value="SWApp.cpp"/>
+    <MAINSOURCE value="SWSpeller.cpp"/>
     <INCLUDEPATH value="..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
@@ -49,10 +58,10 @@
   <OPTIONS>
     <CFLAG1 value="-Od -H=..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
       -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <PFLAGS value="-N2SWSpeller.obj -N0SWSpeller.obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <LFLAGS value="-ISWSpeller.obj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -62,8 +71,8 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="SWApp.cpp" FORMNAME="" UNITNAME="SWApp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="SWApp.res" FORMNAME="" UNITNAME="SWApp.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SWSpeller.cpp" FORMNAME="" UNITNAME="SWSpeller" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SWSpeller.res" FORMNAME="" UNITNAME="SWSpeller.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Task.cpp" FORMNAME="" UNITNAME="Task" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -79,24 +88,21 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\TargetSeq.cpp" FORMNAME="" UNITNAME="TargetSeq.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\PresParams.cpp" FORMNAME="" UNITNAME="PresParams.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\PresErrors.cpp" FORMNAME="" UNITNAME="PresErrors.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\MidiPlayer.cpp" FORMNAME="" UNITNAME="MidiPlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\StateAccessor.cpp" FORMNAME="" UNITNAME="StateAccessor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Models\PresTaskModel.cpp" FORMNAME="" UNITNAME="PresTaskModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\ArtifactView.cpp" FORMNAME="" UNITNAME="ArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\TextProperties.cpp" FORMNAME="" UNITNAME="TextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\src\Views\TextFrame.cpp" FORMNAME="" UNITNAME="TextFrame" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\StimulusView.cpp" FORMNAME="" UNITNAME="StimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\TargetView.cpp" FORMNAME="" UNITNAME="TargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIStimulusView.cpp" FORMNAME="" UNITNAME="GUIStimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\GUIView.cpp" FORMNAME="" UNITNAME="GUIView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\GUIBackgroundView.cpp" FORMNAME="" UNITNAME="GUIBackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\GUIFeedbackView.cpp" FORMNAME="" UNITNAME="GUIFeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -106,6 +112,7 @@
       <FILE FILENAME="Presentation\src\Views\Win32\GUITargetView.cpp" FORMNAME="" UNITNAME="GUITargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\GUITextProperties.cpp" FORMNAME="" UNITNAME="GUITextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\GUIArtifactView.cpp" FORMNAME="" UNITNAME="GUIArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\src\Views\Win32\GUITextFrame.cpp" FORMNAME="" UNITNAME="GUITextFrame" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Utils\BCI2000\GUITextDialog.cpp" FORMNAME="" UNITNAME="GUITextDialog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Utils\Util.cpp" FORMNAME="" UNITNAME="Util" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Presentation\src\Views\Win32\Views.res" FORMNAME="" UNITNAME="Views.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -113,6 +120,9 @@
       <FILE FILENAME="Presentation\src\Models\PresModel.cpp" FORMNAME="" UNITNAME="PresModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\TaskLogFile.cpp" FORMNAME="" UNITNAME="TaskLogFile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\TrialStatistics.cpp" FORMNAME="" UNITNAME="TrialStatistics" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\src\Models\PresSpellerModel.cpp" FORMNAME="" UNITNAME="PresSpellerModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\src\SpellerTree.cpp" FORMNAME="" UNITNAME="SpellerTree" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\src\SpellerDict.cpp" FORMNAME="" UNITNAME="SpellerDict" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
@@ -184,18 +194,20 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=7
-Item0=_DEBUG;BCI2000;PERUVIAN_BRIGHTNESS_HACK
-Item1=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;PERUVIAN_BRIGHTNESS_HACK
-Item2=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;PERUVIAN_BRIGHTNESS_HACK;VCL_DOUBLEBUF
-Item3=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;VCL_DOUBLEBUF
-Item4=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
-Item5=_DEBUG;BCI2000_STRICT
-Item6=_DEBUG;BCI2000
+Count=8
+Item0=_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK
+Item1=_DEBUG;BCI2000;PERUVIAN_BRIGHTNESS_HACK
+Item2=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;PERUVIAN_BRIGHTNESS_HACK
+Item3=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;PERUVIAN_BRIGHTNESS_HACK;VCL_DOUBLEBUF
+Item4=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;VCL_DOUBLEBUF
+Item5=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
+Item6=_DEBUG;BCI2000_STRICT
+Item7=_DEBUG;BCI2000
 
 [HistoryLists\hlIntOutputDir]
-Count=1
-Item0=obj
+Count=2
+Item0=SWSpeller.obj
+Item1=obj
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
