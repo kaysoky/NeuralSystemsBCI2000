@@ -408,14 +408,14 @@ int     ret;
     {
     trialsequence->SuspendTrial();
     statevector->SetStateValue("PhaseInSequence", 0);
-    statevector->SetStateValue("SelectedTarget", 0);
-    statevector->SetStateValue("SelectedRow", 0);
-    statevector->SetStateValue("SelectedColumn", 0);
     }
  if (running == 0) return;
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
+    statevector->SetStateValue("SelectedTarget", 0);
+    statevector->SetStateValue("SelectedRow", 0);
+    statevector->SetStateValue("SelectedColumn", 0);
     postpostsequence=false;
     cur_runnr++;
     ResetTaskSequence();
