@@ -7,21 +7,39 @@
 #include "OutputForm1.h"
 #include "BCIInput.h"
 
+// FILE *bciin;
 
 BCIInput::BCIInput()
 {
      delayflag= 0;
 
+//    bciin= fopen("c:/shared/misc/BCIIn.asc","w+");
+
 }
 BCIInput::~BCIInput()
 {
-
+//     fclose(bciin);
 }
 
 void __fastcall BCIInput::Config( BCIOutput *BCIOut )
 {
         int i,j;
         float delta;
+
+    // zero everything
+
+        for(i=0;i<NSTATES;i++)
+        {
+                strcpy(Fstatelist[i],"");
+
+                for(j=0;j<NGROUPS;j++)
+                {
+                        Fstate[i][j]= 0;
+                        Fvalue[i][j]= 0;
+                }
+        }
+        for(j=0;j<NGROUPS;j++)
+                Fgroup[j]= 0;
 
         bcioutput= BCIOut;
 
@@ -69,7 +87,7 @@ void __fastcall BCIInput::Config( BCIOutput *BCIOut )
 
 }
 
-void __fastcall BCIInput::CheckCalibration( PARAMLIST *parmlist, char *calib )
+void __fastcall BCIInput::CheckCalibration( PARAMLIST *parmlist, char *calib , bool type )
 {
         int i;
         int n_chans;
@@ -78,7 +96,13 @@ void __fastcall BCIInput::CheckCalibration( PARAMLIST *parmlist, char *calib )
         n_chans= atoi( parmlist->GetParamPtr("SoftwareCh")->GetValue() );
         ncalib= parmlist->GetParamPtr("SourceChOffset")->GetNumValues();
 
-        if( n_chans == ncalib )
+        for(i=0;i<n_chans;i++)
+        {
+                offset[i]= 0.0;
+                gain[i]= 0.008;
+        }
+
+        if( (type == false ) && (n_chans == ncalib ) )
         {
                 for(i=0;i<n_chans;i++)
                 {
@@ -86,27 +110,15 @@ void __fastcall BCIInput::CheckCalibration( PARAMLIST *parmlist, char *calib )
                         gain[i]=atof(parmlist->GetParamPtr("SourceChGain")->GetValue(i));
                 }
         }
-        else
+        else if( parmlist->LoadParameterList( calib ) == true )
         {
-                if( parmlist->LoadParameterList( calib ) == false )
+                n_chans= parmlist->GetParamPtr("SourceChOffset")->GetNumValues();
+
+                for(i=0;i<n_chans;i++)
                 {
-                        for(i=0;i<n_chans;i++)
-                        {
-                                offset[i]= 0.0;
-                                gain[i]= 0.008;
-                        }
+                        offset[i]=atoi(parmlist->GetParamPtr("SourceChOffset")->GetValue(i));
+                        gain[i]=atof(parmlist->GetParamPtr("SourceChGain")->GetValue(i));
                 }
-                else
-                {
-
-                        n_chans= parmlist->GetParamPtr("SourceChOffset")->GetNumValues();
-
-                        for(i=0;i<n_chans;i++)
-                        {
-                                offset[i]=atoi(parmlist->GetParamPtr("SourceChOffset")->GetValue(i));
-                                gain[i]=atof(parmlist->GetParamPtr("SourceChGain")->GetValue(i));
-                        }
-                }       
         }
 }
 
@@ -115,7 +127,7 @@ void __fastcall BCIInput::CheckCalibration( PARAMLIST *parmlist, char *calib )
 __int16 BCIInput::ConvertState(BCI2000DATA *bci2000data, int sample)
 {
         const STATEVECTOR *statevector;
-        short statecode[32];
+        short statecode[NSTATES];
         int i,j;
         int match;
         short current_group;
@@ -380,8 +392,9 @@ void __fastcall BCIInput::ReadFile( BCI2000DATA *bci2000data, int numsamples )
         int n[64];
         int channel;
         float val;
-        int timecount;
+   //     int timecount;
         int index;
+
 
         oldstate= 0;
         old_compu_flag= -999;
@@ -456,7 +469,7 @@ void __fastcall BCIInput::ReadFile( BCI2000DATA *bci2000data, int numsamples )
                                 if( BaselineUse == 1 )
                                         GetBaselines(bci2000data, sample);
 
-                                timecount= 0;
+                        //        timecount= 0;
                                 for(i=start; i<end+1; i++)
                                 {
                                         index= i-start;

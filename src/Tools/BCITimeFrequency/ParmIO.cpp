@@ -165,7 +165,9 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                         else                         iform->CheckSpatialFilter->Checked= false;
                 }
                 else if( strcmp( l1,"Input_SpatialFile") == 0 )
+                {
                         iform->vSpatialFile->Text= l2;
+                }
                 else if( strcmp( l1,"Input_Align") == 0 )
                 {
                         if( strcmp(l2,"true") == 0 ) iform->CheckAlign->Checked= true;
@@ -175,6 +177,10 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                 {
                         if( strcmp(l2,"true") == 0 ) iform->CheckTemporalFilter->Checked= true;
                         else                         iform->CheckTemporalFilter->Checked= false;
+                }
+                else if( strcmp( l1,"Input_TemporalFile") == 0 )
+                {
+                        iform->vTemporalFile->Text= l2;
                 }
                 else if( strcmp( l1,"Input_StateList") == 0 )
                 {

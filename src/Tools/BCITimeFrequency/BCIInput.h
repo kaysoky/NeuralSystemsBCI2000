@@ -80,7 +80,7 @@ class BCIInput
                 int BaseEnd;
 
                 void __fastcall Config( BCIOutput *);
-                void __fastcall CheckCalibration( PARAMLIST * , char * );
+                void __fastcall CheckCalibration( PARAMLIST * , char * , bool);
                 void __fastcall ReadFile( BCI2000DATA *, int );
                 BCIInput();
                 ~BCIInput();

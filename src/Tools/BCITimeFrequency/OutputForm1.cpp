@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "OutputForm1.h"
+#include "ProcessForm1.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -34,14 +35,31 @@ void __fastcall TOutputForm::SubGroupsClick(TObject *Sender)
 
 void __fastcall TOutputForm::OutputOrderClick(TObject *Sender)
 {
+        int i;
+
         if( OutputOrder->ItemIndex == 2 )
         {
-                Label5->Visible= true;
+                if( ProcessForm->UseMEM->Checked )
+                {
+
+                        TopoType->Caption= "Frequencies";
+
+                        for(i=0;i<8;i++)
+                        {
+                                Times->Lines->Strings[i]= (i+2) * 3;
+                        }
+                }
+                else
+                {
+                        TopoType->Caption= "Time (msec)";
+                }
+
+                TopoType->Visible= true;
                 Times->Visible= true;
         }
         else
         {
-                Label5->Visible= false;
+                TopoType->Visible= false;
                 Times->Visible= false;
         }
 

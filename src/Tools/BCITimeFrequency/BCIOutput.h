@@ -21,8 +21,8 @@ class BCIOutput
                 float fstart;
                 double point[NGROUPS][MAXCHANS][MAXPOINTS];
                 float spoint[NGROUPS][MAXCHANS][MAXPOINTS];
-                int n[NGROUPS][MAXCHANS][MAXPOINTS];
-                int sn[NGROUPS][MAXCHANS];
+                float n[NGROUPS][MAXCHANS][MAXPOINTS];             // int ? float ? 
+                int sn[NGROUPS][MAXCHANS];                         // length of spectral data
                 double sspoint[NGROUPS][MAXCHANS][MAXPOINTS];
                 double xypoint[NGROUPS][MAXCHANS][MAXPOINTS];
                 double stateval[NGROUPS][MAXSTATES][MAXPOINTS];

@@ -32,17 +32,21 @@ TfMain *fMain;
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
-        : TForm(Owner)
+        : TForm(Owner),
+        bciinput(NULL),
+        bcioutput(NULL),
+        bci2000data(NULL),
+        mem(NULL)
 {
 }
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::~TfMain( void )
 {
-        if (bciinput) delete bciinput;
-        if (bcioutput) delete bcioutput;
-        if (bci2000data) delete bci2000data;
-        if (mem) delete mem;
+        delete bciinput;
+        delete bcioutput;
+        delete bci2000data;
+        delete mem;
 }
 //---------------------------------------------------------------------------        
 
@@ -99,7 +103,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
 
         cvplp= (PARAMLIST *)bci2000data->GetParamListPtr();
 
-        bciinput->CheckCalibration( cvplp, vCalibrationFile->Text.c_str() );
+        bciinput->CheckCalibration( cvplp, vCalibrationFile->Text.c_str(), FileType->Checked );
 
         channels=bci2000data->GetNumChannels();
         samplingrate=bci2000data->GetSampleFrequency();
@@ -145,13 +149,11 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
                 {
                    start= atof( ProcessForm->vStart->Text.c_str() );
                    bandwidth= atof( ProcessForm->vBandwidth->Text.c_str() );
-           //        bciinput->time_list[i]= (int)( start + ( (float)timeval * bandwidth ) ) ;
-                   bcioutput->value_list[i]= (int)( start + ( (float)timeval * bandwidth ) ) ;
+                   bcioutput->value_list[i]= (int)( start + ( (float)timeval / bandwidth ) ) ;
                 }
                 else
                 {
                      bcioutput->value_list[i]= ( samplingrate * timeval ) / 1000;
-           //        bciinput->time_list[i]=  ( samplingrate * timeval ) / 1000;
                 }
 
                 bcioutput->time_list[i]= timeval;
@@ -186,19 +188,20 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
                 }
 
         }
-        bciinput->sfilterflag= InputForm->CheckSpatialFilter->Checked;
-        bciinput->alignflag= InputForm->CheckAlign->Checked;
+
 
         bciinput->BaselineUse= InputForm->Baseline->ItemIndex;
         bciinput->BaseStart= (int)(( atof( InputForm->vStartBase->Text.c_str() ) * samplingrate) / 1000.0);
         bciinput->BaseEnd= (int)((atof( InputForm->vEndBase->Text.c_str() )* samplingrate) / 1000.0);
 
+        bciinput->sfilterflag= InputForm->CheckSpatialFilter->Checked;
+        bciinput->alignflag= InputForm->CheckAlign->Checked;
+
         if( InputForm->CheckSpatialFilter->Checked == true )
         {
-
-                if( (lpfile=fopen(InputForm->OpenSpatialFile->FileName.c_str(),"r"))==NULL )
+                if( (lpfile=fopen(InputForm->vSpatialFile->Text.c_str(),"r"))==NULL )
                 {
-                        Application->MessageBoxA("Error","Opening Spatial Filter File",MB_OK);
+                        Application->MessageBox("Error","Opening Spatial Filter File",MB_OK);
                         return;
                 }
 
@@ -403,7 +406,9 @@ void __fastcall TfMain::ProcessControlClick(TObject *Sender)
 void __fastcall TfMain::Button5Click(TObject *Sender)
 {
         FILE *saveIO;
-        pario= new ParIO;
+      //  pario= new ParIO;
+
+        ParIO pario;
 
         SaveParameterFile->Execute();
         vParmFile->Text= SaveParameterFile->FileName;
@@ -415,11 +420,11 @@ void __fastcall TfMain::Button5Click(TObject *Sender)
         }
 
         fprintf(saveIO,"BCITime Parameters \n");
-        pario->SaveF( saveIO, UseStateForm , InputForm, ProcessForm , OutputForm);
+        pario.SaveF( saveIO, UseStateForm , InputForm, ProcessForm , OutputForm);
 
         fclose( saveIO );
-        delete pario;
-        pario= NULL;
+   //     delete pario;
+   //     pario= NULL;
 
 }
 //---------------------------------------------------------------------------
@@ -431,7 +436,9 @@ void __fastcall TfMain::Button4Click(TObject *Sender)
         OpenParameterFile->Execute();
         vParmFile->Text= OpenParameterFile->FileName;
 
-        pario= new ParIO;
+        // pario= new ParIO;
+
+        ParIO pario;
 
         if( ( getIO= fopen( vParmFile->Text.c_str(), "r" )) == NULL )
         {
@@ -439,11 +446,11 @@ void __fastcall TfMain::Button4Click(TObject *Sender)
                 return;
         }
 
-        pario->GetF( getIO, UseStateForm, InputForm, ProcessForm, OutputForm );
+        pario.GetF( getIO, UseStateForm, InputForm, ProcessForm, OutputForm );
 
         fclose( getIO );
-        delete pario;
-        pario= NULL;
+      //  delete pario;
+      //  pario= NULL;
 }
 //---------------------------------------------------------------------------
 

@@ -23,7 +23,7 @@ __published:	// IDE-managed Components
         TLabel *Label4;
         TRadioGroup *Statistics;
         TCheckBox *SubGroups;
-        TLabel *Label5;
+        TLabel *TopoType;
         TMemo *Times;
         TLabel *Label6;
         TEdit *vDecimate;

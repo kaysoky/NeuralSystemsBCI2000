@@ -40,6 +40,7 @@ __published:	// IDE-managed Components
         void __fastcall InputClick(TObject *Sender);
         void __fastcall SaveClick(TObject *Sender);
 private:	// User declarations
+        void __fastcall ClearGrid( void );
 
 public:		// User declarations
         int rows;
@@ -53,6 +54,7 @@ public:		// User declarations
         int Value[NGROUPS][NSTATES];              // values for each row
         
         __fastcall TUseStateForm(TComponent* Owner);
+        __fastcall ~TUseStateForm();
         void __fastcall SetVals( void );
 };
 //---------------------------------------------------------------------------

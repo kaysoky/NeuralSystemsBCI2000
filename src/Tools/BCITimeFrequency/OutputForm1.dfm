@@ -43,7 +43,7 @@ object OutputForm: TOutputForm
     Caption = 'Changes'
     Visible = False
   end
-  object Label5: TLabel
+  object TopoType: TLabel
     Left = 280
     Top = 152
     Width = 94

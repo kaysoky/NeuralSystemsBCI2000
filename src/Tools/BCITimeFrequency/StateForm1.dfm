@@ -1,8 +1,8 @@
 object UseStateForm: TUseStateForm
   Left = 151
   Top = 209
-  Width = 633
-  Height = 403
+  Width = 709
+  Height = 416
   Caption = 'UseStateForm'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -48,7 +48,7 @@ object UseStateForm: TUseStateForm
   object Grid: TStringGrid
     Left = 24
     Top = 112
-    Width = 585
+    Width = 657
     Height = 217
     ColCount = 6
     DefaultColWidth = 80

@@ -1,8 +1,8 @@
 object InputForm: TInputForm
   Left = 498
   Top = 235
-  Width = 463
-  Height = 352
+  Width = 467
+  Height = 365
   Caption = 'InputForm'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

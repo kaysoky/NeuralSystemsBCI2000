@@ -1,9 +1,9 @@
 object fMain: TfMain
-  Left = 284
-  Top = 141
-  Width = 527
-  Height = 489
-  Caption = 'BCI TimeFrequency 12/16/03'
+  Left = 271
+  Top = 132
+  Width = 550
+  Height = 517
+  Caption = 'BCI TimeFrequency 1/22/04'
   Color = clSkyBlue
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -297,6 +297,16 @@ object fMain: TfMain
     ParentFont = False
     TabOrder = 18
     OnClick = Button5Click
+  end
+  object FileType: TCheckBox
+    Left = 224
+    Top = 112
+    Width = 97
+    Height = 17
+    Caption = 'OldDataFileTypeCheckBox1'
+    Checked = True
+    State = cbChecked
+    TabOrder = 19
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'

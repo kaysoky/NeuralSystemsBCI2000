@@ -4,7 +4,7 @@
 *********************************************************************/
 
 #include <stdio.h>
-FILE *bcio;
+// FILE *bcio;
 
 #include "BCIOutput.h"
 #include "BCIInput.h"
@@ -13,12 +13,12 @@ FILE *bcio;
 
 BCIOutput::BCIOutput()
 {
- //      bcio= fopen("c:/shared/misc/BCIO.asc","w+");
- //      fprintf(bcio,"Opening BCIO.asc \n");
+    //   bcio= fopen("c:/shared/misc/BCIO.asc","w+");
+    //   fprintf(bcio,"Opening BCIO.asc \n");
 }
 BCIOutput::~BCIOutput()
 {
- //      fclose(bcio);
+    //   fclose(bcio);
 }
 
 void __fastcall BCIOutput::Config( char *outfile, int sr, float start, int order, int stat )
@@ -58,9 +58,10 @@ void __fastcall BCIOutput::Config( char *outfile, int sr, float start, int order
                         for(k=0;k<MAXPOINTS;k++)
                         {
                                 point[i][j][k]= 0;
-                                sspoint[i][j][k];
-                                xypoint[i][j][k];
+                                sspoint[i][j][k]= 0;
+                                xypoint[i][j][k]= 0;
                                 n[i][j][k]= 0;
+                                spoint[i][j][k]= 0;
                          }
                  }
                  for(j=0;j<MAXSTATES;j++)
@@ -162,7 +163,7 @@ void __fastcall BCIOutput::AddSpcPoint( int group, int chan, int time, float val
 
         spoint[group][chan][time]= val;
 
-        sn[group][chan]=time;
+        if( sn[group][chan] < time ) sn[group][chan]= time;
 }
 
 void __fastcall BCIOutput::DumpSpc( void )
@@ -191,7 +192,7 @@ void __fastcall BCIOutput::DumpSpc( void )
 //*************** do windowing here **************
 
                            rempts= sn[i][j] + 1 ;
-                          
+
                            if( wintype == 0 )       // only 1 window in this case
                            {
                                 winlength= rempts;
@@ -201,7 +202,7 @@ void __fastcall BCIOutput::DumpSpc( void )
                            for(k=0;k<MAXBINS;k++)
                            {
                                 spwr[k]= 0;
-                           }     
+                           }
                            npwr= 0;
 
                            while( rempts >= winlength )
@@ -227,7 +228,7 @@ void __fastcall BCIOutput::DumpSpc( void )
                                         for(k=0;k<pts;k++)
                                                 spwr[k]+= pwr[k];
                                         npwr++;
-                                }       
+                                }
                             }
                             if( npwr > 0 )
                             {
@@ -236,6 +237,20 @@ void __fastcall BCIOutput::DumpSpc( void )
                                         AddPoint( i, j, k, spwr[k]/npwr );
                             }
 //*******end windowing ***************************
+                        }
+
+                }
+         }
+
+         for(i=0;i<NGROUPS;i++)
+         {
+                for(j=0;j<MAXCHANS;j++)
+                {
+                        sn[i][j]= 0;
+
+                        for(k=0;k<MAXPOINTS;k++)
+                        {
+                                spoint[i][j][k]= 0.0;
                         }
                 }
          }

@@ -54,6 +54,7 @@ __published:	// IDE-managed Components
         TButton *Button5;
         TLabel *Label3;
         TSaveDialog *SaveParameterFile;
+        TCheckBox *FileType;
 
         void __fastcall ConvertClick(TObject *Sender);
         void __fastcall bOpenFileClick(TObject *Sender);
@@ -75,7 +76,7 @@ private:	// User declarations
         BCI2000DATA *bci2000data;
         BCIInput *bciinput;
         BCIOutput *bcioutput;
-        ParIO *pario;
+  //      ParIO *pario;
         MEM *mem;
         int     ret, firstrun, lastrun, cur_run, channel;
         ULONG   sample, numsamples;

@@ -11,6 +11,9 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
+// FILE *statefile;
+
 TUseStateForm *UseStateForm;
 //---------------------------------------------------------------------------
 __fastcall TUseStateForm::TUseStateForm(TComponent* Owner)
@@ -34,7 +37,13 @@ __fastcall TUseStateForm::TUseStateForm(TComponent* Owner)
         cols= 5;
         NUstates= 0;
 
+ //       statefile= fopen("Statefile.asc","w+");
 
+
+}
+__fastcall TUseStateForm::~TUseStateForm()
+{
+   //     fclose(statefile);
 }
 //---------------------------------------------------------------------------
 void __fastcall TUseStateForm::vNStatesChange(TObject *Sender)
@@ -48,6 +57,11 @@ void __fastcall TUseStateForm::vNValuesChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 void __fastcall TUseStateForm::ClearClick(TObject *Sender)
+{
+        ClearGrid();
+}
+
+void __fastcall TUseStateForm::ClearGrid( void )
 {
         int i;
         int j;
@@ -71,15 +85,30 @@ void __fastcall TUseStateForm::SetVals( void )
         int i;
         int j;
         int k;
-        int statecount= 0;
+        int statecount;
 
         nstates= atoi( vNStates->Text.c_str() );
         cols= nstates * 2 + 2;
         ntargs= atoi( vNValues->Text.c_str() );
         rows= ntargs +1;
 
+ // clear everything
+
+        for(i=0; i<NGROUPS; i++)
+        {
+                Group[i]= 0;
+                for(j=0;j<NSTATES;j++)
+                {
+                        State[i][j]= 0;
+                        Value[i][j]= 0;
+                }
+        }
+        for(j=0;j<NSTATES;j++)
+                strcpy(StateList[j],"");
 
  // get all unique statenames
+
+        statecount= 0;
 
         for(i=1;i<rows;i++)
         {
@@ -113,7 +142,6 @@ jmpout:
                 }
          }
          NUstates= statecount;
-
 }
 //---------------------------------------------------------------------------
 
@@ -131,6 +159,7 @@ void __fastcall TUseStateForm::InputClick(TObject *Sender)
         char v1[32],v2[32],v3[32],v4[32];
         int i,j;
 
+
         OpenInput->Execute();
         vInput->Text= OpenInput->FileName;
 
@@ -139,6 +168,8 @@ void __fastcall TUseStateForm::InputClick(TObject *Sender)
                 Application->MessageBox("Error opening Input","File Error",MB_OK);
                 return;
         }
+
+        ClearGrid();
 
         while( fscanf(infile,"%s",line) != EOF )
         {
