@@ -58,6 +58,7 @@ all docinfo prepare clean install update pdf:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.>>${MKNAM}
+  echo ^#INSTALLDIR=      ^# The root directory for "make install".    >>${MKNAM}
   echo MAKEFILES =\                                                    >>${MKNAM}
   -for /R %i in (*.bpr) do echo %~di%~pi%~ni.mak \                     >>${MKNAM}
   echo.                                                                >>${MKNAM}
