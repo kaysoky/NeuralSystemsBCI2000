@@ -46,8 +46,9 @@ DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 AND = &&
 OR = ||
 # Workaround macros for nonexisting commands.
-FALSE = color 00
-TRUE = echo.>nul
+FALSE = (color 00)
+TRUE = (echo on)
+ABORT = (color 00||exit)
 
 !include ${MKNAM}
 
@@ -107,11 +108,14 @@ clean: prepare ${MAKEFILES:.mak=.clean}
   @echo ^^ -del $^^(PROJECT) $^^(OBJFILES) ^^^>nul 2^^^>^^^&1 >>$@
   @echo.                                                      >>$@
   # We cannot tolerate absolute paths in makefiles.
-  ${SHELL} (grep "^[A-Z]*PATH[A-Z]*.*:" $@ \
-    ${AND} (echo Found absolute path^^(s^^) in makefile -- sorry, aborting. \
-           ${AND} echo Fix paths in $< using the IDE. \
-           ${AND} ${FALSE} ${OR} exit)) \
-    ${OR} ${TRUE}
+  @${SHELL} \
+  ( \
+   grep "^[A-Z]*PATH[A-Z]*.*:" $@ \
+    ${AND} echo Found absolute path^^(s^^) in makefile -- sorry, aborting. \
+    ${AND} echo Fix paths in $< using the IDE. \
+    ${AND} ${ABORT} \
+  ) \
+  ${OR} ${TRUE}
   ${DONE}
 
 .mak.all:
