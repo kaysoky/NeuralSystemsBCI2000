@@ -322,9 +322,10 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
   if (cur_param)
      {
      paramline=cur_param->GetParamLine().c_str();
+     paramline = paramline + "\r\n"; // CRLF
 
-     coremessage->SetLength((unsigned short)strlen(paramline.c_str()));
-     strncpy(coremessage->GetBufPtr(), paramline.c_str(), strlen(paramline.c_str()));
+     coremessage->SetLength( paramline.Length() );
+     strcpy( coremessage->GetBufPtr(), paramline.c_str() );
 
      coremessage->SendCoreMessage(pSourceStream);
      coremessage->SendCoreMessage(pSigProcStream);
