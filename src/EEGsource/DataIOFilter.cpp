@@ -74,7 +74,7 @@ DataIOFilter::DataIOFilter()
       "0 0 1 // time offset for all source channels (not used if -1)",
 
     // Storage related parameters:
-    "Storage string FileInitials= c:\\data a z "
+    "Storage string FileInitials= ..\\data a z "
       "// path to top level data directory (directory)",
     "Storage string SubjectName= Name Name a z "
       "// subject alias",
