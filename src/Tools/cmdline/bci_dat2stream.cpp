@@ -105,16 +105,16 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
       if( ++curSample == sampleBlockSize )
       {
         curSample = 0;
-        if( transmitData )
-        {
-          // Send the data.
-          MessageHandler::PutMessage( out, outputSignal );
-        }
         if( transmitStates )
         {
           memcpy( statevector.GetStateVectorPtr(), dataBuffer + sourceCh * 2,
                                             statevector.GetStateVectorLength() );
           MessageHandler::PutMessage( out, statevector );
+        }
+        if( transmitData )
+        {
+          // Send the data.
+          MessageHandler::PutMessage( out, outputSignal );
         }
       }
     }
