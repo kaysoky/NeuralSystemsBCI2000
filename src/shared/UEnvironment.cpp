@@ -21,6 +21,7 @@
 #include "UEnvironment.h"
 
 #include "MessageHandler.h"
+#include "USysCommand.h"
 #include "UBCIError.h"
 #include <typeinfo>
 
@@ -394,7 +395,10 @@ void EnvironmentBase::EnterNonaccessPhase()
           if( i->second.Changed() )
             changedParameters.insert( *i );
         if( !changedParameters.empty() )
-          if( !MessageHandler::PutMessage( *_operator, changedParameters ) )
+          if( !(
+            MessageHandler::PutMessage( *_operator, changedParameters )
+            && MessageHandler::PutMessage( *_operator, SYSCMD::EndOfParameter )
+          ) )
             bcierr << "Could not publish changed parameters" << endl;
       }
       break;

@@ -102,7 +102,7 @@ MessageHandler::PutMessage( ostream& os, const PARAMLIST& parameters )
 {
   for( PARAMLIST::const_iterator i = parameters.begin(); i != parameters.end(); ++i )
     PutMessage( os, i->second );
-  return PutMessage( os, SYSCMD::EndOfParameter );
+  return os;
 }
 
 template<>
@@ -111,7 +111,7 @@ MessageHandler::PutMessage( ostream& os, const STATELIST& states )
 {
   for( int i = 0; i < states.GetNumStates(); ++i )
     PutMessage( os, *states.GetStatePtr( i ) );
-  return PutMessage( os, SYSCMD::EndOfState );
+  return os;
 }
 
 // Enforce instantiation of all message construction functions here,
@@ -121,6 +121,7 @@ template ostream& MessageHandler::PutMessage( std::ostream&, const PARAMLIST& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const STATELIST& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const STATEVECTOR& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const STATUS& );
+template ostream& MessageHandler::PutMessage( std::ostream&, const SYSCMD& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const GenericSignal& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisCfg& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisMemo& );

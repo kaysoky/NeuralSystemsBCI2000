@@ -519,8 +519,10 @@ TfMain::Startup( AnsiString inTarget )
 
   // now, publish all parameters
   MessageHandler::PutMessage( mOperator, mParamlist );
+  MessageHandler::PutMessage( mOperator, SYSCMD::EndOfParameter );
   // and the states
   MessageHandler::PutMessage( mOperator, mStatelist );
+  MessageHandler::PutMessage( mOperator, SYSCMD::EndOfState );
 
   MessageHandler::PutMessage( mOperator, STATUS( "Waiting for configuration ...", 100 ) );
   Application->OnIdle = ApplicationIdleHandler;
