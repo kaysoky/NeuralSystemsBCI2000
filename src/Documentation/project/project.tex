@@ -272,23 +272,24 @@ machine.)
 \subsection{Descriptor=2: Parameter Format}
 \label{parameter_format}
 
-\textit{\textbf{Update:}As of Feb 12, 2003, references to length limits in parameters are obsolete.
-All fields listed in Table \ref{tab:parametervariables} may be of arbitrary length.}{--jm}
-
 This section describes the format of the message when the core message is of 
 type system parameter (i.e., the message's descriptor is 2). In this case, the 
 aforementioned content data is a line of ASCII characters (parameters delimited 
-by spaces) in the following format (Table \ref{tab:parametervariables} lists the 
-maximum length of each individual component in the parameter string):
+by spaces) in the following format (Table \ref{tab:parametervariables} summarizes
+the individual components in the parameter string):
 \\[2ex]
 Section DataType Name= Value DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
-If DataType is either \textit{intlist} or \textit{floatlist}, the format is
+If DataType is \textit{list, intlist} or \textit{floatlist}, the format is
 as follows: 
 \\[2ex]
-Section DataType Name= NumValues Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+Section DataType Name= (NumValues$\mid${Labels}) Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+where Labels is a list of textual labels that optionally substitutes the number denoted by NumValues. A list of labels is enclosed in a matching pair of any of \verb|{}, [], (), <>|, as in 
+\verb|[low medium high]|.
+\\[2ex]
 If DataType is \textit{matrix}, the format is as follows:
 \\[2ex]
-Section DataType Name= NumValuesDim1 NumValuesDim2 Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+Section DataType Name= (NumValuesDim1$\mid$LabelsDim1) (NumValuesDim2$\mid$LabelsDim2) Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+where again each NumValues entry may be substituted by a list of textual labels.
 
 This format not only applies to the interaction between core and operator, but
 also reflects the data format of the system's parameter files (i.e., files with
@@ -299,38 +300,43 @@ communicate in the system initialization phase (as described in section \ref{sys
  \centering
  \begin{tabular}{|l|l|}
   \hline
-  \textbf{Name} & \textbf{Max. Length} \\
+  \textbf{Name} \\
   \hline
-  Section & 30\\
+  Section \\
   \hline
-  Type & 30 \\
+  Type \\
   \hline
-  Name & 30 \\
+  Name \\
   \hline
-  NumValues & 3 \\
+  ${\left[
+    \mbox{(NumValuesDim1$\mid$\{ LabelDim1.1 LabelDim1.2 ... \})}
+    \atop
+    \mbox{[(NumValuesDim2$\mid$\{ LabelDim2.1 LabelDim2.2 ... \})]}
+    \right]}$ \\
   \hline
-  NumValuesDim1/2 & 3 \\
+  Value(s) \\
   \hline
-  Value(s) & 50 \\
+  DefaultValue \\
   \hline
-  DefaultValue & 50 \\
+  LowRange \\
   \hline
-  LowRange & 50 \\
+  HighRange \\
   \hline
-  HighRange & 50 \\
-  \hline
-  Comment & 255 \\
+  Comment \\
   \hline
  \end{tabular}
  \caption{Definition of variables in the parameter string}
  \label{tab:parametervariables}
 \end{table}   
 
-If \textit{NumValues} is provided (i.e., data type \textit{intlist} or 
+If \textit{NumValues} is provided (i.e., data type \textit{list, intlist} or 
 \textit{floatlist}), it indicates how many values are following it. The separate 
 values are then delimited by white spaces. In case of data type \textit{matrix}, 
 the transmitted values represent the matrix as follows: the first NumValuesDim2 
-values are value(0, t), followed by NumValuesDim2 values value(1, t), etc. \\
+values are value(0, t), followed by NumValuesDim2 values value(1, t), etc.;
+in case that labels are specified in place of value counts, the analogy holds
+with the value counts given by the number of labels for the dimension in
+question.\\
 
 Each core module knows the data types of the parameters it is requesting and 
 thus does not need a parameter data type definition. However, the operator 
@@ -883,6 +889,15 @@ As in the publishing phase, the Information Phase ends when a state
 In order to maintain integrity throughout operation, no parameters or states 
 should be added to or removed from the system beyond this point.
 
+\subsection{Preflight Phase}
+\textit{Note: As of May 2003, the Preflight phase is not fully implemented,
+so the information in this paragraph is not accurate for the actual module
+code.--jm}\\[1ex]
+Each core module declares whether it can process data with the received
+parameters and states, or indicates errors by sending descriptions into
+an error channel. If any errors are indicated during the preflight phase,
+the operator module will not initiate the initialization phase but display
+the errors, prompting the user to fix the problems detected.
 
 \subsection{Initialization Phase}
 
