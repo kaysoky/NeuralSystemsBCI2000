@@ -40,6 +40,22 @@ Acquisition.
 
 \subsubsection{Specific Implementation}
 
+\textit{By May 2003, much of the following detailed description has become
+obsolete, mainly by the introduction of a more thorough and unifying
+inheritance scheme;} \texttt{GenericADC} \textit{now inherits from}
+\texttt{GenericFilter}; \textit{all arguments that referred to global objects
+of types} \texttt{PARAMLIST, STATELIST, STATEVECTOR,} \textit{and}
+\texttt{CORECOMM} \textit{have been removed in favor of
+accessor functions which are part of a new mix-in base class,}
+\texttt{Environment}. \textit{A strict privatization of data members and introduction
+of accessor functions, as well as a consequent distinction between private,
+public, and protected members has taken place, resulting in a minimal set
+of details being exposed to code outside the framework itself, which is
+still changing, but without consequences for existing ADC and filter code.
+From this point of view, updating the following section in detail seemed
+problematic. For detailed up-to-date reference, the reader is pointed to the
+source code itself. To indicate the most important changes, footnotes have
+been added to the existing text which remains unchanged.--jm}\\[1ex]
 The system instantiates a new object from a class derived from 
 \textit{GenericADC} (details in \ref{class_model_dataacqu}) and passes an empty 
 parameter and state list. The constructor for this class fills these empty lists 
@@ -77,12 +93,21 @@ ADReadDataBlock() acquires a data block (\textit{SoftwareCh} channels and
 \textit{SampleBlockSize} samples) with sampling rate \textit{SamplingRate}. 
 ADReadDataBlock() DOES NOT return, until the data acquisition for said data 
 block has not finished. Finally, ADShutdown() stops the data acquisition upon
-exiting the main loop.
+exiting the main loop.\footnote{
+The \texttt{GenericADC} class now inherits the unified class interface declared
+by \texttt{GenericFilter}, which is discussed in section~\ref{class_model}.
+The previous \texttt{GenericADC} member functions have been mapped as follows:
+\texttt{ADInit()}$\rightarrow$\texttt{Initialize()} -- \texttt{ADReadDataBlock()}$\rightarrow$\texttt{Process()} -- \texttt{ADShutdown()}$\rightarrow$\texttt{Halt()}.
+}
 
 
 \subsection{Implementing Your Own Data Acquisition}
 
-Integrating a new data acquisition board into the system is simple:
+Integrating a new data acquisition board into the system is simple:\footnote{
+       The instantiation scheme has been changed to avoid copying and editing
+       of framework code (which made it difficult to maintain). Now, you add a line
+       \texttt{RegisterFilter(MyADC, 1);} to your ADCs own cpp file, and
+       don't touch \texttt{UMain.cpp}.}
 
 \begin{enumerate}
  \item{Derive a class from \textit{GenericADC} in a separate file}
@@ -347,7 +372,13 @@ SignalProcessing module. It instantiates and initializes each signal and filter,
 and for each incoming EEG signal block from Data Acquisition, its Process() 
 method calls the Process() methods for each filter. This class is defined in the 
 unit UFilterHandling.cpp -- \textbf{no other unit has to and should be touched, 
-if you want to include your filter in the main program.}
+if you want to include your filter in the main program.}\footnote{
+This is likely to change in the future such that copying and editing of framework code
+can be avoided (which makes it difficult to maintain otherwise). If you implement
+your filter's \texttt{Preflight()} member properly (see the error handling document
+for details about this new member of \texttt{GenericFilter}), and if you add a
+line \texttt{RegisterFilter(MyFilter, 2.x);} to your filter's cpp file,
+you prepare for those changes.}
 
 \begin{verbatim}
 class FILTERS
@@ -789,27 +820,45 @@ the trial and reset the internal counter.
 The SW-Filter uses the following parameters:
 
 \begin{verbatim}
-ArteFilter intlist ArteChList= 3 2 2 -1 2 -1 63 // Assignment of artefact channels, -1: no artifact channel
-ArteFilter floatlist ArteFactorList= 7 0.15 0.15 0 0 0 0 0 0 -1 1 // Influence of artefact channel on input channel, -1: no artifact channel
-ArteFilter int ArteMode= 0 1 0 3 // Artefact correction mode, 0 off, 1 continuous, 2 conditioned
-Visualize int VisualizeFBArteCorFiltering= 1 0 0 1  // visualize FBArte corrected signals (0=no 1=yes)
-Artifacts are corrected on all channels which are not marked with -1 in the ArteChList. For the correction, the channel number at the position of the channel in the ArteChList is used as artifact channel. For example, the standard setting corrects the channels 0 and 1 by using channel 2 for the correction. The correction factor is the factor set in ArteFactorList, 0.15 in the standard setting. 
-ArteMode=0 switches this filter off.
-ArteMode=1 will subtract the artifact channel multiplied with a constant factor.
-ArteMode=2 will correct the signal according the following condition, described by Koutchoubey, 1997:
-
-if (ArteMode>=2) {
-     if ((ArteSignal*ControlSignal) > 0) {            // if they have same signs
-        if (fabs(ArteSignal) < fabs(ControlSignal)) InputSignal->Value[m][n] = ControlSignal-ArteSignal;  // if Artefact not too big then correct
-        else {                             // artifact is too big
-            InputSignal->Value[m][n] = 0;  // FB is supressed
-            if (ArteMode==3) statevector->SetStateValue("Artifact",1);
-        }
-     }
-  }  // end ArteMode 2
-
-ArteMode=3 is working identically to ArteMode 2 but sets the Artifact state to 1 when the feedback is set to zero.
+ArteFilter intlist ArteChList= 3 2 2 -1 2 -1 63
+  // Assignment of artefact channels, -1: no artifact channel
+ArteFilter floatlist ArteFactorList= 7 0.15 0.15 0 0 0 0 0 0 -1 1
+  // Influence of artefact channel on input channel,
+     -1: no artifact channel
+ArteFilter int ArteMode= 0 1 0 3
+  // Artefact correction mode, 0 off, 1 continuous, 2 conditioned
+Visualize int VisualizeFBArteCorFiltering= 1 0 0 1 
+  // visualize FBArte corrected signals (0=no 1=yes)
 \end{verbatim}
+
+Artifacts are corrected on all channels which are not marked with -1
+in the ArteChList. For the correction, the channel number at the
+position of the channel in the ArteChList is used as artifact channel.
+For example, the standard setting corrects the channels 0 and 1 by using
+channel 2 for the correction. The correction factor is the factor set
+in ArteFactorList, 0.15 in the standard setting.
+
+For the ArteMode parameter, the following values are possible: 
+\begin{itemize}
+ \item\verb|ArteMode 0| switches this filter off.
+ \item\verb|ArteMode 1| will subtract the artifact channel multiplied 
+      with a constant factor.
+ \item\verb|ArteMode 2| will correct the signal according to Koutchoubey, 1997:
+      If the artifact's absolute value does not exceed that of the control signal,
+      the control signal is corrected by subtracting the artifact signal; otherwise,
+      feedback is suppressed.
+%\begin{verbatim}
+%     if ((ArteSignal*ControlSignal) > 0) {            // if they have same signs
+%        if (fabs(ArteSignal) < fabs(ControlSignal)) InputSignal->Value[m][n] = ControlSignal-ArteSignal;  // if Artefact not too big then correct
+%        else {                             // artifact is too big
+%            InputSignal->Value[m][n] = 0;  // FB is supressed
+%            if (ArteMode==3) statevector->SetStateValue("Artifact",1);
+%        }
+%     }
+%\end{verbatim}
+ \item\verb|ArteMode 3| is working identically to \verb|ArteMode 2| but sets the
+      Artifact state to 1 when the feedback is set to zero.
+\end{itemize}
 
 
 \section{User Application}
@@ -840,7 +889,9 @@ task - a simple cursor task - that complies with this motivation.
 
 The right justified box task is a cursor task, in which the subject tries to hit 
 one out of \textit{n} targets on a screen in trials of equal length. As listed 
-in table \ref{blablabla} and figure \ref{rjb_task}, the task requests and 
+in 
+%table \ref{blablabla} and
+figure \ref{rjb_task}, the task requests and 
 controls specific states.
 
 Whatever signal processing algorithm is used, it can passively monitor these 
