@@ -123,7 +123,7 @@ StatFilter::~StatFilter()
   delete StatSignal;
   if (Statfile) fclose( Statfile );
 #ifdef USE_LOGFILE
-  fclose( estat );
+  if( estat ) fclose( estat );
 #endif // USE_LOGFILE
 }
 
@@ -150,6 +150,13 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   Parameter("FileInitials");
   Parameter("SubjectSession");
   Parameter("SubjectName");
+
+  // Files accessible?
+#ifdef USE_LOGFILE
+  if( estat == NULL )
+    bcierr << "Cannot write to log file" << std::endl;
+#endif // USE_LOGFILE
+  // We should check for "Statfile" and "Sfile" accessibility here.
 
   // This one is not required to exist.
   // If we didn't ask for it here, the framework would not let us access
@@ -247,6 +254,8 @@ void StatFilter::Initialize()
     strcat(OName, AName.c_str() );         // CAT vs CPY
     if (Statfile) fclose(Statfile);
     Statfile= fopen(OName,"a+");
+    if( Statfile == NULL )
+      bcierr << "Could not open " << OName << " for writing" << std::endl;
   }
 
   if( ( (InterceptEstMode>0)||(Trend_Control>0)||(WtControl > 0 ) ) && init_flag < 1 )               // need to update if different targets
@@ -288,6 +297,8 @@ void StatFilter::Initialize()
       strcat(OName, AName.c_str() );         // CAT vs CPY
       if (Sfile) fclose(Sfile);
       Sfile= fopen(OName,"a+");
+      if( Sfile == NULL )
+        bcierr << "Could not open " << OName << " for writing" << std::endl;
       stat->SetWeightControl( Sfile );
       wt_init_flag= 1;
     }

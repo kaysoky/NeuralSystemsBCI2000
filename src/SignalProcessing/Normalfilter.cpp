@@ -57,8 +57,11 @@ NormalFilter::~NormalFilter()
  delete vis;
 
 #ifdef USE_LOGFILE
-  fprintf(Normalfile,"Destructor \n");
-  fclose( Normalfile );
+  if( Normalfile != NULL )
+  {
+    fprintf(Normalfile,"Destructor \n");
+    fclose( Normalfile );
+  }
 #endif // USE_LOGFILE
 }
 

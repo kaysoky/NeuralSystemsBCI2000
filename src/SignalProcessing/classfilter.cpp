@@ -9,6 +9,7 @@
 #include "UParameter.h"
 #include "UGenericVisualization.h"
 #include "ClassFilter.h"
+#include "UBCIError.h"
 
 #ifdef USE_LOGFILE
 FILE *classfile;
@@ -60,7 +61,8 @@ ClassFilter::~ClassFilter()
 {
  delete vis;
 #ifdef USE_LOGFILE
- fclose( classfile );
+ if( classfile != NULL )
+   fclose( classfile );
 #endif // USE_LOGFILE
 }
 
@@ -79,7 +81,10 @@ void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
   Parameter( "SampleBlockSize" );
 
   // Resource availability checks.
-  /* The class filter seems not to depend on external resources. */
+#ifdef USE_LOGFILE
+  if( classfile == NULL )
+    bcierr << "Cannot write to log file" << std::endl;
+#endif // USE_LOGFILE
 
   // Input signal checks.
   // There should be a more thorough check here.

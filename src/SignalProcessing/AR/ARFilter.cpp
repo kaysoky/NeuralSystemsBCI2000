@@ -62,7 +62,7 @@ ARTemporalFilter::~ARTemporalFilter()
   delete vis;
   delete mem;
 #ifdef USE_LOGFILE
-  fclose( tempfile );
+  if( tempfile ) fclose( tempfile );
 #endif // USE_LOGFILE
 }
 

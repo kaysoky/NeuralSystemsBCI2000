@@ -278,7 +278,7 @@ int     i, t, u;
                 delete targbuf[i];
                 targbuf[i]= NULL;
         }
-        fclose(sfile);
+      if(sfile) fclose(sfile);
 }
 
 

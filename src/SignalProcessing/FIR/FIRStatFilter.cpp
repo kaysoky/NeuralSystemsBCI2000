@@ -81,7 +81,7 @@ FIRStatFilter::~FIRStatFilter()
   delete StatSignal;
 
   if (Statfile) fclose( Statfile );
-  // fclose( estat );
+  // if( estat ) fclose( estat );
 }
 
 // **************************************************************************
