@@ -1,0 +1,251 @@
+\documentclass[letterpaper,oneside,12pt]{article}
+%\documentclass[letterpaper,oneside,12pt]{report}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage[american]{babel}
+
+\selectlanguage{american}
+
+% page layout
+%  \setlength{\hoffset}{-1in} 
+  %\setlength{\voffset}{-1in}
+%  \setlength{\textwidth}{15cm}
+%  \setlength{\oddsidemargin}{3.5cm}
+%  \setlength{\evensidemargin}{0.2cm}
+%  %\setlength{\topmargin}{2.5cm}
+%  \setlength{\headsep}{5ex}
+%  \setlength{\textheight}{22cm}
+%  \renewcommand{\baselinestretch}{1.05}
+%  \raggedbottom
+%  \newlength{\pictheight}
+%  \setlength{\pictheight}{\textheight}
+%  \addtolength{\pictheight}{-2cm}
+
+% document
+\begin{document}
+
+%\include{title}
+\title{BCI2000-Compatible Audio-Visual P3 Task}
+\author{J\"{u}rgen Mellinger, Gerwin Schalk}
+\maketitle
+
+\tableofcontents
+
+\newpage 
+
+\begin{abstract}
+
+The main purpose of this task is to present a series of (auditory or visual) 
+stimuli sequentially to the user of the BCI system. The sequence and nature of 
+the stimuli can be defined by the investigator. In addition to stimulus 
+delivery, the task can optionally be used in conjunction with BCI2000's P300 
+Signal Processing module (P3SignalProcessing.exe) to provide feedback to a 
+selected stimulus in either a copy or a free mode.
+
+\end{abstract}
+
+\section{Functionality}
+
+\subsection{Stimulus Definition}
+
+Stimuli are defined in a Windows\texttrademark{} ini-file. This file defines the 
+total number of stimuli, as well as the details of each stimulus. Each 
+stimulus is defined by the following properties:
+\begin{enumerate}
+ \item Caption
+ \item Icon file
+ \item Audio file
+\end{enumerate}
+
+In addition to stimuli, the file contains definition for a stimulus that 
+announces what to focus on, and a stimulus that announces the result. These
+stimuli are only used when the task is set to copy or free mode.
+
+The following is an example of a stimulus definition file with two stimuli:
+\begin{verbatim}
+[global]
+numstimuli      = 2
+
+[focuson]
+caption         = Please focus on
+icon            = icons\focus on.bmp
+audio           = wav\focus on.wav
+
+[result]
+caption         = The result was
+icon            = icons\result.bmp
+audio           = wav\result.wav
+
+[stimulus1]
+caption         = Donkey
+icon            = icons\donkey.bmp
+audio           = wav\snicker.wav
+
+[stimulus2]
+caption         =
+icon            = icons\elefant.bmp
+audio           = wav\trumpet.wav
+\end{verbatim}
+
+\emph{Comments:} The stimulus properties might contain white spaces. A 
+caption/icon/audio file are not being presented, if they are not defined (e.g., 
+see caption in stimulus2). The stimulus definition file does \emph{not} contain 
+a description on how the stimuli are presented. Stimulus numbers start at 1. For 
+each run, the ini-file will be copied to the same location as the actual data 
+file. For example, if the data file is "JJS007R03.dat," and the ini-file is 
+"stimdefs.ini," then the ini-file will be copied and named "JJS007R03.ini."
+
+\subsection{Stimulus Sequence}
+
+Stimuli are presented in a certain sequence. This sequence can either be 
+deterministic, i.e., defined by the investigator, or random. 
+
+\subsubsection{Deterministic Sequence:}The investigator defines the order by 
+entering a list of stimulus IDs to be presented. As an example: 
+\begin{verbatim} 
+1 5 3 4 2 
+\end{verbatim} 
+defines a sequence in which stimulus 1 is first presented, followed by 
+stimulus 5, etc.
+
+\subsubsection{Random Sequence:}The investigator defines the stimulus 
+probabilities for each stimulus. Stimulus probabilities do not have to
+add up to 100\%. (The sum of all probabilities will define 100\%).
+As an example: 
+\begin{verbatim} 
+60 20 20
+\end{verbatim} 
+defines a probability of 60\% for stimulus 1, and 20\% each for stimuli 2 and 3.
+
+A sequence can be played multiple times. The investigator can define how many 
+times sequences are played.
+
+\subsection{Stimulus Delivery}
+
+For any stimulus, delivery occurs simultaneously for caption\footnote{A caption, 
+if defined, always appears in front on an icon.}, icon, and audio. (A computer 
+can only execute commands in sequence, but the time difference between start of 
+presentation of caption, icon, and audio, is negligible). \emph{Comment:} A 
+knowledgeable investigator has to understand the implications of audio files 
+that are of unequal length !
+
+An investigator can specify:
+\begin{itemize}
+ \item Size and position of the target window (using the same scheme/parameters 
+       as used by the RJB task, Oddball paradigm, or P3 speller).
+ \item Width and height of caption and icon in percent of screen width/height
+ \item Whether captions, icons, or audio files will be presented
+       (i.e., a global switch -- for each stimulus, captions/icons/wave files
+       will not be presented individually, if not defined)
+ \item The volume for audio playback
+ \item Window background color in RGB
+ \item Caption color in RGB
+ \item The duration during which a stimulus is presented (in units of SampleBlocks)
+ \item The inter-stimulus interval that follows completed stimulus presentation \footnote{During 
+       the inter-stimulus interval, the screen is blank and audio is turned off.}
+ \item A minimum and maximum time (in units of SampleBlocks) that will be added randomly
+       to the inter-stimulus interval. If these variables are both set to 0,
+       the actual inter-stimulus interval will always be exactly as defined above.
+       If these variables are set to, for example, 0 and 3, inter-stimulus intervals
+       will randomly be longer by between 0 and 3 units.
+ \item A Comment. A user can enter comments to the specific run in a string parameter.
+\end{itemize}
+
+
+\section{Processing of Classification Results}
+
+The task can be configured to interpret results communicated to it by the P3 
+Signal Processing module. These results represent a judgment on which of the 
+stimuli was most likely selected. Handling of these results is identical to the 
+P3 Spelling Task. 
+
+When it transmits a classification result, Signal Processing sets the state 
+\emph{StimulusCodeRes} to the stimulus code that was originally transmitted to 
+it by the user application. For example, when it sets \emph{StimulusCodeRes} to 
+3, it indicates that it transmits classification results for stimulus 3. In 
+addition, it sets \emph{StimulusTypeRes} to reflect the type of the stimulus 
+(0=non-target, 1=target) when the system is in copy mode. Signal Processing 
+transmits the classication result as one number (i.e., the first control signal).
+
+\subsection{Free Mode}
+
+The task can be configured to operate in free mode. In this case, the sequence 
+of stimulus delivery is followed by a time period, in which the result of Signal 
+Processing's classification is announced. The final classification result is
+the stimulus with the highest classification result.
+
+In order to deliver this announcement, the system uses the stimulus defined in 
+the \texttt{[result]} section of the stimulus ini-file. This announcement is 
+followed by delivery of the determined stimulus. In other words, after a 
+sequence of stimulus delivery, the system might play a .wav file that says: "the 
+result is," followed by a .wav file that says "yes." (assuming "yes" represents
+the stimulus that produced the highest classification result).
+
+Finally, the task sends this result to the operator module as an ASCII text 
+message so that it appears in a log window.
+
+Free mode does not terminate until the investigator suspends operation.
+
+
+\subsection{Copy Mode}
+
+Copy mode is similar to free mode. In copy mode, the investigator can define a 
+list of stimuli to be copied (e.g., "3 5 4"). In this example, the user has to 
+attend to stimulus 3 for the first sequence, 5 for the second sequence, etc.
+
+In addition to an announcement of the result, in copy mode the delivery of 
+stimuli is preceded by an announcement that describes which stimulus the user
+has to attend to. This announcement uses the stimulus that is defined in the
+\texttt{[focuson]} section of the ini-file. This announcement is followed by
+delivery of the desired target stimulus. As an example, the system might say
+"Please focus now on" ... "yes," before it starts with the sequence of
+stimulus delivery.
+
+Copy mode terminates (i.e., the task suspends) when the user finished copying 
+all stimuli specified by the investigator.
+
+\section{Parameters}
+
+Fill in the parameters incl. description, once completed.
+
+
+\section{States}
+
+The time line of stimulus delivery is encoded in state variables as defined in
+Table \ref{tab:states}.
+\begin{table}
+\begin{center}
+\begin{tabular}[ht]{|l|l|l|}
+\hline
+\bf{State Name}& \bf{Bits}            & \bf{Description} \\
+\hline
+\hline
+ SelectedStimulus & 7 & stimulus ID of finally selected stimulus \\
+                  &   & only $>$0 when determining selected stimulus\\
+\hline
+ PhaseInSequence  & 2 & 0 in inter-stimulus interval\\
+                  &   & 1 period prior to stimulus sequence (if any)\\
+                  &   & 2 stimulus sequence period\\
+                  &   & 3 period after stimulus sequence (if any)\\
+\hline
+ StimulusTime     & 16& time in ms as calculated in P3 Speller\\
+\hline
+ StimulusCode     & 7 & stimulus ID of currently visible stimulus\\
+                  &   & or 0 if no stimulus visible\\
+\hline
+ StimulusType     & 1 & 0 in free mode; copy mode :\\
+                  &   & 1 when current stimulus equals target stimulus\\
+                  &   & 0 otherwise\\
+\hline
+ Flashing         & 1 & 1 during stimulus presentation, 0 otherwise\\
+\hline
+\end{tabular}
+\caption{Encoding scheme for this task.}
+\label{tab:states}
+\end{center}
+\end{table}
+
+%\appendix
+
+\end{document}
+
