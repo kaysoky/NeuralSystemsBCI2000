@@ -1,10 +1,11 @@
 object fConfig: TfConfig
-  Left = 107
-  Top = 112
+  Left = 327
+  Top = 109
   Width = 702
   Height = 561
   Caption = 'Configuration ...'
   Color = clBtnFace
+  Constraints.MinWidth = 702
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -12,6 +13,9 @@ object fConfig: TfConfig
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
+  DesignSize = (
+    694
+    534)
   PixelsPerInch = 96
   TextHeight = 13
   object CfgTabControl: TTabControl
@@ -24,37 +28,41 @@ object fConfig: TfConfig
     OnChanging = CfgTabControlChanging
   end
   object bLoadParameters: TButton
-    Left = 573
+    Left = 589
     Top = 37
     Width = 100
     Height = 25
+    Anchors = [akTop]
     Caption = 'Load Parameters'
     TabOrder = 1
     OnClick = bLoadParametersClick
   end
   object bSaveParameters: TButton
-    Left = 573
+    Left = 589
     Top = 5
     Width = 100
     Height = 25
+    Anchors = [akTop]
     Caption = 'Save Parameters'
     TabOrder = 2
     OnClick = bSaveParametersClick
   end
   object bConfigureSaveFilter: TButton
-    Left = 573
+    Left = 589
     Top = 125
     Width = 100
     Height = 25
+    Anchors = [akTop]
     Caption = 'Configure Save'
     TabOrder = 3
     OnClick = bConfigureSaveFilterClick
   end
   object bConfigureLoadFilter: TButton
-    Left = 573
+    Left = 589
     Top = 157
     Width = 100
     Height = 25
+    Anchors = [akTop]
     Caption = 'Configure Load'
     TabOrder = 4
     OnClick = bConfigureLoadFilterClick
@@ -63,14 +71,14 @@ object fConfig: TfConfig
     DefaultExt = '.prm'
     Filter = 'BCI2000 parameter file (*.prm)|*.prm|Any file (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 576
+    Left = 592
     Top = 72
   end
   object SaveDialog: TSaveDialog
     DefaultExt = '.prm'
     Filter = 'BCI2000 parameter file (*.prm)|*.prm|Any file (*.*)|*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
-    Left = 608
+    Left = 624
     Top = 72
   end
 end

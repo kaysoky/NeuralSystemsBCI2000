@@ -27,11 +27,11 @@
 #define COMMENT_OFFSETX         170
 #define COMMENT_OFFSETY         35
 #define COMMENT_SPACINGY        40
-#define VALUE_OFFSETX           170
+#define VALUE_OFFSETX           COMMENT_OFFSETX
 #define VALUE_OFFSETY           50
 #define VALUE_SPACINGY          40
-#define VALUE_WIDTHX            200
-#define USERLEVEL_OFFSETX       VALUE_OFFSETX+240
+#define VALUE_WIDTHX            220
+#define USERLEVEL_OFFSETX       VALUE_OFFSETX+260
 #define USERLEVEL_WIDTHX        70
 #define USERLEVEL_OFFSETY       50
 #define USERLEVEL_SPACINGY      40
@@ -71,6 +71,7 @@ private:	// User declarations
       	TEdit	*ParamValue[MAX_PARAMPERSECTION];
 #ifdef TRY_PARAM_INTERPRETATION
         TComboBox* ParamComboBox[MAX_PARAMPERSECTION];
+        TCheckBox* ParamCheckBox[MAX_PARAMPERSECTION];
 #endif
       	TButton	*ParamButton[3][MAX_PARAMPERSECTION];
       	TTrackBar *ParamUserLevel[MAX_PARAMPERSECTION];
@@ -92,18 +93,45 @@ public:		// User declarations
 private:
         class ParamInterpretation
         {
-          typedef std::vector<std::string> EnumValues_type;
+          // Type declarations.
+          public:
+            // Possible interpretation results.
+            typedef enum
+            {
+              unknown = 0,
+              singleValuedGeneric,
+                singleValuedEnum,         // Possible parameter values are from a pre-defined set.
+                singleValuedBoolean,      // The parameter represents an on/off switch.
+                                          // Logically, this is a specialization of singleValuedEnum.
+              listGeneric,
+              matrixGeneric,
+            } Kind_type;
+          private:
+            typedef std::vector<std::string> Values_type;
 
+          // The public interface.
           public:
             ParamInterpretation( const PARAM& );
-            const bool             IsEnum() const     { return mEnumValues.size() > 0; }
-            const int              IndexBase() const  { return mIndexBase; }
-            const EnumValues_type& EnumValues() const { return mEnumValues; }
-            const std::string&     EnumTitle() const  { return mEnumTitle; }
+
+            // The parameter comment as modified by the interpretation.
+            const std::string& Comment() const   { return mComment; }
+
+            Kind_type          Kind() const      { return mKind; }
+            const Values_type& Values() const    { return mValues; }
+
+            // This is only relevant for the singleValuedEnum type and represents
+            // the numerical parameter value of the first enumeration entry.
+            int                IndexBase() const { return mIndexBase; }
+
+          // Private members.
           private:
-            int             mIndexBase;
-            EnumValues_type mEnumValues;
-            std::string     mEnumTitle;
+            bool TryEnumInterpretation( const PARAM& p );
+            bool IsBooleanEnum() const;
+
+            std::string mComment;
+            Kind_type   mKind;
+            Values_type mValues;
+            int         mIndexBase;
         };
 #endif // TRY_PARAM_INTERPRETATION
 };

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <assert>
 
 #include "..\shared\defines.h"
 #include "UShowParameters.h"
@@ -152,6 +153,8 @@ int     i, t;
 #ifdef TRY_PARAM_INTERPRETATION
   delete ParamComboBox[ i ];
   ParamComboBox[ i ] = NULL;
+  delete ParamCheckBox[ i ];
+  ParamCheckBox[ i ] = NULL;
 #endif // TRY_PARAM_INTERPRETATION
   }
 }
@@ -338,7 +341,7 @@ AnsiString valueline;
         else
         {
           ParamInterpretation interpretation( *cur_param );
-          if( interpretation.IsEnum() )
+          if( interpretation.Kind() == ParamInterpretation::singleValuedEnum )
           {
             TComboBox* comboBox = new TComboBox( this );
             ParamComboBox[ count ] = comboBox;
@@ -349,10 +352,27 @@ AnsiString valueline;
             comboBox->Sorted = false;
             comboBox->Style = csDropDownList;
             comboBox->Parent = CfgTabControl;
-            for( size_t i = 0; i < interpretation.EnumValues().size(); ++i )
-              comboBox->Items->Add( interpretation.EnumValues()[ i ].c_str() );
+            for( size_t i = 0; i < interpretation.Values().size(); ++i )
+              comboBox->Items->Add( interpretation.Values()[ i ].c_str() );
             comboBox->ItemIndex = ::atoi( cur_param->GetValue() ) - interpretation.IndexBase();
-            ParamComment[ count ]->Caption = interpretation.EnumTitle().c_str();
+            comboBox->Hint = cur_param->GetComment();
+            comboBox->ShowHint = true;
+            ParamComment[ count ]->Caption = interpretation.Comment().c_str();
+          }
+          else if( interpretation.Kind() == ParamInterpretation::singleValuedBoolean )
+          {
+            TCheckBox* checkBox = new TCheckBox( this );
+            ParamCheckBox[ count ] = checkBox;
+            checkBox->Left = VALUE_OFFSETX;
+            checkBox->Top= VALUE_OFFSETY + count * VALUE_SPACINGY;
+            checkBox->Width = VALUE_WIDTHX;
+            checkBox->Visible = true;
+            checkBox->Parent = CfgTabControl;
+            checkBox->Checked = ::atoi( cur_param->GetValue() );
+            checkBox->Caption = interpretation.Comment().c_str();
+            checkBox->Hint = cur_param->GetComment();
+            checkBox->ShowHint = true;
+            ParamComment[ count ]->Caption = "";
           }
 #endif // TRY_PARAM_INTERPRETATION
         else
@@ -384,16 +404,13 @@ AnsiString valueline;
 #else
   if( count > 0 )
   {
-    TControl* bottomControl = ParamUserLevel[ count - 1 ];
-    if( bottomControl == NULL )
-      bottomControl = ParamLabel[ count - 1 ];
-    if( bottomControl )
-    {
-      int bottomDiff = bottomControl->Top + bottomControl->Height
-                       - CfgTabControl->DisplayRect.Bottom;
-      if( bottomDiff > 0 )
-        CfgTabControl->Height = CfgTabControl->Height + bottomDiff;
-    }
+    int bottomLine = 0;
+    if( ParamUserLevel[ count - 1 ] != NULL )
+      bottomLine = ParamUserLevel[ count - 1 ]->Top + ParamUserLevel[ count - 1 ]->Height;
+    else if( ParamLabel[ count - 1 ] != NULL )
+      bottomLine = ParamLabel[ count - 1 ]->Top + 3 * ParamLabel[ count - 1 ]->Height;
+    if( bottomLine > 0 )
+      CfgTabControl->Height = CfgTabControl->Height + bottomLine - CfgTabControl->DisplayRect.Bottom;
   }
 #endif // jm 5/03
 
@@ -430,8 +447,10 @@ int     count, t;
         }
 #ifdef TRY_PARAM_INTERPRETATION
      else if( ParamComboBox[ count ] )
-       ParamComboBox[ count ]->ItemIndex = atoi( cur_param->GetValue() )
+       ParamComboBox[ count ]->ItemIndex = ::atoi( cur_param->GetValue() )
                                 - ParamInterpretation( *cur_param ).IndexBase();
+     else if( ParamCheckBox[ count ] )
+       ParamCheckBox[ count ]->Checked = ::atoi( cur_param->GetValue() );
 #endif // TRY_PARAM_INTERPRETATION
   }
 
@@ -500,6 +519,12 @@ char            buf[2048];
       if( param )
         param->SetValue( AnsiString( ParamComboBox[ i ]->ItemIndex
                          + ParamInterpretation( *param ).IndexBase() ).c_str() );
+    }
+    else if( ParamCheckBox[ i ] )
+    {
+      PARAM* param = paramlist->GetParamPtr( paramname.c_str() );
+      if( param )
+        param->SetValue( ParamCheckBox[ i ]->Checked ? "1" : "0" );
     }
 #endif // TRY_PARAM_INTERPRETATION
   }
@@ -823,12 +848,44 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject *Sender)
 
 #ifdef TRY_PARAM_INTERPRETATION
 TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
-: mIndexBase( 0 )
+: mIndexBase( 0 ),
+  mKind( unknown ),
+  mComment( p.GetComment() )
 {
-  // Only int type parameters can be enumerations.
-  const string requestedType = "int";
-  if( p.GetType() != requestedType )
-    return;
+  string paramType = p.GetType();
+  if( paramType == "matrix" )
+    mKind = matrixGeneric;
+  else if( paramType.find( "list" ) != string::npos )
+    mKind = listGeneric;
+  else
+    mKind = singleValuedGeneric;
+
+  switch( mKind )
+  {
+    case singleValuedGeneric:
+      if( TryEnumInterpretation( p ) )
+      {
+        if( IsBooleanEnum() )
+          mKind = singleValuedBoolean;
+        else
+          mKind = singleValuedEnum;
+      }
+      break;
+    case listGeneric:
+    case matrixGeneric:
+      break;
+    default:
+      assert( false );
+  }
+}
+
+bool
+TfConfig::ParamInterpretation::TryEnumInterpretation( const PARAM& p )
+{
+  // Only int type parameters can be enumerations or booleans.
+  const string enumParamType = "int";
+  if( p.GetType() != enumParamType )
+    return false;
 
   // Enumerations need a finite range.
   int lowRange = ::atoi( p.GetLowRange() ),
@@ -838,27 +895,28 @@ TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
       || highRange <= lowRange
       || paramValue < lowRange
       || paramValue > highRange )
-    return;
+    return false;
 
   // Examine the comment: Does it contain an enumeration of all possible values?
-  string comment = p.GetComment();
+  string comment = mComment;
   // Replace all punctuation marks with white space.
-  const string punctuationChars = ",;:=()[]";
-  int punctuationPos = comment.find_first_of( punctuationChars );
+  const string cPunctuationChars = ",;:=()[]";
+  int punctuationPos = comment.find_first_of( cPunctuationChars );
   while( punctuationPos != string::npos )
   {
     comment[ punctuationPos ] = ' ';
-    punctuationPos = comment.find_first_of( punctuationChars );
+    punctuationPos = comment.find_first_of( cPunctuationChars );
   }
 
   map<int, int> histogram;
   istringstream is( comment );
-  string       value;
-  string*      currentLabel = &mEnumTitle;
+  string        value,
+                modifiedComment,
+        *       currentLabel = &modifiedComment;
   while( is >> value )
   {
     // Using the >> operator for an int would accept "+" and similar strings as numbers.
-    // This is not what we want.
+    // We are only interested in groups of decimal digits.
     bool isNum = true;
     int numValue = 0;
     for( string::iterator i = value.begin(); isNum && i != value.end(); ++i )
@@ -875,19 +933,23 @@ TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
     {
       unsigned int index = numValue - lowRange;
       histogram[ index ]++;
-      if( mEnumValues.size() <= index )
-        mEnumValues.resize( index + 1 );
-      currentLabel = &mEnumValues[ index ];
+      if( mValues.size() <= index )
+        mValues.resize( index + 1 );
+      currentLabel = &mValues[ index ];
     }
     else
-      *currentLabel += value + " ";
+    {
+      if( !currentLabel->empty() )
+        *currentLabel += " ";
+      *currentLabel += value;
+    }
   }
 
   bool isEnum = is.eof();
 
   // Each non-null value must be explained in the comment, thus appear exactly
   // once -- if in doubt, let's better return.
-  for( size_t i = 1; isEnum && i < mEnumValues.size(); ++i )
+  for( size_t i = 1; isEnum && i < mValues.size(); ++i )
     if( histogram[ i ] != 1 )
       isEnum = false;
 
@@ -895,36 +957,46 @@ TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
   if( isEnum && lowRange == 0 && highRange == 1
       && histogram[ 0 ] == 0 && histogram[ 1 ] == 1 )
   {
-    if( mEnumValues.size() > 1 )
-      mEnumTitle = mEnumValues[ 1 ];
-    mEnumValues.resize( 2 );
-    mEnumValues[ 0 ] = "no";
-    mEnumValues[ 1 ] = "yes";
+    if( mValues.size() > 1 )
+      modifiedComment = mValues[ 1 ];
+    mValues.resize( 2 );
+    mValues[ 0 ] = "no";
+    mValues[ 1 ] = "yes";
   }
 
-  if( mEnumValues.size() != size_t( highRange - lowRange + 1 ) )
+  if( mValues.size() != size_t( highRange - lowRange + 1 ) )
     isEnum = false;
-    
-  if( isEnum && mEnumValues.size() > 0 && mEnumValues[ 0 ] == "" )
-    mEnumValues[ 0 ] = "none";
+
+  if( isEnum && mValues.size() > 0 && mValues[ 0 ] == "" )
+    mValues[ 0 ] = "none";
 
   // Each of the other labels must now be non-empty.
-  for( size_t i = 1; isEnum && i < mEnumValues.size(); ++i )
-    if( mEnumValues[ i ].empty() )
+  for( size_t i = 1; isEnum && i < mValues.size(); ++i )
+    if( mValues[ i ].empty() )
       isEnum = false;
 
   if( isEnum )
   {
     mIndexBase = lowRange;
-#if 0
-    if( mEnumTitle == "" )
-      mEnumTitle = p.GetName();
-#endif
+    mComment = modifiedComment;
+    mKind = singleValuedEnum;
   }
   else
-  {
-    mEnumValues.clear();
-    mEnumTitle.clear();
-  }
+    mValues.clear();
+  return isEnum;
+}
+
+bool
+TfConfig::ParamInterpretation::IsBooleanEnum() const
+{
+  if( mIndexBase != 0 )
+    return false;
+  if( mValues.size() != 2 )
+    return false;
+  if( mValues[ 0 ] != "no" && mValues[ 0 ] != "No" )
+    return false;
+  if( mValues[ 1 ] != "yes" && mValues[ 1 ] != "Yes" )
+    return false;
+  return true;
 }
 #endif // TRY_PARAM_INTERPRETATION
