@@ -86,9 +86,6 @@ NIADC::~NIADC()
 void NIADC::Preflight( const SignalProperties&,
                              SignalProperties& outSignalProperties ) const
 {
-  // Constants.
-  const size_t signalDepth = 2;
-
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
 
   // Resource availability checks.
@@ -99,7 +96,7 @@ void NIADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 
 // **************************************************************************

@@ -113,7 +113,7 @@ void TRIALSEQUENCE::SuspendTrial()
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-TARGET *TRIALSEQUENCE::Process(const std::vector<float>& controlsignal)
+TARGET *TRIALSEQUENCE::Process(const GenericSignal* controlsignal)
 {
 TARGET   *selected;
 unsigned short running;

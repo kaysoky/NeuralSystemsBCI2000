@@ -113,9 +113,6 @@ gUSBampADC::~gUSBampADC()
 void gUSBampADC::Preflight( const SignalProperties&,
                                        SignalProperties& outSignalProperties ) const
 {
-// Constants.
-const size_t signalDepth = 2;
-
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   // # elements in SourceChGain has to match total # channels
   PreflightCondition( Parameter("SourceChGain")->GetNumValues() == Parameter("SoftwareCh") );
@@ -210,7 +207,7 @@ const size_t signalDepth = 2;
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 
 
@@ -411,7 +408,7 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
      // throw;
      }
   GetOverlappedResult(hdev.at(dev), &ov, &dwBytesReceived, FALSE);
-  for (int sample=0; sample<(int)signal->MaxElements(); sample++)
+  for (size_t sample=0; sample<signal->Elements(); sample++)
    {
    for (int channel=0; channel<numchans.at(dev); channel++)
     {

@@ -84,9 +84,6 @@ AcqBasicInfo  m_BasicInfo;
 int   num_channels, num_markerchannels, blocksize, samplingrate, bitspersample;
 float LSB;
 
-  // Constants.
-  const size_t signalDepth = 2;
-
   //
   // Connect to the server and gather basic info to compare against the BCI2000 parameter settings
   //
@@ -203,7 +200,7 @@ float LSB;
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 
 
@@ -408,7 +405,7 @@ bool          retval;
         for (int ch=0; ch<(num_channels+num_markerchannels); ch++)
          {
          // now, write all the samples into the output signal
-         if (((unsigned int)samp < signal->MaxElements()) && ((unsigned int)ch < signal->Channels()))
+         if (((unsigned int)samp < signal->Elements()) && ((unsigned int)ch < signal->Channels()))
             {
             cur_sample=sample[samp*(num_channels+num_markerchannels)+ch];
             if (cur_sample > +32767) cur_sample=+32767;         // simply saturate at the highest or smallest value
@@ -437,7 +434,7 @@ bool          retval;
         for (int ch=0; ch<(num_channels+num_markerchannels); ch++)
          {
          // now, write all the samples into the output signal
-         if (((unsigned int)samp < signal->MaxElements()) && ((unsigned int)ch < signal->Channels()))
+         if (((unsigned int)samp < signal->Elements()) && ((unsigned int)ch < signal->Channels()))
             signal->SetValue(ch, samp, sample[samp*(num_channels+num_markerchannels)+ch]);
          }
         }

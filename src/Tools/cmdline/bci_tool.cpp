@@ -109,20 +109,25 @@ int main( int argc, const char** argv )
   if( i != argc )
     result = illegalOption;
 
+  if( options.inputFile )
+    if( !::freopen( options.inputFile, "rb", stdin ) )
+    {
+      cerr << "Could not open " << options.inputFile << " for input" << endl;
+      result = fileIOError;
+    }
+
+#if 0
+  const char outputFile[] = "out.~tmp";
+  if( !::freopen( outputFile, "wb", stdout ) )
+  {
+    cerr << "Could not open " << outputFile << " for output" << endl;
+    result = fileIOError;
+  }
+#endif
+
   if( result == noError && options.execute )
   {
-    istream* in = &cin;
-    if( options.inputFile )
-    {
-      in = new ifstream( options.inputFile, ios::binary );
-      if( !*in )
-      {
-        cerr << "Could not open " << options.inputFile << " for input" << endl;
-        result = fileIOError;
-      }
-    }
-    if( result == noError )
-      result = ToolMain( toolOptions, *in, cout );
+    result = ToolMain( toolOptions, cin, cout );
 #if 0
     if( !( in->good() || !in->eof() || result == fileIOError ) )
     {
@@ -130,10 +135,8 @@ int main( int argc, const char** argv )
       result = illegalInput;
     }
 #endif
-    if( options.inputFile )
-      delete in;
   }
-
+  
   options.help |= ( result == illegalOption );
   if( options.help )
   {

@@ -199,7 +199,7 @@ void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv)
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv * pUsrEnv,
+void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUsrEnv,
                                GenericVisualization * pGenericVisualization)
 {
   if (pUsrEnv == NULL || pGenericVisualization == NULL) return;
@@ -231,7 +231,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       uStimulusCodeRes <= (unsigned short)m_vResultValues.size())
   {
     m_vResultCounts[uStimulusCodeRes - 1]++;
-    m_vResultValues[uStimulusCodeRes - 1] += (float)controlsignal[0];
+    m_vResultValues[uStimulusCodeRes - 1] += (*controlsignal)(0,0);
   }
 
   // whether we need to wait before going to the next phase

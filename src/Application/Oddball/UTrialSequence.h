@@ -29,7 +29,7 @@ public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize(USERDISPLAY *);
-        TARGET  *Process(const std::vector<float>&);
+        TARGET  *Process(const GenericSignal* );
         void    ResetTrialSequence();
 };
 #endif

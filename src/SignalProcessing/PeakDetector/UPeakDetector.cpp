@@ -71,9 +71,8 @@ void PeakDetector::Preflight( const SignalProperties& inSignalProperties,
   /* The P3 temporal filter seems not to depend on external resources. */
 
   // Input signal checks.
-  PreflightCondition( inSignalProperties.Channels() >= Parameter( "SpatialFilteredChannels" ) );
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) >= Parameter( "SampleBlockSize" ) );
+  PreflightCondition( inSignalProperties >= SignalProperties(
+    Parameter( "SpatialFilteredChannels" ), Parameter( "SampleBlockSize" ), SignalType::int16 ) );
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties( 2, Parameter( "HistoryLength" ) );
@@ -140,22 +139,22 @@ static bool first=true;
     {
     first=false;
     for (ch=0; ch < 2; ch++)
-     for (sample=0; sample < output->MaxElements(); sample++)
+     for (sample=0; sample < output->Elements(); sample++)
       output->SetValue(ch, sample, 0);
     }
 
  // shift the number of peaks to the left to make room for the new number of peaks
  for (ch=0; ch < 2; ch++)
-  for (sample=1; sample < output->MaxElements(); sample++)
+  for (sample=1; sample < output->Elements(); sample++)
    output->SetValue(ch, sample-1, output->GetValue(ch, sample));
 
  // calculate the new number of peaks and assign them to the right-most (i.e., most recent) position
  num_pos_peaks=get_num_pos_peaks(input, targetchpos);
  num_neg_peaks=get_num_neg_peaks(input, targetchneg);
  // channel 0 ... number of positive peaks
- output->SetValue(0, output->MaxElements()-1, num_pos_peaks);
+ output->SetValue(0, output->Elements()-1, num_pos_peaks);
  // channel 1 ... number of negative peaks
- output->SetValue(1, output->MaxElements()-1, num_neg_peaks);
+ output->SetValue(1, output->Elements()-1, num_neg_peaks);
 
  // FILE *fp=fopen("c:\\data.txt", "ab");
  // fprintf(fp, "%d\r\n", num_pos_peaks);
@@ -183,7 +182,7 @@ int     num_peaks;
  peak_flag=false;
  num_peaks=0;
 
- for (cur_idx=0; cur_idx<input->MaxElements()-1; cur_idx++)
+ for (cur_idx=0; cur_idx<input->Elements()-1; cur_idx++)
   {
   current_val=fabs((float)input->GetValue(channel, cur_idx));
   next_val=fabs((float)input->GetValue(channel, cur_idx+1));
@@ -218,7 +217,7 @@ int     num_peaks;
  peak_flag=false;
  num_peaks=0;
 
- for (cur_idx=0; cur_idx<input->MaxElements()-1; cur_idx++)
+ for (cur_idx=0; cur_idx<input->Elements()-1; cur_idx++)
   {
   current_val=fabs((float)input->GetValue(channel, cur_idx));
   next_val=fabs((float)input->GetValue(channel, cur_idx+1));

@@ -371,7 +371,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
 
   // TTask::Process() implies that the input signal has at least two integer channels
   // with one element each.
-  PreflightCondition( inputProperties >= SignalProperties( 2, 1, 2 ) );
+  PreflightCondition( inputProperties >= SignalProperties( 2, 1, SignalType::int16 ) );
 
   /*shidong starts*/
   //Parameter checking

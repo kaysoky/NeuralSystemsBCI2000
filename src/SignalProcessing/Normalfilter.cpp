@@ -90,11 +90,10 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
   /* The normalizer filter seems not to depend on external resources. */
 
   // Input signal checks.
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
+  PreflightCondition( inSignalProperties >= SignalProperties( 2, 1 ) );
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( cNumControlSignals, 1 );  //  was inSignalProperties;
+  outSignalProperties = SignalProperties( cNumControlSignals, 1 );
 }
 
 // **************************************************************************
@@ -147,51 +146,11 @@ void NormalFilter::Initialize()
 // **************************************************************************
 void NormalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
-//  float   val_ud;
-//  float   val_lr;
-//  float   value;
-
-  // actually perform the Normal Filtering on the input and write it into the output signal
-/*
-  int sample= 0;
-
-  for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
-  {
-    value= input->GetValue(in_channel, sample);
-// ??
-    if( in_channel == 0 ) val_ud=  ( value - ymean ) * ygain;
-    if( in_channel == 1 ) val_lr=  ( value - xmean ) * xgain;
-  }
-  output->SetValue( 0, 0, val_ud );
-  output->SetValue( 1, 0, val_lr );
-*/
-
-const val_max = ( 1 << 15 ) - 1;
   // actually perform the Normal Filtering on the input and write it into the output signal
   float val_ud = ( input->GetValue( 0, 0 ) - ymean ) * ygain;;
-  if( val_ud > val_max )
-  {
-    val_ud = val_max;
-    bciout << "UD value greater " << val_max << endl;
-  }
-  else if( val_ud < -val_max )
-  {
-    val_ud = -val_max;
-    bciout << "UD value below " << -val_max << endl;
-  }
   output->SetValue( 0, 0, val_ud );
 
   float val_lr = ( input->GetValue( 1, 0 ) - xmean ) * xgain;
-  if( val_lr > val_max )
-  {
-    val_lr = val_max;
-    bciout << "LR value greater " << val_max << endl;
-  }
-  else if( val_lr < -val_max )
-  {
-    val_lr = -val_max;
-    bciout << "LR value below " << -val_max << endl;
-  }
   output->SetValue( 1, 0, val_lr );
 
 #ifdef USE_LOGFILE
@@ -215,5 +174,7 @@ int NormalFilter::UpdateParameters( float new_ymean, float new_ygain, float new_
 
   return(1);
 }
+
+
 
 

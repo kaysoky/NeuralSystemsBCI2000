@@ -85,12 +85,14 @@ void FIRClassFilter::Preflight( const SignalProperties& inSignalProperties,
   Parameter( "SampleBlockSize" );
 
   // Resource availability checks.
-  /* The class filter seems not to depend on external resources. */
+  /* The FIR class filter seems not to depend on external resources. */
 
   // Input signal checks.
-  // There should be a more thorough check here.
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
+  PreflightCondition( Parameter( "SpatialFilteredChannels" ) <= MAX_M );
+  PreflightCondition( Parameter( "MUD" )->GetNumValuesDimension1() <= MAX_N );
+  PreflightCondition( inSignalProperties.Channels() >= Parameter( "SpatialFilteredChannels" ) );
+  PreflightCondition( inSignalProperties.Elements() >= Parameter( "MUD" )->GetNumValuesDimension1() );
+  PreflightCondition( Parameter( "MLR" )->GetNumValuesDimension1() >= Parameter( "MUD" )->GetNumValuesDimension1() );
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties( cNumControlSignals, 1 );
@@ -175,7 +177,7 @@ float   value;
         val_ud= 0;
         val_lr= 0;
 
-        for(size_t sample=0; sample<input->MaxElements(); sample++)
+        for(size_t sample=0; sample<input->Elements(); sample++)
         {
             for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
             {

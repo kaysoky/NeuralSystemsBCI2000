@@ -57,7 +57,8 @@ void TransmissionFilter::Preflight( const SignalProperties& InputProperties,
   PreflightCondition( leastEntryInTransmitChList > 0 );
 
   // Output signal properties.
-  OutputProperties = SignalProperties( Parameter( "TransmitChList" )->GetNumValues(), InputProperties.MaxElements(), InputProperties.GetDepth() );
+  OutputProperties = InputProperties;
+  OutputProperties.Channels() = Parameter( "TransmitChList" )->GetNumValues();
 }
 
 void TransmissionFilter::Initialize()
@@ -71,6 +72,6 @@ void TransmissionFilter::Process( const GenericSignal* Input,
                                         GenericSignal* Output )
 {
   for( size_t i = 0; i < mChannelList.size(); ++i )
-    for( size_t j = 0; j < Input->GetNumElements( mChannelList[ i ] ); ++j )
+    for( size_t j = 0; j < Input->Elements(); ++j )
       ( *Output )( i, j ) = ( *Input )( mChannelList[ i ], j );
 }

@@ -134,7 +134,6 @@ private:     // User declarations
         STATELIST        mStatelist;
         STATEVECTOR*     mpStatevector;
         std::string      mInitialStatevector;
-        SignalProperties mInputProperties;
         GenericSignal    mOutputSignal;
         client_tcpsocket mOperatorSocket,
                          mNextModuleSocket;

@@ -255,8 +255,8 @@ TBCIReader::Process(    const TStrList& inChannelNames,
 
     if( !inScanOnly )
     {
-      GenericIntSignal sourceSignal( numSourceChannels, sampleBlockSize );
-      GenericSignal transmittedSignal( numTransmittedChannels, sampleBlockSize );
+      GenericSignal sourceSignal( numSourceChannels, sampleBlockSize ),
+                    transmittedSignal( numTransmittedChannels, sampleBlockSize );
 
       TStrList channelNames = inChannelNames;
       while( channelNames.size() < numTransmittedChannels )

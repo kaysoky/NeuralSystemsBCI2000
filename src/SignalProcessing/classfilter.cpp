@@ -100,10 +100,36 @@ void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
 #endif // USE_LOGFILE
 
   // Input signal checks.
-  // There should be a more thorough check here.
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
-
+  for( size_t i = 0; i < Parameter( "MUD" )->GetNumValuesDimension1(); ++i )
+  {
+    PreflightCondition( Parameter( "MUD", i, 0 ) > 0 ); // Unlike the MLR case,
+                                                        // equality is not
+                                                        // allowed for by Process().
+    PreflightCondition( Parameter( "MUD", i, 0 ) <= inSignalProperties.Channels() );
+    PreflightCondition( Parameter( "MUD", i, 1 ) >= 0 );
+    PreflightCondition( Parameter( "MUD", i, 1 ) <= inSignalProperties.Elements() );
+    if( Parameter( "ClassMode" ) == 2 )
+    {
+      PreflightCondition( Parameter( "MUD", i, 2 ) >= 0 );
+      PreflightCondition( Parameter( "MUD", i, 2 ) <= inSignalProperties.Channels() );
+      PreflightCondition( Parameter( "MUD", i, 3 ) >= 0 );
+      PreflightCondition( Parameter( "MUD", i, 3 ) <= inSignalProperties.Elements() );
+    }
+  }
+  for( size_t i = 0; i < Parameter( "MLR" )->GetNumValuesDimension1(); ++i )
+  {
+    PreflightCondition( Parameter( "MLR", i, 0 ) >= 0 );
+    PreflightCondition( Parameter( "MLR", i, 0 ) <= inSignalProperties.Channels() );
+    PreflightCondition( Parameter( "MLR", i, 1 ) >= 0 );
+    PreflightCondition( Parameter( "MLR", i, 1 ) <= inSignalProperties.Elements() );
+    if( Parameter( "ClassMode" ) == 2 )
+    {
+      PreflightCondition( Parameter( "MLR", i, 2 ) >= 0 );
+      PreflightCondition( Parameter( "MLR", i, 2 ) <= inSignalProperties.Channels() );
+      PreflightCondition( Parameter( "MLR", i, 3 ) >= 0 );
+      PreflightCondition( Parameter( "MLR", i, 3 ) <= inSignalProperties.Elements() );
+    }
+  }
   // Requested output signal properties.
   outSignalProperties = SignalProperties( cNumControlSignals, 1 );
 }

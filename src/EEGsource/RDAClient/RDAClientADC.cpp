@@ -33,9 +33,6 @@ RegisterFilter( RDAClientADC, 1 );
 void RDAClientADC::Preflight( const SignalProperties&,
                                     SignalProperties& outSignalProperties ) const
 {
-  // Constants.
-  const size_t signalDepth = 2;
-
   // Resource availability and parameter consistency checks.
   RDAQueue preflightQueue;
   size_t numInputChannels = 0;
@@ -112,7 +109,7 @@ void RDAClientADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       numInputChannels, Parameter( "SampleBlockSize" ), signalDepth );
+       numInputChannels, Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 
 // **************************************************************************
@@ -146,25 +143,12 @@ void RDAClientADC::Initialize()
 // **************************************************************************
 void RDAClientADC::Process( const GenericSignal*, GenericSignal* SourceSignal )
 {
-  const char* connectionErrorMessage = "Lost connection to VisionRecorder software";
-
-#if 0
-  if( !inputQueue.is_open() )
-  {
-    inputQueue.open( hostName.c_str() );
-    if( !inputQueue.is_open() )
-    {
-      bcierr << connectionErrorMessage << endl;
-      return;
-  }
-#endif
-
-  for( size_t sample = 0; sample < SourceSignal->MaxElements(); ++sample )
+  for( size_t sample = 0; sample < SourceSignal->Elements(); ++sample )
     for( size_t channel = 0; channel < SourceSignal->Channels(); ++channel )
     {
       if( !inputQueue )
       {
-        bcierr << connectionErrorMessage << endl;
+        bcierr << "Lost connection to VisionRecorder software" << endl;
         return;
       }
       SourceSignal->SetValue( channel, sample, inputQueue.front() );

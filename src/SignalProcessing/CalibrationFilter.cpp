@@ -108,11 +108,11 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
   /* The calibration filter seems not to depend on external resources. */
 
   // Input signal checks.
-  /* We can handle any input signal. */
+  PreflightCondition( inSignalProperties.Channels() == Parameter( "TransmitChList" )->GetNumValues() );
 
   // Requested output signal properties.
   outSignalProperties = inSignalProperties;
-  outSignalProperties.SetDepth( sizeof( float ) );
+  outSignalProperties.Type() = SignalType::float32;
 }
 
 // **************************************************************************
@@ -202,7 +202,7 @@ void CalibrationFilter::Process(const GenericSignal *input, GenericSignal *outpu
 {
   // actually perform the calibration on the input and write it into the output signal
   for(size_t channel=0; channel<input->Channels(); channel++)
-    for(size_t sample=0; sample<input->MaxElements(); sample++)
+    for(size_t sample=0; sample<input->Elements(); sample++)
     {
       float value=(input->GetValue(channel, sample)-offset[channel])*gain[channel];
 

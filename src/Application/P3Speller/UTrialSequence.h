@@ -37,7 +37,7 @@ public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize(USERDISPLAY *);
-        int     Process(const std::vector<float>&);
+        int     Process(const GenericSignal*);
         void    ResetTrialSequence();
         bool    onlinemode;
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)

@@ -150,7 +150,7 @@ void
 TBrainVisionGDRConverter::OutputSignal( const GenericSignal& inSignal, long /*inSamplePos*/ )
 {
     Idle();
-    for( size_t sample = 0; sample < inSignal.MaxElements(); ++sample )
+    for( size_t sample = 0; sample < inSignal.Elements(); ++sample )
       for( size_t channel = 0; channel < inSignal.Channels(); ++channel )
       {
         float value = inSignal( channel, sample );

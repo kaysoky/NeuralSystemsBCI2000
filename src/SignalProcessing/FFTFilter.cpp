@@ -89,7 +89,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
       break;
     case eTransform:
       Output = SignalProperties( Parameter( "FFTInputChannels" )->GetNumValues(),
-                                          ( int )Parameter( "FFTSize" ) / 2 + 1 );
+                                    ( int )Parameter( "FFTSize" ) / 2 + 1, Input.Type() );
       break;
     default:
       assert( false );
@@ -160,8 +160,7 @@ FFTFilter::Process( const GenericSignal* inputSignal, GenericSignal* outputSigna
   {
     // Copy the input signal values to the value buffer.
     vector<float>& buffer = mValueBuffers[ i ];
-    const vector<float>& inputChannel = inputSignal->GetChannel( i );
-    int inputSize = inputChannel.size(),
+    int inputSize = inputSignal->Elements(),
         bufferSize = buffer.size();
     // Move old values towards the beginning of the buffer, if any.
     for( int j = 0; j < bufferSize - inputSize; ++j )
@@ -169,7 +168,7 @@ FFTFilter::Process( const GenericSignal* inputSignal, GenericSignal* outputSigna
     // Copy new values to the end of the buffer;
     // the buffer size may be greater of smaller than the input size.
     for( int j = ::max( 0, bufferSize - inputSize ); j < bufferSize; ++j )
-      buffer[ j ] = inputChannel[ j + inputSize - bufferSize ];
+      buffer[ j ] = ( *inputSignal )( i, j + inputSize - bufferSize );
     // Prepare the buffer.
     if( mFFTWindow == eNone )
       for( int j = 0; j < bufferSize; ++j )
@@ -199,7 +198,7 @@ FFTFilter::Process( const GenericSignal* inputSignal, GenericSignal* outputSigna
     case eTransform:
       for( size_t channel = 0; channel < mPowerSpectra.size(); ++channel )
         for( size_t element = 0; element < mPowerSpectra[ channel ].Channels(); ++element )
-          ( *outputSignal )( channel, element ) = mPowerSpectra[ channel ]( channel, 0 );
+          ( *outputSignal )( channel, element ) = mPowerSpectra[ channel ]( element, 0 );
       break;
     default:
       assert( false );

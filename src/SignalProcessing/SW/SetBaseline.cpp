@@ -93,16 +93,16 @@ TSetBaseline::Process( const GenericSignal* inSignal, GenericSignal* outSignal )
     for( size_t i = 0; i < ioSignal.Channels(); ++i )
     {
       float sum = 0;
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
+      for( size_t j = 0; j < ioSignal.Elements(); ++j )
         sum += ioSignal( i, j );
       mBLSignal( i, 0 ) = mBLSignal( i, 0 ) * mBLSamples[ i ] + sum;
-      mBLSamples[ i ] += ioSignal.GetNumElements( i );
+      mBLSamples[ i ] += ioSignal.Elements();
       mBLSignal( i, 0 ) /= mBLSamples[ i ];
     }
 
   for( size_t i = 0; i < mBaseChList.size(); ++i )
     if( mBaseChList[ i ] )
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
+      for( size_t j = 0; j < ioSignal.Elements(); ++j )
         ioSignal( i, j ) -= mBLSignal( i, 0 );
 
   if( mVisualize )

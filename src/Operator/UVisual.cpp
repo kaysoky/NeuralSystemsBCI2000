@@ -388,14 +388,14 @@ void
 VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
 {
   const GenericSignal& newData = v.GetSignal();
-  if( newData.Channels() < 1 || newData.MaxElements() < 1 )
+  if( newData.Channels() < 1 || newData.Elements() < 1 )
     return;
 
   // Any changes in the signal size that we must react to?
   bool reconfigure = false;
-  if( newData.MaxElements() > mNumSamples )
+  if( newData.Elements() > mNumSamples )
   {
-    SetNumSamples( newData.MaxElements() );
+    SetNumSamples( newData.Elements() );
     reconfigure = true;
   }
   if( newData.Channels() != mData.Channels() )
@@ -420,16 +420,16 @@ VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
     form->Invalidate();
   }
 
-  mShowCursor = ( newData.MaxElements() < mNumSamples );
+  mShowCursor = ( newData.Elements() < mNumSamples );
 
   for( size_t i = 0; i < newData.Channels(); ++i )
-    for( size_t j = 0; j < newData.GetNumElements( i ); ++j )
-      mData( i, ( mSampleCursor + j ) % mData.GetNumElements( i ) ) = newData( i, j );
+    for( size_t j = 0; j < newData.Elements(); ++j )
+      mData( i, ( mSampleCursor + j ) % mData.Elements() ) = newData( i, j );
 
   SyncGraphics();
 
   int firstInvalidSample = mSampleCursor,
-      firstValidSample = mSampleCursor + newData.MaxElements();
+      firstValidSample = mSampleCursor + newData.Elements();
   mSampleCursor = firstValidSample % mNumSamples;
   mWrapAround |= bool( firstValidSample / mNumSamples > 0  );
 

@@ -30,7 +30,7 @@ class StreamToTable : public MessageHandler
 {
  public:
   StreamToTable( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0, 0 ) {}
+  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ) {}
   ~StreamToTable() { delete mpStatevector; }
 
  private:
@@ -89,9 +89,9 @@ StreamToTable::HandleVisSignal( istream& arIn )
   v.ReadBinary( arIn );
   const GenericSignal& s = v;
   // Print a header line before the first line of data.
-  if( mSignalProperties == SignalProperties( 0, 0, 0 ) )
+  if( mSignalProperties.IsEmpty() )
   {
-    mSignalProperties = s;
+    mSignalProperties = s.GetProperties();
     mrOut << "#";
     mStateNames.clear();
     for( int i = 0; i < mStatelist.GetNumStates(); ++i )
@@ -99,11 +99,11 @@ StreamToTable::HandleVisSignal( istream& arIn )
     for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
       mrOut << "\t" << *i;
     for( size_t i = 0; i < s.Channels(); ++i )
-      for( size_t j = 0; j < s.GetNumElements( i ); ++j )
+      for( size_t j = 0; j < s.Elements(); ++j )
         mrOut << "\tSignal(" << i << "," << j << ")";
     mrOut << endl;
   }
-  if( s != mSignalProperties )
+  if( s.GetProperties() != mSignalProperties )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
   {
@@ -115,7 +115,7 @@ StreamToTable::HandleVisSignal( istream& arIn )
         mrOut << "\t0";
 
     for( size_t i = 0; i < s.Channels(); ++i )
-      for( size_t j = 0; j < s.GetNumElements( i ); ++j )
+      for( size_t j = 0; j < s.Elements(); ++j )
         mrOut << "\t" << s( i, j );
     mrOut << endl;
   }

@@ -45,7 +45,7 @@ public:
 
   /// Member functions
   void Initialize(UsrEnv * pUsrEnv);
-  void Process(const std::vector<float>&, UsrEnv * pUsrEnv,
+  void Process(const class GenericSignal*, UsrEnv * pUsrEnv,
                GenericVisualization * pGenericVisualization);
   void Reset(UsrEnv * pUsrEnv);
   void SuspendUsrEnv(UsrEnv * pUsrEnv);

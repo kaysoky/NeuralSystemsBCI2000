@@ -101,9 +101,8 @@ void P3TemporalFilter::Preflight( const SignalProperties& inSignalProperties,
   State( "StimulusType" );
 
   // Input signal checks.
-  PreflightCondition( inSignalProperties.Channels() >= Parameter( "SpatialFilteredChannels" ) );
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) >= Parameter( "SampleBlockSize" ) );
+  PreflightCondition( inSignalProperties >= SignalProperties(
+    Parameter( "SpatialFilteredChannels" ), Parameter( "SampleBlockSize" ), SignalType::int16 ) );
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
@@ -282,7 +281,7 @@ float   oldvalue;
   if (ERPBufCode[cur_buf] != ERPBUFCODE_EMPTY)
      {
      // go through all samples and append them if we have not stored enough
-     for (samples=0; samples<(int)input->MaxElements(); samples++)
+     for (samples=0; samples<(int)input->Elements(); samples++)
      {
       if (ERPBufSampleCount[cur_buf] < numsamplesinERP)
          {

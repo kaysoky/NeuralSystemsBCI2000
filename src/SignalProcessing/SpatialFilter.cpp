@@ -80,7 +80,7 @@ void SpatialFilter::Preflight( const SignalProperties& inSignalProperties,
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
                                  Parameter( "SpatialFilteredChannels" ),
-                                 inSignalProperties.MaxElements() );
+                                 inSignalProperties.Elements() );
 }
 
 // **************************************************************************
@@ -139,7 +139,7 @@ void SpatialFilter::Initialize()
 void SpatialFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
   // actually perform the Spatial Filtering on the input and write it into the output signal
-  for(size_t sample=0; sample<input->MaxElements(); sample++)
+  for(size_t sample=0; sample<input->Elements(); sample++)
   {
     for(size_t out_channel= 0; out_channel<output->Channels(); out_channel++)
     {

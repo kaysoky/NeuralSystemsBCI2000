@@ -409,15 +409,13 @@ void TTask::Rest( void )
 
 void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
-        const std::vector< float >& signals = Input->GetChannel( 0 );
-
         ReadStateValues( Statevector );
 
         if( CurrentRunning > 0 )
         {
                 if(CurrentRest > 0 )             Rest();
                 else if (CurrentIti > 0)         Iti();
-                else if (CurrentFeedback > 0 )   Feedback( signals[1], signals[0] );
+                else if (CurrentFeedback > 0 )   Feedback( (*Input)(0,1), (*Input)(0,0) );
         }
 
         UpdateDisplays();

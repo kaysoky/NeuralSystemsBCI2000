@@ -75,8 +75,8 @@ void ARTemporalFilter::Preflight( const SignalProperties& inSignalProperties,
   /* The normalizer filter seems not to depend on external resources. */
 
   // Input signal checks.
-  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
-    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
+  if( !inSignalProperties.IsEmpty() )
+    PreflightCondition( inSignalProperties.Elements() >= Parameter( "SampleBlockSize" ) );
 
   // Requested output signal properties.
   int nBins = ( Parameter( "StopMem" ) - Parameter( "StartMem" ) ) / Parameter( "MemBandWidth" ) + 1;

@@ -45,9 +45,6 @@ void
 TDAS_ADC::Preflight( const SignalProperties&,
                              SignalProperties& outSignalProperties ) const
 {
-  // Constants.
-  const size_t signalDepth = 2;
-
   // "Owned" parameters (those defined in the constructor) are automatically
   // checked for existence and range.
 
@@ -68,7 +65,8 @@ TDAS_ADC::Preflight( const SignalProperties&,
   /* input signal will be ignored */
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( boardInfo.numChannels, boardInfo.sampleBlockSize, signalDepth );
+  outSignalProperties = SignalProperties( boardInfo.numChannels,
+                                  boardInfo.sampleBlockSize, SignalType::int16 );
 
   // Sanity check for TransmitCh, TransmitChList, SoftwareCh.
   // This doesn't really belong here -- rather it belongs into framework code.
@@ -100,7 +98,7 @@ TDAS_ADC::Initialize()
 void
 TDAS_ADC::Process( const GenericSignal*, GenericSignal* outSignal )
 {
-  for( size_t sample = 0; sample < outSignal->MaxElements(); ++sample )
+  for( size_t sample = 0; sample < outSignal->Elements(); ++sample )
     for( size_t channel = 0; channel < outSignal->Channels(); ++channel )
     {
       if( !inputQueue )

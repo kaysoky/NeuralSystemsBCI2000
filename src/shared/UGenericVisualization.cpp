@@ -124,18 +124,6 @@ GenericVisualization::Send( const GenericSignal* s )
   return *Environment::Operator;
 }
 
-// send signal to operator with decimation
-bool
-GenericVisualization::Send2Operator( const GenericIntSignal* inSignal, int inDecimation )
-{
-  GenericSignal decimatedSignal( SignalProperties( inSignal->Channels(),
-                                     inSignal->MaxElements() / inDecimation, 2 ) );
-  for( size_t channel = 0; channel < inSignal->Channels(); ++channel )
-    for( size_t sample = 0; sample < inSignal->GetNumElements( channel ); sample += inDecimation )
-      decimatedSignal( channel, sample / inDecimation ) = ( *inSignal )( channel, sample );
-  return Send( &decimatedSignal );
-}
-
 bool
 GenericVisualization::SendCfg2Operator( int sourceID, int cfgID, int cfgValue )
 {

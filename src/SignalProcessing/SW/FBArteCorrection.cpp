@@ -81,7 +81,7 @@ TFBArteCorrection::Initialize()
   mVisualize = Parameter( "VisualizeFBArteCorFiltering" );
   if( mVisualize )
   {
-    mVis.Send( CFGID::WINDOWTITLE, "Artefact filtered");
+    mVis.Send( CFGID::WINDOWTITLE, "Artefact filtered" );
     mVis.Send( CFGID::MINVALUE, -100 );
     mVis.Send( CFGID::MAXVALUE, 100 );
     mVis.Send( CFGID::NUMSAMPLES, 256 );
@@ -96,7 +96,7 @@ TFBArteCorrection::Process( const GenericSignal* inSignal, GenericSignal* outSig
 
   for( size_t i = 0; i < mArteChList.size(); ++i )
     if( mArteChList[ i ] >= 0 )
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
+      for( size_t j = 0; j < ioSignal.Elements(); ++j )
       {
         float controlSignal = ioSignal( i, j ),
               arteSignal = ioSignal( mArteChList[ i ], j ) * mArteFactorList[ i ];

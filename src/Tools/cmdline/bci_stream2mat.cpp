@@ -50,7 +50,7 @@ class StreamToMat : public MessageHandler
 
  public:
   StreamToMat( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0, 0 ),
+  : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
     mDataElementSizePos( 0 ), mDataRowsPos( 0 ), mDataSizePos( 0 ), mDataRows( 0 ) {}
   ~StreamToMat() { delete mpStatevector; }
   void FinishHeader() const;
@@ -183,7 +183,7 @@ StreamToMat::WriteHeader()
     mrOut.seekp( endPos );
   }
   // An array with the signal's dimensions holding the signal entries' column indices
-  long numSignalEntries = mSignalProperties.Channels() * mSignalProperties.MaxElements();
+  long numSignalEntries = mSignalProperties.Channels() * mSignalProperties.Elements();
   {
     Write32( miMATRIX );
     long sizePos = mrOut.tellp();
@@ -193,7 +193,7 @@ StreamToMat::WriteHeader()
     Write32( mxUINT32_CLASS ); Write32( 0 );
     // Dimensions array
     Write32( miINT32 ); Write32( 8 );
-    Write32( mSignalProperties.Channels() ); Write32( mSignalProperties.MaxElements() );
+    Write32( mSignalProperties.Channels() ); Write32( mSignalProperties.Elements() );
     // Array name
     Write32( miINT8 ); Write32( 0 );
     // Array data
@@ -244,12 +244,8 @@ StreamToMat::WriteData( const GenericSignal& s )
       WriteFloat32( mpStatevector->GetStateValue( i->c_str() ) );
 
   for( size_t i = 0; i < s.Channels(); ++i )
-  {
-    for( size_t j = 0; j < s.GetNumElements( i ); ++j )
+    for( size_t j = 0; j < s.Elements(); ++j )
       WriteFloat32( s( i, j ) );
-    for( size_t j = s.GetNumElements( i ); j < s.MaxElements(); ++j )
-      WriteFloat32( 0 );
-  }
   ++mDataRows;
 }
 
@@ -296,15 +292,15 @@ StreamToMat::HandleVisSignal( istream& arIn )
   v.ReadBinary( arIn );
   const GenericSignal& s = v;
   // Print a header line before the first line of data.
-  if( mSignalProperties == SignalProperties( 0, 0, 0 ) )
+  if( mSignalProperties.IsEmpty() )
   {
-    mSignalProperties = s;
+    mSignalProperties = s.GetProperties();
     mStateNames.clear();
     for( int i = 0; i < mStatelist.GetNumStates(); ++i )
       mStateNames.insert( mStatelist.GetStatePtr( i )->GetName() );
     WriteHeader();
   }
-  if( s != mSignalProperties )
+  if( s.GetProperties() != mSignalProperties )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
     WriteData( s );

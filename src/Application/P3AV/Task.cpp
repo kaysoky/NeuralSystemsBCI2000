@@ -252,7 +252,7 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   if( ::waveOutGetNumDevs() == 0 )
     bcierr << "Sound card is missing." << endl;
 
-  PreflightCondition( inputProperties >= SignalProperties( 1, 1, 2 ) );
+  PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
   outputProperties = SignalProperties( 0, 0 );
 } // Preflight
 
@@ -379,11 +379,9 @@ void TTask::Initialize()
 void TTask::Process( const GenericSignal* Input,
                            GenericSignal* Output )
 {
-  const vector< float > & signals = Input->GetChannel( 0 );
-
   // creates a new state of the user environment
   if (m_pUsrEnvDispatcher != NULL)
-    m_pUsrEnvDispatcher->Process( signals, m_pUsrEnv, &mTaskLogVis );
+    m_pUsrEnvDispatcher->Process( Input, m_pUsrEnv, &mTaskLogVis );
 
   // write the current time, i.e., the "StimulusTime" into the state vector
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();

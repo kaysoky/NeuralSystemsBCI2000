@@ -149,9 +149,7 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
   PreflightCondition( Parameter( "ItiDuration" ) >= 0 );
   PreflightCondition( Parameter( "TimeLimit" ) >= 0 );
 
-  PreflightCondition( cNumFBChannels - 1 <= Input.Channels() );
-  for( size_t i = 0; i < min( cNumFBChannels - 1, Input.Channels() ); ++i )
-    PreflightCondition( Input.GetNumElements( i ) > 0 );
+  PreflightCondition( Input >= SignalProperties( cNumFBChannels - 1, 1, SignalType::int16 ) );
 
   State( "Running" );
 
@@ -558,7 +556,7 @@ void
 TTask::SignalStatistics::Reset()
 {
   for( size_t i = 0; i < mSignalAverage.Channels(); ++i )
-    for( size_t j = 0; j < mSignalAverage.GetNumElements( i ); ++j )
+    for( size_t j = 0; j < mSignalAverage.Elements(); ++j )
       mSignalAverage( i, j ) = 0;
   mNumSignalsInAverage = 0;
 }
@@ -567,7 +565,7 @@ void
 TTask::SignalStatistics::Update( const GenericSignal& signal )
 {
   for( size_t i = 0; i < mSignalAverage.Channels(); ++i )
-    for( size_t j = 0; j < mSignalAverage.GetNumElements( i ); ++j )
+    for( size_t j = 0; j < mSignalAverage.Elements(); ++j )
       mSignalAverage( i, j )
         = ( mNumSignalsInAverage * mSignalAverage( i, j ) + signal( i, j ) )
           / ( 1.0 + mNumSignalsInAverage );

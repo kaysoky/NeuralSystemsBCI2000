@@ -108,10 +108,10 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
     currentFilter->Preflight( *currentInput, currentOutput );
     // The output signal will be created here if it does not exist.
     OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
-    currentInput = &OwnedSignals()[ currentFilter ];
+    currentInput = &OwnedSignals()[ currentFilter ].GetProperties();
   }
   if( currentFilter )
-    Output = OwnedSignals()[ currentFilter ];
+    Output = OwnedSignals()[ currentFilter ].GetProperties();
   else
     Output = Input;
 }

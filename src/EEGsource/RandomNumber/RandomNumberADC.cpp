@@ -112,9 +112,6 @@ RandomNumberADC::~RandomNumberADC()
 void RandomNumberADC::Preflight( const SignalProperties&,
                                        SignalProperties& outSignalProperties ) const
 {
-  // Constants.
-  const size_t signalDepth = 2;
-
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   PreflightCondition( Parameter( "SineMinAmplitude" ) <= Parameter( "SineMaxAmplitude" ) );
   PreflightCondition( Parameter( "NoiseMinAmplitude" ) <= Parameter( "NoiseMaxAmplitude" ) );
@@ -127,7 +124,7 @@ void RandomNumberADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
 
   //Check wether DoTrueRandom and ModulateAmplitude (with mouse) are selected
   /*
@@ -197,14 +194,14 @@ int     stateval, cursorpos, cursorposx;
  float sr = samplerate;
  if( sr < 1.0 )
    sr = 1.0;
- time2wait = 1e3 * signal->MaxElements() / sr - 5.0;
+ time2wait = 1e3 * signal->Elements() / sr - 5.0;
  ::Sleep(time2wait);
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
  noisevalrange=noisemaxamplitude-noiseminamplitude;
 
 // generate the noisy sine wave and write it into the signal
- for (sample=0; sample<signal->MaxElements(); sample++)
+ for (sample=0; sample<signal->Elements(); sample++)
   {
   cursorpos=Mouse->CursorPos.y/70+1;
   cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
@@ -249,7 +246,7 @@ int     stateval, cursorpos, cursorposx;
    }
   }
 
- mCount=mCount+signal->MaxElements();
+ mCount=mCount+signal->Elements();
 }
 
 

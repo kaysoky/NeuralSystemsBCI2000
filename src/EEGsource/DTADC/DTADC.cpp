@@ -151,9 +151,6 @@ void DTADC::Preflight( const SignalProperties&,
 {
 bool    test2boards;     // have to define this again, because can't access Board2Active here
 
-  // Constants.
-  const size_t signalDepth = 2;
-
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
 
@@ -237,7 +234,7 @@ bool    test2boards;     // have to define this again, because can't access Boar
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 
 

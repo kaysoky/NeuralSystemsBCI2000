@@ -115,12 +115,7 @@ class GenericVisualization
     template<>           bool Send( CFGID::CFGID cfgID, const std::string& );
     bool Send( const std::string& memoString );
     bool Send( const GenericSignal* signal );
-    bool Send( const GenericIntSignal* signal )
-             { return Send2Operator( signal ); }
 
-    bool Send2Operator( const GenericIntSignal* signal )
-             { return Send2Operator( signal, 1 ); }
-    bool Send2Operator( const GenericIntSignal*, int decimation );
     bool Send2Operator( const GenericSignal* signal )
              { return Send( signal ); }
     bool SendMemo2Operator( const char* memoString )

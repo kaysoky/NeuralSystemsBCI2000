@@ -27,7 +27,7 @@ class TTask : public GenericFilter
         int             numberofsequences;              // how many sets of 12 intensifications ?
         int             postsetinterval;                // how much time after each set of numberofsequences sequences ?
         int             presetinterval;                 // how much time before each set of numberofsequences sequences ?
-        void            ProcessSigProcResults( const std::vector<float>& signals );
+        void            ProcessSigProcResults( const GenericSignal* signals );
         /*shidong starts*/
         int             responsecount[MAX_STIMULI];
         float           response[MAX_STIMULI];

@@ -189,16 +189,16 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
     for( size_t i = 0; i < mChannelIndices.size(); ++i )
     {
       size_t signalCursorPos = mSignalOfCurrentRun[ i ].size();
-      mSignalOfCurrentRun[ i ].resize( signalCursorPos + signal.GetNumElements( mChannelIndices[ i ] ) );
-      for( size_t j = 0; j < signal.GetNumElements( mChannelIndices[ i ] ); ++j )
+      mSignalOfCurrentRun[ i ].resize( signalCursorPos + signal.Elements() );
+      for( size_t j = 0; j < signal.Elements(); ++j )
         mSignalOfCurrentRun[ i ][ signalCursorPos + j ] = signal( mChannelIndices[ i ], j );
     }
 #ifdef SET_BASELINE
     if( OptionalState( "BaselineInterval" ) || OptionalState( "Baseline" ) )
       for( size_t i = 0; i < mChannelIndices.size(); ++i )
       {
-        mBaselineSamples[ i ] += signal.GetNumElements( mChannelIndices[ i ] );
-        for( size_t j = 0; j < signal.GetNumElements( mChannelIndices[ i ] ); ++j )
+        mBaselineSamples[ i ] += signal.Elements();
+        for( size_t j = 0; j < signal.Elements(); ++j )
           mBaselines[ i ] += signal( mChannelIndices[ i ], j );
       }
 #endif // SET_BASELINE

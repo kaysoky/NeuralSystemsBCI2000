@@ -183,7 +183,7 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
   // Signal properties.
   if( Input.Channels() > 0 )
     bcierr << "Expected empty input signal" << endl;
-  if( Output.GetDepth() != 2 )
+  if( Output.Type() != SignalType::int16 )
     bcierr << "Expected short integer signal in ADC output" << endl;
 }
 
@@ -321,15 +321,13 @@ void DataIOFilter::Process( const GenericSignal* Input,
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
   bool visualizeRoundtrip = false;
-  if( mSignalBuffer > SignalProperties( 0, 0 ) )
+  if( mSignalBuffer.GetProperties() > SignalProperties( 0, 0 ) )
   {
-    for( size_t j = 0; j < mSignalBuffer.MaxElements(); ++j )
+    for( size_t j = 0; j < mSignalBuffer.Elements(); ++j )
     {
       for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
       {
-        uint16 value = 0;
-        if( j < mSignalBuffer.GetNumElements( i ) )
-          value = mSignalBuffer( i, j );
+        uint16 value = mSignalBuffer( i, j );
         mOutputFile.put( value & 0xff ).put( value >> 8 );
       }
       mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );

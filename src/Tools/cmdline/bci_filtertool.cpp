@@ -202,7 +202,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         for( int i = 0; i < mStatelist.GetNumStates(); ++i )
           PutMessage( mrOut, *mStatelist.GetStatePtr( i ) );
         Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
-        GenericFilter::PreflightFilters( inputSignal, outputProperties );
+        GenericFilter::PreflightFilters( inputSignal.GetProperties(), outputProperties );
         mOutputSignal.SetProperties( outputProperties );
         if( __bcierr.flushes() > 0 )
         {

@@ -505,7 +505,7 @@ int     i;
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
 // Returns:    N/A
 // **************************************************************************
-void TTask::ProcessSigProcResults( const std::vector<float>& signals )
+void TTask::ProcessSigProcResults( const GenericSignal* signals )
 {
 unsigned short cur_stimuluscoderes, cur_stimulustyperes;
 
@@ -516,7 +516,7 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
  if (cur_stimuluscoderes > 0)
     {
     responsecount[cur_stimuluscoderes-1]++;
-    response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
+    response[cur_stimuluscoderes-1] += (*signals)(0,0);    // use the first control signal as classification result
     /*shidong debug starts  
     response[cur_stimuluscoderes-1] +=  (float)rand();
    */ //if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
@@ -535,7 +535,6 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
 void TTask::Process( const GenericSignal* Input,
                            GenericSignal* Output )
 {
-const std::vector< float >& signals = Input->GetChannel( 0 );
 char    memotext[256];
 int     ret;
 
@@ -627,7 +626,7 @@ int     ret;
  ProcessPreSequence();
 
  // do statistics on the results from signal processing
- ProcessSigProcResults(signals);
+ ProcessSigProcResults(Input);
 
  // we have to wait a little after a sequence ended (before we turn off the task)
  // to let the final ERP results to come in
@@ -637,7 +636,7 @@ int     ret;
  if ((running == 0) || (postsequence) || (presequence)) goto skipprocess;
 
  // use the current control signal to proceed within the trial sequence
- ret=trialsequence->Process(signals);
+ ret=trialsequence->Process(Input);
  State( "PhaseInSequence" ) = 2;
 
  // whenever the trialsequence returns 1, a trial (i.e., one intensification), is over

@@ -118,7 +118,7 @@ void TTask::Preflight( const SignalProperties& inputProperties,
     default:
       PreflightCondition( false );
   }
-  PreflightCondition( inputProperties >= SignalProperties( 1, 1, 2 ) );
+  PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
   outputProperties = SignalProperties( 0, 0 );
 }
 

@@ -323,10 +323,10 @@ TfMain::InitializeFilters()
   numInputChannels = param ? ::atoi( param->GetValue() ) : 2;
   numInputElements = 1;
 #endif
-  mInputProperties = SignalProperties( numInputChannels, numInputElements, 2 );
-  SignalProperties outputProperties( 0, 0 );
+  SignalProperties inputProperties = SignalProperties( numInputChannels, numInputElements ),
+                   outputProperties( 0, 0 );
   Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
-  GenericFilter::PreflightFilters( mInputProperties, outputProperties );
+  GenericFilter::PreflightFilters( inputProperties, outputProperties );
   Environment::EnterNonaccessPhase();
   errorOccurred |= ( __bcierr.flushes() > 0 );
   if( !errorOccurred )
@@ -386,13 +386,7 @@ void
 TfMain::ProcessFilters( const GenericSignal* input )
 {
   Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
-  if( input && ( *input != mInputProperties ) )
-    BCIERR << "Unexpected input signal properties: "
-           << "Got { " << SignalProperties( *input ) << " }, "
-           << "expected { " << mInputProperties << " }"
-           << endl;
-  else
-    GenericFilter::ProcessFilters( input, &mOutputSignal );
+  GenericFilter::ProcessFilters( input, &mOutputSignal );
   Environment::EnterNonaccessPhase();
   bool errorOccurred = ( __bcierr.flushes() > 0 );
   if( errorOccurred )
@@ -402,9 +396,7 @@ TfMain::ProcessFilters( const GenericSignal* input )
   }
   MessageHandler::PutMessage( mNextModule, *mpStatevector );
 #if( MODTYPE != APP )
-  GenericSignal transferredSignal( mOutputSignal );
-  transferredSignal.SetDepth( 2 );
-  MessageHandler::PutMessage( mNextModule, transferredSignal );
+  MessageHandler::PutMessage( mNextModule, mOutputSignal );
 #endif // APP
 }
 
@@ -644,22 +636,29 @@ TfMain::ApplicationIdleHandler( TObject*, bool& )
                                  // messages resulting from BCI2000 messages
                                  // (e.g. WM_PAINT messages) will be processed
                                  // without additional delay.
-  while( !mTerminated )
+  try
   {
-    if( !mResting && !::GetQueueStatus( QS_ALLEVENTS ) )
-      tcpsocket::wait_for_read( mInputSockets, bciMessageTimeout );
-    try
+    while( !mTerminated )
     {
+      if( !mResting && !::GetQueueStatus( QS_ALLEVENTS ) )
+        tcpsocket::wait_for_read( mInputSockets, bciMessageTimeout );
       ProcessBCIAndWindowsMessages();
+      rReceivingConnected->Checked = mPreviousModule.is_open();
+      if( !mOperator.is_open() )
+        Terminate();
     }
-    catch( const char* s )
-    {
-      BCIERR << s << endl;
-      return;
-    }
-    rReceivingConnected->Checked = mPreviousModule.is_open();
-    if( !mOperator.is_open() )
-      Terminate();
+  }
+  catch( const char* s )
+  {
+    BCIERR << s << ", terminating module"
+           << endl;
+  }
+  catch( const exception& e )
+  {
+    BCIERR << "caught exception "
+           << typeid( e ).name() << " (" << e.what() << "),\n"
+           << "terminating module"
+           << endl;
   }
   Application->Terminate();
 }

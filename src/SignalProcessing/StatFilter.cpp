@@ -174,9 +174,8 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   // filter works for input signals of any size.
   /* no checking done */
 
-  // This filter does not use its output signal argument, so we specify
-  // minimal requirements.
-  outSignalProperties = SignalProperties( 0, 0, 0 );
+  // This filter connects its input through to its output.
+  outSignalProperties = inSignalProperties;
 }
 
 // **************************************************************************
@@ -402,12 +401,6 @@ void StatFilter::Resting()
 
     // change the value of the parameter
 
-    // jm: removed probably unwanted trailing \r characters from parameter values
-    // (they would show up in the operator if the "Config" button was pressed
-    // after "Suspend").
-    // Instead the two lines, one might consider writing
-    // Parameter( "YMean" ) = yintercept;
-    // and do the rounding before the output.
     sprintf(memotext, "%.2f", yintercept);
     Parameter( "YMean" ) = memotext;
 
@@ -447,21 +440,6 @@ void StatFilter::Resting()
       sprintf(memotext, "%.2f", cur_ystat.TargetPC[i]);
       Parameter( "BaselineHits", i, 1 ) = memotext;
     }
-
-/*
-    Corecomm->StartSendingParameters();
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("YMeanProportion") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("XMeanProportion") );
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("YPixelsPerSec") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("XPixelsPerSec") );
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("BaselineHits") );
-
-    Corecomm->StopSendingParameters();
-*/
-
   }
 
   classmode= Parameter("ClassMode");   // ytest classifier type
@@ -476,25 +454,11 @@ void StatFilter::Resting()
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
       Parameter("MUD",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-
-/*
-    Corecomm->StartSendingParameters();
-    Corecomm->PublishParameter( Parameters->GetParamPtr("MUD") );
-    Corecomm->StopSendingParameters();
-*/
-
     for(int i=0;i<clsf->n_hmat;i++)
     {
       sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
       Parameter("MLR",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-
-/*
-    Corecomm->StartSendingParameters();
-    Corecomm->PublishParameter( Parameters->GetParamPtr("MLR") );
-    Corecomm->StopSendingParameters();
-*/
-    
   }
 }
 

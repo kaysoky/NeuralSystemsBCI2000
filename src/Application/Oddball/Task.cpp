@@ -152,11 +152,10 @@ void TTask::HandleSelected(TARGET *selected)
 void TTask::Process( const GenericSignal* Input,
                            GenericSignal* Output )
 {
- const std::vector< float >& signals = Input->GetChannel( 0 );
  TARGET  *selected;
 
  // use the current control signal to proceed within the trial sequence
- selected=trialsequence->Process(signals);
+ selected=trialsequence->Process(Input);
 
  // only if a target has been selected,
  // get the next active targets as a subset of all the potential targets
