@@ -14,6 +14,8 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UGenericFilter.h"
 #include "UBCItime.h"
 
+#include <vcl/series.hpp>
+
 
 class TTask
 {
@@ -27,6 +29,8 @@ private:
         int             MakeMusic(short controlsignal);
         TForm           *form;
         TProgressBar    *progressbar;
+        TChart          *chart;
+        TLineSeries     *series;
 public:
         void Initialize(PARAMLIST *plist, STATEVECTOR *, CORECOMM *, TApplication *);
         void Process(short * );

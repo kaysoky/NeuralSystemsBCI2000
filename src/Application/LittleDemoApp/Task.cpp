@@ -30,6 +30,7 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
 
  form=new TForm(Application);
  form->Caption="Neural Music Test";
+ form->Height=300;
 
  progressbar=new TProgressBar(form);
  progressbar->Parent=form;
@@ -42,6 +43,24 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
  progressbar->Left=10;
  progressbar->Width=200;
  progressbar->Height=20;
+
+ chart=new TChart(form);
+ chart->Visible=false;
+ chart->Parent=form;
+ chart->Left=0;
+ chart->Top=40;
+ chart->Width=form->ClientWidth;
+ chart->Height=form->ClientHeight-40;
+ chart->Title->Visible=false;
+ chart->Legend->Visible=false;
+ chart->AllowPanning=pmVertical;
+ chart->AllowZoom=false;
+ chart->View3D=false;
+ chart->Anchors << akLeft << akTop << akRight << akBottom;
+ chart->Visible=true;
+
+ series=new TLineSeries(chart);
+ series->ParentChart=chart;
 }
 
 //-----------------------------------------------------------------------------
@@ -52,6 +71,8 @@ TTask::~TTask( void )
  vis= NULL;
 
  if (progressbar) delete progressbar;
+ if (series) delete series;
+ if (chart) delete chart;
  form->Close();
 }
 
@@ -85,7 +106,10 @@ int     pitch;
  // pitch=(controlsignal+32767)/256;
  pitch=abs(controlsignal % 256);
 
+ // set the position on the progress bar according to the current control signal
  progressbar->Position=pitch;
+ // add the current control signal value to the chart
+ series->AddY((double)controlsignal, "", (TColor)clTeeColor);
  // update the display
  Application->ProcessMessages();
 
