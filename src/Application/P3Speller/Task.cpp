@@ -93,10 +93,12 @@ TTask::TTask()
 TTask::~TTask( void )
 {
   delete trialsequence;
-  delete userdisplay;
+  // if (userdisplay) delete userdisplay;
   delete cur_time;
   delete bcitime;
   if( logfile ) fclose(logfile);
+
+  userdisplay=NULL;
 }
 
 // **************************************************************************
