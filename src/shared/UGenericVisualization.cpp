@@ -31,10 +31,10 @@ GenericVisualization::GenericVisualization()
 GenericVisualization::GenericVisualization(PARAMLIST *paramlist, CORECOMM *new_corecomm)
 : intsignal( NULL ),
   signal( NULL ),
-  corecomm( NULL ),
+  corecomm( new_corecomm ),
   new_samples( -1 )
 {
- paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
+ // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
 }
 
 
