@@ -22,11 +22,7 @@
 #include "UGenericVisualization.h"
 #include "LengthField.h"
 
-#ifndef BCI_TOOL // Some old modules out there send improperly terminated
-                 // parameter messages. Using an additional buffer for
-                 // received messages will help.
-# include <sstream>
-#endif // BCI_TOOL
+#include <sstream>
 
 using namespace std;
 
@@ -47,7 +43,6 @@ MessageHandler::HandleMessage( istream& is )
   length.ReadBinary( is );
   if( is )
   {
-#ifndef BCI_TOOL
     char* messageBuffer = new char[ length ];
     if( length > 0 )
     {
@@ -58,7 +53,6 @@ MessageHandler::HandleMessage( istream& is )
     }
     istringstream is( string( messageBuffer, length ) );
     delete[] messageBuffer;
-#endif // BCI_TOOL
     switch( descSupp )
     {
       CONSIDER( STATEVECTOR );
@@ -84,10 +78,6 @@ MessageHandler::PutMessage( ostream& os, const content_type& content )
 {
   os.put( Header<content_type>::descSupp >> 8 );
   os.put( Header<content_type>::descSupp & 0xff );
-#ifdef BCI_TOOL // The version without buffering.
-  os.put( 0 ).put( 0 );
-  content.WriteBinary( os );
-#else // We need the buffer to correctly fill in the length field.
   static ostringstream buffer;
   buffer.str( "" );
   buffer.clear();
@@ -95,11 +85,10 @@ MessageHandler::PutMessage( ostream& os, const content_type& content )
   LengthField<2> length = buffer.str().length();
   length.WriteBinary( os );
   os.write( buffer.str().data(), length );
-#endif
   return os;
 }
 
-// Specializations. The protocol could be re-defined to remove them.
+// Specializations. The protocol could be changed to remove them.
 template<>
 ostream&
 MessageHandler::PutMessage( ostream& os, const GenericSignal& signal )

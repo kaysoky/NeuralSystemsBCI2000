@@ -35,7 +35,7 @@ class MessageHandler
 
   private:
     // Callback interface for inheritants to hook in. The return value indicates
-    // whether the content was read from the stream.
+    // whether the content was read (and removed) from the stream.
     // Because template functions cannot be virtual we need to explicitly
     // enumerate all of them.
     // Note that the name of a handler should be Handle<ClassName> to
