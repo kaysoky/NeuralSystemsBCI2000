@@ -36,7 +36,7 @@ MKNAM = .makefiles
 # How to zero the subproject makefile list.
 EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
 # Extensions of files that need to be always writeable.
-FORCEWRITE = *.bpr *.res *.mak *.pdf
+FORCEWRITE = *.bpr *.res *.mak *.pdf *.exe
 # Extensions of files that will be deleted by 'make clean'.
 GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 # How to report when we are done with a target.
