@@ -342,11 +342,14 @@ int     i;
        userdisplay->DisplayStatusBar();
 
        // write the results in the log file
-       fprintf(logfile, "This is the end of this sequence: %d total intensifications\r\n", cur_sequence);
-       fprintf(logfile, "Responses for each stimulus:\r\n");
-       for (i=0; i<NUM_STIMULI; i++)
-        fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
-       fprintf(logfile, "Predicted character: %s\r\n", predchar.c_str());
+       if (logfile)
+          {
+          fprintf(logfile, "This is the end of this sequence: %d total intensifications\r\n", cur_sequence);
+          fprintf(logfile, "Responses for each stimulus:\r\n");
+          for (i=0; i<NUM_STIMULI; i++)
+           fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
+          fprintf(logfile, "Predicted character: %s\r\n", predchar.c_str());
+          }
 
        // send the results to the operator log
        sprintf(memotext, "This is the end of this sequence: %d total intensifications\r", cur_sequence);
@@ -446,7 +449,7 @@ int     ret;
     else
        sprintf(memotext, "Start of run %d in offline mode\r", cur_runnr);
     vis->SendMemo2Operator(memotext);
-    fprintf(logfile, "******************************\r\n%s\n", memotext);
+    if (logfile) fprintf(logfile, "******************************\r\n%s\n", memotext);
     trialsequence->char2spellidx=1;
     userdisplay->statusbar->resulttext="";
     trialsequence->SetUserDisplayTexts();
