@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 146
   Width = 438
   Height = 550
-  Caption = 'BCI2000toASCII V3.6 (Matlab 6.5)'
+  Caption = 'BCI2000toASCII V3.7 (Matlab 6.5+7.0)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -321,6 +321,7 @@ object fMain: TfMain
     Height = 129
     ScrollBars = ssVertical
     TabOrder = 17
+    WordWrap = False
   end
   object bClearList: TButton
     Left = 72
