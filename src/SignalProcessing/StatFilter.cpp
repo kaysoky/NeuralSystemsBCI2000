@@ -34,6 +34,7 @@ StatFilter::StatFilter()
 : vis( NULL ),
   stat( NULL ),
   Statfile( NULL ),
+  Sfile(NULL),
   StatSignal( NULL ),
   nf( NULL ),
   clsf( NULL )
@@ -419,32 +420,17 @@ void StatFilter::Resting()
     sprintf(memotext, "%.2f", lr_gain);
     Parameter( "XGain" ) = memotext;
 
-/*
-
-    Corecomm->StartSendingParameters();
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("YMean") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("YGain") );
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("XMean") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("XGain") );
-
-    Corecomm->StopSendingParameters();
-*/
-
   }
   if( trend_flag > 0 )         // return trends to operator
   {
     trend_flag= 0;
 
-    sprintf(memotext, "%.4f", cur_ystat.aper);
+    sprintf(memotext, "%.6f", cur_ystat.aper);
     Parameter( "YMeanProportion" ) = memotext;
 
-    sprintf(memotext, "%.4f",cur_xstat.aper);
+    sprintf(memotext, "%.6f",cur_xstat.aper);
     Parameter( "XMeanProportion" ) = memotext;
 
-
-    //     sprintf(memotext, "%.2f", cur_ystat.bper * ypix);
     sprintf(memotext, "%.2f", cur_ystat.pix);
     Parameter( "YPixelsPerSec" ) = memotext;
 
@@ -587,6 +573,7 @@ void StatFilter::Process( const GenericSignal *input,
         fprintf(Statfile,"%4d ",recno++);
         for(int i=0;i<Ntargets;i++)       //  was   cur_ystat.NumT;i++)
         fprintf(Statfile,"%4.2f ",cur_ystat.TargetPC[i]);
+        
         fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_ystat.aper,cur_ystat.pix,yintercept,ud_gain);
         fflush( Statfile );
       }

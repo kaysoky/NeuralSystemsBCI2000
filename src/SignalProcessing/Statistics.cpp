@@ -8,9 +8,7 @@
 #include "Statistics.h"
 
 
-// FILE *sfile;
-
-// FILE *statf;
+//  FILE *statf;
 
 void get_oc( float *l, float *q, int n  )
 {
@@ -243,7 +241,7 @@ STATISTICS::STATISTICS()
 int     i, t, u;
 
         outcome_type= 1;                // assume initialy 1
-
+        sign= 1;
 
 
  for(i=0;i<MAXDIM;i++)
@@ -270,8 +268,8 @@ int     i, t, u;
     current_yintercept= 0;
     current_xintercept= 0;
 
- //   statf= fopen( "c:/current/log/statistics.asc","w+");
- //   fprintf(statf,"Opening statistics log \n");
+     //   statf= fopen( "c:/current/log/statistics.asc","w+");
+     //   fprintf(statf,"Opening statistics log \n");
 }
 
 
@@ -295,8 +293,8 @@ int     i, j, t, u;
                 targbuf[i]= NULL;
         }
       }
-//        fprintf(statf,"Closing sfile \n");
-//        fclose(statf);
+ //       fprintf(statf,"Closing sfile \n");
+ //       fclose(statf);
 }
 
 
@@ -373,6 +371,7 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
         static int oldBLupdate=-1;
         float val;
         int i;
+        static int o_sign= 1;
         static int nblstates= 0;
         float l[MAX_BLSTATES];
         float q[MAX_BLSTATES];
@@ -396,17 +395,15 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
                         {
                                 if( target == outcome )   val= 1.0;
                                 else                      val= 0.0;
-                                sign= -1;
+                                o_sign= +1;
                         }
                         else if( outcome_type == 2 )           // direction = 2 for time
                         {
                                 val= (float)outcome;
-                                sign= +1;
+                                o_sign= -1;
                         }
 
                         targbuf[oldBLstate[dim]]->PushVal(val);
-
-//  fprintf(statf,"sign= %d   val= %6.2f \n",sign,val);
                 }
 
 
@@ -453,9 +450,12 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
                 }
 
 
-                actual_lrate= lrate * (float)sign;                  // what is sign?  must be outcome_direction !!
+                actual_lrate= lrate * (float)sign * (float)o_sign;                 // what is sign?  must be outcome_direction !!
 
                 trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
+
+
+ //  fprintf(statf,"dim %2d   aper %10.7f   lin %8.4f   rate %8.5f \n", dim,trialstat->aper,trialstat->lin, actual_lrate);
 
                 if( mode > 2 )
                         trialstat->pix+= trialstat->pix  * trialstat->quad * actual_lrate;
@@ -471,7 +471,7 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
 
 void STATISTICS::ProcRunningAvg( int numBLstate, int controlsigno, float val, TRIALSTAT *trialstat )
 {
-int sign;
+
 static int oldBLstate[3]= {-1,-1,-1};
 int     t;
 float   accavg, accstddev;
@@ -549,10 +549,10 @@ void STATISTICS::ProcWeightControl(     int target,             // targets value
                         wt_buf[chan][i]= wts[i];
 
                 use_flag[chan]= 1;
-fprintf(sfile,"Transfering Weights \n");
+                fprintf(sfile,"Transfering Weights \n");
         for(i=0;i<nh;i++)
                 fprintf(sfile,"     wt_buf[%2d][%2d]= %8.4f \n",chan, i, wt_buf[chan][i]);
-fprintf(sfile,"Rate= %10.8f \n",rate);
+                fprintf(sfile,"Rate= %10.8f \n",rate);
         }
 
 
