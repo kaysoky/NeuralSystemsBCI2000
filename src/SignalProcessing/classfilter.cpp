@@ -103,7 +103,7 @@ void ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector,
         vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
         vc2[i]= 0;
         vf2[i]= 0;
-        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
       }
     }
 
@@ -125,7 +125,7 @@ void ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector,
         hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
         hc2[i]= 0;
         hf2[i]= 0;
-        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
       }
     }
   }
