@@ -108,7 +108,7 @@ DataIOFilter::DataIOFilter()
 
   BEGIN_STATE_DEFINITIONS
     "Running 1 0 0 0",   // published w/default value of 1 (system is suspended)
-    "Recording 1 0 0 0", // published w/default value of 0 (NO recording)
+    "Recording 0 0 0 0", // published w/default value of 0 (NO recording)
     "SourceTime 16 0 0 0",
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
@@ -265,6 +265,7 @@ void DataIOFilter::Initialize()
 {
   mOutputFile.close();
   mOutputFile.clear();
+  State( "Recording" ) = 0;
   mStatevectorBuffer.resize( 0 );
   mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Initialize();
@@ -313,7 +314,10 @@ void DataIOFilter::Process( const GenericSignal* Input,
   // than acquiring a block of data, so it won't enter into the critical time path
   // (roundtrip time).
   if( !mOutputFile.is_open() )
+  {
     StartNewRecording();
+    State( "Recording" ) = 1;
+  }
 
   // Moving the save-to-file code to the beginning of Process() implies
   // that the time spent on i/o operations will only reduce the
@@ -327,21 +331,21 @@ void DataIOFilter::Process( const GenericSignal* Input,
   bool visualizeRoundtrip = false;
   if( mSignalBuffer > SignalProperties( 0, 0 ) )
   {
+    for( size_t j = 0; j < mSignalBuffer.MaxElements(); ++j )
     {
-      for( size_t j = 0; j < mSignalBuffer.MaxElements(); ++j )
+      for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
       {
-        for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
-        {
-          uint16 value = 0;
-          if( j < mSignalBuffer.GetNumElements( i ) )
-            value = mSignalBuffer( i, j );
-          mOutputFile.put( value & 0xff ).put( value >> 8 );
-        }
-        mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
+        uint16 value = 0;
+        if( j < mSignalBuffer.GetNumElements( i ) )
+          value = mSignalBuffer( i, j );
+        mOutputFile.put( value & 0xff ).put( value >> 8 );
       }
-      if( !mOutputFile )
-        bcierr << "Error writing to file" << endl;
+      mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
     }
+    if( !mOutputFile )
+      bcierr << "Error writing to file" << endl;
+    State( "Recording" ) = ( mOutputFile ? 1 : 0 );
+
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
 
@@ -368,6 +372,7 @@ void DataIOFilter::Process( const GenericSignal* Input,
 
 void DataIOFilter::Resting()
 {
+  State( "Recording" ) = 0;
   mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
@@ -379,6 +384,7 @@ void DataIOFilter::Halt()
 {
   mOutputFile.close();
   mOutputFile.clear();
+  State( "Recording" ) = 0;
   mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Halt();
 }
