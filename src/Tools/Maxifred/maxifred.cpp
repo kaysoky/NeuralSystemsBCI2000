@@ -8,9 +8,9 @@ USEFORM("UAbout.cpp", fAbout);
 USEFORM("UEditChannellist.cpp", fEditChannellist);
 USEFORM("UStateDialog.cpp", OKBottomDlg);
 USEFORM("USave2Disk.cpp", fSave2Disk);
-USEUNIT("..\SHARED\UBCI2000Data.cpp");
-USEUNIT("..\SHARED\UState.cpp");
-USEUNIT("..\SHARED\UParameter.cpp");
+USEUNIT("..\..\SHARED\UState.cpp");
+USEUNIT("..\..\SHARED\UParameter.cpp");
+USEUNIT("..\..\SHARED\UBCI2000Data.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
