@@ -310,11 +310,11 @@ void TTask::ShuffleTargs( int ntargs )
 {
   for( int i = 0; i < ntargs; ++i )
   {
-    bool goodTarget = true;
+    bool goodTarget = false;
     do {
       float rval = mpUser->ran1( &randseed );
       targs[ i ] = 1 + int( rval * ntargs );
-      goodTarget &= ( targs[ i ] > 0 );
+      goodTarget = ( targs[ i ] > 0 );
       goodTarget &= ( targs[ i ] <= Ntargets );
       for( int j = 0; goodTarget && j < i; ++j )
         goodTarget &= ( targs[ j ] != targs[ i ] );
