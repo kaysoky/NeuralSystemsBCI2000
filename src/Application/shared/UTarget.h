@@ -46,6 +46,7 @@ public:		// User declarations
         TPen    *Pen;
         void    RenderTarget(TForm *form, TRect destrect);
         void    HideTarget();
+        void    ShowTarget();
         void    HighlightTarget();
         void    SetTextColor(TColor new_color);
         /*shidong starts*/
@@ -76,6 +77,7 @@ public:		// User declarations
         int     GetMaxTargetID();
         void    DeleteTargets();
         void    HideTargets();
+        void    ShowTargets();
         void    HighlightTargets();
         void    RenderTargets(TForm *form, TRect destrect);
         int     GetCurrentBackupPosition();

@@ -236,6 +236,29 @@ TARGET  *cur_target;
 
 
 // **************************************************************************
+// Function:   ShowTargets
+// Purpose:    This function shows all targets
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TARGETLIST::ShowTargets()
+{
+int     i;
+TARGET  *cur_target;
+
+ critsec->Acquire();
+
+ for (i=0; i<target_list->Count; i++)
+   {
+   cur_target=(TARGET *)target_list->Items[i];
+   cur_target->ShowTarget();
+   }
+
+ critsec->Release();
+}
+
+
+// **************************************************************************
 // Function:   GetTargetPtr
 // Purpose:    This function returns the pointer of a target specified by its caption
 //             Comparisons are case-insensitive
@@ -654,6 +677,22 @@ void TARGET::HideTarget()
  if (icon) icon->Visible=false;
  // hide the text, if it exists
  if (caption) caption->Visible=false;
+}
+
+// **************************************************************************
+// Function:   ShowTarget
+// Purpose:    This function shows this target
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TARGET::ShowTarget()
+{
+ // show the rectangle, if it exists
+ if (shape) shape->Visible=true;
+ // show the icon, if it exists
+ if (icon) icon->Visible=true;
+ // show the text, if it exists
+ if (caption) caption->Visible=true;
 }
 
 // **************************************************************************
