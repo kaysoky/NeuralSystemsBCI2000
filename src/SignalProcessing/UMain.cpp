@@ -332,7 +332,7 @@ int     modID;
  if (modID == COREMODULE_OPERATOR)
     {
     ShutdownSystem();
-    Close();
+    Application->Terminate();
     }
 }
 
