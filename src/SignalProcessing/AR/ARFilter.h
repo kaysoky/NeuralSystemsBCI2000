@@ -9,8 +9,8 @@
 
 #include "getmem.h"
 
-#define MAX_N  128
-#define MAX_M  128
+#define MAX_N  256
+#define MAX_M  256
 
 class TemporalFilter : public GenericFilter
 {
