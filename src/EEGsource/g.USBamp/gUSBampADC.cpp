@@ -209,8 +209,8 @@ REF     CommonReference;
     for (int no_filt=0; no_filt<nof; no_filt++)
      {
      GT_GetFilterSpec(filt);
-     if ((abs(filt[no_filt].fu-Parameter("FilterHighPass")) < 0.0001) &&
-         (abs(filt[no_filt].fo-Parameter("FilterLowPass")) < 0.0001) &&
+     if ((fabs(filt[no_filt].fu-Parameter("FilterHighPass")) < 0.0001) &&
+         (fabs(filt[no_filt].fo-Parameter("FilterLowPass")) < 0.0001) &&
          (filt[no_filt].fs == samplingrate) &&
          (filt[no_filt].order == Parameter("FilterModelOrder")) &&
          (filt[no_filt].type == Parameter("FilterType")))
@@ -228,8 +228,8 @@ REF     CommonReference;
     for (int no_filt=0; no_filt<nof; no_filt++)
      {
      GT_GetNotchSpec(filt);
-     if ((abs(filt[no_filt].fu-Parameter("NotchHighPass")) < 0.0001) &&
-         (abs(filt[no_filt].fo-Parameter("NotchLowPass")) < 0.0001) &&
+     if ((fabs(filt[no_filt].fu-Parameter("NotchHighPass")) < 0.0001) &&
+         (fabs(filt[no_filt].fo-Parameter("NotchLowPass")) < 0.0001) &&
          (filt[no_filt].fs == samplingrate) &&
          (filt[no_filt].order == Parameter("NotchModelOrder")) &&
          (filt[no_filt].type == Parameter("NotchType")))
