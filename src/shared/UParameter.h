@@ -6,10 +6,10 @@
 #define LENGTH_TYPE             30
 #define LENGTH_NAME             30
 #define LENGTH_NUMVALUES        3
-#define LENGTH_VALUE            50
-#define LENGTH_DEFAULTVALUE     50
-#define LENGTH_LOWRANGE         50
-#define LENGTH_HIGHRANGE        50
+#define LENGTH_VALUE            100
+#define LENGTH_DEFAULTVALUE     100
+#define LENGTH_LOWRANGE         100
+#define LENGTH_HIGHRANGE        100
 #define LENGTH_COMMENT          255
 #define LENGTH_PARAMLINE        65536
 
