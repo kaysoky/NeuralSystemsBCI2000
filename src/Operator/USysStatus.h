@@ -28,6 +28,7 @@ struct SYSSTATUS
     Resting,
     Running,
     Suspended,
+    Fatal,
     numStates
   } SystemState;
 
