@@ -132,8 +132,8 @@ bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal, int 
 unsigned short    new_channels;
 GenericIntSignal  *new_signal;
 bool    ret;
-int     ch, samp, count;
-
+int     ch, count;
+size_t  samp; 
  // determine how many samples the decimated signal has
  // there might be a better way of doing this :-(
  // only do this in the beginning or if decimation or signal size changes
@@ -175,7 +175,6 @@ unsigned short  *short_dataptr;
 COREMESSAGE     *coremessage;
 short   *valueptr;
 BYTE    *dataptr;
-int     s, t;
 
  // error and consistency checking
  if (my_signal->Channels() > 255)      return(false);       // Channels > 255
@@ -199,8 +198,8 @@ int     s, t;
  short_dataptr=(unsigned short *)&dataptr[3];
  *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
  // write the actual data into the coremessage
- for (t=0; t<my_signal->Channels(); t++)
-  for (s=0; s<my_signal->MaxElements(); s++)
+ for (size_t t=0; t<my_signal->Channels(); t++)
+  for (size_t s=0; s<my_signal->MaxElements(); s++)
    {
    valueptr=(short *)&dataptr[5];
    valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(t, s);
@@ -220,7 +219,6 @@ TWinSocketStream        *pStream;
 unsigned short  *short_dataptr;
 COREMESSAGE     *coremessage;
 BYTE    *dataptr, *dataptr2;
-int     s, t;
 signed char exponent;
 float   value, value2;
 
@@ -246,8 +244,8 @@ float   value, value2;
  short_dataptr=(unsigned short *)&dataptr[3];
  *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
  // write the actual data into the coremessage
- for (t=0; t<my_signal->Channels(); t++)
-  for (s=0; s<my_signal->MaxElements(); s++)
+ for (size_t t=0; t<my_signal->Channels(); t++)
+  for (size_t s=0; s<my_signal->MaxElements(); s++)
    {
    value=my_signal->GetValue(t, s);
    if (value != 0)

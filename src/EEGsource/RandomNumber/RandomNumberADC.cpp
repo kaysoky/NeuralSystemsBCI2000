@@ -110,7 +110,8 @@ int     channels, blocksize;
 int RandomNumberADC::ADReadDataBlock()
 {
 static long count=0;
-int     sample, channel, time2wait;
+size_t  sample;
+int     channel, time2wait;
 int     sinevalrange, noisevalrange;
 TMouse  *cur_mouse;
 int     value, noise;

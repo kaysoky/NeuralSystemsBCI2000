@@ -1,7 +1,8 @@
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
-
+#include <vcl.h>
+#pragma hdrstop
 
 #include "Task.h"
 

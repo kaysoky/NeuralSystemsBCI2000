@@ -46,7 +46,7 @@ DICTIONARY::~DICTIONARY()
 // Returns:    0 ... error
 //             1 ... OK
 // **************************************************************************
-int DICTIONARY::LoadDictionary(char *dictionaryfile, bool eraseold)
+int DICTIONARY::LoadDictionary(const char *dictionaryfile, bool eraseold)
 {
 char    line[MAX_WORDLENGTH];
 FILE    *fp;
@@ -84,7 +84,7 @@ void DICTIONARY::DeleteWords()
 }
 
 
-void DICTIONARY::AddWord(char *word)
+void DICTIONARY::AddWord(const char *word)
 {
  if (numwords >= MAX_WORDS-2) return;
 
@@ -93,7 +93,7 @@ void DICTIONARY::AddWord(char *word)
 }
 
 
-char *DICTIONARY::GetWord(int idx)
+const char *DICTIONARY::GetWord(int idx) const
 {
  if (idx >= numwords) return(NULL);
 
@@ -101,7 +101,7 @@ char *DICTIONARY::GetWord(int idx)
 }
 
 
-int DICTIONARY::GetNumMatching(char *prefix, bool casesensitive)
+int DICTIONARY::GetNumMatching(const char *prefix, bool casesensitive)
 {
 int     i, count;
 
@@ -122,10 +122,10 @@ int     i, count;
 }
 
 
-char *DICTIONARY::GetMatchingWord(char *prefix, bool casesensitive, int idx)
+const char *DICTIONARY::GetMatchingWord(const char *prefix, bool casesensitive, int idx) const
 {
-int     i, count;
-char    *ptr;
+int        i, count;
+const char *ptr;
 
  count=-1;
  ptr=NULL;

@@ -28,8 +28,9 @@ protected:
         BYTE   sourceID;
         BYTE   datatype;
         BYTE   vis_type;
-        int    stored_maxelements, stored_decimation, new_samples;
-public:
+        int    stored_decimation, new_samples;
+        size_t stored_maxelements;
+public: 
 	GenericVisualization::GenericVisualization();
 	GenericVisualization::GenericVisualization(PARAMLIST *paramlist, CORECOMM *);
 	GenericVisualization::~GenericVisualization();

@@ -47,7 +47,7 @@ TREE::~TREE()
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int TREE::get_argument(int ptr, char *buf, char *line, int maxlen)
+int TREE::get_argument(int ptr, char *buf, const char *line, int maxlen) const 
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
@@ -73,7 +73,7 @@ int TREE::get_argument(int ptr, char *buf, char *line, int maxlen)
 // Returns:    0 - error (e.g., file not found)
 //             1 - no error
 // **************************************************************************
-int TREE::LoadTree(char *filename)
+int TREE::LoadTree(const char *filename)
 {
 char    line[256], buf[256];
 FILE    *fp;

@@ -11,12 +11,12 @@ class TREE
 {
 private: 	// User declarations
         int     parentID[MAX_TREESIZE], displaypos[MAX_TREESIZE], targetID[MAX_TREESIZE];
-        int     get_argument(int ptr, char *buf, char *line, int maxlen);
+        int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     treesize;
 public:		// User declarations
         TREE::TREE();
         TREE::~TREE();
-        int     LoadTree(char *filename);
+        int     LoadTree(const char *filename);
         int     DetermineTargetID(int parentID, int displaypos);
         bool    DoesLeadTo(int cur_parentID, int cur_targetID);
         bool    HasChildren(int cur_parentID);

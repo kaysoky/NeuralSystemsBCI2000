@@ -756,7 +756,7 @@ return(state_vector);
 // Parameters: N/A
 // Returns:    pointer to the list of states
 // **************************************************************************
-const STATELIST *STATEVECTOR::GetStateListPtr() const
+STATELIST *STATEVECTOR::GetStateListPtr()
 {
 return(state_list);
 }

@@ -30,6 +30,9 @@ public:		// User declarations
 class PARAM
 {
   friend class PARAMLIST;
+  friend class TfConfig; // Let's get rid of these friends as soon as possible...
+  friend class TfShowParameters;
+  
 private: 	// User declarations
         mutable char    buffer[LENGTH_PARAMLINE];
         char    section[LENGTH_SECTION+1];      // length + 1 because of zero byte

@@ -361,7 +361,7 @@ COREMESSAGE     *coremessage;
 unsigned short  *short_dataptr;
 short   *valueptr;
 BYTE    *dataptr;
-int     s, t, channelnum;
+int     channelnum;
 
  // error and consistency checking
  if (my_signal->Channels() > 255)      return(false);       // Channels > 255
@@ -395,8 +395,8 @@ int     s, t, channelnum;
  // if no channellistparameter is defined, send everything
  if (!channellistparam)
     {
-    for (t=0; t<my_signal->Channels(); t++)
-     for (s=0; s<my_signal->MaxElements(); s++)
+    for (size_t t=0; t<my_signal->Channels(); t++)
+     for (size_t s=0; s<my_signal->MaxElements(); s++)
       {
       valueptr=(short *)&dataptr[5];
       valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(t, s);
@@ -404,10 +404,10 @@ int     s, t, channelnum;
     }
  else           // if we defined a channellist, only send the channels we are interested in
     {
-    for (t=0; t<channellistparam->GetNumValues(); t++)
+    for (int t=0; t<channellistparam->GetNumValues(); t++)
      {
      channelnum=atoi(channellistparam->GetValue(t))-1;
-     for (s=0; s<my_signal->MaxElements(); s++)
+     for (size_t s=0; s<my_signal->MaxElements(); s++)
       {
       valueptr=(short *)&dataptr[5];
       valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(channelnum, s);

@@ -243,7 +243,7 @@ void StatFilter::GetStates( void )
 PARAM   *paramptr;
 int     i, numbl;
 int     j,numbl_states;
-char    *statename;
+const char    *statename;
 int     stateval;
 int     match;
 
@@ -369,7 +369,7 @@ static int oldtarget, oldoutcome;
      {
         sample= 0;
 
-        for(in_channel=0; in_channel<SignalE->Channels; in_channel++)
+        for(in_channel=0; in_channel<SignalE->Channels(); in_channel++)
          {
          value= SignalE->GetValue(in_channel, sample);
 

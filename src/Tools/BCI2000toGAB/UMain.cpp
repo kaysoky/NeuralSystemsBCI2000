@@ -152,7 +152,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
 // convert one state of BCI2000 into the state of the old system
 __int16 TfMain::ConvertState(BCI2000DATA *bci2000data)
 {
-STATEVECTOR *statevector;
+const STATEVECTOR *statevector;
 __int16     old_state;
 short       ITI, targetcode, resultcode, feedback, restperiod;
 static short cur_targetcode=-1;

@@ -137,7 +137,7 @@ int     ret;
 }
 
 
-int TRIALSEQUENCE::LoadPotentialTargets(char *targetdeffilename)
+int TRIALSEQUENCE::LoadPotentialTargets(const char *targetdeffilename)
 {
 char    buf[256], line[256];
 FILE    *fp;
@@ -227,7 +227,7 @@ int             targetID;
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int TRIALSEQUENCE::get_argument(int ptr, char *buf, char *line, int maxlen)
+int TRIALSEQUENCE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip one preceding semicolon, if there is any
  if ((line[ptr] == ';') && (ptr < maxlen))
@@ -364,7 +364,7 @@ short   thisisit;
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-TARGET *TRIALSEQUENCE::Process(short *controlsignal)
+TARGET *TRIALSEQUENCE::Process(const short *controlsignal)
 {
 TARGET   *selected;
 unsigned short running, within;

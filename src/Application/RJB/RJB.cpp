@@ -5,7 +5,6 @@ USEFORM("..\UMain.cpp", fMain);
 USEFORM("Usr.cpp", User);
 USEUNIT("Task.cpp");
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
-USEUNIT("..\..\shared\UBCI2000Data.cpp");
 USEUNIT("..\..\shared\UBCItime.cpp");
 USEUNIT("..\..\shared\UBitRate.cpp");
 USEUNIT("..\..\shared\UCoreComm.cpp");

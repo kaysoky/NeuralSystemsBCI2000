@@ -15,12 +15,12 @@ private: 	// User declarations
 public:		// User declarations
         DICTIONARY::DICTIONARY();
         DICTIONARY::~DICTIONARY();
-        int     LoadDictionary(char *dictionaryfile, bool eraseold);
+        int     LoadDictionary(const char *dictionaryfile, bool eraseold);
         void    DeleteWords();
-        void    AddWord(char *word);
-        char    *GetWord(int idx);
+        void    AddWord(const char *word);
+        const char    *GetWord(int idx) const;
         int     GetNumWords();
-        int     GetNumMatching(char *prefix, bool casesensitive);
-        char    *GetMatchingWord(char *prefix, bool casesensitive, int idx);
+        int     GetNumMatching(const char *prefix, bool casesensitive);
+        const char    *GetMatchingWord(const char *prefix, bool casesensitive, int idx) const;
 };
 #endif

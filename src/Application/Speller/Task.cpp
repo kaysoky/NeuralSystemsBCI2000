@@ -1,3 +1,6 @@
+#include <vcl.h>
+#pragma hdrstop
+
 #include "Task.h"
 
 #include <stdlib.h>

@@ -335,7 +335,7 @@ if (saveprmfile)
 // --- the file is opened and closed with every call ----------------------------
 bool TDataStorage::Write2Disk(const GenericIntSignal *my_signal)
 {
-int     i, ptr, s, t;
+int     i, ptr;
 char    *cur_ptr;
 
  // go through all the buffers and determine which one is free
@@ -371,9 +371,9 @@ char    *cur_ptr;
  buffer[i]=new char[length[i]];
  cur_ptr=buffer[i];
  // write the actual data into the buffer
- for (s=0; s<my_signal->MaxElements(); s++)
+ for (size_t s=0; s<my_signal->MaxElements(); s++)
   {
-  for (t=0; t<my_signal->Channels(); t++)
+  for (size_t t=0; t<my_signal->Channels(); t++)
    {
    // write the samples into memory
    *((short *)cur_ptr)=my_signal->GetValue(t, s);

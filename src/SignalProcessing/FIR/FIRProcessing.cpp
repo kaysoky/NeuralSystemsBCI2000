@@ -11,8 +11,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "SignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
-                 Application->Run();
+     Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
+     Application->Run();
         }
         catch (Exception &exception)
         {

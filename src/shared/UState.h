@@ -80,7 +80,7 @@ public:		// User declarations
         void    Initialize_StateVector(bool use_assigned_positions);
         unsigned short GetStateValue(const char *statename) const;
         unsigned short GetStateValue(int byteloc, int bitloc, int length) const;
-        const STATELIST *GetStateListPtr() const;
+        STATELIST *GetStateListPtr();
         int     SetStateValue(const char *statename, unsigned short value);
         int     SetStateValue(int byteloc, int bitloc, int length, unsigned short value);
         int     GetStateVectorLength() const;

@@ -2,6 +2,8 @@
 //	BCIDirectry.cpp
 //	BCI Dircetory Management Functions
 //-------------------------------------------------
+#include <vcl.h>
+#pragma hdrstop
 
 #include "BCIDirectry.h"
 

@@ -12,7 +12,6 @@ USEUNIT("UTarget.cpp");
 USEUNIT("UTargetSequence.cpp");
 USEUNIT("UTree.cpp");
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
-USEUNIT("..\..\shared\UBCI2000Data.cpp");
 USEUNIT("..\..\shared\UBCItime.cpp");
 USEUNIT("..\..\shared\UBitRate.cpp");
 USEUNIT("..\..\shared\UCoreComm.cpp");

@@ -2,22 +2,22 @@
 <!-- C++Builder XML Project -->
 <PROJECT>
   <MACROS>
-    <VERSION value="BCB.05.03"/>
+    <VERSION value="BCB.06.00"/>
     <PROJECT value="maxifred.exe"/>
-    <OBJFILES value="maxifred.obj UMain.obj channelnames.obj UAbout.obj UEditChannellist.obj 
-      UStateDialog.obj USave2Disk.obj ..\..\SHARED\UState.obj 
-      ..\..\SHARED\UParameter.obj ..\..\SHARED\UBCI2000Data.obj"/>
+    <OBJFILES value="obj\maxifred.obj obj\UMain.obj obj\channelnames.obj obj\UAbout.obj 
+      obj\UEditChannellist.obj obj\UStateDialog.obj obj\USave2Disk.obj 
+      obj\UState.obj obj\UParameter.obj obj\UBCI2000Data.obj"/>
     <RESFILES value="maxifred.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm UAbout.dfm UEditChannellist.dfm UStateDialog.dfm 
       USave2Disk.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value="Tee50.lib vclbde50.lib vcldb50.lib vclx50.lib bcbsmp50.lib vcl50.lib"/>
-    <SPARELIBS value="vcl50.lib bcbsmp50.lib vclx50.lib vcldb50.lib vclbde50.lib Tee50.lib"/>
-    <PACKAGES value="vcl50.bpi vclx50.bpi vcljpg50.bpi bcbsmp50.bpi qrpt50.bpi vcldb50.bpi 
-      vclbde50.bpi ibsmp50.bpi vcldbx50.bpi nmfast50.bpi dclocx50.bpi"/>
-    <PATHCPP value=".;..\..\SHARED"/>
+    <LIBRARIES value="tee.lib bdertl.lib vcldb.lib dbrtl.lib vclx.lib bcbsmp.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib dbrtl.lib vcldb.lib bdertl.lib tee.lib"/>
+    <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
+      vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -27,24 +27,43 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="maxifred.cpp"/>
-    <INCLUDEPATH value="..\SHARED;..\..\Bci2000\src\shared\V0.16;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED"/>
-    <LIBPATH value="..\SHARED;..\..\SHARED;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\SHARED;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED"/>
+    <LIBPATH value="..\SHARED;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
+    <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=c:\PROGRA~1\borland\CBUILD~1\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 
-      -5 -b- -k -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-$Y+ -$W -$O- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
     <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
   </LINKER>
+  <FILELIST>
+      <FILE FILENAME="maxifred.cpp" FORMNAME="" UNITNAME="maxifred" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="maxifred.res" FORMNAME="" UNITNAME="maxifred" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="channelnames.cpp" FORMNAME="" UNITNAME="channelnames" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UAbout.cpp" FORMNAME="fAbout" UNITNAME="UAbout" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UEditChannellist.cpp" FORMNAME="fEditChannellist" UNITNAME="UEditChannellist" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UStateDialog.cpp" FORMNAME="OKBottomDlg" UNITNAME="UStateDialog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="USave2Disk.cpp" FORMNAME="fSave2Disk" UNITNAME="USave2Disk" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SHARED\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
   <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=0
@@ -74,35 +93,39 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-$(BCB)\Bin\sdlcsuite55C5.bpl=SDL Component Suite 5.5 - Rel.1
+d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=11
-Item0=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED
-Item1=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
-Item2=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
-Item3=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
-Item4=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;C:\data\Bci2000\src\SHARED
-Item5=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item7=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item8=C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
-Item9=$(BCB)\include;$(BCB)\include\vcl
-Item10=..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Count=13
+Item0=..\SHARED;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED
+Item1=..\SHARED;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED
+Item2=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED
+Item3=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
+Item4=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
+Item5=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;..\SHARED
+Item6=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl;C:\data\Bci2000\src\SHARED
+Item7=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item9=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item10=C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
+Item11=$(BCB)\include;$(BCB)\include\vcl
+Item12=..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=11
-Item0=..\..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\Bci2000\src\shared\V0.16;..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\SHARED;..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item4=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item7=C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
-Item8=$(BCB)\lib\obj;$(BCB)\lib
-Item9=..\..\..\Program Files\Borland\CBuilder4\Projects;..\..\program files\borland\cbuilder4\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item10=..\..\program files\borland\cbuilder4\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=13
+Item0=..\SHARED;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\SHARED;..\..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\Bci2000\src\shared\V0.16;..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\SHARED;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\SHARED;..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item6=C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\..\Bci2000\src\shared\V0.17;..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\..\Bci2000\src\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item9=C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
+Item10=$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\..\..\Program Files\Borland\CBuilder4\Projects;..\..\program files\borland\cbuilder4\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item12=..\..\program files\borland\cbuilder4\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -112,24 +135,28 @@ Item0=$(BCB)\source\vcl
 Count=1
 Item0=_DEBUG
 
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=obj
+
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
 RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
 HostApplication=
 RemoteHost=
 RemotePath=
+RemoteLauncher=
+RemoteCWD=
 RemoteDebug=0
 
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

@@ -1,11 +1,11 @@
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
+#include <vcl.h>
+#pragma hdrstop
 
 #include "Task.h"
 #include "BCIDirectry.h"
-
-#include <vcl.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -79,15 +79,12 @@ TTask::~TTask( void )
 
 void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
 {
-STATELIST       *slist;
-
  Applic= applic;
  corecomm=new_corecomm;
 
  AcousticMode=atoi(plist->GetParamPtr("AcousticMode")->GetValue());
 
  svect=new_svect;
- slist=svect->GetStateListPtr();
 
  if (vis) delete vis;
  vis= new GenericVisualization( plist, corecomm );
@@ -136,9 +133,7 @@ int     cur_pitch, cur_running;
 
  svect->SetStateValue("Pitch", 23);
  // time stamp the data
- bcitime=new BCITIME;
- svect->SetStateValue("StimulusTime", bcitime->GetBCItime_ms());
- delete bcitime;
+ svect->SetStateValue("StimulusTime", BCITIME::GetBCItime_ms());
 }
 
 

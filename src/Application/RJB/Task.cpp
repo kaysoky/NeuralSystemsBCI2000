@@ -1,7 +1,8 @@
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
-
+#include <vcl.h>
+#pragma hdrstop
 
 #include "Task.h"
 #include "Usr.h"
@@ -65,7 +66,7 @@ TTask::~TTask( void )
 
 void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
 {
-        STATELIST       *slist;
+        STATELIST *slist;
         AnsiString FInit,SSes,SName,AName;
         BCIDtry *bcidtry;
         char FName[120];

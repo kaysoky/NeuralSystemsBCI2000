@@ -145,9 +145,9 @@ float   value;
         val_ud= 0;
         val_lr= 0;
 
-        for(sample=0; sample<input->MaxElements; sample++)
+        for(sample=0; sample<input->MaxElements(); sample++)
         {
-            for(in_channel=0; in_channel<input->Channels; in_channel++)
+            for(in_channel=0; in_channel<input->Channels(); in_channel++)
             {
                 value= input->GetValue(in_channel, sample);
                 val_ud+=  value * mat_ud[sample][in_channel];

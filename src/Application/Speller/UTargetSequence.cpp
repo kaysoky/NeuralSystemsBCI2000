@@ -102,7 +102,7 @@ int     i;
 }
 
 
-int TARGETSEQUENCE::LoadPotentialTargets(char *targetdeffilename, char *treedeffilename)
+int TARGETSEQUENCE::LoadPotentialTargets(const char *targetdeffilename, const char *treedeffilename)
 {
 char    buf[256], line[256];
 FILE    *fp;
@@ -176,7 +176,7 @@ int     i, cur_targetID;
 
 
 // get these targets, in case there is word prediction
-TARGETLIST *TARGETSEQUENCE::GetActiveTargetsPrediction(int cur_parentID, BYTE backuppos, char *cur_prefix)
+TARGETLIST *TARGETSEQUENCE::GetActiveTargetsPrediction(int cur_parentID, BYTE backuppos, const char *cur_prefix)
 {
 TARGETLIST *new_list;
 int     targetID, i, nummatching;
@@ -256,7 +256,7 @@ bool    *populated;
 // gets new targets, given a certain rootID
 // i.e., the targetID of the last selected target
 // parentID==TARGETID_ROOT on start
-TARGETLIST *TARGETSEQUENCE::GetActiveTargets(int cur_parentID, BYTE backuppos, char *cur_prefix)
+TARGETLIST *TARGETSEQUENCE::GetActiveTargets(int cur_parentID, BYTE backuppos, const char *cur_prefix)
 {
 TARGETLIST *new_list;
 int     targetID, displaypos, count, nummatching;
@@ -444,7 +444,7 @@ AnsiString TARGETSEQUENCE::GetPreviousText()
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int TARGETSEQUENCE::get_argument(int ptr, char *buf, char *line, int maxlen)
+int TARGETSEQUENCE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip one preceding semicolon, if there is any
  if ((line[ptr] == ';') && (ptr < maxlen))

@@ -45,7 +45,7 @@ int ret;
 }
 
 
-int TARGETSEQUENCE::LoadPotentialTargets(char *targetdeffilename)
+int TARGETSEQUENCE::LoadPotentialTargets(const char *targetdeffilename)
 {
 char    buf[256], line[256];
 FILE    *fp;
@@ -137,7 +137,7 @@ int             targetID;
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int TARGETSEQUENCE::get_argument(int ptr, char *buf, char *line, int maxlen)
+int TARGETSEQUENCE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip one preceding semicolon, if there is any
  if ((line[ptr] == ';') && (ptr < maxlen))
