@@ -61,6 +61,7 @@ private:
 public:
         STATISTICS::STATISTICS();
         STATISTICS::~STATISTICS();
+        void    SetTrendControl( int bufno, float val, int ntimes );    // seed the trend control running average
         void    ProcRunningAvg(int, int, float, TRIALSTAT *);           // do whole proceedure
         void    ProcTrendControl(int, int, int, int, TRIALSTAT *, float, float);    // do whole proceedure
         void    ProcWeightControl( int, int, int, int, int, float *, float *, float, int );            // weight control

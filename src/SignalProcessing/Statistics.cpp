@@ -443,6 +443,14 @@ float   accavg, accstddev;
  return;
 }
 
+void STATISTICS::SetTrendControl( int bufno, float val, int ntimes )
+{
+        int i;
+
+        for(i=0;i<ntimes;i++)
+                targbuf[ bufno ]->PushVal( val );
+}
+
 void STATISTICS::SetWeightControl( FILE *filehndl )
 {
         sfile= filehndl;

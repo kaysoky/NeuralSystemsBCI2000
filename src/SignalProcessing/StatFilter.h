@@ -45,6 +45,9 @@ private:
        FILE *Statfile;
        FILE *Sfile;
 
+       int BaseNum[16];        // MaxNumTargets?
+       int BaseHits[16];
+
        STATELIST *statelist;
        PARAMLIST *paramlist;
        STATISTICS *stat;
@@ -52,6 +55,7 @@ private:
        GenericVisualization *vis;
        GenericSignal *StatSignal;
        void GetStates();
+       int GetBaselineHits( void );
 public:
        StatFilter(PARAMLIST *plist, STATELIST *slist);
        StatFilter(PARAMLIST *plist, STATELIST *slist, int instance);
