@@ -37,8 +37,6 @@ int main(int argc, char* argv[])
         FileCompare fileC1;
         fileC1.setFiles(fileR1,fileR2);
 
-        cerr<<'\n';
-
         fileC1.compareHeaderLengths();
         fileC1.compareStateVectorLengths();
         fileC1.compareNumChannels();

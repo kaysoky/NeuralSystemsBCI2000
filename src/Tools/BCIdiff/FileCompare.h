@@ -8,16 +8,17 @@ public:
 
         void setFiles(class FileReader* file1, class FileReader* file2);
 
-        bool compareHeaderLengths();
-        bool compareStateVectorLengths();
-        bool compareNumChannels();
-        bool compareSampleFrequencies();
-        bool compareNumSamples();
-        bool compareParams();
-        bool compareStates();
-        bool compareValues();
+        bool headerLengthsDiffer();
+        bool numChannelsDiffer();
+        bool sampleFrequenciesDiffer();
+        bool numSamplesDiffer();
+        bool paramsDiffer();
+        bool stateListsDiffer();
+        bool valuesDiffer(bool compareStates);
 
 private:
+        bool stateVectorLengthsDiffer();
+        bool currentStatesDiffer();
         class FileReader* mFile1, * mFile2;
 };
 #endif
