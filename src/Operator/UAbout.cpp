@@ -20,3 +20,4 @@ void __fastcall TfAbout::OKButtonClick(TObject *Sender)
  Close();        
 }
 //---------------------------------------------------------------------------
+
