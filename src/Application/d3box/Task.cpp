@@ -34,6 +34,37 @@ TTask::TTask()
   OldCurrentTarget( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
+
+    "3DEnvironment int CameraX = 0 0 0 32767 // "
+      "Camera X coordinate in the unit of +- 32767",
+    "3DEnvironment int CameraY = 0 0 0 32767 // "
+      "Camera Y coordinate in the unit of +- 32767",
+    "3DEnvironment int CameraZ = 40959 40959 0 32767 // "
+      "Camera Z coordinate in the unit of +- 32767",
+    "3DEnvironment int CameraAimX = 0 0 0 32767 // "
+      "Camera Aim X coordinate in the unit of +- 32767",
+    "3DEnvironment int CameraAimY = 0 0 0 32767 // "
+      "Camera Aim Y coordinate in the unit of +- 32767",
+    "3DEnvironment int CameraAimZ = 0 0 0 32767 // "
+      "Camera Aim Z coordinate in the unit of +- 32767",
+    "3DEnvironment int LightSourceX = 0 0 0 32767 // "
+      "Light Source X coordinate in the unit of +- 32767",
+    "3DEnvironment int LightSourceY = 0 0 0 32767 // "
+      "Light Source Y coordinate in the unit of +- 32767",
+    "3DEnvironment int LightSourceZ = 32767 0 0 32767 // "
+      "Light Source Z coordinate in the unit of +- 32767",
+    "3DEnvironment int LightSourceColorR = 127 0 0 255 // "
+      "Light Source Color's Red Value, range from 0~255",
+    "3DEnvironment int LightSourceColorG = 127 0 0 255 // "
+      "Light Source Color's Green Value, range from 0~255",
+    "3DEnvironment int LightSourceColorB = 127 0 0 255 // "
+      "Light Source Color's Blue Value, range from 0~255",   
+    "3DEnvironment int LightSourceIntensity = 255 0 0 255 // "
+      "Light Source Color's Intensity Value, range from 0~255",
+
+
+
+
     "UsrTask int PreTrialPause= 10 0 0 0 // "
       "Duration of Target w/o cursor",
     "UsrTask int ItiDuration= 10 0 0 0 // "
@@ -51,7 +82,7 @@ TTask::TTask()
     "UsrTask int RestingPeriod= 0 0 0 1 // "
       "1 defines a rest periuod of data acquisition",
     "UsrTask int WorkspaceBoundaryVisible = 1 0 0 1"
-      "1 defines the apparence of the Workspace boundary ", 
+      "1 defines the apparence of the Workspace boundary, 0 make is not visible ",
 
 
     "UsrTask string BorderTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z //"
@@ -62,10 +93,10 @@ TTask::TTask()
       "Path of cursor texture",
     "UsrTask float CursorSize= 2 0 0 1 // "
       "User Window Cursor Size",
-    "UsrTask int CursorColorFront = -0x7FFF -0x7FFF -0x7FFF 0x7FFF//"
-       "Cursor color when it is at the front of the workspace. -0x7FFF is red and 0x7FFF is blue",
-    "UsrTask int CursorColorBack = 0x7FFF 0x7FFF  -0x7FFF 0x7FFF//"
-       "Cursor color when it is at the back of the workspace. -0x7FFF is red and 0x7FFF is blue",
+    "UsrTask int CursorColorFront = 0x000000 0x000000 0x000000 0xFFFFFF//"
+       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB",
+    "UsrTask int CursorColorBack = 0x000000 0x000000 0x000000 0xFFFFFF//"
+       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB",
     "UsrTask int WinHeight= 512 0 0 1 // "
         "User Window Height",
     "UsrTask int WinWidth= 512 0 0 1 // "
@@ -101,7 +132,7 @@ TTask::TTask()
     "Targets int NumberTargets= 4 0 0 0 // "
       "Number of Targets",
     "Targets int IncludeAllTargets= 0 0 0 1 // "
-      "Test all target positions?",
+      "Test all target positions? 1=test all targets. 0=test only the visible current target",
     "Targets float StartCursorX= 50.0 0 0 100.0 // "
       "Horizontal Start of Cursor",
     "Targets float StartCursorY= 50.0 0 0 100.0 // "
@@ -109,17 +140,18 @@ TTask::TTask()
     "Targets float StartCursorZ= 50.0 0 0 100.0 // "
       "Depth Cursor Starting Position",
 
-    "Targets matrix TargetPos= 9 4 "
-      "40 60 40 60 "
-      "40 40 60 60 "
-      "50 50 50 50 "
-      " 3  3  3  3 "
-      " 3  3  3  3 "
-      " 3  3  3  3 "
-      " 0  0 -1  1 "
-      "-1  1  0  0 "
-      " 0  0  0  0 "
-      " 0 0 100 // Target Position Matrix - Values are 0-100",
+    "Targets matrix TargetPos= 10 6"
+        "35 65 35 65 100 0 "
+        "35 35 65 65 100 0 "
+        "50 50 50 50 100 0 "
+        "8  8  8  8   8  8 "
+        "8  8  8  8   8  8 "
+        "8  8  8  8   8  8 "
+        "0  0 -1  1   0  0 "
+        "-1 1  0  0   0  0 "
+        "0  0  0  0   0  0 "
+        "0  0  0  0   0  0 "// Target Position Matrix - Values are 0-100",
+
 
   #ifdef DATAGLOVE
     "JoyStick matrix GloveControlX= ",
@@ -164,6 +196,7 @@ TTask::TTask()
 
     "Xadapt 16 0 0 0",
     "Yadapt 16 0 0 0",
+    "Zadapt 16 0 0 0",
     "AdaptCode 5 0 0 0",
   END_STATE_DEFINITIONS
 
@@ -186,7 +219,7 @@ if(printFlow) fprintf(b, "In TTask::Constructor.\n");
 //-----------------------------------------------------------------------------
 
 
-/*helper function*/
+/*helper function
 int TTask::hex2dec( AnsiString hex )
 {
         if ( hex.SubString(0,1) == "-") //if the hex is a negative
@@ -198,7 +231,7 @@ int TTask::hex2dec( AnsiString hex )
         {
                 return hex.ToInt();
         }
-}//hex2dec
+}//hex2dec    */
 
 
 
@@ -219,12 +252,92 @@ if (b) fclose(b);
 
 }
 
+void TTask::checkPathHelper()
+{
+
+        borderTexture = ( const char*  )Parameter( "BorderTexture" );
+        targetTexture = ( const char*  )Parameter( "TargetTexture" );
+        cursorTexture = ( const char* )Parameter( "CursorTexture" );
+        if ( (checkPath(borderTexture)) == false)
+        {
+                bciout << "The file in path: " << borderTexture.c_str() << " is either not exist or error occurred when loading the file as texture"  << std::endl;
+                borderTexture = "";
+        }
+
+        if ( (checkPath(targetTexture)) == false)
+        {
+                bciout << "The file in path: " << targetTexture.c_str() << " is either not exist or error occurred when loading the file as texture"  << std::endl;
+                targetTexture = "";
+        }
+
+        if ( (checkPath(cursorTexture)) == false)
+        {
+                bciout << "The file in path: " << cursorTexture.c_str() << " is either not exist or error occurred when loading the file as texture"  << std::endl;
+                cursorTexture = "";
+        }
+}//checkPathHelper
+
+//check the input path to see if it is a valid file
+bool TTask::checkPath(AnsiString path) 
+{
+        try
+        {
+                if(path.Length() == 0)
+                {
+                        return false;
+                }
+                else
+                {
+                        FILE *File=NULL;        // File Handle
+	                File=fopen(path.c_str(),"r");   // Check To See If The File Exists
+	                if (File)		// Does The File Exist?
+	                {
+		                fclose(File);   // Close The Handle
+                                if (auxDIBImageLoad(path.c_str())==NULL)
+		                {
+                                        return false;    
+                                }
+                                else
+                                {
+                                        return true;
+                                }
+	                }
+                        else
+                        {
+                                return false;
+                        }
+
+                }
+        }
+        catch(...)
+        {
+                return false;
+        }
+}//checkpath
+
+//check input string to see if it is a legal int
+bool TTask::checkInt(AnsiString input, AnsiString paraName) const
+{
+        try
+        {
+                input.ToDouble();    //check to see input is a valid number or not
+        }
+        catch(...)      //any error happen
+        {
+                bcierr << "The parameter " << paraName.c_str() << " is not a valid input.  It is likely that \"" << input.c_str() << "\" is not a numeric number.  It will be default to 0." <<std::endl;
+                return false;
+        }
+        return true;            //catch nothin, input is a valid numeric string
+}//checkInt
+
 void TTask::Preflight( const SignalProperties& inputProperties,
-                             SignalProperties& outputProperties ) const
+                             SignalProperties& outputProperties )const
 {
 /*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
 /*shidong ends*/
+
+
   // External parameters.
   Parameter( "FileInitials" );
   Parameter( "SubjectSession" );
@@ -237,6 +350,207 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
   // TTask::Process() implies that the input signal has at least one channel
   // with two elements.
   PreflightCondition( inputProperties >= SignalProperties( 2, 1 ) );
+
+  /*shidong starts*/
+  //Parameter checking
+
+        /***Check The UskTask Tab***/
+
+        //Check CursorColor
+        AnsiString str1, str2, sub1, sub2;
+        str1 =  ( const char* )Parameter( "CursorColorFront");
+        str2 =  ( const char* )Parameter( "CursorColorBack");
+        sub1 =  str1.SubString(3, str1.Length() );
+        sub2 =  str2.SubString(3, str2.Length() );
+        if (str1.Length() != COLORFORMAT || str1.SubString(1,1)!= "0" || str1.SubString(2,1)!= "x")      //if format is not 0xRRGGBB
+        {
+                bcierr << "The format of CursorColorFront is not correct. It should be 0xRRGGBB" << std::endl;
+        }
+        if (str2.Length() != COLORFORMAT || str1.SubString(1,1)!= "0" || str2.SubString(2,1)!= "x")      //if format is not 0xRRGGBB
+        {
+                bcierr << "The format of CursorColorBack is not correct. It should be 0xRRGGBB" << std::endl;
+        }
+        if ( str1.ToIntDef(-1) < 0 || str1.ToIntDef(-1) > 0xFFFFFF || str1.ToIntDef(-1) == -1)
+        {
+                bcierr << "The value of the CursorColorFront should be between 0 and 0xFFFFFF.  Input is " << str1.ToIntDef(-1) << std::endl;
+        }
+        if ( str2.ToIntDef(-1) < 0 || str2.ToIntDef(-1) > 0xFFFFFF || str2.ToIntDef(-1) == -1)
+        {
+                bcierr << "The value of the CursorColorFront should be between 0 and 0xFFFFFF.  Input is " << str2.ToIntDef(-1) << std::endl;
+        }
+        //check the path of the texture
+        checkPathHelper();
+        //Integer paramter of the UsrTask tab
+        checkInt((const char*)Parameter("BaseLineInterval"), "BaseLineInterval");
+        checkInt((const char*)Parameter("CursorSize"), "CursorSize");
+        checkInt((const char*)Parameter("FeedbackDuration"), "FeedbackDuration");
+        checkInt((const char*)Parameter("ItiDuration"), "ItiDuration");
+        checkInt((const char*)Parameter("PreTrialPause"), "PreTrialPause");
+        checkInt((const char*)Parameter("RestingPeriod"), "RestingPeriod");
+        checkInt((const char*)Parameter("RewardDuration"), "RewardDuration");
+        checkInt((const char*)Parameter("TimeLimit"), "TimeLimit");
+        checkInt((const char*)Parameter("WinHeight"), "WinHeight");
+        checkInt((const char*)Parameter("WinWidth"), "WinWidth");
+        checkInt((const char*)Parameter("WinXpos"), "WinXpos");
+        checkInt((const char*)Parameter("WinYpos"), "WinYpos");
+        checkInt((const char*)Parameter("WorkspaceBoundaryVisible"), "WorkspaceBoundaryVisible");
+        PreflightCondition( Parameter("WorkspaceBoundaryVisible")== 0 || Parameter("WorkspaceBoundaryVisible")== 1);
+        PreflightCondition( Parameter("BaseLineInterval")== 1 || Parameter("BaseLineInterval")== 2);
+
+
+        /***Check The Visualize Tab***/
+        checkInt((const char*)Parameter("SourceMax"), "SourceMax");
+        checkInt((const char*)Parameter("SourceMin"), "SourceMin");
+        checkInt((const char*)Parameter("VisualizeCalibration"), "VisualizeCalibration");
+        checkInt((const char*)Parameter("VisualizeClassFiltering"), "VisualizeClassFiltering");
+        checkInt((const char*)Parameter("VisualizeNormalFiltering"), "VisualizeNormalFiltering");
+        checkInt((const char*)Parameter("VisualizeRoundtrip"), "VisualizeRoundtrip");
+        checkInt((const char*)Parameter("VisualizeSource"), "VisualizeSource");
+        checkInt((const char*)Parameter("VisualizeSourceDecimation"), "VisualizeSourceDecimation");
+        checkInt((const char*)Parameter("VisualizeSourceTime"), "VisualizeSourceTime");
+        checkInt((const char*)Parameter("VisualizeSpatialFiltering"), "VisualizeSpatialFiltering");
+        checkInt((const char*)Parameter("VisualizeStatFiltering"), "VisualizeStatFiltering");
+        checkInt((const char*)Parameter("VisualizeTemporalFiltering"), "VisualizeTemporalFiltering");
+        PreflightCondition( Parameter("VisualizeCalibration")== 1 || Parameter("VisualizeCalibration")== 0);
+        PreflightCondition( Parameter("VisualizeClassFiltering")== 1 || Parameter("VisualizeClassFiltering")== 0);
+        PreflightCondition( Parameter("VisualizeNormalFiltering")== 1 || Parameter("VisualizeNormalFiltering")== 0);
+        PreflightCondition( Parameter("VisualizeRoundtrip")== 1 || Parameter("VisualizeRoundtrip")== 0);
+        PreflightCondition( Parameter("VisualizeSource")== 1 || Parameter("VisualizeSource")== 0);
+        PreflightCondition( Parameter("VisualizeSpatialFiltering")== 1 || Parameter("VisualizeSpatialFiltering")== 0);
+        PreflightCondition( Parameter("VisualizeStatFiltering")== 1 || Parameter("VisualizeStatFiltering")== 0);
+        PreflightCondition( Parameter("VisualizeTemporalFiltering")== 1 || Parameter("VisualizeTemporalFiltering")== 0);
+
+        /***Check The Joystick Tab***/
+        checkInt((const char*)Parameter("JoyXgain"), "JoyXgain");
+        checkInt((const char*)Parameter("JoyYgain"), "JoyYgain");
+        checkInt((const char*)Parameter("JoyZgain"), "JoyZgain");
+        checkInt((const char*)Parameter("UseJoyStick"), "UseJoyStick");
+        checkInt((const char*)Parameter("XOffset"), "XOffset");
+        checkInt((const char*)Parameter("YOffset"), "XOffset");
+        checkInt((const char*)Parameter("ZOffset"), "ZOffset");
+        PreflightCondition( Parameter("UseJoyStick")== 1 || Parameter("UseJoyStick")== 0);
+        if (Parameter("JoyZgain") != 1)
+                bciout << "JoyZgain should be set to 1 to avoid float point overflow." << std::endl;
+
+        /***Check The Targets Tab***/
+        checkInt((const char*)Parameter("IncludeAllTargets"), "IncludeAllTargets");
+        checkInt((const char*)Parameter("NumberTargets"), "NumberTargets");
+        checkInt((const char*)Parameter("StartCursorX"), "StartCursorX");
+        checkInt((const char*)Parameter("StartCursorY"), "StartCursorY");
+        checkInt((const char*)Parameter("StartCursorZ"), "StartCursorZ");
+        PreflightCondition( Parameter("IncludeAllTargets")== 1 || Parameter("IncludeAllTargets")== 0);
+        PreflightCondition( Parameter("TargetPos")->GetNumColumns() == Parameter("NumberTargets"));
+        PreflightCondition( Parameter("TargetPos")->GetNumRows() == 10);
+
+        /***Check The Storage Tab***/
+        checkInt((const char*)Parameter("SavePrmFile"), "BaseLineInterval");
+        //FileInitial will be checked in the Initialize.
+        //Subject Name will checked with FileInitial in Initialize
+        //StorageTime is only used in EEG.
+        PreflightCondition( Parameter("SavePrmFile")== 1 || Parameter("SavePrmFile")== 0);
+        PreflightCondition( ((AnsiString) (const char*)Parameter("SubjectRun")).Length() ==2);
+        PreflightCondition( ((AnsiString) (const char*)Parameter("SubjectSession")).Length() ==3);
+
+        /***Check The MEMFilter Tab***/
+        checkInt((const char*)Parameter("deltaMem"), "deltaMem");
+        checkInt((const char*)Parameter("MemBandWidth"), "MemBandWidth");
+        checkInt((const char*)Parameter("MemDetrend"), "MemDetrend");
+        checkInt((const char*)Parameter("MemModelOrder"), "MemModelOrder");
+        checkInt((const char*)Parameter("MemWindows"), "MemWindows");
+        checkInt((const char*)Parameter("StartMem"), "StartMem");
+        checkInt((const char*)Parameter("StopMem"), "StopMem");
+        PreflightCondition( Parameter("MemDetrend")== 1 || Parameter("MemDetrend")== 0 || Parameter("MemDetrend")== 2);
+
+        /***Check The Source Tab***/
+        checkInt((const char*)Parameter("DCoffset"), "DoTrueRandom");
+        checkInt((const char*)Parameter("DoTrueRandom"), "DoTrueRandom");
+        checkInt((const char*)Parameter("ModulateAmplitude"), "ModulateAmplitude");
+        checkInt((const char*)Parameter("NoiseMaxAmplitude"), "NoiseMaxAmplitude");
+        checkInt((const char*)Parameter("NoiseMinAmplitude"), "NoiseMinAmplitude");
+        checkInt((const char*)Parameter("SampleBlockSize"), "SampleBlockSize");
+        checkInt((const char*)Parameter("SamplingRate"), "SamplingRate");
+        checkInt((const char*)Parameter("SineChannel"), "SineChannel");
+        checkInt((const char*)Parameter("SineChannelX"), "SineChannelX");
+        checkInt((const char*)Parameter("SineFrequency"), "SineFrequency");
+        checkInt((const char*)Parameter("SineMaxAmplitude"), "SineMaxAmplitude");
+        checkInt((const char*)Parameter("SineMinAmplitude"), "SineMinAmplitude");
+        checkInt((const char*)Parameter("SoftwareCh"), "SoftwareCh");
+        checkInt((const char*)Parameter("TransmitCh"), "TransmitCh");
+        //checkInt((const char*)Parameter("TransmitChList"), "TransmitChList");
+        PreflightCondition( Parameter("DoTrueRandom")== 1 || Parameter("DoTrueRandom")== 0);
+        PreflightCondition( Parameter("ModulateAmplitude")== 1 || Parameter("ModulateAmplitude")== 0);
+
+
+        /***Check The Source Tab***/
+
+        checkInt((const char*)Parameter("CameraX"), "CameraX");
+        checkInt((const char*)Parameter("CameraY"), "CameraY");
+        checkInt((const char*)Parameter("CameraZ"), "CameraZ");
+        checkInt((const char*)Parameter("LightSourceX"), "LightSourceX");
+        checkInt((const char*)Parameter("LightSourceY"), "LightSourceY");
+        checkInt((const char*)Parameter("LightSourceZ"), "LightSourceZ");
+        checkInt((const char*)Parameter("CameraAimX"), "CameraAimX");
+        checkInt((const char*)Parameter("CameraAimY"), "CameraAimY");
+        checkInt((const char*)Parameter("CameraAimZ"), "CameraAimZ");
+        checkInt((const char*)Parameter("LightSourceColorR"), "LightSourceColorR");
+        checkInt((const char*)Parameter("LightSourceColorG"), "LightSourceColorG");
+        checkInt((const char*)Parameter("LightSourceColorB"), "LightSourceColorB");
+        checkInt((const char*)Parameter("LightSourceIntensity"), "LightSourceIntensity");
+        PreflightCondition( Parameter("CameraAimX")>= -32767  && Parameter("CameraAimX")<= 32767);
+        PreflightCondition( Parameter("CameraAimY")>= -32767  && Parameter("CameraAimY")<= 32767);
+        PreflightCondition( Parameter("CameraAimZ")>= -32767  && Parameter("CameraAimZ")<= 32767);
+        PreflightCondition( Parameter("LightSourceColorR")>= 0  && Parameter("LightSourceColorR")<= 255);
+        PreflightCondition( Parameter("LightSourceColorG")>= 0  && Parameter("LightSourceColorG")<= 255);
+        PreflightCondition( Parameter("LightSourceColorB")>= 0  && Parameter("LightSourceColorB")<= 255);
+        PreflightCondition( Parameter("LightSourceIntensity")>= 0  && Parameter("LightSourceIntensity")<= 255);
+
+
+        /***Check The Statistics Tab***/   
+        checkInt((const char*)Parameter("DesiredPixelsPerSec"), "DesiredPixelsPerSec");
+        checkInt((const char*)Parameter("HorizInterceptProp"), "HorizInterceptProp");
+        checkInt((const char*)Parameter("HorizTrendControl"), "HorizTrendControl");
+        checkInt((const char*)Parameter("InterceptControl"), "InterceptControl");
+        checkInt((const char*)Parameter("InterceptLength"), "InterceptLength");
+        checkInt((const char*)Parameter("InterceptProportion"), "InterceptProportion");
+        checkInt((const char*)Parameter("LinTrendLrnRt"), "LinTrendLrnRt");
+        checkInt((const char*)Parameter("LRPixelsPerSec"), "LRPixelsPerSec");
+        checkInt((const char*)Parameter("QuadTrendLrnRt"), "QuadTrendLrnRt");
+        checkInt((const char*)Parameter("TrendControl"), "TrendControl");
+        checkInt((const char*)Parameter("TrendWinLth"), "TrendWinLth");
+        checkInt((const char*)Parameter("WeightUse"), "WeightUse");
+        checkInt((const char*)Parameter("WtLrnRt"), "WtLrnRt");
+        PreflightCondition( Parameter("HorizTrendControl")== 1  || Parameter("HorizTrendControl") == 2 || Parameter("HorizTrendControl") == 0);
+        PreflightCondition( Parameter("InterceptControl")== 1  || Parameter("InterceptControl") == 2 || Parameter("InterceptControl") == 0);
+        PreflightCondition( Parameter("TrendControl")== 1  || Parameter("TrendControl") == 2 || Parameter("TrendControl") == 0);
+        PreflightCondition( Parameter("WeightUse")== 1  || Parameter("WeightUse") == 2 || Parameter("WeightUse") == 0);
+
+        /***Check The System Tab***/
+
+        checkInt((const char*)Parameter("ApplicationPort"), "ApplicationPort");
+        checkInt((const char*)Parameter("EEGSourcePort"), "EEGSourcePort");
+        checkInt((const char*)Parameter("SignalProcessingPort"), "SignalProcessingPort");
+        checkInt((const char*)Parameter("StateVectorLength"), "StateVectorLength");
+        PreflightCondition( Parameter("ApplicationPort")>= 0 );
+        PreflightCondition( Parameter("EEGSourcePort")>= 0 );
+        PreflightCondition( Parameter("SignalProcessingPort")>= 0 );
+
+        /***Check The Filtering Tab***/
+
+        checkInt((const char*)Parameter("AlignChannels"), "AlignChannels");
+        checkInt((const char*)Parameter("ClassMode"), "ClassMode");
+        checkInt((const char*)Parameter("LR_A"), "LR_A");
+        checkInt((const char*)Parameter("LR_B"), "LR_B");
+        checkInt((const char*)Parameter("NumControlSignals"), "NumControlSignals");
+        checkInt((const char*)Parameter("SourceChTimeOffset"), "SourceChTimeOffset");
+        checkInt((const char*)Parameter("SpatialFilteredChannels"), "SpatialFilteredChannels");
+        checkInt((const char*)Parameter("UD_A"), "NUD_A");
+        checkInt((const char*)Parameter("UD_B"), "NUD_B");        
+        PreflightCondition( Parameter("AlignChannels")== 1 || Parameter("AlignChannels")== 0);
+        PreflightCondition( Parameter("ClassMode")== 1 || Parameter("ClassMode")== 2);
+/*shidong ends*/
+
+
+
 
   #ifdef DATAGLOVE
   // test for presence of glove if we want to use the glove
@@ -264,9 +578,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
         AnsiString COMport;
         /*shidong starts*/
-        AnsiString borderTexture;
-        AnsiString targetTexture;
-        AnsiString cursorTexture;
+
         AnsiString str1, str2;
         /*shidong ends*/
         time_t ctime;
@@ -284,26 +596,39 @@ TEMPORARY_ENVIRONMENT_GLUE
         targetInclude=     Parameter( "IncludeAllTargets" );
         BaselineInterval=  Parameter( "BaselineInterval" );
         Resting=           Parameter( "RestingPeriod" );
-        CursorRadius=      Parameter( "CursorSize" );     
+        CursorRadius=      Parameter( "CursorSize" );
         timelimit=         Parameter( "TimeLimit" );
         WinHeight=         Parameter( "WinHeight");
         WinWidth=          Parameter( "WinWidth");
         WinXpos =          Parameter( "WinXpos");
         WinYpos=           Parameter( "WinYpos");
         /*shidong starts*/
-        borderTexture = ( const char* )Parameter( "BorderTexture" );
-        targetTexture = ( const char* )Parameter( "TargetTexture" );
-        cursorTexture = ( const char* )Parameter( "CursorTexture" );
+        CameraX                 = Parameter( "CameraX");
+        CameraY                 = Parameter( "CameraY");
+        CameraZ                 = Parameter( "CameraZ");
+        CameraAimX              = Parameter( "CameraAimX");
+        CameraAimY              = Parameter( "CameraAimY");
+        CameraAimZ              = Parameter( "CameraAimZ");
+        LightSourceX            = Parameter( "LightSourceX");
+        LightSourceY            = Parameter( "LightSourceY");
+        LightSourceZ            = Parameter( "LightSourceZ");
+        LightSourceColorR       = Parameter( "LightSourceColorR");
+        LightSourceColorG       = Parameter( "LightSourceColorG");
+        LightSourceColorB       = Parameter( "LightSourceColorB");
+        LightSourceIntensity    = Parameter( "LightSourceIntensity");
+
+ 
+
+
         WorkspaceBoundaryVisible = Parameter( "WorkspaceBoundaryVisible");
 
 
-        str1 =  ( const char* )Parameter( "CursorColorFront");
-        str2 =  ( const char* )Parameter( "CursorColorBack");
-        CursorColorFront = hex2dec(str1);
-        CursorColorBack =  hex2dec(str2);
-        
-        if(printFlow) fprintf(b, "The CursorColorFront is %d.\n", CursorColorFront);
-        if(printFlow) fprintf(b, "The CursorColorBack  is %d.\n", CursorColorBack);
+        CursorColorFront =  ( const char* )Parameter( "CursorColorFront");
+        CursorColorBack =  ( const char* )Parameter( "CursorColorBack");
+        if(printFlow) fprintf(b, "The CursorColorFront is %s.\n", CursorColorFront);
+        if(printFlow) fprintf(b, "The CursorColorBack  is %s.\n", CursorColorBack);
+
+
         /*shidong ends*/
         FInit= ( const char* )Parameter( "FileInitials" );
         SSes = ( const char* )Parameter( "SubjectSession" );
@@ -344,7 +669,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         ZOffset= Parameter( "ZOffset" );
 /*shidong starts*/
         n_tmat= Ntargets;
-        m_tmat= 9;              // was 4;   - now includes width and height  and adaptation code
+        m_tmat= 10;              // was 4;   - now includes width and height  and adaptation code
                                 // was 7;   - now includes 3rd dimension coordinate and depth           
         for( i= 0; i<m_tmat; i++)               //9
         {
@@ -399,6 +724,8 @@ TEMPORARY_ENVIRONMENT_GLUE
         User->setTarget(tmat, Ntargets, m_tmat, targetTexture, borderTexture, WorkspaceBoundaryVisible);
         User->open3D();
         User->setWindow(WinHeight, WinWidth, WinXpos, WinYpos);
+        User->setCameraLight(CameraX, CameraY, CameraZ, CameraAimX, CameraAimY, CameraAimZ, LightSourceX, LightSourceY, LightSourceZ, LightSourceColorR, LightSourceColorG, LightSourceColorB, LightSourceIntensity);
+
 /*shidong ends*/
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
         User->GetSize( &size_right, &size_left, &size_top, &size_bottom );
@@ -441,6 +768,7 @@ if(printFlow) fprintf(b, "cursor start position are %f and %f.\n", cursor_x_star
 
         CurrentXadapt= 0;
         CurrentYadapt= 0;
+        CurrentZadapt= 0;
         CurrentAdaptCode= 0;
 
         User->PutO(false);
@@ -479,6 +807,7 @@ if(printFlow) fprintf(b, "In TTask::ReadStateValues function.\n");
 
         CurrentXadapt=       statevector->GetStateValue("Xadapt");
         CurrentYadapt=       statevector->GetStateValue("Yadapt");
+        CurrentZadapt=       statevector->GetStateValue("Zadapt");
         CurrentAdaptCode=    statevector->GetStateValue("AdaptCode");
 
 }
@@ -507,6 +836,7 @@ if(printFlow) fprintf(b, "In TTask::WriteStateValues function.\n\n");
         /*shidong ends*/
         statevector->SetStateValue("Xadapt",CurrentXadapt);
         statevector->SetStateValue("Yadapt",CurrentYadapt);
+        statevector->SetStateValue("Zadapt",CurrentZadapt);
         statevector->SetStateValue("AdaptCode",CurrentAdaptCode);
 
 }
@@ -536,7 +866,8 @@ if(printFlow) fprintf(b, "In TTask::ComputeTargets function.\n");
                 targy_btm[i+1]=      targy[i+1] + targsizey[i+1];
                 targx_adapt[i+1]=    tmat[6][i];
                 targy_adapt[i+1]=    tmat[7][i];
-                targ_adaptcode[i+1]= tmat[8][i];
+                targz_adapt[i+1]=    tmat[8][i];
+                targ_adaptcode[i+1]= tmat[9][i];
         }
         /*shidong ends*/
 
@@ -876,6 +1207,7 @@ if(printFlow) fprintf(b, "In TTask::Iti function.\n");
 
                 CurrentXadapt= targx_adapt[CurrentTarget];
                 CurrentYadapt= targy_adapt[CurrentTarget];
+                CurrentZadapt= targz_adapt[CurrentTarget];
                 CurrentAdaptCode= targ_adaptcode[CurrentTarget];
          }
          if( (targetInclude == 0) && (feedflag == 1) )

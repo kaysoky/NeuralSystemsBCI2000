@@ -159,22 +159,127 @@ void TUser::GetSize( float *right, float *left, float *top, float *bottom )
 
 
 //----------------------------------------------------------------------------
-void TUser::calculateCursorColor(float curPos, int frontColor, int backColor)
+void TUser::setCameraLight(
+                int CameraX,
+                int CameraY,
+                int CameraZ,
+                int CameraAimX,
+                int CameraAimY,
+                int CameraAimZ,
+                int LightSourceX,
+                int LightSourceY,
+                int LightSourceZ,
+                int LightSourceColorR,
+                int LightSourceColorG,
+                int LightSourceColorB,
+                int LightSourceIntensity)
+{
+                /*      Camera Setting    */
+
+ if(debug)fprintf(a, "THEY ARE %d, %d, %d,%d, %d, %d,%d, %d, %d,%d, %d, %d,%d\n",CameraX,CameraY,CameraZ,CameraAimX,CameraAimY,CameraAimZ,LightSourceX,LightSourceY,LightSourceZ,LightSourceColorR,LightSourceColorB,LightSourceColorG,LightSourceIntensity );
+
+                camLig.setCamAim((float)CameraAimX/32767*BORDER, (float)CameraAimY/32767*BORDER, (float)CameraAimZ/32767*BORDER);
+                camLig.setCamViewPoint((float)CameraX/32767*BORDER, (float)CameraY/32767*BORDER, (float)CameraZ/32767*BORDER);
+                camLig.setLight((float)LightSourceX/32767*BORDER, (float)LightSourceY/32767*BORDER, (float)LightSourceZ/32767*BORDER);
+                camLig.setLightColor((float)LightSourceColorR/32767*BORDER, (float)LightSourceColorG/32767*BORDER, (float)LightSourceColorB/32767*BORDER);
+                camLig.setLightBri((float)LightSourceIntensity);
+                camLig.setAmbLightBri((float)LightSourceIntensity);
+                //reset the camera control
+                x = 0;
+                y = 0;
+                z = 0;
+
+}
+
+
+
+
+
+
+
+
+//----------------------------------------------------------------------------
+void TUser::calculateCursorColor(float curPos, AnsiString frontColor, AnsiString backColor)
 {
         /*
         R.G.B value ranges from 0~1.0, 0~1.0, 0~1.0
         max is 1,1,1 min is 0,0,0
         there for the range of the RGB value is 0 ~ 1000
-        */
+         */
+        AnsiString Fred, Fgreen, Fblue;
+        AnsiString Bred, Bgreen, Bblue;
 
-        //map the color number to unsign int
-        frontColor += 32767;
-        backColor += 32767;
+        Fred    = "0x" + frontColor.SubString(3,2);
+        Fgreen  = "0x" + frontColor.SubString(5,2);
+        Fblue   = "0x" + frontColor.SubString(7,2);
+        Bred    = "0x" + backColor.SubString(3,2);
+        Bgreen  = "0x" + backColor.SubString(5,2);
+        Bblue   = "0x" + backColor.SubString(7,2);
 
-        float fColorf = (float)frontColor/(32767*2);    //default value is 65534/65534 = 1      : White
-        float bColorf = (float)backColor/(32767*2);     //default value is 0/65534 = 0          : Black
-        if(debug)fprintf(a, "TaskLog->calculateCursorColor: fColorf is %f and bColorf is %f. \n", fColorf, bColorf);
+if(debug)fprintf(a, "TaskLog->calculateCursorColro: FrontColor is %s and backcolor is %s.\n", frontColor, backColor);
+if(debug)fprintf(a, "TaskLog->calculateCursorColor: fR, fB, fG, bR, bB, bG are %s, %s, %s, %s, %s, %s. \n", Fred, Fgreen, Fblue, Bred, Bgreen, Bblue);
 
+        int Fr, Fg, Fb, Br, Bg, Bb;
+        Fr = Fred.ToIntDef(0);
+        Fg = Fgreen.ToIntDef(0);
+        Fb = Fblue.ToIntDef(0);
+        Br = Bred.ToIntDef(0);
+        Bg = Bgreen.ToIntDef(0);
+        Bb = Bblue.ToIntDef(0);
+
+if(debug)fprintf(a, "TaskLog->calculateCursorColor: Fr, Fg, Fb, Br, Bg, Bb are %d, %d, %d, %d, %d, %d. \n", Fr, Fg, Fb, Br, Bg, Bb);
+
+        int Rrange, Grange, Brange;     //the RGB range between front and back color
+        Rrange = abs(Fr - Br);
+        Grange = abs(Fg - Bg);
+        Brange = abs(Fb - Bb);
+
+        float curZpos = User->posZ;     //current cursor position
+        curZpos += BORDER;              //make it all positive number
+        float zPercent = curZpos / BORDER;      //current cursor position relativ to Border
+
+if(debug)fprintf(a, "TaskLog->calculateCursorColor: cursor position is %f and zpercent is %f.\n", User->posZ,zPercent); 
+
+        float RtoAdd, GtoAdd, BtoAdd;     //the RGB value that current cursor should have
+        RtoAdd = Rrange * zPercent;
+        GtoAdd = Grange * zPercent;
+        BtoAdd = Brange * zPercent;
+
+if(debug)fprintf(a, "TaskLog->calculateCursorColor: Rrange, Grange, Brange, RtoAdd, GtoAdd, BtoAdd are %d, %d, %d, %f, %f, %f. \n", Rrange, Grange, Brange, RtoAdd, GtoAdd, BtoAdd);
+
+        //RGB value of the cursor should add to the lower range side(front or back) RGB value.
+        if (Fr >= Br)
+        {
+                User->zR = (Br+RtoAdd)/255;
+        }
+        else
+        {
+                User->zR = (Fr+RtoAdd)/255;
+        }
+
+        if (Fg >= Bg)
+        {
+                User->zG = (Bg+GtoAdd)/255;
+        }
+        else
+        {
+                User->zG = (Fg+GtoAdd)/255;
+        }
+
+        if (Fb >= Bb)
+        {
+                User->zB = (Bb+BtoAdd)/255;
+        }
+        else
+        {
+                User->zB = (Fb+BtoAdd)/255;
+        }
+
+
+if(debug)fprintf(a, "TaskLog->calculateCursorColor: AFTER MODIFICATION User->zR is %f and User->zB is %f and User->zG is %f\n", User->zR, User->zB, User->zG);
+
+        
+         /*
         int colorValueF = (int)(1000*(float)fColorf);                 //default value 1000 -- white
         int colorValueB = (int)(1000*(float)bColorf);                 //default value 0 -- black
         if(debug)fprintf(a, "TaskLog->calculateCursorColor: colorValueF is %d and colorValueB is %d. \n", colorValueF, colorValueB);
@@ -241,8 +346,8 @@ if(debug)fprintf(a, "TaskLog->calculateCursorColor: User->zR is %f and User->zB 
                 User->zB += 0.1;
         }
 if(debug)fprintf(a, "TaskLog->calculateCursorColor: AFTER MODIFICATION User->zR is %f and User->zB is %f and User->zG is %f\n", User->zR, User->zB, User->zG);
-
-}
+               */
+}         
 
 
 //----------------------------------------------------------------------------
@@ -274,7 +379,7 @@ void TUser::PutCursor(float *x, float *y, TColor color )
         if(*x == 256)  cX = 0;
         if(*y == 256)  cY = 0;
 
-       if(debug)fprintf(a, "TaskLog->PutCursor: front color is %d and back color is %d.\n", cursorColorF, cursorColorB);
+       if(debug)fprintf(a, "TaskLog->PutCursor: front color is %s and back color is %s.\n", cursorColorF, cursorColorB);
 
         if( cY <= -BORDER/2 )    cY = -BORDER/2;
         if( cY >= BORDER/2 ) cY = BORDER/2 ;
@@ -483,14 +588,7 @@ try
                 if (debug) fprintf(a, "3DText: %d.\n", threeDTextVec.back().getElementID());
 
 
-                /*      Camera Setting    */
 
-                camLig.setCamAim(0.0f, 0.0f, 0.0f);
-                camLig.setCamViewPoint(0.0f, 0.0f, BORDER*1.25);
-                camLig.setLight(0.0f, 0.0f, BORDER);
-                camLig.setLightColor(0.5f,0.5f, 0.5f);
-                camLig.setLightBri(255);
-                camLig.setAmbLightBri(255);
 
 
 
@@ -898,7 +996,7 @@ void TUser::resume()
  *      back    -       Color of the cursor if the cursor is at the most back of the screen
  * Return:      void
  */
-void TUser::setCursorColor(int front, int back)
+void TUser::setCursorColor(AnsiString front, AnsiString back)
 {
         cursorColorF = front;
         cursorColorB = back;

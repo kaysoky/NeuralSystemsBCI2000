@@ -15,7 +15,9 @@ Task.h is the header file for the Right Justified Boxes task
 
 #define jhalf 32767
 #define NTARGS  64
-
+/*shidong starts*/
+#define COLORFORMAT 8
+/*shidong ends*/
 class TTask : public GenericFilter
 {
 private:
@@ -52,6 +54,7 @@ private:
         float targy_btm[NTARGS+1];
         short targx_adapt[NTARGS+1];
         short targy_adapt[NTARGS+1];
+        short targz_adapt[NTARGS+1];
         short targ_adaptcode[NTARGS+1];
 
         // weights for glove control
@@ -72,7 +75,7 @@ private:
         int jy_cntr;
         int n_tmat;
         int m_tmat;
-        int tmat[9][NTARGS];
+        int tmat[10][NTARGS];
 
         unsigned short OldRunning;
         unsigned short OldCurrentTarget;
@@ -81,9 +84,13 @@ private:
 
         long randseed;
         /*shidong starts*/
+        AnsiString borderTexture;
+        AnsiString targetTexture;
+        AnsiString cursorTexture;
+
         int WorkspaceBoundaryVisible;            // 1 means show the 3D workspace, 0 means not show
-        int CursorColorFront;                  // cursor's color when it is at front of the workspace, i.e Z= -32767 or -0x7FFF
-        int CursorColorBack;                   // cursor's color when it is at front of the workspace, i.e Z= 32767 or 0x7FFF
+        AnsiString CursorColorFront;                  // cursor's color when it is at front of the workspace, i.e Z= -32767 or -0x7FFF
+        AnsiString CursorColorBack;                   // cursor's color when it is at front of the workspace, i.e Z= 32767 or 0x7FFF
         int WinHeight;
         int WinWidth;
         int WinXpos;
@@ -129,6 +136,7 @@ private:
 
         short CurrentXadapt;
         short CurrentYadapt;
+        short CurrentZadapt;
         unsigned CurrentAdaptCode;
 
         int TestTarget( float, float, int );
@@ -152,18 +160,36 @@ private:
         BCITIME         *bcitime;
         TApplication    *Applic;
         DataGlove       *my_glove;
+
+        /*shidong starts*/
+        int CameraX;
+        int CameraY;
+        int CameraZ;
+        int CameraAimX;
+        int CameraAimY;
+        int CameraAimZ;
+        int LightSourceX;
+        int LightSourceY;
+        int LightSourceZ;
+        int LightSourceColorR;
+        int LightSourceColorG;
+        int LightSourceColorB;
+        int LightSourceIntensity;
+
 public:
         TTask();
         virtual ~TTask();
-        
+
         void ReadStateValues(STATEVECTOR *);
         void WriteStateValues(STATEVECTOR *);
-        virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+        virtual void Preflight( const SignalProperties&, SignalProperties& )const;
         virtual void Initialize();
         virtual void Process( const GenericSignal * Input, GenericSignal * Output );
 
         /*shidong starts*/
-        int hex2dec( AnsiString input );
+        bool checkPath(AnsiString path) ;
+        void checkPathHelper();
+        bool checkInt(AnsiString input, AnsiString paraName) const;
         /*shidong ends*/
 } ;
 

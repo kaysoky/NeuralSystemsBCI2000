@@ -68,27 +68,56 @@ public:		// User declarations
         __fastcall ~TUser();
 
         /*shidong starts*/
-        int cursorColorF;
-        int cursorColorB;
+        AnsiString cursorColorF;
+        AnsiString cursorColorB;
         float startZ;           //curosr initial z coord
         float posZ;
         void suspend();
         void resume();
         void open3D();
         bool boundV;
-        void setCursorColor(int front, int back);
+        void setCursorColor(AnsiString front, AnsiString back);
         void setCursor(float posX, float posY, float posZ, float radius, float clR, float clG, float clB, float bright, AnsiString cTexture);
         void setTarget(int target[][NTARGS], int col, int row, AnsiString tTexture, AnsiString bTexture, int visible);
 
         float zR;
         float zG;
         float zB;
-        void calculateCursorColor(float curPos, int frontColor, int backColor);
+        void calculateCursorColor(float curPos, AnsiString frontColor, AnsiString backColor);
         int WinHeight;
         int WinWidth;
         int WinXpos;
         int WinYpos;
         void setWindow(int h, int w, int x, int y);
+
+        //camera and light
+        int CameraX;
+        int CameraY;
+        int CameraZ;
+        int CameraAimX;
+        int CameraAimY;
+        int CameraAimZ;
+        int LightSourceX;
+        int LightSourceY;
+        int LightSourceZ;
+        int LightSourceColorR;
+        int LightSourceColorG;
+        int LightSourceColorB;
+        int LightSourceintensity;
+        void setCameraLight(
+                int CameraX,
+                int CameraY,
+                int CameraZ,
+                int CameraAimX,
+                int CameraAimY,
+                int CameraAimZ,
+                int LightSourceX,
+                int LightSourceY,
+                int LightSourceZ,
+                int LightSourceColorR,
+                int LightSourceColorG,
+                int LightSourceColorB,
+                int LightSourceIntensity);
         /*shidong ends*/
 };
 //---------------------------------------------------------------------------
