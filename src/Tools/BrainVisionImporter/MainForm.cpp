@@ -33,7 +33,7 @@
 
 TImporterForm *ImporterForm;
 
-const AnsiString appKey = "\\Software\\medpsych.uni-tuebingen.de\\" APP_NAME "\\";
+AnsiString appKey = "\\Software\\medpsych.uni-tuebingen.de\\";
 const AnsiString channelNamesKey = "ChannelNames";
 const AnsiString stateListKey = "States";
 
@@ -67,6 +67,7 @@ BCIError::LogicError( const std::string& s )
 __fastcall TImporterForm::TImporterForm(TComponent* Owner)
     : TForm(Owner)
 {
+    appKey += Application->Title + "\\";
 #ifdef ASCII_CONVERTER
     Caption = "BCI2000 ASCII Converter";
 #endif

@@ -109,8 +109,11 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
+Count=4
 Item0=_DEBUG
+Item1=APP_NAME=&quot;BrainVisionImporter&quot;
+Item2=APP_NAME=&quot;BrainVisionImporter&quot;;_DEBUG
+Item3=APP_NAME=BrainVisionImporter
 
 [HistoryLists\hlIntOutputDir]
 Count=1
