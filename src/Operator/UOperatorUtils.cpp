@@ -63,8 +63,8 @@ OperatorUtils::UpdateState( const STATELIST*   statelist,
    if (cur_state)
    {
      sprintf(statelinebuf, "%s %d %d %d %d\r\n", statename, cur_state->GetLength(), newvalue, cur_state->GetByteLocation(), cur_state->GetBitLocation());
-     coremessage->SetLength((unsigned short)strlen(statelinebuf));
-     strncpy(coremessage->GetBufPtr(), statelinebuf, strlen(statelinebuf));
+     coremessage->SetLength(strlen(statelinebuf));
+     strncpy(coremessage->GetBufPtr( strlen( statelinebuf ) ), statelinebuf, strlen(statelinebuf));
      coremessage->SendCoreMessage(socket);
    }
    else

@@ -192,8 +192,8 @@ COREMESSAGE *coremessage;
  // send a system command to a module
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_SYSCMD);
- coremessage->SetLength((unsigned short)strlen(syscmdbuf)+1);
- sprintf(coremessage->GetBufPtr(), "%s", syscmdbuf);
+ coremessage->SetLength(strlen(syscmdbuf)+1);
+ sprintf(coremessage->GetBufPtr( strlen( syscmdbuf ) + 1 ), "%s", syscmdbuf);
  coremessage->SendCoreMessage(socket);
  delete coremessage;
 
@@ -325,7 +325,7 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
      paramline = paramline + "\r\n"; // CRLF
 
      coremessage->SetLength( paramline.Length() );
-     strcpy( coremessage->GetBufPtr(), paramline.c_str() );
+     strcpy( coremessage->GetBufPtr( paramline.Length() ), paramline.c_str() );
 
      coremessage->SendCoreMessage(pSourceStream);
      coremessage->SendCoreMessage(pSigProcStream);
@@ -395,8 +395,8 @@ char            statelinebuf[LENGTH_STATELINE];
   if (cur_state)
      {
      sprintf(statelinebuf, "%s\r\n", cur_state->GetStateLine());
-     coremessage->SetLength((unsigned short)strlen(statelinebuf));
-     strncpy(coremessage->GetBufPtr(), statelinebuf, strlen(statelinebuf));
+     coremessage->SetLength(strlen(statelinebuf));
+     strncpy(coremessage->GetBufPtr( strlen( statelinebuf ) ), statelinebuf, strlen(statelinebuf));
 
      // broadcast the states to all the modules that are connected
      // (should be all of them anyways)
@@ -466,8 +466,8 @@ COREMESSAGE     *coremessage;
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_STATEVECTOR);
 
- coremessage->SetLength((unsigned short)my_state_vector->GetStateVectorLength());
- strncpy(coremessage->GetBufPtr(), (char *)my_state_vector->GetStateVectorPtr(), my_state_vector->GetStateVectorLength());
+ coremessage->SetLength(my_state_vector->GetStateVectorLength());
+ strncpy(coremessage->GetBufPtr( my_state_vector->GetStateVectorLength() ), (char *)my_state_vector->GetStateVectorPtr(), my_state_vector->GetStateVectorLength());
 
  // broadcast the states to all the modules that are connected
  // (should be all of them anyways)
