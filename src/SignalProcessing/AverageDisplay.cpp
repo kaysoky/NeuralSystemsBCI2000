@@ -3,12 +3,18 @@
 
 #include "AverageDisplay.h"
 #include "defines.h"
+#include "Color.h"
 #include <vector>
 #include <map>
 
 using namespace std;
 
 RegisterFilter( AverageDisplay, 2.C1 );
+
+const RGBColor AverageDisplay::sChannelColors[] =
+{
+  Red, Green, Blue, Yellow, White,
+};
 
 AverageDisplay::AverageDisplay()
 : mLastTargetCode( 0 ),
@@ -65,6 +71,14 @@ AverageDisplay::Initialize()
      vis.Send( CFGID::MAXVALUE, -50 );
      vis.Send( CFGID::NUMSAMPLES, 0 );
      vis.Send( CFGID::graphType, CFGID::polyline );
+
+     Colorlist channelColors;
+     channelColors.resize( numChannels );
+     const size_t numColors = sizeof( sChannelColors ) / sizeof( *sChannelColors );
+     for( size_t i = 0; i < numChannels; ++i )
+       channelColors[ i ] = sChannelColors[ i % numColors ];
+     vis.Send( CFGID::channelColors, channelColors );
+
      vis.Send( CFGID::channelGroupSize, 0 );
      vis.Send( CFGID::showBaselines, 1 );
 

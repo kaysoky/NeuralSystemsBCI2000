@@ -4,6 +4,7 @@
 #include <vector>
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
+#include "Color.h"
 
 #define SET_BASELINE
 
@@ -38,6 +39,8 @@ class AverageDisplay : public GenericFilter
   // Baseline stuff that should really be factored out.
   std::vector<float> mBaselines, mBaselineSamples;
 #endif // SET_BASELINE
+  // A list of channel colors to use for the overlayed display.
+  static const RGBColor sChannelColors[];
 };
 
 #endif // AverageDisplayH

@@ -71,7 +71,7 @@ namespace CFGID
           // Polyline options
           showBaselines,
           channelColors,
-        colorfield,
+        field2d,
 
       // Memo options
       numLines,

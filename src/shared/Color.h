@@ -44,7 +44,7 @@ class RGBColor
   public:
     RGBColor() : mValue( 0 ) {}
     RGBColor( int value ) : mValue( value ) {}
-    RGBColor( char r, char g, char b ) : mValue( r << 16 + g << 8 + b ) {}
+    RGBColor( int r, int g, int b ) : mValue( ( r << 16 ) + ( g << 8 ) + b ) {}
     operator int() const { return mValue; }
     void WriteToStream( std::ostream& ) const;
     void ReadFromStream( std::istream& );
@@ -59,14 +59,14 @@ class RGBColor
 class Colorlist: public std::vector<RGBColor>
 {
   public:
-    // Create a color list from a RGBColor array. The last entry in the array
-    // must be Colorlist::End.
     enum
     {
       End = NullColor,
     };
     
     Colorlist() {}
+    // Create a color list from a RGBColor array. The last entry in the array
+    // must be Colorlist::End.
     Colorlist( const RGBColor* );
     void WriteToStream( std::ostream& ) const;
     void ReadFromStream( std::istream& );
