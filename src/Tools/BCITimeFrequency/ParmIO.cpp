@@ -66,6 +66,10 @@ void ParIO::SaveInputForm( void )
         fprintf(sfile,"Input_ChanCount %d \n",iform->ChanList->Lines->Count);
         for(i=0;i<iform->ChanList->Lines->Count;i++)
                 fprintf(sfile,"Input_ChanValue %d \n",atoi( iform->ChanList->Lines->Strings[i].c_str() ) );
+
+        fprintf( sfile, "Input_Baseline %d \n", iform->Baseline->ItemIndex );
+        fprintf( sfile, "Input_StartBase %s \n", iform->vStartBase->Text.c_str() );
+        fprintf( sfile, "Input_EndBase %s \n", iform->vEndBase->Text.c_str() );
 }
 
 void ParIO::SaveProcessForm( void )
@@ -137,7 +141,7 @@ void ParIO::SaveF( FILE *savefile, TUseStateForm *usesform , TInputForm *inform,
 void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
         TProcessForm *procform, TOutputForm *outform)
 {
-        char l1[128],l2[128],l3[32],l4[32],l5[32];
+        char l1[128],l2[128],l3[32],l4[32],l5[32],line_remainder[1024];
         int i,j;
 
         gfile= getfile;
@@ -146,9 +150,15 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
         pform= procform;
         oform= outform;
 
-        while( fscanf(gfile,"%s %s",l1,l2) != EOF )
+        while( fscanf(gfile,"%s ",l1) != EOF
+               && fgets( line_remainder, sizeof( line_remainder ), gfile )
+               && sscanf( line_remainder, "%s", l2 ) != EOF )
         {
-
+                // fgets will also store the CRLF characters if any.
+                for( char* p = line_remainder; *p != '\0'; ++p )
+                  if( *p == '\r' || *p == '\n' )
+                    *p = '\0';
+                    
                 if( strcmp(l1,"State_NumStates=") == 0 )
                 {
                         usf->vNStates->Text= l2;
@@ -159,7 +169,7 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                 }
                 else if( strcmp( l1,"State_Cell") == 0 )
                 {
-                        fscanf(gfile,"%s %s %s",l3,l4,l5);
+                        sscanf(line_remainder,"%s %s %s %s",l2,l3,l4,l5);
                         i= atoi( l2 );
                         j= atoi( l3 );
                         usf->Grid->Cells[i][j]= l5;
@@ -171,7 +181,7 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                 }
                 else if( strcmp( l1,"Input_SpatialFile") == 0 )
                 {
-                        iform->vSpatialFile->Text= l2;
+                        iform->vSpatialFile->Text= line_remainder;
                 }
                 else if( strcmp( l1,"Input_Align") == 0 )
                 {
@@ -190,7 +200,7 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                 }
                 else if( strcmp( l1,"Input_TemporalFile") == 0 )
                 {
-                        iform->vTemporalFile->Text= l2;
+                        iform->vTemporalFile->Text= line_remainder;
                 }
                 else if( strcmp( l1,"Input_StateList") == 0 )
                 {
@@ -207,6 +217,12 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                         iform->ChanList->Clear();
                 else if( strcmp( l1,"Input_ChanValue") == 0 )
                         iform->ChanList->Lines->Add( atoi( l2 ) );
+                else if( strcmp( l1,"Input_Baseline" ) == 0 )
+                        iform->Baseline->ItemIndex = atoi( l2 );
+                else if( strcmp( l1,"Input_StartBase" ) == 0 )
+                        iform->vStartBase->Text = l2;
+                else if( strcmp( l1,"Input_EndBase" ) == 0 )
+                        iform->vEndBase->Text = l2;
                 else if( strcmp( l1,"Process_UseMEM") == 0 )
                 {
                         if( strcmp(l2,"true") == 0 )
