@@ -23,9 +23,10 @@ private:
        bool visualize;
        class GenericVisualization *vis;
 public:
-          SpatialFilter(PARAMLIST *plist, STATELIST *slist);
+          SpatialFilter();
   virtual ~SpatialFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif

@@ -1,3 +1,6 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
+
 #include <stdio.h>
 #include <math.h>
 #include <conio.h>

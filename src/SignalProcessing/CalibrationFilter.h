@@ -25,9 +25,10 @@ private:
        float    old[MAXCHAN];
        class GenericVisualization *vis;
 public:
-          CalibrationFilter(PARAMLIST *plist, STATELIST *slist);
+          CalibrationFilter();
   virtual ~CalibrationFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *corecomm);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif

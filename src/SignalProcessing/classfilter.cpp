@@ -1,6 +1,8 @@
-#undef USE_LOGFILE
-//---------------------------------------------------------------------------
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
+#undef USE_LOGFILE
+
 #ifdef USE_LOGFILE
 # include <stdio.h>
 #endif // USE_LOGFILE
@@ -12,6 +14,8 @@
 FILE *classfile;
 #endif // USE_LOGFILE
 
+RegisterFilter( ClassFilter, 2.D );
+
 // **************************************************************************
 // Function:   ClassFilter
 // Purpose:    This is the constructor for the ClassFilter class
@@ -22,11 +26,10 @@ FILE *classfile;
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-ClassFilter::ClassFilter(PARAMLIST *plist, STATELIST *slist)
+ClassFilter::ClassFilter()
 : vis( NULL )
 {
- const char* params[] =
- {
+ BEGIN_PARAMETER_DEFINITIONS
    "Filtering matrix MUD= 2 5 "
      "1 5 0 0 -1 "
      "2 5 0 0 -1 "
@@ -39,10 +42,7 @@ ClassFilter::ClassFilter(PARAMLIST *plist, STATELIST *slist)
      "// Classifier mode 1= simple 2= interaction",
    "Visualize int VisualizeClassFiltering= 1 0 0 1  "
      "// visualize Class filtered signals (0=no 1=yes)",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 
 #ifdef USE_LOGFILE
  classfile= fopen("Classifier.asc","w+");
@@ -64,6 +64,31 @@ ClassFilter::~ClassFilter()
 #endif // USE_LOGFILE
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
+                                   SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+  Parameter( "SampleBlockSize" );
+
+  // Resource availability checks.
+  /* The class filter seems not to depend on external resources. */
+
+  // Input signal checks.
+  // There should be a more thorough check here.
+  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
+    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties( Parameter( "NumControlSignals" ), 1 );
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -73,81 +98,64 @@ ClassFilter::~ClassFilter()
 //             new_corecomm - pointer to the communication object to the operator
 // Returns:    N/A
 // **************************************************************************
-void ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void ClassFilter::Initialize()
 {
-  statevector=new_statevector;
-  corecomm=new_corecomm;
+  samples=Parameter( "SampleBlockSize" );
+  visualize= ( int )Parameter( "VisualizeClassFiltering" );
+  n_vmat= Parameter( "MUD" )->GetNumValuesDimension1();
+  class_mode= Parameter( "ClassMode" );
 
-  int visualizeyn = 0;
-
-  try // in case one of the parameters is not defined (should always be, since we requested them)
+  for(int i=0;i<n_vmat;i++)
   {
-    samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeClassFiltering")->GetValue() );
-    n_vmat= paramlist->GetParamPtr("MUD")->GetNumValuesDimension1();
-    class_mode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );
-
-    for(int i=0;i<n_vmat;i++)
+    if( class_mode == 2 )
     {
-      if( class_mode == 2 )
-      {
-        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
-        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
-        vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
-        vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
-        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
-      }
-      else
-      {
-        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
-        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
-        vc2[i]= 0;
-        vf2[i]= 0;
-        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
-      }
+      vc1[i]= Parameter( "MUD", i, 0 );
+      vf1[i]= Parameter( "MUD", i, 1 );
+      vc2[i]= Parameter( "MUD", i, 2 );
+      vf2[i]= Parameter( "MUD", i, 3 );
+      wtmat[0][i]= Parameter( "MUD", i, 4 );
     }
-
-    n_hmat= paramlist->GetParamPtr("MLR")->GetNumValuesDimension1();
-
-    for(int i=0;i<n_hmat;i++)
+    else
     {
-      if( class_mode == 2 )
-      {
-        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
-        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
-        hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
-        hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
-        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
-      }
-      else
-      {
-        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
-        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
-        hc2[i]= 0;
-        hf2[i]= 0;
-        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
-      }
+      vc1[i]= Parameter( "MUD", i, 0 );
+      vf1[i]= Parameter( "MUD", i, 1 );
+      vc2[i]= 0;
+      vf2[i]= 0;
+      wtmat[0][i]= Parameter( "MUD", i, 2 );
     }
   }
-  catch(...)
-  { return; }
 
-  if( visualizeyn == 1 )
+  n_hmat= Parameter( "MLR" )->GetNumValuesDimension1();
+
+  for(int i=0;i<n_hmat;i++)
   {
-    visualize=true;
+    if( class_mode == 2 )
+    {
+      hc1[i]= Parameter( "MLR", i, 0 );
+      hf1[i]= Parameter( "MLR", i, 1 );
+      hc2[i]= Parameter( "MLR", i, 2 );
+      hf2[i]= Parameter( "MLR", i, 3 );
+      wtmat[1][i]= Parameter( "MLR", i, 4 );
+    }
+    else
+    {
+      hc1[i]= Parameter( "MLR", i, 0 );
+      hf1[i]= Parameter( "MLR", i, 1 );
+      hc2[i]= 0;
+      hf2[i]= 0;
+      wtmat[1][i]= Parameter( "MLR", i, 2 );
+    }
+  }
+
+  if( visualize )
+  {
     delete vis;
-    vis= new GenericVisualization( paramlist, corecomm);
+    vis= new GenericVisualization;
     vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_WINDOWTITLE, "Classifier");
     vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MINVALUE, "-40");
     vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MAXVALUE, "40");
     vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_NUMSAMPLES, "256");
   }
-  else
-  {
-    visualize=false;
-  }
-
-  return;
 }
 
 // **************************************************************************

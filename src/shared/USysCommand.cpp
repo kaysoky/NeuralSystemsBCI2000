@@ -13,14 +13,15 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
-
-#include <stdio.h>
 
 #include "USysCommand.h"
 
+#include <string.h>
+
 //---------------------------------------------------------------------------
+#pragma package(smart_init)
 
 // **************************************************************************
 // Function:   SYSCMD

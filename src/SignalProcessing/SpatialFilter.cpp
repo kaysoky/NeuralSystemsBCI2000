@@ -1,8 +1,13 @@
-//---------------------------------------------------------------------------
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
+
+#include "SpatialFilter.h"
+
 #include "UParameter.h"
 #include "UGenericVisualization.h"
-#include "SpatialFilter.h"
+
+RegisterFilter( SpatialFilter, 2.B );
 
 // **************************************************************************
 // Function:   SpatialFilter
@@ -13,11 +18,10 @@
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-SpatialFilter::SpatialFilter(PARAMLIST *plist, STATELIST *slist)
+SpatialFilter::SpatialFilter()
 : vis( NULL )
 {
- const char* params[] =
- {
+ BEGIN_PARAMETER_DEFINITIONS
    "Filtering int SpatialFilteredChannels= 2 "
      "2 1 64 // Number of Spatially Filtered Channels",
    "Filtering matrix SpatialFilterKernal= 2 4 "
@@ -30,10 +34,7 @@ SpatialFilter::SpatialFilter(PARAMLIST *plist, STATELIST *slist)
 */
    "Visualize int VisualizeSpatialFiltering= 1 "
      "0 0 1 // visualize spatial filtered signals (0=no 1=yes)",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 }
 
 
@@ -48,6 +49,39 @@ SpatialFilter::~SpatialFilter()
   delete vis;
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void SpatialFilter::Preflight( const SignalProperties& inSignalProperties,
+                                     SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+  Parameter("SampleBlockSize");
+  PreflightCondition(
+    Parameter("TransmitCh") == Parameter("SpatialFilterKernal")->GetNumValuesDimension2() );
+  PreflightCondition(
+    Parameter("SpatialFilteredChannels") == Parameter("SpatialFilterKernal")->GetNumValuesDimension1() );
+  PreflightCondition(
+     Parameter( "SpatialFilterKernal" )->GetNumValuesDimension1() <= MAX_M );
+  PreflightCondition(
+     Parameter( "SpatialFilterKernal" )->GetNumValuesDimension2() <= MAX_N );
+
+  // Resource availability checks.
+  /* The spatial filter seems not to depend on external resources. */
+
+  // Input signal checks.
+  PreflightCondition( Parameter( "TransmitCh" ) <= inSignalProperties.Channels() );
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties(
+                                 Parameter( "SpatialFilteredChannels" ),
+                                 inSignalProperties.MaxElements() );
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -57,36 +91,28 @@ SpatialFilter::~SpatialFilter()
 //             new_corecomm - pointer to the communication object to the operator
 // Returns:    N/A
 // **************************************************************************
-void SpatialFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void SpatialFilter::Initialize()
 {
-  statevector=new_statevector;
-  corecomm=new_corecomm;
-
   int visualizeyn = 0;
 
-  try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-    samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-    n_mat= atoi(paramlist->GetParamPtr("TransmitCh")->GetValue());
-    m_mat= atoi(paramlist->GetParamPtr("SpatialFilteredChannels")->GetValue());
-    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeSpatialFiltering")->GetValue() );
-  }
-  catch(...)
-  { return; }
+  samples=Parameter("SampleBlockSize");
+  n_mat= Parameter("TransmitCh");
+  m_mat= Parameter("SpatialFilteredChannels");
+  visualizeyn= Parameter("VisualizeSpatialFiltering");
 
   for(int i=0;i<m_mat;i++)
   {
     for(int j=0;j<n_mat;j++)
     {
-      mat[i][j]= atof( paramlist->GetParamPtr("SpatialFilterKernal")->GetValue(i,j) );
+      mat[i][j]= Parameter("SpatialFilterKernal",i,j);
     }
   }
 
   if( visualizeyn == 1 )
   {
     visualize=true;
-    if (vis) delete vis;
-    vis= new GenericVisualization( paramlist, corecomm);
+    delete vis;
+    vis= new GenericVisualization;
     if (vis)
     {
       vis->SendCfg2Operator(SOURCEID_SPATFILT, CFGID_WINDOWTITLE, "Spatial Filter");

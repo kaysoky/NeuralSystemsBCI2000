@@ -3,8 +3,9 @@
 //                  Copyright University of Tuebingen, Germany
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+
 #include <math.h>
 #include "UState.h"
 #include "SWFilter.h"
@@ -13,8 +14,11 @@
 #pragma package(smart_init)
 
 // ---------TSetBaseline class definitions --------------------------------------
-  TSetBaseline::TSetBaseline(PARAMLIST *paramlist, STATELIST *statelist)
+  RegisterFilter( TSetBaseline, 2.D1 );
+
+  TSetBaseline::TSetBaseline()
   {
+TEMPORARY_ENVIRONMENT_GLUE
     char line[127];
 
     statelist->AddState2List("Baseline 1 0 0 0\n");
@@ -31,12 +35,26 @@
     // Initialize(paramlist);
   }
 
-  void TSetBaseline::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, /*GenericSignal *InputSignal,*/ CORECOMM *new_corecomm)
+  void TSetBaseline::Preflight( const SignalProperties& inSignalProperties,
+                                      SignalProperties& outSignalProperties ) const
   {
+#ifdef TODO
+# error Do a real check here.
+#endif // TODO
+    outSignalProperties = inSignalProperties;
+  }
+
+  void TSetBaseline::Initialize()
+  {
+TEMPORARY_ENVIRONMENT_GLUE
     int AkElements;
     int visualizeyn;
+#if 0
     statevector = Newstatevector;
     corecomm=new_corecomm;
+#else
+    TSetBaseline::statevector = svect;
+#endif
 
     int BS = atoi(paramlist->GetParamPtr("SamplingRate")->GetValue())/atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
     BaseBegin = atof(paramlist->GetParamPtr("BaseBegin")->GetValue())*BS;
@@ -63,7 +81,7 @@
     if( visualizeyn == 1 )
  {
         visualize=true;
-        vis= new GenericVisualization( paramlist, corecomm);
+        vis= new GenericVisualization;
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "BaselineFiltered");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");
@@ -95,8 +113,11 @@
    return BLSignal;
   }
 
-  void TSetBaseline::Process(const GenericSignal*, GenericSignal *InputSignal)
+  void TSetBaseline::Process(const GenericSignal* inSignal, GenericSignal *outSignal)
   {
+   GenericSignal* InputSignal = outSignal;
+// Glue code ^
+
    int AkElements;
 
     ++PosInTrial;
@@ -145,9 +166,11 @@
 
 
 // ----------- TFBArteCorrection class definitions ----------------------------------------
+  RegisterFilter( TFBArteCorrection, 2.D2 );
 
-  TFBArteCorrection::TFBArteCorrection(PARAMLIST *paramlist, STATELIST *statelist)
+  TFBArteCorrection::TFBArteCorrection()
   {
+TEMPORARY_ENVIRONMENT_GLUE
     char line[255];
 
     statelist->AddState2List("Artifact 1 0 0 0\n");
@@ -171,11 +194,25 @@
    }
   }
 
-  void TFBArteCorrection::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
+  void TFBArteCorrection::Preflight( const SignalProperties& inSignalProperties,
+                                           SignalProperties& outSignalProperties ) const
   {
+#ifdef TODO
+# error Do a real check here.
+#endif // TODO
+    outSignalProperties = inSignalProperties;
+  }
+
+  void TFBArteCorrection::Initialize()
+  {
+TEMPORARY_ENVIRONMENT_GLUE
     int visualizeyn;
+#if 0
     statevector = Newstatevector;
     corecomm=new_corecomm;
+#else
+    TFBArteCorrection::statevector = svect;
+#endif
 
    if (Initialized) {
        delete [] ArteChList;
@@ -196,7 +233,7 @@
   if( visualizeyn == 1 )
  {
         visualize=true;
-        vis= new GenericVisualization( paramlist, corecomm);
+        vis= new GenericVisualization;
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "Artefiltered");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");
@@ -211,8 +248,11 @@
    return;
   }
 
-  void TFBArteCorrection::Process(const GenericSignal*, GenericSignal* InputSignal)
+  void TFBArteCorrection::Process(const GenericSignal* inSignal, GenericSignal* outSignal)
   {
+   GenericSignal* InputSignal = outSignal;
+// Glue code ^
+
    float ControlSignal;
    float ArteSignal;
 
@@ -243,10 +283,13 @@
   }
 
 // ----------- TSW class definitions ----------------------------------------
+  RegisterFilter( TSW, 2.C );
+  
 // Initialization functions -------------------------------------------------
 
-  TSW::TSW(PARAMLIST *paramlist, STATELIST *statelist)
+  TSW::TSW()
   {
+TEMPORARY_ENVIRONMENT_GLUE
     short n;
     char line[255];
 
@@ -287,12 +330,27 @@
    }
   }
 
-  void TSW::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
+  void TSW::Preflight( const SignalProperties& inSignalProperties,
+                             SignalProperties& outSignalProperties ) const
   {
+#ifdef TODO
+# error Do a real check here.
+#endif // TODO
+    outSignalProperties =
+                 SignalProperties( Parameter( "SpatialFilteredChannels" ), 1 );
+  }
+
+  void TSW::Initialize()
+  {
+TEMPORARY_ENVIRONMENT_GLUE
     int n;
     int visualizeyn;
+#if 0
     statevector = Newstatevector;
     corecomm=new_corecomm;
+#else
+    TSW::statevector = svect;
+#endif
 
     if (paramlist->GetParamPtr("SamplingRate")) SamplingRate = atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
     else SamplingRate = 256;
@@ -323,7 +381,7 @@
  if( visualizeyn == 1 )
  {
         visualize=true;
-        vis= new GenericVisualization( paramlist, corecomm);
+        vis= new GenericVisualization;
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "SWFiltered");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
         vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");

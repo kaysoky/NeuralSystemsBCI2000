@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------
 
-#ifndef TemporalFilterH
-#define TemporalFilterH
+#ifndef P3TemporalFilterH
+#define P3TemporalFilterH
 //---------------------------------------------------------------------------
 
 #include "UGenericFilter.h"
@@ -13,6 +13,11 @@
 class P3TemporalFilter : public GenericFilter
 {
 private:
+       enum
+       {
+         noError = 1,
+         generalError = 0,
+       };
        GenericVisualization *vis;
        GenericSignal    *ERPBufSamples[MAX_ERPBUFFERS], *vissignal;
        bool     visualize;
@@ -28,14 +33,16 @@ private:
        int      ProcessERPBuffers(GenericSignal *output);
        STATEVECTOR     *statevector;
        int      numERPsnecessary, targetERPchannel;
+
 public:
-       P3TemporalFilter(PARAMLIST *plist, STATELIST *slist);
-       P3TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+       P3TemporalFilter();
   virtual ~P3TemporalFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
+private:
        int      numsamplesinERP, numchannels;
 };
-#endif
+#endif // P3TemporalFilterH
 
 

@@ -17,8 +17,12 @@
 //
 // Changes: June 28, 2002, juergen.mellinger@uni-tuebingen.de
 //          - Rewrote classes from scratch but kept old class interface.
+//          Mar 28, 2003, juergen.mellinger@uni-tuebingen.de
+//          - Added depth member to SignalProperties to unify GenericSignal
+//            and GenericIntSignal into one signal type.
 //
 ////////////////////////////////////////////////////////////////////////////////
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "UGenericSignal.h"

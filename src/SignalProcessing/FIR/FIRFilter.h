@@ -9,7 +9,7 @@
 
 #include "getfir.h"
 
-class TemporalFilter : public GenericFilter
+class FIRFilter : public GenericFilter
 {
 private:
        enum
@@ -33,12 +33,13 @@ private:
        bool visualize;
        FIR *fir;
        GenericVisualization *vis;
-public:
        int nPoints;
-       
-          TemporalFilter(PARAMLIST *plist, STATELIST *slist);
-  virtual ~TemporalFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+
+public:
+          FIRFilter();
+  virtual ~FIRFilter();
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif

@@ -31,6 +31,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
+#include <stdlib.h>
 
 class PARAM
 {
@@ -93,6 +95,12 @@ class PARAM
                 { return type.c_str(); }
   const char*   GetName() const
                 { return name.c_str(); }
+  const char*   GetDefaultValue() const
+                { return defaultvalue.c_str(); }
+  const char*   GetLowRange() const
+                { return lowrange.c_str(); }
+  const char*   GetHighRange() const
+                { return highrange.c_str(); }
   const char*   GetComment() const
                 { return comment.c_str(); }
         size_t  GetNumValues() const
@@ -123,7 +131,62 @@ class PARAM
         bool    archive;
         bool    tag;  // important for parameter save/load filters
 
-  // Case insensitive string handling components.
+ // A class that allows for convenient automatic type conversions when
+ // accessing parameter values.
+ public:
+  class type_adapter
+  {
+   private:
+    type_adapter& operator=( const type_adapter& );
+   public:
+    type_adapter()
+    : p( NULL ), i( 0 ), j( 0 ) {}
+    type_adapter( PARAM* param, size_t row, size_t column )
+    : p( param ), i( row ), j( column ) {}
+    // Assignment operators for write access.
+    type_adapter& operator=( const char* s )
+    { if( p ) p->SetValue( s, i, j ); return *this; }
+    type_adapter& operator=( double d )
+    { std::ostringstream os; os << d; if( p ) p->SetValue( os.str().c_str(), i, j ); return *this; }
+    // Conversion operators for read access.
+    operator const char*() const
+    { return p ? p->GetValue( i, j ) : ""; }
+    operator double() const
+    { return p ? atof( p->GetValue( i, j ) ) : 0.0; }
+
+    // We need to override operators to avoid ambiguities
+    // when the compiler resolves expressions.
+    double operator-( double d ) const
+    { return double( *this ) - d; }
+    double operator+( double d ) const
+    { return double( *this ) + d; }
+    double operator*( double d ) const
+    { return double( *this ) * d; }
+    double operator/( double d ) const
+    { return double( *this ) / d; }
+
+    bool operator==( double d ) const
+    { return double( *this ) == d; }
+    bool operator!=( double d ) const
+    { return double( *this ) != d; }
+    bool operator<( double d ) const
+    { return double( *this ) < d; }
+    bool operator>( double d ) const
+    { return double( *this ) > d; }
+    bool operator<=( double d ) const
+    { return double( *this ) <= d; }
+    bool operator>=( double d ) const
+    { return double( *this ) >= d; }
+    // Dereferencing operator for access to PARAM members.
+    PARAM* operator->() const
+    { return p; }
+
+   private:
+    PARAM* p;
+    size_t i, j;
+  };
+
+ // Case insensitive string handling components.
  private:
   static const std::ctype<char>& ct;
 

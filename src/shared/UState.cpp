@@ -12,16 +12,13 @@
  * V0.08 - 03/30/2000 - First commented version                               *
  ******************************************************************************/
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+
+#include "UState.h"
 
 #include <stdio.h>
 #include <assert>
-
-#include "defines.h"
-
-#include "UState.h"
-#include "UCoremessage.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -158,7 +155,7 @@ STATE* new_state,
  if (existing_state)            // state already exists -> only update the value
     existing_state->SetValue(new_state->GetValue());
  else
-    AddState2List(new_state);   // if the state does not exist, add the new one to the list 
+    AddState2List(new_state);   // if the state does not exist, add the new one to the list
  delete new_state;
 }
 
@@ -398,7 +395,7 @@ int STATE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 // Purpose:    Construct a state line, based upon the current values
 //             in the STATE object
 // Parameters: N/A
-// Returns:    always ERRPARAM_NOERR 
+// Returns:    always ERRPARAM_NOERR
 // **************************************************************************
 int STATE::ConstructStateLine() const
 {

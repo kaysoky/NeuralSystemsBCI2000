@@ -1,16 +1,28 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+////////////////////////////////////////////////////////////////////////////////
+//
+// File:    UGenericVisualization.cpp
+//
+// Authors: Gerwin Schalk, Juergen Mellinger
+//
+// Changes: Apr 15, 2003, juergen.mellinger@uni-tuebingen.de:
+//          Reworked graph display double buffering scheme.
+//          Untangled window painting from content changes.
+//          Introduced clipping to reduce the amount of time spent blitting
+//          graphics data.
+//
+//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
+//          from the "Conditional defines" in the project options.
+//
+////////////////////////////////////////////////////////////////////////////////
+#include "PCHIncludes.h"
 #pragma hdrstop
-
-#include <Series.hpp>
-#include <stdio.h>
-#include <math.h>
-
-#include "..\shared\defines.h"
+//---------------------------------------------------------------------------
 #include "UGenericVisualization.h"
-#include "UVisConfig.h"
+
 #include "UCoreMessage.h"
+#include "UVisConfig.h"
+#include <math.h>
+#include <stdio.h>
 
 #pragma link "CSPIN"
 
@@ -18,20 +30,9 @@
 
 #pragma package(smart_init)
 
-
 GenericVisualization::GenericVisualization()
 : intsignal( NULL ),
   signal( NULL ),
-  corecomm( NULL ),
-  new_samples( -1 )
-{
-}
-
-
-GenericVisualization::GenericVisualization(PARAMLIST *paramlist, CORECOMM *new_corecomm)
-: intsignal( NULL ),
-  signal( NULL ),
-  corecomm( new_corecomm ),
   new_samples( -1 )
 {
  // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
@@ -95,6 +96,9 @@ const char *GenericVisualization::GetMemoText() const
 
 bool GenericVisualization::SendMemo2Operator(const char *string)
 {
+CORECOMM* corecomm = Environment::Corecomm;
+// ... temporary glue code
+
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
 short   *valueptr;
@@ -133,7 +137,7 @@ unsigned short    new_channels;
 GenericIntSignal  *new_signal;
 bool    ret;
 int     ch, count;
-size_t  samp; 
+size_t  samp;
  // determine how many samples the decimated signal has
  // there might be a better way of doing this :-(
  // only do this in the beginning or if decimation or signal size changes
@@ -170,6 +174,9 @@ size_t  samp;
 
 bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal)
 {
+CORECOMM* corecomm = Environment::Corecomm;
+// ... temporary glue code
+
 TWinSocketStream        *pStream;
 unsigned short  *short_dataptr;
 COREMESSAGE     *coremessage;
@@ -215,6 +222,9 @@ BYTE    *dataptr;
 
 bool GenericVisualization::Send2Operator(const GenericSignal *my_signal)
 {
+CORECOMM* corecomm = Environment::Corecomm;
+// ... temporary glue code
+
 TWinSocketStream        *pStream;
 unsigned short  *short_dataptr;
 COREMESSAGE     *coremessage;
@@ -275,6 +285,9 @@ float   value, value2;
 
 bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString)
 {
+CORECOMM* corecomm = Environment::Corecomm;
+// ... temporary glue code
+
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
 BYTE    *dataptr, *dataptr2;
@@ -475,6 +488,10 @@ void VISCFGLIST::Add(VISUAL *new_visual)
 
 
 VISUAL::VISUAL(BYTE my_sourceID, BYTE my_vis_type)
+#ifdef NEW_DOUBLEBUF_SCHEME
+: invalidRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
+  redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) )
+#endif // NEW_DOUBLEBUF_SCHEME
 {
 int        ch, i, value;
 AnsiString windowtitle;
@@ -501,7 +518,11 @@ char       buf[256];
 
  if (vis_type == VISTYPE_GRAPH)
     {
+#ifndef NEW_DOUBLEBUF_SCHEME
     form=new TForm(Application);
+#else
+    form = new TVisForm;
+#endif // NEW_DOUBLEBUF_SCHEME
 
     // create the form
     if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
@@ -572,7 +593,11 @@ char       buf[256];
 
  if (vis_type == VISTYPE_MEMO)
     {
+#ifdef NEW_DOUBLEBUF_SCHEME
+    form = new TForm( ( TComponent* )NULL );
+#else // NEW_DOUBLEBUF_SCHEME
     form=new TForm(Application);
+#endif // NEW_DOUBLEBUF_SCHEME
 
     // create the form
     if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
@@ -636,8 +661,14 @@ int ch;
  if (critsec) delete critsec;
 
  if (memo)  delete memo;
+#ifndef NEW_DOUBLEBUF_SCHEME
  if (form)  form->Close();
  form=NULL;
+#else // NEW_DOUBLEBUF_SCHEME
+ delete form;
+ ::DeleteObject( invalidRgn );
+ ::DeleteObject( redrawRgn );
+#endif // NEW_DOUBLEBUF_SCHEME
  // chart=NULL;
  memo=NULL;
  bitmap=NULL;
@@ -661,22 +692,31 @@ void __fastcall VISUAL::FormResize(TObject *Sender)
     critsec->Acquire();
     // if we already had buffers for the bitmap, delete them and create new ones
     // the size of the re-sized window
+#ifdef NEW_DOUBLEBUF_SCHEME
+    bitmap->Canvas->Lock();
+#else
     if (bitmap) delete bitmap;
-
     bitmap=new Graphics::TBitmap();
+#endif // NEW_DOUBLEBUF_SCHEME
+
     bitmap->Width=form->ClientWidth;
     bitmap->Height=form->ClientHeight;
+#ifdef NEW_DOUBLEBUF_SCHEME
+    bitmap->Canvas->Unlock();
+    form->Invalidate();
+#endif // NEW_DOUBLEBUF_SCHEME
 
     // update the display
     RenderGraph(0, displaychannels-1, 0, displaysamples-1);
     critsec->Release();
-
+#ifndef NEW_DOUBLEBUF_SCHEME
     Application->ProcessMessages();
+#endif // NEW_DOUBLEBUF_SCHEME
     }
 }
 //---------------------------------------------------------------------------
 
-
+#ifndef NEW_DOUBLEBUF_SCHEME
 void __fastcall VISUAL::FormPaint(TObject *Sender)
 {
  // only do this, if we have a graph
@@ -687,6 +727,16 @@ void __fastcall VISUAL::FormPaint(TObject *Sender)
     critsec->Release();
     }
 }
+#else // NEW_DOUBLEBUF_SCHEME
+void __fastcall VISUAL::FormPaint( TObject* Sender )
+{
+  PaintGraph( 0, displaychannels - 1, 0, displaysamples - 1 );
+  TForm* Form = static_cast<TForm*>( Sender );
+  bitmap->Canvas->Lock();
+  Form->Canvas->Draw( 0, 0, bitmap );
+  bitmap->Canvas->Unlock();
+}
+#endif // NEW_DOUBLEBUF_SCHEME
 //---------------------------------------------------------------------------
 
 
@@ -724,6 +774,56 @@ void __fastcall VISUAL::FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift)
 // (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
 void VISUAL::RenderGraph(int startch, int endch, int startsamp, int endsamp)
 {
+#ifdef NEW_DOUBLEBUF_SCHEME
+  // Restrict drawing to the part of the window that has actually changed.
+  // This can dramatically improve performance for big windows and high
+  // color depths.
+  //
+  // This piece of code uses a slightly more conventional way to compute pixel
+  // coordinates from sample indices than PaintGraph().
+  // To account for the resulting differences, we enlarge the computed rectangle
+  // by (compatibilityBelt) pixels on both sides.
+  const compatibilityBelt = 5;
+
+  // We always redraw the previously updated region, too,
+  // because of different interpolations and the progress line.
+  ::CombineRgn( invalidRgn, redrawRgn, NULL, RGN_COPY );
+
+  // Which parts of the window will change? Assemble a region and invalidate it.
+  int winxmin = 20,                            // These must be consistent with
+      winxmax = form->ClientWidth,             // the values in PaintGraph().
+      deltaWinX = winxmax - winxmin,           //
+      deltaDatX = displaysamples,              //
+      firstSample = startsample - cur_samples,
+      afterLastSample = startsample,
+      leftX = winxmin + ( firstSample * deltaWinX ) / deltaDatX - compatibilityBelt,
+      rightX = winxmin + ( afterLastSample * deltaWinX ) / deltaDatX + compatibilityBelt;
+
+  ::SetRectRgn( invalidRgn, leftX, 0, rightX, form->ClientHeight );
+  if( leftX + compatibilityBelt < winxmin )
+  {
+    HRGN rectRgn = ::CreateRectRgn( leftX + deltaWinX, 0, rightX + deltaWinX, form->ClientHeight );
+    ::CombineRgn( redrawRgn, redrawRgn, rectRgn, RGN_OR );
+    ::DeleteObject( rectRgn );
+  }
+  else if( rightX - compatibilityBelt >= winxmax )
+  {
+    HRGN rectRgn = ::CreateRectRgn( leftX - deltaWinX, 0, rightX - deltaWinX, form->ClientHeight );
+    ::CombineRgn( redrawRgn, redrawRgn, rectRgn, RGN_OR );
+    ::DeleteObject( rectRgn );
+  }
+  ::CombineRgn( invalidRgn, invalidRgn, redrawRgn, RGN_OR );
+
+  // Apply the invalid region.
+  ::InvalidateRgn( form->Handle, invalidRgn, false );
+  bitmap->Canvas->Lock();
+  ::SelectClipRgn( bitmap->Canvas->Handle, invalidRgn );
+  bitmap->Canvas->Unlock();
+}
+
+void VISUAL::PaintGraph(int startch, int endch, int startsamp, int endsamp)
+{
+#endif // NEW_DOUBLEBUF_SCHEME
 AnsiString label;
 TCanvas *canvas;
 int     ch, samp;
@@ -735,7 +835,8 @@ float	scalex, scaley;
 TPoint  *scaledpoints;
 TRect   allwindow;
 
-// canvas=form->Canvas;
+// canvas = form->Canvas;
+
 canvas=bitmap->Canvas;
 canvas->Lock();
 
@@ -836,6 +937,7 @@ allwindow=Rect(0, 0, form->ClientWidth, form->ClientHeight);
   canvas->MoveTo(winxmin-3, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley));
   canvas->LineTo(winxmin, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley));
   }
+
  // ticks on x axis
  for (samp=0; samp<displaysamples; samp+=50)
   {
@@ -851,8 +953,6 @@ allwindow=Rect(0, 0, form->ClientWidth, form->ClientHeight);
  // DO NOT ASK ME WHY THIS DIDN'T WORK (at least didn't work all the time)
  // in fMain, there is a Windows message that invokes a message handler that blits the double buffer
 }
-
-
 
 // prepare generic int signal and call the actual rendering procedure
 // i.e., fill the graphing point buffer with the actual (i.e., raw) values
@@ -970,7 +1070,7 @@ int     channels, samples, ch, samp, i;
   for (samp=0; samp<samples; samp++)
    points[ch][(samp+startsample)%displaysamples].y=(int)(((double)signal->GetValue(ch, samp)-minvalue)/(maxvalue-minvalue)*65536);
   }
- } catch(...) {;}
+ } catch( TooGeneralCatch& ) {;}
 
  startsample=(samples+startsample)%displaysamples;
 
@@ -981,5 +1081,4 @@ int     channels, samples, ch, samp, i;
  RenderGraph(0, displaychannels-1, 0, displaysamples-1);
  critsec->Release();
 }
-
 

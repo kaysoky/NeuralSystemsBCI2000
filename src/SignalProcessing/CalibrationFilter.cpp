@@ -1,20 +1,19 @@
 #undef USE_LOGFILE
 //---------------------------------------------------------------------------
+#include "PCHIncludes.h"
 #pragma hdrstop
-#ifdef USE_LOGFILE
-# include <stdio.h>
-#endif // USE_LOGFILE
+//---------------------------------------------------------------------------
+
+#include "CalibrationFilter.h"
 #include "UParameter.h"
 #include "UGenericVisualization.h"
-#include "CalibrationFilter.h"
 
 #ifdef USE_LOGFILE
+# include <stdio.h>
 FILE *calibf;
 #endif // USE_LOGFILE
 
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
+RegisterFilter( CalibrationFilter, 2.A );
 
 // **************************************************************************
 // Function:   CalibrationFilter
@@ -25,13 +24,12 @@ FILE *calibf;
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-CalibrationFilter::CalibrationFilter(PARAMLIST *plist, STATELIST *slist)
+CalibrationFilter::CalibrationFilter()
 : offset( NULL ),
   gain( NULL ),
   vis( NULL )
 {
- const char* params[] =
- {
+ BEGIN_PARAMETER_DEFINITIONS
   "Filtering floatlist SourceChOffset= 16 "
     "0 0 0 0 "
     "0 0 0 0 "
@@ -48,10 +46,7 @@ CalibrationFilter::CalibrationFilter(PARAMLIST *plist, STATELIST *slist)
     "// align channels in time (0=no, 1=yes)",
   "Visualize int VisualizeCalibration= 1 0 0 1 "
     "// visualize calibrated channels (0=no, 1=yes)",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 }
 
 
@@ -72,40 +67,54 @@ CalibrationFilter::~CalibrationFilter()
 #endif // USE_LOGFILE
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
+                                         SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+  PreflightCondition( Parameter( "SoftwareCh" ) >= Parameter( "TransmitCh" ) );
+  // if the number of channels does not match for offset and gain there is an error
+  PreflightCondition( Parameter( "SourceChOffset" )->GetNumValues() ==
+                                 Parameter( "SourceChGain" )->GetNumValues() );
+
+  // Resource availability checks.
+  /* The calibration filter seems not to depend on external resources. */
+
+  // Input signal checks.
+  /* We can handle any input signal. */
+
+  // Requested output signal properties.
+  outSignalProperties = inSignalProperties;
+  outSignalProperties.SetDepth( sizeof( float ) );
+}
 
 // **************************************************************************
 // Function:   Initialize
 // Purpose:    This function parameterizes the CalibrationFilter
-// Parameters: paramlist - list of the (fully configured) parameter list
-//             new_statevector - pointer to the statevector (which also has a pointer to the list of states)
-//             new_corecomm - pointer to the communication object to the operator
+// Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void CalibrationFilter::Initialize()
 {
-  statevector=new_statevector;
-  corecomm=new_corecomm;
-
   int alignyesno = 0,
       visualizeyesno = 0,
       numchoffset = 0,
       numchgain = 0;
 
-  try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-    alignyesno=atoi(paramlist->GetParamPtr("AlignChannels")->GetValue());
-    visualizeyesno=atoi(paramlist->GetParamPtr("VisualizeCalibration")->GetValue());
-    numchoffset=paramlist->GetParamPtr("SourceChOffset")->GetNumValues();
-    numchgain=paramlist->GetParamPtr("SourceChGain")->GetNumValues();
+  alignyesno=Parameter("AlignChannels");
+  visualizeyesno=Parameter("VisualizeCalibration");
+  numchoffset=Parameter("SourceChOffset")->GetNumValues();
+  numchgain=Parameter("SourceChGain")->GetNumValues();
 
-    recordedChans= atoi( paramlist->GetParamPtr("SoftwareCh")->GetValue() );
-    transmittedChans= atoi( paramlist->GetParamPtr("TransmitCh")->GetValue() );
-
-    // paramlist.GetParamPtr("TransmitChList")->GetNumValues()
-    // paramlist.GetParamPtr("TransmitCh")->GetValue()
-  }
-  catch(...)
-  { return; }
+  recordedChans= Parameter("SoftwareCh");
+  transmittedChans= Parameter("TransmitCh");
 
   // if the number of channels does not match for offset and gain, exit with an error
   if (numchoffset != numchgain) return;
@@ -121,8 +130,8 @@ void CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statev
   // copy the parameters in our private arrays
   for (int i=0; i<numchoffset; i++)
   {
-    offset[i]=atoi(paramlist->GetParamPtr("SourceChOffset")->GetValue(i));
-    gain[i]=atof(paramlist->GetParamPtr("SourceChGain")->GetValue(i));
+    offset[i]=Parameter("SourceChOffset",i);
+    gain[i]=Parameter("SourceChGain",i);
   }
 
   // do we want to align the samples in time ?
@@ -136,7 +145,7 @@ void CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statev
 
     for(int i=0;i<transmittedChans;i++)   // get original channel position
     {
-      int origchan= atoi(paramlist->GetParamPtr("TransmitChList")->GetValue(i));
+      int origchan= Parameter("TransmitChList",i);
       w2[i]= delta * (float)origchan;
       w1[i]= 1.0 - w2[i];
       old[i]= 0;
@@ -155,14 +164,12 @@ void CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statev
     // create an instance of GenericVisualization
     // it will handle the visualization to the operator
     delete vis;
-    vis=new GenericVisualization(paramlist, corecomm);
+    vis=new GenericVisualization;
     vis->SendCfg2Operator(SOURCEID_CALIBRATION, CFGID_WINDOWTITLE, "Calibration");
     vis->SendCfg2Operator(SOURCEID_CALIBRATION, CFGID_MINVALUE, "-40");
     vis->SendCfg2Operator(SOURCEID_CALIBRATION, CFGID_MAXVALUE, "40");
     vis->SendCfg2Operator(SOURCEID_CALIBRATION, CFGID_NUMSAMPLES, "256");
   }
-
-  return;
 }
 
 
@@ -208,8 +215,6 @@ void CalibrationFilter::Process(const GenericSignal *input, GenericSignal *outpu
     vis->SetSourceID(SOURCEID_CALIBRATION);
     vis->Send2Operator(output);
   }
-
-  return;
 }
 
 

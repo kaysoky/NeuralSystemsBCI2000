@@ -1,3 +1,5 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 // #include "StatFilter.h"
 #include "Statistics.h"
 

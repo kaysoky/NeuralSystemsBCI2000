@@ -57,20 +57,20 @@ class StatFilter : public GenericFilter
        short Yadapt;
        short AdaptCode;
 
-       STATELIST *statelist;
-       PARAMLIST *paramlist;
        STATISTICS *stat;
        bool visualize;
        GenericVisualization *vis;
        GenericSignal *StatSignal;
        void GetStates();
        int GetBaselineHits( void );
+       
  public:
-          StatFilter(PARAMLIST *plist, STATELIST *slist);
+          StatFilter();
   virtual ~StatFilter();
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process( const GenericSignal*, GenericSignal* );
-          int  Resting( ClassFilter * );
+  virtual void Resting();
 };
 #endif
 

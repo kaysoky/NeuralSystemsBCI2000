@@ -1,4 +1,6 @@
+#include "PCHIncludes.h"
 #pragma hdrstop
+
 #include <math.h>
 #include <stdlib.h>
 
@@ -18,6 +20,8 @@
 FILE* estat;
 #endif // USE_LOGFILE
 
+RegisterFilter( StatFilter, 2.E );
+
 // **************************************************************************
 // Function:   StatFilter
 // Purpose:    This is the constructor for the StatFilter Class
@@ -29,24 +33,22 @@ FILE* estat;
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
+StatFilter::StatFilter()
 : vis( NULL ),
   stat( NULL ),
   Statfile( NULL ),
   StatSignal( NULL ),
-  statelist( slist ),
   nf( NULL ),
   clsf( NULL )
 {
   cur_stat.NumT= 0;
   cur_lr_stat.NumT= 0;
 
-  const char* params[] =
-  {
+  BEGIN_PARAMETER_DEFINITIONS
     "Statistics int InterceptControl= 1 "
-      "0 0 1 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri",
+      "0 0 2 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri",
     "Statistics int InterceptLength= 3 "
-      "0 0 1 // Length of time for running average",
+      "0 0 1000 // Length of time for running average",
     "Statistics float InterceptProportion= 1.0 "
       "0.0 0.0 2.0 // Proportion of signal mean for intercept",
     "Statistics float HorizInterceptProp= 1.0 "
@@ -60,15 +62,15 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
     "Statistics matrix BaselineCfg= 2 2 "
       "TargetCode 1 "
       "TargetCode 2 "
-      "0 0 1 // states to watch for baseline",
+      "0 0 0 // states to watch for baseline",
     "Statistics matrix BaselineHits= 2 2 "
       "1 0.50 "
       "2 0.50 "
       "0 0 0 // proportion correct for each target",
     "Statistics int TrendControl= 1 "
-      "0 0 1  // Online adaption of % Correct Trend 1= Lin 2 = Quad",
+      "0 0 2  // Online adaption of % Correct Trend 1= Lin 2 = Quad",
     "Statistics int HorizTrendControl= 1 "
-      "0 0 1  // Adaption of Horizontal % Correct Trend 1= Lin 2 = Quad",
+      "0 0 2  // Adaption of Horizontal % Correct Trend 1= Lin 2 = Quad",
     "Statistics int TrendWinLth= 20 "
       "0 0 100 // Length of % Correct Window",
     "Statistics float LinTrendLrnRt= 0.001 "
@@ -80,10 +82,10 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
     "Xadapt "
     "Yadapt "
     "AdaptCode "
-      "0 0 1 // State Names controlling Classifier Adaptation",
+      "0 0 0 // State Names controlling Classifier Adaptation",
 
     "Statistics int WeightUse= 0 "
-      " 0 2 1 // Use of weights 0 = not 1= compute 2= use ",
+      " 0 0 2 // Use of weights 0 = not 1= compute 2= use ",
     "Statistics float WtLrnRt= 0.001 "
       "0 0.000 0.010 // Rate of Learning for Classifier ",
 
@@ -95,12 +97,11 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
     "Storage string SubjectSession= 001 "
       "001 0 999 // session number (max. 3 characters)",
      */
-  };
-  const size_t numParams = sizeof( params ) / sizeof( *params );
-  for( size_t i = 0; i < numParams; ++i )
-    plist->AddParameter2List( params[ i ] );
+  END_PARAMETER_DEFINITIONS
 
-  statelist->AddState2List( "IntCompute 2 0 0 0 \n" );
+  BEGIN_STATE_DEFINITIONS
+    "IntCompute 2 0 0 0",
+  END_STATE_DEFINITIONS
 
 #ifdef USE_LOGFILE
   estat= fopen("EStat.asc","w+");
@@ -125,6 +126,53 @@ StatFilter::~StatFilter()
 #endif // USE_LOGFILE
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistence with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void StatFilter::Preflight( const SignalProperties& inSignalProperties,
+                                  SignalProperties& outSignalProperties ) const
+{
+  // By just enumerating parameters this way, we have them checked for
+  // existence and range.
+  // For now, we don't perform any more checks, which amounts to declaring
+  // that this filter works provided all parameters are in the range
+  // given in their definition string.
+  Parameter("UD_A");
+  Parameter("UD_B");
+  Parameter("LR_A");
+  Parameter("LR_B");
+  Parameter("FileInitials");
+  Parameter("SubjectSession");
+  Parameter("SubjectName");
+
+  // This one is not required to exist.
+  // If we didn't ask for it here, the framework would not let us access
+  // it later on.
+  OptionalParameter( 2, "NumberTargets" );
+
+  // States we need.
+  OptionalState( Parameter( "WeightControl", 0, 0 ) );
+  OptionalState( Parameter( "WeightControl", 1, 0 ) );
+  OptionalState( Parameter( "WeightControl", 2, 0 ) );
+  State( "TargetCode" );
+  State( "ResultCode" );
+  State( "StimulusTime" );
+  State( "Feedback" );
+  State( "IntertrialInterval" );
+
+  // We don't check the input signal, thus implicitly declaring that this
+  // filter works for input signals of any size.
+  /* no checking done */
+
+  // This filter does not use its output signal argument, so we specify
+  // minimal requirements.
+  outSignalProperties = SignalProperties( 0, 0, 0 );
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -134,13 +182,10 @@ StatFilter::~StatFilter()
 //             new_corecomm - pointer to the communication object to the operator
 // Returns:    N/A
 // **************************************************************************
-void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void StatFilter::Initialize()
 {
   nf = GenericFilter::GetFilter< NormalFilter >();
   clsf = GenericFilter::GetFilter< ClassFilter >();
-  statevector=new_statevector;
-  corecomm=new_corecomm;
-  paramlist=plist;
 
   AnsiString AName,SName,SSes,FInit;
   int visualizeyn = 0;
@@ -151,50 +196,40 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
   intercept_flag= 0;
   weight_flag= 0;
 
-  try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-    InterceptEstMode= atoi(paramlist->GetParamPtr("InterceptControl")->GetValue());
-    InterceptLength= atoi(paramlist->GetParamPtr("InterceptLength")->GetValue());
-    InterceptProportion= atof(paramlist->GetParamPtr("InterceptProportion")->GetValue() );
-    HorizInterceptProp= atof(paramlist->GetParamPtr("HorizInterceptProp")->GetValue() );
-    ud_intercept= atof(paramlist->GetParamPtr("UD_A")->GetValue());
-    ud_gain     = atof(paramlist->GetParamPtr("UD_B")->GetValue());
-    lr_intercept= atof(paramlist->GetParamPtr("LR_A")->GetValue());
-    lr_gain     = atof(paramlist->GetParamPtr("LR_B")->GetValue());
-    Trend_Control= atoi(paramlist->GetParamPtr("TrendControl")->GetValue());
-    HorizTrend_Control= atoi(paramlist->GetParamPtr("HorizTrendControl")->GetValue());
-    Trend_Win_Lth= atoi(paramlist->GetParamPtr("TrendWinLth")->GetValue());
-    LinTrend_Lrn_Rt= atof(paramlist->GetParamPtr("LinTrendLrnRt")->GetValue() );
-    QuadTrend_Lrn_Rt= atof(paramlist->GetParamPtr("QuadTrendLrnRt")->GetValue() );
-    desiredpix= atof(paramlist->GetParamPtr("DesiredPixelsPerSec")->GetValue());
-    horizpix= atof(paramlist->GetParamPtr("LRPixelsPerSec")->GetValue());
-    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeStatFiltering")->GetValue() );
+  InterceptEstMode= Parameter("InterceptControl");
+  InterceptLength= Parameter("InterceptLength");
+  InterceptProportion= Parameter("InterceptProportion");
+  HorizInterceptProp= Parameter("HorizInterceptProp");
+  ud_intercept= Parameter("UD_A");
+  ud_gain     = Parameter("UD_B");
+  lr_intercept= Parameter("LR_A");
+  lr_gain     = Parameter("LR_B");
+  Trend_Control= Parameter("TrendControl");
+  HorizTrend_Control= Parameter("HorizTrendControl");
+  Trend_Win_Lth= Parameter("TrendWinLth");
+  LinTrend_Lrn_Rt= Parameter("LinTrendLrnRt");
+  QuadTrend_Lrn_Rt= Parameter("QuadTrendLrnRt");
+  desiredpix= Parameter("DesiredPixelsPerSec");
+  horizpix= Parameter("LRPixelsPerSec");
+  visualizeyn= Parameter("VisualizeStatFiltering");
 
-  //  WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
+//  WtControl= Parameter("WeightControl");
 
-    WtRate= atof(plist->GetParamPtr("WtLrnRt")->GetValue() );
+  WtRate= Parameter("WtLrnRt");
 
-    WtControl= atoi(plist->GetParamPtr("WeightUse")->GetValue() );
+  WtControl= Parameter("WeightUse");
 
-  //  LRWtControl= atoi(plist->GetParamPtr("LRWeightControl")->GetValue() );
-  //  LRWtRate= atof(plist->GetParamPtr("LRWtLrnRt")->GetValue() );
+//  LRWtControl= Parameter("LRWeightControl");
+//  LRWtRate= Parameter("LRWtLrnRt");
 
 
-    FInit= AnsiString (paramlist->GetParamPtr("FileInitials")->GetValue());
-    SSes = AnsiString (paramlist->GetParamPtr("SubjectSession")->GetValue());
-    SName= AnsiString (paramlist->GetParamPtr("SubjectName")->GetValue());
-  }
-  catch(...)
-  { return; }
+  FInit= ( const char* )Parameter("FileInitials");
+  SSes = ( const char* )Parameter("SubjectSession");
+  SName= ( const char* )Parameter("SubjectName");
 
   // in case NumberTargets defined (maybe we use it with a task that doesn't have different # targets)
   // in this case, of course, all functions of statistics need to be turned off
-  try
-  {
-    Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
-  }
-  catch(...)
-  { Ntargets=2; }
+  Ntargets = OptionalParameter( 2, "NumberTargets" );
 
   {
     BCIDtry bcidtry;
@@ -267,7 +302,7 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
   {
     visualize=true;
     delete vis;
-    vis= new GenericVisualization( paramlist, corecomm );
+    vis= new GenericVisualization;
     vis->SetSourceID(SOURCEID_STATISTICS);
     vis->SendCfg2Operator(SOURCEID_STATISTICS, CFGID_WINDOWTITLE, "Target Trends");
     vis->SendCfg2Operator(SOURCEID_STATISTICS, CFGID_MINVALUE, "0");
@@ -291,7 +326,7 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
 
 int StatFilter::GetBaselineHits( void )
 {
-  PARAM  *paramptr= paramlist->GetParamPtr("BaselineHits");
+  PARAM  *paramptr= Parameters->GetParamPtr("BaselineHits");
   if( !paramptr ) return(0);
   int num= paramptr->GetNumValuesDimension1();
 
@@ -308,13 +343,13 @@ int StatFilter::GetBaselineHits( void )
 
 void StatFilter::GetStates( void )
 {
-  CurrentTarget=       statevector->GetStateValue("TargetCode");
-  CurrentOutcome=      statevector->GetStateValue("ResultCode");
-  CurrentStimulusTime= statevector->GetStateValue("StimulusTime");
-  CurrentFeedback=     statevector->GetStateValue("Feedback");
-  CurrentIti=          statevector->GetStateValue("IntertrialInterval");
+  CurrentTarget=       State("TargetCode");
+  CurrentOutcome=      State("ResultCode");
+  CurrentStimulusTime= State("StimulusTime");
+  CurrentFeedback=     State("Feedback");
+  CurrentIti=          State("IntertrialInterval");
 
-  PARAM* paramptr=paramlist->GetParamPtr("BaselineCfg");
+  PARAM* paramptr=Parameters->GetParamPtr("BaselineCfg");
   if (!paramptr) return;
 
   int numbl=paramptr->GetNumValuesDimension1();
@@ -329,7 +364,7 @@ void StatFilter::GetStates( void )
       const char* statename=paramptr->GetValue(i, (j*2) );
       int stateval=atoi(paramptr->GetValue(i, (j*2)+1) );
 
-      if ( !(statevector->GetStateValue(statename) == stateval) )
+      if ( !(State(statename) == stateval) )
       match= 0;                  //    all must match
 
 
@@ -337,18 +372,12 @@ void StatFilter::GetStates( void )
     if( match == 1 ) CurrentBaseline= i;
   }
 
-  PARAM* adptptr= paramlist->GetParamPtr("WeightControl");
-  const char* xadptname= adptptr->GetValue(0,0);
-  const char* yadptname= adptptr->GetValue(1,0);
-  const char* adptcodename= adptptr->GetValue(2,0);
-
-  Xadapt= statevector->GetStateValue( xadptname );
-  Yadapt= statevector->GetStateValue( yadptname );
-  AdaptCode= statevector->GetStateValue( adptcodename );
+  Xadapt= OptionalState( Parameter( "WeightControl", 0, 0 ) );
+  Yadapt= OptionalState( Parameter( "WeightControl", 1, 0 ) );
+  AdaptCode= OptionalState( Parameter( "WeightControl", 2, 0 ) );
 
 #ifdef USE_LOGFILE
      fprintf(estat,"Xadapt= %d Yadapt= %d AdaptCode= %d \n",Xadapt,Yadapt,AdaptCode);
-
 #endif // USE_LOGFILE
 
 }
@@ -358,7 +387,7 @@ void StatFilter::GetStates( void )
 // Purpose:    This function operates when the state running = 0
 // **************************************************************************
 
-int StatFilter::Resting( ClassFilter *clsf )
+void StatFilter::Resting()
 {
   char memotext[256];
   int classmode;
@@ -371,65 +400,65 @@ int StatFilter::Resting( ClassFilter *clsf )
     // change the value of the parameter
 
     sprintf(memotext, "%.2f\r", ud_intercept);
-    paramlist->GetParamPtr("UD_A")->SetValue( memotext );
+    Parameter( "UD_A" ) = memotext;
 
     sprintf(memotext, "%.2f\r", ud_gain);
-    paramlist->GetParamPtr("UD_B")->SetValue( memotext );
+    Parameter( "UD_B" ) = memotext;
 
     sprintf(memotext, "%.2f\r", lr_intercept);
-    paramlist->GetParamPtr("LR_A")->SetValue( memotext );
+    Parameter( "LR_A" ) = memotext;
 
     sprintf(memotext, "%.2f\r", lr_gain);
-    paramlist->GetParamPtr("LR_B")->SetValue( memotext );
+    Parameter( "LR_B" ) = memotext;
 
-    corecomm->StartSendingParameters();
+    Corecomm->StartSendingParameters();
 
-    corecomm->PublishParameter( paramlist->GetParamPtr("UD_A") );
-    corecomm->PublishParameter( paramlist->GetParamPtr("UD_B") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("UD_A") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("UD_B") );
 
-    corecomm->PublishParameter( paramlist->GetParamPtr("LR_A") );
-    corecomm->PublishParameter( paramlist->GetParamPtr("LR_B") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("LR_A") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("LR_B") );
 
-    corecomm->StopSendingParameters();
+    Corecomm->StopSendingParameters();
   }
   if( trend_flag > 0 )         // return trends to operator
   {
     trend_flag= 0;
 
     sprintf(memotext, "%.4f\r", cur_stat.aper);
-    paramlist->GetParamPtr("InterceptProportion")->SetValue( memotext );
+    Parameter( "InterceptProportion" ) = memotext;
 
     sprintf(memotext, "%.4f\r",cur_lr_stat.aper);
-    paramlist->GetParamPtr("HorInterceptProp")->SetValue( memotext );
+    Parameter( "HorInterceptProp" ) = memotext;
 
 
     //     sprintf(memotext, "%.2f\r", cur_stat.bper * desiredpix);
     sprintf(memotext, "%.2f\r", cur_stat.pix);
-    paramlist->GetParamPtr("DesiredPixelsPerSec")->SetValue( memotext );
+    Parameter( "DesiredPixelsPerSec" ) = memotext;
 
     sprintf(memotext, "%.2f\r", cur_lr_stat.pix);
-    paramlist->GetParamPtr("LRPixelsPerSec")->SetValue( memotext );
+    Parameter( "LRPixelsPerSec" ) = memotext;
 
-    paramlist->GetParamPtr("BaselineHits")->SetDimensions( cur_stat.NumT, 2 );
+    Parameter( "BaselineHits" )->SetDimensions( cur_stat.NumT, 2 );
 
     for(int i=0; i< cur_stat.NumT; i++)
     {
       sprintf(memotext, "%d\r", BaseNum[i]);
-      paramlist->GetParamPtr("BaselineHits")->SetValue( memotext, i, 0 );
+      Parameter( "BaselineHits", i, 0) = memotext;
 
       sprintf(memotext, "%.2f\r", cur_stat.TargetPC[i]);
-      paramlist->GetParamPtr("BaselineHits")->SetValue( memotext, i ,1 );
+      Parameter( "BaselineHits", i, 1 ) = memotext;
     }
 
-    corecomm->StartSendingParameters();
+    Corecomm->StartSendingParameters();
 
-    corecomm->PublishParameter( paramlist->GetParamPtr("InterceptProportion") );
-    corecomm->PublishParameter( paramlist->GetParamPtr("DesiredPixelsPerSec") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("InterceptProportion") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("DesiredPixelsPerSec") );
 
-    corecomm->StopSendingParameters();
+    Corecomm->StopSendingParameters();
   }
 
-  classmode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );   // ytest classifier type
+  classmode= Parameter("ClassMode");   // ytest classifier type
   weightbin= 2;
   if( classmode == 2 ) weightbin= 4;
 
@@ -439,11 +468,11 @@ int StatFilter::Resting( ClassFilter *clsf )
     for(int i=0;i<clsf->n_vmat;i++)
     {
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
-      paramlist->GetParamPtr("MUD")->SetValue(memotext,i,weightbin);   // 2nd or 4th value is the weight
+      Parameter("MUD",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-    corecomm->StartSendingParameters();
-    corecomm->PublishParameter( paramlist->GetParamPtr("MUD") );
-    corecomm->StopSendingParameters();
+    Corecomm->StartSendingParameters();
+    Corecomm->PublishParameter( Parameters->GetParamPtr("MUD") );
+    Corecomm->StopSendingParameters();
 fprintf(estat,"Horizontal weights \n");
     for(int i=0;i<clsf->n_hmat;i++)
     {
@@ -451,14 +480,12 @@ fprintf(estat,"Horizontal weights \n");
 fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
 
       sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
-      paramlist->GetParamPtr("MLR")->SetValue(memotext,i,weightbin);   // 2nd or 4th value is the weight
+      Parameter("MLR",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-    corecomm->StartSendingParameters();
-    corecomm->PublishParameter( paramlist->GetParamPtr("MLR") );
-    corecomm->StopSendingParameters();
+    Corecomm->StartSendingParameters();
+    Corecomm->PublishParameter( Parameters->GetParamPtr("MLR") );
+    Corecomm->StopSendingParameters();
   }
-
-  return(0);              // no errors?
 }
 
 // **************************************************************************
@@ -469,13 +496,16 @@ fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
 // Returns:    N/A
 // **************************************************************************
 void StatFilter::Process( const GenericSignal *SignalE,
-                                GenericSignal *SignalF )
+                                GenericSignal */*SignalF*/ )
 {
   static int recno= 1;
   static  float old_ud_intercept=0, old_ud_gain=0, old_lr_intercept=0, old_lr_gain=0;
   static int oldtarget, oldoutcome;
 
   // actually perform the Stat Filtering on the NormalFilter output signal
+/* What does the above line say?
+   The actual input signal is the NormalFilter _input_ signal.
+   The output signal argument is unused in this filter. */
 
   GetStates();
 

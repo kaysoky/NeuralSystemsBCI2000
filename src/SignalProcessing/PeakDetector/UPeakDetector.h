@@ -20,11 +20,13 @@ private:
        GenericVisualization *vis;
        int get_num_pos_peaks(const GenericSignal *input, int channel);
        int get_num_neg_peaks(const GenericSignal *input, int channel);
-public:
        int nBins;
-       PeakDetector(PARAMLIST *plist, STATELIST *slist);
+
+public:
+       PeakDetector();
   virtual ~PeakDetector();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif

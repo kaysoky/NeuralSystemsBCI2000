@@ -1,6 +1,8 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
+//---------------------------------------------------------------------------
 #undef USE_LOGFILE
 //---------------------------------------------------------------------------
-#pragma hdrstop
 #include <math.h>
 #include <stdio.h>
 #include "Statistics.h"

@@ -24,9 +24,10 @@
         bool visualize;
         GenericVisualization *vis;
   public:
-        TSetBaseline(PARAMLIST *paramlist, STATELIST *statelist);
+        TSetBaseline();
     virtual ~TSetBaseline();
-    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, /*GenericSignal *InputSignal,*/ CORECOMM *new_corecomm);
+    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+    virtual void Initialize();
     virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
         GenericSignal* GetBLSignal();
   };
@@ -42,9 +43,10 @@
         bool visualize;
         GenericVisualization *vis;
   public:
-        TFBArteCorrection(PARAMLIST *paramlist, STATELIST *statelist);
+        TFBArteCorrection();
     virtual ~TFBArteCorrection();
-    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
+    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+    virtual void Initialize();
     virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
   };
 
@@ -85,9 +87,10 @@
         GenericVisualization *vis;
 
   public:
-        TSW(PARAMLIST *paramlist, STATELIST *statelist);
+        TSW();
     virtual ~TSW();
-    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
+    virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+    virtual void Initialize();
     // data related functions
     virtual void Process(const GenericSignal *InputSignal, GenericSignal *OutputSignal);
         float GetAvgBlockValue(short SWCh, int Position);

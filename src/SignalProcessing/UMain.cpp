@@ -32,7 +32,7 @@
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -121,14 +121,16 @@ int     ret, res;
       }
    if (statevector->GetStateVectorLength() != statevectorlength) ret=0;
    }
-  catch(...)
+  catch( TooGeneralCatch& )
    {
    fMain->corecomm->SendStatus("413 Signal Processing: Exception thrown in TReceivingThread::InitializeSignalProcessing()");
    ret=0;
    }
 
   // now, let's initialize all filters and all signals
+  Environment::EnterInitializationPhase( &fMain->paramlist, &fMain->statelist, statevector, fMain->corecomm );
   res=filters->Initialize(&(fMain->paramlist), statevector, fMain->corecomm);
+  Environment::EnterNonaccessPhase();
   if (res == 0)
      {
      sprintf(errmsg, "408 %s", "Filter initialization error" );
@@ -172,7 +174,12 @@ int     trycount;
    }
 
   // initialize signal processing as soon as we are connected
+#if 0
   if (InitializeSignalProcessing() == 0) Terminate();
+#else
+  if( InitializeSignalProcessing() != 0 )
+    fMain->corecomm->SendStatus("201 SignalProcessing module initialized");
+#endif
 
   while(!Terminated && ClientSocket->Connected )
    {
@@ -193,7 +200,7 @@ int     trycount;
        delete coremessage;
        }
     } // end try
-   catch(...)
+   catch( TooGeneralCatch& )
     {
     Terminate();
     }
@@ -260,6 +267,7 @@ float   sigres;
     {
     memcpy(buf, coremessage->GetBufPtr()+5, sizeof(short)*transmitchannels*samples);
 
+    Environment::EnterProcessingPhase( &fMain->paramlist, &fMain->statelist, statevector, fMain->corecomm );
     // now let the filters do their job (only if we are not suspended)
     if (running == 1)
        {
@@ -271,6 +279,7 @@ float   sigres;
           }
        }
       else  res= filters->Resting(buf);
+    Environment::EnterNonaccessPhase();
 
     // if the socket is open, then ...
     if ((fMain->sendingcomm->Connected()) && (!Terminated))
@@ -348,21 +357,21 @@ void TfMain::ShutdownConnections()
   if (ReceivingSocket->Socket->ActiveConnections > 0)
      if (ReceivingSocket->Socket->Connections[0])
         ReceivingSocket->Socket->Connections[0]->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (ReceivingSocket->Active) ReceivingSocket->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (sendingcomm)
      if (sendingcomm->Connected()) sendingcomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (corecomm)
      if (corecomm->Connected()) corecomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
 }
 
 
@@ -464,6 +473,8 @@ int  res, ret;
  eReceivingPort->Text=AnsiString(ReceivingSocket->Socket->LocalPort);
  eReceivingIP->Text=ReceivingSocket->Socket->LocalHost;
 
+ Environment::EnterConstructionPhase( &paramlist, &statelist, statevector, corecomm );
+
  // create instances of all the filters we'll be using
  if (filters) delete filters;
  filters=new FILTERS(&paramlist, &statelist);
@@ -486,6 +497,9 @@ int  res, ret;
  corecomm->PublishStates(&statelist);
  // send a confirmation message
  corecomm->SendStatus("100 SigProc waiting for configuration ...");
+
+ Environment::EnterNonaccessPhase();
+
  return(1);
 }
 
@@ -533,7 +547,9 @@ int     destport, res;
     rSendingConnected->Checked=true;
     eSendingIP->Text=destIP;
     eSendingPort->Text=AnsiString(destport);
+#if 0
     corecomm->SendStatus("201 SignalProcessing module initialized");
+#endif
     }
  else
     return(ERR_NOSOCKPARAM);

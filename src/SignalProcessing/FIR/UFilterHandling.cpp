@@ -1,10 +1,11 @@
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "StatFilter.h"
 #include "UFilterHandling.h"
+#include <assert>
 
 //---------------------------------------------------------------------------
 
@@ -25,17 +26,17 @@ FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 char line[512];
 
  was_error=false;
- calfilter=new CalibrationFilter(plist, slist);
+ calfilter=new CalibrationFilter;
  if (!calfilter) was_error=true;
- spatfilter= new SpatialFilter(plist, slist);
+ spatfilter= new SpatialFilter;
  if(!spatfilter) was_error=true;
- tempfilter= new TemporalFilter(plist, slist);
+ tempfilter= new FIRFilter;
  if(!tempfilter) was_error= true;
- classfilter= new ClassFilter(plist, slist );
+ classfilter= new FIRClassFilter;
  if(!classfilter) was_error= true;
- normalfilter= new NormalFilter( plist, slist );
+ normalfilter= new NormalFilter;
  if(!normalfilter) was_error= true;
- statfilter= new StatFilter( plist, slist );
+ statfilter= new FIRStatFilter;
  if(!statfilter) was_error= true;
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128    // the number of transmitted control signals");
@@ -105,6 +106,42 @@ int     res, returnval;
  if (SignalF) delete SignalF;
  SignalB=SignalC=SignalD=SignalE=SignalF=NULL;
 
+#if 1 // Begin temporary preflight code.
+  bool errorOccurred = false;
+  MA = atoi( plist->GetParamPtr( "TransmitCh" )->GetValue() );
+  NA = atoi( plist->GetParamPtr( "SampleBlockSize" )->GetValue() );
+  SignalProperties spA( MA, NA ),
+                   sp;
+
+  Environment::EnterPreflightPhase( plist, svector->GetStateListPtr(), svector, corecomm );
+  calfilter->Preflight( spA, sp );
+  SignalB = new GenericSignal( sp );
+  spatfilter->Preflight( *SignalB, sp );
+  SignalC = new GenericSignal( sp );
+  tempfilter->Preflight( *SignalC, sp );
+  SignalD = new GenericSignal( sp );
+  classfilter->Preflight( *SignalD, sp );
+  SignalE = new GenericSignal( sp );
+  normalfilter->Preflight( *SignalE, sp );
+  SignalF = new GenericSignal( sp );
+  statfilter->Preflight( *SignalE, sp );
+  errorOccurred |= ( __bcierr.flushes() > 0 );
+  Environment::EnterNonaccessPhase();
+
+  if( !errorOccurred )
+  {
+    Environment::EnterInitializationPhase( plist, svector->GetStateListPtr(), svector, corecomm );
+    calfilter->Initialize();
+    spatfilter->Initialize();
+    tempfilter->Initialize();
+    classfilter->Initialize();
+    normalfilter->Initialize();
+    statfilter->Initialize();
+    errorOccurred |= ( __bcierr.flushes() > 0 );
+    Environment::EnterNonaccessPhase();
+  }
+#endif // preflight
+
  try
   {
   // maxchannels=atoi(plist->GetParamPtr("MaxChannels")->GetValue());
@@ -118,29 +155,38 @@ int     res, returnval;
   NC= NA;
   MC= atoi(plist->GetParamPtr("SpatialFilteredChannels")->GetValue());
   MD= MC;
+#if 0 // preflight
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
 
 
   // now, here place the code to initalize your filter
- calfilter->Initialize(plist, svector, corecomm);
- spatfilter->Initialize(plist, svector, corecomm);
- tempfilter->Initialize(plist, svector, corecomm);
-#if 0
+ calfilter->Initialize();
+ spatfilter->Initialize();
+ tempfilter->Initialize();
  ND= tempfilter->nPoints;
  classfilter->Initialize(plist, svector, corecomm,ND);
-#else // Classfilter's Initialize still depends on tempfilter being initialized first.
- classfilter->Initialize(plist, svector, corecomm);
-#endif
- normalfilter->Initialize( plist, svector, corecomm);
- statfilter->Initialize( plist, svector, corecomm);
+ normalfilter->Initialize();
+ statfilter->Initialize();
 
   SignalD=new GenericSignal(MD, ND);
   SignalE=new GenericSignal(ME, 1);
   SignalF=new GenericSignal(MF, 1);
-
+#else // preflight
+  if( !errorOccurred )
+  {
+    ND = SignalD->MaxElements();
+    assert( *SignalB >= SignalProperties( MB, NB ) );
+    assert( *SignalC >= SignalProperties( MC, NC ) );
+    assert( *SignalD >= SignalProperties( MD, ND ) );
+    assert( *SignalE >= SignalProperties( ME, 1 ) );
+    assert( *SignalF >= SignalProperties( MF, 1 ) );
   }
- catch(...)
+  if( errorOccurred )
+    returnval = 0;
+#endif // preflight
+  }
+ catch( TooGeneralCatch& )
   { returnval=0; }
 
  if (!SignalB || !SignalC || !SignalD || !SignalE || !SignalF)
@@ -152,7 +198,12 @@ int     res, returnval;
 
 int FILTERS::Resting( char *buf)
 {
- statfilter->Resting();
+  calfilter->Resting();
+  spatfilter->Resting();
+  tempfilter->Resting();
+  classfilter->Resting();
+  normalfilter->Resting();
+  statfilter->Resting();
 
  return(0);
 }

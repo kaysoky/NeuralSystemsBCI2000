@@ -17,30 +17,38 @@
 //
 // Changes: June 28, 2002, juergen.mellinger@uni-tuebingen.de
 //          - Rewrote classes from scratch but kept old class interface.
+//          Mar 28, 2003, juergen.mellinger@uni-tuebingen.de
+//          - Added depth member to SignalProperties to unify GenericSignal
+//            and GenericIntSignal into one signal type.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericSignalH
 #define UGenericSignalH
 
 #include <vector>
+#include "UBCIError.h"
 
 // A properties base class all signals are derived from.
 class SignalProperties
 {
   public:
-    SignalProperties( size_t inChannels, size_t inMaxElements )
-    : elements( inChannels, inMaxElements ), maxElements( inMaxElements ) {}
+    SignalProperties()
+    : elements( 0, 0 ), maxElements( 0 ), depth( 0 ) {}
+    SignalProperties( size_t inChannels, size_t inMaxElements, size_t inDepth = 0 )
+    : elements( inChannels, inMaxElements ), maxElements( inMaxElements ), depth( inDepth ) {}
     virtual ~SignalProperties() {}
 
-    virtual size_t Channels() const { return elements.size(); }
-    virtual size_t MaxElements() const { return maxElements; }
+    size_t Channels() const { return elements.size(); }
+    size_t MaxElements() const { return maxElements; }
     virtual bool SetNumElements( size_t inChannel, size_t inNumElements );
-    virtual size_t GetNumElements( size_t inChannel ) const { return elements.at( inChannel ); }
+    size_t GetNumElements( size_t inChannel ) const { return elements.at( inChannel ); }
+    size_t GetDepth() const { return depth; }
+    virtual void SetDepth( size_t inDepth ) { depth = inDepth; }
 #ifdef SIGNAL_BACK_COMPAT
     bool SetElements( size_t inCh, size_t inN ) { return SetNumElements( inCh, inN ); }
     size_t GetElements( size_t inCh ) const { return GetNumElements( inCh ); }
 #endif // SIGNAL_BACK_COMPAT
-    bool operator==( const SignalProperties& sp ) const { return elements == sp.elements; }
+    bool operator==( const SignalProperties& sp ) const { return depth == sp.depth && elements == sp.elements; }
     bool operator!=( const SignalProperties& sp ) const { return !( *this == sp ); }
     // These operators tell whether a signal would "fit" into another one.
     // Note that this is essentially a set inclusion relation,
@@ -53,7 +61,8 @@ class SignalProperties
 
   protected:
     std::vector< size_t > elements;
-    size_t maxElements;
+    size_t maxElements,
+           depth;
 };
 
 // Template declaration of signals.
@@ -92,14 +101,14 @@ template< class T > class BasicSignal : public SignalProperties
 // Template definitions for the signal members.
 template< class T >
 BasicSignal< T >::BasicSignal()
-: SignalProperties( 0, 0 )
+: SignalProperties( 0, 0, sizeof( T ) )
 {
   SetProperties( *this );
 }
 
 template< class T >
 BasicSignal< T >::BasicSignal( size_t inChannels, size_t inMaxElements )
-: SignalProperties( inChannels, inMaxElements )
+: SignalProperties( inChannels, inMaxElements, sizeof( T ) )
 {
   SetProperties( *this );
 }
@@ -188,19 +197,29 @@ template <class T>
 void
 BasicSignal< T >::SetProperties( const SignalProperties& inSp )
 {
+#ifdef _DEBUG
+  if( inSp.GetDepth() > sizeof( T ) )
+    throw DEBUGINFO "Signal depth greater than allowed for by data type.";
+#endif
   Value.resize( inSp.Channels() );
   for( size_t i = 0; i != Value.size(); ++i )
     Value[ i ].resize( inSp.GetNumElements( i ) );
-  static_cast< SignalProperties >( *this ) = inSp;
+  *static_cast< SignalProperties* >( this ) = inSp;
 }
 
 // Commonly used template instantiations.
-
 // A simple typedef breaks on forward declarations in other headers.
 // If anyone knows how to avoid the following clumsiness, please tell.
+#if 0
+typedef BasicSignal< short > GenericIntSignal;
+typedef BasicSignal< float > GenericSignal;
+#else
 class GenericIntSignal : public BasicSignal< short >
 {
   public:
+    GenericIntSignal() {}
+    GenericIntSignal( const SignalProperties& sp )
+    : BasicSignal< short >( sp ) {}
     GenericIntSignal( unsigned short NewChannels, int NewMaxElements )
     : BasicSignal< short >( NewChannels, NewMaxElements ) {}
 };
@@ -208,6 +227,9 @@ class GenericIntSignal : public BasicSignal< short >
 class GenericSignal : public BasicSignal< float >
 {
   public:
+    GenericSignal() {}
+    GenericSignal( const SignalProperties& sp )
+    : BasicSignal< float >( sp ) {}
     GenericSignal( unsigned short NewChannels, int NewMaxElements )
     : BasicSignal< float >( NewChannels, NewMaxElements ) {}
     GenericSignal( const GenericIntSignal& intsig ) { *this = intsig; }
@@ -215,6 +237,7 @@ class GenericSignal : public BasicSignal< float >
     const GenericSignal& operator=( const GenericIntSignal& );
     void  SetChannel(const short *source, size_t channel);
 };
+#endif
 
 #endif // UGenericSignalH
 

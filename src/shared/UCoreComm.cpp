@@ -1,16 +1,11 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
-
-#include <stdio.h>
-
-#include "UParameter.h"
-#include "UState.h"
-#include "UGenericSignal.h"
+//---------------------------------------------------------------------------
 #include "UCoreComm.h"
+
 #include "UCoreMessage.h"
-#include "UBCItime.h"
+#include "UBCIError.h"
+#include <stdio.h>
 
 #pragma package(smart_init)
 //---------------------------------------------------------------------------
@@ -44,7 +39,7 @@ __fastcall CORECOMM::~CORECOMM()
      CoreSocket->Close();
      delete CoreSocket;
      }
-  } catch(...) {CoreSocket=NULL;}
+  } catch( TooGeneralCatch& ) {CoreSocket=NULL;}
 
  CoreSocket=NULL;
  // this->TThread::~TThread();
@@ -85,12 +80,12 @@ int ret;
  CoreSocket->ClientType=ctBlocking;
  try{
   CoreSocket->Open();
-  } catch(...)
+  } catch( TooGeneralCatch& )
     {
     CoreSocket->Host=destIP;
     try{
      CoreSocket->Open();
-     } catch(...)                               // now if using it as a host address (i.e., www.cnn.com), then give up
+     } catch( TooGeneralCatch& )     // now if using it as a host address (i.e., www.cnn.com), then give up
       {
       if (CoreSocket) delete CoreSocket;
       CoreSocket=NULL;
@@ -135,7 +130,7 @@ COREMESSAGE             *coremessage;
        if (coremessage) delete coremessage;
        }
     }
-   catch(...)
+   catch( TooGeneralCatch& )
     {
     Terminate();
     }
@@ -235,7 +230,6 @@ int CORECOMM::PublishParameters(const PARAMLIST *paramlist)
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
 char            line[512];
-int             i;
 const PARAM     *cur_param;
 
  if (!CoreSocket) return(0);
@@ -250,7 +244,7 @@ const PARAM     *cur_param;
  pStream=new TWinSocketStream(CoreSocket->Socket, 5000);
  if (!pStream) return(0);
 
- for (i=0; i<paramlist->GetNumParameters(); i++)
+ for (size_t i=0; i<paramlist->GetNumParameters(); i++)
   {
   cur_param=paramlist->GetParamPtr(i);                          // get the i'th parameter
   strcpy(line, cur_param->GetParamLine());                      // copy its ASCII representation to variable line
@@ -404,7 +398,7 @@ int     channelnum;
     }
  else           // if we defined a channellist, only send the channels we are interested in
     {
-    for (int t=0; t<channellistparam->GetNumValues(); t++)
+    for (size_t t=0; t<channellistparam->GetNumValues(); t++)
      {
      channelnum=atoi(channellistparam->GetValue(t))-1;
      for (size_t s=0; s<my_signal->MaxElements(); s++)

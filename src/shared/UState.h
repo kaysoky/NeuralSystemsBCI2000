@@ -2,8 +2,6 @@
 #ifndef UStateH
 #define UStateH
 
-#include <vcl.h>
-
 #define MAX_STATEVECTORLENGTH   30
 
 #define ERRSTATE_NOERR          0
@@ -15,12 +13,13 @@
 #define LENGTH_NAME             30
 #define LENGTH_STATELINE        512
 
+#include <vcl.h>
 
 class STATE
 {
   friend class STATEVECTOR;
   friend class STATELIST; // calls GetValue() which is to be omitted
-  
+
 private: 	// User declarations
         mutable char    buffer[LENGTH_STATELINE];
         int     length;
@@ -54,7 +53,7 @@ public:		// User declarations
 class STATELIST
 {
 private: 	// User declarations
-        TList   *state_list;
+        class TList *state_list;
 public:		// User declarations
         STATELIST::STATELIST();
         STATELIST::~STATELIST();
@@ -70,25 +69,47 @@ public:		// User declarations
 
 class STATEVECTOR
 {
-private: 	// User declarations
-        BYTE    state_vector[MAX_STATEVECTORLENGTH];    // the actual state vector
-        int     state_vector_length;                    // the length of the actual state vector
-        STATELIST   *state_list;            // a pointer to the list responsible for this vector
-public:		// User declarations
-        STATEVECTOR::STATEVECTOR(STATELIST *);          // constructor takes the pointer to the state list
-        STATEVECTOR::STATEVECTOR(STATELIST *list, bool usepositions);
-        STATEVECTOR::~STATEVECTOR();
-        void    Initialize_StateVector();
-        void    Initialize_StateVector(bool use_assigned_positions);
-        unsigned short GetStateValue(const char *statename) const;
-        unsigned short GetStateValue(int byteloc, int bitloc, int length) const;
-        STATELIST *GetStateListPtr();
-        int     SetStateValue(const char *statename, unsigned short value);
-        int     SetStateValue(int byteloc, int bitloc, int length, unsigned short value);
-        int     GetStateVectorLength() const;
-        BYTE    *GetStateVectorPtr();
-        const BYTE* GetStateVectorPtr() const;
-        void    CommitStateChanges();
+ private: // User declarations
+  BYTE    state_vector[MAX_STATEVECTORLENGTH];    // the actual state vector
+  int     state_vector_length;                    // the length of the actual state vector
+  STATELIST   *state_list;            // a pointer to the list responsible for this vector
+ public:  // User declarations
+  STATEVECTOR(STATELIST *);          // constructor takes the pointer to the state list
+  STATEVECTOR(STATELIST *list, bool usepositions);
+  ~STATEVECTOR();
+  void    Initialize_StateVector();
+  void    Initialize_StateVector(bool use_assigned_positions);
+  unsigned short GetStateValue(const char *statename) const;
+  unsigned short GetStateValue(int byteloc, int bitloc, int length) const;
+  STATELIST *GetStateListPtr();
+  int     SetStateValue(const char *statename, unsigned short value);
+  int     SetStateValue(int byteloc, int bitloc, int length, unsigned short value);
+  int     GetStateVectorLength() const;
+  BYTE    *GetStateVectorPtr();
+  const BYTE* GetStateVectorPtr() const;
+  void    CommitStateChanges();
+
+ // A class that allows for convenient automatic type conversions when
+ // accessing parameter values.
+ public:
+  class type_adapter
+  {
+   private:
+    type_adapter& operator=( const type_adapter& );
+   public:
+    type_adapter()
+    : p( NULL ), bit( 0 ), byte( 0 ), length( 0 ), defVal( 0 ) {}
+    type_adapter( STATEVECTOR* inStatevector, int inBit, int inByte, int inLength, short inDefval = 0 )
+    : p( inStatevector ), bit( inBit ), byte( inByte ), length( inLength ), defVal( inDefval ) {}
+    const type_adapter& operator=( int i )
+    { p && p->SetStateValue( bit, byte, length, i ); return *this; }
+    operator int() const
+    { return p ? p->GetStateValue( bit, byte, length ) : defVal; }
+   private:
+    STATEVECTOR* p;
+    int bit, byte, length;
+    short defVal;
+  };
 };
 
 //---------------------------------------------------------------------------

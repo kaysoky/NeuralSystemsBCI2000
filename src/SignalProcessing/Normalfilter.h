@@ -16,9 +16,10 @@ private:
        bool visualize;
        class GenericVisualization *vis;
 public:
-          NormalFilter(PARAMLIST *plist, STATELIST *slist);
+          NormalFilter();
   virtual ~NormalFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
           int  UpdateParameters( float, float, float, float );
 };

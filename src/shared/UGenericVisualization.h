@@ -1,12 +1,26 @@
-//---------------------------------------------------------------------------
-
+////////////////////////////////////////////////////////////////////////////////
+//
+// File:    UGenericVisualization.h
+//
+// Authors: Gerwin Schalk, Juergen Mellinger
+//
+// Changes: Apr 15, 2003, juergen.mellinger@uni-tuebingen.de:
+//          Reworked graph display double buffering scheme.
+//          Untangled window painting from content changes.
+//          Introduced clipping to reduce the amount of time spent blitting
+//          graphics data.
+//
+//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
+//          from the "Conditional defines" in the project options.
+//
+////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericVisualizationH
 #define UGenericVisualizationH
 
-#include <ScktComp.hpp>
-#include <Chart.hpp>
+//#include <ScktComp.hpp>
+//#include <Chart.hpp>
 
-#include <classes.hpp>
+//#include <classes.hpp>
 
 #define MAX_XAXISLABELS         1024
 #define MAX_YAXISLABELS         256
@@ -16,11 +30,11 @@
 #include "UCoreComm.h"
 #include "UGenericSignal.h"
 #include "UParameter.h"
+#include "UGenericFilter.h"
 
 class GenericVisualization
 {
 protected:
-        CORECOMM *corecomm;
         int     SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length);
         GenericIntSignal *intsignal;
         GenericSignal    *signal;
@@ -30,10 +44,9 @@ protected:
         BYTE   vis_type;
         int    stored_decimation, new_samples;
         size_t stored_maxelements;
-public: 
-	GenericVisualization::GenericVisualization();
-	GenericVisualization::GenericVisualization(PARAMLIST *paramlist, CORECOMM *);
-	GenericVisualization::~GenericVisualization();
+public:
+    GenericVisualization::GenericVisualization();
+    GenericVisualization::~GenericVisualization();
 
         // sends the whole signal to the operator
         bool    Send2Operator(const GenericIntSignal *signal);
@@ -60,7 +73,7 @@ public:
 
 class VISUAL
 {
-private: 	// User declarations
+private:    // User declarations
         double  minvalue;
         double  maxvalue;
         int     displaysamples, displaychannels;        // current number of samples and channels in the graph
@@ -74,15 +87,42 @@ private: 	// User declarations
         void __fastcall FormResize(TObject *Sender);    // called when the user resizes the window
         void __fastcall FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift);       // called, when user presses a key
         void __fastcall FormPaint(TObject *Sender);     // when the graph needs to be repainted
+#ifdef NEW_DOUBLEBUF_SCHEME
+        // This is a do-nothing replacement class.
+        // Of course, this dirty trick will go away ASAP ...
+        struct TCriticalSection
+        {
+          static void Acquire() {}
+          static void Release() {}
+        } *critsec;
+#else // NEW_DOUBLEBUF_SCHEME
         TCriticalSection        *critsec;               // critical section for screen update
+#endif // NEW_DOUBLEBUF_SCHEME
         bool    toggle;
-public:		// User declarations
+public:     // User declarations
         VISUAL::VISUAL(BYTE my_sourceID, BYTE my_vis_type);
         VISUAL::~VISUAL();
         Graphics::TBitmap *bitmap;
         BYTE   sourceID;
         BYTE   vis_type;
         TForm  *form;
+#ifdef NEW_DOUBLEBUF_SCHEME
+private:
+        HRGN invalidRgn, redrawRgn;
+        void PaintGraph(int startch, int endch, int startsample, int endsample);
+        class TVisForm : public TForm
+        {
+         public:
+          TVisForm() : TForm( ( TComponent* )NULL, 1 ) {}
+          // To avoid flicker and save memory bandwidth, use a WM_ERASEBKGND
+          // handler that does not do anything.
+          void __fastcall WMEraseBkgnd( TWMEraseBkgnd& ) {}
+          BEGIN_MESSAGE_MAP
+            VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
+          END_MESSAGE_MAP( TForm )
+        };
+public:
+#endif // NEW_DOUBLEBUF_SCHEME
         // TChart *chart;
         TMemo  *memo;
         int    startsample;
@@ -94,10 +134,10 @@ public:		// User declarations
 
 class VISCFGLIST
 {
-private: 	// User declarations
+private:    // User declarations
         TCriticalSection        *critsec;               // critical section for screen update
         TList   *vis_list;
-public:		// User declarations
+public:     // User declarations
         VISCFGLIST::VISCFGLIST();
         VISCFGLIST::~VISCFGLIST();
         void    Add(VISUAL *new_visual);

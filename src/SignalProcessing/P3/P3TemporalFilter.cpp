@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -13,6 +13,10 @@
 
 #pragma package(smart_init)
 
+using namespace std;
+
+RegisterFilter( P3TemporalFilter, 2.C );
+
 // **************************************************************************
 // Function:   P3TemporalFilter
 // Purpose:    This is the constructor for the P3TemporalFilter class
@@ -22,41 +26,40 @@
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-P3TemporalFilter::P3TemporalFilter(PARAMLIST *plist, STATELIST *slist)
+P3TemporalFilter::P3TemporalFilter()
+: vis( NULL ),
+  vissignal( NULL )
 {
-char    line[512];
-int     cur_buf;
+ BEGIN_PARAMETER_DEFINITIONS
+  "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 "
+    "// visualize Temporal filtered signals (0=no 1=yes)",
+  "P3SignalProcessing int NumSamplesInERP= 144 144 0 1000 "
+    "// Number of samples stored for each response",
+  "P3SignalProcessing int NumERPsToAverage= 15 15 0 1000 "
+    "// Number of ERPs to average before doing DF",
+  "P3SignalProcessing int TargetERPChannel= 1 1 0 128 "
+    "// Target Channel for ERP Display in order of SigProc transfer",
+  "Visualize float ERPMinDispVal= 0 0 -16383 16384 "
+    "// Minimum value for ERP display",
+  "Visualize float ERPMaxDispVal= 300 300 -16383 16384 "
+    "// Maximum value for ERP display",
+ END_PARAMETER_DEFINITIONS
 
- strcpy(line, "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1  // visualize Temporal filtered signals (0=no 1=yes)");
- plist->AddParameter2List( line, strlen(line) );
- strcpy(line, "P3SignalProcessing int NumSamplesInERP= 144 144 0 1000  // Number of samples stored for each response");
- plist->AddParameter2List( line, strlen(line) );
- strcpy(line, "P3SignalProcessing int NumERPsToAverage= 15 15 0 1000  // Number of ERPs to average before doing DF");
- plist->AddParameter2List( line, strlen(line) );
- strcpy(line, "P3SignalProcessing int TargetERPChannel= 1 1 0 128  // Target Channel for ERP Display in order of SigProc transfer");
- plist->AddParameter2List( line, strlen(line) );
-
- strcpy(line, "Visualize float ERPMinDispVal= 0 0 -16383 16384  // Minimum value for ERP display");
- plist->AddParameter2List( line, strlen(line) );
- strcpy(line, "Visualize float ERPMaxDispVal= 300 300 -16383 16384  // Maximum value for ERP display");
- plist->AddParameter2List( line, strlen(line) );
-
+ BEGIN_STATE_DEFINITIONS
  // the code of the stimulus (e.g., which row/column in the P3 spelling paradigm)
- slist->AddState2List("StimulusCodeRes 5 0 0 0 \n");
+   "StimulusCodeRes 5 0 0 0",
  // the type of the stimulus (e.g., standard/oddball in the oddball or P3 spelling paradigm)
- slist->AddState2List("StimulusTypeRes 3 0 0 0 \n");
+   "StimulusTypeRes 3 0 0 0",
+ END_STATE_DEFINITIONS
 
  // initialize ERP buffer variables
- for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
+ for (size_t cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
   {
   ERPBufCode[cur_buf]=ERPBUFCODE_EMPTY;
   ERPBufType[cur_buf]=0;
   ERPBufSampleCount[cur_buf]=0;
   ERPBufSamples[cur_buf]=NULL;
   }
-
- vis=NULL;
- vissignal=NULL;
 }
 
 
@@ -69,13 +72,41 @@ int     cur_buf;
 P3TemporalFilter::~P3TemporalFilter()
 {
  DeleteAllERPBuffers();
-
- if (vis) delete vis;
- vis=NULL;
- if (vissignal) delete vissignal;
- vissignal=NULL;
+ delete vis;
+ delete vissignal;
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void P3TemporalFilter::Preflight( const SignalProperties& inSignalProperties,
+                                        SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+
+  // Resource availability checks.
+  /* The P3 temporal filter seems not to depend on external resources. */
+
+  // Required states.
+  State( "Running" );
+  State( "StimulusCode" );
+  State( "StimulusType" );
+
+  // Input signal checks.
+  PreflightCondition( inSignalProperties.Channels() >= Parameter( "SpatialFilteredChannels" ) );
+  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
+    PreflightCondition( inSignalProperties.GetNumElements( channel ) >= Parameter( "SampleBlockSize" ) );
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties(
+                           Parameter( "SpatialFilteredChannels" ),
+                           Parameter( "NumSamplesInERP" ) );
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -86,38 +117,28 @@ P3TemporalFilter::~P3TemporalFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-void P3TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void P3TemporalFilter::Initialize()
 {
 int     i,j;
-int     visualizeyn;
 char    cur_buf[256];
 
- statevector=new_statevector;
- corecomm=new_corecomm;
-
- try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-  visualizeyn= atoi(paramlist->GetParamPtr("VisualizeP3TemporalFiltering")->GetValue() );
-  targetERPchannel= atoi(paramlist->GetParamPtr("TargetERPChannel")->GetValue() );
-  numsamplesinERP= atoi(paramlist->GetParamPtr("NumSamplesInERP")->GetValue() );
-  numERPsnecessary= atoi(paramlist->GetParamPtr("NumERPsToAverage")->GetValue() );
-  numchannels= atoi(paramlist->GetParamPtr("SpatialFilteredChannels")->GetValue() );
-  mindispval= atof(paramlist->GetParamPtr("ERPMinDispVal")->GetValue() );
-  maxdispval= atof(paramlist->GetParamPtr("ERPMaxDispVal")->GetValue() );
-  }
- catch(...)
-  { return; }
+  visualize= ( int )Parameter("VisualizeP3TemporalFiltering");
+  targetERPchannel= Parameter("TargetERPChannel");
+  numsamplesinERP= Parameter("NumSamplesInERP");
+  numERPsnecessary= Parameter("NumERPsToAverage");
+  numchannels= Parameter("SpatialFilteredChannels");
+  mindispval= Parameter("ERPMinDispVal");
+  maxdispval= Parameter("ERPMaxDispVal");
 
  // we can't average 0 ERPs or have 0 samples in an ERP
  if ((numERPsnecessary == 0) || (numsamplesinERP == 0))
     return;
 
 
- if ( visualizeyn == 1 )
+ if ( visualize )
     {
-    visualize=true;
-    if (vis) delete vis;
-    vis= new GenericVisualization( paramlist, corecomm );
+    delete vis;
+    vis= new GenericVisualization;
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_WINDOWTITLE, "ERP");
     sprintf(cur_buf, "%d", numsamplesinERP);
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
@@ -126,8 +147,6 @@ char    cur_buf[256];
     sprintf(cur_buf, "%f", maxdispval);
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, cur_buf);
     }
- else
-    visualize=false;
 
  OldStimulusCode=0;
  OldRunning=0;
@@ -136,7 +155,7 @@ char    cur_buf[256];
 
  // create a signal that will display the ERPs (on a particular target channel)
  // for each of the twelve StimulusCodes
- if (vissignal) delete vissignal;
+ delete vissignal;
  vissignal=new GenericSignal(12, numsamplesinERP);
  for (i=0; i<12; i++)
   for (j=0; j<numsamplesinERP; j++)
@@ -147,8 +166,6 @@ char    cur_buf[256];
     vis->SetSourceID(SOURCEID_TEMPORALFILT);
     vis->Send2Operator(vissignal);
     }
-
- return;
 }
 
 
@@ -198,9 +215,9 @@ void P3TemporalFilter::DeleteERPBuffer(int cur_buf)
 // **************************************************************************
 void P3TemporalFilter::GetStates()
 {
- CurrentRunning=statevector->GetStateValue("Running");
- CurrentStimulusCode=statevector->GetStateValue("StimulusCode");
- CurrentStimulusType=statevector->GetStateValue("StimulusType");
+ CurrentRunning=State("Running");
+ CurrentStimulusCode=State("StimulusCode");
+ CurrentStimulusType=State("StimulusType");
 }
 
 
@@ -391,10 +408,7 @@ bool    cur_buf;
     cur_buf=ApplyForNewERPBuffer(CurrentStimulusCode, CurrentStimulusType, numchannels, numsamplesinERP);
     if (!cur_buf)
        {
-#ifdef OLDERROR
-       error.SetErrorMsg("P3 Temporal Filter: Inconsistency or ran out of buffers");
-       error.SetErrorCode(415);
-#endif
+       bcierr << 415 << " P3 Temporal Filter: Inconsistency or ran out of buffers" << endl;
        return;
        }
     }
@@ -407,12 +421,11 @@ bool    cur_buf;
  // in this case, also set the right states; before, clear the states
  statevector->SetStateValue("StimulusCodeRes", 0);
  statevector->SetStateValue("StimulusTypeRes", 0);
- ret=ProcessERPBuffers(output);
+ if( ProcessERPBuffers(output) != noError )
+   bcierr << "ERPBuffer processing error" << endl;
 
  OldStimulusCode=CurrentStimulusCode;
  OldRunning=CurrentRunning;
-
- return;
 }
 
 

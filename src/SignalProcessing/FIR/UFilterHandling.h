@@ -9,9 +9,9 @@
 #include "CalibrationFilter.h"
 #include "SpatialFilter.h"
 #include "FIRFilter.h"
-#include "ClassFilter.h"
+#include "FIRClassFilter.h"
 #include "NormalFilter.h"
-#include "StatFilter.h"
+#include "FIRStatFilter.h"
 
 class FILTERS
 {
@@ -28,10 +28,10 @@ public:
        bool     was_error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
-       TemporalFilter     *tempfilter;
-       ClassFilter        *classfilter;
+       FIRFilter          *tempfilter;
+       FIRClassFilter     *classfilter;
        NormalFilter       *normalfilter;
-       StatFilter         *statfilter;
+       FIRStatFilter      *statfilter;
        GenericSignal  *SignalA, *SignalB, *SignalC, *SignalD, *SignalE, *SignalF;
 };
 #endif

@@ -24,12 +24,12 @@
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
  ******************************************************************************/
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "UParameter.h"
 
 #include <fstream>
-#include <sstream>
 #include <set>
 
 using namespace std;

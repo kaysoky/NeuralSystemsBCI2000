@@ -2,7 +2,7 @@
 #ifndef UCoreMessageH
 #define UCoreMessageH
 
-#include <ScktComp.hpp>
+//#include <ScktComp.hpp>
 
 #define COREMESSAGE_MAXBUFFER   65536
 #define COREMESSAGE_HEADERSIZE  3

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "StatFilter.h"
@@ -25,15 +25,15 @@ FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 char line[512];
 
  was_error=false;
- calfilter=new CalibrationFilter(plist, slist);
- spatfilter= new SpatialFilter(plist, slist);
+ calfilter=new CalibrationFilter;
+ spatfilter= new SpatialFilter;
 // tempfilter= new TemporalFilter(plist, slist);
- SWFilter = new TSW(plist, slist);
- SetBaseline = new TSetBaseline(plist, slist);
- FBArteCorrection = new TFBArteCorrection(plist, slist);
+ SWFilter = new TSW;
+ SetBaseline = new TSetBaseline;
+ FBArteCorrection = new TFBArteCorrection;
 
 // classfilter= new ClassFilter(plist, slist );
- normalfilter= new NormalFilter( plist, slist );
+ normalfilter= new NormalFilter;
 // statfilter= new StatFilter( plist, slist );
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128  // the number of transmitted control signals");
@@ -120,22 +120,22 @@ int     maxchannels, maxelements;
 
 
    // now, here place the code to initalize your filter
- calfilter->Initialize(plist, svector, corecomm);
- spatfilter->Initialize(plist, svector, corecomm);
+ calfilter->Initialize();
+ spatfilter->Initialize();
 // res= tempfilter->Initialize(plist, svector, corecomm);
 // if(res == 0 ) returnval= 0;
- SWFilter->Initialize(plist, svector, corecomm);
+ SWFilter->Initialize();
 
  SignalD=new GenericSignal(MD, 1);
 
- SetBaseline->Initialize(plist, svector, /*SignalD,*/ corecomm);
- FBArteCorrection->Initialize(plist, svector, corecomm);
+ SetBaseline->Initialize();
+ FBArteCorrection->Initialize();
 
 // res= classfilter->Initialize(plist, svector, corecomm);
 // if( res == 0 ) returnval= 0;
 // res= tempfilter->Initialize( plist, svector, corecomm);
 // if( res == 0 ) returnval= 0;
- normalfilter->Initialize( plist, svector, corecomm);
+ normalfilter->Initialize();
 // res= statfilter->Initialize( plist, svector, corecomm);
 
   //ND= tempfilter->nBins;
@@ -152,7 +152,7 @@ int     maxchannels, maxelements;
   SignalC->Channels= MC;
   SignalC->MaxElements= NC;    //  not necessary    */
   }
- catch(...)
+ catch( TooGeneralCatch& )
   { returnval=0; }
 
  return(returnval);

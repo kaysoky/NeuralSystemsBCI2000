@@ -16,13 +16,9 @@
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "UCoreComm.h"
 #include "UCoreMessage.h"
 
 //---------------------------------------------------------------------------
@@ -154,7 +150,7 @@ int     bytessent, count=0;
    if (!(Socket->Connected)) return(0);
    bytessent=Socket->SendBuf(buf, length-count);
    }
-  catch(...)
+  catch( TooGeneralCatch& )
    {
    return(0);
    }
@@ -196,7 +192,7 @@ int     bytesread, count=0;
    if (!(Socket->Connected)) return(0);
    bytesread=Socket->ReceiveBuf(buf, length-count);
    }
-  catch(...)
+  catch( TooGeneralCatch& )
    {
    return(0);
    }
@@ -237,7 +233,7 @@ int     bytesread, count=0;
    {
    bytesread=stream->Read(buf, length-count);
    }
-  catch(...)
+  catch( ESocketError& )
    {
    return(0);
    }
@@ -375,7 +371,7 @@ int bytes;
   bytes=stream->Write(GetBufPtr(), length);
   if (bytes == 0) return(ERRCORE_WRITE);
   }
- catch(...)
+ catch( ESocketError& )
   {
   return(ERRCORE_WRITE);
   }
@@ -413,7 +409,7 @@ int bytes;
   bytes=stream->Write(GetBufPtr(), length);
   if (bytes == 0) return(ERRCORE_WRITE);
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   delete stream;
   return(ERRCORE_WRITE);

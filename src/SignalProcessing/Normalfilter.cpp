@@ -1,16 +1,22 @@
 #undef USE_LOGFILE
 //---------------------------------------------------------------------------
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 #include <math.h>
 #ifdef USE_LOGFILE
 # include <stdio.h>
 #endif // USE_LOGFILE
+
+#include "NormalFilter.h"
 #include "UParameter.h"
 #include "UGenericVisualization.h"
-#include "NormalFilter.h"
+
 #ifdef USE_LOGFILE
 FILE *Normalfile;
 #endif // USE_LOGFILE
+
+RegisterFilter( NormalFilter, 2.E );
 
 // **************************************************************************
 // Function:   NormalFilter
@@ -22,11 +28,10 @@ FILE *Normalfile;
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-NormalFilter::NormalFilter(PARAMLIST *plist, STATELIST *slist)
+NormalFilter::NormalFilter()
 : vis( NULL )
 {
- const char* params[] =
- {
+ BEGIN_PARAMETER_DEFINITIONS
    "Filtering float UD_A=  5.0 "
      "5.0  -100.0  100.0 // Normal Filter Up / Down Intercept",
    "Filtering float UD_B=  5.0 "
@@ -37,10 +42,7 @@ NormalFilter::NormalFilter(PARAMLIST *plist, STATELIST *slist)
      "5.0  0.0  100.0 // Normal Filter Left/Right Slope",
    "Visualize int VisualizeNormalFiltering= 1 "
      "0 0 1 // visualize Normal filtered signals (0=no 1=yes)",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 }
 
 
@@ -60,6 +62,29 @@ NormalFilter::~NormalFilter()
 #endif // USE_LOGFILE
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
+                                    SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+
+  // Resource availability checks.
+  /* The normalizer filter seems not to depend on external resources. */
+
+  // Input signal checks.
+  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
+    PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
+
+  // Requested output signal properties.
+  outSignalProperties = inSignalProperties;
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -69,34 +94,26 @@ NormalFilter::~NormalFilter()
 //             new_corecomm - pointer to the communication object to the operator
 // Returns:    N/A
 // **************************************************************************
-void NormalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void NormalFilter::Initialize()
 {
-  statevector=new_statevector;
-  corecomm=new_corecomm;
-
   int visualizeyn = 0;
 
 #ifdef USE_LOGFILE
   fprintf(Normalfile,"Initialize and try \n");
 #endif // USE_LOGFILE
 
-  try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-    ud_a= atof(paramlist->GetParamPtr("UD_A")->GetValue());
-    ud_b= atof(paramlist->GetParamPtr("UD_B")->GetValue());
-    lr_a= atof(paramlist->GetParamPtr("LR_A")->GetValue());
-    lr_b= atof(paramlist->GetParamPtr("LR_B")->GetValue());
+  ud_a= Parameter("UD_A");
+  ud_b= Parameter("UD_B");
+  lr_a= Parameter("LR_A");
+  lr_b= Parameter("LR_B");
 
-    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeNormalFiltering")->GetValue() );
-  }
-  catch(...)
-  { return; }
+  visualizeyn= Parameter("VisualizeNormalFiltering");
 
   if( visualizeyn == 1 )
   {
     visualize=true;
     delete vis;
-    vis= new GenericVisualization( paramlist, corecomm);
+    vis= new GenericVisualization;
     vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "Normalizer");
     vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-40");
     vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "40");

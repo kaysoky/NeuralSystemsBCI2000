@@ -5,6 +5,8 @@
 
 class ClassFilter : public GenericFilter
 {
+ friend class StatFilter;
+ 
  private:
        enum
        {
@@ -33,16 +35,18 @@ class ClassFilter : public GenericFilter
 
        bool visualize;
        class GenericVisualization *vis;
- public:
+
        int n_hmat;                      // number of elements in horizontal function
        int class_mode;
        int n_vmat;                      // number of elements in vertical function
        float feature[2][MAX_M];         //  values of the elements of the linear equations
        float wtmat[2][MAX_M];           //  weights of the elements of the linear equations
 
-          ClassFilter(PARAMLIST *plist, STATELIST *slist);
+ public:
+          ClassFilter();
   virtual ~ClassFilter();
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif

@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <math.h>
@@ -12,6 +12,7 @@
 
 #pragma package(smart_init)
 
+RegisterFilter( PeakDetector, 2.C );
 
 // **************************************************************************
 // Function:   PeakDetector
@@ -22,25 +23,23 @@
 //             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
-PeakDetector::PeakDetector(PARAMLIST *plist, STATELIST *slist)
+PeakDetector::PeakDetector()
+: vis( NULL )
 {
-char line[512];
-
- vis= NULL;
-
- strcpy(line,"PeakDetector float PosPeakThreshold= 0 0 0 2  // Threshold for positive peaks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"PeakDetector float NegPeakThreshold= 0 0 0 2  // Threshold for negative peaks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"PeakDetector int HistoryLength= 10 0 0 10      // Length of history of peak counts");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"PeakDetector int TargetChannelPos= 0 0 0 10      // Target channel for peak detection of positive peaks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"PeakDetector int TargetChannelNeg= 0 0 0 10      // Target channel for peak detection of negative peaks");
- plist->AddParameter2List(line,strlen(line) );
-
- strcpy(line, "Visualize int VisualizePeakDetector= 1 0 0 1  // visualize peak detection results (0=no 1=yes)");
- plist->AddParameter2List( line, strlen(line) );
+ BEGIN_PARAMETER_DEFINITIONS
+  "PeakDetector float PosPeakThreshold= 0 0 0 2 "
+    "// Threshold for positive peaks",
+  "PeakDetector float NegPeakThreshold= 0 0 0 2 "
+    "// Threshold for negative peaks",
+  "PeakDetector int HistoryLength= 10 0 0 10 "
+    "// Length of history of peak counts",
+  "PeakDetector int TargetChannelPos= 0 0 0 10 "
+    "// Target channel for peak detection of positive peaks",
+  "PeakDetector int TargetChannelNeg= 0 0 0 10 "
+    "// Target channel for peak detection of negative peaks",
+  "Visualize int VisualizePeakDetector= 1 0 0 1 "
+    "// visualize peak detection results (0=no 1=yes)",
+ END_PARAMETER_DEFINITIONS
 }
 
 
@@ -52,10 +51,33 @@ char line[512];
 // **************************************************************************
 PeakDetector::~PeakDetector()
 {
-  if( vis ) delete vis;
-  vis= NULL;
+  delete vis;
 }
 
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistency with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void PeakDetector::Preflight( const SignalProperties& inSignalProperties,
+                                    SignalProperties& outSignalProperties ) const
+{
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+
+  // Resource availability checks.
+  /* The P3 temporal filter seems not to depend on external resources. */
+
+  // Input signal checks.
+  PreflightCondition( inSignalProperties.Channels() >= Parameter( "SpatialFilteredChannels" ) );
+  for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
+    PreflightCondition( inSignalProperties.GetNumElements( channel ) >= Parameter( "SampleBlockSize" ) );
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties( 2, Parameter( "HistoryLength" ) );
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -66,35 +88,25 @@ PeakDetector::~PeakDetector()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-void PeakDetector::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void PeakDetector::Initialize()
 {
 int     i,j;
-int     visualizeyn;
 char    cur_buf[256];
 int     nBuf;
 
-        statevector=new_statevector;
-        corecomm=new_corecomm;
+  samples=     Parameter( "SampleBlockSize" );
+  visualize=   ( int )Parameter("VisualizePeakDetector");
+  hz=          Parameter("SamplingRate");
+  posthresh=   Parameter("PosPeakThreshold");
+  negthresh=   Parameter("NegPeakThreshold");
+  nBins=       Parameter("HistoryLength");
+  targetchpos= Parameter("TargetChannelPos");
+  targetchneg= Parameter("TargetChannelNeg");
 
- try // in case one of the parameters is not defined (should always be, since we requested them)
-  {
-        samples=     atoi(paramlist->GetParamPtr( "SampleBlockSize" )->GetValue());
-        visualizeyn= atoi(paramlist->GetParamPtr("VisualizePeakDetector")->GetValue() );
-        hz=          atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
-        posthresh=   atof(paramlist->GetParamPtr("PosPeakThreshold")->GetValue());
-        negthresh=   atof(paramlist->GetParamPtr("NegPeakThreshold")->GetValue());
-        nBins=       atoi(paramlist->GetParamPtr("HistoryLength")->GetValue());;
-        targetchpos=    atoi(paramlist->GetParamPtr("TargetChannelPos")->GetValue());;
-        targetchneg=    atoi(paramlist->GetParamPtr("TargetChannelNeg")->GetValue());;
-  }
- catch(...)
-  { return; }
-
- if ( visualizeyn == 1 )
+ if ( visualize )
     {
-    visualize=true;
-    if (vis) delete vis;
-    vis= new GenericVisualization( paramlist, corecomm);
+    delete vis;
+    vis= new GenericVisualization;
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_WINDOWTITLE, "Peak Detector");
     sprintf(cur_buf, "%d", nBins);
     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
@@ -106,12 +118,6 @@ int     nBuf;
      vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_XAXISLABEL, cur_buf);
      }
     }
- else
- {
-        visualize=false;
- }
-
- return;
 }
 
 
@@ -125,7 +131,7 @@ int     nBuf;
 // **************************************************************************
 void PeakDetector::Process(const GenericSignal *input, GenericSignal *output)
 {
-int   ch, sample;
+size_t   ch, sample;
 int   num_pos_peaks, num_neg_peaks;
 static bool first=true;
 
@@ -168,7 +174,7 @@ static bool first=true;
 // detect number of positive peaks
 int PeakDetector::get_num_pos_peaks(const GenericSignal *input, int channel)
 {
-int     cur_idx, peak_ptr;
+size_t  cur_idx, peak_ptr;
 float   current_val, next_val;
 bool    peak_flag;
 int     num_peaks;
@@ -203,7 +209,7 @@ int     num_peaks;
 // detect number of negative peaks
 int PeakDetector::get_num_neg_peaks(const GenericSignal *input, int channel)
 {
-int     cur_idx, peak_ptr;
+size_t  cur_idx, peak_ptr;
 float   current_val, next_val;
 bool    peak_flag;
 int     num_peaks;
