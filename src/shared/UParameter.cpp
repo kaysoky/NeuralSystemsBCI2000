@@ -213,13 +213,14 @@ PARAMLIST::CloneParameter2List( const PARAM* param )
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
-void
+ostream&
 PARAMLIST::WriteToStream( ostream& os ) const
 {
   for( const_iterator i = begin(); os && i != end(); ++i )
     os << i->second << '\n';
+  return os;
 }
 
 // **************************************************************************
@@ -233,7 +234,7 @@ PARAMLIST::WriteToStream( ostream& os ) const
 // Parameters: Input stream to read from.
 // Returns:    N/A
 // **************************************************************************
-void
+istream&
 PARAMLIST::ReadFromStream( istream& is )
 {
   clear();
@@ -241,6 +242,39 @@ PARAMLIST::ReadFromStream( istream& is )
   is >> ws;
   while( !is.eof() && is >> param >> ws )
     ( *this )[ param.name ] = param;
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteBinary
+// Purpose:    Member function for binary stream output of the entire
+//             parameter list.
+//             For partial output, use another instance of type PARAMLIST
+//             to hold the desired subset as in PARAMLIST::SaveParameterList().
+// Parameters: Output stream to write into.
+// Returns:    Output stream written into.
+// **************************************************************************
+ostream&
+PARAMLIST::WriteBinary( ostream& os ) const
+{
+  for( const_iterator i = begin(); i != end(); ++i )
+    i->second.WriteBinary( os );
+  return os;
+}
+
+// **************************************************************************
+// Function:   ReadBinary
+// Purpose:    Member function for binary stream input of the entire
+//             parameter list. The list is cleared before reading.
+//             For partial input, use another instance of type PARAMLIST
+//             to hold the desired subset as in PARAMLIST::LoadParameterList().
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+istream&
+PARAMLIST::ReadBinary( istream& is )
+{
+  return ReadFromStream( is );
 }
 
 // **************************************************************************
@@ -688,9 +722,9 @@ PARAM::ParseParameter( const char* paramline, size_t length )
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
-void
+istream&
 PARAM::ReadFromStream( istream& is )
 {
   valid = false;
@@ -728,90 +762,90 @@ PARAM::ReadFromStream( istream& is )
   linestream >> value;
   SetName( value );
   if( !linestream )
-  {
     is.setstate( ios::failbit );
-    return;
-  }
-  linestream.clear();
-  // Parse the parameter's definition.
-  linestream.str( definition );
-#ifndef LABEL_INDEXING
-  size_t dimension1 = 1;
-#endif
-  if( type == "matrix" )
-  {
-#ifdef LABEL_INDEXING
-    linestream >> dim1_index >> dim2_index;
-    if( dim2_index.size() < 1 )
-      dim2_index.resize( 1 );
-#else
-    linestream >> dimension1 >> dimension2;
-    if( dimension2 < 1 )
-      dimension2 = 1;
-#endif
-  }
-  else if( type.find( "list" ) != type.npos )
-  {
-#ifdef LABEL_INDEXING
-    linestream >> dim1_index;
-    dim2_index.resize( 1 );
-#else
-    linestream >> dimension1;
-    dimension2 = 1;
-#endif
-  }
   else
   {
-#ifdef LABEL_INDEXING
-    dim1_index.resize( 1 );
-    dim2_index.resize( 1 );
-#else
-    dimension1 = 1;
-    dimension2 = 1;
+    linestream.clear();
+    // Parse the parameter's definition.
+    linestream.str( definition );
+#ifndef LABEL_INDEXING
+    size_t dimension1 = 1;
 #endif
-  }
-  if( !linestream )
-    is.setstate( ios::failbit );
+    if( type == "matrix" )
+    {
+#ifdef LABEL_INDEXING
+      linestream >> dim1_index >> dim2_index;
+      if( dim2_index.size() < 1 )
+        dim2_index.resize( 1 );
+#else
+      linestream >> dimension1 >> dimension2;
+      if( dimension2 < 1 )
+        dimension2 = 1;
+#endif
+      }
+      else if( type.find( "list" ) != type.npos )
+      {
+#ifdef LABEL_INDEXING
+      linestream >> dim1_index;
+      dim2_index.resize( 1 );
+#else
+      linestream >> dimension1;
+      dimension2 = 1;
+#endif
+    }
+    else
+    {
+#ifdef LABEL_INDEXING
+      dim1_index.resize( 1 );
+      dim2_index.resize( 1 );
+#else
+      dimension1 = 1;
+      dimension2 = 1;
+#endif
+    }
+    if( !linestream )
+      is.setstate( ios::failbit );
 
-  linestream >> value;
-#ifdef LABEL_INDEXING
-  while( linestream && values.size() < dim1_index.size() * dim2_index.size() )
-#else
-  while( linestream && values.size() < dimension1 * dimension2 )
-#endif
-  {
-    values.push_back( value );
     linestream >> value;
-  }
-  // Not all matrix/list entries are required for a parameter definition.
 #ifdef LABEL_INDEXING
-  values.resize( dim1_index.size() * dim2_index.size(), defaultValue );
+    while( linestream && values.size() < dim1_index.size() * dim2_index.size() )
 #else
-  values.resize( dimension1 * dimension2, defaultValue );
+    while( linestream && values.size() < dimension1 * dimension2 )
+#endif
+    {
+      values.push_back( value );
+      linestream >> value;
+    }
+    // Not all matrix/list entries are required for a parameter definition.
+#ifdef LABEL_INDEXING
+    values.resize( dim1_index.size() * dim2_index.size(), defaultValue );
+#else
+    values.resize( dimension1 * dimension2, defaultValue );
 #endif
 
-  // These entries are not required for a parameter definition.
-  encodedString* finalEntries[] =
-  {
-    &defaultvalue,
-    &lowrange,
-    &highrange
-  };
-  size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
-         i = 0;
-  while( linestream && i < numFinalEntries )
-  {
-    *finalEntries[ i ] = value;
-    linestream >> value;
-    ++i;
+    // These entries are not required for a parameter definition.
+    encodedString* finalEntries[] =
+    {
+      &defaultvalue,
+      &lowrange,
+      &highrange
+    };
+    size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
+           i = 0;
+    while( linestream && i < numFinalEntries )
+    {
+      *finalEntries[ i ] = value;
+      linestream >> value;
+      ++i;
+    }
+    while( i < numFinalEntries )
+    {
+      *finalEntries[ i ] = defaultValue;
+      ++i;
+    }
   }
-  while( i < numFinalEntries )
-  {
-    *finalEntries[ i ] = defaultValue;
-    ++i;
-  }
-
   valid = !is.fail();
+  return is;
 }
 
 // **************************************************************************
@@ -821,9 +855,9 @@ PARAM::ReadFromStream( istream& is )
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
-void
+ostream&
 PARAM::WriteToStream( ostream& os ) const
 {
   os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
@@ -845,6 +879,7 @@ PARAM::WriteToStream( ostream& os ) const
      << lowrange << ' '
      << highrange << ' '
      << commentSeparator << ' ' << comment;
+  return os;
 }
 
 // **************************************************************************
@@ -852,7 +887,7 @@ PARAM::WriteToStream( ostream& os ) const
 // Purpose:    Member function for input of a single
 //             parameter from a binary stream, as in a parameter message.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
 istream&
 PARAM::ReadBinary( istream& is )
@@ -871,14 +906,12 @@ PARAM::ReadBinary( istream& is )
 // Purpose:    Member function for output of a single
 //             parameter into a binary stream, as in a parameter message.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
 ostream&
 PARAM::WriteBinary( ostream& os ) const
 {
-  WriteToStream( os );
-  os.put( '\r' ).put( '\n' );
-  return os;
+  return WriteToStream( os ).write( "\r\n", 2 );
 }
 
 // **************************************************************************
@@ -934,9 +967,9 @@ const char escapeChar = '%';
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
-void
+istream&
 PARAM::encodedString::ReadFromStream( istream& is )
 {
   string newContent;
@@ -968,6 +1001,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
     }
     *this = newContent;
   }
+  return is;
 }
 
 // **************************************************************************
@@ -976,10 +1010,11 @@ PARAM::encodedString::ReadFromStream( istream& is )
 //             encoded string value.
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
-// Parameters: Output stream to write into.
-// Returns:    N/A
+// Parameters: Output stream to write into; list of characters that may not
+//             appear in the output.
+// Returns:    Stream written into.
 // **************************************************************************
-void
+ostream&
 PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars ) const
 {
   if( empty() )
@@ -1006,6 +1041,7 @@ PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars )
     }
     os << oss.str();
   }
+  return os;
 }
 
 #ifdef LABEL_INDEXING
@@ -1156,9 +1192,9 @@ PARAM::labelIndexer::IsTrivial() const
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
-void
+istream&
 PARAM::labelIndexer::ReadFromStream( istream& is )
 {
   clear();
@@ -1196,6 +1232,7 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
         resize( size );
     }
   }
+  return is;
 }
 
 // **************************************************************************
@@ -1205,9 +1242,9 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
-void
+ostream&
 PARAM::labelIndexer::WriteToStream( ostream& os ) const
 {
   if( IsTrivial() )
@@ -1222,6 +1259,7 @@ PARAM::labelIndexer::WriteToStream( ostream& os ) const
     }
     os << bracketPairs[ 0 ][ 1 ];
   }
+  return os;
 }
 #endif // LABEL_INDEXING
 

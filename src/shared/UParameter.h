@@ -68,8 +68,8 @@ class PARAM
      encodedString() {}
      encodedString( const std::string& s ) : std::string( s ) {}
      encodedString( const char* s ) : std::string( s ) {}
-     void WriteToStream( std::ostream&, const std::string& = "" ) const;
-     void ReadFromStream( std::istream& );
+     std::ostream& WriteToStream( std::ostream&, const std::string& = "" ) const;
+     std::istream& ReadFromStream( std::istream& );
    };
 
 #ifdef LABEL_INDEXING
@@ -98,8 +98,8 @@ class PARAM
       static const std::string& TrivialLabel( size_t );
 
       // Stream I/O.
-      void WriteToStream( std::ostream& ) const;
-      void ReadFromStream( std::istream& );
+      std::ostream& WriteToStream( std::ostream& ) const;
+      std::istream& ReadFromStream( std::istream& );
 
      private:
       void resize( size_t );
@@ -255,8 +255,8 @@ class PARAM
         void    Unchanged()
                 { changed = false; }
 
-        void    WriteToStream( std::ostream& ) const;
-        void    ReadFromStream( std::istream& );
+        std::ostream& WriteToStream( std::ostream& ) const;
+        std::istream& ReadFromStream( std::istream& );
         std::ostream& WriteBinary( std::ostream& ) const;
         std::istream& ReadBinary( std::istream& );
 
@@ -383,8 +383,12 @@ class PARAMLIST : public param_container
                                    bool importnonexisting = true );
 
   // These contain all formatted I/O functionality.
-        void    WriteToStream( std::ostream& ) const;
-        void    ReadFromStream( std::istream& );
+        std::ostream& WriteToStream( std::ostream& ) const;
+        std::istream& ReadFromStream( std::istream& );
+
+  // These define binary I/O conventions.
+        std::ostream& WriteBinary( std::ostream& ) const;
+        std::istream& ReadBinary( std::istream& );
 
   // These are for compatibility.
         void    Sort() {}
@@ -397,55 +401,44 @@ class PARAMLIST : public param_container
 #ifdef LABEL_INDEXING
 inline std::ostream& operator<<( std::ostream& s, const PARAM::labelIndexer& i )
 {
-  i.WriteToStream( s );
-  return s;
+  return i.WriteToStream( s );
 }
 
 inline std::istream& operator>>( std::istream& s, PARAM::labelIndexer& i )
 {
-  i.ReadFromStream( s );
-  return s;
+  return i.ReadFromStream( s );
 }
 #endif // LABEL_INDEXING
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e )
 {
-  e.WriteToStream( s );
-  return s;
+  return e.WriteToStream( s );
 }
 
 inline std::istream& operator>>( std::istream& s, PARAM::encodedString& e )
 {
-  e.ReadFromStream( s );
-  return s;
+  return e.ReadFromStream( s );
 }
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM& p )
 {
-  p.WriteToStream( s );
-  return s;
+  return p.WriteToStream( s );
 }
 
 inline std::istream& operator>>( std::istream& s, PARAM& p )
 {
-  p.ReadFromStream( s );
-  return s;
+  return p.ReadFromStream( s );
 }
 
 inline std::ostream& operator<<( std::ostream& s, const PARAMLIST& p )
 {
-  p.WriteToStream( s );
-  return s;
+  return p.WriteToStream( s );
 }
 
 inline std::istream& operator>>( std::istream& s, PARAMLIST& p )
 {
-  p.ReadFromStream( s );
-  return s;
+  return p.ReadFromStream( s );
 }
 
 #endif // UParameterH
-
-
-
 

@@ -191,13 +191,14 @@ void STATELIST::AddState2List(const STATE *state)
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
-void
+ostream&
 STATELIST::WriteToStream( ostream& os ) const
 {
   for( int i = 0; i < GetNumStates(); ++i )
     os << *GetStatePtr( i ) << '\n';
+  return os;
 }
 
 // **************************************************************************
@@ -209,9 +210,9 @@ STATELIST::WriteToStream( ostream& os ) const
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
-void
+istream&
 STATELIST::ReadFromStream( istream& is )
 {
   ClearStateList();
@@ -219,6 +220,39 @@ STATELIST::ReadFromStream( istream& is )
   is >> ws;
   while( !is.eof() && is >> state >> ws )
     AddState2List( &state );
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteBinary
+// Purpose:    Member function for binary stream output of the entire
+//             state list.
+//             For partial output, use another instance of type STATELIST
+//             to hold the desired subset.
+// Parameters: Output stream to write into.
+// Returns:    Output stream written into.
+// **************************************************************************
+ostream&
+STATELIST::WriteBinary( ostream& os ) const
+{
+  for( int i = 0; i < GetNumStates(); ++i )
+    GetStatePtr( i )->WriteBinary( os );
+  return os;
+}
+
+// **************************************************************************
+// Function:   ReadBinary
+// Purpose:    Member function for binary stream input of the entire
+//             state list. The list is cleared before reading.
+//             For partial input, use another instance of type STATELIST
+//             to hold the desired subset.
+// Parameters: Input stream to read from.
+// Returns:    Input stream read from.
+// **************************************************************************
+istream&
+STATELIST::ReadBinary( istream& is )
+{
+  return ReadFromStream( is );
 }
 
 // **************************************************************************
@@ -246,7 +280,7 @@ STATE::STATE()
 // Parameters: N/A
 // Returns:    a pointer to the state line
 // **************************************************************************
-std::string
+string
 STATE::GetStateLine() const
 {
  ostringstream oss;
@@ -261,15 +295,16 @@ STATE::GetStateLine() const
 //             All formatted input functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Input stream to read from.
-// Returns:    N/A
+// Returns:    Input stream read from.
 // **************************************************************************
-void
-STATE::ReadFromStream( std::istream& is )
+istream&
+STATE::ReadFromStream( istream& is )
 {
   *this = STATE();
   modified = true;
   is >> name >> length >> value >> byteloc >> bitloc;
   valid = !is.fail();
+  return is;
 }
 
 // **************************************************************************
@@ -279,12 +314,16 @@ STATE::ReadFromStream( std::istream& is )
 //             All formatted output functions are, for consistency's sake,
 //             supposed to use this function.
 // Parameters: Output stream to write into.
-// Returns:    N/A
+// Returns:    Output stream written into.
 // **************************************************************************
-void
-STATE::WriteToStream( std::ostream& os ) const
+ostream&
+STATE::WriteToStream( ostream& os ) const
 {
-  os << name << " " << length << " " << value << " " << byteloc << " " << bitloc;
+  return os << name << " "
+            << length << " "
+            << value << " "
+            << byteloc << " "
+            << bitloc;
 }
 
 // **************************************************************************
@@ -298,7 +337,7 @@ istream&
 STATE::ReadBinary( istream& is )
 {
   string line;
-  if( getline( is, line, '\x0a' ) )
+  if( getline( is, line, '\n' ) )
   {
     istringstream linestream( line );
     ReadFromStream( linestream );
@@ -319,8 +358,7 @@ ostream&
 STATE::WriteBinary( ostream& os ) const
 {
   WriteToStream( os );
-  os << '\x0d' << '\x0a';
-  return os;
+  return os.write( "\r\n", 2 );
 }
 
 // **************************************************************************
@@ -769,24 +807,25 @@ STATEVECTOR::CommitStateChanges()
 // Parameters: Output stream to write into.
 // Returns:    Output stream.
 // **************************************************************************
-void
-STATEVECTOR::WriteToStream( std::ostream& os ) const
+ostream&
+STATEVECTOR::WriteToStream( ostream& os ) const
 {
   int indent = os.width();
   const STATELIST* pStatelist = state_list;
   if( pStatelist == NULL )
     for( int i = 0; i < GetStateVectorLength(); ++i )
-      os << '\n' << std::setw( indent ) << ""
+      os << '\n' << setw( indent ) << ""
          << i << ": "
          << GetStateVectorPtr()[ i ];
   else
     for( int i = 0; i < pStatelist->GetNumStates(); ++i )
     {
       const STATE* pState = pStatelist->GetStatePtr( i );
-      os << '\n' << std::setw( indent ) << ""
+      os << '\n' << setw( indent ) << ""
          << pState->GetName() << ": "
          << GetStateValue( pState->GetByteLocation(), pState->GetBitLocation(), pState->GetLength() );
     }
+  return os;
 }
 
 // **************************************************************************
@@ -820,8 +859,7 @@ STATEVECTOR::ReadBinary( istream& is )
 ostream&
 STATEVECTOR::WriteBinary( ostream& os ) const
 {
-  os.write( ( const char* )GetStateVectorPtr(), GetStateVectorLength() );
-  return os;
+  return os.write( ( const char* )GetStateVectorPtr(), GetStateVectorLength() );
 }
 
 

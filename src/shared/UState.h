@@ -47,8 +47,8 @@ public:     // User declarations
         int     GetByteLocation() const;
         int     GetBitLocation() const;
 
-        void WriteToStream( std::ostream& ) const;
-        void ReadFromStream( std::istream& );
+        std::ostream& WriteToStream( std::ostream& ) const;
+        std::istream& ReadFromStream( std::istream& );
         std::ostream& WriteBinary( std::ostream& ) const;
         std::istream& ReadBinary( std::istream& );
 
@@ -78,8 +78,10 @@ public:     // User declarations
         void    ClearStateList();
         void    DeleteState(const char *name);
         
-        void WriteToStream( std::ostream& ) const;
-        void ReadFromStream( std::istream& );
+        std::ostream& WriteToStream( std::ostream& ) const;
+        std::istream& ReadFromStream( std::istream& );
+        std::ostream& WriteBinary( std::ostream& ) const;
+        std::istream& ReadBinary( std::istream& );
 };
 
 
@@ -105,8 +107,8 @@ class STATEVECTOR
   const BYTE* GetStateVectorPtr() const;
   void    PostStateChange( const char* name, unsigned short value );
   void    CommitStateChanges();
-  void WriteToStream( std::ostream& ) const;
-  void ReadFromStream( std::istream& );
+  std::ostream& WriteToStream( std::ostream& ) const;
+  std::istream& ReadFromStream( std::istream& );
   std::ostream& WriteBinary( std::ostream& ) const;
   std::istream& ReadBinary( std::istream& );
 
@@ -137,38 +139,32 @@ class STATEVECTOR
 
 inline std::ostream& operator<<( std::ostream& os, const STATE& s )
 {
-  s.WriteToStream( os );
-  return os;
+  return s.WriteToStream( os );
 }
 
 inline std::istream& operator>>( std::istream& is, STATE& s )
 {
-  s.ReadFromStream( is );
-  return is;
+  return s.ReadFromStream( is );
 }
 
 inline std::ostream& operator<<( std::ostream& os, const STATELIST& s )
 {
-  s.WriteToStream( os );
-  return os;
+  return s.WriteToStream( os );
 }
 
 inline std::istream& operator>>( std::istream& is, STATELIST& s )
 {
-  s.ReadFromStream( is );
-  return is;
+  return s.ReadFromStream( is );
 }
 
 inline std::ostream& operator<<( std::ostream& os, const STATEVECTOR& s )
 {
-  s.WriteToStream( os );
-  return os;
+  return s.WriteToStream( os );
 }
 
 inline std::istream& operator>>( std::istream& is, STATEVECTOR& s )
 {
-  s.ReadFromStream( is );
-  return is;
+  return s.ReadFromStream( is );
 }
 #endif
 
