@@ -14,7 +14,7 @@ USERDISPLAY::USERDISPLAY()
 {
  activetargets=NULL;
 
- form=new TForm(Application);
+ form=new TForm(static_cast<TComponent*>(NULL));
  form->Top=50;
  form->Left=50;
  form->Width=300;
@@ -27,7 +27,7 @@ USERDISPLAY::USERDISPLAY()
  form->BorderIcons >> biSystemMenu;
  form->BorderStyle=bsNone;
 
- message=new TLabel(form);
+ message=new TLabel(static_cast<TComponent*>(NULL));
  message->Parent=form;
  message->Visible=false;
 }
@@ -38,7 +38,7 @@ USERDISPLAY::~USERDISPLAY()
 {
  if (message)       delete message;
  if (activetargets) delete activetargets;
- if (form)          form->Close();
+ delete form;
 
  message=NULL;
  activetargets=NULL;
