@@ -12,6 +12,9 @@ object fEditMatrix: TfEditMatrix
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
+  DesignSize = (
+    272
+    328)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -57,10 +60,8 @@ object fEditMatrix: TfEditMatrix
     Top = 48
     Width = 41
     Height = 22
-    TabStop = True
     MaxValue = 256
     MinValue = 1
-    ParentColor = False
     TabOrder = 1
     Value = 4
   end
@@ -69,10 +70,8 @@ object fEditMatrix: TfEditMatrix
     Top = 48
     Width = 41
     Height = 22
-    TabStop = True
     MaxValue = 256
     MinValue = 1
-    ParentColor = False
     TabOrder = 2
     Value = 4
   end

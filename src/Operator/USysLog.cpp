@@ -1,14 +1,12 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include "USysLog.h"
 
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
-
 
 // **************************************************************************
 // Function:   SYSLOG
@@ -17,6 +15,7 @@
 // Returns:    N/A
 // **************************************************************************
 SYSLOG::SYSLOG()
+: dontClose( false )
 {
  form=new TForm(Application);
  form->Caption="System Log";
@@ -48,15 +47,18 @@ SYSLOG::SYSLOG()
 // **************************************************************************
 SYSLOG::~SYSLOG()
 {
- if (log)     delete log;
- if (form)    delete form;
- if (critsec) delete critsec;
-
- form=NULL;
- log=NULL;
- critsec=NULL;
+ delete critsec;
 }
 
+// The user must close the syslog manually if there are errors/warnings.
+bool SYSLOG::Close( bool force )
+{
+ if( !force && dontClose && form->Visible )
+   return false;
+
+ form->Close();
+ return true;
+}
 
 // **************************************************************************
 // Function:   ShowSysLog
@@ -107,6 +109,7 @@ TDateTime       cur_time;
     log->SelAttributes->Color = clGreen;
     log->SelAttributes->Height += 2;
     log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
+    dontClose = true;
     }
  // is this an error message ?
  if (mode == SYSLOGENTRYMODE_ERROR)
@@ -114,6 +117,7 @@ TDateTime       cur_time;
     log->SelAttributes->Color = clRed;
     log->SelAttributes->Height += 2;
     log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
+    dontClose = true;
     }
 
  cur_time=cur_time.CurrentDateTime();

@@ -1,7 +1,6 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <Registry.hpp>
 #include <stdio.h>
@@ -10,6 +9,7 @@
 #include "UShowParameters.h"
 #include "UEditMatrix.h"
 #include "UOperatorCfg.h"
+#include "UBCIError.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -212,7 +212,7 @@ AnsiString      keyname;
 // render all parameters in a particular section on the screen
 int TfConfig::RenderParameters(AnsiString section)
 {
-int     count=0, i, t, num_param;
+int     count=0, i, num_param;
 PARAM   *cur_param;
 AnsiString valueline;
 
@@ -304,7 +304,7 @@ AnsiString valueline;
            ParamValue[count]->Left=VALUE_OFFSETX;
            ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            valueline="";
-           for (t=0; t<cur_param->GetNumValues(); t++)
+           for (size_t t=0; t<cur_param->GetNumValues(); t++)
             {
             valueline=valueline+cur_param->GetValue(t);
             if (t < cur_param->GetNumValues()-1)
@@ -350,7 +350,7 @@ int     count, t;
      if (ParamValue[count])
         {
         valueline="";
-        for (t=0; t<cur_param->GetNumValues(); t++)
+        for (size_t t=0; t<cur_param->GetNumValues(); t++)
          {
          valueline=valueline+cur_param->GetValue(t);
          if (t < cur_param->GetNumValues()-1)

@@ -1,7 +1,6 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <stdio.h>
 
@@ -321,7 +320,7 @@ fpos_t  pos;
      fprintf(fp, "\r\n");
      }
     fprintf(fp, "[ Parameter Definition ] \r\n");
-    for (int i=0; i<paramlist->GetNumParameters(); i++)
+    for (size_t i=0; i<paramlist->GetNumParameters(); i++)
      {
      fprintf(fp, paramlist->GetParamPtr(i)->GetParamLine());
      fprintf(fp, "\r\n");

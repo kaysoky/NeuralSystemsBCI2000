@@ -13,12 +13,13 @@
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <stdio.h>
 #include "UBCI2000Data.h"
 
+#include "UBCIError.h"
+#include <stdio.h>
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
@@ -365,7 +366,7 @@ int  pos, idx, cur_runnr, runnr, firstrun;
   sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
   try {
   fp=fopen(cur_filename, "rb");
-  } catch(...) {fp=NULL;}
+  } catch( TooGeneralCatch& ) {fp=NULL;}
   if (fp)
      {
      fclose(fp);
@@ -422,7 +423,7 @@ int  pos, idx, cur_runnr, runnr, lastrun;
   sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
   try {
   fp=fopen(cur_filename, "rb");
-  } catch(...) {fp=NULL;}
+  } catch( TooGeneralCatch& ) {fp=NULL;}
   if (!fp)
      {
      lastrun=runnr-1;
@@ -472,7 +473,7 @@ int  pos, idx, cur_runnr, lastrun, res;
  sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
  try {
  fp=fopen(cur_filename, "rb");
- } catch(...) {fp=NULL;}
+ } catch( TooGeneralCatch& ) {fp=NULL;}
 
  // could not open file
  if (!fp) return(0);

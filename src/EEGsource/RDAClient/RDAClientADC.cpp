@@ -9,35 +9,99 @@
 // Description: A source class that interfaces to the BrainAmp RDA socket
 //              interface.
 //
+// Changes:     Apr 3, 2003: Adaptations to the changes introduced by the error
+//              handling facilities.
+//
 ////////////////////////////////////////////////////////////////////////////////
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <string>
-#include <sstream>
-#define bcierr std::ostringstream()
-#define bciout std::ostringstream()
 #include "RDAClientADC.h"
 
-#pragma package(smart_init)
+#include "UGenericSignal.h"
+#include "UBCIError.h"
+#include <string>
+#include <sstream>
 
-#ifdef BCI_2000_STRICT
-// **************************************************************************
-// Function:   GetNewADC
-// Purpose:    This static member function of the GenericADC class is meant to
-//             be implemented along with each subclass of GenericADC.
-//             Its sole purpose is to make subclassing transparent for the
-//             code in EEGSource/UMain.cpp .
-// Parameters: Pointers to parameter and state lists.
-// Returns:    A generic pointer to an instance of the respective default
-//             ADC class.
-// **************************************************************************
-GenericADC*
-GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+using namespace std;
+
+// Register the source class with the framework.
+RegisterFilter( RDAClientADC, 1 );
+
+void RDAClientADC::Preflight( const SignalProperties&,
+                                    SignalProperties& outSignalProperties ) const
 {
-  return new RDAClientADC( inParamList, inStateList );
+  // Constants.
+  const size_t signalDepth = 2;
+
+  // Resource availability and parameter consistency checks.
+  RDAQueue preflightQueue;
+  preflightQueue.open( Parameter( "HostName" ) );
+  if( !preflightQueue.is_open() )
+    bcierr << "Cannot establish connection to the recording software";
+  else
+  {
+    size_t numInputChannels = preflightQueue.info().numChannels + 1;
+    const char* matchMessage = " parameter must equal the number of channels"
+                               " in the recording software plus one";
+    if( Parameter( "SoftwareCh" ) != numInputChannels )
+      bcierr << "The SoftwareCh "
+             << matchMessage
+             << " (" << numInputChannels << ") "
+             << endl;
+    if( Parameter( "SourceChOffset" )->GetNumValues() != numInputChannels )
+      bcierr << "The number of values in the SourceChOffset"
+             << matchMessage
+             << " (" << numInputChannels << ") "
+             << endl;
+    if( Parameter( "SourceChGain" )->GetNumValues() != numInputChannels )
+      bcierr << "The number of values in the SourceChGain"
+             << matchMessage
+             << " (" << numInputChannels << ") "
+             << endl;
+
+    bool goodOffsets = true,
+         goodGains   = true;
+    for( size_t i = 0; i < numInputChannels - 1; ++i )
+    {
+      goodOffsets &=
+        ( Parameter( "SourceChOffset", i ) == 0 );
+      goodGains &=
+        ( Parameter( "SourceChGain", i ) == preflightQueue.info().channelResolutions[ i ] );
+    }
+    if( !goodOffsets )
+      bcierr << "The SourceChOffset values for the first "
+             << numInputChannels - 1 << " channels "
+             << "must be 0"
+             << endl;
+    if( !goodGains )
+      bcierr << "The SourceChGain values for the first "
+             << numInputChannels - 1 << " channels "
+             << "must match the channel resolutions settings "
+             << "in the recording software"
+             << endl;
+
+    float sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
+    if( Parameter( "SamplingRate" ) != sourceSamplingRate )
+      bcierr << "The SamplingRate parameter must match "
+             << "the setting in the recording software "
+             << "(" << sourceSamplingRate << ")"
+             << endl;
+  }
+
+  // Check whether block sizes are sub-optimal.
+  size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
+         sourceBlockSize =
+    preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval;
+  if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
+    bciout << "Non-integral ratio in source and system block sizes. "
+           << "This will cause interference jitter"
+           << endl;
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties(
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
 }
-#endif // BCI_2000_STRICT
 
 // **************************************************************************
 // Function:   ADInit
@@ -49,155 +113,70 @@ GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
 // Parameters: N/A
 // Returns:    Error value
 // **************************************************************************
-int RDAClientADC::ADInit()
+void RDAClientADC::Initialize()
 {
-  int err = noError;
-#ifdef BCI_2000_STRICT
-  sourceSignal = GenericIntSignal( 0, 0 );
-#endif // BCI_2000_STRICT
-  size_t sampleBlockSize = 0;
-  hostName = "";
-
-  const PARAM* param = NULL;
-  const char*  value = NULL;
-#pragma option push
-#pragma warn -pia // Don't complain about possible unwanted assignments
-  if( ( param = paramlist->GetParamPtr( "SampleBlockSize" ) ) && ( value = param->GetValue() ) )
-    sampleBlockSize = atoi( value );
-  else
-    err = parameterError;
-  if( ( param = paramlist->GetParamPtr( "HostName" ) ) && ( value = param->GetValue() ) )
-    hostName = value;
-  else
-    err = parameterError;
-#pragma option pop
-  if( err != noError )
-  {
-    bcierr << "Could not obtain all parameter values needed.";
-    return err;
-  }
+  hostName = ( const char* )Parameter( "HostName" );
 
   inputQueue.open( hostName.c_str() );
   if( !inputQueue.is_open() )
-    return connectionError;
-
   {
-    std::ostringstream os;
-    softwareCh = inputQueue.info().numChannels + 1;
-    os << "Source int SoftwareCh= "
-       << softwareCh << " "
-       << softwareCh
-       << " 1 129 // number of digitized and stored channels including marker channel (readonly)";
-    paramlist->AddParameter2List( os.str().c_str() );
+    bcierr << "Could not establish connection with recording software"
+           << endl;
+    return;
   }
-  {
-    std::ostringstream os;
-    samplingRate = 1e6 / inputQueue.info().samplingInterval;
-    os << "Source int SamplingRate= "
-       << samplingRate << " "
-       << samplingRate
-       << " 1 10000 // sampling rate in S/s (readonly)";
-    paramlist->AddParameter2List( os.str().c_str() );
-  }
-  {
-    size_t numChannels = inputQueue.info().numChannels;
-#ifdef BCI_2000_STRICT
-    std::ostringstream osOffset, osGain;
-    osOffset << "Filtering floatlist SourceChOffset= " << numChannels + 1;
-    osGain   << "Filtering floatlist SourceChGain= " << numChannels + 1;
-    for( size_t i = 0; i < numChannels; ++i )
-    {
-      osOffset << " 0";
-      osGain   << ' ' << inputQueue.info().channelResolutions[ i ];
-    }
-    osOffset << " 0 -500 500 // offset for channels in A/D units (readonly)";
-    osGain   << " 1 -500 500 // gain for each channel (A/D units -> muV) (readonly)";
-    paramlist->AddParameter2List( osOffset.str().c_str() );
-    paramlist->AddParameter2List( osGain.str().c_str() );
-#else // BCI_2000_STRICT
-#ifndef HIDE_MARKER_CHANNEL
-    ++numChannels;
-#endif // HIDE_MARKER_CHANNEL
-    std::ostringstream osAmp, osList;
-    osAmp << "Calibrator floatlist CAMaxAmplitude= " << numChannels;
-    osList << "Calibrator intlist CAChList= " << numChannels;
-    for( size_t i = 0; i < inputQueue.info().numChannels; ++i )
-    {
-      osAmp << ' ' << inputQueue.info().channelResolutions[ i ] * 32000;
-      osList << ' ' << i;
-    }
-#ifndef HIDE_MARKER_CHANNEL
-    osAmp << " 32000";
-    osList << ' ' << numChannels - 1;
-#endif // HIDE_MARKER_CHANNEL
-
-    osAmp << " 1 10000 // Assignment of maximum +/-amplitude in uV (readonly)";
-    osList << " 0 " << numChannels -1 << " // Assignment of calibrated channels (readonly)";
-    paramlist->AddParameter2List( osAmp.str().c_str() );
-    paramlist->AddParameter2List( osList.str().c_str() );
-#endif // BCI_2000_STRICT
-  }
-
-  // Check whether block sizes are sub-optimal.
-  size_t sourceBlockSize = inputQueue.info().blockDuration / inputQueue.info().samplingInterval;
-  if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
-    bciout << "Non-integral ratio in source block sizes.";
-
+#if 0
   inputQueue.close();
   inputQueue.clear();
-
-#ifdef BCI_2000_STRICT
- sourceSignal = GenericIntSignal( softwareCh, sampleBlockSize );
-#endif // BCI_2000_STRICT
-
-  return noError;
+#endif
 }
 
 
 // **************************************************************************
-// Function:   ADReadDataBlock
+// Function:   Process
 // Purpose:    This function is called within fMain->MainDataAcqLoop().
 //             It fills its argument signal with values
 //             and does not return until a full block of data is acquired.
 // Parameters: Pointer to a signal to be filled with values.
-// Returns:    Error value
+// Returns:    N/A
 // **************************************************************************
-int RDAClientADC::ADReadDataBlock( GenericIntSignal* SourceSignal )
+void RDAClientADC::Process( const GenericSignal*, GenericSignal* SourceSignal )
 {
+  const char* connectionErrorMessage = "Lost connection to VisionRecorder software";
+
+#if 0
   if( !inputQueue.is_open() )
   {
     inputQueue.open( hostName.c_str() );
     if( !inputQueue.is_open() )
-      return connectionError;
+    {
+      bcierr << connectionErrorMessage << endl;
+      return;
   }
+#endif
 
-  for( size_t sample = 0; sample < SourceSignal->MaxElements; ++sample )
-    for( size_t channel = 0; channel < SourceSignal->Channels; ++channel )
+  for( size_t sample = 0; sample < SourceSignal->MaxElements(); ++sample )
+    for( size_t channel = 0; channel < SourceSignal->Channels(); ++channel )
     {
       if( !inputQueue )
-        return connectionError;
-      SourceSignal->Value[channel][sample] = inputQueue.front();
+      {
+        bcierr << connectionErrorMessage << endl;
+        return;
+      }
+      SourceSignal->SetValue( channel, sample, inputQueue.front() );
       inputQueue.pop();
     }
-
-#ifndef BCI_2000_STRICT
-  // This should go into the framework code.
-  statevector->SetStateValue( "SourceTime", BCITIME::GetBCItime_ms() );
-#endif // BCI_2000_STRICT
-  return noError;
 }
 
 // **************************************************************************
-// Function:   ADShutdown
+// Function:   Halt
 // Purpose:    This routine shuts down data acquisition
 // Parameters: N/A
-// Returns:    noError
+// Returns:    N/A
 // **************************************************************************
-int RDAClientADC::ADShutdown()
+void RDAClientADC::Halt()
 {
   inputQueue.close();
   inputQueue.clear();
-  return noError;
 }
 
 // **************************************************************************
@@ -209,15 +188,9 @@ int RDAClientADC::ADShutdown()
 //             slist - the list of states
 // Returns:    N/A
 // **************************************************************************
-RDAClientADC::RDAClientADC( PARAMLIST *plist, STATELIST *slist )
-: paramlist( plist ),
-  statelist( slist ),
-  softwareCh( 0 ),
-  samplingRate( 0.0 ),
-  sourceSignal( 0, 0 )
+RDAClientADC::RDAClientADC()
 {
-  const char* params[] =
-  {
+ BEGIN_PARAMETER_DEFINITIONS
     "Source int SoftwareCh= 33 33 1 129"
             " // the number of digitized and stored channels including marker channel",
     "Source int SampleBlockSize= 20 20 1 128"
@@ -226,13 +199,12 @@ RDAClientADC::RDAClientADC( PARAMLIST *plist, STATELIST *slist )
             " // the sample rate",
     "Source string HostName= localhost"
             " // the name of the host to connect to",
-  };
-  const size_t numParams = sizeof( params ) / sizeof( *params );
-  for( size_t i = 0; i < numParams; ++i )
-    paramlist->AddParameter2List( params[ i ] );
+ END_PARAMETER_DEFINITIONS
 
   // This should go into the framework code.
-  statelist->AddState2List( "SourceTime 16 0 0 0\n" );
+ BEGIN_STATE_DEFINITIONS
+    "SourceTime 16 0 0 0",
+ END_STATE_DEFINITIONS
 }
 
 // **************************************************************************
@@ -243,6 +215,6 @@ RDAClientADC::RDAClientADC( PARAMLIST *plist, STATELIST *slist )
 // **************************************************************************
 RDAClientADC::~RDAClientADC()
 {
-  ADShutdown();
+  Halt();
 }
 

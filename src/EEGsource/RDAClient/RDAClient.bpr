@@ -4,11 +4,12 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="RDAClient.exe"/>
-    <OBJFILES value="obj\RDAClient.obj obj\GenericADC.obj obj\UBCItime.obj obj\UCoreComm.obj 
-      obj\UCoreMessage.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
-      obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
-      obj\BCIDirectry.obj obj\RDAClientADC.obj obj\UMain.obj obj\UStorage.obj 
-      obj\UVisConfig.obj obj\RDAQueue.obj"/>
+    <OBJFILES value="obj\RDAClient.obj obj\UGenericFilter.obj obj\UBCItime.obj 
+      obj\UCoreComm.obj obj\UCoreMessage.obj obj\UGenericSignal.obj 
+      obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
+      obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\RDAClientADC.obj obj\UMain.obj obj\UStorage.obj obj\UVisConfig.obj 
+      obj\RDAQueue.obj obj\UEnvironment.obj obj\UBCIError.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -19,14 +20,14 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;BCI_2000_STRICT;SIGNAL_BACK_COMPAT"/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="RDAClient.cpp"/>
     <INCLUDEPATH value="..\;..;..\..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -36,7 +37,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+    <CFLAG1 value="-Od -H=..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
       -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -52,7 +53,7 @@
   </LINKER>
   <FILELIST>
       <FILE FILENAME="RDAClient.cpp" FORMNAME="" UNITNAME="RDAClient" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\GenericADC.cpp" FORMNAME="" UNITNAME="GenericADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UCoreMessage.cpp" FORMNAME="" UNITNAME="UCoreMessage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -68,6 +69,8 @@
       <FILE FILENAME="..\UStorage.cpp" FORMNAME="" UNITNAME="UStorage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RDAQueue.cpp" FORMNAME="" UNITNAME="RDAQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -175,11 +178,11 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=5
-Item0=_DEBUG;BCI_2000_STRICT;SIGNAL_BACK_COMPAT
-Item1=_DEBUG;BCI_2000_STRICT
-Item2=_DEBUG;SIGNAL_BACK_COMPAT
-Item3=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
-Item4=_DEBUG
+Item0=_DEBUG
+Item1=_DEBUG;BCI_2000_STRICT;SIGNAL_BACK_COMPAT
+Item2=_DEBUG;BCI_2000_STRICT
+Item3=_DEBUG;SIGNAL_BACK_COMPAT
+Item4=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
 
 [HistoryLists\hlIntOutputDir]
 Count=1

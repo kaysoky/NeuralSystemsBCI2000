@@ -4,11 +4,12 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="DT2000.exe"/>
-    <OBJFILES value="obj\DT2000.obj obj\UMain.obj obj\UStorage.obj obj\GenericADC.obj 
-      obj\UVisConfig.obj obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj 
-      obj\UCoreMessage.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
-      obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
-      obj\BCIDirectry.obj obj\dtfun.obj obj\DTADC.obj"/>
+    <OBJFILES value="obj\DT2000.obj obj\UMain.obj obj\UStorage.obj obj\UVisConfig.obj 
+      obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
+      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
+      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\dtfun.obj obj\DTADC.obj obj\UGenericFilter.obj obj\UEnvironment.obj 
+      obj\UBCIError.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -19,14 +20,14 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\shared"/>
+    <PATHCPP value=".;..;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT"/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="DT2000.cpp"/>
     <INCLUDEPATH value="..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl;.\da_sdk"/>
@@ -36,7 +37,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+    <CFLAG1 value="-Od -H=..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
       -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -54,7 +55,6 @@
       <FILE FILENAME="DT2000.cpp" FORMNAME="" UNITNAME="DT2000" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UStorage.cpp" FORMNAME="" UNITNAME="UStorage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\GenericADC.cpp" FORMNAME="" UNITNAME="GenericADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -71,6 +71,9 @@
       <FILE FILENAME="DTADC.cpp" FORMNAME="" UNITNAME="DTADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="da_sdk\OLMEM32.lib" FORMNAME="" UNITNAME="OLMEM32.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="da_sdk\oldaapi32.lib" FORMNAME="" UNITNAME="oldaapi32.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -141,8 +144,8 @@ Item29=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\in
 
 [HistoryLists\hlLibraryPath]
 Count=30
-Item0=..\;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item0=..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item2=..\;..;..\shared;..\..\shared;C:\da_sdk\Lib;$(BCB)\lib\obj;$(BCB)\lib
 Item3=..;..\shared;..\..\shared;C:\da_sdk\Lib;$(BCB)\lib\obj;$(BCB)\lib
 Item4=..\;..\shared;..\..\shared;C:\da_sdk\Lib;$(BCB)\lib\obj;$(BCB)\lib
@@ -178,9 +181,9 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=_DEBUG;SIGNAL_BACK_COMPAT
-Item1=_DEBUG;ADC_DTADC;SIGNAL_BACK_COMPAT
-Item2=_DEBUG
+Item0=_DEBUG
+Item1=_DEBUG;SIGNAL_BACK_COMPAT
+Item2=_DEBUG;ADC_DTADC;SIGNAL_BACK_COMPAT
 
 [HistoryLists\hlIntOutputDir]
 Count=1

@@ -1,7 +1,6 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <Registry.hpp>
 
@@ -9,6 +8,7 @@
 #include "operator.h"                    // operator specific defines
 
 #include "UShowParameters.h"
+#include "UBCIError.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -23,22 +23,20 @@ __fastcall TfShowParameters::TfShowParameters(TComponent* Owner)
 
 void __fastcall TfShowParameters::FormShow(TObject *Sender)
 {
-int parameter;
-
  try{
  ParameterListBox->Clear();
  // show all the parameters
- for (parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
   ParameterListBox->Items->Add(parameterlist->GetParamPtr(parameter)->GetName());
  // check the parameters that shouldn't be loaded/saved
- for (parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
   {
   if (GetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype) == 1)
      ParameterListBox->Checked[parameter]=true;
   else
      ParameterListBox->Checked[parameter]=false;
   }
- } catch(...) {;}
+ } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 
@@ -67,7 +65,7 @@ int             ret;
      else
         ret=my_registry->ReadInteger("SaveFilter");
      }
-    catch(...) {;}
+    catch( TooGeneralCatch& ) {;}
     }
 
  delete my_registry;
@@ -110,7 +108,7 @@ AnsiString      keyname;
   keyname=AnsiString(KEY_BCI2000)+AnsiString(KEY_OPERATOR)+AnsiString(KEY_PARAMETERS)+"\\"+AnsiString(param->GetName());
   my_registry->CreateKey(keyname);
   }
- catch (...)
+ catch ( TooGeneralCatch& )
   {;}
 
  if (my_registry->OpenKey(keyname, false))
@@ -122,7 +120,7 @@ AnsiString      keyname;
      else
         my_registry->WriteInteger("SaveFilter", filterstatus);
      }
-    catch(...)
+    catch( TooGeneralCatch& )
      {;}
     }
 
@@ -152,19 +150,17 @@ TIniFile        *my_registry;
 // sets the tag value for the parameters; to be used in subsequent calls to Load/SaveParameterList
 void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
 {
-int parameter;
-
  try{
  // tag each parameter, if the registry "says so"
  // these tags will be used as a filter by Load/SaveParameterList
- for (parameter=0; parameter < paramlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < paramlist->GetNumParameters(); parameter++)
   {
   if (GetFilterStatus(paramlist->GetParamPtr(parameter), filtertype) == 1)
      paramlist->GetParamPtr(parameter)->tag=true;
   else
      paramlist->GetParamPtr(parameter)->tag=false;
   }
- } catch(...) {;}
+ } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 
@@ -173,19 +169,17 @@ int parameter;
 void __fastcall TfShowParameters::FormClose(TObject *Sender,
       TCloseAction &Action)
 {
-int parameter;
-
  try{
  // store the filter setting for the parameters that shouldn't be loaded/saved
  // in the registry
- for (parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
   {
   if (ParameterListBox->Checked[parameter] == true)
      SetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype, 1);
   else
      SetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype, 0);
   }
- } catch(...) {;}
+ } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@
 //          - Moved UpdateState() from ../shared/UState.h to here.
 //
 ////////////////////////////////////////////////////////////////////////////////
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <ScktComp.hpp>
@@ -39,7 +39,7 @@ OperatorUtils::UpdateState( const STATELIST*   statelist,
      if ((!socket) || (!socket->Connected))
        return(ERR_SOURCENOTCONNECTED);
    }
-   catch(...)
+   catch( TooGeneralCatch& )
    {
      return(ERR_SOURCENOTCONNECTED);
    }

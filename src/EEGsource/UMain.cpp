@@ -40,7 +40,7 @@
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -54,6 +54,7 @@
 #include "UParameter.h"
 #include "GenericADC.h"
 #include "UStorage.h"
+#include "UBCIError.h"
 
 #include "UMain.h"
 //---------------------------------------------------------------------------
@@ -161,7 +162,7 @@ int     trycount, ret;
        delete coremessage;
        }
     }
-   catch(...)
+   catch( TooGeneralCatch& )
     {
     Terminate();
     }
@@ -255,7 +256,7 @@ int     consistent;
  try
   {
   // number of TransmitCh != number of values in the list of channels to transmit
-  if (fMain->paramlist.GetParamPtr("TransmitChList")->GetNumValues() != atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()))
+  if (fMain->paramlist.GetParamPtr("TransmitChList")->GetNumValues() != (size_t)atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()))
      consistent=0;
   // we do not want to transmit anything to signal processing, if either the transmitchlist is empty, or TransmitCh==0
   // but in these case, the parameters should be called consistent
@@ -266,7 +267,7 @@ int     consistent;
      consistent=1;
      } */
   }
- catch(...)
+ catch( TooGeneralCatch& )
   {
   consistent=0;
   }
@@ -304,7 +305,7 @@ int     displayseconds;
   display_max= atoi(paramlist.GetParamPtr("SourceMax")->GetValue());
   visdecim=atoi(paramlist.GetParamPtr("VisualizeSourceDecimation")->GetValue());
   displayseconds=atoi(paramlist.GetParamPtr("VisualizeSourceTime")->GetValue());
-  } catch(...)
+  } catch( TooGeneralCatch& )
    {
    samplefreq=128;
    visdecim=1;
@@ -353,6 +354,7 @@ int     res;
 
  try{
 
+ Environment::EnterInitializationPhase( &paramlist, &statelist, statevector, corecomm );
  // initialize the DataStorage object
  res=tds->Initialize(&paramlist, &statelist, statevector);
  if (res == 0)
@@ -362,16 +364,33 @@ int     res;
     }
  tds->Resume();
 
+ Environment::EnterNonaccessPhase();
  // shut down data acquisition
- adc->ADShutdown();
+ adc->Halt();
+
+ Environment::EnterPreflightPhase( &paramlist, &statelist, statevector, corecomm );
+ // This will find a better place in the future.
+ {
+   SignalProperties sourceSignalProperties;
+   adc->Preflight( SignalProperties(), sourceSignalProperties );
+   sourceSignal.SetProperties( sourceSignalProperties );
+   sourceIntSignal.SetProperties( sourceSignalProperties );
+ }
+ if( __bcierr.flushes() > 0 )
+ {
+   corecomm->SendStatus( "411 Error in Source!" );
+   return 0;
+ }
+
+ Environment::EnterInitializationPhase( &paramlist, &statelist, statevector, corecomm );
  // initialize data acquisition
- res=adc->ADInit();
+ adc->Initialize();
+ res = ( __bcierr.flushes() == 0 );
  if (res == 0)
     {
     corecomm->SendStatus("411 Error in Source !");
     return(0);
     }
-
  // create the signal for the roundtrip visualization
  if (roundtripsignal) delete roundtripsignal;
  roundtripsignal=new GenericSignal(1, 1);
@@ -393,17 +412,19 @@ int     res;
  if (ParametersConsistent() == 0)
     {
     corecomm->SendStatus("300 Source: Parameters are inconsistent ...");
-    adc->ADShutdown();
+    adc->Halt();
     return(0);
     }
 
- } catch(...)   // catch any exception that might have been thrown in here
+ } catch( TooGeneralCatch& )   // catch any exception that might have been thrown in here
     {
     corecomm->SendStatus("411 Error in Source: Exception thrown while initializing: !");
-    adc->ADShutdown();
+    adc->Halt();
     return(0);
     }
 
+ Environment::EnterNonaccessPhase();
+ corecomm->SendStatus("200 Source module initialized ");
  return(1);
 }
 
@@ -440,6 +461,8 @@ int     x, y, res;
     return;
     }
 
+ Environment::EnterProcessingPhase( &paramlist, &statelist, statevector, corecomm );
+ try{
  //
  // THIS IS THE MAIN DATA ACQUISITION LOOP
  //
@@ -449,7 +472,12 @@ int     x, y, res;
  while ((resetrequest == 0) && (corecomm->Connected()))
   {
   // read data from ADC - it won't return, until data is there
-  res=adc->ADReadDataBlock();
+  adc->Process( NULL, &sourceSignal );
+// This is glue to go away ASAP.
+  for( size_t i = 0; i < sourceSignal.Channels(); ++i )
+    for( size_t j = 0; j < sourceSignal.GetNumElements( i ); ++j )
+      sourceIntSignal( i, j ) = sourceSignal( i, j );
+#if 0
   // if there is a problem, suspend the system
   if (res == 0)
      {
@@ -458,7 +486,7 @@ int     x, y, res;
      running=0;
      Sleep(500);
      }
-
+#endif
   // update the state vector
   // we have to acquire a lock first (since the receiving thread might overwrite it with the one returned from the application)
   // of course, we only have to do this in case the receiving thread hasn't been terminated
@@ -503,7 +531,7 @@ int     x, y, res;
   if (running == 1) statevector->SetStateValue("Recording", 1);
   oldrunning=running;
 
-  res=Write2SignalProc(adc->Signal(), statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
+  res=Write2SignalProc(&sourceIntSignal, statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
   if (res == 0)
      {
      corecomm->SendStatus("411 Error in Source: Could not send data to Signal Processing !");
@@ -513,7 +541,7 @@ int     x, y, res;
 
   if ((tds) && (statevector->GetStateValue("Recording") == 1))
      {
-     if (!(tds->Write2Disk(adc->Signal())))
+     if (!(tds->Write2Disk(&sourceIntSignal)))
         {
         corecomm->SendStatus("411 Error in Source");
         statevector->SetStateValue("Running", 0);
@@ -532,7 +560,7 @@ int     x, y, res;
 
   // send the whole signal to the operator
   if ((visualize) && (vis))
-     vis->Send2Operator(adc->Signal(), visdecim);
+     vis->Send2Operator(&sourceIntSignal, visdecim);
 
   // give the main thread time to process all the messages,
   // e.g., in order to receive the messages from the operator
@@ -542,10 +570,13 @@ int     x, y, res;
 
   if (!adc) break;
   }
-
+ }
+ catch( const char* s ){ __bcierr << s << std::endl; }
+ Environment::EnterNonaccessPhase();
+ 
  // we also have to have a adc->Shutdown() method that stops
  // the data acquisition at this point
- if (adc) adc->ADShutdown();
+ if (adc) adc->Halt();
 
  if (roundtripsignal) delete roundtripsignal;
  roundtripsignal=NULL;
@@ -580,21 +611,21 @@ void TfMain::ShutdownConnections()
   if (ReceivingSocket->Socket->ActiveConnections > 0)
      if (ReceivingSocket->Socket->Connections[0])
         ReceivingSocket->Socket->Connections[0]->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (ReceivingSocket->Active) ReceivingSocket->Close();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (sendingcomm)
      if (sendingcomm->Connected()) sendingcomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
  try
   {
   if (corecomm)
      if (corecomm->Connected()) corecomm->Terminate();
-  } catch(...) {}
+  } catch( TooGeneralCatch& ) {}
 }
 
 
@@ -609,16 +640,16 @@ void TfMain::ShutdownConnections()
 void TfMain::ShutdownSystem()
 {
  // delete the adc object
- if (adc) adc->ADShutdown();
- if (adc) delete adc;
+ if (adc) adc->Halt();
+ delete adc;
  adc=NULL;
  // delete the vis object
- if (vis) delete vis;
+ delete vis;
  vis=NULL;
- if (roundtripvis) delete roundtripvis;
+ delete roundtripvis;
  roundtripvis=NULL;
  // delete the tds object
- if (tds) delete tds;
+ delete tds;
  tds=NULL;
 
  // now, close all the other connections
@@ -719,14 +750,23 @@ int     ret;
 
  // create an instance of our ADC board class
  // the constructor in this object will fill up the parameter and state lists
- adc = GenericADC::GetNewADC( &paramlist, &statelist );
+ Environment::EnterConstructionPhase( &paramlist, &statelist, statevector, corecomm );
+ GenericFilter::InstantiateFilters();
+ adc = GenericFilter::GetFilter<GenericADC>();
+ if( adc == NULL )
+ {
+   bcierr << "Could not get instance of type GenericADC" << std::endl;
+   return 0;
+ }
  // create an instance of GenericVisualization
  // it will handle the visualization to the operator
- vis=new GenericVisualization(&paramlist, corecomm);
+ vis=new GenericVisualization;
  // visualization of round trip
- roundtripvis=new GenericVisualization(&paramlist, corecomm);
+ roundtripvis=new GenericVisualization;
  // construct a new TDataStorage object
  tds=new TDataStorage(&paramlist);
+
+ Environment::EnterNonaccessPhase();
 
  // add some generic parameters
  sprintf(paramstring, "Visualize int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes)\n");
@@ -814,7 +854,9 @@ int     destport, res;
     rSendingConnected->Checked=true;
     eSendingIP->Text=destIP;
     eSendingPort->Text=AnsiString(destport);
+#if 0
     corecomm->SendStatus("200 Source module initialized ");
+#endif
     }
  else
     return(ERR_NOSOCKPARAM);

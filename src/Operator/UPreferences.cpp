@@ -1,7 +1,6 @@
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <Registry.hpp>
 
@@ -9,6 +8,7 @@
 
 #include "USysStatus.h"
 #include "UPreferences.h"
+#include "UBCIError.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

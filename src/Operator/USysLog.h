@@ -17,10 +17,12 @@ private:	// User declarations
         TForm       *form;
         TRichEdit   *log;
         TCriticalSection *critsec;
+        bool        dontClose;
 public:		// User declarations
         SYSLOG::SYSLOG();
         SYSLOG::~SYSLOG();
         void    SYSLOG::ShowSysLog();
+        bool    SYSLOG::Close( bool force = false );
         void    SYSLOG::AddSysLogEntry(char *text);
         void    SYSLOG::AddSysLogEntry(char *text, int mode);
 };

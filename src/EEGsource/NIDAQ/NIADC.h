@@ -55,24 +55,26 @@ i16     *piBuffer, *piHalfBuffer[NIDAQ_MAX_BUFFERS];
 i32     lTimeout;
 u32     ulPtsTfr;
 
+        int     samplingRate;
         int     blocksize;
         int     channels;
-        PARAMLIST       *paramlist;
-        STATELIST       *statelist;
 private:
         int     Start();
         int     Stop();
-public:
-        NIADC::NIADC(PARAMLIST *, STATELIST *);       // overwrite contructor
-        // NIADC::NIADC(PARAMLIST *);       // overwrite contructor
-        NIADC::~NIADC();
-        TCriticalSection *data_critsec;         // critical section for data FIFO
-        int     ADInit();
         int     ADConfig();
-        int     ADReadDataBlock();
-        int     ADShutdown();
         void    GetData();
         int     cur_buffers;                    // how many data buffers do we currently have ?
+        TCriticalSection *data_critsec;         // critical section for data FIFO
+        static  NIADC* cur_adc;
+        static void CallBack( int, int, WPARAM, LPARAM );
+public:
+        NIADC::NIADC();       // overwrite constructor
+        NIADC::~NIADC();
+        virtual void     Preflight(const SignalProperties&, SignalProperties&) const;
+        virtual void     Initialize();
+        virtual void     Process(const GenericSignal*, GenericSignal*);
+        virtual void     Halt();
+
 };
 
 #endif

@@ -1,7 +1,7 @@
 object fConfig: TfConfig
-  Left = 253
-  Top = 211
-  Width = 705
+  Left = 474
+  Top = 233
+  Width = 702
   Height = 561
   Caption = 'Configuration ...'
   Color = clBtnFace

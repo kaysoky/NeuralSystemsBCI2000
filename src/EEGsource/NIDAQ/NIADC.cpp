@@ -10,10 +10,7 @@
  *                                                                            *
  * V1.00 - 08/09/2002 - First start and also first functioning version        *
  ******************************************************************************/
-
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
@@ -22,28 +19,12 @@
 #include "NIADC.h"
 
 //---------------------------------------------------------------------------
+using namespace std;
 
-#pragma package(smart_init)
+RegisterFilter( NIADC, 1 );
 
+NIADC* NIADC::cur_adc = NULL;
 TEvent   *bufferdone;
-NIADC    *cur_adc=NULL;              // this is for callback only
-
-// **************************************************************************
-// Function:   GetNewADC
-// Purpose:    This static member function of the GenericADC class is meant to
-//             be implemented along with a subclass of GenericADC.
-//             Its sole purpose is to make subclassing transparent for the
-//             code in EEGSource/UMain.cpp .
-// Parameters: Pointers to parameter and state lists.
-// Returns:    A generic pointer to an instance of the respective default
-//             ADC class.
-// **************************************************************************
-GenericADC*
-GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
-{
-  return new NIADC( inParamList, inStateList );
-}
-
 
 // **************************************************************************
 // Function:   NIADC
@@ -54,38 +35,31 @@ GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
 //             slist - the list of states
 // Returns:    N/A
 // **************************************************************************
-NIADC::NIADC(PARAMLIST *plist, STATELIST *slist)
+NIADC::NIADC()
 {
-int     buf;
+ BEGIN_PARAMETER_DEFINITIONS
+   "Source float SamplingRate= 256 256 1 20000 "
+       "// The signal's sampling rate in Hz",
+   "Source int   SampleBlockSize= 16 16 1 2048 "
+       "// The number of samples in one block",
+   "Source int   SoftwareCh= 16 16 1 256 "
+       "// The number of channels",
+   "Source int   BoardNumber= 1 1 1 16 "
+       "// The NI-ADC board's device number",
+ END_PARAMETER_DEFINITIONS
 
- statelist=slist;
- paramlist=plist;
+ BEGIN_STATE_DEFINITIONS
+   "Running 1 0 0 0",
+   "SourceTime 16 2347 0 0",
+ END_STATE_DEFINITIONS
 
- // plist->ClearParamList();
-
- // add all the parameters to the parameter list
- const char* params[] =
- {
-   "Source float SamplingRate= 256 256 1 20000      // The signal's sampling rate in Hz\n",
-   "Source int   SampleBlockSize= 16 16 1 2048              // The number of samples in one block\n",
-   "Source int   SoftwareCh= 16 16 1 256              // The number of channels\n",
-   "Source int   BoardNumber= 1 1 1 16                // The NI-ADC board's device number\n"
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   plist->AddParameter2List( params[ i ] );
-
- statelist->AddState2List("Running 1 0 0 0\n");
- statelist->AddState2List("SourceTime 16 2347 0 0\n");
-
- signal=NULL;
  data_critsec=new TCriticalSection();
  bufferdone=new TEvent(NULL, false, false, "");
  piBuffer=NULL;
- for (buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
+ for (int buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
   piHalfBuffer[buf]=NULL;
 
- cur_adc=this;
+ cur_adc = this;
 }
 
 
@@ -98,26 +72,35 @@ int     buf;
 // **************************************************************************
 NIADC::~NIADC()
 {
-int     buf;
-
- if (signal)       delete signal;
- if (data_critsec) delete data_critsec;
- if (bufferdone)   delete bufferdone;
- if (piBuffer)     delete [] piBuffer;
+ delete data_critsec;
+ delete bufferdone;
+ delete [] piBuffer;
 
  // delete all buffers
- for (buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
-  {
-  if (piHalfBuffer[buf]) delete [] piHalfBuffer[buf];
-  piHalfBuffer[buf]=NULL;
-  }
+ for (int buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
+  delete [] piHalfBuffer[buf];
 
- bufferdone=NULL;
- signal= NULL;
- data_critsec=NULL;
- piBuffer=NULL;
+ cur_adc = NULL;
 }
 
+void NIADC::Preflight( const SignalProperties&,
+                             SignalProperties& outSignalProperties ) const
+{
+  // Constants.
+  const size_t signalDepth = 2;
+
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+
+  // Resource availability checks.
+  /* TODO: We need to check for board availability here. */
+
+  // Input signal checks.
+  /* The input signal will be ignored. */
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties(
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+}
 
 // **************************************************************************
 // Function:   ADInit
@@ -130,28 +113,23 @@ int     buf;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int NIADC::ADInit()
+void NIADC::Initialize()
 {
 int     buf;
 // float   checkbackground;
 
- try {
- channels=atoi(paramlist->GetParamPtr("SoftwareCh")->GetValue());
- samplerate=atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
- // checkbackground=atof(paramlist->GetParamPtr("CheckBackground")->GetValue());
+ channels=Parameter("SoftwareCh");
+ samplingRate=Parameter("SamplingRate");
+ // checkbackground=Parameter("CheckBackground");
  // blocksize=(int)((samplingrate/1000)*checkbackground);
- blocksize=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
- iDevice=atoi(paramlist->GetParamPtr("BoardNumber")->GetValue());
- } catch(...) { return(0); }
+ blocksize=Parameter("SampleBlockSize");
+ iDevice=Parameter("BoardNumber");
 
  // stop the data acquisition board
  Stop();
  bufferdone->ResetEvent();
 
- // create a new signal and buffers
- if( signal ) delete signal;
- signal= new GenericIntSignal( channels, blocksize );
-
+ // create new buffers
  if (piBuffer)     delete [] piBuffer;
  piBuffer=new i16[channels*blocksize*2];        // this buffer has to hold two blocks (the driver does double buffering)
 
@@ -166,8 +144,6 @@ int     buf;
  // re-configure the board and start it again
  ADConfig();
  Start();
-
- return(1);
 }
 
 
@@ -180,16 +156,20 @@ int     buf;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int NIADC::ADReadDataBlock()
+void NIADC::Process( const GenericSignal*, GenericSignal* signal )
 {
 int     sample, channel;
 int     time2wait, buf;
 
  // wait until we are notified that data is there
  // let's wait five times longer than what we are supposed to wait
- time2wait=5*(1000*blocksize)/samplerate;
+ time2wait=5*(1000*blocksize)/samplingRate;
  if (bufferdone->WaitFor(time2wait) != wrSignaled)
-    return(0);  // return an error when we had a time out
+ {
+   // return an error when we had a time out
+   bcierr << "Time out" << endl;
+   return;
+ }
 
  // we do not want simultaneous access to data[]
  // in case the driver notifies us twice in a row that data is there
@@ -218,8 +198,6 @@ int     time2wait, buf;
     bufferdone->SetEvent();
 
  data_critsec->Release();
-
- return(1);
 }
 
 
@@ -229,11 +207,9 @@ int     time2wait, buf;
 // Parameters: N/A
 // Returns:    NIDAQ_ERR_NOERR (1) ... no error
 // **************************************************************************
-int NIADC::ADShutdown()
+void NIADC::Halt()
 {
  Stop();
-
- return(NIDAQ_ERR_NOERR);
 }
 
 
@@ -250,7 +226,7 @@ int NIADC::ADShutdown()
 // Parameters: see NIDAQ documentation
 // Returns:    N/A
 // **************************************************************************
-void CallBack (int handle, int msg, WPARAM wParam, LPARAM lParam)
+void NIADC::CallBack (int handle, int msg, WPARAM wParam, LPARAM lParam)
 {
 // int     doneFlag;
 // short   iDeviceCalled;
@@ -274,7 +250,7 @@ void CallBack (int handle, int msg, WPARAM wParam, LPARAM lParam)
        // set the event so that ADReadDataBlock() gets notified
        }
     }
- } catch(...) { bufferdone->SetEvent(); }
+ } catch( TooGeneralCatch& ) { bufferdone->SetEvent(); }
 }
 
 
@@ -360,7 +336,7 @@ ulPtsTfr = 0;
  // iRetVal = NIDAQErrorHandler(iStatus, "Timeout_Config", iIgnoreWarning);
 
  // configure the SAMPLE'S sampling rate
- iStatus = DAQ_Rate(samplerate*channels, iUnits, &iSampTB, &uSampInt);
+ iStatus = DAQ_Rate(samplingRate*channels, iUnits, &iSampTB, &uSampInt);
  // configure the SCAN'S sampling rate
  // I really don't exactly know what this is for
  // iStatus = DAQ_Rate(dScanRate, iUnits, &iScanTB, &uScanInt);

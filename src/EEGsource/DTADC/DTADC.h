@@ -1,38 +1,39 @@
-//---------------------------------------------------------------------------
-
 #ifndef DTADCH
 #define DTADCH
-//---------------------------------------------------------------------------
-#endif
 
+#include <windows.h>
 #include <olmem.h>
 #include <olerrors.h>
 #include <oldaapi.h>
 
 #include "dtfun.h"
+#include "GenericADC.h"
 
 class DTADC : public GenericADC
 {
-protected:
-        int blocksize;
-        int channels;
-        int SleepTime;
-        PARAMLIST       *paramlist;
-        STATELIST       *statelist;
-        UINT ChanType;
-        UINT ListSize;
-        DBL dGain;
-        int ClkSource;
-        DBL dfFreq;
-        UINT Bufferpts;
-        int StartFlag;
-     
-        // DTFUN *dtfun;
-public:
-        DTADC::DTADC(PARAMLIST *, STATELIST *);       // overwrite contructor
-        DTADC::~DTADC();
-        int     ADInit();
-        int     ADConfig();
-        int     ADReadDataBlock();
-        int     ADShutdown();
+ public:
+               DTADC();
+  virtual      ~DTADC();
+
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
+  virtual void Process( const GenericSignal*, GenericSignal* );
+  virtual void Halt();
+ private:
+  int ADConfig();
+
+ private:
+  int   samplerate;
+  int   blocksize;
+  int   channels;
+  int   SleepTime;
+  UINT  ChanType;
+  UINT  ListSize;
+  DBL   dGain;
+  int   ClkSource;
+  DBL   dfFreq;
+  UINT  Bufferpts;
+  int   StartFlag;
 };
+
+#endif // DTADCH

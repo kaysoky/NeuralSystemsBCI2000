@@ -1,105 +1,110 @@
-//---------------------------------------------------------------------------
-#include <vcl.h>
 #pragma hdrstop
-#include <stdlib.h>
-#include <stdio.h>
-#include "cbw.h"
 
-#include "GenericADC.h"
 #include "DAS1402.h"
 
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
+#include "UBCIError.h"
+#include "cbw.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-// **************************************************************************
-// Function:   GetNewADC
-// Purpose:    This static member function of the GenericADC class is meant to
-//             be implemented along with a subclass of GenericADC.
-//             Its sole purpose is to make subclassing transparent for the
-//             code in EEGSource/UMain.cpp .
-// Parameters: Pointers to parameter and state lists.
-// Returns:    A generic pointer to an instance of the respective default
-//             ADC class.
-// **************************************************************************
-GenericADC*
-GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+using namespace std;
+
+// Register the source class with the framework.
+RegisterFilter( TDASSource, 1 );
+
+TDASSource::TDASSource()
+: Initialized( false ),
+  Gain( BIP5VOLTS ),
+  Status( RUNNING ),
+  CurCount( 0 ),
+  CurIndex( 0 ),
+  BufLen( 8192 ),
+  Samplerate( 10 ),
+  BBeg( 0 ),
+  BEnd( 0 ),
+  BlockSize( 16 ),
+  Channels( 8 ),
+  BoardName( new char [ BOARDNAMELEN ] ),
+  BoardNum( 0 ),
+  ULStat( 0 )
 {
-  return new TDASSource( inParamList, inStateList );
-}
+ cbGetBoardName( BoardNum, BoardName );
+ ULStat = cbStopBackground( BoardNum );
 
-
-TDASSource::TDASSource(PARAMLIST *my_paramlist, STATELIST *statelist) : signal( NULL )
-{
- char line[255];
- BoardName = new char [BOARDNAMELEN];
-
- paramlist=my_paramlist;
- 
- BoardNum = 0;
- cbGetBoardName(BoardNum, BoardName);
- ULStat = cbStopBackground (BoardNum);
- Gain = BIP5VOLTS;
- Status = RUNNING;
- CurCount = 0;
- CurIndex = 0;
- BufLen = 8192;
- Samplerate = 10;
- BBeg = 0;
- BEnd = 0;
- BlockSize = 16;
- Channels = 8;
- // source variables
- const char* params[] =
- {
-   "Source int SoftwareCh= 8 8 1 64 // number of digitized channels",
-   "Source int SampleBlockSize= 16 16 1 1024 // Size of Blocks in Samples",
-   "Source int SamplingRate= 256 256 1 10000 // sampling rate in S/s",
-   "Source int ADGain= 10 10 1 10 // Gain of A/D Board",
-   "Source intlist SourceChList= 8 0 1 2 3 4 5 6 7 1 0 63 // Assignment of Source channels",
- };
- const size_t numParams = sizeof( params ) / sizeof( *params );
- for( size_t i = 0; i < numParams; ++i )
-   paramlist->AddParameter2List( params[ i ] );
-
- Initialized = false;
+ BEGIN_PARAMETER_DEFINITIONS
+   "Source int SoftwareCh= 8 8 1 64 // "
+       "number of digitized channels",
+   "Source int SampleBlockSize= 16 16 1 1024 // "
+       "Size of Blocks in Samples",
+   "Source int SamplingRate= 256 256 1 10000 // "
+       "Sampling rate in S/s",
+   "Source int ADGain= 10 10 1 10 // "
+       "Gain of A/D Board",
+   "Source intlist SourceChList= 8 0 1 2 3 4 5 6 7 1 0 63 // "
+       "Assignment of Source channels",
+ END_PARAMETER_DEFINITIONS
 }
 
 TDASSource::~TDASSource()
 {
-    ULStat = cbStopBackground (BoardNum);
-    delete [] BoardName;
-    if (Initialized) {
-       free (ADData);
-       delete [] RandomData;
-    }
-    if( signal ) delete signal;
-    Initialized=false;
-}
-
-int TDASSource::ADShutdown()
-{
   ULStat = cbStopBackground (BoardNum);
-  return (1);
+  delete [] BoardName;
+  if( Initialized )
+  {
+     free( ADData );
+     delete [] RandomData;
+  }
 }
 
+void TDASSource::Preflight( const SignalProperties&,
+                                  SignalProperties& outSignalProperties ) const
+{
+  // Constants.
+  const size_t signalDepth = 2;
 
-int TDASSource::ADInit()
+  // "Owned" parameters (those defined in the constructor) are automatically
+  // checked for existence and range.
+
+  // Parameter values stored for later consideration.
+  int sampleBlockSize = Parameter( "SampleBlockSize" ),
+      softwareCh = Parameter( "SoftwareCh" ),
+      adGain = Parameter( "ADGain" );
+
+  // Parameter consistency checks.
+  if( adGain != 5 && adGain != 10 )
+    bcierr << "Parameter \"ADGain\" must have a value of either 5 or 10." << endl;
+
+  // Resource availability checks.
+  /* TODO: We need to check for board availability here. */
+
+  // Input signal checks.
+  /* input signal will be ignored */
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties( softwareCh, sampleBlockSize, signalDepth );
+}
+
+void TDASSource::Initialize()
 {
     int ADInitResult;
 
     ULStat = cbStopBackground (BoardNum);
-    if (paramlist->GetParamPtr("SamplingRate")) Samplerate = atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
-    else Samplerate = 256;
-    if (paramlist->GetParamPtr("SampleBlockSize")) BlockSize = atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-    else BlockSize = 16;
-    if (paramlist->GetParamPtr("SoftwareCh")) Channels = atoi(paramlist->GetParamPtr("SoftwareCh")->GetValue());
-    else Channels = 8;
-    if (paramlist->GetParamPtr("ADGain")) {
-        int AuxGain = atoi(paramlist->GetParamPtr("ADGain")->GetValue());
-        if (AuxGain==10) Gain = BIP10VOLTS;
-        if (AuxGain==5) Gain = BIP5VOLTS;
+    Samplerate = Parameter("SamplingRate");
+    BlockSize = Parameter("SampleBlockSize");
+    Channels = Parameter("SoftwareCh");
+    switch( ( int )Parameter("ADGain") )
+    {
+      case 5:
+        Gain = BIP5VOLTS;
+        break;
+      case 10:
+        Gain = BIP10VOLTS;
+        break;
+      default:
+        Gain = BIP5VOLTS;
+        bcierr << "Bad value of parameter \"ADGain\"" << endl;
     }
-    else Gain = BIP5VOLTS;
+
     if (Initialized) {
        free (ADData);
        delete [] RandomData;
@@ -107,8 +112,6 @@ int TDASSource::ADInit()
     ADData = (WORD *) malloc((BufLen+10)*sizeof(short));
     RandomData = new short [Channels];
     for (int i=0; i<Channels; i++) RandomData[i] = 0;
-    if( signal ) delete signal;
-    signal= new GenericIntSignal( Channels, BlockSize );
 
     cbErrHandling (PRINTALL, DONTSTOP);
     if (StrComp(BoardName,"PCIM-DAS1602/16")==0) Options = BACKGROUND + CONTINUOUS + BURSTMODE + SINGLEIO;
@@ -122,8 +125,11 @@ int TDASSource::ADInit()
     BBeg = 0;
     BEnd = 0;
     Initialized = true;
+#if 0
     return ADInitResult;
+#endif
 }
+
 
 int TDASSource::ADDataAvailable()
 {
@@ -137,7 +143,7 @@ int TDASSource::ADDataAvailable()
   return Contains;
 }
 
-int TDASSource::ADReadDataBlock()
+void TDASSource::Process( const GenericSignal*, GenericSignal* signal )
 {
  int Value;
 
@@ -157,21 +163,30 @@ int TDASSource::ADReadDataBlock()
         for (int j=0; j < Channels; j++){
            if (BBeg>(BufLen-1)) BBeg=0;
            Value=ADData[BBeg];
-           signal->Value[j][i]=(signed short)(Value-32768);
+           signal->SetValue( j, i, (signed short)(Value-32768) );
            BBeg+=1;
         }
      }
-     return (ULStat==0);
 }
 
+#if 0
 int TDASSource::ReadRandomDataBlock(GenericIntSignal *SourceSignal)
 {
      for (int i=0; i < BlockSize; i++){
         for (int j=0; j < Channels; j++){
            RandomData[j] += (rand() % 201)-100;
-           SourceSignal->Value[j][i]=RandomData[j];
+           SourceSignal->SetValue( j, i, RandomData[j] );
         }
      }
      Sleep(1000*BlockSize/Samplerate);
      return 1;
 }
+#endif
+
+void TDASSource::Halt()
+{
+  ULStat = cbStopBackground( BoardNum );
+}
+
+
+

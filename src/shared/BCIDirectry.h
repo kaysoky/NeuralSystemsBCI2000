@@ -3,8 +3,8 @@
 //	BCI Directory Management Functions
 //-------------------------------------------------
 
-#ifndef BCIDIRECTRY_H
-#define BCIDIRECTRY_H
+#ifndef BCIDirectryH
+#define BCIDirectryH
 
 #include <vcl.h>
 #include <string>
@@ -49,4 +49,4 @@ class BCIDtry
     int         GetLargestRun( const char * );
 } ;
 
-#endif // BCIDIRECTRY_H
+#endif // BCIDirectryH

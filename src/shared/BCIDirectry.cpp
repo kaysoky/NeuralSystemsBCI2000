@@ -1,15 +1,15 @@
 //-------------------------------------------------
-//	BCIDirectry.cpp
-//	BCI Dircetory Management Functions
+//  BCIDirectry.cpp
+//  BCI Dircetory Management Functions
 //-------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "BCIDirectry.h"
-#include <stdlib.h>
+
 #include <dir.h>
-#include <errno.h>
+
+#pragma package(smart_init)
 
 //--------------------------------------------------
 

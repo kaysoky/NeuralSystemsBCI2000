@@ -15,6 +15,9 @@ object fShowParameters: TfShowParameters
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
+  DesignSize = (
+    249
+    427)
   PixelsPerInch = 96
   TextHeight = 13
   object ParameterListBox: TCheckListBox

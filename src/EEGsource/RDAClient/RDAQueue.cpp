@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 // Make sure Windows.h is _not_ included before the following line
-//  (e.g., via vcl.h) or linking will fail.
+//  (e.g., via vcl.h or PCHIncludes.h) or linking will fail.
 #define INITGUID
 #include <Windows.h>
 #include "RDA/RecorderRDA.h"

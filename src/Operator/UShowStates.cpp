@@ -1,9 +1,9 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
-#pragma hdrstop
-
 #include "UShowStates.h"
+#include "UBCIError.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -24,6 +24,6 @@ int state;
  StateListBox->Clear();
  for (state=0; state < statelist->GetNumStates(); state++)
   StateListBox->Items->Add(statelist->GetStatePtr(state)->GetName());
- } catch(...) {;}
+ } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------

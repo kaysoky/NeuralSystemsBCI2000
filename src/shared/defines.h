@@ -47,6 +47,7 @@
 #define SOURCEID_TASKLOG        60
 #define SOURCEID_ROUNDTRIP      61
 #define SOURCEID_SPELLERTRIALSEQ 62
+#define SOURCEID_BCIOUT         63
         
 #define DATATYPE_INTEGER        0
 #define DATATYPE_FLOAT          1
@@ -56,6 +57,8 @@
 #define HANDLE_MESSAGE   (WM_APP + 402)
 #define STARTDAQ_MESSAGE (WM_APP + 403)
 #define RESET_MESSAGE    (WM_APP + 404)
+#ifndef VCL_DOUBLEBUF
 #define WINDOW_RENDER    (WM_APP + 405)
+#endif // VCL_DOUBLEBUF
 
 #endif

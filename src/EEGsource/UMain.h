@@ -82,6 +82,8 @@ public:		// User declarations
         GenericVisualization *vis, *roundtripvis;
         TDataStorage         *tds;
         CORECOMM             *corecomm, *sendingcomm;
+        GenericSignal        sourceSignal;
+        GenericIntSignal     sourceIntSignal;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;

@@ -13,37 +13,68 @@
  *         05/24/2000 - Data Translation Driver Added                         *
  *         04/11/2002 - Included error reporting                              *
  ******************************************************************************/
-
-//---------------------------------------------------------------------------
-
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <stdio.h>
-
-#include "GenericADC.h"
 #include "DTADC.h"
 
-//---------------------------------------------------------------------------
+#include "UBCIError.h"
+#include "UGenericSignal.h"
 
-#pragma package(smart_init)
+using namespace std;
 
 DTFUN dtfun;
 
+RegisterFilter( DTADC, 1 );
+
 // **************************************************************************
-// Function:   GetNewADC
-// Purpose:    This static member function of the GenericADC class is meant to
-//             be implemented along with a subclass of GenericADC.
-//             Its sole purpose is to make subclassing transparent for the
-//             code in EEGSource/UMain.cpp .
-// Parameters: Pointers to parameter and state lists.
-// Returns:    A generic pointer to an instance of the respective default
-//             ADC class.
+// Function:   DTADC
+// Purpose:    The constructor for the DTADC
+//             it fills the provided list of parameters and states
+//             with the parameters and states it requests from the operator
+// Parameters: N/A
+// Returns:    N/A
 // **************************************************************************
-GenericADC*
-GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
+DTADC::DTADC()
+: samplerate( 0 ),
+  blocksize( 0 ),
+  channels( 0 ),
+  SleepTime( 0 ),
+  ChanType( 0 ),
+  ListSize( 0 ),
+  dGain( 0.0 ),
+  ClkSource( 0 ),
+  dfFreq( 0.0 ),
+  Bufferpts( 0 ),
+  StartFlag( 0 )
 {
-  return new DTADC( inParamList, inStateList );
+ // add all the parameters that this ADC requests to the parameter list
+ BEGIN_PARAMETER_DEFINITIONS
+    "Source int SoftwareCh=      64 64 1 128 "
+        "// this is the number of digitized channels",
+    "Source int TransmitCh=      16 5 1 128 "
+        "// this is the number of transmitted channels",
+    "Source int SampleBlockSize= 16 5 1 128 "
+        "// this is the number of samples transmitted at a time",
+    "Source int SamplingRate=    128 128 1 4000 "
+        "// this is the sample rate",
+    "Source string BoardName=    BCI_IN "
+        "// this is the name of the AD board",
+ END_PARAMETER_DEFINITIONS
+
+ // add all states that this ADC requests to the list of states
+ // this is just an example (here, we don't really need all these states)
+ BEGIN_STATE_DEFINITIONS
+    "Running 1 0 0 0",
+    "Active 1 1 0 0",
+    "SourceTime 16 2347 0 0",
+    "RunActive 1 1 0 0",
+ END_STATE_DEFINITIONS
+}
+
+
+DTADC::~DTADC()
+{
 }
 
 // **************************************************************************
@@ -57,39 +88,20 @@ GenericADC::GetNewADC( PARAMLIST* inParamList, STATELIST* inStateList )
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int DTADC::ADInit()
+void DTADC::Initialize()
 {
-int     i;
-bool    flag;
-
- channels=atoi(paramlist->GetParamPtr("SoftwareCh")->GetValue());
- blocksize=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
- samplerate=atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
- strcpy( dtfun.BoardName, paramlist->GetParamPtr("BoardName")->GetValue() );
+ channels = Parameter( "SoftwareCh" );
+ blocksize = Parameter( "SampleBlockSize" );
+ samplerate = Parameter( "SamplingRate" );
+ // ...
+ strncpy( dtfun.BoardName, Parameter( "BoardName" ), sizeof( dtfun.BoardName ) );
+ dtfun.BoardName[ sizeof( dtfun.BoardName ) - 1 ] = '\0';
 
  dtfun.InitBoard();
-
- // set notification window - but we use a callback function now -> don't need this
- // MsgWin->Show();
- // dtfun.SetWindow( MsgWin->Msgw );
-
  dtfun.SetFunction( );
  ADConfig();
 
- StartFlag= 0;
-
- if ((!paramlist->GetParamPtr("SamplingRate")) || (!paramlist->GetParamPtr("TransmitCh")) || (!paramlist->GetParamPtr("SampleBlockSize")))
-    {
-#if 0
-    error.SetErrorMsg("SamplingRate, TransmitCh, or SampleBlockSize not defined !!");
-#endif
-    return(0);
-    }
-
- if( signal ) delete signal;
- signal= new GenericIntSignal( channels, blocksize );
-
- return(1);
+ StartFlag = 0;
 }
 
 
@@ -114,6 +126,50 @@ int DTADC::ADConfig()
 }
 
 // **************************************************************************
+// Function:   Preflight
+// Purpose:    Checks parameters for availability and consistence with
+//             input signal properties; requests minimally needed properties for
+//             the output signal; checks whether resources are available.
+// Parameters: Input and output signal properties pointers.
+// Returns:    N/A
+// **************************************************************************
+void DTADC::Preflight( const SignalProperties&,
+                             SignalProperties& outSignalProperties ) const
+{
+  // Constants.
+  const size_t signalDepth = 2;
+
+  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
+  PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
+
+  // Resource availability checks.
+  strncpy( dtfun.BoardName, Parameter( "BoardName" ), sizeof( dtfun.BoardName ) );
+  dtfun.BoardName[ sizeof( dtfun.BoardName ) - 1 ] = '\0';
+  dtfun.InitBoard();
+  dtfun.SetFunction();
+  bool boardAccessible =
+    dtfun.ConfigAD(
+        OL_CHNT_SINGLEENDED,
+        Parameter( "SoftwareCh" ),
+        2,
+        0,
+        Parameter( "SoftwareCh" ) * Parameter( "SamplingRate" ),
+        ( UINT )Parameter( "SoftwareCh" ) *  Parameter( "SampleBlockSize" )
+      ) == OLSUCCESS
+    && dtfun.Start() == OLSUCCESS
+    && dtfun.Stop() == OLSUCCESS
+    && dtfun.Reset() == OLSUCCESS
+    && dtfun.CleanUp() == OLSUCCESS;
+
+  if( !boardAccessible )
+    bcierr << "Could not start up data acquisition. Wrong board name?" << endl;
+
+  // Requested output signal properties.
+  outSignalProperties = SignalProperties(
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+}
+
+// **************************************************************************
 // Function:   ADReadDataBlock
 // Purpose:    This function is called within fMain->MainDataAcqLoop()
 //             it fills the already initialized array RawEEG with values
@@ -122,7 +178,7 @@ int DTADC::ADConfig()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int DTADC::ADReadDataBlock()
+void DTADC::Process( const GenericSignal*, GenericSignal* signal )
 {
 int     sample, channel, count;
 int     value, i, buffersize, time2wait;
@@ -131,10 +187,7 @@ int     value, i, buffersize, time2wait;
     {
     if (dtfun.Start() == 0)
        {
-#if 0
-       error.SetErrorMsg("Could not start up data acquisition. Wrong board name ?");
-#endif
-       return(0);
+       return;
        }
     else
        StartFlag= 1;
@@ -183,87 +236,14 @@ int     value, i, buffersize, time2wait;
  if (dtfun.BufferCount == 0) dtfun.bdone->ResetEvent();
 
  dtfun.data_critsec->Release();
-
- return(1);
 }
 
-int DTADC::ADShutdown()
+void DTADC::Halt()
 {
-
-        dtfun.Stop();
-        dtfun.Reset();
-        dtfun.CleanUp();
-
-        return(1);
+  dtfun.Stop();
+  dtfun.Reset();
+  dtfun.CleanUp();
 }
 
 
-// **************************************************************************
-// Function:   RandomNumberADC
-// Purpose:    The constructor for the RandomNumberADC
-//             it fills the provided list of parameters and states
-//             with the parameters and states it requests from the operator
-// Parameters: plist - the list of parameters
-//             slist - the list of states
-// Returns:    N/A
-// **************************************************************************
-DTADC::DTADC(PARAMLIST *plist, STATELIST *slist)
-{
-
-char            line[512];
-
- channels=0;
-
- // store the pointer to the parameter list and state list
- // we need the lists later on, e.g., in ADInit()
- // of course, we then can't meanwhile destroy the paramlist object
- paramlist=plist;
- statelist=slist;
-
- // add all the parameters that this ADC requests to the parameter list
- // in this case, the parameters come from a file
- // of course, they could be 'hard-coded', just the way the states
- // are added on the bottom
-
-strcpy(line,"Source int SoftwareCh=      64 64 1 128  // this is the number of digitized channels");
-paramlist->AddParameter2List(line, strlen(line) );
-
-strcpy(line,"Source int TransmitCh=      16 5 1 128  // this is the number of transmitted channels");
-paramlist->AddParameter2List( line, strlen(line) );
-
-strcpy(line,"Source int SampleBlockSize= 16 5 1 128 // this is the number of samples transmitted at a time");
-paramlist->AddParameter2List(line, strlen(line) );
-
-strcpy(line,"Source int SamplingRate=    128 128 1 4000  // this is the sample rate");
-paramlist->AddParameter2List(line, strlen(line) );
-
-strcpy(line,"Source string BoardName=    BCI_IN // this is the name of the AD board");
-paramlist->AddParameter2List(line, strlen( line ) );
-
-// strcpy(line,"Storage string FileName=    DTdata.dat // this is the name of the data file");
-// paramlist->AddParameter2List(line, strlen( line ) );
-
- // add all states that this ADC requests to the list of states
- // this is just an example (here, we don't really need all these states)
- statelist->AddState2List("Running 1 0 0 0\n");
- statelist->AddState2List("Active 1 1 0 0\n");
- statelist->AddState2List("SourceTime 16 2347 0 0\n");
- statelist->AddState2List("RunActive 1 1 0 0\n");
-
- // dtfun= new DTFUN();
-
-}
-
-
-DTADC::~DTADC()
-{
-int     i;
-
-if( signal ) delete signal;
-signal= NULL;
-
-// if( dtfun ) delete dtfun;
-// dtfun= NULL;
-
-}
 

@@ -23,14 +23,14 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT"/>
+    <USERDEFINES value="_DEBUG;NEW_DOUBLEBUF_SCHEME"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="operat.cpp"/>
     <INCLUDEPATH value="..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -40,8 +40,8 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -xf -X- -r- -a8 -5 -b- 
-      -k -y -v -vi- -c -tW -tWM"/>
+    <CFLAG1 value="-Od -H=..\shared\obj\bci2000.csm -Hc -Vx -Ve -xf -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
@@ -114,7 +114,7 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=26
@@ -178,9 +178,12 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=2
-Item0=_DEBUG;SIGNAL_BACK_COMPAT
+Count=5
+Item0=_DEBUG;NEW_DOUBLEBUF_SCHEME
 Item1=_DEBUG
+Item2=_DEBUG;NEW_DOUBLEBUF
+Item3=_DEBUG;VCL_DOUBLEBUF
+Item4=_DEBUG;SIGNAL_BACK_COMPAT
 
 [HistoryLists\hlIntOutputDir]
 Count=1

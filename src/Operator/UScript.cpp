@@ -1,7 +1,7 @@
+#include "PCHIncludes.h"
+#pragma hdrstop
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
-#pragma hdrstop
 
 #include "..\shared\defines.h"
 #include <stdio.h>

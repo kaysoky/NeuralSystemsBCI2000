@@ -48,9 +48,9 @@
  *                      improved error handling                               *
  ******************************************************************************/
 
-//---------------------------------------------------------------------------
-#include <vcl.h>
+#include "PCHIncludes.h"
 #pragma hdrstop
+//---------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <Registry.hpp>
@@ -133,7 +133,7 @@ COREMESSAGE             *coremessage;
           try {
           fMain->HandleCoreMessage(coremessage, coretype);
           // Synchronize(fMain->HandleCoreMessage);
-          } catch(...) {;}
+          } catch( TooGeneralCatch& ) {;}
           delete coremessage;
           if (coretype == COREMODULE_EEGSOURCE)   sysstatus.NumMessagesRecv1++;
           if (coretype == COREMODULE_SIGPROC)     sysstatus.NumMessagesRecv2++;
@@ -141,7 +141,7 @@ COREMESSAGE             *coremessage;
           }
        }
     }
-   catch(...)
+   catch( TooGeneralCatch& )
     {
     if (!Terminated) Terminate();
     }
@@ -209,7 +209,9 @@ void TfMain::ShutdownSystem()
 }
 
 //---------------------------------------------------------------------------
-__fastcall TfMain::TfMain(TComponent* Owner) : TForm(Owner)
+__fastcall TfMain::TfMain(TComponent* Owner)
+: TForm(Owner),
+  syslog( NULL )
 {
  sendrecv_critsec=new TCriticalSection();
 }
@@ -574,12 +576,14 @@ int     sample, channel, i, j;
                 vis_ptr->RenderData(message->visualization.GetIntSignal());
              if (message->visualization.GetDataType() == DATATYPE_FLOAT)
                 vis_ptr->RenderData(message->visualization.GetSignal());
+#ifndef NEW_DOUBLEBUF_SCHEME
              // now, send a message to the main thread
              // which will update the actual image; can use PostMessage so that it returns right away
              // I've tried forever to get the blitting to run within RenderData and couldn't get it to work
              // even though I used Critical Sections and canvas->Lock; have no idea why
              // that's why I have to use this crazy method
              PostMessage(fMain->Handle, WINDOW_RENDER, message->visualization.GetSourceID(), 0);
+#endif // NEW_DOUBLEBUF_SCHEME
              }
           }
        }
@@ -625,7 +629,7 @@ int     sample, channel, i, j;
        try
         {
         fConfig->RenderParameter(paramlist.GetParamPtr(message->param.GetName()));
-        } catch (...) {};
+        } catch ( TooGeneralCatch& ) {};
        }
 
     // it comes from the EEG source module
@@ -700,6 +704,21 @@ int     sample, channel, i, j;
           }
        }
     }
+
+#if 0
+    // Anyway, we want a working Quit button if any message arrived from one of the modules,
+    // and we need to go back to STATE_INFORMATION if there was an error.
+    if( sysstatus.SystemState == STATE_INITIALIZATION
+        && sysstatus.EEGsourceStatusReceived
+        && sysstatus.SigProcStatusReceived
+        && sysstatus.ApplicationStatusReceived
+        && !( sysstatus.EEGsourceINI && sysstatus.SigProcINI && sysstatus.ApplicationINI ) )
+    {
+      bRunSystem->Enabled = false;
+      bReset->Enabled = true;
+      sysstatus.SystemState = STATE_INFORMATION;
+    }
+#endif
 
  // it is a state message
  if (message->GetDescriptor() == COREMSG_STATE)
@@ -850,6 +869,7 @@ int     sourceID, windowtype;
 }
 
 
+#ifndef NEW_DOUBLEBUF_SCHEME
 void __fastcall TfMain::Render(TMessage &Message)
 {
 int     sourceID, windowtype;
@@ -863,6 +883,7 @@ VISUAL  *vis_ptr;
  vis_ptr->form->Canvas->CopyRect(Rect(0, 0, vis_ptr->form->ClientWidth, vis_ptr->form->ClientHeight), vis_ptr->bitmap->Canvas, Rect(0, 0, vis_ptr->form->ClientWidth, vis_ptr->form->ClientHeight));
  vis_ptr->form->Canvas->Unlock();
 }
+#endif // NEW_DOUBLEBUF_SCHEME
 
 
 void __fastcall TfMain::DoResetOperator(TMessage &Message)
@@ -932,7 +953,7 @@ int             ret;
  // turn off the screen update time
  ActiveTimer->Enabled=false;
 
- if (syslog) delete syslog;
+ if (syslog) syslog->Close( true );
  syslog=NULL;
 
  // store the settings in the ini file
@@ -1045,6 +1066,14 @@ void __fastcall TfMain::ApplicationSocketGetThread(TObject *Sender,
 
 void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
 {
+ if( syslog && !syslog->Close() )
+ {
+   Action = caNone;
+   return;
+ }
+ delete syslog;
+ syslog = NULL;
+ 
  ShutdownSystem();
 
  if (sendrecv_critsec) delete sendrecv_critsec;
@@ -1157,6 +1186,11 @@ void __fastcall TfMain::bSetConfigClick(TObject *Sender)
     {
     // after broadcasting the states, we are now in the Initialization Phase
     sysstatus.SystemState=STATE_INITIALIZATION;
+#if 0
+    sysstatus.EEGsourceStatusReceived = false;
+    sysstatus.SigProcStatusReceived = false;
+    sysstatus.ApplicationStatusReceived = false;
+#endif
     BroadcastStates();
     // send an system command 'Start' to the EEGsource
     SendSysCommand("Start", sysstatus.SourceSocket);

@@ -1,27 +1,28 @@
-//---------------------------------------------------------------------------
-
 #ifndef RandomNumberADCH
 #define RandomNumberADCH
-//---------------------------------------------------------------------------
-#endif
+
+#include "GenericADC.h"
 
 class RandomNumberADC : public GenericADC
 {
-public:
-                RandomNumberADC(PARAMLIST *, STATELIST *);
-    virtual     ~RandomNumberADC();
-    virtual int ADInit();
-    virtual int ADReadDataBlock();
-    virtual int ADShutdown();
+ public:
+               RandomNumberADC();
+  virtual      ~RandomNumberADC();
 
-protected:
-        PARAMLIST       *paramlist;
-        STATELIST       *statelist;
-        short           sineminamplitude, sinemaxamplitude;
-        short           noiseminamplitude, noisemaxamplitude;
-        float           sinefrequency;
-        short           DCoffset;
-        short           sinechannel;
-        bool            modulateamplitude;
-        //char            multstate[256];
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize();
+  virtual void Process( const GenericSignal*, GenericSignal* );
+  virtual void Halt();
+
+ private:
+  int    samplerate;
+  short  sineminamplitude, sinemaxamplitude;
+  short  noiseminamplitude, noisemaxamplitude;
+  float  sinefrequency;
+  short  DCoffset;
+  size_t sinechannel;
+  bool   modulateamplitude;
 };
+
+#endif // RandomNumberADCH
+
