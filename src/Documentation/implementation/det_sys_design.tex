@@ -1,246 +1,78 @@
 \chapter{Detailed System Design}
 
-
 \section{Operator}
+\todo{Describe Operator or drop this section.}
 
-\section{EEG Data Acquisition}
+\section{Core Modules}
 
 \subsection{Module Initialization}
 
-The initialization of the data acquisition module follows the procedure that is 
+The initialization of each core module follows the procedure that is 
 described in detail in chapter \textit{System Initialization} in the BCI2000 
-Project Outline. 
+Project Outline: 
+
+Each module publishes its requests for parameters and states to 
+the Operator module, which configures those and sends them back.
+After Data Acquisition received all parameters and states, it tries to connect
+to Signal Processing and -- upon successful connection -- sends a positive status 
+message to the Operator.
+In the same way, Signal Processing connects to the Application and the
+Application module connects to the Data Acquisition module.
+After the Operator received status messages from all three core modules, the 
+system is fully initialized and is triggered to start, as soon as the Operator 
+sends the state \textit{Running} with a value of 1 to the Data Acquisition.
 
 \subsection{System Termination}
 
-The following system termination procedure ensures a graceful shutdown, i.e., 
-information cycles through the system one last time and then each module 
-terminates. The specific procedure is as follows:
+To each of the three core modules, the operator module indicates system termination
+by closing the connection to that module.
 
-\begin{enumerate}
- \item{Operator sends the system command "Reset" to the EEG Source}
- \item{EEG Source leaves MainDataAcqLoop, and sends the system command "Reset" to Signal Processing}
- \item{When Signal Processing receives "Reset," it terminates its Receiving Thread and sends "Reset" to the Application}
- \item{When the Application receives "Reset," it terminates its Receiving Thread and sends "Reset" to the EEG Source}
- \item{When the EEG Source received "Reset" from the Application, it terminates its Receiving Thread and sends "Reset" to the Operator}
- \item{When the Operator finally receives "Reset," it closes connections to all three core modules}
- \item{Each core module detects the dropped connection to the Operator, then closes all connections and terminates}
-\end{enumerate}
+When a core module loses connection to the two other core modules it is connected
+to, it will send an error message to the operator, and then quit.
+The operator module, in turn, will close the connections to the remaining core
+modules.
 
-\subsubsection{General Principle}
 
-Summarized, the module publishes its requests for parameters and states to the 
-Operator module, which configures those and sends them back. After Data 
-Acquisition received all parameters and states, it tries to connect to Signal 
-Processing and - upon successful connection - sends a positive status message to 
-the Operator. After the Operator received status messages from all three core 
-modules, the system is fully initialized and is triggered to start, as soon as 
-the Operator sends the state \textit{Running} with a value of 1 to the Data 
-Acquisition.
+\section{EEG Data Acquisition}
+\label{sec:sourcedescription}
+The EEG Data Acquisition (or Source) module's role is to wait for data blocks
+coming in from the A/D hardware, and to send these blocks of data on to Signal
+Processing, thus acting as the on-line system's ``metronome" synchronized to 
+the A/D hardware clock.
+At the same time, it receives state vector information from the Application 
+module, and saves this state vector information to a file in BCI2000 .dat
+format, together with the raw digitized data.
 
-\subsubsection{Specific Implementation}
-
-\textit{By May 2003, much of the following detailed description has become
-obsolete, mainly by the introduction of a more thorough and unifying
-inheritance scheme;} \texttt{GenericADC} \textit{now inherits from}
-\texttt{GenericFilter}; \textit{all arguments that referred to global objects
-of types} \texttt{PARAMLIST, STATELIST, STATEVECTOR,} \textit{and}
-\texttt{CORECOMM} \textit{have been removed in favor of
-accessor functions which are part of a new mix-in base class,}
-\texttt{Environment}. \textit{A strict privatization of data members and introduction
-of accessor functions, as well as a consequent distinction between private,
-public, and protected members has taken place, resulting in a minimal set
-of details being exposed to code outside the framework itself, which is
-still changing, but without consequences for existing ADC and filter code.
-From this point of view, updating the following section in detail seemed
-problematic. For detailed up-to-date reference, the reader is pointed to the
-source code itself. To indicate the most important changes, footnotes have
-been added to the existing text which remains unchanged.--jm}\\[1ex]
-The system instantiates a new object from a class derived from 
-\textit{GenericADC} (details in \ref{class_model_dataacqu}) and passes an empty 
-parameter and state list. The constructor for this class fills these empty lists 
-with the parameters and states it wants to request from the operator. After the 
-operator filled these requests with meaningful values and after state 
-\textit{Running} switched to 1, the software enters the main data acquisition 
-loop, as below (in pseude code) - adc is a pointer to the derived (from 
-GenericADC) object:
-
+During normal operation (\textit{Running} is 1), the EEG source module 
+runs in a data acquisition loop that basically reads
 \begin{verbatim}
-void TfMain::MainDataAcqLoop()
-{
- // construct a new GenericDataStore object
- gds=new GenericDataStorage(&paramlist, CoreSocket, SignalProcessingSocket);
-
- adc->ADInit();
-
- while state 'Running' is 1
-  {
-  adc->ADReadDataBlock();
-
-  UpdateStateVector();
-  gds->Write2SignalProc(adc->signal, statevector);
-  tds->Write2Disk(adc->signal);
-
-  vis->Send2Operator(adc->signal);
-  }
-
- adc->ADShutdown();
-}
+1: While Running
+2:   Save state vector to file
+3:   Wait for A/D data
+4:   Send A/D data to Signal Processing
+5:   Wait for state vector from Application
+6:   Save A/D data to file
 \end{verbatim}
 
-ADInit() initializes (i.e., configures and starts) the data acquisition process. 
-ADReadDataBlock() acquires a data block (\textit{SoftwareCh} channels and 
-\textit{SampleBlockSize} samples) with sampling rate \textit{SamplingRate}. 
-ADReadDataBlock() DOES NOT return, until the data acquisition for said data 
-block has not finished. Finally, ADShutdown() stops the data acquisition upon
-exiting the main loop.\footnote{
-The \texttt{GenericADC} class now inherits the unified class interface declared
-by \texttt{GenericFilter}, which is discussed in section~\ref{class_model}.
-The previous \texttt{GenericADC} member functions have been mapped as follows:
-\texttt{ADInit()}$\rightarrow$\texttt{Initialize()} -- \texttt{ADReadDataBlock()}$\rightarrow$\texttt{Process()} -- \texttt{ADShutdown()}$\rightarrow$\texttt{Halt()}.
-}
+Note that statement 3 as well as statement 5 are blocking operations, i.e.\ 
+the module will wait for A/D data as well as for the state vector data
+coming in from the Application module.
 
-
-\subsection{Implementing Your Own Data Acquisition}
-
-Integrating a new data acquisition board into the system is simple:\footnote{
-       The instantiation scheme has been changed to avoid copying and editing
-       of framework code (which made it difficult to maintain). Now, you add a line
-       \texttt{RegisterFilter(MyADC, 1);} to your ADCs own cpp file, and
-       don't touch \texttt{UMain.cpp}.}
-
-\begin{enumerate}
- \item{Derive a class from \textit{GenericADC} in a separate file}
- \item{Implement the constructor and the methods ADInit(), ADReadDataBlock(),
-       and ADShutdown() (use the implementations in RandomNumberADC 
-       as an example to start with and make sure that your methods
-       have the same return values)}
- \item{Include your new unit in the EEGsource project and include 
-       its header file in UMain.cpp}
- \item{In UMain.cpp, in \begin{verbatim}TfMain::StartupDataAcquisition()\end{verbatim}
-       change the instantiation
-       \begin{verbatim}adc=new RandomNumberADC(&paramlist, &statelist);\end{verbatim}}
- \item{Change the type declaration \begin{verbatim}RandomNumberADC *adc;\end{verbatim} 
-       in UMain.h to the name of your derived class}  
-\end{enumerate}
-
-
-\subsection{Class Model}
-\label{class_model_dataacqu}
-
-This section describes the main classes used for data acquisition. In addition, 
-you'll find comments and examples throughout.
-
-\begin{verbatim}
-class GenericADC
-{
-protected:
-        int     samplerate;
-public:
-        GenericADC::GenericADC();
-        GenericADC::~GenericADC();
-        GenericIntSignal *signal;
-        int     ADInit();
-        int     ADReadDataBlock();
-        int     ADShutdown();
-        int     GetSampleRate();
-};
-\end{verbatim}
-
-One example of an implementation of a derived class from GenericADC is 
-RandomNumberADC.
-
-\begin{verbatim}
-class RandomNumberADC : public GenericADC
-{
-protected:
-        PARAMLIST       *paramlist;
-        STATELIST       *statelist;
-public:
-        RandomNumberADC::RandomNumberADC(PARAMLIST *, STATELIST *);
-        RandomNumberADC::~RandomNumberADC();
-        int     ADInit();
-        int     ADReadDataBlock();
-        int     ADShutdown();
-};\end{verbatim}
-
-
-The TDataStorage class deals with storing signals in BCI2000 data format (as 
-defined in the Project Outline, chapter 4.11.1) to the hard drive. It requests 
-parameters upon startup that it needs to operate (e.g., the file name). This is 
-implemented similarly to the GenericADC and GenericFilter classes - the 
-constructor requests certain parameters that the class will later on operate 
-with. Similarly to GenericADC, Initialize() and Shutdown() will be called at the 
-start and the end of the main data acquisition loop, respectively.
-
-\begin{verbatim}
-class TDataStorage
-{
-private:
-        STATELIST *statelist;
-        PARAMLIST *paramlist;
-        STATEVECTOR *statevector;
-        FILE *WFile;
-        signed short *BinData;
-        short Channels;
-        short StateVectorLen;
-        void WriteHeader();
-        char* FName;
-public:
-	TDataStorage::TDataStorage(PARAMLIST *paramlist);
-	TDataStorage::~TDataStorage();
-        void Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList,
-                        STATEVECTOR *Newstatevector);
-        bool Write2Disk(GenericIntSignal *StoreSignal);
-};
-\end{verbatim}
-
-
-The GenericVisualization class deals with packaging signals (GenericSignals and 
-GenericIntSignals), or parts (i.e., certain channels) of these, into core 
-messages (as defined in Project Outline, chapter 4.4.6) and sending these to the 
-operator. These functions might be used by all modules using these GenericSignal 
-classes. Once again, the constructor will request parameters that, for example, 
-select the channels that are transmitted. In addition, there are functions that, 
-provided with a parameter of type \textit{intlist}, only send select channels 
-(without having to derive a specific class that requests this parameter).
-
-
-\begin{verbatim}
-class GenericVisualization
-{
-protected:
-        TCustomWinSocket *operatorsocket;
-        int    SendBufBytes(TCustomWinSocket *Socket, char *buf, 
-                            int length);
-        GenericIntSignal *intsignal;
-        GenericSignal    *signal;
-        BYTE   sourceID;
-        BYTE   datatype;
-        BYTE   vis_type;
-public:
-	GenericVisualization::GenericVisualization();
-	GenericVisualization::GenericVisualization(PARAMLIST *paramlist, 
-	                                           TCustomWinSocket *);
-	GenericVisualization::~GenericVisualization();
-
-        bool    Send2Operator(GenericIntSignal *signal);
-        int     Send2Operator(GenericIntSignal *signal, 
-                              PARAM *channellistparam);
-        bool    Send2Operator(GenericSignal *signal);
-        int     Send2Operator(GenericSignal *signal, 
-                              PARAM *channellistparam);
-        void    ParseVisualization(char *buffer, int length);
-        void    SetSourceID(BYTE my_sourceID);
-        BYTE    GetSourceID();
-        void    SetDataType(BYTE my_datatype);
-        BYTE    GetDataType();
-        GenericIntSignal *GetIntSignal();
-        GenericSignal    *GetSignal();
-        void    SetVisualizationType(BYTE my_vistype);
-        bool    valid;
-};
-\end{verbatim}
+This mode of operation requires a sufficiently fast system to work properly.
+For our purposes, a ``fast" system is a system where 
+\begin{itemize}
+\item synchronous I/O operations (2, 4, 5, and 6) require an execution time
+      that is small compared to the duration of a data block
+      (as given by the sampling rate and the sample block size), and
+\item the time required by the Signal Processing and Application modules
+      for processing the data sent out in statement 4 is small compared
+      to the duration of a data block.
+\end{itemize}
+In an on-line system, the time between sampling of a data block, and display
+of the resulting feedback information to the subject, is critical.
+Given a ``sufficiently fast" system as defined above, only statement 4 will enter
+into this critical time path, while the time spent on execution of the remaining
+statements will reduce the waiting interval occurring in statement 3.
 
 
 \newpage
@@ -248,17 +80,22 @@ public:
 
 \subsection{Overview}
 
-Signal Processing acts like a black box to the rest of the system - it receives 
+Signal Processing acts like a black box to the rest of the system -- it receives 
 EEG signals from the Data Acquisition and sends control signals on to the 
 Application. Figure \ref{sigprocdataflow} illustrates the data flow in this 
-implementation. As layed out in Figure \ref{sigprocdataflow}, there are 5 main 
-filters (Calibration, Spatial Filter, Temporal Filter, Classifier, and 
-Normalizer) and 6 GenericSignals (Signals A, B, C, D, E, F). The dimensionality 
+implementation. As layed out in Figure \ref{sigprocdataflow}, there are basically 
+5 main filters (Calibration, Spatial Filter, Temporal Filter, Classifier, and 
+Normalizer) and 6 different signals (A (EEG signal), B, C, D, E, F 
+(control signal)). The dimensionality 
 of each of these signals is described in their respective filter description. 
 
 \begin{figure}[ht]
  \centerline{\scalebox{0.8}{\includegraphics{figures/SigProcDataFlow}}}
  \caption{Data flow in the signal processing module}
+ \todo{In the actual implementation, the Statistics filter is a pass-through
+       filter for signal E (position), and communicates with the normal filter
+       by changing parameters(arrow direction). However, the diagram
+       might be called roughly correct in a more abstract sense.}
  \label{sigprocdataflow}
 \end{figure}
 
@@ -268,7 +105,7 @@ As described in chapter \ref{des_consid_goals}, one of the goals for this system
 is for each module to be as independent of the others as possible, e.g., Signal 
 Processing should not have to take the type of data collection hardware into 
 account. For the same reason, Application should (ideally) not have to know 
-about the used signal processing method. While in real--world situations this 
+about the used signal processing method. While in real-world situations this 
 will not be possible, control signals shall be normalized to the value range of 
 short integers (-32767 to +32767), shall be zero mean (to the extent that this 
 is possible), and each value shall be equally accessible by the user's EEG. In 
@@ -287,199 +124,954 @@ together with other filters. Therefore, hard coded assumptions about these three
 parameters have to be avoided.
 
 
-\subsection{Module Initialization}
 
-The GenericFilter's constructor requests parameters and states in the state 
-vectors from the operator in the same fashion other classes (e.g., GenericADC) 
-do. In order to distinguish different instances, the constructor can also be 
-passed an integer defining the instance number. The constructor can ignore this 
-instance number or it can request different parameters for each instance (e.g., 
-WindowLength1 for instance 1, WindowLength2 for instance 2, etc.)
+\section{User Application}
+
+As described in chapter \ref{goals_module_independence}, one major goal for 
+system design is the independence between modules. In most BCI systems, however, 
+some parts of the signal processing applied (i.e., the device-dependent part of 
+signal processing) depend on the feedback to the user -- a feature provided by 
+the user application.
+
+This inter-dependence between signal processing and the user application poses 
+severe problems to the system design, because it is not possible to completely 
+encapsulate each module and separate it from others.
+
+In order to minimize inter-dependence, duties should be performed by the module
+that is conceptually defining it, e.g., task paradigm and timing are conceptually
+parts of a task and should therefore be handled by the user application module.
+
+Section \ref{section_rjb_task} describes a particular implementation of a user
+task - a simple cursor task - that complies with this motivation.
 
 
-\subsection{Class Model}
-\label{class_model}
 
-Many classes in both Data Acquisition and Signal Processing are working on 
-signals. Thus, we defined two similar classes: \textit{GenericSignal} (working 
-with floating point numbers) and \textit{GenericIntSignal} (working with short integers).
+\section{Understanding and Writing BCI2000 Code}
 
-\begin{verbatim}
-class GenericSignal
+This section provides background information which you need in order to understand,
+modify, or create code that depends on the specific BCI2000 framework
+presented in this document.
+You should read it before writing your own BCI2000 module, or modifying an
+existing one as presented in the examples of sections \ref{sec:sourcetutorial}
+and \ref{sec:filtertutorial} below.
+
+\subsection{Reporting errors and warnings}
+
+There are two output channels available to any code inside a BCI2000 module.
+Technically, these channels are global objects derived from the STL's \texttt{std::ostream} class. As such, they work much like the global
+\texttt{std::cout} and \texttt{std::cerr} output streams available inside a 
+C++ command line program, except that their output will be sent to the operator
+module's log window rather than a terminal window.
+The names of these output streams are \texttt{bciout} and \texttt{bcierr},
+declared in \texttt{shared/UBCIError.h}, and while writing output to 
+\texttt{bciout} has no side effects, writing to \texttt{bcierr} has side
+effects that depend on the system's phase of operation:
+In preflight phase, the side effect 
+will be a preflight failure, and the system will refuse to be started unless
+reconfigured with correct parameters; otherwise, the side effect will be system termination after error display.
+
+For the \texttt{Preflight} function, there is also a macro
+\texttt{PreflightCondition} available that is intended to make checking 
+for conditions more convenient:
+
+\codebegin
+\verb|PreflightCondition( Parameter( "MyFirstParam" ) >= 3 );|
+\codeend
+
+will result in a message
+
+\codebegin
+\verb|"A necessary condition is violated: Parameter( "MyFirstParam" ) >= 3"|
+\codeend
+
+in the operator window if \texttt{MyFirstParam}'s value is below 3.
+
+Finally, in case of a non-recoverable error, you may also throw an exception 
+of type \texttt{const char*} in order to report an error in the operator window,
+and to terminate the BCI2000 system after the error has been displayed:
+
+\codebegin
+\verb|throw __FUNC__ ": Disk space is exhausted";|
+\codeend
+
+A more detailed discussion of these error reporting facilities, and the overall
+error handling concept in this BCI2000 implementation is available at
+\texttt{Documentation/ errorhandling}.
+\todo{Should we make the error handling document a chapter of this document?}
+
+
+\subsection{Your code's \texttt{Environment}}
+
+In each BCI2000 module, there exist system wide parameters and states as
+described in the project outline document.
+In this implementation, access to parameters and states is mediated through
+a class \texttt{Environment}. This class provides functions for convenient access
+to parameters and states, and transparently handles a number of error conditions
+that might occur.
+The services provided by the \texttt{Environment} class interface are available
+to all classes that inherit from it. For \texttt{GenericFilter} descendants, this
+is automatically the case; for other classes, you need to explicitly state
+the inheritance as in 
+
+\codebegin\begin{verbatim}
+#include "UEnvironment.h"
+...
+MyClass : private Environment
 {
-private:
-       int  *Elements;
-public:
-       GenericSignal(unsigned short NewChannels, int NewMaxElements);
-       ~GenericSignal();
-       float **Value;
-       int   Channels;
-       int   MaxElements;
-       bool  SetElements(unsigned short Channel, int NewElements);
-       int   GetElements(unsigned short Channel);
-       bool  SetChannel(float *source, int channel);
-       float *GetChannel(int channel);
-       float GetValue(int Channel, int Element);
-       bool  SetValue(int Channel, int Element, float Value);
+  ...
 };
-\end{verbatim}
+\end{verbatim}\codeend
 
+From any code inside \texttt{MyClass}, you may then read or set 
+parameter and state values simply by writing
 
-\begin{verbatim}
-class GenericIntSignal
+\codebegin\begin{verbatim}
+int numberOfItems = Parameter( "NumberOfItems" );
+float matrixValue = Parameter( "MatrixParam", index1, index2 );
+short feedbackState = State( "Feedback" );
+State( "Feedback" ) = 0;
+\end{verbatim}\codeend
+
+If you try accessing a parameter or state that does not exist, an appropriate
+error message will be sent to \texttt{bcierr}, so you don't need to handle
+this type of error explicitly.
+
+For a greater independence between modules, it is sometimes desirable to 
+read a parameter or state if it exists, and use a default value otherwise.
+You achieve this behavior by writing
+
+\codebegin\begin{verbatim}
+int numberOfItems = OptionalParameter( defaultValue, "NumberOfItems" );
+short itiState = OptionalState( 0, "IntertrialInterval" );
+\end{verbatim}\codeend
+
+\todo{Check whether there is a problem with TForms inheriting from Environment,
+and if yes, present a work-around here.}
+
+For a detailed description of the \texttt{Environment} facilities, see the 
+\texttt{Environment} section of the BCI2000 error handling document.
+
+\subsection{Signals and Signal Properties}
+
+Many classes in both Data Acquisition and Signal Processing work on 
+signals. The \texttt{GenericSignal} class contains floating point data
+organized as a matrix of channels and ``elements" (a generalized notion 
+of samples -- e.g., spectrally analyzed data might contain the spectrum of 
+each channel as a list of ``elements").
+
+Sometimes, the number of channels, elements, and the number of bytes required
+for storing values, are referred to as ``Signal Properties".
+There is a separate class, \texttt{SignalProperties}, for expressing those
+values, and determining whether a given signal ``fits" into another one, i.e.\ 
+whether the values contained in one signal may be copied into another 
+signal without loss of information.
+\texttt{GenericFilter} inherits from \texttt{SignalProperties}.
+
+\subsection{The \texttt{GenericFilter} class}
+
+\texttt{GenericFilter} is a base class that provides a programming
+interface for all user code inside the core modules of this BCI2000
+implementation.
+Programming your own data acquisition module, your own filter inside 
+Signal Processing, or your own application, all implies deriving your own 
+class from \texttt{GenericFilter}.
+
+\texttt{GenericFilter}'s member functions represent the various 
+initialization and processing events that occur during system startup
+and operation (cf.\ the \textit{System Initialization} chapter in the 
+BCI2000 project outline). Your own filter code \textit{must} implement its own 
+versions of some of these member functions:
+\begin{itemize}
+
+ \item The \textit{Constructor}, besides its general purpose of initializing
+       member data, declares the parameters and states your filter
+       wants to introduce into the system
+       (the \texttt{BEGIN\_...} and \texttt{END\_...} macros handle the actual
+       function calls):
+
+\codebegin\begin{verbatim}
+MyFilter::MyFilter()
+: mMyParam( 1 ),
+  mMyOtherParam( 0.1 ),
+  mCount( 0 )
 {
-private:
-       int  *Elements;
-public:
-       GenericIntSignal(unsigned short NewChannels, int NewMaxElements);
-       ~GenericIntSignal();
-       short **Value;
-       int   Channels;
-       int   MaxElements;
-       bool  SetElements(unsigned short Channel, int NewElements);
-       int   GetElements(unsigned short Channel);
-       bool  SetChannel(short *source, int channel);
-       short *GetChannel(int channel);
-       short GetValue(int Channel, int Element);
-       bool  SetValue(int Channel, int Element, short Value);
-};
-\end{verbatim}
+  BEGIN_PARAMETER_DEFINITIONS
+    "MySection int MyParam= 1 "
+      "0 0 3 // This is range-checked between 0 and 3",
+    "MySection float MyOtherParam= 0.1 "
+      "0 0 0 // This is not automatically range-checked", 
+  END_PARAMETER_DEFINITIONS
+         
+  BEGIN_STATE_DEFINITIONS
+    "MyState 1 0 0 0",
+  END_STATE_DEFINITIONS
+}
+\end{verbatim}\codeend
+       
+ \item The \texttt{Preflight} function checks whether the preconditions
+       for successful operation are met.
+       This function is called whenever parameter values are re-applied,
+       i.e.\ whenever the user presses ``Set Config", ``Start", or ``Resume"
+       in the operator window.
+       If \texttt{Preflight} does not report an error via \texttt{bcierr},
+       this is considered a promise that \texttt{Initialize} and \texttt{Process}
+       will work properly with the current parameters.
+       
+       The first argument to \texttt{Preflight} will inform you about what 
+       kind of input signal your filter is going to receive, and your filter 
+       is expected to report the properties of its output signal via the second
+       parameter:
 
-
-The main class in Signal Processing besides the signal classes is the
-class \textit{GenericFilter} and each filter class is derived from it.
-
-\begin{verbatim}
-class GenericFilter 
+\codebegin\begin{verbatim}
+void
+MyFilter::Preflight( const SignalProperties& inputProperties,
+                                  SignalProperties& outputProperties ) const
 {
-protected:
-       STATEVECTOR       *statevector;
-       TCustomWinSocket  *operatorsocket;
-public:
-       GenericFilter(PARAMLIST *ParamList, STATELIST *StateList);
-       GenericFilter(PARAMLIST *ParamList, STATELIST *StateList, 
-                     int instance);
-       ~GenericFilter();
-       int Initialize(PARAMLIST *ParamList, STATEVECTOR *statevector, 
-                     TCustomWinSocket *opsocket);
-       int Process(GenericSignal *Input, GenericSignal *Output);
-};
-\end{verbatim}
+  PreflightCondition( Parameter( "MyOtherParam" ) > 0.0 );
+  PreflightCondition( inputProperties.Channels() > 0 );
+  PreflightCondition( inputProperties.MaxElements( 0 ) > 0 );
+  outputProperties = inputProperties;
+}
+\end{verbatim}\codeend
+       Note that the \texttt{const} keyword following the function argument list
+       forbids to alter any data member of your filter object.
+       This avoids diffusion of initialization code from \texttt{Initialize}
+       into \texttt{Preflight}. If you have your own sub-objects instantiated
+       and maintained by your filter, you should provide them with their own
+       \texttt{Preflight() const} member functions, and call these from
+       your filter's \texttt{Preflight}.
+ 
+ \item \texttt{Initialize} is called after a successful \texttt{Preflight}.
+       Thus, it may safely omit all checks related to parameter consistency.
+       In \texttt{Initialize}, your filter's data members are set to the
+       values implied by the user's choices, or to the initial values required
+       for the filter's operation: 
 
-
-The class \textit{FILTERS} is a wrapper for all signals and filters in the 
-SignalProcessing module. It instantiates and initializes each signal and filter, 
-and for each incoming EEG signal block from Data Acquisition, its Process() 
-method calls the Process() methods for each filter. This class is defined in the 
-unit UFilterHandling.cpp -- \textbf{no other unit has to and should be touched, 
-if you want to include your filter in the main program.}\footnote{
-This is likely to change in the future such that copying and editing of framework code
-can be avoided (which makes it difficult to maintain otherwise). If you implement
-your filter's \texttt{Preflight()} member properly (see the error handling document
-for details about this new member of \texttt{GenericFilter}), and if you add a
-line \texttt{RegisterFilter(MyFilter, 2.x);} to your filter's cpp file,
-you prepare for those changes.}
-
-\begin{verbatim}
-class FILTERS
+\codebegin\begin{verbatim}
+void
+MyFilter::Initialize()
 {
-protected:
-       GenericSignal *CreateGenericSignal(int transmitchannels, 
-                                          int samples, char *buf);
-       int      numcontrolsignals, samples, transmitchannels;
-public:
-       FILTERS(PARAMLIST *ParamList, STATELIST *StateList);
-       ~FILTERS();
-       int      Initialize(PARAMLIST *plist, STATEVECTOR *svector, 
-                           CORECOMM *corecomm);
-       int      Process(char *buf);
-       bool     error;
-       CalibrationFilter  *calfilter;
-       GenericSignal      *SignalA, *SignalAPrime, *SignalB;
-       GenericSignal      *SignalC, *SignalD, *SignalDPrime;
+  mMyParam = Parameter( "MyParam" );
+  mMyOtherParam = Parameter( "MyOtherParam" );
+  mCount = 0;
+}
+\end{verbatim}\codeend
+       
+ \item The \texttt{Process} function is called once for each block of EEG data.
+       It receives an input in its first argument, and sets the output signal
+       to values resulting from the filter operation.
+       In the current BCI2000 implementation, there is a single chain of 
+       filters; one filter's output signal is the next filter's input.
+       A filter which does not perform any modification to the signal (e.g., a 
+       statistics filter) needs to copy its input signal into the output signal,
+       as in the example:
+
+\codebegin\begin{verbatim}
+void
+MyFilter::Process( const GenericSignal* inputSignal,
+                                GenericSignal* outputSignal )
+{
+  if( ( *inputSignal )( 0, 0 ) > mMyOtherParam )
+    ++mCount;
+  *outputSignal = *inputSignal;
+}
+\end{verbatim}\codeend
+ 
+\end{itemize}
+
+Other member functions are \textit{optional;} you may decide whether you
+override their (empty) default implementation with your own version, 
+depending on what your filter needs to do:
+\begin{itemize}
+
+ \item \texttt{Resting} is called instead of \texttt{Process} when the system
+       is in suspended state. This is also the only function from which
+       a filter may change a parameter value. Any parameter changes inside
+       \texttt{Resting} will propagate to the other modules without any 
+       explicit request from your side.
+       
+ \item The \texttt{Halt} function is called before any re-configuration of 
+       the system takes place. If your filter initiates asynchronous operations
+       such as playing a sound file, acquiring EEG data, or executing threads,
+       its \texttt{Halt} member function should terminate all such operations
+       immediately. Failure to do so might result in a non-responding module,
+       or in other errors difficult to track down.
+       For descendants of \texttt{GenericADC}, implementing the \texttt{Halt}
+       function is mandatory.
+
+ \item Your filter's \textit{Destructor} should free all resources 
+       acquired in the Constructor or in \texttt{Initialize}.
+       In many cases, freeing of resources will be done implicitly if you use
+       direct members instead of pointers, removing the need of a destructor.
+       
+       However, if your filter has a non-empty \texttt{Halt} function, it
+       needs a destructor that calls \texttt{Halt}:\footnote{
+         This can not be done from the base class destructor because overridden
+         virtual functions cannot be called from base class constructors
+         or destructors.}
+
+\codebegin\begin{verbatim}
+MyFilter::~MyFilter()
+{
+  Halt();
+}
+\end{verbatim}\codeend
+
+\end{itemize}
+
+
+\subsection{The filter chain}
+
+As noted in the discussion of the \texttt{GenericFilter::Process} function, all \texttt{GenericFil\-ter} descendants inside a BCI2000 module form a single 
+chain of filters. Each filter's output forms the input of the subsequent filter.
+Creating instances of all filter classes inside a module, and building the filter
+chain, is handled by the framework. However, it needs a hint to determine the
+sequence in which filters are to be arranged. In general, this hint consists of
+a single statement placed inside your filter's .cpp file:
+
+\codebegin\begin{verbatim}
+RegisterFilter( MyFilter, 2.C );
+\end{verbatim}\codeend
+The first argument to this statement is your filter's class name; the second 
+argument is a string value (given without quotes) that determines the
+relative position of your filter in the filter chain.
+This is done applying the simple rule that the filter positions in the chain
+match the alphanumeric sorting order of the filters' associated position strings.
+This scheme allows you to place an additional filter between existing ones
+without changing the position strings of the existing filters.
+
+In principle, this allows to add filters to a module's filter chain without
+modification to existing source code, simply by adding a .cpp file with a
+\texttt{RegisterFilter} statement to the project.
+
+However for Signal Processing modules, it appears more desirable to have an 
+explicit representation of the entire filter chain centralized in one file.
+So there is, for each individual Signal Processing module, one file
+\texttt{UFilterHandling.cpp} that defines the filter chain as a sequence of
+\texttt{Filter} statements (see Section \ref{sec:filtertutorial} for an
+example).
+
+\subsection{Presenting data to the operator user}
+
+Your filter may have information that it wants to present to the user --
+e.g., the EEG signal might appear graphically in a window, or an application
+task log should be presented. Packaging this information into core messages,
+and sending these to the operator module, is handled by the 
+\texttt{GenericVisualization} class.
+
+Typically, to visualize data this way, you will add a data member of type
+\texttt{GenericVisualization} to your filter class -- see Section
+\ref{sec:filtertutorial} for an example.
+
+
+\subsection{Tutorial: Implementing Your Own Data Acquisition}
+\label{sec:sourcetutorial}
+Data acquisition modules are factored into code required for any hardware,
+and code required to access a specific hardware.
+What you need to do is provide a function that waits for and reads A/D data 
+(line 3 in the EEG source pseudo code of section \ref{sec:sourcedescription}),
+together with some helper functions that perform initialization and cleanup tasks.
+Together these functions form a class derived from \texttt{GenericADC}.
+
+In this tutorial, we consider this scenario:
+Your \textit{Tachyon Corporation} A/D card comes with a C-style software interface 
+declared in a header file \texttt{"TachyonLib.h"} that consists of three
+functions
+\codebegin\begin{verbatim}
+#define TACHYON_NO_ERROR 0
+int TachyonStart( int inSamplingRate, int inNumberOfChannels );
+int TachyonStop( void );
+int TachyonWaitForData( short** outBuffer, int inCount );
+\end{verbatim}\codeend
+
+From the library help file, you learn that \texttt{TachyonStart} configures the
+card and starts acquisition to some internal buffer; that \texttt{TachyonStop}
+stops acquisition to the buffer, and that \texttt{TachyonWaitForData}
+will block execution until the specified amount of data has been acquired, and
+that it will return a pointer to a buffer containing the data in its first argument.
+Each of the functions will return zero if everything went well, and some error 
+value otherwise.
+
+Luckily (and somewhat unrealistic), \textit{Tachyon Corporation} gives you just
+what you need for a BCI2000 source module, so implementing the ADC class is 
+quite straightforward.
+In your class' header file, \texttt{"TachyonADC.h"}, you write
+
+\codebegin\begin{verbatim}
+#ifndef TachyonAdcH
+#define TachyonAdcH
+
+#include "GenericADC.h"
+
+class TachyonADC : public GenericADC
+{
+ public:
+   TachyonAdc();
+   ~TachyonAdc();
+
+   void Preflight( const SignalProperties&, SignalProperties& ) const;
+   void Initialize();
+   void Process( const GenericSignal*, GenericSignal* );
+   void Halt();
+
+ private:
+   int  mSoftwareCh,
+        mSampleBlockSize,
+        mSamplingRate;
 };
-\end{verbatim}
+#endif // TachyonAdcH
+\end{verbatim}\codeend
+
+In the .cpp file, you will need some \texttt{\#includes}, and a filter registration:
+
+\codebegin\begin{verbatim}
+#include "TachyonADC.h"
+#include "Tachyon/TachyonLib.h"
+#include "UBCIError.h"
+
+using namespace std;
+
+RegisterFilter( TachyonADC, 1 );
+\end{verbatim}\codeend
+
+From the constructor, you request parameters and states that your ADC needs;
+from the destructor, you call \texttt{Halt} to make sure that your board stops
+acquiring data whenever your class instance gets destructed:
+
+\codebegin\begin{verbatim}
+TachyonADC::TachyonADC()
+: mSoftwareCh( 0 ),
+  mSampleBlockSize( 0 ),
+  mSamplingRate( 0 )
+{
+  BEGIN_PARAMETER_DEFINITIONS
+    "Source int SoftwareCh=      64 64 1 128 "
+        "// this is the number of digitized channels",
+    "Source int SampleBlockSize= 16 5 1 128 "
+        "// this is the number of samples transmitted at a time",
+    "Source int SamplingRate=    128 128 1 4000 "
+        "// this is the sample rate",
+  END_PARAMETER_DEFINITIONS
+}
+
+TachyonADC::~TachyonADC()
+{
+  Halt();
+}
+\end{verbatim}\codeend
+
+Your \texttt{Preflight} function will check whether the board works with the 
+parameters requested, and communicate the dimensions of its output signal:
+
+\codebegin\begin{verbatim}
+void TachyonADC::Preflight( const SignalProperties&,
+                              SignalProperties& outputProperties ) const
+{
+  if( TachyonStart( Parameter( "SamplingRate" ), Parameter( "SoftwareCh" ) )
+      != TACHYON_NO_ERROR )
+    bcierr << "SamplingRate and/or SoftwareCh parameters are not compatible"
+           << " with the A/D card"
+           << endl;
+  TachyonStop();
+  outputProperties = SignalProperties( Parameter( "SoftwareCh" ),
+                                           Parameter( "SampleBlockSize" ), 2 );
+}
+\end{verbatim}\codeend
+
+For the \texttt{Initialize} function, you know that it will only be called if 
+\texttt{Preflight} did not report any errors. So everything will work fine with
+the parameters, and you may skip any checks, writing
+
+\codebegin\begin{verbatim}
+void TachyonADC::Initialize()
+{
+  mSoftwareCh = Parameter( "SoftwareCh" );
+  mSampleBlockSize = Parameter( "SampleBlockSize" );
+  mSamplingRate = Parameter( "SamplingRate" );
+  TachyonStart( mSamplingRate, mSoftwareCh );
+}
+\end{verbatim}\codeend
+
+Your \texttt{Halt} function should stop all asynchronous activity that your 
+ADC code initiates:
+
+\codebegin\begin{verbatim}
+void TachyonADC::Halt()
+{
+  TachyonStop();
+}
+\end{verbatim}\codeend
+
+And now, finally, the actual meat of your class -- note that the function 
+may not return unless the output signal is filled with data, so it is crucial
+that \texttt{TachyonWaitForData} is a blocking function.
+(If your card does not provide such a function, and you need to poll for data,
+don't forget to call \texttt{Sleep( 0 )} inside your polling loop to avoid 
+hogging the CPU.)
+
+\codebegin\begin{verbatim}
+void TachyonADC::Process( const GenericSignal*, GenericSignal* outputSignal )
+{
+  int valuesToRead = mSampleBlockSize * mSoftwareCh;
+  short* buffer;
+  if( TachyonWaitForData( &buffer, valuesToRead ) == TACHYON_NO_ERROR )
+    for( int channel = 0; channel < mSoftwareCh; ++channel )
+      for( int sample = 0; sample < mSampleBlockSize; ++sample )
+        ( *outputSignal )( channel, sample ) = buffer[ i ];
+  else
+    bcierr << "Error reading data" << endl;
+}
+\end{verbatim}\codeend
+
+You are done! Use your \texttt{TachyonADC.cpp} to replace the \texttt{GenericADC}
+descendant in an existing source module, add the \texttt{TachyonADC.lib} shipped 
+with your card to the project, compile, link, and find the bugs...
+
+\subsection{Tutorial: Implementing Your Own Signal Processing Filter}
+\label{sec:filtertutorial}
+
+This tutorial shows you how to derive a new filter class from
+\texttt{GenericFilter}, how to check preconditions, initialize your filter,
+and process data.
+It will also show you how to visualize a filter's output signal, presenting it
+to the operator user.
+
+\subsubsection{A simple low pass filter}
+
+We want to implement a low pass filter with a time constant $T$ (given in units
+of a sample's duration), a sequence $S_{in,t}$ as input and a sequence
+$S_{out,t}$ as output (where $t$ is an sample index proportional to time), and obeying
+\begin{equation}
+\label{eq:LPFormula}
+  \begin{array}{ccl}
+    S_{out, 0} & = & \frac{1}{T} \: S_{in, 0} \\
+    S_{out, t} & = & e^{-1/T} S_{out, t-1} + \frac{1}{T} \: S_{in, t}
+  \end{array}
+\end{equation}
+
+\subsubsection{The filter skeleton}
+
+The resulting filter class is to be called \texttt{LPFilter}.
+We create two new files, \texttt{LPFilter.h}, and \texttt{LPFilter.cpp},
+and put a minimal filter declaration into \texttt{LPFilter.h}:
+
+\codebegin\begin{verbatim}
+#ifndef LPFilterH
+#define LPFilterH
+
+#include "GenericFilter.h"
+
+class LPFilter : public GenericFilter
+{
+ public:
+   LPFilter();
+   ~LPFilter();
+
+   void Preflight( const SignalProperties&, SignalProperties& ) const;
+   void Initialize();
+   void Process( const GenericSignal*, GenericSignal* );
+};
+#endif // LPFilterH
+\end{verbatim}\codeend
+
+Into \texttt{LPFilter.cpp} we put the lines
+
+\codebegin\begin{verbatim}
+#include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy
+#pragma hdrstop
+
+#include "LPFilter.h"
+
+#include "MeasurementUnits.h"
+#include "UBCIError.h"
+#include <vector>
+#include <cmath>
+
+using namespace std;
+\end{verbatim}\codeend
 
 
-\subsection{Implementing Your Own Signal Processing Filter}
+\subsubsection{The \texttt{Process} function}
 
-Integrating a new filter class into the system is simple:
+For implementing a filter, a good strategy is to begin with the \texttt{Process}
+function, and consider the remaining class member functions mere helpers, mainly
+determined by the code of \texttt{Process}.
+So we convert (\ref{eq:LPFormula}) into the \texttt{Process}
+code, introducing member variables \textit{ad hoc}, ignoring possible error
+conditions, and postponing efficiency considerations:
+
+\codebegin\begin{verbatim}
+void LPFilter::Process( const GenericSignal* input, GenericSignal* output )
+{
+  // This will initialize additional elements with 0,
+  // implementing the first line of the filter prescription: 
+  mPreviousOutput.resize( input->Channels(), 0 );
+  // This implements the second line for all channels:
+  for( size_t channel = 0; channel < input->Channels(); ++channel )
+  {
+    for( size_t sample = 0; sample < input->MaxElements( channel ); ++sample )
+    {
+      mPreviousOutput[ channel ] *= mDecayFactor;
+      mPreviousOutput[ channel ] += ( *input )( channel, sample ) / mTimeConstant;
+      ( *output )( channel, sample ) = mPreviousOutput[ channel ];
+    }
+  }
+}
+\end{verbatim}\codeend
+
+
+\subsubsection{The \texttt{Initialize} member function}
+
+As you will notice when comparing \texttt{Process} to equation
+(\ref{eq:LPFormula}), we introduced member variables representing these
+sub-expressions:
+\begin{eqnarray*}
+  \texttt{mPreviousOutput[\ ]} = S_{out, t-1}
+  \texttt{mDecayFactor} = e^{-1/T}
+  \texttt{mTimeConstant} = T
+\end{eqnarray*}
+
+We introduce these members into the class declaration, adding the following lines 
+after the \texttt{Process} declaration:
+
+\codebegin\begin{verbatim}
+  private:
+    float              mTimeConstant,
+                       mDecayFactor;
+    std::vector<float> mPreviousOutput;
+\end{verbatim}\codeend
+    
+The next step is to initialize these member variables, introducing filter
+parameters as needed. This is done in the \texttt{Initialize} member function --
+we write it down without considering possible error conditions:
+
+\codebegin\begin{verbatim}
+void LPFilter::Initialize()
+{
+  mTimeConstant = Parameter( "LPTimeConstant" );
+  mDecayFactor = ::exp( -1.0 / mTimeConstant );
+  mPreviousOutput.clear();
+}
+\end{verbatim}\codeend
+
+Now this version is quite uncomfortable for a user going to configure our filter
+-- the time constant is given in units of the sample duration, resulting in a
+need to re-configure each time the sampling rate is changed.
+Wouldn't it be a nice idea to let the user choose whether to give the time constant in seconds or in sample blocks?
+To achieve this, there is a utility class \texttt{MeasurementUnits} that has
+a member \texttt{ReadAsTime()}, returning values in units of sample blocks which 
+is the natural time unit in a BCI2000 system.
+Writing a number followed by an ``s" will allow the user to specify a time value in
+seconds; writing an naked number will be interpreted as sample blocks.
+Thus, our user friendly version of \texttt{Initialize} reads
+
+\codebegin\begin{verbatim}
+void LPFilter::Initialize()
+{
+  // Get the time constant in units of sample block durations:
+  mTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
+  // Convert it into units of sample durations:
+  mTimeConstant *= Parameter( "SampleBlockSize" );
+  
+  mDecayFactor = ::exp( -1.0 / mTimeConstant );
+  mPreviousOutput.clear();
+}
+\end{verbatim}\codeend
+
+
+\subsubsection{The \texttt{Preflight} function}
+
+Up to now, we didn't consider any error conditions that might occur during
+execution of our filter code. Scanning through the \texttt{Process} and
+\texttt{Initialize} code, we identify a number of implicit assumptions:
 
 \begin{enumerate}
- \item{Derive a class from \textit{GenericFilter} in a separate file}
- \item{Implement the constructor and the methods Initialize() and
-       Process() (use the implementations in CalibrationFilter.cpp 
-       as an example to start with and make sure that your methods
-       have the same return values -- the main program depends on them)}
- \item{Include your new unit in the SignalProcessing project and include 
-       its header file in UFilterHandling.h}
- \item{In UFilterHandling.h, add a pointer variable to your class to the class
-       definition of FILTERS, e.g.,
-       \begin{verbatim}CalibrationFilter  *calfilter;\end{verbatim}}  
- \item{In UFilterHandling.cpp, in the constructor of the FILTERS class,
-       add code that instantiates your class, e.g., 
-       \begin{verbatim}calfilter=new CalibrationFilter(plist, slist);\end{verbatim}}
- \item{In UFilterHandling.cpp, in the destructor of the FILTERS class,
-       add code that deletes the instance of your class, e.g., 
-       \begin{verbatim}if (calfilter) delete calfilter;\end{verbatim}}
- \item{In UFilterHandling.cpp, in the Initialize() method of the FILTERS class,
-       add code that calls the Initialize() method of your filter, e.g., 
-       \begin{verbatim}res=calfilter->Initialize(plist, svector, corecomm);\end{verbatim}}
- \item{In UFilterHandling.cpp, in the Process() method of the FILTERS class,
-       add code that calls the Process() method of your filter, e.g., 
-       \begin{verbatim}res=calfilter->Process(SignalA, SignalAPrime);\end{verbatim}}
+\item The time constant is not zero -- otherwise, a division by zero will occur.
+\item The time constant is not negative -- otherwise, the output signal is no
+      longer guaranteed to be finite, and a numeric overflow may occur.
+\item Input and output signal pointers are assumed to point to valid locations
+      in memory.
+\item The output signal is assumed to hold at least as much data as the input
+      input signal contains.
 \end{enumerate}
 
+The first two assumptions may be violated if a user enters an illegal
+value into the LPTimeConstant parameter; we need to make sure that an error
+is reported, and no code is executed that depends on these two assumptions.
+The third assumption will hold if the framework code does what it is supposed 
+to do, so we don't need to check for it.
+For the last assumption, we request an appropriate output signal from the 
+\texttt{Preflight} function. Thus, the \texttt{Preflight} code reads
 
-You might also want to add visualization capability to your filter. Currently, 
-either the display of signals (channels x samples) or display of a memo field is 
-supported. In addition, graphical output can be configured. Once again, this is 
-pretty simple: 
+\codebegin\begin{verbatim}
+void LPFilter::Preflight( const SignalProperties& inputProperties,
+                            SignalProperties& outputProperties ) const
+{
+  float LPTimeConstant = MeasurementUnits::ReadAsTime( 
+                                            Parameter( "LPTimeConstant" ) );
+  LPTimeConstant *= Parameter( "SampleBlockSize" );
+  // The PreflightCondition macro will automatically generate an error
+  // message if its argument evaluates to false.
+  // However, we need to make sure that its argument is user-readable
+  // -- this is why we chose a variable name that matches the parameter
+  // name.
+  PreflightCondition( LPTimeConstant > 0 );
+  // Alternatively, we might write:
+  if( LPTimeConstant <= 0 )
+    bcierr << "The LPTimeConstant parameter must be greater 0" << endl;
 
-\begin{verbatim} #include 
-"UGenericVisualization.h"
+  // Request output signal properties:
+  outputProperties = inputProperties;
+}
+\end{verbatim}\codeend
 
- GenericVisualization *vis;
+\subsubsection{Constructor and destructor}
 
- // create an instance to GenericVisualization and pass
- // pointers to the parameterlist and the communication object
- vis= new GenericVisualization( paramlist, corecomm);
-
- // set the window title
- vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_WINDOWTITLE, "Temporal Filter");
-
- // set the number of samples to be displayed
- sprintf(cur_buf, "%d", nBins);
- vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
-
- // set the minimum and maximum values in the graph
- vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MINVALUE, "0");
- vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, "80");
+Because we don't explicitly acquire resources, nor perform asynchronous
+operations, there is nothing to be done inside the \texttt{LPFilter} 
+\textit{destructor}.
+Our \textit{constructor} will contain initializers for the members we declared,
+and a BCI2000 parameter definition for LPTimeConstant:
  
- // specify the X axis labels for the graph
- for (i=0; i<nBins; i++)
+\codebegin\begin{verbatim}
+LPFilter::LPFilter()
+: mTimeConstant( 0 ),
+  mDecayFactor( 0 ),
+  mPreviousOutput( 0 )
+{
+  BEGIN_PARAMETER_DEFINITIONS
+    "Filtering float LPTimeConstant= 16s"
+      " 16s 0 0 // time constant for the low pass filter in blocks or seconds",
+  END_PARAMETER_DEFINITIONS
+}
+
+LPFilter::~LPFilter()
+{
+}
+\end{verbatim}\codeend
+
+\subsubsection{Filter instantiation}
+
+To have our filter instantiated in a signal processing module, we add a line
+containing a \texttt{Filter} statement to the module's
+\texttt{UFilterHandling.cpp}.
+This statement expects a string parameter which is used to determine the filter's
+position in the filter chain.
+If we want to use the filter in the AR Signal Processing module, and place it after
+the \texttt{SpatialFilter}, we add
+
+\codebegin\begin{verbatim}
+#include "LPFilter.h"
+...
+Filter( LPFilter, 2.B1 );
+\end{verbatim}\codeend
+to the file \texttt{SignalProcessing/AR/UFilterHandling.cpp}.
+
+Now, if we compile and link the AR Signal Processing module, we get an ``unresolved
+external" linker error that reminds us to add our \texttt{LPFilter.cpp} to that module's project.
+
+\subsubsection{Visualizing filter output}
+
+We would like to present the LPFilter's output signal in an operator window.
+To accomplish this, we add a member of type \texttt{GenericVisualization}
+to our filter class, adding
+
+\codebegin\begin{verbatim}
+#include "GenericVisualization.h"
+...
+class LPFilter : public GenericFilter
+{
+...
+  private:
+...
+    GenericVisualization  mSignalVis;
+};
+...
+\end{verbatim}\codeend
+
+\texttt{GenericVisualization}'s constructor takes a one-byte visualization
+ID as a parameter; we need to get a unique ID in order to get our data routed
+to the correct operator window.
+This can be done by adding an entry
+\texttt{LowPass} at the end of the \texttt{SOURCEID} enumeration in the file
+\texttt{shared/defines.h}.
+
+Then, in our \texttt{.cpp} file, we add 
+
+\codebegin\begin{verbatim}
+#include "defines.h"
+\end{verbatim}\codeend
+and change the \texttt{LPFilter} constructor to read
+
+\codebegin\begin{verbatim}
+LPFilter::LPFilter()
+: mTimeConstant( 0 ),
+  mDecayFactor( 0 ),
+  mPreviousOutput( 0 ),
+  mSignalVis( SOURCEID::LowPass )
+{
+  BEGIN_PARAMETER_DEFINITIONS
+    "Filtering float LPTimeConstant= 16s"
+      " 16s 0 0 // time constant for the low pass filter in blocks or seconds",
+    "Visualize int VisualizeLowPass= 1"
+      " 1 0 1 // visualize low pass output signal (0=no, 1=yes)",
+    "Visualize int LPVisMin= -100 0 0 0 "
+      "// low pass visualization min value",
+    "Visualize int LPVisMax= 100 0 0 0 "
+      "// low pass visualization max value",
+  END_PARAMETER_DEFINITIONS
+}
+\end{verbatim}\codeend
+where LPVisMin and LPVisMax parameters determine the default scaling of the
+displayed signal; these parameters may even be reverted, resulting in an inversion
+of the displayed signal, so there is no need to check these parameters from
+\texttt{Preflight}.
+
+In \texttt{Initialize}, we add
+
+\codebegin\begin{verbatim}
+  mSignalVis.Send( CFGID::WINDOWTITLE, "Low Pass" );
+  mSignalVis.Send( CFGID::graphType, CFGID::polyline );
+  mSignalVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "LPVisMin" );
+  mSignalVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "LPVisMax" );
+\end{verbatim}\codeend
+
+Finally, to update the display in regular intervals, we add the following at the
+end of \texttt{Process}:
+
+\codebegin\begin{verbatim}
+  if( Parameter( "VisualizeLowPass" ) == 1 )
+    mSignalVis.Send( outputSignal );
+\end{verbatim}\codeend
+
+We might also send data to the already existing task log memo window, adding
+another member
+
+\codebegin\begin{verbatim}
+  GenericVisualization  mTakLogVis;
+\end{verbatim}\codeend
+initializing it with
+
+\codebegin\begin{verbatim}
+LPFilter::LPFilter()
+: ...
+  mTaskLogVis( SOURCEID::TASKLOG )
+{
+ ...
+}
+\end{verbatim}\codeend
+and, from inside \texttt{Process}, writing some text to it as in 
+
+\codebegin\begin{verbatim}
+  if( ( *output )( 0, 0 ) > 10 )
   {
-  sprintf(cur_buf, "%03d %.0f", i, (float)start+(float)i*(float)bandwidth);
-  vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_XAXISLABEL, cur_buf);
+    ostringstream oss;
+    oss << "LPFilter: (0,0) entry of output exceeds 10 and is "
+        << ( *output )( 0, 0 );
+    mTaskLogVis.Send( oss.str() );
   }
+\end{verbatim}\codeend
 
- // send out the signal to the Operator
- vis->Send2Operator(signal);   
 
- // another example; configure visualization as a memo and
- // send some ASCII text to the Operator:
- vis->SetSourceID(SOURCEID_TASKLOG);
- vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
- sprintf(memotext, "Run: %d; ITI -> new trial: %d\r", run, trial);
- vis->SendMemo2Operator(memotext);
- 
- delete vis;
-\end{verbatim}
+\subsubsection{Multiple filter instances}
 
-THAT'S IT !! After describing how to integrate a new filter into the system,
-the following sections describe actual implementations of filter classes that
-implement the respective filters in Figure \ref{sigprocdataflow}.
+When instantiating a filter more than once, one needs to maintain multiple
+``instances" of the filter's parameters as well.
+In the following example, we will number filter instances from 1 to $N$, and
+append instance numbers to parameter names in order to obtain a separate copy of
+the parameters for each instance. To keep things simple, we use the initial
+version of \texttt{LPFilter} -- without visualization -- in the example.
 
+To obtain 1-based instance numbers for the instances of \texttt{LPFilter}, 
+we introduce a static class member that acts as an instance counter -- static
+data members of a class exist once per class, so we will increment the counter
+in the constructor, and decrement it in the destructor, to obtain a number that
+will always represent the current number of class instances.
+
+Practically, this implies
+\begin{itemize}
+\item adding the lines 
+
+  \codebegin\begin{verbatim}
+    std::string mParamName_LPTimeConstant;
+    static int sNumInstances;
+  \end{verbatim}\codeend
+  to the end of the \texttt{private} section of the class declaration;
+\item adding the definition and initialization 
+
+  \codebegin\begin{verbatim}
+    int LPFilter::sNumInstances = 0;
+  \end{verbatim}\codeend
+  to \texttt{LPFilter.cpp};
+\item adding an initializer for \texttt{mParamName\_LPTimeConstant} to the
+  constructor, appending the instance number to it, and replacing all 
+  occurrences of the parameter name with \texttt{mParamName\_LPTimeConstant}:
+  
+  \codebegin\begin{verbatim}
+LPFilter::LPFilter()
+: ...
+  mParamName_LPTimeConstant( "LPTimeConstant" )
+{
+  ostringstream oss;
+  oss << ++sNumInstances;
+  mParamName_LPTimeConstant += oss.str();
+    
+  // Instead of using the BEGIN_... and END_... macros, we need
+  // to construct our parameter by hand:
+  string paramLine = "Filtering float ";
+  paramLine += mParamName_LPTimeConstant
+            + "= 16s 16s 0 0 // time constant for the low pass filter"
+            + " in blocks or seconds";
+  ( *Parameters )[ mParamName_LPTimeConstant ] = PARAM( paramLine.c_str() );
+}
+  \end{verbatim}\codeend
+\item changing the destructor to read
+  
+  \codebegin\begin{verbatim}
+LPFilter::~LPFilter()
+{
+  --sNumInstances;
+}
+  \end{verbatim}\codeend
+\item replacing the literal occurrences of \texttt{"LPTimeConstant"} in the 
+  \texttt{Preflight}, \texttt{Initialize}, and \texttt{Process} functions
+  with \texttt{mParamName\_LPTimeConstant}.
+\end{itemize}
+
+Now, when adding multiple \texttt{Filter} statements to
+\texttt{UFilterHandling.cpp}, as in 
+  
+  \codebegin\begin{verbatim}
+Filter( CalibrationFilter, 2.A );
+Filter( LPFilter, 2.A1 ); // this instance owns LPTimeConstant1
+Filter( SpatialFilter, 2.B );
+Filter( LPFilter, 2.B1 ); // this instance owns LPTimeConstant2
+Filter( ARTemporalFilter, 2.C );
+Filter( ClassFilter, 2.D );
+Filter( StatFilter, 2.E1 );
+Filter( NormalFilter, 2.E2 );
+  \end{verbatim}\codeend
+each instance of \texttt{LPFilter} has its own parameter
+\texttt{LPTimeConstant1}, \texttt{LPTimeConstant2}, and so on, and the numbers
+are in the order in which the instances appear in the filter chain.
+
+\section{Entity--Relationship Model for Shared Classes}
+\todo{The figure is not correct any more. Should we show inheritance for
+Environment, GenericFilter, GenericADC, GenericSignal, SignalProperties here?}
+
+\begin{figure}[ht]
+ \centerline{\scalebox{0.9}{\includegraphics{figures/ERmodel_shells}}}
+ \caption{Class model for all shared classes}
+\end{figure}
+
+
+\chapter{Available Filters and their Parameters}
+\todo{Not all existing filters are present here.}
+
+\section{EEG Source}
+\todo{Documentation for the most important EEG sources?}
+
+\section{Signal Processing}
 \subsection{Calibration}
 
 The calibration filter (class \textit{CalibrationFilter}) calibrates the 
@@ -488,7 +1080,7 @@ expressed in $\mu$V and has a mean of zero (i.e.,
 $\mathit{newvalue}=(\mathit{ADvalue}-\mathit{SourceChOffset})*\mathit{SourceChGain}$).
 
 The calibration filter acts only on the subset of channels defined by
-\textit{TransmitCh} and \textit{TransmitChList;} regardless of that, the
+\textit{TransmitCh} and \textit{TransmitChList;} regardless of this, the
 \textit{SourceChOffset} and \textit{SourceChGain} parameters
 refer to the full set of software channels as stored in the data file, in
 the order in which they are digitized.
@@ -508,14 +1100,15 @@ the order in which they are digitized.
   Source & AlignChannels & int \\
   \hline
  \end{tabular}
- \caption{Parameters requested by the class SpatialFilter}
+ \caption{Parameters requested by the class CalibrationFilter}
+ \todo{Document extension to alignment}
 \end{table} 
 
 \textit{SourceChOffset} specifies a list of offsets in AD units -- one value
 for each channel. \\
 \textit{SourceChGain} specifies a list of gains as used in described formula -- 
 one value for each channel. \\
-\textit{AlignChannels} specifies, whether samples should be aligned in time --
+\textit{AlignChannels} specifies whether samples should be aligned in time --
 most data acquisition boards multiplex one A/D converter and thus samples
 for \textit{SoftwareCh} channels are linearly distributed in time over 
 $\frac{1000}{SamplingRate}$ milliseconds (0=no alignment, 1=perform alignment).
@@ -666,66 +1259,12 @@ The input to this filter class is Signal E with the following dimensions:
 Signal F, is of the same dimensionality.
 
 
-%Example of instantiating a Signal:
-
-%\begin{verbatim}
-%GenericSignal *SignalA;
-%SignalA = new GenericSignal(TransmitCh, SampleBlockSize);
-%for (unsigned short n=0; n<TransmitCh; n++) 
-%    SignalA->SetElements(n, SampleBlockSize);
- 
-%The program flow is:
-
-%CreateFilters();
-%SendParameters();
-%GetParameters();
-%Initialize();
-
-%While( active )
-%{	
-%Receive( A, StateVector );									
-%SpatialFilter( A, B );
-%TemporalFilter( B, C );
-%Classifier( C, D );
-%Send( D, StateVector );
-%Statistics( A, B, C, D );
-%}
-%\end{verbatim}
-
-%CreateFilters() Instantiates each filter object.  The constructor of each filter 
-%object fills up the parameter list with AddParameter( *parameterlist ) and 
-%requests any state fields with AddState( *statelist ).  SendParameters() 
-%publishes this list to the operator.  GetParameters() receives the parameter 
-%list from the operator. Initialize() instantiates the GenericSignal objects, 
-%parameterizes the signal processing routines, and creates a global state 
-%vector..
-
-%Each of the Filter modules calls the entire list of filters of its type as below:
-
-%\begin{verbatim}
-%Signal SpatialFilter(GenericSignal A, GenericSignal B)
-%{
-% Laplacian( A, B );
-% Car( A , B);
-% Null( A , B);
-%}
-%\end{verbatim}
-
-%The signals A, B, C and D are not requested parameters because they are always 
-%present in the signal processing module. For each of the signal processing 
-%methods the recipe (e.g. B= f( A ) is in the parameters requested by that 
-%method.  The method goes through it's k copies of it's parameters and computes 
-%the signals indicated in each set of parameters. Any filter can send 
-%visualization data to the operator.  This has implications for concurrency 
-%control.
-
-
 \subsection{Slow-Wave-Feedback}
 
 \subsubsection{Author and Introduction}
 
 Description of Signal Processing Module for the Slow-Wave-Feedback written by 
-Thilo Hinterberger, University of Tuebingen, Germany.
+Dr. Thilo Hinterberger, University of T\"ubingen, Germany.
 
 The calculation of the Slow-Wave feedback signal is subdivided into three 
 modules: The SW-Filter, which is realized as an efficient boxcar-filter, the 
@@ -850,53 +1389,22 @@ For the ArteMode parameter, the following values are possible:
  \item\verb|ArteMode 1| will subtract the artifact channel multiplied 
       with a constant factor.
  \item\verb|ArteMode 2| will correct the signal according to Koutchoubey, 1997:
-      If the artifact's absolute value does not exceed that of the control signal,
-      the control signal is corrected by subtracting the artifact signal; otherwise,
-      feedback is suppressed.
-%\begin{verbatim}
-%     if ((ArteSignal*ControlSignal) > 0) {            // if they have same signs
-%        if (fabs(ArteSignal) < fabs(ControlSignal)) InputSignal->Value[m][n] = ControlSignal-ArteSignal;  // if Artefact not too big then correct
-%        else {                             // artifact is too big
-%            InputSignal->Value[m][n] = 0;  // FB is supressed
-%            if (ArteMode==3) statevector->SetStateValue("Artifact",1);
-%        }
-%     }
-%\end{verbatim}
+      If the artifact signal has the same sign as the control signal, a correction
+      is applied by subtracting the artifact signal; otherwise, no correction 
+      is performed. If the artifact crosses a threshold value, feedback is
+      suppressed.
  \item\verb|ArteMode 3| is working identically to \verb|ArteMode 2| but sets the
       Artifact state to 1 when the feedback is set to zero.
 \end{itemize}
 
-
-\section{User Application}
-
-
-\subsection{General Information}
-
-As described in chapter \ref{goals_module_independence}, one major goal for 
-system design is the independence between modules. In most BCI systems, however, 
-some parts of the signal processing applied (i.e., the device-dependent part of 
-signal processing) depend on the feedback to the user -- a feature provided by 
-the user application.
-
-This inter-dependence between signal processing and the user application poses 
-severe problems to the system design, because it is not possible to completely 
-encapsulate each module and separate it from others.
-
-In order to minimize inter-dependence, duties should be performed by the module
-that is conceptually defining it, e.g., task paradigm and timing are conceptually
-parts of a task and should therefore be handled by the user application module.
-
-Section \ref{section_rjb_task} describes a particular implementation of a user
-task - a simple cursor task - that complies with this motivation.
-
-
-\subsection{Right Justified Box Task}
+\section{Application}
+\todo{Documentation for the most important Application modules?}
+\subsection{Right Justified Boxes Task}
 \label{section_rjb_task}
 
 The right justified box task is a cursor task, in which the subject tries to hit 
 one out of \textit{n} targets on a screen in trials of equal length. As listed 
 in 
-%table \ref{blablabla} and
 figure \ref{rjb_task}, the task requests and 
 controls specific states.
 
@@ -925,13 +1433,6 @@ by the user's EEG.  Horizontal cursor movement is under computer control and is
 at a constant rate.  In 4 the cursor approaches the target and in 5 the target 
 has been hit and trial-outcome feedback is presented.  In 6 the screen is blank 
 (intertrial interval again) and in 7 another target is presented.
-
-\section{Entity--Relationship Model for Shared Classes}
-
-\begin{figure}[ht]
- \centerline{\scalebox{0.9}{\includegraphics{figures/ERmodel_shells}}}
- \caption{Class model for all shared classes}
-\end{figure}
 
 
 %Most components described in the System Architecture section will require a more 

@@ -30,6 +30,7 @@ processor.
 
 \subsubsection{Feasibility study}
 
+\todo{Is this section still useful? Should it be updated to more current hardware?}
 We evaluated the system behavior and processor load caused by the 
 'administrative' duties of the system, i.e., the communication between modules, 
 under different scenarios (e.g., whether the modules reside on one or on 
@@ -68,7 +69,7 @@ In a Brain Computer Interface environment, the system usually has to
 \end{enumerate}
 
 Being able to keeping up with processing directly is a function of the system's 
-overall performance. System response time is also correlated system performance, 
+overall performance. System response time is related to system performance, 
 but also influenced by the operating system (i.e., OS) -- simply because the 
 communication involves the OS. As the feasibility study (figure 
 \ref{feasibility_study}) shows, system latency in absence of signal processing 
@@ -80,8 +81,8 @@ they don't guarantee a deterministic system response time. This includes the
 Microsoft Windows family of operating systems (except, Windows CE, under certain 
 circumstances). This means that it is impossible to (at the application level) 
 write code that operates under this definition. Time stamping data collection 
-and feedback and storing these in fields in the state vector can be used to 
-accomodate for differences in latency. In addition, for a BCI, it is appropriate 
+and feedback, and storing these in fields with the data recorded, can be used to 
+accommodate for differences in latency. In addition, for a BCI, it is appropriate 
 to say that it is sufficient, if it provides feedback on average (e.g., 99.9 
 percent of the time) in a timely manner. 
 
@@ -91,9 +92,9 @@ percent of the time) in a timely manner.
 The system is programmed using Borland's C++ Builder application development 
 environment. The target platform of this environment is Win32 code for Intel 
 CPUs. Therefore, the possible operating systems are Windows 95/98, Windows 
-NT4.0, or Windows 2000.
+NT4.0, or Windows 2000/XP.
 
-This system contains four processes with at least two threads each. Windows NT 
+This system contains four processes with up to two threads each. Windows NT 
 and its successors have built-in advanced priority based scheduling algorithms 
 that are far superior than the simple context--switching based concepts in 
 Windows 95 or 98. While neither the BCI2000 Project Outline nor this document 
@@ -102,7 +103,7 @@ time requirements can be met more easily under Windows NT and its successors.
 
 
 \subsection{End-user characteristics}
-
+\todo{What about these sections?}
 \subsection{Possible and/or probable changes in functionality}
 
      
