@@ -31,7 +31,7 @@ TRIALSEQUENCE::TRIALSEQUENCE()
 {
 
  /*shidong starts*/
-
+ f = NULL;
  debug = false;
  if(debug) f = fopen("debug2.txt", "w");
 
@@ -84,12 +84,11 @@ TRIALSEQUENCE::TRIALSEQUENCE()
 // **************************************************************************
 TRIALSEQUENCE::~TRIALSEQUENCE()
 {
- if (vis) delete vis;
- vis=NULL;
- if (targets) delete targets;
- targets=NULL;
+ delete vis;
+ delete targets;
  /*shidong starts*/
- fclose(f);        
+ if( f )
+   fclose( f );        
  /*shidong ends*/
 }
 
