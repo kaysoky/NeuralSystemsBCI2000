@@ -324,7 +324,6 @@ TfMain::EnterState( SYSSTATUS::State inState )
       {
         mParameters.AddParameter2List(
           "System int StateVectorLength= 0 16 1 30 // length of the state vector in bytes" );
-        mParameters.Sort();
         AnsiString value = STATEVECTOR( &mStates ).GetStateVectorLength();
         mParameters[ "StateVectorLength" ].SetValue( value.c_str() );
       }
@@ -627,11 +626,8 @@ TfMain::CoreConnection::HandleSYSCMD( istream& is )
     {
       mParent.EnterState( SYSSTATUS::Suspended );
     }
-    // If we received 'EndOfParameter', i.e., all parameters arrived,
-    // then let's sort the parameters in the parameter list by name.
     else if( syscmd == SYSCMD::EndOfParameter )
     {
-      mParent.mParameters.Sort();
     }
     // The operator receiving 'EndOfState' marks the end of the publishing phase.
     else if( syscmd == SYSCMD::EndOfState )
@@ -658,7 +654,7 @@ TfMain::CoreConnection::HandlePARAM( istream& is )
   if( param.ReadBinary( is ) )
   {
     ++mParent.mSysstatus.NumParametersRecv[ mOrigin ];
-    mParent.mParameters.CloneParameter2List( &param );
+    mParent.mParameters[ param.GetName() ] = param;
     // Update the parameter in the configuration window.
     fConfig->RenderParameter( mParent.mParameters.GetParamPtr( param.GetName() ) );
   }

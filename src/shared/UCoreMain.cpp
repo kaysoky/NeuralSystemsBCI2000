@@ -180,7 +180,7 @@ TfMain::HandlePARAM( istream& is )
 
   PARAM p;
   if( p.ReadBinary( is ) )
-    mParamlist.CloneParameter2List( &p );
+    mParamlist[ p.GetName() ] = p;
   return is;
 }
 

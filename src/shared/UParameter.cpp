@@ -138,41 +138,19 @@ PARAMLIST::GetParamPtr( size_t idx)
 // Returns:    N/A
 // **************************************************************************
 void
-PARAMLIST::AddParameter2List( const char* line, size_t length )
+PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
 {
-  PARAM param;
-  param.ParseParameter( line, length );
-  if( param.Valid() )
-    ( *this )[ param.name ] = param;
-}
+  if( inLine == NULL )
+    return;
+  string line( inLine, inLength );
+  if( inLength == 0 )
+    line = string( inLine );
+  istringstream linestream( line );
 
-// **************************************************************************
-// Function:   MoveParameter2List
-// Purpose:    adds a new parameter to the list of parameters
-//             this function assumes that the specified parameter object
-//             will not be freed anywhere else (but in the destructor of the
-//             paramlist object). The difference to CloneParameter2List() is
-//             that it does not actually copy the whole param object
-//             This function will not add a parameter to the list, if one
-//             with the same name already exists
-// Note:
-// The implementation is not consistent with the spec given above.
-// According to the spec, the caller wouldn't know if the parameter was actually
-// added, so if not, the PARAM instance would never be deleted.
-// Because the spec states that the caller may not delete the argument, we
-// always delete it as soon as possible (after copying it) to avoid a memory
-// hole.
-// jm
-//
-// Parameters: param - pointer to an existing PARAM object
-// Returns:    N/A
-// **************************************************************************
-void
-PARAMLIST::MoveParameter2List( PARAM* newparam )
-{
-  if( newparam && find( newparam->GetName() ) == end() )
-    ( *this )[ newparam->GetName() ] = *newparam;
-  delete newparam;
+  PARAM param;
+  linestream >> param;
+  if( linestream >> param )
+    ( *this )[ param.name ] = param;
 }
 
 // **************************************************************************
@@ -184,25 +162,6 @@ PARAMLIST::MoveParameter2List( PARAM* newparam )
 // Returns:    N/A
 // **************************************************************************
 // Now defined inline as an alias to std::map<>::erase().
-
-// **************************************************************************
-// Function:   CloneParameter2List
-// Purpose:    adds a new parameter to the list of parameters
-//             The difference to MoveParameter2List() is that it actually
-//             physically copies the param object (the specified param
-//             object can then be freed elsewhere)
-//             This function will UPDATE the values for a parameter in the list,
-//             if one with the same name already exists
-// Parameters: param - pointer to an existing PARAM object
-// Returns:    N/A
-// **************************************************************************
-void
-PARAMLIST::CloneParameter2List( const PARAM* param )
-{
- if( GetParamPtr( param->GetName() ) )
-   DeleteParam( param->GetName() );
- MoveParameter2List( new PARAM( *param ) );
-}
 
 // **************************************************************************
 // Function:   WriteToStream
@@ -400,12 +359,8 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
    else
      for( size_t i = 0; i < dim1; ++i )
        values.erase( values.begin() + ( i + 1 ) * inDimension2, values.begin() + i * inDimension2 + dim2 );
-#ifdef LABEL_INDEXING
    // dim1_index will be resized by SetNumValues().
    dim2_index.resize( inDimension2 );
-#else
-   dimension2 = inDimension2;
-#endif
    SetNumValues( inDimension1 * inDimension2 );
  }
 }
@@ -418,9 +373,6 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 // **************************************************************************
 PARAM::PARAM()
 :
-#ifndef LABEL_INDEXING
-  dimension2( 1 ),
-#endif
   valid( false ),
   changed( false ),
   archive( false ),
@@ -439,9 +391,6 @@ PARAM::PARAM( const char* inName, const char* inSection,
               const char* inDefaultvalue, const char* inLowrange,
               const char* inHighrange, const char* inComment )
 :
-#ifndef LABEL_INDEXING
-  dimension2( 1 ),
-#endif
   defaultvalue( inDefaultvalue ),
   lowrange( inLowrange ),
   highrange( inHighrange ),
@@ -465,17 +414,15 @@ PARAM::PARAM( const char* inName, const char* inSection,
 // Parameters: char *paramstring
 // Returns:    N/A
 // **************************************************************************
-PARAM::PARAM( const char* paramstring )
+PARAM::PARAM( const char* line )
 :
-#ifndef LABEL_INDEXING
-  dimension2( 0 ),
-#endif
   valid( false ),
   changed( false ),
   archive( false ),
   tag( false )
 {
-  ParseParameter( paramstring, strlen( paramstring ) );
+  istringstream iss( line );
+  iss >> *this;
 }
 
 // **************************************************************************
@@ -516,12 +463,10 @@ void
 PARAM::SetNumValues( size_t n )
 {
   values.resize( n, defaultValue );
-#ifdef LABEL_INDEXING
   // dim2_index will always have a size > 0.
   // If n is not a multiple of dim2_index' size something is logically wrong.
   // But it has not been an error up to now.
   dim1_index.resize( n / dim2_index.size() );
-#endif // LABEL_INDEXING
   changed = true;
 }
 
@@ -672,50 +617,6 @@ PARAM::SetValue( const string& value, size_t idx )
 // Now defined inline.
 
 // **************************************************************************
-// Function:   GetParamLine
-// Purpose:    Returns a parameter line in ASCII format
-//             Tis parameter line is constructed, based upon the current
-//             values in the PARAM object
-//
-// Parameters: N/A
-// Returns:    a pointer to the parameter line
-// **************************************************************************
-string
-PARAM::GetParamLine() const
-{
- ostringstream paramline;
- paramline << *this;
- return paramline.str();
-}
-
-// **************************************************************************
-// Function:   ParseParameter
-// Purpose:    This routine is called by coremessage->ParseMessage()
-//             it parses the provided ASCII parameter line and initializes
-//             the PARAM object accordingly, i.e., it fills in values, name,
-//             section name, type, etc.
-// Parameters: line - pointer to the ASCII parameter line
-//             length - length of this parameter line
-// Returns:    ERRPARAM_INVALIDPARAM if the parameter line is invalid, or
-//             ERRPARAM_NOERR
-// **************************************************************************
-int
-PARAM::ParseParameter( const char* paramline, size_t length )
-{
-  if( paramline == NULL )
-    return ERRPARAM_INVALIDPARAM;
-  int err = ERRPARAM_NOERR;
-  string line( paramline, length );
-  if( length == 0 )
-    line = string( paramline );
-  istringstream linestream( line );
-  linestream >> *this;
-  if( !linestream )
-    err = ERRPARAM_INVALIDPARAM;
-  return err;
-}
-
-// **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
 //             parameter.
@@ -768,60 +669,33 @@ PARAM::ReadFromStream( istream& is )
     linestream.clear();
     // Parse the parameter's definition.
     linestream.str( definition );
-#ifndef LABEL_INDEXING
-    size_t dimension1 = 1;
-#endif
     if( type == "matrix" )
     {
-#ifdef LABEL_INDEXING
       linestream >> dim1_index >> dim2_index;
       if( dim2_index.size() < 1 )
         dim2_index.resize( 1 );
-#else
-      linestream >> dimension1 >> dimension2;
-      if( dimension2 < 1 )
-        dimension2 = 1;
-#endif
       }
       else if( type.find( "list" ) != type.npos )
       {
-#ifdef LABEL_INDEXING
       linestream >> dim1_index;
       dim2_index.resize( 1 );
-#else
-      linestream >> dimension1;
-      dimension2 = 1;
-#endif
     }
     else
     {
-#ifdef LABEL_INDEXING
       dim1_index.resize( 1 );
       dim2_index.resize( 1 );
-#else
-      dimension1 = 1;
-      dimension2 = 1;
-#endif
     }
     if( !linestream )
       is.setstate( ios::failbit );
 
     linestream >> value;
-#ifdef LABEL_INDEXING
     while( linestream && values.size() < dim1_index.size() * dim2_index.size() )
-#else
-    while( linestream && values.size() < dimension1 * dimension2 )
-#endif
     {
       values.push_back( value );
       linestream >> value;
     }
     // Not all matrix/list entries are required for a parameter definition.
-#ifdef LABEL_INDEXING
     values.resize( dim1_index.size() * dim2_index.size(), defaultValue );
-#else
-    values.resize( dimension1 * dimension2, defaultValue );
-#endif
 
     // These entries are not required for a parameter definition.
     encodedString* finalEntries[] =
@@ -862,17 +736,9 @@ PARAM::WriteToStream( ostream& os ) const
 {
   os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
   if( type == "matrix" )
-#ifdef LABEL_INDEXING
     os << LabelsDimension1() << ' ' << LabelsDimension2() << ' ';
-#else
-    os << GetNumValuesDimension1() << ' ' << GetNumValuesDimension2() << ' ';
-#endif
   else if( type.find( "list" ) != type.npos )
-#ifdef LABEL_INDEXING
     os << Labels() << ' ';
-#else
-    os << GetNumValues() << ' ';
-#endif
   for( size_t i = 0; i < GetNumValues(); ++i )
     os << encodedString( GetValue( i ) ) << ' ';
   os << defaultvalue << ' '
@@ -940,12 +806,8 @@ PARAM::operator=( const PARAM& p )
       comment = p.comment;
     }
 
-#ifdef LABEL_INDEXING
     dim1_index = p.dim1_index;
     dim2_index = p.dim2_index;
-#else
-    dimension2 = p.dimension2;
-#endif
     values = p.values;
 
     valid = p.valid;
@@ -1044,7 +906,6 @@ PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars )
   return os;
 }
 
-#ifdef LABEL_INDEXING
 /////////////////////////////////////////////////////////////////////////////
 // labelIndexer definitions                                                //
 /////////////////////////////////////////////////////////////////////////////
@@ -1261,7 +1122,6 @@ PARAM::labelIndexer::WriteToStream( ostream& os ) const
   }
   return os;
 }
-#endif // LABEL_INDEXING
 
 /////////////////////////////////////////////////////////////////////////////
 // type_adapter definitions                                                //

@@ -141,7 +141,6 @@ class EnvironmentBase
   PARAM::type_adapter Parameter( const std::string& name,
                                  size_t index1 = 0,
                                  size_t index2 = 0 ) const;
-#ifdef LABEL_INDEXING
   PARAM::type_adapter Parameter( const std::string& name,
                                  const std::string& label1,
                                  const std::string& label2 ) const;
@@ -151,7 +150,6 @@ class EnvironmentBase
   PARAM::type_adapter Parameter( const std::string& name,
                                  size_t index1,
                                  const std::string& label2 ) const;
-#endif // LABEL_INDEXING
 
  protected:
   // Read-only access to parameters that do not necessarily exist.
@@ -174,7 +172,6 @@ class EnvironmentBase
                                                 size_t index1,
                                                 size_t index2 ) const;
  protected:
-#ifdef LABEL_INDEXING
   const PARAM::type_adapter OptionalParameter( double defaultValue,
                                                const std::string& name,
                                                const std::string& label1,
@@ -198,7 +195,6 @@ class EnvironmentBase
   const PARAM::type_adapter OptionalParameter( const std::string& name,
                                                size_t index1,
                                                const std::string& label2 ) const;
-#endif // LABEL_INDEXING
 
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (_PreflightCondition(#x,double(x)))

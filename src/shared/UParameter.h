@@ -44,22 +44,11 @@
 #include <sstream>
 #include <stdlib.h>
 
-#define LABEL_INDEXING
-
 class PARAM
 {
   friend class PARAMLIST;
-  friend class TfConfig;
-  friend class TfShowParameters;
 
  public:
-   enum
-   {
-     ERRPARAM_NOERR = 0,
-     ERRPARAM_INCONSISTENTNUMVAL = 1,
-     ERRPARAM_INVALIDPARAM = 2,
-   };
-
    // A string class that allows for transparent handling of
    // character codes using the % sign.
    class encodedString : public std::string
@@ -72,7 +61,6 @@ class PARAM
      std::istream& ReadFromStream( std::istream& );
    };
 
-#ifdef LABEL_INDEXING
    // A helper class to handle string labels for indexing matrices
    // and lists.
    typedef std::map<encodedString, size_t> indexer_base;
@@ -119,7 +107,6 @@ class PARAM
       mutable bool needSync;
       mutable indexer_base forwardIndex;
    };
-#endif // LABEL_INDEXING
 
  private:
           encodedString section,
@@ -129,12 +116,8 @@ class PARAM
                         lowrange,
                         highrange;
           std::string   comment;
-#ifdef LABEL_INDEXING
           labelIndexer  dim1_index,
                         dim2_index;
-#else // LABEL_INDEXING
-          size_t        dimension2;
-#endif // LABEL_INDEXING
           typedef std::vector<encodedString> values_type;
           values_type values;
 
@@ -158,18 +141,17 @@ class PARAM
         void    SetType( const std::string& s )
                 { type = s; tolower( type ); }
  private:
-        // Changing the name without notifying the list would be a bad idea,
-        // that's why this function is private.
+        // Changing the name without changing its index in the list would be
+        // a bad idea, so this function is private.
         void    SetName( const std::string& s )
                 { name = s; }
  public:
+        void    SetNumValues( size_t n );
         void    SetValue( const std::string& s )
                 { SetValue( s, 0 ); }
         void    SetValue( const std::string&, size_t );
         void    SetValue( const std::string& s, size_t n, size_t m )
                 { SetValue( s, n * GetNumValuesDimension2() + m ); }
-        void    SetNumValues( size_t n );
-#ifdef LABEL_INDEXING
         void    SetValue( const std::string& s,
                           const std::string& label )
                 { return SetValue( s, dim1_index[ label ] ); }
@@ -182,7 +164,7 @@ class PARAM
         void    SetValue( const std::string& s,
                           const std::string& label_dim1, size_t index_dim2 )
                 { return SetValue( s, dim1_index[ label_dim1 ], index_dim2 ); }
-#endif // LABEL_INDEXING
+
   const char*   GetSection() const
                 { return section.c_str(); }
   const char*   GetType() const
@@ -203,13 +185,8 @@ class PARAM
                 { return GetNumValues() / GetNumValuesDimension2(); }
         size_t  GetNumRows() const
                 { return GetNumValuesDimension1(); }
-#ifdef LABEL_INDEXING
         size_t  GetNumValuesDimension2() const
                 { return dim2_index.size(); }
-#else // LABEL_INDEXING
-        size_t  GetNumValuesDimension2() const
-                { return dimension2; }
-#endif // LABEL_INDEXING
         size_t  GetNumColumns() const
                 { return GetNumValuesDimension2(); }
         void    SetDimensions( size_t, size_t );
@@ -218,7 +195,6 @@ class PARAM
   const char*   GetValue( size_t ) const;
   const char*   GetValue( size_t n, size_t m ) const
                 { return GetValue( n * GetNumValuesDimension2() + m ); }
-#ifdef LABEL_INDEXING
   const char*   GetValue( const std::string& label ) const
                 { return GetValue( dim1_index[ label ] ); }
   const char*   GetValue( const std::string& label_dim1, const std::string& label_dim2 ) const
@@ -247,7 +223,6 @@ class PARAM
                 { changed = true; return dim1_index; }
   const labelIndexer& Labels() const
                 { return dim1_index; }
-#endif // LABEL_INDEXING
         bool    Valid() const
                 { return valid; }
         bool    Changed() const
@@ -259,12 +234,6 @@ class PARAM
         std::istream& ReadFromStream( std::istream& );
         std::ostream& WriteBinary( std::ostream& ) const;
         std::istream& ReadBinary( std::istream& );
-
-#if 1 // Changed return type to a copied string value to avoid multithreading trouble.
-      // In the future, this function needs to be replaced by using stream i/o.
-  std::string   GetParamLine() const;
-#endif
-        int     ParseParameter( const char* line, size_t length );
 
  private:
         bool    valid;
@@ -386,19 +355,15 @@ class PARAMLIST : public param_container
         std::ostream& WriteToStream( std::ostream& ) const;
         std::istream& ReadFromStream( std::istream& );
 
-  // These define binary I/O conventions.
+  // These define binary I/O.
         std::ostream& WriteBinary( std::ostream& ) const;
         std::istream& ReadBinary( std::istream& );
 
   // These are for compatibility.
-        void    Sort() {}
         PARAM*  GetParamPtr( size_t );
   const PARAM*  GetParamPtr( size_t ) const;
-        void    CloneParameter2List( const PARAM* );
-        void    MoveParameter2List( PARAM* );
 };
 
-#ifdef LABEL_INDEXING
 inline std::ostream& operator<<( std::ostream& s, const PARAM::labelIndexer& i )
 {
   return i.WriteToStream( s );
@@ -408,7 +373,6 @@ inline std::istream& operator>>( std::istream& s, PARAM::labelIndexer& i )
 {
   return i.ReadFromStream( s );
 }
-#endif // LABEL_INDEXING
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e )
 {

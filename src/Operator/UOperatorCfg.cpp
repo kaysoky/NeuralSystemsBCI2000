@@ -59,7 +59,7 @@ AnsiString      tabname;
    {
    cur_param=paramlist->GetParamPtr(i);
    if (cur_param)
-      if (cur_param->valid)
+      if (cur_param->Valid())
          {
          // parameter has not been 'touched' yet and it's user level is smaller than the operator's user level
          if ((cur_param->archive == false)

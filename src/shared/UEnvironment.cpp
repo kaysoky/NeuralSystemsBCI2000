@@ -123,7 +123,6 @@ EnvironmentBase::Parameter( const string& name,
   return PARAM::type_adapter( param, row, column );
 }
 
-#ifdef LABEL_INDEXING
 PARAM::type_adapter
 EnvironmentBase::Parameter( const string& name,
                             const string& rowLabel, size_t column ) const
@@ -167,7 +166,6 @@ EnvironmentBase::Parameter( const string& name,
   }
   return PARAM::type_adapter( param, row, column );
 }
-#endif // LABEL_INDEXING
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
@@ -213,7 +211,6 @@ EnvironmentBase::OptionalParameter( const string& name,
   return OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
 }
 
-#ifdef LABEL_INDEXING
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& name,
                                     const string& rowLabel, size_t column ) const
@@ -290,7 +287,6 @@ EnvironmentBase::OptionalParameter( double defaultValue,
   }
   return OptionalParameter( defaultValue, param, row, column );
 }
-#endif // LABEL_INDEXING
 
 bool
 EnvironmentBase::_PreflightCondition( const char* inConditionString,

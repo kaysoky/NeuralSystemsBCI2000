@@ -122,7 +122,10 @@ _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long 
           }
         }
         p.LabelsDimension2()[ 0 ] = "";
-        string line = p.GetParamLine();
+
+        ostringstream oss;
+        oss << p;
+        string line = oss.str();
         // Replace RUNTIME_SUFFIX in the parameter name.
         pos = line.find( runtimeSuffix );
         if( pos != line.npos )
@@ -150,7 +153,9 @@ _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long 
         }
         else if( !inList->GetParamPtr( p.GetName() ) )
         {
-          string line = p.GetParamLine();
+          ostringstream oss;
+          oss << p;
+          string line = oss.str();
           // Runtime elements are not supported, the user must supply a value.
           size_t rtPos;
           while( ( rtPos = line.find( runtimeElement ) ) != line.npos )
