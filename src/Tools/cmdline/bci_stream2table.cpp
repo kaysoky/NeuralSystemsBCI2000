@@ -5,6 +5,7 @@
 // Description: See the ToolInfo definition below.
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
+#include <set>
 
 #include "bci_tool.h"
 #include "shared/UParameter.h"
@@ -33,10 +34,13 @@ class StreamToTable : public MessageHandler
   ~StreamToTable() { delete mpStatevector; }
 
  private:
-  ostream& mrOut;
-  STATELIST mStatelist;
-  STATEVECTOR* mpStatevector;
-  SignalProperties mSignalProperties;
+  ostream&            mrOut;
+  STATELIST           mStatelist;
+  STATEVECTOR*        mpStatevector;
+  SignalProperties    mSignalProperties;
+  typedef set<string> StringSet; // A set is a sorted container of unique values.
+  StringSet           mStateNames;
+
 
   virtual bool HandleSTATE(       istream& );
   virtual bool HandleVisSignal(   istream& );
@@ -90,8 +94,11 @@ StreamToTable::HandleVisSignal( istream& arIn )
   {
     mSignalProperties = s;
     mrOut << "#";
+    mStateNames.clear();
     for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-      mrOut << "\t" << mStatelist.GetStatePtr( i )->GetName();
+      mStateNames.insert( mStatelist.GetStatePtr( i )->GetName() );
+    for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
+      mrOut << "\t" << *i;
     for( size_t i = 0; i < s.Channels(); ++i )
       for( size_t j = 0; j < s.GetNumElements( i ); ++j )
         mrOut << "\tSignal(" << i << "," << j << ")";
@@ -101,8 +108,8 @@ StreamToTable::HandleVisSignal( istream& arIn )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
   {
-    for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-      mrOut << "\t" << mpStatevector->GetStateValue( mStatelist.GetStatePtr( i )->GetName() );
+    for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
+      mrOut << "\t" << mpStatevector->GetStateValue( i->c_str() );
     for( size_t i = 0; i < s.Channels(); ++i )
       for( size_t j = 0; j < s.GetNumElements( i ); ++j )
         mrOut << "\t" << s( i, j );
