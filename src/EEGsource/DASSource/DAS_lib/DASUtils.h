@@ -22,7 +22,8 @@ enum
 {
   PC_CARD_DAS16_16 = 56,
   CIO_DAS1402_16 = 3590,
-};
+  PCM_DAS16S_16 = 16393,
+ };
 
 class DASUtils
 {
@@ -30,7 +31,7 @@ class DASUtils
   // Convert a numerical range to the corresponding UL range code, if possible.
   static int GetADRangeCode( float inMin,
                              float inMax );
-                             
+
   // Check whether a numerical range is compatible with an UL range code.
   // Considers UNIPOLAR and BIPOLAR range codes.
   static bool ADRangeCompatible( int   inRangeCode,
@@ -75,8 +76,19 @@ class DASUtils
   // A more convenient way to get error messages.
   static std::string GetErrorMessage( int inError );
 
-  // The following two utility functions might go elsewhere.
-  // They are useful to check the result of GetTransferBlockSize() for sanity.
+  // The following utility functions might go elsewhere.
+  template<typename T> static T GreatestCommonDivisor( T m, T n )
+  {
+    T remainder = 0;
+    while( 0 != ( remainder = m % n ) )
+    {
+      m = n;
+      n = remainder;
+    }
+    return n;
+  }
+
+  // The next two functions are useful to check the result of GetTransferBlockSize() for sanity.
 
   // Check whether an integer is a power of 2.
   template<typename T> static bool IsPowerOf2( T inNumber )
