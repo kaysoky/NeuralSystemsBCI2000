@@ -16,7 +16,6 @@ class TfMain : public TForm
 {
 __published:	// IDE-managed Components
         TButton *bConvert;
-        TEdit *eSourceFile;
         TLabel *Label1;
         TLabel *Label2;
         TEdit *eDestinationFile;
@@ -34,6 +33,7 @@ __published:	// IDE-managed Components
         TEdit *ParameterFile;
         TLabel *Label5;
         TOpenDialog *OpenParameter;
+    TMemo *mSourceFiles;
 
         void __fastcall bConvertClick(TObject *Sender);
         void __fastcall bOpenFileClick(TObject *Sender);

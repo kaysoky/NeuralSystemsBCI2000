@@ -38,27 +38,58 @@ __fastcall TfMain::TfMain(TComponent* Owner)
           gabTargets( NULL ),
           autoMode( false )
 {
+  Caption = Caption + "("__DATE__")";
+  Constraints->MinHeight = Height;
+  Constraints->MinWidth = Width;
+  mSourceFiles->WordWrap = false;
+  bConvert->Caption = "Convert";
+  Continue->Visible = false;
+  frun->Visible = false;
+  lrun->Visible = false;
+  Label3->Visible = false;
+  Label4->Visible = false;
+  
   if( Application->OnIdle == NULL )
     Application->OnIdle = DoStartupProcessing;
-  Caption = Caption + "("__DATE__")";
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
 {
   Application->OnIdle = NULL;
-  if( ParamCount() > 0 )
+
+  const char optionChar = '-';
+  if( ParamCount() > 0 && ParamStr( 1 )[ 1 ] != optionChar )
   {
     autoMode = true;
-    eSourceFile->Text = ParamStr( 1 );
-    if( ParamCount() > 1 )
+    mSourceFiles->Lines->Clear();
+    int i = 1;
+    while( i <= ParamCount() && ParamStr( i )[ 1 ] != optionChar )
+      mSourceFiles->Lines->Append( ParamStr( i++ ) );
+    while( i <= ParamCount() && ParamStr( i )[ 1 ] == optionChar )
     {
-      eDestinationFile->Text = ParamStr( 2 );
-      if( ParamCount() > 2 )
+      if( ParamStr( i ).Length() >= 2 )
       {
-        ParameterFile->Enabled = true;
-        ParameterFile->Text = ParamStr( 3 );
+        switch( ParamStr( i )[ 2 ] )
+        {
+          case 'o':
+          case 'O':
+            if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
+              eDestinationFile->Text = ParamStr( ++i );
+            else
+              eDestinationFile->Text = ParamStr( i ).c_str() + 2;
+            break;
+          case 'p':
+          case 'P':
+            ParameterFile->Enabled = true;
+            if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
+             ParameterFile->Text = ParamStr( ++i );
+            else
+              ParameterFile->Text = ParamStr( i ).c_str() + 2;
+            break;
+        }
       }
+      ++i;
     }
     if( bConvert->Enabled )
       bConvert->Click();
@@ -136,13 +167,26 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 
 void __fastcall TfMain::bConvertClick(TObject *Sender)
 {
-
-
- bci2000data=new BCI2000DATA;
-
  Continue->Enabled= false;
 
- ret=bci2000data->Initialize(eSourceFile->Text.c_str(), 50000);
+ bool errorOccurred = false;
+ for( int i = 0; i < mSourceFiles->Lines->Count; ++i )
+ {
+   BCI2000DATA reader;
+   if( reader.Initialize( mSourceFiles->Lines->Strings[ i ].c_str(), 50000 )
+        != BCI2000ERR_NOERR )
+   {
+      errorOccurred = true;
+      Application->MessageBox( ( AnsiString( "Error opening input file \"" )
+                               + mSourceFiles->Lines->Strings[ i ] + "\"" ).c_str(),
+                               "Error", MB_OK | MB_ICONERROR );
+   }
+ }
+ if( errorOccurred )
+   return;
+
+ bci2000data=new BCI2000DATA;
+ ret=bci2000data->Initialize(mSourceFiles->Lines->Strings[ 0 ].c_str(), 50000);
  if (ret != BCI2000ERR_NOERR)
     {
     Application->MessageBox("Error opening input file", "Error", MB_OK);
@@ -159,29 +203,30 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
     }
 
     CheckCalibrationFile();
-
+#if 0
  firstrun=bci2000data->GetFirstRunNumber();
  lastrun=bci2000data->GetLastRunNumber();
 
  frun->Text= firstrun;
  lrun->Text= lastrun;
-
  Continue->Enabled= true;
-
+#else
+ ContinueClick( Sender );
+#endif
  }
 
  
  void __fastcall TfMain::ContinueClick(TObject *Sender)
 {
-
+#if 0
  firstrun= atoi( frun->Text.c_str() );
  lastrun= atoi( lrun->Text.c_str() );
+#else
+ firstrun = 1;
+ lastrun = mSourceFiles->Lines->Count;
+#endif
  
  channels=bci2000data->GetNumChannels();
-#if 0
- if( channels > 64 )
-   channels = 64;
-#endif
  dummy=1;
  samplingrate=bci2000data->GetSampleFrequency();
 
@@ -198,7 +243,13 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  Gauge->MaxValue=Gauge->Width;// lastrun;
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
+#if 0
   bci2000data->SetRun(cur_run);
+#else
+  delete bci2000data;
+  bci2000data = new BCI2000DATA;
+  bci2000data->Initialize( mSourceFiles->Lines->Strings[ cur_run - 1 ].c_str(), 50000 );
+#endif
   numsamples=bci2000data->GetNumSamples();
 
   // go through all samples in each run
@@ -240,7 +291,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
   dummy=0;
   for (channel=0; channel<=channels; channel++)
      fwrite(&dummy, 2, 1, fp);
-  Gauge->Progress=cur_run;
+  Gauge->Progress=( cur_run * Gauge->MaxValue ) / lastrun;
   }
 
  fclose(fp);
@@ -312,8 +363,9 @@ static short cur_targetcode=-1;
 
 void __fastcall TfMain::bOpenFileClick(TObject *Sender)
 {
+ OpenDialog->Options << ofAllowMultiSelect;
  if (OpenDialog->Execute())
-    eSourceFile->Text=OpenDialog->FileName;
+    mSourceFiles->Lines=OpenDialog->Files;
 }
 //---------------------------------------------------------------------------
 
