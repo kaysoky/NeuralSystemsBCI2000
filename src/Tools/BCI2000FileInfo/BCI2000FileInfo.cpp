@@ -16,11 +16,11 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "BCI2000FileInfo";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TfConfig), &fConfig);
-                 Application->CreateForm(__classid(TfPreferences), &fPreferences);
-                 Application->CreateForm(__classid(TfEditMatrix), &fEditMatrix);
-                 Application->CreateForm(__classid(TfShowParameters), &fShowParameters);
-                 Application->Run();
+         Application->CreateForm(__classid(TfConfig), &fConfig);
+         Application->CreateForm(__classid(TfPreferences), &fPreferences);
+         Application->CreateForm(__classid(TfEditMatrix), &fEditMatrix);
+         Application->CreateForm(__classid(TfShowParameters), &fShowParameters);
+         Application->Run();
         }
         catch (Exception &exception)
         {

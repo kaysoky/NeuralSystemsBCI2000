@@ -7,7 +7,8 @@
     <OBJFILES value="obj\BCI2000FileInfo.obj obj\UMain.obj obj\UOperatorCfg.obj 
       obj\UParameter.obj obj\USysStatus.obj obj\UPreferences.obj 
       obj\UEditMatrix.obj obj\UShowParameters.obj obj\UBCI2000Data.obj 
-      obj\UState.obj obj\UOperatorUtils.obj"/>
+      obj\UState.obj obj\UOperatorUtils.obj obj\ParsedComment.obj 
+      obj\ParamDisplay.obj"/>
     <RESFILES value="BCI2000FileInfo.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm ..\..\Operator\UOperatorCfg.dfm 
@@ -22,14 +23,14 @@
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
       indy.bpi bcb2kaxserver.bpi"/>
-    <PATHCPP value=".;..\..\Operator;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared;..\..\Operator"/>
+    <PATHCPP value=".;..\..\Operator;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value=""/>
+    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2000FileInfo.cpp"/>
     <INCLUDEPATH value="..\..\shared;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -38,7 +39,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
+    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
     <PFLAGS value="-N2.\obj -N0.\obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
@@ -64,6 +65,8 @@
       <FILE FILENAME="..\..\shared\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\Operator\UOperatorUtils.cpp" FORMNAME="" UNITNAME="UOperatorUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\ParsedComment.cpp" FORMNAME="" UNITNAME="ParsedComment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\ParamDisplay.cpp" FORMNAME="" UNITNAME="ParamDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -114,8 +117,9 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG
+Count=2
+Item0=NO_WIN32_LEAN_AND_MEAN
+Item1=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1

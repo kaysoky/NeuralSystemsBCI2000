@@ -11,6 +11,7 @@
 #include <ComCtrls.hpp>
 #include <Menus.hpp>
 #include <Dialogs.hpp>
+#include "UPreferences.h"
 
 //---------------------------------------------------------------------------
 class TfMain : public TForm
