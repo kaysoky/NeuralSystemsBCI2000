@@ -60,7 +60,7 @@ operator<<( std::ostream& os, const LengthField<NumBytes>& l )
 }
 
 template<int NumBytes> std::istream&
-operator<<( std::ostream& is, LengthField<NumBytes>& l )
+operator>>( std::istream& is, LengthField<NumBytes>& l )
 {
   l.ReadFromStream( is );
   return is;
