@@ -386,11 +386,11 @@ char    buf[256];
     if (cfgID == CFGID_NUMSAMPLES)
        fVisConfig->SetVisualPrefs(sourceID, 0, "NumSamples", (int)atoi(&buffer[2]));
     if (cfgID == CFGID_WINDOWTITLE)
-       fVisConfig->SetVisualPrefs(sourceID, 0, "WindowTitle", AnsiString(&buffer[2]));
+       fVisConfig->SetVisualPrefs(sourceID, 0, "WindowTitle", &buffer[2]);
     if (cfgID == CFGID_XAXISLABEL)
        {
        sprintf(buf, "XAxisLabel%d", atoi(&buffer[2]));
-       fVisConfig->SetVisualPrefs(sourceID, 0, AnsiString(buf), AnsiString(&buffer[6]));
+       fVisConfig->SetVisualPrefs(sourceID, 0, buf, &buffer[6]);
        }
     }
 
@@ -514,19 +514,19 @@ char       buf[256];
     form=new TForm(Application);
 
     // create the form
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
        form->Top=value;
     else
        form->Top=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", value))
        form->Left=value;
     else
        form->Left=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", value))
        form->Width=value;
     else
        form->Width=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", value))
        form->Height=value;
     else
        form->Height=100;
@@ -535,17 +535,17 @@ char       buf[256];
     form->Show();
 
     // get the default values from the registry
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", &windowtitle))
+    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", windowtitle))
        form->Caption=AnsiString((int)my_sourceID);
     else
        form->Caption=windowtitle+" ("+AnsiString((int)my_sourceID)+")";
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "NumSamples", &displaysamples))
+    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "NumSamples", displaysamples))
        displaysamples=128;
     if (displaysamples == 0)
        displaysamples=128;
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MinValue", &minvalue))
+    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MinValue", minvalue))
        minvalue=-32768;
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MaxValue", &maxvalue))
+    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MaxValue", maxvalue))
        maxvalue=+32768;
     if (minvalue >= maxvalue)
        {
@@ -585,19 +585,19 @@ char       buf[256];
     form=new TForm(Application);
 
     // create the form
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
        form->Top=value;
     else
        form->Top=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", value))
        form->Left=value;
     else
        form->Left=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", value))
        form->Width=value;
     else
        form->Width=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", &value))
+    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", value))
        form->Height=value;
     else
        form->Height=100;
@@ -606,7 +606,7 @@ char       buf[256];
     form->Show();
 
     // get the default values from the registry
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", &windowtitle))
+    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", windowtitle))
        form->Caption=AnsiString((int)my_sourceID);
     else
        form->Caption=windowtitle+" ("+AnsiString((int)my_sourceID)+")";

@@ -36,15 +36,15 @@ __published:	// IDE-managed Components
         TLabel *Label12;
         TCSpinEdit *cNumSamples;
         void __fastcall bSetClick(TObject *Sender);
-private:	// User declarations
+
 public:		// User declarations
         __fastcall TfVisConfig(TComponent* Owner);
-        bool    GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, int *value);
-        bool    GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, double *value);
-        bool    GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, AnsiString *value);
-        bool    SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, int value);
-        bool    SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, double value);
-        bool    SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, AnsiString value);
+        bool    GetVisualPrefs(int sourceID, int vis_type, const char* variable, int& value) const;
+        bool    GetVisualPrefs(int sourceID, int vis_type, const char* variable, double& value) const;
+        bool    GetVisualPrefs(int sourceID, int vis_type, const char* variable, AnsiString& value) const;
+        bool    SetVisualPrefs(int sourceID, int vis_type, const char* variable, int value);
+        bool    SetVisualPrefs(int sourceID, int vis_type, const char* variable, double value);
+        bool    SetVisualPrefs(int sourceID, int vis_type, const char* variable, const char* value);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfVisConfig *fVisConfig;

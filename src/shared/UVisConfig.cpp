@@ -22,7 +22,7 @@ __fastcall TfVisConfig::TfVisConfig(TComponent* Owner)
 //---------------------------------------------------------------------------
 
 
-bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, int value)
+bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, const char* variable, int value)
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -58,7 +58,7 @@ bool    ret;
 }
 
 
-bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, double value)
+bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, const char* variable, double value)
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -94,7 +94,7 @@ bool    ret;
 }
 
 
-bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, AnsiString variable, AnsiString value)
+bool TfVisConfig::SetVisualPrefs(int sourceID, int vis_type, const char* variable, const char* value)
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -130,7 +130,7 @@ bool    ret;
 }
 
 
-bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, int *value)
+bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, const char* variable, int& value) const
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -146,7 +146,7 @@ bool            ret;
      ret=false;
      if (my_registry->ValueExists(variable))
         {
-        *value=my_registry->ReadInteger(variable);
+        value=my_registry->ReadInteger(variable);
         ret=true;
         }
      }
@@ -160,7 +160,7 @@ bool            ret;
 }
 
 
-bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, double *value)
+bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, const char* variable, double& value) const
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -177,7 +177,7 @@ bool            ret;
      ret=false;
      if (my_registry->ValueExists(variable))
         {
-        *value=my_registry->ReadFloat(variable);
+        value=my_registry->ReadFloat(variable);
         ret=true;
         }
      }
@@ -191,7 +191,7 @@ bool            ret;
 }
 
 
-bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, AnsiString variable, AnsiString *value)
+bool TfVisConfig::GetVisualPrefs(int sourceID, int vis_type, const char* variable, AnsiString& value) const
 {
 TRegistry       *my_registry;
 AnsiString      keyname;
@@ -207,7 +207,7 @@ bool            ret;
      ret=false;
      if (my_registry->ValueExists(variable))
         {
-        *value=my_registry->ReadString(variable);
+        value = my_registry->ReadString(variable);
         ret=true;
         }
      }
