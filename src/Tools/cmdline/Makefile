@@ -19,6 +19,7 @@ OR  = ||
 TARGETS = obj\bci_tool.lib \
           bci_dat2stream.exe \
           bci_prm2stream.exe \
+          bci_stream2prm.exe \
           bci_stream2asc.exe \
           bci_stream2table.exe \
           CalibrationFilter.exe \
@@ -32,9 +33,11 @@ TARGETS = obj\bci_tool.lib \
           UPeakDetector.exe \
           SWFilter.exe \
           FFTFilter.exe \
-          TransmissionFilter.exe
+          TransmissionFilter.exe \
+          StatFilter.exe \
           
 BCIOBJ  = obj\bci_tool.obj \
+          obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \
           obj\UEnvironment.obj \
@@ -48,12 +51,24 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\MeasurementUnits.obj \
           obj\getmem.obj \
           obj\getfir.obj \
-          obj\FFTLibWrap.obj 
+          obj\FFTLibWrap.obj
+          
+STATOBJ = obj\bci_filtertool.obj \
+          obj\StatFilter.obj \
+          obj\Statistics.obj \
+          obj\Normalfilter.obj \
+          obj\ClassFilter.obj \
+
+OLDSTATOBJ = obj\bci_filtertool.obj \
+          obj\old_StatFilter.obj \
+          obj\old_Statistics.obj \
+          obj\old_Normalfilter.obj \
+          obj\old_ClassFilter.obj \
 
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib
+SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\Old
 PATHOBJ = .\obj
 PATHCPP = .;${BCIROOT}\shared;${SIGPROC};${SRCROOT}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
@@ -83,6 +98,18 @@ all: ${TARGETS}
 
 obj\bci_tool.lib: ${BCIOBJ}
 	&${AR} $@ +$**
+
+obj\StatFilter.lib: ${STATOBJ}
+	&${AR} $@ +$**
+
+StatFilter.exe: obj\StatFilter.lib obj\bci_tool.lib
+	${LD} obj\StatFilter.obj obj\StatFilter.lib obj\bci_tool.lib rtl.lib
+	
+obj\old_StatFilter.lib: ${OLDSTATOBJ}
+	&${AR} $@ +$**
+
+old_StatFilter.exe: obj\old_StatFilter.lib obj\bci_tool.lib
+	${LD} obj\old_StatFilter.obj obj\old_StatFilter.lib obj\bci_tool.lib rtl.lib
 
 clean:
 	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds

@@ -34,7 +34,7 @@ ToolResult ToolMain( const OptionSet&, istream& in, ostream& out )
 {
   ToolResult result = noError;
   PARAM p;
-  while( in >> p )
+  while( in >> p >> ws )
     MessageHandler::PutMessage( out, p );
   return result;
 }

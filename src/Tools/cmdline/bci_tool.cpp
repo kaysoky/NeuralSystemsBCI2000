@@ -123,11 +123,13 @@ int main( int argc, const char** argv )
     }
     if( result == noError )
       result = ToolMain( toolOptions, *in, cout );
-    if( result != fileIOError && !*in )
+#if 0
+    if( !( in->good() || !in->eof() || result == fileIOError ) )
     {
       cerr << "Illegal data format" << endl;
       result = illegalInput;
     }
+#endif
     if( options.inputFile )
       delete in;
   }
