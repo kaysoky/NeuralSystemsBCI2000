@@ -235,26 +235,25 @@ AnsiString valueline;
         {
         // render the parameter's name
         ParamLabel[count]=new TLabel(this);
-        ParamLabel[count]->Parent=CfgTabControl;
         ParamLabel[count]->Left=LABELS_OFFSETX;
         ParamLabel[count]->Top=LABELS_OFFSETY+count*LABELS_SPACINGY;
         ParamLabel[count]->Caption=cur_param->GetName();
         ParamLabel[count]->Font->Style = TFontStyles()<< fsBold;
         ParamLabel[count]->Visible=true;
+        ParamLabel[count]->Parent=CfgTabControl;
         // render the parameter's comment
         ParamComment[count]=new TLabel(this);
-        ParamComment[count]->Parent=CfgTabControl;
         ParamComment[count]->Left=COMMENT_OFFSETX;
         ParamComment[count]->Top=COMMENT_OFFSETY+count*COMMENT_SPACINGY;
         ParamComment[count]->Caption=cur_param->GetComment();
         ParamComment[count]->Font->Style = TFontStyles()<< fsItalic;
         ParamComment[count]->Visible=true;
+        ParamComment[count]->Parent=CfgTabControl;
         // render the parameter's User Level track bar
         // ONLY, if the current user level is "advanced"
         if (preferences->UserLevel == USERLEVEL_ADVANCED)
            {
            ParamUserLevel[count]=new TTrackBar(this);
-           ParamUserLevel[count]->Parent=CfgTabControl;
            ParamUserLevel[count]->Left=USERLEVEL_OFFSETX;
            ParamUserLevel[count]->Top=USERLEVEL_OFFSETY+count*USERLEVEL_SPACINGY;
            ParamUserLevel[count]->Width=USERLEVEL_WIDTHX;
@@ -264,6 +263,7 @@ AnsiString valueline;
            ParamUserLevel[count]->PageSize=1;
            ParamUserLevel[count]->OnChange=OnUserLevelChange;
            ParamUserLevel[count]->Visible=true;
+           ParamUserLevel[count]->Parent=CfgTabControl;
            }
         // render the parameter's edit field, depending on the parameter data type
         ParamValue[count]=NULL;
@@ -274,25 +274,24 @@ AnsiString valueline;
            {
            ParamButton[0][count]=new TButton(this);
            ParamButton[0][count]->Caption="Edit Matrix";
-           ParamButton[0][count]->Parent=CfgTabControl;
            ParamButton[0][count]->Left=VALUE_OFFSETX;
            ParamButton[0][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            ParamButton[0][count]->Width=70;
            ParamButton[0][count]->Height=21;
            ParamButton[0][count]->OnClick=bEditMatrixClick;
            ParamButton[0][count]->Visible=true;
+           ParamButton[0][count]->Parent=CfgTabControl;
            ParamButton[1][count]=new TButton(this);
            ParamButton[1][count]->Caption="Load Matrix";
-           ParamButton[1][count]->Parent=CfgTabControl;
            ParamButton[1][count]->Left=VALUE_OFFSETX+70+10;
            ParamButton[1][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            ParamButton[1][count]->Width=70;
            ParamButton[1][count]->Height=21;
            ParamButton[1][count]->OnClick=bLoadMatrixClick;
            ParamButton[1][count]->Visible=true;
+           ParamButton[1][count]->Parent=CfgTabControl;
            ParamButton[2][count]=new TButton(this);
            ParamButton[2][count]->Caption="Save Matrix";
-           ParamButton[2][count]->Parent=CfgTabControl;
            ParamButton[2][count]->Left=VALUE_OFFSETX+70+10+70+10;
            ParamButton[2][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            ParamButton[2][count]->Width=70;
@@ -300,11 +299,11 @@ AnsiString valueline;
            ParamButton[2][count]->Height=21;
            // ParamButton[1][count]->OnClick=bEditMatrixClick;
            ParamButton[2][count]->Visible=true;
+           ParamButton[2][count]->Parent=CfgTabControl;
            }
         else if( cur_param->GetNumValues() > 1 )
            {
            ParamValue[count]=new TEdit(this);
-           ParamValue[count]->Parent=CfgTabControl;
            ParamValue[count]->Left=VALUE_OFFSETX;
            ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            ostringstream oss;
@@ -318,17 +317,18 @@ AnsiString valueline;
            ParamValue[count]->Width=VALUE_WIDTHX;
            ParamValue[count]->ReadOnly=false;
            ParamValue[count]->Visible=true;
+           ParamValue[count]->Parent=CfgTabControl;
            }
         else
            {
            ParamValue[count]=new TEdit(this);
-           ParamValue[count]->Parent=CfgTabControl;
            ParamValue[count]->Left=VALUE_OFFSETX;
            ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
            ParamValue[count]->Text=cur_param->GetValue();
            ParamValue[count]->Width=VALUE_WIDTHX;
            ParamValue[count]->ReadOnly=false;
            ParamValue[count]->Visible=true;
+           ParamValue[count]->Parent=CfgTabControl;
            }
         count++;
         }
