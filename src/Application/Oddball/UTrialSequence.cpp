@@ -8,6 +8,7 @@
 #include "UState.h"
 #include "UTargetSequence.h"
 #include "UTrialSequence.h"
+#include "UBCIError.h"
 
 //---------------------------------------------------------------------------
 
