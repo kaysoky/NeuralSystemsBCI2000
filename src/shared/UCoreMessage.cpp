@@ -13,6 +13,9 @@
  * V0.15 - 03/29/2001 - Added support for SYSCOMMAND                          *
  * V0.16 - 04/11/2002 - Added a little pause to send and receive functions    *
  *                      (so that processor load doesn't go to 100%)           *
+ * V0.17 - 11/26/2003 - Preventing buffer overflow problems by enforcing a    *
+ *                      length value in GetBuffer, checking for 64k length    *
+ *                      limit, juergen.mellinger@uni-tuebingen.de             *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -34,8 +37,15 @@
 COREMESSAGE::COREMESSAGE()
 : length( 0 ),
   descriptor( 0 ),
-  supp_descriptor( 0 )
+  supp_descriptor( 0 ),
+  buffer( NULL ),
+  buffer_size( 0 )
 {
+}
+
+COREMESSAGE::~COREMESSAGE()
+{
+  delete[] buffer;
 }
 
 // **************************************************************************
@@ -110,8 +120,11 @@ unsigned short COREMESSAGE::GetLength() const
 // Parameters: newlength - length of the core message
 // Returns:    N/A
 // **************************************************************************
-void COREMESSAGE::SetLength(unsigned short newlength)
+void COREMESSAGE::SetLength(int newlength)
 {
+ const int limit = 1 << 15 - 1;
+ if( length > limit )
+   throw __FUNC__ ": Length of message exceeds 64k limit";
  length=newlength;
 }
 
@@ -122,11 +135,29 @@ void COREMESSAGE::SetLength(unsigned short newlength)
 // Parameters: N/A
 // Returns:    pointer to the data
 // **************************************************************************
-char *COREMESSAGE::GetBufPtr()
+const char *COREMESSAGE::GetBufPtr() const
 {
  return(buffer);
 }
 
+// **************************************************************************
+// Function:   GetBufPtr
+// Purpose:    Gets a pointer to the GetLength() bytes data in the coremessage
+// Parameters: Minimum size of buffer requested by the caller.
+// Returns:    pointer to the buffer
+// **************************************************************************
+char *COREMESSAGE::GetBufPtr( int inSize )
+{
+  int trueSize = inSize + 1; // In case the caller is unsure about details
+                             // of C string functions...
+  if( buffer_size < trueSize )
+  {
+    delete[] buffer;
+    buffer = new char[ trueSize ];
+    buffer_size = trueSize;
+  }
+  return(buffer);
+}
 
 // **************************************************************************
 // Function:   SendBufBytes
@@ -139,7 +170,7 @@ char *COREMESSAGE::GetBufPtr()
 // Returns:    <= 0 ... on error
 //             >0   ... on success
 // **************************************************************************
-int COREMESSAGE::SendBufBytes(TCustomWinSocket *Socket, char *buf, int length)
+int COREMESSAGE::SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length)
 {
 int     bytessent, count=0;
 
@@ -149,7 +180,7 @@ int     bytessent, count=0;
   try
    {
    if (!(Socket->Connected)) return(0);
-   bytessent=Socket->SendBuf(buf, length-count);
+   bytessent=Socket->SendBuf(( char* )buf, length-count);
    }
   catch( TooGeneralCatch& )
    {
@@ -280,7 +311,7 @@ int             ret1, ret2, ret3, ret4;
  SetSuppDescriptor(supp_descriptor);
  ret3=ReceiveBufBytes(Socket, (char *)&length, 2);
  SetLength(length);
- ret4=ReceiveBufBytes(Socket, GetBufPtr(), length);        // write directly into the buffer
+ ret4=ReceiveBufBytes(Socket, GetBufPtr(length), length);        // write directly into the buffer
 
  if ((ret1 == 0) || (ret2 == 0) || (ret3 == 0) || (ret4 == 0))
     return(ERRCORE_RECEIVEBUFBYTES);
@@ -316,7 +347,7 @@ int             bytesread;
  bytesread=ReceiveBufBytes(stream, (char *)&length, 2);
  if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
  SetLength(length);
- bytesread=ReceiveBufBytes(stream, GetBufPtr(), length);        // write directly into the buffer
+ bytesread=ReceiveBufBytes(stream, GetBufPtr(length), length);        // write directly into the buffer
  if (bytesread == 0) return(ERRCORE_RECEIVEBUFBYTES);
 
  return(ERRCORE_NOERR);

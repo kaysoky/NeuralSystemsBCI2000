@@ -33,15 +33,17 @@
 class COREMESSAGE
 {
 private:	// User declarations
-        char    buffer[COREMESSAGE_MAXBUFFER];
+        char*   buffer;
+        long    buffer_size;
         BYTE    descriptor;
         BYTE    supp_descriptor;
         unsigned short   length;
-        int     SendBufBytes(TCustomWinSocket *Socket, char *buf, int length);
+        int     SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length);
         int     ReceiveBufBytes(TCustomWinSocket *Socket, char *buf, int length);
         int     ReceiveBufBytes(TWinSocketStream *stream, char *buf, int length);
 public:		// User declarations
         COREMESSAGE::COREMESSAGE();
+        ~COREMESSAGE();
         PARAM   param;
         STATE   state;
         STATUS  status;
@@ -52,9 +54,11 @@ public:		// User declarations
         void    SetSuppDescriptor(BYTE newsuppdescriptor);
         BYTE    GetDescriptor() const;
         BYTE    GetSuppDescriptor() const;
-        void    SetLength(unsigned short newlength);
+        void    SetLength(int newlength);
         unsigned short GetLength() const;
-        char    *GetBufPtr();
+        char    *GetBufPtr( int ); // when going to write into the buffer, you
+                                   // must specify the amount of data to write.
+        const char* GetBufPtr() const;
         int     ReceiveCoreMessage(TCustomWinSocket *Socket);
         int     ReceiveCoreMessage(TWinSocketStream *stream);
         int     SendCoreMessage(TCustomWinSocket *Socket);
