@@ -260,7 +260,7 @@ VISUAL::VisualBase::FormResize( TObject* Sender )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-const RGBColor VISUAL::Graph::channelColorsDefault[] =
+const RGBColor VISUAL::Graph::cChannelColorsDefault[] =
 {
   White,
   White,
@@ -272,22 +272,22 @@ const RGBColor VISUAL::Graph::channelColorsDefault[] =
 
 VISUAL::Graph::Graph( id_type inSourceID )
 : VisualBase( inSourceID ),
-  showCursor( false ),
-  wrapAround( false ),
-  numSamples( numSamplesDefault ),
-  sampleCursor( 0 ),
-  numDisplayGroups( 0 ),
-  numDisplayChannels( 0 ),
-  bottomGroup( 0 ),
-  showBaselines( false ),
-  displayColors( true ),
-  channelGroupSize( 1 ),
-  minValue( minValueDefault ),
-  maxValue( maxValueDefault ),
-  displayMode( polyline ),
-  redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
-  offscreenBitmap( new Graphics::TBitmap ),
-  channelColors( channelColorsDefault ),
+  mShowCursor( false ),
+  mWrapAround( false ),
+  mNumSamples( cNumSamplesDefault ),
+  mSampleCursor( 0 ),
+  mNumDisplayGroups( 0 ),
+  mNumDisplayChannels( 0 ),
+  mBottomGroup( 0 ),
+  mShowBaselines( false ),
+  mDisplayColors( true ),
+  mChannelGroupSize( 1 ),
+  mMinValue( cMinValueDefault ),
+  mMaxValue( cMaxValueDefault ),
+  mDisplayMode( polyline ),
+  mRedrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
+  mpOffscreenBitmap( new Graphics::TBitmap ),
+  mChannelColors( cChannelColorsDefault ),
   mUserScaling( 0 )
 {
   Restore();
@@ -296,8 +296,8 @@ VISUAL::Graph::Graph( id_type inSourceID )
 VISUAL::Graph::~Graph()
 {
   Save();
-  delete offscreenBitmap;
-  ::DeleteObject( redrawRgn );
+  delete mpOffscreenBitmap;
+  ::DeleteObject( mRedrawRgn );
 }
 
 void
@@ -307,38 +307,36 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
 
   int userScaling = mUserScaling;
   mUserScaling = 0;
-  inConfig.Get( CFGID::MINVALUE, minValue );
-  inConfig.Get( CFGID::MAXVALUE, maxValue );
+  inConfig.Get( CFGID::MINVALUE, mMinValue );
+  inConfig.Get( CFGID::MAXVALUE, mMaxValue );
   for( int i = 0; i < userScaling; ++i )
     EnlargeSignal();
   for( int i = 0; i > userScaling; --i )
     ReduceSignal();
 
-  inConfig.Get( CFGID::NUMSAMPLES, numSamples );
-  inConfig.Get( CFGID::channelGroupSize, channelGroupSize );
-  if( channelGroupSize < 1 )
-    channelGroupSize = numeric_limits<size_t>::max();
+  size_t newNumSamples;
+  inConfig.Get( CFGID::NUMSAMPLES, newNumSamples );
+  SetNumSamples( newNumSamples );
+  inConfig.Get( CFGID::channelGroupSize, mChannelGroupSize );
+  if( mChannelGroupSize < 1 )
+    mChannelGroupSize = numeric_limits<size_t>::max();
   int graphType = CFGID::polyline;
   inConfig.Get( CFGID::graphType, graphType );
   switch( graphType )
   {
     case CFGID::polyline:
-      displayMode = polyline;
+      mDisplayMode = polyline;
       break;
     case CFGID::field2d:
-      displayMode = field2d;
+      mDisplayMode = field2d;
       break;
   }
-  inConfig.Get( CFGID::showBaselines, showBaselines );
-  inConfig.Get( CFGID::channelColors, channelColors );
+  inConfig.Get( CFGID::showBaselines, mShowBaselines );
+  inConfig.Get( CFGID::channelColors, mChannelColors );
 
   // Sanity checks.
-  if( minValue == maxValue )
-    maxValue = minValue + 1;
-  if( numSamples < 1 )
-    numSamples = 1;
-  for( size_t i = 0; i < data.Channels(); ++i )
-    data.SetNumElements( i, numSamples );
+  if( mMinValue == mMaxValue )
+    mMaxValue = mMinValue + 1;
   form->Invalidate();
 }
 
@@ -384,50 +382,50 @@ VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
 
   // Any changes in the signal size that we must react to?
   bool reconfigure = false;
-  if( newData.MaxElements() > numSamples )
+  if( newData.MaxElements() > mNumSamples )
   {
-    numSamples = newData.MaxElements();
+    SetNumSamples( newData.MaxElements() );
     reconfigure = true;
   }
-  if( newData.Channels() != data.Channels() )
+  if( newData.Channels() != mData.Channels() )
   {
-    numDisplayGroups = ( newData.Channels() - 1 ) / channelGroupSize + 1;
-    switch( displayMode )
+    mNumDisplayGroups = ( newData.Channels() - 1 ) / mChannelGroupSize + 1;
+    switch( mDisplayMode )
     {
       case polyline:
-        numDisplayGroups = min( numDisplayGroups, maxDisplayGroups );
+        mNumDisplayGroups = min( mNumDisplayGroups, cMaxDisplayGroups );
         break;
       case field2d:
       default:
         break;
     }
-    numDisplayChannels = min( newData.Channels(), numDisplayGroups * channelGroupSize );
+    mNumDisplayChannels = min( newData.Channels(), mNumDisplayGroups * mChannelGroupSize );
     reconfigure = true;
   }
   if( reconfigure )
   {
-    data = GenericSignal( newData.Channels(), numSamples );
-    sampleCursor = 0;
+    mData = GenericSignal( newData.Channels(), mNumSamples );
+    mSampleCursor = 0;
     form->Invalidate();
   }
 
-  showCursor = ( newData.MaxElements() < numSamples );
+  mShowCursor = ( newData.MaxElements() < mNumSamples );
 
   for( size_t i = 0; i < newData.Channels(); ++i )
     for( size_t j = 0; j < newData.GetNumElements( i ); ++j )
-      data( i, ( sampleCursor + j ) % data.GetNumElements( i ) ) = newData( i, j );
+      mData( i, ( mSampleCursor + j ) % mData.GetNumElements( i ) ) = newData( i, j );
 
   SyncGraphics();
 
-  int firstInvalidSample = sampleCursor,
-      firstValidSample = sampleCursor + newData.MaxElements();
-  sampleCursor = firstValidSample % numSamples;
-  wrapAround |= bool( firstValidSample / numSamples > 0  );
+  int firstInvalidSample = mSampleCursor,
+      firstValidSample = mSampleCursor + newData.MaxElements();
+  mSampleCursor = firstValidSample % mNumSamples;
+  mWrapAround |= bool( firstValidSample / mNumSamples > 0  );
 
-  long firstInvalidPixel = dataRect.left,
-       firstValidPixel = dataRect.right;
+  long firstInvalidPixel = mDataRect.left,
+       firstValidPixel = mDataRect.right;
 
-  switch( displayMode )
+  switch( mDisplayMode )
   {
     case polyline:
       firstInvalidPixel = SampleLeft( firstInvalidSample - 1 );
@@ -443,26 +441,26 @@ VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
 
   // We maintain a redraw region to make sure the
   // cursor is deleted from its old position.
-  ::InvalidateRgn( form->Handle, redrawRgn, false );
-  ::SetRectRgn( redrawRgn, 0, 0, 0, 0 );
+  ::InvalidateRgn( form->Handle, mRedrawRgn, false );
+  ::SetRectRgn( mRedrawRgn, 0, 0, 0, 0 );
 
-  RECT invalidRect = dataRect;
+  RECT invalidRect = mDataRect;
 
   // The non-wrapped area.
-  invalidRect.left = max( firstInvalidPixel, dataRect.left );
-  invalidRect.right = min( firstValidPixel, dataRect.right );
+  invalidRect.left = max( firstInvalidPixel, mDataRect.left );
+  invalidRect.right = min( firstValidPixel, mDataRect.right );
   if( invalidRect.left < invalidRect.right )
     ::InvalidateRect( form->Handle, &invalidRect, false );
 
   // The area wrapped around the left edge.
-  invalidRect.left = max( firstInvalidPixel + dataWidth, dataRect.left );
-  invalidRect.right = min( firstValidPixel + dataWidth, dataRect.right );
+  invalidRect.left = max( firstInvalidPixel + mDataWidth, mDataRect.left );
+  invalidRect.right = min( firstValidPixel + mDataWidth, mDataRect.right );
   if( invalidRect.left < invalidRect.right )
     ::InvalidateRect( form->Handle, &invalidRect, false );
 
   // The area wrapped around the right edge.
-  invalidRect.left = max( firstInvalidPixel - dataWidth, dataRect.left );
-  invalidRect.right = min( firstValidPixel - dataWidth, dataRect.right );
+  invalidRect.left = max( firstInvalidPixel - mDataWidth, mDataRect.left );
+  invalidRect.right = min( firstValidPixel - mDataWidth, mDataRect.right );
   if( invalidRect.left < invalidRect.right )
     ::InvalidateRect( form->Handle, &invalidRect, false );
 }
@@ -471,9 +469,9 @@ inline
 void
 VISUAL::Graph::SyncGraphics()
 {
-  dataRect = TRect( labelWidth, 0, form->ClientWidth, form->ClientHeight );
-  dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
-  dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
+  mDataRect = TRect( cLabelWidth, 0, form->ClientWidth, form->ClientHeight );
+  mDataWidth = std::max<int>( 0, mDataRect.right - mDataRect.left );
+  mDataHeight = std::max<int>( 0, mDataRect.bottom - mDataRect.top - cLabelWidth );
 }
 
 struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
@@ -536,46 +534,46 @@ VISUAL::Graph::PopupMenuItemClick( TObject* inSender )
 void
 VISUAL::Graph::ToggleDisplayMode()
 {
-  SetDisplayMode( DisplayMode( ( displayMode + 1 ) % numDisplayModes ) );
+  SetDisplayMode( DisplayMode( ( mDisplayMode + 1 ) % cNumDisplayModes ) );
 }
 
 void
 VISUAL::Graph::ToggleBaselines()
 {
-  showBaselines = !showBaselines;
-  visconfigs[ sourceID ].Put( CFGID::showBaselines, showBaselines, UserDefined );
+  mShowBaselines = !mShowBaselines;
+  visconfigs[ sourceID ].Put( CFGID::showBaselines, mShowBaselines, UserDefined );
   form->Invalidate();
 }
 
 bool
 VISUAL::Graph::ToggleBaselines_Enabled() const
 {
-  return displayMode == polyline;
+  return mDisplayMode == polyline;
 }
 
 bool
 VISUAL::Graph::ToggleBaselines_Checked() const
 {
-  return showBaselines;
+  return mShowBaselines;
 }
 
 void
 VISUAL::Graph::ToggleColor()
 {
-  displayColors = !displayColors;
+  mDisplayColors = !mDisplayColors;
   form->Invalidate();
 }
 
 bool
 VISUAL::Graph::ToggleColor_Enabled() const
 {
-  return displayMode == polyline || displayMode == field2d;
+  return mDisplayMode == polyline || mDisplayMode == field2d;
 }
 
 bool
 VISUAL::Graph::ToggleColor_Checked() const
 {
-  return displayColors;
+  return mDisplayColors;
 }
 
 void
@@ -585,9 +583,9 @@ VISUAL::Graph::ChooseColors()
   // Maybe this should be changed in the future.
   const numCustomColors = 16;
   COLORREF customColors[ numCustomColors ];
-  for( int i = 0; i < ::min<int>( channelColors.size(), numCustomColors ); ++i )
-    customColors[ i ] = channelColors[ i ];
-  for( int i = channelColors.size(); i < numCustomColors; ++i )
+  for( int i = 0; i < ::min<int>( mChannelColors.size(), numCustomColors ); ++i )
+    customColors[ i ] = mChannelColors[ i ];
+  for( int i = mChannelColors.size(); i < numCustomColors; ++i )
     customColors[ i ] = Black;
   CHOOSECOLOR chooserParams =
   {
@@ -607,14 +605,14 @@ VISUAL::Graph::ChooseColors()
     while( numUserColors < numCustomColors && customColors[ numUserColors ] != Black )
       ++numUserColors;
     if( numUserColors == 0 )
-      channelColors.resize( 1, White );
+      mChannelColors.resize( 1, White );
     else
     {
-      channelColors.resize( numUserColors );
+      mChannelColors.resize( numUserColors );
       for( int i = 0; i < numUserColors; ++i )
-        channelColors[ i ] = customColors[ i ];
+        mChannelColors[ i ] = customColors[ i ];
     }
-    visconfigs[ sourceID ].Put( CFGID::channelColors, channelColors, UserDefined );
+    visconfigs[ sourceID ].Put( CFGID::channelColors, mChannelColors, UserDefined );
     form->Invalidate();
   }
 }
@@ -622,21 +620,21 @@ VISUAL::Graph::ChooseColors()
 bool
 VISUAL::Graph::ChooseColors_Enabled() const
 {
-  return displayColors && displayMode == polyline;
+  return mDisplayColors && mDisplayMode == polyline;
 }
 
 void
 VISUAL::Graph::EnlargeSignal()
 {
 #if 0
-  float offset = ( minValue + maxValue ) / 2,
-        unit = maxValue - offset;
+  float offset = ( mMinValue + mMaxValue ) / 2,
+        unit = mMaxValue - offset;
   unit /= 2;
-  minValue = offset - unit;
-  maxValue = offset + unit;
+  mMinValue = offset - unit;
+  mMaxValue = offset + unit;
 #else
-  minValue /= 2;
-  maxValue /= 2;
+  mMinValue /= 2;
+  mMaxValue /= 2;
 #endif
   ++mUserScaling;
   form->Invalidate();
@@ -652,14 +650,14 @@ void
 VISUAL::Graph::ReduceSignal()
 {
 #if 0
-  float offset = ( minValue + maxValue ) / 2,
-        unit = maxValue - offset;
+  float offset = ( mMinValue + mMaxValue ) / 2,
+        unit = mMaxValue - offset;
   unit *= 2;
-  minValue = offset - unit;
-  maxValue = offset + unit;
+  mMinValue = offset - unit;
+  mMaxValue = offset + unit;
 #else
-  minValue *= 2;
-  maxValue *= 2;
+  mMinValue *= 2;
+  mMaxValue *= 2;
 #endif
   --mUserScaling;
   form->Invalidate();
@@ -674,33 +672,33 @@ VISUAL::Graph::ReduceSignal_Enabled() const
 void
 VISUAL::Graph::LessChannels()
 {
-  SetDisplayGroups( numDisplayGroups / 2 );
+  SetDisplayGroups( mNumDisplayGroups / 2 );
 }
 
 bool
 VISUAL::Graph::LessChannels_Enabled() const
 {
-  return numDisplayGroups > 1;
+  return mNumDisplayGroups > 1;
 }
 
 void
 VISUAL::Graph::MoreChannels()
 {
-  SetDisplayGroups( numDisplayGroups * 2 );
+  SetDisplayGroups( mNumDisplayGroups * 2 );
 }
 
 bool
 VISUAL::Graph::MoreChannels_Enabled() const
 {
-  return numDisplayGroups < data.Channels() / channelGroupSize;
+  return mNumDisplayGroups < mData.Channels() / mChannelGroupSize;
 }
 
 void
 VISUAL::Graph::SetDisplayGroups( int inDisplayGroups )
 {
-  numDisplayGroups = inDisplayGroups;
-  numDisplayChannels = min( data.Channels(), numDisplayGroups * channelGroupSize );
-  SetBottomGroup( bottomGroup );
+  mNumDisplayGroups = inDisplayGroups;
+  mNumDisplayChannels = min( mData.Channels(), mNumDisplayGroups * mChannelGroupSize );
+  SetBottomGroup( mBottomGroup );
   form->Invalidate();
 }
 
@@ -708,14 +706,14 @@ void
 VISUAL::Graph::SetBottomGroup( int inBottomGroup )
 {
   int newBottomGroup = inBottomGroup,
-      maxBottomGroup = ChannelToGroup( data.Channels() ) - int( numDisplayGroups );
+      maxBottomGroup = ChannelToGroup( mData.Channels() ) - int( mNumDisplayGroups );
   if( newBottomGroup > maxBottomGroup )
     newBottomGroup = maxBottomGroup;
   if( newBottomGroup < 0 )
     newBottomGroup = 0;
-  if( ( size_t )newBottomGroup != bottomGroup )
+  if( ( size_t )newBottomGroup != mBottomGroup )
   {
-    bottomGroup = newBottomGroup;
+    mBottomGroup = newBottomGroup;
     form->Invalidate();
   }
 }
@@ -723,11 +721,25 @@ VISUAL::Graph::SetBottomGroup( int inBottomGroup )
 void
 VISUAL::Graph::SetDisplayMode( DisplayMode mode )
 {
-  if( mode != displayMode )
+  if( mode != mDisplayMode )
   {
     form->Invalidate();
-    displayMode = mode;
+    mDisplayMode = mode;
   }
+}
+
+void
+VISUAL::Graph::SetNumSamples( int inNumSamples )
+{
+  size_t newNumSamples = inNumSamples;
+  if( newNumSamples < 1 )
+    newNumSamples = 1;
+  if( newNumSamples != mNumSamples )
+  {
+    mData = GenericSignal( mData.Channels(), newNumSamples );
+    mSampleCursor = 0;
+  }
+  mNumSamples = newNumSamples;
 }
 
 void
@@ -737,16 +749,16 @@ VISUAL::Graph::FormKeyUp( TObject*, WORD& key, TShiftState )
   switch( key )
   {
     case VK_UP:
-      SetBottomGroup( bottomGroup + 1 );
+      SetBottomGroup( mBottomGroup + 1 );
       break;
     case VK_DOWN:
-      SetBottomGroup( bottomGroup - 1 );
+      SetBottomGroup( mBottomGroup - 1 );
       break;
     case VK_PRIOR:
-      SetBottomGroup( bottomGroup + numDisplayGroups / 2 );
+      SetBottomGroup( mBottomGroup + mNumDisplayGroups / 2 );
       break;
     case VK_NEXT:
-      SetBottomGroup( bottomGroup - numDisplayGroups / 2 );
+      SetBottomGroup( mBottomGroup - mNumDisplayGroups / 2 );
       break;
   }
 }
@@ -774,8 +786,8 @@ VISUAL::Graph::FormPaint( TObject* Sender )
         ::DeleteObject( *i );
     }
   } gdi( numGdiObj ),
-    signalPens( data.Channels() ),
-    signalBrushes( data.Channels() );
+    signalPens( mData.Channels() ),
+    signalBrushes( mData.Channels() );
 
   // Background properties
   const TColor backgroundColor = clBlack;
@@ -794,7 +806,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
   gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, axisColor );
 
-  const fontHeight = labelWidth / 2;
+  const fontHeight = cLabelWidth / 2;
   const labelColor = axisColor;
   gdi[ labelFont ] = ::CreateFont( -fontHeight, 0, 0, 0, FW_DONTCARE,
                       false, false, false, ANSI_CHARSET, OUT_RASTER_PRECIS,
@@ -802,8 +814,8 @@ VISUAL::Graph::FormPaint( TObject* Sender )
                       VARIABLE_PITCH | FF_SWISS, NULL );
 
   // Signal properties
-  if( displayColors )
-    for( size_t i = 0; i < data.Channels(); ++i )
+  if( mDisplayColors )
+    for( size_t i = 0; i < mData.Channels(); ++i )
     {
       signalPens[ i ] = ::CreatePen( PS_SOLID, 0, ChannelColor( i ) );
       signalBrushes[ i ] = ::CreateSolidBrush( ChannelColor( i ) );
@@ -811,19 +823,19 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   else
   {
     HGDIOBJ pen = ::CreatePen( PS_SOLID, 0, clWhite );
-    for( size_t i = 0; i < data.Channels(); ++i )
+    for( size_t i = 0; i < mData.Channels(); ++i )
       signalPens[ i ] = pen;
   }
 
   // Do the drawing.
   TVisForm* Form = static_cast<TVisForm*>( Sender );
   TRect formRect = Form->ClientRect;
-  if( offscreenBitmap->Width != formRect.right )
-    offscreenBitmap->Width = formRect.right;
-  if( offscreenBitmap->Height != formRect.bottom )
-    offscreenBitmap->Height = formRect.bottom;
+  if( mpOffscreenBitmap->Width != formRect.right )
+    mpOffscreenBitmap->Width = formRect.right;
+  if( mpOffscreenBitmap->Height != formRect.bottom )
+    mpOffscreenBitmap->Height = formRect.bottom;
 
-  HDC dc = offscreenBitmap->Canvas->Handle;
+  HDC dc = mpOffscreenBitmap->Canvas->Handle;
   ::SelectClipRgn( dc, Form->updateRgn );
 
   // Clear the background.
@@ -831,53 +843,53 @@ VISUAL::Graph::FormPaint( TObject* Sender )
 
   // Draw the signal.
   SyncGraphics();
-  switch( displayMode )
+  switch( mDisplayMode )
   // Ideally, this distinction should be implemented as subclassing.
   // However, this wouldn't allow switching display modes for windows
   // that already exist.
   {
     case polyline:
     {
-      float  baseInterval = dataHeight / numDisplayGroups;
+      float  baseInterval = mDataHeight / mNumDisplayGroups;
       // Draw the baselines.
-      if( showBaselines )
+      if( mShowBaselines )
       {
         POINT baselinePoints[ 2 ];
         ::SelectObject( dc, gdi[ baselinePen ] );
         baselinePoints[ 0 ].x = SampleLeft( 0 );
-        baselinePoints[ 1 ].x = SampleRight( numSamples );
-        for( size_t i = 0; i < numDisplayGroups; ++i )
+        baselinePoints[ 1 ].x = SampleRight( mNumSamples );
+        for( size_t i = 0; i < mNumDisplayGroups; ++i )
         {
-          baselinePoints[ 0 ].y = ChannelBottom( i ) + ( baseInterval * minValue ) / ( maxValue - minValue );
+          baselinePoints[ 0 ].y = ChannelBottom( i ) + ( baseInterval * mMinValue ) / ( mMaxValue - mMinValue );
           baselinePoints[ 1 ].y = baselinePoints[ 0 ].y;
           ::Polyline( dc, baselinePoints, 2 );
         }
       }
 
-      signalPoints.resize( numSamples );
-      for( size_t i = 0; i < numDisplayChannels; ++i )
+      mSignalPoints.resize( mNumSamples );
+      for( size_t i = 0; i < mNumDisplayChannels; ++i )
       {
-        for( size_t j = 0; j < numSamples; ++j )
+        for( size_t j = 0; j < mNumSamples; ++j )
         {
-          signalPoints[ j ].x = SampleLeft( j );
-          signalPoints[ j ].y = ChannelBottom( i ) - 1
-               - baseInterval * NormData( i + bottomGroup * channelGroupSize, j );
+          mSignalPoints[ j ].x = SampleLeft( j );
+          mSignalPoints[ j ].y = ChannelBottom( i ) - 1
+               - baseInterval * NormData( i + mBottomGroup * mChannelGroupSize, j );
         }
 
-        ::SelectObject( dc, signalPens[ ( i + bottomGroup * channelGroupSize ) % signalPens.size() ] );
-        ::Polyline( dc, signalPoints, sampleCursor );
-        ::Polyline( dc, &signalPoints[ sampleCursor ], numSamples - sampleCursor );
+        ::SelectObject( dc, signalPens[ ( i + mBottomGroup * mChannelGroupSize ) % signalPens.size() ] );
+        ::Polyline( dc, mSignalPoints, mSampleCursor );
+        ::Polyline( dc, &mSignalPoints[ mSampleCursor ], mNumSamples - mSampleCursor );
 
         // We actually need this strange distinction of cases.
-        if( showCursor && sampleCursor != 0 && numSamples > 1 )
+        if( mShowCursor && mSampleCursor != 0 && mNumSamples > 1 )
         {
           POINT remainingPoints[ 2 ];
-          remainingPoints[ 0 ] = signalPoints[ numSamples - 1 ];
-          remainingPoints[ 1 ].x = SampleLeft( numSamples );
-          if( wrapAround )
-            remainingPoints[ 1 ].y = signalPoints[ 0 ].y;
+          remainingPoints[ 0 ] = mSignalPoints[ mNumSamples - 1 ];
+          remainingPoints[ 1 ].x = SampleLeft( mNumSamples );
+          if( mWrapAround )
+            remainingPoints[ 1 ].y = mSignalPoints[ 0 ].y;
           else
-            remainingPoints[ 1 ].y = signalPoints[ numSamples - 1 ].y;
+            remainingPoints[ 1 ].y = mSignalPoints[ mNumSamples - 1 ].y;
           ::Polyline( dc, remainingPoints, 2 );
         }
         ::Sleep( 0 );
@@ -886,9 +898,9 @@ VISUAL::Graph::FormPaint( TObject* Sender )
 
     case field2d:
     {
-      for( size_t i = 0; i < numDisplayChannels; ++i )
+      for( size_t i = 0; i < mNumDisplayChannels; ++i )
       {
-        for( size_t j = 0; j < numSamples; ++j )
+        for( size_t j = 0; j < mNumSamples; ++j )
         {
           RECT dotRect =
           {
@@ -899,14 +911,14 @@ VISUAL::Graph::FormPaint( TObject* Sender )
           };
           if( ::RectVisible( dc, &dotRect ) )
           {
-            float dataValue = NormData( i + bottomGroup * channelGroupSize, j );
+            float dataValue = NormData( i + mBottomGroup * mChannelGroupSize, j );
             if( dataValue < 0.0 )
               dataValue = 0.0;
             else if( dataValue > 1.0 )
               dataValue = 1.0;
 
             LONG color;
-            if( displayColors )
+            if( mDisplayColors )
               color = RGBColor::HSVColor( dataValue - 1.0 / 3.0, 1.0, dataValue );
             else
               color = RGBColor::HSVColor( 0.0, 0.0, dataValue );
@@ -924,24 +936,24 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   }
 
   // Draw the cursor.
-  if( showCursor )
+  if( mShowCursor )
   {
-    size_t cursorSample = sampleCursor;
+    size_t cursorSample = mSampleCursor;
     if( cursorSample == 0 )
-      cursorSample = numSamples;
+      cursorSample = mNumSamples;
 
     RECT cursorRect =
     {
       SampleLeft( cursorSample ) - cursorWidth,
       0,
       SampleLeft( cursorSample ),
-      formRect.bottom - labelWidth
+      formRect.bottom - cLabelWidth
     };
     ::FillRect( dc, &cursorRect, gdi[ cursorBrush ] );
     // Remember the cursor rectangle for redrawing when the next
     // data packet arrives.
     HRGN rectRgn = ::CreateRectRgnIndirect( &cursorRect );
-    ::CombineRgn( redrawRgn, redrawRgn, rectRgn, RGN_OR );
+    ::CombineRgn( mRedrawRgn, mRedrawRgn, rectRgn, RGN_OR );
     ::DeleteObject( rectRgn );
   }
 
@@ -950,25 +962,25 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   ::SelectObject( dc, gdi[ labelFont ] );
   ::SetBkMode( dc, TRANSPARENT );
   // Ticks on the y axis.
-  switch( displayMode )
+  switch( mDisplayMode )
   {
     case field2d:
       break;
     case polyline:
       {
-        int nextLabelPos = dataRect.bottom;
-        for( size_t i = 0; i < numDisplayGroups; ++i )
+        int nextLabelPos = mDataRect.bottom;
+        for( size_t i = 0; i < mNumDisplayGroups; ++i )
         {
-          int channelNumber = ( bottomGroup + i ) * channelGroupSize,
+          int channelNumber = ( mBottomGroup + i ) * mChannelGroupSize,
               tickY = ( GroupBottom( i ) + GroupBottom( i + 1 ) ) / 2;
           RECT tickRect =
           {
-            labelWidth - axisWidth - tickLength,
+            cLabelWidth - axisWidth - tickLength,
             tickY - tickWidth / 2,
-            labelWidth - axisWidth,
+            cLabelWidth - axisWidth,
             tickY + tickWidth / 2
           };
-          if( displayColors && channelGroupSize == 1 )
+          if( mDisplayColors && mChannelGroupSize == 1 )
           {
             tickRect.top -= 1;
             tickRect.bottom += 1;
@@ -980,7 +992,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
           {
             tickRect.right -= 2 * axisWidth;
             nextLabelPos = tickY - ::DrawText( dc,
-               IntToStr( channelNumber + channelBase ).c_str(),
+               IntToStr( channelNumber + cChannelBase ).c_str(),
                -1, &tickRect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP );
           }
         }
@@ -989,22 +1001,22 @@ VISUAL::Graph::FormPaint( TObject* Sender )
       assert( false );
   }
   // Ticks on the x axis.
-  int nextLabelPos = dataRect.left;
-  for( size_t j = xStart; j < numSamples; j += xDivision )
+  int nextLabelPos = mDataRect.left;
+  for( size_t j = xStart; j < mNumSamples; j += xDivision )
   {
     int tickX = SampleRight( j );
     RECT tickRect =
     {
       tickX - tickWidth / 2,
-      dataHeight + axisWidth,
+      mDataHeight + axisWidth,
       tickX + tickWidth / 2,
-      dataHeight + axisWidth + tickLength
+      mDataHeight + axisWidth + tickLength
     };
     ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
     if( tickX > nextLabelPos )
     {
       tickRect.top += 2 * axisWidth;
-      AnsiString label = IntToStr( j + sampleBase );
+      AnsiString label = IntToStr( j + cSampleBase );
       ::DrawText( dc, label.c_str(), -1, &tickRect,
          DT_TOP | DT_SINGLELINE | DT_CENTER | DT_NOCLIP );
       SIZE textSize;
@@ -1017,16 +1029,16 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   RECT xAxis =
   {
     0,
-    dataHeight,
+    mDataHeight,
     formRect.right,
-    dataHeight + axisWidth
+    mDataHeight + axisWidth
   };
   ::FillRect( dc, &xAxis, gdi[ axisBrush ] );
   RECT yAxis =
   {
-    labelWidth - axisWidth,
+    cLabelWidth - axisWidth,
     0,
-    labelWidth,
+    cLabelWidth,
     formRect.bottom
   };
   ::FillRect( dc, &yAxis, gdi[ axisBrush ] );
@@ -1036,7 +1048,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   Form->Canvas->Brush->Color = static_cast<TColor>( ::random( 0x1000000 ) );
   Form->Canvas->FillRect( Form->ClientRect );
 #else
-  Form->Canvas->Draw( 0, Form->ClientHeight - offscreenBitmap->Height, offscreenBitmap );
+  Form->Canvas->Draw( 0, Form->ClientHeight - mpOffscreenBitmap->Height, mpOffscreenBitmap );
 #endif
 }
 

@@ -165,16 +165,16 @@ class VISUAL
   class Graph : public VisualBase
   {
    private:
-    static const numSamplesDefault = 128,
-                 minValueDefault = - 1 << 15,
-                 maxValueDefault = 1 << 16 - 1;
-    static const RGBColor channelColorsDefault[];
+    static const cNumSamplesDefault = 128,
+                 cMinValueDefault = - 1 << 15,
+                 cMaxValueDefault = 1 << 16 - 1;
+    static const RGBColor cChannelColorsDefault[];
     enum
     {
-      channelBase = 1, // displayed number of first channel
-      sampleBase = 0,  // displayed number of first sample
-      labelWidth = 25,
-      maxDisplayGroups = 16,
+      cChannelBase = 1, // displayed number of first channel
+      cSampleBase = 0,  // displayed number of first sample
+      cLabelWidth = 25,
+      cMaxDisplayGroups = 16,
     };
 
    protected:
@@ -183,8 +183,8 @@ class VISUAL
       polyline = 0,
       field2d,
       /* ... */
-      numDisplayModes
-    } displayMode;
+      cNumDisplayModes
+    } mDisplayMode;
 
    public:
     Graph( id_type sourceID );
@@ -243,23 +243,24 @@ class VISUAL
     void SetDisplayGroups( int );
     void SetBottomGroup( int );
     void SetDisplayMode( DisplayMode );
+    void SetNumSamples( int );
 
    // Functions that centralize sample/channel -> pixel conversion in painting
    // and invalidating contexts.
    private:
-    int dataWidth, dataHeight;
-    RECT dataRect;
+    int  mDataWidth, mDataHeight;
+    RECT mDataRect;
     void SyncGraphics();
 
     int SampleLeft( int s )
-    { return labelWidth + ( s * dataWidth ) / ( int )numSamples; }
+    { return cLabelWidth + ( s * mDataWidth ) / ( int )mNumSamples; }
     int SampleRight( int s )
     { return SampleLeft( s + 1 ); }
 
     int GroupTop( int g )
     { return GroupBottom( g + 1 ); }
     int GroupBottom( int g )
-    { return dataHeight - ( g * dataHeight ) / ( int )numDisplayGroups; }
+    { return mDataHeight - ( g * mDataHeight ) / ( int )mNumDisplayGroups; }
 
     int ChannelTop( int ch )
     { return GroupTop( ChannelToGroup( ch ) ); }
@@ -267,34 +268,34 @@ class VISUAL
     { return GroupBottom( ChannelToGroup( ch ) ); }
 
     size_t ChannelToGroup( int ch )
-    { return ch / channelGroupSize; }
+    { return ch / mChannelGroupSize; }
 
     float NormData( size_t i, size_t j )
-    { return ( data( i, j ) - minValue ) / ( maxValue - minValue ); }
+    { return ( mData( i, j ) - mMinValue ) / ( mMaxValue - mMinValue ); }
 
     RGBColor ChannelColor( int ch )
-    { return channelColors[ ch % channelColors.size() ]; }
+    { return mChannelColors[ ch % mChannelColors.size() ]; }
 
    private:
-    bool      showCursor,
-              wrapAround,
-              showBaselines,
-              displayColors;
-    size_t    numSamples,
-              sampleCursor,
-              numDisplayGroups,
-              numDisplayChannels,
-              bottomGroup,
-              channelGroupSize;
-    float     minValue,
-              maxValue;
-    Colorlist channelColors;
-    GenericSignal data;
+    bool          mShowCursor,
+                  mWrapAround,
+                  mShowBaselines,
+                  mDisplayColors;
+    size_t        mNumSamples,
+                  mSampleCursor,
+                  mNumDisplayGroups,
+                  mNumDisplayChannels,
+                  mBottomGroup,
+                  mChannelGroupSize;
+    float         mMinValue,
+                  mMaxValue;
+    Colorlist     mChannelColors;
+    GenericSignal mData;
 
    // VCL/Win32 Graphics details.
    private:
-    HRGN   redrawRgn;
-    Graphics::TBitmap* offscreenBitmap;
+    HRGN               mRedrawRgn;
+    Graphics::TBitmap* mpOffscreenBitmap;
     class PointBuf
     {
      public:
@@ -307,7 +308,7 @@ class VISUAL
      private:
       POINT* p;
       size_t s;
-    } signalPoints;
+    } mSignalPoints;
     void __fastcall FormPaint( TObject* );
     void __fastcall FormKeyUp( TObject*, WORD&, TShiftState );
     void __fastcall PopupMenuPopup( TObject* );
