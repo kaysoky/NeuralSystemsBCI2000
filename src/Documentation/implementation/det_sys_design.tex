@@ -142,7 +142,7 @@ that is conceptually defining it, e.g., task paradigm and timing are conceptuall
 parts of a task and should therefore be handled by the user application module.
 
 Section \ref{section_rjb_task} describes a particular implementation of a user
-task - a simple cursor task - that complies with this motivation.
+task -- a simple cursor task -- that complies with this motivation.
 
 
 
@@ -245,9 +245,64 @@ int numberOfItems = OptionalParameter( defaultValue, "NumberOfItems" );
 short itiState = OptionalState( 0, "IntertrialInterval" );
 \end{verbatim}\codeend
 
-\todo{Check whether there is a problem with TForms inheriting from Environment,
-and if yes, present a work-around here.}
+\paragraph{Note:}
+Due to some non-standard conventions in Borland's VCL library, you
+cannot create a VCL class such as a \texttt{TForm} descendant that also 
+inherits from \texttt{Environment} -- the compiler will report an error
+if you try.
+As a work-around, you might declare an \texttt{Environment} subclass 
+\textit{inside} your VCL \texttt{TForm} child declaration,
+and create a single instance \texttt{mEnv} of this subclass as a member
+of your class, using it to access the \texttt{Environment} functions as in 
 
+\codebegin\begin{verbatim}
+MyForm : public TForm
+{
+  ...
+  private:
+    class MyFormEnvironment : private Environment
+    {
+      public:
+        MyFormEnvironment( MyForm& parent );
+        void Preflight() const;
+        void Initialize();
+    } mEnv;
+};
+
+...
+
+MyForm::MyFormEnvironment( MyForm& parent )
+: mParent( parent )
+{
+  BEGIN_PARAMETER_DEFINITIONS
+    "UsrTask int MyParam= 1 1 0 5 // my parameter",
+  END_PARAMETER_DEFINITIONS
+}
+
+...
+
+void
+MyForm::Initialize()
+{
+  mEnv.Initialize();
+}
+
+void
+MyForm::MyFormEnvironment::Initialize()
+{
+  mParent.mMyParam = Parameter( "MyParam" );
+}
+\end{verbatim}\codeend
+
+This should work in situations where your code's class model is centered around 
+VCL form classes.
+When writing new code, you might consider basing your class model on
+functionality, and use VCL forms merely for input and output -- instantiating
+populating, and deleting them as you need them, such that the BCI2000
+\texttt{Environment} interfacing is done from your own classes, independently
+of the VCL's special needs.
+
+\paragraph{}
 For a detailed description of the \texttt{Environment} facilities, see the 
 \texttt{Environment} section of the BCI2000 error handling document.
 
