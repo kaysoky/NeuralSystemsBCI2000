@@ -1,7 +1,20 @@
-\documentclass[letterpaper,oneside,12pt]{book}
-\usepackage{graphicx}
-\usepackage[american]{babel}
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+  \pdffalse % we are not running PDFLaTeX
+\else
+  \pdfoutput=1 % we are running PDFLaTeX
+  \pdftrue
+\fi
 
+\documentclass[letterpaper,oneside,12pt]{book}
+\ifpdf
+  \usepackage[pdftex]{graphicx}
+  \pdfcompresslevel=9
+\else
+  \usepackage{graphicx}
+\fi
+
+\usepackage[american]{babel}
 \selectlanguage{american}
 
 % page layout
@@ -226,16 +239,81 @@ where again each NumValues entry may be substituted by a list of textual labels.
 \todo{Need to give a few examples of possible parameter lines and need
 to describe the format of the encoding if values include spaces, etc.}
 
-\paragraph{Proposed Addition} The comment line that is introduced by the two 
+\paragraph{Display Format} The comment line that is introduced by the two 
 slashes (//) may contain a format identifier that is used by the Operator module
 to modify the display of the particular parameter. Format identifiers are
-strictly optional and are introduced as follows: \texttt{@identifier}. Each
-identifier might have parameter-specific arguments that follow the identifier
-and are delimited by spaces. Any text starting from the first identifier in
-the comment line will not be displayed as comment. For example:\\
-\texttt{param string // Select the input file @filechooser}; or:\\
-\texttt{param string // Select filter value @dropdown 1=yes 2=no 3=maybe}.
+strictly optional and are introduced as follows: \texttt{(identifier)}.
+Currently, the following format identifiers are implemented:
 
+\begin{table}[ht]
+ \centering
+ \begin{tabular}{|l|l|}
+  \hline
+  \textbf{Identifier} & \textbf{Description}\\
+  \hline
+  \texttt{(enumeration)} & a choice from an enumerated set of values \\
+  \texttt{(boolean)} & a yes/no choice \\
+  \texttt{(inputfile)} & path to a file to be opened for reading \\
+  \texttt{(outputfile)} & path to a file to be opened for writing \\
+  \texttt{(directory)} & path to a directory \\
+  \texttt{(color)} & RGB color \\
+  \hline
+ \end{tabular}
+ \caption{The currently defined format identifiers}
+\end{table}   
+
+\paragraph{\texttt{(enumeration)}}
+The parameter value is presented as a drop down menu, with entries corresponding to the
+possible values listed in the comment. The first part of the comment appears above
+the drop down menu. All interpunction characters present in the comment are ignored.
+
+The parameter's data type must be \texttt{int}.
+All possible values must appear in the comment, and the parameter's LowRange and HighRange 
+fields must be consistent with the enumeration. LowRange will usually be 0, but may be any
+integer.
+\begin{verbatim}
+Breakfast int BreakfastDrink= 1 1 1 3
+  // Drink for breakfast: 1 Tea, 2 Coffee, 3 Juice (enumeration)
+\end{verbatim}
+will display a drop down menu with entries ``Tea,'' ``Coffee,'', and ``Juice.''
+The menu will be labeled ``Drink for breakfast.''
+
+\paragraph{\texttt{(boolean)}}
+The parameter value is presented as a check box; the first part of the comment appears
+right to the check box. LowRange and HighRange must be 0 and 1.
+
+The parameter's data type must be \texttt{int}.
+To ensure human readability of parameter files, the possible values and their meaning may 
+appear in the comment (e.\ g.\ \texttt{0:\ no, 1:\ yes}) but will not be displayed with the 
+check box.
+\begin{verbatim}
+Breakfast int ServeBreakfast= 1 1 0 1
+  // Serve breakfast: 0 no, 1 yes (boolean)
+\end{verbatim}
+will display a check box labeled ``Serve breakfast.''
+
+\paragraph{\texttt{(inputfile)(outputfile)(directory)}}
+The parameter value is presented as an edit field. Beside the edit field, a button
+exists that opens up a file or directory choosing dialog when clicked.
+
+The parameter's data type must be \texttt{string}.
+\begin{verbatim}
+Breakfast string WakeupSound= doorbell.wav % % %
+  // Sound to play in the morning (inputfile)
+\end{verbatim}
+
+\paragraph{\texttt{(color)}}
+The parameter value is presented as an edit field. Right to the edit field, a button
+exists that opens up a color chooser dialog when clicked.
+
+The parameter's data type must be \texttt{string}, with its value containing the color
+in hexadecimal RGB encoding:
+\begin{verbatim}
+Breakfast string TableClothColor= 0x00FF00 0xFFFFFF 0x000000 0xFFFFFF
+  // Color of table cloth to put up for breakfast (color)
+\end{verbatim}
+
+\subsubsection{}
 The parameter format does not only apply to the interaction between core and 
 operator, but also reflects the data format of BCI2000 parameter files (i.e., 
 files with extension .prm) as well as the parameter portion of the BCI2000 data 
@@ -247,13 +325,11 @@ module also use this format to communicate in the system initialization phase
  \centering
  \begin{tabular}{|l|l|}
   \hline
-  \textbf{Name} \\
-  \hline
   Section \\
   \hline
   Type \\
   \hline
-  Name \\
+  \textbf{Name} \\
   \hline
   ${\left[
     \mbox{(NumValuesDim1$\mid$\{ LabelDim1.1 LabelDim1.2 ... \})}
