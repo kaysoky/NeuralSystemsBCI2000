@@ -58,7 +58,7 @@ TBCIReader::Process(    const TStrList& inChannelNames,
                               bool      inScanOnly )
 {
     statesInFile.clear();
-    
+
     string s;
     unsigned long   numSourceChannels = 0,
                     numTransmittedChannels = 0;
@@ -111,6 +111,9 @@ TBCIReader::Process(    const TStrList& inChannelNames,
         if( inIgnoreStates.end() == inIgnoreStates.find( state->GetName() ) )
             statesToConsider.insert( states.GetStatePtr( idx ) );
     }
+    TStrList stateNames;
+    for( StateSet::iterator i = statesToConsider.begin(); i != statesToConsider.end(); ++i )
+      stateNames.push_back( ( *i )->GetName() );
 
     PARAMLIST params;
     while( inputStream && s.length() != 0 )
@@ -168,12 +171,19 @@ TBCIReader::Process(    const TStrList& inChannelNames,
     if( sourceChOffset && sourceChGain )
     {
       // BCI2000 Calibration filter Parameters available.
-      numTransmittedChannels = sourceChOffset->GetNumValues();
-      if( sourceChGain->GetNumValues() != numTransmittedChannels )
+      numTransmittedChannels = sourceChGain->GetNumValues();
+      if( numTransmittedChannels != sourceChOffset->GetNumValues() )
       {
         bcierr << "File format error in file " << fileName << ":" << endl
                << "Number of entries in 'SourceChOffset' "
-               << "does not meet that in 'SourceChGain'" << endl;
+               << "does not match that in 'SourceChGain'" << endl;
+        return;
+      }
+      if( numTransmittedChannels != numSourceChannels )
+      {
+        bcierr << "File format error in file " << fileName << ":" << endl
+               << "'SourceCh' header entry does not match the "
+               << "number of entries in 'SourceChGain' and 'SourceChOffset'" << endl;
         return;
       }
       transmittedChannels.resize( numTransmittedChannels );
@@ -259,7 +269,8 @@ TBCIReader::Process(    const TStrList& inChannelNames,
           &channelNames,
           sampleBlockSize,
           numSamples,
-          samplingRate
+          samplingRate,
+          &stateNames
       };
 
       InitOutput( outputInfo );
@@ -312,6 +323,9 @@ TBCIReader::Process(    const TStrList& inChannelNames,
                           curValue = stateVector.GetStateValue(
                                                   byteLoc, bitLoc, length );
 
+                  OutputStateValue( *state, curValue, curSamplePos );
+                  if( __bcierr.flushes() )
+                    return;
                   if( lastValue != curValue )
                   {
                       // We don't want zero states to show up as markers.
@@ -357,3 +371,16 @@ TBCIReader::Process(    const TStrList& inChannelNames,
     }
 }
 
+void
+TBCIReader::Idle() const
+{
+#ifdef VCL
+    static time_t lastIdle = 0;
+    time_t now = ::time( NULL );
+    if( now - lastIdle > 0 )
+    {
+      lastIdle = now;
+      Application->ProcessMessages();
+    }
+#endif
+}

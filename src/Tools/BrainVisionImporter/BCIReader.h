@@ -42,22 +42,27 @@ class TBCIReader
                                    bool         inScanOnly = false );
     const TStrSet&  GetStates() const { return statesInFile; }
 
+  protected:
+            void    Idle() const;
+
   private:
     struct TOutputInfo
     {
         const char*     name;
         unsigned long   numChannels;
-        TStrList*       channelNames;
+        const TStrList* channelNames;
         unsigned long   blockSize;
         unsigned long   numSamples;
         float           samplingRate;
+        const TStrList* stateNames;
     };
 
     virtual void InitOutput( TOutputInfo& ) = 0;
     virtual void ExitOutput() = 0;
     virtual void OutputSignal( const GenericSignal&, long inSamplePos ) = 0;
-    virtual void OutputStateChange( const STATE&, short, long inSamplePos ) = 0;
-    virtual void OutputStateRange( const STATE&, short, long inBeginPos, long inEndPos ) = 0;
+    virtual void OutputStateValue( const STATE&, short, long inSamplePos ) {}
+    virtual void OutputStateChange( const STATE&, short, long inSamplePos ) {}
+    virtual void OutputStateRange( const STATE&, short, long inBeginPos, long inEndPos ) {}
 
     std::string   fileName;
     std::ifstream inputStream;

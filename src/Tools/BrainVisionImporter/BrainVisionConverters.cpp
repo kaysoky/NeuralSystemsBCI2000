@@ -50,7 +50,7 @@ void
 TBrainVisionGDRConverter::InitOutput( TOutputInfo& inInfo )
 {
     curMarker = 0;
-    
+
     const string bciExtension = ".dat";
     string  headerFileName = ".vhdr",
             dataFileName = ".raw",
@@ -58,7 +58,7 @@ TBrainVisionGDRConverter::InitOutput( TOutputInfo& inInfo )
             baseName( inInfo.name ),
             lowerBaseName( baseName );
     for( string::iterator i = lowerBaseName.begin(); i != lowerBaseName.end(); ++i )
-        *i = tolower( *i ); 
+        *i = tolower( *i );
     int lengthDiff = baseName.length() - bciExtension.length();
     if( ( lengthDiff > 0 ) && ( lowerBaseName.substr( lengthDiff ) == bciExtension ) )
         baseName = baseName.substr( 0, lengthDiff );
@@ -181,7 +181,7 @@ void
 TBrainVisionGDRConverter::OutputStateRange( const STATE& inState, short inValue, long inBeginPos, long inEndPos )
 {
     Idle();
-    
+
     if( ( inEndPos < inBeginPos ) || ( inBeginPos < 0 ) )
     {
       bcierr << "Bad file format" << endl;
@@ -201,19 +201,4 @@ TBrainVisionGDRConverter::OutputStateRange( const STATE& inState, short inValue,
     markerFile  << inBeginPos << ","
                 << inEndPos - inBeginPos << ","
                 << 0 << '\n';
-}
-
-
-void
-TBrainVisionGDRConverter::Idle() const
-{
-#ifdef VCL
-    static time_t lastIdle = 0;
-    time_t now = ::time( NULL );
-    if( now - lastIdle > 0 )
-    {
-      lastIdle = now;
-      Application->ProcessMessages();
-    }
-#endif
 }

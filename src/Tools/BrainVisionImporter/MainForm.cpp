@@ -17,7 +17,11 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "BrainVisionConverters.h"
+#ifdef ASCII_CONVERTER
+# include "ASCIIConverter.h"
+#else
+# include "BrainVisionConverters.h"
+#endif
 #include "MainForm.h"
 #include "UBCIError.h"
 
@@ -29,7 +33,7 @@
 
 TImporterForm *ImporterForm;
 
-const AnsiString appKey = "\\Software\\medpsych.uni-tuebingen.de\\BrainVisionImporter\\";
+const AnsiString appKey = "\\Software\\medpsych.uni-tuebingen.de\\" APP_NAME "\\";
 const AnsiString channelNamesKey = "ChannelNames";
 const AnsiString stateListKey = "States";
 
@@ -63,6 +67,9 @@ BCIError::LogicError( const std::string& s )
 __fastcall TImporterForm::TImporterForm(TComponent* Owner)
     : TForm(Owner)
 {
+#ifdef ASCII_CONVERTER
+    Caption = "BCI2000 ASCII Converter";
+#endif
     Caption = Caption + " " + __DATE__;
 
     ReadSettings();
@@ -96,6 +103,8 @@ __fastcall TImporterForm::~TImporterForm()
 
 void TImporterForm::ProcessFiles( TStrSet& inFilesToProcess, bool scanOnly )
 {
+    __bcierr.clear();
+    __bciout.clear();
     Application->BringToFront();
     DisableAll();
     StatusBar->Panels->Items[ 0 ]->Text = "Processing";
@@ -110,7 +119,11 @@ void TImporterForm::ProcessFiles( TStrSet& inFilesToProcess, bool scanOnly )
     for( int i = 0; i < ChannelNamesMemo->Lines->Count; ++i )
         channelNames.push_back( ChannelNamesMemo->Lines->Strings[ i ].c_str() );
 
+#ifdef ASCII_CONVERTER
+    TASCIIConverter             Converter;
+#else
     TBrainVisionGDRConverter    Converter;
+#endif
     int curFile = 0;
     for( TStrSet::iterator i = inFilesToProcess.begin();
             i != inFilesToProcess.end(); ++i )

@@ -31,7 +31,6 @@ class TBrainVisionGDRConverter : public TBCIReader
     virtual void  OutputSignal( const GenericSignal&, long inSamplePos );
     virtual void  OutputStateChange( const STATE&, short, long inSamplePos );
     virtual void  OutputStateRange( const STATE&, short, long inBeginPos, long inEndPos );
-            void  Idle() const;
 
     long          curMarker;
     std::ofstream dataFile,
