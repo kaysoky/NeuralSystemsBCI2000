@@ -9,12 +9,16 @@
 #include "UState.h"
 #include "UDictionary.h"
 #include "UTarget.h"
+/*shidong starts*/
 
+
+/*shidong ends*/
 #define MAX_TARGETHISTORY       5000
 #define MAX_TEXTHISTORY         MAX_TARGETHISTORY
 
 
-#define NUM_TARGETS             4               // number of targets
+//#define NUM_TARGETS             4               // number of targets
+
 
 class TARGETSEQUENCE
 {
@@ -28,16 +32,24 @@ private: 	// User declarations
 public:		// User declarations
         TARGETSEQUENCE::TARGETSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TARGETSEQUENCE::~TARGETSEQUENCE();
-        TARGETLIST      *GetActiveTargets(int, BYTE, const char *);     // returns targets given a specific parentID (i.e., targetID of selection)
+        /*shidong startS*/
+        TARGETLIST      *GetActiveTargets(int, const char *);     // returns targets given a specific parentID (i.e., targetID of selection)
         TARGETLIST      *GetActiveTargetsPrediction(int, BYTE, const char *); // returns targets in the case of word prediction
+        /*shidong ends*/
         TARGETLIST      *GetPreviousTargets();                          // returns the previous list of targets
         AnsiString      GetPreviousText();                              // returns the previous text
         int             AddDictionary2PotentialTargets();               // adds the dictionary to the list of potential targets
         void            PushTargetsOnHistory(TARGETLIST *activetargets);
         void            PushTextOnHistory(AnsiString text);
-        int             LoadPotentialTargets(const char *targetdeffilename, const char *treedeffilename);
+        /*shidong starts*/
+        int             LoadPotentialTargets(PARAMLIST *plist);
+        FILE            *f;
+        int             NUM_TARGETS;
+        bool            debug;
+       // int             LoadPotentialTargets(const int targetRow, const int targetCol, const int treeRow, const int treeCol);
+        /*shidong ends*/
         void            DeleteHistory();
-        int             Initialize(PARAMLIST *plist);
+        int             Initialize(PARAMLIST *plist, int numTargets);
         TARGETLIST      *targets;                                       // all the potential targets
         TREE            *tree;                                          // tree that is being traversed down if the user makes selections
 };

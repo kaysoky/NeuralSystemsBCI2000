@@ -69,11 +69,16 @@ float   totalheight, numtargets, targetheight;
   cur_target=activetargets->GetTargetPtr(activetargets->GetTargetID(i), i);
   if (cur_target)
      {
+    
      cur_target->Width=(int)(TargetWidth*655.36);                  // width of target
+
      cur_target->Height=(int)targetheight;
      cur_target->Top=(int)(StatusBarSize*655.36+targetheight*(float)cur_target->targetposition);
      cur_target->Left=(int)(65536-cur_target->Width);
-     cur_target->TextHeight=(int)(TargetTextHeight*655.36);        // height of text
+     /*shidong starts*/
+     //implement Font Size
+     cur_target->TextHeight=(int)(TargetTextHeight*655.36*((float)(cur_target->FontSizeFactor)));        // height of text
+     /*shidong ends*/
      }
   }
 }
@@ -193,8 +198,12 @@ void USERDISPLAY::DisplayActiveTargets()
 {
  if (!activetargets) return;
 
- activetargets->RenderTargets(form, TRect(0, 0, form->ClientWidth, form->ClientHeight));
+ activetargets->RenderTargets(form, TRect(0, 0, form->ClientWidth, 
+form->ClientHeight));
+ activetargets->ShowTargets();
 }
+
+
 
 
 void USERDISPLAY::HideActiveTargets()

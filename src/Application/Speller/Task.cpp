@@ -18,11 +18,7 @@ RegisterFilter( TTask, 3 );
 // Returns:    N/A
 // **************************************************************************
 TTask::TTask()
-: vis( NULL ),
-  targetsequence( new TARGETSEQUENCE( Parameters, States ) ),
-  trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
-  userdisplay( new USERDISPLAY ),
-  cur_time( new BCITIME )
+: vis( NULL )
 {
  BEGIN_PARAMETER_DEFINITIONS
   "Speller int WinXpos= 5 0 0 5000 // "
@@ -41,12 +37,11 @@ TTask::TTask()
       "Height of target labels in percent of screen height",
   "Speller int StatusBarTextHeight= 10 0 0 100 // "
       "Height of status bar labels in percent of screen height",
-  "Speller int AlternateBackup= 0 0 0 1 // "
-      "Alternate position of BACK UP (0=no, 1=yes)",
+
   "Speller string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
       "Background Color in hex (0x00BBGGRR)",
   "Speller int NumberTargets= 4 4 0 100 // "
-      "Number of Targets ... NOT USED YET",
+      "Number of Targets ",
   "Speller int StatusBarSize= 10 0 0 100 // "
       "Size of status bar in percent of screen height",
   "Speller string Goal= SEND_MONEY 0 0 100 // "
@@ -70,6 +65,16 @@ TTask::TTask()
    "TIME OUT !!!",
            "ZEIT ABGELAUFEN!!!",
  END_LOCALIZED_STRINGS
+
+
+ targetsequence = new TARGETSEQUENCE( Parameters, States ) ;
+  trialsequence = new TRIALSEQUENCE( Parameters, States ) ;
+  userdisplay = new USERDISPLAY ;
+  cur_time = new BCITIME  ;
+
+
+  debug = false;
+  if(debug) a = fopen("TTaskDebug.txt", "w");
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +93,122 @@ TTask::~TTask( void )
   delete trialsequence;
   delete userdisplay;
   delete cur_time;
+  if(debug) fclose(a);
+}
+
+/*shidong starts*/
+//check input string to see if it is a legal int
+bool TTask::checkInt(AnsiString input) const
+{
+        try
+        {
+                input = input.Trim();
+                if(input == "0")        //if input is 0
+                {
+                        return true;
+                }
+
+                if(atoi(input.c_str()) == 0)    //if input is not an valid input for atoi
+                {
+                        return false;
+                }
+        }
+        catch(...)      //any error happen
+        {
+                bcierr << "The parameter " << input.c_str() << " is not a valid input.  It is likely that \"" << input.c_str() << "\" is not a numeric number.  " <<std::endl;
+                return false;
+        }
+        return true;            //catch nothin, input is a valid numeric string
+}//checkInt
+
+
+bool TTask::CheckTree(int root)
+{
+        bool toRet;
+        if(debug) fprintf(a, "toRet is default to %d.\n", toRet);
+        toRet = true;
+
+        int rowNum = 0;
+        int displayPos = 0;
+   
+
+        for(int row= 0; row<Parameter("TreeDefinitionMatrix")->GetNumRows(); row++)
+        {
+                for (int col=0; col<Parameter("TreeDefinitionMatrix")->GetNumColumns(); col++)
+                {
+                        //if(debug) fprintf(a, "checking matrix %d, %d, it's %s.\n", row, col,AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  );
+                        if(checkInt( AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  ) )
+                        {
+                        }
+                        else
+                        {
+                                return false;
+                        }
+                }
+        }
+
+
+        for(int i=0; i< Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
+        {
+
+               // if(debug) fprintf(a, "In 1st Loop, Looking for targetID %d, rowNum is %d, 1st    column is %s.\n", root, rowNum, AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)) );
+                        //if 1st column in ith row contain the root targetID
+                        if (  AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)).ToInt() == root)
+                        {
+                                break;
+                        }
+                        rowNum ++;
+        }//for
+
+        //if the ID to be searched is not in 1st column and it's not the root. It implies the ID has no children.
+        if(rowNum ==  Parameter("TreeDefinitionMatrix")->GetNumRows()  &&  root != -1)
+        {
+                return true;
+        }
+
+        if(debug) fprintf(a, "          After 1st Loop, Looking for targetID %d, rowNum is %d.\n", root, rowNum);
+
+        for (displayPos = 0; displayPos < Parameter("NumberTargets"); displayPos ++)
+        {
+                //if 1st column is same as the root AND the 3rd column is a real integer
+                if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 0)).ToInt()==root && checkInt( (const char*)Parameter("TreeDefinitionMatrix", displayPos+rowNum, 2) )   )
+                {
+                        if(debug) fprintf(a, "In 2nd Loop, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
+                        //if the 3rd column contains single letter
+                        if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() >= TARGETID_A  && AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt()<= TARGETID__)
+                        {
+                                //do nothing if target is a single letter
+                        }
+                        else if (  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BLANK
+                        ||  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BACKUP)
+                        {
+                                //do nothing if target is BLANK  or BACKUP
+                        }
+                        else    //else keep checking
+                        {
+                                toRet = CheckTree(    AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() );
+                        }
+                }
+                else
+                {
+                        if(debug) fprintf(a, "In 2nd Loop ELSE PART, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
+
+                        return false;
+                }
+        }//for
+
+        return toRet;
+}
+/*shiodng ends*/
+
+void TTask::Preflight( const SignalProperties&, SignalProperties& ) const
+{
+/*shidong starts*/
+        PreflightCondition( Parameter("NumberTargets")>=2 );
+        if(debug) fprintf(a, "CheckTree(TARGETID_ROOT) returns %d.\n", CheckTree(TARGETID_ROOT));
+
+        PreflightCondition( CheckTree(TARGETID_ROOT) == true);
+/*shidong ends*/
 }
 
 
@@ -106,6 +227,10 @@ TColor  BackgroundColor;
 char    memotext[256];
 int     ret;
 
+ /*shidong starts*/
+ NumberTargets = Parameter("NumberTargets");
+ /*shidong ends*/
+
  delete vis;
  vis= new GenericVisualization;
  vis->SetSourceID(SOURCEID_TASKLOG);
@@ -123,23 +248,26 @@ int     ret;
  userdisplay->TargetTextHeight=Parameter("TargetTextHeight");
  userdisplay->StatusBarTextHeight=Parameter("StatusBarTextHeight");
  userdisplay->statusbar->goaltext=AnsiString((const char*)Parameter("Goal")).Trim().UpperCase();
- alternatebackup = ( int )Parameter( "AlternateBackup" );
+ /*shidong starts*/
+        //alternatebackup = ( int )Parameter( "AlternateBackup" );
 
  // initial position of BACK UP is on the top
- currentbackuppos=0;
-
+        //currentbackuppos=0;
+ /*shidong ends*/
  // initialize the between-trial sequence
- targetsequence->Initialize(Parameters);
+ targetsequence->Initialize(Parameters, NumberTargets);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(Parameters, Statevector, userdisplay);
+ trialsequence->Initialize(Parameters, Statevector, userdisplay, NumberTargets);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
  userdisplay->statusbar->resulttext="";
  // get the active targets as a subset of all the potential targets
  if (userdisplay->activetargets) delete userdisplay->activetargets;
- userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, GetCurrentBackupPos(), NULL);       // get the targets that are on the screen first
+ userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, NULL);       // get the targets that are on the screen first
+
+
  // set the initial position/sizes of the current targets, status bar, cursor
  userdisplay->InitializeActiveTargetPosition();
  userdisplay->InitializeStatusBarPosition();
@@ -155,7 +283,7 @@ int     ret;
  userdisplay->form->Show();
 }
 
-
+/*shidong starts
 // **************************************************************************
 // Function:   GetCurrentBackupPos
 // Purpose:    Returns the current position of BACKUP from 0..NUM_TARGETS-1
@@ -166,7 +294,7 @@ BYTE TTask::GetCurrentBackupPos()
 {
  return(currentbackuppos);
 }
-
+/*shidong ends*/
 
 // **************************************************************************
 // Function:   DetermineNewResultText
@@ -296,7 +424,8 @@ int     pos, location, desiredtargetID, displaypos, cur_targetID, correcttargetI
     location=-1;
     desiredword=DetermineDesiredWord(cur_text, goal_text);
     // if yes, does any target contain the "right" word ?
-    for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
+//    for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
+    for (displaypos=0; displaypos<NumberTargets; displaypos++)
      {
      cur_targetID=userdisplay->activetargets->GetTargetID(displaypos);
      // if yes, then this target's targetID becomes the desired targetID
@@ -321,7 +450,8 @@ int     pos, location, desiredtargetID, displaypos, cur_targetID, correcttargetI
  desiredtargetID=targetsequence->targets->GetTargetID(desiredcharacter, TARGETTYPE_CHARACTER);
  // determine the targetID of the NEXT target to be hit
  // do this by finding out, whether any of the current targets leads to the desired choice
- for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
+// for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
+ for (displaypos=0; displaypos<NumberTargets; displaypos++)
   {
   cur_targetID=userdisplay->activetargets->GetTargetID(displaypos);
   if (targetsequence->tree->DoesLeadTo(cur_targetID, desiredtargetID) || (desiredtargetID == cur_targetID))
@@ -365,6 +495,8 @@ int             selectedtargetID, selectedpredictionmode;
 // int             selectedparentID;
 AnsiString      selectedCaption;
 
+        if(debug)fprintf(a, "target ID is %d. type is %d. caption is %s \n", selected->targetID, selected->targettype, selected->Caption);
+
  missionaccomplished=false;
  selectedtargetID=selected->targetID;
  // selectedparentID=selected->parentID;
@@ -376,18 +508,40 @@ AnsiString      selectedCaption;
  if (selectedtargetID == TARGETID_BLANK)
     return;
 
+
+
+
  // if we want to alternate the position of BACK UP, switch it here
+ /*shidong starts
  if (alternatebackup)
     {
     if (currentbackuppos == 0)
        currentbackuppos=NUM_TARGETS-1;
     else
        currentbackuppos=0;
-    }
+    }      */
+ /*shidong ends*/
+
+
+
+
 
  // if we did NOT select BACK-UP, traverse down the tree
  // otherwise, get the previous targets from the history of previous active targets
- if (selectedtargetID == TARGETID_BACKUP)
+
+
+ /*shidong starts*/
+  if(selected->targettype == TARGETTYPE_DELETE)
+  {
+        // if we selected a "DELETE", delte one character from resulttext.
+        if(debug) fprintf(a, "Delete was selected, and result text was %s.\n",userdisplay->statusbar->resulttext);
+        userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(), 1);
+        targetsequence->PushTextOnHistory(userdisplay->statusbar->resulttext);
+        userdisplay->DisplayStatusBar();
+
+        if(debug) fprintf(a, "The resultText now is %s.\n",userdisplay->statusbar->resulttext);
+  }   /*shidong ends*/
+  else if (selectedtargetID == TARGETID_BACKUP)
     {
     // delete all active targets
     if (userdisplay->activetargets) delete userdisplay->activetargets;
@@ -395,15 +549,19 @@ AnsiString      selectedCaption;
     // that we wanted to spell a word that was not in the dictionary
     // just show the alphabet
     if (selectedpredictionmode == MODE_PREDICTION)
-       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, GetCurrentBackupPos(), NULL);
+       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT,  NULL);
     else        // if we are not in prediction mode, get the previous targets and previous result text
        {
        // restore the previous targets and previous resulttext
        userdisplay->activetargets=targetsequence->GetPreviousTargets();
        userdisplay->statusbar->resulttext=targetsequence->GetPreviousText();
        userdisplay->DisplayStatusBar();
+
+       if(debug)fprintf(a, "userdisplay->activetargets has %d targets.\n", userdisplay->activetargets->GetNumTargets());
+
+
        }
-    }
+    }//if we hit backup
  else
     {
     // only if we didn't hit backup, then store the current targets and the current result text in the history
@@ -428,12 +586,12 @@ AnsiString      selectedCaption;
           userdisplay->statusbar->resulttext+="_";
        userdisplay->DisplayStatusBar();
        strcpy(cur_prefix, DetermineCurrentPrefix(userdisplay->statusbar->resulttext).c_str());
-       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, GetCurrentBackupPos(), cur_prefix);
+       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, cur_prefix);
        }
     else
        {
        // selected something else, e.g., a group of characters. then, traverse down the tree
-       userdisplay->activetargets=targetsequence->GetActiveTargets(selectedtargetID, GetCurrentBackupPos(), NULL);
+       userdisplay->activetargets=targetsequence->GetActiveTargets(selectedtargetID, NULL);
        }
     }
 
@@ -460,11 +618,15 @@ AnsiString      selectedCaption;
 // **************************************************************************
 void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
-  const std::vector< float >& signals = Input->GetChannel( 0 );
+  std::vector< float >&signals=std::vector< float >(2);
+  signals.at(0)=( *Input )( 0, 0 );
+  signals.at(1)=( *Input )( 1, 0 );
+
   TARGET  *selected;
 
  // use the current control signal to proceed within the trial sequence
- selected=trialsequence->Process(signals);
+selected=trialsequence->Process((const std::vector< float >&)signals);
+
 
  // only if a target has been selected,
  // get the next active targets as a subset of all the potential targets

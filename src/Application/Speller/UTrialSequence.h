@@ -33,7 +33,7 @@ private: 	// User declarations
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
+        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *, int);
         int     correcttargetID;                        // targetID of the next correct target
         void    ITI();
         void    PTP();
@@ -43,5 +43,8 @@ public:		// User declarations
         TARGET  *Process(const std::vector<float>&);
         void    ResetTrialSequence();
         void    Switch2Congratulations();
+        /*shidong starts*/
+        int     NUM_TARGETS;
+        /*shidong ends*/
 };
 #endif

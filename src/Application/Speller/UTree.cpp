@@ -20,6 +20,11 @@
 // **************************************************************************
 TREE::TREE()
 {
+/*shidong starts*/
+   debug = false;
+   if(debug) a = fopen("tree.txt", "w");
+       
+/*shidong ends*/
  treesize=0;
 }
 
@@ -32,6 +37,9 @@ TREE::TREE()
 // **************************************************************************
 TREE::~TREE()
 {
+/*shidong starts*/
+ if(debug)fclose(a);
+ /*shidong ends*/
 }
 
 
@@ -46,7 +54,7 @@ TREE::~TREE()
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int TREE::get_argument(int ptr, char *buf, const char *line, int maxlen) const 
+int TREE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
@@ -72,11 +80,33 @@ int TREE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 // Returns:    0 - error (e.g., file not found)
 //             1 - no error
 // **************************************************************************
-int TREE::LoadTree(const char *filename)
+int TREE::LoadTree(PARAMLIST *plist)
 {
+/*shidong starts*/
+int     ptr;
+//clean tree value in these 3 arraay
+for (int i=0; i<treesize; i++)
+{
+        parentID[treesize] = 0;
+        displaypos[treesize] = 0;
+        targetID[treesize] = 0;
+}//for
+treesize = 0;
+
+
+ for (int i = 0; i < plist->GetParamPtr("TreeDefinitionMatrix")->GetNumRows(); i++)
+ {
+        parentID[treesize] = AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,0)).ToInt();
+        displaypos[treesize] = AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,1)).ToInt()-1;
+        targetID[treesize]= AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,2)).ToInt();
+        if(debug)fprintf(a, "ParentID[%d] is %d \t displaypos[%d] is  %d \t target[%d] is %d\n", treesize, parentID[treesize]   , treesize, displaypos[treesize], treesize, targetID[treesize]);
+        treesize++;
+ }//for
+
+/*
 char    line[256], buf[256];
 FILE    *fp;
-int     ptr;
+ int     ptr;
 
  // read the tree definition file
  fp=fopen(filename, "rb");
@@ -101,8 +131,9 @@ int     ptr;
      }
   }
  fclose(fp);
-
+  */
  return(1);
+ /*shidong ends*/
 }
 
 

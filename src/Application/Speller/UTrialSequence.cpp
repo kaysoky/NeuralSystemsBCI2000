@@ -48,6 +48,10 @@ char    line[512];
  slist->AddState2List("CursorPosX 16 0 0 0\n");
  slist->AddState2List("CursorPosY 16 0 0 0\n");
 
+ /*shidong starts*/
+ NUM_TARGETS = AnsiString((const char*)plist->GetParamPtr("NumberTargets")->GetValue()).ToInt();
+ /*shidong ends*/
+
  for (i=0; i<NUM_TARGETS; i++)
   {
   sprintf(line, "TargetID%d 16 65535 0 0\n", i+1);
@@ -80,7 +84,7 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay, int numT)
 {
 int     ret;
 

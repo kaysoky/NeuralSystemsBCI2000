@@ -56,6 +56,7 @@ int     i;
  fp=fopen(dictionaryfile, "rb");
  if (!fp) return(0);
 
+ 
  while (!feof(fp))
   {
   fgets(line, MAX_WORDLENGTH, fp);

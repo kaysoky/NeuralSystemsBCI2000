@@ -7,6 +7,10 @@
 #define MAX_TREESIZE    65535
 #define MAX_BRANCHES    16             // maximum number of branches from one node
 
+/*shidong starts*/
+#include "UParameter.h"
+/*shidong ends*/
+
 class TREE
 {
 private: 	// User declarations
@@ -16,7 +20,12 @@ private: 	// User declarations
 public:		// User declarations
         TREE::TREE();
         TREE::~TREE();
-        int     LoadTree(const char *filename);
+        /*shidong starts*/
+        int     LoadTree(PARAMLIST *plist);
+        FILE            *a ;
+        bool    debug;
+        //int     LoadTree(const int treeRow, const int treeCol);
+        /*shidong ends*/
         int     DetermineTargetID(int parentID, int displaypos);
         bool    DoesLeadTo(int cur_parentID, int cur_targetID);
         bool    HasChildren(int cur_parentID);

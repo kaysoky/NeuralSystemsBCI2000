@@ -8,10 +8,10 @@
       obj\UserDisplay.obj obj\UTargetSequence.obj obj\UTree.obj obj\UBCItime.obj 
       obj\UBitRate.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
       obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
-      obj\BCIDirectry.obj obj\UGenericFilter.obj obj\UEnvironment.obj 
-      obj\UBCIError.obj obj\Localization.obj obj\TCPStream.obj 
-      obj\MessageHandler.obj obj\MeasurementUnits.obj obj\UCoreMain.obj 
-      obj\UCursor.obj obj\UStatusBar.obj obj\UTarget.obj"/>
+      obj\BCIDirectry.obj obj\UGenericFilter.obj obj\UBCIError.obj 
+      obj\Localization.obj obj\TCPStream.obj obj\MessageHandler.obj 
+      obj\MeasurementUnits.obj obj\UCoreMain.obj obj\UCursor.obj 
+      obj\UStatusBar.obj obj\UTarget.obj obj\UEnvironment.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -22,7 +22,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -71,7 +71,6 @@
       <FILE FILENAME="..\..\shared\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -81,6 +80,8 @@
       <FILE FILENAME="..\shared\UCursor.cpp" FORMNAME="" UNITNAME="UCursor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UStatusBar.cpp" FORMNAME="" UNITNAME="UStatusBar" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UTarget.cpp" FORMNAME="" UNITNAME="UTarget" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UEnvironment.h" FORMNAME="" UNITNAME="UEnvironment.h" CONTAINERID="" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -114,7 +115,8 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=27

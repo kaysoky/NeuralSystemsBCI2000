@@ -12,6 +12,8 @@
 #include "UTargetSequence.h"
 #include "UTrialSequence.h"
 
+
+
 class TTask : public GenericFilter
 {
 private:
@@ -24,9 +26,17 @@ private:
         void            HandleSelected(TARGET *selected);
         int             DetermineCorrectTargetID();
         BCITIME         *cur_time;
-        bool            alternatebackup;
-        BYTE            currentbackuppos;
-        BYTE            GetCurrentBackupPos();
+        /*shidong starts*/
+        //bool            alternatebackup;
+        ///BYTE            currentbackuppos;
+        //BYTE            GetCurrentBackupPos();
+        FILE            *a;
+        bool            debug;
+        int             NumberTargets;
+        bool            CheckTree(int  root);
+        bool            checkInt(AnsiString input) const;
+        /*shidong ends*/
+        
         AnsiString      DetermineNewResultText(AnsiString resulttext, AnsiString predicted);
         AnsiString      DetermineCurrentPrefix(AnsiString resulttext);
         AnsiString      DetermineDesiredWord(AnsiString resulttext, AnsiString spelledtext);
@@ -34,7 +44,7 @@ public:
           TTask();
   virtual ~TTask();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
