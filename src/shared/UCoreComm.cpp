@@ -7,6 +7,7 @@
 
 #include "UParameter.h"
 #include "UState.h"
+#include "UGenericSignal.h"
 #include "UCoreComm.h"
 #include "UCoreMessage.h"
 #include "UBCItime.h"
