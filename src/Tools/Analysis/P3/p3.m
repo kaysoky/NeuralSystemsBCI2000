@@ -10,6 +10,8 @@
 %             [input]
 %             subject    ... data file name (with .mat extension)
 %             samplefreq ... the data's sampling rate (e.g., 240)
+%             filters    ... hp and lp frequencies in Hz for analog
+%                            filtering (e.g., [0.1 30]) or [-1 -1] if no filtering requested
 %             channels   ... channels of interest (e.g., [15 11])
 %             triallength .. length of the displayed waveform in ms
 %             rorrsq     ... if 1, calculates r^2 values; if 0, calculates r
@@ -32,9 +34,9 @@
 % V1.00 - 09/2002 - first version
 % V1.10 -           can now plot a number of topographies
 % V1.30 - 10/2004 - speed increased; can now also plot a number of traces
-% V1.40 - 12/2004 - can now perform baseline correction
+% V1.40 - 12/2004 - can now perform baseline correction and analog filtering
 
-function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, channels, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, baseline_ms, eloc_file, moviefilename)
+function [res1ch, res2ch, ressqch, stimulusdata] = p3(subject, samplefreq, filters, channels, triallength, rorrsqu, plotthis, topotimes_ms, topogrid, baseline_ms, eloc_file, moviefilename)
 
 topotimes_samples=round(topotimes_ms*samplefreq/1000);				% convert from ms into samples
 triallength=round(triallength*samplefreq/1000);                     % convert from ms into samples
@@ -61,7 +63,7 @@ if (isempty(baseline_ms) == 0)
 end
 
 baseline_samples=round(baseline_ms*samplefreq/1000);				% convert from ms into samples
-% if we specify [0 100], we have to convert the 0 to sample 1
+% if we specify [0 100], we have to convert sample 0 to sample 1
 if (isempty(baseline_samples) == 0)
    baseline_samples(find(baseline_samples < 1))=1;
 end
@@ -70,6 +72,21 @@ end
 fprintf(1, 'Loading data file\n');
 loadcmd=sprintf('load %s', subject);
 eval(loadcmd);
+
+% perform analog filtering before we do the analysis
+hpfreq=filters(1);
+lpfreq=filters(2);
+if (hpfreq > 0)   % only perform the filtering if we want to
+   fprintf(1, 'bandpass filtering signal\n');
+   if (lpfreq > 0)
+      [b, a]=butter(3, [(hpfreq/samplefreq)*2 (lpfreq/samplefreq)*2]);
+   else
+      [b, a]=butter(3, (hpfreq/samplefreq)*2);
+   end
+   for ch=1:size(signal, 2)
+    signal(:, ch)=filter(b, a, signal(:, ch));
+   end
+end
 
 % determine the number of target and non-target stimuli
 % so that we can pre-allocate the avgdata arrays
