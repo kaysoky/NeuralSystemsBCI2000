@@ -2,6 +2,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
+#include <shlobj.h>
 #include <Registry.hpp>
 #include <stdio.h>
 #include <string>
@@ -18,9 +19,10 @@
 #include "UBCIError.h"
 #include "UOperatorUtils.h"
 
-#define MATRIX_EXTENSION ".mat"
-#define MATRIX_FILTER "Space delimited matrix file (*" MATRIX_EXTENSION ")|*" \
-                                         MATRIX_EXTENSION "|Any file (*.*)|*.*";
+#define ANYFILE_FILTER "All files (*.*)|*.*"
+#define MATRIX_EXTENSION ".txt"
+#define MATRIX_FILTER "Space delimited matrix file (*" MATRIX_EXTENSION ")"  \
+                                       "|*" MATRIX_EXTENSION "|" ANYFILE_FILTER
 using namespace std;
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -31,17 +33,6 @@ TfConfig *fConfig;
 __fastcall TfConfig::TfConfig(TComponent* Owner) : TForm(Owner)
 {
   OperatorUtils::RestoreControl( this );
-int     i, t;
-
- for(i=0; i<MAX_PARAMPERSECTION; i++)
-  {
-  ParamLabel[i]=NULL;
-  ParamComment[i]=NULL;
-  ParamValue[i]=NULL;
-  ParamUserLevel[i]=NULL;
-  for (t=0; t<numParamButtons; t++)
-   ParamButton[t][i]=NULL;
-  }
 }
 
 __fastcall TfConfig::~TfConfig()
@@ -132,37 +123,13 @@ int     i, num_tabs;
 
 void TfConfig::DeleteAllParameters()
 {
-int     i, t;
-
- for(i=0; i<MAX_PARAMPERSECTION; i++)
-  {
-  if (ParamLabel[i])
-     delete(ParamLabel[i]);
-  if (ParamComment[i])
-     delete(ParamComment[i]);
-  if (ParamValue[i])
-     delete(ParamValue[i]);
-  if (ParamUserLevel[i])
-     delete(ParamUserLevel[i]);
-  for (t=0; t<numParamButtons; t++)
-   {
-   if (ParamButton[t][i])
-      {
-      delete(ParamButton[t][i]);
-      ParamButton[t][i]=NULL;
-      }
-   }
-  ParamLabel[i]=NULL;
-  ParamComment[i]=NULL;
-  ParamValue[i]=NULL;
-  ParamUserLevel[i]=NULL;
-#ifdef TRY_PARAM_INTERPRETATION
-  delete ParamComboBox[ i ];
-  ParamComboBox[ i ] = NULL;
-  delete ParamCheckBox[ i ];
-  ParamCheckBox[ i ] = NULL;
-#endif // TRY_PARAM_INTERPRETATION
-  }
+  for( size_t i = 0; i < mParamValues.size(); ++i )
+    delete mParamValues[ i ];
+  mParamValues.clear();
+  for( size_t i = 0; i < mParamLabels.size(); ++i )
+    delete mParamLabels[ i ];
+  mParamLabels.clear();
+  mParamInterpretations.clear();
 }
 
 
@@ -227,314 +194,314 @@ AnsiString      keyname;
      {;}
     }
 
- delete my_registry;
- return;
+  delete my_registry;
 }
-
-
 
 // render all parameters in a particular section on the screen
 int TfConfig::RenderParameters(AnsiString section)
 {
-int     count=0, i, num_param;
-PARAM   *cur_param;
-AnsiString valueline;
-
- num_param=paramlist->GetNumParameters();
- DeleteAllParameters();
-
- // go through all the parameters
- // if the parameter's section equals the current label of the tab,
- // then create the objects and draw them
- for (i=0; i<num_param; i++)
+  DeleteAllParameters();
+  for( size_t i = 0; i < paramlist->GetNumParameters(); ++i )
   {
-  cur_param=paramlist->GetParamPtr(i);
-  if (cur_param)
-     {
-     if ((section == cur_param->GetSection()) && (GetUserLevel(cur_param) <= preferences->UserLevel))
-        {
-        // render the parameter's name
-        ParamLabel[count]=new TLabel(this);
-        ParamLabel[count]->Left=LABELS_OFFSETX;
-        ParamLabel[count]->Top=LABELS_OFFSETY+count*LABELS_SPACINGY;
-        ParamLabel[count]->Caption=cur_param->GetName();
-        ParamLabel[count]->Font->Style = TFontStyles()<< fsBold;
-        ParamLabel[count]->Visible=true;
-        ParamLabel[count]->Parent=CfgTabControl;
-        ParamLabel[count]->Hint = cur_param->GetComment();
-        ParamLabel[count]->ShowHint = true;
-        // render the parameter's comment
-        ParamComment[count]=new TLabel(this);
-        ParamComment[count]->Left=COMMENT_OFFSETX;
-        ParamComment[count]->Top=COMMENT_OFFSETY+count*COMMENT_SPACINGY;
-        ParamComment[count]->Caption=cur_param->GetComment();
-        ParamComment[count]->Hint = cur_param->GetComment();
-        ParamComment[count]->ShowHint = true;
-        ParamComment[count]->Font->Style = TFontStyles()<< fsItalic;
-        ParamComment[count]->Visible=true;
-        ParamComment[count]->Parent=CfgTabControl;
-        // render the parameter's User Level track bar
-        // ONLY, if the current user level is "advanced"
-        if (preferences->UserLevel == USERLEVEL_ADVANCED)
-           {
-           ParamUserLevel[count]=new TTrackBar(this);
-           ParamUserLevel[count]->Left=USERLEVEL_OFFSETX;
-           ParamUserLevel[count]->Top=USERLEVEL_OFFSETY+count*USERLEVEL_SPACINGY;
-           ParamUserLevel[count]->Width=USERLEVEL_WIDTHX;
-           ParamUserLevel[count]->Min=1;
-           ParamUserLevel[count]->Max=3;
-           ParamUserLevel[count]->Position=GetUserLevel(cur_param);
-           ParamUserLevel[count]->PageSize=1;
-           ParamUserLevel[count]->OnChange=OnUserLevelChange;
-           ParamUserLevel[count]->Visible=true;
-           ParamUserLevel[count]->Parent=CfgTabControl;
-           }
-        // render the parameter's edit field, depending on the parameter data type
-        ParamValue[count]=NULL;
-        ParamButton[editMatrix][count]=NULL;
-        ParamButton[loadMatrix][count]=NULL;
-        ParamButton[saveMatrix][count]=NULL;
-        if (strcmpi(cur_param->GetType(), "matrix") == 0)
-           {
-           ParamButton[editMatrix][count]=new TButton(this);
-           ParamButton[editMatrix][count]->Caption="Edit Matrix";
-           ParamButton[editMatrix][count]->Left=VALUE_OFFSETX;
-           ParamButton[editMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[editMatrix][count]->Width=70;
-           ParamButton[editMatrix][count]->Height=21;
-           ParamButton[editMatrix][count]->OnClick=bEditMatrixClick;
-           ParamButton[editMatrix][count]->Visible=true;
-           ParamButton[editMatrix][count]->Parent=CfgTabControl;
-           ParamButton[loadMatrix][count]=new TButton(this);
-           ParamButton[loadMatrix][count]->Caption="Load Matrix";
-           ParamButton[loadMatrix][count]->Left=VALUE_OFFSETX+70+10;
-           ParamButton[loadMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[loadMatrix][count]->Width=70;
-           ParamButton[loadMatrix][count]->Height=21;
-           ParamButton[loadMatrix][count]->OnClick=bLoadMatrixClick;
-           ParamButton[loadMatrix][count]->Visible=true;
-           ParamButton[loadMatrix][count]->Parent=CfgTabControl;
-           ParamButton[saveMatrix][count]=new TButton(this);
-           ParamButton[saveMatrix][count]->Caption="Save Matrix";
-           ParamButton[saveMatrix][count]->Left=VALUE_OFFSETX+70+10+70+10;
-           ParamButton[saveMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[saveMatrix][count]->Width=70;
-           ParamButton[saveMatrix][count]->Height=21;
-           ParamButton[saveMatrix][count]->OnClick=bSaveMatrixClick;
-           ParamButton[saveMatrix][count]->Visible=true;
-           ParamButton[saveMatrix][count]->Parent=CfgTabControl;
-           }
-        else if( cur_param->GetNumValues() > 1 )
-           {
-           ParamValue[count]=new TEdit(this);
-           ParamValue[count]->Left=VALUE_OFFSETX;
-           ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ostringstream oss;
-           for (size_t t=0; t<cur_param->GetNumValues(); t++)
-            {
-            oss << PARAM::encodedString( cur_param->GetValue(t) );
-            if (t < cur_param->GetNumValues()-1)
-               oss << " ";
-            }
-           ParamValue[count]->Text=oss.str().c_str();
-           ParamValue[count]->Width=VALUE_WIDTHX;
-           ParamValue[count]->ReadOnly=false;
-           ParamValue[count]->Visible=true;
-           ParamValue[count]->Parent=CfgTabControl;
-           }
-#ifdef TRY_PARAM_INTERPRETATION
-        else
-        {
-          ParamInterpretation interpretation( *cur_param );
-          if( interpretation.Kind() == ParamInterpretation::singleValuedEnum )
+    PARAM* p = paramlist->GetParamPtr( i );
+    if( section == p->GetSection() && GetUserLevel( p ) <= preferences->UserLevel )
+    {
+      int idx = mParamLabels.size();
+      ParamInterpretation interpretation( *p );
+      mParamInterpretations.push_back( interpretation );
+      TControl* valueControl = NULL;
+      bool commentLine = true;
+      switch( interpretation.Kind() )
+      {
+        case ParamInterpretation::singleEntryEnum:
           {
-            TComboBox* comboBox = new TComboBox( this );
-            ParamComboBox[ count ] = comboBox;
-            comboBox->Left = VALUE_OFFSETX;
-            comboBox->Top= VALUE_OFFSETY + count * VALUE_SPACINGY;
+            TComboBox* comboBox = new TComboBox( static_cast<TComponent*>( NULL ) );
             comboBox->Width = VALUE_WIDTHX;
-            comboBox->Visible = true;
             comboBox->Sorted = false;
             comboBox->Style = csDropDownList;
             comboBox->Parent = CfgTabControl;
             for( size_t i = 0; i < interpretation.Values().size(); ++i )
               comboBox->Items->Add( interpretation.Values()[ i ].c_str() );
-            comboBox->ItemIndex = ::atoi( cur_param->GetValue() ) - interpretation.IndexBase();
-            comboBox->Hint = cur_param->GetComment();
+            comboBox->Hint = interpretation.Comment().c_str();
             comboBox->ShowHint = true;
-            ParamComment[ count ]->Caption = interpretation.Comment().c_str();
+            valueControl = comboBox;
           }
-          else if( interpretation.Kind() == ParamInterpretation::singleValuedBoolean )
-          {
-            TCheckBox* checkBox = new TCheckBox( this );
-            ParamCheckBox[ count ] = checkBox;
-            checkBox->Left = VALUE_OFFSETX;
-            checkBox->Top= VALUE_OFFSETY + count * VALUE_SPACINGY;
-            checkBox->Width = VALUE_WIDTHX;
-            checkBox->Visible = true;
-            checkBox->Parent = CfgTabControl;
-            checkBox->Checked = ::atoi( cur_param->GetValue() );
-            checkBox->Caption = interpretation.Comment().c_str();
-            checkBox->Hint = cur_param->GetComment();
-            checkBox->ShowHint = true;
-            ParamComment[ count ]->Caption = "";
-          }
-#endif // TRY_PARAM_INTERPRETATION
-        else
-           {
-           ParamValue[count]=new TEdit(this);
-           ParamValue[count]->Left=VALUE_OFFSETX;
-           ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamValue[count]->Text=cur_param->GetValue();
-           ParamValue[count]->Width=VALUE_WIDTHX;
-           ParamValue[count]->ReadOnly=false;
-           ParamValue[count]->Visible=true;
-           ParamValue[count]->Parent=CfgTabControl;
-           }
-#ifdef TRY_PARAM_INTERPRETATION
-         }
-#endif // TRY_PARAM_INTERPRETATION
-        count++;
-        }
-     }
-  }
+          break;
 
-#if 0 // jm 5/03
- if (count > 0)
-    if (ParamLabel[count-1]->Top+ParamLabel[count-1]->Height > CfgTabControl->Height)
-       {
-       CfgTabControl->Height=ParamLabel[count-1]->Top+ParamLabel[count-1]->Height+15;
-       // fConfig->Width=CfgTabControl->Width+40;
-       }
-#else
-  if( count > 0 )
+        case ParamInterpretation::singleEntryBoolean:
+          {
+            TCheckBox* checkBox = new TCheckBox( static_cast<TComponent*>( NULL ) );
+            checkBox->Width = VALUE_WIDTHX;
+            checkBox->Caption = interpretation.Comment().c_str();
+            checkBox->Hint = interpretation.Comment().c_str();
+            checkBox->ShowHint = true;
+            commentLine = false;
+            valueControl = checkBox;
+          }
+          break;
+
+        case ParamInterpretation::singleEntryInputFile:
+        case ParamInterpretation::singleEntryOutputFile:
+        case ParamInterpretation::singleEntryDirectory:
+          {
+            TEdit* edit = new TEdit( static_cast<TComponent*>( NULL ) );
+            edit->Left = VALUE_OFFSETX;
+            edit->Width = VALUE_WIDTHX;
+            edit->ReadOnly = false;
+            edit->OnChange = SyncHint;
+            valueControl = edit;
+            TButton* button = new TButton( edit );
+            button->Caption = "...";
+            button->Left = edit->Left + edit->Width + BUTTON_HEIGHT / 2;
+            button->Width = BUTTON_HEIGHT;
+            button->Height = BUTTON_HEIGHT;
+            button->Top = VALUE_OFFSETY + idx * VALUE_SPACINGY;
+            button->OnClick = OnChooseFileClick;
+            button->Parent = CfgTabControl;
+            button->Tag = idx;
+          }
+          break;
+          
+        case ParamInterpretation::singleEntryGeneric:
+        case ParamInterpretation::listGeneric:
+          {
+            TEdit* edit = new TEdit( static_cast<TComponent*>( NULL ) );
+            edit->Width = VALUE_WIDTHX;
+            edit->ReadOnly = false;
+            edit->OnChange = SyncHint;
+            valueControl = edit;
+          }
+          break;
+
+        case ParamInterpretation::matrixGeneric:
+          {
+            TButton* editButton = new TButton( static_cast<TComponent*>( NULL ) );
+            editButton->Caption = "Edit Matrix";
+            editButton->Left = VALUE_OFFSETX;
+            editButton->Width = BUTTON_WIDTH;
+            editButton->Height = BUTTON_HEIGHT;
+            editButton->OnClick = bEditMatrixClick;
+            valueControl = editButton;
+
+            TButton* loadButton = new TButton( editButton );
+            loadButton->Caption = "Load Matrix";
+            loadButton->Left = editButton->Left + editButton->Width + BUTTON_SPACING;
+            loadButton->Top = VALUE_OFFSETY + idx * VALUE_SPACINGY;
+            loadButton->Width = BUTTON_WIDTH;
+            loadButton->Height = BUTTON_HEIGHT;
+            loadButton->OnClick = bLoadMatrixClick;
+            loadButton->Visible = true;
+            loadButton->Parent = CfgTabControl;
+            loadButton->Tag = idx;
+
+            TButton* saveButton = new TButton( editButton );
+            saveButton->Caption = "Save Matrix";
+            saveButton->Left = loadButton->Left + loadButton->Width + BUTTON_SPACING;
+            saveButton->Top = VALUE_OFFSETY + idx * VALUE_SPACINGY;
+            saveButton->Width = BUTTON_WIDTH;
+            saveButton->Height = BUTTON_HEIGHT;
+            saveButton->OnClick = bSaveMatrixClick;
+            saveButton->Visible = true;
+            saveButton->Parent = CfgTabControl;
+            saveButton->Tag = idx;
+          }
+          break;
+
+        default:
+          assert( false );
+      }
+      valueControl->Left = VALUE_OFFSETX;
+      valueControl->Top = VALUE_OFFSETY + idx * VALUE_SPACINGY;
+      valueControl->ShowHint = true;
+      valueControl->Visible = true;
+      valueControl->Parent = CfgTabControl;
+      valueControl->Tag = idx;
+      mParamValues.push_back( valueControl );
+
+      // render the parameter's name
+      TLabel* label = new TLabel( static_cast<TComponent*>( NULL ) );
+      label->Left = LABELS_OFFSETX;
+      label->Top = LABELS_OFFSETY + idx * LABELS_SPACINGY;
+      label->Caption = p->GetName();
+      label->Font->Style = TFontStyles() << fsBold;
+      label->Visible = true;
+      label->Hint = interpretation.Comment().c_str();
+      label->ShowHint = true;
+      label->Parent = CfgTabControl;
+      mParamLabels.push_back( label );
+
+      // render the parameter's comment
+      if( commentLine )
+      {
+        TLabel* comment = new TLabel( label );
+        comment->Left = COMMENT_OFFSETX;
+        comment->Top = COMMENT_OFFSETY + idx * COMMENT_SPACINGY;
+        comment->Caption = interpretation.Comment().c_str();
+        comment->Hint = interpretation.Comment().c_str();
+        comment->ShowHint = true;
+        comment->Font->Style = TFontStyles() << fsItalic;
+        comment->Visible = true;
+        comment->Parent = CfgTabControl;
+      }
+
+      // render the parameter's User Level track bar
+      // ONLY, if the current user level is "advanced"
+      if( preferences->UserLevel == USERLEVEL_ADVANCED )
+      {
+        TTrackBar* userLevel = new TTrackBar( valueControl );
+        userLevel->Left = USERLEVEL_OFFSETX;
+        userLevel->Top = USERLEVEL_OFFSETY + idx * USERLEVEL_SPACINGY;
+        userLevel->Width = USERLEVEL_WIDTHX;
+        userLevel->Min = 1;
+        userLevel->Max = 3;
+        userLevel->Position = GetUserLevel( p );
+        userLevel->PageSize = 1;
+        userLevel->OnChange = OnUserLevelChange;
+        userLevel->Visible = true;
+        userLevel->Parent = CfgTabControl;
+        userLevel->Tag = idx;
+      }
+      RenderParameter( idx );
+    }
+  }
+  if( !mParamLabels.empty() )
   {
-    int bottomLine = 0;
-    if( ParamUserLevel[ count - 1 ] != NULL )
-      bottomLine = ParamUserLevel[ count - 1 ]->Top + ParamUserLevel[ count - 1 ]->Height;
-    else if( ParamLabel[ count - 1 ] != NULL )
-      bottomLine = ParamLabel[ count - 1 ]->Top + 3 * ParamLabel[ count - 1 ]->Height;
+    TTrackBar* trackBar = new TTrackBar( static_cast<TComponent*>( NULL ) );
+    TLabel* bottomLabel = *mParamLabels.rbegin();
+    int bottomLine = bottomLabel->Top + bottomLabel->Height + trackBar->Height;
     if( bottomLine > CfgTabControl->Height )
       CfgTabControl->Height = bottomLine;
+    delete trackBar;
   }
-#endif // jm 5/03
-
- cur_numparamsrendered=count;
- return(0);
+  return 0;
 }
-
 
 // update one particular parameter on the screen
 // useful, for example, if parameters change while stuff on screen
-void TfConfig::RenderParameter(PARAM *cur_param)
+void TfConfig::RenderParameter( PARAM *inParam )
 {
-AnsiString      valueline;
-int     count, t;
+  if( !Visible )
+    return;
 
- if (!Visible) return;
-
- // go through all the parameters
- // if one of the parameters one the screen has the same name as the parameter that we're supposed to update
- // then update the display
- for (count=0; count<cur_numparamsrendered; count++)
-  {
-  if (ParamLabel[count]->Caption == AnsiString(cur_param->GetName()))
-     if (ParamValue[count])
-        {
-           ostringstream oss;
-           for (size_t t=0; t<cur_param->GetNumValues(); t++)
-            {
-            oss << PARAM::encodedString( cur_param->GetValue(t) );
-            if (t < cur_param->GetNumValues()-1)
-               oss << " ";
-            }
-           ParamValue[count]->Text=oss.str().c_str();
-        }
-#ifdef TRY_PARAM_INTERPRETATION
-     else if( ParamComboBox[ count ] )
-       ParamComboBox[ count ]->ItemIndex = ::atoi( cur_param->GetValue() )
-                                - ParamInterpretation( *cur_param ).IndexBase();
-     else if( ParamCheckBox[ count ] )
-       ParamCheckBox[ count ]->Checked = ::atoi( cur_param->GetValue() );
-#endif // TRY_PARAM_INTERPRETATION
-  }
-
- // in case we have a matrix on the screen, update the display, too
- // here, it can happen that we changed the matrix parameter, but it is being overwritten by the incoming matrix
- if ((fEditMatrix->Visible) && (fEditMatrix->GetDisplayedParamName() == cur_param->GetName()))
-    fEditMatrix->SetDisplayedParam( cur_param );
+  int idx = -1;
+  for( size_t i = 0; idx == -1 && i < mParamLabels.size(); ++i )
+    if( mParamLabels[ i ]->Caption == inParam->GetName() )
+      idx = i;
+  if( idx > 0 )
+    RenderParameter( idx );
+  // in case we have a matrix on the screen, update the display, too
+  // here, it can happen that we changed the matrix parameter, but it is being overwritten by the incoming matrix
+  if( fEditMatrix->Visible && ( fEditMatrix->GetDisplayedParamName() == inParam->GetName() ) )
+    fEditMatrix->SetDisplayedParam( inParam );
 }
 
+void TfConfig::RenderParameter( int inIndex )
+{
+  PARAM* param = paramlist->GetParamPtr( mParamLabels[ inIndex ]->Caption.c_str() );
+  TControl* value = mParamValues[ inIndex ];
+  switch( mParamInterpretations[ inIndex ].Kind() )
+  {
+    case ParamInterpretation::singleEntryEnum:
+      {
+        TComboBox* comboBox = dynamic_cast<TComboBox*>( value );
+        comboBox->ItemIndex =
+          ::atoi( param->GetValue() ) - mParamInterpretations[ inIndex ].IndexBase();
+      }
+      break;
+
+    case ParamInterpretation::singleEntryBoolean:
+      {
+        TCheckBox* checkBox = dynamic_cast<TCheckBox*>( value );
+        checkBox->Checked = ::atoi( param->GetValue() );
+      }
+      break;
+
+    case ParamInterpretation::singleEntryInputFile:
+    case ParamInterpretation::singleEntryOutputFile:
+    case ParamInterpretation::singleEntryDirectory:
+    case ParamInterpretation::singleEntryGeneric:
+      {
+        TEdit* edit = dynamic_cast<TEdit*>( value );
+        edit->Text = param->GetValue();
+        edit->Hint = edit->Text;
+      }
+      break;
+
+    case ParamInterpretation::listGeneric:
+      {
+        TEdit* edit = dynamic_cast<TEdit*>( value );
+        ostringstream oss;
+        oss << PARAM::encodedString( param->GetValue( 0 ) );
+        for( size_t t = 1; t < param->GetNumValues(); ++t )
+          oss << ' ' << PARAM::encodedString( param->GetValue( t ) );
+        edit->Text = oss.str().c_str();
+        edit->Hint = edit->Text;
+      }
+      break;
+
+    case ParamInterpretation::matrixGeneric:
+      break;
+
+    default:
+      assert( false );
+  }
+}
 
 // go through the parameters on the screen and update the parameters using the data on the screen
-int TfConfig::UpdateParameters(AnsiString section)
+int TfConfig::UpdateParameters()
 {
-int     count=0, i, t, u, num_param, num_values, ptr, endcount;
-PARAM   *cur_param, *param;
-AnsiString      paramname, paramvalue;
-char            buf[2048];
-
- num_param=paramlist->GetNumParameters();
-
- // count the number of parameters on the sheet
- for (i=0; i<num_param; i++)
+  for( size_t i = 0; i < mParamLabels.size(); ++i )
   {
-  cur_param=paramlist->GetParamPtr(i);
-  if (cur_param)
-     if (section == cur_param->GetSection())
-        count++;
-  }
+    PARAM* param = paramlist->GetParamPtr( mParamLabels[ i ]->Caption.c_str() );
+    TControl* valueControl = mParamValues[ i ];
+    switch( mParamInterpretations[ i ].Kind() )
+    {
+      case ParamInterpretation::singleEntryEnum:
+        {
+          TComboBox* comboBox = dynamic_cast<TComboBox*>( valueControl );
+          ostringstream oss;
+          oss << comboBox->ItemIndex + mParamInterpretations[ i ].IndexBase();
+          param->SetValue( oss.str().c_str() );
+        }
+        break;
 
-  // go through all parameters on the sheet
-  // and update the parameters in the parameter list accordingly
-  for (i=0; i<count; i++)
-  {
-    paramname=ParamLabel[i]->Caption;
-    if (ParamValue[i])    // if we did not have an edit field, we had, e.g., a matrix and that is already updated
-    {
-       paramvalue=ParamValue[i]->Text.Trim();
-       param=NULL;
-       // search for the parameter with the same name in the parameterlist
-       for (t=0; t<num_param; t++)
-       {
-        cur_param=paramlist->GetParamPtr(t);
-        if (cur_param)
-           if (paramname == cur_param->GetName())
-              param=cur_param;
-       }
-       if (param)
-       {
-          if( string( param->GetType() ).find( "list" ) != string::npos )
-          {
-            istringstream is( paramvalue.c_str() );
-            PARAM::encodedString value;
-            int index = 0;
-            while( is >> value )
-              param->SetValue( value, index++ );
-            param->SetNumValues( index );
-          }
-          else
-            param->SetValue( paramvalue.c_str() );
-       }
-    }
-#ifdef TRY_PARAM_INTERPRETATION
-    else if( ParamComboBox[ i ] )
-    {
-      PARAM* param = paramlist->GetParamPtr( paramname.c_str() );
-      if( param )
-        param->SetValue( AnsiString( ParamComboBox[ i ]->ItemIndex
-                         + ParamInterpretation( *param ).IndexBase() ).c_str() );
-    }
-    else if( ParamCheckBox[ i ] )
-    {
-      PARAM* param = paramlist->GetParamPtr( paramname.c_str() );
-      if( param )
-        param->SetValue( ParamCheckBox[ i ]->Checked ? "1" : "0" );
-    }
-#endif // TRY_PARAM_INTERPRETATION
-  }
+      case ParamInterpretation::singleEntryBoolean:
+        {
+          TCheckBox* checkBox = dynamic_cast<TCheckBox*>( valueControl );
+          param->SetValue( checkBox->Checked ? "1" : "0" );
+        }
+        break;
 
- return(0);
+      case ParamInterpretation::singleEntryInputFile:
+      case ParamInterpretation::singleEntryOutputFile:
+      case ParamInterpretation::singleEntryDirectory:
+      case ParamInterpretation::singleEntryGeneric:
+        {
+          TEdit* edit = dynamic_cast<TEdit*>( valueControl );
+          param->SetValue( edit->Text.Trim().c_str() );
+        }
+        break;
+
+      case ParamInterpretation::listGeneric:
+        {
+          TEdit* edit = dynamic_cast<TEdit*>( valueControl );
+          istringstream is( edit->Text.c_str() );
+          PARAM::encodedString value;
+          int index = 0;
+          while( is >> value )
+            param->SetValue( value, index++ );
+          param->SetNumValues( index );
+        }
+        break;
+
+      case ParamInterpretation::matrixGeneric:
+        break;
+
+      default:
+        assert( false );
+    }
+  }
+  return 0;
 }
 
 
@@ -547,7 +514,7 @@ void __fastcall TfConfig::CfgTabControlChange(TObject *Sender)
 void __fastcall TfConfig::FormClose(TObject *Sender, TCloseAction &Action)
 {
  if (CfgTabControl->TabIndex > -1)
-    UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
+    UpdateParameters();
  DeleteAllParameters();
  DeleteAllTabs();
 }
@@ -557,7 +524,7 @@ void __fastcall TfConfig::CfgTabControlChanging(TObject *Sender,
       bool &AllowChange)
 {
  if (CfgTabControl->TabIndex > -1)
-    UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
+    UpdateParameters();
  AllowChange = true;
 }
 //---------------------------------------------------------------------------
@@ -569,7 +536,7 @@ bool    ret;
  if (SaveDialog->Execute())
     {
     if (CfgTabControl->TabIndex > -1)
-       UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
+       UpdateParameters();
     fShowParameters->UpdateParameterTags(paramlist, 2);                         // update the tag (= filter) values in each parameter
     ret=paramlist->SaveParameterList(SaveDialog->FileName.c_str(), true);       // save parameters using the filter
     if (!ret)
@@ -589,7 +556,7 @@ bool    ret;
  if (LoadDialog->Execute())
     {
     if (CfgTabControl->TabIndex > -1)
-       UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
+       UpdateParameters();
     fShowParameters->UpdateParameterTags(paramlist, 1);    // update the tag (= filter) values in each parameter
     ret=paramlist->LoadParameterList(LoadDialog->FileName.c_str(), true, false);        // do not import non-existing parameters; use the filter
     if (!ret)
@@ -610,27 +577,13 @@ bool    ret;
 // **************************************************************************
 void __fastcall TfConfig::OnUserLevelChange(TObject *Sender)
 {
-AnsiString      paramname;
-PARAM   *param;
-int     i;
-
- // find out which user level thingy the click came from
- // the track bar tells us about the parameter name
- paramname="";
- for (i=0; i<cur_numparamsrendered; i++)
-  {
-  if (ParamUserLevel[i] == Sender)
-     paramname=ParamLabel[i]->Caption;
-  }
- // now, given the parameter name, find it's pointer
- param=paramlist->GetParamPtr(paramname.c_str());
- if (!param)
-    {
-    Application->MessageBox("Could not find parameter", "Internal Error", MB_OK);
-    return;
-    }
-
- SetUserLevel(param, ((TTrackBar *)Sender)->Position);
+  TTrackBar* trackBar = dynamic_cast<TTrackBar*>( Sender );
+  AnsiString paramname = mParamLabels[ trackBar->Tag ]->Caption;
+  PARAM* param = paramlist->GetParamPtr( paramname.c_str() );
+  if( param )
+    SetUserLevel( param, trackBar->Position );
+  else
+    Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
 }
 
 
@@ -642,28 +595,16 @@ int     i;
 // **************************************************************************
 void __fastcall TfConfig::bEditMatrixClick(TObject *Sender)
 {
-AnsiString      paramname;
-PARAM   *matrix_param;
-int     i;
-
- // find out which button the click came from
- // the button tells us about the parameter name
- paramname="";
- for (i=0; i<cur_numparamsrendered; i++)
+  TControl* control = dynamic_cast<TControl*>( Sender );
+  AnsiString paramname = mParamLabels[ control->Tag ]->Caption;
+  PARAM* matrix_param = paramlist->GetParamPtr( paramname.c_str() );
+  if( matrix_param )
   {
-  if (ParamButton[editMatrix][i] == Sender)
-     paramname=ParamLabel[i]->Caption;
+    fEditMatrix->SetDisplayedParam( matrix_param );
+    fEditMatrix->ShowModal();
   }
- // now, given the parameter name, find it's pointer
- matrix_param=paramlist->GetParamPtr(paramname.c_str());
- if (!matrix_param)
-    {
-    Application->MessageBox("Could not find parameter", "Internal Error", MB_OK);
-    return;
-    }
-
- fEditMatrix->SetDisplayedParam( matrix_param );
- fEditMatrix->ShowModal();
+  else
+    Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
 }
 
 
@@ -677,11 +618,8 @@ void
 __fastcall
 TfConfig::bLoadMatrixClick( TObject* inSender )
 {
-  PARAM* param = NULL;
-  for( int i = 0; param == NULL && i < cur_numparamsrendered; ++i )
-    if( inSender == ParamButton[ loadMatrix ][ i ] )
-      param = paramlist->GetParamPtr( ParamLabel[ i ]->Caption.c_str() );
-
+  TButton* button = dynamic_cast<TButton*>( inSender );
+  PARAM* param = paramlist->GetParamPtr( mParamLabels[ button->Tag ]->Caption.c_str() );
   if( param == NULL )
   {
     Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
@@ -720,11 +658,8 @@ void
 __fastcall
 TfConfig::bSaveMatrixClick( TObject* inSender )
 {
-  PARAM* param = NULL;
-  for( int i = 0; param == NULL && i < cur_numparamsrendered; ++i )
-    if( inSender == ParamButton[ saveMatrix ][ i ] )
-      param = paramlist->GetParamPtr( ParamLabel[ i ]->Caption.c_str() );
-
+  TButton* button = dynamic_cast<TButton*>( inSender );
+  PARAM* param = paramlist->GetParamPtr( mParamLabels[ button->Tag ]->Caption.c_str() );
   if( param == NULL )
   {
     Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
@@ -839,41 +774,145 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-#ifdef TRY_PARAM_INTERPRETATION
-TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
-: mIndexBase( 0 ),
-  mKind( unknown ),
-  mComment( p.GetComment() )
+void __fastcall TfConfig::OnChooseFileClick( TObject* inSender )
 {
-  string paramType = p.GetType();
-  if( paramType == "matrix" )
-    mKind = matrixGeneric;
-  else if( paramType.find( "list" ) != string::npos )
-    mKind = listGeneric;
-  else
-    mKind = singleValuedGeneric;
-
-  switch( mKind )
+  TButton*   button = dynamic_cast<TButton*>( inSender );
+  TEdit*     edit = dynamic_cast<TEdit*>( mParamValues[ button->Tag ] );
+  AnsiString comment = mParamInterpretations[ button->Tag ].Comment().c_str();
+  switch( mParamInterpretations[ button->Tag ].Kind() )
   {
-    case singleValuedGeneric:
-      if( TryEnumInterpretation( p ) )
+    case ParamInterpretation::singleEntryInputFile:
       {
-        if( IsBooleanEnum() )
-          mKind = singleValuedBoolean;
-        else
-          mKind = singleValuedEnum;
+        TOpenDialog* dialog = new TOpenDialog( static_cast<TComponent*>( NULL ) );
+        dialog->Title = AnsiString( "Choosing " ) + comment;
+        dialog->InitialDir = ::ExtractFilePath( edit->Text );
+        dialog->DefaultExt = "";
+        dialog->Filter = ANYFILE_FILTER;
+        dialog->Options.Clear();
+        dialog->Options << ofFileMustExist << ofHideReadOnly
+                        << ofNoChangeDir << ofDontAddToRecent;
+        if( dialog->Execute() )
+          edit->Text = dialog->FileName;
+        delete dialog;
       }
       break;
-    case listGeneric:
-    case matrixGeneric:
+    case ParamInterpretation::singleEntryOutputFile:
+      {
+        TSaveDialog* dialog = new TSaveDialog( static_cast<TComponent*>( NULL ) );
+        dialog->Title = AnsiString( "Choosing " ) + comment;
+        dialog->InitialDir = ::ExtractFilePath( edit->Text );
+        dialog->DefaultExt = "";
+        dialog->Filter = ANYFILE_FILTER;
+        dialog->Options.Clear();
+        dialog->Options << ofPathMustExist << ofHideReadOnly
+                        << ofNoChangeDir << ofDontAddToRecent
+                        << ofNoReadOnlyReturn << ofOverwritePrompt;
+        if( dialog->Execute() )
+          edit->Text = dialog->FileName;
+        delete dialog;
+      }
+      break;
+    case ParamInterpretation::singleEntryDirectory:
+      {
+        LPMALLOC shellMalloc;
+        if( ::SHGetMalloc( &shellMalloc ) == NO_ERROR )
+        {
+          char buffer[ MAX_PATH ];
+          BROWSEINFO browseinfo =
+          {
+            Handle,
+            NULL,
+            buffer,
+            comment.c_str(),
+            BIF_RETURNONLYFSDIRS,
+            NULL, 0, NULL
+          };
+          ITEMIDLIST* result = ::SHBrowseForFolder( &browseinfo );
+          if( result )
+          {
+            if( ::SHGetPathFromIDList( result, buffer ) )
+              edit->Text = buffer;
+            shellMalloc->Free( result );
+          }
+          shellMalloc->Release();
+        }
+      }
       break;
     default:
       assert( false );
   }
 }
 
+void __fastcall TfConfig::SyncHint( TObject* inSender )
+{
+  TEdit* edit = dynamic_cast<TEdit*>( inSender );
+  edit->Hint = edit->Text;
+}
+
+TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
+: mIndexBase( 0 ),
+  mKind( unknown ),
+  mComment( p.GetComment() )
+{
+  // Look for "interpretation hints" in the comment.
+  // Unknown hints (syntax errors) will show up in the operator's comment display.
+  const struct
+  {
+    const char* keyword;
+    Kind_type   kind;
+  } hints[] =
+  {
+    { "@enumeration", singleEntryEnum },
+    { "@boolean",     singleEntryBoolean },
+    { "@inputfile",   singleEntryInputFile },
+    { "@outputfile",  singleEntryOutputFile },
+    { "@directory",   singleEntryDirectory },
+  };
+  for( int i = 0; ( mKind == unknown ) && ( i < sizeof( hints ) / sizeof( *hints ) ); ++i )
+  {
+    size_t hintPos = mComment.find( hints[ i ].keyword );
+    if( hintPos != string::npos )
+    {
+      mComment = mComment.erase( hintPos );
+      mKind = hints[ i ].kind;
+    }
+  }
+  // For matrix and list type parameters, the hint is ignored.
+  string paramType = p.GetType();
+  if( paramType.find( "matrix" ) != string::npos )
+    mKind = matrixGeneric;
+  else if( paramType.find( "list" ) != string::npos )
+    mKind = listGeneric;
+  else if( mKind == unknown )
+    mKind = singleEntryGeneric;
+
+  switch( mKind )
+  {
+    case singleEntryEnum:
+      if( !ExtractEnumValues( p ) )
+        mKind = singleEntryGeneric;
+      break;
+
+    case singleEntryBoolean:
+      if( !( ExtractEnumValues( p ) && IsBooleanEnum() ) )
+        mKind = singleEntryGeneric;
+      break;
+
+    case singleEntryInputFile:
+    case singleEntryOutputFile:
+    case singleEntryDirectory:
+    case singleEntryGeneric:
+    case listGeneric:
+    case matrixGeneric:
+      break;
+
+    default:
+      assert( false );
+  }
+}
+
 bool
-TfConfig::ParamInterpretation::TryEnumInterpretation( const PARAM& p )
+TfConfig::ParamInterpretation::ExtractEnumValues( const PARAM& p )
 {
   // Only int type parameters can be enumerations or booleans.
   const string enumParamType = "int";
@@ -972,7 +1011,6 @@ TfConfig::ParamInterpretation::TryEnumInterpretation( const PARAM& p )
   {
     mIndexBase = lowRange;
     mComment = modifiedComment;
-    mKind = singleValuedEnum;
   }
   else
     mValues.clear();
@@ -992,4 +1030,6 @@ TfConfig::ParamInterpretation::IsBooleanEnum() const
     return false;
   return true;
 }
-#endif // TRY_PARAM_INTERPRETATION
+
+
+

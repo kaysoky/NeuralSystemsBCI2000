@@ -1,6 +1,6 @@
 object fConfig: TfConfig
-  Left = 368
-  Top = 250
+  Left = 433
+  Top = 200
   Width = 702
   Height = 561
   Caption = 'Configuration ...'

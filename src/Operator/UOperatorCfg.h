@@ -3,22 +3,18 @@
 #ifndef UOperatorCfgH
 #define UOperatorCfgH
 //---------------------------------------------------------------------------
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
-#include <ComCtrls.hpp>
-#include <Dialogs.hpp>
-#include <CheckLst.hpp>
 
 #include "UParameter.h"
 #include "USysStatus.h"
 #include "UPreferences.h"
+#include <Classes.hpp>
+#include <ComCtrls.hpp>
+#include <Controls.hpp>
+#include <Dialogs.hpp>
+#include <StdCtrls.hpp>
 
-#ifdef TRY_PARAM_INTERPRETATION
-# include <vector>
-# include <string> 
-#endif // TRY_PARAM_INTERPRETATION
+#include <vector>
+#include <string>
 
 #define MAX_PARAMPERSECTION     300
 #define LABELS_OFFSETX          30
@@ -31,6 +27,9 @@
 #define VALUE_OFFSETY           50
 #define VALUE_SPACINGY          40
 #define VALUE_WIDTHX            220
+#define BUTTON_WIDTH            ( ( VALUE_WIDTHX - 20 ) / 3 )
+#define BUTTON_HEIGHT           21
+#define BUTTON_SPACING          ( ( VALUE_WIDTHX - 3 * BUTTON_WIDTH ) / 2 )
 #define USERLEVEL_OFFSETX       VALUE_OFFSETX+260
 #define USERLEVEL_WIDTHX        70
 #define USERLEVEL_OFFSETY       50
@@ -59,33 +58,9 @@ __published:	// IDE-managed Components
         void __fastcall OnUserLevelChange(TObject *Sender);
         void __fastcall bConfigureSaveFilterClick(TObject *Sender);
         void __fastcall bConfigureLoadFilterClick(TObject *Sender);
-private:	// User declarations
-        enum error
-        {
-          ERR_MATLOADCOLSDIFF = 1,
-          ERR_MATNOTFOUND,
-          ERR_COULDNOTWRITE,
-        };
-        PREFERENCES     *preferences;
-        PARAMLIST       *paramlist;
-      	TLabel	*ParamLabel[MAX_PARAMPERSECTION];
-      	TLabel	*ParamComment[MAX_PARAMPERSECTION];
-      	TEdit	*ParamValue[MAX_PARAMPERSECTION];
-#ifdef TRY_PARAM_INTERPRETATION
-        TComboBox* ParamComboBox[MAX_PARAMPERSECTION];
-        TCheckBox* ParamCheckBox[MAX_PARAMPERSECTION];
-#endif
-        enum paramButtonIndex
-        {
-          editMatrix = 0,
-          loadMatrix = 1,
-          saveMatrix = 2,
-
-          numParamButtons // This is the always the last entry.
-        };
-      	TButton	*ParamButton[ numParamButtons ][MAX_PARAMPERSECTION];
-      	TTrackBar *ParamUserLevel[MAX_PARAMPERSECTION];
-        int     cur_numparamsrendered;
+private:
+        void __fastcall OnChooseFileClick( TObject* );
+        void __fastcall SyncHint( TObject* );
 public:		// User declarations
         __fastcall TfConfig(TComponent* Owner);
         __fastcall ~TfConfig();
@@ -94,12 +69,12 @@ public:		// User declarations
         void    DeleteAllParameters();
         int     RenderParameters(AnsiString section);
         void    RenderParameter(PARAM *cur_param);
-        int     UpdateParameters(AnsiString section);
+        void    RenderParameter(int idx);
+        int     UpdateParameters();
         int     LoadMatrix( const AnsiString& matfilename, PARAM* ) const;
         int     SaveMatrix( const AnsiString& matfilename, PARAM* ) const;
         int     GetUserLevel(PARAM *param);
         void    SetUserLevel(PARAM *param, int cur_userlevel);
-#ifdef TRY_PARAM_INTERPRETATION
 private:
         class ParamInterpretation
         {
@@ -109,10 +84,14 @@ private:
             typedef enum
             {
               unknown = 0,
-              singleValuedGeneric,
-                singleValuedEnum,         // Possible parameter values are from a pre-defined set.
-                singleValuedBoolean,      // The parameter represents an on/off switch.
-                                          // Logically, this is a specialization of singleValuedEnum.
+              singleEntryGeneric,
+                singleEntryEnum,      // Possible parameter values are from a pre-defined set.
+                singleEntryBoolean,   // The parameter represents an on/off switch.
+                                      // Logically, this is a specialization of singleValuedEnum.
+                singleEntryInputFile, // Parameter values are full paths to files.
+                singleEntryOutputFile,
+                singleEntryDirectory, // Parameter values are directory paths.
+
               listGeneric,
               matrixGeneric,
             } Kind_type;
@@ -135,7 +114,7 @@ private:
 
           // Private members.
           private:
-            bool TryEnumInterpretation( const PARAM& p );
+            bool ExtractEnumValues( const PARAM& p );
             bool IsBooleanEnum() const;
 
             std::string mComment;
@@ -143,7 +122,19 @@ private:
             Values_type mValues;
             int         mIndexBase;
         };
-#endif // TRY_PARAM_INTERPRETATION
+
+        enum error
+        {
+          ERR_MATLOADCOLSDIFF = 1,
+          ERR_MATNOTFOUND,
+          ERR_COULDNOTWRITE,
+        };
+        PREFERENCES* preferences;
+        PARAMLIST  * paramlist;
+
+        std::vector<TControl*>           mParamValues;
+        std::vector<TLabel*>             mParamLabels;
+        std::vector<ParamInterpretation> mParamInterpretations;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfConfig *fConfig;

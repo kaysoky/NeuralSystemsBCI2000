@@ -7,11 +7,11 @@
     <OBJFILES value="obj\operat.obj obj\UMain.obj obj\USysStatus.obj obj\UAbout.obj 
       obj\UConnectionInfo.obj obj\UEditMatrix.obj obj\UOperatorCfg.obj 
       obj\UPreferences.obj obj\UScript.obj obj\UShowParameters.obj 
-      obj\UShowStates.obj obj\USysLog.obj obj\UBCItime.obj obj\UBitRate.obj 
-      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
-      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\UShowStates.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
+      obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
       obj\UOperatorUtils.obj obj\UVisual.obj obj\Color.obj obj\TCPStream.obj 
-      obj\MessageHandler.obj obj\UBCIError.obj obj\UEnvironment.obj"/>
+      obj\MessageHandler.obj obj\UBCIError.obj obj\USysLog.obj 
+      obj\UEnvironment.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -22,14 +22,14 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value="_DEBUG;NO_WIN32_LEAN_AND_MEAN"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="operat.cpp"/>
     <INCLUDEPATH value="..;..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -40,10 +40,10 @@
   </MACROS>
   <OPTIONS>
     <CFLAG1 value="-Od -Vx -Ve -xf -X- -r- -a8 -5 -b- -k -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <PFLAGS value="-N2.\obj -N0.\obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <LFLAGS value="-I.\obj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -65,22 +65,19 @@
       <FILE FILENAME="UScript.cpp" FORMNAME="" UNITNAME="UScript" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UShowParameters.cpp" FORMNAME="fShowParameters" UNITNAME="UShowParameters" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UShowStates.cpp" FORMNAME="fShowStates" UNITNAME="UShowStates" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="USysLog.cpp" FORMNAME="" UNITNAME="USysLog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UGenericVisualization.cpp" FORMNAME="" UNITNAME="UGenericVisualization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UStatus.cpp" FORMNAME="" UNITNAME="UStatus" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UOperatorUtils.cpp" FORMNAME="" UNITNAME="UOperatorUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UVisual.cpp" FORMNAME="" UNITNAME="UVisual" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="USysLog.cpp" FORMNAME="" UNITNAME="USysLog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
@@ -113,6 +110,9 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=28
@@ -180,22 +180,24 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=11
-Item0=_DEBUG
-Item1=TRY_PARAM_INTERPRETATION;_DEBUG
-Item2=TRY_PARAM_INTERPRETATION;PUSH_PARAMS;_DEBUG
-Item3=PUSH_PARAMS;_DEBUG
-Item4=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS;_DEBUG
-Item5=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
-Item6=_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
-Item7=_DEBUG;NEW_DOUBLEBUF_SCHEME
-Item8=_DEBUG;NEW_DOUBLEBUF
-Item9=_DEBUG;VCL_DOUBLEBUF
-Item10=_DEBUG;SIGNAL_BACK_COMPAT
+Count=12
+Item0=_DEBUG;NO_WIN32_LEAN_AND_MEAN
+Item1=_DEBUG
+Item2=TRY_PARAM_INTERPRETATION;_DEBUG
+Item3=TRY_PARAM_INTERPRETATION;PUSH_PARAMS;_DEBUG
+Item4=PUSH_PARAMS;_DEBUG
+Item5=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS;_DEBUG
+Item6=NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
+Item7=_DEBUG;NEW_DOUBLEBUF_SCHEME;PUSH_PARAMS
+Item8=_DEBUG;NEW_DOUBLEBUF_SCHEME
+Item9=_DEBUG;NEW_DOUBLEBUF
+Item10=_DEBUG;VCL_DOUBLEBUF
+Item11=_DEBUG;SIGNAL_BACK_COMPAT
 
 [HistoryLists\hlIntOutputDir]
-Count=1
-Item0=obj
+Count=2
+Item0=.\obj
+Item1=obj
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
@@ -216,10 +218,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>
