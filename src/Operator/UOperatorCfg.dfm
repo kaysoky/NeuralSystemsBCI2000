@@ -1,6 +1,6 @@
 object fConfig: TfConfig
-  Left = 327
-  Top = 109
+  Left = 368
+  Top = 250
   Width = 702
   Height = 561
   Caption = 'Configuration ...'
@@ -23,6 +23,7 @@ object fConfig: TfConfig
     Top = 5
     Width = 556
     Height = 521
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     OnChange = CfgTabControlChange
     OnChanging = CfgTabControlChanging
@@ -32,7 +33,7 @@ object fConfig: TfConfig
     Top = 37
     Width = 100
     Height = 25
-    Anchors = [akTop]
+    Anchors = [akTop, akRight]
     Caption = 'Load Parameters'
     TabOrder = 1
     OnClick = bLoadParametersClick
@@ -42,7 +43,7 @@ object fConfig: TfConfig
     Top = 5
     Width = 100
     Height = 25
-    Anchors = [akTop]
+    Anchors = [akTop, akRight]
     Caption = 'Save Parameters'
     TabOrder = 2
     OnClick = bSaveParametersClick
@@ -52,7 +53,7 @@ object fConfig: TfConfig
     Top = 125
     Width = 100
     Height = 25
-    Anchors = [akTop]
+    Anchors = [akTop, akRight]
     Caption = 'Configure Save'
     TabOrder = 3
     OnClick = bConfigureSaveFilterClick
@@ -62,7 +63,7 @@ object fConfig: TfConfig
     Top = 157
     Width = 100
     Height = 25
-    Anchors = [akTop]
+    Anchors = [akTop, akRight]
     Caption = 'Configure Load'
     TabOrder = 4
     OnClick = bConfigureLoadFilterClick

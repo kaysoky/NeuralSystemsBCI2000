@@ -410,7 +410,11 @@ AnsiString valueline;
     else if( ParamLabel[ count - 1 ] != NULL )
       bottomLine = ParamLabel[ count - 1 ]->Top + 3 * ParamLabel[ count - 1 ]->Height;
     if( bottomLine > 0 )
-      CfgTabControl->Height = CfgTabControl->Height + bottomLine - CfgTabControl->DisplayRect.Bottom;
+    {
+      int newHeight = CfgTabControl->Height + bottomLine - CfgTabControl->DisplayRect.Bottom;
+      if( newHeight > CfgTabControl->Height )
+        CfgTabControl->Height = newHeight;
+    }
   }
 #endif // jm 5/03
 
