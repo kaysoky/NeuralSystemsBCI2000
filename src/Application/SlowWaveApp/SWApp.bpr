@@ -9,18 +9,18 @@
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
       obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj 
-      obj\TargetSeq.obj obj\PresParams.obj obj\PresErrors.obj obj\WavePlayer.obj 
-      obj\MidiPlayer.obj obj\StateAccessor.obj obj\PresTaskModel.obj 
-      obj\ArtifactView.obj obj\TextProperties.obj obj\FeedbackView.obj 
-      obj\GUI.obj obj\MarkerView.obj obj\ReinforcementView.obj obj\ScoreView.obj 
-      obj\StimulusView.obj obj\TargetView.obj obj\BackgroundView.obj 
-      obj\GUIStimulusView.obj obj\GUIView.obj obj\GUIBackgroundView.obj 
-      obj\GUIFeedbackView.obj obj\GUIMarkerView.obj obj\GUIReinforcementView.obj 
-      obj\GUIScoreView.obj obj\GUITargetView.obj obj\GUITextProperties.obj 
-      obj\GUIArtifactView.obj obj\GUITextDialog.obj obj\Util.obj 
-      obj\ParamDecl.obj obj\PresModel.obj obj\TaskLogFile.obj 
-      obj\TrialStatistics.obj obj\MeasurementUnits.obj"/>
-    <RESFILES value="SWApp.res Presentation\src\Views\Win32\Views.res"/>
+      obj\WavePlayer.obj obj\MidiPlayer.obj obj\TaskLogFile.obj 
+      obj\TrialStatistics.obj obj\MeasurementUnits.obj obj\ParamDecl.obj 
+      obj\PresErrors.obj obj\PresParams.obj obj\StateAccessor.obj 
+      obj\TargetSeq.obj obj\PresModel.obj obj\PresTaskModel.obj obj\Util.obj 
+      obj\GUITextDialog.obj obj\ArtifactView.obj obj\BackgroundView.obj 
+      obj\FeedbackView.obj obj\GUI.obj obj\MarkerView.obj 
+      obj\ReinforcementView.obj obj\ScoreView.obj obj\StimulusView.obj 
+      obj\TargetView.obj obj\TextProperties.obj obj\GUIView.obj 
+      obj\GUITextProperties.obj obj\GUITargetView.obj obj\GUIStimulusView.obj 
+      obj\GUIScoreView.obj obj\GUIReinforcementView.obj obj\GUIMarkerView.obj 
+      obj\GUIFeedbackView.obj obj\GUIBackgroundView.obj obj\GUIArtifactView.obj"/>
+    <RESFILES value="SWApp.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\UMain.dfm"/>
@@ -30,7 +30,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;Presentation\src;Presentation\src;Presentation\src;..\shared;..\shared;Presentation\src;Presentation\src\Models;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Views\Win32;Presentation\src\Utils\BCI2000;Presentation\src\Utils;Presentation\src;Presentation\src\Models;..\shared;..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\shared;..\..\shared;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -40,8 +40,8 @@
     <USERDEFINES value="_DEBUG;BCI2000;PERUVIAN_BRIGHTNESS_HACK"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SWApp.cpp"/>
-    <INCLUDEPATH value="..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\Win32;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views\Win32;..;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Views;Presentation\Views\Win32;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib;Presentation\src\Utils\BCI2000"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -79,41 +79,41 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\TargetSeq.cpp" FORMNAME="" UNITNAME="TargetSeq.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\PresParams.cpp" FORMNAME="" UNITNAME="PresParams.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\PresErrors.cpp" FORMNAME="" UNITNAME="PresErrors.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\MidiPlayer.cpp" FORMNAME="" UNITNAME="MidiPlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\StateAccessor.cpp" FORMNAME="" UNITNAME="StateAccessor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Models\PresTaskModel.cpp" FORMNAME="" UNITNAME="PresTaskModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\ArtifactView.cpp" FORMNAME="" UNITNAME="ArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\TextProperties.cpp" FORMNAME="" UNITNAME="TextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\StimulusView.cpp" FORMNAME="" UNITNAME="StimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\TargetView.cpp" FORMNAME="" UNITNAME="TargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIStimulusView.cpp" FORMNAME="" UNITNAME="GUIStimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIView.cpp" FORMNAME="" UNITNAME="GUIView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIBackgroundView.cpp" FORMNAME="" UNITNAME="GUIBackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIFeedbackView.cpp" FORMNAME="" UNITNAME="GUIFeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIMarkerView.cpp" FORMNAME="" UNITNAME="GUIMarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIReinforcementView.cpp" FORMNAME="" UNITNAME="GUIReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIScoreView.cpp" FORMNAME="" UNITNAME="GUIScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUITargetView.cpp" FORMNAME="" UNITNAME="GUITargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUITextProperties.cpp" FORMNAME="" UNITNAME="GUITextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\GUIArtifactView.cpp" FORMNAME="" UNITNAME="GUIArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Utils\BCI2000\GUITextDialog.cpp" FORMNAME="" UNITNAME="GUITextDialog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Utils\Util.cpp" FORMNAME="" UNITNAME="Util" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Views\Win32\Views.res" FORMNAME="" UNITNAME="Views.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\ParamDecl.cpp" FORMNAME="" UNITNAME="ParamDecl" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="Presentation\src\Models\PresModel.cpp" FORMNAME="" UNITNAME="PresModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\TaskLogFile.cpp" FORMNAME="" UNITNAME="TaskLogFile" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\TrialStatistics.cpp" FORMNAME="" UNITNAME="TrialStatistics" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\ParamDecl.cpp" FORMNAME="" UNITNAME="ParamDecl" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\PresErrors.cpp" FORMNAME="" UNITNAME="PresErrors" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\PresParams.cpp" FORMNAME="" UNITNAME="PresParams" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\StateAccessor.cpp" FORMNAME="" UNITNAME="StateAccessor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\TargetSeq.cpp" FORMNAME="" UNITNAME="TargetSeq" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Models\PresModel.cpp" FORMNAME="" UNITNAME="PresModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Models\PresTaskModel.cpp" FORMNAME="" UNITNAME="PresTaskModel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Utils\Util.cpp" FORMNAME="" UNITNAME="Util" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Utils\BCI2000\GUITextDialog.cpp" FORMNAME="" UNITNAME="GUITextDialog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\ArtifactView.cpp" FORMNAME="" UNITNAME="ArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\BackgroundView.cpp" FORMNAME="" UNITNAME="BackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\FeedbackView.cpp" FORMNAME="" UNITNAME="FeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\GUI.cpp" FORMNAME="" UNITNAME="GUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\MarkerView.cpp" FORMNAME="" UNITNAME="MarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\ReinforcementView.cpp" FORMNAME="" UNITNAME="ReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\ScoreView.cpp" FORMNAME="" UNITNAME="ScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\StimulusView.cpp" FORMNAME="" UNITNAME="StimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\TargetView.cpp" FORMNAME="" UNITNAME="TargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\TextProperties.cpp" FORMNAME="" UNITNAME="TextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIView.cpp" FORMNAME="" UNITNAME="GUIView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUITextProperties.cpp" FORMNAME="" UNITNAME="GUITextProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUITargetView.cpp" FORMNAME="" UNITNAME="GUITargetView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIStimulusView.cpp" FORMNAME="" UNITNAME="GUIStimulusView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIScoreView.cpp" FORMNAME="" UNITNAME="GUIScoreView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIReinforcementView.cpp" FORMNAME="" UNITNAME="GUIReinforcementView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIMarkerView.cpp" FORMNAME="" UNITNAME="GUIMarkerView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIFeedbackView.cpp" FORMNAME="" UNITNAME="GUIFeedbackView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIBackgroundView.cpp" FORMNAME="" UNITNAME="GUIBackgroundView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\GUIArtifactView.cpp" FORMNAME="" UNITNAME="GUIArtifactView" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Presentation\Views\Win32\Views.res" FORMNAME="" UNITNAME="Views.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -150,34 +150,38 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=12
-Item0=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item2=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item4=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
-Item7=..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
-Item8=..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
-Item9=..\;..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
-Item10=Presentation\src;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item11=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Count=14
+Item0=Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\Win32;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views\Win32;..;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item4=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item6=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
+Item9=..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
+Item10=..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\;..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
+Item12=Presentation\src;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item13=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=12
-Item0=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item4=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
-Item7=..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
-Item8=..;..\..\SHARED;Presentation\src;Presentation\src\Utils;Presentation\src\Models;Presentation\src\Views;$(BCB)\lib\obj;$(BCB)\lib
-Item9=Presentation\src;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item10=Presentation\src;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item11=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Count=14
+Item0=Presentation;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Views;Presentation\Views\Win32;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib;Presentation\src\Utils\BCI2000
+Item1=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils\Win32;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item6=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
+Item10=..;..\..\SHARED;Presentation\src;Presentation\src\Utils;Presentation\src\Models;Presentation\src\Views;$(BCB)\lib\obj;$(BCB)\lib
+Item11=Presentation\src;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item12=Presentation\src;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item13=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
