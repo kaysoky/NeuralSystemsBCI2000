@@ -37,6 +37,9 @@ void TfEditMatrix::SetDisplayedParam( PARAM* inParam )
   matrix_param_name = matrix_param->GetName();
   cRowsMax->Value = matrix_param->GetNumValuesDimension1();
   cColumnsMax->Value = matrix_param->GetNumValuesDimension2();
+  for( int col = 0; col < StringGrid->ColCount; ++col )
+    for( int row = 0; row < StringGrid->RowCount; ++row )
+      StringGrid->Cells[ col ][ row ] = "";
   UpdateDisplay();
   Unlock();
 }

@@ -36,11 +36,6 @@
 #define USERLEVEL_OFFSETY       50
 #define USERLEVEL_SPACINGY      40
 
-#define ERR_NOERR               0
-#define ERR_MATLOADCOLSDIFF     1
-#define ERR_MATNOTFOUND         2
-
-
 //---------------------------------------------------------------------------
 class TfConfig : public TForm
 {
@@ -60,10 +55,17 @@ __published:	// IDE-managed Components
         void __fastcall bLoadParametersClick(TObject *Sender);
         void __fastcall bEditMatrixClick(TObject *Sender);
         void __fastcall bLoadMatrixClick(TObject *Sender);
+        void __fastcall bSaveMatrixClick(TObject *Sender);
         void __fastcall OnUserLevelChange(TObject *Sender);
         void __fastcall bConfigureSaveFilterClick(TObject *Sender);
         void __fastcall bConfigureLoadFilterClick(TObject *Sender);
 private:	// User declarations
+        enum error
+        {
+          ERR_MATLOADCOLSDIFF = 1,
+          ERR_MATNOTFOUND,
+          ERR_COULDNOTWRITE,
+        };
         PREFERENCES     *preferences;
         PARAMLIST       *paramlist;
       	TLabel	*ParamLabel[MAX_PARAMPERSECTION];
@@ -73,10 +75,17 @@ private:	// User declarations
         TComboBox* ParamComboBox[MAX_PARAMPERSECTION];
         TCheckBox* ParamCheckBox[MAX_PARAMPERSECTION];
 #endif
-      	TButton	*ParamButton[3][MAX_PARAMPERSECTION];
+        enum paramButtonIndex
+        {
+          editMatrix = 0,
+          loadMatrix = 1,
+          saveMatrix = 2,
+
+          numParamButtons // This is the always the last entry.
+        };
+      	TButton	*ParamButton[ numParamButtons ][MAX_PARAMPERSECTION];
       	TTrackBar *ParamUserLevel[MAX_PARAMPERSECTION];
         int     cur_numparamsrendered;
-        int     get_argument(int ptr, char *buf, char *line, int maxlen);
 public:		// User declarations
         __fastcall TfConfig(TComponent* Owner);
         __fastcall ~TfConfig();
@@ -86,7 +95,8 @@ public:		// User declarations
         int     RenderParameters(AnsiString section);
         void    RenderParameter(PARAM *cur_param);
         int     UpdateParameters(AnsiString section);
-        int     LoadMatrix(AnsiString matfilename, PARAM *mat_param);
+        int     LoadMatrix( const AnsiString& matfilename, PARAM* ) const;
+        int     SaveMatrix( const AnsiString& matfilename, PARAM* ) const;
         int     GetUserLevel(PARAM *param);
         void    SetUserLevel(PARAM *param, int cur_userlevel);
 #ifdef TRY_PARAM_INTERPRETATION

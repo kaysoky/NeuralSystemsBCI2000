@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <vector>
 #include <assert>
 
 #include "..\shared\defines.h"
@@ -15,6 +18,9 @@
 #include "UBCIError.h"
 #include "UOperatorUtils.h"
 
+#define MATRIX_EXTENSION ".mat"
+#define MATRIX_FILTER "Space delimited matrix file (*" MATRIX_EXTENSION ")|*" \
+                                         MATRIX_EXTENSION "|Any file (*.*)|*.*";
 using namespace std;
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -33,7 +39,7 @@ int     i, t;
   ParamComment[i]=NULL;
   ParamValue[i]=NULL;
   ParamUserLevel[i]=NULL;
-  for (t=0; t<3; t++)
+  for (t=0; t<numParamButtons; t++)
    ParamButton[t][i]=NULL;
   }
 }
@@ -138,7 +144,7 @@ int     i, t;
      delete(ParamValue[i]);
   if (ParamUserLevel[i])
      delete(ParamUserLevel[i]);
-  for (t=0; t<3; t++)
+  for (t=0; t<numParamButtons; t++)
    {
    if (ParamButton[t][i])
       {
@@ -285,39 +291,38 @@ AnsiString valueline;
            }
         // render the parameter's edit field, depending on the parameter data type
         ParamValue[count]=NULL;
-        ParamButton[0][count]=NULL;
-        ParamButton[1][count]=NULL;
-        ParamButton[2][count]=NULL;
+        ParamButton[editMatrix][count]=NULL;
+        ParamButton[loadMatrix][count]=NULL;
+        ParamButton[saveMatrix][count]=NULL;
         if (strcmpi(cur_param->GetType(), "matrix") == 0)
            {
-           ParamButton[0][count]=new TButton(this);
-           ParamButton[0][count]->Caption="Edit Matrix";
-           ParamButton[0][count]->Left=VALUE_OFFSETX;
-           ParamButton[0][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[0][count]->Width=70;
-           ParamButton[0][count]->Height=21;
-           ParamButton[0][count]->OnClick=bEditMatrixClick;
-           ParamButton[0][count]->Visible=true;
-           ParamButton[0][count]->Parent=CfgTabControl;
-           ParamButton[1][count]=new TButton(this);
-           ParamButton[1][count]->Caption="Load Matrix";
-           ParamButton[1][count]->Left=VALUE_OFFSETX+70+10;
-           ParamButton[1][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[1][count]->Width=70;
-           ParamButton[1][count]->Height=21;
-           ParamButton[1][count]->OnClick=bLoadMatrixClick;
-           ParamButton[1][count]->Visible=true;
-           ParamButton[1][count]->Parent=CfgTabControl;
-           ParamButton[2][count]=new TButton(this);
-           ParamButton[2][count]->Caption="Save Matrix";
-           ParamButton[2][count]->Left=VALUE_OFFSETX+70+10+70+10;
-           ParamButton[2][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           ParamButton[2][count]->Width=70;
-           ParamButton[2][count]->Enabled=false;
-           ParamButton[2][count]->Height=21;
-           // ParamButton[1][count]->OnClick=bEditMatrixClick;
-           ParamButton[2][count]->Visible=true;
-           ParamButton[2][count]->Parent=CfgTabControl;
+           ParamButton[editMatrix][count]=new TButton(this);
+           ParamButton[editMatrix][count]->Caption="Edit Matrix";
+           ParamButton[editMatrix][count]->Left=VALUE_OFFSETX;
+           ParamButton[editMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
+           ParamButton[editMatrix][count]->Width=70;
+           ParamButton[editMatrix][count]->Height=21;
+           ParamButton[editMatrix][count]->OnClick=bEditMatrixClick;
+           ParamButton[editMatrix][count]->Visible=true;
+           ParamButton[editMatrix][count]->Parent=CfgTabControl;
+           ParamButton[loadMatrix][count]=new TButton(this);
+           ParamButton[loadMatrix][count]->Caption="Load Matrix";
+           ParamButton[loadMatrix][count]->Left=VALUE_OFFSETX+70+10;
+           ParamButton[loadMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
+           ParamButton[loadMatrix][count]->Width=70;
+           ParamButton[loadMatrix][count]->Height=21;
+           ParamButton[loadMatrix][count]->OnClick=bLoadMatrixClick;
+           ParamButton[loadMatrix][count]->Visible=true;
+           ParamButton[loadMatrix][count]->Parent=CfgTabControl;
+           ParamButton[saveMatrix][count]=new TButton(this);
+           ParamButton[saveMatrix][count]->Caption="Save Matrix";
+           ParamButton[saveMatrix][count]->Left=VALUE_OFFSETX+70+10+70+10;
+           ParamButton[saveMatrix][count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
+           ParamButton[saveMatrix][count]->Width=70;
+           ParamButton[saveMatrix][count]->Height=21;
+           ParamButton[saveMatrix][count]->OnClick=bSaveMatrixClick;
+           ParamButton[saveMatrix][count]->Visible=true;
+           ParamButton[saveMatrix][count]->Parent=CfgTabControl;
            }
         else if( cur_param->GetNumValues() > 1 )
            {
@@ -409,12 +414,8 @@ AnsiString valueline;
       bottomLine = ParamUserLevel[ count - 1 ]->Top + ParamUserLevel[ count - 1 ]->Height;
     else if( ParamLabel[ count - 1 ] != NULL )
       bottomLine = ParamLabel[ count - 1 ]->Top + 3 * ParamLabel[ count - 1 ]->Height;
-    if( bottomLine > 0 )
-    {
-      int newHeight = CfgTabControl->Height + bottomLine - CfgTabControl->DisplayRect.Bottom;
-      if( newHeight > CfgTabControl->Height )
-        CfgTabControl->Height = newHeight;
-    }
+    if( bottomLine > CfgTabControl->Height )
+      CfgTabControl->Height = bottomLine;
   }
 #endif // jm 5/03
 
@@ -650,7 +651,7 @@ int     i;
  paramname="";
  for (i=0; i<cur_numparamsrendered; i++)
   {
-  if (ParamButton[0][i] == Sender)
+  if (ParamButton[editMatrix][i] == Sender)
      paramname=ParamLabel[i]->Caption;
   }
  // now, given the parameter name, find it's pointer
@@ -672,162 +673,150 @@ int     i;
 // Parameters: Sender - pointer to the sending object
 // Returns:    N/A
 // **************************************************************************
-void __fastcall TfConfig::bLoadMatrixClick(TObject *Sender)
+void
+__fastcall
+TfConfig::bLoadMatrixClick( TObject* inSender )
 {
-AnsiString      paramname, new_matrix;
-PARAM   *matrix_param;
-int     ret;
-int     i;
+  PARAM* param = NULL;
+  for( int i = 0; param == NULL && i < cur_numparamsrendered; ++i )
+    if( inSender == ParamButton[ loadMatrix ][ i ] )
+      param = paramlist->GetParamPtr( ParamLabel[ i ]->Caption.c_str() );
 
- // find out which button the click came from
- // the button tells us about the parameter name
- paramname="";
- for (i=0; i<cur_numparamsrendered; i++)
+  if( param == NULL )
   {
-  if (ParamButton[1][i] == Sender)
-     paramname=ParamLabel[i]->Caption;
-  }
- // now, given the parameter name, find it's pointer
- matrix_param=paramlist->GetParamPtr(paramname.c_str());
- if (!matrix_param)
-    {
-    Application->MessageBox("Could not find parameter", "Internal Error", MB_OK);
+    Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
     return;
-    }
+  }
 
- LoadDialog->DefaultExt=".mat";
- LoadDialog->Filter="Space delimited matrix file (*.mat)|*.mat|Any file (*.*)|*.*";
- if (LoadDialog->Execute())
+  LoadDialog->DefaultExt = MATRIX_EXTENSION;
+  LoadDialog->Filter = MATRIX_FILTER;
+  LoadDialog->Options << ofFileMustExist;
+  if( LoadDialog->Execute() )
+  {
+    int result = LoadMatrix( LoadDialog->FileName, param );
+    switch( result )
     {
-    ret=LoadMatrix(LoadDialog->FileName, matrix_param);
-    if (ret != ERR_NOERR)
-       {
-       if (ret == ERR_MATLOADCOLSDIFF)
-          Application->MessageBox("Number of columns in rows is different", "Error", MB_OK);
-       if (ret == ERR_MATNOTFOUND)
-          Application->MessageBox("Could not open matrix data file", "Error", MB_OK);
-       if ((ret != ERR_MATNOTFOUND) && (ret != ERR_MATLOADCOLSDIFF))
-          Application->MessageBox("Error loading the matrix file", "Error", MB_OK);
-       return;
-       }
+      case ERR_NOERR:
+        break;
+      case ERR_MATLOADCOLSDIFF:
+        Application->MessageBox( "Number of columns in rows is different", "Error", MB_OK );
+        break;
+      case ERR_MATNOTFOUND:
+        Application->MessageBox( "Could not open matrix data file", "Error", MB_OK );
+        break;
+      default:
+        Application->MessageBox("Error loading the matrix file", "Error", MB_OK);
     }
+  }
 }
 
+// **************************************************************************
+// Function:   bSaveMatrixClick
+// Purpose:    Responds to a click on the 'Save Matrix' button
+// Parameters: Sender - pointer to the sending object
+// Returns:    N/A
+// **************************************************************************
+void
+__fastcall
+TfConfig::bSaveMatrixClick( TObject* inSender )
+{
+  PARAM* param = NULL;
+  for( int i = 0; param == NULL && i < cur_numparamsrendered; ++i )
+    if( inSender == ParamButton[ saveMatrix ][ i ] )
+      param = paramlist->GetParamPtr( ParamLabel[ i ]->Caption.c_str() );
+
+  if( param == NULL )
+  {
+    Application->MessageBox( "Could not find parameter", "Internal Error", MB_OK );
+    return;
+  }
+
+  SaveDialog->DefaultExt = MATRIX_EXTENSION;
+  SaveDialog->Filter = MATRIX_FILTER;
+  if( SaveDialog->Execute() )
+  {
+    int result = SaveMatrix( SaveDialog->FileName, param );
+    switch( result )
+    {
+      case ERR_NOERR:
+        break;
+      case ERR_COULDNOTWRITE:
+      default:
+        {
+          AnsiString message;
+          message = "Could not write to file ";
+          message += SaveDialog->FileName;
+          Application->MessageBox( message.c_str(), "Error", MB_OK );
+        }
+        break;
+    }
+  }
+}
 
 // **************************************************************************
 // Function:   LoadMatrix
 // Purpose:    Loads a matrix that is delimited by white spaces
-// Parameters: matfilename   - filename of the matrix file, containing the full path
-//             *matrixstring - pointer to the string that contains the matrix
+// Parameters: - filename of the matrix file, containing the full path
+//             - pointer to the parameter that contains the matrix
 // Returns:    ERR_NOERR - no error
 //             ERR_MATLOADCOLSDIFF - number of columns in different rows is different
-//             ERR_MATNOTFOUND - could not open input matrix file
+//             ERR_MATNOTFOUND - could not open input matrix file or file contains no data
 // **************************************************************************
-int TfConfig::LoadMatrix(AnsiString matfilename, PARAM *mat_param)
+int
+TfConfig::LoadMatrix( const AnsiString& inFileName, PARAM* inParam ) const
 {
-char    line[200000], buf[256];
-FILE    *fp;
-int     ptr, rows, cols, cur_cols, retcode;
-int     cur_col, cur_row;
-
- fp=fopen(matfilename.c_str(), "rb");
- if (!fp) return(ERR_MATNOTFOUND);
-
- // first pass; parsing
- // find out rows and columns
- // check for consistency
- rows=cols=0;
- retcode=ERR_NOERR;
- while (!feof(fp))
+  vector<vector<string> > matrix;
+  
+  ifstream input( inFileName.c_str() );
+  string line;
+  while( getline( input, line ) )
   {
-  fgets(line, 200000, fp);
-  if (AnsiString(line).Trim().Length() > 0)
-     {
-     rows++;
-     ptr=0;
-     cur_cols=0;
-     while (ptr < (int)strlen(line))
-      {
-      ptr=get_argument(ptr, buf, line, strlen(line));
-      if (strlen(buf) != 0)
-         cur_cols++;
-      else
-         break;
-      }
-     if ((cur_cols != cols) && (rows != 1))
-        retcode=ERR_MATLOADCOLSDIFF;
-     cols=cur_cols;
-     }
+    istringstream is( line );
+    vector<string> row;
+    string value;
+    while( is >> value )
+      row.push_back( value );
+    if( !row.empty() )
+      matrix.push_back( row );
   }
+  if( matrix.empty() )
+    return ERR_MATNOTFOUND;
 
- // if there was an error, e.g., inconsistent number of columns, return w/o setting the new matrix
- if (retcode != ERR_NOERR)
-    return(retcode);
+  size_t numRows = matrix.size(),
+         numCols = matrix[ 0 ].size();
+  for( size_t row = 1; row < numRows; ++row )
+    if( matrix[ row ].size() != numCols )
+      return ERR_MATLOADCOLSDIFF;
 
- // set the dimensions of the new matrix size
- mat_param->SetDimensions(rows, cols);
+  inParam->SetDimensions( numRows, numCols );
+  for( size_t row = 0; row < numRows; ++row )
+    for( size_t col = 0; col < numCols; ++col )
+      inParam->SetValue( matrix[ row ][ col ], row, col );
 
- fseek(fp, 0, SEEK_SET);
- cur_row=cur_col=0;
- while (!feof(fp))
-  {
-  fgets(line, 200000, fp);
-  if (AnsiString(line).Trim().Length() > 0)
-     {
-     ptr=0;
-     cur_col=0;
-     while (ptr < (int)strlen(line))
-      {
-      ptr=get_argument(ptr, buf, line, strlen(line));
-      if (strlen(buf) != 0)
-         {
-         mat_param->SetValue(buf, cur_row, cur_col);
-         cur_col++;
-         }
-      else
-         break;
-      }
-     cur_row++;
-     }
-  }
-
- if (fp) fclose(fp);
-
-return(ERR_NOERR);
+  return ERR_NOERR;
 }
 
-
 // **************************************************************************
-// Function:   get_argument
-// Purpose:    parses a line of ASCII
-//             it returns the next token that is being delimited by either
-//             a ' ' or '='
-// Parameters: ptr - index into the line of where to start
-//             buf - destination buffer for the token
-//             line - the whole line
-//             maxlen - maximum length of the line
-// Returns:    the index into the line where the returned token ends
+// Function:   SaveMatrix
+// Purpose:    Saves a matrix to a file, delimited by white spaces
+// Parameters: - filename of the matrix file, containing the full path
+//             - pointer to the parameter that contains the matrix
+// Returns:    ERR_NOERR - no error
+//             ERR_COULDNOTWRITE - could not write matrix to output file
 // **************************************************************************
-int TfConfig::get_argument(int ptr, char *buf, char *line, int maxlen)
+int
+TfConfig::SaveMatrix( const AnsiString& inFileName, PARAM* inParam ) const
 {
- // skip trailing spaces, if any
- while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
-  ptr++;
-
- // go through the string, until we either hit a space, a '=', or are at the end
- while ((line[ptr] != '=') && (line[ptr] != ' ') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
+  ofstream output( inFileName.c_str() );
+  for( size_t row = 0; row < inParam->GetNumValuesDimension1(); ++row )
   {
-  *buf=line[ptr];
-  ptr++;
-  buf++;
+    for( size_t col = 0; col < inParam->GetNumValuesDimension2(); ++col )
+      output << ' ' << setw( 8 ) << inParam->GetValue( row, col );
+    output << endl;
   }
-
- *buf=0;
- return(ptr);
+  return output ? ERR_NOERR : ERR_COULDNOTWRITE;
 }
-
-
-
+//---------------------------------------------------------------------------
 
 void __fastcall TfConfig::bConfigureSaveFilterClick(TObject *Sender)
 {
