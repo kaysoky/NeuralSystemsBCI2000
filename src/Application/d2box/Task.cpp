@@ -1,5 +1,5 @@
 /*************************************************************************
-Task.cpp is the source code for the Right Justified Boxes task
+Task.cpp for the d2box task
 *************************************************************************/
 #include <vcl.h>
 #pragma hdrstop
@@ -15,116 +15,120 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <dos.h>
 #include <math.h>
 
-// #define  DATAGLOVE
+//#define  DATAGLOVE
 
 RegisterFilter( TTask, 3 );
 
 
 TTask::TTask()
+: run( 0 ),
+  vis( NULL ),
+  appl( NULL ),
+#ifdef DATAGLOVE
+  my_glove( new DataGlove ),
+#endif
+  OldRunning( 0 ),
+  OldCurrentTarget( 0 )
 {
-TEMPORARY_ENVIRONMENT_GLUE
-        char line[1024];
+  BEGIN_PARAMETER_DEFINITIONS
+    "UsrTask int PreTrialPause= 10 0 0 0 // "
+      "Duration of Target w/o cursor",
+    "UsrTask int ItiDuration= 10 0 0 0 // "
+      "Duration of Intertrial Interval",
+    "UsrTask int RewardDuration= 10 0 0 0 // "
+      "Duration of PostTrial Feedback",
 
-        run= 0;
+    "UsrTask int FeedbackDuration= 20000 0 0 0 // "
+      "Max Trial Duration",
 
-        vis= NULL;
-        appl= NULL;
+    "UsrTask int BaselineInterval= 1 0 0 2 // "
+      "Intercept Computation 1 = targets 2 = ITI",
+    "UsrTask int TimeLimit= 180 180 0 1000 // "
+      "Time Limit for Runs in seconds",
+    "UsrTask int RestingPeriod= 0 0 0 1 // "
+      "1 defines a rest periuod of data acquisition",
 
-        strcpy(line,"UsrTask int PreTrialPause= 10 0 0 1 // Duration of Target w/o cursor");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int ItiDuration= 10 0 0 1 // Duration of Intertrial Interval");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int RewardDuration= 10 0 0 1 // Duration of PostTrial Feedback");
-        plist->AddParameter2List(line,strlen(line));
+  #ifdef DATAGLOVE
+    "JoyStick string GloveCOMport= COM2 0 % % // "
+      "COM port for 5DT glove",
+    "JoyStick int UseJoyStick= 0 0 0 2 // "
+      "0=brain signals; 1=Joystick; 2=Glove",
+  #else // DATAGLOVE
+    "JoyStick int UseJoyStick= 0 0 0 1 // "
+      "0=brain signals; 1=Joystick",
+  #endif // DATAGLOVE
+    "JoyStick float JoyXgain= 1.0 0 -1000.0 1000.0 // "
+      "Horizontal gain",
+    "JoyStick float JoyYgain= 1.0 0 -1000.0 1000.0 // "
+      "Vertical gain",
+    "JoyStick float XOffset= 0 0 -1000.0 1000.0 // "
+      "horizontal offset for joystick/glove",
+    "JoyStick float YOffset= 0 0 -1000.0 1000.0 // "
+      "horizontal offset for joystick/glove",
 
-        strcpy(line,"UsrTask int FeedbackDuration= 20000 0 0 1 // Max Trial Duration");
-        plist->AddParameter2List(line,strlen(line));
+    "Targets int NumberTargets= 4 0 0 0 // "
+      "Number of Targets",
+    "Targets int IncludeAllTargets= 0 0 0 1 // "
+      "Test all target positions?",
+    "Targets float StartCursorX= 50.0 0 0 100.0 // "
+      "Horizontal Start of Cursor",
+    "Targets float StartCursorY= 50.0 0 0 100.0 // "
+      "Vertical Cursor Starting Position",
+    "Targets matrix TargetPos= 7 4 "
+      "25 25  0 90 "
+      " 0 90 25 25 "
+      "50 50 10 10 "
+      "10 10 50 50 "
+      " 0  0 -1  1 "
+      "-1  1  0  0 "
+      " 0  0  0  0 "
+      " 0 0 100 // Target Position Matrix - Values are 0-100",
 
-        strcpy(line,"UsrTask int BaselineInterval= 1 0 0 1 // Intercept Computation 1 = targets 2 = ITI");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int RestingPeriod= 0 0 0 1   //  1 defines a rest periuod of data acquisition");
-        plist->AddParameter2List(line,strlen(line));
+  #ifdef DATAGLOVE
+    "JoyStick matrix GloveControlX= ",
+      "{t-1 t sign} ", // row labels
+      "{ thumb index middle ring little pitch roll } ", // column labels
+      " -1 0 0 0 0 0 0 ",
+      "  1 0 0 0 0 0 0 ",
+      "  1 1 1 1 1 1 1 ",
+      " 0 0 0 // glove sensor weights for horizontal movement",
 
-        #ifdef DATAGLOVE
-        strcpy(line,"JoyStick string GloveCOMport= COM2 0 0 1    // COM port for 5DT glove");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"JoyStick int UseJoyStick= 0 0 0 1    // 0=brain signals; 1=Joystick; 2=Glove");
-        plist->AddParameter2List(line,strlen(line));
-        #endif
-        #ifndef DATAGLOVE
-        strcpy(line,"JoyStick int UseJoyStick= 0 0 0 1    // 0=brain signals; 1=Joystick");
-        plist->AddParameter2List(line,strlen(line));
-        #endif
-        strcpy(line,"JoyStick float JoyXgain= 1.0 0 -1000.0 1000.0 // Horizontal gain");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"JoyStick float JoyYgain= 1.0 0 -1000.0 1000.0 // Vertical gain");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"JoyStick float XOffset= 0 0 -1000.0 1000.0 // horizontal offset for joystick/glove");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"JoyStick float YOffset= 0 0 -1000.0 1000.0 // horizontal offset for joystick/glove");
-        plist->AddParameter2List(line,strlen(line));
+    "JoyStick matrix GloveControlY= ",
+      "{t-1 t sign} ", // row labels
+      "{ thumb index middle ring little pitch roll } ", // column labels
+      " 0 0 -1 0 0 0 0 ",
+      " 0 0  1 0 0 0 0 ",
+      " 1 1  1 1 1 1 1 ",
+      " 0 0 0 // glove sensor weights for vertical movement",
+  #endif // DATAGLOVE
+  END_PARAMETER_DEFINITIONS
 
-        strcpy(line,"Targets int NumberTargets= 4 0 0 1 // Number of Targets");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"Targets int IncludeAllTargets= 0 0 0 1 // Test all target positions?");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"Targets float StartCursorX= 50.0 0 0 100.0 // Horizontal Start of Cursor");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"Targets float StartCursorY= 50.0 0 0 100.0 // Vertical Cursor Starting Position");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"Targets matrix TargetPos= 7 4 25 25 0 90 0 90 25 25 50 50 10 10 10 10 50 50 0 0 -1 1 -1 1 0 0 0 0 0 0 // Target Position Matrix - Values are 0-100");
-        plist->AddParameter2List(line,strlen(line));
+  BEGIN_STATE_DEFINITIONS
+  #ifdef DATAGLOVE
+    "GloveSensor1 8 0 0 0",
+    "GloveSensor2 8 0 0 0",
+    "GloveSensor3 8 0 0 0",
+    "GloveSensor4 8 0 0 0",
+    "GloveSensor5 8 0 0 0",
+    "GloveSensor6 8 0 0 0",
+    "GloveSensor7 8 0 0 0",
+  #endif // DATAGLOVE
 
-        #ifdef DATAGLOVE
-        strcpy(line, "JoyStick matrix GloveControlX= "
-                     "{t-1 t sign} " // row labels
-                     "{ thumb index middle ring little pitch roll } " // column labels
-                     " -1 0 0 0 0 0 0 "
-                     "  1 0 0 0 0 0 0 "
-                     "  1 1 1 1 1 1 1 "
-                     " // glove sensor weights for horizontal movement");
-        plist->AddParameter2List(line,strlen(line));
+    "TargetCode 5 0 0 0",
+    "ResultCode 5 0 0 0",
+    "StimulusTime 16 17528 0 0",
+    "Feedback 2 0 0 0",
+    "IntertrialInterval 2 1 0 0",
+    "RestPeriod 2 0 0 0",
+    "CursorPosX 16 0 0 0",
+    "CursorPosY 16 0 0 0",
 
-        strcpy(line, "JoyStick matrix GloveControlY= "
-                     "{t-1 t sign} " // row labels
-                     "{ thumb index middle ring little pitch roll } " // column labels
-                     " 0 0 -1 0 0 0 0 "
-                     " 0 0  1 0 0 0 0 "
-                     " 1 1  1 1 1 1 1 "
-                     " // glove sensor weights for vertical movement");
-        plist->AddParameter2List(line,strlen(line));
-        slist->AddState2List("GloveSensor1 8 0 0 0\n");
-        slist->AddState2List("GloveSensor2 8 0 0 0\n");
-        slist->AddState2List("GloveSensor3 8 0 0 0\n");
-        slist->AddState2List("GloveSensor4 8 0 0 0\n");
-        slist->AddState2List("GloveSensor5 8 0 0 0\n");
-        slist->AddState2List("GloveSensor6 8 0 0 0\n");
-        slist->AddState2List("GloveSensor7 8 0 0 0\n");
-        #endif
+    "Xadapt 16 0 0 0",
+    "Yadapt 16 0 0 0",
+    "AdaptCode 5 0 0 0",
+  END_STATE_DEFINITIONS
 
-        slist->AddState2List("TargetCode 5 0 0 0\n");
-        slist->AddState2List("ResultCode 5 0 0 0\n");
-        slist->AddState2List("StimulusTime 16 17528 0 0\n");
-        slist->AddState2List("Feedback 2 0 0 0\n");
-        slist->AddState2List("IntertrialInterval 2 1 0 0\n");
-        slist->AddState2List("RestPeriod 2 0 0 0\n");
-        slist->AddState2List("CursorPosX 16 0 0 0\n");
-        slist->AddState2List("CursorPosY 16 0 0 0\n");
-
-        slist->AddState2List("Xadapt 16 0 0 0\n");
-        slist->AddState2List("Yadapt 16 0 0 0\n");
-        slist->AddState2List("AdaptCode 5 0 0 0 \n");
-
-        #ifdef DATAGLOVE
-        my_glove=new DataGlove();
-        #endif
-
-        SetUsr( plist, slist );
-
-        OldRunning=0;
-        OldCurrentTarget=0;
+  SetUsr( Parameters, States );
 }
 
 //-----------------------------------------------------------------------------
@@ -161,10 +165,10 @@ void TTask::Preflight( const SignalProperties& inputProperties,
   if (Parameter( "UseJoystick" ) == 2)
      {
      PreflightCondition( my_glove->GlovePresent(AnsiString((const char *)Parameter("GloveCOMport"))) );
-     PreflightCondition( Parameter("GloveControlX")->GetNumValuesDimension1() == 3);
-     PreflightCondition( Parameter("GloveControlX")->GetNumValuesDimension2() == MAX_GLOVESENSORS);
-     PreflightCondition( Parameter("GloveControlY")->GetNumValuesDimension1() == 3);
-     PreflightCondition( Parameter("GloveControlY")->GetNumValuesDimension2() == MAX_GLOVESENSORS);
+     PreflightCondition( Parameter("GloveControlX")->GetNumRows() == 3);
+     PreflightCondition( Parameter("GloveControlX")->GetNumColumns() == MAX_GLOVESENSORS);
+     PreflightCondition( Parameter("GloveControlY")->GetNumRows() == 3);
+     PreflightCondition( Parameter("GloveControlY")->GetNumColumns() == MAX_GLOVESENSORS);
      }
   #endif
 
@@ -177,51 +181,48 @@ void TTask::Initialize()
 {
 TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
-        BCIDtry *bcidtry=NULL;
         AnsiString COMport;
-        char FName[120];
-        char slash[2];
         time_t ctime;
         struct tm *tblock;
         int i,j;
 
-        PtpDuration=       atoi(plist->GetParamPtr("PreTrialPause")->GetValue());
-        ItiDuration=       atoi(plist->GetParamPtr("ItiDuration")->GetValue());
-        OutcomeDuration=   atoi(plist->GetParamPtr("RewardDuration")->GetValue());
-        FeedbackDuration=  atoi(plist->GetParamPtr("FeedbackDuration")->GetValue() );
-        Ntargets=          atoi(plist->GetParamPtr("NumberTargets")->GetValue());
-        CursorStartX=      atof(plist->GetParamPtr("StartCursorX")->GetValue());
-        CursorStartY=      atof(plist->GetParamPtr("StartCursorY")->GetValue());
-        targetInclude=     atoi(plist->GetParamPtr("IncludeAllTargets")->GetValue() );
-        BaselineInterval=  atoi(plist->GetParamPtr("BaselineInterval")->GetValue());
-        Resting=           atoi(plist->GetParamPtr("RestingPeriod")->GetValue());
+        PtpDuration=       Parameter( "PreTrialPause" );
+        ItiDuration=       Parameter( "ItiDuration" );
+        OutcomeDuration=   Parameter( "RewardDuration" );
+        FeedbackDuration=  Parameter( "FeedbackDuration" );
+        Ntargets=          Parameter( "NumberTargets" );
+        CursorStartX=      Parameter( "StartCursorX" );
+        CursorStartY=      Parameter( "StartCursorY" );
+        targetInclude=     Parameter( "IncludeAllTargets" );
+        BaselineInterval=  Parameter( "BaselineInterval" );
+        Resting=           Parameter( "RestingPeriod" );
 
-        timelimit=         atof(plist->GetParamPtr("TimeLimit")->GetValue());
+        timelimit=         Parameter( "TimeLimit" );
 
-        FInit= AnsiString (plist->GetParamPtr("FileInitials")->GetValue());
-        SSes = AnsiString (plist->GetParamPtr("SubjectSession")->GetValue());
-        SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
+        FInit= ( const char* )Parameter( "FileInitials" );
+        SSes = ( const char* )Parameter( "SubjectSession" );
+        SName= ( const char* )Parameter( "SubjectName" );
 
-        useJoy= atoi(plist->GetParamPtr("UseJoyStick")->GetValue());
+        useJoy= Parameter( "UseJoyStick" );
         #ifdef DATAGLOVE
         if ((useJoy < 0) || (useJoy > 2))
-        bcierr << "UseJoyStick has to be 0, 1, or 2" << std::endl;
+          bcierr << "UseJoyStick has to be 0, 1, or 2" << std::endl;
         #else
         if ((useJoy < 0) || (useJoy > 1))
-        bcierr << "UseJoyStick has to be 0, or 1" << std::endl;
+          bcierr << "UseJoyStick has to be 0, or 1" << std::endl;
         #endif
 
         #ifdef DATAGLOVE
         // transfer the weights for glove into local variables
         if (useJoy == 2)
            {
-           COMport=AnsiString(plist->GetParamPtr("GloveCOMport")->GetValue());
+           COMport= ( const char* )Parameter( "GloveCOMport" );
            for (int sensor=0; sensor<MAX_GLOVESENSORS; sensor++)
             {
             for (int i=0; i<3; i++)
              {
-             GloveControlX[i][sensor]=atof(Parameter("GloveControlX")->GetValue(i, sensor));
-             GloveControlY[i][sensor]=atof(Parameter("GloveControlY")->GetValue(i, sensor));
+             GloveControlX[i][sensor]=Parameter("GloveControlX", i, sensor);
+             GloveControlY[i][sensor]=Parameter("GloveControlY", i, sensor);
              }
             AnsiString glovestatename="GloveSensor"+AnsiString(sensor+1);
             State(glovestatename.c_str())=0;
@@ -229,10 +230,10 @@ TEMPORARY_ENVIRONMENT_GLUE
            }
         #endif
 
-        joy_xgain= atof(plist->GetParamPtr("JoyXgain")->GetValue());
-        joy_ygain= atof(plist->GetParamPtr("JoyYgain")->GetValue());
-        XOffset= atof(plist->GetParamPtr("XOffset")->GetValue());
-        YOffset= atof(plist->GetParamPtr("YOffset")->GetValue());
+        joy_xgain= Parameter( "JoyXgain" );
+        joy_ygain= Parameter( "JoyYgain" );
+        XOffset= Parameter( "XOffset" );
+        YOffset= Parameter( "YOffset" );
 
         n_tmat= Ntargets;
         m_tmat= 7;              // was 4;   - now includes width and height  and adaptation code
@@ -241,38 +242,37 @@ TEMPORARY_ENVIRONMENT_GLUE
         {
                 for(j=0; j<n_tmat; j++)
                 {
-                        tmat[i][j]= atoi(plist->GetParamPtr("TargetPos")->GetValue(i,j) );
+                        tmat[i][j]= Parameter("TargetPos",i,j);
                 }
         }
 
         if( appl == NULL )
         {
-                bcidtry= new BCIDtry();
+                char FName[120];
+                BCIDtry bcidtry;
 
-                bcidtry->SetDir( FInit.c_str() );
-                bcidtry->ProcPath();
-                bcidtry->SetName( SName.c_str() );
-                bcidtry->SetSession( SSes.c_str() );
+                bcidtry.SetDir( FInit.c_str() );
+                bcidtry.ProcPath();
+                bcidtry.SetName( SName.c_str() );
+                bcidtry.SetSession( SSes.c_str() );
 
-                strcpy(FName, bcidtry->ProcSubDir() );
+                strcpy(FName, bcidtry.ProcSubDir() );
 
-                slash[0]= 0x5c;
-                slash[1]= 0x00;
-                strcat(FName,slash);
+                strcat(FName,"\\");
 
                 AName= SName + "S" + SSes + ".apl";
                 strcat(FName, AName.c_str() );               // cpy vs cat
 
-                if( (appl= fopen(FName,"a+")) == NULL)       // report error if NULL
+                if( (appl= fopen(FName,"a+")) != NULL)       // don't crash if NULL
                 {
-                        bcidtry->FileError( Applic, FName );
+                  fprintf(appl,"%s \n",AName.c_str() );
+
+                  ctime= time(NULL);
+                  tblock= localtime(&ctime);
+                  fprintf(appl,"%s \n", asctime( tblock ) );
                 }
-
-                fprintf(appl,"%s \n",AName.c_str() );
-
-                ctime= time(NULL);
-                tblock= localtime(&ctime);
-                fprintf(appl,"%s \n", asctime( tblock ) );
+                else
+                  bcierr << "Could not open " << FName << " for writing" << std::endl;
         }
 
         bitrate.Initialize(Ntargets);
@@ -342,7 +342,6 @@ TEMPORARY_ENVIRONMENT_GLUE
         #endif
 
         WriteStateValues( svect );
-        if (bcidtry) delete bcidtry;
 }
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
