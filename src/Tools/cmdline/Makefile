@@ -30,7 +30,8 @@ TARGETS = obj\bci_tool.lib \
           P3TemporalFilter.exe \
           UPeakDetector.exe \
           SWFilter.exe \
-          FFTFilter.exe
+          FFTFilter.exe \
+          TransmissionFilter.exe
           
 BCIOBJ  = obj\bci_tool.obj \
           obj\UParameter.obj \
@@ -49,10 +50,11 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\FFTLibWrap.obj 
 
 BCIROOT = ..\..
+SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
 SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib
 PATHOBJ = .\obj
-PATHCPP = .;${BCIROOT}\shared;${SIGPROC}
+PATHCPP = .;${BCIROOT}\shared;${SIGPROC};${SRCROOT}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib
 
@@ -68,8 +70,8 @@ RM  = del
 .path.cpp=${PATHCPP}
 
 {$(PATHOBJ)}.obj.exe:
-    ${MAKE} obj\bci_tool.lib
-    ${MAKE} obj\bci_filtertool.obj
+	${MAKE} obj\bci_tool.lib
+	${MAKE} obj\bci_filtertool.obj
 	${LD} $< obj\bci_filtertool.obj obj\bci_tool.lib
 	
 .cpp.obj:
@@ -82,7 +84,7 @@ obj\bci_tool.lib: ${BCIOBJ}
 	&${AR} $@ +$**
 
 clean:
-	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.MAK
+	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK
 
 distclean: clean
-    -${RM} *.exe *.~* *.tds *.il*
+	-${RM} *.exe *.~* *.tds *.il*
