@@ -17,7 +17,7 @@
       tee.bpi teeqr.bpi ibxpress.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
       inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi 
       dbexpress.bpi indy.bpi bcb2kaxserver.bpi dbxcds.bpi visualclx.bpi 
-      visualdbclx.bpi frontend.bpi adortl.bpi"/>
+      visualdbclx.bpi adortl.bpi"/>
     <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
