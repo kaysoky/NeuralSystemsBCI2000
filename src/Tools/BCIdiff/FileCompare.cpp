@@ -118,7 +118,7 @@ bool FileCompare::paramsDiffer()
                 }
                 else
                 {
-                        cout<<"Parameter "<<*i<<"does not exist in both files."<<'\n';
+                        cout<<"Parameter "<<*i<<" does not exist in both files."<<'\n';
                         cout<<'\n';
                         differ=true;
                 }
