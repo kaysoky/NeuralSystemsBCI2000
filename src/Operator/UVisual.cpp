@@ -24,6 +24,11 @@
 //          Aug 8, 2003, jm:
 //          Cleared up use of registry.
 //
+//          Nov 20, 2003, jm:
+//          Added context menu to ease interactive configuration of graph
+//          display properties.
+//          Introduced colorized y axis ticks.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -177,6 +182,7 @@ VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
   numDisplayChannels( 0 ),
   bottomGroup( 0 ),
   showBaselines( false ),
+  displayColors( true ),
   channelGroupSize( 1 ),
   minValue( minValueDefault ),
   maxValue( maxValueDefault ),
@@ -237,7 +243,10 @@ void
 VISUAL::VISUAL_GRAPH::Restore()
 {
   if( form == NULL )
+  {
     form = new TVisForm;
+    BuildContextMenu();
+  }
   VISUAL_BASE::Restore();
   form->OnKeyUp = FormKeyUp;
   form->OnResize = FormResize;
@@ -273,12 +282,12 @@ bool
 VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
 {
   GenericSignal newData;
-  
+
   if( !newData.ReadBinary( is ) )
     return false;
   if( newData.Channels() < 1 || newData.MaxElements() < 1 )
     return true;
-    
+
   if( !( data >= newData ) )
   {
     if( newData.MaxElements() > numSamples )
@@ -355,6 +364,182 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
     ::InvalidateRect( form->Handle, &invalidRect, false );
 
   return true;
+}
+
+inline
+void
+VISUAL::VISUAL_GRAPH::SyncGraphics()
+{
+  dataRect = TRect( labelWidth, 0, form->ClientWidth, form->ClientHeight );
+  dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
+  dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
+}
+
+struct VISUAL::VISUAL_GRAPH::MenuItemEntry VISUAL::VISUAL_GRAPH::sMenuItems[] =
+{
+  { EnlargeSignal, EnlargeSignal_Enabled, NULL, "Enlarge Signal" },
+  { ReduceSignal, ReduceSignal_Enabled, NULL, "Reduce Signal" },
+  { NULL, NULL, NULL, "-" },
+  { LessChannels, LessChannels_Enabled, NULL, "Less Channels" },
+  { MoreChannels, MoreChannels_Enabled, NULL, "More Channels" },
+  { NULL, NULL, NULL, "-" },
+  { ToggleDisplayMode, NULL, NULL, "Toggle Display Mode" },
+  { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
+  { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
+};
+
+void
+VISUAL::VISUAL_GRAPH::BuildContextMenu()
+{
+  assert( form != NULL );
+  TPopupMenu* menu = new TPopupMenu( form );
+  for( int i = 0; i < sizeof( sMenuItems ) / sizeof( *sMenuItems ); ++i )
+  {
+    TMenuItem* newItem = new TMenuItem( menu );
+    menu->Items->Add( newItem );
+    newItem->Caption = sMenuItems[ i ].mCaption;
+    newItem->Tag = i;
+    newItem->OnClick = PopupMenuItemClick;
+  }
+  menu->OnPopup = PopupMenuPopup;
+  form->PopupMenu = menu;
+}
+
+void
+__fastcall
+VISUAL::VISUAL_GRAPH::PopupMenuPopup( TObject* inSender )
+{
+  TPopupMenu* menu = dynamic_cast<TPopupMenu*>( inSender );
+  assert( menu != NULL );
+  for( int i = 0; i < menu->Items->Count && i < sizeof( sMenuItems ) / sizeof( *sMenuItems ); ++i )
+  {
+    if( sMenuItems[ i ].mGetChecked )
+      menu->Items->Items[ i ]->Checked = ( this->*sMenuItems[ i ].mGetChecked )();
+    if( sMenuItems[ i ].mGetEnabled )
+      menu->Items->Items[ i ]->Enabled = ( this->*sMenuItems[ i ].mGetEnabled )();
+  }
+}
+
+void
+__fastcall
+VISUAL::VISUAL_GRAPH::PopupMenuItemClick( TObject* inSender )
+{
+  TMenuItem* item = dynamic_cast<TMenuItem*>( inSender );
+  assert( item != NULL );
+  MenuItemEntry::MenuAction action = sMenuItems[ item->Tag ].mAction;
+  assert( action != NULL );
+  ( this->*action )();
+}
+
+void
+VISUAL::VISUAL_GRAPH::ToggleDisplayMode()
+{
+  SetDisplayMode( DisplayMode( ( displayMode + 1 ) % numDisplayModes ) );
+}
+
+void
+VISUAL::VISUAL_GRAPH::ToggleBaselines()
+{
+  showBaselines = !showBaselines;
+  form->Invalidate();
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ToggleBaselines_Enabled() const
+{
+  return displayMode == polyline;
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ToggleBaselines_Checked() const
+{
+  return showBaselines;
+}
+
+void
+VISUAL::VISUAL_GRAPH::ToggleColor()
+{
+  displayColors = !displayColors;
+  form->Invalidate();
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ToggleColor_Enabled() const
+{
+  return displayMode == polyline;
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ToggleColor_Checked() const
+{
+  return displayColors;
+}
+
+void
+VISUAL::VISUAL_GRAPH::EnlargeSignal()
+{
+  float offset = ( minValue + maxValue ) / 2,
+        unit = maxValue - offset;
+  unit /= 2;
+  minValue = offset - unit;
+  maxValue = offset + unit;
+  form->Invalidate();
+}
+
+bool
+VISUAL::VISUAL_GRAPH::EnlargeSignal_Enabled() const
+{
+  return maxValue > 1 && minValue < -1;
+}
+
+void
+VISUAL::VISUAL_GRAPH::ReduceSignal()
+{
+  float offset = ( minValue + maxValue ) / 2,
+        unit = maxValue - offset;
+  unit *= 2;
+  minValue = offset - unit;
+  maxValue = offset + unit;
+  form->Invalidate();
+}
+
+bool
+VISUAL::VISUAL_GRAPH::ReduceSignal_Enabled() const
+{
+  return maxValue < 1 << 16 && maxValue > -( 1 << 16 );
+}
+
+void
+VISUAL::VISUAL_GRAPH::LessChannels()
+{
+  SetDisplayGroups( numDisplayGroups / 2 );
+}
+
+bool
+VISUAL::VISUAL_GRAPH::LessChannels_Enabled() const
+{
+  return numDisplayGroups > 1;
+}
+
+void
+VISUAL::VISUAL_GRAPH::MoreChannels()
+{
+  SetDisplayGroups( numDisplayGroups * 2 );
+}
+
+bool
+VISUAL::VISUAL_GRAPH::MoreChannels_Enabled() const
+{
+  return numDisplayGroups < data.Channels() / channelGroupSize;
+}
+
+void
+VISUAL::VISUAL_GRAPH::SetDisplayGroups( int inDisplayGroups )
+{
+  numDisplayGroups = inDisplayGroups;
+  numDisplayChannels = min( data.Channels(), numDisplayGroups * channelGroupSize );
+  SetBottomGroup( bottomGroup );
+  form->Invalidate();
 }
 
 void
@@ -435,18 +620,12 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
         ::DeleteObject( *i );
     }
   } gdi( numGdiObj ),
-    signalPens( data.Channels() );
+    signalPens( data.Channels() ),
+    signalBrushes( data.Channels() );
 
   // Background properties
   const TColor backgroundColor = clBlack;
   gdi[ backgroundBrush ] = ::CreateSolidBrush( backgroundColor );
-
-  // Signal properties
-  const TColor signalColors[] =
-  { clRed, clGreen, clBlue, clWhite, clAqua, clOlive, clNavy, clPurple };
-  size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
-  for( size_t i = 0; i < data.Channels(); ++i )
-    signalPens[ i ] = ::CreatePen( PS_SOLID, 0, signalColors[ i % numColors ] );
 
   // Cursor properties
   const TColor cursorColor = clYellow;
@@ -467,7 +646,27 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
                       false, false, false, ANSI_CHARSET, OUT_RASTER_PRECIS,
                       CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                       VARIABLE_PITCH | FF_SWISS, NULL );
-                      
+
+  // Signal properties
+  if( displayColors )
+  {
+    const TColor signalColors[] =
+    { clRed, clGreen, clBlue, clWhite, clAqua, clOlive, clNavy, clPurple };
+    size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
+    for( size_t i = 0; i < data.Channels(); ++i )
+    {
+      int colorIndex = i % numColors;
+      signalPens[ i ] = ::CreatePen( PS_SOLID, 0, signalColors[ colorIndex ] );
+      signalBrushes[ i ] = ::CreateSolidBrush( signalColors[ colorIndex ] );
+    }
+  }
+  else
+  {
+    HGDIOBJ pen = ::CreatePen( PS_SOLID, 0, clWhite );
+    for( size_t i = 0; i < data.Channels(); ++i )
+      signalPens[ i ] = pen;
+  }
+
   // Do the drawing.
   TVisForm* Form = static_cast<TVisForm*>( Sender );
   TRect formRect = Form->ClientRect;
@@ -536,7 +735,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
         }
       }
     } break;
-    
+
     case colorfield:
     {
       struct // A wrapper to locally define a function (which is not possible otherwise).
@@ -605,7 +804,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
           ::DeleteObject( brush );
         }
     } break;
-    
+
     default:
       assert( false );
   }
@@ -616,7 +815,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
     size_t cursorSample = sampleCursor;
     if( cursorSample == 0 )
       cursorSample = numSamples;
-      
+
     RECT cursorRect =
     {
       SampleLeft( cursorSample ) - cursorWidth,
@@ -647,7 +846,8 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
         int nextLabelPos = dataRect.bottom;
         for( size_t i = 0; i < numDisplayGroups; ++i )
         {
-          int tickY = ( GroupBottom( i ) + GroupBottom( i + 1 ) ) / 2;
+          int channelNumber = ( bottomGroup + i ) * channelGroupSize,
+              tickY = ( GroupBottom( i ) + GroupBottom( i + 1 ) ) / 2;
           RECT tickRect =
           {
             labelWidth - axisWidth - tickLength,
@@ -655,12 +855,19 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
             labelWidth - axisWidth,
             tickY + tickWidth / 2
           };
-          ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
+          if( displayColors && channelGroupSize == 1 )
+          {
+            tickRect.top -= 1;
+            tickRect.bottom += 1;
+            ::FillRect( dc, &tickRect, signalBrushes[ channelNumber ] );
+          }
+          else
+            ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
           if( tickY < nextLabelPos )
           {
             tickRect.right -= 2 * axisWidth;
             nextLabelPos = tickY - ::DrawText( dc,
-               IntToStr( ( bottomGroup + i ) * channelGroupSize + channelBase ).c_str(),
+               IntToStr( channelNumber + channelBase ).c_str(),
                -1, &tickRect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP );
           }
         }
@@ -767,7 +974,7 @@ VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
 {
   if( is.peek() != VISTYPE::MEMO )
     return false;
-    
+
   is.ignore( 3 );
   int sourceID = is.get();
   VISUAL_MEMO* visual = dynamic_cast<VISUAL_MEMO*>( visuals[ sourceID ] );

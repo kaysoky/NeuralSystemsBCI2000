@@ -21,6 +21,11 @@
 //          Added the polyline3d/colorfield display types for a graph to support
 //          FFT data.
 //
+//          Nov 20, 2003, jm:
+//          Added context menu to ease interactive configuration of graph
+//          display properties.
+//          Introduced colorized y axis ticks.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UVisualH
 #define UVisualH
@@ -85,7 +90,7 @@ class VISUAL
     static config_container visconfigs;
     virtual void SetConfig( config_settings& );
   };
-  
+
  private:
   class VISUAL_GRAPH : public VISUAL_BASE
   {
@@ -104,10 +109,12 @@ class VISUAL
    protected:
     enum DisplayMode
     {
-      polyline,
+      polyline = 0,
       colorfield,
+      /* ... */
+      numDisplayModes
     } displayMode;
-    
+
    public:
     VISUAL_GRAPH( id_type sourceID );
     virtual ~VISUAL_GRAPH();
@@ -119,7 +126,43 @@ class VISUAL
     virtual void Restore();
     virtual void Save() const;
 
+    // User interaction.
    private:
+    struct MenuItemEntry
+    {
+      typedef void ( VISUAL::VISUAL_GRAPH::*MenuAction )();
+      typedef bool ( VISUAL::VISUAL_GRAPH::*MenuStateGetter )();
+      MenuAction       mAction;
+      MenuStateGetter  mGetEnabled,
+                       mGetChecked;
+      const char*      mCaption;
+    };
+    static struct MenuItemEntry sMenuItems[];
+    void BuildContextMenu();
+
+    void EnlargeSignal();
+    bool EnlargeSignal_Enabled() const;
+
+    void ReduceSignal();
+    bool ReduceSignal_Enabled() const;
+
+    void MoreChannels();
+    bool MoreChannels_Enabled() const;
+
+    void LessChannels();
+    bool LessChannels_Enabled() const;
+
+    void ToggleDisplayMode();
+
+    void ToggleBaselines();
+    bool ToggleBaselines_Enabled() const;
+    bool ToggleBaselines_Checked() const;
+
+    void ToggleColor();
+    bool ToggleColor_Enabled() const;
+    bool ToggleColor_Checked() const;
+
+    void SetDisplayGroups( int );
     void SetBottomGroup( int );
     void SetDisplayMode( DisplayMode );
 
@@ -128,12 +171,7 @@ class VISUAL
    private:
     int dataWidth, dataHeight;
     RECT dataRect;
-    void SyncGraphics()
-    {
-      dataRect = TRect( labelWidth, 0, form->ClientWidth, form->ClientHeight );
-      dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
-      dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
-    }
+    void SyncGraphics();
 
     int SampleLeft( int s )
     { return labelWidth + ( s * dataWidth ) / ( int )numSamples; }
@@ -159,7 +197,8 @@ class VISUAL
    private:
     bool   showCursor,
            wrapAround,
-           showBaselines;
+           showBaselines,
+           displayColors;
     size_t numSamples,
            sampleCursor,
            numDisplayGroups,
@@ -190,6 +229,8 @@ class VISUAL
     void __fastcall FormResize( TObject* );
     void __fastcall FormPaint( TObject* );
     void __fastcall FormKeyUp( TObject*, WORD&, TShiftState );
+    void __fastcall PopupMenuPopup( TObject* );
+    void __fastcall PopupMenuItemClick( TObject* );
     class TVisForm : public TForm
     {
      public:
