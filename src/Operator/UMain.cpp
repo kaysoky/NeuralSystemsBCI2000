@@ -51,7 +51,7 @@
 #include <Registry.hpp>
 
 #include "..\shared\defines.h"
-#include "defines.h"
+#include "operator.h"
 
 #include "USysStatus.h"
 #include "USysLog.h"

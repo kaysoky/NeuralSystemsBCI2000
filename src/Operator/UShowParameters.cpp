@@ -6,7 +6,7 @@
 #include <Registry.hpp>
 
 #include "..\shared\defines.h"       // global defines
-#include "defines.h"                    // operator specific defines
+#include "operator.h"                    // operator specific defines
 
 #include "UShowParameters.h"
 //---------------------------------------------------------------------------
