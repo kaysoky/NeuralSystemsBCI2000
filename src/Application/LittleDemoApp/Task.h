@@ -8,6 +8,8 @@
 #include "UBitRate.h"
 #include "UCoreComm.h"
 #include "UGenericVisualization.h"
+#include "MidiPlayer.h"
+#include "WavePlayer.h"
 #include "UGenericFilter.h"
 
 #include <vcl/series.hpp>
@@ -23,12 +25,14 @@ class TTask : public GenericFilter
         TProgressBar    *progressbar;
         TChart          *chart;
         TLineSeries     *series;
+        TWavePlayer     wavePlayer;
+        TMidiPlayer     midiPlayer;
 
  public:
           TTask();
   virtual ~TTask();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };

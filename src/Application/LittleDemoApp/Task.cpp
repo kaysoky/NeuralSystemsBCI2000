@@ -5,6 +5,8 @@
 #include "UState.h"
 #include "UBCITime.h"
 
+#include <assert>
+
 RegisterFilter( TTask, 3 );
 
 TTask::TTask()
@@ -16,9 +18,13 @@ TTask::TTask()
   series( NULL )
 {
  BEGIN_PARAMETER_DEFINITIONS
-   "NeuralMusic int AcousticMode= 10 0 0 1 // Achin's Acoustic Mode :-)",
+   "NeuralMusic int AcousticMode= 1 "
+     "0 0 2 // 0: no sound, 1: MIDI, 2: WAV -- Achin's Acoustic Mode :-)",
+   "NeuralMusic string WaveFile= % "
+     "% % % // sound file in case of WAV mode",
    // has to be in there
-   "NeuralMusic int NumberTargets= 10 0 0 1 // not used",
+   "NeuralMusic int NumberTargets= 10 "
+     "0 0 10 // not used",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -69,9 +75,56 @@ TTask::~TTask( void )
  delete form;
 }
 
+void TTask::Preflight( const SignalProperties& inputProperties,
+                             SignalProperties& outputProperties ) const
+{
+  switch( ( int )Parameter( "AcousticMode" ) )
+  {
+    case 0: // none
+      break;
+    case 1: // Midi
+      break;
+    case 2: // WAV
+      {
+        TWavePlayer testPlayer;
+        switch( testPlayer.AttachFile( Parameter( "WaveFile" ) ) )
+        {
+          case TWavePlayer::noError:
+            break;
+          case TWavePlayer::fileOpeningError:
+            bcierr << "Could not open "
+                   << ( const char* )Parameter( "WaveFile" )
+                   << " as a wave sound file"
+                   << std::endl;
+            break;
+          default:
+            bcierr << "Some general error prevents wave audio playback"
+                   << std::endl;
+        }
+      }
+      break;
+    default:
+      PreflightCondition( false );
+  }
+  PreflightCondition( inputProperties >= SignalProperties( 1, 1 ) );
+  outputProperties = SignalProperties( 0, 0 );
+}
+
 void TTask::Initialize()
 {
  AcousticMode = Parameter( "AcousticMode" );
+ switch( AcousticMode )
+ {
+   case 0: // none
+     break;
+   case 1: // MIDI
+     break;
+   case 2: // WAV
+     wavePlayer.AttachFile( Parameter( "WaveFile" ) );
+     break;
+   default:
+     assert( false );
+ }
 
  delete vis;
  vis= new GenericVisualization;
@@ -100,6 +153,21 @@ int     pitch;
  // send the current pitch to the operator as well
  sprintf(memotext, "Current Pitch: %d\r", pitch);
  vis->SendMemo2Operator(memotext);
+
+ switch( AcousticMode )
+ {
+   case 0: // none
+     break;
+   case 1: // MIDI
+     midiPlayer.Play( pitch );
+     break;
+   case 2: // WAV
+     if( pitch > 128 )
+       wavePlayer.Play();
+     break;
+   default:
+     assert( false );
+ }
 
  return(pitch);
 }

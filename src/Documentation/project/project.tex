@@ -131,7 +131,7 @@ feasible. (This is not a programming contest for computer science gurus !!)
 \section{Work Breakdown Structure}
 
 \begin{figure}[ht]
- \centerline{\scalebox{0.45}{\includegraphics{figures/WBS.eps}}}
+ \centerline{\scalebox{0.45}{\includegraphics{figures/WBS}}}
  \caption{The work breakdown structure for BCI2000}
 \end{figure}
 
@@ -184,7 +184,7 @@ programmers.
 \section{Overview}
 
 \begin{figure}[ht]
- \centerline{\includegraphics{figures/modules.eps}}
+ \centerline{\includegraphics{figures/modules}}
  \caption{The functional modules and their interfaces}
  \label{fig:modules}
 \end{figure}
@@ -223,7 +223,7 @@ byte content descriptor and one-byte descriptor supplement, followed by a 16-bit
 unsigned integer (little endian) that describes the length of the content.
 
 \begin{figure}[ht]
- \centerline{\includegraphics{figures/operator_prot.eps}}
+ \centerline{\includegraphics{figures/operator_prot}}
  \caption{Layout of one message in the protocol}
 \end{figure}
 
@@ -389,13 +389,13 @@ defined) types could be Horizontal Ball, Vertical Ball, Speller Status, etc. A
 visualization type of 255 defines visualization configuration.
 
 \begin{figure}[ht]
- \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization.eps}}}
+ \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization}}}
  \caption{One message in the protocol, if it is of type "visualization data"}
  \label{visualizationprotocol}
 \end{figure}
 
 \begin{figure}[ht]
- \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type1.eps}}}
+ \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type1}}}
  \caption{One message, if visualization type is 1 (i.e., a graph)}
  \label{visualizationprotocol_type1}
 \end{figure}
@@ -412,13 +412,13 @@ point value is then calculated as follows: $value=A*10^{B}$. Figure
 \ref{visualization_type1} illustrates how the data is transferred.
 
 \begin{figure}[ht]
- \centerline{\includegraphics{figures/visualization_type1.eps}}
+ \centerline{\includegraphics{figures/visualization_type1}}
  \caption{Graphical representation of the transmitted visualization data format}
  \label{visualization_type1}
 \end{figure}
 
 \begin{figure}[ht]
- \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type2.eps}}}
+ \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type2}}}
  \caption{One message, if visualization type is 2 (i.e., a text memo)}
  \label{visualizationprotocol_type2}
 \end{figure}
@@ -429,7 +429,7 @@ identifying the process/filter that generated the data. The following ASCII
 text is zero delimited.
 
 \begin{figure}[ht]
- \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type255.eps}}}
+ \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type255}}}
  \caption{One message, if visualization type is 255 (i.e., visualization configuration)}
  \label{visualizationprotocol_type255}
 \end{figure}

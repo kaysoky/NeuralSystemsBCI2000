@@ -8,7 +8,8 @@
       obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\Task.obj obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj"/>
+      obj\Task.obj obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj 
+      obj\WavePlayer.obj obj\MidiPlayer.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -19,7 +20,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -29,8 +30,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="LittleDemoApp.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\shared;..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\shared;..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -69,6 +70,8 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\MidiPlayer.cpp" FORMNAME="" UNITNAME="MidiPlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
