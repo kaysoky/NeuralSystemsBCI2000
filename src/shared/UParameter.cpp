@@ -949,7 +949,7 @@ PARAM::operator=( const PARAM& p )
     values = p.values;
 
     valid = p.valid;
-    changed = true;
+    changed = p.changed;
     archive = p.archive;
     tag = p.tag;
   }
