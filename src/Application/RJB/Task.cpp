@@ -64,19 +64,24 @@ TTask::TTask()
 
   LANGUAGES "French",
             "German",
+            "Dutch",
   BEGIN_LOCALIZED_STRINGS
     "YES",
             "OUI",
             "JA",
+            "JA",
     "NO",
             "NON",
             "NEIN",
+            "NEE",
     "N/A",
+            " - ",
             " - ",
             " - ",
     "Get Ready ...",
             "Appr" ecirc "ter ...",
             "Achtung ...",
+            "Opgepast ...",
   END_LOCALIZED_STRINGS
 
   assert( User == NULL );
