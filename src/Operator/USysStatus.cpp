@@ -16,7 +16,7 @@ void SYSSTATUS::ResetSysStatus()
   for( int i = 0; i < numModules; ++i )
   {
     Status[ i ] = "no status available";
-    Address[ i ] = "N/A";
+    Address[ i ] = "";
     EOS[ i ] = false;
     INI[ i ] = false;
     NumMessagesRecv[ i ] = 0;
