@@ -191,7 +191,6 @@ int CORECOMM::PublishParameter(const PARAM *param) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
-char            line[512];
 int             i;
 
  if (!CoreSocket) return(0);
@@ -207,9 +206,9 @@ int             i;
  pStream=new TWinSocketStream(CoreSocket->Socket, 5000);
  if (!pStream) return(0);
 
- strcpy(line, param->GetParamLine().c_str());                  // copy its ASCII representation to variable line
- strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
- coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
+ std::string line = param->GetParamLine();
+ strncpy(coremessage->GetBufPtr(line.length()), line.c_str(), line.length()); // copy line into the coremessage
+ coremessage->SetLength(line.length());         // set the length of the coremessage
  coremessage->SendCoreMessage(pStream);                        // and send it out
 
  delete coremessage;
@@ -230,7 +229,6 @@ int CORECOMM::PublishParameters(const PARAMLIST *paramlist)
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
-char            line[512];
 const PARAM     *cur_param;
 
  if (!CoreSocket) return(0);
@@ -248,9 +246,9 @@ const PARAM     *cur_param;
  for (size_t i=0; i<paramlist->GetNumParameters(); i++)
   {
   cur_param=paramlist->GetParamPtr(i);                          // get the i'th parameter
-  strcpy(line, cur_param->GetParamLine().c_str());              // copy its ASCII representation to variable line
-  strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
-  coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
+  std::string line = cur_param->GetParamLine();
+  strcpy(coremessage->GetBufPtr(line.length()), line.c_str());   // copy line into the coremessage
+  coremessage->SetLength((unsigned short)line.length());         // set the length of the coremessage
   coremessage->SendCoreMessage(pStream);                        // and send it out
   }
 
@@ -273,7 +271,6 @@ int CORECOMM::PublishStates(const STATELIST *statelist) const
 {
 TWinSocketStream        *pStream;
 COREMESSAGE     *coremessage;
-char            line[512];
 int             i;
 STATE           *cur_state;
 
@@ -292,9 +289,9 @@ STATE           *cur_state;
  for (i=0; i<statelist->GetNumStates(); i++)
   {
   cur_state=statelist->GetStatePtr(i);                          // get the i'th state
-  strcpy(line, cur_state->GetStateLine().c_str());              // copy its ASCII representation to variable line
-  strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
-  coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
+  std::string line = cur_state->GetStateLine();
+  strncpy(coremessage->GetBufPtr(line.length()), line.c_str(), line.length());        // copy line into the coremessage
+  coremessage->SetLength(line.length());         // set the length of the coremessage
   coremessage->SendCoreMessage(pStream);                        // and send it out
   }
 
@@ -330,8 +327,8 @@ COREMESSAGE     *coremessage;
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_STATUS);
- coremessage->SetLength((unsigned short)strlen(line));
- strncpy(coremessage->GetBufPtr(), line, strlen(line));
+ coremessage->SetLength(strlen(line));
+ strncpy(coremessage->GetBufPtr(strlen(line)), line, strlen(line));
  coremessage->SendCoreMessage(pStream);
  delete coremessage;
 
@@ -442,7 +439,7 @@ COREMESSAGE     *coremessage;
  coremessage->SetLength(statevector->GetStateVectorLength());         // set the length of the coremessage
 
  // copy the state vector into the core message
- memcpy(coremessage->GetBufPtr(), statevector->GetStateVectorPtr(), statevector->GetStateVectorLength());
+ memcpy(coremessage->GetBufPtr(statevector->GetStateVectorLength()), statevector->GetStateVectorPtr(), statevector->GetStateVectorLength());
 
  // and send it off
  coremessage->SendCoreMessage(pStream);     // and send it out
@@ -470,8 +467,8 @@ COREMESSAGE             *coremessage;
  // send a system command to the operator
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_SYSCMD);
- coremessage->SetLength((unsigned short)strlen(syscmdbuf)+1);
- sprintf(coremessage->GetBufPtr(), "%s", syscmdbuf);
+ coremessage->SetLength(strlen(syscmdbuf)+1);
+ sprintf(coremessage->GetBufPtr( strlen( syscmdbuf ) + 1 ), "%s", syscmdbuf);
  coremessage->SendCoreMessage(pStream);
 
  delete coremessage;

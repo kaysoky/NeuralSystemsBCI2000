@@ -15,6 +15,8 @@ class PARAM;
 class PARAMLIST;
 class GenericIntSignal;
 
+#ifndef ABSTRACT_CORECOMM // The CoreModule class implements the abstract corecomm
+                          // interface declared below.
 class CORECOMM : public TThread
 {
 private:
@@ -40,5 +42,14 @@ public:
         bool    SendStateVector2CoreModule(const STATEVECTOR *statevector) const;
         void    SendSysCommand(const char *syscmdbuf) const;
 };
+#else
+class CORECOMM // The CoreModule class implements this abstract corecomm interface.
+               // This is temporary.
+{
+  public:
+    virtual int SendStatus( const char* ) = 0;
+    virtual class std::ostream& GetOperator() = 0;
+};
+#endif // ABSTRACT_CORECOMM
 //---------------------------------------------------------------------------
 #endif
