@@ -138,7 +138,7 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
       baseBegin = MeasurementUnits::ReadAsTime( Parameter( "BaseBegin" ) ),
       baseEnd = MeasurementUnits::ReadAsTime( Parameter( "BaseEnd" ) );
   PreflightCondition( taskBegin < feedbackBegin && feedbackBegin < feedbackEnd );
-  PreflightCondition( baseBegin < baseEnd );
+  PreflightCondition( baseBegin <= baseEnd );
   if( baseEnd > feedbackBegin )
     bciout << "BaseEnd should be before or at FeedbackBegin" << endl;
 
@@ -288,7 +288,7 @@ TTask::Process( const GenericSignal* Input, GenericSignal* Output )
   // States carrying sequencing information for the SignalProcessing module
   // must be set "in advance". We express this by setting these states _after_
   // incrementing the block counters.
-  State( "Baseline" ) = ( mBlockInTrial >= mBaseBegin && mBlockInTrial < mBaseEnd );
+  State( "Baseline" ) = ( mBlockInTrial >= mBaseBegin && mBlockInTrial <= mBaseEnd );
 }
 
 void
