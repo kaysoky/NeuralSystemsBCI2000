@@ -385,6 +385,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Fatal, SYSSTATUS::Fatal ):
       break;
 
     default:
