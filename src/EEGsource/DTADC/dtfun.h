@@ -63,6 +63,7 @@ private:
         UINT uiWinFlags;        //   windows memory allocation flags
         HBUF hbuf[BUFNUM];      //   buffer pointers
         int BufferSize;         //   buffer size
+        int ADSize;             //   size of AD units in bits (12 or 16)
 
         UINT __fastcall SetChanType( UINT );
         UINT __fastcall SetChanList( UINT, DBL );

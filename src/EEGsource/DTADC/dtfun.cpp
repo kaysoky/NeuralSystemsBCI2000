@@ -96,6 +96,7 @@ void __fastcall DTFUN::SetWindow( HWND msgw )
 void __fastcall DTFUN::InitBoard( void )
 {
         UINT uiElement;
+        LPUINT lpuiBits;
 
         lpszName= BoardName;  // "BCI_IN";
         lphDev = NULL;
@@ -114,6 +115,10 @@ void __fastcall DTFUN::InitBoard( void )
         status= olDaSetDataFlow( lphDass, uiDataFlow );
 
         iMsg= status;
+
+        status= olDaGetResolution( lphDass, lpuiBits );
+        ADSize= (int)(*lpuiBits);
+
 }
 
 //--------------------------------------------------------------------
@@ -204,7 +209,8 @@ void __fastcall DTFUN::Add_to_data(short lphBuf[], ULNG samples)
 
         for(i=0;i<samples;i++)
         {
-                data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
+                if (ADSize == 16) data[BufferPtr]= (short)(lphBuf[i]-32678);
+                else              data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
                 BufferPtr++;
         }
         BufferCount++;
