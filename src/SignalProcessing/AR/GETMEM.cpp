@@ -254,6 +254,9 @@ int MEM::get_mem( void )
                 dtrnd();
         }
 
+        /* fixed crash on uninitialized n_bands in get_pwr(), jm */
+        n_bands = ( n_bins / f_width ) + 1;
+
 	if(memcof()<1)
         {
                  err= -1;
