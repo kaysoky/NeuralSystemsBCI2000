@@ -302,11 +302,13 @@ void
 TfMain::Initialize()
 {
   GenericFilter::HaltFilters();
+#if( MODTYPE == EEGSRC )
   // The first state vector written to disk is not the one
   // received in response to the first EEG data block. Without re-initializing
   // it, there would be state information from the end of the (possibly
   // interrupted) previous run written with the first EEG data block.
   mpStatevector->Initialize_StateVector( true );
+#endif // EEGSRC
 
   float samplingRate,
         sampleBlockSize;
