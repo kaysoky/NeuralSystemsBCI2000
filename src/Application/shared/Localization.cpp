@@ -73,7 +73,6 @@
 
 #include "Localization.h"
 #include "UBCIError.h"
-#include "UGenericFilter.h" // For the *_PARAMETER_DEFINITIONS macros.
 
 #ifdef UI_VCL
 # include <vcl.h>
