@@ -11,7 +11,7 @@
 
 CURSOR::CURSOR(TForm *form)
 {
- cursor=new TShape(Application);
+ cursor=new TShape(static_cast<TComponent*>(NULL));
  cursor->Parent=form;
  Width=20;
  Height=20;

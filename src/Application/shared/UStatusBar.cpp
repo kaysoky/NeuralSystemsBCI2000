@@ -3,6 +3,7 @@
 //---------------------------------------------------------------------------
 
 #include "UStatusBar.h"
+#include "Localization.h"
 
 //---------------------------------------------------------------------------
 
@@ -10,24 +11,24 @@
 
 STATUSBAR::STATUSBAR(TForm *form)
 {
- background=new TShape(Application);
+ background=new TShape(static_cast<TComponent*>(NULL));
  background->Parent=form;
  background->Shape=stRectangle;
  background->Visible=false;
 
- divider=new TShape(Application);
+ divider=new TShape(static_cast<TComponent*>(NULL));
  divider->Parent=form;
  divider->Shape=stRectangle;
  divider->Visible=false;
 
- goal=new TLabel(Application);
+ goal=new TLabel(static_cast<TComponent*>(NULL));
  goal->Parent=form;
  goal->Visible=false;
- result=new TLabel(Application);
+ result=new TLabel(static_cast<TComponent*>(NULL));
  result->Parent=form;
  result->Visible=false;
 
- goaltext="Goal";
+ goaltext= LocalizableString( "Goal" );
  resulttext="";
  // Color=clGreen;
  Color=clBlack;

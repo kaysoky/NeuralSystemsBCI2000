@@ -545,7 +545,7 @@ float   scalex, scaley;
  // create the rectangle, if it not already exists
  if (!shape)
     {
-    shape=new TShape(Application);
+    shape=new TShape(static_cast<TComponent*>(NULL));
     shape->Parent=form;
     }
 
@@ -565,7 +565,7 @@ float   scalex, scaley;
  // create the icon, if not already exists
  if ((IconFile != "") && (!icon))
     {
-    icon=new TImage(Application);
+    icon=new TImage(static_cast<TComponent*>(NULL));
     icon->Parent=form;
     }
 
@@ -602,7 +602,7 @@ float   scalex, scaley;
  // write the text, if any
  if ((Caption != "") && (!caption))
     {
-    caption=new TLabel(Application);
+    caption=new TLabel(static_cast<TComponent*>(NULL));
     caption->Parent=form;
     }
 
@@ -642,6 +642,29 @@ void TARGET::HideTarget()
  if (caption) caption->Visible=false;
 }
 
+// **************************************************************************
+// Function:   HighlightTarget
+// Purpose:    This function highlights this target
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void TARGET::HighlightTarget()
+{
+TColor  new_Color;
+long    red, green, blue;
+
+ red=((long)Color)&0x000000FF;
+ green=(((long)Color)&0x0000FF00)>>8;
+ blue=(((long)Color)&0x00FF0000)>>16;
+
+ // take the complement color
+ red=255-red;
+ green=255-green;
+ blue=255-blue;
+
+ new_Color=(TColor)(red+green*256+blue*65536);
+ if (shape) shape->Brush->Color=new_Color;
+}
 
 
 // **************************************************************************

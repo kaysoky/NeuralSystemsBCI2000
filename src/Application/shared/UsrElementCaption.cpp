@@ -58,7 +58,7 @@ void UsrElementCaption::Render(TForm * form, const TRect & destRect)
 {
   // create the label, if not already exists
   if ((m_asText != "") && (m_pLabel == NULL))
-    m_pLabel = new TLabel(Application);
+    m_pLabel = new TLabel(static_cast<TComponent*>(NULL));
     
   if (m_pLabel != NULL)
   {

@@ -95,7 +95,7 @@ void UsrElementVideo::SetIconFileName(const AnsiString & asIconFile)
   m_asIconFile = asIconFile;
   // create the icon, if not already exists
   if ((m_asIconFile != "") && (m_pIcon == NULL))
-    m_pIcon = new TImage(Application);
+    m_pIcon = new TImage(static_cast<TComponent*>(NULL));
   // set the icon's properties
   if (m_pIcon)
   {
@@ -137,7 +137,7 @@ void UsrElementVideo::CloneIcon(const UsrElementVideo *src)
   m_asIconFile = src->GetIconFileName();
   // create the icon, if not already exists
   if ((m_asIconFile != "") && (m_pIcon == NULL))
-     m_pIcon= new TImage(Application);
+     m_pIcon= new TImage(static_cast<TComponent*>(NULL));
   // set the icon's properties
   if (m_pIcon)
   {
