@@ -1,6 +1,8 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include "BCIDirectry.h"
+
 #include "Task.h"
 
 #include <stdlib.h>
@@ -49,9 +51,12 @@ char line[512];
  plist->AddParameter2List(line,strlen(line));
  strcpy(line, "P3Speller int NumberOfSequences= 15 15 0 100 // Number of sets of 12 intensifications");
  plist->AddParameter2List(line,strlen(line));
+ strcpy(line, "P3Speller int InterSetInterval= 1500 1500 0 10000 // Time between sets of n intensifications");
+ plist->AddParameter2List(line,strlen(line));
 
  slist->AddState2List("StimulusTime 16 17528 0 0\n");
  bcitime=new BCITIME();
+ logfile=NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -70,12 +75,14 @@ TTask::~TTask( void )
  if (userdisplay)       delete userdisplay;
  if (cur_time)          delete cur_time;
  if (bcitime)           delete bcitime;
+ if (logfile)           fclose(logfile);
 
  vis=NULL;
  cur_time=NULL;
  trialsequence=NULL;
  userdisplay=NULL;
  bcitime=NULL;
+ logfile=NULL;
 }
 
 
@@ -90,9 +97,11 @@ TTask::~TTask( void )
 // **************************************************************************
 void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
 {
+AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
-char    memotext[256];
+char    memotext[256], FName[256];
 int     ret;
+BCIDtry *bcidtry;
 
  corecomm=new_corecomm;
 
@@ -115,6 +124,10 @@ int     ret;
   userdisplay->StatusBarSize=atof(plist->GetParamPtr("StatusBarSize")->GetValue());
   userdisplay->StatusBarTextHeight=atof(plist->GetParamPtr("StatusBarTextHeight")->GetValue());
   numberofsequences=atoi(plist->GetParamPtr("NumberOfSequences")->GetValue());
+  intersetinterval=atoi(plist->GetParamPtr("InterSetInterval")->GetValue());
+  FInit= AnsiString (plist->GetParamPtr("FileInitials")->GetValue());
+  SSes = AnsiString (plist->GetParamPtr("SubjectSession")->GetValue());
+  SName= AnsiString (plist->GetParamPtr("SubjectName")->GetValue());
   }
  catch(...)
   {
@@ -125,7 +138,21 @@ int     ret;
   Wy=5;
   Wxl=512;
   Wyl=512;
+  intersetinterval=1500;
   }
+
+ // open an output file for the task log
+ bcidtry= new BCIDtry();
+ bcidtry->SetDir( FInit.c_str() );
+ bcidtry->ProcPath();
+ bcidtry->SetName( SName.c_str() );
+ bcidtry->SetSession( SSes.c_str() );
+ strcpy(FName, bcidtry->ProcSubDir() );
+ strcat(FName, "\\");
+ strcat(FName, (SName + "S" + SSes + ".log").c_str() );         // CAT vs CPY
+ if (logfile) fclose(logfile);
+ logfile= fopen(FName, "a+");
+ delete bcidtry;
 
  statevector=new_svect;
 
@@ -161,6 +188,61 @@ int     i;
 
 
 // **************************************************************************
+// Function:   DeterminePredictedCharacter
+// Purpose:    This function determines which character we have selected
+//             by looking at the maximum value for all rows and the max. value for all columns
+// Parameters: N/A
+// Returns:    the predicted character (i.e., the caption of the predicted target)
+// **************************************************************************
+AnsiString TTask::DeterminePredictedCharacter()
+{
+int     i, pickedrow, pickedcol, pickedtargetID;
+TARGET  *pickedtargetptr;
+float   maxval;
+
+ pickedrow=-1;
+ pickedcol=-1;
+
+ // get the column with the highest classification result
+ maxval=-9999999999999999;
+ for (i=0; i<6; i++)
+  {
+  if (responsecount[i] > 0)
+     if (response[i]/(float)responsecount[i] > maxval)
+        {
+        maxval=response[i]/(float)responsecount[i];
+        pickedcol=i;
+        }
+  }
+
+ // get the row with the highest classification result
+ maxval=-9999999999999999;
+ for (i=6; i<12; i++)
+  {
+  if (responsecount[i] > 0)
+     if (response[i]/(float)responsecount[i] > maxval)
+        {
+        maxval=response[i]/(float)responsecount[i];
+        pickedrow=i-6;
+        }
+  }
+
+  // sanity check
+ if ((pickedrow == -1) || (pickedcol == -1))
+    return("Error");
+
+ // from row and column, determine the targetID
+ pickedtargetID=pickedrow*6+pickedcol+1;
+ pickedtargetptr=userdisplay->activetargets->GetTargetPtr(pickedtargetID);
+ if (!pickedtargetptr)
+    return("Did not find target");
+
+ // finally, return the selected character
+ return(pickedtargetptr->Caption);
+}
+
+
+// **************************************************************************
 // Function:   ProcessPostSequence
 // Purpose:    This function determines when, after a sequence finished, it has to turn off the task
 // Parameters: N/A
@@ -168,7 +250,8 @@ int     i;
 // **************************************************************************
 void TTask::ProcessPostSequence()
 {
-unsigned short     cur_time;
+unsigned short  cur_time;
+AnsiString      predchar;
 char    memotext[256];
 int     i;
 
@@ -176,20 +259,37 @@ int     i;
     {
     // let's wait one second
     cur_time=bcitime->GetBCItime_ms();
-    if (bcitime->TimeDiff(postseqtime, cur_time) > 1500)
+    if (bcitime->TimeDiff(postseqtime, cur_time) > intersetinterval)
        {
-       statevector->SetStateValue("Running", 0);
-       running=0;
-       trialsequence->SuspendTrial();
-       sprintf(memotext, "This is the end of this run: %d total intensifications\r", cur_sequence);
-       vis->SendMemo2Operator(memotext);
-       sprintf(memotext, "Responses for each stimulus:\r");
-       vis->SendMemo2Operator(memotext);
+       // determine predicted character
+       predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
+       userdisplay->statusbar->resulttext += predchar;
+       userdisplay->DisplayStatusBar();
+
+       // write the results in the log file
+       fprintf(logfile, "This is the end of this sequence: %d total intensifications\r\n", cur_sequence);
+       fprintf(logfile, "Responses for each stimulus:\r\n");
        for (i=0; i<NUM_STIMULI; i++)
-        {
-        sprintf(memotext, "Response %02d: %.2f\r", i+1, response[i]/(float)responsecount[i]);
-        vis->SendMemo2Operator(memotext);
-        }
+        fprintf(logfile, "Response %02d: %.2f\r\n", i+1, response[i]/(float)responsecount[i]);
+       fprintf(logfile, "Predicted character: %s\r\n", predchar.c_str());
+
+       // send the results to the operator log
+       sprintf(memotext, "This is the end of this sequence: %d total intensifications\r", cur_sequence);
+       vis->SendMemo2Operator(memotext);
+       sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
+       vis->SendMemo2Operator(memotext);
+
+       // if we are in offline mode, suspend the run
+       // otherwise, just reset the task sequence and continue
+       if (!trialsequence->onlinemode)
+          {
+          statevector->SetStateValue("Running", 0);
+          running=0;
+          trialsequence->SuspendTrial();
+          }
+       else
+          ResetTaskSequence();
+
        postsequence=false;
        }
     }
@@ -231,12 +331,17 @@ int     ret;
 
  running=statevector->GetStateValue("Running");
  // don't do anything if running is not 1
+ if ((running == 0) && (oldrunning == 1))
+    trialsequence->SuspendTrial();
  if (running == 0) return;
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
     ResetTaskSequence();
-    sprintf(memotext, "Start of this run\r");
+    if (trialsequence->onlinemode)
+       sprintf(memotext, "Start of this run in online mode\r");
+    else
+       sprintf(memotext, "Start of this run in offline mode\r");
     vis->SendMemo2Operator(memotext);
     }
 

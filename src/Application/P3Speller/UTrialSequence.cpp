@@ -36,13 +36,13 @@ char    line[512];
  plist->AddParameter2List(line,strlen(line) );
  strcpy(line,"P3Speller int OffTime= 1 10 0 5000 // Interval between intensification in units of SampleBlocks");
  plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int CopySpelling= 1 1 0 1 // CopySpelling (0=no, 1=yes)");
+ strcpy(line,"P3Speller int OnlineMode= 0 0 0 1 // Online mode (0=no, 1=yes)");
  plist->AddParameter2List(line,strlen(line) );
  strcpy(line,"P3Speller string TextColor= 0x00000000 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
  plist->AddParameter2List(line,strlen(line));
  strcpy(line,"P3Speller string TextColorIntensified= 0x000000FF 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
  plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller string TextToSpell= P P A Z // Character to focus on");
+ strcpy(line,"P3Speller string TextToSpell= P P A Z // Character to focus on in offline mode");
  plist->AddParameter2List(line,strlen(line));
 
  vis=NULL;
@@ -82,11 +82,16 @@ int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOM
 {
 int     ret;
 
+ corecomm=new_corecomm;
+
  // load and create all potential targets
  ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionFile")->GetValue());
- if (ret == 0) return(0);
+ if (ret == 0)
+    {
+    corecomm->SendStatus("416 P3 Speller: Could not open target definition file");
+    return(0);
+    }
 
- corecomm=new_corecomm;
  statevector=new_svect;
  userdisplay=new_userdisplay;
 
@@ -104,10 +109,10 @@ int     ret;
   TextColorIntensified=(TColor)strtol(plist->GetParamPtr("TextColorIntensified")->GetValue(), NULL, 16);
   TextToSpell=AnsiString(plist->GetParamPtr("TextToSpell")->GetValue());
   chartospell=TextToSpell;  // in case one wanted to step through all characters of TextToSpell
-  if (atoi(plist->GetParamPtr("CopySpelling")->GetValue()) == 1)
-     copyspelling=true;
+  if (atoi(plist->GetParamPtr("OnlineMode")->GetValue()) == 1)
+     onlinemode=true;
   else
-     copyspelling=false;
+     onlinemode=false;
   }
  catch(...)
   {
@@ -118,7 +123,7 @@ int     ret;
   TextColorIntensified=clRed;
   TextToSpell="G";
   chartospell="G";
-  copyspelling=false;
+  onlinemode=false;
   }
 
  // get the active targets as a subset of all the potential targets
@@ -384,7 +389,11 @@ unsigned short running, within;
     {
     ResetTrialSequence();
     userdisplay->HideMessage();                 // hide any message that's there
-    userdisplay->statusbar->goaltext=chartospell;
+    if (!onlinemode)
+       userdisplay->statusbar->goaltext=chartospell;
+    else
+       userdisplay->statusbar->goaltext="";
+    userdisplay->statusbar->resulttext="";
     userdisplay->DisplayStatusBar();
     userdisplay->DisplayActiveTargets();           // display all active targets
     }
@@ -411,7 +420,11 @@ unsigned short running, within;
     cur_trialsequence=0;
     cur_stimuluscode=GetRandomStimulusCode();
     within=IntensifyTargets(cur_stimuluscode, true);
-    statevector->SetStateValue("StimulusType", within);
+    // in the online mode, we do not know whether this is standard or oddball
+    if (onlinemode)
+       statevector->SetStateValue("StimulusType", 0);
+    else
+       statevector->SetStateValue("StimulusType", within);
     statevector->SetStateValue("Flashing", 1);
     }
 

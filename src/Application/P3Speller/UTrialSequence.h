@@ -32,13 +32,13 @@ private: 	// User declarations
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
         AnsiString      TextToSpell, chartospell;
-        bool    copyspelling;
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
         int     Process(const short * );
         void    ResetTrialSequence();
+        bool    onlinemode;
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)
         int             LoadPotentialTargets(const char *targetdeffilename);
         int             Initialize(PARAMLIST *plist);
