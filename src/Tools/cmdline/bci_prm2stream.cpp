@@ -7,8 +7,10 @@
 #include <iostream>
 #include <string>
 
-#include "bci2000_types.h"
 #include "bci_tool.h"
+#include "shared/defines.h"
+#include "shared/UParameter.h"
+#include "shared/MessageHandler.h"
 
 using namespace std;
 
@@ -31,23 +33,8 @@ ToolResult ToolInit()
 ToolResult ToolMain( const OptionSet&, istream& in, ostream& out )
 {
   ToolResult result = noError;
-
-  string token;
-  bool legalInput = true;
-  while( legalInput && in.peek() != EOF && getline( in, token ) )
-  {
-    int length = token.length() - 1;
-    legalInput &= ( length < ( 1 << 16 ) );
-    char parameterHeader[] =
-    {
-      parameter,
-      none,
-      length & 0xff,
-      ( length >> 8 ) & 0xff
-    };
-    out.write( parameterHeader, sizeof( parameterHeader ) );
-    out.write( token.c_str(), length );
-  }
-
+  PARAM p;
+  while( in >> p )
+    MessageHandler::PutMessage( out, p );
   return result;
 }

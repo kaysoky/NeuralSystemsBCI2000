@@ -7,14 +7,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "shared/UGenericVisualization.h"
-GenericVisualization::GenericVisualization(){}
-GenericVisualization::GenericVisualization( unsigned char, unsigned char ){}
-GenericVisualization::~GenericVisualization(){}
-void GenericVisualization::SetSourceID( unsigned char ){}
-bool GenericVisualization::Send2Operator( const GenericSignal* ){ return true; }
-bool GenericVisualization::Send2Operator( const GenericIntSignal* ){ return true; }
-bool GenericVisualization::Send2Operator( const GenericIntSignal*, int ){ return true; }
-bool GenericVisualization::SendMemo2Operator( const char* ){ return true; }
-bool GenericVisualization::SendCfg2Operator( unsigned char, unsigned char, const char* ){ return true; }
-bool GenericVisualization::SendCfg2Operator( unsigned char, unsigned char, int ){ return true; }
-
+bool GenericVisualization::Send( const std::string& ) { return true; }
+bool GenericVisualization::Send( const GenericSignal* ) { return true; }
+bool GenericVisualization::Send2Operator( const GenericIntSignal*, int ) { return true; }
+bool GenericVisualization::SendCfg2Operator( int, int, const char* ) { return true; }
+bool GenericVisualization::SendCfg2Operator( int, int, int ) { return true; }

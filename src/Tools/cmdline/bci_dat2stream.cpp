@@ -5,7 +5,7 @@
 // Description: See the ToolInfo definition below.
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
-#include "bci2000_types.h"
+#include "shared/defines.h"
 #include "shared/UParameter.h"
 #include "shared/UState.h"
 #include "shared/UGenericSignal.h"
@@ -58,23 +58,6 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   getline( in >> ws, token, ']' ) >> ws && token == "[ State Vector Definition ";
   while( legalInput && in.peek() != '[' && getline( in, token ) )
   {
-#if 0
-    token += '\n';
-    int length = token.length();
-    legalInput &= ( length < ( 1 << 16 ) );
-    if( transmitStates )
-    {
-      char stateHeader[] =
-      {
-        state,
-        none,
-        length & 0xff,
-        ( length >> 8 ) & 0xff
-      };
-      out.write( stateHeader, sizeof( stateHeader ) );
-      out.write( token.data(), length );
-    }
-#else
     istringstream is( token );
     STATE state;
     if( is >> state )
@@ -82,39 +65,19 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     legalInput = legalInput && is;
     if( transmitStates )
       MessageHandler::PutMessage( out, state );
-#endif
   }
   legalInput &=
     getline( in >> ws, token, ']' ) >> ws && token == "[ Parameter Definition ";
   PARAMLIST parameters;
   while( legalInput && getline( in, token ) &&  token.length() > 1 )
   {
-#if 0
-    token += "\r\n";
-    parameters.AddParameter2List( token.c_str() );
-    int length = token.length();
-    legalInput &= ( length < ( 1 << 16 ) );
-    if( transmitParameters )
-    {
-      char parameterHeader[] =
-      {
-        parameter,
-        none,
-        length & 0xff,
-        ( length >> 8 ) & 0xff
-      };
-      out.write( parameterHeader, sizeof( parameterHeader ) );
-      out.write( token.data(), length );
-    }
-#else
     istringstream is( token );
     PARAM param;
     if( is >> param )
-      parameters.CloneParameter2List( &param );
+      parameters[ param.GetName() ] = param;
     legalInput = legalInput && is;
     if( transmitParameters )
       MessageHandler::PutMessage( out, param );
-#endif
   }
   int sampleBlockSize = atoi( parameters[ "SampleBlockSize" ].GetValue() );
   legalInput &= ( sampleBlockSize > 0 );
@@ -143,41 +106,13 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
       if( transmitData )
       {
         // Send the data.
-#if 0
-        ostringstream oss;
-        outputSignal.WriteBinary( oss );
-        int length = oss.str().length() + 1;
-        char signalHeader[] =
-        {
-          data,
-          signal,
-          length & 0xff,
-          ( length >> 8 ) & 0xff,
-          none
-        };
-        out.write( signalHeader, sizeof( signalHeader ) );
-        out.write( oss.str().data(), oss.str().length() );
-#else
         MessageHandler::PutMessage( out, outputSignal );
-#endif
       }
       if( transmitStates )
       {
-#if 0
-        char statevectorHeader[] =
-        {
-          state_vector,
-          none,
-          stateVectorLength & 0xff,
-          ( stateVectorLength >> 8 ) & 0xff
-        };
-        out.write( statevectorHeader, sizeof( statevectorHeader ) );
-        out.write( dataBuffer + sourceCh * 2, stateVectorLength );
-#else
         memcpy( statevector.GetStateVectorPtr(), dataBuffer + sourceCh * 2,
                                           statevector.GetStateVectorLength() );
         MessageHandler::PutMessage( out, statevector );
-#endif
       }
     }
   }

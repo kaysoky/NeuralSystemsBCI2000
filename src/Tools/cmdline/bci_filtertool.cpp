@@ -11,10 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "bci2000_types.h"
 #include "bci_tool.h"
+#include "shared/defines.h"
 #include "shared/UParameter.h"
 #include "shared/UState.h"
+#include "shared/UGenericVisualization.h"
 #include "shared/UGenericFilter.h"
 #include "shared/MessageHandler.h"
 
@@ -50,10 +51,10 @@ class FilterWrapper : public MessageHandler
   STATEVECTOR* mpStatevector;
   GenericFilter* mpFilter;
 
-  virtual bool HandlePARAM(         std::istream& );
-  virtual bool HandleSTATE(         std::istream& );
-  virtual bool HandleGenericSignal( std::istream& );
-  virtual bool HandleSTATEVECTOR(   std::istream& );
+  virtual bool HandlePARAM(       std::istream& );
+  virtual bool HandleSTATE(       std::istream& );
+  virtual bool HandleVisSignal(   std::istream& );
+  virtual bool HandleSTATEVECTOR( std::istream& );
 };
 
 ToolResult
@@ -148,62 +149,65 @@ FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 }
 
 bool
-FilterWrapper::HandleGenericSignal( istream& arIn )
+FilterWrapper::HandleVisSignal( istream& arIn )
 {
-  SignalProperties outputProperties;
-  GenericSignal inputSignal;
-  inputSignal.ReadBinary( arIn );
-  switch( Environment::GetPhase() )
+  VisSignal s;
+  if( s.ReadBinary( arIn ) && s.GetSourceID() == 0 )
   {
-    case Environment::nonaccess:
-      Environment::EnterConstructionPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
-      GenericFilter::InstantiateFilters();
-      mpFilter = GenericFilter::GetFilter<GenericFilter>();
-      if( __bcierr.flushes() > 0 )
-        break;
-      /* no break */
-    case Environment::construction:
-      if( mpStatevector == NULL )
-        mpStatevector = new STATEVECTOR( &mStatelist, true );
-      for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-        PutMessage( mrOut, *mStatelist.GetStatePtr( i ) );
-      Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
-      mpFilter->Preflight( inputSignal, outputProperties );
-      mOutputSignal.SetProperties( outputProperties );
-      if( __bcierr.flushes() > 0 )
-        break;
-      /* no break */
-    case Environment::preflight:
-      Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
-      mpFilter->Initialize();
-      if( __bcierr.flushes() > 0 )
-        break;
-      /* no break */
-    case Environment::initialization:
-      // Write Parameters after initialization.
-      for( PARAMLIST::const_iterator i = mParamlist.begin();
-                                     i != mParamlist.end(); ++i )
-        PutMessage( mrOut, i->second );
-      Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
-      /* no break */
-    case Environment::processing:
-      {
-        bool wasRunning = mpStatevector->GetStateValue( "Running" );
-        mpFilter->Process( &inputSignal, &mOutputSignal );
+    const GenericSignal& inputSignal = s;
+    SignalProperties outputProperties;
+    switch( Environment::GetPhase() )
+    {
+      case Environment::nonaccess:
+        Environment::EnterConstructionPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        GenericFilter::InstantiateFilters();
+        mpFilter = GenericFilter::GetFilter<GenericFilter>();
         if( __bcierr.flushes() > 0 )
           break;
-        bool isRunning = mpStatevector->GetStateValue( "Running" );
-        if( isRunning )
-          PutMessage( mrOut, mOutputSignal );
-        if( isRunning || wasRunning )
-          if( mpStatevector->GetStateVectorLength() > 0 )
-            PutMessage( mrOut, *mpStatevector );
-      }
-      break;
-    default:
-      bcierr << "Unknown Environment phase" << endl;
-      arIn.setstate( ios::failbit );
+        /* no break */
+      case Environment::construction:
+        if( mpStatevector == NULL )
+          mpStatevector = new STATEVECTOR( &mStatelist, true );
+        for( int i = 0; i < mStatelist.GetNumStates(); ++i )
+          PutMessage( mrOut, *mStatelist.GetStatePtr( i ) );
+        Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        mpFilter->Preflight( inputSignal, outputProperties );
+        mOutputSignal.SetProperties( outputProperties );
+        if( __bcierr.flushes() > 0 )
+          break;
+        /* no break */
+      case Environment::preflight:
+        Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        mpFilter->Initialize();
+        if( __bcierr.flushes() > 0 )
+          break;
+        /* no break */
+      case Environment::initialization:
+        // Write Parameters after initialization.
+        for( PARAMLIST::const_iterator i = mParamlist.begin();
+                                       i != mParamlist.end(); ++i )
+          PutMessage( mrOut, i->second );
+        Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        /* no break */
+      case Environment::processing:
+        {
+          bool wasRunning = mpStatevector->GetStateValue( "Running" );
+          mpFilter->Process( &inputSignal, &mOutputSignal );
+          if( __bcierr.flushes() > 0 )
+            break;
+          bool isRunning = mpStatevector->GetStateValue( "Running" );
+          if( isRunning || wasRunning )
+            if( mpStatevector->GetStateVectorLength() > 0 )
+              PutMessage( mrOut, *mpStatevector );
+          if( isRunning )
+            PutMessage( mrOut, mOutputSignal );
+        }
+        break;
+      default:
+        bcierr << "Unknown Environment phase" << endl;
+        arIn.setstate( ios::failbit );
+    }
   }
-  return true;
+  return arIn;
 }
 

@@ -30,17 +30,14 @@ TARGETS = obj\bci_tool.lib \
           P3TemporalFilter.exe \
           UPeakDetector.exe \
           SWFilter.exe \
-          Segmenting.exe \
-          SegmentFIR.exe \
-          DropSegments.exe \
-          SegmentPower.exe
+          FFTFilter.exe
           
 BCIOBJ  = obj\bci_tool.obj \
-          obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \
           obj\UEnvironment.obj \
           obj\UGenericFilter.obj \
+          obj\UGenericVisualization.obj \
           obj\UBCIError.obj \
           obj\UState.obj \
           obj\UStatus.obj \
@@ -49,11 +46,11 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\MeasurementUnits.obj \
           obj\getmem.obj \
           obj\getfir.obj \
-          obj\BoolExpression.obj
+          obj\FFTLibWrap.obj 
 
 BCIROOT = ..\..
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SWSignalProcessing;${SIGROOT}\Analysis
+SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib
 PATHOBJ = .\obj
 PATHCPP = .;${BCIROOT}\shared;${SIGPROC}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
@@ -76,6 +73,7 @@ RM  = del
 	${LD} $< obj\bci_filtertool.obj obj\bci_tool.lib
 	
 .cpp.obj:
+	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
 	${CPP} -c -o${PATHOBJ}\${*F}.obj $<
 
 all: ${TARGETS}
