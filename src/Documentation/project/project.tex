@@ -36,169 +36,75 @@
 
 \section{Involved Groups}
 
-This document describes a joint project between the Lab of Nervous Systems 
-Disorders, which is part of the Wadsworth Center in the New York State 
-Department of Health, and the Institut f\"ur Medizinische Psychologie at the 
-Eberhard--Karls--Universit\"at T\"ubingen.
+This document describes a project whose core contributors are the Brain-Computer 
+Interface Research and Development Program at the Wadsworth Center of 
+the New York State Department of Health and the Institute of Medical 
+Psychology and Behavioral Neurobiology at the Eberhard-Karls-University in
+T\"ubingen, Germany.
 
-\section{Project Heads}
+\section{Project Sponsors and Management}
 
-The heads of this project are Jonathan R. Wolpaw, MD, and Prof. Dr. phil. Niels 
-Birbaumer.
-
-\section{Project Manager}
-
-Gerwin Schalk, MS, has been assigned to be the project coordinator for this 
-project. His responsibilities are to synchronize the combined effort of both 
-groups, to report to the project heads, and to participate in the engineering.
-
-\section{Project Team}
-
-The project team consists of:
-%\vspace{2ex}
-\begin{itemize}
- \item{Thilo Hinterberger, Dr.}
- \item{J\"urgen Mellinger}
- \item{Dennis McFarland, PhD}
- \item{Gerwin Schalk, MS}
-\end{itemize}
-
+The BCI2000 project is sponsored by Jonathan R. Wolpaw, MD and Prof. Dr. phil. 
+Niels Birbaumer. The project is managed by Gerwin Schalk, MS.
 
 \section{Acknowledgement}
 
-We want to thank Dr. Jouri Perelmouter for his valuable input during the 
-project design phase.
+We want to thank Dr. Thilo Hinterberger for his contributions during the initial 
+phase of the project and Dr. Jouri Perelmouter for his input during the project 
+design phase.
 
 
-\chapter{Context and Objectives}
+\chapter{Context and Purpose}
 
-\section{Context}
+In recent years, many laboratories have begun to develop brain-computer 
+interface (BCI) systems that provide communication and control capabilities to 
+people with severe motor disabilities. Further progress and realization of 
+practical applications depends on systematic evaluations and comparisons of 
+different brain signals, recording methods, processing algorithms, output 
+formats, and operating protocols.  However, the typical BCI system is designed 
+specifically for one particular BCI method, and is therefore not suited to the 
+systematic studies that are essential for continued progress. Furthermore, BCI 
+design depends on the mastery of diverse areas such as computer science, 
+neuroscience, physiology and psychology, and thus a tool that could facilitate 
+the interaction and integration of competency in these areas would greatly 
+foster the future development of BCI technology.
 
-In recent years, BCI development matured from bold experiments, performed by 
-very few groups, to serious research undertaken by many facilities around the 
-world. While all try to use cortical signals to provide a new communication 
-channel for a severely handicapped population, they use many different 
-physiological phenomena and methodologies to utilize these.
+In response to this problem, we have developed and tested a general-purpose BCI 
+research and development platform, called BCI2000. BCI2000 can incorporate alone 
+or in combination any brain signals, signal processing methods, output devices, 
+and operating protocols. To date, more than 25 laboratories around the world are 
+using BCI2000 in a variety of studies. The BCI2000 system is available with 
+free of charge for research or educational purposes at 
+\texttt{http://www.bci2000.org}.
 
-At the moment, the maximum rate of communication is 10-20 bits per minute. 
-Because there is no commonly used shared platform, little is known about the 
-efficacy of combining these phenomena in order to increase the information 
-transfer rate.
-
-In addition, very few groups currently apply BCI technology to the intended 
-target population. In addition to technical difficulties, only a few facilities 
-possess the necessary resources, e.g., the wide range of occupations, from 
-engineers to psychologists to patient care personnel. An actual application that 
-provided some - even if limited - useful function for patients, who could not be 
-helped by conventional methods, could generate more interest towards this 
-technology, and thereby foster further development.
-
-\section{Objectives}
-
-\subsection{Introduction}
-
-The planned project addresses the aforementioned issues. The main goals are to 
-produce a system in a reasonable time (i.e., by the end of 2000) that can be 
-controlled by both mu/beta and/or slow potentials. The technical realization 
-should make it easy for other groups to use/extend it to incorporate other 
-physiological signals (e.g., P300). Furthermore, parts of the system (e.g., the 
-operator) should be able to reside at a different physical location from the 
-user.
-
-\subsection{Details}
-
-The following list shows the objectives in more detail. Although a major focus 
-will be on a modular and flexible system, the technical realization has to be 
-feasible, with special emphasis on the aspect of code maintenance.
-
-\begin{itemize}
- \item{Different brain signal components, derived from (with a clear focus on mu/beta and slow potentials):}
-    \begin{enumerate}
-      \item{mu/beta}
-      \item{slow cortical potentials}
-      \item{P300}
-      \item{SSVERs}
-      \item{single units}
-    \end{enumerate}
- \item{Open standard:}
-    \begin{enumerate}
-      \item{clear and documented interfaces between modules}
-      \item{flexible file formats}
-      \item{the programming environment should facilitate add-ons and changes by other groups}
-    \end{enumerate}
- \item{Network capabilities, allowing the operator to be at a different physical location from the user}
-\end{itemize}
-
-
-\chapter{Project Plan}
-\todo{Should we drop this chapter, or update it?}
-
-\section{Work Breakdown Structure}
-
-\begin{figure}[ht]
- \centerline{\scalebox{0.45}{\includegraphics{figures/WBS}}}
- \caption{The work breakdown structure for BCI2000}
-\end{figure}
-
-
-%\section{Responsibility Chart}
-
-
-%\section{Gantt Chart}
-
-%\begin{figure}[ht]
-% \centerline{\scalebox{0.6}{\includegraphics{figures/GANTT.eps}}}
-% \caption{The GANTT chart for BCI2000}
-%\end{figure}
-
-
-\section{Milestones}
-
-\begin{tabular}{|c|l|l|}
- \hline
- \textbf{Milestone} & \textbf{Description} & \textbf{Reached}\\
- \hline
- 1 & Empty shells and feasibility study & April 10, 2000\\
- \hline
- 2 & Class model for signal processing & May 1, 2000\\
- \hline
- 3 & Data acquisition & September 14, 2000\\
- \hline
- 4 & Signal Processing & December 1, 2000\\
- \hline
- 5 & User Application & March 1, 2001\\
- \hline
- 6 & Bugfixes, analysis tools; transition to V1.0 & not yet\\
- \hline
-\end{tabular}
-
+The background and rationale, as well as the general concept of BCI2000 is 
+described in detail in a paper in \textit{IEEE Trans Biomed Eng} (Schalk et al., 
+2004). This document goes beyond the scope of this article in that it defines 
+the technical implementation-independent structures of BCI2000 (such as the 
+communication protocol and the file format), i.e., in other words, the 
+\emph{BCI2000 Standard}. This information is sufficient to create any addition 
+to BCI2000 (in any language and on any operating system) that is compatible with 
+this standard. BCI2000 is currently implemented using Borland C++ Builder on 
+Windows platforms. For specific questions about these implementations 
+(such as how to implement your own signal processing routines), please refer to 
+the \emph{BCI2000 Software Design Document}.
 
 \chapter{System Design} 
 
-\section{Introduction}
-
-This chapter describes the BCI2000 standard from the technical perspective. The 
-level of detail should allow creation of a BCI2000-compliant module or an entire 
-BCI2000 system implementation in any programming language and on any operating 
-system platform.
-
-The description is amplified to facilitate understanding by readers others than 
-programmers.
-
-
 \section{Overview}
+
+BCI2000 consists of four modules shown in Figure \ref{fig:modules} that 
+communicate with each other. These modules are called \textit{Source}, 
+\textit{Signal Processing}, \textit{Application}, and \textit{Operator}. We will 
+refer to the three modules Source, Signal Processing and Application together as 
+\textit{core modules}.
+
 
 \begin{figure}[ht]
  \centerline{\includegraphics{figures/modules}}
  \caption{The functional modules and their interfaces}
  \label{fig:modules}
 \end{figure}
-
-Figure \ref{fig:modules} shows modules called \textit{Source}, \textit{Signal 
-Processing}, \textit{Application}, and \textit{Operator}. We will refer to the 
-three modules Source, Signal Processing and Application together as \textit{core 
-modules}.
-
 
 %\section{Functional Modules}
 
@@ -208,11 +114,8 @@ modules}.
 \subsection{Introduction}
 
 The same communication protocol is used between each of the three core modules 
-and the operator module. It is an asynchronous state-less application-level 
-protocol.
-\todo{What exactly does this mean? Is it actually true?}
-Although it can be implemented on top of any transport protocol, it 
-assumes the reliability of TCP (i.e., the protocol does not support 
+and the operator module. Although it can be implemented on top of any transport 
+protocol, it assumes the reliability of TCP (i.e., the protocol does not support 
 acknowledgements or packet sorting or any other means of error correction).
 
 Any message sent to or from any module is wrapped into packets as described in 
@@ -233,11 +136,15 @@ byte content descriptor and one-byte descriptor supplement, followed by a number
  \caption{Layout of one message in the protocol}
 \end{figure}
 
-The element denoted by ``length field(2)" was originally a two-byte integer field
-for the content length in little endian format.
-To allow for messages longer than 64k, a backward compatible extension has been introduced -- if the length is below 65535, it will still be transmitted as a two-byte integer in little endian format. Otherwise, the two bytes will contain the value 65535, and be followed by a decimal ASCII representation of the length, terminated with a zero byte.
-For other one- and two-byte length fields occurring in the protocol, the same scheme applies, generalized to be a ``length field(original number of bytes)" 
-(Figure \ref{fig:length_field}).
+The element denoted by ``length field(2)" was originally a two-byte integer 
+field for the content length in little endian format. To allow for messages 
+longer than 64k, we introduced a backwards-compatible extension: if the length 
+is below 65535, it will still be transmitted as a two-byte integer in little 
+endian format. Otherwise, the two bytes will contain the value 65535, and be 
+followed by a decimal ASCII representation of the length, terminated with a zero 
+byte. For other one- and two-byte length fields occurring in the protocol, the 
+same scheme applies, generalized to be a ``length field(original number of 
+bytes)" (Figure \ref{fig:length_field}).
 
 \begin{figure}[ht]
  \centerline{\includegraphics{figures/length_field}}
@@ -291,9 +198,9 @@ machine.)
 \label{parameter_format}
 
 This section describes the format of the message when the core message is of 
-type system parameter (i.e., the message's descriptor is 2). In this case, the 
-aforementioned content data is a line of ASCII characters (parameters delimited 
-by spaces) in the following format (Table \ref{tab:parametervariables} summarizes
+type system parameter (i.e., the message's descriptor is 2). In this case, 
+content data is a line of ASCII characters in the following format 
+(Table \ref{tab:parametervariables} summarizes
 the individual components in the parameter string):
 \begin{verbatim}
 Section DataType Name= Value DefaultValue LowRange HighRange
@@ -316,11 +223,25 @@ Section DataType Name= (NumValuesDim1|LabelsDim1)
 \end{verbatim}
 where again each NumValues entry may be substituted by a list of textual labels.
 
-This format not only applies to the interaction between core and operator, but
-also reflects the data format of the system's parameter files (i.e., files with
-extension .prm) as well as the parameter portion of the system's data (.dat) files.
-The core modules and the operator module use this format to
-communicate in the system initialization phase (as described in section \ref{system_init}).
+\todo{Need to give a few examples of possible parameter lines and need
+to describe the format of the encoding if values include spaces, etc.}
+
+\paragraph{Proposed Addition} The comment line that is introduced by the two 
+slashes (//) may contain a format identifier that is used by the Operator module
+to modify the display of the particular parameter. Format identifiers are
+strictly optional and are introduced as follows: \texttt{@identifier}. Each
+identifier might have parameter-specific arguments that follow the identifier
+and are delimited by spaces. Any text starting from the first identifier in
+the comment line will not be displayed as comment. For example:\\
+\texttt{param string // Select the input file @filechooser}; or:\\
+\texttt{param string // Select filter value @dropdown 1=yes 2=no 3=maybe}.
+
+The parameter format does not only apply to the interaction between core and 
+operator, but also reflects the data format of BCI2000 parameter files (i.e., 
+files with extension .prm) as well as the parameter portion of the BCI2000 data 
+files (i.e., files with extension .dat) files. The core modules and the operator 
+module also use this format to communicate in the system initialization phase 
+(as described in section \ref{system_init}).
 
 \begin{table}[ht]
  \centering
@@ -348,28 +269,29 @@ communicate in the system initialization phase (as described in section \ref{sys
   \hline
   HighRange \\
   \hline
-  Comment \\
+  Comment incl. format identifiers \\
   \hline
  \end{tabular}
  \caption{Definition of variables in the parameter string}
  \label{tab:parametervariables}
 \end{table}   
 
-If \textit{NumValues} is provided (i.e., data type \textit{list, intlist} or 
-\textit{floatlist}), it indicates how many values are following it. The separate 
-values are then delimited by white space. In case of data type \textit{matrix}, 
-the transmitted values represent the matrix as follows: the first NumValuesDim2 
-values are value(0, t), followed by NumValuesDim2 values value(1, t), etc.;
-in case that labels are specified in place of value counts, the analogy holds
-with the value counts given by the number of labels for the dimension in
-question.\\
+For data types \textit{list, intlist} and \textit{floatlist}, \textit{NumValues} 
+indicates how many values are following. The separate values are then 
+delimited by white spaces. In case of data type \textit{matrix}, the transmitted 
+values represent the matrix as follows: the first NumValuesDim2 values are 
+value(0, t), followed by NumValuesDim2 values value(1, t), etc.; in case that 
+labels are specified in place of value counts, the analogy holds with the value 
+counts given by the number of labels for the dimension in question.\\
 
 Each core module knows the data types of the parameters it is requesting and 
 thus does not need a parameter data type definition. However, the operator 
-module uses the data type definitions as listed in the table below to create 
-their graphical representation. Section \ref{system_params} describes a list of 
-pre-defined system parameters.
+module uses the data type definitions as listed in table 
+\ref{tab:parametervariables} to create their graphical representation. Section 
+\ref{system_params} describes a list of pre-defined system parameters.
 
+\todo{Describe proposal for parameter data type for state definition, e.g.,
+TargetCode 1 Feedback 1}
 
 \subsection{Descriptor=3: State Format}
 \label{state_format}
@@ -381,7 +303,7 @@ delimited by spaces) in the following format:
 \\[2ex]
 \verb|Name Length Value ByteLocation BitLocation CRLF|
 \\[2ex]
-with ByteLocation between 0..29 \todo{Why this value?} and BitLocation ranging from 0..7.
+with BitLocation ranging from 0..7.
 The core modules and the operator module use this format to communicate in 
 the system initialization phase (as described in section \ref{system_init}), 
 as well as during system performance (section \ref{system_performance}) and 
@@ -416,19 +338,18 @@ This section describes the format of the message when the core message is of
 type visualization data (i.e., the message's descriptor is 4). In this case (see 
 figure \ref{visualizationprotocol}), the content descriptor describes the 
 requested visualization type. The only currently defined types are 1 (a graph of 
-\textit{n} channels and \textit{m} samples) and 2 (a text memo). Other (not yet 
-defined) types could be Horizontal Ball, Vertical Ball, Speller Status, etc. A 
-visualization type of 255 defines visualization configuration.
+\textit{n} channels and \textit{m} samples), 2 (a text memo), and 255 
+(visualization configuration).
 
 \begin{figure}[ht]
  \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization}}}
- \caption{One message in the protocol, if it is of type "visualization data"}
+ \caption{One message in the protocol if it is of type "visualization data"}
  \label{visualizationprotocol}
 \end{figure}
 
 \begin{figure}[ht]
  \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type1}}}
- \caption{One message, if visualization type is 1 (i.e., a graph)}
+ \caption{One message if visualization type is 1 (i.e., a graph)}
  \label{visualizationprotocol_type1}
 \end{figure}
 
@@ -451,7 +372,7 @@ point value is then calculated as follows: $value=A*10^{B}$. Figure
 
 \begin{figure}[ht]
  \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type2}}}
- \caption{One message, if visualization type is 2 (i.e., a text memo)}
+ \caption{One message if visualization type is 2 (i.e., a text memo)}
  \label{visualizationprotocol_type2}
 \end{figure}
 
@@ -462,7 +383,7 @@ text is zero delimited.
 
 \begin{figure}[ht]
  \centerline{\scalebox{0.75}{\includegraphics{figures/operator_prot_visualization_type255}}}
- \caption{One message, if visualization type is 255 (i.e., visualization configuration)}
+ \caption{One message if visualization type is 255 (i.e., visualization configuration)}
  \label{visualizationprotocol_type255}
 \end{figure}
 
@@ -515,7 +436,7 @@ configuration IDs are described in Table \ref{tab:viscfg_table}.
 \end{table} 
 
 The ASCII string then contains the configuration option, as defined by the 
-configuration ID. For example, it might contain "128", if the configuration ID 
+configuration ID. For example, it might contain "128" if the configuration ID 
 is 4. This will configure the graph to contain exactly 128 samples. When the 
 configuration ID is 5 or 6 (axis labels), the ASCII string consists of a sample 
 number (three digits), a space, and the axis label. Thus, one message configures 
@@ -598,7 +519,7 @@ section it belongs to, a data type descriptor, its name, value(s), default
 value, and a range of valid numbers. Parameter names are unique across the 
 entire system.
 
-\subsection{Reserved Data Types}
+\subsection{Defined Data Types}
 
 \vspace{.5cm}
 
@@ -637,32 +558,14 @@ entire system.
 
 \newpage
 
-\subsection{Reserved Sections and Parameter Names}
-Several section descriptors are currently defined. These comprise:
+\subsection{Defined Sections and Parameter Names}
 
-\begin{flushleft}
- \begin{tabular}{|l|}
-  \hline
-  \textbf{Section Name}\\
-  \hline
-  Source \\
-  \hline
-  Storage \\
-  \hline
-  Filtering \\
-  \hline
-  Task \\
-  \hline
-  Visualization \\
-  \hline
-  System \\
-  \hline
- \end{tabular}
-\end{flushleft}
+Section names can be defined by the parameter definition. The only reserved 
+section name is \emph{System}. User-defined parameters may not go into this 
+section.
 
-\raggedright Listed below are all currently defined sections with their reserved parameter 
-names.
-\\[2ex]
+The BCI2000 standard requires the definition of the following parameters:
+
 \raggedright \large Section ``Source" \normalsize
 \\[2ex]
 %\begin{displaymath}
@@ -673,10 +576,6 @@ names.
   int & SoftwareCh & number of digitized and stored channels \\
   \hline
   int & SampleBlockSize & number of transmitted samples \\
-  \hline
-  intlist & SourceChList & list of source channels \\
-  \hline
-  int & TransmitCh & number of transmitted channels \\
   \hline
   intlist & TransmitChList & list of channels to transmit \\
   \hline
@@ -694,7 +593,7 @@ names.
   \hline
   \textbf{Type} & \textbf{Parameter Name} & \textbf{Description}\\
   \hline
-  string & SubjectName & subject alias (max. 8 characters) \\
+  string & SubjectName & subject alias \\
   \hline
   string & SubjectSession & session number (max. 3 characters) \\
   \hline
@@ -702,18 +601,9 @@ names.
   \hline
   string & FileInitials & top level directory for saved files \\
   \hline
-  int    & SavePrmFile & 0/1: don't save/save additional parameter file \\
-  \hline
-  string & StorageTime & \\
-  \hline
  \end{tabular}
 % \caption{Parameter names in section Storage}
 %\end{displaymath}
-
-\vspace{.5cm}
-Parameter names in section Filtering and Classification are preceded by 
-a two--character identifier that indicates the type of the parameter.
-\todo{Documentation of Parameters and States can be done automatically using \texttt{make docinfo}.}
 
 \vspace{.5cm}
 
@@ -733,6 +623,8 @@ a two--character identifier that indicates the type of the parameter.
   floatlist & SourceChOffset & offset in A/D units\\
   \hline
   floatlist & SourceChGain & factor to convert A/D units to $\mu$V \\
+  \hline
+  floatlist & SourceChTimeOffset & offset of sample at each channel in time (from 0..1) \\
   \hline
  \end{tabular}
 % \caption{Parameter names in section Filtering}
@@ -820,8 +712,6 @@ to be requested -- they are created automatically. They are:
  16 & StimulusTime & 16-bit unsigned integer; resolution 1 ms \\  
  \hline
  1 & Running & 1: system is running, 0: system is suspended\\  
- \hline
- 1 & Recording & 1: system is recording, 0: not recording\\  
  \hline
 \end{tabular}
 
