@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "UScript.h"
+#include "UOperatorUtils.h"
 
 //---------------------------------------------------------------------------
 
@@ -113,7 +114,7 @@ bool    ok;
        {
        idx=get_argument(idx, token, line, 256);
        idx=get_argument(idx, value, line, 256);
-       if (statelist->UpdateState(token, (unsigned short)atoi(value), socket) == ERR_NOERR)
+       if (OperatorUtils::UpdateState(statelist, token, (unsigned short)atoi(value), socket) == ERR_NOERR)
           sprintf(buf, "%s: Set state %s to %s ... OK", filename, token, value);
        else
           sprintf(buf, "%s: Set state %s to %s ... Error", filename, token, value);

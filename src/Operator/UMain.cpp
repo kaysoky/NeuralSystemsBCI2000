@@ -68,6 +68,7 @@
 #include "UPreferences.h"
 #include "UConnectionInfo.h"
 #include "UVisConfig.h"
+#include "UOperatorUtils.h"
 
 #include "UMain.h"
 //---------------------------------------------------------------------------
@@ -498,7 +499,7 @@ int ret;
     {
     // (do not receive while we send; concurrency problems)
     sendrecv_critsec->Acquire();
-    ret=statelist.UpdateState(statename, newvalue, sysstatus.SourceSocket);
+    ret=OperatorUtils::UpdateState(&statelist,statename, newvalue, sysstatus.SourceSocket);
     // enable reception
     sendrecv_critsec->Release();
     sysstatus.NumMessagesSent1++;
