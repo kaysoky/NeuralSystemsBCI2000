@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 317
   Width = 438
   Height = 454
-  Caption = 'BCI2000toASCII'
+  Caption = 'BCI2000toASCII V2.0'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -73,18 +73,20 @@ object fMain: TfMain
     Height = 25
   end
   object Label3: TLabel
-    Left = 296
-    Top = 16
+    Left = 304
+    Top = 192
     Width = 34
     Height = 13
     Caption = 'first run'
+    Visible = False
   end
   object Label4: TLabel
-    Left = 296
-    Top = 48
+    Left = 304
+    Top = 208
     Width = 34
     Height = 13
     Caption = 'last run'
+    Visible = False
   end
   object Label5: TLabel
     Left = 0
@@ -242,22 +244,24 @@ object fMain: TfMain
   end
   object frun: TEdit
     Left = 344
-    Top = 16
+    Top = 184
     Width = 81
     Height = 21
     Enabled = False
     TabOrder = 5
     Text = '1'
+    Visible = False
     OnChange = frunChange
   end
   object lrun: TEdit
     Left = 344
-    Top = 48
+    Top = 208
     Width = 81
     Height = 21
     Enabled = False
     TabOrder = 6
     Text = '8'
+    Visible = False
   end
   object bDefineInput: TButton
     Left = 344
@@ -370,6 +374,14 @@ object fMain: TfMain
     Height = 17
     Caption = 'Export File'
     TabOrder = 20
+  end
+  object cRunListBox: TCheckListBox
+    Left = 344
+    Top = 8
+    Width = 81
+    Height = 97
+    ItemHeight = 13
+    TabOrder = 21
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'

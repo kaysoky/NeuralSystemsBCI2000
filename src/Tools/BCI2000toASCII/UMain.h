@@ -62,6 +62,7 @@ __published:	// IDE-managed Components
         TComboBox *ITIstateListBox;
         TRadioButton *rExportMatlab;
         TRadioButton *rExportFile;
+        TCheckListBox *cRunListBox;
         void __fastcall bOpenFileClick(TObject *Sender);
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall ContinueClick(TObject *Sender);
@@ -72,9 +73,9 @@ private:	// User declarations
         BCI2000DATA     *bci2000data;
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
-        int     IncrementTrial(int, STATEVECTOR *);
+        int     IncrementTrial(int, const STATEVECTOR *);
         void    UpdateStateListBox(int);
-        bool    SaveSampleOrNot(STATEVECTOR *statevector);
+        bool    SaveSampleOrNot(const STATEVECTOR *statevector);
         int     InitMatlabEngine();
         void    ShutdownMatlabEngine();
         int     GetNumSamples();

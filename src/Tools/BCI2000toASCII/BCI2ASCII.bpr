@@ -16,7 +16,7 @@
       bdertl.bpi ibsmp.bpi vcldbx.bpi ibxpress.bpi bcbie.bpi vclie.bpi inetdb.bpi 
       inet.bpi nmfast.bpi dclocx.bpi bcb2kaxserver.bpi teeui.bpi teedb.bpi 
       tee.bpi teeqr.bpi DCLUSR.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
+    <PATHCPP value=".;..\..\SHARED"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
