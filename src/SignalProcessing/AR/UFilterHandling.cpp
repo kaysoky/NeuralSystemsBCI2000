@@ -205,7 +205,7 @@ int     res, returnval;
 
 int FILTERS::Resting( char *buf)
 {
- statfilter->Resting();
+ statfilter->Resting(classfilter);
 
  return(0);
 }
@@ -267,7 +267,7 @@ int res, returnval;
     error.CopyError(&(normalfilter->error));
     }
 
- res= statfilter->Process(SignalE, normalfilter, SignalF);
+ res= statfilter->Process(classfilter, SignalE, normalfilter, SignalF);
  if (res == 0)
     {
     returnval= 0;
