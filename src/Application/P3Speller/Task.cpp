@@ -62,7 +62,7 @@ TTask::TTask()
       "Duration after set of n intensifications in units of SampleBlocks",
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
       "Duration before set of n intensifications in units of SampleBlocks",
-  "P3Speller string TextResult = % % % % //"
+  "P3Speller string TextResult = %20 %20 %20 %20 //"
       "User spell result", 
  END_PARAMETER_DEFINITIONS
 
@@ -142,6 +142,8 @@ int     ret, numerpsamples, sampleblocksize;
 
 /*shidong starts*/
   PreflightCondition( Parameter("NumMatrixColumns")*Parameter("NumMatrixRows") ==  Parameter("TargetDefinitionMatrix")->GetNumRows() );
+  textresult = ( const char* )Parameter("TextResult");
+  if(debug) fprintf(f, "In Initialize, its length is %d, andtextresult is %s.\n", textresult.Length(), textresult);
 /*shidong ends*/
 
   mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
@@ -252,7 +254,7 @@ float   maxval;
         }
   }
 
-        if(debug)fprintf(f, "From 0 ~ 6 columns, picked column is %d. maxval is %f.\n", pickedcol+1, maxval);
+        //if(debug)fprintf(f, "From 0 ~ 6 columns, picked column is %d. maxval is %f.\n", pickedcol+1, maxval);
 
  // get the row with the highest classification result
  maxval=-9999999999999999;
@@ -270,7 +272,7 @@ float   maxval;
         }
   }
 
-        if(debug)fprintf(f, "From 6 ~ 12 rows, picked row is %d. maxval is %f.\n", pickedrow+1, maxval);
+        //if(debug)fprintf(f, "From 6 ~ 12 rows, picked row is %d. maxval is %f.\n", pickedrow+1, maxval);
  /*shidong ends*/
 
   // sanity check
@@ -301,7 +303,7 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
         pickedtargetID, pickedtargetptr->CharDisplayInMatrix, pickedtargetptr->CharDisplayInResult);
 
   mVis.Send( memotext ); */
-if(debug)fprintf(f, "pickedtargetID is %d, pickedrow is %d, pickedcol is %d, result is %s.\n", pickedtargetID, pickedrow+1, pickedcol+1, pickedtargetptr->CharDisplayInResult);
+//if(debug)fprintf(f, "pickedtargetID is %d, pickedrow is %d, pickedcol is %d, result is %s.\n", pickedtargetID, pickedrow+1, pickedcol+1, pickedtargetptr->CharDisplayInResult);
 
  return(pickedtargetptr->CharDisplayInResult);
  /*shidong ends*/
@@ -359,42 +361,41 @@ int     i;
         
        
 
-       if (predchar == "<BS>")
+       if (predchar == "<BS>")           //check for backspace
        {
         trialsequence->char2spellidx -= 1;
         if (trialsequence->char2spellidx < 1)           //if 1st predchar is <BS>
                 trialsequence->char2spellidx = 1;
         //delete one character                
-       userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
-        //textresult.Delete(textresult.Length(), 1);
+       //userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
+        textresult.Delete(textresult.Length(), 1);
        }
        else
        {
         /*sprintf(memotext, "Adding  char2spellidx %d.\r", trialsequence->char2spellidx);
         mVis.Send(memotext);  */
         trialsequence->char2spellidx += 1;
-         userdisplay->statusbar->resulttext += predchar;
-        //textresult += predchar;
+         //userdisplay->statusbar->resulttext += predchar;
+        textresult += predchar;
        }
-     /*
+
        if(!trialsequence->onlinemode)  //if offline
-       {
+       { 
         userdisplay->statusbar->resulttext = textresult;
        }
        else             //if online
        {
-        int textIndex = textresult.LastDelimiter(" ");
+        int textIndex = textresult.LastDelimiter(" ");          //get index of last space
         userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
         userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
         if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
                 userdisplay->statusbar->resulttext  = "";
         if (userdisplay->statusbar->goaltext.Length()==0)       //check for null        
-                userdisplay->statusbar->goaltext  = "";
-
+                userdisplay->statusbar->goaltext  = "";  
        }
-     */
+
        /*shidong ends*/
-       
+
        trialsequence->SetUserDisplayTexts();
        userdisplay->DisplayStatusBar();
 
@@ -445,6 +446,9 @@ int     i;
           postsequence=false;
           State( "Running" ) = 0;
           running=0;
+          /*shidong starts*/
+          //Resting();
+          /*shidong ends*/
           trialsequence->SuspendTrial();
           }
        }
@@ -471,10 +475,10 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
     {
     responsecount[cur_stimuluscoderes-1]++;
     response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
-    /*shidong debug starts
+    /*shidong debug starts  
     response[cur_stimuluscoderes-1] +=  (float)rand();
-    if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
-   */ /*shidong debug ends*/
+   */ //if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
+   /*shidong debug ends*/
 
     }
 }
@@ -497,10 +501,19 @@ int     ret;
  // don't do anything if running is not 1
  if ((running == 0) && (oldrunning == 1))
     {
+    /*shidong starts*/
+    //Resting();
     trialsequence->SuspendTrial();
     State("PhaseInSequence" ) = 0;
+    /*shidong ends*/
     }
- if (running == 0) return;
+ if (running == 0)
+ /*shiodng starts*/
+ {
+        //Resting();
+        return;
+ }
+ /*shidong ends*/
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
@@ -518,8 +531,54 @@ int     ret;
     mVis.Send( memotext );
     if (logfile) fprintf(logfile, "******************************\r\n%s\n", memotext);
     trialsequence->char2spellidx=1;
-    userdisplay->statusbar->resulttext="";
-    trialsequence->SetUserDisplayTexts();
+    /*shidong starts*/
+   // userdisplay->statusbar->resulttext="";
+   // trialsequence->SetUserDisplayTexts();
+   //
+    if (!trialsequence->onlinemode)      //offline mode
+    {
+        trialsequence->chartospell=trialsequence->TextToSpell.SubString(trialsequence->char2spellidx, 1);
+        userdisplay->statusbar->goaltext=trialsequence->TextToSpell+" ("+trialsequence->chartospell+")";
+        if(textresult.Length()>0)       //if textresult is not empty
+        {
+                textresult = "";
+                
+        }
+        userdisplay->statusbar->resulttext="";
+    }
+     else // if we are in online mode
+    {
+         if(debug) fprintf(f, "In OnlineMode.\n");  
+
+        if (textresult.Length()>0)
+        {
+                if(debug) fprintf(f, "textresult has something, it's %s, its length is %d.\n", textresult, textresult.Length());
+                if(textresult=="(null)")
+                {
+                        textresult = "";
+                        userdisplay->statusbar->resulttext="";
+                        userdisplay->statusbar->goaltext="";
+                        if(debug) fprintf(f, "in\n");
+                }
+                int textIndex = textresult.LastDelimiter(" ");          //get index of last space
+                userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
+                userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+                if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
+                        userdisplay->statusbar->resulttext  = "";
+                if (userdisplay->statusbar->goaltext.Length()==0)       //check for null
+                        userdisplay->statusbar->goaltext  = ""; 
+        }
+        else
+        {
+                if(debug) fprintf(f, "textresult has nothing, it's %s, its length is %d.\n", textresult, textresult.Length());
+                textresult = "";
+                userdisplay->statusbar->resulttext="";
+                userdisplay->statusbar->goaltext="";
+                if(debug) fprintf(f, "setting goal and result text to \"\".\n");
+        }
+    }
+        /*shidong ends*/
+
     }
 
  // if we have a period before the sequence, we have to process it
@@ -553,9 +612,25 @@ int     ret;
     }
 
  skipprocess:
-
+ //Resting();
  // write the current time, i.e., the "StimulusTime" into the state vector
  State( "StimulusTime" ) = cur_time->GetBCItime_ms();
  oldrunning=running;
 }
 
+void TTask::StopRun()
+{
+ /*shidong starts */
+ if(debug) fprintf(f, "in stoprun().\n");
+ if(trialsequence->onlinemode) //if online
+ {
+//         char memo[256] ;
+  //      sprintf(memo, "%s", textresult);
+        Parameter("TextResult") = textresult.c_str();
+ }
+ else   //if offline
+ {
+        
+ }
+ /*shidong ends*/
+}

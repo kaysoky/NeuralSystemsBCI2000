@@ -50,5 +50,6 @@ class TTask : public GenericFilter
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
+  void StopRun();
 };
 #endif

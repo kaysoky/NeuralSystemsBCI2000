@@ -465,7 +465,9 @@ void TRIALSEQUENCE::SetUserDisplayTexts()
     userdisplay->statusbar->goaltext=TextToSpell+" ("+chartospell+")";
     }
  else // if we are in online mode
-    userdisplay->statusbar->goaltext="";
+    {
+        //userdisplay->statusbar->goaltext="";
+    }
 }
 
 
