@@ -10,6 +10,8 @@
 #include "UBCIError.h"
 #include "UsrElementCollection.h"
 #include "UsrEnvAlgorithmP3AV.h"
+#include "UGenericVisualization.h"
+#include <limits>
 
 // **************************************************************************
 // Function:   UsrEnvDispatcher
@@ -79,8 +81,11 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
       }
       m_iUsrElementPriorSeqTime = atoi(pParamList->GetParamPtr("PreSequenceTime")->GetValue());
       m_iUsrElementAfterSeqTime = atoi(pParamList->GetParamPtr("PostSequenceTime")->GetValue());
-      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
-                                   rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+      if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
+        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
+                                      rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+      else
+        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
 
       // figure out whether a stimulus to appear in a sequence
       m_vStimulusPresent.clear();
@@ -198,9 +203,9 @@ void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVecto
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
 void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv * pUsrEnv,
-                               STATEVECTOR * pStateVector)
+                               STATEVECTOR * pStateVector, GenericVisualization * pGenericVisualization)
 {
-  if (pStateVector == NULL || pUsrEnv == NULL) return;
+  if (pStateVector == NULL || pUsrEnv == NULL || pGenericVisualization == NULL) return;
   
   bool bIsStillRunning(false);
   if (pStateVector != NULL)
@@ -221,6 +226,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
   {
     Reset(pUsrEnv, pStateVector);
     pUsrEnv->HideMessage(); // hide any message that's there
+    pGenericVisualization->SendMemo2Operator("New run.");
   }
   m_bIsRunning = bIsStillRunning;
 
@@ -262,6 +268,8 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     pStateVector->SetStateValue("StimulusCode", 0);
     pStateVector->SetStateValue("StimulusType", 0);
     pStateVector->SetStateValue("Flashing", 0);
+
+    pGenericVisualization->SendMemo2Operator("New sequence is presented.");
   }
 
   // prior to sequence
@@ -272,8 +280,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       m_ePhaseInSequence = PHASE_INTERSTIMULUS;
       m_iCurrentPhaseDuration = 0;
       m_bWaiting = true;
-      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
-                                   rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+      if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
+        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
+                                      rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+      else
+        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
 
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       // get the next active elements as a subset of all the potential elements
@@ -290,16 +301,27 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       // this will display what element we have to focus on message
       pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_LAST, 0);
+      if (pUsrEnv->GetActiveElements() != NULL)
+        if (pUsrEnv->GetActiveElements()->GetElementPtrByIndex(1) != NULL)
+        {
+          char memotext[256];
+          sprintf(memotext, "Focusing on stimulus with ID equal to %d \r", pUsrEnv->GetActiveElements()->GetElementID(1));
+          pGenericVisualization->SendMemo2Operator(memotext);
+        }
     }
   }
+
 
   // element is currently present and its time expired
   if (m_ePhaseInSequence == PHASE_STIMULUS && (m_iCurrentPhaseDuration == m_iUsrElementOnTime))
   {
     m_ePhaseInSequence = PHASE_INTERSTIMULUS;
     m_iCurrentPhaseDuration = 0;
-    m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
-                                 rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+    if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
+      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
+                                      rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+    else
+      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
 
     pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
     // get the next active elements as a subset of all the potential elements
@@ -377,7 +399,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     else if (m_iCurrentPhaseDuration == (m_iUsrElementAfterSeqTime - m_iUsrElementOnTime))
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
-      const int iPickedStimulusID = ProcessResult();  // display result
+      const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
       pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
 
       pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
@@ -390,7 +412,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     if (m_iCurrentPhaseDuration == (m_iUsrElementAfterSeqTime - m_iUsrElementOnTime))
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
-      const int iPickedStimulusID = ProcessResult();  // display result
+      const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
       pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
 
       pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
@@ -411,7 +433,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
 }
 
 
-const int UsrEnvDispatcher::ProcessResult(void)
+const int UsrEnvDispatcher::ProcessResult(GenericVisualization * pGenericVisualization)
 {
   for (unsigned int i = 0; i < m_vStimulusPresent.size(); ++i)
   {
@@ -420,7 +442,7 @@ const int UsrEnvDispatcher::ProcessResult(void)
       bcierr << "Signal processing module didnt send a result for stimulus number " << AnsiString(i + 1).c_str() << std::endl;
   }
   // process the results
-  float fMaxValue=-9999999999999999;
+  float fMaxValue = - std::numeric_limits<float>::max();
   int iPickedStimulusID(0);
   for (unsigned int i = 0; i < m_vResultCounts.size(); ++i)
   {
@@ -436,6 +458,13 @@ const int UsrEnvDispatcher::ProcessResult(void)
   {
     m_vResultCounts[i] = 0;
     m_vResultValues[i] = 0;
+  }
+  if (pGenericVisualization != NULL && iPickedStimulusID != 0)
+  {
+    char memotext[256];
+    // send the results to the operator log
+    sprintf(memotext, "The predicted stimulus has ID equal to %d \r", iPickedStimulusID);
+    pGenericVisualization->SendMemo2Operator(memotext);
   }
   return iPickedStimulusID;
 }

@@ -14,6 +14,7 @@ class UsrElement;
 class STATEVECTOR;
 class PARAMLIST;
 class STATELIST;
+class GenericVisualization;
 
 class UsrEnvDispatcher
 {
@@ -44,10 +45,11 @@ public:
 
   /// Member functions
   void Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
-  void Process(const std::vector<float>&, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
+  void Process(const std::vector<float>&, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector,
+               GenericVisualization * pGenericVisualization);
   void Reset(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
   void SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
-  const int ProcessResult(void);
+  const int ProcessResult(GenericVisualization * pGenericVisualization);
 
 private: 	// User declarations
   unsigned int m_iUsrElementOnTime;      // in units of SampleBlocks

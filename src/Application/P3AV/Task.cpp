@@ -199,6 +199,12 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   vParamNames.clear();
   if (bError == false)
   {
+    if (atoi(GetParamPtr("OnTime")->GetValue()) == 0)
+    {
+      bcierr << "OnTime parameter can not be 0." << std::endl;
+      bError = true;
+    }
+
     if (atoi(GetParamPtr("InterpretMode")->GetValue()) < 0 ||
         atoi(GetParamPtr("InterpretMode")->GetValue()) > 2)
     {
@@ -269,6 +275,14 @@ void TTask::Preflight(const SignalProperties& inputProperties,
       }
     }
   vStateNames.clear();
+
+  // check whether sound card is present
+  const int WaveOutputDeviceCount = (int)waveOutGetNumDevs();
+  if (WaveOutputDeviceCount == 0)
+  {
+    bcierr << "Sound card is missing." << std::endl;
+    bError = true;
+  }
 
   if (bError)
     PreflightCondition( false );
@@ -424,9 +438,9 @@ void TTask::Process( const GenericSignal* Input,
 
   // creates a new state of the user environment
   if (m_pUsrEnvDispatcher != NULL)
-    m_pUsrEnvDispatcher->Process(signals, m_pUsrEnv, Statevector);
+    m_pUsrEnvDispatcher->Process(signals, m_pUsrEnv, Statevector, m_pGenericVisualization);
 
   // write the current time, i.e., the "StimulusTime" into the state vector
-  State( "StimulusTime" ) = m_pBCITime->GetBCItime_ms();   
+  State( "StimulusTime" ) = m_pBCITime->GetBCItime_ms();
 }
 
