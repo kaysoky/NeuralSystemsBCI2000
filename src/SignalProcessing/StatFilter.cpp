@@ -65,6 +65,9 @@ cur_stat.NumT= 0;
  strcpy(line, "Statistics matrix BaselineCfg= 2 2 TargetCode 1 TargetCode 2 0 0 1 // states to watch for baseline");
  plist->AddParameter2List( line, strlen(line) );
 
+ strcpy(line, "Statistics matrix BaselineHits= 2 2 1 0.50 2 0.50 // propoirtion correct for each target");
+ plist->AddParameter2List( line, strlen(line) );
+
  strcpy(line, "Statistics int TrendControl= 1 0 0 1  // Online adaption of % Correct Trend 1= Lin 2 = Quad");
  plist->AddParameter2List( line, strlen(line) );
 
@@ -134,18 +137,17 @@ StatFilter::~StatFilter()
 // **************************************************************************
 int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
-AnsiString AName,SName,SSes,FInit;
-PARAM   *cur_param;
-int     visualizeyn;
-char    slash[2];
-char    numbuf[16];
-BCIDtry *bcidtry;
+        AnsiString AName,SName,SSes,FInit;
+        int visualizeyn;
+        char slash[2];
+        char numbuf[16];
+        BCIDtry *bcidtry;
+        int num,i;
 
-static int init_flag= 0;
-
- trend_flag= 0;
- intercept_flag= 0;
- weight_flag= 0;
+        static int init_flag= 0;
+        trend_flag= 0;
+        intercept_flag= 0;
+        weight_flag= 0;
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -167,6 +169,7 @@ static int init_flag= 0;
        QuadTrend_Lrn_Rt= atof(paramlist->GetParamPtr("QuadTrendLrnRt")->GetValue() );
        desiredpix= atof(paramlist->GetParamPtr("DesiredPixelsPerSec")->GetValue());
        visualizeyn= atoi(paramlist->GetParamPtr("VisualizeStatFiltering")->GetValue() );
+       Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
 
        WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
        WtRate= atof(plist->GetParamPtr("WtLrnRt")->GetValue() );
@@ -178,13 +181,6 @@ static int init_flag= 0;
   }
  catch(...)
   { return(0); }
-
- // we might not have defined the NumberTargets parameter in this application
- cur_param=plist->GetParamPtr("NumberTargets");
- if (cur_param)
-    Ntargets= atoi(cur_param->GetValue());
- else
-    Ntargets=2;
 
   bcidtry= new BCIDtry();
 
@@ -225,6 +221,13 @@ static int init_flag= 0;
         if( Trend_Control > 0 )
         {
                 stat->SetDTWinMaxTrials( Trend_Win_Lth );
+
+                num= GetBaselineHits();
+
+                for(i=0;i<num;i++)
+                {
+                        stat->SetTrendControl( i, BaseHits[i], Trend_Win_Lth );
+                }
         }
 
         if( WtControl > 0 )
@@ -271,6 +274,28 @@ static int init_flag= 0;
   return(1);
 }
 
+//**************************************************************************************
+
+int StatFilter::GetBaselineHits( void )
+{
+        PARAM  *paramptr;
+        int i;
+        int num;
+
+        paramptr= paramlist->GetParamPtr("BaselineHits");
+        if( !paramptr ) return(0);
+        num= paramptr->GetNumValuesDimension1();
+
+        for(i=0;i<num;i++)
+        {
+                BaseNum[i]= atoi( paramptr->GetValue(i,0) );
+                BaseHits[i]= atof( paramptr->GetValue(i,1) );
+        }
+        return(num);
+}
+
+
+//**************************************************************************************
 
 void StatFilter::GetStates( void )
 {
@@ -356,6 +381,16 @@ int StatFilter::Resting( ClassFilter *clsf )
                 sprintf(memotext, "%.2f\r", cur_stat.pix);
                 paramlist->GetParamPtr("DesiredPixelsPerSec")->SetValue( memotext );
 
+                paramlist->GetParamPtr("BaselineHits")->SetDimensions( cur_stat.NumT, 2 );
+
+                for(i=0; i< cur_stat.NumT; i++)
+                {
+                        sprintf(memotext, "%d\r", BaseNum[i]);
+                        paramlist->GetParamPtr("BaselineHits")->SetValue( memotext, i, 0 );
+
+                        sprintf(memotext, "%.2f\r", cur_stat.TargetPC[i]);
+                        paramlist->GetParamPtr("BaselineHits")->SetValue( memotext, i ,1 );
+                }
 
                 corecomm->StartSendingParameters();
 
@@ -416,7 +451,7 @@ static int oldtarget, oldoutcome;
      {
         sample= 0;
 
-        for(in_channel=0; in_channel<(int)SignalE->Channels(); in_channel++)
+        for(in_channel=0; in_channel<SignalE->Channels(); in_channel++)
          {
          value= SignalE->GetValue(in_channel, sample);
 

@@ -7,8 +7,8 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-#define MAX_N  256
-#define MAX_M  256
+#define MAX_N  128
+#define MAX_M  128
 
 class ClassFilter : public GenericFilter
 {
@@ -36,6 +36,7 @@ private:
        GenericVisualization *vis;
 public:
        int n_hmat;                      // number of elements in horizontal function
+       int class_mode;
        int n_vmat;                      // number of elements in vertical function
        float feature[2][MAX_M];         //  values of the elements of the linear equations
        float wtmat[2][MAX_M];           //  weights of the elements of the linear equations
