@@ -18,10 +18,9 @@
 #pragma hdrstop
 
 #include "UOperatorUtils.h"
-#include "UState.h"
-#include "UBCIError.h"
 #include "defines.h"
 
+#include <VCL.h>
 #include <Registry.hpp>
 #include <string>
 #include <typeinfo>
@@ -62,7 +61,7 @@ OperatorUtils::RestoreControl( TControl* c )
     storedRect.Top = reg->ReadInteger( "Top" );
     storedRect.Right = storedRect.Left + reg->ReadInteger( "Width" );
     storedRect.Bottom = storedRect.Top + reg->ReadInteger( "Height" );
-    const int minDistance = 10; // Make sure at least that much of the window is
+    const int minDistance = 10; // Make sure that at least that much of the window is
                                 // inside the screen.
     TRect commonRect;
     if( Types::IntersectRect( commonRect, storedRect, Screen->WorkAreaRect )

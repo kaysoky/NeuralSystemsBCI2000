@@ -16,7 +16,7 @@
 #ifndef UOperatorUtilsH
 #define UOperatorUtilsH
 
-class STATELIST;
+class Controls::TControl;
 
 namespace OperatorUtils
 {
@@ -26,7 +26,7 @@ namespace OperatorUtils
 // Parameters: A pointer to a TControl object.
 // Returns:    n/a
 // **************************************************************************
-  void   SaveControl( const TControl* );
+  void SaveControl( const TControl* );
 
 // **************************************************************************
 // Function:   RestoreControl
@@ -34,7 +34,7 @@ namespace OperatorUtils
 // Parameters: A pointer to a TControl object.
 // Returns:    n/a
 // **************************************************************************
-  void   RestoreControl( TControl* );
+  void RestoreControl( TControl* );
 };
 
 #endif
