@@ -20,8 +20,8 @@ string ToolInfo[] =
   "version 0.1.0, compiled "__DATE__,
   "Convert a binary BCI2000 stream into a human readable tabular form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
-    "and writes it output to the standard "
-    "output as a tab separated table of values.",
+    "and writes it to standard output "
+    "as a tab/newline separated table of values.",
   ""
 };
 

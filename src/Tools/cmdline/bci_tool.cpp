@@ -137,12 +137,13 @@ int main( int argc, const char** argv )
   {
     ostream& out = ( result == noError ? cout : cerr );
     out << "Usage: " << ToolInfo[ name ] << " [OPTION]\n"
-        << ToolInfo[ short_description ] << '\n'
-        << "\t-h,        --help        \tDisplay this help\n"
-        << "\t-v,        --version     \tOutput version information\n"
-        << "\t-i<file>,  --input<file>\tGet input from file\n";
+        << "Options are:\n"
+        << "\t-h,       --help        \tDisplay this help\n"
+        << "\t-v,       --version     \tOutput version information\n"
+        << "\t-i<file>, --input<file> \tGet input from <file>\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
+    out << '\n' << ToolInfo[ description ] << '\n';
     out.flush();
   }
   if( options.version )

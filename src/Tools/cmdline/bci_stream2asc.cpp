@@ -26,8 +26,8 @@ string ToolInfo[] =
   "version 0.1.0, compiled "__DATE__,
   "Convert a binary BCI2000 stream into a human readable form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
-    "and writes it output to the standard "
-    "output as human readable character stream.",
+    "and writes it to standard output as a sequence of "
+    "BCI2000 messages in a human readable representation.",
   ""
 };
 

@@ -29,12 +29,11 @@ string ToolInfo[] =
   "",
   "tool, framework version 0.1.0, compiled "__DATE__,
   "Process standard input with the \"" FILTER_NAME "\" BCI2000 filter.",
-  "Reads a BCI2000 compliant binary stream from standard input, "
-    "applies the " FILTER_NAME ", "
-    "and writes its output to the standard "
-    "output as a BCI2000 compliant binary stream.",
+  "Reads a BCI2000 compliant binary stream from standard input, applies the\n"
+    FILTER_NAME " BCI2000 filter, and writes its output to standard output\n"
+    "as a BCI2000 compliant binary stream.",
   "-o<file>, --operator<file>\tdirect visualization messages to <file>",
-  "                            \tinstead of /dev/null",
+  "                          \tinstead of /dev/null",
   ""
 };
 
