@@ -82,8 +82,6 @@ OperatorUtils::SaveControl( const TControl* c )
   {
     reg = new TRegistry( KEY_WRITE );
     reg->RootKey = HKEY_CURRENT_USER;
-    
-    typeid( *c ).name();
     reg->OpenKey( ( string( KEY_BCI2000 KEY_OPERATOR KEY_CONFIG "\\" ) + typeid( *c ).name() ).c_str(), true );
     reg->WriteInteger( "Left", c->Left );
     reg->WriteInteger( "Top", c->Top );
@@ -105,17 +103,22 @@ OperatorUtils::RestoreControl( TControl* c )
     reg = new TRegistry( KEY_READ );
     reg->RootKey = HKEY_CURRENT_USER;
     reg->OpenKey( ( string( KEY_BCI2000 KEY_OPERATOR KEY_CONFIG "\\" ) + typeid( *c ).name() ).c_str(), false );
-    TRect clientRect;
-    clientRect.Left = reg->ReadInteger( "Left" );
-    clientRect.Top = reg->ReadInteger( "Top" );
-    clientRect.Right = clientRect.Left + reg->ReadInteger( "Width" );
-    clientRect.Bottom = clientRect.Top + reg->ReadInteger( "Height" );
-    if( Types::IntersectRect( TRect(), clientRect, Screen->WorkAreaRect ) )
+    TRect storedRect;
+    storedRect.Left = reg->ReadInteger( "Left" );
+    storedRect.Top = reg->ReadInteger( "Top" );
+    storedRect.Right = storedRect.Left + reg->ReadInteger( "Width" );
+    storedRect.Bottom = storedRect.Top + reg->ReadInteger( "Height" );
+    const int minDistance = 10; // Make sure at least that much of the window is
+                                // inside the screen.
+    TRect commonRect;
+    if( Types::IntersectRect( commonRect, storedRect, Screen->WorkAreaRect )
+        && commonRect.Height() >= minDistance
+        && commonRect.Width() >= minDistance )
     {
-      c->Left = clientRect.Left;
-      c->Top = clientRect.Top;
-      c->Height = clientRect.Height();
-      c->Width = clientRect.Width();
+      c->Left = storedRect.Left;
+      c->Top = storedRect.Top;
+      c->Height = storedRect.Height();
+      c->Width = storedRect.Width();
     }
   }
   catch( ERegistryException& )
