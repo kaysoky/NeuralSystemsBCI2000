@@ -205,6 +205,24 @@ void TTask::Preflight(const SignalProperties& inputProperties,
       bcierr << "InterpretMode parameter can be only 0(none mode), 1(free mode), or 2(copy mode)" << std::endl;
       bError = true;
     }
+    if (atoi(GetParamPtr("AudioSwitch")->GetValue()) < 0 ||
+        atoi(GetParamPtr("AudioSwitch")->GetValue()) > 1)
+    {
+      bcierr << "AudioSwitch parameter can be only 0(off), 1(on)" << std::endl;
+      bError = true;
+    }
+    if (atoi(GetParamPtr("VideoSwitch")->GetValue()) < 0 ||
+        atoi(GetParamPtr("VideoSwitch")->GetValue()) > 1)
+    {
+      bcierr << "VideoSwitch parameter can be only 0(off), 1(on)" << std::endl;
+      bError = true;
+    }
+    if (atoi(GetParamPtr("CaptionSwitch")->GetValue()) < 0 ||
+        atoi(GetParamPtr("CaptionSwitch")->GetValue()) > 1)
+    {
+      bcierr << "CaptionSwitch parameter can be only 0(off), 1(on)" << std::endl;
+      bError = true;
+    }
     if (atoi(GetParamPtr("MinInterTime")->GetValue()) > atoi(GetParamPtr("MaxInterTime")->GetValue()))
     {
       bcierr << "MinInterTime parameter can not be larger than MaxInterTime parameter" << std::endl;
@@ -221,7 +239,7 @@ void TTask::Preflight(const SignalProperties& inputProperties,
     {
       bcierr << "NumSamplesInERP has to be less than (PostSequenceTime * SampleBlockSize)" << std::endl;
       bError = true;
-    } 
+    }
   }
 
   // check stimuli matrix , FocusOn matrix, Result matrix
@@ -268,16 +286,22 @@ const bool TTask::ErrorReadingMatrix(const AnsiString asMatrixName) const
   {
     std::string applicationPath = ExtractFilePath(Application->ExeName).c_str();
     // check sound files
-    std::string soundFileName = ( const char* )Parameter(asMatrixName.c_str(), "audio", i );
-    soundFileName = applicationPath + soundFileName;
-    if (ErrorLoadingAudioFile(soundFileName) == true)
-      return true;
+    if (atoi(Parameter( "AudioSwitch" )->GetValue()) == 1)
+    {
+      std::string soundFileName = ( const char* )Parameter(asMatrixName.c_str(), "audio", i );
+      soundFileName = applicationPath + soundFileName;
+      if (ErrorLoadingAudioFile(soundFileName) == true)
+        return true;
+    }
 
     // check icon files
-    std::string iconFileName = ( const char* )Parameter(asMatrixName.c_str(), "icon", i );
-    iconFileName = applicationPath + iconFileName;
-    if (ErrorLoadingVideoFile(iconFileName) == true)
-      return true;
+    if (atoi(Parameter( "VideoSwitch" )->GetValue()) == 1)
+    {
+      std::string iconFileName = ( const char* )Parameter(asMatrixName.c_str(), "icon", i );
+      iconFileName = applicationPath + iconFileName;
+      if (ErrorLoadingVideoFile(iconFileName) == true)
+        return true;
+    }
   }
   return false;
 }
