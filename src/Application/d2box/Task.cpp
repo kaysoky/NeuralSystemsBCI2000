@@ -77,7 +77,8 @@ TTask::TTask()
       "Horizontal Start of Cursor",
     "Targets float StartCursorY= 50.0 0 0 100.0 // "
       "Vertical Cursor Starting Position",
-    "Targets matrix TargetPos= 7 4 "
+    "Targets matrix TargetPos= "
+      "{ H%20Position V%20Position H%20Size V%20Size X%20Adapt Y%20Adapt Adapt%20Code } 4 "
       "25 25  0 90 "
       " 0 90 25 25 "
       "50 50 10 10 "
@@ -85,23 +86,23 @@ TTask::TTask()
       " 0  0 -1  1 "
       "-1  1  0  0 "
       " 0  0  0  0 "
-      " 0 0 100 // Target Position Matrix - Values are 0-100",
+      " 0 0 0 // Target Position Matrix - Values are 0-100",
 
   #ifdef DATAGLOVE
-    "JoyStick matrix GloveControlX= ",
-      "{t-1 t sign} ", // row labels
-      "{ thumb index middle ring little pitch roll } ", // column labels
-      " -1 0 0 0 0 0 0 ",
-      "  1 0 0 0 0 0 0 ",
-      "  1 1 1 1 1 1 1 ",
+    "JoyStick matrix GloveControlX= "
+      "{t-1 t sign} " // row labels
+      "{ thumb index middle ring little pitch roll } " // column labels
+      " -1 0 0 0 0 0 0 "
+      "  1 0 0 0 0 0 0 "
+      "  1 1 1 1 1 1 1 "
       " 0 0 0 // glove sensor weights for horizontal movement",
 
-    "JoyStick matrix GloveControlY= ",
-      "{t-1 t sign} ", // row labels
-      "{ thumb index middle ring little pitch roll } ", // column labels
-      " 0 0 -1 0 0 0 0 ",
-      " 0 0  1 0 0 0 0 ",
-      " 1 1  1 1 1 1 1 ",
+    "JoyStick matrix GloveControlY= "
+      "{t-1 t sign} " // row labels
+      "{ thumb index middle ring little pitch roll } " // column labels
+      " 0 0 -1 0 0 0 0 "
+      " 0 0  1 0 0 0 0 "
+      " 1 1  1 1 1 1 1 "
       " 0 0 0 // glove sensor weights for vertical movement",
   #endif // DATAGLOVE
   END_PARAMETER_DEFINITIONS
