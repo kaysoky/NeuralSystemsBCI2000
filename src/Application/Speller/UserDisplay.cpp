@@ -13,7 +13,7 @@ USERDISPLAY::USERDISPLAY()
 {
  activetargets=NULL;
 
- form=new TForm(Application);
+ form=new TForm(static_cast<TComponent*>(NULL));
  form->Top=50;
  form->Left=50;
  form->Width=300;
@@ -28,7 +28,7 @@ USERDISPLAY::USERDISPLAY()
 
  statusbar=new STATUSBAR(form);
  cursor=new CURSOR(form);
- message=new TLabel(form);
+ message=new TLabel(static_cast<TComponent*>(NULL));
  message->Parent=form;
  message->Visible=false;
 }
@@ -41,7 +41,7 @@ USERDISPLAY::~USERDISPLAY()
  if (activetargets) delete activetargets;
  if (statusbar)     delete statusbar;
  if (cursor)        delete cursor;
- if (form)          form->Close();
+ if (form)          delete form;
 
  message=NULL;
  activetargets=NULL;
