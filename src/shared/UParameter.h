@@ -30,6 +30,9 @@
  *                      PARAM::SetNumValues(), jm                             *
  * V0.23 - 11/24/2003 - Fixed parsing of matrices with 0x0 size               *
  *                      Preserve existing values in SetDimensions, jm         *
+ * V0.24 - 11/28/2003 - Added aliases for some functions that contain         *
+ *                      dimension names, e.g. PARAM::GetNumRows(),            *
+ *                      PARAM::RowLabels(), jm                                *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -198,6 +201,8 @@ class PARAM
                 { return values.size(); }
         size_t  GetNumValuesDimension1() const
                 { return GetNumValues() / GetNumValuesDimension2(); }
+        size_t  GetNumRows() const
+                { return GetNumValuesDimension1(); }
 #ifdef LABEL_INDEXING
         size_t  GetNumValuesDimension2() const
                 { return dim2_index.size(); }
@@ -205,6 +210,8 @@ class PARAM
         size_t  GetNumValuesDimension2() const
                 { return dimension2; }
 #endif // LABEL_INDEXING
+        size_t  GetNumColumns() const
+                { return GetNumValuesDimension2(); }
         void    SetDimensions( size_t, size_t );
   const char*   GetValue() const
                 { return GetValue( 0 ); }
@@ -222,12 +229,20 @@ class PARAM
                 { return GetValue( dim1_index[ label_dim1 ], index_dim2 ); }
   labelIndexer& LabelsDimension1()
                 { return dim1_index; }
+  labelIndexer& RowLabels()
+                { return LabelsDimension1(); }
   const labelIndexer& LabelsDimension1() const
                 { return dim1_index; }
+  const labelIndexer& RowLabels() const
+                { return LabelsDimension1(); }
   labelIndexer& LabelsDimension2()
                 { return dim2_index; }
+  labelIndexer& ColumnLabels()
+                { return LabelsDimension2(); }
   const labelIndexer& LabelsDimension2() const
                 { return dim2_index; }
+  const labelIndexer& ColumnLabels() const
+                { return LabelsDimension2(); }
   labelIndexer& Labels()
                 { return dim1_index; }
   const labelIndexer& Labels() const

@@ -30,6 +30,9 @@
  *                      PARAM::SetNumValues(), jm                             *
  * V0.23 - 11/24/2003 - Fixed parsing of matrices with 0x0 size               *
  *                      Preserve existing values in SetDimensions, jm         *
+ * V0.24 - 11/28/2003 - Added aliases for some functions that contain         *
+ *                      dimension names, e.g. PARAM::GetNumRows(),            *
+ *                      PARAM::RowLabels(), jm                                *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
