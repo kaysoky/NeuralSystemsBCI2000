@@ -16,13 +16,19 @@
 //           Note that waveOutSetVolume does not work as described in the
 //           Win32 documentation but will change the global wave out volume
 //           in the windows mixer instead.
+//          Dec 14, 2004, halder@informatik.uni-tuebingen.de
+//           Reimplemented class using DirectX to enable simultaneous
+//           playback of audio files, with different volume and pan settings,
+//           on one device.
 //
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef WAVEPLAYERH
 #define WAVEPLAYERH
 
+#include <windows.h>
 #include <mmsystem.h>
+#include <dsound.h>
 #include <string>
 
 class TWavePlayer
@@ -33,6 +39,8 @@ class TWavePlayer
       noError,
       fileOpeningError,
       featureNotSupported,
+      invalidParams,
+      initError,
       genError
     };
 
@@ -40,7 +48,7 @@ class TWavePlayer
                             TWavePlayer();
                             TWavePlayer( const TWavePlayer& );
                             TWavePlayer& operator=( const TWavePlayer& );
-    virtual                 ~TWavePlayer();
+  virtual                   ~TWavePlayer();
 
   private:
                 void        Construct();
@@ -54,55 +62,35 @@ class TWavePlayer
 
                 Error       SetVolume( float ); // silent:0 ... 1:max
                 float       GetVolume() const  { return mVolume; }
-                Error       SetBalance( float ); // left:-1 ... 1:right
-                float       GetBalance() const { return mBalance; }
-                Error       SetVolumeAndBalance( float, float );
+                Error       SetPan( float ); // left:-1 ... 1:right
+                float       GetPan() const { return mPan; }
 
                 void        Play();
                 void        Stop();
                 // Returns the current playing position from start
                 // in milliseconds. Zero if not playing.
-                // May be used for delay measurements.
-                // Returns its value multiplied by -1.0 if the device driver
-                // does not support sample-accurate positions.
-                // In this case, the position returned may be ahead of the
-                // actual sound output by some milliseconds.
-                float              GetPos() const;
-                bool               IsPlaying() const { return mPlaying; }
+                float       GetPos() const;
+                bool        IsPlaying() const;
 
 
   private:
                 float       mVolume,
-                            mBalance;
+                            mPan;
                 bool        mPlaying;
                 std::string mCurrentFileName;
 
-// OS specific members go here.
+        // OS specific members go here.
 #ifdef _WIN32
-            enum TOperationMode
-            {
-                unknown,
-                singleDeviceInstance,
-                multipleDeviceInstances
-            };
-            HWAVEOUT        mDeviceHandle;
-            HMMIO           mFileHandle;
-            WAVEFORMATEX    mFileFormat;
-            WAVEHDR         mSoundHeader;
-            DWORD           mSamplingRate;
-            DWORD           mSoundFlags;
+                WAVEHDR         mSoundHeader;
+                DWORD           mSamplingRate;
+                DWORD           mBitsPerSample;
 
-    static  void CALLBACK   MsgHandler( HWAVEOUT, UINT, DWORD, DWORD, DWORD );
+        static  int             sNumInstances;
 
-    // Not all wave out drivers support multiple instances of a wave out
-    // device. We need to work differently then.
-    static  HWAVEOUT        sCurrentDeviceHandle;
-    static  WAVEHDR         *spCurrentHeader;
-    static  TOperationMode  sMode;
-    static  bool            sPositionAccurate;
-    static  int             sNumInstances;
+                LPDIRECTSOUNDBUFFER         mSecondaryBuffer;
+        static  LPDIRECTSOUND               sPDS;
+        static  LPDIRECTSOUNDBUFFER         sPrimarySoundBuffer;
 #endif // WIN32
 
 };
-
 #endif // WAVEPLAYERH
