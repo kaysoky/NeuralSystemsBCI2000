@@ -83,7 +83,7 @@ all docinfo prepare clean install update pdf:
 ##################################################################################
 
 # Make all subprojects.
-all: prepare ${MAKEFILES:.mak=.all}
+all: ${MAKEFILES:.mak=.all}
   ${DONE}
   
 # Do some automatic documentation.
