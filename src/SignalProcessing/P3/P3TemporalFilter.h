@@ -7,38 +7,32 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-#include "getmem.h"
+#define MAX_ERPBUFFERS          50
+#define ERPBUFCODE_EMPTY        -1
 
-// #define MAX_N   72
-// #define MAX_M  128
-
-class TemporalFilter : public GenericFilter
+class P3TemporalFilter : public GenericFilter
 {
 private:
-       int instance;
-       int samples;               // dimension of data matrix
-       int channels;              // dimension of data matrix
-       float start;
-       float stop;
-       float delta;
-       float bandwidth;
-       int modelorder;
-       int datawindows;         // number of data segments per spectra
-       int detrend;
-       int hz;
-
-       float datwin[MAXDATA*8];    // data window buffer
-       int winlgth;
-       bool visualize;
-       MEM *mem;
        GenericVisualization *vis;
+       GenericSignal    *ERPBufSamples[MAX_ERPBUFFERS];
+       bool     visualize;
+       void     GetStates();
+       float    mindispval, maxdispval;
+       int      CurrentRunning, OldRunning, CurrentStimulusCode, OldStimulusCode, CurrentStimulusType;
+       int      ERPBufCode[MAX_ERPBUFFERS], ERPBufType[MAX_ERPBUFFERS], ERPBufSampleCount[MAX_ERPBUFFERS];
+       bool     ApplyForNewERPBuffer(int StimulusCode, int StimulusType, int numchannels, int numsamples);
+       void     DeleteAllERPBuffers();
+       void     DeleteERPBuffer(int cur_buf);
+       void     AppendToERPBuffers(GenericSignal *input);
+       int      ProcessERPBuffers(GenericSignal *output);
+       STATEVECTOR     *statevector;
 public:
-       int nBins;
-       TemporalFilter(PARAMLIST *plist, STATELIST *slist);
-       TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~TemporalFilter();
+       P3TemporalFilter(PARAMLIST *plist, STATELIST *slist);
+       P3TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+       ~P3TemporalFilter();
        int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
        int Process(GenericSignal *Input, GenericSignal *Output);
+       int numsamplesinerp, numchannels, numerpsnecessary;
 };
 #endif
 

@@ -8,8 +8,8 @@
 
 #include "UBCI2000Error.h"
 #include "CalibrationFilter.h"
+#include "P3TemporalFilter.h"
 #include "SpatialFilter.h"
-#include "ARFilter.h"
 #include "ClassFilter.h"
 #include "NormalFilter.h"
 #include "StatFilter.h"
@@ -30,7 +30,7 @@ public:
        BCI2000ERROR       error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
-       TemporalFilter     *tempfilter;
+       P3TemporalFilter   *tempfilter;
        ClassFilter        *classfilter;
        NormalFilter       *normalfilter;
        StatFilter         *statfilter;

@@ -31,7 +31,7 @@ char line[512];
  if (!calfilter) was_error=true;
  spatfilter= new SpatialFilter(plist, slist);
  if(!spatfilter) was_error=true;
- tempfilter= new TemporalFilter(plist, slist);
+ tempfilter= new P3TemporalFilter(plist, slist);
  if(!tempfilter) was_error= true;
  classfilter= new ClassFilter(plist, slist );
  if(!classfilter) was_error= true;
@@ -119,7 +119,6 @@ int     res, returnval;
   NB= NA;
   NC= NA;
   MC= atoi(plist->GetParamPtr("SpatialFilteredChannels")->GetValue());
-  MD= MC;
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
 
@@ -143,14 +142,15 @@ int     res, returnval;
      error.CopyError(&(spatfilter->error));
      }
 
-  // initialize the temporal filter
+  // initialize the P3 temporal filter
   res= tempfilter->Initialize(plist, svector, corecomm);
   if (res == 0)
      {
      returnval= 0;
      error.CopyError(&(tempfilter->error));
      }
-  ND= tempfilter->nBins;
+  MD= tempfilter->numchannels;
+  ND= tempfilter->numsamplesinerp;
 
   // initialize the classifier
   res= classfilter->Initialize(plist, svector, corecomm, ND);
