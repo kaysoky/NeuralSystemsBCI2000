@@ -9,9 +9,7 @@
     <RESFILES value="BCI2ASCII.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm"/>
-    <LIBFILES value="C:\matlabR12\extern\lib\win32\borland\bc54\libmx.lib 
-      C:\matlabR12\extern\lib\win32\borland\bc54\libmat.lib 
-      C:\matlabR12\extern\lib\win32\borland\bc54\libeng.lib"/>
+    <LIBFILES value="libmx.lib libmat.lib libeng.lib"/>
     <LIBRARIES value="vclx.lib bcbsmp.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi vcldb.bpi 
@@ -28,7 +26,7 @@
     <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2ASCII.cpp"/>
-    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include"/>
+    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include"/>
     <LIBPATH value="..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\bin\win32"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
@@ -55,9 +53,9 @@
       <FILE FILENAME="..\..\SHARED\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="C:\matlabR12\extern\lib\win32\borland\bc54\libmx.lib" FORMNAME="" UNITNAME="libmx.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="C:\matlabR12\extern\lib\win32\borland\bc54\libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="C:\matlabR12\extern\lib\win32\borland\bc54\libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="libmx.lib" FORMNAME="" UNITNAME="libmx.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -91,13 +89,14 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=6
-Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
-Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
-Item2=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
-Item3=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
-Item4=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
-Item5=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
+Count=7
+Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include
+Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
+Item2=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
+Item3=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
+Item4=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
+Item5=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
+Item6=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=9
