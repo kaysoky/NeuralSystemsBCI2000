@@ -39,6 +39,7 @@
 
 #include "..\shared\defines.h"
 #include "UGenericFilter.h"
+#include "UGenericSignal.h"
 #include "UGenericVisualization.h"
 #include "UCoreMessage.h"
 #include "Task.h"

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "UCoreComm.h"
 #include "UState.h"
 #include "BCIDirectry.h"
 #include "UFilterHandling.h"
