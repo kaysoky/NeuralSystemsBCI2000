@@ -320,7 +320,8 @@ There is a separate class, \texttt{SignalProperties}, for expressing those
 values, and determining whether a given signal ``fits" into another one, i.e.\ 
 whether the values contained in one signal may be copied into another 
 signal without loss of information.
-\texttt{GenericSignal} inherits from \texttt{SignalProperties}.
+\texttt{GenericSignal} uses a \texttt{SignalProperties} member to maintain
+information about its properties.
 
 \subsection{The \texttt{GenericFilter} class}
 
@@ -657,7 +658,7 @@ void TachyonADC::Preflight( const SignalProperties&,
            << endl;
   TachyonStop();
   outputProperties = SignalProperties( Parameter( "SoftwareCh" ),
-                                           Parameter( "SampleBlockSize" ), 2 );
+                          Parameter( "SampleBlockSize" ), SignalType::int16 );
 }
 \end{verbatim}\codeend
 
