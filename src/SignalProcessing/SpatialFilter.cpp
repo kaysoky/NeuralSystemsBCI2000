@@ -131,12 +131,12 @@ float   value;
 
  // actually perform the Spatial Filtering on the input and write it into the output signal
 
-        for(sample=0; sample<input->MaxElements(); sample++)
+        for(sample=0; sample<(int)input->MaxElements(); sample++)
         {
-            for(out_channel= 0; out_channel<output->Channels(); out_channel++)
+            for(out_channel= 0; out_channel<(int)output->Channels(); out_channel++)
             {
                    value= 0;
-                   for(in_channel=0; in_channel<input->Channels(); in_channel++)
+                   for(in_channel=0; in_channel<(int)input->Channels(); in_channel++)
                    {
                            value+= mat[out_channel][in_channel] * input->GetValue(in_channel, sample);
                    }
