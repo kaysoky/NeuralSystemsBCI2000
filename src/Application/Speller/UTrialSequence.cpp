@@ -10,6 +10,7 @@
 #include "UTrialSequence.h"
 #include "UBCIError.h"
 #include "Localization.h"
+#include "MeasurementUnits.h"
 
 //---------------------------------------------------------------------------
 
@@ -23,39 +24,40 @@
 //             slist - pointer to the state list
 // Returns:    N/A
 // **************************************************************************
-TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist)
+TRIALSEQUENCE::TRIALSEQUENCE()
+: vis( NULL )
 {
-int     i;
-char    line[512];
+ BEGIN_PARAMETER_DEFINITIONS
+  "SpellerSequence int ITITime= 10 "
+    "10 0 5000 // Duration of ITI in units of SampleBlocks",
+  "SpellerSequence int PTPTime= 10 "
+    "10 0 5000 // Duration of pre-trial period in units of SampleBlocks",
+  "SpellerSequence int FeedbackTime= 30 "
+    "30 0 5000 // Duration of feedback in units of SampleBlocks",
+  "SpellerSequence int OutcomeTime= 15 "
+    "15 0 5000 // Duration of outcome in units of SampleBlocks",
+  "Speller int HighlightTarget= 0 "
+    "0 0 1 // Highlight the correct target (0=no, 1=yes) (boolean)",
+ END_PARAMETER_DEFINITIONS
 
- strcpy(line,"SpellerSequence int ITITime= 10 10 0 5000 // Duration of ITI in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"SpellerSequence int PTPTime= 10 10 0 5000 // Duration of pre-trial period in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"SpellerSequence int FeedbackTime= 30 30 0 5000 // Duration of feedback in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"SpellerSequence int OutcomeTime= 15 15 0 5000 // Duration of outcome in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Speller int HighlightTarget= 0 0 0 1 // Highlight the correct target (0=no, 1=yes)");
- plist->AddParameter2List(line,strlen(line) );
-
- vis=NULL;
-
- slist->AddState2List("TargetCode 5 0 0 0\n");
- slist->AddState2List("Feedback 2 0 0 0\n");
- slist->AddState2List("ResultCode 5 0 0 0\n");
- slist->AddState2List("IntertrialInterval 2 1 0 0\n");
- slist->AddState2List("CursorPosX 16 0 0 0\n");
- slist->AddState2List("CursorPosY 16 0 0 0\n");
+ BEGIN_STATE_DEFINITIONS
+  "TargetCode 5 0 0 0",
+  "Feedback 2 0 0 0",
+  "ResultCode 5 0 0 0",
+  "IntertrialInterval 2 1 0 0",
+  "CursorPosX 16 0 0 0",
+  "CursorPosY 16 0 0 0",
+ END_STATE_DEFINITIONS
 
  /*shidong starts*/
- NUM_TARGETS = AnsiString((const char*)plist->GetParamPtr("NumberTargets")->GetValue()).ToInt();
+ NUM_TARGETS = Parameter("NumberTargets");
  /*shidong ends*/
 
- for (i=0; i<NUM_TARGETS; i++)
+ char line[512];
+ for (int i=0; i<NUM_TARGETS; i++)
   {
   sprintf(line, "TargetID%d 16 65535 0 0\n", i+1);
-  slist->AddState2List(line);
+  States->AddState2List(line);
   }
 }
 
@@ -84,12 +86,9 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay, int numT)
+int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay, int numT)
 {
 int     ret;
-
- statevector=new_svect;
- userdisplay=new_userdisplay;
 
  // if (vis) delete vis;
  // vis= new GenericVisualization( plist, corecomm );
@@ -99,14 +98,11 @@ int     ret;
  ret=1;
  try
   {
-  max_ititime=atoi(plist->GetParamPtr("ITITime")->GetValue());
-  max_pretrialtime=atoi(plist->GetParamPtr("PTPTime")->GetValue());
-  max_feedbacktime=atoi(plist->GetParamPtr("FeedbackTime")->GetValue());
-  max_outcometime=atoi(plist->GetParamPtr("OutcomeTime")->GetValue());
-  if (atoi(plist->GetParamPtr("HighlightTarget")->GetValue()) == 0)
-     highlightcorrecttarget=false;
-  else
-     highlightcorrecttarget=true;
+  max_ititime=MeasurementUnits::ReadAsTime(Parameter("ITITime"));
+  max_pretrialtime=MeasurementUnits::ReadAsTime(Parameter("PTPTime"));
+  max_feedbacktime=MeasurementUnits::ReadAsTime(Parameter("FeedbackTime"));
+  max_outcometime=MeasurementUnits::ReadAsTime(Parameter("OutcomeTime"));
+  highlightcorrecttarget=(int)Parameter("HighlightTarget");
   }
  catch(...)
   {
@@ -135,9 +131,6 @@ int     ret;
 // **************************************************************************
 void TRIALSEQUENCE::ResetTrialSequence()
 {
-char    line[256];
-int     i;
-
  ititime=0;
  pretrialtime=0;
  pretrialtime=0;
@@ -149,17 +142,18 @@ int     i;
  selectedtarget=NULL;
  oldrunning=0;
 
- statevector->SetStateValue("TargetCode", 0);
- statevector->SetStateValue("Feedback", 0);
- statevector->SetStateValue("IntertrialInterval", 0);
- statevector->SetStateValue("ResultCode", 0);
- statevector->SetStateValue("CursorPosX", 0);
- statevector->SetStateValue("CursorPosY", 0);
+ State("TargetCode")=0;
+ State("Feedback")=0;
+ State("IntertrialInterval")=0;
+ State("ResultCode")=0;
+ State("CursorPosX")=0;
+ State("CursorPosY")=0;
 
- for (i=0; i<NUM_TARGETS; i++)
+ char line[256];
+ for ( int i=0; i<NUM_TARGETS; i++)
   {
   sprintf(line, "TargetID%d", i+1);
-  statevector->SetStateValue(line, (unsigned short)65535);
+  State( line ) = (unsigned short)65535;
   }
 }
 
@@ -189,16 +183,16 @@ char    memotext[256], line[256];
     userdisplay->InitializeCursorPosition();    // reset the cursor to the middle position
     userdisplay->HideMessage();                 // hide any message that's there
     // set the appropriate variables in the state vector
-    statevector->SetStateValue("TargetCode", 0);
-    statevector->SetStateValue("Feedback", 0);
-    statevector->SetStateValue("IntertrialInterval", 1);
-    statevector->SetStateValue("ResultCode", 0);
-    statevector->SetStateValue("CursorPosX", 0);
-    statevector->SetStateValue("CursorPosY", 0);
+    State("TargetCode")=0;
+    State("Feedback")=0;
+    State("IntertrialInterval")=1;
+    State("ResultCode")=0;
+    State("CursorPosX")=0;
+    State("CursorPosY")=0;
     for (i=0; i<NUM_TARGETS; i++)
      {
      sprintf(line, "TargetID%d", i+1);
-     statevector->SetStateValue(line, (unsigned short)65535);
+     State(line)=(unsigned short)65535;
      }
     }
 
@@ -245,12 +239,12 @@ char    memotext[256], line[256];
        correcttargetptr->HighlightTarget();
     if (correcttargetptr)
        correcttargetposition=correcttargetptr->targetposition+1;
-    statevector->SetStateValue("TargetCode", (unsigned short)correcttargetposition);
-    statevector->SetStateValue("IntertrialInterval", 0);
+    State("TargetCode")=(unsigned short)correcttargetposition;
+    State("IntertrialInterval")=0;
     for (i=0; i<NUM_TARGETS; i++)
      {
      sprintf(line, "TargetID%d", i+1);
-     statevector->SetStateValue(line, (unsigned short)userdisplay->activetargets->GetTargetID(i));
+     State(line)=(unsigned short)userdisplay->activetargets->GetTargetID(i);
      }
     }
 
@@ -288,12 +282,12 @@ char    memotext[256];
  if (feedbacktime == 0)
     {
     // set the appropriate variables in the state vector
-    statevector->SetStateValue("Feedback", 1);
+    State("Feedback")=1;
     }
 
  // set the current cursor position
- statevector->SetStateValue("CursorPosX", (unsigned short)(userdisplay->cursor->Left+userdisplay->cursor->Width/2));
- statevector->SetStateValue("CursorPosY", (unsigned short)(userdisplay->cursor->Top+userdisplay->cursor->Height/2));
+ State("CursorPosX")=(unsigned short)(userdisplay->cursor->Left+userdisplay->cursor->Width/2);
+ State("CursorPosY")=(unsigned short)(userdisplay->cursor->Top+userdisplay->cursor->Height/2);
 
  // increase the internal counter
  feedbacktime++;
@@ -335,8 +329,8 @@ char memotext[256];
  if (outcometime == 0)
     {
     selectedtarget->HighlightTarget();
-    statevector->SetStateValue("Feedback", 0);
-    statevector->SetStateValue("ResultCode", (unsigned short)selectedtarget->targetposition+1);
+    State("Feedback")=0;
+    State("ResultCode")=(unsigned short)selectedtarget->targetposition+1;
     }
 
  outcometime++;
@@ -383,7 +377,7 @@ char memotext[256];
  if (congrattime % 2 == 1)
     userdisplay->HideMessage();
  else
-    userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "CONGRATULATIONS !!!" ) ) ); // display the congratulations message
+    userdisplay->DisplayMessage( LocalizableString( "CONGRATULATIONS !!!" ) ); // display the congratulations message
 
  // if we exceeded the maximum time in this period, switch to the next part in the sequence
  // also, when the outcome period ends, we return the selected target
@@ -393,8 +387,8 @@ char memotext[256];
     cur_sequence=SEQ_ITI;
     // end this run
     userdisplay->HideMessage();
-    userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT ..." ) ) );
-    statevector->SetStateValue("Running", 0);
+    userdisplay->DisplayMessage( LocalizableString( "TIME OUT ..." ) );
+    State("Running")=0;
     }
 }
 
@@ -426,7 +420,7 @@ void TRIALSEQUENCE::SuspendTrial()
  userdisplay->HideStatusBar();               // hide the status bar
  userdisplay->HideCursor();                  // hide the cursor
 
- userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT !!!" ) ) ); // display the "TIME OUT" message
+ userdisplay->DisplayMessage( LocalizableString( "TIME OUT !!!" ) ); // display the "TIME OUT" message
 }
 
 
@@ -443,7 +437,7 @@ unsigned short running;
 
  selected=NULL;
 
- running=statevector->GetStateValue("Running");
+ running=State("Running");
 
  // when we suspend the system, show the "TIME OUT" message
  if ((running == 0) && (oldrunning == 1))

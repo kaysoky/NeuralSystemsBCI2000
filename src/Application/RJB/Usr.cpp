@@ -7,161 +7,156 @@
 #include "UParameter.h"
 #include "Localization.h"
 #include "UBCIError.h"
+#include "MeasurementUnits.h"
 
 #include <math.h>
-
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TUser *User;
 //---------------------------------------------------------------------------
-__fastcall TUser::TUser(TComponent* Owner)
-: TForm(Owner),
+Usr::Usr()
+: mpForm( NULL ),
   mRotateBy( 0.0 )
 {
+ BEGIN_PARAMETER_DEFINITIONS
+  "UsrTask int WinXpos= 400 0 0 2000 "
+    "// User Window X location",
+  "UsrTask int WinYpos= 5 0 0 2000 "
+    "// User Window Y location",
+  "UsrTask int WinWidth= 512 0 0 2000 "
+    "// User Window Width",
+  "UsrTask int WinHeight= 512 0 0 2000 "
+    "// User Window Height",
+  "UsrTask int CursorSize= 25 0 0 1000 "
+    "// User Window Cursor Size",
+  "UsrTask float RotateBy= 0 0 0 0 "
+    "// Counterclockwise rotation of feedback view in units of 2 Pi",
+  "UsrTask int TargetType= 0 0 0 1 "
+    "// 0=Targets, 1=YES/NO (enumeration)",
+  "UsrTask int YesNoCorrect= 0 0 0 1 "
+    "// Yes or No is target word (0=Yes, 1=No) (enumeration)",
+  "UsrTask int YesNoOnTime= 1 0 0 0 "
+    "// Time Yes/No is visible (in units of SampleBlocks)",
+  "UsrTask int YesNoOffTime= 4 0 0 0 "
+    "// Time Yes/No is invisible (in units of SampleBlocks)",
+ END_PARAMETER_DEFINITIONS
 }
 //--------------------------------------------------------------
-_fastcall TUser::~TUser()
+Usr::~Usr()
 {
-        Close();
-       
+  delete mpForm;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
+void Usr::Initialize()
 {
-        char line[512];
+  if( mpForm == NULL )
+    Application->CreateForm( __classid( TUser ), &mpForm );
 
-        strcpy(line,"UsrTask int WinXpos= 400 0 0 1 // User Window X location");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinYpos= 5 0 0 1 // User Window Y location");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinWidth= 512 0 0 1 // User Window Width");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinHeight= 512 0 0 1 // User Window Height");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size");
-        plist->AddParameter2List(line,strlen(line));
-        plist->AddParameter2List(
-         "UsrTask float RotateBy= 0 0 0 0 "
-         "// Counterclockwise rotation of feedback view in units of 2 Pi"
-        );
-        strcpy(line,"UsrTask int TargetType= 0 0 0 1 // 0=Targets, 1=YES/NO");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int YesNoCorrect= 0 0 0 1 // Yes or No is target word (0=Yes, 1=No)");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int YesNoOnTime= 1 0 0 10 // Time Yes/No is visible (in units of SampleBlocks)");
-        plist->AddParameter2List(line,strlen(line));
-        strcpy(line,"UsrTask int YesNoOffTime= 4 0 0 10 // Time Yes/No is invisible (in units of SampleBlocks)");
-        plist->AddParameter2List(line,strlen(line));
-}
+  ApplyLocalizations( mpForm );
 
-//------------------------------------------------------------------------
+  Rotate( mpForm->TargetText1, -mRotateBy );
+  Rotate( mpForm->TargetText2, -mRotateBy );
+  Rotate( mpForm->ResultText, -mRotateBy );
 
-void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
-{
-       Rotate( TargetText1, -mRotateBy );
-       Rotate( TargetText2, -mRotateBy );
-       Rotate( ResultText, -mRotateBy );
+  Wx=  Parameter("WinXpos");
+  Wy=  Parameter("WinYpos");
+  Wxl= Parameter("WinWidth");
+  Wyl= Parameter("WinHeight");
+  CursorSize= Parameter("CursorSize");
+  mpForm->Cursor->Brush->Color= clBlack;
 
-       Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
-       Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
-       Wxl= atoi(plist->GetParamPtr("WinWidth")->GetValue());
-       Wyl= atoi(plist->GetParamPtr("WinHeight")->GetValue());
-       CursorSize= atoi(plist->GetParamPtr("CursorSize")->GetValue());
-       Cursor->Brush->Color= clBlack;
+  mRotateBy = Parameter( "RotateBy" );
 
-       mRotateBy = ::atof( plist->GetParamPtr( "RotateBy" )->GetValue() );
-
-       // do we want targets or YES/NO ?
-       TargetType=  atoi(plist->GetParamPtr("TargetType")->GetValue());
-       YesNoCorrect=atoi(plist->GetParamPtr("YesNoCorrect")->GetValue());
-       YesNoOnTime= atoi(plist->GetParamPtr("YesNoOnTime")->GetValue());
-       YesNoOffTime=atoi(plist->GetParamPtr("YesNoOffTime")->GetValue());
+  // do we want targets or YES/NO ?
+  TargetType   = Parameter( "TargetType" );
+  YesNoCorrect = Parameter( "YesNoCorrect" );
+  YesNoOnTime =  MeasurementUnits::ReadAsTime( Parameter( "YesNoOnTime" ) );
+  YesNoOffTime = MeasurementUnits::ReadAsTime( Parameter( "YesNoOffTime" ) );
 
 
-       // define certain things that depend on whether we have targets or YES/NO
-       if (TargetType == 0)
-          {
-          Target->Visible=false;
-          Target2->Visible=false;
-          Cursor->Shape=stRectangle;
-          }
-       else
-          {
-          Target->Visible=false;
-          Target2->Visible=false;
-          Cursor->Shape=stCircle;
-          }
+  // define certain things that depend on whether we have targets or YES/NO
+  if (TargetType == 0)
+    {
+    mpForm->Target->Visible=false;
+    mpForm->Target2->Visible=false;
+    mpForm->Cursor->Shape=stRectangle;
+    }
+  else
+    {
+    mpForm->Target->Visible=false;
+    mpForm->Target2->Visible=false;
+    mpForm->Cursor->Shape=stCircle;
+    }
 
-       // define target and no-target words based on whether yes or no is correct
-       if (YesNoCorrect == 0)
-          {
-          TargetWord= LocalizableString( "YES" );
-          NoTargetWord= LocalizableString( "NO" );
-          }
-       else
-          {
-          TargetWord= LocalizableString( "NO" );
-          NoTargetWord= LocalizableString( "YES" );
-          }
+  // define target and no-target words based on whether yes or no is correct
+  if (YesNoCorrect == 0)
+    {
+    TargetWord= LocalizableString( "YES" );
+    NoTargetWord= LocalizableString( "NO" );
+    }
+  else
+    {
+    TargetWord= LocalizableString( "NO" );
+    NoTargetWord= LocalizableString( "YES" );
+    }
 
-       // set size of user window
-       ClientWidth=  Wxl;
-       ClientHeight= Wyl;
-       Left=         Wx;
-       Top=          Wy;
-       Cursor->Height=     CursorSize;
-       Cursor->Width=      CursorSize;
+  // set size of user window
+  mpForm->ClientWidth=  Wxl;
+  mpForm->ClientHeight= Wyl;
+  mpForm->Left=         Wx;
+  mpForm->Top=          Wy;
+  mpForm->Cursor->Height=     CursorSize;
+  mpForm->Cursor->Width=      CursorSize;
 
-       // CHECK # targets here !!! Needs to be 2 !!
-       if ((TargetType == 1) && (atoi(plist->GetParamPtr("NumberTargets")->GetValue()) != 2))
-          bcierr << "Number of targets HAS TO BE 2 in Yes/No mode !!" << std::endl;
+  // CHECK # targets here !!! Needs to be 2 !!
+  if ((TargetType == 1) && (Parameter("NumberTargets") != 2))
+    bcierr << "Number of targets HAS TO BE 2 in Yes/No mode !!" << std::endl;
 
-       // YES/NO text for the upper target
-       TargetText1->Visible=false;
-       TargetText1->Font->Height=-Wyl/10;
-       TargetText1->Top=abs(Wyl/4+TargetText1->Font->Height/2);
-       Rotate( TargetText1, mRotateBy );
+  // YES/NO text for the upper target
+  mpForm->TargetText1->Visible=false;
+  mpForm->TargetText1->Font->Height=-Wyl/10;
+  mpForm->TargetText1->Top=abs(Wyl/4+mpForm->TargetText1->Font->Height/2);
+  Rotate( mpForm->TargetText1, mRotateBy );
 
-       // YES/NO text for the lower target
-       TargetText2->Visible=false;
-       TargetText2->Font->Height=-Wyl/10;
-       TargetText2->Top=abs(Wyl*3/4+TargetText2->Font->Height/2);
-       Rotate( TargetText2, mRotateBy );
+  // YES/NO text for the lower target
+  mpForm->TargetText2->Visible=false;
+  mpForm->TargetText2->Font->Height=-Wyl/10;
+  mpForm->TargetText2->Top=abs(Wyl*3/4+mpForm->TargetText2->Font->Height/2);
+  Rotate( mpForm->TargetText2, mRotateBy );
 
-       // text for the decision (YES/NO)
-       ResultText->Visible = false;
-       ResultText->Font->Height=-Wyl/2;
-       ResultText->Top=abs(Wyl/2+ResultText->Font->Height/2);
-       Rotate( ResultText, mRotateBy );
+  // text for the decision (YES/NO)
+  mpForm->ResultText->Visible = false;
+  mpForm->ResultText->Font->Height=-Wyl/2;
+  mpForm->ResultText->Top=abs(Wyl/2+mpForm->ResultText->Font->Height/2);
+  Rotate( mpForm->ResultText, mRotateBy );
 
-       tT->Font->Height=-Wyl*3/4;
-       Canvas->Font=tT->Font;
-       tT->Left=abs(Wxl/2-Canvas->TextWidth(tT->Caption)/2);
-       tT->Top=abs(tT->Font->Height/8);
+  mpForm->tT->Font->Height=-Wyl*3/4;
+  mpForm->Canvas->Font=mpForm->tT->Font;
+  mpForm->tT->Left=abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->tT->Caption)/2);
+  mpForm->tT->Top=abs(mpForm->tT->Font->Height/8);
 
-       tO->Font->Height=-Wyl*3/4;
-       Canvas->Font=tO->Font;
-       tO->Left=abs(Wxl/2-Canvas->TextWidth(tO->Caption)/2);
-       tO->Top=abs(tO->Font->Height/8);
+  mpForm->tO->Font->Height=-Wyl*3/4;
+  mpForm->Canvas->Font=mpForm->tO->Font;
+  mpForm->tO->Left=abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->tO->Caption)/2);
+  mpForm->tO->Top=abs(mpForm->tO->Font->Height/8);
 
-       HalfCursorSize= CursorSize / 2;
+  HalfCursorSize= CursorSize / 2;
 
-       limit_top= 0; //CursorSize/2;
-       limit_bottom= Wyl; //  - CursorSize/2;
-       limit_left= HalfCursorSize;  //  0; CursorSize/2;
-       limit_right= Wxl - HalfCursorSize; // - CursorSize/2;
+  limit_top= 0; //CursorSize/2;
+  limit_bottom= Wyl; //  - CursorSize/2;
+  limit_left= HalfCursorSize;  //  0; CursorSize/2;
+  limit_right= Wxl - HalfCursorSize; // - CursorSize/2;
 
-       Show();
+  mpForm->Show();
 }
 //----------------------------------------------------------------------------
 //
 //factors (x and y) to transform to normalized areas
 //  ( 0x7fff ) y to bottom-top and  x to right-left
 //
-void TUser::Scale( float x, float y )
+void Usr::Scale( float x, float y )
 {
         if( x != 0.0 ) scale_x= (limit_right-limit_left) / x;
         else scale_x= 1.0;
@@ -170,7 +165,7 @@ void TUser::Scale( float x, float y )
 }
 
 //-----------------------------------------------------------------------------
-void TUser::GetLimits(float *right, float *left, float *top, float *bottom )
+void Usr::GetLimits(float *right, float *left, float *top, float *bottom )
 {
         *(right) = limit_right;
         *(left)  = limit_left;
@@ -179,7 +174,7 @@ void TUser::GetLimits(float *right, float *left, float *top, float *bottom )
 }
 
 //----------------------------------------------------------------------------
-void TUser::PutCursor(float x, float y, int cursorstate )
+void Usr::PutCursor(float x, float y, int cursorstate )
 {
 TColor color;
 
@@ -191,10 +186,10 @@ TColor color;
         if( x <= limit_left )   x= limit_left;
         if( x >= limit_right )  x= limit_right;
 
-        Rotate( Cursor, -mRotateBy );
-        Cursor->Top=  y - HalfCursorSize;
-        Cursor->Left= x - HalfCursorSize;
-        Rotate( Cursor, mRotateBy );
+        Rotate( mpForm->Cursor, -mRotateBy );
+        mpForm->Cursor->Top=  y - HalfCursorSize;
+        mpForm->Cursor->Left= x - HalfCursorSize;
+        Rotate( mpForm->Cursor, mRotateBy );
 
         if (cursorstate == CURSOR_ON)      color=clRed;
         if (cursorstate == CURSOR_OFF)     color=clBlack;
@@ -206,42 +201,44 @@ TColor color;
               color=clBlack;
            }
 
-        Cursor->Brush->Color= color;
+        mpForm->Cursor->Brush->Color= color;
         // turn make the cursor visible, except if we are
         // in the reward period and have YES/NO targets
         if ((cursorstate == CURSOR_RESULT) && (TargetType == 1))
-           Cursor->Visible=false;
+           mpForm->Cursor->Visible=false;
         else
-           Cursor->Visible=true;
+           mpForm->Cursor->Visible=true;
 }
 
 
 // show this feedback before a run starts
-void TUser::PreRunInterval(int time)
+void Usr::PreRunInterval(int time)
 {
  if (time == 0)
     {
     Clear();
     if (TargetType == 0)
        {
-       tPreRunIntervalText->Font->Height=-Wyl*1/6;
-       tPreRunIntervalText->Caption= LocalizableString( "Get Ready ..." );
+       mpForm->tPreRunIntervalText->Font->Height=-Wyl*1/6;
+       mpForm->tPreRunIntervalText->Caption= LocalizableString( "Get Ready ..." );
        }
     if (TargetType == 1)
        {
-       tPreRunIntervalText->Font->Height=-Wyl*2/4;
-       tPreRunIntervalText->Caption=TargetWord.UpperCase();
+       mpForm->tPreRunIntervalText->Font->Height=-Wyl*2/4;
+       mpForm->tPreRunIntervalText->Caption=TargetWord.UpperCase();
        }
-    Canvas->Font=tPreRunIntervalText->Font;
-    tPreRunIntervalText->Left=abs(Wxl/2-Canvas->TextWidth(tPreRunIntervalText->Caption)/2);
-    tPreRunIntervalText->Top=abs(Wyl/2+tPreRunIntervalText->Font->Height/2);
-    tPreRunIntervalText->Visible=true;
+    mpForm->Canvas->Font=mpForm->tPreRunIntervalText->Font;
+    mpForm->tPreRunIntervalText->Left=
+      abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->tPreRunIntervalText->Caption)/2);
+    mpForm->tPreRunIntervalText->Top=
+      abs(Wyl/2+mpForm->tPreRunIntervalText->Font->Height/2);
+    mpForm->tPreRunIntervalText->Visible=true;
     }
 }
 
 
 //----------------------------------------------------------------------------
-void TUser::Outcome(int time, int result)
+void Usr::Outcome(int time, int result)
 {
  // do not do anything in this period if we have targets
  if (TargetType == 0) return;
@@ -250,69 +247,70 @@ void TUser::Outcome(int time, int result)
  if (time == 0)
     {
     // turn off targets
-    Target->Visible=false;
-    Target2->Visible=false;
+    mpForm->Target->Visible=false;
+    mpForm->Target2->Visible=false;
     // turn off target words
-    TargetText1->Visible = false;
-    TargetText2->Visible = false;
+    mpForm->TargetText1->Visible = false;
+    mpForm->TargetText2->Visible = false;
     // turn on selected word
-    Canvas->Font=ResultText->Font;
+    mpForm->Canvas->Font=mpForm->ResultText->Font;
     if (result == 1)
-       ResultText->Caption=TargetText1->Caption;
+       mpForm->ResultText->Caption=mpForm->TargetText1->Caption;
     else
-       ResultText->Caption=TargetText2->Caption;
-    Rotate( ResultText, -mRotateBy );
-    ResultText->Left=abs(Wxl/2-Canvas->TextWidth(ResultText->Caption)/2);
-    Rotate( ResultText, mRotateBy );
+       mpForm->ResultText->Caption=mpForm->TargetText2->Caption;
+    Rotate( mpForm->ResultText, -mRotateBy );
+    mpForm->ResultText->Left
+      =abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->ResultText->Caption)/2);
+    Rotate( mpForm->ResultText, mRotateBy );
     }
 
- // turn the ResultText on or off
- if (time % (YesNoOnTime+YesNoOffTime) == 0) ResultText->Visible = true;
- if (time % (YesNoOnTime+YesNoOffTime) == YesNoOnTime) ResultText->Visible = false;
+ // turn the mpForm->ResultText on or off
+ if (time % (YesNoOnTime+YesNoOffTime) == 0) mpForm->ResultText->Visible = true;
+ if (time % (YesNoOnTime+YesNoOffTime) == YesNoOnTime) mpForm->ResultText->Visible = false;
 }
 
 
-void TUser::PutT(bool Tstate)
+void Usr::PutT(bool Tstate)
 {
  if (Tstate)
     {
     Clear();
-    tT->Visible=true;
-    tO->Visible=false;
+    mpForm->tT->Visible=true;
+    mpForm->tO->Visible=false;
     }
  else
-    tT->Visible=false;
+    mpForm->tT->Visible=false;
 }
 
-void TUser::PutO( bool Tstate )
+void Usr::PutO( bool Tstate )
 {
         if(Tstate)
         {
                 Clear();
-                tO->Visible=true;
+                mpForm->tO->Visible=true;
         }
         else
-                tO->Visible=false;
+                mpForm->tO->Visible=false;
 }
 
 //-----------------------------------------
-void TUser::PutTarget(int targetnumber, int targetstate )
+void Usr::PutTarget(int targetnumber, int targetstate )
 {
 TColor  color;
 
  // regular targets ?
  if (TargetType == 0)
     {
-    Target->Top=  targy[targetnumber];
-    Target->Left= targx[targetnumber];
-    Target->Height= targsizey[targetnumber];
-    Target->Width = targsizex[targetnumber];
-    Rotate( Target, mRotateBy );
+    mpForm->Target->Top=  targy[targetnumber];
+    mpForm->Target->Left= targx[targetnumber];
+    mpForm->Target->Height= targsizey[targetnumber];
+    mpForm->Target->Width = targsizex[targetnumber];
+    Rotate( mpForm->Target, mRotateBy );
     if (targetstate == TARGET_RESULT) color=clYellow;
     if (targetstate == TARGET_ON)     color=clRed;
     if (targetstate == TARGET_OFF)    color=clBlack;
-    Target->Brush->Color= color;
-    Target->Visible=true;
+    mpForm->Target->Brush->Color= color;
+    mpForm->Target->Visible=true;
     }
 
  // YES/NO targets
@@ -322,56 +320,58 @@ TColor  color;
     if (targetstate == TARGET_ON)
        {
        // turn on both targets
-       Target->Top=  targy[1];
-       Target->Left= targx[1];
-       Target->Height= targsizey[1];
-       Target->Width = targsizex[1];
-       Target->Brush->Color= clGray;
-       Rotate( Target, mRotateBy );
+       mpForm->Target->Top=  targy[1];
+       mpForm->Target->Left= targx[1];
+       mpForm->Target->Height= targsizey[1];
+       mpForm->Target->Width = targsizex[1];
+       mpForm->Target->Brush->Color= clGray;
+       Rotate( mpForm->Target, mRotateBy );
 
-       Target2->Top=  targy[2];
-       Target2->Left= targx[2];
-       Target2->Height= targsizey[2];
-       Target2->Width = targsizex[2];
-       Target2->Brush->Color= clGray;
-       Rotate( Target2, mRotateBy );
+       mpForm->Target2->Top=  targy[2];
+       mpForm->Target2->Left= targx[2];
+       mpForm->Target2->Height= targsizey[2];
+       mpForm->Target2->Width = targsizex[2];
+       mpForm->Target2->Brush->Color= clGray;
+       Rotate( mpForm->Target2, mRotateBy );
 
-       Target->Visible=true;
-       Target2->Visible=true;
+       mpForm->Target->Visible=true;
+       mpForm->Target2->Visible=true;
        // define YES/NO texts for both targets
        if (targetnumber == 1)
           {
-          TargetText1->Caption=TargetWord;
-          TargetText2->Caption=NoTargetWord;
+          mpForm->TargetText1->Caption=TargetWord;
+          mpForm->TargetText2->Caption=NoTargetWord;
           }
        else
           {
-          TargetText1->Caption=NoTargetWord;
-          TargetText2->Caption=TargetWord;
+          mpForm->TargetText1->Caption=NoTargetWord;
+          mpForm->TargetText2->Caption=TargetWord;
           }
-       Canvas->Font=TargetText1->Font;
-       Rotate( TargetText1, -mRotateBy );
-       TargetText1->Left=targx[1]+targsizex[1]/2-Canvas->TextWidth(TargetText1->Caption)/2;
-       Rotate( TargetText1, mRotateBy );
-       Rotate( TargetText2, -mRotateBy );
-       TargetText2->Left=targx[2]+targsizex[2]/2-Canvas->TextWidth(TargetText2->Caption)/2;
-       Rotate( TargetText2, mRotateBy );
-       TargetText1->Visible = true;
-       TargetText2->Visible = true;
+       mpForm->Canvas->Font=mpForm->TargetText1->Font;
+       Rotate( mpForm->TargetText1, -mRotateBy );
+       mpForm->TargetText1->Left
+         =targx[1]+targsizex[1]/2-mpForm->Canvas->TextWidth(mpForm->TargetText1->Caption)/2;
+       Rotate( mpForm->TargetText1, mRotateBy );
+       Rotate( mpForm->TargetText2, -mRotateBy );
+       mpForm->TargetText2->Left
+         =targx[2]+targsizex[2]/2-mpForm->Canvas->TextWidth(mpForm->TargetText2->Caption)/2;
+       Rotate( mpForm->TargetText2, mRotateBy );
+       mpForm->TargetText1->Visible = true;
+       mpForm->TargetText2->Visible = true;
        }
     }
 }
 
 //-----------------------------------------------------------------------
-void TUser::Clear( void )
+void Usr::Clear( void )
 {
-        Target->Visible=false;
-        Target2->Visible=false;
-        Cursor->Visible=false;
-        TargetText1->Visible= false;
-        TargetText2->Visible= false;
-        ResultText->Visible= false;
-        tPreRunIntervalText->Visible=false;
+        mpForm->Target->Visible=false;
+        mpForm->Target2->Visible=false;
+        mpForm->Cursor->Visible=false;
+        mpForm->TargetText1->Visible= false;
+        mpForm->TargetText2->Visible= false;
+        mpForm->ResultText->Visible= false;
+        mpForm->tPreRunIntervalText->Visible=false;
         // Refresh();
 }
 
@@ -389,7 +389,7 @@ void TUser::Clear( void )
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-float TUser::ran1( long *idum )
+float Usr::ran1( long *idum )
 {
         int j;
         long k;
@@ -421,7 +421,7 @@ float TUser::ran1( long *idum )
 }
 
 void
-TUser::Rotate( TControl* ioControl, float inAngle ) 
+Usr::Rotate( TControl* ioControl, float inAngle )
 {
   if( inAngle == 0 )
     return;
@@ -430,8 +430,8 @@ TUser::Rotate( TControl* ioControl, float inAngle )
         y = ioControl->Top,
         width = ioControl->Width,
         height = ioControl->Height,
-        xunit = ClientWidth,
-        yunit = ClientHeight;
+        xunit = mpForm->ClientWidth,
+        yunit = mpForm->ClientHeight;
   x -= xunit / 2;
   y -= yunit / 2;
   float m_xx = ::cos( inAngle * 2 * M_PI ),

@@ -14,22 +14,21 @@
 #define SEQ_OUTCOME             4
 #define SEQ_CONGRATULATIONS     5
 
-class TRIALSEQUENCE
+class TRIALSEQUENCE : private Environment
 {
 private: 	// User declarations
         int     ontime, offtime;                   // in units of SampleBlocks
         bool    cur_on;   
         int     cur_sequence;                           // current sequence
         USERDISPLAY     *userdisplay;
-        STATEVECTOR     *statevector;
         GenericVisualization    *vis;
         unsigned short oldrunning;
         TARGET  *selectedtarget;
         void    SuspendTrial();
 public:		// User declarations
-        TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
+        TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
+        int     Initialize(USERDISPLAY *);
         TARGET  *Process(const std::vector<float>&);
         void    ResetTrialSequence();
 };

@@ -164,7 +164,7 @@ void USERDISPLAY::HideMessage()
 }
 
 
-void USERDISPLAY::DisplayMessage(char *new_message)
+void USERDISPLAY::DisplayMessage(const char *new_message)
 {
 int     destwidth, destheight, i;
 int     scaledtextsize, scaledtextposx, scaledtextposy;

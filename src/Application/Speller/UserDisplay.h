@@ -23,7 +23,7 @@ public:		// User declarations
         void    DisplayActiveTargets();
         void    DisplayStatusBar();
         void    DisplayCursor();
-        void    DisplayMessage(char *message);
+        void    DisplayMessage(const char *message);
         void    HideActiveTargets();
         void    HideStatusBar();
         void    HideCursor();

@@ -7,6 +7,7 @@
 
 #include "UGenericVisualization.h"
 #include "UserDisplay.h"
+#include "UEnvironment.h"
 
 #define SEQ_ITI                 1
 #define SEQ_PTP                 2
@@ -14,7 +15,7 @@
 #define SEQ_OUTCOME             4
 #define SEQ_CONGRATULATIONS     5
 
-class TRIALSEQUENCE
+class TRIALSEQUENCE : private Environment
 {
 private: 	// User declarations
         int     ititime, max_ititime;                   // in units of SampleBlocks
@@ -24,16 +25,15 @@ private: 	// User declarations
         int     congrattime, max_congrattime;           // in units of SampleBlocks
         int     cur_sequence;                           // current sequence
         USERDISPLAY     *userdisplay;
-        STATEVECTOR     *statevector;
         GenericVisualization    *vis;
         unsigned short oldrunning;
         TARGET  *selectedtarget;
         bool    highlightcorrecttarget;
         void    SuspendTrial();
 public:		// User declarations
-        TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
+        TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *, int);
+        int     Initialize(USERDISPLAY *, int);
         int     correcttargetID;                        // targetID of the next correct target
         void    ITI();
         void    PTP();

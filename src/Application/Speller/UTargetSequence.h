@@ -9,6 +9,7 @@
 #include "UState.h"
 #include "UDictionary.h"
 #include "UTarget.h"
+#include "UEnvironment.h"
 /*shidong starts*/
 
 
@@ -20,7 +21,7 @@
 //#define NUM_TARGETS             4               // number of targets
 
 
-class TARGETSEQUENCE
+class TARGETSEQUENCE : private Environment
 {
 private: 	// User declarations
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
@@ -30,7 +31,7 @@ private: 	// User declarations
         DICTIONARY      *dictionary;
         bool            prediction;
 public:		// User declarations
-        TARGETSEQUENCE::TARGETSEQUENCE(PARAMLIST *plist, STATELIST *slist);
+        TARGETSEQUENCE::TARGETSEQUENCE();
         TARGETSEQUENCE::~TARGETSEQUENCE();
         /*shidong startS*/
         TARGETLIST      *GetActiveTargets(int, const char *);     // returns targets given a specific parentID (i.e., targetID of selection)
@@ -42,14 +43,14 @@ public:		// User declarations
         void            PushTargetsOnHistory(TARGETLIST *activetargets);
         void            PushTextOnHistory(AnsiString text);
         /*shidong starts*/
-        int             LoadPotentialTargets(PARAMLIST *plist);
+        int             LoadPotentialTargets();
         FILE            *f;
         int             NUM_TARGETS;
         bool            debug;
        // int             LoadPotentialTargets(const int targetRow, const int targetCol, const int treeRow, const int treeCol);
         /*shidong ends*/
         void            DeleteHistory();
-        int             Initialize(PARAMLIST *plist, int numTargets);
+        int             Initialize(int numTargets);
         TARGETLIST      *targets;                                       // all the potential targets
         TREE            *tree;                                          // tree that is being traversed down if the user makes selections
 };

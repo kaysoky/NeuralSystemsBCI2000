@@ -5,44 +5,43 @@
 #include <stdio.h>
 
 #include "UTargetSequence.h"
-
 #include "UBCIError.h"
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
 
 
-TARGETSEQUENCE::TARGETSEQUENCE(PARAMLIST *plist, STATELIST *slist)
+TARGETSEQUENCE::TARGETSEQUENCE()
 {
-
 /*shidong starts*/
 
 debug = false;
 if(debug)f = fopen("MuSpellerDebug.txt", "w");
 
-/*shidong starts*/
-char    line[512];
-int     i;
+/*shidong ends*/
 
  targets=new TARGETLIST();
  tree=new TREE();
  dictionary=new DICTIONARY();
 
- strcpy(line, "Speller int EnablePrediction= 1 0 0 1 // Enable word prediction (0=no, 1=yes)");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "Speller string DictionaryFile= odgenswords.voc 0 0 100 // Dictionary file for word prediction");
- plist->AddParameter2List(line,strlen(line));
- /*shidong starts*/                 
- strcpy(line, "Speller matrix TargetDefinitionMatrix = 41 { ID Type Display FontSizeFactor IconFile} //Target Definition Matrix");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line, "Speller matrix TreeDefinitionMatrix= 39 39 {ParentID DisplayPosition TargetID   } -// Tree Definition Matrix");
-
- /*shidong ends*/
- plist->AddParameter2List(line,strlen(line));
+ BEGIN_PARAMETER_DEFINITIONS
+  "Speller int EnablePrediction= 1 "
+    "0 0 1 // Enable word prediction (0=no, 1=yes) (boolean)",
+  "Speller string DictionaryFile= odgenswords.voc "
+    "% % % // Dictionary file for word prediction (inputfile)",
+  /*shidong starts*/
+  "Speller matrix TargetDefinitionMatrix = "
+    "41 {ID Type Display FontSizeFactor IconFile} "
+    "% % % //Target Definition Matrix",
+  "Speller matrix TreeDefinitionMatrix= "
+    "39 {ParentID DisplayPosition TargetID} "
+    "% % % // Tree Definition Matrix",
+  /*shidong ends*/
+ END_PARAMETER_DEFINITIONS
 
  activetargets_historynum=0;
  text_historynum=0;
- for (i=0; i<MAX_TARGETHISTORY; i++)
+ for (int i=0; i<MAX_TARGETHISTORY; i++)
   activetargets_history[i]=NULL;
 }
 
@@ -64,7 +63,7 @@ if(debug)  fclose(f);
 }
 
 
-int TARGETSEQUENCE::Initialize(PARAMLIST *plist, int numT )
+int TARGETSEQUENCE::Initialize(int numT )
 {
 int ret;
 
@@ -73,7 +72,7 @@ int ret;
 
  // Load the dictionary file
  try {
-  if (atoi(plist->GetParamPtr("EnablePrediction")->GetValue()) == 0)
+  if (Parameter("EnablePrediction") == 0)
      prediction=false;
   else
      prediction=true;
@@ -81,7 +80,7 @@ int ret;
   // load and create all potential targets
   /*shidong starts*/
   NUM_TARGETS = numT;
-  ret=LoadPotentialTargets(   plist  );
+  ret=LoadPotentialTargets();
   /*plist->GetParamPtr("TargetDefinitionMatrix")->GetNumColumns(),
   plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows(),
   plist->GetParamPtr("TreeDefinitionMatrix")->GetNumColumns(),
@@ -97,8 +96,8 @@ int ret;
         if(debug) fprintf(f, "After App->msgBox, ret is %d.\n", ret);
 
     /*shidong ends*/
- ret=dictionary->LoadDictionary(plist->GetParamPtr("DictionaryFile")->GetValue(), true);
-        if(debug) fprintf(f, "After LoadDictionary, ret is %d, dic file is %s.\n", ret, plist->GetParamPtr("TargetDefinitionMatrix")->GetValue() );
+ ret=dictionary->LoadDictionary(Parameter("DictionaryFile"), true);
+        if(debug) fprintf(f, "After LoadDictionary, ret is %d, dic file is %s.\n", ret, (const char*)Parameter("TargetDefinitionMatrix") );
   // if there was no error, add the dictionary to the potential targets
   if (ret == 1)
      AddDictionary2PotentialTargets();  /* */
@@ -130,7 +129,7 @@ int     i;
 
 
 //int TARGETSEQUENCE::LoadPotentialTargets(const int targetRow, const int targetCol, const int treeRow, const int treeCol)
-int TARGETSEQUENCE::LoadPotentialTargets(PARAMLIST *plist)
+int TARGETSEQUENCE::LoadPotentialTargets()
 {
 /*shidong starts */
  int    targetID, parentID, displaypos, ptr, targettype;
@@ -141,7 +140,7 @@ int TARGETSEQUENCE::LoadPotentialTargets(PARAMLIST *plist)
  // if we already have a list of potential targets, delete this list
  if (targets) delete targets;
  targets=new TARGETLIST();
- if(debug)fprintf(f, "Row # is %d.\n", plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows());
+ if(debug)fprintf(f, "Row # is %d.\n", Parameter("TargetDefinitionMatrix")->GetNumRows());
  if(debug)fprintf(f, "ID \tType \tDisplay\tFontSizeFactor\tIconFile\n");
 
 
@@ -150,17 +149,17 @@ int TARGETSEQUENCE::LoadPotentialTargets(PARAMLIST *plist)
 
 
  // parse the target definition matrix
- for (int i = 0; i < plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows(); i++)
+ for (size_t i = 0; i < Parameter("TargetDefinitionMatrix")->GetNumRows(); i++)
  {
   targetID =
-        AnsiString((const char*)plist->GetParamPtr("TargetDefinitionMatrix")->GetValue(i,0)).ToInt();
+        AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,0)).ToInt();
  cur_target = new TARGET(targetID);
  cur_target->targettype =
-        AnsiString((const char*)plist->GetParamPtr("TargetDefinitionMatrix")->GetValue(i,1)).ToInt();
- cur_target->Caption = AnsiString((const char*)plist->GetParamPtr("TargetDefinitionMatrix")->GetValue(i,2));
- cur_target->FontSizeFactor = (float)(atof(plist->GetParamPtr("TargetDefinitionMatrix")->GetValue(i,3)));
+        AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,1)).ToInt();
+ cur_target->Caption = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,2));
+ cur_target->FontSizeFactor = (float)(Parameter("TargetDefinitionMatrix",i,3));
   cur_target->IconFile =
- AnsiString((const char*)plist->GetParamPtr("TargetDefinitionMatrix")->GetValue(i,4));
+ AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,4));
  if(debug)fprintf(f, "%d\t", cur_target->targetID);
  if(debug)fprintf(f, "%d\t", cur_target->targettype);
  if(debug)fprintf(f, "%s\t", cur_target->Caption);
@@ -220,7 +219,7 @@ TARGET  *cur_target;
   */ 
  // load the tree file to go with the list of targets
  //if (tree->LoadTree(treeRow, treeCol) == 0)
- if (tree->LoadTree(plist) == 0)
+ if (tree->LoadTree() == 0)
     return(-1);
                  
  return(1);

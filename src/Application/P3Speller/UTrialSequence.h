@@ -27,7 +27,6 @@ private: 	// User declarations
         int     cur_trialsequence;                 // current sequence within trial
         int     cur_sequence;                      // how many total intensifications did we have
         USERDISPLAY     *userdisplay;
-        STATEVECTOR     *statevector;
         GenericVisualization    *vis;
         unsigned short oldrunning;
         TARGET  *selectedtarget;
@@ -35,9 +34,9 @@ private: 	// User declarations
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
 public:		// User declarations
-        TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
+        TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
+        int     Initialize(USERDISPLAY *);
         int     Process(const std::vector<float>&);
         void    ResetTrialSequence();
         bool    onlinemode;
@@ -49,7 +48,8 @@ public:		// User declarations
         int     NUM_STIMULI;      // in this case, we have 12 stimuli (6 columns and 6 rows)
         FILE    *f;
         bool    debug;
-        /*shidong ends*/int             Initialize(PARAMLIST *plist);
+        /*shidong ends*/
+        int             Initialize();
         TARGETLIST      *targets;                                       // all the potential targets
         int             GetRandomStimulusCode();
         short           IntensifyTargets(int stimuluscode, bool intensify);

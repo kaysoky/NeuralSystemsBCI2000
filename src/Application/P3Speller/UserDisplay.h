@@ -21,7 +21,7 @@ public:		// User declarations
         STATUSBAR       *statusbar;
         void    HideActiveTargets();
         void    DisplayActiveTargets();
-        void    DisplayMessage(char *message);
+        void    DisplayMessage(const char *message);
         void    DisplayStatusBar();
         void    HideStatusBar();
         void    HideMessage();

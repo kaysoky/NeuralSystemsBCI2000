@@ -1,6 +1,8 @@
 #ifndef UsrEnvDispatcherH
 #define UsrEnvDispatcherH
+
 #include <vector>
+#include "UEnvironment.h"
 
 #define SEQ_ITI                 1
 #define SEQ_PTP                 2
@@ -11,12 +13,9 @@
 /// forward declarations
 class UsrEnv;
 class UsrElement;
-class STATEVECTOR;
-class PARAMLIST;
-class STATELIST;
 class GenericVisualization;
 
-class UsrEnvDispatcher
+class UsrEnvDispatcher : private Environment
 {
 public:
   enum PhaseInSequenceEnum     // what phase of sequence we are currently running
@@ -41,15 +40,15 @@ public:
   };
   
   /// Constructors and Destructors
-  UsrEnvDispatcher::UsrEnvDispatcher(PARAMLIST * pParamList, STATELIST * pStateList);
+  UsrEnvDispatcher::UsrEnvDispatcher();
   UsrEnvDispatcher::~UsrEnvDispatcher();
 
   /// Member functions
-  void Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
-  void Process(const std::vector<float>&, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector,
+  void Initialize(UsrEnv * pUsrEnv);
+  void Process(const std::vector<float>&, UsrEnv * pUsrEnv,
                GenericVisualization * pGenericVisualization);
-  void Reset(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
-  void SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector);
+  void Reset(UsrEnv * pUsrEnv);
+  void SuspendUsrEnv(UsrEnv * pUsrEnv);
   const int ProcessResult(GenericVisualization * pGenericVisualization);
 
 private: 	// User declarations

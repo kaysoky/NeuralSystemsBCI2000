@@ -7,6 +7,7 @@
 #include "UsrEnvDispatcher.h"
 #include "UsrEnv.h"
 #include "UBCIError.h"
+#include "MeasurementUnits.h"
 #include "UsrElementCollection.h"
 #include "UsrEnvAlgorithmP3AV.h"
 #include "UGenericVisualization.h"
@@ -20,7 +21,7 @@
 //             slist - pointer to the state list
 // Returns:    N/A
 // **************************************************************************
-UsrEnvDispatcher::UsrEnvDispatcher(PARAMLIST * pParamList, STATELIST * pStateList)
+UsrEnvDispatcher::UsrEnvDispatcher()
 {
   m_iUsrElementOnTime       = 10;
   m_iUsrElementOffTime      = 3;
@@ -64,56 +65,53 @@ UsrEnvDispatcher::~UsrEnvDispatcher()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STATEVECTOR * pStateVector)
+void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
 {
   try
   {
-    if (pParamList != NULL)
+    m_iUsrElementOnTime  = MeasurementUnits::ReadAsTime( Parameter( "OnTime" ) );
+    m_iUsrElementOffTime = MeasurementUnits::ReadAsTime( Parameter( "OffTime" ) );
+    m_iUsrElementMinInterTime = MeasurementUnits::ReadAsTime( Parameter( "MinInterTime" ) );
+    m_iUsrElementMaxInterTime = MeasurementUnits::ReadAsTime( Parameter( "MaxInterTime" ) );
+    if (m_iUsrElementMaxInterTime < m_iUsrElementMinInterTime)
     {
-      m_iUsrElementOnTime  = atoi(pParamList->GetParamPtr("OnTime")->GetValue());
-      m_iUsrElementOffTime = atoi(pParamList->GetParamPtr("OffTime")->GetValue());
-      m_iUsrElementMinInterTime = atoi(pParamList->GetParamPtr("MinInterTime")->GetValue());
-      m_iUsrElementMaxInterTime = atoi(pParamList->GetParamPtr("MaxInterTime")->GetValue());
-      if (m_iUsrElementMaxInterTime < m_iUsrElementMinInterTime)
-      {
-        m_iUsrElementMinInterTime = 0;
-        m_iUsrElementMaxInterTime = 0;
-      }
-      m_iUsrElementPriorSeqTime = atoi(pParamList->GetParamPtr("PreSequenceTime")->GetValue());
-      m_iUsrElementAfterSeqTime = atoi(pParamList->GetParamPtr("PostSequenceTime")->GetValue());
-      if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
-        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
-                                      rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
-      else
-        m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
-
-      // figure out whether a stimulus to appear in a sequence
-      m_vStimulusPresent.clear();
-      m_vStimulusPresent.resize(pUsrEnv->GetElements()->GetCollectionSize());
-      for (unsigned int i(0); i < m_vStimulusPresent.size(); ++i)
-        m_vStimulusPresent[i] = false;
-      UsrEnvAlgorithmP3AV::SequenceTypeEnum eSequenceType =
-            (UsrEnvAlgorithmP3AV::SequenceTypeEnum)(atoi(pParamList->GetParamPtr("SequenceType")->GetValue()));
-      for (unsigned int i = 0; i <  pParamList->GetParamPtr("Sequence")->GetNumValuesDimension1(); ++i)
-      {
-        if (eSequenceType == UsrEnvAlgorithmP3AV::SEQUENCE_DETERMINISTIC)
-        {
-          unsigned int uStimulusID(atoi(pParamList->GetParamPtr("Sequence")->GetValue(i)));
-          if (uStimulusID <= m_vStimulusPresent.size() && uStimulusID != 0)
-            m_vStimulusPresent[uStimulusID - 1] = true;
-        }
-        else if (eSequenceType == UsrEnvAlgorithmP3AV::SEQUENCE_RANDOM)
-        {
-          if (i < m_vStimulusPresent.size())
-            m_vStimulusPresent[i] = true;
-        }
-      }
-
-      // find out the wait time
-      const unsigned int uWaitTimeSec(1);
-      m_iWaitTime = atoi(pParamList->GetParamPtr("SamplingRate")->GetValue()) * uWaitTimeSec / atoi(pParamList->GetParamPtr("SampleBlockSize")->GetValue());
-      m_bWaiting = false;
+      m_iUsrElementMinInterTime = 0;
+      m_iUsrElementMaxInterTime = 0;
     }
+    m_iUsrElementPriorSeqTime = MeasurementUnits::ReadAsTime( Parameter( "PreSequenceTime" ) );
+    m_iUsrElementAfterSeqTime = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceTime" ) );
+    if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
+      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
+                                    rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
+    else
+      m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
+
+    // figure out whether a stimulus to appear in a sequence
+    m_vStimulusPresent.clear();
+    m_vStimulusPresent.resize(pUsrEnv->GetElements()->GetCollectionSize());
+    for (unsigned int i(0); i < m_vStimulusPresent.size(); ++i)
+      m_vStimulusPresent[i] = false;
+    UsrEnvAlgorithmP3AV::SequenceTypeEnum eSequenceType =
+          (UsrEnvAlgorithmP3AV::SequenceTypeEnum)int(Parameter("SequenceType"));
+    for (unsigned int i = 0; i <  Parameter("Sequence")->GetNumValuesDimension1(); ++i)
+    {
+      if (eSequenceType == UsrEnvAlgorithmP3AV::SEQUENCE_DETERMINISTIC)
+      {
+        unsigned int uStimulusID(Parameter("Sequence",i));
+        if (uStimulusID <= m_vStimulusPresent.size() && uStimulusID != 0)
+          m_vStimulusPresent[uStimulusID - 1] = true;
+      }
+      else if (eSequenceType == UsrEnvAlgorithmP3AV::SEQUENCE_RANDOM)
+      {
+        if (i < m_vStimulusPresent.size())
+          m_vStimulusPresent[i] = true;
+      }
+    }
+
+    // find out the wait time
+    const unsigned int uWaitTimeSec(1);
+    m_iWaitTime = Parameter("SamplingRate") * uWaitTimeSec / Parameter("SampleBlockSize");
+    m_bWaiting = false;
   }
   catch(...)
   {
@@ -132,7 +130,7 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
     m_bWaiting = false;
   }
   // reset the dispatcher
-  Reset(pUsrEnv, pStateVector);
+  Reset(pUsrEnv);
 }
 
 
@@ -142,21 +140,18 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void UsrEnvDispatcher::Reset(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector)
+void UsrEnvDispatcher::Reset(UsrEnv * pUsrEnv)
 {
   m_iCurrentPhaseDuration = 0;
   m_ePhaseInSequence      = PHASE_START;
   m_bIsRunning            = false;
   m_bWaiting              = false;
 
-  if (pStateVector != NULL)
-  {
-    pStateVector->SetStateValue("SelectedStimulus", 0);
-    pStateVector->SetStateValue("PhaseInSequence", 1);
-    pStateVector->SetStateValue("StimulusCode", 0);
-    pStateVector->SetStateValue("StimulusType", 0);
-    pStateVector->SetStateValue("Flashing", 0);
-  }
+  State( "SelectedStimulus" ) = 0;
+  State( "PhaseInSequence" ) = 1;
+  State( "StimulusCode" ) = 0;
+  State( "StimulusType" ) = 0;
+  State( "Flashing" ) = 0;
 
   if (pUsrEnv != NULL)
   {
@@ -177,20 +172,17 @@ void UsrEnvDispatcher::Reset(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector)
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector)
+void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv)
 {
   if (pUsrEnv != NULL)
   {
     pUsrEnv->HideElements(UsrEnv::COLL_ALL);   // hide all active elements
     pUsrEnv->DisplayMessage( LocalizableString( "TIME OUT !!!" ) );
   }
-  if (pStateVector != NULL)
-  {
-    pStateVector->SetStateValue("PhaseInSequence", 3);
-    pStateVector->SetStateValue("StimulusCode", 0);
-    pStateVector->SetStateValue("StimulusType", 0);
-    pStateVector->SetStateValue("Flashing", 0);
-  }
+  State( "PhaseInSequence" ) = 3;
+  State( "StimulusCode" )= 0;
+  State( "StimulusType" )= 0;
+  State( "Flashing" ) = 0;
   m_vResultCounts.clear();
   m_vResultValues.clear();
 }
@@ -203,18 +195,16 @@ void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVecto
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
 void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv * pUsrEnv,
-                               STATEVECTOR * pStateVector, GenericVisualization * pGenericVisualization)
+                               GenericVisualization * pGenericVisualization)
 {
-  if (pStateVector == NULL || pUsrEnv == NULL || pGenericVisualization == NULL) return;
+  if (pUsrEnv == NULL || pGenericVisualization == NULL) return;
 
-  bool bIsStillRunning(false);
-  if (pStateVector != NULL)
-    bIsStillRunning = pStateVector->GetStateValue("Running");
+  bool bIsStillRunning = State( "Running" );
 
   // when we suspend the system, show the "TIME OUT" message
   if ((bIsStillRunning == false) && (m_bIsRunning == true))
   {
-    SuspendUsrEnv(pUsrEnv, pStateVector);
+    SuspendUsrEnv(pUsrEnv);
     m_bIsRunning = false;
   }
 
@@ -224,14 +214,14 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
   // when we (re)start the system, reset the trial's sequence
   if ((bIsStillRunning == true) && (m_bIsRunning == false))
   {
-    Reset(pUsrEnv, pStateVector);
+    Reset(pUsrEnv);
     pUsrEnv->HideMessage(); // hide any message that's there
     pGenericVisualization->SendMemo2Operator("New run.");
   }
   m_bIsRunning = bIsStillRunning;
 
   // accumulate statistics
-  unsigned short uStimulusCodeRes = pStateVector->GetStateValue("StimulusCodeRes");
+  unsigned short uStimulusCodeRes = State( "StimulusCodeRes" );
   if (uStimulusCodeRes > 0 && uStimulusCodeRes <= (unsigned short)m_vResultCounts.size() &&
       uStimulusCodeRes <= (unsigned short)m_vResultValues.size())
   {
@@ -263,11 +253,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     // this will display 'focus on' message
     pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
 
-    pStateVector->SetStateValue("SelectedStimulus", 0);
-    pStateVector->SetStateValue("PhaseInSequence", 1);
-    pStateVector->SetStateValue("StimulusCode", 0);
-    pStateVector->SetStateValue("StimulusType", 0);
-    pStateVector->SetStateValue("Flashing", 0);
+    State( "SelectedStimulus" ) = 0;
+    State( "PhaseInSequence" ) = 1;
+    State( "StimulusCode" ) = 0;
+    State( "StimulusType" ) = 0;
+    State( "Flashing" ) = 0;
 
     pGenericVisualization->SendMemo2Operator("New sequence is presented.");
   }
@@ -290,11 +280,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       // get the next active elements as a subset of all the potential elements
       m_ePhaseInSequence = (PhaseInSequenceEnum)(pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence));
 
-      pStateVector->SetStateValue("SelectedStimulus", 0);
-      pStateVector->SetStateValue("PhaseInSequence", 0);
-      pStateVector->SetStateValue("StimulusCode", 0);
-      pStateVector->SetStateValue("StimulusType", 0);
-      pStateVector->SetStateValue("Flashing", 0);
+      State( "SelectedStimulus" ) = 0;
+      State( "PhaseInSequence" ) = 0;
+      State( "StimulusCode" ) = 0;
+      State( "StimulusType" ) = 0;
+      State( "Flashing" ) = 0;
     }
     else if (m_iCurrentPhaseDuration == (m_iUsrElementPriorSeqTime - m_iUsrElementOnTime))
     {
@@ -327,17 +317,17 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     // get the next active elements as a subset of all the potential elements
     m_ePhaseInSequence = (PhaseInSequenceEnum)pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence);
 
-    pStateVector->SetStateValue("SelectedStimulus", 0);
-    pStateVector->SetStateValue("PhaseInSequence", 0);
-    pStateVector->SetStateValue("StimulusCode", 0);
-    pStateVector->SetStateValue("StimulusType", 0);
-    pStateVector->SetStateValue("Flashing", 0);
+    State("SelectedStimulus")=0;
+    State("PhaseInSequence")=0;
+    State("StimulusCode")=0;
+    State("StimulusType")=0;
+    State("Flashing")=0;
 
     // wait before displaying the "result was" message
     if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE)
     {
       m_bWaiting = true;
-      pStateVector->SetStateValue("PhaseInSequence", 3);
+      State("PhaseInSequence")=3;
     }
   }
 
@@ -349,14 +339,14 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
 
     pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_ALL, 0);
 
-    pStateVector->SetStateValue("SelectedStimulus", 0);
-    pStateVector->SetStateValue("PhaseInSequence", 2);
-    pStateVector->SetStateValue("Flashing", 1);
+    State("SelectedStimulus")=0;
+    State("PhaseInSequence")=2;
+    State("Flashing")=1;
     if (pUsrEnv->GetActiveElements() != NULL)
     {
-      pStateVector->SetStateValue("StimulusCode", pUsrEnv->GetActiveElements()->GetElementID(0));
+      State("StimulusCode")=pUsrEnv->GetActiveElements()->GetElementID(0);
       // figure out stimulus type here
-      pStateVector->SetStateValue("StimulusType", pUsrEnv->GetStateValue(STATE_STIMULUSTYPE));
+      State("StimulusType")=pUsrEnv->GetStateValue(STATE_STIMULUSTYPE);
     }
   }
 
@@ -374,11 +364,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       if ((ePhaseInSequence == PHASE_FINISH) || (ePhaseInSequence == PHASE_FINISH_WO_RESULT))
         m_ePhaseInSequence = ePhaseInSequence;
 
-      pStateVector->SetStateValue("SelectedStimulus", 0);
-      pStateVector->SetStateValue("PhaseInSequence", 3);
-      pStateVector->SetStateValue("StimulusCode", 0);
-      pStateVector->SetStateValue("StimulusType", 0);
-      pStateVector->SetStateValue("Flashing", 0);
+      State("SelectedStimulus")=0;
+      State("PhaseInSequence")=3;
+      State("StimulusCode")=0;
+      State("StimulusType")=0;
+      State("Flashing")=0;
     }
     else if (m_iCurrentPhaseDuration == m_iUsrElementAfterSeqTime)
     {
@@ -389,11 +379,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       pUsrEnv->HideElements(UsrEnv::COLL_ALL);
       pUsrEnv->GenerateActiveElements((unsigned int)PHASE_PRIORSEQUENCE);
 
-      pStateVector->SetStateValue("SelectedStimulus", 0);
-      pStateVector->SetStateValue("PhaseInSequence", 1);
-      pStateVector->SetStateValue("StimulusCode", 0);
-      pStateVector->SetStateValue("StimulusType", 0);
-      pStateVector->SetStateValue("Flashing", 0);
+      State("SelectedStimulus")=0;
+      State("PhaseInSequence")=1;
+      State("StimulusCode")=0;
+      State("StimulusType")=0;
+      State("Flashing")=0;
     }
     else if (m_iCurrentPhaseDuration == (m_iUsrElementAfterSeqTime - m_iUsrElementOnTime))
     {
@@ -401,7 +391,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
       pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
 
-      pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
+      State("SelectedStimulus")=iPickedStimulusID;
     } // else
   }  // if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE)
 
@@ -415,19 +405,19 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
          {
          const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
          pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
-         pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
+         State("SelectedStimulus")=iPickedStimulusID;
          }
       if (m_ePhaseInSequence == PHASE_FINISH_WO_RESULT)        // 1/28/04 GS
-         pStateVector->SetStateValue("SelectedStimulus", 0);
-      pStateVector->SetStateValue("PhaseInSequence", 3);
-      pStateVector->SetStateValue("StimulusCode", 0);
-      pStateVector->SetStateValue("StimulusType", 0);
-      pStateVector->SetStateValue("Flashing", 0);
+         State("SelectedStimulus")=0;
+      State("PhaseInSequence")=3;
+      State("StimulusCode")=0;
+      State("StimulusType")=0;
+      State("Flashing")=0;
     }
     else if (m_iCurrentPhaseDuration == m_iUsrElementAfterSeqTime)
     {
       m_iCurrentPhaseDuration = 0;
-      pStateVector->SetStateValue("Running", 0);
+      State("Running")=0;
     }
   }
 

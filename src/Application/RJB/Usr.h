@@ -9,7 +9,7 @@
 #include <Forms.hpp>
 #include <ExtCtrls.hpp>
 
-#include "UGenericFilter.h"
+#include "UEnvironment.h"
 
 #define TARGET_OFF      0
 #define TARGET_ON       1
@@ -34,7 +34,15 @@ __published:	// IDE-managed Components
         TLabel *ResultText;
         TLabel *tPreRunIntervalText;
         TShape *Target2;
+public:
+        __fastcall TUser(TComponent*)
+        : TForm( static_cast<TComponent*>( NULL ) ) {}
+};
+
+class Usr : private Environment
+{
 private:	// User declarations
+        TUser* mpForm;
         int Wx;                 // task window x location
         int Wy;                 // task window y location
         int Wxl;                // task window x size
@@ -68,7 +76,6 @@ public:		// User declarations
         void Scale( float , float );
         float ran1( long *idem );       // from Press et al
         void GetLimits( float *, float *, float *, float * );
-       // void TestCursorLocation( float x, float y );
         void PutCursor( float y, float x, int );      // self explanatory
         void PutTarget( int targno, int );
         void PutT(bool);
@@ -76,12 +83,9 @@ public:		// User declarations
         void Clear( void );
         void PreRunInterval(int time);
         void Outcome(int time, int result);
-        void __fastcall SetUsr( PARAMLIST *plist, STATELIST *slist);
-        void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist);
-        __fastcall TUser(TComponent* Owner);
-        __fastcall ~TUser();
+        void Initialize();
+        Usr();
+        ~Usr();
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TUser *User;
 //---------------------------------------------------------------------------
 #endif

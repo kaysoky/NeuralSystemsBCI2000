@@ -80,7 +80,7 @@ int TREE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 // Returns:    0 - error (e.g., file not found)
 //             1 - no error
 // **************************************************************************
-int TREE::LoadTree(PARAMLIST *plist)
+int TREE::LoadTree()
 {
 /*shidong starts*/
 int     ptr;
@@ -94,11 +94,11 @@ for (int i=0; i<treesize; i++)
 treesize = 0;
 
 
- for (int i = 0; i < plist->GetParamPtr("TreeDefinitionMatrix")->GetNumRows(); i++)
+ for (size_t i = 0; i < Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
  {
-        parentID[treesize] = AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,0)).ToInt();
-        displaypos[treesize] = AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,1)).ToInt()-1;
-        targetID[treesize]= AnsiString((const char*)plist->GetParamPtr("TreeDefinitionMatrix")->GetValue(i,2)).ToInt();
+        parentID[treesize] = AnsiString((const char*)Parameter("TreeDefinitionMatrix",i,0)).ToInt();
+        displaypos[treesize] = AnsiString((const char*)Parameter("TreeDefinitionMatrix",i,1)).ToInt()-1;
+        targetID[treesize]= AnsiString((const char*)Parameter("TreeDefinitionMatrix",i,2)).ToInt();
         if(debug)fprintf(a, "ParentID[%d] is %d \t displaypos[%d] is  %d \t target[%d] is %d\n", treesize, parentID[treesize]   , treesize, displaypos[treesize], treesize, targetID[treesize]);
         treesize++;
  }//for

@@ -12,17 +12,15 @@
 #pragma package(smart_init)
 
 
-TARGETSEQUENCE::TARGETSEQUENCE(PARAMLIST *plist, STATELIST *slist)
+TARGETSEQUENCE::TARGETSEQUENCE()
+: targets( new TARGETLIST() )
 {
-char    line[512];
-int     i;
-
- targets=new TARGETLIST();
-
- strcpy(line, "Oddball string TargetDefinitionFile= targets.cfg 0 0 100 // Target definition file");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"Oddball int OddballProbability= 10 10 0 100 // Probability for oddball icon");
- plist->AddParameter2List(line,strlen(line) );
+  BEGIN_PARAMETER_DEFINITIONS
+   "Oddball string TargetDefinitionFile= targets.cfg % % % "
+     "// Target definition file (inputfile)",
+   "Oddball int OddballProbability= 10 10 0 100 "
+     "// Probability for oddball icon",
+  END_PARAMETER_DEFINITIONS
 }
 
 
@@ -33,13 +31,13 @@ TARGETSEQUENCE::~TARGETSEQUENCE()
 }
 
 
-int TARGETSEQUENCE::Initialize(PARAMLIST *plist)
+int TARGETSEQUENCE::Initialize()
 {
 int ret;
 
  // load and create all potential targets
- ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionFile")->GetValue());
- probability=atoi(plist->GetParamPtr("OddballProbability")->GetValue());
+ ret=LoadPotentialTargets(Parameter("TargetDefinitionFile"));
+ probability=Parameter("OddballProbability");
 
  return(ret);
 }

@@ -8,6 +8,7 @@
 #include "UTargetSequence.h"
 #include "UTrialSequence.h"
 #include "UBCIError.h"
+#include "MeasurementUnits.h"
 
 //---------------------------------------------------------------------------
 
@@ -21,20 +22,20 @@
 //             slist - pointer to the state list
 // Returns:    N/A
 // **************************************************************************
-TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist)
+TRIALSEQUENCE::TRIALSEQUENCE()
+: vis( NULL )
 {
-int     i;
-char    line[512];
+  BEGIN_PARAMETER_DEFINITIONS
+    "Oddball int OnTime= 10 10 0 5000 "
+      "// Visible duration of icon in units of SampleBlocks",
+    "Oddball int OffTime= 3 10 0 5000 "
+      "// Invisible duration of icon in units of SampleBlocks",
+  END_PARAMETER_DEFINITIONS
 
- strcpy(line,"Oddball int OnTime= 10 10 0 5000 // Visible duration of icon in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"Oddball int OffTime= 3 10 0 5000 // Invisible duration of icon in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
-
- vis=NULL;
-
- slist->AddState2List("IconNumber 2 0 0 0\n");
- slist->AddState2List("IconVisible 1 0 0 0\n");
+  BEGIN_STATE_DEFINITIONS
+    "IconNumber 2 0 0 0",
+    "IconVisible 1 0 0 0",
+  END_STATE_DEFINITIONS
 }
 
 
@@ -46,9 +47,7 @@ char    line[512];
 // **************************************************************************
 TRIALSEQUENCE::~TRIALSEQUENCE()
 {
- if (vis) delete vis;
-
- vis=NULL;
+  delete vis;
 }
 
 
@@ -62,32 +61,15 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay)
 {
-int     ret;
+  ontime = MeasurementUnits::ReadAsTime( OptionalParameter( "OnTime", 10 ) );
+  offtime = MeasurementUnits::ReadAsTime( OptionalParameter( "OffTime", 3 ) );
 
- statevector=new_svect;
- userdisplay=new_userdisplay;
+  // reset the trial's sequence
+  ResetTrialSequence();
 
- ret=1;
- PARAM* pOnTime = plist->GetParamPtr( "OnTime" ),
-      * pOffTime = plist->GetParamPtr( "OffTime" );
- if( pOnTime && pOffTime )
- {
-   ontime = ::atoi( pOnTime->GetValue() );
-   offtime = ::atoi( pOffTime->GetValue() );
- }
- else
- {
-   ret = 0;
-   ontime = 10;
-   offtime = 3;
- }
-
- // reset the trial's sequence
- ResetTrialSequence();
-
- return(ret);
+  return 1;
 }
 
 
@@ -99,17 +81,14 @@ int     ret;
 // **************************************************************************
 void TRIALSEQUENCE::ResetTrialSequence()
 {
-char    line[256];
-int     i;
+  cur_sequence = 0;
+  cur_on = false;
 
- cur_sequence=0;
- cur_on=false;
+  selectedtarget = NULL;
+  oldrunning = 0;
 
- selectedtarget=NULL;
- oldrunning=0;
-
- statevector->SetStateValue("IconNumber", 0);
- statevector->SetStateValue("IconVisible", 0);
+  State( "IconNumber" ) = 0;
+  State( "IconVisible" ) = 0;
 }
 
 
@@ -141,7 +120,7 @@ unsigned short running;
 
  selected=NULL;
 
- running=statevector->GetStateValue("Running");
+ running=State("Running");
 
  // when we suspend the system, show the "TIME OUT" message
  if ((running == 0) && (oldrunning == 1))
@@ -166,8 +145,8 @@ unsigned short running;
     cur_sequence=0;
     selected=userdisplay->activetargets->GetTargetPtr(userdisplay->activetargets->GetTargetID(0));
     userdisplay->HideActiveTargets();
-    statevector->SetStateValue("IconVisible", 0);
-    statevector->SetStateValue("IconNumber", 0);
+    State( "IconVisible" ) = 0;
+    State( "IconNumber" ) = 0;
     }
 
  if (!cur_on && (cur_sequence == offtime))
@@ -175,8 +154,8 @@ unsigned short running;
     cur_on=true;
     cur_sequence=0;
     userdisplay->DisplayActiveTargets();           // display all active targets
-    statevector->SetStateValue("IconVisible", 1);
-    statevector->SetStateValue("IconNumber", userdisplay->activetargets->GetTargetID(0));
+    State( "IconVisible" ) = 1;
+    State( "IconNumber" ) = userdisplay->activetargets->GetTargetID(0);
     }
 
  oldrunning=running;

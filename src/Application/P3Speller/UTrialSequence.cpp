@@ -11,6 +11,7 @@
 #include "UTaskUtil.h"
 #include "UBCIError.h"
 #include "Localization.h"
+#include "MeasurementUnits.h"
 
 //---------------------------------------------------------------------------
 
@@ -24,46 +25,54 @@
 //             slist - pointer to the state list
 // Returns:    N/A
 // **************************************************************************
-TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist)
+TRIALSEQUENCE::TRIALSEQUENCE()
+: vis( NULL ),
+  targets( new TARGETLIST )
 {
-int     i;
-char    line[512];
-
- targets=new TARGETLIST();
 
  /*shidong starts*/
- 
+
  debug = false;
  if(debug) f = fopen("debug2.txt", "w");
- strcpy(line, "P3Speller matrix TargetDefinitionMatrix= 36 {Display Enter Display%20Size } A A 1 B B 1 C C 1 D D 1 E E 1 F F 1 G G 1 H H 1 I I 1 J J 1 K K 1 L L 1 M M 1 N N 1 O O 1 P P 1 Q Q 1 R R 1 S S 1 T T 1 U U 1 V B 1 W W 1 X X 1 Y Y 1 Z Z 1 1 1 1 2 2 1 3 3 1 4 4 1 5 5 1 6 6 1 7 7 1 8 8 1 9 9 1 _ _ 1 0 0 100 // Target Definition Matrix");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller int NumMatrixColumns= 6 6 0 6 // Display Matrix's Column Number");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int NumMatrixRows= 6 6 0 6 // Display Matrix's Row Number");
- plist->AddParameter2List(line,strlen(line) );
 
+ BEGIN_PARAMETER_DEFINITIONS
+   "P3Speller matrix TargetDefinitionMatrix= "
+      "36 "
+      "{Display Enter Display%20Size } "
+      "A A 1 "  "B B 1 "  "C C 1 "  "D D 1 "  "E E 1 "  "F F 1 "
+      "G G 1 "  "H H 1 "  "I I 1 "  "J J 1 "  "K K 1 "  "L L 1 "
+      "M M 1 "  "N N 1 "  "O O 1 "  "P P 1 "  "Q Q 1 "  "R R 1 "
+      "S S 1 "  "T T 1 "  "U U 1 "  "V V 1 "  "W W 1 "  "X X 1 "
+      "Y Y 1 "  "Z Z 1 "  "1 1 1 "  "2 2 1 "  "3 3 1 "  "4 4 1 "
+      "5 5 1 "  "6 6 1 "  "7 7 1 "  "8 8 1 "  "9 9 1 "  "_ _ 1 "
+      "% % % // Target Definition Matrix",
+   "P3Speller int NumMatrixColumns= 6 "
+      "6 0 6 // Display Matrix's Column Number",
+   "P3Speller int NumMatrixRows= 6 "
+      "6 0 6 // Display Matrix's Row Number",
  /*shidong ends*/
 
- strcpy(line,"P3Speller int OnTime= 4 10 0 5000 // Duration of intensification in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int OffTime= 1 10 0 5000 // Interval between intensification in units of SampleBlocks");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int OnlineMode= 0 0 0 1 // Online mode (0=no, 1=yes)");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller int ResultDisplay= 1 0 0 1 // Display results (0=no, 1=yes)");
- plist->AddParameter2List(line,strlen(line) );
- strcpy(line,"P3Speller string TextColor= 0x00000000 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller string TextColorIntensified= 0x000000FF 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
- plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller string TextToSpell= P P A Z // Character or string to spell in offline mode");
- plist->AddParameter2List(line,strlen(line));
+  "P3Speller int OnTime= 4 "
+    "10 0 5000 // Duration of intensification in units of SampleBlocks",
+  "P3Speller int OffTime= 1 "
+    "10 0 5000 // Interval between intensification in units of SampleBlocks",
+  "P3Speller int OnlineMode= 0 "
+    "0 0 1 // Online mode (0=no, 1=yes) (boolean)",
+  "P3Speller int ResultDisplay= 1 "
+    "0 0 1 // Display results (0=no, 1=yes) (boolean)",
+  "P3Speller string TextColor= 0x00000000 "
+    "0x00505050 0x00000000 0x00000000 // Text Color (color)",
+  "P3Speller string TextColorIntensified= 0x000000FF "
+    "0x00505050 0x00000000 0x00000000 // Intensified Text Color (color)",
+  "P3Speller string TextToSpell= P "
+    "P A Z // Character or string to spell in offline mode",
+ END_PARAMETER_DEFINITIONS
 
- vis=NULL;
-
- slist->AddState2List("StimulusCode 5 0 0 0\n");
- slist->AddState2List("StimulusType 3 0 0 0\n");
- slist->AddState2List("Flashing 1 0 0 0\n");
+ BEGIN_STATE_DEFINITIONS
+  "StimulusCode 5 0 0 0",
+  "StimulusType 3 0 0 0",
+  "Flashing 1 0 0 0",
+ END_STATE_DEFINITIONS
 }
 
 
@@ -95,13 +104,13 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay)
 {
 int     ret;
 
  // load and create all potential targets
  /*shidong starts*/
- ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionMatrix")->GetNumColumns(), plist->GetParamPtr("TargetDefinitionMatrix")->GetNumRows());
+ ret=LoadPotentialTargets(Parameter("TargetDefinitionMatrix")->GetNumColumns(), Parameter("TargetDefinitionMatrix")->GetNumRows());
  NumMatrixColumns = Parameter("NumMatrixColumns");
  NumMatrixRows = Parameter("NumMatrixRows");
  NUM_STIMULI = NumMatrixColumns + NumMatrixRows;
@@ -112,7 +121,6 @@ int     ret;
     return(0);
     }
 
- statevector=new_svect;
  userdisplay=new_userdisplay;
 
  // if (vis) delete vis;
@@ -121,8 +129,8 @@ int     ret;
  // vis->SendCfg2Operator(SOURCEID_SPELLERTRIALSEQ, CFGID_WINDOWTITLE, "Speller Trial Sequence");
 
  ret=1;
- ontime = Parameter( "OnTime" );
- offtime = Parameter( "OffTime" );
+ ontime = MeasurementUnits::ReadAsTime( Parameter( "OnTime" ) );
+ offtime = MeasurementUnits::ReadAsTime( Parameter( "OffTime" ) );
  TextColor=(TColor)strtol( Parameter( "TextColor" ), NULL, 16 );
  TextColorIntensified=(TColor)strtol( Parameter( "TextColorIntensified" ), NULL, 16 );
  TextToSpell = ( const char* )Parameter( "TextToSpell" );
@@ -147,7 +155,7 @@ int     ret;
     cur_resulttextvisible=false;
  userdisplay->InitializeStatusBarPosition(cur_resulttextvisible);
  // userdisplay->DisplayCursor();
- userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "Waiting to start ..." ) ) );
+ userdisplay->DisplayMessage( LocalizableString( "Waiting to start ..." ) );
 
  oldrunning=0;
 
@@ -332,8 +340,8 @@ char    line[256];
  // initialize block randomized numbers
  InitializeBlockRandomizedNumber();
 
- statevector->SetStateValue("StimulusCode", 0);
- statevector->SetStateValue("StimulusType", 0);
+ State("StimulusCode")=0;
+ State("StimulusType")=0;
 }
 
 
@@ -365,11 +373,12 @@ void TRIALSEQUENCE::SuspendTrial()
  userdisplay->HideActiveTargets();           // hide all active targets
  userdisplay->HideStatusBar();               // hide the status bar
 
- statevector->SetStateValue("StimulusCode", 0);
- statevector->SetStateValue("StimulusType", 0);
- statevector->SetStateValue("Flashing", 0);
 
- userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT !!!" ) ) ); // display the "TIME OUT" message
+ State("StimulusCode")=0;
+ State("StimulusType")=0;
+ State("Flashing")=0;
+
+ userdisplay->DisplayMessage( LocalizableString( "TIME OUT !!!" ) ); // display the "TIME OUT" message
 }
 
 
@@ -485,7 +494,7 @@ int     ret;
     /*shidong starts*/
     if (debug) fprintf( f, "The  cur_stimuluscode is %d.\t", cur_stimuluscode);
     /*shidong ends*/
- running=statevector->GetStateValue("Running");
+ running=State("Running");
 
  // when we suspend the system, show the "TIME OUT" message
  if ((running == 0) && (oldrunning == 1))
@@ -510,8 +519,8 @@ int     ret;
     cur_trialsequence=0;
     IntensifyTargets(cur_stimuluscode, false);
     cur_stimuluscode=0;
-    statevector->SetStateValue("StimulusType", 0);
-    statevector->SetStateValue("Flashing", 0);
+    State("StimulusType")=0;
+    State("Flashing")=0;
     ret=1;
     }
 
@@ -528,13 +537,13 @@ int     ret;
     within=IntensifyTargets(cur_stimuluscode, true);
     // in the online mode, we do not know whether this is standard or oddball
     if (onlinemode)
-       statevector->SetStateValue("StimulusType", 0);
+       State("StimulusType")=0;
     else
-       statevector->SetStateValue("StimulusType", within);
-    statevector->SetStateValue("Flashing", 1);
+       State("StimulusType")=within;
+    State("Flashing")=1;
     }
 
- statevector->SetStateValue("StimulusCode", cur_stimuluscode);
+ State("StimulusCode")=cur_stimuluscode;
 
  oldrunning=running;
  cur_trialsequence++;
