@@ -94,11 +94,17 @@ TTask::TTask()
     "UsrTask int RestingPeriod= 0 0 0 1 // "
         "rest period of data acquisition (boolean)",
     "UsrTask matrix Announcements= "
-      " { 0 1 2 } { Task Result Cursor } "
-      "     %      %      % "
-      "     %      %      % "
-      "     %      %      % "
+      " { 0 1 2 } { Task Result Cursor Hit Miss } "
+      "                %      %      %   %    % "
+      "                %      %      %   %    % "
+      "                %      %      %   %    % "
       "// Sound files for auditory announcements",
+    "UsrTask matrix AnnouncementVolumes= "
+      " { 0 1 2 } { Task Result Cursor Hit Miss } "
+      "                1      1      1   1    1 "
+      "                1      1      1   1    1 "
+      "                1      1      1   1    1 "
+      " 1.0 0.0 1.0 // Volume settings for announcements",
     "UsrTask matrix CursorVolume= "
       " { 0 1 2 } { min max } "
       " 0.5 1.0 "
@@ -198,13 +204,28 @@ void TTask::Initialize()
   mCursorAnnouncements.resize( Ntargets + 1 );
   mCursorVolumeOffsets.resize( Ntargets + 1 );
   mCursorVolumeSlopes.resize( Ntargets + 1 );
+  mHitAnnouncements.resize( Ntargets + 1 );
+  mMissAnnouncements.resize( Ntargets + 1 );
   for( int i = 0; i <= Ntargets; ++i )
   {
     mTaskAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Task" ) );
+    mTaskAnnouncements[ i ].SetVolume( Parameter( "AnnouncementVolumes", i, "Task" ) );
+
     mResultAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Result" ) );
+    mResultAnnouncements[ i ].SetVolume( Parameter( "AnnouncementVolumes", i, "Result" ) );
+
     mCursorAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Cursor" ) );
     mCursorVolumeOffsets[ i ] = Parameter( "CursorVolume", i, "min" );
-    mCursorVolumeSlopes[ i ] = Parameter( "CursorVolume", i, "max" ) - mCursorVolumeOffsets[ i ];
+    mCursorVolumeOffsets[ i ] *= Parameter( "AnnouncementVolumes", i, "Cursor" );
+    mCursorVolumeSlopes[ i ] = Parameter( "CursorVolume", i, "max" );
+    mCursorVolumeSlopes[ i ] *= Parameter( "AnnouncementVolumes", i, "Cursor" );
+    mCursorVolumeSlopes[ i ] -= mCursorVolumeOffsets[ i ];
+
+    mHitAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Hit" ) );
+    mHitAnnouncements[ i ].SetVolume( Parameter( "AnnouncementVolumes", i, "Hit" ) );
+
+    mMissAnnouncements[ i ].AttachFile( Parameter( "Announcements", i, "Miss" ) );
+    mMissAnnouncements[ i ].SetVolume( Parameter( "AnnouncementVolumes", i, "Miss" ) );
   }
 
   mTaskLog.Initialize();
@@ -489,6 +510,10 @@ char            memotext[256];
             if (OutcomeTime == 0)
                {
                mResultAnnouncements[ CurrentOutcome ].Play();
+               if( CurrentOutcome == CurrentTarget )
+                 mHitAnnouncements[ CurrentTarget ].Play();
+               else
+                 mMissAnnouncements[ CurrentTarget ].Play();
                sprintf(memotext, "%d hits %d missed", Hits, Misses);
                mVis.Send( memotext );
                bitrate.Push(HitOrMiss);
@@ -687,4 +712,9 @@ void TTask::StopRun()
     mResultAnnouncements[ i ].Stop();
   for( size_t i = 0; i < mCursorAnnouncements.size(); ++i )
     mCursorAnnouncements[ i ].Stop();
+  for( size_t i = 0; i < mHitAnnouncements.size(); ++i )
+    mHitAnnouncements[ i ].Stop();
+  for( size_t i = 0; i < mMissAnnouncements.size(); ++i )
+    mMissAnnouncements[ i ].Stop();
 }
+

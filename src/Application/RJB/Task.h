@@ -87,11 +87,13 @@ private:
         void UpdateSummary( void );
         
         BITRATE              bitrate;
-        LogFile              mTaskLog;
-        GenericVisualization mVis;
+        LogFile                  mTaskLog;
+        GenericVisualization     mVis;
         std::vector<TWavePlayer> mTaskAnnouncements,
                                  mResultAnnouncements,
-                                 mCursorAnnouncements;
+                                 mCursorAnnouncements,
+                                 mHitAnnouncements,
+                                 mMissAnnouncements;
         std::vector<float>       mCursorVolumeOffsets,
                                  mCursorVolumeSlopes;
 
