@@ -437,6 +437,11 @@ TARGET::TARGET(int my_targetID)
 
  IconFile="";
  Caption="";
+ /*shidong starts*/
+        CharDisplayInMatrix = "";
+        CharDisplayInResult = "";
+        FontSizeFactor = 1.0;
+ /*shidong ends*/
 }
 
 
@@ -480,7 +485,11 @@ TARGET *new_target;
  new_target->Left=Left;
  new_target->Width=Width;
  new_target->Height=Height;
-
+ /*shidong starts*/
+ new_target->CharDisplayInMatrix = CharDisplayInMatrix;
+ new_target->CharDisplayInResult = CharDisplayInResult;
+ new_target->FontSizeFactor = FontSizeFactor;        
+ /*shidong ends*/
  return(new_target);
 }
 

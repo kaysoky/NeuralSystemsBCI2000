@@ -48,6 +48,11 @@ public:		// User declarations
         void    HideTarget();
         void    HighlightTarget();
         void    SetTextColor(TColor new_color);
+        /*shidong starts*/
+        AnsiString CharDisplayInMatrix;
+        AnsiString CharDisplayInResult;
+        float FontSizeFactor;
+        /*shidong ends*/
 };
 
 
