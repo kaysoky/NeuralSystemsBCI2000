@@ -53,7 +53,7 @@ TBrainVisionGDRConverter::InitOutput( TOutputInfo& inInfo )
 
     const string bciExtension = ".dat";
     string  headerFileName = ".vhdr",
-            dataFileName = ".raw",
+            dataFileName = ".vraw",
             markerFileName = ".vmrk",
             baseName( inInfo.name ),
             lowerBaseName( baseName );
