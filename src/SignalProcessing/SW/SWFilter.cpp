@@ -45,6 +45,9 @@
     if (Initialized) {
        delete [] BaseChList;
        delete BLSignal;
+#ifdef BCI2000_STRICT
+       Initialized = false;
+#endif // BCI2000_STRICT
     }
    // allocating BL variables
     BaseChList = new bool[NumChan];
@@ -69,9 +72,13 @@
  {
         visualize=false;
  }
+#ifdef BCI2000_STRICT
+    BLBlocks = 0;
+#endif // BCI2000_STRICT
     OldBLState = false;
     PosInTrial = -1;
     Initialized = true;
+    return 1;
   }
 
   TSetBaseline::~TSetBaseline()
@@ -172,6 +179,9 @@
    if (Initialized) {
        delete [] ArteChList;
        delete [] ArteFactorList;
+#ifdef BCI2000_STRICT
+       Initialized = false;
+#endif // BCI2000_STRICT
    }
    NumChan = paramlist->GetParamPtr("ArteChList")->GetNumValues();
    ArteChList = new short[NumChan];
@@ -326,6 +336,7 @@
    return(1);
   }
 
+
   void TSW::InitBuffers(unsigned int NewBlockSize, unsigned int NewBlocksInTrial, short NewSWCh)
   {
   int n;
@@ -335,7 +346,10 @@
 // deleting old Buffers
   if (Initialized) {
     delete AvgBlockBuffer;
-    if (NewSWCh>SWCh) {
+#ifndef BCI2000_STRICT
+    if (NewSWCh>SWCh)
+#endif // !BCI2000_STRICT
+     {
         delete [] SWInChList;
         delete [] SWOutChList;
         delete [] MaxValue;
@@ -343,7 +357,11 @@
         delete [] TcAk;
         NewChannels=true;
     }
+#ifdef BCI2000_STRICT
+    Initialized = false;
+#endif // BCI2000_STRICT
   }
+
 // Setting new variables
     BlockSize = NewBlockSize;
     BlocksInTrial = NewBlocksInTrial;

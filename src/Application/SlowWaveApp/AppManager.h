@@ -10,7 +10,6 @@
 //-------------------- programed by Dr. Thilo Hinterberger 2001 ------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-
 // for source status
 #define NONE     0
 #define BCIFILE  1
@@ -39,7 +38,7 @@ public:
         int RecStatus;             // contains the recording status
         int TrialStatus;           // contains the trial status
         int OldSysStatus;          // contains the previous status
-        bool FBFlag;               // true if feedback is on 
+        bool FBFlag;               // true if feedback is on
         char WorkingDir[128];      // contains the working directory
         char DataDir[128];         // contains the data directory
 };

@@ -4,15 +4,27 @@
 #pragma hdrstop
 #include <stdio.h>
 #include "SWUser.h"
+#ifdef BCI2000_STRICT
+# include <assert>
+#endif // BCI2000_STRICT
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TFBForm *FBForm;
 //---------------------------------------------------------------------------
+
+#ifdef BCI2000_STRICT
+// For consistent values, we simply set the Ball's left coordinate to
+// initialBallLeft whenever PosInTrial is reset.
+const int initialBallLeft = 40;
+#endif // BCI2000_STRICT
+
 __fastcall TFBForm::TFBForm(TComponent* Owner)
         : TForm(Owner)
+#ifdef BCI2000_STRICT
+        , outHandle( NULL )
+#endif // !BCI2000_STRICT
 {
-
 }
 
 void TFBForm::SetFBForm(PARAMLIST *NewParamlist, STATELIST *statelist) {
@@ -88,8 +100,10 @@ void TFBForm::SetFBForm(PARAMLIST *NewParamlist, STATELIST *statelist) {
    strcpy(line, "PresentGM int GMIVNote= 36 36 0 127 // Note for invalid trial)");
    paramlist->AddParameter2List(line, strlen(line));
 
+#ifndef BCI2000_STRICT
    unsigned int GMdeviceID = GMDEVICEID;
    result = midiOutOpen(&outHandle, GMdeviceID, NULL, NULL, CALLBACK_NULL);
+#endif // !BCI2000_STRICT
    STree = new TSTree();
    STree->CurIndex = 0;
    STree->MaxIndex = 0;
@@ -101,6 +115,9 @@ void TFBForm::SetFBForm(PARAMLIST *NewParamlist, STATELIST *statelist) {
        STree->OnNoChoice[n] = 0;
    }
    PosInTrial = -1;
+#ifdef BCI2000_STRICT
+   Ball->Left = initialBallLeft;
+#endif // BCI2000_STRICT
    // defining oddballstr
    OddballStr[0] = "Odd1.wav";
    OddballStr[1] = "Odd2.wav";
@@ -146,8 +163,24 @@ void TFBForm::ReInitialize() //Initialize after Resize
   ZeroBar->Top = ClientHeight/2 - (ZeroInt*ClientHeight)/200;
 }
 
+#ifdef BCI2000_STRICT
+void
+TFBForm::LeaveRunningState()
+{
+  const DWORD midiMsgAllNotesOff = 0x7b; // Little endian byte ordering assumed here.
+  if( outHandle )
+    midiOutShortMsg( outHandle, midiMsgAllNotesOff );
+}
+#endif // !BCI2000_STRICT
+
+
 void TFBForm::Initialize(STATEVECTOR *Newstatevector)
 {
+#ifdef BCI2000_STRICT
+  if( outHandle )
+    midiOutClose( outHandle );
+  midiOutOpen(&outHandle, MIDI_MAPPER, NULL, NULL, CALLBACK_NULL);
+#endif // !BCI2000_STRICT
   statevector = Newstatevector;
   int NegTh = atoi(paramlist->GetParamPtr("NegThreshold")->GetValue());
   int PosTh = atoi(paramlist->GetParamPtr("PosThreshold")->GetValue());
@@ -203,6 +236,10 @@ void TFBForm::Initialize(STATEVECTOR *Newstatevector)
   TaskActive = false;
   BIState = false;
   PosInTrial = -1;
+#ifdef BCI2000_STRICT
+  Ball->Left = initialBallLeft;
+  Ball->Top = ZeroPosition;
+#endif // BCI2000_STRICT
 }
 
 void __fastcall TFBForm::FormResize(TObject *Sender)
@@ -217,6 +254,8 @@ void __fastcall TFBForm::FormResize(TObject *Sender)
  ZeroPosition = ClientHeight/2 - Ball->Height/2;
  MiddleGoal->Top = ClientHeight/2-MiddleGoal->Height/2;
  MiddleGoal->Left = ClientWidth-8-MiddleGoal->Width;
+ PB1->Width = 200;
+ PB1->Height = 200;
  PB1->Top = ClientHeight/2-PB1->Height/2;
  PB1->Left = ClientWidth/2-PB1->Width/2;
  Ball->Top = ZeroPosition;
@@ -236,6 +275,9 @@ void __fastcall TFBForm::FormCreate(TObject *Sender)
  ZeroPosition = ClientHeight/2 - Ball->Height/2;
  MiddleGoal->Top = ClientHeight/2-MiddleGoal->Height/2;
  MiddleGoal->Left = ClientWidth-8-MiddleGoal->Width;
+#ifdef BCI2000_STRICT
+  Ball->Left = initialBallLeft;
+#endif // BCI2000_STRICT
  Ball->Top = ZeroPosition;
  BottomText->Width = 600;
  TopText->Visible = false;
@@ -383,6 +425,9 @@ void TFBForm::ShowFB(int FBValue)
   if (statevector->GetStateValue("BeginOfTrial")==1) {
       Ball->Visible = true;
       Ball->Left = 40;
+#ifdef BCI2000_STRICT
+      Ball->Left = initialBallLeft;
+#endif // BCI2000_STRICT
       Ball->Top =  ZeroPosition;
   }
   if (PosInTrial==FBBegin) statevector->SetStateValue("Feedback", 1);
@@ -416,6 +461,9 @@ void TFBForm::Process(int FBValue)
   if (ProCounter++>10000) ProCounter = 0;
   if (statevector->GetStateValue("BeginOfTrial")==1) {
       PosInTrial = 0;
+#ifdef BCI2000_STRICT
+      Ball->Left = initialBallLeft;
+#endif // BCI2000_STRICT
       BIState = true;
       // acoustic signal for BI begin
       if (AudMarker & 1) {  // Tick
@@ -478,9 +526,9 @@ void TFBForm::Invalid() // Handle Visual and Auditory Invalid indication
 	pCanvas->LineTo(0,  PB1->Height);
     }
     if (AudInvalid==1) result = midiOutShortMsg(outHandle, GMIVVelocity*65536 + GMIVNote*256 + 9*16 + GMIVChannel);
-   // if ((VisInvalid==1) || (AudInvalid==1)) Sleep(300);
+    if ((VisInvalid==1) || (AudInvalid==1)) Sleep(300);
     if (AudInvalid==1) result = midiOutShortMsg(outHandle, GMIVNote*256 + 9*16 + GMIVChannel);
-   // if (VisInvalid==1) PB1->Refresh();
+    if (VisInvalid==1) PB1->Refresh();
 }
 
 void TFBForm::Reinforce()   // Handle Visual and Auditory Reinforcement
@@ -489,10 +537,12 @@ void TFBForm::Reinforce()   // Handle Visual and Auditory Reinforcement
     unsigned int phrase[] = {0x3C, 0x40, 0x43, 0x3C, 0x43, 0x48, 0x3C, 0x43, 0x4C};
     if (VisReinforcement==1) {
         pCanvas->Pen->Width = 1;
+#if 0 // jm
         PB1->Top =  Height/2 -  PB1->Height/2;
         PB1->Left =  Width/2 -  PB1->Width/2;
         PB1->Width = 200;
         PB1->Height = 200;
+#endif
         //the face:
         pCanvas->Brush->Color = clYellow;
         pCanvas->Pen->Color = clYellow;
@@ -510,7 +560,7 @@ void TFBForm::Reinforce()   // Handle Visual and Auditory Reinforcement
         pCanvas->Ellipse(123, 68, 147, 62);
     }
     // smile
- /*   int j = 0;
+    int j = 0;
     int k = 0;
     int l = 0;
     for (int i = 0; i < 15; i += 3){
@@ -537,7 +587,7 @@ void TFBForm::Reinforce()   // Handle Visual and Auditory Reinforcement
    if (VisReinforcement==1) {
     Sleep(100);
     PB1->Refresh();
-   }    */
+   }
 }
 
 bool TFBForm::LoadTree(char *FName)

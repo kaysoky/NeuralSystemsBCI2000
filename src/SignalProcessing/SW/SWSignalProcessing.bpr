@@ -32,7 +32,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value="_DEBUG;BCI2000_STRICT"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SignalProcessing.cpp"/>
     <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -42,7 +42,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=&quot;c:\PROGRAM FILES\borland\CBUILDER6\lib\vcl60.csm&quot; -Hc -Vx -Ve -xf 
+    <CFLAG1 value="-Od -H=&quot;d:\PROGRAM FILES\borland\CBUILDER6\lib\vcl60.csm&quot; -Hc -Vx -Ve -xf 
       -xp -X- -r- -a8 -5 -b- -k -y -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -114,6 +114,9 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
 Count=18
 Item0=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
@@ -161,14 +164,15 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG
+Count=2
+Item0=_DEBUG;BCI2000_STRICT
+Item1=_DEBUG
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=
+RunParams=AUTOSTART 127.0.0.1
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -183,10 +187,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

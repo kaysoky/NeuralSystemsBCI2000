@@ -167,8 +167,8 @@ int     trycount, ret;
              {
              critsec_statevector->Acquire();
              memcpy(statevector->GetStateVectorPtr(), coremessage->GetBufPtr(), statevector->GetStateVectorLength());
-             fMain->statevectorupdate->SetEvent();
              critsec_statevector->Release();
+             fMain->statevectorupdate->SetEvent();
              }
           }
        delete coremessage;
@@ -463,9 +463,19 @@ PARAM   *visparam;
 int     i, ret;
 int     x, y, res;
 
+ startacq:
+
+ // we don't have to wait for an updated state vector the first time
+ statevectorupdate->SetEvent();
+
  // configure the source module
  res=ConfigureSource();
- if (res == 0) return;
+ if (res == 0)
+    {
+    sprintf(errmsg, "415 Error (re)configuring Source");
+    corecomm->SendStatus(errmsg);
+    return;
+    }
 
  //
  // THIS IS THE MAIN DATA ACQUISITION LOOP
@@ -487,21 +497,27 @@ int     x, y, res;
      Sleep(500);
      }
 
-  critsec_statevector->Acquire();
-
   // update the state vector
   // we have to acquire a lock first (since the receiving thread might overwrite it with the one returned from the application)
   // of course, we only have to do this in case the receiving thread hasn't been terminated
   if (receiving_thread)
      {
-     statevectorupdate->WaitFor(750);
+     if (statevectorupdate->WaitFor(10000) == wrTimeout)
+        {
+        sprintf(errmsg, "301 State vector update timeout");
+        corecomm->SendStatus(errmsg);
+        }
+     critsec_statevector->Acquire();
      UpdateStateVector();
+     critsec_statevector->Release();
      }
+
+  critsec_statevector->Acquire();
 
   // time stamp the brain signal
   sourcetime=statevector->GetStateValue("SourceTime");
   stimulustime=statevector->GetStateValue("StimulusTime");
-   statevector->SetStateValue("SourceTime", bcitime.GetBCItime_ms());
+  statevector->SetStateValue("SourceTime", bcitime.GetBCItime_ms());
 
   // get the current value of the state "Running" in the state vector
   // flipping to 0 quits this main data acquisition loop
@@ -511,19 +527,10 @@ int     x, y, res;
      {
      // continue working here
      // still have to react to a problem (shut system down, etc)
-     res=ConfigureSource();
-     // if there was a problem, we need to suspend the system right away
-     if (res == 0)
-        {
-        running=0;
-        oldrunning=1;
-        statevector->SetStateValue("Running", 0);
-        }
-     else
-        {
-        // if it's OK, we have to read new data after reconfiguration, too
-        adc->ADReadDataBlock();
-        }
+     critsec_statevector->Release();
+     oldrunning=1;
+     // go to the beginning and re-configure the system
+     goto startacq;
      }
 
   // inform the operator, in case the system has been suspended

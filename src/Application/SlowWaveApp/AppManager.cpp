@@ -23,7 +23,6 @@ TSTATUS::TSTATUS()
    getcwd(DataDir, 128);
 }
 
-
 //---------------------------------------------------------------------------
 
   TDecider::TDecider(PARAMLIST *paramlist, STATELIST *statelist)
@@ -74,7 +73,7 @@ TSTATUS::TSTATUS()
   }
 
   float TDecider::Process(short *signals)
-  {                 // here also the Classification state could be queried
+  {                   // here also the Classification state could be queried
     if (statevector->GetStateValue("BeginOfTrial")==1) {
        ResultValue = 0;
        CoeffNum = 0;
