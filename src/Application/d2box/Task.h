@@ -27,6 +27,8 @@ private:
         float y_pos;
         float cursor_x_start;
         float cursor_y_start;
+        float CursorStartX;
+        float CursorStartY;
         float limit_right;
         float limit_left;
         float limit_top;

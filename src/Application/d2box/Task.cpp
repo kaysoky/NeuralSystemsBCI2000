@@ -55,7 +55,10 @@ TEMPORARY_ENVIRONMENT_GLUE
         plist->AddParameter2List(line,strlen(line));
         strcpy(line,"Targets int IncludeAllTargets= 0 0 0 1 // Test all target positions?");
         plist->AddParameter2List(line,strlen(line));
-
+        strcpy(line,"Targets float StartCursorX= 50.0 0 0 100.0 // Horizontal Start of Cursor");
+        plist->AddParameter2List(line,strlen(line));
+        strcpy(line,"Targets float StartCursorY= 50.0 0 0 100.0 // Vertical Cursor Starting Position");
+        plist->AddParameter2List(line,strlen(line));
         strcpy(line,"Targets matrix TargetPos= 7 4 25 25 0 90 0 90 25 25 50 50 10 10 10 10 50 50 0 0 -1 1 -1 1 0 0 0 0 0 0 // Target Position Matrix - Values are 0-100");
         plist->AddParameter2List(line,strlen(line));
 
@@ -128,8 +131,8 @@ TEMPORARY_ENVIRONMENT_GLUE
         OutcomeDuration=   atoi(plist->GetParamPtr("RewardDuration")->GetValue());
         FeedbackDuration=  atoi(plist->GetParamPtr("FeedbackDuration")->GetValue() );
         Ntargets=          atoi(plist->GetParamPtr("NumberTargets")->GetValue());
-    //    TargetWidth=       atof(plist->GetParamPtr("TargetWidth")->GetValue());
-    //    TargetHeight=      atof(plist->GetParamPtr("TargetHeight")->GetValue());
+        CursorStartX=      atof(plist->GetParamPtr("StartCursorX")->GetValue());
+        CursorStartY=      atof(plist->GetParamPtr("StartCursorY")->GetValue());
         targetInclude=     atoi(plist->GetParamPtr("IncludeAllTargets")->GetValue() );
         BaselineInterval=  atoi(plist->GetParamPtr("BaselineInterval")->GetValue());
         Resting=           atoi(plist->GetParamPtr("RestingPeriod")->GetValue());
@@ -203,8 +206,8 @@ TEMPORARY_ENVIRONMENT_GLUE
         targetcount= 0;
         ranflag= 0;
 
-        cursor_x_start= ( limit_right - limit_left ) / 2;
-        cursor_y_start= ( limit_bottom - limit_top ) / 2;
+        cursor_x_start= ( limit_right - limit_left ) * CursorStartX/100.0;
+        cursor_y_start= ( limit_bottom - limit_top ) * CursorStartY/100.0;
 
         time( &ctime );
         randseed= -ctime;

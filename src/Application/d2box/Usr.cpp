@@ -75,8 +75,8 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
 
        limit_top= 0; //CursorSize/2;
        limit_bottom= Wyl; //  - CursorSize/2;
-       limit_left= HalfCursorSize;  //  0; CursorSize/2;
-       limit_right= Wxl - HalfCursorSize; // - CursorSize/2;
+       limit_left= 0; // HalfCursorSize;  //  0; CursorSize/2;
+       limit_right= Wxl; // - HalfCursorSize; // - CursorSize/2;
 
        User->Show();
 }
