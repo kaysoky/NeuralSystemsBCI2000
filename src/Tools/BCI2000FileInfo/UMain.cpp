@@ -6,6 +6,8 @@
 #include "UBCI2000Data.h"
 #include "UOperatorCfg.h"
 #include "UMain.h"
+
+#include <assert>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -41,18 +43,15 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
       {
         HDROP handle = ( HDROP )msg.WParam;
         size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
+        if( numFiles > 1 )
+          Application->MessageBox( "You can only drop one file at a time", "Warning", MB_OK );
         if( numFiles > 0 )
         {
-          TStrSet s;
-          for( size_t i = 0; i < numFiles; ++i )
-          {
-            size_t nameLen = ::DragQueryFile( handle, i, NULL, 0 );
-            char* name = new char[ nameLen + 1 ];
-            ::DragQueryFile( handle, i, name, nameLen + 1 );
-            s.insert( std::string( name ) );
-            delete[] name;
-          }
-          ProcessFiles( s, false );
+          size_t nameLen = ::DragQueryFile( handle, 0, NULL, 0 );
+          char* name = new char[ nameLen + 1 ];
+          ::DragQueryFile( handle, 0, name, nameLen + 1 );
+          ProcessFile( name );
+          delete[] name;
         }
         ::DragFinish( handle );
       }
@@ -60,13 +59,7 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
     case WM_USER:
       // If called with command line arguments, process the files and quit.
       if( ParamCount() > 0 )
-      {
-        TStrSet s;
-        for( int i = 1; i <= ParamCount(); ++i )
-            s.insert( std::string( ParamStr( i ).c_str() ) );
-        ProcessFiles( s, false );
-        Application->Terminate();
-      }
+        ProcessFile( ParamStr( 1 ).c_str() );
       break;
     default:
       defaultDropPanelWindowProc( msg );
@@ -74,28 +67,13 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
 }
 
 
-void TfMain::ProcessFiles( TStrSet& inFilesToProcess, bool scanOnly )
+void TfMain::ProcessFile( const char* inFileToProcess )
 {
     Application->BringToFront();
-    /* DisableAll();
-    StatusBar->Panels->Items[ 0 ]->Text = "Processing";
-    Refresh(); */
 
-    if (inFilesToProcess.size() > 1)
-       Application->MessageBox("You can only drop one file at a time", "Warning", MB_OK);
-    else
-       {
-       TStrSet::iterator i = inFilesToProcess.begin();
-       // StatusBar->Panels->Items[ 1 ]->Text = AnsiString(i->c_str());
-       tFileName->Caption = AnsiString(i->c_str());
-       if (RetrieveFileInfo(AnsiString(i->c_str())))
-          DisplayFileInfo();
-       }
-
-    /* EnableAll();
-    StatusBar->Panels->Items[ 0 ]->Text = "Idle";
-    StatusBar->Panels->Items[ 1 ]->Text = "";
-    Refresh(); */
+    tFileName->Caption = inFileToProcess;
+    if( RetrieveFileInfo( inFileToProcess ) )
+      DisplayFileInfo();
 }
 
 

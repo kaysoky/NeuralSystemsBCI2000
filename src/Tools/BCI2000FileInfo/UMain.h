@@ -11,20 +11,6 @@
 #include <ComCtrls.hpp>
 #include <Menus.hpp>
 #include <Dialogs.hpp>
-#include <map>
-#include <set>
-#include <algorithm>
-#include <assert>
-#include <vector>
-#include <string>
-
-struct iless
-{
-  bool operator()( const std::string& a, const std::string& b )
-  { return ::stricmp( a.c_str(), b.c_str() ) < 0; };
-};
-
-typedef std::set<std::string, iless> TStrSet;
 
 //---------------------------------------------------------------------------
 class TfMain : public TForm
@@ -62,7 +48,7 @@ private:	// User declarations
         void    DisplayFileInfo();
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
-        void    ProcessFiles( TStrSet& inFilesToProcess, bool scanOnly );
+        void    ProcessFile( const char* inFileToProcess );
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;
