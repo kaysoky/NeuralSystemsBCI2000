@@ -133,6 +133,7 @@ TSWFilter::Initialize()
   {
     mVis.Send( CFGID::WINDOWTITLE, "SWFiltered" );
     mVis.Send( CFGID::MINVALUE, -100 );
+    mVis.Send( CFGID::MAXVALUE, 100 );
     mVis.Send( CFGID::NUMSAMPLES, 256 );
   }
   mLastItiState = 0;
