@@ -135,7 +135,7 @@ pdf: ${LATEXDOCS:.tex=.pdf}
 
 .mak.all:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS}
-  -del shared\obj\bci2000.csm shared\obj\bci2000.^#*
+  -del shared\obj\bci2000.csm shared\obj\bci2000.^#* > nul 2>&1
   ${DONE}
   
 .mak.docinfo:
