@@ -36,12 +36,13 @@ void RDAClientADC::Preflight( const SignalProperties&,
 
   // Resource availability and parameter consistency checks.
   RDAQueue preflightQueue;
+  size_t numInputChannels = 0;
   preflightQueue.open( Parameter( "HostName" ) );
   if( !preflightQueue.is_open() )
-    bcierr << "Cannot establish connection to the recording software";
+    bcierr << "Cannot establish connection to the recording software" << endl;
   else
   {
-    size_t numInputChannels = preflightQueue.info().numChannels + 1;
+    numInputChannels = preflightQueue.info().numChannels + 1;
     const char* matchMessage = " parameter must equal the number of channels"
                                " in the recording software plus one";
     if( Parameter( "SoftwareCh" ) != numInputChannels )
@@ -78,7 +79,9 @@ void RDAClientADC::Preflight( const SignalProperties&,
       bcierr << "The SourceChGain values for the first "
              << numInputChannels - 1 << " channels "
              << "must match the channel resolutions settings "
-             << "in the recording software"
+             << "in the recording software ("
+             << preflightQueue.info().channelResolutions[ 0 ]
+             << ")"
              << endl;
 
     float sourceSamplingRate = 1e6 / preflightQueue.info().samplingInterval;
@@ -100,7 +103,7 @@ void RDAClientADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+       numInputChannels, Parameter( "SampleBlockSize" ), signalDepth );
 }
 
 // **************************************************************************
@@ -119,15 +122,8 @@ void RDAClientADC::Initialize()
 
   inputQueue.open( hostName.c_str() );
   if( !inputQueue.is_open() )
-  {
     bcierr << "Could not establish connection with recording software"
            << endl;
-    return;
-  }
-#if 0
-  inputQueue.close();
-  inputQueue.clear();
-#endif
 }
 
 
