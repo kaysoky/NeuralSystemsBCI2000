@@ -64,10 +64,10 @@ public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         void   HandleCoreMessage(COREMESSAGE *coremessage);
         int    InitializeConnections();
-        void   SendStatus(char *line, TCustomWinSocket *Socket);
-        int    Write2SignalProc(GenericIntSignal *, STATEVECTOR *, PARAM *);
-        void   SendSysCommand(char *syscmdbuf, TCustomWinSocket *socket);
-        void   SendSysCommand(char *syscmdbuf, CORECOMM *corecomm);
+        void   SendStatus(const char *line, TCustomWinSocket *Socket);
+        int    Write2SignalProc(const GenericIntSignal *, const STATEVECTOR *, const PARAM *);
+        void   SendSysCommand(const char *syscmdbuf, TCustomWinSocket *socket);
+        void   SendSysCommand(const char *syscmdbuf, CORECOMM *corecomm);
         PARAMLIST       paramlist;
         STATELIST       statelist;
         void    ShutdownConnections();

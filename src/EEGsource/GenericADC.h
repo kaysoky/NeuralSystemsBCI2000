@@ -15,17 +15,26 @@
 
 class GenericADC
 {
-protected:
-        int     samplerate;
-public:
-        GenericADC::GenericADC();
-        GenericADC::~GenericADC();
-        GenericIntSignal *signal;
-        int     ADInit();
-        int     ADReadDataBlock();
-        int     ADShutdown();
-        int     GetSampleRate();
-        BCI2000ERROR    error;
+  public:
+    static GenericADC* GetNewADC();
+
+            GenericADC();
+    virtual ~GenericADC();
+
+    virtual int ADInit() = 0;
+    virtual int ADReadDataBlock() = 0;
+    virtual int ADShutdown() = 0;
+
+    int GetSampleRate() const;
+
+    BCI2000ERROR error;
+
+  public: // !!
+    GenericIntSignal* signal;
+
+  protected:
+    int samplerate;
+
 };
 #endif
 

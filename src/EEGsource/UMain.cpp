@@ -46,10 +46,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define ADC_DTADC
-#define ADC_RANDOM
-// #define ADC_DAS1402H
-
 #include "UCoreComm.h"
 #include "..\shared\defines.h"
 #include "UBCItime.h"

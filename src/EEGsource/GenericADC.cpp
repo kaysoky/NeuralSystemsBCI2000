@@ -24,19 +24,18 @@
 
 #pragma package(smart_init)
 
-
 GenericADC::GenericADC()
+: signal( NULL ),
+  samplerate( 0 )
 {
- signal=NULL;
- error.SetErrorMsg("");
+  //error.SetErrorMsg("");
 }
 
 
 GenericADC::~GenericADC()
 {
- if (signal) delete signal;
+  delete signal;
 }
-
 
 // **************************************************************************
 // Function:   GetSampleRate
@@ -44,7 +43,7 @@ GenericADC::~GenericADC()
 // Parameters: N/A
 // Returns:    sample rate
 // **************************************************************************
-int GenericADC::GetSampleRate()
+int GenericADC::GetSampleRate() const
 {
  return(samplerate);
 }
