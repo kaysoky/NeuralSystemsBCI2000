@@ -157,9 +157,9 @@ void TTask::Preflight( const SignalProperties& inputProperties,
   State( "IntertrialInterval" );
   State( "Running" );
 
-  // TTask::Process() implies that the input signal has at least one channel
-  // with two elements.
-  PreflightCondition( inputProperties >= SignalProperties( 1, 2 ) );
+  // TTask::Process() implies that the input signal has at least two channels
+  // with one element each.
+  PreflightCondition( inputProperties >= SignalProperties( 2, 1 ) );
 
   #ifdef DATAGLOVE
   // test for presence of glove if we want to use the glove
