@@ -135,6 +135,10 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  lastrun= atoi( lrun->Text.c_str() );
  
  channels=bci2000data->GetNumChannels();
+#if 0
+ if( channels > 64 )
+   channels = 64;
+#endif
  dummy=1;
  samplingrate=bci2000data->GetSampleFrequency();
 
