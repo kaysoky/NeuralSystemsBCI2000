@@ -92,9 +92,8 @@ char    memotext[256];
 int     ret;
 
  delete vis;
- vis= new GenericVisualization;
- vis->SetSourceID(SOURCEID_TASKLOG);
- vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+ vis= new GenericVisualization(SOURCEID::TASKLOG);
+ vis->Send(CFGID::WINDOWTITLE, "User Task Log");
 
  Wx=  Parameter( "WinXpos" );
  Wy=  Parameter( "WinYpos" );

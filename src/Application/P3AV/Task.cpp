@@ -24,7 +24,7 @@ RegisterFilter( TTask, 3 );
 // **************************************************************************
 TTask::TTask()
 : mApplicationPath( ExtractFilePath(Application->ExeName).c_str() ),
-  mTaskLogVis( SOURCEID_TASKLOG ),
+  mTaskLogVis( SOURCEID::TASKLOG ),
   m_pUsrEnvDispatcher( new UsrEnvDispatcher ),
   m_pUsrEnv( new UsrEnv(AnsiString("P3AVTask"), new UsrEnvAlgorithmP3AV) )
 {

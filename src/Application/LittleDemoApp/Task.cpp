@@ -146,9 +146,8 @@ void TTask::Initialize()
  }
 
  delete vis;
- vis= new GenericVisualization;
- vis->SetSourceID(SOURCEID_TASKLOG);
- vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+ vis= new GenericVisualization(SOURCEID::TASKLOG);
+ vis->SendCfg2Operator(SOURCEID::TASKLOG, CFGID::WINDOWTITLE, "User Task Log");
 
  form->Show();
 }

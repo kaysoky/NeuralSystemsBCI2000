@@ -27,7 +27,7 @@ RegisterFilter( TTask, 3 );
 // Returns:    N/A
 // **************************************************************************
 TTask::TTask()
-: mVis( SOURCEID_TASKLOG ),
+: mVis( SOURCEID::TASKLOG ),
   trialsequence( new TRIALSEQUENCE ),
   userdisplay( new USERDISPLAY ),
   cur_time( new BCITIME ),

@@ -123,9 +123,8 @@ void TTask::Initialize()
         trial=1;
 
         delete vis;
-        vis= new GenericVisualization;
-        vis->SetSourceID(SOURCEID_TASKLOG);
-        vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+        vis= new GenericVisualization(SOURCEID::TASKLOG);
+        vis->Send(CFGID::WINDOWTITLE, "User Task Log");
 
         User->Initialize( Parameters, States );
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
