@@ -1,12 +1,7 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
 
 #include "USysLog.h"
-
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
 
 // **************************************************************************
 // Function:   SYSLOG
@@ -15,27 +10,28 @@
 // Returns:    N/A
 // **************************************************************************
 SYSLOG::SYSLOG()
-: dontClose( false )
+: mpForm( new TForm( ( TComponent* )NULL ) ),
+  mpLog( new TRichEdit( ( TComponent* )NULL ) ),
+  mpCritsec( new TCriticalSection ),
+  mTextHeight( 0 ),
+  mDontClose( false )
 {
- form=new TForm(Application);
- form->Caption="System Log";
- form->Width=600;
- form->Height=250;
- // form->BorderIcons >> biSystemMenu;
- // form->BorderStyle=bsSizeable;
+  mpForm->Caption = "System Log";
+  mpForm->Width = 600;
+  mpForm->Height = 250;
+  // mpForm->BorderIcons >> biSystemMenu;
+  // mpForm->BorderStyle = bsSizeable;
 
- log=new TRichEdit(form);
- log->Visible=false;
- log->Parent=form;
- log->Left=0;
- log->Top=0;
- log->Width=form->ClientWidth;
- log->Height=form->ClientHeight;
- log->Anchors << akLeft << akTop << akRight << akBottom;
- log->ScrollBars=ssVertical;
- log->Visible=true;
-
- critsec=new TCriticalSection();
+  mpLog->Visible = false;
+  mpLog->Parent = mpForm;
+  mpLog->Left = 0;
+  mpLog->Top = 0;
+  mpLog->Width = mpForm->ClientWidth;
+  mpLog->Height = mpForm->ClientHeight;
+  mpLog->Anchors << akLeft << akTop << akRight << akBottom;
+  mpLog->ScrollBars = ssVertical;
+  mpLog->Visible = true;
+  mTextHeight = mpLog->SelAttributes->Height;
 }
 
 
@@ -47,17 +43,20 @@ SYSLOG::SYSLOG()
 // **************************************************************************
 SYSLOG::~SYSLOG()
 {
- delete critsec;
+  delete mpCritsec;
+  delete mpLog;
+  delete mpForm;
 }
 
 // The user must close the syslog manually if there are errors/warnings.
-bool SYSLOG::Close( bool force )
+bool
+SYSLOG::Close( bool inForce )
 {
- if( !force && dontClose && form->Visible )
-   return false;
+  if( !inForce && mDontClose && mpForm->Visible )
+    return false;
 
- form->Close();
- return true;
+  mpForm->Close();
+  return true;
 }
 
 // **************************************************************************
@@ -66,9 +65,10 @@ bool SYSLOG::Close( bool force )
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void SYSLOG::ShowSysLog()
+void
+SYSLOG::ShowSysLog()
 {
- form->Show();
+  mpForm->Show();
 }
 
 // **************************************************************************
@@ -77,9 +77,10 @@ void SYSLOG::ShowSysLog()
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void SYSLOG::HideSysLog()
+void
+SYSLOG::HideSysLog()
 {
- form->Hide();
+  mpForm->Hide();
 }
 
 // **************************************************************************
@@ -88,62 +89,50 @@ void SYSLOG::HideSysLog()
 // Parameters: N/A
 // Returns:    true if the window is visible
 // **************************************************************************
-bool SYSLOG::Visible() const
+bool
+SYSLOG::Visible() const
 {
- return form->Visible;
-}
-
-// **************************************************************************
-// Function:   AddSysLogEntry
-// Purpose:    Adds an entry to the system log
-// Parameters: text - pointer to the text to add to the log
-// Returns:    N/A
-// **************************************************************************
-void SYSLOG::AddSysLogEntry(const char *text)
-{
-TDateTime       cur_time;
-
- critsec->Acquire();
- cur_time=cur_time.CurrentDateTime();
- log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));
- critsec->Release();
+  return mpForm->Visible;
 }
 
 // **************************************************************************
 // Function:   AddSysLogEntry
 // Purpose:    Adds an entry to the system log with a special attribute
 // Parameters: text - pointer to the text to add to the log
-//             mode - either SYSLOGENTRYMODE_NORMAL  (normal attributes)
-//                           SYSLOGENTRYMODE_WARNING (attributes for a warning message)
-//                           SYSLOGENTRYMODE_ERROR   (attributes for an error message)
+//             mode - either logEntryNormal  (normal attributes)
+//                           logEntryWarning (attributes for a warning message)
+//                           logEntryError   (attributes for an error message)
 // Returns:    N/A
 // **************************************************************************
-void SYSLOG::AddSysLogEntry(const char *text, int mode)
+void
+SYSLOG::AddSysLogEntry( const char* inText, LogEntryMode inMode )
 {
-TDateTime       cur_time;
+  mpCritsec->Acquire();
+  switch( inMode )
+  {
+    case logEntryWarning:
+      mpLog->SelAttributes->Color = clGreen;
+      mpLog->SelAttributes->Height = mTextHeight + 2;
+      mpLog->SelAttributes->Style << fsBold;
+      mDontClose = true;
+      break;
 
- critsec->Acquire();
-
- // is this a warning message ?
- if (mode == SYSLOGENTRYMODE_WARNING)
-    {
-    log->SelAttributes->Color = clGreen;
-    log->SelAttributes->Height += 2;
-    log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
-    dontClose = true;
-    }
- // is this an error message ?
- if (mode == SYSLOGENTRYMODE_ERROR)
-    {
-    log->SelAttributes->Color = clRed;
-    log->SelAttributes->Height += 2;
-    log->SelAttributes->Style = log->SelAttributes->Style << fsBold;
-    dontClose = true;
-    }
-
- cur_time=cur_time.CurrentDateTime();
- log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));
-
- critsec->Release();
+    case logEntryError:
+      mpLog->SelAttributes->Color = clRed;
+      mpLog->SelAttributes->Height = mTextHeight + 2;
+      mpLog->SelAttributes->Style << fsBold;
+      mDontClose = true;
+      break;
+      
+    case logEntryNormal:
+    default:
+      mpLog->SelAttributes->Color = clBlack;
+      mpLog->SelAttributes->Height = mTextHeight;
+      mpLog->SelAttributes->Style >> fsBold;
+      break;
+  }
+  mpLog->Lines->Add(
+    TDateTime::CurrentDateTime().FormatString( "ddddd tt - " ) + AnsiString( inText ) );
+  mpCritsec->Release();
 }
 
