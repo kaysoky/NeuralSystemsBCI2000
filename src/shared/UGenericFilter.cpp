@@ -1,3 +1,4 @@
+#if 0 // jm: this file is obsolete
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -18,7 +19,6 @@
 // **************************************************************************
 GenericFilter::GenericFilter()
 {
- error.SetErrorMsg("");
 }
 
 
@@ -59,4 +59,4 @@ GenericFilter::~GenericFilter()
 {
 }
 
-
+#endif
