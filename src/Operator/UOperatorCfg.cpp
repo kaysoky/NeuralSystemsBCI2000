@@ -852,26 +852,34 @@ TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
 
   map<int, int> histogram;
   istringstream is( comment );
-  unsigned int intValue;
-  string       stringValue;
+  string       value;
   string*      currentLabel = &mEnumTitle;
-  while( is )
+  while( is >> value )
   {
-    is >> intValue;
-    if( !is.fail() )
+    // Using the >> operator for an int would accept "+" and similar strings as numbers.
+    // This is not what we want.
+    bool isNum = true;
+    int numValue = 0;
+    for( string::iterator i = value.begin(); isNum && i != value.end(); ++i )
     {
-      unsigned int index = intValue - lowRange;
+      if( *i < '0' || *i > '9' )
+        isNum = false;
+      else
+      {
+        numValue *= 10;
+        numValue += *i - '0';
+      }
+    }
+    if( isNum )
+    {
+      unsigned int index = numValue - lowRange;
       histogram[ index ]++;
       if( mEnumValues.size() <= index )
         mEnumValues.resize( index + 1 );
       currentLabel = &mEnumValues[ index ];
     }
     else
-    {
-      is.clear();
-      if( is >> stringValue )
-        *currentLabel += stringValue + " ";
-    }
+      *currentLabel += value + " ";
   }
 
   bool isEnum = is.eof();
@@ -882,30 +890,36 @@ TfConfig::ParamInterpretation::ParamInterpretation( const PARAM& p )
     if( histogram[ i ] != 1 )
       isEnum = false;
 
-  if( isEnum )
+  // We consider this a boolean parameter.
+  if( isEnum && lowRange == 0 && highRange == 1
+      && histogram[ 0 ] == 0 && histogram[ 1 ] == 1 )
   {
-    // We consider this a boolean parameter.
-    if( lowRange == 0 && highRange == 1 && histogram[ 0 ] == 0 )
-    {
-      if( mEnumValues.size() > 1 )
-        mEnumTitle = mEnumValues[ 1 ];
-      mEnumValues.resize( 2 );
-      mEnumValues[ 0 ] = "no";
-      mEnumValues[ 1 ] = "yes";
-    }
-    else if( histogram[ 0 ] != 1 )
-      isEnum = false;
+    if( mEnumValues.size() > 1 )
+      mEnumTitle = mEnumValues[ 1 ];
+    mEnumValues.resize( 2 );
+    mEnumValues[ 0 ] = "no";
+    mEnumValues[ 1 ] = "yes";
   }
+
   if( mEnumValues.size() != size_t( highRange - lowRange + 1 ) )
     isEnum = false;
+    
+  if( isEnum && mEnumValues.size() > 0 && mEnumValues[ 0 ] == "" )
+    mEnumValues[ 0 ] = "none";
 
-  // Each label must now be non-empty.
-  for( size_t i = 0; isEnum && i < mEnumValues.size(); ++i )
+  // Each of the other labels must now be non-empty.
+  for( size_t i = 1; isEnum && i < mEnumValues.size(); ++i )
     if( mEnumValues[ i ].empty() )
       isEnum = false;
 
   if( isEnum )
+  {
     mIndexBase = lowRange;
+#if 0
+    if( mEnumTitle == "" )
+      mEnumTitle = p.GetName();
+#endif
+  }
   else
   {
     mEnumValues.clear();

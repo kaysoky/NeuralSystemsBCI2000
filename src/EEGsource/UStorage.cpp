@@ -55,13 +55,20 @@ NewRunNo= 0;
 
   const char* params[] =
   {
-    "Storage string FileInitials= c:\\data a z // Initials of file name (max. 8 characters)",
-    "Storage string SubjectName= Name Name a z // subject alias (max. 8 characters)",
-    "Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)",
-    "Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)",
-    "Storage string StorageTime= 16:15 Time a z // time of beginning of data storage",
-    "Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)",
-    "Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file",
+    "Storage string FileInitials= c:\\data a z // "
+      "Initials of file name",
+    "Storage string SubjectName= Name Name a z // "
+      "subject alias",
+    "Storage string SubjectSession= 001 001 0 999 // "
+      "session number (max. 3 characters)",
+    "Storage string SubjectRun= 00 00 0 99 // "
+      "digit run number (max. 3 characters)",
+    "Storage string StorageTime= 16:15 Time a z // "
+      "time of beginning of data storage",
+    "Storage int AutoIncrementRunNo= 1 1 0 1 // "
+      "0: no auto increment 1: auto increment at initialize",
+    "Storage int SavePrmFile= 0 1 0 1 // "
+      "0: don't save additional parameter file 1: save additional parameter file",
   };
   const size_t numParams = sizeof( params ) / sizeof( *params );
   for( size_t i = 0; i < numParams; ++i )
