@@ -9,6 +9,7 @@
 #include "ParsedComment.h"
 
 #include <vector>
+#include <string>
 #include <assert>
 
 #define ALLFILES_FILTER "All files (*.*)|*.*"
@@ -47,6 +48,9 @@ ParamDisplay::ParamDisplay( const PARAM& inParam, TWinControl* inParent )
       break;
     case ParsedComment::singleEntryDirectory:
       mpDisplay = new SingleEntryDirectory( parsedComment, inParent );
+      break;
+    case ParsedComment::singleEntryColor:
+      mpDisplay = new SingleEntryColor( parsedComment, inParent );
       break;
     case ParsedComment::singleEntryGeneric:
       mpDisplay = new SingleEntryEdit( parsedComment, inParent );
@@ -455,10 +459,10 @@ ParamDisplay::Matrix::OnSaveButtonClick( TObject* )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ParamDisplay::SingleEntryFile definitions
+// ParamDisplay::SingleEntryButton definitions
 ////////////////////////////////////////////////////////////////////////////////
-ParamDisplay::SingleEntryFile::SingleEntryFile( const ParsedComment& inParam,
-                                                TWinControl* inParent )
+ParamDisplay::SingleEntryButton::SingleEntryButton( const ParsedComment& inParam,
+                                                    TWinControl* inParent )
 : SingleEntryEdit( inParam, inParent )
 {
   TButton* button = new TButton( static_cast<TComponent*>( NULL ) );
@@ -468,7 +472,7 @@ ParamDisplay::SingleEntryFile::SingleEntryFile( const ParsedComment& inParam,
   button->Width = BUTTON_HEIGHT;
   button->Height = BUTTON_HEIGHT;
   button->Visible = false;
-  button->OnClick = OnChooseFileClick;
+  button->OnClick = OnButtonClick;
   button->Parent = inParent;
   mControls.insert( button );
   mComment = inParam.Comment();
@@ -476,9 +480,9 @@ ParamDisplay::SingleEntryFile::SingleEntryFile( const ParsedComment& inParam,
 
 void
 __fastcall
-ParamDisplay::SingleEntryFile::OnChooseFileClick( TObject* )
+ParamDisplay::SingleEntryButton::OnButtonClick( TObject* )
 {
-  ChooseFile();
+  ButtonClick();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -486,12 +490,12 @@ ParamDisplay::SingleEntryFile::OnChooseFileClick( TObject* )
 ////////////////////////////////////////////////////////////////////////////////
 ParamDisplay::SingleEntryInputFile::SingleEntryInputFile( const ParsedComment& inParam,
                                                           TWinControl* inParent )
-: SingleEntryFile( inParam, inParent )
+: SingleEntryButton( inParam, inParent )
 {
 }
 
 void
-ParamDisplay::SingleEntryInputFile::ChooseFile()
+ParamDisplay::SingleEntryInputFile::ButtonClick()
 {
   TOpenDialog* dialog = new TOpenDialog( static_cast<TComponent*>( NULL ) );
   dialog->Title = AnsiString( "Choosing " ) + mComment.c_str();
@@ -511,12 +515,12 @@ ParamDisplay::SingleEntryInputFile::ChooseFile()
 ////////////////////////////////////////////////////////////////////////////////
 ParamDisplay::SingleEntryOutputFile::SingleEntryOutputFile( const ParsedComment& inParam,
                                                             TWinControl* inParent )
-: SingleEntryFile( inParam, inParent )
+: SingleEntryButton( inParam, inParent )
 {
 }
 
 void
-ParamDisplay::SingleEntryOutputFile::ChooseFile()
+ParamDisplay::SingleEntryOutputFile::ButtonClick()
 {
   TSaveDialog* dialog = new TSaveDialog( static_cast<TComponent*>( NULL ) );
   dialog->Title = AnsiString( "Choosing " ) + mComment.c_str();
@@ -537,12 +541,12 @@ ParamDisplay::SingleEntryOutputFile::ChooseFile()
 ////////////////////////////////////////////////////////////////////////////////
 ParamDisplay::SingleEntryDirectory::SingleEntryDirectory( const ParsedComment& inParam,
                                                           TWinControl* inParent )
-: SingleEntryFile( inParam, inParent )
+: SingleEntryButton( inParam, inParent )
 {
 }
 
 void
-ParamDisplay::SingleEntryDirectory::ChooseFile()
+ParamDisplay::SingleEntryDirectory::ButtonClick()
 {
   LPMALLOC shellMalloc;
   if( ::SHGetMalloc( &shellMalloc ) == NO_ERROR )
@@ -569,12 +573,38 @@ ParamDisplay::SingleEntryDirectory::ChooseFile()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ParamDisplay::SingleEntryColor definitions
+////////////////////////////////////////////////////////////////////////////////
+ParamDisplay::SingleEntryColor::SingleEntryColor( const ParsedComment& inParam,
+                                                  TWinControl* inParent )
+: SingleEntryButton( inParam, inParent )
+{
+}
+
+void
+ParamDisplay::SingleEntryColor::ButtonClick()
+{
+  TColorDialog* dialog = new TColorDialog( static_cast<TComponent*>( NULL ) );
+  try
+  {
+    dialog->Color = StringToColor( mpEdit->Text );
+  }
+  catch( EConvertError& )
+  {
+    dialog->Color = clBlack;
+  }
+  if( dialog->Execute() )
+    mpEdit->Text = AnsiString( "0x" ) + IntToHex( ColorToRGB( dialog->Color ), 6 );
+  delete dialog;
+}
+////////////////////////////////////////////////////////////////////////////////
 // ParamDisplay::SingleEntryEnum definitions
 ////////////////////////////////////////////////////////////////////////////////
 ParamDisplay::SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
                                                 TWinControl* inParent )
 : SeparateComment( inParam, inParent ),
-  mComboBox( NULL )
+  mComboBox( NULL ),
+  mIndexBase( inParam.IndexBase() )
 {
   mComboBox = new TComboBox( static_cast<TComponent*>( NULL ) );
   mComboBox->Left = VALUE_OFFSETX;

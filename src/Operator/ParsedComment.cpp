@@ -31,11 +31,12 @@ ParsedComment::ParsedComment( const PARAM& p )
     Kind_type   kind;
   } hints[] =
   {
-    { "@enumeration", singleEntryEnum },
-    { "@boolean",     singleEntryBoolean },
-    { "@inputfile",   singleEntryInputFile },
-    { "@outputfile",  singleEntryOutputFile },
-    { "@directory",   singleEntryDirectory },
+    { "(enumeration)", singleEntryEnum },
+    { "(boolean)",     singleEntryBoolean },
+    { "(inputfile)",   singleEntryInputFile },
+    { "(outputfile)",  singleEntryOutputFile },
+    { "(directory)",   singleEntryDirectory },
+    { "(color)",       singleEntryColor },
   };
   for( int i = 0; ( mKind == unknown ) && ( i < sizeof( hints ) / sizeof( *hints ) ); ++i )
   {
@@ -70,6 +71,7 @@ ParsedComment::ParsedComment( const PARAM& p )
     case singleEntryInputFile:
     case singleEntryOutputFile:
     case singleEntryDirectory:
+    case singleEntryColor:
     case singleEntryGeneric:
     case listGeneric:
     case matrixGeneric:

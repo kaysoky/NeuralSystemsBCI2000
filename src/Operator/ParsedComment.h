@@ -33,6 +33,7 @@ class ParsedComment
         singleEntryInputFile, // Parameter values are full paths to files.
         singleEntryOutputFile,
         singleEntryDirectory, // Parameter values are directory paths.
+        singleEntryColor,     // Parameter values are RGB colors in hex string notation.
 
       listGeneric,
       matrixGeneric,

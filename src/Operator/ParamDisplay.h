@@ -119,39 +119,47 @@ class ParamDisplay  // This class is the interface to the outside world.
         TEdit*  mpEdit;
     };
 
-    class SingleEntryFile : public SingleEntryEdit
+    class SingleEntryButton : public SingleEntryEdit
     {
       public:
-        SingleEntryFile( const ParsedComment&, TWinControl* );
+        SingleEntryButton( const ParsedComment&, TWinControl* );
       private:
-        void __fastcall OnChooseFileClick( TObject* );
-        virtual void ChooseFile() = 0;
+        void __fastcall OnButtonClick( TObject* );
+        virtual void ButtonClick() = 0;
       protected:
         std::string mComment;
     };
 
-    class SingleEntryInputFile : public SingleEntryFile
+    class SingleEntryInputFile : public SingleEntryButton
     {
       public:
         SingleEntryInputFile( const ParsedComment&, TWinControl* );
       private:
-        virtual void ChooseFile();
+        virtual void ButtonClick();
     };
 
-    class SingleEntryOutputFile : public SingleEntryFile
+    class SingleEntryOutputFile : public SingleEntryButton
     {
       public:
         SingleEntryOutputFile( const ParsedComment&, TWinControl* );
       private:
-        virtual void ChooseFile();
+        virtual void ButtonClick();
     };
 
-    class SingleEntryDirectory : public SingleEntryFile
+    class SingleEntryDirectory : public SingleEntryButton
     {
       public:
         SingleEntryDirectory( const ParsedComment&, TWinControl* );
       private:
-        virtual void ChooseFile();
+        virtual void ButtonClick();
+    };
+
+    class SingleEntryColor : public SingleEntryButton
+    {
+      public:
+        SingleEntryColor( const ParsedComment&, TWinControl* );
+      private:
+        virtual void ButtonClick();
     };
 
     class List : public SingleEntryEdit
