@@ -745,31 +745,29 @@ PARAM::ReadFromStream( istream& is )
     values.push_back( value );
     linestream >> value;
   }
+  // Not all matrix/list entries are required for a parameter definition.
   values.resize( dimension1 * dimension2, "0" );
 
-  if( linestream )
+  // These entries are not required for a parameter definition.
+  string* finalEntries[] =
   {
-    defaultvalue = value;
-    linestream >> value;
-  }
-  else
-    defaultvalue = "0";
-
-  if( linestream )
+    &defaultvalue,
+    &lowrange,
+    &highrange
+  };
+  size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
+         i = 0;
+  while( linestream && i < numFinalEntries )
   {
-    lowrange = value;
+    *finalEntries[ i ] = value;
     linestream >> value;
+    ++i;
   }
-  else
-    lowrange = "0";
-
-  if( linestream )
+  while( i < numFinalEntries )
   {
-    highrange = value;
-    linestream >> value;
+    *finalEntries[ i ] = "0";
+    ++i;
   }
-  else
-    highrange = "0";
 
   valid = !is.fail();
 }
