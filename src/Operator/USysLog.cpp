@@ -13,9 +13,10 @@ SYSLOG::SYSLOG()
 : mpForm( new TForm( ( TComponent* )NULL ) ),
   mpLog( new TRichEdit( ( TComponent* )NULL ) ),
   mpCritsec( new TCriticalSection ),
-  mTextHeight( 0 ),
   mDontClose( false )
 {
+  //for( int i = 0; i < numLogEntryModes; ++i )
+  //  mTextAttributes[ i ] = new TTextAttributes;
   mpForm->Caption = "System Log";
   mpForm->Width = 600;
   mpForm->Height = 250;
@@ -31,7 +32,6 @@ SYSLOG::SYSLOG()
   mpLog->Anchors << akLeft << akTop << akRight << akBottom;
   mpLog->ScrollBars = ssVertical;
   mpLog->Visible = true;
-  mTextHeight = mpLog->SelAttributes->Height;
 }
 
 
@@ -112,27 +112,25 @@ SYSLOG::AddSysLogEntry( const char* inText, LogEntryMode inMode )
   {
     case logEntryWarning:
       mpLog->SelAttributes->Color = clGreen;
-      mpLog->SelAttributes->Height = mTextHeight + 2;
-      mpLog->SelAttributes->Style << fsBold;
+      mpLog->SelAttributes->Height += 2;
+      mpLog->SelAttributes->Style = mpLog->SelAttributes->Style << fsBold;
       mDontClose = true;
       break;
 
     case logEntryError:
       mpLog->SelAttributes->Color = clRed;
-      mpLog->SelAttributes->Height = mTextHeight + 2;
-      mpLog->SelAttributes->Style << fsBold;
+      mpLog->SelAttributes->Height += 2;
+      mpLog->SelAttributes->Style = mpLog->SelAttributes->Style << fsBold;
       mDontClose = true;
       break;
-      
+
     case logEntryNormal:
     default:
-      mpLog->SelAttributes->Color = clBlack;
-      mpLog->SelAttributes->Height = mTextHeight;
-      mpLog->SelAttributes->Style >> fsBold;
       break;
   }
   mpLog->Lines->Add(
     TDateTime::CurrentDateTime().FormatString( "ddddd tt - " ) + AnsiString( inText ) );
+  mpLog->SelAttributes->Assign( mpLog->DefAttributes );
   mpCritsec->Release();
 }
 

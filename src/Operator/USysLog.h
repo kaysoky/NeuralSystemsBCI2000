@@ -11,7 +11,8 @@ class SYSLOG
     {
       logEntryNormal = 0,
       logEntryWarning,
-      logEntryError
+      logEntryError,
+      numLogEntryModes
     };
     SYSLOG();
     ~SYSLOG();
@@ -25,7 +26,6 @@ class SYSLOG
     TForm*            mpForm;
     TRichEdit*        mpLog;
     TCriticalSection* mpCritsec;
-    int               mTextHeight;
     bool              mDontClose;
 };
 #endif // USysLogH
