@@ -136,7 +136,7 @@ StreamToMat::WriteHeader()
   Write32( miINT32 ); Write32( 8 );
   Write32( 1 ); Write32( 1 );
   // Array name
-  const char indexName[] = "ColumnIndex";
+  const char indexName[] = "Index";
   Write32( miINT8 ); Write32( sizeof( indexName ) - 1 );
   mrOut << indexName;
   Pad();
