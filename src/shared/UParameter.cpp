@@ -950,23 +950,28 @@ PARAM::encodedString::ReadFromStream( istream& is )
 void
 PARAM::encodedString::WriteToStream( ostream& os ) const
 {
-  const string& self = *this;
-  ostringstream oss;
-  oss << hex;
-  for( size_t pos = 0; pos < size(); ++pos )
+  if( empty() )
+    os << specialChar;
+  else
   {
-    if( ::isprint( self[ pos ] ) && !::isspace( self[ pos ] ) )
+    const string& self = *this;
+    ostringstream oss;
+    oss << hex;
+    for( size_t pos = 0; pos < size(); ++pos )
     {
-      oss << self[ pos ];
-      if( self[ pos ] == specialChar )
-        oss << specialChar;
+      if( ::isprint( self[ pos ] ) && !::isspace( self[ pos ] ) )
+      {
+        oss << self[ pos ];
+        if( self[ pos ] == specialChar )
+          oss << specialChar;
+      }
+      else
+        oss << specialChar
+            << ( int )( ( self[ pos ] >> 4 ) & 0x0f )
+            << ( int )( self[ pos ] & 0x0f );
     }
-    else
-      oss << specialChar
-          << ( int )( ( self[ pos ] >> 4 ) & 0x0f )
-          << ( int )( self[ pos ] & 0x0f );
+    os << oss.str();
   }
-  os << oss.str();
 }
 
 #ifdef LABEL_INDEXING
