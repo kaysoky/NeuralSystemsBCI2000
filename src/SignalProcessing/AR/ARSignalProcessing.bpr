@@ -4,28 +4,28 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="ARSignalProcessing.exe"/>
-    <OBJFILES value="ARSignalProcessing.obj UMain.obj CalibrationFilter.obj classfilter.obj 
-      GETMEM.obj Normalfilter.obj SpatialFilter.obj Statistics.obj 
-      UFilterHandling.obj ARFilter.obj ..\..\shared\V0.17\UVisConfig.obj 
-      ..\..\shared\V0.17\UBCItime.obj ..\..\shared\V0.17\UBitRate.obj 
-      ..\..\shared\V0.17\UCoreComm.obj ..\..\shared\V0.17\UCoreMessage.obj 
-      ..\..\shared\V0.17\UGenericFilter.obj 
-      ..\..\shared\V0.17\UGenericSignal.obj ..\..\shared\V0.17\UGenericVisualization.obj 
-      ..\..\shared\V0.17\UParameter.obj ..\..\shared\V0.17\UState.obj 
-      ..\..\shared\V0.17\UStatus.obj ..\..\shared\V0.17\USysCommand.obj 
-      ..\..\shared\V0.17\UBCI2000Data.obj TemporalFilter.obj 
-      ..\..\shared\V0.17\BCIDirectry.obj StatFilter.obj"/>
+    <OBJFILES value="ARSignalProcessing.obj ..\Statistics.obj ..\classfilter.obj 
+      ..\Normalfilter.obj ..\SpatialFilter.obj ..\StatFilter.obj 
+      ..\CalibrationFilter.obj ..\UMain.obj UFilterHandling.obj GETMEM.obj 
+      TemporalFilter.obj ARFilter.obj ..\..\shared\UVisConfig.obj 
+      ..\..\shared\UBCI2000Data.obj ..\..\shared\UBCItime.obj 
+      ..\..\shared\UBitRate.obj ..\..\shared\UCoreComm.obj 
+      ..\..\shared\UCoreMessage.obj ..\..\shared\UGenericFilter.obj 
+      ..\..\shared\UGenericSignal.obj ..\..\shared\UGenericVisualization.obj 
+      ..\..\shared\UParameter.obj ..\..\shared\UState.obj 
+      ..\..\shared\UStatus.obj ..\..\shared\USysCommand.obj 
+      ..\..\shared\BCIDirectry.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) UMain.dfm ..\..\shared\V0.17\UVisConfig.dfm"/>
+    <RESDEPEN value="$(RESFILES) ..\UMain.dfm ..\..\shared\UVisConfig.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value="VCLX50.lib bcbsmp50.lib Tee50.lib vcl50.lib"/>
     <SPARELIBS value="vcl50.lib Tee50.lib bcbsmp50.lib VCLX50.lib"/>
     <PACKAGES value="vcl50.bpi vclx50.bpi vcljpg50.bpi bcbsmp50.bpi qrpt50.bpi vcldb50.bpi 
       vclbde50.bpi ibsmp50.bpi vcldbx50.bpi nmfast50.bpi dclocx50.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared\V0.17"/>
+    <PATHCPP value=".;..;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -35,8 +35,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="ARSignalProcessing.cpp"/>
-    <INCLUDEPATH value="..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared;..\;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared;..\;..\..\shared\V0.17;&quot;C:\Program Files\Borland\CBuilder5\Bin\&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
   </MACROS>
