@@ -32,9 +32,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
-#include "UVisual.h"
 
+#include "UVisual.h"
 #include "defines.h"
 #include "UCoreMessage.h" // for COREMSG_DATA
 
@@ -834,7 +833,6 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 
   // Draw the signal.
   SyncGraphics();
-
   switch( displayMode )
   // Ideally, this distinction should be implemented as subclassing.
   // However, this wouldn't allow switching display modes for windows
@@ -884,27 +882,16 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
             remainingPoints[ 1 ].y = signalPoints[ numSamples - 1 ].y;
           ::Polyline( dc, remainingPoints, 2 );
         }
+        ::Sleep( 0 );
       }
     } break;
 
     case field2d:
     {
       for( size_t i = 0; i < numDisplayChannels; ++i )
+      {
         for( size_t j = 0; j < numSamples; ++j )
         {
-          float dataValue = NormData( i + bottomGroup * channelGroupSize, j );
-          if( dataValue < 0.0 )
-            dataValue = 0.0;
-          else if( dataValue > 1.0 )
-            dataValue = 1.0;
-            
-          LONG color;
-          if( displayColors )
-            color = RGBColor::HSVColor( dataValue - 1.0 / 3.0, 1.0, dataValue );
-          else
-            color = RGBColor::HSVColor( 0.0, 0.0, dataValue );
-
-          HBRUSH brush = ::CreateSolidBrush( color );
           RECT dotRect =
           {
             SampleLeft( j ),
@@ -912,9 +899,26 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
             SampleRight( j ),
             ChannelBottom( i )
           };
-          ::FillRect( dc, &dotRect, brush );
-          ::DeleteObject( brush );
+          if( ::RectVisible( dc, &dotRect ) )
+          {
+            float dataValue = NormData( i + bottomGroup * channelGroupSize, j );
+            if( dataValue < 0.0 )
+              dataValue = 0.0;
+            else if( dataValue > 1.0 )
+              dataValue = 1.0;
+
+            LONG color;
+            if( displayColors )
+              color = RGBColor::HSVColor( dataValue - 1.0 / 3.0, 1.0, dataValue );
+            else
+              color = RGBColor::HSVColor( 0.0, 0.0, dataValue );
+            // SetBkColor/ExtTextOut is faster than CreateSolidBrush/FillRect/DeleteObject.
+            ::SetBkColor( dc, color );
+            ::ExtTextOut( dc, dotRect.left, dotRect.top, ETO_OPAQUE, &dotRect, "", 0, NULL );
+          }
         }
+        ::Sleep( 0 );
+      }
     } break;
 
     default:
@@ -947,7 +951,6 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   ::SetTextColor( dc, labelColor );
   ::SelectObject( dc, gdi[ labelFont ] );
   ::SetBkMode( dc, TRANSPARENT );
-
   // Ticks on the y axis.
   switch( displayMode )
   {
@@ -1032,7 +1035,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 
   // Copy the data from the buffer onto the screen.
 #if TEST_UPDATE_REGIONS
-  Form->Canvas->Brush->Color = random( 0x1000000 );
+  Form->Canvas->Brush->Color = static_cast<TColor>( ::random( 0x1000000 ) );
   Form->Canvas->FillRect( Form->ClientRect );
 #else
   Form->Canvas->Draw( 0, Form->ClientHeight - offscreenBitmap->Height, offscreenBitmap );
@@ -1107,11 +1110,18 @@ VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
 bool
 VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
 {
-  string s;
-  getline( is, s, '\0' );
   while( memo->Lines->Count >= numLines )
     memo->Lines->Delete( 0 );
-  memo->Lines->Add( s.c_str() );
+  string s;
+  getline( is, s, '\0' );
+  size_t pos = 0;
+  while( ( pos = s.find_first_of( "\n\r" ) ) != s.npos )
+  {
+    memo->Lines->Add( s.substr( 0, pos ).c_str() );
+    s.erase( 0, pos + 1 );
+  }
+  if( !s.empty() )
+    memo->Lines->Add( s.c_str() );
   return true;
 }
 

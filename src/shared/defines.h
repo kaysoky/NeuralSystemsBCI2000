@@ -73,6 +73,11 @@ namespace CFGID
           channelColors,
         field2d,
 
+      // Units
+      sampleUnit,
+      channelUnit,
+      valueUnit,
+
       // Memo options
       numLines,
   };

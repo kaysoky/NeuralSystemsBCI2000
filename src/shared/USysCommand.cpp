@@ -10,9 +10,6 @@
  *                                                                            *
  * V0.15 - 03/29/2001 - first start                                           *
  ******************************************************************************/
-
-//---------------------------------------------------------------------------
-
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -31,6 +28,11 @@ const SYSCMD SYSCMD::EndOfState( "EndOfState" );
 const SYSCMD SYSCMD::EndOfParameter( "EndOfParameter" );
 const SYSCMD SYSCMD::Start( "Start" );
 const SYSCMD SYSCMD::Reset( "Reset" );
+const SYSCMD SYSCMD::Run( "run" );
+const SYSCMD SYSCMD::Suspend( "susp" );
+const SYSCMD SYSCMD::Success( "succ" );
+const SYSCMD SYSCMD::Recoverable( "recv" );
+const SYSCMD SYSCMD::Fatal( "fatl" );
 
 // **************************************************************************
 // Function:   SYSCMD
@@ -40,13 +42,13 @@ const SYSCMD SYSCMD::Reset( "Reset" );
 // **************************************************************************
 SYSCMD::SYSCMD()
 {
-  buffer[ 0 ] = '\0';
+  mBuffer[ 0 ] = '\0';
 }
 
 SYSCMD::SYSCMD( const char* cmd )
 {
-  ::strncpy( buffer, cmd, LENGTH_SYSCMD );
-  buffer[ LENGTH_SYSCMD - 1 ] = '\0';
+  ::strncpy( mBuffer, cmd, LENGTH_SYSCMD );
+  mBuffer[ LENGTH_SYSCMD - 1 ] = '\0';
 }
 
 // **************************************************************************
@@ -67,9 +69,9 @@ SYSCMD::~SYSCMD()
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
 // **************************************************************************
-const char *SYSCMD::GetSysCmd()
+const char* SYSCMD::GetSysCmd() const
 {
- return(buffer);
+ return mBuffer;
 }
 
 // **************************************************************************
@@ -81,19 +83,19 @@ const char *SYSCMD::GetSysCmd()
 //             length - length of this syscmd line
 // Returns:    ERRSYSCMD_NOERR
 // **************************************************************************
-int SYSCMD::ParseSysCmd(const char *new_line, int length)
+int SYSCMD::ParseSysCmd( const char* new_line, int length )
 {
  if( length >= LENGTH_SYSCMD )
    length = LENGTH_SYSCMD - 1;
- strncpy(buffer, new_line, length + 1);
- buffer[ LENGTH_SYSCMD - 1 ] = '\0';
- return(ERRSYSCMD_NOERR);
+ ::strncpy( mBuffer, new_line, length + 1 );
+ mBuffer[ LENGTH_SYSCMD - 1 ] = '\0';
+ return ERRSYSCMD_NOERR;
 }
 
 void
 SYSCMD::WriteToStream( ostream& os ) const
 {
-  const char* p = buffer;
+  const char* p = mBuffer;
   while( *p != '\0' )
   {
     if( *p == '}' )
@@ -107,7 +109,7 @@ istream&
 SYSCMD::ReadBinary( istream& is )
 {
   string buf;
-  if( getline( is, buf, '\0' ) )
+  if( ::getline( is, buf, '\0' ) )
     if( ParseSysCmd( buf.data(), buf.length() ) != ERRSYSCMD_NOERR )
       is.setstate( ios::failbit );
   return is;
@@ -116,7 +118,7 @@ SYSCMD::ReadBinary( istream& is )
 ostream&
 SYSCMD::WriteBinary( ostream& os ) const
 {
-  os << buffer;
+  os << mBuffer;
   os.put( 0 );
   return os;
 }
@@ -124,11 +126,11 @@ SYSCMD::WriteBinary( ostream& os ) const
 bool
 SYSCMD::operator<( const SYSCMD& s ) const
 {
-  return ::strncmp( buffer, s.buffer, LENGTH_SYSCMD ) < 0;
+  return ::strncmp( mBuffer, s.mBuffer, LENGTH_SYSCMD ) < 0;
 }
 
 bool
 SYSCMD::operator==( const SYSCMD& s ) const
 {
-  return ::strncmp( buffer, s.buffer, LENGTH_SYSCMD ) == 0;
+  return ::strncmp( mBuffer, s.mBuffer, LENGTH_SYSCMD ) == 0;
 }

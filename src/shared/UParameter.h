@@ -315,11 +315,12 @@ class PARAM
     { return double( *this ) >= d; }
     // Dereferencing operator for access to PARAM members.
     PARAM* operator->() const
-    { return p; }
+    { return p ? p : &( null_p = PARAM() ); }
 
    private:
     PARAM* p;
     size_t i, j;
+    static PARAM null_p;
   };
 
  // Case insensitive string handling components.

@@ -32,7 +32,7 @@ typedef class Exception TooGeneralCatch;
 
 // Info added to error output.
 #if( defined( _DEBUG ) && !defined( NDEBUG ) )
-# define DEBUGINFO   __FILE__", "__FUNC__
+# define DEBUGINFO   /*__FILE__", "*/__FUNC__
 #else
 # define DEBUGINFO
 #endif // _DEBUG && !NDEBUG

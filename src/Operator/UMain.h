@@ -14,9 +14,9 @@
 #include <ComCtrls.hpp>
 #include <TeeProcs.hpp>
 #include <AppEvnts.hpp>
-#include "Trayicon.h"
 #include <Menus.hpp>
 #include "trayicon.h"
+
 #include "UVisual.h"
 
 #define PANEL_SYSSTATUS         0
@@ -32,6 +32,8 @@
 //---------------------------------------------------------------------------
 class TfMain : public TForm
 {
+  friend class TCoreRecvThread;
+  
 protected:
     void __fastcall DoResetOperator(TMessage &Message);
     BEGIN_MESSAGE_MAP

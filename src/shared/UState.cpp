@@ -856,7 +856,14 @@ STATEVECTOR::WriteToStream( std::ostream& os ) const
 istream&
 STATEVECTOR::ReadBinary( istream& is )
 {
-  is.read( ( char* )GetStateVectorPtr(), GetStateVectorLength() );
+  // Reading the last byte with is.get() avoids possible problems with tcp
+  // stream buffers. See the comments in TCPStream.cpp, tcpbuf::underflow()
+  // for details.
+  int   length = GetStateVectorLength();
+  char* stateVectorData = GetStateVectorPtr();
+  if( length > 1 )
+    is.read( stateVectorData, length - 1 );
+  stateVectorData[ length - 1 ] = is.get();
   return is;
 }
 

@@ -57,8 +57,8 @@ class GenericFilter : protected Environment
  friend class Documentar;
 
  public:
-          GenericFilter()  { allFilters.push_back( this ); }
-  virtual ~GenericFilter() { allFilters.remove( this ); }
+          GenericFilter()  { AllFilters().push_back( this ); }
+  virtual ~GenericFilter() { AllFilters().remove( this ); }
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   virtual void Initialize() = 0;
@@ -89,9 +89,9 @@ class GenericFilter : protected Environment
   {
    public:
     Registrar( const char* p ) : pos( p ), instance( createdInstances++ )
-    { registrars.insert( this ); }
+    { Registrars().insert( this ); }
     virtual ~Registrar()
-    { registrars.erase( this ); }
+    { Registrars().erase( this ); }
     const std::string& GetPosition() const { return pos; }
     virtual const std::type_info& GetTypeid() const = 0;
     virtual GenericFilter* NewInstance() const = 0;
@@ -109,7 +109,7 @@ class GenericFilter : protected Environment
     };
 
     typedef std::set<Registrar*, Registrar::less> _registrarSet;
-    static _registrarSet registrars;
+    static _registrarSet& Registrars();
 
    private:
     size_t instance;
@@ -156,8 +156,8 @@ class GenericFilter : protected Environment
   template<typename T> static T* GetFilter()
   {
     T* filterFound = NULL;
-    filters_type::iterator i = allFilters.begin();
-    while( i != allFilters.end() && filterFound == NULL )
+    filters_type::iterator i = AllFilters().begin();
+    while( i != AllFilters().end() && filterFound == NULL )
     {
       filterFound = dynamic_cast<T*>( *i );
       ++i;
@@ -170,19 +170,19 @@ class GenericFilter : protected Environment
   template<typename T> static T* PassFilter()
   {
     T* filter = GetFilter<T>();
-    ownedFilters.remove( filter );
+    OwnedFilters().remove( filter );
     return filter;
   }
 
  private:
   typedef std::list<GenericFilter*> filters_type;
   // This container holds all instantiated filters.
-  static filters_type allFilters;
+  static filters_type& AllFilters();
   // These are filters managed by the GenericFilter class:
   // Instantiation, Disposal, and application of filter functions.
-  static filters_type ownedFilters;
+  static filters_type& OwnedFilters();
   typedef std::map<GenericFilter*,GenericSignal> signals_type;
-  static signals_type ownedSignals;
+  static signals_type& OwnedSignals();
 };
 
 #endif // UGenericFilterH

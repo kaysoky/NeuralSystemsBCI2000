@@ -63,8 +63,10 @@ EnvironmentBase::GetParamPtr( const string& name ) const
   {
     param = Parameters->GetParamPtr( name.c_str() );
     if( param == NULL )
+    {
       _bcierr << "Parameter \"" << name << "\" is inaccessible."
               << endl;
+    }
   }
   return param;
 }
@@ -84,7 +86,7 @@ EnvironmentBase::GetOptionalParamPtr( const string& name ) const
 
 void
 EnvironmentBase::CheckRange( const PARAM* param,
-                         size_t row, size_t column ) const
+                             size_t row, size_t column ) const
 {
 #ifdef TODO
 # error Ensure reasonable ranges before enabling the range check.
@@ -109,7 +111,7 @@ EnvironmentBase::CheckRange( const PARAM* param,
 // Read/write access a parameter by its name and indices, if applicable.
 PARAM::type_adapter
 EnvironmentBase::Parameter( const string& name,
-                        size_t row, size_t column ) const
+                            size_t row, size_t column ) const
 {
 #ifdef TODO
 # error Range Check for all values of a parameter if row == column == 0
@@ -123,7 +125,7 @@ EnvironmentBase::Parameter( const string& name,
 #ifdef LABEL_INDEXING
 PARAM::type_adapter
 EnvironmentBase::Parameter( const string& name,
-                        const string& rowLabel, size_t column ) const
+                            const string& rowLabel, size_t column ) const
 {
   PARAM* param = GetParamPtr( name );
   size_t row = 0;
@@ -137,7 +139,7 @@ EnvironmentBase::Parameter( const string& name,
 
 PARAM::type_adapter
 EnvironmentBase::Parameter( const string& name,
-                        size_t row, const string& columnLabel ) const
+                            size_t row, const string& columnLabel ) const
 {
   PARAM* param = GetParamPtr( name );
   size_t column = 0;
@@ -151,7 +153,7 @@ EnvironmentBase::Parameter( const string& name,
 
 PARAM::type_adapter
 EnvironmentBase::Parameter( const string& name,
-                        const string& rowLabel, const string& columnLabel ) const
+                            const string& rowLabel, const string& columnLabel ) const
 {
   PARAM* param = GetParamPtr( name );
   size_t row = 0,
@@ -168,8 +170,8 @@ EnvironmentBase::Parameter( const string& name,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                PARAM* param,
-                                size_t row, size_t column ) const
+                                    PARAM* param,
+                                    size_t row, size_t column ) const
 {
   ostringstream os;
   os << defaultValue;
@@ -178,8 +180,8 @@ EnvironmentBase::OptionalParameter( double defaultValue,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& defaultValue,
-                                PARAM* inParam,
-                                size_t row, size_t column ) const
+                                    PARAM* inParam,
+                                    size_t row, size_t column ) const
 {
   static PARAM defaultParam;
   PARAM* param = &defaultParam;
@@ -195,17 +197,17 @@ EnvironmentBase::OptionalParameter( const string& defaultValue,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                const string& name,
-                                size_t row,
-                                size_t column ) const
+                                    const string& name,
+                                    size_t row,
+                                    size_t column ) const
 {
   return OptionalParameter( defaultValue, GetOptionalParamPtr( name ), row, column );
 }
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& name,
-                                size_t row,
-                                size_t column ) const
+                                    size_t row,
+                                    size_t column ) const
 {
   return OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
 }
@@ -213,7 +215,7 @@ EnvironmentBase::OptionalParameter( const string& name,
 #ifdef LABEL_INDEXING
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& name,
-                                const string& rowLabel, size_t column ) const
+                                    const string& rowLabel, size_t column ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t row = 0;
@@ -224,7 +226,7 @@ EnvironmentBase::OptionalParameter( const string& name,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& name,
-                                size_t row, const string& columnLabel ) const
+                                    size_t row, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t column = 0;
@@ -235,7 +237,7 @@ EnvironmentBase::OptionalParameter( const string& name,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( const string& name,
-                                const string& rowLabel, const string& columnLabel ) const
+                                    const string& rowLabel, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t row = 0,
@@ -250,8 +252,8 @@ EnvironmentBase::OptionalParameter( const string& name,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                const string& name,
-                                const string& rowLabel, size_t column ) const
+                                    const string& name,
+                                    const string& rowLabel, size_t column ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t row = 0;
@@ -262,8 +264,8 @@ EnvironmentBase::OptionalParameter( double defaultValue,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                const string& name,
-                                size_t row, const string& columnLabel ) const
+                                    const string& name,
+                                    size_t row, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t column = 0;
@@ -274,8 +276,8 @@ EnvironmentBase::OptionalParameter( double defaultValue,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                const string& name,
-                                const string& rowLabel, const string& columnLabel ) const
+                                    const string& name,
+                                    const string& rowLabel, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   size_t row = 0,
@@ -291,7 +293,7 @@ EnvironmentBase::OptionalParameter( double defaultValue,
 
 bool
 EnvironmentBase::_PreflightCondition( const char* inConditionString,
-                                         bool inConditionValue ) const
+                                      bool inConditionValue ) const
 {
   if( !inConditionValue )
     _bcierr << "A necessary condition is violated. "
@@ -382,9 +384,9 @@ void EnvironmentBase::EnterNonaccessPhase()
 // Called from the framework before any EnvironmentBase descendant class
 // is instantiated.
 void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
-                                          STATELIST*   inStateList,
-                                          STATEVECTOR* inStateVector,
-                                          CORECOMM*    inCoreComm )
+                                              STATELIST*   inStateList,
+                                              STATEVECTOR* inStateVector,
+                                              CORECOMM*    inCoreComm )
 {
   __bcierr.SetFlushHandler( BCIError::LogicError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -399,9 +401,9 @@ void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
 
 // Called before any call to GenericFilter::Preflight().
 void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
-                                       STATELIST*   inStateList,
-                                       STATEVECTOR* inStateVector,
-                                       CORECOMM*    inCoreComm )
+                                           STATELIST*   inStateList,
+                                           STATEVECTOR* inStateVector,
+                                           CORECOMM*    inCoreComm )
 {
   __bcierr.SetFlushHandler( BCIError::ConfigurationError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -416,9 +418,9 @@ void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
 
 // Called before any call to GenericFilter::Initialize().
 void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
-                                            STATELIST*   inStateList,
-                                            STATEVECTOR* inStateVector,
-                                            CORECOMM*    inCoreComm )
+                                                STATELIST*   inStateList,
+                                                STATEVECTOR* inStateVector,
+                                                CORECOMM*    inCoreComm )
 {
   __bcierr.SetFlushHandler( BCIError::RuntimeError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -433,9 +435,9 @@ void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
 
 // Called before any call to GenericFilter::Process().
 void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
-                                        STATELIST*   inStateList,
-                                        STATEVECTOR* inStateVector,
-                                        CORECOMM*    inCoreComm )
+                                            STATELIST*   inStateList,
+                                            STATEVECTOR* inStateVector,
+                                            CORECOMM*    inCoreComm )
 {
   __bcierr.SetFlushHandler( BCIError::RuntimeError );
   __bciout.SetFlushHandler( BCIError::Warning );

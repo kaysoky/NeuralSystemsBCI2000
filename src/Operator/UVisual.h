@@ -126,20 +126,36 @@ class VISUAL
   class TVisForm : public TForm
   {
    public:
-    HRGN    updateRgn;
+    HRGN         updateRgn;
     TNotifyEvent OnMove;
 
     TVisForm()
     : TForm( ( TComponent* )NULL, 1 ),
+      updateRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
       OnMove( NULL ) {}
+    __fastcall ~TVisForm()
+    {
+      ::DeleteObject( updateRgn );
+    }
+    // There is no inheritance for Message Maps.
+    BEGIN_MESSAGE_MAP
+      VCL_MESSAGE_HANDLER( WM_PAINT, TWMPaint, WMPaint )
+      VCL_MESSAGE_HANDLER( WM_MOVE, TMessage, WMMove )
+    END_MESSAGE_MAP( TForm )
+
+   protected:
     void __fastcall WMMove( TMessage& )
     {
       if( OnMove )
         OnMove( this );
     }
-    BEGIN_MESSAGE_MAP
-      VCL_MESSAGE_HANDLER( WM_MOVE, TMessage, WMMove )
-    END_MESSAGE_MAP( TForm )
+    // Obtain the window's update region before BeginPaint() in the VCL
+    // paint handler destroys (validates) it.
+    void __fastcall WMPaint( TWMPaint& Message )
+    {
+      ::GetUpdateRgn( Handle, updateRgn, false );
+      PaintHandler( Message );
+    }
   };
 
 
@@ -297,28 +313,15 @@ class VISUAL
     class TVisGraphForm : public TVisForm
     {
      public:
-      HRGN    updateRgn;
-
-      TVisGraphForm()
-      : updateRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ) {}
-      __fastcall ~TVisGraphForm()
-      {
-        ::DeleteObject( updateRgn );
-      }
+      TVisGraphForm() {}
       // To avoid flicker and save memory bandwidth, use a WM_ERASEBKGND
       // handler that does not do anything.
       void __fastcall WMEraseBkgnd( TWMEraseBkgnd& ) {}
-      // Obtain the window's update region before BeginPaint() in the VCL
-      // paint handler destroys (validates) it.
-      void __fastcall WMPaint( TWMPaint& Message )
-      {
-        ::GetUpdateRgn( Handle, updateRgn, false );
-        PaintHandler( Message );
-      }
+      // There is no inheritance for Message Maps.
       BEGIN_MESSAGE_MAP
         VCL_MESSAGE_HANDLER( WM_PAINT, TWMPaint, WMPaint )
-        VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
         VCL_MESSAGE_HANDLER( WM_MOVE, TMessage, WMMove )
+        VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
       END_MESSAGE_MAP( TForm )
     };
   };

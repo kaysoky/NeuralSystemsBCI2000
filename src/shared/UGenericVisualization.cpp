@@ -28,11 +28,19 @@
 #include "UCoreMessage.h"
 #include "UCoreComm.h"
 #include "UEnvironment.h"
-#include "UVisConfig.h"
+//#include "UVisConfig.h"
 #include "UGenericSignal.h"
 
 #include <math.h>
 #include <stdio.h>
+
+#ifdef ABSTRACT_CORECOMM
+# include <iostream>
+# include <string>
+# include <sstream>
+#endif
+
+using namespace std;
 
 //---------------------------------------------------------------------------
 
@@ -42,8 +50,8 @@ GenericVisualization::GenericVisualization()
 : signal( NULL ),
   new_samples( -1 ),
   sourceID( -1 ),
-  vis_type( VISTYPE_GRAPH ),
-  datatype( DATATYPE_FLOAT )
+  vis_type( VISTYPE::GRAPH ),
+  datatype( DATATYPE::FLOAT )
 {
  // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
 }
@@ -53,7 +61,7 @@ GenericVisualization::GenericVisualization( BYTE inSourceID, BYTE inVisType )
   new_samples( -1 ),
   sourceID( inSourceID ),
   vis_type( inVisType ),
-  datatype( DATATYPE_FLOAT )
+  datatype( DATATYPE::FLOAT )
 {
 }
 
@@ -106,6 +114,17 @@ const char *GenericVisualization::GetMemoText() const
 
 bool GenericVisualization::SendMemo2Operator(const char *string)
 {
+#ifdef ABSTRACT_CORECOMM
+  ostream& op = Environment::Corecomm->GetOperatorStream();
+  int contentLength = ::strlen( string ) + 2; // source id and terminating 0.
+  if( contentLength > ( 1 << 15 ) )
+    throw __FILE__ ": Message exceeds maximum length";
+  op.put( COREMSG_DATA ).put( VISTYPE::MEMO );
+  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
+  op.put( sourceID );
+  op.write( string, contentLength - 1 );
+  return op.flush();
+#else
 CORECOMM* corecomm = Environment::Corecomm;
 // ... temporary glue code
 
@@ -137,6 +156,7 @@ int     s, t;
  delete pStream;
 
  return(true);
+#endif // ABSTRACT_CORECOMM
 }
 
 
@@ -184,6 +204,19 @@ size_t  samp;
 
 bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal)
 {
+#ifdef ABSTRACT_CORECOMM
+  ostream& op = Environment::Corecomm->GetOperatorStream();
+  ostringstream oss;
+  my_signal->WriteBinary( oss );
+  int contentLength = oss.str().size() + 1;
+  if( contentLength > ( 1 << 15 ) )
+    throw __FILE__ ": Message exceeds maximum length";
+  op.put( COREMSG_DATA ).put( VISTYPE::GRAPH );
+  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
+  op.put( sourceID );
+  op.write( oss.str().data(), contentLength - 1 );
+  return op.flush();
+#else
 CORECOMM* corecomm = Environment::Corecomm;
 // ... temporary glue code
 
@@ -227,11 +260,25 @@ BYTE    *dataptr;
  delete pStream;
 
  return(true);
+#endif // ABSTRACT_CORECOMM
 }
 
 
 bool GenericVisualization::Send2Operator(const GenericSignal *my_signal)
 {
+#ifdef ABSTRACT_CORECOMM
+  ostream& op = Environment::Corecomm->GetOperatorStream();
+  ostringstream oss;
+  my_signal->WriteBinary( oss );
+  int contentLength = oss.str().size() + 1;
+  if( contentLength > ( 1 << 15 ) )
+    throw __FILE__ ": Message exceeds maximum length";
+  op.put( COREMSG_DATA ).put( VISTYPE::GRAPH );
+  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
+  op.put( sourceID );
+  op.write( oss.str().data(), contentLength - 1 );
+  return op.flush();
+#else
 CORECOMM* corecomm = Environment::Corecomm;
 // ... temporary glue code
 
@@ -290,6 +337,7 @@ float   value, value2;
  delete pStream;
 
  return(true);
+#endif // ABSTRACT_CORECOMM
 }
 
 bool GenericVisualization::SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgValue )
@@ -299,6 +347,17 @@ bool GenericVisualization::SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgV
 
 bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString)
 {
+#ifdef ABSTRACT_CORECOMM
+  ostream& op = Environment::Corecomm->GetOperatorStream();
+  int contentLength = ::strlen( cfgString ) + 3;
+  if( contentLength > ( 1 << 15 ) )
+    throw __FILE__ ": Message exceeds maximum length";
+  op.put( COREMSG_DATA ).put( VISTYPE::VISCFG );
+  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
+  op.put( sourceID ).put( cfgID );
+  op.write( cfgString, contentLength - 2 );
+  return op.flush();
+#else
 CORECOMM* corecomm = Environment::Corecomm;
 // ... temporary glue code
 
@@ -333,83 +392,13 @@ float   value, value2;
  delete pStream;
 
  return(true);
+#endif // ABSTRACT_CORECOMM
 }
 
 
 void  GenericVisualization::ParseVisualization(const char *buffer, int length)
 {
-int     i, t;
-BYTE    channels, cfgID;
-unsigned short samples;
-signed char exponent;
-short   *dataptr, value;
-char    buf[256];
-
- valid=false;
- if (length < 2) return;
-
- sourceID=buffer[0];
-
-#if 0 // Went into operator code (class VISUAL).
- // visualization type == 1, i.e., type graph
- if (vis_type == VISTYPE_GRAPH)
-    {
-    datatype=buffer[1];
-    if (length < 5) return;
-    channels=buffer[2];
-    samples=*((unsigned short *)&buffer[3]);
-    if (datatype == DATATYPE_INTEGER)
-       {
-       if (length != (int)channels*(int)samples*2+5) return;    // consistency checks
-       delete signal;
-       signal=new GenericSignal((unsigned short)channels, (int)samples);
-       unsigned short* data = ( unsigned short* )&buffer[ 5 ];
-       for (i=0; i<channels; i++)
-        for( int j = 0; j < samples; ++j )
-          signal->SetValue( i, j, data[ j * channels + i ] );   // set the values in the signal to the data
-       valid=true;
-       }
-    if (datatype == DATATYPE_FLOAT)
-       {
-       if (length != (int)channels*(int)samples*3+5) return;    // consistency checks
-       if (signal) delete signal;
-       signal=new GenericSignal((unsigned short)channels, (int)samples);
-       for (i=0; i<channels; i++)
-        {
-        for (t=0; t<samples; t++)
-         {
-         dataptr=(short *)(buffer+5+i*3*(int)samples+t*3);
-         value=dataptr[0];
-         exponent=((signed char *)dataptr)[2];
-         signal->SetValue(i, t, value*(float)pow(10, (double)exponent));        // set the values in the signal to the data
-         }
-        }
-       valid=true;
-       }
-    }
-
- // visualization type == 2, i.e., type memo field
- if (vis_type == VISTYPE_MEMO)
-    strcpy(memotext, &buffer[1]);
-
- // visualization type == 255, i.e., type visualization config
- if (vis_type == VISTYPE_VISCFG)
-    {
-    cfgID=buffer[1];
-    if (cfgID == CFGID_MINVALUE)
-       fVisConfig->SetVisualPrefs(sourceID, 0, "MinValue", atof(&buffer[2]));
-    if (cfgID == CFGID_MAXVALUE)
-       fVisConfig->SetVisualPrefs(sourceID, 0, "MaxValue", atof(&buffer[2]));
-    if (cfgID == CFGID_NUMSAMPLES)
-       fVisConfig->SetVisualPrefs(sourceID, 0, "NumSamples", (int)atoi(&buffer[2]));
-    if (cfgID == CFGID_WINDOWTITLE)
-       fVisConfig->SetVisualPrefs(sourceID, 0, "WindowTitle", &buffer[2]);
-    if (cfgID == CFGID_XAXISLABEL)
-       {
-       sprintf(buf, "XAxisLabel%d", atoi(&buffer[2]));
-       fVisConfig->SetVisualPrefs(sourceID, 0, buf, &buffer[6]);
-       }
-    }
-#endif
+  sourceID = buffer[ 0 ];
+  valid = true;
 }
 

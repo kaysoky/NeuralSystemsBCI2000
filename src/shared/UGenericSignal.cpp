@@ -27,35 +27,71 @@
 
 #include "UGenericSignal.h"
 
-#include "defines.h" // for DATATYPE_FLOAT / DATATYPE_INTEGER
+#include "defines.h" // for DATATYPE::FLOAT / DATATYPE::INTEGER
 #include <iostream>
 #include <iomanip>
 #include <math.h>
 
 // This will go into a numtypes header some day.
-#if ( sizeof( unsigned char ) == 1 )
 typedef unsigned char  uint8;
-#endif
-#if ( sizeof( signed char ) == 1 )
 typedef signed char    sint8;
-#endif
-#if ( sizeof( unsigned short ) == 2 )
 typedef unsigned short uint16;
-#endif
-#if ( sizeof( signed short ) == 2 )
 typedef signed short   sint16;
-#endif
-#if ( sizeof( unsigned int ) == 4 )
 typedef unsigned int   uint32;
-#endif
-#if ( sizeof( signed char ) == 4 )
 typedef signed int     sint32;
-#endif
 
-template<typename T> std::ostream& put( std::ostream& os, const T& x )
-{ os.write( ( const char* )&x, sizeof( T ) ); return os; }
-template<typename T> std::istream& get( std::istream& is, T& x )
-{ is.read( ( char* )&x, sizeof( T ) ); return is; }
+template<typename T>
+inline
+std::ostream& _put_int( std::ostream& os, const T& x )
+{
+  // This will result in little endian encoding regardless of the target
+  // system's byte ordering.
+  T t = x;
+  for( int i = 0; i < sizeof( T ); ++i )
+  {
+    os.put( t & 0xff );
+    t >>= 8;
+  }
+  return os;
+}
+
+// This will result in an error for types not considered.
+template<typename T>
+std::ostream& _put_is_not_implemented_for_type();
+
+template<typename T>
+inline
+std::ostream& put( std::ostream& os, const T& x )
+{
+  return std::numeric_limits<T>::is_integer ?
+           _put_int( os, x ) :
+           _put_is_not_implemented_for_type<T>();
+}
+
+template<typename T>
+inline
+std::istream& _get_int( std::istream& is, T& x )
+{
+  x = 0;
+  for( int i = 0; i < sizeof( T ); ++i )
+  {
+    x |= ( T( is.get() ) << ( i * 8 ) );
+  }
+  return is;
+}
+
+// This will result in an error for types not considered.
+template<typename T>
+std::istream& _get_is_not_implemented_for_type();
+
+template<typename T>
+inline
+std::istream& get( std::istream& is, T& x )
+{
+  return std::numeric_limits<T>::is_integer ?
+           _get_int( is, x ) :
+           _get_is_not_implemented_for_type<T>();
+}
 
 bool
 SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
@@ -78,8 +114,8 @@ std::ostream&
 SignalProperties::WriteBinary( std::ostream& os ) const
 {
   uint32 channels = Channels(),
-          maxElem = MaxElements(),
-          depth = GetDepth();
+         maxElem = MaxElements(),
+         depth = GetDepth();
   put( os, channels );
   put( os, maxElem );
   put( os, depth );
@@ -164,31 +200,51 @@ GenericSignal::WriteToStream( std::ostream& os ) const
 std::ostream&
 GenericSignal::WriteBinary( std::ostream& os ) const
 {
-  put( os, uint8( DATATYPE_FLOAT ) );
+  uint8 datatype = ( depth >= sizeof( float ) ? DATATYPE::FLOAT : DATATYPE::INTEGER );
+  put( os, uint8( datatype ) );
   put( os, uint8( Channels() ) );
   put( os, uint16( MaxElements() ) );
-  for( size_t j = 0; j < MaxElements(); ++j )
-    for( size_t i = 0; i < Value.size(); ++i )
-    {
-      float value = 0.0;
-      if( j < GetNumElements( i ) )
-        value = GetValue( i, j );
-      int mantissa,
-          exponent;
-      if( value == 0.0 )
-      {
-        mantissa = 0;
-        exponent = 1;
-      }
-      else
-      {
-        exponent = ceil( log10( fabs( value ) ) );
-        mantissa = ( value / pow10( exponent ) ) * 10000;
-        exponent -= 4;
-      }
-      put( os, sint16( mantissa ) );
-      put( os, sint8( exponent ) );
-    }
+  switch( datatype )
+  {
+    case DATATYPE::INTEGER:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < MaxElements(); ++j )
+        {
+          sint16 value = 0;
+          if( j < GetNumElements( i ) )
+            value = GetValue( i, j );
+          put( os, value );
+        }
+      break;
+
+    case DATATYPE::FLOAT:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < MaxElements(); ++j )
+        {
+          float value = 0.0;
+          if( j < GetNumElements( i ) )
+            value = GetValue( i, j );
+          int mantissa,
+              exponent;
+          if( value == 0.0 )
+          {
+            mantissa = 0;
+            exponent = 1;
+          }
+          else
+          {
+            exponent = ceil( log10( fabs( value ) ) );
+            mantissa = ( value / pow10( exponent ) ) * 10000;
+            exponent -= 4;
+          }
+          put( os, sint16( mantissa ) );
+          put( os, sint8( exponent ) );
+        }
+      break;
+      
+    default:
+      os.setstate( os.failbit );
+  }
   return os;
 }
 
@@ -201,10 +257,10 @@ GenericSignal::ReadBinary( std::istream& is )
   get( is, datatype );
   get( is, channels );
   get( is, maxElem );
-  SetProperties( SignalProperties( channels, maxElem, sizeof( value_type ) ) );
   switch( datatype )
   {
-    case DATATYPE_INTEGER:
+    case DATATYPE::INTEGER:
+      SetProperties( SignalProperties( channels, maxElem, 2 ) );
       for( int i = 0; i < channels; ++i )
         for( int j = 0; j < maxElem; ++j )
         {
@@ -213,7 +269,9 @@ GenericSignal::ReadBinary( std::istream& is )
           SetValue( i, j, value );
         }
       break;
-    case DATATYPE_FLOAT:
+
+    case DATATYPE::FLOAT:
+      SetProperties( SignalProperties( channels, maxElem, sizeof( float ) ) );
       for( int i = 0; i < channels; ++i )
         for( int j = 0; j < maxElem; ++j )
         {
@@ -224,6 +282,7 @@ GenericSignal::ReadBinary( std::istream& is )
           SetValue( i, j, mantissa * pow10( exponent ) );
         }
       break;
+      
     default:
       is.setstate( is.failbit );
   }

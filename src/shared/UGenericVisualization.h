@@ -48,6 +48,8 @@ public:
     template<typename T> bool Send( CFGID::CFGID cfgID, const T& cfgValue );
     bool Send( const char* memoString )
              { return SendMemo2Operator( memoString ); }
+    bool Send( const std::string& memoString )
+             { return Send( memoString.c_str() ); }
     bool Send( GenericSignal* signal )
              { return Send2Operator( signal ); }
     bool Send( GenericIntSignal* signal )

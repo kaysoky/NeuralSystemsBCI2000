@@ -250,7 +250,7 @@ BasicSignal< T >::ReadBinary( std::istream& is )
     for( size_t i = 0; i < Value.size(); ++i )
     {
       if( j < Value[ i ].size() )
-        os.read( ( char* )&Value[ i ][ j ], GetDepth() );
+        is.read( ( char* )&Value[ i ][ j ], GetDepth() );
     }
   return is;
 }

@@ -26,27 +26,51 @@
 using namespace std;
 
 // GenericFilter class definitions.
-GenericFilter::filters_type GenericFilter::allFilters;
-GenericFilter::filters_type GenericFilter::ownedFilters;
-GenericFilter::signals_type GenericFilter::ownedSignals;
-GenericFilter::registrarSet GenericFilter::Registrar::registrars;
 size_t GenericFilter::Registrar::createdInstances = 0;
 string emptyPos = "";
+
+GenericFilter::filters_type&
+GenericFilter::AllFilters()
+{
+  static filters_type allFilters;
+  return allFilters;
+}
+
+GenericFilter::filters_type&
+GenericFilter::OwnedFilters()
+{
+  static filters_type ownedFilters;
+  return ownedFilters;
+}
+
+GenericFilter::signals_type&
+GenericFilter::OwnedSignals()
+{
+  static signals_type ownedSignals;
+  return ownedSignals;
+}
+
+GenericFilter::registrarSet&
+GenericFilter::Registrar::Registrars()
+{
+  static registrarSet registrars;
+  return registrars;
+}
 
 const string&
 GenericFilter::GetFirstFilterPosition()
 {
-  if( Registrar::registrars.empty() )
+  if( Registrar::Registrars().empty() )
     return emptyPos;
-  return ( *Registrar::registrars.begin() )->GetPosition();
+  return ( *Registrar::Registrars().begin() )->GetPosition();
 }
 
 const string&
 GenericFilter::GetLastFilterPosition()
 {
-  if( Registrar::registrars.empty() )
+  if( Registrar::Registrars().empty() )
     return emptyPos;
-  return ( *Registrar::registrars.rbegin() )->GetPosition();
+  return ( *Registrar::Registrars().rbegin() )->GetPosition();
 }
 
 // Instantiate all registered filters once.
@@ -58,23 +82,23 @@ GenericFilter::GetLastFilterPosition()
 void
 GenericFilter::InstantiateFilters()
 {
-  for( registrarSet::reverse_iterator i = Registrar::registrars.rbegin();
-                                       i != Registrar::registrars.rend(); ++i )
-    ownedFilters.push_front( ( *i )->NewInstance() );
+  for( registrarSet::reverse_iterator i = Registrar::Registrars().rbegin();
+                                       i != Registrar::Registrars().rend(); ++i )
+    OwnedFilters().push_front( ( *i )->NewInstance() );
 }
 
 void
 GenericFilter::DisposeFilters()
 {
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
     delete *i;
-  ownedFilters.clear();
+  OwnedFilters().clear();
 }
 
 void
 GenericFilter::InitializeFilters()
 {
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
     ( *i )->Initialize();
 }
 
@@ -84,15 +108,17 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
 {
   const SignalProperties* currentInput = &Input;
   GenericFilter* currentFilter = NULL;
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
   {
     currentFilter = *i;
     // This will implicitly create the output signal if it does not exist.
-    currentFilter->Preflight( *currentInput, ownedSignals[ currentFilter ] );
-    currentInput = &ownedSignals[ currentFilter ];
+    SignalProperties currentOutput;
+    currentFilter->Preflight( *currentInput, currentOutput );
+    OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
+    currentInput = &OwnedSignals()[ currentFilter ];
   }
   if( currentFilter )
-    Output = ownedSignals[ currentFilter ];
+    Output = OwnedSignals()[ currentFilter ];
   else
     Output = Input;
 }
@@ -103,15 +129,15 @@ GenericFilter::ProcessFilters( const GenericSignal* Input,
 {
   const GenericSignal* currentInput = Input;
   GenericFilter* currentFilter = NULL;
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
   {
     currentFilter = *i;
     // This will implicitly create the output signal if it does not exist.
-    currentFilter->Process( currentInput, &ownedSignals[ currentFilter ] );
-    currentInput = &ownedSignals[ currentFilter ];
+    currentFilter->Process( currentInput, &OwnedSignals()[ currentFilter ] );
+    currentInput = &OwnedSignals()[ currentFilter ];
   }
   if( currentFilter )
-    *Output = ownedSignals[ currentFilter ];
+    *Output = OwnedSignals()[ currentFilter ];
   else
     *Output = *Input;
 }
@@ -119,14 +145,14 @@ GenericFilter::ProcessFilters( const GenericSignal* Input,
 void
 GenericFilter::RestingFilters()
 {
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
     ( *i )->Resting();
 }
 
 void
 GenericFilter::HaltFilters()
 {
-  for( filters_type::iterator i = ownedFilters.begin(); i != ownedFilters.end(); ++i )
+  for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
     ( *i )->Halt();
 }
 
@@ -135,8 +161,8 @@ GenericFilter*
 GenericFilter::NewInstance( const GenericFilter* existingInstance )
 {
   Registrar* registrarFound = NULL;
-  registrarSet::iterator i = Registrar::registrars.begin();
-  while( i != Registrar::registrars.end() && registrarFound == NULL )
+  registrarSet::iterator i = Registrar::Registrars().begin();
+  while( i != Registrar::Registrars().end() && registrarFound == NULL )
   {
     if( typeid( *existingInstance ) == ( *i )->GetTypeid() )
       registrarFound = *i;

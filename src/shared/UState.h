@@ -26,6 +26,7 @@ class STATE
 {
   friend class STATEVECTOR;
   friend class STATELIST; // calls GetValue()
+  friend class CoreModule; // calls GetValue()
 
 private:    // User declarations
         int     length;
@@ -37,7 +38,7 @@ private:    // User declarations
         bool    modified;
         void    SetByteLocation(int loc);
         void    SetBitLocation(int loc);
-protected:
+private:
         unsigned short GetValue() const;
         void Commit( STATEVECTOR* );
 

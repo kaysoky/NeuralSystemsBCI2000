@@ -78,10 +78,20 @@
 #pragma link "trayicon"
 #pragma resource "*.dfm"
 
+using namespace std;
+
 TfMain *fMain;
 
 SYSSTATUS       sysstatus;
 TCriticalSection *sendrecv_critsec=NULL;
+
+int modules[] =
+{
+  COREMODULE_EEGSOURCE,
+  COREMODULE_SIGPROC,
+  COREMODULE_APPLICATION
+};
+
 
 //---------------------------------------------------------------------------
 class TCoreRecvThread : public  TServerClientThread
@@ -116,34 +126,38 @@ COREMESSAGE             *coremessage;
     {
     if (pStream->WaitForData(1000))
        {
-       coremessage=new COREMESSAGE;
-       // receive Core Message
-       // (do not receive while we send; concurrency problems)
-       sendrecv_critsec->Acquire();
-       ret=coremessage->ReceiveCoreMessage(pStream);
-       sendrecv_critsec->Release();
-       if (ret != ERRCORE_NOERR)
+          COREMESSAGE message;
+          sendrecv_critsec->Acquire();
+          int result = message.ReceiveCoreMessage( pStream );
+          sendrecv_critsec->Release();
+          if( result != ERRCORE_NOERR )
+            Terminate();
+          else
           {
-          delete coremessage;
-          if (!Terminated) Terminate();
-          }
-       else
-          {
-          coremessage->ParseMessage();
-          try {
-            struct
-            { COREMESSAGE* cm; int ct;
-              void __fastcall DoIt() { fMain->HandleCoreMessage( cm, ct ); }
-            } s = { coremessage, coretype };
-            if( coremessage->GetDescriptor() == COREMSG_DATA )
+            message.ParseMessage();
+            if( message.GetDescriptor() == COREMSG_DATA )
+            {
+              struct {
+                COREMESSAGE* cm; int ct;
+                void __fastcall DoIt() { fMain->HandleCoreMessage( cm, ct ); }
+              } s = { &message, coretype };
               Synchronize( s.DoIt );
+            }
             else
-              s.DoIt();
-          } catch( TooGeneralCatch& ) {;}
-          delete coremessage;
-          if (coretype == COREMODULE_EEGSOURCE)   sysstatus.NumMessagesRecv1++;
-          if (coretype == COREMODULE_SIGPROC)     sysstatus.NumMessagesRecv2++;
-          if (coretype == COREMODULE_APPLICATION) sysstatus.NumMessagesRecv3++;
+              fMain->HandleCoreMessage( &message, coretype );
+
+            switch( coretype )
+            {
+              case COREMODULE_EEGSOURCE:
+                ++sysstatus.NumMessagesRecv1;
+                break;
+              case COREMODULE_SIGPROC:
+                ++sysstatus.NumMessagesRecv2;
+                break;
+              case COREMODULE_APPLICATION:
+                ++sysstatus.NumMessagesRecv3;
+                break;
+            }
           }
        }
     }
@@ -219,12 +233,14 @@ __fastcall TfMain::TfMain(TComponent* Owner)
 : TForm(Owner),
   syslog( NULL )
 {
-  sendrecv_critsec=new TCriticalSection();
+  if( sendrecv_critsec == NULL )
+    sendrecv_critsec=new TCriticalSection();
   OperatorUtils::RestoreControl( this );
 }
 
 __fastcall TfMain::~TfMain()
 {
+  delete sendrecv_critsec;
   OperatorUtils::SaveControl( this );
 }
 //---------------------------------------------------------------------------

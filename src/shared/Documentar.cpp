@@ -26,12 +26,15 @@
 #include "UGenericFilter.h"
 #include "UGenericSignal.h"
 
+// Signal dimensions for call to Preflight().
 #define DOC_CHANNELS 64
 #define DOC_ELEMENTS 16
 
 #ifndef DOC_EXTENSION
 # define DOC_EXTENSION ".docinfo"
 #endif
+
+#undef LATEXOUTPUT
 
 using namespace std;
 
@@ -72,19 +75,27 @@ class Table : public ostringstream
           maxLengths[ col ] = cells[ row ][ col ].length();
 
 #ifdef LATEXOUTPUT
-    os << '\n'
+    const char beforeCell[] = "\\verb@",
+               afterCell[] = "@";
+    os << "\\\\\n"
+       << "\\begin{tabular}{";
+    for( size_t col = 0; col < cells[ 0 ].size(); ++col )
+      os << 'l';
+    os <<"}\n"
        << cells[ 0 ][ 0 ];
     for( size_t col = 1; col < cells[ 0 ].size(); ++col )
       os << " & " << cells[ 0 ][ col ];
     os << "\\\\ \\hline \n";
     for( size_t row = 1; row < cells.size(); ++row )
     {
-      os << '\n'
-         << cells[ row ][ 0 ];
+      os << '\n';
+      if( cells[ row ].size() > 0 )
+        os << beforeCell << cells[ row ][ 0 ] << afterCell;
       for( size_t col = 1; col < cells[ row ].size(); ++col )
-        os << " & " << cells[ row ][ col ];
+        os << " & " << beforeCell << cells[ row ][ col ] << afterCell;
       os << "\\\\ \n";
     }
+    os << "\\end{tabular}\n";
 #else // LATEXTOUTPUT
     os << '\n';
     for( size_t col = 0; col < cells[ 0 ].size(); ++col )
@@ -146,15 +157,19 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   if( pos != string::npos )
     filename = filename.substr( 0, pos );
   modulename = filename;
+#if 0
   filename += DOC_EXTENSION;
   freopen( filename.c_str(), "w", stdout );
+#endif
   const char** av = new const char*[ _argc ];
   av[ 0 ] = modulename.c_str();
   for( int i = 1; i <= _argc; ++i )
     av[ i ] = _argv[ i ];
   int ret = Documentar()( _argc, av );
   delete[] av;
+#if 0
   fclose( stdout );
+#endif
   return ret;
 }
 
@@ -164,9 +179,13 @@ int Documentar::operator()( int argc, const char** argv )
   const char tab = '\t';
   Table table;
 
+#ifdef LATEXOUTPUT
+  cout << "\\subsection{Module \\texttt{" << argv[ 0 ] << "}}\n";
+#else
   cout << "Module: " << argv[ 0 ] << newl << newl;
+#endif // LATEXOUTPUT
 
-  if( GenericFilter::Registrar::registrars.size() == 0 )
+  if( GenericFilter::Registrar::Registrars().size() == 0 )
     cout << "No filters registered." << newl;
   else
   {
@@ -176,8 +195,8 @@ int Documentar::operator()( int argc, const char** argv )
 
       string currentPos;
       for( GenericFilter::registrarSet::iterator i
-                 = GenericFilter::Registrar::registrars.begin();
-                 i != GenericFilter::Registrar::registrars.end(); ++i )
+                 = GenericFilter::Registrar::Registrars().begin();
+                 i != GenericFilter::Registrar::Registrars().end(); ++i )
       {
         if( currentPos != ( *i )->GetPosition() )
         {
@@ -199,8 +218,8 @@ int Documentar::operator()( int argc, const char** argv )
   infoset filtersManipulatingCurrentOutput;
 
   for( GenericFilter::registrarSet::iterator i
-           = GenericFilter::Registrar::registrars.begin();
-           i != GenericFilter::Registrar::registrars.end(); ++i )
+           = GenericFilter::Registrar::Registrars().begin();
+           i != GenericFilter::Registrar::Registrars().end(); ++i )
   {
     PARAMLIST filterParams;
     STATELIST filterStates;

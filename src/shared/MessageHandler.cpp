@@ -59,11 +59,11 @@ MessageHandler::HandleMessage( istream& is )
   {
     switch( descriptor )
     {
+      CONSIDER( STATEVECTOR );
+      CONSIDER( GenericSignal );
       CONSIDER( STATUS );
       CONSIDER( PARAM );
       CONSIDER( STATE );
-      CONSIDER( GenericSignal );
-      CONSIDER( STATEVECTOR );
       CONSIDER( SYSCMD );
       default:
         bcierr << "Unknown message descriptor" << endl;
@@ -80,23 +80,23 @@ MessageHandler::PutMessage( std::ostream& os, const content_type& content )
 {
   os.put( Header<content_type>::desc );
   os.put( Header<content_type>::supp );
-#ifdef BCI_TOOL // The version without buffering
+#ifdef BCI_TOOL // The version without buffering.
   os.put( 0 ).put( 0 );
   content.WriteBinary( os );
-#else
-  // For compatibility reasons, we must fill in the length field correctly.
-  // To obtain the length, we need a somewhat inefficient additional buffering.
-  // For the future, the length field might be removed from the standard.
+  if( Header<content_type>::src != ignore )
+    os.put( Header<content_type>::src );
+#else // We need the buffer to correctly fill in the length fields.
   static ostringstream buffer;
   buffer.str( "" );
+  buffer.clear();
   if( Header<content_type>::src != ignore )
     buffer.put( Header<content_type>::src );
   content.WriteBinary( buffer );
   size_t length = buffer.str().length();
-  if( length > 1 << 16 )
+  if( length > ( 1 << 16 ) )
     bcierr << "Message length field overflow" << endl;
-  os.put( length & 0xff ).put( length >> 8 );
-  os << buffer.str();
+  os.put( length & 0xff ).put( ( length >> 8 ) & 0xff );
+  os.write( buffer.str().data(), length );
 #endif
 }
 
