@@ -397,7 +397,9 @@ TTask::ProcessAppState()
       if( mBlockInState == 0 )
       {
         int target = TRUE_TARGET_CODE( State( "TargetCode" ) ),
-            result = mTargetBounds.SignalToTarget( mSignalStatistics.SignalAverage() );
+            result = 0;
+        if( !OptionalState( 0, "Artifact" ) )
+          result = mTargetBounds.SignalToTarget( mSignalStatistics.SignalAverage() );
         State( "ResultCode" ) = result;
         Queue( &TTask::BroadcastFeedbackEnd );
         Queue( &TTask::BroadcastEndOfClass );
@@ -435,8 +437,11 @@ void
 TTask::ProcessEndOfClass( const TEventArgs& inArgs )
 {
   int targetCode = TRUE_TARGET_CODE( inArgs.targetCode );
-  mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
-  mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
+  if( inArgs.resultCode != 0 )
+  {
+    mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
+    mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
+  }
   int hits = mTrialStatisticsForCurrentRun.Hits(),
       total = mTrialStatisticsForCurrentRun.Total();
   ostringstream os;
