@@ -67,7 +67,7 @@ public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         bool    DefineInput(AnsiString);
         int     IncrementTrial(int, const STATEVECTOR *);
-        void    UpdateStateListBox(int);
+        void    UpdateStateListBox();
         bool    SaveSampleOrNot(const STATEVECTOR *statevector);
         int     InitMatlabEngine();
         void    ShutdownMatlabEngine();

@@ -383,7 +383,7 @@ int     ret;
     return(false);
     }
 
- UpdateStateListBox(bci2000data->GetFirstRunNumber());
+ UpdateStateListBox();
  bConvert->Enabled=true;
 
  return(true);
@@ -397,11 +397,10 @@ void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
 //---------------------------------------------------------------------------
 
 
-void TfMain::UpdateStateListBox(int runnr)
+// this assumes an initialized bci2000data
+void TfMain::UpdateStateListBox()
 {
 int state;
-
- bci2000data->SetRun(runnr);
 
  cStateListBox->Clear();
  ListBox1a->Clear();
