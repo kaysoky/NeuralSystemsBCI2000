@@ -69,6 +69,7 @@
 #include "UConnectionInfo.h"
 #include "UVisConfig.h"
 #include "UOperatorUtils.h"
+#include "UBCIError.h"
 
 #include "UMain.h"
 //---------------------------------------------------------------------------
@@ -95,7 +96,8 @@ class TCoreRecvThread : public  TServerClientThread
 TCoreRecvThread *source_thread, *sigproc_thread, *application_thread;
 
 //---------------------------------------------------------------------------
-__fastcall TCoreRecvThread::TCoreRecvThread(bool CreateSuspended, TServerClientWinSocket* ASocket, int new_coretype)  : TServerClientThread( CreateSuspended, ASocket )
+__fastcall TCoreRecvThread::TCoreRecvThread(bool CreateSuspended, TServerClientWinSocket* ASocket, int new_coretype)
+: TServerClientThread( CreateSuspended, ASocket )
 {
  coretype=new_coretype;
 }
@@ -128,11 +130,15 @@ COREMESSAGE             *coremessage;
        else
           {
           coremessage->ParseMessage();
-          fMain->cur_coremessage=coremessage;
-          fMain->cur_coretype=coretype;
           try {
-          fMain->HandleCoreMessage(coremessage, coretype);
-          // Synchronize(fMain->HandleCoreMessage);
+            struct
+            { COREMESSAGE* cm; int ct;
+              void __fastcall DoIt() { fMain->HandleCoreMessage( cm, ct ); }
+            } s = { coremessage, coretype };
+            if( coremessage->GetDescriptor() == COREMSG_DATA )
+              Synchronize( s.DoIt );
+            else
+              s.DoIt();
           } catch( TooGeneralCatch& ) {;}
           delete coremessage;
           if (coretype == COREMODULE_EEGSOURCE)   sysstatus.NumMessagesRecv1++;
@@ -513,14 +519,6 @@ int ret;
 return(ret);
 }
 
-
-// to be called using Synchronize
-void __fastcall TfMain::HandleCoreMessage(void)
-{
- HandleCoreMessage(cur_coremessage, cur_coretype);
-}
-
-
 // **************************************************************************
 // Function:   HandleCoreMessage
 // Purpose:    handles a message that it received from a core module
@@ -536,10 +534,13 @@ int TfMain::HandleCoreMessage(COREMESSAGE *message, int module)
 AnsiString              section, type, name;
 STATEVECTOR             *initial_state_vector;
 PARAM   *temp_param;
+#if 0
 VISUAL  *vis_ptr;
+#endif
 char    buf[255];
 int     sample, channel, i, j;
 
+#if 0
  // it is a message containing visualization data
  if (message->GetDescriptor() == COREMSG_DATA)
     {
@@ -617,6 +618,39 @@ int     sample, channel, i, j;
     if (module == COREMODULE_APPLICATION)
        sysstatus.NumDataRecv3++;
     }
+#else
+ // Begin temporary glue code
+ // We re-build a stream from the message.
+ // In the future, the message will not be parsed outside the classes
+ // that handle it.
+ BYTE header[] =
+ {
+   message->GetDescriptor(),
+   message->GetSuppDescriptor(),
+   message->GetLength() & 0xff,
+   message->GetLength() >> 8,
+ };
+ std::stringstream msg;
+ msg.write( header, sizeof( header ) );
+ msg.write( message->GetBufPtr(), message->GetLength() );
+ // End temporary glue code
+
+ if( VISUAL::HandleMessage( msg ) )
+ {  // it is a message containing visualization data
+   switch( module )
+   {
+     case COREMODULE_EEGSOURCE:
+       ++sysstatus.NumDataRecv1;
+       break;
+     case COREMODULE_SIGPROC:
+       ++sysstatus.NumDataRecv2;
+       break;
+     case COREMODULE_APPLICATION:
+       ++sysstatus.NumDataRecv3;
+       break;
+   }
+ }
+#endif
  // it is a parameter message
  if (message->GetDescriptor() == COREMSG_PARAMETER)
     {
@@ -853,7 +887,7 @@ void __fastcall TfMain::ScrUpdateTimerTimer(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-
+#if 0
 void __fastcall TfMain::OpenVisual(TMessage &Message)
 {
 int     sourceID, windowtype;
@@ -867,6 +901,7 @@ int     sourceID, windowtype;
  if (viscfglist.GetVisCfgPtr(sourceID) == NULL)
      viscfglist.Add(new VISUAL(sourceID, windowtype));
 }
+#endif
 
 
 #ifndef NEW_DOUBLEBUF_SCHEME
@@ -926,7 +961,11 @@ GenericVisualization   *cur_vis;
  fConfig->Close();
 
  // delete all the windows currently visualized
+#if 0
  viscfglist.DeleteAllVisuals();
+#else
+ VISUAL::clear();
+#endif
 
  paramlist.ClearParamList();
  statelist.ClearStateList();
@@ -1204,10 +1243,11 @@ void __fastcall TfMain::bSetConfigClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-
 void __fastcall TfMain::ApplicationEvents1Idle(TObject *Sender, bool &Done)
 {
+#if 0
  Application->ProcessMessages();
+#endif
 }
 //---------------------------------------------------------------------------
 

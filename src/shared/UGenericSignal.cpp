@@ -27,6 +27,35 @@
 
 #include "UGenericSignal.h"
 
+#include "defines.h" // for DATATYPE_FLOAT / DATATYPE_INTEGER
+#include <iostream>
+#include <math.h>
+
+// This will go into a numtypes header some day.
+#if ( sizeof( unsigned char ) == 1 )
+typedef unsigned char  uint8;
+#endif
+#if ( sizeof( signed char ) == 1 )
+typedef signed char    sint8;
+#endif
+#if ( sizeof( unsigned short ) == 2 )
+typedef unsigned short uint16;
+#endif
+#if ( sizeof( signed short ) == 2 )
+typedef signed short   sint16;
+#endif
+#if ( sizeof( unsigned int ) == 4 )
+typedef unsigned int   uint32;
+#endif
+#if ( sizeof( signed char ) == 4 )
+typedef signed int     sint32;
+#endif
+
+template<typename T> std::ostream& put( std::ostream& os, const T& x )
+{ os.write( ( const char* )&x, sizeof( T ) ); return os; }
+template<typename T> std::istream& get( std::istream& is, T& x )
+{ is.read( ( char* )&x, sizeof( T ) ); return is; }
+
 bool
 SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
 {
@@ -36,6 +65,29 @@ SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
   else
     elements.at( inChannel ) = inElements;
   return elementsTooBig;
+}
+
+std::ostream&
+SignalProperties::WriteBinary( std::ostream& os )
+{
+  uint32 channels = Channels(),
+          maxElem = MaxElements(),
+          depth = GetDepth();
+  put( os, channels );
+  put( os, maxElem );
+  put( os, depth );
+  return os;
+}
+
+std::istream&
+SignalProperties::ReadBinary( std::istream& is )
+{
+  uint32 channels, maxElem, depth;
+  get( is, channels );
+  get( is, maxElem );
+  get( is, depth );
+  *this = SignalProperties( channels, maxElem, depth );
+  return is;
 }
 
 bool
@@ -76,4 +128,76 @@ GenericSignal::operator=( const GenericIntSignal& inRHS )
       SetValue( i, j, ( float )inRHS.GetValue( i, j ) );
   return *this;
 }
+
+std::ostream&
+GenericSignal::WriteBinary( std::ostream& os )
+{
+  put( os, uint8( DATATYPE_FLOAT ) );
+  put( os, uint8( Channels() ) );
+  put( os, uint16( MaxElements() ) );
+  for( size_t j = 0; j < MaxElements(); ++j )
+    for( size_t i = 0; i < Value.size(); ++i )
+    {
+      float value = 0.0;
+      if( j < GetNumElements( i ) )
+        value = GetValue( i, j );
+      int mantissa,
+          exponent;
+      if( value == 0.0 )
+      {
+        mantissa = 0;
+        exponent = 1;
+      }
+      else
+      {
+        exponent = ceil( log10( fabs( value ) ) );
+        mantissa = ( value / pow10( exponent ) ) * 10000;
+        exponent -= 4;
+      }
+      put( os, sint16( mantissa ) );
+      put( os, sint8( exponent ) );
+    }
+  return os;
+}
+
+std::istream&
+GenericSignal::ReadBinary( std::istream& is )
+{
+  uint8  datatype,
+         channels;
+  uint16 maxElem;
+  get( is, datatype );
+  get( is, channels );
+  get( is, maxElem );
+  SetProperties( SignalProperties( channels, maxElem, sizeof( value_type ) ) );
+  // Note that the Channels/Samples loops are different for
+  // DATATYPE_INTEGER and DATATYPE_FLOAT.
+  switch( datatype )
+  {
+    case DATATYPE_INTEGER:
+      for( int i = 0; i < channels; ++i )
+        for( int j = 0; j < maxElem; ++j )
+        {
+          sint16 value;
+          get( is, value );
+          SetValue( i, j, value );
+        }
+      break;
+    case DATATYPE_FLOAT:
+      for( int i = 0; i < channels; ++i )
+        for( int j = 0; j < maxElem; ++j )
+        {
+          sint16 mantissa;
+          sint8  exponent;
+          get( is, mantissa );
+          get( is, exponent );
+          SetValue( i, j, mantissa * pow10( exponent ) );
+        }
+      break;
+    default:
+      is.setstate( is.failbit );
+  }
+  return is;
+}
+
 

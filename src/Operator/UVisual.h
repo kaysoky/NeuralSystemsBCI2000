@@ -22,87 +22,183 @@
 #define UVisualH
 
 #include <vcl.h>
-#include <syncobjs.hpp>
+#include <iostream>
+#include <map>
+#include <algorithm>
 #include "UGenericSignal.h"
+
+#include "UGenericVisualization.h"
 
 class VISUAL
 {
-private:    // User declarations
-        enum
-        {
-          MAX_XAXISLABELS = 1024,
-          MAX_YAXISLABELS = 256,
-          MAX_DISPLAYCHANNELS = 256,
-        };
-        double  minvalue;
-        double  maxvalue;
-        int     displaysamples, displaychannels;        // current number of samples and channels in the graph
-        int     cur_samples;                            // current number of samples in the signal
-        int     total_displaychannels;                  // total number of channels in the graph (e.g., with total of 64, only 16 might be displayed)
-        int     startchannel;                           // first channel on the graph
-        TPoint  *points[MAX_DISPLAYCHANNELS];
-        void    RenderGraph(int startch, int endch, int startsample, int endsample);
-        AnsiString      XAxisLabel[MAX_XAXISLABELS];
-        AnsiString      YAxisLabel[MAX_YAXISLABELS];
-        void __fastcall FormResize(TObject *Sender);    // called when the user resizes the window
-        void __fastcall FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift);       // called, when user presses a key
-        void __fastcall FormPaint(TObject *Sender);     // when the graph needs to be repainted
-#ifdef NEW_DOUBLEBUF_SCHEME
-        // This is a do-nothing replacement class.
-        // Of course, this dirty trick will go away ASAP ...
-        struct TCriticalSection
-        {
-          static void Acquire() {}
-          static void Release() {}
-        } *critsec;
-#else // NEW_DOUBLEBUF_SCHEME
-        TCriticalSection        *critsec;               // critical section for screen update
-#endif // NEW_DOUBLEBUF_SCHEME
-        bool    toggle;
-public:     // User declarations
-        VISUAL::VISUAL(BYTE my_sourceID, BYTE my_vis_type);
-        VISUAL::~VISUAL();
-        Graphics::TBitmap *bitmap;
-        BYTE   sourceID;
-        BYTE   vis_type;
-        TForm  *form;
-#ifdef NEW_DOUBLEBUF_SCHEME
-private:
-        HRGN invalidRgn, redrawRgn;
-        void PaintGraph(int startch, int endch, int startsample, int endsample);
-        void SetStartChannel( int );
-        class TVisForm : public TForm
-        {
-         public:
-          TVisForm() : TForm( ( TComponent* )NULL, 1 ) {}
-          // To avoid flicker and save memory bandwidth, use a WM_ERASEBKGND
-          // handler that does not do anything.
-          void __fastcall WMEraseBkgnd( TWMEraseBkgnd& ) {}
-          BEGIN_MESSAGE_MAP
-            VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
-          END_MESSAGE_MAP( TForm )
-        };
-public:
-#endif // NEW_DOUBLEBUF_SCHEME
-        TMemo  *memo;
-        int    startsample;
-        void   RenderData(const GenericIntSignal *signal);
-        void   RenderData(const GenericSignal *signal);
-        void   RenderMemo(const char *memo);
+ public:
+  // This is the entire public interface of VISUAL.
+  typedef BYTE id_type;
+  static bool HandleMessage( std::istream& );
+  static void clear() { VISUAL_BASE::clear(); }
+
+ private:
+  class VISUAL_BASE
+  {
+   protected:
+    VISUAL_BASE( id_type sourceID );
+   public:
+    virtual ~VISUAL_BASE();
+    static void clear() { visuals.clear(); }
+    static bool HandleMessage( std::istream& );
+
+   protected:
+    virtual void Restore();
+    virtual void Save() const;
+
+   protected:
+    id_type sourceID;
+    TForm* form;
+   private:
+    AnsiString title;
+
+   protected:
+    typedef std::map< id_type, VISUAL_BASE* > vis_container_base;
+    static class vis_container : public vis_container_base
+    {
+     public:
+      ~vis_container() { clear(); }
+      void clear();
+    } visuals;
+  };
+  
+ private:
+  class VISUAL_GRAPH : public VISUAL_BASE
+  {
+   private:
+    enum
+    {
+      channelBase = 1, // displayed number of first channel
+      sampleBase = 0,  // displayed number of first sample
+      labelWidth = 20,
+      maxDisplayChannels = 16,
+    };
+
+   protected:
+    enum DisplayMode
+    {
+      polyline,
+      colorfield,
+    } displayMode;
+    
+   public:
+    VISUAL_GRAPH( id_type sourceID );
+    virtual ~VISUAL_GRAPH();
+    static bool HandleMessage( std::istream& );
+    bool InstanceHandleMessage( std::istream& );
+
+   protected:
+    virtual void Restore();
+    virtual void Save() const;
+
+   private:
+    void SetBottomChannel( int );
+    void SetDisplayMode( DisplayMode );
+
+   // Functions that centralize sample/channel -> pixel conversion in painting
+   // and invalidating contexts.
+   private:
+    int dataWidth, dataHeight;
+    RECT dataRect;
+    void SyncGraphics()
+    {
+      dataRect = TRect( labelWidth, 0, form->ClientWidth, form->ClientHeight );
+      dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
+      dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
+    }
+    int SampleLeft( int s )
+    { return labelWidth + ( s * dataWidth ) / ( int )numSamples; }
+    int SampleRight( int s )
+    { return SampleLeft( s + 1 ); }
+    int ChannelTop( int ch )
+    { return ChannelBottom( ch + 1 ); }
+    int ChannelBottom( int ch )
+    { return dataHeight - ( ch * dataHeight ) / ( int )numDisplayChannels; }
+
+    float NormData( size_t i, size_t j )
+    { return ( data( i, j ) - minValue ) / ( maxValue - minValue ); }
+
+   private:
+    bool   showCursor,
+           wrapAround;
+    size_t numSamples,
+           sampleCursor,
+           numDisplayChannels,
+           bottomChannel;
+    float  minValue,
+           maxValue;
+    GenericSignal data;
+
+   // VCL/Win32 Graphics details.
+   private:
+    HRGN   redrawRgn;
+    Graphics::TBitmap* offscreenBitmap;
+    class PointBuf
+    {
+     public:
+      PointBuf() : p( NULL ), s( 0 ) {}
+      ~PointBuf() { delete[] p; }
+      POINT& operator[]( size_t i ) { return p[ i ]; }
+      operator const POINT* () { return p; } const
+      void resize( size_t size )
+      { if( size > s ) { s = size; delete[] p; p = new POINT[ s ]; } }
+     private:
+      POINT* p;
+      size_t s;
+    } signalPoints;
+    void __fastcall FormResize( TObject* );
+    void __fastcall FormPaint( TObject* );
+    void __fastcall FormKeyUp( TObject*, WORD&, TShiftState );
+    class TVisForm : public TForm
+    {
+     public:
+      HRGN    updateRgn;
+
+      TVisForm()
+      : TForm( ( TComponent* )NULL, 1 ),
+        updateRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ) {}
+      __fastcall ~TVisForm()
+      {
+        ::DeleteObject( updateRgn );
+      }
+      // To avoid flicker and save memory bandwidth, use a WM_ERASEBKGND
+      // handler that does not do anything.
+      void __fastcall WMEraseBkgnd( TWMEraseBkgnd& ) {}
+      // Obtain the window's update region before BeginPaint() in the VCL
+      // paint handler destroys (validates) it.
+      void __fastcall WMPaint( TWMPaint& Message )
+      {
+        ::GetUpdateRgn( Handle, updateRgn, false );
+        PaintHandler( Message );
+      }
+      BEGIN_MESSAGE_MAP
+        VCL_MESSAGE_HANDLER( WM_PAINT, TWMPaint, WMPaint )
+        VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
+      END_MESSAGE_MAP( TForm )
+    };
+  };
+
+  class VISUAL_MEMO : public VISUAL_BASE
+  {
+   public:
+    VISUAL_MEMO( id_type sourceID );
+    virtual ~VISUAL_MEMO();
+    static bool HandleMessage( std::istream& );
+    bool InstanceHandleMessage( std::istream& );
+
+   protected:
+    virtual void Restore();
+    virtual void Save() const;
+
+   private:
+    TMemo* memo;
+  };
+
 };
 
-
-class VISCFGLIST
-{
-private:    // User declarations
-        TCriticalSection        *critsec;               // critical section for screen update
-        TList   *vis_list;
-public:     // User declarations
-        VISCFGLIST::VISCFGLIST();
-        VISCFGLIST::~VISCFGLIST();
-        void    Add(VISUAL *new_visual);
-        VISUAL  *GetVisCfgPtr(BYTE my_sourceID);
-        void    DeleteAllVisuals();
-};
-//---------------------------------------------------------------------------
 #endif // UVisualH

@@ -27,6 +27,9 @@
 #define KEY_CONFIG              "\\CONFIG"
 
 #define VISTYPE_GRAPH           1       // visualization type 1   ... graph t channels x s samples
+#define VISTYPE_POLYLINE        VISTYPE_GRAPH|0x00
+#define VISTYPE_COLORFIELD      VISTYPE_GRAPH|0x10
+#define IS_VISTYPE_GRAPH(x)     (((x)&0x0f)==VISTYPE_GRAPH)
 #define VISTYPE_MEMO            2       // visualization type 2   ... memo field
 #define VISTYPE_VISCFG          255     // visualization type 255 ... visualization config
 
@@ -48,17 +51,16 @@
 #define SOURCEID_ROUNDTRIP      61
 #define SOURCEID_SPELLERTRIALSEQ 62
 #define SOURCEID_BCIOUT         63
+#define SOURCEID_FFT            64
         
 #define DATATYPE_INTEGER        0
 #define DATATYPE_FLOAT          1
 
-#define WINDOW_OPEN      (WM_APP + 400)
+//#define WINDOW_OPEN      (WM_APP + 400)
 #define RESET_OPERATOR   (WM_APP + 401)
 #define HANDLE_MESSAGE   (WM_APP + 402)
-#define STARTDAQ_MESSAGE (WM_APP + 403)
+//#define STARTDAQ_MESSAGE (WM_APP + 403)
 #define RESET_MESSAGE    (WM_APP + 404)
-#ifndef VCL_DOUBLEBUF
-#define WINDOW_RENDER    (WM_APP + 405)
-#endif // VCL_DOUBLEBUF
+//#define WINDOW_RENDER    (WM_APP + 405)
 
 #endif

@@ -37,17 +37,26 @@
 #pragma package(smart_init)
 
 GenericVisualization::GenericVisualization()
-: intsignal( NULL ),
-  signal( NULL ),
-  new_samples( -1 )
+: signal( NULL ),
+  new_samples( -1 ),
+  sourceID( -1 ),
+  vis_type( VISTYPE_POLYLINE ),
+  datatype( DATATYPE_FLOAT )
 {
  // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
 }
 
+GenericVisualization::GenericVisualization( BYTE inSourceID, BYTE inVisType )
+: signal( NULL ),
+  new_samples( -1 ),
+  sourceID( inSourceID ),
+  vis_type( inVisType ),
+  datatype( DATATYPE_FLOAT )
+{
+}
 
 GenericVisualization::~GenericVisualization()
 {
- delete intsignal;
  delete signal;
 }
 
@@ -58,7 +67,7 @@ void GenericVisualization::SetSourceID(BYTE my_sourceID)
 }
 
 
-BYTE GenericVisualization::GetSourceID()
+BYTE GenericVisualization::GetSourceID() const
 {
  return(sourceID);
 }
@@ -70,7 +79,7 @@ void GenericVisualization::SetDataType(BYTE my_datatype)
 }
 
 
-BYTE GenericVisualization::GetDataType()
+BYTE GenericVisualization::GetDataType() const
 {
  return(datatype);
 }
@@ -80,13 +89,6 @@ void GenericVisualization::SetVisualizationType(BYTE my_vistype)
 {
  vis_type=my_vistype;
 }
-
-
-const GenericIntSignal *GenericVisualization::GetIntSignal() const
-{
- return(intsignal);
-}
-
 
 const GenericSignal *GenericVisualization::GetSignal() const
 {
@@ -200,7 +202,7 @@ BYTE    *dataptr;
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor(VISTYPE_GRAPH);
+ coremessage->SetSuppDescriptor( vis_type );
  coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
  dataptr=(BYTE *)coremessage->GetBufPtr();
@@ -249,7 +251,7 @@ float   value, value2;
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor(VISTYPE_GRAPH);
+ coremessage->SetSuppDescriptor( vis_type );
  coremessage->SetLength(3*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
  dataptr=(BYTE *)coremessage->GetBufPtr();
@@ -342,6 +344,7 @@ char    buf[256];
 
  sourceID=buffer[0];
 
+#if 0 // Went into operator code (class VISUAL).
  // visualization type == 1, i.e., type graph
  if (vis_type == VISTYPE_GRAPH)
     {
@@ -352,13 +355,12 @@ char    buf[256];
     if (datatype == DATATYPE_INTEGER)
        {
        if (length != (int)channels*(int)samples*2+5) return;    // consistency checks
-       if (intsignal) delete intsignal;
-       intsignal=new GenericIntSignal((unsigned short)channels, (int)samples);
+       delete signal;
+       signal=new GenericSignal((unsigned short)channels, (int)samples);
+       unsigned short* data = ( unsigned short* )&buffer[ 5 ];
        for (i=0; i<channels; i++)
-        {
-        dataptr=(short *)(buffer+5+i*sizeof(short)*(int)samples);
-        intsignal->SetChannel(dataptr, i);                      // set the values in the intsignal to the data
-        }
+        for( int j = 0; j < samples; ++j )
+          signal->SetValue( i, j, data[ j * channels + i ] );   // set the values in the signal to the data
        valid=true;
        }
     if (datatype == DATATYPE_FLOAT)
@@ -402,5 +404,6 @@ char    buf[256];
        fVisConfig->SetVisualPrefs(sourceID, 0, buf, &buffer[6]);
        }
     }
+#endif
 }
 

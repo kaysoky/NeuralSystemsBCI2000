@@ -59,6 +59,10 @@ class SignalProperties
     bool operator>=( const SignalProperties& ) const;
     bool operator<=( const SignalProperties& ) const;
 
+    // Stream i/o
+    std::ostream& WriteBinary( std::ostream& );
+    std::istream& ReadBinary( std::istream& );
+
   protected:
     std::vector< size_t > elements;
     size_t maxElements,
@@ -69,6 +73,8 @@ class SignalProperties
 template< class T > class BasicSignal : public SignalProperties
 {
   public:
+    typedef T value_type;
+    
     BasicSignal();
     BasicSignal( size_t inChannels, size_t inMaxElements );
     BasicSignal( const SignalProperties& );
@@ -88,6 +94,10 @@ template< class T > class BasicSignal : public SignalProperties
     const T& operator() ( size_t inChannel, size_t inElement ) const;
     // Write access
     T& operator() ( size_t inChannel, size_t inElement );
+
+    // Stream i/o
+    std::ostream& WriteBinary( std::ostream& );
+    std::istream& ReadBinary( std::istream& );
 
 #ifndef SIGNAL_BACK_COMPAT
   // For new code, use "SomeSignal( i, j )" resp.
@@ -182,7 +192,7 @@ BasicSignal< T >::operator() ( size_t inChannel, size_t inElement ) const
 #endif
 }
 
-template <class T>
+template<class T>
 T&
 BasicSignal< T >::operator() ( size_t inChannel, size_t inElement )
 {
@@ -193,7 +203,7 @@ BasicSignal< T >::operator() ( size_t inChannel, size_t inElement )
 #endif
 }
 
-template <class T>
+template<class T>
 void
 BasicSignal< T >::SetProperties( const SignalProperties& inSp )
 {
@@ -203,8 +213,42 @@ BasicSignal< T >::SetProperties( const SignalProperties& inSp )
 #endif
   Value.resize( inSp.Channels() );
   for( size_t i = 0; i != Value.size(); ++i )
-    Value[ i ].resize( inSp.GetNumElements( i ) );
+    Value[ i ].resize( inSp.GetNumElements( i ), T( 0 ) );
   *static_cast< SignalProperties* >( this ) = inSp;
+}
+
+template<class T>
+std::ostream&
+WriteBinary( std::ostream& os )
+{
+  SignalProperties::WriteBinary( os );
+  for( size_t j = 0; j < MaxElements(); ++j )
+    for( size_t i = 0; i < Value.size(); ++i )
+    {
+      if( j >= Value[ i ].size() )
+      {
+        static T null = T( 0 );
+        os.write( &null, GetDepth() );
+      }
+      else
+        os.write( &Value[ i ][ j ], GetDepth() );
+    }
+  return os;
+}
+
+template<class T>
+std::istream&
+ReadBinary( std::istream& is )
+{
+  SignalProperties::ReadBinary( is );
+  SetProperties( *this );
+  for( size_t j = 0; j < MaxElements(); ++j )
+    for( size_t i = 0; i < Value.size(); ++i )
+    {
+      if( j < Value[ i ].size() )
+        os.read( &Value[ i ][ j ], GetDepth() );
+    }
+  return is;
 }
 
 // Commonly used template instantiations.
@@ -236,6 +280,9 @@ class GenericSignal : public BasicSignal< float >
     GenericSignal( const GenericIntSignal* intsig ) { *this = *intsig; }
     const GenericSignal& operator=( const GenericIntSignal& );
     void  SetChannel(const short *source, size_t channel);
+
+    std::ostream& WriteBinary( std::ostream& );
+    std::istream& ReadBinary( std::istream& );
 };
 #endif
 

@@ -10,12 +10,16 @@
 //          Introduced clipping to reduce the amount of time spent blitting
 //          graphics data.
 //
-//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
-//          from the "Conditional defines" in the project options.
-//
 //          May 27, 2003, jm:
 //          Created Operator/UVisual to maintain VISUAL and VISCFGLIST
 //          as part of the operator module.
+//
+//          June 1, 2003, jm:
+//          Rewrote VISUAL as a class hierarchy.
+//
+//          June 10, 2003, jm:
+//          Added the polyline3d/colorfield display types for a graph to support
+//          FFT data.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -23,704 +27,750 @@
 //---------------------------------------------------------------------------
 #include "UVisual.h"
 
-#include "UVisConfig.h"
-#include "UGenericVisualization.h"
+#include "defines.h"
+#include "UCoreMessage.h" // for COREMSG_DATA
 
-//---------------------------------------------------------------------------
+#include <assert>
+#include <Registry.hpp>
+#include <math.h>
 
-#pragma package(smart_init)
+#pragma package( smart_init )
 
-VISCFGLIST::VISCFGLIST()
-: vis_list( new TList ),
-  critsec( new TCriticalSection )
+using namespace std;
+
+VISUAL::VISUAL_BASE::vis_container VISUAL::VISUAL_BASE::visuals;
+const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
+
+////////////////////////////////////////////////////////////////////////////////
+VISUAL::VISUAL_BASE::VISUAL_BASE( id_type inSourceID )
+: sourceID( inSourceID ),
+  form( NULL )
 {
+  VISUAL_BASE* visual = visuals[ sourceID ];
+  delete visual;
+  visuals[ sourceID ] = this;
 }
 
-VISCFGLIST::~VISCFGLIST()
+VISUAL::VISUAL_BASE::~VISUAL_BASE()
 {
- DeleteAllVisuals();
-
- delete vis_list;
- delete critsec;
+  delete form;
 }
 
-void VISCFGLIST::DeleteAllVisuals()
+void
+VISUAL::VISUAL_BASE::vis_container::clear()
 {
-int     i;
-VISUAL  *cur_vis;
-
- critsec->Acquire();
-
-  // Clean up – must free memory for the items as well as the list
-  for (i=0; i<vis_list->Count; i++)
-   {
-   cur_vis=(VISUAL *)vis_list->Items[i];
-   // store defaults in registry
-   fVisConfig->SetVisualPrefs(cur_vis->sourceID, cur_vis->vis_type, "Top", cur_vis->form->Top);
-   fVisConfig->SetVisualPrefs(cur_vis->sourceID, cur_vis->vis_type, "Left", cur_vis->form->Left);
-   fVisConfig->SetVisualPrefs(cur_vis->sourceID, cur_vis->vis_type, "Width", cur_vis->form->Width);
-   fVisConfig->SetVisualPrefs(cur_vis->sourceID, cur_vis->vis_type, "Height", cur_vis->form->Height);
-   delete cur_vis;
-   }
-
-  vis_list->Clear();
-
- critsec->Release();
+  for( iterator i = begin(); i != end(); ++i )
+    delete i->second;
+  vis_container_base::clear();
 }
 
-
-// **************************************************************************
-// Function:   s
-// Purpose:    s
-// Parameters: s
-// Returns:    s
-// **************************************************************************
-VISUAL *VISCFGLIST::GetVisCfgPtr(BYTE my_sourceID)
+void
+VISUAL::VISUAL_BASE::Restore()
 {
-VISUAL  *ptr, *cur_ptr;
-int     i;
+  assert( form != NULL );
 
- critsec->Acquire();
+  form->BorderStyle = bsSizeable;
 
- ptr=NULL;
- for (i=0; i<vis_list->Count; i++)
+  AnsiString key = key_base + AnsiString( sourceID );
+  TRegistry* reg = new TRegistry( KEY_READ );
+  if( reg->OpenKeyReadOnly( key ) )
   {
-  cur_ptr=(VISUAL *)vis_list->Items[i];
-  if (cur_ptr->sourceID == my_sourceID)
-     {
-     ptr=cur_ptr;
-     break;
-     }
+    try
+    {
+      form->Top = reg->ReadInteger( "Top" );
+      form->Left = reg->ReadInteger( "Left" );
+      form->Width = reg->ReadInteger( "Width" );
+      form->Height = reg->ReadInteger( "Height" );
+    }
+    catch( ERegistryException& )
+    {
+      static int top = 10,
+                 left = 10;
+      form->Top = top;
+      top += 10;
+      form->Left = left;
+      left += 10;
+      form->Height = 100;
+      form->Width = 100;
+    }
+
+    try
+    {
+      title = reg->ReadString( "WindowTitle" );
+      form->Caption = title + " (" + AnsiString( sourceID ) + ")";
+    }
+    catch( ERegistryException& )
+    {
+      form->Caption = AnsiString( sourceID );
+    }
+  }
+  delete reg;
+
+  if( !::Types::PtInRect( form->ClientRect, TPoint( 10, 10 ) ) )
+  {
+    form->Height = 100;
+    form->Width = 100;
+  }
+}
+
+void
+VISUAL::VISUAL_BASE::Save() const
+{
+  assert( form != NULL );
+
+  AnsiString key = key_base + AnsiString( sourceID );
+  TRegistry* reg = new TRegistry( KEY_WRITE );
+  if( reg->OpenKey( key, true ) )
+  {
+    try
+    {
+      reg->WriteInteger( "Top", form->Top );
+      reg->WriteInteger( "Left", form->Left );
+      reg->WriteInteger( "Width", form->Width );
+      reg->WriteInteger( "Height", form->Height );
+      if( title != "" )
+        reg->WriteString( "WindowTitle", title );
+    }
+    catch( ERegistryException& )
+    {
+    }
+  }
+  delete reg;
+}
+
+bool
+VISUAL::VISUAL_BASE::HandleMessage( istream& is )
+{
+  if( is.peek() != VISTYPE_VISCFG )
+    return VISUAL_GRAPH::HandleMessage( is )
+           || VISUAL_MEMO::HandleMessage( is );
+
+  is.ignore( 3 );
+  int sourceID = is.get(),
+      cfgID = is.get();
+
+  float numValue = 0.0;
+  string stringValue;
+
+  switch( cfgID )
+  {
+    case CFGID_MINVALUE:
+    case CFGID_MAXVALUE:
+    case CFGID_NUMSAMPLES:
+      is >> numValue;
+      break;
+    case CFGID_WINDOWTITLE:
+      is >> stringValue;
+      break;
+    case CFGID_XAXISLABEL:
+      is >> numValue >> stringValue;
+      break;
   }
 
- critsec->Release();
- return(ptr);
-}
+  if( !is )
+    return false;
 
-
-
-// **************************************************************************
-// Function:   s
-// Purpose:    s
-// Parameters: s
-// Returns:    s
-// **************************************************************************
-void VISCFGLIST::Add(VISUAL *new_visual)
-{
- critsec->Acquire();
- vis_list->Add(new_visual);
- critsec->Release();
-}
-
-
-
-VISUAL::VISUAL(BYTE my_sourceID, BYTE my_vis_type)
-#ifdef NEW_DOUBLEBUF_SCHEME
-: invalidRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
-  redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) )
-#endif // NEW_DOUBLEBUF_SCHEME
-{
-int        ch, i, value;
-AnsiString windowtitle;
-char       buf[256];
-
- sourceID=my_sourceID;
- vis_type=my_vis_type;
-
- form=NULL;
- // chart=NULL;
- memo=NULL;
- bitmap=NULL;
-
- startsample=0;
- displaychannels=-1;
- total_displaychannels=-1;
- startchannel=0;
- critsec=new TCriticalSection();
- critsec->Acquire();
-
- // set the buffers for the charting data points to NULL
- for (ch=0; ch<MAX_DISPLAYCHANNELS; ch++)
-  points[ch]=NULL;
-
- if (vis_type == VISTYPE_GRAPH)
+  AnsiString key = key_base + AnsiString( sourceID );
+  TRegistry* reg = new TRegistry( KEY_WRITE );
+  if( reg->OpenKey( key, true ) )
+  {
+    try
     {
-#ifndef NEW_DOUBLEBUF_SCHEME
-    form=new TForm(Application);
-#else
+      switch( cfgID )
+      {
+        case CFGID_MINVALUE:
+          reg->WriteFloat( "MinValue", numValue );
+          break;
+        case CFGID_MAXVALUE:
+          reg->WriteFloat( "MaxValue", numValue );
+          break;
+        case CFGID_NUMSAMPLES:
+          reg->WriteInteger( "NumSamples", numValue );
+          break;
+        case CFGID_WINDOWTITLE:
+          reg->WriteString( "WindowTitle", stringValue.c_str() );
+          break;
+        case CFGID_XAXISLABEL:
+          reg->WriteString( "XAxisLabel" + IntToStr( ( int )numValue ), stringValue.c_str() );
+          break;
+      }
+    }
+    catch( ERegistryException& )
+    {
+    }
+  }
+  delete reg;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
+: VISUAL_BASE( inSourceID ),
+  showCursor( false ),
+  wrapAround( false ),
+  numSamples( 0 ),
+  sampleCursor( 0 ),
+  numDisplayChannels( 0 ),
+  bottomChannel( 0 ),
+  minValue( 0.0 ),
+  maxValue( 1.0 ),
+  displayMode( polyline ),
+  redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
+  offscreenBitmap( new Graphics::TBitmap )
+{
+  Restore();
+}
+
+VISUAL::VISUAL_GRAPH::~VISUAL_GRAPH()
+{
+  Save();
+  delete offscreenBitmap;
+  ::DeleteObject( redrawRgn );
+}
+
+void
+VISUAL::VISUAL_GRAPH::Restore()
+{
+  if( form == NULL )
     form = new TVisForm;
-#endif // NEW_DOUBLEBUF_SCHEME
+  VISUAL_BASE::Restore();
+  form->OnKeyUp = FormKeyUp;
+  form->OnResize = FormResize;
+  form->OnPaint = FormPaint;
+  form->Show();
 
-    // create the form
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
-       form->Top=value;
-    else
-       form->Top=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", value))
-       form->Left=value;
-    else
-       form->Left=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", value))
-       form->Width=value;
-    else
-       form->Width=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", value))
-       form->Height=value;
-    else
-       form->Height=100;
-    // form->BorderIcons >> biSystemMenu;
-    form->BorderStyle=bsSizeable;
-    form->Show();
-
-    // get the default values from the registry
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", windowtitle))
-       form->Caption=AnsiString((int)my_sourceID);
-    else
-       form->Caption=windowtitle+" ("+AnsiString((int)my_sourceID)+")";
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "NumSamples", displaysamples))
-       displaysamples=128;
-    if (displaysamples == 0)
-       displaysamples=128;
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MinValue", minvalue))
-       minvalue=-32768;
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "MaxValue", maxvalue))
-       maxvalue=+32768;
-    if (minvalue >= maxvalue)
-       {
-       maxvalue=32768;
-       minvalue=-32768;
-       }
-
-    // create buffer for the chart within the form
-    bitmap=new Graphics::TBitmap();
-    bitmap->Width=form->ClientWidth;
-    bitmap->Height=form->ClientHeight;
-
-    form->OnResize=FormResize;
-    form->OnKeyUp=FormKeyUp;
-    form->OnPaint=FormPaint;
-
-    // create the chart within the form
-    /* chart=new TChart(form);
-    chart->Visible=false;
-    chart->Parent=form;
-    chart->Left=0;
-    chart->Top=0;
-    chart->Width=form->ClientWidth;
-    chart->Height=form->ClientHeight;
-    chart->Title->Visible=false;
-    chart->Legend->Visible=false;
-    chart->AllowPanning=pmVertical;
-    chart->AllowZoom=false;
-    chart->View3D=false;
-    chart->Anchors << akLeft << akTop << akRight << akBottom;
-    // chart->BottomAxis->LabelStyle=talText;
-    chart->Visible=true; */
-    }
-
- if (vis_type == VISTYPE_MEMO)
+  AnsiString key = key_base + AnsiString( sourceID );
+  TRegistry* reg = new TRegistry( KEY_READ );
+  if( reg->OpenKeyReadOnly( key ) )
+  {
+    try
     {
-#ifdef NEW_DOUBLEBUF_SCHEME
-    form = new TForm( ( TComponent* )NULL );
-#else // NEW_DOUBLEBUF_SCHEME
-    form=new TForm(Application);
-#endif // NEW_DOUBLEBUF_SCHEME
-
-    // create the form
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Top", value))
-       form->Top=value;
-    else
-       form->Top=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Left", value))
-       form->Left=value;
-    else
-       form->Left=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Width", value))
-       form->Width=value;
-    else
-       form->Width=100;
-    if (fVisConfig->GetVisualPrefs(sourceID, vis_type, "Height", value))
-       form->Height=value;
-    else
-       form->Height=100;
-    // form->BorderIcons >> biSystemMenu;
-    form->BorderStyle=bsSizeable;
-    form->Show();
-
-    // get the default values from the registry
-    if (!fVisConfig->GetVisualPrefs(sourceID, vis_type, "WindowTitle", windowtitle))
-       form->Caption=AnsiString((int)my_sourceID);
-    else
-       form->Caption=windowtitle+" ("+AnsiString((int)my_sourceID)+")";
-
-    // critsec=new TCriticalSection();
-
-    // create the memo within the form
-    memo=new TMemo(form);
-    memo->Visible=false;
-    memo->Parent=form;
-    memo->Left=0;
-    memo->Top=0;
-    memo->Width=form->ClientWidth;
-    memo->Height=form->ClientHeight;
-    memo->Anchors << akLeft << akTop << akRight << akBottom;
-    memo->ScrollBars=ssVertical;
-    memo->Visible=true;
+      numSamples = reg->ReadInteger( "NumSamples" );
+      minValue = reg->ReadFloat( "MinValue" );
+      maxValue = reg->ReadFloat( "MaxValue" );
     }
-
- critsec->Release();
+    catch( ERegistryException& )
+    {
+      numSamples = 128;
+      minValue = -32768;
+      maxValue = 32768;
+    }
+    if( minValue >= maxValue )
+    {
+      minValue = -32768;
+      maxValue = 32768;
+    }
+  }
+  delete reg;
 }
 
-
-VISUAL::~VISUAL()
+void
+VISUAL::VISUAL_GRAPH::Save() const
 {
-int ch;
+  VISUAL_BASE::Save();
+}
 
- // if (chart) delete chart;
- // delete the buffer for the charting data points
- for (ch=0; ch<MAX_DISPLAYCHANNELS; ch++)
+bool
+VISUAL::VISUAL_GRAPH::HandleMessage( istream& is )
+{
+  if( !IS_VISTYPE_GRAPH( is.peek() ) )
+    return false;
+
+  DisplayMode displayMode;
+  switch( is.peek() )
   {
-  if (points[ch]) delete points[ch];
-  points[ch]=NULL;
+    case VISTYPE_GRAPH:
+      displayMode = polyline;
+      break;
+    case VISTYPE_COLORFIELD:
+      displayMode = colorfield;
+      break;
+    default:
+      assert( false );
+  }
+  is.ignore( 3 );
+
+  int sourceID = is.get();
+  VISUAL_GRAPH* visual = dynamic_cast<VISUAL_GRAPH*>( visuals[ sourceID ] );
+  if( visual == NULL )
+    visual = new VISUAL_GRAPH( sourceID );
+
+  visual->SetDisplayMode( displayMode );
+  return visual->InstanceHandleMessage( is );
+}
+
+bool
+VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
+{
+  GenericSignal newData;
+  
+  if( !newData.ReadBinary( is ) )
+    return false;
+    
+  if( !( data >= newData ) )
+  {
+    if( newData.MaxElements() > numSamples )
+      numSamples = newData.MaxElements();
+    numDisplayChannels = newData.Channels();
+    switch( displayMode )
+    {
+      case polyline:
+        numDisplayChannels = min( newData.Channels(), maxDisplayChannels );
+        break;
+      case colorfield:
+        numDisplayChannels = newData.Channels();
+        break;
+    }
+    data = GenericSignal( newData.Channels(), numSamples );
+    sampleCursor = 0;
+    form->Invalidate();
   }
 
- if (bitmap) delete bitmap;
- if (critsec) delete critsec;
+  showCursor = ( newData.MaxElements() < numSamples );
 
- if (memo)  delete memo;
-#ifndef NEW_DOUBLEBUF_SCHEME
- if (form)  form->Close();
- form=NULL;
-#else // NEW_DOUBLEBUF_SCHEME
- delete form;
- ::DeleteObject( invalidRgn );
- ::DeleteObject( redrawRgn );
-#endif // NEW_DOUBLEBUF_SCHEME
- // chart=NULL;
- memo=NULL;
- bitmap=NULL;
- critsec=NULL;
+  for( size_t i = 0; i < newData.Channels(); ++i )
+    for( size_t j = 0; j < newData.GetNumElements( i ); ++j )
+      data( i, ( sampleCursor + j ) % data.GetNumElements( i ) ) = newData( i, j );
+
+  SyncGraphics();
+
+  int firstInvalidSample = sampleCursor,
+      firstValidSample = sampleCursor + newData.MaxElements();
+  sampleCursor = firstValidSample % numSamples;
+  wrapAround |= ( firstValidSample / numSamples );
+
+  int firstInvalidPixel = dataRect.left,
+      firstValidPixel = dataRect.right;
+
+  switch( displayMode )
+  {
+    case polyline:
+      firstInvalidPixel = SampleLeft( firstInvalidSample - 1 );
+      firstValidPixel = SampleLeft( firstValidSample + 1 );
+      break;
+    case colorfield:
+      firstInvalidPixel = SampleLeft( firstInvalidSample );
+      firstValidPixel = SampleLeft( firstValidSample );
+      break;
+    default:
+      assert( false );
+  }
+
+  // We maintain a redraw region to make sure the
+  // cursor is deleted from its old position.
+  ::InvalidateRgn( form->Handle, redrawRgn, false );
+  ::SetRectRgn( redrawRgn, 0, 0, 0, 0 );
+
+  RECT invalidRect = dataRect;
+
+  // The non-wrapped area.
+  invalidRect.left = max( firstInvalidPixel, dataRect.left );
+  invalidRect.right = min( firstValidPixel, dataRect.right );
+  if( invalidRect.left < invalidRect.right )
+    ::InvalidateRect( form->Handle, &invalidRect, false );
+
+  // The area wrapped around the left edge.
+  invalidRect.left = max( firstInvalidPixel + dataWidth, dataRect.left );
+  invalidRect.right = min( firstValidPixel + dataWidth, dataRect.right );
+  if( invalidRect.left < invalidRect.right )
+    ::InvalidateRect( form->Handle, &invalidRect, false );
+
+  // The area wrapped around the right edge.
+  invalidRect.left = max( firstInvalidPixel - dataWidth, dataRect.left );
+  invalidRect.right = min( firstValidPixel - dataWidth, dataRect.right );
+  if( invalidRect.left < invalidRect.right )
+    ::InvalidateRect( form->Handle, &invalidRect, false );
+
+  return true;
 }
 
-
-void VISUAL::RenderMemo(const char *memotext)
+void
+VISUAL::VISUAL_GRAPH::SetBottomChannel( int inBottomChannel )
 {
- if (!memotext) return;
-
- memo->Lines->Add(AnsiString(memotext));
-}
-
-
-void __fastcall VISUAL::FormResize(TObject *Sender)
-{
- // only do this, if we have a graph
- if (vis_type == VISTYPE_GRAPH)
-    {
-    critsec->Acquire();
-    // if we already had buffers for the bitmap, delete them and create new ones
-    // the size of the re-sized window
-#ifdef NEW_DOUBLEBUF_SCHEME
-    bitmap->Canvas->Lock();
-#else
-    if (bitmap) delete bitmap;
-    bitmap=new Graphics::TBitmap();
-#endif // NEW_DOUBLEBUF_SCHEME
-
-    bitmap->Width=form->ClientWidth;
-    bitmap->Height=form->ClientHeight;
-#ifdef NEW_DOUBLEBUF_SCHEME
-    bitmap->Canvas->Unlock();
+  int newBottomChannel = min( inBottomChannel, data.Channels() - numDisplayChannels );
+  newBottomChannel = max( newBottomChannel, 0 );
+  if( ( size_t )newBottomChannel != bottomChannel )
+  {
+    bottomChannel = newBottomChannel;
     form->Invalidate();
-#endif // NEW_DOUBLEBUF_SCHEME
-
-    // update the display
-    RenderGraph(0, displaychannels-1, 0, displaysamples-1);
-    critsec->Release();
-#ifndef NEW_DOUBLEBUF_SCHEME
-    Application->ProcessMessages();
-#endif // NEW_DOUBLEBUF_SCHEME
-    }
+  }
 }
-//---------------------------------------------------------------------------
 
-#ifndef NEW_DOUBLEBUF_SCHEME
-void __fastcall VISUAL::FormPaint(TObject *Sender)
+void
+VISUAL::VISUAL_GRAPH::SetDisplayMode( DisplayMode mode )
 {
- // only do this, if we have a graph
- if (vis_type == VISTYPE_GRAPH)
-    {
-    critsec->Acquire();
-    RenderGraph(0, displaychannels-1, 0, displaysamples-1);
-    critsec->Release();
-    }
-}
-#else // NEW_DOUBLEBUF_SCHEME
-void __fastcall VISUAL::FormPaint( TObject* Sender )
-{
-  PaintGraph( 0, displaychannels - 1, 0, displaysamples - 1 );
-  TForm* Form = static_cast<TForm*>( Sender );
-  bitmap->Canvas->Lock();
-  Form->Canvas->Draw( 0, 0, bitmap );
-  bitmap->Canvas->Unlock();
-}
-#endif // NEW_DOUBLEBUF_SCHEME
-//---------------------------------------------------------------------------
-
-#ifdef NEW_DOUBLEBUF_SCHEME
-void VISUAL::SetStartChannel( int inStartChannel )
-{
-  startchannel = inStartChannel;
+  displayMode = mode;
   form->Invalidate();
 }
-#endif // NEW_DOUBLEBUF_SCHEME
 
-void __fastcall VISUAL::FormKeyUp(TObject *Sender, WORD &Key, TShiftState Shift)
+void
+__fastcall
+VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
 {
- // only do this, if we have a graph
- if (vis_type == VISTYPE_GRAPH)
-    {
-    // 1.) the number of channels on the screen has to be smaller than the total number of channels (otherwise, scrolling makes no sense)
-    // 2.) the "right" (i.e., up or down arrow) key has to be pressed
-    // 3.) we don't want to be able to scroll beyond the total number of channels
-    if ((displaychannels < total_displaychannels) && (Key == 38) && (startchannel+displaychannels <= total_displaychannels))
-       {
-       critsec->Acquire();
-#ifdef NEW_DOUBLEBUF_SCHEME
-       SetStartChannel( startchannel + displaychannels / 2 );
-#else
-       startchannel+=displaychannels/2;
-#endif // NEW_DOUBLEBUF_SCHEME
-       RenderGraph(0, displaychannels-1, 0, displaysamples-1);
-       critsec->Release();
-       }
-    if ((displaychannels < total_displaychannels) && (Key == 40) && (startchannel >= 0))
-       {
-       critsec->Acquire();
-#ifdef NEW_DOUBLEBUF_SCHEME
-       SetStartChannel( startchannel - displaychannels / 2 );
-#else
-       startchannel-=displaychannels/2;
-#endif // NEW_DOUBLEBUF_SCHEME
-       RenderGraph(0, displaychannels-1, 0, displaysamples-1);
-       critsec->Release();
-       }
-    }
+  switch( key )
+  {
+    case VK_UP:
+      SetBottomChannel( bottomChannel + numDisplayChannels / 2 );
+      break;
+    case VK_DOWN:
+      SetBottomChannel( bottomChannel - numDisplayChannels / 2 );
+      break;
+  }
 }
 
-
-// update the actual display of the graph
-// at the moment, it will always update the WHOLE GRAPH, i.e., all the channels and samples
-// it uses the graph's point buffer (prepared by RenderData), scales the values and
-// renders the graph into a double buffer
-// a windows message subsequently (in fMain) then invokes a message handler
-// (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
-void VISUAL::RenderGraph(int startch, int endch, int startsamp, int endsamp)
+void
+__fastcall
+VISUAL::VISUAL_GRAPH::FormResize( TObject* Sender )
 {
-#ifdef NEW_DOUBLEBUF_SCHEME
-  // Restrict drawing to the part of the window that has actually changed.
-  // This can dramatically improve performance for big windows and high
-  // color depths.
-  //
-  // This piece of code uses a slightly more conventional way to compute pixel
-  // coordinates from sample indices than PaintGraph().
-  // To account for the resulting differences, we enlarge the computed rectangle
-  // by (compatibilityBelt) pixels on both sides.
-  const compatibilityBelt = 5;
+  TForm* Form = static_cast<TForm*>( Sender );
+  Form->Invalidate();
+}
 
-  // We always redraw the previously updated region, too,
-  // because of different interpolations and the progress line.
-  ::CombineRgn( invalidRgn, redrawRgn, NULL, RGN_COPY );
-
-  // Which parts of the window will change? Assemble a region and invalidate it.
-  int winxmin = 20,                            // These must be consistent with
-      winxmax = form->ClientWidth,             // the values in PaintGraph().
-      deltaWinX = winxmax - winxmin,           //
-      deltaDatX = displaysamples,              //
-      firstSample = startsample - cur_samples,
-      afterLastSample = startsample,
-      leftX = winxmin + ( firstSample * deltaWinX ) / deltaDatX - compatibilityBelt,
-      rightX = winxmin + ( afterLastSample * deltaWinX ) / deltaDatX + compatibilityBelt;
-
-  ::SetRectRgn( invalidRgn, leftX, 0, rightX, form->ClientHeight );
-  if( leftX + compatibilityBelt < winxmin )
+void
+__fastcall
+VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
+{
+  enum
   {
-    HRGN rectRgn = ::CreateRectRgn( leftX + deltaWinX, 0, rightX + deltaWinX, form->ClientHeight );
+    backgroundBrush = 0,
+    cursorBrush,
+    axisBrush,
+    labelFont,
+    numGdiObj
+  };
+  struct GdiObjContainer : public vector<HGDIOBJ>
+  {
+    GdiObjContainer( size_t s )
+    : vector<HGDIOBJ>( s, NULL ) {}
+    ~GdiObjContainer()
+    {
+      for( iterator i = begin(); i != end(); ++i )
+        ::DeleteObject( *i );
+    }
+  } gdi( numGdiObj ),
+    signalPens( data.Channels() );
+
+  // Background properties
+  const TColor backgroundColor = clBlack;
+  gdi[ backgroundBrush ] = ::CreateSolidBrush( backgroundColor );
+
+  // Signal properties
+  const TColor signalColors[] =
+  { clWhite, clRed, clGreen, clBlue, clYellow, clAqua };
+  size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
+  for( size_t i = 0; i < data.Channels(); ++i )
+    signalPens[ i ] = ::CreatePen( PS_SOLID, 0, signalColors[ i % numColors ] );
+
+  // Cursor properties
+  const TColor cursorColor = clYellow;
+  const cursorWidth = 3;
+  gdi[ cursorBrush ] = ::CreateSolidBrush( cursorColor );
+
+  // Axis properties
+  const TColor axisColor = clAqua;
+  const axisWidth = 2;
+  const tickWidth = axisWidth, tickLength = 4;
+  const xDivision = 50, xStart = xDivision;
+  gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
+
+  const fontHeight = labelWidth / 2;
+  const labelColor = axisColor;
+  gdi[ labelFont ] = ::CreateFont( -fontHeight, 0, 0, 0, FW_DONTCARE,
+                      false, false, false, ANSI_CHARSET, OUT_RASTER_PRECIS,
+                      CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                      VARIABLE_PITCH | FF_SWISS, NULL );
+                      
+  // Do the drawing.
+  TVisForm* Form = static_cast<TVisForm*>( Sender );
+  TRect formRect = Form->ClientRect;
+  if( offscreenBitmap->Width != formRect.right )
+    offscreenBitmap->Width = formRect.right;
+  if( offscreenBitmap->Height != formRect.bottom )
+    offscreenBitmap->Height = formRect.bottom;
+
+  HDC dc = offscreenBitmap->Canvas->Handle;
+  ::SelectClipRgn( dc, Form->updateRgn );
+
+  // Clear the background.
+  ::FillRect( dc, &formRect, gdi[ backgroundBrush ] );
+
+  // Draw the signal.
+  SyncGraphics();
+
+  switch( displayMode )
+  // Ideally, this distinction should be implemented as subclassing.
+  // However, this wouldn't allow switching display modes for windows
+  // that already exist.
+  {
+    case polyline:
+    {
+      float  baseInterval = dataHeight / numDisplayChannels;
+      signalPoints.resize( numSamples );
+      for( size_t i = 0; i < numDisplayChannels; ++i )
+      {
+        for( size_t j = 0; j < numSamples; ++j )
+        {
+          signalPoints[ j ].x = SampleLeft( j );
+          signalPoints[ j ].y = ChannelBottom( i ) - 1
+               - baseInterval * NormData( i + bottomChannel, j );
+        }
+
+        ::SelectObject( dc, signalPens[ i ] );
+        ::Polyline( dc, signalPoints, sampleCursor );
+        ::Polyline( dc, &signalPoints[ sampleCursor ], numSamples - sampleCursor );
+
+        // We actually need this strange distinction of cases.
+        if( showCursor && sampleCursor != 0 && numSamples > 1 )
+        {
+          POINT remainingPoints[ 2 ];
+          remainingPoints[ 0 ] = signalPoints[ numSamples - 1 ];
+          remainingPoints[ 1 ].x = SampleLeft( numSamples );
+          if( wrapAround )
+            remainingPoints[ 1 ].y = signalPoints[ 0 ].y;
+          else
+            remainingPoints[ 1 ].y = signalPoints[ numSamples - 1 ].y;
+          ::Polyline( dc, remainingPoints, 2 );
+        }
+      }
+    } break;
+    
+    case colorfield:
+    {
+      struct // A wrapper to locally define a function (which is not possible otherwise).
+      {
+        COLORREF operator()( float H, float S, float V )
+        {
+          // According to Foley and VanDam.
+          // All input components range from 0 to 1 - EPS.
+          float h = 6.0 * ::fmod( H, 1.0 );
+          if( h < 0.0 )
+            h += 6.0;
+          int i = ::floor( h );
+          float f = h - i;
+          if( !( i % 2 ) )
+            f = 1.0 - f;
+          unsigned int m = ( V * ( 1.0 - S ) ) * 0x100,
+                       n = ( V * ( 1.0 - S * f ) ) * 0x100,
+                       v = V * 0x100;
+          if( m > 0xff )
+            m = 0xff;
+          if( n > 0xff )
+            n = 0xff;
+          if( v > 0xff )
+            v = 0xff;
+          COLORREF rgb = RGB( 0, 0, 0 );
+          switch( i )
+          {
+            case 0:
+              rgb = RGB( v, n, m );
+              break;
+            case 1:
+              rgb = RGB( n, v, m );
+              break;
+            case 2:
+              rgb = RGB( m, v, n );
+              break;
+            case 3:
+              rgb = RGB( m, n, v );
+              break;
+            case 4:
+              rgb = RGB( n, m, v );
+              break;
+            case 5:
+              rgb = RGB( v, m, n );
+              break;
+            default:
+              assert( false );
+          }
+          return rgb;
+        };
+      } HSVColor;
+
+      for( size_t i = 0; i < numDisplayChannels; ++i )
+        for( size_t j = 0; j < numSamples; ++j )
+        {
+          LONG color = HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomChannel, j ) ), 1.0, 1.0 );
+          HBRUSH brush = ::CreateSolidBrush( color );
+          RECT dotRect =
+          {
+            SampleLeft( j ),
+            ChannelTop( i ),
+            SampleRight( j ),
+            ChannelBottom( i )
+          };
+          ::FillRect( dc, &dotRect, brush );
+          ::DeleteObject( brush );
+        }
+    } break;
+    
+    default:
+      assert( false );
+  }
+
+  // Draw the cursor.
+  if( showCursor )
+  {
+    size_t cursorSample = sampleCursor;
+    if( cursorSample == 0 )
+      cursorSample = numSamples;
+      
+    RECT cursorRect =
+    {
+      SampleLeft( cursorSample ) - cursorWidth,
+      0,
+      SampleLeft( cursorSample ),
+      formRect.bottom - labelWidth
+    };
+    ::FillRect( dc, &cursorRect, gdi[ cursorBrush ] );
+    // Remember the cursor rectangle for redrawing when the next
+    // data packet arrives.
+    HRGN rectRgn = ::CreateRectRgnIndirect( &cursorRect );
     ::CombineRgn( redrawRgn, redrawRgn, rectRgn, RGN_OR );
     ::DeleteObject( rectRgn );
   }
-  else if( rightX - compatibilityBelt >= winxmax )
+
+  // Draw the ticks.
+  ::SetTextColor( dc, labelColor );
+  ::SelectObject( dc, gdi[ labelFont ] );
+  ::SetBkMode( dc, TRANSPARENT );
+
+  // Ticks on the y axis.
+  if( displayMode != colorfield )
   {
-    HRGN rectRgn = ::CreateRectRgn( leftX - deltaWinX, 0, rightX - deltaWinX, form->ClientHeight );
-    ::CombineRgn( redrawRgn, redrawRgn, rectRgn, RGN_OR );
-    ::DeleteObject( rectRgn );
-  }
-  ::CombineRgn( invalidRgn, invalidRgn, redrawRgn, RGN_OR );
-
-  // Apply the invalid region.
-  ::InvalidateRgn( form->Handle, invalidRgn, false );
-  bitmap->Canvas->Lock();
-  ::SelectClipRgn( bitmap->Canvas->Handle, invalidRgn );
-  bitmap->Canvas->Unlock();
-}
-
-void VISUAL::PaintGraph(int startch, int endch, int startsamp, int endsamp)
-{
-#endif // NEW_DOUBLEBUF_SCHEME
-AnsiString label;
-TCanvas *canvas;
-int     ch, samp;
-float   dataymin, dataymax;
-float   dataxmin, dataxmax;
-float   winymin, winymax;
-float   winxmin, winxmax;
-float   scalex, scaley;
-TPoint  *scaledpoints;
-TRect   allwindow;
-
-// canvas = form->Canvas;
-
-canvas=bitmap->Canvas;
-canvas->Lock();
-
-// limits of the drawing area within the window
-winymin=0;
-winymax=(float)form->ClientHeight-20;
-winxmin=20;
-winxmax=(float)form->ClientWidth;
-
-// limits of the data in both directions
-dataxmin=0;
-dataxmax=displaysamples;
-dataymin=0;
-dataymax=65536*displaychannels;                 // limits for each channel 0..65535
-
-// the total size of the whole chart within the window
-allwindow=Rect(0, 0, form->ClientWidth, form->ClientHeight);
-
-// if we do a complete update, clear the background first
-// if (update_type == UPDATETYPE_ALL)
-//    {
-   canvas->Brush->Color=clBlack;
-   // canvas->FillRect(Rect(winxmin, winymin, winxmax, winymax));
-   // fill everything including the chart axes
-   canvas->FillRect(allwindow);
-   canvas->Pen->Color=clAqua;
-   canvas->Pen->Width=1;
-   // draw the x and y axis
-   canvas->MoveTo(winxmin-1, winymin+1);
-   canvas->LineTo(winxmin-1, winymax+1);
-   canvas->MoveTo(winxmin-1, winymax+1);
-   canvas->LineTo(winxmax, winymax+1);
-   canvas->Pen->Color=clWhite;
-//    }
-
- scalex=(winxmax-winxmin)/(dataxmax-dataxmin-1);
- scaley=(winymax-winymin)/(dataymax-dataymin);
-
- //
- // draw the graph
- //
- scaledpoints=new TPoint[displaysamples];
- // re-scale the data points to fit the window and draw the lines
- // this (acting on a "generic" data source and re-scaling it has a little overhead, but is much more flexible
- for (ch=0; ch<displaychannels; ch++)
-  {
-  for (samp=0; samp<displaysamples; samp++)
-   {
-   scaledpoints[samp].x=(int)(winxmin+((float)samp-(float)startsamp)*scalex);
-   if ((ch+startchannel >= 0) && (ch+startchannel < total_displaychannels))
-      scaledpoints[samp].y=(int)(winymax-((float)points[ch+startchannel][samp].y-dataymin+(float)ch*65536)*scaley);
-   else
-      scaledpoints[samp].y=(int)(winymax-((float)ch*65536)*scaley);
-   }
-  // actually draw the lines
-  // if (ch%2 == 0)
-  //    canvas->Pen->Color=clWhite;
-  // else
-  //    canvas->Pen->Color=clYellow;
-  canvas->Polyline((TPoint *)scaledpoints, displaysamples-1);
-  }
- delete scaledpoints;
-
- // draw the progress line (if the number of samples in the signal is smaller than the total number in the display)
- if (cur_samples < displaysamples)
+    int nextLabelPos = dataRect.bottom;
+    for( size_t i = 0; i < numDisplayChannels; ++i )
     {
-    canvas->Pen->Color=clYellow;
-    canvas->MoveTo((int)(winxmin+((float)startsample)*scalex), (int)winymin);
-    canvas->LineTo((int)(winxmin+((float)startsample)*scalex), (int)winymax);
-    }
-
- //
- // draw the axis labels
- //
- canvas->Font->Color=clAqua;
- canvas->Pen->Color=clAqua;
- // labels on y axis
- for (ch=0; ch<displaychannels; ch++)
-  {
-  if ((ch+startchannel >= 0) && (ch+startchannel < total_displaychannels))
-     canvas->TextOut(2, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley)-abs(canvas->Font->Height)/2, AnsiString(ch+1+startchannel));
-  else
-     canvas->TextOut(2, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley)-abs(canvas->Font->Height)/2, "NA");
-  }
- // labels on x axis
- for (samp=0; samp<displaysamples; samp+=50)
-  {
-  label=AnsiString(samp+1);
-  canvas->TextOut((int)(winxmin+(float)samp*scalex)-canvas->TextWidth(label)/2, winymax+5, label);
-  }
-
- //
- // draw the ticks
- //
- // ticks on y axis
- for (ch=0; ch<displaychannels; ch++)
-  {
-  canvas->MoveTo(winxmin-3, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley));
-  canvas->LineTo(winxmin, (int)(winymax-(32768-dataymin+(float)ch*65536)*scaley));
-  }
-
- // ticks on x axis
- for (samp=0; samp<displaysamples; samp+=50)
-  {
-  canvas->MoveTo((int)(winxmin+(float)samp*scalex), winymax+1);
-  canvas->LineTo((int)(winxmin+(float)samp*scalex), winymax+4);
-  }
-
- // double buffering; copy the whole image into the actual form at once
- canvas->Unlock();
-
- // lock the destination (i.e., the form's) canvas before copying to prevent
- // the main thread from interfering
- // DO NOT ASK ME WHY THIS DIDN'T WORK (at least didn't work all the time)
- // in fMain, there is a Windows message that invokes a message handler that blits the double buffer
-}
-
-// prepare generic int signal and call the actual rendering procedure
-// i.e., fill the graphing point buffer with the actual (i.e., raw) values
-// a subsequent call to RenderGraph then renders these values into a double buffer
-// a windows message subsequently (in fMain) then invokes a message handler
-// (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
-void VISUAL::RenderData(const GenericIntSignal *signal)
-{
-int     channels, samples, ch, samp, i;
-char    buf[256];
-bool    recreate;
-
- // if ((!signal) || (!chart)) return;
- if (!signal) return;
-
- critsec->Acquire();
- channels=signal->Channels();
- samples=cur_samples=signal->MaxElements();
- recreate=false;
- if (samples > displaysamples)
-    {
-    displaysamples=samples;
-    recreate=true;
-    }
-
- // if the current number of channels in the chart does not match the
- // number of channels, delete the old ones and set new ones up
- if ((total_displaychannels != channels) || (recreate))
-    {
-    total_displaychannels=channels;
-    displaychannels=channels;
-    if (displaychannels > 16) displaychannels=16;
-    // delete the data for all the channels
-    for (ch=0; ch<MAX_DISPLAYCHANNELS; ch++)
-     {
-     if (points[ch]) delete points[ch];
-     points[ch]=NULL;
-     }
-    for (ch=0; ch<channels; ch++)
-     {
-     points[ch]=new TPoint[displaysamples];
-     for (samp=0; samp<displaysamples; samp++)
+      int tickY = ( ChannelBottom( i ) + ChannelBottom( i + 1 ) ) / 2;
+      RECT tickRect =
       {
-      points[ch][samp].x=samp;
-      points[ch][samp].y=0;
+        labelWidth - axisWidth - tickLength,
+        tickY - tickWidth / 2,
+        labelWidth - axisWidth,
+        tickY + tickWidth / 2
+      };
+      ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
+      if( tickY < nextLabelPos )
+      {
+        tickRect.right -= 2 * axisWidth;
+        nextLabelPos = tickY - ::DrawText( dc,
+           IntToStr( bottomChannel + i + channelBase ).c_str(), -1,
+           &tickRect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP );
       }
     }
-   }
-
- // now, fill the data point arrays with the new values
- for (ch=0; ch<channels; ch++)
+  }
+  // Ticks on the x axis.
+  int nextLabelPos = dataRect.left;
+  for( size_t j = xStart; j < numSamples; j += xDivision )
   {
-  for (samp=0; samp<samples; samp++)
-   points[ch][(samp+startsample)%displaysamples].y=(int)(((double)signal->GetValue(ch, samp)-minvalue)/(maxvalue-minvalue)*65536);
+    int tickX = SampleRight( j );
+    RECT tickRect =
+    {
+      tickX - tickWidth / 2,
+      dataHeight + axisWidth,
+      tickX + tickWidth / 2,
+      dataHeight + axisWidth + tickLength
+    };
+    ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
+    if( tickX > nextLabelPos )
+    {
+      tickRect.top += 2 * axisWidth;
+      AnsiString label = IntToStr( j + sampleBase );
+      ::DrawText( dc, label.c_str(), -1, &tickRect,
+         DT_TOP | DT_SINGLELINE | DT_CENTER | DT_NOCLIP );
+      SIZE textSize;
+      ::GetTextExtentPoint32( dc, label.c_str(), label.Length(), &textSize );
+      nextLabelPos = tickX + textSize.cx;
+    }
   }
 
- startsample=(samples+startsample)%displaysamples;
+  // Draw the axes.
+  RECT xAxis =
+  {
+    0,
+    dataHeight,
+    formRect.right,
+    dataHeight + axisWidth
+  };
+  ::FillRect( dc, &xAxis, gdi[ axisBrush ] );
+  RECT yAxis =
+  {
+    labelWidth - axisWidth,
+    0,
+    labelWidth,
+    formRect.bottom
+  };
+  ::FillRect( dc, &yAxis, gdi[ axisBrush ] );
 
- // actually render the graph in the double buffer
- // that is, ALL channels and ALL samples
- // a windows message subsequently (in fMain) then invokes a message handler
- // (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
- RenderGraph(0, displaychannels-1, 0, displaysamples-1);
- critsec->Release();
+  // Copy the data from the buffer onto the screen.
+  Form->Canvas->Draw( 0, Form->ClientHeight - offscreenBitmap->Height, offscreenBitmap );
 }
 
-
-// prepare generic signal and call the actual rendering procedure
-// i.e., fill the graphing point buffer with the actual (i.e., raw) values
-// a subsequent call to RenderGraph then renders these values into a double buffer
-// a windows message subsequently (in fMain) then invokes a message handler
-// (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
-void VISUAL::RenderData(const GenericSignal *signal)
+////////////////////////////////////////////////////////////////////////////////
+VISUAL::VISUAL_MEMO::VISUAL_MEMO( id_type inSourceID )
+: VISUAL_BASE( inSourceID ),
+  memo( new TMemo( ( TComponent* )NULL ) )
 {
-char    buf[256];
-int     channels, samples, ch, samp, i;
+  Restore();
+}
 
- // if ((!signal) || (!chart)) return;
- if (!signal) return;
+VISUAL::VISUAL_MEMO::~VISUAL_MEMO()
+{
+  Save();
+  delete memo;
+}
 
- critsec->Acquire();
- channels=signal->Channels();
- samples=cur_samples=signal->MaxElements();
- if (samples > displaysamples)
-    displaysamples=samples;
+void
+VISUAL::VISUAL_MEMO::Restore()
+{
+  if( form == NULL )
+    form = new TForm( ( TComponent* )NULL );
+  VISUAL_BASE::Restore();
+  form->Show();
+  memo->Visible = false;
+  memo->Parent = form;
+  memo->BoundsRect = form->ClientRect;
+  memo->Anchors << akLeft << akTop << akRight << akBottom;
+  memo->ScrollBars = ssVertical;
+  memo->Visible = true;
+}
 
- // if the current number of channels in the chart does not match the
- // number of channels, delete the old ones and set new ones up
- if (total_displaychannels != channels)
-    {
-    total_displaychannels=channels;
-    displaychannels=channels;
-    if (displaychannels > 16) displaychannels=16;
-    // delete the data for all the channels
-    for (ch=0; ch<MAX_DISPLAYCHANNELS; ch++)
-     {
-     if (points[ch]) delete points[ch];
-     points[ch]=NULL;
-     }
-    for (ch=0; ch<channels; ch++)
-     {
-     points[ch]=new TPoint[displaysamples];
-     for (samp=0; samp<displaysamples; samp++)
-      {
-      points[ch][samp].x=samp;
-      points[ch][samp].y=0;
-      }
-    }
-   }
+void
+VISUAL::VISUAL_MEMO::Save() const
+{
+  VISUAL_BASE::Save();
+}
 
- // now, fill the data point arrays with the new values
- try {
- for (ch=0; ch<channels; ch++)
-  {
-  for (samp=0; samp<samples; samp++)
-   points[ch][(samp+startsample)%displaysamples].y=(int)(((double)signal->GetValue(ch, samp)-minvalue)/(maxvalue-minvalue)*65536);
-  }
- } catch( TooGeneralCatch& ) {;}
+bool
+VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
+{
+  if( is.peek() != VISTYPE_MEMO )
+    return false;
+  is.ignore( 3 );
 
- startsample=(samples+startsample)%displaysamples;
+  int sourceID = is.get();
+  VISUAL_MEMO* visual = dynamic_cast<VISUAL_MEMO*>( visuals[ sourceID ] );
+  if( visual == NULL )
+    visual = new VISUAL_MEMO( sourceID );
 
- // actually render the graph in the double buffer
- // that is, ALL channels and ALL samples
- // a windows message subsequently (in fMain) then invokes a message handler
- // (in the main VCL thread and thereby avoiding threading problems), which blits the double buffer
- RenderGraph(0, displaychannels-1, 0, displaysamples-1);
- critsec->Release();
+  return visual->InstanceHandleMessage( is );
+}
+
+bool
+VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
+{
+  string s;
+  getline( is, s, '\0' );
+  memo->Lines->Add( s.c_str() );
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool
+VISUAL::HandleMessage( istream& is )
+{
+  if( is.peek() != COREMSG_DATA )
+    return false;
+  is.get();
+  return VISUAL_BASE::HandleMessage( is );
 }
 

@@ -32,7 +32,6 @@ class GenericVisualization
 {
 protected:
         int     SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length);
-        GenericIntSignal *intsignal;
         GenericSignal    *signal;
         char   memotext[512];
         BYTE   sourceID;
@@ -42,6 +41,7 @@ protected:
         size_t stored_maxelements;
 public:
     GenericVisualization::GenericVisualization();
+    GenericVisualization( BYTE sourceID, BYTE visType );
     GenericVisualization::~GenericVisualization();
 
         // sends the whole signal to the operator
@@ -56,13 +56,13 @@ public:
         bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString);
         void    ParseVisualization(const char *buffer, int length);
         void    SetSourceID(BYTE my_sourceID);
-        BYTE    GetSourceID();
+        BYTE    GetSourceID() const;
         void    SetDataType(BYTE my_datatype);
-        BYTE    GetDataType();
-        const GenericIntSignal *GetIntSignal() const;
-        const GenericSignal    *GetSignal() const;
+        BYTE    GetDataType() const;
+        const   GenericSignal    *GetSignal() const;
         const char *GetMemoText() const;
         void    SetVisualizationType(BYTE my_vistype);
+        BYTE    GetVisualizationType() const { return vis_type; }
         bool    valid;
 };
 
