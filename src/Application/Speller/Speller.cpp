@@ -31,7 +31,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "RJB Task";
+                 Application->Title = "BCI2000 Speller";
                  Application->CreateForm(__classid(TfMain), &fMain);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
                  Application->Run();

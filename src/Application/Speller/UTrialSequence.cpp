@@ -229,7 +229,7 @@ char    memotext[256], line[256];
 
  // the first time we are in PTP, show the active targets
  // and determine which target is the 'correct' target (i.e., the target that should be hit)
-  if (pretrialtime == 0)
+ if (pretrialtime == 0)
     {
     // display the targets and the status bar
     userdisplay->DisplayActiveTargets();           // display all active targets

@@ -470,6 +470,7 @@ TARGET *new_target;
 
  new_target=new TARGET(targetID);
  new_target->Caption=Caption;
+ new_target->IconFile=IconFile;
  new_target->Color=Color;
  new_target->TextColor=TextColor;
  new_target->targetposition=targetposition;
@@ -541,7 +542,7 @@ float   scalex, scaley;
  form->Canvas->Font->Style=TFontStyles() << fsBold;
 
  // create the rectangle, if it not already exists
- if ((!shape) && (IconFile == ""))
+ if (!shape)
     {
     shape=new TShape(Application);
     shape->Parent=form;
@@ -560,7 +561,7 @@ float   scalex, scaley;
     shape->Enabled=true;
     }
 
- // create the icon, if not already exists, and if any
+ // create the icon, if not already exists
  if ((IconFile != "") && (!icon))
     {
     icon=new TImage(Application);
@@ -573,13 +574,16 @@ float   scalex, scaley;
     icon->Visible=true;
     icon->Enabled=true;
     icon->Stretch=true;
-    icon->Left=scaledleft;
-    icon->Top=scaledtop;
-    icon->Width=scaledright-scaledleft;
-    icon->Height=scaledbottom-scaledtop;
-    try {
-     icon->Picture->LoadFromFile(IconFile);
-     } catch(...) {;}
+    icon->Left=scaledleft+1;
+    icon->Top=scaledtop+1;
+    icon->Width=scaledright-scaledleft-2;
+    icon->Height=scaledbottom-scaledtop-2;
+    try {icon->Picture->LoadFromFile(IconFile);}
+    catch(...)
+         {
+         delete icon;
+         icon=NULL;
+         }
     }
 
  // write the text, if any
@@ -647,7 +651,7 @@ long    red, green, blue;
  blue=255-blue;
 
  new_Color=(TColor)(red+green*256+blue*65536);
- shape->Brush->Color=new_Color;
+ if (shape) shape->Brush->Color=new_Color;
 }
 
 

@@ -35,7 +35,7 @@ public:		// User declarations
         int             AddDictionary2PotentialTargets();               // adds the dictionary to the list of potential targets
         void            PushTargetsOnHistory(TARGETLIST *activetargets);
         void            PushTextOnHistory(AnsiString text);
-        int             LoadPotentialTargets();
+        int             LoadPotentialTargets(char *targetdeffilename, char *treedeffilename);
         void            DeleteHistory();
         int             Initialize(PARAMLIST *plist);
         TARGETLIST      *targets;                                       // all the potential targets

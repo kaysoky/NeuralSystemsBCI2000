@@ -25,6 +25,10 @@ int     i;
  plist->AddParameter2List(line,strlen(line));
  strcpy(line, "Speller string DictionaryFile= odgenswords.voc 0 0 100 // Dictionary file for word prediction");
  plist->AddParameter2List(line,strlen(line));
+ strcpy(line, "Speller string TargetDefinitionFile= targets.cfg 0 0 100 // Target definition file");
+ plist->AddParameter2List(line,strlen(line));
+ strcpy(line, "Speller string TreeDefinitionFile= tree.cfg 0 0 100 // Tree definition file");
+ plist->AddParameter2List(line,strlen(line));
 
  activetargets_historynum=0;
  text_historynum=0;
@@ -61,10 +65,11 @@ int ret;
   else
      prediction=true;
   // load and create all potential targets
-  ret=LoadPotentialTargets();
+  ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionFile")->GetValue(), plist->GetParamPtr("TreeDefinitionFile")->GetValue());
   // possibly replace this with something better
-  if (ret == 0) Application->MessageBox("Could not find target definition file. Wrong directory ?", "Error", MB_OK);
-  if (ret == 0) return(0);
+  if (ret == 0)  Application->MessageBox("Could not find target definition file. Wrong directory ?", "Error", MB_OK);
+  if (ret == -1) Application->MessageBox("Could not find tree definition file. Wrong directory ?", "Error", MB_OK);
+  if (ret <= 0)  return(0);
 
   ret=dictionary->LoadDictionary(plist->GetParamPtr("DictionaryFile")->GetValue(), true);
   // if there was no error, add the dictionary to the potential targets
@@ -97,7 +102,7 @@ int     i;
 }
 
 
-int TARGETSEQUENCE::LoadPotentialTargets()
+int TARGETSEQUENCE::LoadPotentialTargets(char *targetdeffilename, char *treedeffilename)
 {
 char    buf[256], line[256];
 FILE    *fp;
@@ -109,7 +114,7 @@ TARGET  *cur_target;
  targets=new TARGETLIST();
 
  // read the target definition file
- fp=fopen("targets.cfg", "rb");
+ fp=fopen(targetdeffilename, "rb");
  if (!fp) return(0);
 
  while (!feof(fp))
@@ -122,9 +127,12 @@ TARGET  *cur_target;
      ptr=get_argument(ptr, buf, line, 255);
      targetID=atoi(buf);
      cur_target=new TARGET(targetID);
-     // second column ... Caption
+     // second column ... caption
      ptr=get_argument(ptr, buf, line, 255);
      cur_target->Caption=AnsiString(buf).Trim();
+     // third column ... icon
+     ptr=get_argument(ptr, buf, line, 255);
+     cur_target->IconFile=AnsiString(buf).Trim();
      targettype=TARGETTYPE_NOTYPE;
      if ((targetID == TARGETID_BLANK) || (targetID == TARGETID_BACKUP) || (targetID == TARGETID_ROOT))
         targettype=TARGETTYPE_CONTROL;
@@ -139,11 +147,8 @@ TARGET  *cur_target;
  fclose(fp);
 
  // load the tree file to go with the list of targets
- if (tree->LoadTree("tree.cfg") == 0)
-    {
-    Application->MessageBox("Could not find tree definition file. Wrong directory ?", "Error", MB_OK);
-    return(0);
-    }
+ if (tree->LoadTree(treedeffilename) == 0)
+    return(-1);
 
  return(1);
 }
@@ -257,6 +262,7 @@ TARGETLIST *new_list;
 int     targetID, displaypos, count, nummatching;
 TARGET  *new_target, *target;
 BYTE    offset;
+bool    fullypopulated;                 // specifies whether or not there is a target for every display position. if not, then we shuffle backup around in a funky fashion
 
  // include prediction, if we specified a prefix and we enabled prediction, and
  // if the number of possible words with this prefix fits in the free targets
@@ -281,49 +287,71 @@ BYTE    offset;
  // the last displayposition is not in the tree, but will be dynamically assigned here for BACKUP
  // the logic is a little strange, please forgive
 
+ // count the number of targets on the screen
+ // if there is a target defined for each display position, no need to shuffle BACKUP around, etc.
  count=0;
+ fullypopulated=false;
  for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
   {
-  if ((displaypos == NUM_TARGETS-1) && (activetargets_historynum == 0))     // if we are at root and we haven't spelled anything (i.e., there is no history), then use a blank target
-     targetID=TARGETID_BLANK;
-  else                                                                      // otherwise use the target determined by the tree or determine BACK UP
-     {
-     if (displaypos == NUM_TARGETS-1)
-        {
-        // if we are at the last position, then we should have had NUM_TARGETS-1
-        // if not, then we might have selected a dummy target that does not lead to anything in the tree
-        if (count == NUM_TARGETS-1)
-           targetID=TARGETID_BACKUP;
-        else
-           targetID=TARGETID_NOID;
-        }
-     else
-        targetID=tree->DetermineTargetID(cur_parentID, displaypos);
-     }
-
-  // safety check ...
-  if (targetID == TARGETID_NOID) targetID=TARGETID_BLANK;
-
-  target=targets->GetTargetPtr(targetID);
-
-  if ((targetID >= 0) && (target))
-     {
-     // add to active targets
-     new_target=target->CloneTarget();
-     new_target->Color=clYellow;
-     // new_target->TextColor=clGreen;
-     new_target->TextColor=clBlack;
-     new_target->parentID=cur_parentID;
-     // if the current targetID is "BLANK" or "BACKUP" choose the defined displayposition
-     // otherwise, choose the displayposition stored in the tree, offset by whether or not BACKUP is the first or last target
-     if ((targetID == TARGETID_BLANK) || (targetID == TARGETID_BACKUP))
-        new_target->targetposition=backuppos;
-     else
-        new_target->targetposition=(BYTE)displaypos+offset;
-     new_list->Add(new_target);
-     count++;
-     }
+  targetID=tree->DetermineTargetID(cur_parentID, displaypos);
+  if (targetID != TARGETID_NOID) count++;
   }
+ if (count == NUM_TARGETS)
+    {
+    fullypopulated=true;
+    offset=0;
+    }
+
+ // if there is at least one target (as defined by the tree) on the screen, populate the targets
+ if (count > 0)
+    {
+    count=0;
+    for (displaypos=0; displaypos<NUM_TARGETS; displaypos++)
+     {
+     // if every display position on the screen is filled with a target, then just get that target ID
+     if (fullypopulated)
+        targetID=tree->DetermineTargetID(cur_parentID, displaypos);
+     else
+        {
+        if ((displaypos == NUM_TARGETS-1) && (activetargets_historynum == 0))     // if we are at root and we haven't spelled anything (i.e., there is no history), then use a blank target
+           targetID=TARGETID_BLANK;
+        else                                                                      // otherwise use the target determined by the tree or determine BACK UP
+           {
+           if (displaypos == NUM_TARGETS-1)
+              {
+              // if we are at the last position, then we should have had NUM_TARGETS-1
+              // if not, then we might have selected a dummy target that does not lead to anything in the tree
+              if (count == NUM_TARGETS-1)
+                 targetID=TARGETID_BACKUP;
+              else
+                 targetID=TARGETID_NOID;
+              }
+           else
+              targetID=tree->DetermineTargetID(cur_parentID, displaypos);
+           }
+        }
+     // safety check ...
+     if (targetID == TARGETID_NOID) targetID=TARGETID_BLANK;
+     target=targets->GetTargetPtr(targetID);
+     if ((targetID >= 0) && (target))
+        {
+        // add to active targets
+        new_target=target->CloneTarget();
+        new_target->Color=clYellow;
+        // new_target->TextColor=clGreen;
+        new_target->TextColor=clBlack;
+        new_target->parentID=cur_parentID;
+        // if the current targetID is "BLANK" or "BACKUP" choose the defined displayposition
+        // otherwise, choose the displayposition stored in the tree, offset by whether or not BACKUP is the first or last target
+        if ((targetID == TARGETID_BLANK) || (targetID == TARGETID_BACKUP))
+           new_target->targetposition=backuppos;
+        else
+           new_target->targetposition=(BYTE)displaypos+offset;
+        new_list->Add(new_target);
+        count++;
+        }
+     }
+    }
 
  // if, for some reason, the lists contain no target, then display the root targets
  // and delete the (empty) lists of current targets and in history
@@ -408,10 +436,8 @@ AnsiString TARGETSEQUENCE::GetPreviousText()
 
 // **************************************************************************
 // Function:   get_argument
-// Purpose:    parses the parameter line that is being sent in the core
-//             communication, or as stored in any BCI2000 .prm file
-//             it returns the next token that is being delimited by either
-//             a ' ' or '='
+// Purpose:    parses a line
+//             it returns the next token that is being delimited by a ";"
 // Parameters: ptr - index into the line of where to start
 //             buf - destination buffer for the token
 //             line - the whole line
@@ -420,12 +446,12 @@ AnsiString TARGETSEQUENCE::GetPreviousText()
 // **************************************************************************
 int TARGETSEQUENCE::get_argument(int ptr, char *buf, char *line, int maxlen)
 {
- // skip trailing spaces, if any
- while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
-  ptr++;
+ // skip one preceding semicolon, if there is any
+ if ((line[ptr] == ';') && (ptr < maxlen))
+    ptr++;
 
- // go through the string, until we either hit a space, a '=', or are at the end
- while ((line[ptr] != '=') && (line[ptr] != ' ') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
+ // go through the string, until we either hit a semicolon, or are at the end
+ while ((line[ptr] != ';') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
   {
   *buf=line[ptr];
   ptr++;

@@ -80,6 +80,9 @@ int     scaledtop, scaledleft, scaledbottom, scaledright;
 int     scaledtextsize, scaledtextposx, scaledtextposy;
 float   scalex, scaley;
 
+ // if the height of the status bar is 0, then don't render anything
+ if (Height == 0) return;
+
  destwidth=destrect.Width();
  destheight=destrect.Height();
  scalex=(float)destwidth/(float)65536;
