@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="BCI2ASCII.exe"/>
+    <OBJFILES value="BCI2ASCII.obj UMain.obj ..\..\SHARED\UState.obj 
+      ..\..\SHARED\UParameter.obj ..\..\SHARED\UBCI2000Data.obj"/>
+    <RESFILES value="BCI2ASCII.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) UMain.dfm"/>
+    <LIBFILES value="&quot;C:\Program Files\MATLAB_SR11\extern\include\libmx.lib&quot; 
+      &quot;C:\Program Files\MATLAB_SR11\extern\include\libmat.lib&quot; &quot;C:\Program Files\MATLAB_SR11\extern\include\libeng.lib&quot;"/>
+    <LIBRARIES value="VCLX50.lib bcbsmp50.lib Vcl50.lib"/>
+    <SPARELIBS value="Vcl50.lib bcbsmp50.lib VCLX50.lib"/>
+    <PACKAGES value="Vcl50.bpi Vclx50.bpi bcbsmp50.bpi Qrpt50.bpi Vcldb50.bpi Vclbde50.bpi 
+      ibsmp50.bpi vcldbx50.bpi VCLIB50.bpi bcbie50.bpi vclie50.bpi Inetdb50.bpi 
+      Inet50.bpi NMFast50.bpi dclocx50.bpi bcb2kaxserver50.bpi TeeUI50.bpi 
+      TeeDB50.bpi Tee50.bpi TeeQR50.bpi dclusr50.bpi"/>
+    <PATHCPP value=".;..\..\SHARED"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="tlink32"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="BCI2ASCII.cpp"/>
+    <INCLUDEPATH value="..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;&quot;c:\program files\matlab_sr11\bin\&quot;;&quot;c:\program files\matlab_sr11\extern\include\&quot;"/>
+    <LIBPATH value="..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;&quot;c:\program files\matlab_sr11\bin\&quot;;&quot;c:\program files\matlab_sr11\extern\lib\&quot;"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y -v -vi- 
+      -c -tW -tWM"/>
+    <PFLAGS value="-$YD -$W -$O- -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+$(BCB)\Bin\sdlcsuite55C5.bpl=SDL Component Suite 5.5 - Rel.1
+
+[HistoryLists\hlIncludePath]
+Count=4
+Item0=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
+Item1=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
+Item2=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
+Item3=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=3
+Item0=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\lib\;
+Item1=..\..\SHARED;..\..\shared\V0.16;..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
