@@ -19,6 +19,7 @@ Task.h is the header file for the Right Justified Boxes task
 class TTask : public GenericFilter
 {
 private:
+        class Usr* mpUser;
         float x_pos;
         float y_pos;
         float cursor_x_start;
@@ -101,6 +102,8 @@ public:
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
+  virtual void StopRun();
+private:
           void ReadStateValues();
           void WriteStateValues();
 

@@ -24,7 +24,8 @@ FFTFilter::FFTFilter()
    SECTION " int FFTOutputSignal= 0"
      " 0 0 1 // Signal provided to the next filter: "
               "0: Input Signal, "
-              "1: Power Spectra of selected Channels",
+              "1: Power Spectra of selected Channels "
+              "(enumeration)",
    SECTION " intlist FFTInputChannels= 1 1"
      " 0 0 0 // Input Channels the FFT is performed on",
    SECTION " int FFTSize= 256"
@@ -33,9 +34,10 @@ FFTFilter::FFTFilter()
      " 0 0 3 // Type of Sidelobe Suppression Window "
               "1: Hamming, "
               "2: Hann, "
-              "3: Blackman",
+              "3: Blackman "
+              "(enumeration)",
    "Visualize int VisualizeFFT= 0"
-     " 0 0 1 // 1 Visualize FFT Power Spectra",
+     " 0 0 1 // Visualize FFT Power Spectra (boolean)",
    "Visualize float FFTMaxValue= 4000"
      " 4000 0 0 // FFT visualization max value",
  END_PARAMETER_DEFINITIONS
@@ -51,7 +53,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
   for( size_t i = 0; i < Parameter( "FFTInputChannels" )->GetNumValues(); ++i )
     PreflightCondition( Parameter( "FFTInputChannels", i ) > 0
                         && Parameter( "FFTInputChannels", i ) <= Input.Channels() );
-                        
+
   PreflightCondition( Parameter( "FFTInputChannels" )->GetNumValues() == 0 || Parameter( "FFTSize" ) > 0 );
   if( ( int )Parameter( "VisualizeFFT" ) && ( ( int )Parameter( "FFTSize" ) / 2 + 1 > 255 ) )
     bcierr << "FFTSize must be less than 510 because signals with more than"
@@ -124,7 +126,7 @@ FFTFilter::Initialize()
       mVisualizations.back().Send( CFGID::MAXVALUE, ( float )Parameter( "FFTMaxValue" ) );
     }
   }
-  
+
   mWindow.clear();
   mWindow.resize( mFFTSize, 1.0 );
   float phasePerSample = M_PI / float( mFFTSize );

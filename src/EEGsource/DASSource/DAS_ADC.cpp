@@ -32,7 +32,7 @@ TDAS_ADC::TDAS_ADC()
        "number of digitized channels",
    "Source int SampleBlockSize= 16 16 1 16384 // "
        "Size of Blocks in Samples",
-   "Source int SamplingRate= 256 256 1 100000 // "
+   "Source int SamplingRate= 256 256 0 0 // "
        "Sampling Rate in Samples per Second",
    "Source int BoardNumber= 0 0 0 0 // "
        "Number of A/D Board as displayed by the InstaCal program",

@@ -56,7 +56,7 @@ PARAM_DECL(
     string,
     ::Storage,
     "Resources Resources a z",
-    "Resource directory relative to application module",
+    "Resource directory relative to application module (directory)",
     0, 0
 )
 
@@ -188,7 +188,8 @@ PARAM_DECL(
     "1 1 0 2",
     "0 no presentation, "
         "1 Training/Oddball/WordPresentation, "
-        "2 Speller/CopySpeller",
+        "2 Speller/CopySpeller"
+        "(enumeration)",
     0, 2
 )
 #endif // BCI2000
@@ -226,7 +227,7 @@ PARAM_DECL(
     int,
     PRES_SECTION,
     "0 0 0 1",
-    "use old colors and goal sizes for target views (0 no, 1 yes)",
+    "use old colors and goal sizes for target views (0 no, 1 yes) (boolean)",
     0, 1
 )
 #endif // BCI2000
@@ -238,7 +239,7 @@ PARAM_DECL(
     int,
     PRES_SECTION,
     "0 0 0 1",
-    "give feedback and show result for correct result only (0 no, 1 yes)",
+    "give feedback and show result for correct result only (0 no, 1 yes) (boolean)",
     0, 1
 )
 #endif // BCI2000
@@ -262,7 +263,8 @@ PARAM_DECL(
     "0 no task, "
         "1 sequence file, "
         "2 random, "
-        "3 explicit",
+        "3 explicit"
+        "(enumeration)",
     0, 3
 )
 
@@ -305,7 +307,7 @@ PARAM_DECL(
     string,
     TASK_MODEL_SECTION,
     "default.seq default.seq a z",
-    "file name of sequence file",
+    "file name of sequence file(inputfile)",
     0, 0
 )
 #endif // BCI2000_SPELLER
@@ -325,7 +327,8 @@ PARAM_DECL(
     "1 1 0 2",
     "0 no speller, "
         "1 free spelling, "
-        "2 copy spelling",
+        "2 copy spelling"
+        "(enumeration)",
     0, 2
 )
 
@@ -334,7 +337,7 @@ PARAM_DECL(
     string,
     SPELLER_MODEL_SECTION,
     "default.spt default.spt a z",
-    "file name for tree",
+    "file name for tree (inputfile)",
     0, 0
 )
 
@@ -343,7 +346,7 @@ PARAM_DECL(
     string,
     SPELLER_MODEL_SECTION,
     "default.dic default.dic a z",
-    "file name for dictionary",
+    "file name for dictionary (inputfile)",
     0, 0
 )
 
@@ -352,7 +355,7 @@ PARAM_DECL(
     string,
     SPELLER_MODEL_SECTION,
     "current.txt current.txt a z",
-    "file name for document being worked on",
+    "file name for document being worked on (outputfile)",
     0, 0
 )
 
@@ -469,7 +472,8 @@ PARAM_DECL(
     "0 no FB, "
         "1 cursor from file, "
         "2 ball, "
-        "3 brightness",
+        "3 brightness"
+        "(enumeration)",
     0, 3
 )
 #else
@@ -480,7 +484,8 @@ PARAM_DECL(
     "2 2 0 2",
     "0 no FB, "
         "1 cursor from file, "
-        "2 ball",
+        "2 ball"
+        "(enumeration)",
     0, 2
 )
 #endif // PERUVIAN_BRIGHTNESS_HACK
@@ -493,7 +498,8 @@ PARAM_DECL(
     "1 1 0 2",
     "0 no acoustic FB, "
         "1 MIDI, "
-        "2 continuous synth",
+        "2 continuous synth"
+        "(enumeration)",
     0, 2
 )
 #else // USE_WAVE_SYNTH
@@ -503,7 +509,8 @@ PARAM_DECL(
     FEEDBACK_VIEW_SECTION,
     "1 1 0 1",
     "0 no acoustic FB, "
-        "1 MIDI",
+        "1 MIDI"
+        "(enumeration)",
     0, 1
 )
 #endif // USE_WAVE_SYNTH
@@ -513,7 +520,7 @@ PARAM_DECL(
     string,
     FEEDBACK_VIEW_SECTION,
     "Ball.bmp Ball.bmp a z",
-    "name of cursor image file",
+    "name of cursor image file (inputfile)",
     0, 0
 )
 
@@ -523,7 +530,8 @@ PARAM_DECL(
     FEEDBACK_VIEW_SECTION,
     "0 0 0 1",
     "0 no feedback display outside feedback interval, "
-        "1 always show feedback cursor/play feedback sound",
+        "1 always show feedback cursor/play feedback sound"
+        "(enumeration)",
     0, 1
 )
 
@@ -547,7 +555,8 @@ PARAM_DECL(
         "3 melodic minor, "
         "4 harmonic minor, "
         "5 pentatonic, "
-        "6 whole tone",
+        "6 whole tone"
+        "(enumeration)",
     0, 6
 )
 
@@ -594,7 +603,8 @@ PARAM_DECL(
     "0 0 0 1",
     "repeat file C<result.wav> continuously during feedback: "
         "0: no, "
-        "1: yes",
+        "1: yes"
+        "(boolean)",
     0, 1
 )
 
@@ -606,7 +616,8 @@ PARAM_DECL_SUFFIX(
     "1 1 0 1",
     "target " RUNTIME_SUFFIX ": "
         "0 no visual task representation, "
-        "1 light goal",
+        "1 light goal"
+        "(enumeration)",
     0, 1
 )
 
@@ -619,7 +630,8 @@ PARAM_DECL(
     "0 0 0 1",
     "no target: "
         "0 no visual task representation, "
-        "1 light background",
+        "1 light background"
+        "(enumeration)",
     0, 1
 )
 
@@ -630,7 +642,8 @@ PARAM_DECL_SUFFIX(
     "1 1 0 1",
     "target " RUNTIME_SUFFIX ": "
         "0 no visual result, "
-        "1 blink goal",
+        "1 blink goal"
+        "(enumeration)",
     0, 1
 )
 
@@ -643,7 +656,8 @@ PARAM_DECL(
     "0 0 0 1",
     "no target: "
         "0 no visual result, "
-        "1 blink background",
+        "1 blink background"
+        "(enumeration)",
     0, 1
 )
 
@@ -655,7 +669,8 @@ PARAM_DECL_SUFFIX(
     "target " RUNTIME_SUFFIX ": "
         "0 no auditory task, "
         "1 MIDI, "
-        "2 WAV",
+        "2 WAV"
+        "(enumeration)",
     0, 2
 )
 
@@ -669,7 +684,8 @@ PARAM_DECL(
     "no target: "
         "0 no auditory task, "
         "1 MIDI, "
-        "2 WAV",
+        "2 WAV"
+        "(enumeration)",
     0, 2
 )
 
@@ -681,7 +697,8 @@ PARAM_DECL_SUFFIX(
     "target " RUNTIME_SUFFIX ": "
         "0 no auditory result, "
         "1 MIDI, "
-        "2 WAV",
+        "2 WAV"
+        "(enumeration)",
     0, 2
 )
 
@@ -695,7 +712,8 @@ PARAM_DECL(
     "no target: "
         "0 no auditory result, "
         "1 MIDI, "
-        "2 WAV",
+        "2 WAV"
+        "(enumeration)",
     0, 2
 )
 
@@ -795,7 +813,8 @@ PARAM_DECL(
     "1 1 0 2",
     "0 no visual marker, "
         "1: Zero Bar, "
-        "2: Fixation Cross ",
+        "2: Fixation Cross"
+        "(enumeration)",
     0, 2
 )
 
@@ -860,7 +879,8 @@ PARAM_DECL(
     REINFORCEMENT_VIEW_SECTION,
     "1 1 0 1",
     "0 no visual reinforcement, "
-        "1 smiley",
+        "1 smiley"
+        "(enumeration)",
     0, 1
 )
 
@@ -871,7 +891,8 @@ PARAM_DECL(
     "1 1 0 2",
     "0 no auditory reinforcement, "
         "1 MIDI, "
-        "2 WAV",
+        "2 WAV"
+        "(enumeration)",
     0, 2
 )
 
@@ -898,7 +919,7 @@ PARAM_DECL(
     string,
     REINFORCEMENT_VIEW_SECTION,
     "welldone.wav welldone.wav a z",
-    "sound file for acoustic reinforcement",
+    "sound file for acoustic reinforcement (inputfile)",
     0, 0
 )
 
@@ -925,7 +946,8 @@ PARAM_DECL(
     ARTIFACT_VIEW_SECTION,
     "1 1 0 1",
     "0 no visual invalid indicator, "
-        "1 cross",
+        "1 cross"
+        "(enumeration)",
     0, 1
 )
 
@@ -935,7 +957,8 @@ PARAM_DECL(
     ARTIFACT_VIEW_SECTION,
     "1 1 0 1",
     "0 no auditory invalid indicator, "
-        "1 MIDI",
+        "1 MIDI"
+        "(enumeration)",
     0, 1
 )
 
@@ -981,7 +1004,8 @@ PARAM_DECL(
     "1 1 0 1",
     "score view: "
         "0: off, "
-        "1: on",
+        "1: on"
+        "(enumeration)",
     0, 1
 )
 

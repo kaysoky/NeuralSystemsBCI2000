@@ -11,6 +11,7 @@ Task.cpp is the source code for the Right Justified Boxes task
 
 #include "UState.h"
 #include "BCIDirectry.h"
+#include "MeasurementUnits.h"
 
 #include "Usr.h"
 #include "Task.h"
@@ -25,24 +26,24 @@ TTask::TTask()
   OldCurrentTarget( 0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
-  "UsrTask int TargetDuration= 20 0 0 1 // "
+  "UsrTask int TargetDuration= 20 0 0 0 // "
       "Duration of Target in cursor update units",
-  "UsrTask int ItiDuration= 10 0 0 1 // "
+  "UsrTask int ItiDuration= 10 0 0 0 // "
       "Duration of Intertrial Interval",
-  "UsrTask int RewardDuration= 10 0 0 1 // "
+  "UsrTask int RewardDuration= 10 0 0 0 // "
       "Duration of PostTrial Feedback",
-  "UsrTask int NumberTargets= 2 0 0 1 // "
+  "UsrTask int NumberTargets= 2 0 0 2 // "
       "Number of Targets",
-  "UsrTask int TargetOrientation= 1 0 0 1 // "
-      "Orientation 1= Vertical 2= Horizontal 3= Both",
-  "UsrTask float TargetWidth= 25 0 0 1 // "
+  "UsrTask int TargetOrientation= 1 0 1 3 // "
+      "Orientation 1= Vertical 2= Horizontal 3= Both (enumeration)",
+  "UsrTask float TargetWidth= 25 0 0 0 // "
       "Width of Targets in Pixels",
-  "UsrTask float TargetHeight= 25 0 0 1 // "
+  "UsrTask float TargetHeight= 25 0 0 0 // "
       "Height of Targets in Pixels",
-  "UsrTask int TimeLimit= 180 180 0 1000 // "
+  "UsrTask int TimeLimit= 180 180 0 0 // "
       "Time Limit for Runs in seconds",
   "UsrTask int RestingPeriod= 0 0 0 1   // "
-      "1 defines a rest period of data acquisition",
+      "rest period of data acquisition (boolean)",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -74,15 +75,15 @@ void TTask::Initialize()
         time_t ctime;
         struct tm *tblock;
 
-        TargetDuration=         Parameter("TargetDuration");
-        ItiDuration=            Parameter("ItiDuration");
-        Ntargets=               Parameter("NumberTargets");
-        TargetOrien=            Parameter("TargetOrientation");
-        TargetWidth=            Parameter("TargetWidth");
-        TargetHeight=           Parameter("TargetHeight");
-        Resting=                Parameter("RestingPeriod");
+        TargetDuration= MeasurementUnits::ReadAsTime( Parameter("TargetDuration") );
+        ItiDuration=    MeasurementUnits::ReadAsTime( Parameter("ItiDuration") );
+        Ntargets=       Parameter("NumberTargets");
+        TargetOrien=    Parameter("TargetOrientation");
+        TargetWidth=    Parameter("TargetWidth");
+        TargetHeight=   Parameter("TargetHeight");
+        Resting=        Parameter("RestingPeriod");
 
-        timelimit=              Parameter("TimeLimit");
+        timelimit=      Parameter("TimeLimit");
 
         FInit= (const char*)Parameter("FileInitials");
         SSes = (const char*)Parameter("SubjectSession");

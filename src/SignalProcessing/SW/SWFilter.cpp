@@ -55,7 +55,7 @@ TSWFilter::TSWFilter()
     SECTION " float Tc= 0"
       " 0 0 0 // Time constant, 0 for no correction",
     "Visualize int VisualizeSWFiltering= 1"
-      " 0 0 1 // visualize SW filtered signals (0=no 1=yes)",
+      " 0 0 1 // visualize SW filtered signals (0=no 1=yes) (boolean)",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS

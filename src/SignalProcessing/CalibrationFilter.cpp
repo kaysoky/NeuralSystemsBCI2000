@@ -50,7 +50,7 @@ CalibrationFilter::CalibrationFilter()
   "Filtering int AlignChannels= 0 0 0 1 "
     "// align channels in time (0=no, 1=yes)",
   "Visualize int VisualizeCalibration= 1 0 0 1 "
-    "// visualize calibrated channels (0=no, 1=yes)",
+    "// visualize calibrated channels (0=no, 1=yes) (boolean)",
  END_PARAMETER_DEFINITIONS
 }
 

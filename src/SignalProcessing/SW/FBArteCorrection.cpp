@@ -43,9 +43,10 @@ TFBArteCorrection::TFBArteCorrection()
         "0 off, "
         "1 linear subtraction, "
         "2 subtraction if supporting, "
-        "3 subtraction w/abort",
+        "3 subtraction w/abort "
+        "(enumeration)",
     "Visualize int VisualizeFBArteCorFiltering= 0"
-      " 0 0 1 // visualize FBArte corrected signals (0=no 1=yes)",
+      " 0 0 1 // visualize FBArte corrected signals (0=no 1=yes) (boolean)",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS

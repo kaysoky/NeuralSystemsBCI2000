@@ -34,7 +34,7 @@ P3TemporalFilter::P3TemporalFilter()
 
  BEGIN_PARAMETER_DEFINITIONS
   "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 "
-    "// visualize Temporal filtered signals (0=no 1=yes)",
+    "// visualize Temporal filtered signals (0=no 1=yes) (boolean)",
   "P3SignalProcessing int NumSamplesInERP= 144 144 0 1000 "
     "// Number of samples stored for each response",
   "P3SignalProcessing int NumERPsToAverage= 15 15 0 1000 "

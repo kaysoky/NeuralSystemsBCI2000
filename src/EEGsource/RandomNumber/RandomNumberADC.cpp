@@ -63,8 +63,7 @@ RandomNumberADC::RandomNumberADC()
    "Source int SampleBlockSize= 32 5 1 128 "
        "// the number of samples transmitted at a time",
    "Source int ModulateAmplitude= 0 0 0 1 "
-       "// modulate the amplitude with the mouse (0=no, 1=yes)"
-       "@boolean",
+       "// modulate the amplitude with the mouse (0=no, 1=yes) (boolean)",
    "Source int SamplingRate=    256 128 1 4000 "
        "// the sample rate",
    "Source int SineChannel=    0 0 0 128 "
@@ -84,8 +83,7 @@ RandomNumberADC::RandomNumberADC()
    "Source int DCoffset=             0 0 -32767 32767 "
        "// DC offset (common to all channels)",
    "Source int DoTrueRandom=        0 0 0 1"
-        "// Generate truly random sequence (0=no, 1=yes)"
-        "@boolean",
+        "// Generate truly random sequence (0=no, 1=yes) (boolean)",
  //"Source string MultiplierState=   -1 -1 0 0 "
  //    "// State to use as signal multiplier (-1 == don't use multiplier)",
  END_PARAMETER_DEFINITIONS

@@ -25,7 +25,7 @@ RegisterFilter( TTask, 3 );
 TTask::TTask()
 : mApplicationPath( ExtractFilePath(Application->ExeName).c_str() ),
   mTaskLogVis( SOURCEID_TASKLOG ),
-  m_pUsrEnvDispatcher( new UsrEnvDispatcher(Parameters, States) ),
+  m_pUsrEnvDispatcher( new UsrEnvDispatcher ),
   m_pUsrEnv( new UsrEnv(AnsiString("P3AVTask"), new UsrEnvAlgorithmP3AV) )
 {
   if( mApplicationPath.empty()
@@ -43,7 +43,7 @@ TTask::TTask()
     "P3AV_Window int WinHeight= 512 512 0 2000 // "
       "User Window Height",
     "P3AV_Window string WinBackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
-      "Background Color in hex (0x00BBGGRR)",
+      "Background Color (color)",
   END_PARAMETER_DEFINITIONS
 
   // Stimulus parameters
@@ -53,7 +53,7 @@ TTask::TTask()
     "P3AV_Stimulus int CaptionHeight= 10 0 0 100 // "
       "Height of stimulus caption text in percent of screen height",
     "P3AV_Stimulus string CaptionColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // "
-      "Color of stimulus caption text in hex (0x00BBGGRR)",
+      "Color of stimulus caption text (color)",
     "P3AV_Stimulus float AudioVolume= 1 1 0 1 // "
       "Volume for audio playback",
     "P3AV_Stimulus int OnTime= 10 10 0 5000 // "
@@ -66,14 +66,14 @@ TTask::TTask()
       "Period following the presentation of the stimulus sequence (in units of SampleBlocks)",
     "P3AV_Stimulus int MinInterTime= 0 0 0 0 // "
       "Minimum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks",
-    "P3AV_Stimulus int MaxInterTime= 3 3 3 3 // "
+    "P3AV_Stimulus int MaxInterTime= 3 3 0 0 // "
       "Maximum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks",
     "P3AV_Stimulus int AudioSwitch= 1 1 0 1 // "
-      "Whether audio files will be presented (will not be presented individually if not defined)",
+      "Present audio files (boolean)",
     "P3AV_Stimulus int VideoSwitch= 1 1 0 1 // "
-      "Whether icons files will be presented (will not be presented individually if not defined)",
+      "Present icon files (boolean)",
     "P3AV_Stimulus int CaptionSwitch= 1 1 0 1 // "
-      "Whether captions will be presented (will not be presented individually if not defined)",
+      "Present captions (boolean)",
   END_PARAMETER_DEFINITIONS
 
   // stimuli sequence related parameters
@@ -106,13 +106,13 @@ TTask::TTask()
       "Sequence in which stimuli are presented (deterministic mode)/ Stimulus frequencies for each stimulus (random mode)",
 
     "P3AV_Stimuli int SequenceType= 0 0 0 1 // "
-      "Sequence of stimuli can be deterministic(0) or random(1)",
+      "Sequence of stimuli is 0 deterministic, 1 random (enumeration)",
 
-    "P3AV_Stimuli int NumberOfSeq= 3 1 0 100 // "
+    "P3AV_Stimuli int NumberOfSeq= 3 1 0 1000 // "
       "How many times the sequence will be played",
 
     "P3AV_Stimuli int InterpretMode= 0 0 0 2 // "
-      "Classification of results can be in none(0), free(1) or copy(2) mode",
+      "Classification of results: 0 none, 1 free mode, 2 copy mode (enumeration)",
 
     "P3AV_Stimuli intlist ToBeCopied= 3 1 2 3 1 1 1000 // "
       "Sequence in which stimuli need to be copied (only used in copy mode)",
@@ -361,7 +361,7 @@ void TTask::Initialize()
   // initialize user environment dispatcher
   if (m_pUsrEnvDispatcher != NULL)
   {
-    m_pUsrEnvDispatcher->Initialize(Parameters, m_pUsrEnv, Statevector);
+    m_pUsrEnvDispatcher->Initialize(m_pUsrEnv);
   }
 }
 
@@ -379,7 +379,7 @@ void TTask::Process( const GenericSignal* Input,
 
   // creates a new state of the user environment
   if (m_pUsrEnvDispatcher != NULL)
-    m_pUsrEnvDispatcher->Process( signals, m_pUsrEnv, Statevector, &mTaskLogVis );
+    m_pUsrEnvDispatcher->Process( signals, m_pUsrEnv, &mTaskLogVis );
 
   // write the current time, i.e., the "StimulusTime" into the state vector
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();

@@ -75,8 +75,7 @@ DataIOFilter::DataIOFilter()
 
     // Storage related parameters:
     "Storage string FileInitials= c:\\data a z "
-      "// path to top level data directory"
-      "@directory",
+      "// path to top level data directory (directory)",
     "Storage string SubjectName= Name Name a z "
       "// subject alias",
     "Storage string SubjectSession= 001 001 0 0 "
@@ -86,16 +85,13 @@ DataIOFilter::DataIOFilter()
     "Storage string StorageTime= 16:15 Time a z "
       "// time of beginning of data storage",
     "Storage int SavePrmFile= 0 1 0 1 "
-      "// save additional parameter file (0=no, 1=yes)"
-      "@boolean",
+      "// save additional parameter file (0=no, 1=yes) (boolean)",
 
     // Visualization of data as far as managed by the DataIOFilter:
     "Visualize int VisualizeRoundtrip= 1 1 0 1 "
-      "// visualize roundtrip time (0=no, 1=yes)"
-      "@boolean",
+      "// visualize roundtrip time (0=no, 1=yes) (boolean)",
     "Visualize int VisualizeSource= 1 1 0 1 "
-      "// visualize raw brain signal (0=no, 1=yes)"
-      "@boolean",
+      "// visualize raw brain signal (0=no, 1=yes) (boolean)",
     "Visualize int VisualizeSourceDecimation= 1 1 0 1 "
       "// decimation factor for raw brain signal",
     "Visualize int VisualizeSourceTime= 2 2 0 5 "

@@ -19,8 +19,8 @@ RegisterFilter( TTask, 3 );
 // **************************************************************************
 TTask::TTask()
 : vis( NULL ),
-  targetsequence( new TARGETSEQUENCE( Parameters, States ) ),
-  trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
+  targetsequence( new TARGETSEQUENCE ),
+  trialsequence( new TRIALSEQUENCE ),
   userdisplay( new USERDISPLAY ),
   cur_time( new BCITIME )
 {
@@ -41,7 +41,7 @@ TTask::TTask()
    "Oddball int TargetTextHeight= 10 0 0 100 // "
        "Height of target labels in percent of screen height",
    "Oddball string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
-       "Background Color in hex (0x00BBGGRR)",
+       "Background Color (color)",
    "Oddball int NumberTargets= 4 4 0 100 // "
        "Number of Targets ... NOT USED YET",
  END_PARAMETER_DEFINITIONS
@@ -107,10 +107,10 @@ int     ret;
  userdisplay->TargetTextHeight=Parameter( "TargetTextHeight" );
 
  // initialize the between-trial sequence
- targetsequence->Initialize(Parameters);
+ targetsequence->Initialize();
 
  // initialize the within-trial sequence
- trialsequence->Initialize(Parameters, Statevector, userdisplay);
+ trialsequence->Initialize(userdisplay);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);

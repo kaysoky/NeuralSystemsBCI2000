@@ -19,7 +19,7 @@ TTask::TTask()
 {
  BEGIN_PARAMETER_DEFINITIONS
    "NeuralMusic int AcousticMode= 1 "
-     "0 0 2 // 0: no sound, 1: MIDI, 2: WAV -- Achin's Acoustic Mode :-)",
+     "0 0 2 // Achin's Acoustic Mode :-) 0: no sound, 1: MIDI, 2: WAV (enumeration)",
    "NeuralMusic matrix Sounds= "
      "{ MIDI WAV } " // row labels
 

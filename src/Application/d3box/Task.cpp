@@ -58,7 +58,7 @@ TTask::TTask()
     "3DEnvironment int LightSourceColorG = 127 0 0 255 // "
       "Light Source Color's Green Value, range from 0~255",
     "3DEnvironment int LightSourceColorB = 127 0 0 255 // "
-      "Light Source Color's Blue Value, range from 0~255",   
+      "Light Source Color's Blue Value, range from 0~255",
     "3DEnvironment int LightSourceIntensity = 255 0 0 255 // "
       "Light Source Color's Intensity Value, range from 0~255",
 
@@ -76,27 +76,26 @@ TTask::TTask()
       "Max Trial Duration",
 
     "UsrTask int BaselineInterval= 1 0 0 2 // "
-      "Intercept Computation 1 = targets 2 = ITI",
+      "Intercept Computation 0 = none 1 = targets 2 = ITI (enumeration)",
     "UsrTask int TimeLimit= 180 180 0 1000 // "
       "Time Limit for Runs in seconds",
     "UsrTask int RestingPeriod= 0 0 0 1 // "
-      "1 defines a rest periuod of data acquisition",
+      "rest period of data acquisition (boolean)",
     "UsrTask int WorkspaceBoundaryVisible = 1 0 0 1"
-      "1 defines the apparence of the Workspace boundary, 0 make is not visible ",
-
+      "Show the Workspace boundary (boolean)",
 
     "UsrTask string BorderTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z //"
-      "Path of border texture",
+      "Path of border texture (inputfile)",
     "UsrTask string TargetTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Cube.bmp a z //"
-      "Path of target texture",
+      "Path of target texture (inputfile)",
     "UsrTask string CursorTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z //"
-      "Path of cursor texture",
+      "Path of cursor texture (inputfile)",
     "UsrTask float CursorSize= 2 0 0 1 // "
       "User Window Cursor Size",
     "UsrTask int CursorColorFront = 0x000000 0x000000 0x000000 0xFFFFFF//"
-       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB",
+       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB (color)",
     "UsrTask int CursorColorBack = 0x000000 0x000000 0x000000 0xFFFFFF//"
-       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB",
+       "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB (color)",
     "UsrTask int WinHeight= 512 0 0 1 // "
         "User Window Height",
     "UsrTask int WinWidth= 512 0 0 1 // "
@@ -111,10 +110,10 @@ TTask::TTask()
     "JoyStick string GloveCOMport= COM2 0 % % // "
       "COM port for 5DT glove",
     "JoyStick int UseJoyStick= 0 0 0 2 // "
-      "0=brain signals; 1=Joystick; 2=Glove",
+      "0=brain signals; 1=Joystick; 2=Glove (enumeration)",
   #else // DATAGLOVE
     "JoyStick int UseJoyStick= 0 0 0 1 // "
-      "0=brain signals; 1=Joystick",
+      "0=brain signals; 1=Joystick (enumeration)",
   #endif // DATAGLOVE
     "JoyStick float JoyXgain= 4.0 0 -1000.0 1000.0 // "
       "Horizontal gain",
@@ -132,7 +131,8 @@ TTask::TTask()
     "Targets int NumberTargets= 4 0 0 0 // "
       "Number of Targets",
     "Targets int IncludeAllTargets= 0 0 0 1 // "
-      "Test all target positions? 1=test all targets. 0=test only the visible current target",
+      "Test all target positions? 1=test all targets. 0=test only the visible current target"
+      " (enumeration)",
     "Targets float StartCursorX= 50.0 0 0 100.0 // "
       "Horizontal Start of Cursor",
     "Targets float StartCursorY= 50.0 0 0 100.0 // "
@@ -209,7 +209,7 @@ TTask::TTask()
         bcierr << "Could not open TTaskFlow.txt for writing" << std::endl;
   }
   else
-  {     
+  {
         printFlow = true;
  }
  /*  shidong ends*/
@@ -237,7 +237,7 @@ int TTask::hex2dec( AnsiString hex )
 
 TTask::~TTask( void )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::~TTask function.\n");
 /*shidong ends*/
         if( vis ) delete vis;
@@ -278,7 +278,7 @@ void TTask::checkPathHelper()
 }//checkPathHelper
 
 //check the input path to see if it is a valid file
-bool TTask::checkPath(AnsiString path) 
+bool TTask::checkPath(AnsiString path)
 {
         try
         {
@@ -295,7 +295,7 @@ bool TTask::checkPath(AnsiString path)
 		                fclose(File);   // Close The Handle
                                 if (auxDIBImageLoad(path.c_str())==NULL)
 		                {
-                                        return false;    
+                                        return false;
                                 }
                                 else
                                 {
@@ -543,7 +543,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         checkInt((const char*)Parameter("SourceChTimeOffset"), "SourceChTimeOffset");
         checkInt((const char*)Parameter("SpatialFilteredChannels"), "SpatialFilteredChannels");
         checkInt((const char*)Parameter("UD_A"), "NUD_A");
-        checkInt((const char*)Parameter("UD_B"), "NUD_B");        
+        checkInt((const char*)Parameter("UD_B"), "NUD_B");
         PreflightCondition( Parameter("AlignChannels")== 1 || Parameter("AlignChannels")== 0);
         PreflightCondition( Parameter("ClassMode")== 1 || Parameter("ClassMode")== 2);     */
 /*shidong ends*/
@@ -570,7 +570,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
 
 void TTask::Initialize()
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::Initialize function.\n");
 /*shidong ends*/
 TEMPORARY_ENVIRONMENT_GLUE
@@ -591,7 +591,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         Ntargets=          Parameter( "NumberTargets" );
         CursorStartX=      Parameter( "StartCursorX" );
         CursorStartY=      Parameter( "StartCursorY" );
-        CursorStartZ=      Parameter( "StartCursorZ" );        
+        CursorStartZ=      Parameter( "StartCursorZ" );
         targetInclude=     Parameter( "IncludeAllTargets" );
         BaselineInterval=  Parameter( "BaselineInterval" );
         Resting=           Parameter( "RestingPeriod" );
@@ -616,7 +616,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         LightSourceColorB       = Parameter( "LightSourceColorB");
         LightSourceIntensity    = Parameter( "LightSourceIntensity");
 
- 
+
 
 
         WorkspaceBoundaryVisible = Parameter( "WorkspaceBoundaryVisible");
@@ -669,7 +669,7 @@ TEMPORARY_ENVIRONMENT_GLUE
 /*shidong starts*/
         n_tmat= Ntargets;
         m_tmat= 10;              // was 4;   - now includes width and height  and adaptation code
-                                // was 7;   - now includes 3rd dimension coordinate and depth           
+                                // was 7;   - now includes 3rd dimension coordinate and depth
         for( i= 0; i<m_tmat; i++)               //9
         {
                 for(j=0; j<n_tmat; j++)         //target numbers
@@ -787,7 +787,7 @@ if(printFlow) fprintf(b, "cursor start position are %f and %f.\n", cursor_x_star
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::ReadStateValues function.\n");
 /*shidong ends*/
         CurrentTarget=       statevector->GetStateValue("TargetCode");
@@ -842,7 +842,7 @@ if(printFlow) fprintf(b, "In TTask::WriteStateValues function.\n\n");
 
 void TTask::ComputeTargets( int ntargs )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::ComputeTargets function.\n");
 /*shidong ends*/
         int i;
@@ -874,7 +874,7 @@ if(printFlow) fprintf(b, "In TTask::ComputeTargets function.\n");
 
 void TTask::ShuffleTargs( int ntargs )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::ShufflesTargs function.\n");
 /*shidong ends*/
         int i,j;
@@ -895,7 +895,7 @@ if(printFlow) fprintf(b, "In TTask::ShufflesTargs function.\n");
 
 int TTask::GetTargetNo( int ntargs )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::GetTargetNo function.\n");
 /*shidong ends*/
         int retval;
@@ -921,7 +921,7 @@ if(printFlow) fprintf(b, "In TTask::GetTargetNo function.\n");
 
 int TTask::TestTarget( float xpos, float ypos, int targ )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::TestTarget function.\n");
 /*shidong ends*/
         int result;
@@ -934,7 +934,7 @@ if(printFlow) fprintf(b, "In TTask::TestTarget function.\n");
         // could use cursor center by adding 1/2 of size to position
         /*shidong starts*/
        /*
-        
+
         if( ( (xpos+half) > targx[targ] ) && ( (xpos-half) < targx_rt[targ] ) )
         {
                 if( ( (ypos+half) > targy[targ] ) && ( (ypos-half) < targy_btm[targ] ) ) result= 1;
@@ -960,7 +960,7 @@ if(printFlow) fprintf(b, "In TTask::TestTarget function.\n");
                 else
                 {
                         if(printFlow) fprintf(b, "Cuboids size is %d.\n", cuboidsVec.size());
-                }        
+                }
         }
         /*shidong ends*/
         return( result );
@@ -969,7 +969,7 @@ if(printFlow) fprintf(b, "In TTask::TestTarget function.\n");
 
 void TTask::TestCursorLocation( float x, float y )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::TestCursorLocation function.\n");
 /*shidong ends*/
         int i;
@@ -1051,7 +1051,7 @@ jmp:            if( CurrentOutcome == CurrentTarget )
 
 void TTask::UpdateSummary( void )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::UpdateSummary function.\n");
 /*shidong ends*/
         float pc;
@@ -1081,7 +1081,7 @@ if(printFlow) fprintf(b, "In TTask::UpdateSummary function.\n");
 
 void TTask::UpdateDisplays( void )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::UpdateDisplays function.\n");
 /*shidong ends*/
 
@@ -1176,7 +1176,7 @@ char            memotext[256];
 
 void TTask::Iti( void )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::Iti function.\n");
 /*shidong ends*/
         if( BaselineInterval == 2 )
@@ -1302,7 +1302,7 @@ sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), Use
 #ifdef DATAGLOVE
 void TTask::GetGlove( )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::GetGlove function.\n");
 /*shidong ends*/
 float cur_glovevalx, cur_glovevaly;
@@ -1335,7 +1335,7 @@ float cur_glovevalx, cur_glovevaly;
 
 void TTask::Feedback( short sig_x, short sig_y )
 {
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::Feedback function.\n");
 if(printFlow) fprintf(b, "FeedbackTime is %d.\n", FeedbackTime);
 if(printFlow) fprintf(b, "FeedbackTime Signals are %hd and %hd.\n", sig_x, sig_y);
@@ -1448,7 +1448,7 @@ if(printFlow) fprintf(b, "In TTask::Process function.\n");
                 else if (CurrentTarget   > 0 )   Ptp();
         }
 
-/*shidong starts*/   
+/*shidong starts*/
 if(printFlow) fprintf(b, "Running is %d, Rest is %d, Iti is %d, CurrentFeedback is %d, Outcome is %d, Target is %d.\n", CurrentRunning, CurrentRest, CurrentIti, CurrentFeedback, CurrentOutcome, CurrentTarget);
 if(printFlow) fprintf(b, "The input singal is %f, and %f.\n", ( *Input )( 1, 0 ), ( *Input )( 0, 0 ));
 /*shidong ends*/

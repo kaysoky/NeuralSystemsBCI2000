@@ -38,7 +38,7 @@ PeakDetector::PeakDetector()
   "PeakDetector int TargetChannelNeg= 0 0 0 10 "
     "// Target channel for peak detection of negative peaks",
   "Visualize int VisualizePeakDetector= 1 0 0 1 "
-    "// visualize peak detection results (0=no 1=yes)",
+    "// visualize peak detection results (0=no 1=yes) (boolean)",
  END_PARAMETER_DEFINITIONS
 }
 

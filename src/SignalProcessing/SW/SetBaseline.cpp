@@ -36,7 +36,7 @@ TSetBaseline::TSetBaseline()
     SECTION " intlist BaseChList= 2 1 1"
       " 0 0 1 // 1 to mark that BL is subtracted",
     "Visualize int VisualizeBaselineFiltering= 0"
-      " 0 0 1 // visualize baseline filtered signals (0=no 1=yes)",
+      " 0 0 1 // visualize baseline filtered signals (0=no 1=yes) (boolean)",
   END_PARAMETER_DEFINITIONS
 }
 

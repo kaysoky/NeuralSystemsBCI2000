@@ -39,7 +39,7 @@ TTask::TTask()
       "Height of status bar labels in percent of screen height",
 
   "Speller string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
-      "Background Color in hex (0x00BBGGRR)",
+      "Background Color (color)",
   "Speller int NumberTargets= 4 4 0 100 // "
       "Number of Targets ",
   "Speller int StatusBarSize= 10 0 0 100 // "
@@ -67,11 +67,11 @@ TTask::TTask()
  END_LOCALIZED_STRINGS
 
 
- targetsequence = new TARGETSEQUENCE( Parameters, States ) ;
-  trialsequence = new TRIALSEQUENCE( Parameters, States ) ;
-  userdisplay = new USERDISPLAY ;
-  cur_time = new BCITIME  ;
-
+  targetsequence = new TARGETSEQUENCE;
+  trialsequence = new TRIALSEQUENCE;
+  userdisplay = new USERDISPLAY;
+  cur_time = new BCITIME;
+  
 
   debug = false;
   if(debug) a = fopen("TTaskDebug.txt", "w");
@@ -122,19 +122,19 @@ bool TTask::checkInt(AnsiString input) const
 }//checkInt
 
 
-bool TTask::CheckTree(int root)
+bool TTask::CheckTree(int root) const
 {
         bool toRet;
         if(debug) fprintf(a, "toRet is default to %d.\n", toRet);
         toRet = true;
 
-        int rowNum = 0;
+        size_t rowNum = 0;
         int displayPos = 0;
    
 
-        for(int row= 0; row<Parameter("TreeDefinitionMatrix")->GetNumRows(); row++)
+        for(size_t row= 0; row<Parameter("TreeDefinitionMatrix")->GetNumRows(); row++)
         {
-                for (int col=0; col<Parameter("TreeDefinitionMatrix")->GetNumColumns(); col++)
+                for (size_t col=0; col<Parameter("TreeDefinitionMatrix")->GetNumColumns(); col++)
                 {
                         //if(debug) fprintf(a, "checking matrix %d, %d, it's %s.\n", row, col,AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  );
                         if(checkInt( AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  ) )
@@ -148,7 +148,7 @@ bool TTask::CheckTree(int root)
         }
 
 
-        for(int i=0; i< Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
+        for(size_t i=0; i< Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
         {
 
                // if(debug) fprintf(a, "In 1st Loop, Looking for targetID %d, rowNum is %d, 1st    column is %s.\n", root, rowNum, AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)) );
@@ -161,7 +161,7 @@ bool TTask::CheckTree(int root)
         }//for
 
         //if the ID to be searched is not in 1st column and it's not the root. It implies the ID has no children.
-        if(rowNum ==  Parameter("TreeDefinitionMatrix")->GetNumRows()  &&  root != -1)
+        if(rowNum == Parameter("TreeDefinitionMatrix")->GetNumRows()  &&  root != -1)
         {
                 return true;
         }
@@ -255,10 +255,10 @@ int     ret;
         //currentbackuppos=0;
  /*shidong ends*/
  // initialize the between-trial sequence
- targetsequence->Initialize(Parameters, NumberTargets);
+ targetsequence->Initialize(NumberTargets);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(Parameters, Statevector, userdisplay, NumberTargets);
+ trialsequence->Initialize(userdisplay, NumberTargets);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
@@ -276,7 +276,7 @@ int     ret;
  userdisplay->DisplayStatusBar();
  // userdisplay->DisplayActiveTargets();
  // userdisplay->DisplayCursor();
- userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "Waiting to start ..." ) ) );
+ userdisplay->DisplayMessage( LocalizableString( "Waiting to start ..." ) );
  // tell the trial sequence what the correct target ID is
  trialsequence->correcttargetID=DetermineCorrectTargetID();
  // show the user window

@@ -12,6 +12,7 @@
 #include "BCIDirectry.h"
 #include "UBCIError.h"
 #include "Localization.h"
+#include "MeasurementUnits.h"
 
 #include "Task.h"
 
@@ -27,7 +28,7 @@ RegisterFilter( TTask, 3 );
 // **************************************************************************
 TTask::TTask()
 : mVis( SOURCEID_TASKLOG ),
-  trialsequence( new TRIALSEQUENCE( Parameters, States ) ),
+  trialsequence( new TRIALSEQUENCE ),
   userdisplay( new USERDISPLAY ),
   cur_time( new BCITIME ),
   bcitime( new BCITIME ),
@@ -55,8 +56,8 @@ TTask::TTask()
   "P3Speller int StatusBarTextHeight= 8 0 0 100 // "
       "Size of status bar text in percent of screen height",
   "P3Speller string BackgroundColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // "
-      "Background Color in hex (0x00BBGGRR)",
-  "P3Speller int NumberOfSequences= 15 15 0 100 // "
+      "Background Color (color)",
+  "P3Speller int NumberOfSequences= 15 15 0 0 // "
       "Number of sets of 12 intensifications",
   "P3Speller int PostSetInterval= 60 60 0 10000 // "
       "Duration after set of n intensifications in units of SampleBlocks",
@@ -160,8 +161,8 @@ int     ret, numerpsamples, sampleblocksize;
   userdisplay->StatusBarSize=Parameter("StatusBarSize");
   userdisplay->StatusBarTextHeight=Parameter("StatusBarTextHeight");
   numberofsequences=Parameter("NumberOfSequences");
-  postsetinterval=Parameter("PostSetInterval");
-  presetinterval=Parameter("PreSetInterval");
+  postsetinterval=MeasurementUnits::ReadAsTime(Parameter("PostSetInterval"));
+  presetinterval=MeasurementUnits::ReadAsTime(Parameter("PreSetInterval"));
   numerpsamples=Parameter("NumSamplesInERP");
   sampleblocksize=Parameter("SampleBlockSize");
 
@@ -191,7 +192,7 @@ int     ret, numerpsamples, sampleblocksize;
   userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
 
   // initialize the within-trial sequence
-  trialsequence->Initialize( Parameters, Statevector, userdisplay);
+  trialsequence->Initialize(userdisplay);
 
   // show the user window
   userdisplay->form->Show();

@@ -13,7 +13,6 @@
 #include "UTrialSequence.h"
 
 
-
 class TTask : public GenericFilter
 {
 private:
@@ -33,7 +32,7 @@ private:
         FILE            *a;
         bool            debug;
         int             NumberTargets;
-        bool            CheckTree(int  root);
+        bool            CheckTree(int  root) const;
         bool            checkInt(AnsiString input) const;
         /*shidong ends*/
         
