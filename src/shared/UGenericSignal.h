@@ -124,6 +124,11 @@ template< class T >
 const T&
 BasicSignal< T >::GetValue( size_t inChannel, size_t inElement ) const
 {
+#ifdef SIGNAL_BACK_COMPAT
+  static T nullvalue = ( T )0;
+  if( ( inChannel >= Value.size() ) || ( inElement >= Value[ inChannel ].size() ) )
+    return nullvalue;
+#endif // SIGNAL_BACK_COMPAT
   return Value.at( inChannel ).at( inElement );
 }
 
@@ -131,6 +136,10 @@ template< class T >
 void
 BasicSignal< T >::SetValue( size_t inChannel, size_t inElement, T inValue )
 {
+#ifdef SIGNAL_BACK_COMPAT
+  if( ( inChannel >= Value.size() ) || ( inElement >= Value[ inChannel ].size() ) )
+    return;
+#endif // SIGNAL_BACK_COMPAT
   Value.at( inChannel ).at( inElement ) = inValue;
 }
 
