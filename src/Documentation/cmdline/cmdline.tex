@@ -1,0 +1,261 @@
+\documentclass[12pt,a4paper]{article}
+%\documentclass[12pt,a4paper,fleqn]{article}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\sloppy
+\flushbottom
+
+%\pagestyle{empty}
+
+\title{BCI2000 Command Line Interface}
+%\date{}
+\author{J\"{u}rgen Mellinger}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\pagebreak
+\section{Introduction}
+
+Command line interfaces are a powerful tool for dynamically combining 
+pieces of software which are typically tiny programs optimized for performing
+a very limited functionality.
+With a command line interface, data processing is usually performed 
+\textit{sequentially} on a stream of data.
+This allows the processing of indefinitely large amounts of data while 
+consuming but a finite, and often very small, amount of memory.
+
+Moreover, combining command line programs to perform complex tasks can be 
+done interactively by entering complex commands directly but also in a ``scripting''
+manner, by entering sequences of commands into text files which allow for 
+iteration and branching. 
+That way, automation of complex tasks can be achieved by rather simple means.
+
+With the BCI2000 command line interface, BCI2000 data files can be 
+\begin{itemize}
+\item \textit{converted} into various formats, ready for
+further processing with available software tools, or for visual inspection in 
+human readable format; \item \textit{processed} off-line with literally the same
+code as used in the on-line system.
+\end{itemize}
+
+Together, these two concepts provide versatile access to recorded data on all 
+stages of processing.
+The BCI2000 command line interface may prove useful for
+\begin{itemize}
+\item automated \textit{analysis} of large amounts of recorded data,
+\item \textit{development} of new filter classes,
+\item \textit{verification} of external off-line analysis methods.
+\end{itemize}
+
+This document explains the command line tools available for working with BCI2000 
+files, and how to build BCI2000 filters as single executables that may be combined 
+to form a chain of filters.
+
+\section{Command line interfaces}
+
+Basically, the interface of a command line tool consists in 
+\begin{itemize}
+\item an input stream \texttt{stdin},
+\item an output stream \texttt{stdout},
+\item an error stream \texttt{stderr},
+\item optional arguments (switches) controlling details of its behavior.
+\end{itemize}
+
+The most important feature of a command line interface is its ability to 
+\textit{redirect} streams.
+\begin{itemize}
+\item \texttt{stdin} can be redirected to read from a file using the 
+      \texttt{<} operator;
+\item \texttt{stdout} can be redirected to write to a file using the 
+      \texttt{>} operator;
+\item one program's \texttt{stdout} can be plugged into another program's 
+      \texttt{stdin} using the \texttt{|} operator (``pipe'').
+\end{itemize}
+
+Because redirection is a feature of the program's execution environment 
+(``shell''), and not a feature of the program itself, programs can be very 
+simple, avoiding handling of file names and associated I/O errors.
+
+The following example command line will extract the ``sampling rate'' 
+parameter from the BCI2000 data file \texttt{mydata.dat} file, and display 
+the result on the text console:
+\begin{verbatim}
+bci_dat2stream < mydata.dat | bci_stream2prm | grep SamplingRate
+\end{verbatim}
+
+\section{Building BCI2000 command line tools}
+As the command line tools are not automatically built from the main makefile, 
+you need to do this manually. 
+On the Windows NT shell, change to the \texttt{BCI2000/Tools/cmdline} directory,
+and execute \texttt{make all} from there.
+
+To use the tools from any directory, you will need to add the 
+\texttt{BCI2000/Tools/cmdline} directory to your system's PATH environment variable. 
+Please consult your operating system's documentation on how to do this.
+
+\section{Stream format}
+The common format used to exchange data between BCI2000 command line tools 
+is called a ``BCI2000 binary stream,'' or just ``stream.''
+Such a ``stream'' transfers parameters, states, and data in exactly the same
+binary format as it is used for socket communication between the four main 
+modules of the BCI2000 real-time system.
+
+The stream format is different from the BCI2000 \texttt{dat} and \texttt{prm} 
+file formats, and is not human readable.
+A number of tools is available to convert data either to or from stream format.
+As the stream format is only used between tools, and generally not of interest 
+for the user, a typical conversion will use \textit{two} of the tools provided, 
+one to translate the original file into a ``stream,'' and one to translate the 
+stream into the desired format.
+
+E.g., to display a \texttt{dat} file's contents in a human readable format,
+one would use a tool called \texttt{bci\_dat2stream} to convert it into a stream, 
+and then use another tool called \texttt{bci\_stream2asc} to convert the stream 
+into text. 
+If we want the output to appear in the text window as a sequence of pages, we pipe it
+into the ``more'' program:
+\begin{verbatim}
+bci_dat2stream < myfile.dat | bci_stream2asc | more
+\end{verbatim}
+
+\subsection{Conversion into stream format}
+\subsubsection{\texttt{bci\_dat2stream}}
+\paragraph{Input format} \texttt{bci\_dat2stream} converts a BCI2000 data  
+(\texttt{dat}) file into a stream.
+\paragraph{Options} The \texttt{--transmit} option may be used to select states, 
+parameters, and data for transmission, as in\\
+\verb|bci_dat2stream --transmit-sp < myfile.dat|
+\\ Only states and parameters but no data will be contained in the resulting stream.
+``Data'' comprises signal and state vector data.
+
+\subsubsection{\texttt{bci\_prm2stream}}
+\texttt{bci\_prm2stream} converts a BCI2000 parameter (\texttt{prm}) file into a stream.
+
+\subsection{Conversion from stream format}
+\subsubsection{\texttt{bci\_stream2prm}}
+\texttt{bci\_stream2prm} converts a stream into a BCI2000 parameter (\texttt{prm}) file.
+As a parameter file is just a sequence of parameter lines, this is also a text-only, 
+human readable format.
+
+\subsubsection{\texttt{bci\_stream2asc}}
+\texttt{bci\_stream2asc} converts a stream into a human readable format.´
+Each object contained in the stream will appear as its type name, followed by an 
+opening brace, its content, and a closing brace.
+The content will appear as defined by the stream inserter \texttt{operator>>} for 
+the object's type.
+
+Each state will appear on its own line, thus values of certain states may be easily 
+extracted using the \texttt{grep} program.
+
+\subsubsection{\texttt{bci\_stream2table}}
+\texttt{bci\_stream2table} converts a stream into a tab-separated table containing 
+states and signal values in ASCII format.
+Each state, and each entry of the signal, has its own column.
+The first line of output begins with a \texttt{\#} comment character, and contains 
+a tab-separated list of column headers.
+This format is best suited for data import into applications that work on tables.
+
+\section{Applying BCI2000 filters to streams}
+\subsection{Compiling an existing filter as a command line tool}
+A filter defined in a file \texttt{MyFilter.cpp} may be compiled and linked into 
+its own executable by executing\\
+\verb|make MyFilter.exe|\\
+from the Windows command prompt when in \texttt{BCI2000/Tools/cmdline}.
+For this to work, it is necessary that the path to the filter's \texttt{cpp}
+file is contained in the makefile's \texttt{SIGPROC} variable; you may have to 
+adapt it to fit your needs.
+
+If the filter's code depends on code not contained within its \texttt{cpp} file,
+you will get linker complaints about unresolved externals.
+To solve the problem, add the missing \texttt{cpp} files to the makefile's 
+\texttt{BCIOBJ} variable, and execute\\
+\verb|make clean && make MyFilter.exe|\\
+
+To check whether the executable works, enter \\
+\verb|MyFilter --help|\\
+You should get a message that the program applies your filter to its input, or 
+otherwise a hint pointing you towards fixing it.
+
+\subsection{Off-line only filters}
+For off-line analysis, data must often be partitioned into ``segments'' before
+performing statistics. As there is no notion of ``segments'' in the on-line data
+and file format, we suggest using the ``Running'' state to indicate segments in
+the following way:
+
+When performing segmenting, a filter sets the ``Running'' state to zero
+outside segments.
+A statistics filter will then perform buffering from its \texttt{Process()}
+function, and act on the buffered data from its \texttt{StartRun()} and 
+\texttt{StopRun()} functions.
+
+Setting the ``Running'' state to zero will suspend the on-line system, so
+this kind of segmenting and statistics filtering cannot be used on-line.
+
+\section{Examples}
+The following examples work from the Windows NT command prompt.
+Nevertheless, we would like to point the reader to the free \textit{cygwin} 
+collection of GNU tools ported to the Win32 API. \textit{Cygwin} provides the 
+power of the \texttt{bash} shell, and of programs like the \texttt{sed} 
+stream editor. 
+Although the BCI2000 command line tools cannot be compiled with \texttt{gcc} they 
+work fine when called from \textit{cygwin}.
+
+\subsection{Extracting parameters}
+To extract parameters from a data file, one convert it into a stream using 
+\texttt{bci\_dat2stream --transmit-p}, and convert the stream into a parameter file
+using \texttt{bci\_stream2prm} as in
+\begin{verbatim}
+bci_dat2stream < mydata.dat | bci_stream2prm > myprms.prm
+\end{verbatim}
+
+\subsection{Processing data with parameters different from the ones 
+contained in the file}
+To combine a data file with parameters other than those contained in it, use 
+\texttt{bci\_dat2stream}'s transmit option to suppress parameters, and combine 
+its output with \texttt{bci\_prm2stream}'s into a single stream. 
+To affect processing, parameters must precede the data in the stream.
+Combining the output is effected by the \texttt{( ... \&\& ... )} construct.
+\begin{verbatim}
+(bci_prm2stream < myparameters.prm && 
+  bci_dat2stream --transmit-sd < mydata.dat) |
+  MyFilter | bci_stream2table > mytable.txt
+\end{verbatim}
+
+\subsection{Exporting BCI2000 data into a table suitable for import into 
+external applications (MS Excel, Matlab, SPSS)}
+To process data with the filters used in the mu-training on-line system, 
+and save the AR spectrum as a table in ASCII format, execute
+\begin{verbatim}
+bci_dat2stream < mydata.dat | TransmissionFilter | 
+  CalibrationFilter | SpatialFilter | ARFilter | 
+  bci_stream2table > mytable.asc
+\end{verbatim}
+
+\subsection{Testing a modified filter on existing data}
+To verify that changes to a filter's code don't change its behavior with 
+respect to existing data, apply both versions to a stream, convert the output 
+stream into human readable format, and have a file comparison program display 
+any differences.
+For the following example, we will compare a previous version of the ARFilter, 
+renamed \texttt{prev\_ARFilter}, to the current one.
+\begin{enumerate}
+\item Create a stream suitable for input to the ARFilter:
+\begin{verbatim}
+bci_dat2stream < mydata.dat | TransmissionFilter | 
+  CalibrationFilter | SpatialFilter > test.bcistream
+\end{verbatim}
+\item Apply both filter versions to the stream, and save the results in human readable format:
+\begin{verbatim}
+ARFilter < test.bcistream | bci_stream2asc > ARresult.txt &&
+  prev_ARFilter < test.bcistream |
+  bci_stream2asc > prev_ARresult.txt
+\end{verbatim}
+\item Compare the results (using the Windows NT analog to the \texttt{diff} program):
+\begin{verbatim}
+comp /a /l prev_ARresult.txt ARresult.txt | more
+\end{verbatim}
+\end{enumerate}
+
+\end{document}
