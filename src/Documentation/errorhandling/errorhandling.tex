@@ -1,0 +1,401 @@
+\documentclass[12pt,a4paper]{article}
+%\documentclass[12pt,a4paper,fleqn]{article}
+%\usepackage{ngerman}
+%\usepackage{bibgerm}
+\usepackage{graphicx}
+\usepackage{epsfig}
+%\sloppy
+%\flushbottom
+
+%\pagestyle{empty}
+
+\title{BCI 2000 Error Handling: A Proposal}
+%\date{}
+\author{J\"urgen Mellinger, Gerwin Schalk}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\pagebreak
+\section{Handling Errors}
+\label{secHandl}
+\subsection{Types of Errors}
+We assume that all errors we need to consider fall 
+into one the following categories, each of which
+implies a different type of approach to error
+avoidance/error handling:
+\begin{itemize}
+\item{Parameter Setup Errors}
+\item{Runtime Errors}
+\item{Logic (Programming) Errors}
+\end{itemize}
+
+\subsection{Parameter Setup Errors}
+
+\subsubsection{Definition of the Term}
+
+This category covers anything a user can do wrong
+by using a program with parameters that are out of range,
+inconsistent, or otherwise erroneous (by, e.g.,
+specifying an output file at a location where the user
+has no write permission).
+
+Parameter setup errors, when unhandled, become runtime errors.
+
+\subsubsection{Proposed Strategies}
+\label{secParamcheck}
+
+As a guideline for approaching Parameter Setup Errors
+we propose the adoption of the following principle: ``Whatever a
+user does from within an application program should never
+make that application crash.''
+
+In BCI 2000, this translates into a thorough parameter
+check done by each module before any parameter settings are
+actually applied to the system.
+
+Parameter checking should comprise
+\begin{itemize}
+  \item{Range and Consistency checks,}
+        whereby generally ranges depend on other parameters' values;
+  \item{Signal property checks:}
+        Does the output signal of one filter meet the next filter's
+        requirements for its input signal?
+  \item{Resource availability checks:}
+  \begin{itemize}  
+    \item{Are needed system resources available?}
+          (E.g., is it possible to open a required sound output device?)
+    \item{Are auxiliary files (e.g., media files) available and readable?}
+    \item{Do output files have legal file names? Are output files writeable?}
+       (We could even check whether there is enough
+       space left to write the EEG file, but practically this
+       would not make too much sense because a concurrent process
+       might use up the space while our system runs.)
+  \end{itemize}
+\end{itemize}
+
+In each of those cases, the user should get appropriate
+feedback guiding her towards fixing the problem.
+
+Whenever the system tries to fix a parameter setup error
+by using some default set of parameters, it should do so
+only if
+\begin{itemize}
+\item it presents the user with a warning that tells her
+what it did and why it did so, and if
+\item the automatically fixed parameters are treated as if
+changed by the user, i.e. with a parameter check performed
+on them.
+\end{itemize}
+Otherwise, people might end up using a system that doesn't
+do what they want it to -- but without telling them, so they
+don't ever realize --, or with a system creating new parameter
+inconsistencies when trying to fix others.
+
+\subsubsection{User Interface Details}
+
+The user interface for Parameter Setup Error handling is,
+along with the parameter setup dialog, part of the operator
+module. A first implementation of a GUI based user interface might
+consist in a floating, non-modal error window popping up from the operator
+module that would present a list of error related textual
+messages to the user, allowing for browsing error messages
+while changing respective parameters via the parameter setup
+dialog. After the next parameter check, the operator module would close
+that window or replace its contents based on the result of the check.
+Parameter checking would occur when the user clicks the "SetConfig"
+button in the operator main window, followed by actually applying
+parameters in case the check was successful.
+
+\subsection{Runtime Errors}
+
+\subsubsection{Definition of the Term}
+
+This category covers everything that can go wrong
+in the course of an application program running
+insofar as that malfunction is due to a lack of resources in the
+underlying system required for proper operation
+(i.e., not due to a programming error).
+Assuming that parameter checking has been implemented
+properly as outlined above, we can narrow the term
+'Runtime Error' to cases for which the following statement
+holds: A runtime error occurs whenever the system runs
+out of resources that were still available during parameter
+checking.
+
+\ 
+
+Typical reasons for this kind of error are
+\begin{itemize}
+\item the system running out of disk space while recording data,
+\item files being moved, trashed, or locked by a concurrent process,
+\item a network connection becoming unavailable.
+\end{itemize}
+
+Runtime errors, when unhandled, become logic errors because
+the code implies assumptions that no longer hold once a
+runtime error has occurred.
+
+\subsubsection{Proposed Strategies}
+
+In a properly designed and implemented system, runtime errors
+in the restricted sense described above will not occur 
+frequently. However, as they are caused by undesired
+circumstances outside the scope of the application program
+itself, it seems important to provide information
+to the user as detailed as possible in order to enable her
+to prevent this type of situation in the future, and to 
+make her aware of the fact that the application program
+depends on her willingness to provide a smooth operating
+environment. This being ensured, it seems appropriate to
+simply abort execution altogether, while trying to avoid 
+a loss of the data acquired up to that time.
+
+\subsubsection{User Interface Details}
+
+In general, it is desirable to have runtime errors displayed
+along with the operator module's user interface. However,
+as this requires a working connection between the module where
+the error occurs, and the operator module, this may not
+always be possible. Therefore, in addition to an
+operator-based error reporting interface, each module should
+have a less demanding mechanism to provide error information to the
+user, e.g., a local log file.
+
+\subsection{Logic Errors}
+
+\subsubsection{Definition of the Term}
+
+Logic, or programming, errors in general are faults of
+a programmer who, in his or her code, implicitly or explicitly
+makes assumptions that do not always hold.
+
+\subsubsection{Proposed Strategies}
+
+Programming errors are not supposed to occur at all in
+a tested version of an application. Therefore, instead
+of trying to 'handle' them, it is important to make them show
+up as close to their point of origin in the code as
+possible, by frequently and explicitly checking whether
+implicit assumptions actually hold, and aborting execution
+with an error message if this is not the case.
+
+Aside from that, writing code as explicit, general, and
+simple as possible greatly reduces the possibility of making
+logic errors in the first place.
+
+\subsubsection{User Interface Details}
+
+As programming errors are nothing a user can do anything
+about, and as their occurrence with a user is an embarrassing
+glitch anyway, simply aborting the program or module with
+an error message seems appropriate.
+
+\pagebreak
+\section{Implementation Details}
+
+\subsection{Interface to the Programmer}
+
+\subsubsection{Reporting Errors}
+
+For a simple and general way to provide
+user communication and error reporting means to a module's
+programmer, we propose the introduction of two global
+objects derived from \texttt{std::ostream} and named, e.g.,
+\texttt{bciout} and \texttt{bcierr}, in analogy to
+\texttt{std::cout} and \texttt{std::cerr}, where \texttt{bciout}
+is used to transfer general messages and warnings while
+\texttt{bcierr} takes actual errors. \footnote{The introduction
+of error numbers seems not necessary at this point;
+however, if error codes are preferred, they should
+be implemented as an enumerated type, not spelled
+out explicitly in strings.}
+
+A code example would then look like this:
+\begin{verbatim}
+...
+if( myParamValue < 0 || myParamValue >= 10 )
+{
+  bcierr << "'myParam' is out of range." << endl;
+  errorOccurred = true;
+}
+...
+\end{verbatim}
+
+Furthermore, for handling runtime errors difficult to recover
+from, a programmer may also throw an exception that will abort
+execution and
+eventually lead to an error message being sent to the operator
+module (for framework related details see section~\ref{secImpl}):
+\begin{verbatim}
+...
+if( ernie.find( bert ) != ernie.end() )
+  throw "Ernie just ate Bert. " 
+        "I don't know how to tell the story.";
+tellMyStory( bert.begin(), ernie.end() );
+...
+\end{verbatim}
+
+\subsubsection{Checking Parameters}
+
+Checking parameters is done in a separate member function
+of the filter base class which, similar to the member function
+that does the actual processing, takes input and output signal
+representatives as parameters, thus allowing for signal
+property checking.
+
+For an actual implementation, its declaration would be as follows:
+\begin{verbatim}
+void GenericFilter::Preflight(
+   const SignalProperties* inSignalProperties,
+         SignalProperties* outSignalProperties ) const;
+\end{verbatim}
+
+For a filter class derived from
+\texttt{GenericFilter}, this function is supposed to perform
+parameter checking as described in section~\ref{secParamcheck}.
+Instead of returning an error value, it writes possible error
+messages into \texttt{bcierr}.
+The \texttt{const} declaration for its \texttt{this} pointer
+prohibits initialization functionality from
+\texttt{GenericFilter::Initialize()} entering into
+\texttt{Preflight()}; this is unwanted because it would
+corrupt the idea of performing a \textit{complete} parameter check
+before actually altering the state of \textit{any}
+filter object.
+
+\subsection{Implementation on the Framework Side}
+\label{secImpl}
+
+The operator module's behaviour in response to an error
+message arriving from one of the modules would depend
+on its context, i.e. on the execution phase the system is in.
+That way, no additional programming interface elements
+visible to a filter/module programmer
+would be needed to implement an error handling scheme as
+described in section~\ref{secHandl}. 
+
+During the \textbf{preflight phase,} errors would be {Parameter
+Setup Errors.} A module's framework code behind
+\texttt{bcierr} would just collect error
+messages; on return from the preflight function, it would
+send those messages to the operator module which would then,
+from the contents of the message (i.e. whether it was empty
+or not), determine whether the preflight was successful;
+on not receiving any message after some timeout\footnote{
+For now, a simple timeout scheme with a fixed timeout
+interval of 5~s seems appropriate. In the future, one might consider
+a module requesting additional timeout periods if it expects 
+lengthy calculations.}
+it would assume a broken connection or a crashed module.
+
+During all \textbf{other phases,} the code behind \texttt{bcierr}
+would immediately (i.e., on flushing the \texttt{std::ostream})
+send its message buffer to a log file as well as to
+the operator module, indicating a {Runtime Error} 
+to the operator module which would, in turn, halt the system,
+shut down the other modules, and display the message to the
+user.
+
+In addition, the top level exception handling code
+of each module would contain similar functionality,
+sending an exception's associated description string into
+a log file and to the operator module, if possible, then
+quitting the module in which the exception occurred.
+This would not only ensure
+a proper general handling of exceptions within the framework but
+also allow a programmer to handle {Runtime Errors} by raising
+her own exceptions, eliminating the need to take care of the error
+condition in the code following the detection of an error.
+
+%\subsection{Appendix: Using the \texttt{assert()} Macro
+%to deal with Logic errors}
+%
+%We propose using the \texttt{assert()} macro as a valuable
+%tool to make implicit assumptions explicit, as in the
+%following examples:
+%\begin{verbatim}
+%#include <assert>
+%...
+%
+%void DoSomething( int someArg )
+%{
+%  // We implicitly assume someArg to be smaller that 10.
+%  // So, let's make that assumption explicit and be sure
+%  // we'll notice whenever it is violated.
+%  assert( someArg < 10 );
+%  ...
+%}
+%
+%void DoSomethingElse( someEnumeratedType someArg )
+%{
+%  switch( someArg )
+%  {
+%    case firstExpectedValue:
+%      DoWhatever1();
+%      break;
+%
+%    case secondExpectedValue:
+%      DoWhatever2();
+%      break;
+%
+%    // Catch all unexpected cases.
+%    default:
+%      // We could just write assert( false ) but the following
+%      // trick gives us a more useful error message.
+%      assert( !"Unexpected value of someArg\n" );
+%  }
+%}
+%
+%float ComputeSomeFunction( float x )
+%{
+%  assert( x != 0.0 );
+%  return 1.0 / x * ( pow( x, 2 ) + x );
+%}
+%
+%// Or, even better because more general and more simple
+%// (sorry for the stupid example):
+%float ComputeSomeFunction( float x )
+%{
+%  // No implicit assumption, no assert().
+%  // And a more precise result, too.
+%  return x + 1.0;
+%}
+%\end{verbatim}
+%
+%Whenever the argument of \texttt{assert()} becomes \texttt{false},
+%the program will be aborted with an error message. When the code
+%is compiled with the symbol \texttt{NDEBUG} being \texttt{\#define}d
+%via a compiler option, all occurrences of \texttt{assert()} and its
+%arguments will be ignored.
+%
+%\textbf{Caveat:} Don't use any function calls
+%with side effects inside \texttt{assert()} because they won't be
+%called in the final \texttt{NDEBUG} version! 
+
+\pagebreak
+\section{Error Handling Roadmap}
+\begin{flushleft}
+\begin{itemize}
+\item \textit{Mellinger:} Remove references to current preliminary error handling
+object from code. \textit{done Oct 21, 2002}
+\item \textit{Mellinger:} Introduce \texttt{GenericFilter} inheritance into all
+existing filter classes.
+\item \textit{Mellinger:} Create headers and dummy implementation for error stream
+objects in framework code to allow for using error handling from
+filter code; add virtual function \texttt{GenericFilter::Preflight}
+and a dummy implementation to allow for existing code to compile.
+\item \textit{Mellinger:} Introduce calls to \texttt{GenericFilter::Preflight} into
+framework code.
+\item \textit{Mellinger:} Implement display of error messages in operator module.
+\item \textit{Mellinger:} Write actual implementation for error stream objects that
+sends errors to operator.
+\item \textit{Existing filters' authors:} Add implementation of \texttt{GenericFilter::Preflight} to
+existing filters.
+\item \textit{Mellinger:} Write top level exception handler that diverts exceptions
+occurring in modules to the operator module and remove \texttt{GenericFilter::Preflight} dummy default implementation from
+\texttt{GenericFilter.}
+\end{itemize}
+\end{flushleft}
+\end{document}
