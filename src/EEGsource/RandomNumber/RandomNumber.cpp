@@ -1,7 +1,6 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-USEUNIT("..\Application.cpp");
 USEUNIT("..\GenericADC.cpp");
 USEUNIT("..\UStorage.cpp");
 USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
