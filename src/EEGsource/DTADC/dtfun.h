@@ -9,43 +9,48 @@
 
 
 #define MAXCHANS     64
-#define MAXPOINTS 0x7ffff
-#define BUFNUM        10        // was 3 and 5
+#define MAXPOINTS    0x7ffff
+#define BUFNUM       10        // was 3 and 5
 
 DECLARE_HANDLE(HDRVR);
 
 class DTFUN
 {
 public:
-        TEvent *bdone;
-        int BufferCount;
-        int BufferPtr;
-        int ClockHz;
-        char    BoardName[64];
-        ECODE errc;
-	int iMsg;
-        short data[MAXPOINTS];
-        HDASS lphDass;          //   Subsystem Handle
-        int save_flag;
-        char DatFile[80];
-        int n_display;
         TCriticalSection *data_critsec;         // critical section for data FIFO
+        TEvent  *bdone;
+        int     BufferCount;
+        int     BufferPtr;
 
-        __fastcall Start( void );
-        __fastcall Stop( void );
-        __fastcall Reset( void );
-        __fastcall CleanUp( void );
-        __fastcall Terminator( void );
         DTFUN::DTFUN( void );
         DTFUN::~DTFUN( void );
-        void Save( void );
-        void __fastcall SetWindow( HWND );
-        void __fastcall SetFunction( void );
-        void __fastcall Add_to_data( short *, ULNG );
-	void  __fastcall InitBoard( void );
-        ECODE __fastcall ConfigAD( UINT, UINT, DBL, int, DBL, DWORD);
-private:
 
+        short data[MAXPOINTS];
+
+        int  Start( void );
+        int  Stop( void );
+        int  Reset( void );
+        int  CleanUp( void );
+        int  Terminator( void );
+        void Save( void );
+        void SetWindow( HWND );
+        void SetFunction( void );
+	void InitBoard( const char *, bool );
+	void SetBoardName(const char *);
+        void Add_to_data( short *, ULNG );
+        ECODE ConfigAD( UINT, UINT, DBL, int, DBL, DWORD);
+
+private:
+        int     ClockHz;
+        ECODE   errc;
+	int     iMsg;
+        int     save_flag;
+        char    DatFile[80];
+        int     n_display;
+
+        char    BoardName[128];
+        HDASS lphDass;          //   Subsystem Handle
+        HDASS lphDassCT;        //   Subsystem Handle for Counter/Timer
 
         HWND Ad_Win_Msg;        //   handle to window for A/D messages
         UINT LSize;             //   channel list size
@@ -65,13 +70,13 @@ private:
         int BufferSize;         //   buffer size
         int ADSize;             //   size of AD units in bits (12 or 16)
 
-        UINT __fastcall SetChanType( UINT );
-        UINT __fastcall SetChanList( UINT, DBL );
-        DBL  __fastcall SetClock(int , DBL  );
-        ECODE __fastcall SetWndHandle( void );
-        ECODE __fastcall SetBuffers( DWORD );
-}     ;
+        bool    outputclockonusercounter;       // do we want to output the sample clock onto the user counter pin?
 
-extern DTFUN dtfun;
+        UINT  SetChanType( UINT );
+        UINT  SetChanList( UINT, DBL );
+        DBL   SetClock(int , DBL  );
+        ECODE SetWndHandle( void );
+        ECODE SetBuffers( DWORD );
+};
 
 __stdcall BufferDone( UINT, unsigned int, LPARAM );

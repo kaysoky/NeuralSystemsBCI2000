@@ -8,6 +8,8 @@
 
 #include "dtfun.h"
 #include "GenericADC.h"
+#include "UGenericSignal.h"
+
 
 class DTADC : public GenericADC
 {
@@ -19,21 +21,19 @@ class DTADC : public GenericADC
   virtual void Initialize();
   virtual void Process( const GenericSignal*, GenericSignal* );
   virtual void Halt();
- private:
-  int ADConfig();
 
  private:
   int   samplerate;
   int   blocksize;
   int   channels;
   int   SleepTime;
-  UINT  ChanType;
-  UINT  ListSize;
-  DBL   dGain;
-  int   ClkSource;
-  DBL   dfFreq;
-  UINT  Bufferpts;
+  // DBL   dGain;
+  // int   ClkSource;
+  // DBL   dfFreq;
+  // UINT  Bufferpts;
   int   StartFlag;
+  bool  Board2Active;
+  int   channelsb1, channelsb2;
 };
 
 #endif // DTADCH

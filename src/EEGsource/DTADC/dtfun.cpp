@@ -14,6 +14,7 @@ DTFUN::DTFUN( void )
 {
  data_critsec=new TCriticalSection();
  bdone=NULL;
+ outputclockonusercounter=false;         // this is to output the sample clock onto the user counter
 }
 //---------------------------------------------------------------------------
 
@@ -26,12 +27,18 @@ DTFUN::~DTFUN( void )
 }
 
 //---------------------------------------------------------------------------
-__fastcall DTFUN::Start( void )
+int DTFUN::Start( void )
 {
 int     ret;
 ECODE   status;
 
- status= olDaStart( lphDass );
+ // if we output the driving A/D sample clock on the user counter pin,
+ // then we start the system by starting the counter subsystem (A/D input pre-started in Config before)
+ if (outputclockonusercounter)
+    status= olDaStart( lphDassCT );
+ else
+    status= olDaStart( lphDass );
+
  ret=1;
  if (status != OLNOERROR) ret=0;
 
@@ -39,100 +46,115 @@ ECODE   status;
 }
 
 //----------------------------------------------------------------------------
-__fastcall DTFUN::Stop( void )
+int DTFUN::Stop( void )
 {
-        ECODE status;
+ECODE status;
 
-        status= olDaAbort(lphDass);
-        return( status );
+ status= olDaAbort(lphDass);
+ if (outputclockonusercounter)
+    status= olDaAbort(lphDassCT);
+
+ return( status );
 }
 //-----------------------------------------------------------------------------
 
-__fastcall DTFUN::Reset( void )
+int DTFUN::Reset( void )
 {
-        ECODE status;
+ECODE status;
 
-        status= olDaReset( lphDass );
-        return( status );
-}
+ status= olDaReset( lphDass );
+ if (outputclockonusercounter)
+    status= olDaReset(lphDassCT);
 
-//-----------------------------------------------------------------------------
-
-__fastcall DTFUN::CleanUp( void )
-{
-        int i;
-        int bcount;
-
-        status= olDaFlushBuffers( lphDass );
-
-        bcount= BUFNUM;
-
-        for(i=0;i<bcount;i++)
-        {
-                status= olDaGetBuffer( lphDass, &hbuf[i] );
-                status= olDmFreeBuffer( hbuf[i] );
-        }
-
-        status= olDaReleaseDASS( lphDass );
-
-        return( status );
+ return( status );
 }
 
 //-----------------------------------------------------------------------------
 
-__fastcall DTFUN::Terminator( void )
+int DTFUN::CleanUp( void )
 {
-        ECODE status;
-        status= olDaTerminate( lphDev );
+int     i, bcount, status;
 
-        return( status );
+ status= olDaFlushBuffers( lphDass );
+
+ bcount= BUFNUM;
+
+ for (i=0; i<bcount; i++)
+  {
+  status+= olDaGetBuffer( lphDass, &hbuf[i] );
+  status+= olDmFreeBuffer( hbuf[i] );
+  }
+
+ if (outputclockonusercounter)
+    status+= olDaReleaseDASS( lphDassCT );
+
+ status+= olDaReleaseDASS( lphDass );
+ return( status );
 }
 
 //-----------------------------------------------------------------------------
-void __fastcall DTFUN::SetWindow( HWND msgw )
+
+int DTFUN::Terminator( void )
 {
-        Ad_Win_Msg= msgw;
+ECODE status;
+
+ status= olDaTerminate( lphDev );
+
+ return( status );
+}
+
+//-----------------------------------------------------------------------------
+void DTFUN::SetWindow( HWND msgw )
+{
+ Ad_Win_Msg= msgw;
 }
 
 //---------------------------------------------------------------------------
 
-void __fastcall DTFUN::InitBoard( void )
+void DTFUN::InitBoard( const char *board_name, bool new_outputclockonusercounter )
 {
-        UINT uiElement;
-        UINT uiBits;
+UINT    uiElement;
+UINT    uiBits;
 
-        lpszName= BoardName;  // "BCI_IN";
-        lphDev = NULL;
+ outputclockonusercounter=new_outputclockonusercounter;
 
-        uiElement= 0;
+ SetBoardName(board_name);
 
-        status= olDaInitialize( lpszName, &lphDev );
+ lpszName= BoardName;  // "BCI_IN";
+ lphDev = NULL;
+ uiElement= 0;
 
-        status= olDaGetDASS( lphDev,
-                             OLSS_AD,
-                             uiElement,
-                             &lphDass) ;
+ // initialize this board
+ status= olDaInitialize( lpszName, &lphDev );
 
-        uiDataFlow= OL_DF_CONTINUOUS;
+ // get a handle to the A/D subsystem
+ status= olDaGetDASS( lphDev, OLSS_AD, uiElement, &lphDass) ;
 
-        status= olDaSetDataFlow( lphDass, uiDataFlow );
+ // do we want to output the sample clock onto the user counter pin?
+ // (this user counter pin is used as an A/D sample clock input for this board
+ // and can also be used to synchronize boards
+ if (outputclockonusercounter)
+    status= olDaGetDASS(lphDev, OLSS_CT, 0, &lphDassCT);
 
-        iMsg= status;
+ uiDataFlow= OL_DF_CONTINUOUS;
+ status= olDaSetDataFlow( lphDass, uiDataFlow );
 
-        status= olDaGetResolution( lphDass, (LPUINT)&uiBits );
-        ADSize= (int)uiBits;
+ iMsg= status;
 
+ status= olDaGetResolution( lphDass, (LPUINT)&uiBits );
+ ADSize= (int)uiBits;
 }
 
 //--------------------------------------------------------------------
 
-UINT __fastcall DTFUN::SetChanType( UINT ChanType )
+UINT DTFUN::SetChanType( UINT ChanType )
 {
-       errc= olDaSetChannelType( lphDass, ChanType);
-       return( errc );
+ errc= olDaSetChannelType( lphDass, ChanType);
+
+ return( errc );
 }
 
-UINT __fastcall DTFUN::SetChanList( UINT ListSize, DBL dGain )
+UINT DTFUN::SetChanList( UINT ListSize, DBL dGain )
 {
      int count;
 
@@ -150,7 +172,7 @@ UINT __fastcall DTFUN::SetChanList( UINT ListSize, DBL dGain )
 }
 
 
-DBL __fastcall DTFUN::SetClock(int ClockSource, DBL Freq )
+DBL DTFUN::SetClock(int ClockSource, DBL Freq )
 {
         ECODE status;
 
@@ -172,14 +194,14 @@ DBL __fastcall DTFUN::SetClock(int ClockSource, DBL Freq )
         return( Freq );
 }
 
-ECODE __fastcall DTFUN::SetWndHandle( void )
+ECODE DTFUN::SetWndHandle( void )
 {
 
         errc= olDaSetWndHandle( lphDass, Ad_Win_Msg, lParam );
         return( errc );
 }
 
-ECODE __fastcall DTFUN::SetBuffers( DWORD BufSize )
+ECODE DTFUN::SetBuffers( DWORD BufSize )
 {
         int i;
         ECODE retval= 0;
@@ -204,39 +226,44 @@ ECODE __fastcall DTFUN::SetBuffers( DWORD BufSize )
 }
 
 //----------------------------------------------------------------
-
-void __fastcall DTFUN::Add_to_data(short lphBuf[], ULNG samples)
+void DTFUN::SetBoardName(const char *new_board_name)
 {
-        unsigned i;
-
-        if (ADSize == 16)       // check for resolution of A/D converter
-           {
-           for(i=0;i<samples;i++)
-            {
-            data[BufferPtr]= (short)(lphBuf[i]-32678);
-            BufferPtr++;
-            }
-           }
-        else
-           {
-           for(i=0;i<samples;i++)
-            {
-            data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
-            BufferPtr++;
-            }
-           }
-
-        BufferCount++;
+ strcpy(BoardName, (const char *)new_board_name);
 }
 
 
-void __fastcall DTFUN::SetFunction(  void )
+void DTFUN::Add_to_data(short lphBuf[], ULNG samples)
+{
+unsigned        i;
+
+ if (ADSize == 16)       // check for resolution of A/D converter
+    {
+    for (i=0; i<samples; i++)
+     {
+     data[BufferPtr]= (short)(lphBuf[i]-32678);
+     BufferPtr++;
+     }
+    }
+ else
+    {
+    for (i=0; i<samples; i++)
+     {
+     data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
+     BufferPtr++;
+     }
+    }
+
+ BufferCount++;
+}
+
+
+void DTFUN::SetFunction(  void )
 {
 OLNOTIFYPROC    lpfnNotifyProc;
 ECODE           errc;
 
  lpfnNotifyProc=(OLNOTIFYPROC)&BufferDone;
- errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, lParam );
+ errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, (LPARAM)this );   // tell the callback function which instance of DTADC called it
  if (bdone) delete bdone;
  bdone= new TEvent(NULL,false,false,"");
 }
@@ -249,6 +276,7 @@ ECODE           errc;
 // that causes this function to be called unevenly spaced in time
 // this only happens under certain circumstances (i.e., number of channels,
 // SampleBlockSize, and sampling frequency)
+// see corresponding description in BCI2000 documentation
 __stdcall BufferDone( UINT uiMsg, unsigned int Dass, LPARAM lParam )
 {
 ECODE   status;
@@ -274,34 +302,65 @@ HDASS   lphDass;
 
     buffer= (short *)lphBuf;
 
-    dtfun.data_critsec->Acquire();
-    dtfun.Add_to_data( buffer, samples );  // add data to FIFO
-    dtfun.data_critsec->Release();
+    ((DTFUN *)(lParam))->data_critsec->Acquire();
+    ((DTFUN *)(lParam))->Add_to_data( buffer, samples );  // add data to FIFO
+    ((DTFUN *)(lParam))->data_critsec->Release();
     }
 
  // notify ADReadDataBlock() that data is here
- dtfun.bdone->SetEvent();
+ ((DTFUN *)(lParam))->bdone->SetEvent();
  return(0);
 }
 
 
-ECODE __fastcall DTFUN::ConfigAD( UINT ChanType,
+ECODE DTFUN::ConfigAD( UINT ChanType,
                                  UINT ListSize,
                                  DBL  Gain,
                                  int  ClockSource,
                                  DBL  Freq,
                                  DWORD BufSize   )
 {
+int status;
+
         ECODE result= 0;
         BufferSize= (int)BufSize;
 
         result+= SetChanType( ChanType );
-        result+= SetChanList( ListSize,Gain );
-        Freq= SetClock(ClockSource,Freq );
+        result+= SetChanList( ListSize, Gain );
+        Freq= SetClock(ClockSource, Freq );       // ClockSource=0 ... internal, 1=external
         result+= SetWndHandle();
         result+= SetBuffers( BufSize );
 
         ClockHz= Freq;
 
-        return( result );
+        // do we want to output the sample clock onto the user counter pin?
+        // (this user counter pin can then be used as an A/D sample clock input for another board
+        // and is also used to drive this particular board
+        // NOTE that the user counter pin has to be wired externally to the A/D Sample Clock In pin
+        if (outputclockonusercounter)
+           {
+           // set the cascade mode
+           status= olDaSetCascadeMode(lphDassCT, OL_CT_SINGLE);
+           // set up the clocks and gates
+           // use an internal clock
+           status= olDaSetClockSource(lphDassCT, OL_CLK_INTERNAL);
+           // set the clock frequency
+           status= olDaSetClockFrequency(lphDassCT, ClockHz);
+           // specify the gate to enable the C/T operation
+           status= olDaSetGateType(lphDassCT, OL_GATE_NONE);
+           // status= olDaSetGateType(lphDassCT, OL_GATE_HIGH_LEVEL);
+           // specify the mode for continuous output
+           status= olDaSetCTMode(lphDassCT, OL_CTMODE_RATE);    // as opposed to OL_CTMODE_ONESHOT
+           // specify the output pulse type
+           status= olDaSetPulseType(lphDassCT, OL_PLS_HIGH2LOW);
+           // specify the duty cycle or pulse width
+           status= olDaSetPulseWidth(lphDassCT, 100);
+           // configure the subsystem
+           status= olDaConfig( lphDassCT );
+           // if we use a self-generated clock, then pre-start the A/D conversion here
+           // start of sampling will be triggered when counter/clock is started
+           status= olDaStart( lphDass );
+           }
+
+ return( result );
 }
