@@ -349,7 +349,6 @@ int     displayseconds;
 int TfMain::ConfigureSource()
 {
 const PARAM   *visparam;
-char    errmsg[1024];
 int     res;
 
  try{
@@ -358,8 +357,7 @@ int     res;
  res=tds->Initialize(&paramlist, &statelist, statevector);
  if (res == 0)
     {
-    sprintf(errmsg, "411 Error in Source ! %s", tds->error.GetErrorMsg());
-    corecomm->SendStatus(errmsg);
+    corecomm->SendStatus("411 Error in Source !");
     return(0);
     }
  tds->Resume();
@@ -370,8 +368,7 @@ int     res;
  res=adc->ADInit();
  if (res == 0)
     {
-    sprintf(errmsg, "411 Error in Source ! %s", adc->error.GetErrorMsg());
-    corecomm->SendStatus(errmsg);
+    corecomm->SendStatus("411 Error in Source !");
     return(0);
     }
 
@@ -402,8 +399,7 @@ int     res;
 
  } catch(...)   // catch any exception that might have been thrown in here
     {
-    sprintf(errmsg, "411 Error in Source: Exception thrown while initializing: !");
-    corecomm->SendStatus(errmsg);
+    corecomm->SendStatus("411 Error in Source: Exception thrown while initializing: !");
     adc->ADShutdown();
     return(0);
     }
@@ -427,7 +423,6 @@ static unsigned short   oldrunning=0;
 unsigned short          sourcetime, stimulustime;
 unsigned short          running;
 BCITIME bcitime;
-char    errmsg[1024];
 PARAM   *visparam;
 int     i, ret;
 int     x, y, res;
@@ -441,8 +436,7 @@ int     x, y, res;
  res=ConfigureSource();
  if (res == 0)
     {
-    sprintf(errmsg, "415 Error (re)configuring Source");
-    corecomm->SendStatus(errmsg);
+    corecomm->SendStatus("415 Error (re)configuring Source");
     return;
     }
 
@@ -459,8 +453,7 @@ int     x, y, res;
   // if there is a problem, suspend the system
   if (res == 0)
      {
-     sprintf(errmsg, "411 Error in Source ! %s", adc->error.GetErrorMsg());
-     corecomm->SendStatus(errmsg);
+     corecomm->SendStatus("411 Error in Source !");
      statevector->SetStateValue("Running", 0);
      running=0;
      Sleep(500);
@@ -473,8 +466,7 @@ int     x, y, res;
      {
      if (statevectorupdate->WaitFor(10000) == wrTimeout)
         {
-        sprintf(errmsg, "301 State vector update timeout");
-        corecomm->SendStatus(errmsg);
+        corecomm->SendStatus("301 State vector update timeout");
         }
      critsec_statevector->Acquire();
      statevector->CommitStateChanges();
@@ -514,8 +506,7 @@ int     x, y, res;
   res=Write2SignalProc(adc->Signal(), statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
   if (res == 0)
      {
-     sprintf(errmsg, "411 Error in Source: Could not send data to Signal Processing !");
-     corecomm->SendStatus(errmsg);
+     corecomm->SendStatus("411 Error in Source: Could not send data to Signal Processing !");
      statevector->SetStateValue("Running", 0);
      running=0;
      }
@@ -524,8 +515,7 @@ int     x, y, res;
      {
      if (!(tds->Write2Disk(adc->Signal())))
         {
-        sprintf(errmsg, "411 Error in Source: %s", tds->error.GetErrorMsg());
-        corecomm->SendStatus(errmsg);
+        corecomm->SendStatus("411 Error in Source");
         statevector->SetStateValue("Running", 0);
         running=0;
         }

@@ -43,7 +43,6 @@ NewRunNo= 0;
  useflag= 1;
 
  FName = new char [255];
- error.SetErrorMsg("");
 
  event=new TEvent(NULL, false, false, "");
 
@@ -213,8 +212,10 @@ char    errmsg[1024];
  // if we can't open the target file name, return 0 (failure)
  if ((fp = fopen(FName, "ab") ) == NULL)
     {
+#if 0
     sprintf(errmsg, "Could not open data file %s !!", FName);
     error.SetErrorMsg(errmsg);
+#endif
     // the next time it shall create a new file name
     // from the parameters since it failed initializing
     useflag=1;
@@ -368,7 +369,9 @@ char    *cur_ptr;
  // all buffers filled
  if (ptr >= MAX_BUFFERS-1)
     {
+#if 0
     error.SetErrorMsg("Data Storage: All Buffers Filled !!");
+#endif
     return(false);
     }
 

@@ -4,7 +4,6 @@
 #define UStorageH
 //---------------------------------------------------------------------------
 
-#include "UBCI2000Error.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UGenericSignal.h"
@@ -44,7 +43,6 @@ protected:
 public:
         __fastcall TDataStorage::TDataStorage(PARAMLIST *paramlist);
         __fastcall TDataStorage::~TDataStorage();
-        BCI2000ERROR   error;
         int     Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector);
         void    WriteHeader();
         bool    Write2Disk(const GenericIntSignal *StoreSignal);

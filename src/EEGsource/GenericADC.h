@@ -4,7 +4,6 @@
 #define GenericADCH
 //---------------------------------------------------------------------------
 
-#include "UBCI2000Error.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UGenericSignal.h"
@@ -34,8 +33,6 @@ class GenericADC
     virtual int ADInit() = 0;
     virtual int ADReadDataBlock() = 0;
     virtual int ADShutdown() = 0;
-
-    BCI2000ERROR error;
 
   protected:
     int samplerate;
