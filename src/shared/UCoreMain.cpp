@@ -320,7 +320,9 @@ TfMain::ResetStatevector()
 void
 TfMain::InitializeFilters()
 {
+  __bcierr.clear();
   GenericFilter::HaltFilters();
+  bool errorOccurred = ( __bcierr.flushes() > 0 );
 #if 1//( MODTYPE == EEGSRC )
   // The first state vector written to disk is not the one
   // received in response to the first EEG data block. Without resetting it
@@ -354,11 +356,10 @@ TfMain::InitializeFilters()
 #endif
   mInputProperties = SignalProperties( numInputChannels, numInputElements, 2 );
   SignalProperties outputProperties( 0, 0 );
-  __bcierr.clear();
   Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::PreflightFilters( mInputProperties, outputProperties );
   Environment::EnterNonaccessPhase();
-  bool errorOccurred = ( __bcierr.flushes() > 0 );
+  errorOccurred |= ( __bcierr.flushes() > 0 );
   if( !errorOccurred )
   {
     mOutputSignal = GenericSignal( outputProperties );
