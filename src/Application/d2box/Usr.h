@@ -9,6 +9,7 @@
 #include <Forms.hpp>
 #include "UGenericFilter.h"
 #include <ExtCtrls.hpp>
+#define MAXFOILS  32
 
 void SetUsr( PARAMLIST *plist, STATELIST *slist);
 
@@ -21,6 +22,7 @@ __published:	// IDE-managed Components
         TLabel *tT;
         TLabel *tO;
 private:	// User declarations
+        TShape *Foil[MAXFOILS];
         int Wx;                 // task window x location
         int Wy;                 // task window y location
         int Wxl;                // task window x size
@@ -34,6 +36,7 @@ private:	// User declarations
         float limit_right;
         float xscalef;
         float yscalef;
+        int maxfoils;
 
 public:		// User declarations
         int HalfCursorSize;     // 1/2 of cursor size
@@ -44,8 +47,10 @@ public:		// User declarations
         void GetLimits( float *, float *, float *, float * );
         void GetSize( float *, float *, float *, float *);
        // void TestCursorLocation( float x, float y );
+        void makeFoil( int, int, int, int, int );
         void PutCursor( float *y, float *x, TColor color );      // self explanitory
         void PutTarget( float x, float y, float sizex, float sizey, TColor color );
+        void PutFoils( int n, TColor color ) ;
         void PutT(bool);
         void PutO(bool);
         void Clear( void );

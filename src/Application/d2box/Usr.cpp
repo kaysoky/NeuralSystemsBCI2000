@@ -78,6 +78,8 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
        limit_left= 0; // HalfCursorSize;  //  0; CursorSize/2;
        limit_right= Wxl; // - HalfCursorSize; // - CursorSize/2;
 
+       maxfoils= 0;
+
        User->Show();
 }
 //----------------------------------------------------------------------------
@@ -156,12 +158,44 @@ void TUser::PutTarget(float x, float y, float sizex, float sizey, TColor color )
         Target->Width = sizex;
         Target->Brush->Color= color;
 }
+void TUser::makeFoil( int n, int x,  int y, int sizex,  int sizey  )
+{
+        Foil[n]= new TShape( this );
+        Foil[n]->Parent= this;
+        Foil[n]->Top=  y;
+        Foil[n]->Left= x;
+        Foil[n]->Height= sizey;
+        Foil[n]->Width=  sizex;
+        Foil[n]->Brush->Color= clBlack;
+        Foil[n]->Shape= stRectangle;
+        Foil[n]->Visible= false;
+        Foil[n]->Brush->Style= bsClear;
+}
+
+void TUser::PutFoils( int n, TColor color )
+{
+        Foil[n]->Brush->Color= color;
+        Foil[n]->Visible= true;
+        Foil[n]->Brush->Style= bsSolid;
+
+        if( n > maxfoils ) maxfoils= n;
+}
+
 
 //-----------------------------------------------------------------------
 void TUser::Clear( void )
 {
+        int i;
+        
         Target->Brush->Color= clBlack;
         Cursor->Brush->Color= clBlack;
+
+        for(i=0;i<maxfoils;i++)
+        {
+                Foil[i+1]->Brush->Color= clBlack;
+                Foil[i+1]->Visible= false;
+                Foil[i+1]->Brush->Style= bsClear;
+        }
         Refresh();
 }
 
