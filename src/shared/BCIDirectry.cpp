@@ -15,6 +15,7 @@
 
 using namespace std;
 
+static const char BCIFileExtension[] = ".dat";
 
 const string&
 BCIDirectory::InstallationDirectory()
@@ -94,7 +95,7 @@ BCIDirectory::ChangeForceDir( const string& inPath )
 string
 BCIDirectory::ConstructFileName() const
 {
-  int runNumber = GetLargestRun( DirectoryPath() );
+  int runNumber = GetLargestRun( DirectoryPath() ) + 1;
   if( mRunNumber > runNumber )
     runNumber = mRunNumber;
   ostringstream oss;
@@ -114,9 +115,10 @@ BCIDirectory::GetLargestRun( const string& inPath )
 {
   int largestRun = 0;
   AnsiString path = inPath.c_str();
-  path += "*.dat";
+  path += "*";
+  path += BCIFileExtension;
   TSearchRec sr;
-  if( Sysutils::FindFirst( path, faAnyFile, sr ) )
+  if( !Sysutils::FindFirst( path, faAnyFile, sr ) )
   {
     do
     {

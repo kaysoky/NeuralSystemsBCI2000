@@ -20,11 +20,11 @@
 #include "UBCIError.h"
 #include "BCIDirectry.h"
 #include "UBCItime.h"
+
 #include <stdio.h>
 #include <fstream>
+#include <iostream>
 #include <iomanip>
-
-# include <iostream>
 
 using namespace std;
 
