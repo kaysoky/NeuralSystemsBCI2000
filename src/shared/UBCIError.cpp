@@ -36,7 +36,7 @@ using namespace BCIError;
 bci_ostream __bcierr;
 bci_ostream __bciout;
 
-std::ostream&
+ostream&
 bci_ostream::operator()( const char* inInfoHeader )
 {
 #if 0
@@ -59,6 +59,7 @@ bci_ostream::bci_stringbuf::SetFlushHandler( bci_ostream::flush_handler f )
     on_flush( str() );
   else
     f( str() );
+  str( "" );
   on_flush = f;
 }
 
@@ -77,26 +78,26 @@ bci_ostream::bci_stringbuf::sync()
 
 #ifdef BCI_TOOL // implementation for a filter wrapper
 void
-BCIError::Warning( const std::string& message )
+BCIError::Warning( const string& message )
 {
 }
 
 void
-BCIError::ConfigurationError( const std::string& message )
+BCIError::ConfigurationError( const string& message )
 {
   if( message.length() > 1 )
     cerr << "Configuration Error: " << message << endl;
 }
 
 void
-BCIError::RuntimeError( const std::string& message )
+BCIError::RuntimeError( const string& message )
 {
   if( message.length() > 1 )
     cerr << "Runtime Error: " << message << endl;
 }
 
 void
-BCIError::LogicError( const std::string& message )
+BCIError::LogicError( const string& message )
 {
   if( message.length() > 1 )
     cerr << "Logic Error: " << message << endl;
@@ -106,7 +107,7 @@ BCIError::LogicError( const std::string& message )
 // on the core module side.
 struct StatusMessage
 {
- void operator()( const std::string& text, int code )
+ void operator()( const string& text, int code )
  {
   static ostream* op = NULL;
   if( op == NULL )
@@ -130,28 +131,28 @@ struct StatusMessage
 } StatusMessage;
 
 void
-BCIError::Warning( const std::string& message )
+BCIError::Warning( const string& message )
 {
   if( message.length() > 1 )
     StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), 301 );
 }
 
 void
-BCIError::ConfigurationError( const std::string& message )
+BCIError::ConfigurationError( const string& message )
 {
   if( message.length() > 1 )
     StatusMessage( message.substr( 0, message.length() - 1 ), 408 );
 }
 
 void
-BCIError::RuntimeError( const std::string& message )
+BCIError::RuntimeError( const string& message )
 {
   if( message.length() > 1 )
     StatusMessage( message.substr( 0, message.length() - 1 ), 409 );
 }
 
 void
-BCIError::LogicError( const std::string& message )
+BCIError::LogicError( const string& message )
 {
   if( message.length() > 1 )
     StatusMessage( message.substr( 0, message.length() - 1 ), 499 );
