@@ -24,6 +24,8 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
         vis= NULL;
         appl= NULL;
 
+        strcpy(line,"UsrTask int PreRunInterval= 20 0 0 100 // Pause prior to starting a run (in units of SampleBlocks)");
+        plist->AddParameter2List(line,strlen(line));
         strcpy(line,"UsrTask int PreTrialPause= 10 0 0 1 // Duration of Target w/o cursor");
         plist->AddParameter2List(line,strlen(line));
         strcpy(line,"UsrTask int ItiDuration= 10 0 0 1 // Duration of Intertrial Interval");
@@ -45,18 +47,15 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
         slist->AddState2List("ResultCode 5 0 0 0\n");
         slist->AddState2List("StimulusTime 16 17528 0 0\n");
         slist->AddState2List("Feedback 2 0 0 0\n");
-        slist->AddState2List("IntertrialInterval 2 1 0 0\n");
+        slist->AddState2List("IntertrialInterval 2 0 0 0\n");
         slist->AddState2List("RestPeriod 2 0 0 0\n");
         slist->AddState2List("CursorPosX 16 0 0 0\n");
         slist->AddState2List("CursorPosY 16 0 0 0\n");
-
-
 
         User->SetUsr( plist, slist );
 
         OldRunning=0;
         OldCurrentTarget=0;
-
 }
 
 //-----------------------------------------------------------------------------
@@ -80,6 +79,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 
         corecomm=new_corecomm;
 
+        PreRunInterval=         atoi(plist->GetParamPtr("PreRunInterval")->GetValue());
         PtpDuration=            atoi(plist->GetParamPtr("PreTrialPause")->GetValue());
         ItiDuration=            atoi(plist->GetParamPtr("ItiDuration")->GetValue());
         OutcomeDuration=        atoi(plist->GetParamPtr("RewardDuration")->GetValue());
@@ -134,7 +134,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         vis->SetSourceID(SOURCEID_TASKLOG);
         vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
-        User->Initialize( plist, slist );
+        User->Initialize( plist, slist, corecomm );
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
         User->Scale( (float)0x7fff, (float)0x7fff );
         ComputeTargets( Ntargets );
@@ -155,7 +155,18 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         BaselineTime= 0;
         CurrentFeedback= 0;
         FeedbackTime= 0;
-        CurrentIti= 1;
+        // if there is no PreRunInterval (i.e., it is 0), switch to ITI directly
+        if (PreRunInterval > 0)
+           {
+           CurrentPri= 1;
+           CurrentIti= 0;
+           }
+        else
+           {
+           CurrentPri= 0;
+           CurrentIti= 1;
+           }
+        PriTime= 0;
         ItiTime= 0;
         CurrentFeedback= 0;
         FeedbackTime= 0;
@@ -185,7 +196,7 @@ void TTask::ReadStateValues(STATEVECTOR *statevector)
                 }
 
         CurrentRest=         statevector->GetStateValue("RestPeriod");
-        
+
 }
 
 void TTask::WriteStateValues(STATEVECTOR *statevector)
@@ -214,11 +225,11 @@ void TTask::ComputeTargets( int ntargs )
 
         for(i=0;i<ntargs;i++)
         {
-                targx[i+1]=      limit_right - ( 1.0 * TargetWidth );
-                targsizex[i+1]=  TargetWidth;
-                targy[i+1]=      limit_top + i * y_range/ntargs;
-                targsizey[i+1]=  y_range/ntargs;
-                targy_btm[i+1]=  targy[i+1]+targsizey[i+1];
+                User->targx[i+1]=      limit_right - ( 1.0 * TargetWidth );
+                User->targsizex[i+1]=  TargetWidth;
+                User->targy[i+1]=      limit_top + i * y_range/ntargs;
+                User->targsizey[i+1]=  y_range/ntargs;
+                User->targy_btm[i+1]=  User->targy[i+1]+User->targsizey[i+1];
         }
 
 }
@@ -271,42 +282,37 @@ void TTask::TestCursorLocation( float x, float y )
 
         x*= User->scale_x;
         y*= User->scale_y;
-        
+
         if( x > ( limit_right - TargetWidth ) )
         {
-                User->PutCursor( x_pos, y_pos, clYellow );
+                User->PutCursor( x_pos, y_pos, CURSOR_RESULT );
 
                 CurrentOutcome= 1;
 
-                if( y < targy[1] )              y= targy[1];
-                if( y > targy_btm[Ntargets] )   y= targy_btm[Ntargets];
+                if( y < User->targy[1] )              y= User->targy[1];
+                if( y > User->targy_btm[Ntargets] )   y= User->targy_btm[Ntargets];
 
                 for(i=0;i<Ntargets;i++)
                 {
-                        if( ( y > targy[i+1] ) && ( y<= targy_btm[i+1] ) )
+                        if( ( y > User->targy[i+1] ) && ( y<= User->targy_btm[i+1] ) )
                         {
                                 CurrentOutcome= i+1;
 
                         }
                 }
 
+                // flash outcome (only) when YES/NO (display the same for hits and misses)
+                User->Outcome(0, CurrentOutcome );
+
                 if( CurrentOutcome == CurrentTarget )
                 {
-                         User->PutTarget( targx[ CurrentTarget ],
-                                 targy[ CurrentTarget ],
-                                 targsizex[ CurrentTarget ],
-                                 targsizey[ CurrentTarget ],
-                                 clYellow   );
+                          User->PutTarget(CurrentTarget, TARGET_RESULT );
                           Hits++;
                           HitOrMiss=true;
                 }
                 else
                 {
-                         User->PutTarget( targx[ CurrentTarget ],
-                                 targy[ CurrentTarget ],
-                                 targsizex[ CurrentTarget ],
-                                 targsizey[ CurrentTarget ],
-                                 clBlack   );
+                         User->PutTarget(CurrentTarget, TARGET_OFF );
                          Misses++;
                          HitOrMiss=false;
                 }
@@ -333,9 +339,7 @@ void TTask::UpdateSummary( void )
 
 void TTask::UpdateDisplays( void )
 {
-
 char            memotext[256];
-
 
  if (CurrentRunning == 0)
     CurrentRunning=0;
@@ -345,6 +349,9 @@ char            memotext[256];
     User->Clear();
     User->PutT(true);
     CurrentIti=1;
+    CurrentFeedback=0;
+    CurrentTarget=0;
+    CurrentOutcome=0;
     }
  if (CurrentRunning == 1)
     {
@@ -423,6 +430,29 @@ char            memotext[256];
  OldCurrentTarget=CurrentTarget;
 }
 
+
+// if we have defined this period, show some initial feedback
+// after a run has been started
+void TTask::Pri( void )
+{
+ User->PreRunInterval(PriTime);
+ PriTime++;
+
+ // set all state variables to 0 in this period
+ CurrentIti=0;
+ CurrentTarget=0;
+ CurrentBaseline=0;
+ CurrentFeedback=0;
+ CurrentOutcome=0;
+
+ if (PriTime >= PreRunInterval)
+    {
+    CurrentPri=0;
+    CurrentIti=1;
+    }
+}
+
+
 void TTask::Iti( void )
 {
         if( BaselineInterval == 2 )
@@ -435,11 +465,7 @@ void TTask::Iti( void )
                 CurrentIti = 0;
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
-                User->PutTarget( targx[ CurrentTarget ],
-                                 targy[ CurrentTarget ],
-                                 targsizex[ CurrentTarget ],
-                                 targsizey[ CurrentTarget ],
-                                 clRed   );
+                User->PutTarget(CurrentTarget, TARGET_ON );
 
                 if( BaselineInterval == 1 )
                         CurrentBaseline= 1;
@@ -461,7 +487,7 @@ void TTask::Ptp( void )
                 y_pos= cursor_y_start;
                 if( User->scale_x > 0.0 ) x_pos/= User->scale_x;
                 if( User->scale_y > 0.0 ) y_pos/= User->scale_y;
-                User->PutCursor( x_pos, y_pos, clRed );
+                User->PutCursor( x_pos, y_pos, CURSOR_ON );
                 CurrentFeedback= 1;
                 PtpTime= 0;
         }
@@ -473,7 +499,7 @@ void TTask::Feedback( short sig_x, short sig_y )
 
         x_pos+= sig_x;
         y_pos+= sig_y;
-        User->PutCursor( x_pos, y_pos, clRed );
+        User->PutCursor( x_pos, y_pos, CURSOR_ON );
         TestCursorLocation( x_pos, y_pos );
 }
 
@@ -481,14 +507,15 @@ void TTask::Feedback( short sig_x, short sig_y )
 void TTask::Outcome()
 {
         OutcomeTime++;
+        User->Outcome( OutcomeTime, CurrentOutcome );                   // flash outcome when YES/NO
 
-        if( OutcomeTime > OutcomeDuration )
+        if( OutcomeTime >= OutcomeDuration-1 )
         {
                 CurrentIti= 1;
                 CurrentOutcome= 0;
                 CurrentTarget= 0;
                 OutcomeTime= 0;
-                User->PutCursor( x_pos, y_pos, clBlack );
+                User->PutCursor( x_pos, y_pos, CURSOR_OFF );
         }
 }
 
@@ -530,6 +557,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
         if( CurrentRunning > 0 )
         {
                 if(CurrentRest > 0 )             Rest();
+                else if (CurrentPri > 0)         Pri();
                 else if (CurrentIti > 0)         Iti();
                 else if (CurrentFeedback > 0 )   Feedback(signals[1], signals[0]);
                 else if (CurrentOutcome  > 0 )   Outcome();

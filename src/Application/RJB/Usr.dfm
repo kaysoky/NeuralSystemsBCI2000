@@ -14,11 +14,11 @@ object User: TUser
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object Cursor: TShape
-    Left = 16
-    Top = 184
-    Width = 49
-    Height = 49
+  object Target2: TShape
+    Left = 495
+    Top = 320
+    Width = 25
+    Height = 145
     Brush.Color = clBlack
   end
   object Target: TShape
@@ -53,6 +53,78 @@ object User: TUser
     Font.Color = clBlue
     Font.Height = -400
     Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    Transparent = True
+    Visible = False
+  end
+  object TargetText1: TLabel
+    Left = 448
+    Top = 120
+    Width = 73
+    Height = 42
+    Caption = 'YES'
+    Color = clNone
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clYellow
+    Font.Height = -37
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    Transparent = True
+  end
+  object TargetText2: TLabel
+    Left = 456
+    Top = 304
+    Width = 56
+    Height = 42
+    Caption = 'NO'
+    Color = clNone
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clYellow
+    Font.Height = -37
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+    Transparent = True
+  end
+  object ResultText: TLabel
+    Left = 455
+    Top = 216
+    Width = 62
+    Height = 42
+    Caption = 'N/A'
+    Color = clNone
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clYellow
+    Font.Height = -37
+    Font.Name = 'Arial'
+    Font.Style = []
+    ParentColor = False
+    ParentFont = False
+  end
+  object Cursor: TShape
+    Left = 16
+    Top = 184
+    Width = 49
+    Height = 49
+    Brush.Color = clBlack
+  end
+  object tPreRunIntervalText: TLabel
+    Left = 70
+    Top = 123
+    Width = 399
+    Height = 223
+    Alignment = taCenter
+    Caption = 'YES'
+    Color = clBlack
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clLime
+    Font.Height = -200
+    Font.Name = 'Arial'
     Font.Style = []
     ParentColor = False
     ParentFont = False

@@ -25,11 +25,6 @@ private:
         float limit_top;
         float limit_bottom;
         float TargetWidth;
-        float targx[NTARGS+1];
-        float targy[NTARGS+1];
-        float targsizex[NTARGS+1];
-        float targsizey[NTARGS+1];
-        float targy_btm[NTARGS+1];
 
         int Ntargets;
         int targetcount;
@@ -41,7 +36,7 @@ private:
         unsigned short OldRunning;
         unsigned short OldCurrentTarget;
 
-        bool HitOrMiss;                          // after trial: true, if hit; false if miss 
+        bool HitOrMiss;                          // after trial: true, if hit; false if miss
 
         long randseed;
 
@@ -57,13 +52,16 @@ private:
         unsigned short CurrentFeedback;
         int FeedbackTime;
         unsigned short CurrentIti;              // value of state - internal
+        unsigned short CurrentPri;              // value of state - internal (not reflected in system state)
         unsigned short CurrentRunning;          // value of state - internal
         unsigned short CurRunFlag;              // special flag to prevent auto restart
        // int Resting;                            // value of parameter for resting data acquisition period
         unsigned short CurrentRest;             // value of state- internal
         int Resting;
         int ItiTime;                            // Counter - internal
+        int PriTime;                            // Counter - internal
         int ItiDuration;                        // Goal    - internal
+        int PreRunInterval;
         int PtpTime;                            // Pretrial Pause
         int PtpDuration;
         float runstarttime;                     // time run begins
@@ -75,6 +73,7 @@ private:
 
         void ShuffleTargs( int ntargs );
         void Rest( void );
+        void Pri( void );
         void Iti( void );
         void Ptp( void );
         void Feedback( short, short );
