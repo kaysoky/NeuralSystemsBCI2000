@@ -41,12 +41,18 @@ GARBAGE = *.obj *.tds *.csm *.~* *.\#* *.docinfo
 DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 # Where to put binaries below the installation root.
 BINDIR = prog
+# Where to put tools below the installation root if no separate tools directory is specified.
+TOOLSBINDIR = tools
 
 # Workaround macros to access shell operators.
 AND = &&
 OR = ||
 
 !include ${MKNAM}
+
+!ifndef TOOLSINSTALLDIR
+TOOLSINSTALLDIR = ${INSTALLDIR}\${TOOLSBINDIR}
+!endif
 
 !ifndef MAKEFILES
 ##################################################################################
@@ -59,6 +65,8 @@ all docinfo prepare clean install update pdf:
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.>>${MKNAM}
   echo ^#INSTALLDIR=      ^# The root directory for "make install".    >>${MKNAM}
+  echo ^#TOOLSINSTALLDIR= ^# Optionally, a separate tools destination\
+                             directory for "make install".             >>${MKNAM}
   echo MAKEFILES =\                                                    >>${MKNAM}
   -for /R %i in (*.bpr) do echo %~di%~pi%~ni.mak \                     >>${MKNAM}
   echo.                                                                >>${MKNAM}
@@ -123,18 +131,17 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                   >>$@
   @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\           >>$@
   @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES)    >>$@
-  @echo ^^ -_$^^(PROJECT)                                            >>$@
+  @echo ^^ -_$^^(PROJECT) ^>.docinfo                                 >>$@
   @echo ^^ -del _$^^(PROJECT)                                        >>$@
   @echo ^^ -del _*.tds                                               >>$@
   @echo prepare:                                                     >>$@
   @echo ^^ -attrib -r $^^(PROJECT)                                   >>$@
   @echo install: $^^(PROJECT)                                        >>$@
-  @echo ^^ if not exist ^^"$^(INSTALLDIR)\$(BINDIR)^" \
-             mkdir ^^"$^(INSTALLDIR)\$(BINDIR)^"                     >>$@
-  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(INSTALLDIR)\$(BINDIR)^"       >>$@
+  @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"      >>$@
+  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                    >>$@
   @echo update: $^^(PROJECT)                                         >>$@
-  @echo ^^ if exist ^^"$^(INSTALLDIR)\$(BINDIR)^" \
-            xcopy /d /u /y $^^(PROJECT) ^^"$^(INSTALLDIR)\$(BINDIR)^">>$@
+  @echo ^^ if exist ^^"$^(DESTDIR)^" \
+            xcopy /d /u /y $^^(PROJECT) ^^"$^(DESTDIR)^"             >>$@
   @echo clean:                                                       >>$@
   @echo ^^ -del $^^(PROJECT) $^^(OBJFILES)                           >>$@
   @echo.                                                             >>$@
@@ -169,8 +176,11 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   
 .mak.install:
 !ifdef INSTALLDIR
-  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
-                            -DINSTALLDIR="${INSTALLDIR}" install
+  ${SHELL} echo ${<D} | grep \\Tools\\ \
+    ${AND} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                              -DDESTDIR="${TOOLSINSTALLDIR}" install \
+    ${OR}  cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                            -DDESTDIR="${INSTALLDIR}\${BINDIR}" install
   ${DONE}
 !else  # !ifdef INSTALLDIR
   @echo.
@@ -181,8 +191,11 @@ pdf: ${LATEXDOCS:.tex=.pdf}
 
 .mak.update:
 !ifdef INSTALLDIR
-  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
-                            -DINSTALLDIR="${INSTALLDIR}" update
+  ${SHELL} echo ${<D} | grep \\Tools\\ \
+    ${AND} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                              -DDESTDIR="${TOOLSINSTALLDIR}" update \
+    ${OR}  cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                            -DDESTDIR="${INSTALLDIR}\${BINDIR}" update
   ${DONE}
 !else  # !ifdef INSTALLDIR
   @echo.
