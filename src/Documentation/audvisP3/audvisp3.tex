@@ -26,7 +26,7 @@
 
 %\include{title}
 \title{BCI2000-Compatible Audio-Visual P3 Task}
-\author{Gerwin Schalk, J\"{u}rgen Mellinger, Dennis Mc Farland}
+\author{Jennia Hizver, J\"{u}rgen Mellinger, Dennis McFarland, Gerwin Schalk}
 \maketitle
 
 \tableofcontents
@@ -172,8 +172,8 @@ An investigator can specify:
  \item Width and height of caption and icon in percent of screen
        width/height\footnote{Using, e.g., the \texttt{TImage::Stretch} property for scaling.}
  \item Whether captions, icons, or audio files will be presented
-       (i.e., a global switch -- for each stimulus, captions/icons/wave files
-       will not be presented individually, if not defined)
+       (i.e., a global switch). There are no individual switches for each stimulus. However,
+       captions/icons/wave files will not be presented for individual stimuli if they are not defined.
  \item The volume for audio playback as a float value between 0 and 1
  \item Window background color in RGB\footnote{For convenience, RGB values
        may be entered in hexadecimal notation, e.g. \texttt{0xff0000} for red.}
