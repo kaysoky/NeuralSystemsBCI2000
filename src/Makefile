@@ -136,6 +136,7 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   @echo ^^ -del _*.tds                                               >>$@
   @echo prepare:                                                     >>$@
   @echo ^^ -attrib -r $^^(PROJECT)                                   >>$@
+  @echo ^^ if not exist obj mkdir obj                                >>$@
   @echo install: $^^(PROJECT)                                        >>$@
   @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"      >>$@
   @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                    >>$@
