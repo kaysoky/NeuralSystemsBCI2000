@@ -23,7 +23,9 @@ class RandomNumberADC : public GenericADC
   short  DCoffset;
   size_t sinechannel, sinechannelx;
   bool   modulateamplitude;
+  bool   mTrueRandom;
   BCITIME mLasttime;
+  int mCount;  
 };
 
 #endif // RandomNumberADCH

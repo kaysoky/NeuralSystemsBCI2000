@@ -21,10 +21,11 @@
 #pragma hdrstop
 
 #include "RandomNumberADC.h"
-
+#include "UBCIError.h"
 #include "UGenericSignal.h"
 #include <stdio.h>
 #include <math.h>
+
 
 using namespace std;
 
@@ -48,10 +49,13 @@ RandomNumberADC::RandomNumberADC()
   DCoffset( 0 ),
   sinechannel( 0 ),
   sinechannelx( 0 ),
-  modulateamplitude( 0 )
+  modulateamplitude( 0 ),
+  mTrueRandom(false),
+  mCount(0)
+
 {
  mLasttime = -1;
- 
+
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SoftwareCh=      16 16 1 128 "
@@ -78,6 +82,8 @@ RandomNumberADC::RandomNumberADC()
        "// the maximum output value for noise",
    "Source int DCoffset=             0 0 -32767 32767 "
        "// DC offset (common to all channels)",
+   "Source int DoTrueRandom=        0 0 0 1"
+        "// Generate truely random sequence (0=no, 1=yes)",
  //"Source string MultiplierState=   -1 -1 0 0 "
  //    "// State to use as signal multiplier (-1 == don't use multiplier)",
  END_PARAMETER_DEFINITIONS
@@ -122,6 +128,12 @@ void RandomNumberADC::Preflight( const SignalProperties&,
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
        Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), signalDepth );
+
+  //Check wether DoTrueRandom and ModulateAmplitude (with mouse) are selected
+  /*
+  if(Parameter("DoTrueRandom")==1&&Parameter("ModulateAmplitude")==1)
+        bcierr<<"Selecting \"DoTrueRandom\" and \"ModulateAmplitude\" at the same time is not recommended.";
+        */
 }
 
 
@@ -150,6 +162,12 @@ void RandomNumberADC::Initialize()
   sinechannel = Parameter( "SineChannel" );
   sinechannelx = Parameter( "SineChannelX" );
   mLasttime = -1;
+  mTrueRandom = ((int)Parameter("DoTrueRandom")!=0);
+  if(!mTrueRandom)
+  {
+        mCount=0;
+        srand(0);
+  }
 }
 
 
@@ -164,7 +182,7 @@ void RandomNumberADC::Initialize()
 // **************************************************************************
 void RandomNumberADC::Process( const GenericSignal*, GenericSignal* signal )
 {
-static long count=0;
+//static long count=0;
 size_t  sample;
 size_t  channel;
 int     time2wait;
@@ -190,9 +208,10 @@ int     stateval, cursorpos, cursorposx;
   {
   cursorpos=Mouse->CursorPos.y/70+1;
   cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
+
   for (channel=0; channel<signal->Channels(); channel++)
    {
-   t=(double)(count+sample)/(double)samplerate*(double)sinefrequency;
+   t=(double)(mCount+sample)/(double)samplerate*(double)sinefrequency;
    value=0;
    // create the signal (for Y) on all channels, or on the one channel selected
    if ((sinechannel == 0) || (sinechannel == channel+1))
@@ -215,7 +234,9 @@ int     stateval, cursorpos, cursorposx;
          value=(int)((float)value/(float)cursorposx);
       }
    if (noisevalrange > 1)
-     noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
+   {
+           noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
+   }
    value+= noise;         // add noise after modulating sine wave
    value+=DCoffset;
    const maxvalue = 1 << 15 - 1,
@@ -228,7 +249,7 @@ int     stateval, cursorpos, cursorposx;
    }
   }
 
- count=count+signal->MaxElements();
+ mCount=mCount+signal->MaxElements();
 }
 
 
