@@ -29,7 +29,7 @@ class SignalProperties
 {
   public:
     SignalProperties( size_t inChannels, size_t inMaxElements )
-    : elements( inChannels, 0 ), maxElements( inMaxElements ) {}
+    : elements( inChannels, inMaxElements ), maxElements( inMaxElements ) {}
     virtual ~SignalProperties() {}
 
     virtual size_t Channels() const { return elements.size(); }
