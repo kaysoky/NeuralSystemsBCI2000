@@ -169,7 +169,6 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
        QuadTrend_Lrn_Rt= atof(paramlist->GetParamPtr("QuadTrendLrnRt")->GetValue() );
        desiredpix= atof(paramlist->GetParamPtr("DesiredPixelsPerSec")->GetValue());
        visualizeyn= atoi(paramlist->GetParamPtr("VisualizeStatFiltering")->GetValue() );
-       Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
 
        WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
        WtRate= atof(plist->GetParamPtr("WtLrnRt")->GetValue() );
@@ -181,6 +180,15 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
   }
  catch(...)
   { return(0); }
+
+ // in case NumberTargets defined (maybe we use it with a task that doesn't have different # targets)
+ // in this case, of course, all functions of statistics need to be turned off
+ try
+  {
+  Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
+  }
+ catch(...)
+  { Ntargets=4; }
 
   bcidtry= new BCIDtry();
 
