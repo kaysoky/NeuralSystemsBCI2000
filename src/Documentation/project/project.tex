@@ -19,6 +19,9 @@
   \setlength{\pictheight}{\textheight}
   \addtolength{\pictheight}{-2cm}
 
+%\newcommand{\todo}[1]{\textsf{\textbf{\Large{To do: #1}\normalsize}}}
+\newcommand{\todo}[1]{}
+
 % document
 \begin{document}
 
@@ -55,6 +58,7 @@ The project team consists of:
 %\vspace{2ex}
 \begin{itemize}
  \item{Thilo Hinterberger, Dr.}
+ \item{J\"urgen Mellinger}
  \item{Dennis McFarland, PhD}
  \item{Gerwin Schalk, MS}
 \end{itemize}
@@ -105,7 +109,7 @@ user.
 
 The following list shows the objectives in more detail. Although a major focus 
 will be on a modular and flexible system, the technical realization has to be 
-feasible. (This is not a programming contest for computer science gurus !!) 
+feasible, with special emphasis on the aspect of code maintenance.
 
 \begin{itemize}
  \item{Different brain signal components, derived from (with a clear focus on mu/beta and slow potentials):}
@@ -127,6 +131,7 @@ feasible. (This is not a programming contest for computer science gurus !!)
 
 
 \chapter{Project Plan}
+\todo{Should we drop this chapter, or update it?}
 
 \section{Work Breakdown Structure}
 
@@ -204,7 +209,9 @@ modules}.
 
 The same communication protocol is used between each of the three core modules 
 and the operator module. It is an asynchronous state-less application-level 
-protocol. Although it can be implemented on top of any transport protocol, it 
+protocol.
+\todo{What exactly does this mean? Is it actually true?}
+Although it can be implemented on top of any transport protocol, it 
 assumes the reliability of TCP (i.e., the protocol does not support 
 acknowledgements or packet sorting or any other means of error correction).
 
@@ -219,12 +226,23 @@ nature are not known \textit{a priori}.
 
 Communication consists of messages that are sent and received asynchronously 
 between any core module and the operator module. Each message starts with a one-
-byte content descriptor and one-byte descriptor supplement, followed by a 16-bit 
-unsigned integer (little endian) that describes the length of the content.
+byte content descriptor and one-byte descriptor supplement, followed by a number that describes the length of the content.
 
 \begin{figure}[ht]
  \centerline{\includegraphics{figures/operator_prot}}
  \caption{Layout of one message in the protocol}
+\end{figure}
+
+The element denoted by ``length field(2)" was originally a two-byte integer field
+for the content length in little endian format.
+To allow for messages longer than 64k, a backward compatible extension has been introduced -- if the length is below 65535, it will still be transmitted as a two-byte integer in little endian format. Otherwise, the two bytes will contain the value 65535, and be followed by a decimal ASCII representation of the length, terminated with a zero byte.
+For other one- and two-byte length fields occurring in the protocol, the same scheme applies, generalized to be a ``length field(original number of bytes)" 
+(Figure \ref{fig:length_field}).
+
+\begin{figure}[ht]
+ \centerline{\includegraphics{figures/length_field}}
+ \caption{Detailed layout of a length field(m) for a length $n \geq 2^m-1$}
+ \label{fig:length_field}
 \end{figure}
 
 \begin{table}[ht]
@@ -258,11 +276,11 @@ a status information string (i.e., the message's descriptor is 1). In this
 case, the aforementioned content data is a line of ASCII characters 
 in the following format:
 \\[2ex]
-xxx: status--line--text 
+\verb|xxx: status-line-text| 
 \\[2ex]
 xxx is a three digit number that describes the content of the status information string. 
-The first digit is '1' for status information, '2' for successful operation, '3' 
-for recoverable errors and '4' for fatal errors. The two remaining digits define 
+The first digit is `1' for status information, `2' for successful operation, `3' 
+for recoverable errors and `4' for fatal errors. The two remaining digits define 
 the exact nature of the message, followed by a plain description.
 
 This procedure is used to communicate errors and to convey status information (e.g.,
@@ -277,23 +295,31 @@ type system parameter (i.e., the message's descriptor is 2). In this case, the
 aforementioned content data is a line of ASCII characters (parameters delimited 
 by spaces) in the following format (Table \ref{tab:parametervariables} summarizes
 the individual components in the parameter string):
-\\[2ex]
-Section DataType Name= Value DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+\begin{verbatim}
+Section DataType Name= Value DefaultValue LowRange HighRange
+    // Comment CRLF
+\end{verbatim}
 If DataType is \textit{list, intlist} or \textit{floatlist}, the format is
 as follows: 
-\\[2ex]
-Section DataType Name= (NumValues$\mid${Labels}) Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
-where Labels is a list of textual labels that optionally substitutes the number denoted by NumValues. A list of labels is enclosed in a matching pair of any of \verb|{}, [], (), <>|, as in 
+\begin{verbatim}
+Section DataType Name= (NumValues|Labels) Value(s) DefaultValue
+    LowRange HighRange // Comment CRLF
+\end{verbatim}
+where \texttt{Labels} is a list of textual labels that optionally substitutes the number denoted by \texttt{NumValues}. A list of labels is enclosed in a matching pair of any of \verb|{}, [], (), <>|, as in 
 \verb|[low medium high]|.
 \\[2ex]
 If DataType is \textit{matrix}, the format is as follows:
-\\[2ex]
-Section DataType Name= (NumValuesDim1$\mid$LabelsDim1) (NumValuesDim2$\mid$LabelsDim2) Value(s) DefaultValue LowRange HighRange // Comment CRLF \\[2ex]
+\begin{verbatim}
+Section DataType Name= (NumValuesDim1|LabelsDim1)
+    (NumValuesDim2|LabelsDim2) Value(s) DefaultValue LowRange
+    HighRange // Comment CRLF
+\end{verbatim}
 where again each NumValues entry may be substituted by a list of textual labels.
 
 This format not only applies to the interaction between core and operator, but
 also reflects the data format of the system's parameter files (i.e., files with
-extension .prm). The core modules and the operator module use this format to
+extension .prm) as well as the parameter portion of the system's data (.dat) files.
+The core modules and the operator module use this format to
 communicate in the system initialization phase (as described in section \ref{system_init}).
 
 \begin{table}[ht]
@@ -331,7 +357,7 @@ communicate in the system initialization phase (as described in section \ref{sys
 
 If \textit{NumValues} is provided (i.e., data type \textit{list, intlist} or 
 \textit{floatlist}), it indicates how many values are following it. The separate 
-values are then delimited by white spaces. In case of data type \textit{matrix}, 
+values are then delimited by white space. In case of data type \textit{matrix}, 
 the transmitted values represent the matrix as follows: the first NumValuesDim2 
 values are value(0, t), followed by NumValuesDim2 values value(1, t), etc.;
 in case that labels are specified in place of value counts, the analogy holds
@@ -353,14 +379,14 @@ type system state (i.e., the message's descriptor is 3). In this case, the
 aforementioned content data is a line of ASCII characters (parameters
 delimited by spaces) in the following format:
 \\[2ex]
-Name Length Value ByteLocation BitLocation CRLF
+\verb|Name Length Value ByteLocation BitLocation CRLF|
 \\[2ex]
-with ByteLocation between 0..29 and BitLocation ranging from 0..7. The core 
-modules and the operator module use this format to communicate in the system 
-initialization phase (as described in section \ref{system_init}), as well as 
-during system performance (section \ref{system_performance}) and for system 
-termination (section \ref{system_termination}). Table \ref{state_table} 
-defines the maximum length for each parameter.
+with ByteLocation between 0..29 \todo{Why this value?} and BitLocation ranging from 0..7.
+The core modules and the operator module use this format to communicate in 
+the system initialization phase (as described in section \ref{system_init}), 
+as well as during system performance (section \ref{system_performance}) and 
+for system termination (section \ref{system_termination}). Table 
+\ref{state_table} defines the maximum length for each parameter.
 
 \begin{table}[ht]
  \centering
@@ -430,7 +456,7 @@ point value is then calculated as follows: $value=A*10^{B}$. Figure
 \end{figure}
 
 Figure \ref{visualizationprotocol_type2} illustrates the protocol when the 
-visualization type is 2. The source identifier defines a unique number 
+visualization type is 2. The source identifier is a number uniquely 
 identifying the process/filter that generated the data. The following ASCII
 text is zero delimited.
 
@@ -441,7 +467,7 @@ text is zero delimited.
 \end{figure}
 
 Figure \ref{visualizationprotocol_type255} illustrates the protocol when the 
-visualization type is 255. The source identifier defines a unique number 
+visualization type is 255. The source identifier is a number 
 identifying the process/filter that generated the data. The different 
 configuration IDs are described in Table \ref{tab:viscfg_table}.
 
@@ -459,9 +485,29 @@ configuration IDs are described in Table \ref{tab:viscfg_table}.
   \hline
   4 & Number of Samples \\
   \hline
-  5 & X Axis Lable \\
+  5 & X Axis Label \\
   \hline
-  6 & Y Axis Lable \\
+  6 & Y Axis Label \\
+  \hline
+  7 & Number of Subsequent Channels displayed on the same base line \\
+  \hline
+  8 & Graph Type (Polyline or 2D Field) \\
+  \hline
+  9 & Polyline Graph Type \\
+  \hline
+  10 & Show Base Lines (1 or 0) \\
+  \hline
+  11 & List of Channel Colors \\
+  \hline
+  12 & 2D Field Graph Type \\
+  \hline
+  13 & Unit for Sample dimension \\
+  \hline
+  14 & Unit for Channel dimension \\
+  \hline
+  15 & Unit for Values \\
+  \hline
+  16 & Number of Lines for a Memo \\
   \hline
  \end{tabular}
  \caption{The various IDs for visualization configuration}
@@ -510,19 +556,16 @@ module, communication within the core modules is unidirectional. The initial
 setup determines the exact nature of this communication and data is transmitted 
 with the same protocol as described in Section \ref{protocol_definition}. The 
 following sections describe the transferred brain signal, state vector, and 
-control signal. The state vector must always be transmitted before the brain 
+control signal. The state vector is always transmitted before the brain 
 signal or control signal. Whenever \textit{Running} switches from 0 to 1, the 
-system is re-initialized and the nature of the subsequently transmitted signals 
-could change. Transmitting the state vector before the signals (brain signal or 
-control signals) allows modules to react to these changes.
+system is re-initialized.
 
 \subsection{Brain Signal Format}
 \label{sec:eegsigformat}
 
 The brain signal is transmitted similarly to visualization data (i.e., as 
 described in Section \ref{visualizationdata_format}). The visualization type is 
-set to 1 (i.e., graph), source identifier is set to 0, data type is integer 
-(i.e., 0) and channels and samples are self-explanatory.
+set to 1 (i.e., graph), source identifier is set to 0. Data type, channels and samples reflect the actual format of data transmitted.
 
 
 \subsection{State Vector Format}
@@ -537,15 +580,14 @@ in ascending order, e.g., for a state with a length of 7 bits, starting at byte
 location 2, bit location 3, bit zero is first (byte 2, bit 3), and the highest 
 bit (bit 7) is last (byte 3, bit 1).
 
-
 \subsection{Control Signal Format}
 
 Control signals are transmitted similarly to the Brain Signal (see Section 
-\ref{sec:eegsigformat}) with \textit{NumControlSignals} channels and 1 sample 
+\ref{sec:eegsigformat}) with \textit{NumControlSignals} channels and one sample 
 per channel.
 
 
-\section{System--Wide Parameters}
+\section{System-Wide Parameters}
 \label{system_params}
 
 \subsection{Introduction}
@@ -575,15 +617,17 @@ entire system.
   \hline
   longint & a 32-bit signed integer \\
   \hline
-  float & a single--precision floating point \\
+  float & a single-precision floating point \\
   \hline
   bool & a boolean value (0..false, 1..true) \\
   \hline
-  intlist & a list of 16-bit signed integer \\
+  list & a list of untyped values \\
+  \hline
+  intlist & a list of 16-bit signed integers \\
   \hline
   floatlist & a list of single-precision floating points \\
   \hline
-  matrix & a matrix of single-precision floating points \\
+  matrix & a matrix of untyped values \\
   \hline
  \end{tabular}
 % \caption{Data type definition for variables in the parameter string}
@@ -594,11 +638,9 @@ entire system.
 \newpage
 
 \subsection{Reserved Sections and Parameter Names}
-
-Several section descriptors are currently defined. They are:
+Several section descriptors are currently defined. These comprise:
 
 \begin{flushleft}
-% \centering
  \begin{tabular}{|l|}
   \hline
   \textbf{Section Name}\\
@@ -609,26 +651,19 @@ Several section descriptors are currently defined. They are:
   \hline
   Filtering \\
   \hline
-  Classification \\
-  \hline
-  Statistics \\
-  \hline
   Task \\
-  \hline
-  Sequencer \\
   \hline
   Visualization \\
   \hline
   System \\
   \hline
  \end{tabular}
-% \caption{The currently defined section descriptors}
 \end{flushleft}
 
 \raggedright Listed below are all currently defined sections with their reserved parameter 
 names.
 \\[2ex]
-\raggedright \large Section "Source" \normalsize
+\raggedright \large Section ``Source" \normalsize
 \\[2ex]
 %\begin{displaymath}
  \begin{tabular}{|l|l|l|}
@@ -645,10 +680,6 @@ names.
   \hline
   intlist & TransmitChList & list of channels to transmit \\
   \hline
-  floatlist & SourceChOffset & offset in A/D units\\
-  \hline
-  floatlist & SourceChGain & factor to convert A/D units to $\mu$V \\
-  \hline
   int & SamplingRate & data acquisition's sampling rate in Hz \\
   \hline
  \end{tabular}
@@ -656,7 +687,7 @@ names.
 %\end{displaymath}
 
 \vspace{.5cm}
-\raggedright \large Section "Storage" \normalsize
+\raggedright \large Section ``Storage" \normalsize
 \\[2ex]
 %\begin{displaymath}
  \begin{tabular}{|l|l|l|}
@@ -669,11 +700,11 @@ names.
   \hline
   string & SubjectRun & digit run number (max. 3 characters) \\
   \hline
-  string & FileName & name (w/o ext) for data file (max. 32 char.)\\
+  string & FileInitials & top level directory for saved files \\
   \hline
-  int & StorageMethod & \\
+  int    & SavePrmFile & 0/1: don't save/save additional parameter file \\
   \hline
-  int & StorageTime & \\
+  string & StorageTime & \\
   \hline
  \end{tabular}
 % \caption{Parameter names in section Storage}
@@ -682,12 +713,13 @@ names.
 \vspace{.5cm}
 Parameter names in section Filtering and Classification are preceded by 
 a two--character identifier that indicates the type of the parameter.
+\todo{Documentation of Parameters and States can be done automatically using \texttt{make docinfo}.}
 
 \vspace{.5cm}
 
 \newpage
 
-\large Section "Filtering" \normalsize \\[1ex]
+\large Section ``Filtering" \normalsize \\[1ex]
 
 %\begin{table}[!ht]
  \begin{tabular}{|l|l|l|}
@@ -696,85 +728,57 @@ a two--character identifier that indicates the type of the parameter.
   \hline
   int & NumControlSignals & number of transmitted control signals \\
   \hline
-  & SWxxx & slow--wave filtering \\
+  int & AlignChannels & whether or not to align channels in time \\
   \hline
-  & FTxxx & Fourier transform \\
+  floatlist & SourceChOffset & offset in A/D units\\
   \hline
-  & SPxxx & other spectral analysis methods \\
+  floatlist & SourceChGain & factor to convert A/D units to $\mu$V \\
   \hline
  \end{tabular}
 % \caption{Parameter names in section Filtering}
 %\end{table}   
 
-\vspace{.5cm}
-\large Section "Classification" \normalsize \\[1ex]
+%\vspace{.5cm}
+%\large Section "Visualization" \normalsize \\[1ex]
 
 %\begin{table}[!ht]
- \begin{tabular}{|l|l|l|}
-  \hline
-  \textbf{Type} & \textbf{Parameter Name} & \textbf{Description}\\
-  \hline
-   & LDxxx & linear discriminant analysis \\
-  \hline
-   & NNxxx & neural network classifier \\
-  \hline
- \end{tabular}
-% \caption{Parameter names in section Classification}
-%\end{table}   
-
-\vspace{.5cm}
-\large Section "Sequencer" \normalsize \\[1ex]
-
-%\begin{table}[!ht]
- \begin{tabular}{|l|l|l|}
-  \hline
-  \textbf{Type} & \textbf{Parameter Name} & \textbf{Description}\\
-  \hline
- \end{tabular}
-% \caption{Parameter names in section Sequencer}
-%\end{table}   
-
-\vspace{.5cm}
-\large Section "Visualization" \normalsize \\[1ex]
-
-%\begin{table}[!ht]
- \begin{tabular}{|l|l|l|}
-  \hline
-  \textbf{Type} & \textbf{Parameter Name}\\
-  \hline
-  int & ViewSourceCh[SoftwareCh, ViewSourceBlockSize]\\  
-  \hline
-  int & ViewTransmitCh[TransmitCh, ViewTransmitBlockSize]\\
-  \hline
-  int & ViewControlCh [ControlCh, ViewControlBlockSize] \\
-  \hline
-  float & ViewFFTCh[FFTCh, ViewFFTBlockSize] \\
-  \hline
-  float	& ViewSWCh[SWCh, ViewSWBlockSize] \\
-  \hline
- \end{tabular}
+% \begin{tabular}{|l|l|l|}
+%  \hline
+%  \textbf{Type} & \textbf{Parameter Name}\\
+%  \hline
+%  int & ViewSourceCh[SoftwareCh, ViewSourceBlockSize]\\  
+%  \hline
+%  int & ViewTransmitCh[TransmitCh, ViewTransmitBlockSize]\\
+%  \hline
+%  int & ViewControlCh [ControlCh, ViewControlBlockSize] \\
+%  \hline
+%  float & ViewFFTCh[FFTCh, ViewFFTBlockSize] \\
+%  \hline
+%  float	& ViewSWCh[SWCh, ViewSWBlockSize] \\
+%  \hline
+% \end{tabular}
 % \caption{Parameter names in section Visualization}
 %\end{table}   
 
 \vspace{.5cm}
-\large Section "System" \normalsize \\[1ex]
+\large Section ``System" \normalsize \\[1ex]
 
 %\begin{table}[!ht]
  \begin{tabular}{|l|l|l|}
   \hline
   \textbf{Type} & \textbf{Parameter Name} & \textbf{Description}\\
   \hline
-  string & EEGsourceIP & the IP address the EEGsource core module listens on\\  
+  string & EEGsourceIP & IP address the Source module listens on\\  
   \hline
-  int & EEGsourcePort & the port the EEGsource core module listens on\\  
+  int & EEGsourcePort & port the Source module listens on\\  
   \hline
-  string & SignalProcessingIP & the IP address the SignalProcessing core module listens on\\  
+  string & SignalProcessingIP & IP address Signal Processing listens on\\  
   \hline
-  int & SignalProcessingPort & the port the SignalProcessing core module listens on\\  
+  int & SignalProcessingPort & port Signal Processing listens on\\  
   \hline
-  string & ApplicationIP & the IP address the Application core module listens on\\  
+  string & ApplicationIP & IP address the Application module listens on\\  
   \hline
-  int & ApplicationPort & the port the Application core module listens on\\  
+  int & ApplicationPort & port the Application module listens on\\  
   \hline
   int & StateVectorLength & the length of the state vector in bytes\\  
   \hline
@@ -790,15 +794,15 @@ a two--character identifier that indicates the type of the parameter.
 
 \subsection{Introduction}
 
-While the purpose of system--wide parameters is to define the static 
+While the purpose of system-wide parameters is to define the static 
 configuration, the state information provides dynamic information about the 
 current state of the system, e.g., whether the system is running or not.
 
-States are published and initialized during system--startup, as described in 
+States are published and initialized during system-startup, as described in 
 section \ref{system_init}. A state is described by its name, its length (in 
 bits) and its location (defined by start byte and bit in the state vector). 
 The state vector is always transferred as a full number of bytes (specifically, 
-\textit{StateVectorLength} bytes) (i.e., the end is padded with meaningless 
+\textit{StateVectorLength} bytes) (i.e., the end is padded with zeroed 
 bits if necessary).
 
 \subsection{The State Vector}
@@ -811,25 +815,13 @@ to be requested -- they are created automatically. They are:
  \hline
  \textbf{Length} & \textbf{Name} & \textbf{Description}\\
  \hline
- 16 & SourceTime & 16-bit unsigned integer (little endian); resolution 1 ms \\  
+ 16 & SourceTime & 16-bit unsigned integer; resolution 1 ms \\  
  \hline
- 16 & StimulusTime & 16-bit unsigned integer (little endian); resolution 1 ms \\  
- \hline
- 1 & Online & 1: A/D or random input, 0: input from file \\  
+ 16 & StimulusTime & 16-bit unsigned integer; resolution 1 ms \\  
  \hline
  1 & Running & 1: system is running, 0: system is suspended\\  
  \hline
  1 & Recording & 1: system is recording, 0: not recording\\  
- \hline
- 1 & RunActive & \\  
- \hline
- 1 & BaselineInterval & Application is in baseline interval\\  
- \hline
- 1 & FeedbackInterval & \\  
- \hline
- 1 & InterTrialInterval & Application is between trials\\ 
- \hline
- 1 & InterRunInterval & Application is between runs\\ 
  \hline
 \end{tabular}
 
@@ -851,21 +843,20 @@ port number(s) have to be provided to the core modules. It listens on ports 4000
 (for Source), 4001 (for Signal Processing), and 4002 (for Application) and 
 waits for the respective core module to connect. Each can connect to its 
 assigned port on the operator module in any order. Upon start--up, each core 
-module opens a listening socket on any arbitrary port number.
+module opens a listening socket on an arbitrary port number.
 
 \subsection{Publishing Phase}
 
 Upon connection, each core module publishes its parameters to the operator 
 module, as described in section \ref{parameter_format}. After publishing its 
-parameters, each core module publishes its requested states, as described in 
+parameters, each core module publishes the states it requests, as described in 
 chapter \ref{state_format}. At this time, the operator module ignores every 
 field except \textit{Name} and \textit{Length}, which it needs to construct the 
 state vector.
 
 For this and all subsequent communication, the modules use the protocol 
-described in chapter \ref{protocol_definition}. Each core module sends a state 
-with the name \textit{EndOfState} as the last state. The operator module does 
-not process this state. On receiving this state from all core modules, it ends 
+described in chapter \ref{protocol_definition}. Following the last state, each core module sends a system command containing the string \texttt{EndOfState}.
+On receiving this command from all core modules, the operator module ends 
 this initial publishing phase.
 
 \subsection{Information Phase}
@@ -876,28 +867,27 @@ parameters or states are ignored). At this point, the operator module may modify
 the value of the parameters and states (depending on the investigator's input or 
 the parameter file). The operator module then uses the same channel on which it 
 received data from the core modules to send back to all core modules a list of 
-all system--wide parameters and system-wide states (in any order). Since the IP 
+all system-wide parameters and system-wide states (in any order). Since the IP 
 address and port number on which the core modules listen for data from other 
 core modules are published in system parameters as described, each module now 
 knows where to send its data. The connections from the core modules to the 
 operator module remain open (all subsequent traffic will go through these 
-connections.)
+connections).
 
-As in the publishing phase, the Information Phase ends when a state 
-\textit{EndOfState} is sent.
+As in the publishing phase, the Information Phase ends when a system command 
+\texttt{EndOfState} is sent.
 
 In order to maintain integrity throughout operation, no parameters or states 
 should be added to or removed from the system beyond this point.
 
 \subsection{Preflight Phase}
-\textit{Note: As of May 2003, the Preflight phase is not fully implemented,
-so the information in this paragraph is not accurate for the actual module
-code.--jm}\\[1ex]
+
 Each core module declares whether it can process data with the received
 parameters and states, or indicates errors by sending descriptions into
 an error channel. If any errors are indicated during the preflight phase,
-the operator module will not initiate the initialization phase but display
-the errors, prompting the user to fix the problems detected.
+the module will not initiate the initialization phase; the operator module
+will display the errors, prompting the user to fix the problems detected, 
+and not offer the ``Start" option.
 
 \subsection{Initialization Phase}
 
@@ -955,48 +945,58 @@ must not change within one data file.
 \subsubsection{Header}
 
 The header of a data file consists of lines of ASCII characters. Its total 
-length is determined by the parameter HeaderLen in the first line. The first 
-line specifies general parameters, while the following define all states in the 
-state vector, as well as all the current parameters. The number of bytes in the 
-state vector is determined by the sum of the lengths (defined in bits) for all 
-states, rounded up to the next byte (which equals the value of 
-\textit{StateVectorLength} in both the first line and, since 
-\textit{StateVectorLength} is also a system--wide parameter, in one of the lines 
-in the [ParamDef] section). Thus, the data file can be read (although not fully 
-interpreted) by reading the first line. The state definitions have the same 
-format as described in \ref{state_format} (although their values in the header 
-are irrelevant, since they are defined for each sample in the data file). The 
-parameter definitions have the format described in section 
+length is determined by the parameter HeaderLen in the first line.
+The first line specifies general parameters, while the following define all
+states in the state vector, as well as all the current parameters.
+The number of bytes in the state vector is determined by the sum of the
+lengths (defined in bits) for all states, rounded up to the next byte
+(which equals the value of \textit{StateVectorLength} in both the first 
+line and, since \textit{StateVectorLength} is also a system-wide parameter,
+in one of the lines in the \texttt{[Parameter Definition]} section).
+Thus, the data file can be read (although not fully interpreted) by reading
+the first line.
+The state definitions have the same format as described in \ref{state_format}
+(although their values in the header are irrelevant, since they are defined
+for each sample in the data file).
+The parameter definitions have the format described in section
 \ref{parameter_format}.
 
 \begin{flushleft}
-HeaderLen= length  SourceCh= m  StateVectorLength= k CRLF \\[1ex]
-[StateVectorDef] CRLF \\[1ex]
-Name1 Length1 Value1 ByteLocation1 BitLocation1 CRLF \\[1ex]
-Name2 Length2 Value2 ByteLocation2 BitLocation2 CRLF \\[1ex]
-Name3 Length3 Value3 ByteLocation3 BitLocation3 CRLF \\[1ex]
-... \\[1ex]
-[ParamDef] CRLF \\[1ex]
-Section1 DataType1 Name1= Value1 DefaultValue1 LowRange1 HighRange1 // Comment CRLF \\[1ex]
-Section2 DataType2 Name2= Value2 DefaultValue2 LowRange2 HighRange2 // Comment CRLF \\[1ex]
-Section3 DataType3 Name3= Value3 DefaultValue3 LowRange3 HighRange3 // Comment CRLF \\[1ex]
-... \\[1ex]
-CRLF \\
+\begin{footnotesize}
+\begin{verbatim}
+HeaderLen= length  SourceCh= m  StateVectorLength= k CRLF
+[ State Vector Definition ] CRLF
+Name1 Length1 Value1 ByteLocation1 BitLocation1 CRLF
+Name2 Length2 Value2 ByteLocation2 BitLocation2 CRLF
+Name3 Length3 Value3 ByteLocation3 BitLocation3 CRLF
+...
+[ Parameter Definition ] CRLF
+Section1 DataType1 Name1= Value1 DefaultValue1 LowRange1 HighRange1 // Comment CRLF
+Section2 DataType2 Name2= Value2 DefaultValue2 LowRange2 HighRange2 // Comment CRLF
+Section3 DataType3 Name3= Value3 DefaultValue3 LowRange3 HighRange3 // Comment CRLF
+...
+CRLF
+\end{verbatim}
+\end{footnotesize}
 \end{flushleft}
 The binary data directly follows this last CRLF.
 
 \subsubsection{Binary Data}
 \label{binary_data}
 
-\textit{SourceCh} data--channels, followed by \textit{StateVectorLength} bytes 
-for the state vector. Data samples are stored as 16-bit signed integers (little 
-endian). The number of samples in the file can be calculated as follows: 
-$samples=\frac{filesize}{2*SourceCh+StateVectorLength}$.
+For each sample, data values for all channels are stored, followed by \textit{StateVectorLength} bytes for the state vector.
+Data samples are stored as 16-bit signed integers (little 
+endian).
+The number of samples in the file can be calculated as follows: 
+$$
+  \textrm{samples}
+    =\frac{(\textrm{file size in bytes})-\textrm{HeaderLen}}
+    {2\times\textrm{SourceCh}+\textrm{StateVectorLength}}
+$$
 
 \subsection{Parameter File}
 
-A parameter file consists of lines of ASCII in the same format as the data file 
-header and as described in section \ref{parameter_format}.
+A parameter file consists of lines of ASCII in the same format as the parameter section in the data file header and as described in section \ref{parameter_format}.
 
 \newpage
 \subsection{BCI2000 File Extensions}
@@ -1013,9 +1013,9 @@ The following table lists all extensions for BCI2000 data files:
   \hline
   Parameter file & .prm \\
   \hline
-  Application file & .app \\
+  Application log file & .apl or .log \\
   \hline
-  Psychological state & .psy \\
+  Statistics log file & .sta \\
   \hline
  \end{tabular}
  %\caption{Reserved extensions for BCI2000 data files}
@@ -1038,11 +1038,10 @@ stands for carriage return and line feed, or (subsequent) {ASCII} codes 10 and 1
 \\[2ex]
 \textbf{parameter} \\
 A parameter is a static and global variable that describes some aspect of the 
-system configuration. Parameters can only be created or changed during the 
-system startup phase.
+system configuration. Parameters can only be created during the system startup phase, and changed during the information phase or when the system is in suspended state.
 \\[2ex]
 \textbf{state} \\
-A state is a n--bit value that describes some aspect of the current system 
+A state is a n-bit value that describes some aspect of the current system 
 status. In communication, a state is represented as described in section
 \ref{state_format}.
 \\[2ex]
