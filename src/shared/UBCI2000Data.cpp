@@ -22,6 +22,9 @@
 
 #include "UBCIError.h"
 #include <stdio.h>
+#include <fstream>
+
+using namespace std;
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
@@ -34,11 +37,32 @@
 // Returns:    N/A
 // **************************************************************************
 BCI2000DATA::BCI2000DATA()
+: mpBuf_mem( NULL ),
+  mpStatevector( NULL )
 {
- initialized=false;
- initializedtotal=false;
- statevector=NULL;
- buf_mem=NULL;
+  InitializeInstance();
+}
+
+// **************************************************************************
+// Function:   InitializeInstance
+// Purpose:    Initializes the BCI2000DATA instance to a defined state.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void BCI2000DATA::InitializeInstance()
+{
+  mBuf_mem_start = 0;
+  mSample_number = 0;
+  //! mSample_number_run.clear();
+  mSample_number_total = 0;
+  mBuffer_size = 0;
+  mFilename = "";
+  mInitialized = false;
+  mInitializedtotal = false;
+  mChannels = 0;
+  mHeaderlength = 0;
+  mStatevectorlength = 0;
+  mSample_freq = 0;
 }
 
 // **************************************************************************
@@ -49,9 +73,9 @@ BCI2000DATA::BCI2000DATA()
 // **************************************************************************
 BCI2000DATA::~BCI2000DATA()
 {
- if (buf_mem)     free(buf_mem);
- if (statevector) delete statevector;
- buf_mem=NULL;
+  if( mpBuf_mem )
+    ::free( mpBuf_mem );
+  delete mpStatevector;
 }
 
 // **************************************************************************
@@ -65,46 +89,49 @@ BCI2000DATA::~BCI2000DATA()
 //             BCI2000ERR_MALFORMEDHEADER ... not the correct file type ?
 //             BCI2000ERR_NOBUFMEM        ... could not allocate buffer
 // **************************************************************************
-int BCI2000DATA::Initialize(const char *new_filename, int buf_size)
+int
+BCI2000DATA::Initialize( const char* inNew_filename, int inBuf_size )
 {
-int     ret;
+  InitializeInstance();
+  if( inBuf_size == NULL )
+    return BCI2000ERR_NOERR;
 
- initializedtotal=false;
+  mBuffer_size = inBuf_size;
+  mFilename = inNew_filename;
 
- buffer_size=buf_size;
- strcpy(filename, new_filename);
+  mpBuf_mem = static_cast<__int16*>( ::realloc( mpBuf_mem, static_cast<size_t>( inBuf_size ) ) );
+  if( !mpBuf_mem )
+    return BCI2000ERR_NOBUFMEM;
 
- if (buf_mem) free(buf_mem);
- buf_mem=(__int16 *)malloc((size_t)buffer_size);
- if (!buf_mem) return(BCI2000ERR_NOBUFMEM);
+  InvalidateBuffer();
 
- InvalidateBuffer();
+  mParamlist.ClearParamList();
+  mStatelist.ClearStateList();
 
- paramlist.ClearParamList();
- statelist.ClearStateList();
+  int ret = ReadHeader();
+  if( ret != BCI2000ERR_NOERR )
+    return ret;
 
- ret=ReadHeader();
- if (ret == BCI2000ERR_NOERR) initialized=true;
+  mInitialized = true;
+  CalculateSampleNumber();
 
- CalculateSampleNumber();
+  const float defaultOffset = 0.0;
+  mSourceOffsets.clear();
+  const PARAM* sourceChOffset = mParamlist.GetParamPtr( "SourceChOffset" );
+  if( sourceChOffset != NULL )
+    for( size_t i = 0; i < sourceChOffset->GetNumValues(); ++i )
+      mSourceOffsets.push_back( ::atof( sourceChOffset->GetValue( i ) ) );
+  mSourceOffsets.resize( mChannels, defaultOffset );
 
- const float defaultOffset = 0.0;
- sourceOffsets.clear();
- const PARAM* sourceChOffset = paramlist.GetParamPtr( "SourceChOffset" );
- if( sourceChOffset != NULL )
-   for( size_t i = 0; i < sourceChOffset->GetNumValues(); ++i )
-     sourceOffsets.push_back( ::atof( sourceChOffset->GetValue( i ) ) );
- sourceOffsets.resize( channels, defaultOffset );
+  const float defaultGain = 0.033;
+  mSourceGains.clear();
+  const PARAM* mSourceChGain = mParamlist.GetParamPtr( "SourceChGain" );
+  if( mSourceChGain != NULL )
+    for( size_t i = 0; i < mSourceChGain->GetNumValues(); ++i )
+      mSourceGains.push_back( ::atof( mSourceChGain->GetValue( i ) ) );
+  mSourceGains.resize( mChannels, defaultGain );
 
- const float defaultGain = 0.033;
- sourceGains.clear();
- const PARAM* sourceChGain = paramlist.GetParamPtr( "SourceChGain" );
- if( sourceChGain != NULL )
-   for( size_t i = 0; i < sourceChGain->GetNumValues(); ++i )
-     sourceGains.push_back( ::atof( sourceChGain->GetValue( i ) ) );
- sourceGains.resize( channels, defaultGain ); 
-
- return(ret);
+  return BCI2000ERR_NOERR;
 }
 
 
@@ -116,22 +143,21 @@ int     ret;
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void BCI2000DATA::CalculateSampleNumber()
+void
+BCI2000DATA::CalculateSampleNumber()
 {
-ULONG   filesize;
-FILE    *fp;
+  mSample_number = 0;
+  if( !mInitialized )
+    return;
+    
+  FILE* fp = ::fopen( mFilename.c_str(), "rb" );
+  if( !fp )
+    return;
 
- sample_number=0;
- if (!initialized) return;
-
- fp=fopen(filename, "rb");
- if (!fp) return;
-
- fseek(fp, 0L, SEEK_END);
- filesize = ftell(fp);
-
- sample_number=(filesize-(ULONG)GetHeaderLength())/((ULONG)sizeof(__int16)*GetNumChannels()+(ULONG)GetStateVectorLength());
- fclose(fp);
+  ::fseek( fp, 0L, SEEK_END );
+  size_t data_size = ::ftell( fp ) - GetHeaderLength();
+  mSample_number = data_size / ( sizeof( __int16 ) * GetNumChannels() + static_cast<size_t>( GetStateVectorLength() ) );
+  ::fclose( fp );
 }
 
 
@@ -142,11 +168,10 @@ FILE    *fp;
 // Returns:    number of samples in this run, or
 //             0, if not initialized
 // **************************************************************************
-ULONG BCI2000DATA::GetNumSamples()
+unsigned long
+BCI2000DATA::GetNumSamples()
 {
- if (!initialized) return(0);
-
- return(sample_number);
+  return mSample_number;
 }
 
 
@@ -165,35 +190,33 @@ ULONG BCI2000DATA::GetNumSamples()
 //             BCI2000ERR_MALFORMEDHEADER ... not the correct file type ?
 //             BCI2000ERR_NOBUFMEM        ... could not allocate buffer
 // **************************************************************************
-int BCI2000DATA::InitializeTotal(const char *new_filename, int buf_size)
+int
+BCI2000DATA::InitializeTotal( const char* new_filename, int buf_size )
 {
-int     ret, firstrun, lastrun, cur_run;
-ULONG   totalsamples;
+  mInitializedtotal = false;
 
- initializedtotal=false;
+  // initialize everything to this file first
+  int ret = Initialize( new_filename, buf_size );
+  if( ret != BCI2000ERR_NOERR )
+    return ret;
 
- // initialize everything to this file first
- ret=Initialize(new_filename, buf_size);
- if (ret != BCI2000ERR_NOERR) return(ret);
+  // find out about the first and the last run
+  int firstrun = GetFirstRunNumber(),
+      lastrun = GetLastRunNumber();
 
- // find out about the first and the last run
- firstrun=GetFirstRunNumber();
- lastrun=GetLastRunNumber();
-
- totalsamples=0;
- // now, count the samples in each run
- for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
+  // now, count the samples in each run
+  mSample_number_run.resize( 1, 0 ); // Indices are one-based.
+  for( int cur_run = firstrun; cur_run <= lastrun; ++cur_run )
   {
-  SetRun(cur_run);
-  sample_number_run[cur_run]=GetNumSamples();
-  totalsamples+=sample_number_run[cur_run];
+    SetRun( cur_run );
+    mSample_number_run.push_back( GetNumSamples() );
   }
 
- // finally, initialize everything to this file again
- Initialize(new_filename, buf_size);
- initializedtotal=true;
+  // finally, initialize everything to this file again
+  Initialize( new_filename, buf_size );
+  mInitializedtotal = true;
 
- return(BCI2000ERR_NOERR);
+  return BCI2000ERR_NOERR;
 }
 
 
@@ -204,11 +227,13 @@ ULONG   totalsamples;
 // Returns:    number of samples in this dataset, or
 //             0, if there was an error (e.g., not initialized)
 // **************************************************************************
-ULONG BCI2000DATA::GetNumSamplesTotal() const
+unsigned long
+BCI2000DATA::GetNumSamplesTotal() const
 {
- if (!initializedtotal) return(0);
+  if( !mInitializedtotal )
+    return 0;
 
- return(sample_number_total);
+  return mSample_number_total;
 }
 
 
@@ -218,9 +243,10 @@ ULONG BCI2000DATA::GetNumSamplesTotal() const
 // Parameters: N/A
 // Returns:    true or false
 // **************************************************************************
-bool BCI2000DATA::Initialized() const
+bool
+BCI2000DATA::Initialized() const
 {
- return(initialized);
+  return mInitialized;
 }
 
 
@@ -230,9 +256,10 @@ bool BCI2000DATA::Initialized() const
 // Parameters: N/A
 // Returns:    true or false
 // **************************************************************************
-bool BCI2000DATA::InitializedTotal() const
+bool
+BCI2000DATA::InitializedTotal() const
 {
- return(initializedtotal);
+  return mInitializedtotal;
 }
 
 
@@ -243,11 +270,13 @@ bool BCI2000DATA::InitializedTotal() const
 // Returns:    pointer to the list of parameters
 //             NULL, if not initialized
 // **************************************************************************
-const PARAMLIST *BCI2000DATA::GetParamListPtr() const
+const PARAMLIST*
+BCI2000DATA::GetParamListPtr() const
 {
- if (!initialized) return(NULL);
+  if( !mInitialized )
+    return NULL;
 
- return(&paramlist);
+  return &mParamlist;
 }
 
 
@@ -258,11 +287,13 @@ const PARAMLIST *BCI2000DATA::GetParamListPtr() const
 // Returns:    pointer to the statevector
 //             NULL, if not initialized
 // **************************************************************************
-const STATEVECTOR *BCI2000DATA::GetStateVectorPtr() const
+const STATEVECTOR*
+BCI2000DATA::GetStateVectorPtr() const
 {
- if (!initialized) return(NULL);
+  if( !mInitialized )
+    return NULL;
 
- return(statevector);
+  return mpStatevector;
 }
 
 
@@ -273,11 +304,13 @@ const STATEVECTOR *BCI2000DATA::GetStateVectorPtr() const
 // Returns:    pointer to the list of states
 //             NULL, if not initialized
 // **************************************************************************
-const STATELIST *BCI2000DATA::GetStateListPtr() const
+const STATELIST*
+BCI2000DATA::GetStateListPtr() const
 {
- if (!initialized) return(NULL);
+  if( !mInitialized )
+    return NULL;
 
- return(&statelist);
+  return &mStatelist;
 }
 
 
@@ -288,11 +321,13 @@ const STATELIST *BCI2000DATA::GetStateListPtr() const
 // Returns:    length of the header, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetHeaderLength() const
+int
+BCI2000DATA::GetHeaderLength() const
 {
- if (!initialized) return(0);
+  if( !mInitialized )
+    return 0;
 
- return(headerlength);
+  return mHeaderlength;
 }
 
 
@@ -303,11 +338,13 @@ int BCI2000DATA::GetHeaderLength() const
 // Returns:    length of the state vector, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetStateVectorLength() const
+int
+BCI2000DATA::GetStateVectorLength() const
 {
- if (!initialized) return(0);
+  if( !mInitialized )
+    return 0;
 
- return(statevectorlength);
+  return mStatevectorlength;
 }
 
 
@@ -318,11 +355,13 @@ int BCI2000DATA::GetStateVectorLength() const
 // Returns:    number of channels in the file, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetNumChannels() const
+int
+BCI2000DATA::GetNumChannels() const
 {
- if (!initialized) return(0);
+  if( !mInitialized )
+    return 0;
 
- return(channels);
+  return mChannels;
 }
 
 
@@ -334,11 +373,13 @@ int BCI2000DATA::GetNumChannels() const
 // Returns:    sampling frequency, or
 //             0, if not initialized
 // **************************************************************************
-int BCI2000DATA::GetSampleFrequency() const
+int
+BCI2000DATA::GetSampleFrequency() const
 {
- if (!initialized) return(0);
+  if( !mInitialized )
+    return 0;
 
- return(sample_freq);
+  return mSample_freq;
 }
 
 
@@ -352,28 +393,29 @@ int BCI2000DATA::GetSampleFrequency() const
 //             (e.g., not yet initialized, file names don't follow the
 //             nameRxx.dat, etc.)
 // **************************************************************************
-int BCI2000DATA::GetFirstRunNumber() const
+int
+BCI2000DATA::GetFirstRunNumber() const
 {
 FILE *fp;
 char cur_run[1024], cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, runnr, firstrun;
 
- if (!initialized) return(0);
+ if (!mInitialized) return(0);
 
  // if the last 4 characters in the filename are not ".dat", then the file name
  // does not follow the BCI2000 filename conventions
- idx=strlen(filename)-4;
+ idx=strlen(mFilename.c_str())-4;
  if (idx < 0) return(0);
- pos=stricmp(&(filename[idx]), ".DAT");
+ pos=stricmp(mFilename.c_str()+idx, ".DAT");
  if (pos != 0) return(0);
 
  // get the position of the first character of the run number
  idx-=2;
  if (idx < 0) return(0);
- strncpy(cur_run, &filename[idx], 2);
+ strncpy(cur_run, mFilename.c_str()+idx, 2);
  cur_run[2]=0;
  cur_runnr=atoi(cur_run);
- strncpy(prefix, filename, idx);
+ strncpy(prefix, mFilename.c_str(), idx);
  prefix[idx]=0;
 
  // go through all runs and figure out, which run is the first
@@ -407,34 +449,34 @@ int  pos, idx, cur_runnr, runnr, firstrun;
 //             (e.g., not yet initialized, file names don't follow the
 //             nameRxx.dat, etc.)
 // **************************************************************************
-int BCI2000DATA::GetLastRunNumber() const
+int
+BCI2000DATA::GetLastRunNumber() const
 {
 FILE *fp;
 char cur_run[1024], cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, runnr, lastrun;
 
- if (!initialized) return(0);
+ if (!mInitialized) return(0);
 
  // if the last 4 characters in the filename are not ".dat", then the file name
  // does not follow the BCI2000 filename conventions
- idx=strlen(filename)-4;
+ idx=strlen(mFilename.c_str())-4;
  if (idx < 0) return(0);
- pos=stricmp(&(filename[idx]), ".DAT");
+ pos=stricmp(mFilename.c_str()+idx, ".DAT");
  if (pos != 0) return(0);
 
  // get the position of the first character of the run number
  idx-=2;
  if (idx < 0) return(0);
- strncpy(cur_run, &filename[idx], 2);
+ strncpy(cur_run, mFilename.c_str()+idx, 2);
  cur_run[2]=0;
  cur_runnr=atoi(cur_run);
- strncpy(prefix, filename, idx);
+ strncpy(prefix, mFilename.c_str(), idx);
  prefix[idx]=0;
 
  // go through all runs and figure out, which run is the last
  // i.e., which file is the last one to exist
  runnr=cur_runnr;
- lastrun=cur_runnr;
  while (true)
   {
   sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
@@ -460,28 +502,26 @@ int  pos, idx, cur_runnr, runnr, lastrun;
 // Returns:    1 ... OK
 //             0 ... a problem (i.e., run not found, could not be initialized, etc.)
 // **************************************************************************
-int BCI2000DATA::SetRun(int runnr)
+int
+BCI2000DATA::SetRun( int runnr )
 {
 FILE *fp;
-char cur_run[1024], cur_filename[1024], prefix[1024];
+char cur_filename[1024], prefix[1024];
 int  pos, idx, cur_runnr, lastrun, res;
 
- if (!initialized) return(0);
+ if (!mInitialized) return(0);
 
  // if the last 4 characters in the filename are not ".dat", then the file name
  // does not follow the BCI2000 filename conventions
- idx=strlen(filename)-4;
+ idx=strlen(mFilename.c_str())-4;
  if (idx < 0) return(0);
- pos=stricmp(&(filename[idx]), ".DAT");
+ pos=stricmp(mFilename.c_str()+idx, ".DAT");
  if (pos != 0) return(0);
 
  // get the position of the first character of the run number
  idx-=2;
  if (idx < 0) return(0);
- strncpy(cur_run, &filename[idx], 2);
- cur_run[2]=0;
- cur_runnr=atoi(cur_run);
- strncpy(prefix, filename, idx);
+ strncpy(prefix, mFilename.c_str(), idx);
  prefix[idx]=0;
 
  // now, create the file name for the specified run
@@ -493,7 +533,7 @@ int  pos, idx, cur_runnr, lastrun, res;
  fclose(fp);
 
  // now, that that worked, initalize the object
- res=Initialize(cur_filename, buffer_size);
+ res=Initialize(cur_filename, mBuffer_size);
  if (res != BCI2000ERR_NOERR)
     return(0);
 
@@ -509,80 +549,57 @@ int  pos, idx, cur_runnr, lastrun, res;
 //             BCI2000ERR_FILENOTFOUND    ... file not found
 //             BCI2000ERR_MALFORMEDHEADER ... not the correct file type ?
 // **************************************************************************
-int BCI2000DATA::ReadHeader()
+int
+BCI2000DATA::ReadHeader()
 {
-FILE    *fp;
-char    buf[100000], element[255];
-int     idx;
-bool    withinstates, withinparameters;
+  mStatelist.ClearStateList();
+  mParamlist.clear();
+  mHeaderlength = 0;
+  mChannels = 0;
+  mSample_freq = 0;
+  mStatevectorlength = 0;
+  delete mpStatevector;
+  mpStatevector = NULL;
 
- fp=fopen(filename, "rb");
- if (!fp) return(BCI2000ERR_FILENOTFOUND);
+  ifstream file( mFilename.c_str(), ios::in | ios::binary );
+  if( !file.is_open() )
+    return BCI2000ERR_FILENOTFOUND;
 
- // read the first line and do consistency checks
- fgets(buf, 255, fp);
- idx=0;
- get_next_string(buf, &idx, element);
- if (stricmp(element, "HeaderLen=") != 0)
-    {
-    fclose(fp);
-    return(BCI2000ERR_MALFORMEDHEADER);
-    }
- get_next_string(buf, &idx, element);           // headerlength
- headerlength=atoi(element);
- get_next_string(buf, &idx, element);
- if (stricmp(element, "SourceCh=") != 0)
-    {
-    fclose(fp);
-    return(BCI2000ERR_MALFORMEDHEADER);
-    }
- get_next_string(buf, &idx, element);
- channels=atoi(element);
- get_next_string(buf, &idx, element);
- get_next_string(buf, &idx, element);           // state vector length
- statevectorlength=atoi(element);
+  // read the first line and do consistency checks
+  string element;
+  file >> element >> mHeaderlength;
+  if( element != "HeaderLen=" )
+    return BCI2000ERR_MALFORMEDHEADER;
 
- // now go through the header and read all parameters and states
- withinstates=false;
- withinparameters=false;
- fseek(fp, 0, SEEK_SET);
- buf[0]=0;
- while ((buf[0] != '\r') && (buf[0] != '\n'))
-  {
-  fgets(buf, 100000, fp);
-  if ((buf[0] == '\r') || (buf[0] == '\n'))
-     break;
-  if ((strncmp(buf, "[ State Vector Definition ]", 27) == 0) || (strncmp(buf, "[ Parameter Definition ]", 24) == 0))
-     {
-     if (strncmp(buf, "[ State Vector Definition ]", 27) == 0)
-        {
-        withinstates=true;
-        withinparameters=false;
-        }
-     if (strncmp(buf, "[ Parameter Definition ]", 24) == 0)
-        {
-        withinstates=false;
-        withinparameters=true;
-        }
-     }
-  else
-     {
-     if (withinparameters) paramlist.AddParameter2List(buf, strlen(buf));
-     if (withinstates)     statelist.AddState2List(buf);
-     }
-  }
+  file >> element >> mChannels;
+  if( element != "SourceCh=" )
+    return BCI2000ERR_MALFORMEDHEADER;
 
- // create a new state vector
- if (statevector) delete statevector;
- statevector=new STATEVECTOR(&statelist, true);         // build statevector using specified positions
+  file >> element >> mStatevectorlength;
+  if( element != "StatevectorLen=" )
+    return BCI2000ERR_MALFORMEDHEADER;
 
- fclose(fp);
+  // now go through the header and read all parameters and states
+  string line;
+  getline( file >> ws, line, '\n' );
+  if( line.find( "[ State Vector Definition ]" ) != 0 )
+    return BCI2000ERR_MALFORMEDHEADER;
+  while( getline( file, line, '\n' )
+         && line.find( "[ Parameter Definition ]" ) == line.npos )
+    mStatelist.AddState2List( line.c_str() );
+  while( getline( file, line, '\n' )
+         && line != "" && line != "\r" )
+    mParamlist.AddParameter2List( line.c_str() );
 
- sample_freq=atoi(paramlist.GetParamPtr("SamplingRate")->GetValue());
+  // build statevector using specified positions
+  mpStatevector = new STATEVECTOR( &mStatelist, true );
+  PARAM* param = mParamlist.GetParamPtr( "SamplingRate" );
+  if( param == NULL )
+    return BCI2000ERR_MALFORMEDHEADER;
+  mSample_freq = ::atoi( param->GetValue() );
 
- return(BCI2000ERR_NOERR);
+  return file ? BCI2000ERR_NOERR : BCI2000ERR_MALFORMEDHEADER;
 }
-
 
 // **************************************************************************
 // Function:   InvalidateBuffer
@@ -591,11 +608,11 @@ bool    withinstates, withinparameters;
 //             (this is done in case the disc file is being changed and not the buffer)
 // **************************************************************************
 //---------------------------------------------------------------------------
-void BCI2000DATA::InvalidateBuffer()
+void
+BCI2000DATA::InvalidateBuffer()
 {
-  buf_mem_start=-2*buffer_size;
+  mBuf_mem_start = - 2 * mBuffer_size;
 }
-
 
 // **************************************************************************
 // Function:   DetermineRunNumber
@@ -604,7 +621,8 @@ void BCI2000DATA::InvalidateBuffer()
 // Parameters: sample - sample number
 // Returns:    run number, or 0 on error
 // **************************************************************************
-int BCI2000DATA::DetermineRunNumber(ULONG sample)
+int
+BCI2000DATA::DetermineRunNumber(ULONG sample)
 {
 int     firstrun, lastrun, cur_run, runnr;
 ULONG   samplesleft;
@@ -619,7 +637,7 @@ ULONG   samplesleft;
  // go through all runs and determine the run number for this sample
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
-  samplesleft-=sample_number_run[cur_run];
+  samplesleft-=mSample_number_run[cur_run];
   if (samplesleft < 0)
      {
      runnr=cur_run;
@@ -648,10 +666,9 @@ short BCI2000DATA::ReadValueTotal(int channel, ULONG sample)
  return(retval);
 } */
 
-
 // **************************************************************************
 // Function:   Value
-// Purpose:    Returns the sample value in the .raw file for a given sample
+// Purpose:    Returns the sample value in the .dat file for a given sample
 //             and channel number that is, the sample in the current run,
 //             in units of 1e-6 V, i.e. honouring the calibration parameters
 //             present in the file.
@@ -659,9 +676,10 @@ short BCI2000DATA::ReadValueTotal(int channel, ULONG sample)
 //             sample - sample number
 // Returns:    value requested
 // **************************************************************************
-float BCI2000DATA::Value( int channel, unsigned long sample )
+float
+BCI2000DATA::Value( int channel, unsigned long sample )
 {
-  return ( ReadValue( channel, sample ) - sourceOffsets[ channel ] ) * sourceGains[ channel ];
+  return ( ReadValue( channel, sample ) - mSourceOffsets[ channel ] ) * mSourceGains[ channel ];
 }
 
 // **************************************************************************
@@ -672,7 +690,8 @@ float BCI2000DATA::Value( int channel, unsigned long sample )
 //             sample - sample number
 // Returns:    value requested
 // **************************************************************************
-short BCI2000DATA::ReadValue(int channel, unsigned long sample)
+short
+BCI2000DATA::ReadValue( int channel, unsigned long sample )
 {
 FILE   *fp;
 long   file_ptr;
@@ -680,21 +699,21 @@ short  retval;
 char   *cur_bufptr;
 
  file_ptr=GetHeaderLength()+(ULONG)channel*2+sample*(2*(ULONG)GetNumChannels()+GetStateVectorLength());
- if ((file_ptr < buf_mem_start) || (file_ptr >= (buf_mem_start+buffer_size-2))) // the -2 is because it could be that the first byte of the sample is in the buffer, but the second isn't; thus, "just to make sure", reload buffer a little sooner
+ if ((file_ptr < mBuf_mem_start) || (file_ptr >= (mBuf_mem_start+mBuffer_size-2))) // the -2 is because it could be that the first byte of the sample is in the buffer, but the second isn't; thus, "just to make sure", reload buffer a little sooner
     {
-    fp=fopen(filename, "rb");
+    fp=fopen(mFilename.c_str(), "rb");
     if (fp)
        {
        fseek(fp, (long)file_ptr, SEEK_SET);
-       memset(buf_mem, 0, buffer_size);                 // clear buffer memory first (in case that if we are at the end of the file, we don't get garbage
-       fread(buf_mem, 1, buffer_size, fp);
+       memset(mpBuf_mem, 0, mBuffer_size);                 // clear buffer memory first (in case that if we are at the end of the file, we don't get garbage
+       fread(mpBuf_mem, 1, mBuffer_size, fp);
        fclose(fp);
        }
-    buf_mem_start=file_ptr;
+    mBuf_mem_start=file_ptr;
     }
 
- cur_bufptr=(char *)&buf_mem[0];
- memcpy((void *)&retval, (const void *)&cur_bufptr[file_ptr-buf_mem_start], 2);
+ cur_bufptr=(char *)&mpBuf_mem[0];
+ memcpy((void *)&retval, (const void *)&cur_bufptr[file_ptr-mBuf_mem_start], 2);
  return(retval);
 }
 
@@ -708,11 +727,13 @@ char   *cur_bufptr;
 // Returns:    value requested
 //             it returns 0 on error
 // **************************************************************************
-short BCI2000DATA::ReadValue(int channel, unsigned long sample, int run)
+short
+BCI2000DATA::ReadValue( int inChannel, unsigned long inSample, int inRun )
 {
- if (SetRun(run) == 0) return(0);
+  if( SetRun( inRun ) == 0 )
+    return 0;
 
- return(ReadValue(channel, sample));
+  return ReadValue( inChannel, inSample );
 }
 
 
@@ -723,30 +744,29 @@ short BCI2000DATA::ReadValue(int channel, unsigned long sample, int run)
 // Parameters: sample - sample number
 // Returns:    N/A
 // **************************************************************************
-void BCI2000DATA::ReadStateVector(ULONG sample)
+void
+BCI2000DATA::ReadStateVector( unsigned long inSample )
 {
 FILE   *fp;
 long   file_ptr;
 char   *cur_bufptr;
 
- file_ptr=GetHeaderLength()+(ULONG)GetNumChannels()*2+sample*(2*(ULONG)GetNumChannels()+GetStateVectorLength());
- if ((file_ptr < buf_mem_start) || (file_ptr+GetStateVectorLength() >= buf_mem_start+buffer_size))
+ file_ptr=GetHeaderLength()+(ULONG)GetNumChannels()*2+inSample*(2*(ULONG)GetNumChannels()+GetStateVectorLength());
+ if ((file_ptr < mBuf_mem_start) || (file_ptr+GetStateVectorLength() >= mBuf_mem_start+mBuffer_size))
     {
-    fp=fopen(filename, "rb");
+    fp=fopen(mFilename.c_str(), "rb");
     if (fp)
        {
        fseek(fp, (long)file_ptr, SEEK_SET);
-       memset(buf_mem, 0, buffer_size);                 // clear buffer memory first (in case that if we are at the end of the file, we don't get garbage
-       fread(buf_mem, 1, buffer_size, fp);
+       memset(mpBuf_mem, 0, mBuffer_size);                 // clear buffer memory first (in case that if we are at the end of the file, we don't get garbage
+       fread(mpBuf_mem, 1, mBuffer_size, fp);
        fclose(fp);
        }
-    buf_mem_start=file_ptr;
+    mBuf_mem_start=file_ptr;
     }
 
- cur_bufptr=(char *)&buf_mem[0];
- memcpy(statevector->GetStateVectorPtr(), (const void *)&cur_bufptr[file_ptr-buf_mem_start], GetStateVectorLength());
-
- return;
+ cur_bufptr=(char *)&mpBuf_mem[0];
+ memcpy(mpStatevector->GetStateVectorPtr(), (const void *)&cur_bufptr[file_ptr-mBuf_mem_start], GetStateVectorLength());
 }
 
 
@@ -757,13 +777,15 @@ char   *cur_bufptr;
 // Parameters: sample - sample number
 // Returns:    N/A
 // **************************************************************************
-void BCI2000DATA::ReadStateVector(ULONG sample, int run)
+void
+BCI2000DATA::ReadStateVector( unsigned long inSample, int inRun )
 {
- SetRun(run);
- ReadStateVector(sample);
+  SetRun( inRun );
+  ReadStateVector( inSample );
 }
 
 
+#if 0
 // **************************************************************************
 // Function:   get_next_string
 // Purpose:    gets the next delimited item in a string
@@ -788,6 +810,6 @@ while (((buf[idx] == ',') || (buf[idx] == ' ')) && (idx-*start_idx < 2048))
 
 *start_idx=idx;
 }
-
+#endif
 
 
