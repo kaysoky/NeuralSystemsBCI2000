@@ -78,6 +78,7 @@ __published:	// IDE-managed Components
         void __fastcall bSave2DiskClick(TObject *Sender);
         void __fastcall cStateListBoxClickCheck(TObject *Sender);
 private:	// User declarations
+        void __fastcall CSpEditOnChange( TObject* );
 public:		// User declarations
         __int16 UserStateVal;
         bool    UserStateEntered;

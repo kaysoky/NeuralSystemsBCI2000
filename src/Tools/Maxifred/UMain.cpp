@@ -72,6 +72,14 @@ __fastcall TfMain::TfMain(TComponent* Owner)
         : TForm(Owner)
 {
  bci2000data=NULL;
+ 
+ for( int i = 0; i < ComponentCount; ++i )
+ {
+   TCSpinEdit* cSpComponent = dynamic_cast<TCSpinEdit*>( Components[ i ] );
+   if( cSpComponent != NULL )
+     cSpComponent->OnChange = CSpEditOnChange;
+ }
+ eScaling->OnExit = bGoButton->OnClick;
 }
 
 _fastcall TfMain::~TfMain()
@@ -80,6 +88,43 @@ _fastcall TfMain::~TfMain()
  bci2000data=NULL;
 }
 
+// Fix erroneous behaviour of TCSpinEdit component, jm
+void __fastcall TfMain::CSpEditOnChange( TObject* Sender )
+{
+  TEdit* editField = static_cast<TEdit*>( Sender );
+  editField->OnChange = NULL;
+  AnsiString text = editField->Text;
+  int selStart = editField->SelStart;
+  bool leaveEditor = text.Pos( "\n" ) || text.Pos( "\r" );
+  int i = 1;
+  while( i <= text.Length() )
+  {
+    if( !isdigit( text[ i ] ) )
+      text.Delete( i, 1 );
+    else
+      ++i;
+  }
+  if( text == "" )
+    text = "0";
+  editField->Text = text;
+  if( leaveEditor )
+    editField->SelectAll();
+  else
+  {
+    if( selStart > text.Length() )
+      selStart = text.Length();
+    editField->SelLength = 0;
+    editField->SelStart = selStart;
+  }
+  editField->OnChange = CSpEditOnChange;
+
+#if 0
+  // Take some action.
+  if( obj == cDisplaySamples || obj == cNumChannels )
+    if( bGoButton->OnClick != NULL )
+      bGoButton->OnClick( Sender );
+#endif
+}
 
 // **************************************************************************
 // Function:   UpdateStatusBar
@@ -264,7 +309,7 @@ float   car, reference, scaling;
    if (channellist[cur_channel].chanreftype == REFTYPE_CAR)
       reference=car;
    if (i+start_channel < num_channels)
-      MainChart->Series[i]->YValues->Value[t]=(float)bci2000data->ReadValue(cur_channel, t+start_sample)*scaling/12288+i-reference;
+      MainChart->Series[i]->YValues->Value[t]=(bci2000data->Value(cur_channel, t+start_sample)-reference)/.003/12288*scaling+i;
    else
       MainChart->Series[i]->YValues->Value[t]=i;
    // MainChart->Series[i]->XValues->Value[t]=t+start_sample;
@@ -299,7 +344,7 @@ float   sum;
 
  sum=0;
  for (i=0; i<num_channels; i++)
-  sum += (float)bci2000data->ReadValue(i, sample)/12288;
+  sum += bci2000data->Value(i, sample);
 
  return(sum/num_channels);
 }
