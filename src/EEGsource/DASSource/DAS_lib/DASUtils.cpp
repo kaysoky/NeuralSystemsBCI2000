@@ -39,6 +39,19 @@ DASUtils::ADRangeEntry DASUtils::ranges[] =
   { BIPPT005VOLTS, -0.005, 0.005 },
 };
 
+// Try a number of options in the order of preferability.
+const int DASUtils::tryOptions[] =
+{
+  BLOCKIO | BURSTMODE | CONVERTDATA,
+  BLOCKIO | CONVERTDATA,
+  BLOCKIO | BURSTMODE,
+  BLOCKIO,
+  BURSTMODE | CONVERTDATA,
+  CONVERTDATA,
+  BURSTMODE,
+  0,
+};
+
 int
 DASUtils::GetADRangeCode( float rangeMin, float rangeMax )
 {
@@ -50,9 +63,39 @@ DASUtils::GetADRangeCode( float rangeMin, float rangeMax )
   return ADRange;
 }
 
+bool
+DASUtils::ADRangeCompatible( int inRange, float rangeMin, float rangeMax )
+{
+  int rangeCode = GetADRangeCode( rangeMin, rangeMax ),
+      polarity = ( rangeMin == 0 ? UNIPOLAR : BIPOLAR );
+  return ( inRange == NOTUSED ) || ( inRange == rangeCode ) || ( inRange == polarity );
+}
+
 int
 DASUtils::GetTransferBlockSize( int inBoardNumber, long& outBlockSize )
 {
+  // Try looking up the transfer block size in a table.
+  bool boardInTable = true;
+  int boardType = 0;
+  if( NOERRORS == ::cbGetConfig( BOARDINFO, inBoardNumber, 0, BIBOARDTYPE, &boardType ) )
+  {
+    switch( boardType )
+    {
+      case CIO_DAS1402_16:
+        outBlockSize = 512;
+        break;
+      case PC_CARD_DAS16_16:
+        outBlockSize = 2048;
+        break;
+      default:
+        boardInTable = false;
+    }
+  }
+  if( boardInTable )
+    return NOERRORS;
+
+  // The board is not in the table -- try measuring the block size.
+  
   // Determine a ADRange parameter supported by the board.
   int result = BADRANGE,
       ADRange = NOTUSED;
@@ -80,7 +123,7 @@ DASUtils::GetTransferBlockSize( int inBoardNumber, long& outBlockSize )
         {
           result = ::cbAInScan( inBoardNumber, 0, numADChans - 1, testSampleCount,
                    &samplingRate, ADRange, data, CONTINUOUS | BACKGROUND );
-        } while( result == BADRATE && ( samplingRate /= 2 ) > 0 );
+        } while( result != NOERRORS && ( samplingRate /= 2 ) > 0 );
 
         if( result == NOERRORS )
         {
@@ -133,21 +176,10 @@ DASUtils::GetBoardOptions( int   inBoardNumber,
 {
   const int maxCount = 1 << 20;
 
-  // Try options in the order given here.
+  // Try options in the order given in tryOptions.
   // Options independent of the ones given in tryOptions
   // will not be touched.
-  int tryOptions[] =
-  {
-    BLOCKIO | BURSTMODE | CONVERTDATA,
-    BLOCKIO | CONVERTDATA,
-    BLOCKIO | BURSTMODE,
-    BLOCKIO,
-    BURSTMODE | CONVERTDATA,
-    CONVERTDATA,
-    BURSTMODE,
-    0,
-  },
-  numTryOptions = sizeof( tryOptions ) / sizeof( *tryOptions ),
+  int numTryOptions = sizeof( tryOptions ) / sizeof( *tryOptions ),
   tryMask = 0;
   for( int i = 0; i < numTryOptions; ++i )
     tryMask |= tryOptions[ i ];

@@ -17,12 +17,25 @@
 #include <string>
 #include <map>
 
+// These constants should actually be in cbw.h.
+enum
+{
+  PC_CARD_DAS16_16 = 56,
+  CIO_DAS1402_16 = 3590,
+};
+
 class DASUtils
 {
  public:
   // Convert a numerical range to the corresponding UL range code, if possible.
   static int GetADRangeCode( float inMin,
                              float inMax );
+                             
+  // Check whether a numerical range is compatible with an UL range code.
+  // Considers UNIPOLAR and BIPOLAR range codes.
+  static bool ADRangeCompatible( int   inRangeCode,
+                                 float inMin,
+                                 float inMax );
 
   // Measure the size of the chunks in which data are transferred from the
   // board. In most cases, this should equal half the size of the board's
@@ -101,6 +114,8 @@ class DASUtils
     int code;
     float min, max;
   } ranges[];
+
+  static const int tryOptions[];
 
   struct LoopData
   {
