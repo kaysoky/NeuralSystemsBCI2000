@@ -125,7 +125,7 @@ int     s, t;
  coremessage->SetSuppDescriptor(VISTYPE_MEMO);
  coremessage->SetLength(strlen(string)+1+4);         // set the length of the coremessage (strlen(..)+1 to account for delimiting 0 byte)
 
- dataptr=(BYTE *)coremessage->GetBufPtr();
+ dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
  // construct the header of the core message
  dataptr[0]=sourceID;                        // write the source ID into the coremessage
  strcpy(&dataptr[1], string);                // copy the string into the coremessage
@@ -205,7 +205,7 @@ BYTE    *dataptr;
  coremessage->SetSuppDescriptor( vis_type );
  coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
- dataptr=(BYTE *)coremessage->GetBufPtr();
+ dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
  // construct the header of the core message
  dataptr[0]=sourceID;                   // write the source ID into the coremessage
  dataptr[1]=DATATYPE_INTEGER;           // write the datatype into the coremessage
@@ -254,7 +254,7 @@ float   value, value2;
  coremessage->SetSuppDescriptor( vis_type );
  coremessage->SetLength(3*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
- dataptr=(BYTE *)coremessage->GetBufPtr();
+ dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
  // construct the header of the core message
  dataptr[0]=sourceID;                   // write the source ID into the coremessage
  dataptr[1]=DATATYPE_FLOAT;             // write the datatype into the coremessage
@@ -320,7 +320,7 @@ float   value, value2;
  coremessage->SetSuppDescriptor(VISTYPE_VISCFG);
  coremessage->SetLength(2+strlen(cfgString)+4);         // set the length of the coremessage
 
- dataptr=(BYTE *)coremessage->GetBufPtr();
+ dataptr=(BYTE *)coremessage->GetBufPtr( coremessage->GetLength() );
  // construct the header of the core message
  dataptr[0]=sourceID;                      // write the source ID into the coremessage
  dataptr[1]=cfgID;                         // write the config ID into the coremessage

@@ -376,7 +376,7 @@ int     channelnum;
  else
     coremessage->SetLength(sizeof(unsigned short)*(unsigned short)channellistparam->GetNumValues()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
 
- dataptr=(BYTE *)coremessage->GetBufPtr();
+ dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
  // construct the header of the core message
  dataptr[0]=0;                          // sourceID is 0 for data transfer
  dataptr[1]=DATATYPE_INTEGER;           // write the datatype into the coremessage
