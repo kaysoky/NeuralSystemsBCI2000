@@ -18,21 +18,12 @@
 // Returns:    N/A
 // **************************************************************************
 BITRATE::BITRATE()
-{
- hits=misses=0;
-}
-
-
-// **************************************************************************
-// Function:   ~BITRATE
-// Purpose:    the destructor for the BITRATE object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-BITRATE::~BITRATE()
+: hits( 0 ),
+  misses( 0 ),
+  choices( 0 ),
+  starttime( 0 )
 {
 }
-
 
 // **************************************************************************
 // Function:   Initialize
@@ -71,7 +62,7 @@ void BITRATE::Push(bool hit)
 // Parameters: N/A
 // Returns:    information transfer rate in bits
 // **************************************************************************
-float BITRATE::TotalBitsTransferred()
+float BITRATE::TotalBitsTransferred() const
 {
 float res;
 
@@ -88,7 +79,7 @@ float res;
 // Parameters: N/A
 // Returns:    information transfer rate in bits/trial
 // **************************************************************************
-float BITRATE::BitsPerTrial()
+float BITRATE::BitsPerTrial() const
 {
 float p, res;
 
@@ -124,7 +115,7 @@ float p, res;
 // Parameters: N/A
 // Returns:    information transfer rate in bits/minute
 // **************************************************************************
-float BITRATE::BitsPerMinute()
+float BITRATE::BitsPerMinute() const
 {
 float minutes;
 

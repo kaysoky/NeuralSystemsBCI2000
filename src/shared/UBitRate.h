@@ -13,11 +13,10 @@ private:	// User declarations
         TDateTime       starttime;
 public:		// User declarations
         BITRATE::BITRATE();
-        BITRATE::~BITRATE();
         void    Initialize(int choices);
         void    Push(bool hit);
-        float   TotalBitsTransferred();
-        float   BitsPerTrial();
-        float   BitsPerMinute();
+        float   TotalBitsTransferred() const;
+        float   BitsPerTrial() const;
+        float   BitsPerMinute() const;
 };
 #endif
