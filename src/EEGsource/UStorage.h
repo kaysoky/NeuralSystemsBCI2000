@@ -4,14 +4,15 @@
 #define UStorageH
 //---------------------------------------------------------------------------
 
+#include "UBCI2000Error.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UGenericSignal.h"
+#include "BCIDirectry.h"
 
 #include <Classes.hpp>
 #include <scktcomp.hpp>
 #include <forms.hpp>
-#include "BCIDirectry.h"
 
 #define MAX_BUFFERS     20
 
@@ -38,14 +39,15 @@ protected:
         int     NewRunNo;
         bool    saveprmfile;
         int     Channels, StateVectorLen;
+        void    CreateFileName( BCIDtry * );
+        char    *GetFileName();
 public:
         __fastcall TDataStorage::TDataStorage(PARAMLIST *paramlist);
         __fastcall TDataStorage::~TDataStorage();
-        void TDataStorage::Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector);
-        void TDataStorage::CreateFileName( BCIDtry * );
-        char *TDataStorage::GetFileName();
-        void TDataStorage::WriteHeader();
-        bool TDataStorage::Write2Disk(GenericIntSignal *StoreSignal);
+        BCI2000ERROR   error;
+        int     Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector);
+        void    WriteHeader();
+        bool    Write2Disk(GenericIntSignal *StoreSignal);
 };
 //---------------------------------------------------------------------------
 #endif

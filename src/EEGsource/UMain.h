@@ -57,6 +57,9 @@ __published:	// IDE-managed Components
         void __fastcall FormCreate(TObject *Sender);
 private:	// User declarations
         bool    GUImode;
+        bool    visualize, visualizeroundtrip;
+        int     ConfigureSource();
+        GenericSignal   *roundtripsignal;
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         void   HandleCoreMessage(COREMESSAGE *coremessage);
@@ -74,12 +77,16 @@ public:		// User declarations
         void    UpdateStateVector();
         int     ParametersConsistent();
         void    SetEEGDisplayProperties();
-        int     resetrequest;
+        int     resetrequest, visdecim;
         TEvent  *statevectorupdate;
         #ifdef ADC_DTADC
          DTADC               *adc;
-        #else
+        #endif
+        #ifdef ADC_RANDOM
          RandomNumberADC     *adc;
+        #endif
+        #ifdef ADC_DAS1402H
+         TDASSource          *adc;
         #endif
         GenericVisualization *vis, *roundtripvis;
         TDataStorage         *tds;

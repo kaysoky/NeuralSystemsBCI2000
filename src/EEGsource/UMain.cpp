@@ -2,7 +2,7 @@
  * Program:   EEGsource.EXE                                                   *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The EEGsource module for BCI2000                                *
- * Version:   0.24                                                            *
+ * Version:   0.25                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -36,6 +36,7 @@
  *                      added visualization of round-trip time                *
  * V0.24 - 09/27/2001 - can control RandomNumberGenerator with mouse          *
  * V0.241- 01/11/2002 - fixed minor issue in MainDataAcqLoop() and UStorage   *
+ * V0.25 - 04/09/2002 - improved error handling                               *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -45,7 +46,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ADC_DTADC
+// #define ADC_DTADC
+#define ADC_RANDOM
+// #define ADC_DAS1402H
 
 #include "UCoreComm.h"
 #include "..\shared\defines.h"
@@ -56,8 +59,12 @@
 #include "GenericADC.h"
 #ifdef ADC_DTADC
  #include "DTADC\DTADC.h"
-#else
+#endif
+#ifdef ADC_RANDOM
  #include "RandomNumber\RandomNumberADC.h"
+#endif
+#ifdef ADC_DAS1402H
+ #include "Computerboard\DAS1402.h"
 #endif
 #include "UStorage.h"
 
@@ -66,7 +73,6 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
-// FILE *termin;
 
 TfMain          *fMain;
 STATEVECTOR     *statevector;
@@ -144,7 +150,7 @@ int     trycount, ret;
    {
    try
     {
-    if (pStream->WaitForData(1000))
+    if (pStream->WaitForData(100))
        {
        // read the statevector
        coremessage=new COREMESSAGE();
@@ -297,16 +303,15 @@ int     consistent;
   consistent=0;
   }
 
+ if (atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()) == 1) consistent=0;
+
  return(consistent);
 }
 
 
 // **************************************************************************
-// Function:   MainDataAcqLoop
-// Purpose:    This is the main data acquisition loop
-//             it reads data from the ADC board
-//             this loop is being called on transitions from the state Running
-//             from 0 to 1
+// Function:   SetEEGDisplayProperties
+// Purpose:    This sets display properties for the visualization windows
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
@@ -316,11 +321,11 @@ char    cur_buf[256];
 int     samplefreq, i, displaysamples;
 int     display_min= 0;
 int     display_max= 8192;
-int     visdecim, displayseconds;
+int     displayseconds;
 
  // unique source ID for this visualization
  vis->SetSourceID(SOURCEID_EEGDISP);
- vis->SendCfg2Operator(SOURCEID_EEGDISP, CFGID_WINDOWTITLE, "Source EEG");
+ vis->SendCfg2Operator(SOURCEID_EEGDISP, CFGID_WINDOWTITLE, "Source Signal");
  roundtripvis->SetSourceID(SOURCEID_ROUNDTRIP);
  roundtripvis->SendCfg2Operator(SOURCEID_ROUNDTRIP, CFGID_WINDOWTITLE, "Roundtrip");
 
@@ -362,6 +367,83 @@ int     visdecim, displayseconds;
 
 
 // **************************************************************************
+// Function:   ConfigureSource
+// Purpose:    This procedure configures the source module and is called
+//             at the beginning of MainDataAcqLoop() (i.e., when the system is started)
+//             and whenever the system is being re-initialized (i.e., when
+//             operation is resumed
+//             This function will send error messages to the Operator, as appropriate
+// Parameters: N/A
+// Returns:    0 ... error
+//             1 ... OK
+// **************************************************************************
+int TfMain::ConfigureSource()
+{
+PARAM   *visparam;
+char    errmsg[1024];
+int     res;
+
+ try{
+
+ // initialize the DataStorage object
+ res=tds->Initialize(&paramlist, &statelist, statevector);
+ if (res == 0)
+    {
+    sprintf(errmsg, "411 Error in Source ! %s", tds->error.GetErrorMsg());
+    corecomm->SendStatus(errmsg);
+    return(0);
+    }
+ tds->Resume();
+
+ // shut down data acquisition
+ adc->ADShutdown();
+ // initialize data acquisition
+ res=adc->ADInit();
+ if (res == 0)
+    {
+    sprintf(errmsg, "411 Error in Source ! %s", adc->error.GetErrorMsg());
+    corecomm->SendStatus(errmsg);
+    return(0);
+    }
+
+ // create the signal for the roundtrip visualization
+ if (roundtripsignal) delete roundtripsignal;
+ roundtripsignal=new GenericSignal(1, 1);
+
+ // configure visualization
+ visualize=false;
+ visparam=fMain->paramlist.GetParamPtr("VisualizeSource");
+ if ((visparam) && (atoi(visparam->GetValue()) == 1))
+    {
+    SetEEGDisplayProperties();             // set the display properties at the operator
+    visualize=true;
+    }
+ visparam=fMain->paramlist.GetParamPtr("VisualizeRoundtrip");
+ visualizeroundtrip=false;
+ if ((visparam) && (atoi(visparam->GetValue()) == 1))
+    visualizeroundtrip=true;
+
+ // don't proceed if certain parameters are not consistent
+ if (ParametersConsistent() == 0)
+    {
+    corecomm->SendStatus("300 Source: Parameters are inconsistent ...");
+    adc->ADShutdown();
+    return(0);
+    }
+
+ } catch(...)   // catch any exception that might have been thrown in here
+    {
+    sprintf(errmsg, "411 Error in Source: Exception thrown while initializing: !");
+    corecomm->SendStatus(errmsg);
+    adc->ADShutdown();
+    return(0);
+    }
+
+ return(1);
+}
+
+
+// **************************************************************************
 // Function:   MainDataAcqLoop
 // Purpose:    This is the main data acquisition loop
 //             it reads data from the ADC board
@@ -375,56 +457,51 @@ void TfMain::MainDataAcqLoop()
 static unsigned short   oldrunning=0;
 unsigned short          sourcetime, stimulustime;
 unsigned short          running;
-BCITIME                 bcitime;
-PARAM                   *visparam;
-bool                    visualize;
-int                     i, ret, visdecim;
-GenericSignal           *roundtripsignal;
-int                     x, y;
+BCITIME bcitime;
+char    errmsg[1024];
+PARAM   *visparam;
+int     i, ret;
+int     x, y, res;
 
- // initialize the DataStorage object
- tds->Initialize(&paramlist, &statelist, statevector);
- tds->Resume();
- // the constructor for adc has been called before
- // (when the connection to the operator was established)
- adc->ADInit();				// initialize
+ // configure the source module
+ res=ConfigureSource();
+ if (res == 0) return;
 
- // create the signal for the roundtrip visualization
- roundtripsignal=new GenericSignal(1, 1);
-
- visualize=false;
- visparam=fMain->paramlist.GetParamPtr("VisualizeSource");
- if (visparam)
-    if (atoi(visparam->GetValue()) == 1)
-       {
-       SetEEGDisplayProperties();             // set the display properties at the operator
-       visualize=true;
-       }
- visdecim=atoi(fMain->paramlist.GetParamPtr("VisualizeSourceDecimation")->GetValue());
-
- // don't proceed, if certain parameters are not consistent
- if (ParametersConsistent() == 0)
-    {
-    corecomm->SendStatus("300 Parameters are inconsistent ...");
-    adc->ADShutdown();
-    return;
-    }
-
+ //
+ // THIS IS THE MAIN DATA ACQUISITION LOOP
+ //
+ // this acts as the system metronome
+ // loop, as long as we have not received a reset request and
+ // as long as the connection to the operator is connected
  while ((resetrequest == 0) && (corecomm->Connected()))
   {
-  adc->ADReadDataBlock();		// read data from ADC - it won't return, until data is there
+  // read data from ADC - it won't return, until data is there
+  res=adc->ADReadDataBlock();
+  // if there is a problem, suspend the system
+  if (res == 0)
+     {
+     sprintf(errmsg, "411 Error in Source ! %s", adc->error.GetErrorMsg());
+     corecomm->SendStatus(errmsg);
+     statevector->SetStateValue("Running", 0);
+     running=0;
+     Sleep(500);
+     }
 
-  // we have to acquire a lock to the statevector
-  // (otherwise, if we are unlucky, the thread that receives the resulting statevector from the
-  // application will overwrite the statevector at the same time)
   critsec_statevector->Acquire();
-  statevectorupdate->WaitFor(750);
-  UpdateStateVector();
 
-  // time stamp the EEG data
+  // update the state vector
+  // we have to acquire a lock first (since the receiving thread might overwrite it with the one returned from the application)
+  // of course, we only have to do this in case the receiving thread hasn't been terminated
+  if (receiving_thread)
+     {
+     statevectorupdate->WaitFor(750);
+     UpdateStateVector();
+     }
+
+  // time stamp the brain signal
   sourcetime=statevector->GetStateValue("SourceTime");
   stimulustime=statevector->GetStateValue("StimulusTime");
-  statevector->SetStateValue("SourceTime", bcitime.GetBCItime_ms());
+   statevector->SetStateValue("SourceTime", bcitime.GetBCItime_ms());
 
   // get the current value of the state "Running" in the state vector
   // flipping to 0 quits this main data acquisition loop
@@ -432,19 +509,21 @@ int                     x, y;
   // has the operator restarted the system ?
   if ((running == 1) && (oldrunning == 0))
      {
-     adc->ADShutdown();                                         // stop data acquisition
-     tds->Initialize(&paramlist, &statelist, statevector);      // re-initialize the data storage
-     adc->ADInit();
-     visualize=false;
-     visparam=fMain->paramlist.GetParamPtr("VisualizeSource");  // re-do visualization properties
-     if (visparam)
-        if (atoi(visparam->GetValue()) == 1)
-           {
-           SetEEGDisplayProperties();             // set the display properties at the operator
-           visualize=true;
-           }
-     visdecim=atoi(fMain->paramlist.GetParamPtr("VisualizeSourceDecimation")->GetValue());
-     adc->ADReadDataBlock();		                        // have to read new data after reconfiguration, too
+     // continue working here
+     // still have to react to a problem (shut system down, etc)
+     res=ConfigureSource();
+     // if there was a problem, we need to suspend the system right away
+     if (res == 0)
+        {
+        running=0;
+        oldrunning=1;
+        statevector->SetStateValue("Running", 0);
+        }
+     else
+        {
+        // if it's OK, we have to read new data after reconfiguration, too
+        adc->ADReadDataBlock();
+        }
      }
 
   // inform the operator, in case the system has been suspended
@@ -456,24 +535,38 @@ int                     x, y;
   if (running == 1) statevector->SetStateValue("Recording", 1);
   oldrunning=running;
 
-  Write2SignalProc(adc->signal, statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
+  res=Write2SignalProc(adc->signal, statevector, fMain->paramlist.GetParamPtr("TransmitChList"));
+  if (res == 0)
+     {
+     sprintf(errmsg, "411 Error in Source: Could not send data to Signal Processing !");
+     corecomm->SendStatus(errmsg);
+     statevector->SetStateValue("Running", 0);
+     running=0;
+     }
 
   if ((tds) && (statevector->GetStateValue("Recording") == 1))
-     tds->Write2Disk(adc->signal);
+     {
+     if (!(tds->Write2Disk(adc->signal)))
+        {
+        sprintf(errmsg, "411 Error in Source: %s", tds->error.GetErrorMsg());
+        corecomm->SendStatus(errmsg);
+        statevector->SetStateValue("Running", 0);
+        running=0;
+        }
+     }
 
   critsec_statevector->Release();
 
   // store timing info
-  if (running == 1)
+  if ((running == 1) && (visualizeroundtrip) && (roundtripvis))
      {
      roundtripsignal->SetValue(0, 0, (float)bcitime.TimeDiff(sourcetime, stimulustime));
      roundtripvis->Send2Operator(roundtripsignal);
      }
 
   // send the whole signal to the operator
-  if (visualize)
-     if (vis)
-        vis->Send2Operator(adc->signal, visdecim);
+  if ((visualize) && (vis))
+     vis->Send2Operator(adc->signal, visdecim);
 
   // give the main thread time to process all the messages,
   // e.g., in order to receive the messages from the operator
@@ -549,12 +642,6 @@ void TfMain::ShutdownConnections()
 // **************************************************************************
 void TfMain::ShutdownSystem()
 {
-
-
-   //     termin= fopen("Termin.asc","a");
-   //     fprintf(termin,"Begin Shutdown \n");
-   //     fclose( termin );
-
  // delete the adc object
  if (adc) adc->ADShutdown();
  if (adc) delete adc;
@@ -581,10 +668,6 @@ void TfMain::ShutdownSystem()
  statelist.ClearStateList();
  if (statevector) delete statevector;
  statevector=NULL;
-
-    //    termin= fopen("Termin.asc","a");
-    //    fprintf(termin,"End Shutdown \n");
-    //    fclose( termin );
 }
 
 
@@ -604,6 +687,8 @@ __fastcall TfMain::TfMain(TComponent* Owner) : TForm(Owner)
  // i.e., the main data acquisiton loop waits until the system has received the
  // updated state vector
  statevectorupdate=new TEvent(NULL, false, false, "StateVectorUpdate");
+
+ roundtripsignal=NULL;
 
  adc=NULL;
  vis=NULL;
@@ -671,8 +756,12 @@ int     ret;
  // the constructor in this object will fill up the parameter and state lists
  #ifdef ADC_DTADC
   adc=new DTADC(&paramlist, &statelist);
- #else
+ #endif
+ #ifdef ADC_RANDOM
   adc=new RandomNumberADC(&paramlist, &statelist);
+ #endif
+ #ifdef ADC_DAS1402H
+  adc=new TDASSource(&paramlist, &statelist);
  #endif
  // create an instance of GenericVisualization
  // it will handle the visualization to the operator
@@ -683,15 +772,17 @@ int     ret;
  tds=new TDataStorage(&paramlist);
 
  // add some generic parameters
- sprintf(paramstring, "Visualize int VisualizeSource= 1 1 0 1 // visualize raw EEG (0=no, 1=yes)\n");
+ sprintf(paramstring, "Visualize int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes)\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
- sprintf(paramstring, "Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw EEG\n");
+ sprintf(paramstring, "Visualize int VisualizeSource= 1 1 0 1    // visualize raw brain signal (0=no, 1=yes)\n");
+ paramlist.AddParameter2List(paramstring, strlen(paramstring));
+ sprintf(paramstring, "Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw brain signal\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
  sprintf(paramstring, "Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
- sprintf(paramstring, "Visualize int SourceMin= 0 0 -8092 0 // raw EEG vis Min Value\n");
+ sprintf(paramstring, "Visualize int SourceMin= 0 0 -8092 0 // raw signal vis Min Value\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
- sprintf(paramstring, "Visualize int SourceMax= 8092 8092 0 16386 // raw EEG vsi Max Value\n");
+ sprintf(paramstring, "Visualize int SourceMax= 8092 8092 0 16386 // raw signal vsi Max Value\n");
  paramlist.AddParameter2List(paramstring, strlen(paramstring));
 
  sprintf(paramstring, "Source int TransmitCh=      4 4 1 128        // the number of transmitted channels\n");
@@ -766,7 +857,7 @@ int     destport, res;
     rSendingConnected->Checked=true;
     eSendingIP->Text=destIP;
     eSendingPort->Text=AnsiString(destport);
-    corecomm->SendStatus("200 EEGsource module initialized ");
+    corecomm->SendStatus("200 Source module initialized ");
     }
  else
     return(ERR_NOSOCKPARAM);
@@ -841,7 +932,8 @@ STATE   *cur_state;
           }
        else
           {
-          Application->MessageBox("Could not initialize connections", "Error", MB_OK);
+          // send an error message to the operator
+          corecomm->SendStatus("410 Source: could not initialize connections");
           }
        }
     // is this to start the system ?
@@ -886,10 +978,6 @@ void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
  critsec_statevector=NULL;
  // if (corecomm)    delete corecomm;
  // if (sendingcomm) delete sendingcomm;
-
-    //    termin= fopen("Termin.asc","a");
-    //    fprintf(termin,"Closing Form \n");
-    //    fclose( termin );
 }
 //---------------------------------------------------------------------------
 

@@ -2,7 +2,7 @@
  * Program:   EEGsource.EXE                                                   *
  * Module:    GenericADC.CPP                                                  *
  * Comment:   Definition for the GenericADC class                             *
- * Version:   0.01                                                            *
+ * Version:   0.03                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -10,6 +10,7 @@
  *                                                                            *
  * V0.01 - 05/11/2000 - First start                                           *
  * V0.02 - 05/26/2000 - changed **RawEEG to *GenericIntSignal                 *
+ * V0.03 - 04/11/2002 - included BCI2000ERROR object                          *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -27,6 +28,7 @@
 GenericADC::GenericADC()
 {
  signal=NULL;
+ error.SetErrorMsg("");
 }
 
 

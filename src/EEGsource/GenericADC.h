@@ -3,17 +3,11 @@
 #ifndef GenericADCH
 #define GenericADCH
 //---------------------------------------------------------------------------
-#endif
 
-#ifndef UParameterH
- #include "UParameter.h"
-#endif
-#ifndef UStateH
- #include "UState.h"
-#endif
-#ifndef UGenericSignalH
- #include "UGenericSignal.h"
-#endif
+#include "UBCI2000Error.h"
+#include "UParameter.h"
+#include "UState.h"
+#include "UGenericSignal.h"
 
 #define ADCERR_NOERR    0
 #define ADCERR_INIT     1
@@ -31,4 +25,7 @@ public:
         int     ADReadDataBlock();
         int     ADShutdown();
         int     GetSampleRate();
+        BCI2000ERROR    error;
 };
+#endif
+

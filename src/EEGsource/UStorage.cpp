@@ -46,6 +46,7 @@ NewRunNo= 0;
  useflag= 1;
 
  FName = new char [255];
+ error.SetErrorMsg("");
 
  event=new TEvent(NULL, false, false, "");
 
@@ -89,9 +90,14 @@ __fastcall TDataStorage::~TDataStorage()
 {
 int     i;
 
- Terminate();
- event->SetEvent();
- WaitFor();
+ // if we have even started the thread yet (i.e., through Resume())
+ // then shut it down now
+ if (!Suspended)
+    {
+    Terminate();
+    event->SetEvent();
+    WaitFor();
+    }
 
  delete [] FName;
 
@@ -148,15 +154,26 @@ FILE    *fp;
 //---------------------------------------------------------------------------
 
 
-void TDataStorage::Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector)
+// **************************************************************************
+// Function:   Initialize
+// Purpose:    This function initializes data storage
+// Parameters: newparamlist   - pointer to the new list of parameters
+//             newstatelist   - pointer to the new list of states
+//             newstatevector - pointer to the new statevector
+// Returns:    0 ... on error
+//             1 ... no error
+// **************************************************************************
+int TDataStorage::Initialize(PARAMLIST *Newparamlist, STATELIST *NewStateList, STATEVECTOR *Newstatevector)
 {
 FILE    *fp;
-int     i;
+int     i, ret;
+char    errmsg[1024];
 
  paramlist = Newparamlist;
  statelist = NewStateList;
  statevector = Newstatevector;
 
+ ret=1;
  max=0;
 
  paramlist = Newparamlist;
@@ -171,35 +188,28 @@ int     i;
  else
     saveprmfile=false;
 
-    bcidtry= new BCIDtry();
-
-    // incrementing run no. or not
-/*
-    NewRunNo = atoi(paramlist->GetParamPtr("SubjectRun")->GetValue());
-    if( NewRunNo < OldRunNo ) NewRunNo= OldRunNo;
-    if( ( NewRunNo == OldRunNo ) && ( AlreadyIncremented == false ) )
-    {
-        NewRunNo++;
-        sprintf(FName, "%d", NewRunNo);
-        paramlist->GetParamPtr("SubjectRun")->SetValue(FName);
-        AlreadyIncremented = true;
-    }
-*/
-
-  if( useflag > 0 )
-         CreateFileName( bcidtry );
-
- //  OldRunNo = NewRunNo;
+ bcidtry= new BCIDtry();
+ if (!bcidtry) ret=0;
+ // if we have, since the last configuration, written to a file,
+ // then create a new file name
+ if ( useflag > 0 )
+    CreateFileName( bcidtry );
 
  // determine whether we have to write the header
  // can't write a buffer at the same time
  for (i=0; i<MAX_BUFFERS; i++)
    critsec[i]->Acquire();
 
- if( (fp = fopen(FName, "ab") ) == NULL )
- {
-        bcidtry->FileError( Application, FName );
- }
+ // if we can't open the target file name, return 0 (failure)
+ if ((fp = fopen(FName, "ab") ) == NULL)
+    {
+    sprintf(errmsg, "Could not open data file %s !!", FName);
+    error.SetErrorMsg(errmsg);
+    // the next time it shall create a new file name
+    // from the parameters since it failed initializing
+    useflag=1;
+    ret=0;
+    }
 
  if (fp)
     {
@@ -213,12 +223,16 @@ int     i;
        fclose(fp);
     }
 
-    delete bcidtry;
-    bcidtry= NULL;
+ // clean up
+ if (bcidtry) delete bcidtry;
+ bcidtry= NULL;
 
  // release the locks
  for (i=0; i<MAX_BUFFERS; i++)
    critsec[i]->Release();
+
+ // return 1 on success, 0 on failure
+ return(ret);
 }
 
 
@@ -343,7 +357,10 @@ char    *cur_ptr;
 
  // all buffers filled
  if (ptr >= MAX_BUFFERS-1)
+    {
+    error.SetErrorMsg("Data Storage: All Buffers Filled !!");
     return(false);
+    }
 
  // assign appropriate buffer slot
  if (ptr == -1) // no buffer currently filled
