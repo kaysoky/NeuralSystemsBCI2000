@@ -65,11 +65,14 @@ TTask::TTask()
       "horizontal offset for joystick/glove",
     "JoyStick float YOffset= 0 0 -1000.0 1000.0 // "
       "horizontal offset for joystick/glove",
-
-    "Targets int NumberTargets= 4 0 0 0 // "
+     "Targets int NumberTargets= 4 0 0 16 // "
       "Number of Targets",
+    "Targets int ShowAllTargets= 0 0 0 1 // "
+      "Display all Targets?",
     "Targets int IncludeAllTargets= 0 0 0 1 // "
       "Test all target positions?",
+    "Targets int FeedbackMode= 0 0 0 1 // "
+      "0 for correct  1 for any hit",
     "Targets float StartCursorX= 50.0 0 0 100.0 // "
       "Horizontal Start of Cursor",
     "Targets float StartCursorY= 50.0 0 0 100.0 // "
@@ -129,6 +132,8 @@ TTask::TTask()
     "AdaptCode 5 0 0 0",
   END_STATE_DEFINITIONS
 
+  oldNtargets= 0;
+
   SetUsr( Parameters, States );
 }
 
@@ -180,6 +185,7 @@ void TTask::Preflight( const SignalProperties& inputProperties,
 
 void TTask::Initialize()
 {
+        targetDisplay= 0;
 TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
         AnsiString COMport;
@@ -194,6 +200,8 @@ TEMPORARY_ENVIRONMENT_GLUE
         Ntargets=          Parameter( "NumberTargets" );
         CursorStartX=      Parameter( "StartCursorX" );
         CursorStartY=      Parameter( "StartCursorY" );
+        targetDisplay=     Parameter( "ShowAllTargets" );
+        feedbackmode=      Parameter( "FeedbackMode" );
         targetInclude=     Parameter( "IncludeAllTargets" );
         BaselineInterval=  Parameter( "BaselineInterval" );
         Resting=           Parameter( "RestingPeriod" );
@@ -291,8 +299,26 @@ TEMPORARY_ENVIRONMENT_GLUE
         User->GetSize( &size_right, &size_left, &size_top, &size_bottom );
         User->Scale( (float)0x7fff, (float)0x7fff );
         ComputeTargets( Ntargets );
-        targetcount= 0;
-        ranflag= 0;
+
+        if( targetDisplay == 1 )
+        {
+                for(i=0;i<Ntargets;i++)
+                {
+                        User->makeFoil( i+1,
+                                targx[i+1],
+                                targy[i+1],
+                                targsizex[i+1],
+                                targsizey[i+1]  );
+                }
+
+        }
+
+
+        if( oldNtargets != Ntargets )
+        {
+                targetcount= 0;
+                ranflag= 0;
+        }
 
         cursor_x_start= ( limit_right - limit_left ) * CursorStartX/100.0;
         cursor_y_start= ( limit_bottom - limit_top ) * CursorStartY/100.0;
@@ -491,6 +517,7 @@ void TTask::TestCursorLocation( float x, float y )
                 res= TestTarget( x, y, CurrentTarget );
                 if( res == 1 )
                 {
+                        User->Clear();
                         User->PutCursor( &x_pos, &y_pos, clBlue );
                         User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
@@ -528,6 +555,7 @@ void TTask::TestCursorLocation( float x, float y )
 
 jmp:            if( CurrentOutcome == CurrentTarget )
                 {
+                         User->Clear();
                          User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
@@ -538,13 +566,28 @@ jmp:            if( CurrentOutcome == CurrentTarget )
                 }
                 else
                 {
-                         User->PutTarget( targx[ CurrentTarget ],
-                                 targy[ CurrentTarget ],
-                                 targsizex[ CurrentTarget ],
-                                 targsizey[ CurrentTarget ],
-                                 clBlack   );
-                         Misses++;
-                         HitOrMiss=false;
+                         User->Clear();
+
+                         if( feedbackmode == 0 )
+                         {
+                                User->PutTarget( targx[ CurrentTarget ],
+                                        targy[ CurrentTarget ],
+                                        targsizex[ CurrentTarget ],
+                                        targsizey[ CurrentTarget ],
+                                        clBlack   );
+                                Misses++;
+                                HitOrMiss=false;
+                         }
+                         else
+                         {
+                                User->PutTarget( targx[ CurrentOutcome ],
+                                        targy[ CurrentOutcome ],
+                                        targsizex[ CurrentOutcome ],
+                                        targsizey[ CurrentOutcome ],
+                                        clYellow   );
+                                Misses++;
+                                HitOrMiss=false;
+                         }
                 }
                 CurrentFeedback= 0;
                 if( BaselineInterval == 1 )
@@ -674,6 +717,9 @@ char            memotext[256];
 
 void TTask::Iti( void )
 {
+        int i;
+        TColor clr;
+
         if( BaselineInterval == 2 )
                 CurrentBaseline= 1;
         User->Clear();
@@ -686,11 +732,26 @@ void TTask::Iti( void )
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
 
-                User->PutTarget( targx[ CurrentTarget ],
+                if( targetDisplay == 1 )
+                {
+                        for(i=0;i<Ntargets;i++)
+                        {
+                                if( CurrentTarget == (i+1) )
+                                        User->PutFoils( i+1, clRed   );
+                                else
+                                        User->PutFoils( i+1, clGreen   );
+                        }
+
+                }
+
+                else
+                {
+                        User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
                                  clRed   );
+                }
 
                 if( BaselineInterval == 1 )
                         CurrentBaseline= 1;

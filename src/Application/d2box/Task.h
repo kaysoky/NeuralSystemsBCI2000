@@ -20,6 +20,8 @@ class TTask : public GenericFilter
 {
 private:
         int useJoy;
+        int feedbackmode;
+        int targetDisplay;
         int targetInclude;
         float joy_xgain;
         float joy_ygain;
@@ -37,8 +39,6 @@ private:
         float size_left;
         float size_top;
         float size_bottom;
-    //    float TargetWidth;
-    //    float TargetHeight;
         float targx[NTARGS+1];
         float targy[NTARGS+1];
         float targsizex[NTARGS+1];
@@ -57,6 +57,7 @@ private:
         float XOffset, YOffset;
 
         int Ntargets;
+        int oldNtargets;
         int targetcount;
         int ranflag;
         int targs[NTARGS];
