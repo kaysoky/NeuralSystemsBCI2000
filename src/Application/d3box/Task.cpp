@@ -398,7 +398,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("BaseLineInterval")== 1 || Parameter("BaseLineInterval")== 2);
 
 
-        /***Check The Visualize Tab***/
+        /***Check The Visualize Tab**
         checkInt((const char*)Parameter("SourceMax"), "SourceMax");
         checkInt((const char*)Parameter("SourceMin"), "SourceMin");
         checkInt((const char*)Parameter("VisualizeCalibration"), "VisualizeCalibration");
@@ -419,7 +419,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("VisualizeSpatialFiltering")== 1 || Parameter("VisualizeSpatialFiltering")== 0);
         PreflightCondition( Parameter("VisualizeStatFiltering")== 1 || Parameter("VisualizeStatFiltering")== 0);
         PreflightCondition( Parameter("VisualizeTemporalFiltering")== 1 || Parameter("VisualizeTemporalFiltering")== 0);
-
+        */
         /***Check The Joystick Tab***/
         checkInt((const char*)Parameter("JoyXgain"), "JoyXgain");
         checkInt((const char*)Parameter("JoyYgain"), "JoyYgain");
@@ -451,7 +451,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( ((AnsiString) (const char*)Parameter("SubjectRun")).Length() ==2);
         PreflightCondition( ((AnsiString) (const char*)Parameter("SubjectSession")).Length() ==3);
 
-        /***Check The MEMFilter Tab***/
+        /***Check The MEMFilter Tab*
         checkInt((const char*)Parameter("deltaMem"), "deltaMem");
         checkInt((const char*)Parameter("MemBandWidth"), "MemBandWidth");
         checkInt((const char*)Parameter("MemDetrend"), "MemDetrend");
@@ -460,8 +460,8 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         checkInt((const char*)Parameter("StartMem"), "StartMem");
         checkInt((const char*)Parameter("StopMem"), "StopMem");
         PreflightCondition( Parameter("MemDetrend")== 1 || Parameter("MemDetrend")== 0 || Parameter("MemDetrend")== 2);
-
-        /***Check The Source Tab***/
+            **/
+        /***Check The Source Tab*
         checkInt((const char*)Parameter("DCoffset"), "DoTrueRandom");
         checkInt((const char*)Parameter("DoTrueRandom"), "DoTrueRandom");
         checkInt((const char*)Parameter("ModulateAmplitude"), "ModulateAmplitude");
@@ -480,8 +480,8 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("DoTrueRandom")== 1 || Parameter("DoTrueRandom")== 0);
         PreflightCondition( Parameter("ModulateAmplitude")== 1 || Parameter("ModulateAmplitude")== 0);
 
-
-        /***Check The Source Tab***/
+           **/
+        /***Check The 3DEnvironment Tab***/
 
         checkInt((const char*)Parameter("CameraX"), "CameraX");
         checkInt((const char*)Parameter("CameraY"), "CameraY");
@@ -505,7 +505,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("LightSourceIntensity")>= 0  && Parameter("LightSourceIntensity")<= 255);
 
 
-        /***Check The Statistics Tab***/   
+        /***Check The Statistics Tab**
         checkInt((const char*)Parameter("DesiredPixelsPerSec"), "DesiredPixelsPerSec");
         checkInt((const char*)Parameter("HorizInterceptProp"), "HorizInterceptProp");
         checkInt((const char*)Parameter("HorizTrendControl"), "HorizTrendControl");
@@ -523,9 +523,8 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("InterceptControl")== 1  || Parameter("InterceptControl") == 2 || Parameter("InterceptControl") == 0);
         PreflightCondition( Parameter("TrendControl")== 1  || Parameter("TrendControl") == 2 || Parameter("TrendControl") == 0);
         PreflightCondition( Parameter("WeightUse")== 1  || Parameter("WeightUse") == 2 || Parameter("WeightUse") == 0);
-
-        /***Check The System Tab***/
-
+                              */
+        /***Check The System Tab**
         checkInt((const char*)Parameter("ApplicationPort"), "ApplicationPort");
         checkInt((const char*)Parameter("EEGSourcePort"), "EEGSourcePort");
         checkInt((const char*)Parameter("SignalProcessingPort"), "SignalProcessingPort");
@@ -534,7 +533,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         PreflightCondition( Parameter("EEGSourcePort")>= 0 );
         PreflightCondition( Parameter("SignalProcessingPort")>= 0 );
 
-        /***Check The Filtering Tab***/
+        /***Check The Filtering Tab**
 
         checkInt((const char*)Parameter("AlignChannels"), "AlignChannels");
         checkInt((const char*)Parameter("ClassMode"), "ClassMode");
@@ -546,7 +545,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         checkInt((const char*)Parameter("UD_A"), "NUD_A");
         checkInt((const char*)Parameter("UD_B"), "NUD_B");        
         PreflightCondition( Parameter("AlignChannels")== 1 || Parameter("AlignChannels")== 0);
-        PreflightCondition( Parameter("ClassMode")== 1 || Parameter("ClassMode")== 2);
+        PreflightCondition( Parameter("ClassMode")== 1 || Parameter("ClassMode")== 2);     */
 /*shidong ends*/
 
 
