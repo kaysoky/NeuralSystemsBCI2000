@@ -114,6 +114,8 @@ private:     // User declarations
         void __fastcall  ApplicationIdleHandler( TObject*, bool& );
 
         void             InitializeFilters();
+        void             StartRunFilters();
+        void             StopRunFilters();
         void             ProcessFilters( const class GenericSignal* );
         void             RestingFilters();
 
@@ -122,8 +124,6 @@ private:     // User declarations
         void             InitializeConnections();
         void             ShutdownConnections();
         void             ShutdownSystem();
-        void             EnterRunningState();
-        void             EnterSuspendedState();
         void             ResetStatevector();
         void             ProcessBCIAndWindowsMessages();
         void             HandleResting();
