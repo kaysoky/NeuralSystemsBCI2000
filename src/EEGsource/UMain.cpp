@@ -91,7 +91,6 @@ public:
 //---------------------------------------------------------------------------
 __fastcall TReceivingThread::TReceivingThread(bool CreateSuspended, TServerClientWinSocket* ASocket) : TServerClientThread(CreateSuspended, ASocket)
 {
- statevector=NULL;
 }
 //---------------------------------------------------------------------------
 
@@ -117,7 +116,7 @@ int     trycount, ret;
 
   trycount=0;
   // if the statevector has not been defined yet, wait a little
-  while ((!statevector) && (trycount < 50))
+  while ((!statevector) && (trycount < 100))
    {
    Sleep(50);
    trycount++;
