@@ -190,13 +190,24 @@ int     stateval, cursorpos;
    value=0;
    // create the signal on all channels, or on the one channel selected
    if ((sinechannel == 0) || (sinechannel == channel+1))
-      value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
+   {
+     if( sinefrequency == 0 && modulateamplitude )
+       value = ( sinevalrange * ( Screen->Height / 2 - Mouse->CursorPos.y ) ) / Screen->Height + sineminamplitude;
+     else
+       value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
+   }
    if (noisevalrange > 1)
      noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
-   if (modulateamplitude)
+   if (sinefrequency != 0 && modulateamplitude)
      value=(int)((float)value/(float)cursorpos);
-  value+= noise;            // add noise after modulating sine wave
+   value+= noise;         // add noise after modulating sine wave
    value+=DCoffset;
+   const maxvalue = 1 << 15 - 1,
+         minvalue = - 1 << 15;
+   if( value > maxvalue )
+     value = maxvalue;
+   if( value < minvalue )
+     value = minvalue;
    signal->SetValue(channel, sample, (short)value);
    }
   }
