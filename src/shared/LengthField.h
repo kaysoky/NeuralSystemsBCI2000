@@ -32,7 +32,7 @@ template<int NumBytes> class LengthField
   public:
     enum
     {
-      EscapeValue = ( 1 << ( 8 * NumBytes ) ) - 1,
+      EscapeValue = ( 1 << ( 8 * NumBytes ) ) - 1, // NumBytes bytes filled with 0xff.
     };
     LengthField() : mValue( 0 ) {}
     LengthField( size_t value ) : mValue( value ) {}
@@ -44,7 +44,7 @@ template<int NumBytes> class LengthField
     void WriteToStream( std::ostream& os ) const { os << mValue; }
     void ReadFromStream( std::istream& is ) { is >> mValue; }
 
-    // Binary I/O according to the BCI2000 convention:
+    // Binary I/O according to the BCI2000 protocol:
     void WriteBinary( std::ostream& os ) const;
     void ReadBinary( std::istream& is );
 
@@ -69,21 +69,20 @@ operator<<( std::ostream& is, LengthField<NumBytes>& l )
 template<int NumBytes> void
 LengthField<NumBytes>::WriteBinary( std::ostream& os ) const
 {
-  if( mValue < EscapeValue )
+  size_t value = mValue;
+  if( value > EscapeValue )
+    value = EscapeValue;
+  // Old protocol: Write bytes of mValue in little endian order.
+  // Extended protocol: Write the escape value.
+  for( int i = 0; i < NumBytes; ++i )
   {
-    // Old protocol: Write bytes in little endian order.
-    size_t value = mValue;
-    for( int i = 0; i < NumBytes; ++i )
-    {
-      os.put( value & 0xff );
-      value >>= 8;
-    }
+    os.put( value & 0xff );
+    value >>= 8;
   }
-  else
+  if( mValue >= EscapeValue )
   {
-    // New protocol: Write -1 as an escape value, followed by a
-    // null-terminated ASCII representation.
-    os.put( 0xff ).put( 0xff );
+    // Extended protocol: Write a null-terminated ASCII representation of the
+    // value after the escape value.
     os << mValue;
     os.put( '\0' );
   }
