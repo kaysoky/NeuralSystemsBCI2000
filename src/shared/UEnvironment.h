@@ -228,8 +228,6 @@ class EnvironmentBase
     construction,
     preflight,
     initialization,
-    startRun,
-    stopRun,
     processing,
     resting
   };
