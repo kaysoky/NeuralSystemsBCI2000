@@ -148,11 +148,6 @@ namespace DATATYPE
 
 #undef _OLD_NAMES
 
-#define RESET_OPERATOR   (WM_APP + 401)
-#define HANDLE_MESSAGE   (WM_APP + 402)
-#define STARTDAQ_MESSAGE (WM_APP + 403)
-#define RESET_MESSAGE    (WM_APP + 404)
-
 typedef unsigned char uint8;
 typedef signed char sint8;
 typedef unsigned short uint16;
