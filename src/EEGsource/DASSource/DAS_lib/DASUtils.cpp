@@ -75,6 +75,7 @@ int
 DASUtils::GetTransferBlockSize( int inBoardNumber, long& outBlockSize )
 {
   // Try looking up the transfer block size in a table.
+  // This will speed up initialization.
   bool boardInTable = true;
   int boardType = 0;
   if( NOERRORS == ::cbGetConfig( BOARDINFO, inBoardNumber, 0, BIBOARDTYPE, &boardType ) )
@@ -86,6 +87,9 @@ DASUtils::GetTransferBlockSize( int inBoardNumber, long& outBlockSize )
         break;
       case PC_CARD_DAS16_16:
         outBlockSize = 2048;
+        break;
+      case PCM_DAS16S_16:
+        outBlockSize = 256;
         break;
       default:
         boardInTable = false;
