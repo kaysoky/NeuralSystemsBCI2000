@@ -28,10 +28,12 @@
 
 using namespace std;
 
-const char* bciDataExtension = ".dat",
-          * bciParameterExtension = ".prm";
-
 RegisterFilter( DataIOFilter, 0 );
+
+
+static const char* bciDataExtension = ".dat",
+                 * bciParameterExtension = ".prm";
+
 
 DataIOFilter::DataIOFilter()
 : mADC( GenericFilter::PassFilter<GenericADC>() ),
@@ -86,10 +88,12 @@ DataIOFilter::DataIOFilter()
   END_STATE_DEFINITIONS
 }
 
+
 DataIOFilter::~DataIOFilter()
 {
   delete mADC;
 }
+
 
 void DataIOFilter::Preflight( const SignalProperties& Input,
                                     SignalProperties& Output ) const
@@ -160,6 +164,7 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
     bcierr << "Expected short integer signal in ADC output" << endl;
 }
 
+
 void DataIOFilter::StartNewRecording()
 {
   string baseFileName = BCIDirectory()
@@ -174,22 +179,40 @@ void DataIOFilter::StartNewRecording()
   mOutputFile.open( dataFileName.c_str(), ios::out | ios::binary );
 
   // Write the header.
-  const int lengthDigits = 5;
-  mOutputFile << "HeaderLen= ";
-  ios::pos_type lengthPos = mOutputFile.tellp();
-  mOutputFile << setw( lengthDigits + 1 ) << setfill( ' ' ) << " "
-              << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
-              << "StatevectorLen= " << Statevector->GetStateVectorLength()
-              << "\r\n"
-              << "[ State Vector Definition ] \r\n"
-              << *States
-              << "[ Parameter Definition ] \r\n"
-              << *Parameters
-              << "\r\n";
-  ios::pos_type dataBegin = mOutputFile.tellp();
-  mOutputFile.seekp( lengthPos );
-  mOutputFile << dataBegin;
-  mOutputFile.seekp( dataBegin );
+  //
+  // Because the header contains its own length in ASCII format, it is a bit
+  // tricky to get this right if we don't want to imply a fixed width for the
+  // HeaderLen field.
+  ostringstream header;
+  header << " "
+         << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
+         << "StatevectorLen= " << Statevector->GetStateVectorLength()
+         << "\r\n"
+         << "[ State Vector Definition ] \r\n"
+         << *States
+         << "[ Parameter Definition ] \r\n"
+         << *Parameters
+         << "\r\n";
+
+  const string headerBegin = "HeaderLen= ";
+  size_t fieldLength = 5; // Follow the old scheme
+                          // (5 characters for the header length field),
+                          // but allow for a longer HeaderLen field
+                          // if necessary.
+  ostringstream headerLengthField;
+  do
+  { // This trial-and-error scheme is invariant against changes in number
+    // formatting and character set (unicode, hex, ...).
+    size_t headerLength = headerBegin.length() + fieldLength + header.str().length();
+    headerLengthField.str( "" );
+    headerLengthField << headerBegin
+                      << setfill( ' ' ) << setw( fieldLength )
+                      << headerLength;
+  } while( headerLengthField
+           && ( headerLengthField.str().length() - headerBegin.length() != fieldLength++ ) );
+
+  mOutputFile.write( headerLengthField.str().data(), headerLengthField.str().size() );
+  mOutputFile.write( header.str().data(), header.str().size() );
 
   if( !mOutputFile )
     bcierr << "Error writing to file " << dataFileName << endl;
@@ -205,10 +228,13 @@ void DataIOFilter::StartNewRecording()
   }
 }
 
+
 void DataIOFilter::Initialize()
 {
-  mSignalQueue = signalqueue_type();
-  StartNewRecording();
+  mOutputFile.close();
+  mOutputFile.clear();
+  mStatevectorBuffer.resize( 0 );
+  mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Initialize();
   
   // Configure visualizations.
@@ -239,29 +265,49 @@ void DataIOFilter::Initialize()
   }
 }
 
+
 void DataIOFilter::Process( const GenericSignal* Input,
                                   GenericSignal* Output )
 {
+  // Although it actually performs some initialization, StartNewRecording()
+  // is called from Process(). The reason is that Initialize() may be called
+  // an arbitrary number of times before data gets actually written to disk.
+  // Initialize() is always called before the very first call to Process()
+  // in a session, so moving file creation and header output from Initialize()
+  // to Process() implies no performance penalty.
+  // In most cases, StartNewRecording() should take significantly less time
+  // than acquiring a block of data, so it won't enter the critical time path
+  // (roundtrip time).
+  if( !mOutputFile.is_open() )
+    StartNewRecording();
+
+  // Moving the save-to-file code to the beginning of Process() implies
+  // that the time spent on i/o operations will only reduce the
+  // time spent waiting for A/D data, and thus not enter into the
+  // roundtrip time.
+  // In between, the signal is written to a queue which should never contain
+  // more than one element.
+  // The BCI2000 standard requires that the state vector saved with a data block
+  // is the one that existed when the data came out of the ADC.
+  // So we also need to save the state vector between calls to Process().
   bool visualizeRoundtrip = false;
-  if( !mSignalQueue.empty() )
+  if( mSignalBuffer > SignalProperties( 0, 0 ) )
   {
     {
-      const GenericSignal& signal = mSignalQueue.front();
-      for( size_t j = 0; j < signal.MaxElements(); ++j )
+      for( size_t j = 0; j < mSignalBuffer.MaxElements(); ++j )
       {
-        for( size_t i = 0; i < signal.Channels(); ++i )
+        for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
         {
           uint16 value = 0;
-          if( j < signal.GetNumElements( i ) )
-            value = signal( i, j );
+          if( j < mSignalBuffer.GetNumElements( i ) )
+            value = mSignalBuffer( i, j );
           mOutputFile.put( value & 0xff ).put( value >> 8 );
         }
-        mOutputFile.write( Statevector->GetStateVectorPtr(), Statevector->GetStateVectorLength() );
+        mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.length() );
       }
       if( !mOutputFile )
         bcierr << "Error writing to file" << endl;
     }
-    mSignalQueue.pop();
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
 
@@ -269,32 +315,37 @@ void DataIOFilter::Process( const GenericSignal* Input,
   BCITIME now = BCITIME::GetBCItime_ms();
   if( visualizeRoundtrip )
   {
-    BCITIME sourceTime = ( short )State( "SourceTime" ),
-            stimulusTime = ( short )State( "StimulusTime" );
+    BCITIME sourceTime = static_cast<short>( State( "SourceTime" ) ),
+            stimulusTime = static_cast<short>( State( "StimulusTime" ) );
     mRoundtripSignal( 0, 0 ) = stimulusTime - sourceTime;
     mRoundtripSignal( 1, 0 ) = now - sourceTime;
     mRoundtripVis.Send( &mRoundtripSignal );
   }
   State( "SourceTime" ) = now;
-  mSignalQueue.push( *Output );
+  mStatevectorBuffer = string(
+    reinterpret_cast<const char*>( Statevector->GetStateVectorPtr() ),
+    Statevector->GetStateVectorLength() );
+  mSignalBuffer = *Output;
 
   if( mVisualizeEEG )
     mEEGVis.Send( Output );
 }
 
+
 void DataIOFilter::Resting()
 {
-  mSignalQueue = signalqueue_type();
+  mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
     mEEGVis.Send( &mRestingSignal );
 }
 
+
 void DataIOFilter::Halt()
 {
   mOutputFile.close();
   mOutputFile.clear();
-  mSignalQueue = signalqueue_type();
+  mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Halt();
 }
 

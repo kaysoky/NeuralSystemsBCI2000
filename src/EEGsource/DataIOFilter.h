@@ -16,7 +16,6 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-#include <queue>
 #include <fstream>
 
 class DataIOFilter: public GenericFilter
@@ -33,20 +32,20 @@ class DataIOFilter: public GenericFilter
   virtual void Halt();
 
  private:
-  void        ResetQueue();
   void        StartNewRecording();
 
-  GenericFilter*                    mADC;
-  typedef std::queue<GenericSignal> signalqueue_type;
-  signalqueue_type                  mSignalQueue;
-  std::string                       mFileName;
-  std::ofstream                     mOutputFile;
-  bool                              mVisualizeEEG,
-                                    mVisualizeRoundtrip;
-  GenericVisualization              mEEGVis,
-                                    mRoundtripVis;
-  GenericSignal                     mRoundtripSignal;
-  mutable GenericSignal             mRestingSignal;
+  GenericFilter*         mADC;
+  GenericSignal          mSignalBuffer;
+  std::string            mStatevectorBuffer;
+  
+  std::string            mFileName;
+  std::ofstream          mOutputFile;
+  bool                   mVisualizeEEG,
+                         mVisualizeRoundtrip;
+  GenericVisualization   mEEGVis,
+                         mRoundtripVis;
+  GenericSignal          mRoundtripSignal;
+  mutable GenericSignal  mRestingSignal;
 };
 
 #endif // DataIOFilterH
