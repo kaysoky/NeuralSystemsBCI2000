@@ -35,14 +35,14 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       Application->Initialize();
       Application->Title = appName;
       Application->CreateForm(__classid(TfMain), &fMain);
-      Application->CreateForm(__classid(TfAbout), &fAbout);
-      Application->CreateForm(__classid(TfConnectionInfo), &fConnectionInfo);
-      Application->CreateForm(__classid(TfEditMatrix), &fEditMatrix);
-      Application->CreateForm(__classid(TfConfig), &fConfig);
-      Application->CreateForm(__classid(TfPreferences), &fPreferences);
-      Application->CreateForm(__classid(TfShowParameters), &fShowParameters);
-      Application->CreateForm(__classid(TfShowStates), &fShowStates);
-      Application->Run();
+         Application->CreateForm(__classid(TfAbout), &fAbout);
+         Application->CreateForm(__classid(TfConnectionInfo), &fConnectionInfo);
+         Application->CreateForm(__classid(TfEditMatrix), &fEditMatrix);
+         Application->CreateForm(__classid(TfConfig), &fConfig);
+         Application->CreateForm(__classid(TfPreferences), &fPreferences);
+         Application->CreateForm(__classid(TfShowParameters), &fShowParameters);
+         Application->CreateForm(__classid(TfShowStates), &fShowStates);
+         Application->Run();
     }
     catch (Exception &exception)
     {

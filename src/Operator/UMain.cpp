@@ -738,6 +738,7 @@ void __fastcall TfMain::bRunSystemClick( TObject* )
 
 void __fastcall TfMain::bConfigClick( TObject* )
 {
+  fPreferences->preferences = &mPreferences;
   fConfig->Initialize( &mParameters, &mPreferences );
   fConfig->Show();
 }

@@ -11,7 +11,7 @@
       obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
       obj\UOperatorUtils.obj obj\UVisual.obj obj\Color.obj obj\TCPStream.obj 
       obj\MessageHandler.obj obj\UBCIError.obj obj\USysLog.obj 
-      obj\UEnvironment.obj"/>
+      obj\UEnvironment.obj obj\ParamDisplay.obj obj\ParsedComment.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -79,6 +79,8 @@
       <FILE FILENAME="..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="USysLog.cpp" FORMNAME="" UNITNAME="USysLog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ParamDisplay.cpp" FORMNAME="" UNITNAME="ParamDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ParsedComment.cpp" FORMNAME="" UNITNAME="ParsedComment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
