@@ -1,48 +1,55 @@
 #ifndef USysCommandH
 #define USysCommandH
 
-#define LENGTH_SYSCMD          256
-#define ERRSYSCMD_NOERR        0
+#include <string>
+class std::ostream;
+class std::istream;
 
-class SYSCMD
+#define SysCommand SYSCMD
+
+class SysCommand
 {
+  public:
+    SysCommand()  {}
+    ~SysCommand() {}
+
   private:
-    char    mBuffer[ LENGTH_SYSCMD ];
+    // The constructor which specifies the string content of
+    // a SysCommand should not be created ad hoc --
+    // instead, all existing SysCommands should be listed
+    // as static constants of this class.
+    explicit SysCommand( const char* s ) : mBuffer( s ) {}
 
   public:
-    SYSCMD();
-    explicit SYSCMD( const char* );
-    ~SYSCMD();
-    
-    int           ParseSysCmd( const char* line, int length );
-    const char*   GetSysCmd() const;
-    void          WriteToStream( class std::ostream& ) const;
-    void          ReadFromStream( class std::istream& );
-    class std::ostream& WriteBinary( class std::ostream& ) const;
-    class std::istream& ReadBinary( class std::istream& );
-    bool          operator<( const SYSCMD& ) const;
-    bool          operator==( const SYSCMD& ) const;
+    bool          operator<( const SysCommand& ) const;
+    bool          operator==( const SysCommand& ) const;
 
-    static const  SYSCMD EndOfState,
-                         EndOfParameter,
-                         Start,
-                         Reset,
-                         Run,
-                         Suspend,
-                         Success,
-                         Recoverable,
-                         Fatal;
+    void          WriteToStream( std::ostream& ) const;
+    void          ReadFromStream( std::istream& );
+    std::ostream& WriteBinary( std::ostream& ) const;
+    std::istream& ReadBinary( std::istream& );
+
+    // This is a list of all SysCommands defined in the protocol.
+    // No other SysCommands should be sent.
+    static const  SysCommand EndOfState,
+                             EndOfParameter,
+                             Start,
+                             Reset,
+                             Suspend;
+  private:
+    std::string   mBuffer;
 };
 
+
 inline
-class std::ostream& operator<<( class std::ostream& os, const SYSCMD& s )
+std::ostream& operator<<( std::ostream& os, const SysCommand& s )
 {
   s.WriteToStream( os );
   return os;
 }
 
 inline
-class std::istream& operator>>( class std::istream& is, SYSCMD& s )
+std::istream& operator>>( std::istream& is, SysCommand& s )
 {
   s.ReadFromStream( is );
   return is;

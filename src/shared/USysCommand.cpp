@@ -1,136 +1,58 @@
-/******************************************************************************
- * Program:   BCI2000                                                         *
- * Module:    USysCommand.cpp                                                 *
- * Comment:   This unit provides support for system commands                  *
- * Version:   0.15                                                            *
- * Author:    Gerwin Schalk                                                   *
- * Copyright: (C) Wadsworth Center, NYSDOH                                    *
- ******************************************************************************
- * Version History:                                                           *
- *                                                                            *
- * V0.15 - 03/29/2001 - first start                                           *
- ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "USysCommand.h"
 
-#include <string.h>
 #include <string>
 #include <iostream>
 
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
-
 using namespace std;
 
-const SYSCMD SYSCMD::EndOfState( "EndOfState" );
-const SYSCMD SYSCMD::EndOfParameter( "EndOfParameter" );
-const SYSCMD SYSCMD::Start( "Start" );
-const SYSCMD SYSCMD::Reset( "Reset" );
-const SYSCMD SYSCMD::Run( "run" );
-const SYSCMD SYSCMD::Suspend( "susp" );
-const SYSCMD SYSCMD::Success( "succ" );
-const SYSCMD SYSCMD::Recoverable( "recv" );
-const SYSCMD SYSCMD::Fatal( "fatl" );
+const SysCommand SysCommand::EndOfState( "EndOfState" );
+const SysCommand SysCommand::EndOfParameter( "EndOfParameter" );
+const SysCommand SysCommand::Start( "Start" );
+const SysCommand SysCommand::Reset( "Reset" );
+const SysCommand SysCommand::Suspend( "Suspend" );
 
-// **************************************************************************
-// Function:   SYSCMD
-// Purpose:    The constructor for the SYSCMD object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-SYSCMD::SYSCMD()
-{
-  mBuffer[ 0 ] = '\0';
-}
-
-SYSCMD::SYSCMD( const char* cmd )
-{
-  ::strncpy( mBuffer, cmd, LENGTH_SYSCMD );
-  mBuffer[ LENGTH_SYSCMD - 1 ] = '\0';
-}
-
-// **************************************************************************
-// Function:   ~SYSCMD
-// Purpose:    The destructor for the SYSCMD object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-SYSCMD::~SYSCMD()
-{
-}
-
-// **************************************************************************
-// Function:   GetSysCmd
-// Purpose:    Returns a parameter line in ASCII format
-//             Tis parameter line is constructed, based upon the current
-//             values in the PARAM object
-// Parameters: N/A
-// Returns:    a pointer to the parameter line
-// **************************************************************************
-const char* SYSCMD::GetSysCmd() const
-{
- return mBuffer;
-}
-
-// **************************************************************************
-// Function:   ParseSysCmd
-// Purpose:    This routine is called by coremessage->ParseMessage()
-//             it parses the provided ASCII SysCmd line and copies its content
-//             into the SYSCMD object
-// Parameters: line - pointer to the ASCII system command line
-//             length - length of this syscmd line
-// Returns:    ERRSYSCMD_NOERR
-// **************************************************************************
-int SYSCMD::ParseSysCmd( const char* new_line, int length )
-{
- if( length >= LENGTH_SYSCMD )
-   length = LENGTH_SYSCMD - 1;
- ::strncpy( mBuffer, new_line, length + 1 );
- mBuffer[ LENGTH_SYSCMD - 1 ] = '\0';
- return ERRSYSCMD_NOERR;
-}
 
 void
-SYSCMD::WriteToStream( ostream& os ) const
+SysCommand::WriteToStream( ostream& os ) const
 {
-  const char* p = mBuffer;
-  while( *p != '\0' )
+  string::const_iterator p = mBuffer.begin();
+  while( p != mBuffer.end() )
   {
     if( *p == '}' )
       os.put( '\\' );
-    os.put( *p );
-    ++p;
+    os.put( *p++ );
   }
 }
 
+
 istream&
-SYSCMD::ReadBinary( istream& is )
+SysCommand::ReadBinary( istream& is )
 {
-  string buf;
-  if( ::getline( is, buf, '\0' ) )
-    if( ParseSysCmd( buf.data(), buf.length() ) != ERRSYSCMD_NOERR )
-      is.setstate( ios::failbit );
-  return is;
+  return ::getline( is, mBuffer, '\0' );
 }
 
+
 ostream&
-SYSCMD::WriteBinary( ostream& os ) const
+SysCommand::WriteBinary( ostream& os ) const
 {
-  os << mBuffer;
-  os.put( 0 );
+  os.write( mBuffer.data(), mBuffer.size() );
+  os.put( '\0' );
   return os;
 }
 
-bool
-SYSCMD::operator<( const SYSCMD& s ) const
-{
-  return ::strncmp( mBuffer, s.mBuffer, LENGTH_SYSCMD ) < 0;
-}
 
 bool
-SYSCMD::operator==( const SYSCMD& s ) const
+SysCommand::operator<( const SysCommand& s ) const
 {
-  return ::strncmp( mBuffer, s.mBuffer, LENGTH_SYSCMD ) == 0;
+  return mBuffer < s.mBuffer;
+}
+
+
+bool
+SysCommand::operator==( const SysCommand& s ) const
+{
+  return mBuffer == s.mBuffer;
 }
