@@ -431,6 +431,11 @@ MyFilter::Process( const GenericSignal* inputSignal,
   *outputSignal = *inputSignal;
 }
 \end{verbatim}\codeend
+
+       The \texttt{Process} function should not acquire or release resources 
+       (opening/closing files, allocating memory, etc).
+       Natural places for such operations are the \texttt{Initialize},
+       \texttt{StartRun}, and \texttt{StopRun} member functions.
  
 \end{itemize}
 
@@ -440,6 +445,13 @@ depending on what your filter needs to do:
 \begin{itemize}
 
  \item \texttt{StartRun} is called when the system enters the running state.
+       As opposed to \texttt{Initialize} -- which is the place for tasks that
+       need to be performed on each parameter change --,
+       \texttt{StartRun} is provided for tasks that need to be performed each 
+       time the user clicks ``Run'' or ``Resume'' in the operator window. 
+       As a canonical example, the \texttt{DataIOFilter} opens a new \texttt{.dat}
+       file from its \texttt{StartRun} member function.
+       
        By default, \texttt{StartRun} calls \texttt{Initialize} to make sure
        that intermittent parameter changes are applied. If you provide your own
        \texttt{StartRun} function, you will probably want to call
@@ -447,7 +459,13 @@ depending on what your filter needs to do:
        
  \item \texttt{StopRun} is called each time the system
        leaves the running state, entering the suspended state.
-       This is also the only function from which
+       Typically, this happens whenever the user clicks ``Suspend''
+       in the operator window.
+       The \texttt{DataIOFilter} provides an example for its usage:
+       This filter closes the current
+       \texttt{.dat} file from its \texttt{StopRun} member function.
+       
+       \texttt{StopRun} is also the only function from which
        a filter may change a parameter value.
        Any parameter changes inside \texttt{StopRun} will propagate to the
        other modules without any explicit request from your side.
@@ -464,9 +482,9 @@ depending on what your filter needs to do:
        For descendants of \texttt{GenericADC}, implementing the \texttt{Halt}
        function is mandatory.
 
- \item Your filter's \textit{Destructor} should free all resources 
+ \item Your filter's \textit{Destructor} should free all resources
        acquired in the Constructor or in \texttt{Initialize}.
-       In many cases, freeing of resources will be done implicitly if you use
+       In many cases, freeing of resources will be done automatically if you use
        direct members instead of pointers, removing the need of a destructor.
        
        However, if your filter has a non-empty \texttt{Halt} function, it
