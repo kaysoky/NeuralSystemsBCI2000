@@ -651,7 +651,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   if( displayColors )
   {
     const TColor signalColors[] =
-    { clRed, clGreen, clBlue, clWhite, clAqua, clOlive, clNavy, clPurple };
+    { clRed, clGreen, clBlue, clWhite, clAqua };
     size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
     for( size_t i = 0; i < data.Channels(); ++i )
     {

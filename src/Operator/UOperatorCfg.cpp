@@ -446,15 +446,12 @@ char            buf[2048];
       {
         if( string( param->GetType() ).find( "list" ) != string::npos )
         {
-        ptr=0;
-        u=0;
-        while (ptr < (int)strlen(paramvalue.c_str()))
-         {
-         ptr=param->get_argument(ptr, buf, paramvalue.c_str(), strlen(paramvalue.c_str()));
-         param->SetValue(buf, u);
-         u++;
-         }
-        param->SetNumValues(u);
+          istringstream is( paramvalue.c_str() );
+          PARAM::encodedString value;
+          int index = 0;
+          while( is >> value )
+            param->SetValue( value, index++ );
+          param->SetNumValues( index );
         }
         else
           param->SetValue( paramvalue.c_str() );

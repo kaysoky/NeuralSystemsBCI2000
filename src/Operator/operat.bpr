@@ -23,7 +23,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -68,7 +68,6 @@
       <FILE FILENAME="UShowParameters.cpp" FORMNAME="fShowParameters" UNITNAME="UShowParameters" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UShowStates.cpp" FORMNAME="fShowStates" UNITNAME="UShowStates" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="USysLog.cpp" FORMNAME="" UNITNAME="USysLog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
