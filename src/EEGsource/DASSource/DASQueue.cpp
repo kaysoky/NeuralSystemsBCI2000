@@ -7,7 +7,7 @@
 // Date: Sep 23, 2003
 //
 // Description: A class that interfaces with A/D boards supported by
-//              MeasurementComputing's Universal Library. 
+//              MeasurementComputing's Universal Library.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
@@ -61,7 +61,7 @@ DASQueue::open( const DASInfo& inInfo )
   mTimeoutInterval = cTimeoutFactor * ( 1000 * inInfo.sampleBlockSize ) / inInfo.samplingRate;
   if( mTimeoutInterval < 1 )
     mTimeoutInterval = 1;
-    
+
   // Check whether there are version conflicts between DLL and board driver.
   float ignored;
   int result = ::cbGetRevision( &ignored, &ignored );
@@ -110,16 +110,23 @@ DASQueue::open( const DASInfo& inInfo )
 
         long hwSamplingRate = inInfo.samplingRate * mFreqMultiplier;
         int  options = CONTINUOUS | BACKGROUND;
-        result = DASUtils::GetBoardOptions( mBoardNumber, mHWChannels,
-                                            mDataBufferSize, hwSamplingRate,
-                                            adRange, options );
+        while( hwSamplingRate > 0
+          && BADRATE == ( result = DASUtils::GetBoardOptions(
+                                             mBoardNumber, mHWChannels,
+                                             mDataBufferSize, hwSamplingRate,
+                                             adRange, options ) ) )
+            hwSamplingRate /= 2;
+
         if( result == NOERRORS )
         {
-          // The board may have changed the sample rate.
+          // The sampling rate may have changed.
           if( hwSamplingRate / mFreqMultiplier != inInfo.samplingRate )
-            bcierr << "Sampling rate not supported by A/D board"
+          {
+            bciout << "Sampling rate/block size combination not optimally supported by A/D board"
                    << " (try " << hwSamplingRate / mFreqMultiplier << "/s)"
                    << endl;
+            mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
+          }
           // A memory allocation failure will trigger an error below.
           mDataBuffer = ( USHORT* )::cbWinBufAlloc( mDataBufferSize );
           mReadCursor = 0;
