@@ -104,10 +104,8 @@ DASQueue::open( const DASInfo& inInfo )
 
         // For large hardware buffers, we need to increase the sampling rate to
         // obtain the block update rate implied by the parameters.
-        if( hwBlockSize == 1 )
-          mFreqMultiplier = 1.0;
-        else
-          mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
+        mFreqMultiplier = hwBlockSize / DASUtils::GreatestCommonDivisor(
+                             hwBlockSize, mHWChannels * inInfo.sampleBlockSize );
         mDataBufferSize = cBlocksInBuffer * hwBlockSize;
 
         long hwSamplingRate = inInfo.samplingRate * mFreqMultiplier;
