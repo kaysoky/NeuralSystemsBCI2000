@@ -75,13 +75,13 @@ DataIOFilter::DataIOFilter()
 
     // Storage related parameters:
     "Storage string FileInitials= c:\\data a z "
-      "// Initials of file name",
+      "// path to top level data directory",
     "Storage string SubjectName= Name Name a z "
       "// subject alias",
-    "Storage string SubjectSession= 001 001 0 999 "
-      "// session number (max. 3 characters)",
-    "Storage string SubjectRun= 00 00 0 99 "
-      "// digit run number (max. 2 characters)",
+    "Storage string SubjectSession= 001 001 0 0 "
+      "// three-digit session number",
+    "Storage string SubjectRun= 00 00 0 0 "
+      "// two-digit run number",
     "Storage string StorageTime= 16:15 Time a z "
       "// time of beginning of data storage",
 #if 0 // The value of AutoIncrementRunNo is not read from anywhere.
@@ -117,6 +117,7 @@ DataIOFilter::DataIOFilter()
 
 DataIOFilter::~DataIOFilter()
 {
+  Halt();
   delete mADC;
 }
 
@@ -214,11 +215,11 @@ void DataIOFilter::StartNewRecording()
          << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
          << "StatevectorLen= " << Statevector->GetStateVectorLength()
          << "\r\n"
-         << "[ State Vector Definition ] \r\n"
-         << *States
-         << "[ Parameter Definition ] \r\n"
-         << *Parameters
-         << "\r\n";
+         << "[ State Vector Definition ] \r\n";
+  States->WriteBinary( header );
+  header << "[ Parameter Definition ] \r\n";
+  Parameters->WriteBinary( header );
+  header << "\r\n";
 
   const string headerBegin = "HeaderLen= ";
   size_t fieldLength = 5; // Follow the old scheme
@@ -252,6 +253,11 @@ void DataIOFilter::StartNewRecording()
              << paramFileName
              << endl;
   }
+  // Initialize time stamps with the current time to get a correct roundtrip
+  // time, and a zero stimulus delay, for the first block.
+  BCITIME now = BCITIME::GetBCItime_ms();
+  State( "SourceTime" ) = now;
+  State( "StimulusTime" ) = now;
 }
 
 
@@ -262,7 +268,7 @@ void DataIOFilter::Initialize()
   mStatevectorBuffer.resize( 0 );
   mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Initialize();
-  
+
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
   if( mVisualizeEEG )
@@ -282,8 +288,8 @@ void DataIOFilter::Initialize()
     mRoundtripVis.Send( CFGID::NUMSAMPLES, 128 );
     mRoundtripVis.Send( CFGID::MINVALUE, 0 );
     // Roundtrip values are in ms, and we want a range that is twice the value
-    // of what we expect for the second signal (the time between completions of
-    // the ADC::Process()).
+    // of what we expect for the second signal (the time between subsequent
+    // completions of the ADC's Process()).
     int roundtripMax = 2000 * Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
     mRoundtripVis.Send( CFGID::MAXVALUE, roundtripMax );
     mRoundtripVis.Send( CFGID::graphType, CFGID::polyline );
@@ -297,12 +303,14 @@ void DataIOFilter::Process( const GenericSignal* Input,
 {
   // Although it actually performs some initialization, StartNewRecording()
   // is called from Process(). The reason is that Initialize() may be called
-  // an arbitrary number of times before data gets actually written to disk.
-  // Initialize() is always called before the very first call to Process()
-  // in a session, so moving file creation and header output from Initialize()
-  // to Process() implies no performance penalty.
+  // an arbitrary number of times before data gets actually written to disk,
+  // resulting in a number of empty files if StartNewRecording() is called
+  // from Initialize().
+  // Because Initialize() is always called before the very first call to Process()
+  // in a session, moving file creation and header output from Initialize()
+  // to Process() implies no relative performance penalty.
   // In most cases, StartNewRecording() should take significantly less time
-  // than acquiring a block of data, so it won't enter the critical time path
+  // than acquiring a block of data, so it won't enter into the critical time path
   // (roundtrip time).
   if( !mOutputFile.is_open() )
     StartNewRecording();
@@ -315,7 +323,7 @@ void DataIOFilter::Process( const GenericSignal* Input,
   // more than one element.
   // The BCI2000 standard requires that the state vector saved with a data block
   // is the one that existed when the data came out of the ADC.
-  // So we also need to save the state vector between calls to Process().
+  // So we also need to buffer the state vector between calls to Process().
   bool visualizeRoundtrip = false;
   if( mSignalBuffer > SignalProperties( 0, 0 ) )
   {
@@ -329,7 +337,7 @@ void DataIOFilter::Process( const GenericSignal* Input,
             value = mSignalBuffer( i, j );
           mOutputFile.put( value & 0xff ).put( value >> 8 );
         }
-        mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.length() );
+        mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
       }
       if( !mOutputFile )
         bcierr << "Error writing to file" << endl;
