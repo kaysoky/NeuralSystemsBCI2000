@@ -1,117 +1,219 @@
-//---------------------------------------------------------------------------
+/******************************************************************************
+ * Program:   BCI2000                                                         *
+ * Module:    UParameter.h                                                    *
+ * Comment:   This unit provides support for system-wide parameters           *
+ *            and parameter lists                                             *
+ * Version:   0.19                                                            *
+ * Authors:   Gerwin Schalk, Juergen Mellinger                                *
+ * Copyright: (C) Wadsworth Center, NYSDOH                                    *
+ ******************************************************************************
+ * Version History:                                                           *
+ *                                                                            *
+ * V0.08 - 03/30/2000 - First commented version                               *
+ * V0.10 - 05/12/2000 - added AddParam2List(char *paramline)                  *
+ *                      CloneParameter2List now updates the values of an      *
+ *                      existing parameter                                    *
+ * V0.11 - 06/09/2000 - Archive flag to each parameter                        *
+ *                      better validity check in ParseParameter()             *
+ * V0.13 - 08/09/2000 - Parameter supports datatype matrix                    *
+ * V0.14 - 09/25/2000 - load and save parameter files                         *
+ * V0.16 - 04/30/2001 - sorting of parameter lists; numerous other changes    *
+ * V0.17 - 06/20/2002 - introduction of const, private/protected              *
+ *                      juergen.mellinger@uni-tuebingen.de                    *
+ * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
+ * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
+ *                      juergen.mellinger@uni-tuebingen.de                    *
+ ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
 
-#define LENGTH_SECTION          30
-#define LENGTH_TYPE             30
-#define LENGTH_NAME             30
-#define LENGTH_NUMVALUES        3
-#define LENGTH_VALUE            100
-#define LENGTH_DEFAULTVALUE     100
-#define LENGTH_LOWRANGE         100
-#define LENGTH_HIGHRANGE        100
-#define LENGTH_COMMENT          255
-#define LENGTH_PARAMLINE        65536
-
-#define ERRPARAM_NOERR                  0
-#define ERRPARAM_INCONSISTENTNUMVAL     1
-#define ERRPARAM_INVALIDPARAM           2
-
-#include <ScktComp.hpp>
-
-
-class LSTVALUE
-{
-public:		// User declarations
-        char    value[LENGTH_VALUE+1];
-};
-
+#include <locale>
+#include <string>
+#include <vector>
+#include <map>
 
 class PARAM
 {
   friend class PARAMLIST;
-  friend class TfConfig; // Let's get rid of these friends as soon as possible...
+  friend class TfConfig;
   friend class TfShowParameters;
-  
-private: 	// User declarations
-        mutable char    buffer[LENGTH_PARAMLINE];
-        char    section[LENGTH_SECTION+1];      // length + 1 because of zero byte
-        char    type[LENGTH_TYPE+1];
-        char    name[LENGTH_NAME+1];
-        int     numvalues;
-        int     dimension1, dimension2;
-        TList   *value_list;
-        char    defaultvalue[LENGTH_DEFAULTVALUE+1];
-        char    lowrange[LENGTH_LOWRANGE+1];
-        char    highrange[LENGTH_HIGHRANGE+1];
-        char    comment[LENGTH_COMMENT+1];
-public:		// User declarations
-        PARAM::PARAM();
-        PARAM::PARAM(const char *name, const char *section, const char *type, const char *value, const char *defaultvalue, const char *lowrange, const char *highrange, const char *comment);
-        PARAM::PARAM(const char *paramstring);
-        PARAM::~PARAM();
-        void    SetSection(const char *);
-        void    SetType(const char *);
-        void    SetName(const char *);
-        void    SetValue(const char *);
-        void    SetValue(const char *, int);
-        void    SetValue(const char *, int, int);
-        void    SetNumValues(int new_numvalues);
-        const char    *GetSection() const;
-        const char    *GetType() const;
-        const char    *GetName() const;
-        const char    *GetComment() const;
-        const char    *GetParamLine() const;
-        int     GetNumValues() const;
-        int     GetNumValuesDimension1() const;
-        int     GetNumValuesDimension2() const;
-        void    SetDimensions(int new_dimension1, int new_dimension2);
-        const char    *GetValue() const;
-        const char    *GetValue(int idx) const;
-        const char    *GetValue(int idx1, int idx2) const;
-        int     ParseParameter(const char *line, int length);
-        bool    Valid() { return valid; }
 
-  protected:
-        int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
-        TList   *GetListPtr();
-        const TList* GetListPtr() const;
-        void    SetListPtr(TList *);
+ public:
+   enum
+   {
+     ERRPARAM_NOERR = 0,
+     ERRPARAM_INCONSISTENTNUMVAL = 1,
+     ERRPARAM_INVALIDPARAM = 2,
+   };
+
+ private:
+          std::string section,
+                      name,
+                      type,
+                      defaultvalue,
+                      lowrange,
+                      highrange,
+                      comment;
+          size_t      dimension2;
+          std::vector<std::string> values;
+
+ public:
+        PARAM();
+        PARAM( const char* name,
+               const char* section,
+               const char* type,
+               const char* value,
+               const char* defaultvalue,
+               const char* lowrange,
+               const char* highrange,
+               const char* comment );
+        PARAM( const char* paramstring );
+        ~PARAM() {}
+
+        void    SetSection( const std::string& s )
+                { section = s; }
+        void    SetType( const std::string& s )
+                { type = s; tolower( type ); }
+ private:
+        // Changing the name without notifying the list would be a bad idea,
+        // that's why this function is private.
+        void    SetName( const std::string& s )
+                { name = s; }
+ public:
+        void    SetValue( const std::string& s )
+                { SetValue( s, 0 ); }
+        void    SetValue( const std::string&, size_t );
+        void    SetValue( const std::string& s, size_t n, size_t m )
+                { SetValue( s, n * dimension2 + m ); }
+        void    SetNumValues( size_t n )
+                { values.resize( n, "0" ); }
+  const char*   GetSection() const
+                { return section.c_str(); }
+  const char*   GetType() const
+                { return type.c_str(); }
+  const char*   GetName() const
+                { return name.c_str(); }
+  const char*   GetComment() const
+                { return comment.c_str(); }
+        size_t  GetNumValues() const
+                { return values.size(); }
+        size_t  GetNumValuesDimension1() const
+                { return GetNumValues() / dimension2; }
+        size_t  GetNumValuesDimension2() const
+                { return dimension2; }
+        void    SetDimensions( size_t, size_t );
+  const char*   GetValue() const
+                { return GetValue( 0 ); }
+  const char*   GetValue( size_t ) const;
+  const char*   GetValue( size_t n, size_t m ) const
+                { return GetValue( n * dimension2 + m ); }
+        bool    Valid()
+                { return valid; }
+
+        void    WriteToStream( std::ostream& ) const;
+        void    ReadFromStream( std::istream& );
+
+  const char*   GetParamLine() const;
+        int     ParseParameter( const char* line, size_t length );
+
+  static int get_argument(int ptr, char *buf, const char *line, int maxlen);
+
+ public: // These will become private.
         bool    valid;
         bool    archive;
-        bool    tag;                    // important for parameter save/load filters
+        bool    tag;  // important for parameter save/load filters
 
-  private:
-        int     ConstructParameterLine() const;
+  // Case insensitive string handling components.
+ private:
+  static const std::ctype<char>& ct;
+
+ public:
+  static void tolower( std::string& s )
+  { ct.tolower( s.begin(), s.end() ); }
+  static void toupper( std::string& s )
+  { ct.toupper( s.begin(), s.end() ); }
+
+  static bool ciless( char a, char b )
+  { return ct.toupper( a ) < ct.toupper( b ); }
+  static bool ciequal( char a, char b )
+  { return ct.toupper( a ) == ct.toupper( b ); }
+
+  static bool strciless( const std::string& a, const std::string& b )
+  { return namecmp()( a, b ); }
+  static bool strciequal( const std::string& a, const std::string& b )
+  { return !strciless( a, b ) && !strciless( b, a ); }
+
+  class namecmp
+  {
+   public:
+    bool operator()( const std::string& a, const std::string& b ) const
+    { return std::lexicographical_compare(
+                        a.begin(), a.end(), b.begin(), b.end(), ciless ); }
+  };
 };
 
+typedef std::map<std::string, PARAM, PARAM::namecmp> param_container;
 
-class PARAMLIST
+class PARAMLIST : public param_container
 {
-private: 	// User declarations
-        TList   *param_list;
-public:		// User declarations
-        PARAMLIST::PARAMLIST();
-        PARAMLIST::~PARAMLIST();
-        int     GetNumParameters() const;
-        PARAM   *GetParamPtr(int idx);
-        const PARAM   *GetParamPtr(int idx) const;
-        PARAM   *GetParamPtr(const char *name);
-        const PARAM   *GetParamPtr(const char *name) const;
-        void    CloneParameter2List(const PARAM *param);
-        void    MoveParameter2List(PARAM *param);
-        void    ClearParamList();
-        void    Sort();
-        void    AddParameter2List(const char *paramstring, int paramlen = 0);
-        void    DeleteParam(const char *name);
-        bool    SaveParameterList(const char *filename) const;
-        bool    SaveParameterList(const char *filename, bool usetags) const;
-        bool    LoadParameterList(const char *filename);
-        bool    LoadParameterList(const char *filename, bool usetags, bool importnonexisting);
+ public:
+        PARAM*  GetParamPtr( const char* name );
+  const PARAM*  GetParamPtr( const char* name ) const;
+
+        size_t  GetNumParameters() const
+                { return size(); }
+        void    ClearParamList()
+                { clear(); }
+        void    DeleteParam( const char* name )
+                { erase( name ); }
+
+        void    AddParameter2List( const char* paramstring,
+                                   size_t paramlen = 0 );
+        bool    SaveParameterList( const char* filename,
+                                   bool usetags = false ) const;
+        bool    LoadParameterList( const char* filename,
+                                   bool usetags = false,
+                                   bool importnonexisting = true );
+
+  // These contain all formatted I/O functionality.
+        void    WriteToStream( std::ostream& ) const;
+        void    ReadFromStream( std::istream& );
+
+  // These are for compatibility.
+        void    Sort()
+                {}
+        PARAM*  GetParamPtr( size_t );
+  const PARAM*  GetParamPtr( size_t ) const;
+        void    CloneParameter2List( const PARAM* );
+        void    MoveParameter2List( PARAM* );
 };
 
-//---------------------------------------------------------------------------
-#endif
+inline std::ostream& operator<<( std::ostream& s, const PARAM& p )
+{
+  p.WriteToStream( s );
+  return s;
+}
+
+inline std::istream& operator>>( std::istream& s, PARAM& p )
+{
+  p.ReadFromStream( s );
+  return s;
+}
+
+inline std::ostream& operator<<( std::ostream& s, const PARAMLIST& p )
+{
+  p.WriteToStream( s );
+  return s;
+}
+
+inline std::istream& operator>>( std::istream& s, PARAMLIST& p )
+{
+  p.ReadFromStream( s );
+  return s;
+}
+
+#endif // UParameterH
+
 
 
 

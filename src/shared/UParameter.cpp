@@ -3,8 +3,8 @@
  * Module:    UParameter.cpp                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.17                                                            *
- * Author:    Gerwin Schalk                                                   *
+ * Version:   0.19                                                            *
+ * Authors:   Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
@@ -18,122 +18,24 @@
  * V0.13 - 08/09/2000 - Parameter supports datatype matrix                    *
  * V0.14 - 09/25/2000 - load and save parameter files                         *
  * V0.16 - 04/30/2001 - sorting of parameter lists; numerous other changes    *
- * V0.17 - 01/31/2003 - fixed bug in SaveParameterList()                      *
+ * V0.17 - 06/20/2002 - introduction of const, private/protected              *
+ *                      juergen.mellinger@uni-tuebingen.de                    *
+ * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
+ * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
+ *                      juergen.mellinger@uni-tuebingen.de                    *
  ******************************************************************************/
-
-//---------------------------------------------------------------------------
-#include <vcl.h>
 #pragma hdrstop
 
-#include <stdio.h>
-#include <sysutils.hpp>
-
 #include "UParameter.h"
-#include "UCoremessage.h"
 
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
+#include <fstream>
+#include <sstream>
+#include <set>
 
-
-// **************************************************************************
-// Function:   PARAMLIST
-// Purpose:    the constructor for the PARAMLIST object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-PARAMLIST::PARAMLIST()
-{
- param_list=new TList;
-}
-
-
-// **************************************************************************
-// Function:   ~PARAMLIST
-// Purpose:    The destructor for the PARAMLIST object. It deletes both
-//             all PARAM objects in the list and also the list object itself
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-PARAMLIST::~PARAMLIST()
-{
-int     i;
-PARAM   *cur_param;
-
-  // Clean up – must free memory for the items as well as the list
-  for (i=0; i<param_list->Count; i++)
-   {
-   cur_param=(PARAM *)param_list->Items[i];
-   delete cur_param;
-   }
-
- delete param_list;
-}
-
-
-// **************************************************************************
-// Function:   SortCompare
-// Purpose:    Is the comparison function for the TList sort command
-// Parameters: Item1 + Item2 ... pointers to items in the list
-// Returns:    <0 ... Item1 < Item2
-//             =0 ... Item1 = Item2
-//             >0 ... Item1 > Item2
-// **************************************************************************
-int __fastcall SortCompare(void * Item1, void * Item2)
-{
-const char *name1, *name2;
-
- name1=((PARAM *)Item1)->GetName();
- name2=((PARAM *)Item2)->GetName();
-
- if (!name1 || !name2)
-    return(0);
-
- return(stricmp(name1, name2));
-}
-
-
-// **************************************************************************
-// Function:   Sort
-// Purpose:    This function sorts the parameters in the list alphabetically
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void PARAMLIST::Sort()
-{
- param_list->Sort(SortCompare);
-}
-
-#if 0
-// **************************************************************************
-// Function:   PublishParameters
-// Purpose:    this method publishes this module's parameters
-// Parameters: Socket - socket descriptor for the connection to the operator
-// Returns:    always 0
-// **************************************************************************
-int PARAMLIST::PublishParameters(TCustomWinSocket *Socket)
-{
-COREMESSAGE     *coremessage;
-FILE            *fp;
-char            line[512];
-int i;
-PARAM           *cur_param;
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_PARAMETER);
-
- for (i=0; i<GetNumParameters(); i++)
-  {
-  cur_param=GetParamPtr(i);                                     // get the i'th parameter
-  strcpy(line, cur_param->GetParamLine());                      // copy its ASCII representation to variable line
-  strncpy(coremessage->GetBufPtr(), line, strlen(line));        // copy line into the coremessage
-  coremessage->SetLength((unsigned short)strlen(line));         // set the length of the coremessage
-  coremessage->SendCoreMessage((TCustomWinSocket *)Socket);     // and send it out
-  }
-
- delete coremessage;
- return(0);
-}
-#endif
+using namespace std;
+/////////////////////////////////////////////////////////////////////////////
+// PARAMLIST definitions                                                   //
+/////////////////////////////////////////////////////////////////////////////
 
 // **************************************************************************
 // Function:   GetNumParameters
@@ -141,11 +43,7 @@ PARAM           *cur_param;
 // Parameters: N/A
 // Returns:    the number of parameters
 // **************************************************************************
-int PARAMLIST::GetNumParameters() const
-{
-return(param_list->Count);
-}
-
+// Now defined inline as an alias to std::map<>::size().
 
 // **************************************************************************
 // Function:   GetParamPtr
@@ -154,26 +52,24 @@ return(param_list->Count);
 // Returns:    pointer to a PARAM object or
 //             NULL, if no parameter with this name exists in the list
 // **************************************************************************
-const PARAM   *PARAMLIST::GetParamPtr(const char *name) const
+const PARAM*
+PARAMLIST::GetParamPtr( const char* name ) const
 {
-const char* paramname;
-int         i;
-
- for (i=0; i<GetNumParameters(); i++)
-  {
-  paramname=GetParamPtr(i)->GetName();
-  if (strcmpi(name, paramname) == 0)
-     return(GetParamPtr(i));
-  }
-
- return(NULL);
+  const PARAM* retParam = NULL;
+  const_iterator i = find( name );
+  if( i != end() )
+    retParam = &i->second;
+  return retParam;
 }
 
-PARAM   *PARAMLIST::GetParamPtr(const char *name)
+PARAM*
+PARAMLIST::GetParamPtr( const char* name )
 {
-  // Sorry for this hack.
-  const PARAMLIST* p = this;
-  return ( PARAM* )p->GetParamPtr( name );
+  PARAM* retParam = NULL;
+  iterator i = find( name );
+  if( i != end() )
+    retParam = &i->second;
+  return retParam;
 }
 
 // **************************************************************************
@@ -183,19 +79,34 @@ PARAM   *PARAMLIST::GetParamPtr(const char *name)
 // Returns:    pointer to a PARAM object or
 //             NULL, if the specified index is out of range
 // **************************************************************************
-const PARAM *PARAMLIST::GetParamPtr(int idx) const
+const PARAM*
+PARAMLIST::GetParamPtr( size_t idx ) const
 {
- if ((idx < param_list->Count) && (idx >= 0))
-    return((PARAM *)param_list->Items[idx]);
- else
-    return(NULL);
+  // This is quite inefficient. For traversing the list,
+  // use its iterators, or for_each() from <algorithm>.
+  const PARAM* retParam = NULL;
+  if( idx < size() )
+  {
+    const_iterator i = begin();
+    advance( i, idx );
+    retParam = &i->second;
+  }
+  return retParam;
 }
 
-PARAM *PARAMLIST::GetParamPtr(int idx)
+PARAM *
+PARAMLIST::GetParamPtr( size_t idx)
 {
-  // Sorry for this hack, too.
-  const PARAMLIST* p = this;
-  return ( PARAM* )p->GetParamPtr( idx );
+  // This is quite inefficient. For traversing the list,
+  // use its iterators, or for_each() from <algorithm>.
+  PARAM* retParam = NULL;
+  if( idx < size() )
+  {
+    iterator i = begin();
+    advance( i, idx );
+    retParam = &i->second;
+  }
+  return retParam;
 }
 
 // **************************************************************************
@@ -205,141 +116,7 @@ PARAM *PARAMLIST::GetParamPtr(int idx)
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::ClearParamList()
-{
-PARAM   *cur_param;
-
- while (param_list->Count > 0)
-  {
-  cur_param=(PARAM *)param_list->Items[0];
-  param_list->Delete(0);
-  delete cur_param;
-  }
-
- param_list->Clear();
-}
-
-
-// **************************************************************************
-// Function:   SaveParameterList
-// Purpose:    Saves the current list of paramters in a parameter file
-// Parameters: char *filename - filename to save the list to
-// Returns:    true - successful
-//             false - error (disc full, etc.)
-// **************************************************************************
-bool PARAMLIST::SaveParameterList(const char *filename) const
-{
- return(SaveParameterList(filename, false));
-}
-
-
-// **************************************************************************
-// Function:   SaveParameterList
-// Purpose:    Saves the current list of paramters in a parameter file
-// Parameters: char *filename - filename to save the list to
-//             usetags - if usetags is true, then the "tag" value in each parameter determines whether the parameter should be saved
-//                       if the tag value in the parameter is true, then the parameter will NOT be saved
-//                       if usetags is false, then all parameters are saved
-// Returns:    true - successful
-//             false - error (disc full, etc.)
-// **************************************************************************
-bool PARAMLIST::SaveParameterList(const char *filename, bool usetags) const
-{
-const char  *paramline;
-int         i;
-FILE        *fp;
-
- fp=fopen(filename, "wb");
- if (!fp) return(false);
-
- for (i=0; i<GetNumParameters(); i++)
-  {
-  if ((usetags && !GetParamPtr(i)->tag) || (!usetags))
-     {
-     paramline=GetParamPtr(i)->GetParamLine();
-     if (fprintf(fp, "%s\r\n", paramline) == EOF)
-        {
-        fclose(fp);
-        return(false);
-        }
-     }
-  }
-
- fclose(fp);
- return(true);
-}
-
-
-// **************************************************************************
-// Function:   LoadParameterList
-// Purpose:    Loads the current list of parameters from a parameter file
-//             It does NOT load system critical dynamic parameters (e.g., ports, IP addresses)
-// Parameters: char *filename - filename of the parameterlist
-// Returns:    true - successful
-//             false - error
-// **************************************************************************
-bool PARAMLIST::LoadParameterList(const char *filename)
-{
- return(LoadParameterList(filename, false, true));
-}
-
-
-// **************************************************************************
-// Function:   LoadParameterList
-// Purpose:    Loads the current list of parameters from a parameter file
-//             It does NOT load system critical dynamic parameters (e.g., ports, IP addresses)
-// Parameters: char *filename - filename of the parameterlist
-//             usetags - if usetags is true, then the "tag" value in each parameter determines whether the parameter should be loaded
-//                       if the tag value in the parameter is "true", then the parameter will NOT be loaded
-//                       if usetags is false, then all parameters are loaded
-//             nonexisting - if true, load parameters, even if they currently do not exist in the list
-// Returns:    true - successful
-//             false - error
-// **************************************************************************
-bool PARAMLIST::LoadParameterList(const char *filename, bool usetags, bool importnonexisting)
-{
-char    paramline[10000], paramname[256];
-int     idx;
-bool    dont;
-FILE    *fp;
-PARAM   dummyparam;
-
- fp=fopen(filename, "rb");
- if (!fp) return(false);
-
- while (!feof(fp))
-  {
-  fgets(paramline, 10000, fp);
-  dont=false;
-  idx=0;
-  idx=dummyparam.get_argument(idx, paramname, paramline, 10000);   // section
-  idx=dummyparam.get_argument(idx, paramname, paramline, 10000);   // data type
-  idx=dummyparam.get_argument(idx, paramname, paramline, 10000);   // parameter name
-  // do not import, if we use tags (and the parameter exists) and the tag says don't import
-  if ((GetParamPtr(paramname) != NULL) && (usetags))
-     if (GetParamPtr(paramname)->tag)
-        dont=true;
-  // do not import, if we choose to import only existing parameters and if the parameter does not already exist
-  if ((GetParamPtr(paramname) == NULL) && (!importnonexisting)) dont=true;
-  // do not import, if one of these system parameters
-  if (stricmp(paramline, "ApplicationPort") == 0) dont=true;
-  if (stricmp(paramline, "ApplicationIP") == 0) dont=true;
-  if (stricmp(paramline, "SignalProcessingPort") == 0) dont=true;
-  if (stricmp(paramline, "SignalProcessingIP") == 0) dont=true;
-  if (stricmp(paramline, "EEGsourcePort") == 0) dont=true;
-  if (stricmp(paramline, "EEGsourceIP") == 0) dont=true;
-  if (stricmp(paramline, "StateVectorLength") == 0) dont=true;
-  if (!dont)
-     AddParameter2List(paramline, strlen(paramline));
-  }
-
- fclose(fp);
-
- // let's re-sort all the parameters
- Sort();
- return(true);
-}
-
+// Now defined inline as an alias to std::map<>::clear().
 
 // **************************************************************************
 // Function:   AddParameter2List
@@ -350,21 +127,14 @@ PARAM   dummyparam;
 //                           defining this parameter
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::AddParameter2List(const char *paramstring, int paramlen)
+void
+PARAMLIST::AddParameter2List( const char* line, size_t length )
 {
-PARAM   *new_param;
-int lengthToConsider = paramlen;
- if( lengthToConsider == 0 )
-  lengthToConsider = strlen( paramstring );
-
- new_param=new PARAM();
- new_param->ParseParameter(paramstring, lengthToConsider);
- if (new_param->valid)
-    CloneParameter2List(new_param);                        // it clones the newly created parameter to the list
-
- delete new_param;
+  PARAM param;
+  param.ParseParameter( line, length );
+  if( param.valid )
+    ( *this )[ param.name ] = param;
 }
-
 
 // **************************************************************************
 // Function:   MoveParameter2List
@@ -375,18 +145,25 @@ int lengthToConsider = paramlen;
 //             that it does not actually copy the whole param object
 //             This function will not add a parameter to the list, if one
 //             with the same name already exists
+// Note:
+// The implementation is not consistent with the spec given above.
+// According to the spec, the caller wouldn't know if the parameter was actually
+// added, so if not, the PARAM instance would never be deleted.
+// Because the spec states that the caller may not delete the argument, we
+// always delete it as soon as possible (after copying it) to avoid a memory
+// hole.
+// jm
+//
 // Parameters: param - pointer to an existing PARAM object
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::MoveParameter2List(PARAM *newparam)
+void
+PARAMLIST::MoveParameter2List( PARAM* newparam )
 {
- // if we can find a parameter with the same name, do not add this parameter to the list
- if (GetParamPtr(newparam->GetName()))
-    return;
-
- param_list->Add(newparam);
+  if( newparam && find( newparam->GetName() ) == end() )
+    ( *this )[ newparam->GetName() ] = *newparam;
+  delete newparam;
 }
-
 
 // **************************************************************************
 // Function:   DeleteParam
@@ -396,23 +173,7 @@ void PARAMLIST::MoveParameter2List(PARAM *newparam)
 // Parameters: name - name of the parameter
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::DeleteParam(const char *name)
-{
-int     i;
-PARAM   *cur_param;
-
- // Clean up – must free memory for the item as well as the list
- for (i=0; i<param_list->Count; i++)
-  {
-  cur_param=(PARAM *)param_list->Items[i];
-  if (strcmpi(name, cur_param->GetName()) == 0)
-     {
-     param_list->Delete(i);
-     delete cur_param;
-     }
-  }
-}
-
+// Now defined inline as an alias to std::map<>::erase().
 
 // **************************************************************************
 // Function:   CloneParameter2List
@@ -425,56 +186,171 @@ PARAM   *cur_param;
 // Parameters: param - pointer to an existing PARAM object
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::CloneParameter2List(const PARAM *param)
+void
+PARAMLIST::CloneParameter2List( const PARAM* param )
 {
-PARAM           *newparam;
-LSTVALUE        *newlstvalue;
-int             i;
-TList           *bufferlst;
-
- // if we can find a parameter with the same name, delete the old parameter and
- // thereafter add the new one
- if (GetParamPtr(param->GetName()))
-    DeleteParam(param->GetName());
-
- // create a new parameter and copy the content of the other one
- newparam=new PARAM;
- bufferlst=newparam->GetListPtr();         // well, I know that this is a little crude
- memcpy(newparam, param, sizeof(PARAM));   // first, we save the listptr, then we copy the whole object onto the new one
- newparam->SetListPtr(bufferlst);          // and here we restore it back
-
- // copy the contents of the LSTVALUE list
- for (i=0; i<param->GetListPtr()->Count; i++)
-  {
-  newlstvalue=new LSTVALUE;
-  memcpy(newlstvalue, (LSTVALUE *)(((PARAM*)param)->GetListPtr()->Items[i]), sizeof(LSTVALUE));
-  newparam->GetListPtr()->Add(newlstvalue);     // add the value to the list of values
-  }
-
- MoveParameter2List(newparam);   // now, add the whole new parameter to our list
+ if( GetParamPtr( param->GetName() ) )
+   DeleteParam( param->GetName() );
+ MoveParameter2List( new PARAM( *param ) );
 }
 
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of the entire
+//             parameter list.
+//             For partial output, use another instance of type PARAMLIST
+//             to hold the desired subset as in PARAMLIST::SaveParameterList().
+//             _All_ formatted output functions (stream based or not) are,
+//             for consistency's sake, supposed to call this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAMLIST::WriteToStream( ostream& os ) const
+{
+  for( const_iterator i = begin(); os && i != end(); ++i )
+    os << i->second << '\n';
+}
+
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of the entire
+//             parameter list. The list is cleared before reading.
+//             For partial input, use another instance of type PARAMLIST
+//             to hold the desired subset as in PARAMLIST::LoadParameterList().
+//             _All_ formatted input functions (stream based or not) are,
+//             for consistency's sake, supposed to call this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAMLIST::ReadFromStream( istream& is )
+{
+  clear();
+  PARAM param;
+  is >> ws;
+  do
+  {
+    is >> param >> ws;
+    ( *this )[ param.name ] = param;
+  } while( !is.eof() );
+}
+
+// **************************************************************************
+// Function:   SaveParameterList
+// Purpose:    Saves the current list of paramters in a parameter file
+// Parameters: char *filename - filename to save the list to
+//             usetags - if usetags is true, then the "tag" value in each parameter
+//                       determines whether the parameter should be saved
+//                       if the tag value in the parameter is true, then the
+//                       parameter will NOT be saved
+//                       if usetags is false, then all parameters are saved
+// Returns:    true - successful
+//             false - error (disk full, etc.)
+// **************************************************************************
+bool
+PARAMLIST::SaveParameterList( const char* filename, bool usetags ) const
+{
+  ofstream file( filename );
+  if( !file.is_open() )
+    return false;
+  // If desired, exclude parameters tagged in the parameter list.
+  if( usetags )
+  {
+    PARAMLIST paramsToSave( *this );
+    for( iterator i = paramsToSave.begin(); i != paramsToSave.end(); ++i )
+      if( i->second.tag )
+        paramsToSave.erase( i );
+    file << paramsToSave;
+  }
+  else
+    file << *this;
+  return !file.fail();
+}
+
+// **************************************************************************
+// Function:   LoadParameterList
+// Purpose:    Loads the current list of parameters from a parameter file
+//             It does NOT load system critical dynamic parameters (e.g., ports,
+//             IP addresses)
+// Parameters: char *filename - filename of the parameterlist
+//             usetags - if usetags is true, then the "tag" value in each parameter
+//                       determines whether the parameter should be loaded
+//                       if the tag value in the parameter is "true", then the
+//                       parameter will NOT be loaded
+//                       if usetags is false, then all parameters are loaded
+//             nonexisting - if true, load parameters, even if they currently do
+//                       not exist in the list
+// Returns:    true - successful
+//             false - error
+// **************************************************************************
+bool
+PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnonexisting )
+{
+  ifstream file( filename );
+  PARAMLIST paramsFromFile;
+  file >> paramsFromFile;
+
+  typedef set<string> nameset;
+  nameset unwantedParams;
+
+#if 1 // This section's functionality will go into operator code.
+  // Exclude parameters from unwanted sections.
+  const char* unwantedSections[] = { "System", };
+  for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
+    for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
+      if( PARAM::strciequal( i->second.section, unwantedSections[ j ] ) )
+        unwantedParams.insert( i->first );
+#endif
+
+  // If desired, exclude parameters tagged in the main parameter list.
+  if( usetags )
+    for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
+    {
+      const_iterator f = find( i->first );
+      if( f != end() && f->second.tag )
+        unwantedParams.insert( i->first );
+    }
+
+  // If desired, exclude parameters missing from the main parameter list.
+  if( !importnonexisting )
+    for( const_iterator i = paramsFromFile.begin(); i!= paramsFromFile.end(); ++i )
+      if( find( i->first ) == end() )
+        unwantedParams.insert( i->first );
+
+  for( nameset::const_iterator i = unwantedParams.begin(); i != unwantedParams.end(); ++i )
+    paramsFromFile.erase( *i );
+
+  for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
+    ( *this )[ i->first ] = i->second;
+
+  return !file.fail();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// PARAM definitions                                                       //
+/////////////////////////////////////////////////////////////////////////////
+const char commentSeparator[] = "//";
+const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 
 // **************************************************************************
 // Function:   SetDimensions
-// Purpose:    Sets the dimensions of a matrix parameter
-//             It does not do anything, if the parameter is not a matrix
-// Parameters: new_dimension1 - size in dimension 1
-//             new_dimension2 - size in dimension 2
+// Purpose:    Sets the dimensions of a matrix parameter.
+//             It does not do anything, if the parameter is not a matrix.
+// Parameters: inDimension1 - size in dimension 1
+//             inDimension2 - size in dimension 2
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetDimensions(int new_dimension1, int new_dimension2)
+void
+PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 {
- // at first, check whether this is a matrix parameter
- // if not, just return
- if (strcmpi(type, "matrix") != 0)
-    return;
-
- dimension1=new_dimension1;
- dimension2=new_dimension2;
- SetNumValues(dimension1*dimension2);
+ // Don't do anything if this is not a matrix parameter.
+ if( type == "matrix" && inDimension2 > 0 )
+ {
+   dimension2 = inDimension2;
+   SetNumValues( inDimension1 * inDimension2 );
+ }
 }
-
 
 // **************************************************************************
 // Function:   PARAM
@@ -483,12 +359,12 @@ void PARAM::SetDimensions(int new_dimension1, int new_dimension2)
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM()
+: dimension2( 1 ),
+  valid( false ),
+  archive( false ),
+  tag( false )
 {
- value_list=new TList;
- numvalues=0;
- tag=false;
 }
-
 
 // **************************************************************************
 // Function:   PARAM
@@ -496,30 +372,25 @@ PARAM::PARAM()
 // Parameters: self-explanatory
 // Returns:    N/A
 // **************************************************************************
-PARAM::PARAM(const char *name, const char *section, const char *type,
-             const char *value, const char *my_defaultvalue, const char *my_lowrange,
-             const char *my_highrange, const char *my_comment)
+PARAM::PARAM( const char* inName, const char* inSection,
+              const char* inType, const char* inValue,
+              const char* inDefaultvalue, const char* inLowrange,
+              const char* inHighrange, const char* inComment )
+: dimension2( 1 ),
+  defaultvalue( inDefaultvalue ),
+  lowrange( inLowrange ),
+  highrange( inHighrange ),
+  comment( inComment ),
+  valid( false ),
+  archive( false ),
+  tag( false )
 {
- value_list=new TList;
- numvalues=1;
- tag=false;
-
- if (name)    SetName(name);
- if (section) SetSection(section);
- if (type)    SetType(type);
- if (value)   SetValue(value);
-
- if (my_defaultvalue) strncpy(defaultvalue, my_defaultvalue, LENGTH_DEFAULTVALUE);
- if (my_lowrange) strncpy(lowrange, my_lowrange, LENGTH_LOWRANGE);
- if (my_highrange) strncpy(highrange, my_highrange, LENGTH_HIGHRANGE);
- if (my_comment) strncpy(comment, my_comment, LENGTH_COMMENT);
-
- if ((!name) || (!section) || (!type) ||(!value))
-    valid=false;
- else
-    valid=true;
+ SetName( inName );
+ SetSection( inSection );
+ SetType( inType );
+ SetValue( inValue );
+ valid = inName && inSection && inType && inValue;
 }
-
 
 // **************************************************************************
 // Function:   PARAM
@@ -528,14 +399,14 @@ PARAM::PARAM(const char *name, const char *section, const char *type,
 // Parameters: char *paramstring
 // Returns:    N/A
 // **************************************************************************
-PARAM::PARAM(const char *paramstring)
+PARAM::PARAM( const char* paramstring )
+: dimension2( 0 ),
+  valid( false ),
+  archive( false ),
+  tag( false )
 {
- tag=false;
- value_list=new TList;
-
- ParseParameter(paramstring, strlen(paramstring));
+  ParseParameter( paramstring, strlen( paramstring ) );
 }
-
 
 // **************************************************************************
 // Function:   ~PARAM
@@ -544,21 +415,7 @@ PARAM::PARAM(const char *paramstring)
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-PARAM::~PARAM()
-{
-int     i;
-LSTVALUE   *cur_value;
-
-  // Clean up – must free memory for the items as well as the list
-  for (i=0; i<value_list->Count; i++)
-   {
-   cur_value=(LSTVALUE *)value_list->Items[i];
-   delete cur_value;
-   }
-
- delete value_list;
-}
-
+// Now the members' standard destructors take care.
 
 // **************************************************************************
 // Function:   GetValue
@@ -568,11 +425,7 @@ LSTVALUE   *cur_value;
 // Parameters: N/A
 // Returns:    char pointer to the value
 // **************************************************************************
-const char *PARAM::GetValue() const
-{
- return(((LSTVALUE *)((TList*)GetListPtr())->Items[0])->value);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetNumValues
@@ -581,11 +434,7 @@ const char *PARAM::GetValue() const
 // Parameters: N/A
 // Returns:    number of values in this parameter
 // **************************************************************************
-int PARAM::GetNumValues() const
-{
- return(numvalues);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetNumValues
@@ -593,11 +442,7 @@ int PARAM::GetNumValues() const
 // Parameters: new number of values in this parameter
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetNumValues(int new_numvalues)
-{
- numvalues=new_numvalues;
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetDimension1
@@ -606,11 +451,7 @@ void PARAM::SetNumValues(int new_numvalues)
 // Parameters: N/A
 // Returns:    number of values in dimension1 of this parameter
 // **************************************************************************
-int PARAM::GetNumValuesDimension1() const
-{
- return(dimension1);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetDimension2
@@ -619,29 +460,31 @@ int PARAM::GetNumValuesDimension1() const
 // Parameters: N/A
 // Returns:    number of values in dimension2 of this parameter
 // **************************************************************************
-int PARAM::GetNumValuesDimension2() const
-{
- return(dimension2);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetValue
 // Purpose:    Returns a pointer to the i'th value of this parameter
 //             (most parameters, except the *list parameter types, only
 //             have one value anyways)
+//             All versions of PARAM::GetValue() call this function.
 // Parameters: idx ... index of the value
 // Returns:    char pointer to the value
 //             if idx is out of bounds, it returns a pointer to the first value
 // **************************************************************************
-const char *PARAM::GetValue(int idx) const
+const char*
+PARAM::GetValue( size_t idx ) const
 {
- if ((idx < 0) || (idx >= value_list->Count))
-    idx=0;
-
- return(((LSTVALUE *)((TList*)GetListPtr())->Items[idx])->value);
+  size_t numValues = GetNumValues();
+  const char* retValue = "0";
+  if( numValues != 0 )
+  {
+    if( idx >= numValues )
+      idx = 0;
+    retValue = values[ idx ].c_str();
+  }
+  return retValue;
 }
-
 
 // **************************************************************************
 // Function:   GetValue
@@ -651,14 +494,7 @@ const char *PARAM::GetValue(int idx) const
 // Returns:    char pointer to the value
 //             if the idxs are out of bounds, it returns a pointer to the first value
 // **************************************************************************
-const char *PARAM::GetValue(int x1, int x2) const
-{
-int idx;
-
- idx=x1*dimension2+x2;
- return(GetValue(idx));
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetSection
@@ -666,11 +502,7 @@ int idx;
 // Parameters: char pointer to the section name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetSection(const char *src)
-{
- strncpy(section, src, LENGTH_SECTION);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetType
@@ -678,11 +510,7 @@ void PARAM::SetSection(const char *src)
 // Parameters: char pointer to the type name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetType(const char *src)
-{
- strncpy(type, src, LENGTH_TYPE);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetName
@@ -691,11 +519,7 @@ void PARAM::SetType(const char *src)
 // Parameters: char pointer to the name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetName(const char *src)
-{
- strncpy(name, src, LENGTH_NAME);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetValue
@@ -703,67 +527,24 @@ void PARAM::SetName(const char *src)
 // Parameters: char pointer to the value
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(const char *src)
-{
-char *buf;
-int  length;
-LSTVALUE        *lstvalue;
-
- length=strlen(src);
- if (length > LENGTH_VALUE) length=LENGTH_VALUE;
-
- // does at least one value exist ?
- if (value_list->Count > 0)
-    {
-    lstvalue=((LSTVALUE *)GetListPtr()->Items[0]);
-    strncpy(lstvalue->value, src, length+1);
-    }
- else
-    {
-    lstvalue=new LSTVALUE;
-    strncpy(lstvalue->value, src, length+1);
-    value_list->Add(lstvalue);
-    }
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   SetValue
 // Purpose:    sets the idx'th value of the parameter
+//             All versions of PARAM::SetValue() call this function.
 // Parameters: src - char pointer to the value
 //             idx - index of the value (0...GetNumValues()-1)
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(const char *src, int idx)
+void
+PARAM::SetValue( const string& value, size_t idx )
 {
-char            *buf;
-int             length, i, num2add;
-LSTVALUE        *lstvalue;
-
- length=strlen(src);
- if (length > LENGTH_VALUE) length=LENGTH_VALUE;
-
- if (idx < 0) return;
-
- num2add=idx-value_list->Count+1;
- if (num2add > 0)
-    {
-    for (i=0; i<num2add; i++)
-     {
-     lstvalue=new LSTVALUE;
-     strncpy(lstvalue->value, "0", 2);
-     value_list->Add(lstvalue);
-     }
-    // numvalues+=num2add;
-    }
-
- lstvalue=((LSTVALUE *)GetListPtr()->Items[idx]);
- if (src[0] != '\0')
-    strncpy(lstvalue->value, src, length+1);
- else
-    strncpy(lstvalue->value, "0", 2);
+  if( GetNumValues() <= idx )
+    SetNumValues( idx + 1 );
+  if( value != "" )
+    values[ idx ] = value;
 }
-
 
 // **************************************************************************
 // Function:   SetValue
@@ -774,14 +555,7 @@ LSTVALUE        *lstvalue;
 //             x2 - index of the value (0...GetNumValuesDimension2()-1)
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(const char *src, int x1, int x2)
-{
-int idx;
-
- idx=x1*dimension2+x2;
- SetValue(src, idx);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetSection
@@ -789,11 +563,7 @@ int idx;
 // Parameters: N/A
 // Returns:    char pointer to the section name
 // **************************************************************************
-const char *PARAM::GetSection() const
-{
- return(section);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetType
@@ -801,11 +571,7 @@ const char *PARAM::GetSection() const
 // Parameters: N/A
 // Returns:    char pointer to the type
 // **************************************************************************
-const char *PARAM::GetType() const
-{
- return(type);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetName
@@ -814,11 +580,7 @@ const char *PARAM::GetType() const
 // Parameters: N/A
 // Returns:    char pointer to the name
 // **************************************************************************
-const char *PARAM::GetName() const
-{
- return(name);
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   GetComment
@@ -826,40 +588,7 @@ const char *PARAM::GetName() const
 // Parameters: N/A
 // Returns:    char pointer to the comment
 // **************************************************************************
-const char *PARAM::GetComment() const
-{
- return(comment);
-}
-
-
-// **************************************************************************
-// Function:   GetListPtr
-// Purpose:    Returns a pointer to this parameter's list of values
-// Parameters: N/A
-// Returns:    pointer to the list
-// **************************************************************************
-TList   *PARAM::GetListPtr()
-{
- return (value_list);
-}
-
-const TList   *PARAM::GetListPtr() const
-{
- return (value_list);
-}
-
-
-// **************************************************************************
-// Function:   SetListPtr
-// Purpose:    Sets this parameter's list of values
-// Parameters: pointer to the list
-// Returns:    N/A
-// **************************************************************************
-void    PARAM::SetListPtr(TList *temp_list)
-{
- value_list=temp_list;
-}
-
+// Now defined inline.
 
 // **************************************************************************
 // Function:   get_argument
@@ -867,13 +596,19 @@ void    PARAM::SetListPtr(TList *temp_list)
 //             communication, or as stored in any BCI2000 .prm file
 //             it returns the next token that is being delimited by either
 //             a ' ' or '='
+// Note:
+// This function is now obsolete as far as the PARAMLIST/PARAM classes are
+// concerned. It will be kept as long as it is referenced from elsewhere,
+// but please do not use it for new code.
+// jm
+//
 // Parameters: ptr - index into the line of where to start
 //             buf - destination buffer for the token
 //             line - the whole line
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen) const
+int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
@@ -891,63 +626,28 @@ int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen) const
  return(ptr);
 }
 
-
 // **************************************************************************
 // Function:   GetParamLine
 // Purpose:    Returns a parameter line in ASCII format
 //             Tis parameter line is constructed, based upon the current
 //             values in the PARAM object
+// Note:
+// Calling GetParamLine() will invalidate its previous return value.
+// The pointer return type forbids a more robust behaviour.
+// jm
+//
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
 // **************************************************************************
-const char *PARAM::GetParamLine() const
+const char*
+PARAM::GetParamLine() const
 {
- // construct the parameter line
- ConstructParameterLine();
- return(buffer);
+ static string buffer;
+ ostringstream paramline;
+ paramline << *this << ends;
+ buffer = paramline.str();
+ return buffer.c_str();
 }
-
-// **************************************************************************
-// Function:   ConstructParamLine
-// Purpose:    Construct a parameter line, based upon the current values
-//             in the PARAM object
-// Parameters: N/A
-// Returns:    ERRPARAM_NOERR
-// **************************************************************************
-int PARAM::ConstructParameterLine() const
-{
-int             i;
-LSTVALUE        *cur_value;
-
- // if it is of data type *list, write the numvalues parameter, otherwise not
- if ((strcmpi(type, "intlist") == 0) || (strcmpi(type, "floatlist") == 0) || (strcmpi(type, "matrix") == 0))
-    {
-    if (strcmpi(type, "matrix") == 0)
-       sprintf(buffer, "%s %s %s= %d %d ", section, type, name, dimension1, dimension2);
-    else
-       sprintf(buffer, "%s %s %s= %d ", section, type, name, numvalues);
-    }
- else
-    sprintf(buffer, "%s %s %s= ", section, type, name);
-
- for (i=0; i<numvalues; i++)
-  {
-  cur_value=(LSTVALUE *)value_list->Items[i];
-  strncat(buffer, cur_value->value, LENGTH_VALUE);
-  strcat(buffer, " ");
-  }
-
- strncat(buffer, defaultvalue, LENGTH_DEFAULTVALUE);
- strcat(buffer, " ");
- strncat(buffer, lowrange, LENGTH_LOWRANGE);
- strcat(buffer, " ");
- strncat(buffer, highrange, LENGTH_HIGHRANGE);
- strcat(buffer, " // ");
- strncat(buffer, comment, LENGTH_COMMENT);
-
- return(ERRPARAM_NOERR);
-}
-
 
 // **************************************************************************
 // Function:   ParseParameter
@@ -960,130 +660,136 @@ LSTVALUE        *cur_value;
 // Returns:    ERRPARAM_INVALIDPARAM if the parameter line is invalid, or
 //             ERRPARAM_NOERR
 // **************************************************************************
-int PARAM::ParseParameter(const char *new_line, int length)
+int
+PARAM::ParseParameter( const char* paramline, size_t length )
 {
-int     ptr, i;
-char    *buf, *remptr, *filterptr;
-char    line[LENGTH_PARAMLINE+1];
-LSTVALUE *newlistvalue;
-bool    dontcontinue;
+  if( paramline == NULL )
+    return ERRPARAM_INVALIDPARAM;
+  int err = ERRPARAM_NOERR;
+  string line( paramline, length );
+  if( length == 0 )
+    line = string( paramline );
+  istringstream linestream( line );
+  linestream >> *this;
+  if( !linestream )
+    err = ERRPARAM_INVALIDPARAM;
+  return err;
+}
 
- strncpy(line, new_line, length);
- line[length]=0;
- filterptr=strchr(line, '\r');
- if (filterptr) *filterptr=0;
- filterptr=strchr(line, '\n');
- if (filterptr) *filterptr=0;
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             parameter.
+//             _All_ formatted input functions (stream based or not) are,
+//             for consistency's sake, supposed to call this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::ReadFromStream( istream& is )
+{
+  valid = false;
+  archive = false;
+  tag = false;
+  values.clear();
+  string lineBegin,
+         lineEnd;
+  getline( is, lineBegin, '=' );
+  getline( is, lineEnd );
+  istringstream linestream( lineBegin );
+  string value;
+  linestream >> value;
+  SetSection( value );
+  linestream >> value;
+  SetType( value );
+  linestream >> value;
+  SetName( value );
+  if( !linestream )
+  {
+    is.setstate( ios::failbit );
+    return;
+  }
+  linestream.clear();
+  linestream.str( lineEnd );
+  size_t dimension1;
+  if( type == "matrix" )
+  {
+    linestream >> dimension1 >> dimension2;
+  }
+  else if( type.find( "list" ) != type.npos )
+  {
+    linestream >> dimension1;
+    dimension2 = 1;
+  }
+  else
+  {
+    dimension1 = 1;
+    dimension2 = 1;
+  }
+  if( !linestream )
+    is.setstate( ios::failbit );
 
- dontcontinue=false;
- valid=false;
- numvalues=1;
- section[0]=0;
- name[0]=0;
- dimension1=1;
- dimension2=1;
+  linestream >> value;
+  while( linestream && value != commentSeparator
+          && values.size() < dimension1 * dimension2 )
+  {
+    values.push_back( value );
+    linestream >> value;
+  }
+  values.resize( dimension1 * dimension2, "0" );
 
- // buf=new char[length+1];
- buf=(char *)malloc(length+1);
+  if( value == commentSeparator )
+    defaultvalue = "0";
+  else
+  {
+    defaultvalue = value;
+    linestream >> value;
+  }
+  if( value == commentSeparator )
+    lowrange = "0";
+  else
+  {
+    lowrange = value;
+    linestream >> value;
+  }
+  if( value == commentSeparator )
+    highrange = "0";
+  else
+  {
+    highrange = value;
+    linestream >> value;
+  }
+  linestream >> ws;
+  if( value == commentSeparator && !linestream.eof() )
+    getline( linestream, comment );
+  else
+    comment = "";
 
- ptr=0;
- ptr=get_argument(ptr, buf, line, length);
- strncpy(section, buf, LENGTH_SECTION);
- ptr=get_argument(ptr, buf, line, length);
- strncpy(type, buf, LENGTH_TYPE);
- ptr=get_argument(ptr, buf, line, length);
- strncpy(name, buf, LENGTH_NAME);
- if ((section[0] == 0) || (type[0] == 0) || (name[0] == 0))
-    {
-    free(buf);
-    return(ERRPARAM_INVALIDPARAM);
-    }
+  valid = !is.fail();
+}
 
- // if it is of data type *list, expect more than one parameters
- if ((strcmpi(type, "intlist") == 0) || (strcmpi(type, "floatlist") == 0) || (strcmpi(type, "matrix") == 0))
-    {
-    if (strcmpi(type, "matrix") == 0)
-       {
-       ptr=get_argument(ptr, buf, line, length);
-       dimension1=atoi(buf);
-       ptr=get_argument(ptr, buf, line, length);
-       dimension2=atoi(buf);
-       numvalues=dimension1*dimension2;
-       }
-    else
-       {
-       ptr=get_argument(ptr, buf, line, length);
-       numvalues=atoi(buf);
-       }
-
-    i=0;
-    while (i < numvalues)
-     {
-     ptr=get_argument(ptr, buf, line, length);
-     if ((buf[0] == '/') && (buf[1] == '/'))
-        dontcontinue=true;
-     newlistvalue=new LSTVALUE;
-     if (!dontcontinue)
-        strncpy(newlistvalue->value, buf, LENGTH_VALUE);
-     else
-        strcpy(newlistvalue->value, "0");
-     value_list->Add(newlistvalue);
-     i++;
-     }
-    }
- else
-    {
-    numvalues=1;
-    ptr=get_argument(ptr, buf, line, length);
-    newlistvalue=new LSTVALUE;
-    strncpy(newlistvalue->value, buf, LENGTH_VALUE);
-    newlistvalue->value[LENGTH_VALUE]=0;
-    value_list->Add(newlistvalue);
-    }
-
- if (strcmp(name, "BoardName") == 0)
-    dontcontinue=dontcontinue;
-
- // now, parse default, lowrange and highrange
- // in case we find //, then insert default values
- ptr=get_argument(ptr, buf, line, length);
- if (((buf[0] == '/') && (buf[1] == '/')) || (dontcontinue))
-    {
-    strcpy(defaultvalue, "0");
-    dontcontinue=true;
-    }
- else
-    strncpy(defaultvalue, buf, LENGTH_DEFAULTVALUE);
- ptr=get_argument(ptr, buf, line, length);
- if (((buf[0] == '/') && (buf[1] == '/')) || (dontcontinue))
-    {
-    strcpy(lowrange, "0");
-    dontcontinue=true;
-    }
- else
-    strncpy(lowrange, buf, LENGTH_LOWRANGE);
- ptr=get_argument(ptr, buf, line, length);
- if (((buf[0] == '/') && (buf[1] == '/')) || (dontcontinue))
-    {
-    strcpy(highrange, "0");
-    dontcontinue=true;
-    }
- else
-    strncpy(highrange, buf, LENGTH_HIGHRANGE);
-
- remptr=strchr(line, '/');
- comment[0]=0;                                  // set the first character to zero
- if (remptr != NULL)
-    {
-    i=1;
-    while ((i < (int)strlen(remptr)) && ((remptr[i] == ' ') || (remptr[i] == '/')))
-     i++;
-    strncpy(comment, &remptr[i], LENGTH_COMMENT);
-    }
-
- free(buf);
- // delete(buf);
- valid=true;
- return(ERRPARAM_NOERR);
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             parameter.
+//             _All_ formatted output functions (stream based or not) are,
+//             for consistency's sake, supposed to call this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::WriteToStream( ostream& os ) const
+{
+  os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
+  if( type == "matrix" )
+    os << GetNumValuesDimension1() << ' ' << GetNumValuesDimension2() << ' ';
+  else if( type.find( "list" ) != type.npos )
+    os << GetNumValues() << ' ';
+  for( size_t i = 0; i < GetNumValues(); ++i )
+    os << GetValue( i ) << ' ';
+  os << defaultvalue << ' '
+     << lowrange << ' '
+     << highrange << ' '
+     << commentSeparator << ' ' << comment;
 }
 
