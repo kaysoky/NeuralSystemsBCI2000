@@ -1123,6 +1123,7 @@ PARAM::labelIndexer::IsTrivial() const
 void
 PARAM::labelIndexer::ReadFromStream( istream& is )
 {
+  clear();
   if( is >> ws )
   {
     // Check if the first character is an opening bracket.

@@ -76,7 +76,7 @@ class PARAM
    {
      friend class PARAM;
      private:
-      labelIndexer() : needSync( false ) { resize( 1 ); }
+      labelIndexer() : needSync( false ) { clear(); }
       ~labelIndexer() {}
       
      public:
@@ -97,6 +97,12 @@ class PARAM
       void resize( size_t );
       size_t size() const { return reverseIndex.size(); }
       void sync() const;
+      void clear()
+      {
+        reverseIndex.clear();
+        forwardIndex.clear();
+        resize( 1 );
+      }
 
      private:
       // This is the maintained index.
