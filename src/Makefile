@@ -45,10 +45,6 @@ DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 # Workaround macros to access shell operators.
 AND = &&
 OR = ||
-# Workaround macros for nonexisting commands.
-FALSE = (color 00)
-TRUE = (echo on)
-ABORT = (color 00||exit)
 
 !include ${MKNAM}
 
@@ -113,9 +109,9 @@ clean: prepare ${MAKEFILES:.mak=.clean}
    grep "^[A-Z]*PATH[A-Z]*.*:" $@ \
     ${AND} echo Found absolute path^^(s^^) in makefile -- sorry, aborting. \
     ${AND} echo Fix paths in $< using the IDE. \
-    ${AND} ${ABORT} \
+    ${AND} exit 1 \
   ) \
-  ${OR} ${TRUE}
+  ${OR} exit 0
   ${DONE}
 
 .mak.all:
