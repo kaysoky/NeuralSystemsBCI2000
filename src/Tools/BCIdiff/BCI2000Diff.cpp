@@ -37,18 +37,18 @@ int main(int argc, char* argv[])
         FileCompare fileC1;
         fileC1.setFiles(fileR1,fileR2);
 
-        fileC1.compareHeaderLengths();
-        fileC1.compareStateVectorLengths();
-        fileC1.compareNumChannels();
-        fileC1.compareSampleFrequencies();
-        fileC1.compareNumSamples();
-        fileC1.compareParams();
-        fileC1.compareStates();
-        fileC1.compareValues();
+        fileC1.headerLengthsDiffer();
+        fileC1.numChannelsDiffer();
+        fileC1.sampleFrequenciesDiffer();
+        fileC1.numSamplesDiffer();
+        fileC1.paramsDiffer();
+        bool compareStateVectors=!fileC1.stateListsDiffer();
+        bool compareTimes=false;
+        fileC1.valuesDiffer(compareStateVectors, compareTimes);
 
         delete fileR1;
         delete fileR2;
 
-        return 0;
+        return 1;
 }
 //---------------------------------------------------------------------------
