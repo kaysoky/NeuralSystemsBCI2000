@@ -24,6 +24,9 @@ HDC hDC = NULL;                         // Private GDI device context
 HWND hWnd = NULL;                       // Holds our window handle
 HINSTANCE hInstance = NULL;             // Holds the instance of the application
 
+GLfloat lightPosition[]={0, 0,  0, 0.0f};                // light position
+
+
 bool keys[256];                         // Array used for the keyboard routine
 bool active = true;                     // Window active flag set to true by default
 bool fullscreen = true;                 // Fullscreen flag set to fullscreen mode by default
@@ -455,7 +458,7 @@ model3dList[i].rotPointAngleXY=0;
                 globalError = "Unknown error occur in BuildSphere() function.\n";
                  try
                  {
-                        throw Exception("Error in BuildSphere() function");
+                        //throw Exception("Error in BuildSphere() function");
 
                  }
                  catch (Exception &exception)
@@ -511,7 +514,7 @@ try{
                 globalError = "Unknown error occur in Position2DObject() function.\n";
                  try
                  {
-                        throw Exception("Error in Position2DObject() function\n");
+                        //throw Exception("Error in Position2DObject() function\n");
 
                  }
                  catch (Exception &exception)
@@ -552,7 +555,7 @@ glLoadIdentity(); //reset modelview matrix
                 globalError = "Unknown error occur in Enable2D() function.\n";
                  try
                  {
-                        throw Exception("Error in Enable2D()\n");
+                        //throw Exception("Error in Enable2D()\n");
 
                  }
                  catch (Exception &exception)
@@ -589,7 +592,7 @@ glPopMatrix();
                 globalError = "Unknown error occur in Disable2D() function.\n";
                  try
                  {
-                        throw Exception("Error in Disable2D() function.\n");
+                        //throw Exception("Error in Disable2D() function.\n");
 
                  }
                  catch (Exception &exception)
@@ -652,7 +655,7 @@ try
                 globalError = "Unknown error occur in Build2DCursor() function.\n";
                  try
                  {
-                        throw Exception("Error in Build2DCursor() function");
+                        //throw Exception("Error in Build2DCursor() function");
 
                  }
                  catch (Exception &exception)
@@ -747,7 +750,7 @@ if(debug )
                 globalError = "Unknown error occur in glDraw2DText() function.\n";
                  try
                  {
-                        throw Exception("Error in glDraw2DText() function");
+                        //throw Exception("Error in glDraw2DText() function");
 
                  }
                  catch (Exception &exception)
@@ -822,7 +825,7 @@ try
                 globalError = "Unknown error occur in Build2DFont() function.\n";
                  try
                  {
-                        throw Exception("Error in Build2DFont() function");
+                        //throw Exception("Error in Build2DFont() function");
 
                  }
                  catch (Exception &exception)
@@ -881,7 +884,7 @@ if (debug)      fprintf(f, "Building text color %f, %f, %f.\n", twoDTextVec[i].g
                 globalError = "Unknown error occur in Build2DText() function.\n";
                  try
                  {
-                        throw Exception("Error in Build2DText() function");
+                        //throw Exception("Error in Build2DText() function");
 
                  }
                  catch (Exception &exception)
@@ -1033,7 +1036,7 @@ try
                 globalError = "Unknown error occur in Build2DOverlay() function.\n";
                  try
                  {
-                        throw Exception("Error in Build2DOverlay() function");
+                        //throw Exception("Error in Build2DOverlay() function");
 
                  }
                  catch (Exception &exception)
@@ -1061,6 +1064,10 @@ try
 
 //set the camera view
 gluLookAt(camLig.getCamViewX()+x, camLig.getCamViewY()+y, camLig.getCamViewZ()+z, camLig.getCamAimX(), camLig.getCamAimY(), camLig.getCamAimZ(), 0.0f, 1.0f, 0.0f);
+
+
+        //REPOSITION THE LIGHT
+        glLightfv(GL_LIGHT0, GL_POSITION,lightPosition);	// Position The Lig
 
 if(debug) fprintf(f, "In build3d Text.\n");
 
@@ -1232,7 +1239,7 @@ if (debug) fprintf(f, "font rotate z by %f degree and y by %f degree.\n", zPlane
                 globalError = "Unknown error occur in Build3DText() function.\n";
                  try
                  {
-                        throw Exception("Error in Build3DText() function");
+                        //throw Exception("Error in Build3DText() function");
 
                  }
                  catch (Exception &exception)
@@ -1290,7 +1297,7 @@ try
                 globalError = "Unknown error occur in BuildFont() function.\n";
                  try
                  {
-                        throw Exception("Error in BuildFont() function");
+                        //throw Exception("Error in BuildFont() function");
 
                  }
                  catch (Exception &exception)
@@ -1329,7 +1336,7 @@ try
                 globalError = "Unknown error occur in KillFont() function.\n";
                  try
                  {
-                        throw Exception("Error in KillFont() function");
+                        //throw Exception("Error in KillFont() function");
 
                  }
                  catch (Exception &exception)
@@ -1369,7 +1376,7 @@ try
                 globalError = "Unknown error occur in Kill2DFont() function.\n";
                  try
                  {
-                        throw Exception("Error in Kill2DFont() function");
+                        //throw Exception("Error in Kill2DFont() function");
 
                  }
                  catch (Exception &exception)
@@ -1429,7 +1436,7 @@ if (debug) fprintf(f, "FFFFFFFFFFFFFFFF IN glPrint.\n");
                 globalError = "Unknown error occur in glPrint() function.\n";
                  try
                  {
-                        throw Exception("Error in glPrint() function");
+                        //throw Exception("Error in glPrint() function");
 
                  }
                  catch (Exception &exception)
@@ -1557,7 +1564,7 @@ else
                 globalError = "Unknown error occur in createTexture() function.\n";
                  try
                  {
-                        throw Exception("Error in createTexture() function");
+                        //throw Exception("Error in createTexture() function");
 
                  }
                  catch (Exception &exception)
@@ -2914,7 +2921,7 @@ if(debug) fprintf(f, "current min and max are: %f, %f.\n", box2Min[i], box2Max[i
                 globalError = "Unknown error occur in collide() function.\n";
                  try
                  {
-                        throw Exception("Error in collide() function");
+                        //throw Exception("Error in collide() function");
 
                  }
                  catch (Exception &exception)
@@ -3175,11 +3182,13 @@ GLfloat newz = tempBase*sin((double)ang);
         glLoadIdentity();
         //CAMERAgl
         glMultMatrixf(posAfterCamera);
-        
+        //REPOSITION THE LIGHT
+        glLightfv(GL_LIGHT0, GL_POSITION,lightPosition);	// Position The Lig
+
         if (cuboidsObj.getPrimitiveID()!=3) //not boundary
         {
         //MOVEMENT AND ROTATION
-        glMultMatrixf(movePointM);
+        glMultMatrixf(movePointM);        
         glMultMatrixf(rotate1);
         glMultMatrixf(rotate2);
         glMultMatrixf(rotate3);
@@ -3583,7 +3592,7 @@ else    //it is a bound, i.e, midpoint is always 0,0,0
                 globalError = "Unknown error occur in BuildCuboid() function.\n";
                  try
                  {
-                        throw Exception("Error in BuildCuboid() function");
+                        //throw Exception("Error in BuildCuboid() function");
 
                  }
                  catch (Exception &exception)
@@ -3830,6 +3839,9 @@ if(debug) fprintf(f, "rotate itself x is %f, y is %f, z is %f degrees.\n", spher
         glLoadIdentity();
         //CAMERAgl
         glMultMatrixf(posAfterCamera);
+        //REPOSITION THE LIGHT
+        glLightfv(GL_LIGHT0, GL_POSITION,lightPosition);	// Position The Lig
+
         //MOVEMENT AND ROTATION
         glMultMatrixf(movePointM);
         glMultMatrixf(rotate1);
@@ -3942,7 +3954,7 @@ sphereVec[i].setRotPointAngleXY(0);
                 globalError = "Unknown error occur in BuildSphere() function.\n";
                  try
                  {
-                        throw Exception("Error in BuildSphere() function");
+                        //throw Exception("Error in BuildSphere() function");
 
                  }
                  catch (Exception &exception)
@@ -4111,7 +4123,7 @@ Sleep(frameRate-timeinms);
                 globalError = "Unknown error occur in BuildSphere() function.\n";
                  try
                  {
-                        throw Exception("Error in BuildSphere() function");
+                        //throw Exception("Error in BuildSphere() function");
 
                  }
                  catch (Exception &exception)
@@ -4280,7 +4292,7 @@ model3dList[index].rotPointAngleXY=0;
                 globalError = "Unknown error occur in rotateObjByPoint() function.\n";
                  try
                  {
-                        throw Exception("Error in rotateObjByPoint() function");
+                        //throw Exception("Error in rotateObjByPoint() function");
 
                  }
                  catch (Exception &exception)
@@ -4469,7 +4481,7 @@ Sleep(frameRate-timeinms);
                 globalError = "Unknown error occur in moveObj() function.\n";
                  try
                  {
-                        throw Exception("Error in moveObj() function");
+                        //throw Exception("Error in moveObj() function");
 
                  }
                  catch (Exception &exception)
@@ -4518,7 +4530,7 @@ try
                 globalError = "Unknown error occur in ReSizeGLScene() function.\n";
                  try
                  {
-                        throw Exception("Error in ReSizeGLScene() function");
+                        //throw Exception("Error in ReSizeGLScene() function");
 
                  }
                  catch (Exception &exception)
@@ -4550,40 +4562,7 @@ try
         glShadeModel(GL_SMOOTH);
 
         
-        //set up the light
-        //white ambient light background
-        if (debug)       fprintf(f, "getting light.\n");
-        GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
-        GLfloat ligBri = (GLfloat)camLig.getLightBri()/255;
-        if (abmBri >= 1)
-                abmBri = 1.0f;
-        if (ligBri >=1 )
-                ligBri = 1.0f;
-        if (debug)      fprintf(f, "abmBri is %f and ligBri is %f.\n", abmBri, ligBri);
-        GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
-        GLfloat spec[] = {ligBri*camLig.getLightColorX(), ligBri*camLig.getLightColorY(), ligBri*camLig.getLightColorZ(), 1.0f};
-        GLfloat lightPosition[] = {camLig.getLightX(), camLig.getLightY(),  camLig.getLightZ(), 0.0f};
 
-
-        glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, spec);		        // Setup The Specular Light
-        glLightfv(GL_LIGHT0, GL_SPECULAR, spec);		// Setup The Specular Light
-        glLightfv(GL_LIGHT0, GL_POSITION,lightPosition);	// Position The Lig
-
-        //shade added
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
-        glMaterialfv(GL_FRONT, GL_AMBIENT, abmLight);
-        glMaterialf(GL_FRONT, GL_SHININESS, 128.0);
-        //added
-
-        glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
-	glEnable(GL_LIGHT0);                                    // Enable light one
-        glEnable(GL_LIGHTING);
-        glEnable(GL_COLOR_MATERIAL );
-        
-
-        
         GetClientRect(hWnd, &WinDimension);					// Assign the windows rectangle to a global RECT
     
         //build the font
@@ -4686,7 +4665,7 @@ if(i==0)twoDTextVec[i].setFontID( Build2DFont( twoDTextVec[i].getTextFont(), two
                 globalError = "Unknown error occur in InitGL() function.\n";
                  try
                  {
-                        throw Exception("Error in InitGL() function");
+                        //throw Exception("Error in InitGL() function");
 
                  }
                  catch (Exception &exception)
@@ -4706,6 +4685,44 @@ int DrawScreen(GLvoid)
         {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear screen and depth buffer
 	glLoadIdentity();       // Reset the current modelview matrix
+
+
+        //set up the light
+        //white ambient light background
+        if (debug)       fprintf(f, "getting light.\n");
+        GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
+        GLfloat ligBri = (GLfloat)camLig.getLightBri()/255;
+        if (abmBri >= 1)
+                abmBri = 1.0f;
+        if (ligBri >=1 )
+                ligBri = 1.0f;
+        if (debug)      fprintf(f, "abmBri is %f and ligBri is %f.\n", abmBri, ligBri);
+        GLfloat abmLight[] ={abmBri*camLig.getLightColorX(), abmBri*camLig.getLightColorY(), abmBri*camLig.getLightColorZ(),  1.0f};
+        GLfloat spec[] = {ligBri*camLig.getLightColorX(), ligBri*camLig.getLightColorY(), ligBri*camLig.getLightColorZ(), 1.0f};
+        lightPosition[0] = camLig.getLightX();
+        lightPosition[1] = camLig.getLightY();
+        lightPosition[2] = camLig.getLightZ();
+        lightPosition[3] = 0.0f;
+
+
+        glLightfv(GL_LIGHT0, GL_AMBIENT, abmLight);		// Setup The Ambient Light
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, spec);		        // Setup The Specular Light
+        glLightfv(GL_LIGHT0, GL_SPECULAR, spec);		// Setup The Specular Light
+        glLightfv(GL_LIGHT0, GL_POSITION,lightPosition);	// Position The Lig
+
+        //shade added
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, spec);
+        glMaterialfv(GL_FRONT, GL_AMBIENT, abmLight);
+        glMaterialf(GL_FRONT, GL_SHININESS, 128.0);
+        //added
+
+        glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
+	glEnable(GL_LIGHT0);                                    // Enable light one
+        glEnable(GL_LIGHTING);
+        glEnable(GL_COLOR_MATERIAL );
+        
+
 
 
 
@@ -4835,7 +4852,7 @@ fprintf(g, "%e\n", timeinms);
                 globalError = "Unknown error occur in DrawScreen() function.\n";
                  try
                  {
-                        throw Exception("Error in DrawScreen() function.");
+                        //throw Exception("Error in DrawScreen() function.");
 
                  }
                  catch (Exception &exception)
@@ -4906,7 +4923,7 @@ try
                 globalError = "Unknown error occur in KillGLWindow() function.\n";
                  try
                  {
-                        throw Exception("Error in KillGLWindow() function");
+                        //throw Exception("Error in KillGLWindow() function");
 
                  }
                  catch (Exception &exception)
@@ -5110,7 +5127,7 @@ try
                 globalError = "Unknown error occur in CreateGLWindow() function.\n";
                 try
                 {
-                       throw Exception("Error in CreateGLWindow() function");
+                       //throw Exception("Error in CreateGLWindow() function");
                 }
                 catch (Exception &exception)
                 {
