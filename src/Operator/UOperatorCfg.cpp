@@ -4,12 +4,16 @@
 
 #include <Registry.hpp>
 #include <stdio.h>
+#include <string>
+#include <sstream>
 
 #include "..\shared\defines.h"
 #include "UShowParameters.h"
 #include "UEditMatrix.h"
 #include "UOperatorCfg.h"
 #include "UBCIError.h"
+
+using namespace std;
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -297,20 +301,31 @@ AnsiString valueline;
            // ParamButton[1][count]->OnClick=bEditMatrixClick;
            ParamButton[2][count]->Visible=true;
            }
+        else if( cur_param->GetNumValues() > 1 )
+           {
+           ParamValue[count]=new TEdit(this);
+           ParamValue[count]->Parent=CfgTabControl;
+           ParamValue[count]->Left=VALUE_OFFSETX;
+           ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
+           ostringstream oss;
+           for (size_t t=0; t<cur_param->GetNumValues(); t++)
+            {
+            oss << PARAM::encodedString( cur_param->GetValue(t) );
+            if (t < cur_param->GetNumValues()-1)
+               oss << " ";
+            }
+           ParamValue[count]->Text=oss.str().c_str();
+           ParamValue[count]->Width=VALUE_WIDTHX;
+           ParamValue[count]->ReadOnly=false;
+           ParamValue[count]->Visible=true;
+           }
         else
            {
            ParamValue[count]=new TEdit(this);
            ParamValue[count]->Parent=CfgTabControl;
            ParamValue[count]->Left=VALUE_OFFSETX;
            ParamValue[count]->Top=VALUE_OFFSETY+count*VALUE_SPACINGY;
-           valueline="";
-           for (size_t t=0; t<cur_param->GetNumValues(); t++)
-            {
-            valueline=valueline+cur_param->GetValue(t);
-            if (t < cur_param->GetNumValues()-1)
-               valueline=valueline+" ";
-            }
-           ParamValue[count]->Text=valueline;
+           ParamValue[count]->Text=cur_param->GetValue();
            ParamValue[count]->Width=VALUE_WIDTHX;
            ParamValue[count]->ReadOnly=false;
            ParamValue[count]->Visible=true;
@@ -349,14 +364,14 @@ int     count, t;
   if (ParamLabel[count]->Caption == AnsiString(cur_param->GetName()))
      if (ParamValue[count])
         {
-        valueline="";
-        for (size_t t=0; t<cur_param->GetNumValues(); t++)
-         {
-         valueline=valueline+cur_param->GetValue(t);
-         if (t < cur_param->GetNumValues()-1)
-            valueline=valueline+" ";
-         }
-        ParamValue[count]->Text=valueline;
+           ostringstream oss;
+           for (size_t t=0; t<cur_param->GetNumValues(); t++)
+            {
+            oss << PARAM::encodedString( cur_param->GetValue(t) );
+            if (t < cur_param->GetNumValues()-1)
+               oss << " ";
+            }
+           ParamValue[count]->Text=oss.str().c_str();
         }
   }
 
@@ -407,6 +422,8 @@ char            buf[2048];
             param=cur_param;
       }
      if (param)
+      {
+        if( param->GetNumValues() > 1 )
         {
         ptr=0;
         u=0;
@@ -418,6 +435,9 @@ char            buf[2048];
          }
         param->SetNumValues(u);
         }
+        else
+          param->SetValue( paramvalue.c_str() );
+      }
      }
   }
 
@@ -445,7 +465,6 @@ void __fastcall TfConfig::CfgTabControlChanging(TObject *Sender,
 {
  if (CfgTabControl->TabIndex > -1)
     UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
-
  AllowChange = true;
 }
 //---------------------------------------------------------------------------
