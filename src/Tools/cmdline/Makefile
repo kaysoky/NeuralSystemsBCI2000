@@ -59,7 +59,7 @@ PATHCPP = .;${BCIROOT}\shared;${SIGPROC};${SRCROOT}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib
 
-DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;NO_VCL;SIGNAL_BACK_COMPAT
+DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT
 CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
 
 CPP = ${CC} ${CFLAGS} -D${DEFINES} -I${INCLUDEPATH}
