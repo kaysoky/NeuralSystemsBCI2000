@@ -66,6 +66,7 @@ MessageHandler::HandleMessage( istream& is )
       default:
         bcierr << "Unknown message descriptor/supplement" << endl;
     }
+    is.setstate( iss.rdstate() & ~ios::eofbit );
   }
 }
 
