@@ -36,6 +36,7 @@ TTask::TTask()
  BEGIN_STATE_DEFINITIONS
    "Pitch 8 0 0 0",
    "StimulusTime 16 17528 0 0",
+   "TargetCode 8 0 0 0",
  END_STATE_DEFINITIONS
 
  form=new TForm( ( TComponent* )NULL );
@@ -182,7 +183,7 @@ int     pitch;
    pitchLabel = "high";
  else
    pitchLabel = "ultra high";
-   
+
  switch( AcousticMode )
  {
    case 0: // none
