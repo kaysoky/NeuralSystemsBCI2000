@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 
+#define  V5_COMPAT              // for matlab compatibility
+
 #include "UBCI2000DATA.h"
 #include "UParameter.h"
 #include "engine.h"

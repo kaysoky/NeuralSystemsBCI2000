@@ -1,9 +1,9 @@
 object fMain: TfMain
-  Left = 392
-  Top = 284
+  Left = 321
+  Top = 146
   Width = 438
   Height = 550
-  Caption = 'BCI2000toASCII V3.5'
+  Caption = 'BCI2000toASCII V3.6 (Matlab 6.5)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
