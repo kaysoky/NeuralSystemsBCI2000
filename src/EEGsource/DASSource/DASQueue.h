@@ -50,13 +50,14 @@ class DASQueue : public std::queue<short>
                                           // fit into the sample buffer.
 
     int     mFailstate,
-            mBoardNumber;
+            mBoardNumber,
+            mFreqMultiplier,
+            mChannels,
+            mHWChannels;
     USHORT* mDataBuffer;
     long    mDataBufferSize,
             mReadCursor,
-            mWriteCursor,
-            mFreqMultiplier,
-            mChannels;
+            mWriteCursor;
     bool    mShouldBeOpen;
     DWORD   mTimeoutInterval;
     HANDLE  mDataAvailableEvent;

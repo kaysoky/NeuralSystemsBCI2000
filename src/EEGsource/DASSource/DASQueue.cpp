@@ -31,6 +31,7 @@ DASQueue::DASQueue()
   mWriteCursor( 0 ),
   mFreqMultiplier( 1 ),
   mChannels( 0 ),
+  mHWChannels( 0 ),
   mShouldBeOpen( false ),
   mTimeoutInterval( 0 ),
   mDataAvailableEvent( ::CreateEvent( NULL, FALSE, FALSE, NULL ) )
@@ -78,16 +79,16 @@ DASQueue::open( const DASInfo& inInfo )
         ADRange = hwRange;
       }
 
-      int hwChannels = 0;
+      mHWChannels = 0;
       mChannels = inInfo.numChannels;
-      result = ::cbGetConfig( BOARDINFO, mBoardNumber, 0, BINUMADCHANS, &hwChannels );
+      result = ::cbGetConfig( BOARDINFO, mBoardNumber, 0, BINUMADCHANS, &mHWChannels );
       if( result == NOERRORS )
       {
-        if( hwChannels < mChannels )
+        if( mHWChannels < mChannels )
         {
           bcierr << "Requested number of channels exceeds number of available"
                  << " hardware channels" << endl;
-          mChannels = hwChannels;
+          mChannels = mHWChannels;
         }
 
         long hwBlockSize;
@@ -103,12 +104,12 @@ DASQueue::open( const DASInfo& inInfo )
 
         // For large hardware buffers, we need to increase the sampling rate to
         // obtain the block update rate implied by the parameters.
-        mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mChannels * inInfo.sampleBlockSize );
+        mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
         mDataBufferSize = cBlocksInBuffer * hwBlockSize;
 
         long hwSamplingRate = inInfo.samplingRate * mFreqMultiplier;
         int  options = CONTINUOUS | BACKGROUND;
-        result = DASUtils::GetBoardOptions( mBoardNumber, mChannels,
+        result = DASUtils::GetBoardOptions( mBoardNumber, mHWChannels,
                                             mDataBufferSize, hwSamplingRate,
                                             ADRange, options );
         if( result == NOERRORS )
@@ -122,7 +123,7 @@ DASQueue::open( const DASInfo& inInfo )
           mDataBuffer = ( USHORT* )::cbWinBufAlloc( mDataBufferSize );
           mReadCursor = 0;
           mWriteCursor = 0;
-          result = DASUtils::BackgroundScan( mBoardNumber, 0, mChannels - 1,
+          result = DASUtils::BackgroundScan( mBoardNumber, 0, mHWChannels - 1,
                                              mDataBufferSize, hwSamplingRate,
                                              ADRange, mDataBuffer, options,
                                              BoardEventCallback, this );
@@ -184,8 +185,9 @@ inline
 bool
 DASQueue::IgnoredSample( long inIndex )
 {
-  long posInQuasiSample = inIndex % ( mFreqMultiplier * mChannels );
-  return posInQuasiSample < ( mFreqMultiplier - 1 ) * mChannels; 
+  bool notSWChannel = ( inIndex % mHWChannels >= mChannels ),
+       notSWSample = ( ( inIndex / mHWChannels ) % mFreqMultiplier != 0 );
+  return notSWChannel || notSWSample;
 }
 
 // This is not a member function but we get an instance pointer in the
