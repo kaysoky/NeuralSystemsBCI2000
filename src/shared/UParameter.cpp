@@ -3,7 +3,7 @@
  * Module:    UParameter.cpp                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.19                                                            *
+ * Version:   0.21                                                            *
  * Authors:   Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -24,6 +24,8 @@
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
  * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
+ * V0.21 - 05/15/2003 - Fixed invalid iterator problem in SaveParameterList(),*
+ *                      jm                                                    *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -258,10 +260,10 @@ PARAMLIST::SaveParameterList( const char* filename, bool usetags ) const
   // If desired, exclude parameters tagged in the parameter list.
   if( usetags )
   {
-    PARAMLIST paramsToSave( *this );
-    for( iterator i = paramsToSave.begin(); i != paramsToSave.end(); ++i )
-      if( i->second.tag )
-        paramsToSave.erase( i );
+    PARAMLIST paramsToSave;
+    for( const_iterator i = begin(); i != end(); ++i )
+      if( !i->second.tag )
+        paramsToSave[ i->first ] = i->second;
     file << paramsToSave;
   }
   else
@@ -628,7 +630,6 @@ PARAM::SetValue( const string& value, size_t idx )
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-#if 1
 int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
 {
  // skip trailing spaces, if any
@@ -646,7 +647,6 @@ int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
  *buf=0;
  return(ptr);
 }
-#endif
 
 // **************************************************************************
 // Function:   GetParamLine
@@ -853,7 +853,7 @@ PARAM::WriteToStream( ostream& os ) const
 // Function:   operator=
 // Purpose:    Assignment operator to prevent setting of certain properties
 //             from e.g. parameter files.
-// Parameters: PARAM instance to be copied into *this.
+// Parameters: PARAM instance to be assigned to *this.
 // Returns:    *this.
 // **************************************************************************
 PARAM&
@@ -861,20 +861,19 @@ PARAM::operator=( const PARAM& p )
 {
   if( this != &p )
   {
-    if( section.empty() )
+    // We prevent assignment of certain values if a parameter's name
+    // is set and the parameter that is to be copied has the same
+    // name.
+    if( name.empty() || name != p.name )
+    {
       section = p.section;
-    if( name.empty() )
       name = p.name;
-    if( type.empty() )
       type = p.type;
-    if( defaultvalue.empty() )
       defaultvalue = p.defaultvalue;
-    if( lowrange.empty() )
       lowrange = p.lowrange;
-    if( highrange.empty() )
       highrange = p.highrange;
-    if( comment.empty() )
       comment = p.comment;
+    }
 
 #ifdef LABEL_INDEXING
     dim1_index = p.dim1_index;

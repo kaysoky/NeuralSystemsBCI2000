@@ -1,9 +1,9 @@
 /******************************************************************************
  * Program:   BCI2000                                                         *
- * Module:    UParameter.h                                                    *
+ * Module:    UParameter.cpp                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.19                                                            *
+ * Version:   0.21                                                            *
  * Authors:   Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -23,9 +23,9 @@
  * V0.18 - 01/31/2003 - fixed bug in SaveParameterList()                      *
  * V0.19 - 01/09/2003 - completely rewrote implementation based on STL,       *
  *                      juergen.mellinger@uni-tuebingen.de                    *
- * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists     *
- * V0.21 - 05/08/2003 - Assignment operator controls behavior of certain      *
- *                      elements to avoid changes of e.g. ranges entries      *
+ * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
+ * V0.21 - 05/15/2003 - Fixed invalid iterator problem in SaveParameterList(),*
+ *                      jm                                                    *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -232,9 +232,7 @@ class PARAM
 #endif
         int     ParseParameter( const char* line, size_t length );
 
-#if 1
   static int get_argument(int ptr, char *buf, const char *line, int maxlen);
-#endif
 
  public: // These will become private.
         bool    valid;
