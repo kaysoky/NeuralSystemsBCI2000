@@ -1,0 +1,12 @@
+This is how to switch the task from displaying targets to displaying YES/NO's 
+(such as described by Schalk et al., 2000):
+
+(all parameter changes refer to parameter section UsrTask)
+
+o switch TargetType to 1 (Yes/No display)
+o set TargetWidth to 1 (so that cursor can go to the very right)
+o set YesNoCorrect appropriately (if YesNoCorrect is 0, Yes is the correct choice in each trial)
+o set YesNoOnTime appropriately
+  At the end of a trial, the selected choice (YES/NO) is flashing. This variable defines how long (in units of SampleBlocks) the selected word stays on.
+o set YesNoOffTime appropriately (similar to YesNoOnTime, defines how long the selected word is turned OFF).
+
