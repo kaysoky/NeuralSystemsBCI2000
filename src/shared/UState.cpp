@@ -111,7 +111,7 @@ STATE   *cur_state;
 STATE *STATELIST::GetStatePtr(int idx)  const
 {
 #ifdef NO_VCL
-  return ( idx < GetNumStates() && idx > 0 ) ? state_list[ idx ] : NULL;
+  return ( idx < GetNumStates() && idx >= 0 ) ? state_list[ idx ] : NULL;
 #else
  if ((idx < state_list->Count) && (idx >= 0))
     return((STATE *)state_list->Items[idx]);
