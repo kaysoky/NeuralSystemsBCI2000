@@ -223,8 +223,6 @@ class PARAM
                 { changed = true; return dim1_index; }
   const labelIndexer& Labels() const
                 { return dim1_index; }
-        bool    Valid() const
-                { return valid; }
         bool    Changed() const
                 { return changed; }
         void    Unchanged()
@@ -236,7 +234,6 @@ class PARAM
         std::istream& ReadBinary( std::istream& );
 
  private:
-        bool    valid;
         bool    changed;
 
  public: // These will become private.

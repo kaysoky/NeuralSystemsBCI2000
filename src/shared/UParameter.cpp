@@ -148,7 +148,6 @@ PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
   istringstream linestream( line );
 
   PARAM param;
-  linestream >> param;
   if( linestream >> param )
     ( *this )[ param.name ] = param;
 }
@@ -372,9 +371,7 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM()
-:
-  valid( false ),
-  changed( false ),
+: changed( false ),
   archive( false ),
   tag( false )
 {
@@ -395,7 +392,6 @@ PARAM::PARAM( const char* inName, const char* inSection,
   lowrange( inLowrange ),
   highrange( inHighrange ),
   comment( inComment ),
-  valid( false ),
   changed( false ),
   archive( false ),
   tag( false )
@@ -404,7 +400,6 @@ PARAM::PARAM( const char* inName, const char* inSection,
   SetSection( inSection );
   SetType( inType );
   SetValue( inValue );
-  valid = inName && inSection && inType && inValue;
 }
 
 // **************************************************************************
@@ -415,9 +410,7 @@ PARAM::PARAM( const char* inName, const char* inSection,
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM( const char* line )
-:
-  valid( false ),
-  changed( false ),
+: changed( false ),
   archive( false ),
   tag( false )
 {
@@ -628,7 +621,6 @@ PARAM::SetValue( const string& value, size_t idx )
 istream&
 PARAM::ReadFromStream( istream& is )
 {
-  valid = false;
   changed = true;
   archive = false;
   tag = false;
@@ -718,7 +710,6 @@ PARAM::ReadFromStream( istream& is )
       ++i;
     }
   }
-  valid = !is.fail();
   return is;
 }
 
@@ -810,7 +801,6 @@ PARAM::operator=( const PARAM& p )
     dim2_index = p.dim2_index;
     values = p.values;
 
-    valid = p.valid;
     changed = p.changed;
     archive = p.archive;
     tag = p.tag;
