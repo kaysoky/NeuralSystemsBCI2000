@@ -107,8 +107,13 @@ StreamToTable::HandleVisSignal( istream& arIn )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
   {
-    for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
-      mrOut << "\t" << mpStatevector->GetStateValue( i->c_str() );
+    if( mpStatevector != NULL )
+      for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
+        mrOut << "\t" << mpStatevector->GetStateValue( i->c_str() );
+    else
+      for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
+        mrOut << "\t0";
+
     for( size_t i = 0; i < s.Channels(); ++i )
       for( size_t j = 0; j < s.GetNumElements( i ); ++j )
         mrOut << "\t" << s( i, j );
