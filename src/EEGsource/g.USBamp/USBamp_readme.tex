@@ -13,8 +13,8 @@
 \begin{document}
 
 %\include{title}
-\title{g.USBamp Support in BCI2000}
-\author{Gerwin Schalk\\ \small{\copyright{} 2004 Wadsworth Center, New York State Department of Health}}
+\title{BCI2000 g.USBamp Support}
+\author{Gerwin Schalk\\ \small{2004 Brain-Computer Interface Research and Development Program}\\ \small{Wadsworth Center, New York State Department of Health}}
 \maketitle
 
 \tableofcontents
@@ -26,44 +26,333 @@
 
 \section{Introduction}
 
-\sloppypar \emph{g.USBamp} is an amplifier/digitizer combination from g.tec, 
-Inc. This document describes this support that consists of two components: A 
-BCI2000-compatible Source Module (\texttt{gUSBamp.exe}) and a command-line 
-tool (\texttt{USBampgetinfo}). 
+\sloppypar \emph{g.USBamp} is an amplifier/digitizer combination from g.tec 
+Technologies (\texttt{http://www.gtec.at}). This document describes support for 
+this device in BCI2000, which consists of two components: A BCI2000-compatible 
+Source Module (\texttt{gUSBamp.exe}) and a command-line tool 
+(\texttt{USBampgetinfo}). 
 
-\section{gUSBamp Source Module}
+\section{g.USBamp Hardware}
 
-The BCI2000-compatible Source Module \texttt{gUSBamp.exe} can be used instead 
-of any other source module. In addition to standard parameters (\ie{} 
-\emph{SampleBlockSize}, \emph{SamplingRate}, \emph{SoftwareCh}), it 
+The USBamp consists of 16 independent 24-bit A/D converters that can sample at 
+up to 38.4kHz per channel. Because there is one A/D converter for each channel, 
+one particular sample is digitized at the exact same time for each channel. This 
+is unlike with traditional A/D converter boards that only have one A/D 
+converter. BCI2000 has a feature that can align samples in time (parameter 
+\emph{AlignChannels} in Section \emph{Filtering}). Because this feature is not 
+needed in conjunction with the USBamp, it needs to be turned off (i.e., 
+\emph{AlignChannels} needs to be 0).
 
+
+\section{g.USBamp Source Module}
+
+The BCI2000-compatible Source Module \texttt{gUSBamp.exe} can be used instead of 
+any other source module. In addition to standard parameters (\ie{} 
+\emph{SampleBlockSize}, \emph{SamplingRate}, \emph{SoftwareCh}, 
+\emph{TransmitCh}, \emph{TransmitChList}), it also contains the following 
+parameters:
+
+\begin{description}
+ \item [DeviceIDMaster] Serial number of the master device. 
+                        If you only have one device, this 
+                        parameter has to equal \emph{DeviceIDs}.
+                        If you have more then one device, then
+                        this parameter represents the serial
+                        number of the device whose SYNC goes to
+                        the slaves, i.e., the only device that 
+                        has a cable connected at SYNC OUT, but 
+                        none connected to SYNC IN.
+ \item [DeviceIDs]      List of serial numbers of all devices.
+                        If you have more than one device, this 
+                        list determines the order of
+                        the channels in the data file.
+ \item [FilterEnabled]  Choose 1 if you want a pass band filter,
+                        and 0 if you don't. The gUSBamp is a 
+                        DC amplifier and thus you most likely
+                        will want a pass band filter.
+ \item [FilterHighPass] High pass frequency for pass band. You need to query
+                        the amp for possible values. See description
+                        of the USBampgetinfo tool for more info.
+ \item [FilterLowPass]  High pass frequency for pass band. See description
+                        of the USBampgetinfo tool for more info.
+ \item [FilterModelOrder] Model order for passband filter. See description
+                        of the USBampgetinfo tool for more info.
+ \item [FilterType]     Type of passband filter. 1=CHEBYSHEV, 2=BUTTERWORTH
+ \item [NotchEnabled]   Choose 1 if you want a notch filter,
+                        and 0 if you don't.
+ \item [NotchHighPass]     Similar to FilterHighPass.
+ \item [NotchLowPass]      Similar to FilterLowPass.
+ \item [NotchModelOrder]   Similar to FilterModelOrder.
+ \item [NotchType]         Similar to FilterType.
+ \item [SampleBlockSize]   Samples per digitized block. The block size has to 
+                           be chosen such that $SoftwareChDevices*SampleBlockSize*4$
+                           is a multiple of 512. (This is apparently a limitation of
+                           the USB driver.)
+ \item [SamplingRate]      The sampling rate of all connected USBamps. While there is
+                           no hardware constraint on the sampling rate, it has to
+                           be chosen so as to satisfy the constraint described for
+                           \textit{SampleBlockSize}. Furthermore, if one wants to 
+                           use a bandpass or a notch filter, there needs to be a filter
+                           configuration for that particular sampling rate (see the section
+                           on the \texttt{USBampgetinfo} tool). (Guger Technologies can
+                           provide you with a new driver configuration file if you need
+                           a different filter.)
+ \item [SoftwareCh]        The total number of channels across all USBamp devices.
+ \item [SoftwareChDevices] The number of channels acquired from each device. 
+                           If there is only one device, this parameter has to equal \textit{SoftwareCh}.
+                           For example, '16 8' will acquire channels from the 
+                           first device listed under \textit{DeviceIDs}, and 8 channels
+                           from the second device listed under \textit{DeviceIDs}.
+                           Data acquisition always starts at channel 1.
+                           The sum of all channels (e.g., 24 in this example) has to 
+                           equal the value of \textit{SoftwareCh}.
+ \item [TransmitCh]        The number of channels that are transmitted to the BCI2000 
+                           Signal Processing module. See the BCI2000 Project
+                           Outline for further information.
+ \item [TransmitChList]    The list of channels that are transmitted to the BCI2000 
+                           Signal Processing module. See the BCI2000 Project
+                           Outline for further information.                                                                        
+\end{description}
+
+
+\subsection{Assumptions}
+
+The USBamp source module assumes that the amplifier is not turned off during the 
+session. (Since the EEG display would stop, this is a fairly safe assumption.) 
+This assumption is made since it takes about 2.5 seconds to program new filter 
+settings into one USBamp (and correspondingly more time for more amps). Thus, 
+any click on \emph{Set Config} would be followed by a fairly long delay. In 
+consequence, the USBamp source module only programs the filter settings on the 
+first run or if the filter settings have changed.
+
+\subsection{Data Storage}
+
+Unlike other systems, the USBamp is a DC amplifier system that digitizes at 24 
+bit. Bandpass and notch filtering is performed on the digitized samples, 
+resulting in floating point signal samples in units of $\mu V$. Because BCI2000 
+currently only supports signed 16 bit integers, the floating point values have 
+to be converted back into integers before they can be stored and transmitted to 
+Signal Processing. This is done by the following transformation: 
+$sample_{stored}(A/D units)=\frac{sample_{acquired}(\mu V)}{SourceChGain}$. 
+(\emph{SourceChOffset} is assumed (and required) to be zero for all channels.) 
+BCI2000 Signal Processing or any offline analysis routine can derive, as with 
+any other BCI2000 source module, sample values in $\mu V$ by subtracting, from 
+each stored sample, \emph{SourceChOffset} (i.e., zero), and multiplying it with 
+\emph{SourceChGain} for each channel.
+
+Once BCI2000 is able to support floating point samples, this conversion can be 
+removed.
 
 \section{The \texttt{USBampgetinfo} Command Line Tool}
 
-This command line tool reads system settings from the \emph{Neuroscan Acquire} 
-server, displays them on a screen and creates a BCI2000 parameter file fragment 
-if desired. It can be used as follows: \texttt{neurogetparams -address 
-localhost:3999 -paramfile test.prm}. (The \emph{Acquire} server has to be 
-enabled before using this tool.) Once BCI2000 is configured correctly, this 
-parameter file fragment needs to be loaded on top of the existing configuration 
-to make sure that the settings match. You only need to repeat this procedure if 
-you change settings in \emph{Acquire} (\eg{} such as the number of channels or 
-the amplification).
+This command line tool displays all connected USBamps, including their serial 
+number and the USB port that they connect to. Further, this tool reads, for the 
+first of the connected amplifiers, all supported bandpass and notch filter 
+configurations. Thus, this tool can be used to determine which filters can be 
+used for a particular sampling frequency within BCI2000. The following is an 
+example screen output:
 
 \begin{verbatim}
-BCI2000 Parameter Tool for Neuroscan Acquire V4.3
-*******************************************************************
-(C)2004 Gerwin Schalk and Juergen Mellinger
-        Wadsworth Center, New York State Dept of Health, Albany, NY
-        Eberhardt-Karls University of Tuebingen, Germany
-*******************************************************************
-Signal Channels: 32
-Event Channels:  1
-Block Size:      40
-Sampling Rate:   1000
-Bits/Sample:     16
-Resolution:      0.168uV/LSB
-Parameter file test.prm successfully written
+*******************************************
+BCI2000 Information Tool for g.USBamp
+*******************************************
+(C)2004 Gerwin Schalk
+        Wadsworth Center
+        New York State Department of Health
+        Albany, NY, USA
+*******************************************
+Amp found at USB address 2 (S/N: UA-2004.08.03)
+Printing info for first amp (USB address 2)
+
+Available bandpass filters
+===================================
+num| hpfr  | lpfreq |  sfr | or | type
+===================================
+000|  0.00 |   15.0 |   32 |  3 | 1
+001|  0.01 |   15.0 |   32 |  3 | 1
+002|  0.10 |   15.0 |   32 |  3 | 1
+003|  0.50 |   15.0 |   32 |  3 | 1
+004|  2.00 |   15.0 |   32 |  3 | 1
+005|  0.00 |   30.0 |   64 |  3 | 1
+006|  0.01 |   30.0 |   64 |  3 | 1
+007|  0.10 |   30.0 |   64 |  3 | 1
+008|  0.50 |   30.0 |   64 |  3 | 1
+009|  2.00 |   30.0 |   64 |  3 | 1
+010|  0.00 |   30.0 |  128 |  4 | 1
+011|  0.00 |   60.0 |  128 |  4 | 1
+012|  0.01 |   30.0 |  128 |  2 | 1
+013|  0.01 |   60.0 |  128 |  2 | 1
+014|  0.10 |   30.0 |  128 |  3 | 1
+015|  0.10 |   60.0 |  128 |  3 | 1
+016|  0.50 |   30.0 |  128 |  3 | 1
+017|  0.50 |   60.0 |  128 |  4 | 1
+018|  2.00 |   30.0 |  128 |  3 | 1
+019|  2.00 |   60.0 |  128 |  4 | 1
+020|  0.00 |   30.0 |  256 |  4 | 1
+021|  0.00 |   60.0 |  256 |  4 | 1
+022|  0.00 |  100.0 |  256 |  4 | 1
+023|  0.01 |   30.0 |  256 |  2 | 1
+024|  0.01 |   60.0 |  256 |  2 | 1
+025|  0.01 |  100.0 |  256 |  2 | 1
+026|  0.10 |   30.0 |  256 |  2 | 1
+027|  0.10 |   60.0 |  256 |  2 | 1
+028|  0.10 |  100.0 |  256 |  2 | 1
+029|  0.50 |   30.0 |  256 |  2 | 1
+030|  0.50 |   60.0 |  256 |  3 | 1
+031|  0.50 |  100.0 |  256 |  3 | 1
+032|  2.00 |   30.0 |  256 |  2 | 1
+033|  2.00 |   60.0 |  256 |  3 | 1
+034|  2.00 |  100.0 |  256 |  4 | 1
+035|  5.00 |   30.0 |  256 |  2 | 1
+036|  5.00 |   60.0 |  256 |  3 | 1
+037|  5.00 |  100.0 |  256 |  4 | 1
+038|  0.00 |   30.0 |  512 |  4 | 1
+039|  0.00 |   60.0 |  512 |  4 | 1
+040|  0.00 |  100.0 |  512 |  4 | 1
+041|  0.00 |  200.0 |  512 |  4 | 1
+042|  0.01 |   30.0 |  512 |  1 | 1
+043|  0.01 |   60.0 |  512 |  1 | 1
+044|  0.01 |  100.0 |  512 |  2 | 1
+045|  0.01 |  200.0 |  512 |  2 | 1
+046|  0.10 |   30.0 |  512 |  1 | 1
+047|  0.10 |   60.0 |  512 |  1 | 1
+048|  0.10 |  100.0 |  512 |  2 | 1
+049|  0.10 |  200.0 |  512 |  2 | 1
+050|  0.50 |   30.0 |  512 |  1 | 1
+051|  0.50 |   60.0 |  512 |  1 | 1
+052|  0.50 |  100.0 |  512 |  2 | 1
+053|  0.50 |  200.0 |  512 |  2 | 1
+054|  2.00 |   30.0 |  512 |  2 | 1
+055|  2.00 |   60.0 |  512 |  2 | 1
+056|  2.00 |  100.0 |  512 |  4 | 1
+057|  2.00 |  200.0 |  512 |  4 | 1
+058|  5.00 |   30.0 |  512 |  2 | 1
+059|  5.00 |   60.0 |  512 |  2 | 1
+060|  5.00 |  100.0 |  512 |  3 | 1
+061|  5.00 |  200.0 |  512 |  3 | 1
+062|  0.00 |   30.0 |  600 |  4 | 1
+063|  0.00 |   60.0 |  600 |  4 | 1
+064|  0.00 |  100.0 |  600 |  4 | 1
+065|  0.00 |  200.0 |  600 |  4 | 1
+066|  0.00 |  250.0 |  600 |  4 | 1
+067|  0.01 |   60.0 |  600 |  1 | 1
+068|  0.01 |  100.0 |  600 |  2 | 1
+069|  0.01 |  200.0 |  600 |  2 | 1
+070|  0.01 |  250.0 |  600 |  2 | 1
+071|  0.10 |   60.0 |  600 |  2 | 1
+072|  0.10 |  100.0 |  600 |  3 | 1
+073|  0.10 |  200.0 |  600 |  3 | 1
+074|  0.10 |  250.0 |  600 |  3 | 1
+075|  0.50 |   30.0 |  600 |  2 | 1
+076|  0.50 |   60.0 |  600 |  2 | 1
+077|  0.50 |  100.0 |  600 |  3 | 1
+078|  0.50 |  200.0 |  600 |  3 | 1
+079|  0.50 |  250.0 |  600 |  3 | 1
+080|  2.00 |   30.0 |  600 |  2 | 1
+081|  2.00 |   60.0 |  600 |  2 | 1
+082|  2.00 |  100.0 |  600 |  3 | 1
+083|  2.00 |  200.0 |  600 |  3 | 1
+084|  2.00 |  250.0 |  600 |  4 | 1
+085|  5.00 |   30.0 |  600 |  2 | 1
+086|  5.00 |   60.0 |  600 |  2 | 1
+087|  5.00 |  100.0 |  600 |  3 | 1
+088|  5.00 |  200.0 |  600 |  3 | 1
+089|  5.00 |  250.0 |  600 |  4 | 1
+090|  0.00 |   30.0 | 1200 |  4 | 1
+091|  0.00 |   60.0 | 1200 |  4 | 1
+092|  0.00 |  100.0 | 1200 |  4 | 1
+093|  0.00 |  200.0 | 1200 |  4 | 1
+094|  0.00 |  250.0 | 1200 |  4 | 1
+095|  0.00 |  500.0 | 1200 |  4 | 1
+096|  0.01 |  100.0 | 1200 |  1 | 1
+097|  0.01 |  200.0 | 1200 |  2 | 1
+098|  0.01 |  250.0 | 1200 |  2 | 1
+099|  0.01 |  500.0 | 1200 |  2 | 1
+100|  0.10 |  100.0 | 1200 |  1 | 1
+101|  0.10 |  200.0 | 1200 |  2 | 1
+102|  0.10 |  250.0 | 1200 |  2 | 1
+103|  0.10 |  500.0 | 1200 |  2 | 1
+104|  0.50 |  100.0 | 1200 |  1 | 1
+105|  0.50 |  200.0 | 1200 |  2 | 1
+106|  0.50 |  250.0 | 1200 |  3 | 1
+107|  0.50 |  500.0 | 1200 |  4 | 1
+108|  2.00 |  100.0 | 1200 |  1 | 1
+109|  2.00 |  200.0 | 1200 |  2 | 1
+110|  2.00 |  250.0 | 1200 |  3 | 1
+111|  2.00 |  500.0 | 1200 |  4 | 1
+112|  5.00 |  100.0 | 1200 |  1 | 1
+113|  5.00 |  200.0 | 1200 |  2 | 1
+114|  5.00 |  250.0 | 1200 |  3 | 1
+115|  5.00 |  500.0 | 1200 |  4 | 1
+116|  0.00 |   30.0 | 2400 |  4 | 1
+117|  0.00 |   60.0 | 2400 |  4 | 1
+118|  0.00 |  100.0 | 2400 |  4 | 1
+119|  0.00 |  200.0 | 2400 |  4 | 1
+120|  0.00 |  250.0 | 2400 |  4 | 1
+121|  0.00 |  500.0 | 2400 |  4 | 1
+122|  0.00 | 1000.0 | 2400 |  4 | 1
+123|  0.01 |  200.0 | 2400 |  1 | 1
+124|  0.01 |  250.0 | 2400 |  1 | 1
+125|  0.01 |  500.0 | 2400 |  3 | 1
+126|  0.01 | 1000.0 | 2400 |  3 | 1
+127|  0.10 |  200.0 | 2400 |  2 | 1
+128|  0.10 |  250.0 | 2400 |  2 | 1
+129|  0.10 |  500.0 | 2400 |  3 | 1
+130|  0.10 | 1000.0 | 2400 |  3 | 1
+131|  0.50 |  200.0 | 2400 |  2 | 1
+132|  0.50 |  250.0 | 2400 |  2 | 1
+133|  0.50 |  500.0 | 2400 |  3 | 1
+134|  0.50 | 1000.0 | 2400 |  3 | 1
+135|  2.00 |  200.0 | 2400 |  2 | 1
+136|  2.00 |  250.0 | 2400 |  2 | 1
+137|  2.00 |  500.0 | 2400 |  3 | 1
+138|  2.00 | 1000.0 | 2400 |  3 | 1
+139|  5.00 |  200.0 | 2400 |  2 | 1
+140|  5.00 |  250.0 | 2400 |  2 | 1
+141|  5.00 |  500.0 | 2400 |  3 | 1
+142|  5.00 | 1000.0 | 2400 |  3 | 1
+143|  0.00 |   30.0 | 4800 |  4 | 1
+144|  0.00 |   60.0 | 4800 |  4 | 1
+145|  0.00 |  100.0 | 4800 |  4 | 1
+146|  0.00 |  200.0 | 4800 |  4 | 1
+147|  0.00 |  250.0 | 4800 |  4 | 1
+148|  0.00 |  500.0 | 4800 |  4 | 1
+149|  0.00 | 1000.0 | 4800 |  4 | 1
+150|  0.00 | 2000.0 | 4800 |  4 | 1
+151|  0.01 |  500.0 | 4800 |  2 | 1
+152|  0.01 | 1000.0 | 4800 |  2 | 1
+153|  0.01 | 2000.0 | 4800 |  2 | 1
+154|  0.10 |  500.0 | 4800 |  2 | 1
+155|  0.10 | 1000.0 | 4800 |  2 | 1
+156|  0.10 | 2000.0 | 4800 |  2 | 1
+157|  0.50 |  500.0 | 4800 |  2 | 1
+158|  0.50 | 1000.0 | 4800 |  2 | 1
+159|  0.50 | 2000.0 | 4800 |  2 | 1
+160|  2.00 |  500.0 | 4800 |  2 | 1
+161|  2.00 | 1000.0 | 4800 |  2 | 1
+162|  2.00 | 2000.0 | 4800 |  2 | 1
+163|  5.00 |  500.0 | 4800 |  2 | 1
+164|  5.00 | 1000.0 | 4800 |  2 | 1
+165|  5.00 | 2000.0 | 4800 |  2 | 1
+
+Available notch filters
+===================================
+num| hpfr  | lpfreq |  sfr | or | type
+===================================
+000| 40.00 |   60.0 |  128 |  2 | 1
+001| 50.00 |   63.0 |  128 |  2 | 1
+002| 40.00 |   60.0 |  256 |  2 | 1
+003| 50.00 |   70.0 |  256 |  2 | 1
+004| 40.00 |   60.0 |  512 |  2 | 1
+005| 50.00 |   70.0 |  512 |  2 | 1
+006| 40.00 |   60.0 |  600 |  2 | 1
+007| 50.00 |   70.0 |  600 |  2 | 1
+008| 40.00 |   60.0 | 1200 |  2 | 1
+009| 50.00 |   70.0 | 1200 |  2 | 1
+010| 40.00 |   60.0 | 2400 |  2 | 1
+011| 50.00 |   70.0 | 2400 |  2 | 1
+012| 40.00 |   60.0 | 4800 |  2 | 1
+013| 50.00 |   70.0 | 4800 |  2 | 1
 \end{verbatim}
 
 

@@ -113,16 +113,22 @@ gUSBampADC::~gUSBampADC()
 void gUSBampADC::Preflight( const SignalProperties&,
                                        SignalProperties& outSignalProperties ) const
 {
-  // Constants.
-  const size_t signalDepth = 2;
+// Constants.
+const size_t signalDepth = 2;
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   // # elements in SourceChGain has to match total # channels
   PreflightCondition( Parameter("SourceChGain")->GetNumValues() == Parameter("SoftwareCh") );
+  // # elements in SourceChOffset has to match total # channels
+  PreflightCondition( Parameter("SourceChOffset")->GetNumValues() == Parameter("SoftwareCh") );
 
   // SourceChGain is not supposed to be zero
+  // SourceChOffset is supposed to be zero
   for (int ch=0; ch<Parameter("SoftwareCh"); ch++)
+   {
    PreflightCondition( Parameter("SourceChGain", ch) > 0 );
+   PreflightCondition( abs(Parameter("SourceChOffset", ch)) < 0.0001 );
+   }
 
   // # devices has to equal # entries in SoftwareChDevices
   PreflightCondition( Parameter("DeviceIDs")->GetNumValues() == Parameter("SoftwareChDevices")->GetNumValues() );
