@@ -89,7 +89,11 @@ __fastcall TfMain::TfMain(TComponent* Owner)
   mProgressLegend->Caption = "";
   eDestinationFile->Enabled = false;
   eDestinationFile->Text = "<auto>";
-  
+
+  defaultSourceFilesWindowProc = mSourceFiles->WindowProc;
+  mSourceFiles->WindowProc = SourceFilesWindowProc;
+  ::DragAcceptFiles( mSourceFiles->Handle, true );
+
   if( Application->OnIdle == NULL )
     Application->OnIdle = DoStartupProcessing;
 }
@@ -213,6 +217,9 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 
 void __fastcall TfMain::bConvertClick(TObject *Sender)
 {
+ TButton* self = static_cast<TButton*>( Sender );
+ self->Enabled = false;
+#define EXIT {self->Enabled = true; return;} // sorry for this, jm
  mOffset.clear();
  mGain.clear();
 
@@ -264,7 +271,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      }
    }
    if( errorOccurred )
-     return;
+     EXIT;
 
    CheckCalibrationFile();
 
@@ -273,7 +280,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    if (!fp)
       {
       UserMessage( "Error opening output file", Error );
-      return;
+      EXIT;
       }
 
    gab_type val = numChannels;
@@ -283,7 +290,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    val = samplingRate;
    fwrite(&val, sizeof( val ), 1, fp);
  }
- 
+
  float maxRatio = 0.0;
  bool unexpectedTargetCode = false;
 
@@ -420,6 +427,8 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  Gauge->Progress=0;
  mProgressLegend->Caption = "";
  mProgressLegend->Invalidate();
+ EXIT;
+#undef EXIT
 }
 //---------------------------------------------------------------------------
 
@@ -526,4 +535,31 @@ void __fastcall TfMain::mSourceFilesChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TfMain::SourceFilesWindowProc( TMessage& msg )
+{
+  switch( msg.Msg )
+  {
+    case WM_DROPFILES:
+      {
+        HDROP handle = ( HDROP )msg.WParam;
+        size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
+        if( numFiles > 0 )
+        {
+          for( size_t i = 0; i < numFiles; ++i )
+          {
+            size_t nameLen = ::DragQueryFile( handle, i, NULL, 0 );
+            char* name = new char[ nameLen + 1 ];
+            ::DragQueryFile( handle, i, name, nameLen + 1 );
+            if( mSourceFiles->Lines->IndexOf( name ) == -1 )
+              mSourceFiles->Lines->Add( name );
+            delete[] name;
+          }
+        }
+        ::DragFinish( handle );
+      }
+      break;
+    default:
+      defaultSourceFilesWindowProc( msg );
+  }
+}
 

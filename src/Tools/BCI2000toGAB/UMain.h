@@ -37,8 +37,8 @@ __published:	// IDE-managed Components
         void __fastcall bOpenFileClick(TObject *Sender);
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall Button2Click(TObject *Sender);
-    void __fastcall mSourceFilesChange(TObject *Sender);
-        
+        void __fastcall mSourceFilesChange(TObject *Sender);
+
 private:	// User declarations
         typedef __int16 gab_type;
         const short* mpGabTargets;
@@ -54,6 +54,9 @@ private:	// User declarations
 
         typedef enum { Message, Warning, Error } msgtypes;
         void UserMessage( const AnsiString&, msgtypes ) const;
+
+        void __fastcall SourceFilesWindowProc( TMessage& msg );
+        TWndMethod defaultSourceFilesWindowProc;
 
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
