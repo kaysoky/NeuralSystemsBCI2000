@@ -788,7 +788,6 @@ VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
   while( memo->Lines->Count >= numLines )
     memo->Lines->Delete( 0 );
   memo->Lines->Add( s.c_str() );
-  memo->Text = memo->Text.SubString( 0, memo->Text.Length() - 2 );
   return true;
 }
 
