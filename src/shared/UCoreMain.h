@@ -150,7 +150,6 @@ private:     // User declarations
         // functions as if TfMain directly inherited from MessageHandler.
         // VCL quirks forbid that TfMain directly inherits from MessageHandler,
         // so we use the described construction instead.
-        bool HandleSTATUS(      std::istream& );
         bool HandlePARAM(       std::istream& );
         bool HandleSTATE(       std::istream& );
         bool HandleVisSignal(   std::istream& );

@@ -142,8 +142,9 @@ TfMain::HandleSTATEVECTOR( istream& is )
 #if( MODTYPE == EEGSRC )
     // The EEG source does not receive a signal, so handling must take place
     // on arrival of a STATEVECTOR message.
-    // This distinction could be easily avoided if the state vector was
-    // sent _after_ its associated signal.
+    // This distinction could be avoided if the state vector was
+    // sent _after_ its associated signal; then, all modules might call
+    // Process() from HandleSTATEVECTOR().
     if( mLastRunning ) // For the first "Running" block, Process() is called from
                        // HandleSTATE(), and may not be called here.
                        // For the first "Suspended" block, we need to call
@@ -280,6 +281,8 @@ TfMain::HandleResting()
 void
 TfMain::EnterRunningState()
 {
+  // Filters may have changed parameters when executing GenericFilter::Resting(),
+  // so we need to do an initialize every time we enter the Running state.
   Initialize();
   MessageHandler::PutMessage( mOperator, STATUS( THISMODULE " running", 201 + 2 * MODTYPE ) );
   mResting = false;
@@ -299,6 +302,11 @@ void
 TfMain::Initialize()
 {
   GenericFilter::HaltFilters();
+  // The first state vector written to disk is not the one
+  // received in response to the first EEG data block. Without re-initializing
+  // it, there would be state information from the end of the (possibly
+  // interrupted) previous run written with the first EEG data block.
+  mpStatevector->Initialize_StateVector( true );
 
   float samplingRate,
         sampleBlockSize;
