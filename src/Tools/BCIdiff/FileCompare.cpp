@@ -129,8 +129,6 @@ bool FileCompare::paramsDiffer()
 
 bool FileCompare::stateListsDiffer()
 {
-        bool differ=false;
-
         const STATELIST* stateL1=mFile1->getStateListPtr();
         const STATELIST* stateL2=mFile2->getStateListPtr();
 
@@ -140,8 +138,25 @@ bool FileCompare::stateListsDiffer()
                 return true;
         }
 
-        for(int i=0; i<stateL1->GetNumStates();i++)
+        bool differ=false;
+        bool containedInOtherList=false;
+        for(int i=0; i<stateL1->GetNumStates();++i)
         {
+                for(int j=0; j<stateL2->GetNumStates();++j)
+                {
+                        if(string(stateL1->GetStatePtr(i)->GetName())==string(stateL2->GetStatePtr(j)->GetName()))
+                                containedInOtherList=true;
+                }
+                if(!containedInOtherList)
+                {
+                        cout<<"State "<<i<<" has name "<<stateL1->GetStatePtr(i)->GetName()
+                                <<" in file "<<mFile1->getFileName()<<" and ist not contained "
+                                <<"in file "<<mFile2->getFileName()<<'\n';
+                        differ=true;
+                }
+                else
+                        containedInOtherList=false;
+                /*
                 if(string(stateL1->GetStatePtr(i)->GetName())!=string(stateL2->GetStatePtr(i)->GetName()))
                 {
                         cout<<"State "<<i<<" has name "<<stateL1->GetStatePtr(i)->GetName()
@@ -150,6 +165,24 @@ bool FileCompare::stateListsDiffer()
                                 <<mFile2->getFileName()<<'\n';
                         differ=true;
                 }
+                */
+        }
+        for(int i=0; i<stateL2->GetNumStates();++i)
+        {
+                for(int j=0; j<stateL1->GetNumStates();++j)
+                {
+                        if(string(stateL2->GetStatePtr(i)->GetName())==string(stateL1->GetStatePtr(j)->GetName()))
+                                containedInOtherList=true;
+                }
+                if(!containedInOtherList)
+                {
+                        cout<<"State "<<i<<" has name "<<stateL2->GetStatePtr(i)->GetName()
+                                <<" in file "<<mFile2->getFileName()<<" and ist not contained "
+                                <<"in file "<<mFile1->getFileName()<<'\n';
+                        differ=true;
+                }
+                else
+                        containedInOtherList=false;
         }
         return differ;
 }
@@ -179,10 +212,11 @@ bool FileCompare::currentStatesDiffer(bool omitTimes)
         return differ;
 }
 
-bool FileCompare::valuesDiffer(bool compareStates, bool omitTimes)
+bool FileCompare::valuesDiffer(bool omitData, bool omitStates, bool omitTimes)
 {
         bool differ=false;
         int num_vals_same=0;
+        int num_states_same=0;
         unsigned long max_num_samples=min(mFile1->getNumSamples(),mFile2->getNumSamples());
         int max_num_channels=min(mFile1->getNumChannels(),mFile2->getNumChannels());
 
@@ -190,32 +224,31 @@ bool FileCompare::valuesDiffer(bool compareStates, bool omitTimes)
         {
                 for(int mom_channel=0; mom_channel<max_num_channels; ++mom_channel)
                 {
-                        if(mFile1->readValue(mom_channel, mom_sample)==mFile2->readValue(mom_channel, mom_sample))
-                        {
-                                if(compareStates)
-                                {
-                                        mFile1->readStateVector(mom_sample);
-                                        mFile2->readStateVector(mom_sample);
-                                        if(currentStatesDiffer(omitTimes))
-                                                differ=true;
-                                        else
-                                                ++num_vals_same;
-                                }
-                                else
-                                        ++num_vals_same;
-                        }
-                        else
+                        if(mFile1->readValue(mom_channel, mom_sample)!=mFile2->readValue(mom_channel, mom_sample)&&!omitData)
                         {
                                 cout<<"Sample "<<mom_sample<<" on channel "<<mom_channel<<" has value "
                                         <<mFile1->readValue(mom_channel, mom_sample)<<" in file one and value "
                                         <<mFile2->readValue(mom_channel, mom_sample)<<" in file two. \n";
                                 differ=true;
                         }
+                        else
+                                ++num_vals_same;
+
+
+                }
+                if(!omitStates)
+                {
+                        mFile1->readStateVector(mom_sample);
+                        mFile2->readStateVector(mom_sample);
+                        if(currentStatesDiffer(omitTimes))
+                                differ=true;
+                        else
+                                ++num_states_same;
                 }
         }
 
         cout<<"The files "<<mFile1->getFileName()<<" and "<<mFile2->getFileName()<<" had "
-                <<num_vals_same<<" of "<<max_num_samples*max_num_channels<<" compared sample values that were the same. \n";
+                <<num_vals_same<<" of "<<max_num_samples*max_num_channels<<" compared sample values and that were the same. \n";
         cout<<'\n';
         return differ;
 }

@@ -14,7 +14,7 @@ public:
         bool numSamplesDiffer();
         bool paramsDiffer();
         bool stateListsDiffer();
-        bool valuesDiffer(bool compareStates, bool omitTimes);
+        bool valuesDiffer(bool omitData, bool omitStates, bool omitTimes);
 
 private:
         bool stateVectorLengthsDiffer();

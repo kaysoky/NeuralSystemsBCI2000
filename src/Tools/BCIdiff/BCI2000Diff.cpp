@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
                 " options are:\n"
                 " --help                \tshow this help\n"
                 " --no-parameters       \tdon't compare parameters\n"
+                " --no-init-states      \tdon't compare initial state lists and state names\n"
                 " --no-states           \tdon't compare state lists and state values\n"
                 " --no-data             \tdon't compare EEG data\n"
                 " --comp-times          \tcompare source and stimulus times\n"
@@ -26,6 +27,7 @@ int main(int argc, char* argv[])
 
         short fileNameCount=0;
         bool omitParameters=false;
+        bool omitInitStates=false;
         bool omitStates=false;
         bool omitData=false;
         bool omitTimes=true;
@@ -38,6 +40,8 @@ int main(int argc, char* argv[])
                 }
                 else if(string(argv[i])=="--no-parameters")
                         omitParameters=true;
+                else if(string(argv[i])=="--no-init-states")
+                        omitInitStates=true;
                 else if(string(argv[i])=="--no-states")
                         omitStates=true;
                 else if(string(argv[i])=="--no-data")
@@ -89,13 +93,14 @@ int main(int argc, char* argv[])
                 filesDiffer|=fileC1.paramsDiffer();
 
         bool compareStateVectors=false;
-        if(!omitStates)
+        if(!omitInitStates)
         {
-                compareStateVectors=!fileC1.stateListsDiffer();
+                omitStates==fileC1.stateListsDiffer();
                 filesDiffer|=!compareStateVectors;
         }
-        if(!omitData)
-                filesDiffer|=fileC1.valuesDiffer(compareStateVectors, omitTimes);
+
+        if(!omitData||!omitStates)
+                filesDiffer|=fileC1.valuesDiffer(omitData, omitStates, omitTimes);
 
         delete fileR1;
         delete fileR2;
