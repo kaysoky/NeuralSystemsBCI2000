@@ -459,7 +459,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
     signalPens( data.Channels() );
 
   // Background properties
-  const TColor backgroundColor = rand();//clBlack;
+  const TColor backgroundColor = clBlack;
   gdi[ backgroundBrush ] = ::CreateSolidBrush( backgroundColor );
 
   // Signal properties
