@@ -4,23 +4,23 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="DASSource.exe"/>
-    <OBJFILES value="obj\DASSource.obj obj\DAS1402.obj obj\UMain.obj obj\UStorage.obj 
-      obj\UVisConfig.obj obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj 
-      obj\UCoreMessage.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
-      obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
-      obj\BCIDirectry.obj obj\UGenericFilter.obj obj\UEnvironment.obj 
-      obj\UBCIError.obj"/>
+    <OBJFILES value="obj\DASSource.obj obj\UMain.obj obj\UStorage.obj obj\UVisConfig.obj 
+      obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
+      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
+      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj 
+      obj\DAS_ADC.obj obj\DASQueue.obj obj\DASUtils.obj obj\cbw32_imports.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\UMain.dfm ..\..\SHARED\UVisConfig.dfm"/>
-    <LIBFILES value="cbw32bc.lib"/>
+    <LIBFILES value=""/>
     <LIBRARIES value="vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;DAS_lib;DAS_lib"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -30,8 +30,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="DASSource.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="DAS_lib;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="DAS_lib;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -53,8 +53,6 @@
   </LINKER>
   <FILELIST>
       <FILE FILENAME="DASSource.cpp" FORMNAME="" UNITNAME="DASSource" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="DAS1402.cpp" FORMNAME="" UNITNAME="DAS1402" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="cbw32bc.lib" FORMNAME="" UNITNAME="cbw32bc" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\UStorage.cpp" FORMNAME="" UNITNAME="UStorage.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UVisConfig.cpp" FORMNAME="fVisConfig" UNITNAME="UVisConfig" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -72,6 +70,10 @@
       <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="DAS_ADC.cpp" FORMNAME="" UNITNAME="DAS_ADC" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="DASQueue.cpp" FORMNAME="" UNITNAME="DASQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="DAS_lib\DASUtils.cpp" FORMNAME="" UNITNAME="DASUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="DAS_lib\cbw32_imports.cpp" FORMNAME="" UNITNAME="cbw32_imports" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -178,10 +180,11 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=3
+Count=4
 Item0=_DEBUG
-Item1=_DEBUG;SIGNAL_BACK_COMPAT
-Item2=_DEBUG;ADC_DAS1402H;SIGNAL_BACK_COMPAT
+Item1=_DEBUG;OLDTYPE
+Item2=_DEBUG;SIGNAL_BACK_COMPAT
+Item3=_DEBUG;ADC_DAS1402H;SIGNAL_BACK_COMPAT
 
 [HistoryLists\hlIntOutputDir]
 Count=1
@@ -191,7 +194,7 @@ Item0=obj
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=
+RunParams=AUTOSTART 127.0.0.1
 Launcher=
 UseLauncher=0
 DebugCWD=
