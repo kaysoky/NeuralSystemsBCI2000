@@ -131,23 +131,8 @@ class GenericSignal
 #endif
 
   private:
-    template<typename T>
-    static void PutLittleEndian( std::ostream& os, const T& inValue )
-    {
-      T value = inValue;
-      for( int i = 0; i < sizeof( T ); ++i )
-      {
-        os.put( value & 0xff );
-        value >>= 8;
-      }
-    }
-    template<typename T>
-    static void GetLittleEndian( std::istream& is, T& outValue )
-    {
-      outValue = 0;
-      for( int i = 0; i < sizeof( T ); ++i )
-        outValue |= is.get() << ( i * 8 );
-    }
+    template<typename T> static void PutLittleEndian( std::ostream&, const T& );
+    template<typename T> static void GetLittleEndian( std::istream&, T& );
 
   private:
     SignalProperties                      mProperties;
