@@ -192,11 +192,15 @@ void __fastcall TfMain::CheckCalibrationFile( void )
   param = paramlist.GetParamPtr( "TargetOrientation" );
   if( param == NULL )
     param = data.GetParamListPtr()->GetParamPtr( "TargetOrientation" );
-  int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 );
+  int targetOrientation = ( param ? atoi( param->GetValue() ) : -1 );
   mTargetMax = 0;
 
   switch( targetOrientation )
   {
+    case -1: // It's a file with supposedly linear target numbering.
+      mpGabTargets = NULL;
+      mTargetMax = numberTargets;
+      break;
     case 0:
     case 3: // Both
       mpGabTargets = udlr;
@@ -353,7 +357,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      BCI2000DATA data;
      data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), BLOCKSIZE );
      int samples = data.GetNumSamples(),
-         channels = data.GetNumChannels();
+         channels = UserChannels( data.GetNumChannels() );
      for( int sample = 0; sample < samples; ++sample )
      {
        if( sample % 1000 == 0 )
@@ -393,7 +397,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
   BCI2000DATA data;
   data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), BLOCKSIZE );
   int samples=data.GetNumSamples(),
-      channels = data.GetNumChannels();
+      channels = UserChannels( data.GetNumChannels() );
 
   // go through all samples in each run
   for ( int sample=0; sample<samples; sample++)
@@ -486,17 +490,27 @@ __int16 TfMain::ConvertState(BCI2000DATA *bci2000data)
         restPeriod = statevector->GetStateValue( "RestPeriod" ),
         feedback = statevector->GetStateValue( "Feedback" );
 
-  if( ITI == 1 )
-    gabState = 20;
-  else if( restPeriod == 1 )
-    gabState = 24;
-  else if( targetCode > 0 )
+  if( targetCode <= mTargetMax )
   {
-    if( targetCode <= mTargetMax && mpGabTargets != NULL )
-      gabState = mpGabTargets[ targetCode - 1 ];
+    if( mpGabTargets != NULL )
+    {
+      if( ITI == 1 )
+        gabState = 20;
+      else if( restPeriod == 1 )
+        gabState = 24;
+      else if( targetCode > 0 )
+        gabState = mpGabTargets[ targetCode - 1 ];
+      else
+        gabState = 20;
+    }
+    else
+    {
+      if( feedback )
+        gabState = targetCode;
+      else
+        gabState = 20;
+    }
   }
-  else
-    gabState = 20;
 
   return gabState;
 }
@@ -601,5 +615,41 @@ void __fastcall TfMain::SourceFilesWindowProc( TMessage& msg )
     default:
       defaultSourceFilesWindowProc( msg );
   }
+}
+
+
+void __fastcall TfMain::mSubSetCheckboxClick(TObject *Sender)
+{
+  mSubSetEdit->Enabled = mSubSetCheckbox->Checked;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfMain::mSubSetEditChange(TObject *Sender)
+{
+  static AnsiString lastValue = "1";
+  bool goodEntry = true;
+  for( int i = 0; i < mSubSetEdit->Text.Length(); ++i )
+    goodEntry &= ::isdigit( mSubSetEdit->Text.c_str()[ i ] );
+  if( !goodEntry )
+  {
+    Beep();
+    mSubSetEdit->Text = lastValue;
+    mSubSetEdit->SelStart = mSubSetEdit->Text.Length();
+  }
+  else
+    lastValue = mSubSetEdit->Text;
+}
+//---------------------------------------------------------------------------
+
+int __fastcall TfMain::UserChannels( int inDefaultChannels ) const
+{
+  int returnValue = inDefaultChannels;
+  if( mSubSetCheckbox->Checked )
+  {
+    int userChannels = atoi( mSubSetEdit->Text.c_str() );
+    if( userChannels > 0 && userChannels <= inDefaultChannels )
+      returnValue = userChannels;
+  }
+  return returnValue;
 }
 

@@ -1,6 +1,6 @@
 object fMain: TfMain
-  Left = 492
-  Top = 265
+  Left = 673
+  Top = 408
   Width = 470
   Height = 416
   Caption = 'BCI2000toGAB'
@@ -51,59 +51,151 @@ object fMain: TfMain
   end
   object mProgressLegend: TLabel
     Left = 16
-    Top = 296
-    Width = 3
+    Top = 342
+    Width = 87
     Height = 13
-    Anchors = [akTop, akBottom]
+    Anchors = [akBottom]
+    Caption = '<progress legend>'
   end
-  object GroupBox3: TGroupBox
+  object mOptionsGroupBox: TGroupBox
+    Left = 16
+    Top = 176
+    Width = 433
+    Height = 129
+    Anchors = [akLeft, akRight, akBottom]
+    Caption = 'Options'
+    TabOrder = 3
+    DesignSize = (
+      433
+      129)
+    object Label3: TLabel
+      Left = 8
+      Top = 80
+      Width = 128
+      Height = 13
+      Anchors = [akLeft, akBottom]
+      Caption = 'Use external parameter file:'
+    end
+    object Label1: TLabel
+      Left = 112
+      Top = 25
+      Width = 65
+      Height = 13
+      Caption = 'channels only'
+    end
+    object mSubSetCheckbox: TCheckBox
+      Left = 8
+      Top = 24
+      Width = 65
+      Height = 17
+      Caption = 'Use first'
+      TabOrder = 0
+      OnClick = mSubSetCheckboxClick
+    end
+    object mSubSetEdit: TEdit
+      Left = 72
+      Top = 22
+      Width = 33
+      Height = 21
+      Enabled = False
+      TabOrder = 1
+      Text = '1'
+      OnChange = mSubSetEditChange
+    end
+    object Button2: TButton
+      Left = 8
+      Top = 100
+      Width = 33
+      Height = 21
+      Anchors = [akLeft, akBottom]
+      Caption = 'Find...'
+      TabOrder = 3
+      OnClick = Button2Click
+    end
+    object AutoscaleCheckbox: TCheckBox
+      Left = 8
+      Top = 50
+      Width = 273
+      Height = 23
+      Anchors = [akLeft, akBottom]
+      Caption = 'Auto-scale input signal to fit into 16-bit output signal'
+      Checked = True
+      State = cbChecked
+      TabOrder = 2
+    end
+    object ParameterFile: TEdit
+      Left = 48
+      Top = 100
+      Width = 377
+      Height = 21
+      Anchors = [akLeft, akRight, akBottom]
+      Enabled = False
+      TabOrder = 4
+      Text = '<none>'
+    end
+  end
+  object mOutputGroupBox: TGroupBox
     Left = 16
     Top = 117
     Width = 433
     Height = 49
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Output File'
-    TabOrder = 10
+    TabOrder = 2
+    DesignSize = (
+      433
+      49)
+    object eDestinationFile: TEdit
+      Left = 48
+      Top = 20
+      Width = 377
+      Height = 21
+      Anchors = [akLeft, akRight, akBottom]
+      TabOrder = 1
+      Text = 'c:\shared\raw\em180.raw'
+    end
+    object Button1: TButton
+      Left = 8
+      Top = 20
+      Width = 33
+      Height = 21
+      Anchors = [akLeft, akBottom]
+      Caption = 'Find...'
+      TabOrder = 0
+      OnClick = Button1Click
+    end
   end
-  object GroupBox2: TGroupBox
+  object mInputGroupBox: TGroupBox
     Left = 16
     Top = 8
     Width = 433
     Height = 94
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'BCI2000 File(s)'
-    TabOrder = 9
-  end
-  object mSourceFiles: TMemo
-    Left = 64
-    Top = 24
-    Width = 377
-    Height = 70
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    Lines.Strings = (
-      'c:\shared\raw\em180.dat')
-    ScrollBars = ssVertical
-    TabOrder = 6
-    OnChange = mSourceFilesChange
-  end
-  object GroupBox1: TGroupBox
-    Left = 16
-    Top = 176
-    Width = 433
-    Height = 102
-    Anchors = [akLeft, akRight, akBottom]
-    Caption = 'Options'
-    TabOrder = 8
+    TabOrder = 1
     DesignSize = (
       433
-      102)
-    object Label3: TLabel
+      94)
+    object bOpenFile: TButton
       Left = 8
-      Top = 45
-      Width = 128
-      Height = 13
-      Anchors = [akLeft, akBottom]
-      Caption = 'Use external parameter file:'
+      Top = 16
+      Width = 33
+      Height = 21
+      Caption = 'Find...'
+      TabOrder = 0
+      OnClick = bOpenFileClick
+    end
+    object mSourceFiles: TMemo
+      Left = 48
+      Top = 16
+      Width = 377
+      Height = 70
+      Anchors = [akLeft, akTop, akRight, akBottom]
+      Lines.Strings = (
+        'c:\shared\raw\em180.dat')
+      ScrollBars = ssVertical
+      TabOrder = 1
+      OnChange = mSourceFilesChange
     end
   end
   object bConvert: TButton
@@ -117,65 +209,6 @@ object fMain: TfMain
     TabOrder = 0
     OnClick = bConvertClick
   end
-  object eDestinationFile: TEdit
-    Left = 64
-    Top = 135
-    Width = 377
-    Height = 21
-    Anchors = [akLeft, akRight, akBottom]
-    TabOrder = 1
-    Text = 'c:\shared\raw\em180.raw'
-  end
-  object bOpenFile: TButton
-    Left = 24
-    Top = 24
-    Width = 33
-    Height = 21
-    Caption = 'Find...'
-    TabOrder = 2
-    OnClick = bOpenFileClick
-  end
-  object Button2: TButton
-    Left = 24
-    Top = 239
-    Width = 33
-    Height = 21
-    Anchors = [akLeft, akBottom]
-    Caption = 'Find...'
-    TabOrder = 4
-    OnClick = Button2Click
-  end
-  object ParameterFile: TEdit
-    Left = 64
-    Top = 239
-    Width = 377
-    Height = 21
-    Anchors = [akLeft, akRight, akBottom]
-    Enabled = False
-    TabOrder = 5
-    Text = '<none>'
-  end
-  object AutoscaleCheckbox: TCheckBox
-    Left = 24
-    Top = 192
-    Width = 273
-    Height = 23
-    Anchors = [akLeft, akBottom]
-    Caption = 'Auto-scale input signal to fit into 16-bit output signal'
-    Checked = True
-    State = cbChecked
-    TabOrder = 7
-  end
-  object Button1: TButton
-    Left = 24
-    Top = 135
-    Width = 33
-    Height = 21
-    Anchors = [akLeft, akBottom]
-    Caption = 'Find...'
-    TabOrder = 3
-    OnClick = Button1Click
-  end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
@@ -188,7 +221,7 @@ object fMain: TfMain
   end
   object OpenParameter: TOpenDialog
     Filter = '*.prm|*.prm|all files|*.*'
-    Left = 288
-    Top = 240
+    Left = 312
+    Top = 216
   end
 end

@@ -27,17 +27,22 @@ __published:	// IDE-managed Components
         TOpenDialog *OpenParameter;
         TMemo *mSourceFiles;
     TCheckBox *AutoscaleCheckbox;
-    TGroupBox *GroupBox1;
+    TGroupBox *mOptionsGroupBox;
     TLabel *Label3;
-    TGroupBox *GroupBox2;
-    TGroupBox *GroupBox3;
+    TGroupBox *mInputGroupBox;
+    TGroupBox *mOutputGroupBox;
     TLabel *mProgressLegend;
+    TCheckBox *mSubSetCheckbox;
+    TEdit *mSubSetEdit;
+    TLabel *Label1;
 
         void __fastcall bConvertClick(TObject *Sender);
         void __fastcall bOpenFileClick(TObject *Sender);
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall Button2Click(TObject *Sender);
         void __fastcall mSourceFilesChange(TObject *Sender);
+    void __fastcall mSubSetCheckboxClick(TObject *Sender);
+    void __fastcall mSubSetEditChange(TObject *Sender);
 
 private:	// User declarations
         typedef __int16 gab_type;
@@ -52,6 +57,8 @@ private:	// User declarations
 
         void __fastcall DoStartupProcessing( TObject*, bool& );
         bool mBatchMode;
+
+        int __fastcall UserChannels( int defaultChannels ) const;
 
         typedef enum { Message, Warning, Error } msgtypes;
         void UserMessage( const AnsiString&, msgtypes ) const;
