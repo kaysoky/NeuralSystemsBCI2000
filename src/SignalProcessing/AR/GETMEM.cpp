@@ -1,10 +1,9 @@
-#include "PCHIncludes.h"
+//#include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
 #include <math.h>
-#include <conio.h>
-#include <vcl.h>
+#include "UBCIError.h"
 #include "getmem.h"
 
 MEM::MEM( void )
@@ -236,9 +235,8 @@ int MEM::get_mem( void )
 
                 if(n_bins < 1)
                 {
-                        Application->MessageBox("Error for n_bins out of bounds",
-                                mtWarning,MB_ICONWARNING|MB_OK);
-                                return(-1);
+                  bciout << "Error for n_bins out of bounds" << std::endl;
+                  return(-1);
                 }
                 else
                         parms= 1;
@@ -337,9 +335,8 @@ void MEM::setData( int length, float values[] )
 
         if( length > MAXDATA )
         {
-                Application->MessageBox("Error: Data Exceeds Max Length",
-                        mtWarning,MB_ICONWARNING|MB_OK);
-                        return;
+          bciout << "Error: Data Exceeds Max Length" << std::endl;
+          return;
         }
                         
         sp_lth= length;
