@@ -20,6 +20,7 @@ TARGETS = obj\bci_tool.lib \
           bci_dat2stream.exe \
           bci_prm2stream.exe \
           bci_stream2asc.exe \
+          bci_stream2table.exe \
           CalibrationFilter.exe \
           ClassFilter.exe \
           Normalfilter.exe \
@@ -84,7 +85,7 @@ obj\bci_tool.lib: ${BCIOBJ}
 	&${AR} $@ +$**
 
 clean:
-	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK
+	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds
 
 distclean: clean
-	-${RM} *.exe *.~* *.tds *.il*
+	-${RM} *.exe *.~* *.il*
