@@ -15,7 +15,7 @@
 //         following:
 //         - There are two parameters that govern the behavior of the
 //           Localization class:
-//           "Localization" defines the language to translate the strings
+//           "Language" defines the language to translate the strings
 //           into; if its value matches one of the "LocalizedStrings" row
 //           labels, translations will be taken from that row; otherwise,
 //           strings will not be translated.
@@ -84,7 +84,8 @@
 
 // Name of the parameter that holds the localized strings.
 #define STRINGS_PARAM    "LocalizedStrings"
-#define LANG_PARAM       "Localization"
+#define LANG_PARAM       "Language"
+#define SECTION          "Localization"
 #define DEFAULT_LANGUAGE "Default" // A language ID that means "don't localize".
 
 using namespace std;
@@ -97,9 +98,9 @@ void
 Localization::Publish()
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "UsrTask string " LANG_PARAM "= " DEFAULT_LANGUAGE " " DEFAULT_LANGUAGE " % % //"
+    SECTION " string " LANG_PARAM "= " DEFAULT_LANGUAGE " " DEFAULT_LANGUAGE " % % //"
       " Language for user messages",
-    "UsrTask matrix " STRINGS_PARAM "= 0 0 % % % //"
+    SECTION " matrix " STRINGS_PARAM "= 0 0 % % % //"
       " Localized user messages",
   END_PARAMETER_DEFINITIONS
 }

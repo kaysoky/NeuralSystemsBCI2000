@@ -15,7 +15,7 @@
 //         following:
 //         - There are two parameters that govern the behavior of the
 //           Localization class:
-//           "Localization" defines the language to translate the strings
+//           "Language" defines the language to translate the strings
 //           into; if its value matches one of the "LocalizedStrings" row
 //           labels, translations will be taken from that row; otherwise,
 //           strings will not be translated.
