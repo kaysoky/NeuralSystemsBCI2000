@@ -316,13 +316,13 @@ fpos_t  pos;
     fprintf(fp, "[ State Vector Definition ] \r\n");
     for (int i=0; i<statelist->GetNumStates(); i++)
      {
-     fprintf(fp, statelist->GetStatePtr(i)->GetStateLine());
+     fprintf(fp, statelist->GetStatePtr(i)->GetStateLine().c_str());
      fprintf(fp, "\r\n");
      }
     fprintf(fp, "[ Parameter Definition ] \r\n");
     for (size_t i=0; i<paramlist->GetNumParameters(); i++)
      {
-     fprintf(fp, paramlist->GetParamPtr(i)->GetParamLine());
+     fprintf(fp, paramlist->GetParamPtr(i)->GetParamLine().c_str());
      fprintf(fp, "\r\n");
      }
     fprintf(fp, "\r\n");
