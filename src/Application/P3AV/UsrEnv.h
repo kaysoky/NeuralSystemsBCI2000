@@ -33,7 +33,7 @@ public:
   void HideElements(const ElementCollEnum eElementColl);
   void DisplayElements(const ElementCollEnum eElementColl, const UsrElementCollection::RenderModeEnum eRenderMode,
                        const unsigned int & uElementID);
-  void DisplayMessage(char * message);
+  void DisplayMessage(const char * message);
   void HideMessage(void);
   void InitializeAlgorithm(TTask * pTask, TApplication * pApplication);
   const unsigned int GenerateActiveElements(const unsigned int & uPhaseInSequence);

@@ -1,17 +1,18 @@
-#pragma hdrstop
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <dos.h>
 #include "PCHIncludes.h"
+#pragma hdrstop
+
 #include "Task.h"
-#include "UBCITime.h"
-#include "UGenericVisualization.h"
 #include "UsrEnv.h"
 #include "UsrEnvDispatcher.h"
 #include "UsrEnvAlgorithmP3AV.h"
 #include "WavePlayer.h"
+#include "UBCITime.h"
+#include "UGenericVisualization.h"
+#include "Localization.h"
+
+#include <string>
+
+using namespace std;
 
 RegisterFilter( TTask, 3 );
 
@@ -22,11 +23,14 @@ RegisterFilter( TTask, 3 );
 // Returns:    N/A
 // **************************************************************************
 TTask::TTask()
-            : m_pGenericVisualization( NULL ) ,
-              m_pUsrEnvDispatcher( new UsrEnvDispatcher(Parameters, States) ),
-              m_pUsrEnv( new UsrEnv(AnsiString("P3AVTask"), new UsrEnvAlgorithmP3AV) ),
-              m_pBCITime( new BCITIME ) 
+: mApplicationPath( ExtractFilePath(Application->ExeName).c_str() ),
+  mTaskLogVis( SOURCEID_TASKLOG ),
+  m_pUsrEnvDispatcher( new UsrEnvDispatcher(Parameters, States) ),
+  m_pUsrEnv( new UsrEnv(AnsiString("P3AVTask"), new UsrEnvAlgorithmP3AV) )
 {
+  if( mApplicationPath.empty()
+      || mApplicationPath[ mApplicationPath.length() - 1 ] != '\\' )
+    mApplicationPath += '\\';
 
   // window parameters
   BEGIN_PARAMETER_DEFINITIONS
@@ -117,6 +121,14 @@ TTask::TTask()
       "User comments for a specific run",
   END_PARAMETER_DEFINITIONS
 
+  LANGUAGES "German",
+  BEGIN_LOCALIZED_STRINGS
+   "TIME OUT !!!",
+           "Zeit abgelaufen!",
+   "Waiting to start ...",
+           "Warte ...",
+  END_LOCALIZED_STRINGS
+
   BEGIN_STATE_DEFINITIONS
     "SelectedStimulus 7 0 0 0",
     "StimulusTime 16 17528 0 0",
@@ -124,7 +136,7 @@ TTask::TTask()
     "StimulusCode 7 0 0 0",
     "StimulusType 1 0 0 0",
     "Flashing 1 0 0 0",
- END_STATE_DEFINITIONS
+  END_STATE_DEFINITIONS
 }
 
 //-----------------------------------------------------------------------------
@@ -138,188 +150,136 @@ TTask::TTask()
 // **************************************************************************
 TTask::~TTask()
 {
-  if (m_pGenericVisualization != NULL) delete m_pGenericVisualization;
-  if (m_pUsrEnv != NULL) delete m_pUsrEnv;
-  if (m_pUsrEnvDispatcher != NULL) delete m_pUsrEnvDispatcher;
-  if (m_pBCITime != NULL) delete m_pBCITime;
-
-  m_pGenericVisualization = NULL;
-  m_pUsrEnv = NULL;
-  m_pUsrEnvDispatcher = NULL;
-  m_pBCITime = NULL;
+  delete m_pUsrEnv;
+  delete m_pUsrEnvDispatcher;
 }
 
 
 void TTask::Preflight(const SignalProperties& inputProperties,
                             SignalProperties& outputProperties ) const
 {
-  bool bError = false;
-  std::vector< std::string > vParamNames;
-  vParamNames.clear();
-  // check all the parameters presence
-  vParamNames.push_back("WinXpos");
-  vParamNames.push_back("WinYpos");
-  vParamNames.push_back("WinWidth");
-  vParamNames.push_back("WinHeight");
-  vParamNames.push_back("WinBackgroundColor");
-  vParamNames.push_back("StimulusWidth");
-  vParamNames.push_back("CaptionHeight");
-  vParamNames.push_back("CaptionColor");
-  vParamNames.push_back("AudioVolume");
-  vParamNames.push_back("OnTime");
-  vParamNames.push_back("OffTime");
-  vParamNames.push_back("PreSequenceTime");
-  vParamNames.push_back("PostSequenceTime");
-  vParamNames.push_back("MinInterTime");
-  vParamNames.push_back("MaxInterTime");
-  vParamNames.push_back("AudioSwitch");
-  vParamNames.push_back("VideoSwitch");
-  vParamNames.push_back("CaptionSwitch");
-  vParamNames.push_back("Matrix");
-  vParamNames.push_back("FocusOn");
-  vParamNames.push_back("Result");
-  vParamNames.push_back("Sequence");
-  vParamNames.push_back("SequenceType");
-  vParamNames.push_back("NumberOfSeq");
-  vParamNames.push_back("InterpretMode");
-  vParamNames.push_back("ToBeCopied");
-  vParamNames.push_back("UserComment");
-  vParamNames.push_back("SampleBlockSize");
-
-  for (unsigned int i(0); i < vParamNames.size(); ++i)
+  // check all the parameters' presence
+  // This will be done from the framework some day.
+  const char* paramNames[] =
   {
-    if ((GetParamPtr(vParamNames[i]) == NULL) == true)
-    {
-      bcierr << vParamNames[i].c_str() << " parameter is not set" << std::endl;
-      bError = true;
-    }
-  }
-  vParamNames.clear();
-  if (bError == false)
-  {
-    if (atoi(GetParamPtr("OnTime")->GetValue()) == 0)
-    {
-      bcierr << "OnTime parameter can not be 0." << std::endl;
-      bError = true;
-    }
+    "WinXpos",
+    "WinYpos",
+    "WinWidth",
+    "WinHeight",
+    "WinBackgroundColor",
+    "StimulusWidth",
+    "CaptionHeight",
+    "CaptionColor",
+    "AudioVolume",
+    "OnTime",
+    "OffTime",
+    "PreSequenceTime",
+    "PostSequenceTime",
+    "MinInterTime",
+    "MaxInterTime",
+    "AudioSwitch",
+    "VideoSwitch",
+    "CaptionSwitch",
+    "Matrix",
+    "FocusOn",
+    "Result",
+    "Sequence",
+    "SequenceType",
+    "NumberOfSeq",
+    "InterpretMode",
+    "ToBeCopied",
+    "UserComment",
+    "SampleBlockSize",
+  };
+  for( int i = 0; i < sizeof( paramNames ) / sizeof( *paramNames ); ++i )
+    Parameter( paramNames[ i ] ); // This results in an error message if the
+                                  // parameter is missing.
+  if( Parameter( "OnTime" ) == 0 )
+    bcierr << "OnTime parameter can not be 0." << endl;
 
-    if (atoi(GetParamPtr("InterpretMode")->GetValue()) < 0 ||
-        atoi(GetParamPtr("InterpretMode")->GetValue()) > 2)
-    {
-      bcierr << "InterpretMode parameter can be only 0(none mode), 1(free mode), or 2(copy mode)" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("AudioSwitch")->GetValue()) < 0 ||
-        atoi(GetParamPtr("AudioSwitch")->GetValue()) > 1)
-    {
-      bcierr << "AudioSwitch parameter can be only 0(off), 1(on)" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("VideoSwitch")->GetValue()) < 0 ||
-        atoi(GetParamPtr("VideoSwitch")->GetValue()) > 1)
-    {
-      bcierr << "VideoSwitch parameter can be only 0(off), 1(on)" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("CaptionSwitch")->GetValue()) < 0 ||
-        atoi(GetParamPtr("CaptionSwitch")->GetValue()) > 1)
-    {
-      bcierr << "CaptionSwitch parameter can be only 0(off), 1(on)" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("MinInterTime")->GetValue()) > atoi(GetParamPtr("MaxInterTime")->GetValue()))
-    {
-      bcierr << "MinInterTime parameter can not be larger than MaxInterTime parameter" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("PreSequenceTime")->GetValue()) < 2 * atoi(GetParamPtr("OnTime")->GetValue()) ||
-        atoi(GetParamPtr("PostSequenceTime")->GetValue()) < 2 * atoi(GetParamPtr("OnTime")->GetValue()))
-    {
-      bcierr << "PreSequenceTime and PostSequenceTime parameters must be at least 2 times larger than OnTime parameter" << std::endl;
-      bError = true;
-    }
-  }
+  if( Parameter( "InterpretMode" ) < 0 || Parameter( "InterpretMode" ) > 2 )
+    bcierr << "InterpretMode parameter can be only "
+              "0(none mode), 1(free mode), or 2(copy mode)" << endl;
+
+  if( Parameter( "AudioSwitch" ) < 0 || Parameter( "AudioSwitch" ) > 1 )
+    bcierr << "AudioSwitch parameter can be only 0(off), 1(on)" << endl;
+
+  if( Parameter( "VideoSwitch" ) < 0 || Parameter( "VideoSwitch" ) > 1 )
+    bcierr << "VideoSwitch parameter can be only 0(off), 1(on)" << endl;
+
+  if( Parameter( "CaptionSwitch" ) < 0 || Parameter( "CaptionSwitch" ) > 1 )
+    bcierr << "CaptionSwitch parameter can be only 0(off), 1(on)" << endl;
+
+  if( Parameter( "MinInterTime" ) > Parameter( "MaxInterTime" ) )
+    bcierr << "MinInterTime parameter can not be larger than MaxInterTime parameter" << endl;
+
+  if( Parameter( "PreSequenceTime" ) < 2 * Parameter( "OnTime" )
+      || Parameter( "PostSequenceTime" ) < 2 * Parameter( "OnTime" ) )
+    bcierr << "PreSequenceTime and PostSequenceTime parameters must be"
+              " at least 2 times larger than OnTime parameter" << endl;
 
   // check stimuli matrix , FocusOn matrix, Result matrix
-  if (ErrorReadingMatrix("Matrix") || ErrorReadingMatrix("FocusOn") || ErrorReadingMatrix("Result"))
-    bError = true;
+  ErrorReadingMatrix("Matrix");
+  ErrorReadingMatrix("FocusOn");
+  ErrorReadingMatrix("Result");
 
   // now check the states
-  std::vector< std::string > vStateNames;
-  vStateNames.clear();
-  vStateNames.push_back("SelectedStimulus");
-  vStateNames.push_back("StimulusTime");
-  vStateNames.push_back("PhaseInSequence");
-  vStateNames.push_back("StimulusCode");
-  vStateNames.push_back("StimulusType");
-  vStateNames.push_back("Flashing");
-  vStateNames.push_back("StimulusCodeRes");
-  vStateNames.push_back("StimulusTypeRes");
-  vStateNames.push_back("Running");
-
-  if (Statevector != NULL)
-    for (unsigned int i(0); i < vStateNames.size(); ++i)
-    {
-      if ((Statevector->GetStateListPtr()->GetStatePtr(vStateNames[i].c_str()) == NULL) == true)
-      {
-        bcierr << vStateNames[i].c_str() << " state is not set" << std::endl;
-        bError = true;
-      }
-    }
-  vStateNames.clear();
+  const char* stateNames[] =
+  {
+    "SelectedStimulus",
+    "StimulusTime",
+    "PhaseInSequence",
+    "StimulusCode",
+    "StimulusType",
+    "Flashing",
+    // "StimulusCodeRes", // This state is accessed from UsrEnvDispatcher and
+                          // appears to be optional there.
+    "Running",
+  };
+  for( int i = 0; i < sizeof( stateNames ) / sizeof( *stateNames ); ++i )
+    State( stateNames[ i ] );  // This results in an error message if the
+                               // state is missing.
 
   // check whether sound card is present
-  const int WaveOutputDeviceCount = (int)waveOutGetNumDevs();
-  if (WaveOutputDeviceCount == 0)
-  {
-    bcierr << "Sound card is missing." << std::endl;
-    bError = true;
-  }
+  if( ::waveOutGetNumDevs() == 0 )
+    bcierr << "Sound card is missing." << endl;
 
-  if (bError)
-    PreflightCondition( false );
-  else
-  {
-    PreflightCondition( inputProperties >= SignalProperties( 1, 1 ) );
-    outputProperties = SignalProperties( 0, 0 );
-  }
+  PreflightCondition( inputProperties >= SignalProperties( 1, 1 ) );
+  outputProperties = SignalProperties( 0, 0 );
 } // Preflight
 
 
-const bool TTask::ErrorReadingMatrix(const AnsiString asMatrixName) const
+bool TTask::ErrorReadingMatrix( const string& sMatrixName ) const
 {
-  for( size_t i = 0; i < Parameter(asMatrixName.c_str())->GetNumValuesDimension2(); ++i )
+  bool result = false;
+  for( size_t i = 0; i < Parameter( sMatrixName )->GetNumValuesDimension2(); ++i )
   {
-    std::string applicationPath = ExtractFilePath(Application->ExeName).c_str();
     // check sound files
-    if (atoi(Parameter( "AudioSwitch" )->GetValue()) == 1)
+    if( Parameter( "AudioSwitch" ) == 1 )
     {
-      std::string soundFileName = ( const char* )Parameter(asMatrixName.c_str(), "audio", i );
-      if (soundFileName != "")
-         {
-         soundFileName = applicationPath + soundFileName;
-         if (ErrorLoadingAudioFile(soundFileName) == true)
-            return true;
-         }
+      string soundFileName = ( const char* )Parameter( sMatrixName.c_str(), "audio", i );
+      if( soundFileName != "" )
+      {
+        soundFileName = mApplicationPath + soundFileName;
+        result = result || ErrorLoadingAudioFile( soundFileName );
+      }
     }
-
     // check icon files
-    if (atoi(Parameter( "VideoSwitch" )->GetValue()) == 1)
+    if( Parameter( "VideoSwitch" ) == 1 )
     {
-      std::string iconFileName = ( const char* )Parameter(asMatrixName.c_str(), "icon", i );
-      if (iconFileName != "")
-         {
-         iconFileName = applicationPath + iconFileName;
-         if (ErrorLoadingVideoFile(iconFileName) == true)
-           return true;
-         }
+      string iconFileName = ( const char* )Parameter( sMatrixName.c_str(), "icon", i );
+      if( iconFileName != "" )
+      {
+        iconFileName = mApplicationPath + iconFileName;
+        result = result || ErrorLoadingVideoFile( iconFileName );
+      }
     }
   }
-  return false;
+  return result;
 }
 
 
-const bool TTask::ErrorLoadingAudioFile(std::string sAudioFile) const
+bool TTask::ErrorLoadingAudioFile( const string& sAudioFile ) const
 {
   TWavePlayer testPlayer;
   TWavePlayer::Error err;
@@ -327,21 +287,22 @@ const bool TTask::ErrorLoadingAudioFile(std::string sAudioFile) const
     err = testPlayer.AttachFile(sAudioFile.c_str());
   if( err == TWavePlayer::fileOpeningError )
   {
-    bcierr << "Could not open \"" << sAudioFile << "\" as a sound file" << std::endl;
+    bcierr << "Could not open \"" << sAudioFile << "\" as a sound file" << endl;
     return true;
   }
   else if( err != TWavePlayer::noError )
   {
-    bcierr << "Some general error prevents wave audio playback" << std::endl;
+    bcierr << "Some general error prevents wave audio playback" << endl;
     return true;
   }
   return false;
 } // ErrorLoadingAudioFile
 
 
-const bool TTask::ErrorLoadingVideoFile(std::string sVideoFile) const
+bool TTask::ErrorLoadingVideoFile( const string& sVideoFile ) const
 {
-  TImage * pIcon = new TImage(Application);
+  string errorText = "";
+  TImage * pIcon = new TImage(static_cast<TComponent*>(NULL));
   try
   {
     if (Parameter( "VideoSwitch" ) == 1)
@@ -349,33 +310,24 @@ const bool TTask::ErrorLoadingVideoFile(std::string sVideoFile) const
   }
   catch(EInOutError & )
   {
-    bcierr << "Input/Output error for \"" << sVideoFile << std::endl;
-    delete pIcon;
-    pIcon = NULL;
-    return true;
+    errorText = "Input/Output error";
   }
   catch(EInvalidGraphic & )
   {
-    bcierr << "Invalid Graphic error for \"" << sVideoFile << std::endl;
-    delete pIcon;
-    pIcon = NULL;
-    return true;
+    errorText = "Invalid Graphic error";
   }
   catch (EFOpenError &)
   {
-    bcierr << "Opening error for \"" << sVideoFile << std::endl;
-    delete pIcon;
-    pIcon = NULL;
-    return true;
+    errorText = "Opening error";
   }
   catch(Exception &)
   {
-    bcierr << "Error loading \"" << sVideoFile << std::endl;
-    delete pIcon;
-    pIcon = NULL;
-    return true;
+    errorText = "General error";
   }
-  return false;
+  delete pIcon;
+  if( !errorText.empty() )
+    bcierr << errorText << " for \"" << sVideoFile << "\"" << endl;
+  return !errorText.empty();
 } // ErrorLoadingVideoFile
 
 
@@ -385,16 +337,9 @@ const bool TTask::ErrorLoadingVideoFile(std::string sVideoFile) const
 // Parameters: 
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize(void)
+void TTask::Initialize()
 {
-  if (m_pGenericVisualization != NULL)
-  {
-    delete m_pGenericVisualization;
-    m_pGenericVisualization = NULL;
-  }
-  m_pGenericVisualization = new GenericVisualization;
-  m_pGenericVisualization->SetSourceID(SOURCEID_TASKLOG);
-  m_pGenericVisualization->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+  mTaskLogVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
   // initialize user environment
   if (m_pUsrEnv != NULL)
@@ -426,13 +371,13 @@ void TTask::Initialize(void)
 void TTask::Process( const GenericSignal* Input,
                            GenericSignal* Output )
 {
-  const std::vector< float > & signals = Input->GetChannel( 0 );
+  const vector< float > & signals = Input->GetChannel( 0 );
 
   // creates a new state of the user environment
   if (m_pUsrEnvDispatcher != NULL)
-    m_pUsrEnvDispatcher->Process(signals, m_pUsrEnv, Statevector, m_pGenericVisualization);
+    m_pUsrEnvDispatcher->Process( signals, m_pUsrEnv, Statevector, &mTaskLogVis );
 
   // write the current time, i.e., the "StimulusTime" into the state vector
-  State( "StimulusTime" ) = m_pBCITime->GetBCItime_ms();
+  State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
 }
 

@@ -6,6 +6,7 @@
 #include "UsrEnvAlgorithmP3AV.h"
 #include "UParameter.h"
 #include "Task.h"
+#include "Localization.h"
 
 // **************************************************************************
 // Function:   UsrEnv
@@ -22,7 +23,7 @@ UsrEnv::UsrEnv(const AnsiString & asTaskName, UsrEnvAlgorithm * pAlgorithm)
   m_pAlgorithm = pAlgorithm;
 
   // create a new form
-  m_pForm = new TForm(Application);
+  m_pForm = new TForm(static_cast<TComponent*>(NULL));
   m_pForm->Top     = 50;
   m_pForm->Left    = 50;
   m_pForm->Width   = 300;
@@ -36,7 +37,7 @@ UsrEnv::UsrEnv(const AnsiString & asTaskName, UsrEnvAlgorithm * pAlgorithm)
   m_pForm->BorderStyle = bsNone;
 
   // create a new 
-  m_pMessage = new TLabel(m_pForm);
+  m_pMessage = new TLabel(static_cast<TComponent*>(NULL));
   m_pMessage->Parent  = m_pForm;
   m_pMessage->Visible = false;
 } // UsrEnv
@@ -68,9 +69,14 @@ UsrEnv::~UsrEnv()
 void UsrEnv::Initialize(TTask * pTask, TApplication * pApplication, const int & iTop, const int & iLeft,
                         const int & iWidth,const int & iHeight, TColor color)
 {
+#if 0 // Do we actually want to flash the window on every Initialize()?
   if (m_pForm != NULL)
     if (m_pForm->Visible == true)
       m_pForm->Close();
+#endif
+
+  // Translate any strings visible on the form.
+  ApplyLocalizations( m_pForm );
       
   // Initialize usr element collection
   InitializeAlgorithm(pTask , pApplication);
@@ -78,7 +84,7 @@ void UsrEnv::Initialize(TTask * pTask, TApplication * pApplication, const int & 
   // set the window position, size, and background color
   SetWindowSize(iTop, iLeft, iWidth, iHeight, color);
 
-  DisplayMessage("Waiting to start ...");
+  DisplayMessage( LocalizableString( "Waiting to start ..." ) );
 
   // show the user window
   if (m_pForm != NULL)
@@ -157,7 +163,7 @@ void UsrEnv::HideMessage(void)
 // Returns:    void
 //
 // **************************************************************************
-void UsrEnv::DisplayMessage(char * message)
+void UsrEnv::DisplayMessage(const char * message)
 {
   if (m_pForm != NULL)
   {

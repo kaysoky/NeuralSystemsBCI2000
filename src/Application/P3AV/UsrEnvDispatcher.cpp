@@ -10,6 +10,7 @@
 #include "UsrElementCollection.h"
 #include "UsrEnvAlgorithmP3AV.h"
 #include "UGenericVisualization.h"
+#include "Localization.h"
 #include <limits>
 
 // **************************************************************************
@@ -181,7 +182,7 @@ void UsrEnvDispatcher::SuspendUsrEnv(UsrEnv * pUsrEnv, STATEVECTOR * pStateVecto
   if (pUsrEnv != NULL)
   {
     pUsrEnv->HideElements(UsrEnv::COLL_ALL);   // hide all active elements
-    pUsrEnv->DisplayMessage("TIME OUT !!!");
+    pUsrEnv->DisplayMessage( LocalizableString( "TIME OUT !!!" ) );
   }
   if (pStateVector != NULL)
   {
