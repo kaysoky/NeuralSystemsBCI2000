@@ -46,6 +46,10 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
         slist->AddState2List("Feedback 2 0 0 0\n");
         slist->AddState2List("IntertrialInterval 2 1 0 0\n");
         slist->AddState2List("RestPeriod 2 0 0 0\n");
+        slist->AddState2List("CursorPosX 16 0 0 0\n");
+        slist->AddState2List("CursorPosY 16 0 0 0\n");
+
+
 
         User->SetUsr( plist, slist );
 
@@ -69,7 +73,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         STATELIST *slist;
         AnsiString FInit,SSes,SName,AName;
         BCIDtry *bcidtry;
-        char FName[120];
+        char FName[256];
         char slash[2];
         time_t ctime;
         struct tm *tblock;
@@ -136,7 +140,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 
         User->Initialize( plist, slist );
         User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
-
+        User->Scale( (float)0x7fff, (float)0x7fff );
         ComputeTargets( Ntargets );
         targetcount= 0;
         ranflag= 0;
@@ -201,6 +205,8 @@ void TTask::WriteStateValues(STATEVECTOR *statevector)
         statevector->SetStateValue("IntertrialInterval",CurrentIti);
         statevector->SetStateValue("Running",CurrentRunning);
         statevector->SetStateValue("RestPeriod",CurrentRest);
+        statevector->SetStateValue("CursorPosX",(int)x_pos*User->scale_x );
+        statevector->SetStateValue("CursorPosY",(int)y_pos*User->scale_y );
 }
 
 void TTask::ComputeTargets( int ntargs )
@@ -267,6 +273,9 @@ void TTask::TestCursorLocation( float x, float y )
 {
         int i;
 
+        x*= User->scale_x;
+        y*= User->scale_y;
+        
         if( x > ( limit_right - TargetWidth ) )
         {
                 User->PutCursor( x_pos, y_pos, clYellow );
@@ -454,6 +463,8 @@ void TTask::Ptp( void )
 
                 x_pos= cursor_x_start;
                 y_pos= cursor_y_start;
+                if( User->scale_x > 0.0 ) x_pos/= User->scale_x;
+                if( User->scale_y > 0.0 ) y_pos/= User->scale_y;
                 User->PutCursor( x_pos, y_pos, clRed );
                 CurrentFeedback= 1;
                 PtpTime= 0;

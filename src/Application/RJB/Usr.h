@@ -32,9 +32,13 @@ private:	// User declarations
         float limit_bottom;
         float limit_left;
         float limit_right;
+        float xscalef;
+        float yscalef;
 
 public:		// User declarations
-
+        float scale_x;
+        float scale_y;
+        void Scale( float , float );
         float ran1( long *idem );       // from Press et al
         void GetLimits( float *, float *, float *, float * );
        // void TestCursorLocation( float x, float y );

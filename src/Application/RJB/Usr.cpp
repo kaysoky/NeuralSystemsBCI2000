@@ -81,7 +81,19 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
        User->Show();
 }
 //----------------------------------------------------------------------------
+//
+//factors (x and y) to transform to normalized areas
+//  ( 0x7fff ) y to bottom-top and  x to right-left
+//
+void TUser::Scale( float x, float y )
+{
+        if( x != 0.0 ) scale_x= (limit_right-limit_left) / x;
+        else scale_x= 1.0;
+        if( y != 0.0 ) scale_y= (limit_bottom-limit_top) / y;
+        else scale_y= 1.0;
+}
 
+//-----------------------------------------------------------------------------
 void TUser::GetLimits(float *right, float *left, float *top, float *bottom )
 {
         *(right) = limit_right;
@@ -93,6 +105,8 @@ void TUser::GetLimits(float *right, float *left, float *top, float *bottom )
 //----------------------------------------------------------------------------
 void TUser::PutCursor(float x, float y, TColor color )
 {
+        x*= scale_x;
+        y*= scale_y;
 
         if( y <= limit_top )    y= limit_top;
         if( y >= limit_bottom ) y= limit_bottom;
