@@ -42,7 +42,7 @@ char    line[512];
  plist->AddParameter2List(line,strlen(line));
  strcpy(line,"P3Speller string TextColorIntensified= 0x000000FF 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
  plist->AddParameter2List(line,strlen(line));
- strcpy(line,"P3Speller string TextToSpell= P P A Z // Character to focus on in offline mode");
+ strcpy(line,"P3Speller string TextToSpell= P P A Z // Character or string to spell in offline mode");
  plist->AddParameter2List(line,strlen(line));
 
  vis=NULL;
@@ -108,7 +108,6 @@ int     ret;
   TextColor=(TColor)strtol(plist->GetParamPtr("TextColor")->GetValue(), NULL, 16);
   TextColorIntensified=(TColor)strtol(plist->GetParamPtr("TextColorIntensified")->GetValue(), NULL, 16);
   TextToSpell=AnsiString(plist->GetParamPtr("TextToSpell")->GetValue());
-  chartospell=TextToSpell;  // in case one wanted to step through all characters of TextToSpell
   if (atoi(plist->GetParamPtr("OnlineMode")->GetValue()) == 1)
      onlinemode=true;
   else
@@ -391,11 +390,14 @@ void TRIALSEQUENCE::GetReadyForTrial()
 // **************************************************************************
 void TRIALSEQUENCE::SetUserDisplayTexts()
 {
+ // if we are in offline mode, then ...
  if (!onlinemode)
-    userdisplay->statusbar->goaltext=chartospell;
- else
+    {
+    chartospell=TextToSpell.SubString(char2spellidx, 1);
+    userdisplay->statusbar->goaltext=TextToSpell+" ("+chartospell+")";
+    }
+ else // if we are in online mode
     userdisplay->statusbar->goaltext="";
- userdisplay->statusbar->resulttext="";
 }
 
 

@@ -204,6 +204,7 @@ int     i;
   response[i]=0;
   }
 
+
  postsequence=false;
  presequence=false;
  if (presetinterval > 0) presequence=true;
@@ -312,11 +313,13 @@ int     i;
  if (postsequence)
     {
     statevector->SetStateValue("PhaseInSequence", 3);
-    if (postsequencecount > postsetinterval)
+    if ((postsequencecount > postsetinterval) && (!postpostsequence))
        {
        // determine predicted character
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
        userdisplay->statusbar->resulttext += predchar;
+       trialsequence->char2spellidx++;
+       trialsequence->SetUserDisplayTexts();
        userdisplay->DisplayStatusBar();
 
        // write the results in the log file
@@ -332,18 +335,34 @@ int     i;
        sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
        vis->SendMemo2Operator(memotext);
 
-       // if we are in offline mode, suspend the run
-       // otherwise, just reset the task sequence and continue
+       // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
+       // if we are in online mode, just reset the task sequence and continue
        if (!trialsequence->onlinemode)
           {
-          statevector->SetStateValue("Running", 0);
-          running=0;
-          trialsequence->SuspendTrial();
+          // we want the postsequence just one cycle longer so that the final
+          // classification result gets reflected in the file
+          if (trialsequence->char2spellidx > trialsequence->TextToSpell.Length())
+             postpostsequence=true;
+          else
+             ResetTaskSequence();
           }
        else
           ResetTaskSequence();
 
-       postsequence=false;
+       // always end the postsequence, except when we tuck on one extra cycle at the end of the offline mode
+       if (!postpostsequence) postsequence=false;
+       }
+    else
+       {
+       // turn it off one cycle afterwards; now, the classification of the final character is reflected in the file
+       if (postpostsequence)
+          {
+          postpostsequence=false;
+          postsequence=false;
+          statevector->SetStateValue("Running", 0);
+          running=0;
+          trialsequence->SuspendTrial();
+          }
        }
     postsequencecount++;
     }
@@ -397,6 +416,7 @@ int     ret;
  // has the system been restarted ?
  if ((running == 1) && (oldrunning == 0))
     {
+    postpostsequence=false;
     cur_runnr++;
     ResetTaskSequence();
     vis->SendMemo2Operator("******************************\r");
@@ -406,6 +426,8 @@ int     ret;
        sprintf(memotext, "Start of run %d in offline mode\r", cur_runnr);
     vis->SendMemo2Operator(memotext);
     fprintf(logfile, "******************************\r\n%s\n", memotext);
+    trialsequence->char2spellidx=1;
+    userdisplay->statusbar->resulttext="";
     trialsequence->SetUserDisplayTexts();
     }
 

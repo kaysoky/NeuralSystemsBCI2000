@@ -19,7 +19,7 @@ class TRIALSEQUENCE
 {
 private: 	// User declarations
         int     ontime, offtime;                   // in units of SampleBlocks
-        bool    cur_on;   
+        bool    cur_on;
         int     cur_trialsequence;                 // current sequence within trial
         int     cur_sequence;                      // how many total intensifications did we have
         CORECOMM        *corecomm;
@@ -31,7 +31,6 @@ private: 	// User declarations
         TColor  TextColor, TextColorIntensified;
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
-        AnsiString      TextToSpell, chartospell;
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
@@ -48,5 +47,7 @@ public:		// User declarations
         void            SuspendTrial();
         void            GetReadyForTrial();
         void            SetUserDisplayTexts();
+        int             char2spellidx;
+        AnsiString      TextToSpell, chartospell;
 };
 #endif

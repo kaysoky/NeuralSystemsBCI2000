@@ -35,7 +35,7 @@ private:
         void            ResetTaskSequence();
         void            ProcessPostSequence();
         void            ProcessPreSequence();
-        bool            postsequence, presequence;
+        bool            postsequence, presequence, postpostsequence;
         int             postsequencecount, presequencecount;
         AnsiString      DeterminePredictedCharacter();
         FILE            *logfile;
