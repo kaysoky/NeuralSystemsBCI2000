@@ -77,22 +77,13 @@ MATFile *pmat;
     return;
     }
 
- totalsamples=GetNumSamples();
+ // totalsamples=GetNumSamples();
+ totalsamples=0;
  cur_totalsample=0;
  channels=bci2000data->GetNumChannels();
  samplingrate=bci2000data->GetSampleFrequency();
  for (i=0; i < MAX_STATES; i++)
   state_var[i]=NULL;
-
- // initialize Batlab
- // create Matlab variables, if we want to export
- if (exportmatlab)
-    {
-    ret=InitMatlabEngine();
-    if (ret == -1) return;
-    signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
-    mxSetName(signal, "signal");
-    }
 
  firstrun= bci2000data->GetFirstRunNumber();
  lastrun= bci2000data->GetLastRunNumber();
@@ -103,10 +94,11 @@ MATFile *pmat;
  consistent=true;
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
-  if (cStateListBox->Checked[cur_run-firstrun])         // only for checked runs
+  if (cRunListBox->Checked[cur_run-firstrun])         // only for checked runs
      {
      bci2000data->SetRun(cur_run);
      numsamples=bci2000data->GetNumSamples();
+     totalsamples += numsamples;
      numstates=bci2000data->GetStateListPtr()->GetNumStates();
      if ((numstates != oldnumstates) && (oldnumstates != -1))
         consistent=false;
@@ -119,6 +111,16 @@ MATFile *pmat;
     {
     Application->MessageBox("Runs are not consistent (e.g., different # states)", "Error", MB_OK);
     return;
+    }
+
+ // initialize Batlab
+ // create Matlab variables, if we want to export
+ if (exportmatlab)
+    {
+    ret=InitMatlabEngine();
+    if (ret == -1) return;
+    signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
+    mxSetName(signal, "signal");
     }
 
  // open destination file
@@ -172,20 +174,18 @@ MATFile *pmat;
     }
 
  // go through each run
- Gauge->MinValue=0;
- Gauge->Progress=0;
- Gauge->MaxValue=totalsamples;
+ Gauge->MinValue=firstrun;
+ Gauge->MaxValue=lastrun;
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
-  if (cStateListBox->Checked[cur_run-firstrun])
+  Gauge->Progress=cur_run;
+  if (cRunListBox->Checked[cur_run-firstrun])
      {
      bci2000data->SetRun(cur_run);
      numsamples=bci2000data->GetNumSamples();
      // go through all samples in each run
      for (sample=0; sample<numsamples; sample++)
       {
-      if (cur_totalsample % 100 == 0)
-         Gauge->Progress=cur_totalsample;
       // read the state vector
       bci2000data->ReadStateVector(sample);
       cur_trial=IncrementTrial(cur_trial, bci2000data->GetStateVectorPtr());
