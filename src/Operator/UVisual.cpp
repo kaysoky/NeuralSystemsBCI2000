@@ -314,7 +314,7 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
   for( int i = 0; i > userScaling; --i )
     ReduceSignal();
 
-  size_t newNumSamples;
+  size_t newNumSamples = mNumSamples;
   inConfig.Get( CFGID::NUMSAMPLES, newNumSamples );
   SetNumSamples( newNumSamples );
   inConfig.Get( CFGID::channelGroupSize, mChannelGroupSize );
@@ -1055,8 +1055,8 @@ VISUAL::Graph::FormPaint( TObject* Sender )
 ////////////////////////////////////////////////////////////////////////////////
 VISUAL::Memo::Memo( id_type inSourceID )
 : VisualBase( inSourceID ),
-  memo( new TMemo( ( TComponent* )NULL ) ),
-  numLines( 0 )
+  mpMemo( new TMemo( ( TComponent* )NULL ) ),
+  mNumLines( 0 )
 {
   Restore();
 }
@@ -1064,16 +1064,16 @@ VISUAL::Memo::Memo( id_type inSourceID )
 VISUAL::Memo::~Memo()
 {
   Save();
-  delete memo;
+  delete mpMemo;
 }
 
 void
 VISUAL::Memo::SetConfig( config_settings& inConfig )
 {
   VisualBase::SetConfig( inConfig );
-  inConfig.Get( CFGID::numLines, numLines );
-  if( numLines < 1 )
-    numLines = numeric_limits<int>::max();
+  inConfig.Get( CFGID::numLines, mNumLines );
+  if( mNumLines < 1 )
+    mNumLines = numeric_limits<int>::max();
 }
 
 void
@@ -1083,20 +1083,20 @@ VISUAL::Memo::Restore()
     form = new TVisForm();
   VisualBase::Restore();
   form->Show();
-  memo->Visible = false;
-  memo->Parent = form;
-  memo->BoundsRect = form->ClientRect;
-  memo->Anchors << akLeft << akTop << akRight << akBottom;
-  memo->ScrollBars = ssVertical;
-  memo->ReadOnly = true;
-  memo->Visible = true;
+  mpMemo->Visible = false;
+  mpMemo->Parent = form;
+  mpMemo->BoundsRect = form->ClientRect;
+  mpMemo->Anchors << akLeft << akTop << akRight << akBottom;
+  mpMemo->ScrollBars = ssVertical;
+  mpMemo->ReadOnly = true;
+  mpMemo->Visible = true;
 }
 
 void
 VISUAL::Memo::Save() const
 {
   VisualBase::Save();
-  visconfigs[ sourceID ].Put( CFGID::numLines, numLines, MessageDefined );
+  visconfigs[ sourceID ].Put( CFGID::numLines, mNumLines, MessageDefined );
 }
 
 void
@@ -1115,16 +1115,16 @@ VISUAL::Memo::HandleMessage( const VisMemo& v )
 void
 VISUAL::Memo::InstanceHandleMessage( const VisMemo& v )
 {
-  while( memo->Lines->Count >= numLines )
-    memo->Lines->Delete( 0 );
+  while( mpMemo->Lines->Count >= mNumLines )
+    mpMemo->Lines->Delete( 0 );
   string s = v.GetMemoText();
   size_t pos = 0;
   while( ( pos = s.find_first_of( "\n\r" ) ) != s.npos )
   {
-    memo->Lines->Add( s.substr( 0, pos ).c_str() );
+    mpMemo->Lines->Add( s.substr( 0, pos ).c_str() );
     s.erase( 0, pos + 1 );
   }
   if( !s.empty() )
-    memo->Lines->Add( s.c_str() );
+    mpMemo->Lines->Add( s.c_str() );
 }
 

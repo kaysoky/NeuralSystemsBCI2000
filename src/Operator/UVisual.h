@@ -343,8 +343,8 @@ class VISUAL
     virtual void Save() const;
 
    private:
-    TMemo* memo;
-    int numLines;
+    TMemo* mpMemo;
+    int    mNumLines;
   };
 
 };
