@@ -8,6 +8,8 @@
 #include "Localization.h"
 #include "UBCIError.h"
 
+#include <math.h>
+
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -15,10 +17,9 @@
 TUser *User;
 //---------------------------------------------------------------------------
 __fastcall TUser::TUser(TComponent* Owner)
-        : TForm(Owner)
+: TForm(Owner),
+  mRotateBy( 0.0 )
 {
-
-
 }
 //--------------------------------------------------------------
 _fastcall TUser::~TUser()
@@ -42,6 +43,10 @@ void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
         plist->AddParameter2List(line,strlen(line) );
         strcpy(line,"UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size");
         plist->AddParameter2List(line,strlen(line));
+        plist->AddParameter2List(
+         "UsrTask float RotateBy= 0 0 0 0 "
+         "// Counterclockwise rotation of feedback view in units of 2 Pi"
+        );
         strcpy(line,"UsrTask int TargetType= 0 0 0 1 // 0=Targets, 1=YES/NO");
         plist->AddParameter2List(line,strlen(line));
         strcpy(line,"UsrTask int YesNoCorrect= 0 0 0 1 // Yes or No is target word (0=Yes, 1=No)");
@@ -56,6 +61,10 @@ void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
 
 void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
 {
+       Rotate( TargetText1, -mRotateBy );
+       Rotate( TargetText2, -mRotateBy );
+       Rotate( ResultText, -mRotateBy );
+
        Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
        Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
        Wxl= atoi(plist->GetParamPtr("WinWidth")->GetValue());
@@ -63,13 +72,16 @@ void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
        CursorSize= atoi(plist->GetParamPtr("CursorSize")->GetValue());
        Cursor->Brush->Color= clBlack;
 
+       mRotateBy = ::atof( plist->GetParamPtr( "RotateBy" )->GetValue() );
+
        // do we want targets or YES/NO ?
        TargetType=  atoi(plist->GetParamPtr("TargetType")->GetValue());
        YesNoCorrect=atoi(plist->GetParamPtr("YesNoCorrect")->GetValue());
        YesNoOnTime= atoi(plist->GetParamPtr("YesNoOnTime")->GetValue());
        YesNoOffTime=atoi(plist->GetParamPtr("YesNoOffTime")->GetValue());
 
-       // define certain things that depend on whether we have targets or YES/NO 
+
+       // define certain things that depend on whether we have targets or YES/NO
        if (TargetType == 0)
           {
           Target->Visible=false;
@@ -111,16 +123,19 @@ void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
        TargetText1->Visible=false;
        TargetText1->Font->Height=-Wyl/10;
        TargetText1->Top=abs(Wyl/4+TargetText1->Font->Height/2);
+       Rotate( TargetText1, mRotateBy );
 
        // YES/NO text for the lower target
        TargetText2->Visible=false;
        TargetText2->Font->Height=-Wyl/10;
        TargetText2->Top=abs(Wyl*3/4+TargetText2->Font->Height/2);
+       Rotate( TargetText2, mRotateBy );
 
        // text for the decision (YES/NO)
        ResultText->Visible = false;
        ResultText->Font->Height=-Wyl/2;
        ResultText->Top=abs(Wyl/2+ResultText->Font->Height/2);
+       Rotate( ResultText, mRotateBy );
 
        tT->Font->Height=-Wyl*3/4;
        Canvas->Font=tT->Font;
@@ -176,8 +191,10 @@ TColor color;
         if( x <= limit_left )   x= limit_left;
         if( x >= limit_right )  x= limit_right;
 
+        Rotate( Cursor, -mRotateBy );
         Cursor->Top=  y - HalfCursorSize;
         Cursor->Left= x - HalfCursorSize;
+        Rotate( Cursor, mRotateBy );
 
         if (cursorstate == CURSOR_ON)      color=clRed;
         if (cursorstate == CURSOR_OFF)     color=clBlack;
@@ -244,7 +261,9 @@ void TUser::Outcome(int time, int result)
        ResultText->Caption=TargetText1->Caption;
     else
        ResultText->Caption=TargetText2->Caption;
+    Rotate( ResultText, -mRotateBy );
     ResultText->Left=abs(Wxl/2-Canvas->TextWidth(ResultText->Caption)/2);
+    Rotate( ResultText, mRotateBy );
     }
 
  // turn the ResultText on or off
@@ -288,6 +307,7 @@ TColor  color;
     Target->Left= targx[targetnumber];
     Target->Height= targsizey[targetnumber];
     Target->Width = targsizex[targetnumber];
+    Rotate( Target, mRotateBy );
     if (targetstate == TARGET_RESULT) color=clYellow;
     if (targetstate == TARGET_ON)     color=clRed;
     if (targetstate == TARGET_OFF)    color=clBlack;
@@ -307,11 +327,15 @@ TColor  color;
        Target->Height= targsizey[1];
        Target->Width = targsizex[1];
        Target->Brush->Color= clGray;
+       Rotate( Target, mRotateBy );
+
        Target2->Top=  targy[2];
        Target2->Left= targx[2];
        Target2->Height= targsizey[2];
        Target2->Width = targsizex[2];
        Target2->Brush->Color= clGray;
+       Rotate( Target2, mRotateBy );
+
        Target->Visible=true;
        Target2->Visible=true;
        // define YES/NO texts for both targets
@@ -326,8 +350,12 @@ TColor  color;
           TargetText2->Caption=TargetWord;
           }
        Canvas->Font=TargetText1->Font;
+       Rotate( TargetText1, -mRotateBy );
        TargetText1->Left=targx[1]+targsizex[1]/2-Canvas->TextWidth(TargetText1->Caption)/2;
+       Rotate( TargetText1, mRotateBy );
+       Rotate( TargetText2, -mRotateBy );
        TargetText2->Left=targx[2]+targsizex[2]/2-Canvas->TextWidth(TargetText2->Caption)/2;
+       Rotate( TargetText2, mRotateBy );
        TargetText1->Visible = true;
        TargetText2->Visible = true;
        }
@@ -391,5 +419,48 @@ float TUser::ran1( long *idum )
          if((temp=AM*iy) > RNMX) return RNMX;
          else return temp;
 }
+
+void
+TUser::Rotate( TControl* ioControl, float inAngle ) 
+{
+  if( inAngle == 0 )
+    return;
+    
+  float x = ioControl->Left,
+        y = ioControl->Top,
+        width = ioControl->Width,
+        height = ioControl->Height,
+        xunit = ClientWidth,
+        yunit = ClientHeight;
+  x -= xunit / 2;
+  y -= yunit / 2;
+  float m_xx = ::cos( inAngle * 2 * M_PI ),
+        m_xy = ::sin( inAngle * 2 * M_PI ),
+        m_yy = m_xx,
+        m_yx = -m_xy;
+  m_xy *= xunit / yunit;
+  m_yx *= yunit / xunit;
+  float x2 = m_xx * x + m_xy * y,
+        y2 = m_yx * x + m_yy * y,
+        width2 = m_xx * width + m_xy * height,
+        height2 = m_yx * width + m_yy * height;
+  x2 += xunit / 2;
+  y2 += yunit / 2;
+  if( width2 < 0 )
+  {
+    width2 = ::fabs( width2 );
+    x2 -= width2;
+  }
+  if( height2 < 0 )
+  {
+    height2 = ::fabs( height2 );
+    y2 -= height2;
+  }
+  ioControl->Left = ::floor( x2 + 0.5 );
+  ioControl->Top = ::floor( y2 + 0.5 );
+  ioControl->Width = ::floor( width2 + 0.5 );
+  ioControl->Height = ::floor( height2 + 0.5 );
+}
+
 
 

@@ -100,10 +100,10 @@ TTask::TTask()
       "// Sound files for auditory announcements",
     "UsrTask matrix CursorVolume= "
       " { 0 1 2 } { min max } "
-      "  0.5 1.0 "
-      "  0.5 1.0 "
-      "  0.5 1.0 "
-      " 1.0 1.0 0.0 1.0 // Volume ranges for cursor announcement",
+      " 0.5 1.0 "
+      " 0.5 1.0 "
+      " 0.5 1.0 "
+      " 1.0 1.0 0.0 1.0 // Volume ranges for cursor announcements",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS

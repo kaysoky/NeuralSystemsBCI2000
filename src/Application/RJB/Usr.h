@@ -54,6 +54,8 @@ private:	// User declarations
         float xscalef;
         float yscalef;
         AnsiString      TargetWord, NoTargetWord;
+        float mRotateBy;
+        void  Rotate( TControl*, float );
 public:		// User declarations
         float targx[NTARGS+1];
         float targy[NTARGS+1];
@@ -67,7 +69,7 @@ public:		// User declarations
         float ran1( long *idem );       // from Press et al
         void GetLimits( float *, float *, float *, float * );
        // void TestCursorLocation( float x, float y );
-        void PutCursor( float y, float x, int );      // self explanitory
+        void PutCursor( float y, float x, int );      // self explanatory
         void PutTarget( int targno, int );
         void PutT(bool);
         void PutO(bool);
