@@ -365,7 +365,7 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
        values.insert( values.begin() + i * inDimension2 + dim2, inDimension2 - dim2, defaultValue );
    else
      for( size_t i = 0; i < dim1; ++i )
-       values.erase( values.begin() +  i * inDimension2 + dim2, values.begin() + ( i + 1 ) * inDimension2 );
+       values.erase( values.begin() + ( i + 1 ) * inDimension2, values.begin() + i * inDimension2 + dim2 );
 #ifdef LABEL_INDEXING
    // dim1_index will be resized by SetNumValues().
    dim2_index.resize( inDimension2 );
