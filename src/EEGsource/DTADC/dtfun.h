@@ -29,6 +29,7 @@ public:
         int save_flag;
         char DatFile[80];
         int n_display;
+        TCriticalSection *data_critsec;         // critical section for data FIFO
 
         __fastcall Start( void );
         __fastcall Stop( void );
@@ -43,7 +44,6 @@ public:
         void __fastcall Add_to_data( short *, ULNG );
 	void  __fastcall InitBoard( void );
         ECODE __fastcall ConfigAD( UINT, UINT, DBL, int, DBL, DWORD);
-
 private:
 
 

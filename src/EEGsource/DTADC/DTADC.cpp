@@ -111,50 +111,58 @@ int DTADC::ADConfig()
 // **************************************************************************
 int DTADC::ADReadDataBlock()
 {
-        int sample, channel, count;
-        int value;
-        int i;
-      
-        if( StartFlag == 0 )
-        {
-                dtfun.Start();
-                StartFlag= 1;
-        }
+int     sample, channel, count;
+int     value, i, buffersize;
 
-   /*
-        while( MsgWin->DoneFlag < 1 )
-        {
+ if ( StartFlag == 0 )
+    {
+    dtfun.Start();
+    StartFlag= 1;
+    }
 
-                WaitMessage();
-                Application->ProcessMessages();
-        }
-   */
-        dtfun.bdone->WaitFor(3000);
+ // wait until we are notified that data is there
+ dtfun.bdone->WaitFor(3000);
 
-        count= 0;
+ // we do not want simultaneous access to dtfun.data[]
+ // in case the driver notifies us twice in a row that data is there
+ dtfun.data_critsec->Acquire();
 
-        for(i=0;i<dtfun.BufferCount;i++)
-        {
+ // copy the "oldest" data into our signal
+ count= 0;
+ for (sample=0; sample<blocksize; sample++)
+  {
+  for (channel=0; channel<channels; channel++)
+   {
+   value= dtfun.data[count];
+   signal->SetValue( channel, sample, value );
+   count++;
+   }
+  }
 
-                for (sample=0; sample<blocksize; sample++)
-                {
-                        for (channel=0; channel<channels; channel++)
-                        {
-                                value= dtfun.data[count];
+ // now, overwrite the "oldest" data by overwriting it with the remaining data blocks
+ // in theory, there should always only be one block of data, assuming that the driver
+ // notifies us right away when data is there and assuming that the signal happens immediately
+ // sometimes, the driver waits longer and then notifies the Callback function (BufferDone) twice
+ buffersize=blocksize*channel;   // in samples
+ if (dtfun.BufferCount > 1)      // in essence, delete the first buffer by copying the rest over it
+    {
+    for (sample=0; sample<(dtfun.BufferCount-1)*buffersize; sample++)
+     {
+     dtfun.data[sample]=dtfun.data[count];
+     count++;
+     }
+    }
 
-                                signal->SetValue( channel, sample, value );
-                                count++;
-                        }
-                }
-        }
+ dtfun.BufferCount--;
+ dtfun.BufferPtr -= buffersize;
 
-        dtfun.BufferCount= 0;
-        dtfun.BufferPtr= 0;
+ // if there is more than one data block ready, do not reset the event
+ // ADReadDataBlock will then return a second time right away
+ if (dtfun.BufferCount == 0) dtfun.bdone->ResetEvent();
 
-        dtfun.bdone->ResetEvent();
+ dtfun.data_critsec->Release();
 
-        // MsgWin->DoneFlag= 0;
-        return(1);
+ return(1);
 }
 
 int DTADC::ADShutdown()

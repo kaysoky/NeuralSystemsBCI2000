@@ -6,22 +6,20 @@
 #include <stdlib.h>
 
 #include "dtfun.h"
-#include "MsgWin1.h"
+// #include "MsgWin1.h" // we do not need this anymore; not notified by Windows messages ...
 #include "UBCITime.h"
-
-// FILE *dtf;
-// BCITIME bct;
-// unsigned short oldbct;
 
 //---------------------------------------------------------------------------
 DTFUN::DTFUN( void )
 {
-    //    dtf= fopen("dtfun.asc","w+");
+ data_critsec=new TCriticalSection();
 }
 //---------------------------------------------------------------------------
+
 DTFUN::~DTFUN( void )
 {
-    //   fclose( dtf );
+ if (data_critsec) delete data_critsec;
+ data_critsec=NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -32,6 +30,7 @@ __fastcall DTFUN::Start( void )
         status= olDaStart( lphDass );
         return( status );
 }
+
 //----------------------------------------------------------------------------
 __fastcall DTFUN::Stop( void )
 {
@@ -78,7 +77,7 @@ __fastcall DTFUN::Terminator( void )
 {
         ECODE status;
         status= olDaTerminate( lphDev );
-       
+
         return( status );
 }
 
@@ -137,6 +136,7 @@ UINT __fastcall DTFUN::SetChanList( UINT ListSize, DBL dGain )
      }
      return( status );
 }
+
 
 DBL __fastcall DTFUN::SetClock(int ClockSource, DBL Freq )
 {
@@ -204,13 +204,8 @@ void __fastcall DTFUN::Add_to_data(short lphBuf[], ULNG samples)
                 BufferPtr++;
         }
         BufferCount++;
-
-     //   bt= bct.GetBCItime_ms();
-     //   dt= bt-oldbct;
-     //   oldbct= bt;
-
-     //   fprintf(dtf,"%6d %6d %6d \n",dt,BufferCount,BufferPtr);
 }
+
 
 void __fastcall DTFUN::SetFunction(  void )
 {
@@ -226,60 +221,46 @@ void __fastcall DTFUN::SetFunction(  void )
 
 //----------------------------------------------------------------
 
+
+// this function is called directly by the driver whenever data is ready
+// there is an anomaly in the (current version of the) Data Translation driver
+// that causes this function to be called unevenly spaced in time
+// this only happens under certain circumstances (i.e., number of channels,
+// SampleBlockSize, and sampling frequency)
 __stdcall BufferDone( UINT uiMsg, unsigned int Dass, LPARAM lParam )
 {
-        ECODE status;
-        int arrays;
-        int i;
-        short *buffer;
+ECODE   status;
+int     arrays;
+int     i;
+short   *buffer;
+HBUF    hBuf;
+LPHBUF  lphBuf;
+ULNG    samples;
+HDASS   lphDass;
 
-        
+ hBuf= NULL;
+ lphBuf= NULL;
+ lphDass= (void *)Dass;
 
-        HBUF   hBuf;
-        LPHBUF lphBuf;
-        ULNG samples;
+ status= olDaGetBuffer(lphDass, &hBuf);
 
-        hBuf= NULL;
-        lphBuf= NULL;
+ if ( hBuf != NULL )
+    {
+    status= olDmGetMaxSamples(hBuf,&samples);
+    status= olDmGetBufferPtr( hBuf, (LPVOID FAR*)&lphBuf );
+    status= olDaPutBuffer(lphDass, hBuf);
 
+    buffer= (short *)lphBuf;
 
-        HDASS lphDass;
+    dtfun.data_critsec->Acquire();
+    dtfun.Add_to_data( buffer, samples );  // add data to FIFO
+    dtfun.data_critsec->Release();
+    }
 
-        lphDass= (void *)Dass;
-
-        status= olDaGetBuffer(lphDass, &hBuf);
-
-
-
-        if( hBuf != NULL )
-        {
-                status= olDmGetMaxSamples(hBuf,&samples);
-                status= olDmGetBufferPtr( hBuf, (LPVOID FAR*)&lphBuf );
-                status= olDaPutBuffer(lphDass, hBuf);
-
-                buffer= (short *)lphBuf;
-
-             //   for(i=0;i<samples;i++)
-             //           dtfun.data[i]= (short)lphBuf[i] * 8;
-
-               dtfun.Add_to_data( buffer, samples );
-        }
-
-        // NumSamples->Text= samples;
-
-
-        // DoneCount->Text= ++done_count;
-        // ArrayCount->Text=  arrays;
-
-        dtfun.bdone->SetEvent();
-
-    // dtfun.DoneFlag++;
-
-    // vDoneFlag->Text= DoneFlag;
-
-    //   vClockHz->Text= dtfun.ClockHz;
-    //   mwMSG++;
+ // notify ADReadDataBlock() that data is here
+ dtfun.bdone->SetEvent();
 }
+
 
 ECODE __fastcall DTFUN::ConfigAD( UINT ChanType,
                                  UINT ListSize,
