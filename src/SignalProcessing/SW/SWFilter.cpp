@@ -67,10 +67,10 @@ void
 TSWFilter::Preflight( const SignalProperties& Input,
                       SignalProperties& Output ) const
 {
-  if( Parameter( "UD_A" ) != 0 )
-    bciout << "UD_A should be set to zero for Slow Waves" << endl;
-  if( Parameter( "UD_B" ) < 300 || Parameter( "UD_B" ) > 400 )
-    bciout << "UD_B should be set to 327.68 for Slow Waves" << endl;
+  if( Parameter( "YMean" ) != 0 )
+    bciout << "YMean should be set to zero for Slow Waves" << endl;
+  if( Parameter( "YGain" ) < 300 || Parameter( "YGain" ) > 400 )
+    bciout << "YGain should be set to 327.68 for Slow Waves" << endl;
 
   PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
   Parameter( "FeedbackEnd" );
