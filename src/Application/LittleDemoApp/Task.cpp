@@ -1,34 +1,35 @@
-/*************************************************************************
-Task.cpp is the source code for the Right Justified Boxes task
-*************************************************************************/
 #include <vcl.h>
 #pragma hdrstop
 
 #include "Task.h"
-#include "BCIDirectry.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <dos.h>
+#include "UBCITime.h"
 
 
 TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
+: vis( NULL ),
+  svect( NULL ),
+  corecomm( NULL ),
+  Applic( Application ),
+  AcousticMode( 0 ),
+  form( NULL ),
+  progressbar( NULL ),
+  chart( NULL ),
+  series( NULL )
 {
- char line[512];
-
- vis= NULL;
-
- strcpy(line,"NeuralMusic int AcousticMode= 10 0 0 1 // Achin's Acoustic Mode :-)");
- plist->AddParameter2List(line,strlen(line));
- // has to be in there
- strcpy(line,"NeuralMusic int NumberTargets= 10 0 0 1 // not used");
- plist->AddParameter2List(line,strlen(line));
+ const char* params[] =
+ {
+   "NeuralMusic int AcousticMode= 10 0 0 1 // Achin's Acoustic Mode :-)",
+   // has to be in there
+   "NeuralMusic int NumberTargets= 10 0 0 1 // not used",
+ };
+ const size_t numParams = sizeof( params ) / sizeof( *params );
+ for( size_t i = 0; i < numParams; ++i )
+   plist->AddParameter2List( params[ i ] );
 
  slist->AddState2List("Pitch 8 0 0 0\n");
  slist->AddState2List("StimulusTime 16 17528 0 0\n");
 
- form=new TForm(Application);
+ form=new TForm( ( TComponent* )NULL );
  form->Caption="Neural Music Test";
  form->Height=300;
 
@@ -67,13 +68,8 @@ TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
 
 TTask::~TTask( void )
 {
- if( vis ) delete vis;
- vis= NULL;
-
- if (progressbar) delete progressbar;
- if (series) delete series;
- if (chart) delete chart;
- form->Close();
+ delete vis;
+ delete form;
 }
 
 
@@ -86,7 +82,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 
  svect=new_svect;
 
- if (vis) delete vis;
+ delete vis;
  vis= new GenericVisualization( plist, corecomm );
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");

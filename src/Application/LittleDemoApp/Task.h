@@ -1,6 +1,3 @@
-/*************************************************************************
-Task.h is the header file for the Right Justified Boxes task
-*************************************************************************/
 #ifndef TaskH
 #define TaskH
 
@@ -12,7 +9,6 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
-#include "UBCItime.h"
 
 #include <vcl/series.hpp>
 
@@ -23,7 +19,6 @@ private:
         STATEVECTOR           *svect;
         GenericVisualization  *vis;
         CORECOMM        *corecomm;
-        BCITIME         *bcitime;
         TApplication    *Applic;
         int             AcousticMode;
         int             MakeMusic(short controlsignal);
