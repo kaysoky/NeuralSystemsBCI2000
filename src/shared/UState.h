@@ -11,7 +11,7 @@
 #define ERRSTATEVEC_NOERR       0
 
 #define LENGTH_NAME             30
-#define LENGTH_STATELINE        512
+#define LENGTH_STATELINE        255
 
 #ifdef NO_VCL
 # include <vector>
@@ -83,6 +83,9 @@ public:     // User declarations
         int     GetNumStates() const;
         void    ClearStateList();
         void    DeleteState(const char *name);
+        
+        void WriteToStream( std::ostream& ) const;
+        void ReadFromStream( std::istream& );
 };
 
 
@@ -149,6 +152,17 @@ inline std::istream& operator>>( std::istream& is, STATE& s )
   return is;
 }
 
+inline std::ostream& operator<<( std::ostream& os, const STATELIST& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( std::istream& is, STATELIST& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
 
 inline std::ostream& operator<<( std::ostream& os, const STATEVECTOR& s )
 {

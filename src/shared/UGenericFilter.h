@@ -20,6 +20,8 @@
 
 #include <typeinfo>
 #include <set>
+#include <list>
+#include <map>
 #include "UEnvironment.h"
 // Includes needed for every filter, so they are put here for
 // convenience.
@@ -55,10 +57,8 @@ class GenericFilter : protected Environment
  friend class Documentar;
 
  public:
-          GenericFilter()
-          { filters.insert( this ); }
-  virtual ~GenericFilter()
-          { filters.erase( this ); }
+          GenericFilter()  { allFilters.push_back( this ); }
+  virtual ~GenericFilter() { allFilters.remove( this ); }
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   virtual void Initialize() = 0;
@@ -131,8 +131,24 @@ class GenericFilter : protected Environment
   };
   #define RegisterFilter( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
 
+  // Get available filters' position strings.
+  static const std::string& GetFirstFilterPosition();
+  static const std::string& GetLastFilterPosition();
+
   // Instantiate all registered filters once.
   static void InstantiateFilters();
+  // Dispose of all filter instances not passed to another filter with PassFilter<>().
+  static void DisposeFilters();
+  // Apply the single filter functions to all filters instantiated and not passed
+  // to another filter with PassFilter<>().
+  static void InitializeFilters();
+  static void PreflightFilters( const SignalProperties& Input,
+                                      SignalProperties& Output );
+  static void ProcessFilters( const GenericSignal* Input,
+                                    GenericSignal* Output );
+  static void RestingFilters();
+  static void HaltFilters();
+
   // Create a new instance of the same type as the argument pointer.
   static GenericFilter* NewInstance( const GenericFilter* );
   // Get the first filter instance of a given type, e.g.:
@@ -140,18 +156,33 @@ class GenericFilter : protected Environment
   template<typename T> static T* GetFilter()
   {
     T* filterFound = NULL;
-    filterSet::iterator i = filters.begin();
-    while( i != filters.end() && filterFound == NULL )
+    filters_type::iterator i = allFilters.begin();
+    while( i != allFilters.end() && filterFound == NULL )
     {
       filterFound = dynamic_cast<T*>( *i );
       ++i;
     }
     return filterFound;
   }
+  // Get the first filter instance of a given type, and remove it
+  // from the owned filters list. This is meant for building a hierarchy of
+  // GenericFilter instances.
+  template<typename T> static T* PassFilter()
+  {
+    T* filter = GetFilter<T>();
+    ownedFilters.remove( filter );
+    return filter;
+  }
 
  private:
-  typedef std::set<GenericFilter*> filterSet;
-  static filterSet filters;
+  typedef std::list<GenericFilter*> filters_type;
+  // This container holds all instantiated filters.
+  static filters_type allFilters;
+  // These are filters managed by the GenericFilter class:
+  // Instantiation, Disposal, and application of filter functions.
+  static filters_type ownedFilters;
+  typedef std::map<GenericFilter*,GenericSignal> signals_type;
+  static signals_type ownedSignals;
 };
 
 #endif // UGenericFilterH

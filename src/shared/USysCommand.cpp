@@ -27,6 +27,11 @@
 
 using namespace std;
 
+const SYSCMD SYSCMD::EndOfState( "EndOfState" );
+const SYSCMD SYSCMD::EndOfParameter( "EndOfParameter" );
+const SYSCMD SYSCMD::Start( "Start" );
+const SYSCMD SYSCMD::Reset( "Reset" );
+
 // **************************************************************************
 // Function:   SYSCMD
 // Purpose:    The constructor for the SYSCMD object
@@ -35,8 +40,14 @@ using namespace std;
 // **************************************************************************
 SYSCMD::SYSCMD()
 {
+  buffer[ 0 ] = '\0';
 }
 
+SYSCMD::SYSCMD( const char* cmd )
+{
+  ::strncpy( buffer, cmd, LENGTH_SYSCMD );
+  buffer[ LENGTH_SYSCMD - 1 ] = '\0';
+}
 
 // **************************************************************************
 // Function:   ~SYSCMD
@@ -47,38 +58,6 @@ SYSCMD::SYSCMD()
 SYSCMD::~SYSCMD()
 {
 }
-
-#if 0
-// **************************************************************************
-// Function:   get_argument
-// Purpose:    parses the parameter line that is being sent in the core
-//             communication, or as stored in any BCI2000 .prm file
-//             it returns the next token that is being delimited by either
-//             a ' ' or '='
-// Parameters: ptr - index into the line of where to start
-//             buf - destination buffer for the token
-//             line - the whole line
-//             maxlen - maximum length of the line
-// Returns:    the index into the line where the returned token ends
-// **************************************************************************
-int SYSCMD::get_argument(int ptr, char *buf, char *line, int maxlen)
-{
- // skip trailing spaces, if any
- while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
-  ptr++;
-
- // go through the string, until we either hit a space, a '=', or are at the end
- while ((line[ptr] != '=') && (line[ptr] != ' ') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
-  {
-  *buf=line[ptr];
-  ptr++;
-  buf++;
-  }
-
- *buf=0;
- return(ptr);
-}
-#endif
 
 // **************************************************************************
 // Function:   GetSysCmd
@@ -93,7 +72,6 @@ const char *SYSCMD::GetSysCmd()
  return(buffer);
 }
 
-
 // **************************************************************************
 // Function:   ParseSysCmd
 // Purpose:    This routine is called by coremessage->ParseMessage()
@@ -105,7 +83,9 @@ const char *SYSCMD::GetSysCmd()
 // **************************************************************************
 int SYSCMD::ParseSysCmd(const char *new_line, int length)
 {
- strncpy(buffer, new_line, length);
+ if( length >= LENGTH_SYSCMD )
+   length = LENGTH_SYSCMD - 1;
+ strncpy(buffer, new_line, length + 1);
  buffer[ LENGTH_SYSCMD - 1 ] = '\0';
  return(ERRSYSCMD_NOERR);
 }
@@ -141,4 +121,14 @@ SYSCMD::WriteBinary( ostream& os ) const
   return os;
 }
 
+bool
+SYSCMD::operator<( const SYSCMD& s ) const
+{
+  return ::strncmp( buffer, s.buffer, LENGTH_SYSCMD ) < 0;
+}
 
+bool
+SYSCMD::operator==( const SYSCMD& s ) const
+{
+  return ::strncmp( buffer, s.buffer, LENGTH_SYSCMD ) == 0;
+}

@@ -28,6 +28,8 @@
  *                      jm                                                    *
  * V0.22 - 05/30/2003 - Fixed index synchronization bug in                    *
  *                      PARAM::SetNumValues(), jm                             *
+ * V0.23 - 11/24/2003 - Fixed parsing of matrices with 0x0 size               *
+ *                      Preserve existing values in SetDimensions, jm         *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -332,6 +334,7 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
 /////////////////////////////////////////////////////////////////////////////
 // PARAM definitions                                                       //
 /////////////////////////////////////////////////////////////////////////////
+const char* const defaultValue = "0";
 const string commentSeparator = "//";
 const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 
@@ -339,6 +342,8 @@ const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 // Function:   SetDimensions
 // Purpose:    Sets the dimensions of a matrix parameter.
 //             It does not do anything, if the parameter is not a matrix.
+// NOTE:       The two dimensions are in reverse order wrt
+//             SetValue/GetValue.
 // Parameters: inDimension1 - size in dimension 1
 //             inDimension2 - size in dimension 2
 // Returns:    N/A
@@ -349,6 +354,15 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
  // Don't do anything if this is not a matrix parameter.
  if( type == "matrix" && inDimension2 > 0 )
  {
+   // To preserve existing values' indices, insert/remove values as needed.
+   size_t dim1 = GetNumValuesDimension1(),
+          dim2 = GetNumValuesDimension2();
+   if( inDimension2 > dim2 )
+     for( size_t i = 0; i < dim1; ++i )
+       values.insert( values.begin() + i * inDimension2 + dim2, inDimension2 - dim2, defaultValue );
+   else
+     for( size_t i = 0; i < dim1; ++i )
+       values.erase( values.begin() +  i * inDimension2 + dim2, values.begin() + ( i + 1 ) * inDimension2 );
 #ifdef LABEL_INDEXING
    // dim1_index will be resized by SetNumValues().
    dim2_index.resize( inDimension2 );
@@ -461,7 +475,7 @@ PARAM::PARAM( const char* paramstring )
 void
 PARAM::SetNumValues( size_t n )
 {
-  values.resize( n, "0" );
+  values.resize( n, defaultValue );
 #ifdef LABEL_INDEXING
   // dim2_index will always have a size > 0.
   // If n is not a multiple of dim2_index' size something is logically wrong.
@@ -502,7 +516,7 @@ const char*
 PARAM::GetValue( size_t idx ) const
 {
   size_t numValues = GetNumValues();
-  const char* retValue = "0";
+  const char* retValue = defaultValue;
   if( numValues != 0 )
   {
     if( idx >= numValues )
@@ -622,42 +636,6 @@ PARAM::SetValue( const string& value, size_t idx )
 // Now defined inline.
 
 // **************************************************************************
-// Function:   get_argument
-// Purpose:    parses the parameter line that is being sent in the core
-//             communication, or as stored in any BCI2000 .prm file
-//             it returns the next token that is being delimited by either
-//             a ' ' or '='
-// Note:
-// This function is now obsolete as far as the PARAMLIST/PARAM classes are
-// concerned. It will be kept as long as it is referenced from elsewhere,
-// but please do not use it for new code.
-// jm
-//
-// Parameters: ptr - index into the line of where to start
-//             buf - destination buffer for the token
-//             line - the whole line
-//             maxlen - maximum length of the line
-// Returns:    the index into the line where the returned token ends
-// **************************************************************************
-int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
-{
- // skip trailing spaces, if any
- while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
-  ptr++;
-
- // go through the string, until we either hit a space, a '=', or are at the end
- while ((line[ptr] != '=') && (line[ptr] != ' ') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
-  {
-  *buf=line[ptr];
-  ptr++;
-  buf++;
-  }
-
- *buf=0;
- return(ptr);
-}
-
-// **************************************************************************
 // Function:   GetParamLine
 // Purpose:    Returns a parameter line in ASCII format
 //             Tis parameter line is constructed, based upon the current
@@ -757,8 +735,12 @@ PARAM::ReadFromStream( istream& is )
   {
 #ifdef LABEL_INDEXING
     linestream >> dim1_index >> dim2_index;
+    if( dim2_index.size() < 1 )
+      dim2_index.resize( 1 );
 #else
     linestream >> dimension1 >> dimension2;
+    if( dimension2 < 1 )
+      dimension2 = 1;
 #endif
   }
   else if( type.find( "list" ) != type.npos )
@@ -796,9 +778,9 @@ PARAM::ReadFromStream( istream& is )
   }
   // Not all matrix/list entries are required for a parameter definition.
 #ifdef LABEL_INDEXING
-  values.resize( dim1_index.size() * dim2_index.size(), "0" );
+  values.resize( dim1_index.size() * dim2_index.size(), defaultValue );
 #else
-  values.resize( dimension1 * dimension2, "0" );
+  values.resize( dimension1 * dimension2, defaultValue );
 #endif
 
   // These entries are not required for a parameter definition.
@@ -818,7 +800,7 @@ PARAM::ReadFromStream( istream& is )
   }
   while( i < numFinalEntries )
   {
-    *finalEntries[ i ] = "0";
+    *finalEntries[ i ] = defaultValue;
     ++i;
   }
 
@@ -890,7 +872,7 @@ ostream&
 PARAM::WriteBinary( ostream& os ) const
 {
   WriteToStream( os );
-  os << '\x0d' << '\x0a';
+  os << "\x0d\x0a";
   return os;
 }
 
@@ -938,7 +920,7 @@ PARAM::operator=( const PARAM& p )
 /////////////////////////////////////////////////////////////////////////////
 // encodedString definitions                                               //
 /////////////////////////////////////////////////////////////////////////////
-const char specialChar = '%';
+const char escapeChar = '%';
 // **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
@@ -954,7 +936,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
   string newContent;
   if( is >> newContent )
   {
-    size_t pos = newContent.find( specialChar, 0 );
+    size_t pos = newContent.find( escapeChar, 0 );
     while( pos != npos )
     {
       newContent.erase( pos, 1 );
@@ -976,7 +958,7 @@ PARAM::encodedString::ReadFromStream( istream& is )
       if( hexValue > 0 )
         newContent.insert( pos, 1, ( char )hexValue );
 
-      pos = newContent.find( specialChar, pos + 1 );
+      pos = newContent.find( escapeChar, pos + 1 );
     }
     *this = newContent;
   }
@@ -995,7 +977,7 @@ void
 PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars ) const
 {
   if( empty() )
-    os << specialChar;
+    os << escapeChar;
   else
   {
     const string& self = *this;
@@ -1008,11 +990,11 @@ PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars )
           && forbiddenChars.find( self[ pos ] ) == npos )
       {
         oss << self[ pos ];
-        if( self[ pos ] == specialChar )
-          oss << specialChar;
+        if( self[ pos ] == escapeChar )
+          oss << escapeChar;
       }
       else
-        oss << specialChar
+        oss << escapeChar
             << ( int )( ( self[ pos ] >> 4 ) & 0x0f )
             << ( int )( self[ pos ] & 0x0f );
     }
@@ -1045,6 +1027,20 @@ PARAM::labelIndexer::operator[]( const string& label ) const
   if( i != forwardIndex.end() )
     retIndex = i->second;
   return retIndex;
+}
+
+// **************************************************************************
+// Function:   Exists
+// Purpose:    Checks whether a given textual label exists in the index.
+//             Needed because operator[] always returns a valid index.
+// Parameters: String label.
+// Returns:    Boolean value that indicates the existence of the argument.
+// **************************************************************************
+bool
+PARAM::labelIndexer::Exists( const string& label ) const
+{
+  sync();
+  return forwardIndex.find( label ) != forwardIndex.end();
 }
 
 // **************************************************************************

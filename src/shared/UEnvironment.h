@@ -2,22 +2,27 @@
 //
 // File: UEnvironment.h
 //
-// Description: A mix-in base class that channels access to enviroment-like
+// Description: EnvironmentBase and Environment are mix-in base classes that
+//              channel access to enviroment-like
 //              global objects of types CORECOMM, PARAMLIST, STATELIST,
 //              STATEVECTOR, and provides convenient accessor functions
 //              and checking utilities.
+//              The difference between EnvironmentBase and Environment is that
+//              Environment descendants are assumed to perform globally relevant
+//              actions inside their constructors (as GenericFilter does), while
+//              EnvironmentBase descendants such as Environment::Extension
+//              are supposed to use a separate function Publish() for such
+//              purposes. 
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UEnvironmentH
 #define UEnvironmentH
 
-//#include <typeinfo>
-//#include <set>
-
 #include "UParameter.h"
 #include "UState.h"
 class CORECOMM;
 class SignalProperties;
+class EnvironmentExtension;
 
 // This base class channels access to Parameter, State, and Communication
 // related objects that used to be arguments of member functions.
@@ -25,22 +30,24 @@ class SignalProperties;
 // to use its "controlling" functions, a class must be listed as
 // a friend. Only framework classes should be friends.
 
-class Environment
+class EnvironmentBase
 {
  // Friends from framework classes.
  friend class GenericVisualization;
  friend class TReceivingThread;
  friend class TfMain;
+ friend class FILTERS;
+
+ friend class CoreModule;
  friend class Documentar;
  friend class StatusMessage;
  friend class FilterWrapper;
- friend class FILTERS;
 
  // Protecting the constructor prevents instantiation of this class
  // outside its descendants.
  protected:
-  Environment();
-  virtual ~Environment() {}
+  EnvironmentBase() {}
+  virtual ~EnvironmentBase() {}
 
  // Opaque references to environment objects.
  // These symbols have the syntax of pointers but allow for intercepting
@@ -107,7 +114,7 @@ class Environment
   PARAM* GetParamPtr( const std::string& ) const;
   PARAM* GetOptionalParamPtr( const std::string& ) const;
   void CheckRange( const PARAM*, size_t, size_t ) const;
-  
+
   // Read/write access to a parameter by its name and indices, if applicable.
   PARAM::type_adapter Parameter( const std::string& name,
                                  size_t index1 = 0,
@@ -194,7 +201,7 @@ class Environment
  //   checked during preflight; parameters being maintained in some class
  //   outside a GenericFilter).
 
- private:
+ protected:
   enum executionPhase
   {
     nonaccess,
@@ -204,6 +211,9 @@ class Environment
     processing
   };
 
+  static executionPhase GetPhase() { return _phase; }
+
+ private:
   // Called to prevent access.
   static void EnterNonaccessPhase();
   // Called from the framework before any Environment descendant class
@@ -228,7 +238,13 @@ class Environment
                                         STATEVECTOR*,
                                         CORECOMM* );
 
-  static executionPhase GetPhase() { return _phase; }
+ protected:
+  void RegisterExtension( EnvironmentExtension* p )   { sExtensions.insert( p ); }
+  void UnregisterExtension( EnvironmentExtension* p ) { sExtensions.erase( p ); }
+
+ private:
+  typedef std::set<EnvironmentExtension*> ExtensionsContainer;
+  static ExtensionsContainer sExtensions;
 
  private:
   static PARAMLIST*     _paramlist;
@@ -244,6 +260,38 @@ class Environment
   #define _phase        (void)
 };
 
+class Environment: protected EnvironmentBase
+{
+ // Protecting the constructor prevents instantiation of this class
+ // outside its descendants.
+ protected:
+  Environment();
+  virtual ~Environment() {}
+};
+
+// A virtual interface for classes that provide global information and need
+// to be notified of system phase transitions.
+// Unlike GenericFilter descendants, descendants of EnvironmentExtension
+// should not need any constructor code that publishes information; rather,
+// they should use the Publish() virtual member function.
+// That way we may have static instantiation without a separate registrar class,
+// and avoid difficulties that arise from the fact that constructors are not
+// ordinary member functions (constructors cannot be virtual; calling of virtual
+// functions from base class constructors is impossible).
+
+class EnvironmentExtension : protected EnvironmentBase
+{
+  protected:
+   EnvironmentExtension()          { EnvironmentBase::RegisterExtension( this ); }
+   virtual ~EnvironmentExtension() { EnvironmentBase::UnregisterExtension( this ); }
+
+  // The virtual interface.
+  public:
+   virtual void Publish() = 0;
+   virtual void Preflight() const = 0;
+   virtual void Initialize() = 0;
+   virtual void Process() = 0;
+};
 
 #endif // UEnvironmentH
 

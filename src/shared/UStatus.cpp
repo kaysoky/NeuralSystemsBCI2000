@@ -14,6 +14,21 @@
 
 using namespace std;
 
+const STATUS STATUS::Fail( "Error", 498 );
+
+STATUS::STATUS()
+: code( 0 )
+{
+  status[ 0 ] = '\0';
+}
+
+STATUS::STATUS( const char* inStatus, int inCode )
+: code( inCode )
+{
+  ::strncpy( status, inStatus, LENGTH_STATUSLINE );
+  status[ LENGTH_STATUSLINE - 1 ] = '\0';
+}
+
 int STATUS::ParseStatus(const char *line, int length)
 {
 char    temp[4];

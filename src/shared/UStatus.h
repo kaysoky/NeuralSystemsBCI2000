@@ -12,14 +12,17 @@ private: 	// User declarations
         char    status[LENGTH_STATUSLINE];
         int     code;
 public:		// User declarations
+        STATUS();
+        STATUS( const char*, int );
         int     ParseStatus(const char *line, int length);
         const char *GetStatus();
         int     GetCode();
-        
+
         void ReadFromStream( class std::istream& );
         void WriteToStream( class std::ostream& ) const;
         class std::istream& ReadBinary( class std::istream& );
         class std::ostream& WriteBinary( class std::ostream& ) const;
+        static const STATUS Fail;
 };
 
 //---------------------------------------------------------------------------

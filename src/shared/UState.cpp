@@ -168,21 +168,6 @@ int         i;
 #endif
 }
 
-
-#if 0
-// **************************************************************************
-// Function:   GetListPtr
-// Purpose:    Returns a pointer to this state's list of values
-// Parameters: N/A
-// Returns:    pointer to the list
-// **************************************************************************
-TList *STATELIST::GetListPtr()
-{
-return(state_list);
-}
-#endif
-
-
 // **************************************************************************
 // Function:   AddState2List
 // Purpose:    adds a new state to the list of states
@@ -267,17 +252,50 @@ STATE           *newstate;
     DeleteState(state->GetName());
 
  // create a new state and copy the content of the other one
-#if 0 // jm 6/27/02
- newstate=new STATE;
- memcpy(newstate, state, sizeof(STATE));
-#else
   newstate = new STATE( *state );
-#endif
 
  state_list->Add(newstate);
 #endif // NO_VCL
 }
 
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of the entire
+//             state list.
+//             For partial output, use another instance of type STATELIST
+//             to hold the desired subset.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+STATELIST::WriteToStream( ostream& os ) const
+{
+  for( int i = 0; i < GetNumStates(); ++i )
+    os << *GetStatePtr( i ) << '\n';
+}
+
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of the entire
+//             state list. The list is cleared before reading.
+//             For partial input, use another instance of type STATELIST
+//             to hold the desired subset.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+STATELIST::ReadFromStream( istream& is )
+{
+  ClearStateList();
+  STATE state;
+  is >> ws;
+  while( !is.eof() && is >> state >> ws )
+    AddState2List( &state );
+}
 
 // **************************************************************************
 // Function:   STATE
@@ -293,23 +311,8 @@ STATE::STATE()
   valid( false ),
   modified( false )
 {
-#if 0
-  buffer[ 0 ] = '\0';
-#endif
   name[ 0 ] = '\0';
 }
-
-#if 0
-// **************************************************************************
-// Function:   ~STATE
-// Purpose:    the destructor for the STATE object
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-STATE::~STATE()
-{
-}
-#endif
 
 // **************************************************************************
 // Function:   GetStateLine
@@ -492,53 +495,6 @@ void STATE::SetBitLocation(int loc)
  bitloc=loc;
 }
 
-#if 0
-// **************************************************************************
-// Function:   get_argument
-// Purpose:    parses the state line that is being sent in the core
-//             communication
-//             it returns the next token that is being delimited by either
-//             a ' ' or '='
-// Parameters: ptr - index into the line of where to start
-//             buf - destination buffer for the token
-//             line - the whole line
-//             maxlen - maximum length of the line
-// Returns:    the index into the line where the returned token ends
-// **************************************************************************
-int STATE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
-{
- // skip trailing spaces, if any
- while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
-  ptr++;
-
- // go through the string, until we either hit a space, a '=', or are at the end
- while ((line[ptr] != '=') && (line[ptr] != ' ') && (line[ptr] != '\n') && (line[ptr] != '\r') && (ptr < maxlen))
-  {
-  *buf=line[ptr];
-  ptr++;
-  buf++;
-  }
-
- *buf=0;
- return(ptr);
-}
-#endif
-
-#if 0
-// **************************************************************************
-// Function:   ConstructStateLine
-// Purpose:    Construct a state line, based upon the current values
-//             in the STATE object
-// Parameters: N/A
-// Returns:    always ERRPARAM_NOERR
-// **************************************************************************
-int STATE::ConstructStateLine() const
-{
- sprintf(buffer, "%s %d %d %d %d", name, length, value, byteloc, bitloc);
- return(ERRSTATE_NOERR);
-}
-#endif
-
 // **************************************************************************
 // Function:   ParseState
 // Purpose:    This routine is called by coremessage->ParseMessage()
@@ -550,40 +506,6 @@ int STATE::ConstructStateLine() const
 // Returns:    ERRSTATE_INVALIDSTATE if the state line is invalid, or
 //             ERRSTATE_NOERR
 // **************************************************************************
-#if 0
-int STATE::ParseState(const char *line, int statelength)
-{
-int     ptr;
-char    *buf;
-
- valid=false;
- buf=(char *)malloc(statelength+1);
- // buf=new char[statelength+1];
-
- ptr=0;
- ptr=get_argument(ptr, buf, line, statelength);
- strncpy(name, buf, LENGTH_NAME);
- if (name[0] == 0)
-    {
-    free(buf);
-    return(ERRSTATE_INVALIDSTATE);
-    }
- ptr=get_argument(ptr, buf, line, statelength);
- length=atoi(buf);
- ptr=get_argument(ptr, buf, line, statelength);
- value=atoi(buf);
- modified = true;
- ptr=get_argument(ptr, buf, line, statelength);
- byteloc=atoi(buf);
- ptr=get_argument(ptr, buf, line, statelength);
- bitloc=atoi(buf);
-
- free(buf);
- // delete buf;
- valid=true;
- return(ERRSTATE_NOERR);
-}
-#else
 int STATE::ParseState( const char* stateline, int length )
 {
   if( stateline == NULL )
@@ -598,7 +520,6 @@ int STATE::ParseState( const char* stateline, int length )
     err = ERRSTATE_INVALIDSTATE;
   return err;
 }
-#endif
 
 // **************************************************************************
 // Function:   STATE::Commit
@@ -619,31 +540,6 @@ STATE::Commit( STATEVECTOR* stateVector )
   }
 }
 
-/*
-// **************************************************************************
-// Function:   Set_StateVector
-// Purpose:    sets the content of a whole state vector
-// Parameters: src - pointer to the source state vector content
-//             length - length of the state vector in bytes
-//             src_list - pointer to the list of states describing this state vector
-// Returns:    N/A
-// **************************************************************************
-void STATEVECTOR::SetStateVector(BYTE *src, int length, STATELIST *src_list)
-{
- if (length < MAX_STATEVECTORLENGTH)
-    {
-    memcpy(&state_vector[0], src, length);
-    state_vector_length=length;
-    state_list=src_list;
-    }
- else
-    {
-    state_vector_length=0;
-    state_list=NULL;
-    }
-}
-*/
-
 // **************************************************************************
 // Function:   Initialize_StateVector
 // Purpose:    assigns locations in the state vector for each state; in addition, it
@@ -656,7 +552,6 @@ void STATEVECTOR::Initialize_StateVector()
  // initialize the statevector by calculating the positions in the statevector
  Initialize_StateVector(false);
 }
-
 
 // **************************************************************************
 // Function:   Initialize_StateVector
@@ -881,8 +776,6 @@ return(state_vector_length);
 // Parameters: N/A
 // Returns:    a pointer to the state vector data
 // **************************************************************************
-// Having the same function with different const types may look stupid
-// but actually makes some sense.
 BYTE*
 STATEVECTOR::GetStateVectorPtr()
 {

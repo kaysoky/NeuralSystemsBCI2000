@@ -13,6 +13,7 @@
 #define MessageHandlerH
 
 #include <iostream>
+#include "TCPStream.h"
 
 class MessageHandler
 {
@@ -28,6 +29,9 @@ class MessageHandler
     // Message composing functions.
     // Accessible for inheritants only.
     template<typename content_type> static void PutMessage( std::ostream&, const content_type& );
+    // A specialization that accounts for tcpstream's flushing needs.
+    template<typename content_type> static void PutMessage( tcpstream& s, const content_type& c )
+    { PutMessage( static_cast<std::ostream&>( s ), c ); s.flush(); }
 
   private:
     // Callback interface for inheritants to hook in. The return value indicates

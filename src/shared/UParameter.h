@@ -28,6 +28,8 @@
  *                      jm                                                    *
  * V0.22 - 05/30/2003 - Fixed index synchronization bug in                    *
  *                      PARAM::SetNumValues(), jm                             *
+ * V0.23 - 11/24/2003 - Fixed parsing of matrices with 0x0 size               *
+ *                      Preserve existing values in SetDimensions, jm         *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -82,6 +84,9 @@ class PARAM
      public:
       // Forward lookup.
       indexer_base::mapped_type operator[]( const std::string& ) const;
+      // We need this because the above operator must return 0 for nonexisting
+      // labels.
+      bool Exists( const std::string& ) const;
       // A reverse lookup operator.
       const std::string& operator[]( size_t ) const;
       std::string& operator[]( size_t );
@@ -127,7 +132,8 @@ class PARAM
 #else // LABEL_INDEXING
           size_t        dimension2;
 #endif // LABEL_INDEXING
-          std::vector<encodedString> values;
+          typedef std::vector<encodedString> values_type;
+          values_type values;
 
  public:
         PARAM();
@@ -165,14 +171,14 @@ class PARAM
                           const std::string& label )
                 { return SetValue( s, dim1_index[ label ] ); }
         void    SetValue( const std::string& s,
-                          const std::string& label_dim2, const std::string& label_dim1 )
-                { return SetValue( s, dim2_index[ label_dim2 ], dim1_index[ label_dim1 ] ); }
+                          const std::string& label_dim1, const std::string& label_dim2 )
+                { return SetValue( s, dim1_index[ label_dim1 ], dim2_index[ label_dim2 ] ); }
         void    SetValue( const std::string& s,
-                          size_t index_dim2, const std::string& label_dim1  )
-                { return SetValue( s, index_dim2, dim1_index[ label_dim1 ] ); }
+                          size_t index_dim1, const std::string& label_dim2  )
+                { return SetValue( s, index_dim1, dim2_index[ label_dim2 ] ); }
         void    SetValue( const std::string& s,
-                          const std::string& label_dim2, size_t index_dim1 )
-                { return SetValue( s, dim2_index[ label_dim2 ], index_dim1 ); }
+                          const std::string& label_dim1, size_t index_dim2 )
+                { return SetValue( s, dim1_index[ label_dim1 ], index_dim2 ); }
 #endif // LABEL_INDEXING
   const char*   GetSection() const
                 { return section.c_str(); }
@@ -208,12 +214,12 @@ class PARAM
 #ifdef LABEL_INDEXING
   const char*   GetValue( const std::string& label ) const
                 { return GetValue( dim1_index[ label ] ); }
-  const char*   GetValue( const std::string& label_dim2, const std::string& label_dim1 ) const
-                { return GetValue( dim2_index[ label_dim2 ], dim1_index[ label_dim1 ] ); }
-  const char*   GetValue( size_t index_dim2, const std::string& label_dim1  ) const
-                { return GetValue( index_dim2, dim1_index[ label_dim1 ] ); }
-  const char*   GetValue( const std::string& label_dim2, size_t index_dim1 ) const
-                { return GetValue( dim2_index[ label_dim2 ], index_dim1 ); }
+  const char*   GetValue( const std::string& label_dim1, const std::string& label_dim2 ) const
+                { return GetValue( dim1_index[ label_dim1 ], dim2_index[ label_dim2 ] ); }
+  const char*   GetValue( size_t index_dim1, const std::string& label_dim2  ) const
+                { return GetValue( index_dim1, dim2_index[ label_dim2 ] ); }
+  const char*   GetValue( const std::string& label_dim1, size_t index_dim2 ) const
+                { return GetValue( dim1_index[ label_dim1 ], index_dim2 ); }
   labelIndexer& LabelsDimension1()
                 { return dim1_index; }
   const labelIndexer& LabelsDimension1() const
@@ -240,8 +246,6 @@ class PARAM
   std::string   GetParamLine() const;
 #endif
         int     ParseParameter( const char* line, size_t length );
-
-  static int get_argument(int ptr, char *buf, const char *line, int maxlen);
 
  public: // These will become private.
         bool    valid;

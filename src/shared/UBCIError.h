@@ -53,13 +53,14 @@ namespace BCIError
 
   class bci_ostream : public std::ostream
   {
-   friend class Environment;
+   friend class EnvironmentBase;
 
    public:
     bci_ostream() : std::ostream( 0 ) { this->init( &buf ); }
     std::ostream& operator()( const char* );
     std::ostream& operator()() { return *this; }
     int flushes() { return buf.flushes(); }
+    void clear() { std::ostream::clear(); buf.clear(); }
 
    private:
     typedef void ( *flush_handler )( const std::string& );
@@ -71,6 +72,7 @@ namespace BCIError
       bci_stringbuf() : on_flush( LogicError ), num_flushes( 0 ), std::stringbuf( std::ios_base::out ) {}
       void SetFlushHandler( flush_handler f = NULL );
       int flushes() { return num_flushes; }
+      void clear()  { SetFlushHandler( on_flush ); num_flushes = 0; }
      private:
       flush_handler on_flush;
       int num_flushes;

@@ -2,10 +2,17 @@
 //
 // File: UEnvironment.cpp
 //
-// Description: A mix-in base class that channels access to enviroment-like
+// Description: EnvironmentBase and Environment are mix-in base classes that
+//              channel access to enviroment-like
 //              global objects of types CORECOMM, PARAMLIST, STATELIST,
 //              STATEVECTOR, and provides convenient accessor functions
 //              and checking utilities.
+//              The difference between EnvironmentBase and Environment is that
+//              Environment descendants are assumed to perform globally relevant
+//              actions inside their constructors (as GenericFilter does), while
+//              EnvironmentBase descendants such as Environment::Extension
+//              are supposed to use a separate function Publish() for such
+//              purposes. 
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -21,32 +28,28 @@
 
 using namespace std;
 
-// Environment class definitions.
+////////////////////////////////////////////////////////////////////////////////
+// EnvironmentBase definitions
+////////////////////////////////////////////////////////////////////////////////
 #undef _paramlist
 #undef _statelist
 #undef _statevector
 #undef _corecomm
 #undef _phase
-PARAMLIST*   Environment::_paramlist = NULL;
-STATELIST*   Environment::_statelist = NULL;
-STATEVECTOR* Environment::_statevector = NULL;
-CORECOMM*    Environment::_corecomm = NULL;
-Environment::executionPhase Environment::_phase = Environment::nonaccess;
+PARAMLIST*   EnvironmentBase::_paramlist = NULL;
+STATELIST*   EnvironmentBase::_statelist = NULL;
+STATEVECTOR* EnvironmentBase::_statevector = NULL;
+CORECOMM*    EnvironmentBase::_corecomm = NULL;
+EnvironmentBase::executionPhase EnvironmentBase::_phase = EnvironmentBase::nonaccess;
+EnvironmentBase::ExtensionsContainer EnvironmentBase::sExtensions;
 
-Environment::paramlistAccessor   Environment::Parameters;
-Environment::statelistAccessor   Environment::States;
-Environment::statevectorAccessor Environment::Statevector;
-Environment::corecommAccessor    Environment::Corecomm;
-
-Environment::Environment()
-{
-  if( _phase != construction )
-    _bcierr << "Environment descendant instantiated "
-               "outside construction phase.";
-}
+EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
+EnvironmentBase::statelistAccessor   EnvironmentBase::States;
+EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
+EnvironmentBase::corecommAccessor    EnvironmentBase::Corecomm;
 
 PARAM*
-Environment::GetParamPtr( const string& name ) const
+EnvironmentBase::GetParamPtr( const string& name ) const
 {
 #ifdef TODO
 # error Check for Preflight access before Initialize/Process access
@@ -67,7 +70,7 @@ Environment::GetParamPtr( const string& name ) const
 }
 
 PARAM*
-Environment::GetOptionalParamPtr( const string& name ) const
+EnvironmentBase::GetOptionalParamPtr( const string& name ) const
 {
   PARAM* param = NULL;
 
@@ -80,7 +83,7 @@ Environment::GetOptionalParamPtr( const string& name ) const
 }
 
 void
-Environment::CheckRange( const PARAM* param,
+EnvironmentBase::CheckRange( const PARAM* param,
                          size_t row, size_t column ) const
 {
 #ifdef TODO
@@ -105,7 +108,7 @@ Environment::CheckRange( const PARAM* param,
 // Convenient accessor functions.
 // Read/write access a parameter by its name and indices, if applicable.
 PARAM::type_adapter
-Environment::Parameter( const string& name,
+EnvironmentBase::Parameter( const string& name,
                         size_t row, size_t column ) const
 {
 #ifdef TODO
@@ -119,7 +122,7 @@ Environment::Parameter( const string& name,
 
 #ifdef LABEL_INDEXING
 PARAM::type_adapter
-Environment::Parameter( const string& name,
+EnvironmentBase::Parameter( const string& name,
                         const string& rowLabel, size_t column ) const
 {
   PARAM* param = GetParamPtr( name );
@@ -133,7 +136,7 @@ Environment::Parameter( const string& name,
 }
 
 PARAM::type_adapter
-Environment::Parameter( const string& name,
+EnvironmentBase::Parameter( const string& name,
                         size_t row, const string& columnLabel ) const
 {
   PARAM* param = GetParamPtr( name );
@@ -147,7 +150,7 @@ Environment::Parameter( const string& name,
 }
 
 PARAM::type_adapter
-Environment::Parameter( const string& name,
+EnvironmentBase::Parameter( const string& name,
                         const string& rowLabel, const string& columnLabel ) const
 {
   PARAM* param = GetParamPtr( name );
@@ -164,7 +167,7 @@ Environment::Parameter( const string& name,
 #endif // LABEL_INDEXING
 
 const PARAM::type_adapter
-Environment::OptionalParameter( double defaultValue,
+EnvironmentBase::OptionalParameter( double defaultValue,
                                 PARAM* param,
                                 size_t row, size_t column ) const
 {
@@ -174,7 +177,7 @@ Environment::OptionalParameter( double defaultValue,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( const string& defaultValue,
+EnvironmentBase::OptionalParameter( const string& defaultValue,
                                 PARAM* inParam,
                                 size_t row, size_t column ) const
 {
@@ -191,7 +194,7 @@ Environment::OptionalParameter( const string& defaultValue,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( double defaultValue,
+EnvironmentBase::OptionalParameter( double defaultValue,
                                 const string& name,
                                 size_t row,
                                 size_t column ) const
@@ -200,7 +203,7 @@ Environment::OptionalParameter( double defaultValue,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( const string& name,
+EnvironmentBase::OptionalParameter( const string& name,
                                 size_t row,
                                 size_t column ) const
 {
@@ -209,7 +212,7 @@ Environment::OptionalParameter( const string& name,
 
 #ifdef LABEL_INDEXING
 const PARAM::type_adapter
-Environment::OptionalParameter( const string& name,
+EnvironmentBase::OptionalParameter( const string& name,
                                 const string& rowLabel, size_t column ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
@@ -220,7 +223,7 @@ Environment::OptionalParameter( const string& name,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( const string& name,
+EnvironmentBase::OptionalParameter( const string& name,
                                 size_t row, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
@@ -231,7 +234,7 @@ Environment::OptionalParameter( const string& name,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( const string& name,
+EnvironmentBase::OptionalParameter( const string& name,
                                 const string& rowLabel, const string& columnLabel ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
@@ -246,7 +249,7 @@ Environment::OptionalParameter( const string& name,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( double defaultValue,
+EnvironmentBase::OptionalParameter( double defaultValue,
                                 const string& name,
                                 const string& rowLabel, size_t column ) const
 {
@@ -258,7 +261,7 @@ Environment::OptionalParameter( double defaultValue,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( double defaultValue,
+EnvironmentBase::OptionalParameter( double defaultValue,
                                 const string& name,
                                 size_t row, const string& columnLabel ) const
 {
@@ -270,7 +273,7 @@ Environment::OptionalParameter( double defaultValue,
 }
 
 const PARAM::type_adapter
-Environment::OptionalParameter( double defaultValue,
+EnvironmentBase::OptionalParameter( double defaultValue,
                                 const string& name,
                                 const string& rowLabel, const string& columnLabel ) const
 {
@@ -287,11 +290,12 @@ Environment::OptionalParameter( double defaultValue,
 #endif // LABEL_INDEXING
 
 bool
-Environment::_PreflightCondition( const char* inConditionString,
+EnvironmentBase::_PreflightCondition( const char* inConditionString,
                                          bool inConditionValue ) const
 {
   if( !inConditionValue )
-    _bcierr << "Required parameter condition not fulfilled: "
+    _bcierr << "A necessary condition is violated. "
+            << "Please make sure that the following is true: "
             << inConditionString << endl;
   return inConditionValue;
 }
@@ -299,7 +303,7 @@ Environment::_PreflightCondition( const char* inConditionString,
 
 // Read/write access to a state by its name.
 STATEVECTOR::type_adapter
-Environment::State( const char* name ) const
+EnvironmentBase::State( const char* name ) const
 {
 #ifdef TODO
 # error In the type adapter, check whether the value fits into the state.
@@ -334,7 +338,7 @@ Environment::State( const char* name ) const
 
 // Read access to an optional state by its name.
 const STATEVECTOR::type_adapter
-Environment::OptionalState( short defaultValue, const char* name ) const
+EnvironmentBase::OptionalState( short defaultValue, const char* name ) const
 {
   int bitLocation = 0,
       byteLocation = 0,
@@ -365,7 +369,7 @@ Environment::OptionalState( short defaultValue, const char* name ) const
 }
 
 // Called to prevent access.
-void Environment::EnterNonaccessPhase()
+void EnvironmentBase::EnterNonaccessPhase()
 {
   __bcierr.SetFlushHandler( BCIError::LogicError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -375,9 +379,9 @@ void Environment::EnterNonaccessPhase()
   _statevector = NULL;
   _corecomm = NULL;
 }
-// Called from the framework before any Environment descendant class
+// Called from the framework before any EnvironmentBase descendant class
 // is instantiated.
-void Environment::EnterConstructionPhase( PARAMLIST*   inParamList,
+void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
                                           STATELIST*   inStateList,
                                           STATEVECTOR* inStateVector,
                                           CORECOMM*    inCoreComm )
@@ -389,10 +393,12 @@ void Environment::EnterConstructionPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _corecomm = inCoreComm;
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->Publish();
 }
 
 // Called before any call to GenericFilter::Preflight().
-void Environment::EnterPreflightPhase( PARAMLIST*   inParamList,
+void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
                                        STATELIST*   inStateList,
                                        STATEVECTOR* inStateVector,
                                        CORECOMM*    inCoreComm )
@@ -404,10 +410,12 @@ void Environment::EnterPreflightPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = NULL;
   _corecomm = inCoreComm;
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->Preflight();
 }
 
 // Called before any call to GenericFilter::Initialize().
-void Environment::EnterInitializationPhase( PARAMLIST*   inParamList,
+void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
                                             STATELIST*   inStateList,
                                             STATEVECTOR* inStateVector,
                                             CORECOMM*    inCoreComm )
@@ -419,10 +427,12 @@ void Environment::EnterInitializationPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _corecomm = inCoreComm;
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->Initialize();
 }
 
 // Called before any call to GenericFilter::Process().
-void Environment::EnterProcessingPhase( PARAMLIST*   inParamList,
+void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
                                         STATELIST*   inStateList,
                                         STATEVECTOR* inStateVector,
                                         CORECOMM*    inCoreComm )
@@ -434,4 +444,18 @@ void Environment::EnterProcessingPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _corecomm = inCoreComm;
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->Process();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Environment definitions
+////////////////////////////////////////////////////////////////////////////////
+Environment::Environment()
+{
+  if( GetPhase() != construction )
+    _bcierr << "Environment descendant instantiated "
+               "outside construction phase.";
+}
+
+

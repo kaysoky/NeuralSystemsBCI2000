@@ -14,6 +14,7 @@ private: 	// User declarations
         char    buffer[LENGTH_SYSCMD];
 public:		// User declarations
         SYSCMD::SYSCMD();
+        SYSCMD::SYSCMD( const char* );
         SYSCMD::~SYSCMD();
         int     ParseSysCmd(const char *line, int length);
         const char* SYSCMD::GetSysCmd();
@@ -21,6 +22,9 @@ public:		// User declarations
         void ReadFromStream( class std::istream& );
         class std::ostream& WriteBinary( class std::ostream& ) const;
         class std::istream& ReadBinary( class std::istream& );
+        bool operator<( const SYSCMD& ) const;
+        bool operator==( const SYSCMD& ) const;
+        static const SYSCMD EndOfState, EndOfParameter, Start, Reset;
 };
 
 inline class std::ostream& operator<<( class std::ostream& os, const SYSCMD& s )

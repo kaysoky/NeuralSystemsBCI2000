@@ -21,10 +21,9 @@
 #pragma hdrstop
 
 #include "UBCIError.h"
+#include <iostream>
 
-#ifdef BCI_TOOL
-# include <iostream>
-#else
+#ifndef BCI_TOOL
 # include "UCoreComm.h"
 # include "UEnvironment.h"
 #endif
@@ -76,7 +75,33 @@ bci_ostream::bci_stringbuf::sync()
   return r;
 }
 
-#ifndef BCI_TOOL
+#ifdef BCI_TOOL // implementation for a filter wrapper
+void
+BCIError::Warning( const std::string& message )
+{
+}
+
+void
+BCIError::ConfigurationError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Configuration Error: " << message << endl;
+}
+
+void
+BCIError::RuntimeError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Runtime Error: " << message << endl;
+}
+
+void
+BCIError::LogicError( const std::string& message )
+{
+  if( message.length() > 1 )
+    cerr << "Logic Error: " << message << endl;
+}
+#else // implementation for a module
 // A preliminary implementation of the error display/error handling mechanism
 // on the core module side.
 struct StatusMessage
@@ -92,8 +117,12 @@ struct StatusMessage
   // If the connection to the operator does not work, fall back to a local
   // error display.
   if( !( corecomm && corecomm->SendStatus( status.str().c_str() ) ) && code >= 400 )
+#if !defined( WIN32 ) || defined( __CONSOLE__ )
+    cerr << text << endl;
+#else
     ::MessageBox( NULL, text.c_str(), "BCI2000 Error",
                     MB_OK | MB_ICONHAND | MB_SYSTEMMODAL | MB_SETFOREGROUND );
+#endif
  }
 } StatusMessage;
 
@@ -123,31 +152,5 @@ BCIError::LogicError( const std::string& message )
 {
   if( message.length() > 1 )
     StatusMessage( 499, message.substr( 0, message.length() - 1 ) );
-}
-#else // implementation for a command line tool
-void
-BCIError::Warning( const std::string& message )
-{
-}
-
-void
-BCIError::ConfigurationError( const std::string& message )
-{
-  if( message.length() > 1 )
-    cerr << "Configuration Error: " << message << endl;
-}
-
-void
-BCIError::RuntimeError( const std::string& message )
-{
-  if( message.length() > 1 )
-    cerr << "Runtime Error: " << message << endl;
-}
-
-void
-BCIError::LogicError( const std::string& message )
-{
-  if( message.length() > 1 )
-    cerr << "Logic Error: " << message << endl;
 }
 #endif // BCI_TOOL
