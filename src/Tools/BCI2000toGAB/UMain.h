@@ -44,13 +44,14 @@ private:	// User declarations
         const short* mpGabTargets;
         int mTargetMax;
         __int16 ConvertState(BCI2000DATA *bci2000data);
+        enum { eInvalidState = -1 };
 
         std::vector<float> mOffset, mGain;
         bool CalibFromFile() { return mGain.size() != 0; }
         void __fastcall CheckCalibrationFile( void );
 
         void __fastcall DoStartupProcessing( TObject*, bool& );
-        bool mAutoMode;
+        bool mBatchMode;
 
         typedef enum { Message, Warning, Error } msgtypes;
         void UserMessage( const AnsiString&, msgtypes ) const;

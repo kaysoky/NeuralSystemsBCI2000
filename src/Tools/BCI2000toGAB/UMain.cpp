@@ -17,6 +17,7 @@
 #pragma resource "*.dfm"
 
 #define VERSION "0.5"
+#define BLOCKSIZE 50000
 
 using namespace std;
 
@@ -55,7 +56,7 @@ template<typename From, typename To> float convert_num( const From& f, To& t )
 
 void TfMain::UserMessage( const AnsiString& msg, TfMain::msgtypes type ) const
 {
-  bool actuallyShowIt = !mAutoMode;
+  bool actuallyShowIt = !mBatchMode;
   const char* msgtype = "Message";
   long msgflags = MB_OK;
   switch( type )
@@ -79,7 +80,7 @@ __fastcall TfMain::TfMain(TComponent* Owner)
         : TForm(Owner),
           mpGabTargets( NULL ),
           mTargetMax( 0 ),
-          mAutoMode( false )
+          mBatchMode( false )
 {
   Caption = Caption + " " VERSION " ("__DATE__")";
   Constraints->MinHeight = Height;
@@ -94,6 +95,50 @@ __fastcall TfMain::TfMain(TComponent* Owner)
   mSourceFiles->WindowProc = SourceFilesWindowProc;
   ::DragAcceptFiles( mSourceFiles->Handle, true );
 
+  mSourceFiles->Lines->Clear();
+
+  const char optionChar = '-';
+  int i = 1;
+  while( i <= ParamCount() && ParamStr( i )[ 1 ] == optionChar )
+  {
+    if( ParamStr( i ).Length() >= 2 )
+    {
+      switch( ParamStr( i )[ 2 ] )
+      {
+        case 'o':
+        case 'O':
+          if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
+            eDestinationFile->Text = ParamStr( ++i );
+          else
+            eDestinationFile->Text = ParamStr( i ).c_str() + 2;
+          break;
+        case 'p':
+        case 'P':
+          ParameterFile->Enabled = true;
+          if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
+           ParameterFile->Text = ParamStr( ++i );
+          else
+            ParameterFile->Text = ParamStr( i ).c_str() + 2;
+          break;
+        case 'a':
+        case 'A':
+          AutoscaleCheckbox->Checked = true;
+          break;
+        case 'm':
+        case 'M':
+          AutoscaleCheckbox->Checked = false;
+          break;
+        case 'b': // Use this option for scripts.
+        case 'B':
+          mBatchMode = true;
+          break;
+      }
+    }
+    ++i;
+  }
+  while( i <= ParamCount() && ParamStr( i )[ 1 ] != optionChar )
+    mSourceFiles->Lines->Append( ParamStr( i++ ) );
+
   if( Application->OnIdle == NULL )
     Application->OnIdle = DoStartupProcessing;
 }
@@ -103,46 +148,9 @@ void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
 {
   Application->OnIdle = NULL;
 
-  const char optionChar = '-';
-  if( ParamCount() > 0 && ParamStr( 1 )[ 1 ] != optionChar )
+  if( mBatchMode && bConvert->Enabled )
   {
-    mAutoMode = true;
-    AutoscaleCheckbox->Checked = false;
-    mSourceFiles->Lines->Clear();
-    int i = 1;
-    while( i <= ParamCount() && ParamStr( i )[ 1 ] != optionChar )
-      mSourceFiles->Lines->Append( ParamStr( i++ ) );
-    while( i <= ParamCount() && ParamStr( i )[ 1 ] == optionChar )
-    {
-      if( ParamStr( i ).Length() >= 2 )
-      {
-        switch( ParamStr( i )[ 2 ] )
-        {
-          case 'o':
-          case 'O':
-            if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
-              eDestinationFile->Text = ParamStr( ++i );
-            else
-              eDestinationFile->Text = ParamStr( i ).c_str() + 2;
-            break;
-          case 'p':
-          case 'P':
-            ParameterFile->Enabled = true;
-            if( ParamCount() > i && ParamStr( i + 1 )[ 1 ] != optionChar )
-             ParameterFile->Text = ParamStr( ++i );
-            else
-              ParameterFile->Text = ParamStr( i ).c_str() + 2;
-            break;
-          case 'a':
-          case 'A':
-            AutoscaleCheckbox->Checked = true;
-            break;
-        }
-      }
-      ++i;
-    }
-    if( bConvert->Enabled )
-      bConvert->Click();
+    bConvert->Click();
     Application->Terminate();
   }
 }
@@ -208,7 +216,7 @@ void __fastcall TfMain::CheckCalibrationFile( void )
   {
     UserMessage( "Target type heuristics failed. "
                  "Target conversion is likely to be unusable.",
-                 Warning );
+                 Error );
     mpGabTargets = NULL;
   }
 }
@@ -229,10 +237,20 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  {
    int  samplingRate = 0,
         numChannels = 0;
+
+   // Parameters that must have identical values in all of the files.
+   const char* paramNamesToCheck[] =
+   {
+     "NumberTargets",
+     "TargetOrientation",
+   };
+   const size_t numParamNamesToCheck = sizeof( paramNamesToCheck ) / sizeof( *paramNamesToCheck );
+   PARAMLIST paramsFromFirstFile;
+
    for( int i = 0; i < mSourceFiles->Lines->Count; ++i )
    {
      BCI2000DATA reader;
-     if( reader.Initialize( mSourceFiles->Lines->Strings[ i ].c_str(), 50000 )
+     if( reader.Initialize( mSourceFiles->Lines->Strings[ i ].c_str(), BLOCKSIZE )
           != BCI2000ERR_NOERR )
      {
         errorOccurred = true;
@@ -242,6 +260,30 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      }
      else
      {
+        if( i == 0 )
+          paramsFromFirstFile = *reader.GetParamListPtr();
+        else
+          for( size_t i = 0; i < numParamNamesToCheck; ++i )
+          {
+            bool goodParam = true;
+            const PARAM* currentParam = reader.GetParamListPtr()->GetParamPtr( paramNamesToCheck[ i ] ),
+                       * referenceParam = paramsFromFirstFile.GetParamPtr( paramNamesToCheck[ i ] );
+            if( !( currentParam == NULL && referenceParam == NULL ) )
+            {
+              goodParam = ( currentParam->GetNumValues() == referenceParam->GetNumValues() );
+              for( size_t j = 0; goodParam && j < currentParam->GetNumValues(); ++j )
+                goodParam = goodParam && ( string( currentParam->GetValue( j ) ) == string( referenceParam->GetValue( j ) ) );
+            }
+            if( !goodParam )
+            {
+              errorOccurred = true;
+              UserMessage( "Parameter \""
+                           + AnsiString( paramNamesToCheck[ i ] )
+                           + "\" is inconsistent across input files.",
+                           Error );
+            }
+          }
+
         if( numChannels != 0 && reader.GetNumChannels() != numChannels )
         {
           UserMessage( "Inconsistent channel count in file \""
@@ -268,6 +310,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
                        Error );
           errorOccurred = true;
         }
+
      }
    }
    if( errorOccurred )
@@ -308,7 +351,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    for( int file = 0; file < files; ++file )
    {
      BCI2000DATA data;
-     data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), 50000 );
+     data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), BLOCKSIZE );
      int samples = data.GetNumSamples(),
          channels = data.GetNumChannels();
      for( int sample = 0; sample < samples; ++sample )
@@ -348,7 +391,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
   mProgressLegend->Invalidate();
 
   BCI2000DATA data;
-  data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), 50000 );
+  data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), BLOCKSIZE );
   int samples=data.GetNumSamples(),
       channels = data.GetNumChannels();
 
@@ -389,7 +432,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    // write the state element
    data.ReadStateVector(sample);
    gab_type cur_state=ConvertState(&data);
-   if( cur_state == -1 )
+   if( cur_state == eInvalidState )
      unexpectedTargetCode = true;
    fwrite(&cur_state, sizeof( cur_state ), 1, fp);
    }
@@ -410,7 +453,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
                 "Input data exceeded the numeric range by a ratio of "
                 + FloatToStr( maxRatio ) + ".\n"
                 "Conversion process finished.",
-                Warning );
+                Error );
  }
  if( unexpectedTargetCode )
  {
@@ -418,7 +461,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    UserMessage( "Unexpected target code found during conversion.\n"
                 "Target conversion will be unusable.\n"
                 "Conversion process finished.",
-                Warning );
+                Error );
  }
 
  if( !errorOccurred )
@@ -436,53 +479,26 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
 // convert one state of BCI2000 into the state of the old system
 __int16 TfMain::ConvertState(BCI2000DATA *bci2000data)
 {
-const STATEVECTOR *statevector;
-__int16     old_state;
-short       ITI, targetcode, resultcode, feedback, restperiod;
-static short cur_targetcode=-1;
+  __int16 gabState = eInvalidState;
+  const STATEVECTOR* statevector = bci2000data->GetStateVectorPtr();
+  short ITI = statevector->GetStateValue( "InterTrialInterval" ),
+        targetCode = statevector->GetStateValue( "TargetCode" ),
+        restPeriod = statevector->GetStateValue( "RestPeriod" ),
+        feedback = statevector->GetStateValue( "Feedback" );
 
- statevector=bci2000data->GetStateVectorPtr();
- ITI=statevector->GetStateValue("InterTrialInterval");
- targetcode=statevector->GetStateValue("TargetCode");
- resultcode=statevector->GetStateValue("ResultCode");
- feedback=statevector->GetStateValue("Feedback");
- restperiod= statevector->GetStateValue("RestPeriod");
- if (targetcode > 0) cur_targetcode=targetcode;
+  if( ITI == 1 )
+    gabState = 20;
+  else if( restPeriod == 1 )
+    gabState = 24;
+  else if( targetCode > 0 )
+  {
+    if( targetCode <= mTargetMax && mpGabTargets != NULL )
+      gabState = mpGabTargets[ targetCode - 1 ];
+  }
+  else
+    gabState = 20;
 
- // ITI
- if (ITI == 1)
-    return(20);
-
- // there is an outcome
- if (resultcode > 0)
-    {
-    if (resultcode == cur_targetcode)
-       return(18);
-    else
-       return(19);
-    }
-
- // target on the screen
- if (targetcode > 0 )
- {
-   if( targetcode > mTargetMax )
-     return -1;
-   else if( mpGabTargets != NULL )
-     return mpGabTargets[ targetcode - 1 ];
-   else
-   {
-      if (feedback == 0)                  // no cursor -> pre-trial pause
-         return(2+targetcode-1);
-      else
-         return(10+targetcode-1);         // cursor on the screen
-   }
- }
-
-  if( restperiod == 1 )
-        return( 24 );  
-
- // should actually never get here   
- return(1);
+  return gabState;
 }
 
 
@@ -490,13 +506,7 @@ void __fastcall TfMain::bOpenFileClick(TObject *Sender)
 {
  OpenDialog->Options << ofAllowMultiSelect;
  if( OpenDialog->Execute() )
- {
-    TStringList* fileList = new TStringList;
-    fileList->Assign( OpenDialog->Files );
-    fileList->Sort();
-    mSourceFiles->Lines->Assign( fileList );
-    delete fileList;
- }
+    mSourceFiles->Lines->Assign( OpenDialog->Files );
 }
 //---------------------------------------------------------------------------
 
@@ -525,12 +535,42 @@ void __fastcall TfMain::Button2Click(TObject *Sender)
 void __fastcall TfMain::mSourceFilesChange(TObject *Sender)
 {
   TMemo* memo = static_cast<TMemo*>( Sender );
-  bool haveFiles = ( memo->Text.Trim().Length() != 0 );
+  TNotifyEvent changeHandler = memo->OnChange;
+  memo->OnChange = NULL;
+  memo->Text = memo->Text.Trim();
+  TStringList* fileList = new TStringList;
+  fileList->Assign( memo->Lines );
+  fileList->Sort();
+  memo->Lines->Assign( fileList );
+  delete fileList;
+  memo->OnChange = changeHandler;
+
+  bool haveFiles = ( memo->Text.Length() != 0 );
   bConvert->Enabled = haveFiles;
+  bConvert->Default = haveFiles;
   if( haveFiles && !eDestinationFile->Enabled )
   {
-    AnsiString destFileName = memo->Lines->Strings[ 0 ];
-    eDestinationFile->Text = ::ChangeFileExt( destFileName, ".raw" );
+    AnsiString orienDesc = "";
+    BCI2000DATA data;
+    data.Initialize( mSourceFiles->Lines->Strings[ 0 ].c_str(), BLOCKSIZE );
+    const PARAM* param = data.GetParamListPtr()->GetParamPtr( "TargetOrientation" );
+    if( param != NULL )
+      switch( ::atoi( param->GetValue() ) )
+      {
+        case 1: // vertical
+          orienDesc = "_v";
+          break;
+        case 2: // horizontal
+          orienDesc = "_h";
+          break;
+        case 3: // both
+          orienDesc = "_b";
+          break;
+        default:
+          orienDesc = "_strange";
+          break;
+      }
+    eDestinationFile->Text = ::ChangeFileExt( mSourceFiles->Lines->Strings[ 0 ], orienDesc + ".raw" );
   }
 }
 //---------------------------------------------------------------------------
