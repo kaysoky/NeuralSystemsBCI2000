@@ -37,7 +37,7 @@ __fastcall DTFUN::Stop( void )
 {
         ECODE status;
 
-        status= olDaStop(lphDass);
+        status= olDaAbort(lphDass);
         return( status );
 }
 //-----------------------------------------------------------------------------
