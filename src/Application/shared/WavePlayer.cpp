@@ -11,6 +11,11 @@
 // Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
 //           Added copy constructor, assignment operator and related private
 //           member functions.
+//          Nov 11, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added volume and balance setting.
+//           Note that waveOutSetVolume does not work as described in the
+//           Win32 documentation but will change the global wave out volume
+//           in the windows mixer instead.
 //
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
@@ -18,32 +23,37 @@
 #pragma hdrstop
 #endif // __BORLANDC__
 
+#include <math.h>
 #include <assert>
 
 #include "WavePlayer.h"
 
-HWAVEOUT TWavePlayer::currentDeviceHandle = NULL;
-WAVEHDR* TWavePlayer::currentHeader = NULL;
+HWAVEOUT TWavePlayer::sCurrentDeviceHandle = NULL;
+WAVEHDR* TWavePlayer::spCurrentHeader = NULL;
 
-TWavePlayer::TOperationMode TWavePlayer::mode = unknown;
-bool                        TWavePlayer::positionAccurate = false;
-int                         TWavePlayer::numInstances = 0;
+TWavePlayer::TOperationMode TWavePlayer::sMode = unknown;
+bool                        TWavePlayer::sPositionAccurate = false;
+int                         TWavePlayer::sNumInstances = 0;
 
 
 TWavePlayer::TWavePlayer()
-: samplingRate( 0 ),
-  playing( false ),
-  deviceHandle( NULL ),
-  fileHandle( NULL )
+: mVolume( 1.0 ),
+  mBalance( 0.0 ),
+  mSamplingRate( 0 ),
+  mPlaying( false ),
+  mDeviceHandle( NULL ),
+  mFileHandle( NULL )
 {
     Construct();
 }
 
 TWavePlayer::TWavePlayer( const TWavePlayer& inOriginal )
-: samplingRate( 0 ),
-  playing( false ),
-  deviceHandle( NULL ),
-  fileHandle( NULL )
+: mVolume( 1.0 ),
+  mBalance( 0.0 ),
+  mSamplingRate( 0 ),
+  mPlaying( false ),
+  mDeviceHandle( NULL ),
+  mFileHandle( NULL )
 {
     Construct();
     Assign( inOriginal );
@@ -69,8 +79,8 @@ TWavePlayer::~TWavePlayer()
 void
 TWavePlayer::Construct()
 {
-    ++numInstances;
-    if( mode == unknown )
+    ++sNumInstances;
+    if( sMode == unknown )
     {
         // Determine if the wave out driver supports multiple device instances.
         const int   rate = 22050,   // should be supported by any driver
@@ -88,53 +98,53 @@ TWavePlayer::Construct()
             bitsPerSamplePerChannel
         };
 
-        sysErr = waveOutOpen( &deviceHandle1, WAVE_MAPPER, &format,
+        sysErr = ::waveOutOpen( &deviceHandle1, WAVE_MAPPER, &format,
                                             NULL, 0, CALLBACK_NULL );
         if( sysErr != MMSYSERR_NOERROR )
-            mode = singleDeviceInstance;
+            sMode = singleDeviceInstance;
         else
         {
-            sysErr = waveOutOpen( &deviceHandle2, WAVE_MAPPER, &format,
+            sysErr = ::waveOutOpen( &deviceHandle2, WAVE_MAPPER, &format,
                                                 NULL, 0, CALLBACK_NULL );
             if( sysErr != MMSYSERR_NOERROR )
             {
-                mode = singleDeviceInstance;
-                waveOutClose( deviceHandle1 );
+                sMode = singleDeviceInstance;
+                ::waveOutClose( deviceHandle1 );
             }
             else
             {
-                mode = multipleDeviceInstances;
-                waveOutClose( deviceHandle1 );
-                waveOutClose( deviceHandle2 );
+                sMode = multipleDeviceInstances;
+                ::waveOutClose( deviceHandle1 );
+                ::waveOutClose( deviceHandle2 );
             }
         }
 
         // Determine if the device supports retrieving a sample-accurate position.
         WAVEOUTCAPS caps;
-        sysErr = waveOutGetDevCaps( WAVE_MAPPER, &caps, sizeof( caps ) );
+        sysErr = ::waveOutGetDevCaps( WAVE_MAPPER, &caps, sizeof( caps ) );
         if( sysErr == MMSYSERR_NOERROR )
-            positionAccurate = ( caps.dwSupport & WAVECAPS_SAMPLEACCURATE );
+            sPositionAccurate = ( caps.dwSupport & WAVECAPS_SAMPLEACCURATE );
     }
 }
 
 void
 TWavePlayer::Destruct()
 {
-    --numInstances;
+    --sNumInstances;
 
     // This happens in singleDeviceInstance mode.
-    if( numInstances < 1 && currentDeviceHandle != NULL )
+    if( sNumInstances < 1 && sCurrentDeviceHandle != NULL )
     {
         // If the device is open, close it.
-        waveOutReset( currentDeviceHandle );
-        if( currentHeader != NULL )
+        ::waveOutReset( sCurrentDeviceHandle );
+        if( spCurrentHeader != NULL )
         {
-            waveOutUnprepareHeader( currentDeviceHandle,
-                                    currentHeader, sizeof( soundHeader ) );
-            currentHeader = NULL;
+            ::waveOutUnprepareHeader( sCurrentDeviceHandle,
+                                    spCurrentHeader, sizeof( mSoundHeader ) );
+            spCurrentHeader = NULL;
         }
-        waveOutClose( currentDeviceHandle );
-        currentDeviceHandle = NULL;
+        ::waveOutClose( sCurrentDeviceHandle );
+        sCurrentDeviceHandle = NULL;
     }
 
     DetachFile();
@@ -144,6 +154,7 @@ void
 TWavePlayer::Assign( const TWavePlayer& inOriginal )
 {
   AttachFile( inOriginal.GetFile().c_str() );
+  SetVolumeAndBalance( inOriginal.GetVolume(), inOriginal.GetBalance() );
 }
 
 TWavePlayer::Error
@@ -160,8 +171,8 @@ TWavePlayer::AttachFile( const char* inFileName )
     // the OS should map its contents into memory instead of
     // maintaining a separate buffer. This is what we want.
 
-    fileHandle = mmioOpen( ( char* )inFileName, NULL, MMIO_READ | MMIO_ALLOCBUF );
-    if( fileHandle == NULL )
+    mFileHandle = mmioOpen( ( char* )inFileName, NULL, MMIO_READ | MMIO_ALLOCBUF );
+    if( mFileHandle == NULL )
         err = fileOpeningError;
 
     MMCKINFO    parentChunkInfo,
@@ -173,7 +184,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     {
         // Read the chunks we need to play the file.
         parentChunkInfo.fccType = mmioFOURCC( 'W', 'A', 'V', 'E' );
-        sysErr = mmioDescend( fileHandle, &parentChunkInfo, NULL, MMIO_FINDRIFF );
+        sysErr = mmioDescend( mFileHandle, &parentChunkInfo, NULL, MMIO_FINDRIFF );
         if( sysErr != MMSYSERR_NOERROR )
             // The file doesn't contain a WAVE chunk.
             err = fileOpeningError;
@@ -182,7 +193,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err == noError )
     {
         childChunkInfo.ckid = mmioFOURCC( 'f', 'm', 't', ' ' );
-        sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
+        sysErr = mmioDescend( mFileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
         if( sysErr != MMSYSERR_NOERROR )
             // The file doesn't contain a fmt chunk.
             err = fileOpeningError;
@@ -191,25 +202,25 @@ TWavePlayer::AttachFile( const char* inFileName )
     // Read the fmt chunk into the WAVEFORMATEX structure.
     if( err == noError )
     {
-        fileFormat.cbSize = 0;
-        if( childChunkInfo.cksize > sizeof( fileFormat ) )
+        mFileFormat.cbSize = 0;
+        if( childChunkInfo.cksize > sizeof( mFileFormat ) )
             // The chunk does not fit into the WAVEFORMATEX structure.
             err = fileOpeningError;
     }
 
     if( err == noError )
     {
-        if( mmioRead( fileHandle, ( char* )&fileFormat, childChunkInfo.cksize ) != ( long )childChunkInfo.cksize )
+        if( mmioRead( mFileHandle, ( char* )&mFileFormat, childChunkInfo.cksize ) != ( long )childChunkInfo.cksize )
             // There is not enough data in the file.
             err = fileOpeningError;
     }
 
     if( err == noError )
     {
-        mmioAscend( fileHandle, &childChunkInfo, 0 );
+        mmioAscend( mFileHandle, &childChunkInfo, 0 );
         // Get to the data chunk.
         childChunkInfo.ckid = mmioFOURCC( 'd', 'a', 't', 'a' );
-        sysErr = mmioDescend( fileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
+        sysErr = mmioDescend( mFileHandle, &childChunkInfo, &parentChunkInfo, MMIO_FINDCHUNK );
         if( sysErr != MMSYSERR_NOERROR )
             // The file doesn't contain a data chunk.
             err = fileOpeningError;
@@ -220,7 +231,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err == noError )
     {
         // Resize the file buffer to contain all data.
-        sysErr = mmioSetBuffer( fileHandle, NULL, dataLength, 0 );
+        sysErr = mmioSetBuffer( mFileHandle, NULL, dataLength, 0 );
         if( sysErr != MMSYSERR_NOERROR )
             // The new buffer size could not be set. Should not happen
             // in a WIN32 environment if virtual memory is configured
@@ -231,7 +242,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err == noError )
     {
         // Make sure the data is in the buffer.
-        sysErr = mmioAdvance( fileHandle, NULL, MMIO_READ );
+        sysErr = mmioAdvance( mFileHandle, NULL, MMIO_READ );
         if( sysErr != MMSYSERR_NOERROR )
             err = fileOpeningError;
     }
@@ -239,7 +250,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err == noError )
     {
         // Get a pointer to the buffer and enter it into the WAVEHDR structure.
-        sysErr = mmioGetInfo( fileHandle, &info, 0 );
+        sysErr = mmioGetInfo( mFileHandle, &info, 0 );
         if( sysErr != MMSYSERR_NOERROR )
             err = fileOpeningError;
     }
@@ -247,18 +258,18 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err == noError )
     {
         assert( info.cchBuffer == dataLength );
-        soundHeader.lpData = info.pchBuffer;
-        soundHeader.dwBufferLength = dataLength;
-        soundHeader.dwBytesRecorded = 0;
-        soundHeader.dwUser = 0;
-        soundHeader.dwFlags = 0;
-        soundHeader.dwLoops = 0;
-        soundHeader.lpNext = NULL;
-        soundHeader.reserved = 0;
+        mSoundHeader.lpData = info.pchBuffer;
+        mSoundHeader.dwBufferLength = dataLength;
+        mSoundHeader.dwBytesRecorded = 0;
+        mSoundHeader.dwUser = 0;
+        mSoundHeader.dwFlags = 0;
+        mSoundHeader.dwLoops = 0;
+        mSoundHeader.lpNext = NULL;
+        mSoundHeader.reserved = 0;
 
-        samplingRate = fileFormat.nSamplesPerSec;
+        mSamplingRate = mFileFormat.nSamplesPerSec;
 
-        switch( mode )
+        switch( sMode )
         {
             case singleDeviceInstance:
                 // We cannot open the device and keep it open because the device cannot
@@ -267,7 +278,7 @@ TWavePlayer::AttachFile( const char* inFileName )
 
             case multipleDeviceInstances:
                 // Try opening a wave output device suited for the file's format.
-                sysErr = waveOutOpen( &deviceHandle, WAVE_MAPPER, &fileFormat,
+                sysErr = ::waveOutOpen( &mDeviceHandle, WAVE_MAPPER, &mFileFormat,
                                         ( DWORD )MsgHandler, ( DWORD )this, CALLBACK_FUNCTION );
                 if( sysErr != MMSYSERR_NOERROR )
                     err = genError;
@@ -275,11 +286,11 @@ TWavePlayer::AttachFile( const char* inFileName )
                 if( err == noError )
                 {
                     // Prepare the sound header for playing.
-                    sysErr = waveOutPrepareHeader( deviceHandle, &soundHeader, sizeof( soundHeader ) );
+                    sysErr = ::waveOutPrepareHeader( mDeviceHandle, &mSoundHeader, sizeof( mSoundHeader ) );
                     if( sysErr != MMSYSERR_NOERROR )
                         err = genError;
                     else
-                        soundFlags = soundHeader.dwFlags;
+                        mSoundFlags = mSoundHeader.dwFlags;
                 }
                 break;
             default:
@@ -291,7 +302,7 @@ TWavePlayer::AttachFile( const char* inFileName )
     if( err != noError )
       DetachFile();
     else
-      currentFileName = inFileName;
+      mCurrentFileName = inFileName;
 
     return err;
 }
@@ -299,34 +310,34 @@ TWavePlayer::AttachFile( const char* inFileName )
 void
 TWavePlayer::DetachFile()
 {
-    switch( mode )
+    switch( sMode )
     {
         case singleDeviceInstance:
             // If this instance of TWavePlayer is playing, stop playback and
             // unprepare our header.
-            if( ( currentDeviceHandle != NULL ) && ( currentHeader == &soundHeader ) )
+            if( ( sCurrentDeviceHandle != NULL ) && ( spCurrentHeader == &mSoundHeader ) )
             {
                 // Stop playback immediately.
-                waveOutReset( currentDeviceHandle );
+                ::waveOutReset( sCurrentDeviceHandle );
                 // Free internal buffer memory.
-                waveOutUnprepareHeader( currentDeviceHandle, currentHeader, sizeof( soundHeader ) );
+                ::waveOutUnprepareHeader( sCurrentDeviceHandle, spCurrentHeader, sizeof( mSoundHeader ) );
                 // Close the device.
-                waveOutClose( currentDeviceHandle );
-                currentDeviceHandle = NULL;
-                currentHeader = NULL;
+                ::waveOutClose( sCurrentDeviceHandle );
+                sCurrentDeviceHandle = NULL;
+                spCurrentHeader = NULL;
             }
             break;
 
         case multipleDeviceInstances:
-            if( deviceHandle != NULL )
+            if( mDeviceHandle != NULL )
             {
                 // Stop playback immediately.
-                waveOutReset( deviceHandle );
+                ::waveOutReset( mDeviceHandle );
                 // Free internal buffer memory.
-                waveOutUnprepareHeader( deviceHandle, &soundHeader, sizeof( soundHeader ) );
+                ::waveOutUnprepareHeader( mDeviceHandle, &mSoundHeader, sizeof( mSoundHeader ) );
                 // Close device instance.
-                waveOutClose( deviceHandle );
-                deviceHandle = NULL;
+                ::waveOutClose( mDeviceHandle );
+                mDeviceHandle = NULL;
             }
             break;
 
@@ -334,71 +345,74 @@ TWavePlayer::DetachFile()
             assert( false );
     }
 
-    if( fileHandle != NULL )
-        mmioClose( fileHandle, 0 );
-    fileHandle = NULL;
-    currentFileName = "";
-    samplingRate = 0;
+    if( mFileHandle != NULL )
+        mmioClose( mFileHandle, 0 );
+    mFileHandle = NULL;
+    mCurrentFileName = "";
+    mSamplingRate = 0;
 }
 
 void
 TWavePlayer::Play()
 {
-    if( fileHandle == NULL )
+    if( mFileHandle == NULL )
         return;
+
+    SetVolume( mVolume );
+    SetBalance( mBalance );
 
     MMRESULT    sysErr;
 
-    switch( mode )
+    switch( sMode )
     {
         case singleDeviceInstance:
-            if( ( currentDeviceHandle != NULL ) && ( currentHeader != NULL ) )
+            if( ( sCurrentDeviceHandle != NULL ) && ( spCurrentHeader != NULL ) )
             {
                 // If the device is open, close it.
-                waveOutReset( currentDeviceHandle );
-                waveOutUnprepareHeader( currentDeviceHandle,
-                                        currentHeader, sizeof( soundHeader ) );
-                waveOutClose( currentDeviceHandle );
-                currentHeader = NULL;
+                ::waveOutReset( sCurrentDeviceHandle );
+                ::waveOutUnprepareHeader( sCurrentDeviceHandle,
+                                        spCurrentHeader, sizeof( mSoundHeader ) );
+                ::waveOutClose( sCurrentDeviceHandle );
+                spCurrentHeader = NULL;
             }
 
-            sysErr = waveOutOpen( &currentDeviceHandle, WAVE_MAPPER, &fileFormat,
+            sysErr = ::waveOutOpen( &sCurrentDeviceHandle, WAVE_MAPPER, &mFileFormat,
                                 ( DWORD )MsgHandler, ( DWORD )this, CALLBACK_FUNCTION );
             if( sysErr != MMSYSERR_NOERROR )
             {
-                currentDeviceHandle = NULL;
+                sCurrentDeviceHandle = NULL;
                 return;
             }
-            currentHeader = &soundHeader;
-            sysErr = waveOutPrepareHeader( currentDeviceHandle,
-                                        currentHeader, sizeof( soundHeader ) );
+            spCurrentHeader = &mSoundHeader;
+            sysErr = ::waveOutPrepareHeader( sCurrentDeviceHandle,
+                                        spCurrentHeader, sizeof( mSoundHeader ) );
             if( sysErr != MMSYSERR_NOERROR )
                 return;
 
-            playing = true;
-            sysErr = waveOutWrite( currentDeviceHandle,
-                            currentHeader, sizeof( soundHeader ) );
+            mPlaying = true;
+            sysErr = ::waveOutWrite( sCurrentDeviceHandle,
+                            spCurrentHeader, sizeof( mSoundHeader ) );
             if( sysErr != MMSYSERR_NOERROR )
             {
-                playing = false;
+                mPlaying = false;
                 return;
             }
 
             break;
 
         case multipleDeviceInstances:
-            // The call to waveOutReset() does not seem to result in a
+            // The call to ::waveOutReset() does not seem to result in a
             // noteworthy amount of additional delay time.
-            waveOutReset( deviceHandle );
+            ::waveOutReset( mDeviceHandle );
             // Resetting the flags seems to reduce the onset delay.
-            // May only be done after waveOutReset().
-            soundHeader.dwFlags = soundFlags;
+            // May only be done after ::waveOutReset().
+            mSoundHeader.dwFlags = mSoundFlags;
 
-            playing = true;
-            sysErr = waveOutWrite( deviceHandle, &soundHeader, sizeof( soundHeader ) );
+            mPlaying = true;
+            sysErr = ::waveOutWrite( mDeviceHandle, &mSoundHeader, sizeof( mSoundHeader ) );
             if( sysErr != MMSYSERR_NOERROR )
             {
-                playing = false;
+                mPlaying = false;
                 return;
             }
             break;
@@ -408,26 +422,86 @@ TWavePlayer::Play()
     }
 }
 
+TWavePlayer::Error
+TWavePlayer::SetVolume( float inVolume )
+{
+  return SetVolumeAndBalance( inVolume, mBalance );
+}
+
+TWavePlayer::Error
+TWavePlayer::SetBalance( float inBalance )
+{
+  return SetVolumeAndBalance( mVolume, inBalance );
+}
+
+TWavePlayer::Error
+TWavePlayer::SetVolumeAndBalance( float inVolume, float inBalance )
+{
+  mVolume = inVolume;
+  mBalance = inBalance;
+  const int maxValue = ( 1 << 16 ) - 1;
+  int leftVolume = ::floor( ( 1.0 - inBalance ) / 2.0 * mVolume * maxValue ),
+      rightVolume = ::floor( ( 1.0 + inBalance ) / 2.0 * mVolume * maxValue );
+  if( leftVolume < 0 )
+    leftVolume = 0;
+  else if( leftVolume > maxValue )
+    leftVolume = maxValue;
+  if( rightVolume < 0 )
+    rightVolume = 0;
+  else if( rightVolume > maxValue )
+    rightVolume = maxValue;
+
+  HWAVEOUT device = NULL;
+  switch( sMode )
+  {
+    case singleDeviceInstance:
+      device = sCurrentDeviceHandle;
+      break;
+
+    case multipleDeviceInstances:
+      device = mDeviceHandle;
+      break;
+
+    default:
+      assert( false );
+  }
+  Error err = genError;
+  switch( ::waveOutSetVolume( device, leftVolume | ( rightVolume << 16 ) ) )
+  {
+    case MMSYSERR_NOERROR:
+      err = noError;
+      break;
+
+    case MMSYSERR_NOTSUPPORTED:
+      err = featureNotSupported;
+      break;
+
+    default:
+      err = genError;
+  }
+  return err;
+}
+
 void
 TWavePlayer::Stop()
 {
-    switch( mode )
+    switch( sMode )
     {
         case singleDeviceInstance:
             // If this instance of TWavePlayer is playing, stop playback and
             // unprepare our header.
-            if( ( currentDeviceHandle != NULL ) && ( currentHeader == &soundHeader ) )
+            if( ( sCurrentDeviceHandle != NULL ) && ( spCurrentHeader == &mSoundHeader ) )
             {
                 // Stop playback immediately.
-                waveOutReset( currentDeviceHandle );
+                ::waveOutReset( sCurrentDeviceHandle );
             }
             break;
 
         case multipleDeviceInstances:
-            if( deviceHandle != NULL )
+            if( mDeviceHandle != NULL )
             {
                 // Stop playback immediately.
-                waveOutReset( deviceHandle );
+                ::waveOutReset( mDeviceHandle );
             }
             break;
 
@@ -439,18 +513,18 @@ TWavePlayer::Stop()
 float
 TWavePlayer::GetPos() const
 {
-    if( !playing )
+    if( !mPlaying )
         return 0.0;
 
     HWAVEOUT    device = NULL;
-    switch( mode )
+    switch( sMode )
     {
         case singleDeviceInstance:
-            if( currentHeader == &soundHeader )
-                device = currentDeviceHandle;
+            if( spCurrentHeader == &mSoundHeader )
+                device = sCurrentDeviceHandle;
             break;
         case multipleDeviceInstances:
-            device = deviceHandle;
+            device = mDeviceHandle;
             break;
         default:
             assert( false );
@@ -462,12 +536,12 @@ TWavePlayer::GetPos() const
     MMTIME      pos;
     MMRESULT    sysErr;
     pos.wType = TIME_SAMPLES;
-    sysErr = waveOutGetPosition( device, &pos, sizeof( pos ) );
+    sysErr = ::waveOutGetPosition( device, &pos, sizeof( pos ) );
     if( sysErr != MMSYSERR_NOERROR )
         return 0.0;
     assert( pos.wType == TIME_SAMPLES );
-    float retVal = ( ( float )pos.u.sample * 1000.0 ) / ( float )samplingRate;
-    if( !positionAccurate )
+    float retVal = ( ( float )pos.u.sample * 1000.0 ) / ( float )mSamplingRate;
+    if( !sPositionAccurate )
         retVal *= -1.0;
     return retVal;
 }
@@ -487,7 +561,7 @@ TWavePlayer::MsgHandler( HWAVEOUT   inDeviceHandle,
             break;
         case WOM_CLOSE:
         case WOM_DONE:
-            instance->playing = false;
+            instance->mPlaying = false;
             break;
         default:
             assert( false );

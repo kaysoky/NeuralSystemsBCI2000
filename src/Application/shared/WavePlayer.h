@@ -11,14 +11,19 @@
 // Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
 //           Added copy constructor, assignment operator and related private
 //           member functions.
+//          Nov 11, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added volume and balance setting.
+//           Note that waveOutSetVolume does not work as described in the
+//           Win32 documentation but will change the global wave out volume
+//           in the windows mixer instead.
 //
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef WAVEPLAYERH
 #define WAVEPLAYERH
 
-#include <string>
 #include <mmsystem.h>
+#include <string>
 
 class TWavePlayer
 {
@@ -27,6 +32,7 @@ class TWavePlayer
     {
       noError,
       fileOpeningError,
+      featureNotSupported,
       genError
     };
 
@@ -44,6 +50,14 @@ class TWavePlayer
   public:
                 Error       AttachFile( const char* inFileName );
                 void        DetachFile();
+                const std::string& GetFile() const { return mCurrentFileName; }
+
+                Error       SetVolume( float ); // silent:0 ... 1:max
+                float       GetVolume() const  { return mVolume; }
+                Error       SetBalance( float ); // left:-1 ... 1:right
+                float       GetBalance() const { return mBalance; }
+                Error       SetVolumeAndBalance( float, float );
+
                 void        Play();
                 void        Stop();
                 // Returns the current playing position from start
@@ -54,13 +68,14 @@ class TWavePlayer
                 // In this case, the position returned may be ahead of the
                 // actual sound output by some milliseconds.
                 float              GetPos() const;
-                bool               IsPlaying() const { return playing; }
-                
-                const std::string& GetFile() const { return currentFileName; }
+                bool               IsPlaying() const { return mPlaying; }
+
 
   private:
-                bool        playing;
-                std::string currentFileName;
+                float       mVolume,
+                            mBalance;
+                bool        mPlaying;
+                std::string mCurrentFileName;
 
 // OS specific members go here.
 #ifdef _WIN32
@@ -70,22 +85,22 @@ class TWavePlayer
                 singleDeviceInstance,
                 multipleDeviceInstances
             };
-            HWAVEOUT        deviceHandle;
-            HMMIO           fileHandle;
-            WAVEFORMATEX    fileFormat;
-            WAVEHDR         soundHeader;
-            DWORD           samplingRate;
-            DWORD           soundFlags;
+            HWAVEOUT        mDeviceHandle;
+            HMMIO           mFileHandle;
+            WAVEFORMATEX    mFileFormat;
+            WAVEHDR         mSoundHeader;
+            DWORD           mSamplingRate;
+            DWORD           mSoundFlags;
 
     static  void CALLBACK   MsgHandler( HWAVEOUT, UINT, DWORD, DWORD, DWORD );
 
     // Not all wave out drivers support multiple instances of a wave out
     // device. We need to work differently then.
-    static  HWAVEOUT        currentDeviceHandle;
-    static  WAVEHDR         *currentHeader;
-    static  TOperationMode  mode;
-    static  bool            positionAccurate;
-    static  int             numInstances;
+    static  HWAVEOUT        sCurrentDeviceHandle;
+    static  WAVEHDR         *spCurrentHeader;
+    static  TOperationMode  sMode;
+    static  bool            sPositionAccurate;
+    static  int             sNumInstances;
 #endif // WIN32
 
 };
