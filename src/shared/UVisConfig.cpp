@@ -5,7 +5,7 @@
 
 #include <Registry.hpp>
 
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 // #include "defines.h"
 
 #include "UVisConfig.h"

@@ -17,7 +17,7 @@
 
 #include <stdio.h>
 
-#include "..\defines.h"
+#include "defines.h"
 
 #include "UState.h"
 #include "UCoremessage.h"

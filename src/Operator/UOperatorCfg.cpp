@@ -6,7 +6,7 @@
 #include <Registry.hpp>
 #include <stdio.h>
 
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 #include "UShowParameters.h"
 #include "UEditMatrix.h"
 #include "UOperatorCfg.h"

@@ -5,7 +5,7 @@
 
 #include <Registry.hpp>
 
-#include "defines.h"                    // operator specific defines
+#include "operator.h"                    // operator specific defines
 
 #include "USysStatus.h"
 #include "UPreferences.h"

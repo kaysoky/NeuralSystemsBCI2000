@@ -3,6 +3,7 @@
 #pragma hdrstop
 USERES("operat.res");
 USEFORM("UMain.cpp", fMain);
+USEUNIT("USysStatus.cpp");
 USEFORM("UAbout.cpp", fAbout);
 USEFORM("UConnectionInfo.cpp", fConnectionInfo);
 USEFORM("UEditMatrix.cpp", fEditMatrix);
@@ -12,20 +13,20 @@ USEUNIT("UScript.cpp");
 USEFORM("UShowParameters.cpp", fShowParameters);
 USEFORM("UShowStates.cpp", fShowStates);
 USEUNIT("USysLog.cpp");
-USEUNIT("USysStatus.cpp");
-USEFORM("..\..\shared\V0.17\UVisConfig.cpp", fVisConfig);
-USEUNIT("..\..\shared\V0.17\UBCItime.cpp");
-USEUNIT("..\..\shared\V0.17\UBitRate.cpp");
-USEUNIT("..\..\shared\V0.17\UCoreComm.cpp");
-USEUNIT("..\..\shared\V0.17\UCoreMessage.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericFilter.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericSignal.cpp");
-USEUNIT("..\..\shared\V0.17\UParameter.cpp");
-USEUNIT("..\..\shared\V0.17\UState.cpp");
-USEUNIT("..\..\shared\V0.17\UStatus.cpp");
-USEUNIT("..\..\shared\V0.17\USysCommand.cpp");
-USEUNIT("..\..\shared\V0.17\UBCI2000Data.cpp");
-USEUNIT("..\..\shared\V0.17\UGenericVisualization.cpp");
+USEFORM("..\shared\UVisConfig.cpp", fVisConfig);
+USEUNIT("..\shared\UBCI2000Data.cpp");
+USEUNIT("..\shared\UBCItime.cpp");
+USEUNIT("..\shared\UBitRate.cpp");
+USEUNIT("..\shared\UCoreComm.cpp");
+USEUNIT("..\shared\UCoreMessage.cpp");
+USEUNIT("..\shared\UGenericFilter.cpp");
+USEUNIT("..\shared\UGenericSignal.cpp");
+USEUNIT("..\shared\UGenericVisualization.cpp");
+USEUNIT("..\shared\UParameter.cpp");
+USEUNIT("..\shared\UState.cpp");
+USEUNIT("..\shared\UStatus.cpp");
+USEUNIT("..\shared\USysCommand.cpp");
+USEUNIT("..\shared\BCIDirectry.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 #include "UGenericVisualization.h"
 #include "UVisConfig.h"
 #include "UCoreMessage.h"

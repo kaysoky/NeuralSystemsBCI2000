@@ -12,7 +12,7 @@
 #define MAX_YAXISLABELS         256
 #define MAX_DISPLAYCHANNELS     256
 
-#include "..\defines.h"
+#include "defines.h"
 #include "UCoreComm.h"
 #include "UGenericSignal.h"
 #include "UParameter.h"
