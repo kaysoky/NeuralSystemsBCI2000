@@ -62,15 +62,17 @@ __published:	// IDE-managed Components
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall bClearListClick(TObject *Sender);
 private:	// User declarations
-        BCI2000DATA     *bci2000data;
+        class BCI2000DATA* bci2000data;
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         bool    DefineInput(AnsiString);
-        int     IncrementTrial(int, const STATEVECTOR *);
+        int     Process();
+        int     IncrementTrial(int, const class STATEVECTOR*);
         void    UpdateStateListBox();
-        bool    SaveSampleOrNot(const STATEVECTOR *statevector);
+        bool    SaveSampleOrNot(const class STATEVECTOR*);
         int     InitMatlabEngine();
         void    ShutdownMatlabEngine();
+        void    ProcessCommandLineOptions();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;

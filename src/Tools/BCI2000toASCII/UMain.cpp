@@ -4,6 +4,8 @@
 #pragma hdrstop
 
 #include <stdio.h>
+#include <vector>
+#include <string>
 
 #define  V5_COMPAT              // for matlab compatibility
 
@@ -24,6 +26,7 @@
 TfMain *fMain;
 Engine *ep;
 
+using namespace std;
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner) : TForm(Owner)
@@ -58,6 +61,12 @@ void TfMain::ShutdownMatlabEngine()
 //-----------------------------------------------------------------------------
 void __fastcall TfMain::ContinueClick(TObject *Sender)
 {
+  if( !Process() )
+    Application->MessageBox("Export finished successfully", "Message", MB_OK);
+}
+
+int TfMain::Process()
+{
 int     ret, firstfile, lastfile, cur_file, channel, state, i;
 double  cur_value_double, cur_state_double, dummy_double;
 ULONG   sample, numsamples;
@@ -76,7 +85,7 @@ MATFile *pmat;
  if ((!exportfile) && (!exportmatlab))
     {
     Application->MessageBox("You probably want to export to either Matlab or a file ...", "Warning", MB_OK);
-    return;
+    return -1;
     }
 
  // totalsamples=GetNumSamples();
@@ -110,7 +119,7 @@ MATFile *pmat;
  if (!consistent)
     {
     Application->MessageBox("Runs/files are not consistent (e.g., different # states)", "Error", MB_OK);
-    return;
+    return -1;
     }
 
  // initialize Matlab
@@ -118,7 +127,8 @@ MATFile *pmat;
  if (exportmatlab)
     {
     ret=InitMatlabEngine();
-    if (ret == -1) return;
+    if( ret != 0 )
+      return ret;
     signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
     mxSetName(signal, "signal");
     }
@@ -132,7 +142,7 @@ MATFile *pmat;
     if (!fp)
        {
        Application->MessageBox("Error opening output ASCII file", "Error", MB_OK);
-       return;
+       return -1;
        }
     }
  if (exportmatlab)
@@ -141,7 +151,7 @@ MATFile *pmat;
     if (!pmat)
        {
        Application->MessageBox("Error opening output Matlab file", "Error", MB_OK);
-       return;
+       return -1;
        }
     }
 
@@ -267,7 +277,7 @@ MATFile *pmat;
  if (fp) fclose(fp);
 
  Gauge->Progress=0;
- Application->MessageBox("Export finished successfully", "Message", MB_OK);
+ return 0;
 }
 //---------------------------------------------------------------------------
 
@@ -429,6 +439,102 @@ void __fastcall TfMain::bClearListClick(TObject *Sender)
  mFilenames->Lines->Clear();        
  bConvert->Enabled=false;
 }
-//---------------------------------------------------------------------------
 
+
+// This is called from WinMain() to make sure that all forms are instantiated
+// before a parameter file is loaded.
+void TfMain::ProcessCommandLineOptions()
+{
+  AnsiString programName = ExtractFileName( ChangeFileExt( ParamStr( 0 ), "" ) );
+  const char* messageMode = "error";
+  bool batchMode = false,
+       mergeFiles = false;
+  vector< string > inputFiles; 
+
+  for( int i = 1; i <= ParamCount(); ++i )
+  {
+    char* option = new char[ ParamStr( i ).Length() + 1 ];
+    ::strcpy( option, ParamStr( i ).c_str() );
+    switch( *option )
+    {
+      case '\0':
+        break;
+
+      case '-':
+        switch( *++option )
+        {
+          case 'a':
+          case 'A':
+            rExportFile->Checked = true;
+            break;
+
+          case 'b':
+          case 'B':
+            batchMode = true;
+            break;
+
+          case 'o':
+          case 'O':
+            eDestinationFile->Text = ++option;
+            mergeFiles = true;
+            break;
+
+          case 'h':
+          case 'H':
+          case '?':
+            messageMode = "help";
+            /* no break */
+          default:
+            Application->MessageBox(
+              "The following parameters are accepted:\n\n"
+              " -h\t                 \tshow this help\n"
+              " -a\t                 \texport to ASCII instead of matlab format\n"
+              " -b\t                 \tprocess and quit (batch mode)\n"
+              " -o<output file>      \toutput file name (also enables merging for multiple files)\n"
+              " <file1> <file2> ...  \tany number of input file names\n",
+              ( programName + " command line " + messageMode ).c_str(),
+              MB_OK | MB_ICONINFORMATION
+            );
+            Application->Terminate();
+        }
+        break;
+
+      default:
+        inputFiles.push_back( option );
+    }
+    delete[] option;
+  }
+  
+  if( !inputFiles.empty() )
+    DefineInput( inputFiles[ 0 ].c_str() );
+
+  if( !batchMode || mergeFiles )
+  {
+    for( size_t i = 0; i < inputFiles.size(); ++i )
+        mFilenames->Lines->Add( inputFiles[ i ].c_str() );
+  }
+  
+  if( batchMode )
+  {
+    fMain->Show();
+    if( mergeFiles )
+      Process();
+    else
+    {
+      const char* outputExtension = ".mat";
+      if( rExportFile->Checked )
+        outputExtension = ".asc";
+      for( size_t i = 0; i < inputFiles.size(); ++i )
+      {
+        mFilenames->Clear();
+        mFilenames->Lines->Add( inputFiles[ i ].c_str() );
+        eDestinationFile->Text = ChangeFileExt( inputFiles[ i ].c_str(), outputExtension );
+        Process();
+      }
+    }
+    Application->Terminate();
+  }
+  if( !batchMode )
+    bConvert->Enabled = ( eDestinationFile->Text != "" && mFilenames->Text != "" );
+}
 

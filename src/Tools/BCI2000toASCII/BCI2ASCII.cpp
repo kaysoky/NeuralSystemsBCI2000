@@ -1,9 +1,8 @@
-//---------------------------------------------------------------------------
-
-#include <float.h>
-
 #include <vcl.h>
 #pragma hdrstop
+
+#include <float.h>
+#include "UMain.h"
 USEFORM("UMain.cpp", fMain);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -14,6 +13,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "BCI2000toASCII";
                  Application->CreateForm(__classid(TfMain), &fMain);
+                 fMain->ProcessCommandLineOptions();
                  Application->Run();
         }
         catch (Exception &exception)
