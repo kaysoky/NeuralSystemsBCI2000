@@ -9,7 +9,7 @@
 #include <ComCtrls.hpp>
 #include <Menus.hpp>
 
-#include <map>
+#include <set>
 #include "TCPStream.h"
 #include "MessageHandler.h"
 #include "UParameter.h"
@@ -80,14 +80,6 @@ class TfMain : public TForm
 
   void __fastcall ProcessBCIMessages();
 
-  void EEGSourceSocketAccept();
-  void EEGSourceSocketDisconnect();
-  void SigProcSocketAccept();
-  void SigProcSocketDisconnect();
-  void AppSocketAccept();
-  void AppSocketDisconnect();
-  MessageOrigin Origin( std::istream& );
-
   void EnterState( SYSSTATUS::State );
   void BroadcastParameters();
   void BroadcastStates();
@@ -104,28 +96,59 @@ class TfMain : public TForm
   SCRIPT           mScript;
   bool             mTerminated;
   TDateTime        mStarttime;
+
   enum
   {
     EEGSourcePort = 4000,
     SigProcPort = 4001,
     AppPort = 4002,
   };
-  server_tcpsocket  mEEGSourceSocket,
-                    mSigProcSocket,
-                    mAppSocket;
-  tcpstream         mEEGSource,
-                    mSigProc,
-                    mApp;
 
-  typedef void ( TfMain::*SocketHandler )();
-  // mSockets and the m<Module>Socket members are accessed from ReceivingThread
-  // without a lock. This is OK as long as they are not accessed outside
-  // TfMain::ProcessBCIMessages().
-  tcpsocket::set_of_instances         mSockets;
-  std::map<tcpsocket*, SocketHandler> mAcceptHandlers,
-                                      mDisconnectHandlers;
-  std::map<tcpsocket*, tcpstream*>    mStreams;
-  std::map<tcpsocket*, bool>          mConnectionStates;
+  class CoreConnection;
+  friend class CoreConnection;
+  class CoreConnection : public MessageHandler
+  {
+    public:
+      CoreConnection( TfMain&, MessageOrigin, short port );
+      ~CoreConnection();
+
+      void ProcessBCIMessages();
+      void BroadcastParameters();
+      void BroadcastStates();
+
+      template<typename T> bool PutMessage( const T& t )
+      { return MessageHandler::PutMessage<T>( mStream, t ).flush(); }
+
+    private:
+      virtual bool HandleSTATUS(    std::istream& );
+      virtual bool HandleSYSCMD(    std::istream& );
+      virtual bool HandlePARAM(     std::istream& );
+      virtual bool HandleSTATE(     std::istream& );
+      virtual bool HandleVisSignal( std::istream& );
+      virtual bool HandleVisCfg(    std::istream& );
+      virtual bool HandleVisMemo(   std::istream& );
+
+      void OnAccept();
+      void OnDisconnect();
+
+      TfMain&          mParent;
+      MessageOrigin    mOrigin;
+      short            mPort;
+      server_tcpsocket mSocket;
+      tcpstream        mStream;
+      bool             mConnected;
+
+  };
+
+  typedef std::set<CoreConnection*> SetOfConnections;
+  SetOfConnections mCoreConnections;
+  tcpsocket::set_of_instances mSockets;
+  // Note that these members must be declared after the containers
+  // because their constructors require already-initialized containers.
+  CoreConnection mEEGSource,
+                 mSigProc,
+                 mApp;
+
 
   class ReceivingThread;
   friend class ReceivingThread;
@@ -139,31 +162,6 @@ class TfMain : public TForm
     virtual void __fastcall Execute();
     TfMain& mParent;
   } *mpReceivingThread;
-
-  bool HandleSTATUS(    std::istream& );
-  bool HandleSYSCMD(    std::istream& );
-  bool HandlePARAM(     std::istream& );
-  bool HandleSTATE(     std::istream& );
-  bool HandleVisSignal( std::istream& );
-  bool HandleVisCfg(    std::istream& );
-  bool HandleVisMemo(   std::istream& );
-
-  class _MessageHandler;
-  friend class _MessageHandler;
-  class _MessageHandler : public MessageHandler
-  {
-    public:
-      _MessageHandler( TfMain& parent ) : mParent( parent ) {}
-    private:
-      virtual bool HandleSTATUS(    std::istream& is ) { return mParent.HandleSTATUS( is ); }
-      virtual bool HandleSYSCMD(    std::istream& is ) { return mParent.HandleSYSCMD( is ); }
-      virtual bool HandlePARAM(     std::istream& is ) { return mParent.HandlePARAM( is ); }
-      virtual bool HandleSTATE(     std::istream& is ) { return mParent.HandleSTATE( is ); }
-      virtual bool HandleVisSignal( std::istream& is ) { return mParent.HandleVisSignal( is ); }
-      virtual bool HandleVisCfg(    std::istream& is ) { return mParent.HandleVisCfg( is ); }
-      virtual bool HandleVisMemo(   std::istream& is ) { return mParent.HandleVisMemo( is ); }
-      TfMain& mParent;
-  } mMessageHandler;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;

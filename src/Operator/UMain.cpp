@@ -86,44 +86,10 @@ TfMain::TfMain( TComponent* Owner )
   mTerminated( false ),
   mScript( &mParameters, &mStates, &mSyslog, this ),
   mpReceivingThread( new ReceivingThread( this ) ),
-  mMessageHandler( *this )
+  mEEGSource( *this, EEGSource, EEGSourcePort ),
+  mSigProc( *this, SigProc, SigProcPort ),
+  mApp( *this, App, AppPort )
 {
-  const struct
-  {
-    tcpsocket*    socket;
-    int           port;
-    tcpstream*    stream;
-    SocketHandler acceptHandler,
-                  disconnectHandler;
-  } socketInfo[] =
-  {
-    #define INFO_ENTRY( module ) \
-    {                                                                           \
-      &m##module##Socket,                                                       \
-      module##Port,                                                             \
-      &m##module,                                                               \
-      &TfMain::module##SocketAccept,                                            \
-      &TfMain::module##SocketDisconnect                                         \
-    },
-    INFO_ENTRY( EEGSource )
-    INFO_ENTRY( SigProc )
-    INFO_ENTRY( App )
-  };
-  for( int i = 0; i < sizeof( socketInfo ) / sizeof( *socketInfo ); ++i )
-  {
-    tcpsocket* socket = socketInfo[ i ].socket;
-    socket->open( "*", socketInfo[ i ].port );
-    if( !socket->is_open() )
-      __bcierr << "Operator: Could not open socket for listening on port "
-               << socketInfo[ i ].port
-               << endl;
-    mSockets.insert( socket );
-    mAcceptHandlers[ socket ] = socketInfo[ i ].acceptHandler;
-    mDisconnectHandlers[ socket ] = socketInfo[ i ].disconnectHandler;
-    mStreams[ socket ] = socketInfo[ i ].stream;
-    mConnectionStates[ socket ] = false;
-  }
-
   if( __bcierr.flushes() == 0 )
   {
     OperatorUtils::RestoreControl( this );
@@ -131,8 +97,31 @@ TfMain::TfMain( TComponent* Owner )
     Application->OnIdle = ApplicationIdleHandler;
   }
   else
-    Terminate();
+    EnterState( SYSSTATUS::Fatal );
 }
+
+TfMain::CoreConnection::CoreConnection( TfMain& inParent, MessageOrigin inOrigin, short inPort )
+: mParent( inParent ),
+  mOrigin( inOrigin ),
+  mPort( inPort ),
+  mConnected( false )
+{
+  mParent.mCoreConnections.insert( this );
+  mParent.mSockets.insert( &mSocket );
+  mSocket.open( "*", mPort );
+  if( !mSocket.is_open() )
+    __bcierr << "Operator: Could not open socket for listening on port "
+             << mPort
+             << endl;
+}
+
+
+TfMain::CoreConnection::~CoreConnection()
+{
+  mParent.mCoreConnections.erase( this );
+  mParent.mSockets.erase( &mSocket );
+}
+
 
 __fastcall TfMain::~TfMain()
 {
@@ -169,7 +158,7 @@ TfMain::UpdateState( const char* inName, unsigned short inValue )
   if( s == NULL )
     return ERR_STATENOTFOUND;
   s->SetValue( inValue );
-  if( !MessageHandler::PutMessage( mEEGSource, *s ) )
+  if( !mEEGSource.PutMessage( *s ) )
     return ERR_SOURCENOTCONNECTED;
   return ERR_NOERR;
 }
@@ -205,129 +194,100 @@ void
 __fastcall
 TfMain::ProcessBCIMessages()
 {
-  for( tcpsocket::set_of_instances::iterator i = mSockets.begin(); i != mSockets.end(); ++i )
-  {
-    if( ( *i )->connected() && !mConnectionStates[ *i ] )
-      ( this->*mAcceptHandlers[ *i ] )();
-    else if( !( *i )->connected() && mConnectionStates[ *i ] )
-      ( this->*mDisconnectHandlers[ *i ] )();
-    mConnectionStates[ *i ] = ( *i )->connected();
-    while( *mStreams[ *i ] && mStreams[ *i ]->rdbuf()->in_avail() && !mTerminated )
-    {
-      mMessageHandler.HandleMessage( *mStreams[ *i ] );
-      ++mSysstatus.NumMessagesRecv[ Origin( *mStreams[ *i ] ) ];
-      if( !( *mStreams[ *i ] && mStreams[ *i ]->is_open() ) || ( __bcierr.flushes() > 0 ) )
-        Terminate();
-    }
-  }
+  for( SetOfConnections::iterator i = mCoreConnections.begin();
+                                               i != mCoreConnections.end(); ++i )
+    ( *i )->ProcessBCIMessages();
   UpdateDisplay();
+}
+
+
+void
+TfMain::CoreConnection::ProcessBCIMessages()
+{
+  if( mSocket.connected() && !mConnected )
+    OnAccept();
+  else if( !mSocket.connected() && mConnected )
+    OnDisconnect();
+  mConnected = mSocket.connected();
+  while( mStream && mStream.rdbuf()->in_avail() && !mParent.mTerminated )
+  {
+    HandleMessage( mStream );
+#ifdef TODO
+# error Move this kind of counter from SYSSTATUS into CoreConnection class.
+#endif // TODO
+    ++mParent.mSysstatus.NumMessagesRecv[ mOrigin ];
+    if( !( mStream && mStream.is_open() ) || ( __bcierr.flushes() > 0 ) )
+      mParent.EnterState( SYSSTATUS::Fatal );
+  }
 }
 
 //----------------------- Connection householding ------------------------------
 
 // When a connection is accepted by an open socket, open the associated stream,
 // and enter the appropriate information into its SYSSTATUS::Address[] entry.
-#define SOCKET_ACCEPT_DEF( module ) \
-void                                                                            \
-TfMain::module##SocketAccept()                                                  \
-{                                                                               \
-  m##module.clear();                                                            \
-  m##module.open( m##module##Socket );                                          \
-  if( m##module.is_open() )                                                     \
-    mSysstatus.Address[ module ]                                                \
-      = AnsiString( m##module##Socket.ip().c_str() ) + ":"                      \
-        + AnsiString( m##module##Socket.port() );                               \
+void
+TfMain::CoreConnection::OnAccept()
+{
+  mStream.clear();
+  mStream.open( mSocket );
+  if( mStream.is_open() )
+    mParent.mSysstatus.Address[ mOrigin ]                                                \
+      = AnsiString( mSocket.ip().c_str() ) + ":"
+        + AnsiString( mSocket.port() );
 }
-SOCKET_ACCEPT_DEF( EEGSource )
-SOCKET_ACCEPT_DEF( SigProc )
-SOCKET_ACCEPT_DEF( App )
 
 // When a connection is closed, close the associated stream, and update the
 // the information in its SYSSTATUS::Address[] entry.
-#define SOCKET_DISCONNECT_DEF( module ) \
-void                                                                            \
-TfMain::module##SocketDisconnect()                                              \
-{                                                                               \
-  m##module.close();                                                            \
-  m##module##Socket.open( "*", module##Port );                                  \
-  mSysstatus.Address[ module ] = "";                                            \
-}
-SOCKET_DISCONNECT_DEF( EEGSource )
-SOCKET_DISCONNECT_DEF( SigProc )
-SOCKET_DISCONNECT_DEF( App )
-
-// Given a stream, return the index of its associated module.
-MessageOrigin
-TfMain::Origin( istream& is )
+void
+TfMain::CoreConnection::OnDisconnect()
 {
-  if( &is == &mEEGSource )
-    return EEGSource;
-  if( &is == &mSigProc )
-    return SigProc;
-  if( &is == &mApp )
-    return App;
-  return Operator;
+  mStream.close();
+  mSocket.open( "*", mPort );
+  mParent.mSysstatus.Address[ mOrigin ] = "";
 }
 
-//------------------ Medium level aggregate functions --------------------------
 
 void
 TfMain::BroadcastParameters()
 {
-  if( mEEGSource.is_open() && mSigProc.is_open() && mApp.is_open() )
+  for( SetOfConnections::iterator i = mCoreConnections.begin();
+                                               i != mCoreConnections.end(); ++i )
+    ( *i )->BroadcastParameters();
+}
+
+
+void
+TfMain::CoreConnection::BroadcastParameters()
+{
+  int numParams = mParent.mParameters.GetNumParameters();
+  mParent.mSysstatus.INI[ mOrigin ] = false;
+  if( PutMessage( mParent.mParameters ) )
   {
-    int numParams = mParameters.GetNumParameters();
-    if( MessageHandler::PutMessage( mEEGSource, mParameters ) )
-    {
-      mEEGSource.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ EEGSource ] += numParams + 1;
-      mSysstatus.NumParametersSent[ EEGSource ] += numParams;
-    }
-    if( MessageHandler::PutMessage( mSigProc, mParameters ) )
-    {
-      mSigProc.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ SigProc ] += numParams + 1;
-      mSysstatus.NumParametersSent[ SigProc ] += numParams;
-    }
-    if( MessageHandler::PutMessage( mApp, mParameters ) )
-    {
-      mApp.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ App ] += numParams + 1;
-      mSysstatus.NumParametersSent[ App ] += numParams;
-    }
+    ::Sleep( 0 );
+    mParent.mSysstatus.NumMessagesSent[ mOrigin ] += numParams + 1;
+    mParent.mSysstatus.NumParametersSent[ mOrigin ] += numParams;
   }
 }
+
 
 void
 TfMain::BroadcastStates()
 {
-  if( mEEGSource.is_open() && mSigProc.is_open() && mApp.is_open() )
+  for( SetOfConnections::iterator i = mCoreConnections.begin();
+                                               i != mCoreConnections.end(); ++i )
+    ( *i )->BroadcastStates();
+}
+
+
+void
+TfMain::CoreConnection::BroadcastStates()
+{
+  int numStates = mParent.mStates.GetNumStates();
+  if( PutMessage( mParent.mStates ) )
   {
-    int numStates = mStates.GetNumStates();
-    if( MessageHandler::PutMessage( mEEGSource, mStates ) )
-    {
-      mEEGSource.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ EEGSource ] += numStates + 1;
-      mSysstatus.NumStatesSent[ EEGSource ] += numStates;
-    }
-    if( MessageHandler::PutMessage( mSigProc, mStates ) )
-    {
-      mSigProc.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ SigProc ] += numStates + 1;
-      mSysstatus.NumStatesSent[ SigProc ] += numStates;
-    }
-    if( MessageHandler::PutMessage( mApp, mStates ) )
-    {
-      mApp.flush();
-      ::Sleep( 0 );
-      mSysstatus.NumMessagesSent[ App ] += numStates + 1;
-      mSysstatus.NumStatesSent[ App ] += numStates;
-    }
+    ::Sleep( 0 );
+    mParent.mSysstatus.NumMessagesSent[ mOrigin ] += numStates + 1;
+    mParent.mSysstatus.NumStatesSent[ mOrigin ] += numStates;
   }
 }
 
@@ -368,7 +328,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       BroadcastParameters();
       BroadcastStates();
       // Send a system command 'Start' to the EEGsource (currently, it will be ignored).
-      if( MessageHandler::PutMessage( mEEGSource, SYSCMD::Start ) )
+      if( mEEGSource.PutMessage( SYSCMD::Start ) )
       {
         ++mSysstatus.NumMessagesSent[ EEGSource ];
         ++mSysstatus.NumStatesSent[ EEGSource ];
@@ -422,6 +382,11 @@ TfMain::EnterState( SYSSTATUS::State inState )
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
       break;
 
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Fatal ):
+      break;
+
     default:
       bcierr << "Unexpected system state transition: "
              << mSysstatus.SystemState << " -> " << inState
@@ -446,7 +411,7 @@ TfMain::QuitOperator()
     // Store the settings in the ini file.
     mPreferences.SetDefaultSettings();
     // Send a system command 'Reset' to the EEGsource.
-    if( mEEGSource.is_open() && MessageHandler::PutMessage( mEEGSource, SYSCMD::Reset ) )
+    if( mEEGSource.PutMessage( SYSCMD::Reset ) )
       ++mSysstatus.NumMessagesSent[ EEGSource ];
     // Quit the operator.
     Terminate();
@@ -486,6 +451,8 @@ TfMain::UpdateDisplay()
       windowCaption += " - " TXT_OPERATOR_RUNNING " " + timeElapsed.FormatString( "nn:ss" ) + " s";
       statusText = TXT_OPERATOR_RUNNING;
       break;
+    case SYSSTATUS::Fatal:
+      statusText = "Fatal Error ...";
   }
 
   if( Caption != windowCaption )
@@ -536,6 +503,9 @@ TfMain::UpdateDisplay()
       runSystemCaption = "Suspend";
       runSystemEnabled = true;
       break;
+    case SYSSTATUS::Fatal:
+      quitEnabled = true;
+      break;
   }
   if( bRunSystem->Caption != runSystemCaption )
     bRunSystem->Caption = runSystemCaption;
@@ -584,147 +554,154 @@ TfMain::ReceivingThread::Execute()
 //--------------------- Handlers for BCI messages ------------------------------
 
 bool
-TfMain::HandleSTATUS( istream& is )
+TfMain::CoreConnection::HandleSTATUS( istream& is )
 {
   STATUS status;
   if( status.ReadBinary( is ) )
   {
-    mSysstatus.Status[ Origin( is ) ] = status.GetStatus();
-    
+    mParent.mSysstatus.Status[ mOrigin ] = status.GetStatus();
+
     // If we receive a warning message, add a line to the system log and bring it to front.
     if( ( status.GetCode() >= 300 ) && ( status.GetCode() < 400 ) )
     {
-      mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_WARNING );
-      mSyslog.ShowSysLog();
+      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_WARNING );
+      mParent.mSyslog.ShowSysLog();
     }
     // If we receive an error message, add a line to the system log and bring it to front.
     else if( ( status.GetCode() >= 400 ) && ( status.GetCode() < 500 ) )
     {
-      mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_ERROR );
-      mSyslog.ShowSysLog();
+      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_ERROR );
+      mParent.mSyslog.ShowSysLog();
     }
 
     // If the operator received successful status messages from
     // all core modules, then this is the end of the initialization phase.
-    if( ( mSysstatus.SystemState == SYSSTATUS::Initialization ) && ( status.GetCode() < 300 ) )
+    if( ( mParent.mSysstatus.SystemState == SYSSTATUS::Initialization ) && ( status.GetCode() < 300 ) )
     {
-      mSysstatus.INI[ Origin( is ) ] = true;
-      switch( Origin( is ) )
+      mParent.mSysstatus.INI[ mOrigin ] = true;
+#ifdef TODO
+# error Replace that switch statement with a single statement.
+#endif // TODO
+      switch( mOrigin )
       {
         case EEGSource:
-          mSyslog.AddSysLogEntry( "Source confirmed new parameters ..." );
+          mParent.mSyslog.AddSysLogEntry( "Source confirmed new parameters ..." );
           break;
         case SigProc:
-          mSyslog.AddSysLogEntry( "Signal Processing confirmed new parameters ..." );
+          mParent.mSyslog.AddSysLogEntry( "Signal Processing confirmed new parameters ..." );
           break;
         case App:
-          mSyslog.AddSysLogEntry( "User Application confirmed new parameters ..." );
+          mParent.mSyslog.AddSysLogEntry( "User Application confirmed new parameters ..." );
           break;
       }
     }
-    if( mSysstatus.INI[ EEGSource ] && mSysstatus.INI[ SigProc ] && mSysstatus.INI[ App ]
-        && mSysstatus.SystemState == SYSSTATUS::Initialization )
+    if( mParent.mSysstatus.INI[ EEGSource ]
+       && mParent.mSysstatus.INI[ SigProc ]
+       && mParent.mSysstatus.INI[ App ]
+        && mParent.mSysstatus.SystemState == SYSSTATUS::Initialization )
     {
-      EnterState( SYSSTATUS::Resting );
+      mParent.EnterState( SYSSTATUS::Resting );
     }
   }
   return true;
 }
 
 bool
-TfMain::HandleSYSCMD( istream& is )
+TfMain::CoreConnection::HandleSYSCMD( istream& is )
 {
   SYSCMD syscmd;
   if( syscmd.ReadBinary( is ) )
   {
     if( syscmd == SYSCMD::Reset )
     {
-      Terminate();
+      mParent.Terminate();
     }
     else if( syscmd == SYSCMD::Suspend )
     {
-      EnterState( SYSSTATUS::Suspended );
+      mParent.EnterState( SYSSTATUS::Suspended );
     }
     // If we received 'EndOfParameter', i.e., all parameters arrived,
     // then let's sort the parameters in the parameter list by name.
     else if( syscmd == SYSCMD::EndOfParameter )
     {
-      mParameters.Sort();
+      mParent.mParameters.Sort();
     }
     // The operator receiving 'EndOfState' marks the end of the publishing phase.
     else if( syscmd == SYSCMD::EndOfState )
     {
-      mSysstatus.EOS[ Origin( is ) ] = true;
+      mParent.mSysstatus.EOS[ mOrigin ] = true;
     }
     // If we received EndOfStates from all the modules, then make the transition
     // to the next system state.
-    if( mSysstatus.EOS[ EEGSource ] && mSysstatus.EOS[ SigProc ] && mSysstatus.EOS[ App ]
-        && mSysstatus.SystemState == SYSSTATUS::Publishing )
+    if( mParent.mSysstatus.EOS[ EEGSource ]
+        && mParent.mSysstatus.EOS[ SigProc ]
+        && mParent.mSysstatus.EOS[ App ]
+        && mParent.mSysstatus.SystemState == SYSSTATUS::Publishing )
     {
-      EnterState( SYSSTATUS::Information );
+      mParent.EnterState( SYSSTATUS::Information );
     }
   }
   return true;
 }
 
 bool
-TfMain::HandlePARAM( istream& is )
+TfMain::CoreConnection::HandlePARAM( istream& is )
 {
   PARAM param;
   if( param.ReadBinary( is ) )
   {
-    ++mSysstatus.NumParametersRecv[ Origin( is ) ];
-    mParameters.CloneParameter2List( &param );
+    ++mParent.mSysstatus.NumParametersRecv[ mOrigin ];
+    mParent.mParameters.CloneParameter2List( &param );
     // Update the parameter in the configuration window.
-    fConfig->RenderParameter( mParameters.GetParamPtr( param.GetName() ) );
+    fConfig->RenderParameter( mParent.mParameters.GetParamPtr( param.GetName() ) );
   }
   return true;
 }
 
 bool
-TfMain::HandleSTATE( istream& is )
+TfMain::CoreConnection::HandleSTATE( istream& is )
 {
   STATE state;
   if( state.ReadBinary( is ) )
   {
-    ++mSysstatus.NumStatesRecv[ Origin( is ) ];
-    mStates.AddState2List( &state );
-    EnterState( SYSSTATUS::Publishing );
+    ++mParent.mSysstatus.NumStatesRecv[ mOrigin ];
+    mParent.mStates.AddState2List( &state );
+    mParent.EnterState( SYSSTATUS::Publishing );
   }
   return true;
 }
 
 bool
-TfMain::HandleVisSignal( istream& is )
+TfMain::CoreConnection::HandleVisSignal( istream& is )
 {
   VisSignal visSignal;
   if( visSignal.ReadBinary( is ) )
   {
-    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    ++mParent.mSysstatus.NumDataRecv[ mOrigin ];
     VISUAL::HandleMessage( visSignal );
   }
   return true;
 }
 
 bool
-TfMain::HandleVisCfg( istream& is )
+TfMain::CoreConnection::HandleVisCfg( istream& is )
 {
   VisCfg visCfg;
   if( visCfg.ReadBinary( is ) )
   {
-    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    ++mParent.mSysstatus.NumDataRecv[ mOrigin ];
     VISUAL::HandleMessage( visCfg );
   }
   return true;
 }
 
 bool
-TfMain::HandleVisMemo( istream& is )
+TfMain::CoreConnection::HandleVisMemo( istream& is )
 {
   VisMemo visMemo;
   if( visMemo.ReadBinary( is ) )
   {
-    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    ++mParent.mSysstatus.NumDataRecv[ mOrigin ];
     VISUAL::HandleMessage( visMemo );
   }
   return true;
