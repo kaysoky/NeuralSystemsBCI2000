@@ -4,11 +4,10 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="BCI2000FileInfo.exe"/>
-    <OBJFILES value="BCI2000FileInfo.obj UMain.obj ..\..\Operator\UOperatorCfg.obj 
-      ..\..\shared\UParameter.obj ..\..\Operator\USysStatus.obj 
-      ..\..\Operator\UPreferences.obj ..\..\Operator\UEditMatrix.obj 
-      ..\..\Operator\UShowParameters.obj ..\..\shared\UBCI2000Data.obj 
-      ..\..\shared\UState.obj ..\..\Operator\UOperatorUtils.obj"/>
+    <OBJFILES value="obj\BCI2000FileInfo.obj obj\UMain.obj obj\UOperatorCfg.obj 
+      obj\UParameter.obj obj\USysStatus.obj obj\UPreferences.obj 
+      obj\UEditMatrix.obj obj\UShowParameters.obj obj\UBCI2000Data.obj 
+      obj\UState.obj obj\UOperatorUtils.obj"/>
     <RESFILES value="BCI2000FileInfo.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm ..\..\Operator\UOperatorCfg.dfm 
@@ -23,7 +22,7 @@
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
       indy.bpi bcb2kaxserver.bpi"/>
-    <PATHCPP value=".;..\..\Operator;..\..\shared"/>
+    <PATHCPP value=".;..\..\Operator;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared;..\..\Operator"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -40,10 +39,10 @@
   </MACROS>
   <OPTIONS>
     <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
-    <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <PFLAGS value="-N2.\obj -N0.\obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <LFLAGS value="-I.\obj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -97,6 +96,9 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
 Count=2
 Item0=..\..\shared;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
@@ -114,6 +116,10 @@ Item0=$(BCB)\source\vcl
 [HistoryLists\hlConditionals]
 Count=1
 Item0=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=.\obj
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
@@ -134,10 +140,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>
