@@ -90,16 +90,16 @@ void RDAClientADC::Preflight( const SignalProperties&,
              << "the setting in the recording software "
              << "(" << sourceSamplingRate << ")"
              << endl;
+             
+    // Check whether block sizes are sub-optimal.
+    size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
+           sourceBlockSize =
+      preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval;
+    if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
+      bciout << "Non-integral ratio in source and system block sizes. "
+             << "This will cause interference jitter"
+             << endl;
   }
-
-  // Check whether block sizes are sub-optimal.
-  size_t sampleBlockSize = Parameter( "SampleBlockSize" ),
-         sourceBlockSize =
-    preflightQueue.info().blockDuration / preflightQueue.info().samplingInterval;
-  if( sampleBlockSize % sourceBlockSize != 0 && sourceBlockSize % sampleBlockSize != 0 )
-    bciout << "Non-integral ratio in source and system block sizes. "
-           << "This will cause interference jitter"
-           << endl;
 
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
