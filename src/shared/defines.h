@@ -59,7 +59,7 @@
 //#define WINDOW_OPEN      (WM_APP + 400)
 #define RESET_OPERATOR   (WM_APP + 401)
 #define HANDLE_MESSAGE   (WM_APP + 402)
-//#define STARTDAQ_MESSAGE (WM_APP + 403)
+#define STARTDAQ_MESSAGE (WM_APP + 403)
 #define RESET_MESSAGE    (WM_APP + 404)
 //#define WINDOW_RENDER    (WM_APP + 405)
 
