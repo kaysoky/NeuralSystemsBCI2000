@@ -246,12 +246,15 @@ int     i, t, u;
   CurAvg[i]=0;                          // set the average to start with to zero
   for (t=0; t<MAX_BLSTATES; t++)
    circbuf[i][t]=new CIRCBUF;
+   sig_mean[i]= 0;                     // estimate of signal means
+   use_flag[i]= 0;
   }
 
   for(i=0;i<MAX_BLSTATES;i++)
         targbuf[i]= new CIRCBUF;        // buffers for target % Correct
 
     current_intercept= 0;
+    current_lr_intercept= 0;
 }
 
 
@@ -383,20 +386,19 @@ void STATISTICS::ProcTrendControl(int Ntargets, int numBLstate, int target, int 
                 for(i=0;i<nblstates;i++)
                 {
                         trialstat->lin+= l[i]  * trialstat->TargetPC[i];
-                        trialstat->quad+= q[i] * trialstat->TargetPC[i];
+ //     no quad right now             trialstat->quad+= q[i] * trialstat->TargetPC[i];
                 }
 
                 actual_lrate= lrate * (float)sign;
 
                 trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
-         //  trialstat->bper-= trialstat->bper * trialstat->quad * qrate;
-                trialstat->pix-= trialstat->pix * trialstat->quad * qrate;
+//  trialstat->bper-= trialstat->bper * trialstat->quad * qrate;
+//                trialstat->pix-= trialstat->pix * trialstat->quad * qrate;
 
                 trialstat->trial_flag= 1;
 
-#ifdef USE_LOGFILE
-                fprintf(sfile,"oldtarget= %2d outcome= %2d val= %4.2f \n",oldtarget,outcome,val);
-#endif // USE_LOGFILE
+
+ //               fprintf(sfile,"oldtarget= %2d outcome= %2d val= %4.2f \n",oldtarget,outcome,val);
 
         }
         oldoutcome= outcome;
@@ -407,13 +409,14 @@ void STATISTICS::ProcTrendControl(int Ntargets, int numBLstate, int target, int 
 
 void STATISTICS::ProcRunningAvg( int numBLstate, int controlsigno, float val, TRIALSTAT *trialstat )
 {
-static int oldBLstate=-1;
+static int oldBLstate[3]= {-1,-1,-1};
 int     t;
 float   accavg, accstddev;
 
+if( controlsigno > 2 ) return;
  accavg=accstddev=0;
  // the end of any BL interval ?
- if ((oldBLstate > -1) && (numBLstate == -1))        // end of any of the defined BL periods
+ if ((oldBLstate[controlsigno] > -1) && (numBLstate == -1))        // end of any of the defined BL periods
     {
     for (t=0; t<MAX_BLSTATES; t++)
      {
@@ -426,7 +429,7 @@ float   accavg, accstddev;
        CurStdDev[controlsigno]=accstddev/(float)GetNumBLstates(controlsigno);       // the gain for this control signal is the average of the averages of all BL periods
        trialstat->update_flag++;
        }
-    circbuf[controlsigno][oldBLstate]->NextTrial();
+    circbuf[controlsigno][oldBLstate[controlsigno]]->NextTrial();
     }
 
  // are we within any of the BL periods ?
@@ -435,7 +438,7 @@ float   accavg, accstddev;
  if (numBLstate > -1)
     circbuf[controlsigno][numBLstate]->PushVal(val);
 
- oldBLstate=numBLstate;
+ oldBLstate[controlsigno]=numBLstate;
 
  trialstat->Intercept=CurAvg[controlsigno];
  trialstat->StdDev=CurStdDev[controlsigno];
@@ -443,7 +446,8 @@ float   accavg, accstddev;
  if( trialstat->Intercept > 0 ) sign= +1;
  else                           sign= -1;
 
- current_intercept= trialstat->Intercept;
+ if( controlsigno == 0 )      current_intercept= trialstat->Intercept;
+ else if( controlsigno == 1 ) current_lr_intercept= trialstat->Intercept;
 
  return;
 }
@@ -461,62 +465,42 @@ void STATISTICS::SetWeightControl( FILE *filehndl )
         sfile= filehndl;
 }
 
-void STATISTICS::ProcWeightControl(     int ntargs,             // number of targets
-                                        int targ,
+void STATISTICS::ProcWeightControl(     int target,             // targets value to predict
                                         int feedback,
-                                        int nh,                 // # horizontal elements
-                                        int ctr,                // control mode
+                                        int nh,                 // # elements
+                                        int use,                // control mode
                                         float *elements,        // pointer to lineq
                                         float *wts,             // pointer to weights
                                         float rate,
-                                        int use                 // use of wts
+                                        int chan
                                   )
 {
-        static int oldfeedback= 0;
-        static float wt_buf[128];
+    //    static int oldfeedback= 0;
+    //    static float wt_buf[128];
         int i;
-        int target;
         float predicted;
         float err;
-        static float mean= 0;
-        static int use_flag= 0;
+    //    static float mean= 0;
+    //    static int use_flag= 0;
         static int count= 0;
 
-        switch( ntargs )                      //  target should have 0 mean?
-        {
-                case 2:
-                        if( targ == 1 )     target= -1;
-                        else if( targ == 2 )target=  1;
-                        else target= 0;
-                        break;
-                case 3:
-                        if( targ == 1 )      target= -1;
-                        else if( targ == 2 ) target=  0;
-                        else if( targ == 3 ) target=  1;
-                        else targ= 0;
-                        break;
-                case 4:
-                        if( targ == 1 )      target= -2;
-                        else if( targ == 2 ) target= -1;
-                        else if( targ == 3 ) target=  1;
-                        else if( targ == 4 ) target=  2;
-                        else target= 0;
-                        break;
-                default:    return;
-        }
-
-
-        if( use_flag == 0 )
+ // problem !!
+        if( use_flag[chan] == 0 )
         {
                 for(i=0;i<nh;i++)                // transfer weights
-                        wt_buf[i]= wts[i];
+                        wt_buf[chan][i]= wts[i];
 
-                use_flag= 1;
+                use_flag[chan]= 1;
+fprintf(sfile,"Transfering Weights \n");
+        for(i=0;i<nh;i++)
+                fprintf(sfile,"     wt_buf[%2d][%2d]= %8.4f \n",chan, i, wt_buf[chan][i]);
+fprintf(sfile,"Rate= %10.8f \n",rate);                
         }
+
 
         if(feedback == 1 )
         {
-                if( oldfeedback == 0 )
+                if( oldfeedback[chan] == 0 )
                 {
 
                 }
@@ -525,38 +509,42 @@ void STATISTICS::ProcWeightControl(     int ntargs,             // number of tar
 
                 for( i=0;i<nh;i++)       // apply filter
                 {
-                        predicted+=  wt_buf[i] * elements[i];
+                        predicted+=  wt_buf[chan][i] * elements[i];
                 }
 
-                predicted-= mean;         // include mean in model
+                predicted-= sig_mean[chan];         // include mean in model
 
                 err= (float)target - predicted;
 
                 for(i=0;i<nh;i++)         // update weights
                 {
-                        wt_buf[i]+= elements[i] * err * rate;
+                        wt_buf[chan][i]+= elements[i] * err * rate;
                 }
-                mean= current_intercept;  // += 1.0 * err * rate;        // update mean
+                if( chan == 1 )
+                        sig_mean[chan]= current_intercept;  // += 1.0 * err * rate;        // update mean
+                else if( chan == 2 )
+                        sig_mean[chan]= current_lr_intercept;
 
                                                                         // Print to file
-                fprintf(sfile,"%5d %2d %2d %8.4f ",count,use,target,err);
+                fprintf(sfile,"Chan %2d %5d %2d %2d %8.4f %2d",chan,count,use,target,err,nh);
                 count++;
                 for(i=0;i<nh;i++)
                 {
-                        fprintf(sfile," %7.3f  %7.4f ",elements[i],wt_buf[i]);
+                        fprintf(sfile," %7.3f  %7.4f ",elements[i],wt_buf[chan][i]);
                 }
-                fprintf(sfile,"%8.4f \n",mean);                  // mean and linefeed
+                fprintf(sfile,"%8.4f \n",sig_mean[chan]);                  // mean and linefeed
 
           }
+
           else if( feedback == 0 )
           {
-                if( (oldfeedback == 1) &&  (use == 2 ) )      // reset weights at trial end
+                if( (oldfeedback[chan] == 1) &&  (use == 2 ) )      // reset weights at trial end
                 {
                         for(i=0;i<nh;i++)
-                                wts[i]= wt_buf[i];
+                                wts[i]= wt_buf[chan][i];
                 }
           }
-          oldfeedback= feedback;
+          oldfeedback[chan]= feedback;
 }
 
 

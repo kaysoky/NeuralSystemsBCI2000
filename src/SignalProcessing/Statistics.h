@@ -55,14 +55,19 @@ private:
         float   CurAvg[MAX_CONTROLSIG];
         float   CurStdDev[MAX_CONTROLSIG];
         float   current_intercept;
+        float   current_lr_intercept;
         FILE    *sfile;
+        float   sig_mean[MAX_CONTROLSIG];
+        int  oldfeedback[MAX_CONTROLSIG];
+        float wt_buf[MAX_CONTROLSIG][128];
+        int  use_flag[MAX_CONTROLSIG];
 public:
         STATISTICS::STATISTICS();
         STATISTICS::~STATISTICS();
         void    SetTrendControl( int bufno, float val, int ntimes );    // seed the trend control running average
         void    ProcRunningAvg(int, int, float, TRIALSTAT *);           // do whole proceedure
         void    ProcTrendControl(int, int, int, int, TRIALSTAT *, float, float);    // do whole proceedure
-        void    ProcWeightControl( int, int, int, int, int, float *, float *, float, int );            // weight control
+        void    ProcWeightControl( int, int, int, int, float *, float *, float, int );   // weight control
         void    SetNumMaxTrials(int trials);                            // sets the maximum number of trials, i.e., the length of the running average
         void    SetDTWinMaxTrials( int trials );
         void    SetIntercept(int controlsigno, float intercept);        // sets the current intercept for this controlsignal

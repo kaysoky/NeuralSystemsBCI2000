@@ -1,6 +1,9 @@
 #pragma hdrstop
 #include <math.h>
 #include <stdlib.h>
+
+#define USE_LOGFILE
+
 #ifdef USE_LOGFILE
 # include <stdio.h>
 #endif // USE_LOGFILE
@@ -36,6 +39,7 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
   clsf( NULL )
 {
   cur_stat.NumT= 0;
+  cur_lr_stat.NumT= 0;
 
   const char* params[] =
   {
@@ -45,8 +49,12 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
       "0 0 1 // Length of time for running average",
     "Statistics float InterceptProportion= 1.0 "
       "0.0 0.0 2.0 // Proportion of signal mean for intercept",
+    "Statistics float HorizInterceptProp= 1.0 "
+        "0.0 0.0 2.0 // Proportion of horizontal signal intercept",
     "Statistics float DesiredPixelsPerSec= 70 "
       "70 0 400 // Desired pixels per second",
+    "Statistics float LRPixelsPerSec= 0 "
+      "70 0 400 // Horizontal Pixel Rate",
     "Visualize int VisualizeStatFiltering= 1 "
       "0 0 1  // visualize Stat filtered signals (0=no 1=yes)",
     "Statistics matrix BaselineCfg= 2 2 "
@@ -59,16 +67,26 @@ StatFilter::StatFilter(PARAMLIST *plist, STATELIST *slist)
       "0 0 0 // proportion correct for each target",
     "Statistics int TrendControl= 1 "
       "0 0 1  // Online adaption of % Correct Trend 1= Lin 2 = Quad",
+    "Statistics int HorizTrendControl= 1 "
+      "0 0 1  // Adaption of Horizontal % Correct Trend 1= Lin 2 = Quad",
     "Statistics int TrendWinLth= 20 "
       "0 0 100 // Length of % Correct Window",
     "Statistics float LinTrendLrnRt= 0.001 "
       "0 0.000 0.010 // Learning Rate for Linear Trend Control",
     "Statistics float QuadTrendLrnRt= 0.001 "
       "0 0 0.010 // Learning Rate for Linear Trend Control",
-    "Statistics int WeightControl= 0 "
-      "0 0 1 // Classifier Adaptation 0= no  1= Compute  2= use",
+
+    "Statistics matrix WeightControl= 3 1 "
+    "Xadapt "
+    "Yadapt "
+    "AdaptCode "
+      "0 0 1 // State Names controlling Classifier Adaptation",
+
+    "Statistics int WeightUse= 0 "
+      " 0 2 1 // Use of weights 0 = not 1= compute 2= use ",
     "Statistics float WtLrnRt= 0.001 "
       "0 0.000 0.010 // Rate of Learning for Classifier ",
+
      /*
     "Storage string FileInitials= Data "
       "Data a z // Initials of file name (max. 8 characters)",
@@ -128,6 +146,7 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
   int visualizeyn = 0;
 
   static int init_flag= 0;
+  static int wt_init_flag= 0;
   trend_flag= 0;
   intercept_flag= 0;
   weight_flag= 0;
@@ -137,19 +156,29 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
     InterceptEstMode= atoi(paramlist->GetParamPtr("InterceptControl")->GetValue());
     InterceptLength= atoi(paramlist->GetParamPtr("InterceptLength")->GetValue());
     InterceptProportion= atof(paramlist->GetParamPtr("InterceptProportion")->GetValue() );
+    HorizInterceptProp= atof(paramlist->GetParamPtr("HorizInterceptProp")->GetValue() );
     ud_intercept= atof(paramlist->GetParamPtr("UD_A")->GetValue());
     ud_gain     = atof(paramlist->GetParamPtr("UD_B")->GetValue());
     lr_intercept= atof(paramlist->GetParamPtr("LR_A")->GetValue());
     lr_gain     = atof(paramlist->GetParamPtr("LR_B")->GetValue());
     Trend_Control= atoi(paramlist->GetParamPtr("TrendControl")->GetValue());
+    HorizTrend_Control= atoi(paramlist->GetParamPtr("HorizTrendControl")->GetValue());
     Trend_Win_Lth= atoi(paramlist->GetParamPtr("TrendWinLth")->GetValue());
     LinTrend_Lrn_Rt= atof(paramlist->GetParamPtr("LinTrendLrnRt")->GetValue() );
     QuadTrend_Lrn_Rt= atof(paramlist->GetParamPtr("QuadTrendLrnRt")->GetValue() );
     desiredpix= atof(paramlist->GetParamPtr("DesiredPixelsPerSec")->GetValue());
+    horizpix= atof(paramlist->GetParamPtr("LRPixelsPerSec")->GetValue());
     visualizeyn= atoi(paramlist->GetParamPtr("VisualizeStatFiltering")->GetValue() );
 
-    WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
+  //  WtControl= atoi(plist->GetParamPtr("WeightControl")->GetValue() );
+
     WtRate= atof(plist->GetParamPtr("WtLrnRt")->GetValue() );
+
+    WtControl= atoi(plist->GetParamPtr("WeightUse")->GetValue() );
+
+  //  LRWtControl= atoi(plist->GetParamPtr("LRWeightControl")->GetValue() );
+  //  LRWtRate= atof(plist->GetParamPtr("LRWtLrnRt")->GetValue() );
+
 
     FInit= AnsiString (paramlist->GetParamPtr("FileInitials")->GetValue());
     SSes = AnsiString (paramlist->GetParamPtr("SubjectSession")->GetValue());
@@ -184,7 +213,7 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
     Statfile= fopen(OName,"a+");
   }
 
-  if( ( (InterceptEstMode>0)||(Trend_Control>0)||(WtControl>0) ) && init_flag < 1 )               // need to update if different targets
+  if( ( (InterceptEstMode>0)||(Trend_Control>0)||(WtControl > 0 ) ) && init_flag < 1 )               // need to update if different targets
   {
     delete stat;
     stat= new STATISTICS;
@@ -196,7 +225,7 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
     else
       stat->SetGain( 0, 1000);
     if (lr_gain != 0)
-      stat->SetGain( 1, desiredpix/lr_gain );
+      stat->SetGain( 1, horizpix/lr_gain );
     else
       stat->SetGain( 1, 1000 );
 
@@ -211,7 +240,12 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
       }
     }
 
-    if( WtControl > 0 )
+
+
+    init_flag++;
+  }
+
+  if( ( WtControl > 0 ) && ( wt_init_flag == 0 ) )
     {
       AName= SName + "S" + SSes + ".lms";
       strcpy(OName,FName);
@@ -219,14 +253,15 @@ void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORE
       if (Sfile) fclose(Sfile);
       Sfile= fopen(OName,"a+");
       stat->SetWeightControl( Sfile );
+      wt_init_flag= 1;
     }
-
-    init_flag++;
-  }
 
   //       cur_stat.bper= 1;
   cur_stat.pix= desiredpix;
   cur_stat.aper= InterceptProportion;
+
+  cur_lr_stat.pix= horizpix;
+  cur_lr_stat.aper= HorizInterceptProp;
 
   if( visualizeyn == 1 )
   {
@@ -297,12 +332,25 @@ void StatFilter::GetStates( void )
       if ( !(statevector->GetStateValue(statename) == stateval) )
       match= 0;                  //    all must match
 
-#ifdef USE_LOGFILE
-      fprintf(Statfile,"i= %d j= %d match= %d  name %s val %d \n",i,j,match,statename,stateval);
-#endif // USE_LOGFILE
+
     }
     if( match == 1 ) CurrentBaseline= i;
   }
+
+  PARAM* adptptr= paramlist->GetParamPtr("WeightControl");
+  const char* xadptname= adptptr->GetValue(0,0);
+  const char* yadptname= adptptr->GetValue(1,0);
+  const char* adptcodename= adptptr->GetValue(2,0);
+
+  Xadapt= statevector->GetStateValue( xadptname );
+  Yadapt= statevector->GetStateValue( yadptname );
+  AdaptCode= statevector->GetStateValue( adptcodename );
+
+#ifdef USE_LOGFILE
+     fprintf(estat,"Xadapt= %d Yadapt= %d AdaptCode= %d \n",Xadapt,Yadapt,AdaptCode);
+
+#endif // USE_LOGFILE
+
 }
 
 // **************************************************************************
@@ -313,6 +361,8 @@ void StatFilter::GetStates( void )
 int StatFilter::Resting( ClassFilter *clsf )
 {
   char memotext[256];
+  int classmode;
+  int weightbin;
 
   if( intercept_flag > 0 )               // return to operator
   {
@@ -326,11 +376,19 @@ int StatFilter::Resting( ClassFilter *clsf )
     sprintf(memotext, "%.2f\r", ud_gain);
     paramlist->GetParamPtr("UD_B")->SetValue( memotext );
 
+    sprintf(memotext, "%.2f\r", lr_intercept);
+    paramlist->GetParamPtr("LR_A")->SetValue( memotext );
+
+    sprintf(memotext, "%.2f\r", lr_gain);
+    paramlist->GetParamPtr("LR_B")->SetValue( memotext );
 
     corecomm->StartSendingParameters();
 
     corecomm->PublishParameter( paramlist->GetParamPtr("UD_A") );
     corecomm->PublishParameter( paramlist->GetParamPtr("UD_B") );
+
+    corecomm->PublishParameter( paramlist->GetParamPtr("LR_A") );
+    corecomm->PublishParameter( paramlist->GetParamPtr("LR_B") );
 
     corecomm->StopSendingParameters();
   }
@@ -341,10 +399,16 @@ int StatFilter::Resting( ClassFilter *clsf )
     sprintf(memotext, "%.4f\r", cur_stat.aper);
     paramlist->GetParamPtr("InterceptProportion")->SetValue( memotext );
 
+    sprintf(memotext, "%.4f\r",cur_lr_stat.aper);
+    paramlist->GetParamPtr("HorInterceptProp")->SetValue( memotext );
+
 
     //     sprintf(memotext, "%.2f\r", cur_stat.bper * desiredpix);
     sprintf(memotext, "%.2f\r", cur_stat.pix);
     paramlist->GetParamPtr("DesiredPixelsPerSec")->SetValue( memotext );
+
+    sprintf(memotext, "%.2f\r", cur_lr_stat.pix);
+    paramlist->GetParamPtr("LRPixelsPerSec")->SetValue( memotext );
 
     paramlist->GetParamPtr("BaselineHits")->SetDimensions( cur_stat.NumT, 2 );
 
@@ -364,16 +428,33 @@ int StatFilter::Resting( ClassFilter *clsf )
 
     corecomm->StopSendingParameters();
   }
+
+  classmode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );   // ytest classifier type
+  weightbin= 2;
+  if( classmode == 2 ) weightbin= 4;
+
   if( weight_flag > 0 )            // return weights to operator
   {
     weight_flag= 0;
     for(int i=0;i<clsf->n_vmat;i++)
     {
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
-      paramlist->GetParamPtr("MUD")->SetValue(memotext,i,4);   // 4th value is the weight
+      paramlist->GetParamPtr("MUD")->SetValue(memotext,i,weightbin);   // 2nd or 4th value is the weight
     }
     corecomm->StartSendingParameters();
     corecomm->PublishParameter( paramlist->GetParamPtr("MUD") );
+    corecomm->StopSendingParameters();
+fprintf(estat,"Horizontal weights \n");
+    for(int i=0;i<clsf->n_hmat;i++)
+    {
+
+fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
+
+      sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
+      paramlist->GetParamPtr("MLR")->SetValue(memotext,i,weightbin);   // 2nd or 4th value is the weight
+    }
+    corecomm->StartSendingParameters();
+    corecomm->PublishParameter( paramlist->GetParamPtr("MLR") );
     corecomm->StopSendingParameters();
   }
 
@@ -415,6 +496,7 @@ void StatFilter::Process( const GenericSignal *SignalE,
 
         old_ud_intercept= ud_intercept;
         old_ud_gain= ud_gain;
+
       }
 
       intercept_flag= 1;
@@ -423,11 +505,11 @@ void StatFilter::Process( const GenericSignal *SignalE,
       {
         if (in_channel == 1)
         {
-          stat->ProcRunningAvg(CurrentBaseline, in_channel, value, &cur_stat);
-          stat->ProcRunningAvg(CurrentBaseline, in_channel, value, &cur_stat);
-          lr_intercept=cur_stat.Intercept;
-          if (cur_stat.StdDev != 0)
-            lr_gain=desiredpix/cur_stat.StdDev;
+          stat->ProcRunningAvg(CurrentBaseline, in_channel, value, &cur_lr_stat);
+ 
+          lr_intercept=cur_lr_stat.Intercept;
+          if (cur_lr_stat.StdDev != 0)
+            lr_gain=horizpix/cur_lr_stat.StdDev;
 
           if (( visualize ) && ((lr_intercept != old_lr_intercept) || (lr_gain != old_lr_gain)))
           {
@@ -482,19 +564,35 @@ void StatFilter::Process( const GenericSignal *SignalE,
   old_lr_intercept=lr_intercept;
   old_lr_gain=lr_gain;
 
-  if( WtControl > 0 )
+  if( WtControl > 1 )
   {
-    // control Weight !!
-    stat->ProcWeightControl(        Ntargets,
-                                    CurrentTarget,
-                                    CurrentFeedback,
-                                    clsf->n_vmat,     // # vertical control elements
-                                    WtControl,        // control mode (1 vs 2 dim)
-                                    clsf->feature[0], // pointer to linear equation matrx
-                                    clsf->wtmat[0],   // matrix of weights
-                                    WtRate,
-                                    WtControl );
-    weight_flag= 1;
+        if( (AdaptCode == 1)||(AdaptCode == 3) )
+        {
+        // control vertical (Y) Weights !!
+        stat->ProcWeightControl(        Yadapt,            // Y value assigned target
+                                        CurrentFeedback,   // trial interval
+                                        clsf->n_vmat,      // # vertical control elements
+                                        WtControl,         // control mode (1 vs 2 dim)
+                                        clsf->feature[0], // pointer to linear equation matrx
+                                        clsf->wtmat[0],   // matrix of weights
+                                        WtRate,           // learning rate
+                                        1 );              // chan code for Y
+                weight_flag= 1;
+        }
+        if( (AdaptCode == 2)||(AdaptCode == 3) )
+        {
+        // control horizontal (X) Weight !!
+        stat->ProcWeightControl(        Xadapt,            // X value assigned target
+                                        CurrentFeedback,   // trial interval
+                                        clsf->n_hmat,      // # horizontal control elements
+                                        WtControl,         // control mode (1 vs 2 dim)
+                                        clsf->feature[1], // pointer to linear equation matrx
+                                        clsf->wtmat[1],   // matrix of weights
+                                        WtRate,
+                                        2 );              // chan code for x
+                weight_flag= 1;
+
+        }
   }
 }
 
