@@ -101,12 +101,13 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 ##################################################################################
 .bpr.mak:
   (bpr2mak $<) & echo.
-  @echo.                                                      >>$@
-  @echo prepare:                                              >>$@
-  @echo ^^ -attrib -r $^^(PROJECT) ^^^>nul 2^^^>^^^&1         >>$@
-  @echo clean:                                                >>$@
-  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES) ^^^>nul 2^^^>^^^&1 >>$@
-  @echo.                                                      >>$@
+  @echo.                                              >>$@
+  @echo QUIET = 2^^^^^^^>nul                          >>$@
+  @echo prepare:                                      >>$@
+  @echo ^^ -attrib -r $^^(PROJECT) $^^(QUIET)         >>$@
+  @echo clean:                                        >>$@
+  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES) $^^(QUIET) >>$@
+  @echo.                                              >>$@
   # We cannot tolerate absolute paths in makefiles.
   @${SHELL} \
   ( \
