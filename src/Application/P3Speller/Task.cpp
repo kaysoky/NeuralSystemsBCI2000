@@ -127,7 +127,6 @@ AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
 char    memotext[256], FName[256], cur_dir[MAXPATH];
 int     ret, numerpsamples, sampleblocksize;
-BCIDtry *bcidtry;
 
  delete vis;
  vis= new GenericVisualization;
@@ -177,21 +176,18 @@ BCIDtry *bcidtry;
 
  // open an output file for the task log
  current_directory(cur_dir);    // store current directory
- bcidtry= new BCIDtry();
- bcidtry->SetDir( FInit.c_str() );
- bcidtry->ProcPath();
- bcidtry->SetName( SName.c_str() );
- bcidtry->SetSession( SSes.c_str() );
- strcpy(FName, bcidtry->ProcSubDir() );
+ BCIDtry bcidtry;
+ bcidtry.SetDir( FInit.c_str() );
+ bcidtry.ProcPath();
+ bcidtry.SetName( SName.c_str() );
+ bcidtry.SetSession( SSes.c_str() );
+ strcpy(FName, bcidtry.ProcSubDir() );
  strcat(FName, "\\");
  strcat(FName, (SName + "S" + SSes + ".log").c_str() );         // CAT vs CPY
-#if 0
  if (logfile) fclose(logfile);
  logfile= fopen(FName, "a+");
  if( !logfile )
    bcierr << "Could not open " << FName << " for writing" << std::endl;
-#endif
- delete bcidtry;
  ChDir(AnsiString(cur_dir));    // restore current directory
 
  State( "PhaseInSequence" ) = 0;
