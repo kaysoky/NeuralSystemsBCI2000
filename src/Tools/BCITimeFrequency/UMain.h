@@ -88,6 +88,7 @@ private:	// User declarations
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
         __fastcall ~TfMain( void );
+        void ProcessCommandLineOptions();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;

@@ -19,7 +19,7 @@
       bdertl.bpi ibsmp.bpi vcldbx.bpi ibxpress.bpi bcbie.bpi vclie.bpi inetdb.bpi 
       inet.bpi nmfast.bpi dclocx.bpi bcb2kaxserver.bpi teeui.bpi teedb.bpi 
       tee.bpi teeqr.bpi DCLUSR.bpi"/>
-    <PATHCPP value=".;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -132,7 +132,7 @@ Item0=obj
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=
+RunParams=-pM:\BCITimeFrequencySupplements\spectralparms
 Launcher=
 UseLauncher=0
 DebugCWD=

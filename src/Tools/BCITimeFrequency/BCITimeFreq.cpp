@@ -2,6 +2,9 @@
 
 #include <vcl.h>
 #pragma hdrstop
+
+#include "UMain.h"
+
 USEFORM("UMain.cpp", fMain);
 USEFORM("StateForm1.cpp", UseStateForm);
 USEFORM("OutputForm1.cpp", OutputForm);
@@ -19,6 +22,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->CreateForm(__classid(TOutputForm), &OutputForm);
                  Application->CreateForm(__classid(TInputForm), &InputForm);
                  Application->CreateForm(__classid(TProcessForm), &ProcessForm);
+                 fMain->ProcessCommandLineOptions();
                  Application->Run();
         }
         catch (Exception &exception)
