@@ -43,6 +43,7 @@ class SignalProperties
     virtual bool SetNumElements( size_t inChannel, size_t inNumElements );
     size_t GetNumElements( size_t inChannel ) const { return elements.at( inChannel ); }
     size_t GetDepth() const { return depth; }
+    bool IsEmpty() const { return elements.empty() || maxElements == 0 || depth == 0; }
     virtual void SetDepth( size_t inDepth ) { depth = inDepth; }
     bool operator==( const SignalProperties& sp ) const { return depth == sp.depth && elements == sp.elements; }
     bool operator!=( const SignalProperties& sp ) const { return !( *this == sp ); }

@@ -97,6 +97,10 @@ SignalProperties::ReadBinary( istream& is )
 bool
 SignalProperties::operator>=( const SignalProperties& sp ) const
 {
+  if( IsEmpty() )
+    return sp.IsEmpty();
+  if( sp.IsEmpty() )
+    return true;
   if( depth < sp.depth )
     return false;
   if( elements.size() < sp.elements.size() )
@@ -110,6 +114,10 @@ SignalProperties::operator>=( const SignalProperties& sp ) const
 bool
 SignalProperties::operator<=( const SignalProperties& sp ) const
 {
+  if( IsEmpty() )
+    return true;
+  if( sp.IsEmpty() )
+    return false;
   if( sp.depth < depth )
     return false;
   if( sp.elements.size() < elements.size() )
