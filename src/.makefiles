@@ -20,6 +20,6 @@ MAKEFILES =\
 .\SignalProcessing\SWSignalProcessing\SignalProcessing.mak \ 
 #.\Tools\BCI2000toASCII\BCI2ASCII.mak \ 
 .\Tools\BCI2000toGAB\BCI2GAB.mak \ 
-#.\Tools\GenerateCalibration\calibgen.mak \ 
+.\Tools\GenerateCalibration\calibgen.mak \ 
 .\Tools\Maxifred\maxifred.mak \ 
  
