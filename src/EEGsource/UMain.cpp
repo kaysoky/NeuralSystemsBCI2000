@@ -271,7 +271,8 @@ int     consistent;
   consistent=0;
   }
 
- if (atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()) == 1) consistent=0;
+ // should be able to transmit one channel. why not ?
+ // if (atoi(fMain->paramlist.GetParamPtr("TransmitCh")->GetValue()) == 1) consistent=0;
 
  return(consistent);
 }
