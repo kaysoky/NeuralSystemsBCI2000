@@ -44,10 +44,6 @@ class SignalProperties
     size_t GetNumElements( size_t inChannel ) const { return elements.at( inChannel ); }
     size_t GetDepth() const { return depth; }
     virtual void SetDepth( size_t inDepth ) { depth = inDepth; }
-#ifdef SIGNAL_BACK_COMPAT
-    bool SetElements( size_t inCh, size_t inN ) { return SetNumElements( inCh, inN ); }
-    size_t GetElements( size_t inCh ) const { return GetNumElements( inCh ); }
-#endif // SIGNAL_BACK_COMPAT
     bool operator==( const SignalProperties& sp ) const { return depth == sp.depth && elements == sp.elements; }
     bool operator!=( const SignalProperties& sp ) const { return !( *this == sp ); }
     // These operators tell whether a signal would "fit" into another one.
@@ -103,12 +99,7 @@ template< class T > class BasicSignal : public SignalProperties
     std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 
-#ifndef SIGNAL_BACK_COMPAT
-  // For new code, use "SomeSignal( i, j )" resp.
-  // "( *SomeSignalPointer )( i, j )" as declared above instead of accessing
-  // the Value member directly.
   protected:
-#endif // SIGNAL_BACK_COMPAT
     std::vector< std::vector< T > > Value;
 };
 
@@ -221,56 +212,7 @@ BasicSignal< T >::SetProperties( const SignalProperties& inSp )
   *static_cast< SignalProperties* >( this ) = inSp;
 }
 
-template<class T>
-std::ostream&
-BasicSignal< T >::WriteBinary( std::ostream& os ) const
-{
-  SignalProperties::WriteBinary( os );
-  for( size_t j = 0; j < MaxElements(); ++j )
-    for( size_t i = 0; i < Value.size(); ++i )
-    {
-      if( j >= Value[ i ].size() )
-      {
-        static T null = T( 0 );
-        os.write( ( const char* )&null, GetDepth() );
-      }
-      else
-        os.write( ( const char* )&Value[ i ][ j ], GetDepth() );
-    }
-  return os;
-}
-
-template<class T>
-std::istream&
-BasicSignal< T >::ReadBinary( std::istream& is )
-{
-  SignalProperties::ReadBinary( is );
-  SetProperties( *this );
-  for( size_t j = 0; j < MaxElements(); ++j )
-    for( size_t i = 0; i < Value.size(); ++i )
-    {
-      if( j < Value[ i ].size() )
-        is.read( ( char* )&Value[ i ][ j ], GetDepth() );
-    }
-  return is;
-}
-
-// Commonly used template instantiations.
-// A simple typedef breaks on forward declarations in other headers.
-// If anyone knows how to avoid the following clumsiness, please tell.
-#if 0
 typedef BasicSignal< short > GenericIntSignal;
-typedef BasicSignal< float > GenericSignal;
-#else
-class GenericIntSignal : public BasicSignal< short >
-{
-  public:
-    GenericIntSignal() {}
-    GenericIntSignal( const SignalProperties& sp )
-    : BasicSignal< short >( sp ) {}
-    GenericIntSignal( unsigned short NewChannels, int NewMaxElements )
-    : BasicSignal< short >( NewChannels, NewMaxElements ) {}
-};
 
 class GenericSignal : public BasicSignal< float >
 {
@@ -281,16 +223,13 @@ class GenericSignal : public BasicSignal< float >
     GenericSignal( unsigned short NewChannels, int NewMaxElements )
     : BasicSignal< float >( NewChannels, NewMaxElements ) {}
     GenericSignal( const GenericIntSignal& intsig ) { *this = intsig; }
-    GenericSignal( const GenericIntSignal* intsig ) { *this = *intsig; }
     const GenericSignal& operator=( const GenericIntSignal& );
-    void  SetChannel(const short *source, size_t channel);
 
     void WriteToStream( std::ostream& ) const;
     void ReadFromStream( std::istream& );
     std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 };
-#endif
 
 inline std::ostream& operator<<( class std::ostream& os, const SignalProperties& s )
 {
