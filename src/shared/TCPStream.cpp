@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// File: tcpstream.cpp
+// File: TCPStream.cpp
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
@@ -21,13 +21,28 @@
 //                calls.
 //
 ////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
-#pragma hdrstop
+#ifdef _BORLANDC_
+# include "PCHIncludes.h"
+# pragma hdrstop
+#endif // _BORLANDC_
 
 #include "TCPStream.h"
 
+#ifdef _WIN32
+# define socklen_t int
+#else
+# include <sys/socket.h>
+# include <arpa/inet.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# define INVALID_SOCKET   ( -1 )
+# define SOCKET_ERROR     ( -1 )
+# define closesocket( s ) close( s )
+#endif
+
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +51,7 @@ using namespace std;
 int tcpsocket::s_instance_count = 0;
 
 tcpsocket::tcpsocket()
-: m_handle( NULL ),
+: m_handle( INVALID_SOCKET ),
   m_listening( false )
 {
 #ifdef _WIN32
@@ -112,7 +127,7 @@ tcpsocket::set_address( const char* ip, u_short port )
 void
 tcpsocket::update_address()
 {
-  int addr_size = sizeof( m_address );
+  socklen_t addr_size = sizeof( m_address );
   if( SOCKET_ERROR == ::getsockname( m_handle, reinterpret_cast<sockaddr*>( &m_address ), &addr_size ) )
     close();
 }
@@ -132,10 +147,10 @@ tcpsocket::port() const
 bool
 tcpsocket::is_open() const
 {
-  if( m_handle == NULL )
+  if( m_handle == INVALID_SOCKET )
     return false;
-  int err = 0,
-      err_size = sizeof( err );
+  int err = 0;
+  socklen_t err_size = sizeof( err );
   if( ::getsockopt( m_handle, SOL_SOCKET, SO_ERROR, ( char* )&err, &err_size ) || err )
     return false;
   return true;
@@ -159,7 +174,7 @@ void
 tcpsocket::close()
 {
   ::closesocket( m_handle );
-  m_handle = NULL;
+  m_handle = INVALID_SOCKET;
   m_listening = false;
 }
 
@@ -185,19 +200,33 @@ tcpsocket::wait_for_read( const tcpsocket::set_of_instances& inSockets,
                           bool  return_on_accept )
 {
   const int msecs_per_sec = 1000;
-  ::timeval  timeout = { inTimeout / msecs_per_sec, inTimeout % msecs_per_sec },
+  ::timeval  timeout = { inTimeout / msecs_per_sec, 1000 * ( inTimeout % msecs_per_sec ) },
            * timeoutPtr = &timeout;
   if( inTimeout < 0 )
     timeoutPtr = NULL;
-  if( inSockets.size() < 1 )
-    return false;
 
+  int max_fd = -1;
   ::fd_set readfds;
   FD_ZERO( &readfds );
   for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
-    FD_SET( ( *i )->m_handle, &readfds );
-
-  int result = ::select( 1, &readfds, NULL, NULL, timeoutPtr );
+    if( ( *i )->m_handle != INVALID_SOCKET )
+    {
+      max_fd = max( max_fd, ( *i )->m_handle );
+      FD_SET( ( *i )->m_handle, &readfds );
+    }
+  if( max_fd < 0 )
+  {
+    if( inTimeout > 0 )
+    {
+#ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
+      ::Sleep( inTimeout );
+#else
+      ::select( 0, NULL, NULL, NULL, timeoutPtr );
+#endif
+    }
+    return false;
+  }
+  int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeoutPtr );
   if( result > 0 )
   {
     for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
@@ -219,24 +248,37 @@ tcpsocket::wait_for_write( const tcpsocket::set_of_instances& inSockets,
                            bool return_on_accept )
 {
   const int msecs_per_sec = 1000;
-  ::timeval  timeout = { inTimeout / msecs_per_sec, inTimeout % msecs_per_sec },
+  ::timeval  timeout = { inTimeout / msecs_per_sec, 1000 * ( inTimeout % msecs_per_sec ) },
            * timeoutPtr = &timeout;
-  if( inTimeout == 0 )
+  if( inTimeout < 0 )
     timeoutPtr = NULL;
-  if( inSockets.size() < 1 )
-    return false;
 
+  int max_fd = -1;
   ::fd_set writefds,
            readfds;
   FD_ZERO( &writefds );
   FD_ZERO( &readfds );
   for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
+    if( ( *i )->m_handle != INVALID_SOCKET )
+    {
+      max_fd = max( max_fd, ( *i )->m_handle );
+      FD_SET( ( *i )->m_handle, &writefds );
+      if( ( *i )->m_listening )
+        FD_SET( ( *i )->m_handle, &readfds );
+    }
+  if( max_fd < 0 )
   {
-    FD_SET( ( *i )->m_handle, &writefds );
-    if( ( *i )->m_listening )
-      FD_SET( ( *i )->m_handle, &readfds );
+    if( inTimeout > 0 )
+    {
+#ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
+      ::Sleep( inTimeout );
+#else
+      ::select( 0, NULL, NULL, NULL, timeoutPtr );
+#endif
+    }
+    return false;
   }
-  int result = ::select( 2, &readfds, &writefds, NULL, timeoutPtr );
+  int result = ::select( max_fd + 1, &readfds, &writefds, NULL, timeoutPtr );
   if( result > 0 )
   {
     for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
@@ -281,7 +323,7 @@ tcpsocket::accept()
 {
   if( m_listening )
   {
-    unsigned int new_handle = ::accept( m_handle, NULL, NULL );
+    int new_handle = ::accept( m_handle, NULL, NULL );
     if( new_handle == INVALID_SOCKET )
       return;
     ::closesocket( m_handle );
@@ -297,9 +339,13 @@ server_tcpsocket::do_open()
   close();
   if( SOCKET_ERROR == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
   {
-    m_handle = NULL;
+    m_handle = INVALID_SOCKET;
     return;
   }
+
+  int val = 1;
+  ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>( &val ), sizeof( val ) );
+
   if( ( SOCKET_ERROR == ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) ) )
       ||
       ( SOCKET_ERROR == ::listen( m_handle, 1 ) ) )
@@ -317,7 +363,7 @@ client_tcpsocket::do_open()
   close();
   if( SOCKET_ERROR == ( m_handle = ::socket( PF_INET, SOCK_STREAM, 0 ) ) )
   {
-    m_handle = NULL;
+    m_handle = INVALID_SOCKET;
     return;
   }
   if( SOCKET_ERROR == ::connect( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) ) )
@@ -355,7 +401,7 @@ tcpbuf::underflow()
 {
   if( sync() == traits_type::eof() )
     return traits_type::eof();
-  
+
   if( !eback() )
   {
     char* buf = new char[ buf_size ];
@@ -406,7 +452,7 @@ tcpbuf::sync()
 {
   if( !m_socket )
     return traits_type::eof();
-    
+
   char* write_ptr = pbase();
   if( !write_ptr )
   {

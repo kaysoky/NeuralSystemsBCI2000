@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// File: tcpstream.h
+// File: TCPStream.h
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
@@ -30,7 +30,7 @@
 #ifdef _WIN32
 # include <winsock.h>
 #else
-# include <socket.h>
+# include <netinet/in.h>
 #endif
 
 #include <iostream>
@@ -91,8 +91,8 @@ class tcpsocket
     void update_address();
 
   protected:
+    int          m_handle;
     bool         m_listening;
-    unsigned int m_handle;
     sockaddr_in  m_address;
 
   // static members
