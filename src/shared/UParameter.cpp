@@ -703,7 +703,7 @@ PARAM::ReadFromStream( istream& is )
   string definition;
   {
     int i = is.peek();
-    while( i != '\r' && i != '\n' && i != EOF )
+    while( is && i != '\r' && i != '\n' && i != EOF )
     {
       definition += is.get();
       i = is.peek();
@@ -858,9 +858,10 @@ istream&
 PARAM::ReadBinary( istream& is )
 {
   ReadFromStream( is );
-  if( is && ( is.get() != '\r' ) )
+  // Some old modules out there don't send CRLF after binary PARAM messages.
+  if( !is.eof() && ( is.get() != '\r' ) )
     is.setstate( ios::failbit );
-  if( is && ( is.get() != '\n' ) )
+  if( !is.eof() && ( is.get() != '\n' ) )
     is.setstate( ios::failbit );
   return is;
 }
