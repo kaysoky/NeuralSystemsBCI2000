@@ -458,14 +458,37 @@ TARGET::TARGET(int my_targetID)
  icon=NULL;
  caption=NULL;
 
+
  IconFile="";
  Caption="";
  /*shidong starts*/
         CharDisplayInMatrix = "";
         CharDisplayInResult = "";
         FontSizeFactor = 1.0;
+        clickedOn = false;
+       // caption->OnClick = clickTarget;
  /*shidong ends*/
 }
+
+
+void __fastcall TARGET::clickTarget( TObject* input)
+{
+        clickedOn = true;
+}
+
+// **************************************************************************
+// Function:   IsClickedOn
+// Purpose:    Check to see if the targets been clicked by the mouse
+// Parameters: N/A
+// Returns:    bool
+// **************************************************************************
+bool TARGET::IsClickedOn()
+{
+        bool toRet;
+        toRet = clickedOn;      //get the current value of clickedOn
+        clickedOn = false;      //restore the clickedOn to false
+        return toRet;
+}//IsClickedOn
 
 
 // **************************************************************************
@@ -516,7 +539,8 @@ TARGET *new_target;
  /*shidong starts*/
  new_target->CharDisplayInMatrix = CharDisplayInMatrix;
  new_target->CharDisplayInResult = CharDisplayInResult;
- new_target->FontSizeFactor = FontSizeFactor;        
+ new_target->FontSizeFactor = FontSizeFactor;
+ new_target->clickedOn = clickedOn;      
  /*shidong ends*/
  return(new_target);
 }
@@ -659,6 +683,9 @@ float   scalex, scaley;
     scaledtextposy=(scaledbottom+scaledtop)/2-caption->Height/2;
     caption->Left=scaledtextposx;
     caption->Top=scaledtextposy;
+    /*shidong starts*/
+    caption->OnClick = clickTarget;
+    /*shidong ends*/
     }
 }
 

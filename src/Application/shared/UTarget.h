@@ -32,6 +32,9 @@ private: 	// User declarations
         TShape  *shape;
         TImage  *icon;
         TLabel  *caption;
+        /*shidong starts*/
+        void __fastcall clickTarget( TObject* );
+        /*shidong ends*/
 public:		// User declarations
         TARGET::TARGET(int my_targetID);
         TARGET::~TARGET();
@@ -54,6 +57,9 @@ public:		// User declarations
         AnsiString CharDisplayInMatrix;
         AnsiString CharDisplayInResult;
         float FontSizeFactor;
+        bool    clickedOn;
+        bool    IsClickedOn();
+
         /*shidong ends*/
 };
 
