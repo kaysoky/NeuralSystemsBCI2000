@@ -15,6 +15,7 @@
 #include "shared/UState.h"
 #include "shared/UGenericFilter.h"
 #include "shared/USysCommand.h"
+#include "shared/UGenericVisualization.h"
 #include "shared/MessageHandler.h"
 
 using namespace std;
@@ -42,12 +43,12 @@ class StreamToAsc : public MessageHandler
   STATELIST mStatelist;
   STATEVECTOR* mpStatevector;
 
-  virtual bool HandleSTATUS(        istream& );
-  virtual bool HandlePARAM(         istream& );
-  virtual bool HandleSTATE(         istream& );
-  virtual bool HandleGenericSignal( istream& );
-  virtual bool HandleSTATEVECTOR(   istream& );
-  virtual bool HandleSYSCMD(        istream& );
+  virtual bool HandleSTATUS(      istream& );
+  virtual bool HandlePARAM(       istream& );
+  virtual bool HandleSTATE(       istream& );
+  virtual bool HandleVisSignal(   istream& );
+  virtual bool HandleSTATEVECTOR( istream& );
+  virtual bool HandleSYSCMD(      istream& );
 };
 
 template<typename T> void Convert( istream&, ostream& );
@@ -122,9 +123,9 @@ StreamToAsc::HandleSTATE( istream& arIn )
 }
 
 bool
-StreamToAsc::HandleGenericSignal( istream& arIn )
+StreamToAsc::HandleVisSignal( istream& arIn )
 {
-  Convert<GenericSignal>( arIn, mrOut );
+  Convert<VisSignal>( arIn, mrOut );
   return true;
 }
 

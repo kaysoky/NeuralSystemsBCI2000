@@ -114,7 +114,7 @@ int main( int argc, const char** argv )
   istream* in = &cin;
   if( options.inputFile )
   {
-    in = new ifstream( options.inputFile );
+    in = new ifstream( options.inputFile, ios::binary );
     if( !*in )
     {
       cerr << "Could not open " << options.inputFile << " for input" << endl;
@@ -131,9 +131,9 @@ int main( int argc, const char** argv )
     ostream& out = ( result == noError ? cout : cerr );
     out << "Usage: " << ToolInfo[ name ] << " [OPTION]\n"
         << ToolInfo[ short_description ] << '\n'
-        << "\t-h, --help\tDisplay this help\n"
-        << "\t-v, --version\tOutput version information\n"
-        << "\t-i <file>, --input\tGet input from file\n";
+        << "\t-h,        --help        \tDisplay this help\n"
+        << "\t-v,        --version     \tOutput version information\n"
+        << "\t-i <file>, --input <file>\tGet input from file\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out.flush();
@@ -146,13 +146,13 @@ int main( int argc, const char** argv )
     cerr << "Error writing to standard output" << endl;
     result = genericError;
   }
-  if( options.inputFile )
-    delete in;
   if( result != fileIOError && !*in )
   {
     cerr << "Illegal data format" << endl;
     result = illegalInput;
   }
+  if( options.inputFile )
+    delete in;
   return result;
 }
 

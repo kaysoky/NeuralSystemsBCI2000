@@ -43,8 +43,6 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
        transmitData = ( transmissionList.find_first_of( "dD" ) != string::npos );
 
   // Read the BCI2000 header.
-  // The format given here does not match the specification but is what is actually
-  // found in .dat files written by the BCI2000 source module.
   string token;
   int headerLength,
       sourceCh,
@@ -68,6 +66,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   }
   legalInput &=
     getline( in >> ws, token, ']' ) >> ws && token == "[ Parameter Definition ";
+
   PARAMLIST parameters;
   while( legalInput && getline( in, token ) &&  token.length() > 1 )
   {
@@ -87,51 +86,43 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     return illegalInput;
   }
 
-  STATEVECTOR statevector( &states );
-  assert( statevector.GetStateVectorLength() == stateVectorLength );
-  int bufferSize = sourceCh * 2 + statevector.GetStateVectorLength();
-  char* dataBuffer = new char[ bufferSize ];
-  int curSample = 0;
-  GenericSignal outputSignal( sourceCh, sampleBlockSize );
-  while( legalInput && in.peek() != EOF && in.read( dataBuffer, bufferSize ) )
+  if( transmitData || transmitStates )
   {
-    for( int i = 0; i < sourceCh; ++i )
+    STATEVECTOR statevector( &states, true );
+    assert( statevector.GetStateVectorLength() == stateVectorLength );
+    int bufferSize = sourceCh * 2 + statevector.GetStateVectorLength();
+    char* dataBuffer = new char[ bufferSize ];
+    int curSample = 0;
+    GenericSignal outputSignal( sourceCh, sampleBlockSize );
+    while( legalInput && in.peek() != EOF && in.read( dataBuffer, bufferSize ) )
     {
-      sint16 value = dataBuffer[ 2 * i + 1 ] << 8 | dataBuffer[ 2 * i ];
-      outputSignal( i, curSample ) = value;
+      for( int i = 0; i < sourceCh; ++i )
+      {
+        sint16 value = dataBuffer[ 2 * i + 1 ] << 8 | dataBuffer[ 2 * i ];
+        outputSignal( i, curSample ) = value;
+      }
+      if( ++curSample == sampleBlockSize )
+      {
+        curSample = 0;
+        if( transmitData )
+        {
+          // Send the data.
+          MessageHandler::PutMessage( out, outputSignal );
+        }
+        if( transmitStates )
+        {
+          memcpy( statevector.GetStateVectorPtr(), dataBuffer + sourceCh * 2,
+                                            statevector.GetStateVectorLength() );
+          MessageHandler::PutMessage( out, statevector );
+        }
+      }
     }
-    if( ++curSample == sampleBlockSize )
+    delete[] dataBuffer;
+    if( curSample != 0 )
     {
-      curSample = 0;
-      if( transmitData )
-      {
-        // Send the data.
-        MessageHandler::PutMessage( out, outputSignal );
-      }
-      if( transmitStates )
-      {
-        memcpy( statevector.GetStateVectorPtr(), dataBuffer + sourceCh * 2,
-                                          statevector.GetStateVectorLength() );
-        MessageHandler::PutMessage( out, statevector );
-      }
+      cerr << "Non-integer number of data blocks in input" << endl;
+      result = illegalInput;
     }
-  }
-  delete[] dataBuffer;
-  if( curSample != 0 )
-  {
-    cerr << "Non-integer number of data blocks in input" << endl;
-    result = illegalInput;
-  }
-
-  if( !out )
-  {
-    cerr << "Error writing to standard output" << endl;
-    result = genericError;
-  }
-  if( !in )
-  {
-    cerr << "Illegal data format" << endl;
-    result = illegalInput;
   }
   return result;
 }
