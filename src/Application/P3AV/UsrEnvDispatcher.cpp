@@ -438,12 +438,6 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
 
 const int UsrEnvDispatcher::ProcessResult(GenericVisualization * pGenericVisualization)
 {
-  for (unsigned int i = 0; i < m_vStimulusPresent.size(); ++i)
-  {
-    // report error
-    if (m_vStimulusPresent[i] == true && m_vResultCounts[i] == 0)
-      bcierr << "Signal processing module didnt send a result for stimulus number " << AnsiString(i + 1).c_str() << std::endl;
-  }
   // process the results
   float fMaxValue = - std::numeric_limits<float>::max();
   int iPickedStimulusID(0);
