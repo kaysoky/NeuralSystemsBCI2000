@@ -8,20 +8,6 @@
 
 #include <vcl.h>
 #include <string>
-
-//-------------------------------------------------
-
-class TFEForm : public TForm
-{
-private:
-        TButton  *OKButton;
-        TEdit    *BadPath;
-        void __fastcall OKButtonClick(TObject*);
-public:
-        __fastcall TFEForm( const char *);
-};
-
-
 //--------------------------------------------------
 class BCIDtry
 {
@@ -44,8 +30,6 @@ class BCIDtry
     void        SetSession( const char * );
     int         ProcPath( void );
     const char* ProcSubDir( void );
-    void        FileError( const char* );
-    void        FileError( TApplication *, const char *s ) { FileError( s ); }
     int         GetLargestRun( const char * );
 } ;
 

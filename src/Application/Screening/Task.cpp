@@ -62,14 +62,13 @@ TTask::TTask()
 TTask::~TTask( void )
 {
   delete vis;
-  fclose( appl );
+  if( appl ) fclose( appl );
 }
 
 
 void TTask::Initialize()
 {
         AnsiString FInit,SSes,SName,AName;
-        BCIDtry *bcidtry;
         char FName[120];
         char slash[2];
         time_t ctime;
@@ -92,32 +91,30 @@ void TTask::Initialize()
 
         if( appl == NULL )
         {
-                bcidtry= new BCIDtry();
+                BCIDtry bcidtry;
 
-                bcidtry->SetDir( FInit.c_str() );
-                bcidtry->ProcPath();
-                bcidtry->SetName( SName.c_str() );
-                bcidtry->SetSession( SSes.c_str() );
+                bcidtry.SetDir( FInit.c_str() );
+                bcidtry.ProcPath();
+                bcidtry.SetName( SName.c_str() );
+                bcidtry.SetSession( SSes.c_str() );
 
-                strcpy(FName, bcidtry->ProcSubDir() );
+                strcpy(FName, bcidtry.ProcSubDir() );
 
-                slash[0]= 0x5c;
-                slash[1]= 0x00;
-                strcat(FName,slash);
+                strcat(FName,"\\");
 
                 AName= SName + "S" + SSes + ".apl";
                 strcat(FName, AName.c_str() );               // cpy vs cat
 
-                if( (appl= fopen(FName,"a+")) == NULL)       // report error if NULL
+                if( (appl= fopen(FName,"a+")) != NULL)       // don't crash if NULL
                 {
-                        bcidtry->FileError( Applic, FName );
+                  fprintf(appl,"%s \n",AName.c_str() );
+
+                  ctime= time(NULL);
+                  tblock= localtime(&ctime);
+                  fprintf(appl,"%s \n", asctime( tblock ) );
                 }
-
-                fprintf(appl,"%s \n",AName.c_str() );
-
-                ctime= time(NULL);
-                tblock= localtime(&ctime);
-                fprintf(appl,"%s \n", asctime( tblock ) );
+                else
+                  bcierr << "Could not open " << FName << " for writing" << std::endl;
         }
 
         bitrate.Initialize(Ntargets);

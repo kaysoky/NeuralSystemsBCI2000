@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "UStorage.h"
+#include "UBCIError.h"
 
 #pragma package(smart_init)
 //---------------------------------------------------------------------------
@@ -118,6 +119,9 @@ short   value;
 FILE    *fp;
 bool    atleastone;
 
+ 
+ ReturnValue=1;
+
  while (!Terminated)
   {
   // critsec_event->Acquire();
@@ -137,27 +141,41 @@ bool    atleastone;
 
   // go through all the buffers and store the ones that hold data
   if (atleastone)
-     {
-     fp=fopen(FName, "ab");
-     for (i=0; i<MAX_BUFFERS; i++)
+  {
+    fp=fopen(FName, "ab");
+    bool writeSuccess = false;
+    if( fp )
+    {
+      for (i=0; i<MAX_BUFFERS; i++)
       {
-      critsec[i]->Acquire();       // acquire a lock for this buffer
-      // buffer present ?
-      if (length[i] > 0)
-         {
-         fwrite(buffer[i], length[i], 1, fp);
-         delete [] buffer[i];
-         buffer[i]=NULL;
-         length[i]=0;
-         AlreadyIncremented = false;
-         }
-      critsec[i]->Release();       // release the lock for this buffer
+        critsec[i]->Acquire();       // acquire a lock for this buffer
+        // buffer present ?
+        if (length[i] > 0)
+        {
+          writeSuccess = ( fwrite(buffer[i], length[i], 1, fp) == 1 );
+          delete [] buffer[i];
+          buffer[i]=NULL;
+          length[i]=0;
+          AlreadyIncremented = false;
+        }
+        critsec[i]->Release();       // release the lock for this buffer
       }
-     fclose(fp);
-     }
+      fclose(fp);
+    }
+    if( !fp )
+    {
+      bcierr << "Could not open " << FName << " for writing" << std::endl;
+      ReturnValue = 0;
+      Terminate();
+    }
+    else if( !writeSuccess )
+    {
+      bcierr << "Error writing to file " << FName << " (disk full?)" << std::endl;
+      ReturnValue = 0;
+      Terminate();
+    }
   }
-
- ReturnValue=1;
+ }
 }
 //---------------------------------------------------------------------------
 
@@ -210,16 +228,13 @@ char    errmsg[1024];
 
  // if we can't open the target file name, return 0 (failure)
  if ((fp = fopen(FName, "ab") ) == NULL)
-    {
-#if 0
-    sprintf(errmsg, "Could not open data file %s !!", FName);
-    error.SetErrorMsg(errmsg);
-#endif
-    // the next time it shall create a new file name
-    // from the parameters since it failed initializing
-    useflag=1;
-    ret=0;
-    }
+ {
+   bcierr << "Could not open " << FName << " for writing" << std::endl;
+   // the next time it shall create a new file name
+   // from the parameters since it failed initializing
+   useflag=1;
+   ret=0;
+ }
 
  if (fp)
     {
@@ -308,7 +323,7 @@ char    *PLine;
 fpos_t  pos;
 
  if( ( fp = fopen(FName,"w+b") ) == NULL )
-        Application->MessageBox("In Write Header: Could not open data file ", "Error", MB_OK);
+   bcierr << "Could not open " << FName << " for writing" << std::endl;
 
  if (fp)
     {
@@ -339,7 +354,8 @@ if (saveprmfile)
    strcpy(Line, FName);
    PLine = strstr(Line, ".dat\0");
    strcpy( PLine, ".prm");
-   if (!paramlist->SaveParameterList(Line)) Application->MessageBox("Could not write parameter file !", NULL, MB_OK);
+   if( !paramlist->SaveParameterList( Line ) )
+     bcierr << "Could not save parameters to file " << Line << std::endl;
    }
 // --------- end of PRM saving --------------------------------------------------
 }
@@ -368,9 +384,7 @@ char    *cur_ptr;
  // all buffers filled
  if (ptr >= MAX_BUFFERS-1)
     {
-#if 0
-    error.SetErrorMsg("Data Storage: All Buffers Filled !!");
-#endif
+    bcierr << "Data Storage Error: All Buffers Filled" << std::endl;
     return(false);
     }
 

@@ -367,6 +367,7 @@ int     res;
  Environment::EnterInitializationPhase( &paramlist, &statelist, statevector, corecomm );
  // initialize the DataStorage object
  res=tds->Initialize(&paramlist, &statelist, statevector);
+ res = ( res && __bcierr.flushes() == 0 );
  if (res == 0)
     {
     corecomm->SendStatus("411 Error in Source !");

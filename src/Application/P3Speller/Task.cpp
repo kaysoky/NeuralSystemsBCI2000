@@ -10,6 +10,7 @@
 
 #include "UState.h"
 #include "BCIDirectry.h"
+#include "UBCIError.h"
 
 #include "Task.h"
 
@@ -85,7 +86,7 @@ TTask::~TTask( void )
   delete userdisplay;
   delete cur_time;
   delete bcitime;
-  fclose(logfile);
+  if( logfile ) fclose(logfile);
 }
 
 // **************************************************************************
@@ -175,8 +176,12 @@ BCIDtry *bcidtry;
  strcpy(FName, bcidtry->ProcSubDir() );
  strcat(FName, "\\");
  strcat(FName, (SName + "S" + SSes + ".log").c_str() );         // CAT vs CPY
+#if 0
  if (logfile) fclose(logfile);
  logfile= fopen(FName, "a+");
+ if( !logfile )
+   bcierr << "Could not open " << FName << " for writing" << std::endl;
+#endif
  delete bcidtry;
  ChDir(AnsiString(cur_dir));    // restore current directory
 

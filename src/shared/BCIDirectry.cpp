@@ -7,6 +7,7 @@
 
 #include "BCIDirectry.h"
 
+#include "UBCIError.h"
 #include <dir.h>
 
 #pragma package(smart_init)
@@ -96,13 +97,6 @@ const char *BCIDtry::ProcSubDir( void )
     return SubjPath.c_str();
 }
 
-void BCIDtry::FileError( const char *badpath )
-{
-    TFEForm *FEForm = new TFEForm( badpath );
-    FEForm->ShowModal();
-    delete FEForm;
-}
-
 int BCIDtry::GetLargestRun( const char *path )
 {
         struct ffblk ffblk;
@@ -138,42 +132,6 @@ int BCIDtry::GetLargestRun( const char *path )
                 done= findnext( &ffblk );
         }
         return( max );
-}
-
-__fastcall TFEForm::TFEForm( const char *path )
-// As we delete the form object ourselves, we don't want it to have
-// an owner at all.
-: TForm( ( TComponent* )NULL, 1 )
-{
-        Height= 150;
-        Width= 250;
-        // Position= poScreenCenter;
-        Top= 20;
-        Left= 20;
-        AutoScroll = false;
-
-        Caption= Application->Title + ": File I/O Error";
-
-        OKButton= new TButton(this);
-        OKButton->Parent= this;
-        OKButton->Top= 75;
-        OKButton->Left= 75;
-        OKButton->OnClick= OKButtonClick;
-        OKButton->Caption= "OK";
-
-        BadPath= new TEdit( this );
-        BadPath->Parent= this;
-        BadPath->Text= path;
-        BadPath->Left= 10;
-        BadPath->Top= 50;
-        BadPath->Width= 220;
-        BadPath->Height= 30;
-        BadPath->ReadOnly = true;
-}
-
-void __fastcall TFEForm::OKButtonClick(TObject *Sender )
-{
-        Close();
 }
 
 
