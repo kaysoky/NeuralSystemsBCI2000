@@ -15,13 +15,19 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <ScktComp.hpp>
-#include <stdio.h>
-
 #include "UOperatorUtils.h"
 #include "UState.h"
 #include "UCoreMessage.h"
 #include "UBCIError.h"
+#include "defines.h"
+
+#include <ScktComp.hpp>
+#include <Registry.hpp>
+#include <stdio.h>
+#include <string>
+#include <typeinfo>
+
+using namespace std;
 
 int
 OperatorUtils::UpdateState( const STATELIST*   statelist,
@@ -67,3 +73,55 @@ OperatorUtils::UpdateState( const STATELIST*   statelist,
    delete coremessage;
    return ret;
 }
+
+void
+OperatorUtils::SaveControl( const TControl* c )
+{
+  TRegistry* reg = NULL;
+  try
+  {
+    reg = new TRegistry( KEY_WRITE );
+    reg->RootKey = HKEY_CURRENT_USER;
+    
+    typeid( *c ).name();
+    reg->OpenKey( ( string( KEY_BCI2000 KEY_OPERATOR KEY_CONFIG "\\" ) + typeid( *c ).name() ).c_str(), true );
+    reg->WriteInteger( "Left", c->Left );
+    reg->WriteInteger( "Top", c->Top );
+    reg->WriteInteger( "Height", c->Height );
+    reg->WriteInteger( "Width", c->Width );
+  }
+  catch( ERegistryException& )
+  {
+  }
+  delete reg;
+}
+
+void
+OperatorUtils::RestoreControl( TControl* c )
+{
+  TRegistry* reg = NULL;
+  try
+  {
+    reg = new TRegistry( KEY_READ );
+    reg->RootKey = HKEY_CURRENT_USER;
+    reg->OpenKey( ( string( KEY_BCI2000 KEY_OPERATOR KEY_CONFIG "\\" ) + typeid( *c ).name() ).c_str(), false );
+    TRect clientRect;
+    clientRect.Left = reg->ReadInteger( "Left" );
+    clientRect.Top = reg->ReadInteger( "Top" );
+    clientRect.Right = clientRect.Left + reg->ReadInteger( "Width" );
+    clientRect.Bottom = clientRect.Top + reg->ReadInteger( "Height" );
+    if( Types::IntersectRect( TRect(), clientRect, Screen->WorkAreaRect ) )
+    {
+      c->Left = clientRect.Left;
+      c->Top = clientRect.Top;
+      c->Height = clientRect.Height();
+      c->Width = clientRect.Width();
+    }
+  }
+  catch( ERegistryException& )
+  {
+  }
+  delete reg;
+}
+
+

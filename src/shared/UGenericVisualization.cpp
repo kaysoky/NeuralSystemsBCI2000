@@ -40,7 +40,7 @@ GenericVisualization::GenericVisualization()
 : signal( NULL ),
   new_samples( -1 ),
   sourceID( -1 ),
-  vis_type( VISTYPE_POLYLINE ),
+  vis_type( VISTYPE_GRAPH ),
   datatype( DATATYPE_FLOAT )
 {
  // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
@@ -290,6 +290,10 @@ float   value, value2;
  return(true);
 }
 
+bool GenericVisualization::SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgValue )
+{
+  return SendCfg2Operator( sourceID, cfgID, AnsiString( cfgValue ).c_str() );
+}
 
 bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString)
 {

@@ -219,7 +219,13 @@ __fastcall TfMain::TfMain(TComponent* Owner)
 : TForm(Owner),
   syslog( NULL )
 {
- sendrecv_critsec=new TCriticalSection();
+  sendrecv_critsec=new TCriticalSection();
+  OperatorUtils::RestoreControl( this );
+}
+
+__fastcall TfMain::~TfMain()
+{
+  OperatorUtils::SaveControl( this );
 }
 //---------------------------------------------------------------------------
 
@@ -534,91 +540,10 @@ int TfMain::HandleCoreMessage(COREMESSAGE *message, int module)
 AnsiString              section, type, name;
 STATEVECTOR             *initial_state_vector;
 PARAM   *temp_param;
-#if 0
-VISUAL  *vis_ptr;
-#endif
 char    buf[255];
 int     sample, channel, i, j;
 
-#if 0
- // it is a message containing visualization data
- if (message->GetDescriptor() == COREMSG_DATA)
-    {
-    /* // it is visualization configuration
-    if (message->GetDescriptor() == VISTYPE_VISCFG)
-       {
-       // if the configuration contains cfg re. a graph, open a window, if necessary
-       vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
-       if (vis_ptr == NULL)
-          SendMessage(fMain->Handle, WINDOW_OPEN, message->visualization.GetSourceID(), VISTYPE_GRAPH);
-       } */
-
-    // it is a graph that was coming in
-    if (message->GetSuppDescriptor() == VISTYPE_GRAPH)
-       {
-       // the graph contains integers
-       if ((message->visualization.GetDataType() == DATATYPE_INTEGER) || (message->visualization.GetDataType() == DATATYPE_FLOAT))
-          {
-          // if we did not receive anything from this source yet, open another window
-          // we send a message to the main thread that will open the window
-          // we have to send a message, since this code is executed in a separate thread,
-          // and VCL components have to be dealt with in the main thread
-          // it only works, if I open the window in a message handler
-          // I think that it should also work, if I used Synchronize(OpenVisual()), but haven't tried it yet
-          vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
-          if (vis_ptr == NULL)
-             SendMessage(fMain->Handle, WINDOW_OPEN, message->visualization.GetSourceID(), VISTYPE_GRAPH);
-          vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
-          if (vis_ptr != NULL)
-             {
-             // if visual object exists but window is closed, reopen it
-             if (!vis_ptr->form->Visible) vis_ptr->form->Visible=true;
-             if (message->visualization.GetDataType() == DATATYPE_INTEGER)
-                vis_ptr->RenderData(message->visualization.GetIntSignal());
-             if (message->visualization.GetDataType() == DATATYPE_FLOAT)
-                vis_ptr->RenderData(message->visualization.GetSignal());
-#ifndef NEW_DOUBLEBUF_SCHEME
-             // now, send a message to the main thread
-             // which will update the actual image; can use PostMessage so that it returns right away
-             // I've tried forever to get the blitting to run within RenderData and couldn't get it to work
-             // even though I used Critical Sections and canvas->Lock; have no idea why
-             // that's why I have to use this crazy method
-             PostMessage(fMain->Handle, WINDOW_RENDER, message->visualization.GetSourceID(), 0);
-#endif // NEW_DOUBLEBUF_SCHEME
-             }
-          }
-       }
-
-    // it is a memo that was coming in
-    if (message->GetSuppDescriptor() == VISTYPE_MEMO)
-       {
-       // if we did not receive anything from this source yet, open another window
-       // we send a message to the main thread that will open the window
-       // since this is not the main thread, opening a VCL object needs to be synchronized
-       // could potentially use Synchronize(), but here I use a windows message
-       vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
-       if (vis_ptr == NULL)
-          SendMessage(fMain->Handle, WINDOW_OPEN, message->visualization.GetSourceID(), VISTYPE_MEMO);
-       vis_ptr=viscfglist.GetVisCfgPtr(message->visualization.GetSourceID());
-       if (vis_ptr != NULL)
-          {
-          // if visual object exists but window is closed, reopen it
-          if (!vis_ptr->form->Visible) vis_ptr->form->Visible=true;
-          vis_ptr->RenderMemo(message->visualization.GetMemoText());
-          }
-       }
-
-    // it comes from the EEG source module
-    if (module == COREMODULE_EEGSOURCE)
-       sysstatus.NumDataRecv1++;
-    // it comes from the signal processing module
-    if (module == COREMODULE_SIGPROC)
-       sysstatus.NumDataRecv2++;
-    // it comes from the application module
-    if (module == COREMODULE_APPLICATION)
-       sysstatus.NumDataRecv3++;
-    }
-#else
+#if 1
  // Begin temporary glue code
  // We re-build a stream from the message.
  // In the future, the message will not be parsed outside the classes
@@ -886,41 +811,6 @@ void __fastcall TfMain::ScrUpdateTimerTimer(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-
-#if 0
-void __fastcall TfMain::OpenVisual(TMessage &Message)
-{
-int     sourceID, windowtype;
-
- sourceID=Message.WParam;
- windowtype=Message.LParam;
-
- // if we wanted to open a visualization window, we have to do this in the main thread
- // otherwise, windows message processing gets screwed up
- // could also use the Synchronize method
- if (viscfglist.GetVisCfgPtr(sourceID) == NULL)
-     viscfglist.Add(new VISUAL(sourceID, windowtype));
-}
-#endif
-
-
-#ifndef NEW_DOUBLEBUF_SCHEME
-void __fastcall TfMain::Render(TMessage &Message)
-{
-int     sourceID, windowtype;
-VISUAL  *vis_ptr;
-
- sourceID=Message.WParam;
- vis_ptr=viscfglist.GetVisCfgPtr(sourceID);
- if (!vis_ptr) return;
-
- vis_ptr->form->Canvas->Lock();
- vis_ptr->form->Canvas->CopyRect(Rect(0, 0, vis_ptr->form->ClientWidth, vis_ptr->form->ClientHeight), vis_ptr->bitmap->Canvas, Rect(0, 0, vis_ptr->form->ClientWidth, vis_ptr->form->ClientHeight));
- vis_ptr->form->Canvas->Unlock();
-}
-#endif // NEW_DOUBLEBUF_SCHEME
-
-
 void __fastcall TfMain::DoResetOperator(TMessage &Message)
 {
  ResetOperator();
@@ -961,11 +851,7 @@ GenericVisualization   *cur_vis;
  fConfig->Close();
 
  // delete all the windows currently visualized
-#if 0
- viscfglist.DeleteAllVisuals();
-#else
  VISUAL::clear();
-#endif
 
  paramlist.ClearParamList();
  statelist.ClearStateList();

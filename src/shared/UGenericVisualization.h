@@ -40,9 +40,21 @@ protected:
         int    stored_decimation, new_samples;
         size_t stored_maxelements;
 public:
-    GenericVisualization::GenericVisualization();
+    GenericVisualization();
     GenericVisualization( BYTE sourceID, BYTE visType );
-    GenericVisualization::~GenericVisualization();
+    ~GenericVisualization();
+
+    // Some convenience declarations.
+    bool Send( CFGID::CFGID cfgID, const char* cfgString )
+             { return SendCfg2Operator( sourceID, cfgID, cfgString ); }
+    bool Send( CFGID::CFGID cfgID, int cfgValue )
+             { return SendCfg2Operator( sourceID, cfgID, cfgValue ); }
+    bool Send( const char* memoString )
+             { return SendMemo2Operator( memoString ); }
+    bool Send( GenericSignal* signal )
+             { return Send2Operator( signal ); }
+    bool Send( GenericIntSignal* signal )
+             { return Send2Operator( signal ); }
 
         // sends the whole signal to the operator
         bool    Send2Operator(const GenericIntSignal *signal);
@@ -54,6 +66,7 @@ public:
         int     Send2Operator(const GenericSignal *signal, const PARAM *channellistparam);
         bool    SendMemo2Operator(const char *string);
         bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString);
+        bool    SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgValue );
         void    ParseVisualization(const char *buffer, int length);
         void    SetSourceID(BYTE my_sourceID);
         BYTE    GetSourceID() const;

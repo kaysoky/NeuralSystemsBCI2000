@@ -15,6 +15,93 @@
 #pragma resource "*.dfm"
 TFBForm *FBForm;
 //---------------------------------------------------------------------------
+#ifdef BCI2000_STRICT
+# define FIX_TIMING;
+#endif // BCI2000_STRICT
+
+#ifdef FIX_TIMING
+void DelayedMidiMsg( int delay /* ms */, HMIDIOUT handle, int message )
+{
+  class MidiTimer : public TTimer
+  {
+   public:
+    MidiTimer( int delay, HMIDIOUT handle, int message )
+    : TTimer( NULL ), killme( false ), handle( handle ), message( message )
+    {
+      OnTimer = DoIt;
+      Interval = delay;
+    }
+   private:
+    void __fastcall DoIt( TObject* )
+    {
+      Enabled = false;
+      ::midiOutShortMsg( handle, message );
+      killme = true;
+    }
+    HMIDIOUT handle;
+    int      message;
+   public:
+    bool killme;
+  };
+
+  typedef std::list<MidiTimer*> TimerList;
+  TimerList timers;
+  TimerList::iterator i = timers.begin();
+  while( i != timers.end() )
+  {
+    if( ( *i )->killme )
+    {
+      delete *i;
+      timers.erase( i );
+    }
+    else
+      ++i;
+  }
+  timers.push_back( new MidiTimer( delay, handle, message ) );
+}
+
+void DelayedColorChange( int delay /* ms */, TShape* shape, TColor brush, TColor pen )
+{
+  class ColorTimer : public TTimer
+  {
+   public:
+    ColorTimer( int delay, TShape* shape, TColor brush, TColor pen )
+    : TTimer( NULL ), killme( false ), shape( shape ), brush( brush ), pen( pen )
+    {
+      OnTimer = DoIt;
+      Interval = delay;
+    }
+   private:
+    void __fastcall DoIt( TObject* )
+    {
+      Enabled = false;
+      shape->Brush->Color = brush;
+      shape->Pen->Color = pen;
+      shape->Update();
+      killme = true;
+    }
+    TShape* shape;
+    TColor  brush, pen;
+   public:
+    bool killme;
+  };
+
+  typedef std::list<ColorTimer*> TimerList;
+  TimerList timers;
+  TimerList::iterator i = timers.begin();
+  while( i != timers.end() )
+  {
+    if( ( *i )->killme )
+    {
+      delete *i;
+      timers.erase( i );
+    }
+    else
+      ++i;
+  }
+  timers.push_back( new ColorTimer( delay, shape, brush, pen ) );
+}
+#endif // FIX_TIMING
 
 #ifdef BCI2000_STRICT
 // For consistent values, we simply set the Ball's left coordinate to
@@ -354,8 +441,12 @@ void TFBForm::ShowTask()
      }
      if ((TargetCode!=0) && (AudTaskMode==1)) {      // play the Note
          result = midiOutShortMsg(outHandle, GMFBVelocity*65536 + Note*256 + 9*16 + GMFBChannel);
+#ifdef FIX_TIMING
+         DelayedMidiMsg( 50, outHandle, Note*256 + 9*16 + GMFBChannel );
+#else
          Sleep(50);
          result = midiOutShortMsg(outHandle, Note*256 + 9*16 + GMFBChannel);
+#endif
      }
   }
 }
@@ -369,15 +460,27 @@ void TFBForm::ShowLetters2Select()
 
 void TFBForm::ShowResult()
 {
+#ifdef FIX_TIMING
+  const blinkInterval = 200; // ms
+#endif
      if (VisResultMode==1) {
          if (statevector->GetStateValue("ResultCode") & 4) {
              LowerGoal->Brush->Color = clGreen;
+#ifdef FIX_TIMING
+             DelayedColorChange( blinkInterval, LowerGoal, clGreen, clPurple );
+#endif // FIX_TIMING
          }
          if (statevector->GetStateValue("ResultCode") & 1) {
              UpperGoal->Brush->Color = clGreen;
+#ifdef FIX_TIMING
+             DelayedColorChange( blinkInterval, UpperGoal, clGreen, clPurple );
+#endif // FIX_TIMING
          }
          if (statevector->GetStateValue("ResultCode") & 2) {
              MiddleGoal->Brush->Color = clGreen;
+#ifdef FIX_TIMING
+             DelayedColorChange( blinkInterval, MiddleGoal, clGreen, clPurple );
+#endif // FIX_TIMING
          }
      }
      if (statevector->GetStateValue("Artifact")==1) Invalid();
@@ -471,8 +574,12 @@ void TFBForm::Process(int FBValue)
       // acoustic signal for BI begin
       if (AudMarker & 1) {  // Tick
           result = midiOutShortMsg(outHandle, GMBIVelocity*65536 + GMBINote*256 + 9*16 + GMBIChannel);
+#ifdef FIX_TIMING
+          DelayedMidiMsg( 1, outHandle, GMBINote*256 + 9*16 + GMBIChannel );
+#else // FIX_TIMING
           Sleep(1);
           result = midiOutShortMsg(outHandle, GMBINote*256 + 9*16 + GMBIChannel);
+#endif // FIX_TIMING
       }
       PB1->Refresh();
   }
@@ -481,8 +588,12 @@ void TFBForm::Process(int FBValue)
       if (BIState) {
          if (AudMarker & 2) {            // acoustic signal for FI begin Tack
              result = midiOutShortMsg(outHandle, GMFIVelocity*65536 + GMFINote*256 + 9*16 + GMFIChannel);
+#ifdef FIX_TIMING
+             DelayedMidiMsg(1, outHandle, GMFINote*256 + 9*16 + GMFIChannel);
+#else
              Sleep(1);
              result = midiOutShortMsg(outHandle, GMFINote*256 + 9*16 + GMFIChannel);
+#endif // FIX_TIMING
          }
          BIState = false;
       }
@@ -529,8 +640,13 @@ void TFBForm::Invalid() // Handle Visual and Auditory Invalid indication
 	pCanvas->LineTo(0,  PB1->Height);
     }
     if (AudInvalid==1) result = midiOutShortMsg(outHandle, GMIVVelocity*65536 + GMIVNote*256 + 9*16 + GMIVChannel);
+#ifdef FIX_TIMING
+    if( AudInvalid == 1 )
+      DelayedMidiMsg( 300,outHandle, GMIVNote*256 + 9*16 + GMIVChannel);
+#else // FIX_TIMING
     if ((VisInvalid==1) || (AudInvalid==1)) Sleep(300);
     if (AudInvalid==1) result = midiOutShortMsg(outHandle, GMIVNote*256 + 9*16 + GMIVChannel);
+#endif // FIX_TIMING
     if (VisInvalid==1) PB1->Refresh();
 }
 
@@ -583,12 +699,18 @@ void TFBForm::Reinforce()   // Handle Visual and Auditory Reinforcement
         }
         if (AudReinforcement==1) {
            if (l<9) result = midiOutShortMsg(outHandle, GMRIVelocity*65536 + phrase[l]*256 + 9*16 + GMRIChannel);
+#ifdef FIX_TIMING
+           if (l<9) DelayedMidiMsg( 60, outHandle, phrase[l]*256 + 9*16 + GMRIChannel);
+#else
            Sleep(60);
            if (l<9) result = midiOutShortMsg(outHandle, phrase[l]*256 + 9*16 + GMRIChannel);
+#endif // FIX_TIMING
         }
     }  
    if (VisReinforcement==1) {
+#ifndef FIX_TIMING
     Sleep(100);
+#endif // FIX_TIMING
     PB1->Refresh();
    }
 }

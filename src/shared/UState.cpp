@@ -3,7 +3,7 @@
  * Module:    UState.cpp                                                      *
  * Comment:   This unit provides support for system-wide states,              *
  *            lists of states, and the state vector                           *
- * Version:   0.09                                                            *
+ * Version:   0.10                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -13,6 +13,7 @@
  * V0.09 - 07/22/2003 - Replaced VCL's TList with STL's std::vector<>         *
  *                      to avoid linking against the VCL in command line      *
  *                      tools using the STATELIST class, jm                   *
+ * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  ******************************************************************************/
 //---------------------------------------------------------------------------
 #include "PCHIncludes.h"
@@ -23,6 +24,7 @@
 #include <stdio.h>
 #include <assert>
 #include <sstream>
+#include <iomanip>
 using namespace std;
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -134,7 +136,7 @@ STATELIST::_state_list::size_type STATELIST::GetStateIndex( const char *name ) c
 {
   string s_name( name );
   _state_list::size_type i = 0;
-  while( i < state_list.size() && s_name != state_list[ i ]->GetName() )
+  while( i < state_list.size() && stricmp( s_name.c_str(), state_list[ i ]->GetName() ) )
     ++i;
   return i;
 }
@@ -317,13 +319,82 @@ STATE::~STATE()
 // Parameters: N/A
 // Returns:    a pointer to the state line
 // **************************************************************************
-std::string STATE::GetStateLine() const
+std::string
+STATE::GetStateLine() const
 {
  ostringstream oss;
- oss << name << " " << length << " " << value << " " << byteloc << " " << bitloc;
+ oss << *this;
  return oss.str();
 }
 
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             state.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+void
+STATE::ReadFromStream( std::istream& is )
+{
+  *this = STATE();
+  modified = true;
+  is >> name >> length >> value >> byteloc >> bitloc;
+  valid = !is.fail();
+}
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             state.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+void
+STATE::WriteToStream( std::ostream& os ) const
+{
+  os << name << " " << length << " " << value << " " << byteloc << " " << bitloc;
+}
+
+// **************************************************************************
+// Function:   ReadBinary
+// Purpose:    Member function for input of a single
+//             state from a binary stream, as in a state message.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+istream&
+STATE::ReadBinary( istream& is )
+{
+  string line;
+  if( getline( is, line, '\x0a' ) )
+  {
+    istringstream linestream( line );
+    ReadFromStream( linestream );
+    if( !linestream )
+      is.setstate( ios::failbit );
+  }
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteBinary
+// Purpose:    Member function for output of a single
+//             state into a binary stream, as in a state message.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+ostream&
+STATE::WriteBinary( ostream& os ) const
+{
+  WriteToStream( os );
+  os << '\x0d' << '\x0a';
+  return os;
+}
 
 // **************************************************************************
 // Function:   GetName
@@ -421,7 +492,7 @@ void STATE::SetBitLocation(int loc)
  bitloc=loc;
 }
 
-
+#if 0
 // **************************************************************************
 // Function:   get_argument
 // Purpose:    parses the state line that is being sent in the core
@@ -451,6 +522,7 @@ int STATE::get_argument(int ptr, char *buf, const char *line, int maxlen) const
  *buf=0;
  return(ptr);
 }
+#endif
 
 #if 0
 // **************************************************************************
@@ -478,6 +550,7 @@ int STATE::ConstructStateLine() const
 // Returns:    ERRSTATE_INVALIDSTATE if the state line is invalid, or
 //             ERRSTATE_NOERR
 // **************************************************************************
+#if 0
 int STATE::ParseState(const char *line, int statelength)
 {
 int     ptr;
@@ -510,6 +583,22 @@ char    *buf;
  valid=true;
  return(ERRSTATE_NOERR);
 }
+#else
+int STATE::ParseState( const char* stateline, int length )
+{
+  if( stateline == NULL )
+    return ERRSTATE_INVALIDSTATE;
+  int err = ERRSTATE_NOERR;
+  string line( stateline, length );
+  if( length == 0 )
+    line = string( stateline );
+  istringstream linestream( line );
+  linestream >> *this;
+  if( !linestream )
+    err = ERRSTATE_INVALIDSTATE;
+  return err;
+}
+#endif
 
 // **************************************************************************
 // Function:   STATE::Commit
@@ -616,13 +705,11 @@ STATE   *cur_state;
   }
 }
 
-
 STATEVECTOR::STATEVECTOR(STATELIST *list)
 {
  state_list=list;       // so the state vector knows which values it holds
  Initialize_StateVector();
 }
-
 
 // can specify, whether or not defined byte/bit positions should be used
 // true: use already specified ones
@@ -632,11 +719,9 @@ STATEVECTOR::STATEVECTOR(STATELIST *list, bool usepositions)
  Initialize_StateVector(usepositions);
 }
 
-
 STATEVECTOR::~STATEVECTOR()
 {
 }
-
 
 // **************************************************************************
 // Function:   GetStateValue
@@ -840,5 +925,61 @@ STATEVECTOR::CommitStateChanges()
     state->Commit( this );
   }
 }
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted output of a state vector
+//             into a stream.
+// Parameters: Output stream to write into.
+// Returns:    Output stream.
+// **************************************************************************
+void
+STATEVECTOR::WriteToStream( std::ostream& os ) const
+{
+  int indent = os.width();
+  const STATELIST* pStatelist = state_list;
+  if( pStatelist == NULL )
+    for( int i = 0; i < GetStateVectorLength(); ++i )
+      os << '\n' << std::setw( indent ) << ""
+         << i << ": "
+         << GetStateVectorPtr()[ i ];
+  else
+    for( int i = 0; i < pStatelist->GetNumStates(); ++i )
+    {
+      const STATE* pState = pStatelist->GetStatePtr( i );
+      os << '\n' << std::setw( indent ) << ""
+         << pState->GetName() << ": "
+         << GetStateValue( pState->GetByteLocation(), pState->GetBitLocation(), pState->GetLength() );
+    }
+}
+
+// **************************************************************************
+// Function:   ReadBinary
+// Purpose:    Member function for input of a state vector
+//             from a binary stream, as in a state vector message.
+// Parameters: Input stream to read from.
+// Returns:    Input stream.
+// **************************************************************************
+istream&
+STATEVECTOR::ReadBinary( istream& is )
+{
+  is.read( ( char* )GetStateVectorPtr(), GetStateVectorLength() );
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteBinary
+// Purpose:    Member function for output of a state vector
+//             into a binary stream, as in a state vector message.
+// Parameters: Output stream to write into.
+// Returns:    Output stream.
+// **************************************************************************
+ostream&
+STATEVECTOR::WriteBinary( ostream& os ) const
+{
+  os.write( ( const char* )GetStateVectorPtr(), GetStateVectorLength() );
+  return os;
+}
+
 
 

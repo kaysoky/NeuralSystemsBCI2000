@@ -6,11 +6,15 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <string>
+#include <iostream>
+#include <sstream>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
+using namespace std;
 
-int STATUS::ParseStatus(char *line, int length)
+int STATUS::ParseStatus(const char *line, int length)
 {
 char    temp[4];
 
@@ -32,7 +36,7 @@ char    temp[4];
 }
 
 
-char *STATUS::GetStatus()
+const char *STATUS::GetStatus()
 {
  return(status);
 }
@@ -42,4 +46,33 @@ int STATUS::GetCode()
 {
  return(code);
 }
+
+void
+STATUS::WriteToStream( ostream& os ) const
+{
+  ostringstream oss;
+  oss << code << ": " << status;
+  for( size_t p = oss.str().find( '}' ); p != string::npos; p = oss.str().find( '}', p ) )
+    oss.str().replace( p, 1, "\\}" );
+  os << oss.str();
+}
+
+istream&
+STATUS::ReadBinary( istream& is )
+{
+  string buf;
+  if( getline( is, buf, '\0' ) )
+    if( ParseStatus( buf.data(), buf.length() ) != ERRSTATUS_NOERR )
+      is.setstate( ios::failbit );
+  return is;
+}
+
+ostream&
+STATUS::WriteBinary( ostream& os ) const
+{
+  os << code << ": " << status;
+  os.put( 0 );
+  return os;
+}
+
 

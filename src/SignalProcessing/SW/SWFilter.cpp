@@ -1,5 +1,6 @@
 //------------------ Slow Wave Class Definition ------------------------
 //                  written by Dr. Thilo Hinterberger 2000-2001
+//                  some bugs fixed by Juergen Mellinger 2003
 //                  Copyright University of Tuebingen, Germany
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -30,7 +31,7 @@ TEMPORARY_ENVIRONMENT_GLUE
     paramlist->AddParameter2List(line, strlen(line));
     strcpy(line, "SWFilter intlist BaseChList= 2 1 1 0 0 1 // 1 to mark that BL is subtracted");
     paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Visualize int VisualizeBaselineFiltering= 1 0 0 1  // visualize baseline filtered signals (0=no 1=yes)");
+    strcpy(line, "Visualize int VisualizeBaselineFiltering= 0 0 0 1  // visualize baseline filtered signals (0=no 1=yes)");
     paramlist->AddParameter2List( line, strlen(line) );
     Initialized = false;
     // Initialize(paramlist);
@@ -49,25 +50,17 @@ TEMPORARY_ENVIRONMENT_GLUE
   {
 TEMPORARY_ENVIRONMENT_GLUE
     int AkElements;
-    int visualizeyn;
-#if 0
-    statevector = Newstatevector;
-    corecomm=new_corecomm;
-#else
     TSetBaseline::statevector = svect;
-#endif
 
     int BS = atoi(paramlist->GetParamPtr("SamplingRate")->GetValue())/atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
     BaseBegin = atof(paramlist->GetParamPtr("BaseBegin")->GetValue())*BS;
     BaseEnd = (atof(paramlist->GetParamPtr("BaseEnd")->GetValue())-0.001)*BS;
     NumChan = paramlist->GetParamPtr("BaseChList")->GetNumValues();
-    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeBaselineFiltering")->GetValue() );
+    visualize = atoi(paramlist->GetParamPtr("VisualizeBaselineFiltering")->GetValue() );
     if (Initialized) {
        delete [] BaseChList;
        delete BLSignal;
-#ifdef BCI2000_STRICT
        Initialized = false;
-#endif // BCI2000_STRICT
     }
    // allocating BL variables
     BaseChList = new bool[NumChan];
@@ -79,22 +72,18 @@ TEMPORARY_ENVIRONMENT_GLUE
         AkElements = BLSignal->GetElements(m);
         for (int n=0; n<AkElements; n++) BLSignal->Value[m][n]=0;   // set BLSignal to zero
     }
-    if( visualizeyn == 1 )
- {
-        visualize=true;
-        vis= new GenericVisualization;
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "BaselineFiltered");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_NUMSAMPLES, "256");
- }
- else
- {
-        visualize=false;
- }
-#ifdef BCI2000_STRICT
-    BLBlocks = 0;
-#endif // BCI2000_STRICT
+    if( visualize )
+    {
+      vis= new GenericVisualization;
+      vis->SetSourceID( SOURCEID::Baseline );
+      vis->SendCfg2Operator(SOURCEID::Baseline, CFGID::WINDOWTITLE, "BaselineFiltered");
+      vis->SendCfg2Operator(SOURCEID::Baseline, CFGID::MINVALUE, 5);
+      vis->SendCfg2Operator(SOURCEID::Baseline, CFGID::MAXVALUE, -5);
+      vis->SendCfg2Operator(SOURCEID::Baseline, CFGID::NUMSAMPLES, 256);
+      vis->SendCfg2Operator(SOURCEID::Baseline, CFGID::showBaselines, true);
+    }
+    mBLSamples.clear();
+    mBLSamples.resize( NumChan, 0 );
     OldBLState = false;
     PosInTrial = -1;
     Initialized = true;
@@ -129,40 +118,32 @@ TEMPORARY_ENVIRONMENT_GLUE
 
    if (BLState && (!OldBLState)) {   // Begin of the Baselineperiod
         for (short m=0; m<NumChan; m++) {
+            mBLSamples[ m ] = 0;
             AkElements = BLSignal->GetElements(m);
             for (int n=0; n<AkElements; n++) BLSignal->Value[m][n]=0;   // set BLSignal to zero
         }
-        BLBlocks = 0;
    }
    int BChannels = NumChan;
    if (InputSignal->Channels()<NumChan) BChannels = InputSignal->Channels();
    if (BLState) {
         for (short m=0; m<BChannels; m++) {
             if (BaseChList[m]) {
-                AkElements = BLSignal->GetElements(m);
-                for (int n=0; n<AkElements; n++) {
-                    BLSignal->Value[m][n] = BLSignal->Value[m][n]*BLBlocks + InputSignal->Value[m][n];
-                    BLSignal->Value[m][n] /= BLBlocks+1;
-                }
+                float sum = 0;
+                for( int n = 0; n < InputSignal->GetElements( m ); ++n )
+                  sum += InputSignal->Value[ m ][ n ];
+                BLSignal->Value[ m ][ 0 ] = BLSignal->Value[ m ][ 0 ] * mBLSamples[ m ] + sum;
+                BLSignal->Value[ m ][ 0 ] /= mBLSamples[ m ] + InputSignal->GetElements( m );
             }
+            mBLSamples[ m ] += InputSignal->GetElements( m );
         }
-        ++BLBlocks;
    }
-   for (short m=0; m<BChannels; m++) {
-       if (BaseChList[m]) {
-                AkElements = BLSignal->GetElements(m);
-                for (int n=0; n<AkElements; n++) {
-                InputSignal->Value[m][n] -= BLSignal->Value[m][n];
-           }
-       }
-   }
+   for( int m = 0; m < BChannels; ++m )
+     if( BaseChList[ m ] )
+       for( int n = 0; n < InputSignal->GetElements( m ); ++n )
+         InputSignal->Value[ m ][ n ] -= BLSignal->Value[ m ][ 0 ];
    OldBLState = BLState;
    if( visualize )
-        {
-              vis->SetSourceID(81);
-              vis->Send2Operator(InputSignal);
-        }
-  return;
+     vis->Send2Operator(InputSignal);
   }
 
 
@@ -182,7 +163,7 @@ TEMPORARY_ENVIRONMENT_GLUE
     paramlist->AddParameter2List(line, strlen(line));
     strcpy(line, "SWFilter int ArteMode= 0 1 0 3 // Artefact correction mode, 0 off, 1 continuous, 2 conditioned");
     paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "Visualize int VisualizeFBArteCorFiltering= 1 0 0 1  // visualize FBArte corrected signals (0=no 1=yes)");
+    strcpy(line, "Visualize int VisualizeFBArteCorFiltering= 0 0 0 1  // visualize FBArte corrected signals (0=no 1=yes)");
     paramlist->AddParameter2List( line, strlen(line) );
     Initialized = false;
   }
@@ -235,10 +216,10 @@ TEMPORARY_ENVIRONMENT_GLUE
  {
         visualize=true;
         vis= new GenericVisualization;
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "Artefiltered");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_NUMSAMPLES, "256");
+        vis->SendCfg2Operator(SOURCEID::Artefact, CFGID::WINDOWTITLE, "Artefiltered");
+        vis->SendCfg2Operator(SOURCEID::Artefact, CFGID::MINVALUE, "-100");
+        vis->SendCfg2Operator(SOURCEID::Artefact, CFGID::MAXVALUE, "100");
+        vis->SendCfg2Operator(SOURCEID::Artefact, CFGID::NUMSAMPLES, "256");
  }
  else
  {
@@ -275,11 +256,13 @@ TEMPORARY_ENVIRONMENT_GLUE
             }
         }  // end valid channel
    }
+#if 0
    if( visualize )
         {
               vis->SetSourceID(82);
               vis->Send2Operator(InputSignal);
         }
+#endif
    return;
   }
 
@@ -384,10 +367,10 @@ TEMPORARY_ENVIRONMENT_GLUE
  {
         visualize=true;
         vis= new GenericVisualization;
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_WINDOWTITLE, "SWFiltered");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MINVALUE, "-100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_MAXVALUE, "100");
-        vis->SendCfg2Operator(SOURCEID_NORMALIZER, CFGID_NUMSAMPLES, "256");
+        vis->SendCfg2Operator(SOURCEID::SW, CFGID::WINDOWTITLE, "SWFiltered");
+        vis->SendCfg2Operator(SOURCEID::SW, CFGID::MINVALUE, "-100");
+        vis->SendCfg2Operator(SOURCEID::SW, CFGID::MAXVALUE, "100");
+        vis->SendCfg2Operator(SOURCEID::SW, CFGID::NUMSAMPLES, "256");
  }
  else
  {
@@ -545,10 +528,12 @@ TEMPORARY_ENVIRONMENT_GLUE
        CorrectTc();
        AvgToSW(OutputSignal);
        CheckArtefacts(OutputSignal);
+#if 0
        if( visualize )
         {
               vis->SetSourceID(80);
               vis->Send2Operator(OutputSignal);
         }
+#endif
    return;
   }

@@ -33,21 +33,9 @@
 class TfMain : public TForm
 {
 protected:
-#if 0
-    void __fastcall OpenVisual(TMessage &Message);
-#endif
     void __fastcall DoResetOperator(TMessage &Message);
-#ifndef NEW_DOUBLEBUF_SCHEME
-    void __fastcall Render(TMessage &Message);
-#endif // NEW_DOUBLEBUF_SCHEME
     BEGIN_MESSAGE_MAP
-#if 0
-      MESSAGE_HANDLER(WINDOW_OPEN, TMessage, OpenVisual)
-#endif
       MESSAGE_HANDLER(RESET_OPERATOR, TMessage, DoResetOperator)
-#ifndef NEW_DOUBLEBUF_SCHEME
-      MESSAGE_HANDLER(WINDOW_RENDER, TMessage, Render)
-#endif // NEW_DOUBLEBUF_SCHEME
     END_MESSAGE_MAP(TControl)
 __published:	// IDE-managed Components
         TServerSocket *SourceSocket;
@@ -135,6 +123,7 @@ private:	// User declarations
         TDateTime       starttime;
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
+        __fastcall ~TfMain();
         int     HandleCoreMessage(COREMESSAGE *message, int module);
         int     ReceiveBufBytes(TCustomWinSocket *Socket, char *buf, int length);
         void    ResetOperator();
@@ -149,9 +138,6 @@ public:		// User declarations
         void    SetFunctionButtons();
         PARAMLIST       paramlist;
         STATELIST       statelist;
-#if 0
-        VISCFGLIST      viscfglist;
-#endif
         SYSLOG          *syslog;
         PREFERENCES     preferences;
         SCRIPT          script;

@@ -21,6 +21,9 @@
 //          Added the polyline3d/colorfield display types for a graph to support
 //          FFT data.
 //
+//          Aug 8, 2003, jm:
+//          Cleared up use of registry.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -40,6 +43,7 @@
 using namespace std;
 
 VISUAL::VISUAL_BASE::vis_container VISUAL::VISUAL_BASE::visuals;
+VISUAL::VISUAL_BASE::config_container VISUAL::VISUAL_BASE::visconfigs;
 const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +70,21 @@ VISUAL::VISUAL_BASE::vis_container::clear()
 }
 
 void
+VISUAL::VISUAL_BASE::SetConfig( config_settings& inConfig )
+{
+  title = inConfig[ CFGID::WINDOWTITLE ];
+  if( title != "" )
+    form->Caption = AnsiString( title.c_str() ) + " (" + AnsiString( sourceID ) + ")";
+  else
+    form->Caption = AnsiString( sourceID );
+}
+
+void
 VISUAL::VISUAL_BASE::Restore()
 {
   assert( form != NULL );
 
-  form->BorderStyle = bsSizeable;
+  form->BorderStyle = bsSizeToolWin;
 
   AnsiString key = key_base + AnsiString( sourceID );
   TRegistry* reg = new TRegistry( KEY_READ );
@@ -94,16 +108,6 @@ VISUAL::VISUAL_BASE::Restore()
       form->Height = 100;
       form->Width = 100;
     }
-
-    try
-    {
-      title = reg->ReadString( "WindowTitle" );
-      form->Caption = title + " (" + AnsiString( sourceID ) + ")";
-    }
-    catch( ERegistryException& )
-    {
-      form->Caption = AnsiString( sourceID );
-    }
   }
   delete reg;
 
@@ -112,6 +116,7 @@ VISUAL::VISUAL_BASE::Restore()
     form->Height = 100;
     form->Width = 100;
   }
+  SetConfig( visconfigs[ sourceID ] );
 }
 
 void
@@ -129,8 +134,10 @@ VISUAL::VISUAL_BASE::Save() const
       reg->WriteInteger( "Left", form->Left );
       reg->WriteInteger( "Width", form->Width );
       reg->WriteInteger( "Height", form->Height );
+      // This is just for the user to recognize the registry entry for
+      // manual editing.
       if( title != "" )
-        reg->WriteString( "WindowTitle", title );
+        reg->WriteString( "WindowTitle", title.c_str() );
     }
     catch( ERegistryException& )
     {
@@ -142,67 +149,21 @@ VISUAL::VISUAL_BASE::Save() const
 bool
 VISUAL::VISUAL_BASE::HandleMessage( istream& is )
 {
-  if( is.peek() != VISTYPE_VISCFG )
-    return VISUAL_GRAPH::HandleMessage( is )
-           || VISUAL_MEMO::HandleMessage( is );
+  if( is.peek() != VISTYPE::VISCFG )
+    return  VISUAL_GRAPH::HandleMessage( is )
+            || VISUAL_MEMO::HandleMessage( is );
 
   is.ignore( 3 );
   int sourceID = is.get(),
       cfgID = is.get();
-
-  float numValue = 0.0;
-  string stringValue;
-
-  switch( cfgID )
+  string value;
+  if( getline( is >> ws, value, '\0' ) )
   {
-    case CFGID_MINVALUE:
-    case CFGID_MAXVALUE:
-    case CFGID_NUMSAMPLES:
-      is >> numValue;
-      break;
-    case CFGID_WINDOWTITLE:
-      getline( is >> ws, stringValue, '\0' );
-      break;
-    case CFGID_XAXISLABEL:
-      is >> numValue;
-      getline( is >> ws, stringValue, '\0' );
-      break;
+    visconfigs[ sourceID ][ cfgID ] = value;
+    if( visuals[ sourceID ] != NULL )
+      visuals[ sourceID ]->SetConfig( visconfigs[ sourceID ] );
   }
-
-  if( !is )
-    return false;
-
-  AnsiString key = key_base + AnsiString( sourceID );
-  TRegistry* reg = new TRegistry( KEY_WRITE );
-  if( reg->OpenKey( key, true ) )
-  {
-    try
-    {
-      switch( cfgID )
-      {
-        case CFGID_MINVALUE:
-          reg->WriteFloat( "MinValue", numValue );
-          break;
-        case CFGID_MAXVALUE:
-          reg->WriteFloat( "MaxValue", numValue );
-          break;
-        case CFGID_NUMSAMPLES:
-          reg->WriteInteger( "NumSamples", numValue );
-          break;
-        case CFGID_WINDOWTITLE:
-          reg->WriteString( "WindowTitle", stringValue.c_str() );
-          break;
-        case CFGID_XAXISLABEL:
-          reg->WriteString( "XAxisLabel" + IntToStr( ( int )numValue ), stringValue.c_str() );
-          break;
-      }
-    }
-    catch( ERegistryException& )
-    {
-    }
-  }
-  delete reg;
-  return true;
+  return is;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,12 +171,15 @@ VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
 : VISUAL_BASE( inSourceID ),
   showCursor( false ),
   wrapAround( false ),
-  numSamples( 0 ),
+  numSamples( numSamplesDefault ),
   sampleCursor( 0 ),
+  numDisplayGroups( 0 ),
   numDisplayChannels( 0 ),
-  bottomChannel( 0 ),
-  minValue( 0.0 ),
-  maxValue( 1.0 ),
+  bottomGroup( 0 ),
+  showBaselines( false ),
+  channelGroupSize( 1 ),
+  minValue( minValueDefault ),
+  maxValue( maxValueDefault ),
   displayMode( polyline ),
   redrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
   offscreenBitmap( new Graphics::TBitmap )
@@ -231,6 +195,45 @@ VISUAL::VISUAL_GRAPH::~VISUAL_GRAPH()
 }
 
 void
+VISUAL::VISUAL_GRAPH::SetConfig( config_settings& inConfig )
+{
+  VISUAL_BASE::SetConfig( inConfig );
+  if( inConfig[ CFGID::MINVALUE ] != "" )
+    minValue = ::atof( inConfig[ CFGID::MINVALUE ].c_str() );
+  if( inConfig[ CFGID::MAXVALUE ] != "" )
+    maxValue = ::atof( inConfig[ CFGID::MAXVALUE ].c_str() );
+  if( inConfig[ CFGID::NUMSAMPLES ] != "" )
+    numSamples = ::atof( inConfig[ CFGID::NUMSAMPLES ].c_str() );
+  if( inConfig[ CFGID::channelGroupSize ] != "" )
+  {
+    channelGroupSize = ::atoi( inConfig[ CFGID::channelGroupSize ].c_str() );
+    if( channelGroupSize < 1 )
+      channelGroupSize = numeric_limits<size_t>::max();
+  }
+  if( inConfig[ CFGID::graphType ] != "" )
+    switch( ::atoi( inConfig[ CFGID::graphType ].c_str() ) )
+    {
+      case CFGID::polyline:
+        displayMode = polyline;
+        break;
+      case CFGID::colorfield:
+        displayMode = colorfield;
+        break;
+    }
+  if( inConfig[ CFGID::showBaselines ] != "" )
+    showBaselines = ::atoi( inConfig[ CFGID::showBaselines ].c_str() );
+
+  // Sanity checks.
+  if( minValue == maxValue )
+    maxValue = minValue + 1;
+  if( numSamples < 1 )
+    numSamples = 1;
+  for( size_t i = 0; i < data.Channels(); ++i )
+    data.SetNumElements( i, numSamples );
+  form->Invalidate();
+}
+
+void
 VISUAL::VISUAL_GRAPH::Restore()
 {
   if( form == NULL )
@@ -240,34 +243,6 @@ VISUAL::VISUAL_GRAPH::Restore()
   form->OnResize = FormResize;
   form->OnPaint = FormPaint;
   form->Show();
-
-  const numSamplesDefault = 128,
-        minValueDefault = - 1 << 15,
-        maxValueDefault = 1 << 16 - 1;
-
-  AnsiString key = key_base + AnsiString( sourceID );
-  TRegistry* reg = new TRegistry( KEY_READ );
-  if( reg->OpenKeyReadOnly( key ) )
-  {
-    try
-    {
-      numSamples = reg->ReadInteger( "NumSamples" );
-      minValue = reg->ReadFloat( "MinValue" );
-      maxValue = reg->ReadFloat( "MaxValue" );
-    }
-    catch( ERegistryException& )
-    {
-      numSamples = numSamplesDefault;
-      minValue = minValueDefault;
-      maxValue = maxValueDefault;
-    }
-    if( minValue >= maxValue )
-    {
-      minValue = minValueDefault;
-      maxValue = maxValueDefault;
-    }
-  }
-  delete reg;
 }
 
 void
@@ -279,23 +254,10 @@ VISUAL::VISUAL_GRAPH::Save() const
 bool
 VISUAL::VISUAL_GRAPH::HandleMessage( istream& is )
 {
-  if( !IS_VISTYPE_GRAPH( is.peek() ) )
+  if( is.peek() != VISTYPE::GRAPH )
     return false;
 
-  DisplayMode displayMode;
-  switch( is.peek() )
-  {
-    case VISTYPE_GRAPH:
-      displayMode = polyline;
-      break;
-    case VISTYPE_COLORFIELD:
-      displayMode = colorfield;
-      break;
-    default:
-      assert( false );
-  }
   is.ignore( 3 );
-
   int sourceID = is.get();
   VISUAL_GRAPH* visual = dynamic_cast<VISUAL_GRAPH*>( visuals[ sourceID ] );
   if( visual == NULL )
@@ -304,8 +266,6 @@ VISUAL::VISUAL_GRAPH::HandleMessage( istream& is )
     visual = new VISUAL_GRAPH( sourceID );
     visuals[ sourceID ] = visual;
   }
-  
-  visual->SetDisplayMode( displayMode );
   return visual->InstanceHandleMessage( is );
 }
 
@@ -316,21 +276,24 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
   
   if( !newData.ReadBinary( is ) )
     return false;
+  if( newData.Channels() < 1 || newData.MaxElements() < 1 )
+    return true;
     
   if( !( data >= newData ) )
   {
     if( newData.MaxElements() > numSamples )
       numSamples = newData.MaxElements();
-    numDisplayChannels = newData.Channels();
+    numDisplayGroups = ( newData.Channels() - 1 ) / channelGroupSize + 1;
     switch( displayMode )
     {
       case polyline:
-        numDisplayChannels = min( newData.Channels(), maxDisplayChannels );
+        numDisplayGroups = min( numDisplayGroups, maxDisplayGroups );
         break;
       case colorfield:
-        numDisplayChannels = newData.Channels();
+      default:
         break;
     }
+    numDisplayChannels = min( newData.Channels(), numDisplayGroups * channelGroupSize );
     data = GenericSignal( newData.Channels(), numSamples );
     sampleCursor = 0;
     form->Invalidate();
@@ -347,7 +310,7 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
   int firstInvalidSample = sampleCursor,
       firstValidSample = sampleCursor + newData.MaxElements();
   sampleCursor = firstValidSample % numSamples;
-  wrapAround |= ( firstValidSample / numSamples );
+  wrapAround |= bool( firstValidSample / numSamples > 0  );
 
   long firstInvalidPixel = dataRect.left,
        firstValidPixel = dataRect.right;
@@ -395,17 +358,17 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
 }
 
 void
-VISUAL::VISUAL_GRAPH::SetBottomChannel( int inBottomChannel )
+VISUAL::VISUAL_GRAPH::SetBottomGroup( int inBottomGroup )
 {
-  int newBottomChannel = inBottomChannel,
-      maxBottomChannel =  int( data.Channels() ) - int( numDisplayChannels );
-  if( newBottomChannel > maxBottomChannel )
-    newBottomChannel = maxBottomChannel;
-  if( newBottomChannel < 0 )
-    newBottomChannel = 0;
-  if( ( size_t )newBottomChannel != bottomChannel )
+  int newBottomGroup = inBottomGroup,
+      maxBottomGroup = ChannelToGroup( data.Channels() ) - int( numDisplayGroups );
+  if( newBottomGroup > maxBottomGroup )
+    newBottomGroup = maxBottomGroup;
+  if( newBottomGroup < 0 )
+    newBottomGroup = 0;
+  if( ( size_t )newBottomGroup != bottomGroup )
   {
-    bottomChannel = newBottomChannel;
+    bottomGroup = newBottomGroup;
     form->Invalidate();
   }
 }
@@ -427,16 +390,16 @@ VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
   switch( key )
   {
     case VK_UP:
-      SetBottomChannel( bottomChannel + 1 );
+      SetBottomGroup( bottomGroup + 1 );
       break;
     case VK_DOWN:
-      SetBottomChannel( bottomChannel - 1 );
+      SetBottomGroup( bottomGroup - 1 );
       break;
     case VK_PRIOR:
-      SetBottomChannel( bottomChannel + numDisplayChannels / 2 );
+      SetBottomGroup( bottomGroup + numDisplayGroups / 2 );
       break;
     case VK_NEXT:
-      SetBottomChannel( bottomChannel - numDisplayChannels / 2 );
+      SetBottomGroup( bottomGroup - numDisplayGroups / 2 );
       break;
   }
 }
@@ -459,6 +422,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
     cursorBrush,
     axisBrush,
     labelFont,
+    baselinePen,
     numGdiObj
   };
   struct GdiObjContainer : public vector<HGDIOBJ>
@@ -479,7 +443,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 
   // Signal properties
   const TColor signalColors[] =
-  { clWhite, clRed, clGreen, clBlue, clYellow, clAqua };
+  { clRed, clGreen, clBlue, clWhite, clAqua, clOlive, clNavy, clPurple };
   size_t numColors = sizeof( signalColors ) / sizeof( *signalColors );
   for( size_t i = 0; i < data.Channels(); ++i )
     signalPens[ i ] = ::CreatePen( PS_SOLID, 0, signalColors[ i % numColors ] );
@@ -495,6 +459,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   const tickWidth = axisWidth, tickLength = 4;
   const xDivision = 50, xStart = xDivision;
   gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
+  gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, axisColor );
 
   const fontHeight = labelWidth / 2;
   const labelColor = axisColor;
@@ -527,7 +492,22 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   {
     case polyline:
     {
-      float  baseInterval = dataHeight / numDisplayChannels;
+      float  baseInterval = dataHeight / numDisplayGroups;
+      // Draw the baselines.
+      if( showBaselines )
+      {
+        POINT baselinePoints[ 2 ];
+        ::SelectObject( dc, gdi[ baselinePen ] );
+        baselinePoints[ 0 ].x = SampleLeft( 0 );
+        baselinePoints[ 1 ].x = SampleRight( numSamples );
+        for( size_t i = 0; i < numDisplayGroups; ++i )
+        {
+          baselinePoints[ 0 ].y = ChannelBottom( i ) + ( baseInterval * minValue ) / ( maxValue - minValue );
+          baselinePoints[ 1 ].y = baselinePoints[ 0 ].y;
+          ::Polyline( dc, baselinePoints, 2 );
+        }
+      }
+
       signalPoints.resize( numSamples );
       for( size_t i = 0; i < numDisplayChannels; ++i )
       {
@@ -535,10 +515,10 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
         {
           signalPoints[ j ].x = SampleLeft( j );
           signalPoints[ j ].y = ChannelBottom( i ) - 1
-               - baseInterval * NormData( i + bottomChannel, j );
+               - baseInterval * NormData( i + bottomGroup * channelGroupSize, j );
         }
 
-        ::SelectObject( dc, signalPens[ i + bottomChannel ] );
+        ::SelectObject( dc, signalPens[ ( i + bottomGroup * channelGroupSize ) % signalPens.size() ] );
         ::Polyline( dc, signalPoints, sampleCursor );
         ::Polyline( dc, &signalPoints[ sampleCursor ], numSamples - sampleCursor );
 
@@ -612,7 +592,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
       for( size_t i = 0; i < numDisplayChannels; ++i )
         for( size_t j = 0; j < numSamples; ++j )
         {
-          LONG color = HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomChannel, j ) ), 1.0, 1.0 );
+          LONG color = HSVColor( 2.0 / 3.0 * ( 1.0 - NormData( i + bottomGroup * channelGroupSize, j ) ), 1.0, 1.0 );
           HBRUSH brush = ::CreateSolidBrush( color );
           RECT dotRect =
           {
@@ -658,28 +638,35 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
   ::SetBkMode( dc, TRANSPARENT );
 
   // Ticks on the y axis.
-  if( displayMode != colorfield )
+  switch( displayMode )
   {
-    int nextLabelPos = dataRect.bottom;
-    for( size_t i = 0; i < numDisplayChannels; ++i )
-    {
-      int tickY = ( ChannelBottom( i ) + ChannelBottom( i + 1 ) ) / 2;
-      RECT tickRect =
+    case colorfield:
+      break;
+    case polyline:
       {
-        labelWidth - axisWidth - tickLength,
-        tickY - tickWidth / 2,
-        labelWidth - axisWidth,
-        tickY + tickWidth / 2
-      };
-      ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
-      if( tickY < nextLabelPos )
-      {
-        tickRect.right -= 2 * axisWidth;
-        nextLabelPos = tickY - ::DrawText( dc,
-           IntToStr( bottomChannel + i + channelBase ).c_str(), -1,
-           &tickRect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP );
-      }
-    }
+        int nextLabelPos = dataRect.bottom;
+        for( size_t i = 0; i < numDisplayGroups; ++i )
+        {
+          int tickY = ( GroupBottom( i ) + GroupBottom( i + 1 ) ) / 2;
+          RECT tickRect =
+          {
+            labelWidth - axisWidth - tickLength,
+            tickY - tickWidth / 2,
+            labelWidth - axisWidth,
+            tickY + tickWidth / 2
+          };
+          ::FillRect( dc, &tickRect, gdi[ axisBrush ] );
+          if( tickY < nextLabelPos )
+          {
+            tickRect.right -= 2 * axisWidth;
+            nextLabelPos = tickY - ::DrawText( dc,
+               IntToStr( ( bottomGroup + i ) * channelGroupSize + channelBase ).c_str(),
+               -1, &tickRect, DT_RIGHT | DT_SINGLELINE | DT_VCENTER | DT_NOCLIP );
+          }
+        }
+      } break;
+    default:
+      assert( false );
   }
   // Ticks on the x axis.
   int nextLabelPos = dataRect.left;
@@ -731,7 +718,8 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 ////////////////////////////////////////////////////////////////////////////////
 VISUAL::VISUAL_MEMO::VISUAL_MEMO( id_type inSourceID )
 : VISUAL_BASE( inSourceID ),
-  memo( new TMemo( ( TComponent* )NULL ) )
+  memo( new TMemo( ( TComponent* )NULL ) ),
+  numLines( 0 )
 {
   Restore();
 }
@@ -740,6 +728,16 @@ VISUAL::VISUAL_MEMO::~VISUAL_MEMO()
 {
   Save();
   delete memo;
+}
+
+void
+VISUAL::VISUAL_MEMO::SetConfig( config_settings& inConfig )
+{
+  VISUAL_BASE::SetConfig( inConfig );
+  if( inConfig[ CFGID::numLines ] != "" )
+    numLines = ::atoi( inConfig[ CFGID::numLines ].c_str() );
+  if( numLines < 1 )
+    numLines = numeric_limits<int>::max();
 }
 
 void
@@ -754,6 +752,7 @@ VISUAL::VISUAL_MEMO::Restore()
   memo->BoundsRect = form->ClientRect;
   memo->Anchors << akLeft << akTop << akRight << akBottom;
   memo->ScrollBars = ssVertical;
+  memo->ReadOnly = true;
   memo->Visible = true;
 }
 
@@ -766,10 +765,10 @@ VISUAL::VISUAL_MEMO::Save() const
 bool
 VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
 {
-  if( is.peek() != VISTYPE_MEMO )
+  if( is.peek() != VISTYPE::MEMO )
     return false;
+    
   is.ignore( 3 );
-
   int sourceID = is.get();
   VISUAL_MEMO* visual = dynamic_cast<VISUAL_MEMO*>( visuals[ sourceID ] );
   if( visual == NULL )
@@ -786,7 +785,10 @@ VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
 {
   string s;
   getline( is, s, '\0' );
+  while( memo->Lines->Count >= numLines )
+    memo->Lines->Delete( 0 );
   memo->Lines->Add( s.c_str() );
+  memo->Text = memo->Text.SubString( 0, memo->Text.Length() - 2 );
   return true;
 }
 

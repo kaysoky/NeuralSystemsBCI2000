@@ -1,5 +1,5 @@
-#ifndef GENERIC_DEFINES
-#define GENERIC_DEFINES
+#ifndef DefinesH
+#define DefinesH
 
 #define ERR_NOERR               0
 #define ERR_STATENOTFOUND       1
@@ -26,41 +26,113 @@
 #define KEY_PARAMETERS          "\\PARAMETERS"
 #define KEY_CONFIG              "\\CONFIG"
 
-#define VISTYPE_GRAPH           1       // visualization type 1   ... graph t channels x s samples
-#define VISTYPE_POLYLINE        VISTYPE_GRAPH|0x00
-#define VISTYPE_COLORFIELD      VISTYPE_GRAPH|0x10
-#define IS_VISTYPE_GRAPH(x)     (((x)&0x0f)==VISTYPE_GRAPH)
-#define VISTYPE_MEMO            2       // visualization type 2   ... memo field
-#define VISTYPE_VISCFG          255     // visualization type 255 ... visualization config
+#define _OLD_NAMES
 
-#define CFGID_WINDOWTITLE       1
-#define CFGID_MINVALUE          2
-#define CFGID_MAXVALUE          3
-#define CFGID_NUMSAMPLES        4
-#define CFGID_XAXISLABEL        5
-#define CFGID_YAXISLABEL        6
+namespace VISTYPE
+{
+  enum VISTYPE
+  {
+    GRAPH = 1,      // visualization type 1   ... graph t channels x s samples
+    MEMO = 2,       // visualization type 2   ... memo field
+    VISCFG = 255,   // visualization type 255 ... visualization config
+  };
+};
+// Backward compatibility.
+#ifdef _OLD_NAMES
+# define VISTYPE_GRAPH           (VISTYPE::GRAPH)
+# define VISTYPE_MEMO            (VISTYPE::MEMO)
+# define VISTYPE_VISCFG          (VISTYPE::VISCFG)
+#endif // _OLD_NAMES
 
-#define SOURCEID_EEGDISP        53
-#define SOURCEID_CALIBRATION    54
-#define SOURCEID_SPATFILT       55
-#define SOURCEID_TEMPORALFILT   56
-#define SOURCEID_CLASSIFIER     57
-#define SOURCEID_NORMALIZER     58
-#define SOURCEID_STATISTICS     59
-#define SOURCEID_TASKLOG        60
-#define SOURCEID_ROUNDTRIP      61
-#define SOURCEID_SPELLERTRIALSEQ 62
-#define SOURCEID_BCIOUT         63
-#define SOURCEID_FFT            64
-        
-#define DATATYPE_INTEGER        0
-#define DATATYPE_FLOAT          1
+namespace CFGID
+{
+  enum CFGID
+  {
+    WINDOWTITLE = 1,
 
-//#define WINDOW_OPEN      (WM_APP + 400)
+      // Graph options
+      MINVALUE,
+      MAXVALUE,
+      NUMSAMPLES,
+      XAXISLABEL,
+      YAXISLABEL,
+      channelGroupSize,
+      graphType,
+        // Graph types
+        polyline,
+          // Polyline options
+          showBaselines,
+        colorfield,
+
+      // Memo options
+      numLines,
+  };
+};
+// Backward compatibility.
+#ifdef _OLD_NAMES
+# define CFGID_WINDOWTITLE (CFGID::WINDOWTITLE)
+# define CFGID_MINVALUE    (CFGID::MINVALUE)
+# define CFGID_MAXVALUE    (CFGID::MAXVALUE)
+# define CFGID_NUMSAMPLES  (CFGID::NUMSAMPLES)
+# define CFGID_XAXISLABEL  (CFGID::XAXISLABEL)
+# define CFGID_YAXISLABEL  (CFGID::YAXISLABEL)
+#endif // _OLD_NAMES
+
+namespace SOURCEID
+{
+  enum SOURCEID
+  {
+    EEGDISP = 53,
+    CALIBRATION,
+    SPATFILT,
+    TEMPORALFILT,
+    CLASSIFIER,
+    NORMALIZER,
+    STATISTICS,
+    TASKLOG,
+    ROUNDTRIP,
+    SPELLERTRIALSEQ,
+    Average,
+    FFT = Average + 10,
+    SW,
+    Baseline,
+    Artefact,
+  };
+};
+// Backward compatibility.
+#ifdef _OLD_NAMES
+# define SOURCEID_EEGDISP         (SOURCEID::EEGDISP)
+# define SOURCEID_CALIBRATION     (SOURCEID::CALIBRATION)
+# define SOURCEID_SPATFILT        (SOURCEID::SPATFILT)
+# define SOURCEID_TEMPORALFILT    (SOURCEID::TEMPORALFILT)
+# define SOURCEID_CLASSIFIER      (SOURCEID::CLASSIFIER)
+# define SOURCEID_NORMALIZER      (SOURCEID::NORMALIZER)
+# define SOURCEID_STATISTICS      (SOURCEID::STATISTICS)
+# define SOURCEID_TASKLOG         (SOURCEID::TASKLOG)
+# define SOURCEID_ROUNDTRIP       (SOURCEID::ROUNDTRIP)
+# define SOURCEID_SPELLERTRIALSEQ (SOURCEID::SPELLERTRIALSEQ)
+#endif // _OLD_NAMES
+
+namespace DATATYPE
+{
+  enum
+  {
+    INTEGER = 0,
+    FLOAT,
+  };
+};
+
+// Backward compatibility.
+#ifdef _OLD_NAMES
+# define DATATYPE_INTEGER        (DATATYPE::INTEGER)
+# define DATATYPE_FLOAT          (DATATYPE::FLOAT)
+#endif // _OLD_NAMES
+
+#undef _OLD_NAMES
+
 #define RESET_OPERATOR   (WM_APP + 401)
 #define HANDLE_MESSAGE   (WM_APP + 402)
 #define STARTDAQ_MESSAGE (WM_APP + 403)
 #define RESET_MESSAGE    (WM_APP + 404)
-//#define WINDOW_RENDER    (WM_APP + 405)
 
-#endif
+#endif // DefinesH

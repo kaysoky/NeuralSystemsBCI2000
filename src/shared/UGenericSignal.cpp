@@ -29,6 +29,7 @@
 
 #include "defines.h" // for DATATYPE_FLOAT / DATATYPE_INTEGER
 #include <iostream>
+#include <iomanip>
 #include <math.h>
 
 // This will go into a numtypes header some day.
@@ -67,8 +68,14 @@ SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
   return elementsTooBig;
 }
 
+void
+SignalProperties::WriteToStream( std::ostream& os ) const
+{
+  os << Channels() << " " << MaxElements() << " " << GetDepth();
+}
+
 std::ostream&
-SignalProperties::WriteBinary( std::ostream& os )
+SignalProperties::WriteBinary( std::ostream& os ) const
 {
   uint32 channels = Channels(),
           maxElem = MaxElements(),
@@ -129,8 +136,33 @@ GenericSignal::operator=( const GenericIntSignal& inRHS )
   return *this;
 }
 
+void
+GenericSignal::WriteToStream( std::ostream& os ) const
+{
+  int indent = os.width();
+  os << '\n' << std::setw( indent ) << ""
+     << "SignalProperties { ";
+  SignalProperties::WriteToStream( os );
+  os << '\n' << std::setw( indent ) << ""
+     << "}";
+  os << std::setprecision( 7 );
+  for( size_t j = 0; j < MaxElements(); ++j )
+  {
+    os << '\n' << std::setw( indent ) << "";
+    for( size_t i = 0; i < Value.size(); ++i )
+    {
+      os << std::setw( 14 );
+      if( j < GetNumElements( i ) )
+        os << GetValue( i, j );
+      else
+        os << "n/a";
+      os << ' ';
+    }
+  }
+}
+
 std::ostream&
-GenericSignal::WriteBinary( std::ostream& os )
+GenericSignal::WriteBinary( std::ostream& os ) const
 {
   put( os, uint8( DATATYPE_FLOAT ) );
   put( os, uint8( Channels() ) );

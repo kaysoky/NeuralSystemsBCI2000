@@ -3,9 +3,13 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include "StatFilter.h"
+#undef USE_FFT
+
 #include "UFilterHandling.h"
-#include "FFTFilter.h"
+#ifdef USE_FFT
+# include "FFTFilter.h"
+#endif // USE_FFT
+#include "AverageDisplay.h"
 
 //---------------------------------------------------------------------------
 
@@ -22,6 +26,10 @@
 //             sets the variable error to true, if there was an error
 // **************************************************************************
 FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
+: mpAvgDisplay( new AverageDisplay )
+#ifdef USE_FFT
+  , mpFFTFilter( new TFFTFilter )
+#endif // USE_FFT
 {
 char line[512];
 
@@ -29,7 +37,6 @@ char line[512];
  calfilter=new CalibrationFilter;
  spatfilter= new SpatialFilter;
 // tempfilter= new TemporalFilter(plist, slist);
- FFTFilter = new TFFTFilter;
  SWFilter = new TSW;
  SetBaseline = new TSetBaseline;
  FBArteCorrection = new TFBArteCorrection;
@@ -61,7 +68,6 @@ FILTERS::~FILTERS()
  calfilter=NULL;
  if(spatfilter) delete spatfilter;
  spatfilter=NULL;
- delete FFTFilter;
  // if(tempfilter) delete tempfilter;
  // tempfilter= NULL;
  if (SWFilter) delete SWFilter;
@@ -76,6 +82,10 @@ FILTERS::~FILTERS()
  normalfilter= NULL;
 // if(statfilter) delete statfilter;
 // statfilter= NULL;
+#ifdef USE_FFT
+ delete mpFFTFilter;
+#endif
+ delete mpAvgDisplay;
 
  if (SignalA) delete SignalA;
  if (SignalC) delete SignalC;
@@ -103,29 +113,22 @@ int     maxchannels, maxelements;
 // int m_mat;              // # of spatially filtered channels
 // int f_mat;              // # of frequency bins
 
- returnval=1;
+  returnval=1;
 
- try
-  {
- // maxchannels=atoi(plist->GetParamPtr("MaxChannels")->GetValue());
- // maxelements=atoi(plist->GetParamPtr("MaxElements")->GetValue());
-  ME= atoi(plist->GetParamPtr("NumControlSignals")->GetValue());
-  MF= ME;
-  MA= atoi(plist->GetParamPtr("TransmitCh")->GetValue());
-  MB= MA;
-  MC= atoi(plist->GetParamPtr("SpatialFilteredChannels")->GetValue());
-  MD= MC;
-  NA= atoi(plist->GetParamPtr("SampleBlockSize")->GetValue());
-  NB= NA;
-  NC= NA;
+  MF = ME = Parameter( "NumControlSignals" );
+  MB = MA = Parameter( "TransmitCh" );
+  MD = MC = Parameter( "SpatialFilteredChannels" );
+  NC = NB = NA = Parameter( "SampleBlockSize" );
+  
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
-
 
    // now, here place the code to initalize your filter
  calfilter->Initialize();
  spatfilter->Initialize();
- FFTFilter->Initialize();
+#ifdef USE_FFT
+ mpFFTFilter->Initialize();
+#endif
 // res= tempfilter->Initialize(plist, svector, corecomm);
 // if(res == 0 ) returnval= 0;
  SWFilter->Initialize();
@@ -135,6 +138,12 @@ int     maxchannels, maxelements;
  SetBaseline->Initialize();
  FBArteCorrection->Initialize();
 
+ SignalProperties sp;
+ mpAvgDisplay->Preflight( *SignalD, sp );
+ if( __bcierr.flushes() > 0 )
+   returnval = 0;
+ else
+   mpAvgDisplay->Initialize();
 // res= classfilter->Initialize(plist, svector, corecomm);
 // if( res == 0 ) returnval= 0;
 // res= tempfilter->Initialize( plist, svector, corecomm);
@@ -148,16 +157,11 @@ int     maxchannels, maxelements;
   SignalE=new GenericSignal(ME, 1);
   SignalF=new GenericSignal(MF, 1);
 
-
-
 /*  SignalB->Channels= MB;
   SignalB->MaxElements= NB;
 
   SignalC->Channels= MC;
   SignalC->MaxElements= NC;    //  not necessary    */
-  }
- catch( TooGeneralCatch& )
-  { returnval=0; }
 
  return(returnval);
 }
@@ -192,7 +196,12 @@ int res, returnval;
  // now, here place the code to let your filters process the signals
  calfilter->Process(SignalA, SignalB);
  spatfilter->Process(SignalB, SignalC);
- FFTFilter->Process( SignalC, NULL );
+ static GenericSignal ignore;
+ mpAvgDisplay->Process( SignalC, &ignore );
+#ifdef USE_FFT
+ mpFFTFilter->Process( SignalC, &ignore );
+#endif
+
  SWFilter->Process(SignalC, SignalD);
  SetBaseline->Process(NULL,SignalD);
  FBArteCorrection->Process(NULL,SignalD);
@@ -201,7 +210,7 @@ int res, returnval;
 // res=classfilter->Process(SignalD, SignalE);
 // if( res == 0 ) returnval= 0;
  normalfilter->Process(SignalD, SignalF);
-// res= statfilter->Process(SignalD, normalfilter, SignalF);
+ // res= statfilter->Process(SignalD, normalfilter, SignalF);
 // if( res == 0 ) returnval= 0;
 
  return(returnval);

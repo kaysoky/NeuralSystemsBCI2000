@@ -4,6 +4,7 @@
 
 #include "UEditMatrix.h"
 #include "UBCIError.h"
+#include "UOperatorUtils.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "CSPIN"
@@ -14,6 +15,7 @@ __fastcall TfEditMatrix::TfEditMatrix(TComponent* Owner)
 : TForm(Owner),
   lock( new TCriticalSection )
 {
+  OperatorUtils::RestoreControl( this );
 #ifdef LABEL_INDEXING
   bToggleEditing->OnClick = ToggleLabelEditing;
 #else
@@ -24,6 +26,7 @@ __fastcall TfEditMatrix::TfEditMatrix(TComponent* Owner)
 //---------------------------------------------------------------------------
 __fastcall TfEditMatrix::~TfEditMatrix()
 {
+  OperatorUtils::SaveControl( this );
   delete lock;
 }
 

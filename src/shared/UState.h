@@ -33,7 +33,6 @@ private:    // User declarations
         unsigned short value;
         int     byteloc;
         int     bitloc;
-        int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         bool    valid;
         bool    modified;
         void    SetByteLocation(int loc);
@@ -49,6 +48,12 @@ public:     // User declarations
         void    SetValue(unsigned short new_value);
         int     GetByteLocation() const;
         int     GetBitLocation() const;
+
+        void WriteToStream( std::ostream& ) const;
+        void ReadFromStream( std::istream& );
+        std::ostream& WriteBinary( std::ostream& ) const;
+        std::istream& ReadBinary( std::istream& );
+
 #if 1 // Changed return type to a copied string value to avoid multithreading trouble.
       // In the future, this function should be replaced by using stream i/o.
         std::string GetStateLine() const;
@@ -102,6 +107,10 @@ class STATEVECTOR
   BYTE    *GetStateVectorPtr();
   const BYTE* GetStateVectorPtr() const;
   void    CommitStateChanges();
+  void WriteToStream( std::ostream& ) const;
+  void ReadFromStream( std::istream& );
+  std::ostream& WriteBinary( std::ostream& ) const;
+  std::istream& ReadBinary( std::istream& );
 
  // A class that allows for convenient automatic type conversions when
  // accessing state values.
@@ -127,5 +136,30 @@ class STATEVECTOR
 };
 
 //---------------------------------------------------------------------------
+
+inline std::ostream& operator<<( std::ostream& os, const STATE& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( std::istream& is, STATE& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
+
+
+inline std::ostream& operator<<( std::ostream& os, const STATEVECTOR& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( std::istream& is, STATEVECTOR& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
 #endif
 

@@ -70,6 +70,7 @@ private:	// User declarations
         int     get_argument(int ptr, char *buf, char *line, int maxlen);
 public:		// User declarations
         __fastcall TfConfig(TComponent* Owner);
+        __fastcall ~TfConfig();
         int     Initialize(PARAMLIST *paramlist, PREFERENCES *);
         void    DeleteAllTabs();
         void    DeleteAllParameters();

@@ -11,9 +11,8 @@
 #include "SWFilter.h"
 #include "ClassFilter.h"
 #include "NormalFilter.h"
-#include "StatFilter.h"
 
-class FILTERS
+class FILTERS : public Environment
 {
 protected:
        GenericSignal *CreateGenericSignal(int transmitchannels, int samples, char *buf);
@@ -28,13 +27,14 @@ public:
        bool     was_error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
-       class TFFTFilter*  FFTFilter;
        ClassFilter        *classfilter;
        NormalFilter       *normalfilter;
-       StatFilter         *statfilter;
        TSW                *SWFilter;
        TFBArteCorrection  *FBArteCorrection;
        TSetBaseline       *SetBaseline;
+
+       GenericFilter*  mpFFTFilter,
+                    *  mpAvgDisplay;
 
        GenericSignal  *SignalA, *SignalB, *SignalC, *SignalD, *SignalE, *SignalF;
 };

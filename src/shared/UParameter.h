@@ -232,6 +232,8 @@ class PARAM
 
         void    WriteToStream( std::ostream& ) const;
         void    ReadFromStream( std::istream& );
+        std::ostream& WriteBinary( std::ostream& ) const;
+        std::istream& ReadBinary( std::istream& );
 
 #if 1 // Changed return type to a copied string value to avoid multithreading trouble.
       // In the future, this function needs to be replaced by using stream i/o.

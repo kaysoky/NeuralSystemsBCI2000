@@ -10,12 +10,16 @@
 //          Introduced clipping to reduce the amount of time spent blitting
 //          graphics data.
 //
-//          To get the previous code, remove NEW_DOUBLEBUF_SCHEME
-//          from the "Conditional defines" in the project options.
-//
 //          May 27, 2003, jm:
 //          Created Operator/UVisual to maintain VISUAL and VISCFGLIST
 //          as part of the operator module.
+//
+//          June 1, 2003, jm:
+//          Rewrote VISUAL as a class hierarchy.
+//
+//          June 10, 2003, jm:
+//          Added the polyline3d/colorfield display types for a graph to support
+//          FFT data.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UVisualH
@@ -47,6 +51,7 @@ class VISUAL
     static void clear() { visuals.clear(); }
     static bool HandleMessage( std::istream& );
 
+
    protected:
     virtual void Restore();
     virtual void Save() const;
@@ -55,7 +60,7 @@ class VISUAL
     id_type sourceID;
     TForm* form;
    private:
-    AnsiString title;
+    std::string title;
 
    protected:
     typedef std::map< id_type, VISUAL_BASE* > vis_container_base;
@@ -65,18 +70,35 @@ class VISUAL
       ~vis_container() { clear(); }
       void clear();
     } visuals;
+
+    // The following container mess is needed because the protocol
+    // does not factor out properties and types of
+    // visualizations properly. Previously, the role of these objects
+    // was played by the registry, with additional potential for trouble.
+    // The protocol should be re-defined and this stuff should go away.
+
+    // configID->value
+    typedef std::map< id_type, std::string > config_settings;
+
+    // sourceID->config information
+    typedef std::map< id_type, config_settings > config_container;
+    static config_container visconfigs;
+    virtual void SetConfig( config_settings& );
   };
   
  private:
   class VISUAL_GRAPH : public VISUAL_BASE
   {
    private:
+    static const numSamplesDefault = 128,
+                 minValueDefault = - 1 << 15,
+                 maxValueDefault = 1 << 16 - 1;
     enum
     {
       channelBase = 1, // displayed number of first channel
       sampleBase = 0,  // displayed number of first sample
       labelWidth = 20,
-      maxDisplayChannels = 16,
+      maxDisplayGroups = 16,
     };
 
    protected:
@@ -93,11 +115,12 @@ class VISUAL
     bool InstanceHandleMessage( std::istream& );
 
    protected:
+    virtual void SetConfig( VISUAL_BASE::config_settings& );
     virtual void Restore();
     virtual void Save() const;
 
    private:
-    void SetBottomChannel( int );
+    void SetBottomGroup( int );
     void SetDisplayMode( DisplayMode );
 
    // Functions that centralize sample/channel -> pixel conversion in painting
@@ -111,25 +134,38 @@ class VISUAL
       dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
       dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
     }
+
     int SampleLeft( int s )
     { return labelWidth + ( s * dataWidth ) / ( int )numSamples; }
     int SampleRight( int s )
     { return SampleLeft( s + 1 ); }
+
+    int GroupTop( int g )
+    { return GroupBottom( g + 1 ); }
+    int GroupBottom( int g )
+    { return dataHeight - ( g * dataHeight ) / ( int )numDisplayGroups; }
+
     int ChannelTop( int ch )
-    { return ChannelBottom( ch + 1 ); }
+    { return GroupTop( ChannelToGroup( ch ) ); }
     int ChannelBottom( int ch )
-    { return dataHeight - ( ch * dataHeight ) / ( int )numDisplayChannels; }
+    { return GroupBottom( ChannelToGroup( ch ) ); }
+
+    size_t ChannelToGroup( int ch )
+    { return ch / channelGroupSize; }
 
     float NormData( size_t i, size_t j )
     { return ( data( i, j ) - minValue ) / ( maxValue - minValue ); }
 
    private:
     bool   showCursor,
-           wrapAround;
+           wrapAround,
+           showBaselines;
     size_t numSamples,
            sampleCursor,
+           numDisplayGroups,
            numDisplayChannels,
-           bottomChannel;
+           bottomGroup,
+           channelGroupSize;
     float  minValue,
            maxValue;
     GenericSignal data;
@@ -192,11 +228,13 @@ class VISUAL
     bool InstanceHandleMessage( std::istream& );
 
    protected:
+    virtual void SetConfig( VISUAL_BASE::config_settings& );
     virtual void Restore();
     virtual void Save() const;
 
    private:
     TMemo* memo;
+    int numLines;
   };
 
 };

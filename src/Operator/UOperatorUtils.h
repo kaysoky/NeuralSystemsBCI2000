@@ -36,6 +36,23 @@ namespace OperatorUtils
                        const char*                  statename,
                        unsigned short               newvalue,
                        Scktcomp::TCustomWinSocket*  socket );
+
+
+// **************************************************************************
+// Function:   SaveControl
+// Purpose:    Write control properties to the registry.
+// Parameters: A pointer to a TControl object.
+// Returns:    n/a
+// **************************************************************************
+  void   SaveControl( const TControl* );
+
+// **************************************************************************
+// Function:   RestoreControl
+// Purpose:    Restore control properties from the registry.
+// Parameters: A pointer to a TControl object.
+// Returns:    n/a
+// **************************************************************************
+  void   RestoreControl( TControl* );
 };
 
 #endif

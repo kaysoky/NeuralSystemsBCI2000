@@ -19,9 +19,13 @@
 #include "USysCommand.h"
 
 #include <string.h>
+#include <string>
+#include <iostream>
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
+
+using namespace std;
 
 // **************************************************************************
 // Function:   SYSCMD
@@ -44,7 +48,7 @@ SYSCMD::~SYSCMD()
 {
 }
 
-
+#if 0
 // **************************************************************************
 // Function:   get_argument
 // Purpose:    parses the parameter line that is being sent in the core
@@ -74,7 +78,7 @@ int SYSCMD::get_argument(int ptr, char *buf, char *line, int maxlen)
  *buf=0;
  return(ptr);
 }
-
+#endif
 
 // **************************************************************************
 // Function:   GetSysCmd
@@ -84,7 +88,7 @@ int SYSCMD::get_argument(int ptr, char *buf, char *line, int maxlen)
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
 // **************************************************************************
-char *SYSCMD::GetSysCmd()
+const char *SYSCMD::GetSysCmd()
 {
  return(buffer);
 }
@@ -99,10 +103,42 @@ char *SYSCMD::GetSysCmd()
 //             length - length of this syscmd line
 // Returns:    ERRSYSCMD_NOERR
 // **************************************************************************
-int SYSCMD::ParseSysCmd(char *new_line, int length)
+int SYSCMD::ParseSysCmd(const char *new_line, int length)
 {
  strncpy(buffer, new_line, length);
-
+ buffer[ LENGTH_SYSCMD - 1 ] = '\0';
  return(ERRSYSCMD_NOERR);
 }
+
+void
+SYSCMD::WriteToStream( ostream& os ) const
+{
+  const char* p = buffer;
+  while( *p != '\0' )
+  {
+    if( *p == '}' )
+      os.put( '\\' );
+    os.put( *p );
+    ++p;
+  }
+}
+
+istream&
+SYSCMD::ReadBinary( istream& is )
+{
+  string buf;
+  if( getline( is, buf, '\0' ) )
+    if( ParseSysCmd( buf.data(), buf.length() ) != ERRSYSCMD_NOERR )
+      is.setstate( ios::failbit );
+  return is;
+}
+
+ostream&
+SYSCMD::WriteBinary( ostream& os ) const
+{
+  os << buffer;
+  os.put( 0 );
+  return os;
+}
+
 

@@ -859,6 +859,42 @@ PARAM::WriteToStream( ostream& os ) const
 }
 
 // **************************************************************************
+// Function:   ReadBinary
+// Purpose:    Member function for input of a single
+//             parameter from a binary stream, as in a parameter message.
+// Parameters: Input stream to read from.
+// Returns:    N/A
+// **************************************************************************
+istream&
+PARAM::ReadBinary( istream& is )
+{
+  string line;
+  if( getline( is, line, '\x0a' ) )
+  {
+    istringstream linestream( line );
+    ReadFromStream( linestream );
+    if( !linestream )
+      is.setstate( ios::failbit );
+  }
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteBinary
+// Purpose:    Member function for output of a single
+//             parameter into a binary stream, as in a parameter message.
+// Parameters: Output stream to write into.
+// Returns:    N/A
+// **************************************************************************
+ostream&
+PARAM::WriteBinary( ostream& os ) const
+{
+  WriteToStream( os );
+  os << '\x0d' << '\x0a';
+  return os;
+}
+
+// **************************************************************************
 // Function:   operator=
 // Purpose:    Assignment operator to prevent setting of certain properties
 //             from e.g. parameter files.

@@ -5,9 +5,12 @@ Task.cpp is the source code for the Right Justified Boxes task
 #pragma hdrstop
 
 #include <vector>
+#include <iomanip>
+#include <sstream>
 
 #include "UState.h"
 #include "Task.h"
+#include "UBCITime.h"
 
 RegisterFilter( TTask, 3 );
 
@@ -20,11 +23,23 @@ TTask::TTask()
   ClassSequencer( new TClassSequencer( Parameters, States ) ),
   Decider( new TDecider( Parameters, States ) ),
   TaskManager( new TTaskManager( Parameters, States ) ),
-  SessionManager( new TSessionManager( Parameters, States ) )
+  SessionManager( new TSessionManager( Parameters, States ) ),
+  vis( new GenericVisualization( SOURCEID::STATISTICS, VISTYPE::MEMO ) )
 {
   FBForm = new TFBForm( ( TComponent* )NULL );
-  FBForm->Show();
+  FBForm->Hide();
   FBForm->SetFBForm( Parameters, States );
+
+  BEGIN_PARAMETER_DEFINITIONS
+    "UsrTask int WinHeight= 480 0 0 1 // User Window Height",
+    "UsrTask int WinWidth= 640 0 0 1 // User Window Width",
+    "UsrTask int WinXpos= 1024 0 0 1 // User Window X location",
+    "UsrTask int WinYpos= 0 0 0 1 // User Window Y location",
+  END_PARAMETER_DEFINITIONS
+
+  BEGIN_STATE_DEFINITIONS
+    "StimulusTime 16 0 0 0",
+  END_STATE_DEFINITIONS
 }
 
 //-----------------------------------------------------------------------------
@@ -37,6 +52,7 @@ TTask::~TTask( void )
  delete SessionManager;
  delete status;
  delete FBForm;
+ delete vis;
 }
 
 
@@ -69,6 +85,13 @@ void TTask::Initialize()
       Statevector->SetStateValue( statesToReset[ i ], 0 );
   }
 #endif // BCI2000_STRICT
+  vis->Send( CFGID::WINDOWTITLE, "Trial statistics" );
+  vis->Send( CFGID::numLines, 1 );
+  FBForm->Width = Parameter( "WinWidth" );
+  FBForm->Height = Parameter( "WinHeight" );
+  FBForm->Left = Parameter( "WinXpos" );
+  FBForm->Top = Parameter( "WinYpos" );
+  FBForm->Show();
   FBForm->Initialize(Statevector);
   ClassSequencer->Initialize(Parameters, Statevector);
   Decider->Initialize(Parameters, Statevector);
@@ -92,6 +115,28 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
   }
 #endif // BCI2000_STRICT
    if (status->SysStatus==RUNNING) Decider->Process(signals);
+
+   static short lastEndOfClass = 0;
+   if( State( "BeginOfTrial" ) )
+     lastEndOfClass = 0;
+   if( State( "EndOfClass" ) && !lastEndOfClass )
+   {
+     int trialsCorrect, trialsIncorrect, trialsInvalid;
+     Decider->GetVote( trialsCorrect, trialsIncorrect, trialsInvalid );
+     std::ostringstream os;
+     os << "Trials correct: " << trialsCorrect
+        << ", \tTrials incorrect: " << trialsIncorrect
+        << ", \tTrials invalid: " << trialsInvalid
+        << ", \tCorrect: ";
+     int trialsValid = trialsCorrect + trialsIncorrect;
+     if( trialsValid > 0 )
+       os << ( 200 * trialsCorrect + trialsValid ) / ( 2 * trialsValid ) << "%";
+     else
+       os << "n/a";
+     vis->Send( os.str().c_str() );
+     lastEndOfClass = 1;
+   }
+
 #ifndef BCI2000_STRICT
    FBForm->Process(signals[0]);
 #endif // BCI2000_STRICT
@@ -117,6 +162,8 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
                     TaskManager->Process(false);
                     }; break;
    } // switch
+   
+  State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
 }
 
 

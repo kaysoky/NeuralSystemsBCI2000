@@ -60,7 +60,9 @@ class SignalProperties
     bool operator<=( const SignalProperties& ) const;
 
     // Stream i/o
-    std::ostream& WriteBinary( std::ostream& );
+    void WriteToStream( std::ostream& ) const;
+    void ReadFromStream( std::istream& );
+    std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 
   protected:
@@ -74,7 +76,7 @@ template< class T > class BasicSignal : public SignalProperties
 {
   public:
     typedef T value_type;
-    
+
     BasicSignal();
     BasicSignal( size_t inChannels, size_t inMaxElements );
     BasicSignal( const SignalProperties& );
@@ -96,7 +98,9 @@ template< class T > class BasicSignal : public SignalProperties
     T& operator() ( size_t inChannel, size_t inElement );
 
     // Stream i/o
-    std::ostream& WriteBinary( std::ostream& );
+    void WriteToStream( std::ostream& ) const;
+    void ReadFromStream( std::istream& );
+    std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 
 #ifndef SIGNAL_BACK_COMPAT
@@ -219,7 +223,7 @@ BasicSignal< T >::SetProperties( const SignalProperties& inSp )
 
 template<class T>
 std::ostream&
-BasicSignal< T >::WriteBinary( std::ostream& os )
+BasicSignal< T >::WriteBinary( std::ostream& os ) const
 {
   SignalProperties::WriteBinary( os );
   for( size_t j = 0; j < MaxElements(); ++j )
@@ -281,10 +285,52 @@ class GenericSignal : public BasicSignal< float >
     const GenericSignal& operator=( const GenericIntSignal& );
     void  SetChannel(const short *source, size_t channel);
 
-    std::ostream& WriteBinary( std::ostream& );
+    void WriteToStream( std::ostream& ) const;
+    void ReadFromStream( std::istream& );
+    std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 };
 #endif
+
+inline std::ostream& operator<<( class std::ostream& os, const SignalProperties& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( class std::istream& is, SignalProperties& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
+
+
+template<class T>
+inline std::ostream& operator<<( class std::ostream& os, const BasicSignal<T>& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+template<class T>
+inline std::istream& operator>>( class std::istream& is, BasicSignal<T>& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
+
+
+inline std::ostream& operator<<( class std::ostream& os, const GenericSignal& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( class std::istream& is, GenericSignal& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
 
 #endif // UGenericSignalH
 

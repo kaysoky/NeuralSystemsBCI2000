@@ -12,6 +12,7 @@
 #include "UEditMatrix.h"
 #include "UOperatorCfg.h"
 #include "UBCIError.h"
+#include "UOperatorUtils.h"
 
 using namespace std;
 //---------------------------------------------------------------------------
@@ -22,6 +23,7 @@ TfConfig *fConfig;
 
 __fastcall TfConfig::TfConfig(TComponent* Owner) : TForm(Owner)
 {
+  OperatorUtils::RestoreControl( this );
 int     i, t;
 
  for(i=0; i<MAX_PARAMPERSECTION; i++)
@@ -33,6 +35,11 @@ int     i, t;
   for (t=0; t<3; t++)
    ParamButton[t][i]=NULL;
   }
+}
+
+__fastcall TfConfig::~TfConfig()
+{
+  OperatorUtils::SaveControl( this );
 }
 //---------------------------------------------------------------------------
 

@@ -15,9 +15,23 @@ private: 	// User declarations
 public:		// User declarations
         SYSCMD::SYSCMD();
         SYSCMD::~SYSCMD();
-        int     get_argument(int ptr, char *buf, char *line, int maxlen);
-        int     ParseSysCmd(char *line, int length);
-        char    *SYSCMD::GetSysCmd();
+        int     ParseSysCmd(const char *line, int length);
+        const char* SYSCMD::GetSysCmd();
+        void WriteToStream( class std::ostream& ) const;
+        void ReadFromStream( class std::istream& );
+        class std::ostream& WriteBinary( class std::ostream& ) const;
+        class std::istream& ReadBinary( class std::istream& );
 };
 
+inline class std::ostream& operator<<( class std::ostream& os, const SYSCMD& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline class std::istream& operator>>( class std::istream& is, SYSCMD& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
 #endif

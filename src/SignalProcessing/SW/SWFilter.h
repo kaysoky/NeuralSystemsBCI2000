@@ -14,7 +14,7 @@
         STATEVECTOR *statevector;
         int BaseBegin, BaseEnd;
     // BL variables
-        int BLBlocks;
+        std::vector<float> mBLSamples;
         int NumChan;
         bool OldBLState;
         bool* BaseChList;
