@@ -11,7 +11,7 @@ class STATUSBAR
 private: 	// User declarations
         TLabel  *goal, *result;
         TShape  *background, *divider;
-        bool    goaltextvisible;
+        bool    resulttextvisible;
 public:		// User declarations
         STATUSBAR::STATUSBAR(TForm *form);
         STATUSBAR::~STATUSBAR();
@@ -22,7 +22,7 @@ public:		// User declarations
         int     GoalPosX, GoalPosY;
         int     ResultPosX, ResultPosY;
         int     TextHeight;
-        void    SetGoalTextVisibility(bool cur_goaltextvisible);
+        void    SetResultTextVisibility(bool cur_resulttextvisible);
         void    RenderStatusBar(TForm *form, TRect destrect);
         void    Hide();
         void    Show();
