@@ -47,16 +47,16 @@
 // #define ADC_DTADC
 
 #include "UCoreComm.h"
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 #include "UBCItime.h"
 #include "UGenericVisualization.h"
 #include "UCoreMessage.h"
 #include "UParameter.h"
 #include "GenericADC.h"
 #ifdef ADC_DTADC
- #include "DTADC.h"
+ #include "DTADC\DTADC.h"
 #else
- #include "RandomNumberADC.h"
+ #include "RandomNumber\RandomNumberADC.h"
 #endif
 #include "UStorage.h"
 
