@@ -5,7 +5,7 @@ REM start EEGsource\DTADC\DT2000.exe AUTOSTART 127.0.0.1
 start EEGsource\RandomNumber\RandomNumber.exe AUTOSTART 127.0.0.1
 start SignalProcessing\SW\SWSignalProcessing.exe AUTOSTART 127.0.0.1
 cd Application\SlowWaveApp
-rem start SWApp.exe AUTOSTART 127.0.0.1
+start SWApp.exe AUTOSTART 127.0.0.1
 cd ..\..
 
 
