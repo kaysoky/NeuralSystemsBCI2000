@@ -38,8 +38,8 @@ class BCIOutput
                 int maxstate;
                 int statistics;
                 char inf[MAXOUT];
-                int achans;
-                int buf_lth;
+              //  int achans;
+              //  int buf_lth;
                 char outf_base[MAXOUT];
 
                 int wintype;          // type of windowing  0 is all data in one window
@@ -48,7 +48,7 @@ class BCIOutput
                 int winlength;        // total data length = wblocksz * winnum
                 
                 double __fastcall GetLr( double *t, double *ss, double *ssxy, int *n, int ntarg );
-                void __fastcall print_hdr(FILE *otf, char *);
+                void __fastcall print_hdr(FILE *otf, char *, int, int);
 	public:
                 int time_list[64];
                 int value_list[64];

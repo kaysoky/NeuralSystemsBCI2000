@@ -79,6 +79,10 @@ void ParIO::SaveProcessForm( void )
                 fprintf(sfile,"Process_MEMBandwidth= %6.2f \n",atof( pform->vBandwidth->Text.c_str() ) );
                 fprintf(sfile,"Process_MEMModel= %2d \n",atoi( pform->vModel->Text.c_str() ) );
                 fprintf(sfile,"Process_MEMRemove= %2d \n",pform->Remove->ItemIndex );
+                fprintf(sfile,"Process_MEMWinType= %2d \n",pform->MemWinType->ItemIndex );
+                fprintf(sfile,"Process_MEMWindows= %2d \n", atoi( pform->vMemWindows->Text.c_str() ) );
+                fprintf(sfile,"Process_MEMBlockSize= %2d \n", atoi( pform->vMemBlockSize->Text.c_str() ) );
+                fprintf(sfile,"Process_MEMDataLength= %2d \n", atoi( pform->vMemDataLength->Text.c_str() ) );
         }
         else
                 fprintf(sfile,"Process_UseMEM false \n");
@@ -173,6 +177,11 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                         if( strcmp(l2,"true") == 0 ) iform->CheckAlign->Checked= true;
                         else                         iform->CheckAlign->Checked= false;
                 }
+                else if( strcmp( l1,"Input_AllCh") == 0 )
+                {
+                        if( strcmp(l2,"true") == 0 ) iform->AllCh->Checked= true;
+                        else                         iform->AllCh->Checked= false;
+                }
                 else if( strcmp( l1,"Input_TemporalFilter") == 0 )
                 {
                         if( strcmp(l2,"true") == 0 ) iform->CheckTemporalFilter->Checked= true;
@@ -218,6 +227,14 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                         pform->vModel->Text= l2;
                 else if( strcmp( l1,"Process_MEMRemove=") == 0 )
                         pform->Remove->ItemIndex= atoi(l2);
+                else if( strcmp( l1,"Process_MEMWinType=") == 0 )
+                        pform->MemWinType->ItemIndex= atoi( l2 );
+                else if( strcmp( l1, "Process_MEMWindows=") == 0 )
+                        pform->vMemWindows->Text= atoi( l2 );
+                else if( strcmp( l1, "Process_MEMBlockSize=") == 0 )
+                        pform->vMemBlockSize->Text= atoi( l2 );
+                else if( strcmp( l1, "Process_MEMDataLength=") == 0 )
+                        pform->vMemDataLength->Text= atoi( l2 );
                 else if( strcmp( l1,"Output_Start=") == 0 )
                         oform->vStart->Text= l2;
                 else if( strcmp( l1,"Output_End=") == 0 )

@@ -13,12 +13,12 @@
 
 BCIOutput::BCIOutput()
 {
-    //   bcio= fopen("c:/shared/misc/BCIO.asc","w+");
-    //   fprintf(bcio,"Opening BCIO.asc \n");
+     //  bcio= fopen("c:/shared/misc/BCIO2.asc","w+");
+     //  fprintf(bcio,"Opening BCIO.asc \n");
 }
 BCIOutput::~BCIOutput()
 {
-    //   fclose(bcio);
+     //  fclose(bcio);
 }
 
 void __fastcall BCIOutput::Config( char *outfile, int sr, float start, int order, int stat )
@@ -36,8 +36,8 @@ void __fastcall BCIOutput::Config( char *outfile, int sr, float start, int order
         if( order == 2 )
         {
                 strcpy(inf,"VOID");
-                achans= 0;
-                buf_lth= 0;
+               //  achans= 0;
+               //  buf_lth= 0;
                 strcpy( outf_base, outfile );
         }
         else
@@ -332,6 +332,8 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
         char outf[MAXOUT];
         char suf[16];
         int feedflag;
+        int ncol;
+        int nchan;
 
         switch(xyorder)
         {
@@ -418,13 +420,16 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
                                                         fprintf(fileptr," %9.3f",point[i][j][k]/n[i][j][k]);
                                         }
                                         fprintf(fileptr,"\n");
-                                      }  
+                                      }
                                 }
                         }
                         break;
                 case 2:                           // Topographies
                         for(k=0;k<ntimes;k++)
                         {
+
+//   fprintf(bcio,"time_list[%2d]= %4d  value_list[%2d]= %4d \n",k,time_list[k],k,value_list[k]);
+
                                 strcpy( outf, outf_base );
                                 strcat( outf,".");
                                 itoa( time_list[k],suf,10);
@@ -434,7 +439,39 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
                                 {
                                         return;
                                 }
-                                print_hdr(fileptr, suf );
+
+                                ncol= 0;
+
+                                for(i=1;i<maxgroup+1;i++)              // reverse order- need at least 1 group value
+                                {
+                                        for(j=0;j<maxchan+1;j++)
+                                        {
+                                                if( n[i][j][value_list[k]] > 0 )
+                                                {
+                                                        ncol++;
+                                                        goto nxt;
+                                                }
+                                        }
+                                        nxt:
+                                }
+
+                                nchan= 0;
+
+                                 for(j=0;j<maxchan+1;j++)
+                                 {
+                                        for(i=1;i<maxgroup+1;i++)              // need at least 1 chan value
+                                        {
+
+                                                if( n[i][j][value_list[k]] > 0 )
+                                                {
+                                                        nchan++;
+                                                        goto nxt2;
+                                                }
+                                        }
+                                        nxt2:
+                                }
+
+                                print_hdr(fileptr, suf, ncol, nchan );
 
                                 for(j=0;j<maxchan+1;j++)
                                 {
@@ -455,7 +492,11 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
                                         if( statistics > 0 )
                                         {
                                                 r= GetLr( sum, ss, sxy, nn, maxgroup);
-                                                fprintf(fileptr,"    %8.4f  %8.4f",r*r, 1+r);      // add 1 to r for HzPlot
+
+                                                if( ncol < 4 )
+                                                        fprintf(fileptr,"    %8.4f  %8.4f",r*r, 1+r);      // add 1 to r for HzPlot
+                                                else
+                                                        fprintf(fileptr,"    %8.4f  %8.4f  %8.4f  %8.4f",r*r,r*r,1+r,1+r);
                                         }
                                         fprintf(fileptr,"\n");
                                 }
@@ -465,7 +506,7 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
          }
 }
 
-void __fastcall BCIOutput::print_hdr(FILE *otf, char *time)
+void __fastcall BCIOutput::print_hdr(FILE *otf, char *time, int cols, int chans)
 {
         char cur_out[80];
         char ext[15];
@@ -479,7 +520,7 @@ void __fastcall BCIOutput::print_hdr(FILE *otf, char *time)
 	strcpy(type[0],"RSQ");
 	strcpy(type[1],"VOID");
 
-        fprintf(otf,"TDOM %s (%d channels) at %s \n",inf,achans,time);
+        fprintf(otf,"TOPO %s (%d channels) at %s \n",inf,chans,time);
 	fprintf(otf,"Order: %d\n", 7734);
 	fprintf(otf,"Zero Padding:  1\n");
 	fprintf(otf,"Target filter: ");
@@ -491,8 +532,12 @@ void __fastcall BCIOutput::print_hdr(FILE *otf, char *time)
         fprintf(otf,"Hamming window: OFF\n");
         fprintf(otf,"Remove grand mean: OFF\n");
 
-       fprintf(otf,"2 %3d %4.1f Up Down",buf_lth,time);
-       fprintf(otf,"\n");
+        fprintf(otf,"%2d %3d %s ",cols,chans,time);
+
+        for(i=0;i<cols;i++)
+                fprintf(otf,"%2d ",i+1);
+                
+        fprintf(otf,"\n");
  }
 
 

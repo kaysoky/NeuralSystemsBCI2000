@@ -1,6 +1,6 @@
 object ProcessForm: TProcessForm
-  Left = 511
-  Top = 245
+  Left = 557
+  Top = 283
   Width = 328
   Height = 298
   Caption = 'ProcessForm'

@@ -149,7 +149,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
                 {
                    start= atof( ProcessForm->vStart->Text.c_str() );
                    bandwidth= atof( ProcessForm->vBandwidth->Text.c_str() );
-                   bcioutput->value_list[i]= (int)( start + ( (float)timeval / bandwidth ) ) ;
+                   bcioutput->value_list[i]= (int)( ( ( (float)timeval ) - ( (float)start ) + 0.5 ) / bandwidth ) ;
                 }
                 else
                 {

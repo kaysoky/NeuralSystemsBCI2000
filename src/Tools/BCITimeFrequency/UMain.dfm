@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 132
   Width = 550
   Height = 517
-  Caption = 'BCI TimeFrequency 1/22/04'
+  Caption = 'BCI TimeFrequency 3/16/04'
   Color = clSkyBlue
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -304,8 +304,6 @@ object fMain: TfMain
     Width = 97
     Height = 17
     Caption = 'OldDataFileTypeCheckBox1'
-    Checked = True
-    State = cbChecked
     TabOrder = 19
   end
   object OpenDialog: TOpenDialog
