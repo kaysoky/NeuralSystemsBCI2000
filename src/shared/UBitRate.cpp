@@ -102,7 +102,12 @@ float p, res;
  if (choices > 1)
     {
     if (p >= 1/(float)choices)
-       res=(float)(Log2((float)choices)+p*Log2(p)+(1-p)*Log2((1-p)/((float)choices-1)));
+       {
+       if ( (1-p) > 0 )
+          res=(float)(Log2((float)choices)+p*Log2(p)+(1-p)*Log2((1-p)/((float)choices-1)));
+       else
+          res= (float)(Log2((float)choices));
+       }
     else
        res=0;
     }
