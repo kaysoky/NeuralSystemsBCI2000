@@ -1,0 +1,7 @@
+LOAD PARAMETERFILE c:\temp\startup.prm
+INSERT STATE EOG 1 0 0 0
+INSERT STATE EMG 1 0 0 0
+SYSTEM c:\temp\test.bat
+
+
+
