@@ -30,6 +30,8 @@ char line[512];
  if (!calfilter) was_error=true;
  spatfilter= new SpatialFilter();
  if(!spatfilter) was_error=true;
+ firfilter= new FIRFilter();
+ if(!firfilter) was_error= true;
  tempfilter= new P3TemporalFilter();
  if(!tempfilter) was_error= true;
  classfilter= new ClassFilter();
@@ -46,7 +48,7 @@ char line[512];
  strcpy(line, "Filtering int MaxElements= 256 10 1 256       // maximum number of elements in signals B,C");
  plist->AddParameter2List(line, strlen(line));
 
- SignalA=SignalB=SignalC=SignalD=SignalE=SignalF=NULL;
+ SignalA=SignalB=SignalC=SignalC2=SignalD=SignalE=SignalF=NULL;
 }
 
 
@@ -62,6 +64,8 @@ FILTERS::~FILTERS()
  calfilter=NULL;
  if(spatfilter) delete spatfilter;
  spatfilter=NULL;
+ if(firfilter) delete firfilter;
+ firfilter= NULL;
  if(tempfilter) delete tempfilter;
  tempfilter= NULL;
  if(classfilter) delete classfilter;
@@ -73,6 +77,7 @@ FILTERS::~FILTERS()
 
  if (SignalA) delete SignalA;
  if (SignalC) delete SignalC;
+ if (SignalC2) delete SignalC2;
  if (SignalD) delete SignalD;
  if (SignalE) delete SignalE;
  if (SignalB) delete SignalB;
@@ -101,10 +106,11 @@ int     res, returnval;
 
  if (SignalB) delete SignalB;
  if (SignalC) delete SignalC;
+ if (SignalC2) delete SignalC2;
  if (SignalD) delete SignalD;
  if (SignalE) delete SignalE;
  if (SignalF) delete SignalF;
- SignalB=SignalC=SignalD=SignalE=SignalF=NULL;
+ SignalB=SignalC=SignalC2=SignalD=SignalE=SignalF=NULL;
 
 #if 1 // Begin temporary preflight code.
   bool errorOccurred = false;
@@ -118,7 +124,9 @@ int     res, returnval;
   SignalB = new GenericSignal( sp );
   spatfilter->Preflight( *SignalB, sp );
   SignalC = new GenericSignal( sp );
-  tempfilter->Preflight( *SignalC, sp );
+  firfilter->Preflight( *SignalC, sp );
+  SignalC2 = new GenericSignal( sp );
+  tempfilter->Preflight( *SignalC2, sp );
   SignalD = new GenericSignal( sp );
   classfilter->Preflight( *SignalD, sp );
   SignalE = new GenericSignal( sp );
@@ -133,6 +141,7 @@ int     res, returnval;
     Environment::EnterInitializationPhase( plist, svector->GetStateListPtr(), svector, corecomm );
     calfilter->Initialize();
     spatfilter->Initialize();
+    firfilter->Initialize();
     tempfilter->Initialize();
     classfilter->Initialize();
     normalfilter->Initialize();
@@ -153,10 +162,14 @@ int     res, returnval;
   NA= atoi(plist->GetParamPtr("SampleBlockSize")->GetValue());
   NB= NA;
   NC= NA;
+  NC2= NC;
   MC= atoi(plist->GetParamPtr("SpatialFilteredChannels")->GetValue());
+  MC2= MC;
+
 #if 0 // preflight
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
+  SignalC2= new GenericSignal( MC2, NC2 );
 
   //
   // now, here place the code to initalize your filter(s)
@@ -167,6 +180,9 @@ int     res, returnval;
 
   // initialize the spatial filter
   spatfilter->Initialize(plist, svector, corecomm);
+
+  // initialize FIR filter
+  firfilter->Initialize(plist, svector, corecom);
 
   // initialize the P3 temporal filter
   tempfilter->Initialize(plist, svector, corecomm);
@@ -193,6 +209,9 @@ int     res, returnval;
 
   SignalC->Channels= MC;
   SignalC->MaxElements= NC;
+
+  SignalC2->Channels= MC2;
+  SignalC2->MaxElements= NC2;
 #endif
 #else // preflight
   if( !errorOccurred )
@@ -201,6 +220,7 @@ int     res, returnval;
     ND = SignalD->MaxElements();
     assert( *SignalB >= SignalProperties( MB, NB ) );
     assert( *SignalC >= SignalProperties( MC, NC ) );
+    assert( *SignalC2 >= SignalProperties( MC2, NC2 ) );
     assert( *SignalD >= SignalProperties( MD, ND ) );
     assert( *SignalE >= SignalProperties( ME, 1 ) );
     assert( *SignalF >= SignalProperties( MF, 1 ) );
@@ -215,7 +235,7 @@ int     res, returnval;
   }
 
  // in case we could not generate any of these five signals
- if (!SignalB || !SignalC || !SignalD || !SignalE || !SignalF)
+ if (!SignalB || !SignalC || !SignalC2 || !SignalD || !SignalE || !SignalF)
     {
     returnval= 0;
     }
@@ -228,6 +248,7 @@ int FILTERS::Resting( char *buf)
 {
   calfilter->Resting();
   spatfilter->Resting();
+  firfilter->Resting();
   tempfilter->Resting();
   classfilter->Resting();
   normalfilter->Resting();
@@ -262,7 +283,8 @@ int res, returnval;
 
  calfilter->Process(SignalA, SignalB);
  spatfilter->Process(SignalB, SignalC);
- tempfilter->Process(SignalC, SignalD);
+ firfilter->Process(SignalC, SignalC2);
+ tempfilter->Process(SignalC2, SignalD);
  classfilter->Process(SignalD, SignalE);
  normalfilter->Process(SignalE, SignalF);
  // statfilter->Process(SignalE, SignalF);

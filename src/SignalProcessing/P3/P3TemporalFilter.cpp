@@ -15,7 +15,7 @@
 
 using namespace std;
 
-RegisterFilter( P3TemporalFilter, 2.C );
+RegisterFilter( P3TemporalFilter, 2.D );
 
 // **************************************************************************
 // Function:   P3TemporalFilter
@@ -30,6 +30,8 @@ P3TemporalFilter::P3TemporalFilter()
 : vis( NULL ),
   vissignal( NULL )
 {
+
+
  BEGIN_PARAMETER_DEFINITIONS
   "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 "
     "// visualize Temporal filtered signals (0=no 1=yes)",
@@ -74,6 +76,7 @@ P3TemporalFilter::~P3TemporalFilter()
  DeleteAllERPBuffers();
  delete vis;
  delete vissignal;
+
 }
 
 // **************************************************************************
@@ -271,7 +274,6 @@ void P3TemporalFilter::AppendToERPBuffers(const GenericSignal *input)
 {
 int     cur_buf, samples, ch;
 float   oldvalue;
-
  // go through all buffers that contain ERP signals
  for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
   {
@@ -281,13 +283,14 @@ float   oldvalue;
      {
      // go through all samples and append them if we have not stored enough
      for (samples=0; samples<(int)input->MaxElements(); samples++)
-      {
+     {
       if (ERPBufSampleCount[cur_buf] < numsamplesinERP)
          {
          for (ch=0; ch<(int)input->Channels(); ch++)
           {
           oldvalue=ERPBufSamples[cur_buf]->GetValue(ch, ERPBufSampleCount[cur_buf]);
           ERPBufSamples[cur_buf]->SetValue(ch, ERPBufSampleCount[cur_buf], oldvalue+input->GetValue(ch, samples));
+
           }
          ERPBufSampleCount[cur_buf]++;
          }
