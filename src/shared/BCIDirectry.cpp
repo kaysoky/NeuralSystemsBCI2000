@@ -2,147 +2,156 @@
 //	BCIDirectry.cpp
 //	BCI Dircetory Management Functions
 //-------------------------------------------------
+
 #include <vcl.h>
 #pragma hdrstop
 
 #include "BCIDirectry.h"
+#include "stdlib.h"
+#include "errno.h"
 
 //--------------------------------------------------
 
+using namespace std;
 
-int BCIDtry::CheckPath( char *path )
+string BCIDtry::BaseDir = BCIDtry::GetCwd();
+
+string BCIDtry::GetCwd()
 {
-        return( chdir( path ) );
+    const size_t    pathLenMax = 2048;
+    const char*     cwd = ::getcwd( NULL, pathLenMax );
+    string          cwdString = "";
+    if( cwd != NULL )
+    {
+        cwdString = cwd;
+        ::free( ( void* )cwd );
+    }
+
+    if( cwdString.length() < 1 || cwdString[ cwdString.length() - 1 ] != DirSeparator )
+        cwdString += DirSeparator;
+
+    return cwdString;
 }
 
-int BCIDtry::MakePath( char *path )
+int BCIDtry::ChangeForceDir( const string& path )
 {
-        return( mkdir( path ) );
+    string fullPath = path;
+    if( fullPath.length() < 2 || fullPath[ 1 ] != DriveSeparator )
+        fullPath = BaseDir + fullPath;
+    if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
+        fullPath += DirSeparator;
+    int err = ::chdir( fullPath.c_str() );
+    if( err )
+    {
+        if( errno == EACCES )
+            return err;
+        else
+        {
+            size_t p = fullPath.rfind( DirSeparator, fullPath.length() - 2 );
+            if( p == std::string::npos )
+                return err;
+            err = ChangeForceDir( fullPath.substr( 0, p ) );
+            if( err )
+                return err;
+            err = ::mkdir( fullPath.c_str() );
+            if( err )
+                return err;
+            err = ::chdir( fullPath.c_str() );
+        }
+    }
+    return err;
 }
 
-/*
-int BCIDtry::CheckSubDir( char *subdir )
+void BCIDtry::SetDir( const char *dir )
 {
+        SubjDir = dir;
 }
 
-int BCIDtry::MakeSubDir( char *subdir )
+void BCIDtry::SetName( const char *name )
 {
-}
-*/
-
-void BCIDtry::SetDir( char *dir )
-{
-        strcpy( SubjDir, dir );
+        SubjName = name;
 }
 
-void BCIDtry::SetName( char *name )
+void BCIDtry::SetSession( const char *session )
 {
-        strcpy( SubjName, name );
-}
-
-void BCIDtry::SetSession( char *session )
-{
-        strcpy( SubjSession, session );
+        SubjSession = session;
 }
 
 int BCIDtry::ProcPath( void )
 {
-     int retval= 0;
-
-     if( CheckPath( SubjDir ) < 0 )
-     {
-        // in the future check with operator
-
-        retval= MakePath( SubjDir );
-     }
-     return( retval );
+    return ChangeForceDir( SubjDir );
 }
 
-char *BCIDtry::ProcSubDir( void )
+const char *BCIDtry::ProcSubDir( void )
 {
+    SubjPath = SubjDir;
+    if( SubjPath.length() < 2 || SubjPath[ 1 ] != DriveSeparator )
+        SubjPath = BaseDir + SubjPath;
+    if( SubjPath.length() > 0 && SubjPath[ SubjPath.length() - 1 ] != DirSeparator )
+        SubjPath += DirSeparator;
+    SubjPath += SubjName;
+    SubjPath += SubjSession;
+    ChangeForceDir( SubjPath );
+    return SubjPath.c_str();
+}
+
+void BCIDtry::FileError( const char *badpath )
+{
+    TFEForm *FEForm = new TFEForm( badpath );
+    FEForm->ShowModal();
+    delete FEForm;
+}
+
+int BCIDtry::GetLargestRun( const char *path )
+{
+        struct ffblk ffblk;
+        int done;
+        int res;
         int lth;
+        int max;
+        int current;
+        int i;
+        int lastr;
+        char str[16];
 
-        char slash[2];
-        char zero[2];
+        if( chdir( path ) )
+            return 0;
 
-        slash[0]= 0x5c;
-        slash[1]= 0x00;
-        zero[0]= 0x00;
-        zero[1]= 0x00;
+        done= findfirst("*.dat", &ffblk, FA_ARCH);
 
-        strcpy( SubjPath, SubjDir );
-        lth= strlen( SubjPath );
+        max= 0;
 
-        if( SubjPath[lth-1] != slash[0]  )
-                strcat( SubjPath, slash );
-
-        strcat( SubjPath, SubjName );
-        strcat( SubjPath, SubjSession );
-
-        if( CheckPath( SubjPath ) < 0 )
+        while( !done )
         {
-                MakePath( SubjPath );
+                lth= strlen( ffblk.ff_name );
+
+                for(i=0;i<lth;i++)     // find last "r"
+                        if( ffblk.ff_name[i] == 0x52 ) lastr= i;
+                str[ 0 ] = ffblk.ff_name[lastr+1];
+                str[ 1 ] = ffblk.ff_name[lastr+2];
+                str[ 2 ] = 0;
+
+                current= atoi( str );
+                if( current > max ) max= current;
+
+                done= findnext( &ffblk );
         }
-        return( SubjPath );
+        return( max );
 }
 
-
-void BCIDtry::FileError( TApplication *appl, char *badpath )
-{
-        char line[120];
-        strcpy(line,badpath);
-
-        TFEForm *FEForm = new TFEForm( appl, badpath );
-        FEForm->ShowModal();
-        delete FEForm;
-      //  MessageBox(line, "Error Opening File", MB_OK);
-
-}
-
-int BCIDtry::GetLargestRun( char *path )
-{
-struct ffblk ffblk;
-int done;
-int lth;
-int max;
-int current;
-int i;
-int lastr;
-char str[16];
-
- chdir( path );
-
- done= findfirst("*.dat", &ffblk, FA_ARCH);
-
- max= 0;
- while ( !done )
-  {
-  lth= strlen( ffblk.ff_name );
-
-  for(i=0;i<lth;i++)     // find last "r"
-   if( ffblk.ff_name[i] == 0x52 ) lastr= i;
-  str[ 0 ] = ffblk.ff_name[lastr+1];
-  str[ 1 ] = ffblk.ff_name[lastr+2];
-  str[ 2 ] = 0;
-
-  current= atoi( str );
-  if( current > max ) max= current;
-  done= findnext( &ffblk );
-  }
-
- return( max );
-}
-
-
-__fastcall TFEForm::TFEForm( TApplication *appl, char *path ): TForm(appl,0)
+__fastcall TFEForm::TFEForm( const char *path )
+// As we delete the form object ourselves, we don't want it to have
+// an owner at all.
+: TForm( ( TComponent* )NULL, 1 )
 {
         Height= 150;
         Width= 250;
         // Position= poScreenCenter;
         Top= 20;
         Left= 20;
+        AutoScroll = false;
 
-        Caption= "Error Opening File";
+        Caption= Application->Title + ": File I/O Error";
 
         OKButton= new TButton(this);
         OKButton->Parent= this;
@@ -158,8 +167,7 @@ __fastcall TFEForm::TFEForm( TApplication *appl, char *path ): TForm(appl,0)
         BadPath->Top= 50;
         BadPath->Width= 220;
         BadPath->Height= 30;
-
-      //   statevector->SetStateValue("Running",CurrentRunning);
+        BadPath->ReadOnly = true;
 }
 
 void __fastcall TFEForm::OKButtonClick(TObject *Sender )

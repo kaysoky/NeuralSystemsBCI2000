@@ -1,51 +1,52 @@
 //-------------------------------------------------
-//	BCIDirectry Class
-//	BCI Dircetory Management Functions
+//	BCIDtry Class
+//	BCI Directory Management Functions
 //-------------------------------------------------
 
-#include <dir.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#ifndef BCIDIRECTRY_H
+#define BCIDIRECTRY_H
 
-//--------------------------------------------------
+#include <vcl.h>
+#include <string>
 
-#include <vcl\Classes.hpp>
-#include <vcl\Controls.hpp>
-#include <vcl\StdCtrls.hpp>
-#include <vcl\Forms.hpp>
-#include <vcl\ComCtrls.hpp>
+//-------------------------------------------------
 
 class TFEForm : public TForm
 {
 private:
         TButton  *OKButton;
-        TEdit *BadPath;
-        void __fastcall OKButtonClick(TObject *Sender );
+        TEdit    *BadPath;
+        void __fastcall OKButtonClick(TObject*);
 public:
-
-        virtual __fastcall TFEForm( TApplication *, char *);
+        __fastcall TFEForm( const char *);
 };
 
 
 //--------------------------------------------------
 class BCIDtry
 {
-private:
-	char SubjDir[80];
-	char SubjName[80];
-	char SubjSession[80];
-	char SubjPath[120];
-public:
-       	int CheckPath( char * );
-	int MakePath( char * );
-	int CheckSubDir( char * );
-	int MakeSubDir( char * );
-        void SetDir( char * );
-        void SetName( char* );
-        void SetSession( char * );
-        int ProcPath( void );
-        char *ProcSubDir( void );
-        void FileError( TApplication *, char * );
-        int GetLargestRun( char * );
+ private:
+    static const char  DirSeparator = '\\';
+    static const char  DriveSeparator = ':';
+    static std::string BaseDir;
+
+    std::string        SubjDir,
+                       SubjName,
+                       SubjSession,
+                       SubjPath;
+
+    static std::string GetCwd();
+    int         ChangeForceDir( const std::string& );
+
+ public:
+    void        SetDir( const char * );
+    void        SetName( const char* );
+    void        SetSession( const char * );
+    int         ProcPath( void );
+    const char* ProcSubDir( void );
+    void        FileError( const char* );
+    void        FileError( TApplication *, const char *s ) { FileError( s ); }
+    int         GetLargestRun( const char * );
 } ;
+
+#endif // BCIDIRECTRY_H
