@@ -2943,7 +2943,7 @@ if(debug) fprintf(f, "current min and max are: %f, %f.\n", box2Min[i], box2Max[i
 */
 GLfloat* CrossProduct(GLfloat VX, GLfloat VY, GLfloat VZ, GLfloat FX, GLfloat FY, GLfloat FZ)
 {
-        GLfloat toRet[3];
+        static GLfloat toRet[] = { 0, 0, 0 };
 
         toRet[0] = VY*FZ - VZ*FY;
         toRet[1] = VZ*FX - VX*FZ;
@@ -4689,9 +4689,9 @@ int DrawScreen(GLvoid)
 
         //set up the light
         //white ambient light background
-        if (debug)       fprintf(f, "getting light.\n");
-        GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/255;
-        GLfloat ligBri = (GLfloat)camLig.getLightBri()/255;
+        //if (debug)       fprintf(f, "getting light.\n");
+        GLfloat abmBri = (GLfloat)camLig.getAmbLightBri()/(GLfloat)255.0;
+        GLfloat ligBri = (GLfloat)camLig.getLightBri()/(GLfloat)255.0;
         if (abmBri >= 1)
                 abmBri = 1.0f;
         if (ligBri >=1 )
@@ -4718,7 +4718,7 @@ int DrawScreen(GLvoid)
         //added
 
         glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE );
-	glEnable(GL_LIGHT0);                                    // Enable light one
+	glEnable(GL_LIGHT0);                                    // Enable light zero
         glEnable(GL_LIGHTING);
         glEnable(GL_COLOR_MATERIAL );
         
@@ -4750,7 +4750,7 @@ timeinms= ( (double)prectime2.QuadPart-(double)prectime1.QuadPart-(double)overhe
 
 
         //draw the sphere
-        fprintf(f, "drawing the sphere.\n");
+        //if(debug) fprintf(f, "drawing the sphere.\n");
         int Ssize = sphereVec.size();
         if(debug) fprintf(f, "The Ssize is %d.\n", Ssize);
         for (int i=0; i<Ssize; i++)
@@ -4942,11 +4942,15 @@ try
  *      positionX               - X position of the window
  *      positionY               - Y position of the window
  *	fullscreenflag	- Use Fullscreen Mode (true) Or Windowed Mode (false)
+ *      monitor                 - 1 for secondary monitor, 0 for primary monitor
  */
-bool CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag, int positionX, int positionY)
+bool CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag, int positionX, int positionY, int monitor)
 {
 try
 {
+
+
+
 	GLuint		PixelFormat;		// Holds the results after searching for a match
 	WNDCLASS	wc;		        // Windows class structure
 	DWORD		dwExStyle;              // Window extended style
@@ -4956,6 +4960,19 @@ try
 	WindowRect.right = (long)width;		// Set right value to requested width
 	WindowRect.top = (long)0;               // Set top value to 0
 	WindowRect.bottom = (long)height;       // Set bottom value to requested height
+
+        if(monitor == 1 )    // if window is showing at 2nd monitor, change window width
+        {
+                //get cureent primary device display setting
+                DEVMODE screenMode;
+                memset(&screenMode, 0, sizeof(screenMode));
+                screenMode.dmSize = sizeof(screenMode);
+                EnumDisplaySettings(NULL,  ENUM_CURRENT_SETTINGS, &screenMode);
+
+                positionX = screenMode.dmPelsWidth  + positionX;
+                if(debug)fprintf(f, "Calling monitor's positionX %d.\n",  positionX);
+        }//if monitor is the 2nd monitor
+
 
 	fullscreen = fullscreenflag;              // Set the global fullscreen flag
 
@@ -4988,22 +5005,83 @@ try
 		dmScreenSettings.dmBitsPerPel	= bits;	                        // Selected bits per pixel
 		dmScreenSettings.dmFields       = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
 
-		// Try to set selected mode and get results. NOTE: CDS_FULLSCREEN gets rid of start bar.
-		if (ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-		{
-			// If the mode fails, offer two options. Quit or use windowed mode.
-			if (MessageBox(NULL,"The requested fullscreen mode is not supported by\nyour video card. Use windowed mode instead?","NeHe GL",MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
-			{
-				fullscreen = false;       // Windowed mode selected. Fullscreen = false
-			}
-			else
-			{
-				// Pop up a message box letting user know the program is closing.
-				MessageBox(NULL,"Program will now close.","ERROR",MB_OK|MB_ICONSTOP);
-				return false;           // Return false
-			}
-		}
-	}
+
+                if( monitor == 0)       // primary display monitor
+                {
+        		// Try to set selected mode and get results. NOTE: CDS_FULLSCREEN gets rid of start bar.
+	        	if (ChangeDisplaySettings(&dmScreenSettings,CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+		        {
+	       		        // If the mode fails, offer two options. Quit or use windowed mode.
+                       		if (MessageBox(NULL,"The requested fullscreen mode is not supported by\nyour video card. Use windowed mode instead?","NeHe GL",MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+		        	{
+		        		fullscreen = false;       // Windowed mode selected. Fullscreen = false
+        			}
+	        		else
+		        	{
+			        	// Pop up a message box letting user know the program is closing.
+        				MessageBox(NULL,"Program will now close.","ERROR",MB_OK|MB_ICONSTOP);
+	        			return false;           // Return false
+		        	}
+        		}
+                }//if monitor is primary
+
+                if (monitor == 1)       // secondary display monitor
+                {
+                        //find 2nd monitor display name
+                        LPCTSTR deviceName = "";
+                        DWORD iDevNum =0;
+                        DWORD dwFlags=0;
+                        DISPLAY_DEVICE lpDisplayDevice; // device information
+                        lpDisplayDevice.cb = sizeof( lpDisplayDevice);
+
+                        while (EnumDisplayDevices(
+                        NULL,                     // device name
+                        iDevNum,                        // display device
+                        &lpDisplayDevice,                // device information
+                        dwFlags                         // reserved
+                        ))
+                        {//while starts
+                                 if(debug)fprintf(f, "Current monitor is %s.\n", lpDisplayDevice.DeviceName);
+
+                                //dont' want mirror drive
+                                if (!(lpDisplayDevice.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER)) //device is not a MIRRORING driver device
+                                {
+                                        if(lpDisplayDevice.StateFlags  & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP ) //devices attach to the desktop
+                                        {
+                                                if( !(lpDisplayDevice.StateFlags  & DISPLAY_DEVICE_PRIMARY_DEVICE) ) //it is not primary device
+                                                {
+                                                if(debug)fprintf(f, "Break: selected monitor is %s.\n", lpDisplayDevice.DeviceName);
+                                                break;
+                                                }
+                                        }
+
+                                }//if it's not mirror monitor
+                                iDevNum++;
+                        }//while ends
+
+                       if(debug)fprintf(f, "Second monitor is %s.\n", lpDisplayDevice.DeviceName);
+
+
+        		// Try to set selected mode and get results. NOTE: CDS_FULLSCREEN gets rid of start bar.
+	        	if (ChangeDisplaySettingsEx(lpDisplayDevice.DeviceName, &dmScreenSettings, NULL, 0, NULL) != DISP_CHANGE_SUCCESSFUL)
+		        {
+	       		        // If the mode fails, offer two options. Quit or use windowed mode.
+                       		if (MessageBox(NULL,"The requested fullscreen mode is not supported by\nyour video card. Use windowed mode instead?","NeHe GL",MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
+		        	{
+		        		fullscreen = false;       // Windowed mode selected. Fullscreen = false
+        			}
+	        		else
+		        	{
+			        	// Pop up a message box letting user know the program is closing.
+        				MessageBox(NULL,"Program will now close.","ERROR",MB_OK|MB_ICONSTOP);
+	        			return false;           // Return false
+		        	}
+        		}
+                }//if monitor is secondary
+
+	}//if fullscreen
+
+
 
 	if (fullscreen)                         // Are We Still In Fullscreen Mode?
 	{
@@ -5018,6 +5096,8 @@ try
 	}
 
 	AdjustWindowRectEx(&WindowRect,dwStyle,false,dwExStyle);        // Adjust window to true requested size
+
+
 
 	// Create the window
 	if (!(hWnd = CreateWindowEx(dwExStyle,          // Extended Style For The Window
