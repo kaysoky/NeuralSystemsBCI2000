@@ -26,8 +26,8 @@
     <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2ASCII.cpp"/>
-    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include"/>
-    <LIBPATH value="..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\bin\win32"/>
+    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab"/>
+    <LIBPATH value="..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -88,30 +88,30 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlIncludePath]
-Count=7
-Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include
-Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
-Item2=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
-Item3=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
-Item4=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
-Item5=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
-Item6=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
+Count=9
+Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab
+Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;C:\data\Bci2000\src\Tools\BCI2000toASCII\matlab
+Item2=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include
+Item3=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
+Item4=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
+Item5=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
+Item6=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
+Item7=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
+Item8=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=9
-Item0=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\bin\win32
-Item1=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\extern\bin
-Item2=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54
-Item3=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\matlabr12\bin;c:\matlabr12\extern\lib
-Item4=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin;c:\program files\matlab_sr11\extern\lib
-Item5=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\lib\
-Item6=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\lib\;
-Item7=..\..\SHARED;..\..\shared\V0.16;..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item8=..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=10
+Item0=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\bin\win32
+Item2=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54;C:\matlabR12\extern\bin
+Item3=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\matlabR12\extern\lib\win32\borland\bc54
+Item4=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\matlabr12\bin;c:\matlabr12\extern\lib
+Item5=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin;c:\program files\matlab_sr11\extern\lib
+Item6=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\lib\
+Item7=..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\lib\;
+Item8=..\..\SHARED;..\..\shared\V0.16;..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -144,5 +144,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
