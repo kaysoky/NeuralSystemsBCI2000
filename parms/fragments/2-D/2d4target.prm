@@ -1,0 +1,14 @@
+UsrTask int FeedbackDuration= 300 0 0 0 // Max Trial Duration
+Targets int IncludeAllTargets= 0 0 0 1 // Test all target positions?
+Targets int NumberTargets= 4 0 0 1 // Number of Targets
+Targets float StartCursorX= 50.0 0 0 100.0 // Horizontal Start of Cursor
+Targets float StartCursorY= 50.0 0 0 100.0 // Vertical Cursor Starting Position
+Targets matrix TargetPos= 7 4 37.5 80 37.5 0 0 37.5 80 37.5 25 20 25 20 20 25 20 25 0 1 0 -1 -1 0 1 0 3 3 3 3 0 0 0 // Target Position Matrix - Values are 0-100
+Statistics matrix BaselineCfg= 4 4 TargetCode 1 Feedback 1 TargetCode 2 Feedback 1 TargetCode 3 Feedback 1 TargetCode 4 Feedback 1 0 0 0 // states to watch for baseline
+Statistics matrix BaselineHits= 4 2 1 0.50 2 0.50 3 0.50 4 0.50 0 0 0 // proportion correct for each target
+Statistics float XGain= 1000.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope 
+Statistics float XPixelsPerSec= 630 70 0 400 // Horizontal Pixel Rate 
+Statistics int XTrendControl= 2 0 0 2 // X Intercept Adapt 0 none 1 mean 2 mean prop 3 slope 
+Statistics float YGain= 1000 5.0 -100.0 100.0 // Normal Filter Up / Down Slope 
+Statistics float YPixelsPerSec= 472 70 0 400 // Desired pixels per second 
+Statistics int YTrendControl= 2 0 0 2 // Y Intercept Adapt 0 none 1 mean 2 mean prop 3 slope 
