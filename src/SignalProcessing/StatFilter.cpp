@@ -4,11 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define USE_LOGFILE
-
-#ifdef USE_LOGFILE
 # include <stdio.h>
-#endif // USE_LOGFILE
 
 #include "MessageHandler.h"
 #include "UState.h"
@@ -17,9 +13,7 @@
 #include "NormalFilter.h"
 #include "StatFilter.h"
 
-#ifdef USE_LOGFILE
-FILE* estat;
-#endif // USE_LOGFILE
+// FILE* estat;
 
 using namespace std;
 
@@ -44,21 +38,23 @@ StatFilter::StatFilter()
   nf( NULL ),
   clsf( NULL )
 {
-  cur_stat.NumT= 0;
-  cur_lr_stat.NumT= 0;
+  cur_ystat.NumT= 0;
+  cur_xstat.NumT= 0;
 
   BEGIN_PARAMETER_DEFINITIONS
-    "Statistics int InterceptControl= 1 "
-      "0 0 2 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri",
-    "Statistics int InterceptLength= 3 "
-      "0 0 1000 // Length of time for running average",
-    "Statistics float InterceptProportion= 1.0 "
+    "Statistics int YTrendControl= 1 "
+      "0 0 2 // Y Intercept Adapt 0 none 1 mean 2 mean prop 3 slope",
+    "Statistics int SignalWinLth= 3 "
+      "0 0 1000 // Trials in Signal Running Average",
+    "Statistics int OutcomeDirection= 1 "
+      "0 1 2 // Direction of trial outcome statistic",
+    "Statistics float YMeanProportion= 1.0 "
       "0.0 0.0 2.0 // Proportion of signal mean for intercept",
-    "Statistics float HorizInterceptProp= 1.0 "
+    "Statistics float XMeanProportion= 1.0 "
         "0.0 0.0 2.0 // Proportion of horizontal signal intercept",
-    "Statistics float DesiredPixelsPerSec= 70 "
+    "Statistics float YPixelsPerSec= 70 "
       "70 0 400 // Desired pixels per second",
-    "Statistics float LRPixelsPerSec= 0 "
+    "Statistics float XPixelsPerSec= 0 "
       "70 0 400 // Horizontal Pixel Rate",
     "Visualize int VisualizeStatFiltering= 1 "
       "0 0 1  // visualize Stat filtered signals (0=no 1=yes)",
@@ -70,22 +66,19 @@ StatFilter::StatFilter()
       "1 0.50 "
       "2 0.50 "
       "0 0 0 // proportion correct for each target",
-    "Statistics int TrendControl= 1 "
-      "0 0 2  // Online adaption of % Correct Trend 1= Lin 2 = Quad",
-    "Statistics int HorizTrendControl= 1 "
-      "0 0 2  // Adaption of Horizontal % Correct Trend 1= Lin 2 = Quad",
-    "Statistics int TrendWinLth= 20 "
-      "0 0 100 // Length of % Correct Window",
-    "Statistics float LinTrendLrnRt= 0.001 "
+    "Statistics int XTrendControl= 1 "
+      "0 0 2  // X Intercept Adapt 0 none 1 mean 2 mean prop 3 slope",
+    "Statistics int TargetWinLth= 20 "
+      "0 0 100 // Length of Target % Window",
+    "Statistics float TrendControlRate= 0.001 "
       "0 0.000 0.010 // Learning Rate for Linear Trend Control",
-    "Statistics float QuadTrendLrnRt= 0.001 "
-      "0 0 0.010 // Learning Rate for Linear Trend Control",
 
-    "Statistics matrix WeightControl= 3 1 "
+    "Statistics matrix WeightControl= 4 1 "
     "Xadapt "
     "Yadapt "
     "AdaptCode "
-      "0 0 0 // State Names controlling Classifier Adaptation",
+    "ResultCode "
+      "0 0 0 0 // State Names controlling Adaptation",
 
     "Statistics int WeightUse= 0 "
       " 0 0 2 // Use of weights 0 = not 1= compute 2= use ",
@@ -106,9 +99,9 @@ StatFilter::StatFilter()
     "IntCompute 2 0 0 0",
   END_STATE_DEFINITIONS
 
-#ifdef USE_LOGFILE
-  estat= fopen("EStat.asc","w+");
-#endif // USE_LOGFILE
+
+//  estat= fopen("c:/current/log/EStat.asc","w+");
+
 }
 
 
@@ -124,9 +117,9 @@ StatFilter::~StatFilter()
   delete stat;
   delete StatSignal;
   if (Statfile) fclose( Statfile );
-#ifdef USE_LOGFILE
-  if( estat ) fclose( estat );
-#endif // USE_LOGFILE
+
+//    fclose( estat );
+
 }
 
 // **************************************************************************
@@ -145,10 +138,10 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   // For now, we don't perform any more checks, which amounts to declaring
   // that this filter works provided all parameters are in the range
   // given in their definition string.
-  Parameter("UD_A");
-  Parameter("UD_B");
-  Parameter("LR_A");
-  Parameter("LR_B");
+  Parameter("YMean");
+  Parameter("YGain");
+  Parameter("XMean");
+  Parameter("XGain");
   Parameter("FileInitials");
   Parameter("SubjectSession");
   Parameter("SubjectName");
@@ -169,6 +162,7 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   OptionalState( Parameter( "WeightControl", 0, 0 ) );
   OptionalState( Parameter( "WeightControl", 1, 0 ) );
   OptionalState( Parameter( "WeightControl", 2, 0 ) );
+  OptionalState( Parameter( "WeightControl", 3, 0 ) );
   State( "TargetCode" );
   State( "ResultCode" );
   State( "StimulusTime" );
@@ -179,8 +173,9 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   // filter works for input signals of any size.
   /* no checking done */
 
-  // This filter connects its input signal through to the output.
-  outSignalProperties = inSignalProperties;
+  // This filter does not use its output signal argument, so we specify
+  // minimal requirements.
+  outSignalProperties = SignalProperties( 0, 0, 0 );
 }
 
 // **************************************************************************
@@ -205,32 +200,25 @@ void StatFilter::Initialize()
   intercept_flag= 0;
   weight_flag= 0;
 
-  InterceptEstMode= Parameter("InterceptControl");
-  InterceptLength= Parameter("InterceptLength");
-  InterceptProportion= Parameter("InterceptProportion");
-  HorizInterceptProp= Parameter("HorizInterceptProp");
-  ud_intercept= Parameter("UD_A");
-  ud_gain     = Parameter("UD_B");
-  lr_intercept= Parameter("LR_A");
-  lr_gain     = Parameter("LR_B");
-  Trend_Control= Parameter("TrendControl");
-  HorizTrend_Control= Parameter("HorizTrendControl");
-  Trend_Win_Lth= Parameter("TrendWinLth");
-  LinTrend_Lrn_Rt= Parameter("LinTrendLrnRt");
-  QuadTrend_Lrn_Rt= Parameter("QuadTrendLrnRt");
-  desiredpix= Parameter("DesiredPixelsPerSec");
-  horizpix= Parameter("LRPixelsPerSec");
+  YInterceptEstMode= Parameter("YTrendControl");
+  XInterceptEstMode= Parameter("XTrendControl");
+  SignalWinLth= Parameter("SignalWinLth");
+  OutcomeDirection= Parameter("OutcomeDirection");
+  YMeanProportion= Parameter("YMeanProportion");
+  XMeanProportion= Parameter("XMeanProportion");
+  yintercept= Parameter("YMean");
+  ud_gain     = Parameter("YGain");
+  xintercept= Parameter("XMean");
+  lr_gain     = Parameter("XGain");
+  Trend_Win_Lth= Parameter("TargetWinLth");
+  TrendControlRate= Parameter("TrendControlRate");
+  ypix= Parameter("YPixelsPerSec");
+  horizpix= Parameter("XPixelsPerSec");
   visualizeyn= Parameter("VisualizeStatFiltering");
-
-//  WtControl= Parameter("WeightControl");
 
   WtRate= Parameter("WtLrnRt");
 
   WtControl= Parameter("WeightUse");
-
-//  LRWtControl= Parameter("LRWeightControl");
-//  LRWtRate= Parameter("LRWtLrnRt");
-
 
   FInit= ( const char* )Parameter("FileInitials");
   SSes = ( const char* )Parameter("SubjectSession");
@@ -259,35 +247,37 @@ void StatFilter::Initialize()
       bcierr << "Could not open " << OName << " for writing" << std::endl;
   }
 
-  if( ( (InterceptEstMode>0)||(Trend_Control>0)||(WtControl > 0 ) ) && init_flag < 1 )               // need to update if different targets
+  if( ( (YInterceptEstMode>0)||(WtControl > 0 )||(XInterceptEstMode>0))
+         && init_flag < 1 )               // need to update if different targets
   {
+
     delete stat;
     stat= new STATISTICS;
-    stat->SetNumMaxTrials(InterceptLength);
-    stat->SetIntercept( 0, ud_intercept );
-    stat->SetIntercept( 1, lr_intercept );
+    stat->SetNumMaxTrials(SignalWinLth);
+    stat->SetOutcomeDirection(OutcomeDirection);
+    stat->SetIntercept( 0, yintercept );
+    stat->SetIntercept( 1, xintercept );
     if (ud_gain != 0)
-      stat->SetGain( 0, desiredpix/ud_gain );
+      stat->SetGain( 0, ypix/ud_gain );
     else
       stat->SetGain( 0, 1000);
     if (lr_gain != 0)
       stat->SetGain( 1, horizpix/lr_gain );
     else
       stat->SetGain( 1, 1000 );
+    init_flag++;
+  }
 
-    if( Trend_Control > 0 )
+    if( (YInterceptEstMode > 1 ) || (XInterceptEstMode > 1 ) )
     {
       stat->SetDTWinMaxTrials( Trend_Win_Lth );
       int num= GetBaselineHits();
 
       for(int i=0;i<num;i++)
       {
-        stat->SetTrendControl( i, BaseHits[i], Trend_Win_Lth );
+        stat->SetTrendControl( BaseNum[i]-1, BaseHits[i], Trend_Win_Lth );
       }
     }
-
-    init_flag++;
-  }
 
   if( ( WtControl > 0 ) && ( wt_init_flag == 0 ) )
     {
@@ -302,12 +292,12 @@ void StatFilter::Initialize()
       wt_init_flag= 1;
     }
 
-  //       cur_stat.bper= 1;
-  cur_stat.pix= desiredpix;
-  cur_stat.aper= InterceptProportion;
+  //       cur_ystat.bper= 1;
+  cur_ystat.pix= ypix;
+  cur_ystat.aper= YMeanProportion;
 
-  cur_lr_stat.pix= horizpix;
-  cur_lr_stat.aper= HorizInterceptProp;
+  cur_xstat.pix= horizpix;
+  cur_xstat.aper= XMeanProportion;
 
   if( visualizeyn == 1 )
   {
@@ -338,6 +328,7 @@ void StatFilter::Initialize()
 int StatFilter::GetBaselineHits( void )
 {
   PARAM  *paramptr= Parameters->GetParamPtr("BaselineHits");
+
   if( !paramptr ) return(0);
   int num= paramptr->GetNumValuesDimension1();
 
@@ -386,9 +377,9 @@ void StatFilter::GetStates( void )
   Xadapt= OptionalState( Parameter( "WeightControl", 0, 0 ) );
   Yadapt= OptionalState( Parameter( "WeightControl", 1, 0 ) );
   AdaptCode= OptionalState( Parameter( "WeightControl", 2, 0 ) );
-
+  OutcomeCode= OptionalState( Parameter( "WeightControl", 3, 0 ) );
 #ifdef USE_LOGFILE
-     fprintf(estat,"Xadapt= %d Yadapt= %d AdaptCode= %d \n",Xadapt,Yadapt,AdaptCode);
+     fprintf(estat,"Xadapt= %d Yadapt= %d AdaptCode= %d Outcome= %d \n",Xadapt,Yadapt,AdaptCode,OutcomeCode);
 #endif // USE_LOGFILE
 
 }
@@ -409,48 +400,82 @@ void StatFilter::Resting()
     intercept_flag= 0;
 
     // change the value of the parameter
-    // Parameters changed from the "Resting" function will now automatically
-    // be published to the operator module, jm.
 
-    sprintf(memotext, "%.2f", ud_intercept);
-    Parameter( "UD_A" ) = memotext;
+    // jm: removed probably unwanted trailing \r characters from parameter values
+    // (they would show up in the operator if the "Config" button was pressed
+    // after "Suspend").
+    // Instead the two lines, one might consider writing
+    // Parameter( "YMean" ) = yintercept;
+    // and do the rounding before the output.
+    sprintf(memotext, "%.2f", yintercept);
+    Parameter( "YMean" ) = memotext;
 
     sprintf(memotext, "%.2f", ud_gain);
-    Parameter( "UD_B" ) = memotext;
+    Parameter( "YGain" ) = memotext;
 
-    sprintf(memotext, "%.2f", lr_intercept);
-    Parameter( "LR_A" ) = memotext;
+    sprintf(memotext, "%.2f", xintercept);
+    Parameter( "XMean" ) = memotext;
 
     sprintf(memotext, "%.2f", lr_gain);
-    Parameter( "LR_B" ) = memotext;
+    Parameter( "XGain" ) = memotext;
+
+/*
+
+    Corecomm->StartSendingParameters();
+
+    Corecomm->PublishParameter( Parameters->GetParamPtr("YMean") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("YGain") );
+
+    Corecomm->PublishParameter( Parameters->GetParamPtr("XMean") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("XGain") );
+
+    Corecomm->StopSendingParameters();
+*/
+
   }
   if( trend_flag > 0 )         // return trends to operator
   {
     trend_flag= 0;
 
-    sprintf(memotext, "%.4f", cur_stat.aper);
-    Parameter( "InterceptProportion" ) = memotext;
+    sprintf(memotext, "%.4f", cur_ystat.aper);
+    Parameter( "YMeanProportion" ) = memotext;
 
-    sprintf(memotext, "%.4f",cur_lr_stat.aper);
-    Parameter( "HorizInterceptProp" ) = memotext;
+    sprintf(memotext, "%.4f",cur_xstat.aper);
+    Parameter( "XMeanProportion" ) = memotext;
 
-    //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
-    sprintf(memotext, "%.2f", cur_stat.pix);
-    Parameter( "DesiredPixelsPerSec" ) = memotext;
 
-    sprintf(memotext, "%.2f", cur_lr_stat.pix);
-    Parameter( "LRPixelsPerSec" ) = memotext;
+    //     sprintf(memotext, "%.2f", cur_ystat.bper * ypix);
+    sprintf(memotext, "%.2f", cur_ystat.pix);
+    Parameter( "YPixelsPerSec" ) = memotext;
 
-    Parameter( "BaselineHits" )->SetDimensions( cur_stat.NumT, 2 );
+    sprintf(memotext, "%.2f", cur_xstat.pix);
+    Parameter( "XPixelsPerSec" ) = memotext;
 
-    for(int i=0; i< cur_stat.NumT; i++)
+    Parameter( "BaselineHits" )->SetDimensions( cur_ystat.NumT, 2 );
+
+    for(int i=0; i< cur_ystat.NumT; i++)
     {
-      sprintf(memotext, "%d", BaseNum[i]);
+      sprintf(memotext, "%2d",BaseNum[i] );
       Parameter( "BaselineHits", i, 0) = memotext;
 
-      sprintf(memotext, "%.2f", cur_stat.TargetPC[i]);
+      sprintf(memotext, "%.2f", cur_ystat.TargetPC[i]);
       Parameter( "BaselineHits", i, 1 ) = memotext;
     }
+
+/*
+    Corecomm->StartSendingParameters();
+
+    Corecomm->PublishParameter( Parameters->GetParamPtr("YMeanProportion") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("XMeanProportion") );
+
+    Corecomm->PublishParameter( Parameters->GetParamPtr("YPixelsPerSec") );
+    Corecomm->PublishParameter( Parameters->GetParamPtr("XPixelsPerSec") );
+
+    Corecomm->PublishParameter( Parameters->GetParamPtr("BaselineHits") );
+
+    Corecomm->StopSendingParameters();
+*/
+
   }
 
   classmode= Parameter("ClassMode");   // ytest classifier type
@@ -465,15 +490,25 @@ void StatFilter::Resting()
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
       Parameter("MUD",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-fprintf(estat,"Horizontal weights \n");
+
+/*
+    Corecomm->StartSendingParameters();
+    Corecomm->PublishParameter( Parameters->GetParamPtr("MUD") );
+    Corecomm->StopSendingParameters();
+*/
+
     for(int i=0;i<clsf->n_hmat;i++)
     {
-
-fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
-
       sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
       Parameter("MLR",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
+
+/*
+    Corecomm->StartSendingParameters();
+    Corecomm->PublishParameter( Parameters->GetParamPtr("MLR") );
+    Corecomm->StopSendingParameters();
+*/
+    
   }
 }
 
@@ -484,102 +519,123 @@ fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
 //             output - output signal for this filter
 // Returns:    N/A
 // **************************************************************************
+
 void StatFilter::Process( const GenericSignal *input,
                                 GenericSignal *output )
+
 {
   static int recno= 1;
-  static  float old_ud_intercept=0, old_ud_gain=0, old_lr_intercept=0, old_lr_gain=0;
+  static  float old_yintercept=0, old_ud_gain=0, old_xintercept=0, old_lr_gain=0;
   static int oldtarget, oldoutcome;
-
-  // actually perform the Stat Filtering on the NormalFilter output signal
-/* What does the above line say?
-   The actual input signal is the NormalFilter _input_ signal.
-   The output signal argument is unused in this filter. */
+  float value;
+  int sample;
 
   GetStates();
 
-  if( InterceptEstMode >0 )
-  {
-    int sample= 0;
-
-    for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
-    {
-      float value= input->GetValue(in_channel, sample);
-
-      if (in_channel == 0)
-      {
-        stat->ProcRunningAvg(CurrentBaseline, in_channel, value, &cur_stat);
-        ud_intercept=cur_stat.Intercept;
-        if (cur_stat.StdDev != 0)
-        ud_gain=desiredpix/cur_stat.StdDev;
-
-        old_ud_intercept= ud_intercept;
-        old_ud_gain= ud_gain;
-      }
-
-      intercept_flag= 1;
-
-      if (InterceptEstMode > 1)
-      {
-        if (in_channel == 1)
+        if( YInterceptEstMode >0 )
         {
-          stat->ProcRunningAvg(CurrentBaseline, in_channel, value, &cur_lr_stat);
- 
-          lr_intercept=cur_lr_stat.Intercept;
-          if (cur_lr_stat.StdDev != 0)
-            lr_gain=horizpix/cur_lr_stat.StdDev;
+                // channel 0 1st element
 
-          if (( visualize ) && ((lr_intercept != old_lr_intercept) || (lr_gain != old_lr_gain)))
-          {
-            //char memotext[512];
-            //sprintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f", lr_intercept, lr_gain);
-            //s->SendMemo2Operator(memotext);
-          }
+                value= input->GetValue( 0, 0);
+
+                stat->ProcRunningAvg(CurrentBaseline, 0, value, &cur_ystat);
+                yintercept=cur_ystat.Intercept;
+
+                if (cur_ystat.StdDev != 0)
+                        ud_gain=ypix/cur_ystat.StdDev;
+
+                old_yintercept= yintercept;
+                old_ud_gain= ud_gain;
+
+                intercept_flag= 1;
         }
-      }
-    }
 
-    if( Trend_Control > 0 )
+        if (XInterceptEstMode > 0)
+        {
+                // channel 1 1st element
+
+                value= input->GetValue( 1, 0 );
+                stat->ProcRunningAvg(CurrentBaseline, 1, value, &cur_xstat);
+
+                xintercept=cur_xstat.Intercept;
+                if (cur_xstat.StdDev != 0)
+                        lr_gain=horizpix/cur_xstat.StdDev;
+
+                if (( visualize ) && ((xintercept != old_xintercept) || (lr_gain != old_lr_gain)))
+                {
+                        //char memotext[512];
+                        //sprintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f", xintercept, lr_gain);
+                        //s->SendMemo2Operator(memotext);
+                }
+                intercept_flag= 1;
+        }
+
+
+    if( YInterceptEstMode > 1 )
     {
-      stat->ProcTrendControl(Ntargets, CurrentBaseline, CurrentTarget, CurrentOutcome, &cur_stat, LinTrend_Lrn_Rt, QuadTrend_Lrn_Rt);
+      stat->ProcTrendControl(0, Ntargets, CurrentBaseline, CurrentTarget,
+                         OutcomeCode, Yadapt, &cur_ystat, TrendControlRate, YInterceptEstMode );
 
-      ud_intercept *= cur_stat.aper;
-      if (cur_stat.StdDev != 0)
-      ud_gain=cur_stat.pix/cur_stat.StdDev;
+      yintercept *= cur_ystat.aper;
+      if (cur_ystat.StdDev != 0)
+      ud_gain=cur_ystat.pix/cur_ystat.StdDev;
 
       trend_flag= 1;
 
-      if( cur_stat.trial_flag > 0 )
+      if( cur_ystat.trial_flag > 0 )
       {
         fprintf(Statfile,"%4d ",recno++);
-        for(int i=0;i<Ntargets;i++)       //  was   cur_stat.NumT;i++)
-        fprintf(Statfile,"%4.2f ",cur_stat.TargetPC[i]);
-        fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_stat.aper,cur_stat.pix,ud_intercept,ud_gain);
+        for(int i=0;i<Ntargets;i++)       //  was   cur_ystat.NumT;i++)
+        fprintf(Statfile,"%4.2f ",cur_ystat.TargetPC[i]);
+        fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_ystat.aper,cur_ystat.pix,yintercept,ud_gain);
         fflush( Statfile );
       }
     }
+
+    if( XInterceptEstMode > 1 )
+    {
+
+      stat->ProcTrendControl(1, Ntargets, CurrentBaseline, CurrentTarget,
+                         OutcomeCode, Xadapt, &cur_xstat, TrendControlRate, XInterceptEstMode );
+
+      xintercept *= cur_xstat.aper;
+      if (cur_xstat.StdDev != 0)
+      lr_gain=cur_xstat.pix/cur_xstat.StdDev;
+
+      trend_flag= 1;
+
+      if( cur_xstat.trial_flag > 0 )
+      {
+        fprintf(Statfile,"%4d ",recno++);
+        for(int i=0;i<Ntargets;i++)       //  was   cur_ystat.NumT;i++)
+        fprintf(Statfile,"%4.2f ",cur_xstat.TargetPC[i]);
+        fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_xstat.aper,cur_xstat.pix,xintercept,lr_gain);
+        fflush( Statfile );
+      }
+    }
+
     oldtarget= CurrentTarget;
     oldoutcome= CurrentOutcome;
 
     // now, update the parameters (i.e., intercept, gain) for the normalizer
-    nf->UpdateParameters( ud_intercept, ud_gain, lr_intercept, lr_gain );
+    nf->UpdateParameters( yintercept, ud_gain, xintercept, lr_gain );
 
-    if (( visualize ) && (cur_stat.update_flag > 0 ) ) //((ud_intercept != old_ud_intercept) || (ud_gain != old_ud_gain)))
+    if (( visualize ) && (cur_ystat.update_flag > 0 ) ) //((yintercept != old_yintercept) || (ud_gain != old_ud_gain)))
     {
       for(int i=0;i<Ntargets;i++)
-      StatSignal->SetValue( 0 ,i,  cur_stat.TargetPC[i] );
+      StatSignal->SetValue( 0 ,i,  cur_ystat.TargetPC[i] );
 
       vis->SetSourceID(SOURCEID_STATISTICS);
       vis->Send2Operator(StatSignal);
 
-      cur_stat.update_flag= 0;
+      cur_ystat.update_flag= 0;
     }
-  }
+//  }
 
   // store the old values
-  old_ud_intercept=ud_intercept;
+  old_yintercept=yintercept;
   old_ud_gain=ud_gain;
-  old_lr_intercept=lr_intercept;
+  old_xintercept=xintercept;
   old_lr_gain=lr_gain;
 
   if( WtControl > 1 )
@@ -612,6 +668,7 @@ void StatFilter::Process( const GenericSignal *input,
 
         }
   }
+
   *output = *input;
 }
 

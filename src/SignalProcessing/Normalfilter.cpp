@@ -12,13 +12,13 @@
 #include "UParameter.h"
 #include "UGenericVisualization.h"
 
-using namespace std;
-
 #ifdef USE_LOGFILE
 FILE *Normalfile;
 #endif // USE_LOGFILE
 
-RegisterFilter( NormalFilter, 2.F );
+using namespace std;
+
+RegisterFilter( NormalFilter, 2.E );
 
 // **************************************************************************
 // Function:   NormalFilter
@@ -33,18 +33,24 @@ RegisterFilter( NormalFilter, 2.F );
 NormalFilter::NormalFilter()
 : vis( NULL )
 {
-  BEGIN_PARAMETER_DEFINITIONS
-    "Filtering float UD_A=  5.0 "
-      "5.0  -100.0  100.0 // Normal Filter Up/Down Intercept",
-    "Filtering float UD_B=  5.0 "
-      "5.0  -100.0  100.0 // Normal Filter Up/Down Slope",
-    "Filtering float LR_A= -5.0 "
-      "-5.0  -100.0  100.0 // Normal Filter Left/Right Intercept",
-    "Filtering float LR_B= 5.0 "
-      "5.0  0.0  100.0 // Normal Filter Left/Right Slope",
-    "Visualize int VisualizeNormalFiltering= 1 "
-      "0 0 1 // visualize Normal filtered signals (0=no 1=yes)",
-  END_PARAMETER_DEFINITIONS
+ BEGIN_PARAMETER_DEFINITIONS
+   "Statistics float YMean=  5.0 "
+     "5.0  -100.0  100.0 // Normal Filter Up / Down Intercept",
+   "Statistics float YGain=  5.0 "
+     "5.0  -100.0  100.0 // Normal Filter Up / Down Slope",
+   "Statistics float XMean= -5.0 "
+     "-5.0  -100.0  100.0 // Normal Filter Left/Right Intercept",
+   "Statistics float XGain= 5.0 "
+     "5.0  0.0  100.0 // Normal Filter Left/Right Slope",
+   "Visualize int VisualizeNormalFiltering= 1 "
+     "0 0 1 // visualize Normal filtered signals (0=no 1=yes)",
+ END_PARAMETER_DEFINITIONS
+ #ifdef USE_LOGFILE
+
+  Normalfile= fopen("NormalFilter.asc","w+");
+  fprintf(Normalfile,"Constructor \n");
+
+  #endif // USE_LOGFILE
 }
 
 
@@ -79,17 +85,16 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
                                     SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  /* No mutual range dependendies appear to exist. */
 
   // Resource availability checks.
-  /* The normalizer filter appears not to depend on external resources. */
+  /* The normalizer filter seems not to depend on external resources. */
 
   // Input signal checks.
   for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
     PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( cNumControlSignals, 1 );
+  outSignalProperties = SignalProperties( cNumControlSignals, 1 );  //  was inSignalProperties;
 }
 
 // **************************************************************************
@@ -108,10 +113,10 @@ void NormalFilter::Initialize()
   fprintf(Normalfile,"Initialize and try \n");
 #endif // USE_LOGFILE
 
-  ud_a= Parameter("UD_A");
-  ud_b= Parameter("UD_B");
-  lr_a= Parameter("LR_A");
-  lr_b= Parameter("LR_B");
+  ymean= Parameter("YMean");
+  ygain= Parameter("YGain");
+  xmean= Parameter("XMean");
+  xgain= Parameter("XGain");
 
   visualizeyn= Parameter("VisualizeNormalFiltering");
 
@@ -129,6 +134,8 @@ void NormalFilter::Initialize()
   {
     visualize=false;
   }
+
+  return;
 }
 
 // **************************************************************************
@@ -138,11 +145,30 @@ void NormalFilter::Initialize()
 //             output - output signal for this filter
 // Returns:    N/A
 // **************************************************************************
-void NormalFilter::Process( const GenericSignal* input, GenericSignal* output )
+void NormalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
-  const val_max = ( 1 << 15 ) - 1;
+//  float   val_ud;
+//  float   val_lr;
+//  float   value;
+
   // actually perform the Normal Filtering on the input and write it into the output signal
-  float val_ud = ( input->GetValue( 0, 0 ) - ud_a ) * ud_b;
+/*
+  int sample= 0;
+
+  for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
+  {
+    value= input->GetValue(in_channel, sample);
+// ??
+    if( in_channel == 0 ) val_ud=  ( value - ymean ) * ygain;
+    if( in_channel == 1 ) val_lr=  ( value - xmean ) * xgain;
+  }
+  output->SetValue( 0, 0, val_ud );
+  output->SetValue( 1, 0, val_lr );
+*/
+
+const val_max = ( 1 << 15 ) - 1;
+  // actually perform the Normal Filtering on the input and write it into the output signal
+  float val_ud = ( input->GetValue( 0, 0 ) - ymean ) * ygain;;
   if( val_ud > val_max )
   {
     val_ud = val_max;
@@ -155,7 +181,7 @@ void NormalFilter::Process( const GenericSignal* input, GenericSignal* output )
   }
   output->SetValue( 0, 0, val_ud );
 
-  float val_lr = ( input->GetValue( 1, 0 ) - lr_a ) * lr_b;
+  float val_lr = ( input->GetValue( 1, 0 ) - xmean ) * xgain;
   if( val_lr > val_max )
   {
     val_lr = val_max;
@@ -169,22 +195,23 @@ void NormalFilter::Process( const GenericSignal* input, GenericSignal* output )
   output->SetValue( 1, 0, val_lr );
 
 #ifdef USE_LOGFILE
-  fprintf( Normalfile, "Process val_ud= %8.3f  val_lr= %8.3f\n", val_ud, val_lr );
+  fprintf(Normalfile,"Process val_ud= %8.3f  val_lr= %8.3f\n",val_ud,val_lr);
 #endif // USE_LOGFILE
 
   if( visualize )
   {
-    vis->SetSourceID( SOURCEID_NORMALIZER );
+    vis->SetSourceID(SOURCEID_NORMALIZER);
     vis->Send2Operator( output );
   }
+  return;
 }
 
-int NormalFilter::UpdateParameters( float new_ud_a, float new_ud_b, float new_lr_a, float new_lr_b )
+int NormalFilter::UpdateParameters( float new_ymean, float new_ygain, float new_xmean, float new_xgain )
 {
-  ud_a= new_ud_a;
-  ud_b= new_ud_b;
-  lr_a= new_lr_a;
-  lr_b= new_lr_b;
+  ymean= new_ymean;
+  ygain= new_ygain;
+  xmean= new_xmean;
+  xgain= new_xgain;
 
   return(1);
 }

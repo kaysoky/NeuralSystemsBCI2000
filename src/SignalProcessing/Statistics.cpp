@@ -1,15 +1,16 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
-#undef USE_LOGFILE
+//  #define USE_LOGFILE
 //---------------------------------------------------------------------------
 #include <math.h>
 #include <stdio.h>
 #include "Statistics.h"
 
-#ifdef USE_LOGFILE
-FILE *sfile;
-#endif // USE_LOGFILE
+
+// FILE *sfile;
+
+// FILE *statf;
 
 void get_oc( float *l, float *q, int n  )
 {
@@ -241,7 +242,20 @@ STATISTICS::STATISTICS()
 {
 int     i, t, u;
 
-        sign= 1;                // assume initialy 1
+        outcome_type= 1;                // assume initialy 1
+
+
+
+ for(i=0;i<MAXDIM;i++)
+ {
+        oldBLstate[i]= -1;
+ }
+
+ for(i=0;i<MAX_BLSTATES;i++)
+ {
+
+        targbuf[i]= new CIRCBUF;        // buffers for target % Correct
+ }
 
  for (i=0; i<MAX_CONTROLSIG; i++)
   {
@@ -252,17 +266,18 @@ int     i, t, u;
    use_flag[i]= 0;
   }
 
-  for(i=0;i<MAX_BLSTATES;i++)
-        targbuf[i]= new CIRCBUF;        // buffers for target % Correct
 
-    current_intercept= 0;
-    current_lr_intercept= 0;
+    current_yintercept= 0;
+    current_xintercept= 0;
+
+ //   statf= fopen( "c:/current/log/statistics.asc","w+");
+ //   fprintf(statf,"Opening statistics log \n");
 }
 
 
 STATISTICS::~STATISTICS()
 {
-int     i, t, u;
+int     i, j, t, u;
 
  for (i=0; i<MAX_CONTROLSIG; i++)
   for (t=0; t<MAX_BLSTATES; t++)
@@ -273,12 +288,15 @@ int     i, t, u;
       }
 
       for(i=0;i<MAX_BLSTATES;i++)
+      {
         if( targbuf[i])
         {
                 delete targbuf[i];
                 targbuf[i]= NULL;
         }
-      if(sfile) fclose(sfile);
+      }
+//        fprintf(statf,"Closing sfile \n");
+//        fclose(statf);
 }
 
 
@@ -294,10 +312,10 @@ int     i, t, u;
 
 void STATISTICS::SetDTWinMaxTrials( int trials )
 {
-        int t;
+        int i,t;
         for (t=0; t<MAX_BLSTATES; t++)
         if (targbuf[t])
-                targbuf[t]->maxtrials=trials;
+                targbuf[t]->maxtrials=trials-1;
 
 }
 
@@ -329,6 +347,11 @@ void STATISTICS::SetGain(int controlsigno, float gain)
  CurStdDev[controlsigno]=gain;
 }
 
+void STATISTICS::SetOutcomeDirection( int dir )
+{
+        outcome_type= dir;
+}
+
 
 int   STATISTICS::GetNumTrendstates()
 {
@@ -344,32 +367,51 @@ int count;
  return(count);
 }
 
-
-void STATISTICS::ProcTrendControl(int Ntargets, int numBLstate, int target, int outcome, TRIALSTAT *trialstat, float lrate , float qrate)
+void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int target, int outcome,
+                         short adapt, TRIALSTAT *trialstat, float lrate, int mode )
 {
-        static int oldBLstate=-1;
+        static int oldBLupdate=-1;
         float val;
-        static int oldtarget= -1;
-        static int oldoutcome= 0;
         int i;
-
         static int nblstates= 0;
         float l[MAX_BLSTATES];
         float q[MAX_BLSTATES];
         float actual_lrate;
 
+        float quad_mean;
+
         trialstat->trial_flag= 0;
 
-        if ((oldBLstate > -1) && (numBLstate == -1))        // end of any of the defined BL periods
+        if ((oldBLstate[dim] > -1) && (numBLstate == -1))        // end of any of the defined BL periods
         {
 
-                if( target == outcome )   val= 1.0;
-                else                      val= 0.0;
 
-                targbuf[oldBLstate]->PushVal(val);
+                targval[dim][target-1]= adapt;
+                targval2[dim][target-1]= abs( adapt );
+
+                if( oldBLupdate > -1 )                                // do once for all dimensions
+                {
+
+                        if( outcome_type == 1 )                       // direction = 1 for pc
+                        {
+                                if( target == outcome )   val= 1.0;
+                                else                      val= 0.0;
+                                sign= -1;
+                        }
+                        else if( outcome_type == 2 )           // direction = 2 for time
+                        {
+                                val= (float)outcome;
+                                sign= +1;
+                        }
+
+                        targbuf[oldBLstate[dim]]->PushVal(val);
+
+//  fprintf(statf,"sign= %d   val= %6.2f \n",sign,val);
+                }
+
+
 
                 nblstates= GetNumTrendstates();
-                nblstates= Ntargets;
 
                 if( nblstates >= trialstat->NumT ) trialstat->NumT= nblstates;
 
@@ -378,39 +420,58 @@ void STATISTICS::ProcTrendControl(int Ntargets, int numBLstate, int target, int 
                         trialstat->TargetPC[i]=  targbuf[i]->CalculateAllTrialAverage();
                 }
 
-                targbuf[oldBLstate]->NextTrial();
+                if( oldBLupdate > -1 )    targbuf[oldBLstate[dim]]->NextTrial();     // do once for all dimensions
 
-                get_oc(l,q,nblstates);
 
-                trialstat->lin= 0;
-                trialstat->quad= 0;
+                trialstat->lin= 0.0;
+
+                if( mode > 2 )
+                {
+                        trialstat->quad= 0.0;
+
+                        quad_mean= 0.0;
+                        for(i=0;i<nblstates;i++)
+                        {
+                                quad_mean+= targval2[dim][i];
+                        }
+
+                        if( nblstates > 0 ) quad_mean/= nblstates;
+
+                        for(i=0;i<nblstates;i++)
+                        {
+                                quadval[i]= targval2[dim][i] - quad_mean;
+                        }
+                }
 
                 for(i=0;i<nblstates;i++)
                 {
-                        trialstat->lin+= l[i]  * trialstat->TargetPC[i];
- //     no quad right now             trialstat->quad+= q[i] * trialstat->TargetPC[i];
+                        trialstat->lin+= targval[dim][i]  * trialstat->TargetPC[i];             // product of dimension val and outcome
+                        if( mode > 2 )
+                        {
+                                trialstat->quad+= quadval[i] * trialstat->TargetPC[i];
+                        }
                 }
 
-                actual_lrate= lrate * (float)sign;
+
+                actual_lrate= lrate * (float)sign;                  // what is sign?  must be outcome_direction !!
 
                 trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
-//  trialstat->bper-= trialstat->bper * trialstat->quad * qrate;
-//                trialstat->pix-= trialstat->pix * trialstat->quad * qrate;
+
+                if( mode > 2 )
+                        trialstat->pix+= trialstat->pix  * trialstat->quad * actual_lrate;
+
 
                 trialstat->trial_flag= 1;
 
-
- //               fprintf(sfile,"oldtarget= %2d outcome= %2d val= %4.2f \n",oldtarget,outcome,val);
-
         }
-        oldoutcome= outcome;
 
-        oldBLstate=numBLstate;
-        oldtarget= target;
+        oldBLupdate= numBLstate;
+        oldBLstate[dim]= numBLstate;
 }
 
 void STATISTICS::ProcRunningAvg( int numBLstate, int controlsigno, float val, TRIALSTAT *trialstat )
 {
+int sign;
 static int oldBLstate[3]= {-1,-1,-1};
 int     t;
 float   accavg, accstddev;
@@ -448,8 +509,8 @@ if( controlsigno > 2 ) return;
  if( trialstat->Intercept > 0 ) sign= +1;
  else                           sign= -1;
 
- if( controlsigno == 0 )      current_intercept= trialstat->Intercept;
- else if( controlsigno == 1 ) current_lr_intercept= trialstat->Intercept;
+ if( controlsigno == 0 )      current_yintercept= trialstat->Intercept;
+ else if( controlsigno == 1 ) current_xintercept= trialstat->Intercept;
 
  return;
 }
@@ -477,16 +538,11 @@ void STATISTICS::ProcWeightControl(     int target,             // targets value
                                         int chan
                                   )
 {
-    //    static int oldfeedback= 0;
-    //    static float wt_buf[128];
         int i;
         float predicted;
         float err;
-    //    static float mean= 0;
-    //    static int use_flag= 0;
         static int count= 0;
 
- // problem !!
         if( use_flag[chan] == 0 )
         {
                 for(i=0;i<nh;i++)                // transfer weights
@@ -496,7 +552,7 @@ void STATISTICS::ProcWeightControl(     int target,             // targets value
 fprintf(sfile,"Transfering Weights \n");
         for(i=0;i<nh;i++)
                 fprintf(sfile,"     wt_buf[%2d][%2d]= %8.4f \n",chan, i, wt_buf[chan][i]);
-fprintf(sfile,"Rate= %10.8f \n",rate);                
+fprintf(sfile,"Rate= %10.8f \n",rate);
         }
 
 
@@ -523,9 +579,9 @@ fprintf(sfile,"Rate= %10.8f \n",rate);
                         wt_buf[chan][i]+= elements[i] * err * rate;
                 }
                 if( chan == 1 )
-                        sig_mean[chan]= current_intercept;  // += 1.0 * err * rate;        // update mean
+                        sig_mean[chan]= current_yintercept;  // += 1.0 * err * rate;        // update mean
                 else if( chan == 2 )
-                        sig_mean[chan]= current_lr_intercept;
+                        sig_mean[chan]= current_xintercept;
 
                                                                         // Print to file
                 fprintf(sfile,"Chan %2d %5d %2d %2d %8.4f %2d",chan,count,use,target,err,nh);

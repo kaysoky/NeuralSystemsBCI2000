@@ -2,14 +2,13 @@
 #define ClassFilterH
 
 #include "UGenericFilter.h"
-#include <vector>
 
 class ClassFilter : public GenericFilter
 {
  friend class StatFilter;
  
  private:
-  static const int cNumControlSignals = 2;
+       static const int cNumControlSignals = 2;
 
   int samples;
 
@@ -23,14 +22,15 @@ class ClassFilter : public GenericFilter
                    hc2,          // horizontal chan #2
                    hf2;          // horizontal freq #2
 
-  bool  visualize;
-  class GenericVisualization *vis;
 
-  int    n_hmat;                        // number of elements in horizontal function
-  int    class_mode;
-  int    n_vmat;                        // number of elements in vertical function
-  float* feature[ cNumControlSignals ], // values of the elements of the linear equations
-       * wtmat[ cNumControlSignals ];   // weights of the elements of the linear equations
+       bool visualize;
+       class GenericVisualization *vis;
+
+       int n_hmat;                      // number of elements in horizontal function
+       int class_mode;
+       int n_vmat;                      // number of elements in vertical function
+       float* feature[ cNumControlSignals ];         //  values of the elements of the linear equations
+       float* wtmat[ cNumControlSignals ];           //  weights of the elements of the linear equations
 
  public:
           ClassFilter();

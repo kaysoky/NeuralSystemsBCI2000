@@ -8,30 +8,29 @@
 #include "UGenericVisualization.h"
 #include "Statistics.h"
 
+#define MaxNumTargets 32
+
 class StatFilter : public GenericFilter
 {
  private:
        class NormalFilter* nf;
        class ClassFilter* clsf;
        int Ntargets;                    // number of targets
-       int InterceptEstMode;            // mode of estimating intercept  0 = none
-       float InterceptProportion;       // proportion of intercept used
-       float HorizInterceptProp;        // proportion of horizontal intercept used
-       int InterceptLength;             // length of running average
-       int Trend_Control;               // control of % Correct trend
-       int HorizTrend_Control;          // horizontal control of % correct
+       int YInterceptEstMode;           // mode of estimating y intercept  0 = none
+       int XInterceptEstMode;
+       float YMeanProportion;           // proportion of intercept used
+       float XMeanProportion;           // proportion of horizontal intercept used
+       int SignalWinLth;                // length of running average
+       int OutcomeDirection;            // direction of adaption for trial outcome variable- pc vs time
        int Trend_Win_Lth;               // length of window for trend control
-       float LinTrend_Lrn_Rt;           // rate of learning for linear trend control
-       float QuadTrend_Lrn_Rt;          // rate of learning for quadratic trend control
+       float TrendControlRate;          // rate of learning for linear trend control
        int WtControl;                   // control of Classifier weights
        float WtRate;                    // Learning rate for Classifier control
-   //    int LRWtControl;                 // Horizontal wt adaptation
-   //    float LRWtRate;                  // Horizontal classifier learning rate
-       float ud_intercept;
+       float yintercept;
        float ud_gain;
-       float lr_intercept;
+       float xintercept;
        float lr_gain;
-       float desiredpix;
+       float ypix;
        float horizpix;
        int CurrentTarget;
        int CurrentBaseline;
@@ -39,8 +38,8 @@ class StatFilter : public GenericFilter
        int CurrentStimulusTime;
        int CurrentFeedback;
        int CurrentIti;
-       TRIALSTAT cur_stat;
-       TRIALSTAT cur_lr_stat;
+       TRIALSTAT cur_ystat;
+       TRIALSTAT cur_xstat;
 
        int trend_flag;
        int intercept_flag;
@@ -50,12 +49,13 @@ class StatFilter : public GenericFilter
        FILE *Statfile;
        FILE *Sfile;
 
-       int BaseNum[16];        // MaxNumTargets?
-       int BaseHits[16];
+       int BaseNum[MaxNumTargets];        // MaxNumTargets?
+       float BaseHits[MaxNumTargets];
 
        short Xadapt;             // control of classifier weight adaptation
        short Yadapt;
        short AdaptCode;
+       short OutcomeCode;        // state with outcome measure - pc or time?
 
        STATISTICS *stat;
        bool visualize;
