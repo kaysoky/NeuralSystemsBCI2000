@@ -45,7 +45,9 @@ DONE = @${SHELL} echo. && echo Done with target "$@". && echo.
 # Workaround macros to access shell operators.
 AND = &&
 OR = ||
-QUIET =# >nul 2>&1
+# Workaround macros for nonexisting commands.
+FALSE = color 00
+TRUE = echo.>nul
 
 !include ${MKNAM}
 
@@ -98,18 +100,18 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 ##################################################################################
 .bpr.mak:
   (bpr2mak $<) & echo.
-  @echo.                                              >>$@
-  @echo prepare:                                      >>$@
-  @echo " " -attrib -r \$\(PROJECT) "${QUIET}"        >>$@
-  @echo clean:                                        >>$@
-  @echo " " -del \$\(PROJECT) \$\(OBJFILES) "${QUIET}">>$@
-  @echo.                                              >>$@
+  @echo.                                                      >>$@
+  @echo prepare:                                              >>$@
+  @echo ^^ -attrib -r $^^(PROJECT) ^^^>nul 2^^^>^^^&1         >>$@
+  @echo clean:                                                >>$@
+  @echo ^^ -del $^^(PROJECT) $^^(OBJFILES) ^^^>nul 2^^^>^^^&1 >>$@
+  @echo.                                                      >>$@
   # We cannot tolerate absolute paths in makefiles.
-  @${SHELL} (grep "^[A-Z]*PATH[A-Z]*.*:" $@) \
-    ${AND} (echo Found absolute path^^(s^^) in makefile -- sorry, aborting. & \
-            echo Fix paths in $< using the IDE. & \
-            false & exit) \
-    ${OR} true
+  ${SHELL} (grep "^[A-Z]*PATH[A-Z]*.*:" $@ \
+    ${AND} (echo Found absolute path^^(s^^) in makefile -- sorry, aborting. \
+           ${AND} echo Fix paths in $< using the IDE. \
+           ${AND} ${FALSE} ${OR} exit)) \
+    ${OR} ${TRUE}
   ${DONE}
 
 .mak.all:
