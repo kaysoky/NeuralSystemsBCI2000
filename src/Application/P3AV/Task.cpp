@@ -57,13 +57,13 @@ TTask::TTask()
     "P3AV_Stimulus float AudioVolume= 1 1 0 1 // "
       "Volume for audio playback",
     "P3AV_Stimulus int OnTime= 10 10 0 5000 // "
-      "Duration during which the stimulus is presented in units of SampleBlocks",
+      "Stimulus presentation time (in units of SampleBlocks)",
     "P3AV_Stimulus int OffTime= 3 10 0 5000 // "
-      "Duration of an inter-stimulus interval following stimulus in units of SampleBlocks",
+      "Inter-stimulus period (in units of SampleBlocks)",
     "P3AV_Stimulus int PreSequenceTime= 50 30 0 5000 // "
-      "Duration during which the stimulus is presented in units of SampleBlocks",
+      "Period preceding the presentation of the stimulus sequence (in units of SampleBlocks)",
     "P3AV_Stimulus int PostSequenceTime= 50 30 0 5000 // "
-      "Duration of an inter-stimulus interval following stimulus in units of SampleBlocks",
+      "Period following the presentation of the stimulus sequence (in units of SampleBlocks)",
     "P3AV_Stimulus int MinInterTime= 0 0 0 0 // "
       "Minimum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks",
     "P3AV_Stimulus int MaxInterTime= 3 3 3 3 // "
