@@ -3,7 +3,7 @@
  * Module:    UParameter.cpp                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.21                                                            *
+ * Version:   0.22                                                            *
  * Authors:   Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -26,6 +26,8 @@
  * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
  * V0.21 - 05/15/2003 - Fixed invalid iterator problem in SaveParameterList(),*
  *                      jm                                                    *
+ * V0.22 - 05/30/2003 - Fixed index synchronization bug in                    *
+ *                      PARAM::SetNumValues(), jm                             *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -371,9 +373,6 @@ PARAM::PARAM()
 #ifndef LABEL_INDEXING
   dimension2( 1 ),
 #endif
-#ifdef PUSH_PARAMS
-  value_changed( false ),
-#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -398,9 +397,6 @@ PARAM::PARAM( const char* inName, const char* inSection,
   lowrange( inLowrange ),
   highrange( inHighrange ),
   comment( inComment ),
-#ifdef PUSH_PARAMS
-  value_changed( false ),
-#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -424,9 +420,6 @@ PARAM::PARAM( const char* paramstring )
 #ifndef LABEL_INDEXING
   dimension2( 0 ),
 #endif
-#ifdef PUSH_PARAMS
-  value_changed( false ),
-#endif // PUSH_PARAMS
   valid( false ),
   archive( false ),
   tag( false )
@@ -478,9 +471,6 @@ PARAM::SetNumValues( size_t n )
   // But it has not been an error up to now.
   dim1_index.resize( n / dim2_index.size() );
 #endif // LABEL_INDEXING
-#ifdef PUSH_PARAMS
-  value_changed = true;
-#endif // PUSH_PARAMS
 }
 
 // **************************************************************************
@@ -588,9 +578,6 @@ PARAM::SetValue( const string& value, size_t idx )
 #else
   values[ idx ] = value;
 #endif
-#ifdef PUSH_PARAMS
-  value_changed = true;
-#endif // PUSH_PARAMS
 }
 
 // **************************************************************************
@@ -732,9 +719,6 @@ PARAM::ParseParameter( const char* paramline, size_t length )
 void
 PARAM::ReadFromStream( istream& is )
 {
-#ifdef PUSH_PARAMS
-  value_changed = false;
-#endif // PUSH_PARAMS
   valid = false;
   archive = false;
   tag = false;
@@ -911,9 +895,6 @@ PARAM::operator=( const PARAM& p )
 #endif
     values = p.values;
 
-#ifdef PUSH_PARAMS
-    value_changed = false;
-#endif // PUSH_PARAMS
     valid = p.valid;
     archive = p.archive;
     tag = p.tag;

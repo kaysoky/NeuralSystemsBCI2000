@@ -1,9 +1,9 @@
 /******************************************************************************
  * Program:   BCI2000                                                         *
- * Module:    UParameter.cpp                                                  *
+ * Module:    UParameter.h                                                  *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
- * Version:   0.21                                                            *
+ * Version:   0.22                                                            *
  * Authors:   Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -26,6 +26,8 @@
  * V0.20 - 05/07/2003 - Added textual index labels for matrices and lists, jm *
  * V0.21 - 05/15/2003 - Fixed invalid iterator problem in SaveParameterList(),*
  *                      jm                                                    *
+ * V0.22 - 05/30/2003 - Fixed index synchronization bug in                    *
+ *                      PARAM::SetNumValues(), jm                             *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -233,17 +235,7 @@ class PARAM
 
   static int get_argument(int ptr, char *buf, const char *line, int maxlen);
 
-#ifdef PUSH_PARAMS
- public:
-        bool    Changed() const
-                { return value_changed; }
-        void    Published()
-                { value_changed = false; }
- private:
-        bool    value_changed;
-#else
  public: // These will become private.
-#endif // PUSH_PARAMS
         bool    valid;
         bool    archive;
         bool    tag;  // important for parameter save/load filters
