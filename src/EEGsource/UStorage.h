@@ -14,7 +14,7 @@
 #include <scktcomp.hpp>
 #include <forms.hpp>
 
-#define MAX_BUFFERS     20
+#define MAX_BUFFERS     100
 
 //---------------------------------------------------------------------------
 class TDataStorage : public TThread
