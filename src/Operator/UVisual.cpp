@@ -49,7 +49,7 @@
 
 using namespace std;
 
-const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
+static const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
 
 void
 VISUAL::HandleMessage( const VisCfg& v )
@@ -86,7 +86,7 @@ VISUAL::VisualBase::Visconfigs()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-const char* cfgid_prefix = "CFGID"; // const AnsiString cfgid_prefix = "CFGID"; won't work.
+static const char* cfgid_prefix = "CFGID"; // const AnsiString cfgid_prefix = "CFGID"; won't work.
 
 void
 VISUAL::VisualBase::config_container::Save()
