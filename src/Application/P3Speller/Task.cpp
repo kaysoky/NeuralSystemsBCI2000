@@ -62,6 +62,8 @@ TTask::TTask()
       "Duration after set of n intensifications in units of SampleBlocks",
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
       "Duration before set of n intensifications in units of SampleBlocks",
+  "P3Speller string TextResult = % % % % //"
+      "User spell result", 
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -81,6 +83,7 @@ TTask::TTask()
  END_LOCALIZED_STRINGS
 
  /*shidong starts*/
+ textresult = "";
  debug = false;
  if(debug) f = fopen ("TaskDebug.txt", "w");
  
@@ -353,21 +356,43 @@ int     i;
        // determine predicted character
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
        /*shidong starts*/
+        
+       
+
        if (predchar == "<BS>")
        {
         trialsequence->char2spellidx -= 1;
         if (trialsequence->char2spellidx < 1)           //if 1st predchar is <BS>
                 trialsequence->char2spellidx = 1;
-        userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
+        //delete one character                
+       userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
+        //textresult.Delete(textresult.Length(), 1);
        }
        else
        {
         /*sprintf(memotext, "Adding  char2spellidx %d.\r", trialsequence->char2spellidx);
         mVis.Send(memotext);  */
         trialsequence->char2spellidx += 1;
-        userdisplay->statusbar->resulttext += predchar;
+         userdisplay->statusbar->resulttext += predchar;
+        //textresult += predchar;
        }
-       //userdisplay->statusbar->resulttext += predchar;
+     /*
+       if(!trialsequence->onlinemode)  //if offline
+       {
+        userdisplay->statusbar->resulttext = textresult;
+       }
+       else             //if online
+       {
+        int textIndex = textresult.LastDelimiter(" ");
+        userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
+        userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+        if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
+                userdisplay->statusbar->resulttext  = "";
+        if (userdisplay->statusbar->goaltext.Length()==0)       //check for null        
+                userdisplay->statusbar->goaltext  = "";
+
+       }
+     */
        /*shidong ends*/
        
        trialsequence->SetUserDisplayTexts();
@@ -393,6 +418,7 @@ int     i;
        sprintf(memotext, "The cur_stimuluscode is %d.\r", trialsequence->c);
        mVis.Send(memotext);  */
        /*shidong ends*/
+
        // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
        // if we are in online mode, just reset the task sequence and continue
        if (!trialsequence->onlinemode)
@@ -444,11 +470,11 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
  if (cur_stimuluscoderes > 0)
     {
     responsecount[cur_stimuluscoderes-1]++;
-    //response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
-    /*shidong debug starts*/
+    response[cur_stimuluscoderes-1] += (float)signals[0];    // use the first control signal as classification result
+    /*shidong debug starts
     response[cur_stimuluscoderes-1] +=  (float)rand();
     if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
-    /*shidong debug ends*/
+   */ /*shidong debug ends*/
 
     }
 }

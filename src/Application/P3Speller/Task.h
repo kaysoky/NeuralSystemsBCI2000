@@ -33,6 +33,7 @@ class TTask : public GenericFilter
         float           response[MAX_STIMULI];
         FILE            *f;
         bool            debug;
+        AnsiString      textresult;
         /*shidong ends*/
         void            ResetTaskSequence();
         void            ProcessPostSequence();
