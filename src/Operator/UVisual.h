@@ -60,7 +60,7 @@ class VISUAL
     VisualBase( id_type sourceID );
    public:
     virtual ~VisualBase();
-    static void clear() { visuals.clear(); }
+    static void clear() { Visuals().clear(); }
     static void HandleMessage( const VisCfg& );
 
 
@@ -85,7 +85,7 @@ class VISUAL
      public:
       ~vis_container() { clear(); }
       void clear();
-    } visuals;
+    }& Visuals();
 
    public:
     enum config_state  // Possible states of properties ("configs").
@@ -120,7 +120,7 @@ class VISUAL
         void Save();
         void Restore();
     };
-    static config_container visconfigs;
+    static config_container& Visconfigs();
     virtual void SetConfig( config_settings& );
   };
 

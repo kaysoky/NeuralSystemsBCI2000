@@ -71,8 +71,19 @@ VISUAL::HandleMessage( const VisMemo& v )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-VISUAL::VisualBase::vis_container VISUAL::VisualBase::visuals;
-VISUAL::VisualBase::config_container VISUAL::VisualBase::visconfigs;
+VISUAL::VisualBase::vis_container&
+VISUAL::VisualBase::Visuals()
+{
+  static VISUAL::VisualBase::vis_container visuals;
+  return visuals;
+}
+
+VISUAL::VisualBase::config_container&
+VISUAL::VisualBase::Visconfigs()
+{
+  static VISUAL::VisualBase::config_container visconfigs;
+  return visconfigs;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 const char* cfgid_prefix = "CFGID"; // const AnsiString cfgid_prefix = "CFGID"; won't work.
@@ -153,9 +164,9 @@ VISUAL::VisualBase::VisualBase( id_type inSourceID )
 : sourceID( inSourceID ),
   form( NULL )
 {
-  VisualBase* visual = visuals[ sourceID ];
+  VisualBase* visual = Visuals()[ sourceID ];
   delete visual;
-  visuals[ sourceID ] = this;
+  Visuals()[ sourceID ] = this;
 }
 
 VISUAL::VisualBase::~VisualBase()
@@ -224,7 +235,7 @@ VISUAL::VisualBase::Restore()
   form->BorderStyle = bsSizeToolWin;
   form->OnMove = FormMove;
   form->OnResize = FormResize;
-  SetConfig( visconfigs[ sourceID ] );
+  SetConfig( Visconfigs()[ sourceID ] );
 }
 
 void
@@ -236,17 +247,17 @@ VISUAL::VisualBase::Save() const
 void
 VISUAL::VisualBase::HandleMessage( const VisCfg& v )
 {
-  visconfigs[ v.GetSourceID() ].Put( v.GetCfgID(), v.GetCfgValue(), MessageDefined );
-  if( visuals[ v.GetSourceID() ] != NULL )
-    visuals[ v.GetSourceID() ]->SetConfig( visconfigs[ v.GetSourceID() ] );
+  Visconfigs()[ v.GetSourceID() ].Put( v.GetCfgID(), v.GetCfgValue(), MessageDefined );
+  if( Visuals()[ v.GetSourceID() ] != NULL )
+    Visuals()[ v.GetSourceID() ]->SetConfig( Visconfigs()[ v.GetSourceID() ] );
 }
 
 void
 __fastcall
 VISUAL::VisualBase::FormMove( TObject* )
 {
-  visconfigs[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
-  visconfigs[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
 }
 
 void
@@ -255,8 +266,8 @@ VISUAL::VisualBase::FormResize( TObject* Sender )
 {
   TForm* Form = static_cast<TForm*>( Sender );
   Form->Invalidate();
-  visconfigs[ sourceID ].Put( CFGID::Width, form->Width, UserDefined );
-  visconfigs[ sourceID ].Put( CFGID::Height, form->Height, UserDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::Width, form->Width, UserDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::Height, form->Height, UserDefined );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -363,12 +374,12 @@ VISUAL::Graph::Save() const
 void
 VISUAL::Graph::HandleMessage( const VisSignal& v )
 {
-  Graph* visual = dynamic_cast<Graph*>( visuals[ v.GetSourceID() ] );
+  Graph* visual = dynamic_cast<Graph*>( Visuals()[ v.GetSourceID() ] );
   if( visual == NULL )
   {
-    delete visuals[ v.GetSourceID() ];
+    delete Visuals()[ v.GetSourceID() ];
     visual = new Graph( v.GetSourceID() );
-    visuals[ v.GetSourceID() ] = visual;
+    Visuals()[ v.GetSourceID() ] = visual;
   }
   visual->InstanceHandleMessage( v );
 }
@@ -541,7 +552,7 @@ void
 VISUAL::Graph::ToggleBaselines()
 {
   mShowBaselines = !mShowBaselines;
-  visconfigs[ sourceID ].Put( CFGID::showBaselines, mShowBaselines, UserDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::showBaselines, mShowBaselines, UserDefined );
   form->Invalidate();
 }
 
@@ -612,7 +623,7 @@ VISUAL::Graph::ChooseColors()
       for( int i = 0; i < numUserColors; ++i )
         mChannelColors[ i ] = customColors[ i ];
     }
-    visconfigs[ sourceID ].Put( CFGID::channelColors, mChannelColors, UserDefined );
+    Visconfigs()[ sourceID ].Put( CFGID::channelColors, mChannelColors, UserDefined );
     form->Invalidate();
   }
 }
@@ -1096,18 +1107,18 @@ void
 VISUAL::Memo::Save() const
 {
   VisualBase::Save();
-  visconfigs[ sourceID ].Put( CFGID::numLines, mNumLines, MessageDefined );
+  Visconfigs()[ sourceID ].Put( CFGID::numLines, mNumLines, MessageDefined );
 }
 
 void
 VISUAL::Memo::HandleMessage( const VisMemo& v )
 {
-  Memo* visual = dynamic_cast<Memo*>( visuals[ v.GetSourceID() ] );
+  Memo* visual = dynamic_cast<Memo*>( Visuals()[ v.GetSourceID() ] );
   if( visual == NULL )
   {
-    delete visuals[ v.GetSourceID() ];
+    delete Visuals()[ v.GetSourceID() ];
     visual = new Memo( v.GetSourceID() );
-    visuals[ v.GetSourceID() ] = visual;
+    Visuals()[ v.GetSourceID() ] = visual;
   }
   visual->InstanceHandleMessage( v );
 }
