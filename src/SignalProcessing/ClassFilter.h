@@ -33,8 +33,8 @@ class ClassFilter : public GenericFilter
        int n_hmat;                      // number of elements in horizontal function
        int class_mode;
        int n_vmat;                      // number of elements in vertical function
-       std::vector<float> feature[ 2 ], //  values of the elements of the linear equations
-                          wtmat[ 2 ];   //  weights of the elements of the linear equations
+       float* feature[ 2 ],             //  values of the elements of the linear equations
+            * wtmat[ 2 ];               //  weights of the elements of the linear equations
 
  public:
           ClassFilter();

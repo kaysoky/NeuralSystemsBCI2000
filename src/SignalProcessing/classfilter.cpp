@@ -32,6 +32,12 @@ RegisterFilter( ClassFilter, 2.D );
 ClassFilter::ClassFilter()
 : vis( NULL )
 {
+ for( int i = 0; i < 2; ++i )
+ {
+   feature[ i ] = NULL;
+   wtmat[ i ] = NULL;
+ }
+
  BEGIN_PARAMETER_DEFINITIONS
    "Filtering matrix MUD= 2 5 "
      "1 5 0 0 -1 "
@@ -66,6 +72,11 @@ ClassFilter::~ClassFilter()
  if( classfile != NULL )
    fclose( classfile );
 #endif // USE_LOGFILE
+ for( int i = 0; i < 2; ++i )
+ {
+   delete[] feature[ i ];
+   delete[] wtmat[ i ];
+ }
 }
 
 // **************************************************************************
@@ -116,8 +127,10 @@ void ClassFilter::Initialize()
   vf1.resize( n_vmat );
   vc2.resize( n_vmat );
   vf2.resize( n_vmat );
-  wtmat[ 0 ].resize( n_vmat );
-  feature[ 0 ].resize( n_vmat );
+  delete[] wtmat[ 0 ];
+  wtmat[ 0 ] = new float[ n_vmat ];
+  delete[] feature[ 0 ];
+  feature[ 0 ] = new float[ n_vmat ];
 
   for(int i=0;i<n_vmat;i++)
   {
@@ -140,13 +153,15 @@ void ClassFilter::Initialize()
   }
 
   n_hmat= Parameter( "MLR" )->GetNumValuesDimension1();
-  
+
   hc1.resize( n_hmat );
   hf1.resize( n_hmat );
   hc2.resize( n_hmat );
   hf2.resize( n_hmat );
-  wtmat[ 1 ].resize( n_hmat );
-  feature[ 1 ].resize( n_hmat );
+  delete[] wtmat[ 1 ];
+  wtmat[ 1 ] = new float[ n_hmat ];
+  delete[] feature[ 1 ];
+  feature[ 1 ] = new float[ n_hmat ];
 
   for(int i=0;i<n_hmat;i++)
   {
