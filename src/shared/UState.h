@@ -102,9 +102,9 @@ class STATEVECTOR
     type_adapter( STATEVECTOR* inStatevector, int inBit, int inByte, int inLength, short inDefval = 0 )
     : p( inStatevector ), bit( inBit ), byte( inByte ), length( inLength ), defVal( inDefval ) {}
     const type_adapter& operator=( int i )
-    { p && p->SetStateValue( bit, byte, length, i ); return *this; }
+    { p && p->SetStateValue( byte, bit, length, i ); return *this; }
     operator int() const
-    { return p ? p->GetStateValue( bit, byte, length ) : defVal; }
+    { return p ? p->GetStateValue( byte, bit, length ) : defVal; }
    private:
     STATEVECTOR* p;
     int bit, byte, length;
