@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <limits>
 
 #include "UBCI2000DATA.h"
 #include "UParameter.h"
@@ -17,23 +18,62 @@
 
 using namespace std;
 
+template<typename From, typename To> bool convert_num( const From& f, To& t )
+{
+  bool overflow = false;
+  if( numeric_limits<To>::is_integer ) // asymmetry in numeric_limits::min()
+    overflow = ( numeric_limits<To>::max() < f ) || ( f < numeric_limits<To>::min() );
+  else
+    overflow = ( numeric_limits<To>::max() < f ) || ( f < -numeric_limits<To>::max() );
+  t = To( f );
+  return overflow;
+}
+
 TfMain *fMain;
 
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
         : TForm(Owner),
-          gabTargets( NULL )
+          gabTargets( NULL ),
+          autoMode( false )
 {
-
+  if( Application->OnIdle == NULL )
+    Application->OnIdle = DoStartupProcessing;
+  Caption = Caption + "("__DATE__")";
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
+{
+  Application->OnIdle = NULL;
+  if( ParamCount() > 0 )
+  {
+    autoMode = true;
+    eSourceFile->Text = ParamStr( 1 );
+    if( ParamCount() > 1 )
+    {
+      eDestinationFile->Text = ParamStr( 2 );
+      if( ParamCount() > 2 )
+      {
+        ParameterFile->Enabled = true;
+        ParameterFile->Text = ParamStr( 3 );
+      }
+    }
+    if( bConvert->Enabled )
+      bConvert->Click();
+    if( Continue->Enabled )
+      Continue->Click();
+    Application->Terminate();
+  }
+}
 
 void __fastcall TfMain::CheckCalibrationFile( void )
 {
   int i;
   int n_chans;
   PARAMLIST parmlist;
+  const PARAMLIST* paramlistPtr = &parmlist;
 
   if( ParameterFile->Enabled && ParameterFile->Text.Length() > 0 )
   {
@@ -52,7 +92,43 @@ void __fastcall TfMain::CheckCalibrationFile( void )
     }
     else
       Application->MessageBox( ( AnsiString( "Could not open calibration file \"" )
-                                    + ParameterFile->Text + "\"." ).c_str(), "Error", MB_OK );
+                                    + ParameterFile->Text + "\"." ).c_str(),
+                                "Error", MB_OK | MB_ICONERROR );
+  }
+  else
+    paramlistPtr = bci2000data->GetParamListPtr();
+    
+  static const short ud[] = { 11, 15 },
+                     lr[] = { 13, 17 },
+                     udlr[] = { 10, 12, 14, 16 };
+  const PARAM* param = paramlistPtr->GetParamPtr( "NumberTargets" );
+  int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
+  param = paramlistPtr->GetParamPtr( "TargetOrientation" );
+  int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 ),
+      numberTargetsMax = 0;
+  switch( targetOrientation )
+  {
+    case 0:
+    case 3: // Both
+      gabTargets = udlr;
+      numberTargetsMax = sizeof( udlr ) / sizeof( *udlr );
+      break;
+    case 1: // Vertical
+      gabTargets = ud;
+      numberTargetsMax = sizeof( ud ) / sizeof( *ud );
+      break;
+    case 2: // Horizontal
+      gabTargets = lr;
+      numberTargetsMax = sizeof( lr ) / sizeof( *lr );
+      break;
+  }
+  if( numberTargets > numberTargetsMax )
+  {
+    Application->MessageBox(
+                 "Target type heuristics failed. "
+                 "Target conversion is likely to be unusable.",
+                 "Warning", MB_OK | MB_ICONWARNING );
+    gabTargets = NULL;
   }
 }
 
@@ -90,39 +166,6 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  frun->Text= firstrun;
  lrun->Text= lastrun;
 
- gabTargets = NULL;
- static const short ud[] = { 11, 15 },
-                    lr[] = { 13, 17 },
-                    udlr[] = { 10, 12, 14, 16 },
-                    *newGabTargets = NULL;
- const PARAMLIST* paramlist = bci2000data->GetParamListPtr();
- const PARAM* param = paramlist->GetParamPtr( "NumberTargets" );
- int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
- param = paramlist->GetParamPtr( "TargetOrientation" );
- int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 ),
-     numberTargetsMax = 0;
- switch( targetOrientation )
- {
-   case 0:
-   case 3: // Both
-     newGabTargets = udlr;
-     numberTargetsMax = sizeof( udlr ) / sizeof( *udlr );
-     break;
-   case 1: // Vertical
-     newGabTargets = ud;
-     numberTargetsMax = sizeof( ud ) / sizeof( *ud );
-     break;
-   case 2: // Horizontal
-     newGabTargets = lr;
-     numberTargetsMax = sizeof( lr ) / sizeof( *lr );
-     break;
- }
- if( numberTargets > numberTargetsMax )
-   Application->MessageBox( "Target type heuristics failed. "
-                 "Target conversion is likely to be unusable.", "Warning", MB_OK );
- else
-   gabTargets = newGabTargets;
-
  Continue->Enabled= true;
 
  }
@@ -142,6 +185,8 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  dummy=1;
  samplingrate=bci2000data->GetSampleFrequency();
 
+ bool overflowOccurred = false;
+ 
  // write the header
  fwrite(&channels, 2, 1, fp);
  fwrite(&dummy, 2, 1, fp);
@@ -150,7 +195,7 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
  // go through each run
  Gauge->MinValue=0;
  Gauge->Progress=0;
- Gauge->MaxValue=lastrun;
+ Gauge->MaxValue=Gauge->Width;// lastrun;
  for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
   {
   bci2000data->SetRun(cur_run);
@@ -159,7 +204,12 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
   // go through all samples in each run
   for (sample=0; sample<numsamples; sample++)
    {
-   if (sample % 1000 == 0) Application->ProcessMessages();
+   if (sample % 1000 == 0)
+   {
+     Gauge->Progress = ( ( cur_run - 1 ) * Gauge->MaxValue ) / lastrun
+                      + ( sample * Gauge->MaxValue ) / ( numsamples * lastrun );
+     Application->ProcessMessages();
+   }
    // go through each channel
    if( CalibFromFile() )
    {
@@ -167,17 +217,19 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      {
        cur_value=bci2000data->ReadValue(channel, sample);
        val= (float)cur_value;
-       val= val * ( gain[channel] / 0.003 ) + offset[channel];
-       cur_value= (__int16) (val);
+       val= gain[channel] * ( val - offset[channel] ) / 0.003;
+       overflowOccurred |= convert_num( val, cur_value );
        fwrite(&cur_value, 2, 1, fp);
      }
    }
    else
      for( channel = 0; channel < channels; ++channel )
      {
-       cur_value = __int16( bci2000data->Value( channel, sample ) / 0.003 );
+       val = bci2000data->Value( channel, sample ) / 0.003;
+       overflowOccurred |= convert_num( val, cur_value );
        fwrite( &cur_value, sizeof( cur_value ), 1, fp );
      }
+
    // write the state element
    bci2000data->ReadStateVector(sample);
    cur_state=ConvertState(bci2000data);
@@ -193,8 +245,16 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
 
  fclose(fp);
 
+ if( overflowOccurred )
+   Application->MessageBox(
+               "Numeric overflow occurred during conversion.\n"
+               "Conversion process finished.",
+               "Warning", MB_OK | MB_ICONWARNING );
+ else if( !autoMode )
+   Application->MessageBox(
+               "Conversion process finished successfully",
+               "Message", MB_OK | MB_ICONASTERISK );
  Gauge->Progress=0;
- Application->MessageBox("Conversion process finished successfully", "Message", MB_OK);
 }
 //---------------------------------------------------------------------------
 

@@ -52,6 +52,8 @@ private:	// User declarations
         const short* gabTargets;
         bool CalibFromFile() { return gain.size() != 0; }
         void __fastcall CheckCalibrationFile( void );
+        void __fastcall DoStartupProcessing( TObject*, bool& );
+        bool autoMode;
       
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);

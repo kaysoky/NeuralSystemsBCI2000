@@ -190,14 +190,12 @@ int     stateval, cursorpos;
    value=0;
    // create the signal on all channels, or on the one channel selected
    if ((sinechannel == 0) || (sinechannel == channel+1))
-      {
       value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
-      if (noisevalrange > 1)
-         noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
-      if (modulateamplitude)
-         value=(int)((float)value/(float)cursorpos);
-      value+= noise;            // add noise after modulating sine wave
-      }
+   if (noisevalrange > 1)
+     noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
+   if (modulateamplitude)
+     value=(int)((float)value/(float)cursorpos);
+  value+= noise;            // add noise after modulating sine wave
    value+=DCoffset;
    signal->SetValue(channel, sample, (short)value);
    }

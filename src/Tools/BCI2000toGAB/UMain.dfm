@@ -3,8 +3,10 @@ object fMain: TfMain
   Top = 221
   Width = 425
   Height = 284
-  Caption = 'BCI2000toGAB  v0.3  9/13/01'
+  Caption = 'BCI2000toGAB  v0.3 '
   Color = clBtnFace
+  Constraints.MinHeight = 284
+  Constraints.MinWidth = 425
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -37,6 +39,9 @@ object fMain: TfMain
     000000000000000000000000000000000000000000000000000000000000}
   OldCreateOrder = False
   Position = poScreenCenter
+  DesignSize = (
+    417
+    257)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -70,12 +75,14 @@ object fMain: TfMain
     Top = 208
     Width = 353
     Height = 25
+    Anchors = [akLeft, akRight, akBottom]
   end
   object Label3: TLabel
     Left = 272
     Top = 48
     Width = 34
     Height = 13
+    Anchors = [akTop, akRight]
     Caption = 'first run'
   end
   object Label4: TLabel
@@ -83,6 +90,7 @@ object fMain: TfMain
     Top = 80
     Width = 34
     Height = 13
+    Anchors = [akTop, akRight]
     Caption = 'last run'
   end
   object Label5: TLabel
@@ -103,6 +111,7 @@ object fMain: TfMain
     Top = 8
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Load List'
     TabOrder = 0
     OnClick = bConvertClick
@@ -112,6 +121,7 @@ object fMain: TfMain
     Top = 48
     Width = 201
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     Text = 'c:\shared\raw\em180.dat'
   end
@@ -120,6 +130,7 @@ object fMain: TfMain
     Top = 104
     Width = 201
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 2
     Text = 'c:\shared\raw\em180.raw'
   end
@@ -146,6 +157,7 @@ object fMain: TfMain
     Top = 112
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     Caption = 'Convert'
     Enabled = False
     TabOrder = 5
@@ -156,6 +168,7 @@ object fMain: TfMain
     Top = 48
     Width = 89
     Height = 21
+    Anchors = [akTop, akRight]
     TabOrder = 6
     Text = 'firstr'
   end
@@ -164,6 +177,7 @@ object fMain: TfMain
     Top = 80
     Width = 89
     Height = 21
+    Anchors = [akTop, akRight]
     TabOrder = 7
     Text = 'lastr'
   end
@@ -181,6 +195,7 @@ object fMain: TfMain
     Top = 160
     Width = 201
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     Enabled = False
     TabOrder = 9
     Text = '<none>'
