@@ -9,12 +9,13 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = LittleDemoApp.exe Oddball.exe P3Speller.exe RJB.exe Screen.exe \
-  SWApp.exe Speller.exe D2Box.exe P3AVTask.exe DASSource.exe DT2000.exe \
-  NISource.exe RDAClient.exe RandomNumber.exe operat.exe ARSignalProcessing.exe \
-  FIRProcessing.exe P3SignalProcessing.exe PeakDetectSignalProcessing.exe \
-  SignalProcessing.exe DummySignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe \
-  calibgen.exe maxifred.exe getparams.exe BrainVisionImporter.exe
+PROJECTS = D2Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe P3Speller.exe \
+  RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe DASSource.exe DT2000.exe \
+  Neuroscan.exe NISource.exe RandomNumber.exe RDAClient.exe operat.exe \
+  ARSignalProcessing.exe DummySignalProcessing.exe FIRProcessing.exe \
+  P3SignalProcessing.exe PeakDetectSignalProcessing.exe SignalProcessing.exe \
+  BCIBatch.exe BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCITimeFreq.exe \
+  BrainVisionImporter.exe calibgen.exe maxifred.exe getparams.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -124,6 +125,26 @@ getparams.exe: EEGsource\RDAClient\getparams\getparams.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 BrainVisionImporter.exe: Tools\BrainVisionImporter\BrainVisionImporter.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSpeller.exe: Application\SlowWaveApp\SWSpeller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Neuroscan.exe: EEGsource\Neuroscan\Neuroscan.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCIBatch.exe: Tools\Batch\BCIBatch.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCI2000FileInfo.exe: Tools\BCI2000FileInfo\BCI2000FileInfo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCITimeFreq.exe: Tools\BCITimeFrequency\BCITimeFreq.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
