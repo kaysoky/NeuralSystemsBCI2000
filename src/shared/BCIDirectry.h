@@ -21,10 +21,11 @@ class BCIDtry
                        SubjSession,
                        SubjPath;
 
-    static std::string GetCwd();
     int         ChangeForceDir( const std::string& );
 
  public:
+    static std::string GetCwd();
+    
     void        SetDir( const char * );
     void        SetName( const char* );
     void        SetSession( const char * );
