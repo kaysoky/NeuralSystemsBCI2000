@@ -29,6 +29,7 @@ STATUSBAR::STATUSBAR(TForm *form)
  result->Visible=false;
 
  goaltext= LocalizableString( "Goal" );
+ goaltextvisible=true;
  resulttext="";
  // Color=clGreen;
  Color=clBlack;
@@ -64,6 +65,18 @@ void STATUSBAR::Hide()
  result->Visible=false;
  background->Visible=false;
  divider->Visible=false;
+}
+
+
+// **************************************************************************
+// Function:   SetGoalTextVisibility
+// Purpose:    This function determines whether the goal text will be visible or not
+// Parameters: bool - if true, will be visible; if false, will not
+// Returns:    N/A
+// **************************************************************************
+void STATUSBAR::SetGoalTextVisibility(bool cur_goaltextvisible)
+{
+ goaltextvisible=cur_goaltextvisible;
 }
 
 
@@ -126,7 +139,7 @@ float   scalex, scaley;
  scaledtextposx=(int)((float)GoalPosX*scalex+(float)destrect.Left);
  scaledtextposy=(int)((float)GoalPosY*scaley+(float)destrect.Top-goal->Height/2);
  goal->Caption=goaltext;
- goal->Visible=true;
+ goal->Visible=goaltextvisible;
  goal->Layout=tlBottom;
  goal->Transparent=true;
  goal->Left=scaledtextposx;
