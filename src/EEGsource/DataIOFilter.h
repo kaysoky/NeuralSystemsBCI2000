@@ -26,14 +26,15 @@ class DataIOFilter: public GenericFilter
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
   virtual void Initialize();
+  virtual void StartRun();
+  virtual void StopRun();
+
   virtual void Process( const GenericSignal* Input,
                               GenericSignal* Output );
   virtual void Resting();
   virtual void Halt();
 
  private:
-  void        StartNewRecording();
-
   GenericFilter*         mADC;
   GenericSignal          mSignalBuffer;
   std::string            mStatevectorBuffer;

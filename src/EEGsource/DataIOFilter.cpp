@@ -84,10 +84,6 @@ DataIOFilter::DataIOFilter()
       "// two-digit run number",
     "Storage string StorageTime= 16:15 Time a z "
       "// time of beginning of data storage",
-#if 0 // The value of AutoIncrementRunNo is not read from anywhere.
-    "Storage int AutoIncrementRunNo= 1 1 0 1 "
-      "// 0: no auto increment 1: auto increment at Initialize)",
-#endif
     "Storage int SavePrmFile= 0 1 0 1 "
       "// 0/1: don't save/save additional parameter file",
 
@@ -107,8 +103,8 @@ DataIOFilter::DataIOFilter()
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
-    "Running 1 0 0 0",   // published w/default value of 1 (system is suspended)
-    "Recording 0 0 0 0", // published w/default value of 0 (NO recording)
+    "Running 1 0 0 0",
+    "Recording 1 0 0 0",
     "SourceTime 16 0 0 0",
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
@@ -192,7 +188,45 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
 }
 
 
-void DataIOFilter::StartNewRecording()
+void DataIOFilter::Initialize()
+{
+  mOutputFile.close();
+  mOutputFile.clear();
+  State( "Recording" ) = 0;
+  mStatevectorBuffer.resize( 0 );
+  mSignalBuffer = GenericSignal( 0, 0 );
+  mADC->Initialize();
+
+  // Configure visualizations.
+  mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
+  if( mVisualizeEEG )
+  {
+    mEEGVis.Send( CFGID::WINDOWTITLE, "Source Signal" );
+    int numSamplesInDisplay = ( Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" ) )
+                               / Parameter( "VisualizeSourceDecimation" );
+    mEEGVis.Send( CFGID::NUMSAMPLES, numSamplesInDisplay );
+    mEEGVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "SourceMin" ) );
+    mEEGVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "SourceMax" ) );
+  }
+
+  mVisualizeRoundtrip = ( Parameter( "VisualizeRoundtrip" ) == 1 );
+  if( mVisualizeRoundtrip )
+  {
+    mRoundtripVis.Send( CFGID::WINDOWTITLE, "Roundtrip" );
+    mRoundtripVis.Send( CFGID::NUMSAMPLES, 128 );
+    mRoundtripVis.Send( CFGID::MINVALUE, 0 );
+    // Roundtrip values are in ms, and we want a range that is twice the value
+    // of what we expect for the second signal (the time between subsequent
+    // completions of the ADC's Process()).
+    int roundtripMax = 2000 * Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
+    mRoundtripVis.Send( CFGID::MAXVALUE, roundtripMax );
+    mRoundtripVis.Send( CFGID::graphType, CFGID::polyline );
+    mRoundtripVis.Send( CFGID::showBaselines, true );
+  }
+}
+
+
+void DataIOFilter::StartRun()
 {
   string baseFileName = BCIDirectory()
                         .SubjectDirectory( Parameter( "FileInitials" ) )
@@ -253,72 +287,30 @@ void DataIOFilter::StartNewRecording()
              << paramFileName
              << endl;
   }
+
+  mADC->StartRun();
+
   // Initialize time stamps with the current time to get a correct roundtrip
   // time, and a zero stimulus delay, for the first block.
   BCITIME now = BCITIME::GetBCItime_ms();
   State( "SourceTime" ) = now;
   State( "StimulusTime" ) = now;
+  State( "Recording" ) = 1;
 }
 
 
-void DataIOFilter::Initialize()
+void DataIOFilter::StopRun()
 {
   mOutputFile.close();
   mOutputFile.clear();
-  State( "Recording" ) = 0;
-  mStatevectorBuffer.resize( 0 );
+  mADC->StopRun();
   mSignalBuffer = GenericSignal( 0, 0 );
-  mADC->Initialize();
-
-  // Configure visualizations.
-  mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
-  if( mVisualizeEEG )
-  {
-    mEEGVis.Send( CFGID::WINDOWTITLE, "Source Signal" );
-    int numSamplesInDisplay = ( Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" ) )
-                               / Parameter( "VisualizeSourceDecimation" );
-    mEEGVis.Send( CFGID::NUMSAMPLES, numSamplesInDisplay );
-    mEEGVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "SourceMin" ) );
-    mEEGVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "SourceMax" ) );
-  }
-
-  mVisualizeRoundtrip = ( Parameter( "VisualizeRoundtrip" ) == 1 );
-  if( mVisualizeRoundtrip )
-  {
-    mRoundtripVis.Send( CFGID::WINDOWTITLE, "Roundtrip" );
-    mRoundtripVis.Send( CFGID::NUMSAMPLES, 128 );
-    mRoundtripVis.Send( CFGID::MINVALUE, 0 );
-    // Roundtrip values are in ms, and we want a range that is twice the value
-    // of what we expect for the second signal (the time between subsequent
-    // completions of the ADC's Process()).
-    int roundtripMax = 2000 * Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
-    mRoundtripVis.Send( CFGID::MAXVALUE, roundtripMax );
-    mRoundtripVis.Send( CFGID::graphType, CFGID::polyline );
-    mRoundtripVis.Send( CFGID::showBaselines, true );
-  }
+  State( "Recording" ) = 0;
 }
-
 
 void DataIOFilter::Process( const GenericSignal* Input,
                                   GenericSignal* Output )
 {
-  // Although it actually performs some initialization, StartNewRecording()
-  // is called from Process(). The reason is that Initialize() may be called
-  // an arbitrary number of times before data gets actually written to disk,
-  // resulting in a number of empty files if StartNewRecording() is called
-  // from Initialize().
-  // Because Initialize() is always called before the very first call to Process()
-  // in a session, moving file creation and header output from Initialize()
-  // to Process() implies no relative performance penalty.
-  // In most cases, StartNewRecording() should take significantly less time
-  // than acquiring a block of data, so it won't enter into the critical time path
-  // (roundtrip time).
-  if( !mOutputFile.is_open() )
-  {
-    StartNewRecording();
-    State( "Recording" ) = 1;
-  }
-
   // Moving the save-to-file code to the beginning of Process() implies
   // that the time spent on i/o operations will only reduce the
   // time spent waiting for A/D data, and thus not enter into the
@@ -372,8 +364,6 @@ void DataIOFilter::Process( const GenericSignal* Input,
 
 void DataIOFilter::Resting()
 {
-  State( "Recording" ) = 0;
-  mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
     mEEGVis.Send( &mRestingSignal );

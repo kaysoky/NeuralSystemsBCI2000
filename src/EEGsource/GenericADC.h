@@ -31,6 +31,8 @@ class GenericADC : public GenericFilter
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;
   virtual void Initialize() = 0;
+  virtual void StartRun() {}
+  virtual void StopRun() {}
   virtual void Process(   const GenericSignal*,
                                 GenericSignal* ) = 0;
   virtual void Halt() = 0;
