@@ -471,7 +471,7 @@ COREMESSAGE             *coremessage;
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_SYSCMD);
  coremessage->SetLength((unsigned short)strlen(syscmdbuf)+1);
- sprintf(coremessage->GetBufPtr(), syscmdbuf, strlen(syscmdbuf));
+ sprintf(coremessage->GetBufPtr(), "%s", syscmdbuf);
  coremessage->SendCoreMessage(pStream);
 
  delete coremessage;
