@@ -7,7 +7,7 @@
     <OBJFILES value="Application.obj Task.obj SWUser.obj AppManager.obj ..\UMain.obj 
       ..\..\SHARED\UVisConfig.obj ..\..\SHARED\UBCI2000Data.obj 
       ..\..\SHARED\UBCI2000Error.obj ..\..\SHARED\UBCItime.obj 
-      ..\..\SHARED\UBitRate.obj ..\..\SHARED\UCoreComm.obj 
+      ..\..\SHARED\UBitRate.obj ..\..\shared\UCoreComm.obj 
       ..\..\SHARED\UCoreMessage.obj ..\..\SHARED\UGenericFilter.obj 
       ..\..\SHARED\UGenericSignal.obj ..\..\SHARED\UGenericVisualization.obj 
       ..\..\SHARED\UParameter.obj ..\..\SHARED\UState.obj 
@@ -23,18 +23,18 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;BCI2000_STRICT"/>
+    <USERDEFINES value="_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="Application.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -66,7 +66,7 @@
       <FILE FILENAME="..\..\SHARED\UBCI2000Error.cpp" FORMNAME="" UNITNAME="UBCI2000Error.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\SHARED\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UCoreMessage.cpp" FORMNAME="" UNITNAME="UCoreMessage.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -156,9 +156,10 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=2
-Item0=_DEBUG;BCI2000_STRICT
-Item1=_DEBUG;BCI2000
+Count=3
+Item0=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
+Item1=_DEBUG;BCI2000_STRICT
+Item2=_DEBUG;BCI2000
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

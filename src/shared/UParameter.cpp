@@ -79,7 +79,7 @@ PARAM   *cur_param;
 // **************************************************************************
 int __fastcall SortCompare(void * Item1, void * Item2)
 {
-char *name1, *name2;
+const char *name1, *name2;
 
  name1=((PARAM *)Item1)->GetName();
  name2=((PARAM *)Item2)->GetName();
@@ -102,7 +102,7 @@ void PARAMLIST::Sort()
  param_list->Sort(SortCompare);
 }
 
-
+#if 0
 // **************************************************************************
 // Function:   PublishParameters
 // Purpose:    this method publishes this module's parameters
@@ -132,7 +132,7 @@ PARAM           *cur_param;
  delete coremessage;
  return(0);
 }
-
+#endif
 
 // **************************************************************************
 // Function:   GetNumParameters
@@ -140,7 +140,7 @@ PARAM           *cur_param;
 // Parameters: N/A
 // Returns:    the number of parameters
 // **************************************************************************
-int PARAMLIST::GetNumParameters()
+int PARAMLIST::GetNumParameters() const
 {
 return(param_list->Count);
 }
@@ -153,10 +153,10 @@ return(param_list->Count);
 // Returns:    pointer to a PARAM object or
 //             NULL, if no parameter with this name exists in the list
 // **************************************************************************
-PARAM   *PARAMLIST::GetParamPtr(char *name)
+const PARAM   *PARAMLIST::GetParamPtr(const char *name) const
 {
-char    *paramname;
-int     i;
+const char* paramname;
+int         i;
 
  for (i=0; i<GetNumParameters(); i++)
   {
@@ -168,6 +168,12 @@ int     i;
  return(NULL);
 }
 
+PARAM   *PARAMLIST::GetParamPtr(const char *name)
+{
+  // Sorry for this hack.
+  const PARAMLIST* p = this;
+  return ( PARAM* )p->GetParamPtr( name );
+}
 
 // **************************************************************************
 // Function:   GetParamPtr
@@ -176,7 +182,7 @@ int     i;
 // Returns:    pointer to a PARAM object or
 //             NULL, if the specified index is out of range
 // **************************************************************************
-PARAM *PARAMLIST::GetParamPtr(int idx)
+const PARAM *PARAMLIST::GetParamPtr(int idx) const
 {
  if ((idx < param_list->Count) && (idx >= 0))
     return((PARAM *)param_list->Items[idx]);
@@ -184,6 +190,12 @@ PARAM *PARAMLIST::GetParamPtr(int idx)
     return(NULL);
 }
 
+PARAM *PARAMLIST::GetParamPtr(int idx)
+{
+  // Sorry for this hack, too.
+  const PARAMLIST* p = this;
+  return ( PARAM* )p->GetParamPtr( idx );
+}
 
 // **************************************************************************
 // Function:   ClearParamList
@@ -214,7 +226,7 @@ PARAM   *cur_param;
 // Returns:    true - successful
 //             false - error (disc full, etc.)
 // **************************************************************************
-bool PARAMLIST::SaveParameterList(char *filename)
+bool PARAMLIST::SaveParameterList(const char *filename) const
 {
  return(SaveParameterList(filename, false));
 }
@@ -230,11 +242,11 @@ bool PARAMLIST::SaveParameterList(char *filename)
 // Returns:    true - successful
 //             false - error (disc full, etc.)
 // **************************************************************************
-bool PARAMLIST::SaveParameterList(char *filename, bool usetags)
+bool PARAMLIST::SaveParameterList(const char *filename, bool usetags) const
 {
-char    *paramline;
-int     i;
-FILE    *fp;
+const char  *paramline;
+int         i;
+FILE        *fp;
 
  fp=fopen(filename, "wb");
  if (!fp) return(false);
@@ -265,7 +277,7 @@ FILE    *fp;
 // Returns:    true - successful
 //             false - error
 // **************************************************************************
-bool PARAMLIST::LoadParameterList(char *filename)
+bool PARAMLIST::LoadParameterList(const char *filename)
 {
  return(LoadParameterList(filename, false, true));
 }
@@ -283,7 +295,7 @@ bool PARAMLIST::LoadParameterList(char *filename)
 // Returns:    true - successful
 //             false - error
 // **************************************************************************
-bool PARAMLIST::LoadParameterList(char *filename, bool usetags, bool importnonexisting)
+bool PARAMLIST::LoadParameterList(const char *filename, bool usetags, bool importnonexisting)
 {
 char    paramline[10000], paramname[256];
 int     idx;
@@ -337,7 +349,7 @@ PARAM   dummyparam;
 //                           defining this parameter
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::AddParameter2List(char *paramstring, int paramlen)
+void PARAMLIST::AddParameter2List(const char *paramstring, int paramlen)
 {
 PARAM   *new_param;
 
@@ -380,7 +392,7 @@ void PARAMLIST::MoveParameter2List(PARAM *newparam)
 // Parameters: name - name of the parameter
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::DeleteParam(char *name)
+void PARAMLIST::DeleteParam(const char *name)
 {
 int     i;
 PARAM   *cur_param;
@@ -409,7 +421,7 @@ PARAM   *cur_param;
 // Parameters: param - pointer to an existing PARAM object
 // Returns:    N/A
 // **************************************************************************
-void PARAMLIST::CloneParameter2List(PARAM *param)
+void PARAMLIST::CloneParameter2List(const PARAM *param)
 {
 PARAM           *newparam;
 LSTVALUE        *newlstvalue;
@@ -431,7 +443,7 @@ TList           *bufferlst;
  for (i=0; i<param->GetListPtr()->Count; i++)
   {
   newlstvalue=new LSTVALUE;
-  memcpy(newlstvalue, (LSTVALUE *)(param->GetListPtr()->Items[i]), sizeof(LSTVALUE));
+  memcpy(newlstvalue, (LSTVALUE *)(((PARAM*)param)->GetListPtr()->Items[i]), sizeof(LSTVALUE));
   newparam->GetListPtr()->Add(newlstvalue);     // add the value to the list of values
   }
 
@@ -480,7 +492,9 @@ PARAM::PARAM()
 // Parameters: self-explanatory
 // Returns:    N/A
 // **************************************************************************
-PARAM::PARAM(char *name, char *section, char *type, char *value, char *my_defaultvalue, char *my_lowrange, char *my_highrange, char *my_comment)
+PARAM::PARAM(const char *name, const char *section, const char *type,
+             const char *value, const char *my_defaultvalue, const char *my_lowrange,
+             const char *my_highrange, const char *my_comment)
 {
  value_list=new TList;
  numvalues=1;
@@ -510,7 +524,7 @@ PARAM::PARAM(char *name, char *section, char *type, char *value, char *my_defaul
 // Parameters: char *paramstring
 // Returns:    N/A
 // **************************************************************************
-PARAM::PARAM(char *paramstring)
+PARAM::PARAM(const char *paramstring)
 {
  tag=false;
  value_list=new TList;
@@ -550,9 +564,9 @@ LSTVALUE   *cur_value;
 // Parameters: N/A
 // Returns:    char pointer to the value
 // **************************************************************************
-char *PARAM::GetValue()
+const char *PARAM::GetValue() const
 {
- return(((LSTVALUE *)GetListPtr()->Items[0])->value);
+ return(((LSTVALUE *)((TList*)GetListPtr())->Items[0])->value);
 }
 
 
@@ -563,7 +577,7 @@ char *PARAM::GetValue()
 // Parameters: N/A
 // Returns:    number of values in this parameter
 // **************************************************************************
-int PARAM::GetNumValues()
+int PARAM::GetNumValues() const
 {
  return(numvalues);
 }
@@ -588,7 +602,7 @@ void PARAM::SetNumValues(int new_numvalues)
 // Parameters: N/A
 // Returns:    number of values in dimension1 of this parameter
 // **************************************************************************
-int PARAM::GetNumValuesDimension1()
+int PARAM::GetNumValuesDimension1() const
 {
  return(dimension1);
 }
@@ -601,7 +615,7 @@ int PARAM::GetNumValuesDimension1()
 // Parameters: N/A
 // Returns:    number of values in dimension2 of this parameter
 // **************************************************************************
-int PARAM::GetNumValuesDimension2()
+int PARAM::GetNumValuesDimension2() const
 {
  return(dimension2);
 }
@@ -616,12 +630,12 @@ int PARAM::GetNumValuesDimension2()
 // Returns:    char pointer to the value
 //             if idx is out of bounds, it returns a pointer to the first value
 // **************************************************************************
-char *PARAM::GetValue(int idx)
+const char *PARAM::GetValue(int idx) const
 {
  if ((idx < 0) || (idx >= value_list->Count))
     idx=0;
 
- return(((LSTVALUE *)GetListPtr()->Items[idx])->value);
+ return(((LSTVALUE *)((TList*)GetListPtr())->Items[idx])->value);
 }
 
 
@@ -633,7 +647,7 @@ char *PARAM::GetValue(int idx)
 // Returns:    char pointer to the value
 //             if the idxs are out of bounds, it returns a pointer to the first value
 // **************************************************************************
-char *PARAM::GetValue(int x1, int x2)
+const char *PARAM::GetValue(int x1, int x2) const
 {
 int idx;
 
@@ -648,7 +662,7 @@ int idx;
 // Parameters: char pointer to the section name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetSection(char *src)
+void PARAM::SetSection(const char *src)
 {
  strncpy(section, src, LENGTH_SECTION);
 }
@@ -660,7 +674,7 @@ void PARAM::SetSection(char *src)
 // Parameters: char pointer to the type name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetType(char *src)
+void PARAM::SetType(const char *src)
 {
  strncpy(type, src, LENGTH_TYPE);
 }
@@ -673,7 +687,7 @@ void PARAM::SetType(char *src)
 // Parameters: char pointer to the name
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetName(char *src)
+void PARAM::SetName(const char *src)
 {
  strncpy(name, src, LENGTH_NAME);
 }
@@ -685,7 +699,7 @@ void PARAM::SetName(char *src)
 // Parameters: char pointer to the value
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(char *src)
+void PARAM::SetValue(const char *src)
 {
 char *buf;
 int  length;
@@ -716,7 +730,7 @@ LSTVALUE        *lstvalue;
 //             idx - index of the value (0...GetNumValues()-1)
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(char *src, int idx)
+void PARAM::SetValue(const char *src, int idx)
 {
 char            *buf;
 int             length, i, num2add;
@@ -756,7 +770,7 @@ LSTVALUE        *lstvalue;
 //             x2 - index of the value (0...GetNumValuesDimension2()-1)
 // Returns:    N/A
 // **************************************************************************
-void PARAM::SetValue(char *src, int x1, int x2)
+void PARAM::SetValue(const char *src, int x1, int x2)
 {
 int idx;
 
@@ -771,7 +785,7 @@ int idx;
 // Parameters: N/A
 // Returns:    char pointer to the section name
 // **************************************************************************
-char *PARAM::GetSection()
+const char *PARAM::GetSection() const
 {
  return(section);
 }
@@ -783,7 +797,7 @@ char *PARAM::GetSection()
 // Parameters: N/A
 // Returns:    char pointer to the type
 // **************************************************************************
-char *PARAM::GetType()
+const char *PARAM::GetType() const
 {
  return(type);
 }
@@ -796,7 +810,7 @@ char *PARAM::GetType()
 // Parameters: N/A
 // Returns:    char pointer to the name
 // **************************************************************************
-char *PARAM::GetName()
+const char *PARAM::GetName() const
 {
  return(name);
 }
@@ -808,7 +822,7 @@ char *PARAM::GetName()
 // Parameters: N/A
 // Returns:    char pointer to the comment
 // **************************************************************************
-char *PARAM::GetComment()
+const char *PARAM::GetComment() const
 {
  return(comment);
 }
@@ -821,6 +835,11 @@ char *PARAM::GetComment()
 // Returns:    pointer to the list
 // **************************************************************************
 TList   *PARAM::GetListPtr()
+{
+ return (value_list);
+}
+
+const TList   *PARAM::GetListPtr() const
 {
  return (value_list);
 }
@@ -850,7 +869,7 @@ void    PARAM::SetListPtr(TList *temp_list)
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int PARAM::get_argument(int ptr, char *buf, char *line, int maxlen)
+int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen) const
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
@@ -877,7 +896,7 @@ int PARAM::get_argument(int ptr, char *buf, char *line, int maxlen)
 // Parameters: N/A
 // Returns:    a pointer to the parameter line
 // **************************************************************************
-char *PARAM::GetParamLine()
+const char *PARAM::GetParamLine() const
 {
  // construct the parameter line
  ConstructParameterLine();
@@ -891,7 +910,7 @@ char *PARAM::GetParamLine()
 // Parameters: N/A
 // Returns:    ERRPARAM_NOERR
 // **************************************************************************
-int PARAM::ConstructParameterLine()
+int PARAM::ConstructParameterLine() const
 {
 int             i;
 LSTVALUE        *cur_value;
@@ -937,7 +956,7 @@ LSTVALUE        *cur_value;
 // Returns:    ERRPARAM_INVALIDPARAM if the parameter line is invalid, or
 //             ERRPARAM_NOERR
 // **************************************************************************
-int PARAM::ParseParameter(char *new_line, int length)
+int PARAM::ParseParameter(const char *new_line, int length)
 {
 int     ptr, i;
 char    *buf, *remptr, *filterptr;
