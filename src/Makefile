@@ -35,6 +35,10 @@ SHELL = cmd /c @prompt $g &&
 MKNAM = .makefiles
 # How to zero the subproject makefile list:
 EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
+# Extensions of files that need to be always writeable.
+FORCEWRITE = *.bpr *.res *.mak
+# Extensions of files that will be deleted by 'make clean'.
+GARBAGE = *.obj *.tds *.csm *.~* *.\#*
 
 # Workaround macros to access shell operators.
 AND = &&
@@ -68,15 +72,15 @@ all prepare clean:
 all: ${MAKEFILES:.mak=.makeall}
 
 # Prepare source files for opening projects without crashing(!) the Borland IDE.
-prepare:
-  -${SHELL} for /R %i in (*.bpr *.res *.exe *.lib *.dll *.mak) do attrib -r %i
+prepare: ${MAKEFILES:.mak=.makeprepare}
+  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i
 !ifndef DONTCLEANME
   -${SHELL} attrib -r ${MKNAM}
 !endif
 
 # Cleanup
 clean: prepare ${MAKEFILES:.mak=.makeclean}
-  -${SHELL} for /R %i in (*.obj *.tds *.csm *.~* *.\#* *.mak) do del %i
+  -${SHELL} for /R %i in (${GARBAGE}) do del %i
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
@@ -87,17 +91,23 @@ clean: prepare ${MAKEFILES:.mak=.makeclean}
 #
 ##################################################################################
 .bpr.mak:
-  bpr2mak $<                                     # Create makefile from bpr
-  echo.                                    >>$@  # and add target 'clean'
+  bpr2mak $<
+  echo.                                    >>$@
+  echo prepare:                            >>$@
+  echo " " -attrib -r \$\(PROJECT)         >>$@
   echo clean:                              >>$@
   echo " " -del \$\(PROJECT) \$\(OBJFILES) >>$@
   echo.                                    >>$@
 
 .mak.makeall:
-  ${SHELL} cd ${@D} ${AND} ${MAKE} -f${*F} -${MAKEFLAGS}
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS}
+  
+.mak.makeprepare:
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} prepare
 
 .mak.makeclean:
-  ${SHELL} cd ${@D} ${AND} ${MAKE} -f${*F} -${MAKEFLAGS} clean
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} clean
+  del $<
   
 !endif # !ifndef MAKEFILES
 
