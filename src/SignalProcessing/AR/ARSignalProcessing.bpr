@@ -4,17 +4,17 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="ARSignalProcessing.exe"/>
-    <OBJFILES value="ARSignalProcessing.obj ..\Statistics.obj ..\classfilter.obj 
-      ..\Normalfilter.obj ..\SpatialFilter.obj ..\StatFilter.obj 
-      ..\CalibrationFilter.obj ..\UMain.obj UFilterHandling.obj GETMEM.obj 
-      TemporalFilter.obj ARFilter.obj ..\..\shared\UVisConfig.obj 
+    <OBJFILES value="ARSignalProcessing.obj ..\classfilter.obj ..\Normalfilter.obj 
+      ..\SpatialFilter.obj ..\CalibrationFilter.obj ..\UMain.obj 
+      UFilterHandling.obj GETMEM.obj ..\..\shared\UVisConfig.obj 
       ..\..\shared\UBCI2000Data.obj ..\..\shared\UBCItime.obj 
       ..\..\shared\UBitRate.obj ..\..\shared\UCoreComm.obj 
       ..\..\shared\UCoreMessage.obj ..\..\shared\UGenericFilter.obj 
       ..\..\shared\UGenericSignal.obj ..\..\shared\UGenericVisualization.obj 
       ..\..\shared\UParameter.obj ..\..\shared\UState.obj 
       ..\..\shared\UStatus.obj ..\..\shared\USysCommand.obj 
-      ..\..\shared\BCIDirectry.obj"/>
+      ..\..\shared\BCIDirectry.obj ARFilter.obj ..\Statistics.obj 
+      ..\StatFilter.obj TemporalFilter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>

@@ -35,6 +35,7 @@
  * V0.23 - 08/14/2001 - added possibility to decimate EEG display             *
  *                      added visualization of round-trip time                *
  * V0.24 - 09/27/2001 - can control RandomNumberGenerator with mouse          *
+ * V0.241- 01/11/2002 - fixed minor issue in MainDataAcqLoop() and UStorage   *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -44,7 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define ADC_DTADC
+#define ADC_DTADC
 
 #include "UCoreComm.h"
 #include "..\shared\defines.h"
@@ -371,6 +372,7 @@ PARAM                   *visparam;
 bool                    visualize;
 int                     i, ret, visdecim;
 GenericSignal           *roundtripsignal;
+int                     x, y;
 
  // initialize the DataStorage object
  tds->Initialize(&paramlist, &statelist, statevector);
@@ -451,17 +453,14 @@ GenericSignal           *roundtripsignal;
   if ((tds) && (statevector->GetStateValue("Recording") == 1))
      tds->Write2Disk(adc->signal);
 
+  critsec_statevector->Release();
+
   // store timing info
-  if (statevector->GetStateValue("Running") == 1)
+  if (running == 1)
      {
-     // FILE *fptiti=fopen("c:\\time.asc", "ab");
-     // fprintf(fptiti, "%d\r\n", (int)bcitime.TimeDiff(start, end));
-     // fclose(fptiti);
      roundtripsignal->SetValue(0, 0, (float)bcitime.TimeDiff(sourcetime, stimulustime));
      roundtripvis->Send2Operator(roundtripsignal);
      }
-
-  critsec_statevector->Release();
 
   // send the whole signal to the operator
   if (visualize)

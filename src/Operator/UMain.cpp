@@ -2,7 +2,7 @@
  * Program:   OPERAT.EXE                                                      *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The main module of the operator program in BCI2000              *
- * Version:   0.24                                                            *
+ * Version:   0.25                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -42,6 +42,8 @@
  *                      TeeChart with our own code                            *
  * V0.23 - 08/15/2001 - added color scheme to output graph                    *
  * V0.24 - 01/03/2002 - minor stability improvements                          *
+ * V0.25 - 01/11/2002 - fixed concurrency issues (i.e., can't send or receive *
+ *                      to core modules at the same time)                     *
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -74,6 +76,7 @@
 TfMain *fMain;
 
 SYSSTATUS       sysstatus;
+TCriticalSection *sendrecv_critsec=NULL;
 
 //---------------------------------------------------------------------------
 class TCoreRecvThread : public  TServerClientThread
@@ -108,7 +111,11 @@ COREMESSAGE             *coremessage;
     if (pStream->WaitForData(1000))
        {
        coremessage=new COREMESSAGE;
+       // receive Core Message
+       // (do not receive while we send; concurrency problems)
+       sendrecv_critsec->Acquire();
        ret=coremessage->ReceiveCoreMessage(pStream);
+       sendrecv_critsec->Release();
        if (ret != ERRCORE_NOERR)
           {
           delete coremessage;
@@ -169,13 +176,18 @@ void TfMain::SendSysCommand(char *syscmdbuf, TCustomWinSocket *socket)
 FILE *fp;
 COREMESSAGE *coremessage;
 
- // send a system command to the operator
+ // (do not receive while we send; concurrency problems)
+ sendrecv_critsec->Acquire();
+
+ // send a system command to a module
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_SYSCMD);
  coremessage->SetLength((unsigned short)strlen(syscmdbuf)+1);
  sprintf(coremessage->GetBufPtr(), syscmdbuf, strlen(syscmdbuf));
  coremessage->SendCoreMessage(socket);
  delete coremessage;
+
+ sendrecv_critsec->Release();
 }
 
 
@@ -195,6 +207,7 @@ void TfMain::ShutdownSystem()
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner) : TForm(Owner)
 {
+ sendrecv_critsec=new TCriticalSection();
 }
 //---------------------------------------------------------------------------
 
@@ -274,6 +287,9 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
  if ((!sysstatus.SourceConnected) || (!sysstatus.SigProcConnected) || (!sysstatus.ApplicationConnected))
     return(ERR_NOERR);
 
+ // (do not receive while we send; concurrency problems)
+ sendrecv_critsec->Acquire();
+
  pSourceStream=new TWinSocketStream(sysstatus.SourceSocket, 5000);
  pSigProcStream=new TWinSocketStream(sysstatus.SigProcSocket, 5000);
  pApplicationStream=new TWinSocketStream(sysstatus.ApplicationSocket, 5000);
@@ -292,10 +308,10 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
      coremessage->SetLength((unsigned short)strlen(paramline.c_str()));
      strncpy(coremessage->GetBufPtr(), paramline.c_str(), strlen(paramline.c_str()));
 
-     ret=coremessage->SendCoreMessage(pSourceStream);
-
+     coremessage->SendCoreMessage(pSourceStream);
      coremessage->SendCoreMessage(pSigProcStream);
      coremessage->SendCoreMessage(pApplicationStream);
+
      sysstatus.NumMessagesSent1++;
      sysstatus.NumParametersSent1++;
      sysstatus.NumMessagesSent2++;
@@ -305,6 +321,8 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
      }
   }
 
+ sendrecv_critsec->Release();
+
  // at the very end, send EndOfParameter to terminate this phase
  // broadcast this final state to all the modules that are connected
  if (sysstatus.SourceConnected)
@@ -312,10 +330,6 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
     SendSysCommand("EndOfParameter", sysstatus.SourceSocket);
     sysstatus.NumMessagesSent1++;
     }
-
-//  if (sysstatus.SystemState == STATE_INFORMATION)
-//     {
-
  if (sysstatus.SigProcConnected)
     {
     SendSysCommand("EndOfParameter", sysstatus.SigProcSocket);
@@ -326,8 +340,6 @@ TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
     SendSysCommand("EndOfParameter", sysstatus.ApplicationSocket);
     sysstatus.NumMessagesSent3++;
     }
-
-//    }
 
  delete pSourceStream;
  delete pSigProcStream;
@@ -350,6 +362,9 @@ COREMESSAGE     *coremessage;
 STATE           *cur_state;
 int             num_state, i;
 char            statelinebuf[LENGTH_STATELINE];
+
+ // (do not receive while we send; concurrency problems)
+ sendrecv_critsec->Acquire();
 
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_STATE);
@@ -389,6 +404,8 @@ char            statelinebuf[LENGTH_STATELINE];
 
  delete coremessage;
 
+ sendrecv_critsec->Release();
+
  // at the very end, send EndOfState to terminate this phase
  // broadcast this final state to all the modules that are connected
  if (sysstatus.SourceConnected)
@@ -424,6 +441,9 @@ int TfMain::BroadcastStateVector(STATEVECTOR *my_state_vector)
 {
 COREMESSAGE     *coremessage;
 
+ // (do not receive while we send; concurrency problems)
+ sendrecv_critsec->Acquire();
+
  coremessage=new COREMESSAGE;
  coremessage->SetDescriptor(COREMSG_STATEVECTOR);
 
@@ -451,6 +471,8 @@ COREMESSAGE     *coremessage;
     sysstatus.NumStateVecsSent3++;
     }
 
+ sendrecv_critsec->Release();
+
  delete coremessage;
  return(ERR_NOERR);
 }
@@ -471,7 +493,11 @@ int ret;
 
  if (sysstatus.SourceConnected)
     {
+    // (do not receive while we send; concurrency problems)
+    sendrecv_critsec->Acquire();
     ret=statelist.UpdateState(statename, newvalue, sysstatus.SourceSocket);
+    // enable reception
+    sendrecv_critsec->Release();
     sysstatus.NumMessagesSent1++;
     sysstatus.NumStatesSent1++;
     }
@@ -1003,6 +1029,8 @@ void __fastcall TfMain::ApplicationSocketGetThread(TObject *Sender,
 void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
 {
  ShutdownSystem();
+
+ if (sendrecv_critsec) delete sendrecv_critsec;
 }
 //---------------------------------------------------------------------------
 
@@ -1105,6 +1133,7 @@ void __fastcall TfMain::bSetConfigClick(TObject *Sender)
  syslog->AddSysLogEntry("Operator set configuration");
 
  BroadcastParameters();
+
  // only publish the states in the information phase
  if (sysstatus.SystemState == STATE_INFORMATION)
     {
@@ -1212,12 +1241,12 @@ void __fastcall TfMain::bShowConnectionInfoClick(TObject *Sender)
 
 void __fastcall TfMain::SetTrayIcon(TObject *Sender)
 {
- TrayIcon->Visible=true;
+ // TrayIcon->Visible=true;
 }
 
 void __fastcall TfMain::RemoveTrayIcon(TObject *Sender)
 {
- TrayIcon->Visible=false;
+ // TrayIcon->Visible=false;
 }
 
 

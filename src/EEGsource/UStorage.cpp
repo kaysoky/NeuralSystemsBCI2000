@@ -209,7 +209,8 @@ int     i;
        fclose(fp);
        WriteHeader();
        }
-    fclose(fp);
+    else
+       fclose(fp);
     }
 
     delete bcidtry;
@@ -253,7 +254,7 @@ void TDataStorage::CreateFileName( BCIDtry *bcidtry )
         if( (NewRunNo == OldRunNo ) && (AlreadyIncremented == false ) )
         {
                 NewRunNo++;
-                sprintf(SRun.c_str(),"%d",NewRunNo);
+                SRun=AnsiString(NewRunNo);
                 paramlist->GetParamPtr("SubjectRun")->SetValue(SRun.c_str() );
                 AlreadyIncremented = true;
         }

@@ -82,7 +82,6 @@ Comments=
 
 [Excluded Packages]
 $(BCB)\Bin\dclite50.bpl=Borland Integrated Translation Environment
-$(BCB)\Bin\sdlcsuite55C5.bpl=SDL Component Suite 5.5 - Rel.1
 
 [HistoryLists\hlIncludePath]
 Count=23
