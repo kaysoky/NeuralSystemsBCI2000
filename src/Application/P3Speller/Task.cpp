@@ -11,6 +11,7 @@
 #include "UState.h"
 #include "BCIDirectry.h"
 #include "UBCIError.h"
+#include "Localization.h"
 
 #include "Task.h"
 
@@ -68,6 +69,14 @@ TTask::TTask()
   "PhaseInSequence 2 0 0 0",
   "StimulusTime 16 17528 0 0",
  END_STATE_DEFINITIONS
+
+ LANGUAGES "German",
+ BEGIN_LOCALIZED_STRINGS
+  "TIME OUT !!!",
+           "Zeit abgelaufen!",
+  "Waiting to start ...",
+           "Warte ...",
+ END_LOCALIZED_STRINGS
 }
 
 //-----------------------------------------------------------------------------

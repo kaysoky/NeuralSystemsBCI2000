@@ -11,6 +11,7 @@
 #include "UTrialSequence.h"
 #include "UTaskUtil.h"
 #include "UBCIError.h"
+#include "Localization.h"
 
 //---------------------------------------------------------------------------
 
@@ -134,7 +135,7 @@ int     ret;
  userdisplay->InitializeActiveTargetPosition();
  userdisplay->InitializeStatusBarPosition();
  // userdisplay->DisplayCursor();
- userdisplay->DisplayMessage("Waiting to start ...");
+ userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "Waiting to start ..." ) ) );
 
  oldrunning=0;
 
@@ -310,7 +311,7 @@ void TRIALSEQUENCE::SuspendTrial()
  statevector->SetStateValue("StimulusType", 0);
  statevector->SetStateValue("Flashing", 0);
 
- userdisplay->DisplayMessage("TIME OUT !!!");      // display the "TIME OUT" message
+ userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "TIME OUT !!!" ) ) ); // display the "TIME OUT" message
 }
 
 
