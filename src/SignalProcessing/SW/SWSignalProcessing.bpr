@@ -8,10 +8,11 @@
       obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\SWFilter.obj obj\Normalfilter.obj obj\SpatialFilter.obj 
-      obj\CalibrationFilter.obj obj\UGenericFilter.obj obj\UBCIError.obj 
-      obj\UEnvironment.obj obj\AverageDisplay.obj obj\FFTFilter.obj 
-      obj\FFTLibWrap.obj obj\Color.obj obj\MeasurementUnits.obj"/>
+      obj\SetBaseline.obj obj\FBArteCorrection.obj obj\SWFilter.obj 
+      obj\Normalfilter.obj obj\SpatialFilter.obj obj\CalibrationFilter.obj 
+      obj\UGenericFilter.obj obj\UBCIError.obj obj\UEnvironment.obj 
+      obj\AverageDisplay.obj obj\FFTFilter.obj obj\FFTLibWrap.obj obj\Color.obj 
+      obj\MeasurementUnits.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -68,6 +69,8 @@
       <FILE FILENAME="..\..\SHARED\UStatus.cpp" FORMNAME="" UNITNAME="UStatus.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SetBaseline.cpp" FORMNAME="" UNITNAME="SetBaseline" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FBArteCorrection.cpp" FORMNAME="" UNITNAME="FBArteCorrection" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="SWFilter.cpp" FORMNAME="" UNITNAME="SWFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\Normalfilter.cpp" FORMNAME="" UNITNAME="Normalfilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

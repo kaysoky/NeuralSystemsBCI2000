@@ -19,7 +19,6 @@
 #include "UBCIError.h"
 #include "MeasurementUnits.h"
 #include <cmath>
-#include <assert>
 
 #define SECTION "Filtering"
 
@@ -27,210 +26,11 @@ using namespace std;
 
 const float infinity = 1e10;
 
-const char* baselineStateName = "Baseline",
-          * itiStateName = "IntertrialInterval";
+const char* itiStateName = "IntertrialInterval";
 
-// TSetBaseline class definitions.
-RegisterFilter( TSetBaseline, 2.D1 );
+RegisterFilter( TSWFilter, 2.C );
 
-TSetBaseline::TSetBaseline()
-: mVisualize( 0 ),
-  mVis( SOURCEID::Baseline, VISTYPE::GRAPH ),
-  mLastBaselineState( 0 )
-{
-  BEGIN_PARAMETER_DEFINITIONS
-    SECTION " intlist BaseChList= 2 1 1"
-      " 0 0 1 // 1 to mark that BL is subtracted",
-    "Visualize int VisualizeBaselineFiltering= 0"
-      " 0 0 1 // visualize baseline filtered signals (0=no 1=yes)",
-  END_PARAMETER_DEFINITIONS
-}
-
-void
-TSetBaseline::Preflight( const SignalProperties& inSignalProperties,
-                               SignalProperties& outSignalProperties ) const
-{
-  PreflightCondition(
-    Parameter( "BaseChList" )->GetNumValues() <= inSignalProperties.Channels() );
-    
-  State( baselineStateName );
-  outSignalProperties = inSignalProperties;
-}
-
-void
-TSetBaseline::Initialize()
-{
-  mVisualize = Parameter( "VisualizeBaselineFiltering" );
-
-  // allocating BL variables
-  int numChan = Parameter( "BaseChList" )->GetNumValues();
-  mBLSamples.resize( numChan, 0 );
-  mBaseChList.resize( numChan, false );
-  for( int i = 0; i < numChan; ++i )
-    mBaseChList[ i ] = ( Parameter( "BaseChList", i ) > 0 );
-  mBLSignal = GenericSignal( numChan, 1 );
-
-  if( mVisualize )
-  {
-    mVis.Send( CFGID::WINDOWTITLE, "BaselineFiltered" );
-    mVis.Send( CFGID::MINVALUE, 5 );
-    mVis.Send( CFGID::MAXVALUE, -5 );
-    mVis.Send( CFGID::NUMSAMPLES, 256 );
-    mVis.Send( CFGID::showBaselines, true );
-  }
-  mLastBaselineState = 0;
-}
-
-void
-TSetBaseline::Process( const GenericSignal* inSignal, GenericSignal* outSignal )
-{
-  *outSignal = *inSignal;
-  GenericSignal& ioSignal = *outSignal;
-
-  if( State( baselineStateName ) - mLastBaselineState == 1 )
-  {
-    for( size_t i = 0; i < mBLSignal.Channels(); ++i )
-      mBLSignal( i, 0 ) = 0;
-    for( size_t i = 0; i < mBLSamples.size(); ++i )
-      mBLSamples[ i ] = 0;
-  }
-
-  if( State( baselineStateName ) )
-    for( size_t i = 0; i < ioSignal.Channels(); ++i )
-    {
-      float sum = 0;
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
-        sum += ioSignal( i, j );
-      mBLSignal( i, 0 ) = mBLSignal( i, 0 ) * mBLSamples[ i ] + sum;
-      mBLSamples[ i ] += ioSignal.GetNumElements( i );
-      mBLSignal( i, 0 ) /= mBLSamples[ i ];
-    }
-
-  for( size_t i = 0; i < mBaseChList.size(); ++i )
-    if( mBaseChList[ i ] )
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
-        ioSignal( i, j ) -= mBLSignal( i, 0 );
-
-  if( mVisualize )
-    mVis.Send( &ioSignal );
-
-  mLastBaselineState = State( baselineStateName );
-}
-
-// TFBArteCorrection class definitions.
-RegisterFilter( TFBArteCorrection, 2.D2 );
-
-TFBArteCorrection::TFBArteCorrection()
-: mVisualize( 0 ),
-  mVis( SOURCEID::Artefact, VISTYPE::GRAPH ),
-  mArteMode( off )
-{
-  BEGIN_PARAMETER_DEFINITIONS
-    SECTION " intlist ArteChList= 2 2 0"
-      " 2 0 0 // Association of artefact channels with signal channels, 0 for no artefact channel",
-    SECTION " floatlist ArteFactorList= 2 0.15 0"
-      " 0 0 0 // Influence of artefact channel on input channel, -1: no artifact channel",
-    SECTION " int ArteMode= 0"
-      " 1 0 3 // Artefact correction mode: "
-        "0 off, "
-        "1 linear subtraction, "
-        "2 subtraction if supporting, "
-        "3 subtraction w/abort",
-    "Visualize int VisualizeFBArteCorFiltering= 0"
-      " 0 0 1 // visualize FBArte corrected signals (0=no 1=yes)",
-  END_PARAMETER_DEFINITIONS
-
-  BEGIN_STATE_DEFINITIONS
-    "Artifact 1 0 0 0",
-  END_STATE_DEFINITIONS
-}
-
-void
-TFBArteCorrection::Preflight( const SignalProperties& inSignalProperties,
-                                    SignalProperties& outSignalProperties ) const
-{
-  for( size_t i = 0; i < Parameter( "ArteChList" )->GetNumValues(); ++i )
-  {
-    PreflightCondition( Parameter( "ArteChList", i ) >= 0 );
-    PreflightCondition( Parameter( "ArteChList", i ) <= inSignalProperties.Channels() );
-  }
-  outSignalProperties = inSignalProperties;
-}
-
-void
-TFBArteCorrection::Initialize()
-{
-  mArteChList.clear();
-  for( size_t i = 0; i < Parameter( "ArteChList" )->GetNumValues(); ++i )
-    mArteChList.push_back( Parameter( "ArteChList", i ) - 1 );
-
-  mArteFactorList.clear();
-  for( size_t i = 0; i < Parameter( "ArteFactorList" )->GetNumValues(); ++i )
-    mArteFactorList.push_back( Parameter( "ArteFactorList", i ) );
-
-  mArteMode = static_cast<ArteMode>( ( int )Parameter( "ArteMode" ) );
-  mVisualize = Parameter( "VisualizeFBArteCorFiltering" );
-  if( mVisualize )
-  {
-    mVis.Send( CFGID::WINDOWTITLE, "Artefact filtered");
-    mVis.Send( CFGID::MINVALUE, -100 );
-    mVis.Send( CFGID::MAXVALUE, 100 );
-    mVis.Send( CFGID::NUMSAMPLES, 256 );
-  }
-}
-
-void
-TFBArteCorrection::Process( const GenericSignal* inSignal, GenericSignal* outSignal )
-{
-  *outSignal = *inSignal;
-  GenericSignal& ioSignal = *outSignal;
-
-  for( size_t i = 0; i < mArteChList.size(); ++i )
-    if( mArteChList[ i ] >= 0 )
-      for( size_t j = 0; j < ioSignal.GetNumElements( i ); ++j )
-      {
-        float controlSignal = ioSignal( i, j ),
-              arteSignal = ioSignal( mArteChList[ i ], j ) * mArteFactorList[ i ];
-
-        switch( mArteMode )
-        {
-          case off:
-            break;
-
-          case linearSubtraction:
-            // Linear subtraction.
-            ioSignal( i, j ) = controlSignal - arteSignal;
-            break;
-
-          case subtractionIfSupporting:
-          case subtractionWithAbort:
-            if( arteSignal * controlSignal > 0 )
-            { // If they have same signs:
-              if( ::fabs( arteSignal ) < ::fabs( controlSignal ) )
-              // If artefact is not too big, correct the signal.
-                ioSignal( i, j ) = controlSignal - arteSignal;
-              else
-              { // Artefact is too big.
-                ioSignal( i, j ) = 0; // FB is supressed.(?)
-                if( mArteMode == subtractionWithAbort )
-                  State( "Artifact" ) = 1;
-              }
-            }
-            break;
-
-          default:
-            assert( false );
-        }
-      }
-
-  if( mVisualize )
-    mVis.Send( &ioSignal );
-}
-
-// TSW class definitions.
-RegisterFilter( TSW, 2.C );
-
-TSW::TSW()
+TSWFilter::TSWFilter()
 : mVisualize( 0 ),
   mVis( SOURCEID::SW, VISTYPE::GRAPH ),
   mLastItiState( 0 ),
@@ -264,7 +64,7 @@ TSW::TSW()
 }
 
 void
-TSW::Preflight( const SignalProperties& Input,
+TSWFilter::Preflight( const SignalProperties& Input,
                       SignalProperties& Output ) const
 {
   if( Parameter( "UD_A" ) != 0 )
@@ -289,7 +89,7 @@ TSW::Preflight( const SignalProperties& Input,
 }
 
 void
-TSW::Initialize()
+TSWFilter::Initialize()
 {
   mBlockSize = Parameter( "SampleBlockSize" );
   mBlocksInTrial = MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) );
@@ -339,7 +139,7 @@ TSW::Initialize()
 }
 
 void
-TSW::Process( const GenericSignal* InputSignal, GenericSignal* OutputSignal )
+TSWFilter::Process( const GenericSignal* InputSignal, GenericSignal* OutputSignal )
 {
   *OutputSignal = *InputSignal;
   if( mPosInBuffer < mAvgBufferSize - 1 )
@@ -359,7 +159,7 @@ TSW::Process( const GenericSignal* InputSignal, GenericSignal* OutputSignal )
 
 // SW calculation: arithmetic functions.
 void
-TSW::NewTrial()
+TSWFilter::NewTrial()
 {
   for( int n = 0; n < mPosInBuffer - mBufferOffset; n++ )
     for( short m = 0; m < mSWCh; m++ )
@@ -377,7 +177,7 @@ TSW::NewTrial()
 }
 
 void
-TSW::AvgToBuffer( const GenericSignal& InputSignal )
+TSWFilter::AvgToBuffer( const GenericSignal& InputSignal )
 {
   for( short m = 0; m < mSWCh; m++ )
   {
@@ -389,7 +189,7 @@ TSW::AvgToBuffer( const GenericSignal& InputSignal )
 }
 
 void
-TSW::CorrectTc()
+TSWFilter::CorrectTc()
 {
   for( short m = 0; m < mSWCh; m++ )
   {
@@ -401,7 +201,7 @@ TSW::CorrectTc()
 }
 
 void
-TSW::AvgToSW( GenericSignal& OutputSignal )
+TSWFilter::AvgToSW( GenericSignal& OutputSignal )
 {
   for( short m = 0; m < mSWCh; m++ )
   {
@@ -413,7 +213,7 @@ TSW::AvgToSW( GenericSignal& OutputSignal )
 }
 
 void
-TSW::CheckArtefacts( const GenericSignal& InputSignal )
+TSWFilter::CheckArtefacts( const GenericSignal& InputSignal )
 {
   for( short m = 0; m < mSWCh; m++ )
   {
