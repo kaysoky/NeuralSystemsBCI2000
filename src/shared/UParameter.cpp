@@ -200,8 +200,8 @@ PARAMLIST::CloneParameter2List( const PARAM* param )
 //             parameter list.
 //             For partial output, use another instance of type PARAMLIST
 //             to hold the desired subset as in PARAMLIST::SaveParameterList().
-//             _All_ formatted output functions (stream based or not) are,
-//             for consistency's sake, supposed to call this function.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
 // Parameters: Output stream to write into.
 // Returns:    N/A
 // **************************************************************************
@@ -218,8 +218,8 @@ PARAMLIST::WriteToStream( ostream& os ) const
 //             parameter list. The list is cleared before reading.
 //             For partial input, use another instance of type PARAMLIST
 //             to hold the desired subset as in PARAMLIST::LoadParameterList().
-//             _All_ formatted input functions (stream based or not) are,
-//             for consistency's sake, supposed to call this function.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
 // Parameters: Input stream to read from.
 // Returns:    N/A
 // **************************************************************************
@@ -330,7 +330,7 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
 /////////////////////////////////////////////////////////////////////////////
 // PARAM definitions                                                       //
 /////////////////////////////////////////////////////////////////////////////
-const char commentSeparator[] = "//";
+const string commentSeparator = "//";
 const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 
 // **************************************************************************
@@ -632,8 +632,7 @@ int PARAM::get_argument(int ptr, char *buf, const char *line, int maxlen)
 //             Tis parameter line is constructed, based upon the current
 //             values in the PARAM object
 // Note:
-// Calling GetParamLine() will invalidate its previous return value.
-// The pointer return type forbids a more robust behaviour.
+// Calling GetParamLine() may invalidate its previous return value.
 // jm
 //
 // Parameters: N/A
@@ -680,8 +679,8 @@ PARAM::ParseParameter( const char* paramline, size_t length )
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
 //             parameter.
-//             _All_ formatted input functions (stream based or not) are,
-//             for consistency's sake, supposed to call this function.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
 // Parameters: Input stream to read from.
 // Returns:    N/A
 // **************************************************************************
@@ -692,11 +691,21 @@ PARAM::ReadFromStream( istream& is )
   archive = false;
   tag = false;
   values.clear();
-  string lineBegin,
-         lineEnd;
-  getline( is, lineBegin, '=' );
-  getline( is, lineEnd );
-  istringstream linestream( lineBegin );
+  string declaration,
+         definition;
+  getline( is, declaration, '=' );
+  getline( is, definition );
+  size_t commentSepPos = definition.rfind( commentSeparator );
+  if( commentSepPos != definition.npos )
+  {
+    size_t commentPos = commentSepPos + commentSeparator.length();
+    while( commentPos < definition.size() && ct.is( ct.space, definition[ commentPos ] ) )
+      ++commentPos;
+    comment = definition.substr( commentPos );
+    definition = definition.substr( 0, commentSepPos );
+  }
+  // Parse the parameter's declaration.
+  istringstream linestream( declaration );
   string value;
   linestream >> value;
   SetSection( value );
@@ -710,7 +719,8 @@ PARAM::ReadFromStream( istream& is )
     return;
   }
   linestream.clear();
-  linestream.str( lineEnd );
+  // Parse the parameter's definition.
+  linestream.str( definition );
   size_t dimension1;
   if( type == "matrix" )
   {
@@ -730,40 +740,36 @@ PARAM::ReadFromStream( istream& is )
     is.setstate( ios::failbit );
 
   linestream >> value;
-  while( linestream && value != commentSeparator
-          && values.size() < dimension1 * dimension2 )
+  while( linestream && values.size() < dimension1 * dimension2 )
   {
     values.push_back( value );
     linestream >> value;
   }
   values.resize( dimension1 * dimension2, "0" );
 
-  if( value == commentSeparator )
-    defaultvalue = "0";
-  else
+  if( linestream )
   {
     defaultvalue = value;
     linestream >> value;
   }
-  if( value == commentSeparator )
-    lowrange = "0";
   else
+    defaultvalue = "0";
+
+  if( linestream )
   {
     lowrange = value;
     linestream >> value;
   }
-  if( value == commentSeparator )
-    highrange = "0";
   else
+    lowrange = "0";
+
+  if( linestream )
   {
     highrange = value;
     linestream >> value;
   }
-  linestream >> ws;
-  if( value == commentSeparator && !linestream.eof() )
-    getline( linestream, comment );
   else
-    comment = "";
+    highrange = "0";
 
   valid = !is.fail();
 }
@@ -772,8 +778,8 @@ PARAM::ReadFromStream( istream& is )
 // Function:   WriteToStream
 // Purpose:    Member function for formatted stream output of a single
 //             parameter.
-//             _All_ formatted output functions (stream based or not) are,
-//             for consistency's sake, supposed to call this function.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
 // Parameters: Output stream to write into.
 // Returns:    N/A
 // **************************************************************************
