@@ -1,14 +1,15 @@
 Filtering int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes) (does NOT work yet)
 System string ApplicationIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0. // this module's listening IP
-System string ApplicationPort= 2046 4200 1024 32768 // this module's listening port
+System string ApplicationPort= 2452 4200 1024 32768 // this module's listening port
 Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)
 P3Speller string BackgroundColor= 0x00000000 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)
 Statistics matrix BaselineCfg= 4 4 TargetCode 1 Feedback 1 TargetCode 2 Feedback 1 TargetCode 3 Feedback 1 TargetCode 4 Feedback 1 0 0 1 // states to watch for baseline
-P3Speller int CopySpelling= 1 1 0 1 // CopySpelling (0=no, 1=yes)
+Statistics matrix BaselineHits= 2 2 1 0.50 2 0.50 0 0 0 // propoirtion correct for each target
+Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
 Statistics float DesiredPixelsPerSec= 15 70 0 400 // 
 System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
-System string EEGsourcePort= 2042 4200 1024 32768 // this module's listening port
+System string EEGsourcePort= 2450 4200 1024 32768 // this module's listening port
 Visualize float ERPMaxDispVal= 30 300 -16383 16384 // Maximum value for ERP display
 Visualize float ERPMinDispVal= 0 -300 -16383 16384 // Minimum value for ERP display
 Storage string FileInitials= d:\bci2000data TD a z // Initials of file name (max. 8 characters)
@@ -22,7 +23,7 @@ Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals
 Filtering int MaxElements= 256 10 1 256 // maximum number of elements in signals B,C
 Filtering matrix MLR= 144 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Left / Right Weights
 Source int ModulateAmplitude= 0 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
-Filtering matrix MUD= 144 1 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 -0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Up / Down Weights
+Filtering matrix MUD= 20 3 1 60 1 1 61 1 1 62 1 1 63 1 1 64 1 1 65 1 1 66 1 1 67 1 1 68 1 1 69 1 1 70 1 1 71 1 1 72 1 1 73 1 1 74 1 1 75 1 1 76 1 1 77 1 1 78 1 1 79 1 64 0 100 // Class Filter Up / Down Weights
 Source int NoiseMaxAmplitude= 3000 3000 -32767 32767 // the maximum output value for noise
 Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value for noise
 P3Speller int NumberOfSequences= 15 15 0 100 // Number of sets of 12 intensifications
@@ -30,13 +31,16 @@ Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control 
 P3SignalProcessing int NumERPsToAverage= 15 15 0 1000 // Number of ERPs to average before doing DF
 P3SignalProcessing int NumSamplesInERP= 144 144 0 1000 // Number of samples stored for each response
 P3Speller int OffTime= 1 10 0 5000 // Invisible duration of icon in units of SampleBlocks
+P3Speller int OnlineMode= 0 0 0 1 // Online mode (0=no, 1=yes)
 P3Speller int OnTime= 4 10 0 5000 // Visible duration of icon in units of SampleBlocks
+P3Speller int PostSetInterval= 60 60 0 10000 // Duration after set of n intensifications in units of SampleBlocks
+P3Speller int PreSetInterval= 100 60 0 10000 // Duration before set of n intensifications in units of SampleBlocks
 Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Rate of Learning for Linear Trend Control
 Source int SampleBlockSize= 6 5 1 128 // the number of samples transmitted at a time
 Source int SamplingRate= 240 128 1 4000 // the sample rate
 Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file
 System string SignalProcessingIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
-System string SignalProcessingPort= 2044 4200 1024 32768 // this module's listening port
+System string SignalProcessingPort= 2448 4200 1024 32768 // this module's listening port
 Source int SineChannel= 0 0 0 128 // channel number of sinewave (0=all)
 Source float SineFrequency= 10 10 0 100 // frequency of the sine wave
 Source int SineMaxAmplitude= 10000 20000 -32767 32767 // the maximum output value for sine
@@ -48,23 +52,23 @@ Visualize int SourceMax= 8092 8092 0 16386 // raw EEG vsi Max Value
 Visualize int SourceMin= 0 0 -8092 0 // raw EEG vis Min Value
 Filtering int SpatialFilteredChannels= 1 4 1 64 // Number of Spatially Filtered Channels
 Filtering matrix SpatialFilterKernal= 1 1 1 0 64 -100 // Spatial Filter Kernal Weights
-System int StateVectorLength= 7 16 1 30 // length of the state vector in bytes
+System int StateVectorLength= 9 16 1 30 // length of the state vector in bytes
 P3Speller int StatusBarSize= 10 0 0 100 // Size of status bar in percent of screen height
 P3Speller int StatusBarTextHeight= 4 0 0 100 // Size of status bar text in percent of screen height
 Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
 Storage string SubjectName= test Name a z // subject alias (max. 8 characters)
-Storage string SubjectRun= 01 00 0 99 // digit run number (max. 3 characters)
+Storage string SubjectRun= 00 00 0 99 // digit run number (max. 3 characters)
 Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
-P3Speller string TargetDefinitionFile= p3targets.cfg 0 0 100 // Target definition file
+P3Speller string TargetDefinitionFile= c:\data\bci2000\src\application\p3speller\p3targets.cfg 0 0 100 // Target definition file
 P3SignalProcessing int TargetERPChannel= 1 1 0 128 // Target Channel for ERP Display in order of SigProc transfer
 P3Speller int TargetHeight= 12 0 0 100 // TargetHeight in percent of screen height
 P3Speller int TargetTextHeight= 8 0 0 100 // Height of target labels in percent of screen height
 P3Speller int TargetWidth= 12 0 0 100 // TargetWidth in percent of screen width
 P3Speller string TextColor= 0x00555555 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)
 P3Speller string TextColorIntensified= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)
-P3Speller string TextToSpell= P P A Z // Character to focus on
+P3Speller string TextToSpell= BUSH P A Z // Character to focus on
 Source int TransmitCh= 1 4 1 128 // the number of transmitted channels
-Source intlist TransmitChList= 1 51 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
+Source intlist TransmitChList= 1 11 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
 Statistics int TrendControl= 0 0 0 1 // Online adaption of % Correct Trend 1= Lin 2 = Quad
 Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window
 Filtering float UD_A= 0 10.0 -100.0 100.0 // 
@@ -80,8 +84,8 @@ Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualizat
 Visualize int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatial filtered signals (0=no 1=yes)
 Visualize int VisualizeStatFiltering= 0 0 0 1 // visualize Stat filtered signals (0=no 1=yes)
 Statistics int WeightControl= 0 0 0 1 // Classifier Adaptation 0= no  1= Compute  2= use
-P3Speller int WinHeight= 512 512 0 2000 // User Window Height
-P3Speller int WinWidth= 512 512 0 2000 // User Window Width
-P3Speller int WinXpos= 5 0 0 5000 // User Window X location
-P3Speller int WinYpos= 5 0 0 5000 // User Window Y location
+P3Speller int WinHeight= 512 0 0 1 // User Window Height
+P3Speller int WinWidth= 512 0 0 1 // User Window Width
+P3Speller int WinXpos= 1 0 0 1 // User Window X location
+P3Speller int WinYpos= 1 0 0 1 // User Window Y location
 Statistics float WtLrnRt= 0.001 0 0.000 0.010 // Rate of Learning for Classifier 
