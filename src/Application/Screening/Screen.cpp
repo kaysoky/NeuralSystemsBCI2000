@@ -11,8 +11,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         {
                  Application->Initialize();
                  Application->Title = "Application";
-                 Application->CreateForm(__classid(TUser), &User);
                  Application->CreateForm(__classid(TfMain), &fMain);
+                 Application->CreateForm(__classid(TUser), &User);
                  Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
                  Application->Run();
         }
