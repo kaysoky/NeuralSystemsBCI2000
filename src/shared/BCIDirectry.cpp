@@ -1,137 +1,168 @@
-//-------------------------------------------------
+///////////////////////////////////////////////////
 //  BCIDirectry.cpp
-//  BCI Dircetory Management Functions
-//-------------------------------------------------
+//  BCI Directory Management Functions
+///////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "BCIDirectry.h"
-
-#include "UBCIError.h"
+// Directory management is platform specific.
+#include <vcl.h>
 #include <dir.h>
 
-#pragma package(smart_init)
-
-//--------------------------------------------------
+#include <sstream>
+#include <iomanip>
 
 using namespace std;
 
-string BCIDtry::BaseDir = BCIDtry::GetCwd();
 
-string BCIDtry::GetCwd()
+const string&
+BCIDirectory::InstallationDirectory()
 {
-    const size_t    pathLenMax = 2048;
-    const char*     cwd = ::getcwd( NULL, pathLenMax );
-    string          cwdString = "";
-    if( cwd != NULL )
+  static string installationDirectory
+    = Sysutils::ExtractFilePath( System::ParamStr( 0 ) ).c_str();
+  return installationDirectory;
+}
+
+
+string
+BCIDirectory::DirectoryPath() const
+{
+  string result = mSubjectDirectory;
+  if( result.length() < 2 || result[ 1 ] != DriveSeparator )
+    result = InstallationDirectory() + result;
+  if( result.length() > 0 && result[ result.length() - 1 ] != DirSeparator )
+    result += DirSeparator;
+  result += mSubjectName;
+  if( mSessionNumber != none )
+  {
+    ostringstream oss;
+    oss << setfill( '0' ) << setw( 3 ) << mSessionNumber;
+    result += oss.str();
+  }
+  result += DirSeparator;
+  return result;
+}
+
+
+string
+BCIDirectory::FilePath() const
+{
+  return DirectoryPath() + ConstructFileName();
+}
+
+
+const BCIDirectory&
+BCIDirectory::CreatePath() const
+{
+  ChangeForceDir( DirectoryPath() );
+  return *this;
+}
+
+
+int
+BCIDirectory::ChangeForceDir( const string& inPath )
+{
+  string fullPath = inPath;
+  if( fullPath.length() < 2 || fullPath[ 1 ] != DriveSeparator )
+    fullPath = InstallationDirectory() + fullPath;
+  if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
+    fullPath += DirSeparator;
+  int err = ::chdir( fullPath.c_str() );
+  if( err )
+  {
+    if( errno == EACCES )
+      return err;
+    else
     {
-        cwdString = cwd;
-        ::free( ( void* )cwd );
+      size_t p = fullPath.rfind( DirSeparator, fullPath.length() - 2 );
+      if( p == string::npos )
+        return err;
+      err = ChangeForceDir( fullPath.substr( 0, p ) );
+      if( err )
+        return err;
+      err = ::mkdir( fullPath.c_str() );
+      if( err )
+        return err;
+      err = ::chdir( fullPath.c_str() );
     }
-
-    if( cwdString.length() < 1 || cwdString[ cwdString.length() - 1 ] != DirSeparator )
-        cwdString += DirSeparator;
-
-    return cwdString;
+  }
+  return err;
 }
 
-int BCIDtry::ChangeForceDir( const string& path )
+
+string
+BCIDirectory::ConstructFileName() const
 {
-    string fullPath = path;
-    if( fullPath.length() < 2 || fullPath[ 1 ] != DriveSeparator )
-        fullPath = BaseDir + fullPath;
-    if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
-        fullPath += DirSeparator;
-    int err = ::chdir( fullPath.c_str() );
-    if( err )
+  int runNumber = GetLargestRun( DirectoryPath() );
+  if( mRunNumber > runNumber )
+    runNumber = mRunNumber;
+  ostringstream oss;
+  oss << mSubjectName;
+  if( mSessionNumber != none )
+  {
+     oss << "S" << setfill( '0' ) << setw( 3 ) << mSessionNumber;
+     if( mRunNumber != none )
+       oss << "R" << setfill( '0' ) << setw( 2 ) << runNumber;
+  }
+  return oss.str();
+}
+
+
+int
+BCIDirectory::GetLargestRun( const string& inPath )
+{
+  int largestRun = 0;
+  AnsiString path = inPath.c_str();
+  path += "*.dat";
+  TSearchRec sr;
+  if( Sysutils::FindFirst( path, faAnyFile, sr ) )
+  {
+    do
     {
-        if( errno == EACCES )
-            return err;
-        else
-        {
-            size_t p = fullPath.rfind( DirSeparator, fullPath.length() - 2 );
-            if( p == std::string::npos )
-                return err;
-            err = ChangeForceDir( fullPath.substr( 0, p ) );
-            if( err )
-                return err;
-            err = ::mkdir( fullPath.c_str() );
-            if( err )
-                return err;
-            err = ::chdir( fullPath.c_str() );
-        }
-    }
-    return err;
+      int curRun = ExtractRunNumber( sr.Name.c_str() );
+      if( curRun > largestRun )
+        largestRun = curRun;
+    } while( !Sysutils::FindNext( sr ) );
+    Sysutils::FindClose( sr );
+  }
+  return largestRun;
 }
 
-void BCIDtry::SetDir( const char *dir )
+
+int
+BCIDirectory::ExtractRunNumber( const string& inFileName )
 {
-        SubjDir = dir;
+  int result = 0;
+  size_t runBegin = inFileName.find_last_of( "Rr" ),
+         numDigits = 0;
+  if( runBegin != string::npos )
+  {
+    ++runBegin;
+    while( ::isdigit( inFileName[ runBegin + numDigits ] ) )
+      ++numDigits;
+    result = ::atoi( inFileName.substr( runBegin, numDigits ).c_str() );
+  }
+  return result;
 }
 
-void BCIDtry::SetName( const char *name )
+
+#ifdef OLD_BCIDTRY
+// Legacy functions.
+int
+BCIDirectory::ProcPath()
 {
-        SubjName = name;
+  return ChangeForceDir( mSubjectDirectory );
 }
 
-void BCIDtry::SetSession( const char *session )
+
+const char*
+BCIDirectory::ProcSubDir()
 {
-        SubjSession = session;
+  mSubjectPath = DirectoryPath();
+  ChangeForceDir( mSubjectPath );
+  return mSubjectPath.c_str();
 }
 
-int BCIDtry::ProcPath( void )
-{
-    return ChangeForceDir( SubjDir );
-}
-
-const char *BCIDtry::ProcSubDir( void )
-{
-    SubjPath = SubjDir;
-    if( SubjPath.length() < 2 || SubjPath[ 1 ] != DriveSeparator )
-        SubjPath = BaseDir + SubjPath;
-    if( SubjPath.length() > 0 && SubjPath[ SubjPath.length() - 1 ] != DirSeparator )
-        SubjPath += DirSeparator;
-    SubjPath += SubjName;
-    SubjPath += SubjSession;
-    ChangeForceDir( SubjPath );
-    return SubjPath.c_str();
-}
-
-int BCIDtry::GetLargestRun( const char *path )
-{
-        struct ffblk ffblk;
-        int done;
-        int res;
-        int lth;
-        int max;
-        int current;
-        int i;
-        int lastr;
-        char str[16];
-
-        if( chdir( path ) )
-            return 0;
-
-        done= findfirst("*.dat", &ffblk, FA_ARCH);
-
-        max= 0;
-
-        while( !done )
-        {
-                lth= strlen( ffblk.ff_name );
-
-                for(i=0;i<lth;i++)     // find last "r"
-                        if( ffblk.ff_name[i] == 0x52 ) lastr= i;
-                str[ 0 ] = ffblk.ff_name[lastr+1];
-                str[ 1 ] = ffblk.ff_name[lastr+2];
-                str[ 2 ] = 0;
-
-                current= atoi( str );
-                if( current > max ) max= current;
-
-                done= findnext( &ffblk );
-        }
-        return( max );
-}
-
+#endif // OLD_BCIDTRY
 
