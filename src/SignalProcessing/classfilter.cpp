@@ -39,6 +39,9 @@ char line[512];
  strcpy(line,"Filtering matrix MLR= 2 5 0 0 0 0 0 0 0 0 0 0   64  0 100  // Class Filter Left / Right Weights");
  plist->AddParameter2List(line,strlen(line) );
 
+ strcpy(line,"Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction");
+ plist->AddParameter2List(line,strlen(line) );
+
  strcpy(line, "Visualize int VisualizeClassFiltering= 1 0 0 1  // visualize Class filtered signals (0=no 1=yes)");
  plist->AddParameter2List( line, strlen(line) );
 
@@ -86,25 +89,48 @@ float stop,start,bandwidth;
         samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
         visualizeyn= atoi(paramlist->GetParamPtr("VisualizeClassFiltering")->GetValue() );
         n_vmat= paramlist->GetParamPtr("MUD")->GetNumValuesDimension1();
+        class_mode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );
 
         for(i=0;i<n_vmat;i++)
         {
-                vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
-                vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
-                vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
-                vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
-                wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
+                if( class_mode == 2 )
+                {
+                        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
+                        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
+                        vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
+                        vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+                        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
+                }
+                else
+                {
+                        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
+                        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
+                        vc2[i]= 0;
+                        vf2[i]= 0;
+                        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+                }
         }
 
         n_hmat= paramlist->GetParamPtr("MLR")->GetNumValuesDimension1();
 
         for(i=0;i<n_hmat;i++)
         {
-                hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
-                hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
-                hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
-                hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
-                wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
+                if( class_mode == 2 )
+                {
+                        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
+                        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
+                        hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
+                        hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+                        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
+                }
+                else
+                {
+                        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
+                        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
+                        hc2[i]= 0;
+                        hf2[i]= 0;
+                        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+                }
         }
   }
  catch(...)
