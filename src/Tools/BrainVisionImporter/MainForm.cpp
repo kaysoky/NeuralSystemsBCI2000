@@ -63,7 +63,6 @@ BCIError::LogicError( const std::string& s )
 __fastcall TImporterForm::TImporterForm(TComponent* Owner)
     : TForm(Owner)
 {
-    Application->Title = Caption;
     Caption = Caption + " " + __DATE__;
 
     ReadSettings();

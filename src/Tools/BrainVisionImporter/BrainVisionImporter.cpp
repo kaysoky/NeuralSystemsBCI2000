@@ -7,26 +7,47 @@ USEFORM("MainForm.cpp", ImporterForm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-    try
+    AnsiString appTitle = ::ChangeFileExt( ::ExtractFileName( __FILE__ ), "" );
+    HANDLE appMutex = ::CreateMutex( NULL, TRUE, appTitle.c_str() );
+    if( ::GetLastError() == ERROR_ALREADY_EXISTS )
     {
-         Application->Initialize();
-         Application->CreateForm(__classid(TImporterForm), &ImporterForm);
-         Application->Run();
+      if( appMutex != NULL )
+        ::CloseHandle( appMutex );
+
+      Application->Title = "";
+      HWND runningApp = ::FindWindow( "TApplication", appTitle.c_str() );
+      if( runningApp != NULL )
+      {
+        ::SendMessage( runningApp, WM_SYSCOMMAND, SC_RESTORE, 0 );
+        ::SetForegroundWindow( runningApp );
+      }
     }
-    catch (Exception &exception)
+    else
     {
-         Application->ShowException(&exception);
-    }
-    catch (...)
-    {
-         try
-         {
-             throw Exception("");
-         }
-         catch (Exception &exception)
-         {
-             Application->ShowException(&exception);
-         }
+      try
+      {
+        Application->Title = appTitle;
+        Application->Initialize();
+        Application->CreateForm(__classid(TImporterForm), &ImporterForm);
+        Application->Run();
+      }
+      catch (Exception &exception)
+      {
+        Application->ShowException(&exception);
+      }
+      catch (...)
+      {
+        try
+        {
+          throw Exception("");
+        }
+        catch (Exception &exception)
+        {
+          Application->ShowException(&exception);
+        }
+      }
+      ::ReleaseMutex( appMutex );
+      ::CloseHandle( appMutex );
     }
     return 0;
 }
