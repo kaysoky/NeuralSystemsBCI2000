@@ -22,6 +22,12 @@
 #include "UGenericVisualization.h"
 #include "LengthField.h"
 
+#ifndef BCI_TOOL // Some old modules out there send improperly terminated
+                 // parameter messages. Using an additional buffer for
+                 // received messages will help.
+# include <sstream>
+#endif // BCI_TOOL
+
 using namespace std;
 
 // A macro that contains the structure of a single case statement in the
@@ -35,12 +41,24 @@ using namespace std;
 void
 MessageHandler::HandleMessage( istream& is )
 {
-  int  descSupp = is.get() << 8;
+  int descSupp = is.get() << 8;
   descSupp |= is.get();
   LengthField<2> length;
   length.ReadBinary( is );
   if( is )
   {
+#ifndef BCI_TOOL
+    char* messageBuffer = new char[ length ];
+    if( length > 0 )
+    {
+      is.read( messageBuffer, length - 1 );
+      messageBuffer[ length - 1 ] = is.get();
+      if( !is )
+        return;
+    }
+    istringstream is( string( messageBuffer, length ) );
+    delete[] messageBuffer;
+#endif // BCI_TOOL
     switch( descSupp )
     {
       CONSIDER( STATEVECTOR );
@@ -117,4 +135,5 @@ template ostream& MessageHandler::PutMessage( std::ostream&, const STATUS& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const GenericSignal& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisCfg& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisMemo& );
+
 
