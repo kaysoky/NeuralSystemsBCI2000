@@ -17,7 +17,7 @@
 #include "PresBroadcasting.h"
 #include "PresModel.h"
 #include "TrialStatistics.h"
-#include "TaskLogFile.h"
+#include "LogFile.h"
 
 #include <time.h>
 
@@ -137,7 +137,7 @@ class TTask : public GenericFilter, private TPresBroadcaster, TPresListener
     bool                 mIsFirstInitialize;
     time_t               mRunStart;
     GenericVisualization mTaskLogVis;
-    TaskLogFile          mTaskLogFile;
+    LogFile              mTaskLogFile;
 } ;
 
 #endif // TaskH

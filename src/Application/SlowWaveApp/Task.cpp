@@ -54,6 +54,7 @@ TTask::TTask()
   mBaseBegin( 0 ),
   mBaseEnd( 0 ),
   mTaskLogVis( SOURCEID::TASKLOG, VISTYPE::MEMO ),
+  mTaskLogFile( ".apl" ),
   mRunCount( 1 ),
   mRunStart( 0 ),
   mIsFirstInitialize( true )
