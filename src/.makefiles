@@ -1,6 +1,6 @@
 d2 1
 DONTCLEANME=true # Uncomment this line if you edit this file.
-MAKEFILES =\
+MAKEFILES =\ 
 .\Application\LittleDemoApp\LittleDemoApp.mak \ 
 .\Application\Oddball\Oddball.mak \ 
 .\Application\P3Speller\P3Speller.mak \ 
@@ -9,8 +9,8 @@ MAKEFILES =\
 .\Application\SlowWaveApp\SWApp.mak \ 
 .\Application\Speller\Speller.mak \ 
 .\EEGsource\DASSource\DASSource.mak \ 
-#.\EEGsource\DTADC\DT2000.mak \ 
-#.\EEGsource\NIDAQ\NISource.mak \ 
+.\EEGsource\DTADC\DT2000.mak \ 
+.\EEGsource\NIDAQ\NISource.mak \ 
 .\EEGsource\RandomNumber\RandomNumber.mak \ 
 .\Operator\operat.mak \ 
 .\SignalProcessing\AR\ARSignalProcessing.mak \ 
@@ -18,7 +18,7 @@ MAKEFILES =\
 .\SignalProcessing\P3\P3SignalProcessing.mak \ 
 #.\SignalProcessing\PeakDetector\PeakDetectSignalProcessing.mak \ 
 .\SignalProcessing\SWSignalProcessing\SignalProcessing.mak \ 
-#.\Tools\BCI2000toASCII\BCI2ASCII.mak \ 
+.\Tools\BCI2000toASCII\BCI2ASCII.mak \ 
 .\Tools\BCI2000toGAB\BCI2GAB.mak \ 
 .\Tools\GenerateCalibration\calibgen.mak \ 
 .\Tools\Maxifred\maxifred.mak \ 

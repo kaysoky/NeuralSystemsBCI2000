@@ -80,7 +80,7 @@ all: ${MAKEFILES:.mak=.all}
 
 # Prepare source files for opening projects without crashing(!) the Borland IDE.
 prepare: ${MAKEFILES:.mak=.prepare}
-  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i ${QUIET}
+  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r %i
 !ifndef DONTCLEANME
   -${SHELL} attrib -r ${MKNAM}
 !endif
@@ -88,7 +88,7 @@ prepare: ${MAKEFILES:.mak=.prepare}
 
 # Cleanup
 clean: prepare ${MAKEFILES:.mak=.clean}
-  -${SHELL} for /R %i in (${GARBAGE}) do del %i ${QUIET}
+  -${SHELL} for /R %i in (${GARBAGE}) do del %i
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
