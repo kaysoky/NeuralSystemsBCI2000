@@ -8,7 +8,7 @@ MAKEFILES =\
 .\Application\Screening\Screen.mak \ 
 .\Application\SlowWaveApp\SWApp.mak \ 
 .\Application\Speller\Speller.mak \ 
-.\EEGsource\ComputerBoard\DASSource.mak \ 
+.\EEGsource\DASSource\DASSource.mak \ 
 #.\EEGsource\DTADC\DT2000.mak \ 
 #.\EEGsource\NIDAQ\NISource.mak \ 
 .\EEGsource\RandomNumber\RandomNumber.mak \ 
