@@ -8,6 +8,7 @@
 //          standard output as a BCI2000 compliant binary stream.
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,8 @@ string ToolInfo[] =
     "applies the " FILTER_NAME ", "
     "and writes its output to the standard "
     "output as a BCI2000 compliant binary stream.",
+  "-o <file>, --operator <file>\tdirect visualization messages to <file>",
+  "                            \tinstead of /dev/null",
   ""
 };
 
@@ -41,10 +44,12 @@ class FilterWrapper : public MessageHandler
   FilterWrapper( ostream& arOut )
   : mrOut( arOut ), mpStatevector( NULL ), mpFilter( NULL ) {}
   ~FilterWrapper() { delete mpStatevector; delete mpFilter; }
+  void RedirectOperator( string file ) { mOperator.open( file.c_str() ); }
   static const char* FilterName();
 
  private:
   ostream& mrOut;
+  ofstream mOperator;
   GenericSignal mOutputSignal;
   PARAMLIST mParamlist;
   STATELIST mStatelist;
@@ -75,9 +80,14 @@ ToolInit()
 ToolResult
 ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
-  if( arOptions.size() > 0 )
-    return illegalOption;
   FilterWrapper wrapper( arOut );
+  if( arOptions.size() == 1 )
+  {
+    string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
+    if( operatorFile == "" )
+      return illegalInput;
+    wrapper.RedirectOperator( operatorFile.c_str() );
+  }
   while( arIn && arIn.peek() != EOF )
     wrapper.HandleMessage( arIn );
   if( !arIn )
@@ -159,25 +169,37 @@ FilterWrapper::HandleVisSignal( istream& arIn )
     switch( Environment::GetPhase() )
     {
       case Environment::nonaccess:
-        Environment::EnterConstructionPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
-        GenericFilter::InstantiateFilters();
-        mpFilter = GenericFilter::GetFilter<GenericFilter>();
-        if( __bcierr.flushes() > 0 )
-          break;
+        {
+          PARAMLIST filterParams;
+          STATELIST filterStates;
+          Environment::EnterConstructionPhase( &filterParams, &filterStates, NULL, &mOperator );
+          GenericFilter::InstantiateFilters();
+          mpFilter = GenericFilter::GetFilter<GenericFilter>();
+          if( __bcierr.flushes() > 0 )
+            break;
+          // Add the filter's parameters with their default values to the parameter
+          // list as far as they are missing from the input stream.
+          for( PARAMLIST::iterator i = filterParams.begin(); i != filterParams.end(); ++i )
+            if( mParamlist.find( i->second.GetName() ) == mParamlist.end() )
+              mParamlist[ i->second.GetName() ] = i->second;
+          // If there are no states in the input stream, use the filter's states.
+          if( mStatelist.GetNumStates() == 0 )
+            mStatelist = filterStates;
+        }
         /* no break */
       case Environment::construction:
         if( mpStatevector == NULL )
           mpStatevector = new STATEVECTOR( &mStatelist, true );
         for( int i = 0; i < mStatelist.GetNumStates(); ++i )
           PutMessage( mrOut, *mStatelist.GetStatePtr( i ) );
-        Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
         mpFilter->Preflight( inputSignal, outputProperties );
         mOutputSignal.SetProperties( outputProperties );
         if( __bcierr.flushes() > 0 )
           break;
         /* no break */
       case Environment::preflight:
-        Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
         mpFilter->Initialize();
         if( __bcierr.flushes() > 0 )
           break;
@@ -187,7 +209,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         for( PARAMLIST::const_iterator i = mParamlist.begin();
                                        i != mParamlist.end(); ++i )
           PutMessage( mrOut, i->second );
-        Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
+        Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
         /* no break */
       case Environment::processing:
         {
