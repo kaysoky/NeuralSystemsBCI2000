@@ -13,7 +13,8 @@ PROJECTS = LittleDemoApp.exe Oddball.exe P3Speller.exe RJB.exe Screen.exe \
   SWApp.exe Speller.exe D2Box.exe DASSource.exe DT2000.exe NISource.exe \
   RDAClient.exe RandomNumber.exe operat.exe ARSignalProcessing.exe \
   FIRProcessing.exe P3SignalProcessing.exe PeakDetectSignalProcessing.exe \
-  SignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe calibgen.exe maxifred.exe
+  SignalProcessing.exe DummySignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe \
+  calibgen.exe maxifred.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -107,6 +108,10 @@ RDAClient.exe: EEGsource\RDAClient\RDAClient.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 D2Box.exe: Application\d2box\D2Box.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DummySignalProcessing.exe: SignalProcessing\Dummy\DummySignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
