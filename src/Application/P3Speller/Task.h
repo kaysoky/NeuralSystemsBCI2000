@@ -34,6 +34,7 @@ class TTask : public GenericFilter
         FILE            *f;
         bool            debug;
         AnsiString      textresult;
+        int             P3TestMode;
         /*shidong ends*/
         void            ResetTaskSequence();
         void            ProcessPostSequence();
@@ -47,7 +48,7 @@ class TTask : public GenericFilter
           TTask();
   virtual ~TTask();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const {}
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
   void StopRun();

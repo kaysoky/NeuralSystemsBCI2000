@@ -65,7 +65,10 @@ TTask::TTask()
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
       "Duration before set of n intensifications in units of SampleBlocks",
   "P3Speller string TextResult = %20 %20 %20 %20 //"
-      "User spell result", 
+      "User spell result",
+  "P3Speller int P3TestMode = 0 0 0 1 //"
+      "P3TestMode (0=no, 1=yes) (boolean)",
+
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -126,6 +129,13 @@ char *current_directory(char *path)
   return(path);
 }
 
+
+void TTask::Preflight( const SignalProperties&, SignalProperties& ) const
+{
+}//Preflight
+
+
+
 // **************************************************************************
 // Function:   Initialize
 // Purpose:    Initializes the task, e.g., resets the trial sequence, etc.
@@ -146,6 +156,8 @@ int     ret, numerpsamples, sampleblocksize;
   PreflightCondition( Parameter("NumMatrixColumns")*Parameter("NumMatrixRows") ==  Parameter("TargetDefinitionMatrix")->GetNumRows() );
   textresult = ( const char* )Parameter("TextResult");
   if(debug) fprintf(f, "In Initialize, its length is %d, andtextresult is %s.\n", textresult.Length(), textresult);
+  P3TestMode = Parameter("P3TestMode");
+
 /*shidong ends*/
 
   mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
@@ -308,7 +320,30 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
   mVis.Send( memotext ); */
 //if(debug)fprintf(f, "pickedtargetID is %d, pickedrow is %d, pickedcol is %d, result is %s.\n", pickedtargetID, pickedrow+1, pickedcol+1, pickedtargetptr->CharDisplayInResult);
 
- return(pickedtargetptr->CharDisplayInResult);
+        if (P3TestMode == 1)            //if testmode
+        {
+                TARGET *temp;
+                AnsiString toRet ="";
+                for(int i=0; i<userdisplay->activetargets->GetNumTargets(); i++)
+                {
+                      temp = userdisplay->activetargets->GetTargetPtr(i+1);
+                      if (temp->IsClickedOn())
+                      {         //get the last target that is clicked
+                                toRet = temp->CharDisplayInResult;
+                      }
+                }
+                if(toRet == "")
+                {
+                        return(pickedtargetptr->CharDisplayInResult);
+                }
+                else
+                {
+                        return toRet;
+                }
+        }
+
+        return(pickedtargetptr->CharDisplayInResult);
+
  /*shidong ends*/
 }
 
@@ -362,9 +397,13 @@ int     i;
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
        /*shidong starts*/
         
-       
 
-       if (predchar == "<BS>")           //check for backspace
+       if (predchar == "<END>")                         //check for user "end" input
+       {
+         State("Running")=0;
+        //return;        
+       }
+       else if (predchar == "<BS>")           //check for backspace
        {
         trialsequence->char2spellidx -= 1;
         if (trialsequence->char2spellidx < 1)           //if 1st predchar is <BS>
