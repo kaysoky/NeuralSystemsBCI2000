@@ -118,12 +118,6 @@ void TTask::Initialize()
         timelimit=              Parameter("TimeLimit");
 
         mTaskLog.Initialize();
-        mTaskLog << mTaskLog.FilePath() << '\n';
-
-        time_t ctime= time(NULL);
-        struct tm* tblock= localtime(&ctime);
-        mTaskLog << asctime( tblock ) << '\n';
-
         bitrate.Initialize(Ntargets);
 
         trial=1;
@@ -137,6 +131,7 @@ void TTask::Initialize()
         targetcount= 0;
         ranflag= 0;
 
+        time_t ctime= time(NULL);
         time( &ctime );
         randseed= -ctime;
 
