@@ -127,7 +127,7 @@ const size_t signalDepth = 2;
   for (int ch=0; ch<Parameter("SoftwareCh"); ch++)
    {
    PreflightCondition( Parameter("SourceChGain", ch) > 0 );
-   PreflightCondition( abs(Parameter("SourceChOffset", ch)) < 0.0001 );
+   PreflightCondition( fabs(Parameter("SourceChOffset", ch)) < 0.0001 );
    }
 
   // # devices has to equal # entries in SoftwareChDevices
@@ -252,10 +252,10 @@ REF     CommonReference;
 
  //
  // at the moment, we CANNOT determine whether we've lost some data
- // thus, we set the timeout to be small, i.e., 1.5 times the size of
+ // thus, we set the timeout to be small, e.g., 3 times the size of
  // one sample block and simply give a warning
  // this is not perfect but I simply can't do it better at the moment
- timeoutms=(int)((Parameter("SampleBlockSize")/Parameter("SamplingRate"))*1000*1.5);
+ timeoutms=(int)((Parameter("SampleBlockSize")/Parameter("SamplingRate"))*1000*3);
 
  // determine the number of devices and allocate the buffers accordingly
  numdevices=Parameter("DeviceIDs")->GetNumValues();
@@ -396,8 +396,6 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
 // **************************************************************************
 void gUSBampADC::Halt()
 {
- // int tintifax=State("Running");
-
  // stop the master first
  for (unsigned int dev=0; dev<hdev.size(); dev++)
   {
