@@ -26,9 +26,9 @@ private:
 public:
        CalibrationFilter(PARAMLIST *plist, STATELIST *slist);
        CalibrationFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~CalibrationFilter();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *corecomm);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~CalibrationFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *corecomm);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
 

@@ -79,7 +79,7 @@ TemporalFilter::~TemporalFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int     i,j;
 int     visualizeyn;
@@ -103,7 +103,7 @@ int     nBuf;
         m_coef=      atoi(paramlist->GetParamPtr("FIRFilteredChannels")->GetValue());     // get output dim of spatial filtering
   }
  catch(...)
-  { return(0); }
+  { return; }
 
         n_coef= samples * datawindows;
         n_coef= paramlist->GetParamPtr("FIRFilterKernal")->GetNumValuesDimension2();
@@ -145,7 +145,7 @@ int     nBuf;
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 // **************************************************************************
@@ -156,7 +156,7 @@ int     nBuf;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int TemporalFilter::Process(GenericSignal *input, GenericSignal *output)
+void TemporalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int   out_channel;
 float value[MAXDATA];
@@ -216,7 +216,7 @@ static count= 0;
               vis->Send2Operator(output);
         }
 
-   return(1);
+   return;
 }
 
 

@@ -4,15 +4,16 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <vcl.h>
 #pragma hdrstop
 
-#include "Task.h"
-#include "Usr.h"
-#include "BCIDirectry.h"
-
+#include <vector>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <dos.h>
 
+#include "UState.h"
+#include "BCIDirectry.h"
+#include "Usr.h"
+#include "Task.h"
 
 TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
 {
@@ -68,17 +69,14 @@ TTask::~TTask( void )
 }
 
 
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
 {
         STATELIST *slist;
         AnsiString FInit,SSes,SName,AName;
         BCIDtry *bcidtry;
         char FName[256];
-        char slash[2];
         time_t ctime;
         struct tm *tblock;
-
-        Applic= applic;
 
         corecomm=new_corecomm;
 
@@ -108,9 +106,7 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
 
                 strcpy(FName, bcidtry->ProcSubDir() );
 
-                slash[0]= 0x5c;
-                slash[1]= 0x00;
-                strcat(FName,slash);
+                strcat(FName,"\\");
 
                 AName= SName + "S" + SSes + ".apl";
                 strcat(FName, AName.c_str() );               // cpy vs cat
@@ -525,8 +521,9 @@ void TTask::Rest( void )
 
 }
 
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
+        const std::vector< float >& signals = Input->GetChannel( 0 );
 
         ReadStateValues( svect );
 
@@ -534,7 +531,7 @@ void TTask::Process( short *signals )
         {
                 if(CurrentRest > 0 )             Rest();
                 else if (CurrentIti > 0)         Iti();
-                else if (CurrentFeedback > 0 )   Feedback( signals[1], signals[0] );
+                else if (CurrentFeedback > 0 )   Feedback(signals[1], signals[0]);
                 else if (CurrentOutcome  > 0 )   Outcome();
                 else if (CurrentTarget   > 0 )   Ptp();
         }

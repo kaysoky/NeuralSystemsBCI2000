@@ -25,7 +25,7 @@ public:
        int      Initialize(PARAMLIST *plist, STATEVECTOR *svector, CORECOMM *);
        int      Process(char *buf);
        int      Resting(char *buf);
-       bool     error;
+       bool     was_error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
        TemporalFilter     *tempfilter;

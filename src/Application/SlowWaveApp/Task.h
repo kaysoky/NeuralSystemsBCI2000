@@ -13,7 +13,7 @@ Task.h is the header file for the Right Justified Boxes task
 
 #define NTARGS  8
 
-class TTask
+class TTask : public GenericFilter
 {
 private:
         STATEVECTOR             *svect;
@@ -26,10 +26,11 @@ private:
         TClassSequencer *ClassSequencer;
 
 public:
-        void Initialize(PARAMLIST *plist, STATEVECTOR *, CORECOMM *, TApplication *applic);
-        void Process(short * );
-        TTask(PARAMLIST *plist, STATELIST *slist);
-        ~TTask( void );
+          TTask( PARAMLIST*, STATELIST* );
+  virtual ~TTask();
+
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 } ;
 
 #endif

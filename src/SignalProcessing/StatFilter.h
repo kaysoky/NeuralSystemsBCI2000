@@ -59,9 +59,9 @@ private:
 public:
        StatFilter(PARAMLIST *plist, STATELIST *slist);
        StatFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~StatFilter();
+  virtual ~StatFilter();
        int Resting( ClassFilter * );
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
        int Process(    //	CalibrationFilter *Calf,
 		       //	SpatialFilter *Sf,
 		       //	TemporalFilter *Tf,

@@ -80,7 +80,9 @@ bool    flag;
 
  if ((!paramlist->GetParamPtr("SamplingRate")) || (!paramlist->GetParamPtr("TransmitCh")) || (!paramlist->GetParamPtr("SampleBlockSize")))
     {
+#if 0
     error.SetErrorMsg("SamplingRate, TransmitCh, or SampleBlockSize not defined !!");
+#endif
     return(0);
     }
 
@@ -129,7 +131,9 @@ int     value, i, buffersize, time2wait;
     {
     if (dtfun.Start() == 0)
        {
+#if 0
        error.SetErrorMsg("Could not start up data acquisition. Wrong board name ?");
+#endif
        return(0);
        }
     else

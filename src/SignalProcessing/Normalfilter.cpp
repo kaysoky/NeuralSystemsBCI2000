@@ -79,7 +79,7 @@ NormalFilter::~NormalFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int NormalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void NormalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int visualizeyn;
 
@@ -100,7 +100,7 @@ int visualizeyn;
 
   }
  catch(...)
-  { return(0); }
+  { return; }
 
  if( visualizeyn == 1 )
  {
@@ -117,7 +117,7 @@ int visualizeyn;
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 // **************************************************************************
@@ -128,7 +128,7 @@ int visualizeyn;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int NormalFilter::Process(GenericSignal *input, GenericSignal *output)
+void NormalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int     in_channel, out_channel,sample;
 float   val_ud;
@@ -156,7 +156,7 @@ float   value;
            vis->SetSourceID(SOURCEID_NORMALIZER);
            vis->Send2Operator( output );
       }
-      return(1);
+      return;
 }
 
 

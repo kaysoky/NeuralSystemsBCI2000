@@ -60,13 +60,13 @@ char line[512];
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-TTask::~TTask( void )
+TTask::~TTask()
 {
- if (vis)               delete vis;
- if (targetsequence)    delete targetsequence;
- if (trialsequence)     delete trialsequence;
- if (userdisplay)       delete userdisplay;
- if (cur_time)          delete cur_time;
+ delete vis;
+ delete targetsequence;
+ delete trialsequence;
+ delete userdisplay;
+ delete cur_time;
 
  vis=NULL;
  cur_time=NULL;
@@ -85,15 +85,13 @@ TTask::~TTask( void )
 //             applic       - pointer to the current application
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM* new_corecomm)
 {
 TColor  BackgroundColor;
 char    memotext[256];
 int     ret;
 
- corecomm=new_corecomm;
-
- if (vis) delete vis;
+ delete vis;
  vis= new GenericVisualization( plist, corecomm );
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
@@ -167,9 +165,11 @@ void TTask::HandleSelected(TARGET *selected)
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
 // Returns:    N/A
 // **************************************************************************
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input,
+                           GenericSignal* Output )
 {
-TARGET  *selected;
+ const std::vector< float >& signals = Input->GetChannel( 0 );
+ TARGET  *selected;
 
  // use the current control signal to proceed within the trial sequence
  selected=trialsequence->Process(signals);

@@ -6,6 +6,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include <math.h>
+#include "UState.h"
 #include "SWFilter.h"
 
 //---------------------------------------------------------------------------
@@ -30,7 +31,7 @@
     // Initialize(paramlist);
   }
 
-  int TSetBaseline::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm)
+  void TSetBaseline::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm)
   {
     int AkElements;
     int visualizeyn;
@@ -78,7 +79,7 @@
     OldBLState = false;
     PosInTrial = -1;
     Initialized = true;
-    return 1;
+    return;
   }
 
   TSetBaseline::~TSetBaseline()
@@ -94,7 +95,7 @@
    return BLSignal;
   }
 
-  int TSetBaseline::Process(GenericSignal *InputSignal)
+  void TSetBaseline::Process(const GenericSignal*, GenericSignal *InputSignal)
   {
    int AkElements;
 
@@ -139,7 +140,7 @@
               vis->SetSourceID(81);
               vis->Send2Operator(InputSignal);
         }
-  return(1);
+  return;
   }
 
 
@@ -170,7 +171,7 @@
    }
   }
 
-  int TFBArteCorrection::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
+  void TFBArteCorrection::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
   {
     int visualizeyn;
     statevector = Newstatevector;
@@ -207,10 +208,10 @@
  }
 
    Initialized = true;
-   return(1);
+   return;
   }
 
-  int TFBArteCorrection::Process(GenericSignal *InputSignal)
+  void TFBArteCorrection::Process(const GenericSignal*, GenericSignal* InputSignal)
   {
    float ControlSignal;
    float ArteSignal;
@@ -238,7 +239,7 @@
               vis->SetSourceID(82);
               vis->Send2Operator(InputSignal);
         }
-   return(1);
+   return;
   }
 
 // ----------- TSW class definitions ----------------------------------------
@@ -286,7 +287,7 @@
    }
   }
 
-  int TSW::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
+  void TSW::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm)
   {
     int n;
     int visualizeyn;
@@ -333,7 +334,7 @@
         visualize=false;
  }
     PosInTrial = -1;
-   return(1);
+   return;
   }
 
 
@@ -431,7 +432,7 @@
        PosInBuffer = BufferOffset;
   }
 
-  void TSW::AvgToBuffer(GenericSignal *InputSignal)
+  void TSW::AvgToBuffer(const GenericSignal *InputSignal)
   {
        for (short m=0; m <SWCh ; m ++) {
            float zsum=0;
@@ -475,7 +476,7 @@
      }
   }
 
-  int TSW::Process(GenericSignal *InputSignal, GenericSignal *OutputSignal)
+  void TSW::Process(const GenericSignal *InputSignal, GenericSignal *OutputSignal)
   {
        ++PosInTrial;
        if (PosInBuffer<(AvgBufferSize-1)) ++PosInBuffer;
@@ -489,5 +490,5 @@
               vis->SetSourceID(80);
               vis->Send2Operator(OutputSignal);
         }
-   return(1);
+   return;
   }

@@ -6,7 +6,6 @@
 
 #include <Scktcomp.hpp>
 
-#include "UBCI2000Error.h"
 #include "CalibrationFilter.h"
 #include "SpatialFilter.h"
 #include "ARFilter.h"
@@ -27,7 +26,6 @@ public:
        int      Process(char *buf);
        int      Resting(char *buf);
        bool     was_error;
-       BCI2000ERROR       error;
        CalibrationFilter  *calfilter;
        SpatialFilter      *spatfilter;
        TemporalFilter     *tempfilter;

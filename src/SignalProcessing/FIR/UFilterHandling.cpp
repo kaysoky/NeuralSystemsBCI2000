@@ -24,19 +24,19 @@ FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 {
 char line[512];
 
- error=false;
+ was_error=false;
  calfilter=new CalibrationFilter(plist, slist);
- if (!calfilter) error=true;
+ if (!calfilter) was_error=true;
  spatfilter= new SpatialFilter(plist, slist);
- if(!spatfilter) error=true;
+ if(!spatfilter) was_error=true;
  tempfilter= new TemporalFilter(plist, slist);
- if(!tempfilter) error= true;
+ if(!tempfilter) was_error= true;
  classfilter= new ClassFilter(plist, slist );
- if(!classfilter) error= true;
+ if(!classfilter) was_error= true;
  normalfilter= new NormalFilter( plist, slist );
- if(!normalfilter) error= true;
+ if(!normalfilter) was_error= true;
  statfilter= new StatFilter( plist, slist );
- if(!statfilter) error= true;
+ if(!statfilter) was_error= true;
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128    // the number of transmitted control signals");
  plist->AddParameter2List(line, strlen(line));
@@ -123,18 +123,13 @@ int     res, returnval;
 
 
   // now, here place the code to initalize your filter
- res= calfilter->Initialize(plist, svector, corecomm);
- if( res==0) returnval= 0;
- res= spatfilter->Initialize(plist, svector, corecomm);
- if (res == 0) returnval=0;
- res= tempfilter->Initialize(plist, svector, corecomm);
- if(res == 0 ) returnval= 0;
+ calfilter->Initialize(plist, svector, corecomm);
+ spatfilter->Initialize(plist, svector, corecomm);
+ tempfilter->Initialize(plist, svector, corecomm);
  ND= tempfilter->nPoints;
- res= classfilter->Initialize(plist, svector, corecomm, ND);
- if( res == 0 ) returnval= 0;
- res= normalfilter->Initialize( plist, svector, corecomm);
- if( res == 0 ) returnval= 0;
- res= statfilter->Initialize( plist, svector, corecomm);
+ classfilter->Initialize(plist, svector, corecomm, ND);
+ normalfilter->Initialize( plist, svector, corecomm);
+ statfilter->Initialize( plist, svector, corecomm);
 
   SignalD=new GenericSignal(MD, ND);
   SignalE=new GenericSignal(ME, 1);
@@ -177,18 +172,12 @@ int res, returnval;
  returnval=1;
 
  // now, here place the code to let your filters process the signals
- res=calfilter->Process(SignalA, SignalB);
- if (res == 0) returnval=0;
- res=spatfilter->Process(SignalB, SignalC);
- if( res == 0) returnval= 0;
- res=tempfilter->Process(SignalC, SignalD);
- if( res == 0 ) returnval= 0;
- res=classfilter->Process(SignalD, SignalE);
- if( res == 0 ) returnval= 0;
- res= normalfilter->Process(SignalE, SignalF);
- if( res == 0 ) returnval= 0;
- res= statfilter->Process(SignalE, normalfilter, SignalF);
- if( res == 0 ) returnval= 0;
+ calfilter->Process(SignalA, SignalB);
+ spatfilter->Process(SignalB, SignalC);
+ tempfilter->Process(SignalC, SignalD);
+ classfilter->Process(SignalD, SignalE);
+ normalfilter->Process(SignalE, SignalF);
+ statfilter->Process(SignalE, normalfilter, SignalF);
 
  return(returnval);
 }

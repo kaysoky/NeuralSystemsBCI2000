@@ -43,9 +43,9 @@ public:
 
        ClassFilter(PARAMLIST *plist, STATELIST *slist);
        ClassFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~ClassFilter();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *, int);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~ClassFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
 

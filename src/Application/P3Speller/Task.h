@@ -2,6 +2,7 @@
 #define TaskH
 
 #include <stdio.h>
+#include <vector>
 
 #include "UBCITime.h"
 #include "UCoreComm.h"
@@ -12,9 +13,9 @@
 #include "UserDisplay.h"
 #include "UTrialSequence.h"
 
-class TTask
+class TTask : public GenericFilter
 {
-private:
+ private:
         GenericVisualization    *vis;
         TARGETLIST      *targets, oldactivetargets;
         USERDISPLAY     *userdisplay;
@@ -29,7 +30,7 @@ private:
         int             numberofsequences;              // how many sets of 12 intensifications ?
         int             postsetinterval;                // how much time after each set of numberofsequences sequences ?
         int             presetinterval;                 // how much time before each set of numberofsequences sequences ?
-        void            ProcessSigProcResults( short *signals );
+        void            ProcessSigProcResults( const std::vector<float>& signals );
         int             responsecount[NUM_STIMULI];
         float           response[NUM_STIMULI];
         void            ResetTaskSequence();
@@ -40,10 +41,11 @@ private:
         AnsiString      DeterminePredictedCharacter();
         FILE            *logfile;
         int             cur_runnr;
-public:
-        TTask::TTask(PARAMLIST *plist, STATELIST *slist);
-        TTask::~TTask( void );
-        void Initialize(PARAMLIST *plist, STATEVECTOR *, CORECOMM *, TApplication *);
-        void Process(short * );
+ public:
+          TTask( PARAMLIST*, STATELIST* );
+  virtual ~TTask();
+
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
+  virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 #endif

@@ -4,14 +4,16 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <vcl.h>
 #pragma hdrstop
 
-#include "Task.h"
-#include "Usr.h"
-#include "BCIDirectry.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <dos.h>
+
+#include "UState.h"
+#include "BCIDirectry.h"
+
+#include "Usr.h"
+#include "Task.h"
 
 
 TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
@@ -66,7 +68,7 @@ TTask::~TTask( void )
 }
 
 
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
 {
         STATELIST       *slist;
         AnsiString FInit,SSes,SName,AName;
@@ -75,8 +77,6 @@ void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_
         char slash[2];
         time_t ctime;
         struct tm *tblock;
-
-        Applic= applic;
 
         corecomm=new_corecomm;
 
@@ -417,8 +417,9 @@ void TTask::Rest( void )
 
 }
 
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
+        const std::vector< float >& signals = Input->GetChannel( 0 );
 
         ReadStateValues( svect );
 

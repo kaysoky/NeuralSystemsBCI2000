@@ -66,7 +66,7 @@ PeakDetector::~PeakDetector()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int PeakDetector::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void PeakDetector::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int     i,j;
 int     visualizeyn;
@@ -88,7 +88,7 @@ int     nBuf;
         targetchneg=    atoi(paramlist->GetParamPtr("TargetChannelNeg")->GetValue());;
   }
  catch(...)
-  { return(0); }
+  { return; }
 
  if ( visualizeyn == 1 )
     {
@@ -111,7 +111,7 @@ int     nBuf;
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 
@@ -123,7 +123,7 @@ int     nBuf;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int PeakDetector::Process(GenericSignal *input, GenericSignal *output)
+void PeakDetector::Process(const GenericSignal *input, GenericSignal *output)
 {
 int   ch, sample;
 int   num_pos_peaks, num_neg_peaks;
@@ -134,22 +134,22 @@ static bool first=true;
     {
     first=false;
     for (ch=0; ch < 2; ch++)
-     for (sample=0; sample < output->MaxElements; sample++)
+     for (sample=0; sample < output->MaxElements(); sample++)
       output->SetValue(ch, sample, 0);
     }
 
  // shift the number of peaks to the left to make room for the new number of peaks
  for (ch=0; ch < 2; ch++)
-  for (sample=1; sample < output->MaxElements; sample++)
+  for (sample=1; sample < output->MaxElements(); sample++)
    output->SetValue(ch, sample-1, output->GetValue(ch, sample));
 
  // calculate the new number of peaks and assign them to the right-most (i.e., most recent) position
  num_pos_peaks=get_num_pos_peaks(input, targetchpos);
  num_neg_peaks=get_num_neg_peaks(input, targetchneg);
  // channel 0 ... number of positive peaks
- output->SetValue(0, output->MaxElements-1, num_pos_peaks);
+ output->SetValue(0, output->MaxElements()-1, num_pos_peaks);
  // channel 1 ... number of negative peaks
- output->SetValue(1, output->MaxElements-1, num_neg_peaks);
+ output->SetValue(1, output->MaxElements()-1, num_neg_peaks);
 
  // FILE *fp=fopen("c:\\data.txt", "ab");
  // fprintf(fp, "%d\r\n", num_pos_peaks);
@@ -161,12 +161,12 @@ static bool first=true;
     vis->Send2Operator(output);
     }
 
- return(1);
+ return;
 }
 
 
 // detect number of positive peaks
-int PeakDetector::get_num_pos_peaks(GenericSignal *input, int channel)
+int PeakDetector::get_num_pos_peaks(const GenericSignal *input, int channel)
 {
 int     cur_idx, peak_ptr;
 float   current_val, next_val;
@@ -177,7 +177,7 @@ int     num_peaks;
  peak_flag=false;
  num_peaks=0;
 
- for (cur_idx=0; cur_idx<input->MaxElements-1; cur_idx++)
+ for (cur_idx=0; cur_idx<input->MaxElements()-1; cur_idx++)
   {
   current_val=fabs((float)input->GetValue(channel, cur_idx));
   next_val=fabs((float)input->GetValue(channel, cur_idx+1));
@@ -201,7 +201,7 @@ int     num_peaks;
 
 
 // detect number of negative peaks
-int PeakDetector::get_num_neg_peaks(GenericSignal *input, int channel)
+int PeakDetector::get_num_neg_peaks(const GenericSignal *input, int channel)
 {
 int     cur_idx, peak_ptr;
 float   current_val, next_val;
@@ -212,7 +212,7 @@ int     num_peaks;
  peak_flag=false;
  num_peaks=0;
 
- for (cur_idx=0; cur_idx<input->MaxElements-1; cur_idx++)
+ for (cur_idx=0; cur_idx<input->MaxElements()-1; cur_idx++)
   {
   current_val=fabs((float)input->GetValue(channel, cur_idx));
   next_val=fabs((float)input->GetValue(channel, cur_idx+1));

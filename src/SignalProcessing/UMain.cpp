@@ -40,7 +40,6 @@
 #include <math.h>
 
 #include "..\shared\defines.h"
-#include "UBCI2000Error.h"
 #include "CalibrationFilter.h"
 #include "UFilterHandling.h"
 #include "UGenericVisualization.h"
@@ -132,7 +131,7 @@ int     ret, res;
   res=filters->Initialize(&(fMain->paramlist), statevector, fMain->corecomm);
   if (res == 0)
      {
-     sprintf(errmsg, "408 %s", filters->error.GetErrorMsg());
+     sprintf(errmsg, "408 %s", "Filter initialization error" );
      fMain->corecomm->SendStatus(errmsg);
      ret=0;
      }

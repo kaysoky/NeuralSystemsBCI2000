@@ -66,7 +66,7 @@ SpatialFilter::~SpatialFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int SpatialFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void SpatialFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int     i,j;
 int visualizeyn;
@@ -84,7 +84,7 @@ int visualizeyn;
 
   }
  catch(...)
-  { return(0); }
+  { return; }
 
   for(i=0;i<m_mat;i++)
   {
@@ -113,7 +113,7 @@ int visualizeyn;
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 // **************************************************************************
@@ -124,7 +124,7 @@ int visualizeyn;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int SpatialFilter::Process(GenericSignal *input, GenericSignal *output)
+void SpatialFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int     in_channel, out_channel,sample;
 float   value;
@@ -148,7 +148,7 @@ float   value;
               vis->SetSourceID(SOURCEID_SPATFILT);
               vis->Send2Operator(output);
         }
-   return(1);
+   return;
 }
 
 

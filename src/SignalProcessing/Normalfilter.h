@@ -20,9 +20,9 @@ private:
 public:
        NormalFilter(PARAMLIST *plist, STATELIST *slist);
        NormalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~NormalFilter();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~NormalFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
        int UpdateParameters( float, float, float, float );
 };
 #endif

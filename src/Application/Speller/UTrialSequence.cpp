@@ -270,7 +270,7 @@ char    memotext[256], line[256];
 // Parameters: controlsignal - pointer to the vector of controlsignals (first control signal: up/down; second control signal: left/right)
 // Returns:    N/A
 // **************************************************************************
-void TRIALSEQUENCE::Feedback(short *controlsignal)
+void TRIALSEQUENCE::Feedback(const std::vector<float>& controlsignal)
 {
 char    memotext[256];
 
@@ -433,7 +433,7 @@ void TRIALSEQUENCE::SuspendTrial()
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-TARGET *TRIALSEQUENCE::Process(short *controlsignal)
+TARGET *TRIALSEQUENCE::Process(const std::vector<float>& controlsignal)
 {
 TARGET   *selected;
 unsigned short running;

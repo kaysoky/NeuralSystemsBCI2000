@@ -3,6 +3,7 @@
 #ifndef UTrialSequenceH
 #define UTrialSequenceH
 //---------------------------------------------------------------------------
+#include <vector>
 
 #include "UGenericVisualization.h"
 #include "UserDisplay.h"
@@ -35,7 +36,7 @@ public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
-        int     Process(const short * );
+        int     Process(const std::vector<float>&);
         void    ResetTrialSequence();
         bool    onlinemode;
         TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)

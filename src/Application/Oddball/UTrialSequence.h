@@ -4,6 +4,7 @@
 #define UTrialSequenceH
 //---------------------------------------------------------------------------
 
+#include <vector>
 #include "UGenericVisualization.h"
 #include "UserDisplay.h"
 
@@ -30,7 +31,7 @@ public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
         int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
-        TARGET  *Process(short * );
+        TARGET  *Process(const std::vector<float>&);
         void    ResetTrialSequence();
 };
 #endif

@@ -408,7 +408,7 @@ void TRIALSEQUENCE::SetUserDisplayTexts()
 // Parameters: controlsignal - pointer to the vector of control signals
 // Returns:    pointer to the selected target (if one was selected), or NULL
 // **************************************************************************
-int TRIALSEQUENCE::Process(const short *controlsignal)
+int TRIALSEQUENCE::Process(const std::vector<float>& controlsignal)
 {
 unsigned short running, within;
 int     ret;

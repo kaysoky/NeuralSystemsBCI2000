@@ -3,17 +3,14 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "UFilterHandling.h"
-#include "StatFilter.h"
+#include <math.h>
+#include <stdlib.h>
+
+#include "UState.h"
 #include "BCIDirectry.h"
 
-#include <math.h>
-
-// #include <stdio.h>
-#include <stdlib.h>
-// FILE *Statfile;
-
-// FILE *estat;
+#include "UFilterHandling.h"
+#include "StatFilter.h"
 
 
 //---------------------------------------------------------------------------
@@ -135,7 +132,7 @@ StatFilter::~StatFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
         AnsiString AName,SName,SSes,FInit;
         int visualizeyn;
@@ -179,7 +176,7 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
 
   }
  catch(...)
-  { return(0); }
+  { return; }
 
  // in case NumberTargets defined (maybe we use it with a task that doesn't have different # targets)
  // in this case, of course, all functions of statistics need to be turned off
@@ -279,7 +276,7 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
 
   if (bcidtry) delete bcidtry;
 
-  return(1);
+  return;
 }
 
 //**************************************************************************************

@@ -5,9 +5,12 @@
 
 #include <vcl.h>
 #pragma hdrstop
-#include "AppManager.h"
 
 #include <dir.h>
+
+#include "UState.h"
+#include "UParameter.h"
+#include "AppManager.h"
 
 #pragma package(smart_init)
 
@@ -72,7 +75,7 @@ TSTATUS::TSTATUS()
    if (fabs(Res)<=ZeroInt) statevector->SetStateValue("ResultCode",2);
   }
 
-  float TDecider::Process(short *signals)
+  float TDecider::Process(const std::vector<float>& signals)
   {                   // here also the Classification state could be queried
     if (statevector->GetStateValue("BeginOfTrial")==1) {
        ResultValue = 0;

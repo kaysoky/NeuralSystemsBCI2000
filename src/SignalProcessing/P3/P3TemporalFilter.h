@@ -24,16 +24,16 @@ private:
        void     DeleteAllERPBuffers();
        void     DeleteERPBuffer(int cur_buf);
        int      maxstimuluscode;
-       void     AppendToERPBuffers(GenericSignal *input);
+       void     AppendToERPBuffers(const GenericSignal *input);
        int      ProcessERPBuffers(GenericSignal *output);
        STATEVECTOR     *statevector;
        int      numERPsnecessary, targetERPchannel;
 public:
        P3TemporalFilter(PARAMLIST *plist, STATELIST *slist);
        P3TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~P3TemporalFilter();
-       int      Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int      Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~P3TemporalFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
        int      numsamplesinERP, numchannels;
 };
 #endif

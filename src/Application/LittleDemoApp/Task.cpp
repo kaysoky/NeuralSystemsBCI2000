@@ -1,6 +1,7 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include "UState.h"
 #include "Task.h"
 #include "UBCITime.h"
 
@@ -8,8 +9,6 @@
 TTask::TTask(  PARAMLIST *plist, STATELIST *slist )
 : vis( NULL ),
   svect( NULL ),
-  corecomm( NULL ),
-  Applic( Application ),
   AcousticMode( 0 ),
   form( NULL ),
   progressbar( NULL ),
@@ -73,11 +72,8 @@ TTask::~TTask( void )
 }
 
 
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM* corecomm )
 {
- Applic= applic;
- corecomm=new_corecomm;
-
  AcousticMode=atoi(plist->GetParamPtr("AcousticMode")->GetValue());
 
  svect=new_svect;
@@ -114,22 +110,23 @@ int     pitch;
 }
 
 
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input, GenericSignal* )
 {
-int     cur_pitch, cur_running;
+  const std::vector< float >& signals = Input->GetChannel( 0 );
+  int cur_pitch, cur_running;
 
- cur_pitch=svect->GetStateValue("Pitch");
+  cur_pitch=svect->GetStateValue("Pitch");
 
- cur_running=svect->GetStateValue("Running");
- if (cur_running > 0)
+  cur_running=svect->GetStateValue("Running");
+  if (cur_running > 0)
     {
     // make music
-    cur_pitch=MakeMusic(signals[0]);
+    cur_pitch=MakeMusic( signals[ 0 ] );
     }
 
- svect->SetStateValue("Pitch", 23);
- // time stamp the data
- svect->SetStateValue("StimulusTime", BCITIME::GetBCItime_ms());
+  svect->SetStateValue("Pitch", 23);
+  // time stamp the data
+  svect->SetStateValue("StimulusTime", BCITIME::GetBCItime_ms());
 }
 
 

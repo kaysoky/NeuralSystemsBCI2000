@@ -120,28 +120,22 @@ int     maxchannels, maxelements;
 
 
    // now, here place the code to initalize your filter
- res= calfilter->Initialize(plist, svector, corecomm);
- if( res==0) returnval= 0;
- res= spatfilter->Initialize(plist, svector, corecomm);
- if (res == 0) returnval=0;
+ calfilter->Initialize(plist, svector, corecomm);
+ spatfilter->Initialize(plist, svector, corecomm);
 // res= tempfilter->Initialize(plist, svector, corecomm);
 // if(res == 0 ) returnval= 0;
- res= SWFilter->Initialize(plist, svector, corecomm);
- if(res == 0 ) returnval= 0;
+ SWFilter->Initialize(plist, svector, corecomm);
 
  SignalD=new GenericSignal(MD, 1);
 
- res= SetBaseline->Initialize(plist, svector, SignalD, corecomm);
- if(res == 0 ) returnval= 0;
- res= FBArteCorrection->Initialize(plist, svector, corecomm);
- if(res == 0 ) returnval= 0;
+ SetBaseline->Initialize(plist, svector, SignalD, corecomm);
+ FBArteCorrection->Initialize(plist, svector, corecomm);
 
 // res= classfilter->Initialize(plist, svector, corecomm);
 // if( res == 0 ) returnval= 0;
 // res= tempfilter->Initialize( plist, svector, corecomm);
 // if( res == 0 ) returnval= 0;
- res= normalfilter->Initialize( plist, svector, corecomm);
- if( res == 0 ) returnval= 0;
+ normalfilter->Initialize( plist, svector, corecomm);
 // res= statfilter->Initialize( plist, svector, corecomm);
 
   //ND= tempfilter->nBins;
@@ -192,22 +186,16 @@ int res, returnval;
  returnval=1;
 
  // now, here place the code to let your filters process the signals
- res=calfilter->Process(SignalA, SignalB);
- if (res == 0) returnval=0;
- res=spatfilter->Process(SignalB, SignalC);
- if( res == 0) returnval= 0;
- res=SWFilter->Process(SignalC, SignalD);
- if( res == 0 ) returnval= 0;
- res=SetBaseline->Process(SignalD);
- if( res == 0 ) returnval= 0;
- res=FBArteCorrection->Process(SignalD);
- if( res == 0 ) returnval= 0;
+ calfilter->Process(SignalA, SignalB);
+ spatfilter->Process(SignalB, SignalC);
+ SWFilter->Process(SignalC, SignalD);
+ SetBaseline->Process(NULL,SignalD);
+ FBArteCorrection->Process(NULL,SignalD);
 // res=tempfilter->Process(SignalC, SignalD);
 // if( res == 0 ) returnval= 0;
 // res=classfilter->Process(SignalD, SignalE);
 // if( res == 0 ) returnval= 0;
- res= normalfilter->Process(SignalD, SignalF);
- if( res == 0 ) returnval= 0;
+ normalfilter->Process(SignalD, SignalF);
 // res= statfilter->Process(SignalD, normalfilter, SignalF);
 // if( res == 0 ) returnval= 0;
 

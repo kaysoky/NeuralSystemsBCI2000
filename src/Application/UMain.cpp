@@ -2,7 +2,7 @@
  * Program:   Application.EXE                                                 *
  * Module:    UMAIN.CPP                                                       *
  * Comment:   The Application module for BCI2000                              *
- * Version:   0.24                                                            *
+ * Version:   0.25                                                            *
  * Author:    Gerwin Schalk                                                   *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
@@ -27,6 +27,7 @@
  * V0.22 - 06/07/2001 - upgraded to shared libraries V0.17                    *
  * V0.23 - 08/16/2001 - accumulated bug fixes of V0.22x                       *
  * V0.24 - 08/31/2001 - also uses Synchronize() for Task->Initialize          *
+ * V0.25 - 10/22/2002 - changed TTask interface to GenericFilter interface, jm*
  ******************************************************************************/
 
 //---------------------------------------------------------------------------
@@ -37,8 +38,10 @@
 #include <stdlib.h>
 
 #include "..\shared\defines.h"
+#include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 #include "UCoreMessage.h"
+#include "Task.h"
 #include "UMain.h"
 
 //---------------------------------------------------------------------------
@@ -46,7 +49,8 @@
 #pragma resource "*.dfm"
 
 TfMain *fMain;
-STATEVECTOR     *statevector;
+STATEVECTOR *statevector;
+class TReceivingThread *receiving_thread;
 
 // **************************************************************************
 // Function:   TReceivingThread
@@ -62,7 +66,7 @@ class TReceivingThread : public  TServerClientThread
         int     InitializeApplication();
         int     HandleSigProcMessage(COREMESSAGE *coremessage);
         int     numcontrolsignals, statevectorlength;
-        short   *controlsignals;
+        GenericSignal* controlsignals;
         void __fastcall ProcessTask(void);
         void __fastcall InitializeTask(void);
   public:
@@ -78,15 +82,13 @@ class TReceivingThread : public  TServerClientThread
 // Returns:    N/A
 // **************************************************************************
 //---------------------------------------------------------------------------
-__fastcall TReceivingThread::TReceivingThread(bool CreateSuspended, TServerClientWinSocket* ASocket) : TServerClientThread( CreateSuspended, ASocket )
+__fastcall TReceivingThread::TReceivingThread(bool CreateSuspended, TServerClientWinSocket* ASocket)
+: TServerClientThread( CreateSuspended, ASocket ),
+  controlsignals( NULL ),
+  pStream( NULL )
 {
- controlsignals=NULL;
- pStream=NULL;
 }
 //---------------------------------------------------------------------------
-
-TReceivingThread  *receiving_thread;
-
 
 // **************************************************************************
 // Function:   InitializeApplication
@@ -120,11 +122,11 @@ int     ret;
 
   Synchronize(InitializeTask);
 
-  if (controlsignals) delete [] controlsignals;
-  if (pStream) delete pStream;
+  delete controlsignals;
+  delete pStream;
 
   pStream=new TWinSocketStream(ClientSocket, 5000);
-  controlsignals=new short[numcontrolsignals];
+  controlsignals=new GenericSignal( 1, numcontrolsignals );
   if ((!controlsignals) || (!pStream)) ret=0;
 
  return(ret);
@@ -181,8 +183,8 @@ int     trycount;
     }
    } // end while
 
- if (controlsignals) delete [] controlsignals;
- if (pStream) delete pStream;
+ delete controlsignals;
+ delete pStream;
  ReturnValue=1;
  // shut down connection to the EEGSource
  if (fMain->sendingcomm)
@@ -206,7 +208,7 @@ int     trycount;
 // **************************************************************************
 void __fastcall TReceivingThread::ProcessTask(void)
 {
- fMain->Task->Process( controlsignals );
+ fMain->Task->Process( controlsignals, NULL );
 }
 
 
@@ -220,7 +222,7 @@ void __fastcall TReceivingThread::ProcessTask(void)
 // **************************************************************************
 void __fastcall TReceivingThread::InitializeTask(void)
 {
-  fMain->Task->Initialize(&(fMain->paramlist), statevector, fMain->corecomm, Application);
+  fMain->Task->Initialize(&(fMain->paramlist), statevector, fMain->corecomm);
 }
 
 
@@ -262,7 +264,8 @@ float   sigres;
 
  if (coremessage->GetDescriptor() == COREMSG_DATA)
     {
-    memcpy(controlsignals, coremessage->GetBufPtr()+5, sizeof(short)*numcontrolsignals);
+    //memcpy(controlsignals, coremessage->GetBufPtr()+5, sizeof(short)*numcontrolsignals);
+    controlsignals->SetChannel( ( short* )( coremessage->GetBufPtr() + 5 ), 0 );
 
     // now let the application do its job
     // use the thread's synchronize function to avoid any visual artifact
@@ -371,10 +374,10 @@ static bool inhere=false;
 
  // paramlist.ClearParamList();
  // statelist.ClearStateList();
- if (statevector) delete statevector;
+ delete statevector;
  statevector=NULL;
 
- if( Task ) delete Task;
+ delete Task;
  Task= NULL;
 
  inhere=false;
@@ -389,11 +392,10 @@ static bool inhere=false;
 // **************************************************************************
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
-        : TForm(Owner)
+        : TForm(Owner),
+          Task( NULL ),
+          sendingcomm( NULL )
 {
- statevector=NULL;
- corecomm=NULL;
- sendingcomm=NULL;
 }
 
 //********************************************************************
@@ -402,7 +404,7 @@ __fastcall TfMain::TfMain(TComponent* Owner)
 
 __fastcall TfMain::~TfMain( void )
 {
-        if( Task ) delete Task;
+        delete Task;
         Task= NULL;
 
 }

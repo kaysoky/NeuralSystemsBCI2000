@@ -18,14 +18,14 @@ private:
        float    posthresh, negthresh;
        bool visualize;
        GenericVisualization *vis;
-       int get_num_pos_peaks(GenericSignal *input, int channel);
-       int get_num_neg_peaks(GenericSignal *input, int channel);
+       int get_num_pos_peaks(const GenericSignal *input, int channel);
+       int get_num_neg_peaks(const GenericSignal *input, int channel);
 public:
        int nBins;
        PeakDetector(PARAMLIST *plist, STATELIST *slist);
-       ~PeakDetector();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~PeakDetector();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
 

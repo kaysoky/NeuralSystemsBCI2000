@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include "..\shared\defines.h"
+#include "UState.h"
 
 #include "P3TemporalFilter.h"
 
@@ -85,7 +86,7 @@ P3TemporalFilter::~P3TemporalFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int P3TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void P3TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int     i,j;
 int     visualizeyn;
@@ -105,11 +106,11 @@ char    cur_buf[256];
   maxdispval= atof(paramlist->GetParamPtr("ERPMaxDispVal")->GetValue() );
   }
  catch(...)
-  { return(0); }
+  { return; }
 
  // we can't average 0 ERPs or have 0 samples in an ERP
  if ((numERPsnecessary == 0) || (numsamplesinERP == 0))
-    return(0);
+    return;
 
 
  if ( visualizeyn == 1 )
@@ -147,7 +148,7 @@ char    cur_buf[256];
     vis->Send2Operator(vissignal);
     }
 
- return(1);
+ return;
 }
 
 
@@ -249,7 +250,7 @@ bool    ret;
 // Parameters: input - input signal from the spatial filter to be appended to our buffers
 // Returns:    N/A
 // **************************************************************************
-void P3TemporalFilter::AppendToERPBuffers(GenericSignal *input)
+void P3TemporalFilter::AppendToERPBuffers(const GenericSignal *input)
 {
 int     cur_buf, samples, ch;
 float   oldvalue;
@@ -374,7 +375,7 @@ float   cur_output;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int P3TemporalFilter::Process(GenericSignal *input, GenericSignal *output)
+void P3TemporalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int     i, ret;
 bool    cur_buf;
@@ -382,7 +383,7 @@ bool    cur_buf;
  GetStates();
 
  // don't do anything if we are not running
- if (CurrentRunning == 0) return(1);
+ if (CurrentRunning == 0) return;
 
  // check whether we are starting to get a response for a certain StimulusCode
  if ((CurrentStimulusCode > 0) && (OldStimulusCode == 0))
@@ -390,9 +391,11 @@ bool    cur_buf;
     cur_buf=ApplyForNewERPBuffer(CurrentStimulusCode, CurrentStimulusType, numchannels, numsamplesinERP);
     if (!cur_buf)
        {
+#ifdef OLDERROR
        error.SetErrorMsg("P3 Temporal Filter: Inconsistency or ran out of buffers");
        error.SetErrorCode(415);
-       return(0);
+#endif
+       return;
        }
     }
 
@@ -409,7 +412,7 @@ bool    cur_buf;
  OldStimulusCode=CurrentStimulusCode;
  OldRunning=CurrentRunning;
 
- return(1);
+ return;
 }
 
 

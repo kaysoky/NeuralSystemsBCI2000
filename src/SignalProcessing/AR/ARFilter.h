@@ -35,9 +35,9 @@ public:
        int nBins;
        TemporalFilter(PARAMLIST *plist, STATELIST *slist);
        TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~TemporalFilter();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~TemporalFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
 

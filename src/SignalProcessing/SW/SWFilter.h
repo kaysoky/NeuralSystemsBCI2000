@@ -25,9 +25,9 @@
         GenericVisualization *vis;
   public:
         TSetBaseline(PARAMLIST *paramlist, STATELIST *statelist);
-        ~TSetBaseline();
-        int Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm);
-        int Process(GenericSignal *InputSignal);
+    virtual ~TSetBaseline();
+    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm);
+    virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
         GenericSignal* GetBLSignal();
   };
 
@@ -43,9 +43,9 @@
         GenericVisualization *vis;
   public:
         TFBArteCorrection(PARAMLIST *paramlist, STATELIST *statelist);
-        ~TFBArteCorrection();
-        int Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
-        int Process(GenericSignal *InputSignal);
+    virtual ~TFBArteCorrection();
+    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
+    virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
   };
 
   class TSW : public GenericFilter {
@@ -75,7 +75,7 @@
         float* MinValue;     // MinValue[short SWCh]
         float* MaxValue;     // MaxValue[short SWCh]
     // SW calculation functions
-        void AvgToBuffer(GenericSignal *InputSignal);  // first average: adds to AvgBlockBuffer
+        void AvgToBuffer(const GenericSignal *InputSignal);  // first average: adds to AvgBlockBuffer
         void CorrectTc();
         void AvgToSW(GenericSignal *OutputSignal);      // second average: adds to SWValue
         void CheckArtefacts(GenericSignal *OutputSignal);
@@ -86,10 +86,10 @@
 
   public:
         TSW(PARAMLIST *paramlist, STATELIST *statelist);
-        ~TSW();
-        int Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
+    virtual ~TSW();
+    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, CORECOMM *new_corecomm);
     // data related functions
-        int Process(GenericSignal *InputSignal, GenericSignal *OutputSignal);
+    virtual void Process(const GenericSignal *InputSignal, GenericSignal *OutputSignal);
         float GetAvgBlockValue(short SWCh, int Position);
         GenericSignal* GetAvgBlockBuffer();
    // parameter related functions

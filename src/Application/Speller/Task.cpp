@@ -93,7 +93,7 @@ TTask::~TTask( void )
 //             applic       - pointer to the current application
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
 {
 TColor  BackgroundColor;
 char    memotext[256];
@@ -475,9 +475,10 @@ AnsiString      selectedCaption;
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
 // Returns:    N/A
 // **************************************************************************
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
-TARGET  *selected;
+  const std::vector< float >& signals = Input->GetChannel( 0 );
+  TARGET  *selected;
 
  // use the current control signal to proceed within the trial sequence
  selected=trialsequence->Process(signals);

@@ -5,5 +5,8 @@ start EEGsource\RandomNumber\RandomNumber.exe AUTOSTART 127.0.0.1
 start SignalProcessing\P3\P3SignalProcessing.exe AUTOSTART 127.0.0.1
 cd Application\P3Speller
 start P3Speller.exe AUTOSTART 127.0.0.1
+cd ..\..
+
+
 
 

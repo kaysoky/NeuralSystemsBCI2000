@@ -13,7 +13,7 @@
 #include "UTargetSequence.h"
 #include "UTrialSequence.h"
 
-class TTask
+class TTask : public GenericFilter
 {
 private:
         GenericVisualization    *vis;
@@ -34,9 +34,10 @@ private:
         AnsiString      DetermineCurrentPrefix(AnsiString resulttext);
         AnsiString      DetermineDesiredWord(AnsiString resulttext, AnsiString spelledtext);
 public:
-        TTask::TTask(PARAMLIST *plist, STATELIST *slist);
-        TTask::~TTask( void );
-        void Initialize(PARAMLIST *plist, STATEVECTOR *, CORECOMM *, TApplication *);
-        void Process(short * );
+          TTask( PARAMLIST*, STATELIST* );
+  virtual ~TTask();
+
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 #endif

@@ -3,6 +3,7 @@
 #ifndef UTrialSequenceH
 #define UTrialSequenceH
 //---------------------------------------------------------------------------
+#include <vector>
 
 #include "UGenericVisualization.h"
 #include "UserDisplay.h"
@@ -37,10 +38,10 @@ public:		// User declarations
         int     correcttargetID;                        // targetID of the next correct target
         void    ITI();
         void    PTP();
-        void    Feedback(short *controlsignal);
+        void    Feedback(const std::vector<float>& controlsignal);
         TARGET  *Outcome();
         void    Congratulations();
-        TARGET  *Process(short * );
+        TARGET  *Process(const std::vector<float>&);
         void    ResetTrialSequence();
         void    Switch2Congratulations();
 };

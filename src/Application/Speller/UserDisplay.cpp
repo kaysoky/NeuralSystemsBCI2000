@@ -109,7 +109,7 @@ void USERDISPLAY::InitializeCursorPosition()
 
 // positions the position of the cursor
 // target coordinates 0..65536
-void USERDISPLAY::UpdateCursorPosition(short *controlsignal)
+void USERDISPLAY::UpdateCursorPosition(const std::vector<float>& controlsignal)
 {
  // advance the cursor in pixels (the control signal defines the cursor advancement in pixels)
  // thus, re-scale the control signal (in pixels) into screen coordinates 0..65535

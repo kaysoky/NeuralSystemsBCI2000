@@ -1,15 +1,15 @@
 #include <vcl.h>
 #pragma hdrstop
 
-#include "BCIDirectry.h"
-
-#include "Task.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <dos.h>
 
+#include "UState.h"
+#include "BCIDirectry.h"
+
+#include "Task.h"
 
 // **************************************************************************
 // Function:   TASK
@@ -105,7 +105,7 @@ TTask::~TTask( void )
 //             applic       - pointer to the current application
 // Returns:    N/A
 // **************************************************************************
-void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm)
 {
 AnsiString      FInit, SSes, SName;
 TColor  BackgroundColor;
@@ -375,7 +375,7 @@ int     i;
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
 // Returns:    N/A
 // **************************************************************************
-void TTask::ProcessSigProcResults( short *signals )
+void TTask::ProcessSigProcResults( const std::vector<float>& signals )
 {
 unsigned short cur_stimuluscoderes, cur_stimulustyperes;
 
@@ -397,8 +397,10 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
 // Returns:    N/A
 // **************************************************************************
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input,
+                           GenericSignal* Output )
 {
+const std::vector< float >& signals = Input->GetChannel( 0 );
 char    memotext[256];
 int     ret;
 

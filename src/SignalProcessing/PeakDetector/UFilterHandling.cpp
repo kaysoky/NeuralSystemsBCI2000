@@ -24,19 +24,19 @@ FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 {
 char line[512];
 
- error=false;
+ was_error=false;
  calfilter=new CalibrationFilter(plist, slist);
- if (!calfilter) error=true;
+ if (!calfilter) was_error=true;
  spatfilter= new SpatialFilter(plist, slist);
- if(!spatfilter) error=true;
+ if(!spatfilter) was_error=true;
  peakdetector= new PeakDetector(plist, slist);
- if(!peakdetector) error= true;
+ if(!peakdetector) was_error= true;
  classfilter= new ClassFilter(plist, slist );
- if(!classfilter) error= true;
+ if(!classfilter) was_error= true;
  normalfilter= new NormalFilter( plist, slist );
- if(!normalfilter) error= true;
+ if(!normalfilter) was_error= true;
  statfilter= new StatFilter( plist, slist );
- if(!statfilter) error= true;
+ if(!statfilter) was_error= true;
 
  strcpy(line, "Filtering int NumControlSignals= 2 1 1 128    // the number of transmitted control signals");
  plist->AddParameter2List(line, strlen(line));
@@ -123,32 +123,24 @@ int     maxchannels, maxelements;
 
 
   // now, here place the code to initalize your filter
- res= calfilter->Initialize(plist, svector, corecomm);
- if( res==0) returnval= 0;
- res= spatfilter->Initialize(plist, svector, corecomm);
- if (res == 0) returnval=0;
- res= peakdetector->Initialize(plist, svector, corecomm);
- if(res == 0 ) returnval= 0;
+ calfilter->Initialize(plist, svector, corecomm);
+ spatfilter->Initialize(plist, svector, corecomm);
+ peakdetector->Initialize(plist, svector, corecomm);
  ND= peakdetector->nBins;
- res= classfilter->Initialize(plist, svector, corecomm, ND);
- if( res == 0 ) returnval= 0;
- res= normalfilter->Initialize( plist, svector, corecomm);
- if( res == 0 ) returnval= 0;
- res= statfilter->Initialize( plist, svector, corecomm);
-
-
+ classfilter->Initialize(plist, svector, corecomm);
+ normalfilter->Initialize( plist, svector, corecomm);
+ statfilter->Initialize( plist, svector, corecomm);
 
   SignalD=new GenericSignal(2, ND);
   SignalE=new GenericSignal(ME, 1);
   SignalF=new GenericSignal(MF, 1);
 
-
-
+#if 0 // jm Oct 21, 2002
   SignalB->Channels= MB;
   SignalB->MaxElements= NB;
-
   SignalC->Channels= MC;
   SignalC->MaxElements= NC;
+#endif
   }
  catch(...)
   { returnval=0; }
@@ -162,7 +154,8 @@ int     maxchannels, maxelements;
 
 int FILTERS::Resting( char *buf)
 {
-        statfilter->Resting();
+  statfilter->Resting(classfilter);
+  return 0;
 }
 
 // **************************************************************************
@@ -179,24 +172,20 @@ int res, returnval;
  // dynamically create Signal A from the input
  if (SignalA) delete SignalA;
  SignalA=CreateGenericSignal(MA, NA, buf);
+#if 0 // jm Oct 21, 2002
  SignalA->Channels= MA;
  SignalA->MaxElements= NA;
+#endif
 
  returnval=1;
 
  // now, here place the code to let your filters process the signals
- res=calfilter->Process(SignalA, SignalB);
- if (res == 0) returnval=0;
- res=spatfilter->Process(SignalB, SignalC);
- if( res == 0) returnval= 0;
- res=peakdetector->Process(SignalC, SignalD);
- if( res == 0 ) returnval= 0;
- res=classfilter->Process(SignalD, SignalE);
- if( res == 0 ) returnval= 0;
- res= normalfilter->Process(SignalE, SignalF);
- if( res == 0 ) returnval= 0;
- res= statfilter->Process(SignalE, normalfilter, SignalF);
- if( res == 0 ) returnval= 0;
+ calfilter->Process(SignalA, SignalB);
+ spatfilter->Process(SignalB, SignalC);
+ peakdetector->Process(SignalC, SignalD);
+ classfilter->Process(SignalD, SignalE);
+ normalfilter->Process(SignalE, SignalF);
+ statfilter->Process(classfilter, SignalE, normalfilter, SignalF);
 
  return(returnval);
 }

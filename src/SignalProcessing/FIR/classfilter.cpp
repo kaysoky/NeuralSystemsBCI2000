@@ -66,7 +66,7 @@ ClassFilter::~ClassFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm, int nbins)
+void ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm, int nbins)
 {
 int     i,j;
 int visualizeyn;
@@ -95,7 +95,7 @@ float stop,start,bandwidth;
 
   }
  catch(...)
-  { return(0); }
+  { return; }
 
   for(i=0;i<n_mat;i++)
   {
@@ -122,7 +122,7 @@ float stop,start,bandwidth;
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 // **************************************************************************
@@ -133,7 +133,7 @@ float stop,start,bandwidth;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int ClassFilter::Process(GenericSignal *input, GenericSignal *output)
+void ClassFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int     in_channel, out_channel,sample;
 float   val_ud;
@@ -162,7 +162,7 @@ float   value;
               vis->SetSourceID(SOURCEID_CLASSIFIER);
               vis->Send2Operator(output);
         }
-   return(1);
+   return;
 }
 
 

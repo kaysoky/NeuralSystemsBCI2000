@@ -4,12 +4,10 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <vcl.h>
 #pragma hdrstop
 
-#include "Task.h"
+#include <vector>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-//#include "UMain.h"
+#include "UState.h"
+#include "Task.h"
 
 class TfMain;
 extern TfMain *fMain;
@@ -47,7 +45,7 @@ TTask::~TTask( void )
 }
 
 
-void TTask::Initialize( PARAMLIST *paramlist, STATEVECTOR *statevector, CORECOMM *new_corecomm, TApplication *applic)
+void TTask::Initialize( PARAMLIST *paramlist, STATEVECTOR *statevector, CORECOMM *new_corecomm)
 {
 #ifdef BCI2000_STRICT
   // TSTATUS does not have an Initialize() member but needs to be
@@ -85,8 +83,9 @@ void TTask::Initialize( PARAMLIST *paramlist, STATEVECTOR *statevector, CORECOMM
   SessionManager->Initialize(paramlist, statevector, status);
 }
 
-void TTask::Process( short *signals )
+void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
+  const std::vector< float >& signals = Input->GetChannel( 0 );
 #ifdef BCI2000_STRICT
   {
     // Static is ok because there is only one instance anyway.

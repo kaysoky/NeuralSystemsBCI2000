@@ -72,7 +72,7 @@ CalibrationFilter::~CalibrationFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void CalibrationFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
 int     alignyesno, visualizeyesno, numchoffset, numchgain, i;
 int origchan;
@@ -95,10 +95,10 @@ int origchan;
 
   }
  catch(...)
-  { return(0); }
+  { return; }
 
  // if the number of channels does not match for offset and gain, exit with an error
- if (numchoffset != numchgain) return(0);
+ if (numchoffset != numchgain) return;
 
  // allocate arrays for offsets and gains
  // we don't always want to query parameters
@@ -150,7 +150,7 @@ int origchan;
     vis->SendCfg2Operator(SOURCEID_CALIBRATION, CFGID_NUMSAMPLES, "256");
     }
 
- return(1);
+ return;
 }
 
 
@@ -162,7 +162,7 @@ int origchan;
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int CalibrationFilter::Process(GenericSignal *input, GenericSignal *output)
+void CalibrationFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int     channel, sample;
 float   value;
@@ -196,7 +196,7 @@ float   temp;
     vis->Send2Operator(output);
     }
 
- return(1);
+ return;
 }
 
 

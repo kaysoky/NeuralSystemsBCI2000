@@ -1,12 +1,15 @@
 //---------------------------------------------------------------------------
-
 #include <vcl.h>
 #pragma hdrstop
+
 #include <stdio.h>
-#include "SWUser.h"
 #ifdef BCI2000_STRICT
 # include <assert>
 #endif // BCI2000_STRICT
+
+#include "UState.h"
+#include "SWUser.h"
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

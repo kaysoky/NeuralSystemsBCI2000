@@ -23,9 +23,9 @@ private:
 public:
        SpatialFilter(PARAMLIST *plist, STATELIST *slist);
        SpatialFilter(PARAMLIST *plist, STATELIST *slist, int instance);
-       ~SpatialFilter();
-       int Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int Process(GenericSignal *Input, GenericSignal *Output);
+  virtual ~SpatialFilter();
+  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
+  virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
 

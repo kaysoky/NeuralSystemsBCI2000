@@ -79,7 +79,7 @@ TemporalFilter::~TemporalFilter()
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
+void TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
         int     i,j;
         int     visualizeyn;
@@ -106,7 +106,7 @@ int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevecto
         hz=          atoi(paramlist->GetParamPtr("SamplingRate")->GetValue());
   }
  catch(...)
-  { return(0); }
+  { return; }
 
   mem->setStart( start );
   mem->setStop( stop );
@@ -144,7 +144,7 @@ int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevecto
         visualize=false;
  }
 
- return(1);
+ return;
 }
 
 // **************************************************************************
@@ -155,7 +155,7 @@ int TemporalFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevecto
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-int TemporalFilter::Process(GenericSignal *input, GenericSignal *output)
+void TemporalFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
 int   out_channel;
 float value[MAXDATA];
@@ -219,7 +219,7 @@ static count= 0;
               vis->Send2Operator(output);
         }
 
-   return(1);
+   return;
 }
 
 

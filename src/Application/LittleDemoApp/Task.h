@@ -13,24 +13,24 @@
 #include <vcl/series.hpp>
 
 
-class TTask
+class TTask : public GenericFilter
 {
-private:
+ private:
         STATEVECTOR           *svect;
         GenericVisualization  *vis;
-        CORECOMM        *corecomm;
-        TApplication    *Applic;
         int             AcousticMode;
         int             MakeMusic(short controlsignal);
         TForm           *form;
         TProgressBar    *progressbar;
         TChart          *chart;
         TLineSeries     *series;
-public:
-        void Initialize(PARAMLIST *plist, STATEVECTOR *, CORECOMM *, TApplication *);
-        void Process(short * );
-        TTask(PARAMLIST *plist, STATELIST *slist);
-        ~TTask( void );
-} ;
+
+ public:
+          TTask( PARAMLIST*, STATELIST* );
+  virtual ~TTask();
+
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Process( const GenericSignal* Input, GenericSignal* Output );
+};
 
 #endif

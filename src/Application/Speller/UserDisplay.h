@@ -3,6 +3,7 @@
 #ifndef UserDisplayH
 #define UserDisplayH
 //---------------------------------------------------------------------------
+#include <vector>
 
 #include "UCursor.h"
 #include "UStatusBar.h"
@@ -30,7 +31,7 @@ public:		// User declarations
         void    InitializeActiveTargetPosition();
         void    InitializeStatusBarPosition();
         void    InitializeCursorPosition();
-        void    UpdateCursorPosition(short *);
+        void    UpdateCursorPosition(const std::vector<float>&);
         void    SetWindowSize(int Top, int Left, int Width, int Height, TColor Color);
         TForm   *form;
         float   StatusBarSize, StatusBarTextHeight, CursorSize, TargetWidth, TargetTextHeight;
