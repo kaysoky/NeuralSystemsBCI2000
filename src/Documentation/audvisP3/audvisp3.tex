@@ -249,8 +249,62 @@ Copy mode terminates (i.e., the task suspends) when the user finished copying
 all stimuli specified by the investigator.
 
 \section{Parameters}
+There exist the following parameters:
+\begin{itemize}
+ \item {\tt WinXpos, WinYpos, WinWidth, WinHeight}: Size and position of the target window (using the same scheme/parameters 
+       as used by the RJB task, Oddball paradigm, or P3 speller).
+ \item {\tt WinBackgroundColor}: Window background color in RGB\footnote{For convenience, RGB values
+       may be entered in hexadecimal notation, e.g. \texttt{0xff0000} for red.}
+ \item {\tt StimulusWidth}: Width of stimulus in percent of screen. Height is deduced based on aspect ratio of the corresponding icon.
+ \item {\tt AudioSwitch}: Whether audio files will be presented
+       (i.e., a global switch). There are no individual switches for each stimulus. However,
+       wave files will not be presented for individual stimuli if they are not defined. The values can be: 0 - off and 1 - on.
+ \item {\tt VideoSwitch}: Whether video files will be presented
+       (i.e., a global switch). There are no individual switches for each stimulus. However,
+       icons files will not be presented for individual stimuli if they are not defined. The values can be: 0 - off and 1 - on.
+ \item {\tt CaptionSwitch}: Whether captions will be presented
+       (i.e., a global switch). There are no individual switches for each stimulus. However,
+       captions will not be presented for individual stimuli if they are not defined. The values can be: 0 - off and 1 - on.
+ \item {\tt AudioVolume}: The volume for audio playback as a float value between 0 and 1
+ \item {\tt CaptionColor}: Color of stimulus caption text in hex (0x00BBGGRR).
+ \item {\tt CaptionHeight}: Height of stimulus caption text.
+ \item {\tt OnTime}: The duration during which a stimulus is presented (in units of
+       SampleBlocks)\footnote{Playback of audio extending above the specified duration 
+       will be muted.}
+ \item {\tt OffTime}: The duration of an inter-stimulus interval following stimulus presentation
+       (in units of SampleBlocks)\footnote{During the inter-stimulus interval, the
+       screen is blank and audio is turned off.}
+ \item {\tt MinInterTime, MaxInterTime}: A minimum and maximum time (in units of SampleBlocks) that will be added randomly
+       to the inter-stimulus interval, with probability distributed uniformly over time
+       intervals.
+       If these variables are both set to 0, the actual inter-stimulus interval will
+       always be exactly as defined above.
+       If these variables are set to, for example, 0 and 3, inter-stimulus intervals
+       will randomly be longer by between 0 and 3 units, with a probability of $1/4$
+       for the occurrence of any one of the four time intervals possible.
+ \item {\tt PreSequenceTime}: The duration before a sequence is presented in SampleBlocks.
+ \item {\tt PostSequenceTime}: The duration after a sequence is presented in SampleBlocks.
+ \item {\tt Matrix}: Defines all the possible stimuli which can be presented on the screen.
+ \item {\tt FocusOn}: Defines a stimulus that is used to announce "please, focus on .." message.
+ \item {\tt Result}: Defines a stimulus that is used to announce "the result is .." message.
+ \item {\tt Sequence}: Sequence of stimuli that is presented to the user (deterministic type) / Frequencies for for each stimulus (random sequence).
+ \item {\tt SequenceType}: Specifies whether the sequence is deterministic (value 0) or random (value 1).
+ \item {\tt NumberOfSeq}: Number of sequences being presented to the user in a single run.
+ \item {\tt InterpretMode}: None(value 0, no interpretation)/Free(value 1)/Copy(value 2) mode.
+ \item {\tt ToBeCopied}: A list of stimuli that user needs to copy (only in copy mode). 
+ \item {\tt UserComment}: A Comment. A user can enter comments to the specific run in a string parameter.
+\end{itemize}
 
-Fill in the parameters incl. description, once completed.
+The following conditions need to be satisfied: 
+\begin{itemize}
+  \item All the parameters have to be present.
+  \item {\tt MinInterTime} has to be less than {\tt MaxInterTime}.
+  \item {\tt PreSequenceTime} and {\tt PostSequenceTime} have to be at least 2 times larger than {\tt OnTime}. This follows from the fact
+  	that during presequence and postsequence there will be 2 stimuli presented: one is for "please, focus on .."/"the result is .." and the
+  	other for the actual name of the stimulus.		
+  \item {\tt PostSequenceTime} has to be larger than {\tt NumSamplesInERP}.
+\end{itemize}
+
 
 
 \section{States}
