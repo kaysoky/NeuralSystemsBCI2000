@@ -15,6 +15,16 @@
 #define MAXSTATES 8
 #define MAXOUT 512
 
+enum SidelobeSuppression // variants of sidelobe suppression
+{
+  none = 0,
+  hamming,
+  hann,
+  blackman,
+  
+  numSidelobeSuppressions
+};
+
 class BCIOutput
 {
 	private:
@@ -46,7 +56,8 @@ class BCIOutput
                 int wblocksz;         // window block size
                 int winnum;           // number of blocks per window
                 int winlength;        // total data length = wblocksz * winnum
-                
+                float* mWindowCoeffs; // array to hold sidelobe suppression window coefficients
+
                 double __fastcall GetLr( double *t, double *ss, double *ssxy, int *n, int ntarg );
                 void __fastcall print_hdr(FILE *otf, char *, int, int);
 	public:
@@ -60,7 +71,7 @@ class BCIOutput
                 BCIOutput();
                 ~BCIOutput();
 
-                 void setWindow( int, int, int, int );
+                 void setWindow( int, int, int, int, int );
                 __fastcall void CloseFiles( void );
                 __fastcall void ClearVals( void );
 		__fastcall void AddPoint( int group, int chan, int point, float val );

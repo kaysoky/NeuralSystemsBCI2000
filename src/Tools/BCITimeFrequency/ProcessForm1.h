@@ -32,6 +32,8 @@ __published:	// IDE-managed Components
         TEdit *vMemWindows;
         TEdit *vMemBlockSize;
         TRadioGroup *MemWinType;
+        TComboBox *cbSidelobeSuppression;
+    TGroupBox *GroupBox1;
         void __fastcall ExitClick(TObject *Sender);
         void __fastcall MemWinTypeClick(TObject *Sender);
         void __fastcall vMemWindowsChange(TObject *Sender);

@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "ProcessForm1.h"
+#include "BCIOutput.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -12,6 +13,27 @@ TProcessForm *ProcessForm;
 __fastcall TProcessForm::TProcessForm(TComponent* Owner)
         : TForm(Owner)
 {
+  const struct
+  {
+    SidelobeSuppression type;
+    const char* name;
+  } sidelobeSuppressionTypes[] =
+  {
+    { none,     "None" },
+    { hamming,  "Hamming" },
+    { hann,     "Hann" },
+    { blackman, "Blackman" },
+  };
+  cbSidelobeSuppression->Items->Clear();
+  for( int i = 0; i < sizeof( sidelobeSuppressionTypes ) / sizeof( *sidelobeSuppressionTypes ); ++i )
+  {
+    if( sidelobeSuppressionTypes[ i ].type != i )
+      Application->MessageBox(
+        "Sidelobe suppression type names are messed up in " __FUNC__ ".",
+        "Error", MB_OK | MB_ICONSTOP );
+    cbSidelobeSuppression->Items->Append( sidelobeSuppressionTypes[ i ].name );
+  }
+  cbSidelobeSuppression->ItemIndex = 0;
 }
 //---------------------------------------------------------------------------
 void __fastcall TProcessForm::ExitClick(TObject *Sender)

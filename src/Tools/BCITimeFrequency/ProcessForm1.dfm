@@ -1,9 +1,10 @@
 object ProcessForm: TProcessForm
   Left = 557
   Top = 283
-  Width = 328
-  Height = 298
+  BorderStyle = bsDialog
   Caption = 'ProcessForm'
+  ClientHeight = 381
+  ClientWidth = 332
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -83,7 +84,7 @@ object ProcessForm: TProcessForm
   object Remove: TRadioGroup
     Left = 200
     Top = 56
-    Width = 105
+    Width = 121
     Height = 73
     Caption = 'Remove Trend'
     ItemIndex = 0
@@ -94,8 +95,8 @@ object ProcessForm: TProcessForm
     TabOrder = 1
   end
   object Exit: TButton
-    Left = 224
-    Top = 224
+    Left = 248
+    Top = 344
     Width = 75
     Height = 25
     Caption = 'Exit'
@@ -174,8 +175,8 @@ object ProcessForm: TProcessForm
   end
   object MemWinType: TRadioGroup
     Left = 200
-    Top = 160
-    Width = 105
+    Top = 168
+    Width = 121
     Height = 49
     Caption = 'Windows'
     ItemIndex = 0
@@ -184,5 +185,22 @@ object ProcessForm: TProcessForm
       'Fixed')
     TabOrder = 11
     OnClick = MemWinTypeClick
+  end
+  object GroupBox1: TGroupBox
+    Left = 200
+    Top = 272
+    Width = 121
+    Height = 49
+    Caption = 'Sidelobe Suppression'
+    TabOrder = 12
+    object cbSidelobeSuppression: TComboBox
+      Left = 16
+      Top = 16
+      Width = 97
+      Height = 21
+      Style = csDropDownList
+      ItemHeight = 13
+      TabOrder = 0
+    end
   end
 end

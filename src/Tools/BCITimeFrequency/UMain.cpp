@@ -248,7 +248,8 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
                 bcioutput->setWindow( ProcessForm->MemWinType->ItemIndex,
                                  atoi( ProcessForm->vMemWindows->Text.c_str()),
                                  atoi( ProcessForm->vMemBlockSize->Text.c_str() ),
-                                 atoi( ProcessForm->vMemDataLength->Text.c_str() ) );
+                                 atoi( ProcessForm->vMemDataLength->Text.c_str() ),
+                                 ProcessForm->cbSidelobeSuppression->ItemIndex );
         }
 
         // go through each run

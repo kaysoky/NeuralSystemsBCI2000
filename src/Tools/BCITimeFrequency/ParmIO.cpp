@@ -83,6 +83,7 @@ void ParIO::SaveProcessForm( void )
                 fprintf(sfile,"Process_MEMWindows= %2d \n", atoi( pform->vMemWindows->Text.c_str() ) );
                 fprintf(sfile,"Process_MEMBlockSize= %2d \n", atoi( pform->vMemBlockSize->Text.c_str() ) );
                 fprintf(sfile,"Process_MEMDataLength= %2d \n", atoi( pform->vMemDataLength->Text.c_str() ) );
+                fprintf(sfile,"Process_MEMSidelobeSuppression= %s \n", pform->cbSidelobeSuppression->Text.c_str() );
         }
         else
                 fprintf(sfile,"Process_UseMEM false \n");
@@ -235,6 +236,16 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                         pform->vMemBlockSize->Text= atoi( l2 );
                 else if( strcmp( l1, "Process_MEMDataLength=") == 0 )
                         pform->vMemDataLength->Text= atoi( l2 );
+                else if( strcmp( l1, "Process_MEMSidelobeSuppression=" ) == 0 )
+                {
+                  int index = pform->cbSidelobeSuppression->Items->IndexOf( l2 );
+                  if( index == -1 )
+                  {
+                    Application->MessageBox( "Unknown value of \"Process_MEMSidelobeSuppression\"", "Error", MB_OK );
+                    index = 0;
+                  }
+                  pform->cbSidelobeSuppression->ItemIndex = index;
+                }
                 else if( strcmp( l1,"Output_Start=") == 0 )
                         oform->vStart->Text= l2;
                 else if( strcmp( l1,"Output_End=") == 0 )
