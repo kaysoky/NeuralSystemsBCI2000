@@ -1,0 +1,71 @@
+\chapter{Introduction}
+
+\section{Purpose}
+
+All presently available augmentative communication systems depend in some 
+measure on voluntary muscle control.  Thus, they are useless to those who are 
+totally paralyzed and to some others with severe motor disabilities.  EEG--based 
+communication, because it does not depend on voluntary muscle control, could 
+provide a valuable new communication and control option for these individuals.  
+Over the past decade, a number of laboratories have begun developing EEG--based 
+Brain Computer Interfaces (i.e., BCIs) as a new augmentative technology for 
+people with motor disabilities.
+
+The BCI2000 standard (as described in the BCI2000 Project Outline) has been 
+designed in a cooperation between the Laboratory of Nervous Systems Disorders at 
+the Wadsworth Center in the New York State Department of Health and the Institut 
+f\"ur Medizinische Psychologie at the Medizinische Fakult\"at at the 
+Eberhard--Karls--Universit\"at in T\"ubingen/Germany, in an effort to create a 
+well documented and open system that is open for extensions; this document 
+describes one particular implementation of this standard.
+
+Not only does this document describe the software already in place, it is also 
+intended to enforce compatibility of future modifications or add--ons.
+
+\section{Scope}
+
+This document is intended to give a detailed technical description of the 
+BCI2000 software project. It does not, however, explain the BCI2000 standard 
+itself, or the rationale behind the implementation or standard.
+
+\section{Intended Audience}
+
+The intended audience for this document are engineers or researchers, who want 
+to modify and/or extend the existing reference implementation. As described 
+software is implemented using Borland's C++ Builder, the reader should have some 
+knowledge of the C/C++ programming language.
+
+\section{List of System Components}
+
+The sofware package consists of four Win32 executables:
+
+\begin{table}[ht]
+ \centering
+ \begin{tabular}{|l|l|l|}
+  \hline
+  \textbf{Module Name} & \textbf{Filename} & \textbf{Current Version} \\
+  \hline
+  Operator & Operat.exe & V0.20 \\
+  \hline
+  EEG source & EEGsource.exe & V0.20 \\
+  \hline
+  Signal Processing & SignalProcessing.exe & V0.20 \\
+  \hline
+  Application & Application.exe & V0.20 \\
+  \hline
+ \end{tabular}
+ \caption{The four executables}
+\end{table}   
+
+
+\section{References}
+
+The BCI2000 project homepage contains all relevant documentation, source code, 
+and additional analysis tools:\\ 
+http://www.bciresearch.org/BCI2000/bci2000.html
+
+\section{Content Summary}
+
+This document presents an overview of the system, the design considerations 
+leading to the system architecture, describes the system architecture itself, 
+and finally details the system design.

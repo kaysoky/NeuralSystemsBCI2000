@@ -1,0 +1,49 @@
+\documentclass[letterpaper,oneside,12pt]{book}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage[american]{babel}
+
+\selectlanguage{american}
+
+% page layout
+  \setlength{\hoffset}{-1in} 
+  %\setlength{\voffset}{-1in}
+  \setlength{\textwidth}{15cm}
+  \setlength{\oddsidemargin}{3.5cm}
+  \setlength{\evensidemargin}{0.2cm}
+  %\setlength{\topmargin}{2.5cm}
+  \setlength{\headsep}{5ex}
+  \setlength{\textheight}{22cm}
+  \renewcommand{\baselinestretch}{1.05}
+  \raggedbottom
+  \newlength{\pictheight}
+  \setlength{\pictheight}{\textheight}
+  \addtolength{\pictheight}{-2cm}
+
+% document
+\begin{document}
+
+\frontmatter
+\include{title}
+
+\tableofcontents
+
+\mainmatter
+
+\include{introduction}
+\include{system_overview}
+\include{design_considerations}
+\include{arch_strat}
+\include{system_arch}
+\include{det_sys_design}
+\include{glossary}
+
+\appendix
+\include{state_list}
+\include{parameter_list}
+\include{sourceID_list}
+\include{errormessages}
+
+\backmatter
+\end{document}
+

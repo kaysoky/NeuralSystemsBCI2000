@@ -1,0 +1,71 @@
+\chapter{Error and Status Messages}
+
+\begin{table}[ht]
+ \begin{tabular}{|l|l|}
+  \hline
+  \textbf{Code} & \textbf{Text} \\
+  \hline
+  200 & EEGsource module initialized successfully ... \\
+  \hline
+  201 & SignalProcessing module initialized successfully ... \\
+  \hline
+  202 & Application module initialized successfully ... \\
+  \hline
+  203 & EEGsource started ...\\
+  \hline
+  204 & EEGsource suspended ...\\
+  \hline
+  205 & SignalProcessing started ...\\
+  \hline
+  206 & SignalProcessing suspended ...\\
+  \hline
+  207 & Application started ...\\
+  \hline
+  208 & Application suspended ...\\
+  \hline
+  300 & Parameters are inconsistent ...\\
+  \hline
+  301 & State vector update timeout ! \\
+  \hline
+  302 & PostSetInterval shorter than time derived by NumERPSamples \\
+  \hline
+  303 & One of the parameters needed by the task not found \\
+  \hline
+  400 & Could not initialize socket connection to Signal Processing \\
+  \hline
+  401 & Could not initialize socket connection to Application \\
+  \hline
+  402 & Could not initialize socket connection to Source \\
+  \hline
+  403 & Signal Processing dropped connection unexpectedly \\
+  \hline
+  404 & Source dropped connection unexpectedly \\
+  \hline
+  405 & Application dropped connection unexpectedly \\
+  \hline
+  406 & Could not set SourceTime in the statevector \\
+  \hline
+  407 & Error creating filters \\
+  \hline
+  408 & Error initializing filters \\
+  \hline
+  409 & Error while processing filters \\
+  \hline
+  410 & Source: could not initialize connections \\
+  \hline
+  411 & Error in Source: Exception thrown while initializing: !\\
+  \hline
+  412 & Signal Processing: state vector is not defined ! \\
+  \hline
+  413 & Signal Processing: Exception thrown in Initialize() \\
+  \hline
+  414 & Application: state vector is not defined ! \\
+  \hline
+  415 & P3 Temporal Filter: Inconsistency or ran out of buffers \\
+  \hline
+  416 & P3 Speller: Could not open target definition file \\
+  \hline
+ \end{tabular}
+ \caption{Currently defined status information messages}
+ \label{stat_info_mess}
+\end{table}   

@@ -1,0 +1,43 @@
+\chapter{List of Requested Parameters}
+
+\scalebox{0.7}{
+\mbox{
+ \centering
+ \begin{tabular}{|l|l|l|l|l|l|}
+  \hline
+  \textbf{Project} & \textbf{Unit} & \textbf{Section} & \textbf{Type} & \textbf{Parameter} & \textbf{Description} \\
+  \hline
+  Dtsource & Storage.cpp & Storage & string & FileName & Name of Data File \\
+  Dtsource & Storage.cpp & Storage & string & SubjectName & Name of subject \\
+  Dtsource & Storage.cpp & Storage & string* & SubjectSession & Session Number \\
+  Dtsource & Storage.cpp & Storage & string* & SubjectRun & run number \\
+  Dtsource & Storage.cpp & Storage & string & StorageTime & time of beginning of data \\
+  Dtsource & dtadc.cpp & Source & int & SoftwareCh & number of digitized channels \\
+  Dtsource & dtadc.cpp & Source & int & TransmitCh & number of transmitted channels \\
+  Dtsource & dtadc.cpp & Source & int & SampleBlockSize & number of samples transmitted at a time \\
+  Dtsource & dtadc.cpp & Source & int & SamplingRate & sample rate \\
+  Dtsource & dtadc.cpp & Source & string & BoardName & AD board name from driver \\
+  Dtsource & dtadc.cpp & Storage & string & FileName & Data File Name \\
+  SignalProc & Calibration & Filtering & floatlist & SourceChOffset & offset in A/D units \\
+  SignalProc & Calibration & Filtering & floatlist & SourceChGain & gain for each channel (A/D units to $\mu$V) \\
+  SignalProc & Calibration & Filtering & int & AlignChannels & align channels in time (0= no, 1= yes) \\
+  SignalProc & Calibration & Visualization & int & VisualizeCalibration & visualize calibration channels \\
+  SignalProc & Spatial & Filtering & int & SpatialFilteredChannels & Number of spatially filtered channels \\
+  SignalProc & Spatial & Filtering & matrix & SpatialFilterKernal & Spatial Filter Kernal Weights \\
+  SignalProc & Spatial & Visualization & int & VisualizeSpatialFiltering & Visualize Spatial Filtering? \\
+  SignalProc & Temporal & Filtering & float & StartMem & Start of Spectrum in Hz \\
+  SignalProc & Temporal & Filtering & float & StopMem & End of Spectrum in Hz \\
+  SignalProc & Temporal & Filtering & float & deltaMem & Resolution (line density) in Hz \\
+  SignalProc & Temporal & Filtering & float & MemBandWidth & Spectral Bandwidth in Hz \\
+  SignalProc & Temporal & Filtering & int & MemModelOrder & AR model Order \\
+  SignalProc & Temporal & Filtering & int & MemDetrend & Detrend data? (0=no, 1= mean, 2=linear) \\
+  SignalProc & Temporal & Visualization & int & VisualizeTemporalFiltering & Visualize Temporal Filtering \\
+  SignalProc & Classifier & Filtering & matrix & MUD & Classifier Up/Down Control Weights \\
+  SignalProc & Classifier & Filtering & matrix & MLR & Classifier Left/Right Control Weights \\
+  SignalProc & Classifier & Filtering & int & VisualizeClassFiltering & Visualize Classifier Filtering (y/n) \\
+  \hline
+  &  & to & be & announced & \\
+  \hline
+ \end{tabular}
+} }
+
