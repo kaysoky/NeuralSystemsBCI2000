@@ -32,7 +32,7 @@ __fastcall TUser::TUser(TComponent* Owner)
 _fastcall TUser::~TUser()
 {
 /*shidong starts*/
-if(debug)fprintf(a, "In Destructor.\n");
+
 if(a)fclose(a);
 if(a)fclose(f);
 if(a)fclose(g);
@@ -98,9 +98,9 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
 
        /*shidong starts*/      //User->Show();
 
-        borderTexture.append(border.c_str());
-        targetTexture.append(target.c_str());;
-        cursorTexture.append(cursor.c_str());;
+        borderTexture = (border.c_str());
+        targetTexture = (target.c_str());;
+        cursorTexture = (cursor.c_str());;
      /*   */
        if(a)   {}
         else
@@ -567,7 +567,7 @@ void startGLthread(void *null)
 
 try
 {
-                if (debug) fprintf(a, "In thread.\n");
+                //if (debug) fprintf(a, "In thread.\n");
 
 
                 
@@ -585,7 +585,7 @@ try
 
                 threeDTextVec.push_back(text);
                 threeDTextVec.back().setElementID(threeDTextVec.size()-1);
-                if (debug) fprintf(a, "3DText: %d.\n", threeDTextVec.back().getElementID());
+              //  if (debug) fprintf(a, "3DText: %d.\n", threeDTextVec.back().getElementID());
 
 
 
@@ -689,7 +689,7 @@ try
                         if(sphereVec.size() != 0)
                         sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
 
-                        if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
+                        //if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
                         //make sure posZ is within Boundary
                         if (User->posZ > 0) User->posZ = 0;
                         if (User->posZ < (0-BORDER)) User->posZ = (0-BORDER);
@@ -699,7 +699,7 @@ try
                         if(sphereVec.size() != 0)
                         sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
 
-                        if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
+                       // if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
                         //make sure posZ is within Boundary
                         if (User->posZ > 0) User->posZ = 0;
                         if (User->posZ < (0-BORDER)) User->posZ = (0-BORDER);
@@ -724,10 +724,10 @@ QueryPerformanceCounter(&S1);
                                        SwapBuffers(hDC);
 QueryPerformanceCounter(&S2);                   
 timeinms= ( (double)S2.QuadPart-(double)S1.QuadPart-(double)overhead.QuadPart )/(double)prectimebase.QuadPart*1000;
-if(debug)fprintf(g, "%e\n", timeinms);
+//if(debug)fprintf(g, "%e\n", timeinms);
 double frameRate = 1000/25;             //25 Hz, 40 ms per frame
-if(debug)fprintf(g, "%e\n", frameRate-timeinms);
-if(debug)fprintf(g, "\tAcutal frame Rate is: %e.\n", 1000/timeinms);
+//if(debug)fprintf(g, "%e\n", frameRate-timeinms);
+//if(debug)fprintf(g, "\tAcutal frame Rate is: %e.\n", 1000/timeinms);
 if(timeinms<frameRate)
 {
 Sleep(frameRate-timeinms);
@@ -744,7 +744,7 @@ Sleep(frameRate-timeinms);
 				KillGLWindow();                 // Kill our current window
 				fullscreen =! fullscreen;       // Toggle fullscreen / windowed mode
 				// Recreate our OpenGL window
-				if (!CreateGLWindow("D3Box 3D Environment",480,480,16,fullscreen, 300, 0))
+				if (!CreateGLWindow("D3Box 3D Environment",User->WinHeight,User->WinWidth,16,fullscreen, User->WinXpos, User->WinYpos))
 				{
 					return;               // Quit if window was not created
 				}
@@ -881,14 +881,14 @@ Sleep(frameRate-timeinms);
 }
         catch (exception e)
         {
-                if (debug) fprintf(a, "ERROR: %s.\n", e.what());
+                //if (debug) fprintf(a, "ERROR: %s.\n", e.what());
                 globalError = e.what();
 
         }//catch
         catch (...)
         {
                 globalError = "Unknown error occur in Driver() function.\n";
-                if(debug) fprintf(a, "Unknown error.\n");
+                //if(debug) fprintf(a, "Unknown error.\n");
                  try
                  {
                         throw Exception("Error in Driver() function");
@@ -1046,7 +1046,8 @@ void TUser::setCursor(float posX, float posY, float posZ, float radius, float cl
         temp.setStatus(false);
         temp.setBrightness(bright);
         temp.setTransparency(255);
-        temp.setTexture(cursorTexture.c_str());    
+        temp.setHasTexture(true);
+        temp.setTexture(cTexture.c_str());
 
         if (sphereVec.size() != 0)      //if already one cursor in the vector
         {
@@ -1061,7 +1062,8 @@ void TUser::setCursor(float posX, float posY, float posZ, float radius, float cl
                 //IMPORTANT: Once texture loaded first time, it cannot be changed.
                 //If changes occur, it will not reflect in the program because 1st texture is already
                 //loaded into the system.
-                sphereVec[0].setTexture(cursorTexture.c_str());
+                sphereVec[0].setHasTexture(true);
+                sphereVec[0].setTexture(cTexture.c_str());
         }
         else
         {

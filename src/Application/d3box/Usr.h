@@ -18,7 +18,7 @@
 #include "../Application/Shared/3DAPI/Environment3D.cpp"
 
 
-FILE *a;
+
 
 bool    glWindowRun;
 /*shidong end*/
@@ -68,6 +68,7 @@ public:		// User declarations
         __fastcall ~TUser();
 
         /*shidong starts*/
+        FILE *a;
         AnsiString cursorColorF;
         AnsiString cursorColorB;
         float startZ;           //curosr initial z coord

@@ -107,7 +107,8 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
+c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=27
