@@ -71,9 +71,8 @@ int main( int argc, const char** argv )
           }
           else if( longOption == "input" )
           {
-            if( i + 1 < argc )
-              options.inputFile = argv[ ++i ];
-            else
+            options.inputFile = argv[ i ] + 2;
+            if( options.inputFile == "" )
             {
               options.execute = false;
               options.help = true;
@@ -96,9 +95,8 @@ int main( int argc, const char** argv )
         break;
       case 'i':
       case 'I':
-        if( i + 1 < argc )
-          options.inputFile = argv[ ++i ];
-        else
+        options.inputFile = argv[ i ] + 2;
+        if( options.inputFile == "" )
         {
           options.execute = false;
           options.help = true;
@@ -109,21 +107,30 @@ int main( int argc, const char** argv )
     }
   }
   if( i != argc )
-    result == illegalOption;
-
-  istream* in = &cin;
-  if( options.inputFile )
-  {
-    in = new ifstream( options.inputFile, ios::binary );
-    if( !*in )
-    {
-      cerr << "Could not open " << options.inputFile << " for input" << endl;
-      result = fileIOError;
-    }
-  }
+    result = illegalOption;
 
   if( result == noError && options.execute )
-    result = ToolMain( toolOptions, *in, cout );
+  {
+    istream* in = &cin;
+    if( options.inputFile )
+    {
+      in = new ifstream( options.inputFile, ios::binary );
+      if( !*in )
+      {
+        cerr << "Could not open " << options.inputFile << " for input" << endl;
+        result = fileIOError;
+      }
+    }
+    if( result == noError )
+      result = ToolMain( toolOptions, *in, cout );
+    if( result != fileIOError && !*in )
+    {
+      cerr << "Illegal data format" << endl;
+      result = illegalInput;
+    }
+    if( options.inputFile )
+      delete in;
+  }
 
   options.help |= ( result == illegalOption );
   if( options.help )
@@ -133,7 +140,7 @@ int main( int argc, const char** argv )
         << ToolInfo[ short_description ] << '\n'
         << "\t-h,        --help        \tDisplay this help\n"
         << "\t-v,        --version     \tOutput version information\n"
-        << "\t-i <file>, --input <file>\tGet input from file\n";
+        << "\t-i<file>,  --input<file>\tGet input from file\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out.flush();
@@ -146,13 +153,6 @@ int main( int argc, const char** argv )
     cerr << "Error writing to standard output" << endl;
     result = genericError;
   }
-  if( result != fileIOError && !*in )
-  {
-    cerr << "Illegal data format" << endl;
-    result = illegalInput;
-  }
-  if( options.inputFile )
-    delete in;
   return result;
 }
 
