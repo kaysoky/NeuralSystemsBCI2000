@@ -26,7 +26,8 @@ public:
     PHASE_PRIORSEQUENCE,
     PHASE_STIMULUS,
     PHASE_AFTERSEQUENCE,
-    PHASE_FINISH
+    PHASE_FINISH,
+    PHASE_FINISH_WO_RESULT
   };
 
   enum StateEnum     // what phase of sequence we are currently running

@@ -305,7 +305,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
         if (pUsrEnv->GetActiveElements()->GetElementPtrByIndex(1) != NULL)
         {
           char memotext[256];
-          sprintf(memotext, "Focusing on stimulus with ID equal to %d \r", pUsrEnv->GetActiveElements()->GetElementID(1));
+          sprintf(memotext, "Focusing on stimulus %d \r", pUsrEnv->GetActiveElements()->GetElementID(1));
           pGenericVisualization->SendMemo2Operator(memotext);
         }
     }
@@ -368,12 +368,11 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       PhaseInSequenceEnum ePhaseInSequence = (PhaseInSequenceEnum)pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence);
       // this will display 'result is' message
-      pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
-
       if (ePhaseInSequence == PHASE_FINISH)
-      {
+         pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
+
+      if ((ePhaseInSequence == PHASE_FINISH) || (ePhaseInSequence == PHASE_FINISH_WO_RESULT))
         m_ePhaseInSequence = ePhaseInSequence;
-      }
 
       pStateVector->SetStateValue("SelectedStimulus", 0);
       pStateVector->SetStateValue("PhaseInSequence", 3);
@@ -407,15 +406,19 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
   }  // if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE)
 
   // the end
-  if (m_ePhaseInSequence == PHASE_FINISH)
+  if ((m_ePhaseInSequence == PHASE_FINISH) || (m_ePhaseInSequence == PHASE_FINISH_WO_RESULT))
   {
     if (m_iCurrentPhaseDuration == (m_iUsrElementAfterSeqTime - m_iUsrElementOnTime))
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
-      const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
-      pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
-
-      pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
+      if (m_ePhaseInSequence == PHASE_FINISH)
+         {
+         const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
+         pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
+         pStateVector->SetStateValue("SelectedStimulus", iPickedStimulusID);
+         }
+      if (m_ePhaseInSequence == PHASE_FINISH_WO_RESULT)        // 1/28/04 GS
+         pStateVector->SetStateValue("SelectedStimulus", 0);
       pStateVector->SetStateValue("PhaseInSequence", 3);
       pStateVector->SetStateValue("StimulusCode", 0);
       pStateVector->SetStateValue("StimulusType", 0);
@@ -463,7 +466,7 @@ const int UsrEnvDispatcher::ProcessResult(GenericVisualization * pGenericVisuali
   {
     char memotext[256];
     // send the results to the operator log
-    sprintf(memotext, "The predicted stimulus has ID equal to %d \r", iPickedStimulusID);
+    sprintf(memotext, "The predicted stimulus was stimulus %d \r", iPickedStimulusID);
     pGenericVisualization->SendMemo2Operator(memotext);
   }
   return iPickedStimulusID;

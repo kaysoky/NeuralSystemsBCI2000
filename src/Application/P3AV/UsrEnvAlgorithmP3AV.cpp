@@ -378,11 +378,12 @@ const unsigned int UsrEnvAlgorithmP3AV::GenerateActiveElements(UsrElementCollect
         if (m_eInterpretMode == INTERPRETATION_COPYMODE)
           ++m_uNumOfTimesCopied;
         if (m_uNumOfTimesCopied == m_uNumOfTimesToCopy && m_eInterpretMode == INTERPRETATION_COPYMODE)
-          iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_FINISH;
+           iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_FINISH;
         else
-          iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_PRIORSEQUENCE;
+           iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_PRIORSEQUENCE;
+        if (m_eInterpretMode == INTERPRETATION_NONE)        // 01/28/04 GS
+           iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_FINISH_WO_RESULT;
         break;
-
 
       case UsrEnvDispatcher::PHASE_INTERSTIMULUS:
       case UsrEnvDispatcher::PHASE_STIMULUS:
@@ -392,8 +393,9 @@ const unsigned int UsrEnvAlgorithmP3AV::GenerateActiveElements(UsrElementCollect
         if (m_uCurStimuliSequenceIndex == m_listStimuliSequence.size())
         {
           m_uCurStimuliSequenceIndex = 0;
-          if (m_eInterpretMode != INTERPRETATION_NONE)
-            return iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_AFTERSEQUENCE;
+          // include the following line if we want stimulus to never stop in no interpretation mode
+          // if (m_eInterpretMode != INTERPRETATION_NONE)       // 01/28/04 GS
+             return iNewPhaseInSequence = (unsigned int)UsrEnvDispatcher::PHASE_AFTERSEQUENCE;
         }
         // Search the list for the element which corresponds to the current index in the
         // stimuli sequence
@@ -415,7 +417,7 @@ const unsigned int UsrEnvAlgorithmP3AV::GenerateActiveElements(UsrElementCollect
           m_bStimulusTypeValue = (m_uCurStimuliToBeCopiedID == pUsrElement->GetID());
         } // if (pUsrElement != NULL)
         break;
-      }  
+      }
       default:
         break;
     }

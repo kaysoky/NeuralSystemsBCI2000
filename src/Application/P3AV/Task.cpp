@@ -303,18 +303,24 @@ const bool TTask::ErrorReadingMatrix(const AnsiString asMatrixName) const
     if (atoi(Parameter( "AudioSwitch" )->GetValue()) == 1)
     {
       std::string soundFileName = ( const char* )Parameter(asMatrixName.c_str(), "audio", i );
-      soundFileName = applicationPath + soundFileName;
-      if (ErrorLoadingAudioFile(soundFileName) == true)
-        return true;
+      if (soundFileName != "")
+         {
+         soundFileName = applicationPath + soundFileName;
+         if (ErrorLoadingAudioFile(soundFileName) == true)
+            return true;
+         }
     }
 
     // check icon files
     if (atoi(Parameter( "VideoSwitch" )->GetValue()) == 1)
     {
       std::string iconFileName = ( const char* )Parameter(asMatrixName.c_str(), "icon", i );
-      iconFileName = applicationPath + iconFileName;
-      if (ErrorLoadingVideoFile(iconFileName) == true)
-        return true;
+      if (iconFileName != "")
+         {
+         iconFileName = applicationPath + iconFileName;
+         if (ErrorLoadingVideoFile(iconFileName) == true)
+           return true;
+         }
     }
   }
   return false;
