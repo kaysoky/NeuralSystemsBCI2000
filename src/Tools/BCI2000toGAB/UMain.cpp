@@ -133,39 +133,42 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 {
   int i;
   int n_chans;
-  PARAMLIST parmlist;
-  const PARAMLIST* paramlistPtr = &parmlist;
+  PARAMLIST paramlist;
 
   if( ParameterFile->Enabled && ParameterFile->Text.Length() > 0 )
   {
-    if( parmlist.LoadParameterList( ParameterFile->Text.c_str() ) )
+    if( paramlist.LoadParameterList( ParameterFile->Text.c_str() ) )
     {
-      n_chans= parmlist.GetParamPtr("SourceChOffset")->GetNumValues();
+      n_chans= paramlist.GetParamPtr("SourceChOffset")->GetNumValues();
       offset.clear();
       offset.resize( n_chans, 0 );
       gain.clear();
       gain.resize( n_chans, 0 );
       for(i=0;i<n_chans;i++)
       {
-        offset[i]=atoi(parmlist.GetParamPtr("SourceChOffset")->GetValue(i));
-        gain[i]=atof(parmlist.GetParamPtr("SourceChGain")->GetValue(i));
+        offset[i]=atoi(paramlist.GetParamPtr("SourceChOffset")->GetValue(i));
+        gain[i]=atof(paramlist.GetParamPtr("SourceChGain")->GetValue(i));
       }
     }
     else
       UserMessage( "Could not open parameter file \""
                    + ParameterFile->Text + "\".", Error );
   }
-  else
-    paramlistPtr = bci2000data->GetParamListPtr();
-    
+
   static const short ud[] = { 11, 15 },
                      lr[] = { 13, 17 },
                      udlr[] = { 10, 12, 14, 16 };
-  const PARAM* param = paramlistPtr->GetParamPtr( "NumberTargets" );
+  const PARAM* param = paramlist.GetParamPtr( "NumberTargets" );
+  if( param == NULL )
+    param = bci2000data->GetParamListPtr()->GetParamPtr( "NumberTargets" );
   int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
-  param = paramlistPtr->GetParamPtr( "TargetOrientation" );
+
+  param = paramlist.GetParamPtr( "TargetOrientation" );
+  if( param == NULL )
+    param = bci2000data->GetParamListPtr()->GetParamPtr( "TargetOrientation" );
   int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 ),
       numberTargetsMax = 0;
+
   switch( targetOrientation )
   {
     case 0:
