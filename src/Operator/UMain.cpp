@@ -565,13 +565,13 @@ TfMain::CoreConnection::HandleSTATUS( istream& is )
     // If we receive a warning message, add a line to the system log and bring it to front.
     if( ( status.GetCode() >= 300 ) && ( status.GetCode() < 400 ) )
     {
-      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_WARNING );
+      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryWarning );
       mParent.mSyslog.ShowSysLog();
     }
     // If we receive an error message, add a line to the system log and bring it to front.
     else if( ( status.GetCode() >= 400 ) && ( status.GetCode() < 500 ) )
     {
-      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_ERROR );
+      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryError );
       mParent.mSyslog.ShowSysLog();
     }
 
