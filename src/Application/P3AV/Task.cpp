@@ -216,12 +216,12 @@ void TTask::Preflight(const SignalProperties& inputProperties,
       bcierr << "PreSequenceTime and PostSequenceTime parameters must be at least 2 times larger than OnTime parameter" << std::endl;
       bError = true;
     }
-   /* if (atoi(GetParamPtr("PostSequenceTime")->GetValue()) * atoi(GetParamPtr("SampleBlockSize")->GetValue()) <
+    if (atoi(GetParamPtr("PostSequenceTime")->GetValue()) * atoi(GetParamPtr("SampleBlockSize")->GetValue()) <
         atoi(GetParamPtr("NumSamplesInERP")->GetValue()))
     {
       bcierr << "NumSamplesInERP has to be less than (PostSequenceTime * SampleBlockSize)" << std::endl;
       bError = true;
-    } */
+    } 
   }
 
   // check stimuli matrix , FocusOn matrix, Result matrix
