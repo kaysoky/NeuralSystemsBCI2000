@@ -1154,13 +1154,13 @@ void __fastcall TfMain::bSetConfigClick(TObject *Sender)
  // only publish the states in the information phase
  if (sysstatus.SystemState == STATE_INFORMATION)
     {
+    // after broadcasting the states, we are now in the Initialization Phase
+    sysstatus.SystemState=STATE_INITIALIZATION;
     BroadcastStates();
     // send an system command 'Start' to the EEGsource
     SendSysCommand("Start", sysstatus.SourceSocket);
     sysstatus.NumMessagesSent1++;
     sysstatus.NumStatesSent1++;
-    // after broadcasting the states, we are now in the Initialization Phase
-    sysstatus.SystemState=STATE_INITIALIZATION;
     }
 
  // enable the set config

@@ -5,6 +5,7 @@
 //---------------------------------------------------------------------------
 
 #include <ComCtrls.hpp>
+#include <SyncObjs.hpp>
 
 #define SYSLOGENTRYMODE_NORMAL  0
 #define SYSLOGENTRYMODE_WARNING 1
@@ -15,6 +16,7 @@ class SYSLOG
 private:	// User declarations
         TForm       *form;
         TRichEdit   *log;
+        TCriticalSection *critsec;
 public:		// User declarations
         SYSLOG::SYSLOG();
         SYSLOG::~SYSLOG();

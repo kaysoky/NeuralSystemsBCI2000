@@ -35,6 +35,8 @@ SYSLOG::SYSLOG()
  log->Anchors << akLeft << akTop << akRight << akBottom;
  log->ScrollBars=ssVertical;
  log->Visible=true;
+
+ critsec=new TCriticalSection();
 }
 
 
@@ -46,11 +48,13 @@ SYSLOG::SYSLOG()
 // **************************************************************************
 SYSLOG::~SYSLOG()
 {
- if (log)  delete log;
- if (form) delete form;
+ if (log)     delete log;
+ if (form)    delete form;
+ if (critsec) delete critsec;
 
  form=NULL;
  log=NULL;
+ critsec=NULL;
 }
 
 
@@ -76,8 +80,10 @@ void SYSLOG::AddSysLogEntry(char *text)
 {
 TDateTime       cur_time;
 
+ critsec->Acquire();
  cur_time=cur_time.CurrentDateTime();
  log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));
+ critsec->Release();
 }
 
 // **************************************************************************
@@ -92,6 +98,8 @@ TDateTime       cur_time;
 void SYSLOG::AddSysLogEntry(char *text, int mode)
 {
 TDateTime       cur_time;
+
+ critsec->Acquire();
 
  // is this a warning message ?
  if (mode == SYSLOGENTRYMODE_WARNING)
@@ -110,5 +118,7 @@ TDateTime       cur_time;
 
  cur_time=cur_time.CurrentDateTime();
  log->Lines->Add(cur_time.FormatString("ddddd tt - ")+AnsiString(text));
+
+ critsec->Release();
 }
 
