@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "..\..\shared\defines.h"
+#include "..\shared\defines.h"
 #include "CalibrationFilter.h"
 #include "UFilterHandling.h"
 #include "UGenericVisualization.h"
