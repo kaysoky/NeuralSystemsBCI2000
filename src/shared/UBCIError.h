@@ -21,10 +21,6 @@
 
 #include <sstream>
 
-#ifdef DONT_CATCH_ALL
-# error Please remove DONT_CATCH_ALL from the project file under "Conditionals".
-#endif // DONT_CATCH_ALL
-
 // Info added to error output.
 #if( defined( _DEBUG ) && !defined( NDEBUG ) )
 # define DEBUGINFO   /*__FILE__", "*/__FUNC__
