@@ -15,6 +15,11 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "UBCIError.h"
 #include "Usr.h"
 #include "Task.h"
+#include "Localization.h"
+
+#include <assert>
+
+using namespace std;
 
 RegisterFilter( TTask, 3 );
 
@@ -57,6 +62,25 @@ TTask::TTask()
     "CursorPosY 16 0 0 0",
   END_STATE_DEFINITIONS
 
+  LANGUAGES "French",
+            "German",
+  BEGIN_LOCALIZED_STRINGS
+    "YES",
+            "OUI",
+            "JA",
+    "NO",
+            "NON",
+            "NEIN",
+    "N/A",
+            " - ",
+            " - ",
+    "Get Ready ...",
+            "Appr" ecirc "ter ...",
+            "Achtung ...",
+  END_LOCALIZED_STRINGS
+
+  assert( User == NULL );
+  Application->CreateForm( __classid( TUser ), &User );
   User->SetUsr( Parameters, States );
 }
 
@@ -68,9 +92,19 @@ TTask::~TTask( void )
   if( appl ) fclose( appl );
 }
 
+void
+TTask::Preflight( const SignalProperties& inputProperties,
+                        SignalProperties& outputProperties ) const
+{
+  outputProperties = SignalProperties( 0, 0 );
+}
+
+
 
 void TTask::Initialize()
 {
+        ApplyLocalizations( User );
+
         AnsiString FInit,SSes,SName,AName;
         char FName[256];
         time_t ctime;

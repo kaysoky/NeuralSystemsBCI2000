@@ -5,6 +5,7 @@
 
 #include "Usr.h"
 #include "UParameter.h"
+#include "Localization.h"
 
 
 //---------------------------------------------------------------------------
@@ -84,13 +85,13 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, CORECOMM 
        // define target and no-target words based on whether yes or no is correct
        if (YesNoCorrect == 0)
           {
-          TargetWord="YES";
-          NoTargetWord="NO";
+          TargetWord= LocalizableString( "YES" );
+          NoTargetWord= LocalizableString( "NO" );
           }
        else
           {
-          TargetWord="NO";
-          NoTargetWord="YES";
+          TargetWord= LocalizableString( "NO" );
+          NoTargetWord= LocalizableString( "YES" );
           }
 
        // set size of user window
@@ -206,7 +207,7 @@ void TUser::PreRunInterval(int time)
     if (TargetType == 0)
        {
        tPreRunIntervalText->Font->Height=-Wyl*1/6;
-       tPreRunIntervalText->Caption="Get Ready ...";
+       tPreRunIntervalText->Caption= LocalizableString( "Get Ready ..." );
        }
     if (TargetType == 1)
        {
