@@ -509,6 +509,8 @@ bool    ret;
  LoadDialog->Filter="BCI2000 parameter file (*.prm)|*.prm|Any file (*.*)|*.*";
  if (LoadDialog->Execute())
     {
+    if (CfgTabControl->TabIndex > -1)
+       UpdateParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
     fShowParameters->UpdateParameterTags(paramlist, 1);    // update the tag (= filter) values in each parameter
     ret=paramlist->LoadParameterList(LoadDialog->FileName.c_str(), true, false);        // do not import non-existing parameters; use the filter
     if (!ret)

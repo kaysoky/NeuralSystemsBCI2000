@@ -16,11 +16,16 @@
 #pragma link "CGAUGES"
 #pragma resource "*.dfm"
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 
 using namespace std;
 
 TfMain *fMain;
+
+// Target code conversions
+static const short ud[] = { 11, 15 },
+                   lr[] = { 13, 17 },
+                   udlr[] = { 10, 12, 14, 16 };
 
 template<typename From, typename To> float convert_num( const From& f, To& t )
 {
@@ -50,7 +55,7 @@ template<typename From, typename To> float convert_num( const From& f, To& t )
 
 void TfMain::UserMessage( const AnsiString& msg, TfMain::msgtypes type ) const
 {
-  bool actuallyShowIt = !autoMode;
+  bool actuallyShowIt = !mAutoMode;
   const char* msgtype = "Message";
   long msgflags = MB_OK;
   switch( type )
@@ -72,14 +77,18 @@ void TfMain::UserMessage( const AnsiString& msg, TfMain::msgtypes type ) const
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
         : TForm(Owner),
-          gabTargets( NULL ),
-          autoMode( false ),
-          bci2000data( NULL )
+          mpGabTargets( NULL ),
+          mTargetMax( 0 ),
+          mAutoMode( false )
 {
   Caption = Caption + " " VERSION " ("__DATE__")";
   Constraints->MinHeight = Height;
   Constraints->MinWidth = Width;
   mSourceFiles->WordWrap = false;
+  mSourceFiles->Text = "";
+  mProgressLegend->Caption = "";
+  eDestinationFile->Enabled = false;
+  eDestinationFile->Text = "<auto>";
   
   if( Application->OnIdle == NULL )
     Application->OnIdle = DoStartupProcessing;
@@ -93,7 +102,8 @@ void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
   const char optionChar = '-';
   if( ParamCount() > 0 && ParamStr( 1 )[ 1 ] != optionChar )
   {
-    autoMode = true;
+    mAutoMode = true;
+    AutoscaleCheckbox->Checked = false;
     mSourceFiles->Lines->Clear();
     int i = 1;
     while( i <= ParamCount() && ParamStr( i )[ 1 ] != optionChar )
@@ -119,6 +129,10 @@ void __fastcall TfMain::DoStartupProcessing( TObject*, bool& )
             else
               ParameterFile->Text = ParamStr( i ).c_str() + 2;
             break;
+          case 'a':
+          case 'A':
+            AutoscaleCheckbox->Checked = true;
+            break;
         }
       }
       ++i;
@@ -140,14 +154,14 @@ void __fastcall TfMain::CheckCalibrationFile( void )
     if( paramlist.LoadParameterList( ParameterFile->Text.c_str() ) )
     {
       n_chans= paramlist.GetParamPtr("SourceChOffset")->GetNumValues();
-      offset.clear();
-      offset.resize( n_chans, 0 );
-      gain.clear();
-      gain.resize( n_chans, 0 );
+      mOffset.clear();
+      mOffset.resize( n_chans, 0 );
+      mGain.clear();
+      mGain.resize( n_chans, 0 );
       for(i=0;i<n_chans;i++)
       {
-        offset[i]=atoi(paramlist.GetParamPtr("SourceChOffset")->GetValue(i));
-        gain[i]=atof(paramlist.GetParamPtr("SourceChGain")->GetValue(i));
+        mOffset[i]=atoi(paramlist.GetParamPtr("SourceChOffset")->GetValue(i));
+        mGain[i]=atof(paramlist.GetParamPtr("SourceChGain")->GetValue(i));
       }
     }
     else
@@ -155,42 +169,43 @@ void __fastcall TfMain::CheckCalibrationFile( void )
                    + ParameterFile->Text + "\".", Error );
   }
 
-  static const short ud[] = { 11, 15 },
-                     lr[] = { 13, 17 },
-                     udlr[] = { 10, 12, 14, 16 };
+  BCI2000DATA data;
+  data.Initialize( mSourceFiles->Lines->Strings[ 0 ].c_str(), 0 );
+
   const PARAM* param = paramlist.GetParamPtr( "NumberTargets" );
   if( param == NULL )
-    param = bci2000data->GetParamListPtr()->GetParamPtr( "NumberTargets" );
+    param = data.GetParamListPtr()->GetParamPtr( "NumberTargets" );
   int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
 
   param = paramlist.GetParamPtr( "TargetOrientation" );
   if( param == NULL )
-    param = bci2000data->GetParamListPtr()->GetParamPtr( "TargetOrientation" );
-  int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 ),
-      numberTargetsMax = 0;
+    param = data.GetParamListPtr()->GetParamPtr( "TargetOrientation" );
+  int targetOrientation = ( param ? atoi( param->GetValue() ) : 0 );
+  mTargetMax = 0;
 
   switch( targetOrientation )
   {
     case 0:
     case 3: // Both
-      gabTargets = udlr;
-      numberTargetsMax = sizeof( udlr ) / sizeof( *udlr );
+      mpGabTargets = udlr;
+      mTargetMax = sizeof( udlr ) / sizeof( *udlr );
       break;
     case 1: // Vertical
-      gabTargets = ud;
-      numberTargetsMax = sizeof( ud ) / sizeof( *ud );
+      mpGabTargets = ud;
+      mTargetMax = sizeof( ud ) / sizeof( *ud );
       break;
     case 2: // Horizontal
-      gabTargets = lr;
-      numberTargetsMax = sizeof( lr ) / sizeof( *lr );
+      mpGabTargets = lr;
+      mTargetMax = sizeof( lr ) / sizeof( *lr );
       break;
   }
-  if( numberTargets > numberTargetsMax )
+
+  if( numberTargets > mTargetMax )
   {
     UserMessage( "Target type heuristics failed. "
                  "Target conversion is likely to be unusable.",
                  Warning );
-    gabTargets = NULL;
+    mpGabTargets = NULL;
   }
 }
 
@@ -198,97 +213,166 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 
 void __fastcall TfMain::bConvertClick(TObject *Sender)
 {
- offset.clear();
- gain.clear();
+ mOffset.clear();
+ mGain.clear();
 
- bool errorOccurred = false;
- for( int i = 0; i < mSourceFiles->Lines->Count; ++i )
+ FILE* fp = NULL;
+ bool errorOccurred = mSourceFiles->Lines->Count < 1;
+
  {
-   BCI2000DATA reader;
-   if( reader.Initialize( mSourceFiles->Lines->Strings[ i ].c_str(), 50000 )
-        != BCI2000ERR_NOERR )
+   int  samplingRate = 0,
+        numChannels = 0;
+   for( int i = 0; i < mSourceFiles->Lines->Count; ++i )
    {
-      errorOccurred = true;
-      UserMessage( "Error opening input file \""
-                   + mSourceFiles->Lines->Strings[ i ] + "\"",
-                   Error );
+     BCI2000DATA reader;
+     if( reader.Initialize( mSourceFiles->Lines->Strings[ i ].c_str(), 50000 )
+          != BCI2000ERR_NOERR )
+     {
+        errorOccurred = true;
+        UserMessage( "Error opening input file \""
+                     + mSourceFiles->Lines->Strings[ i ] + "\"",
+                     Error );
+     }
+     else
+     {
+        if( numChannels != 0 && reader.GetNumChannels() != numChannels )
+        {
+          UserMessage( "Inconsistent channel count in file \""
+                       + mSourceFiles->Lines->Strings[ i ] + "\"",
+                       Error );
+          errorOccurred = true;
+        }
+        numChannels = reader.GetNumChannels();
+
+        if( samplingRate != 0 && reader.GetSampleFrequency() != samplingRate )
+        {
+          UserMessage( "Inconsistent sampling rate in file \""
+                       + mSourceFiles->Lines->Strings[ i ] + "\"",
+                       Error );
+          errorOccurred = true;
+        }
+        samplingRate = reader.GetSampleFrequency();
+
+        if( ::SameFileName(
+               ::ExtractShortPathName( mSourceFiles->Lines->Strings[ i ] ),
+               ::ExtractShortPathName( eDestinationFile->Text ) ) )
+        {
+          UserMessage( "Input and output file are identical",
+                       Error );
+          errorOccurred = true;
+        }
+     }
    }
+   if( errorOccurred )
+     return;
+
+   CheckCalibrationFile();
+
+   // write the header
+   fp = fopen(eDestinationFile->Text.c_str(), "wb");
+   if (!fp)
+      {
+      UserMessage( "Error opening output file", Error );
+      return;
+      }
+
+   gab_type val = numChannels;
+   fwrite(&val, sizeof( val ), 1, fp);
+   val = 0;
+   fwrite(&val, sizeof( val ), 1, fp);
+   val = samplingRate;
+   fwrite(&val, sizeof( val ), 1, fp);
  }
- if( errorOccurred )
-   return;
-
- delete bci2000data;
- bci2000data=new BCI2000DATA;
- ret=bci2000data->Initialize(mSourceFiles->Lines->Strings[ 0 ].c_str(), 50000);
- if (ret != BCI2000ERR_NOERR)
-    {
-    UserMessage( "Error opening input file", Error );
-    delete bci2000data;
-    return;
-    }
-
- fp=fopen(eDestinationFile->Text.c_str(), "wb");
- if (!fp)
-    {
-    UserMessage( "Error opening output file", Error );
-    delete bci2000data;
-    return;
-    }
-
- CheckCalibrationFile();
-
- firstrun = 1;
- lastrun = mSourceFiles->Lines->Count;
-
- channels=bci2000data->GetNumChannels();
- dummy=1;
- samplingrate=bci2000data->GetSampleFrequency();
-
+ 
  float maxRatio = 0.0;
+ bool unexpectedTargetCode = false;
 
- // write the header
- fwrite(&channels, 2, 1, fp);
- fwrite(&dummy, 2, 1, fp);
- fwrite(&samplingrate, 2, 1, fp);
-
- // go through each run
  Gauge->MinValue=0;
  Gauge->Progress=0;
  Gauge->MaxValue=Gauge->Width;
- for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
+
+ int files = mSourceFiles->Lines->Count;
+ float scalingFactor = 1.0 / 0.003;
+ if( AutoscaleCheckbox->Checked )
+ {
+   mProgressLegend->Caption = "Scanning ...";
+   mProgressLegend->Invalidate();
+   float absMaxVal = 0.0;
+   for( int file = 0; file < files; ++file )
+   {
+     BCI2000DATA data;
+     data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), 50000 );
+     int samples = data.GetNumSamples(),
+         channels = data.GetNumChannels();
+     for( int sample = 0; sample < samples; ++sample )
+     {
+       if( sample % 1000 == 0 )
+       {
+         Gauge->Progress = ( file * Gauge->MaxValue ) / files
+                          + ( sample * Gauge->MaxValue ) / ( samples * files );
+         Application->ProcessMessages();
+       }
+       if( CalibFromFile() )
+         for( int channel = 0; channel < channels; ++channel )
+         {
+           float absVal = fabs( mGain[channel] * ( data.ReadValue( channel, sample )
+                                               - mOffset[channel] ) * scalingFactor );
+           if( absVal > absMaxVal )
+             absMaxVal = absVal;
+         }
+       else
+         for( int channel = 0; channel < channels; ++channel )
+         {
+           float absVal = fabs( data.Value( channel, sample ) );
+           if( absVal > absMaxVal )
+             absMaxVal = absVal;
+         }
+     }
+     Gauge->Progress = ( ( file + 1 ) * Gauge->MaxValue ) / files;
+   }
+   if( absMaxVal > 0.0 )
+     scalingFactor = ( float( numeric_limits<short>::max() ) - 1e-10 ) / absMaxVal;
+ }
+
+ // go through each run
+ for ( int file = 0; file < files; ++file )
   {
-  delete bci2000data;
-  bci2000data = new BCI2000DATA;
-  bci2000data->Initialize( mSourceFiles->Lines->Strings[ cur_run - 1 ].c_str(), 50000 );
-  numsamples=bci2000data->GetNumSamples();
+  mProgressLegend->Caption = "Converting ...";
+  mProgressLegend->Invalidate();
+
+  BCI2000DATA data;
+  data.Initialize( mSourceFiles->Lines->Strings[ file ].c_str(), 50000 );
+  int samples=data.GetNumSamples(),
+      channels = data.GetNumChannels();
 
   // go through all samples in each run
-  for (sample=0; sample<numsamples; sample++)
+  for ( int sample=0; sample<samples; sample++)
    {
    if (sample % 1000 == 0)
    {
-     Gauge->Progress = ( ( cur_run - 1 ) * Gauge->MaxValue ) / lastrun
-                      + ( sample * Gauge->MaxValue ) / ( numsamples * lastrun );
+     Gauge->Progress = ( file * Gauge->MaxValue ) / files
+                      + ( sample * Gauge->MaxValue ) / ( samples * files );
      Application->ProcessMessages();
    }
    // go through each channel
    if( CalibFromFile() )
    {
-     for (channel=0; channel<channels; channel++)
+     for (int channel=0; channel<channels; channel++)
      {
-       cur_value=bci2000data->ReadValue(channel, sample);
-       val= (float)cur_value;
-       val= gain[channel] * ( val - offset[channel] ) / 0.003;
+       float val = data.ReadValue(channel, sample);
+       val= mGain[channel] * ( val - mOffset[channel] ) * scalingFactor;
+       gab_type cur_value;
        float ratio = convert_num( val, cur_value );
        if( maxRatio < ratio )
          maxRatio = ratio;
-       fwrite(&cur_value, 2, 1, fp);
+       fwrite(&cur_value, sizeof( cur_value ), 1, fp);
      }
    }
    else
-     for( channel = 0; channel < channels; ++channel )
+     for( int channel = 0; channel < channels; ++channel )
      {
-       val = bci2000data->Value( channel, sample ) / 0.003;
+       float val = data.Value( channel, sample ) * scalingFactor;
+       gab_type cur_value;
        float ratio = convert_num( val, cur_value );
        if( maxRatio < ratio )
          maxRatio = ratio;
@@ -296,30 +380,46 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
      }
 
    // write the state element
-   bci2000data->ReadStateVector(sample);
-   cur_state=ConvertState(bci2000data);
-   fwrite(&cur_state, 2, 1, fp);
+   data.ReadStateVector(sample);
+   gab_type cur_state=ConvertState(&data);
+   if( cur_state == -1 )
+     unexpectedTargetCode = true;
+   fwrite(&cur_state, sizeof( cur_state ), 1, fp);
    }
    // now, write one sample (all channels + state)
   // with a state value of 0 (i.e., Inter-Run-Interval)
-  dummy=0;
-  for (channel=0; channel<=channels; channel++)
-     fwrite(&dummy, 2, 1, fp);
-  Gauge->Progress=( cur_run * Gauge->MaxValue ) / lastrun;
+  gab_type val = 0;
+  for (int channel=0; channel<=channels; channel++)
+     fwrite(&val, sizeof( val ), 1, fp);
+  Gauge->Progress=( ( file + 1 ) * Gauge->MaxValue ) / files;
   }
 
  fclose(fp);
 
  if( maxRatio > 1.0 )
+ {
+   errorOccurred = true;
    UserMessage( "Numeric overflow occurred during conversion.\n"
                 "Input data exceeded the numeric range by a ratio of "
                 + FloatToStr( maxRatio ) + ".\n"
                 "Conversion process finished.",
                 Warning );
- else
+ }
+ if( unexpectedTargetCode )
+ {
+   errorOccurred = true;
+   UserMessage( "Unexpected target code found during conversion.\n"
+                "Target conversion will be unusable.\n"
+                "Conversion process finished.",
+                Warning );
+ }
+
+ if( !errorOccurred )
    UserMessage( "Conversion process finished successfully",
                 Message );
  Gauge->Progress=0;
+ mProgressLegend->Caption = "";
+ mProgressLegend->Invalidate();
 }
 //---------------------------------------------------------------------------
 
@@ -356,8 +456,10 @@ static short cur_targetcode=-1;
  // target on the screen
  if (targetcode > 0 )
  {
-   if( gabTargets != NULL )
-     return gabTargets[ targetcode - 1 ];
+   if( targetcode > mTargetMax )
+     return -1;
+   else if( mpGabTargets != NULL )
+     return mpGabTargets[ targetcode - 1 ];
    else
    {
       if (feedback == 0)                  // no cursor -> pre-trial pause
@@ -379,25 +481,49 @@ void __fastcall TfMain::bOpenFileClick(TObject *Sender)
 {
  OpenDialog->Options << ofAllowMultiSelect;
  if( OpenDialog->Execute() )
-    mSourceFiles->Lines = OpenDialog->Files;
+ {
+    TStringList* fileList = new TStringList;
+    fileList->Assign( OpenDialog->Files );
+    fileList->Sort();
+    mSourceFiles->Lines->Assign( fileList );
+    delete fileList;
+ }
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TfMain::Button1Click(TObject *Sender)
 {
-        if (SaveDialog->Execute())
-                eDestinationFile->Text=SaveDialog->FileName;
+  SaveDialog->InitialDir = ::ExtractFileDir( eDestinationFile->Text );
+  if (SaveDialog->Execute())
+  {
+    eDestinationFile->Enabled = true;
+    eDestinationFile->Text=SaveDialog->FileName;
+  }
 }
 //---------------------------------------------------------------------------
 
 
 void __fastcall TfMain::Button2Click(TObject *Sender)
 {
-        if (OpenParameter->Execute())
-        {
-          ParameterFile->Enabled = true;
-          ParameterFile->Text=OpenParameter->FileName;
-        }
+  if (OpenParameter->Execute())
+  {
+    ParameterFile->Enabled = true;
+    ParameterFile->Text=OpenParameter->FileName;
+  }
 }
 //---------------------------------------------------------------------------
+
+void __fastcall TfMain::mSourceFilesChange(TObject *Sender)
+{
+  TMemo* memo = static_cast<TMemo*>( Sender );
+  bool haveFiles = ( memo->Text.Trim().Length() != 0 );
+  bConvert->Enabled = haveFiles;
+  if( haveFiles && !eDestinationFile->Enabled )
+  {
+    AnsiString destFileName = memo->Lines->Strings[ 0 ];
+    eDestinationFile->Text = ::ChangeFileExt( destFileName, ".raw" );
+  }
+}
+//---------------------------------------------------------------------------
+
 

@@ -161,10 +161,11 @@ VISUAL::VISUAL_BASE::HandleMessage( istream& is )
       is >> numValue;
       break;
     case CFGID_WINDOWTITLE:
-      is >> stringValue;
+      getline( is >> ws, stringValue, '\0' );
       break;
     case CFGID_XAXISLABEL:
-      is >> numValue >> stringValue;
+      is >> numValue;
+      getline( is >> ws, stringValue, '\0' );
       break;
   }
 
@@ -298,8 +299,12 @@ VISUAL::VISUAL_GRAPH::HandleMessage( istream& is )
   int sourceID = is.get();
   VISUAL_GRAPH* visual = dynamic_cast<VISUAL_GRAPH*>( visuals[ sourceID ] );
   if( visual == NULL )
+  {
+    delete visuals[ sourceID ];
     visual = new VISUAL_GRAPH( sourceID );
-
+    visuals[ sourceID ] = visual;
+  }
+  
   visual->SetDisplayMode( displayMode );
   return visual->InstanceHandleMessage( is );
 }
@@ -392,8 +397,12 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
 void
 VISUAL::VISUAL_GRAPH::SetBottomChannel( int inBottomChannel )
 {
-  int newBottomChannel = min( inBottomChannel, data.Channels() - numDisplayChannels );
-  newBottomChannel = max( newBottomChannel, 0 );
+  int newBottomChannel = inBottomChannel,
+      maxBottomChannel =  int( data.Channels() ) - int( numDisplayChannels );
+  if( newBottomChannel > maxBottomChannel )
+    newBottomChannel = maxBottomChannel;
+  if( newBottomChannel < 0 )
+    newBottomChannel = 0;
   if( ( size_t )newBottomChannel != bottomChannel )
   {
     bottomChannel = newBottomChannel;
@@ -418,9 +427,15 @@ VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
   switch( key )
   {
     case VK_UP:
-      SetBottomChannel( bottomChannel + numDisplayChannels / 2 );
+      SetBottomChannel( bottomChannel + 1 );
       break;
     case VK_DOWN:
+      SetBottomChannel( bottomChannel - 1 );
+      break;
+    case VK_PRIOR:
+      SetBottomChannel( bottomChannel + numDisplayChannels / 2 );
+      break;
+    case VK_NEXT:
       SetBottomChannel( bottomChannel - numDisplayChannels / 2 );
       break;
   }
@@ -523,7 +538,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
                - baseInterval * NormData( i + bottomChannel, j );
         }
 
-        ::SelectObject( dc, signalPens[ i ] );
+        ::SelectObject( dc, signalPens[ i + bottomChannel ] );
         ::Polyline( dc, signalPoints, sampleCursor );
         ::Polyline( dc, &signalPoints[ sampleCursor ], numSamples - sampleCursor );
 
@@ -758,8 +773,11 @@ VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
   int sourceID = is.get();
   VISUAL_MEMO* visual = dynamic_cast<VISUAL_MEMO*>( visuals[ sourceID ] );
   if( visual == NULL )
+  {
+    delete visuals[ sourceID ];
     visual = new VISUAL_MEMO( sourceID );
-
+    visuals[ sourceID ] = visual;
+  }
   return visual->InstanceHandleMessage( is );
 }
 
