@@ -437,7 +437,7 @@ void StatFilter::Resting()
     Parameter( "InterceptProportion" ) = memotext;
 
     sprintf(memotext, "%.4f",cur_lr_stat.aper);
-    Parameter( "HorInterceptProp" ) = memotext;
+    Parameter( "HorizInterceptProp" ) = memotext;
 
 
     //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
