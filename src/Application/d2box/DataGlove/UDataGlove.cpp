@@ -8,7 +8,6 @@
 
 #pragma package(smart_init)
 
-
 __fastcall DataGlove::DataGlove(): TThread(true)
 {
  hCOM=NULL;
@@ -124,7 +123,7 @@ DWORD numread, numwritten;
    WriteFile(hCOM, sendbuf, 1, &numwritten, NULL);
    // 'eat' all values until the expected return
    ReadFile(hCOM, buf, 1, &numread, NULL);
-   if (buf[0] == 'U') break;
+   if ((numread) && (buf[0] == 'U')) break;
    }
   strcpy(sendbuf, "BA");
   WriteFile(hCOM, sendbuf, 2, &numwritten, NULL);
@@ -187,6 +186,7 @@ unsigned char cur_sensorval;
  CloseComPort();
  streaming=false;
 }
+
 
 // **************************************************************************
 // Function:   StartStreaming
@@ -338,6 +338,18 @@ DWORD dwError=0;
 
  if (hCOM == INVALID_HANDLE_VALUE)
     return false;
+
+  // SET THE COMM TIMEOUTS
+ GetCommTimeouts(hCOM, &ctmoOld);
+ ctmoNew.ReadTotalTimeoutConstant = 100;
+ ctmoNew.ReadTotalTimeoutMultiplier = 0;
+ ctmoNew.WriteTotalTimeoutMultiplier = 0;
+ ctmoNew.WriteTotalTimeoutConstant = 0;
+ SetCommTimeouts(hCOM, &ctmoNew);
+
+ dcb.DCBlength = sizeof(DCB);
+ GetCommState(hCOM, &dcb);
+
  if (!BuildCommDCB("baud=19200 parity=N data=8 stop=1",&dcb))
     return false;
 
@@ -354,7 +366,7 @@ DWORD dwError=0;
 
  if (!SetCommState(hCOM, &dcb))
     return false;
-    
+
  ClearCommError(hCOM,&dwError,NULL);
 
 return true;
@@ -367,6 +379,7 @@ bool DataGlove::CloseComPort()
  if (hCOM)
     {
     PurgeComm(hCOM, PURGE_TXABORT|PURGE_RXABORT|PURGE_TXCLEAR|PURGE_RXCLEAR);
+    SetCommTimeouts(hCOM, &ctmoOld);
     CloseHandle(hCOM);
     }
 

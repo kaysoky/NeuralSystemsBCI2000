@@ -18,6 +18,7 @@
 // these two variables have to be static, otherwise BuildCommDB does not work. No clue why
 static HANDLE        hCOM;
 static DCB           dcb;
+static COMMTIMEOUTS ctmoNew = {0}, ctmoOld;
 
 class DataGlove : public TThread
 {
