@@ -47,7 +47,7 @@ P3TemporalFilter::P3TemporalFilter()
 
  BEGIN_STATE_DEFINITIONS
  // the code of the stimulus (e.g., which row/column in the P3 spelling paradigm)
-   "StimulusCodeRes 5 0 0 0",
+   "StimulusCodeRes 7 0 0 0",
  // the type of the stimulus (e.g., standard/oddball in the oddball or P3 spelling paradigm)
    "StimulusTypeRes 3 0 0 0",
  END_STATE_DEFINITIONS

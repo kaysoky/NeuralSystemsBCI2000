@@ -7,7 +7,7 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-#define MAX_ERPBUFFERS          1500
+#define MAX_ERPBUFFERS          3000
 #define ERPBUFCODE_EMPTY        -1
 
 class P3TemporalFilter : public GenericFilter
