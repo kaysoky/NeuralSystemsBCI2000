@@ -56,7 +56,7 @@ void TfMain::ShutdownMatlabEngine()
 //-----------------------------------------------------------------------------
 void __fastcall TfMain::ContinueClick(TObject *Sender)
 {
-int     ret, firstrun, lastrun, cur_run, channel, state, i;
+int     ret, firstfile, lastfile, cur_file, channel, state, i;
 double  cur_value_double, cur_state_double, dummy_double;
 ULONG   sample, numsamples;
 char    cur_statename[256], buffer[5000];
@@ -85,31 +85,29 @@ MATFile *pmat;
  for (i=0; i < MAX_STATES; i++)
   state_var[i]=NULL;
 
- firstrun= bci2000data->GetFirstRunNumber();
- lastrun= bci2000data->GetLastRunNumber();
+ firstfile=0;
+ lastfile=mFilenames->Lines->Count;
  cur_trial=0;
 
  // consistency checks
  oldnumstates=-1;
  consistent=true;
- for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
+ for (cur_file=firstfile; cur_file<lastfile; cur_file++)
   {
-  if (cRunListBox->Checked[cur_run-firstrun])         // only for checked runs
-     {
-     bci2000data->SetRun(cur_run);
-     numsamples=bci2000data->GetNumSamples();
-     totalsamples += numsamples;
-     numstates=bci2000data->GetStateListPtr()->GetNumStates();
-     if ((numstates != oldnumstates) && (oldnumstates != -1))
-        consistent=false;
-     oldnumstates=numstates;
-     }
+  bci2000data->Initialize(mFilenames->Lines->Strings[cur_file].c_str(), 50000);
+  // bci2000data->SetRun(cur_run);
+  numsamples=bci2000data->GetNumSamples();
+  totalsamples += numsamples;
+  numstates=bci2000data->GetStateListPtr()->GetNumStates();
+  if ((numstates != oldnumstates) && (oldnumstates != -1))
+     consistent=false;
+  oldnumstates=numstates;
   }
 
  // different number of states, etc.
  if (!consistent)
     {
-    Application->MessageBox("Runs are not consistent (e.g., different # states)", "Error", MB_OK);
+    Application->MessageBox("Runs/files are not consistent (e.g., different # states)", "Error", MB_OK);
     return;
     }
 
@@ -175,66 +173,64 @@ MATFile *pmat;
     }
 
  // go through each run
- Gauge->MinValue=firstrun;
- Gauge->MaxValue=lastrun;
- for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
+ Gauge->MinValue=firstfile;
+ Gauge->MaxValue=lastfile;
+ for (cur_file=firstfile; cur_file<lastfile; cur_file++)
   {
-  Gauge->Progress=cur_run;
-  if (cRunListBox->Checked[cur_run-firstrun])
-     {
-     bci2000data->SetRun(cur_run);
-     numsamples=bci2000data->GetNumSamples();
-     // go through all samples in each run
-     for (sample=0; sample<numsamples; sample++)
+  Gauge->Progress=cur_file;
+  bci2000data->Initialize(mFilenames->Lines->Strings[cur_file].c_str(), 50000);
+  // bci2000data->SetRun(cur_run);
+  numsamples=bci2000data->GetNumSamples();
+  // go through all samples in each run
+  for (sample=0; sample<numsamples; sample++)
+   {
+   // read the state vector
+   bci2000data->ReadStateVector(sample);
+   cur_trial=IncrementTrial(cur_trial, bci2000data->GetStateVectorPtr());
+   if (SaveSampleOrNot(bci2000data->GetStateVectorPtr()))
       {
-      // read the state vector
-      bci2000data->ReadStateVector(sample);
-      cur_trial=IncrementTrial(cur_trial, bci2000data->GetStateVectorPtr());
-      if (SaveSampleOrNot(bci2000data->GetStateVectorPtr()))
+      if (exportfile)
          {
-         if (exportfile)
-            {
-            fprintf(fp, "%d ", cur_run);
-            fprintf(fp, "%d ", cur_trial);
-            fprintf(fp, "%d ", sample);
-            }
-         if (exportmatlab)
-            {
-            dummy_double=(double)cur_run;
-            memcpy((char *)((double *)mxGetPr(run_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
-            dummy_double=(double)cur_trial;
-            memcpy((char *)((double *)mxGetPr(trial_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
-            dummy_double=(double)sample;
-            memcpy((char *)((double *)mxGetPr(sample_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
-            }
-         if (sample % 1000 == 0) Application->ProcessMessages();
-         // go through each channel
-         for (channel=0; channel<channels; channel++)
-          {
-          cur_value=bci2000data->ReadValue(channel, sample);
-          cur_value_double=(double)cur_value;
-          if (exportmatlab) memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
-          if (exportfile) fprintf(fp, "%d ", cur_value);
-          }
-         // store the value of each state
-         for (state=0; state < cStateListBox->Items->Count; state++)
-          {
-          // if we decided to save this state
-          if (cStateListBox->Checked[state])
-             {
-             strcpy(cur_statename, cStateListBox->Items->Strings[state].c_str());
-             cur_state=(int)bci2000data->GetStateVectorPtr()->GetStateValue(cur_statename);
-             cur_state_double=(double)cur_state;
-             if (exportfile) fprintf(fp, "%d ", cur_state);
-             if (exportmatlab) memcpy((char *)((double *)mxGetPr(state_var[state])+cur_totalsample), (char *)&cur_state_double, sizeof(double));
-             }
-          }
-         if (exportfile) fprintf(fp, "\r\n");
+         fprintf(fp, "%d ", cur_file);
+         fprintf(fp, "%d ", cur_trial);
+         fprintf(fp, "%d ", sample);
          }
-      cur_totalsample++;
-      } // end samples
-     } // if run actually selected
-  } // for all runs
+      if (exportmatlab)
+         {
+         dummy_double=(double)cur_file;
+         memcpy((char *)((double *)mxGetPr(run_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
+         dummy_double=(double)cur_trial;
+         memcpy((char *)((double *)mxGetPr(trial_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
+         dummy_double=(double)sample;
+         memcpy((char *)((double *)mxGetPr(sample_var)+cur_totalsample), (char *)&dummy_double, sizeof(double));
+         }
+      if (sample % 1000 == 0) Application->ProcessMessages();
+      // go through each channel
+      for (channel=0; channel<channels; channel++)
+       {
+       cur_value=bci2000data->ReadValue(channel, sample);
+       cur_value_double=(double)cur_value;
+       if (exportmatlab) memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
+       if (exportfile) fprintf(fp, "%d ", cur_value);
+       }
+      // store the value of each state
+      for (state=0; state < cStateListBox->Items->Count; state++)
+       {
+       // if we decided to save this state
+       if (cStateListBox->Checked[state])
+          {
+          strcpy(cur_statename, cStateListBox->Items->Strings[state].c_str());
+          cur_state=(int)bci2000data->GetStateVectorPtr()->GetStateValue(cur_statename);
+          cur_state_double=(double)cur_state;
+          if (exportfile) fprintf(fp, "%d ", cur_state);
+          if (exportmatlab) memcpy((char *)((double *)mxGetPr(state_var[state])+cur_totalsample), (char *)&cur_state_double, sizeof(double));
+          }
+       }
+      if (exportfile) fprintf(fp, "\r\n");
+      }
+   cur_totalsample++;
+   } // end samples
+  } // for all files
 
  // put the data into matlab
  if (exportmatlab)
@@ -268,48 +264,11 @@ MATFile *pmat;
 
  if (fp) fclose(fp);
 
- frun->Enabled=false;
- lrun->Enabled=false;
-
  Gauge->Progress=0;
  Application->MessageBox("Export finished successfully", "Message", MB_OK);
 }
 //---------------------------------------------------------------------------
 
-
-int TfMain::GetNumSamples()
-{
-int     sample, num_samples_run, num_samples;
-int     cur_trial, cur_run, firstrun, lastrun;
-
- firstrun= atoi( frun->Text.c_str() );
- lastrun= atoi( lrun->Text.c_str() );
- cur_trial=0;
-
- // go through each run
- Gauge->MinValue=0;
- Gauge->Progress=0;
- Gauge->MaxValue=lastrun-firstrun+1;
- num_samples=0;
- for (cur_run=firstrun; cur_run<=lastrun; cur_run++)
-  {
-  Gauge->Progress=cur_run-firstrun;
-  bci2000data->SetRun(cur_run);
-  num_samples_run=bci2000data->GetNumSamples();
-  // go through all samples in each run
-  for (sample=0; sample<num_samples_run; sample++)
-   {
-   // read the state vector
-   bci2000data->ReadStateVector(sample);
-   cur_trial=IncrementTrial(cur_trial, bci2000data->GetStateVectorPtr());
-   if (SaveSampleOrNot(bci2000data->GetStateVectorPtr()))
-      num_samples++;
-   } // end samples
-  }
-
- Gauge->Progress=0;
- return(num_samples);
-}
 
 // uses constraints to determine whether sample should be saved
 // returns true if yes, otherwise false
@@ -386,55 +345,47 @@ int cur_state, desiredstate, retval;
 
 void __fastcall TfMain::bOpenFileClick(TObject *Sender)
 {
+ bool firsttime=false;
+
  if (OpenDialog->Execute())
-    eSourceFile->Text=OpenDialog->FileName;
+    {
+    if (mFilenames->Lines->Count == 0)
+       firsttime=true;
+    mFilenames->Lines->AddStrings(OpenDialog->Files);
+    if (firsttime) DefineInput(OpenDialog->Files->Strings[0]);
+    bConvert->Enabled=true;
+    }
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::Button1Click(TObject *Sender)
+void __fastcall TfMain::bOutputFileClick(TObject *Sender)
 {
-        if (SaveDialog->Execute())
-                eDestinationFile->Text=SaveDialog->FileName;
+ if (SaveDialog->Execute())
+    eDestinationFile->Text=SaveDialog->FileName;
 }
 //---------------------------------------------------------------------------
 
 
 
-
-void __fastcall TfMain::bDefineInputClick(TObject *Sender)
+bool TfMain::DefineInput(AnsiString file)
 {
-int     ret, state, run, i;
-char    buf[256];
-
- frun->Enabled=true;
- lrun->Enabled=true;
+int     ret;
 
  if (bci2000data) delete bci2000data;
  bci2000data=new BCI2000DATA;
- ret=bci2000data->Initialize(eSourceFile->Text.c_str(), 50000);
+ ret=bci2000data->Initialize(file.c_str(), 50000);
  if (ret != BCI2000ERR_NOERR)
     {
     Application->MessageBox("Error opening input file", "Error", MB_OK);
     delete bci2000data;
-    return;
+    return(false);
     }
 
- frun->Text= bci2000data->GetFirstRunNumber();
- lrun->Text= bci2000data->GetLastRunNumber();
-
- cRunListBox->Clear();
- for (run=bci2000data->GetFirstRunNumber(); run<=bci2000data->GetLastRunNumber(); run++)
-  {
-  sprintf(buf, "Run %d", run);
-  cRunListBox->Items->Add(buf);
-  }
-
  UpdateStateListBox(bci2000data->GetFirstRunNumber());
-
  bConvert->Enabled=true;
-}
-//---------------------------------------------------------------------------
 
+ return(true);
+}
 
 void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
 {
@@ -471,9 +422,12 @@ int state;
   cStateListBox->Checked[state]=true;
 }
 
-void __fastcall TfMain::frunChange(TObject *Sender)
+
+void __fastcall TfMain::bClearListClick(TObject *Sender)
 {
- UpdateStateListBox(atoi(frun->Text.c_str()));
+ mFilenames->Lines->Clear();        
+ bConvert->Enabled=false;
 }
 //---------------------------------------------------------------------------
+
 

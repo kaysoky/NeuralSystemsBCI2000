@@ -1,9 +1,9 @@
 object fMain: TfMain
-  Left = 379
-  Top = 317
+  Left = 392
+  Top = 284
   Width = 438
-  Height = 454
-  Caption = 'BCI2000toASCII V3.0'
+  Height = 550
+  Caption = 'BCI2000toASCII V3.5'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -40,25 +40,12 @@ object fMain: TfMain
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
-    Left = 40
-    Top = 32
-    Width = 74
-    Height = 16
-    Caption = 'BCI2000 File'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-  end
   object Label2: TLabel
-    Left = 40
-    Top = 88
-    Width = 58
+    Left = 72
+    Top = 176
+    Width = 63
     Height = 16
-    Caption = 'ASCII File'
+    Caption = 'Output File'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -68,120 +55,104 @@ object fMain: TfMain
   end
   object Gauge: TCGauge
     Left = 0
-    Top = 392
+    Top = 488
     Width = 425
     Height = 25
   end
-  object Label3: TLabel
-    Left = 304
-    Top = 192
-    Width = 34
-    Height = 13
-    Caption = 'first run'
-    Visible = False
-  end
-  object Label4: TLabel
-    Left = 304
-    Top = 208
-    Width = 34
-    Height = 13
-    Caption = 'last run'
-    Visible = False
-  end
   object Label5: TLabel
     Left = 0
-    Top = 136
+    Top = 232
     Width = 63
     Height = 13
     Caption = 'Export States'
   end
   object Label6: TLabel
     Left = 0
-    Top = 349
+    Top = 445
     Width = 113
     Height = 13
     Caption = 'Increment trial #, if state'
   end
   object Label7: TLabel
     Left = 136
-    Top = 349
+    Top = 445
     Width = 53
     Height = 13
     Caption = 'switches to'
   end
   object Label8: TLabel
     Left = 40
-    Top = 256
+    Top = 352
     Width = 89
     Height = 13
     Caption = 'Export only, if state'
   end
   object Label9: TLabel
     Left = 176
-    Top = 256
+    Top = 352
     Width = 31
     Height = 13
     Caption = 'equals'
   end
   object Label10: TLabel
     Left = 224
-    Top = 256
+    Top = 352
     Width = 18
     Height = 13
     Caption = 'and'
   end
   object Label11: TLabel
     Left = 264
-    Top = 256
+    Top = 352
     Width = 31
     Height = 13
     Caption = 'if state'
   end
   object Label12: TLabel
     Left = 392
-    Top = 256
+    Top = 352
     Width = 31
     Height = 13
     Caption = 'equals'
   end
   object Label13: TLabel
     Left = 40
-    Top = 296
+    Top = 392
     Width = 31
     Height = 13
     Caption = 'if state'
   end
   object Label14: TLabel
     Left = 176
-    Top = 296
+    Top = 392
     Width = 31
     Height = 13
     Caption = 'equals'
   end
   object Label15: TLabel
     Left = 224
-    Top = 296
+    Top = 392
     Width = 18
     Height = 13
     Caption = 'and'
   end
   object Label16: TLabel
     Left = 264
-    Top = 296
+    Top = 392
     Width = 31
     Height = 13
     Caption = 'if state'
   end
   object Label17: TLabel
     Left = 392
-    Top = 296
+    Top = 392
     Width = 31
     Height = 13
     Caption = 'equals'
   end
   object Label18: TLabel
     Left = 0
-    Top = 288
+    Top = 384
     Width = 31
     Height = 24
     Caption = 'OR'
@@ -192,45 +163,43 @@ object fMain: TfMain
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object eSourceFile: TEdit
-    Left = 40
-    Top = 48
-    Width = 225
-    Height = 21
-    TabOrder = 0
-    Text = 'D:\BCI2000DATA\gal165\galS165R01.dat'
+  object Bevel1: TBevel
+    Left = 0
+    Top = 224
+    Width = 425
+    Height = 1
   end
   object eDestinationFile: TEdit
-    Left = 40
-    Top = 104
-    Width = 225
+    Left = 72
+    Top = 192
+    Width = 353
     Height = 21
-    TabOrder = 1
+    TabOrder = 0
     Text = 'D:\BCI2000DATA\gal165\galS165.mat'
   end
   object bOpenFile: TButton
     Left = 0
-    Top = 48
-    Width = 33
+    Top = 136
+    Width = 65
+    Height = 25
+    Caption = 'Add File(s)'
+    TabOrder = 1
+    OnClick = bOpenFileClick
+  end
+  object bOutputFile: TButton
+    Left = 0
+    Top = 192
+    Width = 65
     Height = 21
     Caption = 'File'
     TabOrder = 2
-    OnClick = bOpenFileClick
-  end
-  object Button1: TButton
-    Left = 0
-    Top = 104
-    Width = 33
-    Height = 21
-    Caption = 'File'
-    TabOrder = 3
-    OnClick = Button1Click
+    OnClick = bOutputFileClick
   end
   object bConvert: TButton
     Left = 344
-    Top = 152
+    Top = 136
     Width = 81
-    Height = 25
+    Height = 41
     Caption = 'Convert'
     Enabled = False
     Font.Charset = DEFAULT_CHARSET
@@ -239,165 +208,137 @@ object fMain: TfMain
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 3
     OnClick = ContinueClick
-  end
-  object frun: TEdit
-    Left = 344
-    Top = 184
-    Width = 81
-    Height = 21
-    Enabled = False
-    TabOrder = 5
-    Text = '1'
-    Visible = False
-    OnChange = frunChange
-  end
-  object lrun: TEdit
-    Left = 344
-    Top = 208
-    Width = 81
-    Height = 21
-    Enabled = False
-    TabOrder = 6
-    Text = '8'
-    Visible = False
-  end
-  object bDefineInput: TButton
-    Left = 344
-    Top = 120
-    Width = 81
-    Height = 25
-    Caption = 'Define Input'
-    TabOrder = 7
-    OnClick = bDefineInputClick
   end
   object cStateListBox: TCheckListBox
     Left = 0
-    Top = 152
+    Top = 248
     Width = 121
     Height = 97
     ItemHeight = 13
-    TabOrder = 8
+    TabOrder = 4
   end
   object eITIStateValue: TEdit
     Left = 136
-    Top = 365
+    Top = 461
     Width = 33
     Height = 21
-    TabOrder = 9
+    TabOrder = 5
     Text = '1'
   end
   object eState1aVal: TEdit
     Left = 176
-    Top = 272
+    Top = 368
     Width = 33
     Height = 21
-    TabOrder = 10
+    TabOrder = 6
     Text = '1'
   end
   object eState1bVal: TEdit
     Left = 392
-    Top = 272
+    Top = 368
     Width = 33
     Height = 21
-    TabOrder = 11
+    TabOrder = 7
   end
   object eState2bVal: TEdit
     Left = 392
-    Top = 312
+    Top = 408
     Width = 33
     Height = 21
-    TabOrder = 13
+    TabOrder = 9
   end
   object eState2aVal: TEdit
     Left = 176
-    Top = 312
+    Top = 408
     Width = 33
     Height = 21
-    TabOrder = 12
+    TabOrder = 8
   end
   object ListBox1a: TComboBox
     Left = 40
-    Top = 272
+    Top = 368
+    Width = 113
+    Height = 21
+    ItemHeight = 13
+    TabOrder = 10
+  end
+  object ListBox1b: TComboBox
+    Left = 264
+    Top = 368
+    Width = 113
+    Height = 21
+    ItemHeight = 13
+    TabOrder = 11
+  end
+  object ListBox2a: TComboBox
+    Left = 40
+    Top = 408
+    Width = 113
+    Height = 21
+    ItemHeight = 13
+    TabOrder = 12
+  end
+  object ListBox2b: TComboBox
+    Left = 264
+    Top = 408
+    Width = 113
+    Height = 21
+    ItemHeight = 13
+    TabOrder = 13
+  end
+  object ITIstateListBox: TComboBox
+    Left = 0
+    Top = 461
     Width = 113
     Height = 21
     ItemHeight = 13
     TabOrder = 14
   end
-  object ListBox1b: TComboBox
-    Left = 264
-    Top = 272
-    Width = 113
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 15
-  end
-  object ListBox2a: TComboBox
-    Left = 40
-    Top = 312
-    Width = 113
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 16
-  end
-  object ListBox2b: TComboBox
-    Left = 264
-    Top = 312
-    Width = 113
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 17
-  end
-  object ITIstateListBox: TComboBox
-    Left = 0
-    Top = 365
-    Width = 113
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 18
-  end
   object rExportMatlab: TRadioButton
     Left = 136
-    Top = 152
+    Top = 248
     Width = 113
     Height = 17
     Caption = 'Export Matlab'
     Checked = True
-    TabOrder = 19
+    TabOrder = 15
     TabStop = True
   end
   object rExportFile: TRadioButton
     Left = 136
-    Top = 176
+    Top = 272
     Width = 113
     Height = 17
     Caption = 'Export File'
-    TabOrder = 20
+    TabOrder = 16
   end
-  object cRunListBox: TCheckListBox
-    Left = 344
-    Top = 8
-    Width = 81
-    Height = 105
-    ItemHeight = 13
-    TabOrder = 21
+  object mFilenames: TMemo
+    Left = 0
+    Top = 0
+    Width = 425
+    Height = 129
+    ScrollBars = ssVertical
+    TabOrder = 17
+  end
+  object bClearList: TButton
+    Left = 72
+    Top = 136
+    Width = 67
+    Height = 25
+    Caption = 'Clear List'
+    TabOrder = 18
+    OnClick = bClearListClick
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 40
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofFileMustExist, ofEnableSizing]
+    Left = 176
+    Top = 136
   end
   object SaveDialog: TSaveDialog
-    Left = 80
-  end
-  object OpenParameter: TOpenDialog
-    Filter = '*.prm|*.prm|all files|*.*'
-  end
-  object OpenDialog1: TOpenDialog
-    Filter = '*.prm|*.prm|all files|*.*'
-  end
-  object OpenDialog2: TOpenDialog
-    Filter = '*.prm|*.prm|all files|*.*'
+    Left = 208
+    Top = 136
   end
 end

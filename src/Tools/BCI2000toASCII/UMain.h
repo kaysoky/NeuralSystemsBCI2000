@@ -10,6 +10,7 @@
 #include "CGAUGES.h"
 #include <Dialogs.hpp>
 #include <CheckLst.hpp>
+#include <ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 
 #define MAXCHANS  64
@@ -17,22 +18,14 @@
 class TfMain : public TForm
 {
 __published:	// IDE-managed Components
-        TEdit *eSourceFile;
-        TLabel *Label1;
         TLabel *Label2;
         TEdit *eDestinationFile;
         TCGauge *Gauge;
         TOpenDialog *OpenDialog;
         TButton *bOpenFile;
-        TButton *Button1;
+        TButton *bOutputFile;
         TSaveDialog *SaveDialog;
         TButton *bConvert;
-        TLabel *Label3;
-        TEdit *frun;
-        TLabel *Label4;
-        TEdit *lrun;
-        TOpenDialog *OpenParameter;
-        TButton *bDefineInput;
         TCheckListBox *cStateListBox;
         TLabel *Label5;
         TLabel *Label6;
@@ -43,8 +36,6 @@ __published:	// IDE-managed Components
         TLabel *Label10;
         TLabel *Label11;
         TLabel *Label12;
-        TOpenDialog *OpenDialog1;
-        TOpenDialog *OpenDialog2;
         TEdit *eState1aVal;
         TEdit *eState1bVal;
         TEdit *eState2bVal;
@@ -62,23 +53,24 @@ __published:	// IDE-managed Components
         TComboBox *ITIstateListBox;
         TRadioButton *rExportMatlab;
         TRadioButton *rExportFile;
-        TCheckListBox *cRunListBox;
+        TMemo *mFilenames;
+        TButton *bClearList;
+        TBevel *Bevel1;
         void __fastcall bOpenFileClick(TObject *Sender);
-        void __fastcall Button1Click(TObject *Sender);
+        void __fastcall bOutputFileClick(TObject *Sender);
         void __fastcall ContinueClick(TObject *Sender);
-        void __fastcall bDefineInputClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-        void __fastcall frunChange(TObject *Sender);
+        void __fastcall bClearListClick(TObject *Sender);
 private:	// User declarations
         BCI2000DATA     *bci2000data;
 public:		// User declarations
         __fastcall TfMain(TComponent* Owner);
+        bool    DefineInput(AnsiString);
         int     IncrementTrial(int, const STATEVECTOR *);
         void    UpdateStateListBox(int);
         bool    SaveSampleOrNot(const STATEVECTOR *statevector);
         int     InitMatlabEngine();
         void    ShutdownMatlabEngine();
-        int     GetNumSamples();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;
