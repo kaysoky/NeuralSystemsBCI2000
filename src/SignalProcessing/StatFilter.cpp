@@ -134,16 +134,18 @@ StatFilter::~StatFilter()
 // **************************************************************************
 int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
-        AnsiString AName,SName,SSes,FInit;
-        int visualizeyn;
-        char slash[2];
-        char numbuf[16];
-        BCIDtry *bcidtry;
+AnsiString AName,SName,SSes,FInit;
+PARAM   *cur_param;
+int     visualizeyn;
+char    slash[2];
+char    numbuf[16];
+BCIDtry *bcidtry;
 
-        static int init_flag= 0;
-        trend_flag= 0;
-        intercept_flag= 0;
-        weight_flag= 0;
+static int init_flag= 0;
+
+ trend_flag= 0;
+ intercept_flag= 0;
+ weight_flag= 0;
 
  statevector=new_statevector;
  corecomm=new_corecomm;
@@ -178,14 +180,11 @@ int StatFilter::Initialize(PARAMLIST *plist, STATEVECTOR *new_statevector, COREC
   { return(0); }
 
  // we might not have defined the NumberTargets parameter in this application
- try
-  {
-  Ntargets= atoi(plist->GetParamPtr("NumberTargets")->GetValue() );
-  }
- catch(...)
-  {
-  Ntargets=2;
-  }
+ cur_param=plist->GetParamPtr("NumberTargets");
+ if (cur_param)
+    Ntargets= atoi(cur_param->GetValue());
+ else
+    Ntargets=2;
 
   bcidtry= new BCIDtry();
 
