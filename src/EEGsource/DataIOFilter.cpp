@@ -384,7 +384,6 @@ void DataIOFilter::Halt()
 {
   mOutputFile.close();
   mOutputFile.clear();
-  State( "Recording" ) = 0;
   mSignalBuffer = GenericSignal( 0, 0 );
   mADC->Halt();
 }
