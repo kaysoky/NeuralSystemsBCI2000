@@ -13,7 +13,7 @@ PROJECTS = LittleDemoApp.exe Oddball.exe P3Speller.exe RJB.exe Screen.exe \
   SWApp.exe Speller.exe DASSource.exe DT2000.exe NISource.exe RandomNumber.exe \
   operat.exe ARSignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
   PeakDetectSignalProcessing.exe SignalProcessing.exe BCI2ASCII.exe BCI2GAB.exe \
-  calibgen.exe maxifred.exe
+  calibgen.exe maxifred.exe RDAClient.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -99,6 +99,10 @@ calibgen.exe: Tools\GenerateCalibration\calibgen.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 maxifred.exe: Tools\Maxifred\maxifred.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAClient.exe: EEGsource\RDAClient\RDAClient.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
