@@ -16,4 +16,5 @@ bool GenericVisualization::Send2Operator( const GenericIntSignal* ){ return true
 bool GenericVisualization::Send2Operator( const GenericIntSignal*, int ){ return true; }
 bool GenericVisualization::SendMemo2Operator( const char* ){ return true; }
 bool GenericVisualization::SendCfg2Operator( unsigned char, unsigned char, const char* ){ return true; }
+bool GenericVisualization::SendCfg2Operator( unsigned char, unsigned char, int ){ return true; }
 

@@ -1,3 +1,17 @@
+####################################################################
+# File:        Makefile
+# Date:        Jul 18, 2003
+# Author:      juergen.mellinger@uni-tuebingen.de
+# Description: Makefile for BCI2000 command line tools.
+#              You can create any BCI2000 filter as a
+#              command line tool by entering "make myfilter.exe"
+#              at a windows command prompt in the directory
+#              containing this Makefile, provided there exists
+#              a file "myfilter.cpp" in one of the paths listed
+#              in the SIGPROC variable.
+#              Aside from testing purposes, this may be useful
+#              for offline data analysis.
+####################################################################
 
 TARGETS = obj\bci_tool.lib \
           bci_dat2stream.exe \
@@ -5,7 +19,6 @@ TARGETS = obj\bci_tool.lib \
           bci_stream2asc.exe \
           CalibrationFilter.exe \
           ClassFilter.exe \
-          FFTFilter.exe \
           Normalfilter.exe \
           SpatialFilter.exe \
           ARFilter.exe \
