@@ -1,0 +1,73 @@
+\documentclass[letterpaper, oneside, 12pt]{article}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage[american]{babel}
+
+\selectlanguage{american}
+
+\newcommand{\ie}{i.e.,}
+\newcommand{\eg}{e.g.,}
+
+
+% document
+\begin{document}
+
+%\include{title}
+\title{g.USBamp Support in BCI2000}
+\author{Gerwin Schalk\\ \small{\copyright{} 2004 Wadsworth Center, New York State Department of Health}}
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+%\begin{abstract}
+%\end{abstract}
+
+\section{Introduction}
+
+\sloppypar \emph{g.USBamp} is an amplifier/digitizer combination from g.tec, 
+Inc. This document describes this support that consists of two components: A 
+BCI2000-compatible Source Module (\texttt{gUSBamp.exe}) and a command-line 
+tool (\texttt{USBampgetinfo}). 
+
+\section{gUSBamp Source Module}
+
+The BCI2000-compatible Source Module \texttt{gUSBamp.exe} can be used instead 
+of any other source module. In addition to standard parameters (\ie{} 
+\emph{SampleBlockSize}, \emph{SamplingRate}, \emph{SoftwareCh}), it 
+
+
+\section{The \texttt{USBampgetinfo} Command Line Tool}
+
+This command line tool reads system settings from the \emph{Neuroscan Acquire} 
+server, displays them on a screen and creates a BCI2000 parameter file fragment 
+if desired. It can be used as follows: \texttt{neurogetparams -address 
+localhost:3999 -paramfile test.prm}. (The \emph{Acquire} server has to be 
+enabled before using this tool.) Once BCI2000 is configured correctly, this 
+parameter file fragment needs to be loaded on top of the existing configuration 
+to make sure that the settings match. You only need to repeat this procedure if 
+you change settings in \emph{Acquire} (\eg{} such as the number of channels or 
+the amplification).
+
+\begin{verbatim}
+BCI2000 Parameter Tool for Neuroscan Acquire V4.3
+*******************************************************************
+(C)2004 Gerwin Schalk and Juergen Mellinger
+        Wadsworth Center, New York State Dept of Health, Albany, NY
+        Eberhardt-Karls University of Tuebingen, Germany
+*******************************************************************
+Signal Channels: 32
+Event Channels:  1
+Block Size:      40
+Sampling Rate:   1000
+Bits/Sample:     16
+Resolution:      0.168uV/LSB
+Parameter file test.prm successfully written
+\end{verbatim}
+
+
+
+
+\end{document}
+
