@@ -166,6 +166,9 @@ ABSTRACT:
 #define OLREQUESTPENDING            OLIWBASE+126 // Defer Completion of Open Layers call
 #define OLUNSUPPORTEDSYSTEM         OLIWBASE+127 // Operating System not supported
 
+#define OLBADFILENAME			    OLIWBASE+128 // Invalid Filename
+#define OLBADBUFFER					OLIWBASE+129 // Invalid buffer pointer
+
 #define OLBMBASE                    ((ECODE)200)
 
 #define OLCANNOTALLOCBCB            OLBMBASE+0   // Cannot allocate a buffer control block for the requested data buffer.

@@ -13,13 +13,16 @@
 DTFUN::DTFUN( void )
 {
  data_critsec=new TCriticalSection();
+ bdone=NULL;
 }
 //---------------------------------------------------------------------------
 
 DTFUN::~DTFUN( void )
 {
  if (data_critsec) delete data_critsec;
+ if (bdone) delete bdone;
  data_critsec=NULL;
+ bdone=NULL;
 }
 
 //---------------------------------------------------------------------------
@@ -96,7 +99,7 @@ void __fastcall DTFUN::SetWindow( HWND msgw )
 void __fastcall DTFUN::InitBoard( void )
 {
         UINT uiElement;
-        LPUINT lpuiBits;
+        UINT uiBits;
 
         lpszName= BoardName;  // "BCI_IN";
         lphDev = NULL;
@@ -116,8 +119,8 @@ void __fastcall DTFUN::InitBoard( void )
 
         iMsg= status;
 
-        status= olDaGetResolution( lphDass, lpuiBits );
-        ADSize= (int)(*lpuiBits);
+        status= olDaGetResolution( lphDass, (LPUINT)&uiBits );
+        ADSize= (int)uiBits;
 
 }
 
@@ -205,14 +208,24 @@ ECODE __fastcall DTFUN::SetBuffers( DWORD BufSize )
 void __fastcall DTFUN::Add_to_data(short lphBuf[], ULNG samples)
 {
         unsigned i;
-        unsigned short bt,dt;
 
-        for(i=0;i<samples;i++)
-        {
-                if (ADSize == 16) data[BufferPtr]= (short)(lphBuf[i]-32678);
-                else              data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
-                BufferPtr++;
-        }
+        if (ADSize == 16)       // check for resolution of A/D converter
+           {
+           for(i=0;i<samples;i++)
+            {
+            data[BufferPtr]= (short)(lphBuf[i]-32678);
+            BufferPtr++;
+            }
+           }
+        else
+           {
+           for(i=0;i<samples;i++)
+            {
+            data[BufferPtr]= (short)(lphBuf[i]-2048) * 16;
+            BufferPtr++;
+            }
+           }
+
         BufferCount++;
 }
 
@@ -222,8 +235,9 @@ void __fastcall DTFUN::SetFunction(  void )
 OLNOTIFYPROC    lpfnNotifyProc;
 ECODE           errc;
 
- lpfnNotifyProc= &BufferDone;
+ lpfnNotifyProc=(OLNOTIFYPROC)&BufferDone;
  errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, lParam );
+ if (bdone) delete bdone;
  bdone= new TEvent(NULL,false,false,"");
 }
 

@@ -268,6 +268,9 @@ ECODE WINAPI olDaSetRetrigger (HDASS hDass, UINT uiTrig);
 ECODE WINAPI olDaGetRetrigger (HDASS hDass, PUINT puiTrig);   
 
 ECODE WINAPI olDaGetSingleValueEx( HDASS hDass, UINT uiChannel, BOOL bAutoRange, PDBL pdfGain, PLNG plValueCounts, PDBL pdfValueVolts );
+ECODE WINAPI olDaDownloadImage (HDEV hDev, PCHAR szFileName);
+ECODE WINAPI olDaHdwReset (HDEV hDev);
+
 
 
 // Utilitarian functions..taking no device or subsysten handle
@@ -323,6 +326,13 @@ ECODE WINAPI olDaGetDriverSpecificInfo( HDEV hDev,
 
 
 ECODE WINAPI olDaModifyOpenLayersBoardName( PTSTR pszOldName, PTSTR pszNewName );
+
+/* DT9841 specific functions */
+ECODE WINAPI olDaReadMem (HDEV hDev, UINT MemType, ULONG CPUAddress, ULONG NumBytes, PVOID PCBuffer);
+ECODE WINAPI olDaWriteMem (HDEV hDev, UINT MemType,  PVOID PCBuffer, ULONG NumBytes, ULONG CPUAddress);
+ECODE WINAPI olDaSendMessage (HDEV hDev, PVOID Message, ULONG NumBytes);
+ECODE WINAPI olDaReceiveMessage (HDEV hDev, PVOID Message, ULONG BufSize, PULONG BytesTransferred);
+
 
 #ifdef __cplusplus
 }

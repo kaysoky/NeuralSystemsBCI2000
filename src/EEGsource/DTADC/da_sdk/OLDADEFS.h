@@ -40,7 +40,7 @@ ABSTRACT:
 
 /* prototype for OLNOTIFYOPROC needed by driver as well as API */
 
-typedef BOOL (FAR PASCAL *OLNOTIFYPROC) (
+typedef void (FAR PASCAL *OLNOTIFYPROC) (
    UINT uiMsg,
    WPARAM wParam,
    LPARAM lParam);
