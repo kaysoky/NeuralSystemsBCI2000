@@ -20,7 +20,7 @@ class STATE
   friend class STATEVECTOR;
   friend class STATELIST; // calls GetValue() which is to be omitted
 
-private: 	// User declarations
+private:    // User declarations
         mutable char    buffer[LENGTH_STATELINE];
         int     length;
         char    name[LENGTH_NAME];
@@ -37,7 +37,7 @@ protected:
         unsigned short GetValue() const;
         void Commit( STATEVECTOR* );
 
-public:		// User declarations
+public:     // User declarations
         STATE::STATE();
         const char    *GetName() const;
         int     GetLength() const;
@@ -52,9 +52,9 @@ public:		// User declarations
 
 class STATELIST
 {
-private: 	// User declarations
+private:    // User declarations
         class TList *state_list;
-public:		// User declarations
+public:     // User declarations
         STATELIST::STATELIST();
         STATELIST::~STATELIST();
         STATE   *GetStatePtr(int idx) const;
@@ -90,7 +90,7 @@ class STATEVECTOR
   void    CommitStateChanges();
 
  // A class that allows for convenient automatic type conversions when
- // accessing parameter values.
+ // accessing state values.
  public:
   class type_adapter
   {
