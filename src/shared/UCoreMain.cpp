@@ -402,7 +402,9 @@ TfMain::ProcessFilters( const GenericSignal* input )
   }
   MessageHandler::PutMessage( mNextModule, *mpStatevector );
 #if( MODTYPE != APP )
-  MessageHandler::PutMessage( mNextModule, mOutputSignal );
+  GenericSignal transferredSignal( mOutputSignal );
+  transferredSignal.SetDepth( 2 );
+  MessageHandler::PutMessage( mNextModule, transferredSignal );
 #endif // APP
 }
 
