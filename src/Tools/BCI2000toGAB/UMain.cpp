@@ -27,29 +27,29 @@ __fastcall TfMain::TfMain(TComponent* Owner)
 
 void __fastcall TfMain::CheckCalibrationFile( void )
 {
-        int i;
-        int n_chans;
-        PARAMLIST parmlist;
+  int i;
+  int n_chans;
+  PARAMLIST parmlist;
 
-        if( parmlist.LoadParameterList( ParameterFile->Text.c_str() ) == false )
-        {
-                for(i=0;i<MAXCHANS;i++)
-                {
-                        offset[i]= 0.0;
-                        gain[i]= 0.008;
-                }
-        }
-        else
-        {
-
-                n_chans= parmlist.GetParamPtr("SourceChOffset")->GetNumValues();
-
-                for(i=0;i<n_chans;i++)
-                {
-                        offset[i]=atoi(parmlist.GetParamPtr("SourceChOffset")->GetValue(i));
-                        gain[i]=atof(parmlist.GetParamPtr("SourceChGain")->GetValue(i));
-                }
-        }
+  if( ParameterFile->Enabled && ParameterFile->Text.Length() > 0 )
+  {
+    if( parmlist.LoadParameterList( ParameterFile->Text.c_str() ) )
+    {
+      n_chans= parmlist.GetParamPtr("SourceChOffset")->GetNumValues();
+      offset.clear();
+      offset.resize( n_chans, 0 );
+      gain.clear();
+      gain.resize( n_chans, 0 );
+      for(i=0;i<n_chans;i++)
+      {
+        offset[i]=atoi(parmlist.GetParamPtr("SourceChOffset")->GetValue(i));
+        gain[i]=atof(parmlist.GetParamPtr("SourceChGain")->GetValue(i));
+      }
+    }
+    else
+      Application->MessageBox( ( AnsiString( "Could not open calibration file \"" )
+                                    + ParameterFile->Text + "\"." ).c_str(), "Error", MB_OK );
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -120,14 +120,23 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
    {
    if (sample % 1000 == 0) Application->ProcessMessages();
    // go through each channel
-   for (channel=0; channel<channels; channel++)
-    {
-    cur_value=bci2000data->ReadValue(channel, sample);
-    val= (float)cur_value;
-    val= val * ( gain[channel] / 0.003 ) + offset[channel];
-    cur_value= (__int16) (val);
-    fwrite(&cur_value, 2, 1, fp);
-    }
+   if( CalibFromFile() )
+   {
+     for (channel=0; channel<channels; channel++)
+     {
+       cur_value=bci2000data->ReadValue(channel, sample);
+       val= (float)cur_value;
+       val= val * ( gain[channel] / 0.003 ) + offset[channel];
+       cur_value= (__int16) (val);
+       fwrite(&cur_value, 2, 1, fp);
+     }
+   }
+   else
+     for( channel = 0; channel < channels; ++channel )
+     {
+       cur_value = __int16( bci2000data->Value( channel, sample ) / 0.003 );
+       fwrite( &cur_value, sizeof( cur_value ), 1, fp );
+     }
    // write the state element
    bci2000data->ReadStateVector(sample);
    cur_state=ConvertState(bci2000data);
@@ -212,7 +221,10 @@ void __fastcall TfMain::Button1Click(TObject *Sender)
 void __fastcall TfMain::Button2Click(TObject *Sender)
 {
         if (OpenParameter->Execute())
-                ParameterFile->Text=OpenParameter->FileName;
+        {
+          ParameterFile->Enabled = true;
+          ParameterFile->Text=OpenParameter->FileName;
+        }
 }
 //---------------------------------------------------------------------------
 

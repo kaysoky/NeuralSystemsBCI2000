@@ -9,9 +9,8 @@
 #include <Forms.hpp>
 #include "CGAUGES.h"
 #include <Dialogs.hpp>
+#include <vector>
 //---------------------------------------------------------------------------
-
-#define MAXCHANS  64
 
 class TfMain : public TForm
 {
@@ -49,8 +48,8 @@ private:	// User declarations
         __int16 samplingrate, channels, dummy, cur_value, cur_state;
         float val;
         FILE *cf;
-        float offset[MAXCHANS];
-        float gain[MAXCHANS];
+        std::vector<float> offset, gain;
+        bool CalibFromFile() { return gain.size() != 0; }
         void __fastcall CheckCalibrationFile( void );
       
 public:		// User declarations

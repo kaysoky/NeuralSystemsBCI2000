@@ -234,11 +234,8 @@ PARAMLIST::ReadFromStream( istream& is )
   clear();
   PARAM param;
   is >> ws;
-  do
-  {
-    is >> param >> ws;
+  while( !is.eof() && is >> param >> ws )
     ( *this )[ param.name ] = param;
-  } while( !is.eof() );
 }
 
 // **************************************************************************

@@ -181,8 +181,9 @@ object fMain: TfMain
     Top = 160
     Width = 201
     Height = 21
+    Enabled = False
     TabOrder = 9
-    Text = 'c:\shared\raw\calib.prm'
+    Text = '<none>'
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'
