@@ -12,7 +12,7 @@
 #         command shell.
 #
 #         Use "make clean && make all" to do a clean rebuild after updating
-#         files from SourceSafe.
+#         files from CVS.
 #
 #         Use "make prepare" to avoid Borland IDE problems with write protected
 #         project files.
