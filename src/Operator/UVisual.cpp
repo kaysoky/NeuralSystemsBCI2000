@@ -33,6 +33,7 @@
 #include <assert>
 #include <Registry.hpp>
 #include <math.h>
+#include <algorithm>
 
 #pragma package( smart_init )
 
@@ -239,6 +240,10 @@ VISUAL::VISUAL_GRAPH::Restore()
   form->OnPaint = FormPaint;
   form->Show();
 
+  const numSamplesDefault = 128,
+        minValueDefault = - 1 << 15,
+        maxValueDefault = 1 << 16 - 1;
+
   AnsiString key = key_base + AnsiString( sourceID );
   TRegistry* reg = new TRegistry( KEY_READ );
   if( reg->OpenKeyReadOnly( key ) )
@@ -251,14 +256,14 @@ VISUAL::VISUAL_GRAPH::Restore()
     }
     catch( ERegistryException& )
     {
-      numSamples = 128;
-      minValue = -32768;
-      maxValue = 32768;
+      numSamples = numSamplesDefault;
+      minValue = minValueDefault;
+      maxValue = maxValueDefault;
     }
     if( minValue >= maxValue )
     {
-      minValue = -32768;
-      maxValue = 32768;
+      minValue = minValueDefault;
+      maxValue = maxValueDefault;
     }
   }
   delete reg;
@@ -339,8 +344,8 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
   sampleCursor = firstValidSample % numSamples;
   wrapAround |= ( firstValidSample / numSamples );
 
-  int firstInvalidPixel = dataRect.left,
-      firstValidPixel = dataRect.right;
+  long firstInvalidPixel = dataRect.left,
+       firstValidPixel = dataRect.right;
 
   switch( displayMode )
   {
@@ -399,8 +404,11 @@ VISUAL::VISUAL_GRAPH::SetBottomChannel( int inBottomChannel )
 void
 VISUAL::VISUAL_GRAPH::SetDisplayMode( DisplayMode mode )
 {
-  displayMode = mode;
-  form->Invalidate();
+  if( mode != displayMode )
+  {
+    form->Invalidate();
+    displayMode = mode;
+  }
 }
 
 void
@@ -451,7 +459,7 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
     signalPens( data.Channels() );
 
   // Background properties
-  const TColor backgroundColor = clBlack;
+  const TColor backgroundColor = rand();//clBlack;
   gdi[ backgroundBrush ] = ::CreateSolidBrush( backgroundColor );
 
   // Signal properties
