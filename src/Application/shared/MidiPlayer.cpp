@@ -8,7 +8,9 @@
 //
 // Description: The WIN32 implementation of the TMidiPlayer interface.
 //
-// Changes:
+// Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added copy constructor, assignment operator and related private
+//           member functions.
 //
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
@@ -59,11 +61,70 @@ TMidiPlayer::TMidiPlayer(   int inGMInstrument,
   curSeqPos( NULL ),
   channel( GetChannel() )
 {
+  Construct();
+}
 
+TMidiPlayer::TMidiPlayer()
+: gmInstrument( defaultInstrument - 1 ),
+  gmVolume( defaultVolume ),
+  curNote( defaultNote ),
+  curLength( defaultLength ),
+  gmBalance( defaultBalance ),
+  seqTimerID( NULL ),
+  noteSeq( NULL ),
+  curSeqPos( NULL ),
+  channel( GetChannel() )
+{
+  Construct();
+}
+
+TMidiPlayer::TMidiPlayer( const TMidiPlayer& inOriginal )
+: gmInstrument( defaultInstrument - 1 ),
+  gmVolume( defaultVolume ),
+  curNote( defaultNote ),
+  curLength( defaultLength ),
+  gmBalance( defaultBalance ),
+  seqTimerID( NULL ),
+  noteSeq( NULL ),
+  curSeqPos( NULL ),
+  channel( GetChannel() )
+{
+  Construct();
+  Assign( inOriginal );
+}
+
+TMidiPlayer&
+TMidiPlayer::operator=( const TMidiPlayer& inOriginal )
+{
+  if( &inOriginal != this )
+  {
+    Destruct();
+    Assign( inOriginal );
+  }
+  return *this;
+}
+
+TMidiPlayer::~TMidiPlayer()
+{
+  Destruct();
+  ReleaseChannel( channel );
+  ReleaseDevice();
+}
+
+void
+TMidiPlayer::Construct()
+{
+    GetDevice();
+    Initialize();
+}
+
+void
+TMidiPlayer::Initialize()
+{
     // Instruments ("Programs") are also numbered from 1 to 128 but represented from
     // 0 to 127.
     if( gmInstrument >= maxInstrument || gmInstrument < 0 )
-        gmInstrument = defaultInstrument;
+        gmInstrument = defaultInstrument - 1;
     if( gmVolume > maxVolume || gmVolume < 0 )
         gmVolume = defaultVolume;
     if( curNote > maxNote || curNote < 0 )
@@ -73,8 +134,6 @@ TMidiPlayer::TMidiPlayer(   int inGMInstrument,
 
     if( curLength < 0 )
         curLength = 0;
-
-    GetDevice();
 
     // Set the instrument for our channel.
     ::midiOutShortMsg( deviceHandle, ShortMidiMsg(
@@ -99,21 +158,36 @@ TMidiPlayer::TMidiPlayer(   int inGMInstrument,
                     mControlModeChange, channel, mPan | mLSB, 0 ) );
 }
 
-
-TMidiPlayer::~TMidiPlayer()
+void
+TMidiPlayer::Destruct()
 {
     // Stop sequence processing.
     if( seqTimerID != NULL )
+    {
         ::timeKillEvent( seqTimerID );
+        seqTimerID = NULL;
+    }
     if( noteSeq != NULL )
+    {
         ::free( noteSeq );
+        noteSeq = NULL;
+        curSeqPos = NULL;
+    }
 
     // Stop all playing notes.
     ::midiOutShortMsg( deviceHandle, ShortMidiMsg(
                     mControlModeChange, channel, mAllNotesOff, 0 ) );
+}
 
-    ReleaseChannel( channel );
-    ReleaseDevice();
+void
+TMidiPlayer::Assign( const TMidiPlayer& inOriginal )
+{
+  gmInstrument = inOriginal.gmInstrument;
+  gmVolume = inOriginal.gmVolume;
+  gmBalance = inOriginal.gmBalance;
+  curNote = inOriginal.curNote;
+  curLength = inOriginal.curLength;
+  Initialize();
 }
 
 void

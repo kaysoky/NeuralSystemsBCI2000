@@ -8,7 +8,9 @@
 //
 // Description: The WIN32 implementation of the TWavePlayer interface.
 //
-// Changes:
+// Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added copy constructor, assignment operator and related private
+//           member functions.
 //
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
@@ -33,6 +35,39 @@ TWavePlayer::TWavePlayer()
   playing( false ),
   deviceHandle( NULL ),
   fileHandle( NULL )
+{
+    Construct();
+}
+
+TWavePlayer::TWavePlayer( const TWavePlayer& inOriginal )
+: samplingRate( 0 ),
+  playing( false ),
+  deviceHandle( NULL ),
+  fileHandle( NULL )
+{
+    Construct();
+    Assign( inOriginal );
+}
+
+TWavePlayer&
+TWavePlayer::operator=( const TWavePlayer& inOriginal )
+{
+    if( &inOriginal != this )
+    {
+      Destruct();
+      Construct();
+      Assign( inOriginal );
+    }
+    return *this;
+}
+
+TWavePlayer::~TWavePlayer()
+{
+    Destruct();
+}
+
+void
+TWavePlayer::Construct()
 {
     ++numInstances;
     if( mode == unknown )
@@ -82,7 +117,8 @@ TWavePlayer::TWavePlayer()
     }
 }
 
-TWavePlayer::~TWavePlayer()
+void
+TWavePlayer::Destruct()
 {
     --numInstances;
 
@@ -104,13 +140,19 @@ TWavePlayer::~TWavePlayer()
     DetachFile();
 }
 
+void
+TWavePlayer::Assign( const TWavePlayer& inOriginal )
+{
+  AttachFile( inOriginal.GetFile().c_str() );
+}
+
 TWavePlayer::Error
 TWavePlayer::AttachFile( const char* inFileName )
 {
     DetachFile();
 
     if( inFileName == NULL || *inFileName == '\0' )
-       return noError;
+      return noError;
 
     Error err = noError;
 
@@ -248,6 +290,8 @@ TWavePlayer::AttachFile( const char* inFileName )
 
     if( err != noError )
       DetachFile();
+    else
+      currentFileName = inFileName;
 
     return err;
 }
@@ -293,6 +337,7 @@ TWavePlayer::DetachFile()
     if( fileHandle != NULL )
         mmioClose( fileHandle, 0 );
     fileHandle = NULL;
+    currentFileName = "";
     samplingRate = 0;
 }
 

@@ -8,7 +8,9 @@
 //
 // Description: A MIDI output interface class.
 //
-// Changes:
+// Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added copy constructor, assignment operator and related private
+//           member functions.
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -67,14 +69,25 @@ class TMidiPlayer
                                     // specify a length of 0 for the terminating element in a sequence.
     } TMidiNote;
 
-                        TMidiPlayer( int inGMInstrument = defaultInstrument,
+  public:
+                        TMidiPlayer();
+                        TMidiPlayer( int inGMInstrument,
                                      int inGMVolume = defaultVolume,
                                      int inMidiNote = defaultNote,
                                      int inNoteLength = defaultLength,
                                      int inBalance = defaultBalance );
-
+                        TMidiPlayer( const TMidiPlayer& );
+                        TMidiPlayer& operator=( const TMidiPlayer& );
     virtual             ~TMidiPlayer();
 
+  private:
+                void    Construct();
+                void    Destruct();
+                void    Assign( const TMidiPlayer& );
+                
+                void    Initialize();
+
+  public:
                 void    Play();
                 void    Play(   int inMidiNote );
                 void    Play(   int inMidiNote,

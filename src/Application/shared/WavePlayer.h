@@ -8,13 +8,16 @@
 //
 // Description: A PCM audio output interface class.
 //
-// Changes:
+// Changes: Jan 9, 2004, juergen.mellinger@uni-tuebingen.de:
+//           Added copy constructor, assignment operator and related private
+//           member functions.
 //
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef WAVEPLAYERH
 #define WAVEPLAYERH
 
+#include <string>
 #include <mmsystem.h>
 
 class TWavePlayer
@@ -26,13 +29,23 @@ class TWavePlayer
       fileOpeningError,
       genError
     };
-                        TWavePlayer();
-    virtual             ~TWavePlayer();
 
-                Error  AttachFile( const char* inFileName );
-                void   DetachFile();
-                void   Play();
-                void   Stop();
+  public:
+                            TWavePlayer();
+                            TWavePlayer( const TWavePlayer& );
+                            TWavePlayer& operator=( const TWavePlayer& );
+    virtual                 ~TWavePlayer();
+
+  private:
+                void        Construct();
+                void        Destruct();
+                void        Assign( const TWavePlayer& );
+
+  public:
+                Error       AttachFile( const char* inFileName );
+                void        DetachFile();
+                void        Play();
+                void        Stop();
                 // Returns the current playing position from start
                 // in milliseconds. Zero if not playing.
                 // May be used for delay measurements.
@@ -40,11 +53,14 @@ class TWavePlayer
                 // does not support sample-accurate positions.
                 // In this case, the position returned may be ahead of the
                 // actual sound output by some milliseconds.
-                float  GetPos() const;
-                bool   IsPlaying() const { return playing; }
+                float              GetPos() const;
+                bool               IsPlaying() const { return playing; }
+                
+                const std::string& GetFile() const { return currentFileName; }
 
   private:
-                bool   playing;
+                bool        playing;
+                std::string currentFileName;
 
 // OS specific members go here.
 #ifdef _WIN32
