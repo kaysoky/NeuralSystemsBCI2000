@@ -289,13 +289,25 @@ void NIADC::GetData()
 {
  // allocate a new buffer
  piHalfBuffer[cur_buffers]=new i16[channels*blocksize];
+ // pdVoltBuffer[cur_buffers]=new f64[channels*blocksize];
+
  // transfer the data
  iStatus = DAQ_DB_Transfer(iDevice, piHalfBuffer[cur_buffers], &ulPtsTfr, &iDAQstopped);
+ if (iStatus == overWriteBeforeCopy)
+    {
+    delete [] piHalfBuffer[cur_buffers];   // drop this buffer
+    return;
+    }
+ // iRetVal = NIDAQErrorHandler(iStatus, "DAQ_DB_Transfer", iIgnoreWarning);
  // demultiplex the signal into piHalfBuffer
  iStatus = SCAN_Demux(piHalfBuffer[cur_buffers], ulPtsTfr, channels, iNumMUXBrds);
- iRetVal = NIDAQYield(iYieldON);
+ iRetVal = NIDAQErrorHandler(iStatus, "SCAN_Demux", iIgnoreWarning);
+ // and also convert the data into microvolts
+ // iStatus = DAQ_VScale(iDevice, iChan, iGain, dGainAdjust, dOffset, ulPtsTfr, piHalfBuffer, pdVoltBuffer[cur_buffers]);
 
  cur_buffers++;
+
+ iRetVal = NIDAQYield(iYieldON);
 }
 
 
