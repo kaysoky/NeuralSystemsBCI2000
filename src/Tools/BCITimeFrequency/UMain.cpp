@@ -54,6 +54,12 @@ __fastcall TfMain::~TfMain( void )
 
 void __fastcall TfMain::ConvertClick(TObject *Sender)
 {
+        if( Process() )
+          Application->MessageBox("Conversion process finished successfully", "Message", MB_OK);
+}
+
+bool TfMain::Process()
+{
         FILE *pfile;
         char CurrentFile[256];
         int nfiles;
@@ -89,7 +95,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
       if( nfiles > 0 )
         strcpy( CurrentFile, FileList->Items->Strings[0].c_str() );
       else
-        return;
+        return false;
 
        
         ret= bci2000data->Initialize(CurrentFile, 50000);
@@ -98,7 +104,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
         {
                 Application->MessageBox("Error opening input file", "Error", MB_OK);
                 delete bci2000data;
-                return;
+                return false;
         }
 
         cvplp= (PARAMLIST *)bci2000data->GetParamListPtr();
@@ -202,7 +208,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
                 if( (lpfile=fopen(InputForm->vSpatialFile->Text.c_str(),"r"))==NULL )
                 {
                         Application->MessageBox("Error","Opening Spatial Filter File",MB_OK);
-                        return;
+                        return false;
                 }
 
                 while( ( fscanf(lpfile,"%s",line) )!= EOF )
@@ -281,8 +287,7 @@ void __fastcall TfMain::ConvertClick(TObject *Sender)
         bcioutput->CloseFiles();
 
         Gauge->Progress=0;
-        Application->MessageBox("Conversion process finished successfully", "Message", MB_OK);
-
+        return true;
 }
 //---------------------------------------------------------------------------
 
@@ -465,6 +470,7 @@ void TfMain::ProcessCommandLineOptions()
 {
   AnsiString programName = ExtractFileName( ChangeFileExt( ParamStr( 0 ), "" ) );
   const char* messageMode = "error";
+  bool batchMode = false;
 
   for( int i = 1; i <= ParamCount(); ++i )
   {
@@ -478,6 +484,11 @@ void TfMain::ProcessCommandLineOptions()
       case '-':
         switch( *++option )
         {
+          case 'b':
+          case 'B':
+            batchMode = true;
+            break;
+
           case 'p':
           case 'P':
             vParmFile->Text = ++option;
@@ -504,6 +515,7 @@ void TfMain::ProcessCommandLineOptions()
             Application->MessageBox(
               "The following parameters are accepted:\n\n"
               " -h\t                 \tshow this help\n"
+              " -b\t                 \tprocess and quit (batch mode)\n"
               " -o<output file>      \toutput file name\n"
               " -p<parameter file>   \tload named parameter file at startup\n"
               " -c<calibration file> \tcalibration file name\n"
@@ -520,5 +532,10 @@ void TfMain::ProcessCommandLineOptions()
         FileList->Items->Add( option );
     }
     delete[] option;
+  }
+  if( batchMode )
+  {
+    Process();
+    Application->Terminate();
   }
 }

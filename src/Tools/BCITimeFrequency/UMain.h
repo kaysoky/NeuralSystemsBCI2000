@@ -83,6 +83,7 @@ private:	// User declarations
         __int16 samplingrate, channels;
         // float val;
         FILE *cf;
+        bool Process();
         void ApplyParamFile( const char* inParamFile );
 
 public:		// User declarations
