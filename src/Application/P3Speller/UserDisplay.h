@@ -25,7 +25,7 @@ public:		// User declarations
         void    HideStatusBar();
         void    HideMessage();
         void    InitializeActiveTargetPosition();
-        void    InitializeStatusBarPosition();
+        void    InitializeStatusBarPosition(bool);
         void    SetWindowSize(int Top, int Left, int Width, int Height, TColor Color);
         TForm   *form;
         float   TargetWidth, TargetHeight, TargetTextHeight;

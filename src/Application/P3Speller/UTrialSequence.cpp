@@ -39,6 +39,8 @@ char    line[512];
  plist->AddParameter2List(line,strlen(line) );
  strcpy(line,"P3Speller int OnlineMode= 0 0 0 1 // Online mode (0=no, 1=yes)");
  plist->AddParameter2List(line,strlen(line) );
+ strcpy(line,"P3Speller int ResultDisplay= 1 0 0 1 // Display results (0=no, 1=yes)");
+ plist->AddParameter2List(line,strlen(line) );
  strcpy(line,"P3Speller string TextColor= 0x00000000 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
  plist->AddParameter2List(line,strlen(line));
  strcpy(line,"P3Speller string TextColorIntensified= 0x000000FF 0x00505050 0x00000000 0x00000000 // Text Color in hex (0x00BBGGRR)");
@@ -113,7 +115,12 @@ int     ret;
 
  // set the initial position/sizes of the current targets, status bar, cursor
  userdisplay->InitializeActiveTargetPosition();
- userdisplay->InitializeStatusBarPosition();
+ bool cur_resulttextvisible;
+ if (( int )Parameter( "ResultDisplay" ) == 1)
+    cur_resulttextvisible=true;
+ else
+    cur_resulttextvisible=false;
+ userdisplay->InitializeStatusBarPosition(cur_resulttextvisible);
  // userdisplay->DisplayCursor();
  userdisplay->DisplayMessage( const_cast<char*>( LocalizableString( "Waiting to start ..." ) ) );
 
