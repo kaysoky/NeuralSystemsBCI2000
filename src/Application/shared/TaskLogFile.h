@@ -20,18 +20,21 @@
 class TaskLogFile: public std::ofstream, Environment
 {
   public:
-    TaskLogFile() {}
+    TaskLogFile() : mExtension( ".apl" ) {}
+    explicit TaskLogFile( const char* extension ) : mExtension( extension ) {}
 
   private:
     TaskLogFile( const TaskLogFile& );
     TaskLogFile& operator=( const TaskLogFile& );
 
   public:
-    void  Preflight() const;
-    void  Initialize();
+    void        Preflight() const;
+    void        Initialize();
 
   private:
-    std::string FileName() const;
+    std::string FilePath() const;
+
+    std::string mExtension;
 };
 
 #endif // TaskLogFileH
