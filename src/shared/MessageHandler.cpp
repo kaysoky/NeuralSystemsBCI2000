@@ -30,7 +30,7 @@ using namespace std;
 // main message handling function.
 #define CONSIDER(x)                                                      \
   case Header<x>::descSupp:                                              \
-    Handle##x( is ) || is.ignore( length );                              \
+    Handle##x( iss );                                                    \
     break;
 
 // The main message handling function.
@@ -51,7 +51,7 @@ MessageHandler::HandleMessage( istream& is )
       if( !is )
         return;
     }
-    istringstream is( string( messageBuffer, length ) );
+    istringstream iss( string( messageBuffer, length ) );
     delete[] messageBuffer;
     switch( descSupp )
     {
