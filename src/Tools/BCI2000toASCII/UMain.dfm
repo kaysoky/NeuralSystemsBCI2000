@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 317
   Width = 438
   Height = 454
-  Caption = 'BCI2000toASCII V2.0'
+  Caption = 'BCI2000toASCII V3.0'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -379,7 +379,7 @@ object fMain: TfMain
     Left = 344
     Top = 8
     Width = 81
-    Height = 97
+    Height = 105
     ItemHeight = 13
     TabOrder = 21
   end

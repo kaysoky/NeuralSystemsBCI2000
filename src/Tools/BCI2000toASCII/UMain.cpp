@@ -113,7 +113,7 @@ MATFile *pmat;
     return;
     }
 
- // initialize Batlab
+ // initialize Matlab
  // create Matlab variables, if we want to export
  if (exportmatlab)
     {
@@ -127,6 +127,7 @@ MATFile *pmat;
  fp=NULL;
  if (exportfile)
     {
+    // Application->MessageBox("Make sure states are in same order when exporting multiple files/runs !! Otherwise, output is not correct !!", MB_OK);
     fp=fopen(eDestinationFile->Text.c_str(), "wb");
     if (!fp)
        {
@@ -151,9 +152,9 @@ MATFile *pmat;
     for (channel=0; channel < channels; channel++)
      fprintf(fp, "ch%d ", channel+1);
     // write a state's name if we decided to save this state
-    for (state=0; state < bci2000data->GetStateListPtr()->GetNumStates(); state++)
+    for (state=0; state < cStateListBox->Items->Count; state++)
      if (cStateListBox->Checked[state])
-        fprintf(fp, "%s ", bci2000data->GetStateListPtr()->GetStatePtr(state)->GetName());
+        fprintf(fp, "%s ", cStateListBox->Items->Strings[state].c_str());
     fprintf(fp, "\r\n");
     }
  // create state variables in matlab, if we export to matlab
@@ -165,11 +166,11 @@ MATFile *pmat;
     mxSetName(trial_var, "trialnr");
     sample_var = mxCreateDoubleMatrix(totalsamples, 1, mxREAL);
     mxSetName(sample_var, "samplenr");
-    for (state=0; state < bci2000data->GetStateListPtr()->GetNumStates(); state++)
+    for (state=0; state < cStateListBox->Items->Count; state++)
      if (cStateListBox->Checked[state])
         {
         state_var[state] = mxCreateDoubleMatrix(totalsamples, 1, mxREAL);
-        mxSetName(state_var[state], bci2000data->GetStateListPtr()->GetStatePtr(state)->GetName());
+        mxSetName(state_var[state], cStateListBox->Items->Strings[state].c_str());
         }
     }
 
@@ -216,12 +217,12 @@ MATFile *pmat;
           if (exportfile) fprintf(fp, "%d ", cur_value);
           }
          // store the value of each state
-         for (state=0; state < bci2000data->GetStateListPtr()->GetNumStates(); state++)
+         for (state=0; state < cStateListBox->Items->Count; state++)
           {
           // if we decided to save this state
           if (cStateListBox->Checked[state])
              {
-             strcpy(cur_statename, bci2000data->GetStateListPtr()->GetStatePtr(state)->GetName());
+             strcpy(cur_statename, cStateListBox->Items->Strings[state].c_str());
              cur_state=(int)bci2000data->GetStateVectorPtr()->GetStateValue(cur_statename);
              cur_state_double=(double)cur_state;
              if (exportfile) fprintf(fp, "%d ", cur_state);
