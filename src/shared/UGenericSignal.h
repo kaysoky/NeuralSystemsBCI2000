@@ -2,24 +2,10 @@
 //
 // File: UGenericSignal.h
 //
-// Description: This file declares a SignalProperties base class and a BasicSignal
-//   class template deriving from it with the signal's numerical type as the
-//   template argument.
-//   Two classes, GenericSignal and GenericIntSignal, are derived from a float
-//   and int instantiation of this template. With a compatibility flag defined
-//   (SIGNAL_BACK_COMPAT) old code should compile with minimal changes.
+// Author: juergen.mellinger@uni-tuebingen.de
 //
-//   For the future, the following name transitions might be considered:
-//     BasicSignal --> GenericSignal
-//     GenericSignal --> FloatSignal
-//     GenericIntSignal --> IntSignal
-//   as the latter two don't have anything generic about them any more.
-//
-// Changes: June 28, 2002, juergen.mellinger@uni-tuebingen.de
-//          - Rewrote classes from scratch but kept old class interface.
-//          Mar 28, 2003, juergen.mellinger@uni-tuebingen.de
-//          - Added depth member to SignalProperties to unify GenericSignal
-//            and GenericIntSignal into one signal type.
+// Description: This file declares a SignalProperties base class and a
+//   GenericSignal class deriving from it.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericSignalH
@@ -28,32 +14,62 @@
 #include <vector>
 #include "UBCIError.h"
 
-// A properties base class all signals are derived from.
+namespace SignalType
+{
+  typedef enum Type
+  {
+    int16 = 0,
+    float24,
+    float32,
+    int32,
+
+    numTypes,
+    defaultType = float32
+
+  } Type;
+  const char* Name( Type );
+  bool        ConversionSafe( Type from, Type to );
+};
+
+// A class that holds a signal's properties.
 class SignalProperties
 {
   public:
     SignalProperties()
-    : elements( 0, 0 ), maxElements( 0 ), depth( sizeof( float ) ) {}
-    SignalProperties( size_t inChannels, size_t inMaxElements, size_t inDepth = sizeof( float ) )
-    : elements( inChannels, inMaxElements ), maxElements( inMaxElements ), depth( inDepth ) {}
+    : mChannels( 0 ), mElements( 0 ), mType( SignalType::defaultType )                {}
+
+    SignalProperties(
+      size_t inChannels,
+      size_t inElements,
+      SignalType::Type inType = SignalType::defaultType )
+    : mChannels( inChannels ), mElements( inElements ), mType( inType )       {}
+
     virtual ~SignalProperties() {}
 
-    size_t Channels() const { return elements.size(); }
-    size_t MaxElements() const { return maxElements; }
-    virtual bool SetNumElements( size_t inChannel, size_t inNumElements );
-    size_t GetNumElements( size_t inChannel ) const { return elements.at( inChannel ); }
-    size_t GetDepth() const { return depth; }
-    bool IsEmpty() const { return elements.empty() || maxElements == 0 || depth == 0; }
-    virtual void SetDepth( size_t inDepth ) { depth = inDepth; }
-    bool operator==( const SignalProperties& sp ) const { return depth == sp.depth && elements == sp.elements; }
-    bool operator!=( const SignalProperties& sp ) const { return !( *this == sp ); }
+    // Read access
+    size_t           Channels() const   { return mChannels; }
+    size_t           Elements() const   { return mElements; }
+    SignalType::Type Type() const       { return mType; }
+    // Write access
+    size_t& Channels()                  { return mChannels; }
+    size_t& Elements()                  { return mElements; }
+    SignalType::Type& Type()            { return mType; }
+
+    bool IsEmpty() const                { return Channels() == 0 || Elements() == 0; }
+    bool operator==( const SignalProperties& sp ) const
+                                        { return Type() == sp.Type() && Elements() == sp.Elements(); }
+    bool operator!=( const SignalProperties& sp ) const
+                                        { return !( *this == sp ); }
     // These operators tell whether a signal would "fit" into another one.
     // Note that this is essentially a set inclusion relation,
     // so a < b and b >= a may both be false (but not both true) at the same
     // time.
-    bool operator>( const SignalProperties& sp ) const { return ( *this >= sp ) && ( *this != sp ); }
-    bool operator<( const SignalProperties& sp ) const { return ( *this <= sp ) && ( *this != sp ); }
-    bool operator>=( const SignalProperties& ) const;
+    bool operator>( const SignalProperties& sp ) const
+                                        { return ( *this >= sp ) && ( *this != sp ); }
+    bool operator<( const SignalProperties& sp ) const
+                                        { return ( *this <= sp ) && ( *this != sp ); }
+    bool operator>=( const SignalProperties& sp ) const
+                                        { return sp <= *this; } 
     bool operator<=( const SignalProperties& ) const;
 
     // Stream i/o
@@ -62,37 +78,45 @@ class SignalProperties
     std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 
-  protected:
-    std::vector< size_t > elements;
-    size_t maxElements,
-           depth;
+#if 1
+    // Legacy names for accessors.
+    size_t MaxElements() const                          { return Elements(); }
+    size_t GetNumElements( size_t /*inChannel*/ ) const { return Elements(); }
+#endif
+
+  private:
+    size_t           mChannels,
+                     mElements;
+    SignalType::Type mType;
 };
 
-// Template declaration of signals.
-template< class T > class BasicSignal : public SignalProperties
+class GenericSignal
 {
   public:
-    typedef T value_type;
+    typedef double value_type;
 
-    BasicSignal();
-    BasicSignal( size_t inChannels, size_t inMaxElements );
-    BasicSignal( const SignalProperties& );
+    GenericSignal();
+    GenericSignal(
+      size_t inChannels,
+      size_t inMaxElements,
+      SignalType::Type inType = SignalType::defaultType );
+    explicit GenericSignal( const SignalProperties& );
 
     void SetProperties( const SignalProperties& );
-
-    // Overridden from SignalProperties
-    virtual bool SetNumElements( size_t inChannel, size_t inElements );
-
-    // Accessors
-    const T& GetValue( size_t inChannel, size_t inElement ) const;
-    void SetValue( size_t inChannel, size_t inElement, T inValue );
-    const std::vector< T >& GetChannel( size_t inChannel ) const;
-    void SetChannel( const T* inChannelData, size_t inChannel );
+    const SignalProperties& GetProperties() const { return mProperties; }
 
     // Read access
-    const T& operator() ( size_t inChannel, size_t inElement ) const;
-    // Write access
-    T& operator() ( size_t inChannel, size_t inElement );
+    size_t           Channels() const   { return mProperties.Channels(); }
+    size_t           Elements() const   { return mProperties.Elements(); }
+    SignalType::Type Type() const       { return mProperties.Type(); }
+
+    // Accessors
+    const value_type& GetValue( size_t inChannel, size_t inElement ) const;
+    void SetValue( size_t inChannel, size_t inElement, value_type inValue );
+    // Bracket read access
+    const value_type& operator() ( size_t inChannel, size_t inElement ) const;
+    // Bracket write access
+    value_type& operator() ( size_t inChannel, size_t inElement );
 
     // Stream i/o
     void WriteToStream( std::ostream& ) const;
@@ -100,136 +124,34 @@ template< class T > class BasicSignal : public SignalProperties
     std::ostream& WriteBinary( std::ostream& ) const;
     std::istream& ReadBinary( std::istream& );
 
-  protected:
-    std::vector< std::vector< T > > Value;
-};
-
-// Template definitions for the signal members.
-template< class T >
-BasicSignal< T >::BasicSignal()
-: SignalProperties( 0, 0, sizeof( T ) )
-{
-  SetProperties( *this );
-}
-
-template< class T >
-BasicSignal< T >::BasicSignal( size_t inChannels, size_t inMaxElements )
-: SignalProperties( inChannels, inMaxElements, sizeof( T ) )
-{
-  SetProperties( *this );
-}
-
-template< class T >
-BasicSignal< T >::BasicSignal( const SignalProperties& inProperties )
-: SignalProperties( inProperties )
-{
-  SetProperties( *this );
-}
-
-template< class T >
-bool
-BasicSignal< T >::SetNumElements( size_t inChannel, size_t inElements )
-{
-  bool result = SignalProperties::SetNumElements( inChannel, inElements );
-  SetProperties( *this );
-  return result;
-}
-
-template< class T >
-const T&
-BasicSignal< T >::GetValue( size_t inChannel, size_t inElement ) const
-{
-#ifdef SIGNAL_BACK_COMPAT
-  static T nullvalue = ( T )0;
-  if( ( inChannel >= Value.size() ) || ( inElement >= Value[ inChannel ].size() ) )
-    return nullvalue;
-#endif // SIGNAL_BACK_COMPAT
-  return Value.at( inChannel ).at( inElement );
-}
-
-template< class T >
-void
-BasicSignal< T >::SetValue( size_t inChannel, size_t inElement, T inValue )
-{
-#ifdef SIGNAL_BACK_COMPAT
-  if( ( inChannel >= Value.size() ) || ( inElement >= Value[ inChannel ].size() ) )
-    return;
-#endif // SIGNAL_BACK_COMPAT
-  Value.at( inChannel ).at( inElement ) = inValue;
-}
-
-template< class T >
-void
-BasicSignal< T >::SetChannel( const T* inChannelData, size_t inChannel )
-{
-  for( size_t i = 0; i < GetChannel( inChannel ).size(); ++i )
-    ( *this )( inChannel, i ) = inChannelData[ i ];
-}
-
-template< class T >
-const std::vector< T >&
-BasicSignal< T >::GetChannel( size_t inChannel ) const
-{
-#ifdef _DEBUG
-  return Value.at( inChannel );
-#else
-  return Value[ inChannel ];
+#if 1
+    // Legacy names for accessors.
+    size_t MaxElements() const                          { return Elements(); }
+    size_t GetNumElements( size_t /*inChannel*/ ) const { return Elements(); }
 #endif
-}
 
-template< class T >
-const T&
-BasicSignal< T >::operator() ( size_t inChannel, size_t inElement ) const
-{
-#ifdef _DEBUG
-  return Value.at( inChannel ).at( inElement );
-#else
-  return Value[ inChannel ][ inElement ];
-#endif
-}
+  private:
+    template<typename T>
+    static void PutLittleEndian( std::ostream& os, const T& inValue )
+    {
+      T value = inValue;
+      for( int i = 0; i < sizeof( T ); ++i )
+      {
+        os.put( value & 0xff );
+        value >>= 8;
+      }
+    }
+    template<typename T>
+    static void GetLittleEndian( std::istream& is, T& outValue )
+    {
+      outValue = 0;
+      for( int i = 0; i < sizeof( T ); ++i )
+        outValue |= is.get() << ( i * 8 );
+    }
 
-template<class T>
-T&
-BasicSignal< T >::operator() ( size_t inChannel, size_t inElement )
-{
-#ifdef _DEBUG
-  return Value.at( inChannel ).at( inElement );
-#else
-  return Value[ inChannel ][ inElement ];
-#endif
-}
-
-template<class T>
-void
-BasicSignal< T >::SetProperties( const SignalProperties& inSp )
-{
-#ifdef _DEBUG
-  if( inSp.GetDepth() > sizeof( T ) )
-    throw DEBUGINFO "Signal depth greater than allowed for by data type.";
-#endif
-  Value.resize( inSp.Channels() );
-  for( size_t i = 0; i != Value.size(); ++i )
-    Value[ i ].resize( inSp.GetNumElements( i ), T( 0 ) );
-  *static_cast< SignalProperties* >( this ) = inSp;
-}
-
-typedef BasicSignal< short > GenericIntSignal;
-
-class GenericSignal : public BasicSignal< float >
-{
-  public:
-    GenericSignal() {}
-    GenericSignal( const SignalProperties& sp )
-    : BasicSignal< float >( sp ) {}
-    GenericSignal( unsigned short NewChannels, int NewMaxElements )
-    : BasicSignal< float >( NewChannels, NewMaxElements ) {}
-    GenericSignal( const GenericIntSignal& intsig ) { *this = intsig; }
-    const GenericSignal& operator=( const GenericIntSignal& );
-
-    void WriteToStream( std::ostream& ) const;
-    void ReadFromStream( std::istream& );
-    std::ostream& WriteBinary( std::ostream& ) const;
-    std::istream& ReadBinary( std::istream& );
+  private:
+    SignalProperties                      mProperties;
+    std::vector<std::vector<value_type> > mValues;
 };
 
 inline std::ostream& operator<<( class std::ostream& os, const SignalProperties& s )
@@ -243,22 +165,6 @@ inline std::istream& operator>>( class std::istream& is, SignalProperties& s )
   s.ReadFromStream( is );
   return is;
 }
-
-
-template<class T>
-inline std::ostream& operator<<( class std::ostream& os, const BasicSignal<T>& s )
-{
-  s.WriteToStream( os );
-  return os;
-}
-
-template<class T>
-inline std::istream& operator>>( class std::istream& is, BasicSignal<T>& s )
-{
-  s.ReadFromStream( is );
-  return is;
-}
-
 
 inline std::ostream& operator<<( class std::ostream& os, const GenericSignal& s )
 {

@@ -2,24 +2,10 @@
 //
 // File: UGenericSignal.cpp
 //
-// Description: This file declares a SignalProperties base class and a BasicSignal
-//   class template deriving from it with the signal's numerical type as the
-//   template argument.
-//   Two classes, GenericSignal and GenericIntSignal, are derived from a float
-//   and int instantiation of this template. With a compatibility flag set
-//   (SIGNAL_BACK_COMPAT) existing code should compile with minimal changes.
+// Author: juergen.mellinger@uni-tuebingen.de
 //
-//   For the future, the following name transitions might be considered:
-//     BasicSignal --> GenericSignal
-//     GenericSignal --> FloatSignal
-//     GenericIntSignal --> IntSignal
-//   as the latter two don't have anything generic about them any more.
-//
-// Changes: June 28, 2002, juergen.mellinger@uni-tuebingen.de
-//          - Rewrote classes from scratch but kept old class interface.
-//          Mar 28, 2003, juergen.mellinger@uni-tuebingen.de
-//          - Added depth member to SignalProperties to unify GenericSignal
-//            and GenericIntSignal into one signal type.
+// Description: This file defines a SignalProperties base class and a
+//   GenericSignal class deriving from it.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -31,84 +17,77 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <float.h>
 #include <math.h>
 
 #include <assert>
 
-#if( sizeof( signed short ) != 2 || sizeof( signed char ) != 1 )
+#if( USHRT_MAX != ( 1UL << 16 ) - 1 || UCHAR_MAX != ( 1UL << 8 ) - 1 )
 # error This file depends on 2-byte shorts and 1-byte chars.
 #endif
 
-#if( sizeof( unsigned int ) != 4 && sizeof( float ) != 4 )
+#if( UINT_MAX / 2 + 1 != ( 1UL << 31 ) || FLT_MANT_DIG != 24 || FLT_MAX_EXP != 128 )
 # error This file assumes a size of 4 bytes for unsigned int and float.
 #endif
 
-namespace DATATYPE
-{
-  enum
-  {
-    INTEGER = 0,
-    FLOAT = 1,
-    FLOAT32 = 2,
-  };
-};
-
 using namespace std;
 
-bool
-SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
+const char*
+SignalType::Name( SignalType::Type t )
 {
-  bool elementsTooBig = ( inElements > maxElements );
-  if( elementsTooBig )
-    elements.at( inChannel ) = maxElements;
-  else
-    elements.at( inChannel ) = inElements;
-  return elementsTooBig;
+  static const char* nameTable[] =
+  {
+    "int16",
+    "float24",
+    "float32",
+    "int32",
+    "float64",
+  };
+  return nameTable[ t ];
+};
+
+// Determine whether a given signal type can be converted into another one without
+// loss of information.
+bool
+SignalType::ConversionSafe( SignalType::Type from, SignalType::Type to )
+{
+  static const bool conversionTable[ numTypes ][ numTypes ] =
+  {
+    /*              int16    float24   float32    int32 */
+    /* int16   */ {  true,     true,     true,    true, },
+    /* float24 */ { false,     true,     true,   false, },
+    /* float32 */ { false,    false,     true,   false, },
+    /* int32   */ { false,    false,    false,    true, },
+  };
+  return conversionTable[ from ][ to ];
 }
 
 void
 SignalProperties::WriteToStream( ostream& os ) const
 {
-  os << Channels() << " " << MaxElements() << " " << GetDepth();
+  os << Channels() << " " << Elements() << " " << SignalType::Name( Type() );
 }
 
 ostream&
 SignalProperties::WriteBinary( ostream& os ) const
 {
+  LengthField<1>( Type() ).WriteBinary( os );
   LengthField<2>( Channels() ).WriteBinary( os );
-  LengthField<2>( MaxElements() ).WriteBinary( os );
-  LengthField<1>( GetDepth() ).WriteBinary( os );
+  LengthField<2>( Elements() ).WriteBinary( os );
   return os;
 }
 
 istream&
 SignalProperties::ReadBinary( istream& is )
 {
+  LengthField<1> type;
   LengthField<2> channels,
-                 maxElem;
-  LengthField<1> depth;
+                 elements;
+  type.ReadBinary( is );
   channels.ReadBinary( is );
-  maxElem.ReadBinary( is );
-  depth.ReadBinary( is );
-  *this = SignalProperties( channels, maxElem, depth );
+  elements.ReadBinary( is );
+  *this = SignalProperties( channels, elements, SignalType::Type( int( type ) ) );
   return is;
-}
-
-bool
-SignalProperties::operator>=( const SignalProperties& sp ) const
-{
-  if( IsEmpty() )
-    return sp.IsEmpty();
-  if( sp.IsEmpty() )
-    return true;
-  if( depth < sp.depth )
-    return false;
-  if( elements.size() < sp.elements.size() )
-    return false;
-  for( size_t i = 0; i < sp.elements.size(); ++i )
-    if( elements[ i ] < sp.elements[ i ] )
-      return false;
-  return true;
 }
 
 bool
@@ -118,24 +97,78 @@ SignalProperties::operator<=( const SignalProperties& sp ) const
     return true;
   if( sp.IsEmpty() )
     return false;
-  if( sp.depth < depth )
+  if( !ConversionSafe( Type(), sp.Type() ) )
     return false;
-  if( sp.elements.size() < elements.size() )
+  if( sp.Elements() < Elements() )
     return false;
-  for( size_t i = 0; i < elements.size(); ++i )
-    if( sp.elements[ i ] < elements[ i ] )
-      return false;
+  if( sp.Elements() < Elements() )
+    return false;
   return true;
 }
 
-const GenericSignal&
-GenericSignal::operator=( const GenericIntSignal& inRHS )
+GenericSignal::GenericSignal()
 {
-  SetProperties( inRHS );
-  for( size_t i = 0; i < inRHS.Channels(); ++i )
-    for( size_t j = 0; j < inRHS.GetNumElements( i ); ++j )
-      SetValue( i, j, ( float )inRHS.GetValue( i, j ) );
-  return *this;
+  SetProperties( mProperties );
+}
+
+GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType::Type inType )
+{
+  SetProperties( SignalProperties( inChannels, inElements, inType ) );
+}
+
+GenericSignal::GenericSignal( const SignalProperties& inProperties )
+{
+  SetProperties( inProperties );
+}
+
+const GenericSignal::value_type&
+GenericSignal::GetValue( size_t inChannel, size_t inElement ) const
+{
+#ifdef SIGNAL_BACK_COMPAT
+  static value_type nullvalue = ( value_type )0;
+  if( ( inChannel >= mValues.size() ) || ( inElement >= mValues[ inChannel ].size() ) )
+    return nullvalue;
+#endif // SIGNAL_BACK_COMPAT
+  return mValues.at( inChannel ).at( inElement );
+}
+
+void
+GenericSignal::SetValue( size_t inChannel, size_t inElement, value_type inValue )
+{
+#ifdef SIGNAL_BACK_COMPAT
+  if( ( inChannel >= mValues.size() ) || ( inElement >= mValues[ inChannel ].size() ) )
+    return;
+#endif // SIGNAL_BACK_COMPAT
+  mValues.at( inChannel ).at( inElement ) = inValue;
+}
+
+const GenericSignal::value_type&
+GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
+{
+#ifdef _DEBUG
+  return mValues.at( inChannel ).at( inElement );
+#else
+  return mValues[ inChannel ][ inElement ];
+#endif
+}
+
+GenericSignal::value_type&
+GenericSignal::operator() ( size_t inChannel, size_t inElement )
+{
+#ifdef _DEBUG
+  return mValues.at( inChannel ).at( inElement );
+#else
+  return mValues[ inChannel ][ inElement ];
+#endif
+}
+
+void
+GenericSignal::SetProperties( const SignalProperties& inSp )
+{
+  mValues.resize( inSp.Channels() );
+  for( size_t i = 0; i != mValues.size(); ++i )
+    mValues[ i ].resize( inSp.Elements(), value_type( 0 ) );
+  mProperties = inSp;
 }
 
 void
@@ -144,21 +177,18 @@ GenericSignal::WriteToStream( ostream& os ) const
   int indent = os.width();
   os << '\n' << setw( indent ) << ""
      << "SignalProperties { ";
-  SignalProperties::WriteToStream( os );
+  mProperties.WriteToStream( os );
   os << '\n' << setw( indent ) << ""
      << "}";
   os << setprecision( 7 );
-  for( size_t j = 0; j < MaxElements(); ++j )
+  for( size_t j = 0; j < Elements(); ++j )
   {
     os << '\n' << setw( indent ) << "";
-    for( size_t i = 0; i < Value.size(); ++i )
+    for( size_t i = 0; i < mValues.size(); ++i )
     {
-      os << setw( 14 );
-      if( j < GetNumElements( i ) )
-        os << GetValue( i, j );
-      else
-        os << "n/a";
-      os << ' ';
+      os << setw( 14 )
+         << GetValue( i, j )
+         << ' ';
     }
   }
 }
@@ -166,48 +196,23 @@ GenericSignal::WriteToStream( ostream& os ) const
 ostream&
 GenericSignal::WriteBinary( ostream& os ) const
 {
-  int datatype = DATATYPE::FLOAT;
-  switch( depth )
+  mProperties.WriteBinary( os );
+  switch( Type() )
   {
-    case 0:
-    case 1:
-    case 2:
-      datatype = DATATYPE::INTEGER;
-      break;
-    case 3:
-      datatype = DATATYPE::FLOAT;
-      break;
-#ifdef BCI_TOOL // Remove the #ifdef once the protocol allows for it.
-    case 4:
-      datatype = DATATYPE::FLOAT32;
-      break;
-#endif // BCI_TOOL
-    default:
-      datatype = DATATYPE::FLOAT;
-  }
-  os.put( datatype );
-  LengthField<1>( Channels() ).WriteBinary( os );
-  LengthField<2>( MaxElements() ).WriteBinary( os );
-  switch( datatype )
-  {
-    case DATATYPE::INTEGER:
+    case SignalType::int16:
       for( size_t i = 0; i < Channels(); ++i )
-        for( size_t j = 0; j < MaxElements(); ++j )
+        for( size_t j = 0; j < Elements(); ++j )
         {
-          int value = 0;
-          if( j < GetNumElements( i ) )
-            value = GetValue( i, j );
+          int value = GetValue( i, j );
           os.put( value & 0xff ).put( value >> 8 );
         }
       break;
 
-    case DATATYPE::FLOAT:
+    case SignalType::float24:
       for( size_t i = 0; i < Channels(); ++i )
-        for( size_t j = 0; j < MaxElements(); ++j )
+        for( size_t j = 0; j < Elements(); ++j )
         {
-          float value = 0.0;
-          if( j < GetNumElements( i ) )
-            value = GetValue( i, j );
+          float value = GetValue( i, j );
           int mantissa,
               exponent;
           if( value == 0.0 )
@@ -226,19 +231,23 @@ GenericSignal::WriteBinary( ostream& os ) const
         }
       break;
 
-    case DATATYPE::FLOAT32:
+    case SignalType::float32:
       for( size_t i = 0; i < Channels(); ++i )
-        for( size_t j = 0; j < MaxElements(); ++j )
+        for( size_t j = 0; j < Elements(); ++j )
         {
           assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-          unsigned int value = 0;
-          if( j < GetNumElements( i ) )
-            value = *reinterpret_cast<const unsigned int*>( &GetValue( i, j ) );
-          for( int i = 0; i < sizeof( value ); ++i )
-          {
-            os.put( value & 0xff );
-            value >>= 8;
-          }
+          float floatvalue = GetValue( i, j );
+          unsigned int value = *reinterpret_cast<const unsigned int*>( &floatvalue );
+          PutLittleEndian( os, value );
+        }
+      break;
+
+    case SignalType::int32:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < Elements(); ++j )
+        {
+          signed int value = GetValue( i, j );
+          PutLittleEndian( os, value );
         }
       break;
 
@@ -251,17 +260,14 @@ GenericSignal::WriteBinary( ostream& os ) const
 istream&
 GenericSignal::ReadBinary( istream& is )
 {
-  int datatype = is.get();
-  LengthField<1> channels;
-  channels.ReadBinary( is );
-  LengthField<2> maxElem;
-  maxElem.ReadBinary( is );
-  switch( datatype )
+  SignalProperties p;
+  p.ReadBinary( is );
+  SetProperties( p );
+  switch( Type() )
   {
-    case DATATYPE::INTEGER:
-      SetProperties( SignalProperties( channels, maxElem, 2 ) );
-      for( size_t i = 0; i < channels; ++i )
-        for( size_t j = 0; j < maxElem; ++j )
+    case SignalType::int16:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < Elements(); ++j )
         {
           signed short value = is.get();
           value |= is.get() << 8;
@@ -269,10 +275,9 @@ GenericSignal::ReadBinary( istream& is )
         }
       break;
 
-    case DATATYPE::FLOAT:
-      SetProperties( SignalProperties( channels, maxElem, 3 ) );
-      for( size_t i = 0; i < channels; ++i )
-        for( size_t j = 0; j < maxElem; ++j )
+    case SignalType::float24:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < Elements(); ++j )
         {
           signed short mantissa = is.get();
           mantissa |= is.get() << 8;
@@ -281,16 +286,24 @@ GenericSignal::ReadBinary( istream& is )
         }
       break;
 
-    case DATATYPE::FLOAT32:
-      SetProperties( SignalProperties( channels, maxElem, 4 ) );
-      for( size_t i = 0; i < channels; ++i )
-        for( size_t j = 0; j < maxElem; ++j )
+    case SignalType::float32:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < Elements(); ++j )
         {
           assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
           unsigned int value = 0;
-          for( int i = 0; i < sizeof( value ); ++i )
-            value |= is.get() << ( i * 8 );
+          GetLittleEndian( is, value );
           SetValue( i, j, *reinterpret_cast<float*>( &value ) );
+        }
+      break;
+
+    case SignalType::int32:
+      for( size_t i = 0; i < Channels(); ++i )
+        for( size_t j = 0; j < Elements(); ++j )
+        {
+          signed int value = 0;
+          GetLittleEndian( is, value );
+          SetValue( i, j, value );
         }
       break;
 
