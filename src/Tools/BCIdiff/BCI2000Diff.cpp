@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
                         omitData=true;
                 else if(string(argv[i])=="--comp-times")
                         omitTimes=false;
-                else if(i>=argc-2)
+                else if(i>=argc-2&&argv[i][0]!='-'&&argv[i][1]!='-')
                         ++fileNameCount;
                 else
                 {
