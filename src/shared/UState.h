@@ -103,6 +103,7 @@ class STATEVECTOR
   int     GetStateVectorLength() const;
   BYTE    *GetStateVectorPtr();
   const BYTE* GetStateVectorPtr() const;
+  void    PostStateChange( const char* name, unsigned short value );
   void    CommitStateChanges();
   void WriteToStream( std::ostream& ) const;
   void ReadFromStream( std::istream& );

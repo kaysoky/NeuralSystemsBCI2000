@@ -724,8 +724,27 @@ return(state_list);
 }
 
 // **************************************************************************
+// Function:   PostStateChange
+// Purpose:    Have a state changed upon the next call to CommitStateChanges().
+// Parameters: Name of the state to be changed; requested value
+// Returns:    N/A
+// **************************************************************************
+void
+STATEVECTOR::PostStateChange( const char* inName, unsigned short inValue )
+{
+  if( !state_list )
+    throw __FUNC__ " called for improperly initialized object";
+
+  STATE* state = state_list->GetStatePtr( inName );
+  if( state == NULL )
+    throw __FUNC__ " called for undeclared state";
+
+  state->SetValue( inValue ); // We use STATE::value as a buffer.
+}
+
+// **************************************************************************
 // Function:   CommitStateChanges
-// Purpose:    have all states commit their changes, if any
+// Purpose:    Have all states commit their changes, if any.
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
@@ -733,7 +752,7 @@ void
 STATEVECTOR::CommitStateChanges()
 {
   if( !state_list )
-    return;
+    throw __FUNC__ " called for improperly initialized object";
 
   for( int i = 0; i < state_list->GetNumStates(); ++i )
   {
