@@ -461,6 +461,11 @@ TARGET::~TARGET()
  Pen=NULL;
  shape=NULL;
  icon=NULL;
+  /*shidong starts*/
+ CharDisplayInMatrix = NULL;
+ CharDisplayInResult = NULL;
+ FontSizeFactor = NULL;
+ /*shidong ends*/
 }
 
 
