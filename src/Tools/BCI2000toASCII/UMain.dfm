@@ -1,6 +1,6 @@
 object fMain: TfMain
-  Left = 400
-  Top = 347
+  Left = 379
+  Top = 317
   Width = 438
   Height = 454
   Caption = 'BCI2000toASCII'

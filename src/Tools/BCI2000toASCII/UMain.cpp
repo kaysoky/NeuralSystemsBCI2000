@@ -91,6 +91,7 @@ MATFile *pmat;
  if (exportmatlab)
     {
     ret=InitMatlabEngine();
+    if (ret == -1) return;
     signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
     mxSetName(signal, "signal");
     }
