@@ -173,7 +173,9 @@ int     trycount;
        // read the statevector
        coremessage=new COREMESSAGE();
        ret1=coremessage->ReceiveCoreMessage(pStream);
-       if (ret1 == ERRCORE_NOERR)
+       if (ret1 != ERRCORE_NOERR)
+         Terminate();
+       else
           {
           coremessage->ParseMessage();
           ret2=HandleSigProcMessage(coremessage);
