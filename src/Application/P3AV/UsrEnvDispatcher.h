@@ -63,5 +63,7 @@ private: 	// User declarations
   PhaseInSequenceEnum m_ePhaseInSequence;    // current phase throughout the stimulus sequence
   std::vector< int >   m_vResultCounts; // to accumulate data about how many times a certain stimulus has been selected
   std::vector< float > m_vResultValues; // to accumulate data about what was the actual value
+  unsigned int m_iWaitTime; // in units of SampleBlocks, to make things like " please focus on" and the next stimulus sound reasonably
+  bool m_bWaiting; // waiting for the m_iWaitTime to be over
 };
 #endif

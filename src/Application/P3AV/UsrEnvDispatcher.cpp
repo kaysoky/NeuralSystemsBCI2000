@@ -33,6 +33,8 @@ UsrEnvDispatcher::UsrEnvDispatcher(PARAMLIST * pParamList, STATELIST * pStateLis
   m_ePhaseInSequence        = PHASE_START;
   m_vResultCounts.clear();
   m_vResultValues.clear();
+  m_iWaitTime = 0;
+  m_bWaiting = false;
 }
 
 
@@ -101,6 +103,11 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
             m_vStimulusPresent[i] = true;
         }
       }
+
+      // find out the wait time
+      const unsigned int uWaitTimeSec(1);
+      m_iWaitTime = atoi(pParamList->GetParamPtr("SamplingRate")->GetValue()) * uWaitTimeSec / atoi(pParamList->GetParamPtr("SampleBlockSize")->GetValue());
+      m_bWaiting = false;
     }
   }
   catch( TooGeneralCatch& )
@@ -116,6 +123,8 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
     m_vStimulusPresent.resize(pUsrEnv->GetElements()->GetCollectionSize());
     for (unsigned int i(0); i < m_vStimulusPresent.size(); ++i)
       m_vStimulusPresent[i] = false;
+    m_iWaitTime = 0;
+    m_bWaiting = false;
   }
   // reset the dispatcher
   Reset(pUsrEnv, pStateVector);
@@ -133,6 +142,7 @@ void UsrEnvDispatcher::Reset(UsrEnv * pUsrEnv, STATEVECTOR * pStateVector)
   m_iCurrentPhaseDuration = 0;
   m_ePhaseInSequence      = PHASE_START;
   m_bIsRunning            = false;
+  m_bWaiting              = false;
 
   if (pStateVector != NULL)
   {
@@ -223,6 +233,20 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     m_vResultValues[uStimulusCodeRes - 1] += (float)controlsignal[0];
   }
 
+  // whether we need to wait before going to the next phase
+  if (m_bWaiting == true)
+  {
+    if (m_iCurrentPhaseDuration == m_iWaitTime)
+    {
+      m_iCurrentPhaseDuration = 0;
+      m_bWaiting = false;
+    }
+    else
+    {
+      ++m_iCurrentPhaseDuration;
+      return;
+    }
+  }
   // right at the beginning of the run
   if (m_ePhaseInSequence == PHASE_START)
   {
@@ -247,6 +271,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     {
       m_ePhaseInSequence = PHASE_INTERSTIMULUS;
       m_iCurrentPhaseDuration = 0;
+      m_bWaiting = true;
       m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
                                    rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
 
@@ -260,7 +285,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
       pStateVector->SetStateValue("StimulusType", 0);
       pStateVector->SetStateValue("Flashing", 0);
     }
-    else if (m_iCurrentPhaseDuration == m_iUsrElementOnTime)
+    else if (m_iCurrentPhaseDuration == (m_iUsrElementPriorSeqTime - m_iUsrElementOnTime))
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       // this will display what element we have to focus on message
@@ -279,12 +304,19 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
     // get the next active elements as a subset of all the potential elements
     m_ePhaseInSequence = (PhaseInSequenceEnum)pUsrEnv->GenerateActiveElements((unsigned int)m_ePhaseInSequence);
-
+      
     pStateVector->SetStateValue("SelectedStimulus", 0);
     pStateVector->SetStateValue("PhaseInSequence", 0);
     pStateVector->SetStateValue("StimulusCode", 0);
     pStateVector->SetStateValue("StimulusType", 0);
     pStateVector->SetStateValue("Flashing", 0);
+
+    // wait before displaying the "result was" message
+    if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE)
+    {
+      m_bWaiting = true;
+      pStateVector->SetStateValue("PhaseInSequence", 3);
+    }
   }
 
   // element is not present and interstimulus time expired
@@ -307,7 +339,7 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
   }
 
   // after sequence phase
-  if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE)
+  if (m_ePhaseInSequence == PHASE_AFTERSEQUENCE && m_bWaiting == false)
   {
     if (m_iCurrentPhaseDuration == 0)
     {
@@ -331,7 +363,8 @@ void UsrEnvDispatcher::Process(const std::vector<float>& controlsignal, UsrEnv *
     {
       m_iCurrentPhaseDuration = 0;
       m_ePhaseInSequence = PHASE_START;
-
+      m_bWaiting = true;
+      
       pUsrEnv->HideElements(UsrEnv::COLL_ALL);
       pUsrEnv->GenerateActiveElements((unsigned int)PHASE_PRIORSEQUENCE);
 
