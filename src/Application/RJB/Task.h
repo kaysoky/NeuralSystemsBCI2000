@@ -6,7 +6,6 @@ Task.h is the header file for the Right Justified Boxes task
 
 #include <stdio.h>
 #include "UBitRate.h"
-#include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
 #include "UBCItime.h"

@@ -48,15 +48,16 @@ __published:	// IDE-managed Components
         TLabel *tNumDataRecv1;
         TLabel *tNumDataRecv2;
         TLabel *tNumDataRecv3;
-        TLabel *tSourceConnected;
+    TLabel *tEEGSourceConnected;
         TLabel *tSigProcConnected;
-        TLabel *tApplicationConnected;
-        TCheckBox *cSourceConnected;
+    TLabel *tAppConnected;
+    TCheckBox *cEEGSourceConnected;
         TCheckBox *cSigProcConnected;
-        TCheckBox *cApplicationConnected;
+    TCheckBox *cAppConnected;
 private:	// User declarations
 public:		// User declarations
         __fastcall TfConnectionInfo(TComponent* Owner);
+        void UpdateDisplay( const class SYSSTATUS& );
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfConnectionInfo *fConnectionInfo;

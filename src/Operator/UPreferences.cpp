@@ -44,22 +44,23 @@ void __fastcall TfPreferences::TrackBar1Change(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TfPreferences::bCloseClick(TObject *Sender)
 {
- strncpy(preferences->Script_AfterModulesConnected, eAfterModulesConnected->Text.c_str(), 255);
- strncpy(preferences->Script_OnExit, eExit->Text.c_str(), 255);
- strncpy(preferences->Script_OnResume, eOnResume->Text.c_str(), 255);
- strncpy(preferences->Script_OnSuspend, eOnSuspend->Text.c_str(), 255);
- strncpy(preferences->Script_OnStart, eOnStart->Text.c_str(), 255);
+  #define SAVE_SCRIPT( name ) \
+  preferences->Script[ PREFERENCES::name ] = e##name->Text.Trim();
+  SAVE_SCRIPT( AfterModulesConnected );
+  SAVE_SCRIPT( OnExit );
+  SAVE_SCRIPT( OnResume );
+  SAVE_SCRIPT( OnSuspend );
+  SAVE_SCRIPT( OnStart );
 
- strncpy(preferences->Button1_Name, eButton1Name->Text.c_str(), 255);
- strncpy(preferences->Button1_Cmd, eButton1Cmd->Text.c_str(), 255);
- strncpy(preferences->Button2_Name, eButton2Name->Text.c_str(), 255);
- strncpy(preferences->Button2_Cmd, eButton2Cmd->Text.c_str(), 255);
- strncpy(preferences->Button3_Name, eButton3Name->Text.c_str(), 255);
- strncpy(preferences->Button3_Cmd, eButton3Cmd->Text.c_str(), 255);
- strncpy(preferences->Button4_Name, eButton4Name->Text.c_str(), 255);
- strncpy(preferences->Button4_Cmd, eButton4Cmd->Text.c_str(), 255);
+  #define SAVE_BUTTON( number ) \
+  preferences->Buttons[ number ].Name = eButton##number##Name->Text.Trim(); \
+  preferences->Buttons[ number ].Cmd = eButton##number##Cmd->Text.Trim();
+  SAVE_BUTTON( 1 );
+  SAVE_BUTTON( 2 );
+  SAVE_BUTTON( 3 );
+  SAVE_BUTTON( 4 );
 
- Close();
+  Close();
 }
 //---------------------------------------------------------------------------
 
@@ -82,20 +83,21 @@ void __fastcall TfPreferences::FormShow(TObject *Sender)
     tUserLevel->Caption=USERLEVELTXT_ADVANCED;
     }
 
- eAfterModulesConnected->Text=preferences->Script_AfterModulesConnected;
- eExit->Text=preferences->Script_OnExit;
- eOnResume->Text=preferences->Script_OnResume;
- eOnSuspend->Text=preferences->Script_OnSuspend;
- eOnStart->Text=preferences->Script_OnStart;
+  #define RESTORE_SCRIPT( name ) \
+  e##name->Text = preferences->Script[ PREFERENCES::name ];
+  RESTORE_SCRIPT( AfterModulesConnected );
+  RESTORE_SCRIPT( OnExit );
+  RESTORE_SCRIPT( OnResume );
+  RESTORE_SCRIPT( OnSuspend );
+  RESTORE_SCRIPT( OnStart );
 
- eButton1Name->Text=preferences->Button1_Name;
- eButton1Cmd->Text=preferences->Button1_Cmd;
- eButton2Name->Text=preferences->Button2_Name;
- eButton2Cmd->Text=preferences->Button2_Cmd;
- eButton3Name->Text=preferences->Button3_Name;
- eButton3Cmd->Text=preferences->Button3_Cmd;
- eButton4Name->Text=preferences->Button4_Name;
- eButton4Cmd->Text=preferences->Button4_Cmd;
+  #define RESTORE_BUTTON( number ) \
+  eButton##number##Name->Text = preferences->Buttons[ number ].Name; \
+  eButton##number##Cmd->Text = preferences->Buttons[ number ].Cmd;
+  RESTORE_BUTTON( 1 );
+  RESTORE_BUTTON( 2 );
+  RESTORE_BUTTON( 3 );
+  RESTORE_BUTTON( 4 );
 }
 //---------------------------------------------------------------------------
 
@@ -103,68 +105,62 @@ void __fastcall TfPreferences::FormShow(TObject *Sender)
 
 PREFERENCES::PREFERENCES()
 {
- UserLevel=USERLEVEL_BEGINNER;
+  UserLevel=USERLEVEL_BEGINNER;
 }
 
 
 // retrieves the default user settings
 void PREFERENCES::GetDefaultSettings()
 {
-TIniFile        *my_registry;
-
- my_registry=new TIniFile(ExtractFilePath(Application->ExeName)+AnsiString(INIFILENAME_PREFERENCES));
-
- try
+  TIniFile* storage = new TIniFile( ExtractFilePath( Application->ExeName ) + INIFILENAME_PREFERENCES );
+  try
   {
-  UserLevel=my_registry->ReadInteger("Various", "DefaultUserLevel", USERLEVEL_ADVANCED);
-  strcpy(Script_AfterModulesConnected, my_registry->ReadString("Scripts", "AfterModulesConnected", "").c_str());
-  strcpy(Script_OnExit, my_registry->ReadString("Scripts", "OnExit", "").c_str());
-  strcpy(Script_OnResume, my_registry->ReadString("Scripts", "OnResume", "").c_str());
-  strcpy(Script_OnSuspend, my_registry->ReadString("Scripts", "OnSuspend", "").c_str());
-  strcpy(Script_OnStart, my_registry->ReadString("Scripts", "OnStart", "").c_str());
-  strcpy(Button1_Name, my_registry->ReadString("Buttons", "Button1Name", "").c_str());
-  strcpy(Button1_Cmd, my_registry->ReadString("Buttons", "Button1Cmd", "").c_str());
-  strcpy(Button2_Name, my_registry->ReadString("Buttons", "Button2Name", "").c_str());
-  strcpy(Button2_Cmd, my_registry->ReadString("Buttons", "Button2Cmd", "").c_str());
-  strcpy(Button3_Name, my_registry->ReadString("Buttons", "Button3Name", "").c_str());
-  strcpy(Button3_Cmd, my_registry->ReadString("Buttons", "Button3Cmd", "").c_str());
-  strcpy(Button4_Name, my_registry->ReadString("Buttons", "Button4Name", "").c_str());
-  strcpy(Button4_Cmd, my_registry->ReadString("Buttons", "Button4Cmd", "").c_str());
+    UserLevel = storage->ReadInteger( "Various", "DefaultUserLevel", USERLEVEL_ADVANCED );
+    #define READ_SCRIPT( name ) \
+    Script[ name ] = storage->ReadString( "Scripts", #name, "" );
+    READ_SCRIPT( AfterModulesConnected );
+    READ_SCRIPT( OnExit );
+    READ_SCRIPT( OnSuspend );
+    READ_SCRIPT( OnStart );
+
+    #define READ_BUTTON( number ) \
+    Buttons[ number ].Name = storage->ReadString( "Buttons", "Button" #number "Name", "" );\
+    Buttons[ number ].Cmd = storage->ReadString( "Buttons", "Button" #number "Cmd", "" );
+    READ_BUTTON( 1 );
+    READ_BUTTON( 2 );
+    READ_BUTTON( 3 );
+    READ_BUTTON( 4 );
   }
- catch(...) {;}
+  catch(...) {}
 
- delete my_registry;
+  delete storage;
 }
-
-
 
 // sets the default user settings
 void PREFERENCES::SetDefaultSettings()
 {
-TIniFile       *my_registry;
-
- my_registry=new TIniFile(ExtractFilePath(Application->ExeName)+AnsiString(INIFILENAME_PREFERENCES));
-
- try
+  TIniFile* storage = new TIniFile( ExtractFilePath( Application->ExeName ) + INIFILENAME_PREFERENCES );
+  try
   {
-  my_registry->WriteInteger("Various", "DefaultUserLevel", UserLevel);
-  my_registry->WriteString("Scripts", "AfterModulesConnected", AnsiString(Script_AfterModulesConnected));
-  my_registry->WriteString("Scripts", "OnExit", AnsiString(Script_OnExit));
-  my_registry->WriteString("Scripts", "OnResume", AnsiString(Script_OnResume));
-  my_registry->WriteString("Scripts", "OnSuspend", AnsiString(Script_OnSuspend));
-  my_registry->WriteString("Scripts", "OnStart", AnsiString(Script_OnStart));
-  my_registry->WriteString("Buttons", "Button1Name", AnsiString(Button1_Name));
-  my_registry->WriteString("Buttons", "Button1Cmd", AnsiString(Button1_Cmd));
-  my_registry->WriteString("Buttons", "Button2Name", AnsiString(Button2_Name));
-  my_registry->WriteString("Buttons", "Button2Cmd", AnsiString(Button2_Cmd));
-  my_registry->WriteString("Buttons", "Button3Name", AnsiString(Button3_Name));
-  my_registry->WriteString("Buttons", "Button3Cmd", AnsiString(Button3_Cmd));
-  my_registry->WriteString("Buttons", "Button4Name", AnsiString(Button4_Name));
-  my_registry->WriteString("Buttons", "Button4Cmd", AnsiString(Button4_Cmd));
-  }
- catch(...)
-  {;}
+    storage->WriteInteger( "Various", "DefaultUserLevel", UserLevel );
+    #define WRITE_SCRIPT( name ) \
+    storage->WriteString( "Scripts", #name, Script[ name ] );
+    WRITE_SCRIPT( AfterModulesConnected );
+    WRITE_SCRIPT( OnExit );
+    WRITE_SCRIPT( OnResume );
+    WRITE_SCRIPT( OnSuspend );
+    WRITE_SCRIPT( OnStart );
 
- delete my_registry;
+    #define WRITE_BUTTON( number ) \
+    storage->WriteString( "Buttons", "Button" #number "Name", Buttons[ number ].Name ); \
+    storage->WriteString( "Buttons", "Button" #number "Cmd", Buttons[ number ].Cmd );
+    WRITE_BUTTON( 1 );
+    WRITE_BUTTON( 2 );
+    WRITE_BUTTON( 3 );
+    WRITE_BUTTON( 4 );
+  }
+  catch(...) {}
+
+  delete storage;
 }
 

@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 
-#include "UCoreComm.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UTargetSequence.h"
@@ -81,11 +80,10 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
 {
 int     ret;
 
- corecomm=new_corecomm;
  statevector=new_svect;
  userdisplay=new_userdisplay;
 
@@ -106,7 +104,7 @@ int     ret;
   else
      highlightcorrecttarget=true;
   }
- catch( TooGeneralCatch& )
+ catch(...)
   {
   ret=0;
   max_ititime=10;

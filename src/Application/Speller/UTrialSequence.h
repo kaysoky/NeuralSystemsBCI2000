@@ -23,7 +23,6 @@ private: 	// User declarations
         int     outcometime, max_outcometime;           // in units of SampleBlocks
         int     congrattime, max_congrattime;           // in units of SampleBlocks
         int     cur_sequence;                           // current sequence
-        CORECOMM        *corecomm;
         USERDISPLAY     *userdisplay;
         STATEVECTOR     *statevector;
         GenericVisualization    *vis;
@@ -34,7 +33,7 @@ private: 	// User declarations
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
+        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
         int     correcttargetID;                        // targetID of the next correct target
         void    ITI();
         void    PTP();

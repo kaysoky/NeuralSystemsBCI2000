@@ -2,14 +2,14 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 #include <vcl.h>
-USEFORM("..\UMain.cpp", fMain);
+USEFORM("..\..\shared\UCoreMain.cpp", fMain);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
         try
         {
                  Application->Initialize();
-                 Application->Title = "SignalProcessing";
+                 Application->Title = "SWSignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
          Application->Run();
         }

@@ -22,19 +22,33 @@ class PREFERENCES
 {
 private:	// User declarations
 public:		// User declarations
-        PREFERENCES::PREFERENCES();
+        PREFERENCES();
+        
         int     UserLevel;
-        char    Script_AfterModulesConnected[256];
-        char    Script_OnExit[256];
-        char    Script_OnResume[256];
-        char    Script_OnSuspend[256];
-        char    Script_OnStart[256];
-        char    Button1_Name[256], Button1_Cmd[256];
-        char    Button2_Name[256], Button2_Cmd[256];
-        char    Button3_Name[256], Button3_Cmd[256];
-        char    Button4_Name[256], Button4_Cmd[256];
-        void    GetDefaultSettings();
-        void    SetDefaultSettings();
+
+        enum
+        {
+          AfterModulesConnected = 0,
+          OnExit,
+          OnResume,
+          OnSuspend,
+          OnStart,
+          numScriptEvents
+        };
+        AnsiString Script[ numScriptEvents ];
+
+        enum
+        {
+          numButtons = 4,
+        };
+        struct
+        {
+          AnsiString Name,
+                     Cmd;
+        } Buttons[ numButtons + 1 ];
+
+        void          GetDefaultSettings();
+        void          SetDefaultSettings();
 };
 
 
@@ -51,7 +65,7 @@ __published:	// IDE-managed Components
         TLabel *Label2;
         TLabel *Label3;
         TEdit *eAfterModulesConnected;
-        TEdit *eExit;
+    TEdit *eOnExit;
         TLabel *Label4;
         TLabel *Label5;
         TEdit *eOnResume;

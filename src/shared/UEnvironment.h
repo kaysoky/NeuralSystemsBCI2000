@@ -20,7 +20,8 @@
 
 #include "UParameter.h"
 #include "UState.h"
-class CORECOMM;
+#include <set>
+class std::ostream;
 class SignalProperties;
 class EnvironmentExtension;
 
@@ -34,9 +35,9 @@ class EnvironmentBase
 {
  // Friends from framework classes.
  friend class GenericVisualization;
- friend class TReceivingThread;
+ //friend class TReceivingThread;
  friend class TfMain;
- friend class FILTERS;
+ //friend class FILTERS;
 
  friend class CoreModule;
  friend class Documentar;
@@ -88,16 +89,17 @@ class EnvironmentBase
     STATEVECTOR* operator->() { return _statevector; }
   } Statevector;
 
-  class corecommAccessor;
-  friend class corecommAccessor;
-  static class corecommAccessor
+ private:
+  class operatorAccessor;
+  friend class operatorAccessor;
+  static class operatorAccessor
   {
    private:
     operator&();
    public:
-    operator CORECOMM*()   { return _corecomm; }
-    CORECOMM* operator->() { return _corecomm; }
-  } Corecomm;
+    operator std::ostream*()   { return _operator; }
+    std::ostream* operator->() { return _operator; }
+  } Operator;
 
   // This macro defines some old identifiers that used to be arguments in
   // previous versions of GenericFilter's member functions.
@@ -105,7 +107,6 @@ class EnvironmentBase
   PARAMLIST* paramlist = (Environment::Parameters), *plist = paramlist; \
   STATELIST* statelist = (Environment::States), *slist = statelist; \
   STATEVECTOR* statevector = (Environment::Statevector), *svect = statevector; \
-  CORECOMM* corecomm = (Environment::Corecomm);
 
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
@@ -130,7 +131,9 @@ class EnvironmentBase
                                  size_t index1,
                                  const std::string& label2 ) const;
 #endif // LABEL_INDEXING
-  // Read-only access to parameters that need not be there.
+
+ protected:
+  // Read-only access to parameters that do not necessarily exist.
   const PARAM::type_adapter OptionalParameter( double defaultValue,
                                                const std::string& name,
                                                size_t index1 = 0,
@@ -208,7 +211,8 @@ class EnvironmentBase
     construction,
     preflight,
     initialization,
-    processing
+    processing,
+    resting
   };
 
   static executionPhase GetPhase() { return _phase; }
@@ -221,22 +225,27 @@ class EnvironmentBase
   static void EnterConstructionPhase(   PARAMLIST*,
                                         STATELIST*,
                                         STATEVECTOR*,
-                                        CORECOMM* );
+                                        std::ostream* );
   // Called before any call to GenericFilter::Preflight().
   static void EnterPreflightPhase(      PARAMLIST*,
                                         STATELIST*,
                                         STATEVECTOR*,
-                                        CORECOMM* );
+                                        std::ostream* );
   // Called before any call to GenericFilter::Initialize().
   static void EnterInitializationPhase( PARAMLIST*,
                                         STATELIST*,
                                         STATEVECTOR*,
-                                        CORECOMM* );
+                                        std::ostream* );
   // Called before any call to GenericFilter::Process().
   static void EnterProcessingPhase(     PARAMLIST*,
                                         STATELIST*,
                                         STATEVECTOR*,
-                                        CORECOMM* );
+                                        std::ostream* );
+  // Called before any call to GenericFilter::Resting().
+  static void EnterRestingPhase(        PARAMLIST*,
+                                        STATELIST*,
+                                        STATEVECTOR*,
+                                        std::ostream* );
 
  protected:
   void RegisterExtension( EnvironmentExtension* p )   { sExtensions.insert( p ); }
@@ -250,13 +259,13 @@ class EnvironmentBase
   static PARAMLIST*     _paramlist;
   static STATELIST*     _statelist;
   static STATEVECTOR*   _statevector;
-  static CORECOMM*      _corecomm;
+  static std::ostream*  _operator;
   static executionPhase _phase;
   // No direct use of those members, please.
   #define _paramlist    (void)
   #define _statelist    (void)
   #define _statevector  (void)
-  #define _corecomm     (void)
+  #define _operator     (void)
   #define _phase        (void)
 };
 
@@ -291,6 +300,7 @@ class EnvironmentExtension : protected EnvironmentBase
    virtual void Preflight() const = 0;
    virtual void Initialize() = 0;
    virtual void Process() = 0;
+   virtual void Resting() {}
 };
 
 #endif // UEnvironmentH

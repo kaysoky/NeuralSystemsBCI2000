@@ -142,7 +142,7 @@ PARAMLIST::AddParameter2List( const char* line, size_t length )
 {
   PARAM param;
   param.ParseParameter( line, length );
-  if( param.valid )
+  if( param.Valid() )
     ( *this )[ param.name ] = param;
 }
 
@@ -388,6 +388,7 @@ PARAM::PARAM()
   dimension2( 1 ),
 #endif
   valid( false ),
+  changed( false ),
   archive( false ),
   tag( false )
 {
@@ -412,6 +413,7 @@ PARAM::PARAM( const char* inName, const char* inSection,
   highrange( inHighrange ),
   comment( inComment ),
   valid( false ),
+  changed( false ),
   archive( false ),
   tag( false )
 {
@@ -435,6 +437,7 @@ PARAM::PARAM( const char* paramstring )
   dimension2( 0 ),
 #endif
   valid( false ),
+  changed( false ),
   archive( false ),
   tag( false )
 {
@@ -485,6 +488,7 @@ PARAM::SetNumValues( size_t n )
   // But it has not been an error up to now.
   dim1_index.resize( n / dim2_index.size() );
 #endif // LABEL_INDEXING
+  changed = true;
 }
 
 // **************************************************************************
@@ -585,13 +589,8 @@ PARAM::SetValue( const string& value, size_t idx )
 {
   if( GetNumValues() <= idx )
     SetNumValues( idx + 1 );
-#if 0 // Now that an empty string value can be represented in formatted I/O,
-      // we accept empty values.
-  if( value != "" )
-    values[ idx ] = value;
-#else
   values[ idx ] = value;
-#endif
+  changed = true;
 }
 
 // **************************************************************************
@@ -695,6 +694,7 @@ void
 PARAM::ReadFromStream( istream& is )
 {
   valid = false;
+  changed = true;
   archive = false;
   tag = false;
   values.clear();
@@ -915,6 +915,7 @@ PARAM::operator=( const PARAM& p )
     values = p.values;
 
     valid = p.valid;
+    changed = true;
     archive = p.archive;
     tag = p.tag;
   }

@@ -6,6 +6,7 @@
 #include "Usr.h"
 #include "UParameter.h"
 #include "Localization.h"
+#include "UBCIError.h"
 
 
 //---------------------------------------------------------------------------
@@ -53,7 +54,7 @@ void __fastcall TUser::SetUsr( PARAMLIST *plist, STATELIST *slist )
 
 //------------------------------------------------------------------------
 
-void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, CORECOMM *corecomm)
+void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
 {
        Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
        Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
@@ -71,7 +72,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, CORECOMM 
        // define certain things that depend on whether we have targets or YES/NO 
        if (TargetType == 0)
           {
-          Target->Visible=true;
+          Target->Visible=false;
           Target2->Visible=false;
           Cursor->Shape=stRectangle;
           }
@@ -104,7 +105,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, CORECOMM 
 
        // CHECK # targets here !!! Needs to be 2 !!
        if ((TargetType == 1) && (atoi(plist->GetParamPtr("NumberTargets")->GetValue()) != 2))
-          corecomm->SendStatus("417 Number of targets HAS TO BE 2 in Yes/No mode !!");
+          bcierr << "Number of targets HAS TO BE 2 in Yes/No mode !!" << std::endl;
 
        // YES/NO text for the upper target
        TargetText1->Visible=false;

@@ -10,6 +10,8 @@
 class FIRClassFilter : public GenericFilter
 {
 private:
+       static const int cNumControlSignals = 2;
+
        enum
        {
 #undef MAX_N

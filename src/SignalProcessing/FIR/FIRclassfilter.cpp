@@ -93,7 +93,7 @@ void FIRClassFilter::Preflight( const SignalProperties& inSignalProperties,
     PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( Parameter( "NumControlSignals" ), 1 );
+  outSignalProperties = SignalProperties( cNumControlSignals, 1 );
 }
 
 // **************************************************************************

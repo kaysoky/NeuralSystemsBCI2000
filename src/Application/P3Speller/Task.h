@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "UBCITime.h"
-#include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "UGenericFilter.h"
 #include "UTarget.h"

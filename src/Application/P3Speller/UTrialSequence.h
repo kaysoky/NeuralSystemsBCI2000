@@ -7,6 +7,7 @@
 
 #include "UGenericVisualization.h"
 #include "UserDisplay.h"
+#include "UEnvironment.h"
 
 #define SEQ_ITI                 1
 #define SEQ_PTP                 2
@@ -16,14 +17,13 @@
 
 #define NUM_STIMULI     12      // in this case, we have 12 stimuli (6 columns and 6 rows)
 
-class TRIALSEQUENCE
+class TRIALSEQUENCE : public Environment
 {
 private: 	// User declarations
         int     ontime, offtime;                   // in units of SampleBlocks
         bool    cur_on;
         int     cur_trialsequence;                 // current sequence within trial
         int     cur_sequence;                      // how many total intensifications did we have
-        CORECOMM        *corecomm;
         USERDISPLAY     *userdisplay;
         STATEVECTOR     *statevector;
         GenericVisualization    *vis;
@@ -35,7 +35,7 @@ private: 	// User declarations
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
+        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
         int     Process(const std::vector<float>&);
         void    ResetTrialSequence();
         bool    onlinemode;

@@ -6,7 +6,6 @@ Task.h is the header file for the Right Justified Boxes task
 
 #include <stdio.h>
 #include "UBitRate.h"
-#include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "UDataGlove.h"
 #include "UGenericFilter.h"
@@ -134,7 +133,6 @@ private:
         FILE *appl;
         STATEVECTOR             *svect;
         GenericVisualization    *vis;
-        CORECOMM        *corecomm;
         BITRATE         bitrate;
         BCITIME         *bcitime;
         TApplication    *Applic;

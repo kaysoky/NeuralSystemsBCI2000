@@ -19,386 +19,137 @@
 //          stream to allow for transmitting color lists for
 //          CFGID::channelColors.
 //
+//          May 28, 2004, jm:
+//          Introduced Memo, Signal, and Cfg objects to allow for centralization
+//          of message processing in the MessageHandler class.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+
 #include "UGenericVisualization.h"
 
-#include "UCoreMessage.h"
-#include "UCoreComm.h"
 #include "UEnvironment.h"
-//#include "UVisConfig.h"
 #include "UGenericSignal.h"
+#include "MessageHandler.h"
 
-#include <math.h>
-#include <stdio.h>
-
-#ifdef ABSTRACT_CORECOMM
-# include <iostream>
-# include <string>
-# include <sstream>
-#endif
+#include <iostream>
+#include <string>
+#include <assert>
 
 using namespace std;
 
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
-
-GenericVisualization::GenericVisualization()
-: signal( NULL ),
-  new_samples( -1 ),
-  sourceID( -1 ),
-  vis_type( VISTYPE::GRAPH ),
-  datatype( DATATYPE::FLOAT )
+// Common to all visualization messages.
+istream&
+VisBase::ReadBinary( istream& is )
 {
- // paramlist->AddParameter2List( "Source intlist VisChList= 5 11 23 1 2 3 11 1 64  // list of channels to visualize" );
+  mSourceID = is.get();
+  ReadBinarySelf( is );
+  return is;
 }
 
-GenericVisualization::GenericVisualization( BYTE inSourceID, BYTE inVisType )
-: signal( NULL ),
-  new_samples( -1 ),
-  sourceID( inSourceID ),
-  vis_type( inVisType ),
-  datatype( DATATYPE::FLOAT )
+ostream&
+VisBase::WriteBinary( ostream& os ) const
 {
+  os.put( mSourceID & 0xff );
+  WriteBinarySelf( os );
+  return os;
 }
 
-GenericVisualization::~GenericVisualization()
+// Config message.
+void
+VisCfg::ReadBinarySelf( istream& is )
 {
- delete signal;
+  mCfgID = is.get();
+  getline( is, mCfgValue, '\0' );
 }
 
-
-void GenericVisualization::SetSourceID(BYTE my_sourceID)
+void
+VisCfg::WriteBinarySelf( ostream& os ) const
 {
- sourceID=my_sourceID;
+  os.put( mCfgID );
+  os.write( mCfgValue.data(), mCfgValue.length() );
+  os.put( '\0' );
 }
 
-
-BYTE GenericVisualization::GetSourceID() const
+// Memo message.
+void
+VisMemo::ReadBinarySelf( istream& is )
 {
- return(sourceID);
+  getline( is, mMemo, '\0' );
 }
 
-
-void GenericVisualization::SetDataType(BYTE my_datatype)
+void
+VisMemo::WriteBinarySelf( ostream& os ) const
 {
- datatype=my_datatype;
+  os.write( mMemo.data(), mMemo.length() );
+  os.put( '\0' );
 }
 
-
-BYTE GenericVisualization::GetDataType() const
+// Signal message.
+void
+VisSignal::ReadBinarySelf( istream& is )
 {
- return(datatype);
+  mSignal.ReadBinary( is );
 }
 
-
-void GenericVisualization::SetVisualizationType(BYTE my_vistype)
+void
+VisSignal::WriteBinarySelf( ostream& os ) const
 {
- vis_type=my_vistype;
+  mSignal.WriteBinary( os );
 }
 
-const GenericSignal *GenericVisualization::GetSignal() const
+template<>
+bool
+GenericVisualization::Send( CFGID::CFGID inCfgID, const string& inCfgString )
 {
- return(signal);
+  MessageHandler::PutMessage( *Environment::Operator, VisCfg( mSourceID, inCfgID, inCfgString ) );
+  Environment::Operator->flush();
+  return *Environment::Operator;
 }
 
-
-const char *GenericVisualization::GetMemoText() const
+bool
+GenericVisualization::Send( const string& s )
 {
- return(memotext);
+  MessageHandler::PutMessage( *Environment::Operator, VisMemo( mSourceID, s ) );
+  Environment::Operator->flush();
+  return *Environment::Operator;
 }
 
-
-bool GenericVisualization::SendMemo2Operator(const char *string)
+bool
+GenericVisualization::Send( const GenericSignal* s )
 {
-#ifdef ABSTRACT_CORECOMM
-  ostream& op = Environment::Corecomm->GetOperatorStream();
-  int contentLength = ::strlen( string ) + 2; // source id and terminating 0.
-  if( contentLength > ( 1 << 15 ) )
-    throw __FILE__ ": Message exceeds maximum length";
-  op.put( COREMSG_DATA ).put( VISTYPE::MEMO );
-  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
-  op.put( sourceID );
-  op.write( string, contentLength - 1 );
-  return op.flush();
-#else
-CORECOMM* corecomm = Environment::Corecomm;
-// ... temporary glue code
-
-TWinSocketStream        *pStream;
-COREMESSAGE     *coremessage;
-short   *valueptr;
-BYTE    *dataptr;
-int     s, t;
-
- // error and consistency checking
- if (!corecomm)              return(false);       // core communicatino not defined
- if (!corecomm->Connected()) return(false);       // no connection to the core module
- if (strlen(string)+1+4 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
-
- pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor(VISTYPE_MEMO);
- coremessage->SetLength(strlen(string)+1+4);         // set the length of the coremessage (strlen(..)+1 to account for delimiting 0 byte)
-
- dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
- // construct the header of the core message
- dataptr[0]=sourceID;                        // write the source ID into the coremessage
- strcpy(&dataptr[1], string);                // copy the string into the coremessage
-
- coremessage->SendCoreMessage(pStream);     // and send it out
- delete coremessage;
- delete pStream;
-
- return(true);
-#endif // ABSTRACT_CORECOMM
+  MessageHandler::PutMessage( *Environment::Operator, VisSignal( mSourceID, *s ) );
+  Environment::Operator->flush();
+  return *Environment::Operator;
 }
-
 
 // send signal to operator with decimation
-bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal, int decimation)
+bool
+GenericVisualization::Send2Operator( const GenericIntSignal* inSignal, int inDecimation )
 {
-unsigned short    new_channels;
-GenericIntSignal  *new_signal;
-bool    ret;
-int     ch, count;
-size_t  samp;
- // determine how many samples the decimated signal has
- // there might be a better way of doing this :-(
- // only do this in the beginning or if decimation or signal size changes
- if ((new_samples == -1) || (my_signal->MaxElements() != stored_maxelements) || (decimation != stored_decimation))
-    {
-    new_samples=0;
-    for (samp=0; samp<my_signal->MaxElements(); samp+=decimation)
-     new_samples++;
-    stored_maxelements=my_signal->MaxElements();
-    stored_decimation=decimation;
-    }
-
- new_channels=my_signal->Channels();
- // new_samples=my_signal->MaxElements/decimation;
- // create the new signal
- new_signal=new GenericIntSignal((unsigned short)new_channels, new_samples);
- // copy the content with decimation
- for (ch=0; ch<new_channels; ch++)
-  {
-  count=0;
-  for (samp=0; samp<my_signal->MaxElements(); samp+=decimation)
-   {
-   new_signal->SetValue(ch, count, my_signal->GetValue(ch, samp));
-   count++;
-   }
-  }
-
- ret=Send2Operator(new_signal);
- delete new_signal;
-
- return(ret);
+  GenericSignal decimatedSignal( SignalProperties( inSignal->Channels(),
+                                     inSignal->MaxElements() / inDecimation, 2 ) );
+  for( size_t channel = 0; channel < inSignal->Channels(); ++channel )
+    for( size_t sample = 0; sample < inSignal->GetNumElements( channel ); sample += inDecimation )
+      decimatedSignal( channel, sample / inDecimation ) = ( *inSignal )( channel, sample );
+  return Send( &decimatedSignal );
 }
 
-
-bool GenericVisualization::Send2Operator(const GenericIntSignal *my_signal)
-{
-#ifdef ABSTRACT_CORECOMM
-  ostream& op = Environment::Corecomm->GetOperatorStream();
-  ostringstream oss;
-  my_signal->WriteBinary( oss );
-  int contentLength = oss.str().size() + 1;
-  if( contentLength > ( 1 << 15 ) )
-    throw __FILE__ ": Message exceeds maximum length";
-  op.put( COREMSG_DATA ).put( VISTYPE::GRAPH );
-  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
-  op.put( sourceID );
-  op.write( oss.str().data(), contentLength - 1 );
-  return op.flush();
-#else
-CORECOMM* corecomm = Environment::Corecomm;
-// ... temporary glue code
-
-TWinSocketStream        *pStream;
-unsigned short  *short_dataptr;
-COREMESSAGE     *coremessage;
-short   *valueptr;
-BYTE    *dataptr;
-
- // error and consistency checking
- if (my_signal->Channels() > 255)      return(false);       // Channels > 255
- if (my_signal->MaxElements() > 65535) return(false);       // samples per channel > 65535
- if (!corecomm)                      return(false);       // core communication not defined
- if (!corecomm->Connected())         return(false);       // no connection to the core module
- if ((long)my_signal->Channels()*(long)my_signal->MaxElements()+9 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
-
- pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor( vis_type );
- coremessage->SetLength(sizeof(unsigned short)*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
-
- dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
- // construct the header of the core message
- dataptr[0]=sourceID;                   // write the source ID into the coremessage
- dataptr[1]=DATATYPE_INTEGER;           // write the datatype into the coremessage
- dataptr[2]=(BYTE)my_signal->Channels();// write the # of channels into the coremessage
- short_dataptr=(unsigned short *)&dataptr[3];
- *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
- // write the actual data into the coremessage
- for (size_t t=0; t<my_signal->Channels(); t++)
-  for (size_t s=0; s<my_signal->MaxElements(); s++)
-   {
-   valueptr=(short *)&dataptr[5];
-   valueptr[t*my_signal->MaxElements()+s]=my_signal->GetValue(t, s);
-   }
-
- coremessage->SendCoreMessage(pStream);     // and send it out
- delete coremessage;
- delete pStream;
-
- return(true);
-#endif // ABSTRACT_CORECOMM
-}
-
-
-bool GenericVisualization::Send2Operator(const GenericSignal *my_signal)
-{
-#ifdef ABSTRACT_CORECOMM
-  ostream& op = Environment::Corecomm->GetOperatorStream();
-  ostringstream oss;
-  my_signal->WriteBinary( oss );
-  int contentLength = oss.str().size() + 1;
-  if( contentLength > ( 1 << 15 ) )
-    throw __FILE__ ": Message exceeds maximum length";
-  op.put( COREMSG_DATA ).put( VISTYPE::GRAPH );
-  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
-  op.put( sourceID );
-  op.write( oss.str().data(), contentLength - 1 );
-  return op.flush();
-#else
-CORECOMM* corecomm = Environment::Corecomm;
-// ... temporary glue code
-
-TWinSocketStream        *pStream;
-unsigned short  *short_dataptr;
-COREMESSAGE     *coremessage;
-BYTE    *dataptr, *dataptr2;
-signed char exponent;
-float   value, value2;
-
- // error and consistency checking
- if (my_signal->Channels() > 255)      return(false);       // Channels > 255
- if (my_signal->MaxElements() > 65535) return(false);       // samples per channel > 65535
- if (!corecomm)                      return(false);       // core communication not defined
- if (!corecomm->Connected())         return(false);       // no connection to the core module
- if ((long)my_signal->Channels()*(long)my_signal->MaxElements()+8 > COREMESSAGE_MAXBUFFER) return(false);     // data too big for a coremessage
-
- pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor( vis_type );
- coremessage->SetLength(3*(unsigned short)my_signal->Channels()*(unsigned short)my_signal->MaxElements()+5);         // set the length of the coremessage
-
- dataptr=coremessage->GetBufPtr( coremessage->GetLength() );
- // construct the header of the core message
- dataptr[0]=sourceID;                   // write the source ID into the coremessage
- dataptr[1]=DATATYPE_FLOAT;             // write the datatype into the coremessage
- dataptr[2]=(BYTE)my_signal->Channels();  // write the # of channels into the coremessage
- short_dataptr=(unsigned short *)&dataptr[3];
- *short_dataptr=(unsigned short)my_signal->MaxElements(); // write the # of samples into the coremessage
- // write the actual data into the coremessage
- for (size_t t=0; t<my_signal->Channels(); t++)
-  for (size_t s=0; s<my_signal->MaxElements(); s++)
-   {
-   value=my_signal->GetValue(t, s);
-   if (value != 0)
-      {
-      exponent=(int)(ceil(log10(fabs(value))));
-      value2=value/pow10((int)exponent);
-      exponent-=4;
-      value2*=10000;
-      }
-   else
-      {
-      value2=0;
-      exponent=1;
-      }
-   dataptr2=&dataptr[5+3*t*my_signal->MaxElements()+3*s];
-   *((short *)&dataptr2[0])=(short)value2;
-   *((signed char *)&dataptr2[2])=exponent;
-   }
-
- coremessage->SendCoreMessage(pStream);     // and send it out
- delete coremessage;
- delete pStream;
-
- return(true);
-#endif // ABSTRACT_CORECOMM
-}
-
-bool GenericVisualization::SendCfg2Operator( BYTE sourceID, BYTE cfgID, int cfgValue )
+bool
+GenericVisualization::SendCfg2Operator( int sourceID, int cfgID, int cfgValue )
 {
   return SendCfg2Operator( sourceID, cfgID, AnsiString( cfgValue ).c_str() );
 }
 
-bool GenericVisualization::SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString)
+bool
+GenericVisualization::SendCfg2Operator( int sourceID, int cfgID, const char* cfgString )
 {
-#ifdef ABSTRACT_CORECOMM
-  ostream& op = Environment::Corecomm->GetOperatorStream();
-  int contentLength = ::strlen( cfgString ) + 3;
-  if( contentLength > ( 1 << 15 ) )
-    throw __FILE__ ": Message exceeds maximum length";
-  op.put( COREMSG_DATA ).put( VISTYPE::VISCFG );
-  op.put( contentLength & 0xff ).put( ( contentLength >> 8 ) & 0xff );
-  op.put( sourceID ).put( cfgID );
-  op.write( cfgString, contentLength - 2 );
-  return op.flush();
-#else
-CORECOMM* corecomm = Environment::Corecomm;
-// ... temporary glue code
-
-TWinSocketStream        *pStream;
-COREMESSAGE     *coremessage;
-BYTE    *dataptr, *dataptr2;
-int     s, t;
-signed char exponent;
-float   value, value2;
-
- if (!corecomm)                    return(false);       // socket not defined
- if (!corecomm->Connected())       return(false);       // no connection to the core module
-
- // error and consistency checking
- if (strlen(cfgString) > 255) return(false);
-
- pStream=new TWinSocketStream(corecomm->GetSocket(), 5000);
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_DATA);
- coremessage->SetSuppDescriptor(VISTYPE_VISCFG);
- coremessage->SetLength(2+strlen(cfgString)+4);         // set the length of the coremessage
-
- dataptr=(BYTE *)coremessage->GetBufPtr( coremessage->GetLength() );
- // construct the header of the core message
- dataptr[0]=sourceID;                      // write the source ID into the coremessage
- dataptr[1]=cfgID;                         // write the config ID into the coremessage
- strcpy((char *)&(dataptr[2]), cfgString); // copy the config string into the coremessage
-
- coremessage->SendCoreMessage(pStream);     // and send it out
- delete coremessage;
- delete pStream;
-
- return(true);
-#endif // ABSTRACT_CORECOMM
-}
-
-
-void  GenericVisualization::ParseVisualization(const char *buffer, int length)
-{
-  sourceID = buffer[ 0 ];
-  valid = true;
+  if( mSourceID == invalidID )
+    mSourceID = sourceID;
+  else if( sourceID != mSourceID )
+    bcierr << "Source ID parameter disagrees with class instance's source ID member"
+           << endl;
+  return Send( static_cast<CFGID::CFGID>( cfgID ), cfgString );
 }
 

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include <io.h>
 #include <fcntl.h>
@@ -22,11 +23,11 @@ int main( int argc, const char** argv )
 
   if( ToolInfo[ name ] == "" )
   {
-	size_t nameBegin = string( argv[ 0 ] ).find_last_of( "/\\" );
-	ToolInfo[ name ] = ( nameBegin == string::npos ? argv[ 0 ] : argv[ 0 ] + nameBegin + 1 );
-	size_t extensionBegin = ToolInfo[ name ].rfind( "." );
-	if( extensionBegin != string::npos )
-	  ToolInfo[ name ].erase( extensionBegin );
+    size_t nameBegin = string( argv[ 0 ] ).find_last_of( "/\\" );
+    ToolInfo[ name ] = ( nameBegin == string::npos ? argv[ 0 ] : argv[ 0 ] + nameBegin + 1 );
+    size_t extensionBegin = ToolInfo[ name ].rfind( "." );
+    if( extensionBegin != string::npos )
+      ToolInfo[ name ].erase( extensionBegin );
   }
 
   ToolResult result = ToolInit();
@@ -39,14 +40,16 @@ int main( int argc, const char** argv )
 
   struct options
   {
-    bool   execute;
-    bool   help;
-    bool   version;
+    bool        execute;
+    bool        help;
+    bool        version;
+    const char* inputFile;
   } options =
   {
     true,
     false,
     false,
+    NULL,
   };
   int i = 0;
   while( ++i < argc && argv[ i ][ 0 ] == '-' )
@@ -66,8 +69,18 @@ int main( int argc, const char** argv )
             options.version = true;
             options.execute = false;
           }
+          else if( longOption == "input" )
+          {
+            if( i + 1 < argc )
+              options.inputFile = argv[ ++i ];
             else
-              toolOptions.insert( argv[ i ] );
+            {
+              options.execute = false;
+              options.help = true;
+            }
+          }
+          else
+            toolOptions.insert( argv[ i ] );
         }
         break;
       case 'v':
@@ -81,6 +94,16 @@ int main( int argc, const char** argv )
         options.help = true;
         options.execute = false;
         break;
+      case 'i':
+      case 'I':
+        if( i + 1 < argc )
+          options.inputFile = argv[ ++i ];
+        else
+        {
+          options.execute = false;
+          options.help = true;
+        }
+        break;
       default:
         toolOptions.insert( argv[ i ] );
     }
@@ -88,8 +111,19 @@ int main( int argc, const char** argv )
   if( i != argc )
     result == illegalOption;
 
+  istream* in = &cin;
+  if( options.inputFile )
+  {
+    in = new ifstream( options.inputFile );
+    if( !*in )
+    {
+      cerr << "Could not open " << options.inputFile << " for input" << endl;
+      result = fileIOError;
+    }
+  }
+
   if( result == noError && options.execute )
-    result = ToolMain( toolOptions, cin, cout );
+    result = ToolMain( toolOptions, *in, cout );
 
   options.help |= ( result == illegalOption );
   if( options.help )
@@ -98,7 +132,8 @@ int main( int argc, const char** argv )
     out << "Usage: " << ToolInfo[ name ] << " [OPTION]\n"
         << ToolInfo[ short_description ] << '\n'
         << "\t-h, --help\tDisplay this help\n"
-        << "\t-v, --version\tOutput version information\n";
+        << "\t-v, --version\tOutput version information\n"
+        << "\t-i <file>, --input\tGet input from file\n";
     for( int i = firstOption; ToolInfo[ i ] != ""; ++i )
       out << '\t' << ToolInfo[ i ] << '\n';
     out.flush();
@@ -111,7 +146,9 @@ int main( int argc, const char** argv )
     cerr << "Error writing to standard output" << endl;
     result = genericError;
   }
-  if( !cin )
+  if( options.inputFile )
+    delete in;
+  if( result != fileIOError && !*in )
   {
     cerr << "Illegal data format" << endl;
     result = illegalInput;

@@ -24,8 +24,9 @@
 #include <iostream>
 
 #ifndef BCI_TOOL
-# include "UCoreComm.h"
 # include "UEnvironment.h"
+# include "MessageHandler.h"
+# include "UStatus.h"
 #endif
 
 using namespace std;
@@ -59,7 +60,6 @@ bci_ostream::bci_stringbuf::SetFlushHandler( bci_ostream::flush_handler f )
   else
     f( str() );
   on_flush = f;
-  num_flushes = 0;
 }
 
 int
@@ -106,18 +106,21 @@ BCIError::LogicError( const std::string& message )
 // on the core module side.
 struct StatusMessage
 {
- void operator()( int code, const std::string& text )
+ void operator()( const std::string& text, int code )
  {
-  static CORECOMM* corecomm = NULL;
-  if( corecomm == NULL )
-    corecomm = ::Environment::Corecomm;
+  static ostream* op = NULL;
+  if( op == NULL )
+    op = ::Environment::Operator;
 
-  ostringstream status;
-  status << code << " " << text;
   // If the connection to the operator does not work, fall back to a local
   // error display.
-  if( !( corecomm && corecomm->SendStatus( status.str().c_str() ) ) && code >= 400 )
-#if !defined( WIN32 ) || defined( __CONSOLE__ )
+  if( op != NULL )
+  {
+    MessageHandler::PutMessage( *op, STATUS( text.c_str(), code ) );
+    op->flush();
+  }
+  if( ( !op || !*op ) && code >= 400 )
+#if !defined( _WIN32 ) || defined( __CONSOLE__ )
     cerr << text << endl;
 #else
     ::MessageBox( NULL, text.c_str(), "BCI2000 Error",
@@ -130,27 +133,27 @@ void
 BCIError::Warning( const std::string& message )
 {
   if( message.length() > 1 )
-    StatusMessage( 301, string( "Warning: " ) + message.substr( 0, message.length() - 1 ) );
+    StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), 301 );
 }
 
 void
 BCIError::ConfigurationError( const std::string& message )
 {
   if( message.length() > 1 )
-    StatusMessage( 408, message.substr( 0, message.length() - 1 ) );
+    StatusMessage( message.substr( 0, message.length() - 1 ), 408 );
 }
 
 void
 BCIError::RuntimeError( const std::string& message )
 {
   if( message.length() > 1 )
-    StatusMessage( 409, message.substr( 0, message.length() - 1 ) );
+    StatusMessage( message.substr( 0, message.length() - 1 ), 409 );
 }
 
 void
 BCIError::LogicError( const std::string& message )
 {
   if( message.length() > 1 )
-    StatusMessage( 499, message.substr( 0, message.length() - 1 ) );
+    StatusMessage( message.substr( 0, message.length() - 1 ), 499 );
 }
 #endif // BCI_TOOL

@@ -27,71 +27,15 @@
 
 #include "UGenericSignal.h"
 
+#include "LengthField.h"
 #include "defines.h" // for DATATYPE::FLOAT / DATATYPE::INTEGER
 #include <iostream>
 #include <iomanip>
 #include <math.h>
 
-// This will go into a numtypes header some day.
-typedef unsigned char  uint8;
-typedef signed char    sint8;
-typedef unsigned short uint16;
-typedef signed short   sint16;
-typedef unsigned int   uint32;
-typedef signed int     sint32;
-
-template<typename T>
-inline
-std::ostream& _put_int( std::ostream& os, const T& x )
-{
-  // This will result in little endian encoding regardless of the target
-  // system's byte ordering.
-  T t = x;
-  for( int i = 0; i < sizeof( T ); ++i )
-  {
-    os.put( t & 0xff );
-    t >>= 8;
-  }
-  return os;
-}
-
-// This will result in an error for types not considered.
-template<typename T>
-std::ostream& _put_is_not_implemented_for_type();
-
-template<typename T>
-inline
-std::ostream& put( std::ostream& os, const T& x )
-{
-  return std::numeric_limits<T>::is_integer ?
-           _put_int( os, x ) :
-           _put_is_not_implemented_for_type<T>();
-}
-
-template<typename T>
-inline
-std::istream& _get_int( std::istream& is, T& x )
-{
-  x = 0;
-  for( int i = 0; i < sizeof( T ); ++i )
-  {
-    x |= ( T( is.get() ) << ( i * 8 ) );
-  }
-  return is;
-}
-
-// This will result in an error for types not considered.
-template<typename T>
-std::istream& _get_is_not_implemented_for_type();
-
-template<typename T>
-inline
-std::istream& get( std::istream& is, T& x )
-{
-  return std::numeric_limits<T>::is_integer ?
-           _get_int( is, x ) :
-           _get_is_not_implemented_for_type<T>();
-}
+#if( sizeof( signed short ) != 2 || sizeof( signed char ) != 1 )
+# error This file depends on 2-byte shorts and 1-byte chars.
+#endif
 
 bool
 SignalProperties::SetNumElements( size_t inChannel, size_t inElements )
@@ -113,22 +57,21 @@ SignalProperties::WriteToStream( std::ostream& os ) const
 std::ostream&
 SignalProperties::WriteBinary( std::ostream& os ) const
 {
-  uint32 channels = Channels(),
-         maxElem = MaxElements(),
-         depth = GetDepth();
-  put( os, channels );
-  put( os, maxElem );
-  put( os, depth );
+  LengthField<2>( Channels() ).WriteBinary( os );
+  LengthField<2>( MaxElements() ).WriteBinary( os );
+  LengthField<1>( GetDepth() ).WriteBinary( os );
   return os;
 }
 
 std::istream&
 SignalProperties::ReadBinary( std::istream& is )
 {
-  uint32 channels, maxElem, depth;
-  get( is, channels );
-  get( is, maxElem );
-  get( is, depth );
+  LengthField<2> channels,
+                 maxElem;
+  LengthField<1> depth;
+  channels.ReadBinary( is );
+  maxElem.ReadBinary( is );
+  depth.ReadBinary( is );
   *this = SignalProperties( channels, maxElem, depth );
   return is;
 }
@@ -200,20 +143,20 @@ GenericSignal::WriteToStream( std::ostream& os ) const
 std::ostream&
 GenericSignal::WriteBinary( std::ostream& os ) const
 {
-  uint8 datatype = ( depth >= sizeof( float ) ? DATATYPE::FLOAT : DATATYPE::INTEGER );
-  put( os, uint8( datatype ) );
-  put( os, uint8( Channels() ) );
-  put( os, uint16( MaxElements() ) );
+  int datatype = ( depth >= sizeof( float ) ? DATATYPE::FLOAT : DATATYPE::INTEGER );
+  os.put( datatype );
+  LengthField<1>( Channels() ).WriteBinary( os );
+  LengthField<2>( MaxElements() ).WriteBinary( os );
   switch( datatype )
   {
     case DATATYPE::INTEGER:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < MaxElements(); ++j )
         {
-          sint16 value = 0;
+          int value = 0;
           if( j < GetNumElements( i ) )
             value = GetValue( i, j );
-          put( os, value );
+          os.put( value & 0xff ).put( value >> 8 );
         }
       break;
 
@@ -237,8 +180,8 @@ GenericSignal::WriteBinary( std::ostream& os ) const
             mantissa = ( value / pow10( exponent ) ) * 10000;
             exponent -= 4;
           }
-          put( os, sint16( mantissa ) );
-          put( os, sint8( exponent ) );
+          os.put( mantissa & 0xff ).put( mantissa >> 8 );
+          os.put( exponent & 0xff );
         }
       break;
       
@@ -251,35 +194,33 @@ GenericSignal::WriteBinary( std::ostream& os ) const
 std::istream&
 GenericSignal::ReadBinary( std::istream& is )
 {
-  uint8  datatype,
-         channels;
-  uint16 maxElem;
-  get( is, datatype );
-  get( is, channels );
-  get( is, maxElem );
+  int datatype = is.get();
+  LengthField<1> channels;
+  channels.ReadBinary( is );
+  LengthField<2> maxElem;
+  maxElem.ReadBinary( is );
   switch( datatype )
   {
     case DATATYPE::INTEGER:
       SetProperties( SignalProperties( channels, maxElem, 2 ) );
-      for( int i = 0; i < channels; ++i )
-        for( int j = 0; j < maxElem; ++j )
+      for( size_t i = 0; i < channels; ++i )
+        for( size_t j = 0; j < maxElem; ++j )
         {
-          sint16 value;
-          get( is, value );
+          signed short value = is.get();
+          value |= is.get() << 8;
           SetValue( i, j, value );
         }
       break;
 
     case DATATYPE::FLOAT:
       SetProperties( SignalProperties( channels, maxElem, sizeof( float ) ) );
-      for( int i = 0; i < channels; ++i )
-        for( int j = 0; j < maxElem; ++j )
+      for( size_t i = 0; i < channels; ++i )
+        for( size_t j = 0; j < maxElem; ++j )
         {
-          sint16 mantissa;
-          sint8  exponent;
-          get( is, mantissa );
-          get( is, exponent );
-          SetValue( i, j, mantissa * pow10( exponent ) );
+          signed short mantissa = is.get();
+          mantissa |= is.get() << 8;
+          signed char exponent = is.get();
+          SetValue( i, j, mantissa * ::pow10( exponent ) );
         }
       break;
       

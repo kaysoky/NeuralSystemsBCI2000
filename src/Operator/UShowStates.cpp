@@ -20,10 +20,8 @@ void __fastcall TfShowStates::FormShow(TObject *Sender)
 {
 int state;
 
- try{
  StateListBox->Clear();
  for (state=0; state < statelist->GetNumStates(); state++)
   StateListBox->Items->Add(statelist->GetStatePtr(state)->GetName());
- } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------

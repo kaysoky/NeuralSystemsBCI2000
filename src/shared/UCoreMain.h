@@ -32,6 +32,8 @@
  *                        MessageHandler classes, jm                          *
  * V0.30 - 05/27/2004 - Removed multi-threading,                              *
  *                      unified code for all modules except operator, jm      *
+ *                    - Made sure that only a single instance of each module  *
+ *                      type will run at a time, jm                           *
  ******************************************************************************/
 #ifndef UCoreMainH
 #define UCoreMainH
@@ -125,6 +127,7 @@ private:     // User declarations
         void             ProcessBCIAndWindowsMessages();
         void             HandleResting();
 
+        HANDLE           mMutex;
         bool             mTerminated;
         PARAMLIST        mParamlist;
         STATELIST        mStatelist;

@@ -28,6 +28,7 @@ typedef enum ToolResult
   noError = 0,
   illegalOption,
   illegalInput,
+  fileIOError,
   genericError
 } ToolResult;
 

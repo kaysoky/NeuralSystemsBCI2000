@@ -2,7 +2,6 @@
 #pragma package(smart_init)
 #include <stdio.h>
 #include "PCHIncludes.h"
-#include "UCoreComm.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UsrEnvDispatcher.h"
@@ -115,7 +114,7 @@ void UsrEnvDispatcher::Initialize(PARAMLIST * pParamList, UsrEnv * pUsrEnv, STAT
       m_bWaiting = false;
     }
   }
-  catch( TooGeneralCatch& )
+  catch(...)
   {
     m_iUsrElementOnTime  = 10;
     m_iUsrElementOffTime = 3;

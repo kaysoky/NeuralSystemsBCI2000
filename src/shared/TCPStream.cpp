@@ -99,9 +99,9 @@ tcpsocket::set_address( const char* ip, u_short port )
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sin_family = AF_INET;
   m_address.sin_port = ::htons( port );
-  if( !ip || *ip == '\0' || *ip == '*' )
+  if( ip && *ip == '*' ) // A "*" as IP addess means "any local address" (for bind() ).
     m_address.sin_addr.s_addr = INADDR_ANY;
-  if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
+  else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
   {
     ::hostent* host = ::gethostbyname( ip );
     if( host && host->h_addr_list )
@@ -141,6 +141,20 @@ tcpsocket::is_open() const
   return true;
 }
 
+bool
+tcpsocket::connected()
+{
+  bool connected = !m_listening;
+  if( connected && is_open() && can_read() )
+  {
+    // Check for a connection reset by the peer.
+    char c;
+    int result = ::recv( m_handle, &c, sizeof( c ), MSG_PEEK );
+    connected = ( result != 0 && result != SOCKET_ERROR );
+  }
+  return connected && is_open();
+}
+
 void
 tcpsocket::close()
 {
@@ -167,8 +181,8 @@ tcpsocket::wait_for_write( int timeout, bool return_on_accept )
 
 bool
 tcpsocket::wait_for_read( const tcpsocket::set_of_instances& inSockets,
-                          int inTimeout,
-                          bool return_on_accept )
+                          int   inTimeout,
+                          bool  return_on_accept )
 {
   const int msecs_per_sec = 1000;
   ::timeval  timeout = { inTimeout / msecs_per_sec, inTimeout % msecs_per_sec },
@@ -331,7 +345,7 @@ tcpbuf::showmanyc()
   // Are there any data available in the streambuffer?
   int result = egptr() - gptr();
   // Are there data waiting in the socket buffer?
-  if( result < 1 && m_socket->can_read() && underflow() != traits_type::eof() )
+  if( result < 1 && m_socket && m_socket->can_read() && underflow() != traits_type::eof() )
     result = egptr() - gptr();
   return result;
 }
@@ -356,8 +370,8 @@ tcpbuf::underflow()
   // Quite likely, this is due to a situation where all data is transmitted
   // but underflow() is called from the stream via snextc() to examine whether
   // there is an eof pending. Making sure that the last transferred byte is
-  // either a terminating character or read with get(), not with read(), will
-  // probably fix the situation.
+  // either a terminating character or reading it with get(), not with read(),
+  // will probably fix the situation.
   // The reason for this problem is fundamental because there is no "maybe eof"
   // alternative to returning eof().
   if( m_socket->wait_for_read( m_timeout ) )
@@ -377,15 +391,6 @@ tcpbuf::underflow()
 int
 tcpbuf::overflow( int c )
 {
-  if( !pbase() )
-  {
-    char* buf = new char[ buf_size ];
-    if( !buf )
-      return traits_type::eof();
-    setp( buf, buf + buf_size );
-  }
-
-
   if( sync() == traits_type::eof() )
     return traits_type::eof();
   if( c != traits_type::eof() )
@@ -399,7 +404,18 @@ tcpbuf::overflow( int c )
 int
 tcpbuf::sync()
 {
+  if( !m_socket )
+    return traits_type::eof();
+    
   char* write_ptr = pbase();
+  if( !write_ptr )
+  {
+    char* buf = new char[ buf_size ];
+    if( !buf )
+      return traits_type::eof();
+    setp( buf, buf + buf_size );
+    write_ptr = pbase();
+  }
   while( m_socket->wait_for_write( m_timeout ) && write_ptr < pptr() )
     write_ptr += m_socket->write( write_ptr, pptr() - write_ptr );
   if( !m_socket->is_open() )

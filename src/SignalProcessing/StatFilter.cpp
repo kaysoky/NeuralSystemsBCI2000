@@ -10,7 +10,7 @@
 # include <stdio.h>
 #endif // USE_LOGFILE
 
-#include "UCoreComm.h"
+#include "MessageHandler.h"
 #include "UState.h"
 #include "BCIDirectry.h"
 #include "ClassFilter.h"
@@ -20,6 +20,8 @@
 #ifdef USE_LOGFILE
 FILE* estat;
 #endif // USE_LOGFILE
+
+using namespace std;
 
 RegisterFilter( StatFilter, 2.E );
 
@@ -177,9 +179,8 @@ void StatFilter::Preflight( const SignalProperties& inSignalProperties,
   // filter works for input signals of any size.
   /* no checking done */
 
-  // This filter does not use its output signal argument, so we specify
-  // minimal requirements.
-  outSignalProperties = SignalProperties( 0, 0, 0 );
+  // This filter connects its input signal through to the output.
+  outSignalProperties = inSignalProperties;
 }
 
 // **************************************************************************
@@ -284,8 +285,6 @@ void StatFilter::Initialize()
         stat->SetTrendControl( i, BaseHits[i], Trend_Win_Lth );
       }
     }
-
-
 
     init_flag++;
   }
@@ -410,13 +409,9 @@ void StatFilter::Resting()
     intercept_flag= 0;
 
     // change the value of the parameter
+    // Parameters changed from the "Resting" function will now automatically
+    // be published to the operator module, jm.
 
-    // jm: removed probably unwanted trailing \r characters from parameter values
-    // (they would show up in the operator if the "Config" button was pressed
-    // after "Suspend").
-    // Instead the two lines, one might consider writing
-    // Parameter( "UD_A" ) = ud_intercept;
-    // and do the rounding before the output.
     sprintf(memotext, "%.2f", ud_intercept);
     Parameter( "UD_A" ) = memotext;
 
@@ -428,17 +423,6 @@ void StatFilter::Resting()
 
     sprintf(memotext, "%.2f", lr_gain);
     Parameter( "LR_B" ) = memotext;
-
-
-    Corecomm->StartSendingParameters();
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("UD_A") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("UD_B") );
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("LR_A") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("LR_B") );
-
-    Corecomm->StopSendingParameters();
   }
   if( trend_flag > 0 )         // return trends to operator
   {
@@ -449,7 +433,6 @@ void StatFilter::Resting()
 
     sprintf(memotext, "%.4f",cur_lr_stat.aper);
     Parameter( "HorizInterceptProp" ) = memotext;
-
 
     //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
     sprintf(memotext, "%.2f", cur_stat.pix);
@@ -468,13 +451,6 @@ void StatFilter::Resting()
       sprintf(memotext, "%.2f", cur_stat.TargetPC[i]);
       Parameter( "BaselineHits", i, 1 ) = memotext;
     }
-
-    Corecomm->StartSendingParameters();
-
-    Corecomm->PublishParameter( Parameters->GetParamPtr("InterceptProportion") );
-    Corecomm->PublishParameter( Parameters->GetParamPtr("DesiredPixelsPerSec") );
-
-    Corecomm->StopSendingParameters();
   }
 
   classmode= Parameter("ClassMode");   // ytest classifier type
@@ -489,9 +465,6 @@ void StatFilter::Resting()
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
       Parameter("MUD",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-    Corecomm->StartSendingParameters();
-    Corecomm->PublishParameter( Parameters->GetParamPtr("MUD") );
-    Corecomm->StopSendingParameters();
 fprintf(estat,"Horizontal weights \n");
     for(int i=0;i<clsf->n_hmat;i++)
     {
@@ -501,9 +474,6 @@ fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
       sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
       Parameter("MLR",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
-    Corecomm->StartSendingParameters();
-    Corecomm->PublishParameter( Parameters->GetParamPtr("MLR") );
-    Corecomm->StopSendingParameters();
   }
 }
 
@@ -514,8 +484,8 @@ fprintf(estat,"%2d %8.5f \n",i,clsf->wtmat[1][i]);
 //             output - output signal for this filter
 // Returns:    N/A
 // **************************************************************************
-void StatFilter::Process( const GenericSignal *SignalE,
-                                GenericSignal */*SignalF*/ )
+void StatFilter::Process( const GenericSignal *input,
+                                GenericSignal *output )
 {
   static int recno= 1;
   static  float old_ud_intercept=0, old_ud_gain=0, old_lr_intercept=0, old_lr_gain=0;
@@ -532,9 +502,9 @@ void StatFilter::Process( const GenericSignal *SignalE,
   {
     int sample= 0;
 
-    for(size_t in_channel=0; in_channel<SignalE->Channels(); in_channel++)
+    for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
     {
-      float value= SignalE->GetValue(in_channel, sample);
+      float value= input->GetValue(in_channel, sample);
 
       if (in_channel == 0)
       {
@@ -545,7 +515,6 @@ void StatFilter::Process( const GenericSignal *SignalE,
 
         old_ud_intercept= ud_intercept;
         old_ud_gain= ud_gain;
-
       }
 
       intercept_flag= 1;
@@ -643,6 +612,7 @@ void StatFilter::Process( const GenericSignal *SignalE,
 
         }
   }
+  *output = *input;
 }
 
 

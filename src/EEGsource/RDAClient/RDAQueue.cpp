@@ -19,8 +19,14 @@
 
 #include "RDAQueue.h"
 
+#ifdef HAVE_BCIERR
+# include "UBCIError.h"
+#endif // HAVE_BCIERR
+
 #include <assert>
 #include <string>
+
+using namespace std;
 
 RDAQueue::RDAQueue()
 : bufferSize( initialBufferSize ),
@@ -30,18 +36,28 @@ RDAQueue::RDAQueue()
   lastMessageType( RDAStop )
 {
   connectionInfo.blockNumber = 0;
-  connectionInfo.numChannels = numChannelsGuess;
-  connectionInfo.samplingInterval = samplingIntervalGuess;
+  connectionInfo.numChannels = 0;
+  connectionInfo.samplingInterval = 0;
   connectionInfo.blockDuration = blockDurationGuess;
   connectionInfo.channelResolutions
-    = std::vector<double>( connectionInfo.numChannels, channelResolutionGuess );
+    = vector<double>( connectionInfo.numChannels, 0 );
 
   if( receiveBuffer == NULL )
+  {
     failstate |= memoryFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not allocate receive buffer" << endl;
+#endif // HAVE_BCIERR
+  }
 
   ::WSADATA ignored;
   if( ::WSAStartup( 2, &ignored ) )
+  {
     failstate |= netinitFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not initialize Windows sockets" << endl;
+#endif // HAVE_BCIERR
+  }
 }
 
 RDAQueue::~RDAQueue()
@@ -60,11 +76,14 @@ RDAQueue::open( const char* inHostName )
   if( is_open() )
     close();
 
-  std::string hostName = inHostName;
+  string hostName = inHostName;
   socketHandle = ::socket( PF_INET, SOCK_STREAM, 0 );
   if( socketHandle == SOCKET_ERROR )
   {
     failstate |= netinitFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not create client socket" << endl;
+#endif // HAVE_BCIERR
     socketHandle = NULL;
     return;
   }
@@ -86,12 +105,18 @@ RDAQueue::open( const char* inHostName )
   if( host == NULL )
   {
     failstate |= netinitFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not resolve host name" << endl;
+#endif // HAVE_BCIERR
     close();
     return;
   }
   if( host->h_addr_list == NULL )
   {
     failstate |= netinitFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not resolve host name" << endl;
+#endif // HAVE_BCIERR
     close();
     return;
   }
@@ -101,6 +126,9 @@ RDAQueue::open( const char* inHostName )
         == SOCKET_ERROR )
   {
     failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+    bcierr << "Could not connect to " << hostName << endl;
+#endif // HAVE_BCIERR
     close();
     return;
   }
@@ -115,14 +143,18 @@ RDAQueue::close()
   ::closesocket( socketHandle );
   socketHandle = NULL;
   lastMessageType = RDAStop;
+  clear();
 }
 
 const short&
 RDAQueue::front()
 {
-  while( empty() )
+  while( empty() && failstate == ok )
     ReceiveData();
-  return std::queue<short>::front();
+  if( failstate == ok )
+    return queue<short>::front();
+  static short null = 0;
+  return null;
 }
 
 void
@@ -150,6 +182,9 @@ RDAQueue::ReceiveData()
     else if( result != 1 )
     {
       failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+      bcierr << "Could not read data" << endl;
+#endif // HAVE_BCIERR
       return;
     }
   }
@@ -182,21 +217,32 @@ RDAQueue::ReceiveData()
       {
         const RDA_MessageData* dataMsg
           = reinterpret_cast<const RDA_MessageData*>( msg );
-        if( dataMsg->nBlock != ++connectionInfo.blockNumber )
+        switch( lastMessageType )
         {
-          if( lastMessageType != RDAData )
-          {
+          case RDAData:
+            if( ( ++connectionInfo.blockNumber & blockNumberMask )
+                != ( dataMsg->nBlock & blockNumberMask ) )
+            {
+              failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+              bcierr << "RDA block numbers not in sequence" << endl;
+#endif // HAVE_BCIERR
+              lastMessageType = RDAStop;
+            }
+            break;
+          case RDAStart:
             connectionInfo.blockNumber = dataMsg->nBlock;
             connectionInfo.blockDuration = dataMsg->nPoints * connectionInfo.samplingInterval;
-          }
-          else
-          {
+            break;
+          case RDAStop:
             failstate |= connectionFail;
-            lastMessageType = RDAStop;
+#ifdef HAVE_BCIERR
+            bcierr << "RDA server sent data block before start block" << endl;
+#endif // HAVE_BCIERR
             return;
-          }
+          default:
+            assert( false );
         }
-
 
         // Unlike explicitly stated in RecorderRDA's RDA_MessageData declaration,
         // the "Markers[]" array is neither an array nor located where the
@@ -243,6 +289,9 @@ RDAQueue::ReceiveData()
       break;
     default:
       failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+      bcierr << "Unknown RDA message type" << endl;
+#endif // HAVE_BCIERR
   }
   lastMessageType = RDAMessageType( msg->nType );
 }
@@ -267,6 +316,9 @@ RDAQueue::GetServerMessage()
     if( nResult < 0 )
     {
       failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+      bcierr << "Could not receive data" << endl;
+#endif // HAVE_BCIERR
       return;
     }
     nRemLength -= nResult;
@@ -278,6 +330,9 @@ RDAQueue::GetServerMessage()
   if( header->guid != GUID_RDAHeader )
   {
     failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+    bcierr << "RDA message doesn't have correct GUID" << endl;
+#endif // HAVE_BCIERR
     return;
   }
   nRemLength = header->nSize - sizeof( RDA_MessageHeader );
@@ -288,6 +343,9 @@ RDAQueue::GetServerMessage()
     if( receiveBuffer == NULL )
     {
       failstate |= memoryFail;
+#ifdef HAVE_BCIERR
+      bcierr << "Could not adapt size of receive buffer" << endl;
+#endif // HAVE_BCIERR
       return;
     }
   }
@@ -300,6 +358,9 @@ RDAQueue::GetServerMessage()
     if( nResult <= 0 )
     {
       failstate |= connectionFail;
+#ifdef HAVE_BCIERR
+      bcierr << "Error receiving data" << endl;
+#endif // HAVE_BCIERR
       return;
     }
     nRemLength -= nResult;

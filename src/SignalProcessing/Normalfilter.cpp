@@ -18,7 +18,7 @@ using namespace std;
 FILE *Normalfile;
 #endif // USE_LOGFILE
 
-RegisterFilter( NormalFilter, 2.E );
+RegisterFilter( NormalFilter, 2.F );
 
 // **************************************************************************
 // Function:   NormalFilter
@@ -35,9 +35,9 @@ NormalFilter::NormalFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Filtering float UD_A=  5.0 "
-      "5.0  -100.0  100.0 // Normal Filter Up / Down Intercept",
+      "5.0  -100.0  100.0 // Normal Filter Up/Down Intercept",
     "Filtering float UD_B=  5.0 "
-      "5.0  -100.0  100.0 // Normal Filter Up / Down Slope",
+      "5.0  -100.0  100.0 // Normal Filter Up/Down Slope",
     "Filtering float LR_A= -5.0 "
       "-5.0  -100.0  100.0 // Normal Filter Left/Right Intercept",
     "Filtering float LR_B= 5.0 "
@@ -79,18 +79,17 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
                                     SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  PreflightCondition( Parameter( "NumControlSignals" ) == 2 );
-  /* The LR_A etc. parameters don't allow for any generalization here. */
+  /* No mutual range dependendies appear to exist. */
 
   // Resource availability checks.
-  /* The normalizer filter seems not to depend on external resources. */
+  /* The normalizer filter appears not to depend on external resources. */
 
   // Input signal checks.
   for( size_t channel = 0; channel < inSignalProperties.Channels(); ++channel )
     PreflightCondition( inSignalProperties.GetNumElements( channel ) > 0 );
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( Parameter( "NumControlSignals" ), 1 );
+  outSignalProperties = SignalProperties( cNumControlSignals, 1 );
 }
 
 // **************************************************************************

@@ -2,6 +2,7 @@
 #define RandomNumberADCH
 
 #include "GenericADC.h"
+#include "UBCITime.h"
 
 class RandomNumberADC : public GenericADC
 {
@@ -22,6 +23,7 @@ class RandomNumberADC : public GenericADC
   short  DCoffset;
   size_t sinechannel, sinechannelx;
   bool   modulateamplitude;
+  BCITIME mLasttime;
 };
 
 #endif // RandomNumberADCH

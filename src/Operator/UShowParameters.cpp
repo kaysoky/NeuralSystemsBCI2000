@@ -23,7 +23,6 @@ __fastcall TfShowParameters::TfShowParameters(TComponent* Owner)
 
 void __fastcall TfShowParameters::FormShow(TObject *Sender)
 {
- try{
  ParameterListBox->Clear();
  // show all the parameters
  for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
@@ -36,7 +35,6 @@ void __fastcall TfShowParameters::FormShow(TObject *Sender)
   else
      ParameterListBox->Checked[parameter]=false;
   }
- } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 
@@ -150,7 +148,6 @@ TIniFile        *my_registry;
 // sets the tag value for the parameters; to be used in subsequent calls to Load/SaveParameterList
 void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
 {
- try{
  // tag each parameter, if the registry "says so"
  // these tags will be used as a filter by Load/SaveParameterList
  for (size_t parameter=0; parameter < paramlist->GetNumParameters(); parameter++)
@@ -160,7 +157,6 @@ void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
   else
      paramlist->GetParamPtr(parameter)->tag=false;
   }
- } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 
@@ -169,7 +165,6 @@ void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
 void __fastcall TfShowParameters::FormClose(TObject *Sender,
       TCloseAction &Action)
 {
- try{
  // store the filter setting for the parameters that shouldn't be loaded/saved
  // in the registry
  for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
@@ -179,7 +174,6 @@ void __fastcall TfShowParameters::FormClose(TObject *Sender,
   else
      SetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype, 0);
   }
- } catch( TooGeneralCatch& ) {;}
 }
 //---------------------------------------------------------------------------
 

@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 
-#include "UCoreComm.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UTrialSequence.h"
@@ -80,17 +79,15 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
 {
 int     ret;
-
- corecomm=new_corecomm;
 
  // load and create all potential targets
  ret=LoadPotentialTargets(plist->GetParamPtr("TargetDefinitionFile")->GetValue());
  if (ret == 0)
     {
-    corecomm->SendStatus("416 P3 Speller: Could not open target definition file");
+    bcierr << "P3 Speller: Could not open target definition file" << std::endl;
     return(0);
     }
 
@@ -103,29 +100,12 @@ int     ret;
  // vis->SendCfg2Operator(SOURCEID_SPELLERTRIALSEQ, CFGID_WINDOWTITLE, "Speller Trial Sequence");
 
  ret=1;
- try
-  {
-  ontime=atoi(plist->GetParamPtr("OnTime")->GetValue());
-  offtime=atoi(plist->GetParamPtr("OffTime")->GetValue());
-  TextColor=(TColor)strtol(plist->GetParamPtr("TextColor")->GetValue(), NULL, 16);
-  TextColorIntensified=(TColor)strtol(plist->GetParamPtr("TextColorIntensified")->GetValue(), NULL, 16);
-  TextToSpell=AnsiString(plist->GetParamPtr("TextToSpell")->GetValue());
-  if (atoi(plist->GetParamPtr("OnlineMode")->GetValue()) == 1)
-     onlinemode=true;
-  else
-     onlinemode=false;
-  }
- catch( TooGeneralCatch& )
-  {
-  ret=0;
-  ontime=10;
-  offtime=3;
-  TextColor=clYellow;
-  TextColorIntensified=clRed;
-  TextToSpell="G";
-  chartospell="G";
-  onlinemode=false;
-  }
+ ontime = Parameter( "OnTime" );
+ offtime = Parameter( "OffTime" );
+ TextColor=(TColor)strtol( Parameter( "TextColor" ), NULL, 16 );
+ TextColorIntensified=(TColor)strtol( Parameter( "TextColorIntensified" ), NULL, 16 );
+ TextToSpell = ( const char* )Parameter( "TextToSpell" );
+ onlinemode = ( int )Parameter( "OnlineMode" );
 
  // get the active targets as a subset of all the potential targets
  if (userdisplay->activetargets) delete userdisplay->activetargets;

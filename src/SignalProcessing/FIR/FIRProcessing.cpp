@@ -2,8 +2,7 @@
 #pragma hdrstop
 #include <vcl.h>
 //---------------------------------------------------------------------------
-USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
-USEFORM("..\UMain.cpp", fMain);
+USEFORM("..\..\shared\UCoreMain.cpp", fMain);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -12,7 +11,6 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "SignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
-         Application->CreateForm(__classid(TfVisConfig), &fVisConfig);
          Application->Run();
         }
         catch (Exception &exception)

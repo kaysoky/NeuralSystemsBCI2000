@@ -135,7 +135,15 @@ FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
     mpStatevector = new STATEVECTOR( &mStatelist, true );
+  bool wasRunning = mpStatevector->GetStateValue( "Running" );
   mpStatevector->ReadBinary( arIn );
+  bool isRunning = mpStatevector->GetStateValue( "Running" );
+#if 0
+  if( !wasRunning && isRunning )
+    mpFilter->Initialize();
+#endif
+  if( wasRunning && !isRunning )
+    mpFilter->Resting();
   return true;
 }
 
@@ -179,12 +187,18 @@ FilterWrapper::HandleGenericSignal( istream& arIn )
       Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, NULL );
       /* no break */
     case Environment::processing:
-      mpFilter->Process( &inputSignal, &mOutputSignal );
-      if( __bcierr.flushes() > 0 )
-        break;
-      PutMessage( mrOut, mOutputSignal );
-      if( mpStatevector->GetStateVectorLength() > 0 )
-        PutMessage( mrOut, *mpStatevector );
+      {
+        bool wasRunning = mpStatevector->GetStateValue( "Running" );
+        mpFilter->Process( &inputSignal, &mOutputSignal );
+        if( __bcierr.flushes() > 0 )
+          break;
+        bool isRunning = mpStatevector->GetStateValue( "Running" );
+        if( isRunning )
+          PutMessage( mrOut, mOutputSignal );
+        if( isRunning || wasRunning )
+          if( mpStatevector->GetStateVectorLength() > 0 )
+            PutMessage( mrOut, *mpStatevector );
+      }
       break;
     default:
       bcierr << "Unknown Environment phase" << endl;

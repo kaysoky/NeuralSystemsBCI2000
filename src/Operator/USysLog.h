@@ -22,6 +22,8 @@ public:		// User declarations
         SYSLOG::SYSLOG();
         SYSLOG::~SYSLOG();
         void    SYSLOG::ShowSysLog();
+        void    SYSLOG::HideSysLog();
+        bool    SYSLOG::Visible() const;
         bool    SYSLOG::Close( bool force = false );
         void    SYSLOG::AddSysLogEntry(const char *text);
         void    SYSLOG::AddSysLogEntry(const char *text, int mode);

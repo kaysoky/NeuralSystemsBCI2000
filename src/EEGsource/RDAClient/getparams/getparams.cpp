@@ -97,7 +97,7 @@ int main( int argc, char** argv )
   {
     paramlist[ "SourceChOffset" ].SetValue( "0", i );
     paramlist[ "SourceChGain" ].SetValue( str( q.info().channelResolutions[ i ] ), i );
-    paramlist[ "TransmitChList" ].SetValue( str( i ), i );
+    paramlist[ "TransmitChList" ].SetValue( str( i + 1 ), i );
     paramlist[ "SpatialFilterKernal" ].SetValue( "1", i, i );
   }
   paramlist[ "SourceChOffset" ].SetValue( "0", numInputChannels - 1 );

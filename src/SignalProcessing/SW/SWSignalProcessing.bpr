@@ -3,38 +3,38 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="SignalProcessing.exe"/>
-    <OBJFILES value="obj\SignalProcessing.obj obj\UMain.obj obj\UFilterHandling.obj 
-      obj\UBCItime.obj obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
+    <PROJECT value="SWSignalProcessing.exe"/>
+    <OBJFILES value="obj\SWSignalProcessing.obj obj\UBCItime.obj obj\UBitRate.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
       obj\SetBaseline.obj obj\FBArteCorrection.obj obj\SWFilter.obj 
       obj\Normalfilter.obj obj\SpatialFilter.obj obj\CalibrationFilter.obj 
       obj\UGenericFilter.obj obj\UBCIError.obj obj\UEnvironment.obj 
       obj\AverageDisplay.obj obj\FFTFilter.obj obj\FFTLibWrap.obj obj\Color.obj 
-      obj\MeasurementUnits.obj"/>
+      obj\MeasurementUnits.obj obj\MessageHandler.obj obj\TCPStream.obj 
+      obj\UFilterHandling.obj obj\UCoreMain.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) ..\UMain.dfm"/>
+    <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value="vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..\..\shared;..\..\shared;..\..\shared;..;..;..\fftlib;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..\..\shared;..\..\shared;..\..\shared;..;..;..\fftlib;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value="_DEBUG;MODTYPE=2"/>
     <SYSDEFINES value="NO_STRICT"/>
-    <MAINSOURCE value="SignalProcessing.cpp"/>
-    <INCLUDEPATH value="..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <MAINSOURCE value="SWSignalProcessing.cpp"/>
+    <INCLUDEPATH value="..\;..;..\..\Modules;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;..\..\Modules;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -55,13 +55,9 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="SignalProcessing.cpp" FORMNAME="" UNITNAME="SignalProcessing" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="UFilterHandling.cpp" FORMNAME="" UNITNAME="UFilterHandling" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SWSignalProcessing.cpp" FORMNAME="" UNITNAME="SWSignalProcessing" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\SHARED\UCoreMessage.cpp" FORMNAME="" UNITNAME="UCoreMessage.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UGenericVisualization.cpp" FORMNAME="" UNITNAME="UGenericVisualization.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -83,6 +79,10 @@
       <FILE FILENAME="..\fftlib\FFTLibWrap.cpp" FORMNAME="" UNITNAME="FFTLibWrap" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UFilterHandling.cpp" FORMNAME="" UNITNAME="UFilterHandling" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UCoreMain.cpp" FORMNAME="fMain" UNITNAME="UCoreMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -119,75 +119,83 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=25
-Item0=..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item1=..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\..\Application\SlowWaveApp\Presentation\src\Utils;..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\fftlib;..\..;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item6=..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item7=..\;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item8=..\;..\..\SHARED;..;$(BCB)\include;$(BCB)\include\vcl
-Item9=..\..\SHARED;..\;$(BCB)\include;$(BCB)\include\vcl
-Item10=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item12=..\..\shared\V0.17;..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item13=..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item14=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item15=..\..\shared\V0.15;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item16=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item17=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item18=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item19=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item20=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item21=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item22=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
-Item23=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
-Item24=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Count=28
+Item0=..\;..;..\..\Modules;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..\..\Modules;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\Modules;..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item4=..;..\fftlib;..\..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\..\Application\SlowWaveApp\Presentation\src\Utils;..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\fftlib;..\..;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item9=..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item10=..\;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\;..\..\SHARED;..;$(BCB)\include;$(BCB)\include\vcl
+Item12=..\..\SHARED;..\;$(BCB)\include;$(BCB)\include\vcl
+Item13=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item14=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item15=..\..\shared\V0.17;..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item16=..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item17=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item18=..\..\shared\V0.15;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item19=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item20=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item21=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item22=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item23=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item24=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item25=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item26=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item27=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=25
-Item0=..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\..\Application\SlowWaveApp\Presentation\src\Utils;..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item4=..\fftlib;..\..;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item7=..\;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item8=..\;..\..\SHARED;..;$(BCB)\lib\obj;$(BCB)\lib
-Item9=..\..\SHARED;..\;$(BCB)\lib\obj;$(BCB)\lib
-Item10=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item12=..\..\shared\V0.17;..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item13=..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item14=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item15=..\..\shared\V0.15;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item16=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item17=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item18=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item19=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item20=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item21=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item22=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
-Item23=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
-Item24=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Count=28
+Item0=..\;..;..\..\Modules;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..\..\Modules;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\Modules;..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\;..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..;..\fftlib;..\..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\..\Application\SlowWaveApp\Presentation\src\Utils;..\;..\fftlib;..\..;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\fftlib;..\..;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item10=..\;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\;..\..\SHARED;..;$(BCB)\lib\obj;$(BCB)\lib
+Item12=..\..\SHARED;..\;$(BCB)\lib\obj;$(BCB)\lib
+Item13=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item14=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item15=..\..\shared\V0.17;..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item16=..\..\shared\V0.16;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item17=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item18=..\..\shared\V0.15;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item19=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item20=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item21=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item22=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.13;..\..\..\..\EMG_Explorer\V1.40;C:\Program Files\Borland\CBuilder5\Projects;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item23=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item24=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item25=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item26=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item27=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=8
-Item0=_DEBUG
-Item1=_DEBUG;USE_FILTER_REGISTRY
-Item2=_DEBUG;BCI2000_STRICT;USE_FFT;USE_FILTER_REGISTRY
-Item3=_DEBUG;BCI2000_STRICT;USE_FFT
-Item4=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;USE_FFT;USE_FILTER_REGISTRY
-Item5=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;USE_FFT
-Item6=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
-Item7=_DEBUG;BCI2000_STRICT
+Count=10
+Item0=_DEBUG;MODTYPE=2
+Item1=_DEBUG;DONT_CATCH_ALL;MODTYPE=2
+Item2=_DEBUG
+Item3=_DEBUG;USE_FILTER_REGISTRY
+Item4=_DEBUG;BCI2000_STRICT;USE_FFT;USE_FILTER_REGISTRY
+Item5=_DEBUG;BCI2000_STRICT;USE_FFT
+Item6=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;USE_FFT;USE_FILTER_REGISTRY
+Item7=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT;USE_FFT
+Item8=_DEBUG;SIGNAL_BACK_COMPAT;BCI2000_STRICT
+Item9=_DEBUG;BCI2000_STRICT
 
 [HistoryLists\hlIntOutputDir]
 Count=1

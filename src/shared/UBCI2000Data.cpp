@@ -383,9 +383,7 @@ int  pos, idx, cur_runnr, runnr, firstrun;
  while (runnr <= cur_runnr)
   {
   sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
-  try {
   fp=fopen(cur_filename, "rb");
-  } catch( TooGeneralCatch& ) {fp=NULL;}
   if (fp)
      {
      fclose(fp);
@@ -440,9 +438,7 @@ int  pos, idx, cur_runnr, runnr, lastrun;
  while (true)
   {
   sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
-  try {
   fp=fopen(cur_filename, "rb");
-  } catch( TooGeneralCatch& ) {fp=NULL;}
   if (!fp)
      {
      lastrun=runnr-1;
@@ -490,9 +486,7 @@ int  pos, idx, cur_runnr, lastrun, res;
 
  // now, create the file name for the specified run
  sprintf(cur_filename, "%s%02d.dat", prefix, runnr);
- try {
  fp=fopen(cur_filename, "rb");
- } catch( TooGeneralCatch& ) {fp=NULL;}
 
  // could not open file
  if (!fp) return(0);

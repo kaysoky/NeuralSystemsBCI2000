@@ -38,8 +38,8 @@ void RDAClientADC::Preflight( const SignalProperties&,
   RDAQueue preflightQueue;
   size_t numInputChannels = 0;
   preflightQueue.open( Parameter( "HostName" ) );
-  if( !preflightQueue.is_open() )
-    bcierr << "Cannot establish connection to the recording software" << endl;
+  if( !( preflightQueue && preflightQueue.is_open() ) )
+    bcierr << "Cannot establish a connection to the recording software" << endl;
   else
   {
     numInputChannels = preflightQueue.info().numChannels + 1;

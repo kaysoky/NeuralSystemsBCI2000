@@ -75,7 +75,7 @@ int ret;
   // if there was no error, add the dictionary to the potential targets
   if (ret == 1)
      AddDictionary2PotentialTargets();
- } catch( TooGeneralCatch& ) {ret=0;}
+ } catch(...) {ret=0;}
 
  // possibly replace this with something better
  if (ret == 0) Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);

@@ -96,34 +96,21 @@ int     ret;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
- try
-  {
-  Wx=  Parameter( "WinXpos" );
-  Wy=  Parameter( "WinYpos" );
-  Wxl= Parameter( "WinWidth" );
-  Wyl= Parameter( "WinHeight" );
+ Wx=  Parameter( "WinXpos" );
+ Wy=  Parameter( "WinYpos" );
+ Wxl= Parameter( "WinWidth" );
+ Wyl= Parameter( "WinHeight" );
 
-  BackgroundColor=( TColor )strtol( Parameter( "BackgroundColor" ), NULL, 16 );
-  userdisplay->TargetWidth=Parameter( "TargetWidth" );
-  userdisplay->TargetHeight=Parameter( "TargetHeight" );
-  userdisplay->TargetTextHeight=Parameter( "TargetTextHeight" );
-  }
- catch( TooGeneralCatch& )
-  {
-  BackgroundColor=clDkGray;
-  userdisplay->TargetWidth=5;
-  userdisplay->TargetTextHeight=10;
-  Wx=5;
-  Wy=5;
-  Wxl=512;
-  Wyl=512;
-  }
+ BackgroundColor=( TColor )strtol( Parameter( "BackgroundColor" ), NULL, 16 );
+ userdisplay->TargetWidth=Parameter( "TargetWidth" );
+ userdisplay->TargetHeight=Parameter( "TargetHeight" );
+ userdisplay->TargetTextHeight=Parameter( "TargetTextHeight" );
 
  // initialize the between-trial sequence
  targetsequence->Initialize(Parameters);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(Parameters, Statevector, Corecomm, userdisplay);
+ trialsequence->Initialize(Parameters, Statevector, userdisplay);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);

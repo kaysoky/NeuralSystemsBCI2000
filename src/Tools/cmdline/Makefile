@@ -13,6 +13,9 @@
 #              for offline data analysis.
 ####################################################################
 
+AND = &&
+OR  = ||
+
 TARGETS = obj\bci_tool.lib \
           bci_dat2stream.exe \
           bci_prm2stream.exe \
@@ -26,9 +29,13 @@ TARGETS = obj\bci_tool.lib \
           FIRclassfilter.exe \
           P3TemporalFilter.exe \
           UPeakDetector.exe \
-          SWFilter.exe
+          SWFilter.exe \
+          Segmenting.exe \
+          SegmentFIR.exe \
+          DropSegments.exe \
+          SegmentPower.exe
           
-BCIOBJ =  obj\bci_tool.obj \
+BCIOBJ  = obj\bci_tool.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \
@@ -41,11 +48,12 @@ BCIOBJ =  obj\bci_tool.obj \
           obj\MessageHandler.obj \
           obj\MeasurementUnits.obj \
           obj\getmem.obj \
-          obj\getfir.obj
+          obj\getfir.obj \
+          obj\BoolExpression.obj
 
 BCIROOT = ..\..
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SWSignalProcessing
+SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SWSignalProcessing;${SIGROOT}\Analysis
 PATHOBJ = .\obj
 PATHCPP = .;${BCIROOT}\shared;${SIGPROC}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
@@ -56,7 +64,7 @@ CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
 
 CPP = ${CC} ${CFLAGS} -D${DEFINES} -I${INCLUDEPATH}
 LD  = bcc32 -L${LIBPATH}
-AR  = tlib /C /P64 /0 >nul
+AR  = tlib /C /P128 /0 >nul # If this fails, try a larger value for the /P argument.
 RM  = del 
 
 .autodepend

@@ -8,14 +8,16 @@
 
 class NormalFilter : public GenericFilter
 {
-private:
-       float ud_a;
-       float ud_b;
-       float lr_a;
-       float lr_b;
-       bool visualize;
-       class GenericVisualization *vis;
-public:
+ private:
+  static const int cNumControlSignals = 2;
+  float ud_a,
+        ud_b,
+        lr_a,
+        lr_b;
+  bool  visualize;
+  class GenericVisualization *vis;
+
+ public:
           NormalFilter();
   virtual ~NormalFilter();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;

@@ -21,13 +21,8 @@
 
 #include <sstream>
 
-// Temporary dummy class as a replacement for '...' in 'catch(...)'.
 #ifdef DONT_CATCH_ALL
-// Don't catch anything.
-typedef class NeverThrown{} TooGeneralCatch;
-#else // DONT_CATCH_ALL
-// Catch VCL exceptions.
-typedef class Exception TooGeneralCatch;
+# error Please remove DONT_CATCH_ALL from the project file under "Conditionals".
 #endif // DONT_CATCH_ALL
 
 // Info added to error output.

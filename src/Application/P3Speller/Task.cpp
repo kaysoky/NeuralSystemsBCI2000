@@ -133,8 +133,6 @@ int     ret, numerpsamples, sampleblocksize;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
- try
-  {
   Wx=  Parameter( "WinXpos" );
   Wy=  Parameter( "WinYpos" );
   Wxl= Parameter( "WinWidth" );
@@ -154,25 +152,12 @@ int     ret, numerpsamples, sampleblocksize;
   FInit= (const char*)Parameter("FileInitials");
   SSes = (const char*)Parameter("SubjectSession");
   SName= (const char*)Parameter("SubjectName");
-  }
- catch( TooGeneralCatch& )
-  {
-  BackgroundColor=clDkGray;
-  userdisplay->TargetWidth=5;
-  userdisplay->TargetTextHeight=10;
-  Wx=5;
-  Wy=5;
-  Wxl=512;
-  Wyl=512;
-  postsetinterval=60;
-  presetinterval=60;
-  Corecomm->SendStatus("303 One of the parameters needed by the task not found");
-  }
 
  // we have to make sure that we wait long enough after a set of n intensifications
  // to get all the responses
  if (postsetinterval*sampleblocksize <= numerpsamples)
-    Corecomm->SendStatus("302 PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)");
+    bciout << "PostSetInterval shorter than time derived by NumERPSamples (we have to wait long enough to get the final response)"
+           << std::endl;
 
  // open an output file for the task log
  current_directory(cur_dir);    // store current directory
@@ -196,7 +181,7 @@ int     ret, numerpsamples, sampleblocksize;
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);
 
  // initialize the within-trial sequence
- trialsequence->Initialize( Parameters, Statevector, Corecomm, userdisplay);
+ trialsequence->Initialize( Parameters, Statevector, userdisplay);
 
  // show the user window
  userdisplay->form->Show();

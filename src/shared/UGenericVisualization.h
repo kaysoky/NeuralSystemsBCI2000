@@ -14,69 +14,127 @@
 //          Separated VISUAL and VISCFGLIST into a file belonging to
 //          the operator module.
 //
+//          May 28, 2004, jm:
+//          Introduced VisMemo, VisSignal, and VisCfg objects to allow for
+//          centralization of message processing in the MessageHandler class.
+//
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericVisualizationH
 #define UGenericVisualizationH
 
-#include <ScktComp.hpp>
 #include <sstream>
 #include "defines.h"
+#include "UGenericSignal.h"
 
-class GenericIntSignal;
-class GenericSignal;
-class PARAM;
+class VisBase
+{
+  public:
+    VisBase()
+    : mSourceID( 0 ) {}
+    VisBase( int inSourceID )
+    : mSourceID( inSourceID ) {}
+    virtual ~VisBase() {}
+
+    class std::istream& ReadBinary( class std::istream& );
+    class std::ostream& WriteBinary( class std::ostream& ) const;
+    virtual void ReadBinarySelf( class std::istream& ) = 0;
+    virtual void WriteBinarySelf( class std::ostream& ) const = 0;
+    
+    int GetSourceID() const { return mSourceID; }
+
+  private:
+    int mSourceID;
+};
+
+class VisCfg : public VisBase
+{
+  enum { invalidID = -1 };
+  public:
+    VisCfg()
+    : mCfgID( invalidID ) {}
+    VisCfg( int inSourceID, int inCfgID, const std::string& inCfgValue )
+    : VisBase( inSourceID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
+    virtual void ReadBinarySelf( class std::istream& );
+    virtual void WriteBinarySelf( class std::ostream& ) const;
+
+    int GetCfgID() const { return mCfgID; }
+    const std::string& GetCfgValue() const { return mCfgValue; }
+
+  private:
+    int mCfgID;
+    std::string mCfgValue;
+};
+
+class VisMemo : public VisBase
+{
+  public:
+    VisMemo() {}
+    VisMemo( int inSourceID, const std::string& inMemo )
+    : VisBase( inSourceID ), mMemo( inMemo ) {}
+    virtual void ReadBinarySelf( class std::istream& );
+    virtual void WriteBinarySelf( class std::ostream& ) const;
+
+    const std::string& GetMemoText() const { return mMemo; }
+
+  private:
+    std::string mMemo;
+};
+
+class VisSignal : public VisBase
+{
+  public:
+    VisSignal() {}
+    VisSignal( int inSourceID, const GenericSignal& inSignal )
+    : VisBase( inSourceID ), mSignal( inSignal ) {}
+    VisSignal( const GenericSignal& inSignal )
+    : VisBase( 0 ), mSignal( inSignal ) {}
+    virtual void ReadBinarySelf( class std::istream& );
+    virtual void WriteBinarySelf( class std::ostream& ) const;
+
+    const GenericSignal& GetSignal() const { return mSignal; }
+    operator const GenericSignal&() const { return mSignal; }
+
+  private:
+    GenericSignal mSignal;
+};
 
 class GenericVisualization
 {
-protected:
-        int     SendBufBytes(TCustomWinSocket *Socket, const char *buf, int length);
-        GenericSignal    *signal;
-        char   memotext[512];
-        BYTE   sourceID;
-        BYTE   datatype;
-        BYTE   vis_type;
-        int    stored_decimation, new_samples;
-        size_t stored_maxelements;
-public:
-    GenericVisualization();
-    GenericVisualization( BYTE sourceID, BYTE visType );
-    ~GenericVisualization();
+  enum { invalidID = -1 };
+  public:
+    GenericVisualization() : mSourceID( invalidID ) {}
+    GenericVisualization( int sourceID ) : mSourceID( sourceID ) {}
+    GenericVisualization( int sourceID, int /*visType*/ ) : mSourceID( sourceID ) {}
+    ~GenericVisualization() {}
 
-    // Some convenience declarations.
-    bool Send( CFGID::CFGID cfgID, const char* cfgString )
-             { return SendCfg2Operator( sourceID, cfgID, cfgString ); }
+    // Setters and Getters.
+    void SetSourceID( int sourceID ) { mSourceID = sourceID; }
+    int  GetSourceID() const         { return mSourceID; }
+
     template<typename T> bool Send( CFGID::CFGID cfgID, const T& cfgValue );
-    bool Send( const char* memoString )
-             { return SendMemo2Operator( memoString ); }
-    bool Send( const std::string& memoString )
-             { return Send( memoString.c_str() ); }
-    bool Send( GenericSignal* signal )
-             { return Send2Operator( signal ); }
-    bool Send( GenericIntSignal* signal )
+    template<>           bool Send( CFGID::CFGID cfgID, const std::string& );
+    bool Send( const std::string& memoString );
+    bool Send( const GenericSignal* signal );
+    bool Send( const GenericIntSignal* signal )
              { return Send2Operator( signal ); }
 
-        // sends the whole signal to the operator
-        bool    Send2Operator(const GenericIntSignal *signal);
-        // sends only certain channels, as defined in the parameter, to the operator
-        int     Send2Operator(const GenericIntSignal *signal, const PARAM *channellistparam);
-        bool    Send2Operator(const GenericIntSignal *my_signal, int decimation);
-        // the same functions for GenericSignals
-        bool    Send2Operator(const GenericSignal *signal);
-        int     Send2Operator(const GenericSignal *signal, const PARAM *channellistparam);
-        bool    SendMemo2Operator(const char *string);
-        bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, const char *cfgString);
-        bool    SendCfg2Operator(BYTE sourceID, BYTE cfgID, int cfgValue);
-        void    ParseVisualization(const char *buffer, int length);
-        void    SetSourceID(BYTE my_sourceID);
-        BYTE    GetSourceID() const;
-        void    SetDataType(BYTE my_datatype);
-        BYTE    GetDataType() const;
-        const   GenericSignal    *GetSignal() const;
-        const char *GetMemoText() const;
-        void    SetVisualizationType(BYTE my_vistype);
-        BYTE    GetVisualizationType() const { return vis_type; }
-        bool    valid;
+    bool Send2Operator( const GenericIntSignal* signal )
+             { return Send2Operator( signal, 1 ); }
+    bool Send2Operator( const GenericIntSignal*, int decimation );
+    bool Send2Operator( const GenericSignal* signal )
+             { return Send( signal ); }
+    bool SendMemo2Operator( const char* memoString )
+             { return Send( memoString ); }
+    bool SendCfg2Operator( int sourceID, int cfgID, const char* cfgString );
+    bool SendCfg2Operator( int sourceID, int cfgID, int cfgValue );
+
+  private:
+    int  mSourceID;
 };
+
+template<>
+bool
+GenericVisualization::Send( CFGID::CFGID inCfgID, const std::string& inCfgString );
 
 template<typename T>
 bool
@@ -84,7 +142,7 @@ GenericVisualization::Send( CFGID::CFGID cfgID, const T& cfgValue )
 {
   std::ostringstream oss;
   oss << cfgValue;
-  return Send( cfgID, oss.str().c_str() );
+  return Send<std::string>( cfgID, oss.str() );
 }
 
 #endif // UGenericVisualizationH

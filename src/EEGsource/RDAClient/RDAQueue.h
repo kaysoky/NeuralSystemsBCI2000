@@ -55,9 +55,8 @@ class RDAQueue : public std::queue<short>
     };
     static const size_t initialBufferSize = 1024;
     static const int blockDurationGuess = 40000; // microseconds
-    static const int samplingIntervalGuess = 10000;
-    static const int numChannelsGuess = 8;
-    static const int channelResolutionGuess = 1000;
+    static const int blockNumberMask = 0x00ffffff; // what we consider significant,
+                                                   // i.e. wrap-around safe
     static const int RDAPortNumber = 51234;
 
     void ReceiveData();

@@ -13,7 +13,7 @@ PROJECTS = D2Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe P3Speller.exe \
   RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe DASSource.exe DT2000.exe \
   Neuroscan.exe NISource.exe RandomNumber.exe RDAClient.exe operat.exe \
   ARSignalProcessing.exe DummySignalProcessing.exe FIRProcessing.exe \
-  P3SignalProcessing.exe PeakDetectSignalProcessing.exe SignalProcessing.exe \
+  P3SignalProcessing.exe PeakDetectSignalProcessing.exe SWSignalProcessing.exe \
   BCIBatch.exe BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCITimeFreq.exe \
   BrainVisionImporter.exe calibgen.exe maxifred.exe getparams.exe
 #------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ PeakDetectSignalProcessing.exe: SignalProcessing\PeakDetector\PeakDetectSignalPr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-SignalProcessing.exe: SignalProcessing\SWSignalProcessing\SignalProcessing.bpr
+SWSignalProcessing.exe: SignalProcessing\SW\SWSignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

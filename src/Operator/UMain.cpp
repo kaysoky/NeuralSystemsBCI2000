@@ -46,1292 +46,801 @@
  *                      to core modules at the same time)                     *
  * V0.26 - 04/11/2002 - Updated to Borland C++ Builder 6.0                    *
  *                      improved error handling                               *
+ * V0.27 - 06/11/2004 juergen.mellinger@uni-tuebingen.de:                     *
+ *                    - replaced CORECOMM and COREMESSAGE with TCPStream and  *
+ *                      MessageHandler classes,                               *
+ *                    - cleared up management of system state,                *
+ *                    - reduced number of receiving threads to one            *
  ******************************************************************************/
-
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <Registry.hpp>
+#include "UMain.h"
 
 #include "..\shared\defines.h"
-#include "operator.h"
-
+#include "Operator.h"
 #include "USysStatus.h"
 #include "USysLog.h"
 #include "UScript.h"
 #include "UAbout.h"
 #include "UShowStates.h"
-#include "UCoreMessage.h"
 #include "UOperatorCfg.h"
 #include "UPreferences.h"
 #include "UConnectionInfo.h"
-#include "UVisConfig.h"
 #include "UOperatorUtils.h"
 #include "UBCIError.h"
+#include "UStatus.h"
+#include "USysCommand.h"
+#include "UBCITime.h"
 
-#include "UMain.h"
-//---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma link "Trayicon"
-#pragma link "trayicon"
 #pragma resource "*.dfm"
 
 using namespace std;
 
 TfMain *fMain;
 
-SYSSTATUS       sysstatus;
-TCriticalSection *sendrecv_critsec=NULL;
-
-int modules[] =
+__fastcall
+TfMain::TfMain( TComponent* Owner )
+: TForm( Owner ),
+  mTerminated( false ),
+  mScript( &mParameters, &mStates, &mSyslog, this ),
+  mpReceivingThread( new ReceivingThread( this ) ),
+  mMessageHandler( *this )
 {
-  COREMODULE_EEGSOURCE,
-  COREMODULE_SIGPROC,
-  COREMODULE_APPLICATION
-};
+  const struct
+  {
+    tcpsocket*    socket;
+    int           port;
+    tcpstream*    stream;
+    SocketHandler acceptHandler,
+                  disconnectHandler;
+  } socketInfo[] =
+  {
+    #define INFO_ENTRY( module ) \
+    {                                                                           \
+      &m##module##Socket,                                                       \
+      module##Port,                                                             \
+      &m##module,                                                               \
+      &TfMain::module##SocketAccept,                                            \
+      &TfMain::module##SocketDisconnect                                         \
+    },
+    INFO_ENTRY( EEGSource )
+    INFO_ENTRY( SigProc )
+    INFO_ENTRY( App )
+  };
+  for( int i = 0; i < sizeof( socketInfo ) / sizeof( *socketInfo ); ++i )
+  {
+    tcpsocket* socket = socketInfo[ i ].socket;
+    socket->open( "*", socketInfo[ i ].port );
+    if( !socket->is_open() )
+      __bcierr << "Operator: Could not open socket for listening on port "
+               << socketInfo[ i ].port
+               << endl;
+    mSockets.insert( socket );
+    mAcceptHandlers[ socket ] = socketInfo[ i ].acceptHandler;
+    mDisconnectHandlers[ socket ] = socketInfo[ i ].disconnectHandler;
+    mStreams[ socket ] = socketInfo[ i ].stream;
+    mConnectionStates[ socket ] = false;
+  }
 
-
-//---------------------------------------------------------------------------
-class TCoreRecvThread : public  TServerClientThread
-{
-  protected:
-        int     coretype;
-  public:
-    __fastcall TCoreRecvThread(bool CreateSuspended, TServerClientWinSocket* ASocket, int coretype);
-    void __fastcall ClientExecute( void );
-};
-
-TCoreRecvThread *source_thread, *sigproc_thread, *application_thread;
-
-//---------------------------------------------------------------------------
-__fastcall TCoreRecvThread::TCoreRecvThread(bool CreateSuspended, TServerClientWinSocket* ASocket, int new_coretype)
-: TServerClientThread( CreateSuspended, ASocket )
-{
- coretype=new_coretype;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TCoreRecvThread::ClientExecute( void )
-{
-int                     ret;
-TWinSocketStream        *pStream;
-COREMESSAGE             *coremessage;
-
-  pStream=new TWinSocketStream(ClientSocket, 5000);
-  while(!Terminated && ClientSocket->Connected )
-   {
-   try
-    {
-    if (pStream->WaitForData(1000))
-       {
-          COREMESSAGE message;
-          sendrecv_critsec->Acquire();
-          int result = message.ReceiveCoreMessage( pStream );
-          sendrecv_critsec->Release();
-          if( result != ERRCORE_NOERR )
-            Terminate();
-          else
-          {
-            message.ParseMessage();
-            if( message.GetDescriptor() == COREMSG_DATA )
-            {
-              struct {
-                COREMESSAGE* cm; int ct;
-                void __fastcall DoIt() { fMain->HandleCoreMessage( cm, ct ); }
-              } s = { &message, coretype };
-              Synchronize( s.DoIt );
-            }
-            else
-              fMain->HandleCoreMessage( &message, coretype );
-
-            switch( coretype )
-            {
-              case COREMODULE_EEGSOURCE:
-                ++sysstatus.NumMessagesRecv1;
-                break;
-              case COREMODULE_SIGPROC:
-                ++sysstatus.NumMessagesRecv2;
-                break;
-              case COREMODULE_APPLICATION:
-                ++sysstatus.NumMessagesRecv3;
-                break;
-            }
-          }
-       }
-    }
-   catch( TooGeneralCatch& )
-    {
-    if (!Terminated) Terminate();
-    }
-   }
-
-  if (coretype == COREMODULE_EEGSOURCE)
-     {
-     source_thread=NULL;
-     // Synchronize();
-     if (fMain->SourceSocket->Socket->ActiveConnections > 0)
-        if (fMain->SourceSocket->Socket->Connections[0])
-           fMain->SourceSocket->Socket->Connections[0]->Close();
-     }
-  if (coretype == COREMODULE_SIGPROC)
-     {
-     sigproc_thread=NULL;
-     if (fMain->SigProcSocket->Socket->ActiveConnections > 0)
-        if (fMain->SigProcSocket->Socket->Connections[0])
-           fMain->SigProcSocket->Socket->Connections[0]->Close();
-      }
-  if (coretype == COREMODULE_APPLICATION)
-      {
-      application_thread=NULL;
-      if (fMain->ApplicationSocket->Socket->ActiveConnections > 0)
-         if (fMain->ApplicationSocket->Socket->Connections[0])
-            fMain->ApplicationSocket->Socket->Connections[0]->Close();
-      }
-
-  delete pStream;
-}
-//---------------------------------------------------------------------------
-
-
-void TfMain::SendSysCommand(char *syscmdbuf, TCustomWinSocket *socket)
-{
-FILE *fp;
-COREMESSAGE *coremessage;
-
- // (do not receive while we send; concurrency problems)
- sendrecv_critsec->Acquire();
-
- // send a system command to a module
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_SYSCMD);
- coremessage->SetLength(strlen(syscmdbuf)+1);
- sprintf(coremessage->GetBufPtr( strlen( syscmdbuf ) + 1 ), "%s", syscmdbuf);
- coremessage->SendCoreMessage(socket);
- delete coremessage;
-
- sendrecv_critsec->Release();
-}
-
-
-void TfMain::ShutdownSystem()
-{
- if (fMain->SourceSocket->Socket->ActiveConnections > 0)
-    if (fMain->SourceSocket->Socket->Connections[0])
-       fMain->SourceSocket->Socket->Connections[0]->Close();
- if (fMain->SigProcSocket->Socket->ActiveConnections > 0)
-    if (fMain->SigProcSocket->Socket->Connections[0])
-       fMain->SigProcSocket->Socket->Connections[0]->Close();
- if (fMain->ApplicationSocket->Socket->ActiveConnections > 0)
-    if (fMain->ApplicationSocket->Socket->Connections[0])
-       fMain->ApplicationSocket->Socket->Connections[0]->Close();
-}
-
-//---------------------------------------------------------------------------
-__fastcall TfMain::TfMain(TComponent* Owner)
-: TForm(Owner),
-  syslog( NULL )
-{
-  if( sendrecv_critsec == NULL )
-    sendrecv_critsec=new TCriticalSection();
-  OperatorUtils::RestoreControl( this );
+  if( __bcierr.flushes() == 0 )
+  {
+    OperatorUtils::RestoreControl( this );
+    mPreferences.GetDefaultSettings();
+    Application->OnIdle = ApplicationIdleHandler;
+  }
+  else
+    Terminate();
 }
 
 __fastcall TfMain::~TfMain()
 {
-  delete sendrecv_critsec;
   OperatorUtils::SaveControl( this );
+  delete mpReceivingThread;
 }
-//---------------------------------------------------------------------------
 
-
-// **************************************************************************
-// Function:   ApplicationSocketClientDisconnect
-// Purpose:    is called when the application core module disconnects
-// Parameters: Socket - pointer to the socket that connects to the client
-// Returns:    N/A
-// **************************************************************************
-void __fastcall TfMain::ApplicationSocketClientDisconnect(TObject *Sender,
-      TCustomWinSocket *Socket)
+// Send a state message containing a certain state value to the EEG source module.
+// This function is public because it is called from the SCRIPT class.
+int
+TfMain::UpdateState( const char* inName, unsigned short inValue )
 {
- if (sysstatus.ApplicationConnected)
-    {
-    sysstatus.ApplicationConnected=false;
-    fConnectionInfo->cApplicationConnected->Checked=false;
-    fConnectionInfo->tApplicationConnected->Caption="N/A";
-    }
-}
-//---------------------------------------------------------------------------
-
-
-// **************************************************************************
-// Function:   SigProcSocketClientDisconnect
-// Purpose:    is called when the signal processing core module disconnects
-// Parameters: Socket - pointer to the socket that connects to the client
-// Returns:    N/A
-// **************************************************************************
-void __fastcall TfMain::SigProcSocketClientDisconnect(TObject *Sender,
-      TCustomWinSocket *Socket)
-{
- if (sysstatus.SigProcConnected)
-    {
-    sysstatus.SigProcConnected=false;
-    fConnectionInfo->cSigProcConnected->Checked=false;
-    fConnectionInfo->tSigProcConnected->Caption="N/A";
-    }
-}
-//---------------------------------------------------------------------------
-
-
-// **************************************************************************
-// Function:   SourceSocketClientDisconnect
-// Purpose:    is called when the EEGsource core module disconnects
-// Parameters: Socket - pointer to the socket that connects to the client
-// Returns:    N/A
-// **************************************************************************
-void __fastcall TfMain::SourceSocketClientDisconnect(TObject *Sender,
-      TCustomWinSocket *Socket)
-{
- if (sysstatus.SourceConnected)
-    {
-    sysstatus.SourceConnected=false;
-    fConnectionInfo->cSourceConnected->Checked=false;
-    fConnectionInfo->tSourceConnected->Caption="N/A";
-    }
-}
-//---------------------------------------------------------------------------
-
-
-// **************************************************************************
-// Function:   BroadcastParameters
-// Purpose:    sends all parameters (i.e., param lines) to all connected core modules
-// Parameters: N/A
-// Returns:    always ERR_NOERR
-// **************************************************************************
-int TfMain::BroadcastParameters()
-{
-COREMESSAGE     *coremessage;
-int             num_param, i, ret;
-PARAM           *cur_param;
-AnsiString      paramline;
-FILE            *fp;
-TWinSocketStream        *pSourceStream, *pSigProcStream, *pApplicationStream;
-
- if ((!sysstatus.SourceConnected) || (!sysstatus.SigProcConnected) || (!sysstatus.ApplicationConnected))
-    return(ERR_NOERR);
-
- // (do not receive while we send; concurrency problems)
- sendrecv_critsec->Acquire();
-
- pSourceStream=new TWinSocketStream(sysstatus.SourceSocket, 5000);
- pSigProcStream=new TWinSocketStream(sysstatus.SigProcSocket, 5000);
- pApplicationStream=new TWinSocketStream(sysstatus.ApplicationSocket, 5000);
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_PARAMETER);
-
- num_param=paramlist.GetNumParameters();
- for (i=0; i<num_param; i++)
+  // We call EnterState() from here to have a consistent behavior if
+  // UpdateState() is called for "Running" from a script or a button.
+  if( string( "Running" ) == inName )
   {
-  cur_param=paramlist.GetParamPtr(i);
-  if (cur_param)
-     {
-     paramline=cur_param->GetParamLine().c_str();
-     paramline = paramline + "\r\n"; // CRLF
-
-     coremessage->SetLength( paramline.Length() );
-     strncpy( coremessage->GetBufPtr( paramline.Length() ), paramline.c_str(), paramline.Length() );
-
-     coremessage->SendCoreMessage(pSourceStream);
-     coremessage->SendCoreMessage(pSigProcStream);
-     coremessage->SendCoreMessage(pApplicationStream);
-
-     sysstatus.NumMessagesSent1++;
-     sysstatus.NumParametersSent1++;
-     sysstatus.NumMessagesSent2++;
-     sysstatus.NumParametersSent2++;
-     sysstatus.NumMessagesSent3++;
-     sysstatus.NumParametersSent3++;
-     }
+    switch( mSysstatus.SystemState )
+    {
+      case SYSSTATUS::Resting:
+      case SYSSTATUS::Suspended:
+        if( inValue )
+          EnterState( SYSSTATUS::Running );
+        break;
+      case SYSSTATUS::Running:
+        if( !inValue )
+          EnterState( SYSSTATUS::Suspended );
+        break;
+      default:
+        return ERR_STATENOTFOUND;
+    }
   }
 
- sendrecv_critsec->Release();
-
- // at the very end, send EndOfParameter to terminate this phase
- // broadcast this final state to all the modules that are connected
- if (sysstatus.SourceConnected)
-    {
-    SendSysCommand("EndOfParameter", sysstatus.SourceSocket);
-    sysstatus.NumMessagesSent1++;
-    }
- if (sysstatus.SigProcConnected)
-    {
-    SendSysCommand("EndOfParameter", sysstatus.SigProcSocket);
-    sysstatus.NumMessagesSent2++;
-    }
- if (sysstatus.ApplicationConnected)
-    {
-    SendSysCommand("EndOfParameter", sysstatus.ApplicationSocket);
-    sysstatus.NumMessagesSent3++;
-    }
-
- delete pSourceStream;
- delete pSigProcStream;
- delete pApplicationStream;
- delete coremessage;
-
- return(ERR_NOERR);
+  STATE* s = mStates.GetStatePtr( inName );
+  if( s == NULL )
+    return ERR_STATENOTFOUND;
+  s->SetValue( inValue );
+  if( !MessageHandler::PutMessage( mEEGSource, *s ) )
+    return ERR_SOURCENOTCONNECTED;
+  return ERR_NOERR;
 }
 
-
-// **************************************************************************
-// Function:   BroadcastStates
-// Purpose:    sends all states (i.e., state lines) to all connected core modules
-// Parameters: N/A
-// Returns:    always ERR_NOERR
-// **************************************************************************
-int TfMain::BroadcastStates()
+// Some initialization code requires a fully initialized application on the VCL
+// level, and thus cannot go into the TfMain constructor.
+// Instead, it is performed inside an idle handler that detaches itself from
+// the idle event as soon as it is called for the first time.
+void
+__fastcall
+TfMain::ApplicationIdleHandler( TObject*, bool& )
 {
-COREMESSAGE     *coremessage;
-STATE           *cur_state;
-int             num_state, i;
-char            statelinebuf[LENGTH_STATELINE];
+  Application->OnIdle = NULL;
+  mSyslog.AddSysLogEntry( "BCI2000 started" );
+  SetFunctionButtons();
+  UpdateDisplay();
+  mpReceivingThread->Resume();
+}
 
- // (do not receive while we send; concurrency problems)
- sendrecv_critsec->Acquire();
+// Initiate program termination, and perform de-initialization that must take
+// place before the destructor.
+void
+TfMain::Terminate()
+{
+  mTerminated = true;
+  mpReceivingThread->Terminate();
+  Application->Terminate();
+}
 
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_STATE);
-
- num_state=statelist.GetNumStates();
- for (i=0; i<num_state; i++)
+// Get all available BCI messages from the streams, and call the appropriate handlers.
+// This function is called from the ReceivingThread inside a Synchronize() call.
+void
+__fastcall
+TfMain::ProcessBCIMessages()
+{
+  for( tcpsocket::set_of_instances::iterator i = mSockets.begin(); i != mSockets.end(); ++i )
   {
-  cur_state=statelist.GetStatePtr(i);
-  if (cur_state)
-     {
-     sprintf(statelinebuf, "%s\r\n", cur_state->GetStateLine());
-     coremessage->SetLength(strlen(statelinebuf));
-     strncpy(coremessage->GetBufPtr( strlen( statelinebuf ) ), statelinebuf, strlen(statelinebuf));
+    if( ( *i )->connected() && !mConnectionStates[ *i ] )
+      ( this->*mAcceptHandlers[ *i ] )();
+    else if( !( *i )->connected() && mConnectionStates[ *i ] )
+      ( this->*mDisconnectHandlers[ *i ] )();
+    mConnectionStates[ *i ] = ( *i )->connected();
+    while( *mStreams[ *i ] && mStreams[ *i ]->rdbuf()->in_avail() && !mTerminated )
+    {
+      mMessageHandler.HandleMessage( *mStreams[ *i ] );
+      ++mSysstatus.NumMessagesRecv[ Origin( *mStreams[ *i ] ) ];
+      if( !( *mStreams[ *i ] && mStreams[ *i ]->is_open() ) || ( __bcierr.flushes() > 0 ) )
+        Terminate();
+    }
+  }
+  UpdateDisplay();
+}
 
-     // broadcast the states to all the modules that are connected
-     // (should be all of them anyways)
-     if (sysstatus.SourceConnected)
-        {
-        coremessage->SendCoreMessage(sysstatus.SourceSocket);
-        sysstatus.NumMessagesSent1++;
-        sysstatus.NumStatesSent1++;
-        }
-     if (sysstatus.SigProcConnected)
-        {
-        coremessage->SendCoreMessage(sysstatus.SigProcSocket);
-        sysstatus.NumMessagesSent2++;
-        sysstatus.NumStatesSent2++;
-        }
-     if (sysstatus.ApplicationConnected)
-        {
-        coremessage->SendCoreMessage(sysstatus.ApplicationSocket);
-        sysstatus.NumMessagesSent3++;
-        sysstatus.NumStatesSent3++;
-        }
-     }
+//----------------------- Connection householding ------------------------------
+
+// When a connection is accepted by an open socket, open the associated stream,
+// and enter the appropriate information into its SYSSTATUS::Address[] entry.
+#define SOCKET_ACCEPT_DEF( module ) \
+void                                                                            \
+TfMain::module##SocketAccept()                                                  \
+{                                                                               \
+  m##module.clear();                                                            \
+  m##module.open( m##module##Socket );                                          \
+  if( m##module.is_open() )                                                     \
+    mSysstatus.Address[ module ]                                                \
+      = AnsiString( m##module##Socket.ip().c_str() ) + ":"                      \
+        + AnsiString( m##module##Socket.port() );                               \
+}
+SOCKET_ACCEPT_DEF( EEGSource )
+SOCKET_ACCEPT_DEF( SigProc )
+SOCKET_ACCEPT_DEF( App )
+
+// When a connection is closed, close the associated stream, and update the
+// the information in its SYSSTATUS::Address[] entry.
+#define SOCKET_DISCONNECT_DEF( module ) \
+void                                                                            \
+TfMain::module##SocketDisconnect()                                              \
+{                                                                               \
+  m##module.close();                                                            \
+  m##module##Socket.open( "*", module##Port );                                  \
+  mSysstatus.Address[ module ] = "";                                            \
+}
+SOCKET_DISCONNECT_DEF( EEGSource )
+SOCKET_DISCONNECT_DEF( SigProc )
+SOCKET_DISCONNECT_DEF( App )
+
+// Given a stream, return the index of its associated module.
+MessageOrigin
+TfMain::Origin( istream& is )
+{
+  if( &is == &mEEGSource )
+    return EEGSource;
+  if( &is == &mSigProc )
+    return SigProc;
+  if( &is == &mApp )
+    return App;
+  return Operator;
+}
+
+//------------------ Medium level aggregate functions --------------------------
+
+void
+TfMain::BroadcastParameters()
+{
+  if( mEEGSource.is_open() && mSigProc.is_open() && mApp.is_open() )
+  {
+    int numParams = mParameters.GetNumParameters();
+    if( MessageHandler::PutMessage( mEEGSource, mParameters ) )
+    {
+      mEEGSource.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ EEGSource ] += numParams + 1;
+      mSysstatus.NumParametersSent[ EEGSource ] += numParams;
+    }
+    if( MessageHandler::PutMessage( mSigProc, mParameters ) )
+    {
+      mSigProc.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ SigProc ] += numParams + 1;
+      mSysstatus.NumParametersSent[ SigProc ] += numParams;
+    }
+    if( MessageHandler::PutMessage( mApp, mParameters ) )
+    {
+      mApp.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ App ] += numParams + 1;
+      mSysstatus.NumParametersSent[ App ] += numParams;
+    }
+  }
+}
+
+void
+TfMain::BroadcastStates()
+{
+  if( mEEGSource.is_open() && mSigProc.is_open() && mApp.is_open() )
+  {
+    int numStates = mStates.GetNumStates();
+    if( MessageHandler::PutMessage( mEEGSource, mStates ) )
+    {
+      mEEGSource.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ EEGSource ] += numStates + 1;
+      mSysstatus.NumStatesSent[ EEGSource ] += numStates;
+    }
+    if( MessageHandler::PutMessage( mSigProc, mStates ) )
+    {
+      mSigProc.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ SigProc ] += numStates + 1;
+      mSysstatus.NumStatesSent[ SigProc ] += numStates;
+    }
+    if( MessageHandler::PutMessage( mApp, mStates ) )
+    {
+      mApp.flush();
+      ::Sleep( 0 );
+      mSysstatus.NumMessagesSent[ App ] += numStates + 1;
+      mSysstatus.NumStatesSent[ App ] += numStates;
+    }
+  }
+}
+
+// Here we list the actions to be taken for the allowed state transitions.
+#define TRANSITION( a, b )  ( ( int( a ) << 8 ) | int( b ) )
+void
+TfMain::EnterState( SYSSTATUS::State inState )
+{
+  int transition = TRANSITION( mSysstatus.SystemState, inState );
+  mSysstatus.SystemState = inState;
+  switch( transition )
+  {
+    case TRANSITION( SYSSTATUS::Idle, SYSSTATUS::Publishing ):
+      mStarttime = TDateTime::CurrentDateTime();
+      break;
+
+    case TRANSITION( SYSSTATUS::Publishing, SYSSTATUS::Publishing ):
+      break;
+
+    case TRANSITION( SYSSTATUS::Publishing, SYSSTATUS::Information ):
+      // Execute the script after all modules are connected ...
+      if( mPreferences.Script[ PREFERENCES::AfterModulesConnected ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing script after all modules connected ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::AfterModulesConnected ].c_str() );
+      }
+      // Add the state vector's length to the system parameters.
+      {
+        mParameters.AddParameter2List(
+          "System int StateVectorLength= 0 16 1 30 // length of the state vector in bytes" );
+        mParameters.Sort();
+        AnsiString value = STATEVECTOR( &mStates ).GetStateVectorLength();
+        mParameters[ "StateVectorLength" ].SetValue( value.c_str() );
+      }
+      break;
+
+    case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Initialization ):
+      BroadcastParameters();
+      BroadcastStates();
+      // Send a system command 'Start' to the EEGsource (currently, it will be ignored).
+      if( MessageHandler::PutMessage( mEEGSource, SYSCMD::Start ) )
+      {
+        ++mSysstatus.NumMessagesSent[ EEGSource ];
+        ++mSysstatus.NumStatesSent[ EEGSource ];
+      }
+      mSyslog.AddSysLogEntry( "Operator set configuration" );
+      break;
+
+    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Resting ):
+      break;
+
+    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Resting ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Resting ):
+      BroadcastParameters();
+      mSyslog.AddSysLogEntry( "Operator set configuration" );
+      break;
+
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Running ):
+      // Execute the on-start script ...
+      if( mPreferences.Script[ PREFERENCES::OnStart ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing on-start script ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnStart ].c_str() );
+      }
+      mStarttime = TDateTime::CurrentDateTime();
+      mSyslog.AddSysLogEntry( "Operator started operation" );
+      break;
+
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Running ):
+      mSyslog.AddSysLogEntry( "Operator resumed operation" );
+      // Execute the on-resume script ...
+      if( mPreferences.Script[ PREFERENCES::OnResume ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing on-resume script ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnResume ].c_str() );
+      }
+      mStarttime = TDateTime::CurrentDateTime();
+      break;
+
+    case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Suspended ):
+      mSyslog.AddSysLogEntry( "Operator suspended operation" );
+      // Execute the on-suspend script ...
+      if( mPreferences.Script[ PREFERENCES::OnSuspend ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing on-suspend script ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnSuspend ].c_str() );
+      }
+      mStarttime = TDateTime::CurrentDateTime();
+      break;
+
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
+      break;
+
+    default:
+      bcierr << "Unexpected system state transition: "
+             << mSysstatus.SystemState << " -> " << inState
+             << endl;
+  }
+  UpdateDisplay();
+}
+
+void
+TfMain::QuitOperator()
+{
+  if( ID_YES == Application->MessageBox(
+    "Do you really want to quit BCI2000?", "Question", MB_YESNO ) )
+  {
+    // Execute the on-exit script ...
+    if( mPreferences.Script[ PREFERENCES::OnExit ] != "" )
+    {
+      mSyslog.AddSysLogEntry( "Executing on-exit script ..." );
+      mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnExit ].c_str() );
+    }
+    mSyslog.Close( true );
+    // Store the settings in the ini file.
+    mPreferences.SetDefaultSettings();
+    // Send a system command 'Reset' to the EEGsource.
+    if( mEEGSource.is_open() && MessageHandler::PutMessage( mEEGSource, SYSCMD::Reset ) )
+      ++mSysstatus.NumMessagesSent[ EEGSource ];
+    // Quit the operator.
+    Terminate();
+  }
+}
+
+// This function is called after each received message has been processed.
+// To avoid unnecessary redraws of controls (flicker), we check for changed
+// captions before actually assigning them.
+void
+TfMain::UpdateDisplay()
+{
+  TDateTime  timeElapsed = TDateTime::CurrentDateTime() - mStarttime;
+  AnsiString windowCaption = TXT_WINDOW_CAPTION " " TXT_OPERATOR_VERSION,
+             statusText = "N/A";
+
+  switch( mSysstatus.SystemState )
+  {
+    case SYSSTATUS::Idle:
+      statusText = "System Status: < idle >";
+      break;
+    case SYSSTATUS::Publishing:
+      statusText = "Publishing Phase ...";
+      break;
+    case SYSSTATUS::Information:
+      statusText = "Information Phase ...";
+      break;
+    case SYSSTATUS::Initialization:
+      statusText = "Initialization Phase ...";
+      break;
+    case SYSSTATUS::Resting:
+    case SYSSTATUS::Suspended:
+      windowCaption += " - " TXT_OPERATOR_SUSPENDED " " + timeElapsed.FormatString( "nn:ss" ) + " s";
+      statusText = TXT_OPERATOR_SUSPENDED;
+      break;
+    case SYSSTATUS::Running:
+      windowCaption += " - " TXT_OPERATOR_RUNNING " " + timeElapsed.FormatString( "nn:ss" ) + " s";
+      statusText = TXT_OPERATOR_RUNNING;
+      break;
   }
 
- delete coremessage;
+  if( Caption != windowCaption )
+    Caption = windowCaption;
+  mSysstatus.Status[ Operator ] = statusText;
+  for( int i = 0; i < numMessageOrigins; ++i )
+    if( StatusBar->Panels->Items[ i ]->Text != mSysstatus.Status[ i ] )
+      StatusBar->Panels->Items[ i ]->Text = mSysstatus.Status[ i ];
 
- sendrecv_critsec->Release();
+  AnsiString runSystemCaption = "Start";
+  bool       configEnabled = false,
+             setConfigEnabled = false,
+             runSystemEnabled = false,
+             quitEnabled = false;
 
- // at the very end, send EndOfState to terminate this phase
- // broadcast this final state to all the modules that are connected
- if (sysstatus.SourceConnected)
-    {
-    SendSysCommand("EndOfState", sysstatus.SourceSocket);
-    sysstatus.NumMessagesSent1++;
-    sysstatus.NumStatesSent1++;
-    }
- if (sysstatus.SigProcConnected)
-    {
-    SendSysCommand("EndOfState", sysstatus.SigProcSocket);
-    sysstatus.NumMessagesSent2++;
-    sysstatus.NumStatesSent2++;
-    }
- if (sysstatus.ApplicationConnected)
-    {
-    SendSysCommand("EndOfState", sysstatus.ApplicationSocket);
-    sysstatus.NumMessagesSent3++;
-    sysstatus.NumStatesSent3++;
-    }
+  switch( mSysstatus.SystemState )
+  {
+    case SYSSTATUS::Idle:
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Publishing:
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Information:
+      configEnabled = true;
+      setConfigEnabled = true;
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Initialization:
+      configEnabled = true;
+      setConfigEnabled = true;
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Resting:
+      configEnabled = true;
+      setConfigEnabled = true;
+      runSystemEnabled = true;
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Suspended:
+      runSystemCaption = "Resume";
+      configEnabled = true;
+      setConfigEnabled = true;
+      runSystemEnabled = true;
+      quitEnabled = true;
+      break;
+    case SYSSTATUS::Running:
+      runSystemCaption = "Suspend";
+      runSystemEnabled = true;
+      break;
+  }
+  if( bRunSystem->Caption != runSystemCaption )
+    bRunSystem->Caption = runSystemCaption;
+  if( bConfig->Enabled != configEnabled )
+    bConfig->Enabled = configEnabled;
+  if( bSetConfig->Enabled != setConfigEnabled )
+    bSetConfig->Enabled = setConfigEnabled;
+  if( bRunSystem->Enabled != runSystemEnabled )
+    bRunSystem->Enabled = runSystemEnabled;
+  if( bQuit->Enabled != quitEnabled )
+    bQuit->Enabled = quitEnabled;
 
- return(ERR_NOERR);
+  fConnectionInfo->UpdateDisplay( mSysstatus );
 }
-
-
-// **************************************************************************
-// Function:   BroadcastStateVector
-// Purpose:    sends the initial state vector to all connected core modules
-// Parameters: N/A
-// Returns:    always ERR_NOERR
-// **************************************************************************
-int TfMain::BroadcastStateVector(STATEVECTOR *my_state_vector)
-{
-COREMESSAGE     *coremessage;
-
- // (do not receive while we send; concurrency problems)
- sendrecv_critsec->Acquire();
-
- coremessage=new COREMESSAGE;
- coremessage->SetDescriptor(COREMSG_STATEVECTOR);
-
- coremessage->SetLength(my_state_vector->GetStateVectorLength());
- strncpy(coremessage->GetBufPtr( my_state_vector->GetStateVectorLength() ), (char *)my_state_vector->GetStateVectorPtr(), my_state_vector->GetStateVectorLength());
-
- // broadcast the states to all the modules that are connected
- // (should be all of them anyways)
- if (sysstatus.SourceConnected)
-    {
-    coremessage->SendCoreMessage(sysstatus.SourceSocket);
-    sysstatus.NumMessagesSent1++;
-    sysstatus.NumStateVecsSent1++;
-    }
- if (sysstatus.SigProcConnected)
-    {
-    coremessage->SendCoreMessage(sysstatus.SigProcSocket);
-    sysstatus.NumMessagesSent2++;
-    sysstatus.NumStateVecsSent2++;
-    }
- if (sysstatus.ApplicationConnected)
-    {
-    coremessage->SendCoreMessage(sysstatus.ApplicationSocket);
-    sysstatus.NumMessagesSent3++;
-    sysstatus.NumStateVecsSent3++;
-    }
-
- sendrecv_critsec->Release();
-
- delete coremessage;
- return(ERR_NOERR);
-}
-
-
-// **************************************************************************
-// Function:   UpdateState
-// Purpose:    Send an updated state to the EEGsource
-// Parameters: statename - name of the state to modify
-//             newvalue - new value for this state
-// Returns:    ERR_NOERR - if everything OK
-//             ERR_STATENOTFOUND - if the state was not found
-//             ERR_SOURCENOTCONNECTED - the EEGsource is not connected
-// **************************************************************************
-int TfMain::UpdateState(char *statename, unsigned short newvalue)
-{
-int ret;
-
- if (sysstatus.SourceConnected)
-    {
-    // (do not receive while we send; concurrency problems)
-    sendrecv_critsec->Acquire();
-    ret=OperatorUtils::UpdateState(&statelist,statename, newvalue, sysstatus.SourceSocket);
-    // enable reception
-    sendrecv_critsec->Release();
-    sysstatus.NumMessagesSent1++;
-    sysstatus.NumStatesSent1++;
-    }
- else
-    ret=ERR_SOURCENOTCONNECTED;
-
-return(ret);
-}
-
-// **************************************************************************
-// Function:   HandleCoreMessage
-// Purpose:    handles a message that it received from a core module
-//             this procedure assumes that message->ParseMessage() has been
-//             called first to pre-process the data in the message
-//             (e.g., in case of a parameter, parse the parameter line)
-// Parameters: message - a pointer to the coremessage
-//             module  - descriptor, describing which core module it came from (defined in defines.h)
-// Returns:    always ERR_NOERR
-// **************************************************************************
-int TfMain::HandleCoreMessage(COREMESSAGE *message, int module)
-{
-AnsiString              section, type, name;
-STATEVECTOR             *initial_state_vector;
-PARAM   *temp_param;
-char    buf[255];
-int     sample, channel, i, j;
-
-#if 1
- // Begin temporary glue code
- // We re-build a stream from the message.
- // In the future, the message will not be parsed outside the classes
- // that handle it.
- BYTE header[] =
- {
-   message->GetDescriptor(),
-   message->GetSuppDescriptor(),
-   message->GetLength() & 0xff,
-   message->GetLength() >> 8,
- };
- std::stringstream msg;
- msg.write( header, sizeof( header ) );
- msg.write( message->GetBufPtr(), message->GetLength() );
- // End temporary glue code
-
- if( VISUAL::HandleMessage( msg ) )
- {  // it is a message containing visualization data
-   switch( module )
-   {
-     case COREMODULE_EEGSOURCE:
-       ++sysstatus.NumDataRecv1;
-       break;
-     case COREMODULE_SIGPROC:
-       ++sysstatus.NumDataRecv2;
-       break;
-     case COREMODULE_APPLICATION:
-       ++sysstatus.NumDataRecv3;
-       break;
-   }
- }
-#endif
- // it is a parameter message
- if (message->GetDescriptor() == COREMSG_PARAMETER)
-    {
-    // now, add the parameter to the list of parameters
-    // (if it is a valid parameter
-    if (message->param.Valid())
-       {
-       paramlist.CloneParameter2List(&(message->param));
-       // refresh this parameter on the screen (in case the cfg window is open)
-       try
-        {
-        fConfig->RenderParameter(paramlist.GetParamPtr(message->param.GetName()));
-        } catch ( TooGeneralCatch& ) {};
-       }
-
-    // it comes from the EEG source module
-    if (module == COREMODULE_EEGSOURCE)
-       sysstatus.NumParametersRecv1++;
-    // it comes from the signal processing module
-    if (module == COREMODULE_SIGPROC)
-       sysstatus.NumParametersRecv2++;
-    // it comes from the application module
-    if (module == COREMODULE_APPLICATION)
-       sysstatus.NumParametersRecv3++;
-    }
-
-
- // it is a status message
- if (message->GetDescriptor() == COREMSG_STATUS)
-    {
-    // if we receive a warning message, add a line to the system log and bring it to front
-    if ((message->status.GetCode() >= 300) && (message->status.GetCode() < 400))
-       {
-       syslog->AddSysLogEntry(message->status.GetStatus(), SYSLOGENTRYMODE_WARNING);
-       syslog->ShowSysLog();
-       }
-    // if we receive an error message, add a line to the system log and bring it to front
-    if ((message->status.GetCode() >= 400) && (message->status.GetCode() < 500))
-       {
-       syslog->AddSysLogEntry(message->status.GetStatus(), SYSLOGENTRYMODE_ERROR);
-       syslog->ShowSysLog();
-       }
-    if (module == COREMODULE_EEGSOURCE)
-       {
-       sysstatus.EEGsourceStatus=message->status.GetStatus();
-       sysstatus.EEGsourceStatusReceived=true;
-       }
-    if (module == COREMODULE_SIGPROC)
-       {
-       sysstatus.SigProcStatus=message->status.GetStatus();
-       sysstatus.SigProcStatusReceived=true;
-       }
-    if (module == COREMODULE_APPLICATION)
-       {
-       sysstatus.ApplicationStatus=message->status.GetStatus();
-       sysstatus.ApplicationStatusReceived=true;
-       }
-
-    // if the operator received successful status messages from
-    // all core modules, then this is the end of the initialization phase
-    if ((sysstatus.SystemState == STATE_INITIALIZATION) && (message->status.GetCode() < 300))
-       {
-       if (module == COREMODULE_EEGSOURCE)
-          {
-          sysstatus.EEGsourceINI=true;
-          syslog->AddSysLogEntry("Source confirmed new parameters ...");
-          }
-       if (module == COREMODULE_SIGPROC)
-          {
-          sysstatus.SigProcINI=true;
-          syslog->AddSysLogEntry("Signal Processing confirmed new parameters ...");
-          }
-       if (module == COREMODULE_APPLICATION)
-          {
-          sysstatus.ApplicationINI=true;
-          syslog->AddSysLogEntry("User Application confirmed new parameters ...");
-          }
-
-       if ((sysstatus.EEGsourceINI) && (sysstatus.SigProcINI) && (sysstatus.ApplicationINI))
-          {
-          bRunSystem->Enabled=true;
-          bReset->Enabled=true;
-          // UpdateState("Running", 1);                    // this sends the state running with 1 to the EEGsource and starts operation
-          sysstatus.SystemState=STATE_RUNNING;
-          }
-       }
-    }
-
-#if 0
-    // Anyway, we want a working Quit button if any message arrived from one of the modules,
-    // and we need to go back to STATE_INFORMATION if there was an error.
-    if( sysstatus.SystemState == STATE_INITIALIZATION
-        && sysstatus.EEGsourceStatusReceived
-        && sysstatus.SigProcStatusReceived
-        && sysstatus.ApplicationStatusReceived
-        && !( sysstatus.EEGsourceINI && sysstatus.SigProcINI && sysstatus.ApplicationINI ) )
-    {
-      bRunSystem->Enabled = false;
-      bReset->Enabled = true;
-      sysstatus.SystemState = STATE_INFORMATION;
-    }
-#endif
-
- // it is a state message
- if (message->GetDescriptor() == COREMSG_STATE)
-    {
-    if (message->state.Valid())
-       {
-       // if we received any state and we are in STATE_IDLE, switch to publishing phase
-       if (sysstatus.SystemState == STATE_IDLE)
-          sysstatus.SystemState=STATE_PUBLISHING;
-
-       // it comes from the source module
-       if (module == COREMODULE_EEGSOURCE)
-          sysstatus.NumStatesRecv1++;
-       // it comes from the signal processing module
-       if (module == COREMODULE_SIGPROC)
-          sysstatus.NumStatesRecv2++;
-       // it comes from the application module
-       if (module == COREMODULE_APPLICATION)
-          sysstatus.NumStatesRecv3++;
-
-       statelist.AddState2List(&(message->state));  // now, add the state to the list of states
-       }
-    }
-
- // it is a system command
- if (message->GetDescriptor() == COREMSG_SYSCMD)
-    {
-    if (stricmp(message->syscmd.GetSysCmd(), "Reset") == 0)
-       SendMessage(fMain->Handle, RESET_OPERATOR, 0, 0);
-
-    if (stricmp(message->syscmd.GetSysCmd(), "Suspend") == 0)
-       {
-       if (sysstatus.SystemState != STATE_SUSPENDED)
-          StartSuspendSystem(false);
-       }
-
-    // if we received 'EndOfParameter', i.e., all parameters,
-    // then let's sort the parameters in the parameter list by name
-    if (strcmp(message->syscmd.GetSysCmd(), "EndOfParameter") == 0)
-       paramlist.Sort();
-
-    // the operator receiving 'EndOfState' marks the end of the publishing phase
-    if (strcmp(message->syscmd.GetSysCmd(), "EndOfState") == 0)
-       {
-       if (module == COREMODULE_EEGSOURCE)   sysstatus.EEGsourceEOS=true;
-       if (module == COREMODULE_SIGPROC)     sysstatus.SigProcEOS=true;
-       if (module == COREMODULE_APPLICATION) sysstatus.ApplicationEOS=true;
-       // if we received EndOfStates from all the modules, then make the transition to the next system state
-       if ((sysstatus.EEGsourceEOS) && (sysstatus.SigProcEOS) && (sysstatus.ApplicationEOS) && (sysstatus.SystemState == STATE_PUBLISHING))
-          {
-          // execute the script after all modules are connected ...
-          if (AnsiString(preferences.Script_AfterModulesConnected).Trim() != "")
-             {
-             syslog->AddSysLogEntry("Executing script after all modules connected ...");
-             script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
-             script.ExecuteScript(preferences.Script_AfterModulesConnected);
-             }
-
-          sysstatus.SystemState=STATE_INFORMATION;
-          // create the initial state vector and set the locations in each state
-          initial_state_vector=new STATEVECTOR(&statelist);
-          // add the parameter StateVectorLength to the list of parameters
-          sprintf(buf, "%d", initial_state_vector->GetStateVectorLength());
-          temp_param=new PARAM("StateVectorLength", "System", "int", buf, "16", "1", "30", "length of the state vector in bytes");
-          paramlist.MoveParameter2List(temp_param);
-          paramlist.Sort();
-          
-          // now there is the possibility to configure the system
-          // therefore, 'turn' the config button on
-          bConfig->Enabled=true;
-          bSetConfig->Enabled=true;
-
-          delete initial_state_vector;
-          }
-       }
-    }
-
- return(ERR_NOERR);
-}
-
-
-// **************************************************************************
-// Function:   ScrUpdateTimerTimer
-// Purpose:    this is the routine for the screen update timer
-//             it is called every 60ms to update the screen
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void __fastcall TfMain::ScrUpdateTimerTimer(TObject *Sender)
-{
- fConnectionInfo->tNumMessagesRecv1->Caption=AnsiString(sysstatus.NumMessagesRecv1);
- fConnectionInfo->tNumMessagesRecv2->Caption=AnsiString(sysstatus.NumMessagesRecv2);
- fConnectionInfo->tNumMessagesRecv3->Caption=AnsiString(sysstatus.NumMessagesRecv3);
- fConnectionInfo->tNumParametersRecv1->Caption=AnsiString(sysstatus.NumParametersRecv1);
- fConnectionInfo->tNumParametersRecv2->Caption=AnsiString(sysstatus.NumParametersRecv2);
- fConnectionInfo->tNumParametersRecv3->Caption=AnsiString(sysstatus.NumParametersRecv3);
- fConnectionInfo->tNumStatesRecv1->Caption=AnsiString(sysstatus.NumStatesRecv1);
- fConnectionInfo->tNumStatesRecv2->Caption=AnsiString(sysstatus.NumStatesRecv2);
- fConnectionInfo->tNumStatesRecv3->Caption=AnsiString(sysstatus.NumStatesRecv3);
- fConnectionInfo->tNumDataRecv1->Caption=AnsiString(sysstatus.NumDataRecv1);
- fConnectionInfo->tNumDataRecv2->Caption=AnsiString(sysstatus.NumDataRecv2);
- fConnectionInfo->tNumDataRecv3->Caption=AnsiString(sysstatus.NumDataRecv3);
-
- fConnectionInfo->tNumMessagesSent1->Caption=AnsiString(sysstatus.NumMessagesSent1);
- fConnectionInfo->tNumMessagesSent2->Caption=AnsiString(sysstatus.NumMessagesSent2);
- fConnectionInfo->tNumMessagesSent3->Caption=AnsiString(sysstatus.NumMessagesSent3);
- fConnectionInfo->tNumParametersSent1->Caption=AnsiString(sysstatus.NumParametersSent1);
- fConnectionInfo->tNumParametersSent2->Caption=AnsiString(sysstatus.NumParametersSent2);
- fConnectionInfo->tNumParametersSent3->Caption=AnsiString(sysstatus.NumParametersSent3);
- fConnectionInfo->tNumStatesSent1->Caption=AnsiString(sysstatus.NumStatesSent1);
- fConnectionInfo->tNumStatesSent2->Caption=AnsiString(sysstatus.NumStatesSent2);
- fConnectionInfo->tNumStatesSent3->Caption=AnsiString(sysstatus.NumStatesSent3);
- fConnectionInfo->tNumStateVecsSent1->Caption=AnsiString(sysstatus.NumStateVecsSent1);
- fConnectionInfo->tNumStateVecsSent2->Caption=AnsiString(sysstatus.NumStateVecsSent2);
- fConnectionInfo->tNumStateVecsSent3->Caption=AnsiString(sysstatus.NumStateVecsSent3);
-
- if (sysstatus.SystemState == STATE_IDLE)
-    StatusBar->Panels->Items[PANEL_SYSSTATUS]->Text = "System Status: < idle >";
- if (sysstatus.SystemState == STATE_PUBLISHING)
-    StatusBar->Panels->Items[PANEL_SYSSTATUS]->Text = "System Status: Publishing Phase ...";
- if (sysstatus.SystemState == STATE_INFORMATION)
-    StatusBar->Panels->Items[PANEL_SYSSTATUS]->Text = "System Status: Information Phase ...";
- if (sysstatus.SystemState == STATE_INITIALIZATION)
-    StatusBar->Panels->Items[PANEL_SYSSTATUS]->Text = "System Status: Initialization Phase ...";
- if (sysstatus.SystemState == STATE_RUNNING)
-    StatusBar->Panels->Items[PANEL_SYSSTATUS]->Text = "System Status: System Running ...";
-
- StatusBar->Panels->Items[PANEL_EEGSOURCE]->Text=sysstatus.EEGsourceStatus;
- StatusBar->Panels->Items[PANEL_SIGPROC]->Text=sysstatus.SigProcStatus;
- StatusBar->Panels->Items[PANEL_APPLICATION]->Text=sysstatus.ApplicationStatus;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::DoResetOperator(TMessage &Message)
-{
- ResetOperator();
- Close();
-}
-
-
-void TfMain::ResetOperator()
-{
-int     i;
-GenericVisualization   *cur_vis;
-
- if (source_thread)  source_thread->Terminate();
- if (sigproc_thread) sigproc_thread->Terminate();
- if (application_thread) application_thread->Terminate();
- sysstatus.SourceConnected=false;
- fConnectionInfo->cSourceConnected->Checked=false;
- fConnectionInfo->tSourceConnected->Caption="N/A";
- sysstatus.SigProcConnected=false;
- fConnectionInfo->cSigProcConnected->Checked=false;
- fConnectionInfo->tSigProcConnected->Caption="N/A";
- sysstatus.ApplicationConnected=false;
- fConnectionInfo->cApplicationConnected->Checked=false;
- fConnectionInfo->tApplicationConnected->Caption="N/A";
-
- // wait a little, so that remaining messages, which are still 'on the way'
- // arrive at the operator ProcessMessages() then ensures that they'll be
- // processed, before we delete everything
- Sleep(500);
- Application->ProcessMessages();
-
- bRunSystem->Caption="Start";
- bRunSystem->Enabled=false;
-
- // close the parameter configuration window
- bConfig->Enabled=false;
- bSetConfig->Enabled=false;
- fConfig->Close();
-
- // delete all the windows currently visualized
- VISUAL::clear();
-
- paramlist.ClearParamList();
- statelist.ClearStateList();
-
- sysstatus.ResetSysStatus();
-}
-
-
-void TfMain::QuitOperator()
-{
-int             ret;
-
- ret=Application->MessageBox("Do you really want to quit BCI2000 ?", "Question", MB_YESNO);
- if (ret != ID_YES) return;
-
- // execute the on-exit script...
- if (AnsiString(preferences.Script_OnExit).Trim() != "")
-    {
-    syslog->AddSysLogEntry("Executing on-exit script ...");
-    script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
-    script.ExecuteScript(preferences.Script_OnExit);
-    }
-
- // turn off the screen update time
- ActiveTimer->Enabled=false;
-
- if (syslog) syslog->Close( true );
- syslog=NULL;
-
- // store the settings in the ini file
- preferences.SetDefaultSettings();
-
- // if the system is not running, just reset the operator
- if (sysstatus.SystemState != STATE_RUNNING)
-    {
-    ResetOperator();
-    Close();
-    }
-
- // send an system command 'Reset' to the EEGsource
- // will force the system to stop
- if (sysstatus.SourceConnected)
-    {
-    SendSysCommand("Reset", sysstatus.SourceSocket);
-    sysstatus.NumMessagesSent1++;
-    sysstatus.NumStatesSent1++;
-    }
-}
-
-
-void __fastcall TfMain::bResetClick(TObject *Sender)
-{
- QuitOperator();
-}
-//---------------------------------------------------------------------------
-
-
-
-void __fastcall TfMain::SourceSocketClientError(TObject *Sender,
-      TCustomWinSocket *Socket, TErrorEvent ErrorEvent, int &ErrorCode)
-{
- Application->MessageBox("ERROR: ERROR IN COMMUNICATION W/SOURCE", "ERROR", ID_YES);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::SigProcSocketClientError(TObject *Sender,
-      TCustomWinSocket *Socket, TErrorEvent ErrorEvent, int &ErrorCode)
-{
- Application->MessageBox("ERROR: ERROR IN COMMUNICATION W/SIGPROC", "ERROR", ID_YES);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::ApplicationSocketClientError(TObject *Sender,
-      TCustomWinSocket *Socket, TErrorEvent ErrorEvent, int &ErrorCode)
-{
- Application->MessageBox("ERROR: ERROR IN COMMUNICATION W/APPLICATION", "ERROR", ID_YES);
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfMain::SourceSocketGetThread(TObject *Sender,
-      TServerClientWinSocket *ClientSocket,
-      TServerClientThread *&SocketThread)
-{
- source_thread=new TCoreRecvThread(false, ClientSocket, COREMODULE_EEGSOURCE);
- SocketThread=source_thread;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::SourceSocketAccept(TObject *Sender,
-      TCustomWinSocket *Socket)
-{
- sysstatus.SourceConnected=true;
- sysstatus.SourceSocket=Socket;
- fConnectionInfo->cSourceConnected->Checked=true;
- fConnectionInfo->tSourceConnected->Caption=Socket->RemoteAddress+":"+AnsiString(Socket->RemotePort);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::SigProcSocketGetThread(TObject *Sender,
-      TServerClientWinSocket *ClientSocket,
-      TServerClientThread *&SocketThread)
-{
- sigproc_thread=new TCoreRecvThread(false, ClientSocket, COREMODULE_SIGPROC);
- SocketThread=sigproc_thread;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::SigProcSocketAccept(TObject *Sender,
-      TCustomWinSocket *Socket)
-{
- sysstatus.SigProcConnected=true;
- sysstatus.SigProcSocket=Socket;
- fConnectionInfo->cSigProcConnected->Checked=true;
- fConnectionInfo->tSigProcConnected->Caption=Socket->RemoteAddress+":"+AnsiString(Socket->RemotePort);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::ApplicationSocketAccept(TObject *Sender,
-      TCustomWinSocket *Socket)
-{
- sysstatus.ApplicationConnected=true;
- sysstatus.ApplicationSocket=Socket;
- fConnectionInfo->cApplicationConnected->Checked=true;
- fConnectionInfo->tApplicationConnected->Caption=Socket->RemoteAddress+":"+AnsiString(Socket->RemotePort);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::ApplicationSocketGetThread(TObject *Sender,
-      TServerClientWinSocket *ClientSocket,
-      TServerClientThread *&SocketThread)
-{
- application_thread=new TCoreRecvThread(false, ClientSocket, COREMODULE_APPLICATION);
- SocketThread=application_thread;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TfMain::FormClose(TObject *Sender, TCloseAction &Action)
-{
- if( syslog && !syslog->Close() )
- {
-   Action = caNone;
-   return;
- }
- delete syslog;
- syslog = NULL;
- 
- ShutdownSystem();
-
- if (sendrecv_critsec) delete sendrecv_critsec;
- sendrecv_critsec=NULL;
-}
-//---------------------------------------------------------------------------
-
-
-void TfMain::StartSuspendSystem(bool update)
-{
-unsigned short     suspended, running;
-
- if (sysstatus.SystemState == STATE_RUNNING)
-    {
-    bRunSystem->Caption="Suspend";
-    bSetConfig->Enabled=false;
-    running=1;
-    sysstatus.SystemState=STATE_OPERATING;
-    syslog->AddSysLogEntry("Operator started operation");
-
-    // execute the on-start script...
-    if (AnsiString(preferences.Script_OnStart).Trim() != "")
-       {
-       syslog->AddSysLogEntry("Executing on-start script ...");
-       script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
-       script.ExecuteScript(preferences.Script_OnStart);
-       }
-    }
- else
-    {
-    if (sysstatus.SystemState == STATE_SUSPENDED)
-       {
-       syslog->AddSysLogEntry("Operator resumed operation");
-
-       // execute the on-resume script...
-       if (AnsiString(preferences.Script_OnResume).Trim() != "")
-          {
-          syslog->AddSysLogEntry("Executing on-resume script ...");
-          script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
-          script.ExecuteScript(preferences.Script_OnResume);
-          }
-
-       bRunSystem->Caption="Suspend";
-       running=1;
-       bSetConfig->Enabled=false;
-       sysstatus.SystemState=STATE_OPERATING;
-       }
-    else
-       {
-       if (sysstatus.SystemState == STATE_OPERATING)
-          {
-          syslog->AddSysLogEntry("Operator suspended operation");
-
-          // execute the on-suspend script...
-          if (AnsiString(preferences.Script_OnSuspend).Trim() != "")
-             {
-             syslog->AddSysLogEntry("Executing on-suspend script ...");
-             script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
-             script.ExecuteScript(preferences.Script_OnSuspend);
-             }
-
-          bRunSystem->Caption="Resume";
-          running=0;
-          bSetConfig->Enabled=true;
-          sysstatus.SystemState=STATE_SUSPENDED;
-          }
-       }
-    }
-
- starttime=TDateTime::CurrentDateTime();
- if (update)
-    UpdateState("Running", running);       // suspend or re-start the system
-}
-
-
-void __fastcall TfMain::bRunSystemClick(TObject *Sender)
-{
- StartSuspendSystem(true);
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfMain::bConfigClick(TObject *Sender)
-{
- // now there is the possibility to configure the system
- fConfig->Initialize(&paramlist, &preferences);
- fConfig->Show();
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfMain::bSetConfigClick(TObject *Sender)
-{
- // disable the set config and start button
- bSetConfig->Enabled=false;
-
- // if the config window is visible, update the parameters for the current tab sheet
- if (fConfig->Visible == true)
-    fConfig->Close();
-
- if (sysstatus.SystemState == STATE_INFORMATION)
-    bReset->Enabled=false;
-
- syslog->AddSysLogEntry("Operator set configuration");
-
- BroadcastParameters();
-
- // only publish the states in the information phase
- if (sysstatus.SystemState == STATE_INFORMATION)
-    {
-    // after broadcasting the states, we are now in the Initialization Phase
-    sysstatus.SystemState=STATE_INITIALIZATION;
-#if 0
-    sysstatus.EEGsourceStatusReceived = false;
-    sysstatus.SigProcStatusReceived = false;
-    sysstatus.ApplicationStatusReceived = false;
-#endif
-    BroadcastStates();
-    // send an system command 'Start' to the EEGsource
-    SendSysCommand("Start", sysstatus.SourceSocket);
-    sysstatus.NumMessagesSent1++;
-    sysstatus.NumStatesSent1++;
-    }
-
- // enable the set config
- bSetConfig->Enabled=true;
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfMain::ApplicationEvents1Idle(TObject *Sender, bool &Done)
-{
-#if 0
- Application->ProcessMessages();
-#endif
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TfMain::FormCreate(TObject *Sender)
-{
- firsttime=true;
- Application->OnMinimize = SetTrayIcon;
- Application->OnRestore = RemoveTrayIcon;
-
- preferences.GetDefaultSettings();
-}
-//---------------------------------------------------------------------------
-
 
 void TfMain::SetFunctionButtons()
 {
- if ((preferences.Button1_Name[0] != '\0') && (preferences.Button1_Cmd[0] != '\0'))
+  #define SET_BUTTON( number ) \
+  if( mPreferences.Buttons[ number ].Name != ""                       \
+      && mPreferences.Buttons[ number ].Cmd != "" )                   \
+  {                                                                   \
+    bFunction##number->Enabled = true;                                \
+    bFunction##number->Caption = mPreferences.Buttons[ number ].Name; \
+  }                                                                   \
+  else                                                                \
+  {                                                                   \
+    bFunction##number->Enabled = false;                               \
+    bFunction##number->Caption = "Function " #number;                 \
+  }
+  SET_BUTTON( 1 );
+  SET_BUTTON( 2 );
+  SET_BUTTON( 3 );
+  SET_BUTTON( 4 );
+}
+
+void
+__fastcall
+TfMain::ReceivingThread::Execute()
+{
+  const socketTimeout = 500; // ms
+  while( !TThread::Terminated )
+    if( tcpsocket::wait_for_read( mParent.mSockets, socketTimeout, true ) )
+      TThread::Synchronize( mParent.ProcessBCIMessages );
+}
+
+//--------------------- Handlers for BCI messages ------------------------------
+
+bool
+TfMain::HandleSTATUS( istream& is )
+{
+  STATUS status;
+  if( status.ReadBinary( is ) )
+  {
+    mSysstatus.Status[ Origin( is ) ] = status.GetStatus();
+    
+    // If we receive a warning message, add a line to the system log and bring it to front.
+    if( ( status.GetCode() >= 300 ) && ( status.GetCode() < 400 ) )
     {
-    bFunction1->Enabled=true;
-    bFunction1->Caption=preferences.Button1_Name;
+      mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_WARNING );
+      mSyslog.ShowSysLog();
     }
- else
+    // If we receive an error message, add a line to the system log and bring it to front.
+    else if( ( status.GetCode() >= 400 ) && ( status.GetCode() < 500 ) )
     {
-    bFunction1->Enabled=false;
-    bFunction1->Caption="Function 1";
+      mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOGENTRYMODE_ERROR );
+      mSyslog.ShowSysLog();
     }
- if ((preferences.Button2_Name[0] != '\0') && (preferences.Button2_Cmd[0] != '\0'))
+
+    // If the operator received successful status messages from
+    // all core modules, then this is the end of the initialization phase.
+    if( ( mSysstatus.SystemState == SYSSTATUS::Initialization ) && ( status.GetCode() < 300 ) )
     {
-    bFunction2->Enabled=true;
-    bFunction2->Caption=preferences.Button2_Name;
+      mSysstatus.INI[ Origin( is ) ] = true;
+      switch( Origin( is ) )
+      {
+        case EEGSource:
+          mSyslog.AddSysLogEntry( "Source confirmed new parameters ..." );
+          break;
+        case SigProc:
+          mSyslog.AddSysLogEntry( "Signal Processing confirmed new parameters ..." );
+          break;
+        case App:
+          mSyslog.AddSysLogEntry( "User Application confirmed new parameters ..." );
+          break;
+      }
     }
- else
+    if( mSysstatus.INI[ EEGSource ] && mSysstatus.INI[ SigProc ] && mSysstatus.INI[ App ]
+        && mSysstatus.SystemState == SYSSTATUS::Initialization )
     {
-    bFunction2->Enabled=false;
-    bFunction2->Caption="Function 2";
+      EnterState( SYSSTATUS::Resting );
     }
- if ((preferences.Button3_Name[0] != '\0') && (preferences.Button3_Cmd[0] != '\0'))
+  }
+  return true;
+}
+
+bool
+TfMain::HandleSYSCMD( istream& is )
+{
+  SYSCMD syscmd;
+  if( syscmd.ReadBinary( is ) )
+  {
+    if( syscmd == SYSCMD::Reset )
     {
-    bFunction3->Enabled=true;
-    bFunction3->Caption=preferences.Button3_Name;
+      Terminate();
     }
- else
+    else if( syscmd == SYSCMD::Suspend )
     {
-    bFunction3->Enabled=false;
-    bFunction3->Caption="Function 3";
+      EnterState( SYSSTATUS::Suspended );
     }
- if ((preferences.Button4_Name[0] != '\0') && (preferences.Button4_Cmd[0] != '\0'))
+    // If we received 'EndOfParameter', i.e., all parameters arrived,
+    // then let's sort the parameters in the parameter list by name.
+    else if( syscmd == SYSCMD::EndOfParameter )
     {
-    bFunction4->Enabled=true;
-    bFunction4->Caption=preferences.Button4_Name;
+      mParameters.Sort();
     }
- else
+    // The operator receiving 'EndOfState' marks the end of the publishing phase.
+    else if( syscmd == SYSCMD::EndOfState )
     {
-    bFunction4->Enabled=false;
-    bFunction4->Caption="Function 4";
+      mSysstatus.EOS[ Origin( is ) ] = true;
     }
-}
-
-
-void __fastcall TfMain::FormShow(TObject *Sender)
-{
- if (firsttime)
+    // If we received EndOfStates from all the modules, then make the transition
+    // to the next system state.
+    if( mSysstatus.EOS[ EEGSource ] && mSysstatus.EOS[ SigProc ] && mSysstatus.EOS[ App ]
+        && mSysstatus.SystemState == SYSSTATUS::Publishing )
     {
-    // fConnectionInfo->Show();
-    // fVisConfig->Show();
-    syslog=new SYSLOG;
-    syslog->AddSysLogEntry("BCI2000 started");
-    firsttime=false;
-
-    SetFunctionButtons();
+      EnterState( SYSSTATUS::Information );
     }
+  }
+  return true;
+}
+
+bool
+TfMain::HandlePARAM( istream& is )
+{
+  PARAM param;
+  if( param.ReadBinary( is ) )
+  {
+    ++mSysstatus.NumParametersRecv[ Origin( is ) ];
+    mParameters.CloneParameter2List( &param );
+    // Update the parameter in the configuration window.
+    fConfig->RenderParameter( mParameters.GetParamPtr( param.GetName() ) );
+  }
+  return true;
+}
+
+bool
+TfMain::HandleSTATE( istream& is )
+{
+  STATE state;
+  if( state.ReadBinary( is ) )
+  {
+    ++mSysstatus.NumStatesRecv[ Origin( is ) ];
+    mStates.AddState2List( &state );
+    EnterState( SYSSTATUS::Publishing );
+  }
+  return true;
+}
+
+bool
+TfMain::HandleVisSignal( istream& is )
+{
+  VisSignal visSignal;
+  if( visSignal.ReadBinary( is ) )
+  {
+    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    VISUAL::HandleMessage( visSignal );
+  }
+  return true;
+}
+
+bool
+TfMain::HandleVisCfg( istream& is )
+{
+  VisCfg visCfg;
+  if( visCfg.ReadBinary( is ) )
+  {
+    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    VISUAL::HandleMessage( visCfg );
+  }
+  return true;
+}
+
+bool
+TfMain::HandleVisMemo( istream& is )
+{
+  VisMemo visMemo;
+  if( visMemo.ReadBinary( is ) )
+  {
+    ++mSysstatus.NumDataRecv[ Origin( is ) ];
+    VISUAL::HandleMessage( visMemo );
+  }
+  return true;
+}
+
+
+//------------------ IDE-managed VCL event handlers -------------------------
+
+void __fastcall TfMain::bQuitClick( TObject* )
+{
+  QuitOperator();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::bShowConnectionInfoClick(TObject *Sender)
+void __fastcall TfMain::FormClose( TObject*, TCloseAction &outAction )
 {
- fConnectionInfo->Show();
+  if( !mSyslog.Close() )
+    outAction = caNone;
 }
 //---------------------------------------------------------------------------
 
-
-
-void __fastcall TfMain::SetTrayIcon(TObject *Sender)
+void __fastcall TfMain::bRunSystemClick( TObject* )
 {
- // TrayIcon->Visible=true;
-}
-
-void __fastcall TfMain::RemoveTrayIcon(TObject *Sender)
-{
- // TrayIcon->Visible=false;
-}
-
-
-void __fastcall TfMain::ActiveTimerTimer(TObject *Sender)
-{
-TDateTime       cur_time, delay;
-AnsiString      caption;
-
- // calculate the seconds the system has been idle/running
- cur_time=TDateTime::CurrentDateTime();
- delay=cur_time-starttime;
-
- caption=AnsiString(TXT_WINDOW_CAPTION)+" "+AnsiString(TXT_OPERATOR_VERSION);
-
- if (sysstatus.SystemState == STATE_OPERATING)
-    caption += " - Running "+delay.FormatString("nn:ss")+" s";
- if (sysstatus.SystemState == STATE_SUSPENDED)
-    caption += " - Suspended "+delay.FormatString("nn:ss")+" s";
-
- fMain->Caption=caption;
+  UpdateState( "Running", mSysstatus.SystemState != SYSSTATUS::Running );
 }
 //---------------------------------------------------------------------------
 
-
-
-void __fastcall TfMain::Exit1Click(TObject *Sender)
+void __fastcall TfMain::bConfigClick( TObject* )
 {
- QuitOperator();
+  fConfig->Initialize( &mParameters, &mPreferences );
+  fConfig->Show();
 }
 //---------------------------------------------------------------------------
 
-
-void __fastcall TfMain::N1Click(TObject *Sender)
+void __fastcall TfMain::bSetConfigClick( TObject* )
 {
- fPreferences->preferences=&preferences;
- fPreferences->ShowModal();
- SetFunctionButtons();
+  if( fConfig->Visible )
+    fConfig->Close();
+
+  switch( mSysstatus.SystemState )
+  {
+    case SYSSTATUS::Information:
+    case SYSSTATUS::Initialization:
+      EnterState( SYSSTATUS::Initialization );
+      break;
+    case SYSSTATUS::Resting:
+    case SYSSTATUS::Suspended:
+      EnterState( SYSSTATUS::Resting );
+      break;
+  }
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::About1Click(TObject *Sender)
+void __fastcall TfMain::bShowConnectionInfoClick( TObject* )
 {
- fAbout->ShowModal();
+  fConnectionInfo->Show();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::States1Click(TObject *Sender)
+void __fastcall TfMain::Exit1Click( TObject* )
 {
- fShowStates->statelist=&statelist;
- fShowStates->ShowModal();
+  QuitOperator();
 }
 //---------------------------------------------------------------------------
 
-
-void __fastcall TfMain::OperatorLog1Click(TObject *Sender)
+void __fastcall TfMain::N1Click( TObject* )
 {
- syslog->ShowSysLog();        
+  fPreferences->preferences = &mPreferences;
+  fPreferences->ShowModal();
+  SetFunctionButtons();
 }
 //---------------------------------------------------------------------------
 
-
-void __fastcall TfMain::bFunction1Click(TObject *Sender)
+void __fastcall TfMain::About1Click( TObject* )
 {
- script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
- script.ExecuteCommand(preferences.Button1_Cmd);
+  fAbout->ShowModal();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::bFunction2Click(TObject *Sender)
+void __fastcall TfMain::States1Click( TObject* )
 {
- script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
- script.ExecuteCommand(preferences.Button2_Cmd);
+  fShowStates->statelist = &mStates;
+  fShowStates->ShowModal();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::bFunction3Click(TObject *Sender)
+void __fastcall TfMain::OperatorLog1Click( TObject* )
 {
- script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
- script.ExecuteCommand(preferences.Button3_Cmd);
+  if( mSyslog.Visible() )
+    mSyslog.HideSysLog();
+  else
+    mSyslog.ShowSysLog();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TfMain::bFunction4Click(TObject *Sender)
+void __fastcall TfMain::ConnectionInfo1Click( TObject* )
 {
- script.Initialize(&paramlist, &statelist, syslog, sysstatus.SourceSocket);
- script.ExecuteCommand(preferences.Button4_Cmd);
+  fConnectionInfo->Visible = !fConnectionInfo->Visible;
 }
 //---------------------------------------------------------------------------
 
-
+void __fastcall TfMain::View1Click(TObject *Sender)
+{
+  ConnectionInfo1->Checked = fConnectionInfo->Visible;
+  OperatorLog1->Checked = mSyslog.Visible();
+}
+//---------------------------------------------------------------------------
+#define BUTTON_CLICK( number ) \
+void __fastcall TfMain::bFunction##number##Click( TObject* )            \
+{                                                                       \
+  mScript.ExecuteCommand( mPreferences.Buttons[ number ].Cmd.c_str() ); \
+}
+BUTTON_CLICK( 1 )
+BUTTON_CLICK( 2 )
+BUTTON_CLICK( 3 )
+BUTTON_CLICK( 4 )
 
 
 

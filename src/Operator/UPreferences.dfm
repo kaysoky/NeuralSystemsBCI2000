@@ -226,7 +226,7 @@ object fPreferences: TfPreferences
     Height = 21
     TabOrder = 2
   end
-  object eExit: TEdit
+  object eOnExit: TEdit
     Left = 16
     Top = 96
     Width = 225

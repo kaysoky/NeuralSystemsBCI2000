@@ -59,7 +59,7 @@ class tcpsocket
     void open( const char* ip, u_short port );
     void close();
     bool is_open() const; // A socket may be open but not connected.
-    bool connected() const { return is_open() && !m_listening; }
+    bool connected();
     std::string ip() const;
     u_short port() const;
     // If there is data available, this function returns true.
@@ -132,8 +132,8 @@ class tcpbuf : public std::streambuf
     {
       // 512 is a small buffer size intended to trigger bugs with messages that exceed it.
       // For efficient operation, this should be something like 64k.
-      buf_size = 512,
-      //buf_size = 64 * 1024,
+      // buf_size = 512,
+      buf_size = 64 * 1024,
     };
 
   public:

@@ -71,6 +71,27 @@ void SYSLOG::ShowSysLog()
  form->Show();
 }
 
+// **************************************************************************
+// Function:   HideSysLog
+// Purpose:    Hides the system log window
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void SYSLOG::HideSysLog()
+{
+ form->Hide();
+}
+
+// **************************************************************************
+// Function:   Visible
+// Purpose:    Returns whether the sys log window is visible
+// Parameters: N/A
+// Returns:    true if the window is visible
+// **************************************************************************
+bool SYSLOG::Visible() const
+{
+ return form->Visible;
+}
 
 // **************************************************************************
 // Function:   AddSysLogEntry

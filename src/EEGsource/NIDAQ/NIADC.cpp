@@ -250,7 +250,7 @@ void NIADC::CallBack (int handle, int msg, WPARAM wParam, LPARAM lParam)
        // set the event so that ADReadDataBlock() gets notified
        }
     }
- } catch( TooGeneralCatch& ) { bufferdone->SetEvent(); }
+ } catch(...) { bufferdone->SetEvent(); }
 }
 
 

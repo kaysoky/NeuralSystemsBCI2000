@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-USEFORM("..\UMain.cpp", fMain);
 USEFORM("Usr.cpp", User);
+USEFORM("..\..\shared\UCoreMain.cpp", fMain);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

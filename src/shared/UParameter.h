@@ -228,28 +228,32 @@ class PARAM
   const char*   GetValue( const std::string& label_dim1, size_t index_dim2 ) const
                 { return GetValue( dim1_index[ label_dim1 ], index_dim2 ); }
   labelIndexer& LabelsDimension1()
-                { return dim1_index; }
+                { changed = true; return dim1_index; }
   labelIndexer& RowLabels()
-                { return LabelsDimension1(); }
+                { changed = true; return LabelsDimension1(); }
   const labelIndexer& LabelsDimension1() const
                 { return dim1_index; }
   const labelIndexer& RowLabels() const
                 { return LabelsDimension1(); }
   labelIndexer& LabelsDimension2()
-                { return dim2_index; }
+                { changed = true; return dim2_index; }
   labelIndexer& ColumnLabels()
-                { return LabelsDimension2(); }
+                { changed = true; return LabelsDimension2(); }
   const labelIndexer& LabelsDimension2() const
                 { return dim2_index; }
   const labelIndexer& ColumnLabels() const
                 { return LabelsDimension2(); }
   labelIndexer& Labels()
-                { return dim1_index; }
+                { changed = true; return dim1_index; }
   const labelIndexer& Labels() const
                 { return dim1_index; }
 #endif // LABEL_INDEXING
-        bool    Valid()
+        bool    Valid() const
                 { return valid; }
+        bool    Changed() const
+                { return changed; }
+        void    Unchanged()
+                { changed = false; }
 
         void    WriteToStream( std::ostream& ) const;
         void    ReadFromStream( std::istream& );
@@ -262,8 +266,11 @@ class PARAM
 #endif
         int     ParseParameter( const char* line, size_t length );
 
- public: // These will become private.
+ private:
         bool    valid;
+        bool    changed;
+
+ public: // These will become private.
         bool    archive;
         bool    tag;  // important for parameter save/load filters
 

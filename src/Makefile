@@ -131,7 +131,7 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                   >>$@
   @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\           >>$@
   @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES)    >>$@
-  @echo ^^ -_$^^(PROJECT) ^>.docinfo                                 >>$@
+  @echo ^^ -_$^^(PROJECT) ^^>$^^(PROJECT:.exe=.info)                 >>$@
   @echo ^^ -del _$^^(PROJECT)                                        >>$@
   @echo ^^ -del _*.tds                                               >>$@
   @echo prepare:                                                     >>$@

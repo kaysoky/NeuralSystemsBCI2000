@@ -4,7 +4,7 @@
 //
 // Description: EnvironmentBase and Environment are mix-in base classes that
 //              channel access to enviroment-like
-//              global objects of types CORECOMM, PARAMLIST, STATELIST,
+//              global objects of types PARAMLIST, STATELIST,
 //              STATEVECTOR, and provides convenient accessor functions
 //              and checking utilities.
 //              The difference between EnvironmentBase and Environment is that
@@ -20,6 +20,7 @@
 
 #include "UEnvironment.h"
 
+#include "MessageHandler.h"
 #include "UBCIError.h"
 #include <typeinfo>
 
@@ -34,19 +35,19 @@ using namespace std;
 #undef _paramlist
 #undef _statelist
 #undef _statevector
-#undef _corecomm
+#undef _operator
 #undef _phase
 PARAMLIST*   EnvironmentBase::_paramlist = NULL;
 STATELIST*   EnvironmentBase::_statelist = NULL;
 STATEVECTOR* EnvironmentBase::_statevector = NULL;
-CORECOMM*    EnvironmentBase::_corecomm = NULL;
+ostream*    EnvironmentBase::_operator = NULL;
 EnvironmentBase::executionPhase EnvironmentBase::_phase = EnvironmentBase::nonaccess;
 EnvironmentBase::ExtensionsContainer EnvironmentBase::sExtensions;
 
 EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
 EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
-EnvironmentBase::corecommAccessor    EnvironmentBase::Corecomm;
+EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
 PARAM*
 EnvironmentBase::GetParamPtr( const string& name ) const
@@ -375,18 +376,43 @@ void EnvironmentBase::EnterNonaccessPhase()
 {
   __bcierr.SetFlushHandler( BCIError::LogicError );
   __bciout.SetFlushHandler( BCIError::Warning );
+  switch( _phase )
+  {
+    case nonaccess:
+      bcierr << "Already in non-access phase" << endl;
+      break;
+    case construction:
+    case preflight:
+    case initialization:
+    case processing:
+      break;
+    case resting:
+      if( _paramlist && _operator )
+      {
+        PARAMLIST changedParameters;
+        for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
+          if( i->second.Changed() )
+            changedParameters.insert( *i );
+        if( !changedParameters.empty() )
+          if( !MessageHandler::PutMessage( *_operator, changedParameters ) )
+            bcierr << "Could not publish changed parameters" << endl;
+      }
+      break;
+    default:
+      bcierr << "Unknown execution phase" << endl;
+  }
   _phase = nonaccess;
   _paramlist = NULL;
   _statelist = NULL;
   _statevector = NULL;
-  _corecomm = NULL;
+  _operator = NULL;
 }
 // Called from the framework before any EnvironmentBase descendant class
 // is instantiated.
 void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
                                               STATELIST*   inStateList,
                                               STATEVECTOR* inStateVector,
-                                              CORECOMM*    inCoreComm )
+                                              ostream*     inOperator )
 {
   __bcierr.SetFlushHandler( BCIError::LogicError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -394,7 +420,7 @@ void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
   _paramlist = inParamList;
   _statelist = inStateList;
   _statevector = inStateVector;
-  _corecomm = inCoreComm;
+  _operator = inOperator;
   for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
     ( *i )->Publish();
 }
@@ -403,7 +429,7 @@ void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
 void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
                                            STATELIST*   inStateList,
                                            STATEVECTOR* inStateVector,
-                                           CORECOMM*    inCoreComm )
+                                           ostream*     inOperator )
 {
   __bcierr.SetFlushHandler( BCIError::ConfigurationError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -411,7 +437,7 @@ void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
   _paramlist = inParamList;
   _statelist = inStateList;
   _statevector = NULL;
-  _corecomm = inCoreComm;
+  _operator = inOperator;
   for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
     ( *i )->Preflight();
 }
@@ -420,7 +446,7 @@ void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
 void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
                                                 STATELIST*   inStateList,
                                                 STATEVECTOR* inStateVector,
-                                                CORECOMM*    inCoreComm )
+                                                ostream*     inOperator )
 {
   __bcierr.SetFlushHandler( BCIError::RuntimeError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -428,7 +454,7 @@ void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
   _paramlist = inParamList;
   _statelist = inStateList;
   _statevector = inStateVector;
-  _corecomm = inCoreComm;
+  _operator = inOperator;
   for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
     ( *i )->Initialize();
 }
@@ -437,7 +463,7 @@ void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
 void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
                                             STATELIST*   inStateList,
                                             STATEVECTOR* inStateVector,
-                                            CORECOMM*    inCoreComm )
+                                            ostream*     inOperator )
 {
   __bcierr.SetFlushHandler( BCIError::RuntimeError );
   __bciout.SetFlushHandler( BCIError::Warning );
@@ -445,9 +471,28 @@ void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
   _paramlist = inParamList;
   _statelist = inStateList;
   _statevector = inStateVector;
-  _corecomm = inCoreComm;
+  _operator = inOperator;
   for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
     ( *i )->Process();
+}
+
+// Called before any call to GenericFilter::Resting().
+void EnvironmentBase::EnterRestingPhase( PARAMLIST*   inParamList,
+                                         STATELIST*   inStateList,
+                                         STATEVECTOR* inStateVector,
+                                         ostream*     inOperator )
+{
+  __bcierr.SetFlushHandler( BCIError::RuntimeError );
+  __bciout.SetFlushHandler( BCIError::Warning );
+  _phase = resting;
+  _paramlist = inParamList;
+  _statelist = inStateList;
+  _statevector = inStateVector;
+  _operator = inOperator;
+  for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
+    i->second.Unchanged();
+  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+    ( *i )->Resting();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,9 +500,11 @@ void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
 ////////////////////////////////////////////////////////////////////////////////
 Environment::Environment()
 {
+#if 0
   if( GetPhase() != construction )
     _bcierr << "Environment descendant instantiated "
                "outside construction phase.";
+#endif
 }
 
 

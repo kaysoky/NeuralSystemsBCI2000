@@ -323,7 +323,7 @@ object fConnectionInfo: TfConnectionInfo
     Height = 13
     Caption = '0'
   end
-  object tSourceConnected: TLabel
+  object tEEGSourceConnected: TLabel
     Left = 176
     Top = 8
     Width = 20
@@ -337,14 +337,14 @@ object fConnectionInfo: TfConnectionInfo
     Height = 13
     Caption = 'N/A'
   end
-  object tApplicationConnected: TLabel
+  object tAppConnected: TLabel
     Left = 176
     Top = 40
     Width = 20
     Height = 13
     Caption = 'N/A'
   end
-  object cSourceConnected: TCheckBox
+  object cEEGSourceConnected: TCheckBox
     Left = 8
     Top = 8
     Width = 145
@@ -360,7 +360,7 @@ object fConnectionInfo: TfConnectionInfo
     Caption = 'signal processing connected'
     TabOrder = 1
   end
-  object cApplicationConnected: TCheckBox
+  object cAppConnected: TCheckBox
     Left = 8
     Top = 40
     Width = 161

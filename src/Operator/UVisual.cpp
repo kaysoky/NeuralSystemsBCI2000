@@ -35,7 +35,7 @@
 
 #include "UVisual.h"
 #include "defines.h"
-#include "UCoreMessage.h" // for COREMSG_DATA
+#include "UGenericVisualization.h"
 
 #include <assert>
 #include <Registry.hpp>
@@ -51,14 +51,34 @@ using namespace std;
 
 const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
 
-VISUAL::VISUAL_BASE::vis_container VISUAL::VISUAL_BASE::visuals;
-VISUAL::VISUAL_BASE::config_container VISUAL::VISUAL_BASE::visconfigs;
+void
+VISUAL::HandleMessage( const VisCfg& v )
+{
+  VisualBase::HandleMessage( v );
+}
+
+void
+VISUAL::HandleMessage( const VisSignal& v )
+{
+  Graph::HandleMessage( v );
+}
+
+void
+VISUAL::HandleMessage( const VisMemo& v )
+{
+  Memo::HandleMessage( v );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+VISUAL::VisualBase::vis_container VISUAL::VisualBase::visuals;
+VISUAL::VisualBase::config_container VISUAL::VisualBase::visconfigs;
 
 ////////////////////////////////////////////////////////////////////////////////
 const char* cfgid_prefix = "CFGID"; // const AnsiString cfgid_prefix = "CFGID"; won't work.
 
 void
-VISUAL::VISUAL_BASE::config_container::Save()
+VISUAL::VisualBase::config_container::Save()
 {
   AnsiString as_cfgid_prefix = cfgid_prefix;
 
@@ -88,7 +108,7 @@ VISUAL::VISUAL_BASE::config_container::Save()
 }
 
 void
-VISUAL::VISUAL_BASE::config_container::Restore()
+VISUAL::VisualBase::config_container::Restore()
 {
   AnsiString as_cfgid_prefix = cfgid_prefix;
 
@@ -129,22 +149,22 @@ VISUAL::VISUAL_BASE::config_container::Restore()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VISUAL::VISUAL_BASE::VISUAL_BASE( id_type inSourceID )
+VISUAL::VisualBase::VisualBase( id_type inSourceID )
 : sourceID( inSourceID ),
   form( NULL )
 {
-  VISUAL_BASE* visual = visuals[ sourceID ];
+  VisualBase* visual = visuals[ sourceID ];
   delete visual;
   visuals[ sourceID ] = this;
 }
 
-VISUAL::VISUAL_BASE::~VISUAL_BASE()
+VISUAL::VisualBase::~VisualBase()
 {
   delete form;
 }
 
 void
-VISUAL::VISUAL_BASE::vis_container::clear()
+VISUAL::VisualBase::vis_container::clear()
 {
   for( iterator i = begin(); i != end(); ++i )
     delete i->second;
@@ -152,7 +172,7 @@ VISUAL::VISUAL_BASE::vis_container::clear()
 }
 
 void
-VISUAL::VISUAL_BASE::SetConfig( config_settings& inConfig )
+VISUAL::VisualBase::SetConfig( config_settings& inConfig )
 {
   title = inConfig[ CFGID::WINDOWTITLE ];
   if( title != "" )
@@ -198,7 +218,7 @@ VISUAL::VISUAL_BASE::SetConfig( config_settings& inConfig )
 }
 
 void
-VISUAL::VISUAL_BASE::Restore()
+VISUAL::VisualBase::Restore()
 {
   assert( form != NULL );
   form->BorderStyle = bsSizeToolWin;
@@ -208,34 +228,22 @@ VISUAL::VISUAL_BASE::Restore()
 }
 
 void
-VISUAL::VISUAL_BASE::Save() const
+VISUAL::VisualBase::Save() const
 {
   assert( form != NULL );
 }
 
-bool
-VISUAL::VISUAL_BASE::HandleMessage( istream& is )
+void
+VISUAL::VisualBase::HandleMessage( const VisCfg& v )
 {
-  if( is.peek() != VISTYPE::VISCFG )
-    return  VISUAL_GRAPH::HandleMessage( is )
-            || VISUAL_MEMO::HandleMessage( is );
-
-  is.ignore( 3 );
-  int sourceID = is.get(),
-      cfgID = is.get();
-  string value;
-  if( getline( is >> ws, value, '\0' ) )
-  {
-    visconfigs[ sourceID ].Put( cfgID, value, MessageDefined );
-    if( visuals[ sourceID ] != NULL )
-      visuals[ sourceID ]->SetConfig( visconfigs[ sourceID ] );
-  }
-  return is;
+  visconfigs[ v.GetSourceID() ].Put( v.GetCfgID(), v.GetCfgValue(), MessageDefined );
+  if( visuals[ v.GetSourceID() ] != NULL )
+    visuals[ v.GetSourceID() ]->SetConfig( visconfigs[ v.GetSourceID() ] );
 }
 
 void
 __fastcall
-VISUAL::VISUAL_BASE::FormMove( TObject* )
+VISUAL::VisualBase::FormMove( TObject* )
 {
   visconfigs[ sourceID ].Put( CFGID::Top, form->Top, UserDefined );
   visconfigs[ sourceID ].Put( CFGID::Left, form->Left, UserDefined );
@@ -243,7 +251,7 @@ VISUAL::VISUAL_BASE::FormMove( TObject* )
 
 void
 __fastcall
-VISUAL::VISUAL_BASE::FormResize( TObject* Sender )
+VISUAL::VisualBase::FormResize( TObject* Sender )
 {
   TForm* Form = static_cast<TForm*>( Sender );
   Form->Invalidate();
@@ -252,7 +260,7 @@ VISUAL::VISUAL_BASE::FormResize( TObject* Sender )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-const RGBColor VISUAL::VISUAL_GRAPH::channelColorsDefault[] =
+const RGBColor VISUAL::Graph::channelColorsDefault[] =
 {
   White,
   White,
@@ -262,8 +270,8 @@ const RGBColor VISUAL::VISUAL_GRAPH::channelColorsDefault[] =
   Colorlist::End
 };
 
-VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
-: VISUAL_BASE( inSourceID ),
+VISUAL::Graph::Graph( id_type inSourceID )
+: VisualBase( inSourceID ),
   showCursor( false ),
   wrapAround( false ),
   numSamples( numSamplesDefault ),
@@ -285,7 +293,7 @@ VISUAL::VISUAL_GRAPH::VISUAL_GRAPH( id_type inSourceID )
   Restore();
 }
 
-VISUAL::VISUAL_GRAPH::~VISUAL_GRAPH()
+VISUAL::Graph::~Graph()
 {
   Save();
   delete offscreenBitmap;
@@ -293,9 +301,9 @@ VISUAL::VISUAL_GRAPH::~VISUAL_GRAPH()
 }
 
 void
-VISUAL::VISUAL_GRAPH::SetConfig( config_settings& inConfig )
+VISUAL::Graph::SetConfig( config_settings& inConfig )
 {
-  VISUAL_BASE::SetConfig( inConfig );
+  VisualBase::SetConfig( inConfig );
 
   int userScaling = mUserScaling;
   mUserScaling = 0;
@@ -335,52 +343,44 @@ VISUAL::VISUAL_GRAPH::SetConfig( config_settings& inConfig )
 }
 
 void
-VISUAL::VISUAL_GRAPH::Restore()
+VISUAL::Graph::Restore()
 {
   if( form == NULL )
   {
     form = new TVisGraphForm;
     BuildContextMenu();
   }
-  VISUAL_BASE::Restore();
+  VisualBase::Restore();
   form->OnKeyUp = FormKeyUp;
   form->OnPaint = FormPaint;
   form->Show();
 }
 
 void
-VISUAL::VISUAL_GRAPH::Save() const
+VISUAL::Graph::Save() const
 {
-  VISUAL_BASE::Save();
+  VisualBase::Save();
 }
 
-bool
-VISUAL::VISUAL_GRAPH::HandleMessage( istream& is )
+void
+VISUAL::Graph::HandleMessage( const VisSignal& v )
 {
-  if( is.peek() != VISTYPE::GRAPH )
-    return false;
-
-  is.ignore( 3 );
-  int sourceID = is.get();
-  VISUAL_GRAPH* visual = dynamic_cast<VISUAL_GRAPH*>( visuals[ sourceID ] );
+  Graph* visual = dynamic_cast<Graph*>( visuals[ v.GetSourceID() ] );
   if( visual == NULL )
   {
-    delete visuals[ sourceID ];
-    visual = new VISUAL_GRAPH( sourceID );
-    visuals[ sourceID ] = visual;
+    delete visuals[ v.GetSourceID() ];
+    visual = new Graph( v.GetSourceID() );
+    visuals[ v.GetSourceID() ] = visual;
   }
-  return visual->InstanceHandleMessage( is );
+  visual->InstanceHandleMessage( v );
 }
 
-bool
-VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
+void
+VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
 {
-  GenericSignal newData;
-
-  if( !newData.ReadBinary( is ) )
-    return false;
+  const GenericSignal& newData = v.GetSignal();
   if( newData.Channels() < 1 || newData.MaxElements() < 1 )
-    return true;
+    return;
 
   // Any changes in the signal size that we must react to?
   bool reconfigure = false;
@@ -465,20 +465,18 @@ VISUAL::VISUAL_GRAPH::InstanceHandleMessage( istream& is )
   invalidRect.right = min( firstValidPixel - dataWidth, dataRect.right );
   if( invalidRect.left < invalidRect.right )
     ::InvalidateRect( form->Handle, &invalidRect, false );
-
-  return true;
 }
 
 inline
 void
-VISUAL::VISUAL_GRAPH::SyncGraphics()
+VISUAL::Graph::SyncGraphics()
 {
   dataRect = TRect( labelWidth, 0, form->ClientWidth, form->ClientHeight );
   dataWidth = std::max<int>( 0, dataRect.right - dataRect.left );
   dataHeight = std::max<int>( 0, dataRect.bottom - dataRect.top - labelWidth );
 }
 
-struct VISUAL::VISUAL_GRAPH::MenuItemEntry VISUAL::VISUAL_GRAPH::sMenuItems[] =
+struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
 {
   { EnlargeSignal, EnlargeSignal_Enabled, NULL, "Enlarge Signal" },
   { ReduceSignal, ReduceSignal_Enabled, NULL, "Reduce Signal" },
@@ -493,7 +491,7 @@ struct VISUAL::VISUAL_GRAPH::MenuItemEntry VISUAL::VISUAL_GRAPH::sMenuItems[] =
 };
 
 void
-VISUAL::VISUAL_GRAPH::BuildContextMenu()
+VISUAL::Graph::BuildContextMenu()
 {
   assert( form != NULL );
   TPopupMenu* menu = new TPopupMenu( form );
@@ -511,7 +509,7 @@ VISUAL::VISUAL_GRAPH::BuildContextMenu()
 
 void
 __fastcall
-VISUAL::VISUAL_GRAPH::PopupMenuPopup( TObject* inSender )
+VISUAL::Graph::PopupMenuPopup( TObject* inSender )
 {
   TPopupMenu* menu = dynamic_cast<TPopupMenu*>( inSender );
   assert( menu != NULL );
@@ -526,7 +524,7 @@ VISUAL::VISUAL_GRAPH::PopupMenuPopup( TObject* inSender )
 
 void
 __fastcall
-VISUAL::VISUAL_GRAPH::PopupMenuItemClick( TObject* inSender )
+VISUAL::Graph::PopupMenuItemClick( TObject* inSender )
 {
   TMenuItem* item = dynamic_cast<TMenuItem*>( inSender );
   assert( item != NULL );
@@ -536,13 +534,13 @@ VISUAL::VISUAL_GRAPH::PopupMenuItemClick( TObject* inSender )
 }
 
 void
-VISUAL::VISUAL_GRAPH::ToggleDisplayMode()
+VISUAL::Graph::ToggleDisplayMode()
 {
   SetDisplayMode( DisplayMode( ( displayMode + 1 ) % numDisplayModes ) );
 }
 
 void
-VISUAL::VISUAL_GRAPH::ToggleBaselines()
+VISUAL::Graph::ToggleBaselines()
 {
   showBaselines = !showBaselines;
   visconfigs[ sourceID ].Put( CFGID::showBaselines, showBaselines, UserDefined );
@@ -550,38 +548,38 @@ VISUAL::VISUAL_GRAPH::ToggleBaselines()
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ToggleBaselines_Enabled() const
+VISUAL::Graph::ToggleBaselines_Enabled() const
 {
   return displayMode == polyline;
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ToggleBaselines_Checked() const
+VISUAL::Graph::ToggleBaselines_Checked() const
 {
   return showBaselines;
 }
 
 void
-VISUAL::VISUAL_GRAPH::ToggleColor()
+VISUAL::Graph::ToggleColor()
 {
   displayColors = !displayColors;
   form->Invalidate();
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ToggleColor_Enabled() const
+VISUAL::Graph::ToggleColor_Enabled() const
 {
   return displayMode == polyline || displayMode == field2d;
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ToggleColor_Checked() const
+VISUAL::Graph::ToggleColor_Checked() const
 {
   return displayColors;
 }
 
 void
-VISUAL::VISUAL_GRAPH::ChooseColors()
+VISUAL::Graph::ChooseColors()
 {
   // The dialog's "custom colors" are used to hold the user colors.
   // Maybe this should be changed in the future.
@@ -622,13 +620,13 @@ VISUAL::VISUAL_GRAPH::ChooseColors()
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ChooseColors_Enabled() const
+VISUAL::Graph::ChooseColors_Enabled() const
 {
   return displayColors && displayMode == polyline;
 }
 
 void
-VISUAL::VISUAL_GRAPH::EnlargeSignal()
+VISUAL::Graph::EnlargeSignal()
 {
 #if 0
   float offset = ( minValue + maxValue ) / 2,
@@ -645,13 +643,13 @@ VISUAL::VISUAL_GRAPH::EnlargeSignal()
 }
 
 bool
-VISUAL::VISUAL_GRAPH::EnlargeSignal_Enabled() const
+VISUAL::Graph::EnlargeSignal_Enabled() const
 {
   return mUserScaling < maxUserScaling;
 }
 
 void
-VISUAL::VISUAL_GRAPH::ReduceSignal()
+VISUAL::Graph::ReduceSignal()
 {
 #if 0
   float offset = ( minValue + maxValue ) / 2,
@@ -668,37 +666,37 @@ VISUAL::VISUAL_GRAPH::ReduceSignal()
 }
 
 bool
-VISUAL::VISUAL_GRAPH::ReduceSignal_Enabled() const
+VISUAL::Graph::ReduceSignal_Enabled() const
 {
   return mUserScaling > -maxUserScaling;
 }
 
 void
-VISUAL::VISUAL_GRAPH::LessChannels()
+VISUAL::Graph::LessChannels()
 {
   SetDisplayGroups( numDisplayGroups / 2 );
 }
 
 bool
-VISUAL::VISUAL_GRAPH::LessChannels_Enabled() const
+VISUAL::Graph::LessChannels_Enabled() const
 {
   return numDisplayGroups > 1;
 }
 
 void
-VISUAL::VISUAL_GRAPH::MoreChannels()
+VISUAL::Graph::MoreChannels()
 {
   SetDisplayGroups( numDisplayGroups * 2 );
 }
 
 bool
-VISUAL::VISUAL_GRAPH::MoreChannels_Enabled() const
+VISUAL::Graph::MoreChannels_Enabled() const
 {
   return numDisplayGroups < data.Channels() / channelGroupSize;
 }
 
 void
-VISUAL::VISUAL_GRAPH::SetDisplayGroups( int inDisplayGroups )
+VISUAL::Graph::SetDisplayGroups( int inDisplayGroups )
 {
   numDisplayGroups = inDisplayGroups;
   numDisplayChannels = min( data.Channels(), numDisplayGroups * channelGroupSize );
@@ -707,7 +705,7 @@ VISUAL::VISUAL_GRAPH::SetDisplayGroups( int inDisplayGroups )
 }
 
 void
-VISUAL::VISUAL_GRAPH::SetBottomGroup( int inBottomGroup )
+VISUAL::Graph::SetBottomGroup( int inBottomGroup )
 {
   int newBottomGroup = inBottomGroup,
       maxBottomGroup = ChannelToGroup( data.Channels() ) - int( numDisplayGroups );
@@ -723,7 +721,7 @@ VISUAL::VISUAL_GRAPH::SetBottomGroup( int inBottomGroup )
 }
 
 void
-VISUAL::VISUAL_GRAPH::SetDisplayMode( DisplayMode mode )
+VISUAL::Graph::SetDisplayMode( DisplayMode mode )
 {
   if( mode != displayMode )
   {
@@ -734,7 +732,7 @@ VISUAL::VISUAL_GRAPH::SetDisplayMode( DisplayMode mode )
 
 void
 __fastcall
-VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
+VISUAL::Graph::FormKeyUp( TObject*, WORD& key, TShiftState )
 {
   switch( key )
   {
@@ -755,7 +753,7 @@ VISUAL::VISUAL_GRAPH::FormKeyUp( TObject*, WORD& key, TShiftState )
 
 void
 __fastcall
-VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
+VISUAL::Graph::FormPaint( TObject* Sender )
 {
   enum
   {
@@ -1043,35 +1041,35 @@ VISUAL::VISUAL_GRAPH::FormPaint( TObject* Sender )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-VISUAL::VISUAL_MEMO::VISUAL_MEMO( id_type inSourceID )
-: VISUAL_BASE( inSourceID ),
+VISUAL::Memo::Memo( id_type inSourceID )
+: VisualBase( inSourceID ),
   memo( new TMemo( ( TComponent* )NULL ) ),
   numLines( 0 )
 {
   Restore();
 }
 
-VISUAL::VISUAL_MEMO::~VISUAL_MEMO()
+VISUAL::Memo::~Memo()
 {
   Save();
   delete memo;
 }
 
 void
-VISUAL::VISUAL_MEMO::SetConfig( config_settings& inConfig )
+VISUAL::Memo::SetConfig( config_settings& inConfig )
 {
-  VISUAL_BASE::SetConfig( inConfig );
+  VisualBase::SetConfig( inConfig );
   inConfig.Get( CFGID::numLines, numLines );
   if( numLines < 1 )
     numLines = numeric_limits<int>::max();
 }
 
 void
-VISUAL::VISUAL_MEMO::Restore()
+VISUAL::Memo::Restore()
 {
   if( form == NULL )
     form = new TVisForm();
-  VISUAL_BASE::Restore();
+  VisualBase::Restore();
   form->Show();
   memo->Visible = false;
   memo->Parent = form;
@@ -1083,37 +1081,31 @@ VISUAL::VISUAL_MEMO::Restore()
 }
 
 void
-VISUAL::VISUAL_MEMO::Save() const
+VISUAL::Memo::Save() const
 {
-  VISUAL_BASE::Save();
+  VisualBase::Save();
   visconfigs[ sourceID ].Put( CFGID::numLines, numLines, MessageDefined );
 }
 
-bool
-VISUAL::VISUAL_MEMO::HandleMessage( istream& is )
+void
+VISUAL::Memo::HandleMessage( const VisMemo& v )
 {
-  if( is.peek() != VISTYPE::MEMO )
-    return false;
-
-  is.ignore( 3 );
-  int sourceID = is.get();
-  VISUAL_MEMO* visual = dynamic_cast<VISUAL_MEMO*>( visuals[ sourceID ] );
+  Memo* visual = dynamic_cast<Memo*>( visuals[ v.GetSourceID() ] );
   if( visual == NULL )
   {
-    delete visuals[ sourceID ];
-    visual = new VISUAL_MEMO( sourceID );
-    visuals[ sourceID ] = visual;
+    delete visuals[ v.GetSourceID() ];
+    visual = new Memo( v.GetSourceID() );
+    visuals[ v.GetSourceID() ] = visual;
   }
-  return visual->InstanceHandleMessage( is );
+  visual->InstanceHandleMessage( v );
 }
 
-bool
-VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
+void
+VISUAL::Memo::InstanceHandleMessage( const VisMemo& v )
 {
   while( memo->Lines->Count >= numLines )
     memo->Lines->Delete( 0 );
-  string s;
-  getline( is, s, '\0' );
+  string s = v.GetMemoText();
   size_t pos = 0;
   while( ( pos = s.find_first_of( "\n\r" ) ) != s.npos )
   {
@@ -1122,16 +1114,5 @@ VISUAL::VISUAL_MEMO::InstanceHandleMessage( istream& is )
   }
   if( !s.empty() )
     memo->Lines->Add( s.c_str() );
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-bool
-VISUAL::HandleMessage( istream& is )
-{
-  if( is.peek() != COREMSG_DATA )
-    return false;
-  is.get();
-  return VISUAL_BASE::HandleMessage( is );
 }
 

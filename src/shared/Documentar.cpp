@@ -30,17 +30,18 @@
 #define DOC_CHANNELS 64
 #define DOC_ELEMENTS 16
 
-#ifndef DOC_EXTENSION
-# define DOC_EXTENSION ".docinfo"
-#endif
-
-#undef LATEXOUTPUT
-
 using namespace std;
+
+typedef enum
+{
+  plain,
+  latex,
+} OutputType;
 
 class Table : public ostringstream
 {
  public:
+  explicit Table( OutputType output = plain ) : mOutputType( output ) {}
   void WriteToStream( ostream& os ) const
   {
     vector< vector< string > > cells( 1 );
@@ -74,47 +75,56 @@ class Table : public ostringstream
         if( cells[ row ][ col ].length() > maxLengths[ col ] )
           maxLengths[ col ] = cells[ row ][ col ].length();
 
-#ifdef LATEXOUTPUT
-    const char beforeCell[] = "\\verb@",
-               afterCell[] = "@";
-    os << "\\\\\n"
-       << "\\begin{tabular}{";
-    for( size_t col = 0; col < cells[ 0 ].size(); ++col )
-      os << 'l';
-    os <<"}\n"
-       << cells[ 0 ][ 0 ];
-    for( size_t col = 1; col < cells[ 0 ].size(); ++col )
-      os << " & " << cells[ 0 ][ col ];
-    os << "\\\\ \\hline \n";
-    for( size_t row = 1; row < cells.size(); ++row )
+    switch( mOutputType )
     {
-      os << '\n';
-      if( cells[ row ].size() > 0 )
-        os << beforeCell << cells[ row ][ 0 ] << afterCell;
-      for( size_t col = 1; col < cells[ row ].size(); ++col )
-        os << " & " << beforeCell << cells[ row ][ col ] << afterCell;
-      os << "\\\\ \n";
+      case latex:
+      {
+        const char beforeCell[] = "\\verb@",
+                   afterCell[] = "@";
+        os << "\\\\\n"
+           << "\\begin{tabular}{";
+        for( size_t col = 0; col < cells[ 0 ].size(); ++col )
+          os << 'l';
+        os <<"}\n"
+           << cells[ 0 ][ 0 ];
+        for( size_t col = 1; col < cells[ 0 ].size(); ++col )
+          os << " & " << cells[ 0 ][ col ];
+        os << "\\\\ \\hline \n";
+        for( size_t row = 1; row < cells.size(); ++row )
+        {
+          os << '\n';
+          if( cells[ row ].size() > 0 )
+            os << beforeCell << cells[ row ][ 0 ] << afterCell;
+          for( size_t col = 1; col < cells[ row ].size(); ++col )
+            os << " & " << beforeCell << cells[ row ][ col ] << afterCell;
+          os << "\\\\ \n";
+        }
+        os << "\\end{tabular}\n";
+      } break;
+      default:
+      {
+        os << '\n';
+        for( size_t col = 0; col < cells[ 0 ].size(); ++col )
+          os << ' '
+             << cells[ 0 ][ col ]
+             << string( maxLengths[ col ] - cells[ 0 ][ col ].length(), ' ' );
+        os << '\n';
+        for( size_t col = 0; col < cells[ 0 ].size(); ++col )
+          os << ' ' << string( maxLengths[ col ], '-' );
+        for( size_t row = 1; row < cells.size(); ++row )
+        {
+          os << '\n';
+          for( size_t col = 0; col < cells[ row ].size(); ++col )
+          os << ' '
+             << cells[ row ][ col ]
+             << string( maxLengths[ col ] - cells[ row ][ col ].length(), ' ' );
+        }
+      }
     }
-    os << "\\end{tabular}\n";
-#else // LATEXTOUTPUT
-    os << '\n';
-    for( size_t col = 0; col < cells[ 0 ].size(); ++col )
-      os << ' '
-         << cells[ 0 ][ col ]
-         << string( maxLengths[ col ] - cells[ 0 ][ col ].length(), ' ' );
-    os << '\n';
-    for( size_t col = 0; col < cells[ 0 ].size(); ++col )
-      os << ' ' << string( maxLengths[ col ], '-' );
-    for( size_t row = 1; row < cells.size(); ++row )
-    {
-      os << '\n';
-      for( size_t col = 0; col < cells[ row ].size(); ++col )
-      os << ' '
-         << cells[ row ][ col ]
-         << string( maxLengths[ col ] - cells[ row ][ col ].length(), ' ' );
-    }
-#endif // LATEXOUTPUT
   }
+
+ private:
+  OutputType mOutputType;
 };
 
 ostream& operator<<( ostream& os, Table& tb )
@@ -127,7 +137,7 @@ BCIError::bci_ostream::bci_stringbuf::sync()
   ++num_flushes;
   if( on_flush )
   {
-    cout << str();
+    cerr << str();
     str( "" );
   }
   return r;
@@ -157,65 +167,65 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   if( pos != string::npos )
     filename = filename.substr( 0, pos );
   modulename = filename;
-#if 0
-  filename += DOC_EXTENSION;
-  freopen( filename.c_str(), "w", stdout );
-#endif
   const char** av = new const char*[ _argc ];
   av[ 0 ] = modulename.c_str();
   for( int i = 1; i <= _argc; ++i )
     av[ i ] = _argv[ i ];
   int ret = Documentar()( _argc, av );
   delete[] av;
-#if 0
-  fclose( stdout );
-#endif
   return ret;
 }
 
 int Documentar::operator()( int argc, const char** argv )
 {
+  OutputType outputType = plain;
+  int  signalChannels = DOC_CHANNELS,
+       signalElements = DOC_ELEMENTS;
+  bool reportSignals = false;
+
+  for( int i = 1; i < argc; ++i )
+  {
+    if( string( "--latexoutput" ) == argv[ i ] )
+      outputType = latex;
+    else if( string( "--signaldimensions" ) == argv[ i ] )
+    {
+      reportSignals = true;
+      if( argc > i + 1 )
+        signalChannels = ::atoi( argv[ i + 1 ] );
+      if( argc > i + 2 )
+        signalElements = ::atoi( argv[ i + 2 ] );
+    }
+  }
+
   const char newl = '\n';
   const char tab = '\t';
-  Table table;
+  Table table( outputType );
 
-#ifdef LATEXOUTPUT
-  cout << "\\subsection{Module \\texttt{" << argv[ 0 ] << "}}\n";
-#else
-  cout << "Module: " << argv[ 0 ] << newl << newl;
-#endif // LATEXOUTPUT
-
-  if( GenericFilter::Registrar::Registrars().size() == 0 )
-    cout << "No filters registered." << newl;
-  else
+  switch( outputType )
   {
-      cout << "Filter sequence:" << newl;
-
-      table << "Position" << tab << "Filter Name" << newl;
-
-      string currentPos;
-      for( GenericFilter::registrarSet::iterator i
-                 = GenericFilter::Registrar::Registrars().begin();
-                 i != GenericFilter::Registrar::Registrars().end(); ++i )
-      {
-        if( currentPos != ( *i )->GetPosition() )
-        {
-          currentPos = ( *i )->GetPosition();
-          table << currentPos;
-        }
-        table << tab << ( *i )->GetTypeid().name() << newl;
-      }
-      cout << table << newl;
+    case latex:
+      cout << "\\subsection{Module \\texttt{" << argv[ 0 ] << "}}\n";
+      break;
+    default:
+      cout << "Module: " << argv[ 0 ] << newl << newl;
+      break;
   }
 
   PARAMLIST allParams;
   STATELIST allStates;
 
   SignalProperties inputProperties,
-                   outputProperties( DOC_CHANNELS, DOC_ELEMENTS );
+                   outputProperties( signalChannels, signalElements );
   string currentPos;
   typedef set<string> infoset;
   infoset filtersManipulatingCurrentOutput;
+  ostringstream report;
+  Table filterTable( outputType );
+  filterTable << "Position" << tab << "Filter Name";
+  if( reportSignals )
+    filterTable << tab
+                << "Input dimensions" << tab << "Output dimensions";
+  filterTable << newl;
 
   for( GenericFilter::registrarSet::iterator i
            = GenericFilter::Registrar::Registrars().begin();
@@ -229,11 +239,11 @@ int Documentar::operator()( int argc, const char** argv )
 
     if( filterParams.size() > 0 )
     {
-      cout << newl
-           << "Parameters defined by the "
-           << ( *i )->GetTypeid().name()
-           << " filter:"
-           << newl;
+      report << newl
+             << "Parameters defined by the "
+             << ( *i )->GetTypeid().name()
+             << " filter:"
+             << newl;
 
       table << "Section" << tab << "Type" << tab << "Name"
             << tab << "Description" << newl;
@@ -243,17 +253,17 @@ int Documentar::operator()( int argc, const char** argv )
         table << p->GetSection() << tab << p->GetType() << tab << p->GetName()
               << tab << p->GetComment() << newl;
       }
-      cout << table << newl;
+      report << table << newl;
       allParams.insert( filterParams.begin(), filterParams.end() );
     }
 
     if( filterStates.GetNumStates() > 0 )
     {
-      cout << newl
-           << "States defined by the "
-           << ( *i )->GetTypeid().name()
-           << " filter:"
-           << newl;
+      report << newl
+             << "States defined by the "
+             << ( *i )->GetTypeid().name()
+             << " filter:"
+             << newl;
       table << "Name" << tab << "Length" << newl;
       for( int i = 0; i < filterStates.GetNumStates(); ++i )
       {
@@ -262,7 +272,7 @@ int Documentar::operator()( int argc, const char** argv )
               << state->GetLength() << newl;
         allStates.AddState2List( state );
       }
-      cout << table << newl;
+      report << table << newl;
     }
 
     Environment::EnterPreflightPhase( &allParams, &allStates, NULL, NULL );
@@ -287,8 +297,25 @@ int Documentar::operator()( int argc, const char** argv )
     }
     filter->Preflight( inputProperties, outputProperties );
     if( outputProperties != SignalProperties( 0, 0 ) )
-      filtersManipulatingCurrentOutput.insert( typeid( filter ).name() );
+      filtersManipulatingCurrentOutput.insert( typeid( *filter ).name() );
+    if( currentPos != ( *i )->GetPosition() )
+      filterTable << ( *i )->GetPosition();
+    filterTable << tab << typeid( *filter ).name();
+    if( reportSignals )
+      filterTable << tab
+                  << "(" << inputProperties.Channels() << ", "
+                  << inputProperties.MaxElements() << ')' << tab
+                  << "(" << outputProperties.Channels() << ", "
+                  << outputProperties.MaxElements() << ")";
+    filterTable << newl;
   }
+
+  if( GenericFilter::Registrar::Registrars().size() == 0 )
+    cout << "No filters registered." << newl;
+  else
+    cout << filterTable << newl;
+  cout << report.str() << newl;
+
   return 0;
 }
 

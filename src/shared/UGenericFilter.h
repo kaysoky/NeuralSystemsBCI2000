@@ -13,6 +13,11 @@
 //            introduced the Environment class to handle access to those objects.
 //          - Added the Preflight() member as a purely virtual function to enforce
 //            implementation in subclasses.
+//          Jun 10, 2004, juergen.mellinger@uni-tuebingen.de
+//          - Disabled auto-instantiation for signal processing modules in favor
+//            of a list of Filter() statements in an additional cpp file
+//            to avoid unwanted changes in filter sequence when using the new
+//            unified module framework code.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericFilterH
@@ -51,9 +56,18 @@
     States->AddState2List( _states[ i ] );                             \
 };
 
+#if( MODTYPE == 2 ) // Compiling for a Signal Processing module
+# define RegisterFilter( name, pos )
+# define Filter( name, pos )          _RegisterFilter( name, pos )
+#else // MODTYPE
+# define RegisterFilter( name, pos )  _RegisterFilter( name, pos )
+#endif // MODTYPE
+
+#define _RegisterFilter( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
+
+
 class GenericFilter : protected Environment
 {
- friend class FILTERS;
  friend class Documentar;
 
  public:
@@ -129,7 +143,6 @@ class GenericFilter : protected Environment
     virtual GenericFilter* NewInstance() const
     { return new T; }
   };
-  #define RegisterFilter( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
 
   // Get available filters' position strings.
   static const std::string& GetFirstFilterPosition();

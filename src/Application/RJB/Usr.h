@@ -10,8 +10,6 @@
 #include "UGenericFilter.h"
 #include <ExtCtrls.hpp>
 
-#include "UCoreComm.h"
-
 #define TARGET_OFF      0
 #define TARGET_ON       1
 #define TARGET_RESULT   2
@@ -76,7 +74,7 @@ public:		// User declarations
         void PreRunInterval(int time);
         void Outcome(int time, int result);
         void __fastcall SetUsr( PARAMLIST *plist, STATELIST *slist);
-        void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist, CORECOMM *corecomm);
+        void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist);
         __fastcall TUser(TComponent* Owner);
         __fastcall ~TUser();
 };

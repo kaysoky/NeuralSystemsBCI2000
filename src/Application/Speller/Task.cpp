@@ -111,43 +111,19 @@ int     ret;
  vis->SetSourceID(SOURCEID_TASKLOG);
  vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 
- try
-  {
-  Wx=  Parameter("WinXpos");
-  Wy=  Parameter("WinYpos");
-  Wxl= Parameter("WinWidth");
-  Wyl= Parameter("WinHeight");
+ Wx=  Parameter("WinXpos");
+ Wy=  Parameter("WinYpos");
+ Wxl= Parameter("WinWidth");
+ Wyl= Parameter("WinHeight");
 
-  BackgroundColor=(TColor)strtol(Parameter("BackgroundColor"), NULL, 16);
-  userdisplay->CursorSize= Parameter("CursorSize");
-  userdisplay->StatusBarSize=Parameter("StatusBarSize");
-  userdisplay->TargetWidth=Parameter("TargetWidth");
-  userdisplay->TargetTextHeight=Parameter("TargetTextHeight");
-  userdisplay->StatusBarTextHeight=Parameter("StatusBarTextHeight");
-  userdisplay->statusbar->goaltext=AnsiString((const char*)Parameter("Goal")).Trim().UpperCase();
-#if 0
-  if (atoi(plist->GetParamPtr("AlternateBackup")->GetValue()) == 0)
-     alternatebackup=false;
-  else
-     alternatebackup=true;
-#else
-  alternatebackup = ( int )Parameter( "AlternateBackup" );
-#endif
-  }
- catch( TooGeneralCatch& )
-  {
-  BackgroundColor=clDkGray;
-  userdisplay->StatusBarSize=15;
-  userdisplay->CursorSize=5;
-  userdisplay->TargetWidth=5;
-  userdisplay->TargetTextHeight=10;
-  userdisplay->StatusBarTextHeight=10;
-  userdisplay->statusbar->goaltext= LocalizableString( "Gerv" );
-  Wx=5;
-  Wy=5;
-  Wxl=512;
-  Wyl=512;
-  }
+ BackgroundColor=(TColor)strtol(Parameter("BackgroundColor"), NULL, 16);
+ userdisplay->CursorSize= Parameter("CursorSize");
+ userdisplay->StatusBarSize=Parameter("StatusBarSize");
+ userdisplay->TargetWidth=Parameter("TargetWidth");
+ userdisplay->TargetTextHeight=Parameter("TargetTextHeight");
+ userdisplay->StatusBarTextHeight=Parameter("StatusBarTextHeight");
+ userdisplay->statusbar->goaltext=AnsiString((const char*)Parameter("Goal")).Trim().UpperCase();
+ alternatebackup = ( int )Parameter( "AlternateBackup" );
 
  // initial position of BACK UP is on the top
  currentbackuppos=0;
@@ -156,7 +132,7 @@ int     ret;
  targetsequence->Initialize(Parameters);
 
  // initialize the within-trial sequence
- trialsequence->Initialize(Parameters, Statevector, Corecomm, userdisplay);
+ trialsequence->Initialize(Parameters, Statevector, userdisplay);
 
  // set the window position, size, and background color
  userdisplay->SetWindowSize(Wy, Wx, Wxl, Wyl, BackgroundColor);

@@ -7,7 +7,6 @@
 #include "PCHIncludes.h"
 #include "Task.h"
 #include "UBCITime.h"
-#include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "UsrEnv.h"
 #include "UsrEnvDispatcher.h"
@@ -186,7 +185,6 @@ void TTask::Preflight(const SignalProperties& inputProperties,
   vParamNames.push_back("ToBeCopied");
   vParamNames.push_back("UserComment");
   vParamNames.push_back("SampleBlockSize");
-  vParamNames.push_back("NumSamplesInERP");
 
   for (unsigned int i(0); i < vParamNames.size(); ++i)
   {
@@ -238,12 +236,6 @@ void TTask::Preflight(const SignalProperties& inputProperties,
         atoi(GetParamPtr("PostSequenceTime")->GetValue()) < 2 * atoi(GetParamPtr("OnTime")->GetValue()))
     {
       bcierr << "PreSequenceTime and PostSequenceTime parameters must be at least 2 times larger than OnTime parameter" << std::endl;
-      bError = true;
-    }
-    if (atoi(GetParamPtr("PostSequenceTime")->GetValue()) * atoi(GetParamPtr("SampleBlockSize")->GetValue()) <
-        atoi(GetParamPtr("NumSamplesInERP")->GetValue()))
-    {
-      bcierr << "NumSamplesInERP has to be less than (PostSequenceTime * SampleBlockSize)" << std::endl;
       bError = true;
     }
   }
@@ -409,17 +401,11 @@ void TTask::Initialize(void)
   {
     int iWinXpos(5), iWinYpos(5), iWinWidth(512), iWinHeight(512);
     TColor backgroundColor = clDkGray;
-    try
-    {
-      backgroundColor = (TColor)strtol( Parameter( "WinBackgroundColor" ), NULL, 16 );
-      iWinXpos  = Parameter( "WinXpos" );
-      iWinYpos  = Parameter( "WinYpos" );
-      iWinWidth = Parameter( "WinWidth" );
-      iWinHeight= Parameter( "WinHeight" );
-    }
-    catch( TooGeneralCatch& )
-    {
-    }
+    backgroundColor = (TColor)strtol( Parameter( "WinBackgroundColor" ), NULL, 16 );
+    iWinXpos  = Parameter( "WinXpos" );
+    iWinYpos  = Parameter( "WinYpos" );
+    iWinWidth = Parameter( "WinWidth" );
+    iWinHeight= Parameter( "WinHeight" );
     m_pUsrEnv->Initialize(this, Application, iWinYpos, iWinXpos, iWinWidth, iWinHeight, backgroundColor);
   }
 

@@ -130,7 +130,7 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
   PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
 
   // Initialize unit time to the length of a block.
-  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / Parameter( "SampleBlockSize" ) );
+  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / OptionalParameter( "SampleBlockSize", 1 ) );
   int taskBegin = MeasurementUnits::ReadAsTime( Parameter( "TaskBegin" ) ),
       feedbackBegin = MeasurementUnits::ReadAsTime( Parameter( "FeedbackBegin" ) ),
       feedbackEnd = MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) ),
@@ -175,6 +175,13 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
 void
 TTask::Initialize()
 {
+  State( "TargetCode" ) = 0;
+  State( "ResultCode" ) = 0;
+  State( "Feedback" ) = 0;
+  State( "Baseline" ) = 0;
+  State( "IntertrialInterval" ) = 0;
+  State( "StimulusTime" ) = 0;
+  
   TStateAccessor::Initialize( Statevector );
   // Initialize unit time to the length of a block.
   MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / Parameter( "SampleBlockSize" ) );

@@ -50,6 +50,8 @@ RandomNumberADC::RandomNumberADC()
   sinechannelx( 0 ),
   modulateamplitude( 0 )
 {
+ mLasttime = -1;
+ 
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SoftwareCh=      16 16 1 128 "
@@ -147,6 +149,7 @@ void RandomNumberADC::Initialize()
   DCoffset = Parameter( "DCoffset" );
   sinechannel = Parameter( "SineChannel" );
   sinechannelx = Parameter( "SineChannelX" );
+  mLasttime = -1;
 }
 
 
@@ -177,9 +180,7 @@ int     stateval, cursorpos, cursorposx;
  if( sr < 1.0 )
    sr = 1.0;
  time2wait = 1e3 * signal->MaxElements() / sr - 5.0;
- if( time2wait < 0 )
-   time2wait = 0;
- Sleep(time2wait);
+ ::Sleep(time2wait);
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
  noisevalrange=noisemaxamplitude-noiseminamplitude;

@@ -13,11 +13,7 @@
 #define LENGTH_NAME             30
 #define LENGTH_STATELINE        255
 
-#ifdef NO_VCL
-# include <vector>
-#else
-# include <vcl.h>
-#endif // NO_VCL
+#include <vector>
 #include <string>
 
 typedef unsigned char BYTE;
@@ -27,6 +23,7 @@ class STATE
   friend class STATEVECTOR;
   friend class STATELIST; // calls GetValue()
   friend class CoreModule; // calls GetValue()
+  friend class TfMain;     // calls GetValue()
 
 private:    // User declarations
         int     length;
@@ -67,13 +64,9 @@ public:     // User declarations
 class STATELIST
 {
 private:    // User declarations
-#ifdef NO_VCL
         typedef std::vector<STATE*> _state_list;
         _state_list state_list;
         _state_list::size_type GetStateIndex( const char* name ) const;
-#else
-        class TList *state_list;
-#endif
 public:     // User declarations
         STATELIST::STATELIST();
         STATELIST::~STATELIST();

@@ -8,10 +8,10 @@
       obj\UConnectionInfo.obj obj\UEditMatrix.obj obj\UOperatorCfg.obj 
       obj\UPreferences.obj obj\UScript.obj obj\UShowParameters.obj 
       obj\UShowStates.obj obj\USysLog.obj obj\UBCItime.obj obj\UBitRate.obj 
-      obj\UCoreComm.obj obj\UCoreMessage.obj obj\UGenericSignal.obj 
-      obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
-      obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\UOperatorUtils.obj obj\UVisual.obj obj\Color.obj"/>
+      obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
+      obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
+      obj\UOperatorUtils.obj obj\UVisual.obj obj\Color.obj obj\TCPStream.obj 
+      obj\MessageHandler.obj obj\UBCIError.obj obj\UEnvironment.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -22,7 +22,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -68,8 +68,6 @@
       <FILE FILENAME="USysLog.cpp" FORMNAME="" UNITNAME="USysLog" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UBitRate.cpp" FORMNAME="" UNITNAME="UBitRate" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UCoreComm.cpp" FORMNAME="" UNITNAME="UCoreComm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\UCoreMessage.cpp" FORMNAME="" UNITNAME="UCoreMessage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UGenericVisualization.cpp" FORMNAME="" UNITNAME="UGenericVisualization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -80,6 +78,10 @@
       <FILE FILENAME="UOperatorUtils.cpp" FORMNAME="" UNITNAME="UOperatorUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UVisual.cpp" FORMNAME="" UNITNAME="UVisual" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\UEnvironment.cpp" FORMNAME="" UNITNAME="UEnvironment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

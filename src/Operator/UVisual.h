@@ -47,19 +47,21 @@ class VISUAL
  public:
   // This is the entire public interface of VISUAL.
   typedef BYTE id_type;
-  static bool HandleMessage( std::istream& );
-  static void clear() { VISUAL_BASE::clear(); }
+  static void HandleMessage( const VisSignal& );
+  static void HandleMessage( const VisCfg& );
+  static void HandleMessage( const VisMemo& );
+  static void clear() { VisualBase::clear(); }
   class TVisForm;
 
  private:
-  class VISUAL_BASE
+  class VisualBase
   {
    protected:
-    VISUAL_BASE( id_type sourceID );
+    VisualBase( id_type sourceID );
    public:
-    virtual ~VISUAL_BASE();
+    virtual ~VisualBase();
     static void clear() { visuals.clear(); }
-    static bool HandleMessage( std::istream& );
+    static void HandleMessage( const VisCfg& );
 
 
    protected:
@@ -77,7 +79,7 @@ class VISUAL
     std::string title;
 
    protected:
-    typedef std::map< id_type, VISUAL_BASE* > vis_container_base;
+    typedef std::map< id_type, VisualBase* > vis_container_base;
     static class vis_container : public vis_container_base
     {
      public:
@@ -160,7 +162,7 @@ class VISUAL
 
 
  private:
-  class VISUAL_GRAPH : public VISUAL_BASE
+  class Graph : public VisualBase
   {
    private:
     static const numSamplesDefault = 128,
@@ -185,13 +187,13 @@ class VISUAL
     } displayMode;
 
    public:
-    VISUAL_GRAPH( id_type sourceID );
-    virtual ~VISUAL_GRAPH();
-    static bool HandleMessage( std::istream& );
-    bool InstanceHandleMessage( std::istream& );
+    Graph( id_type sourceID );
+    virtual ~Graph();
+    static void HandleMessage( const VisSignal& );
+    void InstanceHandleMessage( const VisSignal& );
 
    protected:
-    virtual void SetConfig( VISUAL_BASE::config_settings& );
+    virtual void SetConfig( VisualBase::config_settings& );
     virtual void Restore();
     virtual void Save() const;
 
@@ -200,8 +202,8 @@ class VISUAL
     struct MenuItemEntry
     {
       // The typedefs declare pointers to class instance member functions.
-      typedef void ( VISUAL::VISUAL_GRAPH::*MenuAction )();
-      typedef bool ( VISUAL::VISUAL_GRAPH::*MenuStateGetter )();
+      typedef void ( VISUAL::Graph::*MenuAction )();
+      typedef bool ( VISUAL::Graph::*MenuStateGetter )();
       MenuAction       mAction;
       MenuStateGetter  mGetEnabled,
                        mGetChecked;
@@ -326,16 +328,16 @@ class VISUAL
     };
   };
 
-  class VISUAL_MEMO : public VISUAL_BASE
+  class Memo : public VisualBase
   {
    public:
-    VISUAL_MEMO( id_type sourceID );
-    virtual ~VISUAL_MEMO();
-    static bool HandleMessage( std::istream& );
-    bool InstanceHandleMessage( std::istream& );
+    Memo( id_type sourceID );
+    virtual ~Memo();
+    static void HandleMessage( const VisMemo& );
+    void InstanceHandleMessage( const VisMemo& );
 
    protected:
-    virtual void SetConfig( VISUAL_BASE::config_settings& );
+    virtual void SetConfig( VisualBase::config_settings& );
     virtual void Restore();
     virtual void Save() const;
 
@@ -348,7 +350,7 @@ class VISUAL
 
 template<typename T>
 bool
-VISUAL::VISUAL_BASE::config_settings::Get( id_type id, T& t, config_state minState )
+VISUAL::VisualBase::config_settings::Get( id_type id, T& t, config_state minState )
 {
   const_iterator i = find( id );
   if( i == end() )
@@ -367,7 +369,7 @@ VISUAL::VISUAL_BASE::config_settings::Get( id_type id, T& t, config_state minSta
 
 template<typename T>
 bool
-VISUAL::VISUAL_BASE::config_settings::Put( id_type id, const T& t, config_state state )
+VISUAL::VisualBase::config_settings::Put( id_type id, const T& t, config_state state )
 {
   if( State( id ) > state )
     return false;

@@ -96,15 +96,7 @@ void UsrEnvAlgorithmP3AV::Initialize(UsrElementCollection * pActiveUsrElementCol
   if (pTask != NULL && pApplication != NULL && pUsrElementColl != NULL)
   {
     // find out about some of the user settings for the elements
-    float fWidthInPercentOfScreen(10.0f);
-    try
-    {
-      fWidthInPercentOfScreen = pTask->Parameter( "StimulusWidth" );
-    }
-    catch( TooGeneralCatch& )
-    {
-      fWidthInPercentOfScreen = 10;
-    }
+    float fWidthInPercentOfScreen = pTask->Parameter( "StimulusWidth" );
 
     // reset all member variables
     Reset();

@@ -20,7 +20,6 @@ private: 	// User declarations
         int     ontime, offtime;                   // in units of SampleBlocks
         bool    cur_on;   
         int     cur_sequence;                           // current sequence
-        CORECOMM        *corecomm;
         USERDISPLAY     *userdisplay;
         STATEVECTOR     *statevector;
         GenericVisualization    *vis;
@@ -30,7 +29,7 @@ private: 	// User declarations
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE(PARAMLIST *plist, STATELIST *slist);
         TRIALSEQUENCE::~TRIALSEQUENCE();
-        int     Initialize( PARAMLIST *, STATEVECTOR *, CORECOMM *, USERDISPLAY *);
+        int     Initialize( PARAMLIST *, STATEVECTOR *, USERDISPLAY *);
         TARGET  *Process(const std::vector<float>&);
         void    ResetTrialSequence();
 };

@@ -7,22 +7,22 @@
 #include <stdio.h>
 
 #include "UScript.h"
-#include "UOperatorUtils.h"
-
+#include "UParameter.h"
+#include "UState.h"
+#include "USysLog.h"
+#include "UMain.h"
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
 
 
-int SCRIPT::Initialize(PARAMLIST *my_paramlist, STATELIST *my_statelist, SYSLOG *my_syslog, TCustomWinSocket *my_socket)
+SCRIPT::SCRIPT(PARAMLIST *my_paramlist, STATELIST *my_statelist, SYSLOG *my_syslog, TfMain *my_fMain)
+: paramlist( my_paramlist ),
+  statelist( my_statelist ),
+  syslog( my_syslog ),
+  fMain( my_fMain ),
+  cur_line( 0 )
 {
- paramlist=my_paramlist;
- statelist=my_statelist;
- syslog=my_syslog;
- socket=my_socket;
- cur_line=0;
-
- return(0);
 }
 
 
@@ -114,7 +114,7 @@ bool    ok;
        {
        idx=get_argument(idx, token, line, 256);
        idx=get_argument(idx, value, line, 256);
-       if (OperatorUtils::UpdateState(statelist, token, (unsigned short)atoi(value), socket) == ERR_NOERR)
+       if (fMain->UpdateState(token, (unsigned short)atoi(value)) == ERR_NOERR)
           sprintf(buf, "%s: Set state %s to %s ... OK", filename, token, value);
        else
           sprintf(buf, "%s: Set state %s to %s ... Error", filename, token, value);

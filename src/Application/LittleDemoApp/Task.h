@@ -8,7 +8,6 @@
 #include <map>
 
 #include "UBitRate.h"
-#include "UCoreComm.h"
 #include "UGenericVisualization.h"
 #include "MidiPlayer.h"
 #include "WavePlayer.h"

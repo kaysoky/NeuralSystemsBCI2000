@@ -32,6 +32,8 @@
  *                        MessageHandler classes, jm                          *
  * V0.30 - 05/27/2004 - Removed multi-threading,                              *
  *                      unified code for all modules except operator, jm      *
+ *                    - Made sure that only a single instance of each module  *
+ *                      type will run at a time, jm                           *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -65,13 +67,34 @@ TfMain::TfMain( TComponent* Owner )
   mTerminated( false ),
   mMessageHandler( *this ),
   mLastRunning( false ),
-  mResting( false )
+  mResting( false ),
+  mMutex( NULL )
 {
+  // Make sure there is only one instance of each module running at a time.
+  // We achieve this by creating a mutex -- if it exists, there is
+  // another instance running, we bring it to the front and exit.
+  const char appTitle[] = THISMODULE " Module";
+  mMutex = ::CreateMutex( NULL, TRUE, appTitle );
+  if( ::GetLastError() == ERROR_ALREADY_EXISTS )
+  {
+    if( mMutex != NULL )
+      ::CloseHandle( mMutex );
+    Application->Title = "";
+    HWND runningApp = ::FindWindow( "TApplication", appTitle );
+    if( runningApp != NULL )
+    {
+      ::SendMessage( runningApp, WM_SYSCOMMAND, SC_RESTORE, 0 );
+      ::SetForegroundWindow( runningApp );
+    }
+    Application->Terminate();
+    return;
+  }
+
   mInputSockets.insert( &mOperatorSocket );
   mInputSockets.insert( &mPreviousModuleSocket );
 
   Caption = "BCI2000/" THISMODULE " V" THISVERSION;
-  Application->Title = THISMODULE " V" THISVERSION;
+  Application->Title = appTitle;
   Color = THISCOLOR;
   eOperatorPort->Text = THISOPPORT;
 
@@ -99,6 +122,8 @@ TfMain::~TfMain( void )
   ShutdownSystem();
   delete mpStatevector;
   Terminate();
+  ::ReleaseMutex( mMutex );
+  ::CloseHandle( mMutex );
 }
 
 bool

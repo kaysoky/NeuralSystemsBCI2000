@@ -7,10 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "UCoreComm.h"
 #include "UState.h"
 #include "BCIDirectry.h"
-#include "UFilterHandling.h"
 #include "FIRStatFilter.h"
 
 FILE *Statfile = NULL;
@@ -129,9 +127,8 @@ void FIRStatFilter::Preflight( const SignalProperties& inSignalProperties,
   // filter works for input signals of any size.
   /* no checking done */
 
-  // This filter does not use its output signal argument, so we specify
-  // minimal requirements.
-  outSignalProperties = SignalProperties( 0, 0, 0 );
+  // This filter copies its input signal through to its output.
+  outSignalProperties = inSignalProperties;
 }
 
 // **************************************************************************
@@ -317,14 +314,6 @@ void FIRStatFilter::Resting( void )
 
                 sprintf(memotext, "%.2f", ud_gain);
                 Parameter("UD_B") = memotext;
-
-
-                Corecomm->StartSendingParameters();
-
-                Corecomm->PublishParameter( Parameters->GetParamPtr("UD_A") );
-                Corecomm->PublishParameter( Parameters->GetParamPtr("UD_B") );
-
-                Corecomm->StopSendingParameters();
         }
         if( trend_flag > 0 )         // return trends to operator
         {
@@ -337,14 +326,6 @@ void FIRStatFilter::Resting( void )
     //     sprintf(memotext, "%.2f", cur_stat.bper * desiredpix);
                 sprintf(memotext, "%.2f", cur_stat.pix);
                 Parameter("DesiredPixelsPerSec") = memotext;
-
-
-                Corecomm->StartSendingParameters();
-
-                Corecomm->PublishParameter( Parameters->GetParamPtr("InterceptProportion") );
-                Corecomm->PublishParameter( Parameters->GetParamPtr("DesiredPixelsPerSec") );
-
-                Corecomm->StopSendingParameters();
         }
 }
 
@@ -356,14 +337,8 @@ void FIRStatFilter::Resting( void )
 // Returns:    0 ... on error
 //             1 ... no error
 // **************************************************************************
-void FIRStatFilter::Process(      //  CalibrationFilter       *calf,
-                              //  SpatialFilter           *sf
-                              //  TemporalFilter          *tf,
-                              //  ClassFilter             *clsf,
-                              const GenericSignal *SignalE,
-                              //  NormalFilter  *nf,
-                                GenericSignal *SignalF
-                        )
+void FIRStatFilter::Process(  const GenericSignal *input,
+                                    GenericSignal *output )
 {
 static int recno= 1;
 int i;
@@ -383,9 +358,9 @@ static int oldtarget, oldoutcome;
      {
         size_t sample= 0;
 
-        for(size_t in_channel=0; in_channel<SignalE->Channels(); in_channel++)
+        for(size_t in_channel=0; in_channel<input->Channels(); in_channel++)
          {
-         value= SignalE->GetValue(in_channel, sample);
+         value= input->GetValue(in_channel, sample);
 
          if (in_channel == 0)
             {
@@ -489,7 +464,7 @@ static int oldtarget, oldoutcome;
       old_ud_gain=ud_gain;
       old_lr_intercept=lr_intercept;
       old_lr_gain=lr_gain;
-      return;
+      *output = *input;
 }
 
 

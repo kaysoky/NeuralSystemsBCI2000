@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-#include "UCoreComm.h"
 #include "UParameter.h"
 #include "UState.h"
 #include "UTargetSequence.h"
@@ -63,31 +62,27 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, CORECOMM *new_corecomm, USERDISPLAY *new_userdisplay)
+int TRIALSEQUENCE::Initialize( PARAMLIST *plist, STATEVECTOR *new_svect, USERDISPLAY *new_userdisplay)
 {
 int     ret;
 
- corecomm=new_corecomm;
  statevector=new_svect;
  userdisplay=new_userdisplay;
 
- // if (vis) delete vis;
- // vis= new GenericVisualization( plist, corecomm );
- // vis->SetSourceID(SOURCEID_SPELLERTRIALSEQ);
- // vis->SendCfg2Operator(SOURCEID_SPELLERTRIALSEQ, CFGID_WINDOWTITLE, "Speller Trial Sequence");
-
  ret=1;
- try
-  {
-  ontime=atoi(plist->GetParamPtr("OnTime")->GetValue());
-  offtime=atoi(plist->GetParamPtr("OffTime")->GetValue());
-  }
- catch( TooGeneralCatch& )
-  {
-  ret=0;
-  ontime=10;
-  offtime=3;
-  }
+ PARAM* pOnTime = plist->GetParamPtr( "OnTime" ),
+      * pOffTime = plist->GetParamPtr( "OffTime" );
+ if( pOnTime && pOffTime )
+ {
+   ontime = ::atoi( pOnTime->GetValue() );
+   offtime = ::atoi( pOffTime->GetValue() );
+ }
+ else
+ {
+   ret = 0;
+   ontime = 10;
+   offtime = 3;
+ }
 
  // reset the trial's sequence
  ResetTrialSequence();
