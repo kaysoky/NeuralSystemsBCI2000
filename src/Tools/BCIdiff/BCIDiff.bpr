@@ -12,12 +12,7 @@
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi bcbsmp.bpi vcldb.bpi dbrtl.bpi qrpt.bpi 
-      bdertl.bpi vcldbx.bpi dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi 
-      tee.bpi teeqr.bpi ibxpress.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
-      inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi 
-      dbexpress.bpi indy.bpi bcb2kaxserver.bpi dbxcds.bpi visualclx.bpi 
-      visualdbclx.bpi frontend.bpi adortl.bpi"/>
+    <PACKAGES value="rtl.bpi"/>
     <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -28,8 +23,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL;_RTLDLL;USEPACKAGES"/>
     <MAINSOURCE value="BCIDiff.bpf"/>
-    <INCLUDEPATH value="..\..\shared;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared;$(BCB)\Projects\Lib;D:\mellinger\Projekte\BCI2000\Tools\BCIdiff;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared;.;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared;$(BCB)\Projects\Lib;.;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
