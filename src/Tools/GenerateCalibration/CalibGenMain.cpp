@@ -25,6 +25,8 @@ __fastcall TfMain::TfMain(TComponent* Owner)
 
 void __fastcall TfMain::bSelectInputClick(TObject *Sender)
 {
+ OpenDialog->Options >> ofAllowMultiSelect
+                     << ofFileMustExist;
  if (OpenDialog->Execute())
     {
     sourceconfig.filename=OpenDialog->FileName;
@@ -207,7 +209,7 @@ void __fastcall TfMain::bGoClick(TObject *Sender)
 FILE    *fpin, *fpout;
 char    buf[50000];
 short   cur_val[MAX_CHANNELS], old_val[MAX_CHANNELS];
-int     cur_long_val, ch, numchannelsinlist, num_ch, cur_ch;
+int     cur_long_val, ch;
 long    sample;
 float   min_val[MAX_CHANNELS], max_val[MAX_CHANNELS];
 int     num_minval[MAX_CHANNELS], num_maxval[MAX_CHANNELS];
@@ -287,93 +289,22 @@ bool    pos_slope[MAX_CHANNELS], neg_slope[MAX_CHANNELS];
   // fprintf(fpout, "%d %.5f\r\n", calibconfig.offset[ch], calibconfig.gain[ch]);
   }
 
- numchannelsinlist=mTransmitChannels->Lines->Count;
-
  // write parameter file
  // first the offset
  fprintf(fpout, "Filtering floatlist SourceChOffset= %d ", sourceconfig.channels);
- // we have not checked "Enable Channellist" -> all the channels
- if (!cEnableChannellist->Checked)
-    {
-    for (ch=0; ch<sourceconfig.channels; ch++)
-     fprintf(fpout, "%d ", calibconfig.offset[ch]);
-    }
- else   // just select channels
-    {
-    for (ch=0; ch<numchannelsinlist; ch++)
-     {
-     if (mTransmitChannels->Lines->Strings[ch].Trim() != "")
-        {
-        cur_ch=atoi(mTransmitChannels->Lines->Strings[ch].c_str())-1;
-        if (cur_ch >= sourceconfig.channels)
-           cur_ch=0;
-        fprintf(fpout, "%d ", calibconfig.offset[cur_ch]);
-        }
-     }
-    }
+ for (ch=0; ch<sourceconfig.channels; ch++)
+   fprintf(fpout, "%d ", calibconfig.offset[ch]);
  fprintf(fpout, "0 -500 500 // offset for channels in A/D units\r\n");
 
  // and then the gain
  fprintf(fpout, "Filtering floatlist SourceChGain= %d ", sourceconfig.channels);
- // we have not checked "Enable Channellist" -> all the channels
- num_ch=0;
- if (!cEnableChannellist->Checked)
-    {
-    for (ch=0; ch<sourceconfig.channels; ch++)
-     fprintf(fpout, "%.5f ", calibconfig.gain[ch]);
-    }
- else   // just select channels
-    {
-    for (ch=0; ch<numchannelsinlist; ch++)
-     {
-     if (mTransmitChannels->Lines->Strings[ch].Trim() != "")
-        {
-        num_ch++;
-        cur_ch=atoi(mTransmitChannels->Lines->Strings[ch].c_str())-1;
-        if (cur_ch >= sourceconfig.channels)
-           cur_ch=0;
-        fprintf(fpout, "%.5f ", calibconfig.gain[cur_ch]);
-        }
-     }
-    }
+//jm num_ch=0;
+ for (ch=0; ch<sourceconfig.channels; ch++)
+   fprintf(fpout, "%.5f ", calibconfig.gain[ch]);
  fprintf(fpout, "0.033 -500 500 // gain for each channel (A/D units -> muV)\r\n");
-
- // the number of transmitted channels
- if (!cEnableChannellist->Checked)
-    fprintf(fpout, "Source int TransmitCh= %d 4 1 128 // the number of transmitted channels\r\n", sourceconfig.channels);
- else
-    fprintf(fpout, "Source int TransmitCh= %d 4 1 128 // the number of transmitted channels\r\n", num_ch);
-
- // and finally the TransmitChannelList
- if (!cEnableChannellist->Checked)
-    fprintf(fpout, "Source intlist TransmitChList= %d ", sourceconfig.channels);
- else
-    fprintf(fpout, "Source intlist TransmitChList= %d ", num_ch);
- if (!cEnableChannellist->Checked)
-    {
-    for (ch=0; ch<sourceconfig.channels; ch++)
-     fprintf(fpout, "%d ", ch+1);
-    }
- else   // just select channels
-    {
-    for (ch=0; ch<numchannelsinlist; ch++)
-     {
-     if (mTransmitChannels->Lines->Strings[ch].Trim() != "")
-        {
-        cur_ch=atoi(mTransmitChannels->Lines->Strings[ch].c_str())-1;
-        if (cur_ch >= sourceconfig.channels)
-           cur_ch=0;
-        cur_ch=atoi(mTransmitChannels->Lines->Strings[ch].c_str());
-        fprintf(fpout, "%d ", cur_ch);
-        }
-     }
-    }
- fprintf(fpout, "1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)\r\n");
 
  // Filtering floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -500 500 // offset for channels in A/D units
  // Filtering floatlist SourceChGain= 16 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 -500 500 // gain for each channel (A/D units -> muV)
- // Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
- // Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
 
  if (fpin)  fclose(fpin);
  if (fpout) fclose(fpout);

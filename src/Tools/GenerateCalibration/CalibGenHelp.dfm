@@ -1,9 +1,11 @@
 object fHelp: TfHelp
-  Left = 407
-  Top = 389
-  Width = 374
-  Height = 208
+  Left = 488
+  Top = 393
+  Anchors = [akLeft, akTop, akRight, akBottom]
+  BorderStyle = bsSingle
   Caption = 'Help'
+  ClientHeight = 181
+  ClientWidth = 366
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -27,14 +29,15 @@ object fHelp: TfHelp
     Lines.Strings = (
       'This program extracts minimum and maximum sample '
       'values for the first 5000 samples of the specified channels '
-      'in BCI2000 *.DAT files. It does this by using a simple'
-      'procedure to detect ANY local minimum or maximum.'
+      'in BCI2000 *.DAT files. It does this by using a simple '
+      'procedure to detect ANY local minimum or maximum. '
       'It assumes that the data files contain a calibration '
       'signal of a defined minimum- and maximum value. '
       'From this, it calculates an offset and a gain for each of the '
       'provided channels and saves it in a BCI2000 parameter file '
       'to be read into the BCI2000 system.')
     ParentFont = False
+    ReadOnly = True
     TabOrder = 0
   end
 end

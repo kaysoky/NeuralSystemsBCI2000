@@ -69,7 +69,8 @@ long    selectrange_samplestart, selectrange_sampleend;
 
 //---------------------------------------------------------------------------
 __fastcall TfMain::TfMain(TComponent* Owner)
-        : TForm(Owner)
+: TForm(Owner),
+  GetSampleValue( NULL )
 {
  bci2000data=NULL;
  
@@ -80,12 +81,33 @@ __fastcall TfMain::TfMain(TComponent* Owner)
      cSpComponent->OnChange = CSpEditOnChange;
  }
  eScaling->OnExit = bGoButton->OnClick;
+ ReadCalibrationCheckBox();
 }
 
 _fastcall TfMain::~TfMain()
 {
  if (bci2000data) delete bci2000data;
  bci2000data=NULL;
+}
+
+// Functions to switch between calibrated/uncalibrated behavior via assignment
+// to the GetSampleValue pointer.
+void TfMain::ReadCalibrationCheckBox()
+{
+ if( cCalibrationCheckBox->Checked )
+   GetSampleValue = GetSampleValueCalibrated;
+ else
+   GetSampleValue = GetSampleValueUncalibrated;
+}
+
+float TfMain::GetSampleValueCalibrated( BCI2000DATA* data, int channel, unsigned long sample )
+{
+  return data->Value( channel, sample ) / 0.003;
+}
+
+float TfMain::GetSampleValueUncalibrated( BCI2000DATA* data, int channel, unsigned long sample )
+{
+  return data->ReadValue( channel, sample );
 }
 
 // Fix erroneous behaviour of TCSpinEdit component, jm
@@ -300,7 +322,6 @@ float   car, reference, scaling;
 
  for (t=0; t<display_samples; t++)
   {
-  cMainGauge->Progress=(int)(100*(float)t/(float)display_samples);
   car=Get_CAR_Value(t+start_sample);
   for (i=0; i<display_channels; i++)
    {
@@ -309,7 +330,7 @@ float   car, reference, scaling;
    if (channellist[cur_channel].chanreftype == REFTYPE_CAR)
       reference=car;
    if (i+start_channel < num_channels)
-      MainChart->Series[i]->YValues->Value[t]=(bci2000data->Value(cur_channel, t+start_sample)-reference)/.003/12288*scaling+i;
+      MainChart->Series[i]->YValues->Value[t]=(GetSampleValue( bci2000data, cur_channel, t+start_sample)-reference)/12288*scaling+i;
    else
       MainChart->Series[i]->YValues->Value[t]=i;
    // MainChart->Series[i]->XValues->Value[t]=t+start_sample;
@@ -320,6 +341,7 @@ float   car, reference, scaling;
    msec=msec-hour*3600000-min*60000-sec*1000;
    MainChart->Series[i]->XValues->Value[t]=EncodeTime((WORD)hour, (WORD)min, (WORD)sec, (WORD)msec);
    }
+   cMainGauge->Progress = ( 100 * ( t + 1 ) ) / display_samples;
   }
 
  for (i=0; i<display_channels; i++)
@@ -344,7 +366,7 @@ float   sum;
 
  sum=0;
  for (i=0; i<num_channels; i++)
-  sum += bci2000data->Value(i, sample);
+  sum += GetSampleValue( bci2000data, i, sample);
 
  return(sum/num_channels);
 }
@@ -999,7 +1021,6 @@ FILE    *fp;
  // now output all the columns, i.e., all the channels
  for (t=0; t<display_samples; t++)
   {
-  cMainGauge->Progress=(int)(100*(float)i/(float)display_channels);
   // the first 'sample' is the time
   msec=(long)((((float)t+(float)start_sample)/(float)sample_freq)*1000);
   hour=msec/3600000;
@@ -1015,6 +1036,7 @@ FILE    *fp;
       fprintf(fp, "%d ", i);
    }
   fprintf(fp, "\r\n");
+  cMainGauge->Progress = ( 100 * ( t + 1 ) ) / display_samples;
   }
 
  cMainGauge->Progress=0;
@@ -1029,4 +1051,11 @@ void __fastcall TfMain::cStateListBoxClickCheck(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TfMain::cCalibrationCheckBoxClick(TObject *Sender)
+{
+  ReadCalibrationCheckBox();
+  bGoButton->Click();    
+}
+//---------------------------------------------------------------------------
 

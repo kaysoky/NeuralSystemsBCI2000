@@ -50,6 +50,8 @@ __published:	// IDE-managed Components
         TCheckListBox *cStateListBox;
         TLabel *Label2;
         TEdit *eScaling;
+        TCheckBox *cCalibrationCheckBox;
+        TBevel *Bevel2;
         void __fastcall bGoButtonClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall LeftRightMouseUp(TObject *Sender,
@@ -77,6 +79,7 @@ __published:	// IDE-managed Components
           TShiftState Shift, int X, int Y);
         void __fastcall bSave2DiskClick(TObject *Sender);
         void __fastcall cStateListBoxClickCheck(TObject *Sender);
+    void __fastcall cCalibrationCheckBoxClick(TObject *Sender);
 private:	// User declarations
         void __fastcall CSpEditOnChange( TObject* );
 public:		// User declarations
@@ -99,6 +102,12 @@ public:		// User declarations
         bool    readonly;
         AnsiString      inputfile;
         BCI2000DATA     *bci2000data;
+private:
+        // This is a pointer to one of the functions following it.
+        float ( *GetSampleValue )( BCI2000DATA*, int, unsigned long );
+        static float GetSampleValueUncalibrated( BCI2000DATA*, int, unsigned long );
+        static float GetSampleValueCalibrated( BCI2000DATA*, int, unsigned long );
+        void ReadCalibrationCheckBox();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfMain *fMain;

@@ -80,6 +80,11 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
   PreflightCondition( Parameter( "SoftwareCh" ) >= Parameter( "TransmitCh" ) );
+  PreflightCondition( Parameter( "TransmitCh" ) ==
+                                Parameter( "TransmitChList" )->GetNumValues() );
+  for( size_t i = 0; i < Parameter( "TransmitChList" )->GetNumValues(); ++i )
+    PreflightCondition( Parameter( "TransmitChList", i ) <= Parameter( "SoftwareCh" ) );
+
   // if the number of channels does not match for offset and gain there is an error
   PreflightCondition( Parameter( "SourceChOffset" )->GetNumValues() ==
                                  Parameter( "SourceChGain" )->GetNumValues() );
@@ -103,43 +108,29 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
 // **************************************************************************
 void CalibrationFilter::Initialize()
 {
-  int alignyesno = 0,
-      visualizeyesno = 0,
-      numchoffset = 0,
-      numchgain = 0;
-
-  alignyesno=Parameter("AlignChannels");
-  visualizeyesno=Parameter("VisualizeCalibration");
-  numchoffset=Parameter("SourceChOffset")->GetNumValues();
-  numchgain=Parameter("SourceChGain")->GetNumValues();
-
   recordedChans= Parameter("SoftwareCh");
-  transmittedChans= Parameter("TransmitCh");
-
-  // if the number of channels does not match for offset and gain, exit with an error
-  if (numchoffset != numchgain) return;
+  transmittedChans= Parameter("TransmitChList")->GetNumValues();
 
   // allocate arrays for offsets and gains
   // we don't always want to query parameters
   delete [] offset;
   delete [] gain;
 
-  offset=new float[numchoffset];
-  gain=new float[numchgain];
+  offset=new float[ transmittedChans ];
+  gain=new float[ transmittedChans ];
 
   // copy the parameters in our private arrays
-  for (int i=0; i<numchoffset; i++)
+  for (int i=0; i< transmittedChans; i++)
   {
-    offset[i]=Parameter("SourceChOffset",i);
-    gain[i]=Parameter("SourceChGain",i);
+    int origChan = Parameter( "TransmitChList", i );
+    offset[i]=Parameter("SourceChOffset", origChan - 1 );
+    gain[i]=Parameter("SourceChGain", origChan - 1 );
   }
 
   // do we want to align the samples in time ?
-  if (alignyesno == 0)
-    align=false;
-  else
+  align = ( Parameter( "AlignChannels" ) == 1 );
+  if( align )
   {
-    align=true;
     delta= (float)recordedChans;
     delta= 1/delta;
 
@@ -156,11 +147,9 @@ void CalibrationFilter::Initialize()
   }
 
   // do we want to visualize ?
-  if (visualizeyesno == 0)
-    visualize=false;
-  else
+  visualize = ( Parameter( "VisualizeCalibration" ) == 1 );
+  if( visualize )
   {
-    visualize=true;
     // create an instance of GenericVisualization
     // it will handle the visualization to the operator
     delete vis;

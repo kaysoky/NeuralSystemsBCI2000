@@ -1,9 +1,10 @@
 object fMain: TfMain
-  Left = 304
-  Top = 245
-  Width = 555
-  Height = 344
-  Caption = 'BCI2000 Calibration Generator V1.0 ... Gerv '#39'01'
+  Left = 372
+  Top = 272
+  BorderStyle = bsSingle
+  Caption = 'BCI2000 Calibration Generator V1.1 ... Gerv '#39'01'
+  ClientHeight = 317
+  ClientWidth = 456
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -114,39 +115,6 @@ object fMain: TfMain
     Height = 13
     Caption = 'Peak-to-Peak value of the input sine wave in microVolts:'
   end
-  object Label9: TLabel
-    Left = 352
-    Top = 56
-    Width = 89
-    Height = 24
-    Caption = 'Channels'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -19
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label10: TLabel
-    Left = 440
-    Top = 120
-    Width = 23
-    Height = 20
-    Caption = '-->'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'MS Sans Serif'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label11: TLabel
-    Left = 376
-    Top = 200
-    Width = 131
-    Height = 13
-    Caption = '(otherwise, all the channels)'
-  end
   object bSelectInput: TButton
     Left = 16
     Top = 88
@@ -179,7 +147,7 @@ object fMain: TfMain
     OnClick = bSelectCalibClick
   end
   object bGo: TButton
-    Left = 463
+    Left = 367
     Top = 88
     Width = 75
     Height = 81
@@ -195,7 +163,7 @@ object fMain: TfMain
     OnClick = bGoClick
   end
   object bHelp: TButton
-    Left = 464
+    Left = 368
     Top = 8
     Width = 75
     Height = 25
@@ -210,88 +178,6 @@ object fMain: TfMain
     Height = 21
     TabOrder = 4
     Text = '100.0'
-  end
-  object mTransmitChannels: TMemo
-    Left = 360
-    Top = 88
-    Width = 73
-    Height = 81
-    Lines.Strings = (
-      '1'
-      '2'
-      '3'
-      '4'
-      '5'
-      '6'
-      '7'
-      '8'
-      '9'
-      '10'
-      '11'
-      '12'
-      '13'
-      '14'
-      '15'
-      '16'
-      '17'
-      '18'
-      '19'
-      '20'
-      '21'
-      '22'
-      '23'
-      '24'
-      '25'
-      '26'
-      '27'
-      '28'
-      '29'
-      '30'
-      '31'
-      '32'
-      '33'
-      '34'
-      '35'
-      '36'
-      '37'
-      '38'
-      '39'
-      '40'
-      '41'
-      '42'
-      '43'
-      '44'
-      '45'
-      '46'
-      '47'
-      '48'
-      '49'
-      '50'
-      '51'
-      '52'
-      '53'
-      '54'
-      '55'
-      '56'
-      '57'
-      '58'
-      '59'
-      '60'
-      '61'
-      '62'
-      '63'
-      '64'
-      '')
-    ScrollBars = ssVertical
-    TabOrder = 5
-  end
-  object cEnableChannellist: TCheckBox
-    Left = 360
-    Top = 176
-    Width = 113
-    Height = 17
-    Caption = 'Enable Channellist'
-    TabOrder = 6
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'

@@ -65,11 +65,6 @@ __published:	// IDE-managed Components
         TLabel *Label8;
         TSaveDialog *SaveDialog;
         TEdit *eTargetVal;
-        TMemo *mTransmitChannels;
-        TLabel *Label9;
-        TLabel *Label10;
-        TCheckBox *cEnableChannellist;
-        TLabel *Label11;
         void __fastcall bSelectInputClick(TObject *Sender);
         void __fastcall bSelectCalibClick(TObject *Sender);
         void __fastcall bGoClick(TObject *Sender);

@@ -485,7 +485,13 @@ implement the respective filters in Figure \ref{sigprocdataflow}.
 The calibration filter (class \textit{CalibrationFilter}) calibrates the 
 incoming EEG signal. It performs a linear scaling, such that each channel is 
 expressed in $\mu$V and has a mean of zero (i.e., 
-$newvalue=(ADvalue-SourceChOffset)*SourceChGain$). 
+$\mathit{newvalue}=(\mathit{ADvalue}-\mathit{SourceChOffset})*\mathit{SourceChGain}$).
+
+The calibration filter acts only on the subset of channels defined by
+\textit{TransmitCh} and \textit{TransmitChList;} regardless of that, the
+\textit{SourceChOffset} and \textit{SourceChGain} parameters
+refer to the full set of software channels as stored in the data file, in
+the order in which they are digitized.
 
 \subsubsection{Requested Parameters}
 
