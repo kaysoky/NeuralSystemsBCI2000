@@ -324,7 +324,7 @@ void NeuroscanADC::Process( const GenericSignal*, GenericSignal* signal )
     }
 
    // has the connection closed? then abort
-   if ( !server ) break;
+   if ( !*server ) break;
 
    // Network byte order to host byte order (Big-Endian -> Little-Endian)
    pMsg->Convert(false);
