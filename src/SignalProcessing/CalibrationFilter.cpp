@@ -37,11 +37,11 @@ CalibrationFilter::CalibrationFilter()
     "0 0 0 0 "
     "0 -500 500 // offset for channels in A/D units",
   "Filtering floatlist SourceChGain= 16 "
-    "0.033 0.033 0.033 0.033 "
-    "0.033 0.033 0.033 0.033 "
-    "0.033 0.033 0.033 0.033 "
-    "0.033 0.033 0.033 0.033 "
-    "0.033 -500 500 // gain for each channel (A/D units -> muV)",
+    "0.003 0.003 0.003 0.003 "
+    "0.003 0.003 0.003 0.003 "
+    "0.003 0.003 0.003 0.003 "
+    "0.003 0.003 0.003 0.003 "
+    "0.003 -500 500 // gain for each channel (A/D units -> muV)",
   "Filtering int AlignChannels= 0 0 0 1 "
     "// align channels in time (0=no, 1=yes)",
   "Visualize int VisualizeCalibration= 1 0 0 1 "
