@@ -7,7 +7,7 @@
     <OBJFILES value="obj\BCITimeFreq.obj obj\UMain.obj obj\StateForm1.obj obj\BCIOutput.obj 
       obj\BCIInput.obj obj\OutputForm1.obj obj\InputForm1.obj 
       obj\ProcessForm1.obj obj\UBCI2000Data.obj obj\UParameter.obj 
-      obj\UState.obj obj\GETMEM.obj obj\ParmIO.obj"/>
+      obj\UState.obj obj\GETMEM.obj obj\ParmIO.obj obj\WindowingFunction.obj"/>
     <RESFILES value="BCITimeFreq.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm StateForm1.dfm OutputForm1.dfm InputForm1.dfm 
@@ -63,6 +63,7 @@
       <FILE FILENAME="..\..\shared\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="GETMEM.cpp" FORMNAME="" UNITNAME="GETMEM" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ParmIO.cpp" FORMNAME="" UNITNAME="ParmIO" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="WindowingFunction.cpp" FORMNAME="" UNITNAME="WindowingFunction" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -132,7 +133,7 @@ Item0=obj
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=-pM:\BCITimeFrequencySupplements\spectralparms
+RunParams=-pM:\BCITimeFrequencySupplements\spectralparms -c -oC:\data\all1signal001\all1signal.asc C:\data\all1signal001\all1signalS001R02.dat
 Launcher=
 UseLauncher=0
 DebugCWD=

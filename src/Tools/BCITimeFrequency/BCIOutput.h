@@ -5,6 +5,7 @@
 
 #include "StateForm1.h"
 #include "GETMEM.h"
+#include "WindowingFunction.h"
 /********************************************************************
         BCIOutput contains the output routines for the
         BCITime application
@@ -15,19 +16,9 @@
 #define MAXSTATES 8
 #define MAXOUT 512
 
-enum SidelobeSuppression // variants of sidelobe suppression
-{
-  none = 0,
-  hamming,
-  hann,
-  blackman,
-  
-  numSidelobeSuppressions
-};
-
 class BCIOutput
 {
-	private:
+    private:
                 int Hz;
                 float fstart;
                 double point[NGROUPS][MAXCHANS][MAXPOINTS];
@@ -56,7 +47,7 @@ class BCIOutput
                 int wblocksz;         // window block size
                 int winnum;           // number of blocks per window
                 int winlength;        // total data length = wblocksz * winnum
-                float* mWindowCoeffs; // array to hold sidelobe suppression window coefficients
+                WindowingFunction mSidelobeSuppression;
 
                 double __fastcall GetLr( double *t, double *ss, double *ssxy, int *n, int ntarg );
                 void __fastcall print_hdr(FILE *otf, char *, int, int);
@@ -71,10 +62,10 @@ class BCIOutput
                 BCIOutput();
                 ~BCIOutput();
 
-                 void setWindow( int, int, int, int, int );
+                 void setWindow( int, int, int, int, const WindowingFunction& );
                 __fastcall void CloseFiles( void );
                 __fastcall void ClearVals( void );
-		__fastcall void AddPoint( int group, int chan, int point, float val );
+                __fastcall void AddPoint( int group, int chan, int point, float val );
                 __fastcall void AddSpcPoint( int group, int chan, int point, float val );
                 __fastcall void DumpSpc( void );
                 __fastcall void AddStateVal( int group, int chan, int point, float val );

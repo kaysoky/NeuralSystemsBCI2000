@@ -16,13 +16,13 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "BCI2000toGAB";
+                 Application->Title = "BCITimeFrequency";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TUseStateForm), &UseStateForm);
-                 Application->CreateForm(__classid(TOutputForm), &OutputForm);
-                 Application->CreateForm(__classid(TInputForm), &InputForm);
-                 Application->CreateForm(__classid(TProcessForm), &ProcessForm);
-                 fMain->ProcessCommandLineOptions();
+         Application->CreateForm(__classid(TUseStateForm), &UseStateForm);
+         Application->CreateForm(__classid(TOutputForm), &OutputForm);
+         Application->CreateForm(__classid(TInputForm), &InputForm);
+         Application->CreateForm(__classid(TProcessForm), &ProcessForm);
+         fMain->ProcessCommandLineOptions();
                  Application->Run();
         }
         catch (Exception &exception)

@@ -12,14 +12,13 @@
 #include <string.h>
 
 BCIOutput::BCIOutput()
-: mWindowCoeffs( NULL )
+: mSidelobeSuppression( WindowingFunction::None )
 {
      //  bcio= fopen("c:/shared/misc/BCIO2.asc","w+");
      //  fprintf(bcio,"Opening BCIO.asc \n");
 }
 BCIOutput::~BCIOutput()
 {
-  delete[] mWindowCoeffs;
      //  fclose(bcio);
 }
 
@@ -142,32 +141,13 @@ void __fastcall BCIOutput::AddPoint( int group, int chan, int time, float val )
         }
 }
 
-void BCIOutput::setWindow( int wuse, int nwin, int wblock, int wlength, int suppression )
+void BCIOutput::setWindow( int wuse, int nwin, int wblock, int wlength, const WindowingFunction& inSidelobeSuppression )
 {
       wintype= wuse;                    // type of windowing  0 is all data in one window
       wblocksz= wblock;                 // window block size
       winnum= nwin;                     // number of blocks per window
       winlength= wlength;               // total data length = wblocksz * winnum
-
-      if( suppression < 0 || suppression >= numSidelobeSuppressions )
-      {
-        Application->MessageBox( "Unknown sidelobe suppression type in " __FUNC__, "Error", MB_OK );
-        suppression = none;
-      }
-      
-      delete[] mWindowCoeffs;
-      mWindowCoeffs = new float[ winlength ];
-
-      float phasePerSample = M_PI / float( winlength );
-      // Parameters for computing window coefficients:
-      //                      None  Hamming  Hann  Blackman
-      const float a1[] = {       0,    0.46,  0.5,      0.5, },
-                  a2[] = {       0,    0,     0,        0.08 };
-
-      for( int i = 0; i < winlength; ++i )
-        mWindowCoeffs[ i ] = 1.0 - a1[ suppression ] - a2[ suppression ]
-                           + a1[ suppression ] * cos( float( i ) * phasePerSample )
-                           + a2[ suppression ] * cos( float( i ) * 2 * phasePerSample );
+      mSidelobeSuppression = inSidelobeSuppression;
 
       // compute things??
 }
@@ -236,7 +216,8 @@ void __fastcall BCIOutput::DumpSpc( void )
                                 index= 0;
                                 for(k=kstart;k<kend;k++)        //  for(k=0;k<sn[i][j];k++)
                                 {
-                                        vect[index]= mWindowCoeffs[index] * spoint[i][j][k];
+                                        vect[index]= spoint[i][j][k];
+                                        vect[ index ] *= mSidelobeSuppression.Value( float( index ) / float( winlength ) ); 
                                         index++;
                                 }
 
