@@ -120,6 +120,8 @@ DASQueue::open( const DASInfo& inInfo )
                    << endl;
           // A memory allocation failure will trigger an error below.
           mDataBuffer = ( USHORT* )::cbWinBufAlloc( mDataBufferSize );
+          mReadCursor = 0;
+          mWriteCursor = 0;
           result = DASUtils::BackgroundScan( mBoardNumber, 0, mChannels - 1,
                                              mDataBufferSize, hwSamplingRate,
                                              ADRange, mDataBuffer, options,
@@ -144,17 +146,22 @@ DASQueue::close()
 {
   DASUtils::StopBackground( mBoardNumber );
   ::cbWinBufFree( mDataBuffer );
+  mDataBuffer = NULL;
+  mReadCursor = 0;
+  mWriteCursor = 0;
   mShouldBeOpen = false;
 }
 
 const short&
 DASQueue::front()
 {
-  static short null = 0;
   while( empty() && mFailstate == ok )
     ReceiveData();
   if( empty() )
+  {
+    static short null = 0;
     return null;
+  }
   return std::queue<short>::front();
 }
 
