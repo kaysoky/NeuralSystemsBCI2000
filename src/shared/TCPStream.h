@@ -31,8 +31,18 @@
 # include <winsock.h>
 #else
 # include <netinet/in.h>
-#endif
+# ifdef __GNUC__
+#  if __GNUC__ < 3
+#   define IN_AVAIL_BROKEN
+//  In the STL shipped with older gcc versions, streambuf::in_avail() does not call
+//  streambuf::showmanyc() as it should.
+//  Replacing in_avail() with showmanyc() should be logically correct for all streambufs
+//  (though it might adversely affect performance).
+#  endif
+# endif  // __GNUC__
+#endif // _WIN32
 
+#include <string>
 #include <iostream>
 #include <set>
 
@@ -145,8 +155,14 @@ class tcpbuf : public std::streambuf
     tcpbuf* open( tcpsocket& s )    { m_socket = &s; return this; }
     tcpbuf* close()                 { m_socket = NULL; return this; }
 
+#ifdef IN_AVAIL_BROKEN
+  public:
+#else
   protected:
+#endif // IN_AVAIL_BROKEN
     virtual int showmanyc();        // Called from streambuf::in_avail().
+
+  protected:
     virtual int underflow();        // Called from read operations if empty.
     virtual int overflow( int c );  // Called if write buffer is filled.
     virtual int sync();             // Called from iostream::flush().
@@ -169,5 +185,9 @@ class tcpstream : public std::iostream
   private:
     tcpbuf buf;
 };
+
+#ifdef IN_AVAIL_BROKEN
+# define in_avail showmanyc
+#endif // IN_AVAIL_BROKEN
 
 #endif // TCPSTREAMH

@@ -31,6 +31,7 @@
 #ifdef _WIN32
 # define socklen_t int
 #else
+# include <unistd.h>
 # include <sys/socket.h>
 # include <arpa/inet.h>
 # include <netinet/in.h>
@@ -38,11 +39,26 @@
 # define INVALID_SOCKET   ( -1 )
 # define SOCKET_ERROR     ( -1 )
 # define closesocket( s ) close( s )
-#endif
+# ifdef __GNUC__
+#  if __GNUC__ < 3
+#   define EMULATE_TRAITS_TYPE
+#  endif
+# endif  // __GNUC__
+#endif   // _WIN32
 
 #include <string>
 #include <sstream>
 #include <algorithm>
+
+#ifdef EMULATE_TRAITS_TYPE
+# define traits_type char_traits
+struct char_traits
+{
+  static int  eof()                        { return EOF; }
+  static char not_eof( const int& i )      { return i == EOF ? 0 : i; }
+  static int  to_int_type( const char& c ) { return *reinterpret_cast<const unsigned char*>( &c ); }
+};
+#endif // EMULATE_TRAITS_TYPE
 
 using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
