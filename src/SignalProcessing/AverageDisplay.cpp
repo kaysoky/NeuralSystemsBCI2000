@@ -17,8 +17,7 @@ const RGBColor AverageDisplay::sChannelColors[] =
 };
 
 AverageDisplay::AverageDisplay()
-: mLastTargetCode( 0 ),
-  mITI( true )
+: mLastTargetCode( 0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
    "Visualize matrix AvgDisplayCh= 2 2 "
@@ -91,8 +90,6 @@ AverageDisplay::Initialize()
   mBaselineSamples.resize( numChannels );
 #endif // SET_BASELINE
   mLastTargetCode = 0;
-  
-  mITI = true;
 }
 
 void
@@ -103,16 +100,6 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
 #endif // TODO
   const GenericSignal& signal = *inputSignal;
   size_t targetCode = State( "TargetCode" );
-
-  // The BCI2000 standard suggests that target codes be 0 outside of trials.
-  // The following lines work around modules that don't quite follow that standard.
-  if( OptionalState( "BeginOfTrial" ) )
-    mITI = false;
-  else if( OptionalState( "EndOfTrial" ) )
-    mITI = true;
-  if( mITI )
-    targetCode = 0;
-
   if( targetCode == 0 && targetCode != mLastTargetCode )
   {
     size_t targetIndex = find( mTargetCodes.begin(), mTargetCodes.end(), mLastTargetCode ) - mTargetCodes.begin();

@@ -33,7 +33,6 @@ class AverageDisplay : public GenericFilter
   std::vector<std::vector<std::vector<std::vector<float> > > > mPowerSums;
 
   size_t mLastTargetCode;
-  bool mITI;
 
 #ifdef SET_BASELINE
   // Baseline stuff that should really be factored out.
