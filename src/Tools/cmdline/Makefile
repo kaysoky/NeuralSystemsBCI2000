@@ -39,6 +39,7 @@ BCIOBJ =  obj\bci_tool.obj \
           obj\UStatus.obj \
           obj\USysCommand.obj \
           obj\MessageHandler.obj \
+          obj\MeasurementUnits.obj \
           obj\getmem.obj \
           obj\getfir.obj
 
