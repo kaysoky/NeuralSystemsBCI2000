@@ -156,7 +156,7 @@ void DTADC::Preflight( const SignalProperties&,
         Parameter( "SoftwareCh" ) * Parameter( "SamplingRate" ),
         ( UINT )Parameter( "SoftwareCh" ) *  Parameter( "SampleBlockSize" )
       ) == OLSUCCESS
-    && dtfun.Start() == OLSUCCESS
+    && dtfun.Start() == 1
     && dtfun.Stop() == OLSUCCESS
     && dtfun.Reset() == OLSUCCESS
     && dtfun.CleanUp() == OLSUCCESS;
