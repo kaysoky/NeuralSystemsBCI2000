@@ -3,8 +3,6 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#undef USE_FFT
-
 #include "UFilterHandling.h"
 #ifdef USE_FFT
 # include "FFTFilter.h"
@@ -28,7 +26,7 @@
 FILTERS::FILTERS(PARAMLIST *plist, STATELIST *slist)
 : mpAvgDisplay( new AverageDisplay )
 #ifdef USE_FFT
-  , mpFFTFilter( new TFFTFilter )
+  , mpFFTFilter( new FFTFilter )
 #endif // USE_FFT
 {
 char line[512];
@@ -119,7 +117,8 @@ int     maxchannels, maxelements;
   MB = MA = Parameter( "TransmitCh" );
   MD = MC = Parameter( "SpatialFilteredChannels" );
   NC = NB = NA = Parameter( "SampleBlockSize" );
-  
+  SignalProperties sp;
+
   SignalB=new GenericSignal( MB, NB );
   SignalC=new GenericSignal( MC, NC );
 
@@ -127,7 +126,11 @@ int     maxchannels, maxelements;
  calfilter->Initialize();
  spatfilter->Initialize();
 #ifdef USE_FFT
- mpFFTFilter->Initialize();
+ mpFFTFilter->Preflight( *SignalC, sp );
+ if( __bcierr.flushes() > 0 )
+   returnval = 0;
+ else
+   mpFFTFilter->Initialize();
 #endif
 // res= tempfilter->Initialize(plist, svector, corecomm);
 // if(res == 0 ) returnval= 0;
@@ -138,7 +141,6 @@ int     maxchannels, maxelements;
  SetBaseline->Initialize();
  FBArteCorrection->Initialize();
 
- SignalProperties sp;
  mpAvgDisplay->Preflight( *SignalD, sp );
  if( __bcierr.flushes() > 0 )
    returnval = 0;
@@ -168,6 +170,14 @@ int     maxchannels, maxelements;
 
 int FILTERS::Resting( char *buf)
 {
+ calfilter->Resting();
+ spatfilter->Resting();
+ mpFFTFilter->Resting();
+ SWFilter->Resting();
+ SetBaseline->Resting();
+ FBArteCorrection->Resting();
+ mpAvgDisplay->Resting();
+ normalfilter->Resting();
  // statfilter->Resting();
 
  return(0);
@@ -196,11 +206,11 @@ int res, returnval;
  // now, here place the code to let your filters process the signals
  calfilter->Process(SignalA, SignalB);
  spatfilter->Process(SignalB, SignalC);
+#ifdef USE_FFT
+ mpFFTFilter->Process( SignalC, SignalC );
+#endif
  static GenericSignal ignore;
  mpAvgDisplay->Process( SignalC, &ignore );
-#ifdef USE_FFT
- mpFFTFilter->Process( SignalC, &ignore );
-#endif
 
  SWFilter->Process(SignalC, SignalD);
  SetBaseline->Process(NULL,SignalD);

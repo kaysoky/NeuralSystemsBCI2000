@@ -161,7 +161,7 @@ TEMPORARY_ENVIRONMENT_GLUE
     paramlist->AddParameter2List(line, strlen(line));
     strcpy(line, "SWFilter floatlist ArteFactorList= 2 0.15 0 0 -1 1 // Influence of artefact channel on input channel, -1: no artifact channel");
     paramlist->AddParameter2List(line, strlen(line));
-    strcpy(line, "SWFilter int ArteMode= 0 1 0 3 // Artefact correction mode, 0 off, 1 continuous, 2 conditioned");
+    strcpy(line, "SWFilter int ArteMode= 0 1 0 2 // Artefact correction mode, 0 off, 1 continuous, 2 conditional");
     paramlist->AddParameter2List(line, strlen(line));
     strcpy(line, "Visualize int VisualizeFBArteCorFiltering= 0 0 0 1  // visualize FBArte corrected signals (0=no 1=yes)");
     paramlist->AddParameter2List( line, strlen(line) );
