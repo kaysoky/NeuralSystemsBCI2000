@@ -20,6 +20,7 @@
 #pragma hdrstop
 
 #include "UCoreMessage.h"
+#include "UBCIError.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

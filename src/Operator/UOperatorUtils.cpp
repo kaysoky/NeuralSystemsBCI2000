@@ -19,8 +19,9 @@
 #include <stdio.h>
 
 #include "UOperatorUtils.h"
-#include "../shared/UState.h"
-#include "../shared/UCoreMessage.h"
+#include "UState.h"
+#include "UCoreMessage.h"
+#include "UBCIError.h"
 
 int
 OperatorUtils::UpdateState( const STATELIST*   statelist,

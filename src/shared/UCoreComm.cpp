@@ -5,6 +5,7 @@
 
 #include "UCoreMessage.h"
 #include "UBCIError.h"
+#include "UGenericSignal.h"
 #include <stdio.h>
 
 #pragma package(smart_init)

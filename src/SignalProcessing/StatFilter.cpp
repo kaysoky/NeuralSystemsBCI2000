@@ -10,6 +10,7 @@
 # include <stdio.h>
 #endif // USE_LOGFILE
 
+#include "UCoreComm.h"
 #include "UState.h"
 #include "BCIDirectry.h"
 #include "ClassFilter.h"
@@ -416,6 +417,7 @@ void StatFilter::Resting()
 
     sprintf(memotext, "%.2f", lr_gain);
     Parameter( "LR_B" ) = memotext;
+
 
     Corecomm->StartSendingParameters();
 

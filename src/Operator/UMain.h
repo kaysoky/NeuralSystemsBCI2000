@@ -17,6 +17,7 @@
 #include "Trayicon.h"
 #include <Menus.hpp>
 #include "trayicon.h"
+#include "UVisual.h"
 
 #define PANEL_SYSSTATUS         0
 #define PANEL_EEGSOURCE         1

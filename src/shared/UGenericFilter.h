@@ -21,9 +21,10 @@
 #include <typeinfo>
 #include <set>
 #include "UEnvironment.h"
-
-class GenericSignal;
-class SignalProperties;
+// Includes needed for every filter, so they are put here for
+// convenience.
+#include "UGenericSignal.h"
+#include "UBCIError.h"
 
 // Some utility macros for more readable filter constructors.
 #define BEGIN_PARAMETER_DEFINITIONS                                    \

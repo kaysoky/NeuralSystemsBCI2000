@@ -44,6 +44,7 @@
 #include "UFilterHandling.h"
 #include "UGenericVisualization.h"
 #include "UCoreMessage.h"
+#include "UCoreComm.h"
 #include "UMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

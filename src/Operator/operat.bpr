@@ -11,7 +11,7 @@
       obj\UBitRate.obj obj\UCoreComm.obj obj\UCoreMessage.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
-      obj\UOperatorUtils.obj"/>
+      obj\UOperatorUtils.obj obj\UVisual.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -81,6 +81,7 @@
       <FILE FILENAME="..\shared\USysCommand.cpp" FORMNAME="" UNITNAME="USysCommand" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\BCIDirectry.cpp" FORMNAME="" UNITNAME="BCIDirectry" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UOperatorUtils.cpp" FORMNAME="" UNITNAME="UOperatorUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UVisual.cpp" FORMNAME="" UNITNAME="UVisual" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

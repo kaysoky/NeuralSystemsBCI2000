@@ -10,6 +10,7 @@
 #include "UState.h"
 #include "UTrialSequence.h"
 #include "UTaskUtil.h"
+#include "UBCIError.h"
 
 //---------------------------------------------------------------------------
 
