@@ -9,7 +9,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         try
         {
                  Application->Initialize();
-                 Application->Title = "2-dimensional box task";
+                 Application->Title = "3-dimensional box task";
                  Application->CreateForm(__classid(TfMain), &fMain);
                  Application->CreateForm(__classid(TUser), &User);
                  Application->Run();

@@ -22,7 +22,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -112,9 +112,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=28
@@ -220,5 +217,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>

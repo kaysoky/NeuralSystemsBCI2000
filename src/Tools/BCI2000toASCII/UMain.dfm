@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 146
   Width = 438
   Height = 550
-  Caption = 'BCI2000toASCII V3.7 (Matlab 6.5+7.0)'
+  Caption = 'BCI2000toASCII V3.8 (Matlab 6.5+7.0)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -214,7 +214,7 @@ object fMain: TfMain
   object cStateListBox: TCheckListBox
     Left = 0
     Top = 248
-    Width = 121
+    Width = 145
     Height = 97
     ItemHeight = 13
     TabOrder = 4
@@ -297,7 +297,7 @@ object fMain: TfMain
     TabOrder = 14
   end
   object rExportMatlab: TRadioButton
-    Left = 136
+    Left = 152
     Top = 248
     Width = 113
     Height = 17
@@ -307,7 +307,7 @@ object fMain: TfMain
     TabStop = True
   end
   object rExportFile: TRadioButton
-    Left = 136
+    Left = 152
     Top = 272
     Width = 113
     Height = 17
@@ -331,6 +331,18 @@ object fMain: TfMain
     Caption = 'Clear List'
     TabOrder = 18
     OnClick = bClearListClick
+  end
+  object ExportDataType: TRadioGroup
+    Left = 272
+    Top = 232
+    Width = 113
+    Height = 65
+    Caption = 'ExportDataType'
+    ItemIndex = 0
+    Items.Strings = (
+      'double (default)'
+      'signed int16')
+    TabOrder = 19
   end
   object OpenDialog: TOpenDialog
     Filter = 'BCI2000 EEG files (*.DAT)|*.DAT|All Files (*.*)|*.*'

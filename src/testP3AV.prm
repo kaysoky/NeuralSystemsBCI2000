@@ -1,47 +1,67 @@
-System string ApplicationIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0. // this module's listening IP
-System string ApplicationPort= 1108 4200 1024 32768 // this module's listening port
-Storage int AutoIncrementRunNo= 1 1 0 1 // 0: no auto increment 1: auto increment at Initialize)
-Oddball string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)
+System string ApplicationIP= 172.16.13.47 127.0.0.1 127.0.0.1 127.0.0.1 // the Application module's listening IP
+System string ApplicationPort= 1423 4200 1024 32768 // the Application module's listening port
+P3AV_Stimulus int AudioSwitch= 1 1 0 1 // Whether audio files will be presented (will not be presented individually if not defined)
+P3AV_Stimulus float AudioVolume= 1 1 0 1 // Volume for audio playback
+P3AV_Stimulus string CaptionColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // Color of stimulus caption text in hex (0x00BBGGRR)
+P3AV_Stimulus int CaptionHeight= 10 0 0 100 // Height of stimulus caption text in percent of screen height
+P3AV_Stimulus int CaptionSwitch= 1 1 0 1 // Whether captions will be presented (will not be presented individually if not defined)
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
-System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
-System string EEGsourcePort= 1106 4200 1024 32768 // this module's listening port
-Storage string FileInitials= d:\bci2000data TD a z // Initials of file name (max. 8 characters)
-Source int ModulateAmplitude= 1 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
+Source int DoTrueRandom= 0 0 0 1 // Generate truly random sequence (0=no, 1=yes)@boolean
+System string EEGSourceIP= 172.16.13.47 127.0.0.1 127.0.0.1 127.0.0.1 // the EEGSource module's listening IP
+System string EEGSourcePort= 1420 4200 1024 32768 // the EEGSource module's listening port
+Storage string FileInitials= c:\bci2000data a z 0 // path to top level data directory@directory
+P3AV_Stimuli matrix FocusOn= { caption icon audio } { focuson } Please%20focus%20on icons\focuson.bmp sounds\uh-uh.wav 0 0 0 // initial announcement what to focus on
+P3AV_Stimuli int InterpretMode= 0 0 0 2 // Classification of results can be in none(0), free(1) or copy(2) mode
+Localization string Language= Default Default % % // Language for user messages
+Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... % % % // Localized user messages
+P3AV_Stimuli matrix Matrix= { caption icon audio } { stimulus1 stimulus2 stimulus3 stimulus4 stimulus5 stimulus6 } One Two Three Four Five Six icons\1.bmp icons\2.bmp icons\3.bmp icons\4.bmp icons\5.bmp icons\6.bmp sounds\1.wav sounds\2.wav sounds\3.wav sounds\4.wav sounds\5.wav sounds\6.wav 0 0 0 // captions and icons to be displayed, sounds to be played for different stimuli
+P3AV_Stimulus int MaxInterTime= 3 3 3 3 // Maximum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks
+P3AV_Stimulus int MinInterTime= 0 0 0 0 // Minimum time that will be randomly added to the inter-stimulus interval in units of SampleBlocks
+Source int ModulateAmplitude= 1 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)@boolean
 Source int NoiseMaxAmplitude= 3000 3000 -32767 32767 // the maximum output value for noise
 Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value for noise
-Oddball int NumberTargets= 4 4 0 100 // Number of Targets ... NOT USED YET
+P3AV_Stimuli int NumberOfSeq= 3 1 0 100 // How many times the sequence will be played
 Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
-Oddball int OddballProbability= 10 10 0 100 // Probability for oddball icon
-Oddball int OffTime= 3 10 0 5000 // Invisible duration of icon in units of SampleBlocks
-Oddball int OnTime= 10 10 0 5000 // Visible duration of icon in units of SampleBlocks
+P3AV_Stimulus int OffTime= 3 10 0 5000 // Inter-stimulus period (in units of SampleBlocks)
+P3AV_Stimulus int OnTime= 10 10 0 5000 // Stimulus presentation time (in units of SampleBlocks)
+P3AV_Stimulus int PostSequenceTime= 50 30 0 5000 // Period following the presentation of the stimulus sequence (in units of SampleBlocks)
+P3AV_Stimulus int PreSequenceTime= 50 30 0 5000 // Period preceding the presentation of the stimulus sequence (in units of SampleBlocks)
+P3AV_Stimuli matrix Result= { caption icon audio } { result } The%20result%20was icons\result.bmp sounds\uh-uh.wav 0 0 0 // final result announcement 
 Source int SampleBlockSize= 16 5 1 128 // the number of samples transmitted at a time
 Source int SamplingRate= 384 128 1 4000 // the sample rate
-Storage int SavePrmFile= 0 1 0 1 // 0/1: don't save/save additional parameter file
-System string SignalProcessingIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
-System string SignalProcessingPort= 1110 4200 1024 32768 // this module's listening port
-Source int SineChannel= 0 0 0 128 // channel number of sinewave (0=all)
+Storage int SavePrmFile= 0 1 0 1 // save additional parameter file (0=no, 1=yes)@boolean
+P3AV_Stimuli intlist Sequence= 4 1 3 4 2 1 1 1000 // Sequence in which stimuli are presented (deterministic mode)/ Stimulus frequencies for each stimulus (random mode)
+P3AV_Stimuli int SequenceType= 0 0 0 1 // Sequence of stimuli can be deterministic(0) or random(1)
+System string SignalProcessingIP= 172.16.13.47 127.0.0.1 127.0.0.1 127.0.0.1 // the SignalProcessing module's listening IP
+System string SignalProcessingPort= 1424 4200 1024 32768 // the SignalProcessing module's listening port
+Source int SineChannel= 0 0 0 128 // channel number of sinewave for y (0=all)
+Source int SineChannelX= 0 0 0 128 // channel number of sinewave for x
 Source float SineFrequency= 10 10 0 100 // frequency of the sine wave
 Source int SineMaxAmplitude= 10000 20000 -32767 32767 // the maximum output value for sine
 Source int SineMinAmplitude= -10000 0 -32767 32767 // the minimal output value for sine
 Source int SoftwareCh= 16 16 1 128 // the number of digitized and stored channels
-Visualize int SourceMax= 8092 8092 0 16386 // raw EEG vsi Max Value
-Visualize int SourceMin= 0 0 -8092 0 // raw EEG vis Min Value
-System int StateVectorLength= 5 16 1 30 // length of the state vector in bytes
+Filtering floatlist SourceChGain= 16 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 -500 500 // gain for each channel (A/D units -> muV)
+Filtering floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -500 500 // offset for channels in A/D units
+Filtering floatlist SourceChTimeOffset= 1 -1 0 0 1 // time offset for all source channels (not used if -1)
+Visualize int SourceMax= 8092 4096 0 16386 // raw signal vis Max Value
+Visualize int SourceMin= 0 0 -8092 0 // raw signal vis Min Value
+System int StateVectorLength= 7 16 1 30 // length of the state vector in bytes
+P3AV_Stimulus int StimulusWidth= 5 0 0 100 // StimulusWidth in percent of screen width
 Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
-Storage string SubjectName= test Name a z // subject alias (max. 8 characters)
-Storage string SubjectRun= 01 00 0 99 // digit run number (max. 3 characters)
-Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
-Oddball string TargetDefinitionFile= P3AVtargets.cfg 0 0 100 // Target definition file
-Oddball int TargetHeight= 35 0 0 100 // TargetHeight in percent of screen height
-Oddball int TargetTextHeight= 5.5 0 0 100 // Height of target labels in percent of screen height
-Oddball int TargetWidth= 35 0 0 100 // TargetWidth in percent of screen width
+Storage string SubjectName= test Name a z // subject alias
+Storage string SubjectRun= 01 00 0 0 // two-digit run number
+Storage string SubjectSession= 001 001 0 0 // three-digit session number
+P3AV_Stimuli intlist ToBeCopied= 3 1 2 3 1 1 1000 // Sequence in which stimuli need to be copied (only used in copy mode)
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
-Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
-Visualize int VisualizeRoundtrip= 0 1 0 1 // visualize roundtrip time (0=no, 1=yes)
-Visualize int VisualizeSource= 1 1 0 1 // visualize raw EEG (0=no, 1=yes)
-Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw EEG
+Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
+P3AV_Stimuli string UserComment= Add your comment here // User comments for a specific run
+P3AV_Stimulus int VideoSwitch= 1 1 0 1 // Whether icons files will be presented (will not be presented individually if not defined)
+Visualize int VisualizeRoundtrip= 0 1 0 1 // visualize roundtrip time (0=no, 1=yes)@boolean
+Visualize int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes)@boolean
+Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw brain signal
 Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization
-Oddball int WinHeight= 512 512 0 2000 // User Window Height
-Oddball int WinWidth= 512 512 0 2000 // User Window Width
-Oddball int WinXpos= 5 0 0 5000 // User Window X location
-Oddball int WinYpos= 5 0 0 5000 // User Window Y location
+P3AV_Window string WinBackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // Background Color in hex (0x00BBGGRR)
+P3AV_Window int WinHeight= 512 512 0 2000 // User Window Height
+P3AV_Window int WinWidth= 512 512 0 2000 // User Window Width
+P3AV_Window int WinXpos= 5 0 0 5000 // User Window X location
+P3AV_Window int WinYpos= 5 0 0 5000 // User Window Y location

@@ -26,10 +26,21 @@ private:
         float joy_xgain;
         float joy_ygain;
         float joy_zgain;
-        float x_pos;
-        float y_pos;
+        float x_pos, x_trkpos, x_radius;
+        float y_pos, y_trkpos, y_radius;
         float cursor_x_start;
         float cursor_y_start;
+
+        bool  TrackingTarget;
+        float ellipse_radius_x;
+        float ellipse_radius_y;
+        float ellipse_radius_decrement_x;
+        float ellipse_radius_decrement_y;
+        float tracking_speed;
+        int   tracking_shape;
+        float triangle_size_x, triangle_size_y;
+
+        float cntr;             // counter for drawing tracking figures
 
         float CursorStartX;
         float CursorStartY;
@@ -142,6 +153,7 @@ private:
         int TestTarget( float, float, int );
         void GetJoy( void );
         void GetGlove( );
+        void GetMouse( void );
         void ShuffleTargs( int ntargs );
         void Rest( void );
         void Iti( void );

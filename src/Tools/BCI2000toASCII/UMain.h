@@ -56,6 +56,7 @@ __published:	// IDE-managed Components
         TMemo *mFilenames;
         TButton *bClearList;
         TBevel *Bevel1;
+        TRadioGroup *ExportDataType;
         void __fastcall bOpenFileClick(TObject *Sender);
         void __fastcall bOutputFileClick(TObject *Sender);
         void __fastcall ContinueClick(TObject *Sender);

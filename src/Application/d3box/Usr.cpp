@@ -6,8 +6,6 @@
 #include "Usr.h"
 #include "UParameter.h"
 
-
-
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -25,13 +23,11 @@ int numTarg;            //number of total targets
 __fastcall TUser::TUser(TComponent* Owner)
         : TForm(Owner)
 {
-
-
+ TrackingTarget=false;
 }
 //--------------------------------------------------------------
 _fastcall TUser::~TUser()
-{
-/*shidong starts*/
+{/*shidong starts*/
 
 if(a)fclose(a);
 if(a)fclose(f);
@@ -39,7 +35,7 @@ if(a)fclose(g);
 
 /*shidong ends*/
 User->Close();
-       
+
 }
 //---------------------------------------------------------------------------
 
@@ -61,8 +57,10 @@ void SetUsr( PARAMLIST *plist, STATELIST *slist )
 
 //------------------------------------------------------------------------
 
-void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiString border, AnsiString target, AnsiString cursor, int totalTarg)
+void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiString border, AnsiString target, AnsiString cursor, int totalTarg, bool new_TrackingTarget)
 {
+
+       TrackingTarget=new_TrackingTarget;
 
        Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
        Wy=  atoi(plist->GetParamPtr("WinYpos")->GetValue());
@@ -70,7 +68,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
        Wyl= atoi(plist->GetParamPtr("WinHeight")->GetValue());
        CursorSize= atoi(plist->GetParamPtr("CursorSize")->GetValue());
        Cursor->Brush->Color= clBlack;
-       
+
        User->ClientWidth=  Wxl;
        User->ClientHeight= Wyl;
        User->Left=         Wx;
@@ -95,6 +93,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
        limit_left= 0; // HalfCursorSize;  //  0; CursorSize/2;
        limit_right= Wxl; // - HalfCursorSize; // - CursorSize/2;
 
+       // sphereVec.clear();
 
        /*shidong starts*/      //User->Show();
 
@@ -112,7 +111,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist, AnsiStrin
 
         if(g)   {}
         else
-        {       g = fopen("APIprocess.txt", "w");       }        
+        {       g = fopen("APIprocess.txt", "w");       }
 
         if (a==NULL )bcierr << "Could not open TaskLog.txt for writing" << std::endl;
         if (f==NULL )bcierr << "Could not open APIlog.txt for writing" << std::endl;
@@ -357,7 +356,7 @@ void TUser::PutCursor(float *x, float *y, TColor color )
         if( *y <= limit_top )    *y= limit_top;
         if( *y >= limit_bottom ) *y= limit_bottom;
         if( *x <= limit_left )   *x= limit_left;
-        if( *x >= limit_right )  *x= limit_right;      
+        if( *x >= limit_right )  *x= limit_right;
 
         Cursor->Top=  *y - HalfCursorSize;
         Cursor->Left= *x - HalfCursorSize;
@@ -385,28 +384,66 @@ void TUser::PutCursor(float *x, float *y, TColor color )
         if( cY >= BORDER/2 ) cY = BORDER/2 ;
         if( cX <= -BORDER/2 )   cX= -BORDER/2;
         if( cX >= BORDER/2 )  cX= BORDER/2 ;
- 
+
         calculateCursorColor(sphereVec[0].getSphereZ(), cursorColorF, cursorColorB);
         sphereVec[0].setColor(User->zR, User->zG, User->zB);
-
-        /*z - 25 to make best view */
         sphereVec[0].setSphere(cX, cY, User->posZ, sphereVec[0].getSphereRad());
+
   if(debug)fprintf(a, "TaskLog->PutCursor: cX is %f and cY is %f and Z is %f.\n", cX, cY, sphereVec[0].getSphereZ());
 
 
-        if (color != clBlack)                   //if curosor is not hiding
+        if (color != clBlack)                   //if cursor is not hiding
         {
         sphereVec[0].setStatus(true);          //enable cursor
         }
         else
         {
-        sphereVec[0].setStatus(false);          //enable cursor
+        sphereVec[0].setStatus(false);          //disable cursor
         User->posZ = startZ;
         }
         /*shidong ends*/
 }
 
 
+void TUser::PutTrackingTarget(float *x, float *y, TColor color )
+{
+        if( *y <= limit_top )    *y= limit_top;
+        if( *y >= limit_bottom ) *y= limit_bottom;
+        if( *x <= limit_left )   *x= limit_left;
+        if( *x >= limit_right )  *x= limit_right;
+
+        Cursor->Top=  *y - HalfCursorSize;
+        Cursor->Left= *x - HalfCursorSize;
+        Cursor->Brush->Color= color;
+
+        float tempX = *x;
+        float tempY = *y;
+
+        tempX = tempX-256;
+        tempY = 256-tempY;
+
+        float cX, cY;
+        cX = tempX/512*BORDER;
+        cY = tempY/512*BORDER;
+
+        if(*x == 256)  cX = 0;
+        if(*y == 256)  cY = 0;
+
+        if( cY <= -BORDER/2 )    cY = -BORDER/2;
+        if( cY >= BORDER/2 ) cY = BORDER/2 ;
+        if( cX <= -BORDER/2 )   cX= -BORDER/2;
+        if( cX >= BORDER/2 )  cX= BORDER/2 ;
+
+        if (sphereVec.size() < 2) return;
+
+        // sphereVec[1].setColor(User->zR, User->zG, User->zB);
+        sphereVec[1].setSphere(cX, cY, User->posZ, sphereVec[1].getSphereRad());
+
+        if (color != clBlack)                   //if cursor is not hiding
+           sphereVec[1].setStatus(true);          //enable cursor
+        else
+           sphereVec[1].setStatus(false);
+}
 //----------------------------------------------------------------------------
 
 /*shidong starts*/
@@ -449,7 +486,7 @@ void TUser::PutO( bool Tstate )
         }
         else
                 tO->Visible=false;
-}                        
+}
 
 //----------------------------------------------------------------------------
 
@@ -626,7 +663,7 @@ try
         bool light1;
 
 
-        
+
 
         while(!done)                    // Loop that runs while done = false
 	{
@@ -655,39 +692,18 @@ try
 			}
 
                         if (msg.message == WM_LBUTTONDOWN)      // if left button mouse is pressed
-                        {
-                                posZadd = true;
-                        }
-                        if (msg.message == WM_LBUTTONUP)
-                        {
-                                posZadd = false;
-                        }
-                        if (posZadd)
-                        {
-                                User->posZ += 0.2;
-                                if(sphereVec.size() != 0)
-                                sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
-                        }
-
-
+                           User->posZ += 0.2;
 
                         if (msg.message == WM_RBUTTONDOWN)      // if right button mouse is pressed
-                        {
-                                posZminus = true;
-                        }
-                        if (msg.message == WM_RBUTTONUP)
-                        {
-                                posZminus = false;
-                        }
-                        if (posZminus)
-                        {
-                                User->posZ -= 0.2;
-                                if(sphereVec.size() != 0)
-                                sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
-                        }
+                           User->posZ -= 0.2;
 
-                        if(sphereVec.size() != 0)
-                        sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
+                        if (sphereVec.size() != 0)
+                           {
+                           // sphere1 = cursor; sphere2 = tracking target
+                           sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
+                           if (User->TrackingTarget)
+                              sphereVec[1].setSphere(sphereVec[1].getSphereX(), sphereVec[1].getSphereY(), User->posZ, sphereVec[1].getSphereRad() );
+                           }
 
                         //if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
                         //make sure posZ is within Boundary
@@ -696,8 +712,12 @@ try
                 }
 		else            // If there are no messages
 		{
-                        if(sphereVec.size() != 0)
-                        sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
+                        if (sphereVec.size() != 0)
+                           {
+                           sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), User->posZ, sphereVec[0].getSphereRad() );
+                           if (User->TrackingTarget)
+                              sphereVec[1].setSphere(sphereVec[1].getSphereX(), sphereVec[1].getSphereY(), User->posZ, sphereVec[1].getSphereRad() );
+                           }
 
                        // if(debug) fprintf(a, "The z position is %f.\n", User->posZ);
                         //make sure posZ is within Boundary
@@ -722,7 +742,7 @@ try
 QueryPerformanceCounter(&S1);
 				       DrawScreen();          // Draw the scene
                                        SwapBuffers(hDC);
-QueryPerformanceCounter(&S2);                   
+QueryPerformanceCounter(&S2);
 timeinms= ( (double)S2.QuadPart-(double)S1.QuadPart-(double)overhead.QuadPart )/(double)prectimebase.QuadPart*1000;
 //if(debug)fprintf(g, "%e\n", timeinms);
 double frameRate = 1000/25;             //25 Hz, 40 ms per frame
@@ -1005,7 +1025,7 @@ void TUser::setCursorColor(AnsiString front, AnsiString back)
 
 
 /*
- * Function:    serCursor()
+ * Function:    setCursor()
  * Paramters:   posX    --      x coordinate postion
                 posY    --      y ""
                 posZ    --      z ""
@@ -1015,12 +1035,11 @@ void TUser::setCursorColor(AnsiString front, AnsiString back)
                 clB     --      blue color component
                 bright  --      brightness
                 cTexture--      cursor texture file path
- * Purpose:     Create a cursor and set its parameters.  Add the cursor to the spehre vector
+ * Purpose:     Create a cursor and set its parameters.  Add the cursor to the sphere vector
  * Return:      n/a
  */
 void TUser::setCursor(float posX, float posY, float posZ, float radius, float clR, float clG, float clB, float bright, AnsiString cTexture)
 {
-
         sphere temp;                    //sphere primitive
 
         //radius and positions are the percentage if the window's dimension.
@@ -1064,16 +1083,36 @@ void TUser::setCursor(float posX, float posY, float posZ, float radius, float cl
                 //loaded into the system.
                 sphereVec[0].setHasTexture(true);
                 sphereVec[0].setTexture(cTexture.c_str());
+
+                if (TrackingTarget)
+                   {
+                   sphereVec[1].setSphere(posX, posY, posZ, radius);
+                   User->posZ = posZ;
+                   sphereVec[1].setColor(posX, clG, clB);
+                   sphereVec[1].setPrimitveID(1);
+                   sphereVec[1].setRotPointPosition(0.0f, 0.0f, 0.0f);
+                   sphereVec[1].setStatus(true);
+                   sphereVec[1].setBrightness(bright);
+                   sphereVec[1].setTransparency(255);
+                   sphereVec[1].setHasTexture(false);
+                   }
         }
         else
         {
                 sphereVec.push_back(temp);
                 sphereVec.back().setElementID(sphereVec.size()-1);
+                if (TrackingTarget)
+                   {
+                   sphereVec.push_back(temp);
+                   sphereVec.back().setElementID(sphereVec.size()-1);
+                   }
         }
         if (debug) fprintf(a, "Cursor: %d\n", sphereVec.back().getElementID());
 
 }//serCursor
-   
+
+
+
 //----------------------------------------------------------------------------
 void TUser::setWindow(int h, int w, int x, int y)
 {

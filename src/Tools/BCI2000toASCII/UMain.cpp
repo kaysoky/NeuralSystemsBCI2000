@@ -42,12 +42,9 @@ int TfMain::InitMatlabEngine()
   * Start the MATLAB engine
   */
  ep = engOpen(NULL);
- if (!ep)
-    {
-    Application->MessageBox ("Can't start MATLAB engine", "Engwindemo.c", MB_OK);
-    return(-1);
-    }
+ if (!ep) return(-1);
 
+ engSetVisible(ep, false);
  return(0);
 }
 
@@ -74,12 +71,14 @@ char    cur_statename[256], buffer[5000];
 int     samplingrate, channels, cur_value, cur_state, cur_trial;
 int     numstates, oldnumstates, totalsamples, cur_totalsample;
 bool    consistent, exportfile, exportmatlab;
+int     exportdatatype;
 FILE    *fp;
 mxArray *signal, *state_var[MAX_STATES], *run_var, *trial_var, *sample_var;
 MATFile *pmat;
 
  exportmatlab=rExportMatlab->Checked;
  exportfile=rExportFile->Checked;
+ exportdatatype=ExportDataType->ItemIndex;   // 0=double, 1=int16
 
  // if we did not select to export to anything
  if ((!exportfile) && (!exportmatlab))
@@ -127,9 +126,19 @@ MATFile *pmat;
  if (exportmatlab)
     {
     ret=InitMatlabEngine();
-    if( ret != 0 )
-      return ret;
-    signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
+    if (ret != 0)
+       {
+       Application->MessageBox("Could not open Matlab Engine", "Error", MB_OK);
+       return ret;
+       }
+    // signal = mxCreateDoubleMatrix(totalsamples, channels, mxREAL);
+    int dims[2];
+    dims[0]=totalsamples;
+    dims[1]=channels;
+    if (exportdatatype == 0)
+       signal=mxCreateNumericArray(2, (const int *)&dims, mxDOUBLE_CLASS, mxREAL);
+    else
+       signal=mxCreateNumericArray(2, (const int *)&dims, mxINT16_CLASS, mxREAL);
     mxSetName(signal, "signal");
     }
 
@@ -222,7 +231,13 @@ MATFile *pmat;
        {
        cur_value=bci2000data->ReadValue(channel, sample);
        cur_value_double=(double)cur_value;
-       if (exportmatlab) memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
+       if (exportmatlab)
+          {
+          if (exportdatatype == 0)
+             memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
+          else
+             memcpy((char *)((__int16 *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value, sizeof(__int16));
+          }
        if (exportfile) fprintf(fp, "%d ", cur_value);
        }
       // store the value of each state
@@ -537,4 +552,5 @@ void TfMain::ProcessCommandLineOptions()
   if( !batchMode )
     bConvert->Enabled = ( eDestinationFile->Text != "" && mFilenames->Text != "" );
 }
+
 

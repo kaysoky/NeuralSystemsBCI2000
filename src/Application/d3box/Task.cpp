@@ -1,5 +1,5 @@
 /*************************************************************************
-Task.cpp for the d2box task
+Task.cpp for the d3box task
 *************************************************************************/
 #include <vcl.h>
 #pragma hdrstop
@@ -63,6 +63,24 @@ TTask::TTask()
       "Light Source Color's Intensity Value, range from 0~255",
 
 
+    "TrackingTask int UseTracking= 1 0 0 0 // "
+      "Enable tracking task (1=yes, 0=target task)",
+    "TrackingTask float EllipseRadiusX= 14000 0 0 0 // "
+      "X radius of ellipse",
+    "TrackingTask float EllipseRadiusY= 14000 0 0 0 // "
+      "Y radius of ellipse",
+    "TrackingTask float EllipseRadiusDecrX= 0.5 0 0 0 // "
+      "continuously decreases X radius of ellipse",
+    "TrackingTask float EllipseRadiusDecrY= 0.5 0 0 0 // "
+      "continuously decreases Y radius of ellipse",
+    "TrackingTask float TrackingSpeed= 0.02 0 0 0 // "
+      "Adv. of tracking cursor per sample block (no units)",
+    "TrackingTask int TrackingShape= 1 0 0 0 // "
+      "1=ellipse, 2=triangle",
+    "TrackingTask float TriangleSizeX= 5 0 0 0 // "
+      "Size of triangle in X",
+    "TrackingTask float TriangleSizeY= 5 0 0 0 // "
+      "Size of triangle in Y",
 
 
     "UsrTask int PreTrialPause= 10 0 0 0 // "
@@ -110,10 +128,10 @@ TTask::TTask()
     "JoyStick string GloveCOMport= COM2 0 % % // "
       "COM port for 5DT glove",
     "JoyStick int UseJoyStick= 0 0 0 2 // "
-      "0=brain signals; 1=Joystick; 2=Glove (enumeration)",
+      "0=brain signals; 1=Joystick; 2=Mouse; 3=Glove (enumeration)",
   #else // DATAGLOVE
     "JoyStick int UseJoyStick= 0 0 0 1 // "
-      "0=brain signals; 1=Joystick (enumeration)",
+      "0=brain signals; 1=Joystick; 2=Mouse (enumeration)",
   #endif // DATAGLOVE
     "JoyStick float JoyXgain= 4.0 0 -1000.0 1000.0 // "
       "Horizontal gain",
@@ -193,6 +211,9 @@ TTask::TTask()
     "CursorPosX 16 0 0 0",
     "CursorPosY 16 0 0 0",
     "CursorPosZ 16 0 0 0",
+    "TrkCursorPosX 16 0 0 0",
+    "TrkCursorPosY 16 0 0 0",
+    "TrkCursorPosZ 16 0 0 0",
 
     "Xadapt 16 0 0 0",
     "Yadapt 16 0 0 0",
@@ -428,7 +449,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
         checkInt((const char*)Parameter("XOffset"), "XOffset");
         checkInt((const char*)Parameter("YOffset"), "XOffset");
         checkInt((const char*)Parameter("ZOffset"), "ZOffset");
-        PreflightCondition( Parameter("UseJoyStick")== 1 || Parameter("UseJoyStick")== 0);
+        PreflightCondition( Parameter("UseJoyStick") >= 0 && Parameter("UseJoyStick") <= 3);
         if (Parameter("JoyZgain") != 1)
                 bciout << "JoyZgain should be set to 1 to avoid float point overflow." << std::endl;
 
@@ -553,7 +574,7 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
 
   #ifdef DATAGLOVE
   // test for presence of glove if we want to use the glove
-  if (Parameter( "UseJoystick" ) == 2)
+  if (Parameter( "UseJoystick" ) == 3)
      {
      PreflightCondition( my_glove->GlovePresent(AnsiString((const char *)Parameter("GloveCOMport"))) );
      PreflightCondition( Parameter("GloveControlX")->GetNumRows() == 3);
@@ -616,8 +637,21 @@ TEMPORARY_ENVIRONMENT_GLUE
         LightSourceColorB       = Parameter( "LightSourceColorB");
         LightSourceIntensity    = Parameter( "LightSourceIntensity");
 
+        TrackingTarget=false;
+        if (Parameter("UseTracking") == 1)
+           {
+           TrackingTarget=true;
+           ellipse_radius_x = Parameter( "EllipseRadiusX");
+           ellipse_radius_y = Parameter( "EllipseRadiusY");
+           ellipse_radius_decrement_x = Parameter( "EllipseRadiusDecrX");
+           ellipse_radius_decrement_y = Parameter( "EllipseRadiusDecrY");
+           tracking_speed = Parameter("TrackingSpeed");
+           tracking_shape = Parameter("TrackingShape");
+           triangle_size_x = Parameter("TriangleSizeX");
+           triangle_size_y = Parameter("TriangleSizeY");
+           }
 
-
+        User->PutTrackingTarget( &x_pos, &y_pos, clBlack );
 
         WorkspaceBoundaryVisible = Parameter( "WorkspaceBoundaryVisible");
 
@@ -635,16 +669,16 @@ TEMPORARY_ENVIRONMENT_GLUE
 
         useJoy= Parameter( "UseJoyStick" );
         #ifdef DATAGLOVE
+        if ((useJoy < 0) || (useJoy > 3))
+          bcierr << "UseJoyStick has to be 0, 1, 2, or 3" << std::endl;
+        #else
         if ((useJoy < 0) || (useJoy > 2))
           bcierr << "UseJoyStick has to be 0, 1, or 2" << std::endl;
-        #else
-        if ((useJoy < 0) || (useJoy > 1))
-          bcierr << "UseJoyStick has to be 0, or 1" << std::endl;
         #endif
 
         #ifdef DATAGLOVE
         // transfer the weights for glove into local variables
-        if (useJoy == 2)
+        if (useJoy == 3)
            {
            COMport= ( const char* )Parameter( "GloveCOMport" );
            for (int sensor=0; sensor<MAX_GLOVESENSORS; sensor++)
@@ -717,12 +751,12 @@ TEMPORARY_ENVIRONMENT_GLUE
         vis->SetSourceID(SOURCEID_TASKLOG);
         vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
 /*shidong starts*/
-        User->Initialize( plist, slist, borderTexture, targetTexture, cursorTexture, Ntargets   );
+        User->Initialize( plist, slist, borderTexture, targetTexture, cursorTexture, Ntargets, TrackingTarget);
         User->setCursorColor( CursorColorFront, CursorColorBack);
         User->setCursor(CursorStartX, CursorStartY, CursorStartZ, CursorRadius, 0,1,0,255, cursorTexture);
         User->setTarget(tmat, Ntargets, m_tmat, targetTexture, borderTexture, WorkspaceBoundaryVisible);
         User->open3D();
-        User->setWindow(WinHeight, WinWidth, WinXpos, WinYpos);
+        User->setWindow(WinWidth, WinHeight, WinXpos, WinYpos);
         User->setCameraLight(CameraX, CameraY, CameraZ, CameraAimX, CameraAimY, CameraAimZ, LightSourceX, LightSourceY, LightSourceZ, LightSourceColorR, LightSourceColorG, LightSourceColorB, LightSourceIntensity);
 
 /*shidong ends*/
@@ -774,7 +808,7 @@ if(printFlow) fprintf(b, "cursor start position are %f and %f.\n", cursor_x_star
 
         #ifdef DATAGLOVE
         // if we want glove input, start streaming values from the joystick
-        if (useJoy == 2)
+        if (useJoy == 3)
            {
            delete my_glove;
            my_glove=new DataGlove();            // have to create it new; once stopped streaming, thread is terminated
@@ -831,8 +865,11 @@ if(printFlow) fprintf(b, "In TTask::WriteStateValues function.\n\n");
         /*shidong starts*/
         statevector->SetStateValue("CursorPosX",(int) (x_pos/ User->scalex) );
         statevector->SetStateValue("CursorPosY",(int) (y_pos/ User->scaley) );
-        statevector->SetStateValue("CursorPosY",(int) User->posZ/75*0x7fff );
+        statevector->SetStateValue("CursorPosZ",(int) User->posZ/75*0x7fff );
         /*shidong ends*/
+        statevector->SetStateValue("TrkCursorPosX", (int) (x_trkpos/ User->scalex) );
+        statevector->SetStateValue("TrkCursorPosY", (int) (y_trkpos/ User->scaley) );
+        statevector->SetStateValue("TrkCursorPosZ", (int) 0 );
         statevector->SetStateValue("Xadapt",CurrentXadapt);
         statevector->SetStateValue("Yadapt",CurrentYadapt);
         statevector->SetStateValue("Zadapt",CurrentZadapt);
@@ -985,7 +1022,8 @@ if(printFlow) fprintf(b, "In TTask::TestCursorLocation function.\n");
                 if( res == 1 )
                 {
                         User->PutCursor( &x_pos, &y_pos, clBlue );
-                        User->PutTarget( targx[ CurrentTarget ],
+                        if (!TrackingTarget)
+                           User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -1022,7 +1060,8 @@ if(printFlow) fprintf(b, "In TTask::TestCursorLocation function.\n");
 
 jmp:            if( CurrentOutcome == CurrentTarget )
                 {
-                         User->PutTarget( targx[ CurrentTarget ],
+                         if (!TrackingTarget)
+                            User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -1033,7 +1072,8 @@ jmp:            if( CurrentOutcome == CurrentTarget )
                 }
                 else
                 {
-                         User->PutTarget( targx[ CurrentTarget ],
+                         if (!TrackingTarget)
+                            User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -1056,7 +1096,7 @@ if(printFlow) fprintf(b, "In TTask::UpdateSummary function.\n");
 /*shidong ends*/
         float pc;
 
-        fprintf(appl," @ D2Box @   Number of Targets=%2d \n",Ntargets);
+        fprintf(appl," @ D3Box @   Number of Targets=%2d \n",Ntargets);
 
         if( targetInclude == 0 )
         {
@@ -1191,7 +1231,8 @@ if(printFlow) fprintf(b, "In TTask::Iti function.\n");
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
 
-                User->PutTarget( targx[ CurrentTarget ],
+                if (!TrackingTarget)
+                   User->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -1232,6 +1273,12 @@ if(printFlow) fprintf(b, "PtpTime is %d.\n", PtpTime);
 
                 x_pos= cursor_x_start;
                 y_pos= cursor_y_start;
+                x_trkpos= cursor_x_start;
+                y_trkpos= cursor_y_start;
+                x_radius=ellipse_radius_x;
+                y_radius=ellipse_radius_y;
+                cntr=0;
+                
 if(printFlow) fprintf(b, "In Ptp x and y pos are: %f, %f.\n", x_pos, y_pos);
                 User->PutCursor( &x_pos, &y_pos, clRed );
                 CurrentFeedback= 1;
@@ -1266,14 +1313,13 @@ if(printFlow) fprintf(b, "In TTask::GetJoy function.\n");
 
         mmres= joyGetPos( JOYSTICKID1, &joyi );
         //shidong starts   JOYSTICK CONTROL 3rd Dimension
+        // turned off for now
+        /*
         if (joyi.wButtons == JOY_BUTTON1)
-        {
                 User->posZ += 0.2;
-        }
-        else
-        {
+        if (joyi.wButtons == JOY_BUTTON2)
                 User->posZ -= 0.2;
-        }
+        */
 if(printFlow) fprintf(b, "In TTask::GetJoy function, Zoffset is %f and joy_zgain is %f, posZ is %f.\n",ZOffset, joy_zgain, User->posZ);
         User->posZ = ((User->posZ)-(float)(int)ZOffset)*joy_zgain ;
 if(printFlow) fprintf(b, "In TTask::GetJoy function, Zoffset is %f and joy_zgain is %f, posZ is %f.\n",ZOffset, joy_zgain, User->posZ);
@@ -1296,6 +1342,15 @@ sphereVec[0].setSphere(sphereVec[0].getSphereX(), sphereVec[0].getSphereY(), Use
 
         x_pos+= tx * joy_xgain;
         y_pos+= ty * joy_ygain;
+}
+
+
+void TTask::GetMouse( )
+{
+// x_pos and y_pos are in pixels (i.e., the same as window size)
+
+  x_pos= 512*((float)Mouse->CursorPos.x)/((float)Screen->Width) * joy_xgain;
+  y_pos= 512*((float)Mouse->CursorPos.y)/((float)Screen->Height) * joy_ygain;
 }
 
 
@@ -1349,12 +1404,51 @@ if(printFlow) fprintf(b, "scalex and y are %f and %f.\n", User->scalex, User->sc
                 if(printFlow) fprintf(b, "USEJOY == 0.\n");
         }
         if(useJoy == 1) GetJoy();
+        if(useJoy == 2) GetMouse();
         #ifdef DATAGLOVE
-        if(useJoy == 2) GetGlove();
+        if(useJoy == 3) GetGlove();
         #endif
 if(printFlow) fprintf(b, "After mult scale Signals are %f and %f.\n", x_pos, y_pos);
         User->PutCursor( &x_pos, &y_pos, clRed );
-if(printFlow) fprintf(b, "After put curosr are %f and %f.\n", x_pos, y_pos);
+        if (TrackingTarget)
+           {
+           // triangle
+           if (tracking_shape == 2)
+              {
+              if (cntr <= 0.33)
+                 {
+                 x_trkpos-=0.7071*triangle_size_x;
+                 y_trkpos+=1.41*triangle_size_y;
+                 }
+              else
+                 {
+                 if (cntr <= 0.66)
+                    {
+                    x_trkpos+=1.5*triangle_size_x;
+                    y_trkpos+=0;
+                    }
+                 else
+                    {
+                    x_trkpos-=0.7071*triangle_size_x;
+                    y_trkpos-=1.41*triangle_size_y;
+                    }
+                 }
+              }
+           // ellipse
+           if (tracking_shape == 1)
+              {
+              x_radius-=cntr*ellipse_radius_decrement_x;
+              y_radius-=cntr*ellipse_radius_decrement_y;
+              x_trkpos=(16384+x_radius*cos(cntr))*User->scalex;
+              y_trkpos=(16384+y_radius*sin(cntr))*User->scaley;
+              }
+           User->PutTrackingTarget( &x_trkpos, &y_trkpos, clRed );
+
+           cntr+=tracking_speed;
+           if (tracking_shape == 2)  // reset triangle if back at top
+              if (cntr > 1) cntr=0;
+           }
+if(printFlow) fprintf(b, "After put cursor are %f and %f.\n", x_pos, y_pos);
         TestCursorLocation( x_pos, y_pos );
 if(printFlow) fprintf(b, "After TestCursorLocation are %f and %f.\n", x_pos, y_pos);
 
@@ -1391,6 +1485,8 @@ if(printFlow) fprintf(b, "In TTask::Outcome function.\n");
                 CurrentTarget= 0;
                 OutcomeTime= 0;
                 User->PutCursor( &x_pos, &y_pos, clBlack );
+                if (TrackingTarget)
+                   User->PutTrackingTarget( &x_pos, &y_pos, clBlack );
         }
 
         if( (targetInclude == 0) && (feedflag == 1) )

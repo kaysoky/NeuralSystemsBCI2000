@@ -48,8 +48,8 @@ private:	// User declarations
         float xscalef;
         float yscalef;
        
-
 public:		// User declarations
+        bool  TrackingTarget;
         int HalfCursorSize;     // 1/2 of cursor size
         float scalex;
         float scaley;   
@@ -59,11 +59,12 @@ public:		// User declarations
         void GetSize( float *, float *, float *, float *);
        // void TestCursorLocation( float x, float y );
         void PutCursor( float *y, float *x, TColor color );      // self explanitory
+        void PutTrackingTarget( float *y, float *x, TColor color );      // self explanitory
         void PutTarget( float x, float y, float sizex, float sizey, TColor color, int target );
         void PutT(bool);
         void PutO(bool);
         void Clear( void );
-        void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist, AnsiString borderTexture, AnsiString targetTexture, AnsiString cursorTexture,  int totalTarg);
+        void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist, AnsiString borderTexture, AnsiString targetTexture, AnsiString cursorTexture,  int totalTarg, bool TrackingTarget);
         __fastcall TUser(TComponent* Owner);
         __fastcall ~TUser();
 
