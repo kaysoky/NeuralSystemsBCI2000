@@ -93,15 +93,10 @@ int
 BCI2000DATA::Initialize( const char* inNew_filename, int inBuf_size )
 {
   InitializeInstance();
-  if( inBuf_size == NULL )
-    return BCI2000ERR_NOERR;
 
   mBuffer_size = inBuf_size;
   mFilename = inNew_filename;
-
   mpBuf_mem = static_cast<__int16*>( ::realloc( mpBuf_mem, static_cast<size_t>( inBuf_size ) ) );
-  if( !mpBuf_mem )
-    return BCI2000ERR_NOBUFMEM;
 
   InvalidateBuffer();
 
@@ -149,7 +144,7 @@ BCI2000DATA::CalculateSampleNumber()
   mSample_number = 0;
   if( !mInitialized )
     return;
-    
+
   FILE* fp = ::fopen( mFilename.c_str(), "rb" );
   if( !fp )
     return;
