@@ -1,8 +1,8 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
 USEFORM("..\UMain.cpp", fMain);
+USEFORM("..\..\shared\UVisConfig.cpp", fVisConfig);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
