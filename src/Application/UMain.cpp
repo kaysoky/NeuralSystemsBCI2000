@@ -155,9 +155,9 @@ int     trycount;
 
   trycount=0;
   // if the statevector has not been defined yet, wait a little
-  while ((!statevector) && (trycount < 10))
+  while ((!statevector) && (trycount < 100))
    {
-   Sleep(300);
+   Sleep(50);
    trycount++;
    }
 
@@ -417,6 +417,7 @@ __fastcall TfMain::TfMain(TComponent* Owner)
           Task( NULL ),
           sendingcomm( NULL )
 {
+ statevector=NULL;
 }
 
 //********************************************************************
