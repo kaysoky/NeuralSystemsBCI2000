@@ -26,7 +26,7 @@
   public:
         TSetBaseline(PARAMLIST *paramlist, STATELIST *statelist);
     virtual ~TSetBaseline();
-    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm);
+    virtual void Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, /*GenericSignal *InputSignal,*/ CORECOMM *new_corecomm);
     virtual void Process(const GenericSignal *InputSignal, GenericSignal*);
         GenericSignal* GetBLSignal();
   };

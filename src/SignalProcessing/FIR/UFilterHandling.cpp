@@ -126,8 +126,12 @@ int     res, returnval;
  calfilter->Initialize(plist, svector, corecomm);
  spatfilter->Initialize(plist, svector, corecomm);
  tempfilter->Initialize(plist, svector, corecomm);
+#if 0
  ND= tempfilter->nPoints;
- classfilter->Initialize(plist, svector, corecomm, ND);
+ classfilter->Initialize(plist, svector, corecomm,ND);
+#else // Classfilter's Initialize still depends on tempfilter being initialized first.
+ classfilter->Initialize(plist, svector, corecomm);
+#endif
  normalfilter->Initialize( plist, svector, corecomm);
  statfilter->Initialize( plist, svector, corecomm);
 
@@ -177,7 +181,7 @@ int res, returnval;
  tempfilter->Process(SignalC, SignalD);
  classfilter->Process(SignalD, SignalE);
  normalfilter->Process(SignalE, SignalF);
- statfilter->Process(SignalE, normalfilter, SignalF);
+ statfilter->Process(SignalE, SignalF);
 
  return(returnval);
 }

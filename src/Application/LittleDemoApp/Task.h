@@ -29,7 +29,7 @@ class TTask : public GenericFilter
           TTask( PARAMLIST*, STATELIST* );
   virtual ~TTask();
 
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* = NULL );
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
 };
 

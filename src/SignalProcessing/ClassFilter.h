@@ -1,19 +1,18 @@
-//---------------------------------------------------------------------------
-
 #ifndef ClassFilterH
 #define ClassFilterH
-//---------------------------------------------------------------------------
 
 #include "UGenericFilter.h"
-#include "UGenericVisualization.h"
-
-#define MAX_N  128
-#define MAX_M  128
 
 class ClassFilter : public GenericFilter
 {
-private:
-       int      instance;
+ private:
+       enum
+       {
+#undef MAX_N
+         MAX_N = 128,
+#undef MAX_M
+         MAX_M = 128,
+       };
        int samples;
 
       // int n_mat;                   // dimension of filter kernal = TransmitCh
@@ -33,16 +32,15 @@ private:
   //     float mat_lr[MAX_M][MAX_N];  // vertical filter kernal matrix
 
        bool visualize;
-       GenericVisualization *vis;
-public:
+       class GenericVisualization *vis;
+ public:
        int n_hmat;                      // number of elements in horizontal function
        int class_mode;
        int n_vmat;                      // number of elements in vertical function
        float feature[2][MAX_M];         //  values of the elements of the linear equations
        float wtmat[2][MAX_M];           //  weights of the elements of the linear equations
 
-       ClassFilter(PARAMLIST *plist, STATELIST *slist);
-       ClassFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+          ClassFilter(PARAMLIST *plist, STATELIST *slist);
   virtual ~ClassFilter();
   virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);

@@ -14,6 +14,9 @@
 
 //#define GF_FINAL
 
+#include <typeinfo>
+#include <set>
+
 class PARAMLIST;
 class STATELIST;
 class STATEVECTOR;
@@ -27,36 +30,46 @@ class CORECOMM;
 class GenericFilter
 {
  public:
-#ifndef GF_FINAL
           GenericFilter()
-          : statevector( NULL ), corecomm( NULL ) {}
-#endif
-  virtual ~GenericFilter() {}
-
-#ifdef GF_FINAL
+          : statevector( NULL ), corecomm( NULL )
+          { filters.insert( this ); }
+  virtual ~GenericFilter()
+          { filters.erase( this ); }
   virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* ) = 0;
-#else
-  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* ) {}
-#endif
-
-#ifdef GF_FINAL
   virtual void Process( const GenericSignal* Input,
                               GenericSignal* Output ) = 0;
-#else
-  virtual void Process( const GenericSignal* Input,
-                              GenericSignal* Output ) {}
-#endif
 
 #ifdef GF_FINAL
   virtual void Preflight( const SignalProperties* Input,
                                 SignalProperties* Output ) = 0;
 #endif
 
-#ifndef GF_FINAL
  protected:
+#ifndef GF_FINAL
   STATEVECTOR* statevector;
   CORECOMM*    corecomm;
 #endif
+  // Get a filter instance of a given type, e.g.:
+  // MyFilter* myFilter = GenericFilter::GetFilter<MyFilter>();
+  //
+  // This is a workaround for adapting legacy code. Don't use it in new code.
+  // It ignores the possibility of multiple instances of the same filter class.
+  //
+  template<class T> static T* GetFilter()
+  {
+    T* filterFound = NULL;
+    filterSet::iterator i = filters.begin();
+    while( i != filters.end() && filterFound == NULL )
+    {
+      filterFound = dynamic_cast<T*>( *i );
+      ++i;
+    }
+    return filterFound;
+  }
+
+ private:
+  typedef std::set<GenericFilter*> filterSet;
+  static filterSet filters;
 };
 
 #endif // UGenericFilterH

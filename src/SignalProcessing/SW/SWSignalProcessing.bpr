@@ -10,7 +10,7 @@
       obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
       obj\BCIDirectry.obj obj\SWFilter.obj obj\Statistics.obj 
       obj\classfilter.obj obj\Normalfilter.obj obj\SpatialFilter.obj 
-      obj\CalibrationFilter.obj obj\StatFilter.obj"/>
+      obj\CalibrationFilter.obj obj\StatFilter.obj obj\UGenericFilter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -21,7 +21,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..;..;.."/>
+    <PATHCPP value=".;..;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..;..;..;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -75,6 +75,7 @@
       <FILE FILENAME="..\SpatialFilter.cpp" FORMNAME="" UNITNAME="SpatialFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\CalibrationFilter.cpp" FORMNAME="" UNITNAME="CalibrationFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\StatFilter.cpp" FORMNAME="" UNITNAME="StatFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericFilter.cpp" FORMNAME="" UNITNAME="UGenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

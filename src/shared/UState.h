@@ -2,6 +2,8 @@
 #ifndef UStateH
 #define UStateH
 
+#include <vcl.h>
+
 #define MAX_STATEVECTORLENGTH   30
 
 #define ERRSTATE_NOERR          0

@@ -31,7 +31,7 @@
     // Initialize(paramlist);
   }
 
-  void TSetBaseline::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, GenericSignal *InputSignal, CORECOMM *new_corecomm)
+  void TSetBaseline::Initialize(PARAMLIST *paramlist, STATEVECTOR *Newstatevector, /*GenericSignal *InputSignal,*/ CORECOMM *new_corecomm)
   {
     int AkElements;
     int visualizeyn;
@@ -52,8 +52,8 @@
     }
    // allocating BL variables
     BaseChList = new bool[NumChan];
-    BLSignal = new GenericSignal(NumChan, InputSignal->MaxElements());
-    for (unsigned short n=0; n<NumChan; n++) BLSignal->SetElements(n, InputSignal->GetElements(n));
+    BLSignal = new GenericSignal(NumChan, 1/*InputSignal->MaxElements()*/);
+    for (unsigned short n=0; n<NumChan; n++) BLSignal->SetElements(n, 1 /*InputSignal->GetElements(n)*/);
     for (int m=0; m<NumChan; m++) {
         BaseChList[m] = false;
         if (atoi(paramlist->GetParamPtr("BaseChList")->GetValue(m))==1) BaseChList[m] = true;

@@ -185,7 +185,7 @@ int res, returnval;
  peakdetector->Process(SignalC, SignalD);
  classfilter->Process(SignalD, SignalE);
  normalfilter->Process(SignalE, SignalF);
- statfilter->Process(classfilter, SignalE, normalfilter, SignalF);
+ statfilter->Process(SignalE, SignalF);
 
  return(returnval);
 }

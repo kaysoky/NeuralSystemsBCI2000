@@ -1,14 +1,12 @@
 #ifndef StatisticsH
 #define StatisticsH
 
+#include <stdio.h>
+
 #define MAX_CONTROLSIG          8
 #define MAX_BLSTATES            16
 #define MAX_SAMPLESPERTRIAL     500
 #define MAX_TRIALS              30
-
-#include <stdio.h>
-
-
 
 class TRIALSTAT
 {
@@ -57,7 +55,7 @@ private:
         float   CurAvg[MAX_CONTROLSIG];
         float   CurStdDev[MAX_CONTROLSIG];
         float   current_intercept;
-        FILE *sfile;
+        FILE    *sfile;
 public:
         STATISTICS::STATISTICS();
         STATISTICS::~STATISTICS();

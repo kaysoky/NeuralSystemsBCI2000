@@ -206,7 +206,11 @@ int res, returnval;
  tempfilter->Process(SignalC, SignalD);
  classfilter->Process(SignalD, SignalE);
  normalfilter->Process(SignalE, SignalF);
+#if 0
  statfilter->Process(classfilter, SignalE, normalfilter, SignalF);
+#else
+ statfilter->Process(SignalE, SignalF);
+#endif
 
  return(returnval);
 }

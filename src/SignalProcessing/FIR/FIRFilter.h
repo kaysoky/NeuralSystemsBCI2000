@@ -9,13 +9,16 @@
 
 #include "getfir.h"
 
-#define MAX_N  256
-#define MAX_M  64
-
 class TemporalFilter : public GenericFilter
 {
 private:
-       int instance;
+       enum
+       {
+#undef MAX_N
+         MAX_N = 256,
+#undef MAX_M
+         MAX_M = 64,
+       };
        int samples;               // dimension of data matrix
        int channels;              // dimension of data matrix
        int detrend;
@@ -32,8 +35,8 @@ private:
        GenericVisualization *vis;
 public:
        int nPoints;
-       TemporalFilter(PARAMLIST *plist, STATELIST *slist);
-       TemporalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+       
+          TemporalFilter(PARAMLIST *plist, STATELIST *slist);
   virtual ~TemporalFilter();
   virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);

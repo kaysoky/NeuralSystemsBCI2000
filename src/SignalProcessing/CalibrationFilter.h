@@ -5,13 +5,15 @@
 //---------------------------------------------------------------------------
 
 #include "UGenericFilter.h"
-#include "UGenericVisualization.h"
-
-#define MAXCHAN 72
 
 class CalibrationFilter : public GenericFilter
 {
 private:
+       enum
+       {
+#undef MAXCHAN
+         MAXCHAN = 72,
+       };
        bool     align;
        bool     visualize;
        float    *offset, *gain;
@@ -21,11 +23,9 @@ private:
        float    w1[MAXCHAN];
        float    w2[MAXCHAN];
        float    old[MAXCHAN];
-       int      instance;
-       GenericVisualization *vis;
+       class GenericVisualization *vis;
 public:
-       CalibrationFilter(PARAMLIST *plist, STATELIST *slist);
-       CalibrationFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+          CalibrationFilter(PARAMLIST *plist, STATELIST *slist);
   virtual ~CalibrationFilter();
   virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *corecomm);
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);

@@ -5,25 +5,22 @@
 //---------------------------------------------------------------------------
 
 #include "UGenericFilter.h"
-#include "UGenericVisualization.h"
 
 class NormalFilter : public GenericFilter
 {
 private:
-       int      instance;
        float ud_a;
        float ud_b;
        float lr_a;
        float lr_b;
        bool visualize;
-       GenericVisualization *vis;
+       class GenericVisualization *vis;
 public:
-       NormalFilter(PARAMLIST *plist, STATELIST *slist);
-       NormalFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+          NormalFilter(PARAMLIST *plist, STATELIST *slist);
   virtual ~NormalFilter();
   virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
-       int UpdateParameters( float, float, float, float );
+          int  UpdateParameters( float, float, float, float );
 };
 #endif
 

@@ -1,10 +1,13 @@
-// #include "StatFilter.h"
+#undef USE_LOGFILE
+//---------------------------------------------------------------------------
+#pragma hdrstop
+#include <math.h>
+#include <stdio.h>
 #include "Statistics.h"
 
-#include <math.h>
-// #include <stdio.h>
-
-// FILE *sfile;
+#ifdef USE_LOGFILE
+FILE *sfile;
+#endif // USE_LOGFILE
 
 void get_oc( float *l, float *q, int n  )
 {
@@ -391,7 +394,9 @@ void STATISTICS::ProcTrendControl(int Ntargets, int numBLstate, int target, int 
 
                 trialstat->trial_flag= 1;
 
-//  fprintf(sfile,"oldtarget= %2d outcome= %2d val= %4.2f \n",oldtarget,outcome,val);
+#ifdef USE_LOGFILE
+                fprintf(sfile,"oldtarget= %2d outcome= %2d val= %4.2f \n",oldtarget,outcome,val);
+#endif // USE_LOGFILE
 
         }
         oldoutcome= outcome;

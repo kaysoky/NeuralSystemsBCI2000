@@ -6,14 +6,13 @@
 
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
-#include "ClassFilter.h"
-#include "NormalFilter.h"
 #include "Statistics.h"
 
 class StatFilter : public GenericFilter
 {
-private:
-       int instance;
+ private:
+       class NormalFilter* nf;
+       class ClassFilter* clsf;
        int Ntargets;                    // number of targets
        int InterceptEstMode;            // mode of estimating intercept  0 = none
        float InterceptProportion;       // proportion of intercept used
@@ -56,20 +55,12 @@ private:
        GenericSignal *StatSignal;
        void GetStates();
        int GetBaselineHits( void );
-public:
-       StatFilter(PARAMLIST *plist, STATELIST *slist);
-       StatFilter(PARAMLIST *plist, STATELIST *slist, int instance);
+ public:
+          StatFilter(PARAMLIST *plist, STATELIST *slist);
   virtual ~StatFilter();
-       int Resting( ClassFilter * );
-  virtual void Initialize(PARAMLIST *plist, STATEVECTOR *statevector, CORECOMM *);
-       int Process(    //	CalibrationFilter *Calf,
-		       //	SpatialFilter *Sf,
-		       //	TemporalFilter *Tf,
-		       	ClassFilter *,
-                        GenericSignal *SignalE,
-			NormalFilter *nf,
-                        GenericSignal *SignalF
-                          );
+  virtual void Initialize( PARAMLIST*, STATEVECTOR*, CORECOMM* );
+  virtual void Process( const GenericSignal*, GenericSignal* );
+          int  Resting( ClassFilter * );
 };
 #endif
 

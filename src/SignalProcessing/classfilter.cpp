@@ -1,18 +1,16 @@
+#undef USE_LOGFILE
 //---------------------------------------------------------------------------
-
-#include <vcl.h>
 #pragma hdrstop
-
+#ifdef USE_LOGFILE
+# include <stdio.h>
+#endif // USE_LOGFILE
+#include "UParameter.h"
+#include "UGenericVisualization.h"
 #include "ClassFilter.h"
 
-#include <stdio.h>
-
-// FILE *classfile;
-
-
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
+#ifdef USE_LOGFILE
+FILE *classfile;
+#endif // USE_LOGFILE
 
 // **************************************************************************
 // Function:   ClassFilter
@@ -25,28 +23,30 @@
 // Returns:    N/A
 // **************************************************************************
 ClassFilter::ClassFilter(PARAMLIST *plist, STATELIST *slist)
+: vis( NULL )
 {
+ const char* params[] =
+ {
+   "Filtering matrix MUD= 2 5 "
+     "1 5 0 0 -1 "
+     "2 5 0 0 -1 "
+     "64  0 100 // Class Filter Additive Up / Down Weights",
+   "Filtering matrix MLR= 2 5 "
+     "0 0 0 0 0 "
+     "0 0 0 0 0 "
+     "64  0 100 // Class Filter Left / Right Weights",
+   "Filtering int ClassMode= 1 0 1 2 "
+     "// Classifier mode 1= simple 2= interaction",
+   "Visualize int VisualizeClassFiltering= 1 0 0 1  "
+     "// visualize Class filtered signals (0=no 1=yes)",
+ };
+ const size_t numParams = sizeof( params ) / sizeof( *params );
+ for( size_t i = 0; i < numParams; ++i )
+   plist->AddParameter2List( params[ i ] );
 
-char line[512];
-
-// instance=my_instance;
-
- vis=NULL;
-
- strcpy(line,"Filtering matrix MUD= 2 5 1 5 0 0 -1 2 5 0 0 -1 64  0 100  // Class Filter Additive Up / Down Weights");
- plist->AddParameter2List(line,strlen(line) );
-
- strcpy(line,"Filtering matrix MLR= 2 5 0 0 0 0 0 0 0 0 0 0   64  0 100  // Class Filter Left / Right Weights");
- plist->AddParameter2List(line,strlen(line) );
-
- strcpy(line,"Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction");
- plist->AddParameter2List(line,strlen(line) );
-
- strcpy(line, "Visualize int VisualizeClassFiltering= 1 0 0 1  // visualize Class filtered signals (0=no 1=yes)");
- plist->AddParameter2List( line, strlen(line) );
-
- // classfile= fopen("Classifier.asc","w+");
-
+#ifdef USE_LOGFILE
+ classfile= fopen("Classifier.asc","w+");
+#endif // USE_LOGFILE
 }
 
 
@@ -58,10 +58,10 @@ char line[512];
 // **************************************************************************
 ClassFilter::~ClassFilter()
 {
- if( vis ) delete vis;
- vis= NULL;
-
- // fclose( classfile );
+ delete vis;
+#ifdef USE_LOGFILE
+ fclose( classfile );
+#endif // USE_LOGFILE
 }
 
 
@@ -71,87 +71,83 @@ ClassFilter::~ClassFilter()
 // Parameters: paramlist - list of the (fully configured) parameter list
 //             new_statevector - pointer to the statevector (which also has a pointer to the list of states)
 //             new_corecomm - pointer to the communication object to the operator
-// Returns:    0 ... on error
-//             1 ... no error
+// Returns:    N/A
 // **************************************************************************
 void ClassFilter::Initialize(PARAMLIST *paramlist, STATEVECTOR *new_statevector, CORECOMM *new_corecomm)
 {
-int     i,j;
-int visualizeyn;
-float stop,start,bandwidth;
+  statevector=new_statevector;
+  corecomm=new_corecomm;
 
+  int visualizeyn = 0;
 
- statevector=new_statevector;
- corecomm=new_corecomm;
-
- try // in case one of the parameters is not defined (should always be, since we requested them)
+  try // in case one of the parameters is not defined (should always be, since we requested them)
   {
-        samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
-        visualizeyn= atoi(paramlist->GetParamPtr("VisualizeClassFiltering")->GetValue() );
-        n_vmat= paramlist->GetParamPtr("MUD")->GetNumValuesDimension1();
-        class_mode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );
+    samples=atoi(paramlist->GetParamPtr("SampleBlockSize")->GetValue());
+    visualizeyn= atoi(paramlist->GetParamPtr("VisualizeClassFiltering")->GetValue() );
+    n_vmat= paramlist->GetParamPtr("MUD")->GetNumValuesDimension1();
+    class_mode= atoi( paramlist->GetParamPtr("ClassMode")->GetValue() );
 
-        for(i=0;i<n_vmat;i++)
-        {
-                if( class_mode == 2 )
-                {
-                        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
-                        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
-                        vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
-                        vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
-                        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
-                }
-                else
-                {
-                        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
-                        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
-                        vc2[i]= 0;
-                        vf2[i]= 0;
-                        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
-                }
-        }
+    for(int i=0;i<n_vmat;i++)
+    {
+      if( class_mode == 2 )
+      {
+        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
+        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
+        vc2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,2) );
+        vf2[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,4) );
+      }
+      else
+      {
+        vc1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,0) );
+        vf1[i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,1) );
+        vc2[i]= 0;
+        vf2[i]= 0;
+        wtmat[0][i]= atof( paramlist->GetParamPtr("MUD")->GetValue(i,3) );
+      }
+    }
 
-        n_hmat= paramlist->GetParamPtr("MLR")->GetNumValuesDimension1();
+    n_hmat= paramlist->GetParamPtr("MLR")->GetNumValuesDimension1();
 
-        for(i=0;i<n_hmat;i++)
-        {
-                if( class_mode == 2 )
-                {
-                        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
-                        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
-                        hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
-                        hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
-                        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
-                }
-                else
-                {
-                        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
-                        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
-                        hc2[i]= 0;
-                        hf2[i]= 0;
-                        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
-                }
-        }
+    for(int i=0;i<n_hmat;i++)
+    {
+      if( class_mode == 2 )
+      {
+        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
+        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
+        hc2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,2) );
+        hf2[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,4) );
+      }
+      else
+      {
+        hc1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,0) );
+        hf1[i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,1) );
+        hc2[i]= 0;
+        hf2[i]= 0;
+        wtmat[1][i]= atof( paramlist->GetParamPtr("MLR")->GetValue(i,3) );
+      }
+    }
   }
- catch(...)
+  catch(...)
   { return; }
 
+  if( visualizeyn == 1 )
+  {
+    visualize=true;
+    delete vis;
+    vis= new GenericVisualization( paramlist, corecomm);
+    vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_WINDOWTITLE, "Classifier");
+    vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MINVALUE, "-40");
+    vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MAXVALUE, "40");
+    vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_NUMSAMPLES, "256");
+  }
+  else
+  {
+    visualize=false;
+  }
 
- if( visualizeyn == 1 )
- {
-        visualize=true;
-        if (vis) delete vis;
-        vis= new GenericVisualization( paramlist, corecomm);
-        vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_WINDOWTITLE, "Classifier");
-        vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MINVALUE, "-40");
-        vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_MAXVALUE, "40");
-        vis->SendCfg2Operator(SOURCEID_CLASSIFIER, CFGID_NUMSAMPLES, "256"); }
- else
- {
-        visualize=false;
- }
-
- return;
+  return;
 }
 
 // **************************************************************************
@@ -159,70 +155,64 @@ float stop,start,bandwidth;
 // Purpose:    This function applies the Class routine
 // Parameters: input  - input signal for the
 //             output - output signal for this filter
-// Returns:    0 ... on error
-//             1 ... no error
+// Returns:    N/A
 // **************************************************************************
 void ClassFilter::Process(const GenericSignal *input, GenericSignal *output)
 {
-int     in_channel, out_channel,sample;
-float   val_ud;
-float   val_lr;
+  float   val_ud = 0;
+  float   val_lr = 0;
+  float   term1,term2;
 
-float term1,term2;
+  // actually perform the Class Filtering on the input and write it into the output signal
 
-int i;
+  for(int i=0;i<n_vmat;i++)       // need to get vmat - number of vertical classifying functions
+  {
+    term1= input->GetValue( vc1[i]-1, vf1[i]-1 );
 
- // actually perform the Class Filtering on the input and write it into the output signal
+    if( ( vc2[i] > 0  ) && ( vf2[i] > 0 ) )
+    term2= input->GetValue( vc2[i]-1, vf2[i]-1 );
+    else    term2= 1.0;
 
-        val_ud= 0;
-        val_lr= 0;
+    feature[0][i]= term1 * term2;
 
+    val_ud+= feature[0][i] * wtmat[0][i];
 
-        for(i=0;i<n_vmat;i++)       // need to get vmat - number of vertical classifying functions
-        {
-                term1= input->GetValue( vc1[i]-1, vf1[i]-1 );
+#ifdef USE_LOGFILE
+    fprintf(classfile,"%2d %2d %2d %7.3f %7.3f %7.2f ",i,vc1[i],vf1[i],val_ud,feature[0][i],wtmat[0][i]);
+#endif // USE_LOGFILE
 
-                if( ( vc2[i] > 0  ) && ( vf2[i] > 0 ) )
-                        term2= input->GetValue( vc2[i]-1, vf2[i]-1 );
-                else    term2= 1.0;
+    //  solution= // need to transmit each result to statistics for LMS
+  }
+#ifdef USE_LOGFILE
+  fprintf(classfile,"\n");
+#endif // USE_LOGFILE
 
-                feature[0][i]= term1 * term2;
+  for(int i=0;i<n_hmat;i++)
+  {
+    if( ( hc1[i]>0 ) && (hf1[i] > 0 ) )
+    term1= input->GetValue( hc1[i]-1, hf1[i]-1 );
+    else term1= 0;
 
-                val_ud+= feature[0][i] * wtmat[0][i];
+    if( ( hc2[i] > 0  ) && ( hf2[i] > 0 ) )
+    term2= input->GetValue( hc2[i]-1, hf2[i]-1 );
+    else    term2= 1.0;
 
-// fprintf(classfile,"%2d %2d %2d %7.3f %7.3f %7.2f ",i,vc1[i],vf1[i],val_ud,feature[0][i],wtmat[0][i]);
+    feature[1][i]=  term1 * term2;
 
-                //  solution= // need to transmit each result to statistics for LMS
-        }
-// fprintf(classfile,"\n");        
+    val_lr+= feature[1][i] * wtmat[1][i];
 
-        for(i=0;i<n_hmat;i++)
-        {
+    //  solution= // need to transmit each result to statistics for LMS
+  }
 
-                if( ( hc1[i]>0 ) && (hf1[i] > 0 ) )
-                        term1= input->GetValue( hc1[i]-1, hf1[i]-1 );
-                else term1= 0;
+  output->SetValue( 0, 0, val_ud );
+  output->SetValue( 1, 0, val_lr );
 
-                if( ( hc2[i] > 0  ) && ( hf2[i] > 0 ) )
-                        term2= input->GetValue( hc2[i]-1, hf2[i]-1 );
-                else    term2= 1.0;
-
-                feature[1][i]=  term1 * term2;
-
-                val_lr+= feature[1][i] * wtmat[1][i];
-
-                //  solution= // need to transmit each result to statistics for LMS
-        }
-
-        output->SetValue( 0, 0, val_ud );
-        output->SetValue( 1, 0, val_lr );
-
-        if( visualize )
-        {
-              vis->SetSourceID(SOURCEID_CLASSIFIER);
-              vis->Send2Operator(output);
-        }
-   return;
+  if( visualize )
+  {
+    vis->SetSourceID(SOURCEID_CLASSIFIER);
+    vis->Send2Operator(output);
+  }
+  return;
 }
 
 

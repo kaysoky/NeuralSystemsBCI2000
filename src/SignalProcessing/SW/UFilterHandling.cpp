@@ -128,7 +128,7 @@ int     maxchannels, maxelements;
 
  SignalD=new GenericSignal(MD, 1);
 
- SetBaseline->Initialize(plist, svector, SignalD, corecomm);
+ SetBaseline->Initialize(plist, svector, /*SignalD,*/ corecomm);
  FBArteCorrection->Initialize(plist, svector, corecomm);
 
 // res= classfilter->Initialize(plist, svector, corecomm);
