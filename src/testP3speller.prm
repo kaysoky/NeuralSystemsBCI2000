@@ -17,8 +17,8 @@ FIRFilter int FIRWindows= 2 2 1 8 // FIR- number of input blocks
 FIRFilter int Integration= 1 0 0 1 // FIR result Integration 0 = mean 1 = rms
 Localization string Language= Default Default % % // Language for user messages
 Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... % % % // Localized user messages
-Filtering float LR_A= 0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
-Filtering float LR_B= 10 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Filtering float XMean= 0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float XGain= 10 5.0 0.0 100.0 // Normal Filter Left/Right Slope
 Filtering matrix MLR= 1 3 0 0 0 64 0 100 // Class Filter Left / Right Weights
 Source int ModulateAmplitude= 0 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
 Filtering matrix MUD= 1 3 0 0 0 64 0 100 // Class Filter Additive Up / Down Weights
@@ -69,8 +69,8 @@ P3Speller string TextColorIntensified= 0x00FFFFFF 0x00505050 0x00000000 0x000000
 P3Speller string TextToSpell= BUSH P A Z // Character or string to spell in offline mode
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
 Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
-Filtering float UD_A= 0 5.0 -100.0 100.0 // Normal Filter Up/Down Intercept
-Filtering float UD_B= 10 5.0 -100.0 100.0 // Normal Filter Up/Down Slope
+Filtering float YMean= 0 5.0 -100.0 100.0 // Normal Filter Up/Down Intercept
+Filtering float YGain= 10 5.0 -100.0 100.0 // Normal Filter Up/Down Slope
 Visualize int VisualizeCalibration= 0 0 0 1 // visualize calibrated channels (0=no, 1=yes)
 Visualize int VisualizeClassFiltering= 0 0 0 1 // visualize Class filtered signals (0=no 1=yes)
 Visualize int VisualizeNormalFiltering= 0 0 0 1 // visualize Normal filtered signals (0=no 1=yes)

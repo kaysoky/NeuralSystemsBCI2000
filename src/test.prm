@@ -7,17 +7,16 @@ UsrTask int BaselineInterval= 1 0 0 1 // Intercept Computation 1 = targets 2 = I
 UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
 MEMFilter float deltaMem= 0.2 0.2 0.02 2.00 // Resolution (line density)
-Statistics float DesiredPixelsPerSec= 50.00 70 0 400 // 
+Statistics float YPixelsPerSec= 50.00 70 0 400 // 
 System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
 System string EEGsourcePort= 2598 4200 1024 32768 // this module's listening port
 Storage string FileInitials= d:\bci2000data TD a z // Initials of file name (max. 8 characters)
-Statistics int InterceptControl= 1 0 0 1 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri
-Statistics int InterceptLength= 3 0 0 1 // Length of time for running average
-Statistics float InterceptProportion= 1.0000 0.0 0.0 2.0 // 
+Statistics int SignalWinLth= 3 0 0 1 // Length of time for running average
+Statistics float YMeanProportion= 1.0000 0.0 0.0 2.0 // 
 UsrTask int ItiDuration= 10 0 0 1 // Duration of Intertrial Interval
-Statistics float LinTrendLrnRt= -0.001 0 -0.010 0.010 // Rate of Learning for Linear Trend Control
-Filtering float LR_A= -5 0.0 -100.0 100.0 // Normal Filter Left/Right Intercept
-Filtering float LR_B= 5 10.0 0.0 100.0 // Normal Filter Left/Right Slope
+Statistics float TrendControlRate= -0.001 0 -0.010 0.010 // Rate of Learning for Linear Trend Control
+Filtering float XMean= -5 0.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float XGain= 5 10.0 0.0 100.0 // Normal Filter Left/Right Slope
 Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
 Filtering int MaxElements= 256 10 1 256 // maximum number of elements in signals B,C
 MEMFilter float MemBandWidth= 3.0 3.0 0.5 32.0 // Spectral Bandwidth in Hz
@@ -31,7 +30,6 @@ Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value f
 UsrTask int NumberTargets= 2 0 0 1 // Number of Targets
 Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
 UsrTask int PreTrialPause= 10 0 0 1 // Duration of Target w/o cursor
-Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Rate of Learning for Linear Trend Control
 UsrTask int RewardDuration= 10 0 0 1 // Duration of PostTrial Feedback
 Source int SampleBlockSize= 32 5 1 128 // the number of samples transmitted at a time
 Source int SamplingRate= 256 128 1 4000 // the sample rate
@@ -60,10 +58,9 @@ UsrTask float TargetWidth= 25 0 0 1 // Width of Targets
 UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
 Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
-Statistics int TrendControl= 1 0 0 1 // Online adaption of % Correct Trend 1= Lin 2 = Quad
-Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window
-Filtering float UD_A= 126.99 10.0 -100.0 100.0 // 
-Filtering float UD_B= 2.48 10.0 -100.0 100.0 // 
+Statistics int TargetWinLth= 20 0 0 100 // Length of % Correct Window
+Filtering float YMean= 126.99 10.0 -100.0 100.0 // 
+Filtering float YGain= 2.48 10.0 -100.0 100.0 // 
 Visualize int VisualizeCalibration= 1 0 0 1 // visualize calibrated channels (0=no, 1=yes)
 Visualize int VisualizeClassFiltering= 1 0 0 1 // visualize Class filtered signals (0=no 1=yes)
 Visualize int VisualizeNormalFiltering= 1 0 0 1 // visualize Normal filtered signals (0=no 1=yes)
@@ -75,3 +72,6 @@ UsrTask int WinHeight= 512 0 0 1 // User Window Height
 UsrTask int WinWidth= 512 0 0 1 // User Window Width
 UsrTask int WinXpos= 400 0 0 1 // User Window X location
 UsrTask int WinYpos= 5 0 0 1 // User Window Y location
+Filtering int YTrendControl= 2 0 0 0 // introduced by conversion script
+Filtering int XTrendControl= 0 0 0 0 // introduced by conversion script
+Filtering int OutcomeDirection= 1 0 0 0 // introduced by conversion script

@@ -15,8 +15,8 @@ System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this modul
 System string EEGsourcePort= 1235 4200 1024 32768 // this module's listening port
 Storage string FileInitials= c:\data a z 0 // Initials of file name (max. 8 characters)
 Sequencer float FIPts= 5.0 5.0 0 60 // Feedback-Intervall in s
-Filtering float LR_A= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
-Filtering float LR_B= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Filtering float XMean= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float XGain= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
 Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
 Filtering int MaxElements= 256 16 1 256 // maximum number of elements in signals B,C
 Source int ModulateAmplitude= 1 0 0 1 // modulate the amplitude with the mouse (0=no, 1=yes)
@@ -53,8 +53,8 @@ SWFilter float Tc= 16 16 0 1024 // Time constant filter settings in s
 SWFilter floatlist ThresholdAmp= 2 200 800 200 -2000 2000 // Threshold for invalid Trial in uV
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
 Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
-Filtering float UD_A= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
-Filtering float UD_B= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
+Filtering float YMean= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
+Filtering float YGain= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
 Visualize int VisualizeBaselineFiltering= 1 0 0 1 // visualize baseline filtered signals (0=no 1=yes)
 Visualize int VisualizeCalibration= 1 0 0 1 // visualize calibrated channels (0=no, 1=yes)
 Visualize int VisualizeFBArteCorFiltering= 1 0 0 1 // visualize FBArte corrected signals (0=no 1=yes)
