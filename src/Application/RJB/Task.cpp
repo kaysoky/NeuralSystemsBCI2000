@@ -23,6 +23,7 @@ RegisterFilter( TTask, 3 );
 
 TTask::TTask()
 : run( 0 ),
+  mTaskLog( ".apl" ),
   mVis( SOURCEID_TASKLOG ),
   OldRunning( 0 ),
   OldCurrentTarget( 0 )
