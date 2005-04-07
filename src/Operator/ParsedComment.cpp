@@ -10,6 +10,9 @@
 //       for display purposes.
 //
 ///////////////////////////////////////////////////////////////////////
+#include "PCHIncludes.h"
+#pragma hdrstop
+
 #include "ParsedComment.h"
 
 #include "UParameter.h"
