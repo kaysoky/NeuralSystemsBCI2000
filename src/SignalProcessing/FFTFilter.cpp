@@ -25,6 +25,7 @@ FFTFilter::FFTFilter()
      " 0 0 1 // Signal provided to the next filter: "
               "0: Input Signal, "
               "1: Power Spectra of selected Channels "
+              "2: Complex Amplitudes of selected Channels "
               "(enumeration)",
    SECTION " intlist FFTInputChannels= 1 1"
      " 0 0 0 // Input Channels the FFT is performed on",
@@ -63,7 +64,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
   if( ( int )Parameter( "VisualizeFFT" ) )
     PreflightCondition( Parameter( "FFTMaxValue" ) > 0 );
 
-  bool fftRequired = ( ( int )Parameter( "FFTOutputSignal" ) == eTransform
+  bool fftRequired = ( ( int )Parameter( "FFTOutputSignal" ) != eInput
                        || ( int )Parameter( "VisualizeFFT" ) )
                      && ( Parameter( "FFTInputChannels" )->GetNumValues() > 0 );
   if( fftRequired )
@@ -87,9 +88,13 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
     case eInput:
       Output = Input;
       break;
-    case eTransform:
+    case ePower:
       Output = SignalProperties( Parameter( "FFTInputChannels" )->GetNumValues(),
                                     ( int )Parameter( "FFTSize" ) / 2 + 1, Input.Type() );
+      break;
+    case eHalfcomplex:
+      Output = SignalProperties( Parameter( "FFTInputChannels" )->GetNumValues(),
+                                    ( int )Parameter( "FFTSize" ), Input.Type() );
       break;
     default:
       assert( false );
@@ -105,12 +110,12 @@ FFTFilter::Initialize()
   mFFTWindow = ( eFFTWindow )( int )Parameter( "FFTWindow" );
 
   mFFTInputChannels.clear();
-  mPowerSpectra.clear();
+  mSpectra.clear();
   mVisualizations.clear();
   for( size_t i = 0; i < Parameter( "FFTInputChannels" )->GetNumValues(); ++i )
   {
     mFFTInputChannels.push_back( Parameter( "FFTInputChannels", i ) + 1 );
-    mPowerSpectra.push_back( GenericSignal( mFFTSize / 2 + 1, 1 ) );
+    mSpectra.push_back( GenericSignal( mFFTSize / 2 + 1, 1 ) );
     if( mVisualizeFFT )
     {
       mVisualizations.push_back( GenericVisualization( SOURCEID::FFT + i, VISTYPE::GRAPH ) );
@@ -142,12 +147,12 @@ FFTFilter::Initialize()
   mValueBuffers.resize( mFFTInputChannels.size() );
   ResetValueBuffers( mFFTSize );
 
-  bool fftRequired = ( mVisualizeFFT || mFFTOutputSignal == eTransform )
+  bool fftRequired = ( mVisualizeFFT || mFFTOutputSignal != eInput)
                      && mFFTInputChannels.size() > 0;
   if( !fftRequired )
   {
     mFFTInputChannels.clear();
-    mPowerSpectra.clear();
+    mSpectra.clear();
   }
   else
     mFFT.Initialize( mFFTSize );
@@ -178,27 +183,37 @@ FFTFilter::Process( const GenericSignal* inputSignal, GenericSignal* outputSigna
         mFFT.Input( j ) = buffer[ j ] * mWindow[ j ];
     // Compute the power spectrum and visualize it if requested.
     mFFT.Transform();
-    GenericSignal& powerSpectrum = mPowerSpectra[ i ];
-    float normFactor = 1.0 / bufferSize;
-    powerSpectrum( 0, 0 ) = mFFT.Output( 0 ) * mFFT.Output( 0 ) * normFactor;
-    for( int k = 1; k < ( bufferSize + 1 ) / 2; ++k )
-      powerSpectrum( k, 0 ) = (
-        mFFT.Output( k ) * mFFT.Output( k ) +
-        mFFT.Output( bufferSize - k ) * mFFT.Output( bufferSize - k ) ) * normFactor;
-    if( bufferSize % 2 == 0 )
-      powerSpectrum( bufferSize / 2, 0 ) = mFFT.Output( bufferSize / 2 ) * mFFT.Output( bufferSize / 2 ) * normFactor;
+    GenericSignal& spectrum = mSpectra[ i ];
+    if( mVisualizeFFT || mFFTOutputSignal == ePower )
+    {
+      float normFactor = 1.0 / bufferSize;
+      spectrum( 0, 0 ) = mFFT.Output( 0 ) * mFFT.Output( 0 ) * normFactor;
+      for( int k = 1; k < ( bufferSize + 1 ) / 2; ++k )
+        spectrum( k, 0 ) = (
+          mFFT.Output( k ) * mFFT.Output( k ) +
+          mFFT.Output( bufferSize - k ) * mFFT.Output( bufferSize - k ) ) * normFactor;
+      if( bufferSize % 2 == 0 )
+        spectrum( bufferSize / 2, 0 ) = mFFT.Output( bufferSize / 2 ) * mFFT.Output( bufferSize / 2 ) * normFactor;
+    }
+    else if( mFFTOutputSignal == eHalfcomplex )
+    {
+      float normFactor = 1.0 / ::sqrt( bufferSize );
+      for( int k = 0; k < bufferSize; ++k )
+        spectrum( k, 0 ) = mFFT.Output( k ) * normFactor;
+    }
     if( mVisualizeFFT )
-      mVisualizations[ i ].Send( &powerSpectrum );
+      mVisualizations[ i ].Send( &spectrum );
   }
   switch( mFFTOutputSignal )
   {
     case eInput:
       *outputSignal = *inputSignal;
       break;
-    case eTransform:
-      for( size_t channel = 0; channel < mPowerSpectra.size(); ++channel )
-        for( size_t element = 0; element < mPowerSpectra[ channel ].Channels(); ++element )
-          ( *outputSignal )( channel, element ) = mPowerSpectra[ channel ]( element, 0 );
+    case ePower:
+    case eHalfcomplex:
+      for( size_t channel = 0; channel < mSpectra.size(); ++channel )
+        for( size_t element = 0; element < mSpectra[ channel ].Channels(); ++element )
+          ( *outputSignal )( channel, element ) = mSpectra[ channel ]( element, 0 );
       break;
     default:
       assert( false );

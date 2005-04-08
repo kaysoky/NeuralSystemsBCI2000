@@ -22,7 +22,8 @@ class FFTFilter : public GenericFilter
   enum eFFTOutputSignal
   {
     eInput = 0,
-    eTransform,
+    ePower,
+    eHalfcomplex,
   } mFFTOutputSignal;
   std::vector<size_t> mFFTInputChannels;
   int mFFTSize;
@@ -37,7 +38,7 @@ class FFTFilter : public GenericFilter
   void ResetValueBuffers( size_t );
 
   std::vector<GenericVisualization> mVisualizations;
-  std::vector<GenericSignal>        mPowerSpectra;
+  std::vector<GenericSignal>        mSpectra;
   std::vector<std::vector<float> >  mValueBuffers;
   std::vector<float>                mWindow;
 
