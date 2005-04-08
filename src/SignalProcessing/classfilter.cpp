@@ -99,6 +99,7 @@ void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
     bcierr << "Cannot write to log file" << std::endl;
 #endif // USE_LOGFILE
 
+#if 0 // This is disabled because it breaks existing parameter files.
   // Input signal checks.
   for( size_t i = 0; i < Parameter( "MUD" )->GetNumValuesDimension1(); ++i )
   {
@@ -130,6 +131,7 @@ void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
       PreflightCondition( Parameter( "MLR", i, 3 ) <= inSignalProperties.Elements() );
     }
   }
+#endif
   // Requested output signal properties.
   outSignalProperties = SignalProperties( cNumControlSignals, 1 );
 }
