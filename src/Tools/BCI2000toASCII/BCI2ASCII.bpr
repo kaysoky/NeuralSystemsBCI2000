@@ -23,7 +23,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value=""/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2ASCII.cpp"/>
     <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab"/>
@@ -32,12 +32,12 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
-      -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
+      -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
