@@ -204,7 +204,10 @@ int     stateval, cursorpos, cursorposx;
  for (sample=0; sample<signal->Elements(); sample++)
   {
   cursorpos=Mouse->CursorPos.y/70+1;
-  cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
+  if (Mouse->CursorPos.x >= Screen->Width) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
+     cursorposx=1;
+  else
+     cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
 
   for (channel=0; channel<signal->Channels(); channel++)
    {
