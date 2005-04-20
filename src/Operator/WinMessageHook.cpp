@@ -30,13 +30,15 @@ HHOOK          WinMessageHook::sHandle = NULL;
 
 WinMessageHook::WinMessageHook()
 {
-  sHandle = ::SetWindowsHookEx( WH_GETMESSAGE, reinterpret_cast<HOOKPROC>( HookProc ),
-    static_cast<HINSTANCE>( NULL ), ::GetCurrentThreadId() );
+  if( sHandle == NULL )
+    sHandle = ::SetWindowsHookEx( WH_GETMESSAGE, reinterpret_cast<HOOKPROC>( HookProc ),
+      static_cast<HINSTANCE>( NULL ), ::GetCurrentThreadId() );
 }
 
 WinMessageHook::~WinMessageHook()
 {
   ::UnhookWindowsHookEx( sHandle );
+  sHandle = NULL;
 }
 
 LRESULT CALLBACK
