@@ -17,19 +17,20 @@ using namespace std;
 const STATUS STATUS::Fail( "Error", 498 );
 
 STATUS::STATUS()
-: code( 0 )
+: mCode( 0 )
 {
-  status[ 0 ] = '\0';
+  mStatus[ 0 ] = '\0';
 }
 
 STATUS::STATUS( const char* inStatus, int inCode )
-: code( inCode )
+: mCode( inCode )
 {
-  ::strncpy( status, inStatus, LENGTH_STATUSLINE );
-  status[ LENGTH_STATUSLINE - 1 ] = '\0';
+  ::strncpy( mStatus, inStatus, LENGTH_STATUSLINE );
+  mStatus[ LENGTH_STATUSLINE - 1 ] = '\0';
 }
 
-int STATUS::ParseStatus(const char *line, int length)
+int
+STATUS::ParseStatus( const char* line, int length )
 {
 char    temp[4];
 
@@ -37,36 +38,67 @@ char    temp[4];
     {
     strncpy(temp, line, 3);
     temp[3]=0;
-    code=atoi(temp);
-    strncpy(status, line+4, length-4);
-    status[length-4]=0;
+    mCode=atoi(temp);
+    strncpy(mStatus, line+4, length-4);
+    mStatus[length-4]=0;
     }
  else
     {
-    code=0;
-    status[0]=0;
+    mCode=0;
+    mStatus[0]=0;
     }
 
  return(ERRSTATUS_NOERR);
 }
 
 
-const char *STATUS::GetStatus()
+const char*
+STATUS::GetStatus() const
 {
- return(status);
+  return mStatus;
 }
 
 
-int STATUS::GetCode()
+int
+STATUS::GetCode() const
 {
- return(code);
+  return mCode;
+}
+
+STATUS::ContentType
+STATUS::Content() const
+{
+  ContentType result = unknown;
+  if( ( GetCode() >= 300 ) && ( GetCode() < 400 ) )
+    result = warning;
+  else if( ( GetCode() >= 400 ) && ( GetCode() < 500 ) )
+    result = error;
+  else switch( GetCode() )
+  {
+    case 200:
+    case 201:
+    case 202:
+      result = initialized;
+      break;
+    case 203:
+    case 205:
+    case 207:
+      result = running;
+      break;
+    case 204:
+    case 206:
+    case 208:
+      result = suspended;
+      break;
+  }
+  return result;
 }
 
 void
 STATUS::WriteToStream( ostream& os ) const
 {
   ostringstream oss;
-  oss << code << ": " << status;
+  oss << mCode << ": " << mStatus;
   for( size_t p = oss.str().find( '}' ); p != string::npos; p = oss.str().find( '}', p ) )
     oss.str().replace( p, 1, "\\}" );
   os << oss.str();
@@ -85,7 +117,7 @@ STATUS::ReadBinary( istream& is )
 ostream&
 STATUS::WriteBinary( ostream& os ) const
 {
-  os << code << ": " << status;
+  os << mCode << ": " << mStatus;
   os.put( 0 );
   return os;
 }
