@@ -20,6 +20,7 @@
 
 #include "UParameter.h"
 #include "UState.h"
+#include "UBCIError.h"
 #include <set>
 class std::ostream;
 class SignalProperties;
