@@ -19,6 +19,8 @@ void SYSSTATUS::ResetSysStatus()
     Address[ i ] = "";
     EOS[ i ] = false;
     INI[ i ] = false;
+    suspendConfirmed[ i ] = false;
+    runningConfirmed[ i ] = false;
     NumMessagesRecv[ i ] = 0;
     NumStatesRecv[ i ] = 0;
     NumStateVecsRecv[ i ] = 0;

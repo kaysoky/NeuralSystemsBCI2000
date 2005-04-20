@@ -144,17 +144,17 @@ TfMain::UpdateState( const char* inName, unsigned short inValue )
       case SYSSTATUS::Resting:
       case SYSSTATUS::Suspended:
         if( inValue )
-          EnterState( SYSSTATUS::Running );
+          EnterState( SYSSTATUS::RunningInitiated );
         break;
       case SYSSTATUS::Running:
         if( !inValue )
-          EnterState( SYSSTATUS::Suspended );
+          EnterState( SYSSTATUS::SuspendInitiated );
         break;
       default:
         return ERR_STATENOTFOUND;
     }
   }
-
+  
   STATE* s = mStates.GetStatePtr( inName );
   if( s == NULL )
     return ERR_STATENOTFOUND;
@@ -361,7 +361,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       mSyslog.AddSysLogEntry( "Operator set configuration" );
       break;
 
-    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Running ):
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::RunningInitiated ):
       // Execute the on-start script ...
       if( mPreferences.Script[ PREFERENCES::OnStart ] != "" )
       {
@@ -372,7 +372,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       mSyslog.AddSysLogEntry( "Operator started operation" );
       break;
 
-    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Running ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::RunningInitiated ):
       // Execute the on-resume script ...
       if( mPreferences.Script[ PREFERENCES::OnResume ] != "" )
       {
@@ -383,7 +383,10 @@ TfMain::EnterState( SYSSTATUS::State inState )
       mSyslog.AddSysLogEntry( "Operator resumed operation" );
       break;
 
-    case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Suspended ):
+    case TRANSITION( SYSSTATUS::RunningInitiated, SYSSTATUS::Running ):
+      break;
+
+    case TRANSITION( SYSSTATUS::Running, SYSSTATUS::SuspendInitiated ):
       // Execute the on-suspend script ...
       if( mPreferences.Script[ PREFERENCES::OnSuspend ] != "" )
       {
@@ -392,6 +395,13 @@ TfMain::EnterState( SYSSTATUS::State inState )
       }
       mStarttime = TDateTime::CurrentDateTime();
       mSyslog.AddSysLogEntry( "Operator suspended operation" );
+      break;
+
+    case TRANSITION( SYSSTATUS::SuspendInitiated, SYSSTATUS::SuspendInitiated ):
+      break;
+
+    case TRANSITION( SYSSTATUS::SuspendInitiated, SYSSTATUS::Suspended ):
+      BroadcastParameters(); // no EndOfParameter
       break;
 
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
@@ -459,10 +469,12 @@ TfMain::UpdateDisplay()
       statusText = "Initialization Phase ...";
       break;
     case SYSSTATUS::Resting:
+    case SYSSTATUS::SuspendInitiated:
     case SYSSTATUS::Suspended:
       windowCaption += " - " TXT_OPERATOR_SUSPENDED " " + timeElapsed.FormatString( "nn:ss" ) + " s";
       statusText = TXT_OPERATOR_SUSPENDED;
       break;
+    case SYSSTATUS::RunningInitiated:
     case SYSSTATUS::Running:
       windowCaption += " - " TXT_OPERATOR_RUNNING " " + timeElapsed.FormatString( "nn:ss" ) + " s";
       statusText = TXT_OPERATOR_RUNNING;
@@ -508,12 +520,20 @@ TfMain::UpdateDisplay()
       runSystemEnabled = true;
       quitEnabled = true;
       break;
+    case SYSSTATUS::SuspendInitiated:
+      runSystemCaption = "Resume";
+      configEnabled = true;
+      quitEnabled = true;
+      break;
     case SYSSTATUS::Suspended:
       runSystemCaption = "Resume";
       configEnabled = true;
       setConfigEnabled = true;
       runSystemEnabled = true;
       quitEnabled = true;
+      break;
+    case SYSSTATUS::RunningInitiated:
+      runSystemCaption = "Suspend";
       break;
     case SYSSTATUS::Running:
       runSystemCaption = "Suspend";
@@ -576,47 +596,74 @@ TfMain::CoreConnection::HandleSTATUS( istream& is )
   if( status.ReadBinary( is ) )
   {
     mParent.mSysstatus.Status[ mOrigin ] = status.GetStatus();
+    switch( status.Content() )
+    {
+      case STATUS::warning:
+        // If we receive a warning message, add a line to the system log and bring it to front.
+        mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryWarning );
+        mParent.mSyslog.ShowSysLog();
+        break;
+      case STATUS::error:
+        // If we receive an error message, add a line to the system log and bring it to front.
+        mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryError );
+        mParent.mSyslog.ShowSysLog();
+        break;
+      case STATUS::initialized:
+        // If the operator received successful status messages from
+        // all core modules, then this is the end of the initialization phase.
+        if( mParent.mSysstatus.SystemState == SYSSTATUS::Initialization )
+        {
+          mParent.mSysstatus.INI[ mOrigin ] = true;
+          switch( mOrigin )
+          {
+            case EEGSource:
+              mParent.mSyslog.AddSysLogEntry( "Source confirmed new parameters ..." );
+              break;
+            case SigProc:
+              mParent.mSyslog.AddSysLogEntry( "Signal Processing confirmed new parameters ..." );
+              break;
+            case App:
+              mParent.mSyslog.AddSysLogEntry( "User Application confirmed new parameters ..." );
+              break;
+          }
+        }
+        break;
+      case STATUS::running:
+        mParent.mSysstatus.runningConfirmed[ mOrigin ] = true;
+        break;
+      case STATUS::suspended:
+        mParent.mSysstatus.suspendConfirmed[ mOrigin ] = true;
+        break;
+    }
 
-    // If we receive a warning message, add a line to the system log and bring it to front.
-    if( ( status.GetCode() >= 300 ) && ( status.GetCode() < 400 ) )
-    {
-      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryWarning );
-      mParent.mSyslog.ShowSysLog();
-    }
-    // If we receive an error message, add a line to the system log and bring it to front.
-    else if( ( status.GetCode() >= 400 ) && ( status.GetCode() < 500 ) )
-    {
-      mParent.mSyslog.AddSysLogEntry( status.GetStatus(), SYSLOG::logEntryError );
-      mParent.mSyslog.ShowSysLog();
-    }
-
-    // If the operator received successful status messages from
-    // all core modules, then this is the end of the initialization phase.
-    if( ( mParent.mSysstatus.SystemState == SYSSTATUS::Initialization ) && ( status.GetCode() < 300 ) )
-    {
-      mParent.mSysstatus.INI[ mOrigin ] = true;
-#ifdef TODO
-# error Replace that switch statement with a single statement.
-#endif // TODO
-      switch( mOrigin )
-      {
-        case EEGSource:
-          mParent.mSyslog.AddSysLogEntry( "Source confirmed new parameters ..." );
-          break;
-        case SigProc:
-          mParent.mSyslog.AddSysLogEntry( "Signal Processing confirmed new parameters ..." );
-          break;
-        case App:
-          mParent.mSyslog.AddSysLogEntry( "User Application confirmed new parameters ..." );
-          break;
-      }
-    }
     if( mParent.mSysstatus.INI[ EEGSource ]
        && mParent.mSysstatus.INI[ SigProc ]
        && mParent.mSysstatus.INI[ App ]
         && mParent.mSysstatus.SystemState == SYSSTATUS::Initialization )
     {
       mParent.EnterState( SYSSTATUS::Resting );
+    }
+
+    if( mParent.mSysstatus.suspendConfirmed[ EEGSource ]
+       && mParent.mSysstatus.suspendConfirmed[ SigProc ]
+       && mParent.mSysstatus.suspendConfirmed[ App ]
+        && mParent.mSysstatus.SystemState == SYSSTATUS::SuspendInitiated )
+    {
+      mParent.mSysstatus.suspendConfirmed[ EEGSource ] = false;
+      mParent.mSysstatus.suspendConfirmed[ SigProc ] = false;
+      mParent.mSysstatus.suspendConfirmed[ App ] = false;
+      mParent.EnterState( SYSSTATUS::Suspended );
+    }
+
+    if( mParent.mSysstatus.runningConfirmed[ EEGSource ]
+       && mParent.mSysstatus.runningConfirmed[ SigProc ]
+       && mParent.mSysstatus.runningConfirmed[ App ]
+        && mParent.mSysstatus.SystemState == SYSSTATUS::RunningInitiated )
+    {
+      mParent.mSysstatus.runningConfirmed[ EEGSource ] = false;
+      mParent.mSysstatus.runningConfirmed[ SigProc ] = false;
+      mParent.mSysstatus.runningConfirmed[ App ] = false;
+      mParent.EnterState( SYSSTATUS::Running );
     }
   }
   return true;
@@ -634,12 +681,11 @@ TfMain::CoreConnection::HandleSYSCMD( istream& is )
     }
     else if( syscmd == SYSCMD::Suspend )
     {
-      mParent.EnterState( SYSSTATUS::Suspended );
+      mParent.EnterState( SYSSTATUS::SuspendInitiated );
     }
     else if( syscmd == SYSCMD::EndOfParameter )
     {
-      if( mParent.mSysstatus.SystemState == SYSSTATUS::Suspended )
-        mParent.BroadcastParameters(); // without EndOfParameter
+      /* do nothing */
     }
     // The operator receiving 'EndOfState' marks the end of the publishing phase.
     else if( syscmd == SYSCMD::EndOfState )

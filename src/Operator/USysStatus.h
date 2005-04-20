@@ -26,7 +26,9 @@ struct SYSSTATUS
     Information,
     Initialization,
     Resting,
+    RunningInitiated,
     Running,
+    SuspendInitiated,
     Suspended,
     Fatal,
     numStates
@@ -36,6 +38,8 @@ struct SYSSTATUS
              Address[ numModules ];
   bool       EOS[ numModules ];
   bool       INI[ numModules ];
+  bool       suspendConfirmed[ numModules ];
+  bool       runningConfirmed[ numModules ];
   long       NumMessagesRecv[ numModules ];
   long       NumStatesRecv[ numModules ];
   long       NumStateVecsRecv[ numModules ];
