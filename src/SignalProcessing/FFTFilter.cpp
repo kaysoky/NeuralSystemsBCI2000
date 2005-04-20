@@ -22,7 +22,7 @@ FFTFilter::FFTFilter()
 {
  BEGIN_PARAMETER_DEFINITIONS
    SECTION " int FFTOutputSignal= 0"
-     " 0 0 1 // Signal provided to the next filter: "
+     " 0 0 2 // Signal provided to the next filter: "
               "0: Input Signal, "
               "1: Power Spectra of selected Channels "
               "2: Complex Amplitudes of selected Channels "
