@@ -34,6 +34,8 @@
 #define _bcierr     __bcierr( typeid( *this ).name() )
 #define _bciout     __bciout( typeid( *this ).name() )
 
+class EnvironmentBase;
+
 namespace BCIError
 {
   // Stream message handling actions for bcierr/bciout.
