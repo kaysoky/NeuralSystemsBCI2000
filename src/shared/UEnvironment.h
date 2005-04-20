@@ -34,7 +34,10 @@ class EnvironmentExtension;
 #define END_PARAMETER_DEFINITIONS                                      \
   };                                                                   \
   for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
-    Parameters->AddParameter2List( _params[ i ] );                     \
+    if( !Parameters->AddParameter2List( _params[ i ] ) )               \
+      bcierr << "error in parameter definition:\n"                     \
+             << _params[ i ]                                           \
+             << std::endl;                                             \
 };
 
 #define BEGIN_STATE_DEFINITIONS                                        \
@@ -45,7 +48,10 @@ class EnvironmentExtension;
 #define END_STATE_DEFINITIONS                                          \
   };                                                                   \
   for( size_t i = 0; i < sizeof( _states ) / sizeof( *_states ); ++i ) \
-    States->AddState2List( _states[ i ] );                             \
+    if( !States->AddState2List( _states[ i ] ) )                       \
+      bcierr << "error in state definition:\n"                         \
+             << _states[ i ]                                           \
+             << std::endl;                                             \
 };
 
 // This base class channels access to Parameter, State, and Communication
