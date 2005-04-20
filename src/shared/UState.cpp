@@ -131,21 +131,20 @@ STATELIST::_state_list::size_type STATELIST::GetStateIndex( const char *name ) c
 //                           defining this new state
 // Returns:    N/A
 // **************************************************************************
-void STATELIST::AddState2List(const char *statestring)
+bool STATELIST::AddState2List(const char *statestring)
 {
-STATE* new_state,
-     * existing_state;
-
- new_state=new STATE();
- new_state->ParseState(statestring, strlen(statestring));
- existing_state=GetStatePtr(new_state->GetName());
- if (existing_state)            // state already exists -> only update the value
-    existing_state->SetValue(new_state->GetValue());
- else
-    AddState2List(new_state);   // if the state does not exist, add the new one to the list
- delete new_state;
+  istringstream line( statestring );
+  STATE s;
+  if( line >> s )
+  {
+    STATE* existingState = GetStatePtr( s.GetName() );
+    if( existingState )
+      existingState->SetValue( s.GetValue() );
+    else
+      AddState2List( &s );
+  }
+  return line;
 }
-
 
 // **************************************************************************
 // Function:   DeleteState

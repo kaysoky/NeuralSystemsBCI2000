@@ -72,7 +72,7 @@ public:     // User declarations
         STATELIST::~STATELIST();
         STATE   *GetStatePtr(int idx) const;
         STATE   *GetStatePtr(const char *name) const;
-        void    AddState2List(const char *statestring);
+        bool    AddState2List(const char *statestring);
         void    AddState2List(const STATE *state);
         int     GetNumStates() const;
         void    ClearStateList();
