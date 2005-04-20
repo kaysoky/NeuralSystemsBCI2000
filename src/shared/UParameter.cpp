@@ -133,15 +133,15 @@ PARAMLIST::GetParamPtr( size_t idx)
 // Purpose:    adds a new parameter to the list of parameters
 //             if a parameter with the same name already exists,
 //             it updates the currently stored parameter with the provided values
-// Parameters: paramstring - ASCII string, as defined in project description,
+// Parameters: inLine - ASCII string, as defined in project description,
 //                           defining this parameter
-// Returns:    N/A
+// Returns:    true if inLine is a correct parameter line, false otherwise
 // **************************************************************************
-void
+bool
 PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
 {
   if( inLine == NULL )
-    return;
+    return false;
   string line( inLine, inLength );
   if( inLength == 0 )
     line = string( inLine );
@@ -150,6 +150,7 @@ PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
   PARAM param;
   if( linestream >> param )
     ( *this )[ param.name ] = param;
+  return linestream;
 }
 
 // **************************************************************************

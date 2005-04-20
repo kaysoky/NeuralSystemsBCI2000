@@ -340,7 +340,7 @@ class PARAMLIST : public param_container
         void    DeleteParam( const char* name )
                 { erase( name ); }
 
-        void    AddParameter2List( const char* paramstring,
+        bool    AddParameter2List( const char* paramstring,
                                    size_t paramlen = 0 );
         bool    SaveParameterList( const char* filename,
                                    bool usetags = false ) const;
