@@ -20,9 +20,6 @@
 
 #include "UGenericFilter.h"
 
-// The #pragma makes the linker evaluate dependencies for startup initalization.
-#pragma package(smart_init)
-
 using namespace std;
 
 // GenericFilter class definitions.
