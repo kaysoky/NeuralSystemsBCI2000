@@ -179,9 +179,9 @@ class Localization: public EnvironmentExtension
     static Localization sInstance; 
     void _AddLocalizations( const char**, int, const char**, int ) const;
     typedef std::map<void*,std::vector<std::string> > GUIObjectStringsContainer;
-    static GUIObjectStringsContainer sGUIObjectStrings;
+    static GUIObjectStringsContainer& GUIObjectStrings();
     typedef std::map<std::string, std::string> LocalizedStringsContainer;
-    static LocalizedStringsContainer sLocalizedStrings;
+    static LocalizedStringsContainer& LocalizedStrings();
 };
 
 // The Borland compiler appears to have difficulties with the using directive.

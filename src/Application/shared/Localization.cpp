@@ -79,8 +79,6 @@
 # include <typinfo.hpp>
 #endif // UI_VCL
 
-#pragma package(smart_init)
-
 // Name of the parameter that holds the localized strings.
 #define STRINGS_PARAM    "LocalizedStrings"
 #define LANG_PARAM       "Language"
@@ -90,8 +88,20 @@
 using namespace std;
 
 Localization Localization::sInstance;
-Localization::GUIObjectStringsContainer Localization::sGUIObjectStrings;
-Localization::LocalizedStringsContainer Localization::sLocalizedStrings;
+
+Localization::GUIObjectStringsContainer&
+Localization::GUIObjectStrings()
+{
+  static Localization::GUIObjectStringsContainer _GUIObjectStrings;
+  return _GUIObjectStrings;
+}
+
+Localization::LocalizedStringsContainer&
+Localization::LocalizedStrings()
+{
+  static Localization::LocalizedStringsContainer localizedStrings;
+  return localizedStrings;
+}
 
 void
 Localization::Publish()
@@ -130,7 +140,7 @@ Localization::Preflight() const
 void
 Localization::Initialize()
 {
-  sLocalizedStrings.clear();
+  LocalizedStrings().clear();
   string userLanguage = ( const char* )OptionalParameter( LANG_PARAM );
   if( userLanguage != ""
       && userLanguage != DEFAULT_LANGUAGE
@@ -140,7 +150,7 @@ Localization::Initialize()
     const PARAM::labelIndexer& labels = Parameter( STRINGS_PARAM )->LabelsDimension2();
     int languageIndex = Parameter( STRINGS_PARAM )->LabelsDimension1()[ userLanguage ];
     for( size_t i = 0; i < numStrings; ++i )
-      sLocalizedStrings[ labels[ i ] ] = ( const char* )Parameter( STRINGS_PARAM, languageIndex, i );
+      LocalizedStrings()[ labels[ i ] ] = ( const char* )Parameter( STRINGS_PARAM, languageIndex, i );
   }
 }
 
@@ -206,7 +216,7 @@ Localization::LocalizableString( const char* inString )
   const char* result = inString;
   if( inString && *inString != '\0' )
   {
-    const string& localization = sLocalizedStrings[ inString ];
+    const string& localization = LocalizedStrings()[ inString ];
     if( !localization.empty() )
       result = localization.c_str();
   }
@@ -230,18 +240,18 @@ Localization::ApplyLocalizations( void* inObject )
 
     // We use the VCL Typinfo routines to check whether a given object has one
     // of the properties we consider localizable.
-    if( sGUIObjectStrings[ inObject ].size() < numLocalizableProperties )
+    if( GUIObjectStrings()[ inObject ].size() < numLocalizableProperties )
     {
-      sGUIObjectStrings[ inObject ].resize( numLocalizableProperties );
+      GUIObjectStrings()[ inObject ].resize( numLocalizableProperties );
       for( int i = 0; i < numLocalizableProperties; ++i )
         if( Typinfo::IsPublishedProp( vclObject, localizableProperties[ i ] ) )
-          sGUIObjectStrings[ inObject ][ i ] = Typinfo::GetStrProp( vclObject,
+          GUIObjectStrings()[ inObject ][ i ] = Typinfo::GetStrProp( vclObject,
                                                 localizableProperties[ i ] ).c_str();
     }
     for( int i = 0; i < numLocalizableProperties; ++i )
       if( Typinfo::IsPublishedProp( vclObject, localizableProperties[ i ] ) )
         Typinfo::SetStrProp( vclObject, localizableProperties[ i ],
-                   LocalizableString( sGUIObjectStrings[ inObject ][ i ].c_str() ) );
+                   LocalizableString( GUIObjectStrings()[ inObject ][ i ].c_str() ) );
 
     // If the object is a TWinControl, it has sub-controls.
     TWinControl* vclWinControl = dynamic_cast<TWinControl*>( vclObject );
@@ -251,3 +261,8 @@ Localization::ApplyLocalizations( void* inObject )
   }
 #endif // UI_VCL
 }
+
+
+
+
+
