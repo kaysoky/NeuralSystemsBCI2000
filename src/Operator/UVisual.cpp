@@ -45,8 +45,6 @@
 #include <vcl.h>
 #include <grids.hpp>
 
-#pragma package( smart_init )
-
 using namespace std;
 
 static const char* key_base = KEY_BCI2000 KEY_OPERATOR KEY_VISUALIZATION "\\";
