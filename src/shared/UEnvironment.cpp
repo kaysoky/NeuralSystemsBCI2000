@@ -25,9 +25,6 @@
 #include "UBCIError.h"
 #include <typeinfo>
 
-// The #pragma makes the linker evaluate dependencies for startup initalization.
-#pragma package(smart_init)
-
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,14 +38,20 @@ using namespace std;
 PARAMLIST*   EnvironmentBase::_paramlist = NULL;
 STATELIST*   EnvironmentBase::_statelist = NULL;
 STATEVECTOR* EnvironmentBase::_statevector = NULL;
-ostream*    EnvironmentBase::_operator = NULL;
+ostream*     EnvironmentBase::_operator = NULL;
 EnvironmentBase::executionPhase EnvironmentBase::_phase = EnvironmentBase::nonaccess;
-EnvironmentBase::ExtensionsContainer EnvironmentBase::sExtensions;
 
 EnvironmentBase::paramlistAccessor   EnvironmentBase::Parameters;
 EnvironmentBase::statelistAccessor   EnvironmentBase::States;
 EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
+
+EnvironmentBase::ExtensionsContainer&
+EnvironmentBase::Extensions()
+{
+  static EnvironmentBase::ExtensionsContainer instance;
+  return instance;
+}
 
 PARAM*
 EnvironmentBase::GetParamPtr( const string& name ) const
@@ -425,7 +428,7 @@ void EnvironmentBase::EnterConstructionPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Publish();
 }
 
@@ -442,7 +445,7 @@ void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = NULL;
   _operator = inOperator;
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Preflight();
 }
 
@@ -459,7 +462,7 @@ void EnvironmentBase::EnterInitializationPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Initialize();
 }
 
@@ -476,7 +479,7 @@ void EnvironmentBase::EnterStartRunPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->StartRun();
 }
 
@@ -493,7 +496,7 @@ void EnvironmentBase::EnterProcessingPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Process();
 }
 
@@ -512,7 +515,7 @@ void EnvironmentBase::EnterStopRunPhase( PARAMLIST*   inParamList,
   _operator = inOperator;
   for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
     i->second.Unchanged();
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->StopRun();
 }
 
@@ -531,7 +534,7 @@ void EnvironmentBase::EnterRestingPhase( PARAMLIST*   inParamList,
   _operator = inOperator;
   for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
     i->second.Unchanged();
-  for( ExtensionsContainer::iterator i = sExtensions.begin(); i != sExtensions.end(); ++i )
+  for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Resting();
 }
 

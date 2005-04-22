@@ -282,12 +282,12 @@ class EnvironmentBase
                                         std::ostream* );
 
  protected:
-  void RegisterExtension( EnvironmentExtension* p )   { sExtensions.insert( p ); }
-  void UnregisterExtension( EnvironmentExtension* p ) { sExtensions.erase( p ); }
+  void RegisterExtension( EnvironmentExtension* p )   { Extensions().insert( p ); }
+  void UnregisterExtension( EnvironmentExtension* p ) { Extensions().erase( p ); }
 
  private:
   typedef std::set<EnvironmentExtension*> ExtensionsContainer;
-  static ExtensionsContainer sExtensions;
+  static ExtensionsContainer& Extensions();
 
  private:
   static PARAMLIST*     _paramlist;
