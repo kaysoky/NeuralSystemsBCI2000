@@ -32,10 +32,10 @@ if(debug)f = fopen("MuSpellerDebug.txt", "w");
   /*shidong starts*/
   "Speller matrix TargetDefinitionMatrix = "
     "41 {ID Type Display FontSizeFactor IconFile} "
-    "% % % //Target Definition Matrix",
+    " //Target Definition Matrix",
   "Speller matrix TreeDefinitionMatrix= "
     "39 {ParentID DisplayPosition TargetID} "
-    "% % % // Tree Definition Matrix",
+    " // Tree Definition Matrix",
   /*shidong ends*/
  END_PARAMETER_DEFINITIONS
 
