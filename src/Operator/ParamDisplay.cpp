@@ -329,9 +329,12 @@ ParamDisplay::List::ReadValuesFrom( const PARAM& inParam )
 {
   DisplayBase::ReadValuesFrom( inParam );
   ostringstream oss;
-  oss << PARAM::encodedString( inParam.GetValue( 0 ) );
-  for( size_t i = 1; i < inParam.GetNumValues(); ++i )
-    oss << ' ' << PARAM::encodedString( inParam.GetValue( i ) );
+  if( inParam.GetNumValues() > 0 )
+  {
+    oss << PARAM::encodedString( inParam.GetValue( 0 ) );
+    for( size_t i = 1; i < inParam.GetNumValues(); ++i )
+      oss << ' ' << PARAM::encodedString( inParam.GetValue( i ) );
+  }
   mpEdit->Text = oss.str().c_str();
 }
 
