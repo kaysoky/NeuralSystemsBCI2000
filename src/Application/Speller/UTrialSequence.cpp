@@ -90,6 +90,8 @@ int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay, int numT)
 {
 int     ret;
 
+ userdisplay = new_userdisplay;
+ 
  // if (vis) delete vis;
  // vis= new GenericVisualization( plist, corecomm );
  // vis->SetSourceID(SOURCEID_SPELLERTRIALSEQ);
