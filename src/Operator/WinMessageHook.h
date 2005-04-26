@@ -27,7 +27,8 @@ class WinMessageHook
  private:
   static LRESULT CALLBACK HookProc( int, WPARAM, LPARAM );
   
-  static HHOOK          sHandle;
+  static HHOOK          sHookHandle;
+  static DWORD          sThreadId;
   static WinMessageHook sInstance;
 };
 
