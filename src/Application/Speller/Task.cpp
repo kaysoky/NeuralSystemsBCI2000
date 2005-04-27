@@ -21,31 +21,51 @@ TTask::TTask()
 : vis( NULL )
 {
  BEGIN_PARAMETER_DEFINITIONS
-  "Speller int WinXpos= 5 0 0 5000 // "
+  "Speller int WinXpos= 400 0 0 5000 // "
       "User Window X location",
-  "Speller int WinYpos= 5 0 0 5000 // "
+  "Speller int WinYpos= 5 0 0 5000  // "
       "User Window Y location",
   "Speller int WinWidth= 512 512 0 2000 // "
       "User Window Width",
   "Speller int WinHeight= 512 512 0 2000 // "
       "User Window Height",
-  "Speller int CursorSize= 25 25 0 100 // "
+  "Speller int CursorSize= 5 25 0 100  // "
       "Cursor Size in percent of screen",
-  "Speller int TargetWidth= 5 0 0 100 // "
+  "Speller int TargetWidth= 50 0 0 100 // "
       "TargetWidth in percent of screen width",
-  "Speller int TargetTextHeight= 10 0 0 100 // "
+  "Speller int TargetTextHeight= 8 0 0 100  // "
       "Height of target labels in percent of screen height",
-  "Speller int StatusBarTextHeight= 10 0 0 100 // "
+  "Speller int StatusBarTextHeight=  4 0 0 100 // "
       "Height of status bar labels in percent of screen height",
 
   "Speller string BackgroundColor= 0x00585858 0x00505050 0x00000000 0x00000000 // "
       "Background Color (color)",
-  "Speller int NumberTargets= 4 4 0 100 // "
+  "Speller int NumberTargets= 5 4 0 100 //  "
       "Number of Targets ",
   "Speller int StatusBarSize= 10 0 0 100 // "
       "Size of status bar in percent of screen height",
   "Speller string Goal= SEND_MONEY 0 0 100 // "
       "Text to copy",
+  "Speller int TargetTextHeight= 8 0 0 100 // "
+      "Height of target labels in percent of screen height",
+  "Speller int TargetWidth= 50 0 0 100 // "
+      "TargetWidth in percent of screen width",
+
+  "Speller int IgnoreMistakes = 0 0 0 1 //"
+    "Ignore changes made by the user (0=no, 1=yes) (boolean)",
+
+
+  "SpellerSequence int ITITime= 16 10 0 5000 // "
+      "Duration of ITI in units of SampleBlocks",
+  "SpellerSequence int OutcomeTime= 16 15 0 5000 // "
+      "Duration of outcome in units of SampleBlocks ",
+  "SpellerSequence int PTPTime= 16 10 0 5000 // "
+      "Duration of pre-trial period in units of SampleBlocks",
+  "SpellerSequence int FeedbackTime= 20000 30 0 5000 //"
+      "Duration of feedback in units of SampleBlocks",
+
+
+
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -229,6 +249,7 @@ int     ret;
 
  /*shidong starts*/
  NumberTargets = Parameter("NumberTargets");
+ IgnoreMistakes = Parameter("IgnoreMistakes");
  /*shidong ends*/
 
  delete vis;
@@ -505,23 +526,7 @@ AnsiString      selectedCaption;
  // if we selected a dummy (i.e., blank) target, just return
  // i.e., the next trial will start and the new targets will be the same as the old targets
  if (selectedtargetID == TARGETID_BLANK)
-    return;
-
-
-
-
- // if we want to alternate the position of BACK UP, switch it here
- /*shidong starts
- if (alternatebackup)
-    {
-    if (currentbackuppos == 0)
-       currentbackuppos=NUM_TARGETS-1;
-    else
-       currentbackuppos=0;
-    }      */
- /*shidong ends*/
-
-
+    return;                   
 
 
 
@@ -532,8 +537,13 @@ AnsiString      selectedCaption;
  /*shidong starts*/
   if(selected->targettype == TARGETTYPE_DELETE)
   {
-        // if we selected a "DELETE", delte one character from resulttext.
         if(debug) fprintf(a, "Delete was selected, and result text was %s.\n",userdisplay->statusbar->resulttext);
+        //check to see if IgnoreMistakes is on, if so, re-run the trial because DELETE is not the correct target ID in IngoreError mode
+        if( IgnoreMistakes == 1)
+        {
+                return;         //DO NOTHING, this will re-run the trial
+        }
+        // if we selected a "DELETE", delte one character from resulttext.
         userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(), 1);
         targetsequence->PushTextOnHistory(userdisplay->statusbar->resulttext);
         userdisplay->DisplayStatusBar();
@@ -541,58 +551,65 @@ AnsiString      selectedCaption;
         if(debug) fprintf(a, "The resultText now is %s.\n",userdisplay->statusbar->resulttext);
   }   /*shidong ends*/
   else if (selectedtargetID == TARGETID_BACKUP)
+  {
+        //if IgnoreMistakes is on, BACKUP would never be the correct target, so re-run the trial
+        if( IgnoreMistakes == 1)
+        {
+                return;         //DO NOTHING, this will re-run the trial
+        }
+        // delete all active targets
+        if (userdisplay->activetargets) delete userdisplay->activetargets;
+        // in case we showed predicted words and we select BACK UP, assume
+        // that we wanted to spell a word that was not in the dictionary
+        // just show the alphabet
+        if (selectedpredictionmode == MODE_PREDICTION)
+        userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT,  NULL);
+        else        // if we are not in prediction mode, get the previous targets and previous result text
+        {
+                // restore the previous targets and previous resulttext
+                userdisplay->activetargets=targetsequence->GetPreviousTargets();
+                userdisplay->statusbar->resulttext=targetsequence->GetPreviousText();
+                userdisplay->DisplayStatusBar();
+                if(debug)fprintf(a, "userdisplay->activetargets has %d targets.\n", userdisplay->activetargets->GetNumTargets());
+        }//else not in mode_prediction
+  }//if we hit backup
+  else
     {
-    // delete all active targets
-    if (userdisplay->activetargets) delete userdisplay->activetargets;
-    // in case we showed predicted words and we select BACK UP, assume
-    // that we wanted to spell a word that was not in the dictionary
-    // just show the alphabet
-    if (selectedpredictionmode == MODE_PREDICTION)
-       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT,  NULL);
-    else        // if we are not in prediction mode, get the previous targets and previous result text
-       {
-       // restore the previous targets and previous resulttext
-       userdisplay->activetargets=targetsequence->GetPreviousTargets();
-       userdisplay->statusbar->resulttext=targetsequence->GetPreviousText();
-       userdisplay->DisplayStatusBar();
-
-       if(debug)fprintf(a, "userdisplay->activetargets has %d targets.\n", userdisplay->activetargets->GetNumTargets());
-
-
-       }
-    }//if we hit backup
- else
-    {
-    // only if we didn't hit backup, then store the current targets and the current result text in the history
-    targetsequence->PushTargetsOnHistory(userdisplay->activetargets);
-    targetsequence->PushTextOnHistory(userdisplay->statusbar->resulttext);
-    // delete all active targets
-    delete userdisplay->activetargets;
-    // did we select an actual letter, or, are we in prediction mode ?
-    // in this case, add the caption to the resulttext
-    if (((selectedtargetID >= TARGETID_A) && (selectedtargetID <= TARGETID__)) || (selectedpredictionmode == MODE_PREDICTION))
-       {
-       // determine the new result; either just add the selected letter or the predicted word
-       if (selectedpredictionmode == MODE_PREDICTION)
-          userdisplay->statusbar->resulttext=DetermineNewResultText(userdisplay->statusbar->resulttext, AnsiString(selectedCaption).UpperCase());
-       else
-          userdisplay->statusbar->resulttext+=AnsiString(selectedCaption);
-       // if we spelled everything correctly, show congratulations and end the run
-       if (userdisplay->statusbar->resulttext == userdisplay->statusbar->goaltext)
-          missionaccomplished=true;
-       // if we used prediction to spell a word, add a space after this word
-       if (selectedpredictionmode == MODE_PREDICTION)
-          userdisplay->statusbar->resulttext+="_";
-       userdisplay->DisplayStatusBar();
-       strcpy(cur_prefix, DetermineCurrentPrefix(userdisplay->statusbar->resulttext).c_str());
-       userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, cur_prefix);
-       }
-    else
-       {
-       // selected something else, e.g., a group of characters. then, traverse down the tree
-       userdisplay->activetargets=targetsequence->GetActiveTargets(selectedtargetID, NULL);
-       }
-    }
+        //if IgnoreMistakes is on, check if selected target ID == correct targetID, if not, re-run the trial
+        if( IgnoreMistakes == 1 && selectedtargetID != DetermineCorrectTargetID() )
+        {
+                return;         //DO NOTHING, this will re-run the trial
+        }
+        // only if we didn't hit backup, then store the current targets and the current result text in the history
+        targetsequence->PushTargetsOnHistory(userdisplay->activetargets);
+        targetsequence->PushTextOnHistory(userdisplay->statusbar->resulttext);
+        // delete all active targets
+        delete userdisplay->activetargets;
+        // did we select an actual letter, or, are we in prediction mode ?
+        // in this case, add the caption to the resulttext
+        if (((selectedtargetID >= TARGETID_A) && (selectedtargetID <= TARGETID__)) || (selectedpredictionmode == MODE_PREDICTION))
+        {
+                // determine the new result; either just add the selected letter or the predicted word
+                if (selectedpredictionmode == MODE_PREDICTION)
+                userdisplay->statusbar->resulttext=DetermineNewResultText(userdisplay->statusbar->resulttext, AnsiString(selectedCaption).UpperCase());
+                else
+                userdisplay->statusbar->resulttext+=AnsiString(selectedCaption);
+                // if we spelled everything correctly, show congratulations and end the run
+                if (userdisplay->statusbar->resulttext == userdisplay->statusbar->goaltext)
+                missionaccomplished=true;
+                // if we used prediction to spell a word, add a space after this word
+                if (selectedpredictionmode == MODE_PREDICTION)
+                userdisplay->statusbar->resulttext+="_";
+                userdisplay->DisplayStatusBar();
+                strcpy(cur_prefix, DetermineCurrentPrefix(userdisplay->statusbar->resulttext).c_str());
+                userdisplay->activetargets=targetsequence->GetActiveTargets(TARGETID_ROOT, cur_prefix);
+        }//if
+        else
+        {
+                // selected something else, e.g., a group of characters. then, traverse down the tree
+                userdisplay->activetargets=targetsequence->GetActiveTargets(selectedtargetID, NULL);
+        }//else
+    }//else
 
  // show the new targets
  userdisplay->InitializeActiveTargetPosition();

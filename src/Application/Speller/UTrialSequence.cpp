@@ -36,7 +36,7 @@ TRIALSEQUENCE::TRIALSEQUENCE()
     "30 0 5000 // Duration of feedback in units of SampleBlocks",
   "SpellerSequence int OutcomeTime= 15 "
     "15 0 5000 // Duration of outcome in units of SampleBlocks",
-  "Speller int HighlightTarget= 0 "
+  "Speller int HighlightTarget= 1 "
     "0 0 1 // Highlight the correct target (0=no, 1=yes) (boolean)",
  END_PARAMETER_DEFINITIONS
 

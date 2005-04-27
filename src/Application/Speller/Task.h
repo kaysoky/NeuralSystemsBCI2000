@@ -32,6 +32,8 @@ private:
         FILE            *a;
         bool            debug;
         int             NumberTargets;
+        int            IgnoreMistakes;
+
         bool            CheckTree(int  root) const;
         bool            checkInt(AnsiString input) const;
         /*shidong ends*/
