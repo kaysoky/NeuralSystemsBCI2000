@@ -28,7 +28,8 @@ namespace SignalType
 
   } Type;
   const char* Name( Type );
-  bool        ConversionSafe( Type from, Type to );
+  size_t      Size( Type );
+  bool        ConversionIsSafe( Type from, Type to );
 };
 
 // A class that holds a signal's properties.
@@ -36,13 +37,13 @@ class SignalProperties
 {
   public:
     SignalProperties()
-    : mChannels( 0 ), mElements( 0 ), mType( SignalType::defaultType )                {}
+    : mChannels( 0 ), mElements( 0 ), mType( SignalType::defaultType )  {}
 
     SignalProperties(
       size_t inChannels,
       size_t inElements,
       SignalType::Type inType = SignalType::defaultType )
-    : mChannels( inChannels ), mElements( inElements ), mType( inType )       {}
+    : mChannels( inChannels ), mElements( inElements ), mType( inType ) {}
 
     virtual ~SignalProperties() {}
 
@@ -119,6 +120,10 @@ class GenericSignal
     value_type& operator() ( size_t inChannel, size_t inElement );
 
     // Stream i/o
+    template<SignalType::Type>
+      void PutValueBinary( std::ostream&, size_t inChannel, size_t inElement ) const;
+    template<SignalType::Type>
+      void GetValueBinary( std::istream&, size_t inChannel, size_t inElement );
     void WriteToStream( std::ostream& ) const;
     void ReadFromStream( std::istream& );
     std::ostream& WriteBinary( std::ostream& ) const;

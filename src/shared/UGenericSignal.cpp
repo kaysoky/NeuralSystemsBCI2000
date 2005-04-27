@@ -32,24 +32,41 @@
 
 using namespace std;
 
-const char*
-SignalType::Name( SignalType::Type t )
+static struct
 {
-  static const char* nameTable[] =
-  {
-    "int16",
-    "float24",
-    "float32",
-    "int32",
-    "float64",
-  };
-  return nameTable[ t ];
+  SignalType::Type type;
+  const char*      name;
+  size_t           size;
+} SignalTypeProperties[] =
+{
+  { SignalType::int16,   "int16",   2 },
+  { SignalType::float24, "float24", 3 },
+  { SignalType::float32, "float32", 4 },
+  { SignalType::int32,   "int32",   4 },
 };
+
+const char*
+SignalType::Name( SignalType::Type inType )
+{
+  for( size_t i = 0; i < sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties ); ++i )
+    if( SignalTypeProperties[ i ].type == inType )
+      return SignalTypeProperties[ i ].name;
+  return "n/a";
+};
+
+size_t
+SignalType::Size( SignalType::Type inType )
+{
+  for( size_t i = 0; i < sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties ); ++i )
+    if( SignalTypeProperties[ i ].type == inType )
+      return SignalTypeProperties[ i ].size;
+  return sizeof( double );
+}
 
 // Determine whether a given signal type can be converted into another one without
 // loss of information.
 bool
-SignalType::ConversionSafe( SignalType::Type from, SignalType::Type to )
+SignalType::ConversionIsSafe( SignalType::Type from, SignalType::Type to )
 {
   static const bool conversionTable[ numTypes ][ numTypes ] =
   {
@@ -97,7 +114,7 @@ SignalProperties::operator<=( const SignalProperties& sp ) const
     return true;
   if( sp.IsEmpty() )
     return false;
-  if( !ConversionSafe( Type(), sp.Type() ) )
+  if( !ConversionIsSafe( Type(), sp.Type() ) )
     return false;
   if( sp.Elements() < Elements() )
     return false;
@@ -129,7 +146,7 @@ GenericSignal::GetValue( size_t inChannel, size_t inElement ) const
   if( ( inChannel >= mValues.size() ) || ( inElement >= mValues[ inChannel ].size() ) )
     return nullvalue;
 #endif // SIGNAL_BACK_COMPAT
-  return mValues.at( inChannel ).at( inElement );
+  return operator()( inChannel, inElement );
 }
 
 void
@@ -139,7 +156,7 @@ GenericSignal::SetValue( size_t inChannel, size_t inElement, value_type inValue 
   if( ( inChannel >= mValues.size() ) || ( inElement >= mValues[ inChannel ].size() ) )
     return;
 #endif // SIGNAL_BACK_COMPAT
-  mValues.at( inChannel ).at( inElement ) = inValue;
+  operator()( inChannel, inElement ) = inValue;
 }
 
 const GenericSignal::value_type&
@@ -202,53 +219,25 @@ GenericSignal::WriteBinary( ostream& os ) const
     case SignalType::int16:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          int value = GetValue( i, j );
-          os.put( value & 0xff ).put( value >> 8 );
-        }
+          PutValueBinary<SignalType::int16>( os, i, j );
       break;
 
     case SignalType::float24:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          float value = GetValue( i, j );
-          int mantissa,
-              exponent;
-          if( value == 0.0 )
-          {
-            mantissa = 0;
-            exponent = 1;
-          }
-          else
-          {
-            exponent = ceil( log10( fabs( value ) ) );
-            mantissa = ( value / pow10( exponent ) ) * 10000;
-            exponent -= 4;
-          }
-          os.put( mantissa & 0xff ).put( mantissa >> 8 );
-          os.put( exponent & 0xff );
-        }
+          PutValueBinary<SignalType::float24>( os, i, j );
       break;
 
     case SignalType::float32:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-          float floatvalue = GetValue( i, j );
-          unsigned int value = *reinterpret_cast<const unsigned int*>( &floatvalue );
-          PutLittleEndian( os, value );
-        }
+          PutValueBinary<SignalType::float32>( os, i, j );
       break;
 
     case SignalType::int32:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          signed int value = GetValue( i, j );
-          PutLittleEndian( os, value );
-        }
+          PutValueBinary<SignalType::int32>( os, i, j );
       break;
 
     default:
@@ -268,49 +257,117 @@ GenericSignal::ReadBinary( istream& is )
     case SignalType::int16:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          signed short value = is.get();
-          value |= is.get() << 8;
-          SetValue( i, j, value );
-        }
+          GetValueBinary<SignalType::int16>( is, i, j );
       break;
 
     case SignalType::float24:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          signed short mantissa = is.get();
-          mantissa |= is.get() << 8;
-          signed char exponent = is.get();
-          SetValue( i, j, mantissa * ::pow10( exponent ) );
-        }
+          GetValueBinary<SignalType::float24>( is, i, j );
       break;
 
     case SignalType::float32:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-          unsigned int value = 0;
-          GetLittleEndian( is, value );
-          SetValue( i, j, *reinterpret_cast<float*>( &value ) );
-        }
+          GetValueBinary<SignalType::float32>( is, i, j );
       break;
 
     case SignalType::int32:
       for( size_t i = 0; i < Channels(); ++i )
         for( size_t j = 0; j < Elements(); ++j )
-        {
-          signed int value = 0;
-          GetLittleEndian( is, value );
-          SetValue( i, j, value );
-        }
+          GetValueBinary<SignalType::int32>( is, i, j );
       break;
 
     default:
       is.setstate( is.failbit );
   }
   return is;
+}
+
+template<>
+void
+GenericSignal::PutValueBinary<SignalType::int16>( std::ostream& os, size_t inChannel, size_t inElement ) const
+{
+  int value = GetValue( inChannel, inElement );
+  os.put( value & 0xff ).put( value >> 8 );
+}
+
+template<>
+void
+GenericSignal::GetValueBinary<SignalType::int16>( std::istream& is, size_t inChannel, size_t inElement )
+{
+  signed short value = is.get();
+  value |= is.get() << 8;
+  SetValue( inChannel, inElement, value );
+}
+
+template<>
+void
+GenericSignal::PutValueBinary<SignalType::int32>( std::ostream& os, size_t inChannel, size_t inElement ) const
+{
+  signed int value = GetValue( inChannel, inElement );
+  PutLittleEndian( os, value );
+}
+
+template<>
+void
+GenericSignal::GetValueBinary<SignalType::int32>( std::istream& is, size_t inChannel, size_t inElement )
+{
+  signed int value = 0;
+  GetLittleEndian( is, value );
+  SetValue( inChannel, inElement, value );
+}
+
+template<>
+void
+GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inChannel, size_t inElement ) const
+{
+  float value = GetValue( inChannel, inElement );
+  int mantissa,
+      exponent;
+  if( value == 0.0 )
+  {
+    mantissa = 0;
+    exponent = 1;
+  }
+  else
+  {
+    exponent = ceil( log10( fabs( value ) ) );
+    mantissa = ( value / pow10( exponent ) ) * 10000;
+    exponent -= 4;
+  }
+  os.put( mantissa & 0xff ).put( mantissa >> 8 );
+  os.put( exponent & 0xff );
+}
+
+template<>
+void
+GenericSignal::GetValueBinary<SignalType::float24>( std::istream& is, size_t inChannel, size_t inElement )
+{
+  signed short mantissa = is.get();
+  mantissa |= is.get() << 8;
+  signed char exponent = is.get();
+  SetValue( inChannel, inElement, mantissa * ::pow10( exponent ) );
+}
+
+template<>
+void
+GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
+{
+  assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+  float floatvalue = GetValue( inChannel, inElement );
+  unsigned int value = *reinterpret_cast<const unsigned int*>( &floatvalue );
+  PutLittleEndian( os, value );
+}
+
+template<>
+void
+GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inChannel, size_t inElement )
+{
+  assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
+  unsigned int value = 0;
+  GetLittleEndian( is, value );
+  SetValue( inChannel, inElement, *reinterpret_cast<float*>( &value ) );
 }
 
 template<typename T>
@@ -324,6 +381,7 @@ GenericSignal::PutLittleEndian( std::ostream& os, const T& inValue )
     value >>= 8;
   }
 }
+
 template<typename T>
 void
 GenericSignal::GetLittleEndian( std::istream& is, T& outValue )
