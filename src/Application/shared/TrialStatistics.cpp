@@ -38,12 +38,19 @@ TrialStatistics::Reset()
   for( size_t i = 0; i < mTargetsResultsMatrix.size(); ++i )
     for( size_t j = 0; j < mTargetsResultsMatrix[ i ].size(); ++j )
       mTargetsResultsMatrix[ i ][ j ] = 0;
+  mInvalidTrials = 0;
 }
 
 void
 TrialStatistics::Update( int inTargetCode, int inResultCode )
 {
   ++mTargetsResultsMatrix[ inTargetCode ][ inResultCode ];
+}
+
+void
+TrialStatistics::UpdateInvalid()
+{
+  ++mInvalidTrials;
 }
 
 int
@@ -63,6 +70,12 @@ TrialStatistics::Total() const
     for( size_t j = 0; j < mTargetsResultsMatrix[ i ].size(); ++j )
       result += mTargetsResultsMatrix[ i ][ j ];
   return result;
+}
+
+int
+TrialStatistics::Invalid() const
+{
+  return mInvalidTrials;
 }
 
 float
@@ -146,7 +159,7 @@ TrialStatistics::Bits() const
 
   int numSymbols = mTargetsResultsMatrix.size();
   vector<double> targetFrequencies( numSymbols, 0.0 ),
-                resultFrequencies( numSymbols, 0.0 );
+                 resultFrequencies( numSymbols, 0.0 );
   for( int i = 0; i < numSymbols; ++i )
     for( int j = 0; j < numSymbols; ++j )
     {
@@ -173,3 +186,4 @@ TrialStatistics::Bits() const
   bits /= ::log( 2.0 );
   return bits;
 }
+

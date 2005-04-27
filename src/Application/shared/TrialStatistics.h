@@ -22,12 +22,15 @@ class TrialStatistics: public Environment
 
     void  Reset();
     void  Update( int inTargetCode, int inResultCode );
+    void  UpdateInvalid();
 
-    int   Hits()  const;
-    int   Total() const;
-    float Bits()  const;
+    int   Hits()    const;
+    int   Total()   const;
+    int   Invalid() const;
+    float Bits()    const;
 
   private:
+    int                            mInvalidTrials;
     std::vector<std::vector<int> > mTargetsResultsMatrix;
 };
 

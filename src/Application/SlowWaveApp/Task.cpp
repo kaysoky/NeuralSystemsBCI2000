@@ -440,10 +440,16 @@ TTask::ProcessEndOfClass( const TEventArgs& inArgs )
     mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
     mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
   }
+  else
+  {
+    mTrialStatisticsForCurrentRun.UpdateInvalid();
+    mTrialStatisticsForAllRuns.UpdateInvalid();
+  }
   int hits = mTrialStatisticsForCurrentRun.Hits(),
-      total = mTrialStatisticsForCurrentRun.Total();
+      total = mTrialStatisticsForCurrentRun.Total(),
+      invalid = mTrialStatisticsForCurrentRun.Invalid();
   ostringstream os;
-  os << hits << " hits, " << total - hits << " missed\n";
+  os << hits << " hits, " << total - hits - invalid << " missed\n";
   mTaskLogVis.Send( os.str() );
 }
 
@@ -457,9 +463,10 @@ TTask::ProcessStopBegin( const TEventArgs& )
   {
     float hits = mTrialStatisticsForCurrentRun.Hits(),
           total = mTrialStatisticsForCurrentRun.Total(),
+          invalid = mTrialStatisticsForCurrentRun.Invalid(),
           bits = mTrialStatisticsForCurrentRun.Bits(),
           percentCorrect = 100.0 * hits / total;
-    os << hits << " Hits, " << total << " Total, "
+    os << hits << " Hits, " << total << " Total, " << invalid << " Invalid, "
        << fixed << setprecision( 2 )
        << percentCorrect << "% correct\n"
        << "  " << bits << " bits transferred,\n"
@@ -476,9 +483,10 @@ TTask::ProcessStopBegin( const TEventArgs& )
     os << "All Runs: ";
     float hits = mTrialStatisticsForAllRuns.Hits(),
           total = mTrialStatisticsForAllRuns.Total(),
+          invalid = mTrialStatisticsForCurrentRun.Invalid(),
           bits = mTrialStatisticsForAllRuns.Bits(),
           percentCorrect = 100.0 * hits / total;
-    os << hits << " Hits, " << total << " Total, "
+    os << hits << " Hits, " << total << " Total, " << invalid << " Invalid, "
        << setprecision( 2 )
        << percentCorrect << "% correct\n"
        << "  " << bits << " bits transferred,\n"
