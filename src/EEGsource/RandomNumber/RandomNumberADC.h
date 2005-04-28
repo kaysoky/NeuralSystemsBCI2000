@@ -23,6 +23,7 @@ class RandomNumberADC : public GenericADC
   short  DCoffset;
   size_t sinechannel, sinechannelx;
   bool   modulateamplitude;
+  int    cur_mousexpos, cur_mouseypos;
   bool   mTrueRandom;
   BCITIME mLasttime;
   int mCount;  

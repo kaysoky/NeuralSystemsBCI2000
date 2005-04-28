@@ -2,8 +2,8 @@
  * Program:   EEGsource.EXE                                                   *
  * Module:    RandomNumberADC.CPP                                             *
  * Comment:   Definition for the GenericADC class                             *
- * Version:   0.05                                                            *
- * Author:    Gerwin Schalk                                                   *
+ * Version:   0.07                                                            *
+ * Author:    Gerwin Schalk, Juergen Mellinger                                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
@@ -16,6 +16,9 @@
  * V0.05 - 09/28/2001 - can modulate samples based on mouse                   *
  * V0.06 - 03/28/2003 - juergen.mellinger@uni-tuebingen.de:                   *
  *                      now derived from GenericFilter                        *
+ * V0.07 - 04/28/2005 - removed 'call to OS function failed' bug              *
+ *                      now produces data every SampleblockSize/SamplingFreq  *
+ *                      seconds irrespective of processor load                *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -190,24 +193,32 @@ double  t;
 STATE   *stateptr;
 int     stateval, cursorpos, cursorposx;
 
- // well, we don't want to spit out data continously; thus, wait around 100ms
+ // we don't want to spit out data continously; thus, wait some time
  float sr = samplerate;
- if( sr < 1.0 )
-   sr = 1.0;
- time2wait = 1e3 * signal->Elements() / sr - 5.0;
+ if( sr < 1.0 ) sr = 1.0;
+ BCITIME mCurtime=BCITIME::GetBCItime_ms();
+ time2wait = 1e3 * signal->Elements() / sr - BCITIME::TimeDiff(mLasttime, mCurtime);
+ if (time2wait < 0) time2wait = 0;
  ::Sleep(time2wait);
+ mLasttime = mCurtime;
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
  noisevalrange=noisemaxamplitude-noiseminamplitude;
 
+ try{
+  cur_mousexpos=Mouse->CursorPos.x;
+  cur_mouseypos=Mouse->CursorPos.y;
+  } catch(...) // if the screensaver comes on, CursorPos throws an exception (no mouse pointer anymore?). In this case, simply do not change the cursor position; 04/28/05 GS
+     { bciout << "Cursor position could not be determined (screen saver on?). Data not predictable." << endl; }
+
 // generate the noisy sine wave and write it into the signal
  for (sample=0; sample<signal->Elements(); sample++)
   {
-  cursorpos=Mouse->CursorPos.y/70+1;
-  if (Mouse->CursorPos.x >= Screen->Width) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
+  cursorpos=cur_mouseypos/70+1;
+  if (cur_mousexpos >= Screen->Width) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
      cursorposx=1;
   else
-     cursorposx=(Screen->Width-Mouse->CursorPos.x)/70+1;
+     cursorposx=(Screen->Width-cur_mousexpos)/70+1;
 
   for (channel=0; channel<signal->Channels(); channel++)
    {
@@ -217,7 +228,7 @@ int     stateval, cursorpos, cursorposx;
    if ((sinechannel == 0) || (sinechannel == channel+1))
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = ( sinevalrange * ( Screen->Height / 2 - Mouse->CursorPos.y ) ) / Screen->Height + sineminamplitude;
+        value = ( sinevalrange * ( Screen->Height / 2 - cur_mouseypos ) ) / Screen->Height + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
@@ -227,7 +238,7 @@ int     stateval, cursorpos, cursorposx;
    if (sinechannelx == channel+1)
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = ( sinevalrange * ( Screen->Width / 2 - Mouse->CursorPos.x ) ) / Screen->Width + sineminamplitude;
+        value = ( sinevalrange * ( Screen->Width / 2 - cur_mousexpos ) ) / Screen->Width + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
