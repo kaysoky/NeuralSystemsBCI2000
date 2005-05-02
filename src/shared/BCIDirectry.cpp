@@ -25,6 +25,18 @@ BCIDirectory::InstallationDirectory()
   return installationDirectory;
 }
 
+BCIDirectory&
+BCIDirectory::UpdateRunNumber()
+{
+  mActualRunNumber = mDesiredRunNumber;
+  if( mDesiredRunNumber != none )
+  {
+    int largestRunNumber = GetLargestRun( DirectoryPath() ) + 1;
+    if( largestRunNumber > mDesiredRunNumber )
+      mActualRunNumber = largestRunNumber;
+  }
+  return *this;
+}
 
 string
 BCIDirectory::DirectoryPath() const
@@ -95,16 +107,13 @@ BCIDirectory::ChangeForceDir( const string& inPath )
 string
 BCIDirectory::ConstructFileName() const
 {
-  int runNumber = GetLargestRun( DirectoryPath() ) + 1;
-  if( mRunNumber > runNumber )
-    runNumber = mRunNumber;
   ostringstream oss;
   oss << mSubjectName;
   if( mSessionNumber != none )
   {
      oss << "S" << setfill( '0' ) << setw( 3 ) << mSessionNumber;
-     if( mRunNumber != none )
-       oss << "R" << setfill( '0' ) << setw( 2 ) << runNumber;
+     if( mActualRunNumber != none )
+       oss << "R" << setfill( '0' ) << setw( 2 ) << mActualRunNumber;
   }
   return oss.str();
 }

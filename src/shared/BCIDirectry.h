@@ -21,15 +21,28 @@ class BCIDirectory
   static const std::string& InstallationDirectory();
 
   BCIDirectory()
-  : mSessionNumber( none ), mRunNumber( none ) {}
+  : mSessionNumber( none ), mDesiredRunNumber( none ), mActualRunNumber( none ) {}
+  // Write accessors return an instance reference to allow for "named parameter"
+  // constructs as in
+  //   BCIDirectory().SubjectDirectory( "c:\\" ).SubjectName( "test" );
   BCIDirectory&      SubjectDirectory( const char* s )
-                     { mSubjectDirectory = s; return *this; }
+                     { mSubjectDirectory = s; return UpdateRunNumber(); }
   BCIDirectory&      SubjectName( const char* s )
-                     { mSubjectName = s; return *this; }
+                     { mSubjectName = s; return UpdateRunNumber(); }
   BCIDirectory&      SessionNumber( int i )
-                     { mSessionNumber = i; return *this; }
+                     { mSessionNumber = i; return UpdateRunNumber(); }
   BCIDirectory&      RunNumber( int i )
-                     { mRunNumber = i; return *this; }
+                     { mDesiredRunNumber = i; return UpdateRunNumber(); }
+ public:
+  // Read accessors
+  const std::string& SubjectDirectory() const
+                     { return mSubjectDirectory; }
+  const std::string& SubjectName() const
+                     { return mSubjectName; }
+  int                SessionNumber() const
+                     { return mSessionNumber; }
+  int                RunNumber() const
+                     { return mActualRunNumber; }
   // This returns the full path to the current file, but without the .dat extension.
   std::string        FilePath() const;
   std::string        DirectoryPath() const;
@@ -52,6 +65,8 @@ class BCIDirectory
   static int         GetLargestRun( const std::string& path );
   static int         ExtractRunNumber( const std::string& fileName );
   static int         ChangeForceDir( const std::string& );
+
+  BCIDirectory&      UpdateRunNumber();
   std::string        ConstructFileName() const;
 
   static const char  DirSeparator = '\\';
@@ -60,7 +75,8 @@ class BCIDirectory
   std::string        mSubjectDirectory,
                      mSubjectName;
   int                mSessionNumber,
-                     mRunNumber;
+                     mDesiredRunNumber,
+                     mActualRunNumber;
 #ifdef OLD_BCIDTRY
   std::string        mSubjectPath;
 #endif // OLD_BCIDTRY
