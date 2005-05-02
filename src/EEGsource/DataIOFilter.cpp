@@ -228,13 +228,19 @@ void DataIOFilter::Initialize()
 
 void DataIOFilter::StartRun()
 {
-  string baseFileName = BCIDirectory()
-                        .SubjectDirectory( Parameter( "FileInitials" ) )
-                        .SubjectName( Parameter( "SubjectName" ) )
-                        .SessionNumber( Parameter( "SubjectSession" ) )
-                        .RunNumber( Parameter( "SubjectRun" ) )
-                        .FilePath(),
+  BCIDirectory bciDirectory = BCIDirectory()
+                              .SubjectDirectory( Parameter( "FileInitials" ) )
+                              .SubjectName( Parameter( "SubjectName" ) )
+                              .SessionNumber( Parameter( "SubjectSession" ) )
+                              .RunNumber( Parameter( "SubjectRun" ) );
+  string baseFileName = bciDirectory.FilePath(),
          dataFileName = baseFileName + bciDataExtension;
+  // BCIDirectory will update the run number to the largest unused one.
+  // We want this to be reflected in the "SubjectRun" parameter.
+  ostringstream oss;
+  oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
+  Parameter( "SubjectRun" ) = oss.str().c_str();
+
   mOutputFile.close();
   mOutputFile.clear();
   mOutputFile.open( dataFileName.c_str(), ios::out | ios::binary );
