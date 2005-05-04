@@ -228,7 +228,7 @@ bool TfMain::Process()
                         else if( strcmp(line,"Neigh[" ) == 0 )
                         {
                                 fscanf(lpfile,"%s %s %s %s",line,l2,l3,l4);
-                                cneigh= atoi( line ) - 1;                              //  -1 added 5/4/05
+                                cneigh= atoi( line );            
                                 bciinput->lap[current_signal][cneigh]= atoi( l3 ) - 1; //  -1 added 5/4/05
                                 bciinput->d_lap[current_signal][cneigh]= atof( l4 );
                         }
