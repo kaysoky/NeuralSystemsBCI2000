@@ -221,16 +221,16 @@ bool TfMain::Process()
                         else if( strcmp(line,"Chan[" ) == 0 )
                         {
                                 fscanf(lpfile,"%s %s %s %s",line,l2,l3,l4);
-                                current_signal= atoi( line ) -1;
-                                bciinput->lap[current_signal][0]= atoi( l3 ) - 1;
-                                bciinput->lapn[current_signal]= atoi( l4 ) - 1;
+                                current_signal= atoi( line ) - 1;
+                                bciinput->lap[current_signal][0]= atoi( l3 ) - 1;      //  -1 added 5/4/05
+                                bciinput->lapn[current_signal]= atoi( l4 );
                         }
                         else if( strcmp(line,"Neigh[" ) == 0 )
                         {
                                 fscanf(lpfile,"%s %s %s %s",line,l2,l3,l4);
-                                cneigh= atoi( line );
-                                bciinput->lap[current_signal][cneigh]= atoi( l3 ) - 1;
-                                bciinput->d_lap[current_signal][cneigh]= atof( l4 ) - 1;
+                                cneigh= atoi( line ) - 1;                              //  -1 added 5/4/05
+                                bciinput->lap[current_signal][cneigh]= atoi( l3 ) - 1; //  -1 added 5/4/05
+                                bciinput->d_lap[current_signal][cneigh]= atof( l4 );
                         }
 
                 }
