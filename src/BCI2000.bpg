@@ -15,7 +15,7 @@ PROJECTS = RJB.exe D2Box.exe D3Box.exe P3AVTask.exe P3Speller.exe \
   RandomNumber.exe RDAClient.exe operat.exe ARSignalProcessing.exe \
   DummySignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
   PeakDetectSignalProcessing.exe SWSignalProcessing.exe BCIBatch.exe \
-  BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCITimeFreq.exe \
+  BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCITimeFreq.exe BCIDiff.exe \
   BrainVisionImporter.exe calibgen.exe maxifred.exe getparams.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
@@ -154,6 +154,10 @@ D3Box.exe: Application\d3box\D3Box.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 gUSBamp.exe: EEGsource\g.USBamp\gUSBamp.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
