@@ -22,7 +22,8 @@
 #include <string>
 #include <time.h>
 
-#define PROGRAM_INFO "BCI 2000 to BrainVision file converter -- mailto:juergen.mellinger@uni-tuebingen.de"
+#define PROGRAM_INFO "BCI2000 to BrainVision file converter (compiled " __DATE__\
+                     ") -- mailto:juergen.mellinger@uni-tuebingen.de"
 
 using namespace std;
 
