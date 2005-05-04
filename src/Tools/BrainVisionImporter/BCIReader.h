@@ -18,6 +18,8 @@
 #include <vector>
 #include <string>
 
+#include "UBCI2000Data.h"
+
 struct iless
 {
   bool operator()( const std::string& a, const std::string& b )
@@ -40,10 +42,10 @@ class TBCIReader
              void   Process( const TStrList&    inChannelNames,
                              const TStrSet&     inIgnoreStates,
                                    bool         inScanOnly = false );
-    const TStrSet&  GetStates() const { return statesInFile; }
+    const TStrSet&  GetStates() const { return mStatesInFile; }
 
   protected:
-            void    Idle() const;
+             void   Idle() const;
 
   private:
     struct TOutputInfo
@@ -64,9 +66,9 @@ class TBCIReader
     virtual void OutputStateChange( const STATE&, short, long inSamplePos ) {}
     virtual void OutputStateRange( const STATE&, short, long inBeginPos, long inEndPos ) {}
 
-    std::string   fileName;
-    std::ifstream inputStream;
-    TStrSet       statesInFile;
+    std::string   mFileName;
+    BCI2000DATA   mInputData;
+    TStrSet       mStatesInFile;
 };
 
 #endif // BCIReaderH
