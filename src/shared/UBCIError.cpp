@@ -55,22 +55,22 @@ bci_ostream::operator()( const char* inInfoHeader )
 void
 bci_ostream::bci_stringbuf::SetFlushHandler( bci_ostream::flush_handler f )
 {
-  if( on_flush )
-    on_flush( str() );
+  if( mp_on_flush )
+    mp_on_flush( str() );
   else
     f( str() );
   str( "" );
-  on_flush = f;
+  mp_on_flush = f;
 }
 
 int
 bci_ostream::bci_stringbuf::sync()
 {
   int r = stringbuf::sync();
-  ++num_flushes;
-  if( on_flush )
+  ++m_num_flushes;
+  if( mp_on_flush )
   {
-    on_flush( str() );
+    mp_on_flush( str() );
     str( "" );
   }
   return r;
@@ -109,20 +109,24 @@ BCIError::LogicError( const string& message )
 // on the core module side.
 struct StatusMessage
 {
- void operator()( const string& text, int code )
+ void operator()( const string& inText, int inCode )
  {
   static ostream* op = NULL;
   if( op == NULL )
     op = ::Environment::Operator;
 
+  string text = inText;
+  if( text.find_last_of( ".!?" ) != text.length() - 1 )
+    text += '.';
+
   // If the connection to the operator does not work, fall back to a local
   // error display.
   if( op != NULL )
   {
-    MessageHandler::PutMessage( *op, STATUS( text.c_str(), code ) );
+    MessageHandler::PutMessage( *op, STATUS( text.c_str(), inCode ) );
     op->flush();
   }
-  if( ( !op || !*op ) && code >= 400 )
+  if( ( !op || !*op ) && inCode >= 400 )
 #if !defined( _WIN32 ) || defined( __CONSOLE__ )
     cerr << text << endl;
 #else

@@ -49,30 +49,38 @@ namespace BCIError
    friend class EnvironmentBase;
 
    public:
-    bci_ostream() : std::ostream( 0 ) { this->init( &buf ); }
+    bci_ostream() : std::ostream( 0 )  { this->init( &m_buf ); }
+
     std::ostream& operator()( const char* );
-    std::ostream& operator()() { return *this; }
-    int flushes() { return buf.flushes(); }
-    void clear() { std::ostream::clear(); buf.clear(); }
+    std::ostream& operator()()         { return *this; }
+    int           flushes()            { return m_buf.flushes(); }
+    void          clear()              { std::ostream::clear(); m_buf.clear(); }
 
    private:
     typedef void ( *flush_handler )( const std::string& );
-    void SetFlushHandler( flush_handler f = NULL ) { buf.SetFlushHandler( f ); }
+    void SetFlushHandler( flush_handler f = NULL ) { m_buf.SetFlushHandler( f ); }
 
     class bci_stringbuf : public std::stringbuf
     {
      public:
-      bci_stringbuf() : on_flush( LogicError ), num_flushes( 0 ), std::stringbuf( std::ios_base::out ) {}
+      bci_stringbuf()
+      : mp_on_flush( LogicError ),
+        m_num_flushes( 0 ),
+        std::stringbuf( std::ios_base::out )
+      {}
+
       void SetFlushHandler( flush_handler f = NULL );
-      int flushes() { return num_flushes; }
-      void clear()  { SetFlushHandler( on_flush ); num_flushes = 0; }
+      int  flushes()      { return m_num_flushes; }
+      void clear()        { SetFlushHandler( mp_on_flush ); m_num_flushes = 0; }
+
      private:
-      flush_handler on_flush;
-      int num_flushes;
+      flush_handler mp_on_flush;
+      int           m_num_flushes;
+
      protected:
       // This function gets called on ostream::flush().
-      virtual int sync();
-    } buf;
+      virtual int   sync();
+    } m_buf;
   };
 
 }
