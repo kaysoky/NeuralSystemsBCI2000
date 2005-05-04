@@ -45,20 +45,22 @@ static struct
   { SignalType::int32,   "int32",   4 },
 };
 
+static const numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties );
+
 const char*
-SignalType::Name( SignalType::Type inType )
+SignalType::Name() const
 {
-  for( size_t i = 0; i < sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties ); ++i )
-    if( SignalTypeProperties[ i ].type == inType )
+  for( size_t i = 0; i < numSignalTypes; ++i )
+    if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].name;
   return "n/a";
 };
 
 size_t
-SignalType::Size( SignalType::Type inType )
+SignalType::Size() const
 {
-  for( size_t i = 0; i < sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties ); ++i )
-    if( SignalTypeProperties[ i ].type == inType )
+  for( size_t i = 0; i < numSignalTypes; ++i )
+    if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].size;
   return sizeof( double );
 }
@@ -66,7 +68,7 @@ SignalType::Size( SignalType::Type inType )
 // Determine whether a given signal type can be converted into another one without
 // loss of information.
 bool
-SignalType::ConversionIsSafe( SignalType::Type from, SignalType::Type to )
+SignalType::ConversionIsSafe( SignalType from, SignalType to )
 {
   static const bool conversionTable[ numTypes ][ numTypes ] =
   {
@@ -76,19 +78,50 @@ SignalType::ConversionIsSafe( SignalType::Type from, SignalType::Type to )
     /* float32 */ { false,    false,     true,   false, },
     /* int32   */ { false,    false,    false,    true, },
   };
-  return conversionTable[ from ][ to ];
+  return conversionTable[ from.mType ][ to.mType ];
+}
+
+void
+SignalType::WriteToStream( ostream& os ) const
+{
+  os << Name();
+}
+
+void
+SignalType::ReadFromStream( istream& is )
+{
+  mType = none;
+  string s;
+  if( is >> s )
+    for( size_t i = 0; mType == none && i < numSignalTypes; ++i )
+      if( s == SignalTypeProperties[ i ].name )
+        mType = SignalTypeProperties[ i ].type;
+  if( mType == none )
+    is.setstate( ios::failbit );
+}
+
+void
+SignalType::WriteBinary( ostream& os ) const
+{
+  os.put( mType );
+}
+
+void
+SignalType::ReadBinary( istream& is )
+{
+  mType = Type( is.get() );
 }
 
 void
 SignalProperties::WriteToStream( ostream& os ) const
 {
-  os << Channels() << " " << Elements() << " " << SignalType::Name( Type() );
+  os << Channels() << " " << Elements() << " " << Type();
 }
 
 ostream&
 SignalProperties::WriteBinary( ostream& os ) const
 {
-  LengthField<1>( Type() ).WriteBinary( os );
+  Type().WriteBinary( os );
   LengthField<2>( Channels() ).WriteBinary( os );
   LengthField<2>( Elements() ).WriteBinary( os );
   return os;
@@ -97,13 +130,13 @@ SignalProperties::WriteBinary( ostream& os ) const
 istream&
 SignalProperties::ReadBinary( istream& is )
 {
-  LengthField<1> type;
+  SignalType     type;
   LengthField<2> channels,
                  elements;
   type.ReadBinary( is );
   channels.ReadBinary( is );
   elements.ReadBinary( is );
-  *this = SignalProperties( channels, elements, SignalType::Type( int( type ) ) );
+  *this = SignalProperties( channels, elements, type );
   return is;
 }
 
@@ -114,7 +147,7 @@ SignalProperties::operator<=( const SignalProperties& sp ) const
     return true;
   if( sp.IsEmpty() )
     return false;
-  if( !ConversionIsSafe( Type(), sp.Type() ) )
+  if( !SignalType::ConversionIsSafe( Type(), sp.Type() ) )
     return false;
   if( sp.Elements() < Elements() )
     return false;
@@ -129,6 +162,11 @@ GenericSignal::GenericSignal()
 }
 
 GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType::Type inType )
+{
+  SetProperties( SignalProperties( inChannels, inElements, inType ) );
+}
+
+GenericSignal::GenericSignal( size_t inChannels, size_t inElements, SignalType inType )
 {
   SetProperties( SignalProperties( inChannels, inElements, inType ) );
 }
@@ -284,6 +322,58 @@ GenericSignal::ReadBinary( istream& is )
   return is;
 }
 
+void
+GenericSignal::WriteValueBinary( ostream& os, size_t inChannel, size_t inElement ) const
+{
+  switch( Type() )
+  {
+    case SignalType::int16:
+      PutValueBinary<SignalType::int16>( os, inChannel, inElement );
+      break;
+
+    case SignalType::float24:
+      PutValueBinary<SignalType::float24>( os, inChannel, inElement );
+      break;
+
+    case SignalType::float32:
+      PutValueBinary<SignalType::float32>( os, inChannel, inElement );
+      break;
+
+    case SignalType::int32:
+      PutValueBinary<SignalType::int32>( os, inChannel, inElement );
+      break;
+
+    default:
+      os.setstate( os.failbit );
+  }
+}
+
+void
+GenericSignal::ReadValueBinary( istream& is, size_t inChannel, size_t inElement )
+{
+  switch( Type() )
+  {
+    case SignalType::int16:
+      GetValueBinary<SignalType::int16>( is, inChannel, inElement );
+      break;
+
+    case SignalType::float24:
+      GetValueBinary<SignalType::float24>( is, inChannel, inElement );
+      break;
+
+    case SignalType::float32:
+      GetValueBinary<SignalType::float32>( is, inChannel, inElement );
+      break;
+
+    case SignalType::int32:
+      GetValueBinary<SignalType::int32>( is, inChannel, inElement );
+      break;
+
+    default:
+      is.setstate( is.failbit );
+  }
+}
+
 template<>
 void
 GenericSignal::PutValueBinary<SignalType::int16>( std::ostream& os, size_t inChannel, size_t inElement ) const
@@ -332,8 +422,8 @@ GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inC
   }
   else
   {
-    exponent = ceil( log10( fabs( value ) ) );
-    mantissa = ( value / pow10( exponent ) ) * 10000;
+    exponent = ::ceil( ::log10( ::fabs( value ) ) );
+    mantissa = ( value / ::pow10( exponent ) ) * 10000;
     exponent -= 4;
   }
   os.put( mantissa & 0xff ).put( mantissa >> 8 );
@@ -367,7 +457,14 @@ GenericSignal::GetValueBinary<SignalType::float32>( std::istream& is, size_t inC
   assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
   unsigned int value = 0;
   GetLittleEndian( is, value );
-  SetValue( inChannel, inElement, *reinterpret_cast<float*>( &value ) );
+  try
+  {
+    SetValue( inChannel, inElement, *reinterpret_cast<float*>( &value ) );
+  }
+  catch( ... )
+  {
+    is.setstate( is.failbit );
+  }
 }
 
 template<typename T>

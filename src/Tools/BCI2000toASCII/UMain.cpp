@@ -68,7 +68,7 @@ int     ret, firstfile, lastfile, cur_file, channel, state, i;
 double  cur_value_double, cur_state_double, dummy_double;
 ULONG   sample, numsamples;
 char    cur_statename[256], buffer[5000];
-int     samplingrate, channels, cur_value, cur_state, cur_trial;
+int     samplingrate, channels, cur_state, cur_trial;
 int     numstates, oldnumstates, totalsamples, cur_totalsample;
 bool    consistent, exportfile, exportmatlab;
 int     exportdatatype;
@@ -79,6 +79,15 @@ MATFile *pmat;
  exportmatlab=rExportMatlab->Checked;
  exportfile=rExportFile->Checked;
  exportdatatype=ExportDataType->ItemIndex;   // 0=double, 1=int16
+ if( exportdatatype == 1 && bci2000data->GetSignalType() != SignalType::int16 )
+   Application->MessageBox( (
+     AnsiString( "You are about to export " )
+     + bci2000data->GetSignalType().Name()
+     + " data into int16 values.\n"
+     + "The resulting file is likely to contain corrupted data." ).c_str(),
+     "Warning",
+     MB_OK
+   );
 
  // if we did not select to export to anything
  if ((!exportfile) && (!exportmatlab))
@@ -229,16 +238,16 @@ MATFile *pmat;
       // go through each channel
       for (channel=0; channel<channels; channel++)
        {
-       cur_value=bci2000data->ReadValue(channel, sample);
-       cur_value_double=(double)cur_value;
+       cur_value_double=bci2000data->ReadValue(channel, sample);
+       __int16 cur_value_short = cur_value_double;
        if (exportmatlab)
           {
           if (exportdatatype == 0)
              memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
           else
-             memcpy((char *)((__int16 *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value, sizeof(__int16));
+             memcpy((char *)((__int16 *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_short, sizeof(__int16));
           }
-       if (exportfile) fprintf(fp, "%d ", cur_value);
+       if (exportfile) fprintf(fp, "%d ", cur_value_double);
        }
       // store the value of each state
       for (state=0; state < cStateListBox->Items->Count; state++)

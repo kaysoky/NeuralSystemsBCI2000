@@ -118,8 +118,9 @@ DataIOFilter::~DataIOFilter()
 }
 
 
-void DataIOFilter::Preflight( const SignalProperties& Input,
-                                    SignalProperties& Output ) const
+void
+DataIOFilter::Preflight( const SignalProperties& Input,
+                               SignalProperties& Output ) const
 {
   // Parameter existence and range.
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
@@ -178,17 +179,30 @@ void DataIOFilter::Preflight( const SignalProperties& Input,
 
   // Sub-filter preflight/signal properties.
   mADC->Preflight( Input, Output );
+  switch( Output.Type() )
+  {
+    case SignalType::int16:
+    case SignalType::int32:
+    case SignalType::float32:
+      /* These types are OK */
+      break;
+
+    default: // All other types are unsupported in BCI2000 data files.
+      bcierr << "ADC requested unsupported data type ("
+             << Output.Type().Name()
+             << ")"
+             << endl;
+  }
   mRestingSignal.SetProperties( Output );
 
   // Signal properties.
   if( Input.Channels() > 0 )
     bcierr << "Expected empty input signal" << endl;
-  if( Output.Type() != SignalType::int16 )
-    bcierr << "Expected short integer signal in ADC output" << endl;
 }
 
 
-void DataIOFilter::Initialize()
+void
+DataIOFilter::Initialize()
 {
   mOutputFile.close();
   mOutputFile.clear();
@@ -226,7 +240,8 @@ void DataIOFilter::Initialize()
 }
 
 
-void DataIOFilter::StartRun()
+void
+DataIOFilter::StartRun()
 {
   BCIDirectory bciDirectory = BCIDirectory()
                               .SubjectDirectory( Parameter( "FileInitials" ) )
@@ -235,8 +250,8 @@ void DataIOFilter::StartRun()
                               .RunNumber( Parameter( "SubjectRun" ) );
   string baseFileName = bciDirectory.FilePath(),
          dataFileName = baseFileName + bciDataExtension;
-  // BCIDirectory will update the run number to the largest unused one.
-  // We want this to be reflected in the "SubjectRun" parameter.
+  // BCIDirectory will update the run number to the largest unused one
+  // -- we want this to be reflected in the "SubjectRun" parameter.
   ostringstream oss;
   oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
   Parameter( "SubjectRun" ) = oss.str().c_str();
@@ -244,6 +259,9 @@ void DataIOFilter::StartRun()
   mOutputFile.close();
   mOutputFile.clear();
   mOutputFile.open( dataFileName.c_str(), ios::out | ios::binary );
+
+  // We write 16 bit data in the old format to maintain backward compatibility.
+  bool useOldFormat = ( mRestingSignal.GetProperties().Type() == SignalType::int16 );
 
   // Write the header.
   //
@@ -253,15 +271,22 @@ void DataIOFilter::StartRun()
   ostringstream header;
   header << " "
          << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
-         << "StatevectorLen= " << Statevector->GetStateVectorLength()
-         << "\r\n"
+         << "StatevectorLen= " << Statevector->GetStateVectorLength();
+  if( !useOldFormat )
+    header << " "
+           << "DataFormat= "
+           << mRestingSignal.GetProperties().Type().Name();
+  header << "\r\n"
          << "[ State Vector Definition ] \r\n";
   States->WriteBinary( header );
   header << "[ Parameter Definition ] \r\n";
   Parameters->WriteBinary( header );
   header << "\r\n";
 
-  const string headerBegin = "HeaderLen= ";
+  string headerBegin;
+  if( !useOldFormat )
+    headerBegin = "BCI2000V= 1.1 ";
+  headerBegin += "HeaderLen= ";
   size_t fieldLength = 5; // Follow the old scheme
                           // (5 characters for the header length field),
                           // but allow for a longer HeaderLen field
@@ -305,7 +330,8 @@ void DataIOFilter::StartRun()
 }
 
 
-void DataIOFilter::StopRun()
+void
+DataIOFilter::StopRun()
 {
   mOutputFile.close();
   mOutputFile.clear();
@@ -314,8 +340,23 @@ void DataIOFilter::StopRun()
   State( "Recording" ) = 0;
 }
 
-void DataIOFilter::Process( const GenericSignal* Input,
-                                  GenericSignal* Output )
+template<SignalType::Type T>
+void
+DataIOFilter::PutBlock()
+{
+  // Note that the order of Elements and Channels differs from the one in the
+  // socket protocol.
+  for( size_t j = 0; j < mSignalBuffer.Elements(); ++j )
+  {
+    for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
+      mSignalBuffer.PutValueBinary<T>( mOutputFile, i, j );
+    mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
+  }
+}
+
+void
+DataIOFilter::Process( const GenericSignal* Input,
+                             GenericSignal* Output )
 {
   // Moving the save-to-file code to the beginning of Process() implies
   // that the time spent on i/o operations will only reduce the
@@ -329,14 +370,22 @@ void DataIOFilter::Process( const GenericSignal* Input,
   bool visualizeRoundtrip = false;
   if( mSignalBuffer.GetProperties() > SignalProperties( 0, 0 ) )
   {
-    for( size_t j = 0; j < mSignalBuffer.Elements(); ++j )
+    switch( mSignalBuffer.GetProperties().Type() )
     {
-      for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
-      {
-        uint16 value = mSignalBuffer( i, j );
-        mOutputFile.put( value & 0xff ).put( value >> 8 );
-      }
-      mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
+      case SignalType::int16:
+        PutBlock<SignalType::int16>();
+        break;
+
+      case SignalType::float32:
+        PutBlock<SignalType::float32>();
+        break;
+
+      case SignalType::int32:
+        PutBlock<SignalType::int32>();
+        break;
+
+      default:
+        bcierr << "Unsupported signal data type" << endl;
     }
     if( !mOutputFile )
       bcierr << "Error writing to file" << endl;
@@ -365,8 +414,8 @@ void DataIOFilter::Process( const GenericSignal* Input,
     mEEGVis.Send( Output );
 }
 
-
-void DataIOFilter::Resting()
+void
+DataIOFilter::Resting()
 {
   mADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
@@ -374,7 +423,8 @@ void DataIOFilter::Resting()
 }
 
 
-void DataIOFilter::Halt()
+void
+DataIOFilter::Halt()
 {
   mOutputFile.close();
   mOutputFile.clear();

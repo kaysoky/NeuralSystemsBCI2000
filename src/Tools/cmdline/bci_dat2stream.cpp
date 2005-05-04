@@ -48,13 +48,40 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   int headerLength,
       sourceCh,
       stateVectorLength;
+  SignalType dataFormat;
   STATELIST states;
+  enum { v10, v11 } fileFormatVersion = v10;
 
-  bool legalInput =
-  in >> token && token == "HeaderLen=" && in >> headerLength &&
-  in >> token && token == "SourceCh=" && in >> sourceCh &&
-  in >> token && token == "StatevectorLen=" && in >> stateVectorLength &&
-  getline( in >> ws, token, ']' ) >> ws && token == "[ State Vector Definition ";
+  bool legalInput = in >> token;
+  if( legalInput && token == "BCI2000V=" )
+  {
+    legalInput = legalInput &&
+      in >> token;
+    if( token == "1.1" )
+      fileFormatVersion = v11;
+    else
+      legalInput = false;
+    legalInput = legalInput &&
+      in >> token;
+  }
+  legalInput &=
+    token == "HeaderLen=" && in >> headerLength &&
+    in >> token && token == "SourceCh=" && in >> sourceCh &&
+    in >> token && token == "StatevectorLen=" && in >> stateVectorLength;
+  switch( fileFormatVersion )
+  {
+    case v10:
+      dataFormat = SignalType::int16;
+      break;
+    case v11:
+      legalInput &=
+        in >> token && token == "DataFormat=" && in >> dataFormat;
+      break;
+    default:
+      assert( false );
+  }
+  legalInput &=
+    getline( in >> ws, token, ']' ) >> ws && token == "[ State Vector Definition ";
   while( legalInput && in.peek() != '[' && getline( in, token ) )
   {
     istringstream is( token );
@@ -91,24 +118,19 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   {
     STATEVECTOR statevector( &states, true );
     assert( statevector.GetStateVectorLength() == stateVectorLength );
-    int bufferSize = sourceCh * 2 + statevector.GetStateVectorLength();
-    char* dataBuffer = new char[ bufferSize ];
     int curSample = 0;
-    GenericSignal outputSignal( sourceCh, sampleBlockSize );
-    while( legalInput && in.peek() != EOF && in.read( dataBuffer, bufferSize ) )
+    GenericSignal outputSignal( sourceCh, sampleBlockSize, dataFormat );
+    while( in && in.peek() != EOF )
     {
       for( int i = 0; i < sourceCh; ++i )
-      {
-        sint16 value = dataBuffer[ 2 * i + 1 ] << 8 | dataBuffer[ 2 * i ];
-        outputSignal( i, curSample ) = value;
-      }
+        outputSignal.ReadValueBinary( in, i, curSample );
+      in.read( statevector.GetStateVectorPtr(), stateVectorLength );
+
       if( ++curSample == sampleBlockSize )
       {
         curSample = 0;
         if( transmitStates )
         {
-          memcpy( statevector.GetStateVectorPtr(), dataBuffer + sourceCh * 2,
-                                            statevector.GetStateVectorLength() );
           MessageHandler::PutMessage( out, statevector );
         }
         if( transmitData )
@@ -118,7 +140,6 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
         }
       }
     }
-    delete[] dataBuffer;
     if( curSample != 0 )
     {
       cerr << "Non-integer number of data blocks in input" << endl;

@@ -1,6 +1,6 @@
 object fMain: TfMain
-  Left = 321
-  Top = 146
+  Left = 401
+  Top = 195
   Width = 438
   Height = 550
   Caption = 'BCI2000toASCII V3.8 (Matlab 6.5+7.0)'

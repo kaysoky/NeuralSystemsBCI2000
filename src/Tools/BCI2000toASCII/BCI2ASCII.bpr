@@ -5,7 +5,7 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="BCI2ASCII.exe"/>
     <OBJFILES value="obj\BCI2ASCII.obj obj\UMain.obj obj\UState.obj obj\UParameter.obj 
-      obj\UBCI2000Data.obj"/>
+      obj\UBCI2000Data.obj obj\UGenericSignal.obj"/>
     <RESFILES value="BCI2ASCII.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm"/>
@@ -56,6 +56,7 @@
       <FILE FILENAME="libmx.lib" FORMNAME="" UNITNAME="libmx.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

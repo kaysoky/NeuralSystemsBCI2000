@@ -35,6 +35,8 @@ class DataIOFilter: public GenericFilter
   virtual void Halt();
 
  private:
+  template<SignalType::Type T> void PutBlock();
+  
   GenericFilter*         mADC;
   GenericSignal          mSignalBuffer;
   std::string            mStatevectorBuffer;

@@ -32,6 +32,10 @@ __published:	// IDE-managed Components
         TLabel *tSampleBlockSize;
         TLabel *tSamplingRate;
         TLabel *tUpdateRate;
+    TLabel *Label5;
+    TLabel *tFileFormat;
+    TLabel *Label6;
+    TLabel *tDataFormat;
         void __fastcall DropPanelWindowProc( TMessage& msg );
         void __fastcall bShowParamsClick(TObject *Sender);
         void __fastcall FormShow(TObject *Sender);

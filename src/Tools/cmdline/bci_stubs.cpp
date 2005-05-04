@@ -24,3 +24,8 @@ BCIDirectory::ProcSubDir()
   return tempDir;
 }
 
+BCIDirectory&
+BCIDirectory::UpdateRunNumber()
+{
+  return *this;
+}

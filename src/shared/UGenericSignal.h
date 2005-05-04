@@ -14,10 +14,12 @@
 #include <vector>
 #include "UBCIError.h"
 
-namespace SignalType
+class SignalType
 {
+ public:
   typedef enum Type
   {
+    none = -1,
     int16 = 0,
     float24,
     float32,
@@ -27,9 +29,22 @@ namespace SignalType
     defaultType = float32
 
   } Type;
-  const char* Name( Type );
-  size_t      Size( Type );
-  bool        ConversionIsSafe( Type from, Type to );
+
+  SignalType() : mType( none )      {}
+  SignalType( Type t ) : mType( t ) {}
+  operator SignalType::Type() const { return mType; }
+
+  const char* Name() const;
+  size_t      Size() const;
+  static bool ConversionIsSafe( SignalType from, SignalType to );
+
+  void ReadFromStream( std::istream& );
+  void WriteToStream( std::ostream& ) const;
+  void ReadBinary( std::istream& );
+  void WriteBinary( std::ostream& ) const;
+
+ private:
+  Type mType;
 };
 
 // A class that holds a signal's properties.
@@ -45,16 +60,22 @@ class SignalProperties
       SignalType::Type inType = SignalType::defaultType )
     : mChannels( inChannels ), mElements( inElements ), mType( inType ) {}
 
+    SignalProperties(
+      size_t inChannels,
+      size_t inElements,
+      SignalType inType )
+    : mChannels( inChannels ), mElements( inElements ), mType( inType ) {}
+
     virtual ~SignalProperties() {}
 
     // Read access
-    size_t           Channels() const   { return mChannels; }
-    size_t           Elements() const   { return mElements; }
-    SignalType::Type Type() const       { return mType; }
+    size_t            Channels() const  { return mChannels; }
+    size_t            Elements() const  { return mElements; }
+    const SignalType& Type() const      { return mType; }
     // Write access
     size_t& Channels()                  { return mChannels; }
     size_t& Elements()                  { return mElements; }
-    SignalType::Type& Type()            { return mType; }
+    SignalType& Type()                  { return mType; }
 
     bool IsEmpty() const                { return Channels() == 0 || Elements() == 0; }
     bool operator==( const SignalProperties& sp ) const
@@ -86,9 +107,9 @@ class SignalProperties
 #endif
 
   private:
-    size_t           mChannels,
-                     mElements;
-    SignalType::Type mType;
+    size_t     mChannels,
+               mElements;
+    SignalType mType;
 };
 
 class GenericSignal
@@ -101,15 +122,25 @@ class GenericSignal
       size_t inChannels,
       size_t inMaxElements,
       SignalType::Type inType = SignalType::defaultType );
+    GenericSignal(
+      size_t inChannels,
+      size_t inMaxElements,
+      SignalType inType );
     explicit GenericSignal( const SignalProperties& );
 
     void SetProperties( const SignalProperties& );
     const SignalProperties& GetProperties() const { return mProperties; }
 
     // Read access
-    size_t           Channels() const   { return mProperties.Channels(); }
-    size_t           Elements() const   { return mProperties.Elements(); }
-    SignalType::Type Type() const       { return mProperties.Type(); }
+    size_t            Channels() const   { return mProperties.Channels(); }
+    size_t            Elements() const   { return mProperties.Elements(); }
+    const SignalType& Type() const       { return mProperties.Type(); }
+
+#if 1
+    // Legacy names for accessors.
+    size_t MaxElements() const                          { return Elements(); }
+    size_t GetNumElements( size_t /*inChannel*/ ) const { return Elements(); }
+#endif
 
     // Accessors
     const value_type& GetValue( size_t inChannel, size_t inElement ) const;
@@ -120,20 +151,17 @@ class GenericSignal
     value_type& operator() ( size_t inChannel, size_t inElement );
 
     // Stream i/o
+    void WriteToStream( std::ostream& ) const;
+    void ReadFromStream( std::istream& );
+    void WriteValueBinary( std::ostream&, size_t inChannel, size_t inElement ) const;
+    void ReadValueBinary( std::istream&, size_t inChannel, size_t inElement );
+    std::ostream& WriteBinary( std::ostream& ) const;
+    std::istream& ReadBinary( std::istream& );
+
     template<SignalType::Type>
       void PutValueBinary( std::ostream&, size_t inChannel, size_t inElement ) const;
     template<SignalType::Type>
       void GetValueBinary( std::istream&, size_t inChannel, size_t inElement );
-    void WriteToStream( std::ostream& ) const;
-    void ReadFromStream( std::istream& );
-    std::ostream& WriteBinary( std::ostream& ) const;
-    std::istream& ReadBinary( std::istream& );
-
-#if 1
-    // Legacy names for accessors.
-    size_t MaxElements() const                          { return Elements(); }
-    size_t GetNumElements( size_t /*inChannel*/ ) const { return Elements(); }
-#endif
 
   private:
     template<typename T> static void PutLittleEndian( std::ostream&, const T& );
@@ -143,6 +171,18 @@ class GenericSignal
     SignalProperties                      mProperties;
     std::vector<std::vector<value_type> > mValues;
 };
+
+inline std::ostream& operator<<( class std::ostream& os, const SignalType& s )
+{
+  s.WriteToStream( os );
+  return os;
+}
+
+inline std::istream& operator>>( class std::istream& is, SignalType& s )
+{
+  s.ReadFromStream( is );
+  return is;
+}
 
 inline std::ostream& operator<<( class std::ostream& os, const SignalProperties& s )
 {

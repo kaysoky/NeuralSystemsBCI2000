@@ -290,7 +290,7 @@ int     i, channelnum;
  // the same channel number (-> physical channel number = channel number on the screen)
  channelnum=displaynumber;
 
- for (i=0; i<num_channels; i++)
+ for (i=0; i<num_channels && i < MAX_CHANNELS; i++)
   if (channellist[i].displayposition == displaynumber)
      channelnum=i;
 

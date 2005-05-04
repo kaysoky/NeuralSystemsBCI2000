@@ -85,8 +85,15 @@ RandomNumberADC::RandomNumberADC()
        "// the maximum output value for noise",
    "Source int DCoffset=             0 0 -32767 32767 "
        "// DC offset (common to all channels)",
-   "Source int DoTrueRandom=        0 0 0 1"
+   "Source int DoTrueRandom=         0 0 0 1"
         "// Generate truly random sequence (0=no, 1=yes) (boolean)",
+   "Source int SignalType=           0 0 0 3"
+        "// numeric type of output signal: "
+            " 0: int16,"
+            " 1: float24,"
+            " 2: float32,"
+            " 3: int32 "
+            "(enumeration)"
  //"Source string MultiplierState=   -1 -1 0 0 "
  //    "// State to use as signal multiplier (-1 == don't use multiplier)",
  END_PARAMETER_DEFINITIONS
@@ -126,8 +133,9 @@ void RandomNumberADC::Preflight( const SignalProperties&,
   /* The input signal will be ignored. */
 
   // Requested output signal properties.
+  int signalType = Parameter( "SignalType" );
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::Type( signalType ) );
 
   //Check wether DoTrueRandom and ModulateAmplitude (with mouse) are selected
   /*

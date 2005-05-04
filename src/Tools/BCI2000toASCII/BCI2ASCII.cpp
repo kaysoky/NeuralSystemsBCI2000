@@ -13,7 +13,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "BCI2000toASCII";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 fMain->ProcessCommandLineOptions();
+         fMain->ProcessCommandLineOptions();
                  Application->Run();
         }
         catch (Exception &exception)

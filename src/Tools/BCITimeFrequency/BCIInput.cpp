@@ -236,7 +236,6 @@ __int16 BCIInput::GetCompuFlag(BCI2000DATA *bci2000data, int sample )
 
 float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int sample  )
 {
-        __int16 ival;
         float val;
         float neigh;
         float temp;
@@ -250,8 +249,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
         {
                 if(sfilterflag == false )            // no temporal or spatial filtering
                 {
-                        ival= bci2000data->ReadValue( channel, sample );
-                        val= (float)ival;
+                        val= bci2000data->ReadValue( channel, sample );
                         val= ( val - offset[chan_list[channel]] ) * gain[chan_list[channel]];
                         if( alignflag )
                         {
@@ -261,8 +259,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
                 }
                 else                                // spatial but not temporal
                 {
-                        ival= bci2000data->ReadValue( channel, sample );
-                        val= (float)ival;
+                        val= bci2000data->ReadValue( channel, sample );
                         val= ( val - offset[chan_list[channel]] ) * gain[chan_list[channel]];
                         if( alignflag )
                         {
@@ -275,13 +272,11 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
 
                         for(i=1;i<lapn[chan_list[channel]]+1;i++)
                         {
-                                ival= bci2000data->ReadValue( lap[chan_list[channel]][i], sample );
-                                temp= (float)ival;
+                                temp= bci2000data->ReadValue( lap[chan_list[channel]][i], sample );
                                 temp= ( temp - offset[lap[chan_list[channel]][i]] ) * gain[lap[chan_list[channel]][i]];
                                 if( alignflag )
                                 {
-                                        ival= bci2000data->ReadValue( lap[chan_list[channel]][i], sample-1 );
-                                        lastemp= (float)(ival);
+                                        lastemp= bci2000data->ReadValue( lap[chan_list[channel]][i], sample-1 );
                                         lastemp= ( lastemp - offset[lap[chan_list[channel]][i]] ) * gain[lap[chan_list[channel]][i]];
                                         temp= (w1[lap[chan_list[channel]][i]]*temp) + (w2[lap[chan_list[channel]][i]]*lastemp);
                                 }
@@ -326,8 +321,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
                                 {
                                         index++;
 
-                                        ival= bci2000data->ReadValue( channel, index );
-                                        tval= (float)ival;
+                                        tval= bci2000data->ReadValue( channel, index );
                                         tval= ( tval - offset[chan_list[channel]] ) * gain[chan_list[channel]];
 
                                         neigh= 0;
@@ -335,8 +329,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
 
                                         for(j=1;j<lapn[chan_list[channel]]+1;j++)
                                         {
-                                                ival= bci2000data->ReadValue( lap[chan_list[channel]][j], index );
-                                                temp= (float)ival;
+                                                temp= bci2000data->ReadValue( lap[chan_list[channel]][j], index );
                                                 temp= ( temp - offset[lap[chan_list[channel]][j]] ) * gain[lap[chan_list[channel]][j]];
                                                 neigh+= temp * d_lap[lap[chan_list[channel]][j]][j];
                                                 sum+= d_lap[lap[chan_list[channel]][j]][j];

@@ -5,20 +5,21 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="BCIDiff.exe"/>
     <OBJFILES value="obj\BCI2000Diff.obj obj\FileCompare.obj obj\FileReader.obj 
-      obj\UParameter.obj obj\UState.obj obj\UBCI2000Data.obj"/>
+      obj\UParameter.obj obj\UState.obj obj\UBCI2000Data.obj 
+      obj\UGenericSignal.obj"/>
     <RESFILES value="BCIDiff.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
-    <SPARELIBS value=""/>
+    <SPARELIBS value="rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi bcbsmp.bpi vcldb.bpi dbrtl.bpi qrpt.bpi 
       bdertl.bpi vcldbx.bpi dsnap.bpi cds.bpi bdecds.bpi teeui.bpi teedb.bpi 
       tee.bpi teeqr.bpi ibxpress.bpi vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi 
       inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi 
       dbexpress.bpi indy.bpi bcb2kaxserver.bpi dbxcds.bpi visualclx.bpi 
       visualdbclx.bpi adortl.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -57,6 +58,7 @@
       <FILE FILENAME="..\..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

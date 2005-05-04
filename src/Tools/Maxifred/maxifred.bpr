@@ -6,7 +6,8 @@
     <PROJECT value="maxifred.exe"/>
     <OBJFILES value="obj\maxifred.obj obj\UMain.obj obj\channelnames.obj obj\UAbout.obj 
       obj\UEditChannellist.obj obj\UStateDialog.obj obj\USave2Disk.obj 
-      obj\UState.obj obj\UParameter.obj obj\UBCI2000Data.obj"/>
+      obj\UState.obj obj\UParameter.obj obj\UBCI2000Data.obj 
+      obj\UGenericSignal.obj"/>
     <RESFILES value="maxifred.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -17,14 +18,14 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib dbrtl.lib vcldb.lib bdertl.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG"/>
+    <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="maxifred.cpp"/>
     <INCLUDEPATH value="..\SHARED;$(BCB)\include;$(BCB)\include\vcl;..\..\SHARED"/>
@@ -34,12 +35,12 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k -y 
-      -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -60,6 +61,7 @@
       <FILE FILENAME="..\..\SHARED\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -93,7 +95,7 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-d:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=13

@@ -1,6 +1,6 @@
 object fMain: TfMain
-  Left = 288
-  Top = 262
+  Left = 571
+  Top = 239
   BorderStyle = bsSingle
   Caption = 'BCI2000FileInfo ... (C) 2003 Gerwin Schalk'
   ClientHeight = 159
@@ -94,6 +94,46 @@ object fMain: TfMain
   object tUpdateRate: TLabel
     Left = 152
     Top = 88
+    Width = 20
+    Height = 13
+    Caption = 'N/A'
+  end
+  object Label5: TLabel
+    Left = 8
+    Top = 112
+    Width = 109
+    Height = 13
+    Caption = 'File Format Version'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object tFileFormat: TLabel
+    Left = 152
+    Top = 112
+    Width = 20
+    Height = 13
+    Caption = 'N/A'
+  end
+  object Label6: TLabel
+    Left = 8
+    Top = 128
+    Width = 70
+    Height = 13
+    Caption = 'Data Format'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object tDataFormat: TLabel
+    Left = 152
+    Top = 128
     Width = 20
     Height = 13
     Caption = 'N/A'

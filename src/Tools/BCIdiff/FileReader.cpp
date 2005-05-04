@@ -90,7 +90,7 @@ const STATEVECTOR* FileReader::getStateVectorPtr() const
         return mBCI2000Data->GetStateVectorPtr();
 }
 
-short FileReader::readValue(int channel, unsigned long sample)
+GenericSignal::value_type FileReader::readValue(int channel, unsigned long sample)
 {
         return mBCI2000Data->ReadValue(channel, sample);
 }

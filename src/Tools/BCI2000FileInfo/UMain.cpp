@@ -164,6 +164,8 @@ void TfMain::DisplayFileInfo()
  tSampleBlockSize->Caption=prmval_blocksize;
  tSamplingRate->Caption=prmval_samplingrate+" Hz";
  tUpdateRate->Caption=AnsiString::FormatFloat("#.##", updaterate)+" Hz";
+ tFileFormat->Caption=bci2000data->GetFileFormatVersion().c_str();
+ tDataFormat->Caption=bci2000data->GetSignalType().Name();
 }
 
 

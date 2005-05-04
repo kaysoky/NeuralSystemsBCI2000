@@ -1,6 +1,8 @@
 #ifndef FileReaderH
 #define FileReaderH
 
+#include "UGenericSignal.h"
+
 class FileReader{
 public:
         FileReader();
@@ -16,7 +18,7 @@ public:
         const class PARAMLIST *getParamListPtr() const;
         const class STATELIST *getStateListPtr() const;
         const class STATEVECTOR *getStateVectorPtr() const;
-        short readValue(int channel, unsigned long sample);
+        GenericSignal::value_type readValue(int channel, unsigned long sample);
         void readStateVector(unsigned long sample);
         const char* getFileName();
 
