@@ -419,9 +419,14 @@ TTask::ProcessBeginOfTrial( const TEventArgs& inArgs )
 {
   mSignalStatistics.Reset();
   ostringstream os;
-  os << "Run: " << mRunCount << "; "
+  os << "\nRun: " << mRunCount << "; "
      << "new trial: " << mTrialStatisticsForCurrentRun.Total() + 1 << '\n'
-     << "Target: " << inArgs.targetCode << endl;
+     << "Target: " << inArgs.targetCode;
+     if( inArgs.targetCode == 1 )
+       os << " (neg)";
+     else if( inArgs.targetCode == Parameter( "NumberTargets" ) )
+       os << " (pos)";
+  os << endl;
   mTaskLogVis.Send( os.str() );
 }
 
@@ -435,21 +440,23 @@ void
 TTask::ProcessEndOfClass( const TEventArgs& inArgs )
 {
   int targetCode = TRUE_TARGET_CODE( inArgs.targetCode );
+  ostringstream os;
   if( inArgs.resultCode != 0 )
   {
     mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
     mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
+    os << "Result: " << inArgs.resultCode << '\n';
   }
   else
   {
     mTrialStatisticsForCurrentRun.UpdateInvalid();
     mTrialStatisticsForAllRuns.UpdateInvalid();
+    os << "Trial invalid\n";
   }
   int hits = mTrialStatisticsForCurrentRun.Hits(),
       total = mTrialStatisticsForCurrentRun.Total(),
       invalid = mTrialStatisticsForCurrentRun.Invalid();
-  ostringstream os;
-  os << hits << " hits, " << total - hits - invalid << " missed\n";
+  os << hits << " hits, " << total - hits << " missed, " << invalid << " invalid\n";
   mTaskLogVis.Send( os.str() );
 }
 
@@ -458,7 +465,7 @@ TTask::ProcessStopBegin( const TEventArgs& )
 {
   time_t timePassed = ::time( NULL ) - mRunStart;
   ostringstream os;
-  os << "Run " << mRunCount << ": ";
+  os << "\nRun " << mRunCount << ": ";
   if( mTrialStatisticsForCurrentRun.Total() > 0 )
   {
     float hits = mTrialStatisticsForCurrentRun.Hits(),
@@ -466,7 +473,7 @@ TTask::ProcessStopBegin( const TEventArgs& )
           invalid = mTrialStatisticsForCurrentRun.Invalid(),
           bits = mTrialStatisticsForCurrentRun.Bits(),
           percentCorrect = 100.0 * hits / total;
-    os << hits << " Hits, " << total << " Total, " << invalid << " Invalid, "
+    os << hits << " Hits, " << invalid << " Invalid, " << total + invalid << " Total, "
        << fixed << setprecision( 2 )
        << percentCorrect << "% correct\n"
        << "  " << bits << " bits transferred,\n"
@@ -486,7 +493,7 @@ TTask::ProcessStopBegin( const TEventArgs& )
           invalid = mTrialStatisticsForCurrentRun.Invalid(),
           bits = mTrialStatisticsForAllRuns.Bits(),
           percentCorrect = 100.0 * hits / total;
-    os << hits << " Hits, " << total << " Total, " << invalid << " Invalid, "
+    os << hits << " Hits, " << invalid << " Invalid, " << total + invalid << " Total, "
        << setprecision( 2 )
        << percentCorrect << "% correct\n"
        << "  " << bits << " bits transferred,\n"
