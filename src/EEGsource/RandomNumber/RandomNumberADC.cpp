@@ -204,11 +204,11 @@ int     stateval, cursorpos, cursorposx;
  // we don't want to spit out data continously; thus, wait some time
  float sr = samplerate;
  if( sr < 1.0 ) sr = 1.0;
- BCITIME mCurtime=BCITIME::GetBCItime_ms();
- time2wait = 1e3 * signal->Elements() / sr - BCITIME::TimeDiff(mLasttime, mCurtime);
+ BCITIME curtime=BCITIME::GetBCItime_ms();
+ time2wait = 1e3 * signal->Elements() / sr - ( curtime - mLasttime );
  if (time2wait < 0) time2wait = 0;
  ::Sleep(time2wait);
- mLasttime = mCurtime;
+ mLasttime = BCITIME::GetBCItime_ms();
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
  noisevalrange=noisemaxamplitude-noiseminamplitude;
