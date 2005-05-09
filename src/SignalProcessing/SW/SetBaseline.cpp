@@ -44,8 +44,12 @@ void
 TSetBaseline::Preflight( const SignalProperties& inSignalProperties,
                                SignalProperties& outSignalProperties ) const
 {
-  PreflightCondition(
-    Parameter( "BaseChList" )->GetNumValues() <= inSignalProperties.Channels() );
+  if( Parameter( "BaseChList" )->GetNumValues() != inSignalProperties.Channels() )
+    bcierr << "The number of BaseChList entries "
+           << "(currently " << Parameter( "BaseChList" )->GetNumValues() << ") "
+           << "must match the number of input channels to the SetBaseline filter "
+           << "(currently " << inSignalProperties.Channels() << ")"
+           << endl;
 
   State( baselineStateName );
   outSignalProperties = inSignalProperties;
