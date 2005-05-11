@@ -80,6 +80,15 @@ namespace CFGID
 
       // Memo options
       numLines,
+
+      // Label lists
+      channelLabels,
+      groupLabels,
+      xAxisLabels,
+      yAxisLabels,
+      // Marker lists
+      xAxisMarkers,
+      yAxisMarkers,
   };
 };
 // Backward compatibility.
