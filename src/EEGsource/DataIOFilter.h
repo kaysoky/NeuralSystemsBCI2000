@@ -45,9 +45,11 @@ class DataIOFilter: public GenericFilter
   std::ofstream          mOutputFile;
   bool                   mVisualizeEEG,
                          mVisualizeRoundtrip;
+  int                    mVisualizeSourceDecimation;
   GenericVisualization   mEEGVis,
                          mRoundtripVis;
-  GenericSignal          mRoundtripSignal;
+  GenericSignal          mDecimatedSignal,
+                         mRoundtripSignal;
   mutable GenericSignal  mRestingSignal;
 };
 

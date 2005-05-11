@@ -38,6 +38,7 @@ static const char* bciDataExtension = ".dat",
 DataIOFilter::DataIOFilter()
 : mADC( GenericFilter::PassFilter<GenericADC>() ),
   mVisualizeEEG( false ),
+  mVisualizeSourceDecimation( 1 ),
   mVisualizeRoundtrip( false ),
   mEEGVis( SOURCEID::EEGDISP, VISTYPE::GRAPH ),
   mRoundtripVis( SOURCEID::ROUNDTRIP, VISTYPE::GRAPH ),
@@ -213,14 +214,19 @@ DataIOFilter::Initialize()
 
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
+  mVisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
   if( mVisualizeEEG )
   {
     mEEGVis.Send( CFGID::WINDOWTITLE, "Source Signal" );
     int numSamplesInDisplay = ( Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" ) )
-                               / Parameter( "VisualizeSourceDecimation" );
+                               / mVisualizeSourceDecimation;
     mEEGVis.Send( CFGID::NUMSAMPLES, numSamplesInDisplay );
+    ostringstream oss;
+    oss << ( 1.0 / Parameter( "SamplingRate" ) * mVisualizeSourceDecimation ) << "s";
+    mEEGVis.Send( CFGID::sampleUnit, oss.str() );
     mEEGVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "SourceMin" ) );
     mEEGVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "SourceMax" ) );
+    mEEGVis.Send( CFGID::valueUnit, string( Parameter( "SourceChGain", 0, 0 ) ) + "uV" );
   }
 
   mVisualizeRoundtrip = ( Parameter( "VisualizeRoundtrip" ) == 1 );
@@ -411,7 +417,14 @@ DataIOFilter::Process( const GenericSignal* Input,
   mSignalBuffer = *Output;
 
   if( mVisualizeEEG )
-    mEEGVis.Send( Output );
+  {
+    if( mVisualizeSourceDecimation == 1 )
+      mEEGVis.Send( Output );
+    else
+      for( size_t j = 0; j < mDecimatedSignal.Channels(); ++j )
+        for( size_t i = 0; i < mDecimatedSignal.Elements(); ++i )
+          mDecimatedSignal( i, j ) = ( *Output )( i, j * mVisualizeSourceDecimation );
+  }
 }
 
 void
