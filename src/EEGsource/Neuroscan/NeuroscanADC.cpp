@@ -183,7 +183,6 @@ float LSB;
   PreflightCondition( Parameter( "SoftwareCh" ) == num_channels );
   PreflightCondition( Parameter( "SampleBlockSize" ) == blocksize );
   PreflightCondition( Parameter( "SamplingRate" ) == samplingrate );
-  // PreflightCondition( bitspersample == 16 );                            // currently, we only support 16 bit data
 
   // also cross check SourceChGain and SourceChOffset
   for (int ch=0; ch<Parameter( "SoftwareCh" ); ch++)
@@ -199,8 +198,22 @@ float LSB;
   /* The input signal will be ignored. */
 
   // Requested output signal properties.
+  SignalType outSignalType;
+  switch( bitspersample )
+  {
+    case 16:
+      outSignalType = SignalType::int16;
+      break;
+    case 32:
+      outSignalType = SignalType::int32;
+      break;
+    default:
+      bcierr << "Server reports unsupported data size "
+             << "(" << bitspersample << " bits per sample)"
+             << endl;
+  }
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), SignalType::int16 );
+       Parameter( "SoftwareCh" ), Parameter( "SampleBlockSize" ), outSignalType );
 }
 
 
@@ -390,62 +403,45 @@ bool          retval;
     }
  else if (pMsg->m_wCode == DataType_EegData)
     {
-    if ((pMsg->m_wRequest != DataTypeRaw16bit) && (pMsg->m_wRequest != DataTypeRaw32bit))
-       bcierr << "Unrecognized EEG data type." << endl;
-    // 32 bit data received
-    // for BCI2000, take bits 1-16 (no good plan yet what to do with bits 17-22)
-    if (pMsg->m_wRequest == DataTypeRaw32bit)
-       {
-       assert((int)(pMsg->m_dwSize) == (int)(num_channels+num_markerchannels)*blocksize*(bitspersample/8));
-       assert(samplingrate > 0);        // if -1, this means we have not received the info block prior to a data block
-       int *sample=(int *)pMsg->m_pBody, cur_sample;
-       // process raw 32 bit data
-       for (int samp=0; samp<blocksize; samp++)
-        {
-        for (int ch=0; ch<(num_channels+num_markerchannels); ch++)
-         {
-         // now, write all the samples into the output signal
-         if (((unsigned int)samp < signal->Elements()) && ((unsigned int)ch < signal->Channels()))
+      if (pMsg->m_dwSize != size_t((num_channels+num_markerchannels)*blocksize*(bitspersample/8)))
+        bcierr << "Inconsistent data message block size" << endl;
+      if( samplingrate <= 0 )
+        bcierr << "Received data block before info block" << endl;
+
+      switch( pMsg->m_wRequest )
+      {
+        case DataTypeRaw16bit:
+        case DataTypeRaw32bit:
+          {
+            const unsigned char* pData = reinterpret_cast<unsigned char*>( pMsg->m_pBody );
+            // we also write the event marker channel into a state variable
+            // in the current implementation of BCI2000, we can only have one event marker
+            // per sample block, not per sample
+            // let's use the event marker of the first sample for the whole sample block
+            if( num_markerchannels > 0 )
+              State( "NeuroscanEvent1" ) = pData[ num_channels * ( bitspersample / 8 ) ]; // mask out lower 8 bits
+
+            for( int sample = 0; sample < blocksize; ++sample )
             {
-            cur_sample=sample[samp*(num_channels+num_markerchannels)+ch];
-            if (cur_sample > +32767) cur_sample=+32767;         // simply saturate at the highest or smallest value
-            if (cur_sample < -32768) cur_sample=-32768;
-            signal->SetValue(ch, samp, (short)cur_sample);
+              for( int channel = 0; channel < num_channels; ++channel )
+              {
+                long value = 0;
+                for( int byte = 0; byte < bitspersample / 8; ++byte )
+                {
+                  value <<= 8;
+                  value |= *pData++;
+                }
+                signal->SetValue( channel, sample, value );
+              }
+              // Does the marker channels' bit width actually depend on the data bit width?
+              pData += num_markerchannels * ( bitspersample / 8 );
             }
-         }
-        }
-       // we also write the event marker channel into a state variable
-       // in the current implementation of BCI2000, we can only have one event marker
-       // per sample block, not per sample
-       // let's use the event marker of the first sample for the whole sample block
-       if (num_markerchannels > 0)
-          State("NeuroscanEvent1")=(unsigned char)(sample[num_channels]&0xFF); // mask out lower 8 bits
-       retval=true;
-       }
-    // 16 bit data received
-    if (pMsg->m_wRequest == DataTypeRaw16bit)
-       {
-       assert((int)(pMsg->m_dwSize) == (int)(num_channels+num_markerchannels)*blocksize*(bitspersample/8));
-       assert(samplingrate > 0);        // if -1, this means we have not received the info block prior to a data block
-       short *sample=(short *)pMsg->m_pBody;
-       // process raw 16 bit data
-       for (int samp=0; samp<blocksize; samp++)
-        {
-        for (int ch=0; ch<(num_channels+num_markerchannels); ch++)
-         {
-         // now, write all the samples into the output signal
-         if (((unsigned int)samp < signal->Elements()) && ((unsigned int)ch < signal->Channels()))
-            signal->SetValue(ch, samp, sample[samp*(num_channels+num_markerchannels)+ch]);
-         }
-        }
-       // we also write the event marker channel into a state variable
-       // in the current implementation of BCI2000, we can only have one event marker
-       // per sample block, not per sample
-       // let's use the event marker of the first sample for the whole sample block
-       if (num_markerchannels > 0)
-          State("NeuroscanEvent1")=(unsigned char)(sample[num_channels]&0xFF); // mask out lower 8 bits
-       retval=true;
-       }
+          }
+          break;
+        default:
+           bcierr << "Unrecognized EEG data type." << endl;
+      }
+      retval = true;
     }
 
  return(retval);
