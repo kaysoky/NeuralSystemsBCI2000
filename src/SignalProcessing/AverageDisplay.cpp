@@ -2,8 +2,10 @@
 #pragma hdrstop
 
 #include "AverageDisplay.h"
+#include "MeasurementUnits.h"
 #include "defines.h"
 #include "Color.h"
+#include "Label.h"
 #include <vector>
 #include <map>
 
@@ -24,6 +26,13 @@ AverageDisplay::AverageDisplay()
       "1 Channel%201 "
       "2 Channel%202 "
         "0 0 0 // Channels and display names for average display",
+   "Visualize matrix AvgDisplayMarkers= 5 1 "
+      "TaskBegin "
+      "FeedbackBegin "
+      "FeedbackEnd "
+      "BaseBegin "
+      "BaseEnd "
+        "% % % // Time-valued parameters that will be indicated by markers",
  END_PARAMETER_DEFINITIONS
 }
 
@@ -37,6 +46,7 @@ AverageDisplay::Preflight( const SignalProperties& inProperties, SignalPropertie
       Parameter( "AvgDisplayCh", i, 0 ) > 0
       && Parameter( "AvgDisplayCh", i, 0 ) <= inProperties.Channels()
     );
+  PreflightCondition( Parameter( "SamplingRate" ) > 0 );
   State( "TargetCode" );
   outProperties = inProperties;
 }
@@ -53,35 +63,53 @@ AverageDisplay::Initialize()
   mBaselines.clear();
   mBaselineSamples.clear();
 #endif // SET_BASELINE
+  Labellist markerLabels;
+  for( size_t i = 0; i < Parameter( "AvgDisplayMarkers" )->GetNumRows(); ++i )
+  {
+    string markerName = string( Parameter( "AvgDisplayMarkers", i, 0 ) );
+    int position =
+      MeasurementUnits::ReadAsTime( OptionalParameter( -1, markerName ) )
+                                               * Parameter( "SampleBlockSize" );
+    if( position >= 0 )
+      markerLabels.push_back( Label( position, markerName ) );
+  }
+
   size_t numChannels = Parameter( "AvgDisplayCh" )->GetNumValuesDimension1();
   mPowerSums.resize( maxPower + 1, vector<vector<vector<float> > >( numChannels ) );
   for( size_t i = 0; i < numChannels; ++i )
   {
-     mVisualizations.push_back( GenericVisualization( SOURCEID::Average + i, VISTYPE::GRAPH ) );
-     GenericVisualization& vis = mVisualizations[ i ];
+    mVisualizations.push_back( GenericVisualization( SOURCEID::Average + i, VISTYPE::GRAPH ) );
+    GenericVisualization& vis = mVisualizations[ i ];
 
-     string windowTitle = ( const char* )Parameter( "AvgDisplayCh", i, 1 );
-     if( windowTitle == "" )
-       windowTitle = "unknown";
-     windowTitle += " Average";
-     vis.Send( CFGID::WINDOWTITLE, windowTitle.c_str() );
-     // Note min and max value are interchanged to account for EEG display direction.
-     vis.Send( CFGID::MINVALUE, 50 );
-     vis.Send( CFGID::MAXVALUE, -50 );
-     vis.Send( CFGID::NUMSAMPLES, 0 );
-     vis.Send( CFGID::graphType, CFGID::polyline );
+    string windowTitle = string( Parameter( "AvgDisplayCh", i, 1 ) );
+    if( windowTitle == "" )
+      windowTitle = "unknown";
+    windowTitle += " Average";
+    vis.Send( CFGID::WINDOWTITLE, windowTitle );
+    // Note min and max value are interchanged to account for EEG display direction.
+    vis.Send( CFGID::MINVALUE, 50 );
+    vis.Send( CFGID::MAXVALUE, -50 );
+    vis.Send( CFGID::NUMSAMPLES, 0 );
+    vis.Send( CFGID::graphType, CFGID::polyline );
 
-     Colorlist channelColors;
-     channelColors.resize( numChannels );
-     const size_t numColors = sizeof( sChannelColors ) / sizeof( *sChannelColors );
-     for( size_t i = 0; i < numChannels; ++i )
-       channelColors[ i ] = sChannelColors[ i % numColors ];
-     vis.Send( CFGID::channelColors, channelColors );
+    ostringstream oss;
+    oss << ( 1.0 / Parameter( "SamplingRate" ) ) << "s";
+    vis.Send( CFGID::sampleUnit, oss.str() );
 
-     vis.Send( CFGID::channelGroupSize, 0 );
-     vis.Send( CFGID::showBaselines, 1 );
+    if( !markerLabels.empty() )
+      vis.Send( CFGID::xAxisMarkers, markerLabels );
 
-     mChannelIndices.push_back( Parameter( "AvgDisplayCh", i, 0 ) - 1 );
+    Colorlist channelColors;
+    channelColors.resize( numChannels );
+    const size_t numColors = sizeof( sChannelColors ) / sizeof( *sChannelColors );
+    for( size_t i = 0; i < numChannels; ++i )
+      channelColors[ i ] = sChannelColors[ i % numColors ];
+    vis.Send( CFGID::channelColors, channelColors );
+
+    vis.Send( CFGID::channelGroupSize, 0 );
+    vis.Send( CFGID::showBaselines, 1 );
+
+    mChannelIndices.push_back( Parameter( "AvgDisplayCh", i, 0 ) - 1 );
   }
   
   mSignalOfCurrentRun.resize( numChannels );
@@ -171,8 +199,10 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
         targetCodesToIndex[ mTargetCodes[ target ] ] = target;
 
       GenericSignal average( numTargets, numSamples );
+      Labellist     labels;
       for( map<int, int>::const_iterator target = targetCodesToIndex.begin();
                                    target != targetCodesToIndex.end(); ++target )
+      {
         for( size_t sample = 0; sample < numSamples; ++sample )
           // If everything behaves as we believe it will,
           // a division by zero is impossible.
@@ -180,6 +210,14 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
           average( target->second, sample ) =
             mPowerSums[ 1 ][ channel ][ target->second ][ sample ] /
                           mPowerSums[ 0 ][ channel ][ target->second ][ sample ];
+        ostringstream oss;
+        oss << "Target " << target->first;
+        string targetName = string( OptionalParameter( "TargetNames", target->first ) );
+        if( targetName != "" )
+          oss << " (" << targetName << ")";
+        labels.push_back( Label( target->second, oss.str() ) );
+      }
+      mVisualizations[ channel ].Send( CFGID::channelLabels, labels );
       mVisualizations[ channel ].Send( &average );
     }
   }
@@ -195,12 +233,14 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
     }
 #ifdef SET_BASELINE
     if( OptionalState( "BaselineInterval" ) || OptionalState( "Baseline" ) )
+    {
       for( size_t i = 0; i < mChannelIndices.size(); ++i )
       {
         mBaselineSamples[ i ] += signal.Elements();
         for( size_t j = 0; j < signal.Elements(); ++j )
           mBaselines[ i ] += signal( mChannelIndices[ i ], j );
       }
+    }
 #endif // SET_BASELINE
   }
   mLastTargetCode = targetCode;
