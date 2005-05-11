@@ -63,8 +63,8 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // **************************************************************************
 int TRIALSEQUENCE::Initialize(USERDISPLAY *new_userdisplay)
 {
-  ontime = MeasurementUnits::ReadAsTime( OptionalParameter( "OnTime", 10 ) );
-  offtime = MeasurementUnits::ReadAsTime( OptionalParameter( "OffTime", 3 ) );
+  ontime = MeasurementUnits::ReadAsTime( OptionalParameter( 10, "OnTime" ) );
+  offtime = MeasurementUnits::ReadAsTime( OptionalParameter( 3, "OffTime" ) );
 
   // reset the trial's sequence
   ResetTrialSequence();
