@@ -124,7 +124,7 @@ void RDAClientADC::Preflight( const SignalProperties&,
 // **************************************************************************
 void RDAClientADC::Initialize()
 {
-  hostName = ( const char* )Parameter( "HostName" );
+  hostName = string( Parameter( "HostName" ) );
 
   inputQueue.open( hostName.c_str() );
   if( !inputQueue.is_open() )
