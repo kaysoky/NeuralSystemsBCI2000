@@ -38,6 +38,7 @@
 #include <map>
 #include <algorithm>
 #include "Color.h"
+#include "Label.h"
 #include "UGenericSignal.h"
 
 #include "UGenericVisualization.h"
@@ -233,6 +234,10 @@ class VISUAL
     bool ToggleBaselines_Enabled() const;
     bool ToggleBaselines_Checked() const;
 
+    void ToggleChannelLabels();
+    bool ToggleChannelLabels_Enabled() const;
+    bool ToggleChannelLabels_Checked() const;
+
     void ToggleColor();
     bool ToggleColor_Enabled() const;
     bool ToggleColor_Checked() const;
@@ -280,6 +285,7 @@ class VISUAL
     bool          mShowCursor,
                   mWrapAround,
                   mShowBaselines,
+                  mShowChannelLabels,
                   mDisplayColors;
     size_t        mNumSamples,
                   mSampleCursor,
@@ -289,7 +295,15 @@ class VISUAL
                   mChannelGroupSize;
     float         mMinValue,
                   mMaxValue;
+    std::string   mSampleUnit,
+                  mValueUnit,
+                  mChannelUnit;
+    float         mUnitsPerSample,
+                  mUnitsPerValue,
+                  mUnitsPerChannel;
     Colorlist     mChannelColors;
+    Labellist     mChannelLabels,
+                  mXAxisMarkers;
     GenericSignal mData;
 
    // VCL/Win32 Graphics details.

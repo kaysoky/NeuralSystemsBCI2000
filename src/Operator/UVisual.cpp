@@ -42,6 +42,7 @@
 #include <math.h>
 #include <algorithm>
 #include <sstream>
+#include <iomanip>
 #include <vcl.h>
 #include <grids.hpp>
 
@@ -289,10 +290,14 @@ VISUAL::Graph::Graph( id_type inSourceID )
   mNumDisplayChannels( 0 ),
   mBottomGroup( 0 ),
   mShowBaselines( false ),
+  mShowChannelLabels( false ),
   mDisplayColors( true ),
   mChannelGroupSize( 1 ),
   mMinValue( cMinValueDefault ),
   mMaxValue( cMaxValueDefault ),
+  mUnitsPerSample( 1 ),
+  mUnitsPerChannel( 1 ),
+  mUnitsPerValue( 1 ),
   mDisplayMode( polyline ),
   mRedrawRgn( ::CreateRectRgn( 0, 0, 0, 0 ) ),
   mpOffscreenBitmap( new Graphics::TBitmap ),
@@ -342,6 +347,39 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
   }
   inConfig.Get( CFGID::showBaselines, mShowBaselines );
   inConfig.Get( CFGID::channelColors, mChannelColors );
+
+  string unit;
+  istringstream iss;
+  if( inConfig.Get( CFGID::sampleUnit, unit ) )
+  {
+    iss.clear();
+    iss.str( unit );
+    mUnitsPerSample = 1;
+    mSampleUnit = "";
+    iss >> mUnitsPerSample >> mSampleUnit;
+  }
+
+  if( inConfig.Get( CFGID::channelUnit, unit ) )
+  {
+    iss.clear();
+    iss.str( unit );
+    mUnitsPerChannel = 1;
+    mChannelUnit = "";
+    iss >> mUnitsPerChannel >> mChannelUnit;
+  }
+
+  if( inConfig.Get( CFGID::valueUnit, unit ) )
+  {
+    iss.clear();
+    iss.str( unit );
+    mUnitsPerValue = 1;
+    mValueUnit = "";
+    iss >> mUnitsPerValue >> mValueUnit;
+  }
+
+  inConfig.Get( CFGID::xAxisMarkers, mXAxisMarkers );
+  inConfig.Get( CFGID::channelLabels, mChannelLabels );
+  mShowChannelLabels = !mChannelLabels.empty();
 
   // Sanity checks.
   if( mMinValue == mMaxValue )
@@ -495,6 +533,7 @@ struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
   { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
   { ChooseColors, ChooseColors_Enabled, NULL, "Choose Channel Colors..." },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
+  { ToggleChannelLabels, ToggleChannelLabels_Enabled, ToggleChannelLabels_Checked, "Show Legend" },
 };
 
 void
@@ -564,6 +603,25 @@ bool
 VISUAL::Graph::ToggleBaselines_Checked() const
 {
   return mShowBaselines;
+}
+
+void
+VISUAL::Graph::ToggleChannelLabels()
+{
+  mShowChannelLabels = !mShowChannelLabels;
+  form->Invalidate();
+}
+
+bool
+VISUAL::Graph::ToggleChannelLabels_Enabled() const
+{
+  return !mChannelLabels.empty();
+}
+
+bool
+VISUAL::Graph::ToggleChannelLabels_Checked() const
+{
+  return mShowChannelLabels;
 }
 
 void
@@ -781,6 +839,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
     backgroundBrush = 0,
     cursorBrush,
     axisBrush,
+    markerBrush,
     labelFont,
     baselinePen,
     numGdiObj
@@ -811,9 +870,10 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   const TColor axisColor = clAqua;
   const axisWidth = 2;
   const tickWidth = axisWidth, tickLength = 4;
-  const xDivision = 50, xStart = xDivision;
   gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
   gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, axisColor );
+  const TColor markerColor = clWhite;
+  gdi[ markerBrush ] = ::CreateSolidBrush( markerColor );
 
   const fontHeight = cLabelWidth / 2;
   const labelColor = axisColor;
@@ -1010,8 +1070,14 @@ VISUAL::Graph::FormPaint( TObject* Sender )
       assert( false );
   }
   // Ticks on the x axis.
+  float displayLength = mNumSamples * mUnitsPerSample,
+        scale = ::pow( 10, ::floor( ::log10( displayLength ) + 0.5 ) ),
+        xDivision = scale / mUnitsPerSample / 5,
+        xStart = xDivision;
+  if( xDivision < 1 )
+    xDivision = 1;
   int nextLabelPos = mDataRect.left;
-  for( size_t j = xStart; j < mNumSamples; j += xDivision )
+  for( float j = xStart; j < float( mNumSamples ); j += xDivision )
   {
     int tickX = SampleRight( j );
     RECT tickRect =
@@ -1025,11 +1091,12 @@ VISUAL::Graph::FormPaint( TObject* Sender )
     if( tickX > nextLabelPos )
     {
       tickRect.top += 2 * axisWidth;
-      AnsiString label = IntToStr( j + cSampleBase );
-      ::DrawText( dc, label.c_str(), -1, &tickRect,
+      ostringstream label;
+      label << setprecision( 6 ) << ' ' << j * mUnitsPerSample << mSampleUnit << ' ';
+      ::DrawText( dc, label.str().c_str(), -1, &tickRect,
          DT_TOP | DT_SINGLELINE | DT_CENTER | DT_NOCLIP );
       SIZE textSize;
-      ::GetTextExtentPoint32( dc, label.c_str(), label.Length(), &textSize );
+      ::GetTextExtentPoint32( dc, label.str().c_str(), label.str().length(), &textSize );
       nextLabelPos = tickX + textSize.cx;
     }
   }
@@ -1051,6 +1118,38 @@ VISUAL::Graph::FormPaint( TObject* Sender )
     formRect.bottom
   };
   ::FillRect( dc, &yAxis, gdi[ axisBrush ] );
+
+  // Draw markers.
+  for( size_t i = 0; i < mXAxisMarkers.size(); ++i )
+  {
+    int markerX = SampleRight( mXAxisMarkers[ i ].Address() );
+    RECT markerBar =
+    {
+      markerX - axisWidth / 2,
+      mDataHeight - 4 * axisWidth,
+      markerX + axisWidth / 2,
+      mDataHeight - 1
+    };
+    ::FillRect( dc, &markerBar, gdi[ markerBrush ] );
+  }
+
+  // Draw channel labels.
+  if( mShowChannelLabels )
+  {
+    ::SetBkColor( dc, clBlack );
+    ::SetBkMode( dc, OPAQUE );
+    RECT legendRect =
+    {
+      0, 0, 0, 0
+    };
+    for( size_t i = 0; i < mChannelLabels.size(); ++i )
+    {
+      ::SetTextColor( dc, ChannelColor( mChannelLabels[ i ].Address() ) );
+      legendRect.top += ::DrawText( dc, mChannelLabels[ i ].Text().c_str(),
+        mChannelLabels[ i ].Text().length(), &legendRect,
+        DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_EXTERNALLEADING );
+    }
+  }
 
   // Copy the data from the buffer onto the screen.
 #if TEST_UPDATE_REGIONS
