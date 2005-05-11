@@ -12,7 +12,7 @@
       obj\UGenericFilter.obj obj\UBCIError.obj obj\UEnvironment.obj 
       obj\AverageDisplay.obj obj\FFTFilter.obj obj\FFTLibWrap.obj obj\Color.obj 
       obj\MeasurementUnits.obj obj\MessageHandler.obj obj\TCPStream.obj 
-      obj\UFilterHandling.obj obj\UCoreMain.obj"/>
+      obj\UFilterHandling.obj obj\UCoreMain.obj obj\Label.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -23,7 +23,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..\..\shared;..\..\shared;..\..\shared;..;..;..\fftlib;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..;..;..;..\..\shared;..\..\shared;..\..\shared;..;..;..\fftlib;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -83,6 +83,7 @@
       <FILE FILENAME="..\..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UFilterHandling.cpp" FORMNAME="" UNITNAME="UFilterHandling" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UCoreMain.cpp" FORMNAME="fMain" UNITNAME="UCoreMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\Label.cpp" FORMNAME="" UNITNAME="Label" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
