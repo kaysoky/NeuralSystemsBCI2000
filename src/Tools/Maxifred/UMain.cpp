@@ -183,7 +183,7 @@ int     i, t;
   MainChart->Series[i]->Title="title";
   MainChart->Series[i]->SeriesColor=clBlack;
   for (t=0; t<display_samples; t++)
-   MainChart->Series[i]->AddXY(t, 0, "", clTeeColor);
+   MainChart->Series[i]->AddXY(t, 0, "", TColor( clTeeColor ));
   }
 
  initialized=true;
@@ -385,12 +385,10 @@ float   sum;
 // **************************************************************************
 void TfMain::Set_State(long samplestart, long sampleend, __int16 state, int setstatetype)
 {
+#if 0
 long    file_ptr, sampledummy, i;
 __int16 statetoset;
 STATEDESC       cur_state;
-
-
- return;
 
  if (sampleend < samplestart)
     {
@@ -411,6 +409,7 @@ STATEDESC       cur_state;
   }
 
  return;
+#endif
 }
 
 
@@ -660,8 +659,7 @@ STATEDESC       my_state;
  UpdateMainChart();
  UpdateStatusBar("< idle >");
 
- return;
-
+#if 0
  if (fp)
     {
     // seeking for given run
@@ -718,6 +716,7 @@ STATEDESC       my_state;
     UpdateMainChart();
     UpdateStatusBar("< idle >");
     }
+#endif
 }
 //---------------------------------------------------------------------------
 
@@ -971,8 +970,6 @@ int     x, i;
 void __fastcall TfMain::MainChartMouseMove(TObject *Sender,
       TShiftState Shift, int X, int Y)
 {
-long    xc;
-
  if (initialized)
     {
     // check if within chart area
@@ -980,7 +977,6 @@ long    xc;
        if ((Y > MainChart->ChartRect.Top) && (Y < MainChart->ChartRect.Bottom))
           if (selectrange == true)
              {
-             xc=X-MainChart->ChartRect.Left;
              if (selectrange_xcend != selectrange_xcstart)
                 TCanvas3DRectangle(selectrange_xcstart, selectrange_xcend);
              TCanvas3DRectangle(selectrange_xcstart, X);
