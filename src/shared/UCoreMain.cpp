@@ -660,6 +660,13 @@ TfMain::ApplicationIdleHandler( TObject*, bool& )
            << "terminating module"
            << endl;
   }
+  catch( const Exception& e )
+  {
+    BCIERR << "caught exception "
+           << e.Message.c_str() << ",\n"
+           << "terminating module"
+           << endl;
+  }
   Application->Terminate();
 }
 
