@@ -163,7 +163,7 @@ TTask::Preflight( const SignalProperties& inputProperties,
   for( size_t i = 0; i < Parameter( "Announcements" )->GetNumValuesDimension1(); ++i )
     for( size_t j = 0; j < Parameter( "Announcements" )->GetNumValuesDimension2(); ++j )
   {
-    string soundFile = static_cast<const char*>( Parameter( "Announcements", i, j ) );
+    string soundFile = string( Parameter( "Announcements", i, j ) );
     if( soundFile != "" )
     {
       if( preflightPlayer.AttachFile( soundFile.c_str() ) != TWavePlayer::noError )

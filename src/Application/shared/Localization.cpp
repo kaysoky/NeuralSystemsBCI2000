@@ -122,7 +122,7 @@ Localization::Preflight() const
   // entry does not constitute an error.
   // However, we emit a warning if the user requires a language that is
   // not present in the LocalizedStrings parameter.
-  string userLanguage = ( const char* )OptionalParameter( LANG_PARAM );
+  string userLanguage = string( OptionalParameter( LANG_PARAM ) );
   if( userLanguage != "" && userLanguage != DEFAULT_LANGUAGE )
   {
     const PARAM::labelIndexer& labels = Parameter( STRINGS_PARAM )->LabelsDimension1();
@@ -141,7 +141,7 @@ void
 Localization::Initialize()
 {
   LocalizedStrings().clear();
-  string userLanguage = ( const char* )OptionalParameter( LANG_PARAM );
+  string userLanguage = string( OptionalParameter( LANG_PARAM ) );
   if( userLanguage != ""
       && userLanguage != DEFAULT_LANGUAGE
       && Parameter( STRINGS_PARAM )->LabelsDimension1().Exists( userLanguage ) )
@@ -150,7 +150,7 @@ Localization::Initialize()
     const PARAM::labelIndexer& labels = Parameter( STRINGS_PARAM )->LabelsDimension2();
     int languageIndex = Parameter( STRINGS_PARAM )->LabelsDimension1()[ userLanguage ];
     for( size_t i = 0; i < numStrings; ++i )
-      LocalizedStrings()[ labels[ i ] ] = ( const char* )Parameter( STRINGS_PARAM, languageIndex, i );
+      LocalizedStrings()[ labels[ i ] ] = string( Parameter( STRINGS_PARAM, languageIndex, i ) );
   }
 }
 

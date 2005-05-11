@@ -7,6 +7,8 @@
 
 #include <assert>
 
+using namespace std;
+
 RegisterFilter( TTask, 3 );
 
 TTask::TTask()
@@ -94,22 +96,22 @@ void TTask::Preflight( const SignalProperties& inputProperties,
       break;
     case 2: // WAV
       {
-        std::string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+        string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
         bool genError = false;
         TWavePlayer testPlayer;
         for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
         {
-          std::string fileName = applicationPath + ( const char* )Parameter( "Sounds", "WAV", i );
+          string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
           TWavePlayer::Error err = testPlayer.AttachFile( fileName.c_str() );
           if( err == TWavePlayer::fileOpeningError )
               bcierr << "Could not open \""
                      << fileName
                      << "\" as a wave sound file"
-                     << std::endl;
+                     << endl;
           else if( err != TWavePlayer::noError )
           {
               bcierr << "Some general error prevents wave audio playback"
-                     << std::endl;
+                     << endl;
               genError = true;
           }
         }
@@ -133,10 +135,10 @@ void TTask::Initialize()
      break;
    case 2: // WAV
      {
-      std::string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+      string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
       for( size_t i = 0; i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
       {
-        std::string fileName = applicationPath + ( const char* )Parameter( "Sounds", "WAV", i );
+        string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
         wavePlayers[ Parameter( "Sounds" )->LabelsDimension2()[ i ] ].AttachFile( fileName.c_str() );
       }
      }

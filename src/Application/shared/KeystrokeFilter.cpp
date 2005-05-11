@@ -40,7 +40,7 @@ void
 KeystrokeFilter::Preflight( const SignalProperties& inSignalProperties,
                                    SignalProperties& outSignalProperties ) const
 {
-  string keystrokeStateName = ( const char* )Parameter( "KeystrokeStateName" );
+  string keystrokeStateName = string( Parameter( "KeystrokeStateName" ) );
   if( keystrokeStateName != "" )
     State( keystrokeStateName.c_str() );
   outSignalProperties = inSignalProperties;
@@ -49,7 +49,7 @@ KeystrokeFilter::Preflight( const SignalProperties& inSignalProperties,
 void
 KeystrokeFilter::Initialize()
 {
-  mKeystrokeStateName = ( const char* )Parameter( "KeystrokeStateName" );
+  mKeystrokeStateName = string( Parameter( "KeystrokeStateName" ) );
   if( mKeystrokeStateName != "" )
   {
     mPreviousStateValue = State( mKeystrokeStateName.c_str() );
