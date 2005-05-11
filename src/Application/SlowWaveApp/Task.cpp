@@ -94,6 +94,8 @@ TTask::TTask()
       " 1.9s 0 0 // Begin of Baseline",
     "UsrTask float BaseEnd= 2.0s"
       " 2.0s 0 0 // End of Baseline in s",
+    "UsrTask stringlist TargetNames= 3 null neg pos"
+      " % % % // Display names for targets including null target",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -131,7 +133,7 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
   PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
 
   // Initialize unit time to the length of a block.
-  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / OptionalParameter( "SampleBlockSize", 1 ) );
+  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / OptionalParameter( 1, "SampleBlockSize" ) );
   int taskBegin = MeasurementUnits::ReadAsTime( Parameter( "TaskBegin" ) ),
       feedbackBegin = MeasurementUnits::ReadAsTime( Parameter( "FeedbackBegin" ) ),
       feedbackEnd = MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) ),
@@ -422,10 +424,9 @@ TTask::ProcessBeginOfTrial( const TEventArgs& inArgs )
   os << "\nRun: " << mRunCount << "; "
      << "new trial: " << mTrialStatisticsForCurrentRun.Total() + 1 << '\n'
      << "Target: " << inArgs.targetCode;
-     if( inArgs.targetCode == 1 )
-       os << " (neg)";
-     else if( inArgs.targetCode == Parameter( "NumberTargets" ) )
-       os << " (pos)";
+  string targetName = string( OptionalParameter( "TargetNames", TRUE_TARGET_CODE( inArgs.targetCode ) ) );
+  if( targetName != "" )
+    os << " (" << targetName << ")";
   os << endl;
   mTaskLogVis.Send( os.str() );
 }
@@ -441,17 +442,17 @@ TTask::ProcessEndOfClass( const TEventArgs& inArgs )
 {
   int targetCode = TRUE_TARGET_CODE( inArgs.targetCode );
   ostringstream os;
-  if( inArgs.resultCode != 0 )
-  {
-    mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
-    mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
-    os << "Result: " << inArgs.resultCode << '\n';
-  }
-  else
+  if( OptionalState( 0, "Artifact" ) )
   {
     mTrialStatisticsForCurrentRun.UpdateInvalid();
     mTrialStatisticsForAllRuns.UpdateInvalid();
     os << "Trial invalid\n";
+  }
+  else
+  {
+    mTrialStatisticsForCurrentRun.Update( targetCode, inArgs.resultCode );
+    mTrialStatisticsForAllRuns.Update( targetCode, inArgs.resultCode );
+    os << "Result: " << inArgs.resultCode << '\n';
   }
   int hits = mTrialStatisticsForCurrentRun.Hits(),
       total = mTrialStatisticsForCurrentRun.Total(),
