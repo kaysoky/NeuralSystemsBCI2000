@@ -95,33 +95,3 @@ Colorlist::Colorlist( const RGBColor* values )
     push_back( *c++ );
 }
 
-void
-Colorlist::ReadFromStream( std::istream& is )
-{
-  clear();
-  is >> ws;
-  if( is.peek() == beginOfList )
-    is.get();
-  else
-    is.setstate( ios::failbit );
-  is >> ws;
-  
-  RGBColor color;
-  while( is.peek() != endOfList && is >> color >> ws )
-    push_back( color );
-
-  if( is.peek() == endOfList )
-    is.get();
-  else
-    is.setstate( ios::failbit );
-}
-
-void
-Colorlist::WriteToStream( std::ostream& os ) const
-{
-  os << beginOfList;
-  for( const_iterator i = begin(); i != end(); ++i )
-    os << *i << " ";
-  os << endOfList;
-}
-

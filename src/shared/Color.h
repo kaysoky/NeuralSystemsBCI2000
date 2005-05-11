@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <vector>
+#include "VisList.h"
 
 enum ColorNames
 {
@@ -56,23 +57,17 @@ class RGBColor
     int mValue;
 };
 
-class Colorlist: public std::vector<RGBColor>
+class Colorlist: public VisList<RGBColor>
 {
   public:
     enum
     {
       End = NullColor,
     };
-    
     Colorlist() {}
     // Create a color list from a RGBColor array. The last entry in the array
     // must be Colorlist::End.
     Colorlist( const RGBColor* );
-    void WriteToStream( std::ostream& ) const;
-    void ReadFromStream( std::istream& );
-  private:
-    static const char beginOfList = '{',
-                      endOfList = '}';
 };
 
 inline std::ostream& operator<<( std::ostream& s, const RGBColor& c )
