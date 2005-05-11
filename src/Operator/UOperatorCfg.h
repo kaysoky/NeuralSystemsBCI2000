@@ -46,7 +46,17 @@ public:		// User declarations
         void    RenderParameters( const AnsiString& section );
         void    RenderParameter( PARAM* );
         void    UpdateParameters();
+        
+        typedef void ( *Notification )();
+        void          OnParameterChange( Notification n )
+                      { mOnParameterChange = n; }
+        Notification  OnParameterChange() const
+                      { return mOnParameterChange; }
+        void          ParameterChange()
+                      { if( mOnParameterChange ) mOnParameterChange(); }
+
 private:
+        Notification mOnParameterChange;
         PARAMLIST*   paramlist;
         PREFERENCES* preferences;
         typedef std::map<std::string, ParamDisplay> DisplayContainer;

@@ -88,6 +88,7 @@ class TfMain : public TForm
   void QuitOperator();
   void UpdateDisplay();
   void SetFunctionButtons();
+  static void UserChangedParameters();
 
  private:
   PARAMLIST        mParameters;

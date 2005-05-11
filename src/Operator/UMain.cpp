@@ -164,6 +164,21 @@ TfMain::UpdateState( const char* inName, unsigned short inValue )
   return ERR_NOERR;
 }
 
+void
+TfMain::UserChangedParameters()
+{
+  switch( fMain->mSysstatus.SystemState )
+  {
+    case SYSSTATUS::Resting:
+      fMain->EnterState( SYSSTATUS::RestingParamsModified );
+      break;
+
+    case SYSSTATUS::Suspended:
+      fMain->EnterState( SYSSTATUS::SuspendedParamsModified );
+      break;
+  }
+}
+
 // Some initialization code requires a fully initialized application on the VCL
 // level, and thus cannot go into the TfMain constructor.
 // Instead, it is performed inside an idle handler that detaches itself from
@@ -310,6 +325,7 @@ void
 TfMain::EnterState( SYSSTATUS::State inState )
 {
   int transition = TRANSITION( mSysstatus.SystemState, inState );
+  SYSSTATUS::State prevState = mSysstatus.SystemState;
   mSysstatus.SystemState = inState;
   switch( transition )
   {
@@ -336,6 +352,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       }
       break;
 
+    case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Information ):
     case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Initialization ):
       BroadcastParameters();
       BroadcastEndOfParameter();
@@ -350,12 +367,14 @@ TfMain::EnterState( SYSSTATUS::State inState )
       mSyslog.AddSysLogEntry( "Operator set configuration" );
       break;
 
+    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Resting ):
       break;
 
-    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Resting ):
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Resting ):
+    case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Resting ):
+    case TRANSITION( SYSSTATUS::RestingParamsModified, SYSSTATUS::Resting ):
       BroadcastParameters();
       BroadcastEndOfParameter();
       mSyslog.AddSysLogEntry( "Operator set configuration" );
@@ -404,18 +423,31 @@ TfMain::EnterState( SYSSTATUS::State inState )
       BroadcastParameters(); // no EndOfParameter
       break;
 
-    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::SuspendedParamsModified ):
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::RestingParamsModified ):
       break;
 
+#if 0
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Suspended ):
+      break;
+#endif
+
+    case TRANSITION( SYSSTATUS::Publishing, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Fatal ):
-    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::RestingParamsModified, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::RunningInitiated, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Running, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::SuspendInitiated, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Fatal ):
+    case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Fatal, SYSSTATUS::Fatal ):
       break;
 
     default:
       bcierr << "Unexpected system state transition: "
-             << mSysstatus.SystemState << " -> " << inState
+             << prevState << " -> " << inState
              << endl;
   }
   UpdateDisplay();
@@ -445,8 +477,6 @@ TfMain::QuitOperator()
 }
 
 // This function is called after each received message has been processed.
-// To avoid unnecessary redraws of controls (flicker), we check for changed
-// captions before actually assigning them.
 void
 TfMain::UpdateDisplay()
 {
@@ -469,8 +499,10 @@ TfMain::UpdateDisplay()
       statusText = "Initialization Phase ...";
       break;
     case SYSSTATUS::Resting:
+    case SYSSTATUS::RestingParamsModified:
     case SYSSTATUS::SuspendInitiated:
     case SYSSTATUS::Suspended:
+    case SYSSTATUS::SuspendedParamsModified:
       windowCaption += " - " TXT_OPERATOR_SUSPENDED " " + timeElapsed.FormatString( "nn:ss" ) + " s";
       statusText = TXT_OPERATOR_SUSPENDED;
       break;
@@ -515,9 +547,11 @@ TfMain::UpdateDisplay()
       quitEnabled = true;
       break;
     case SYSSTATUS::Resting:
+      runSystemEnabled = true;
+      /* no break */
+    case SYSSTATUS::RestingParamsModified:
       configEnabled = true;
       setConfigEnabled = true;
-      runSystemEnabled = true;
       quitEnabled = true;
       break;
     case SYSSTATUS::SuspendInitiated:
@@ -526,10 +560,12 @@ TfMain::UpdateDisplay()
       quitEnabled = true;
       break;
     case SYSSTATUS::Suspended:
+      runSystemEnabled = true;
+      /* no break */
+    case SYSSTATUS::SuspendedParamsModified:
       runSystemCaption = "Resume";
       configEnabled = true;
       setConfigEnabled = true;
-      runSystemEnabled = true;
       quitEnabled = true;
       break;
     case SYSSTATUS::RunningInitiated:
@@ -543,6 +579,8 @@ TfMain::UpdateDisplay()
       quitEnabled = true;
       break;
   }
+  // To avoid unnecessary redraws of controls (flicker), we check for changed
+  // captions before actually assigning them.
   if( bRunSystem->Caption != runSystemCaption )
     bRunSystem->Caption = runSystemCaption;
   if( bConfig->Enabled != configEnabled )
@@ -793,6 +831,7 @@ void __fastcall TfMain::bRunSystemClick( TObject* )
 void __fastcall TfMain::bConfigClick( TObject* )
 {
   fPreferences->preferences = &mPreferences;
+  fConfig->OnParameterChange( UserChangedParameters );
   fConfig->Initialize( &mParameters, &mPreferences );
   fConfig->Show();
 }
@@ -810,7 +849,9 @@ void __fastcall TfMain::bSetConfigClick( TObject* )
       EnterState( SYSSTATUS::Initialization );
       break;
     case SYSSTATUS::Resting:
+    case SYSSTATUS::RestingParamsModified:
     case SYSSTATUS::Suspended:
+    case SYSSTATUS::SuspendedParamsModified:
       EnterState( SYSSTATUS::Resting );
       break;
   }

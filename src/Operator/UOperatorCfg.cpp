@@ -145,9 +145,16 @@ void TfConfig::RenderParameter( PARAM *inParam )
 // go through the parameters on the screen and update the parameters using the data on the screen
 void TfConfig::UpdateParameters()
 {
+  bool modified = false;
   for( DisplayContainer::const_iterator i = mParamDisplays.begin();
          i != mParamDisplays.end(); ++i )
-    i->second.WriteValuesTo( ( *paramlist )[ i->first ] );
+    if( i->second.Modified() )
+    {
+      i->second.WriteValuesTo( ( *paramlist )[ i->first ] );
+      modified = true;
+    }
+  if( modified )
+    ParameterChange();
 }
 
 void __fastcall TfConfig::CfgTabControlChange(TObject *Sender)
@@ -207,7 +214,10 @@ bool    ret;
     if (!ret)
        Application->MessageBox("Error reading parameter file", "Error", MB_OK);
     else
+       {
        RenderParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]);
+       ParameterChange();
+       }
     }
  else
     return;
@@ -233,4 +243,6 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject *Sender)
  Application->MessageBox("The parameters that you select here will NOT be loaded !", "Reminder", MB_OK);
  fShowParameters->ShowModal();
 }
+
+
 

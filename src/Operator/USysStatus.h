@@ -26,10 +26,12 @@ struct SYSSTATUS
     Information,
     Initialization,
     Resting,
+    RestingParamsModified,
     RunningInitiated,
     Running,
     SuspendInitiated,
     Suspended,
+    SuspendedParamsModified,
     Fatal,
     numStates
   } SystemState;
