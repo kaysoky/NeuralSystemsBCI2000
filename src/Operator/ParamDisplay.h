@@ -44,6 +44,7 @@ class ParamDisplay  // This class is the interface to the outside world.
 
     void WriteValuesTo( PARAM& ) const;
     void ReadValuesFrom( const PARAM& );
+    bool Modified() const;
 
     enum
     {
@@ -90,23 +91,33 @@ class ParamDisplay  // This class is the interface to the outside world.
 
         virtual void WriteValuesTo( PARAM& ) const;
         virtual void ReadValuesFrom( const PARAM& );
+        bool Modified() const { return mModified; }
+
+      protected:
+        void AddControl( TControl* c )                { mControls.insert( c ); }
+        void __fastcall OnContentChange( TObject* = NULL ) { mModified = true; }
 
       private:
+        typedef std::set<TControl*>        ControlContainer;
+        typedef ControlContainer::iterator ControlIterator;
+        ControlContainer                   mControls;
+
+        bool       mModified;
         int        mTop,
                    mLeft;
         TTrackBar* mpUserLevel;
-
-      protected:
-        std::set<TControl*> mControls;
-
     };
 
+    // This is the base class for all displays where there is a separate label
+    // holding the "comment" part of the parameter.
     class SeparateComment : public DisplayBase
     {
       protected:
         SeparateComment( const ParsedComment&, TWinControl* );
     };
 
+    // This is the base class for all displays that contain an edit field
+    // holding parameter values.
     class SingleEntryEdit : public SeparateComment
     {
       public:
@@ -119,6 +130,8 @@ class ParamDisplay  // This class is the interface to the outside world.
         TEdit*  mpEdit;
     };
 
+    // This is the base class for all displays that contain a button beside
+    // the edit field.
     class SingleEntryButton : public SingleEntryEdit
     {
       public:

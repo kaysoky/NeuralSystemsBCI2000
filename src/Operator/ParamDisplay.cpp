@@ -136,6 +136,12 @@ ParamDisplay::ReadValuesFrom( const PARAM& p )
   mpDisplay->ReadValuesFrom( p );
 }
 
+bool
+ParamDisplay::Modified() const
+{
+  return mpDisplay->Modified();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ParamDisplay::DisplayBase definitions
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +149,8 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
                                         TWinControl* inParent )
 : mpUserLevel( NULL ),
   mTop( 0 ),
-  mLeft( 0 )
+  mLeft( 0 ),
+  mModified( false )
 {
   // render the parameter's name
   TLabel* label = new TLabel( static_cast<TComponent*>( NULL ) );
@@ -171,20 +178,21 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
     mpUserLevel->PageSize = 1;
     mpUserLevel->Visible = false;
     mpUserLevel->Parent = inParent;
+    mpUserLevel->OnChange = DisplayBase::OnContentChange;
     mControls.insert( mpUserLevel );
   }
 }
 
 ParamDisplay::DisplayBase::~DisplayBase()
 {
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     delete *i;
 }
 
 void
 ParamDisplay::DisplayBase::SetTop( int inTop )
 {
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     ( *i )->Top = ( *i )->Top - mTop + inTop;
   mTop = inTop;
 }
@@ -192,7 +200,7 @@ ParamDisplay::DisplayBase::SetTop( int inTop )
 void
 ParamDisplay::DisplayBase::SetLeft( int inLeft )
 {
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     ( *i )->Left = ( *i )->Left - mLeft + inLeft;
   mLeft = inLeft;
 }
@@ -201,7 +209,7 @@ int
 ParamDisplay::DisplayBase::GetBottom()
 {
   int bottom = 0;
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     bottom = max( bottom, ( *i )->Top + ( *i )->Height );
   return bottom;
 }
@@ -210,7 +218,7 @@ int
 ParamDisplay::DisplayBase::GetRight()
 {
   int right = 0;
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     right = max( right, ( *i )->Left + ( *i )->Width );
   return right;
 }
@@ -218,14 +226,14 @@ ParamDisplay::DisplayBase::GetRight()
 void
 ParamDisplay::DisplayBase::Hide()
 {
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     ( *i )->Hide();
 }
 
 void
 ParamDisplay::DisplayBase::Show()
 {
-  for( set<TControl*>::iterator i = mControls.begin(); i != mControls.end(); ++i )
+  for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     ( *i )->Show();
 }
 
@@ -239,6 +247,7 @@ ParamDisplay::DisplayBase::WriteValuesTo( PARAM& inParam ) const
 void
 ParamDisplay::DisplayBase::ReadValuesFrom( const PARAM& inParam )
 {
+  mModified = false;
   if( mpUserLevel )
     mpUserLevel->Position = OperatorUtils::GetUserLevel( inParam.GetName() );
 }
@@ -260,7 +269,7 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
   comment->Font->Style = TFontStyles() << fsItalic;
   comment->Visible = false;
   comment->Parent = inParent;
-  mControls.insert( comment );
+  AddControl( comment );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,21 +289,21 @@ ParamDisplay::SingleEntryEdit::SingleEntryEdit( const ParsedComment& inParam,
   mpEdit->ShowHint = true;
   mpEdit->Visible = false;
   mpEdit->Parent = inParent;
-  mControls.insert( mpEdit );
+  AddControl( mpEdit );
 }
 
 void
 ParamDisplay::SingleEntryEdit::WriteValuesTo( PARAM& outParam ) const
 {
-  DisplayBase::WriteValuesTo( outParam );
   outParam.SetValue( mpEdit->Text.c_str() );
+  DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::SingleEntryEdit::ReadValuesFrom( const PARAM& inParam )
 {
-  DisplayBase::ReadValuesFrom( inParam );
   mpEdit->Text = inParam.GetValue();
+  DisplayBase::ReadValuesFrom( inParam );
 }
 
 void
@@ -302,6 +311,7 @@ __fastcall
 ParamDisplay::SingleEntryEdit::OnEditChange( TObject* )
 {
   mpEdit->Hint = mpEdit->Text;
+  DisplayBase::OnContentChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -315,19 +325,19 @@ ParamDisplay::List::List( const ParsedComment& inParam, TWinControl* inParent )
 void
 ParamDisplay::List::WriteValuesTo( PARAM& outParam ) const
 {
-  DisplayBase::WriteValuesTo( outParam );
   istringstream is( mpEdit->Text.c_str() );
   PARAM::encodedString value;
   int index = 0;
   while( is >> value )
     outParam.SetValue( value, index++ );
   outParam.SetNumValues( index );
+
+  DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::List::ReadValuesFrom( const PARAM& inParam )
 {
-  DisplayBase::ReadValuesFrom( inParam );
   ostringstream oss;
   if( inParam.GetNumValues() > 0 )
   {
@@ -336,6 +346,8 @@ ParamDisplay::List::ReadValuesFrom( const PARAM& inParam )
       oss << ' ' << PARAM::encodedString( inParam.GetValue( i ) );
   }
   mpEdit->Text = oss.str().c_str();
+  
+  DisplayBase::ReadValuesFrom( inParam );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -354,7 +366,7 @@ ParamDisplay::Matrix::Matrix( const ParsedComment& inParam, TWinControl* inParen
   editButton->OnClick = OnEditButtonClick;
   editButton->Visible = false;
   editButton->Parent = inParent;
-  mControls.insert( editButton );
+  AddControl( editButton );
 
   TButton* loadButton = new TButton( static_cast<TComponent*>( NULL ) );
   loadButton->Caption = "Load Matrix";
@@ -365,7 +377,7 @@ ParamDisplay::Matrix::Matrix( const ParsedComment& inParam, TWinControl* inParen
   loadButton->OnClick = OnLoadButtonClick;
   loadButton->Visible = false;
   loadButton->Parent = inParent;
-  mControls.insert( loadButton );
+  AddControl( loadButton );
 
   TButton* saveButton = new TButton( static_cast<TComponent*>( NULL ) );
   saveButton->Caption = "Save Matrix";
@@ -376,23 +388,23 @@ ParamDisplay::Matrix::Matrix( const ParsedComment& inParam, TWinControl* inParen
   saveButton->OnClick = OnSaveButtonClick;
   saveButton->Visible = false;
   saveButton->Parent = inParent;
-  mControls.insert( saveButton );
+  AddControl( saveButton );
 }
 
 void
 ParamDisplay::Matrix::WriteValuesTo( PARAM& outParam ) const
 {
-  DisplayBase::WriteValuesTo( outParam );
   outParam = mParam;
+  DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::Matrix::ReadValuesFrom( const PARAM& inParam )
 {
-  DisplayBase::ReadValuesFrom( inParam );
   mParam = inParam;
   if( mMatrixWindowOpen )
     fEditMatrix->SetDisplayedParam( &mParam );
+  DisplayBase::ReadValuesFrom( inParam );
 }
 
 void
@@ -403,6 +415,7 @@ ParamDisplay::Matrix::OnEditButtonClick( TObject* )
   fEditMatrix->SetDisplayedParam( &mParam );
   fEditMatrix->ShowModal();
   mMatrixWindowOpen = false;
+  DisplayBase::OnContentChange();
 }
 
 void
@@ -429,6 +442,7 @@ ParamDisplay::Matrix::OnLoadButtonClick( TObject* )
       default:
         Application->MessageBox(" Error loading the matrix file", "Error", MB_OK );
     }
+    DisplayBase::OnContentChange();
   }
   delete loadDialog;
 }
@@ -477,7 +491,7 @@ ParamDisplay::SingleEntryButton::SingleEntryButton( const ParsedComment& inParam
   button->Visible = false;
   button->OnClick = OnButtonClick;
   button->Parent = inParent;
-  mControls.insert( button );
+  AddControl( button );
   mComment = inParam.Comment();
 }
 
@@ -621,7 +635,8 @@ ParamDisplay::SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
   mComboBox->Hint = inParam.Comment().c_str();
   mComboBox->ShowHint = true;
   mComboBox->Visible = false;
-  mControls.insert( mComboBox );
+  mComboBox->OnChange = DisplayBase::OnContentChange;
+  AddControl( mComboBox );
 }
 
 void
@@ -630,12 +645,14 @@ ParamDisplay::SingleEntryEnum::WriteValuesTo( PARAM& outParam ) const
   ostringstream oss;
   oss << mComboBox->ItemIndex + mIndexBase;
   outParam.SetValue( oss.str().c_str() );
+  SeparateComment::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::SingleEntryEnum::ReadValuesFrom( const PARAM& inParam )
 {
   mComboBox->ItemIndex = ::atoi( inParam.GetValue() ) - mIndexBase;
+  SeparateComment::ReadValuesFrom( inParam );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -655,19 +672,22 @@ ParamDisplay::SingleEntryBoolean::SingleEntryBoolean( const ParsedComment& inPar
   mCheckBox->ShowHint = true;
   mCheckBox->Visible = false;
   mCheckBox->Parent = inParent;
-  mControls.insert( mCheckBox );
+  mCheckBox->OnClick = DisplayBase::OnContentChange;
+  AddControl( mCheckBox );
 }
 
 void
 ParamDisplay::SingleEntryBoolean::WriteValuesTo( PARAM& outParam ) const
 {
   outParam.SetValue( mCheckBox->Checked ? "1" : "0" );
+  DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::SingleEntryBoolean::ReadValuesFrom( const PARAM& inParam )
 {
   mCheckBox->Checked = ::atoi( inParam.GetValue() );
+  DisplayBase::ReadValuesFrom( inParam );
 }
 
 
