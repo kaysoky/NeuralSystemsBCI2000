@@ -142,6 +142,11 @@ class EnvironmentBase
   // Helper functions that include testing and reporting of error conditions.
   PARAM* GetParamPtr( const std::string& ) const;
   PARAM* GetOptionalParamPtr( const std::string& ) const;
+  PARAM* GetOptionalParamPtr( const std::string& inName,
+                              const std::string& inLabel1,
+                              const std::string& inLabel2,
+                              size_t&            outIndex1,
+                              size_t&            outIndex2 ) const;
   void CheckRange( const PARAM*, size_t, size_t ) const;
 
   // Read/write access to a parameter by its name and indices, if applicable.
@@ -164,21 +169,6 @@ class EnvironmentBase
                                                const std::string& name,
                                                size_t index1 = 0,
                                                size_t index2 = 0 ) const;
-  // A version with an empty default value, as often appropriate.
-  const PARAM::type_adapter OptionalParameter( const std::string& name,
-                                               size_t index1 = 0,
-                                               size_t index2 = 0 ) const;
-
- private:
-  const PARAM::type_adapter OptionalParameter(  const std::string& defaultValue,
-                                                PARAM* param,
-                                                size_t index1,
-                                                size_t index2 ) const;
-  const PARAM::type_adapter OptionalParameter(  double defaultValue,
-                                                PARAM* param,
-                                                size_t index1,
-                                                size_t index2 ) const;
- protected:
   const PARAM::type_adapter OptionalParameter( double defaultValue,
                                                const std::string& name,
                                                const std::string& label1,
@@ -194,6 +184,9 @@ class EnvironmentBase
 
   // Versions with empty default values.
   const PARAM::type_adapter OptionalParameter( const std::string& name,
+                                               size_t index1 = 0,
+                                               size_t index2 = 0 ) const;
+  const PARAM::type_adapter OptionalParameter( const std::string& name,
                                                const std::string& label1,
                                                const std::string& label2 ) const;
   const PARAM::type_adapter OptionalParameter( const std::string& name,
@@ -203,6 +196,18 @@ class EnvironmentBase
                                                size_t index1,
                                                const std::string& label2 ) const;
 
+ private:
+  // Functions used by all OptionalParameter() functions.
+  const PARAM::type_adapter _OptionalParameter( const std::string& defaultValue,
+                                                PARAM* param,
+                                                size_t index1,
+                                                size_t index2 ) const;
+  const PARAM::type_adapter _OptionalParameter( double defaultValue,
+                                                PARAM* param,
+                                                size_t index1,
+                                                size_t index2 ) const;
+
+ protected:
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (_PreflightCondition(#x,double(x)))
   bool _PreflightCondition( const char*, bool ) const;

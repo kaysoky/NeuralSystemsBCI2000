@@ -89,6 +89,36 @@ EnvironmentBase::GetOptionalParamPtr( const string& name ) const
   return param;
 }
 
+PARAM*
+EnvironmentBase::GetOptionalParamPtr( const string& name,
+                                      const string& inLabel1,
+                                      const string& inLabel2,
+                                      size_t&       outIndex1,
+                                      size_t&       outIndex2 ) const
+{
+  PARAM* param = GetOptionalParamPtr( name );
+  if( param != NULL )
+  {
+    // If labels are given, they must exist in the parameter.
+    // Otherwise, return a NULL pointer.
+    if( inLabel1 != "" )
+    {
+      if( param->LabelsDimension1().Exists( inLabel1 ) )
+        outIndex1 = param->LabelsDimension1()[ inLabel1 ];
+      else
+        param = NULL;
+    }
+    if( inLabel2 != "" )
+    {
+      if( param->LabelsDimension2().Exists( inLabel2 ) )
+        outIndex2 = param->LabelsDimension2()[ inLabel2 ];
+      else
+        param = NULL;
+    }
+  }
+  return param;
+}
+
 void
 EnvironmentBase::CheckRange( const PARAM* param,
                              size_t row, size_t column ) const
@@ -173,22 +203,98 @@ EnvironmentBase::Parameter( const string& name,
 
 const PARAM::type_adapter
 EnvironmentBase::OptionalParameter( double defaultValue,
-                                    PARAM* param,
-                                    size_t row, size_t column ) const
+                                    const string& name,
+                                    size_t row,
+                                    size_t column ) const
 {
-  ostringstream os;
-  os << defaultValue;
-  return OptionalParameter( os.str(), param, row, column );
+  return _OptionalParameter( defaultValue, GetOptionalParamPtr( name ), row, column );
 }
 
 const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( const string& defaultValue,
-                                    PARAM* inParam,
-                                    size_t row, size_t column ) const
+EnvironmentBase::OptionalParameter( double defaultValue,
+                                    const string& name,
+                                    const string& rowLabel, size_t column ) const
+{
+  size_t row = 0;
+  PARAM* param = GetOptionalParamPtr( name, rowLabel, "", row, column );
+  return _OptionalParameter( defaultValue, param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( double defaultValue,
+                                    const string& name,
+                                    size_t row, const string& columnLabel ) const
+{
+  size_t column = 0;
+  PARAM* param = GetOptionalParamPtr( name, "", columnLabel, row, column );
+  return _OptionalParameter( defaultValue, param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( double defaultValue,
+                                    const string& name,
+                                    const string& rowLabel, const string& columnLabel ) const
+{
+  size_t row = 0,
+         column = 0;
+  PARAM* param = GetOptionalParamPtr( name, rowLabel, columnLabel, row, column );
+  return _OptionalParameter( defaultValue, param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( const string& name,
+                                    size_t row,
+                                    size_t column ) const
+{
+  return _OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( const string& name,
+                                    const string& rowLabel, size_t column ) const
+{
+  size_t row = 0;
+  PARAM* param = GetOptionalParamPtr( name, rowLabel, "", row, column );
+  return _OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( const string& name,
+                                    size_t row, const string& columnLabel ) const
+{
+  size_t column = 0;
+  PARAM* param = GetOptionalParamPtr( name, "", columnLabel, row, column );
+  return _OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::OptionalParameter( const string& name,
+                                    const string& rowLabel, const string& columnLabel ) const
+{
+  size_t row = 0,
+         column = 0;
+  PARAM* param = GetOptionalParamPtr( name, rowLabel, columnLabel, row, column );
+  return _OptionalParameter( "", param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::_OptionalParameter( double defaultValue,
+                                     PARAM* param,
+                                     size_t row, size_t column ) const
+{
+  ostringstream os;
+  os << defaultValue;
+  return _OptionalParameter( os.str(), param, row, column );
+}
+
+const PARAM::type_adapter
+EnvironmentBase::_OptionalParameter( const string& defaultValue,
+                                     PARAM* inParam,
+                                     size_t row, size_t column ) const
 {
   static PARAM defaultParam;
   PARAM* param = &defaultParam;
-  if( inParam == NULL )
+  if( inParam == NULL || row >= inParam->GetNumRows() || column >= inParam->GetNumColumns() )
     defaultParam.SetValue( defaultValue, row, column );
   else
   {
@@ -196,100 +302,6 @@ EnvironmentBase::OptionalParameter( const string& defaultValue,
     CheckRange( param, row, column );
   }
   return PARAM::type_adapter( param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( double defaultValue,
-                                    const string& name,
-                                    size_t row,
-                                    size_t column ) const
-{
-  return OptionalParameter( defaultValue, GetOptionalParamPtr( name ), row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( const string& name,
-                                    size_t row,
-                                    size_t column ) const
-{
-  return OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( const string& name,
-                                    const string& rowLabel, size_t column ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t row = 0;
-  if( param != NULL )
-      row = param->LabelsDimension1()[ rowLabel ];
-  return OptionalParameter( "", param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( const string& name,
-                                    size_t row, const string& columnLabel ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t column = 0;
-  if( param != NULL )
-      column = param->LabelsDimension2()[ columnLabel ];
-  return OptionalParameter( "", param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( const string& name,
-                                    const string& rowLabel, const string& columnLabel ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t row = 0,
-         column = 0;
-  if( param != NULL )
-  {
-      row = param->LabelsDimension1()[ rowLabel ];
-      column = param->LabelsDimension2()[ columnLabel ];
-  }
-  return OptionalParameter( "", param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( double defaultValue,
-                                    const string& name,
-                                    const string& rowLabel, size_t column ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t row = 0;
-  if( param != NULL )
-      row = param->LabelsDimension1()[ rowLabel ];
-  return OptionalParameter( defaultValue, param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( double defaultValue,
-                                    const string& name,
-                                    size_t row, const string& columnLabel ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t column = 0;
-  if( param != NULL )
-      column = param->LabelsDimension2()[ columnLabel ];
-  return OptionalParameter( defaultValue, param, row, column );
-}
-
-const PARAM::type_adapter
-EnvironmentBase::OptionalParameter( double defaultValue,
-                                    const string& name,
-                                    const string& rowLabel, const string& columnLabel ) const
-{
-  PARAM* param = GetOptionalParamPtr( name );
-  size_t row = 0,
-         column = 0;
-  if( param != NULL )
-  {
-      row = param->LabelsDimension1()[ rowLabel ];
-      column = param->LabelsDimension2()[ columnLabel ];
-  }
-  return OptionalParameter( defaultValue, param, row, column );
 }
 
 bool
