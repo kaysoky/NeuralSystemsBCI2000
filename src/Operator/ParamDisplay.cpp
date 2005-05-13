@@ -247,9 +247,9 @@ ParamDisplay::DisplayBase::WriteValuesTo( PARAM& inParam ) const
 void
 ParamDisplay::DisplayBase::ReadValuesFrom( const PARAM& inParam )
 {
-  mModified = false;
   if( mpUserLevel )
     mpUserLevel->Position = OperatorUtils::GetUserLevel( inParam.GetName() );
+  mModified = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
