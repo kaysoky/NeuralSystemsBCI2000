@@ -12,7 +12,9 @@ echo Processing...
 goto end
 
 :info
-echo Please drop one or more *.dat files to analyze onto this program.
+echo This program converts one or more *.dat files into a single Matlab
+echo *.mat file.
+echo Please drop one or more *.dat files onto this program.
 
 :end
 echo.
