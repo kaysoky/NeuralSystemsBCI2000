@@ -51,7 +51,7 @@ class StreamToMat : public MessageHandler
  public:
   StreamToMat( ostream& arOut )
   : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
-    mDataElementSizePos( 0 ), mDataRowsPos( 0 ), mDataSizePos( 0 ), mDataRows( 0 ) {}
+    mDataElementSizePos( 0 ), mDataColsPos( 0 ), mDataSizePos( 0 ), mDataCols( 0 ) {}
   ~StreamToMat() { delete mpStatevector; }
   void FinishHeader() const;
 
@@ -63,9 +63,9 @@ class StreamToMat : public MessageHandler
   typedef set<string> StringSet; // A set is a sorted container of unique values.
   StringSet           mStateNames;
   size_t              mDataElementSizePos,
-                      mDataRowsPos,
+                      mDataColsPos,
                       mDataSizePos,
-                      mDataRows;
+                      mDataCols;
 
   void WriteHeader();
   void WriteData( const GenericSignal& );
@@ -182,7 +182,7 @@ StreamToMat::WriteHeader()
     Write32( endPos - sizePos - 4 );
     mrOut.seekp( endPos );
   }
-  // An array with the signal's dimensions holding the signal entries' column indices
+  // An array with the signal's dimensions holding the signal entries' row indices
   long numSignalEntries = mSignalProperties.Channels() * mSignalProperties.Elements();
   {
     Write32( miMATRIX );
@@ -198,8 +198,9 @@ StreamToMat::WriteHeader()
     Write32( miINT8 ); Write32( 0 );
     // Array data
     Write32( miUINT32 ); Write32( 4 * numSignalEntries );
-    for( int i = 1; i <= numSignalEntries; ++i )
-      Write32( mStateNames.size() + i );
+    for( size_t j = 0; j < mSignalProperties.Elements(); ++j )
+      for( size_t i = 0; i < mSignalProperties.Channels(); ++i )
+        Write32( mStateNames.size() + 1 + i * mSignalProperties.Elements() + j );
     long endPos = mrOut.tellp();
     mrOut.seekp( sizePos );
     Write32( endPos - sizePos - 4 );
@@ -221,7 +222,7 @@ StreamToMat::WriteHeader()
   // Dimensions array
   Write32( miINT32 ); Write32( 8 );
   Write32( mStateNames.size() + numSignalEntries );
-  mDataRowsPos = mrOut.tellp();
+  mDataColsPos = mrOut.tellp();
   Write32( 0 );
   // Array name
   const char dataName[] = "Data";
@@ -246,7 +247,7 @@ StreamToMat::WriteData( const GenericSignal& s )
   for( size_t i = 0; i < s.Channels(); ++i )
     for( size_t j = 0; j < s.Elements(); ++j )
       WriteFloat32( s( i, j ) );
-  ++mDataRows;
+  ++mDataCols;
 }
 
 void
@@ -263,8 +264,8 @@ StreamToMat::FinishHeader() const
   Write32( endPos - mDataElementSizePos - 4 );
   mrOut.seekp( endPos );
 
-  mrOut.seekp( mDataRowsPos );
-  Write32( mDataRows );
+  mrOut.seekp( mDataColsPos );
+  Write32( mDataCols );
   mrOut.seekp( endPos );
 }
 
