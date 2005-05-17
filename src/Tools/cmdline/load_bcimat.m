@@ -40,18 +40,17 @@ if( num_states ~= nargout - 1 )
   return;
 end
 
-load( filename );
-
-if( ~( exist( 'Data', 'var' ) && exist( 'Index', 'var' ) ) )
+if( char( who( '-file', filename ) ) ~= [ 'Data '; 'Index' ] )
   error( 'Input file is not a bci_stream2mat file.' );
   return;
 end
+load( filename );
 
 switch outdim
   case 2
     signal = zeros( size( Index.Signal, 2 ) * size( Data, 2 ), size( Index.Signal, 1 ) );
     for( i = 1 : size( Index.Signal, 1 ) )
-      signal( :, i ) = reshape( squeeze( Data( Index.Signal( i, : ), : ) ), [], 1 );
+      signal( :, i ) = reshape( Data( Index.Signal( i, : ), : ), [], 1 );
     end
     for( i = 1 : num_states )
       state = [];
@@ -63,7 +62,7 @@ switch outdim
     end
     
   case 3
-    signal = reshape( Data( Index.Signal, : ).', ...
+    signal = reshape( Data( Index.Signal.', : ).', ...
       [], size( Index.Signal, 2 ), size( Index.Signal, 1 ) );
     for( i = 1 : num_states )
       idx = eval( [ 'Index.' varargin{ i + 1 } ] ); 
