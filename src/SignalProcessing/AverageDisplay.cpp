@@ -33,6 +33,10 @@ AverageDisplay::AverageDisplay()
       "BaseBegin "
       "BaseEnd "
         "% % % // Time-valued parameters that will be indicated by markers",
+   "Visualize float AvgDisplayMin= 50 "
+     "0 0 0 // Minimum value for average display",
+   "Visualize float AvgDisplayMax= -50 "
+     "0 0 0 // Maximum value for average display",
  END_PARAMETER_DEFINITIONS
 }
 
@@ -47,6 +51,7 @@ AverageDisplay::Preflight( const SignalProperties& inProperties, SignalPropertie
       && Parameter( "AvgDisplayCh", i, 0 ) <= inProperties.Channels()
     );
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
+  PreflightCondition( inProperties.Elements() > 0 );
   State( "TargetCode" );
   outProperties = inProperties;
 }
@@ -87,14 +92,10 @@ AverageDisplay::Initialize()
     windowTitle += " Average";
     vis.Send( CFGID::WINDOWTITLE, windowTitle );
     // Note min and max value are interchanged to account for EEG display direction.
-    vis.Send( CFGID::MINVALUE, 50 );
-    vis.Send( CFGID::MAXVALUE, -50 );
+    vis.Send( CFGID::MINVALUE, int( Parameter( "AvgDisplayMin" ) ) );
+    vis.Send( CFGID::MAXVALUE, int( Parameter( "AvgDisplayMax" ) ) );
     vis.Send( CFGID::NUMSAMPLES, 0 );
     vis.Send( CFGID::graphType, CFGID::polyline );
-
-    ostringstream oss;
-    oss << ( 1.0 / Parameter( "SamplingRate" ) ) << "s";
-    vis.Send( CFGID::sampleUnit, oss.str() );
 
     if( !markerLabels.empty() )
       vis.Send( CFGID::xAxisMarkers, markerLabels );
@@ -218,6 +219,9 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
         labels.push_back( Label( target->second, oss.str() ) );
       }
       mVisualizations[ channel ].Send( CFGID::channelLabels, labels );
+      ostringstream oss;
+      oss << ( Parameter( "SampleBlockSize" )  / inputSignal->Elements() / Parameter( "SamplingRate" ) ) << "s";
+      mVisualizations[ channel ].Send( CFGID::sampleUnit, oss.str() );
       mVisualizations[ channel ].Send( &average );
     }
   }
@@ -246,7 +250,4 @@ AverageDisplay::Process( const GenericSignal* inputSignal, GenericSignal* output
   mLastTargetCode = targetCode;
   *outputSignal = *inputSignal;
 }
-
-
-
 
