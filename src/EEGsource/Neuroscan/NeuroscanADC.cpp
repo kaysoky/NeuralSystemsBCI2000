@@ -428,8 +428,8 @@ bool          retval;
                 long value = 0;
                 for( int byte = 0; byte < bitspersample / 8; ++byte )
                 {
-                  value <<= 8;
-                  value |= *pData++;
+                  long byteVal = *pData++;
+                  value |= byteVal << ( 8 * byte );
                 }
                 signal->SetValue( channel, sample, value );
               }
