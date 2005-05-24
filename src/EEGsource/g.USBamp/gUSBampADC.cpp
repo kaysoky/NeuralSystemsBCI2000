@@ -320,7 +320,7 @@ bool    autoconfigure;
   hdev.at(dev) = GT_OpenDeviceEx((char *)DeviceIDs.at(dev).c_str());
   assert(hdev.at(dev));
 
-  ret=GT_SetBufferSize(hdev.at(dev), buffersize.at(dev));
+  ret=GT_SetBufferSize(hdev.at(dev), Parameter( "SampleBlockSize" ) );
   // set all devices to slave except the one master
   // externally, the master needs to have its SYNC OUT wired to the SYNC IN
   // of the first slave (whos SYNC OUT is connected to the next slave's SYNC IN)
@@ -402,7 +402,10 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
   dwOVret = WaitForSingleObject(m_hEvent, timeoutms);
   if (dwOVret == WAIT_TIMEOUT)
      {
-     bciout << "Signals lost during acquisition. Set SampleBlockSize larger !!" << endl;
+     bciout << "Signals lost during acquisition. "
+            << "Make sure that the g.USBamp is attached to a USB 2.0 port, or "
+            << "set SampleBlockSize larger !!"
+            << endl;
      // ResetEvent(m_hEvent);
      // GT_ResetTransfer(hdev.at(dev));
      // throw;
