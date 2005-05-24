@@ -367,10 +367,10 @@ TfMain::EnterState( SYSSTATUS::State inState )
       mSyslog.AddSysLogEntry( "Operator set configuration" );
       break;
 
-    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Resting ):
       break;
 
+    case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Resting ):
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Resting ):
     case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Resting ):
