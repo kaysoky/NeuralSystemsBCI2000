@@ -1,20 +1,13 @@
-#undef USE_LOGFILE
+
 //---------------------------------------------------------------------------
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
 #include <math.h>
-#ifdef USE_LOGFILE
-# include <stdio.h>
-#endif // USE_LOGFILE
 
 #include "NormalFilter.h"
 #include "UParameter.h"
 #include "UGenericVisualization.h"
-
-#ifdef USE_LOGFILE
-FILE *Normalfile;
-#endif // USE_LOGFILE
 
 using namespace std;
 
@@ -45,12 +38,7 @@ NormalFilter::NormalFilter()
    "Visualize int VisualizeNormalFiltering= 1 "
      "0 0 1 // visualize Normal filtered signals (0=no 1=yes)",
  END_PARAMETER_DEFINITIONS
- #ifdef USE_LOGFILE
 
-  Normalfile= fopen("NormalFilter.asc","w+");
-  fprintf(Normalfile,"Constructor \n");
-
-  #endif // USE_LOGFILE
 }
 
 
@@ -64,13 +52,6 @@ NormalFilter::~NormalFilter()
 {
  delete vis;
 
-#ifdef USE_LOGFILE
-  if( Normalfile != NULL )
-  {
-    fprintf(Normalfile,"Destructor \n");
-    fclose( Normalfile );
-  }
-#endif // USE_LOGFILE
 }
 
 // **************************************************************************
@@ -107,10 +88,6 @@ void NormalFilter::Preflight( const SignalProperties& inSignalProperties,
 void NormalFilter::Initialize()
 {
   int visualizeyn = 0;
-
-#ifdef USE_LOGFILE
-  fprintf(Normalfile,"Initialize and try \n");
-#endif // USE_LOGFILE
 
   ymean= Parameter("YMean");
   ygain= Parameter("YGain");
@@ -152,10 +129,6 @@ void NormalFilter::Process(const GenericSignal *input, GenericSignal *output)
 
   float val_lr = ( input->GetValue( 1, 0 ) - xmean ) * xgain;
   output->SetValue( 1, 0, val_lr );
-
-#ifdef USE_LOGFILE
-  fprintf(Normalfile,"Process val_ud= %8.3f  val_lr= %8.3f\n",val_ud,val_lr);
-#endif // USE_LOGFILE
 
   if( visualize )
   {

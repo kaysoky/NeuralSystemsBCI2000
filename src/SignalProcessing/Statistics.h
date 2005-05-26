@@ -52,6 +52,7 @@ private:
         int sign;
         CIRCBUF *circbuf[MAX_CONTROLSIG][MAX_BLSTATES];
         CIRCBUF *targbuf[MAX_BLSTATES];
+        int targuse[MAXDIM][MAX_BLSTATES];
         int targval[MAXDIM][MAX_BLSTATES];
         int targval2[MAXDIM][MAX_BLSTATES];
         float   CurAvg[MAX_CONTROLSIG];

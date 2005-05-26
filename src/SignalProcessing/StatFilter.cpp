@@ -13,7 +13,7 @@
 #include "NormalFilter.h"
 #include "StatFilter.h"
 
-// FILE* estat;
+//  FILE* estat;
 
 using namespace std;
 
@@ -101,7 +101,7 @@ StatFilter::StatFilter()
   END_STATE_DEFINITIONS
 
 
-//  estat= fopen("c:/current/log/EStat.asc","w+");
+// estat= fopen("c:/current/log/EStat.asc","w+");
 
 }
 
@@ -119,7 +119,7 @@ StatFilter::~StatFilter()
   delete StatSignal;
   if (Statfile) fclose( Statfile );
 
-//    fclose( estat );
+ //   fclose( estat );
 
 }
 
@@ -454,6 +454,7 @@ void StatFilter::Resting()
       sprintf(memotext, "%.5f",clsf->wtmat[0][i]);
       Parameter("MUD",i,weightbin) = memotext;   // 2nd or 4th value is the weight
     }
+
     for(int i=0;i<clsf->n_hmat;i++)
     {
       sprintf(memotext, "%.5f",clsf->wtmat[1][i]);
@@ -482,43 +483,39 @@ void StatFilter::Process( const GenericSignal *input,
 
   GetStates();
 
-        if( YInterceptEstMode >0 )
-        {
-                // channel 0 1st element
+  if( YInterceptEstMode > 0 )
+  {
+          // channel 0 1st element
 
-                value= input->GetValue( 0, 0);
+          value= input->GetValue( 0, 0);
 
-                stat->ProcRunningAvg(CurrentBaseline, 0, value, &cur_ystat);
-                yintercept=cur_ystat.Intercept;
+          stat->ProcRunningAvg(CurrentBaseline, 0, value, &cur_ystat);
+          yintercept=cur_ystat.Intercept;
 
-                if (cur_ystat.StdDev != 0)
-                        ud_gain=ypix/cur_ystat.StdDev;
+          if ( cur_ystat.StdDev > 0.01 )
+                  ud_gain= ypix/cur_ystat.StdDev;
 
-                old_yintercept= yintercept;
-                old_ud_gain= ud_gain;
+          old_yintercept= yintercept;
+          old_ud_gain= ud_gain;
 
-                intercept_flag= 1;
-        }
+          intercept_flag= 1;
+  }
 
-        if (XInterceptEstMode > 0)
-        {
-                // channel 1 1st element
+  if (XInterceptEstMode > 0)
+  {
+          // channel 1 1st element
 
-                value= input->GetValue( 1, 0 );
-                stat->ProcRunningAvg(CurrentBaseline, 1, value, &cur_xstat);
+          value= input->GetValue( 1, 0 );
+          stat->ProcRunningAvg(CurrentBaseline, 1, value, &cur_xstat);
 
-                xintercept=cur_xstat.Intercept;
-                if (cur_xstat.StdDev != 0)
-                        lr_gain=horizpix/cur_xstat.StdDev;
+          xintercept=cur_xstat.Intercept;
+          if ( cur_xstat.StdDev > 0.01 )
+                  lr_gain= horizpix/cur_xstat.StdDev;
 
-                if (( visualize ) && ((xintercept != old_xintercept) || (lr_gain != old_lr_gain)))
-                {
-                        //char memotext[512];
-                        //sprintf(memotext, "Adjusted CH1 intercept to %.2f and slope to %.2f", xintercept, lr_gain);
-                        //s->SendMemo2Operator(memotext);
-                }
-                intercept_flag= 1;
-        }
+          intercept_flag= 1;
+
+      //    fprintf(estat,"lr_gain= %f  cur_xstat.StdDev= %f \n",lr_gain,cur_xstat.StdDev);
+  }
 
 
     if( YInterceptEstMode > 1 )
@@ -537,7 +534,7 @@ void StatFilter::Process( const GenericSignal *input,
         fprintf(Statfile,"%4d ",recno++);
         for(int i=0;i<Ntargets;i++)       //  was   cur_ystat.NumT;i++)
         fprintf(Statfile,"%4.2f ",cur_ystat.TargetPC[i]);
-        
+
         fprintf(Statfile,"%1d %1d %7.4f %7.3f %7.3f %7.3f \n",CurrentTarget,CurrentOutcome,cur_ystat.aper,cur_ystat.pix,yintercept,ud_gain);
         fflush( Statfile );
       }
@@ -591,7 +588,7 @@ void StatFilter::Process( const GenericSignal *input,
 
   if( WtControl > 1 )
   {
-        if( (AdaptCode == 1)||(AdaptCode == 3) )
+        if( (AdaptCode == 2)||(AdaptCode == 3) )
         {
         // control vertical (Y) Weights !!
         stat->ProcWeightControl(        Yadapt,            // Y value assigned target
@@ -604,7 +601,7 @@ void StatFilter::Process( const GenericSignal *input,
                                         1 );              // chan code for Y
                 weight_flag= 1;
         }
-        if( (AdaptCode == 2)||(AdaptCode == 3) )
+        if( (AdaptCode == 1)||(AdaptCode == 3) )
         {
         // control horizontal (X) Weight !!
         stat->ProcWeightControl(        Xadapt,            // X value assigned target

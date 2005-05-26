@@ -1,23 +1,16 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
-#undef USE_LOGFILE
+//------------------------------------------------------------------------------
 
-#ifdef USE_LOGFILE
-# include <stdio.h>
-#endif // USE_LOGFILE
 #include "UParameter.h"
 #include "UGenericVisualization.h"
 #include "ClassFilter.h"
 #include "UBCIError.h"
 
-#ifdef USE_LOGFILE
-FILE *classfile;
-#endif // USE_LOGFILE
 
 RegisterFilter( ClassFilter, 2.D );
 
-// **************************************************************************
+// *****************************************************************************
 // Function:   ClassFilter
 // Purpose:    This is the constructor for the ClassFilter class
 //             It is the "Classifier" or whatever one wants to call it
@@ -26,7 +19,8 @@ RegisterFilter( ClassFilter, 2.D );
 // Parameters: plist - pointer to a list of parameters
 //             slist - pointer to a list of states
 // Returns:    N/A
-// **************************************************************************
+// *****************************************************************************
+
 ClassFilter::ClassFilter()
 : vis( NULL )
 {
@@ -50,19 +44,20 @@ ClassFilter::ClassFilter()
   wtmat[i]=NULL;
   feature[i]=NULL;
   }
+//  BEGIN_STATE_DEFINITIONS
+//    "ARVal 16 0 0 0",
+//  END_STATE_DEFINITIONS
 
-#ifdef USE_LOGFILE
- classfile= fopen("Classifier.asc","w+");
-#endif // USE_LOGFILE
 }
 
 
-// **************************************************************************
+// *****************************************************************************
 // Function:   ~ClassFilter
 // Purpose:    This is the destructor for the ClassFilter class
 // Parameters: N/A
 // Returns:    N/A
-// **************************************************************************
+// *****************************************************************************
+
 ClassFilter::~ClassFilter()
 {
  delete vis;
@@ -72,11 +67,6 @@ ClassFilter::~ClassFilter()
   delete [] wtmat[i];
   delete [] feature[i];
   }
-
-#ifdef USE_LOGFILE
- if( classfile != NULL )
-   fclose( classfile );
-#endif // USE_LOGFILE
 }
 
 // **************************************************************************
@@ -87,6 +77,7 @@ ClassFilter::~ClassFilter()
 // Parameters: Input and output signal properties pointers.
 // Returns:    N/A
 // **************************************************************************
+
 void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
                                    SignalProperties& outSignalProperties ) const
 {
@@ -94,10 +85,6 @@ void ClassFilter::Preflight( const SignalProperties& inSignalProperties,
   Parameter( "SampleBlockSize" );
 
   // Resource availability checks.
-#ifdef USE_LOGFILE
-  if( classfile == NULL )
-    bcierr << "Cannot write to log file" << std::endl;
-#endif // USE_LOGFILE
 
 #if 0 // This is disabled because it breaks existing parameter files.
   // Input signal checks.
@@ -251,15 +238,9 @@ void ClassFilter::Process(const GenericSignal *input, GenericSignal *output)
 
     val_ud+= feature[0][i] * wtmat[0][i];
 
-#ifdef USE_LOGFILE
-    fprintf(classfile,"%2d %2d %2d %7.3f %7.3f %7.2f ",i,vc1[i],vf1[i],val_ud,feature[0][i],wtmat[0][i]);
-#endif // USE_LOGFILE
 
     //  solution= // need to transmit each result to statistics for LMS
   }
-#ifdef USE_LOGFILE
-  fprintf(classfile,"\n");
-#endif // USE_LOGFILE
 
   for(int i=0;i<n_hmat;i++)
   {
@@ -280,6 +261,8 @@ void ClassFilter::Process(const GenericSignal *input, GenericSignal *output)
 
   output->SetValue( 0, 0, val_ud );
   output->SetValue( 1, 0, val_lr );
+
+ // State("ARVal")= (int)(val_ud*1000);
 
   if( visualize )
   {

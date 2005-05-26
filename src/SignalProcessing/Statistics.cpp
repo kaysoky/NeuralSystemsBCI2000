@@ -262,14 +262,21 @@ int     i, t, u;
    circbuf[i][t]=new CIRCBUF;
    sig_mean[i]= 0;                     // estimate of signal means
    use_flag[i]= 0;
+
+   for(t=0;t<MAX_BLSTATES;t++)
+   {
+        targuse[i][t]= 0;
+        targval[i][t]= 0;
+        targval2[i][t]= 0;
+   }
   }
 
 
     current_yintercept= 0;
     current_xintercept= 0;
 
-     //   statf= fopen( "c:/current/log/statistics.asc","w+");
-     //   fprintf(statf,"Opening statistics log \n");
+//     statf= fopen( "c:/current/log/statistics.asc","w+");
+//     fprintf(statf,"Opening statistics log \n");
 }
 
 
@@ -378,6 +385,7 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
         float actual_lrate;
 
         float quad_mean;
+        int tflag;
 
         trialstat->trial_flag= 0;
 
@@ -387,6 +395,7 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
 
                 targval[dim][target-1]= adapt;
                 targval2[dim][target-1]= abs( adapt );
+                targuse[dim][target-1]++;
 
                 if( oldBLupdate > -1 )                                // do once for all dimensions
                 {
@@ -440,28 +449,34 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
                         }
                 }
 
+                tflag= 1;
+
                 for(i=0;i<nblstates;i++)
                 {
+
+                        if( targuse[dim][i]== 0 ) tflag= 0;
+
                         trialstat->lin+= targval[dim][i]  * trialstat->TargetPC[i];             // product of dimension val and outcome
                         if( mode > 2 )
                         {
                                 trialstat->quad+= quadval[i] * trialstat->TargetPC[i];
                         }
+
                 }
 
 
                 actual_lrate= lrate * (float)sign * (float)o_sign;                 // what is sign?  must be outcome_direction !!
 
-                trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
+                if( tflag > 0 )
+                {
+                        trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
+
+                        if( mode > 2 )
+                                trialstat->pix+= trialstat->pix  * trialstat->quad * actual_lrate;
 
 
- //  fprintf(statf,"dim %2d   aper %10.7f   lin %8.4f   rate %8.5f \n", dim,trialstat->aper,trialstat->lin, actual_lrate);
-
-                if( mode > 2 )
-                        trialstat->pix+= trialstat->pix  * trialstat->quad * actual_lrate;
-
-
-                trialstat->trial_flag= 1;
+                        trialstat->trial_flag= 1;  
+                }
 
         }
 
