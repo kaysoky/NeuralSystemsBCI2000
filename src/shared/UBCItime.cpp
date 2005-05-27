@@ -37,14 +37,7 @@ LARGE_INTEGER   prectime, prectimebase;
 // **************************************************************************
 unsigned short BCITIME::TimeDiff(unsigned short time1, unsigned short time2)
 {
-#if 1
- if ((int)time2-(int)time1 >= 0)
-    return(time2-time1);
- else
-    return((unsigned short)((int)time2-(int)time1+(int)65536));
-#else // jm's version
   const int maxdiffPlusOne = 1 << ( 8 * sizeof( time1 ) );
   return ( ( time2 + maxdiffPlusOne ) - time1 ) % maxdiffPlusOne;
-#endif
 }
 
