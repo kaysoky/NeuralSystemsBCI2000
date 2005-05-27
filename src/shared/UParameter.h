@@ -289,6 +289,11 @@ class PARAM
     // Dereferencing operator for access to PARAM members.
     PARAM* operator->() const
     { return p ? p : &( null_p = PARAM() ); }
+    // Stream i/o.
+    std::ostream& WriteToStream( std::ostream& os ) const
+    { os << operator const char*(); return os; }
+    std::istream& ReadFromStream( std::istream& is )
+    { std::string s; is >> s; *this = s.c_str(); return is; }
 
    private:
     PARAM* p;
@@ -379,6 +384,16 @@ inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e 
 inline std::istream& operator>>( std::istream& s, PARAM::encodedString& e )
 {
   return e.ReadFromStream( s );
+}
+
+inline std::ostream& operator<<( std::ostream& s, const PARAM::type_adapter& t )
+{
+  return t.WriteToStream( s );
+}
+
+inline std::istream& operator>>( std::istream& s, PARAM::type_adapter& t )
+{
+  return t.ReadFromStream( s );
 }
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM& p )

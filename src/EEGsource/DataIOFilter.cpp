@@ -224,8 +224,8 @@ DataIOFilter::Initialize()
     ostringstream oss;
     oss << ( 1.0 / Parameter( "SamplingRate" ) * mVisualizeSourceDecimation ) << "s";
     mEEGVis.Send( CFGID::sampleUnit, oss.str() );
-    mEEGVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "SourceMin" ) );
-    mEEGVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "SourceMax" ) );
+    mEEGVis.Send( CFGID::MINVALUE, Parameter( "SourceMin" ) );
+    mEEGVis.Send( CFGID::MAXVALUE, Parameter( "SourceMax" ) );
     mEEGVis.Send( CFGID::valueUnit, string( Parameter( "SourceChGain", 0, 0 ) ) + "uV" );
   }
 
