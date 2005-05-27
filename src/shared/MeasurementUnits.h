@@ -44,18 +44,18 @@ std::ostream& operator<<( std::ostream& os, const DisplayUnit& du )
 class MeasurementUnits
 {
   public:
-    static int   ReadAsTime( const char* value )
+    static float   ReadAsTime( const char* value )
     { return ToUnit( value, "s", sUnitsPerSec ); }
     static void  InitializeTimeUnit( float inUnitsPerSec )
     { sUnitsPerSec = inUnitsPerSec; }
 
-    static int   ReadAsFreq( const char* value )
+    static float   ReadAsFreq( const char* value )
     { return ToUnit( value, "Hz", sUnitsPerHertz ); }
     static void  InitializeFreqUnit( float inUnitsPerHertz )
     { sUnitsPerHertz = inUnitsPerHertz; }
 
   private:
-    static int ToUnit( const char*, const char* inUnitName, float inUnitValue );
+    static float ToUnit( const char*, const char* inUnitName, float inUnitValue );
     static float sUnitsPerSec;
     static float sUnitsPerHertz;
 };

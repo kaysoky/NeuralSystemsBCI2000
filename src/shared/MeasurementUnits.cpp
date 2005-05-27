@@ -24,7 +24,7 @@ using namespace std;
 float MeasurementUnits::sUnitsPerSec = 1.0;
 float MeasurementUnits::sUnitsPerHertz = 1.0;
 
-int
+float
 MeasurementUnits::ToUnit( const char* inValue, const char* inUnitName, float inUnitValue )
 {
   string value( inValue );
@@ -67,7 +67,7 @@ MeasurementUnits::ToUnit( const char* inValue, const char* inUnitName, float inU
              << " expected '" << inUnitName << "'" << endl;
     value.erase( pos );
   }
-  return ::floor( unit * ::atof( value.c_str() ) + 0.5 );
+  return unit * ::atof( value.c_str() );
 }
 
 
