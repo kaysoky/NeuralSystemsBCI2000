@@ -67,16 +67,6 @@ TDAS_ADC::Preflight( const SignalProperties&,
   // Requested output signal properties.
   outSignalProperties = SignalProperties( boardInfo.numChannels,
                                   boardInfo.sampleBlockSize, SignalType::int16 );
-
-  // Sanity check for TransmitCh, TransmitChList, SoftwareCh.
-  // This doesn't really belong here -- rather it belongs into framework code.
-  PreflightCondition( Parameter( "SoftwareCh" ) >= Parameter( "TransmitCh" ) );
-  PreflightCondition( Parameter( "TransmitChList" )->GetNumValues() == Parameter( "TransmitCh" ) );
-  int greatestEntryInTransmitCh = 0; // The name will appear in a possible user message.
-  for( size_t i = 0; i < Parameter( "TransmitChList" )->GetNumValues(); ++i )
-    if( Parameter( "TransmitChList", i ) > greatestEntryInTransmitCh )
-      greatestEntryInTransmitCh = Parameter( "TransmitChList", i );
-  PreflightCondition( greatestEntryInTransmitCh <= Parameter( "SoftwareCh" ) );
 }
 
 void
