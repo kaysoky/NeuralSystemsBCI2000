@@ -122,6 +122,7 @@ namespace SOURCEID
     SW = FFT + 64,
     Baseline,
     Artefact,
+    LowPass,
   };
 };
 // Backward compatibility.
