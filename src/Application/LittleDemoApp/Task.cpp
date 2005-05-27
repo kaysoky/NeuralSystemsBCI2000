@@ -2,230 +2,209 @@
 #pragma hdrstop
 
 #include "Task.h"
+
+#include <vcl.h>
+#include <ComCtrls.hpp>
+
 #include "UState.h"
 #include "UBCITime.h"
-
-#include <assert>
 
 using namespace std;
 
 RegisterFilter( TTask, 3 );
 
 TTask::TTask()
-: vis( NULL ),
-  AcousticMode( 0 ),
-  form( NULL ),
-  progressbar( NULL ),
-  chart( NULL ),
-  series( NULL )
+: mAcousticMode( amNone ),
+  mpForm( NULL ),
+  mpProgressbar( NULL ),
+  mpChart( NULL ),
+  mpSeries( NULL ),
+  mVis( SOURCEID::TASKLOG )
 {
- BEGIN_PARAMETER_DEFINITIONS
-   "NeuralMusic int AcousticMode= 1 "
-     "0 0 2 // Achin's Acoustic Mode :-) 0: no sound, 1: MIDI, 2: WAV (enumeration)",
-   "NeuralMusic matrix Sounds= "
-     "{ MIDI WAV } " // row labels
+  BEGIN_PARAMETER_DEFINITIONS
+    "NeuralMusic int WinXpos= 400 0 0 0 "
+      "// Window X location",
+    "NeuralMusic int WinYpos= 5 0 0 0 "
+      "// Window Y location",
+    "NeuralMusic int WinWidth= 512 0 0 0 "
+      "// Window Width",
+    "NeuralMusic int WinHeight= 300 0 0 0 "
+      "// Window Height",
 
-     "{     ultra%20low     low              medium            high              ultra%20high } " // column labels
-/* MIDI */ "45              52               59                66                73 "
-/* WAV  */ "sounds\\pig.wav sounds\\frog.wav sounds\\train.wav sounds\\uh-uh.wav sounds\\whistle.wav "
+    "NeuralMusic int AcousticMode= 1 "
+      "0 0 2 // Achin's Acoustic Mode :-) 0: no sound, 1: MIDI, 2: WAV (enumeration)",
 
-     " // sounds to be played for different ranges of the feedback signal",
-   // has to be in there
-   "NeuralMusic int NumberTargets= 10 "
-     "0 0 10 // not used",
- END_PARAMETER_DEFINITIONS
+    "NeuralMusic matrix Sounds= "
+      "{ MIDI WAV } " // row labels
+      "{     ultra%20low     low              medium            high              ultra%20high } " // column labels
+/* MIDI */  "45              52               59                66                73 "
+/* WAV  */  "sounds\\pig.wav sounds\\frog.wav sounds\\train.wav sounds\\uh-uh.wav sounds\\whistle.wav "
 
- BEGIN_STATE_DEFINITIONS
-   "Pitch 8 0 0 0",
-   "StimulusTime 16 17528 0 0",
-   "TargetCode 8 0 0 0",
- END_STATE_DEFINITIONS
+      " // sounds to be played for different ranges of the feedback signal",
+  END_PARAMETER_DEFINITIONS
 
- form=new TForm( ( TComponent* )NULL );
- form->Caption="Neural Music Test";
- form->Height=300;
+  BEGIN_STATE_DEFINITIONS
+    "Pitch 8 0 0 0",
+    "StimulusTime 16 17528 0 0",
+    "TargetCode 8 0 0 0",
+  END_STATE_DEFINITIONS
 
- progressbar=new TProgressBar(form);
- progressbar->Parent=form;
- progressbar->Visible=true;
- progressbar->Enabled=true;
- progressbar->Position=0;
- progressbar->Min=0;
- progressbar->Max=255;
- progressbar->Top=10;
- progressbar->Left=10;
- progressbar->Width=200;
- progressbar->Height=20;
+  mpForm = new TForm( ( TComponent* )NULL );
+  mpForm->Caption = "Neural Music Test";
 
- chart=new TChart(form);
- chart->Visible=false;
- chart->Parent=form;
- chart->Left=0;
- chart->Top=40;
- chart->Width=form->ClientWidth;
- chart->Height=form->ClientHeight-40;
- chart->Title->Visible=false;
- chart->Legend->Visible=false;
- chart->AllowPanning=pmVertical;
- chart->AllowZoom=false;
- chart->View3D=false;
- chart->Anchors << akLeft << akTop << akRight << akBottom;
- chart->Visible=true;
+  mpProgressbar = new TProgressBar( mpForm ); // Let the form delete the progressbar on its own destruction.
+  mpProgressbar->Parent = mpForm;
+  mpProgressbar->Visible = true;
+  mpProgressbar->Enabled = true;
+  mpProgressbar->Position = 0;
+  mpProgressbar->Min = 0;
+  mpProgressbar->Max = 255;
+  mpProgressbar->Top = 10;
+  mpProgressbar->Left = 10;
+  mpProgressbar->Width = 200;
+  mpProgressbar->Height = 20;
+  mpProgressbar->Anchors << akLeft << akTop << akRight << akBottom;
 
- series=new TLineSeries(chart);
- series->ParentChart=chart;
+  mpChart = new TChart( mpForm ); // Let the form delete the chart on its own destruction.
+  mpChart->Visible = false;
+  mpChart->Parent = mpForm;
+  mpChart->Left = 0;
+  mpChart->Top = 40;
+  mpChart->Width = mpForm->ClientWidth;
+  mpChart->Height = mpForm->ClientHeight-40;
+  mpChart->Title->Visible = false;
+  mpChart->Legend->Visible = false;
+  mpChart->AllowPanning = pmVertical;
+  mpChart->AllowZoom = false;
+  mpChart->View3D = false;
+  mpChart->Anchors << akLeft << akTop << akRight << akBottom;
+  mpChart->Visible = true;
+
+  mpSeries = new TLineSeries( mpChart ); // Let the chart delete the series on its own destruction.
+  mpSeries->ParentChart = mpChart;
 }
 
-//-----------------------------------------------------------------------------
 
 TTask::~TTask( void )
 {
- delete vis;
- delete form;
+  delete mpForm;
 }
 
-void TTask::Preflight( const SignalProperties& inputProperties,
-                             SignalProperties& outputProperties ) const
+
+void
+TTask::Preflight( const SignalProperties& inputProperties,
+                        SignalProperties& outputProperties ) const
 {
-  switch( ( int )Parameter( "AcousticMode" ) )
+  if( Parameter( "AcousticMode" ) == amWave )
   {
-    case 0: // none
-      break;
-    case 1: // Midi
-      // We believe our MIDI player handles any input.
-      break;
-    case 2: // WAV
+    string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+    bool genError = false;
+    TWavePlayer testPlayer;
+    for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
+    {
+      string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
+      TWavePlayer::Error err = testPlayer.AttachFile( fileName.c_str() );
+      if( err == TWavePlayer::fileOpeningError )
+          bcierr << "Could not open \""
+                 << fileName
+                 << "\" as a wave sound file"
+                 << endl;
+      else if( err != TWavePlayer::noError )
       {
-        string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
-        bool genError = false;
-        TWavePlayer testPlayer;
-        for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
-        {
-          string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
-          TWavePlayer::Error err = testPlayer.AttachFile( fileName.c_str() );
-          if( err == TWavePlayer::fileOpeningError )
-              bcierr << "Could not open \""
-                     << fileName
-                     << "\" as a wave sound file"
-                     << endl;
-          else if( err != TWavePlayer::noError )
-          {
-              bcierr << "Some general error prevents wave audio playback"
-                     << endl;
-              genError = true;
-          }
-        }
+          bcierr << "Some general error prevents wave audio playback"
+                 << endl;
+          genError = true;
       }
-      break;
-    default:
-      PreflightCondition( false );
+    }
   }
+
   PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
   outputProperties = SignalProperties( 0, 0 );
 }
 
-void TTask::Initialize()
+void
+TTask::Initialize()
 {
- AcousticMode = Parameter( "AcousticMode" );
- switch( AcousticMode )
- {
-   case 0: // none
-     break;
-   case 1: // MIDI
-     break;
-   case 2: // WAV
-     {
-      string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
-      for( size_t i = 0; i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
-      {
-        string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
-        wavePlayers[ Parameter( "Sounds" )->LabelsDimension2()[ i ] ].AttachFile( fileName.c_str() );
-      }
-     }
-     break;
-   default:
-     assert( false );
- }
-
- delete vis;
- vis= new GenericVisualization(SOURCEID::TASKLOG);
- vis->SendCfg2Operator(SOURCEID::TASKLOG, CFGID::WINDOWTITLE, "User Task Log");
-
- form->Show();
-}
-
-
-int TTask::MakeMusic(short controlsignal)
-{
-char    memotext[256];
-int     pitch;
-
- // pitch=(controlsignal+32767)/256;
- pitch=abs(controlsignal % 256);
-
- // set the position on the progress bar according to the current control signal
- progressbar->Position=pitch;
- // add the current control signal value to the chart
- series->AddY((double)controlsignal, "", (TColor)clTeeColor);
-
- // send the current pitch to the operator as well
- sprintf(memotext, "Current Pitch: %d\r", pitch);
- vis->SendMemo2Operator(memotext);
-
- const char* pitchLabel = "";
-
- if( pitch < 51 )
-   pitchLabel = "ultra low";
- else if( pitch < 102 )
-   pitchLabel = "low";
- else if( pitch < 153 )
-   pitchLabel = "medium";
- else if( pitch < 204 )
-   pitchLabel = "high";
- else
-   pitchLabel = "ultra high";
-
- switch( AcousticMode )
- {
-   case 0: // none
-     break;
-   case 1: // MIDI
-     midiPlayer.Play( Parameter( "Sounds", "MIDI", pitchLabel ) );
-     break;
-   case 2: // WAV
-     if( !wavePlayers[ pitchLabel ].IsPlaying() )
-       wavePlayers[ pitchLabel ].Play();
-     break;
-   default:
-     assert( false );
- }
-
- return(pitch);
-}
-
-
-void TTask::Process( const GenericSignal* Input, GenericSignal* )
-{
-  const GenericSignal& InputSignal = *Input;
-  int cur_pitch, cur_running;
-
-  cur_pitch = State( "Pitch" );
-
-  cur_running = State( "Running" );
-  if (cur_running > 0)
+  mAcousticMode = Parameter( "AcousticMode" );
+  if( mAcousticMode == amWave )
+  {
+    string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
+    for( size_t i = 0; i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
     {
-    // make music
-    cur_pitch=MakeMusic( InputSignal( 0, 0 ) );
+      string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
+      mWavePlayers[ i ].AttachFile( fileName.c_str() );
     }
+  }
 
-  State( "Pitch" ) = cur_pitch;
+  mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
+
+  mpForm->Left = Parameter( "WinXPos" );
+  mpForm->Top = Parameter( "WinYPos" );
+  mpForm->Width = Parameter( "WinWidth" );
+  mpForm->Height = Parameter( "WinHeight" );
+  mpForm->Show();
+}
+
+
+int
+TTask::MakeMusic( short Controlsignal )
+{
+  int pitch = ::abs( Controlsignal % 256 );
+
+  // set the position on the progress bar according to the current control signal
+  mpProgressbar->Position = pitch;
+  // add the current control signal value to the chart
+  mpSeries->AddY( Controlsignal, "", TColor( clTeeColor ) );
+
+  // send the current pitch to the operator as well
+  ostringstream oss;
+  oss << "Current Pitch: " << pitch << '\n';
+  mVis.Send( oss.str() );
+
+  int pitchIndex = ultra_high;
+
+  if( pitch < 51 )
+    pitchIndex = ultra_low;
+  else if( pitch < 102 )
+    pitchIndex = low;
+  else if( pitch < 153 )
+    pitchIndex = medium;
+  else if( pitch < 204 )
+    pitchIndex = high;
+
+  switch( mAcousticMode )
+  {
+    case amNone:
+      break;
+    case amMidi:
+      mMidiPlayer.Play( Parameter( "Sounds", "MIDI", pitchIndex ) );
+      break;
+    case 2: // WAV
+      if( !mWavePlayers[ pitchIndex ].IsPlaying() )
+        mWavePlayers[ pitchIndex ].Play();
+      break;
+    default:
+      bcierr << "Unknown acoustic mode " << mAcousticMode << endl;
+  }
+  return pitch;
+}
+
+
+void
+TTask::Process( const GenericSignal* Input, GenericSignal* )
+{
+  if( State( "Running" ) )
+  {
+    // make music
+    State( "Pitch" ) = MakeMusic( ( *Input )( 0, 0 ) );
+  }
   // time stamp the data
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
 }
 
 void TTask::Halt()
 {
-  midiPlayer.StopSequence();
-  for( WavePlayerContainer::iterator i = wavePlayers.begin(); i != wavePlayers.end(); ++i )
-    i->second.Stop();
+  mMidiPlayer.StopSequence();
+  for( WavePlayerContainer::iterator i = mWavePlayers.begin(); i != mWavePlayers.end(); ++i )
+    i->Stop();
 }
