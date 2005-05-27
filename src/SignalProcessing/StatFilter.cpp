@@ -195,7 +195,6 @@ void StatFilter::Initialize()
   int visualizeyn = 0;
 
   static int init_flag= 0;
-  static int wt_init_flag= 0;
   trend_flag= 0;
   intercept_flag= 0;
   weight_flag= 0;
@@ -279,17 +278,15 @@ void StatFilter::Initialize()
       }
     }
 
-  if( ( WtControl > 0 ) && ( wt_init_flag == 0 ) )
+  if( ( WtControl > 0 ) && ( Sfile == NULL ) )
     {
       AName= SName + "S" + SSes + ".lms";
       strcpy(OName,FName);
       strcat(OName, AName.c_str() );         // CAT vs CPY
-      if (Sfile) fclose(Sfile);
       Sfile= fopen(OName,"a+");
       if( Sfile == NULL )
         bcierr << "Could not open " << OName << " for writing" << std::endl;
       stat->SetWeightControl( Sfile );
-      wt_init_flag= 1;
     }
 
   //       cur_ystat.bper= 1;
