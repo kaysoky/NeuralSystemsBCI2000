@@ -47,9 +47,11 @@ class GenericFilter : protected Environment
 {
  friend class Documentar;
 
- public:
+ protected:
           GenericFilter()  { AllFilters().push_back( this ); }
+ public:
   virtual ~GenericFilter() { AllFilters().remove( this ); }
+
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const = 0;
   // Initialize() performs initialization required when parameter settings
