@@ -590,8 +590,8 @@ In your class' header file, \texttt{"TachyonADC.h"}, you write
 class TachyonADC : public GenericADC
 {
  public:
-   TachyonAdc();
-   ~TachyonAdc();
+   TachyonADC();
+   ~TachyonADC();
 
    void Preflight( const SignalProperties&, SignalProperties& ) const;
    void Initialize();
@@ -662,6 +662,10 @@ void TachyonADC::Preflight( const SignalProperties&,
 }
 \end{verbatim}\codeend
 
+Here, the last argument of the \texttt{SignalProperties} constructor
+determines not only the type of the signal propagated to the BCI2000 filters 
+but also the format of the \texttt{dat} file written by the source module.
+
 For the \texttt{Initialize} function, you know that it will only be called if 
 \texttt{Preflight} did not report any errors. So everything will work fine with
 the parameters, and you may skip any checks, writing
@@ -723,13 +727,13 @@ and process data.
 It will also show you how to visualize a filter's output signal, presenting it
 to the operator user.
 
-\subsubsection{A simple high pass filter}
+\subsubsection{A simple low pass filter}
 
-We want to implement a high pass filter with a time constant $T$ (given in units
+We want to implement a low pass filter with a time constant $T$ (given in units
 of a sample's duration), a sequence $S_{in,t}$ as input and a sequence
 $S_{out,t}$ as output (where $t$ is an sample index proportional to time), and obeying
 \begin{equation}
-\label{eq:HPFormula}
+\label{eq:LPFormula}
   \begin{array}{ccl}
     S_{out, 0} & = & \frac{1}{T} \: S_{in, 0} \\
     S_{out, t} & = & e^{-1/T} S_{out, t-1} + \frac{1}{T} \: S_{in, t}
@@ -738,36 +742,36 @@ $S_{out,t}$ as output (where $t$ is an sample index proportional to time), and o
 
 \subsubsection{The filter skeleton}
 
-The resulting filter class is to be called \texttt{HPFilter}.
-We create two new files, \texttt{HPFilter.h}, and \texttt{HPFilter.cpp},
-and put a minimal filter declaration into \texttt{HPFilter.h}:
+The resulting filter class is to be called \texttt{LPFilter}.
+We create two new files, \texttt{LPFilter.h}, and \texttt{LPFilter.cpp},
+and put a minimal filter declaration into \texttt{LPFilter.h}:
 
 \codebegin\begin{verbatim}
-#ifndef HPFilterH
-#define HPFilterH
+#ifndef LPFilterH
+#define LPFilterH
 
-#include "GenericFilter.h"
+#include "UGenericFilter.h"
 
-class HPFilter : public GenericFilter
+class LPFilter : public GenericFilter
 {
  public:
-   HPFilter();
-   ~HPFilter();
+   LPFilter();
+   ~LPFilter();
 
    void Preflight( const SignalProperties&, SignalProperties& ) const;
    void Initialize();
    void Process( const GenericSignal*, GenericSignal* );
 };
-#endif // HPFilterH
+#endif // LPFilterH
 \end{verbatim}\codeend
 
-Into \texttt{HPFilter.cpp} we put the lines
+Into \texttt{LPFilter.cpp} we put the lines
 
 \codebegin\begin{verbatim}
 #include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy
 #pragma hdrstop
 
-#include "HPFilter.h"
+#include "LPFilter.h"
 
 #include "MeasurementUnits.h"
 #include "UBCIError.h"
@@ -780,15 +784,15 @@ using namespace std;
 
 \subsubsection{The \texttt{Process} function}
 
-For implementing a filter, a good strategy is to begin with the \texttt{Process}
-function, and consider the remaining class member functions mere helpers, mainly
+When implementing a filter, a good strategy is to begin with the \texttt{Process}
+function, and to consider the remaining class member functions mere helpers, mainly
 determined by the code of \texttt{Process}.
-So we convert (\ref{eq:HPFormula}) into the \texttt{Process}
+So we convert (\ref{eq:LPFormula}) into the \texttt{Process}
 code, introducing member variables \textit{ad hoc}, ignoring possible error
 conditions, and postponing efficiency considerations:
 
 \codebegin\begin{verbatim}
-void HPFilter::Process( const GenericSignal* input, GenericSignal* output )
+void LPFilter::Process( const GenericSignal* input, GenericSignal* output )
 {
   // This will initialize additional elements with 0,
   // implementing the first line of the filter prescription: 
@@ -796,7 +800,7 @@ void HPFilter::Process( const GenericSignal* input, GenericSignal* output )
   // This implements the second line for all channels:
   for( size_t channel = 0; channel < input->Channels(); ++channel )
   {
-    for( size_t sample = 0; sample < input->MaxElements( channel ); ++sample )
+    for( size_t sample = 0; sample < input->Elements(); ++sample )
     {
       mPreviousOutput[ channel ] *= mDecayFactor;
       mPreviousOutput[ channel ] += ( *input )( channel, sample ) / mTimeConstant;
@@ -810,7 +814,7 @@ void HPFilter::Process( const GenericSignal* input, GenericSignal* output )
 \subsubsection{The \texttt{Initialize} member function}
 
 As you will notice when comparing \texttt{Process} to equation
-(\ref{eq:HPFormula}), we introduced member variables representing these
+(\ref{eq:LPFormula}), we introduced member variables representing these
 sub-expressions:
 \begin{eqnarray*}
   \texttt{mPreviousOutput[\ ]} & = & S_{out, t-1}\\
@@ -833,9 +837,9 @@ parameters as needed. This is done in the \texttt{Initialize} member function --
 we write it down without considering possible error conditions:
 
 \codebegin\begin{verbatim}
-void HPFilter::Initialize()
+void LPFilter::Initialize()
 {
-  mTimeConstant = Parameter( "HPTimeConstant" );
+  mTimeConstant = Parameter( "LPTimeConstant" );
   mDecayFactor = ::exp( -1.0 / mTimeConstant );
   mPreviousOutput.clear();
 }
@@ -853,10 +857,10 @@ seconds; writing an naked number will be interpreted as sample blocks.
 Thus, our user friendly version of \texttt{Initialize} reads
 
 \codebegin\begin{verbatim}
-void HPFilter::Initialize()
+void LPFilter::Initialize()
 {
   // Get the time constant in units of a sample block's duration:
-  mTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "HPTimeConstant" ) );
+  mTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
   // Convert it into units of a sample's duration:
   mTimeConstant *= Parameter( "SampleBlockSize" );
   
@@ -883,7 +887,7 @@ execution of our filter code. Scanning through the \texttt{Process} and
 \end{enumerate}
 
 The first two assumptions may be violated if a user enters an illegal
-value into the HPTimeConstant parameter; we need to make sure that an error
+value into the LPTimeConstant parameter; we need to make sure that an error
 is reported, and no code is executed that depends on these two assumptions.
 The third assumption will hold if the framework code does what it is supposed 
 to do, so we don't need to check for it.
@@ -891,21 +895,21 @@ For the last assumption, we request an appropriate output signal from the
 \texttt{Preflight} function. Thus, the \texttt{Preflight} code reads
 
 \codebegin\begin{verbatim}
-void HPFilter::Preflight( const SignalProperties& inputProperties,
+void LPFilter::Preflight( const SignalProperties& inputProperties,
                             SignalProperties& outputProperties ) const
 {
-  float HPTimeConstant = MeasurementUnits::ReadAsTime( 
-                                            Parameter( "HPTimeConstant" ) );
-  HPTimeConstant *= Parameter( "SampleBlockSize" );
+  float LPTimeConstant = MeasurementUnits::ReadAsTime( 
+                                            Parameter( "LPTimeConstant" ) );
+  LPTimeConstant *= Parameter( "SampleBlockSize" );
   // The PreflightCondition macro will automatically generate an error
   // message if its argument evaluates to false.
   // However, we need to make sure that its argument is user-readable
   // -- this is why we chose a variable name that matches the parameter
   // name.
-  PreflightCondition( HPTimeConstant > 0 );
+  PreflightCondition( LPTimeConstant > 0 );
   // Alternatively, we might write:
-  if( HPTimeConstant <= 0 )
-    bcierr << "The HPTimeConstant parameter must be greater 0" << endl;
+  if( LPTimeConstant <= 0 )
+    bcierr << "The LPTimeConstant parameter must be greater 0" << endl;
 
   // Request output signal properties:
   outputProperties = inputProperties;
@@ -915,24 +919,24 @@ void HPFilter::Preflight( const SignalProperties& inputProperties,
 \subsubsection{Constructor and destructor}
 
 Because we don't explicitly acquire resources, nor perform asynchronous
-operations, there is nothing to be done inside the \texttt{HPFilter} 
+operations, there is nothing to be done inside the \texttt{LPFilter} 
 \textit{destructor}.
 Our \textit{constructor} will contain initializers for the members we declared,
-and a BCI2000 parameter definition for HPTimeConstant:
+and a BCI2000 parameter definition for LPTimeConstant:
  
 \codebegin\begin{verbatim}
-HPFilter::HPFilter()
+LPFilter::LPFilter()
 : mTimeConstant( 0 ),
   mDecayFactor( 0 ),
   mPreviousOutput( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Filtering float HPTimeConstant= 16s"
-      " 16s 0 0 // time constant for the high pass filter in blocks or seconds",
+    "Filtering float LPTimeConstant= 16s"
+      " 16s 0 0 // time constant for the low pass filter in blocks or seconds",
   END_PARAMETER_DEFINITIONS
 }
 
-HPFilter::~HPFilter()
+LPFilter::~LPFilter()
 {
 }
 \end{verbatim}\codeend
@@ -948,25 +952,25 @@ If we want to use the filter in the AR Signal Processing module, and place it af
 the \texttt{SpatialFilter}, we add
 
 \codebegin\begin{verbatim}
-#include "HPFilter.h"
+#include "LPFilter.h"
 ...
-Filter( HPFilter, 2.B1 );
+Filter( LPFilter, 2.B1 );
 \end{verbatim}\codeend
 to the file \texttt{SignalProcessing/AR/UFilterHandling.cpp}.
 
 Now, if we compile and link the AR Signal Processing module, we get an ``unresolved
-external" linker error that reminds us to add our \texttt{HPFilter.cpp} to that module's project.
+external" linker error that reminds us to add our \texttt{LPFilter.cpp} to that module's project.
 
 \subsubsection{Visualizing filter output}
 
-We would like to present the HPFilter's output signal in an operator window.
+We would like to present the LPFilter's output signal in an operator window.
 To accomplish this, we introduce a member of type \texttt{GenericVisualization}
 into our filter class, adding
 
 \codebegin\begin{verbatim}
-#include "GenericVisualization.h"
+#include "UGenericVisualization.h"
 ...
-class HPFilter : public GenericFilter
+class LPFilter : public GenericFilter
 {
 ...
   private:
@@ -980,7 +984,7 @@ class HPFilter : public GenericFilter
 ID as a parameter; we need to get a unique ID in order to get our data routed
 to the correct operator window.
 This can be done by adding an entry
-\texttt{HighPass} at the end of the \texttt{SOURCEID} enumeration in the file
+\texttt{LowPass} at the end of the \texttt{SOURCEID} enumeration in the file
 \texttt{shared/defines.h}.
 
 Then, in our \texttt{.cpp} file, we add 
@@ -988,28 +992,28 @@ Then, in our \texttt{.cpp} file, we add
 \codebegin\begin{verbatim}
 #include "defines.h"
 \end{verbatim}\codeend
-and change the \texttt{HPFilter} constructor to read
+and change the \texttt{LPFilter} constructor to read
 
 \codebegin\begin{verbatim}
-HPFilter::HPFilter()
+LPFilter::LPFilter()
 : mTimeConstant( 0 ),
   mDecayFactor( 0 ),
   mPreviousOutput( 0 ),
-  mSignalVis( SOURCEID::HighPass )
+  mSignalVis( SOURCEID::LowPass )
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Filtering float HPTimeConstant= 16s"
-      " 16s 0 0 // time constant for the high pass filter in blocks or seconds",
-    "Visualize int VisualizeHighPass= 1"
-      " 1 0 1 // visualize high pass output signal (0=no, 1=yes)",
-    "Visualize int HPVisMin= -100 0 0 0 "
-      "// high pass visualization min value",
-    "Visualize int HPVisMax= 100 0 0 0 "
-      "// high pass visualization max value",
+    "Filtering float LPTimeConstant= 16s"
+      " 16s 0 0 // time constant for the low pass filter in blocks or seconds",
+    "Visualize int VisualizeLowPass= 1"
+      " 1 0 1 // visualize low pass output signal (0=no, 1=yes)",
+    "Visualize int LPVisMin= -100 0 0 0 "
+      "// low pass visualization min value",
+    "Visualize int LPVisMax= 100 0 0 0 "
+      "// low pass visualization max value",
   END_PARAMETER_DEFINITIONS
 }
 \end{verbatim}\codeend
-where HPVisMin and HPVisMax parameters determine the default scaling of the
+where LPVisMin and LPVisMax parameters determine the default scaling of the
 displayed signal; these parameters may even be reverted, resulting in an inversion
 of the displayed signal, so there is no need to check these parameters from
 \texttt{Preflight}.
@@ -1017,18 +1021,19 @@ of the displayed signal, so there is no need to check these parameters from
 In \texttt{Initialize}, we add
 
 \codebegin\begin{verbatim}
-  mSignalVis.Send( CFGID::WINDOWTITLE, "High Pass" );
+  mSignalVis.Send( CFGID::WINDOWTITLE, "Low Pass" );
   mSignalVis.Send( CFGID::graphType, CFGID::polyline );
-  mSignalVis.Send( CFGID::MINVALUE, ( const char* )Parameter( "HPVisMin" );
-  mSignalVis.Send( CFGID::MAXVALUE, ( const char* )Parameter( "HPVisMax" );
+  mSignalVis.Send( CFGID::MINVALUE, Parameter( "LPVisMin" ) );
+  mSignalVis.Send( CFGID::MAXVALUE, Parameter( "LPVisMax" ) );
+  mSignalVis.Send( CFGID::NUMSAMPLES, 2 * Parameter( "SamplingRate" ) );
 \end{verbatim}\codeend
 
 Finally, to update the display in regular intervals, we add the following at the
 end of \texttt{Process}:
 
 \codebegin\begin{verbatim}
-  if( Parameter( "VisualizeHighPass" ) == 1 )
-    mSignalVis.Send( outputSignal );
+  if( Parameter( "VisualizeLowPass" ) == 1 )
+    mSignalVis.Send( output );
 \end{verbatim}\codeend
 
 We might also send data to the already existing task log memo window, adding
@@ -1040,7 +1045,7 @@ another member
 initializing it with
 
 \codebegin\begin{verbatim}
-HPFilter::HPFilter()
+LPFilter::LPFilter()
 : ...
   mTaskLogVis( SOURCEID::TASKLOG )
 {
@@ -1053,7 +1058,7 @@ and, from inside \texttt{Process}, writing some text to it as in
   if( ( *output )( 0, 0 ) > 10 )
   {
     ostringstream oss;
-    oss << "HPFilter: (0,0) entry of output exceeds 10 and is "
+    oss << "LPFilter: (0,0) entry of output exceeds 10 and is "
         << ( *output )( 0, 0 );
     mTaskLogVis.Send( oss.str() );
   }
@@ -1067,9 +1072,9 @@ When instantiating a filter more than once, one needs to maintain multiple
 In the following example, we will number filter instances from 1 to $N$, and
 append instance numbers to parameter names in order to obtain a separate copy of
 the parameters for each instance. To keep things simple, we use the initial
-version of \texttt{HPFilter} -- without visualization -- in the example.
+version of \texttt{LPFilter} -- without visualization -- in the example.
 
-To obtain 1-based instance numbers for the instances of \texttt{HPFilter}, 
+To obtain 1-based instance numbers for the instances of \texttt{LPFilter}, 
 we introduce a static class member that acts as an instance counter -- static
 data members of a class exist once per class, so we will increment the counter
 in the constructor, and decrement it in the destructor, to obtain a number that
@@ -1080,49 +1085,49 @@ Practically, this implies
 \item adding the lines 
 
   \codebegin\begin{verbatim}
-    std::string mParamName_HPTimeConstant;
+    std::string mParamName_LPTimeConstant;
     static int sNumInstances;
   \end{verbatim}\codeend
   to the end of the \texttt{private} section of the class declaration;
 \item adding the definition and initialization 
 
   \codebegin\begin{verbatim}
-    int HPFilter::sNumInstances = 0;
+    int LPFilter::sNumInstances = 0;
   \end{verbatim}\codeend
-  to \texttt{HPFilter.cpp};
-\item adding an initializer for \texttt{mParamName\_HPTimeConstant} to the
+  to \texttt{LPFilter.cpp};
+\item adding an initializer for \texttt{mParamName\_LPTimeConstant} to the
   constructor, appending the instance number to it, and replacing all 
-  occurrences of the parameter name with \texttt{mParamName\_HPTimeConstant}:
+  occurrences of the parameter name with \texttt{mParamName\_LPTimeConstant}:
   
   \codebegin\begin{verbatim}
-HPFilter::HPFilter()
+LPFilter::LPFilter()
 : ...
-  mParamName_HPTimeConstant( "HPTimeConstant" )
+  mParamName_LPTimeConstant( "LPTimeConstant" )
 {
   ostringstream oss;
   oss << ++sNumInstances;
-  mParamName_HPTimeConstant += oss.str();
+  mParamName_LPTimeConstant += oss.str();
     
   // Instead of using the BEGIN_... and END_... macros, we need
   // to construct our parameter by hand:
   string paramLine = "Filtering float ";
-  paramLine += mParamName_HPTimeConstant
-            + "= 16s 16s 0 0 // time constant for the high pass filter"
+  paramLine += mParamName_LPTimeConstant
+            + "= 16s 16s 0 0 // time constant for the low pass filter"
             + " in blocks or seconds";
-  ( *Parameters )[ mParamName_HPTimeConstant ] = PARAM( paramLine.c_str() );
+  ( *Parameters )[ mParamName_LPTimeConstant ] = PARAM( paramLine.c_str() );
 }
   \end{verbatim}\codeend
 \item changing the destructor to read
   
   \codebegin\begin{verbatim}
-HPFilter::~HPFilter()
+LPFilter::~LPFilter()
 {
   --sNumInstances;
 }
   \end{verbatim}\codeend
-\item replacing the literal occurrences of \texttt{"HPTimeConstant"} in the 
+\item replacing the literal occurrences of \texttt{"LPTimeConstant"} in the 
   \texttt{Preflight}, \texttt{Initialize}, and \texttt{Process} functions
-  with \texttt{mParamName\_HPTimeConstant}.
+  with \texttt{mParamName\_LPTimeConstant}.
 \end{itemize}
 
 Now, when adding multiple \texttt{Filter} statements to
@@ -1130,16 +1135,16 @@ Now, when adding multiple \texttt{Filter} statements to
   
   \codebegin\begin{verbatim}
 Filter( CalibrationFilter, 2.A );
-Filter( HPFilter, 2.A1 ); // this instance owns HPTimeConstant1
+Filter( LPFilter, 2.A1 ); // this instance owns LPTimeConstant1
 Filter( SpatialFilter, 2.B );
-Filter( HPFilter, 2.B1 ); // this instance owns HPTimeConstant2
+Filter( LPFilter, 2.B1 ); // this instance owns LPTimeConstant2
 Filter( ARTemporalFilter, 2.C );
 Filter( ClassFilter, 2.D );
 Filter( StatFilter, 2.E1 );
 Filter( NormalFilter, 2.E2 );
   \end{verbatim}\codeend
-each instance of \texttt{HPFilter} has its own parameter
-\texttt{HPTimeConstant1}, \texttt{HPTimeConstant2}, and so on, and the numbers
+each instance of \texttt{LPFilter} has its own parameter
+\texttt{LPTimeConstant1}, \texttt{LPTimeConstant2}, and so on, and the numbers
 are in the order in which the instances appear in the filter chain.
 
 \section{Entity--Relationship Model for Shared Classes}
