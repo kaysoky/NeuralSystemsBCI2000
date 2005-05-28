@@ -735,8 +735,8 @@ $S_{out,t}$ as output (where $t$ is an sample index proportional to time), and o
 \begin{equation}
 \label{eq:LPFormula}
   \begin{array}{ccl}
-    S_{out, 0} & = & \frac{1}{T} \: S_{in, 0} \\
-    S_{out, t} & = & e^{-1/T} S_{out, t-1} + \frac{1}{T} \: S_{in, t}
+    S_{out, 0} & = & \left( 1-e^{-1/T} \right) S_{in, 0} \\
+    S_{out, t} & = & e^{-1/T} S_{out, t-1} + \left( 1-e^{-1/T} \right) S_{in, t}
   \end{array}
 \end{equation}
 
@@ -803,7 +803,8 @@ void LPFilter::Process( const GenericSignal* input, GenericSignal* output )
     for( size_t sample = 0; sample < input->Elements(); ++sample )
     {
       mPreviousOutput[ channel ] *= mDecayFactor;
-      mPreviousOutput[ channel ] += ( *input )( channel, sample ) / mTimeConstant;
+      mPreviousOutput[ channel ] += 
+           ( *input )( channel, sample ) * ( 1.0 - mDecayFactor );
       ( *output )( channel, sample ) = mPreviousOutput[ channel ];
     }
   }
@@ -819,7 +820,6 @@ sub-expressions:
 \begin{eqnarray*}
   \texttt{mPreviousOutput[\ ]} & = & S_{out, t-1}\\
   \texttt{mDecayFactor} & = & e^{-1/T}\\
-  \texttt{mTimeConstant} & = & T\\
 \end{eqnarray*}
 
 We introduce these members into the class declaration, adding the following lines 
@@ -827,8 +827,7 @@ after the \texttt{Process} declaration:
 
 \codebegin\begin{verbatim}
   private:
-    float              mTimeConstant,
-                       mDecayFactor;
+    float              mDecayFactor;
     std::vector<float> mPreviousOutput;
 \end{verbatim}\codeend
     
@@ -839,8 +838,8 @@ we write it down without considering possible error conditions:
 \codebegin\begin{verbatim}
 void LPFilter::Initialize()
 {
-  mTimeConstant = Parameter( "LPTimeConstant" );
-  mDecayFactor = ::exp( -1.0 / mTimeConstant );
+  float timeConstant = Parameter( "LPTimeConstant" );
+  mDecayFactor = ::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
 }
 \end{verbatim}\codeend
@@ -860,11 +859,11 @@ Thus, our user friendly version of \texttt{Initialize} reads
 void LPFilter::Initialize()
 {
   // Get the time constant in units of a sample block's duration:
-  mTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
+  float timeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
   // Convert it into units of a sample's duration:
-  mTimeConstant *= Parameter( "SampleBlockSize" );
+  timeConstant *= Parameter( "SampleBlockSize" );
   
-  mDecayFactor = ::exp( -1.0 / mTimeConstant );
+  mDecayFactor = ::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
 }
 \end{verbatim}\codeend
@@ -926,8 +925,7 @@ and a BCI2000 parameter definition for LPTimeConstant:
  
 \codebegin\begin{verbatim}
 LPFilter::LPFilter()
-: mTimeConstant( 0 ),
-  mDecayFactor( 0 ),
+: mDecayFactor( 0 ),
   mPreviousOutput( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
@@ -996,8 +994,7 @@ and change the \texttt{LPFilter} constructor to read
 
 \codebegin\begin{verbatim}
 LPFilter::LPFilter()
-: mTimeConstant( 0 ),
-  mDecayFactor( 0 ),
+: mDecayFactor( 0 ),
   mPreviousOutput( 0 ),
   mSignalVis( SOURCEID::LowPass )
 {
