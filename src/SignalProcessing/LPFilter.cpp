@@ -75,7 +75,7 @@ LPFilter::Initialize()
   float timeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
   // Convert it into units of a sample's duration:
   timeConstant *= Parameter( "SampleBlockSize" );
-  
+
   mDecayFactor = ::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
 
@@ -91,7 +91,7 @@ void
 LPFilter::Process( const GenericSignal* input, GenericSignal* output )
 {
   // This will initialize additional elements with 0,
-  // implementing the first line of the filter prescription: 
+  // implementing the first line of the filter prescription:
   mPreviousOutput.resize( input->Channels(), 0 );
   // This implements the second line for all channels:
   for( size_t channel = 0; channel < input->Channels(); ++channel )
@@ -99,7 +99,7 @@ LPFilter::Process( const GenericSignal* input, GenericSignal* output )
     for( size_t sample = 0; sample < input->Elements(); ++sample )
     {
       mPreviousOutput[ channel ] *= mDecayFactor;
-      mPreviousOutput[ channel ] += ( *input )( channel, sample ) * ( 1 - mDecayFactor );
+      mPreviousOutput[ channel ] += ( *input )( channel, sample ) * ( 1.0 - mDecayFactor );
       ( *output )( channel, sample ) = mPreviousOutput[ channel ];
     }
   }
