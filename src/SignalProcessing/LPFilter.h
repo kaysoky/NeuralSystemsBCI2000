@@ -26,10 +26,9 @@ class LPFilter : public GenericFilter
    void Process( const GenericSignal*, GenericSignal* );
 
  private:
-   float                mTimeConstant,
-                        mDecayFactor;
+   float                mDecayFactor;
    std::vector<float>   mPreviousOutput;
-   
+
    GenericVisualization mSignalVis;
 };
 #endif // LPFilterH

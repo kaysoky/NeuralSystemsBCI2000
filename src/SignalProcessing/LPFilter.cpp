@@ -25,8 +25,7 @@ using namespace std;
 RegisterFilter( LPFilter, 2.B1 );
 
 LPFilter::LPFilter()
-: mTimeConstant( 0 ),
-  mDecayFactor( 0 ),
+: mDecayFactor( 0 ),
   mPreviousOutput( 0 ),
   mSignalVis( SOURCEID::LowPass )
 {
@@ -73,11 +72,11 @@ void
 LPFilter::Initialize()
 {
   // Get the time constant in units of a sample block's duration:
-  mTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
+  float timeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
   // Convert it into units of a sample's duration:
-  mTimeConstant *= Parameter( "SampleBlockSize" );
+  timeConstant *= Parameter( "SampleBlockSize" );
   
-  mDecayFactor = ::exp( -1.0 / mTimeConstant );
+  mDecayFactor = ::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
 
   mSignalVis.Send( CFGID::WINDOWTITLE, "Low Pass" );
@@ -100,7 +99,7 @@ LPFilter::Process( const GenericSignal* input, GenericSignal* output )
     for( size_t sample = 0; sample < input->Elements(); ++sample )
     {
       mPreviousOutput[ channel ] *= mDecayFactor;
-      mPreviousOutput[ channel ] += ( *input )( channel, sample ) / mTimeConstant;
+      mPreviousOutput[ channel ] += ( *input )( channel, sample ) * ( 1 - mDecayFactor );
       ( *output )( channel, sample ) = mPreviousOutput[ channel ];
     }
   }
