@@ -1,0 +1,103 @@
+Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
+UsrTask matrix Announcements= { 0 1 2 } { Task Result } % % % % % % 0 0 0 // Sound files for auditory announcements
+UsrTask matrix AnnouncementVolumes= { 0 1 2 } { Task Result Cursor Hit Miss } 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1.0 0.0 1.0 // Volume settings for announcements
+System string ApplicationIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the Application module's listening IP
+System string ApplicationPort= 1133 4200 1024 32768 // the Application module's listening port
+Statistics matrix BaselineCfg= 2 2 TargetCode 1 TargetCode 2 0 0 0 // states to watch for baseline
+Statistics matrix BaselineHits= 2 2 1 0.50 2 0.50 0 0 0 // proportion correct for each target
+UsrTask int BaselineInterval= 1 0 0 2 // Intercept Computation 0 = none 1 = targets 2 = ITI (enumeration)
+Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction
+UsrTask int CursorSize= 25 0 0 1000 // User Window Cursor Size
+UsrTask matrix CursorVolume= { 0 1 2 } { min max } 0.5 1.0 0.5 1.0 0.5 1.0 1.0 1.0 0.0 // Volume ranges for cursor announcements
+MEMFilter float deltaMem= 0.2 0.2 0.02 2.00 // Resolution (line density)
+Source string DeviceIDMaster= auto 1 1 16 // deviceID for the device whose SYNC goes to the slaves
+Source list DeviceIDs= 1 auto 0 0 0 // list of USBamps to be used (or auto)
+System string EEGSourceIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the EEGSource module's listening IP
+System string EEGSourcePort= 1131 4200 1024 32768 // the EEGSource module's listening port
+Storage string FileInitials= ..\ a z 0 // path to top level data directory (directory)
+Source int FilterEnabled= 1 1 0 1 // Enable pass band filter (0=no, 1=yes)
+Source float FilterHighPass= 2 0.1 0 50 // high pass filter for pass band
+Source float FilterLowPass= 60 60 0 4000 // low pass filter for pass band
+Source int FilterModelOrder= 3 4 1 10 // filter model order for pass band
+Source int FilterType= 1 1 1 2 // filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)
+UsrTask int ItiDuration= 10 0 0 100 // Duration of Intertrial Interval
+Localization string Language= Default Default % % // Language for user messages
+Localization matrix LocalizedStrings= { French German Dutch } { YES NO N/A Get%20Ready%20... } OUI NON %20-%20 Appr%eater%20... JA NEIN %20-%20 Achtung%20... JA NEE %20-%20 Opgepast%20... % % % // Localized user messages
+MEMFilter float MemBandWidth= 3.0 3.0 0.5 32.0 // Spectral Bandwidth in Hz
+MEMFilter int MemDetrend= 0 0 0 2 // Detrend data?  0=no 1=mean 2= linear
+MEMFilter int MemModelOrder= 10 10 2 32 // AR model order
+MEMFilter int MemWindows= 2 2 1 8 // AR- number of input blocks
+Filtering matrix MLR= 10 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Left / Right Weights
+Filtering matrix MUD= 10 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 100 // Class Filter Additive Up / Down Weights
+Source int NotchEnabled= 1 1 0 1 // Enable notch (0=no, 1=yes)
+Source float NotchHighPass= 50 50 0 70 // high pass filter for notch filter
+Source float NotchLowPass= 70 70 0 4000 // low pass filter for notch filter
+Source int NotchModelOrder= 2 2 1 10 // filter model order for notch filter
+Source int NotchType= 1 1 1 2 // filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)
+UsrTask int NumberTargets= 2 0 0 1023 // Number of Targets
+Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
+Statistics int OutcomeDirection= 1 0 1 2 // Direction of trial outcome statistic
+UsrTask int PreRunInterval= 20 0 0 100 // Pause prior to starting a run (in units of SampleBlocks)
+UsrTask int PreTrialPause= 10 0 0 100 // Duration of Target w/o cursor
+UsrTask int RestingPeriod= 0 0 0 1 // rest period of data acquisition (boolean)
+UsrTask int RewardDuration= 10 0 0 100 // Duration of PostTrial Feedback
+UsrTask float RotateBy= 0 0 0 0 // Counterclockwise rotation of feedback view in units of 2 Pi
+Source int SampleBlockSize= 8 5 1 128 // number of samples per block
+Source int SamplingRate= 256 128 1 40000 // the signal sampling rate
+Storage int SavePrmFile= 0 1 0 1 // save additional parameter file (0=no, 1=yes) (boolean)
+System string SignalProcessingIP= 172.16.10.16 127.0.0.1 127.0.0.1 127.0.0.1 // the SignalProcessing module's listening IP
+System string SignalProcessingPort= 1129 4200 1024 32768 // the SignalProcessing module's listening port
+Statistics int SignalWinLth= 3 0 0 1000 // Trials in Signal Running Average
+Source int SoftwareCh= 16 16 1 128 // number of digitized channels total
+Source intlist SoftwareChDevices= 1 16 16 1 16 // number of digitized channels per device
+Filtering floatlist SourceChGain= 16 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 0.003 -500 500 // gain for each channel (A/D units -> muV)
+Filtering floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -500 500 // offset for channels in A/D units
+Filtering floatlist SourceChTimeOffset= 1 -1 0 0 1 // time offset for all source channels (not used if -1)
+Visualize int SourceMax= 8092 4096 0 16386 // raw signal vis Max Value
+Visualize int SourceMin= 0 0 -8092 0 // raw signal vis Min Value
+Filtering int SpatialFilteredChannels= 4 2 1 64 // Number of Spatially Filtered Channels
+Filtering matrix SpatialFilterKernal= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 64 -100 100 // Spatial Filter Kernal Weights
+MEMFilter float StartMem= 0.0 0.0 0.0 512.0 // Start of Spectrum in Hz
+System int StateVectorLength= 11 16 1 30 // length of the state vector in bytes
+MEMFilter float StopMem= 30.0 30.0 0.0 512.0 // End of Spectrum in Hz
+Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
+Storage string SubjectName= test Name a z // subject alias
+Storage string SubjectRun= 01 00 0 0 // two-digit run number
+Storage string SubjectSession= 001 001 0 0 // three-digit session number
+UsrTask int TargetType= 0 0 0 1 // 0=Targets, 1=YES/NO (enumeration)
+UsrTask float TargetWidth= 25 0 0 32767 // Width of Targets
+Statistics int TargetWinLth= 20 0 0 100 // Length of Target % Window
+UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds
+Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
+Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
+Statistics float TrendControlRate= 0.001 0 0.000 0.010 // Learning Rate for Linear Trend Control
+Visualize int VisualizeCalibration= 1 0 0 1 // visualize calibrated channels (0=no, 1=yes) (boolean)
+Visualize int VisualizeClassFiltering= 1 0 0 1 // visualize Class filtered signals (0=no 1=yes)
+Visualize int VisualizeNormalFiltering= 1 0 0 1 // visualize Normal filtered signals (0=no 1=yes)
+Visualize int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes) (boolean)
+Visualize int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
+Visualize int VisualizeSourceDecimation= 1 1 0 1 // decimation factor for raw brain signal
+Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualization
+Visualize int VisualizeSpatialFiltering= 1 0 0 1 // visualize spatial filtered signals (0=no 1=yes) (boolean)
+Visualize int VisualizeStatFiltering= 1 0 0 1 // visualize Stat filtered signals (0=no 1=yes)
+Visualize int VisualizeTemporalFiltering= 1 0 0 1 // visualize Temporal filtered signals (0=no 1=yes)
+Statistics matrix WeightControl= 3 1 Xadapt Yadapt AdaptCode 0 0 0 // State Names controlling Adaptation
+Statistics int WeightUse= 0 0 0 2 // Use of weights 0 = not 1= compute 2= use 
+UsrTask int WinHeight= 512 0 0 2000 // User Window Height
+UsrTask int WinWidth= 512 0 0 2000 // User Window Width
+UsrTask int WinXpos= 400 0 0 2000 // User Window X location
+UsrTask int WinYpos= 5 0 0 2000 // User Window Y location
+Statistics float WtLrnRt= 0.001 0 0.000 0.010 // Rate of Learning for Classifier 
+Statistics float XGain= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Statistics float XMean= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Statistics float XMeanProportion= 1.0 0.0 0.0 2.0 // Proportion of horizontal signal intercept
+Statistics float XPixelsPerSec= 0 70 0 400 // Horizontal Pixel Rate
+Statistics int XTrendControl= 0 0 0 2 // X Intercept Adapt 0 none 1 mean 2 mean prop 3 slope
+UsrTask int YesNoCorrect= 0 0 0 1 // Yes or No is target word (0=Yes, 1=No) (enumeration)
+UsrTask int YesNoOffTime= 4 0 0 0 // Time Yes/No is invisible (in units of SampleBlocks)
+UsrTask int YesNoOnTime= 1 0 0 0 // Time Yes/No is visible (in units of SampleBlocks)
+Statistics float YGain= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
+Statistics float YMean= 5.0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
+Statistics float YMeanProportion= 1.0 0.0 0.0 2.0 // Proportion of signal mean for intercept
+Statistics float YPixelsPerSec= 70 70 0 400 // Desired pixels per second
+Statistics int YTrendControl= 0 0 0 2 // Y Intercept Adapt 0 none 1 mean 2 mean prop 3 slope
