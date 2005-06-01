@@ -130,11 +130,11 @@ tcpsocket::set_address( const char* ip, u_short port )
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sin_family = AF_INET;
   m_address.sin_port = ::htons( port );
-  if( ip && *ip == '*' ) // A "*" as IP addess means "any local address" (for bind() ).
+  if( ip && *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
     m_address.sin_addr.s_addr = INADDR_ANY;
-  else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
+  else if( !ip || INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
   {
-    ::hostent* host = ::gethostbyname( ip );
+    ::hostent* host = ::gethostbyname( ip ); // gethostbyname( NULL ) will return local host.
     if( host && host->h_addr_list )
       m_address.sin_addr = *reinterpret_cast<in_addr*>( host->h_addr_list[ 0 ] );
   }
