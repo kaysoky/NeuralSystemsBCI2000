@@ -20,6 +20,7 @@
 #include "UBCIError.h"
 #include "BCIDirectry.h"
 #include "UBCItime.h"
+#include "MeasurementUnits.h"
 
 #include <stdio.h>
 #include <fstream>
@@ -97,9 +98,9 @@ DataIOFilter::DataIOFilter()
       "// decimation factor for raw brain signal",
     "Visualize int VisualizeSourceTime= 2 2 0 5 "
       "// how much time in Source visualization",
-    "Visualize int SourceMin= 0 0 -8092 0 "
+    "Visualize int SourceMin= -100muV -100muV 0 0 "
       "// raw signal vis Min Value",
-    "Visualize int SourceMax= 4096 4096 0 16386 "
+    "Visualize int SourceMax= 100muV 100muV 0 0 "
       "// raw signal vis Max Value",
   END_PARAMETER_DEFINITIONS
 
@@ -125,8 +126,16 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 {
   // Parameter existence and range.
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
-  PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
-  PreflightCondition( Parameter( "VisualizeSourceDecimation" ) > 0 );
+  int SampleBlockSize = Parameter( "SampleBlockSize" ),
+      VisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+  PreflightCondition( SampleBlockSize > 0 );
+  PreflightCondition( VisualizeSourceDecimation > 0 );
+  if( SampleBlockSize % VisualizeSourceDecimation != 0 )
+    bcierr << "The VisualizationSourceDecimation parameter "
+           << "(now " << VisualizeSourceDecimation << ") "
+           << "must be a divider of the sample block size "
+           << "(now " << SampleBlockSize << ")"
+           << endl;
 
   // File accessibility.
   string baseFileName = BCIDirectory()
@@ -215,6 +224,13 @@ DataIOFilter::Initialize()
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
   mVisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+  mSourceChOffset.resize( mRestingSignal.Channels(), 0.0 );
+  mSourceChGain.resize( mRestingSignal.Channels(), 1.0 );
+  for( size_t channel = 0; channel < mRestingSignal.Channels(); ++channel )
+  {
+    mSourceChOffset[ channel ] = OptionalParameter( 0, "SourceChOffset", channel );
+    mSourceChGain[ channel ] = OptionalParameter( 1, "SourceChGain", channel );
+  }
   if( mVisualizeEEG )
   {
     mEEGVis.Send( CFGID::WINDOWTITLE, "Source Signal" );
@@ -224,10 +240,17 @@ DataIOFilter::Initialize()
     ostringstream oss;
     oss << ( 1.0 / Parameter( "SamplingRate" ) * mVisualizeSourceDecimation ) << "s";
     mEEGVis.Send( CFGID::sampleUnit, oss.str() );
-    mEEGVis.Send( CFGID::MINVALUE, Parameter( "SourceMin" ) );
-    mEEGVis.Send( CFGID::MAXVALUE, Parameter( "SourceMax" ) );
-    mEEGVis.Send( CFGID::valueUnit, string( Parameter( "SourceChGain", 0, 0 ) ) + "uV" );
+    float minValue = MeasurementUnits::ReadAsVoltage( Parameter( "SourceMin" ) ),
+          maxValue = MeasurementUnits::ReadAsVoltage( Parameter( "SourceMax" ) );
+    mEEGVis.Send( CFGID::MINVALUE, ( minValue - mSourceChOffset[ 0 ] ) * mSourceChGain[ 0 ] );
+    mEEGVis.Send( CFGID::MAXVALUE, ( maxValue - mSourceChOffset[ 0 ] ) * mSourceChGain[ 0 ] );
+    mEEGVis.Send( CFGID::valueUnit, "1muV" );
   }
+  mDecimatedSignal.SetProperties( SignalProperties(
+    mRestingSignal.Channels(),
+    mRestingSignal.Elements() / mVisualizeSourceDecimation,
+    SignalType::float24
+  ) );
 
   mVisualizeRoundtrip = ( Parameter( "VisualizeRoundtrip" ) == 1 );
   if( mVisualizeRoundtrip )
@@ -418,12 +441,12 @@ DataIOFilter::Process( const GenericSignal* Input,
 
   if( mVisualizeEEG )
   {
-    if( mVisualizeSourceDecimation == 1 )
-      mEEGVis.Send( Output );
-    else
-      for( size_t j = 0; j < mDecimatedSignal.Channels(); ++j )
-        for( size_t i = 0; i < mDecimatedSignal.Elements(); ++i )
-          mDecimatedSignal( i, j ) = ( *Output )( i, j * mVisualizeSourceDecimation );
+    for( size_t i = 0; i < mDecimatedSignal.Channels(); ++i )
+      for( size_t j = 0; j < mDecimatedSignal.Elements(); ++j )
+        mDecimatedSignal( i, j )
+          = ( ( *Output )( i, j * mVisualizeSourceDecimation ) - mSourceChOffset[ i ] )
+          * mSourceChGain[ i ];
+    mEEGVis.Send( &mDecimatedSignal );
   }
 }
 
@@ -432,7 +455,14 @@ DataIOFilter::Resting()
 {
   mADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
-    mEEGVis.Send( &mRestingSignal );
+  {
+    for( size_t i = 0; i < mDecimatedSignal.Channels(); ++i )
+      for( size_t j = 0; j < mDecimatedSignal.Elements(); ++j )
+        mDecimatedSignal( i, j )
+          = ( mRestingSignal( i, j * mVisualizeSourceDecimation ) - mSourceChOffset[ i ] )
+          * mSourceChGain[ i ];
+    mEEGVis.Send( &mDecimatedSignal );
+  }
 }
 
 

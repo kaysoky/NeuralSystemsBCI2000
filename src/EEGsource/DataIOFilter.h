@@ -51,6 +51,8 @@ class DataIOFilter: public GenericFilter
   GenericSignal          mDecimatedSignal,
                          mRoundtripSignal;
   mutable GenericSignal  mRestingSignal;
+  std::vector<float>     mSourceChOffset,
+                         mSourceChGain;
 };
 
 #endif // DataIOFilterH
