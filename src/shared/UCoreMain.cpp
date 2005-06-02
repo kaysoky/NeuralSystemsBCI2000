@@ -309,6 +309,16 @@ TfMain::InitializeFilters()
   sampleBlockSize = param ? ::atoi( param->GetValue() ) : 1.0;
   MeasurementUnits::InitializeTimeUnit( samplingRate / sampleBlockSize );
 
+  float microvoltsPerAdUnit = 1.0;
+  param = mParamlist.GetParamPtr( "SourceChGain" );
+  if( param )
+  {
+    float paramValue = ::atof( param->GetValue( 0 ) );
+    if( paramValue > 0 )
+      microvoltsPerAdUnit = paramValue;
+  }
+  MeasurementUnits::InitializeVoltageUnit( 1e6 / microvoltsPerAdUnit );
+
   int numInputChannels = 0,
       numInputElements = 0;
 #if( MODTYPE == EEGSRC )
