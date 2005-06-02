@@ -17,10 +17,10 @@ class RandomNumberADC : public GenericADC
 
  private:
   int    samplerate;
-  short  sineminamplitude, sinemaxamplitude;
-  short  noiseminamplitude, noisemaxamplitude;
-  float  sinefrequency;
-  short  DCoffset;
+  float  sineminamplitude, sinemaxamplitude,
+         noiseminamplitude, noisemaxamplitude,
+         sinefrequency,
+         DCoffset;
   size_t sinechannel, sinechannelx;
   bool   modulateamplitude;
   int    cur_mousexpos, cur_mouseypos;

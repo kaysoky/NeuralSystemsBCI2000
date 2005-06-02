@@ -26,6 +26,7 @@
 #include "RandomNumberADC.h"
 #include "UBCIError.h"
 #include "UGenericSignal.h"
+#include "MeasurementUnits.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -79,6 +80,10 @@ RandomNumberADC::RandomNumberADC()
        "// the minimal output value for sine",
    "Source int SineMaxAmplitude=    10000 20000 -32767 32767 "
        "// the maximum output value for sine",
+#ifdef ROTATEMOUSE
+   "Source float RotateMouseBy=      0 0 0 0 "
+       "// angle of rotation for mouse direction in degrees",
+#endif // ROTATEMOUSE
    "Source int NoiseMinAmplitude=    -3000 0 -32767 32767 "
        "// the minimal output value for noise",
    "Source int NoiseMaxAmplitude=    3000 3000 -32767 32767 "
@@ -93,7 +98,7 @@ RandomNumberADC::RandomNumberADC()
             " 1: float24,"
             " 2: float32,"
             " 3: int32 "
-            "(enumeration)"
+            "(enumeration)",
  //"Source string MultiplierState=   -1 -1 0 0 "
  //    "// State to use as signal multiplier (-1 == don't use multiplier)",
  END_PARAMETER_DEFINITIONS
@@ -161,10 +166,10 @@ void RandomNumberADC::Initialize()
   // store the value of the needed parameters
   samplerate = Parameter( "SamplingRate" );
   sinefrequency = Parameter( "SineFrequency" );
-  sineminamplitude = Parameter( "SineMinAmplitude" );
-  sinemaxamplitude = Parameter( "SineMaxAmplitude" );
-  noiseminamplitude = Parameter( "NoiseMinAmplitude" );
-  noisemaxamplitude = Parameter( "NoiseMaxAmplitude" );
+  sineminamplitude = MeasurementUnits::ReadAsVoltage( Parameter( "SineMinAmplitude" ) );
+  sinemaxamplitude = MeasurementUnits::ReadAsVoltage( Parameter( "SineMaxAmplitude" ) );
+  noiseminamplitude = MeasurementUnits::ReadAsVoltage( Parameter( "NoiseMinAmplitude" ) );
+  noisemaxamplitude = MeasurementUnits::ReadAsVoltage( Parameter( "NoiseMaxAmplitude" ) );
   modulateamplitude = ( ( int )Parameter( "ModulateAmplitude" ) != 0 );
   DCoffset = Parameter( "DCoffset" );
   sinechannel = Parameter( "SineChannel" );
@@ -176,6 +181,7 @@ void RandomNumberADC::Initialize()
         mCount=0;
         srand(0);
   }
+
 }
 
 
@@ -194,8 +200,8 @@ void RandomNumberADC::Process( const GenericSignal*, GenericSignal* signal )
 size_t  sample;
 size_t  channel;
 int     time2wait;
-int     sinevalrange, noisevalrange;
-int     value, noise;
+float   sinevalrange, noisevalrange;
+float   value;
 long    longvalue;
 double  t;
 STATE   *stateptr;
@@ -216,6 +222,26 @@ int     stateval, cursorpos, cursorposx;
  try{
   cur_mousexpos=Mouse->CursorPos.x;
   cur_mouseypos=Mouse->CursorPos.y;
+#ifdef ROTATEMOUSE
+  if( Parameter( "RotateMouseBy" ) != 0 )
+  {
+    float x_in = float( cur_mousexpos - Screen->Width / 2 ) / Screen->Width,
+          y_in = float( cur_mouseypos - Screen->Height / 2 ) / Screen->Height,
+          phi = Parameter( "RotateMouseBy" ) * M_PI / 180.,
+          sin_phi = ::sin( phi ),
+          cos_phi = ::cos( phi ),
+          x_out = x_in * cos_phi - y_in * sin_phi,
+          y_out = x_in * sin_phi + y_in * cos_phi,
+          length = ::sqrt( x_out * x_out + y_out * y_out );
+    if( length > 0.5 )
+    {
+      x_out /= 2 * length;
+      y_out /= 2 * length;
+    }
+    cur_mousexpos = ( x_out + 0.5 ) * Screen->Width;
+    cur_mouseypos = ( y_out + 0.5 ) * Screen->Height;
+  }
+#endif // ROTATEMOUSE
   } catch(...) // if the screensaver comes on, CursorPos throws an exception (no mouse pointer anymore?). In this case, simply do not change the cursor position; 04/28/05 GS
      { bciout << "Cursor position could not be determined (screen saver on?). Data not predictable." << endl; }
 
@@ -252,19 +278,13 @@ int     stateval, cursorpos, cursorposx;
       if (sinefrequency != 0 && modulateamplitude)
          value=(int)((float)value/(float)cursorposx);
       }
-   if (noisevalrange > 1)
+   if (noisevalrange > 0)
    {
-           noise=(int)(rand() % noisevalrange + (int)noiseminamplitude);
+     float noise = rand() * noisevalrange / RAND_MAX + noiseminamplitude;
+     value += noise;         // add noise after modulating sine wave
    }
-   value+= noise;         // add noise after modulating sine wave
    value+=DCoffset;
-   const maxvalue = 1 << 15 - 1,
-         minvalue = - 1 << 15;
-   if( value > maxvalue )
-     value = maxvalue;
-   if( value < minvalue )
-     value = minvalue;
-   signal->SetValue(channel, sample, (short)value);
+   signal->SetValue(channel, sample, value);
    }
   }
 
