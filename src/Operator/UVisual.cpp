@@ -996,34 +996,61 @@ VISUAL::Graph::FormPaint( TObject* Sender )
               rulerLength = scale;
         while( rulerLength / unitsPerPixel >= 0.95 * baseInterval )
           rulerLength -= scale / 10;
+        int pixelLength = rulerLength / unitsPerPixel;
 
         ostringstream label;
         label << rulerLength << mValueUnit;
-        int left = SampleLeft( 0 ),
-            center = ChannelBottom( 0 ) - baseInterval / 2,
-            length = rulerLength / unitsPerPixel;
-        RECT labelRect =
+        if( mMinValue == 0 )
         {
-          left,
-          center,
-          left,
-          center
-        };
-        ::DrawText( dc, label.str().c_str(), -1, &labelRect,
-            DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
-        ::DrawText( dc, label.str().c_str(), -1, &labelRect,
-            DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_CALCRECT );
-        RECT lineRect =
+          int left = SampleLeft( 0 ) + tickLength,
+              top = ChannelBottom( 0 ) - pixelLength;
+          RECT labelRect =
+          {
+            left,
+            top,
+            left,
+            top
+          };
+          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+              DT_TOP | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
+          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+              DT_TOP | DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_CALCRECT );
+          RECT lineRect =
+          {
+            SampleLeft( 0 ),
+            labelRect.top,
+            left,
+            labelRect.top + 1
+          };
+          ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+        }
+        else
         {
-          labelRect.left,
-          center - ( length + markerWidth ) / 2,
-          labelRect.right,
-          center - ( length - markerWidth ) / 2
-        };
-        ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
-        lineRect.top += length;
-        lineRect.bottom += length;
-        ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+          int left = SampleLeft( 0 ),
+              center = ChannelBottom( 0 ) - baseInterval / 2;
+          RECT labelRect =
+          {
+            left,
+            center,
+            left,
+            center
+          };
+          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+              DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
+          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+              DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_CALCRECT );
+          RECT lineRect =
+          {
+            labelRect.left,
+            center - ( pixelLength + markerWidth ) / 2,
+            labelRect.right,
+            center - ( pixelLength - markerWidth ) / 2
+          };
+          ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+          lineRect.top += pixelLength;
+          lineRect.bottom += pixelLength;
+          ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+        }
       }
     } break;
 
