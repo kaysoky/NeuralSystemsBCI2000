@@ -89,6 +89,10 @@ namespace CFGID
       // Marker lists
       xAxisMarkers,
       yAxisMarkers,
+      // Miscellaneous
+      showSampleUnit,
+      showChannelUnit,
+      showValueUnit,
   };
 };
 // Backward compatibility.

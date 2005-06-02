@@ -291,6 +291,7 @@ VISUAL::Graph::Graph( id_type inSourceID )
   mBottomGroup( 0 ),
   mShowBaselines( false ),
   mShowChannelLabels( false ),
+  mShowValueUnit( false ),
   mDisplayColors( true ),
   mChannelGroupSize( 1 ),
   mMinValue( cMinValueDefault ),
@@ -376,7 +377,8 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
     mValueUnit = "";
     iss >> mUnitsPerValue >> mValueUnit;
   }
-
+  inConfig.Get( CFGID::showValueUnit, mShowValueUnit );
+  
   inConfig.Get( CFGID::xAxisMarkers, mXAxisMarkers );
   inConfig.Get( CFGID::channelLabels, mChannelLabels );
   mShowChannelLabels = !mChannelLabels.empty();
@@ -533,6 +535,7 @@ struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
   { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
   { ChooseColors, ChooseColors_Enabled, NULL, "Choose Channel Colors..." },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
+  { ToggleValueUnit, ToggleValueUnit_Enabled, ToggleValueUnit_Checked, "Show Unit" },
   { ToggleChannelLabels, ToggleChannelLabels_Enabled, ToggleChannelLabels_Checked, "Show Legend" },
 };
 
@@ -603,6 +606,26 @@ bool
 VISUAL::Graph::ToggleBaselines_Checked() const
 {
   return mShowBaselines;
+}
+
+void
+VISUAL::Graph::ToggleValueUnit()
+{
+  mShowValueUnit = !mShowValueUnit;
+  Visconfigs()[ sourceID ].Put( CFGID::showValueUnit, mShowValueUnit, UserDefined );
+  form->Invalidate();
+}
+
+bool
+VISUAL::Graph::ToggleValueUnit_Enabled() const
+{
+  return mDisplayMode == polyline;
+}
+
+bool
+VISUAL::Graph::ToggleValueUnit_Checked() const
+{
+  return mShowValueUnit;
 }
 
 void
@@ -873,6 +896,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
   gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
   gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, axisColor );
   const TColor markerColor = clWhite;
+  const markerWidth = 1;
   gdi[ markerBrush ] = ::CreateSolidBrush( markerColor );
 
   const fontHeight = cLabelWidth / 2;
@@ -962,6 +986,44 @@ VISUAL::Graph::FormPaint( TObject* Sender )
           ::Polyline( dc, remainingPoints, 2 );
         }
         ::Sleep( 0 );
+      }
+
+      if( mShowValueUnit )
+      {
+        // Find a round value that is near the display range.
+        float unitsPerPixel = ( mMaxValue - mMinValue ) * mUnitsPerValue / baseInterval,
+              scale = ::pow( 10, ::ceil( ::log10( unitsPerPixel * 0.95 * baseInterval ) ) ),
+              rulerLength = scale;
+        while( rulerLength / unitsPerPixel >= 0.95 * baseInterval )
+          rulerLength -= scale / 10;
+
+        ostringstream label;
+        label << rulerLength << mValueUnit;
+        int left = SampleLeft( 0 ),
+            center = ChannelBottom( 0 ) - baseInterval / 2,
+            length = rulerLength / unitsPerPixel;
+        RECT labelRect =
+        {
+          left,
+          center,
+          left,
+          center
+        };
+        ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+            DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
+        ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+            DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_CALCRECT );
+        RECT lineRect =
+        {
+          labelRect.left,
+          center - ( length + markerWidth ) / 2,
+          labelRect.right,
+          center - ( length - markerWidth ) / 2
+        };
+        ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+        lineRect.top += length;
+        lineRect.bottom += length;
+        ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
       }
     } break;
 

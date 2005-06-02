@@ -234,6 +234,10 @@ class VISUAL
     bool ToggleBaselines_Enabled() const;
     bool ToggleBaselines_Checked() const;
 
+    void ToggleValueUnit();
+    bool ToggleValueUnit_Enabled() const;
+    bool ToggleValueUnit_Checked() const;
+
     void ToggleChannelLabels();
     bool ToggleChannelLabels_Enabled() const;
     bool ToggleChannelLabels_Checked() const;
@@ -286,6 +290,7 @@ class VISUAL
                   mWrapAround,
                   mShowBaselines,
                   mShowChannelLabels,
+                  mShowValueUnit,
                   mDisplayColors;
     size_t        mNumSamples,
                   mSampleCursor,
