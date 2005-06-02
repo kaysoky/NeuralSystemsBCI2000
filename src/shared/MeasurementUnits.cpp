@@ -23,6 +23,7 @@ using namespace std;
 
 float MeasurementUnits::sUnitsPerSec = 1.0;
 float MeasurementUnits::sUnitsPerHertz = 1.0;
+float MeasurementUnits::sUnitsPerVolt = 1.0;
 
 float
 MeasurementUnits::ToUnit( const char* inValue, const char* inUnitName, float inUnitValue )

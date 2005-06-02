@@ -54,10 +54,16 @@ class MeasurementUnits
     static void  InitializeFreqUnit( float inUnitsPerHertz )
     { sUnitsPerHertz = inUnitsPerHertz; }
 
+    static float   ReadAsVoltage( const char* value )
+    { return ToUnit( value, "V", sUnitsPerVolt ); }
+    static void  InitializeVoltageUnit( float inUnitsPerVolt )
+    { sUnitsPerVolt = inUnitsPerVolt; }
+
   private:
     static float ToUnit( const char*, const char* inUnitName, float inUnitValue );
     static float sUnitsPerSec;
     static float sUnitsPerHertz;
+    static float sUnitsPerVolt;
 };
 
 #endif // MeasurementUnitsH
