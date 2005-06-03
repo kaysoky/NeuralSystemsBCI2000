@@ -29,14 +29,15 @@ class gUSBampADC : public GenericADC
   vector<int>    iBytesperScan;
   vector<int>    numchans;
   vector<float>  LSB;             // how many microVolts is one A/D unit (=SourceChGain)
-  int            DetectAutoMode();
-  int            DetermineFilterNumber();
-  int            DetermineNotchNumber();
+  int            DetectAutoMode() const;
+  int            DetermineFilterNumber() const;
+  int            DetermineNotchNumber() const;
   int            numdevices;
   float          filterhighpass, filterlowpass, notchhighpass, notchlowpass;   // at the moment, only one filter setting for all channels and all devices
   int            filtermodelorder, filtertype, notchmodelorder, notchtype;
   string         MasterDeviceID;  // device ID for the master device (exactly one device has to be master)
   int            timeoutms;
+  bool           mFloatOutput;
 };
 
 #endif // gUSBampADCH
