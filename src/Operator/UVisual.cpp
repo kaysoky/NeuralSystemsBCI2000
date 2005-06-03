@@ -534,6 +534,7 @@ struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
   { ToggleDisplayMode, NULL, NULL, "Toggle Display Mode" },
   { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
   { ChooseColors, ChooseColors_Enabled, NULL, "Choose Channel Colors..." },
+  { NULL, NULL, NULL, "-" },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
   { ToggleValueUnit, ToggleValueUnit_Enabled, ToggleValueUnit_Checked, "Show Unit" },
   { ToggleChannelLabels, ToggleChannelLabels_Enabled, ToggleChannelLabels_Checked, "Show Legend" },
@@ -991,7 +992,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
       if( mShowValueUnit )
       {
         // Find a round value that is near the display range.
-        float unitsPerPixel = ( mMaxValue - mMinValue ) * mUnitsPerValue / baseInterval,
+        float unitsPerPixel = ::fabs( ( mMaxValue - mMinValue ) * mUnitsPerValue / baseInterval ),
               scale = ::pow( 10, ::ceil( ::log10( unitsPerPixel * 0.95 * baseInterval ) ) ),
               rulerLength = scale;
         while( rulerLength / unitsPerPixel >= 0.95 * baseInterval )
@@ -1159,7 +1160,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
       assert( false );
   }
   // Ticks on the x axis.
-  float displayLength = mNumSamples * mUnitsPerSample,
+  float displayLength = ::fabs( mNumSamples * mUnitsPerSample ),
         scale = ::pow( 10, ::floor( ::log10( displayLength ) + 0.5 ) ),
         xDivision = scale / mUnitsPerSample / 5,
         xStart = xDivision;
