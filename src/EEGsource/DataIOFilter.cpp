@@ -240,6 +240,11 @@ DataIOFilter::Initialize()
     ostringstream oss;
     oss << ( 1.0 / Parameter( "SamplingRate" ) * mVisualizeSourceDecimation ) << "s";
     mEEGVis.Send( CFGID::sampleUnit, oss.str() );
+    // This is a hack to keep compatibility with old parameter files; it will
+    // not treat individual offset/gain settings different channels properly.
+    // Ideally, the offset/gain parameters should not be used here, and the parameter
+    // values should be treated as muV regardless of whether this is stated
+    // explicitly or not.
     float minValue = MeasurementUnits::ReadAsVoltage( Parameter( "SourceMin" ) ),
           maxValue = MeasurementUnits::ReadAsVoltage( Parameter( "SourceMax" ) );
     mEEGVis.Send( CFGID::MINVALUE, ( minValue - mSourceChOffset[ 0 ] ) * mSourceChGain[ 0 ] );
@@ -265,6 +270,7 @@ DataIOFilter::Initialize()
     mRoundtripVis.Send( CFGID::MAXVALUE, roundtripMax );
     mRoundtripVis.Send( CFGID::graphType, CFGID::polyline );
     mRoundtripVis.Send( CFGID::showBaselines, true );
+    mRoundtripVis.Send( CFGID::valueUnit, "1ms" );
   }
 }
 
