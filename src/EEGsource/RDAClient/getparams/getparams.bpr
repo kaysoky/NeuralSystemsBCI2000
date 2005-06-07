@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="getparams.exe"/>
-    <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj"/>
+    <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj obj\UBCIError.obj"/>
     <RESFILES value="getparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -17,14 +17,14 @@
       inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi 
       dclocx.bpi dbexpress.bpi dbxcds.bpi indy.bpi bcb2kaxserver.bpi 
       visualclx.bpi visualdbclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared;.."/>
+    <PATHCPP value=".;..\..\..\shared;..;..\..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value=""/>
+    <USERDEFINES value="BCI_TOOL;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="getparams.bpf"/>
     <INCLUDEPATH value="..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -33,11 +33,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
-    <PFLAGS value="-N2.\obj -N0.\obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2.\obj -N0.\obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-I.\obj -D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-I.\obj -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -52,6 +52,7 @@
       <FILE FILENAME="getparams.cpp" FORMNAME="" UNITNAME="getparams" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\RDAQueue.cpp" FORMNAME="" UNITNAME="RDAQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -102,8 +103,10 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG
+Count=3
+Item0=BCI_TOOL;_DEBUG
+Item1=BCI_TOOL
+Item2=_DEBUG
 
 [HistoryLists\hlIntOutputDir]
 Count=1
