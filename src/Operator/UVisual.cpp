@@ -1028,7 +1028,7 @@ VISUAL::Graph::FormPaint( TObject* Sender )
         else
         {
           int left = SampleLeft( 0 ),
-              center = ChannelBottom( 0 ) - baseInterval / 2;
+              center = ( GroupBottom( 0 ) + GroupBottom( 1 ) ) / 2;
           RECT labelRect =
           {
             left,
@@ -1036,8 +1036,6 @@ VISUAL::Graph::FormPaint( TObject* Sender )
             left,
             center
           };
-          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
-              DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
           ::DrawText( dc, label.str().c_str(), -1, &labelRect,
               DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_CALCRECT );
           RECT lineRect =
@@ -1051,6 +1049,11 @@ VISUAL::Graph::FormPaint( TObject* Sender )
           lineRect.top += pixelLength;
           lineRect.bottom += pixelLength;
           ::FillRect( dc, &lineRect, gdi[ markerBrush ] );
+
+          labelRect.top = center;
+          labelRect.bottom = labelRect.top;
+          ::DrawText( dc, label.str().c_str(), -1, &labelRect,
+              DT_VCENTER | DT_SINGLELINE | DT_LEFT | DT_NOCLIP );
         }
       }
     } break;
