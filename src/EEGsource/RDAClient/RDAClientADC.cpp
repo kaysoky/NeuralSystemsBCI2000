@@ -126,6 +126,7 @@ void RDAClientADC::Initialize()
 {
   hostName = string( Parameter( "HostName" ) );
 
+  inputQueue.clear();
   inputQueue.open( hostName.c_str() );
   if( !inputQueue.is_open() )
     bcierr << "Could not establish connection with recording software"

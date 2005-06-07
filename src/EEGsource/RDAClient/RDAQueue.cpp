@@ -19,7 +19,7 @@
 
 #include "RDAQueue.h"
 
-# include "UBCIError.h"
+#include "UBCIError.h"
 #include <assert>
 #include <string>
 
@@ -128,7 +128,6 @@ RDAQueue::close()
   ::closesocket( socketHandle );
   socketHandle = NULL;
   lastMessageType = RDAStop;
-  clear();
 }
 
 const short&
