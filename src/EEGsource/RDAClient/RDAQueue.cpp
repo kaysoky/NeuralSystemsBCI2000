@@ -19,10 +19,7 @@
 
 #include "RDAQueue.h"
 
-#ifdef HAVE_BCIERR
 # include "UBCIError.h"
-#endif // HAVE_BCIERR
-
 #include <assert>
 #include <string>
 
@@ -45,18 +42,14 @@ RDAQueue::RDAQueue()
   if( receiveBuffer == NULL )
   {
     failstate |= memoryFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not allocate receive buffer" << endl;
-#endif // HAVE_BCIERR
   }
 
   ::WSADATA ignored;
   if( ::WSAStartup( 2, &ignored ) )
   {
     failstate |= netinitFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not initialize Windows sockets" << endl;
-#endif // HAVE_BCIERR
   }
 }
 
@@ -81,9 +74,7 @@ RDAQueue::open( const char* inHostName )
   if( socketHandle == SOCKET_ERROR )
   {
     failstate |= netinitFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not create client socket" << endl;
-#endif // HAVE_BCIERR
     socketHandle = NULL;
     return;
   }
@@ -105,18 +96,14 @@ RDAQueue::open( const char* inHostName )
   if( host == NULL )
   {
     failstate |= netinitFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not resolve host name" << endl;
-#endif // HAVE_BCIERR
     close();
     return;
   }
   if( host->h_addr_list == NULL )
   {
     failstate |= netinitFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not resolve host name" << endl;
-#endif // HAVE_BCIERR
     close();
     return;
   }
@@ -126,9 +113,7 @@ RDAQueue::open( const char* inHostName )
         == SOCKET_ERROR )
   {
     failstate |= connectionFail;
-#ifdef HAVE_BCIERR
     bcierr << "Could not connect to " << hostName << endl;
-#endif // HAVE_BCIERR
     close();
     return;
   }
@@ -182,9 +167,7 @@ RDAQueue::ReceiveData()
     else if( result != 1 )
     {
       failstate |= connectionFail;
-#ifdef HAVE_BCIERR
       bcierr << "Could not read data" << endl;
-#endif // HAVE_BCIERR
       return;
     }
   }
@@ -224,9 +207,7 @@ RDAQueue::ReceiveData()
                 != ( dataMsg->nBlock & blockNumberMask ) )
             {
               failstate |= connectionFail;
-#ifdef HAVE_BCIERR
               bcierr << "RDA block numbers not in sequence" << endl;
-#endif // HAVE_BCIERR
               lastMessageType = RDAStop;
             }
             break;
@@ -236,12 +217,10 @@ RDAQueue::ReceiveData()
             break;
           case RDAStop:
             failstate |= connectionFail;
-#ifdef HAVE_BCIERR
             bcierr << "RDA server sent data block before start block" << endl;
-#endif // HAVE_BCIERR
             return;
           default:
-            assert( false );
+            assert( false ); // Only the named three values should ever be in lastMessageType.
         }
 
         // Unlike explicitly stated in RecorderRDA's RDA_MessageData declaration,
@@ -273,14 +252,13 @@ RDAQueue::ReceiveData()
               switch( *markerDesc )
               {
                 case 'S':
-                  markerState |= atoi( markerDesc + 1 );
+                  markerState |= ::atoi( markerDesc + 1 );
                   break;
                 case 'R':
-                  markerState |= ( atoi( markerDesc + 1 ) ) << 8;
+                  markerState |= ( ::atoi( markerDesc + 1 ) ) << 8;
                   break;
               }
             }
-
           // After the data channels, write the marker state channel.
           push( markerState );
         }
@@ -288,12 +266,18 @@ RDAQueue::ReceiveData()
       }
       break;
     default:
-      failstate |= connectionFail;
-#ifdef HAVE_BCIERR
-      bcierr << "Unknown RDA message type" << endl;
-#endif // HAVE_BCIERR
+      ; // Ignoring undocumented message types.
   }
-  lastMessageType = RDAMessageType( msg->nType );
+  switch( msg->nType )
+  {
+    case RDAStart:
+    case RDAStop:
+    case RDAData:
+      lastMessageType = RDAMessageType( msg->nType );
+      break;
+    default:
+      ; // Ignoring undocumented message types.
+  }
 }
 
 void
@@ -316,9 +300,7 @@ RDAQueue::GetServerMessage()
     if( nResult < 0 )
     {
       failstate |= connectionFail;
-#ifdef HAVE_BCIERR
       bcierr << "Could not receive data" << endl;
-#endif // HAVE_BCIERR
       return;
     }
     nRemLength -= nResult;
@@ -330,9 +312,7 @@ RDAQueue::GetServerMessage()
   if( header->guid != GUID_RDAHeader )
   {
     failstate |= connectionFail;
-#ifdef HAVE_BCIERR
     bcierr << "RDA message doesn't have correct GUID" << endl;
-#endif // HAVE_BCIERR
     return;
   }
   nRemLength = header->nSize - sizeof( RDA_MessageHeader );
@@ -343,9 +323,7 @@ RDAQueue::GetServerMessage()
     if( receiveBuffer == NULL )
     {
       failstate |= memoryFail;
-#ifdef HAVE_BCIERR
       bcierr << "Could not adapt size of receive buffer" << endl;
-#endif // HAVE_BCIERR
       return;
     }
   }
@@ -358,9 +336,7 @@ RDAQueue::GetServerMessage()
     if( nResult <= 0 )
     {
       failstate |= connectionFail;
-#ifdef HAVE_BCIERR
       bcierr << "Error receiving data" << endl;
-#endif // HAVE_BCIERR
       return;
     }
     nRemLength -= nResult;
