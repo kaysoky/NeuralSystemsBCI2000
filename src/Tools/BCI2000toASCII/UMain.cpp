@@ -247,7 +247,18 @@ MATFile *pmat;
           else
              memcpy((char *)((__int16 *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_short, sizeof(__int16));
           }
-       if (exportfile) fprintf(fp, "%d ", cur_value_double);
+       if (exportfile)
+         switch( exportdatatype )
+           {
+           case 0:
+             fprintf( fp, "%f ", cur_value_double );
+             break;
+           case 1:
+             fprintf( fp, "%d ", cur_value_short );
+             break;
+           default:
+             assert( false );
+           }
        }
       // store the value of each state
       for (state=0; state < cStateListBox->Items->Count; state++)
