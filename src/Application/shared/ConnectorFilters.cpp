@@ -50,7 +50,7 @@ ConnectorInput::ConnectorInput()
       "% % % // list of state names or signal elements to allow, "
       "\"*\" for any, signal elements as in \"Signal(1,0)\"",
     SECTION " string ConnectorInputAddress= % "
-      "localhost:20321 % % // IP address to read from, empty for off",
+      "localhost:20320 % % // IP address/port to read from, e.g. localhost:20320",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -142,7 +142,7 @@ ConnectorOutput::ConnectorOutput()
 {
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
-      "localhost:20321 % % // IP address to write to, empty for off",
+      "localhost:20320 % % // IP address/port to write to, e.g. localhost:20320",
   END_PARAMETER_DEFINITIONS
 }
 
