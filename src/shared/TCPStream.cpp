@@ -360,9 +360,11 @@ server_tcpsocket::do_open()
   }
 
   int val = 1;
-  ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>( &val ), sizeof( val ) );
+  ::setsockopt( m_handle, SOL_SOCKET, SO_REUSEADDR,
+                              reinterpret_cast<const char*>( &val ), sizeof( val ) );
 
-  if( ( SOCKET_ERROR == ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) ) )
+  if( ( SOCKET_ERROR == ::bind( m_handle, reinterpret_cast<sockaddr*>( &m_address ),
+                                                              sizeof( m_address ) ) )
       ||
       ( SOCKET_ERROR == ::listen( m_handle, 1 ) ) )
   {
@@ -382,7 +384,46 @@ client_tcpsocket::do_open()
     m_handle = INVALID_SOCKET;
     return;
   }
-  if( SOCKET_ERROR == ::connect( m_handle, reinterpret_cast<sockaddr*>( &m_address ), sizeof( m_address ) ) )
+  if( SOCKET_ERROR == ::connect( m_handle,
+                                 reinterpret_cast<sockaddr*>( &m_address ),
+                                 sizeof( m_address ) ) )
+    close();
+}
+
+void
+receiving_udpsocket::do_open()
+{
+  close();
+  if( SOCKET_ERROR == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
+  {
+    m_handle = INVALID_SOCKET;
+    return;
+  }
+  if( SOCKET_ERROR == ::bind( m_handle,
+                              reinterpret_cast<sockaddr*>( &m_address ),
+                              sizeof( m_address ) ) )
+    close();
+}
+
+void
+sending_udpsocket::do_open()
+{
+  close();
+  if( SOCKET_ERROR == ( m_handle = ::socket( PF_INET, SOCK_DGRAM, 0 ) ) )
+  {
+    m_handle = INVALID_SOCKET;
+    return;
+  }
+  sockaddr_in bind_addr = m_address;
+  bind_addr.sin_addr.s_addr = INADDR_ANY;
+  bind_addr.sin_port = 0;
+  if( ( SOCKET_ERROR == ::bind( m_handle,
+                                reinterpret_cast<sockaddr*>( &bind_addr ),
+                                sizeof( bind_addr ) ) )
+      ||
+      ( SOCKET_ERROR == ::connect( m_handle,
+                                reinterpret_cast<sockaddr*>( &m_address ),
+                                sizeof( m_address ) ) ) )
     close();
 }
 

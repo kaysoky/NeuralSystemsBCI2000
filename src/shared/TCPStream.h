@@ -136,6 +136,32 @@ class client_tcpsocket : public tcpsocket
     virtual void do_open();
 };
 
+class receiving_udpsocket : public tcpsocket
+{
+  private:
+    receiving_udpsocket( const receiving_udpsocket& ); // prevent copying
+    receiving_udpsocket& operator=( const receiving_udpsocket& ); // prevent assignments
+  public:
+    receiving_udpsocket()                               {}
+    explicit receiving_udpsocket( const char* address ) { open( address ); }
+    virtual ~receiving_udpsocket()                      {}
+  private:
+    virtual void do_open();
+};
+
+class sending_udpsocket : public tcpsocket
+{
+  private:
+    sending_udpsocket( const sending_udpsocket& ); // prevent copying
+    sending_udpsocket& operator=( const sending_udpsocket& ); // prevent assignments
+  public:
+    sending_udpsocket()                               {}
+    explicit sending_udpsocket( const char* address ) { open( address ); }
+    virtual ~sending_udpsocket()                      {}
+  private:
+    virtual void do_open();
+};
+
 class tcpbuf : public std::streambuf
 {
     enum
