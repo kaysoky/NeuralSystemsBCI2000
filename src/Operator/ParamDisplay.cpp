@@ -179,6 +179,7 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
     mpUserLevel->Visible = false;
     mpUserLevel->Parent = inParent;
     mpUserLevel->OnChange = DisplayBase::OnContentChange;
+    mpUserLevel->TabStop = false;
     mControls.insert( mpUserLevel );
   }
 }
