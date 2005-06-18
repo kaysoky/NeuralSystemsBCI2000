@@ -54,7 +54,7 @@ IP addresses and ports used are user-configurable. Sending and receiving need no
 \section{Protocol}
 
 Messages consist of a name and a value, separated by white space
-and terminated with a single newline \verb|\n| character.
+and terminated with a single newline (\verb|'\n'==0x0a|) character.
 
 Names may identify
 \begin{itemize}
@@ -76,7 +76,8 @@ While the system is in that state, no communication is possible over the applica
 
 \section{Parameterization from within BCI2000}
 
-BCI2000 reads data from a local IP socket specified in the \texttt{ConnectorInputAddress} parameter, and writes data out into the socket specified in the
+BCI2000 reads data from a local IP socket specified by the 
+\texttt{ConnectorInputAddress} parameter, and writes data out into the socket specified by the 
 \texttt{ConnectorOutputAddress} parameter.
 Sockets are specified by an address/port combination.
 Addresses may be host names, or numerical IP addresses. Address and port are separated by
