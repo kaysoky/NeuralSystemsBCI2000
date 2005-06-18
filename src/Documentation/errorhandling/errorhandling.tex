@@ -304,8 +304,7 @@ is provided by the following symbols:
 \begin{itemize}
 \item \texttt{Parameters} syntactically behaves like a \texttt{PARAMLIST*},
 \item \texttt{States} behaves like a \texttt{STATELIST*},
-\item \texttt{Statevector} behaves like a \texttt{STATEVECTOR*},
-\item and \texttt{Corecomm} behaves like a \texttt{CORECOMM*}.
+\item and \texttt{Statevector} behaves like a \texttt{STATEVECTOR*}.
 \end{itemize}
 As an example, take
 \begin{verbatim}
@@ -476,11 +475,13 @@ sends errors to operator.
   \textit{done Apr 25, 2003, Mellinger}
 \item \textit{Mellinger:} Write top level exception handler that diverts exceptions
 occurring in modules to the operator module.
+  \textit{done Jun 18, 2004, Mellinger}
 \item \textit{Existing filters' authors:} Fill in actual low range and high range 
 values into parameter declarations; work out preliminary preflight implementations 
 into complete checking.
-\item \textit{Mellinger:} Enable automatic range checking for parameters; re-work operator and module logic to actually keep the system from running when a preflight error is
-reported, and introduce a graceful system halt in case of a runtime error.
+\item \textit{Mellinger:} re-work operator and module logic to actually keep the system from running when a preflight error is reported.
+  \textit{done Jun 18, 2004, Mellinger}
+\item \textit{Mellinger:} Enable automatic range checking for parameters; introduce a graceful system halt in case of a runtime error.
 \end{itemize}
 \end{flushleft}
 
