@@ -63,9 +63,6 @@ TTask::TTask()
       "Duration of pre-trial period in units of SampleBlocks",
   "SpellerSequence int FeedbackTime= 20000 30 0 5000 //"
       "Duration of feedback in units of SampleBlocks",
-
-
-
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -91,7 +88,7 @@ TTask::TTask()
   trialsequence = new TRIALSEQUENCE;
   userdisplay = new USERDISPLAY;
   cur_time = new BCITIME;
-  
+
 
   debug = false;
   if(debug) a = fopen("TTaskDebug.txt", "w");
@@ -221,7 +218,8 @@ bool TTask::CheckTree(int root) const
 }
 /*shiodng ends*/
 
-void TTask::Preflight( const SignalProperties&, SignalProperties& ) const
+void TTask::Preflight( const SignalProperties& inputProperties,
+                             SignalProperties& outputProperties ) const
 {
 /*shidong starts*/
         PreflightCondition( Parameter("NumberTargets")>=2 );
@@ -229,6 +227,7 @@ void TTask::Preflight( const SignalProperties&, SignalProperties& ) const
 
         PreflightCondition( CheckTree(TARGETID_ROOT) == true);
 /*shidong ends*/
+        outputProperties = inputProperties;
 }
 
 
@@ -651,5 +650,6 @@ selected=trialsequence->Process((const std::vector< float >&)signals);
 
  // write the current time, i.e., the "StimulusTime" into the state vector
  Statevector->SetStateValue("StimulusTime", cur_time->GetBCItime_ms());
+ *Output = *Input;
 }
 

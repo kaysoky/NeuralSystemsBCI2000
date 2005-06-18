@@ -75,6 +75,12 @@ TTask::~TTask()
  delete cur_time;
 }
 
+void
+TTask::Preflight( const SignalProperties& InputProperties,
+                        SignalProperties& OutputProperties ) const
+{
+  OutputProperties = InputProperties;
+}
 
 // **************************************************************************
 // Function:   Initialize
@@ -164,5 +170,6 @@ void TTask::Process( const GenericSignal* Input,
 
  // write the current time, i.e., the "StimulusTime" into the state vector
  State( "StimulusTime" ) = cur_time->GetBCItime_ms();
+ *Output = *Input;
 }
 

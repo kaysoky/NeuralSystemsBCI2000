@@ -66,6 +66,12 @@ TTask::~TTask( void )
   if( appl ) fclose( appl );
 }
 
+void TTask::Preflight( const SignalProperties& inputProperties,
+                             SignalProperties& outputProperties ) const
+{
+  outputProperties = inputProperties;
+}
+
 
 void TTask::Initialize()
 {
@@ -420,6 +426,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 
         UpdateDisplays();
         WriteStateValues( Statevector );
+        *Output = *Input;
 }
 
 

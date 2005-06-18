@@ -119,7 +119,7 @@ TTask::Preflight( const SignalProperties& inputProperties,
   }
 
   PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
-  outputProperties = SignalProperties( 0, 0 );
+  outputProperties = inputProperties;
 }
 
 void
@@ -191,7 +191,7 @@ TTask::MakeMusic( short Controlsignal )
 
 
 void
-TTask::Process( const GenericSignal* Input, GenericSignal* )
+TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 {
   if( State( "Running" ) )
   {
@@ -200,6 +200,7 @@ TTask::Process( const GenericSignal* Input, GenericSignal* )
   }
   // time stamp the data
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
+  *Output = *Input;
 }
 
 void TTask::Halt()

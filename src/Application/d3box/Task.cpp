@@ -594,8 +594,8 @@ if(printFlow) fprintf(b, "In TTask::Preflight function.\n");
      }
   #endif
 
-  // We don't use an output signal.
-  outputProperties = SignalProperties( 0, 0 );
+  // We connect the input signal through to the output signal.
+  outputProperties = inputProperties;
 }
 
 
@@ -1563,6 +1563,7 @@ if(printFlow) fprintf(b, "The input singal is %f, and %f.\n", ( *Input )( 1, 0 )
 /*shidong ends*/
         UpdateDisplays();
         WriteStateValues( Statevector );
+        *Output = *Input;
 }
 
 

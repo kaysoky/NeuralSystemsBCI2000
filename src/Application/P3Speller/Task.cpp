@@ -130,8 +130,10 @@ char *current_directory(char *path)
 }
 
 
-void TTask::Preflight( const SignalProperties&, SignalProperties& ) const
+void TTask::Preflight( const SignalProperties& inputProperties,
+                             SignalProperties& outputProperties ) const
 {
+  outputProperties = inputProperties;
 }//Preflight
 
 
@@ -657,6 +659,7 @@ int     ret;
  // write the current time, i.e., the "StimulusTime" into the state vector
  State( "StimulusTime" ) = cur_time->GetBCItime_ms();
  oldrunning=running;
+ *Output = *Input;
 }
 
 void TTask::StopRun()

@@ -253,7 +253,7 @@ void TTask::Preflight(const SignalProperties& inputProperties,
     bcierr << "Sound card is missing." << endl;
 
   PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
-  outputProperties = SignalProperties( 0, 0 );
+  outputProperties = inputProperties;
 } // Preflight
 
 
@@ -385,5 +385,6 @@ void TTask::Process( const GenericSignal* Input,
 
   // write the current time, i.e., the "StimulusTime" into the state vector
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
+  *Output = *Input;
 }
 

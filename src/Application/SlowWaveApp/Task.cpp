@@ -170,7 +170,7 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
 
   mTaskLogFile.Preflight();
 
-  Output = SignalProperties( 0, 0 );
+  Output = Input;
 }
 
 void
@@ -289,6 +289,7 @@ TTask::Process( const GenericSignal* Input, GenericSignal* Output )
   // must be set "in advance". We express this by setting these states _after_
   // incrementing the block counters.
   State( "Baseline" ) = ( mBlockInTrial >= mBaseBegin && mBlockInTrial <= mBaseEnd );
+  *Output = *Input;
 }
 
 void

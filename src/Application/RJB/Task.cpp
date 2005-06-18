@@ -183,7 +183,7 @@ TTask::Preflight( const SignalProperties& inputProperties,
   // TTask::Process() implies that the input signal has at least two integer channels
   // with one element each.
   PreflightCondition( inputProperties >= SignalProperties( 2, 1, SignalType::int16 ) );
-  outputProperties = SignalProperties( 0, 0 );
+  outputProperties = inputProperties;
 }
 
 void TTask::Initialize()
@@ -702,6 +702,7 @@ void TTask::Process( const GenericSignal* Input, GenericSignal* Output )
 
   UpdateDisplays();
   WriteStateValues();
+  *Output = *Input;
 }
 
 void TTask::StopRun()

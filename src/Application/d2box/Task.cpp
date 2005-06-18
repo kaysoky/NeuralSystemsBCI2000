@@ -179,8 +179,8 @@ void TTask::Preflight( const SignalProperties& inputProperties,
      }
   #endif
 
-  // We don't use an output signal.
-  outputProperties = SignalProperties( 0, 0 );
+  // We connect the input signal through to the output signal.
+  outputProperties = inputProperties;
 }
 
 
@@ -369,6 +369,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         #endif
 
         WriteStateValues( svect );
+
 }
 
 void TTask::ReadStateValues(STATEVECTOR *statevector)
@@ -953,6 +954,7 @@ void TTask::Process( const GenericSignal * Input, GenericSignal * Output )
 
         UpdateDisplays();
         WriteStateValues( Statevector );
+        *Output = *Input;
 }
 
 
