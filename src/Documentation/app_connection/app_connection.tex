@@ -1,0 +1,95 @@
+\documentclass[12pt,a4paper,notitlepage]{article}
+%\documentclass[12pt,a4paper,fleqn]{article}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\sloppy
+\flushbottom
+
+%\pagestyle{empty}
+
+\title{BCI2000 External Application Interface}
+%\date{}
+\author{J\"{u}rgen Mellinger}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\pagebreak
+\section{Introduction}
+
+The BCI2000 external application interface provides a bi-directional link to exchange 
+information with external processes running on the same machine, or on a different machine
+over a local network.
+
+Its design aims at simplicity, and at minimal interference with the timing of the signal flow
+through the BCI2000 system.
+With this in mind, a connection-less, UDP based transmission protocol was chosen rather than a TCP based one.
+This comes at the cost of a possible loss, or re-ordering of protocol messages.
+To keep the probability for such losses as low as possible, and their consequences as
+local as possible, messages have been designed to be short, self-contained, and redundantly
+encoded in a human readable fashion.
+
+For communication involving a number of network nodes, or unreliable connections, we suggest 
+using locally executed server processes that forward messages to a TCP connection.
+
+\section{Description}
+
+For each block of data processed by the BCI2000 system, two types of information are sent out
+and may be received from the external application interface:
+\begin{itemize}
+\item the BCI2000 internal state as defined by the values of the entries of its state vector data structure, and
+\item the BCI2000 control signal.
+\end{itemize}
+For the definition of and details about states and the control signal, please refer to the BCI2000
+project outline document.
+
+Sending data is done after processing by the application module's task filter has taken place; receiving occurs before the task filter.
+This makes sure that changes resulting from user choices are sent out immediately, and that 
+received information will immediately be availiable to the task filter.
+
+IP addresses and ports used are user-configurable. Sending and receiving need not use the same address and port.
+
+
+\section{Protocol}
+
+Messages consist of a name and a value, separated by white space
+and terminated with a single newline \verb|\n| character.
+
+Names may identify
+\begin{itemize}
+\item BCI2000 states by name -- then followed
+   by an integer value in decimal ASCII representation;
+\item Signal elements in the form \texttt{Signal(<channel>,<element>)} --
+   then followed by a float value in decimal ASCII representation.
+\end{itemize}
+
+\paragraph{Examples:}
+\begin{verbatim}
+Running 0\n
+ResultCode 2\n
+Signal(1,2) 1e-8\n
+\end{verbatim}
+
+Note that the first example will switch BCI2000 into a suspended state.
+While the system is in that state, no communication is possible over the application protocol.
+
+\section{Parameterization from within BCI2000}
+
+BCI2000 reads data from a local IP socket specified in the \texttt{ConnectorInputAddress} parameter, and writes data out into the socket specified in the
+\texttt{ConnectorOutputAddress} parameter.
+Sockets are specified by an address/port combination.
+Addresses may be host names, or numerical IP addresses. Address and port are separated by
+a colon as in
+\begin{verbatim}
+localhost:5000
+134.2.103.151:20321
+\end{verbatim}
+
+For incoming values, messages are filtered by name using a list of allowed names 
+present in the \texttt{ConnectorInputFilter} parameter. 
+To allow signal messages, allowed signal elements must be specified including their
+indices.
+To allow all names, enter an asterisk (*) as the only list entry.
+
+\end{document}
