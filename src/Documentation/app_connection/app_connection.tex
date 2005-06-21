@@ -22,15 +22,21 @@ The BCI2000 external application interface provides a bi-directional link to exc
 information with external processes running on the same machine, or on a different machine
 over a local network.
 
-Its design aims at simplicity, and at minimal interference with the timing of the signal flow
-through the BCI2000 system.
+Via the external application interface, read/write access to BCI2000 state vector information 
+and control signal is possible. An external application may read the \texttt{ResultCode} state
+to access the classification result, or set the \texttt{TargetCode} state to control the user's task.
+Multiple instances of BCI2000 running on separate machines may share sequencing and control signal 
+information, allowing for applications such as games.
+
+The external application interface's design aims at simplicity, and at minimal interference with 
+the timing of the signal flow through the BCI2000 system.
 With this in mind, a connection-less, UDP based transmission protocol was chosen rather than a TCP based one.
 This comes at the cost of a possible loss, or re-ordering of protocol messages.
 To keep the probability for such losses as low as possible, and their consequences as
 local as possible, messages have been designed to be short, self-contained, and redundantly
 encoded in a human readable fashion.
 
-For communication involving a number of network nodes, or unreliable connections, we suggest 
+For communication involving a large number of network nodes, or unreliable connections, we suggest 
 using locally executed server processes that forward messages to a TCP connection.
 
 \section{Description}
@@ -44,9 +50,10 @@ and may be received from the external application interface:
 For the definition of and details about states and the control signal, please refer to the BCI2000
 project outline document.
 
-Sending data is done after processing by the application module's task filter has taken place; receiving occurs before the task filter.
+Sending data is done immediately after processing by the application module's task filter has taken place; 
+receiving occurs immediately before the task filter.
 This makes sure that changes resulting from user choices are sent out immediately, and that 
-received information will immediately be availiable to the task filter.
+received information will immediately be available to the task filter.
 
 IP addresses and ports used are user-configurable. Sending and receiving need not use the same address and port.
 
