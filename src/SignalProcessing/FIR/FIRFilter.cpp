@@ -27,6 +27,7 @@ FIRFilter::FIRFilter()
   vis( NULL ),
   nPoints( 0 )
 {
+
   nPoints= 1;               // for now, a constant at 1- only one output/channel
 
   BEGIN_PARAMETER_DEFINITIONS
@@ -35,7 +36,7 @@ FIRFilter::FIRFilter()
     "FIRFilter int FIRDetrend= 0 0 0 2 "
       "// Detrend data?  0=no 1=mean 2= linear",
     "FIRFilter int Integration= 1 0 0 1 "
-      "// FIR result Integration 0 = mean 1 = rms",
+      "// FIR Integration 0 = none, 1= mean 2 = rms 3 = max",
     "FIRFilter int FIRFilteredChannels= 4 4 1 64 "
       "// Number of FIR Filtered Filtered Channels",
     "FIRFilter matrix FIRFilterKernal= 4 4 "
@@ -77,8 +78,8 @@ void FIRFilter::Preflight( const SignalProperties& inSignalProperties,
   Parameter( "SamplingRate" );
   PreflightCondition(
     Parameter( "FIRFilteredChannels" ) == Parameter( "FIRFilterKernal" )->GetNumValuesDimension1() );
-  PreflightCondition(
-    Parameter( "SampleBlockSize" ) == Parameter( "FIRFilterKernal" )->GetNumValuesDimension2() );
+ // PreflightCondition(
+ //   Parameter( "SampleBlockSize" ) == Parameter( "FIRFilterKernal" )->GetNumValuesDimension2() );
   PreflightCondition(
      Parameter( "FIRFilterKernal" )->GetNumValuesDimension1() <= MAX_M );
   PreflightCondition(
@@ -91,7 +92,22 @@ void FIRFilter::Preflight( const SignalProperties& inSignalProperties,
   PreflightCondition( Parameter( "FIRFilteredChannels" ) <= inSignalProperties.Channels() );
 
   // Requested output signal properties.
-  outSignalProperties = SignalProperties( inSignalProperties.Channels(), nPoints );
+
+  if( Parameter( "Integration" ) == 0 )
+  {
+
+         PreflightCondition( Parameter( "FIRFilterKernal" )->GetNumValuesDimension2() ==
+           ( Parameter( "FIRWindows" ) -1 ) * Parameter( "SampleBlockSize" ) + 1 );
+
+         outSignalProperties = SignalProperties( inSignalProperties.Channels(), Parameter( "SampleBlockSize" ) );
+  }
+  else
+  {
+        PreflightCondition( Parameter( "FIRFilterKernal" )->GetNumValuesDimension2() <=
+           ( Parameter( "FIRWindows" ) -1 ) * Parameter( "SampleBlockSize" ) + 1 );
+
+         outSignalProperties = SignalProperties( inSignalProperties.Channels(), 1 );
+  }
 }
 
 // **************************************************************************
@@ -146,10 +162,10 @@ int     nBuf;
         visualize=true;
         vis= new GenericVisualization;
         vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_WINDOWTITLE, "Temporal Filter");
-        sprintf(cur_buf, "%d", 50);
+        sprintf(cur_buf, "%d", 200);
         vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_NUMSAMPLES, cur_buf);
-   //     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MINVALUE, "0");
-   //     vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, "60");
+        vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MINVALUE, "-60");
+        vis->SendCfg2Operator(SOURCEID_TEMPORALFILT, CFGID_MAXVALUE, "60");
         for (i=0; i<nPoints; i++)
          {
    //      sprintf(cur_buf, "%03d %.0f", i, (float)start+(float)i*(float)bandwidth);
@@ -177,11 +193,13 @@ float value[MAXDATA];
 float result[MAXDATA];
 float rms= 0;
 float mean= 0;
+float max= 0;
 
 int ocount,ncount;
 int i,j,k;
 
 static count= 0;
+// static rcount= 0;
 
 // actually perform the Temporal Filtering on the input and write it into the output signal
 
@@ -204,20 +222,32 @@ static count= 0;
                 for(j=0;j<samples;j++)
                 {
                         count--;
-                        datwin[i][j]= input->GetValue(i,count);
+                        datwin[i][j]= input->GetValue(i,j);  // was count);
                 }
 
                 fir->convolve( i, winlgth, datwin[i], result );
 
-                if( integrate == 1 )
+                if( integrate == 2 )
                 {
                   rms= fir->rms( winlgth - (n_coef-1), result );  // sub order
                   output->SetValue( i, 0, rms );
                 }
-                else
+                else if( integrate == 1 )
                 {
                         mean= fir->mean( winlgth - (n_coef-1), result );  // sub order
                         output->SetValue( i, 0, mean );
+                }
+                else if( integrate == 0 )
+                {
+                        for(j=0;j< ( winlgth - (n_coef-1) );j++)
+                        {
+                                output->SetValue( i, j, result[j] );
+                        }
+                }
+                else if( integrate == 3 )
+                {
+                        max= fir->max( winlgth - (n_coef-1), result );
+                        output->SetValue( i, 0, max );
                 }
         }
 

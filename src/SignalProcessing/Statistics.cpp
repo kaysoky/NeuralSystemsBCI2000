@@ -275,8 +275,8 @@ int     i, t, u;
     current_yintercept= 0;
     current_xintercept= 0;
 
-//     statf= fopen( "c:/current/log/statistics.asc","w+");
-//     fprintf(statf,"Opening statistics log \n");
+//  statf= fopen( "c:/current/log/statistics.asc","w+");
+//  fprintf(statf,"Opening statistics log \n");
 }
 
 
@@ -300,8 +300,8 @@ int     i, j, t, u;
                 targbuf[i]= NULL;
         }
       }
- //       fprintf(statf,"Closing sfile \n");
- //       fclose(statf);
+//        fprintf(statf,"Closing sfile \n");
+//        fclose(statf);
 }
 
 
@@ -457,6 +457,7 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
                         if( targuse[dim][i]== 0 ) tflag= 0;
 
                         trialstat->lin+= targval[dim][i]  * trialstat->TargetPC[i];             // product of dimension val and outcome
+//  fprintf(statf,"lin= %8.4f  targval[%2d]= %2d  TargetPC= %8.4f \n", trialstat->lin,i,targval[dim][i],trialstat->TargetPC[i]);
                         if( mode > 2 )
                         {
                                 trialstat->quad+= quadval[i] * trialstat->TargetPC[i];
@@ -470,6 +471,8 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
                 if( tflag > 0 )
                 {
                         trialstat->aper+= trialstat->aper * trialstat->lin  * actual_lrate;
+
+//  fprintf(statf,"dim= %2d  sign= %2d  aper= %8.4f  \n",dim,sign,trialstat->aper);
 
                         if( mode > 2 )
                                 trialstat->pix+= trialstat->pix  * trialstat->quad * actual_lrate;

@@ -122,7 +122,7 @@ float FIR::mean( int count, float *data )
                 mean= x / n;
         }
         else
-                mean= 0.0;
+                mean= x;
 
                 return( (float)mean );
 
@@ -161,6 +161,16 @@ float FIR::rms( int count, float *data )
 
 }
 
+float FIR::max( int count, float *data )
+{
+        int i;
+        float max;
 
+        max= 0;
+
+        for(i=0;i<count;i++)
+                if( data[i] > max ) max= data[i];
+        return( max );
+}
 
 

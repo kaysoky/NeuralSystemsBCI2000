@@ -489,7 +489,7 @@ void StatFilter::Process( const GenericSignal *input,
           stat->ProcRunningAvg(CurrentBaseline, 0, value, &cur_ystat);
           yintercept=cur_ystat.Intercept;
 
-          if ( cur_ystat.StdDev > 0.01 )
+          if ( cur_ystat.StdDev > 0.001 )
                   ud_gain= ypix/cur_ystat.StdDev;
 
           old_yintercept= yintercept;
@@ -498,24 +498,7 @@ void StatFilter::Process( const GenericSignal *input,
           intercept_flag= 1;
   }
 
-  if (XInterceptEstMode > 0)
-  {
-          // channel 1 1st element
-
-          value= input->GetValue( 1, 0 );
-          stat->ProcRunningAvg(CurrentBaseline, 1, value, &cur_xstat);
-
-          xintercept=cur_xstat.Intercept;
-          if ( cur_xstat.StdDev > 0.01 )
-                  lr_gain= horizpix/cur_xstat.StdDev;
-
-          intercept_flag= 1;
-
-      //    fprintf(estat,"lr_gain= %f  cur_xstat.StdDev= %f \n",lr_gain,cur_xstat.StdDev);
-  }
-
-
-    if( YInterceptEstMode > 1 )
+  if( YInterceptEstMode > 1 )            // this uses sign from above !!!
     {
       stat->ProcTrendControl(0, Ntargets, CurrentBaseline, CurrentTarget,
                          OutcomeCode, Yadapt, &cur_ystat, TrendControlRate, YInterceptEstMode );
@@ -536,6 +519,25 @@ void StatFilter::Process( const GenericSignal *input,
         fflush( Statfile );
       }
     }
+
+  if (XInterceptEstMode > 0)
+  {
+          // channel 1 1st element
+
+          value= input->GetValue( 1, 0 );
+          stat->ProcRunningAvg(CurrentBaseline, 1, value, &cur_xstat);
+
+          xintercept=cur_xstat.Intercept;
+          if ( cur_xstat.StdDev > 0.001 )
+                  lr_gain= horizpix/cur_xstat.StdDev;
+
+          intercept_flag= 1;
+
+      //    fprintf(estat,"lr_gain= %f  cur_xstat.StdDev= %f \n",lr_gain,cur_xstat.StdDev);
+  }
+
+
+
 
     if( XInterceptEstMode > 1 )
     {

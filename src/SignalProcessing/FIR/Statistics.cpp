@@ -420,7 +420,7 @@ float   accavg, accstddev;
     if (GetNumBLstates(controlsigno) > 0)
        {
        CurAvg[controlsigno]=accavg/(float)GetNumBLstates(controlsigno);           // the intercept for this control signal is the average of the averages of all BL periods
-       CurStdDev[controlsigno]=accstddev/(float)GetNumBLstates(controlsigno);       // the gain for this control signal is the average of the averages of all BL periods
+       CurStdDev[controlsigno]=accstddev/(float)GetNumBLstates(controlsigno);     // the gain for this control signal is the average of the averages of all BL periods
        trialstat->update_flag++;
        }
     circbuf[controlsigno][oldBLstate]->NextTrial();
@@ -434,8 +434,8 @@ float   accavg, accstddev;
 
  oldBLstate=numBLstate;
 
- trialstat->Intercept=CurAvg[controlsigno];
- trialstat->StdDev=CurStdDev[controlsigno];
+ trialstat->Intercept= CurAvg[controlsigno];
+ trialstat->StdDev= CurStdDev[controlsigno];
 
  if( trialstat->Intercept > 0 ) sign= +1;
  else                           sign= -1;

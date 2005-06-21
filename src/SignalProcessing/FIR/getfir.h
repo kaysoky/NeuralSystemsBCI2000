@@ -17,4 +17,5 @@ public:
         void convolve( int, int, float *, float * );
         float rms( int, float * );
         float mean( int, float * );
+        float max( int, float * );
 } ;

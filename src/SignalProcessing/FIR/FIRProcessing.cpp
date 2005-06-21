@@ -11,7 +11,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "SignalProcessing";
                  Application->CreateForm(__classid(TfMain), &fMain);
-         Application->Run();
+                 Application->Run();
         }
         catch (Exception &exception)
         {
@@ -20,3 +20,4 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         return 0;
 }
 //---------------------------------------------------------------------------
+

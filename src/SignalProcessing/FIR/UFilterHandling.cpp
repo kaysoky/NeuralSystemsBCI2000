@@ -13,14 +13,14 @@
 #include "CalibrationFilter.h"
 #include "SpatialFilter.h"
 #include "FIRFilter.h"
-#include "FIRClassFilter.h"
+#include "ClassFilter.h"
 #include "NormalFilter.h"
-#include "FIRStatFilter.h"
+#include "StatFilter.h"
 
 Filter( CalibrationFilter, 2.A );
 Filter( SpatialFilter, 2.B );
 Filter( FIRFilter, 2.C );
-Filter( FIRClassFilter, 2.D );
-Filter( FIRStatFilter, 2.E1 );
+Filter( ClassFilter, 2.D );
+Filter( StatFilter, 2.E1 );
 Filter( NormalFilter, 2.E2 );
 
