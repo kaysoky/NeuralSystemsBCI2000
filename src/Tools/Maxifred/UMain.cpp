@@ -559,6 +559,9 @@ int     i;
 
  inputfile="";
  readonly=false;
+
+ if( ParamCount > 0 )
+   eFilename->Text = ParamStr( 1 );
 }
 //---------------------------------------------------------------------------
 
@@ -605,22 +608,21 @@ AnsiString statetext;
 int     xc, t;
 float   factor;
 int     cur_state, old_state, state;
-char    cur_statename[256];
 
  if (!bci2000data) return;
  if (bci2000data->Initialized())
     {
     // now draw all the lines
-    for (state=0; state < bci2000data->GetStateListPtr()->GetNumStates(); state++)
-     {
-     if (cStateListBox->Checked[state])
+    for( state = 0; state < cStateListBox->Items->Count; ++state )
+    {
+      if( cStateListBox->Checked[ state ] )
         {
         old_state=0;
-        strcpy(cur_statename, bci2000data->GetStateListPtr()->GetStatePtr(state)->GetName());
+        AnsiString cur_statename = cStateListBox->Items->Strings[ state ];
         for (t=0; t<display_samples; t++)
          {
          bci2000data->ReadStateVector(t+start_sample);
-         cur_state=bci2000data->GetStateVectorPtr()->GetStateValue(cur_statename);
+         cur_state=bci2000data->GetStateVectorPtr()->GetStateValue( cur_statename.c_str() );
          if ((old_state != cur_state) && (t != 0))
             {
             MainChart->Canvas->Pen->Color=clAqua;
@@ -630,7 +632,7 @@ char    cur_statename[256];
             xc=(int)((float)t*factor+(float)MainChart->ChartRect.Left);
             MainChart->Canvas->MoveTo(xc, MainChart->ChartRect.Top);
             MainChart->Canvas->LineTo(xc, MainChart->ChartRect.Bottom);
-            statetext=AnsiString(cur_statename)+": "+AnsiString(cur_state);
+            statetext=cur_statename+": "+cur_state;
             MainChart->Canvas->TextOut(xc, MainChart->ChartRect.Top-MainChart->Canvas->TextHeight(statetext), statetext);
             }
          old_state=cur_state;
