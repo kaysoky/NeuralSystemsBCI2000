@@ -72,6 +72,7 @@ TfMain::TfMain( TComponent* Owner )
   mMessageHandler( *this ),
   mLastRunning( false ),
   mResting( false ),
+  mStartRunPending( true ),
   mMutex( NULL )
 {
   // Make sure there is only one instance of each module running at a time.
@@ -135,13 +136,11 @@ TfMain::HandleSTATEVECTOR( istream& is )
   {
 #if( MODTYPE == EEGSRC )
     mpStatevector->CommitStateChanges();
-#endif // EEGSRC
     bool running = mpStatevector->GetStateValue( "Running" );
     if( running && !mLastRunning )
       StartRunFilters();
     else if( !running && mLastRunning )
       StopRunFilters();
-#if( MODTYPE == EEGSRC )
     // The EEG source does not receive a signal, so handling must take place
     // on arrival of a STATEVECTOR message.
     // This distinction could be avoided if the state vector was
@@ -154,6 +153,10 @@ TfMain::HandleSTATEVECTOR( istream& is )
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
       ProcessFilters( NULL );
+#else // EEGSRC
+    bool running = mpStatevector->GetStateValue( "Running" );
+    if( !running && mLastRunning )
+      StopRunFilters();
 #endif // EEGSRC
     mLastRunning = running;
   }
@@ -166,6 +169,8 @@ TfMain::HandleVisSignal( istream& is )
   VisSignal s;
   if( s.ReadBinary( is ) && s.GetSourceID() == 0 )
   {
+    if( mStartRunPending )
+      StartRunFilters();
     const GenericSignal& inputSignal = s;
     ProcessFilters( &inputSignal );
   }
@@ -298,6 +303,7 @@ TfMain::ResetStatevector()
 void
 TfMain::InitializeFilters()
 {
+  mStartRunPending = true;
   __bcierr.clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( __bcierr.flushes() > 0 );
@@ -359,6 +365,7 @@ TfMain::InitializeFilters()
 void
 TfMain::StartRunFilters()
 {
+  mStartRunPending = false;
   // The first state vector written to disk is not the one
   // received in response to the first EEG data block. Without resetting it
   // to its initial value,
@@ -379,6 +386,7 @@ TfMain::StartRunFilters()
 void
 TfMain::StopRunFilters()
 {
+  mStartRunPending = true;
   Environment::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::StopRunFilters();
   Environment::EnterNonaccessPhase();
@@ -413,6 +421,7 @@ TfMain::ProcessFilters( const GenericSignal* input )
 void
 TfMain::RestingFilters()
 {
+  mStartRunPending = true;
   Environment::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::RestingFilters();
   Environment::EnterNonaccessPhase();
