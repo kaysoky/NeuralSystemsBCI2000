@@ -61,7 +61,7 @@ WinMessageHook::HookProc( int nCode, WPARAM wParam, LPARAM lParam )
     {
       // Whenever the user clicks on the title bar of a window, we simulate
       // a mouse movement, forcing the DefWindowProc out of a modal loop
-      // that would otherwise block the application.
+      // that would otherwise block message handling for a few seconds.
       case WM_NCLBUTTONDOWN:
         if( !::IsZoomed( ioMsg.hwnd ) && ioMsg.wParam == HTCAPTION )
         {
