@@ -16,7 +16,7 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
-#include <fstream>
+class GenericFileWriter;
 
 class DataIOFilter: public GenericFilter
 {
@@ -35,14 +35,11 @@ class DataIOFilter: public GenericFilter
   virtual void Halt();
 
  private:
-  template<SignalType::Type T> void PutBlock();
-  
-  GenericFilter*         mADC;
+  GenericFilter*         mpADC;
+  GenericFileWriter*     mpFileWriter;
   GenericSignal          mSignalBuffer;
-  std::string            mStatevectorBuffer;
-  
-  std::string            mFileName;
-  std::ofstream          mOutputFile;
+  STATEVECTOR            mStatevectorBuffer;
+
   bool                   mVisualizeEEG,
                          mVisualizeRoundtrip;
   int                    mVisualizeSourceDecimation;

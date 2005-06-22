@@ -17,6 +17,7 @@
 
 #include "defines.h"
 #include "GenericADC.h"
+#include "GenericFileWriter.h"
 #include "UBCIError.h"
 #include "BCIDirectry.h"
 #include "UBCItime.h"
@@ -26,18 +27,17 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <assert>
 
 using namespace std;
 
 RegisterFilter( DataIOFilter, 0 );
 
 
-static const char* bciDataExtension = ".dat",
-                 * bciParameterExtension = ".prm";
-
-
 DataIOFilter::DataIOFilter()
-: mADC( GenericFilter::PassFilter<GenericADC>() ),
+: mpADC( GenericFilter::PassFilter<GenericADC>() ),
+  mpFileWriter( GenericFilter::PassFilter<GenericFileWriter>() ),
+  mStatevectorBuffer( States, true ),
   mVisualizeEEG( false ),
   mVisualizeSourceDecimation( 1 ),
   mVisualizeRoundtrip( false ),
@@ -45,11 +45,6 @@ DataIOFilter::DataIOFilter()
   mRoundtripVis( SOURCEID::ROUNDTRIP, VISTYPE::GRAPH ),
   mRoundtripSignal( 2, 1 )
 {
-  // The ADC filter must have a position string less than that of the
-  // DataIOFilter.
-  if( !mADC )
-    bcierr << "Expected an ADC filter instance to be present" << endl;
-
   BEGIN_PARAMETER_DEFINITIONS
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -86,8 +81,6 @@ DataIOFilter::DataIOFilter()
       "// two-digit run number",
     "Storage string StorageTime= 16:15 Time a z "
       "// time of beginning of data storage",
-    "Storage int SavePrmFile= 0 1 0 1 "
-      "// save additional parameter file (0=no, 1=yes) (boolean)",
 
     // Visualization of data as far as managed by the DataIOFilter:
     "Visualize int VisualizeRoundtrip= 1 1 0 1 "
@@ -116,7 +109,8 @@ DataIOFilter::DataIOFilter()
 DataIOFilter::~DataIOFilter()
 {
   Halt();
-  delete mADC;
+  delete mpADC;
+  delete mpFileWriter;
 }
 
 
@@ -137,76 +131,42 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << "(now " << SampleBlockSize << ")"
            << endl;
 
-  // File accessibility.
-  string baseFileName = BCIDirectory()
-    .SubjectDirectory( Parameter( "FileInitials" ) )
-    .SubjectName( Parameter( "SubjectName" ) )
-    .SessionNumber( Parameter( "SubjectSession" ) )
-    .RunNumber( Parameter( "SubjectRun" ) )
-    .CreatePath()
-    .FilePath();
-
-  {
-    string dataFileName = baseFileName + bciDataExtension;
-
-    // Does the data file exist?
-    ifstream dataRead( dataFileName.c_str() );
-    if( dataRead.is_open() )
-      bcierr << "Data file " << dataFileName << " already exists, "
-             << "will not be touched." << endl;
-    else
-    {
-      // It does not exist, can we write to it?
-      ofstream dataWrite( dataFileName.c_str() );
-      if( !dataWrite.is_open() )
-        bcierr << "Cannot write to file " << dataFileName << endl;
-      else
-      {
-        dataWrite.close();
-        ::remove( dataFileName.c_str() );
-      }
-    }
-  }
-  if( Parameter( "SavePrmFile" ) == 1 )
-  {
-    string paramFileName =  baseFileName + bciParameterExtension;
-    ifstream paramRead( paramFileName.c_str() );
-    if( paramRead.is_open() )
-      bcierr << "Parameter file " << paramFileName << " already exists, "
-             << "will not be touched." << endl;
-    else
-    {
-      ofstream paramWrite( paramFileName.c_str() );
-      if( !paramWrite.is_open() )
-        bcierr << "Cannot write to file " << paramFileName << endl;
-      else
-      {
-        paramWrite.close();
-        ::remove( paramFileName.c_str() );
-      }
-    }
-  }
-
   // Sub-filter preflight/signal properties.
-  mADC->Preflight( Input, Output );
-  switch( Output.Type() )
+  // The ADC and file writer filters must have a position string greater than
+  // that of the DataIOFilter.
+  if( !mpADC )
+    bcierr << "Expected an ADC filter instance to be present" << endl;
+  else
   {
-    case SignalType::int16:
-    case SignalType::int32:
-    case SignalType::float32:
-      /* These types are OK */
-      break;
+    mpADC->Preflight( Input, Output );
+    switch( Output.Type() )
+    {
+      case SignalType::int16:
+      case SignalType::int32:
+      case SignalType::float32:
+        /* These types are OK */
+        break;
 
-    default: // All other types are unsupported in BCI2000 data files.
-      bcierr << "ADC requested unsupported data type ("
-             << Output.Type().Name()
-             << ")"
-             << endl;
+      default: // All other types are unsupported in BCI2000 data files.
+        bcierr << "ADC requested unsupported data type ("
+               << Output.Type().Name()
+               << ")"
+               << endl;
+    }
+    mRestingSignal.SetProperties( Output );
   }
-  mRestingSignal.SetProperties( Output );
 
+  if( !mpFileWriter )
+    bcierr << "Expected a file writer filter instance to be present" << endl;
+  else
+  {
+    SignalProperties writerOutput;
+    mpFileWriter->Preflight( Output, writerOutput );
+    if( !writerOutput.IsEmpty() )
+      bcierr << "Expected empty output signal from file writer" << endl;
+  }
   // Signal properties.
-  if( Input.Channels() > 0 )
+  if( !Input.IsEmpty() )
     bcierr << "Expected empty input signal" << endl;
 }
 
@@ -214,12 +174,10 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 void
 DataIOFilter::Initialize()
 {
-  mOutputFile.close();
-  mOutputFile.clear();
   State( "Recording" ) = 0;
-  mStatevectorBuffer.resize( 0 );
   mSignalBuffer = GenericSignal( 0, 0 );
-  mADC->Initialize();
+  mpADC->Initialize();
+  mpFileWriter->Initialize();
 
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
@@ -278,83 +236,8 @@ DataIOFilter::Initialize()
 void
 DataIOFilter::StartRun()
 {
-  BCIDirectory bciDirectory = BCIDirectory()
-                              .SubjectDirectory( Parameter( "FileInitials" ) )
-                              .SubjectName( Parameter( "SubjectName" ) )
-                              .SessionNumber( Parameter( "SubjectSession" ) )
-                              .RunNumber( Parameter( "SubjectRun" ) );
-  string baseFileName = bciDirectory.FilePath(),
-         dataFileName = baseFileName + bciDataExtension;
-  // BCIDirectory will update the run number to the largest unused one
-  // -- we want this to be reflected in the "SubjectRun" parameter.
-  ostringstream oss;
-  oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
-  Parameter( "SubjectRun" ) = oss.str().c_str();
-
-  mOutputFile.close();
-  mOutputFile.clear();
-  mOutputFile.open( dataFileName.c_str(), ios::out | ios::binary );
-
-  // We write 16 bit data in the old format to maintain backward compatibility.
-  bool useOldFormat = ( mRestingSignal.GetProperties().Type() == SignalType::int16 );
-
-  // Write the header.
-  //
-  // Because the header contains its own length in ASCII format, it is a bit
-  // tricky to get this right if we don't want to imply a fixed width for the
-  // HeaderLen field.
-  ostringstream header;
-  header << " "
-         << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
-         << "StatevectorLen= " << Statevector->GetStateVectorLength();
-  if( !useOldFormat )
-    header << " "
-           << "DataFormat= "
-           << mRestingSignal.GetProperties().Type().Name();
-  header << "\r\n"
-         << "[ State Vector Definition ] \r\n";
-  States->WriteBinary( header );
-  header << "[ Parameter Definition ] \r\n";
-  Parameters->WriteBinary( header );
-  header << "\r\n";
-
-  string headerBegin;
-  if( !useOldFormat )
-    headerBegin = "BCI2000V= 1.1 ";
-  headerBegin += "HeaderLen= ";
-  size_t fieldLength = 5; // Follow the old scheme
-                          // (5 characters for the header length field),
-                          // but allow for a longer HeaderLen field
-                          // if necessary.
-  ostringstream headerLengthField;
-  do
-  { // This trial-and-error scheme is invariant against changes in number
-    // formatting and character set (unicode, hex, ...).
-    size_t headerLength = headerBegin.length() + fieldLength + header.str().length();
-    headerLengthField.str( "" );
-    headerLengthField << headerBegin
-                      << setfill( ' ' ) << setw( fieldLength )
-                      << headerLength;
-  } while( headerLengthField
-           && ( headerLengthField.str().length() - headerBegin.length() != fieldLength++ ) );
-
-  mOutputFile.write( headerLengthField.str().data(), headerLengthField.str().size() );
-  mOutputFile.write( header.str().data(), header.str().size() );
-
-  if( !mOutputFile )
-    bcierr << "Error writing to file " << dataFileName << endl;
-
-  if( Parameter( "SavePrmFile" ) == 1 )
-  {
-    string paramFileName =  baseFileName + bciParameterExtension;
-    ofstream file( paramFileName.c_str() );
-    if( !( file << *Parameters << flush ) )
-      bcierr << "Error writing parameters to file "
-             << paramFileName
-             << endl;
-  }
-
-  mADC->StartRun();
+  mpADC->StartRun();
+  mpFileWriter->StartRun();
 
   // Initialize time stamps with the current time to get a correct roundtrip
   // time, and a zero stimulus delay, for the first block.
@@ -368,26 +251,12 @@ DataIOFilter::StartRun()
 void
 DataIOFilter::StopRun()
 {
-  mOutputFile.close();
-  mOutputFile.clear();
-  mADC->StopRun();
+  mpADC->StopRun();
+  mpFileWriter->StopRun();
   mSignalBuffer = GenericSignal( 0, 0 );
   State( "Recording" ) = 0;
 }
 
-template<SignalType::Type T>
-void
-DataIOFilter::PutBlock()
-{
-  // Note that the order of Elements and Channels differs from the one in the
-  // socket protocol.
-  for( size_t j = 0; j < mSignalBuffer.Elements(); ++j )
-  {
-    for( size_t i = 0; i < mSignalBuffer.Channels(); ++i )
-      mSignalBuffer.PutValueBinary<T>( mOutputFile, i, j );
-    mOutputFile.write( mStatevectorBuffer.data(), mStatevectorBuffer.size() );
-  }
-}
 
 void
 DataIOFilter::Process( const GenericSignal* Input,
@@ -397,39 +266,19 @@ DataIOFilter::Process( const GenericSignal* Input,
   // that the time spent on i/o operations will only reduce the
   // time spent waiting for A/D data, and thus not enter into the
   // roundtrip time.
-  // In between, the signal is written to a queue which should never contain
-  // more than one element.
+  // In between, the signal is buffered in a data member.
   // The BCI2000 standard requires that the state vector saved with a data block
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
+  // Buffering is done inside the GenericFileWriter class when we call
+  // its PushStatevector() function.
   bool visualizeRoundtrip = false;
-  if( mSignalBuffer.GetProperties() > SignalProperties( 0, 0 ) )
+  if( !mSignalBuffer.GetProperties().IsEmpty() )
   {
-    switch( mSignalBuffer.GetProperties().Type() )
-    {
-      case SignalType::int16:
-        PutBlock<SignalType::int16>();
-        break;
-
-      case SignalType::float32:
-        PutBlock<SignalType::float32>();
-        break;
-
-      case SignalType::int32:
-        PutBlock<SignalType::int32>();
-        break;
-
-      default:
-        bcierr << "Unsupported signal data type" << endl;
-    }
-    if( !mOutputFile )
-      bcierr << "Error writing to file" << endl;
-    State( "Recording" ) = ( mOutputFile ? 1 : 0 );
-
+    mpFileWriter->Write( mSignalBuffer, mStatevectorBuffer );
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
-
-  mADC->Process( Input, Output );
+  mpADC->Process( Input, Output );
   BCITIME now = BCITIME::GetBCItime_ms();
   if( visualizeRoundtrip )
   {
@@ -440,9 +289,7 @@ DataIOFilter::Process( const GenericSignal* Input,
     mRoundtripVis.Send( &mRoundtripSignal );
   }
   State( "SourceTime" ) = now;
-  mStatevectorBuffer = string(
-    reinterpret_cast<const char*>( Statevector->GetStateVectorPtr() ),
-    Statevector->GetStateVectorLength() );
+  mStatevectorBuffer = *Statevector;
   mSignalBuffer = *Output;
 
   if( mVisualizeEEG )
@@ -459,7 +306,7 @@ DataIOFilter::Process( const GenericSignal* Input,
 void
 DataIOFilter::Resting()
 {
-  mADC->Process( NULL, &mRestingSignal );
+  mpADC->Process( NULL, &mRestingSignal );
   if( mVisualizeEEG )
   {
     for( size_t i = 0; i < mDecimatedSignal.Channels(); ++i )
@@ -471,13 +318,13 @@ DataIOFilter::Resting()
   }
 }
 
-
 void
 DataIOFilter::Halt()
 {
-  mOutputFile.close();
-  mOutputFile.clear();
   mSignalBuffer = GenericSignal( 0, 0 );
-  mADC->Halt();
+  if( mpADC )
+    mpADC->Halt();
+  if( mpFileWriter )
+    mpFileWriter->Halt();
 }
 

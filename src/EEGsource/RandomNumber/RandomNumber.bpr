@@ -9,7 +9,8 @@
       obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
       obj\BCIDirectry.obj obj\RandomNumberADC.obj obj\UEnvironment.obj 
       obj\TCPStream.obj obj\MessageHandler.obj obj\TransmissionFilter.obj 
-      obj\DataIOFilter.obj obj\MeasurementUnits.obj obj\UCoreMain.obj"/>
+      obj\DataIOFilter.obj obj\MeasurementUnits.obj obj\UCoreMain.obj 
+      obj\BCIDatFileWriter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -20,14 +21,14 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;.."/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..\..\shared;.."/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;MODTYPE=1"/>
+    <USERDEFINES value="_DEBUG;MODTYPE=1;ROTATEMOUSE"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="RandomNumber.cpp"/>
     <INCLUDEPATH value="..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -71,6 +72,7 @@
       <FILE FILENAME="..\DataIOFilter.cpp" FORMNAME="" UNITNAME="DataIOFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UCoreMain.cpp" FORMNAME="fMain" UNITNAME="UCoreMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\BCIDatFileWriter.cpp" FORMNAME="" UNITNAME="BCIDatFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -108,8 +110,8 @@ c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation E
 
 [HistoryLists\hlIncludePath]
 Count=30
-Item0=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item0=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item2=..\;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item3=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item4=..\..\Modules;..\;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
@@ -141,8 +143,8 @@ Item29=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\in
 
 [HistoryLists\hlLibraryPath]
 Count=30
-Item0=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item0=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item2=..\;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item3=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item4=..\..\Modules;..\;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
@@ -177,12 +179,14 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=5
-Item0=_DEBUG;MODTYPE=1
-Item1=_DEBUG;DONT_CATCH_ALL;MODTYPE=1
-Item2=_DEBUG
-Item3=_DEBUG;SIGNAL_BACK_COMPAT
-Item4=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
+Count=7
+Item0=_DEBUG;MODTYPE=1;ROTATEMOUSE
+Item1=_DEBUG;MODTYPE=1;noROTATEMOUSE
+Item2=_DEBUG;MODTYPE=1
+Item3=_DEBUG;DONT_CATCH_ALL;MODTYPE=1
+Item4=_DEBUG
+Item5=_DEBUG;SIGNAL_BACK_COMPAT
+Item6=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
 
 [HistoryLists\hlIntOutputDir]
 Count=1
