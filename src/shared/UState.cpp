@@ -592,17 +592,15 @@ unsigned short STATEVECTOR::GetStateValue(int byteloc, int bitloc, int length) c
 {
 int     i, dest_byte, dest_bit;
 char    buf[2];
-unsigned short *result;
+unsigned short *result = reinterpret_cast<unsigned short*>( buf );
 
  // location is outside the state vector or length > 16 bit
  if ((byteloc+length/8 >= MAX_STATEVECTORLENGTH) || (length > 16))
     return(ERRSTATEVEC_NOSTATE);
 
- result=0;
  dest_byte=0;
  dest_bit=0;
  buf[0]=buf[1]=0;
- result=(unsigned short *)buf;
  for (i=0; i<length; i++)
   {
   if (state_vector[byteloc]&(1<<bitloc))
