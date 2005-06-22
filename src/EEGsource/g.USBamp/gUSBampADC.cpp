@@ -119,46 +119,66 @@ void gUSBampADC::Preflight( const SignalProperties&,
                                        SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  // # elements in SourceChGain has to match total # channels
-  PreflightCondition( Parameter("SourceChGain")->GetNumValues() == Parameter("SoftwareCh") );
-  // # elements in SourceChOffset has to match total # channels
-  PreflightCondition( Parameter("SourceChOffset")->GetNumValues() == Parameter("SoftwareCh") );
+  if( Parameter("SourceChGain")->GetNumValues() != Parameter("SoftwareCh") )
+    bcierr << "# elements in SourceChGain has to match total # channels" << endl;
+  if( Parameter("SourceChOffset")->GetNumValues() != Parameter("SoftwareCh") )
+    bcierr << "# elements in SourceChOffset has to match total # channels" << endl;
 
-  // SourceChGain is not supposed to be zero
-  // SourceChOffset is supposed to be zero
+  bool goodSourceChGain = true,
+       goodSourceChOffset = true;
   for (int ch=0; ch<Parameter("SoftwareCh"); ch++)
    {
-   PreflightCondition( Parameter("SourceChGain", ch) > 0 );
-   PreflightCondition( fabs(Parameter("SourceChOffset", ch)) < 0.0001 );
+   goodSourceChGain = goodSourceChGain && ( Parameter("SourceChGain", ch) > 0 );
+   goodSourceChOffset = goodSourceChOffset && ( fabs(Parameter("SourceChOffset", ch)) < 0.0001 );
    }
+  if( !goodSourceChGain )
+    bcierr << "SourceChGain is not supposed to be zero" << endl;
+  if( !goodSourceChOffset )
+    bcierr << "SourceChOffset is supposed to be zero" << endl;
 
-  // # devices has to equal # entries in SoftwareChDevices
-  PreflightCondition( Parameter("DeviceIDs")->GetNumValues() == Parameter("SoftwareChDevices")->GetNumValues() );
+  if( Parameter("DeviceIDs")->GetNumValues() != Parameter("SoftwareChDevices")->GetNumValues() )
+    bcierr << "# devices has to equal # entries in SoftwareChDevices" << endl;
 
-  // # total channels has to equal sum of all channels over all devices
   int totalnumchannels=0;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
    totalnumchannels += Parameter("SoftwareChDevices", dev);
-  PreflightCondition( Parameter("SoftwareCh") == totalnumchannels );
+  if( Parameter("SoftwareCh") != totalnumchannels )
+    bcierr << "# total channels has to equal sum of all channels over all devices" << endl;
 
-  // the MasterDevice has to be one of the DeviceIDs
   bool DeviceIDMaster=false;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
    if (Parameter("DeviceIDs") == Parameter("DeviceIDMaster"))
       DeviceIDMaster=true;
-  PreflightCondition( DeviceIDMaster == true );
+  if( !DeviceIDMaster )
+    bcierr << "the MasterDevice has to be one of the DeviceIDs" << endl;
 
-  // currently, the size in bytes of each sample block has to be a multiple of 512
-  // (limitation of the driver)
+  bool goodBlockSize = true;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
-   PreflightCondition((int)(Parameter("SoftwareChDevices", dev)*Parameter("SampleBlockSize")*sizeof(float))%512 == 0 );
+   goodBlockSize = goodBlockSize && ((int)(Parameter("SoftwareChDevices", dev)*Parameter("SampleBlockSize")*sizeof(float))%512 == 0 );
+  if( !goodBlockSize )
+    bcierr << "currently, the size in bytes of each sample block has to be"
+           << " a multiple of 512 (limitation of the driver)"
+           << endl;
 
   //
   // From here down, determine device settings and verify if OK
   //
   // if we have one device ID, and it's set to 'auto' check whether we can proceed in auto mode
-  if ((Parameter("DeviceIDs")->GetNumValues() == 1) && (strcmp((const char *)Parameter("DeviceIDs"), "auto") == 0))
-     PreflightCondition(DetectAutoMode() >= 0);
+  if ((Parameter("DeviceIDs")->GetNumValues() == 1) && (string(Parameter("DeviceIDs"))=="auto"))
+  {
+    int detectionResult = DetectAutoMode();
+    if( detectionResult == -1 )
+      bcierr << "Could not detect any amplifier. "
+             << "Make sure there is a single gUSBamp amplifier connected to your system, and switched on"
+             << endl;
+    else if( detectionResult == -2 )
+      bcierr << "Too many amplifiers connected. "
+             << "In auto-configuring mode, only a single amplifier may be connected"
+             << endl;
+    else if( detectionResult < 0 )
+      bcierr << "Auto-detection of amplifier failed"
+             << endl;
+  }
   else // if we defined more than one device or not auto mode, try to open and test all devices
      {
      int numdevices=Parameter("DeviceIDs")->GetNumValues();
@@ -177,10 +197,10 @@ void gUSBampADC::Preflight( const SignalProperties&,
          if (!GT_SetSampleRate(hdev, samplerate))
          {
            WORD wErrorCode;
-           char LastError[512] = "";
+           char LastError[512] = "unavailable";
            GT_GetLastError(&wErrorCode, LastError);
            bcierr << "Could not set sampling rate on device " << string(Parameter("DeviceIDs")->GetValue(dev))
-                  << " (" << LastError << ")"
+                  << " (error details: " << LastError << ")"
                   << endl;
          }
          GT_CloseDevice(&hdev);
