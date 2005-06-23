@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper,notitlepage]{article}
+\documentclass[12pt,letter,notitlepage]{article}
 %\documentclass[12pt,a4paper,fleqn]{article}
 \usepackage{graphicx}
 \usepackage{epsfig}
@@ -22,19 +22,43 @@ The BCI2000 external application interface provides a bi-directional link to exc
 information with external processes running on the same machine, or on a different machine
 over a local network.
 
-Via the external application interface, read/write access to BCI2000 state vector information 
-and control signal is possible. An external application may read the \texttt{ResultCode} state
-to access the classification result, or set the \texttt{TargetCode} state to control the user's task.
-Multiple instances of BCI2000 running on separate machines may share sequencing and control signal 
-information, allowing for applications such as games.
+Via the external application interface, read/write access to BCI2000 state 
+vector information and control signals is possible. An external application may 
+read the \texttt{ResultCode} state to access the classification result, set the 
+\texttt{TargetCode} state to control the user's task, or get access to the 
+control signal that is calculated by SignalProcessing so as to control an 
+external output device (such as a robotic arm or a web browser). Multiple 
+instances of BCI2000 running on separate machines may share sequencing and 
+control signal information, allowing for interactive applications such as games.
 
-The external application interface's design aims at simplicity, and at minimal interference with 
-the timing of the signal flow through the BCI2000 system.
-With this in mind, a connection-less, UDP based transmission protocol was chosen rather than a TCP based one.
-This comes at the cost of a possible loss, or re-ordering of protocol messages.
-To keep the probability for such losses as low as possible, and their consequences as
-local as possible, messages have been designed to be short, self-contained, and redundantly
-encoded in a human readable fashion.
+The scope of this interface is to provide access to internal BCI2000 information 
+in cases in which the generation of a full-fledged BCI2000 module is 
+impractical. Such a case might be the control of external applications that 
+practically do not allow full incorporation into the BCI2000 framework (such as 
+the Dasher system for efficient low-bandwidth spelling). This interface is 
+\emph{NOT} intended to replace the existing BCI2000 framework for BCI2000 
+communication. The advantage of writing modules that are fully integrated into 
+the BCI2000 framework are that their configuration is achieved through the same 
+interface as other BCI2000 configuration, that this configuration is stored in 
+the data file along with all other system parameters, and that the state of the 
+module at any given time is encoded in event markers that are also stored in the 
+data file. In contrast, control of an external device using the External 
+Application Interface implies that the configuration of the external device has 
+to be done outside of BCI2000, that this corresponding configuration is not 
+stored along with the data file, and that the internal state of the output 
+device is not saved together with the brain signals. This will make it more 
+difficult to reconstruct what exactly was going on during an experimental 
+session. It is thus important to keep this in mind when using this exciting new 
+possibility.
+
+The external application interface's design aims at simplicity, and at minimal 
+interference with the timing of the signal flow through the BCI2000 system. With 
+this in mind, a connection-less, UDP based transmission protocol was chosen 
+rather than one based on TCP. This comes at the cost of a possible loss, or 
+reordering of protocol messages. To keep the probability for such losses as low 
+as possible, and their consequences as local as possible, messages have been 
+designed to be short, self-contained, and redundantly encoded in a human 
+readable fashion.
 
 For communication involving a large number of network nodes, or unreliable connections, we suggest 
 using locally executed server processes that forward messages to a TCP connection.
@@ -45,7 +69,7 @@ For each block of data processed by the BCI2000 system, two types of information
 and may be received from the external application interface:
 \begin{itemize}
 \item the BCI2000 internal state as defined by the values of the entries of its state vector data structure, and
-\item the BCI2000 control signal.
+\item the BCI2000 control signals.
 \end{itemize}
 For the definition of and details about states and the control signal, please refer to the BCI2000
 project outline document.
