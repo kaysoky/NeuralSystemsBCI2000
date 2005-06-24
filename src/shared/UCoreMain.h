@@ -144,7 +144,8 @@ private:     // User declarations
                          mPreviousModule;
         bool             mLastRunning,
                          mResting,
-                         mStartRunPending;
+                         mStartRunPending,
+                         mStopRunPending;
 
         // We derive a class _MessageHandler from
         // MessageHandler and create an instance of it as a member of TfMain.

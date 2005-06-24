@@ -72,7 +72,8 @@ TfMain::TfMain( TComponent* Owner )
   mMessageHandler( *this ),
   mLastRunning( false ),
   mResting( false ),
-  mStartRunPending( true ),
+  mStartRunPending( false ),
+  mStopRunPending( false ),
   mMutex( NULL )
 {
   // Make sure there is only one instance of each module running at a time.
@@ -156,7 +157,7 @@ TfMain::HandleSTATEVECTOR( istream& is )
 #else // EEGSRC
     bool running = mpStatevector->GetStateValue( "Running" );
     if( !running && mLastRunning )
-      StopRunFilters();
+      mStopRunPending = true;
 #endif // EEGSRC
     mLastRunning = running;
   }
@@ -173,6 +174,8 @@ TfMain::HandleVisSignal( istream& is )
       StartRunFilters();
     const GenericSignal& inputSignal = s;
     ProcessFilters( &inputSignal );
+    if( mStopRunPending )
+      StopRunFilters();
   }
   return is;
 }
@@ -386,6 +389,7 @@ TfMain::StartRunFilters()
 void
 TfMain::StopRunFilters()
 {
+  mStopRunPending = false;
   mStartRunPending = true;
   Environment::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::StopRunFilters();
@@ -421,7 +425,6 @@ TfMain::ProcessFilters( const GenericSignal* input )
 void
 TfMain::RestingFilters()
 {
-  mStartRunPending = true;
   Environment::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::RestingFilters();
   Environment::EnterNonaccessPhase();
