@@ -1,5 +1,3 @@
-Dear Gerwin,
-
 Please find in a separate attachment the code / programs I developped to interface our BIOSEMI system to bci2000.
 Instructions:
 1. Unzip on a WinXP machine;
