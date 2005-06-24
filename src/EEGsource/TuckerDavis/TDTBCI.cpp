@@ -1,24 +1,24 @@
 //---------------------------------------------------------------------------
 #include "PCHIncludes.h"
 
-#pragma	hdrstop
+#pragma hdrstop
 
 #include "TDTBCI.h"
 #include "UBCIError.h"
 #include "PCHIncludes.h"
 #include "UBCIError.h"
+#include "RPCOXLib_OCX.h"
 
 #include <stdio.h>
 #include <math.h>
 
-TRPcoX *TDTBCI::RPcoX1 = NULL;
+using namespace std;
 
-using namespace	std;
-
-RegisterFilter(	TDTBCI,	1);
+RegisterFilter( TDTBCI, 1);
 
 // Class constructor for TDTBCI
 TDTBCI::TDTBCI()
+: RPcoX1( NULL )
 {
     mSoftwareCh = 0;
     mSampleBlockSize = 0;
@@ -35,38 +35,51 @@ TDTBCI::TDTBCI()
     stopIndex = 0;
     indexMult = 1;
 
-	BEGIN_PARAMETER_DEFINITIONS
-		"Source	int	SoftwareCh=	64 64 1	128"
-			"//this	is the number of digitized channels",
-		"Source	int	SampleBlockSize= 16	5 1	128"
-			"//number of samples transmitted at	a time",
-		"Source	int	SamplingRate=	128	128	1 4000"
-			"//sample rate",
-		"Source	string CircuitPath=	C:\\bci2000\\EEGsource\\TDTclient\\ 0 0 1024"
-			"//RCO circuit path",
-		"Source	string CircuitName=	chAcquire64.rco	0 0	1024"
-			"RCO Circuit name",
-		"Source	float LPFfreq= 256 256 0 1024"
-			"//Low Pass	Filter Frequency",
-		"Source	float HPFfreq= 3 3 0 256"
-			"//High	Pass Filter	Frequency",
-		"Source	float notchBW= 10 10 1 30"
-			"//60 Hz notch filter BW",
+    BEGIN_PARAMETER_DEFINITIONS
+        "Source int SoftwareCh= 64 64 1 128"
+            "//this is the number of digitized channels",
+        "Source int SampleBlockSize= 16 5 1 128"
+            "//number of samples transmitted at a time",
+        "Source int SamplingRate=   128 128 1 4000"
+            "//sample rate",
+        "Source string CircuitPath= C:\\bci2000\\EEGsource\\TDTclient\\ 0 0 1024"
+            "//RCO circuit path",
+        "Source string CircuitName= chAcquire64.rco 0 0 1024"
+            "//RCO Circuit name",
+        "Source float LPFfreq= 256 256 0 1024"
+            "//Low Pass Filter Frequency",
+        "Source float HPFfreq= 3 3 0 256"
+            "//High Pass Filter Frequency",
+        "Source float notchBW= 10 10 1 30"
+            "//60 Hz notch filter BW",
         "Source float TDTgain= 1 1 1 32768"
             "//TDT pre-gain"
-	END_PARAMETER_DEFINITIONS
+    END_PARAMETER_DEFINITIONS
+
+    try
+    {
+      RPcoX1 = new TRPcoX( ( TComponent* )NULL );
+    }
+    catch( const EOleSysError& instantiationError )
+    {
+      bcierr << "Could not instantiate TDT ActiveX control ("
+             << instantiationError.Message.c_str() << ")"
+             << endl;
+    }
 }
 
 // Class destructor
 TDTBCI::~TDTBCI()
 {
-	// ...because memory leaks are bad!
-	delete [] dataA;
+    // ...because memory leaks are bad!
+    delete [] dataA;
     delete [] dataB;
     delete [] dataC;
     delete [] dataD;
+
+    Halt();
     
-	Halt();
+    delete RPcoX1;
 }
 
 //

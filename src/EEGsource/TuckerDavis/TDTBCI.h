@@ -3,11 +3,9 @@
 #ifndef TDTBCIH
 #define TDTBCIH
 
-#include <Classes.hpp>
 #include <string>
 #include <vector>
 #include <math.h>
-#include "RPCOXLib_OCX.h"   
 #include "GenericADC.h"
 #include "TDTADC.h"
 #include "UBCITime.h"
@@ -24,13 +22,11 @@ public:
     void Process( const GenericSignal*, GenericSignal*);
     void Halt();
 
-    // Things that should be made public
-    static TRPcoX *RPcoX1;
-	AnsiString buildTarget(int ch);
-
-
 private:
-	int	mSoftwareCh;
+    class TRPcoX *RPcoX1;
+    AnsiString buildTarget(int ch);
+
+    int	mSoftwareCh;
     int	mSampleBlockSize;
     int mSamplingRate;
     int mOffset;
