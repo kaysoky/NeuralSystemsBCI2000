@@ -33,6 +33,7 @@ private:
   GenericVisualization mTaskLogVis;
   UsrEnv * m_pUsrEnv;
   UsrEnvDispatcher * m_pUsrEnvDispatcher;
+  char  GetPressedKey();
 };
 
 #endif

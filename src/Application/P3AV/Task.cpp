@@ -139,6 +139,7 @@ TTask::TTask()
     "StimulusCode 7 0 0 0",
     "StimulusType 1 0 0 0",
     "Flashing 1 0 0 0",
+    "PressedKey 8 0 0 0",
   END_STATE_DEFINITIONS
 }
 
@@ -240,6 +241,7 @@ void TTask::Preflight(const SignalProperties& inputProperties,
     "StimulusCode",
     "StimulusType",
     "Flashing",
+    "PressedKey",
     // "StimulusCodeRes", // This state is accessed from UsrEnvDispatcher and
                           // appears to be optional there.
     "Running",
@@ -371,6 +373,32 @@ void TTask::Initialize()
 
 
 // **************************************************************************
+// Function:   GetPressedKey
+// Purpose:    Determines the code of the pressed key
+//             This only works if the window has the focus and should be replaced
+//             by a Windows hook function using SetWindowsHookEx
+// Parameters: N/A
+// Returns:    0 if no key is pressed or the code of the pressed key otherwise
+// **************************************************************************
+char TTask::GetPressedKey()
+{
+BYTE KeyState[256];
+
+ GetKeyboardState((PBYTE)KeyState);
+
+ char pressedkey=0;
+ for (int i=0; i<256; i++)
+  if (KeyState[i] & 128)
+     {
+     pressedkey=i;
+     break;
+     }
+
+ return(pressedkey);
+}
+
+
+// **************************************************************************
 // Function:   Process
 // Purpose:    Processes the control signal sent by the frame work
 // Parameters: signals - pointer to the vector of controlsignals (1st element = up/down, 2nd element = left/right)
@@ -385,6 +413,8 @@ void TTask::Process( const GenericSignal* Input,
 
   // write the current time, i.e., the "StimulusTime" into the state vector
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms();
+  State( "PressedKey" ) = GetPressedKey();
+
   *Output = *Input;
 }
 
