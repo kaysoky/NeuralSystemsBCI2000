@@ -46,9 +46,13 @@ BufferReadADC::BufferReadADC()
     "SourceTime 16 2347 0 0",
   END_STATE_DEFINITIONS
   
-  Init_SB_Functions();
-  Parameter( "SamplingRate" ) = 1000000L / pSB_GetBinwidthUs();
-  Parameter( "SoftwareCh" ) = pSB_GetChRange();
+  if( Init_SB_Functions() )
+  {
+    Parameter( "SamplingRate" ) = 1000000L / pSB_GetBinwidthUs();
+    Parameter( "SoftwareCh" ) = pSB_GetChRange();
+  }
+  else
+    bcierr << "Could not load Biosemi sample buffer library" << endl;
 }
 
 BufferReadADC::~BufferReadADC()
