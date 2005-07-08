@@ -24,6 +24,11 @@ TDTBCI::TDTBCI()
     mSampleBlockSize = 0;
     mSamplingRate = 0;
     nChannels = 0;
+    nChannels1 = 0;
+    nChannels2 = 0;
+    nProcessors1 = 0;
+    nProcessors2 = 0;
+    use2RX5 = false;
     mOffset = 0;
     LPFfreq = 0;
     HPFfreq = 0;
@@ -34,37 +39,46 @@ TDTBCI::TDTBCI()
     curindex = 0;
     stopIndex = 0;
     indexMult = 1;
-
+	
     BEGIN_PARAMETER_DEFINITIONS
         "Source int SoftwareCh= 64 64 1 128"
-            "//this is the number of digitized channels",
+		"// The number of channels acquired",
+        "Source int SoftwareChBoard1= 64 64 1 64"
+		"// Number of channels on first RX5 (ignored if only one RX5)",
+        "Source int SoftwareChBoard2= 64 64 1 64"
+		"// Number of channels on 2nd RX5 (ignored if only one RX5)",
         "Source int SampleBlockSize= 16 5 1 128"
-            "//number of samples transmitted at a time",
-        "Source int SamplingRate=   128 128 1 4000"
-            "//sample rate",
+		"//number of samples transmitted at a time",
+        "Source int SamplingRate=   512 128 1 4000"
+		"//sample rate",
         "Source string CircuitPath= C:\\bci2000\\EEGsource\\TDTclient\\ 0 0 1024"
-            "//RCO circuit path",
+		"//RCO circuit path",
         "Source string CircuitName= chAcquire64.rco 0 0 1024"
-            "//RCO Circuit name",
+		"//RCO Circuit name",
         "Source float LPFfreq= 256 256 0 1024"
-            "//Low Pass Filter Frequency",
+		"//Low Pass Filter Frequency",
         "Source float HPFfreq= 3 3 0 256"
-            "//High Pass Filter Frequency",
+		"//High Pass Filter Frequency",
         "Source float notchBW= 10 10 1 30"
-            "//60 Hz notch filter BW",
+		"//60 Hz notch filter BW",
         "Source float TDTgain= 1 1 1 32768"
-            "//TDT pre-gain"
-    END_PARAMETER_DEFINITIONS
-
-    try
+		"//TDT pre-gain",
+        "Source int nProcessorsBoard1= 5 5 0 0"
+		"// Number of 1st RX5 processors (set the RCO file accordingly!): ",
+        "Source int nProcessorsBoard2= 0 5 0 0"
+		"// Number of 2nd RX5 processors (0 if only one board): ",
+		END_PARAMETER_DEFINITIONS
+		
+		try
     {
-      RPcoX1 = new TRPcoX( ( TComponent* )NULL );
+		RPcoX1 = new TRPcoX( ( TComponent* )NULL );
+		RPcoX2 = new TRPcoX( ( TComponent* )NULL );
     }
     catch( const EOleSysError& instantiationError )
     {
-      bcierr << "Could not instantiate TDT ActiveX control ("
-             << instantiationError.Message.c_str() << ")"
-             << endl;
+		bcierr << "Could not instantiate TDT ActiveX control ("
+			<< instantiationError.Message.c_str() << ")"
+			<< endl;
     }
 }
 
@@ -76,56 +90,122 @@ TDTBCI::~TDTBCI()
     delete [] dataB;
     delete [] dataC;
     delete [] dataD;
-
+    delete [] dataA2;
+    delete [] dataB2;
+    delete [] dataC2;
+    delete [] dataD2;
+	
     Halt();
     
     delete RPcoX1;
+    delete RPcoX2;
 }
 
 //
 void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperties)	const
 {
+    PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
 	// checks whether the board	works with the parameters requested, and
 	// communicates	the	dimensions of its output signal
-
-	int	sr = Parameter("SamplingRate");           
-
+	
+    mSoftwareCh = Parameter("SoftwareCh");
+    nChannels1 = Parameter("SoftwareChBoard1");
+    nChannels2 = Parameter("SoftwareChBoard2");
+    nProcessors1 = Parameter("nProcessorsBoard1");
+    nProcessors2 = Parameter("nProcessorsBoard2");
+	mSamplingRate = Parameter("SamplingRate");
+	
+    // check the the number of processors given is valid
+    if ((nProcessors1 != 2) && (nProcessors1 != 5))
+    {
+        bcierr << "The number of processors must be either 2 or 5."<<endl;
+    }
+	
+    if ((nProcessors2 != 2) && (nProcessors2 != 5) && (nProcessors2 != 0))
+    {
+        bcierr << "The number of processors for the 2nd system must be either 2 or 5, or 0 if not being used."<<endl;
+    }
+	
+	
+    // check if a 2nd system is being used
+    if (nProcessors2 > 0)
+        use2RX5=true;
+    else
+        use2RX5=false;
+	
+    if (use2RX5)
+	{
+		if (Parameter( "SoftwareChBoard1" )+Parameter( "SoftwareChBoard2" ) != Parameter( "SoftwareCh" ))
+			bcierr << "If we have two systems, SoftwareChBoard1+SoftwareChBoard2 has to equal SoftwareCh" << endl;
+		
+	}
+	
+	
 	const char * circuitPath = Parameter("CircuitPath");
 	const char * circuitName = Parameter("CircuitName");
-
+	
 	string circuit(circuitPath);
 	WideString interfaceType("GB");
-
+	
 	if(	!circuit.empty() &&	'\\' !=	circuit[circuit.size()-1]  ){
 		circuit.append("\\");
 	}
-
+	
 	circuit.append(circuitName);
-
-	bciout <<"Connecting to	Pentusa..."<<endl;
-	if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
-	{
-		bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
-		// error
-	}
-
-	bciout <<"Loading RCO file..."<<endl;
-	if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
-	{
-		bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
-		//error
-	}
-
-	RPcoX1->Halt();
+	
+    if (!use2RX5)
+    {
+		bciout <<"Connecting to	Pentusa..."<<endl;
+		if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
+		{
+			bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
+			// error
+		}
+		
+		bciout <<"Loading RCO file..."<<endl;
+		if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
+		{
+			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
+			//error
+		}
+		
+		
+    }
+    else
+    {
+        bciout <<"Connecting to	Pentusa #1..."<<endl;
+		if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
+		{
+			bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
+			// error
+		}
+		
+        bciout <<"Connecting to	Pentusa #2..."<<endl;
+		if (!RPcoX2->ConnectRX5(interfaceType.c_bstr(),	1))
+		{
+			bcierr << "Error connecting	to the 2nd RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
+			// error
+		}
+		
+		bciout <<"Loading RCO file #1..."<<endl;
+		if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
+		{
+			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
+			//error
+		}
+        bciout <<"Loading RCO file #2..."<<endl;
+		if (!RPcoX2->LoadCOF(WideString(circuit.c_str())))
+		{
+			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
+			//error
+		}
+    }
+	
 	//status = RPcoX1->GetStatus();
-
-
-
-    int nSamplesPerSec = floor(TDTsampleRate / sr);
-    double nSamplingRate = TDTsampleRate / nSamplesPerSec;
-    Parameter("SamplingRate") = nSamplingRate;
-    bciout <<"The actual sampling rate is "<<nSamplingRate <<" Hz"<<endl;
-
+	
+	RPcoX1->Halt();
+    RPcoX2->Halt();
+	
 	outputProperties = SignalProperties(Parameter( "SoftwareCh"	), Parameter( "SampleBlockSize"	), SignalType::int16);
 }
 
@@ -139,31 +219,31 @@ void TDTBCI::Initialize()
 	notchBW	= Parameter("notchBW");
 	blockSize =	Parameter("SampleBlockSize");
     TDTgain = Parameter("TDTgain");
-
-    
+    nChannels1 = Parameter("SoftwareChBoard1");
+    nChannels2 = Parameter("SoftwareChBoard2");
+    nProcessors1 = Parameter("nProcessorsBoard1");
+    nProcessors2 = Parameter("nProcessorsBoard2");
+	
+    int nSamplesPerSec = floor(TDTsampleRate / mSamplingRate);
+    double nSamplingRate = TDTsampleRate / nSamplesPerSec;
+    bciout <<"The actual sampling rate is "<<nSamplingRate <<" Hz"<<endl;
 	//mOffset	= 0;
-
-	WideString nChanTag	= "nChans";
+	
 	WideString LPFfreqTag =	"LPFfreq";
 	WideString HPFfreqTag =	"HPFfreq";
 	WideString notchBWTag =	"notchBW";
 	WideString blockSizeTag	= "blkSize";
     WideString TDTgainTag = "TDTgain";
-
+    WideString nPerTag = "nPer";
+	
 	//make sure	we are connected
-
+	
 	//...
-
+	
 	// set the number of channels
 	// the real	number of channels should be a multiple	of four
     int	valuesToRead = mSampleBlockSize*16;
-	nChannels =	ceil(mSoftwareCh / 4);
-	blockSize *= nChannels;
-	if (!RPcoX1->SetTagVal(nChanTag.c_bstr(), nChannels))
-	{
-		bcierr << "Error setting channel number	tag." << endl;
-	}
-
+	
 	// set filtering stuff
 	if (!RPcoX1->SetTagVal(LPFfreqTag.c_bstr(),	LPFfreq))
 	{
@@ -181,12 +261,57 @@ void TDTBCI::Initialize()
 	{
 		bcierr << "Error setting TDT pre-gain."	<< endl;
 	}
+	
+    if (!RPcoX1->SetTagVal(nPerTag.c_bstr(), nSamplesPerSec))
+	{
+		bcierr << "Error setting TDT sample rate."	<< endl;
+	}
+    if (use2RX5)
+    {
+		// set filtering stuff
+		if (!RPcoX2->SetTagVal(LPFfreqTag.c_bstr(),	LPFfreq))
+		{
+			bcierr << "Error setting LPF tag." << endl;
+		}
+		if (!RPcoX2->SetTagVal(HPFfreqTag.c_bstr(),	HPFfreq))
+		{
+			bcierr << "Error setting HPF tag." << endl;
+		}
+		if (!RPcoX2->SetTagVal(notchBWTag.c_bstr(),	notchBW))
+		{
+			bcierr << "Error setting notch BW tag."	<< endl;
+		}
+		if (!RPcoX2->SetTagVal(TDTgainTag.c_bstr(),	TDTgain))
+		{
+			bcierr << "Error setting TDT pre-gain."	<< endl;
+		}
+		if (!RPcoX2->SetTagVal(nPerTag.c_bstr(), nSamplesPerSec))
+		{
+			bcierr << "Error setting TDT sample rate."	<< endl;
+		}
+    }
 
-        // initialize data buffers
     dataA = new float[valuesToRead];
-    dataB = new float[valuesToRead];
-    dataC = new float[valuesToRead];
-    dataD = new float[valuesToRead];
+
+	if (nProcessors1 == 5)
+    {
+        // initialize data buffers
+        dataB = new float[valuesToRead];
+        dataC = new float[valuesToRead];
+        dataD = new float[valuesToRead];
+    }
+
+    if (use2RX5)
+    {
+        dataA2 = new float[valuesToRead];
+
+        if (nProcessors2 == 5)
+        {
+            dataB2 = new float[valuesToRead];
+            dataC2 = new float[valuesToRead];
+            dataD2 = new float[valuesToRead];
+        }
+    }
     
 	// Start TDT
 	RPcoX1->Run();
@@ -195,8 +320,8 @@ void TDTBCI::Initialize()
 void TDTBCI::Halt()
 {
 	bciout <<"Halting the TDT..."<<endl;
-   RPcoX1->Halt();
-// Halt	the	TDT
+	RPcoX1->Halt();
+	// Halt	the	TDT
 }
 
 // This	is the meat	of the class; it reads the data	from the TDT and returns it
@@ -204,71 +329,67 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 {
 	int	valuesToRead = mSampleBlockSize*16;
     int curSample = 0;
-
+	
 	//mOffset	= (mOffset + valuesToRead) % (2*valuesToRead);
     stopIndex = mOffset + valuesToRead;
-
+	
 	short* buffer;
 	WideString dataTagA("dataA"), dataTagB("dataB"), dataTagC("dataC"),	dataTagD("dataD");
     WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD");
-
-    //float *dataAll = new float[tempNChs][mSampleBlockSize];
-
 
     curindex = RPcoX1->GetTagVal(indexA.c_bstr());
     //if (mOffset >= 31000)
     //   bciout << "mOffset is wrong! ("<<mOffset<<", "<<stopIndex<<", "<<curindex<<")"<<endl;
 
-
     if (stopIndex < 32000)
     {
-       while (curindex < stopIndex)
-       {
-          curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-          Sleep(0);
-       }
+		while (curindex < stopIndex)
+		{
+			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
+			Sleep(0);
+		}
     }
     else
     {
         // this needs to be updated for the buffer wrap-around in the TDT
         while (curindex != 0)
         {
-          curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-          Sleep(0);
+			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
+			Sleep(0);
         }
     }
-
+	
     // read	in each	data buffer
 	if(!RPcoX1->ReadTag(dataTagA.c_bstr(), dataA, mOffset, valuesToRead))
 	{
-	  bcierr <<	"Error reading data	from Pentusa (A)."<<endl;
+		bcierr <<	"Error reading data	from Pentusa (A)."<<endl;
 	}
-
+	
 	if(!RPcoX1->ReadTag(dataTagB.c_bstr(), dataB, mOffset, valuesToRead))
 	{
-	  bcierr <<	"Error reading data	from Pentusa (B)."<<endl;
+		bcierr <<	"Error reading data	from Pentusa (B)."<<endl;
 	}
-
+	
 	if(!RPcoX1->ReadTag(dataTagC.c_bstr(), dataC, mOffset, valuesToRead))
 	{
-	  bcierr <<	"Error reading data	from Pentusa."<<endl;
+		bcierr <<	"Error reading data	from Pentusa."<<endl;
 	}
-
+	
 	if(!RPcoX1->ReadTag(dataTagD.c_bstr(), dataD, mOffset, valuesToRead))
 	{
-	  bcierr <<	"Error reading data	from Pentusa."<<endl;
+		bcierr <<	"Error reading data	from Pentusa."<<endl;
 	}
-
+	
     // update the index and offset
     mOffset = (mOffset + valuesToRead) % (32000);
-
+	
     //Sleep(10);
     for (int ch =0; ch < mSoftwareCh; ch++)
     {
         for (int sample = 0; sample < mSampleBlockSize; sample++)
         {
             curSample = sample*16+ch%16;
-
+			
             //bciout << "("<<curSample<<","<<ch<<","<<sample<<")"<<endl;
             if (ch < 16)
             {
@@ -303,44 +424,44 @@ AnsiString TDTBCI::buildTarget(int ch)
 	// currently this is only for the pentusa
 	int	maxChannels	= 16;
 	int	devNum = floor(ch /	maxChannels);
-
+	
 	AnsiString tag;
-
+	
 	switch (devNum)
 	{
 	/*
-		case 0:
-			tag	= "DataA~" +	IntToStr(realCh);
-			break;
-		case 1:
-			tag	= "DataB~" +	IntToStr(realCh);
-			break;
-		case 2:
-			tag	= "DataC~" +	IntToStr(realCh);
-			break;
-		case 3:
-			tag	= "DataD~" +	IntToStr(realCh);
-			break;
-		default:
-			// error of	some kind...
-			break;
-			*/
-		case 0:
-			tag	= "dataA"; // +	   IntToStr(realCh);
-			break;
-		case 1:
-			tag	= "dataB";// +	  IntToStr(realCh);
-			break;
-		case 2:
-			tag	= "dataC";// +	  IntToStr(realCh);
-			break;
-		case 3:
-			tag	= "dataD";// +	  IntToStr(realCh);
-			break;
-		default:
-			// error of	some kind...
-			break;
+	case 0:
+	tag	= "DataA~" +	IntToStr(realCh);
+	break;
+	case 1:
+	tag	= "DataB~" +	IntToStr(realCh);
+	break;
+	case 2:
+	tag	= "DataC~" +	IntToStr(realCh);
+	break;
+	case 3:
+	tag	= "DataD~" +	IntToStr(realCh);
+	break;
+	default:
+	// error of	some kind...
+	break;
+		*/
+	case 0:
+		tag	= "dataA"; // +	   IntToStr(realCh);
+		break;
+	case 1:
+		tag	= "dataB";// +	  IntToStr(realCh);
+		break;
+	case 2:
+		tag	= "dataC";// +	  IntToStr(realCh);
+		break;
+	case 3:
+		tag	= "dataD";// +	  IntToStr(realCh);
+		break;
+	default:
+		// error of	some kind...
+		break;
 	}
-
+	
 	return tag;
 }

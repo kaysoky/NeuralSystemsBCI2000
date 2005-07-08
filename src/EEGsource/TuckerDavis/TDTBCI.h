@@ -24,6 +24,7 @@ public:
 
 private:
     class TRPcoX *RPcoX1;
+    class TRPcoX *RPcoX2;
     AnsiString buildTarget(int ch);
 
     int	mSoftwareCh;
@@ -31,6 +32,10 @@ private:
     int mSamplingRate;
     int mOffset;
     int nChannels;
+    int nChannels1;
+    int nChannels2;
+    int nProcessors1;
+    int nProcessors2;
     double LPFfreq;
     double HPFfreq;
     double notchBW;
@@ -39,11 +44,16 @@ private:
     int blockSize;
     int curindex, stopIndex, indexMult;
 
+    bool use2RX5;
     
 	float *dataA;// = new float[valuesToRead];
 	float *dataB;// = new float[valuesToRead];
 	float *dataC;// = new float[valuesToRead];
 	float *dataD;// = new float[valuesToRead];
+    float *dataA2;
+    float *dataB2;
+    float *dataC2;
+    float *dataD2;
 };
 
 //---------------------------------------------------------------------------
