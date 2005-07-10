@@ -18,7 +18,8 @@ RegisterFilter( TDTBCI, 1);
 
 // Class constructor for TDTBCI
 TDTBCI::TDTBCI()
-: RPcoX1( NULL )
+: RPcoX1( NULL ),
+  RPcoX2( NULL )
 {
     mSoftwareCh = 0;
     mSampleBlockSize = 0;
@@ -67,7 +68,7 @@ TDTBCI::TDTBCI()
 		"// Number of 1st RX5 processors (set the RCO file accordingly!): ",
         "Source int nProcessorsBoard2= 0 5 0 0"
 		"// Number of 2nd RX5 processors (0 if only one board): ",
-		END_PARAMETER_DEFINITIONS
+	END_PARAMETER_DEFINITIONS
 		
 		try
     {
