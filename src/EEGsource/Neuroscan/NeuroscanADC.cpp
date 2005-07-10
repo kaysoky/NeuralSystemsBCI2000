@@ -431,7 +431,9 @@ bool          retval;
                   long byteVal = *pData++;
                   value |= byteVal << ( 8 * byte );
                 }
-                signal->SetValue( channel, sample, value );
+                if( value & 1 << ( bitspersample - 1 ) )
+                  value |= -1 << bitspersample;
+                ( *signal )( channel, sample ) = value;
               }
               // Does the marker channels' bit width actually depend on the data bit width?
               pData += num_markerchannels * ( bitspersample / 8 );
