@@ -7,7 +7,7 @@
 #include "UBCIError.h"
 #include "PCHIncludes.h"
 #include "UBCIError.h"
-#include "RPCOXLib_OCX.h"
+
 
 #include <stdio.h>
 #include <math.h>
@@ -19,7 +19,9 @@ RegisterFilter( TDTBCI, 1);
 // Class constructor for TDTBCI
 TDTBCI::TDTBCI()
 : RPcoX1( NULL ),
-  RPcoX2( NULL )
+RPcoX2(NULL),
+ZBus(NULL)
+
 {
     mSoftwareCh = 0;
     mSampleBlockSize = 0;
@@ -74,6 +76,7 @@ TDTBCI::TDTBCI()
     {
 		RPcoX1 = new TRPcoX( ( TComponent* )NULL );
 		RPcoX2 = new TRPcoX( ( TComponent* )NULL );
+        ZBus = new TZBUSx( ( TComponent* )NULL );
     }
     catch( const EOleSysError& instantiationError )
     {
@@ -108,40 +111,34 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
 	// checks whether the board	works with the parameters requested, and
 	// communicates	the	dimensions of its output signal
-	
-    mSoftwareCh = Parameter("SoftwareCh");
-    nChannels1 = Parameter("SoftwareChBoard1");
-    nChannels2 = Parameter("SoftwareChBoard2");
-    nProcessors1 = Parameter("nProcessorsBoard1");
-    nProcessors2 = Parameter("nProcessorsBoard2");
-	mSamplingRate = Parameter("SamplingRate");
+
+	bool twoBoards = false;
 	
     // check the the number of processors given is valid
-    if ((nProcessors1 != 2) && (nProcessors1 != 5))
+    if ((Parameter("nProcessorsBoard1") != 2) && (Parameter("nProcessorsBoard1") != 5))
     {
         bcierr << "The number of processors must be either 2 or 5."<<endl;
     }
-	
-    if ((nProcessors2 != 2) && (nProcessors2 != 5) && (nProcessors2 != 0))
+
+    if ((Parameter("nProcessorsBoard2") != 2) && (Parameter("nProcessorsBoard2") != 5) && (Parameter("nProcessorsBoard2") != 0))
     {
         bcierr << "The number of processors for the 2nd system must be either 2 or 5, or 0 if not being used."<<endl;
     }
 	
-	
+
     // check if a 2nd system is being used
-    if (nProcessors2 > 0)
-        use2RX5=true;
+    if (Parameter("nProcessorsBoard2") > 0)
+        twoBoards=true;
     else
-        use2RX5=false;
+        twoBoards=false;
 	
-    if (use2RX5)
+    if (twoBoards)
 	{
 		if (Parameter( "SoftwareChBoard1" )+Parameter( "SoftwareChBoard2" ) != Parameter( "SoftwareCh" ))
 			bcierr << "If we have two systems, SoftwareChBoard1+SoftwareChBoard2 has to equal SoftwareCh" << endl;
-		
-	}
-	
-	
+
+	}	
+
 	const char * circuitPath = Parameter("CircuitPath");
 	const char * circuitName = Parameter("CircuitName");
 	
@@ -153,8 +150,11 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 	}
 	
 	circuit.append(circuitName);
-	
-    if (!use2RX5)
+
+	// connect to the ZBus
+    ZBus->ConnectZBUS(interfaceType.c_bstr());
+    
+    if (!twoBoards)
     {
 		bciout <<"Connecting to	Pentusa..."<<endl;
 		if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
@@ -203,7 +203,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     }
 	
 	//status = RPcoX1->GetStatus();
-	
+
 	RPcoX1->Halt();
     RPcoX2->Halt();
 	
@@ -238,7 +238,11 @@ void TDTBCI::Initialize()
     WideString nPerTag = "nPer";
 	
 	//make sure	we are connected
-	
+
+	if (Parameter("nProcessorsBoard2") > 0)
+        use2RX5 = true;
+    else
+        use2RX5 = false;
 	//...
 	
 	// set the number of channels
@@ -267,6 +271,8 @@ void TDTBCI::Initialize()
 	{
 		bcierr << "Error setting TDT sample rate."	<< endl;
 	}
+
+    // set up the second system if necessary
     if (use2RX5)
     {
 		// set filtering stuff
@@ -292,6 +298,7 @@ void TDTBCI::Initialize()
 		}
     }
 
+    // initialize the data buffers
     dataA = new float[valuesToRead];
 
 	if (nProcessors1 == 5)
@@ -313,6 +320,10 @@ void TDTBCI::Initialize()
             dataD2 = new float[valuesToRead];
         }
     }
+
+    // reset the hardware and all conditions
+    ZBus->zBusTrigA(0, 0, 5);
+    mOffset = 0;
     
 	// Start TDT
 	RPcoX1->Run();
@@ -330,8 +341,7 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 {
 	int	valuesToRead = mSampleBlockSize*16;
     int curSample = 0;
-	
-	//mOffset	= (mOffset + valuesToRead) % (2*valuesToRead);
+
     stopIndex = mOffset + valuesToRead;
 	
 	short* buffer;
@@ -339,8 +349,6 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
     WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD");
 
     curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-    //if (mOffset >= 31000)
-    //   bciout << "mOffset is wrong! ("<<mOffset<<", "<<stopIndex<<", "<<curindex<<")"<<endl;
 
     if (stopIndex < 32000)
     {
@@ -420,49 +428,3 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 
 #pragma	package(smart_init)
 
-AnsiString TDTBCI::buildTarget(int ch)
-{
-	// currently this is only for the pentusa
-	int	maxChannels	= 16;
-	int	devNum = floor(ch /	maxChannels);
-	
-	AnsiString tag;
-	
-	switch (devNum)
-	{
-	/*
-	case 0:
-	tag	= "DataA~" +	IntToStr(realCh);
-	break;
-	case 1:
-	tag	= "DataB~" +	IntToStr(realCh);
-	break;
-	case 2:
-	tag	= "DataC~" +	IntToStr(realCh);
-	break;
-	case 3:
-	tag	= "DataD~" +	IntToStr(realCh);
-	break;
-	default:
-	// error of	some kind...
-	break;
-		*/
-	case 0:
-		tag	= "dataA"; // +	   IntToStr(realCh);
-		break;
-	case 1:
-		tag	= "dataB";// +	  IntToStr(realCh);
-		break;
-	case 2:
-		tag	= "dataC";// +	  IntToStr(realCh);
-		break;
-	case 3:
-		tag	= "dataD";// +	  IntToStr(realCh);
-		break;
-	default:
-		// error of	some kind...
-		break;
-	}
-	
-	return tag;
-}

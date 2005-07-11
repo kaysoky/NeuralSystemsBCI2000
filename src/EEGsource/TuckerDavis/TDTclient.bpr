@@ -10,7 +10,7 @@
       obj\USysCommand.obj obj\UStatus.obj obj\UState.obj obj\UParameter.obj 
       obj\UGenericVisualization.obj obj\UGenericSignal.obj obj\UBCItime.obj 
       obj\UCoreMain.obj obj\TDTBCI.obj obj\DataIOFilter.obj obj\RPCOXLib_OCX.obj 
-      obj\RPCOXLib_TLB.obj"/>
+      obj\RPCOXLib_TLB.obj obj\ZBUSXLib_OCX.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
@@ -75,6 +75,7 @@
       <FILE FILENAME="..\DataIOFilter.cpp" FORMNAME="" UNITNAME="DataIOFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RPCOXLib_OCX.cpp" FORMNAME="" UNITNAME="RPCOXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RPCOXLib_TLB.cpp" FORMNAME="" UNITNAME="RPCOXLib_TLB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ZBUSXLib_OCX.cpp" FORMNAME="" UNITNAME="ZBUSXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

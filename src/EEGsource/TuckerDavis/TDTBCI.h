@@ -9,6 +9,8 @@
 #include "GenericADC.h"
 #include "TDTADC.h"
 #include "UBCITime.h"
+#include "RPCOXLib_OCX.h"
+#include "ZBUSXLib_OCX.h"
 
 class TDTBCI : public GenericADC
 {
@@ -25,8 +27,8 @@ public:
 private:
     class TRPcoX *RPcoX1;
     class TRPcoX *RPcoX2;
-    AnsiString buildTarget(int ch);
-
+    class TZBUSx *ZBus;
+    
     int	mSoftwareCh;
     int	mSampleBlockSize;
     int mSamplingRate;
