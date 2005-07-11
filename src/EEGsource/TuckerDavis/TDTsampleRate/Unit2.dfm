@@ -1,6 +1,6 @@
 object Form2: TForm2
-  Left = 502
-  Top = 146
+  Left = 728
+  Top = 323
   Width = 238
   Height = 237
   Caption = 'TDT Sample Rate'
