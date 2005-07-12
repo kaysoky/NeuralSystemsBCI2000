@@ -7,6 +7,8 @@
 #include "UGenericFilter.h"
 #include "UGenericVisualization.h"
 
+#include <map>
+
 #define MAX_ERPBUFFERS          3000
 #define ERPBUFCODE_EMPTY        -1
 
@@ -33,6 +35,8 @@ private:
        int      ProcessERPBuffers(GenericSignal *output);
        STATEVECTOR     *statevector;
        int      numERPsnecessary, targetERPchannel;
+       int      mNumberOfSequences;
+       std::map<int, bool> mERPDone;
 
 public:
        P3TemporalFilter();

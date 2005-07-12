@@ -28,7 +28,8 @@ RegisterFilter( P3TemporalFilter, 2.D );
 // **************************************************************************
 P3TemporalFilter::P3TemporalFilter()
 : vis( NULL ),
-  vissignal( NULL )
+  vissignal( NULL ),
+  mNumberOfSequences( 0 )
 {
 
 
@@ -104,6 +105,10 @@ void P3TemporalFilter::Preflight( const SignalProperties& inSignalProperties,
   PreflightCondition( inSignalProperties >= SignalProperties(
     Parameter( "SpatialFilteredChannels" ), Parameter( "SampleBlockSize" ), SignalType::int16 ) );
 
+  int NumERPsToAverage = Parameter( "NumERPsToAverage" ),
+      NumberOfSequences = OptionalParameter( NumERPsToAverage, "NumberOfSequences" );
+  PreflightCondition( NumERPsToAverage <= NumberOfSequences );
+
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
                            Parameter( "SpatialFilteredChannels" ),
@@ -128,6 +133,7 @@ char    cur_buf[256];
   targetERPchannel= Parameter("TargetERPChannel");
   numsamplesinERP= Parameter("NumSamplesInERP");
   numERPsnecessary= Parameter("NumERPsToAverage");
+  mNumberOfSequences = OptionalParameter( numERPsnecessary, "NumberOfSequences" );
   numchannels= Parameter("SpatialFilteredChannels");
   mindispval= Parameter("ERPMinDispVal");
   maxdispval= Parameter("ERPMaxDispVal");
@@ -154,6 +160,7 @@ char    cur_buf[256];
  OldRunning=0;
 
  DeleteAllERPBuffers();
+ mERPDone.clear();
 
  // create a signal that will display the ERPs (on a particular target channel)
  // for each of the twelve StimulusCodes
@@ -325,7 +332,7 @@ float   cur_output;
       count++;
   // if we have enough waveforms of this type (i.e., StimulusCode)
   // calculate the average signal and assign it to the output signal
-  if (count == numERPsnecessary)
+  if (count >= numERPsnecessary && !mERPDone[ stimuluscode ] )
      {
      // set the contents of the output signal to 0
      for (ch=0; ch<numchannels; ch++)
@@ -374,11 +381,15 @@ float   cur_output;
      // at the same time, communicate the code and type of this ERP waveform
      State("StimulusCodeRes")=(unsigned short)stimuluscode;
      State("StimulusTypeRes")=(unsigned short)stimulustype;
+     mERPDone[ stimuluscode ] = true;
+    }
+    if( count >= mNumberOfSequences )
+     {
      // finally, we have to delete the ERP waveform buffers
      for (cur_buf=0; cur_buf<MAX_ERPBUFFERS; cur_buf++)
       if ((ERPBufCode[cur_buf] == stimuluscode) && (ERPBufSampleCount[cur_buf] == numsamplesinERP))
          DeleteERPBuffer(cur_buf);
-     break;     // only one at a time
+     mERPDone[ stimuluscode ] = false;
      }
   }
 
