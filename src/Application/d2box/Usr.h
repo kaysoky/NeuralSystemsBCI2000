@@ -11,8 +11,6 @@
 #include <ExtCtrls.hpp>
 #define MAXFOILS  32
 
-void SetUsr( PARAMLIST *plist, STATELIST *slist);
-
 //---------------------------------------------------------------------------
 class TUser : public TForm
 {
@@ -55,10 +53,8 @@ public:		// User declarations
         void PutO(bool);
         void Clear( void );
         void __fastcall Initialize(PARAMLIST *plist, STATELIST *slist);
-        __fastcall TUser(TComponent* Owner);
+        __fastcall TUser(PARAMLIST *plist, STATELIST *slist);
         __fastcall ~TUser();
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TUser *User;
 //---------------------------------------------------------------------------
 #endif

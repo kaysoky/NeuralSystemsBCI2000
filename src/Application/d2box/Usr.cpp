@@ -6,45 +6,32 @@
 #include "Usr.h"
 #include "UParameter.h"
 
-
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TUser *User;
+
 //---------------------------------------------------------------------------
-__fastcall TUser::TUser(TComponent* Owner)
+__fastcall TUser::TUser(PARAMLIST *plist, STATELIST *slist)
         : TForm(Owner)
 {
-
-
+  const char* parameters[] =
+  {
+    "UsrTask int WinXpos= 400 0 0 1 // User Window X location",
+    "UsrTask int WinYpos= 5 0 0 1 // User Window Y location",
+    "UsrTask int WinWidth= 512 0 0 1 // User Window Width",
+    "UsrTask int WinHeight= 512 0 0 1 // User Window Height",
+    "UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size",
+  };
+  for( int i = 0; i < sizeof( parameters ) / sizeof( *parameters ); ++i )
+    plist->AddParameter2List( parameters[ i ] );
 }
 //--------------------------------------------------------------
 _fastcall TUser::~TUser()
 {
-        User->Close();
-       
 }
-//---------------------------------------------------------------------------
-
-void SetUsr( PARAMLIST *plist, STATELIST *slist )
-{
-        char line[512];
-
-        strcpy(line,"UsrTask int WinXpos= 400 0 0 1 // User Window X location");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinYpos= 5 0 0 1 // User Window Y location");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinWidth= 512 0 0 1 // User Window Width");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int WinHeight= 512 0 0 1 // User Window Height");
-        plist->AddParameter2List(line,strlen(line) );
-        strcpy(line,"UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size");
-        plist->AddParameter2List(line,strlen(line));
-}
-
 //------------------------------------------------------------------------
 
-void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
+void __fastcall TUser::Initialize(PARAMLIST *plist, STATELIST *slist)
 {
 
        Wx=  atoi(plist->GetParamPtr("WinXpos")->GetValue());
@@ -53,11 +40,11 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
        Wyl= atoi(plist->GetParamPtr("WinHeight")->GetValue());
        CursorSize= atoi(plist->GetParamPtr("CursorSize")->GetValue());
        Cursor->Brush->Color= clBlack;
-       
-       User->ClientWidth=  Wxl;
-       User->ClientHeight= Wyl;
-       User->Left=         Wx;
-       User->Top=          Wy;
+
+       ClientWidth=  Wxl;
+       ClientHeight= Wyl;
+       Left=         Wx;
+       Top=          Wy;
        Cursor->Height=   CursorSize;
        Cursor->Width=    CursorSize;
 
@@ -80,7 +67,7 @@ void __fastcall TUser:: Initialize(PARAMLIST *plist, STATELIST *slist)
 
        maxfoils= 0;
 
-       User->Show();
+       Show();
 }
 //----------------------------------------------------------------------------
 //

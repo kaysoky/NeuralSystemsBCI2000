@@ -8,6 +8,7 @@ Task.cpp for the d2box task
 #include "Usr.h"
 #include "BCIDirectry.h"
 #include "UState.h"
+#include "MeasurementUnits.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -22,13 +23,15 @@ RegisterFilter( TTask, 3 );
 
 TTask::TTask()
 : run( 0 ),
-  vis( NULL ),
   appl( NULL ),
+  mVis( SOURCEID::TASKLOG ),
+  mpUser( new TUser( Parameters, States ) ),
 #ifdef DATAGLOVE
   my_glove( new DataGlove ),
 #endif
   OldRunning( 0 ),
-  OldCurrentTarget( 0 )
+  OldCurrentTarget( 0 ),
+  oldNtargets( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "UsrTask int PreTrialPause= 10 0 0 0 // "
@@ -42,20 +45,20 @@ TTask::TTask()
       "Max Trial Duration",
 
     "UsrTask int BaselineInterval= 1 0 0 2 // "
-      "Intercept Computation 1 = targets 2 = ITI",
+      "Intercept Computation 1 = targets 2 = ITI (enumeration)",
     "UsrTask int TimeLimit= 180 180 0 1000 // "
       "Time Limit for Runs in seconds",
     "UsrTask int RestingPeriod= 0 0 0 1 // "
-      "1 defines a rest periuod of data acquisition",
+      "1 defines a rest period of data acquisition (boolean)",
 
   #ifdef DATAGLOVE
     "JoyStick string GloveCOMport= COM2 0 % % // "
       "COM port for 5DT glove",
     "JoyStick int UseJoyStick= 0 0 0 2 // "
-      "0=brain signals; 1=Joystick; 2=Glove",
+      "0=brain signals; 1=Joystick; 2=Glove (enumeration)",
   #else // DATAGLOVE
     "JoyStick int UseJoyStick= 0 0 0 1 // "
-      "0=brain signals; 1=Joystick",
+      "0=brain signals; 1=Joystick (enumeration)",
   #endif // DATAGLOVE
     "JoyStick float JoyXgain= 1.0 0 -1000.0 1000.0 // "
       "Horizontal gain",
@@ -68,11 +71,11 @@ TTask::TTask()
      "Targets int NumberTargets= 4 0 0 16 // "
       "Number of Targets",
     "Targets int ShowAllTargets= 0 0 0 1 // "
-      "Display all Targets?",
+      "Display all Targets? (boolean)",
     "Targets int IncludeAllTargets= 0 0 0 1 // "
-      "Test all target positions?",
+      "Test all target positions? (boolean)",
     "Targets int FeedbackMode= 0 0 0 1 // "
-      "0 for correct  1 for any hit",
+      "0 correct hits only 1 any hit (enumeration)",
     "Targets float StartCursorX= 50.0 0 0 100.0 // "
       "Horizontal Start of Cursor",
     "Targets float StartCursorY= 50.0 0 0 100.0 // "
@@ -132,23 +135,16 @@ TTask::TTask()
     "Yadapt 16 0 0 0",
     "AdaptCode 5 0 0 0",
   END_STATE_DEFINITIONS
-
-  oldNtargets= 0;
-
-  SetUsr( Parameters, States );
 }
 
 //-----------------------------------------------------------------------------
 
 TTask::~TTask( void )
 {
-        if( vis ) delete vis;
-        #ifdef DATAGLOVE
-        delete my_glove;
-        #endif
-        vis= NULL;
-        if (appl) fclose( appl );
-
+#ifdef DATAGLOVE
+  delete my_glove;
+#endif
+  delete mpUser;
 }
 
 void TTask::Preflight( const SignalProperties& inputProperties,
@@ -187,17 +183,16 @@ void TTask::Preflight( const SignalProperties& inputProperties,
 void TTask::Initialize()
 {
         targetDisplay= 0;
-TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
         AnsiString COMport;
         time_t ctime;
         struct tm *tblock;
         int i,j;
 
-        PtpDuration=       Parameter( "PreTrialPause" );
-        ItiDuration=       Parameter( "ItiDuration" );
-        OutcomeDuration=   Parameter( "RewardDuration" );
-        FeedbackDuration=  Parameter( "FeedbackDuration" );
+        PtpDuration=       MeasurementUnits::ReadAsTime( Parameter( "PreTrialPause" ) );
+        ItiDuration=       MeasurementUnits::ReadAsTime( Parameter( "ItiDuration" ) );
+        OutcomeDuration=   MeasurementUnits::ReadAsTime( Parameter( "RewardDuration" ) );
+        FeedbackDuration=  MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
         Ntargets=          Parameter( "NumberTargets" );
         CursorStartX=      Parameter( "StartCursorX" );
         CursorStartY=      Parameter( "StartCursorY" );
@@ -288,24 +283,20 @@ TEMPORARY_ENVIRONMENT_GLUE
         bitrate.Initialize(Ntargets);
 
         trial=1;
-        slist=svect->GetStateListPtr();
 
-        if (vis) delete vis;
-        vis= new GenericVisualization;
-        vis->SetSourceID(SOURCEID_TASKLOG);
-        vis->SendCfg2Operator(SOURCEID_TASKLOG, CFGID_WINDOWTITLE, "User Task Log");
+        mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
 
-        User->Initialize( plist, slist );
-        User->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
-        User->GetSize( &size_right, &size_left, &size_top, &size_bottom );
-        User->Scale( (float)0x7fff, (float)0x7fff );
+        mpUser->Initialize( Parameters, States );
+        mpUser->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
+        mpUser->GetSize( &size_right, &size_left, &size_top, &size_bottom );
+        mpUser->Scale( (float)0x7fff, (float)0x7fff );
         ComputeTargets( Ntargets );
 
         if( targetDisplay == 1 )
         {
                 for(i=0;i<Ntargets;i++)
                 {
-                        User->makeFoil( i+1,
+                      mpUser->makeFoil( i+1,
                                 targx[i+1],
                                 targy[i+1],
                                 targsizex[i+1],
@@ -327,7 +318,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         time( &ctime );
         randseed= -ctime;
 
-        ReadStateValues( svect );
+        ReadStateValues();
 
         CurrentTarget= 0;
         TargetTime= 0;
@@ -356,7 +347,7 @@ TEMPORARY_ENVIRONMENT_GLUE
         CurrentYadapt= 0;
         CurrentAdaptCode= 0;
 
-        User->PutO(false);
+        mpUser->PutO(false);
 
         #ifdef DATAGLOVE
         // if we want glove input, start streaming values from the joystick
@@ -368,52 +359,50 @@ TEMPORARY_ENVIRONMENT_GLUE
            }
         #endif
 
-        WriteStateValues( svect );
-
+        WriteStateValues();
 }
 
-void TTask::ReadStateValues(STATEVECTOR *statevector)
+void TTask::ReadStateValues()
 {
-        CurrentTarget=       statevector->GetStateValue("TargetCode");
-        CurrentOutcome=      statevector->GetStateValue("ResultCode");
-        CurrentStimulusTime= statevector->GetStateValue("StimulusTime");
-        CurrentFeedback=     statevector->GetStateValue("Feedback");
-        CurrentIti=          statevector->GetStateValue("IntertrialInterval");
-        CurrentRunning=      statevector->GetStateValue("Running");
+        CurrentTarget=       State("TargetCode");
+        CurrentOutcome=      State("ResultCode");
+        CurrentStimulusTime= State("StimulusTime");
+        CurrentFeedback=     State("Feedback");
+        CurrentIti=          State("IntertrialInterval");
+        CurrentRunning=      State("Running");
                 if( CurRunFlag == 1 )     // 0 must cycle through at least once
                 {
                         if( CurrentRunning == 1 ) CurrentRunning = 0;
                         else                      CurRunFlag= 0;
                 }
 
-        CurrentRest=         statevector->GetStateValue("RestPeriod");
+        CurrentRest=         State("RestPeriod");
 
-        CurrentXadapt=       statevector->GetStateValue("Xadapt");
-        CurrentYadapt=       statevector->GetStateValue("Yadapt");
-        CurrentAdaptCode=    statevector->GetStateValue("AdaptCode");
+        CurrentXadapt=       State("Xadapt");
+        CurrentYadapt=       State("Yadapt");
+        CurrentAdaptCode=    State("AdaptCode");
 
 }
 
-void TTask::WriteStateValues(STATEVECTOR *statevector)
+void TTask::WriteStateValues()
 {
-        bcitime=new BCITIME;
-        CurrentStimulusTime= bcitime->GetBCItime_ms();                   // time stamp
-        delete bcitime;
-        statevector->SetStateValue("StimulusTime",CurrentStimulusTime);
+        CurrentStimulusTime= BCITIME::GetBCItime_ms();                   // time stamp
 
-        statevector->SetStateValue("TargetCode",CurrentTarget);
-        statevector->SetStateValue("ResultCode",CurrentOutcome);
-        statevector->SetStateValue("ResponseTime",FeedbackTime);
-        statevector->SetStateValue("Feedback",CurrentFeedback);
-        statevector->SetStateValue("IntertrialInterval",CurrentIti);
-        statevector->SetStateValue("Running",CurrentRunning);
-        statevector->SetStateValue("RestPeriod",CurrentRest);
-        statevector->SetStateValue("CursorPosX",(int)x_pos );
-        statevector->SetStateValue("CursorPosY",(int)y_pos );
+        State("StimulusTime")=CurrentStimulusTime;
 
-        statevector->SetStateValue("Xadapt",CurrentXadapt);
-        statevector->SetStateValue("Yadapt",CurrentYadapt);
-        statevector->SetStateValue("AdaptCode",CurrentAdaptCode);
+        State("TargetCode")=CurrentTarget;
+        State("ResultCode")=CurrentOutcome;
+        State("ResponseTime")=FeedbackTime;
+        State("Feedback")=CurrentFeedback;
+        State("IntertrialInterval")=CurrentIti;
+        State("Running")=CurrentRunning;
+        State("RestPeriod")=CurrentRest;
+        State("CursorPosX")=x_pos;
+        State("CursorPosY")=y_pos;
+
+        State("Xadapt")=CurrentXadapt;
+        State("Yadapt")=CurrentYadapt;
+        State("AdaptCode")=CurrentAdaptCode;
 
 }
 
@@ -451,7 +440,7 @@ void TTask::ShuffleTargs( int ntargs )
 
         for(i=0;i<ntargs;i++)
         {
-                rpt:    rval= User->ran1( &randseed );
+                rpt:    rval= mpUser->ran1( &randseed );
                         targs[i]= 1 + (int)( rval * ntargs );
 
                 if( (targs[i] < 1) || (targs[i]>Ntargets) )
@@ -490,7 +479,7 @@ int TTask::TestTarget( float xpos, float ypos, int targ )
         int result;
         int half;
 
-        half= User->HalfCursorSize;
+        half= mpUser->HalfCursorSize;
 
         result= 0;
 
@@ -519,9 +508,9 @@ void TTask::TestCursorLocation( float x, float y )
                 res= TestTarget( x, y, CurrentTarget );
                 if( res == 1 )
                 {
-                        User->Clear();
-                        User->PutCursor( &x_pos, &y_pos, clBlue );
-                        User->PutTarget( targx[ CurrentTarget ],
+                        mpUser->Clear();
+                        mpUser->PutCursor( &x_pos, &y_pos, clBlue );
+                        mpUser->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -557,8 +546,8 @@ void TTask::TestCursorLocation( float x, float y )
 
 jmp:            if( CurrentOutcome == CurrentTarget )
                 {
-                         User->Clear();
-                         User->PutTarget( targx[ CurrentTarget ],
+                         mpUser->Clear();
+                         mpUser->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -568,11 +557,11 @@ jmp:            if( CurrentOutcome == CurrentTarget )
                 }
                 else
                 {
-                         User->Clear();
+                         mpUser->Clear();
 
                          if( feedbackmode == 0 )
                          {
-                                User->PutTarget( targx[ CurrentTarget ],
+                                mpUser->PutTarget( targx[ CurrentTarget ],
                                         targy[ CurrentTarget ],
                                         targsizex[ CurrentTarget ],
                                         targsizey[ CurrentTarget ],
@@ -582,7 +571,7 @@ jmp:            if( CurrentOutcome == CurrentTarget )
                          }
                          else
                          {
-                                User->PutTarget( targx[ CurrentOutcome ],
+                                mpUser->PutTarget( targx[ CurrentOutcome ],
                                         targy[ CurrentOutcome ],
                                         targsizex[ CurrentOutcome ],
                                         targsizey[ CurrentOutcome ],
@@ -636,8 +625,8 @@ char            memotext[256];
 
  if ((CurrentRunning == 0) && (OldRunning == 1))            // put the T up there on the transition from not suspended to suspended
     {
-    User->Clear();
-    User->PutT(true);
+    mpUser->Clear();
+    mpUser->PutT(true);
     CurrentIti=1;
     }
  if (CurrentRunning == 1)
@@ -647,7 +636,7 @@ char            memotext[256];
        runstarttime=(double)(TDateTime::CurrentTime());   // run just started ?
        run++;
        }
-    User->PutT(false);
+    mpUser->PutT(false);
     // in the ITI period ?
     if (CurrentIti > 0)
        {
@@ -655,7 +644,7 @@ char            memotext[256];
        if (ItiTime == 0)
           {
           sprintf(memotext, "Run: %d; ITI -> new trial: %d\r", run, trial);
-          vis->SendMemo2Operator(memotext);
+          mVis.Send(memotext);
           trial++;
           }
             // in case the run was longer than x seconds
@@ -668,27 +657,27 @@ char            memotext[256];
                if (Hits+Misses > 0)
                   {
                   sprintf(memotext, "Run %d - %.1f%% correct\r", run, (float)Hits*100/((float)Hits+(float)Misses));
-                  vis->SendMemo2Operator(memotext);
+                  mVis.Send(memotext);
               //    fprintf( appl,"%s \n",memotext);
                   }
                else
                   {
-                  vis->SendMemo2Operator("No statistics for this run\r");
-                  vis->SendMemo2Operator("There were no trials\r");
+                  mVis.Send("No statistics for this run\r");
+                  mVis.Send("There were no trials\r");
                   }
                sprintf(memotext, "Total Bits transferred: %.2f\r", bitrate.TotalBitsTransferred());
-               vis->SendMemo2Operator(memotext);
+               mVis.Send(memotext);
             //   fprintf( appl,"%s \n",memotext);
                sprintf(memotext, "Average Bits/Trial: %.2f\r", bitrate.BitsPerTrial());
-               vis->SendMemo2Operator(memotext);
+               mVis.Send(memotext);
            //    fprintf( appl,"%s \n",memotext);
                sprintf(memotext, "Average Bits/Minute: %.2f\r", bitrate.BitsPerMinute());
-               vis->SendMemo2Operator(memotext);
+               mVis.Send(memotext);
             //   fprintf( appl,"%s \n",memotext);
-               vis->SendMemo2Operator("**************************\r");
+               mVis.Send("**************************\r");
              //  fprintf( appl,"**************************\r\n");
-               User->Clear();
-               User->PutT(true);
+               mpUser->Clear();
+               mpUser->PutT(true);
                UpdateSummary();
                }
         }
@@ -699,7 +688,7 @@ char            memotext[256];
             if (OutcomeTime == 0)
                {
                sprintf(memotext, "%d hits %d missed\r", Hits, Misses);
-               vis->SendMemo2Operator(memotext);
+               mVis.Send(memotext);
                bitrate.Push(HitOrMiss);
                }
 
@@ -710,7 +699,7 @@ char            memotext[256];
  if ((CurrentTarget > 0) && (OldCurrentTarget == 0))
     {
     sprintf(memotext, "Target: %d\r", CurrentTarget);
-    vis->SendMemo2Operator(memotext);
+    mVis.Send(memotext);
     }
 
  OldRunning=CurrentRunning;
@@ -724,7 +713,7 @@ void TTask::Iti( void )
 
         if( BaselineInterval == 2 )
                 CurrentBaseline= 1;
-        User->Clear();
+        mpUser->Clear();
         ItiTime++;
 
         if( ItiTime > ItiDuration )
@@ -739,16 +728,16 @@ void TTask::Iti( void )
                         for(i=0;i<Ntargets;i++)
                         {
                                 if( CurrentTarget == (i+1) )
-                                        User->PutFoils( i+1, clRed   );
+                                        mpUser->PutFoils( i+1, clRed   );
                                 else
-                                        User->PutFoils( i+1, clGreen   );
+                                        mpUser->PutFoils( i+1, clGreen   );
                         }
 
                 }
 
                 else
                 {
-                        User->PutTarget( targx[ CurrentTarget ],
+                        mpUser->PutTarget( targx[ CurrentTarget ],
                                  targy[ CurrentTarget ],
                                  targsizex[ CurrentTarget ],
                                  targsizey[ CurrentTarget ],
@@ -784,7 +773,7 @@ void TTask::Ptp( void )
 
                 x_pos= cursor_x_start;
                 y_pos= cursor_y_start;
-                User->PutCursor( &x_pos, &y_pos, clRed );
+                mpUser->PutCursor( &x_pos, &y_pos, clRed );
                 CurrentFeedback= 1;
                 FeedbackTime= 0;
 
@@ -807,12 +796,11 @@ void TTask::Ptp( void )
 
 void TTask::GetJoy( )
 {
-        MMRESULT mmres;
         JOYINFO joyi;
         float tx;
         float ty;
 
-        mmres= joyGetPos( JOYSTICKID1, &joyi );
+        joyGetPos( JOYSTICKID1, &joyi );
 
         tx= (float)(joyi.wXpos)-32768  - (float)(jx_cntr);
         ty= (float)(joyi.wYpos)-32768  - (float)(jy_cntr);
@@ -860,15 +848,15 @@ void TTask::Feedback( short sig_x, short sig_y )
 {
         if(useJoy == 0)
         {
-                x_pos+= (float)sig_x * User->scalex;
-                y_pos+= (float)sig_y * User->scaley;
+                x_pos+= (float)sig_x * mpUser->scalex;
+                y_pos+= (float)sig_y * mpUser->scaley;
         }
         if(useJoy == 1) GetJoy();
         #ifdef DATAGLOVE
         if(useJoy == 2) GetGlove();
         #endif
 
-        User->PutCursor( &x_pos, &y_pos, clRed );
+        mpUser->PutCursor( &x_pos, &y_pos, clRed );
         TestCursorLocation( x_pos, y_pos );
 
         FeedbackTime++;
@@ -900,7 +888,7 @@ void TTask::Outcome()
                 CurrentOutcome= 0;
                 CurrentTarget= 0;
                 OutcomeTime= 0;
-                User->PutCursor( &x_pos, &y_pos, clBlack );
+                mpUser->PutCursor( &x_pos, &y_pos, clBlack );
         }
 
         if( (targetInclude == 0) && (feedflag == 1) )
@@ -917,9 +905,9 @@ void TTask::Rest( void )
                 runstarttime=(double)(TDateTime::CurrentTime());   // run just started ?
                 run++;
                 OldRunning= 1;
-                User->Clear();
-                User->PutT(false);
-                User->PutO(true);
+                mpUser->Clear();
+                mpUser->PutT(false);
+                mpUser->PutO(true);
                // CurrentRest= 1;
                 CurrentIti= 0;
 
@@ -930,9 +918,9 @@ void TTask::Rest( void )
          if (timepassed > timelimit)
          {
                CurrentRunning=0;
-               User->Clear();
-               User->PutO(false);
-               User->PutT(true);
+               mpUser->Clear();
+               mpUser->PutO(false);
+               mpUser->PutT(true);
                CurrentRest= 0;
                CurrentIti= 1;
          }
@@ -941,7 +929,7 @@ void TTask::Rest( void )
 
 void TTask::Process( const GenericSignal * Input, GenericSignal * Output )
 {
-        ReadStateValues( Statevector );
+        ReadStateValues();
 
         if( CurrentRunning > 0 )
         {
@@ -953,7 +941,7 @@ void TTask::Process( const GenericSignal * Input, GenericSignal * Output )
         }
 
         UpdateDisplays();
-        WriteStateValues( Statevector );
+        WriteStateValues();
         *Output = *Input;
 }
 

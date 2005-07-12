@@ -10,6 +10,7 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UDataGlove.h"
 #include "UGenericFilter.h"
 #include "UBCItime.h"
+#include "LogFile.h"
 
 #include <mmsystem.h>
 
@@ -19,6 +20,7 @@ Task.h is the header file for the Right Justified Boxes task
 class TTask : public GenericFilter
 {
 private:
+        class TUser* mpUser;
         int useJoy;
         int feedbackmode;
         int targetDisplay;
@@ -131,19 +133,18 @@ private:
         int GetTargetNo( int ntargs );
         void UpdateDisplays( void );
         void UpdateSummary( void );
+
         FILE *appl;
-        STATEVECTOR             *svect;
-        GenericVisualization    *vis;
+        GenericVisualization mVis;
         BITRATE         bitrate;
         BCITIME         *bcitime;
-        TApplication    *Applic;
         DataGlove       *my_glove;
 public:
         TTask();
         virtual ~TTask();
         
-        void ReadStateValues(STATEVECTOR *);
-        void WriteStateValues(STATEVECTOR *);
+        void ReadStateValues();
+        void WriteStateValues();
         virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
         virtual void Initialize();
         virtual void Process( const GenericSignal * Input, GenericSignal * Output );
