@@ -76,7 +76,7 @@ gUSBampADC::gUSBampADC()
         "// numeric type of output signal: "
             " 0: int16,"
             " 1: float32"
-            "(enumeration)",
+            " (enumeration)",
  END_PARAMETER_DEFINITIONS
 
  // add all states that this ADC requests to the list of states
