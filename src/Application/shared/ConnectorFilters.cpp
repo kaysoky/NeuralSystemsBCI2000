@@ -192,7 +192,7 @@ ConnectorOutput::Process( const GenericSignal* input, GenericSignal* output )
   }
   for( size_t channel = 0; channel < input->Channels(); ++channel )
     for( size_t element = 0; element < input->Elements(); ++element )
-      mConnection << "Signal(" << channel << ", " << element << ") "
+      mConnection << "Signal(" << channel << "," << element << ") "
                   << ( *input )( channel, element ) << endl;
 }
 
