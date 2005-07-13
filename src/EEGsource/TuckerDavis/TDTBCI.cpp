@@ -39,6 +39,7 @@ ZBus(NULL)
     TDTsampleRate = 24414.0625;
     TDTgain = 1;
     blockSize = 0;
+    TDTbufSize = 32000;
     curindex = 0;
     stopIndex = 0;
     indexMult = 1;
@@ -70,7 +71,7 @@ ZBus(NULL)
 		"// Number of 1st RX5 processors (set the RCO file accordingly!): ",
         "Source int nProcessorsBoard2= 0 5 0 0"
 		"// Number of 2nd RX5 processors (0 if only one board): ",
-	END_PARAMETER_DEFINITIONS
+		END_PARAMETER_DEFINITIONS
 		
 		try
     {
@@ -111,7 +112,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
 	// checks whether the board	works with the parameters requested, and
 	// communicates	the	dimensions of its output signal
-
+	
 	bool twoBoards = false;
 	
     // check the the number of processors given is valid
@@ -119,26 +120,40 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     {
         bcierr << "The number of processors must be either 2 or 5."<<endl;
     }
-
+	
     if ((Parameter("nProcessorsBoard2") != 2) && (Parameter("nProcessorsBoard2") != 5) && (Parameter("nProcessorsBoard2") != 0))
     {
         bcierr << "The number of processors for the 2nd system must be either 2 or 5, or 0 if not being used."<<endl;
     }
 	
-
+	
     // check if a 2nd system is being used
     if (Parameter("nProcessorsBoard2") > 0)
         twoBoards=true;
     else
         twoBoards=false;
-	
+
+	if (!twoBoards)
+    {
+        if ((Parameter("SoftwareCh") > 16) && (Parameter("nProcessorsBoard1") == 2))
+            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
+    }
+    else
+    {
+        if ((Parameter("SoftwareChBoard1") > 16) && (Parameter("nProcessorsBoard1") == 2))
+            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
+
+        if ((Parameter("SoftwareChBoard2") > 16) && (Parameter("nProcessorsBoard2") == 2))
+            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
+    }
+
     if (twoBoards)
 	{
 		if (Parameter( "SoftwareChBoard1" )+Parameter( "SoftwareChBoard2" ) != Parameter( "SoftwareCh" ))
 			bcierr << "If we have two systems, SoftwareChBoard1+SoftwareChBoard2 has to equal SoftwareCh" << endl;
-
+		
 	}	
-
+	
 	const char * circuitPath = Parameter("CircuitPath");
 	const char * circuitName = Parameter("CircuitName");
 	
@@ -150,7 +165,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 	}
 	
 	circuit.append(circuitName);
-
+	
 	// connect to the ZBus
     ZBus->ConnectZBUS(interfaceType.c_bstr());
     
@@ -203,7 +218,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     }
 	
 	//status = RPcoX1->GetStatus();
-
+	
 	RPcoX1->Halt();
     RPcoX2->Halt();
 	
@@ -238,7 +253,7 @@ void TDTBCI::Initialize()
     WideString nPerTag = "nPer";
 	
 	//make sure	we are connected
-
+	
 	if (Parameter("nProcessorsBoard2") > 0)
         use2RX5 = true;
     else
@@ -271,7 +286,7 @@ void TDTBCI::Initialize()
 	{
 		bcierr << "Error setting TDT sample rate."	<< endl;
 	}
-
+	
     // set up the second system if necessary
     if (use2RX5)
     {
@@ -297,10 +312,10 @@ void TDTBCI::Initialize()
 			bcierr << "Error setting TDT sample rate."	<< endl;
 		}
     }
-
+	
     // initialize the data buffers
     dataA = new float[valuesToRead];
-
+	
 	if (nProcessors1 == 5)
     {
         // initialize data buffers
@@ -308,11 +323,11 @@ void TDTBCI::Initialize()
         dataC = new float[valuesToRead];
         dataD = new float[valuesToRead];
     }
-
+	
     if (use2RX5)
     {
         dataA2 = new float[valuesToRead];
-
+		
         if (nProcessors2 == 5)
         {
             dataB2 = new float[valuesToRead];
@@ -320,7 +335,7 @@ void TDTBCI::Initialize()
             dataD2 = new float[valuesToRead];
         }
     }
-
+	
     // reset the hardware and all conditions
     ZBus->zBusTrigA(0, 0, 5);
     mOffset = 0;
@@ -341,16 +356,16 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 {
 	int	valuesToRead = mSampleBlockSize*16;
     int curSample = 0;
-
+	
     stopIndex = mOffset + valuesToRead;
 	
 	short* buffer;
 	WideString dataTagA("dataA"), dataTagB("dataB"), dataTagC("dataC"),	dataTagD("dataD");
     WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD");
-
+	
     curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-
-    if (stopIndex < 32000)
+	
+    if (stopIndex < TDTbufSize)
     {
 		while (curindex < stopIndex)
 		{
@@ -360,11 +375,14 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
     }
     else
     {
+        stopIndex = stopIndex % TDTbufSize;
         // this needs to be updated for the buffer wrap-around in the TDT
-        while (curindex != 0)
+        bool done = false;
+        while (!done)
         {
 			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-			Sleep(0);
+            if  (curindex >= stopIndex && curindex < (TDTbufSize - valuesToRead))
+                done = true;
         }
     }
 	
@@ -374,20 +392,49 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 		bcierr <<	"Error reading data	from Pentusa (A)."<<endl;
 	}
 	
-	if(!RPcoX1->ReadTag(dataTagB.c_bstr(), dataB, mOffset, valuesToRead))
-	{
-		bcierr <<	"Error reading data	from Pentusa (B)."<<endl;
-	}
+	if (nProcessors1 == 5)
+    {
+		if(!RPcoX1->ReadTag(dataTagB.c_bstr(), dataB, mOffset, valuesToRead))
+		{
+			bcierr <<	"Error reading data	from Pentusa (B)."<<endl;
+		}
+		
+		if(!RPcoX1->ReadTag(dataTagC.c_bstr(), dataC, mOffset, valuesToRead))
+		{
+			bcierr <<	"Error reading data	from Pentusa (C)."<<endl;
+		}
+		
+		if(!RPcoX1->ReadTag(dataTagD.c_bstr(), dataD, mOffset, valuesToRead))
+		{
+			bcierr <<	"Error reading data	from Pentusa (D)."<<endl;
+		}
+    }
 	
-	if(!RPcoX1->ReadTag(dataTagC.c_bstr(), dataC, mOffset, valuesToRead))
-	{
-		bcierr <<	"Error reading data	from Pentusa."<<endl;
-	}
-	
-	if(!RPcoX1->ReadTag(dataTagD.c_bstr(), dataD, mOffset, valuesToRead))
-	{
-		bcierr <<	"Error reading data	from Pentusa."<<endl;
-	}
+    if (use2RX5)
+    {
+		if(!RPcoX2->ReadTag(dataTagA.c_bstr(), dataA2, mOffset, valuesToRead))
+		{
+			bcierr <<	"Error reading data	from Pentusa2 (A)."<<endl;
+		}
+		
+		if (nProcessors1 == 5)
+		{
+			if(!RPcoX2->ReadTag(dataTagB.c_bstr(), dataB2, mOffset, valuesToRead))
+			{
+				bcierr <<	"Error reading data	from Pentusa2 (B)."<<endl;
+			}
+			
+			if(!RPcoX2->ReadTag(dataTagC.c_bstr(), dataC2, mOffset, valuesToRead))
+			{
+				bcierr <<	"Error reading data	from Pentusa2 (C)."<<endl;
+			}
+			
+			if(!RPcoX2->ReadTag(dataTagD.c_bstr(), dataD2, mOffset, valuesToRead))
+			{
+				bcierr <<	"Error reading data	from Pentusa2 (D)."<<endl;
+			}
+		}
+    }
 	
     // update the index and offset
     mOffset = (mOffset + valuesToRead) % (32000);
@@ -419,6 +466,30 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
             {
                 //bciout <<"48-63"<<endl;
                 outputSignal->SetValue(ch%16 + 48, sample, dataD[curSample]);
+            }
+
+            if (nProcessors2 == 0)
+                continue;
+
+            if (ch >= 64 && ch < 80)
+            {
+                //bciout <<"0-15"<<endl;
+                outputSignal->SetValue(ch%16 + 64, sample, dataA2[curSample]);
+            }
+            else if (ch >= 80 && ch < 96)
+            {
+                //bciout <<"16-31"<<endl;
+                outputSignal->SetValue(ch%16 + 80, sample, dataB2[curSample]);
+            }
+            else if (ch >= 96 && ch < 112)
+            {
+                //bciout <<"32-47,"<<ch%16+2*nChannels<<","<<dataC[curSample]<<endl;
+                outputSignal->SetValue(ch%16 + 96, sample, dataC2[curSample]);
+            }
+            else if (ch >= 112 && ch < 128)
+            {
+                //bciout <<"48-63"<<endl;
+                outputSignal->SetValue(ch%16 + 112, sample, dataD2[curSample]);
             }
         }
     }

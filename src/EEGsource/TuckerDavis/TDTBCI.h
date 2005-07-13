@@ -43,6 +43,7 @@ private:
     double notchBW;
     double TDTsampleRate;
     double TDTgain;
+    int TDTbufSize;
     int blockSize;
     int curindex, stopIndex, indexMult;
 
