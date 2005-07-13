@@ -438,59 +438,33 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 	
     // update the index and offset
     mOffset = (mOffset + valuesToRead) % (32000);
-	
-    //Sleep(10);
+
     for (int ch =0; ch < mSoftwareCh; ch++)
     {
         for (int sample = 0; sample < mSampleBlockSize; sample++)
         {
             curSample = sample*16+ch%16;
-			
-            //bciout << "("<<curSample<<","<<ch<<","<<sample<<")"<<endl;
+
             if (ch < 16)
-            {
-                //bciout <<"0-15"<<endl;
                 outputSignal->SetValue(ch, sample, dataA[curSample]);
-            }
             else if (ch >= 16 && ch < 32)
-            {
-                //bciout <<"16-31"<<endl;
                 outputSignal->SetValue(ch%16 + 16, sample, dataB[curSample]);
-            }
             else if (ch >= 32 && ch < 48)
-            {
-                //bciout <<"32-47,"<<ch%16+2*nChannels<<","<<dataC[curSample]<<endl;
                 outputSignal->SetValue(ch%16 + 32, sample, dataC[curSample]);
-            }
             else if (ch >= 48 && ch < 64)
-            {
-                //bciout <<"48-63"<<endl;
                 outputSignal->SetValue(ch%16 + 48, sample, dataD[curSample]);
-            }
 
             if (nProcessors2 == 0)
                 continue;
 
             if (ch >= 64 && ch < 80)
-            {
-                //bciout <<"0-15"<<endl;
                 outputSignal->SetValue(ch%16 + 64, sample, dataA2[curSample]);
-            }
             else if (ch >= 80 && ch < 96)
-            {
-                //bciout <<"16-31"<<endl;
                 outputSignal->SetValue(ch%16 + 80, sample, dataB2[curSample]);
-            }
             else if (ch >= 96 && ch < 112)
-            {
-                //bciout <<"32-47,"<<ch%16+2*nChannels<<","<<dataC[curSample]<<endl;
                 outputSignal->SetValue(ch%16 + 96, sample, dataC2[curSample]);
-            }
             else if (ch >= 112 && ch < 128)
-            {
-                //bciout <<"48-63"<<endl;
                 outputSignal->SetValue(ch%16 + 112, sample, dataD2[curSample]);
-            }
         }
     }
 	// END DATA	READ
