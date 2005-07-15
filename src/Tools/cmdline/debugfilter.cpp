@@ -3,7 +3,7 @@
 
 #include "UGenericFilter.h"
 
-#define REPORTFUNCTION  { bciout << "entered function" << endl; }
+#define REPORTFUNCTION  { bciout << "entered function " __FUNC__ << endl; }
 
 using namespace std;
 
