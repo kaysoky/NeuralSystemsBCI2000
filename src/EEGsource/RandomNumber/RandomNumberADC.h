@@ -26,7 +26,8 @@ class RandomNumberADC : public GenericADC
   int    cur_mousexpos, cur_mouseypos;
   bool   mTrueRandom;
   BCITIME mLasttime;
-  int mCount;  
+  int     mCount;
+  int     mSignalType;
 };
 
 #endif // RandomNumberADCH

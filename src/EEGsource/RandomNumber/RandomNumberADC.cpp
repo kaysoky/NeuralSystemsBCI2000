@@ -55,8 +55,8 @@ RandomNumberADC::RandomNumberADC()
   sinechannelx( 0 ),
   modulateamplitude( 0 ),
   mTrueRandom(false),
-  mCount(0)
-
+  mCount(0),
+  mSignalType( SignalType::int16 )
 {
  mLasttime = -1;
 
@@ -181,7 +181,7 @@ void RandomNumberADC::Initialize()
         mCount=0;
         srand(0);
   }
-
+  mSignalType = Parameter( "SignalType" );
 }
 
 
@@ -262,7 +262,7 @@ int     stateval, cursorpos, cursorposx;
    if ((sinechannel == 0) || (sinechannel == channel+1))
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = ( sinevalrange * ( Screen->Height / 2 - cur_mouseypos ) ) / Screen->Height + sineminamplitude;
+        value = sinevalrange * ( 1 - float( cur_mouseypos ) / Screen->Height ) + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
@@ -272,7 +272,7 @@ int     stateval, cursorpos, cursorposx;
    if (sinechannelx == channel+1)
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = ( sinevalrange * ( Screen->Width / 2 - cur_mousexpos ) ) / Screen->Width + sineminamplitude;
+        value = sinevalrange * ( 1 - float( cur_mousexpos ) / Screen->Width ) + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
@@ -284,6 +284,29 @@ int     stateval, cursorpos, cursorposx;
      value += noise;         // add noise after modulating sine wave
    }
    value+=DCoffset;
+   switch( mSignalType )
+   {
+     case SignalType::int16:
+       {
+         const maxvalue = 1 << 15 - 1,
+               minvalue = - 1 << 15;
+         if( value > maxvalue )
+           value = maxvalue;
+         if( value < minvalue )
+           value = minvalue;
+       }
+       break;
+     case SignalType::int32:
+       {
+         const maxvalue = 1 << 31 - 1,
+                minvalue = - 1 << 31;
+         if( value > maxvalue )
+           value = maxvalue;
+         if( value < minvalue )
+           value = minvalue;
+       }
+       break;
+   };
    signal->SetValue(channel, sample, value);
    }
   }
