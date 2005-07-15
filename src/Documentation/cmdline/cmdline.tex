@@ -88,11 +88,16 @@ bci_dat2stream < mydata.dat | bci_stream2prm | grep SamplingRate
 \section{Building BCI2000 command line tools}
 As the command line tools are not automatically built from the main makefile, 
 you need to do this manually. 
-On the Windows NT shell, change to the \texttt{BCI2000/Tools/cmdline} directory,
-and execute \texttt{make all} from there.
+On the Windows NT shell, change to the \texttt{BCI2000/src/Tools/cmdline} directory,
+and execute \texttt{make install} from there; this will also move the 
+resulting executable to the \texttt{BCI2000/Tools/cmdline} directory.
+To build an executable from a file \texttt{MyFilter.cpp} containing a 
+BCI2000 filter \texttt{MyFilter}, execute \texttt{MyFilter.install}.
+This will build an executable \texttt{MyFilter.exe} and add it to the
+\texttt{BCI2000/Tools/cmdline} directory.
 
-To use the tools from any directory, you will need to add the full path to the
-\texttt{BCI2000/Tools/cmdline} directory to your system's PATH environment variable. 
+In order to use the command line tools, you will need to add the full path 
+to the \texttt{BCI2000/Tools/cmdline} directory to your system's PATH environment variable. 
 Please consult your operating system's documentation on how to do this.
 
 \section{Stream format}
