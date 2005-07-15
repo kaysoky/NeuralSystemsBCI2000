@@ -1,9 +1,9 @@
 Filtering int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 System string ApplicationIP= 134.2.102.184 127.0.0.1 127.0.0.1 127.0.0.1 // the Application module's listening IP
-System string ApplicationPort= 2947 4200 1024 32768 // the Application module's listening port
+System string ApplicationPort= 3055 4200 1024 32768 // the Application module's listening port
 Filtering intlist ArteChList= 2 2 0 2 0 0 // Association of artefact channels with signal channels, 0 for no artefact channel
 Filtering floatlist ArteFactorList= 2 0.15 0 0 0 0 // Influence of artefact channel on input channel, -1: no artifact channel
-Filtering int ArteMode= 3 1 0 3 // Artefact correction mode: 0 off, 1 linear subtraction, 2 subtraction if supporting, 3 subtraction w/abort (enumeration)
+Filtering int ArteMode= 0 1 0 3 // Artefact correction mode: 0 off, 1 linear subtraction, 2 subtraction if supporting, 3 subtraction w/abort (enumeration)
 UsrTask_Feedback int AudFBMode= 1 1 0 1 // 0 no acoustic FB, 1 MIDI(enumeration)
 UsrTask_Views int AudInvalid= 1 1 0 1 // 0 no auditory invalid indicator, 1 MIDI(enumeration)
 UsrTask_Views floatlist AudMarkers= 2 TaskBegin FeedbackBegin 0 0 0 // Time offsets for auditory markers (values or parameter names)
@@ -24,7 +24,7 @@ UsrTask_Targets int ContinuousAudResult= 0 0 0 1 // repeat file C<result.wav> co
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
 Source int DoTrueRandom= 0 0 0 1 // Generate truly random sequence (0=no, 1=yes) (boolean)
 System string EEGSourceIP= 134.2.102.184 127.0.0.1 127.0.0.1 127.0.0.1 // the EEGSource module's listening IP
-System string EEGSourcePort= 2945 4200 1024 32768 // the EEGSource module's listening port
+System string EEGSourcePort= 3053 4200 1024 32768 // the EEGSource module's listening port
 UsrTask_Feedback int FBAlwaysOn= 0 0 0 1 // 0 no feedback display outside feedback interval, 1 always show feedback cursor/play feedback sound(enumeration)
 UsrTask_Feedback int FBBrightnessChannel= -1 -1 -1 100 // signal channel for cursor brightness (-1 for none)
 UsrTask_Feedback floatlist FBCh0L= 2 -101 -101 0 -101 101 // Lower target bounds for feedback channel 0
@@ -81,7 +81,7 @@ UsrTask_Views int ScoreViewMode= 1 1 0 1 // score view: 0: off, 1: on(enumeratio
 UsrTask string SequenceFile= default.seq default.seq a z // file name of sequence file(inputfile)
 UsrTask int SequenceType= 3 3 0 3 // 0 no task, 1 sequence file, 2 random, 3 explicit(enumeration)
 System string SignalProcessingIP= 134.2.102.184 127.0.0.1 127.0.0.1 127.0.0.1 // the SignalProcessing module's listening IP
-System string SignalProcessingPort= 2946 4200 1024 32768 // the SignalProcessing module's listening port
+System string SignalProcessingPort= 3054 4200 1024 32768 // the SignalProcessing module's listening port
 Source int SignalType= 0 0 0 3 // numeric type of output signal:  0: int16, 1: float24, 2: float32, 3: int32 (enumeration)
 Source int SineChannel= 0 0 0 128 // channel number of sinewave for y (0=all)
 Source int SineChannelX= 0 0 0 128 // channel number of sinewave for x
