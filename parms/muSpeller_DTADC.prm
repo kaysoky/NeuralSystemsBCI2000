@@ -69,12 +69,12 @@ Storage string StorageTime= 16:15 Time a z // time of beginning of data storage
 Storage string SubjectName= test Name a z // subject alias
 Storage string SubjectRun= 01 00 0 99 // digit run number (max. 3 characters)
 Storage string SubjectSession= 001 001 0 999 // session number (max. 3 characters)
-Speller string TargetDefinitionFile= targets.cfg 0 0 100 // Target definition file
+Speller string TargetDefinitionFile= config\targets.cfg 0 0 100 // Target definition file
 Speller int TargetTextHeight= 5 0 0 100 // Height of target labels in percent of screen height
 Speller int TargetWidth= 30 0 0 100 // TargetWidth in percent of screen width
 Source int TransmitCh= 4 5 1 128 // this is the number of transmitted channels
 Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
-Speller string TreeDefinitionFile= tree.cfg 0 0 100 // Tree definition file
+Speller string TreeDefinitionFile= config\tree.cfg 0 0 100 // Tree definition file
 Statistics int TrendControl= 1 0 0 2 // Online adaption of % Correct Trend 1= Lin 2 = Quad
 Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window
 Filtering float UD_A= 0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
