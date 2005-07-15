@@ -30,7 +30,6 @@ TARGETS = obj\bci_tool.lib \
           SpatialFilter.exe \
           ARFilter.exe \
           FIRFilter.exe \
-          FIRclassfilter.exe \
           P3TemporalFilter.exe \
           UPeakDetector.exe \
           SWFilter.exe \
@@ -43,7 +42,6 @@ TARGETS = obj\bci_tool.lib \
           SpatialFilter.dll \
           ARFilter.dll \
           FIRFilter.dll \
-          FIRclassfilter.dll \
           P3TemporalFilter.dll \
           UPeakDetector.dll \
           SWFilter.dll \
