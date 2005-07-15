@@ -38,13 +38,14 @@ TARGETS = obj\bci_tool.lib \
           StatFilter.exe \
           
 BCIOBJ  = obj\bci_tool.obj \
+          obj\bci_filterwrapper.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \
           obj\UEnvironment.obj \
           obj\UGenericFilter.obj \
           obj\UGenericVisualization.obj \
-          obj\UBCIError.obj \
+          obj\UBCIError_tool.obj \
           obj\UState.obj \
           obj\UStatus.obj \
           obj\USysCommand.obj \
@@ -52,7 +53,25 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\MeasurementUnits.obj \
           obj\getmem.obj \
           obj\getfir.obj \
-          obj\FFTLibWrap.obj
+          obj\FFTLibWrap.obj 
+          
+DLLOBJ  = obj\bci_dll.obj \
+          obj\bci_filterwrapper.obj \
+          obj\bci_stubs.obj \
+          obj\UParameter.obj \
+          obj\UGenericSignal.obj \
+          obj\UEnvironment.obj \
+          obj\UGenericFilter.obj \
+          obj\UGenericVisualization.obj \
+          obj\UBCIError_dll.obj \
+          obj\UState.obj \
+          obj\UStatus.obj \
+          obj\USysCommand.obj \
+          obj\MessageHandler.obj \
+          obj\MeasurementUnits.obj \
+          obj\getmem.obj \
+          obj\getfir.obj \
+          obj\FFTLibWrap.obj 
           
 STATOBJ = obj\bci_filtertool.obj \
           obj\StatFilter.obj \
@@ -91,13 +110,32 @@ RM  = del
 	${MAKE} obj\bci_filtertool.obj
 	${LD} $< obj\bci_filtertool.obj obj\bci_tool.lib
 	
+{$(PATHOBJ)}.obj.dll:
+	${MAKE} obj\bci_dll.lib
+	${LD} -WD $< obj\bci_dll.lib
+
 .cpp.obj:
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
 	${CPP} -c -o${PATHOBJ}\${*F}.obj $<
 
 all: ${TARGETS}
 
+obj\bci_dll.obj: bci_dll.cpp
+	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
+	${CPP} -DBCI_DLL -c -o${PATHOBJ}\${*F}.obj bci_dll.cpp   
+
+obj\UBCIError_tool.obj: ${BCIROOT}\shared\UBCIError.cpp
+	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
+	${CPP} -c -o${PATHOBJ}\${*F}.obj ${BCIROOT}\shared\UBCIError.cpp
+
+obj\UBCIError_dll.obj: ${BCIROOT}\shared\UBCIError.cpp 
+	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
+	${CPP} -DBCI_DLL -c -o${PATHOBJ}\${*F}.obj ${BCIROOT}\shared\UBCIError.cpp   
+
 obj\bci_tool.lib: ${BCIOBJ}
+	&${AR} $@ +$**
+
+obj\bci_dll.lib: ${DLLOBJ}
 	&${AR} $@ +$**
 
 obj\StatFilter.lib: ${STATOBJ}
