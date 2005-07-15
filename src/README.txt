@@ -1,0 +1,45 @@
+Getting started with the BCI2000 source code
+============================================
+
+This document covers the following topics:
+
+(1) Compiling BCI2000 from the command line.
+(2) Compiling BCI2000 using the Borland IDE.
+(3) Starting up BCI2000.
+(4) Creating up-to date versions of the documentation in PDF format.
+
+
+(1) Compiling BCI2000 from the command line
+    =======================================
+  - Open a Windows cmd shell, e.g. by choosing "Run..." from the Start
+    Menu and entering "cmd". 
+  - Change to the "src" directory where this document resides.
+  - Execute "make" from the command prompt.
+  - If you updated or edited any of the source files, and experience 
+    linker errors or other unexpected behavior, execute
+    "make clean && make".
+
+(2) Compiling BCI2000 using the Borland IDE
+    =======================================
+  - Open the file "BCI2000.bpg" with the IDE by double-clicking it.
+  - Make sure the "ProjectManager" view is visible to the left.
+  - Right-click the topmost project (located immediately below the line
+    reading "BCI2000"), and choose "Make all from here".
+  - To get rid of possible inconsistencies from earlier builds, choose
+    "Build all from here" instead of "Make all from here".
+
+(3) Starting up BCI2000
+    ===================
+  - After compilation, a desired configuration of BCI2000 may be started
+    by executing an appropriate batch file from the top level "batch"
+    directory.
+  - If you need a configuration for which no batch file exists, just 
+    modify a copy of a batch file that is close to your needs.
+
+(4) Creating up-to date versions of the documentation in PDF format
+    ===============================================================
+  - If you have a LaTeX distribution installed that provides the pdflatex
+    program, you can create PDF format documents.
+  - Make sure that the pdflatex executable is inside the search path
+    defined by the PATH environment variable.
+  - Execute "make pdf" from the BCI2000/src directory.
