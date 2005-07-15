@@ -94,7 +94,12 @@ all docinfo prepare clean install update pdf:
 ##################################################################################
 
 # Make all subprojects.
-all: prepare ${MAKEFILES:.mak=.all}
+all: prepare ${MAKEFILES:.mak=.all} cmdline
+  ${DONE}
+  
+# Make the command line tools.
+cmdline:
+  ${SHELL} cd Tools\cmdline ${AND} make install
   ${DONE}
   
 # Do some automatic documentation.
@@ -115,6 +120,8 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
+  -${SHELL} cd ..\${BINDIR} for /R %i in (${GARBAGE}) do del "%i"
+  -${SHELL} cd ..\${TOOLSBINDIR} for /R %i in (${GARBAGE}) do del "%i"
   ${DONE}
   
 # Install executables.
@@ -131,7 +138,7 @@ bindist: all pdf
   ${SHELL} cd .. \
     ${AND} ${SEVENZIPDIR}\7z a ${BINDISTNAME}.7z ${BINDISTDIRS} \
     ${AND} ${SEVENZIPDIR}\7z d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
-    ${AND} copy /b  BCI2000\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
+    ${AND} copy /b  src\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
     ${AND} del ${BINDISTNAME}.7z
   ${DONE}
 

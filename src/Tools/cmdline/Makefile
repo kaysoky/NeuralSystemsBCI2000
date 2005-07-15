@@ -23,6 +23,7 @@ TARGETS = obj\bci_tool.lib \
           bci_stream2asc.exe \
           bci_stream2table.exe \
           bci_stream2mat.exe \
+          bci_dllfilter.exe \
           CalibrationFilter.exe \
           ClassFilter.exe \
           Normalfilter.exe \
@@ -35,7 +36,20 @@ TARGETS = obj\bci_tool.lib \
           SWFilter.exe \
           FFTFilter.exe \
           TransmissionFilter.exe \
-          StatFilter.exe \
+#         StatFilter.exe \
+          CalibrationFilter.dll \
+          ClassFilter.dll \
+          Normalfilter.dll \
+          SpatialFilter.dll \
+          ARFilter.dll \
+          FIRFilter.dll \
+          FIRclassfilter.dll \
+          P3TemporalFilter.dll \
+          UPeakDetector.dll \
+          SWFilter.dll \
+          FFTFilter.dll \
+          TransmissionFilter.dll \
+#         StatFilter.dll \
           
 BCIOBJ  = obj\bci_tool.obj \
           obj\bci_filterwrapper.obj \
@@ -79,12 +93,6 @@ STATOBJ = obj\bci_filtertool.obj \
           obj\Normalfilter.obj \
           obj\ClassFilter.obj \
 
-OLDSTATOBJ = obj\bci_filtertool.obj \
-          obj\old_StatFilter.obj \
-          obj\old_Statistics.obj \
-          obj\old_Normalfilter.obj \
-          obj\old_ClassFilter.obj \
-
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
@@ -93,6 +101,11 @@ PATHOBJ = .\obj
 PATHCPP = .;${BCIROOT}\shared;${SIGPROC};${SRCROOT}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib
+
+BINDIR = ..\..\..\Tools\cmdline
+DLLDIR = ..\..\..\Tools\dll
+
+SCRIPTS = *.cmd *.bat *.m
 
 DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT
 CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
@@ -118,7 +131,20 @@ RM  = del
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
 	${CPP} -c -o${PATHOBJ}\${*F}.obj $<
 
-all: ${TARGETS}
+.exe.install:
+  ${SHELL} if not exist ${BINDIR} mkdir ${BINDIR}
+  ${SHELL} move "$<" ${BINDIR}
+  ${DONE}
+
+.dll.dllinstall:
+  ${SHELL} if not exist ${DLLDIR} mkdir ${DLLDIR}
+  ${SHELL} move "$<" ${DLLDIR}
+  ${DONE}
+
+all: ${TARGETS} 
+
+install: all ${TARGETS:.exe=.install} ${TARGETS:.dll=.dllinstall}
+	for %i in (${SCRIPTS}) do copy /y "%i" "${BINDIR}"
 
 obj\bci_dll.obj: bci_dll.cpp
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
@@ -144,12 +170,6 @@ obj\StatFilter.lib: ${STATOBJ}
 StatFilter.exe: obj\StatFilter.lib obj\bci_tool.lib
 	${LD} obj\StatFilter.obj obj\StatFilter.lib obj\bci_tool.lib rtl.lib
 	
-obj\old_StatFilter.lib: ${OLDSTATOBJ}
-	&${AR} $@ +$**
-
-old_StatFilter.exe: obj\old_StatFilter.lib obj\bci_tool.lib
-	${LD} obj\old_StatFilter.obj obj\old_StatFilter.lib obj\bci_tool.lib rtl.lib
-
 clean:
 	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds
 
