@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\tools\BrainAmpGetParams\getparams.exe"/>
+    <PROJECT value="..\..\..\..\tools\BrainAmpGetParams\getparams.exe"/>
     <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj obj\UBCIError.obj"/>
     <RESFILES value="getparams.res"/>
     <DEFFILE value=""/>
@@ -89,14 +89,16 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -113,8 +115,10 @@ Count=1
 Item0=.\obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\tools\BrainAmpGetParams
+Count=3
+Item0=..\..\..\..\tools\BrainAmpGetParams\
+Item1=..\..\..\tools\BrainAmpGetParams\
+Item2=..\..\..\tools\BrainAmpGetParams
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

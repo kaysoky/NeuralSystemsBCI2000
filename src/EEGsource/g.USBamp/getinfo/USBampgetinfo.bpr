@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\tools\USBampgetinfo\USBampgetinfo.exe"/>
+    <PROJECT value="..\..\..\..\tools\USBampgetinfo\USBampgetinfo.exe"/>
     <OBJFILES value="obj\UMain.obj"/>
     <RESFILES value="USBampgetinfo.res"/>
     <DEFFILE value=""/>
@@ -112,8 +112,10 @@ Count=1
 Item0=obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\tools\USBampgetinfo
+Count=3
+Item0=..\..\..\..\tools\USBampgetinfo\
+Item1=..\..\..\tools\USBampgetinfo\
+Item2=..\..\..\tools\USBampgetinfo
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

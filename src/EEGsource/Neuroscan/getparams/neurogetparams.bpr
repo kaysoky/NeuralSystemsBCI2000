@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\tools\NeuroscanGetParams\neurogetparams.exe"/>
+    <PROJECT value="..\..\..\..\tools\NeuroscanGetParams\neurogetparams.exe"/>
     <OBJFILES value="obj\neuroscanget.obj obj\TCPStream.obj obj\UParameter.obj"/>
     <RESFILES value="neurogetparams.res"/>
     <DEFFILE value=""/>
@@ -115,8 +115,10 @@ Count=1
 Item0=obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\tools\NeuroscanGetParams
+Count=3
+Item0=..\..\..\..\tools\NeuroscanGetParams\
+Item1=..\..\..\tools\NeuroscanGetParams\
+Item2=..\..\..\tools\NeuroscanGetParams
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

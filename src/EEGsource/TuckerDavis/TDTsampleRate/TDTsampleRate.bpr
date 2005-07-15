@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\tools\TDTsampleRate\TDTsampleRate.exe"/>
+    <PROJECT value="..\..\..\..\tools\TDTsampleRate\TDTsampleRate.exe"/>
     <OBJFILES value="obj\TDTsampleRate.obj obj\Unit2.obj"/>
     <RESFILES value="TDTsampleRate.res"/>
     <DEFFILE value=""/>
@@ -106,9 +106,10 @@ Count=1
 Item0=obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=..\..\..\tools\TDTsampleRate\
-Item1=..\..\..\tools\TDTsampleRate
+Count=3
+Item0=..\..\..\..\tools\TDTsampleRate\
+Item1=..\..\..\tools\TDTsampleRate\
+Item2=..\..\..\tools\TDTsampleRate
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
