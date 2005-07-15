@@ -44,6 +44,15 @@ BINDIR = prog
 # Where to put tools below the installation root if no separate tools directory is specified.
 TOOLSBINDIR = tools
 
+# Path to distribution creation tool.
+SEVENZIPDIR = %ProgramFiles%\7-Zip
+# Name of the binary distribution archive.
+BINDISTNAME = BCI2000Setup
+# Names of top-level directories that should be contained in the binary distribution.
+BINDISTDIRS = batch data doc parms prog tools
+# Path/filename elements that should be excluded from the binary distribution
+NODISTFILES = *.tds *\CVS .empty
+
 # Workaround macros to access shell operators.
 AND = &&
 OR = ||
@@ -112,6 +121,16 @@ install: ${MAKEFILES:.mak=.install}
 
 # Replace installed executables with current versions.
 update: ${MAKEFILES:.mak=.update}
+  ${DONE}
+  
+# Create an installation archive.
+bindist: all pdf
+  -del ..\${BINDISTNAME}
+  ${SHELL} cd .. \
+    ${AND} ${SEVENZIPDIR}\7z a ${BINDISTNAME}.7z ${BINDISTDIRS} \
+    ${AND} ${SEVENZIPDIR}\7z d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
+    ${AND} copy /b  BCI2000\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
+    ${AND} del ${BINDISTNAME}.7z
   ${DONE}
 
 # Create pdfs from tex files.
