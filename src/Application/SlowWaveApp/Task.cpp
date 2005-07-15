@@ -61,7 +61,7 @@ TTask::TTask()
 {
   // If we do this in Initialize(), we won't have it ready for Preflight().
   // The path must be absolute because someone might change the working directory.
-  Util::TPath::Initialize( ( BCIDirectory::InstallationDirectory() + "SWResources" ).c_str() );
+  Util::TPath::Initialize( ( BCIDirectory::InstallationDirectory() ).c_str() );
 
   PARAM_ADD_ALL( UsrTask );
 

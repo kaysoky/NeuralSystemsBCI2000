@@ -16,7 +16,7 @@ TARGETSEQUENCE::TARGETSEQUENCE()
 : targets( new TARGETLIST() )
 {
   BEGIN_PARAMETER_DEFINITIONS
-   "Oddball string TargetDefinitionFile= targets.cfg % % % "
+   "Oddball string TargetDefinitionFile= config\targets.cfg % % % "
      "// Target definition file (inputfile)",
    "Oddball int OddballProbability= 10 10 0 100 "
      "// Probability for oddball icon",

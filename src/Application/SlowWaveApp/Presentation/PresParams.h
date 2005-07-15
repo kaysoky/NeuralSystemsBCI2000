@@ -336,7 +336,7 @@ PARAM_DECL(
     PRTreeFile,
     string,
     SPELLER_MODEL_SECTION,
-    "default.spt default.spt a z",
+    "config\default.spt % % %",
     "file name for tree (inputfile)",
     0, 0
 )
@@ -345,7 +345,7 @@ PARAM_DECL(
     PRDictionaryFile,
     string,
     SPELLER_MODEL_SECTION,
-    "default.dic default.dic a z",
+    "config\default.dic % % %",
     "file name for dictionary (inputfile)",
     0, 0
 )
@@ -354,7 +354,7 @@ PARAM_DECL(
     PRCurrentDocument,
     string,
     SPELLER_MODEL_SECTION,
-    "current.txt current.txt a z",
+    "current.txt % % %",
     "file name for document being worked on (outputfile)",
     0, 0
 )
@@ -519,7 +519,7 @@ PARAM_DECL(
     PRFBCursorImg,
     string,
     FEEDBACK_VIEW_SECTION,
-    "Ball.bmp Ball.bmp a z",
+    "Ball.bmp % % %",
     "name of cursor image file (inputfile)",
     0, 0
 )
@@ -748,7 +748,7 @@ PARAM_DECL_SUFFIX(
     PRTaskSound,
     string,
     TARGET_VIEW_SECTION,
-    "target" RUNTIME_SUFFIX ".wav target" RUNTIME_SUFFIX ".wav a z",
+    "sounds\target" RUNTIME_SUFFIX ".wav % % %",
     "WAV file for target " RUNTIME_SUFFIX,
     0, 0
 )
@@ -784,7 +784,7 @@ PARAM_DECL_SUFFIX(
     PRResultSound,
     string,
     TARGET_VIEW_SECTION,
-    "result" RUNTIME_SUFFIX ".wav result" RUNTIME_SUFFIX ".wav a z",
+    "sounds\result" RUNTIME_SUFFIX ".wav % % %",
     "WAV file for result " RUNTIME_SUFFIX,
     0, 0
 )
@@ -918,7 +918,7 @@ PARAM_DECL(
     PRRISoundFile,
     string,
     REINFORCEMENT_VIEW_SECTION,
-    "welldone.wav welldone.wav a z",
+    "sounds\welldone.wav % % %",
     "sound file for acoustic reinforcement (inputfile)",
     0, 0
 )

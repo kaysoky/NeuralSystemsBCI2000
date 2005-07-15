@@ -82,7 +82,7 @@ TTask::TTask()
      "{ caption icon audio } " // row labels
      "{ stimulus1 stimulus2 stimulus3 stimulus4 stimulus5 stimulus6 } " // column labels
      " One Two Three Four Five Six "
-     "icons\\1.bmp icons\\2.bmp icons\\3.bmp icons\\4.bmp icons\\5.bmp icons\\6.bmp "
+     "images\\1.bmp images\\2.bmp images\\3.bmp images\\4.bmp images\\5.bmp images\\6.bmp "
      "sounds\\1.wav sounds\\2.wav sounds\\3.wav sounds\\4.wav sounds\\5.wav sounds\\6.wav  "
      " // captions and icons to be displayed, sounds to be played for different stimuli",
 
@@ -90,7 +90,7 @@ TTask::TTask()
      "{ caption icon audio } " // row labels
      "{ focuson } " // column labels
      "Please%20focus%20on "     // caption
-     "icons\\focuson.bmp " // video
+     "images\\focuson.bmp " // video
      "sounds\\uh-uh.wav  "  // audio
      " // initial announcement what to focus on",
 
@@ -98,7 +98,7 @@ TTask::TTask()
      "{ caption icon audio } " // row labels
      "{ result } " // column labels
      "The%20result%20was "     // caption
-     "icons\\result.bmp " // video
+     "images\\result.bmp " // video
      "sounds\\uh-uh.wav "  // audio
      " // final result announcement ",
 
