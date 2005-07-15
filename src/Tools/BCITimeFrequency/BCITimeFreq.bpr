@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BCITimeFreq.exe"/>
+    <PROJECT value="..\..\..\tools\BCITimeFrequency\BCITimeFreq.exe"/>
     <OBJFILES value="obj\BCITimeFreq.obj obj\UMain.obj obj\StateForm1.obj obj\BCIOutput.obj 
       obj\BCIInput.obj obj\OutputForm1.obj obj\InputForm1.obj 
       obj\ProcessForm1.obj obj\UBCI2000Data.obj obj\UParameter.obj 
@@ -99,25 +99,27 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=8
-Item0=..\..\..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared
-Item1=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared
-Item2=..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item3=$(BCB)\include;$(BCB)\include\vcl
-Item4=$(BCB)\include;$(BCB)\include\vcl;..\..\shared
-Item5=..\..\shared;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
-Item6=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
-Item7=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
+Count=9
+Item0=..\..\..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared
+Item2=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared
+Item3=..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item4=$(BCB)\include;$(BCB)\include\vcl
+Item5=$(BCB)\include;$(BCB)\include\vcl;..\..\shared
+Item6=..\..\shared;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
+Item7=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
+Item8=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=4
-Item0=C:\bci2000\shared;..\..\..\shared;..\..\shared;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\shared;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\..\shared;..\..\shared\V0.16;..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=5
+Item0=..\..\shared;..\..\..\shared;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item1=C:\bci2000\shared;..\..\..\shared;..\..\shared;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\shared;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\shared;..\..\shared\V0.16;..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\shared\V0.16;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -130,6 +132,10 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BCITimeFrequency
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

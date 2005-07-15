@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="gUSBamp.exe"/>
+    <PROJECT value="..\..\..\prog\gUSBamp.exe"/>
     <OBJFILES value="obj\gUSBamp.obj obj\UGenericFilter.obj obj\UBCIError.obj obj\UBCItime.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
@@ -189,6 +189,10 @@ Item4=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

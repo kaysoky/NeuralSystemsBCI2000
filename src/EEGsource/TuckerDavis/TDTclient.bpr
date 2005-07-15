@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="TDTclient.exe"/>
+    <PROJECT value="..\..\..\prog\TDTclient.exe"/>
     <OBJFILES value="obj\TDTclient.obj obj\MeasurementUnits.obj obj\TransmissionFilter.obj 
       obj\MessageHandler.obj obj\TCPStream.obj obj\UBCIError.obj 
       obj\UEnvironment.obj obj\UGenericFilter.obj obj\BCIDirectry.obj 
@@ -145,6 +145,10 @@ Item1=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

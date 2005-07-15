@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="getparams.exe"/>
+    <PROJECT value="..\..\..\tools\BrainAmpGetParams\getparams.exe"/>
     <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj obj\UBCIError.obj"/>
     <RESFILES value="getparams.res"/>
     <DEFFILE value=""/>
@@ -27,8 +27,8 @@
     <USERDEFINES value="BCI_TOOL;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="getparams.bpf"/>
-    <INCLUDEPATH value="..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -111,6 +111,10 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=.\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BrainAmpGetParams
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

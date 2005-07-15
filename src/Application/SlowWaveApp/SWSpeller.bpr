@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="SWSpeller.exe"/>
+    <PROJECT value="..\..\..\prog\SWSpeller.exe"/>
     <OBJFILES value="SWSpeller.obj\SWSpeller.obj SWSpeller.obj\Task.obj 
       SWSpeller.obj\UBCItime.obj SWSpeller.obj\UGenericSignal.obj 
       SWSpeller.obj\UGenericVisualization.obj SWSpeller.obj\UParameter.obj 
@@ -225,6 +225,10 @@ Count=3
 Item0=SWSpeller.obj
 Item1=SWSpeller_obj
 Item2=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

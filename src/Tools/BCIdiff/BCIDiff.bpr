@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BCIDiff.exe"/>
+    <PROJECT value="..\..\..\tools\BCIDiff\BCIDiff.exe"/>
     <OBJFILES value="obj\BCI2000Diff.obj obj\FileCompare.obj obj\FileReader.obj 
       obj\UParameter.obj obj\UState.obj obj\UBCI2000Data.obj 
       obj\UGenericSignal.obj"/>
@@ -117,6 +117,10 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=.\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BCIDiff
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

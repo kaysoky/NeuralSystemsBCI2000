@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BCI2GAB.exe"/>
+    <PROJECT value="..\..\..\tools\BCI2000toGAB\BCI2GAB.exe"/>
     <OBJFILES value="obj\BCI2GAB.obj obj\UMain.obj obj\UBCI2000Data.obj obj\UParameter.obj 
       obj\UState.obj obj\UGenericSignal.obj"/>
     <RESFILES value="BCI2GAB.res"/>
@@ -113,6 +113,10 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BCI2000toGAB
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

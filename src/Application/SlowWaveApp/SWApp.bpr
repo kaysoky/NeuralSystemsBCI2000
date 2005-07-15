@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="SWApp.exe"/>
+    <PROJECT value="..\..\..\prog\SWApp.exe"/>
     <OBJFILES value="obj\SWApp.obj obj\Task.obj obj\UBCItime.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
@@ -206,6 +206,10 @@ Item7=_DEBUG;BCI2000
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

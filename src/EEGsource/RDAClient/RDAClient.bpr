@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="RDAClient.exe"/>
+    <PROJECT value="..\..\..\prog\RDAClient.exe"/>
     <OBJFILES value="obj\RDAClient.obj obj\UGenericFilter.obj obj\UBCItime.obj 
       obj\UGenericSignal.obj obj\UGenericVisualization.obj obj\UParameter.obj 
       obj\UState.obj obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
@@ -180,20 +180,25 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=9
-Item0=_DEBUG;MODTYPE=1;HAVE_BCIERR
-Item1=_DEBUG;DONT_CATCH_ALL;MODTYPE=1;HAVE_BCIERR
-Item2=_DEBUG;DONT_CATCH_ALL;MODTYPE=1;HAVE_BCIERROR
-Item3=_DEBUG;DONT_CATCH_ALL;MODTYPE=1
-Item4=_DEBUG
-Item5=_DEBUG;BCI_2000_STRICT;SIGNAL_BACK_COMPAT
-Item6=_DEBUG;BCI_2000_STRICT
-Item7=_DEBUG;SIGNAL_BACK_COMPAT
-Item8=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
+Count=10
+Item0=_DEBUG;MODTYPE=1
+Item1=_DEBUG;MODTYPE=1;HAVE_BCIERR
+Item2=_DEBUG;DONT_CATCH_ALL;MODTYPE=1;HAVE_BCIERR
+Item3=_DEBUG;DONT_CATCH_ALL;MODTYPE=1;HAVE_BCIERROR
+Item4=_DEBUG;DONT_CATCH_ALL;MODTYPE=1
+Item5=_DEBUG
+Item6=_DEBUG;BCI_2000_STRICT;SIGNAL_BACK_COMPAT
+Item7=_DEBUG;BCI_2000_STRICT
+Item8=_DEBUG;SIGNAL_BACK_COMPAT
+Item9=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
 
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

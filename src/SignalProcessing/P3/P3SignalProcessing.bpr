@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="P3SignalProcessing.exe"/>
+    <PROJECT value="..\..\..\prog\P3SignalProcessing.exe"/>
     <OBJFILES value="obj\P3SignalProcessing.obj obj\UGenericFilter.obj obj\Normalfilter.obj 
       obj\SpatialFilter.obj obj\CalibrationFilter.obj obj\UBCItime.obj 
       obj\UBitRate.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
@@ -183,6 +183,10 @@ Item3=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

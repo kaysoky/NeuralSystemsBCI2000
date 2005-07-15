@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="maxifred.exe"/>
+    <PROJECT value="..\..\..\tools\Maxifred\maxifred.exe"/>
     <OBJFILES value="obj\maxifred.obj obj\UMain.obj obj\channelnames.obj obj\UAbout.obj 
       obj\UEditChannellist.obj obj\UStateDialog.obj obj\USave2Disk.obj 
       obj\UState.obj obj\UParameter.obj obj\UBCI2000Data.obj 
@@ -140,6 +140,11 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=..\..\..\tools\Maxifred\
+Item1=..\..\..\tools\Maxifred
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

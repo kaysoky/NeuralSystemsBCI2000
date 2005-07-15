@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BrainVisionImporter.exe"/>
+    <PROJECT value="..\..\..\tools\BrainVisionImporter\BrainVisionImporter.exe"/>
     <OBJFILES value="obj\BrainVisionImporter.obj obj\MainForm.obj obj\BCIReader.obj 
       obj\BrainVisionConverters.obj obj\UGenericSignal.obj obj\UParameter.obj 
       obj\UState.obj obj\UBCIError.obj obj\UBCI2000Data.obj"/>
@@ -119,6 +119,10 @@ Item3=APP_NAME=BrainVisionImporter
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=.\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BrainVisionImporter
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

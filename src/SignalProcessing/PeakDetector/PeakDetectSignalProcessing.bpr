@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="PeakDetectSignalProcessing.exe"/>
+    <PROJECT value="..\..\..\prog\PeakDetectSignalProcessing.exe"/>
     <OBJFILES value="obj\PeakDetectSignalProcessing.obj obj\classfilter.obj 
       obj\Normalfilter.obj obj\SpatialFilter.obj obj\StatFilter.obj 
       obj\Statistics.obj obj\CalibrationFilter.obj obj\UPeakDetector.obj 
@@ -178,6 +178,10 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

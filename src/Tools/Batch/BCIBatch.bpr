@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BCIBatch.exe"/>
+    <PROJECT value="..\..\..\tools\Batch\BCIBatch.exe"/>
     <OBJFILES value="obj\BCIBatch.obj obj\Unit1.obj"/>
     <RESFILES value="BCIBatch.res"/>
     <DEFFILE value=""/>
@@ -84,7 +84,7 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=2
@@ -107,6 +107,10 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\Batch
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

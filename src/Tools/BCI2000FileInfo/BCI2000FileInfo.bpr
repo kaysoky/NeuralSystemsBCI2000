@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BCI2000FileInfo.exe"/>
+    <PROJECT value="..\..\..\tools\BCI2000FileInfo\BCI2000FileInfo.exe"/>
     <OBJFILES value="obj\BCI2000FileInfo.obj obj\UMain.obj obj\UOperatorCfg.obj 
       obj\UParameter.obj obj\USysStatus.obj obj\UPreferences.obj 
       obj\UEditMatrix.obj obj\UShowParameters.obj obj\UBCI2000Data.obj 
@@ -126,6 +126,10 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=.\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\BCI2000FileInfo
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

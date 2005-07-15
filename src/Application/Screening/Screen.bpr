@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="Screen.exe"/>
+    <PROJECT value="..\..\..\prog\Screen.exe"/>
     <OBJFILES value="obj\Screen.obj obj\Task.obj obj\Usr.obj obj\UBCItime.obj obj\UBitRate.obj 
       obj\UGenericSignal.obj obj\UParameter.obj obj\UState.obj 
       obj\USysCommand.obj obj\BCIDirectry.obj obj\UGenericVisualization.obj 
@@ -108,58 +108,60 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=24
-Item0=..\..\Modules;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\Modules;..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item2=..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\;..\..\shared;..;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
-Item7=..\..\shared;..\;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item8=..\..\shared;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item9=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
-Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
-Item11=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
-Item12=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
-Item13=..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
-Item14=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
-Item15=..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
-Item16=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
-Item17=..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
-Item18=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item19=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item20=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item21=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
-Item22=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
-Item23=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Count=25
+Item0=..\shared;..\..\Modules;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\Modules;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\Modules;..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item3=..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\;..\..\shared;..;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\..\shared;..\;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item9=..\..\shared;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item12=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item13=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item14=..\..\shared\V0.15;$(BCB)\include;$(BCB)\include\vcl
+Item15=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
+Item16=..\..\shared\V0.14;$(BCB)\include;$(BCB)\include\vcl
+Item17=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
+Item18=..\..\shared\V0.13;$(BCB)\include;$(BCB)\include\vcl
+Item19=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item20=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item21=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item22=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item23=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item24=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=24
-Item0=..\..\Modules;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\Modules;..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item4=..\;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..\;..\..\shared;..;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
-Item7=..\..\shared;..\;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item8=..\..\shared;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item9=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
-Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
-Item11=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
-Item12=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
-Item13=..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
-Item14=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
-Item15=..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
-Item16=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
-Item17=..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
-Item18=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item19=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item20=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item21=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
-Item22=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
-Item23=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Count=25
+Item0=..\shared;..\..\Modules;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\Modules;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\Modules;..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\;..;..\..\shared;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\;..\..\shared;..;C:\Program Files\Borland\CBuilder5\Bin;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\..\shared;..\;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\..\shared;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item12=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item13=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.16;..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item14=..\..\shared\V0.15;$(BCB)\lib\obj;$(BCB)\lib
+Item15=..\..\shared\V0.15;..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
+Item16=..\..\shared\V0.14;$(BCB)\lib\obj;$(BCB)\lib
+Item17=..\..\shared\V0.14;..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
+Item18=..\..\shared\V0.13;$(BCB)\lib\obj;$(BCB)\lib
+Item19=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.09;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item20=..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item21=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item22=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item23=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item24=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -174,6 +176,10 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

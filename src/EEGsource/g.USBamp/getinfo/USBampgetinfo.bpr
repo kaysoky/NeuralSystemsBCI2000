@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="USBampgetinfo.exe"/>
+    <PROJECT value="..\..\..\tools\USBampgetinfo\USBampgetinfo.exe"/>
     <OBJFILES value="obj\UMain.obj"/>
     <RESFILES value="USBampgetinfo.res"/>
     <DEFFILE value=""/>
@@ -84,15 +84,20 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=$(BCB)\include;$(BCB)\include\vcl;..\
-Item1=C:\data\Bci2000\src\EEGsource\g.USBamp\getcfg;$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=getinfo;$(BCB)\include;$(BCB)\include\vcl;..
+Item1=$(BCB)\include;$(BCB)\include\vcl;..\
+Item2=C:\data\Bci2000\src\EEGsource\g.USBamp\getcfg;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=$(BCB)\lib\obj;$(BCB)\lib
-Item1=C:\data\Bci2000\src\EEGsource\g.USBamp\getcfg;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=getinfo;$(BCB)\lib\obj;$(BCB)\lib
+Item1=$(BCB)\lib\obj;$(BCB)\lib
+Item2=C:\data\Bci2000\src\EEGsource\g.USBamp\getcfg;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -105,6 +110,10 @@ Item0=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\USBampgetinfo
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
@@ -125,10 +134,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

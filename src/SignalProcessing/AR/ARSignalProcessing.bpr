@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="ARSignalProcessing.exe"/>
+    <PROJECT value="..\..\..\prog\ARSignalProcessing.exe"/>
     <OBJFILES value="obj\ARSignalProcessing.obj obj\classfilter.obj obj\Normalfilter.obj 
       obj\SpatialFilter.obj obj\CalibrationFilter.obj obj\GETMEM.obj 
       obj\UBCItime.obj obj\UBitRate.obj obj\UGenericSignal.obj 
@@ -189,6 +189,10 @@ Item4=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

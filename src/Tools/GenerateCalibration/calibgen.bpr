@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="calibgen.exe"/>
+    <PROJECT value="..\..\..\tools\GenerateCalibration\calibgen.exe"/>
     <OBJFILES value="obj\calibgen.obj obj\CalibGenMain.obj obj\CalibGenHelp.obj"/>
     <RESFILES value="calibgen.res"/>
     <DEFFILE value=""/>
@@ -109,6 +109,10 @@ Item0=_DEBUG
 Count=2
 Item0=.\obj
 Item1=..\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\tools\GenerateCalibration
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

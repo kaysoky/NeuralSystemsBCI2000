@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="DASSource.exe"/>
+    <PROJECT value="..\..\..\prog\DASSource.exe"/>
     <OBJFILES value="obj\DASSource.obj obj\UBCItime.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
@@ -32,8 +32,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="DASSource.cpp"/>
-    <INCLUDEPATH value="..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -194,6 +194,10 @@ Item5=_DEBUG;ADC_DAS1402H;SIGNAL_BACK_COMPAT
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

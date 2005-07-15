@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="operat.exe"/>
+    <PROJECT value="..\..\prog\operat.exe"/>
     <OBJFILES value="obj\operat.obj obj\UMain.obj obj\USysStatus.obj obj\UAbout.obj 
       obj\UConnectionInfo.obj obj\UEditMatrix.obj obj\UOperatorCfg.obj 
       obj\UPreferences.obj obj\UScript.obj obj\UShowParameters.obj 
@@ -23,7 +23,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -116,6 +116,9 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
 Count=28
 Item0=..;..\shared;$(BCB)\include;$(BCB)\include\vcl
@@ -201,6 +204,10 @@ Count=2
 Item0=.\obj
 Item1=obj
 
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\prog\
+
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
@@ -220,10 +227,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

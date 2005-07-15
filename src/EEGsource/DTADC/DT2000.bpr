@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="DT2000.exe"/>
+    <PROJECT value="..\..\..\prog\DT2000.exe"/>
     <OBJFILES value="obj\DT2000.obj obj\UBCItime.obj obj\UBitRate.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj obj\dtfun.obj 
@@ -193,6 +193,10 @@ Item4=_DEBUG;ADC_DTADC;SIGNAL_BACK_COMPAT
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

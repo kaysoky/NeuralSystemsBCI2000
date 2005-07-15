@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="BufferRead.exe"/>
+    <PROJECT value="..\..\..\prog\BufferRead.exe"/>
     <OBJFILES value="obj\BufferRead.obj obj\UBCItime.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj 
@@ -31,8 +31,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BufferRead.cpp"/>
-    <INCLUDEPATH value="..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -110,21 +110,28 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=0
+Count=1
+Item0=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=0
+Count=1
+Item0=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=0
+Count=1
+Item0=_DEBUG;MODTYPE=1
 
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

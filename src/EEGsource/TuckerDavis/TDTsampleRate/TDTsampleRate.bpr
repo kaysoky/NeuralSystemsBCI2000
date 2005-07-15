@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="TDTsampleRate.exe"/>
+    <PROJECT value="..\..\..\tools\TDTsampleRate\TDTsampleRate.exe"/>
     <OBJFILES value="obj\TDTsampleRate.obj obj\Unit2.obj"/>
     <RESFILES value="TDTsampleRate.res"/>
     <DEFFILE value=""/>
@@ -33,8 +33,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
-      -tW -tWM"/>
+    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$YD -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
@@ -83,6 +82,9 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
 Count=1
 Item0=$(BCB)\include;$(BCB)\include\vcl
@@ -103,6 +105,11 @@ Item0=_DEBUG
 Count=1
 Item0=obj
 
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=..\..\..\tools\TDTsampleRate\
+Item1=..\..\..\tools\TDTsampleRate
+
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
@@ -122,10 +129,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>

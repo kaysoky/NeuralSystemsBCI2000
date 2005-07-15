@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="RandomNumber.exe"/>
+    <PROJECT value="..\..\..\prog\RandomNumber.exe"/>
     <OBJFILES value="obj\RandomNumber.obj obj\UGenericFilter.obj obj\UBCIError.obj 
       obj\UBCItime.obj obj\UGenericSignal.obj obj\UGenericVisualization.obj 
       obj\UParameter.obj obj\UState.obj obj\UStatus.obj obj\USysCommand.obj 
@@ -110,8 +110,8 @@ c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation E
 
 [HistoryLists\hlIncludePath]
 Count=30
-Item0=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item0=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item2=..\;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item3=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item4=..\..\Modules;..\;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
@@ -143,8 +143,8 @@ Item29=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\in
 
 [HistoryLists\hlLibraryPath]
 Count=30
-Item0=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item0=..\;..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..;..\..\Modules;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item2=..\;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item3=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item4=..\..\Modules;..\;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
@@ -191,6 +191,10 @@ Item6=_DEBUG;SIGNAL_BACK_COMPAT;ADC_RANDOM
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

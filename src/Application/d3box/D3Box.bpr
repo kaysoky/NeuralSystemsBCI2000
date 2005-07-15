@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="D3Box.exe"/>
+    <PROJECT value="..\..\..\prog\D3Box.exe"/>
     <OBJFILES value="obj\D3Box.obj obj\Usr.obj obj\Task.obj obj\UBCItime.obj obj\UBitRate.obj 
       obj\UGenericFilter.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
@@ -108,8 +108,7 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\program files\borland\cbuilder6\Bin\dclclxdb60.bpl=Borland CLX Database Components
-c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
 Count=27
@@ -184,6 +183,10 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="D2Box.exe"/>
+    <PROJECT value="..\..\..\prog\D2Box.exe"/>
     <OBJFILES value="obj\D2Box.obj obj\Usr.obj obj\Task.obj obj\UBCItime.obj obj\UBitRate.obj 
       obj\UGenericFilter.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
@@ -182,6 +182,12 @@ Item2=_DEBUG
 [HistoryLists\hlIntOutputDir]
 Count=1
 Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=3
+Item0=..\..\..\prog\
+Item1=..\..\prog\
+Item2=..\..\prog
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

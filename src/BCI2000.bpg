@@ -9,14 +9,15 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = RJB.exe D2Box.exe D3Box.exe P3AVTask.exe P3Speller.exe \
-  LittleDemoApp.exe Oddball.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe \
-  DASSource.exe DT2000.exe Neuroscan.exe NISource.exe gUSBamp.exe \
-  RandomNumber.exe RDAClient.exe operat.exe ARSignalProcessing.exe \
+PROJECTS = D2Box.exe D3Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe \
+  P3Speller.exe RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe \
+  BufferRead.exe DASSource.exe DT2000.exe gUSBamp.exe Neuroscan.exe NISource.exe \
+  RandomNumber.exe RDAClient.exe TDTclient.exe operat.exe ARSignalProcessing.exe \
   DummySignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
   PeakDetectSignalProcessing.exe SWSignalProcessing.exe BCIBatch.exe \
-  BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCITimeFreq.exe BCIDiff.exe \
-  BrainVisionImporter.exe calibgen.exe maxifred.exe getparams.exe
+  BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCIDiff.exe BCITimeFreq.exe \
+  BrainVisionImporter.exe calibgen.exe maxifred.exe USBampgetinfo.exe \
+  neurogetparams.exe getparams.exe TDTsampleRate.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -158,6 +159,26 @@ gUSBamp.exe: EEGsource\g.USBamp\gUSBamp.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BufferRead.exe: EEGsource\Biosemi\BufferRead.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TDTclient.exe: EEGsource\TuckerDavis\TDTclient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+USBampgetinfo.exe: EEGsource\g.USBamp\getinfo\USBampgetinfo.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+neurogetparams.exe: EEGsource\Neuroscan\getparams\neurogetparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TDTsampleRate.exe: EEGsource\TuckerDavis\TDTsampleRate\TDTsampleRate.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

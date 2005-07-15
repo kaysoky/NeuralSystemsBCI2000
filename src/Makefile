@@ -43,6 +43,8 @@ DONE = @${SHELL} echo. && echo Done with target $@. && echo.
 BINDIR = prog
 # Where to put tools below the installation root if no separate tools directory is specified.
 TOOLSBINDIR = tools
+# Where to put documents.
+DOCDIR = doc
 
 # Path to distribution creation tool.
 SEVENZIPDIR = %ProgramFiles%\7-Zip
@@ -134,7 +136,7 @@ bindist: all pdf
   ${DONE}
 
 # Create pdfs from tex files.
-pdf: ${LATEXDOCS:.tex=.pdf}
+pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   ${DONE}
   
 ##################################################################################
@@ -229,5 +231,10 @@ pdf: ${LATEXDOCS:.tex=.pdf}
   ${SHELL} cd ${<D} ${AND} pdflatex ${<F} ${AND} pdflatex ${<F}
   ${DONE}
   
+.tex.install:
+  ${SHELL} if not exist ..\${DOCDIR} mkdir ..\${DOCDIR}
+  ${SHELL} move "$*.pdf" ..\${DOCDIR}
+  ${DONE}
+
 !endif # !ifndef MAKEFILES
 
