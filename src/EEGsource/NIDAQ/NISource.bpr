@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\prog\NISource.exe"/>
-    <OBJFILES value="obj\NISource.obj obj\UBCItime.obj obj\UBitRase.obj obj\UGenericSignal.obj 
+    <OBJFILES value="obj\NISource.obj obj\UBCItime.obj obj\UBitRate.obj obj\UGenericSignal.obj 
       obj\UGenericVisualization.obj obj\UParameter.obj obj\UState.obj 
       obj\UStatus.obj obj\USysCommand.obj obj\BCIDirectry.obj obj\NIADC.obj 
       obj\UGenericFilter.obj obj\UEnvironment.obj obj\UBCIError.obj 
