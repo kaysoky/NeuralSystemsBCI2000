@@ -71,7 +71,7 @@ TOOLSINSTALLDIR = ${INSTALLDIR}\${TOOLSBINDIR}
 # Bootstrapping: Create list of subproject makefiles
 #
 ##################################################################################
-all docinfo prepare clean install update pdf:
+all cmdline docinfo prepare clean install update bindist pdf:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.   >>${MKNAM}
@@ -134,9 +134,9 @@ update: ${MAKEFILES:.mak=.update}
   
 # Create an installation archive.
 bindist: all pdf
-  -del ..\${BINDISTNAME}
+  -del ..\${BINDISTNAME}.exe
   ${SHELL} cd .. \
-    ${AND} ${SEVENZIPDIR}\7z a ${BINDISTNAME}.7z ${BINDISTDIRS} \
+    ${AND} ${SEVENZIPDIR}\7z a ${BINDISTNAME}.7z ${BINDISTDIRS} -ms=e \
     ${AND} ${SEVENZIPDIR}\7z d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
     ${AND} copy /b  src\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
     ${AND} del ${BINDISTNAME}.7z
@@ -240,7 +240,7 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   
 .tex.install:
   ${SHELL} if not exist ..\${DOCDIR} mkdir ..\${DOCDIR}
-  ${SHELL} move "$*.pdf" ..\${DOCDIR}
+  ${SHELL} move $*.pdf ..\${DOCDIR}
   ${DONE}
 
 !endif # !ifndef MAKEFILES
