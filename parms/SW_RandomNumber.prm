@@ -142,3 +142,6 @@ Statistics float XGain= 5.0 5.0 0.0 100.0 // Normal Filter Left/Right Slope
 Statistics float XMean= -5.0 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
 Statistics float YGain= 327.68 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
 Statistics float YMean= 0 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
+Filtering int YTrendControl= 0 0 0 0 // introduced by conversion script
+Filtering int XTrendControl= 0 0 0 0 // introduced by conversion script
+Filtering int OutcomeDirection= 1 0 0 0 // introduced by conversion script

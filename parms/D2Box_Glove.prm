@@ -9,7 +9,7 @@ Filtering int ClassMode= 1 0 1 2 // Classifier mode 1= simple 2= interaction
 UsrTask int CursorSize= 25 0 0 1 // User Window Cursor Size
 Source int DCoffset= 0 0 -32767 32767 // DC offset (common to all channels)
 MEMFilter float deltaMem= 0.2 0.2 0.02 2.00 // Resolution (line density)
-Statistics float DesiredPixelsPerSec= 50.00 70 0 400 // Desired pixels per second
+Statistics float YPixelsPerSec= 50.00 70 0 400 // Desired pixels per second
 System string EEGsourceIP= 127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1 // this module's listening IP
 System string EEGsourcePort= 1785 4200 1024 32768 // this module's listening port
 UsrTask int FeedbackDuration= 20000 0 0 1 // Max Trial Duration
@@ -17,19 +17,17 @@ Storage string FileInitials= ..\data\ a z 0 // Initials of file name (max. 8 cha
 JoyStick string GloveCOMport= COM2 0 0 1 // COM port for 5DT glove
 JoyStick matrix GloveControlX= { t-1 t sign } { thumb index middle ring little pitch roll } 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1 1 1 1 1 1 0 0 0 // glove sensor weights for horizontal movement
 JoyStick matrix GloveControlY= { t-1 t sign } { thumb index middle ring little pitch roll } 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 1 1 1 1 1 0 0 0 // glove sensor weights for vertical movement
-Statistics float HorizInterceptProp= 1.0 0.0 0.0 2.0 // Proportion of horizontal signal intercept
-Statistics int HorizTrendControl= 1 0 0 2 // Adaption of Horizontal % Correct Trend 1= Lin 2 = Quad
+Statistics float XMeanProportion= 1.0 0.0 0.0 2.0 // Proportion of horizontal signal intercept
 Targets int IncludeAllTargets= 1 0 0 1 // Test all target positions?
-Statistics int InterceptControl= 1 0 0 2 // Online adaption of Intercept 1 = Up/Dn  2 = Up/Dn + Le/Ri
-Statistics int InterceptLength= 3 0 0 1000 // Length of time for running average
-Statistics float InterceptProportion= 0.9801 0.0 0.0 2.0 // Proportion of signal mean for intercept
+Statistics int SignalWinLth= 3 0 0 1000 // Length of time for running average
+Statistics float YMeanProportion= 0.9801 0.0 0.0 2.0 // Proportion of signal mean for intercept
 UsrTask int ItiDuration= 10 0 0 1 // Duration of Intertrial Interval
 JoyStick float JoyXgain= 0.1 0 -1000.0 1000.0 // Horizontal gain
 JoyStick float JoyYgain= 0.1 0 -1000.0 1000.0 // Vertical gain
-Statistics float LinTrendLrnRt= -0.001 0 0.000 0.010 // Learning Rate for Linear Trend Control
-Statistics float LRPixelsPerSec= 0 70 0 400 // Horizontal Pixel Rate
-Filtering float LR_A= -5.00 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
-Filtering float LR_B= 5.00 5.0 0.0 100.0 // Normal Filter Left/Right Slope
+Statistics float TrendControlRate= -0.001 0 0.000 0.010 // Learning Rate for Linear Trend Control
+Statistics float XPixelsPerSec= 0 70 0 400 // Horizontal Pixel Rate
+Filtering float XMean= -5.00 -5.0 -100.0 100.0 // Normal Filter Left/Right Intercept
+Filtering float XGain= 5.00 5.0 0.0 100.0 // Normal Filter Left/Right Slope
 Filtering int MaxChannels= 256 10 1 256 // maximum number of channels in signals B,C
 Filtering int MaxElements= 256 10 1 256 // maximum number of elements in signals B,C
 MEMFilter float MemBandWidth= 3.0 3.0 0.5 32.0 // Spectral Bandwidth in Hz
@@ -44,7 +42,6 @@ Source int NoiseMinAmplitude= -3000 0 -32767 32767 // the minimal output value f
 Targets int NumberTargets= 4 0 0 1 // Number of Targets
 Filtering int NumControlSignals= 2 1 1 128 // the number of transmitted control signals
 UsrTask int PreTrialPause= 10 0 0 1 // Duration of Target w/o cursor
-Statistics float QuadTrendLrnRt= 0.001 0 0 0.010 // Learning Rate for Linear Trend Control
 UsrTask int RestingPeriod= 0 0 0 1 // 1 defines a rest periuod of data acquisition
 UsrTask int RewardDuration= 10 0 0 1 // Duration of PostTrial Feedback
 Source int SampleBlockSize= 8 5 1 128 // the number of samples transmitted at a time
@@ -76,10 +73,9 @@ Targets matrix TargetPos= 7 4 25 25 0 90 0 90 25 25 50 50 10 10 10 10 50 50 0 0 
 UsrTask int TimeLimit= 180 180 0 1000 // Time Limit for Runs in seconds
 Source int TransmitCh= 4 4 1 128 // the number of transmitted channels
 Source intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels (# of channels MUST equal TransmitCh)
-Statistics int TrendControl= 1 0 0 2 // Online adaption of % Correct Trend 1= Lin 2 = Quad
-Statistics int TrendWinLth= 20 0 0 100 // Length of % Correct Window
-Filtering float UD_A= 0.00 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
-Filtering float UD_B= 5000.00 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
+Statistics int TargetWinLth= 20 0 0 100 // Length of % Correct Window
+Filtering float YMean= 0.00 5.0 -100.0 100.0 // Normal Filter Up / Down Intercept
+Filtering float YGain= 5000.00 5.0 -100.0 100.0 // Normal Filter Up / Down Slope
 JoyStick int UseJoyStick= 2 0 0 1 // 0=brain signals; 1=Joystick; 2=Glove
 Visualize int VisualizeCalibration= 0 0 0 1 // visualize calibrated channels (0=no, 1=yes)
 Visualize int VisualizeClassFiltering= 0 0 0 1 // visualize Class filtered signals (0=no 1=yes)
@@ -100,3 +96,6 @@ UsrTask int WinYpos= 5 0 0 1 // User Window Y location
 Statistics float WtLrnRt= 0.001 0 0.000 0.010 // Rate of Learning for Classifier 
 JoyStick float XOffset= 128 0 -1000.0 1000.0 // horizontal offset for joystick/glove
 JoyStick float YOffset= 128 0 -1000.0 1000.0 // horizontal offset for joystick/glove
+Filtering int YTrendControl= 2 0 0 0 // introduced by conversion script
+Filtering int XTrendControl= 0 0 0 0 // introduced by conversion script
+Filtering int OutcomeDirection= 1 0 0 0 // introduced by conversion script
