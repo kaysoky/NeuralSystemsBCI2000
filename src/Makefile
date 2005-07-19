@@ -136,8 +136,8 @@ update: ${MAKEFILES:.mak=.update}
 bindist: all pdf
   -del ..\${BINDISTNAME}.exe
   ${SHELL} cd .. \
-    ${AND} ${SEVENZIPDIR}\7z a ${BINDISTNAME}.7z ${BINDISTDIRS} -ms=e \
-    ${AND} ${SEVENZIPDIR}\7z d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
+    ${AND} "${SEVENZIPDIR}\7z" a ${BINDISTNAME}.7z ${BINDISTDIRS} -ms=e \
+    ${AND} "${SEVENZIPDIR}\7z" d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
     ${AND} copy /b  src\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
     ${AND} del ${BINDISTNAME}.7z
   ${DONE}
