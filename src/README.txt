@@ -1,12 +1,13 @@
 Getting started with the BCI2000 source code
+07/19/2005                 Juergen Mellinger
 ============================================
 
 This document covers the following topics:
 
-(1) Compiling BCI2000 from the command line.
-(2) Compiling BCI2000 using the Borland IDE.
-(3) Starting up BCI2000.
-(4) Creating up-to date versions of the documentation in PDF format.
+(1) Compiling BCI2000 from the command line
+(2) Compiling BCI2000 using the Borland IDE
+(3) Starting up BCI2000
+(4) Creating up-to date versions of the documentation in PDF format
 
 
 (1) Compiling BCI2000 from the command line
@@ -17,8 +18,8 @@ This document covers the following topics:
   - Execute "make" from the command prompt.
   - If you updated or edited any of the source files, and experience 
     linker errors or other unexpected behavior, execute
-    "make clean && make".
-
+    "make clean && make all".
+    
 (2) Compiling BCI2000 using the Borland IDE
     =======================================
   - Open the file "BCI2000.bpg" with the IDE by double-clicking it.
@@ -32,7 +33,9 @@ This document covers the following topics:
     ===================
   - After compilation, a desired configuration of BCI2000 may be started
     by executing an appropriate batch file from the top level "batch"
-    directory.
+    directory. Once a particular configuration of BCI2000 is started,
+    simply load a parameter file with the same name as the batch file
+    from the "parms" directory.
   - If you need a configuration for which no batch file exists, just 
     modify a copy of a batch file that is close to your needs.
 
