@@ -108,7 +108,7 @@ SCRIPTS = *.cmd *.bat *.m
 DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT
 CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
 
-CPP = ${CC} ${CFLAGS} -D${DEFINES} -I${INCLUDEPATH}
+CPP = bcc32 ${CFLAGS} -D${DEFINES} -I${INCLUDEPATH}
 LD  = bcc32 -L${LIBPATH}
 AR  = tlib /C /P128 /0 >nul # If this fails, try a larger value for the /P argument.
 RM  = del 
