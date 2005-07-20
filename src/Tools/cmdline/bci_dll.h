@@ -13,7 +13,7 @@
 # define DLLEXPORT __stdcall __declspec( dllexport )
 #else
 # define DLLEXPORT __stdcall
-#endif // BCI_DLL
+#endif /* BCI_DLL */
 
 #ifdef __cplusplus
 extern "C" {
