@@ -23,7 +23,7 @@
 #include "UBCIError.h"
 #include <iostream>
 
-#ifndef BCI_TOOL
+#if( !defined( BCI_TOOL ) && !defined( BCI_DLL ) )
 # include "UEnvironment.h"
 # include "MessageHandler.h"
 # include "UStatus.h"
@@ -35,6 +35,15 @@ using namespace BCIError;
 // Definitions of the actual global objects.
 bci_ostream __bcierr;
 bci_ostream __bciout;
+
+#ifdef BCI_TOOL
+# ifdef BCI_DLL
+extern ostream sErr;
+ostream& _err = sErr;
+# else
+ostream& _err = cerr;
+# endif // BCI_DLL
+#endif // BCI_TOOL
 
 ostream&
 bci_ostream::operator()( const char* inInfoHeader )
@@ -81,28 +90,28 @@ void
 BCIError::Warning( const string& message )
 {
   if( message.length() > 1 )
-    cerr << message << endl;
+    _err << message << endl;
 }
 
 void
 BCIError::ConfigurationError( const string& message )
 {
   if( message.length() > 1 )
-    cerr << "Configuration Error: " << message << endl;
+    _err << "Configuration Error: " << message << endl;
 }
 
 void
 BCIError::RuntimeError( const string& message )
 {
   if( message.length() > 1 )
-    cerr << "Runtime Error: " << message << endl;
+    _err << "Runtime Error: " << message << endl;
 }
 
 void
 BCIError::LogicError( const string& message )
 {
   if( message.length() > 1 )
-    cerr << "Logic Error: " << message << endl;
+    _err << "Logic Error: " << message << endl;
 }
 #else // implementation for a module
 // A preliminary implementation of the error display/error handling mechanism
