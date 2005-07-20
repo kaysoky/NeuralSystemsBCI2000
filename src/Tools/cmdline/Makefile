@@ -23,7 +23,6 @@ TARGETS = obj\bci_tool.lib \
           bci_stream2asc.exe \
           bci_stream2table.exe \
           bci_stream2mat.exe \
-          bci_dllfilter.exe \
           CalibrationFilter.exe \
           ClassFilter.exe \
           Normalfilter.exe \
