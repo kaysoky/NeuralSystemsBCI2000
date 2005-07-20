@@ -102,7 +102,8 @@ LIBPATH = ${BCB}\lib\obj;${BCB}\lib
 BINDIR = ..\..\..\Tools\cmdline
 DLLDIR = ..\..\..\Tools\dll
 
-SCRIPTS = *.cmd *.bat *.m
+SCRIPTS = *.cmd *.bat load_bcimat.m
+DLLSUPPL = dll_example.m bci_dll.h
 
 DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT
 CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
@@ -142,6 +143,7 @@ all: ${TARGETS}
 
 install: all ${TARGETS:.exe=.install} ${TARGETS:.dll=.dllinstall}
 	for %i in (${SCRIPTS}) do copy /y "%i" "${BINDIR}"
+	for %i in (${DLLSUPPL}) do copy /y "%i" "${DLLDIR}"
 
 obj\bci_dll.obj: bci_dll.cpp
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
