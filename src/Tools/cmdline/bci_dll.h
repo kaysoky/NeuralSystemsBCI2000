@@ -5,6 +5,14 @@
 /* Description: Provides a framework for dlls that contain BCI2000
 /*              filters.
 /*
+/*              NOTE: If you read state vector information from a file,
+/*              you must call PutState() for each state before calling
+/*              Instantiate(). This will result in a binary state
+/*              vector layout matching the one from the file.
+/*              Without previous calls to PutState(), Instantiate()
+/*              will create a new state vector using the states
+/*              requested by the filter(s) present in the DLL.
+/*
 /*********************************************************************/
 #ifndef BCI_DLL_H
 #define BCI_DLL_H
@@ -82,14 +90,33 @@ int DLLEXPORT
 GetStateValue( char* stateName, short* valuePtr );
 
 /*
-function:  SetStatevector
-purpose:   Sets the DLL's state vector to the binary values contained in a state vector.
-arguments: Pointer and length of state vector data. The length must match the length of the
-           state vector inside the DLL.
+function:  GetStatevectorLength
+purpose:   Gets the DLL's state vector length.
+arguments: Pointer reference to receive the state vector length.
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-SetStatevector( char* statevectorData, long statevectorLength );
+GetStatevectorLength( long* statevectorLengthPtr );
+
+/*
+function:  SetStatevector
+purpose:   Sets the DLL's state vector to the binary values contained in a state vector.
+arguments: Pointer to state vector data. The length must match the length returned by
+           GetStatevectorLength.
+returns:   True (1) if no error occurred.
+*/
+int DLLEXPORT
+SetStatevector( unsigned char* statevectorData );
+
+/*
+function:  GetStatevector
+purpose:   Gets the binary data contained in the DLL's state vector.
+arguments: Pointer and length of state vector data. The length must match the length
+           returned by GetStatevectorLength.
+returns:   True (1) if no error occurred.
+*/
+int DLLEXPORT
+GetStatevector( unsigned char* statevectorData );
 
 /*
 function:  Instantiate
@@ -102,7 +129,7 @@ Instantiate( void );
 
 /*
 function:  Dispose
-purpose:   Dispose of all filter instances.
+purpose:   Dispose of all filter instances, and clear parameter and state information.
 arguments: n/a
 returns:   True (1) if no error occurred.
 */

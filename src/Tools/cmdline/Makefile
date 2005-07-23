@@ -49,7 +49,6 @@ TARGETS = obj\bci_tool.lib \
 #         StatFilter.dll \
           
 BCIOBJ  = obj\bci_tool.obj \
-          obj\bci_filterwrapper.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \
@@ -67,7 +66,6 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\FFTLibWrap.obj 
           
 DLLOBJ  = obj\bci_dll.obj \
-          obj\bci_filterwrapper.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
           obj\UGenericSignal.obj \

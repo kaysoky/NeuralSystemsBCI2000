@@ -4,6 +4,15 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Provides a framework for dlls that contain BCI2000
 //              filters.
+//
+//              NOTE: If you read state vector information from a file,
+//              you must call PutState() for each state before calling
+//              Instantiate(). This will result in a binary state
+//              vector layout matching the one from the file.
+//              Without previous calls to PutState(), Instantiate()
+//              will create a new state vector using the states
+//              requested by the filter(s) present in the DLL.
+//
 ////////////////////////////////////////////////////////////////////
 #include "bci_dll.h"
 
@@ -42,7 +51,7 @@ ResetStreams()
 static class FilterWrapper : public Environment
 {
  public:
-  FilterWrapper() : mpStatevector( NULL ) {}
+  FilterWrapper() : mpStatevector( NULL ), mStatesFromInput( false ) {}
 
   const char*
   FilterName()
@@ -99,7 +108,9 @@ static class FilterWrapper : public Environment
   SetStateValue( const char* stateName, long value )
   {
     __bcierr.clear();
+    Environment::EnterInitializationPhase( &mParameters, &mStates, Statevector(), &sVis );
     State( stateName ) = value;
+    Environment::EnterNonaccessPhase();
     return __bcierr.flushes() == 0;
   }
 
@@ -107,20 +118,32 @@ static class FilterWrapper : public Environment
   GetStateValue( const char* stateName, short& value )
   {
     __bcierr.clear();
+    Environment::EnterInitializationPhase( &mParameters, &mStates, Statevector(), &sVis );
     value = State( stateName );
+    Environment::EnterNonaccessPhase();
     return __bcierr.flushes() == 0;
   }
 
   bool
-  SetStatevector( const char* statevectorData, long statevectorLength )
+  GetStatevectorLength( long* statevectorLengthPtr )
+  {
+    *statevectorLengthPtr = Statevector()->GetStateVectorLength();
+    return true;
+  }
+
+  bool
+  SetStatevector( const unsigned char* statevectorData )
   {
     __bcierr.clear();
-    if( Statevector()->GetStateVectorLength() != statevectorLength )
-    {
-      sErr << "Length of input data does not match state vector length." << endl;
-      return false;
-    }
-    ::memcpy( Statevector()->GetStateVectorPtr(), statevectorData, statevectorLength );
+    ::memcpy( Statevector()->GetStateVectorPtr(), statevectorData, Statevector()->GetStateVectorLength() );
+    return true;
+  }
+
+  bool
+  GetStatevector( unsigned char* statevectorData )
+  {
+    __bcierr.clear();
+    ::memcpy( statevectorData, Statevector()->GetStateVectorPtr(), Statevector()->GetStateVectorLength() );
     return true;
   }
 
@@ -128,11 +151,29 @@ static class FilterWrapper : public Environment
   Instantiate()
   {
     __bcierr.clear();
-    Environment::EnterConstructionPhase( &mParameters, &mStates, NULL, &sVis );
+    PARAMLIST filterParams;
+    STATELIST filterStates;
+    Environment::EnterConstructionPhase( &filterParams, &filterStates, NULL, &sVis );
     GenericFilter::InstantiateFilters();
-    bool result = ( __bcierr.flushes() == 0 );
+    bool success = ( __bcierr.flushes() == 0 );
+    if( success )
+    {
+      // Add the filter's parameters with their default values to the parameter
+      // list as far as they are missing from the input.
+      for( PARAMLIST::iterator i = filterParams.begin(); i != filterParams.end(); ++i )
+        if( mParameters.find( i->second.GetName() ) == mParameters.end() )
+          mParameters[ i->second.GetName() ] = i->second;
+      // If there are no states written to the filter, use the filter's states.
+      if( mStates.GetNumStates() == 0 )
+      {
+        mStates = filterStates;
+        mStatesFromInput = false;
+      }
+      else
+        mStatesFromInput = true;
+    }
     Environment::EnterNonaccessPhase();
-    return result;
+    return success;
   }
 
   bool
@@ -142,6 +183,9 @@ static class FilterWrapper : public Environment
     GenericFilter::DisposeFilters();
     bool result = ( __bcierr.flushes() == 0 );
     Environment::EnterNonaccessPhase();
+    delete mpStatevector;
+    mStates.ClearStateList();
+    mParameters.clear();
     return result;
   }
 
@@ -245,7 +289,7 @@ static class FilterWrapper : public Environment
   STATEVECTOR*     Statevector()
   {
     if( !mpStatevector )
-      mpStatevector = new STATEVECTOR( &mStates, true );
+      mpStatevector = new STATEVECTOR( &mStates, mStatesFromInput );
     return mpStatevector;
   }
 
@@ -256,6 +300,7 @@ static class FilterWrapper : public Environment
   PARAMLIST        mParameters;
   STATELIST        mStates;
   STATEVECTOR*     mpStatevector;
+  bool             mStatesFromInput;
 
 
 } wrapper;
@@ -357,6 +402,19 @@ GetStateValue( char* stateName, short* valuePtr )
 }
 
 /*
+function:  GetStatevectorLength
+purpose:   Gets the DLL's state vector length.
+arguments: Pointer reference to receive the state vector length.
+returns:   True (1) if no error occurred.
+*/
+int DLLEXPORT
+GetStatevectorLength( long* statevectorLengthPtr )
+{
+  ResetStreams();
+  return wrapper.GetStatevectorLength( statevectorLengthPtr );
+}
+
+/*
 function:  SetStatevector
 purpose:   Sets the DLL's state vector to the binary values contained in a state vector.
 arguments: Pointer and length of state vector data. The length must match the length of the
@@ -364,10 +422,24 @@ arguments: Pointer and length of state vector data. The length must match the le
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-SetStatevector( char* statevectorData, long statevectorLength )
+SetStatevector( unsigned char* statevectorData )
 {
   ResetStreams();
-  return wrapper.SetStatevector( statevectorData, statevectorLength );
+  return wrapper.SetStatevector( statevectorData );
+}
+
+/*
+function:  GetStatevector
+purpose:   Gets the binary data contained in the DLL's state vector.
+arguments: Pointer and length of state vector data. The length must match the length of the
+           state vector inside the DLL.
+returns:   True (1) if no error occurred.
+*/
+int DLLEXPORT
+GetStatevector( unsigned char* statevectorData )
+{
+  ResetStreams();
+  return wrapper.GetStatevector( statevectorData );
 }
 
 /*
@@ -385,7 +457,7 @@ Instantiate( void )
 
 /*
 function:  Dispose
-purpose:   Dispose of all filter instances.
+purpose:   Dispose of all filter instances, and clear parameter and state information.
 arguments: n/a
 returns:   True (1) if no error occurred.
 */
