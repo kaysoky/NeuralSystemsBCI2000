@@ -55,7 +55,7 @@ ZBus(NULL)
 		"//number of samples transmitted at a time",
         "Source int SamplingRate=   512 128 1 4000"
 		"//sample rate",
-        "Source string CircuitPath= C:\\bci2000\\EEGsource\\TDTclient\\ 0 0 1024"
+        "Source string CircuitPath= c:\\bci2000\\src\\EEGsource\\TuckerDavis\\ 0 0 1024"
 		"//RCO circuit path",
         "Source string CircuitName= chAcquire64.rco 0 0 1024"
 		"//RCO Circuit name",
@@ -104,6 +104,7 @@ TDTBCI::~TDTBCI()
     
     delete RPcoX1;
     delete RPcoX2;
+    delete ZBus;
 }
 
 //
@@ -184,8 +185,6 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
 			//error
 		}
-		
-		
     }
     else
     {
