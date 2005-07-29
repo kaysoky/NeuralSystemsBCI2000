@@ -239,7 +239,7 @@ DASUtils::BackgroundScan( int inBoardNumber, int inLowChan, int inHighChan,
   int result = ::cbStopBackground( inBoardNumber, AIFUNCTION );
   if( result == NOERRORS )
   {
-    result = ::cbEnableEvent( inBoardNumber, ON_DATA_AVAILABLE | ON_SCAN_ERROR, 0,
+    result = ::cbEnableEvent( inBoardNumber, ON_DATA_AVAILABLE | ON_SCAN_ERROR, 1,
                                                 inNotificationCallback, inUserData );
     bool simulateEvents = false;
     if( result == BADBOARDTYPE )
