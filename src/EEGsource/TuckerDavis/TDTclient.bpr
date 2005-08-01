@@ -4,13 +4,14 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\prog\TDTclient.exe"/>
-    <OBJFILES value="obj\TDTclient.obj obj\MeasurementUnits.obj obj\TransmissionFilter.obj 
-      obj\MessageHandler.obj obj\TCPStream.obj obj\UBCIError.obj 
-      obj\UEnvironment.obj obj\UGenericFilter.obj obj\BCIDirectry.obj 
-      obj\USysCommand.obj obj\UStatus.obj obj\UState.obj obj\UParameter.obj 
-      obj\UGenericVisualization.obj obj\UGenericSignal.obj obj\UBCItime.obj 
-      obj\UCoreMain.obj obj\TDTBCI.obj obj\DataIOFilter.obj obj\RPCOXLib_OCX.obj 
-      obj\RPCOXLib_TLB.obj obj\ZBUSXLib_OCX.obj obj\BCIDatFileWriter.obj"/>
+    <OBJFILES value="obj\TDTclient.obj obj\TDTBCI.obj obj\MeasurementUnits.obj 
+      obj\TransmissionFilter.obj obj\MessageHandler.obj obj\TCPStream.obj 
+      obj\UBCIError.obj obj\UEnvironment.obj obj\UGenericFilter.obj 
+      obj\BCIDirectry.obj obj\USysCommand.obj obj\UStatus.obj obj\UState.obj 
+      obj\UParameter.obj obj\UGenericVisualization.obj obj\UGenericSignal.obj 
+      obj\UBCItime.obj obj\UCoreMain.obj obj\DataIOFilter.obj 
+      obj\RPCOXLib_OCX.obj obj\RPCOXLib_TLB.obj obj\ZBUSXLib_OCX.obj 
+      obj\BCIDatFileWriter.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
@@ -55,6 +56,7 @@
   </LINKER>
   <FILELIST>
       <FILE FILENAME="TDTclient.cpp" FORMNAME="" UNITNAME="TDTclient" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="TDTBCI.cpp" FORMNAME="" UNITNAME="TDTBCI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MeasurementUnits.cpp" FORMNAME="" UNITNAME="MeasurementUnits" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\TransmissionFilter.cpp" FORMNAME="" UNITNAME="TransmissionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\MessageHandler.cpp" FORMNAME="" UNITNAME="MessageHandler" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -71,7 +73,6 @@
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UBCItime.cpp" FORMNAME="" UNITNAME="UBCItime" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UCoreMain.cpp" FORMNAME="fMain" UNITNAME="UCoreMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="TDTBCI.cpp" FORMNAME="" UNITNAME="TDTBCI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\DataIOFilter.cpp" FORMNAME="" UNITNAME="DataIOFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RPCOXLib_OCX.cpp" FORMNAME="" UNITNAME="RPCOXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RPCOXLib_TLB.cpp" FORMNAME="" UNITNAME="RPCOXLib_TLB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

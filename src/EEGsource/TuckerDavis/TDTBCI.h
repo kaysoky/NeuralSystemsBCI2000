@@ -46,8 +46,13 @@ private:
     int TDTbufSize;
     int blockSize;
     int curindex, stopIndex, indexMult;
-
+    int devAddr[2];
     bool use2RX5;
+    bool useECG;
+    float ECGgain;
+    int ECGchannel;
+    int ECGoffset;
+    int ECGstopIndex;
     
 	float *dataA;// = new float[valuesToRead];
 	float *dataB;// = new float[valuesToRead];
@@ -57,6 +62,7 @@ private:
     float *dataB2;
     float *dataC2;
     float *dataD2;
+    float *ECGdata;
 };
 
 //---------------------------------------------------------------------------
