@@ -133,10 +133,10 @@ TTask::TTask()
   END_LOCALIZED_STRINGS
 
   BEGIN_STATE_DEFINITIONS
-    "SelectedStimulus 7 0 0 0",
+    "SelectedStimulus 8 0 0 0",
     "StimulusTime 16 17528 0 0",
     "PhaseInSequence 2 0 0 0",
-    "StimulusCode 7 0 0 0",
+    "StimulusCode 8 0 0 0",
     "StimulusType 1 0 0 0",
     "Flashing 1 0 0 0",
     "PressedKey 8 0 0 0",
