@@ -78,8 +78,8 @@ MATFile *pmat;
 
  exportmatlab=rExportMatlab->Checked;
  exportfile=rExportFile->Checked;
- exportdatatype=ExportDataType->ItemIndex;   // 0=double, 1=int16
- if( exportdatatype == 1 && bci2000data->GetSignalType() != SignalType::int16 )
+ exportdatatype=ExportDataType->ItemIndex;   // 0=double, 1=single, 2=int16
+ if( exportdatatype == 2 && bci2000data->GetSignalType() != SignalType::int16 )
    Application->MessageBox( (
      AnsiString( "You are about to export " )
      + bci2000data->GetSignalType().Name()
@@ -130,6 +130,15 @@ MATFile *pmat;
     return -1;
     }
 
+ // see whether output file already exists
+ fp=fopen(eDestinationFile->Text.c_str(), "rb");
+ if (fp)
+    {
+    fclose(fp);
+    int ret=Application->MessageBox("Do you want to overwrite the existing output file?", "Error", MB_YESNO);
+    if (ret != IDYES) return -1;
+    }
+
  // initialize Matlab
  // create Matlab variables, if we want to export
  if (exportmatlab)
@@ -146,7 +155,9 @@ MATFile *pmat;
     dims[1]=channels;
     if (exportdatatype == 0)
        signal=mxCreateNumericArray(2, (const int *)&dims, mxDOUBLE_CLASS, mxREAL);
-    else
+    if (exportdatatype == 1)
+       signal=mxCreateNumericArray(2, (const int *)&dims, mxSINGLE_CLASS, mxREAL);
+    if (exportdatatype == 2)
        signal=mxCreateNumericArray(2, (const int *)&dims, mxINT16_CLASS, mxREAL);
     mxSetName(signal, "signal");
     }
@@ -240,11 +251,14 @@ MATFile *pmat;
        {
        cur_value_double=bci2000data->ReadValue(channel, sample);
        __int16 cur_value_short = cur_value_double;
+       float cur_value_single = cur_value_double;
        if (exportmatlab)
           {
           if (exportdatatype == 0)
              memcpy((char *)((double *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_double, sizeof(double));
-          else
+          if (exportdatatype == 1)
+             memcpy((char *)((float *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_single, sizeof(float));
+          if (exportdatatype == 2)
              memcpy((char *)((__int16 *)mxGetPr(signal)+channel*totalsamples+cur_totalsample), (char *)&cur_value_short, sizeof(__int16));
           }
        if (exportfile)
@@ -254,6 +268,9 @@ MATFile *pmat;
              fprintf( fp, "%f ", cur_value_double );
              break;
            case 1:
+             fprintf( fp, "%f ", cur_value_single );
+             break;
+           case 2:
              fprintf( fp, "%d ", cur_value_short );
              break;
            default:
@@ -312,6 +329,13 @@ MATFile *pmat;
  if (fp) fclose(fp);
 
  Gauge->Progress=0;
+
+ if (cur_trial < 30)
+    {
+    AnsiString msgstring="You only have "+AnsiString(cur_trial)+" trials. Make sure 'increment trial nr.' is set properly";
+    Application->MessageBox(msgstring.c_str(), "Warning", MB_OK);
+    }
+
  return 0;
 }
 //---------------------------------------------------------------------------
@@ -548,7 +572,7 @@ void TfMain::ProcessCommandLineOptions()
     for( size_t i = 0; i < inputFiles.size(); ++i )
         mFilenames->Lines->Add( inputFiles[ i ].c_str() );
   }
-  
+
   if( batchMode )
   {
     fMain->Show();
@@ -572,5 +596,6 @@ void TfMain::ProcessCommandLineOptions()
   if( !batchMode )
     bConvert->Enabled = ( eDestinationFile->Text != "" && mFilenames->Text != "" );
 }
+
 
 

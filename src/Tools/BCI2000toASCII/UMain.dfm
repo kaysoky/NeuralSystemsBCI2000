@@ -3,7 +3,7 @@ object fMain: TfMain
   Top = 195
   Width = 438
   Height = 550
-  Caption = 'BCI2000toASCII V3.8 (Matlab 6.5+7.0)'
+  Caption = 'BCI2000toASCII V3.9 (Matlab 6.5+7.0)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -336,11 +336,12 @@ object fMain: TfMain
     Left = 272
     Top = 232
     Width = 113
-    Height = 65
+    Height = 89
     Caption = 'ExportDataType'
     ItemIndex = 0
     Items.Strings = (
       'double (default)'
+      'single'
       'signed int16')
     TabOrder = 19
   end
