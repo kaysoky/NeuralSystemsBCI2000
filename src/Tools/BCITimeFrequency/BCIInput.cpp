@@ -245,6 +245,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
         int index;
         float tval;
 
+
         if( tfilterflag == false )
         {
                 if(sfilterflag == false )            // no temporal or spatial filtering
@@ -283,8 +284,8 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
 
                                 neigh+= temp * d_lap[lap[chan_list[channel]][i]][i];
                                 sum+= d_lap[lap[chan_list[channel]][i]][i];
+
                         }
-                        val= val - (neigh/sum);
                 }
         }
         else

@@ -12,7 +12,7 @@
 *********************************************************************/
 
 #define MAXCHANS 65
-#define MAXPOINTS 3200
+#define MAXPOINTS 1600
 #define MAXSTATES 8
 #define MAXOUT 512
 
