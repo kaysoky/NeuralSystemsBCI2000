@@ -10,7 +10,7 @@
 //      module.
 //
 // Changes: Feb 1, 2004, jm: Various adaptations to using the presentation
-//      classes within a BCI2000 application (#ifef BCI2000).
+//      classes within a BCI2000 application (#ifdef BCI2000).
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -336,7 +336,7 @@ PARAM_DECL(
     PRTreeFile,
     string,
     SPELLER_MODEL_SECTION,
-    "config\default.spt % % %",
+    "config\\default.spt % % %",
     "file name for tree (inputfile)",
     0, 0
 )
@@ -345,7 +345,7 @@ PARAM_DECL(
     PRDictionaryFile,
     string,
     SPELLER_MODEL_SECTION,
-    "config\default.dic % % %",
+    "config\\default.dic % % %",
     "file name for dictionary (inputfile)",
     0, 0
 )
@@ -748,7 +748,7 @@ PARAM_DECL_SUFFIX(
     PRTaskSound,
     string,
     TARGET_VIEW_SECTION,
-    "sounds\target" RUNTIME_SUFFIX ".wav % % %",
+    "sounds\\target" RUNTIME_SUFFIX ".wav % % %",
     "WAV file for target " RUNTIME_SUFFIX,
     0, 0
 )
@@ -784,7 +784,7 @@ PARAM_DECL_SUFFIX(
     PRResultSound,
     string,
     TARGET_VIEW_SECTION,
-    "sounds\result" RUNTIME_SUFFIX ".wav % % %",
+    "sounds\\result" RUNTIME_SUFFIX ".wav % % %",
     "WAV file for result " RUNTIME_SUFFIX,
     0, 0
 )
@@ -827,6 +827,7 @@ PARAM_DECL(
     "Time offsets for auditory markers (values or parameter names)",
     0, 0
 )
+
 #else
 PARAM_DECL(
     PRAudMarkers,
@@ -839,11 +840,20 @@ PARAM_DECL(
 #endif // BCI2000
 
 PARAM_DECL(
+    PRAudMarkerSoundFiles,
+    list,
+    MARKER_VIEW_SECTION,
+    "2 sounds\\tick.wav sounds\\tack.wav % % %",
+    "Audio files for auditory markers",
+    0, 0
+)
+
+PARAM_DECL(
     PRGMMarkerInstruments,
     intlist,
     MARKER_VIEW_SECTION,
-    "2 14 14 14 1 128",
-    "GM instruments for auditory markers",
+    "2 0 0 14 1 128",
+    "GM instruments for auditory markers (0 for off)",
     0, 128
 )
 
@@ -918,7 +928,7 @@ PARAM_DECL(
     PRRISoundFile,
     string,
     REINFORCEMENT_VIEW_SECTION,
-    "sounds\welldone.wav % % %",
+    "sounds\\welldone.wav % % %",
     "sound file for acoustic reinforcement (inputfile)",
     0, 0
 )

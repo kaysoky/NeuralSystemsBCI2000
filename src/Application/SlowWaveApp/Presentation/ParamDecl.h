@@ -337,6 +337,22 @@
             }                                                       \
         }
 
+#define PARAM_GET_STRING_BY_INDEX( List, Name, Index, Variable )    \
+        {                                                           \
+            PARAM *_paramPtr;                                       \
+            const char  *_valuePtr;                                 \
+            PARAM_GET_PTR( List, Name, _paramPtr );                 \
+            if( _paramPtr == NULL ||                                \
+                ( ( _valuePtr = _paramPtr->GetValue( Index ) ) == NULL ) ) \
+            {                                                       \
+                gPresErrors.AddError( presParamInaccessibleError,   \
+                                            _param_##Name.name() ); \
+                Variable = NULL;                                    \
+            }                                                       \
+            else                                                    \
+                Variable = _valuePtr;                               \
+        }
+
 #define PARAM_GET_STRING_SUFFIX( List, Name, Suffix, Variable )     \
         {                                                           \
             PARAM *_paramPtr;                                       \

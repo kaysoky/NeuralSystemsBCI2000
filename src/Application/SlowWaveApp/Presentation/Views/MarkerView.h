@@ -20,6 +20,7 @@
 
 #include <list>
 #include "MidiPlayer.h"
+#include "WavePlayer.h"
 #include "PresView.h"
 #include "GUIMarkerView.h"
 
@@ -51,6 +52,7 @@ class TMarkerView : public TPresView, private TGUIMarkerView
         {
           float        timeOffset;
           TMidiPlayer* midiPlayer;
+          TWavePlayer* wavePlayer;
           bool operator<( const audMarker& b ) const { return timeOffset < b.timeOffset; }
         };
         typedef std::list<audMarker> audMarkerContainer;

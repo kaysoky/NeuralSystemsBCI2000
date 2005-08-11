@@ -37,6 +37,7 @@ TMarkerView::TMarkerView( PARAMLIST *inParamList )
 {
     PARAM_ENABLE( inParamList, PRVisMarker );
     PARAM_ENABLE( inParamList, PRAudMarkers );
+    PARAM_ENABLE( inParamList, PRAudMarkerSoundFiles );
     PARAM_ENABLE( inParamList, PRGMMarkerInstruments );
     PARAM_ENABLE( inParamList, PRGMMarkerVolumes );
     PARAM_ENABLE( inParamList, PRGMMarkerNotes );
@@ -46,6 +47,7 @@ TMarkerView::~TMarkerView()
 {
     PARAM_DISABLE( curParamList, PRVisMarker );
     PARAM_DISABLE( curParamList, PRAudMarkers );
+    PARAM_DISABLE( curParamList, PRAudMarkerSoundFiles );
     PARAM_DISABLE( curParamList, PRGMMarkerInstruments );
     PARAM_DISABLE( curParamList, PRGMMarkerVolumes );
     PARAM_DISABLE( curParamList, PRGMMarkerNotes );
@@ -72,6 +74,7 @@ TMarkerView::Initialize(       PARAMLIST *inParamList,
     int instrument,
         volume,
         note;
+    const char* soundFile = NULL;
     float timeOffset;
     for( size_t i = 0; i < numMarkers; ++i )
     {
@@ -86,12 +89,23 @@ TMarkerView::Initialize(       PARAMLIST *inParamList,
 #else
       timeOffset = ::atof( value );
 #endif
+      PARAM_GET_STRING_BY_INDEX( inParamList, PRAudMarkerSoundFiles, i, soundFile );
       PARAM_GET_NUM_BY_INDEX( inParamList, PRGMMarkerInstruments, i, instrument );
       PARAM_GET_NUM_BY_INDEX( inParamList, PRGMMarkerVolumes, i, volume );
       PARAM_GET_NUM_BY_INDEX( inParamList, PRGMMarkerNotes, i, note );
       audMarker marker;
       marker.timeOffset = timeOffset;
-      marker.midiPlayer = new TMidiPlayer( instrument, volume, note );
+      if( instrument == 0 )
+        marker.midiPlayer = NULL;
+      else
+        marker.midiPlayer = new TMidiPlayer( instrument, volume, note );
+      if( *soundFile == '\0' )
+        marker.wavePlayer = NULL;
+      else
+      {
+        marker.wavePlayer = new TWavePlayer;
+        marker.wavePlayer->AttachFile( soundFile );
+      }
       audMarkers.push_back( marker );
     }
     audMarkers.sort();
@@ -111,7 +125,10 @@ TMarkerView::ProcessTrialActive( const TEventArgs& args )
   while( currentMarker != audMarkers.end()
          && args.timeOffset >= currentMarker->timeOffset )
   {
-    currentMarker->midiPlayer->Play();
+    if( currentMarker->midiPlayer != NULL )
+      currentMarker->midiPlayer->Play();
+    if( currentMarker->wavePlayer != NULL )
+      currentMarker->wavePlayer->Play();
     ++currentMarker;
   }
 }
@@ -136,14 +153,18 @@ void
 TMarkerView::ProcessStopBegin( const TEventArgs& )
 {
   for( audMarkerContainer::iterator i = audMarkers.begin(); i != audMarkers.end(); ++i )
-    i->midiPlayer->StopSequence();
+    if( i->midiPlayer != NULL )
+      i->midiPlayer->StopSequence();
 }
 
 void
 TMarkerView::ClearMarkers()
 {
     for( audMarkerContainer::iterator i = audMarkers.begin(); i != audMarkers.end(); ++i )
+    {
       delete i->midiPlayer;
+      delete i->wavePlayer;
+    }
     audMarkers.clear();
 }
 
