@@ -19,6 +19,7 @@
 #include "defines.h"
 #include <vector>
 #include <cmath>
+#include <limits>
 
 using namespace std;
 
@@ -30,7 +31,7 @@ LPFilter::LPFilter()
   mSignalVis( SOURCEID::LowPass )
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Filtering float LPTimeConstant= 16s"
+    "Filtering float LPTimeConstant= 0"
       " 16s 0 0 // time constant for the high pass filter in blocks or seconds",
     "Visualize int VisualizeLowPass= 1"
       " 1 0 1 // visualize low pass output signal (boolean)",
@@ -58,10 +59,10 @@ LPFilter::Preflight( const SignalProperties& inputProperties,
   // However, we need to make sure that its argument is user-readable
   // -- this is why we chose a variable name that matches the parameter
   // name.
-  PreflightCondition( LPTimeConstant > 0 );
+  PreflightCondition( LPTimeConstant >= 0 );
   // Alternatively, we might write:
-  if( LPTimeConstant <= 0 )
-    bcierr << "The LPTimeConstant parameter must be greater 0" << endl;
+  if( LPTimeConstant < 0 )
+    bcierr << "The LPTimeConstant parameter must be 0 or greater" << endl;
 
   // Request output signal properties:
   outputProperties = inputProperties;
@@ -76,7 +77,10 @@ LPFilter::Initialize()
   // Convert it into units of a sample's duration:
   timeConstant *= Parameter( "SampleBlockSize" );
 
-  mDecayFactor = ::exp( -1.0 / timeConstant );
+  if( timeConstant < numeric_limits<float>::epsilon() )
+    mDecayFactor = 0.0;
+  else
+    mDecayFactor = ::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
 
   mSignalVis.Send( CFGID::WINDOWTITLE, "Low Pass" );
