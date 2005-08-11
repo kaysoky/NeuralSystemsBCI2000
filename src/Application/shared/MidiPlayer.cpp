@@ -216,12 +216,12 @@ TMidiPlayer::Play(  int inMidiNote,
 
     // Set up the timer event that will switch the note off after
     // curLength milliseconds.
-    DWORD       msg = ShortMidiMsg( mNoteOff, channel, curNote, inVelocity );
+    DWORD       msg = ShortMidiMsg( mNoteOff, channel, curNote, 0 );
     MMRESULT    timerID = ::timeSetEvent( curLength, timerResolution,
                             SendMidiMsg, msg, TIME_ONESHOT );
     if( timerID == NULL )
-    // Setting the timer didn't work; switch the note off at once.
-        ::midiOutShortMsg( deviceHandle, msg );
+      // Setting the timer didn't work; switch the note off at once.
+      ::midiOutShortMsg( deviceHandle, msg );
 }
 
 
