@@ -22,7 +22,7 @@
 //   Logical operators:    < > <= >= == ! ~ != ~=
 //                        ! and ~ are synonymous.
 //   Operator precedence follows the order of appearance in the above list.
-//   Precedence may be altered by enclosing subexpressions into braces ( ).
+//   As usual, braces ( ) may be used to override operator precedence.
 //
 //////////////////////////////////////////////////////////////////////////////////////
 #ifndef EXPRESSION_H
@@ -53,6 +53,7 @@ class Expression : public Environment
   friend void ExpressionParser::yyerror( Expression*, const char* );
 
  public:
+  Expression() : mValue( 0 ), mpSignal( NULL ) {}
   Expression( const char* s ) : mExpression( s ), mValue( 0 ), mpSignal( NULL ) {}
   Expression( const Expression& e ) : mExpression( e.mExpression ), mValue( 0 ), mpSignal( NULL ) {}
   ~Expression() {}
