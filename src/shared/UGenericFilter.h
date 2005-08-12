@@ -56,7 +56,11 @@ class GenericFilter : protected Environment
                                 SignalProperties& Output ) const = 0;
   // Initialize() performs initialization required when parameter settings
   // have changed.
-  virtual void Initialize() = 0;
+  // Initialize2() will replace Initialize() in future versions.
+  virtual void Initialize2( const SignalProperties& Input,
+                            const SignalProperties& Output )    { Initialize(); }
+  // The previous version of Initialize() -- will be removed in the future.
+  virtual void Initialize() {}
   // StartRun() performs initialization required when starting a new run.
   virtual void StartRun()  { Initialize(); }
   // StopRun() performs actions required when a run ends.

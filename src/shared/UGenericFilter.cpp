@@ -96,8 +96,9 @@ void
 GenericFilter::PreflightFilters( const SignalProperties& Input,
                                        SignalProperties& Output )
 {
-  const SignalProperties* currentInput = &Input;
+  OwnedSignals()[ NULL ].SetProperties( Input );
   GenericFilter* currentFilter = NULL;
+  const SignalProperties* currentInput = &Input;
   for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
   {
     currentFilter = *i;
@@ -107,17 +108,21 @@ GenericFilter::PreflightFilters( const SignalProperties& Input,
     OwnedSignals()[ currentFilter ].SetProperties( currentOutput );
     currentInput = &OwnedSignals()[ currentFilter ].GetProperties();
   }
-  if( currentFilter )
-    Output = OwnedSignals()[ currentFilter ].GetProperties();
-  else
-    Output = Input;
+  Output = OwnedSignals()[ currentFilter ].GetProperties();
 }
 
 void
 GenericFilter::InitializeFilters()
 {
+  const SignalProperties* currentInput = &OwnedSignals()[ NULL ].GetProperties();
+  GenericFilter* currentFilter = NULL;
   for( filters_type::iterator i = OwnedFilters().begin(); i != OwnedFilters().end(); ++i )
-    ( *i )->Initialize();
+  {
+    currentFilter = *i;
+    // This will implicitly create the output signal if it does not exist.
+    currentFilter->Initialize2( *currentInput, OwnedSignals()[ currentFilter ].GetProperties() );
+    currentInput = &OwnedSignals()[ currentFilter ].GetProperties();
+  }
 }
 
 void
