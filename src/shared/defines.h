@@ -127,6 +127,8 @@ namespace SOURCEID
     Baseline,
     Artefact,
     LowPass,
+
+    Debug = 255
   };
 };
 // Backward compatibility.
