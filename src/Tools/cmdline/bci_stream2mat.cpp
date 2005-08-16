@@ -292,7 +292,7 @@ StreamToMat::HandleVisSignal( istream& arIn )
   VisSignal v;
   v.ReadBinary( arIn );
   const GenericSignal& s = v;
-  // Print a header line before the first line of data.
+  // Write a header first.
   if( mSignalProperties.IsEmpty() )
   {
     mSignalProperties = s.GetProperties();
