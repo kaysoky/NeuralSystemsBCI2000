@@ -111,16 +111,17 @@ BCIDatFileWriter::Preflight( const SignalProperties& Input,
              << " data type unsupported for BCI2000 files"
              << endl;
   }
-  mInputProperties = Input; // This will go into Initialize() as soon as possible.
   Output = SignalProperties( 0, 0 );
 }
 
 
 void
-BCIDatFileWriter::Initialize()
+BCIDatFileWriter::Initialize2( const SignalProperties& Input,
+                               const SignalProperties& Output )
 {
   mOutputFile.close();
   mOutputFile.clear();
+  mInputProperties = Input;
 }
 
 

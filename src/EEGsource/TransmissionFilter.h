@@ -23,7 +23,8 @@ class TransmissionFilter: public GenericFilter
           TransmissionFilter();
   virtual void Preflight( const SignalProperties& InputProperties,
                                 SignalProperties& OutputProperties ) const;
-  virtual void Initialize();
+  virtual void Initialize2( const SignalProperties& InputProperties,
+                            const SignalProperties& OutputProperties );
   virtual void Process( const GenericSignal* Input,
                               GenericSignal* Output );
  private:

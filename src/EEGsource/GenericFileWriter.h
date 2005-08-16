@@ -25,12 +25,13 @@ class GenericFileWriter : public GenericFilter
   // GenericFilter inherited functions.
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;
-  virtual void Initialize() = 0;
+  virtual void Initialize2( const SignalProperties&,
+                            const SignalProperties& ) = 0;
   virtual void StartRun() {}
   virtual void StopRun() {}
   // The write function takes as argument the state vector
   // that existed at the time of the signal argument's time stamp.
-  virtual void Write(   const GenericSignal&, const STATEVECTOR& ) = 0;
+  virtual void Write( const GenericSignal&, const STATEVECTOR& ) = 0;
   virtual void Halt() {}
 
  private:

@@ -25,7 +25,8 @@ class BCIDatFileWriter: public GenericFileWriter
   virtual ~BCIDatFileWriter();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
-  virtual void Initialize();
+  virtual void Initialize2( const SignalProperties& Input,
+                            const SignalProperties& Output );
   virtual void StartRun();
   virtual void StopRun();
   virtual void Write( const GenericSignal& Signal,
@@ -33,9 +34,8 @@ class BCIDatFileWriter: public GenericFileWriter
 
  private:
   template<SignalType::Type T> void PutBlock( const GenericSignal&, const STATEVECTOR& );
-
-  mutable SignalProperties mInputProperties; // This is mutable until SignalProperties
-                                             // arguments are available for Initialize().
+  
+  SignalProperties         mInputProperties;
   std::string              mFileName;
   std::ofstream            mOutputFile;
 };

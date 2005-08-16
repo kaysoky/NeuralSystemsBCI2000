@@ -61,7 +61,8 @@ void TransmissionFilter::Preflight( const SignalProperties& InputProperties,
   OutputProperties.Channels() = Parameter( "TransmitChList" )->GetNumValues();
 }
 
-void TransmissionFilter::Initialize()
+void TransmissionFilter::Initialize2( const SignalProperties& inputProperties,
+                                      const SignalProperties& outputProperties )
 {
   mChannelList.clear();
   for( size_t i = 0; i < Parameter( "TransmitChList" )->GetNumValues(); ++i )

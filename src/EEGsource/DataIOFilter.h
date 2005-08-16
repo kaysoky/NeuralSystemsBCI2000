@@ -25,7 +25,8 @@ class DataIOFilter: public GenericFilter
   virtual ~DataIOFilter();
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
-  virtual void Initialize();
+  virtual void Initialize2( const SignalProperties& Input,
+                            const SignalProperties& Output );
   virtual void StartRun();
   virtual void StopRun();
 

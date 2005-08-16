@@ -172,12 +172,13 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
 
 void
-DataIOFilter::Initialize()
+DataIOFilter::Initialize2( const SignalProperties& inputProperties,
+                           const SignalProperties& outputProperties )
 {
   State( "Recording" ) = 0;
   mSignalBuffer = GenericSignal( 0, 0 );
-  mpADC->Initialize();
-  mpFileWriter->Initialize();
+  mpADC->Initialize2( inputProperties, outputProperties );
+  mpFileWriter->Initialize2( inputProperties, outputProperties );
 
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
