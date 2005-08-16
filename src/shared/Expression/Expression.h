@@ -19,8 +19,9 @@
 //
 //   Arithmetic operators: ^ unary- * / + -
 //                         a^b evaluates to ::pow(a,b).
-//   Logical operators:    < > <= >= == ! ~ != ~=
-//                        ! and ~ are synonymous.
+//   Comparison operators:  < > <= >= == != ~=
+//   Logical operators:    ! ~ && ||
+//                         ! and ~ are synonymous.
 //   Operator precedence follows the order of appearance in the above list.
 //   As usual, braces ( ) may be used to override operator precedence.
 //

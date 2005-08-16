@@ -33,10 +33,10 @@ namespace ExpressionParser
 /* Bison declarations.  */
 %token <value>  NUMBER
 %token <name>   NAME SIGNAL
+%left '&' '|'
 %left '=' '~' '!' '>' '<'
 %left '-' '+'
 %left '*' '/'
-%left '&' '|'
 %left NEG     /* negation--unary minus */
 %right '^'    /* exponentiation */
 
