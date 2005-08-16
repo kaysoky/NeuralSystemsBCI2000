@@ -102,7 +102,8 @@ int ret;
 } catch(...) {ret=0;}
 
  // possibly replace this with something better
- if (ret == 0) Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);
+ if ((ret == 0) && (prediction))
+    Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);
 
  return(ret);
 }
