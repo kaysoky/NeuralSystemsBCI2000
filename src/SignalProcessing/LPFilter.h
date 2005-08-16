@@ -22,10 +22,11 @@ class LPFilter : public GenericFilter
    ~LPFilter();
 
    void Preflight( const SignalProperties&, SignalProperties& ) const;
-   void Initialize();
+   void Initialize2( const SignalProperties&, const SignalProperties& );
    void Process( const GenericSignal*, GenericSignal* );
 
  private:
+   
    float                mDecayFactor;
    std::vector<float>   mPreviousOutput;
 

@@ -20,6 +20,7 @@
 #include <vector>
 #include <cmath>
 #include <limits>
+#include <sstream>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ LPFilter::LPFilter()
   BEGIN_PARAMETER_DEFINITIONS
     "Filtering float LPTimeConstant= 0"
       " 16s 0 0 // time constant for the high pass filter in blocks or seconds",
-    "Visualize int VisualizeLowPass= 1"
+    "Visualize int VisualizeLowPass= 0"
       " 1 0 1 // visualize low pass output signal (boolean)",
     "Visualize int LPVisMin= -40 0 0 0 "
       "// low pass visualization min value",
@@ -50,10 +51,10 @@ LPFilter::~LPFilter()
 
 void
 LPFilter::Preflight( const SignalProperties& inputProperties,
-                            SignalProperties& outputProperties ) const
+                           SignalProperties& outputProperties ) const
 {
   float LPTimeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
-  LPTimeConstant *= Parameter( "SampleBlockSize" );
+  LPTimeConstant *= inputProperties.Elements();
   // The PreflightCondition macro will automatically generate an error
   // message if its argument evaluates to false.
   // However, we need to make sure that its argument is user-readable
@@ -70,33 +71,42 @@ LPFilter::Preflight( const SignalProperties& inputProperties,
 
 
 void
-LPFilter::Initialize()
+LPFilter::Initialize2( const SignalProperties& inputProperties,
+                       const SignalProperties& outputProperties )
 {
   // Get the time constant in units of a sample block's duration:
   float timeConstant = MeasurementUnits::ReadAsTime( Parameter( "LPTimeConstant" ) );
   // Convert it into units of a sample's duration:
-  timeConstant *= Parameter( "SampleBlockSize" );
+  timeConstant *= inputProperties.Elements();
 
   if( timeConstant < numeric_limits<float>::epsilon() )
     mDecayFactor = 0.0;
   else
     mDecayFactor = ::exp( -1.0 / timeConstant );
+
+  // This will initialize elements with 0,
+  // implementing the first line of the filter prescription:
   mPreviousOutput.clear();
+  mPreviousOutput.resize( inputProperties.Channels(), 0 );
+
+  // Determine a sample's duration in seconds:
+  float sampleDuration = Parameter( "SampleBlockSize" ) /
+                       Parameter( "SamplingRate" ) / inputProperties.Elements();
 
   mSignalVis.Send( CFGID::WINDOWTITLE, "Low Pass" );
   mSignalVis.Send( CFGID::graphType, CFGID::polyline );
   mSignalVis.Send( CFGID::MINVALUE, Parameter( "LPVisMin" ) );
   mSignalVis.Send( CFGID::MAXVALUE, Parameter( "LPVisMax" ) );
-  mSignalVis.Send( CFGID::NUMSAMPLES, 2 * Parameter( "SamplingRate" ) );
+  mSignalVis.Send( CFGID::NUMSAMPLES, 5 / sampleDuration );
+  ostringstream oss;
+  oss << sampleDuration << "s";
+  mSignalVis.Send( CFGID::sampleUnit, oss.str() );
 }
 
 
 void
 LPFilter::Process( const GenericSignal* input, GenericSignal* output )
 {
-  // This will initialize additional elements with 0,
-  // implementing the first line of the filter prescription:
-  mPreviousOutput.resize( input->Channels(), 0 );
   // This implements the second line for all channels:
   for( size_t channel = 0; channel < input->Channels(); ++channel )
   {
