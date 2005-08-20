@@ -371,10 +371,10 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
-    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Resting ):
-    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Resting ):
-    case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Resting ):
-    case TRANSITION( SYSSTATUS::RestingParamsModified, SYSSTATUS::Resting ):
+    case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::Initialization ):
+    case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Initialization ):
+    case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Initialization ):
+    case TRANSITION( SYSSTATUS::RestingParamsModified, SYSSTATUS::Initialization ):
       BroadcastParameters();
       BroadcastEndOfParameter();
       mSyslog.AddSysLogEntry( "Operator set configuration" );
@@ -675,8 +675,8 @@ TfMain::CoreConnection::HandleSTATUS( istream& is )
     }
 
     if( mParent.mSysstatus.INI[ EEGSource ]
-       && mParent.mSysstatus.INI[ SigProc ]
-       && mParent.mSysstatus.INI[ App ]
+        && mParent.mSysstatus.INI[ SigProc ]
+        && mParent.mSysstatus.INI[ App ]
         && mParent.mSysstatus.SystemState == SYSSTATUS::Initialization )
     {
       mParent.EnterState( SYSSTATUS::Resting );
@@ -846,13 +846,11 @@ void __fastcall TfMain::bSetConfigClick( TObject* )
   {
     case SYSSTATUS::Information:
     case SYSSTATUS::Initialization:
-      EnterState( SYSSTATUS::Initialization );
-      break;
     case SYSSTATUS::Resting:
     case SYSSTATUS::RestingParamsModified:
     case SYSSTATUS::Suspended:
     case SYSSTATUS::SuspendedParamsModified:
-      EnterState( SYSSTATUS::Resting );
+      EnterState( SYSSTATUS::Initialization );
       break;
   }
 }
