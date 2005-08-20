@@ -47,8 +47,8 @@ class DataIOFilter: public GenericFilter
   GenericVisualization   mEEGVis,
                          mRoundtripVis;
   GenericSignal          mDecimatedSignal,
-                         mRoundtripSignal;
-  mutable GenericSignal  mRestingSignal;
+                         mRoundtripSignal,
+                         mRestingSignal;
   std::vector<float>     mSourceChOffset,
                          mSourceChGain;
 };

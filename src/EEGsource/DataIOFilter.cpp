@@ -137,24 +137,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   if( !mpADC )
     bcierr << "Expected an ADC filter instance to be present" << endl;
   else
-  {
     mpADC->Preflight( Input, Output );
-    switch( Output.Type() )
-    {
-      case SignalType::int16:
-      case SignalType::int32:
-      case SignalType::float32:
-        /* These types are OK */
-        break;
-
-      default: // All other types are unsupported in BCI2000 data files.
-        bcierr << "ADC requested unsupported data type ("
-               << Output.Type().Name()
-               << ")"
-               << endl;
-    }
-    mRestingSignal.SetProperties( Output );
-  }
 
   if( !mpFileWriter )
     bcierr << "Expected a file writer filter instance to be present" << endl;
@@ -177,8 +160,9 @@ DataIOFilter::Initialize2( const SignalProperties& inputProperties,
 {
   State( "Recording" ) = 0;
   mSignalBuffer = GenericSignal( 0, 0 );
+  mRestingSignal.SetProperties( outputProperties );
   mpADC->Initialize2( inputProperties, outputProperties );
-  mpFileWriter->Initialize2( inputProperties, outputProperties );
+  mpFileWriter->Initialize2( outputProperties, SignalProperties( 0, 0 ) );
 
   // Configure visualizations.
   mVisualizeEEG = ( Parameter( "VisualizeSource" ) == 1 );
