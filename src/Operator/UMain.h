@@ -23,6 +23,7 @@
 
 #define TXT_WINDOW_CAPTION      "BCI2000/Operator"
 #define TXT_OPERATOR_VERSION    "V1.41"
+#define TXT_OPERATOR_COPYRIGHT  "(C) 2000-2005"
 #define TXT_OPERATOR_SUSPENDED  "Suspended"
 #define TXT_OPERATOR_RUNNING    "Running"
 

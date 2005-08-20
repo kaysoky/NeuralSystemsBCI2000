@@ -13,6 +13,7 @@ __fastcall TfAbout::TfAbout(TComponent* Owner)
         : TForm(Owner)
 {
   Version->Caption = TXT_OPERATOR_VERSION;
+  Copyright->Caption = TXT_OPERATOR_COPYRIGHT;
 }
 //---------------------------------------------------------------------------
 
