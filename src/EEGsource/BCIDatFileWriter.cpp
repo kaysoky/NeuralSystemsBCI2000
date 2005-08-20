@@ -46,7 +46,7 @@ BCIDatFileWriter::~BCIDatFileWriter()
 
 void
 BCIDatFileWriter::Preflight( const SignalProperties& Input,
-                                SignalProperties& Output ) const
+                                   SignalProperties& Output ) const
 {
   // File accessibility.
   string baseFileName = BCIDirectory()
@@ -107,7 +107,7 @@ BCIDatFileWriter::Preflight( const SignalProperties& Input,
       break;
 
     default:
-      bcierr << Output.Type().Name()
+      bcierr << Input.Type().Name()
              << " data type unsupported for BCI2000 files"
              << endl;
   }
