@@ -74,8 +74,8 @@ DASQueue::open( const DASInfo& inInfo )
     {
       if( !DASUtils::ADRangeCompatible( hwRange, inInfo.adRangeMin, inInfo.adRangeMax ) )
       {
-        bcierr << "The specified A/D range does not match the associated "
-                  "hardware switch setting" << endl;
+        bcierr << "The specified A/D range does not match the associated"
+                  " hardware switch setting" << endl;
         adRange = hwRange;
       }
 
@@ -115,18 +115,34 @@ DASQueue::open( const DASInfo& inInfo )
                                              mBoardNumber, mHWChannels,
                                              mDataBufferSize, hwSamplingRate,
                                              adRange, options ) ) )
-            hwSamplingRate /= 2;
+        {
+          hwSamplingRate /= 2;
+          mFreqMultiplier = ( 2 * hwSamplingRate + inInfo.samplingRate ) / ( 2 * inInfo.samplingRate );
+        }
 
         if( result == NOERRORS )
         {
           // The sampling rate may have changed.
           if( hwSamplingRate / mFreqMultiplier != inInfo.samplingRate )
           {
+            // hwBlockSize is typically a power of 2, so increasing the software
+            // block size to contain an additional factor of two appears a useful
+            // strategy to fix the problem.
+            // Factor the software block size into powers of 2 and remaining factors:
+            int swBlockSize = inInfo.sampleBlockSize,
+                powersOf2 = 1;
+            while( ( swBlockSize & powersOf2 ) == 0 )
+              powersOf2 <<= 1;
+            // Increase the remaining part by 1 to introduce an additional factor of 2:
+            swBlockSize += powersOf2;
+
             bciout << "Sampling rate/block size combination not optimally supported by A/D board"
-                   << " (try " << hwSamplingRate / mFreqMultiplier << "/s)"
+                   << " (try a block size of " << swBlockSize << ")."
+                   << " The actual sampling rate is now "
+                   << hwSamplingRate / mFreqMultiplier << "/s"
                    << endl;
-            mFreqMultiplier = ( 2 * hwBlockSize + 1 ) / ( 2 * mHWChannels * inInfo.sampleBlockSize );
           }
+
           // A memory allocation failure will trigger an error below.
           mDataBuffer = ( USHORT* )::cbWinBufAlloc( mDataBufferSize );
           mReadCursor = 0;
