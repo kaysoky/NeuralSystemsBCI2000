@@ -286,6 +286,7 @@ float __fastcall BCIInput::GetValue( BCI2000DATA *bci2000data,  int channel, int
                                 sum+= d_lap[lap[chan_list[channel]][i]][i];
 
                         }
+                        val= val - (neigh/sum);
                 }
         }
         else
@@ -383,7 +384,7 @@ void __fastcall BCIInput::ReadFile( BCI2000DATA *bci2000data, int numsamples )
         static int old_compu_flag;
         int vmax;
         int i;
-        int n[64];
+ //       int n[64];
         int channel;
         float val;
    //     int timecount;
@@ -393,8 +394,8 @@ void __fastcall BCIInput::ReadFile( BCI2000DATA *bci2000data, int numsamples )
         oldstate= 0;
         old_compu_flag= -999;
 
-        for(i=0;i<MAXCHANS;i++)
-                n[i]= 0;
+ //       for(i=0;i<MAXCHANS;i++)
+ //               n[i]= 0;
 
                                 // go through all samples in each run
         for (sample=0; sample<numsamples; sample++)
