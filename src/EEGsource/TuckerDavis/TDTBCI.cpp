@@ -75,7 +75,7 @@ ZBus(NULL)
 		    "// Number of 1st RX5 processors (set the RCO file accordingly!): ",
         "Source int nProcessorsBoard2= 0 5 0 0"
 		    "// Number of 2nd RX5 processors (0 if only one board): ",
-        "Source int ECGchannel= 20 0 0 128"
+        "Source int ECGchannel= -1 0 0 128"
             "// The source channel of the ECG (-1 if not used)",
         "Source float ECGgain= 5000 0 0 0 //"
             "The gain of the ECG channel",
@@ -120,11 +120,24 @@ TDTBCI::~TDTBCI()
 void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperties)	const
 {
     PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SoftwareCh" ) );
+    PreflightCondition( Parameter( "ECGchannel" ) <= Parameter ("SoftwareCh"));
 	// checks whether the board	works with the parameters requested, and
 	// communicates	the	dimensions of its output signal
 	
 	bool twoBoards = false;
-	
+    int devAddrTemp[2];
+	WideString interfaceType("GB");
+    
+	// connect to the ZBus
+    ZBus->ConnectZBUS(interfaceType.c_bstr());
+    devAddrTemp[0] = ZBus->GetDeviceAddr(45,1);
+    devAddrTemp[1] = ZBus->GetDeviceAddr(45,2);
+
+    if (devAddrTemp[0] == 0)
+       bcierr << "There do not seem to be any Pentusas on the rack. Quitting."<<endl;
+    if (devAddrTemp[1] == 0)
+       twoBoards = false;
+       
     // check the the number of processors given is valid
     if ((Parameter("nProcessorsBoard1") != 2) && (Parameter("nProcessorsBoard1") != 5))
     {
@@ -138,7 +151,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 	
 	
     // check if a 2nd system is being used
-    if (Parameter("nProcessorsBoard2") > 0)
+    if (Parameter("nProcessorsBoard2") > 0 && devAddrTemp[1] >= 2)
         twoBoards=true;
     else
         twoBoards=false;
@@ -168,18 +181,16 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 	const char * circuitName = Parameter("CircuitName");
 	
 	string circuit(circuitPath);
-	WideString interfaceType("GB");
 	
 	if(	!circuit.empty() &&	'\\' !=	circuit[circuit.size()-1]  ){
 		circuit.append("\\");
 	}
 	
 	circuit.append(circuitName);
-	
-	// connect to the ZBus
-    ZBus->ConnectZBUS(interfaceType.c_bstr());
-    //devAddr[0] = ZBus->GetDeviceAddr()
-    
+    long* devNum;
+    long* devName;
+
+
     if (!twoBoards)
     {
 		bciout <<"Connecting to	Pentusa..."<<endl;
@@ -206,7 +217,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
 		}
 		
         bciout <<"Connecting to	Pentusa #2..."<<endl;
-		if (!RPcoX2->ConnectRX5(interfaceType.c_bstr(),	1))
+		if (!RPcoX2->ConnectRX5(interfaceType.c_bstr(),	2))
 		{
 			bcierr << "Error connecting	to the 2nd RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
 			// error
@@ -263,11 +274,13 @@ void TDTBCI::Initialize()
     WideString TDTgainTag = "TDTgain";
     WideString nPerTag = "nPer";
     WideString ECGgainTag = "ECGscale";
-    WideString ECGchannelTag = "ECGchannel";
+    WideString ECGchannelTag = "ECGch";
 	
 	//make sure	we are connected
-	
-	if (Parameter("nProcessorsBoard2") > 0)
+	devAddr[0] = ZBus->GetDeviceAddr(45,1);
+    devAddr[1] = ZBus->GetDeviceAddr(45,2);
+
+	if (Parameter("nProcessorsBoard2") > 0 && devAddr[1] > 2 )
         use2RX5 = true;
     else
         use2RX5 = false;
@@ -277,7 +290,8 @@ void TDTBCI::Initialize()
         useECG = false;
     else
         useECG = true;
-        
+
+
 	// set the number of channels
 	// the real	number of channels should be a multiple	of four
     int	valuesToRead = mSampleBlockSize*16;
@@ -338,6 +352,7 @@ void TDTBCI::Initialize()
 
         if (!RPcoX1->SetTagVal(ECGgainTag.c_bstr(), ECGgain))
             bcierr << "Error setting ECG gain tag."<<endl;
+        bciout <<"ECGgain: "<<ECGgain<<endl;
     }
 	
     // initialize the data buffers
@@ -523,8 +538,8 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
             else if (ch >= 48 && ch < 64)
                 outputSignal->SetValue(ch%16 + 48, sample, dataD[curSample]);
 
-            if (useECG)
-                outputSignal->SetValue(ECGchannel, sample, ECGdata[curSample]);
+            if (useECG && (ch == (ECGchannel-1)))
+                outputSignal->SetValue(ECGchannel-1, sample, ECGdata[sample]);
 
             if (nProcessors2 == 0)
                 continue;
