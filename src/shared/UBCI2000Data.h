@@ -91,6 +91,7 @@ class BCI2000DATA
   std::vector<float> mSourceOffsets,
                      mSourceGains;
   unsigned long      mCachedSample;
+  unsigned char*     mpFileBuffer;
 
   unsigned long      mSampleNumber;      // samples in this run
   std::vector<unsigned long>

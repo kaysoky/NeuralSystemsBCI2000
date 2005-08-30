@@ -30,7 +30,8 @@ using namespace std;
 // Returns:    N/A
 // **************************************************************************
 BCI2000DATA::BCI2000DATA()
-: mpStatevector( NULL )
+: mpStatevector( NULL ),
+  mpFileBuffer( NULL )
 {
   ResetTotal();
 }
@@ -88,6 +89,7 @@ void BCI2000DATA::ResetTotal()
 BCI2000DATA::~BCI2000DATA()
 {
   delete mpStatevector;
+  delete[] mpFileBuffer;
 }
 
 // **************************************************************************
@@ -116,7 +118,12 @@ BCI2000DATA::Initialize( const char* inNewFilename, int inBufSize )
     return ret;
   CalculateSampleNumber();
 
-  mFile.rdbuf()->pubsetbuf( NULL, inBufSize );
+  delete[] mpFileBuffer;
+  if( inBufSize == 0 )
+    mpFileBuffer = NULL;
+  else
+    mpFileBuffer = new char[ inBufSize ];
+  mFile.rdbuf()->pubsetbuf( mpFileBuffer, inBufSize );
   mFile.seekg( mHeaderLength, ios_base::beg );
   ReadSample();
   if( mFile )
