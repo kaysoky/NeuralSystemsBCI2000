@@ -104,6 +104,7 @@ bool TfMain::Process()
         {
                 Application->MessageBox("Error opening input file", "Error", MB_OK);
                 delete bci2000data;
+                bci2000data = NULL;
                 return false;
         }
 
@@ -474,8 +475,9 @@ void TfMain::ProcessCommandLineOptions()
 
   for( int i = 1; i <= ParamCount(); ++i )
   {
-    char* option = new char[ ParamStr( i ).Length() + 1 ];
-    ::strcpy( option, ParamStr( i ).c_str() );
+    char* optionBuffer = new char[ ParamStr( i ).Length() + 1 ],
+        * option = optionBuffer;
+    ::strcpy( optionBuffer, ParamStr( i ).c_str() );
     switch( *option )
     {
       case '\0':
@@ -531,7 +533,7 @@ void TfMain::ProcessCommandLineOptions()
         eSourceFile->Text = option;
         FileList->Items->Add( option );
     }
-    delete[] option;
+    delete[] optionBuffer;
   }
   if( batchMode )
   {
