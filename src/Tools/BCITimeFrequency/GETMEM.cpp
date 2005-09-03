@@ -291,7 +291,7 @@ int MEM::get_mem( void )
 
         return( 1 );
 
-skip:   for(i=0;i<points;i++)   pwr[i]= err;
+skip:   for(i=0;i<MAXBINS;i++)   pwr[i]= err;
         return(err);
 }
 
