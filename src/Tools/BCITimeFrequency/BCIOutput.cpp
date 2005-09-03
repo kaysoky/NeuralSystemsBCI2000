@@ -504,6 +504,7 @@ void __fastcall BCIOutput::PrintVals( int print_flag )
                                         fprintf(fileptr,"\n");
                                 }
                                 fclose(fileptr);
+                                fileptr = NULL;
                         }
                         break;
          }
