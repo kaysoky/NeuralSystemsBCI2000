@@ -36,7 +36,7 @@ class BCI2000DATA
   int                GetNumChannels() const       { return mChannels; }
   float              GetSamplingRate() const      { return mSamplingRate; }
   const std::string& GetFileFormatVersion() const { return mFileFormatVersion; }
-  const SignalType&  GetSignalType() const        { return mSignalCache.Type(); }
+  const SignalType&  GetSignalType() const        { return mSignalType; }
   unsigned long      GetNumSamples() const        { return mSampleNumber; }
   bool               Initialized() const          { return mInitialized; }
 
@@ -67,11 +67,12 @@ class BCI2000DATA
 
   int                ReadHeader();
   void               CalculateSampleNumber();
-  void               CacheSample( unsigned long sample );
-  void               ReadSample();
 
   int                DetermineRunNumber( unsigned long sample );
 
+  static GenericSignal::value_type ReadValueInt16( const char* );
+  static GenericSignal::value_type ReadValueInt32( const char* );
+  static GenericSignal::value_type ReadValueFloat32( const char* );
 
   PARAMLIST          mParamlist;
   STATELIST          mStatelist;
@@ -79,24 +80,30 @@ class BCI2000DATA
   bool               mInitialized,
                      mInitializedTotal;
 
+  std::ifstream      mFile;
   std::string        mFilename,
                      mFileFormatVersion;
-  std::ifstream      mFile;
-  GenericSignal      mSignalCache;
+                     
+  SignalType         mSignalType;
+  int                mDataSize;
+  GenericSignal::value_type ( *mfpReadValueBinary )( const char* );
+
   int                mChannels,
                      mHeaderLength,
-                     mStatevectorLength,
-                     mDataSize;
+                     mStatevectorLength;
   float              mSamplingRate;
   std::vector<float> mSourceOffsets,
                      mSourceGains;
-  unsigned long      mCachedSample;
-  unsigned char*     mpFileBuffer;
 
   unsigned long      mSampleNumber;      // samples in this run
   std::vector<unsigned long>
                      mSampleNumberRun;   // samples in a particular run
   unsigned long      mSampleNumberTotal; // samples in this dataset
+
+  char*              mpBuffer;
+  int                mBufferSize,
+                     mBufferBegin,
+                     mBufferEnd;
 };
 
 #endif // UBCI2000DataH

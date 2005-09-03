@@ -23,6 +23,7 @@
 
 using namespace std;
 
+
 // **************************************************************************
 // Function:   BCI2000DATA
 // Purpose:    The constructor for the BCI2000DATA object
@@ -31,7 +32,8 @@ using namespace std;
 // **************************************************************************
 BCI2000DATA::BCI2000DATA()
 : mpStatevector( NULL ),
-  mpFileBuffer( NULL )
+  mpBuffer( NULL ),
+  mfpReadValueBinary( NULL )
 {
   ResetTotal();
 }
@@ -54,16 +56,21 @@ void BCI2000DATA::Reset()
   mFilename = "";
   mFile.close();
   mFile.clear();
+  delete mpBuffer;
+  mpBuffer = NULL;
+  mBufferSize = 0;
+  mBufferBegin = 0;
+  mBufferEnd = 0;
 
   mFileFormatVersion = "n/a";
   mChannels = 0;
   mHeaderLength = 0;
   mStatevectorLength = 0;
   mSamplingRate = 1;
-  mDataSize = 1;
-  mSignalCache = GenericSignal( 0, 0, SignalType::int16 );
+  mSignalType = SignalType::int16;
+  mDataSize = 2;
+  mfpReadValueBinary = ReadValueInt16;
   mSampleNumber = 0;
-  mCachedSample = -1;
 }
 
 // **************************************************************************
@@ -89,7 +96,7 @@ void BCI2000DATA::ResetTotal()
 BCI2000DATA::~BCI2000DATA()
 {
   delete mpStatevector;
-  delete[] mpFileBuffer;
+  delete mpBuffer;
 }
 
 // **************************************************************************
@@ -118,16 +125,10 @@ BCI2000DATA::Initialize( const char* inNewFilename, int inBufSize )
     return ret;
   CalculateSampleNumber();
 
-  delete[] mpFileBuffer;
-  if( inBufSize == 0 )
-    mpFileBuffer = NULL;
-  else
-    mpFileBuffer = new char[ inBufSize ];
-  mFile.rdbuf()->pubsetbuf( mpFileBuffer, inBufSize );
-  mFile.seekg( mHeaderLength, ios_base::beg );
-  ReadSample();
-  if( mFile )
-    mCachedSample = 0;
+  mBufferSize = inBufSize;
+  mpBuffer = new char[ mBufferSize ];
+  mBufferBegin = 0;
+  mBufferEnd = 0;
 
   const float defaultOffset = 0.0;
   mSourceOffsets.clear();
@@ -153,7 +154,7 @@ BCI2000DATA::Initialize( const char* inNewFilename, int inBufSize )
 // **************************************************************************
 // Function:   CalculateSampleNumber
 // Purpose:    Calculates the number of samples in the file
-//             Assumes that Initialize() has been called before
+//             Assumes that ReadHeader() has been called before
 //             if there is an unforeseen problem, number of samples is set to 0
 // Parameters: N/A
 // Returns:    N/A
@@ -164,8 +165,10 @@ BCI2000DATA::CalculateSampleNumber()
   mSampleNumber = 0;
   if( mFile.is_open() )
   {
+    streampos curPos = mFile.tellg();
     mFile.seekg( 0, ios_base::end );
     size_t dataSize = mFile.tellg() - mHeaderLength;
+    mFile.seekg( curPos, ios_base::beg );
     mSampleNumber = dataSize / ( mDataSize * mChannels + mStatevectorLength );
   }
 }
@@ -395,23 +398,33 @@ BCI2000DATA::ReadHeader()
   linestream >> mHeaderLength >> element >> mChannels;
   if( element != "SourceCh=" )
     return BCI2000ERR_MALFORMEDHEADER;
-  mSignalCache = GenericSignal( mChannels, 1, SignalType::int16 );
 
   linestream >> element >> mStatevectorLength;
   if( element != "StatevectorLen=" )
     return BCI2000ERR_MALFORMEDHEADER;
 
+  mSignalType = SignalType::int16;
   if( linestream >> element )
   {
     if( element != "DataFormat=" )
       return BCI2000ERR_MALFORMEDHEADER;
     SignalType signalType;
-    if( linestream >> signalType )
-      mSignalCache = GenericSignal( mChannels, 1, signalType );
-    else
+    if( !linestream >> mSignalType )
       return BCI2000ERR_MALFORMEDHEADER;
   }
-  mDataSize = mSignalCache.Type().Size();
+  mDataSize = mSignalType.Size();
+  switch( mSignalType )
+  {
+    case SignalType::int16:
+      mfpReadValueBinary = ReadValueInt16;
+      break;
+    case SignalType::int32:
+      mfpReadValueBinary = ReadValueInt32;
+      break;
+    case SignalType::float32:
+      mfpReadValueBinary = ReadValueFloat32;
+      break;
+  }
 
   // now go through the header and read all parameters and states
   getline( mFile >> ws, line, '\n' );
@@ -513,8 +526,40 @@ BCI2000DATA::Value( int channel, unsigned long sample )
 GenericSignal::value_type
 BCI2000DATA::ReadValue( int inChannel, unsigned long inSample )
 {
-  CacheSample( inSample );
-  return mSignalCache( inChannel, 0 );
+  long filepos = GetHeaderLength()
+               + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() )
+               + inChannel * mDataSize;
+  if( filepos < mBufferBegin || filepos + mDataSize >= mBufferEnd )
+  {
+    if( !mFile.seekg( filepos, ios_base::beg ) )
+      throw "Could not seek to sample position";
+
+    mBufferBegin = filepos;
+    mBufferEnd = mBufferBegin;
+    while( mFile && ( mBufferEnd - mBufferBegin < mDataSize ) )
+      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
+                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
+  }
+  return mfpReadValueBinary( mpBuffer + filepos - mBufferBegin );
+}
+
+// These functions are not endianness-aware.
+GenericSignal::value_type
+BCI2000DATA::ReadValueInt16( const char* p )
+{
+  return *reinterpret_cast<const __int16*>( p );
+}
+
+GenericSignal::value_type
+BCI2000DATA::ReadValueInt32( const char* p )
+{
+  return *reinterpret_cast<const __int32*>( p );
+}
+
+GenericSignal::value_type
+BCI2000DATA::ReadValueFloat32( const char* p )
+{
+  return *reinterpret_cast<const float*>( p );
 }
 
 // **************************************************************************
@@ -535,7 +580,6 @@ BCI2000DATA::ReadValue( int inChannel, unsigned long inSample, int inRun )
   return ReadValue( inChannel, inSample );
 }
 
-
 // **************************************************************************
 // Function:   ReadStateVector
 // Purpose:    reads the statevector for a given sample
@@ -546,7 +590,22 @@ BCI2000DATA::ReadValue( int inChannel, unsigned long inSample, int inRun )
 void
 BCI2000DATA::ReadStateVector( unsigned long inSample )
 {
-  CacheSample( inSample );
+  long filepos = GetHeaderLength()
+               + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() )
+               + mDataSize * GetNumChannels();
+  if( filepos < mBufferBegin || filepos + GetStateVectorLength() >= mBufferEnd )
+  {
+    if( !mFile.seekg( filepos, ios_base::beg ) )
+      throw "Could not seek to sample position";
+
+    mBufferBegin = filepos;
+    mBufferEnd = mBufferBegin;
+    while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
+      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
+                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
+  }
+  ::memcpy( mpStatevector->GetStateVectorPtr(), mpBuffer + filepos - mBufferBegin,
+                                                          GetStateVectorLength() );
 }
 
 // **************************************************************************
@@ -563,33 +622,4 @@ BCI2000DATA::ReadStateVector( unsigned long inSample, int inRun )
   ReadStateVector( inSample );
 }
 
-// Seek to a sample's file position, and read its signal and state vector.
-// After reading the file stream will point to the next sample; for sequential
-// reading, istream::seekg() will not be called.
-void
-BCI2000DATA::CacheSample( unsigned long inSample )
-{
-  if( inSample >= mSampleNumber )
-    inSample = mSampleNumber - 1;
-  if( inSample < 0 )
-    inSample = 0;
-
-  long moveBy = inSample - mCachedSample;
-  if( moveBy != 0 )
-  {
-    if( moveBy != 1 )
-      mFile.seekg( ( moveBy - 1 ) * ( mDataSize * mChannels + mStatevectorLength ), ios_base::cur );
-    ReadSample();
-    mCachedSample = inSample;
-  }
-}
-
-// Read signal and state vector from the current file position into the cache.
-void
-BCI2000DATA::ReadSample()
-{
-  for( size_t i = 0; i < mSignalCache.Channels(); ++i )
-     mSignalCache.ReadValueBinary( mFile, i, 0 );
-  mpStatevector->ReadBinary( mFile );
-}
 
