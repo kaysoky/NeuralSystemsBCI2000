@@ -2,7 +2,7 @@ function [ signal, varargout ] = load_bcimat( filename, varargin )
 %LOAD_BCIMAT Load a matlab file written by bci_stream2mat.
 %
 %  [ signal, state1, state2, ... ] =
-%     load_bcimat( 'filename', output_dimensions, 'state1', 'state2', ... )
+%     myload_bcimat( 'filename', output_dimensions, 'state1', 'state2', ... )
 %
 %  loads signal and state data from the file given in the first argument.
 %
@@ -48,10 +48,10 @@ load( filename );
 
 switch outdim
   case 2
-    signal = zeros( size( Index.Signal, 2 ) * size( Data, 2 ), size( Index.Signal, 1 ) );
+    signal = zeros( size( Index.Signal, 2 ) * size( Data, 2 ), size( Index.Signal, 1 ), 'single' );
     for( i = 1 : size( Index.Signal, 1 ) )
       signal( :, i ) = reshape( Data( Index.Signal( i, : ), : ), [], 1 );
-    end
+    end  
     for( i = 1 : num_states )
       state = [];
       idx = eval( [ 'Index.' varargin{ i + 1 } ] ); 
