@@ -12,6 +12,7 @@
 #define UGenericSignalH
 
 #include <vector>
+#include <iostream>
 #include "UBCIError.h"
 
 class SignalType
@@ -172,37 +173,37 @@ class GenericSignal
     std::vector<std::vector<value_type> > mValues;
 };
 
-inline std::ostream& operator<<( class std::ostream& os, const SignalType& s )
+inline std::ostream& operator<<( std::ostream& os, const SignalType& s )
 {
   s.WriteToStream( os );
   return os;
 }
 
-inline std::istream& operator>>( class std::istream& is, SignalType& s )
+inline std::istream& operator>>( std::istream& is, SignalType& s )
 {
   s.ReadFromStream( is );
   return is;
 }
 
-inline std::ostream& operator<<( class std::ostream& os, const SignalProperties& s )
+inline std::ostream& operator<<( std::ostream& os, const SignalProperties& s )
 {
   s.WriteToStream( os );
   return os;
 }
 
-inline std::istream& operator>>( class std::istream& is, SignalProperties& s )
+inline std::istream& operator>>( std::istream& is, SignalProperties& s )
 {
   s.ReadFromStream( is );
   return is;
 }
 
-inline std::ostream& operator<<( class std::ostream& os, const GenericSignal& s )
+inline std::ostream& operator<<( std::ostream& os, const GenericSignal& s )
 {
   s.WriteToStream( os );
   return os;
 }
 
-inline std::istream& operator>>( class std::istream& is, GenericSignal& s )
+inline std::istream& operator>>( std::istream& is, GenericSignal& s )
 {
   s.ReadFromStream( is );
   return is;
