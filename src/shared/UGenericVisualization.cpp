@@ -35,7 +35,7 @@
 
 #include <iostream>
 #include <string>
-#include <assert>
+#include <sstream>
 
 using namespace std;
 
@@ -127,7 +127,9 @@ GenericVisualization::Send( const GenericSignal* s )
 bool
 GenericVisualization::SendCfg2Operator( int sourceID, int cfgID, int cfgValue )
 {
-  return SendCfg2Operator( sourceID, cfgID, AnsiString( cfgValue ).c_str() );
+  ostringstream oss;
+  oss << cfgValue;
+  return SendCfg2Operator( sourceID, cfgID, oss.str().c_str() );
 }
 
 bool
