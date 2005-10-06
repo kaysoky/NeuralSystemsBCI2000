@@ -114,7 +114,24 @@ class GenericVisualization : public std::ostream
     : std::ostream( 0 ), mSourceID( sourceID ), mBuf( this )
     { this->init( &mBuf ); }
 
-    ~GenericVisualization() {}
+    GenericVisualization( const GenericVisualization& v )
+    : std::ostream( 0 ), mSourceID( v.mSourceID ), mBuf( this )
+    {
+      this->init( &mBuf );
+      mBuf.str( v.mBuf.str() );
+    }
+
+    GenericVisualization& operator=( const GenericVisualization& v )
+    {
+      if( this != &v )
+      {
+        mSourceID = v.mSourceID;
+        mBuf.str( v.mBuf.str() );
+      }
+      return *this;
+    }
+
+    ~GenericVisualization() { mBuf.str( "" ); }
 
     // Setters and Getters.
     void SetSourceID( int sourceID ) { mSourceID = sourceID; }
