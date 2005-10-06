@@ -526,21 +526,7 @@ BCI2000DATA::Value( int channel, unsigned long sample )
 GenericSignal::value_type
 BCI2000DATA::ReadValue( int inChannel, unsigned long inSample )
 {
-  long filepos = GetHeaderLength()
-               + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() )
-               + inChannel * mDataSize;
-  if( filepos < mBufferBegin || filepos + mDataSize >= mBufferEnd )
-  {
-    if( !mFile.seekg( filepos, ios_base::beg ) )
-      throw "Could not seek to sample position";
-
-    mBufferBegin = filepos;
-    mBufferEnd = mBufferBegin;
-    while( mFile && ( mBufferEnd - mBufferBegin < mDataSize ) )
-      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
-                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
-  }
-  return mfpReadValueBinary( mpBuffer + filepos - mBufferBegin );
+  return mfpReadValueBinary( BufferSample( inSample ) + mDataSize * inChannel );
 }
 
 // These functions are not endianness-aware.
@@ -590,22 +576,9 @@ BCI2000DATA::ReadValue( int inChannel, unsigned long inSample, int inRun )
 void
 BCI2000DATA::ReadStateVector( unsigned long inSample )
 {
-  long filepos = GetHeaderLength()
-               + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() )
-               + mDataSize * GetNumChannels();
-  if( filepos < mBufferBegin || filepos + GetStateVectorLength() >= mBufferEnd )
-  {
-    if( !mFile.seekg( filepos, ios_base::beg ) )
-      throw "Could not seek to sample position";
-
-    mBufferBegin = filepos;
-    mBufferEnd = mBufferBegin;
-    while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
-      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
-                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
-  }
-  ::memcpy( mpStatevector->GetStateVectorPtr(), mpBuffer + filepos - mBufferBegin,
-                                                          GetStateVectorLength() );
+  ::memcpy( mpStatevector->GetStateVectorPtr(),
+            BufferSample( inSample ) + mDataSize * GetNumChannels(),
+            GetStateVectorLength() );
 }
 
 // **************************************************************************
@@ -622,4 +595,24 @@ BCI2000DATA::ReadStateVector( unsigned long inSample, int inRun )
   ReadStateVector( inSample );
 }
 
+const char*
+BCI2000DATA::BufferSample( unsigned long inSample )
+{
+  if( inSample >= GetNumSamples() )
+    throw __FUNC__ ": Sample position exceeds file size";
+  long filepos = GetHeaderLength()
+               + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() );
+  if( filepos < mBufferBegin || filepos + mDataSize * GetNumChannels() + GetStateVectorLength() >= mBufferEnd )
+  {
+    if( !mFile.seekg( filepos, ios_base::beg ) )
+      throw __FUNC__ ": Could not seek to sample position";
+
+    mBufferBegin = filepos;
+    mBufferEnd = mBufferBegin;
+    while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
+      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
+                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
+  }
+  return mpBuffer + filepos - mBufferBegin;
+}
 

@@ -67,6 +67,7 @@ class BCI2000DATA
 
   int                ReadHeader();
   void               CalculateSampleNumber();
+  const char*        BufferSample( unsigned long sample );
 
   int                DetermineRunNumber( unsigned long sample );
 
