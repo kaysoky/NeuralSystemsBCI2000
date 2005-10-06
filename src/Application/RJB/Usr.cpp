@@ -2,7 +2,6 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
-
 #include "Usr.h"
 #include "UParameter.h"
 #include "Localization.h"
@@ -14,9 +13,17 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
+using namespace std;
+
 //---------------------------------------------------------------------------
 Usr::Usr()
-: mpForm( NULL ),
+: limit_right( 0 ),
+  limit_left( 0 ),
+  limit_top( 0 ),
+  limit_bottom( 0 ),
+  mpForm( NULL ),
+  mTargetWidth( 0.0 ),
   mRotateBy( 0.0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
@@ -30,10 +37,12 @@ Usr::Usr()
     "// User Window Height",
   "UsrTask int CursorSize= 25 0 0 1000 "
     "// User Window Cursor Size",
+  "UsrTask float TargetWidth= 25 0 0 32767 "
+    "// Width of Targets",
   "UsrTask float RotateBy= 0 0 0 0 "
     "// Counterclockwise rotation of feedback view in units of 2 Pi",
-  "UsrTask int TargetType= 0 0 0 1 "
-    "// 0=Targets, 1=YES/NO (enumeration)",
+  "UsrTask int TargetType= 0 0 0 2 "
+    "// 0=Targets, 1=YES/NO, 2=Free Choice (enumeration)",
   "UsrTask int YesNoCorrect= 0 0 0 1 "
     "// Yes or No is target word (0=Yes, 1=No) (enumeration)",
   "UsrTask int YesNoOnTime= 1 0 0 0 "
@@ -45,6 +54,7 @@ Usr::Usr()
 //--------------------------------------------------------------
 Usr::~Usr()
 {
+  DeleteChoiceTargets();
   delete mpForm;
 }
 //---------------------------------------------------------------------------
@@ -66,7 +76,7 @@ void Usr::Initialize()
   Wyl= Parameter("WinHeight");
   CursorSize= Parameter("CursorSize");
   mpForm->Cursor->Brush->Color= clBlack;
-
+  mTargetWidth = Parameter( "TargetWidth" );
   mRotateBy = Parameter( "RotateBy" );
 
   // do we want targets or YES/NO ?
@@ -75,20 +85,54 @@ void Usr::Initialize()
   YesNoOnTime =  MeasurementUnits::ReadAsTime( Parameter( "YesNoOnTime" ) );
   YesNoOffTime = MeasurementUnits::ReadAsTime( Parameter( "YesNoOffTime" ) );
 
+  TColor choiceColors[] =
+  {
+    clLime,
+    clRed,
+    clBlue,
+    clFuchsia
+  };
+  const maxNumTargets = sizeof( choiceColors ) / sizeof( *choiceColors );
+  int numChoiceTargets = 0;
+  if( TargetType == TYPE_CHOICE )
+    numChoiceTargets = Parameter( "NumberTargets" );
+  if( numChoiceTargets > maxNumTargets )
+  {
+    bcierr << "not ready for > "
+           << maxNumTargets
+           << " target choices."
+           << endl;
+    numChoiceTargets = 1;
+  }
+
+  DeleteChoiceTargets();
+  for( int i = 0; i < numChoiceTargets; ++i )
+  {
+    TShape* target = new TShape( NULL );
+    target->Parent = mpForm;
+    target->Pen->Assign( mpForm->Target->Pen );
+    target->SendToBack();
+    target->Top = targy[ i + 1 ];
+    target->Left = targx[ i + 1 ];
+    target->Height = targsizey[ i + 1 ];
+    target->Width = targsizex[ i + 1 ];
+    Rotate( target, mRotateBy );
+    target->Brush->Color = choiceColors[ i ];
+    target->Visible = false;
+    mChoiceTargets.push_back( target );
+  }
 
   // define certain things that depend on whether we have targets or YES/NO
-  if (TargetType == 0)
+  if (TargetType == TYPE_TARGET)
     {
-    mpForm->Target->Visible=false;
-    mpForm->Target2->Visible=false;
-    mpForm->Cursor->Shape=stRectangle;
+   mpForm->Cursor->Shape=stRectangle;
     }
   else
     {
-    mpForm->Target->Visible=false;
-    mpForm->Target2->Visible=false;
     mpForm->Cursor->Shape=stCircle;
     }
+  mpForm->Target->Hide();
+  mpForm->Target2->Hide();
 
   // define target and no-target words based on whether yes or no is correct
   if (YesNoCorrect == 0)
@@ -111,8 +155,8 @@ void Usr::Initialize()
   mpForm->Cursor->Width=      CursorSize;
 
   // CHECK # targets here !!! Needs to be 2 !!
-  if ((TargetType == 1) && (Parameter("NumberTargets") != 2))
-    bcierr << "Number of targets HAS TO BE 2 in Yes/No mode !!" << std::endl;
+  if ((TargetType == TYPE_YESNO) && (Parameter("NumberTargets") != 2))
+    bcierr << "Number of targets HAS TO BE 2 in Yes/No mode !!" << endl;
 
   // YES/NO text for the upper target
   mpForm->TargetText1->Visible=false;
@@ -132,10 +176,15 @@ void Usr::Initialize()
   mpForm->ResultText->Top=abs(Wyl/2+mpForm->ResultText->Font->Height/2);
   Rotate( mpForm->ResultText, mRotateBy );
 
+  mpForm->tT->AutoSize = true;
+  mpForm->tT->Width = mpForm->ClientWidth;
   mpForm->tT->Font->Height=-Wyl*3/4;
   mpForm->Canvas->Font=mpForm->tT->Font;
-  mpForm->tT->Left=abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->tT->Caption)/2);
-  mpForm->tT->Top=abs(mpForm->tT->Font->Height/8);
+  while( mpForm->Canvas->TextWidth( mpForm->tT->Caption ) > mpForm->ClientWidth )
+    mpForm->Canvas->Font->Height = ( mpForm->Canvas->Font->Height * 9 ) / 10;
+  mpForm->tT->Font = mpForm->Canvas->Font;
+  mpForm->tT->Left = ( mpForm->ClientWidth - mpForm->Canvas->TextWidth( mpForm->tT->Caption ) ) / 2;
+  mpForm->tT->Top = ( mpForm->ClientHeight - mpForm->Canvas->TextHeight( mpForm->tT->Caption ) ) / 2;
 
   mpForm->tO->Font->Height=-Wyl*3/4;
   mpForm->Canvas->Font=mpForm->tO->Font;
@@ -148,6 +197,9 @@ void Usr::Initialize()
   limit_bottom= Wyl; //  - CursorSize/2;
   limit_left= HalfCursorSize;  //  0; CursorSize/2;
   limit_right= Wxl - HalfCursorSize; // - CursorSize/2;
+
+  Scale( (float)0x7fff, (float)0x7fff );
+  ComputeTargets();
 
   mpForm->Show();
 }
@@ -172,42 +224,66 @@ void Usr::GetLimits(float *right, float *left, float *top, float *bottom )
         *(top)   = limit_top;
         *(bottom)= limit_bottom;
 }
-
 //----------------------------------------------------------------------------
 void Usr::PutCursor(float x, float y, int cursorstate )
 {
-TColor color;
+    TColor color;
 
-        x*= scale_x;
-        y*= scale_y;
+    x *= scale_x;
+    y *= scale_y;
 
-        if( y <= limit_top )    y= limit_top;
-        if( y >= limit_bottom ) y= limit_bottom;
-        if( x <= limit_left )   x= limit_left;
-        if( x >= limit_right )  x= limit_right;
+    if( y <= limit_top )    y= limit_top;
+    if( y >= limit_bottom ) y= limit_bottom;
+    if( x <= limit_left )   x= limit_left;
+    if( x >= limit_right )  x= limit_right;
 
-        Rotate( mpForm->Cursor, -mRotateBy );
-        mpForm->Cursor->Top=  y - HalfCursorSize;
-        mpForm->Cursor->Left= x - HalfCursorSize;
-        Rotate( mpForm->Cursor, mRotateBy );
+    Rotate( mpForm->Cursor, -mRotateBy );
+    mpForm->Cursor->Top=  y - HalfCursorSize;
+    mpForm->Cursor->Left= x - HalfCursorSize;
+    Rotate( mpForm->Cursor, mRotateBy );
 
-        if (cursorstate == CURSOR_ON)      color=clRed;
-        if (cursorstate == CURSOR_OFF)     color=clBlack;
-        if (cursorstate == CURSOR_RESULT)
-           {
-           if (TargetType == 0)            // switch the color to yellow for targets
-              color=clYellow;
-           if (TargetType == 1)            // leave them red for YES/NO
-              color=clBlack;
-           }
-
-        mpForm->Cursor->Brush->Color= color;
-        // turn make the cursor visible, except if we are
-        // in the reward period and have YES/NO targets
-        if ((cursorstate == CURSOR_RESULT) && (TargetType == 1))
-           mpForm->Cursor->Visible=false;
-        else
-           mpForm->Cursor->Visible=true;
+    switch( cursorstate )
+    {
+      case CURSOR_ON:
+        switch( TargetType )
+        {
+          case TYPE_CHOICE:
+              color = clYellow;
+              break;
+            case TYPE_TARGET:
+            case TYPE_YESNO:
+            default:
+            color = clRed;
+        }
+        break;
+        
+      case CURSOR_RESULT:
+        switch( TargetType )
+        {
+          case TYPE_TARGET:
+          case TYPE_CHOICE:
+            color = clYellow;
+            break;
+          case TYPE_YESNO:
+          default:
+            color = clBlack;
+            break;
+        }
+        break;
+        
+       case CURSOR_OFF:
+       default:
+        color = clBlack;
+        break;
+      }
+        
+      mpForm->Cursor->Brush->Color= color;
+      // turn make the cursor visible, except if we are
+      // in the reward period and have YES/NO targets
+      if ((cursorstate == CURSOR_RESULT) && (TargetType == TYPE_YESNO))
+        mpForm->Cursor->Visible=false;
+      else
+        mpForm->Cursor->Visible=true;
 }
 
 
@@ -217,16 +293,17 @@ void Usr::PreRunInterval(int time)
  if (time == 0)
     {
     Clear();
-    if (TargetType == 0)
-       {
-       mpForm->tPreRunIntervalText->Font->Height=-Wyl*1/6;
-       mpForm->tPreRunIntervalText->Caption= LocalizableString( "Get Ready ..." );
-       }
-    if (TargetType == 1)
+     if (TargetType == TYPE_YESNO)
        {
        mpForm->tPreRunIntervalText->Font->Height=-Wyl*2/4;
        mpForm->tPreRunIntervalText->Caption=TargetWord.UpperCase();
        }
+       else
+       {
+       mpForm->tPreRunIntervalText->Font->Height=-Wyl*1/6;
+       mpForm->tPreRunIntervalText->Caption= LocalizableString( "Get Ready ..." );
+       }
+   
     mpForm->Canvas->Font=mpForm->tPreRunIntervalText->Font;
     mpForm->tPreRunIntervalText->Left=
       abs(Wxl/2-mpForm->Canvas->TextWidth(mpForm->tPreRunIntervalText->Caption)/2);
@@ -241,14 +318,14 @@ void Usr::PreRunInterval(int time)
 void Usr::Outcome(int time, int result)
 {
  // do not do anything in this period if we have targets
- if (TargetType == 0) return;
+ if (TargetType != TYPE_YESNO) return;
 
  // if we have a YES/NO display, flash the selected word
  if (time == 0)
     {
     // turn off targets
-    mpForm->Target->Visible=false;
-    mpForm->Target2->Visible=false;
+    mpForm->Target->Hide();
+    mpForm->Target2->Hide();
     // turn off target words
     mpForm->TargetText1->Visible = false;
     mpForm->TargetText2->Visible = false;
@@ -296,46 +373,94 @@ void Usr::PutO( bool Tstate )
 //-----------------------------------------
 void Usr::PutTarget(int targetnumber, int targetstate )
 {
-TColor  color;
+  TColor  color = clBlack;
+  bool    visible = false;
+  switch( TargetType )
 
- // regular targets ?
- if (TargetType == 0)
-    {
-    mpForm->Target->Top=  targy[targetnumber];
-    mpForm->Target->Left= targx[targetnumber];
-    mpForm->Target->Height= targsizey[targetnumber];
-    mpForm->Target->Width = targsizex[targetnumber];
-    Rotate( mpForm->Target, mRotateBy );
-    if (targetstate == TARGET_RESULT) color=clYellow;
-    if (targetstate == TARGET_ON)     color=clRed;
-    if (targetstate == TARGET_OFF)    color=clBlack;
-    mpForm->Target->Brush->Color= color;
-    mpForm->Target->Visible=true;
-    }
+  {
 
- // YES/NO targets
- if (TargetType == 1)
-    {
-    // turn text on when target comes on (turn it off when display cleared)
-    if (targetstate == TARGET_ON)
+    case TYPE_TARGET:
+
+      visible = true;
+
+      switch( targetstate )
+
+      {
+        case TARGET_RESULT:
+          color = clYellow;
+          break;
+
+        case TARGET_ON:
+          color = clRed;
+          break;
+
+        case TARGET_OFF:
+        default:
+          color = clBlack;
+          break;
+      }
+      break;
+
+    case TYPE_CHOICE:
+      switch( targetstate )
+      {
+        case TARGET_RESULT:
+          visible = true;
+          color = clBlack;
+          break;
+
+        case TARGET_ON:
+          visible = false;
+          break;
+
+        case TARGET_OFF:
+        default:
+          visible = false;
+          break;
+      }
+      break;
+
+    default:
+      ;
+  }
+
+
+  // regular targets ?
+  switch( TargetType )
+  {
+    case TYPE_TARGET:
+    case TYPE_CHOICE:
+      mpForm->Target->Top = targy[targetnumber];
+      mpForm->Target->Left = targx[targetnumber];
+      mpForm->Target->Height = targsizey[targetnumber];
+      mpForm->Target->Width = targsizex[targetnumber];
+      Rotate( mpForm->Target, mRotateBy );
+      mpForm->Target->Brush->Color = color;
+      mpForm->Target->Visible = visible;
+      break;
+
+    // YES/NO targets
+    case TYPE_YESNO:
+      // turn text on when target comes on (turn it off when display cleared)
+      if (targetstate == TARGET_ON)
        {
        // turn on both targets
-       mpForm->Target->Top=  targy[1];
-       mpForm->Target->Left= targx[1];
-       mpForm->Target->Height= targsizey[1];
-       mpForm->Target->Width = targsizex[1];
-       mpForm->Target->Brush->Color= clGray;
+       mpForm->Target->Top = targy[ 1 ];
+       mpForm->Target->Left = targx[ 1 ];
+       mpForm->Target->Height = targsizey[ 1 ];
+       mpForm->Target->Width = targsizex[ 1 ];
+       mpForm->Target->Brush->Color = clGray;
        Rotate( mpForm->Target, mRotateBy );
+       mpForm->Target->Visible = true;
 
-       mpForm->Target2->Top=  targy[2];
-       mpForm->Target2->Left= targx[2];
-       mpForm->Target2->Height= targsizey[2];
-       mpForm->Target2->Width = targsizex[2];
-       mpForm->Target2->Brush->Color= clGray;
+       mpForm->Target2->Top = targy[ 2 ];
+       mpForm->Target2->Left = targx[ 2 ];
+       mpForm->Target2->Height = targsizey[ 2 ];
+       mpForm->Target2->Width = targsizex[ 2 ];
+       mpForm->Target2->Brush->Color = clGray;
        Rotate( mpForm->Target2, mRotateBy );
+       mpForm->Target2->Visible = true;
 
-       mpForm->Target->Visible=true;
-       mpForm->Target2->Visible=true;
        // define YES/NO texts for both targets
        if (targetnumber == 1)
           {
@@ -359,20 +484,23 @@ TColor  color;
        mpForm->TargetText1->Visible = true;
        mpForm->TargetText2->Visible = true;
        }
-    }
+      break;
+    default:
+      /* do nothing */;
+  }  
 }
 
 //-----------------------------------------------------------------------
 void Usr::Clear( void )
 {
-        mpForm->Target->Visible=false;
-        mpForm->Target2->Visible=false;
-        mpForm->Cursor->Visible=false;
-        mpForm->TargetText1->Visible= false;
-        mpForm->TargetText2->Visible= false;
-        mpForm->ResultText->Visible= false;
-        mpForm->tPreRunIntervalText->Visible=false;
-        // Refresh();
+  mpForm->Target->Hide();
+  mpForm->Target2->Hide();
+  mpForm->Cursor->Visible=false;
+  mpForm->TargetText1->Visible= false;
+  mpForm->TargetText2->Visible= false;
+  mpForm->ResultText->Visible= false;
+  mpForm->tPreRunIntervalText->Visible=false;
+  // Refresh();
 }
 
 //--------------------------------------------------------------------
@@ -462,5 +590,86 @@ Usr::Rotate( TControl* ioControl, float inAngle )
   ioControl->Height = ::floor( height2 + 0.5 );
 }
 
+void
+Usr::ComputeTargets()
+{
+  mNTargets = OptionalParameter( 2, "NumberTargets" );
+  float y_range= limit_bottom - limit_top;
 
+  for( int i=0;i<mNTargets;i++)
+  {
+    targx[i+1]=      limit_right - mTargetWidth;
+    targsizex[i+1]=  mTargetWidth;
+    targy[i+1]=      limit_top + i * y_range/mNTargets;
+    targsizey[i+1]=  y_range/mNTargets;
+    targy_btm[i+1]=  targy[i+1]+targsizey[i+1];
+  }
+}
+
+int
+Usr::TestCursorLocation( float x, float y, int inCurTarget )
+{
+  int CurrentOutcome = 0;
+
+  if( x * scale_x > ( limit_right - mTargetWidth ) )
+  {
+    PutCursor( x, y, CURSOR_RESULT );
+
+    CurrentOutcome= 1;
+
+    y *= scale_y;
+    if( y < targy[1] )              y= targy[1];
+    if( y > targy_btm[mNTargets] )   y= targy_btm[mNTargets];
+
+    for(int i=0;i<mNTargets;i++)
+    {
+            if( ( y > targy[i+1] ) && ( y<= targy_btm[i+1] ) )
+            {
+                    CurrentOutcome= i+1;
+            }
+    }
+
+    // flash outcome (only) when YES/NO (display the same for hits and misses)
+    Outcome(0, CurrentOutcome );
+
+    switch( TargetType )
+    {
+      case TYPE_CHOICE:
+        PutTarget( CurrentOutcome, TARGET_RESULT );
+        break;
+        
+      case TYPE_TARGET:
+      case TYPE_YESNO:
+      default:
+        if( CurrentOutcome == inCurTarget )
+          PutTarget( CurrentOutcome, TARGET_RESULT );
+        else
+          PutTarget( CurrentOutcome, TARGET_OFF );
+        break;
+    }
+  }
+  return CurrentOutcome;
+}
+
+void
+Usr::DeleteChoiceTargets()
+{
+  for( TargetContainer::const_iterator i = mChoiceTargets.begin(); i != mChoiceTargets.end(); ++i )
+    delete *i;
+  mChoiceTargets.clear();
+}
+
+void
+Usr::HideBackground()
+{
+  for( TargetContainer::const_iterator i = mChoiceTargets.begin(); i != mChoiceTargets.end(); ++i )
+    ( *i )->Hide();
+}
+
+void
+Usr::ShowBackground()
+{
+  for( TargetContainer::const_iterator i = mChoiceTargets.begin(); i != mChoiceTargets.end(); ++i )
+    ( *i )->Show();
+}
 

@@ -1,6 +1,6 @@
 object User: TUser
-  Left = 456
-  Top = 5
+  Left = 458
+  Top = 118
   BorderStyle = bsNone
   Caption = 'Usr'
   ClientHeight = 474
@@ -16,7 +16,7 @@ object User: TUser
   TextHeight = 13
   object Target2: TShape
     Left = 495
-    Top = 320
+    Top = 312
     Width = 25
     Height = 145
     Brush.Color = clBlack
@@ -33,6 +33,7 @@ object User: TUser
     Top = 8
     Width = 244
     Height = 447
+    AutoSize = False
     Caption = 'T'
     Font.Charset = ANSI_CHARSET
     Font.Color = clLime
@@ -47,6 +48,7 @@ object User: TUser
     Width = 311
     Height = 447
     Alignment = taCenter
+    AutoSize = False
     Caption = 'O'
     Color = clBlack
     Font.Charset = DEFAULT_CHARSET

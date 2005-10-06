@@ -33,7 +33,6 @@ TTask::TTask()
   limit_left( 0 ),
   limit_top( 0 ),
   limit_bottom( 0 ),
-  TargetWidth( 0 ),
   Ntargets( 0 ),
   targetcount( 0 ),
   ranflag( 0 ),
@@ -85,8 +84,6 @@ TTask::TTask()
         "Duration of PostTrial Feedback",
     "UsrTask int NumberTargets= 2 0 0 1023 // "
         "Number of Targets",
-    "UsrTask float TargetWidth= 25 0 0 32767 // "
-        "Width of Targets",
     "UsrTask int BaselineInterval= 1 0 0 2 // "
         "Intercept Computation 0 = none 1 = targets 2 = ITI (enumeration)",
     "UsrTask int TimeLimit= 180 180 0 1000 // "
@@ -122,6 +119,7 @@ TTask::TTask()
     "RestPeriod 2 0 0 0",
     "CursorPosX 16 0 0 0",
     "CursorPosY 16 0 0 0",
+    "Standby 1 0 0 0",
   END_STATE_DEFINITIONS
 
   LANGUAGES "French",
@@ -192,8 +190,7 @@ void TTask::Initialize()
   PtpDuration =      MeasurementUnits::ReadAsTime( Parameter( "PreTrialPause" ) );
   ItiDuration =      MeasurementUnits::ReadAsTime( Parameter( "ItiDuration" ) );
   OutcomeDuration =  MeasurementUnits::ReadAsTime( Parameter( "RewardDuration" ) );
-  Ntargets =         Parameter("NumberTargets");
-  TargetWidth =      Parameter( "TargetWidth" );
+  Ntargets =         Parameter( "NumberTargets" );
   BaselineInterval = Parameter( "BaselineInterval" );
   Resting =          Parameter( "RestingPeriod" );
 
@@ -237,8 +234,6 @@ void TTask::Initialize()
 
   mpUser->Initialize();
   mpUser->GetLimits( &limit_right, &limit_left, &limit_top, &limit_bottom );
-  mpUser->Scale( (float)0x7fff, (float)0x7fff );
-  ComputeTargets( Ntargets );
   targetcount= 0;
   ranflag= 0;
 
@@ -247,7 +242,7 @@ void TTask::Initialize()
   randseed= -ctime;
 
   cursor_x_start= limit_left;
-  cursor_y_start= ( limit_top + limit_bottom ) /2;
+  cursor_y_start= ( limit_top + limit_bottom ) / 2;
 
   ReadStateValues();
 
@@ -313,23 +308,6 @@ void TTask::WriteStateValues()
   State( "CursorPosY" ) = int( y_pos * mpUser->scale_y );
 }
 
-void TTask::ComputeTargets( int ntargs )
-{
-  int i;
-  float y_range;
-
-  y_range= limit_bottom - limit_top;
-
-  for(i=0;i<ntargs;i++)
-  {
-    mpUser->targx[i+1]=      limit_right - ( 1.0 * TargetWidth );
-    mpUser->targsizex[i+1]=  TargetWidth;
-    mpUser->targy[i+1]=      limit_top + i * y_range/ntargs;
-    mpUser->targsizey[i+1]=  y_range/ntargs;
-    mpUser->targy_btm[i+1]=  mpUser->targy[i+1]+mpUser->targsizey[i+1];
-  }
-}
-
 void TTask::ShuffleTargs( int ntargs )
 {
   for( int i = 0; i < ntargs; ++i )
@@ -369,52 +347,25 @@ int TTask::GetTargetNo( int ntargs )
 
 }
 
-
 void TTask::TestCursorLocation( float x, float y )
 {
-        int i;
-
-        x*= mpUser->scale_x;
-        y*= mpUser->scale_y;
-
-        if( x > ( limit_right - TargetWidth ) )
-        {
-                mpUser->PutCursor( x_pos, y_pos, CURSOR_RESULT );
-
-                CurrentOutcome= 1;
-
-                if( y < mpUser->targy[1] )              y= mpUser->targy[1];
-                if( y > mpUser->targy_btm[Ntargets] )   y= mpUser->targy_btm[Ntargets];
-
-                for(i=0;i<Ntargets;i++)
-                {
-                        if( ( y > mpUser->targy[i+1] ) && ( y<= mpUser->targy_btm[i+1] ) )
-                        {
-                                CurrentOutcome= i+1;
-
-                        }
-                }
-
-                // flash outcome (only) when YES/NO (display the same for hits and misses)
-                mpUser->Outcome(0, CurrentOutcome );
-
-                if( CurrentOutcome == CurrentTarget )
-                {
-                          mpUser->PutTarget(CurrentTarget, TARGET_RESULT );
-                          Hits++;
-                          HitOrMiss=true;
-                }
-                else
-                {
-                         mpUser->PutTarget(CurrentTarget, TARGET_OFF );
-                         Misses++;
-                         HitOrMiss=false;
-                }
-                CurrentFeedback= 0;
-                if( BaselineInterval == 1 )
-                        CurrentBaseline= 0;
-        }
-
+  CurrentOutcome = mpUser->TestCursorLocation( x, y, CurrentTarget );
+  if( CurrentOutcome > 0 )
+  {
+    if( CurrentOutcome == CurrentTarget )
+    {
+      Hits++;
+      HitOrMiss=true;
+    }
+    else
+    {
+      Misses++;
+      HitOrMiss=false;
+    }
+    CurrentFeedback = 0;
+    if( BaselineInterval == 1 )
+      CurrentBaseline = 0;
+  }
 }
 
 void TTask::UpdateSummary( void )
@@ -437,14 +388,13 @@ void TTask::UpdateSummary( void )
 
 void TTask::UpdateDisplays( void )
 {
-char            memotext[256];
-
  if (CurrentRunning == 0)
     CurrentRunning=0;
 
  if ((CurrentRunning == 0) && (OldRunning == 1))            // put the T up there on the transition from not suspended to suspended
     {
     mpUser->Clear();
+    mpUser->HideBackground();
     mpUser->PutT(true);
     CurrentIti=1;
     CurrentFeedback=0;
@@ -465,8 +415,7 @@ char            memotext[256];
        // ITI period just started
        if (ItiTime == 0)
           {
-          sprintf(memotext, "Run: %d; ITI -> new trial: %d", run, trial);
-          mVis.Send( memotext );
+          mVis << "Run: " << run << " ITI -> new trial: " << trial << endl;
           trial++;
           }
             // in case the run was longer than x seconds
@@ -476,28 +425,25 @@ char            memotext[256];
                {
                CurrentRunning=0;
                CurRunFlag= 1;
-               if (Hits+Misses > 0)
-                  {
-                  sprintf(memotext, "Run %d - %.1f%% correct", run, (float)Hits*100/((float)Hits+(float)Misses));
-                  mVis.Send( memotext );
-              //    fprintf( appl,"%s \n",memotext);
-                  }
+               if( Hits + Misses > 0 )
+               {
+                 mVis << "Run " << run << " - "
+                      << fixed << setprecision( 1 ) << Hits * 100. / ( Hits + Misses )
+                      << "% correct"
+                      << endl;
+               }
                else
-                  {
-                  mVis.Send( "No statistics for this run" );
-                  mVis.Send( "There were no trials" );
-                  }
-               sprintf(memotext, "Total Bits transferred: %.2f", bitrate.TotalBitsTransferred());
-               mVis.Send( memotext );
-            //   fprintf( appl,"%s \n",memotext);
-               sprintf(memotext, "Average Bits/Trial: %.2f", bitrate.BitsPerTrial());
-               mVis.Send( memotext );
-           //    fprintf( appl,"%s \n",memotext);
-               sprintf(memotext, "Average Bits/Minute: %.2f", bitrate.BitsPerMinute());
-               mVis.Send( memotext );
-            //   fprintf( appl,"%s \n",memotext);
-               mVis.Send( "**************************" );
-             //  fprintf( appl,"**************************\r\n");
+               {
+                  mVis << "No statistics for this run\n"
+                       << "There were no trials" << endl;
+               }
+               mVis << "Total Bits transferred: "
+                    << fixed << setprecision( 2 ) << bitrate.TotalBitsTransferred() << "\n"
+                    << "Average Bits/Trial: "
+                    << fixed << setprecision( 2 ) << bitrate.BitsPerTrial() << "\n"
+                    << "Average Bits/Minute: "
+                    << fixed << setprecision( 2 ) << bitrate.BitsPerMinute() << "\n"
+                    << "**************************" << endl;
                mpUser->Clear();
                mpUser->PutT(true);
                UpdateSummary();
@@ -514,8 +460,7 @@ char            memotext[256];
                  mHitAnnouncements[ CurrentTarget ].Play();
                else
                  mMissAnnouncements[ CurrentTarget ].Play();
-               sprintf(memotext, "%d hits %d missed", Hits, Misses);
-               mVis.Send( memotext );
+               mVis << Hits << " hits " << Misses << " missed" << endl;
                bitrate.Push(HitOrMiss);
                }
 
@@ -524,10 +469,7 @@ char            memotext[256];
 
  // new trial just started
  if ((CurrentTarget > 0) && (OldCurrentTarget == 0))
-    {
-    sprintf(memotext, "Target: %d", CurrentTarget);
-    mVis.Send( memotext );
-    }
+    mVis << "Target: " << CurrentTarget << endl;
 
  OldRunning=CurrentRunning;
  OldCurrentTarget=CurrentTarget;
@@ -563,20 +505,20 @@ void TTask::Iti( void )
         mpUser->Clear();
         ItiTime++;
 
-        if( ItiTime > ItiDuration )
+        // The "Standby" state will prolong the ITI indefinitely.
+        if( !State( "Standby" ) && ItiTime > ItiDuration )
         {
                 CurrentIti = 0;
                 ItiTime = 0;
                 CurrentTarget= GetTargetNo( Ntargets );
-                mpUser->PutTarget(CurrentTarget, TARGET_ON );
+                mpUser->PutTarget(CurrentTarget, Usr::TARGET_ON );
+                mpUser->ShowBackground();
                 mTaskAnnouncements[ CurrentTarget ].Play();
 
                 if( BaselineInterval == 1 )
                         CurrentBaseline= 1;
                 if( BaselineInterval == 2 )
                         CurrentBaseline= 0;
-
-
         }
 }
 
@@ -591,7 +533,7 @@ void TTask::Ptp( void )
                 y_pos= cursor_y_start;
                 if( mpUser->scale_x > 0.0 ) x_pos/= mpUser->scale_x;
                 if( mpUser->scale_y > 0.0 ) y_pos/= mpUser->scale_y;
-                mpUser->PutCursor( x_pos, y_pos, CURSOR_ON );
+                mpUser->PutCursor( x_pos, y_pos, Usr::CURSOR_ON );
                 CurrentFeedback= 1;
                 PtpTime= 0;
         }
@@ -602,7 +544,7 @@ void TTask::Feedback( short sig_x, short sig_y )
 {
   x_pos += sig_x;
   y_pos += sig_y;
-  mpUser->PutCursor( x_pos, y_pos, CURSOR_ON );
+  mpUser->PutCursor( x_pos, y_pos, Usr::CURSOR_ON );
   TestCursorLocation( x_pos, y_pos );
   if( CurrentFeedback )
   {
@@ -647,7 +589,7 @@ void TTask::Outcome()
                 CurrentOutcome= 0;
                 CurrentTarget= 0;
                 OutcomeTime= 0;
-                mpUser->PutCursor( x_pos, y_pos, CURSOR_OFF );
+                mpUser->PutCursor( x_pos, y_pos, Usr::CURSOR_OFF );
         }
 }
 
@@ -659,6 +601,7 @@ void TTask::Rest( void )
                 run++;
                 OldRunning= 1;
                 mpUser->Clear();
+                mpUser->HideBackground();
                 mpUser->PutT(false);
                 mpUser->PutO(true);
                // CurrentRest= 1;
@@ -672,6 +615,7 @@ void TTask::Rest( void )
          {
                CurrentRunning=0;
                mpUser->Clear();
+               mpUser->HideBackground();
                mpUser->PutO(false);
                mpUser->PutT(true);
                CurrentRest= 0;

@@ -12,14 +12,12 @@ Task.h is the header file for the Right Justified Boxes task
 #include "UBCItime.h"
 #include "LogFile.h"
 #include "WavePlayer.h"
-
-
-#define NTARGS  8
+#include "Usr.h"
 
 class TTask : public GenericFilter
 {
 private:
-        class Usr* mpUser;
+        Usr* mpUser;
         float x_pos;
         float y_pos;
         float cursor_x_start;
@@ -28,12 +26,11 @@ private:
         float limit_left;
         float limit_top;
         float limit_bottom;
-        float TargetWidth;
 
         int Ntargets;
         int targetcount;
         int ranflag;
-        int targs[NTARGS];
+        int targs[Usr::NTARGS];
         int Hits;
         int Misses;
 
