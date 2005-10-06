@@ -98,13 +98,22 @@ class VisSignal : public VisBase
     GenericSignal mSignal;
 };
 
-class GenericVisualization
+class GenericVisualization : public std::ostream
 {
   enum { invalidID = -1 };
   public:
-    GenericVisualization() : mSourceID( invalidID ) {}
-    GenericVisualization( int sourceID ) : mSourceID( sourceID ) {}
-    GenericVisualization( int sourceID, int /*visType*/ ) : mSourceID( sourceID ) {}
+    GenericVisualization()
+    : std::ostream( 0 ), mSourceID( invalidID ), mBuf( this )
+    { this->init( &mBuf ); }
+
+    GenericVisualization( int sourceID )
+    : std::ostream( 0 ), mSourceID( sourceID ), mBuf( this )
+    { this->init( &mBuf ); }
+
+    GenericVisualization( int sourceID, int /*visType*/ )
+    : std::ostream( 0 ), mSourceID( sourceID ), mBuf( this )
+    { this->init( &mBuf ); }
+
     ~GenericVisualization() {}
 
     // Setters and Getters.
@@ -115,6 +124,7 @@ class GenericVisualization
     template<>           bool Send( CFGID::CFGID cfgID, const std::string& );
     bool Send( const std::string& memoString );
     bool Send( const GenericSignal* signal );
+    bool Send( const GenericSignal& signal ) { return Send( &signal ); }
 
     bool Send2Operator( const GenericSignal* signal )
              { return Send( signal ); }
@@ -125,6 +135,17 @@ class GenericVisualization
 
   private:
     int  mSourceID;
+    class VisStringbuf : public std::stringbuf
+    {
+      public:
+        VisStringbuf( GenericVisualization* parent )
+        : std::stringbuf( std::ios_base::out ),
+          mpParent( parent )
+        {}
+      private:
+        virtual int sync();
+        GenericVisualization* mpParent;
+    } mBuf;
 };
 
 template<>

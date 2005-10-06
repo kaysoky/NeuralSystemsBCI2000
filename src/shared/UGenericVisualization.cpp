@@ -143,3 +143,13 @@ GenericVisualization::SendCfg2Operator( int sourceID, int cfgID, const char* cfg
   return Send( static_cast<CFGID::CFGID>( cfgID ), cfgString );
 }
 
+int
+GenericVisualization::VisStringbuf::sync()
+{
+  int result = stringbuf::sync();
+  if( !mpParent->Send( str() ) )
+    mpParent->setstate( ios::failbit );
+  str( "" );
+  return result;
+}
+
