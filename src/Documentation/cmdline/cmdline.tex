@@ -3,7 +3,7 @@
 \usepackage{graphicx}
 \usepackage{epsfig}
 \sloppy
-\flushbottom
+%\flushbottom
 
 %\pagestyle{empty}
 
@@ -96,6 +96,14 @@ BCI2000 filter \texttt{MyFilter}, execute \texttt{MyFilter.install}.
 This will build an executable \texttt{MyFilter.exe} and add it to the
 \texttt{BCI2000/Tools/cmdline} directory.
 
+Building command line tools does not require the full Borland C++ Builder 
+IDE; you may use the freely available command line version of the Borland C++ compiler
+instead (see section \ref{sec:furtherinfo} for information on how to obtain it).
+In this case, you will need to out-comment the line reading
+\verb|#include <vcl.h>| 
+from the file \texttt{BCI2000/src/shared/PCHIncludes.h}
+(thanks to Roberta Carabalona for pointing this out).
+
 In order to use the command line tools, you will need to add the full path 
 to the \texttt{BCI2000/Tools/cmdline} directory to your system's PATH environment variable. 
 Please consult your operating system's documentation on how to do this.
@@ -135,7 +143,8 @@ parameters, and data for transmission, as in\\
 In the above example, only states and parameters but no data will be contained in 
 the resulting stream.
 ``Data'' comprises signal and state vector data.
-By default, all information contained in the \texttt{dat} file will be transmitted.
+By default, all information contained in the \texttt{dat} file will be transmitted,
+corresponding to \texttt{--transmit-spd}.
 
 \subsubsection{\texttt{bci\_prm2stream}}
 \texttt{bci\_prm2stream} converts a BCI2000 parameter (\texttt{prm}) file into a stream.
@@ -313,12 +322,17 @@ comp /a /l prev_ARresult.txt ARresult.txt | more
 \end{enumerate}
 
 \section{Further information}
+\label{sec:furtherinfo}
+\begin{flushleft}
 \begin{itemize}
 \item A comprehensive and up-to-date description of a number of command line shells, and
 their scripting, is provided at \texttt{http://www.ss64.com/}.
 \item The \textit{cygwin} Win32 port of GNU tools can be downloaded at
 \texttt{http://www.cygwin.com/}.
+\item The free command line version of the Borland C++ compiler is available at 
+\texttt{http://www.borland.com/downloads/download\_cbuilder.html}.
 \end{itemize}
+\end{flushleft}
 
 
 \end{document}
