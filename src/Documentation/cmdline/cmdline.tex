@@ -175,23 +175,23 @@ a tab-separated list of column headers.
 This format is best suited for data import into applications that work on tables.
 
 \subsubsection{\texttt{bci\_stream2mat}}
-\texttt{bci\_stream2mat} converts a stream into a matlab binary file.
-The output \texttt{.mat} file contains two matlab variables called
+\texttt{bci\_stream2mat} converts a stream into a Matlab binary file.
+The output \texttt{.mat} file contains two Matlab variables called
 \texttt{Index} and \texttt{Data}.
 Of these, the \texttt{Data} variable is a matrix with each column representing a
 BCI2000 data block (comprising state information and signal data).
-\texttt{Index} is a matlab structure that contains indices to \texttt{Data's}
+\texttt{Index} is a Matlab structure that contains indices to \texttt{Data's}
 rows, allowing access to BCI2000 states by name, as in:
 
 \verb|myMatlabVariable = squeeze( Data( Index.TargetCode, : ) );|\\
 As each BCI2000 data block contains a signal which is a two-dimensional matrix 
 (channels by elements), the signal index is itself a matrix.
-To copy the first channel's data into a matlab variable, write
+To copy the first channel's data into a Matlab variable, write
 
 \verb|myChannel1 = squeeze( Data( Index.Signal( 1, : ), : ) );|\\
 
-For convenience, there is a matlab function provided that simplifies reading 
-\texttt{bci\_stream2mat} output files into matlab variables:
+For convenience, there is a Matlab function provided that simplifies reading 
+\texttt{bci\_stream2mat} output files into Matlab variables:
 \begin{verbatim}
 [ mySignal, myTargetCode ] = 
   load_bcimat( 'eegdata.mat', 2, 'TargetCode' );
@@ -272,19 +272,19 @@ Combining the output is effected by the \texttt{( ... \&\& ... )} construct.
 \subsection{Processing data with BCI2000 filters, and importing the
 results into Matlab}
 To process data with the filters used in the mu-training on-line system, 
-saving the AR spectrum as matlab file, execute
+saving the AR spectrum as Matlab file, execute
 \begin{verbatim}
 bci_dat2stream < mydata.dat | TransmissionFilter | 
   CalibrationFilter | SpatialFilter | ARFilter | 
   bci_stream2mat > myspectra.mat
 \end{verbatim}
-Load the data into matlab using
+Load the data into Matlab using
 \begin{verbatim}
 [ signal, TargetCode ] = 
   load_bcimat( 'myspectra.mat', 3, 'TargetCode' );
 \end{verbatim}
 This requires that the file \texttt{load\_bcimat.m} is accessible from
-the matlab search path.
+the Matlab search path.
 
 \subsection{Exporting BCI2000 data into a table suitable for import into 
 other applications (MS Excel, SPSS)}
