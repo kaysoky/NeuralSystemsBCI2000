@@ -330,8 +330,8 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
 /////////////////////////////////////////////////////////////////////////////
 // PARAM definitions                                                       //
 /////////////////////////////////////////////////////////////////////////////
-const char* const defaultValue = "0";
-const string commentSeparator = "//";
+static const char* const sDefaultValue = "0";
+static const string sCommentSeparator = "//";
 const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 
 // **************************************************************************
@@ -355,7 +355,8 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
           dim2 = GetNumValuesDimension2();
    if( inDimension2 > dim2 )
      for( size_t i = 0; i < dim1; ++i )
-       values.insert( values.begin() + i * inDimension2 + dim2, inDimension2 - dim2, defaultValue );
+       values.insert( values.begin() + i * inDimension2 + dim2, inDimension2 - dim2,
+                                                     encodedString( sDefaultValue ) );
    else
      for( size_t i = 0; i < dim1; ++i )
        values.erase( values.begin() + ( i + 1 ) * inDimension2, values.begin() + i * inDimension2 + dim2 );
@@ -456,7 +457,7 @@ PARAM::PARAM( const char* line )
 void
 PARAM::SetNumValues( size_t n )
 {
-  values.resize( n, defaultValue );
+  values.resize( n, encodedString( sDefaultValue ) );
   // dim2_index will always have a size > 0.
   // If n is not a multiple of dim2_index' size something is logically wrong.
   // But it has not been an error up to now.
@@ -496,7 +497,7 @@ const char*
 PARAM::GetValue( size_t idx ) const
 {
   size_t numValues = GetNumValues();
-  const char* retValue = defaultValue;
+  const char* retValue = sDefaultValue;
   if( numValues != 0 )
   {
     if( idx >= numValues )
@@ -637,10 +638,10 @@ PARAM::ReadFromStream( istream& is )
       i = is.peek();
     }
   }
-  size_t commentSepPos = definition.rfind( commentSeparator );
+  size_t commentSepPos = definition.rfind( sCommentSeparator );
   if( commentSepPos != definition.npos )
   {
-    size_t commentPos = commentSepPos + commentSeparator.length();
+    size_t commentPos = commentSepPos + sCommentSeparator.length();
     while( commentPos < definition.size() && ct.is( ct.space, definition[ commentPos ] ) )
       ++commentPos;
     comment = definition.substr( commentPos );
@@ -688,7 +689,7 @@ PARAM::ReadFromStream( istream& is )
       linestream >> value;
     }
     // Not all matrix/list entries are required for a parameter definition.
-    values.resize( dim1_index.size() * dim2_index.size(), defaultValue );
+    values.resize( dim1_index.size() * dim2_index.size(), encodedString( sDefaultValue ) );
 
     // These entries are not required for a parameter definition.
     encodedString* finalEntries[] =
@@ -707,7 +708,7 @@ PARAM::ReadFromStream( istream& is )
     }
     while( i < numFinalEntries )
     {
-      *finalEntries[ i ] = defaultValue;
+      *finalEntries[ i ] = encodedString( sDefaultValue );
       ++i;
     }
   }
@@ -736,7 +737,7 @@ PARAM::WriteToStream( ostream& os ) const
   os << defaultvalue << ' '
      << lowrange << ' '
      << highrange << ' '
-     << commentSeparator << ' ' << comment;
+     << sCommentSeparator << ' ' << comment;
   return os;
 }
 

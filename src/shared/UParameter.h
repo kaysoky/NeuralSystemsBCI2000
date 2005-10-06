@@ -56,7 +56,7 @@ class PARAM
     public:
      encodedString() {}
      encodedString( const std::string& s ) : std::string( s ) {}
-     encodedString( const char* s ) : std::string( s ) {}
+     explicit encodedString( const char* s ) : std::string( s ) {}
      std::ostream& WriteToStream( std::ostream&, const std::string& = "" ) const;
      std::istream& ReadFromStream( std::istream& );
    };
