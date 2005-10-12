@@ -85,43 +85,6 @@ void Usr::Initialize()
   YesNoOnTime =  MeasurementUnits::ReadAsTime( Parameter( "YesNoOnTime" ) );
   YesNoOffTime = MeasurementUnits::ReadAsTime( Parameter( "YesNoOffTime" ) );
 
-  TColor choiceColors[] =
-  {
-    clLime,
-    clRed,
-    clBlue,
-    clFuchsia
-  };
-  const maxNumTargets = sizeof( choiceColors ) / sizeof( *choiceColors );
-  int numChoiceTargets = 0;
-  if( TargetType == TYPE_CHOICE )
-    numChoiceTargets = Parameter( "NumberTargets" );
-  if( numChoiceTargets > maxNumTargets )
-  {
-    bcierr << "not ready for > "
-           << maxNumTargets
-           << " target choices."
-           << endl;
-    numChoiceTargets = 1;
-  }
-
-  DeleteChoiceTargets();
-  for( int i = 0; i < numChoiceTargets; ++i )
-  {
-    TShape* target = new TShape( NULL );
-    target->Parent = mpForm;
-    target->Pen->Assign( mpForm->Target->Pen );
-    target->SendToBack();
-    target->Top = targy[ i + 1 ];
-    target->Left = targx[ i + 1 ];
-    target->Height = targsizey[ i + 1 ];
-    target->Width = targsizex[ i + 1 ];
-    Rotate( target, mRotateBy );
-    target->Brush->Color = choiceColors[ i ];
-    target->Visible = false;
-    mChoiceTargets.push_back( target );
-  }
-
   // define certain things that depend on whether we have targets or YES/NO
   if (TargetType == TYPE_TARGET)
     {
@@ -200,6 +163,43 @@ void Usr::Initialize()
 
   Scale( (float)0x7fff, (float)0x7fff );
   ComputeTargets();
+
+  TColor choiceColors[] =
+  {
+    clLime,
+    clRed,
+    clBlue,
+    clFuchsia
+  };
+  const maxNumTargets = sizeof( choiceColors ) / sizeof( *choiceColors );
+  int numChoiceTargets = 0;
+  if( TargetType == TYPE_CHOICE )
+    numChoiceTargets = Parameter( "NumberTargets" );
+  if( numChoiceTargets > maxNumTargets )
+  {
+    bcierr << "not ready for > "
+           << maxNumTargets
+           << " target choices."
+           << endl;
+    numChoiceTargets = 1;
+  }
+
+  DeleteChoiceTargets();
+  for( int i = 0; i < numChoiceTargets; ++i )
+  {
+    TShape* target = new TShape( NULL );
+    target->Parent = mpForm;
+    target->Pen->Assign( mpForm->Target->Pen );
+    target->SendToBack();
+    target->Top = targy[ i + 1 ];
+    target->Left = targx[ i + 1 ];
+    target->Height = targsizey[ i + 1 ];
+    target->Width = targsizex[ i + 1 ];
+    Rotate( target, mRotateBy );
+    target->Brush->Color = choiceColors[ i ];
+    target->Visible = false;
+    mChoiceTargets.push_back( target );
+  }
 
   mpForm->Show();
 }
@@ -406,7 +406,7 @@ void Usr::PutTarget(int targetnumber, int targetstate )
       {
         case TARGET_RESULT:
           visible = true;
-          color = clBlack;
+          color = Brighten( mChoiceTargets[ targetnumber - 1 ]->Brush->Color );
           break;
 
         case TARGET_ON:
@@ -671,5 +671,11 @@ Usr::ShowBackground()
 {
   for( TargetContainer::const_iterator i = mChoiceTargets.begin(); i != mChoiceTargets.end(); ++i )
     ( *i )->Show();
+}
+
+TColor
+Usr::Brighten( TColor c )
+{
+  return c | 0x606060;
 }
 

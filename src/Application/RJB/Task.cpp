@@ -19,6 +19,9 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <cmath>
 #include <assert>
 
+// #undef if you don't want choice targets during suspended state.
+#define ALWAYS_SHOW_BACKGND
+
 using namespace std;
 
 RegisterFilter( TTask, 3 );
@@ -274,6 +277,7 @@ void TTask::Initialize()
   Hits= 0;
   Misses= 0;
   mpUser->PutO(false);
+  mpUser->ShowBackground();
 
   WriteStateValues();
 }
@@ -394,7 +398,9 @@ void TTask::UpdateDisplays( void )
  if ((CurrentRunning == 0) && (OldRunning == 1))            // put the T up there on the transition from not suspended to suspended
     {
     mpUser->Clear();
+#ifndef ALWAYS_SHOW_BACKGND
     mpUser->HideBackground();
+#endif
     mpUser->PutT(true);
     CurrentIti=1;
     CurrentFeedback=0;
@@ -415,7 +421,7 @@ void TTask::UpdateDisplays( void )
        // ITI period just started
        if (ItiTime == 0)
           {
-          mVis << "Run: " << run << " ITI -> new trial: " << trial << endl;
+          mVis << "Run: " << run << " ITI -> new trial: " << trial << std::endl;
           trial++;
           }
             // in case the run was longer than x seconds
@@ -601,7 +607,9 @@ void TTask::Rest( void )
                 run++;
                 OldRunning= 1;
                 mpUser->Clear();
+#ifndef ALWAYS_SHOW_BACKGND
                 mpUser->HideBackground();
+#endif
                 mpUser->PutT(false);
                 mpUser->PutO(true);
                // CurrentRest= 1;
@@ -615,7 +623,9 @@ void TTask::Rest( void )
          {
                CurrentRunning=0;
                mpUser->Clear();
+#ifndef ALWAYS_SHOW_BACKGND
                mpUser->HideBackground();
+#endif
                mpUser->PutO(false);
                mpUser->PutT(true);
                CurrentRest= 0;

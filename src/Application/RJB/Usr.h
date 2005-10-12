@@ -77,6 +77,7 @@ private: // User declarations
         float mTargetWidth;
         float mRotateBy;
         void  Rotate( TControl*, float );
+        static TColor Brighten( TColor );
 public:		// User declarations
         float targx[NTARGS+1];
         float targy[NTARGS+1];
