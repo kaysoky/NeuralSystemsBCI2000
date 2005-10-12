@@ -615,7 +615,7 @@ TfMain::ProcessBCIAndWindowsMessages()
   while( mPreviousModule && mPreviousModule.rdbuf()->in_avail()
         || mOperator && mOperator.rdbuf()->in_avail()
         || mResting
-        || ::GetQueueStatus( QS_ALLEVENTS ) )
+        || ::GetQueueStatus( QS_ALLINPUT ) )
   {
     // If there is a message from the previous module, it has highest priority.
     // For the SignalProcessing and the Application modules, these messages occur
@@ -662,7 +662,7 @@ TfMain::ApplicationIdleHandler( TObject*, bool& )
   {
     while( !mTerminated )
     {
-      if( !mResting && !::GetQueueStatus( QS_ALLEVENTS ) )
+      if( !mResting && !::GetQueueStatus( QS_ALLINPUT ) )
         tcpsocket::wait_for_read( mInputSockets, bciMessageTimeout );
       ProcessBCIAndWindowsMessages();
       rReceivingConnected->Checked = mPreviousModule.is_open();
