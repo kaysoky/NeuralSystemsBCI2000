@@ -500,7 +500,8 @@ void StatFilter::Process( const GenericSignal *input,
 
   if( YInterceptEstMode > 1 )            // this uses sign from above !!!
     {
-      stat->ProcTrendControl(0, Ntargets, CurrentBaseline, CurrentTarget,
+      if( CurrentTarget > 0 )
+        stat->ProcTrendControl(0, Ntargets, CurrentBaseline, CurrentTarget,
                          OutcomeCode, Yadapt, &cur_ystat, TrendControlRate, YInterceptEstMode );
 
       yintercept *= cur_ystat.aper;
@@ -541,8 +542,8 @@ void StatFilter::Process( const GenericSignal *input,
 
     if( XInterceptEstMode > 1 )
     {
-
-      stat->ProcTrendControl(1, Ntargets, CurrentBaseline, CurrentTarget,
+      if( CurrentTarget > 0 )
+        stat->ProcTrendControl(1, Ntargets, CurrentBaseline, CurrentTarget,
                          OutcomeCode, Xadapt, &cur_xstat, TrendControlRate, XInterceptEstMode );
 
       xintercept *= cur_xstat.aper;

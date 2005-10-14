@@ -391,8 +391,8 @@ void STATISTICS::ProcTrendControl(int dim, int Ntargets, int numBLstate, int tar
 
         if ((oldBLstate[dim] > -1) && (numBLstate == -1))        // end of any of the defined BL periods
         {
-
-
+                if( target < 1 )
+                  throw __FUNC__ ": invalid target index";
                 targval[dim][target-1]= adapt;
                 targval2[dim][target-1]= abs( adapt );
                 targuse[dim][target-1]++;
