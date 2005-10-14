@@ -102,11 +102,15 @@ void TfMain::ReadCalibrationCheckBox()
 
 float TfMain::GetSampleValueCalibrated( BCI2000DATA* data, int channel, unsigned long sample )
 {
+  if( sample >= data->GetNumSamples() )
+    return 0.0;
   return data->Value( channel, sample ) / 0.003;
 }
 
 float TfMain::GetSampleValueUncalibrated( BCI2000DATA* data, int channel, unsigned long sample )
 {
+  if( sample >= data->GetNumSamples() )
+    return 0.0;
   return data->ReadValue( channel, sample );
 }
 
@@ -117,7 +121,7 @@ void __fastcall TfMain::CSpEditOnChange( TObject* Sender )
   editField->OnChange = NULL;
   AnsiString text = editField->Text;
   int selStart = editField->SelStart;
-  bool leaveEditor = text.Pos( "\n" ) || text.Pos( "\r" );
+  bool selectAll = text.Pos( "\n" ) || text.Pos( "\r" );
   int i = 1;
   while( i <= text.Length() )
   {
@@ -126,10 +130,14 @@ void __fastcall TfMain::CSpEditOnChange( TObject* Sender )
     else
       ++i;
   }
+
   if( text == "" )
+  {
     text = "0";
+    selectAll = true;
+  }
   editField->Text = text;
-  if( leaveEditor )
+  if( selectAll )
     editField->SelectAll();
   else
   {
@@ -430,6 +438,8 @@ void __fastcall TfMain::LeftRightMouseUp(TObject *Sender,
       TMouseButton Button, TShiftState Shift, int X, int Y)
 {
  start_sample += LeftRight->Position*(display_samples*70/100);
+ if( start_sample + display_samples >= bci2000data->GetNumSamples() )
+   start_sample = bci2000data->GetNumSamples() - display_samples;
  if (start_sample < 0) start_sample=0;
  LeftRight->Position=0;
  UpdateStatusBar("Updating display ...");
@@ -447,6 +457,8 @@ void __fastcall TfMain::UpDownMouseUp(TObject *Sender,
  else
     start_channel += UpDown->Position*1;
  if (start_channel < 0) start_channel=0;
+ if( start_channel + display_channels > bci2000data->GetNumChannels() )
+   start_channel = bci2000data->GetNumChannels() - display_channels;
  UpDown->Position=0;
  UpdateStatusBar("Updating display ...");
  UpdateMainChart();
@@ -493,6 +505,8 @@ void __fastcall TfMain::FormKeyUp(TObject *Sender, WORD &Key,
  if (Key == 39)
     {
     start_sample += (display_samples*70/100);
+    if( start_sample + display_samples >= bci2000data->GetNumSamples() )
+      start_sample = bci2000data->GetNumSamples() - display_samples;
     UpdateStatusBar("Detected key right ...");
     UpdateMainChart();
     UpdateStatusBar("< idle >");

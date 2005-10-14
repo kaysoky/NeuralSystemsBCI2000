@@ -35,8 +35,7 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hh=vcl.h -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
-      -c -tW -tWM"/>
+    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -5 -b- -k- -vi -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
@@ -143,8 +142,8 @@ Item0=obj
 
 [HistoryLists\hlFinalOutputDir]
 Count=2
-Item0=..\..\..\tools\Maxifred\
-Item1=..\..\..\tools\Maxifred
+Item0=..\..\..\tools\Maxifred
+Item1=..\..\..\tools\Maxifred\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
