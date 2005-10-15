@@ -62,7 +62,7 @@ private:
     float *dataB2;
     float *dataC2;
     float *dataD2;
-    float *ECGdata;
+    //float *ECGdata;
 };
 
 //---------------------------------------------------------------------------

@@ -107,7 +107,7 @@ TDTBCI::~TDTBCI()
     delete [] dataB2;
     delete [] dataC2;
     delete [] dataD2;
-    delete [] ECGdata;
+    //delete [] ECGdata;
 	
     Halt();
     
@@ -347,12 +347,15 @@ void TDTBCI::Initialize()
 
     if (useECG)
     {
+    	/*
         if (!RPcoX1->SetTagVal(ECGchannelTag.c_bstr(), ECGchannel))
             bcierr << "Error setting ECG channel tag." <<endl;
 
         if (!RPcoX1->SetTagVal(ECGgainTag.c_bstr(), ECGgain))
             bcierr << "Error setting ECG gain tag."<<endl;
         bciout <<"ECGgain: "<<ECGgain<<endl;
+        */
+        ECGgain = ECGgain/TDTgain;
     }
 	
     // initialize the data buffers
@@ -377,11 +380,7 @@ void TDTBCI::Initialize()
             dataD2 = new float[valuesToRead];
         }
     }
-    if (useECG)
-    {
-        ECGdata = new float[valuesToRead];
-    }
-	
+    	
     // reset the hardware and all conditions
     ZBus->zBusTrigA(0, 0, 5);
     mOffset = 0;
@@ -513,11 +512,13 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 		}
     }
 
+    /*
     if (useECG)
     {
         if (!RPcoX1->ReadTag(ECGdataTag.c_bstr(), ECGdata, ECGoffset, mSampleBlockSize))
             bcierr << "Error reading ECG data from the Pentusa." <<endl;
     }
+    */
 	
     // update the index and offset
     mOffset = (mOffset + valuesToRead) % (TDTbufSize);
@@ -539,7 +540,8 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
                 outputSignal->SetValue(ch%16 + 48, sample, dataD[curSample]);
 
             if (useECG && (ch == (ECGchannel-1)))
-                outputSignal->SetValue(ECGchannel-1, sample, ECGdata[sample]);
+                outputSignal->SetValue(ECGchannel-1, sample,
+                	outputSignal->GetValue(ECGchannel-1, sample)*ECGgain);
 
             if (nProcessors2 == 0)
                 continue;
