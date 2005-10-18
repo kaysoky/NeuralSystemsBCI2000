@@ -432,6 +432,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 #endif
 
+    case TRANSITION( SYSSTATUS::Idle, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Publishing, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Fatal ):
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Fatal ):
