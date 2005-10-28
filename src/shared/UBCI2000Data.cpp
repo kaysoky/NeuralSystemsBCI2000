@@ -18,7 +18,6 @@
 
 #include "UBCI2000Data.h"
 
-#include "UBCIError.h"
 #include <fstream>
 
 using namespace std;
