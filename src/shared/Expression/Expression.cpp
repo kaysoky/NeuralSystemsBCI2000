@@ -51,45 +51,25 @@ Expression::Evaluate( const GenericSignal* signal )
   return mValue;
 }
 
-
 double
-
 Expression::Signal( double inChannel, double inElement ) const
-
 {
-
   if( mpSignal == NULL )
-
   {
-
     ReportError( "Trying to access NULL signal" );
-
     return 0;
-
   }
-
   if( inChannel < 0 || inChannel >= mpSignal->Channels() )
-
   {
-
     ReportError( "Channel index out of range" );
-
     return 0;
-
   }
-
   if( inElement < 0 || inElement >= mpSignal->Elements() )
-
   {
-
     ReportError( "Element index out of range" );
-
     return 0;
-
   }
-
   return ( *mpSignal )( inChannel, inElement );
-
 }
 
 void

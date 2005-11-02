@@ -45,7 +45,7 @@ AnsiString      tabname;
   {
   cur_param=paramlist->GetParamPtr(i);
   if (cur_param)
-     cur_param->archive=false;
+     cur_param->Archive()=false;
   }
 
  // go through all the parameters and find out about the section names
@@ -61,20 +61,20 @@ AnsiString      tabname;
    if (cur_param)
      {
      // parameter has not been 'touched' yet and it's user level is smaller than the operator's user level
-     if ((cur_param->archive == false)
+     if ((cur_param->Archive() == false)
        && (OperatorUtils::GetUserLevel(cur_param->GetName()) <= preferences->UserLevel))
         {
         // a 'new' Section name ?
         if (tabname == " ")
            {
            tabname=cur_param->GetSection();
-           cur_param->archive=true;
+           cur_param->Archive()=true;
            }
         else
            {
            // 'touch' all parameters with the same section name
            if (tabname == cur_param->GetSection())
-              cur_param->archive=true;
+              cur_param->Archive()=true;
            }
         }
      }

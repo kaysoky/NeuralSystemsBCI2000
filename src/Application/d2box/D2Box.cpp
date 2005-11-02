@@ -11,7 +11,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "2-dimensional box task";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->Run();
+         Application->Run();
         }
         catch (Exception &exception)
         {

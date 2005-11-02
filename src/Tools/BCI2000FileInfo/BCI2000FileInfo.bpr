@@ -8,7 +8,7 @@
       obj\UParameter.obj obj\USysStatus.obj obj\UPreferences.obj 
       obj\UEditMatrix.obj obj\UShowParameters.obj obj\UBCI2000Data.obj 
       obj\UState.obj obj\UOperatorUtils.obj obj\ParsedComment.obj 
-      obj\ParamDisplay.obj obj\UGenericSignal.obj"/>
+      obj\ParamDisplay.obj obj\UGenericSignal.obj obj\EncodedString.obj"/>
     <RESFILES value="BCI2000FileInfo.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm ..\..\Operator\UOperatorCfg.dfm 
@@ -23,7 +23,7 @@
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
       indy.bpi bcb2kaxserver.bpi"/>
-    <PATHCPP value=".;..\..\Operator;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared"/>
+    <PATHCPP value=".;..\..\Operator;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared;..\..\Operator;..\..\Operator;..\..\Operator;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -68,6 +68,7 @@
       <FILE FILENAME="..\..\Operator\ParsedComment.cpp" FORMNAME="" UNITNAME="ParsedComment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\Operator\ParamDisplay.cpp" FORMNAME="" UNITNAME="ParamDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

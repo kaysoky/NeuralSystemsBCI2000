@@ -51,6 +51,8 @@ TARGETS = obj\bci_tool.lib \
 BCIOBJ  = obj\bci_tool.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
+          obj\EncodedString.obj \
+          obj\ParamRef.obj \
           obj\UGenericSignal.obj \
           obj\UEnvironment.obj \
           obj\UGenericFilter.obj \
@@ -68,6 +70,8 @@ BCIOBJ  = obj\bci_tool.obj \
 DLLOBJ  = obj\bci_dll.obj \
           obj\bci_stubs.obj \
           obj\UParameter.obj \
+          obj\ParamRef.obj \
+          obj\EncodedString.obj \
           obj\UGenericSignal.obj \
           obj\UEnvironment.obj \
           obj\UGenericFilter.obj \

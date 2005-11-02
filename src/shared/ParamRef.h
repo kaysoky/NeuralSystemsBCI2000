@@ -15,6 +15,7 @@
 #define ParamRefH
 
 #include <sstream>
+#include <math.h>
 #include "UParameter.h"
 
 class ParamRef

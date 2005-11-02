@@ -4,7 +4,8 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\tools\NeuroscanGetParams\neurogetparams.exe"/>
-    <OBJFILES value="obj\neuroscanget.obj obj\TCPStream.obj obj\UParameter.obj"/>
+    <OBJFILES value="obj\neuroscanget.obj obj\TCPStream.obj obj\UParameter.obj 
+      obj\EncodedString.obj"/>
     <RESFILES value="neurogetparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -16,7 +17,7 @@
       teedb.bpi tee.bpi teeqr.bpi ibxpress.bpi visualclx.bpi visualdbclx.bpi 
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi"/>
-    <PATHCPP value=".;..\..\..\shared;..\..\..\shared"/>
+    <PATHCPP value=".;..\..\..\shared;..\..\..\shared;..\..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -51,6 +52,7 @@
       <FILE FILENAME="neuroscanget.cpp" FORMNAME="" UNITNAME="neuroscanget" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\TCPStream.cpp" FORMNAME="" UNITNAME="TCPStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

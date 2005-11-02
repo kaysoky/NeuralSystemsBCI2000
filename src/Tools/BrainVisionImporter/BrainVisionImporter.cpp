@@ -29,7 +29,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         Application->Title = appName;
         Application->Initialize();
         Application->CreateForm(__classid(TImporterForm), &ImporterForm);
-        Application->Run();
+         Application->Run();
       }
       catch (Exception &exception)
       {

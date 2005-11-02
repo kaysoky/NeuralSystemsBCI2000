@@ -11,7 +11,7 @@
       obj\UParameter.obj obj\UGenericVisualization.obj obj\UGenericSignal.obj 
       obj\UBCItime.obj obj\UCoreMain.obj obj\DataIOFilter.obj 
       obj\RPCOXLib_OCX.obj obj\RPCOXLib_TLB.obj obj\ZBUSXLib_OCX.obj 
-      obj\BCIDatFileWriter.obj"/>
+      obj\BCIDatFileWriter.obj obj\EncodedString.obj obj\ParamRef.obj"/>
     <RESFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
@@ -24,7 +24,7 @@
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
       indy.bpi bcb2kaxserver.bpi"/>
-    <PATHCPP value=".;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;.."/>
+    <PATHCPP value=".;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -78,6 +78,8 @@
       <FILE FILENAME="RPCOXLib_TLB.cpp" FORMNAME="" UNITNAME="RPCOXLib_TLB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ZBUSXLib_OCX.cpp" FORMNAME="" UNITNAME="ZBUSXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\BCIDatFileWriter.cpp" FORMNAME="" UNITNAME="BCIDatFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

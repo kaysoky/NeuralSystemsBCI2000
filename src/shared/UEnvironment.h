@@ -19,6 +19,7 @@
 #define UEnvironmentH
 
 #include "UParameter.h"
+#include "ParamRef.h"
 #include "UState.h"
 #include "UBCIError.h"
 #include <set>
@@ -145,67 +146,67 @@ class EnvironmentBase
   PARAM* GetOptionalParamPtr( const std::string& inName,
                               const std::string& inLabel1,
                               const std::string& inLabel2,
-                              size_t&            outIndex1,
-                              size_t&            outIndex2 ) const;
-  void CheckRange( const PARAM*, size_t, size_t ) const;
+                              int&               outIndex1,
+                              int&               outIndex2 ) const;
+  void CheckRange( const PARAM*, int, int ) const;
 
   // Read/write access to a parameter by its name and indices, if applicable.
-  PARAM::type_adapter Parameter( const std::string& name,
-                                 size_t index1 = 0,
-                                 size_t index2 = 0 ) const;
-  PARAM::type_adapter Parameter( const std::string& name,
-                                 const std::string& label1,
-                                 const std::string& label2 ) const;
-  PARAM::type_adapter Parameter( const std::string& name,
-                                 const std::string& label1,
-                                 size_t index2 = 0 ) const;
-  PARAM::type_adapter Parameter( const std::string& name,
-                                 size_t index1,
-                                 const std::string& label2 ) const;
+  ParamRef Parameter( const std::string& name,
+                      int   index1 = ParamRef::none,
+                      int   index2 = ParamRef::none ) const;
+  ParamRef Parameter( const std::string& name,
+                      const std::string& label1,
+                      const std::string& label2 ) const;
+  ParamRef Parameter( const std::string& name,
+                      const std::string& label1,
+                      int   index2 = ParamRef::none ) const;
+  ParamRef Parameter( const std::string& name,
+                      int   index1,
+                      const std::string& label2 ) const;
 
  protected:
   // Read-only access to parameters that do not necessarily exist.
-  const PARAM::type_adapter OptionalParameter( double defaultValue,
-                                               const std::string& name,
-                                               size_t index1 = 0,
-                                               size_t index2 = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( double defaultValue,
-                                               const std::string& name,
-                                               const std::string& label1,
-                                               const std::string& label2 ) const;
-  const PARAM::type_adapter OptionalParameter( double defaultValue,
-                                               const std::string& name,
-                                               const std::string& label1,
-                                               size_t index2 = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( double defaultValue,
-                                               const std::string& name,
-                                               size_t index1,
-                                               const std::string& label2 ) const;
+  const ParamRef OptionalParameter( double defaultValue,
+                                    const std::string& name,
+                                    int index1 = ParamRef::none,
+                                    int index2 = ParamRef::none ) const;
+  const ParamRef OptionalParameter( double defaultValue,
+                                    const std::string& name,
+                                    const std::string& label1,
+                                    const std::string& label2 ) const;
+  const ParamRef OptionalParameter( double defaultValue,
+                                    const std::string& name,
+                                    const std::string& label1,
+                                    int index2 = ParamRef::none ) const;
+  const ParamRef OptionalParameter( double defaultValue,
+                                    const std::string& name,
+                                    int index1,
+                                    const std::string& label2 ) const;
 
   // Versions with empty default values.
-  const PARAM::type_adapter OptionalParameter( const std::string& name,
-                                               size_t index1 = 0,
-                                               size_t index2 = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( const std::string& name,
-                                               const std::string& label1,
-                                               const std::string& label2 ) const;
-  const PARAM::type_adapter OptionalParameter( const std::string& name,
-                                               const std::string& label1,
-                                               size_t index2 = 0 ) const;
-  const PARAM::type_adapter OptionalParameter( const std::string& name,
-                                               size_t index1,
-                                               const std::string& label2 ) const;
+  const ParamRef OptionalParameter( const std::string& name,
+                                    int index1 = ParamRef::none,
+                                    int index2 = ParamRef::none ) const;
+  const ParamRef OptionalParameter( const std::string& name,
+                                    const std::string& label1,
+                                    const std::string& label2 ) const;
+  const ParamRef OptionalParameter( const std::string& name,
+                                    const std::string& label1,
+                                    int index2 = ParamRef::none ) const;
+  const ParamRef OptionalParameter( const std::string& name,
+                                    int index1,
+                                    const std::string& label2 ) const;
 
  private:
   // Functions used by all OptionalParameter() functions.
-  const PARAM::type_adapter _OptionalParameter( const std::string& defaultValue,
-                                                PARAM* param,
-                                                size_t index1,
-                                                size_t index2 ) const;
-  const PARAM::type_adapter _OptionalParameter( double defaultValue,
-                                                PARAM* param,
-                                                size_t index1,
-                                                size_t index2 ) const;
+  const ParamRef _OptionalParameter( const std::string& defaultValue,
+                                     PARAM* param,
+                                     int index1,
+                                     int index2 ) const;
+  const ParamRef _OptionalParameter( double defaultValue,
+                                     PARAM* param,
+                                     int index1,
+                                     int index2 ) const;
 
  protected:
   // A macro/function combination for convenient formulation of parameter checks.

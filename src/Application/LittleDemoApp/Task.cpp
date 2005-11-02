@@ -31,6 +31,12 @@ TTask::TTask()
     "NeuralMusic int WinHeight= 300 0 0 0 "
       "// Window Height",
 
+    "NeuralMusic matrix NestedMatrices= 2 3 "
+      " singleValue11        { matrix 2 2 11 12 21 22 } "
+      " { matrix 1 2 11 12 } singleValue22 "
+      " singleValue31        singleValue32 "
+      "// A nested matrix example",
+
     "NeuralMusic int AcousticMode= 1 "
       "0 0 2 // Achin's Acoustic Mode :-) 0: no sound, 1: MIDI, 2: WAV (enumeration)",
 
@@ -47,6 +53,9 @@ TTask::TTask()
     "Pitch 8 0 0 0",
     "StimulusTime 16 17528 0 0",
     "TargetCode 8 0 0 0",
+    "ResultCode 8 0 0 0",
+    "Feedback 1 0 0 0",
+    "IntertrialInterval 1 0 0 0",
   END_STATE_DEFINITIONS
 
   mpForm = new TForm( ( TComponent* )NULL );
@@ -100,7 +109,7 @@ TTask::Preflight( const SignalProperties& inputProperties,
     string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
     bool genError = false;
     TWavePlayer testPlayer;
-    for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
+    for( size_t i = 0; !genError && i < Parameter( "Sounds" )->GetNumColumns(); ++i )
     {
       string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
       TWavePlayer::Error err = testPlayer.AttachFile( fileName.c_str() );
@@ -118,6 +127,8 @@ TTask::Preflight( const SignalProperties& inputProperties,
     }
   }
 
+  Parameter( "NestedMatrix" );
+
   PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
   outputProperties = inputProperties;
 }
@@ -129,7 +140,7 @@ TTask::Initialize()
   if( mAcousticMode == amWave )
   {
     string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
-    for( size_t i = 0; i < Parameter( "Sounds" )->GetNumValuesDimension2(); ++i )
+    for( size_t i = 0; i < Parameter( "Sounds" )->GetNumColumns(); ++i )
     {
       string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
       mWavePlayers[ i ].AttachFile( fileName.c_str() );
@@ -137,6 +148,24 @@ TTask::Initialize()
   }
 
   mVis.Send( CFGID::WINDOWTITLE, "User Task Log" );
+
+  mVis << "All elements of the 'NestedMatrices' parameter:\n";
+  ParamRef NestedMatrices = Parameter( "NestedMatrices" );
+  int numRows = NestedMatrices->GetNumRows(),
+      numCols = NestedMatrices->GetNumColumns();
+  for( int row = 0; row < numRows; ++row )
+    for( int col = 0; col < numCols; ++col )
+    {
+      int numSubRows = NestedMatrices( row, col )->GetNumRows(),
+          numSubCols = NestedMatrices( row, col )->GetNumColumns();
+      if( numSubRows == 1 && numSubCols == 1 )
+        mVis << NestedMatrices( row, col );
+      else
+        for( int subRow = 0; subRow < numSubRows; ++subRow )
+          for( int subCol = 0; subCol < numSubCols; ++subCol )
+            mVis << NestedMatrices( row, col )( subRow, subCol ) << ' ';
+      mVis << endl;
+    }
 
   mpForm->Left = Parameter( "WinXPos" );
   mpForm->Top = Parameter( "WinYPos" );

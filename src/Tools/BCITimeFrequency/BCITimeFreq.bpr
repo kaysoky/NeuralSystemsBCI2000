@@ -8,7 +8,7 @@
       obj\BCIInput.obj obj\OutputForm1.obj obj\InputForm1.obj 
       obj\ProcessForm1.obj obj\UBCI2000Data.obj obj\UParameter.obj 
       obj\UState.obj obj\GETMEM.obj obj\ParmIO.obj obj\WindowingFunction.obj 
-      obj\UGenericSignal.obj"/>
+      obj\UGenericSignal.obj obj\EncodedString.obj"/>
     <RESFILES value="BCITimeFreq.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm StateForm1.dfm OutputForm1.dfm InputForm1.dfm 
@@ -20,7 +20,7 @@
       bdertl.bpi ibsmp.bpi vcldbx.bpi ibxpress.bpi bcbie.bpi vclie.bpi inetdb.bpi 
       inet.bpi nmfast.bpi dclocx.bpi bcb2kaxserver.bpi teeui.bpi teedb.bpi 
       tee.bpi teeqr.bpi DCLUSR.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -66,6 +66,7 @@
       <FILE FILENAME="ParmIO.cpp" FORMNAME="" UNITNAME="ParmIO" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="WindowingFunction.cpp" FORMNAME="" UNITNAME="WindowingFunction" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

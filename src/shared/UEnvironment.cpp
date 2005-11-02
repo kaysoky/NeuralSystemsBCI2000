@@ -93,8 +93,8 @@ PARAM*
 EnvironmentBase::GetOptionalParamPtr( const string& name,
                                       const string& inLabel1,
                                       const string& inLabel2,
-                                      size_t&       outIndex1,
-                                      size_t&       outIndex2 ) const
+                                      int&          outIndex1,
+                                      int&          outIndex2 ) const
 {
   PARAM* param = GetOptionalParamPtr( name );
   if( param != NULL )
@@ -121,7 +121,7 @@ EnvironmentBase::GetOptionalParamPtr( const string& name,
 
 void
 EnvironmentBase::CheckRange( const PARAM* param,
-                             size_t row, size_t column ) const
+                             int row, int column ) const
 {
 #ifdef TODO
 # error Ensure reasonable ranges before enabling the range check.
@@ -144,9 +144,8 @@ EnvironmentBase::CheckRange( const PARAM* param,
 
 // Convenient accessor functions.
 // Read/write access a parameter by its name and indices, if applicable.
-PARAM::type_adapter
-EnvironmentBase::Parameter( const string& name,
-                            size_t row, size_t column ) const
+ParamRef
+EnvironmentBase::Parameter( const string& name, int row, int column ) const
 {
 #ifdef TODO
 # error Range Check for all values of a parameter if row == column == 0
@@ -154,12 +153,12 @@ EnvironmentBase::Parameter( const string& name,
   PARAM* param = GetParamPtr( name );
   if( param != NULL )
       CheckRange( param, row, column );
-  return PARAM::type_adapter( param, row, column );
+  return ParamRef( param, row, column );
 }
 
-PARAM::type_adapter
+ParamRef
 EnvironmentBase::Parameter( const string& name,
-                            const string& rowLabel, size_t column ) const
+                            const string& rowLabel, int column ) const
 {
   PARAM* param = GetParamPtr( name );
   size_t row = 0;
@@ -168,12 +167,12 @@ EnvironmentBase::Parameter( const string& name,
       row = param->LabelsDimension1()[ rowLabel ];
       CheckRange( param, row, column );
   }
-  return PARAM::type_adapter( param, row, column );
+  return ParamRef( param, row, column );
 }
 
-PARAM::type_adapter
+ParamRef
 EnvironmentBase::Parameter( const string& name,
-                            size_t row, const string& columnLabel ) const
+                            int row, const string& columnLabel ) const
 {
   PARAM* param = GetParamPtr( name );
   size_t column = 0;
@@ -182,10 +181,10 @@ EnvironmentBase::Parameter( const string& name,
       column = param->LabelsDimension2()[ columnLabel ];
       CheckRange( param, row, column );
   }
-  return PARAM::type_adapter( param, row, column );
+  return ParamRef( param, row, column );
 }
 
-PARAM::type_adapter
+ParamRef
 EnvironmentBase::Parameter( const string& name,
                             const string& rowLabel, const string& columnLabel ) const
 {
@@ -198,110 +197,112 @@ EnvironmentBase::Parameter( const string& name,
       column = param->LabelsDimension2()[ columnLabel ];
       CheckRange( param, row, column );
   }
-  return PARAM::type_adapter( param, row, column );
+  return ParamRef( param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( double defaultValue,
                                     const string& name,
-                                    size_t row,
-                                    size_t column ) const
+                                    int row,
+                                    int column ) const
 {
   return _OptionalParameter( defaultValue, GetOptionalParamPtr( name ), row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( double defaultValue,
                                     const string& name,
-                                    const string& rowLabel, size_t column ) const
+                                    const string& rowLabel, int column ) const
 {
-  size_t row = 0;
+  int row = 0;
   PARAM* param = GetOptionalParamPtr( name, rowLabel, "", row, column );
   return _OptionalParameter( defaultValue, param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( double defaultValue,
                                     const string& name,
-                                    size_t row, const string& columnLabel ) const
+                                    int row, const string& columnLabel ) const
 {
-  size_t column = 0;
+  int column = 0;
   PARAM* param = GetOptionalParamPtr( name, "", columnLabel, row, column );
   return _OptionalParameter( defaultValue, param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( double defaultValue,
                                     const string& name,
                                     const string& rowLabel, const string& columnLabel ) const
 {
-  size_t row = 0,
-         column = 0;
+  int row = 0,
+      column = 0;
   PARAM* param = GetOptionalParamPtr( name, rowLabel, columnLabel, row, column );
   return _OptionalParameter( defaultValue, param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( const string& name,
-                                    size_t row,
-                                    size_t column ) const
+                                    int row,
+                                    int column ) const
 {
   return _OptionalParameter( "", GetOptionalParamPtr( name ), row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( const string& name,
-                                    const string& rowLabel, size_t column ) const
+                                    const string& rowLabel, int column ) const
 {
-  size_t row = 0;
+  int row = 0;
   PARAM* param = GetOptionalParamPtr( name, rowLabel, "", row, column );
   return _OptionalParameter( "", param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( const string& name,
-                                    size_t row, const string& columnLabel ) const
+                                    int row, const string& columnLabel ) const
 {
-  size_t column = 0;
+  int column = 0;
   PARAM* param = GetOptionalParamPtr( name, "", columnLabel, row, column );
   return _OptionalParameter( "", param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::OptionalParameter( const string& name,
                                     const string& rowLabel, const string& columnLabel ) const
 {
-  size_t row = 0,
-         column = 0;
+  int row = 0,
+      column = 0;
   PARAM* param = GetOptionalParamPtr( name, rowLabel, columnLabel, row, column );
   return _OptionalParameter( "", param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::_OptionalParameter( double defaultValue,
                                      PARAM* param,
-                                     size_t row, size_t column ) const
+                                     int row, int column ) const
 {
   ostringstream os;
   os << defaultValue;
   return _OptionalParameter( os.str(), param, row, column );
 }
 
-const PARAM::type_adapter
+const ParamRef
 EnvironmentBase::_OptionalParameter( const string& defaultValue,
                                      PARAM* inParam,
-                                     size_t row, size_t column ) const
+                                     int row, int column ) const
 {
   static PARAM defaultParam;
   PARAM* param = &defaultParam;
-  if( inParam == NULL || row >= inParam->GetNumRows() || column >= inParam->GetNumColumns() )
-    defaultParam.SetValue( defaultValue, row, column );
+  size_t row_idx = ( row == ParamRef::none ? 0 : row ),
+         column_idx = ( column == ParamRef::none ? 0 : column );
+  if( inParam == NULL || row_idx >= inParam->GetNumRows() || column_idx >= inParam->GetNumColumns() )
+    defaultParam.SetValue( defaultValue, row_idx, column_idx );
   else
   {
     param = inParam;
-    CheckRange( param, row, column );
+    CheckRange( param, row_idx, column_idx );
   }
-  return PARAM::type_adapter( param, row, column );
+  return ParamRef( param, row, column );
 }
 
 bool

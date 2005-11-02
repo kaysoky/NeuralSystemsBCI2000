@@ -1,6 +1,6 @@
 /******************************************************************************
  * Program:   BCI2000                                                         *
- * Module:    UParameter.h                                                  *
+ * Module:    UParameter.h                                                    *
  * Comment:   This unit provides support for system-wide parameters           *
  *            and parameter lists                                             *
  * Version:   0.22                                                            *
@@ -41,29 +41,16 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <sstream>
-#include <stdlib.h>
+#include "EncodedString.h"
 
 class PARAM
 {
   friend class PARAMLIST;
 
  public:
-   // A string class that allows for transparent handling of
-   // character codes using the % sign.
-   class encodedString : public std::string
-   {
-    public:
-     encodedString() {}
-     encodedString( const std::string& s ) : std::string( s ) {}
-     explicit encodedString( const char* s ) : std::string( s ) {}
-     std::ostream& WriteToStream( std::ostream&, const std::string& = "" ) const;
-     std::istream& ReadFromStream( std::istream& );
-   };
-
    // A helper class to handle string labels for indexing matrices
    // and lists.
-   typedef std::map<encodedString, size_t> indexer_base;
+   typedef std::map<EncodedString, size_t> indexer_base;
    typedef std::vector<indexer_base::key_type> indexer_reverse;
    class labelIndexer
    {
@@ -71,7 +58,7 @@ class PARAM
      private:
       labelIndexer() : needSync( false ) { clear(); }
       ~labelIndexer() {}
-      
+
      public:
       // Forward lookup.
       indexer_base::mapped_type operator[]( const std::string& ) const;
@@ -103,23 +90,82 @@ class PARAM
      private:
       // This is the maintained index.
       indexer_reverse reverseIndex;
-      // This is a cache for the most probable lookup direction.
+      // This is a cache for the more probable lookup direction.
       mutable bool needSync;
       mutable indexer_base forwardIndex;
    };
 
- private:
-          encodedString section,
-                        name,
-                        type,
-                        defaultvalue,
-                        lowrange,
-                        highrange;
-          std::string   comment;
-          labelIndexer  dim1_index,
-                        dim2_index;
-          typedef std::vector<encodedString> values_type;
-          values_type values;
+  // A class that represents a single parameter value entry, accommodating
+  // strings and subparameters.
+  public:
+   class paramValue
+   {
+    public:
+     enum
+     {
+       Null,
+       Single,
+       List,
+       Matrix
+     };
+
+     paramValue()
+       : mpString( new EncodedString ), mpParam( NULL )
+       {}
+     paramValue( const paramValue& p )
+       : mpString( NULL ), mpParam( NULL )
+       { Assign( p ); }
+     paramValue( const char* s )
+       : mpString( new EncodedString( s ) ), mpParam( NULL )
+       {}
+     paramValue( const std::string& s )
+       : mpString( new EncodedString( s ) ), mpParam( NULL )
+       {}
+     paramValue( const PARAM& p )
+       : mpString( NULL ), mpParam( new PARAM( p ) )
+       {}
+     ~paramValue()
+       { delete mpString; delete mpParam; }
+
+     const paramValue& operator=( const paramValue& p )
+       { Assign( p ); return *this; }
+     const paramValue& operator=( const char* s )
+       { Assign( std::string( s ) ); return *this; }
+     const paramValue& operator=( const std::string& s )
+       { Assign( s ); return *this; }
+     const paramValue& operator=( const PARAM& p )
+       { Assign( p ); return *this; }
+
+     operator const char*() const
+       { return ToString().c_str(); }
+     operator const std::string&() const
+       { return ToString(); }
+     operator PARAM*()
+       { return ToParam(); }
+     PARAM* operator->()
+       { return ToParam(); }
+
+     int Kind() const;
+
+     void Assign( const paramValue& );
+     void Assign( const std::string& );
+     void Assign( const PARAM& );
+     const std::string& ToString() const;
+     const PARAM*       ToParam() const;
+     PARAM*             ToParam();
+     
+     std::ostream& WriteToStream( std::ostream& os ) const;
+     std::istream& ReadFromStream( std::istream& is );
+
+    private:
+     void ConstructParamBuf() const;
+
+     EncodedString* mpString;
+     PARAM*         mpParam;
+
+     static PARAM       sParamBuf;
+     static std::string sStringBuf;
+  };
 
  public:
         PARAM();
@@ -131,20 +177,20 @@ class PARAM
                const char* lowrange,
                const char* highrange,
                const char* comment );
-        PARAM( const char* paramstring );
+        explicit PARAM( const char* paramstring );
         ~PARAM() {}
 
         PARAM& operator=( const PARAM& );
 
         void    SetSection( const std::string& s )
-                { section = s; }
+                { mSection = s; }
         void    SetType( const std::string& s )
-                { type = s; tolower( type ); }
+                { mType = s; tolower( mType ); }
  private:
         // Changing the name without changing its index in the list would be
         // a bad idea, so this function is private.
         void    SetName( const std::string& s )
-                { name = s; }
+                { mName = s; }
  public:
         void    SetNumValues( size_t n );
         void    SetValue( const std::string& s )
@@ -154,39 +200,39 @@ class PARAM
                 { SetValue( s, n * GetNumValuesDimension2() + m ); }
         void    SetValue( const std::string& s,
                           const std::string& label )
-                { return SetValue( s, dim1_index[ label ] ); }
+                { return SetValue( s, mDim1Index[ label ] ); }
         void    SetValue( const std::string& s,
                           const std::string& label_dim1, const std::string& label_dim2 )
-                { return SetValue( s, dim1_index[ label_dim1 ], dim2_index[ label_dim2 ] ); }
+                { return SetValue( s, mDim1Index[ label_dim1 ], mDim2Index[ label_dim2 ] ); }
         void    SetValue( const std::string& s,
                           size_t index_dim1, const std::string& label_dim2  )
-                { return SetValue( s, index_dim1, dim2_index[ label_dim2 ] ); }
+                { return SetValue( s, index_dim1, mDim2Index[ label_dim2 ] ); }
         void    SetValue( const std::string& s,
                           const std::string& label_dim1, size_t index_dim2 )
-                { return SetValue( s, dim1_index[ label_dim1 ], index_dim2 ); }
+                { return SetValue( s, mDim1Index[ label_dim1 ], index_dim2 ); }
 
   const char*   GetSection() const
-                { return section.c_str(); }
+                { return mSection.c_str(); }
   const char*   GetType() const
-                { return type.c_str(); }
+                { return mType.c_str(); }
   const char*   GetName() const
-                { return name.c_str(); }
+                { return mName.c_str(); }
   const char*   GetDefaultValue() const
-                { return defaultvalue.c_str(); }
+                { return mDefaultvalue.c_str(); }
   const char*   GetLowRange() const
-                { return lowrange.c_str(); }
+                { return mLowrange.c_str(); }
   const char*   GetHighRange() const
-                { return highrange.c_str(); }
+                { return mHighrange.c_str(); }
   const char*   GetComment() const
-                { return comment.c_str(); }
+                { return mComment.c_str(); }
         size_t  GetNumValues() const
-                { return values.size(); }
+                { return mValues.size(); }
         size_t  GetNumValuesDimension1() const
                 { return GetNumValues() / GetNumValuesDimension2(); }
         size_t  GetNumRows() const
                 { return GetNumValuesDimension1(); }
         size_t  GetNumValuesDimension2() const
-                { return dim2_index.size(); }
+                { return mDim2Index.size(); }
         size_t  GetNumColumns() const
                 { return GetNumValuesDimension2(); }
         void    SetDimensions( size_t, size_t );
@@ -196,37 +242,77 @@ class PARAM
   const char*   GetValue( size_t n, size_t m ) const
                 { return GetValue( n * GetNumValuesDimension2() + m ); }
   const char*   GetValue( const std::string& label ) const
-                { return GetValue( dim1_index[ label ] ); }
+                { return GetValue( mDim1Index[ label ] ); }
   const char*   GetValue( const std::string& label_dim1, const std::string& label_dim2 ) const
-                { return GetValue( dim1_index[ label_dim1 ], dim2_index[ label_dim2 ] ); }
+                { return GetValue( mDim1Index[ label_dim1 ], mDim2Index[ label_dim2 ] ); }
   const char*   GetValue( size_t index_dim1, const std::string& label_dim2  ) const
-                { return GetValue( index_dim1, dim2_index[ label_dim2 ] ); }
+                { return GetValue( index_dim1, mDim2Index[ label_dim2 ] ); }
   const char*   GetValue( const std::string& label_dim1, size_t index_dim2 ) const
-                { return GetValue( dim1_index[ label_dim1 ], index_dim2 ); }
+                { return GetValue( mDim1Index[ label_dim1 ], index_dim2 ); }
+
+  // Accessors for bounds-checked, recursive access to parameter entries.
+  const paramValue& Value( size_t idx ) const
+                { return mValues.at( idx ); }
+  paramValue& Value( size_t idx )
+                { return mValues.at( idx ); }
+
+  const paramValue& Value( size_t n, size_t m ) const
+                { return Value( n * GetNumValuesDimension2() + m ); }
+  paramValue& Value( size_t n, size_t m )
+                { return Value( n * GetNumValuesDimension2() + m ); }
+
+  const paramValue& Value( const std::string& label ) const
+                { return Value( mDim1Index[ label ] ); }
+  paramValue& Value( const std::string& label )
+                { return Value( mDim1Index[ label ] ); }
+
+  const paramValue& Value( size_t index_dim1, const std::string& label_dim2  ) const
+                { return Value( index_dim1, mDim2Index[ label_dim2 ] ); }
+  paramValue& Value( size_t index_dim1, const std::string& label_dim2 )
+                { return Value( index_dim1, mDim2Index[ label_dim2 ] ); }
+
+  const paramValue& Value( const std::string& label_dim1, size_t index_dim2 ) const
+                { return Value( mDim1Index[ label_dim1 ], index_dim2 ); }
+  paramValue& Value( const std::string& label_dim1, size_t index_dim2 )
+                { return Value( mDim1Index[ label_dim1 ], index_dim2 ); }
+
+  const paramValue& Value( const std::string& label_dim1, const std::string& label_dim2 ) const
+                { return Value( mDim1Index[ label_dim1 ], mDim2Index[ label_dim2 ] ); }
+  paramValue& Value( const std::string& label_dim1, const std::string& label_dim2 )
+                { return Value( mDim1Index[ label_dim1 ], mDim2Index[ label_dim2 ] ); }
+
   labelIndexer& LabelsDimension1()
-                { changed = true; return dim1_index; }
+                { mChanged = true; return mDim1Index; }
   labelIndexer& RowLabels()
-                { changed = true; return LabelsDimension1(); }
+                { return LabelsDimension1(); }
   const labelIndexer& LabelsDimension1() const
-                { return dim1_index; }
+                { return mDim1Index; }
   const labelIndexer& RowLabels() const
                 { return LabelsDimension1(); }
   labelIndexer& LabelsDimension2()
-                { changed = true; return dim2_index; }
+                { mChanged = true; return mDim2Index; }
   labelIndexer& ColumnLabels()
-                { changed = true; return LabelsDimension2(); }
+                { return LabelsDimension2(); }
   const labelIndexer& LabelsDimension2() const
-                { return dim2_index; }
+                { return mDim2Index; }
   const labelIndexer& ColumnLabels() const
                 { return LabelsDimension2(); }
   labelIndexer& Labels()
-                { changed = true; return dim1_index; }
+                { mChanged = true; return mDim1Index; }
   const labelIndexer& Labels() const
-                { return dim1_index; }
+                { return mDim1Index; }
         bool    Changed() const
-                { return changed; }
+                { return mChanged; }
         void    Unchanged()
-                { changed = false; }
+                { mChanged = false; }
+        bool&   Archive()
+                { return mArchive; }
+        bool    Archive() const
+                { return mArchive; }
+        bool&   Tag()
+                { return mTag; }
+        bool    Tag() const
+                { return mTag; }
 
         std::ostream& WriteToStream( std::ostream& ) const;
         std::istream& ReadFromStream( std::istream& );
@@ -234,72 +320,21 @@ class PARAM
         std::istream& ReadBinary( std::istream& );
 
  private:
-        bool    changed;
+        EncodedString mSection,
+                      mName,
+                      mType,
+                      mDefaultvalue,
+                      mLowrange,
+                      mHighrange;
+        std::string   mComment;
+        labelIndexer  mDim1Index,
+                      mDim2Index;
+        typedef std::vector<paramValue> values_type;
+        values_type   mValues;
+        bool          mChanged,
+                      mArchive,
+                      mTag;  // used for parameter save/load filters
 
- public: // These will become private.
-        bool    archive;
-        bool    tag;  // important for parameter save/load filters
-
- // A class that allows for convenient automatic type conversions when
- // accessing parameter values.
- public:
-  class type_adapter
-  {
-   private:
-    type_adapter& operator=( const type_adapter& );
-   public:
-    type_adapter()
-    : p( NULL ), i( 0 ), j( 0 ) {}
-    type_adapter( PARAM* param, size_t row, size_t column )
-    : p( param ), i( row ), j( column ) {}
-    // Assignment operators for write access.
-    type_adapter& operator=( const char* s )
-    { if( p ) p->SetValue( s, i, j ); return *this; }
-    type_adapter& operator=( double d )
-    { std::ostringstream os; os << d; if( p ) p->SetValue( os.str().c_str(), i, j ); return *this; }
-    // Conversion operators for read access.
-    operator const char*() const
-    { return p ? p->GetValue( i, j ) : ""; }
-    operator double() const
-    { return p ? atof( p->GetValue( i, j ) ) : 0.0; }
-
-    // We need to override operators to avoid ambiguities
-    // when the compiler resolves expressions.
-    double operator-( double d ) const
-    { return double( *this ) - d; }
-    double operator+( double d ) const
-    { return double( *this ) + d; }
-    double operator*( double d ) const
-    { return double( *this ) * d; }
-    double operator/( double d ) const
-    { return double( *this ) / d; }
-
-    bool operator==( double d ) const
-    { return double( *this ) == d; }
-    bool operator!=( double d ) const
-    { return double( *this ) != d; }
-    bool operator<( double d ) const
-    { return double( *this ) < d; }
-    bool operator>( double d ) const
-    { return double( *this ) > d; }
-    bool operator<=( double d ) const
-    { return double( *this ) <= d; }
-    bool operator>=( double d ) const
-    { return double( *this ) >= d; }
-    // Dereferencing operator for access to PARAM members.
-    PARAM* operator->() const
-    { return p ? p : &( null_p = PARAM() ); }
-    // Stream i/o.
-    std::ostream& WriteToStream( std::ostream& os ) const
-    { os << operator const char*(); return os; }
-    std::istream& ReadFromStream( std::istream& is )
-    { std::string s; is >> s; *this = s.c_str(); return is; }
-
-   private:
-    PARAM* p;
-    size_t i, j;
-    static PARAM null_p;
-  };
 
  // Case insensitive string handling components.
  private:
@@ -329,6 +364,7 @@ class PARAM
                         a.begin(), a.end(), b.begin(), b.end(), ciless ); }
   };
 };
+
 
 typedef std::map<std::string, PARAM, PARAM::namecmp> param_container;
 
@@ -366,6 +402,7 @@ class PARAMLIST : public param_container
   const PARAM*  GetParamPtr( size_t ) const;
 };
 
+
 inline std::ostream& operator<<( std::ostream& s, const PARAM::labelIndexer& i )
 {
   return i.WriteToStream( s );
@@ -376,24 +413,14 @@ inline std::istream& operator>>( std::istream& s, PARAM::labelIndexer& i )
   return i.ReadFromStream( s );
 }
 
-inline std::ostream& operator<<( std::ostream& s, const PARAM::encodedString& e )
+inline std::ostream& operator<<( std::ostream& s, const PARAM::paramValue& p )
 {
-  return e.WriteToStream( s );
+  return p.WriteToStream( s );
 }
 
-inline std::istream& operator>>( std::istream& s, PARAM::encodedString& e )
+inline std::istream& operator>>( std::istream& s, PARAM::paramValue& p )
 {
-  return e.ReadFromStream( s );
-}
-
-inline std::ostream& operator<<( std::ostream& s, const PARAM::type_adapter& t )
-{
-  return t.WriteToStream( s );
-}
-
-inline std::istream& operator>>( std::istream& s, PARAM::type_adapter& t )
-{
-  return t.ReadFromStream( s );
+  return p.ReadFromStream( s );
 }
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM& p )

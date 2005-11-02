@@ -16,6 +16,7 @@
 #include "ParsedComment.h"
 
 #include "UParameter.h"
+#include <sstream>
 #include <assert>
 
 using namespace std;

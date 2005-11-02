@@ -153,9 +153,9 @@ void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
  for (size_t parameter=0; parameter < paramlist->GetNumParameters(); parameter++)
   {
   if (GetFilterStatus(paramlist->GetParamPtr(parameter), filtertype) == 1)
-     paramlist->GetParamPtr(parameter)->tag=true;
+     paramlist->GetParamPtr(parameter)->Tag()=true;
   else
-     paramlist->GetParamPtr(parameter)->tag=false;
+     paramlist->GetParamPtr(parameter)->Tag()=false;
   }
 }
 //---------------------------------------------------------------------------

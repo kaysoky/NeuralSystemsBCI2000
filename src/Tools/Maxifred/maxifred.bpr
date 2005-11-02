@@ -7,7 +7,7 @@
     <OBJFILES value="obj\maxifred.obj obj\UMain.obj obj\channelnames.obj obj\UAbout.obj 
       obj\UEditChannellist.obj obj\UStateDialog.obj obj\USave2Disk.obj 
       obj\UState.obj obj\UParameter.obj obj\UBCI2000Data.obj 
-      obj\UGenericSignal.obj"/>
+      obj\UGenericSignal.obj obj\EncodedString.obj"/>
     <RESFILES value="maxifred.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -18,7 +18,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib dbrtl.lib vcldb.lib bdertl.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -61,6 +61,7 @@
       <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

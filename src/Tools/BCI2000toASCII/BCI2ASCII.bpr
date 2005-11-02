@@ -5,7 +5,7 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\tools\BCI2000toASCII\BCI2ASCII.exe"/>
     <OBJFILES value="obj\BCI2ASCII.obj obj\UMain.obj obj\UState.obj obj\UParameter.obj 
-      obj\UBCI2000Data.obj obj\UGenericSignal.obj"/>
+      obj\UBCI2000Data.obj obj\UGenericSignal.obj obj\EncodedString.obj"/>
     <RESFILES value="BCI2ASCII.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm"/>
@@ -16,7 +16,7 @@
       bdertl.bpi ibsmp.bpi vcldbx.bpi ibxpress.bpi bcbie.bpi vclie.bpi inetdb.bpi 
       inet.bpi nmfast.bpi dclocx.bpi bcb2kaxserver.bpi teeui.bpi teedb.bpi 
       tee.bpi teeqr.bpi DCLUSR.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -57,6 +57,7 @@
       <FILE FILENAME="libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 #include <assert>
 
 #define ALLFILES_FILTER "All files (*.*)|*.*"
@@ -327,7 +328,7 @@ void
 ParamDisplay::List::WriteValuesTo( PARAM& outParam ) const
 {
   istringstream is( mpEdit->Text.c_str() );
-  PARAM::encodedString value;
+  EncodedString value;
   int index = 0;
   while( is >> value )
     outParam.SetValue( value, index++ );
@@ -342,9 +343,9 @@ ParamDisplay::List::ReadValuesFrom( const PARAM& inParam )
   ostringstream oss;
   if( inParam.GetNumValues() > 0 )
   {
-    oss << PARAM::encodedString( inParam.GetValue( 0 ) );
+    oss << EncodedString( inParam.GetValue( 0 ) );
     for( size_t i = 1; i < inParam.GetNumValues(); ++i )
-      oss << ' ' << PARAM::encodedString( inParam.GetValue( i ) );
+      oss << ' ' << EncodedString( inParam.GetValue( i ) );
   }
   mpEdit->Text = oss.str().c_str();
   

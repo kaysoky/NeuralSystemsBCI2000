@@ -11,8 +11,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "3-dimensional box task";
                  Application->CreateForm(__classid(TfMain), &fMain);
-                 Application->CreateForm(__classid(TUser), &User);
-                 Application->Run();
+         Application->CreateForm(__classid(TUser), &User);
+         Application->Run();
         }
         catch (Exception &exception)
         {

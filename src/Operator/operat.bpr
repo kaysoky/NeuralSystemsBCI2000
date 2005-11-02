@@ -12,7 +12,7 @@
       obj\UOperatorUtils.obj obj\UVisual.obj obj\Color.obj obj\Label.obj 
       obj\TCPStream.obj obj\MessageHandler.obj obj\UBCIError.obj obj\USysLog.obj 
       obj\UEnvironment.obj obj\ParamDisplay.obj obj\ParsedComment.obj 
-      obj\WinMessageHook.obj"/>
+      obj\WinMessageHook.obj obj\EncodedString.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -23,7 +23,7 @@
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib tee.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi"/>
-    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
+    <PATHCPP value=".;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -84,6 +84,7 @@
       <FILE FILENAME="ParamDisplay.cpp" FORMNAME="" UNITNAME="ParamDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ParsedComment.cpp" FORMNAME="" UNITNAME="ParsedComment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="WinMessageHook.cpp" FORMNAME="" UNITNAME="WinMessageHook" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

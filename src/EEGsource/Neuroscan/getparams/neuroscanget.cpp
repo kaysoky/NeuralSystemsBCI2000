@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string>
+#include <sstream>
 #include <fstream> 
 
 #include "UParameter.h"

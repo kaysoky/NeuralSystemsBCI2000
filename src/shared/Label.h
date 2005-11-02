@@ -15,7 +15,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "UParameter.h"
+#include "EncodedString.h"
 #include "VisList.h"
 
 class Label
@@ -32,8 +32,8 @@ class Label
     void ReadFromStream( std::istream& );
 
   private:
-    int                  mAddress;
-    PARAM::encodedString mText;
+    int           mAddress;
+    EncodedString mText;
 };
 
 typedef VisList<Label> Labellist;

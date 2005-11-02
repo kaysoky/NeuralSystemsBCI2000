@@ -11,13 +11,13 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = D2Box.exe D3Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe \
   P3Speller.exe RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe \
-  BufferRead.exe DASSource.exe DT2000.exe gUSBamp.exe Neuroscan.exe NISource.exe \
-  RandomNumber.exe RDAClient.exe TDTclient.exe operat.exe ARSignalProcessing.exe \
-  DummySignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
-  PeakDetectSignalProcessing.exe SWSignalProcessing.exe BCIBatch.exe \
-  BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCIDiff.exe BCITimeFreq.exe \
-  BrainVisionImporter.exe calibgen.exe maxifred.exe USBampgetinfo.exe \
-  neurogetparams.exe getparams.exe TDTsampleRate.exe
+  BufferRead.exe DASSource.exe DT2000.exe gUSBamp.exe gMOBIlab.exe Neuroscan.exe \
+  NISource.exe RandomNumber.exe RDAClient.exe TDTclient.exe operat.exe \
+  ARSignalProcessing.exe DummySignalProcessing.exe FIRProcessing.exe \
+  P3SignalProcessing.exe PeakDetectSignalProcessing.exe SWSignalProcessing.exe \
+  BCIBatch.exe BCI2000FileInfo.exe BCI2ASCII.exe BCI2GAB.exe BCIDiff.exe \
+  BCITimeFreq.exe BrainVisionImporter.exe calibgen.exe maxifred.exe \
+  USBampgetinfo.exe neurogetparams.exe getparams.exe TDTsampleRate.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -179,6 +179,10 @@ neurogetparams.exe: EEGsource\Neuroscan\getparams\neurogetparams.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 TDTsampleRate.exe: EEGsource\TuckerDavis\TDTsampleRate\TDTsampleRate.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlab.exe: EEGsource\g.MOBIlab\gMOBIlab.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

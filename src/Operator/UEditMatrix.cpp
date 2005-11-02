@@ -10,20 +10,30 @@
 #pragma link "CSPIN"
 #pragma resource "*.dfm"
 TfEditMatrix *fEditMatrix;
+
+int TfEditMatrix::sNumInstances = 0;
+
+static const char* cSubEditTag = "\1subedit";
+static const char* cSubEditCaption = "Matrix...";
 //---------------------------------------------------------------------------
 __fastcall TfEditMatrix::TfEditMatrix(TComponent* Owner)
 : TForm(Owner),
-  lock( new TCriticalSection )
+  lock( new TCriticalSection ),
+  mpSubEditor( NULL )
 {
-  OperatorUtils::RestoreControl( this );
+  ++sNumInstances;
+  if( sNumInstances == 1 )
+    OperatorUtils::RestoreControl( this );
   bToggleEditing->OnClick = ToggleLabelEditing;
   EditEntries();
 }
 //---------------------------------------------------------------------------
 __fastcall TfEditMatrix::~TfEditMatrix()
 {
-  OperatorUtils::SaveControl( this );
+  if( sNumInstances == 1 )
+    OperatorUtils::SaveControl( this );
   delete lock;
+  --sNumInstances;
 }
 
 void TfEditMatrix::SetDisplayedParam( PARAM* inParam )
@@ -81,9 +91,12 @@ int res, row, col;
 void TfEditMatrix::UpdateDisplay()
 {
  Lock();
+ if( mpSubEditor != NULL )
+   mpSubEditor->Close();
+ const PARAM* param = matrix_param;
  // set the window title and comment
- Caption="Edit Matrix "+AnsiString(matrix_param->GetName());
- tComment->Caption=AnsiString(matrix_param->GetComment());
+ Caption="Edit Matrix "+AnsiString(param->GetName());
+ tComment->Caption=AnsiString(param->GetComment());
 
  // given the pointer, write the parameter's data into the spread sheet
  StringGrid->RowCount=cRowsMax->Value+1;
@@ -94,9 +107,9 @@ void TfEditMatrix::UpdateDisplay()
  {
    StringGrid->Cells[ 0 ][ 0 ] = "";
    size_t col = 0;
-   while( col < matrix_param->GetNumValuesDimension2() )
+   while( col < param->GetNumValuesDimension2() )
    {
-     StringGrid->Cells[ col + 1 ][ 0 ] = matrix_param->LabelsDimension2()[ col ].c_str();
+     StringGrid->Cells[ col + 1 ][ 0 ] = param->LabelsDimension2()[ col ].c_str();
      ++col;
    }
    while( ( int )col < fEditMatrix->StringGrid->ColCount - 1 )
@@ -107,7 +120,7 @@ void TfEditMatrix::UpdateDisplay()
    size_t row = 0;
    while( row < matrix_param->GetNumValuesDimension1() )
    {
-      StringGrid->Cells[ 0 ][ row + 1 ] = matrix_param->LabelsDimension1()[ row ].c_str();
+      StringGrid->Cells[ 0 ][ row + 1 ] = param->LabelsDimension1()[ row ].c_str();
       ++row;
    }
    while( ( int )row < fEditMatrix->StringGrid->RowCount - 1 )
@@ -118,10 +131,14 @@ void TfEditMatrix::UpdateDisplay()
  }
 
  // set the values in the spreadsheet
- for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
-  for (size_t col=0; col<matrix_param->GetNumValuesDimension2(); col++)
-   StringGrid->Cells[col+1][row+1]=matrix_param->GetValue(row, col);
+ for (size_t row=0; row<param->GetNumRows(); row++)
+  for (size_t col=0; col<param->GetNumColumns(); col++)
+   if( param->Value( row, col ).Kind() == PARAM::paramValue::Matrix )
+     StringGrid->Cells[ col + 1 ][ row + 1 ] = cSubEditTag;
+   else
+     StringGrid->Cells[col+1][row+1]=param->GetValue(row, col);
 
+ SelectTopLeftCell();
  EditEntries();
 
  Unlock();
@@ -153,7 +170,8 @@ void __fastcall TfEditMatrix::FormClose(TObject *Sender, TCloseAction &Action)
  // set the values in the parameter according to the values in the spreadsheet
  for (size_t row=0; row<matrix_param->GetNumValuesDimension1(); row++)
   for (size_t col=0; col<matrix_param->GetNumValuesDimension2(); col++)
-   matrix_param->SetValue(StringGrid->Cells[col+1][row+1].c_str(), row, col);
+   if( StringGrid->Cells[col+1][row+1] != cSubEditTag )
+    matrix_param->SetValue(StringGrid->Cells[col+1][row+1].c_str(), row, col);
 
  Unlock();
 }
@@ -181,6 +199,15 @@ void TfEditMatrix::EditEntries()
   StringGrid->FixedRows = 1;
   bToggleEditing->Caption = "unlock labels";
   AdaptColumnWidths();
+  SelectTopLeftCell();
+}
+
+void TfEditMatrix::SelectTopLeftCell()
+{
+  TGridRect nullSelection;
+  nullSelection.Left = nullSelection.Right
+    = nullSelection.Top = nullSelection.Bottom = 0;
+  StringGrid->Selection = nullSelection;
 }
 
 void TfEditMatrix::AdaptColumnWidths()
@@ -205,5 +232,42 @@ void TfEditMatrix::AdaptColumnWidths()
   }
 }
 
+void __fastcall TfEditMatrix::StringGridSelectCell(TObject *Sender,
+      int ACol, int ARow, bool &CanSelect)
+{
+  TStringGrid* grid = dynamic_cast<TStringGrid*>( Sender );
+  if( grid->Cells[ ACol ][ ARow ] == cSubEditTag )
+  {
+    mpSubEditor = new TfEditMatrix( NULL );
+    mpSubEditor->Top = mpSubEditor->Top + 20 * ( sNumInstances - 1 );
+    mpSubEditor->Left = mpSubEditor->Left + 20 * ( sNumInstances - 1 );
+    mpSubEditor->SetDisplayedParam( matrix_param->Value( ARow - 1, ACol - 1 ) );
+    mpSubEditor->Caption = Caption + "("
+                           + matrix_param->RowLabels()[ ARow - 1 ].c_str() + ","
+                           + matrix_param->ColumnLabels()[ ACol - 1 ].c_str() + ")";
+    mpSubEditor->tComment->Caption = matrix_param->GetComment();
+    mpSubEditor->ShowModal();
+    delete mpSubEditor;
+    mpSubEditor = NULL;
+    CanSelect = false;
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfEditMatrix::StringGridDrawCell(TObject *Sender, int ACol,
+      int ARow, TRect &Rect, TGridDrawState State)
+{
+  TStringGrid* grid = dynamic_cast<TStringGrid*>( Sender );
+  if( grid->Cells[ ACol ][ ARow ] == cSubEditTag )
+  {
+    grid->Canvas->Pen->Width = 3;
+    grid->Canvas->Pen->Color = clBtnShadow;
+    grid->Canvas->Brush->Color = clBtnFace;
+    grid->Canvas->Rectangle( Rect );
+    grid->Canvas->Font->Color = clBtnText;
+    grid->Canvas->TextRect( Rect, Rect.left + 2, Rect.top + 2, cSubEditCaption );
+  }
+}
+//---------------------------------------------------------------------------
 
 

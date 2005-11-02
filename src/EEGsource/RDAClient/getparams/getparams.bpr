@@ -4,7 +4,8 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\tools\BrainAmpGetParams\getparams.exe"/>
-    <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj obj\UBCIError.obj"/>
+    <OBJFILES value="obj\getparams.obj obj\UParameter.obj obj\RDAQueue.obj obj\UBCIError.obj 
+      obj\EncodedString.obj"/>
     <RESFILES value="getparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -17,7 +18,7 @@
       inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi bcbie.bpi soaprtl.bpi 
       dclocx.bpi dbexpress.bpi dbxcds.bpi indy.bpi bcb2kaxserver.bpi 
       visualclx.bpi visualdbclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared;..;..\..\..\shared"/>
+    <PATHCPP value=".;..\..\..\shared;..;..\..\..\shared;..\..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -53,6 +54,7 @@
       <FILE FILENAME="..\..\..\shared\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\RDAQueue.cpp" FORMNAME="" UNITNAME="RDAQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\UBCIError.cpp" FORMNAME="" UNITNAME="UBCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

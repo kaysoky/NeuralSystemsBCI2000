@@ -39,10 +39,37 @@
 
 #include "UParameter.h"
 
+#include <sstream>
 #include <fstream>
 #include <set>
+#include <assert>
 
 using namespace std;
+
+// This helper class defines what we accept as delimiting single-character
+// symbol pairs for index lists and sub-parameters in a parameter line.
+class Brackets
+{
+ public:
+  static bool IsOpening( char c )
+  {
+    return ClosingMatch( c ) != '\0';
+  }
+  static char ClosingMatch( char c )
+  {
+    size_t pos = BracketPairs.find( c );
+    if( pos != string::npos && !( pos & 1 ) ) // even positions are opening brackets
+      return BracketPairs[ pos + 1 ];
+    return '\0';
+  }
+  static const string BracketPairs;
+  static const string OpeningDefault;
+  static const string ClosingDefault;
+};
+const string Brackets::BracketPairs = "{}()[]<>";
+const string Brackets::OpeningDefault = BracketPairs.substr( 0, 1 );
+const string Brackets::ClosingDefault = BracketPairs.substr( 1, 1 );
+
 /////////////////////////////////////////////////////////////////////////////
 // PARAMLIST definitions                                                   //
 /////////////////////////////////////////////////////////////////////////////
@@ -149,7 +176,7 @@ PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
 
   PARAM param;
   if( linestream >> param )
-    ( *this )[ param.name ] = param;
+    ( *this )[ param.mName ] = param;
   return linestream;
 }
 
@@ -200,7 +227,7 @@ PARAMLIST::ReadFromStream( istream& is )
   PARAM param;
   is >> ws;
   while( !is.eof() && is >> param >> ws )
-    ( *this )[ param.name ] = param;
+    ( *this )[ param.mName ] = param;
   return is;
 }
 
@@ -259,7 +286,7 @@ PARAMLIST::SaveParameterList( const char* filename, bool usetags ) const
   {
     PARAMLIST paramsToSave;
     for( const_iterator i = begin(); i != end(); ++i )
-      if( !i->second.tag )
+      if( !i->second.mTag )
         paramsToSave[ i->first ] = i->second;
     file << paramsToSave;
   }
@@ -299,7 +326,7 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
   const char* unwantedSections[] = { "System", };
   for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
     for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
-      if( PARAM::strciequal( i->second.section, unwantedSections[ j ] ) )
+      if( PARAM::strciequal( i->second.mSection, unwantedSections[ j ] ) )
         unwantedParams.insert( i->first );
 #endif
 
@@ -308,7 +335,7 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
     for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
     {
       const_iterator f = find( i->first );
-      if( f != end() && f->second.tag )
+      if( f != end() && f->second.mTag )
         unwantedParams.insert( i->first );
     }
 
@@ -330,16 +357,18 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
 /////////////////////////////////////////////////////////////////////////////
 // PARAM definitions                                                       //
 /////////////////////////////////////////////////////////////////////////////
-static const char* const sDefaultValue = "0";
+static const char* sDefaultValue = "0";
 static const string sCommentSeparator = "//";
 const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 
 // **************************************************************************
 // Function:   SetDimensions
 // Purpose:    Sets the dimensions of a matrix parameter.
-//             It does not do anything, if the parameter is not a matrix.
-// NOTE:       The two dimensions are in reverse order wrt
-//             SetValue/GetValue.
+//             Converts the type if necessary.
+//               1, 1: 1x1 matrix
+//               0, 1: 0x1 matrix
+//               1, 0: list of length 1
+//               0, 0: list of length 0
 // Parameters: inDimension1 - size in dimension 1
 //             inDimension2 - size in dimension 2
 // Returns:    N/A
@@ -347,23 +376,24 @@ const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
 void
 PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 {
- // Don't do anything if this is not a matrix parameter.
- if( type == "matrix" && inDimension2 > 0 )
- {
-   // To preserve existing values' indices, insert/remove values as needed.
-   size_t dim1 = GetNumValuesDimension1(),
-          dim2 = GetNumValuesDimension2();
-   if( inDimension2 > dim2 )
-     for( size_t i = 0; i < dim1; ++i )
-       values.insert( values.begin() + i * inDimension2 + dim2, inDimension2 - dim2,
-                                                     encodedString( sDefaultValue ) );
-   else
-     for( size_t i = 0; i < dim1; ++i )
-       values.erase( values.begin() + ( i + 1 ) * inDimension2, values.begin() + i * inDimension2 + dim2 );
-   // dim1_index will be resized by SetNumValues().
-   dim2_index.resize( inDimension2 );
-   SetNumValues( inDimension1 * inDimension2 );
- }
+  if( inDimension2 == 0 )
+    mType = "list";
+  else
+    mType = "matrix";
+  // To preserve existing values' indices, insert/remove values as needed.
+  size_t dim1 = GetNumValuesDimension1(),
+  dim2 = GetNumValuesDimension2();
+  if( inDimension2 > dim2 )
+    for( size_t i = 0; i < dim1; ++i )
+      mValues.insert( mValues.begin() + i * inDimension2 + dim2,
+                                          inDimension2 - dim2, sDefaultValue );
+  else
+    for( size_t i = 0; i < dim1; ++i )
+      mValues.erase( mValues.begin() + ( i + 1 ) * inDimension2,
+                                   mValues.begin() + i * inDimension2 + dim2 );
+  // mDim1Index will be resized by SetNumValues().
+  mDim2Index.resize( inDimension2 );
+  SetNumValues( inDimension1 * inDimension2 );
 }
 
 // **************************************************************************
@@ -373,9 +403,10 @@ PARAM::SetDimensions( size_t inDimension1, size_t inDimension2 )
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM()
-: changed( false ),
-  archive( false ),
-  tag( false )
+: mChanged( false ),
+  mArchive( false ),
+  mTag( false ),
+  mValues( 1, sDefaultValue )
 {
 }
 
@@ -390,13 +421,13 @@ PARAM::PARAM( const char* inName, const char* inSection,
               const char* inDefaultvalue, const char* inLowrange,
               const char* inHighrange, const char* inComment )
 :
-  defaultvalue( inDefaultvalue ),
-  lowrange( inLowrange ),
-  highrange( inHighrange ),
-  comment( inComment ),
-  changed( false ),
-  archive( false ),
-  tag( false )
+  mDefaultvalue( inDefaultvalue ),
+  mLowrange( inLowrange ),
+  mHighrange( inHighrange ),
+  mComment( inComment ),
+  mChanged( false ),
+  mArchive( false ),
+  mTag( false )
 {
   SetName( inName );
   SetSection( inSection );
@@ -412,12 +443,13 @@ PARAM::PARAM( const char* inName, const char* inSection,
 // Returns:    N/A
 // **************************************************************************
 PARAM::PARAM( const char* line )
-: changed( false ),
-  archive( false ),
-  tag( false )
+: mChanged( false ),
+  mArchive( false ),
+  mTag( false )
 {
   istringstream iss( line );
-  iss >> *this;
+  if( !( iss >> *this ) )
+    throw __FUNC__ ": invalid parameter line";
 }
 
 // **************************************************************************
@@ -457,12 +489,15 @@ PARAM::PARAM( const char* line )
 void
 PARAM::SetNumValues( size_t n )
 {
-  values.resize( n, encodedString( sDefaultValue ) );
-  // dim2_index will always have a size > 0.
-  // If n is not a multiple of dim2_index' size something is logically wrong.
-  // But it has not been an error up to now.
-  dim1_index.resize( n / dim2_index.size() );
-  changed = true;
+  if( n > 1 && mType.find( "list" ) == mType.npos
+            && mType.find( "matrix" ) == mType.npos )
+    mType = "list";
+  mValues.resize( n, sDefaultValue );
+  // mDim2Index will always have a size > 0.
+  // If n is not a multiple of mDim2Index' size something is logically wrong.
+  // However, this has not been treated as an error up to now.
+  mDim1Index.resize( n / mDim2Index.size() );
+  mChanged = true;
 }
 
 // **************************************************************************
@@ -502,8 +537,8 @@ PARAM::GetValue( size_t idx ) const
   {
     if( idx >= numValues )
       idx = 0;
-    retValue = values[ idx ].c_str();
-  }
+    retValue = mValues[ idx ];
+  };
   return retValue;
 }
 
@@ -563,8 +598,8 @@ PARAM::SetValue( const string& value, size_t idx )
 {
   if( GetNumValues() <= idx )
     SetNumValues( idx + 1 );
-  values[ idx ] = value;
-  changed = true;
+  mValues[ idx ] = value;
+  mChanged = true;
 }
 
 // **************************************************************************
@@ -623,95 +658,95 @@ PARAM::SetValue( const string& value, size_t idx )
 istream&
 PARAM::ReadFromStream( istream& is )
 {
-  changed = true;
-  archive = false;
-  tag = false;
-  values.clear();
-  string declaration;
-  getline( is, declaration, '=' );
-  string definition;
+  mChanged = true;
+  mArchive = false;
+  mTag = false;
+  mSection.clear();
+  mType.clear();
+  mName.clear();
+  mValues.clear();
+
+  is >> ws;
+  string delimiters = "\n\r";
+  EncodedString value;
+  // Unnamed parameters are enclosed in bracket pairs, and they omit section and name.
+  bool unnamedParam = Brackets::IsOpening( is.peek() );
+  if( unnamedParam )
   {
-    int i = is.peek();
-    while( is && i != '\r' && i != '\n' && i != EOF )
-    {
-      definition += is.get();
-      i = is.peek();
-    }
+    delimiters += Brackets::ClosingMatch( is.get() );
+    is >> value;
+    SetType( value );
   }
-  size_t commentSepPos = definition.rfind( sCommentSeparator );
-  if( commentSepPos != definition.npos )
-  {
-    size_t commentPos = commentSepPos + sCommentSeparator.length();
-    while( commentPos < definition.size() && ct.is( ct.space, definition[ commentPos ] ) )
-      ++commentPos;
-    comment = definition.substr( commentPos );
-    definition = definition.substr( 0, commentSepPos );
-  }
-  // Parse the parameter's declaration.
-  istringstream linestream( declaration );
-  encodedString value;
-  linestream >> value;
-  SetSection( value );
-  linestream >> value;
-  SetType( value );
-  linestream >> value;
-  SetName( value );
-  if( !linestream )
-    is.setstate( ios::failbit );
   else
   {
-    linestream.clear();
-    // Parse the parameter's definition.
-    linestream.str( definition );
-    if( type == "matrix" )
-    {
-      linestream >> dim1_index >> dim2_index;
-      if( dim2_index.size() < 1 )
-        dim2_index.resize( 1 );
-      }
-      else if( type.find( "list" ) != type.npos )
-      {
-      linestream >> dim1_index;
-      dim2_index.resize( 1 );
-    }
-    else
-    {
-      dim1_index.resize( 1 );
-      dim2_index.resize( 1 );
-    }
-    if( !linestream )
-      is.setstate( ios::failbit );
+    is >> value;
+    SetSection( value );
+    is >> value;
+    SetType( value );
+    if( is >> value )
+      SetName( value.substr( 0, value.size() - 1 ) );
+  }
 
-    linestream >> value;
-    while( linestream && values.size() < dim1_index.size() * dim2_index.size() )
-    {
-      values.push_back( value );
-      linestream >> value;
-    }
-    // Not all matrix/list entries are required for a parameter definition.
-    values.resize( dim1_index.size() * dim2_index.size(), encodedString( sDefaultValue ) );
+  if( mType.find( "matrix" ) != mType.npos )
+  {
+    is >> mDim1Index >> mDim2Index;
+    if( mDim2Index.size() < 1 )
+      mDim2Index.resize( 1 );
+  }
+  else if( mType.find( "list" ) != mType.npos )
+  {
+    is >> mDim1Index;
+    mDim2Index.resize( 1 );
+  }
+  else
+  {
+    mDim1Index.resize( 1 );
+    mDim2Index.resize( 1 );
+  }
 
-    // These entries are not required for a parameter definition.
-    encodedString* finalEntries[] =
+  // Not all matrix/list entries are required for a parameter definition.
+  mValues.resize( mDim1Index.size() * mDim2Index.size(), sDefaultValue );
+  is >> ws;
+  values_type::iterator i = mValues.begin();
+  while( i != mValues.end() && is.peek() != EOF
+                               && delimiters.find( is.peek() ) == string::npos )
+    is >> *i++ >> ws;
+
+  // The remaining elements are optional.
+  string remainder;
+  {
+    int c = is.peek();
+    while( is && c != EOF && delimiters.find( c ) == string::npos )
     {
-      &defaultvalue,
-      &lowrange,
-      &highrange
-    };
-    size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
-           i = 0;
-    while( linestream && i < numFinalEntries )
-    {
-      *finalEntries[ i ] = value;
-      linestream >> value;
-      ++i;
-    }
-    while( i < numFinalEntries )
-    {
-      *finalEntries[ i ] = encodedString( sDefaultValue );
-      ++i;
+      remainder += is.get();
+      c = is.peek();
     }
   }
+  size_t commentSepPos = remainder.rfind( sCommentSeparator );
+  if( commentSepPos != remainder.npos )
+  {
+    size_t commentPos = commentSepPos + sCommentSeparator.length();
+    while( commentPos < remainder.size() && ct.is( ct.space, remainder[ commentPos ] ) )
+      ++commentPos;
+    mComment = remainder.substr( commentPos );
+    remainder = remainder.substr( 0, commentSepPos );
+  }
+
+  istringstream iss( remainder );
+  EncodedString* finalEntries[] =
+  {
+    &mDefaultvalue,
+    &mLowrange,
+    &mHighrange
+  };
+  size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
+         entry = 0;
+  while( entry < numFinalEntries && iss >> value >> ws )
+    *finalEntries[ entry++ ] = value;
+  while( entry < numFinalEntries )
+    *finalEntries[ entry++ ] = EncodedString( "" );
+  if( unnamedParam )
+    is.get();
   return is;
 }
 
@@ -727,17 +762,28 @@ PARAM::ReadFromStream( istream& is )
 ostream&
 PARAM::WriteToStream( ostream& os ) const
 {
-  os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
-  if( type == "matrix" )
+  bool isUnnamed = mName.empty();
+  if( isUnnamed ) // Un-named parameters are enclosed in brackets.
+    os << Brackets::OpeningDefault << ' ' << mType << ' ';
+  else
+    os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
+
+  if( mType == "matrix" )
     os << LabelsDimension1() << ' ' << LabelsDimension2() << ' ';
-  else if( type.find( "list" ) != type.npos )
+  else if( mType.find( "list" ) != mType.npos )
     os << Labels() << ' ';
   for( size_t i = 0; i < GetNumValues(); ++i )
-    os << encodedString( GetValue( i ) ) << ' ';
-  os << defaultvalue << ' '
-     << lowrange << ' '
-     << highrange << ' '
-     << sCommentSeparator << ' ' << comment;
+    os << Value( i ) << ' ';
+  if( !( mDefaultvalue.empty() && mLowrange.empty() && mHighrange.empty() ) )
+    os << mDefaultvalue << ' '
+       << mLowrange << ' '
+       << mHighrange << ' ';
+  if( !mComment.empty() )
+     os << sCommentSeparator << ' ' << mComment << ' ';
+
+  if( isUnnamed )
+    os << Brackets::ClosingDefault;
+
   return os;
 }
 
@@ -788,124 +834,31 @@ PARAM::operator=( const PARAM& p )
     // We prevent assignment of certain values if a parameter's name
     // is set and the parameter that is to be copied has the same
     // name.
-    if( name.empty() || name != p.name )
+    if( mName.empty() || mName != p.mName )
     {
-      section = p.section;
-      name = p.name;
-      type = p.type;
-      defaultvalue = p.defaultvalue;
-      lowrange = p.lowrange;
-      highrange = p.highrange;
-      comment = p.comment;
+      mSection = p.mSection;
+      mName = p.mName;
+      mType = p.mType;
+      mDefaultvalue = p.mDefaultvalue;
+      mLowrange = p.mLowrange;
+      mHighrange = p.mHighrange;
+      mComment = p.mComment;
     }
 
-    dim1_index = p.dim1_index;
-    dim2_index = p.dim2_index;
-    values = p.values;
+    mDim1Index = p.mDim1Index;
+    mDim2Index = p.mDim2Index;
+    mValues = p.mValues;
 
-    changed = p.changed;
-    archive = p.archive;
-    tag = p.tag;
+    mChanged = p.mChanged;
+    mArchive = p.mArchive;
+    mTag = p.mTag;
   }
   return *this;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// encodedString definitions                                               //
-/////////////////////////////////////////////////////////////////////////////
-const char escapeChar = '%';
-// **************************************************************************
-// Function:   ReadFromStream
-// Purpose:    Member function for formatted stream input of a single
-//             string value.
-//             All formatted input functions are, for consistency's sake,
-//             supposed to use this function.
-// Parameters: Input stream to read from.
-// Returns:    Input stream read from.
-// **************************************************************************
-istream&
-PARAM::encodedString::ReadFromStream( istream& is )
-{
-  string newContent;
-  if( is >> newContent )
-  {
-    size_t pos = newContent.find( escapeChar, 0 );
-    while( pos != npos )
-    {
-      newContent.erase( pos, 1 );
-
-      size_t numDigits = 0;
-      char curDigit;
-      int hexValue = 0;
-      while( pos + numDigits < newContent.size() && numDigits < 2
-             && ::isxdigit( curDigit = newContent[ pos + numDigits ] ) )
-      {
-        if( !::isdigit( curDigit ) )
-          curDigit = ::toupper( curDigit ) - 'A' + 10;
-        else
-          curDigit -= '0';
-        hexValue = ( hexValue << 4 ) + curDigit;
-        ++numDigits;
-      }
-      newContent.erase( pos, numDigits );
-      if( hexValue > 0 )
-        newContent.insert( pos, 1, ( char )hexValue );
-
-      pos = newContent.find( escapeChar, pos + 1 );
-    }
-    *this = newContent;
-  }
-  return is;
-}
-
-// **************************************************************************
-// Function:   WriteToStream
-// Purpose:    Member function for formatted stream output of a single
-//             encoded string value.
-//             All formatted output functions are, for consistency's sake,
-//             supposed to use this function.
-// Parameters: Output stream to write into; list of characters that may not
-//             appear in the output.
-// Returns:    Stream written into.
-// **************************************************************************
-ostream&
-PARAM::encodedString::WriteToStream( ostream& os, const string& forbiddenChars ) const
-{
-  if( empty() )
-    os << escapeChar;
-  else
-  {
-    const string& self = *this;
-    ostringstream oss;
-    oss << hex;
-    for( size_t pos = 0; pos < size(); ++pos )
-    {
-      if( ::isprint( self[ pos ] )
-          && !::isspace( self[ pos ] )
-          && forbiddenChars.find( self[ pos ] ) == npos )
-      {
-        oss << self[ pos ];
-        if( self[ pos ] == escapeChar )
-          oss << escapeChar;
-      }
-      else
-        oss << escapeChar
-            << ( int )( ( self[ pos ] >> 4 ) & 0x0f )
-            << ( int )( self[ pos ] & 0x0f );
-    }
-    os << oss.str();
-  }
-  return os;
-}
-
-/////////////////////////////////////////////////////////////////////////////
 // labelIndexer definitions                                                //
 /////////////////////////////////////////////////////////////////////////////
-
-// Whatever we accept as delimiting single-character symbol pairs for our
-// index list in a parameter line.
-// The first entry is the default pair (used for output).
-const char* bracketPairs[] = { "{}", "()", "[]", "<>" };
 
 // **************************************************************************
 // Function:   operator[]
@@ -1054,21 +1007,13 @@ PARAM::labelIndexer::ReadFromStream( istream& is )
   if( is >> ws )
   {
     // Check if the first character is an opening bracket.
-    char possibleDelimiter = is.peek();
-    const char* endDelimiter = NULL;
-    size_t i = 0;
-    while( endDelimiter == NULL && i < sizeof( bracketPairs ) / sizeof( *bracketPairs ) )
-    {
-      if( possibleDelimiter == bracketPairs[ i ][ 0 ] )
-        endDelimiter = &bracketPairs[ i ][ 1 ];
-      ++i;
-    }
-    if( endDelimiter != NULL )
+    char endDelimiter = Brackets::ClosingMatch( is.peek() );
+    if( endDelimiter != '\0' )
     { // The first character is an opening bracket,
       // Get the line up to the matching closing bracket.
       is.get();
       string labelsList;
-      if( getline( is, labelsList, *endDelimiter ) )
+      if( getline( is, labelsList, endDelimiter ) )
       {
         reverseIndex.clear();
         istringstream labels( labelsList );
@@ -1104,19 +1049,247 @@ PARAM::labelIndexer::WriteToStream( ostream& os ) const
     os << size();
   else
   {
-    os << bracketPairs[ 0 ][ 0 ] << ' ';
+    os << Brackets::OpeningDefault << ' ';
     for( size_t i = 0; i < reverseIndex.size(); ++i )
     {
-      reverseIndex[ i ].WriteToStream( os, &bracketPairs[ 0 ][ 1 ] );
+      reverseIndex[ i ].WriteToStream( os, Brackets::ClosingDefault );
       os << ' ';
     }
-    os << bracketPairs[ 0 ][ 1 ];
+    os << Brackets::ClosingDefault;
   }
   return os;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// type_adapter definitions                                                //
+// paramValue definitions                                                 //
 /////////////////////////////////////////////////////////////////////////////
-PARAM PARAM::type_adapter::null_p;
+PARAM  PARAM::paramValue::sParamBuf;
+string PARAM::paramValue::sStringBuf;
+
+// **************************************************************************
+// Function:   Kind
+// Purpose:    Returns the kind of parameter value this instance represents.
+// Parameters: kind of paramValue.
+// Returns:    N/A
+// **************************************************************************
+int
+PARAM::paramValue::Kind() const
+{
+  int result = Null;
+  if( mpParam )
+  {
+    string type = mpParam->GetType();
+    if( type.find( "list" ) != string::npos )
+      result = List;
+    else if( type.find( "matrix" ) != string::npos )
+      result = Matrix;
+    else
+      result = Single;
+  }
+  else if( mpString )
+    result = Single;
+  return result;
+}
+
+// **************************************************************************
+// Function:   Assign
+// Purpose:    Assigns the content of the paramValue from another
+//             instance of paramValue.
+// Parameters: paramValue reference.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::paramValue::Assign( const paramValue& p )
+{
+  if( p.mpString == NULL )
+  {
+    delete mpString;
+    mpString = NULL;
+  }
+  else
+  {
+    EncodedString* temp = mpString;
+    mpString = new EncodedString( *p.mpString );
+    delete temp;
+  }
+  if( p.mpParam == NULL )
+  {
+    delete mpParam;
+    mpParam = NULL;
+  }
+  else
+  {
+    PARAM* temp = mpParam;
+    mpParam = new PARAM( *p.mpParam );
+    delete temp;
+  }
+}
+
+// **************************************************************************
+// Function:   Assign
+// Purpose:    Assigns the content of the paramValue from a string value.
+// Parameters: string reference.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::paramValue::Assign( const string& s )
+{
+  EncodedString* temp = mpString;
+  mpString = new EncodedString( s );
+  delete temp;
+  delete mpParam;
+  mpParam = NULL;
+}
+
+// **************************************************************************
+// Function:   Assign
+// Purpose:    Assigns the content of the paramValue from a PARAM instance.
+// Parameters: string reference.
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::paramValue::Assign( const PARAM& p )
+{
+  PARAM* temp = mpParam;
+  mpParam = new PARAM( p );
+  delete temp;
+  delete mpString;
+  mpString = NULL;
+}
+
+// **************************************************************************
+// Function:   ToString
+// Purpose:    Returns a paramValue in string form.
+//             If the paramValue is a PARAM, the string will be the PARAM
+//             definition line, enclosed in brackets.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+const string&
+PARAM::paramValue::ToString() const
+{
+  const string* result = mpString;
+  if( !result )
+  {
+    ostringstream oss;
+    oss << *this;
+    sStringBuf = oss.str();
+    result = &sStringBuf;
+  }
+  return *result;
+}
+
+// **************************************************************************
+// Function:   ToParam
+// Purpose:    Returns a paramValue as a PARAM.
+//             If the paramValue is not a PARAM, the result will be a single
+//             valued PARAM.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+const PARAM*
+PARAM::paramValue::ToParam() const
+{
+  const PARAM* result = mpParam;
+  if( !result )
+  {
+    ConstructParamBuf();
+    result = &sParamBuf;
+  }
+  return result;
+}
+
+// **************************************************************************
+// Function:   ToParam
+// Purpose:    Returns a paramValue as a PARAM.
+//             If the paramValue is not a PARAM, the result will be a single
+//             valued PARAM.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+PARAM*
+PARAM::paramValue::ToParam()
+{
+  PARAM* result = mpParam;
+  if( !result )
+  {
+    ConstructParamBuf();
+    result = &sParamBuf;
+  }
+  return result;
+}
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             parameter value.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    Output stream written into.
+// **************************************************************************
+ostream&
+PARAM::paramValue::WriteToStream( ostream& os ) const
+{
+  assert( !( mpString && mpParam ) );
+  if( mpParam )
+    os << *mpParam;
+  else if( mpString )
+    mpString->WriteToStream( os, Brackets::BracketPairs );
+  else
+    os << EncodedString( "" );
+  return os;
+}
+
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             parameter value.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    Input stream read from.
+// **************************************************************************
+istream&
+PARAM::paramValue::ReadFromStream( istream& is )
+{
+  delete mpString;
+  mpString = NULL;
+  delete mpParam;
+  mpParam = NULL;
+  if( is >> ws )
+  {
+    if( Brackets::IsOpening( is.peek() ) )
+    {
+      mpParam = new PARAM;
+      is >> *mpParam;
+    }
+    else
+    {
+      mpString = new EncodedString;
+      is >> *mpString;
+    }
+  }
+  return is;
+}
+
+// **************************************************************************
+// Function:   ConstructParamBuf
+// Purpose:    Constructs a PARAM from a single or NULL value in a
+//             static PARAM buffer.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void
+PARAM::paramValue::ConstructParamBuf() const
+{
+  if( mpString )
+  {
+    sParamBuf.SetNumValues( 1 );
+    sParamBuf.Value( 0 ) = *mpString;
+  }
+  else
+    sParamBuf.SetDimensions( 0, 0 );
+}
+
 
