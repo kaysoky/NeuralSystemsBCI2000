@@ -683,8 +683,10 @@ PARAM::ReadFromStream( istream& is )
     SetSection( value );
     is >> value;
     SetType( value );
-    if( is >> value )
-      SetName( value.substr( 0, value.size() - 1 ) );
+    if( is >> value && value.length() > 0 && *value.rbegin() == '=' )
+      SetName( value.substr( 0, value.length() - 1 ) );
+    else
+      is.setstate( ios::failbit );
   }
 
   if( mType.find( "matrix" ) != mType.npos )
