@@ -127,7 +127,7 @@ TTask::Preflight( const SignalProperties& inputProperties,
     }
   }
 
-  Parameter( "NestedMatrix" );
+  Parameter( "NestedMatrices" );
 
   PreflightCondition( inputProperties >= SignalProperties( 1, 1, SignalType::int16 ) );
   outputProperties = inputProperties;
