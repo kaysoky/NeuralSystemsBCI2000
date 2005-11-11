@@ -64,9 +64,9 @@ TTask::TTask()
       "Duration after set of n intensifications in units of SampleBlocks",
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
       "Duration before set of n intensifications in units of SampleBlocks",
-  "P3Speller string TextResult = %20 %20 %20 %20 //"
+  "P3Speller string TextResult= %20 %20 %20 %20 //"
       "User spell result",
-  "P3Speller int P3TestMode = 0 0 0 1 //"
+  "P3Speller int P3TestMode= 0 0 0 1 //"
       "P3TestMode (0=no, 1=yes) (boolean)",
 
  END_PARAMETER_DEFINITIONS
