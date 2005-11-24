@@ -82,7 +82,7 @@ Visualize int VisualizeSourceTime= 2 2 0 5 // how much time in Source visualizat
 Visualize int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatial filtered signals (0=no 1=yes)
 Visualize int VisualizeStatFiltering= 0 0 0 1 // visualize Stat filtered signals (0=no 1=yes)
 Visualize int VisualizeTemporalFiltering= 1 0 0 1 // visualize Temporal filtered signals (0=no 1=yes)
-Statistics matrix WeightControl= 3 1 Xadapt Yadapt AdaptCode 0 0 0 // State Names controlling Classifier Adaptation
+Statistics matrix WeightControl= 4 1 Xadapt Yadapt AdaptCode ResultCode 0 0 0 // State Names controlling Classifier Adaptation
 Statistics int WeightUse= 0 0 0 2 // Use of weights 0 = not 1= compute 2= use 
 UsrTask int WinHeight= 512 0 0 1 // User Window Height
 UsrTask int WinWidth= 512 0 0 1 // User Window Width
