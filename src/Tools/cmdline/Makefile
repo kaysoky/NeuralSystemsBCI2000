@@ -34,7 +34,7 @@ TARGETS = obj\bci_tool.lib \
           SWFilter.exe \
           FFTFilter.exe \
           TransmissionFilter.exe \
-#         StatFilter.exe \
+          StatFilter.exe \
           CalibrationFilter.dll \
           ClassFilter.dll \
           Normalfilter.dll \
@@ -46,7 +46,7 @@ TARGETS = obj\bci_tool.lib \
           SWFilter.dll \
           FFTFilter.dll \
           TransmissionFilter.dll \
-#         StatFilter.dll \
+          StatFilter.dll \
           
 BCIOBJ  = obj\bci_tool.obj \
           obj\bci_stubs.obj \
@@ -86,8 +86,7 @@ DLLOBJ  = obj\bci_dll.obj \
           obj\getfir.obj \
           obj\FFTLibWrap.obj 
           
-STATOBJ = obj\bci_filtertool.obj \
-          obj\StatFilter.obj \
+STATOBJ = obj\StatFilter.obj \
           obj\Statistics.obj \
           obj\Normalfilter.obj \
           obj\ClassFilter.obj \
@@ -168,8 +167,11 @@ obj\bci_dll.lib: ${DLLOBJ}
 obj\StatFilter.lib: ${STATOBJ}
 	&${AR} $@ +$**
 
-StatFilter.exe: obj\StatFilter.lib obj\bci_tool.lib
-	${LD} obj\StatFilter.obj obj\StatFilter.lib obj\bci_tool.lib rtl.lib
+StatFilter.exe: obj\StatFilter.lib obj\bci_tool.lib obj\bci_filtertool.obj
+	${LD} obj\StatFilter.obj obj\StatFilter.lib obj\bci_tool.lib obj\bci_filtertool.obj rtl.lib
+	
+StatFilter.dll: obj\StatFilter.lib obj\bci_tool.lib obj\bci_dll.lib
+	${LD} -WD obj\StatFilter.obj obj\StatFilter.lib obj\bci_dll.lib rtl.lib
 	
 clean:
 	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds
