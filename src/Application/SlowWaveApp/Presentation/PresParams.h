@@ -36,7 +36,7 @@ PARAM_DECL(
     SamplingRate,
     int,
     ::Source,
-    "",
+    "%",
     "",
     1, 1024
 )
@@ -45,7 +45,7 @@ PARAM_DECL(
     SampleBlockSize,
     int,
     ::Source,
-    "",
+    "%",
     "",
     1, 10000
 )
