@@ -56,16 +56,18 @@ Each stimulus is defined by the following properties:
  \item Caption
  \item Icon file
  \item Audio file
+ \item optionally, an individual Stimulus duration (``on time'')
 \end{enumerate}
 
-In addition to stimuli, the parameter contains a definition for a stimulus that 
-announces what to focus on, and a stimulus that announces the result. These
+In addition to stimuli that are part of the actual stimulation sequence, the {\tt FocusOn} 
+and {\tt Result} parameters contain definitions for a stimulus that announces what to focus on,
+and a stimulus that announces the result. These
 stimuli are only used when the task is set to copy or free mode.
 
 The following table contains an example definition of two stimuli;
 for clarity, the parameter line defining the associated parameter is also given:
 \footnote{
-  The line's parameter format contains to newly introduced extensions:
+  The line's parameter format contains two newly introduced extensions:
   \begin{itemize}
   \item In the place of a dimension value there may be a list of string labels
         that may be used instead of numerical indices, delimited by a matching
@@ -100,21 +102,22 @@ for clarity, the parameter line defining the associated parameter is also given:
 \label{tab:stimuli_example}
 
 \begin{verbatim}
-"P3AV matrix Stimuli= "
-      "{caption icon audio} "                  // row labels
-      "{focuson result stimulus1 stimulus2} "  // column labels
+"P3AV matrix Matrix= "
+      "{caption icon audio OnTime} " // row labels
+      "{stimulus1 stimulus2} "       // column labels
       
-      // focuson
-      "Please%20focus%20on icons\\focus%20on.bmp wav\\focus%20on.wav "
-      // result
-      "The%20result%20was icons\\result.bmp wav\\result.wav "
       // stimulus1
-      "Donkey icons\\donkey.bmp wav\\snicker.wav "
+      "Donkey icons\\donkey.bmp wav\\snicker.wav 10 "
       // stimulus2
-      "% icons\\elefant.bmp wav\\trumpet.wav "
+      "% icons\\elefant.bmp wav\\trumpet.wav 30 "
 \end{verbatim}
 
-\emph{Comments:} The stimulus properties might contain white spaces. A 
+\emph{Comments:} In order to specify individual stimulus durations, a row labelled 
+{\tt OnTime} may be added to the {\tt Matrix} parameter. In this case, the global 
+{\tt OnTime} parameter will be ignored, and a duration for each stimulus must be
+given in the {\tt OnTime} row.
+
+The stimulus properties might contain white spaces. A 
 caption/icon/audio file are not being presented, if they are not defined (e.g., 
 see caption in stimulus2). The stimulus definition parameter does \emph{not} contain 
 a description on how the stimuli are presented. Stimulus numbers start at 1.
@@ -222,8 +225,8 @@ the stimulus with the highest classification result.
 In order to deliver this announcement, the system uses the stimulus defined in 
 the \texttt{result} column of the stimuli parameter. This announcement is 
 followed by delivery of the determined stimulus. In other words, after a 
-sequence of stimulus delivery, the system might play a .wav file that says: "the 
-result is," followed by a .wav file that says "yes." (assuming "yes" represents
+sequence of stimulus delivery, the system might play a .wav file that says: ``the 
+result is," followed by a .wav file that says ``yes." (assuming ``yes" represents
 the stimulus that produced the highest classification result).
 
 Finally, the task sends this result to the operator module as an ASCII text 
@@ -235,7 +238,7 @@ Free mode does not terminate until the investigator suspends operation.
 \subsection{Copy Mode}
 
 Copy mode is similar to free mode. In copy mode, the investigator can define a 
-list of stimuli to be copied (e.g., "3 5 4"). In this example, the user has to 
+list of stimuli to be copied (e.g., ``3 5 4"). In this example, the user has to 
 attend to stimulus 3 for the first sequence, 5 for the second sequence, etc.
 
 In addition to an announcement of the result, in copy mode the delivery of 
@@ -243,7 +246,7 @@ stimuli is preceded by an announcement that describes which stimulus the user
 has to attend to. This announcement uses the stimulus that is defined in the
 \texttt{focuson} column of the stimuli parameter. This announcement is followed by
 delivery of the desired target stimulus. As an example, the system might say
-"Please focus now on" ... "yes," before it starts with the sequence of
+``Please focus now on" ... ``yes," before it starts with the sequence of
 stimulus delivery.
 
 Copy mode terminates (i.e., the task suspends) when the user finished copying 
@@ -271,7 +274,10 @@ The following parameters configure this task:
  \item {\tt CaptionHeight}: Height of stimulus caption text in percent of screen.
  \item {\tt OnTime}: The duration during which a stimulus is presented (in units of
        SampleBlocks)\footnote{Playback of audio extending above the specified duration 
-       will be muted.} The way it translates to seconds is {\tt OnTime} multiplied by {\tt SampleBlockSize}(samples transmitted per time) divided by {\tt SamplingRate}(samples per one second).
+       will be muted.} The way it translates to seconds is {\tt OnTime} multiplied by {\tt SampleBlockSize}
+       (samples transmitted per time) divided by {\tt SamplingRate}(samples per one second).
+       When individual stimulus durations are given in the {\tt Matrix} parameter, the value of the {\tt OnTime}
+       parameter is ignored.
  \item {\tt OffTime}: The duration of an inter-stimulus interval following stimulus presentation
        (in units of SampleBlocks)\footnote{During the inter-stimulus interval, the
        screen is blank and audio is turned off.}
@@ -283,13 +289,13 @@ The following parameters configure this task:
        If these variables are set to, for example, 0 and 3, inter-stimulus intervals
        will randomly be longer by between 0 and 3 units, with a probability of $1/4$
        for the occurrence of any one of the four time intervals possible.
- \item {\tt PreSequenceTime}: The duration(in SampleBlocks) before a sequence is presented. During this time the following is going to happen. In Copy Mode: "Please, focus on ..." message will be played followed by the actual stimulus that the subject needs to focus on.
+ \item {\tt PreSequenceTime}: The duration(in SampleBlocks) before a sequence is presented. During this time the following is going to happen. In Copy Mode: ``Please, focus on ..." message will be played followed by the actual stimulus that the subject needs to focus on.
  In Free Mode and No-Interpretation Mode: during this time nothing will be presented, just a plain blank screen.
- \item {\tt PostSequenceTime}: The duration(in SampleBlocks) after a sequence is presented. During this time the following is going to happen. In Copy Mode and Free Mode: "The result was ..." message will be played followed by the predicted stimulus.
+ \item {\tt PostSequenceTime}: The duration(in SampleBlocks) after a sequence is presented. During this time the following is going to happen. In Copy Mode and Free Mode: ``The result was ..." message will be played followed by the predicted stimulus.
  In No-Interpretation Mode: during this time nothing will be presented, just a plain blank screen.
  \item {\tt Matrix}: Defines all the possible stimuli which can be presented on the screen. See description in \ref{sec:stimulusdefinition} section.
- \item {\tt FocusOn}: Defines a stimulus that is used to announce "please, focus on .." message.
- \item {\tt Result}: Defines a stimulus that is used to announce "the result is .." message.
+ \item {\tt FocusOn}: Defines a stimulus that is used to announce ``please, focus on .." message.
+ \item {\tt Result}: Defines a stimulus that is used to announce ``the result is .." message.
  \item {\tt Sequence}: Sequence of stimuli that is presented to the user (deterministic type) / Frequencies for for each stimulus (random sequence).
  Stimuli are defined as column indices into the  {\tt Matrix } parameter.
  \item {\tt SequenceType}: Specifies whether the sequence is deterministic (value 0) or random (value 1).
@@ -306,7 +312,7 @@ The following conditions need to be satisfied:
   \item All the parameters have to be present.
   \item {\tt MinInterTime} has to be less than {\tt MaxInterTime}.
   \item {\tt PreSequenceTime} and {\tt PostSequenceTime} have to be at least 2 times larger than {\tt OnTime}. This follows from the fact
-  	that during presequence and postsequence there will be 2 stimuli presented: one is for "please, focus on .."/"the result is .." and the
+  	that during presequence and postsequence there will be 2 stimuli presented: one is for ``please, focus on .."/``the result is .." and the
   	other for the actual name of the stimulus.		
   \item The time defined by {\tt PostSequenceTime} multiplied by {\tt SampleBlockSize} has to be larger than the value defined by {\tt NumSamplesInERP}.
 \end{itemize}

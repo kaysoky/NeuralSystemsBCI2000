@@ -24,6 +24,7 @@
 UsrEnvDispatcher::UsrEnvDispatcher()
 {
   m_iUsrElementOnTime       = 10;
+  m_bIndividualOnTimes      = false;
   m_iUsrElementOffTime      = 3;
   m_iUsrElementMinInterTime = 0;
   m_iUsrElementMaxInterTime = 0;
@@ -38,6 +39,7 @@ UsrEnvDispatcher::UsrEnvDispatcher()
   m_vResultValues.clear();
   m_iWaitTime = 0;
   m_bWaiting = false;
+  m_bDisplayResults = false;
 }
 
 
@@ -70,6 +72,8 @@ void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
   try
   {
     m_iUsrElementOnTime  = MeasurementUnits::ReadAsTime( Parameter( "OnTime" ) );
+    m_bIndividualOnTimes = Parameter( "Matrix" )->RowLabels().Exists( "OnTime" );
+
     m_iUsrElementOffTime = MeasurementUnits::ReadAsTime( Parameter( "OffTime" ) );
     m_iUsrElementMinInterTime = MeasurementUnits::ReadAsTime( Parameter( "MinInterTime" ) );
     m_iUsrElementMaxInterTime = MeasurementUnits::ReadAsTime( Parameter( "MaxInterTime" ) );
@@ -87,9 +91,7 @@ void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
       m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime;
 
     // 03/09/05 GS
-    displayresults = false;
-    if (Parameter("DisplayResults") == 1)
-       displayresults = true;
+    m_bDisplayResults = ( Parameter("DisplayResults") == 1 );
 
     // figure out whether a stimulus to appear in a sequence
     m_vStimulusPresent.clear();
@@ -350,6 +352,11 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
     if (pUsrEnv->GetActiveElements() != NULL)
     {
       State("StimulusCode")=pUsrEnv->GetActiveElements()->GetElementID(0);
+
+      if( m_bIndividualOnTimes ) // 12/01/05 jm
+        m_iUsrElementOnTime = MeasurementUnits::ReadAsTime(
+                Parameter( "matrix" )( "OnTime", State( "StimulusCode" ) - 1 ) );
+
       // figure out stimulus type here
       State("StimulusType")=pUsrEnv->GetStateValue(STATE_STIMULUSTYPE);
     }
@@ -367,7 +374,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
                                                // 'result is' shall be rendered after every sequence, not just on the last one
                                                // when we are in no-interpret mode, then there won't be any active elements, and thus the command below won't do anything
                                                // now we're having a switch to simply show the results or not
-      if (displayresults)
+      if (m_bDisplayResults)
          pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
 
       if ((ePhaseInSequence == PHASE_FINISH) || (ePhaseInSequence == PHASE_FINISH_WO_RESULT))
@@ -398,7 +405,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
-      if (displayresults)   // 03/09/05 GS
+      if (m_bDisplayResults)   // 03/09/05 GS
          pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
 
       State("SelectedStimulus")=iPickedStimulusID;
@@ -414,7 +421,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
       if (m_ePhaseInSequence == PHASE_FINISH)
          {
          const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
-         if (displayresults)                                   // 3/29/05 GS
+         if (m_bDisplayResults)                                   // 3/29/05 GS
             pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
          State("SelectedStimulus")=iPickedStimulusID;
          }

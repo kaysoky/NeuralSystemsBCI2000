@@ -67,6 +67,7 @@ private: 	// User declarations
   std::vector< float > m_vResultValues; // to accumulate data about what was the actual value
   unsigned int m_iWaitTime; // in units of SampleBlocks, to make things like " please focus on" and the next stimulus sound reasonably
   bool m_bWaiting; // waiting for the m_iWaitTime to be over
-  bool displayresults; // 03/09/05 GS
+  bool m_bDisplayResults; // 03/09/05 GS
+  bool m_bIndividualOnTimes; // 12/01/05 jm
 };
 #endif
