@@ -407,8 +407,7 @@ BCI2000DATA::ReadHeader()
   {
     if( element != "DataFormat=" )
       return BCI2000ERR_MALFORMEDHEADER;
-    SignalType signalType;
-    if( !linestream >> mSignalType )
+    if( !( linestream >> mSignalType ) )
       return BCI2000ERR_MALFORMEDHEADER;
   }
   mDataSize = mSignalType.Size();
