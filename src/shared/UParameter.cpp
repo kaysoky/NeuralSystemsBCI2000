@@ -66,7 +66,7 @@ class Brackets
   static const string OpeningDefault;
   static const string ClosingDefault;
 };
-const string Brackets::BracketPairs = "{}()[]<>";
+const string Brackets::BracketPairs = "{}[]";
 const string Brackets::OpeningDefault = BracketPairs.substr( 0, 1 );
 const string Brackets::ClosingDefault = BracketPairs.substr( 1, 1 );
 
