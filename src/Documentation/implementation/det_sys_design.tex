@@ -227,7 +227,10 @@ parameter and state values simply by writing
 
 \codebegin\begin{verbatim}
 int numberOfItems = Parameter( "NumberOfItems" );
-float matrixValue = Parameter( "MatrixParam", index1, index2 );
+float listValue = Parameter( "ListParam" )( index );
+float matrixValue = Parameter( "MatrixParam" )( index1, index2 );
+float nestedMatrixValue 
+  = Parameter( "NestedMatrices" )( index1, index2 )( index3, index4 );
 short feedbackState = State( "Feedback" );
 State( "Feedback" ) = 0;
 \end{verbatim}\codeend
@@ -297,10 +300,10 @@ MyForm::MyFormEnvironment::Initialize()
 This should work in situations where your code's class model is centered around 
 VCL form classes.
 When writing new code, you might consider basing your class model on
-functionality, and use VCL forms merely for input and output -- instantiating
+functionality, and use VCL forms merely for input and output -- instantiating, 
 populating, and deleting them as you need them, such that the BCI2000
 \texttt{Environment} interfacing is done from your own classes, independently
-of the VCL's special needs.
+of the VCL's special requirements.
 
 \paragraph{}
 For a detailed description of the \texttt{Environment} facilities, see the 
@@ -576,7 +579,7 @@ that it will return a pointer to a buffer containing the data in its first argum
 Each of the functions will return zero if everything went well, and some error 
 value otherwise.
 
-Luckily (and somewhat unrealistic), \textit{Tachyon Corporation} gives you just
+Luckily, \textit{Tachyon Corporation} gives you just
 what you need for a BCI2000 source module, so implementing the ADC class is 
 quite straightforward.
 In your class' header file, \texttt{"TachyonADC.h"}, you write

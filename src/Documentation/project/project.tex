@@ -225,7 +225,7 @@ as follows:
 Section DataType Name= (NumValues|Labels) Value(s) DefaultValue
     LowRange HighRange // Comment CRLF
 \end{verbatim}
-where \texttt{Labels} is a list of textual labels that optionally substitutes the number denoted by \texttt{NumValues}. A list of labels is enclosed in a matching pair of any of \verb|{}, [], (), <>|, as in 
+where \texttt{Labels} is a list of textual labels that optionally substitutes the number denoted by \texttt{NumValues}. A list of labels is enclosed by \verb|{}| or \verb|[]|, as in 
 \verb|[low medium high]|.
 \\[2ex]
 If DataType is \textit{matrix}, the format is as follows:
@@ -236,8 +236,35 @@ Section DataType Name= (NumValuesDim1|LabelsDim1)
 \end{verbatim}
 where again each NumValues entry may be substituted by a list of textual labels.
 
-\todo{Need to give a few examples of possible parameter lines and need
-to describe the format of the encoding if values include spaces, etc.}
+\paragraph{Special characters} To allow for special characters and white space 
+within parameter values and textual labels, an URL-like encoding scheme is adopted.
+In this encoding, a \texttt{\%} character followed by up to two hexadecimal digits 
+represents a byte value in hexadecimal notation which is interpreted according to 
+the ASCII-Latin1 character table.
+Thus, \texttt{\%20} represents a space character, and \texttt{\%}, \texttt{\%0}, 
+and \texttt{\%00} all represent an empty string value; \texttt{\%\%} represents the
+\texttt{\%} character itself.
+The line
+\begin{verbatim}
+Demo string SomeString= a%20string%20with%20spaces % % % 
+    // White space example
+\end{verbatim}
+defines a parameter \textit{SomeString} which contains the value \textit{``a string
+with spaces''}. The single \texttt{\%} characters indicate that the \textit{DefaultValue},
+\textit{LowRange} and \textit{HighRange} fields should be empty strings.
+
+\paragraph{Sub-parameters} Any parameter value may itself be a sub-parameter.
+Sub-parameters are represented by a short-form
+matrix definition omitting the \textit{Section} and \textit{Name} fields, enclosed in
+a pair of braces:
+\begin{verbatim}
+Demo matrix NestedMatrices= 1 2 11 { matrix 2 2 1211 1212 1221 1222 } 
+    // Nested matrix example
+\end{verbatim}
+will define a matrix parameter whose 1,2 entry is a 2x2 matrix.
+While the syntax allows for any combination of parameter and subparameter types,
+the current implementation of the parameter editor GUI does only support matrix-type
+sub-parameters within matrices as in the example above.
 
 \paragraph{Display Format} The comment line that is introduced by the two 
 slashes (//) may contain a format identifier that is used by the Operator module
