@@ -959,11 +959,17 @@ The state definitions have the same format as described in \ref{state_format}
 for each sample in the data file).
 The parameter definitions have the format described in section
 \ref{parameter_format}.
+Since version 1.1, the first line begins with a \textit{BCI2000V} field
+containing a version number in floating-point format, and ends with a 
+\textit{DataFormat} field describing the format of the binary data as
+\textit{int16}, \textit{int32}, or \textit{float32}.
+A missing \textit{BCI2000V} field indicates a file format version of 1.0, 
+and a \textit{DataFormat} of \textit{int16}.
 
 \begin{flushleft}
 \begin{footnotesize}
 \begin{verbatim}
-HeaderLen= length  SourceCh= m  StateVectorLength= k CRLF
+BCI2000V= 1.1 HeaderLen= l SourceCh= m StateVectorLength= k DataFormat= f CRLF
 [ State Vector Definition ] CRLF
 Name1 Length1 Value1 ByteLocation1 BitLocation1 CRLF
 Name2 Length2 Value2 ByteLocation2 BitLocation2 CRLF
@@ -984,13 +990,20 @@ The binary data directly follows this last CRLF.
 \label{binary_data}
 
 For each sample, data values for all channels are stored, followed by \textit{StateVectorLength} bytes for the state vector.
-Data samples are stored as 16-bit signed integers (little 
-endian).
+Data samples are stored in little endian format depending on the \textit{DataFormat} field:
+\begin{center}
+ \begin{tabular}{|l|l|}\hline
+  \textbf{DataFormat field} & \textbf{data type} \\ \hline 
+  int16 & 2-byte signed integer \\
+  int32 & 4-byte signed integer \\
+  float32 & 4-byte floating point (IEEE 754) \\ \hline 
+ \end{tabular}\\
+\end{center}
 The number of samples in the file can be calculated as follows: 
 $$
   \textrm{samples}
     =\frac{(\textrm{file size in bytes})-\textrm{HeaderLen}}
-    {2\times\textrm{SourceCh}+\textrm{StateVectorLength}}
+    {\textrm{(data value size in bytes)}\times\textrm{SourceCh}+\textrm{StateVectorLength}}
 $$
 
 \subsection{Parameter File}
