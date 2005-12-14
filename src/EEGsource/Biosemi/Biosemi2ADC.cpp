@@ -6,17 +6,17 @@
  * Version:   0.01
  * License:
  * Copyright (C) 2005 Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
@@ -24,6 +24,9 @@
  *
  * Revisions:
  *  $Log$
+ *  Revision 1.2  2005/12/14 15:24:15  mellinger
+ *  Fixed state name typo in Process().
+ *
  *  Revision 1.1  2005/12/12 00:05:24  sinverso
  *  Initial Revision: Working and tested offline. Not tested in real experiments.
  *
@@ -185,15 +188,15 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
 
 
 // **************************************************************************
-// Function:   Initialize 
+// Function:   Initialize
 // Purpose:    This function parameterizes the Biosemi2ADC
 //             It is called each time the operator first starts,
 //             or suspends and then resumes, the system
 //             (i.e., each time the system goes into the main
 //             data acquisition loop (fMain->MainDataAcqLoop())
 // Parameters: N/A
-// Returns:   N/A 
-//            
+// Returns:   N/A
+//
 // **************************************************************************
 void Biosemi2ADC::Initialize()
 {
@@ -225,12 +228,12 @@ void Biosemi2ADC::Initialize()
 
 
 // **************************************************************************
-// Function:   Process 
+// Function:   Process
 // Purpose:    This function is called within fMain->MainDataAcqLoop()
 //             it fills the already initialized array RawEEG with values
 //             and DOES NOT RETURN, UNTIL ALL DATA IS ACQUIRED
 // Parameters: N/A
-// Returns:                
+// Returns:
 // **************************************************************************
 void Biosemi2ADC::Process( const GenericSignal*, GenericSignal* signal )
 {
@@ -242,7 +245,7 @@ void Biosemi2ADC::Process( const GenericSignal*, GenericSignal* signal )
     // Make sure the block is valid.
     //
     if( !_dataBlock->isDataValid() ){
-        if( _biosemi.isBatteryLow() && !State("BatterLow")){
+        if( _biosemi.isBatteryLow() && !State("BatteryLow")){
             bciout << "Warning: Battery Low" << endl;
 
             // we don't want to send messages to bicout everytime
@@ -284,12 +287,12 @@ void Biosemi2ADC::Process( const GenericSignal*, GenericSignal* signal )
 
 
 // **************************************************************************
-// Function:   Halt 
+// Function:   Halt
 // Purpose:    This routine shuts down data acquisition
 //             In this special case, it does not do anything (since
 //             the random number generator does not have to be turned off)
 // Parameters: N/A
-// Returns:    N/A 
+// Returns:    N/A
 // **************************************************************************
 void Biosemi2ADC::Halt()
 {
