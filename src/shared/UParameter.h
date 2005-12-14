@@ -142,7 +142,11 @@ class PARAM
        { return ToString(); }
      operator PARAM*()
        { return ToParam(); }
+     operator const PARAM*() const
+       { return ToParam(); }
      PARAM* operator->()
+       { return ToParam(); }
+     const PARAM* operator->() const
        { return ToParam(); }
 
      int Kind() const;
