@@ -1,5 +1,3 @@
-//---------------------------------------------------------------------------
-
 #ifndef UEditMatrixH
 #define UEditMatrixH
 //---------------------------------------------------------------------------
@@ -15,41 +13,69 @@
 //---------------------------------------------------------------------------
 class TfEditMatrix : public TForm
 {
-__published:	// IDE-managed Components
+__published: // IDE-managed Components
         TStringGrid *StringGrid;
-        TCSpinEdit *cColumnsMax;
-        TCSpinEdit *cRowsMax;
+    TCSpinEdit *cNumCols;
+    TCSpinEdit *cNumRows;
         TLabel *Label1;
         TLabel *Label2;
         TButton *bChangeMatrixSize;
         TLabel *tComment;
-        TButton *bToggleEditing;
         void __fastcall bChangeMatrixSizeClick(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-    void __fastcall StringGridSelectCell(TObject *Sender, int ACol,
+        void __fastcall StringGridSelectCell(TObject *Sender, int ACol,
           int ARow, bool &CanSelect);
-    void __fastcall StringGridDrawCell(TObject *Sender, int ACol, int ARow,
+        void __fastcall StringGridDrawCell(TObject *Sender, int ACol, int ARow,
           TRect &Rect, TGridDrawState State);
-private:	// User declarations
-        static  int sNumInstances;
-        PARAM   *matrix_param;
-        AnsiString matrix_param_name;
-        TfEditMatrix* mpSubEditor;
-        TCriticalSection* lock;
-        void    UpdateDisplay();
-        void    AdaptColumnWidths();
-        void    AdaptSize();
-        void    Lock()   { lock->Acquire(); }
-        void    Unlock() { lock->Release(); }
-        void __fastcall ToggleLabelEditing( TObject* );
-        void    EditLabels();
-        void    EditEntries();
-        void    SelectTopLeftCell();
-public:		// User declarations
+
+public: // User declarations
         __fastcall TfEditMatrix(TComponent* Owner);
         __fastcall ~TfEditMatrix();
         void       SetDisplayedParam( PARAM* );
         AnsiString GetDisplayedParamName() const;
+
+private: // User declarations
+        void       UpdateDisplay();
+        void       UpdatePARAM();
+        void       Lock()   { mpLock->Acquire(); }
+        void       Unlock() { mpLock->Release(); }
+        void       EditLabels();
+        void       EditEntries();
+        void       SelectTopLeftCell();
+
+        void       LabelEditing( int = -1, int = -1 );
+        bool       LabelEditing_Checked( int, int );
+        void       AdaptColumnWidth( int = -1, int = -1 );
+        void       EditSubMatrix( int, int );
+        bool       EditSubMatrix_Enabled( int, int ) const;
+        void       PlainCellToMatrix( int, int );
+        bool       PlainCellToMatrix_Enabled( int, int ) const;
+        void       MatrixToPlainCell( int, int );
+        bool       MatrixToPlainCell_Enabled( int, int ) const;
+
+        static int        sNumInstances;
+        PARAM*            mpMatrixParam;
+        AnsiString        mMatrixParamName;
+        TfEditMatrix*     mpSubEditor;
+        TCriticalSection* mpLock;
+
+        // Context menu infrastructure.
+        void BuildContextMenu();
+        void __fastcall PopupMenuPopup( TObject* inSender, const TPoint&, bool& );
+        void __fastcall PopupMenuItemClick( TObject* inSender );
+
+        struct MenuItemEntry
+        {
+          // The typedefs declare pointers to class instance member functions.
+          typedef void ( TfEditMatrix::*MenuAction )( int, int );
+          typedef bool ( TfEditMatrix::*MenuStateGetter )( int, int );
+          MenuAction       mpAction;
+          MenuStateGetter  mpGetEnabled,
+                           mpGetChecked;
+          const char*      mCaption;
+        };
+        static struct MenuItemEntry sMenuItems[];
+        int mContextRow, mContextCol;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfEditMatrix *fEditMatrix;
