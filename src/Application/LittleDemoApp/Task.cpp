@@ -136,11 +136,13 @@ TTask::Preflight( const SignalProperties& inputProperties,
 void
 TTask::Initialize()
 {
+  mWavePlayers.clear();
   mAcousticMode = Parameter( "AcousticMode" );
   if( mAcousticMode == amWave )
   {
     string applicationPath = ::ExtractFilePath( ::ParamStr( 0 ) ).c_str();
-    for( size_t i = 0; i < Parameter( "Sounds" )->GetNumColumns(); ++i )
+    mWavePlayers.resize( numPitchIndices );
+    for( size_t i = 0; i < mWavePlayers.size(); ++i )
     {
       string fileName = applicationPath + string( Parameter( "Sounds", "WAV", i ) );
       mWavePlayers[ i ].AttachFile( fileName.c_str() );

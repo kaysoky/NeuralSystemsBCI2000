@@ -32,6 +32,8 @@ class TTask : public GenericFilter
     medium,
     high,
     ultra_high,
+
+    numPitchIndices
   };
 
   enum
