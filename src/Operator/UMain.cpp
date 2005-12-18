@@ -90,6 +90,12 @@ TfMain::TfMain( TComponent* Owner )
   mSigProc( *this, SigProc, SigProcPort ),
   mApp( *this, App, AppPort )
 {
+  mParameters.AddParameter2List(
+    "System matrix OperatorVersion= { Framework CVS Build } 1 Operator % %"
+    " % % % // operator module version information" );
+  mParameters[ "OperatorVersion" ].Value( "Framework" ) = TXT_OPERATOR_VERSION;
+  mParameters[ "OperatorVersion" ].Value( "CVS" ) = "$Revision$ $Date$";
+  mParameters[ "OperatorVersion" ].Value( "Build" ) = __DATE__ ", " __TIME__;
   if( __bcierr.flushes() == 0 )
   {
     OperatorUtils::RestoreControl( this );
