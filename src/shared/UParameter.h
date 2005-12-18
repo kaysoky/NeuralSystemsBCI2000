@@ -255,9 +255,9 @@ class PARAM
                 { return GetValue( mDim1Index[ label_dim1 ], index_dim2 ); }
 
   // Accessors for bounds-checked, recursive access to parameter entries.
-  const paramValue& Value( size_t idx ) const
+  const paramValue& Value( size_t idx  = 0 ) const
                 { return mValues.at( idx ); }
-  paramValue& Value( size_t idx )
+  paramValue& Value( size_t idx = 0 )
                 { return mValues.at( idx ); }
 
   const paramValue& Value( size_t n, size_t m ) const
