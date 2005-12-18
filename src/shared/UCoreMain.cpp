@@ -120,7 +120,6 @@ TfMain::TfMain( TComponent* Owner )
 __fastcall
 TfMain::~TfMain( void )
 {
-  ShutdownSystem();
   delete mpStatevector;
   Terminate();
   if( mMutex != NULL )
@@ -524,12 +523,20 @@ TfMain::Startup( AnsiString inTarget )
   mParamlist.AddParameter2List(
     "System string " THISMODULE "Port= x"
     " 4200 1024 32768 // the " THISMODULE " module's listening port" );
-  mParamlist[ THISMODULE "Port" ].SetValue( AnsiString( mPreviousModuleSocket.port() ).c_str() );
+  mParamlist[ THISMODULE "Port" ].Value() = AnsiString( mPreviousModuleSocket.port() ).c_str();
   // and IP address
   mParamlist.AddParameter2List(
     "System string " THISMODULE "IP= x"
     " 127.0.0.1 127.0.0.1 127.0.0.1 // the " THISMODULE " module's listening IP" );
-  mParamlist[ THISMODULE "IP" ].SetValue( mPreviousModuleSocket.ip() );
+  mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
+
+  // Version control
+  mParamlist.AddParameter2List(
+    "System matrix " THISMODULE "Version= { Framework CVS Build } 1 " THISMODULE " % %"
+    " % % % // " THISMODULE " version information" );
+  mParamlist[ THISMODULE "Version" ].Value( "Framework" ) = THISVERSION;
+  mParamlist[ THISMODULE "Version" ].Value( "CVS" ) = "$Revision$ $Date$";
+  mParamlist[ THISMODULE "Version" ].Value( "Build" ) = __DATE__ ", " __TIME__;
 
   // now, publish all parameters
   MessageHandler::PutMessage( mOperator, mParamlist );
@@ -608,6 +615,7 @@ TfMain::bDisconnectClick( TObject* )
   bConnect->Enabled = true;
   bDisconnect->Enabled = false;
 }
+
 
 void
 TfMain::ProcessBCIAndWindowsMessages()
@@ -689,6 +697,7 @@ TfMain::ApplicationIdleHandler( TObject*, bool& )
            << "terminating module"
            << endl;
   }
+  ShutdownSystem();
   Application->Terminate();
 }
 
