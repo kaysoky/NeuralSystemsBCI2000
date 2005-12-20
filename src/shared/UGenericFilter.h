@@ -1,9 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: UGenericFilter.h
-//
-// Description: This file declares a purely abstract GenericFilter interface
-//   which all BCI2000 filters are supposed to implement.
 //
 // Changes: Oct 21, 2002, juergen.mellinger@uni-tuebingen.de
 //          - Made GenericFilter a true base class, and a purely abstract one.
@@ -18,6 +16,13 @@
 //            of a list of Filter() statements in an additional cpp file
 //            to avoid unwanted changes in filter sequence when using the new
 //            unified module framework code.
+// $Log$
+// Revision 1.14  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
+//
+// Description: This file declares a purely abstract GenericFilter interface
+//   which all BCI2000 filters are supposed to implement.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericFilterH

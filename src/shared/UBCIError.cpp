@@ -1,12 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: UBCIError.cpp
-//
-// Description: Declarations for stream symbols related to error handling.
-//              To report an error, write e.g.
-//               bcierr << "My error message" << endl;
-//              For an informational message, write
-//               bciout << "My info message" << endl;
 //
 // Author: Juergen Mellinger
 //
@@ -15,6 +10,16 @@
 // Changes: Apr 16, 2003: Replaced dummy implementations by objects that
 //          actually hold messages.
 //          Jul 22, 2003: Added implementations for command line tools.
+// $Log$
+// Revision 1.9  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
+//
+// Description: Declarations for stream symbols related to error handling.
+//              To report an error, write e.g.
+//               bcierr << "My error message" << endl;
+//              For an informational message, write
+//               bciout << "My info message" << endl;
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

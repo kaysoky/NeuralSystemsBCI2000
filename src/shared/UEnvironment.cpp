@@ -1,6 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: UEnvironment.cpp
+//
+// $Log$
+// Revision 1.13  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: EnvironmentBase and Environment are mix-in base classes that
 //              channel access to enviroment-like

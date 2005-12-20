@@ -1,9 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
-// File: UGenericFilter.cpp
-//
-// Description: Definitions for the GenericFilter interface
-//   which all BCI2000 filters are supposed to implement.
+// File: UGenericFilter.h
 //
 // Changes: Oct 21, 2002, juergen.mellinger@uni-tuebingen.de
 //          - Made GenericFilter a true base class, and a purely abstract one.
@@ -13,6 +11,18 @@
 //            introduced the Environment class to handle access to those objects.
 //          - Added the Preflight() member as a purely virtual function to enforce
 //            implementation in subclasses.
+//          Jun 10, 2004, juergen.mellinger@uni-tuebingen.de
+//          - Disabled auto-instantiation for signal processing modules in favor
+//            of a list of Filter() statements in an additional cpp file
+//            to avoid unwanted changes in filter sequence when using the new
+//            unified module framework code.
+// $Log$
+// Revision 1.13  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
+//
+// Description: This file declares a purely abstract GenericFilter interface
+//   which all BCI2000 filters are supposed to implement.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

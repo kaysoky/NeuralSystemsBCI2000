@@ -1,12 +1,18 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: MessageHandler.cpp
-//
-// Description: Facilities for centralized management of BCI2000 messages.
 //
 // Author: Juergen Mellinger
 //
 // Date:   Jul 24, 2003
+//
+// $Log$
+// Revision 1.10  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
+//
+// Description: Facilities for centralized management of BCI2000 messages.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

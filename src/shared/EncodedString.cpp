@@ -1,4 +1,5 @@
 //////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: EncodedString.cpp
 //
@@ -6,8 +7,18 @@
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
+// $Log$
+// Revision 1.2  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
+//
 // Description: A class that allows for convenient automatic type
-//         conversions when accessing parameter values.
+//   conversions when accessing parameter values.
+//
+//   WriteToStream() will always output white space in encoded
+//   hexadecimal form.
+//   Additional characters may be listed in the "encodeThese"
+//   parameter.
 //
 ///////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

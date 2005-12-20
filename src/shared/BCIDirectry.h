@@ -1,6 +1,11 @@
 ///////////////////////////////////////////////////
+//  $Id$
 //  BCIDirectory Class
 //  BCI Directory Management Functions
+//  $Log$
+//  Revision 1.10  2005/12/20 11:42:41  mellinger
+//  Added CVS id and log to comment.
+//
 ///////////////////////////////////////////////////
 #ifndef BCIDirectryH
 #define BCIDirectryH

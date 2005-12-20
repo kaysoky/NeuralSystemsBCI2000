@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File:    UGenericVisualization.h
 //
@@ -17,6 +18,10 @@
 //          May 28, 2004, jm:
 //          Introduced VisMemo, VisSignal, and VisCfg objects to allow for
 //          centralization of message processing in the MessageHandler class.
+// $Log$
+// Revision 1.15  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericVisualizationH

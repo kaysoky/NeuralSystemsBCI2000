@@ -1,6 +1,11 @@
 ///////////////////////////////////////////////////
+//  $Id$
 //  BCIDirectry.cpp
 //  BCI Directory Management Functions
+//  $Log$
+//  Revision 1.13  2005/12/20 11:42:41  mellinger
+//  Added CVS id and log to comment.
+//
 ///////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

@@ -1,4 +1,5 @@
 /******************************************************************************
+ * $Id$                                                                       *
  * Program:   Core Modules                                                    *
  * Module:    UCoreMain.cpp                                                   *
  * Comment:   The core module framework code for BCI2000                      *
@@ -34,6 +35,10 @@
  *                      unified code for all modules except operator, jm      *
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
+ * $Log$
+ * Revision 1.21  2005/12/20 11:42:41  mellinger
+ * Added CVS id and log to comment.
+ *                                                                      *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop

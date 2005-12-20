@@ -1,8 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: UGenericSignal.h
 //
 // Author: juergen.mellinger@uni-tuebingen.de
+//
+// $Log$
+// Revision 1.19  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: This file declares a SignalProperties base class and a
 //   GenericSignal class deriving from it.

@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File:    UGenericVisualization.cpp
 //
@@ -22,6 +23,10 @@
 //          May 28, 2004, jm:
 //          Introduced Memo, Signal, and Cfg objects to allow for centralization
 //          of message processing in the MessageHandler class.
+// $Log$
+// Revision 1.20  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

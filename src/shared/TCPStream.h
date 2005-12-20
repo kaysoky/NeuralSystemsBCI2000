@@ -1,10 +1,16 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: TCPStream.h
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // Date: Oct 28, 2003
+//
+// $Log$
+// Revision 1.6  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: A std::iostream interface for TCP socket communication.
 //              tcpsocket: A socket wrapper, tied to tcpstream with

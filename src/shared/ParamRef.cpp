@@ -1,10 +1,16 @@
 //////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: ParamRef.cpp
 //
 // Date: Oct 31, 2005
 //
 // Author: juergen.mellinger@uni-tuebingen.de
+//
+// $Log$
+// Revision 1.2  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: A class that holds references to parameters or
 //         parameter values, and allows for convenient automatic type

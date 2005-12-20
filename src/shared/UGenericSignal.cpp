@@ -1,8 +1,14 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: UGenericSignal.cpp
 //
 // Author: juergen.mellinger@uni-tuebingen.de
+//
+// $Log$
+// Revision 1.17  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: This file defines a SignalProperties base class and a
 //   GenericSignal class deriving from it.

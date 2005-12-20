@@ -1,10 +1,16 @@
 //////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: EncodedString.h
 //
 // Date: Oct 31, 2005
 //
 // Author: juergen.mellinger@uni-tuebingen.de
+//
+// $Log$
+// Revision 1.2  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
+//
 //
 // Description: A string class that allows for transparent handling of
 //   character codes using the '%' character.

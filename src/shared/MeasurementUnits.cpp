@@ -1,4 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: MeasurementUnits.cpp
 //
@@ -6,9 +7,12 @@
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
-// Description: Utilities for handling measurement units and conversions.
+// $Log$
+// Revision 1.4  2005/12/20 11:42:41  mellinger
+// Added CVS id and log to comment.
 //
-// Changes:
+//
+// Description: Utilities for handling measurement units and conversions.
 //
 //////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
