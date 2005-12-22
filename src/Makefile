@@ -122,6 +122,7 @@ clean: prepare ${MAKEFILES:.mak=.clean}
 !endif
   -${SHELL} cd ..\${BINDIR} for /R %i in (${GARBAGE}) do del "%i"
   -${SHELL} cd ..\${TOOLSBINDIR} for /R %i in (${GARBAGE}) do del "%i"
+  -${SHELL} cd Tools\cmdline ${AND} make clean
   ${DONE}
   
 # Install executables.
