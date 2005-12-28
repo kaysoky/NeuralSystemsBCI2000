@@ -48,7 +48,7 @@ NeuroscanADC::NeuroscanADC()
        "// number of samples per block (has to match Neuroscan)",
    "Source int SamplingRate=    256 128 1 40000 "
        "// the signal sampling rate (has to match Neuroscan)",
-   "Source string ServerAddress= localhost:3999"
+   "Source string ServerAddress= localhost:3999 "
        "// address and port of the Neuroscan Acquire server",
  END_PARAMETER_DEFINITIONS
 
