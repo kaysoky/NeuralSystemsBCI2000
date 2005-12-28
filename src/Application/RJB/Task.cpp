@@ -123,6 +123,8 @@ TTask::TTask()
     "CursorPosX 16 0 0 0",
     "CursorPosY 16 0 0 0",
     "Standby 1 0 0 0",
+    "Yadapt 16 0 0 0",
+    "AdaptCode 5 0 0 0",
   END_STATE_DEFINITIONS
 
   LANGUAGES "French",
@@ -303,6 +305,8 @@ void TTask::WriteStateValues()
 {
   State( "StimulusTime" ) = BCITIME::GetBCItime_ms(); // time stamp
   State( "TargetCode" ) = CurrentTarget;
+  State( "Yadapt" ) = 2 * CurrentTarget - Parameter( "NumberTargets" ) - 1;
+  State( "AdaptCode" ) = 2;
   State( "ResultCode" ) = CurrentOutcome;
   State( "Feedback" ) = CurrentFeedback;
   State( "IntertrialInterval" ) = CurrentIti;
