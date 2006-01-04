@@ -4,6 +4,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 
 #include "UParameter.h"
 #include "UState.h"
@@ -38,13 +39,13 @@ TRIALSEQUENCE::TRIALSEQUENCE()
  BEGIN_PARAMETER_DEFINITIONS
    "P3Speller matrix TargetDefinitionMatrix= "
       "36 "
-      "{Display Enter Display%20Size } "
-      "A A 1 "  "B B 1 "  "C C 1 "  "D D 1 "  "E E 1 "  "F F 1 "
-      "G G 1 "  "H H 1 "  "I I 1 "  "J J 1 "  "K K 1 "  "L L 1 "
-      "M M 1 "  "N N 1 "  "O O 1 "  "P P 1 "  "Q Q 1 "  "R R 1 "
-      "S S 1 "  "T T 1 "  "U U 1 "  "V V 1 "  "W W 1 "  "X X 1 "
-      "Y Y 1 "  "Z Z 1 "  "1 1 1 "  "2 2 1 "  "3 3 1 "  "4 4 1 "
-      "5 5 1 "  "6 6 1 "  "7 7 1 "  "8 8 1 "  "9 9 1 "  "_ _ 1 "
+      "{Display Enter Display%20Size Icon%20File} "
+      "A A 1 % "  "B B 1 % "  "C C 1 % "  "D D 1 % "  "E E 1 % "  "F F 1 % "
+      "G G 1 % "  "H H 1 % "  "I I 1 % "  "J J 1 % "  "K K 1 % "  "L L 1 % "
+      "M M 1 % "  "N N 1 % "  "O O 1 % "  "P P 1 % "  "Q Q 1 % "  "R R 1 % "
+      "S S 1 % "  "T T 1 % "  "U U 1 % "  "V V 1 % "  "W W 1 % "  "X X 1 % "
+      "Y Y 1 % "  "Z Z 1 % "  "1 1 1 % "  "2 2 1 % "  "3 3 1 % "  "4 4 1 % "
+      "5 5 1 % "  "6 6 1 % "  "7 7 1 % "  "8 8 1 % "  "9 9 1 % "  "_ _ 1 % "
       "% % % // Target Definition Matrix",
    "P3Speller int NumMatrixColumns= 6 "
       "6 0 6 // Display Matrix's Column Number",
@@ -66,6 +67,11 @@ TRIALSEQUENCE::TRIALSEQUENCE()
     "0x00505050 0x00000000 0x00000000 // Intensified Text Color (color)",
   "P3Speller string TextToSpell= P "
     "P A Z // Character or string to spell in offline mode",
+    /* VK added for icon highlighting */
+  "P3Speller int IconHighlight= 1 "
+    "1 0 2 // Icon highlight method 0: GRAYSCALE, 1: INVERT, 2: DARKEN (enumeration)",
+  "P3Speller int HighlightFactor= 2 "
+    "2 1 5 // Scale factor to reduce icon pixel values",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -91,6 +97,53 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
    fclose( f );        
  /*shidong ends*/
 }
+// **************************************************************************
+// Function:   Preflight
+// Purpose:    Added to check for presence of icon and wave files
+// **************************************************************************
+
+// VK Adding to verify existence of files
+void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
+                        SignalProperties& outputProperties ) const
+{
+  int ret, row;
+  AnsiString fileName;
+  TImage *temp_icon;
+  row = Parameter("TargetDefinitionMatrix")->GetNumRows();
+
+  // parse Target Definition Matrix for icon file names.
+  for (int i = 0; i<row; i++)
+  {
+    fileName = "";
+    fileName =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+    if(fileName != "" && fileName != " ")
+    {
+      temp_icon = new TImage(static_cast<TComponent*>(NULL));
+      try
+      {
+      temp_icon->Picture->LoadFromFile(fileName);
+      }
+      catch(...)
+      {
+        bcierr << "P3 Speller: Could not open icon file - "
+               << fileName.c_str() << std::endl;
+      }
+      delete temp_icon;
+    }
+  }
+
+
+  if (Parameter("TextWindowEnabled") == 1)
+  {
+    if(Parameter("OnlineMode") == 0)
+      bcierr << "Cannot open text window in offline mode!"  << std::endl;
+
+    if(AnsiString((const char*)Parameter("TextWindowFilePath")) == "")
+      bcierr << "Please enter path for saving text window files!"  << std::endl;
+  }
+  outputProperties = inputProperties;
+}
+
 
 
 // **************************************************************************
@@ -182,6 +235,8 @@ cur_target->CharDisplayInMatrix="";
 cur_target->CharDisplayInResult="";
 cur_target->FontSizeFactor=1;
 cur_target->targettype=TARGETTYPE_NOTYPE;
+cur_target->IconHighlightFactor=2;       // VK
+cur_target->IconHighlightMethod="";
 targets->Add(cur_target);
 
 for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
@@ -195,6 +250,18 @@ for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
         cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0));
         cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 1));        //assign display result in column 2
         cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix", i, 2));//assign font size factor in column 3
+        // VK: add icon file
+        cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+
+        // VK: Parameters for testing icon highlighting
+        if (Parameter("IconHighlight") == 0)
+          cur_target->IconHighlightMethod = AnsiString("GRAYSCALE");
+        else if (Parameter("IconHighlight") == 1)
+          cur_target->IconHighlightMethod = AnsiString("INVERT");
+        else if (Parameter("IconHighlight") == 2)
+          cur_target->IconHighlightMethod = AnsiString("DARKEN");
+        cur_target->IconHighlightFactor = (float)Parameter("HighlightFactor");
+
         targettype=TARGETTYPE_NOTYPE;
         if ((targetID == TARGETID_BLANK) || (targetID == TARGETID_BACKUP) || (targetID == TARGETID_ROOT))
                 targettype=TARGETTYPE_CONTROL;
@@ -372,6 +439,8 @@ void TRIALSEQUENCE::SuspendTrial()
  userdisplay->HideActiveTargets();           // hide all active targets
  userdisplay->HideStatusBar();               // hide the status bar
 
+ // VK  - enable this statement if text window is to be closed on suspend
+ // userdisplay->DisableTextWindow();
 
  State("StimulusCode")=0;
  State("StimulusType")=0;
@@ -413,6 +482,8 @@ short   thisisit;
            cur_target->SetTextColor(TextColorIntensified);
         else
            cur_target->SetTextColor(TextColor);
+        //VK
+        cur_target->HighlightIcon(intensify);
         if ((i+1 == chartospellID) && (intensify))
            thisisit=1;
         }
@@ -434,6 +505,8 @@ short   thisisit;
         cur_target->SetTextColor(TextColorIntensified);
      else
         cur_target->SetTextColor(TextColor);
+     //VK
+     cur_target->HighlightIcon(intensify);     
      if ((cur_targetID == chartospellID) && (intensify))
         thisisit=1;
      }

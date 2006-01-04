@@ -35,5 +35,11 @@ public:		// User declarations
         int     displayRow;
         int     displayCol;
         /*shidong ends*/
+	/* VK Text Window Stuff*/
+	TForm	*textform;
+	TMemo	*textwindow;
+	void	DisplayTextWindow(int FontSize, const char *FontName);
+	void    SetTextWindowSize(int Top, int Left, int Width, int Height);
+	void	DisableTextWindow();
 };
 #endif

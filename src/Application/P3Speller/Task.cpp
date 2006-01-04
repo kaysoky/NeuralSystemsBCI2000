@@ -7,6 +7,8 @@
 #include <string.h>
 #include <time.h>
 #include <dos.h>
+//VK added
+#include <io.h>
 
 #include "UState.h"
 #include "BCIDirectry.h"
@@ -17,7 +19,7 @@
 #include "Task.h"
 
 using namespace std;
-
+//ifstream& operator >> (ifstream& is, AnsiString& arg);
 RegisterFilter( TTask, 3 );
 
 // **************************************************************************
@@ -64,11 +66,28 @@ TTask::TTask()
       "Duration after set of n intensifications in units of SampleBlocks",
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
       "Duration before set of n intensifications in units of SampleBlocks",
-  "P3Speller string TextResult= %20 %20 %20 %20 //"
+  "P3Speller string TextResult= %20 %20 %20 %20 // "
       "User spell result",
-  "P3Speller int P3TestMode= 0 0 0 1 //"
+  "P3Speller int P3TestMode= 0 0 0 1 // "
       "P3TestMode (0=no, 1=yes) (boolean)",
 
+   /* VK text window stuff */
+  "P3Speller int TextWindowEnabled= 0 "
+    "0 0 1 // Show Text Window (0=no, 1=yes) (boolean)",
+  "P3Speller int TextWinXpos= 600 0 0 5000 // "
+      "Text Window X location",
+  "P3Speller int TextWinYpos= 5 0 0 5000 // "
+      "Text Window Y location",
+  "P3Speller int TextWinWidth= 512 512 0 2000 // "
+      "Text Window Width",
+  "P3Speller int TextWinHeight= 512 512 0 2000 // "
+      "Text Window Height",
+  "P3Speller string TextWinFontName= Courier % % % // "
+      "Text Window Font Name",
+  "P3Speller int TextWinFontSize= 10 4 0 20 // "
+      "Text Window Font Size",
+  "P3Speller string TextWindowFilePath= % % % % // "
+      "Path for Saved Text File",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -91,7 +110,6 @@ TTask::TTask()
  textresult = "";
  debug = false;
  if(debug) f = fopen ("TaskDebug.txt", "w");
- 
  /*shidong ends*/
 }
 
@@ -128,14 +146,13 @@ char *current_directory(char *path)
   getcurdir(0, path+3);  /* fill rest of string with current directory */
   return(path);
 }
-
-
 void TTask::Preflight( const SignalProperties& inputProperties,
                              SignalProperties& outputProperties ) const
 {
+  // VK Adding to verify existence of icon files
+  trialsequence->Preflight(inputProperties, outputProperties);
   outputProperties = inputProperties;
-}//Preflight
-
+}
 
 
 // **************************************************************************
@@ -212,6 +229,22 @@ int     ret, numerpsamples, sampleblocksize;
 
   // show the user window
   userdisplay->form->Show();
+
+  //VK Text Window
+  if (Parameter("TextWindowEnabled") == 1)
+  {
+    int Tx, Ty, Tx1, Ty1, fontsize;
+    const char *fontname;
+    Tx=  Parameter( "TextWinXpos" );
+    Ty=  Parameter( "TextWinYpos" );
+    Tx1= Parameter( "TextWinWidth" );
+    Ty1= Parameter( "TextWinHeight" );
+    fontsize = Parameter("TextWinFontSize");
+    fontname = (const char *)Parameter("TextWinFontName");
+    userdisplay->DisplayTextWindow(fontsize,fontname );
+    userdisplay->SetTextWindowSize(Ty, Tx, Tx1, Ty1);
+    userdisplay->textform->Show();
+  }
 
   cur_sequence=0;
   oldrunning=0;
@@ -385,10 +418,16 @@ void TTask::ProcessPreSequence()
 // **************************************************************************
 void TTask::ProcessPostSequence()
 {
-unsigned short  cur_time;
+//unsigned short  cur_time;
 AnsiString      predchar;
 char    memotext[256];
 int     i;
+
+//VK Adding for time-date stamp for text window
+DateSeparator = ' ';
+ShortDateFormat = "mmddyy";
+TimeSeparator = ' ';
+LongTimeFormat = "hhmm";
 
  if (postsequence)
     {
@@ -397,22 +436,99 @@ int     i;
        {
        // determine predicted character
        predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
-       /*shidong starts*/
-        
 
+       //VK changed location of this function to enable proper scrolling
+       userdisplay->DisplayStatusBar();
+
+       /*shidong starts*/
        if (predchar == "<END>")                         //check for user "end" input
        {
          State("Running")=0;
-        //return;        
+        //return;
        }
-       else if (predchar == "<BS>")           //check for backspace
+       else if (predchar == "<BS>")                     //check for backspace
        {
         trialsequence->char2spellidx -= 1;
         if (trialsequence->char2spellidx < 1)           //if 1st predchar is <BS>
                 trialsequence->char2spellidx = 1;
-        //delete one character                
+        //delete one character
        //userdisplay->statusbar->resulttext.Delete(userdisplay->statusbar->resulttext.Length(),1);
         textresult.Delete(textresult.Length(), 1);
+       }
+       // VK functionality for delete word
+       else if (predchar == "<DW>")
+       {
+         int textIndex = textresult.LastDelimiter(" ");
+         if (textIndex == textresult.Length())          // implies trailing space
+         {
+           //remove trailing space so DW can work     
+           textresult = textresult.SubString(0, textIndex-1);
+           textIndex = textresult.LastDelimiter(" ");
+         }
+
+         AnsiString newresult = textresult.SubString(0, textIndex);
+         trialsequence->char2spellidx -= (textresult.Length() - newresult.Length());
+         if (trialsequence->char2spellidx < 1)           //if 1st predchar is <DW>
+           trialsequence->char2spellidx = 1;
+         textresult = newresult;
+       }
+       // VK Text window save functionality
+       else if (predchar == "<SAVE>" && (Parameter("TextWindowEnabled")==1))
+       {
+         AnsiString fileName = (const char*)Parameter("TextWindowFilePath");
+         AnsiString rfileName = fileName + "LastFile.txt";
+         FILE *lastfile = fopen(rfileName.c_str(), "w");
+
+         fileName = fileName + "Text" + DateTimeToStr(Now()) + ".txt";
+         FILE *fp = fopen(fileName.c_str(),"w");
+
+         if (!fp)
+           bcierr << "P3 Speller: Could not open text file for writing - "
+                  << fileName.c_str() << std::endl;
+         else
+         {
+           fprintf(fp,"%s", userdisplay->textwindow->Text.c_str());
+           fclose(fp);
+           if (lastfile)
+           {                                   // save for retrieving
+             fprintf(lastfile,"%s", userdisplay->textwindow->Text.c_str());
+             fclose(lastfile);
+           }
+           userdisplay->textwindow->Clear();               // erase text window after writing file
+
+           // we need to clear the status bar too .. otherwise text appears again in txt window
+           textresult = "";
+         }
+       }
+       else if (predchar == "<RETR>"&& (Parameter("TextWindowEnabled")==1))
+       {
+         // retrieve latest file to text window
+         AnsiString rfileName = (const char*)Parameter("TextWindowFilePath");
+         rfileName+= "LastFile.txt";
+         int lastfile = FileOpen(rfileName, fmOpenRead);
+         if (lastfile == -1)
+         {
+           sprintf(memotext, "P3Speller: No saved file to retrieve!");
+           mVis.Send( memotext );
+         }
+         else
+         {
+           int fLength = FileSeek(lastfile,0,2);
+           FileSeek(lastfile,0,0);
+           char *cp = new char [fLength + 1];
+           int bytesRead = FileRead(lastfile, cp, fLength);
+           if (bytesRead == 0)
+           {
+             sprintf(memotext, "P3Speller: Retrieved file is empty!");
+             mVis.Send( memotext );
+           }
+           FileClose(lastfile);
+           userdisplay->textwindow->Text = AnsiString(cp);
+
+          // bring the same text back in the status bar
+           textresult = AnsiString(cp);
+          delete cp;
+         }
        }
        else
        {
@@ -423,25 +539,35 @@ int     i;
         textresult += predchar;
        }
 
+       //VK     dont want to display text if it was just saved!
+       if ((Parameter("TextWindowEnabled")==1) && predchar != "<SAVE>" && predchar != "<RETR>" )
+       {
+         userdisplay->textwindow->Text = textresult;
+       }
+
        if(!trialsequence->onlinemode)  //if offline
-       { 
+       {
         userdisplay->statusbar->resulttext = textresult;
        }
        else             //if online
        {
         int textIndex = textresult.LastDelimiter(" ");          //get index of last space
         userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
-        userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+        // VK put scrolling function call here.
+        // userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+        AnsiString goaltxt = textresult.SubString(0, textIndex);
+        userdisplay->statusbar->goaltext = ReturnScrolledString(goaltxt);
+
         if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
                 userdisplay->statusbar->resulttext  = "";
-        if (userdisplay->statusbar->goaltext.Length()==0)       //check for null        
+        if (userdisplay->statusbar->goaltext.Length()==0)       //check for null
                 userdisplay->statusbar->goaltext  = "";  
        }
-
        /*shidong ends*/
 
        trialsequence->SetUserDisplayTexts();
-       userdisplay->DisplayStatusBar();
+       //VK moved this call to beginning of routine
+      // userdisplay->DisplayStatusBar();
 
        // write the results in the log file
        if (logfile)
@@ -519,7 +645,7 @@ unsigned short cur_stimuluscoderes, cur_stimulustyperes;
     {
     responsecount[cur_stimuluscoderes-1]++;
     response[cur_stimuluscoderes-1] += (*signals)(0,0);    // use the first control signal as classification result
-    /*shidong debug starts  
+    /*shidong debug starts
     response[cur_stimuluscoderes-1] +=  (float)rand();
    */ //if(debug) fprintf(f, "StimulusCodeRes:\t %d, \t response[%d]:\t  %f.\n", cur_stimuluscoderes, cur_stimuluscoderes-1, response[cur_stimuluscoderes-1]);
    /*shidong debug ends*/
@@ -589,7 +715,7 @@ int     ret;
         }
         userdisplay->statusbar->resulttext="";
     }
-     else // if we are in online mode
+    else // if we are in online mode
     {
          if(debug) fprintf(f, "In OnlineMode.\n");  
 
@@ -603,9 +729,16 @@ int     ret;
                         userdisplay->statusbar->goaltext="";
                         if(debug) fprintf(f, "in\n");
                 }
+                // VK adding to fix scrolling when resumed
+                userdisplay->DisplayStatusBar();
+                
                 int textIndex = textresult.LastDelimiter(" ");          //get index of last space
                 userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
-                userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+                // VK Check if scrolling is needed?
+                //userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
+                AnsiString goaltxt = textresult.SubString(0, textIndex);
+                userdisplay->statusbar->goaltext = ReturnScrolledString(goaltxt);
+                
                 if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
                         userdisplay->statusbar->resulttext  = "";
                 if (userdisplay->statusbar->goaltext.Length()==0)       //check for null
@@ -677,4 +810,28 @@ void TTask::StopRun()
         
  }
  /*shidong ends*/
+}
+
+
+AnsiString TTask::ReturnScrolledString(AnsiString goaltxt)
+{
+  // check length of input string in pixels
+
+  int width = userdisplay->form->Canvas->TextWidth(goaltxt);
+  AnsiString newgoaltxt;
+  if (width > userdisplay->form->ClientWidth) // need to scroll
+  {
+    int newWidth;
+    for(int i=1; i<goaltxt.Length(); i++)
+    {
+      newgoaltxt = goaltxt.SubString(i, goaltxt.Length());
+      newWidth =  userdisplay->form->Canvas->TextWidth(newgoaltxt);
+      if (newWidth <= userdisplay->form->ClientWidth)
+        break;
+    }
+  }
+  else // no need to scroll
+    newgoaltxt = goaltxt;
+
+  return(newgoaltxt);
 }

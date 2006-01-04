@@ -44,6 +44,8 @@ class TTask : public GenericFilter
         AnsiString      DeterminePredictedCharacter();
         FILE            *logfile;
         int             cur_runnr;
+	AnsiString	ReturnScrolledString(AnsiString); //VK added
+
  public:
           TTask();
   virtual ~TTask();

@@ -33,9 +33,18 @@ private: 	// User declarations
         TColor  TextColor, TextColorIntensified;
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
+        // VK added for control icon hightlight type
+        enum
+	{
+	   GRAYSCALE,
+	   INVERT,
+	   DARKEN,
+	};
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
+        //VK Adding Preflight();
+        void    Preflight(const SignalProperties& ,SignalProperties& ) const;
         int     Initialize(USERDISPLAY *);
         int     Process(const GenericSignal*);
         void    ResetTrialSequence();
