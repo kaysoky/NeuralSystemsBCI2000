@@ -32,6 +32,9 @@ private: 	// User declarations
         TShape  *shape;
         TImage  *icon;
         TLabel  *caption;
+
+        //VK
+        TImage  *mono_icon;
         /*shidong starts*/
         void __fastcall clickTarget( TObject* );
         /*shidong ends*/
@@ -61,6 +64,10 @@ public:		// User declarations
         bool    IsClickedOn();
 
         /*shidong ends*/
+        // VK
+	void	HighlightIcon(bool intensify);
+        AnsiString IconHighlightMethod;
+	float   IconHighlightFactor;
 };
 
 
