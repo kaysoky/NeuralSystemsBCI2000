@@ -457,7 +457,10 @@ TARGET::TARGET(int my_targetID)
  shape=NULL;
  icon=NULL;
  caption=NULL;
-
+ //VK
+ mono_icon=NULL;
+ IconHighlightMethod="DARKEN";
+ IconHighlightFactor=2;
 
  IconFile="";
  Caption="";
@@ -503,10 +506,17 @@ TARGET::~TARGET()
  if (shape) delete shape;
  if (icon) delete icon;
  if (caption) delete caption;
+ //VK
+ if (mono_icon) delete mono_icon;
  caption=NULL;
  Pen=NULL;
  shape=NULL;
  icon=NULL;
+ //VK
+ mono_icon=NULL;
+ IconHighlightMethod=NULL;
+ IconHighlightFactor=NULL;
+
   /*shidong starts*/
  CharDisplayInMatrix = NULL;
  CharDisplayInResult = NULL;
@@ -540,8 +550,11 @@ TARGET *new_target;
  new_target->CharDisplayInMatrix = CharDisplayInMatrix;
  new_target->CharDisplayInResult = CharDisplayInResult;
  new_target->FontSizeFactor = FontSizeFactor;
- new_target->clickedOn = clickedOn;      
+ new_target->clickedOn = clickedOn;
  /*shidong ends*/
+  //VK
+ new_target->IconHighlightFactor= IconHighlightFactor;
+ new_target->IconHighlightMethod= IconHighlightMethod;
  return(new_target);
 }
 
@@ -624,7 +637,7 @@ float   scalex, scaley;
     }
 
  // create the icon, if not already exists
- if ((IconFile != "") && (!icon))
+ if ((IconFile != "") && (!icon) && (IconFile != " "))
     {
     icon=new TImage(static_cast<TComponent*>(NULL));
     icon->Parent=form;
@@ -633,13 +646,17 @@ float   scalex, scaley;
  // set the icon's properties
  if (icon)
     {
-    icon->Visible=true;
+    // VK: dont' display colored icon yet
+    //icon->Visible=true;
     icon->Enabled=true;
     icon->Stretch=true;
     icon->Left=scaledleft+1;
     icon->Top=scaledtop+1;
-    icon->Width=scaledright-scaledleft-2;
-    icon->Height=scaledbottom-scaledtop-2;
+
+    icon->Width=scaledright-scaledleft-2;     // cell width
+    icon->Height=scaledbottom-scaledtop-2;    // cell height
+    icon->OnClick = clickTarget;              // VK added to support test mode with icons.
+
     bool err = false;
     try
       {
@@ -658,6 +675,54 @@ float   scalex, scaley;
       delete icon;
       icon=NULL;
       }
+    else        //VK  create & display monochrome icon
+      {
+        if (!mono_icon)
+        {
+        mono_icon = new TImage(static_cast<TComponent*>(NULL));
+
+        mono_icon->Parent = form;
+        mono_icon->Stretch = icon->Stretch;
+        mono_icon->Left    = icon->Left;
+        mono_icon->Top     = icon->Top;
+        mono_icon->Width   = icon->Width;
+        mono_icon->Height  = icon->Height;
+        mono_icon->Picture->Assign(icon->Picture);
+        mono_icon->Enabled = true;
+        mono_icon->Visible = true;
+        mono_icon->OnClick = clickTarget;
+        
+        if (IconHighlightMethod == "GRAYSCALE")
+          mono_icon->Picture->Bitmap->Monochrome = true;
+        else         // either invert or reduce pixel values
+        {
+          int x, y;
+          int ht = mono_icon->Picture->Bitmap->Height;
+          int width = mono_icon->Picture->Bitmap->Width;
+          long old_color;
+          for (x=0; x<ht; x++)
+          {
+            for (y=0; y<width; y++)
+            {
+              old_color = icon->Picture->Bitmap->Canvas->Pixels[x][y];
+
+              if (IconHighlightMethod == "INVERT")
+                mono_icon->Picture->Bitmap->Canvas->Pixels[x][y] = (TColor)0x00ffffff-icon->Picture->Bitmap->Canvas->Pixels[x][y];
+              else if (IconHighlightMethod == "DARKEN")
+              {
+                long r, g, b;
+                r = (old_color & 0x0000FF)/IconHighlightFactor;
+                g = (old_color & 0x00FF00)/IconHighlightFactor;
+                g = g & 0x00FF00;
+                b = (old_color & 0xFF0000)/IconHighlightFactor;
+                b = b & 0xFF0000;
+                mono_icon->Picture->Bitmap->Canvas->Pixels[x][y] = StringToColor(0x000000|r|g|b);
+              }
+            } // end for y
+          } // end for x
+        } // end else IconHighlightMethod
+        } // end if (!mono_icon)
+      } // end else
     }
 
  // write the text, if any
@@ -704,6 +769,8 @@ void TARGET::HideTarget()
  if (icon) icon->Visible=false;
  // hide the text, if it exists
  if (caption) caption->Visible=false;
+ //VK hide monochrome icon
+ if (mono_icon) mono_icon->Visible=false;
 }
 
 // **************************************************************************
@@ -759,4 +826,28 @@ void TARGET::SetTextColor(TColor new_color)
  if (caption) caption->Font->Color=new_color;
 }
 
+// **************************************************************************
+// Function:   HighlightIcon
+// Purpose:    This function intensifies the icon of this target
+// Parameters: bool intensify
+// Returns:    N/A
+// **************************************************************************
+// VK
+
+void TARGET::HighlightIcon(bool intensify)
+{
+   if (icon && mono_icon)
+   {
+        if (intensify)
+        {
+        icon->Visible=true;
+        mono_icon->Visible=false;
+        }
+        else
+        {
+        icon->Visible=false;
+        mono_icon->Visible=true;
+        }
+   }
+ }
 
