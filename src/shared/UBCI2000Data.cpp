@@ -47,8 +47,8 @@ void BCI2000DATA::Reset()
 {
   mInitialized = false;
 
-  mParamlist.ClearParamList();
-  mStatelist.ClearStateList();
+  mParamlist.Clear();
+  mStatelist.Clear();
   delete mpStatevector;
   mpStatevector = NULL;
 
@@ -131,18 +131,22 @@ BCI2000DATA::Initialize( const char* inNewFilename, int inBufSize )
 
   const float defaultOffset = 0.0;
   mSourceOffsets.clear();
-  const PARAM* pSourceChOffset = mParamlist.GetParamPtr( "SourceChOffset" );
-  if( pSourceChOffset != NULL )
-    for( size_t i = 0; i < pSourceChOffset->GetNumValues(); ++i )
-      mSourceOffsets.push_back( ::atof( pSourceChOffset->GetValue( i ) ) );
+  if( mParamlist.Exists( "SourceChOffset" ) )
+  {
+    const PARAM& SourceChOffset = mParamlist[ "SourceChOffset" ];
+    for( size_t i = 0; i < SourceChOffset.GetNumValues(); ++i )
+      mSourceOffsets.push_back( ::atof( SourceChOffset.GetValue( i ) ) );
+  }
   mSourceOffsets.resize( mChannels, defaultOffset );
 
   const float defaultGain = 0.033;
   mSourceGains.clear();
-  const PARAM* pSourceChGain = mParamlist.GetParamPtr( "SourceChGain" );
-  if( pSourceChGain != NULL )
-    for( size_t i = 0; i < pSourceChGain->GetNumValues(); ++i )
-      mSourceGains.push_back( ::atof( pSourceChGain->GetValue( i ) ) );
+  if( mParamlist.Exists( "SourceChGain" ) )
+  {
+    const PARAM& SourceChGain = mParamlist[ "SourceChGain" ];
+    for( size_t i = 0; i < SourceChGain.GetNumValues(); ++i )
+      mSourceGains.push_back( ::atof( SourceChGain.GetValue( i ) ) );
+  }
   mSourceGains.resize( mChannels, defaultGain );
 
   mInitialized = true;
@@ -430,17 +434,16 @@ BCI2000DATA::ReadHeader()
     return BCI2000ERR_MALFORMEDHEADER;
   while( getline( mFile, line, '\n' )
          && line.find( "[ Parameter Definition ]" ) == line.npos )
-    mStatelist.AddState2List( line.c_str() );
+    mStatelist.Add( line.c_str() );
   while( getline( mFile, line, '\n' )
          && line != "" && line != "\r" )
-    mParamlist.AddParameter2List( line.c_str() );
+    mParamlist.Add( line );
 
   // build statevector using specified positions
-  mpStatevector = new STATEVECTOR( &mStatelist, true );
-  PARAM* pParam = mParamlist.GetParamPtr( "SamplingRate" );
-  if( pParam == NULL )
+  mpStatevector = new STATEVECTOR( mStatelist, true );
+  if( !mParamlist.Exists( "SamplingRate" ) )
     return BCI2000ERR_MALFORMEDHEADER;
-  mSamplingRate = ::atoi( pParam->GetValue() );
+  mSamplingRate = ::atoi( mParamlist[ "SamplingRate" ].GetValue() );
 
   return mFile ? BCI2000ERR_NOERR : BCI2000ERR_MALFORMEDHEADER;
 }
@@ -574,7 +577,7 @@ BCI2000DATA::ReadValue( int inChannel, unsigned long inSample, int inRun )
 void
 BCI2000DATA::ReadStateVector( unsigned long inSample )
 {
-  ::memcpy( mpStatevector->GetStateVectorPtr(),
+  ::memcpy( mpStatevector->Data(),
             BufferSample( inSample ) + mDataSize * GetNumChannels(),
             GetStateVectorLength() );
 }

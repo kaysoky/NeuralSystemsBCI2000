@@ -4,6 +4,9 @@
 // File: UEnvironment.cpp
 //
 // $Log$
+// Revision 1.14  2006/01/11 19:08:44  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 // Revision 1.13  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -29,6 +32,7 @@
 #include "MessageHandler.h"
 #include "USysCommand.h"
 #include "UBCIError.h"
+#include "MeasurementUnits.h"
 #include <typeinfo>
 
 using namespace std;
@@ -72,8 +76,9 @@ EnvironmentBase::GetParamPtr( const string& name ) const
             << endl;
   else
   {
-    param = Parameters->GetParamPtr( name.c_str() );
-    if( param == NULL )
+    if( Parameters->Exists( name ) )
+      param = &( *Parameters )[ name.c_str() ];
+    else
     {
       _bcierr << "Parameter \"" << name << "\" is inaccessible."
               << endl;
@@ -90,8 +95,8 @@ EnvironmentBase::GetOptionalParamPtr( const string& name ) const
   if( Parameters == NULL )
     _bcierr << "Tried parameter access during non-access phase."
             << endl;
-  else
-    param = Parameters->GetParamPtr( name.c_str() );
+  else if( Parameters->Exists( name ) )
+    param = &( *Parameters )[ name.c_str() ];
   return param;
 }
 
@@ -324,48 +329,45 @@ EnvironmentBase::_PreflightCondition( const char* inConditionString,
 
 
 // Read/write access to a state by its name.
-STATEVECTOR::type_adapter
+StateRef
 EnvironmentBase::State( const char* name ) const
 {
 #ifdef TODO
 # error In the type adapter, check whether the value fits into the state.
 #endif // TODO
-  int bitLocation = 0,
-      byteLocation = 0,
+  int location = 0,
       length = 0;
   const STATELIST* statelist = NULL;
 
   if( _phase != processing )
     statelist = States;
   else if( Statevector != NULL )
-    statelist = Statevector->GetStateListPtr();
+    statelist = &Statevector->Statelist();
 
   if( statelist == NULL )
     _bcierr << "States are inaccessible at this time."
             << endl;
   else
   {
-    STATE* state = statelist->GetStatePtr( name );
-    if( state == NULL )
+    if( !statelist->Exists( name ) )
       _bcierr << "State \"" << name << "\" is inaccessible." << endl;
     else
     {
-      bitLocation = state->GetBitLocation();
-      byteLocation = state->GetByteLocation();
-      length = state->GetLength();
+      const STATE& state = ( *statelist )[ name ];
+      location = state.GetLocation();
+      length = state.GetLength();
       if( length < 1 )
         _bcierr << "State \"" << name << "\" has zero length." << endl;
     }
   }
-  return STATEVECTOR::type_adapter( Statevector, byteLocation, bitLocation, length );
+  return StateRef( Statevector, location, length );
 }
 
 // Read access to an optional state by its name.
-const STATEVECTOR::type_adapter
+const StateRef
 EnvironmentBase::OptionalState( short defaultValue, const char* name ) const
 {
-  int bitLocation = 0,
-      byteLocation = 0,
+  int location = 0,
       length = 0;
   STATEVECTOR* statevector = NULL;
   const STATELIST* statelist = NULL;
@@ -373,25 +375,21 @@ EnvironmentBase::OptionalState( short defaultValue, const char* name ) const
   if( _phase != processing )
     statelist = States;
   else if( Statevector != NULL )
-    statelist = Statevector->GetStateListPtr();
+    statelist = &Statevector->Statelist();
 
   if( statelist == NULL )
     _bcierr << "States are inaccessible at this time."
             << endl;
-  else
+  else if( statelist->Exists( name ) )
   {
-    STATE* state = statelist->GetStatePtr( name );
-    if( state != NULL )
-    {
-      statevector = Statevector;
-      bitLocation = state->GetBitLocation();
-      byteLocation = state->GetByteLocation();
-      length = state->GetLength();
-      if( length < 1 )
-        _bcierr << "State \"" << name << "\" has zero length." << endl;
-    }
+    const STATE& state = ( *statelist )[ name ];
+    statevector = Statevector;
+    location = state.GetLocation();
+    length = state.GetLength();
+    if( length < 1 )
+      _bcierr << "State \"" << name << "\" has zero length." << endl;
   }
-  return STATEVECTOR::type_adapter( statevector, byteLocation, bitLocation, length, defaultValue );
+  return StateRef( statevector, location, length, defaultValue );
 }
 
 // Called to prevent access.
@@ -413,10 +411,10 @@ void EnvironmentBase::EnterNonaccessPhase()
       if( _paramlist && _operator )
       {
         PARAMLIST changedParameters;
-        for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
-          if( i->second.Changed() )
-            changedParameters.insert( *i );
-        if( !changedParameters.empty() )
+        for( size_t i = 0; i < _paramlist->Size(); ++i )
+          if( ( *_paramlist )[ i ].Changed() )
+            changedParameters.Add( ( *_paramlist )[ i ] );
+        if( !changedParameters.Empty() )
           if( !(
             MessageHandler::PutMessage( *_operator, changedParameters )
             && MessageHandler::PutMessage( *_operator, SYSCMD::EndOfParameter )
@@ -464,6 +462,25 @@ void EnvironmentBase::EnterPreflightPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = NULL;
   _operator = inOperator;
+
+  double SamplingRate = 1.0,
+         SampleBlockSize = 1.0,
+         SourceChGain = 1.0;
+
+  if( Parameters != NULL )
+  {
+    if( Parameters->Exists( "SamplingRate" ) )
+      SamplingRate = ::atof( ( *Parameters )[ "SamplingRate" ].GetValue() );
+    if( Parameters->Exists( "SampleBlockSize" ) )
+      SampleBlockSize = ::atof( ( *Parameters )[ "SampleBlockSize" ].GetValue() );
+    if( Parameters->Exists( "SourceChGain" ) )
+      SourceChGain = ::atof( ( *Parameters )[ "SourceChGain" ].GetValue( 0 ) );
+  }
+
+  MeasurementUnits::InitializeTimeUnit( SamplingRate / SampleBlockSize );
+  MeasurementUnits::InitializeFreqUnit( 1.0 / SamplingRate );
+  MeasurementUnits::InitializeVoltageUnit( 1e6 / SourceChGain );
+
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Preflight();
 }
@@ -532,8 +549,8 @@ void EnvironmentBase::EnterStopRunPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
-    i->second.Unchanged();
+  for( size_t i = 0; i < _paramlist->Size(); ++i )
+    ( *_paramlist )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->StopRun();
 }
@@ -551,8 +568,8 @@ void EnvironmentBase::EnterRestingPhase( PARAMLIST*   inParamList,
   _statelist = inStateList;
   _statevector = inStateVector;
   _operator = inOperator;
-  for( PARAMLIST::iterator i = _paramlist->begin(); i != _paramlist->end(); ++i )
-    i->second.Unchanged();
+  for( size_t i = 0; i < _paramlist->Size(); ++i )
+    ( *_paramlist )[ i ].Unchanged();
   for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
     ( *i )->Resting();
 }

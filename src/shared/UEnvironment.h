@@ -4,6 +4,9 @@
 // File: UEnvironment.h
 //
 // $Log$
+// Revision 1.17  2006/01/11 19:08:44  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 // Revision 1.16  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -27,6 +30,7 @@
 #include "UParameter.h"
 #include "ParamRef.h"
 #include "UState.h"
+#include "StateRef.h"
 #include "UBCIError.h"
 #include <set>
 class std::ostream;
@@ -42,7 +46,7 @@ class EnvironmentExtension;
 #define END_PARAMETER_DEFINITIONS                                      \
   };                                                                   \
   for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
-    if( !Parameters->AddParameter2List( _params[ i ] ) )               \
+    if( !Parameters->Add( _params[ i ] ) )               \
       bcierr << "error in parameter definition:\n"                     \
              << _params[ i ]                                           \
              << std::endl;                                             \
@@ -56,7 +60,7 @@ class EnvironmentExtension;
 #define END_STATE_DEFINITIONS                                          \
   };                                                                   \
   for( size_t i = 0; i < sizeof( _states ) / sizeof( *_states ); ++i ) \
-    if( !States->AddState2List( _states[ i ] ) )                       \
+    if( !States->Add( _states[ i ] ) )                                 \
       bcierr << "error in state definition:\n"                         \
              << _states[ i ]                                           \
              << std::endl;                                             \
@@ -220,11 +224,11 @@ class EnvironmentBase
   bool _PreflightCondition( const char*, bool ) const;
 
   // Read/write access a state by its name.
-  STATEVECTOR::type_adapter State( const char* ) const;
+  StateRef State( const char* ) const;
   // Read-only access to states that are not required.
   // The first argument is a default value.
-  const STATEVECTOR::type_adapter OptionalState( short, const char* ) const;
-  const STATEVECTOR::type_adapter OptionalState( const char* name ) const
+  const StateRef OptionalState( short, const char* ) const;
+  const StateRef OptionalState( const char* name ) const
   { return OptionalState( 0, name ); }
 
  // Controlling functions to be called from framework friends only.

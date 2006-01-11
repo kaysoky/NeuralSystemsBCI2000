@@ -36,6 +36,9 @@
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
  * $Log$
+ * Revision 1.22  2006/01/11 19:08:44  mellinger
+ * Adaptation to latest revision of parameter and state related class interfaces.
+ *
  * Revision 1.21  2005/12/20 11:42:41  mellinger
  * Added CVS id and log to comment.
  *                                                                      *
@@ -231,7 +234,7 @@ TfMain::HandleSTATE( istream& is )
 #endif // EEGSRC
     }
     else
-      mStatelist.AddState2List( &s );
+      mStatelist.Add( s );
   }
   return is;
 }
@@ -249,7 +252,7 @@ TfMain::HandleSYSCMD( istream& is )
 
       delete mpStatevector;
       // This is the first initialization.
-      mpStatevector = new STATEVECTOR( &mStatelist );
+      mpStatevector = new STATEVECTOR( mStatelist );
       ostringstream oss;
       mpStatevector->WriteBinary( oss );
       mInitialStatevector = oss.str();
@@ -314,36 +317,21 @@ TfMain::InitializeFilters()
   __bcierr.clear();
   GenericFilter::HaltFilters();
   bool errorOccurred = ( __bcierr.flushes() > 0 );
-  float samplingRate,
-        sampleBlockSize;
-  PARAM* param = mParamlist.GetParamPtr( "SamplingRate" );
-  samplingRate = param ? ::atoi( param->GetValue() ) : 1.0;
-  param = mParamlist.GetParamPtr( "SampleBlockSize" );
-  sampleBlockSize = param ? ::atoi( param->GetValue() ) : 1.0;
-  MeasurementUnits::InitializeTimeUnit( samplingRate / sampleBlockSize );
-
-  float microvoltsPerAdUnit = 1.0;
-  param = mParamlist.GetParamPtr( "SourceChGain" );
-  if( param )
-  {
-    float paramValue = ::atof( param->GetValue( 0 ) );
-    if( paramValue > 0 )
-      microvoltsPerAdUnit = paramValue;
-  }
-  MeasurementUnits::InitializeVoltageUnit( 1e6 / microvoltsPerAdUnit );
-
   int numInputChannels = 0,
       numInputElements = 0;
 #if( MODTYPE == EEGSRC )
   numInputChannels = 0;
   numInputElements = 0;
 #elif( MODTYPE == SIGPROC )
-  param = mParamlist.GetParamPtr( "TransmitChList" );
-  numInputChannels = param ? param->GetNumValues() : 0;
-  numInputElements = sampleBlockSize;
+  if( mParamlist.Exists( "TransmitChList" ) )
+    numInputChannels = mParamlist[ "TransmitChList" ].GetNumValues();
+  if( mParamlist.Exists( "SampleBlockSize" ) )
+    numInputElements = ::atoi( mParamlist[ "SampleBlockSize" ].GetValue() );
 #elif( MODTYPE == APP )
-  param = mParamlist.GetParamPtr( "NumControlSignals" );
-  numInputChannels = param ? ::atoi( param->GetValue() ) : 2;
+  if( mParamlist.Exists( "NumControlSignals" ) )
+    numInputChannels = ::atoi( mParamlist[ "NumControlSignals" ].GetValue() );
+  else
+    numInputChannels = 2;
   numInputElements = 1;
 #endif
   SignalProperties inputProperties = SignalProperties( numInputChannels, numInputElements ),
@@ -493,8 +481,8 @@ void
 TfMain::Startup( AnsiString inTarget )
 {
   // clear all parameters and states first
-  mParamlist.ClearParamList();
-  mStatelist.ClearStateList();
+  mParamlist.Clear();
+  mStatelist.Clear();
 
   // creating connection to the operator
   mOperatorSocket.open( ( inTarget + ":" + eOperatorPort->Text ).c_str() );
@@ -518,25 +506,25 @@ TfMain::Startup( AnsiString inTarget )
 
 #if( MODTYPE == SIGPROC )
   // Add the NumControlSignals parameter.
-  mParamlist.AddParameter2List(
+  mParamlist.Add(
     "Filtering int NumControlSignals= 2"
     " 1 1 128 // the number of transmitted control signals" );
 #endif // SIGPROC
 
   // add parameters for socket connection
   // my receiving socket port number
-  mParamlist.AddParameter2List(
+  mParamlist.Add(
     "System string " THISMODULE "Port= x"
     " 4200 1024 32768 // the " THISMODULE " module's listening port" );
   mParamlist[ THISMODULE "Port" ].Value() = AnsiString( mPreviousModuleSocket.port() ).c_str();
   // and IP address
-  mParamlist.AddParameter2List(
+  mParamlist.Add(
     "System string " THISMODULE "IP= x"
     " 127.0.0.1 127.0.0.1 127.0.0.1 // the " THISMODULE " module's listening IP" );
   mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
 
   // Version control
-  mParamlist.AddParameter2List(
+  mParamlist.Add(
     "System matrix " THISMODULE "Version= { Framework CVS Build } 1 " THISMODULE " % %"
     " % % % // " THISMODULE " version information" );
   mParamlist[ THISMODULE "Version" ].Value( "Framework" ) = THISVERSION;
@@ -566,17 +554,18 @@ TfMain::Startup( AnsiString inTarget )
 void
 TfMain::InitializeConnections()
 {
-  PARAM* ipParam = mParamlist.GetParamPtr( NEXTMODULE "IP" ),
-       * portParam = mParamlist.GetParamPtr( NEXTMODULE "Port" );
+  const char* ipParam = NEXTMODULE "IP",
+            * portParam = NEXTMODULE "Port";
 
-  if( !ipParam || !portParam )
+  if( !mParamlist.Exists( ipParam ) || !mParamlist.Exists( portParam ) )
   {
     BCIERR << NEXTMODULE "IP/Port parameters not available"
            << endl;
     return;
   }
-  string nextModuleAddress = string( ipParam->GetValue() ) + ":" + portParam->GetValue();
-  mNextModuleSocket.open( nextModuleAddress.c_str() );
+  string ip = mParamlist[ ipParam ].GetValue(),
+         port = mParamlist[ portParam ].GetValue();
+  mNextModuleSocket.open( ( ip + ":" + port ).c_str() );
   mNextModule.open( mNextModuleSocket );
   if( !mNextModule.is_open() )
   {
@@ -585,8 +574,8 @@ TfMain::InitializeConnections()
     return;
   }
   rSendingConnected->Checked = true;
-  eSendingIP->Text = ipParam->GetValue();
-  eSendingPort->Text = portParam->GetValue();
+  eSendingIP->Text = ip.c_str();
+  eSendingPort->Text = port.c_str();
 
   mPreviousModule.close();
   mPreviousModule.clear();

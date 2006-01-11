@@ -8,6 +8,9 @@
 // Date:   Jul 24, 2003
 //
 // $Log$
+// Revision 1.11  2006/01/11 19:08:44  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 // Revision 1.10  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -107,8 +110,8 @@ template<>
 ostream&
 MessageHandler::PutMessage( ostream& os, const PARAMLIST& parameters )
 {
-  for( PARAMLIST::const_iterator i = parameters.begin(); i != parameters.end(); ++i )
-    PutMessage( os, i->second );
+  for( size_t i = 0; i < parameters.Size(); ++i )
+    PutMessage( os, parameters[ i ] );
   return os;
 }
 
@@ -116,8 +119,8 @@ template<>
 ostream&
 MessageHandler::PutMessage( ostream& os, const STATELIST& states )
 {
-  for( int i = 0; i < states.GetNumStates(); ++i )
-    PutMessage( os, *states.GetStatePtr( i ) );
+  for( size_t i = 0; i < states.Size(); ++i )
+    PutMessage( os, states[ i ] );
   return os;
 }
 
