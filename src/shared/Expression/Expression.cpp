@@ -1,19 +1,26 @@
 //////////////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File:        Expression.cpp
 // Date:        Aug 12, 2005
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: A simple BCI2000 expression parser.
 //              See Expression.h for details about expressions.
+// $Log$
+// Revision 1.3  2006/01/11 19:00:43  mellinger
+// Removed VCL classes when compiled with BCI_TOOL flag; removed "using namespace" from header file; introduced CVS id and log.
 //
 //////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <vcl.h>
-#include <SysUtils.hpp>
+#ifndef BCI_TOOL
+# include <vcl.h>
+#endif
 #include <cmath>
+#include <string>
 #include "Expression.h"
+
+using namespace std;
 
 const Expression&
 Expression::operator=( const Expression& e )
@@ -38,16 +45,18 @@ Expression::Evaluate( const GenericSignal* signal )
     if( ExpressionParser::yyparse( this ) != 0 )
       mValue = 0;
   }
-  catch( const EMathError& e )
-  {
-    ReportError( e.Message.c_str() );
-    mValue = 0;
-  }
   catch( const exception& e )
   {
     ReportError( e.what() );
     mValue = 0;
   }
+#ifndef BCI_TOOL
+  catch( const class EMathError& e )
+  {
+    ReportError( e.Message.c_str() );
+    mValue = 0;
+  }
+#endif
   return mValue;
 }
 
@@ -99,3 +108,4 @@ _matherrl( struct _exceptionl* e )
   ThrowMathError( e->name );
   return true;
 }
+

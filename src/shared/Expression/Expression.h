@@ -1,9 +1,13 @@
 //////////////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File:        Expression.h
 // Date:        Aug 12, 2005
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: A simple BCI2000 expression parser.
+// $Log$
+// Revision 1.4  2006/01/11 19:00:43  mellinger
+// Removed VCL classes when compiled with BCI_TOOL flag; removed "using namespace" from header file; introduced CVS id and log.
+//
 //
 // Usage:
 //   ex1 = Expression( "(1+ResultCode)==Signal(TargetCode,3)" );
@@ -36,8 +40,6 @@
 
 #include "ExpressionParser.hpp"
 
-using namespace std;
-
 class Expression;
 
 namespace ExpressionParser
@@ -66,9 +68,9 @@ class Expression : public Environment
   double Signal( double, double ) const;
   void ReportError( const char* ) const;
 
-  string               mExpression;
+  std::string          mExpression;
   const GenericSignal* mpSignal;
-  istringstream        mInput;
+  std::istringstream   mInput;
   double               mValue;
 };
 
