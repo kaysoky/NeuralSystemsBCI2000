@@ -1,4 +1,5 @@
 /******************************************************************************
+ * $Id$
  * Program:   BCI2000                                                         *
  * Module:    UParameter.h                                                    *
  * Comment:   This unit provides support for system-wide parameters           *
@@ -33,6 +34,10 @@
  * V0.24 - 11/28/2003 - Added aliases for some functions that contain         *
  *                      dimension names, e.g. PARAM::GetNumRows(),            *
  *                      PARAM::RowLabels(), jm                                *
+ * $Log$
+ * Revision 1.29  2006/01/11 19:05:40  mellinger
+ * Revised PARAMLIST class interface; PARAMLIST will now preserve the order in which items were added to the list.
+ *
  ******************************************************************************/
 #ifndef UParameterH
 #define UParameterH
@@ -175,12 +180,12 @@ class PARAM
         PARAM();
         PARAM( const char* name,
                const char* section,
-               const char* type,
-               const char* value,
-               const char* defaultvalue,
-               const char* lowrange,
-               const char* highrange,
-               const char* comment );
+               const char* type = "int",
+               const char* value = "0",
+               const char* defaultvalue = "0",
+               const char* lowrange = "0",
+               const char* highrange = "0",
+               const char* comment = "" );
         explicit PARAM( const char* paramstring );
         ~PARAM() {}
 
@@ -342,18 +347,18 @@ class PARAM
 
  // Case insensitive string handling components.
  private:
-  static const std::ctype<char>& ct;
+  static const std::ctype<char>& ct();
 
  public:
   static void tolower( std::string& s )
-  { ct.tolower( s.begin(), s.end() ); }
+  { ct().tolower( s.begin(), s.end() ); }
   static void toupper( std::string& s )
-  { ct.toupper( s.begin(), s.end() ); }
+  { ct().toupper( s.begin(), s.end() ); }
 
   static bool ciless( char a, char b )
-  { return ct.toupper( a ) < ct.toupper( b ); }
+  { return ct().toupper( a ) < ct().toupper( b ); }
   static bool ciequal( char a, char b )
-  { return ct.toupper( a ) == ct.toupper( b ); }
+  { return ct().toupper( a ) == ct().toupper( b ); }
 
   static bool strciless( const std::string& a, const std::string& b )
   { return namecmp()( a, b ); }
@@ -370,28 +375,36 @@ class PARAM
 };
 
 
-typedef std::map<std::string, PARAM, PARAM::namecmp> param_container;
+typedef std::vector<PARAM> param_container;
 
-class PARAMLIST : public param_container
+class PARAMLIST : private param_container
 {
  public:
-        PARAM*  GetParamPtr( const char* name );
-  const PARAM*  GetParamPtr( const char* name ) const;
+        PARAM&  operator[]( const std::string& name );
+  const PARAM&  operator[]( const std::string& name ) const;
+        PARAM&  operator[]( size_t index )
+                { return at( index ); }
+  const PARAM&  operator[]( size_t index ) const
+                { return at( index ); }
 
-        size_t  GetNumParameters() const
+        size_t  Size() const
                 { return size(); }
-        void    ClearParamList()
-                { clear(); }
-        void    DeleteParam( const char* name )
-                { erase( name ); }
+        bool    Empty() const
+                { return empty(); }
+        void    Clear();
 
-        bool    AddParameter2List( const char* paramstring,
-                                   size_t paramlen = 0 );
-        bool    SaveParameterList( const char* filename,
-                                   bool usetags = false ) const;
-        bool    LoadParameterList( const char* filename,
-                                   bool usetags = false,
-                                   bool importnonexisting = true );
+        bool    Exists( const std::string& name ) const
+                { return mIndex.find( name ) != mIndex.end(); }
+        void    Add( const PARAM& p )
+                { ( *this )[ p.mName ] = p; }
+        bool    Add( const std::string& paramDefinition );
+        void    Delete( const std::string& name );
+
+        bool    Save( const std::string& filename,
+                      bool usetags = false ) const;
+        bool    Load( const std::string& filename,
+                      bool usetags = false,
+                      bool importnonexisting = true );
 
   // These contain all formatted I/O functionality.
         std::ostream& WriteToStream( std::ostream& ) const;
@@ -401,9 +414,35 @@ class PARAMLIST : public param_container
         std::ostream& WriteBinary( std::ostream& ) const;
         std::istream& ReadBinary( std::istream& );
 
-  // These are for compatibility.
+  // Backward compatibility.
+        PARAM*  GetParamPtr( const std::string& name );
+  const PARAM*  GetParamPtr( const std::string& name ) const;
         PARAM*  GetParamPtr( size_t );
   const PARAM*  GetParamPtr( size_t ) const;
+
+        size_t  GetNumParameters() const
+                { return Size(); }
+        void    ClearParamList()
+                { Clear(); }
+        void    DeleteParam( const std::string& name )
+                { Delete( name ); }
+
+        bool    AddParameter2List( const char* paramstring,
+                                   size_t paramlen = 0 )
+                { if( paramlen != 0 ) throw "paramlen != 0"; return Add( paramstring ); }
+        bool    SaveParameterList( const char* filename,
+                                   bool usetags = false ) const
+                { return Save( filename, usetags ); }
+        bool    LoadParameterList( const char* filename,
+                                   bool usetags = false,
+                                   bool importnonexisting = true )
+                { return Load( filename, usetags, importnonexisting ); }
+
+ private:
+        void    RebuildIndex();
+
+  typedef std::map<std::string, int, PARAM::namecmp> param_index;
+  param_index   mIndex;
 };
 
 

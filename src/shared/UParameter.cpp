@@ -75,12 +75,42 @@ const string Brackets::ClosingDefault = BracketPairs.substr( 1, 1 );
 /////////////////////////////////////////////////////////////////////////////
 
 // **************************************************************************
+// Function:   operator[]
+// Purpose:    Access a parameter by its name.
+// Parameters: Parameter name.
+// Returns:    Returns a reference to a parameter with a given name.
+// **************************************************************************
+PARAM&
+PARAMLIST::operator[]( const std::string& inName )
+{
+  param_index::const_iterator i = mIndex.find( inName );
+  if( i == mIndex.end() )
+  {
+    mIndex[ inName ] = size();
+    resize( size() + 1 );
+    i = mIndex.find( inName );
+  }
+  return param_container::operator[]( i->second );
+}
+
+const PARAM&
+PARAMLIST::operator[]( const std::string& inName ) const
+{
+  static PARAM defaultParam( "", "Default" );
+  const PARAM* result = &defaultParam;
+  param_index::const_iterator i = mIndex.find( inName );
+  if( i != mIndex.end() )
+    result = &param_container::operator[]( i->second );
+  return *result;
+}
+
+// **************************************************************************
 // Function:   GetNumParameters
 // Purpose:    Returns the number of parameters in the list
 // Parameters: N/A
 // Returns:    the number of parameters
 // **************************************************************************
-// Now defined inline as an alias to std::map<>::size().
+// Now defined inline as an alias to Size().
 
 // **************************************************************************
 // Function:   GetParamPtr
@@ -90,23 +120,17 @@ const string Brackets::ClosingDefault = BracketPairs.substr( 1, 1 );
 //             NULL, if no parameter with this name exists in the list
 // **************************************************************************
 const PARAM*
-PARAMLIST::GetParamPtr( const char* name ) const
+PARAMLIST::GetParamPtr( const std::string& inName ) const
 {
-  const PARAM* retParam = NULL;
-  const_iterator i = find( name );
-  if( i != end() )
-    retParam = &i->second;
-  return retParam;
+  param_index::const_iterator i = mIndex.find( inName );
+  return i != mIndex.end() ? &at( i->second ) : NULL;
 }
 
 PARAM*
-PARAMLIST::GetParamPtr( const char* name )
+PARAMLIST::GetParamPtr( const std::string& inName )
 {
-  PARAM* retParam = NULL;
-  iterator i = find( name );
-  if( i != end() )
-    retParam = &i->second;
-  return retParam;
+  param_index::const_iterator i = mIndex.find( inName );
+  return i != mIndex.end() ? &at( i->second ) : NULL;
 }
 
 // **************************************************************************
@@ -119,44 +143,31 @@ PARAMLIST::GetParamPtr( const char* name )
 const PARAM*
 PARAMLIST::GetParamPtr( size_t idx ) const
 {
-  // This is quite inefficient. For traversing the list,
-  // use its iterators, or for_each() from <algorithm>.
-  const PARAM* retParam = NULL;
-  if( idx < size() )
-  {
-    const_iterator i = begin();
-    advance( i, idx );
-    retParam = &i->second;
-  }
-  return retParam;
+  return idx < size() ? &param_container::operator[]( idx ) : NULL;
 }
 
-PARAM *
+PARAM*
 PARAMLIST::GetParamPtr( size_t idx)
 {
-  // This is quite inefficient. For traversing the list,
-  // use its iterators, or for_each() from <algorithm>.
-  PARAM* retParam = NULL;
-  if( idx < size() )
-  {
-    iterator i = begin();
-    advance( i, idx );
-    retParam = &i->second;
-  }
-  return retParam;
+  return idx < size() ? &param_container::operator[]( idx ) : NULL;
 }
 
 // **************************************************************************
-// Function:   ClearParamList
+// Function:   Clear
 // Purpose:    deletes all parameters in the parameter list
 //             as a result, the list still exists, but does not contain any parameter
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-// Now defined inline as an alias to std::map<>::clear().
+void
+PARAMLIST::Clear()
+{
+  clear();
+  RebuildIndex();
+}
 
 // **************************************************************************
-// Function:   AddParameter2List
+// Function:   Add
 // Purpose:    adds a new parameter to the list of parameters
 //             if a parameter with the same name already exists,
 //             it updates the currently stored parameter with the provided values
@@ -165,15 +176,9 @@ PARAMLIST::GetParamPtr( size_t idx)
 // Returns:    true if inLine is a correct parameter line, false otherwise
 // **************************************************************************
 bool
-PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
+PARAMLIST::Add( const string& inLine )
 {
-  if( inLine == NULL )
-    return false;
-  string line( inLine, inLength );
-  if( inLength == 0 )
-    line = string( inLine );
-  istringstream linestream( line );
-
+  istringstream linestream( inLine );
   PARAM param;
   if( linestream >> param )
     ( *this )[ param.mName ] = param;
@@ -181,14 +186,22 @@ PARAMLIST::AddParameter2List( const char* inLine, size_t inLength )
 }
 
 // **************************************************************************
-// Function:   DeleteParam
+// Function:   Delete
 // Purpose:    deletes a parameter of a given name in the list of parameters
 //             it also frees the memory for this particular parameter
 //             it does not do anything, if the parameter does not exist
 // Parameters: name - name of the parameter
 // Returns:    N/A
 // **************************************************************************
-// Now defined inline as an alias to std::map<>::erase().
+void
+PARAMLIST::Delete( const std::string& inName )
+{
+  if( mIndex.find( inName ) != mIndex.end() )
+  {
+    erase( &at( mIndex[ inName ] ) );
+    RebuildIndex();
+  }
+}
 
 // **************************************************************************
 // Function:   WriteToStream
@@ -205,7 +218,7 @@ ostream&
 PARAMLIST::WriteToStream( ostream& os ) const
 {
   for( const_iterator i = begin(); os && i != end(); ++i )
-    os << i->second << '\n';
+    os << *i << '\n';
   return os;
 }
 
@@ -244,7 +257,7 @@ ostream&
 PARAMLIST::WriteBinary( ostream& os ) const
 {
   for( const_iterator i = begin(); i != end(); ++i )
-    i->second.WriteBinary( os );
+    i->WriteBinary( os );
   return os;
 }
 
@@ -264,7 +277,7 @@ PARAMLIST::ReadBinary( istream& is )
 }
 
 // **************************************************************************
-// Function:   SaveParameterList
+// Function:   Save
 // Purpose:    Saves the current list of paramters in a parameter file
 // Parameters: char *filename - filename to save the list to
 //             usetags - if usetags is true, then the "tag" value in each parameter
@@ -276,18 +289,18 @@ PARAMLIST::ReadBinary( istream& is )
 //             false - error (disk full, etc.)
 // **************************************************************************
 bool
-PARAMLIST::SaveParameterList( const char* filename, bool usetags ) const
+PARAMLIST::Save( const string& inFileName, bool inUseTags ) const
 {
-  ofstream file( filename );
+  ofstream file( inFileName.c_str() );
   if( !file.is_open() )
     return false;
   // If desired, exclude parameters tagged in the parameter list.
-  if( usetags )
+  if( inUseTags )
   {
     PARAMLIST paramsToSave;
     for( const_iterator i = begin(); i != end(); ++i )
-      if( !i->second.mTag )
-        paramsToSave[ i->first ] = i->second;
+      if( !i->mTag )
+        paramsToSave[ i->mName ] = *i;
     file << paramsToSave;
   }
   else
@@ -312,9 +325,9 @@ PARAMLIST::SaveParameterList( const char* filename, bool usetags ) const
 //             false - error
 // **************************************************************************
 bool
-PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnonexisting )
+PARAMLIST::Load( const string& inFileName, bool inUseTags, bool inImportNonexisting )
 {
-  ifstream file( filename );
+  ifstream file( inFileName.c_str() );
   PARAMLIST paramsFromFile;
   file >> paramsFromFile;
 
@@ -326,32 +339,47 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
   const char* unwantedSections[] = { "System", };
   for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
     for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
-      if( PARAM::strciequal( i->second.mSection, unwantedSections[ j ] ) )
-        unwantedParams.insert( i->first );
+      if( PARAM::strciequal( i->mSection, unwantedSections[ j ] ) )
+        unwantedParams.insert( i->mName );
 #endif
 
   // If desired, exclude parameters tagged in the main parameter list.
-  if( usetags )
+  if( inUseTags )
     for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
     {
-      const_iterator f = find( i->first );
-      if( f != end() && f->second.mTag )
-        unwantedParams.insert( i->first );
+      param_index::const_iterator f = mIndex.find( i->mName );
+      if( f != mIndex.end() && at( f->second ).mTag )
+        unwantedParams.insert( i->mName );
     }
 
   // If desired, exclude parameters missing from the main parameter list.
-  if( !importnonexisting )
+  if( !inImportNonexisting )
     for( const_iterator i = paramsFromFile.begin(); i!= paramsFromFile.end(); ++i )
-      if( find( i->first ) == end() )
-        unwantedParams.insert( i->first );
+      if( mIndex.find( i->mName ) == mIndex.end() )
+        unwantedParams.insert( i->mName );
 
   for( nameset::const_iterator i = unwantedParams.begin(); i != unwantedParams.end(); ++i )
-    paramsFromFile.erase( *i );
+    paramsFromFile.DeleteParam( *i );
 
   for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
-    ( *this )[ i->first ] = i->second;
+    ( *this )[ i->mName ] = *i;
 
   return !file.fail();
+}
+
+// **************************************************************************
+// Function:   RebuildIndex
+// Purpose:    Rebuilds the Name-to-Position index maintained for parameter
+//             access by name.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void
+PARAMLIST::RebuildIndex()
+{
+  mIndex.clear();
+  for( size_t i = 0; i < size(); ++i )
+    mIndex[ ( *this )[ i ].mName ] = i;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -359,7 +387,14 @@ PARAMLIST::LoadParameterList( const char* filename, bool usetags, bool importnon
 /////////////////////////////////////////////////////////////////////////////
 static const char* sDefaultValue = "0";
 static const string sCommentSeparator = "//";
-const ctype<char>& PARAM::ct = use_facet<ctype<char> >( locale() );
+
+const std::ctype<char>&
+PARAM::ct()
+{
+  static const std::ctype<char>& _ct
+    = std::use_facet<std::ctype<char> >( std::locale() );
+  return _ct;
+}
 
 // **************************************************************************
 // Function:   SetDimensions
@@ -728,7 +763,7 @@ PARAM::ReadFromStream( istream& is )
   if( commentSepPos != remainder.npos )
   {
     size_t commentPos = commentSepPos + sCommentSeparator.length();
-    while( commentPos < remainder.size() && ct.is( ct.space, remainder[ commentPos ] ) )
+    while( commentPos < remainder.size() && ct().is( ct().space, remainder[ commentPos ] ) )
       ++commentPos;
     mComment = remainder.substr( commentPos );
     remainder = remainder.substr( 0, commentSepPos );
