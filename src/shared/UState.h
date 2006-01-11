@@ -1,138 +1,194 @@
-//---------------------------------------------------------------------------
+/******************************************************************************
+ * $Id$                                                                       *
+ * Program:   BCI2000                                                         *
+ * File:      UState.h                                                        *
+ * Comment:   This unit provides support for system-wide states,              *
+ *            lists of states, and the state vector                           *
+ * Version:   0.10                                                            *
+ * Author:    Gerwin Schalk                                                   *
+ * Copyright: (C) Wadsworth Center, NYSDOH                                    *
+ ******************************************************************************
+ * Version History:                                                           *
+ *                                                                            *
+ * V0.08 - 03/30/2000 - First commented version                               *
+ * V0.09 - 07/22/2003 - Replaced VCL's TList with STL's std::vector<>         *
+ *                      to avoid linking against the VCL in command line      *
+ *                      tools using the STATELIST class, jm                   *
+ * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
+ * $Log$
+ * Revision 1.18  2006/01/11 19:07:28  mellinger
+ * Revision of interface style to match corresponding parameter classes.
+ *
+ ******************************************************************************/
 #ifndef UStateH
 #define UStateH
 
-#define MAX_STATEVECTORLENGTH   30
-
-#define ERRSTATE_NOERR          0
-#define ERRSTATE_INVALIDSTATE   1
-
-#define ERRSTATEVEC_NOSTATE     -1
-#define ERRSTATEVEC_NOERR       0
-
-#define LENGTH_NAME             30
-#define LENGTH_STATELINE        255
-
 #include <vector>
 #include <string>
-
-typedef unsigned char BYTE;
+#include "UParameter.h"
 
 class STATE
 {
   friend class STATEVECTOR;
-  friend class STATELIST; // calls GetValue()
+  friend class STATELIST;  // calls GetValue()
   friend class CoreModule; // calls GetValue()
   friend class TfMain;     // calls GetValue()
 
-private:    // User declarations
-        int     length;
-        char    name[LENGTH_NAME];
-        unsigned short value;
-        int     byteloc;
-        int     bitloc;
-        bool    valid;
-        bool    modified;
-        void    SetByteLocation(int loc);
-        void    SetBitLocation(int loc);
-private:
-        unsigned short GetValue() const;
-        void Commit( STATEVECTOR* );
+ public:
+  typedef unsigned short value_type;
 
-public:     // User declarations
-        STATE::STATE();
-        const char    *GetName() const;
-        int     GetLength() const;
-        void    SetValue(unsigned short new_value);
-        int     GetByteLocation() const;
-        int     GetBitLocation() const;
+ public:
+  STATE();
+  ~STATE() {}
 
-        std::ostream& WriteToStream( std::ostream& ) const;
-        std::istream& ReadFromStream( std::istream& );
-        std::ostream& WriteBinary( std::ostream& ) const;
-        std::istream& ReadBinary( std::istream& );
+  const char*   GetName() const            { return mName.c_str(); }
+  size_t        GetLocation() const        { return mLocation; }
+  size_t        GetLength() const          { return mLength; }
 
-#if 1 // Changed return type to a copied string value to avoid multithreading trouble.
-      // In the future, this function should be replaced by using stream i/o.
-        std::string GetStateLine() const;
-#endif
-        int     ParseState(const char *line, int length);
-        bool    Valid() const { return valid; }
-};
+  void          SetValue( value_type );
 
-
-class STATELIST
-{
-private:    // User declarations
-        typedef std::vector<STATE*> _state_list;
-        _state_list state_list;
-        _state_list::size_type GetStateIndex( const char* name ) const;
-public:     // User declarations
-        STATELIST::STATELIST();
-        STATELIST::~STATELIST();
-        STATE   *GetStatePtr(int idx) const;
-        STATE   *GetStatePtr(const char *name) const;
-        bool    AddState2List(const char *statestring);
-        void    AddState2List(const STATE *state);
-        int     GetNumStates() const;
-        void    ClearStateList();
-        void    DeleteState(const char *name);
-        
-        std::ostream& WriteToStream( std::ostream& ) const;
-        std::istream& ReadFromStream( std::istream& );
-        std::ostream& WriteBinary( std::ostream& ) const;
-        std::istream& ReadBinary( std::istream& );
-};
-
-
-class STATEVECTOR
-{
- private: // User declarations
-  BYTE    state_vector[MAX_STATEVECTORLENGTH];    // the actual state vector
-  int     state_vector_length;                    // the length of the actual state vector
-  STATELIST   *state_list;            // a pointer to the list responsible for this vector
- public:  // User declarations
-  STATEVECTOR(STATELIST *);          // constructor takes the pointer to the state list
-  STATEVECTOR(STATELIST *list, bool usepositions);
-  ~STATEVECTOR();
-  void    Initialize_StateVector();
-  void    Initialize_StateVector(bool use_assigned_positions);
-  unsigned short GetStateValue(const char *statename) const;
-  unsigned short GetStateValue(int byteloc, int bitloc, int length) const;
-  STATELIST *GetStateListPtr();
-  int     SetStateValue(const char *statename, unsigned short value);
-  int     SetStateValue(int byteloc, int bitloc, int length, unsigned short value);
-  int     GetStateVectorLength() const;
-  BYTE    *GetStateVectorPtr();
-  const BYTE* GetStateVectorPtr() const;
-  void    PostStateChange( const char* name, unsigned short value );
-  void    CommitStateChanges();
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );
   std::ostream& WriteBinary( std::ostream& ) const;
   std::istream& ReadBinary( std::istream& );
 
- // A class that allows for convenient automatic type conversions when
- // accessing state values.
- public:
-  class type_adapter
+  class namecmp
   {
-   private:
-    type_adapter& operator=( const type_adapter& );
    public:
-    type_adapter()
-    : p( NULL ), byte( 0 ), bit( 0 ), length( 0 ), defVal( 0 ) {}
-    type_adapter( STATEVECTOR* inStatevector, int inByte, int inBit, int inLength, short inDefval = 0 )
-    : p( inStatevector ), byte( inByte ), bit( inBit ), length( inLength ), defVal( inDefval ) {}
-    const type_adapter& operator=( int i )
-    { p && p->SetStateValue( byte, bit, length, i ); return *this; }
-    operator int() const
-    { return p ? p->GetStateValue( byte, bit, length ) : defVal; }
-   private:
-    STATEVECTOR* p;
-    int byte, bit, length;
-    short defVal;
+    bool operator()( const std::string& a, const std::string& b ) const
+    { return ::stricmp( a.c_str(), b.c_str() ) < 0; }
   };
+
+  size_t     GetByteLocation() const
+             { return mLocation / 8; }
+  size_t     GetBitLocation() const
+             { return mLocation % 8; }
+ private:
+  value_type GetValue() const
+             { return mValue; }
+  void       SetLocation( size_t location )
+             { mLocation = location; }
+  void       SetByteLocation( size_t location )
+             { SetLocation( location * 8 + GetBitLocation() ); }
+  void       SetBitLocation( size_t location )
+             { SetLocation( GetByteLocation() * 8 + location ); }
+
+  void       Commit( STATEVECTOR* );
+
+ private:
+  std::string mName;
+  value_type  mValue;
+  size_t      mLocation,
+              mLength;
+  bool        mModified;
+};
+
+
+typedef std::vector<STATE> state_container;
+
+class STATELIST : private state_container
+{
+ public:
+  const STATE& operator[]( const std::string& ) const;
+  STATE&       operator[]( const std::string& );
+  const STATE& operator[]( size_t idx ) const
+               { return at( idx ); }
+  STATE&       operator[]( size_t idx )
+               { return at( idx ); }
+
+  size_t Size() const
+         { return size(); }
+  bool   Empty() const
+         { return empty(); }
+  void   Clear();
+
+  bool   Exists( const std::string& name ) const
+         { return mIndex.find( name ) != mIndex.end(); }
+  void   Add( const STATE& s )
+         { ( *this )[ s.mName ] = s; }
+  bool   Add( const std::string& stateDefinition );
+  void   Delete( const std::string& name );
+
+  std::ostream& WriteToStream( std::ostream& ) const;
+  std::istream& ReadFromStream( std::istream& );
+  std::ostream& WriteBinary( std::ostream& ) const;
+  std::istream& ReadBinary( std::istream& );
+
+  // Backward compatibility
+  STATE* GetStatePtr( size_t idx )
+         { return idx < size() ? &at( idx ) : NULL; }
+  STATE* GetStatePtr( const char* name ) 
+         { return Exists( name ) ? &operator[]( name ) : NULL; }
+  bool   AddState2List( const char* statestring )
+         { return Add( statestring ); }
+  void   AddState2List( const STATE* state )
+         { Add( *state ); }
+  int    GetNumStates() const
+         { return Size(); }
+  void   ClearStateList()
+         { Clear(); }
+  void   DeleteState( const char* name )
+         { Delete( name ); }
+
+ private:
+  void   RebuildIndex();
+
+  typedef std::map<std::string, int, STATE::namecmp> state_index;
+  state_index mIndex;
+};
+
+
+class STATEVECTOR
+{
+ public:
+  STATEVECTOR( const STATEVECTOR& );
+  explicit STATEVECTOR( STATELIST& list, bool use_positions = false );
+  ~STATEVECTOR();
+  const STATEVECTOR& operator=( const STATEVECTOR& );
+
+ private:
+  void           Initialize( bool use_assigned_positions = false );
+ public:
+  int            Length() const
+                 { return mByteLength; }
+  unsigned char* Data()
+                 { return mpData; }
+  const unsigned char* Data() const
+                 { return mpData; }
+  STATELIST&     Statelist()
+                 { return mrStatelist; }
+
+  STATE::value_type GetStateValue( const std::string& name ) const;
+  STATE::value_type GetStateValue( size_t location, size_t length) const;
+  void              SetStateValue( const std::string& name, STATE::value_type value );
+  void              SetStateValue( size_t location, size_t length, STATE::value_type value );
+  void              PostStateChange( const std::string& name, STATE::value_type value );
+  void              CommitStateChanges();
+
+  std::ostream&  WriteToStream( std::ostream& ) const;
+  std::istream&  ReadFromStream( std::istream& );
+  std::ostream&  WriteBinary( std::ostream& ) const;
+  std::istream&  ReadBinary( std::istream& );
+
+  // Backward compatibility
+  STATEVECTOR( STATELIST* list, bool use_positions = false );
+  int            GetStateVectorLength() const
+                 { return Length(); }
+  unsigned char* GetStateVectorPtr()
+                 { return Data(); }
+  const unsigned char* GetStateVectorPtr() const
+                 { return Data(); }
+  STATELIST*     GetStateListPtr()
+                 { return &Statelist(); }
+  STATE::value_type GetStateValue( int byteLocation, int bitLocation, size_t length) const
+                 { return GetStateValue( byteLocation * 8 + bitLocation, length ); }
+  void           SetStateValue(  int byteLocation, int bitLocation, size_t length, STATE::value_type value )
+                 { SetStateValue( byteLocation * 8 + bitLocation, length, value ); }
+
+ private:
+  unsigned char* mpData;      // the actual state vector
+  size_t         mByteLength; // the length of the actual state vector
+  STATELIST&     mrStatelist; // a pointer to the list responsible for this vector
 };
 
 //---------------------------------------------------------------------------
@@ -166,5 +222,5 @@ inline std::istream& operator>>( std::istream& is, STATEVECTOR& s )
 {
   return s.ReadFromStream( is );
 }
-#endif
+#endif // UStateH
 
