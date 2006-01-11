@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.19  2006/01/11 19:15:21  mellinger
+ * Fixed definition of STATEVECTOR::operator=().
+ *
  * Revision 1.18  2006/01/11 19:07:28  mellinger
  * Revision of interface style to match corresponding parameter classes.
  *
@@ -401,8 +404,9 @@ STATEVECTOR::operator=( const STATEVECTOR& s )
 {
   if( &s != this )
   {
+    mByteLength = s.mByteLength;
+    mrStatelist = s.mrStatelist;
     delete[] mpData;
-    *this = s;
     mpData = new unsigned char[ mByteLength ];
     ::memcpy( mpData, s.mpData, mByteLength );
   }
