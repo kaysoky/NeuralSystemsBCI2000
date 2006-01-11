@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.5  2006/01/11 19:02:02  mellinger
+// MeasurementUnits::ToUnit() will now use Expression class to parse values.
+//
 // Revision 1.4  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -19,6 +22,7 @@
 #pragma hdrstop
 
 #include "MeasurementUnits.h"
+#include "Expression/Expression.h"
 
 #include "UBCIError.h"
 #include <cmath>
@@ -34,7 +38,7 @@ MeasurementUnits::ToUnit( const char* inValue, const char* inUnitName, float inU
 {
   string value( inValue );
   float  unit = 1.0;
-  size_t pos = value.find_first_not_of( "0123456789.Ee+- " );
+  size_t pos = value.find_first_not_of( "0123456789.Ee+-*/^() " );
   if( pos != value.npos )
   {
     string unitFromValue = value.substr( pos ),
@@ -72,7 +76,7 @@ MeasurementUnits::ToUnit( const char* inValue, const char* inUnitName, float inU
              << " expected '" << inUnitName << "'" << endl;
     value.erase( pos );
   }
-  return unit * ::atof( value.c_str() );
+  return unit * Expression( value.c_str() ).Evaluate();
 }
 
 
