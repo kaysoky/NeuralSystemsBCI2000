@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  File:        ExpressionFilter.h
+//  $Id$
+//  File:        ExpressionFilter.cpp
 //
 //  Description: A tutorial filter demonstrating
 //               the use of boolean and arithmetic expressions in parameters.
@@ -11,6 +11,9 @@
 //
 //  Date:        Aug 12, 2005
 //  Author:      juergen.mellinger@uni-tuebingen.de
+//  $Log$
+//  Revision 1.2  2006/01/12 20:40:35  mellinger
+//  Added CVS id and log to comment.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy

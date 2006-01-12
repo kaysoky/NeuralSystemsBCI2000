@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-//
+//  $Id$
 //  File:        ExpressionFilter.h
 //
 //  Description: A tutorial filter demonstrating
@@ -11,6 +11,9 @@
 //
 //  Date:        Aug 12, 2005
 //  Author:      juergen.mellinger@uni-tuebingen.de
+//  $Log$
+//  Revision 1.2  2006/01/12 20:41:34  mellinger
+//  Added CVS id and log to comment.
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ExpressionFilterH
