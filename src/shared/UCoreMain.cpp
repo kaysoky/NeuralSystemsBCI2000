@@ -36,6 +36,9 @@
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
  * $Log$
+ * Revision 1.23  2006/01/12 20:22:24  mellinger
+ * Adaptation to changes in STATEVECTOR::Add( const STATE& ).
+ *
  * Revision 1.22  2006/01/11 19:08:44  mellinger
  * Adaptation to latest revision of parameter and state related class interfaces.
  *
@@ -234,7 +237,10 @@ TfMain::HandleSTATE( istream& is )
 #endif // EEGSRC
     }
     else
+    {
+      mStatelist.Delete( s.GetName() );
       mStatelist.Add( s );
+    }
   }
   return is;
 }
