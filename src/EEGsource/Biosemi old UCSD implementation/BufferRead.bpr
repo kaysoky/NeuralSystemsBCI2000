@@ -11,7 +11,8 @@
       obj\MeasurementUnits.obj obj\MessageHandler.obj obj\TCPStream.obj 
       obj\DataIOFilter.obj obj\TransmissionFilter.obj obj\UCoreMain.obj 
       obj\BCIDatFileWriter.obj obj\BufferReadADC.obj obj\loadsblib.obj 
-      obj\EncodedString.obj obj\ParamRef.obj"/>
+      obj\EncodedString.obj obj\ParamRef.obj obj\ExpressionParser.obj 
+      obj\Expression.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -22,7 +23,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;.."/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -32,8 +33,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BufferRead.cpp"/>
-    <INCLUDEPATH value="..\;..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared\Expression;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared\Expression;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -77,6 +78,8 @@
       <FILE FILENAME="loadsblib.cpp" FORMNAME="" UNITNAME="loadsblib" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -113,12 +116,16 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=1
-Item0=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=..\..\shared\Expression;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\shared\Expression;..\;..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..\..\shared\Expression;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\shared\Expression;..\;..;..\..\Modules;DAS_lib;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
