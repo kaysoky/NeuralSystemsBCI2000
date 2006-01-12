@@ -90,7 +90,7 @@ TfMain::TfMain( TComponent* Owner )
   mSigProc( *this, SigProc, SigProcPort ),
   mApp( *this, App, AppPort )
 {
-  mParameters.AddParameter2List(
+  mParameters.Add(
     "System matrix OperatorVersion= { Framework CVS Build } 1 Operator % %"
     " % % % // operator module version information" );
   mParameters[ "OperatorVersion" ].Value( "Framework" ) = TXT_OPERATOR_VERSION;
@@ -161,12 +161,15 @@ TfMain::UpdateState( const char* inName, unsigned short inValue )
     }
   }
   
-  STATE* s = mStates.GetStatePtr( inName );
-  if( s == NULL )
+  if( !mStates.Exists( inName ) )
     return ERR_STATENOTFOUND;
-  s->SetValue( inValue );
-  if( !mEEGSource.PutMessage( *s ) )
-    return ERR_SOURCENOTCONNECTED;
+  else
+  {
+    STATE& s = mStates[ inName ];
+    s.SetValue( inValue );
+    if( !mEEGSource.PutMessage( s ) )
+      return ERR_SOURCENOTCONNECTED;
+  }
   return ERR_NOERR;
 }
 
@@ -277,7 +280,7 @@ TfMain::CoreConnection::OnDisconnect()
 void
 TfMain::BroadcastParameters()
 {
-  int numParams = mParameters.GetNumParameters();
+  int numParams = mParameters.Size();
   for( SetOfConnections::iterator i = mCoreConnections.begin();
                                                i != mCoreConnections.end(); ++i )
     if( ( *i )->PutMessage( mParameters ) )
@@ -303,7 +306,7 @@ TfMain::BroadcastEndOfParameter()
 void
 TfMain::BroadcastStates()
 {
-  int numStates = mStates.GetNumStates();
+  int numStates = mStates.Size();
   for( SetOfConnections::iterator i = mCoreConnections.begin();
                                                i != mCoreConnections.end(); ++i )
   {
@@ -351,9 +354,9 @@ TfMain::EnterState( SYSSTATUS::State inState )
       }
       // Add the state vector's length to the system parameters.
       {
-        mParameters.AddParameter2List(
+        mParameters.Add(
           "System int StateVectorLength= 0 16 1 30 // length of the state vector in bytes" );
-        AnsiString value = STATEVECTOR( &mStates ).GetStateVectorLength();
+        AnsiString value = STATEVECTOR( mStates ).Length();
         mParameters[ "StateVectorLength" ].SetValue( value.c_str() );
       }
       break;
@@ -759,7 +762,7 @@ TfMain::CoreConnection::HandlePARAM( istream& is )
     ++mParent.mSysstatus.NumParametersRecv[ mOrigin ];
     mParent.mParameters[ param.GetName() ] = param;
     // Update the parameter in the configuration window.
-    fConfig->RenderParameter( mParent.mParameters.GetParamPtr( param.GetName() ) );
+    fConfig->RenderParameter( &mParent.mParameters[ param.GetName() ] );
   }
   return true;
 }
@@ -771,7 +774,8 @@ TfMain::CoreConnection::HandleSTATE( istream& is )
   if( state.ReadBinary( is ) )
   {
     ++mParent.mSysstatus.NumStatesRecv[ mOrigin ];
-    mParent.mStates.AddState2List( &state );
+    mParent.mStates.Delete( state.GetName() );
+    mParent.mStates.Add( state );
     mParent.EnterState( SYSSTATUS::Publishing );
   }
   return true;

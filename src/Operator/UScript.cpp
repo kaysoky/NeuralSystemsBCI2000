@@ -89,7 +89,7 @@ bool    ok;
     if (stricmp(token, "PARAMETERFILE") == 0)
        {
        idx=get_argument(idx, token, line, 256);
-       if (!paramlist->LoadParameterList(token))
+       if (!paramlist->Load(token))
           {
           sprintf(buf, "%s: Error in scriptfile on line %d: Couldn't load parameter file %s", filename, cur_line, token);
           syslog->AddSysLogEntry(buf);
@@ -134,7 +134,7 @@ bool    ok;
        {
        while ((line[idx] == '\0') || (line[idx] == ' '))
         idx++;
-       statelist->AddState2List(&line[idx]);
+       statelist->Add(&line[idx]);
        idx=get_argument(idx, token, line, 256);
        sprintf(buf, "%s: Added state %s to list", filename, token);
        syslog->AddSysLogEntry(buf);

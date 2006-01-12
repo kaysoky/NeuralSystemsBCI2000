@@ -31,22 +31,17 @@ __fastcall TfConfig::~TfConfig()
 int TfConfig::Initialize(PARAMLIST *my_paramlist, PREFERENCES* new_preferences )
 {
 int             i, num_param;
-PARAM           *cur_param;
 AnsiString      tabname;
 
  paramlist=my_paramlist;
- num_param=paramlist->GetNumParameters();
+ num_param=paramlist->Size();
  preferences = new_preferences;
  
  DeleteAllTabs();
 
  // first, set archive to false
  for (i=0; i<num_param; i++)
-  {
-  cur_param=paramlist->GetParamPtr(i);
-  if (cur_param)
-     cur_param->Archive()=false;
-  }
+  ( *paramlist )[ i ].Archive() = false;
 
  // go through all the parameters and find out about the section names
  // set the Tab captions to the section names
@@ -57,27 +52,24 @@ AnsiString      tabname;
   tabname=" ";
   for (i=0; i<num_param; i++)
    {
-   cur_param=paramlist->GetParamPtr(i);
-   if (cur_param)
-     {
+     PARAM& cur_param = ( *paramlist )[ i ];
      // parameter has not been 'touched' yet and it's user level is smaller than the operator's user level
-     if ((cur_param->Archive() == false)
-       && (OperatorUtils::GetUserLevel(cur_param->GetName()) <= preferences->UserLevel))
+     if ((cur_param.Archive() == false)
+       && (OperatorUtils::GetUserLevel(cur_param.GetName()) <= preferences->UserLevel))
         {
         // a 'new' Section name ?
         if (tabname == " ")
            {
-           tabname=cur_param->GetSection();
-           cur_param->Archive()=true;
+           tabname=cur_param.GetSection();
+           cur_param.Archive()=true;
            }
         else
            {
            // 'touch' all parameters with the same section name
-           if (tabname == cur_param->GetSection())
-              cur_param->Archive()=true;
+           if (tabname == cur_param.GetSection())
+              cur_param.Archive()=true;
            }
         }
-     }
    }
   // create a new tab with the section name
   if (tabname != " ")
@@ -109,9 +101,9 @@ void TfConfig::RenderParameters( const AnsiString& section )
 {
   mParamDisplays.clear();
   int currentTop = LABELS_OFFSETY;
-  for( PARAMLIST::const_iterator i = paramlist->begin(); i != paramlist->end(); ++i )
+  for( size_t i = 0; i < paramlist->Size(); ++i )
   {
-    const PARAM& p = i->second;
+    const PARAM& p = ( *paramlist )[ i ];
     if( section == p.GetSection()
         && OperatorUtils::GetUserLevel( p.GetName() ) <= preferences->UserLevel )
     {
@@ -119,7 +111,7 @@ void TfConfig::RenderParameters( const AnsiString& section )
       paramDisplay.SetLeft( LABELS_OFFSETX );
       paramDisplay.SetTop( currentTop );
       paramDisplay.ReadValuesFrom( p );
-      mParamDisplays[ i->first ] = paramDisplay;
+      mParamDisplays[ p.GetName() ] = paramDisplay;
       currentTop = paramDisplay.GetBottom();
     }
   }
@@ -189,8 +181,8 @@ bool    ret;
     {
     if (CfgTabControl->TabIndex > -1)
        UpdateParameters();
-    fShowParameters->UpdateParameterTags(paramlist, 2);                         // update the tag (= filter) values in each parameter
-    ret=paramlist->SaveParameterList(SaveDialog->FileName.c_str(), true);       // save parameters using the filter
+    fShowParameters->UpdateParameterTags(paramlist, 2);       // update the tag (= filter) values in each parameter
+    ret=paramlist->Save(SaveDialog->FileName.c_str(), true);  // save parameters using the filter
     if (!ret)
        Application->MessageBox("Error writing parameter file", "Error", MB_OK);
     }
@@ -209,8 +201,8 @@ bool    ret;
     {
     if (CfgTabControl->TabIndex > -1)
        UpdateParameters();
-    fShowParameters->UpdateParameterTags(paramlist, 1);    // update the tag (= filter) values in each parameter
-    ret=paramlist->LoadParameterList(LoadDialog->FileName.c_str(), true, false);        // do not import non-existing parameters; use the filter
+    fShowParameters->UpdateParameterTags(paramlist, 1);             // update the tag (= filter) values in each parameter
+    ret=paramlist->Load(LoadDialog->FileName.c_str(), true, false); // do not import non-existing parameters; use the filter
     if (!ret)
        Application->MessageBox("Error reading parameter file", "Error", MB_OK);
     else

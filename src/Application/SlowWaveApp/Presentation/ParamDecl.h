@@ -7,7 +7,7 @@
 // Author: Juergen Mellinger
 //
 // Description: Use the macros in this file for declaring and defining
-//      TTD parameters in a centralized resource-like fashion.
+//      TTD/BCI2000 parameters in a centralized resource-like fashion.
 //
 //      The cpp file that _defines_ the _TParamDef globals
 //      must #define DEFINE_PARAMS before including this file.
@@ -105,8 +105,13 @@
 // (i.e. _not_ by just converting a given name into a
 // string using '#'), we make the compiler notify us of typos in
 // parameter names.
-#define PARAM_GET_PTR( List, Name, Ptr )                \
+#ifdef BCI2000
+# define PARAM_GET_PTR( List, Name, Ptr )                \
+    { Ptr = List->Exists( _param_##Name.name() ) ? &( *List )[ _param_##Name.name() ] : NULL; }
+#else // BCI2000
+# define PARAM_GET_PTR( List, Name, Ptr )                \
     { Ptr = List->GetParamPtr( _param_##Name.name() ); }
+#endif // BCI2000
 
 #define PARAM_GET_PTR_SUFFIX( List, Name, Suffix, Ptr )                             \
     { Ptr = _TParamDef::param_get_ptr_suffix( List, _param_##Name.name(), Suffix ); }
@@ -128,10 +133,21 @@
 #define PARAM_DISABLE( List, Name )                 { PARAM_LINE( Name ); } // just to check for existence
 #define PARAM_DISABLE_SUFFIX( List, Name, Suffix )  { PARAM_LINE( Name ); }
 
+#ifdef BCI2000
+# define ADD_PARAM_TO_LIST( List, Name, Len ) List->Add( Name )
+# define PARAM_EXISTS( List, Name )           List->Exists( Name )
+#else
+# define ADD_PARAM_TO_LIST( List, Name, Len ) List->AddParameter2List( Name, Len )
+# define PARAM_EXISTS( List, Name )           ( List->GetParamPtr( Name ) != NULL )
+#endif // BCI2000
+
 // Don't add the parameter if it's already there.
-#define PARAM_ADD( List, Name )                                     \
-        if( List->GetParamPtr( _param_##Name.name() )== NULL )      \
-            List->AddParameter2List(                                \
+# define PARAM_ADD( List, Name )                                    \
+    {                                                               \
+        PARAM* _p = NULL;                                           \
+        PARAM_GET_PTR( List, Name, _p );                            \
+        if( _p == NULL )                                            \
+          ADD_PARAM_TO_LIST( List,                                  \
                         _param_##Name.definitionLine(),             \
                         ::strlen( _param_##Name.definitionLine() )  \
                         );                                          \
@@ -151,8 +167,8 @@
         _replacePos = _name.find( RUNTIME_SUFFIX );                                     \
         if( _replacePos != std::string::npos )                                          \
             _name.replace( _replacePos, sizeof( RUNTIME_SUFFIX ) - 1, _suffix.str() );  \
-        if( List->GetParamPtr( ( char* )_name.c_str() ) == NULL )                       \
-            List->AddParameter2List( ( char* )_def.c_str(), _def.length() );            \
+        if( !PARAM_EXISTS( List, ( char* )_name.c_str() ) )                             \
+             ADD_PARAM_TO_LIST( List, ( char* )_def.c_str(), _def.length() );           \
     }
 
 #define PARAM_ADD_RT( List, Name, RuntimeElement )                                          \
@@ -163,7 +179,7 @@
             unsigned int _replacePos = _defLine.find( RUNTIME_ELEMENT );                    \
             assert( _replacePos != std::string::npos );                                     \
             _defLine.replace( _replacePos, sizeof( RUNTIME_ELEMENT ) - 1, RuntimeElement ); \
-            List->AddParameter2List( ( char* )_defLine.c_str(), _defLine.length() );        \
+            ADD_PARAM_TO_LIST( List, ( char* )_defLine.c_str(), _defLine.length() );        \
         }                                                                                   \
     }
 

@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File: BCIReader.cpp
 //
 // Author: Juergen Mellinger
@@ -9,6 +9,9 @@
 // Description: An base class for converting a BCI file with purely virtual
 //              output functions (e.g., for output into a file, or directly
 //              into an application via automation interfaces).
+// $Log$
+// Revision 1.5  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
 //
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
@@ -27,8 +30,8 @@
 #include <algorithm>
 
 using namespace std;
-typedef set< STATE* > StateSet;
-typedef map< STATE*, long > StatePosMap;
+typedef set< const STATE* > StateSet;
+typedef map< const STATE*, long > StatePosMap;
 #define CALIBRATION_SIGNAL  0
 #define TTD_MAX_SHORT (32000)
 #define BCI2000_MAX_SHORT (MAXSHORT)
@@ -71,16 +74,14 @@ TBCIReader::Process(    const TStrList& inChannelNames,
     float           samplingRate = mInputData.GetSamplingRate();
 
     const STATELIST& states = *mInputData.GetStateListPtr();
-    for( int i = 0; i < states.GetNumStates(); ++i )
-      mStatesInFile.insert( states.GetStatePtr( i )->GetName() );
+    for( size_t i = 0; i < states.Size(); ++i )
+      mStatesInFile.insert( states[ i ].GetName() );
     // Build a set of states that will be exported as markers.
     StateSet statesToConsider;
-    for( int idx = 0; states.GetStatePtr( idx ) != NULL; ++idx )
-    {
-      STATE* pState = states.GetStatePtr( idx );
-      if( inIgnoreStates.end() == inIgnoreStates.find( pState->GetName() ) )
-        statesToConsider.insert( states.GetStatePtr( idx ) );
-    }
+    for( size_t idx = 0; idx < states.Size(); ++idx )
+      if( inIgnoreStates.end() == inIgnoreStates.find( states[ idx ].GetName() ) )
+        statesToConsider.insert( &states[ idx ] );
+
     TStrList stateNames;
     for( StateSet::iterator i = statesToConsider.begin(); i != statesToConsider.end(); ++i )
       stateNames.push_back( ( *i )->GetName() );
@@ -242,14 +243,13 @@ TBCIReader::Process(    const TStrList& inChannelNames,
           for( StateSet::iterator i = statesToConsider.begin();
                   i != statesToConsider.end(); ++i )
           {
-            STATE*  pState = *i;
-            int     byteLoc = pState->GetByteLocation(),
-                    bitLoc =  pState->GetBitLocation(),
-                    length =  pState->GetLength();
-            short   lastValue = lastStateVector.GetStateValue(
-                                            byteLoc, bitLoc, length ),
-                    curValue = stateVector.GetStateValue(
-                                            byteLoc, bitLoc, length );
+            const STATE* pState = *i;
+            int          location = pState->GetLocation(),
+                         length = pState->GetLength();
+            short        lastValue = lastStateVector.GetStateValue(
+                                                           location, length ),
+                         curValue = stateVector.GetStateValue(
+                                                           location, length );
 
             OutputStateValue( *pState, curValue, curSamplePos );
             if( __bcierr.flushes() )
@@ -285,11 +285,10 @@ TBCIReader::Process(    const TStrList& inChannelNames,
       for( StatePosMap::iterator i = StateSampleBeginPos.begin();
               i != StateSampleBeginPos.end(); ++i )
       {
-        STATE*  pState = i->first;
-        int     byteLoc = pState->GetByteLocation(),
-                bitLoc =  pState->GetBitLocation(),
-                length =  pState->GetLength();
-        short   value = stateVector.GetStateValue( byteLoc, bitLoc, length );
+        const STATE*  pState = i->first;
+        int     location = pState->GetLocation(),
+                length = pState->GetLength();
+        short   value = stateVector.GetStateValue( location, length );
         OutputStateRange( *pState, value, i->second, numBlocks * sampleBlockSize );
         if( __bcierr.flushes() )
             return;

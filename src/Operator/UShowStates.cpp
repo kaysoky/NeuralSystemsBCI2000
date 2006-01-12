@@ -18,10 +18,8 @@ __fastcall TfShowStates::TfShowStates(TComponent* Owner)
 
 void __fastcall TfShowStates::FormShow(TObject *Sender)
 {
-int state;
-
  StateListBox->Clear();
- for (state=0; state < statelist->GetNumStates(); state++)
-  StateListBox->Items->Add(statelist->GetStatePtr(state)->GetName());
+ for (size_t state=0; state < statelist->Size(); state++)
+  StateListBox->Items->Add((*statelist)[state].GetName());
 }
 //---------------------------------------------------------------------------

@@ -1,8 +1,13 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:    bci_stream2table.cpp
 // Date:    Jan 13, 2005
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
+// $Log$
+// Revision 1.7  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <set>
@@ -18,7 +23,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_stream2table",
-  "version 0.1.0, compiled "__DATE__,
+  "$Revision$, compiled "__DATE__,
   "Convert a binary BCI2000 stream into a human readable tabular form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output "
@@ -72,11 +77,12 @@ StreamToTable::HandleSTATE( istream& arIn )
   s.ReadBinary( arIn );
   if( arIn )
   {
-    mStatelist.AddState2List( &s );
+    mStatelist.Delete( s.GetName() );
+    mStatelist.Add( s );
     if( mpStatevector != NULL )
     {
       delete mpStatevector;
-      mpStatevector = new STATEVECTOR( &mStatelist, true );
+      mpStatevector = new STATEVECTOR( mStatelist, true );
     }
   }
   return true;
@@ -94,8 +100,8 @@ StreamToTable::HandleVisSignal( istream& arIn )
     mSignalProperties = s.GetProperties();
     mrOut << "#";
     mStateNames.clear();
-    for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-      mStateNames.insert( mStatelist.GetStatePtr( i )->GetName() );
+    for( size_t i = 0; i < mStatelist.Size(); ++i )
+      mStateNames.insert( mStatelist[ i ].GetName() );
     for( StringSet::const_iterator i = mStateNames.begin(); i != mStateNames.end(); ++i )
       mrOut << "\t" << *i;
     for( size_t i = 0; i < s.Channels(); ++i )
@@ -126,7 +132,7 @@ bool
 StreamToTable::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new STATEVECTOR( &mStatelist, true );
+    mpStatevector = new STATEVECTOR( mStatelist, true );
   mpStatevector->ReadBinary( arIn );
   return true;
 }

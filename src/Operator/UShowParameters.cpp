@@ -25,15 +25,14 @@ void __fastcall TfShowParameters::FormShow(TObject *Sender)
 {
  ParameterListBox->Clear();
  // show all the parameters
- for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
-  ParameterListBox->Items->Add(parameterlist->GetParamPtr(parameter)->GetName());
  // check the parameters that shouldn't be loaded/saved
- for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
+ for (size_t i=0; i < parameterlist->Size(); i++)
   {
-  if (GetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype) == 1)
-     ParameterListBox->Checked[parameter]=true;
+  ParameterListBox->Items->Add((*parameterlist)[i].GetName());
+  if (GetFilterStatus(&(*parameterlist)[i], filtertype) == 1)
+     ParameterListBox->Checked[i]=true;
   else
-     ParameterListBox->Checked[parameter]=false;
+     ParameterListBox->Checked[i]=false;
   }
 }
 //---------------------------------------------------------------------------
@@ -150,12 +149,12 @@ void TfShowParameters::UpdateParameterTags(PARAMLIST *paramlist, int filtertype)
 {
  // tag each parameter, if the registry "says so"
  // these tags will be used as a filter by Load/SaveParameterList
- for (size_t parameter=0; parameter < paramlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < paramlist->Size(); parameter++)
   {
-  if (GetFilterStatus(paramlist->GetParamPtr(parameter), filtertype) == 1)
-     paramlist->GetParamPtr(parameter)->Tag()=true;
+  if (GetFilterStatus(&(*paramlist)[parameter], filtertype) == 1)
+     (*paramlist)[parameter].Tag()=true;
   else
-     paramlist->GetParamPtr(parameter)->Tag()=false;
+     (*paramlist)[parameter].Tag()=false;
   }
 }
 //---------------------------------------------------------------------------
@@ -167,12 +166,12 @@ void __fastcall TfShowParameters::FormClose(TObject *Sender,
 {
  // store the filter setting for the parameters that shouldn't be loaded/saved
  // in the registry
- for (size_t parameter=0; parameter < parameterlist->GetNumParameters(); parameter++)
+ for (size_t parameter=0; parameter < parameterlist->Size(); parameter++)
   {
   if (ParameterListBox->Checked[parameter] == true)
-     SetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype, 1);
+     SetFilterStatus(&(*parameterlist)[parameter], filtertype, 1);
   else
-     SetFilterStatus(parameterlist->GetParamPtr(parameter), filtertype, 0);
+     SetFilterStatus(&(*parameterlist)[parameter], filtertype, 0);
   }
 }
 //---------------------------------------------------------------------------

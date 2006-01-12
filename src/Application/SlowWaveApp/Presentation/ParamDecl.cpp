@@ -7,7 +7,7 @@
 // Author: Juergen Mellinger
 //
 // Description: Use the macros in this file for declaring and defining
-//      TTD parameters in a centralized resource-like fashion.
+//      TTD/BCI2000 parameters in a centralized resource-like fashion.
 //
 //      The cpp file that _defines_ the _TParamDef globals
 //      must #define DEFINE_PARAMS before including this file.
@@ -70,7 +70,11 @@ _TParamDef::param_delete_suffix( PARAMLIST* inList, const char* inName, long inS
   ostringstream _suffix;
   _suffix << inSuffix;
   _name.replace( _replacePos, sizeof( RUNTIME_SUFFIX ) - 1, _suffix.str() );
+#ifdef BCI2000
+  inList->Delete( _name );
+#else
   inList->DeleteParam( ( char* )_name.c_str() );
+#endif
 }
 
 #ifdef BCI2000
@@ -135,8 +139,8 @@ _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long 
         if( pos != line.npos )
           line.replace( pos, runtimeSuffix.length(), "N" );
         name.replace( suffixPos, runtimeSuffix.length(), "" );
-        if( !inList->GetParamPtr( name.c_str() ) )
-          inList->AddParameter2List( line.c_str() );
+        if( !inList->Exists( name ) )
+          inList->Add( line );
       }
       else
       { // The parameter might be a special instance for a certain suffix.
@@ -144,14 +148,18 @@ _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long 
         size_t pos = name.find_last_not_of( "0123456789" );
         PARAM* param = NULL;
         if( pos != name.length() - 1 )
-          param = inList->GetParamPtr( name.substr( 0, pos + 1 ).c_str() );
+        {
+          string paramName = name.substr( 0, pos + 1 );
+          if( inList->Exists( paramName ) )
+            param = &( *inList )[ paramName ];
+        }
         if( param != NULL && string( "matrix" ) == param->GetType() )
         {
           long suffix = ::atoi( name.substr( pos ).c_str() );
           param->SetValue( p.GetValue(), suffix, 0 );
           param->LabelsDimension1()[ suffix ] = p.GetComment();
         }
-        else if( !inList->GetParamPtr( p.GetName() ) )
+        else if( !PARAM_EXISTS( inList, p.GetName() ) )
         {
           ostringstream oss;
           oss << p;
@@ -160,7 +168,7 @@ _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long 
           size_t rtPos;
           while( ( rtPos = line.find( runtimeElement ) ) != line.npos )
             line.replace( rtPos, runtimeElement.length(), "N/A" );
-          inList->AddParameter2List( line.c_str() );
+          inList->Add( line );
         }
       }
     }
@@ -180,6 +188,23 @@ _TParamDef::param_get_ptr_suffix( PARAMLIST* inList, const char* inName, long in
   ostringstream _suffix;
   _suffix << inSuffix;
   _name.replace( _replacePos, sizeof( RUNTIME_SUFFIX ) - 1, _suffix.str() );
+#ifdef BCI2000
+  if( inList->Exists( _name ) )
+    result = &( *inList )[ _name ];
+  else
+  {
+    static PARAM p;
+    if( inList->Exists( _blankName ) )
+    {
+      PARAM& param = ( *inList )[ _blankName ];
+      p.SetType( "list" );
+      p.SetNumValues( param.GetNumValues() );
+      for( size_t i = 0; i < param.GetNumValuesDimension2(); ++i )
+        p.SetValue( param.GetValue( inSuffix, i ), i );
+      result = &p;
+    }
+  }
+#else // BCI2000
   result = inList->GetParamPtr( const_cast< char* >( _name.c_str() ) );
   if( result == NULL )
   {
@@ -194,6 +219,7 @@ _TParamDef::param_get_ptr_suffix( PARAMLIST* inList, const char* inName, long in
       result = &p;
     }
   }
+#endif // BCI2000
   return result;
 }
 

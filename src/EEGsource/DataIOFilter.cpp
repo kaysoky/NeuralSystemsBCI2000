@@ -37,7 +37,7 @@ RegisterFilter( DataIOFilter, 0 );
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
   mpFileWriter( GenericFilter::PassFilter<GenericFileWriter>() ),
-  mStatevectorBuffer( States, true ),
+  mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
   mVisualizeSourceDecimation( 1 ),
   mVisualizeRoundtrip( false ),

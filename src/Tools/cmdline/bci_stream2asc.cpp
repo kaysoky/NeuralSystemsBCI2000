@@ -1,8 +1,13 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:    bci_stream2asc.cpp
 // Date:    Jul 29, 2003
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
+// $Log$
+// Revision 1.4  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <iomanip>
@@ -23,7 +28,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_stream2asc",
-  "version 0.1.0, compiled "__DATE__,
+  "$Revision$, compiled "__DATE__,
   "Convert a binary BCI2000 stream into a human readable form.",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to standard output as a sequence of "
@@ -111,11 +116,12 @@ StreamToAsc::HandleSTATE( istream& arIn )
   s.ReadBinary( arIn );
   if( arIn )
   {
-    mStatelist.AddState2List( &s );
+    mStatelist.Delete( s.GetName() );
+    mStatelist.Add( s );
     if( mpStatevector != NULL )
     {
       delete mpStatevector;
-      mpStatevector = new STATEVECTOR( &mStatelist, true );
+      mpStatevector = new STATEVECTOR( mStatelist, true );
     }
     Print( mrOut, s );
   }
@@ -133,7 +139,7 @@ bool
 StreamToAsc::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new STATEVECTOR( &mStatelist, true );
+    mpStatevector = new STATEVECTOR( mStatelist, true );
   mpStatevector->ReadBinary( arIn );
   Print( mrOut, *mpStatevector );
   return true;

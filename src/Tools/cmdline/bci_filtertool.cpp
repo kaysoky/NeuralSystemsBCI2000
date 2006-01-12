@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:    bci_filtertool.cpp
 // Date:    Jul 18, 2003
 // Author:  juergen.mellinger@uni-tuebingen.de
@@ -6,6 +7,10 @@
 //          compliant binary stream from standard input, applies
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
+// $Log$
+// Revision 1.11  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <fstream>
@@ -27,7 +32,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "",
-  "tool, framework version 0.1.0, compiled "__DATE__,
+  "tool, framework $Revision$, compiled "__DATE__,
   "Process standard input with the \"" FILTER_NAME "\" BCI2000 filter.",
   "Reads a BCI2000 compliant binary stream from standard input, applies the\n"
     FILTER_NAME " BCI2000 filter, and writes its output to standard output\n"
@@ -148,7 +153,10 @@ FilterWrapper::HandleSTATE( istream& arIn )
   STATE s;
   s.ReadBinary( arIn );
   if( arIn )
-    mStatelist.AddState2List( &s );
+  {
+    mStatelist.Delete( s.GetName() );
+    mStatelist.Add( s );
+  }
   return true;
 }
 
@@ -156,7 +164,7 @@ bool
 FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new STATEVECTOR( &mStatelist, true );
+    mpStatevector = new STATEVECTOR( mStatelist, true );
   mpStatevector->ReadBinary( arIn );
   if( !mpStatevector->GetStateValue( "Running" )
       && Environment::GetPhase() == Environment::processing )
@@ -189,11 +197,11 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           }
           // Add the filter's parameters with their default values to the parameter
           // list as far as they are missing from the input stream.
-          for( PARAMLIST::iterator i = filterParams.begin(); i != filterParams.end(); ++i )
-            if( mParamlist.find( i->second.GetName() ) == mParamlist.end() )
-              mParamlist[ i->second.GetName() ] = i->second;
+          for( size_t i = 0; i < filterParams.Size(); ++i )
+            if( !mParamlist.Exists( filterParams[ i ].GetName() ) )
+              mParamlist[ filterParams[ i ].GetName() ] = filterParams[ i ];
           // If there are no states in the input stream, use the filter's states.
-          if( mStatelist.GetNumStates() == 0 )
+          if( mStatelist.Size() == 0 )
           {
             mStatelist = filterStates;
             mStatesFromInput = false;
@@ -204,9 +212,9 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         /* no break */
       case Environment::construction:
         if( mpStatevector == NULL )
-          mpStatevector = new STATEVECTOR( &mStatelist, true );
-        for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-          PutMessage( mrOut, *mStatelist.GetStatePtr( i ) );
+          mpStatevector = new STATEVECTOR( mStatelist, true );
+        for( size_t i = 0; i < mStatelist.Size(); ++i )
+          PutMessage( mrOut, mStatelist[ i ] );
         Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
         GenericFilter::PreflightFilters( inputSignal.GetProperties(), outputProperties );
         mOutputSignal.SetProperties( outputProperties );
@@ -219,8 +227,8 @@ FilterWrapper::HandleVisSignal( istream& arIn )
       case Environment::preflight:
         Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
         GenericFilter::InitializeFilters();
-        for( PARAMLIST::const_iterator i = mParamlist.begin(); i != mParamlist.end(); ++i )
-          PutMessage( mrOut, i->second );
+        for( size_t i = 0; i < mParamlist.Size(); ++i )
+          PutMessage( mrOut, mParamlist[ i ] );
         if( __bcierr.flushes() > 0 )
         {
           arIn.setstate( ios::failbit );
@@ -245,7 +253,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           }
           bool isRunning = mpStatevector->GetStateValue( "Running" );
           if( isRunning || wasRunning )
-            if( mpStatevector->GetStateVectorLength() > 0 )
+            if( mpStatevector->Length() > 0 )
               PutMessage( mrOut, *mpStatevector );
           if( isRunning )
             PutMessage( mrOut, mOutputSignal );

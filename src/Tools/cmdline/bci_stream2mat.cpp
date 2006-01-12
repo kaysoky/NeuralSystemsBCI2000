@@ -1,8 +1,13 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:    bci_stream2mat.cpp
 // Date:    Feb 22, 2005
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
+// $Log$
+// Revision 1.6  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <set>
@@ -18,7 +23,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_stream2mat",
-  "version 0.1.0, compiled "__DATE__,
+  "$Revision$, compiled "__DATE__,
   "Convert a binary BCI2000 stream into a matlab .mat file",
   "Reads a BCI2000 compliant binary stream from standard input, "
     "and writes it to stdout in matlab level 5 MAT-file format.",
@@ -276,11 +281,12 @@ StreamToMat::HandleSTATE( istream& arIn )
   s.ReadBinary( arIn );
   if( arIn )
   {
-    mStatelist.AddState2List( &s );
+    mStatelist.Delete( s.GetName() );
+    mStatelist.Add( s );
     if( mpStatevector != NULL )
     {
       delete mpStatevector;
-      mpStatevector = new STATEVECTOR( &mStatelist, true );
+      mpStatevector = new STATEVECTOR( mStatelist, true );
     }
   }
   return true;
@@ -297,8 +303,8 @@ StreamToMat::HandleVisSignal( istream& arIn )
   {
     mSignalProperties = s.GetProperties();
     mStateNames.clear();
-    for( int i = 0; i < mStatelist.GetNumStates(); ++i )
-      mStateNames.insert( mStatelist.GetStatePtr( i )->GetName() );
+    for( int i = 0; i < mStatelist.Size(); ++i )
+      mStateNames.insert( mStatelist[ i ].GetName() );
     WriteHeader();
   }
   if( s.GetProperties() != mSignalProperties )
@@ -312,7 +318,7 @@ bool
 StreamToMat::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new STATEVECTOR( &mStatelist, true );
+    mpStatevector = new STATEVECTOR( mStatelist, true );
   mpStatevector->ReadBinary( arIn );
   return true;
 }

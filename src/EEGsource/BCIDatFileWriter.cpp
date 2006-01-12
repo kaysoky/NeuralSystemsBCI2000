@@ -156,7 +156,7 @@ BCIDatFileWriter::StartRun()
   ostringstream header;
   header << " "
          << "SourceCh= " << ( int )Parameter( "SoftwareCh" ) << " "
-         << "StatevectorLen= " << Statevector->GetStateVectorLength();
+         << "StatevectorLen= " << Statevector->Length();
   if( !useOldFormat )
     header << " "
            << "DataFormat= "
@@ -223,8 +223,8 @@ BCIDatFileWriter::PutBlock( const GenericSignal& inSignal, const STATEVECTOR& in
   {
     for( size_t i = 0; i < inSignal.Channels(); ++i )
       inSignal.PutValueBinary<T>( mOutputFile, i, j );
-    mOutputFile.write( inStatevector.GetStateVectorPtr(),
-                       inStatevector.GetStateVectorLength() );
+    mOutputFile.write( inStatevector.Data(),
+                       inStatevector.Length() );
   }
 }
 

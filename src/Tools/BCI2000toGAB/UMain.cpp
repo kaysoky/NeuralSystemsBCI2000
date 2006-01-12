@@ -163,17 +163,17 @@ void __fastcall TfMain::CheckCalibrationFile( void )
 
   if( ParameterFile->Enabled && ParameterFile->Text.Length() > 0 )
   {
-    if( paramlist.LoadParameterList( ParameterFile->Text.c_str() ) )
+    if( paramlist.Load( ParameterFile->Text.c_str() ) )
     {
-      n_chans= paramlist.GetParamPtr("SourceChOffset")->GetNumValues();
+      n_chans= paramlist["SourceChOffset"].GetNumValues();
       mOffset.clear();
       mOffset.resize( n_chans, 0 );
       mGain.clear();
       mGain.resize( n_chans, 0 );
       for(i=0;i<n_chans;i++)
       {
-        mOffset[i]=atoi(paramlist.GetParamPtr("SourceChOffset")->GetValue(i));
-        mGain[i]=atof(paramlist.GetParamPtr("SourceChGain")->GetValue(i));
+        mOffset[i]=atoi(paramlist["SourceChOffset"].GetValue(i));
+        mGain[i]=atof(paramlist["SourceChGain"].GetValue(i));
       }
     }
     else
@@ -184,16 +184,17 @@ void __fastcall TfMain::CheckCalibrationFile( void )
   BCI2000DATA data;
   data.Initialize( mSourceFiles->Lines->Strings[ 0 ].c_str(), 0 );
 
-  const PARAM* param = paramlist.GetParamPtr( "NumberTargets" );
-  if( param == NULL )
-    param = data.GetParamListPtr()->GetParamPtr( "NumberTargets" );
-  int numberTargets = ( param ? atoi( param->GetValue() ) : 0 );
+  int numberTargets = 0;
+  if( paramlist.Exists( "NumberTargets" ) )
+    numberTargets = ::atoi( paramlist[ "NumberTargets" ].GetValue() );
+  else if( data.GetParamListPtr()->Exists( "NumberTargets" ) )
+    numberTargets = ::atoi( ( *data.GetParamListPtr() )[ "NumberTargets" ].GetValue() );
 
-  param = paramlist.GetParamPtr( "TargetOrientation" );
-  if( param == NULL )
-    param = data.GetParamListPtr()->GetParamPtr( "TargetOrientation" );
-  int targetOrientation = ( param ? atoi( param->GetValue() ) : -1 );
-  mTargetMax = 0;
+  int targetOrientation = -1;
+  if( paramlist.Exists( "TargetOrientation" ) )
+    targetOrientation = ::atoi( paramlist[ "TargetOrientation" ].GetValue() );
+  else if( data.GetParamListPtr()->Exists( "TargetOrientation" ) )
+    targetOrientation = ::atoi( ( *data.GetParamListPtr() )[ "TargetOrientation" ].GetValue() );
 
   switch( targetOrientation )
   {
@@ -270,13 +271,14 @@ void __fastcall TfMain::bConvertClick(TObject *Sender)
           for( size_t i = 0; i < numParamNamesToCheck; ++i )
           {
             bool goodParam = true;
-            const PARAM* currentParam = reader.GetParamListPtr()->GetParamPtr( paramNamesToCheck[ i ] ),
-                       * referenceParam = paramsFromFirstFile.GetParamPtr( paramNamesToCheck[ i ] );
-            if( !( currentParam == NULL && referenceParam == NULL ) )
+            if( reader.GetParamListPtr()->Exists( paramNamesToCheck[ i ] )
+                && paramsFromFirstFile.Exists( paramNamesToCheck[ i ] ) )
             {
-              goodParam = ( currentParam->GetNumValues() == referenceParam->GetNumValues() );
-              for( size_t j = 0; goodParam && j < currentParam->GetNumValues(); ++j )
-                goodParam = goodParam && ( string( currentParam->GetValue( j ) ) == string( referenceParam->GetValue( j ) ) );
+              const PARAM& currentParam = ( *reader.GetParamListPtr() )[ paramNamesToCheck[ i ] ];
+              const PARAM& referenceParam = paramsFromFirstFile[ paramNamesToCheck[ i ] ];
+              goodParam = ( currentParam.GetNumValues() == referenceParam.GetNumValues() );
+              for( size_t j = 0; goodParam && j < currentParam.GetNumValues(); ++j )
+                goodParam = goodParam && ( string( currentParam.GetValue( j ) ) == string( referenceParam.GetValue( j ) ) );
             }
             if( !goodParam )
             {
@@ -567,9 +569,9 @@ void __fastcall TfMain::mSourceFilesChange(TObject *Sender)
     AnsiString orienDesc = "";
     BCI2000DATA data;
     data.Initialize( mSourceFiles->Lines->Strings[ 0 ].c_str(), BLOCKSIZE );
-    const PARAM* param = data.GetParamListPtr()->GetParamPtr( "TargetOrientation" );
-    if( param != NULL )
-      switch( ::atoi( param->GetValue() ) )
+    if( data.GetParamListPtr()->Exists( "TargetOrientation" ) )
+    {
+      switch( ::atoi( ( *data.GetParamListPtr() )[ "TargetOrientation" ].GetValue() ) )
       {
         case 1: // vertical
           orienDesc = "_v";
@@ -584,6 +586,7 @@ void __fastcall TfMain::mSourceFilesChange(TObject *Sender)
           orienDesc = "_strange";
           break;
       }
+    }
     eDestinationFile->Text = ::ChangeFileExt( mSourceFiles->Lines->Strings[ 0 ], orienDesc + ".raw" );
   }
 }

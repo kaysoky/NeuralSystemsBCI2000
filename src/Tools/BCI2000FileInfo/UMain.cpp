@@ -149,12 +149,12 @@ void TfMain::DisplayFileInfo()
 {
  assert(bci2000data);
 
- const PARAMLIST *paramlist=bci2000data->GetParamListPtr();
- assert(paramlist->GetParamPtr("SampleBlockSize"));
- assert(paramlist->GetParamPtr("SamplingRate"));
+ const PARAMLIST& parameters=*bci2000data->GetParamListPtr();
+ assert(parameters.Exists("SampleBlockSize"));
+ assert(parameters.Exists("SamplingRate"));
 
- AnsiString prmval_blocksize=paramlist->GetParamPtr("SampleBlockSize")->GetValue();
- AnsiString prmval_samplingrate=paramlist->GetParamPtr("SamplingRate")->GetValue();
+ AnsiString prmval_blocksize=parameters["SampleBlockSize"].GetValue();
+ AnsiString prmval_samplingrate=parameters["SamplingRate"].GetValue();
  int blocksize=atoi(prmval_blocksize.c_str());
  float samplingrate=atof(prmval_samplingrate.c_str());
  assert(samplingrate > 0 && blocksize > 0);

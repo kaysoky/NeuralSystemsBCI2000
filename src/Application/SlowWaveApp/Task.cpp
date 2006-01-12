@@ -132,8 +132,6 @@ TTask::Preflight( const SignalProperties& Input, SignalProperties& Output ) cons
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
   PreflightCondition( Parameter( "SampleBlockSize" ) > 0 );
 
-  // Initialize unit time to the length of a block.
-  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / OptionalParameter( 1, "SampleBlockSize" ) );
   int taskBegin = MeasurementUnits::ReadAsTime( Parameter( "TaskBegin" ) ),
       feedbackBegin = MeasurementUnits::ReadAsTime( Parameter( "FeedbackBegin" ) ),
       feedbackEnd = MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) ),
@@ -184,8 +182,6 @@ TTask::Initialize()
   State( "StimulusTime" ) = 0;
   
   TStateAccessor::Initialize( Statevector );
-  // Initialize unit time to the length of a block.
-  MeasurementUnits::InitializeTimeUnit( Parameter( "SamplingRate" ) / Parameter( "SampleBlockSize" ) );
 
   const char* viewStyle;
   PARAM_GET_STRING( Parameters, PRViewStyle, viewStyle );

@@ -129,7 +129,7 @@ ConnectorInput::Process( const GenericSignal* input, GenericSignal* output )
       }
       else
       {
-        if( !States->GetStatePtr( name.c_str() ) )
+        if( !States->Exists( name ) )
           bciout << "Ignoring value for non-existent " << name << " state" << endl;
         else
           State( name.c_str() ) = value;
@@ -184,9 +184,9 @@ void
 ConnectorOutput::Process( const GenericSignal* input, GenericSignal* output )
 {
   *output = *input;
-  for( int state = 0; state < States->GetNumStates(); ++state )
+  for( size_t state = 0; state < States->Size(); ++state )
   {
-    string stateName = States->GetStatePtr( state )->GetName();
+    string stateName = ( *States )[ state ].GetName();
     mConnection << stateName << ' '
                 << State( stateName.c_str() ) << endl;
   }

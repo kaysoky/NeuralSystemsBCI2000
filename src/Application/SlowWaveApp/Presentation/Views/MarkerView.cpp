@@ -81,7 +81,13 @@ TMarkerView::Initialize(       PARAMLIST *inParamList,
       const char* value = audMarkersParam->GetValue( i );
       if( value == NULL )
         value = "";
-      const PARAM* param = inParamList->GetParamPtr( value );
+      const PARAM* param = NULL;
+#ifdef BCI2000
+      if( inParamList->Exists( value ) )
+        param = &( *inParamList )[ value ];
+#else
+      param = inParamList->GetParamPtr( value );
+#endif
       if( param != NULL )
         value = param->GetValue();
 #ifdef BCI2000

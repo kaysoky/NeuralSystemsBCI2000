@@ -8,6 +8,9 @@
 // Date: Nov 30, 2005
 //
 // $Log$
+// Revision 1.2  2006/01/12 20:39:00  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 // Revision 1.1  2005/12/20 11:38:07  mellinger
 // Initial version.
 //
@@ -122,7 +125,7 @@ MatlabFilter::MatlabFilter()
       ostringstream expr;
       expr << PARAM_DEFS << "{" << i << "}";
       string paramDef = MatlabEngine::GetString( expr.str() );
-      if( !Parameters->AddParameter2List( paramDef.c_str() ) )
+      if( !Parameters->Add( paramDef ) )
         bcierr << "Error in parameter definition: " << paramDef << endl;
     }
     int numStateDefs = MatlabEngine::GetScalar( "max(size('" STATE_DEFS "'))" );
@@ -131,7 +134,7 @@ MatlabFilter::MatlabFilter()
       ostringstream expr;
       expr << STATE_DEFS << "{" << i << "}";
       string stateDef = MatlabEngine::GetString( expr.str() );
-      if( !States->AddState2List( stateDef.c_str() ) )
+      if( !States->Add( stateDef ) )
         bcierr << "Error in state definition: " << stateDef << endl;
     }
   }
@@ -272,9 +275,9 @@ MatlabFilter::Halt()
 void
 MatlabFilter::StatesToMatlabWS() const
 {
-  for( int i = 0; i < States->GetNumStates(); ++i )
+  for( size_t i = 0; i < States->Size(); ++i )
   {
-    const char* name = States->GetStatePtr( i )->GetName();
+    const char* name = ( *States )[ i ].GetName();
     MatlabEngine::PutScalar( string( STATES "." ) + name, State( name ) );
   }
 }
@@ -282,9 +285,9 @@ MatlabFilter::StatesToMatlabWS() const
 void
 MatlabFilter::MatlabWSToStates()
 {
-  for( int i = 0; i < States->GetNumStates(); ++i )
+  for( size_t i = 0; i < States->Size(); ++i )
   {
-    const char* name = States->GetStatePtr( i )->GetName();
+    const char* name = ( *States )[ i ].GetName();
     State( name ) = MatlabEngine::GetScalar( string( STATES "." ) + name );
   }
 }
@@ -292,24 +295,28 @@ MatlabFilter::MatlabWSToStates()
 void
 MatlabFilter::ParamsToMatlabWS() const
 {
-  for( PARAMLIST::const_iterator i = Parameters->begin(); i != Parameters->end(); ++i )
-    MatlabEngine::PutCells( string( PARAMETERS "." ) + i->first, i->second );
+  for( size_t i = 0; i < Parameters->Size(); ++i )
+  {
+    PARAM& p = ( *Parameters )[ i ];
+    MatlabEngine::PutCells( string( PARAMETERS "." ) + p.GetName(), p );
+  }
 }
 
 void
 MatlabFilter::MatlabWSToParams()
 {
-  for( PARAMLIST::iterator i = Parameters->begin(); i != Parameters->end(); ++i )
+  for( size_t i = 0; i < Parameters->Size(); ++i )
   {
-    MatlabEngine::StringMatrix curParam = MatlabEngine::GetCells( string( PARAMETERS "." + i->first ) );
-    size_t newRows = curParam.size(),
-           newCols = newRows ? curParam.at( 0 ).size() : 1;
-    if( newRows != i->second.GetNumRows() || newCols != i->second.GetNumColumns() )
-      i->second.SetDimensions( newRows, newCols );
+    PARAM& p = ( *Parameters )[ i ];
+    MatlabEngine::StringMatrix values = MatlabEngine::GetCells( string( PARAMETERS "." ) + p.GetName() );
+    size_t newRows = values.size(),
+           newCols = newRows ? values.at( 0 ).size() : 1;
+    if( newRows != p.GetNumRows() || newCols != p.GetNumColumns() )
+      p.SetDimensions( newRows, newCols );
     for( size_t row = 0; row < newRows; ++row )
       for( size_t col = 0; col < newCols; ++col )
-        if( string( i->second.GetValue( row, col ) ) != curParam.at( row ).at( col ) )
-          i->second.SetValue( curParam.at( row ).at( col ).c_str(), row, col );
+        if( string( p.GetValue( row, col ) ) != values.at( row ).at( col ) )
+          p.SetValue( values.at( row ).at( col ).c_str(), row, col );
   }
 }
 

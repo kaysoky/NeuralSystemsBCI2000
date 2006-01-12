@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////
-// File:        bci_dll.h
+// $Id$
+// File:        bci_dll.cpp
 // Date:        Jul 12, 2005
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Provides a framework for dlls that contain BCI2000
@@ -12,6 +13,9 @@
 //              Without previous calls to PutState(), Instantiate()
 //              will create a new state vector using the states
 //              requested by the filter(s) present in the DLL.
+// $Log$
+// Revision 1.4  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
 //
 ////////////////////////////////////////////////////////////////////
 #include "bci_dll.h"
@@ -100,7 +104,8 @@ static class FilterWrapper : public Environment
     }
     delete mpStatevector;
     mpStatevector = NULL;
-    mStates.AddState2List( &state );
+    mStates.Delete( state.GetName() );
+    mStates.Add( state );
     return true;
   }
 
@@ -127,7 +132,7 @@ static class FilterWrapper : public Environment
   bool
   GetStatevectorLength( long* statevectorLengthPtr )
   {
-    *statevectorLengthPtr = Statevector()->GetStateVectorLength();
+    *statevectorLengthPtr = Statevector()->Length();
     return true;
   }
 
@@ -135,7 +140,7 @@ static class FilterWrapper : public Environment
   SetStatevector( const unsigned char* statevectorData )
   {
     __bcierr.clear();
-    ::memcpy( Statevector()->GetStateVectorPtr(), statevectorData, Statevector()->GetStateVectorLength() );
+    ::memcpy( Statevector()->Data(), statevectorData, Statevector()->Length() );
     return true;
   }
 
@@ -143,7 +148,7 @@ static class FilterWrapper : public Environment
   GetStatevector( unsigned char* statevectorData )
   {
     __bcierr.clear();
-    ::memcpy( statevectorData, Statevector()->GetStateVectorPtr(), Statevector()->GetStateVectorLength() );
+    ::memcpy( statevectorData, Statevector()->Data(), Statevector()->Length() );
     return true;
   }
 
@@ -160,11 +165,11 @@ static class FilterWrapper : public Environment
     {
       // Add the filter's parameters with their default values to the parameter
       // list as far as they are missing from the input.
-      for( PARAMLIST::iterator i = filterParams.begin(); i != filterParams.end(); ++i )
-        if( mParameters.find( i->second.GetName() ) == mParameters.end() )
-          mParameters[ i->second.GetName() ] = i->second;
+      for( size_t i = 0; i < filterParams.Size(); ++i )
+        if( !mParameters.Exists( filterParams[ i ].GetName() ) )
+          mParameters[ filterParams[ i ].GetName() ] = filterParams[ i ];
       // If there are no states written to the filter, use the filter's states.
-      if( mStates.GetNumStates() == 0 )
+      if( mStates.Size() == 0 )
       {
         mStates = filterStates;
         mStatesFromInput = false;
@@ -184,8 +189,8 @@ static class FilterWrapper : public Environment
     bool result = ( __bcierr.flushes() == 0 );
     Environment::EnterNonaccessPhase();
     delete mpStatevector;
-    mStates.ClearStateList();
-    mParameters.clear();
+    mStates.Clear();
+    mParameters.Clear();
     return result;
   }
 
@@ -289,7 +294,7 @@ static class FilterWrapper : public Environment
   STATEVECTOR*     Statevector()
   {
     if( !mpStatevector )
-      mpStatevector = new STATEVECTOR( &mStates, mStatesFromInput );
+      mpStatevector = new STATEVECTOR( mStates, mStatesFromInput );
     return mpStatevector;
   }
 
@@ -325,6 +330,7 @@ GetInfo()
 
   sOut << "Filter name: " << name << '\n'
        << "BCI2000 filter DLL framework compiled " __DATE__ "\n"
+       << "from $Id$\n"
        << ends;
   return sb->str();
 }

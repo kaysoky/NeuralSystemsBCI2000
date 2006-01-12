@@ -1,8 +1,13 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:        bci_dat2stream.cpp
 // Date:        Jul 9, 2003
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
+// $Log$
+// Revision 1.8  2006/01/12 20:37:14  mellinger
+// Adaptation to latest revision of parameter and state related class interfaces.
+//
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
 #include "shared/defines.h"
@@ -20,7 +25,7 @@ using namespace std;
 string ToolInfo[] =
 {
   "bci_dat2stream",
-  "0.1.0, compiled " __DATE__,
+  "$Revision$, compiled " __DATE__,
   "Convert a BCI2000 data file into a BCI2000 stream.",
   "Reads a BCI2000 data file (*.dat) compliant stream from "
     "standard input and writes it to the standard output as a BCI2000 "
@@ -87,7 +92,10 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     istringstream is( token );
     STATE state;
     if( is >> state )
-      states.AddState2List( &state );
+    {
+      states.Delete( state.GetName() );
+      states.Add( state );
+    }
     legalInput = legalInput && is;
     if( transmitStates )
       MessageHandler::PutMessage( out, state );
@@ -116,15 +124,15 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
 
   if( transmitData || transmitStates )
   {
-    STATEVECTOR statevector( &states, true );
-    assert( statevector.GetStateVectorLength() == stateVectorLength );
+    STATEVECTOR statevector( states, true );
+    assert( statevector.Length() == stateVectorLength );
     int curSample = 0;
     GenericSignal outputSignal( sourceCh, sampleBlockSize, dataFormat );
     while( in && in.peek() != EOF )
     {
       for( int i = 0; i < sourceCh; ++i )
         outputSignal.ReadValueBinary( in, i, curSample );
-      in.read( statevector.GetStateVectorPtr(), stateVectorLength );
+      statevector.ReadBinary( in );
 
       if( ++curSample == sampleBlockSize )
       {
