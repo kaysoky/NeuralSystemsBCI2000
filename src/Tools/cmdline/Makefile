@@ -34,6 +34,9 @@ TARGETS = obj\bci_tool.lib \
           SWFilter.exe \
           FFTFilter.exe \
           TransmissionFilter.exe \
+          Normalizer.exe \
+          ConditionalIntegrator.exe \
+          ComplexDemodulator.exe \
           StatFilter.exe \
           CalibrationFilter.dll \
           ClassFilter.dll \
@@ -46,6 +49,9 @@ TARGETS = obj\bci_tool.lib \
           SWFilter.dll \
           FFTFilter.dll \
           TransmissionFilter.dll \
+          Normalizer.dll \
+          ConditionalIntegrator.dll \
+          ComplexDemodulator.dll \
           StatFilter.dll \
           
 BCIOBJ  = obj\bci_tool.obj \
@@ -63,6 +69,8 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\USysCommand.obj \
           obj\MessageHandler.obj \
           obj\MeasurementUnits.obj \
+          obj\Expression.obj \
+          obj\ExpressionParser.obj \
           obj\getmem.obj \
           obj\getfir.obj \
           obj\FFTLibWrap.obj 
@@ -82,6 +90,8 @@ DLLOBJ  = obj\bci_dll.obj \
           obj\USysCommand.obj \
           obj\MessageHandler.obj \
           obj\MeasurementUnits.obj \
+          obj\Expression.obj \
+          obj\ExpressionParser.obj \
           obj\getmem.obj \
           obj\getfir.obj \
           obj\FFTLibWrap.obj 
@@ -94,9 +104,9 @@ STATOBJ = obj\StatFilter.obj \
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\Old
+SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\misc
 PATHOBJ = .\obj
-PATHCPP = .;${BCIROOT}\shared;${SIGPROC};${SRCROOT}
+PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\Expression;${SIGPROC};${SRCROOT}
 INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib
 
