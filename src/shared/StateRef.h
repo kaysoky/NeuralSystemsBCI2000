@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.2  2006/01/12 20:19:18  mellinger
+// Various fixes.
+//
 // Revision 1.1  2006/01/11 19:07:28  mellinger
 // Revision of interface style to match corresponding parameter classes.
 //
@@ -30,15 +33,15 @@ class StateRef
   StateRef();
   StateRef( STATEVECTOR*,
             size_t location, size_t length,
-            STATE::value_type defaultValue = 0 );
+            long defaultValue = 0 );
   const StateRef& operator=( long );
   operator long() const;
 
  private:
-  STATEVECTOR*      mpStatevector;
-  size_t            mLocation,
-                    mLength;
-  STATE::value_type mDefaultValue;
+  STATEVECTOR* mpStatevector;
+  size_t       mLocation,
+               mLength;
+  long         mDefaultValue;
 };
 
 
@@ -55,7 +58,7 @@ inline
 StateRef::StateRef( STATEVECTOR* inStatevector,
                     size_t inLocation,
                     size_t inLength,
-                    STATE::value_type inDefaultValue )
+                    long inDefaultValue )
 : mpStatevector( inStatevector ),
   mLocation( inLocation ),
   mLength( inLength ),
@@ -75,7 +78,7 @@ StateRef::operator=( long inValue )
 inline
 StateRef::operator long() const
 {
-  int value = mDefaultValue;
+  long value = mDefaultValue;
   if( mpStatevector != NULL )
     value = mpStatevector->GetStateValue( mLocation, mLength );
   return value;

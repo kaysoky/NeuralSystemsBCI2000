@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.20  2006/01/12 20:19:18  mellinger
+ * Various fixes.
+ *
  * Revision 1.19  2006/01/11 19:15:21  mellinger
  * Fixed definition of STATEVECTOR::operator=().
  *
@@ -344,11 +347,11 @@ STATEVECTOR::Initialize( bool inUseAssignedPositions )
 
   // calculate the state vector length
   int bitLength = 0;
-  for( size_t i = 0; i < mrStatelist.Size(); ++i )
+  for( size_t i = 0; i < mpStatelist->Size(); ++i )
   {
     if( !inUseAssignedPositions )
-      mrStatelist[ i ].SetLocation( bitLength );
-    bitLength += mrStatelist[ i ].GetLength();
+      ( *mpStatelist )[ i ].SetLocation( bitLength );
+    bitLength += ( *mpStatelist )[ i ].GetLength();
   }
   mByteLength = ( bitLength / 8 ) + 1; // divide it by eight, add one to get the number of needed bytes
   mpData = new unsigned char[ mByteLength ];
@@ -358,16 +361,16 @@ STATEVECTOR::Initialize( bool inUseAssignedPositions )
 
   // initialize the content in the state vector, according to the content
   // of the current states in the state list
-  for( size_t i = 0; i < mrStatelist.Size(); ++i )
-    SetStateValue( mrStatelist[ i ].GetName(), mrStatelist[ i ].GetValue() );
+  for( size_t i = 0; i < mpStatelist->Size(); ++i )
+    SetStateValue( ( *mpStatelist )[ i ].GetName(), ( *mpStatelist )[ i ].GetValue() );
 }
 
 STATEVECTOR::STATEVECTOR( const STATEVECTOR& s )
 : mByteLength( 0 ),
   mpData( NULL ),
-  mrStatelist( s.mrStatelist )
+  mpStatelist( NULL )
 {
-  this->operator =( s );
+  this->operator=( s );
 }
 
 // can specify, whether or not defined byte/bit positions should be used
@@ -375,7 +378,7 @@ STATEVECTOR::STATEVECTOR( const STATEVECTOR& s )
 STATEVECTOR::STATEVECTOR( STATELIST& inList, bool inUsepositions )
 : mByteLength( 0 ),
   mpData( NULL ),
-  mrStatelist( inList )
+  mpStatelist( &inList )
 {
   Initialize( inUsepositions );
 }
@@ -383,7 +386,7 @@ STATEVECTOR::STATEVECTOR( STATELIST& inList, bool inUsepositions )
 STATEVECTOR::STATEVECTOR( STATELIST* inList, bool inUsepositions )
 : mByteLength( 0 ),
   mpData( NULL ),
-  mrStatelist( *inList )
+  mpStatelist( inList )
 {
   Initialize( inUsepositions );
 }
@@ -405,7 +408,7 @@ STATEVECTOR::operator=( const STATEVECTOR& s )
   if( &s != this )
   {
     mByteLength = s.mByteLength;
-    mrStatelist = s.mrStatelist;
+    mpStatelist = s.mpStatelist;
     delete[] mpData;
     mpData = new unsigned char[ mByteLength ];
     ::memcpy( mpData, s.mpData, mByteLength );
@@ -423,14 +426,16 @@ STATEVECTOR::operator=( const STATEVECTOR& s )
 STATE::value_type
 STATEVECTOR::GetStateValue( size_t inLocation, size_t inLength ) const
 {
+  if( inLength > 8 * sizeof( STATE::value_type ) )
+    throw __FUNC__ ": Invalid state length";
   if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
+    throw __FUNC__ ": Accessing non-existent state vector data";
 
   STATE::value_type result = 0;
-  for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )
+  for( int bitIndex = inLocation + inLength - 1; bitIndex >= int( inLocation ); --bitIndex )
   {
     result <<= 1;
-    if( ( mpData[ bitIndex / 8 ] & 1 << ( bitIndex % 8 ) ) != 0 )
+    if( mpData[ bitIndex / 8 ] & ( 1 << ( bitIndex % 8 ) ) )
       result |= 1;
   }
   return result;
@@ -448,9 +453,9 @@ STATE::value_type
 STATEVECTOR::GetStateValue( const string& inName ) const
 {
   STATE::value_type result = 0;
-  if( mrStatelist.Exists( inName ) )
+  if( mpStatelist->Exists( inName ) )
   {
-    STATE& s = mrStatelist[ inName ];
+    STATE& s = ( *mpStatelist )[ inName ];
     result = GetStateValue( s.GetLocation(), s.GetLength() );
   };
   return result;
@@ -468,14 +473,19 @@ STATEVECTOR::GetStateValue( const string& inName ) const
 void
 STATEVECTOR::SetStateValue( size_t inLocation, size_t inLength, STATE::value_type inValue )
 {
+  if( inLength > 8 * sizeof( STATE::value_type ) )
+    throw __FUNC__ ": Invalid state length";
   if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
+    throw __FUNC__ ": Accessing non-existent state vector data";
 
   STATE::value_type value = inValue;
   for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )
   {
+    unsigned char mask = 1 << ( bitIndex % 8 );
     if( value & 1 )
-      mpData[ bitIndex / 8 ] |= 1 << ( bitIndex % 8 );
+      mpData[ bitIndex / 8 ] |= mask;
+    else
+      mpData[ bitIndex / 8 ] &= ~mask;
     value >>= 1;
   }
 }
@@ -489,9 +499,9 @@ STATEVECTOR::SetStateValue( size_t inLocation, size_t inLength, STATE::value_typ
 void
 STATEVECTOR::SetStateValue( const string& inName, STATE::value_type inValue )
 {
-  if( mrStatelist.Exists( inName ) )
+  if( mpStatelist->Exists( inName ) )
   {
-    STATE& s = mrStatelist[ inName ];
+    STATE& s = ( *mpStatelist )[ inName ];
     SetStateValue( s.GetLocation(), s.GetLength(), inValue );
   };
 }
@@ -505,10 +515,10 @@ STATEVECTOR::SetStateValue( const string& inName, STATE::value_type inValue )
 void
 STATEVECTOR::PostStateChange( const string& inName, unsigned short inValue )
 {
-  if( !mrStatelist.Exists( inName ) )
+  if( !mpStatelist->Exists( inName ) )
     throw __FUNC__ " called for undeclared state";
 
-  mrStatelist[ inName ].SetValue( inValue ); // We use STATE::value as a buffer.
+  ( *mpStatelist )[ inName ].SetValue( inValue ); // We use STATE::value as a buffer.
 }
 
 // **************************************************************************
@@ -520,8 +530,8 @@ STATEVECTOR::PostStateChange( const string& inName, unsigned short inValue )
 void
 STATEVECTOR::CommitStateChanges()
 {
-  for( size_t i = 0; i < mrStatelist.Size(); ++i )
-    mrStatelist[ i ].Commit( this );
+  for( size_t i = 0; i < mpStatelist->Size(); ++i )
+    ( *mpStatelist )[ i ].Commit( this );
 }
 
 // **************************************************************************
@@ -535,13 +545,19 @@ ostream&
 STATEVECTOR::WriteToStream( ostream& os ) const
 {
   int indent = os.width();
-  for( size_t i = 0; i < mrStatelist.Size(); ++i )
-  {
-    const STATE& state = mrStatelist[ i ];
-    os << '\n' << setw( indent ) << ""
-       << state.GetName() << ": "
-       << GetStateValue( state.GetLocation(), state.GetLength() );
-  }
+  if( mpStatelist == NULL )
+    for( size_t i = 0; i < mByteLength; ++i )
+      os << '\n' << setw( indent ) << ""
+         << i << ": "
+         << mpData[ i ];
+  else
+    for( size_t i = 0; i < mpStatelist->Size(); ++i )
+    {
+      const STATE& state = ( *mpStatelist )[ i ];
+      os << '\n' << setw( indent ) << ""
+         << state.GetName() << ": "
+         << GetStateValue( state.GetLocation(), state.GetLength() );
+    }
   return os;
 }
 

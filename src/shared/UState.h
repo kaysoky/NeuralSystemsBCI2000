@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.19  2006/01/12 20:19:18  mellinger
+ * Various fixes.
+ *
  * Revision 1.18  2006/01/11 19:07:28  mellinger
  * Revision of interface style to match corresponding parameter classes.
  *
@@ -122,7 +125,7 @@ class STATELIST : private state_container
   bool   AddState2List( const char* statestring )
          { return Add( statestring ); }
   void   AddState2List( const STATE* state )
-         { Add( *state ); }
+         { Delete( state->GetName() ); Add( *state ); }
   int    GetNumStates() const
          { return Size(); }
   void   ClearStateList()
@@ -156,7 +159,7 @@ class STATEVECTOR
   const unsigned char* Data() const
                  { return mpData; }
   STATELIST&     Statelist()
-                 { return mrStatelist; }
+                 { return *mpStatelist; }
 
   STATE::value_type GetStateValue( const std::string& name ) const;
   STATE::value_type GetStateValue( size_t location, size_t length) const;
@@ -188,10 +191,9 @@ class STATEVECTOR
  private:
   unsigned char* mpData;      // the actual state vector
   size_t         mByteLength; // the length of the actual state vector
-  STATELIST&     mrStatelist; // a pointer to the list responsible for this vector
+  STATELIST*     mpStatelist; // a pointer to the list responsible for this vector
 };
 
-//---------------------------------------------------------------------------
 
 inline std::ostream& operator<<( std::ostream& os, const STATE& s )
 {
