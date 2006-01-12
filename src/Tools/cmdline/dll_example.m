@@ -58,7 +58,7 @@ catch
 end
 unloadlibrary( 'lib' );
 
-end
+end % function
 
 function varargout = call_bcidll( libname, funcname, varargin )
 % Call a function from a BCI2000 filter DLL, and report errors if any.
@@ -70,4 +70,4 @@ end
 for( k = 1 : nargout )
   varargout{k} = result{k + 1};
 end
-end
+end % function
