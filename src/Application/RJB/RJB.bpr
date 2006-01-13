@@ -11,8 +11,8 @@
       obj\Localization.obj obj\MessageHandler.obj obj\TCPStream.obj 
       obj\MeasurementUnits.obj obj\UCoreMain.obj obj\LogFile.obj 
       obj\WavePlayer.obj obj\ConnectorFilters.obj obj\EncodedString.obj 
-      obj\ParamRef.obj obj\OrthosisFilter.obj obj\Orthosis.obj 
-      obj\SerialStream.obj obj\ExpressionParser.obj obj\Expression.obj"/>
+      obj\ParamRef.obj obj\SerialStream.obj obj\ExpressionParser.obj 
+      obj\Expression.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -23,7 +23,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -80,8 +80,6 @@
       <FILE FILENAME="..\shared\ConnectorFilters.cpp" FORMNAME="" UNITNAME="ConnectorFilters" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\OrthosisFilter.cpp" FORMNAME="" UNITNAME="OrthosisFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\shared\Orthosis.cpp" FORMNAME="" UNITNAME="Orthosis" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\SerialStream.cpp" FORMNAME="" UNITNAME="SerialStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
