@@ -1,4 +1,5 @@
 ####################################################################
+# $Id$
 # File:        Makefile
 # Date:        Jul 18, 2003
 # Author:      juergen.mellinger@uni-tuebingen.de
@@ -11,6 +12,10 @@
 #              in the SIGPROC variable.
 #              Aside from testing purposes, this may be useful
 #              for offline data analysis.
+# $Log$
+# Revision 1.21  2006/01/17 17:16:43  mellinger
+# Added StateTransform filter.
+#
 ####################################################################
 
 AND = &&
@@ -37,6 +42,7 @@ TARGETS = obj\bci_tool.lib \
           Normalizer.exe \
           ConditionalIntegrator.exe \
           ComplexDemodulator.exe \
+          StateTransform.exe \
           StatFilter.exe \
           CalibrationFilter.dll \
           ClassFilter.dll \
@@ -52,6 +58,7 @@ TARGETS = obj\bci_tool.lib \
           Normalizer.dll \
           ConditionalIntegrator.dll \
           ComplexDemodulator.dll \
+          StateTransform.dll \
           StatFilter.dll \
           
 BCIOBJ  = obj\bci_tool.obj \
@@ -100,7 +107,7 @@ STATOBJ = obj\StatFilter.obj \
           obj\Statistics.obj \
           obj\Normalfilter.obj \
           obj\ClassFilter.obj \
-
+          
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
