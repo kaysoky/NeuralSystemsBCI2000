@@ -9,7 +9,8 @@
     <RESFILES value="BCI2ASCII.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UMain.dfm"/>
-    <LIBFILES value="libmx.lib libmat.lib libeng.lib"/>
+    <LIBFILES value="..\..\lib\matlab\libmx.lib ..\..\lib\matlab\libeng.lib 
+      ..\..\lib\matlab\libmat.lib"/>
     <LIBRARIES value="vclx.lib bcbsmp.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib bcbsmp.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi vcldb.bpi 
@@ -26,7 +27,7 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2ASCII.cpp"/>
-    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab"/>
+    <INCLUDEPATH value="..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;..\..\lib\matlab"/>
     <LIBPATH value="..\..\SHARED;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
@@ -53,11 +54,11 @@
       <FILE FILENAME="..\..\SHARED\UState.cpp" FORMNAME="" UNITNAME="UState" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UParameter.cpp" FORMNAME="" UNITNAME="UParameter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SHARED\UBCI2000Data.cpp" FORMNAME="" UNITNAME="UBCI2000Data" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="libmx.lib" FORMNAME="" UNITNAME="libmx.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\UGenericSignal.cpp" FORMNAME="" UNITNAME="UGenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\lib\matlab\libmx.lib" FORMNAME="" UNITNAME="libmx.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\lib\matlab\libeng.lib" FORMNAME="" UNITNAME="libeng.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\lib\matlab\libmat.lib" FORMNAME="" UNITNAME="libmat.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -94,16 +95,17 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=9
-Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab
-Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;C:\data\Bci2000\src\Tools\BCI2000toASCII\matlab
-Item2=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include
-Item3=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
-Item4=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
-Item5=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
-Item6=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
-Item7=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
-Item8=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
+Count=10
+Item0=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;..\..\lib\matlab
+Item1=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;matlab
+Item2=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;C:\data\Bci2000\src\Tools\BCI2000toASCII\matlab
+Item3=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;D:\MATLAB61\extern\include
+Item4=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin;c:\matlabr12\extern\include
+Item5=..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl;c:\matlabr12\bin\;c:\matlabr12\extern\include\
+Item6=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;c:\program files\matlab_sr11\bin\;c:\program files\matlab_sr11\extern\include\
+Item7=..\..\SHARED;..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl;..\..\shared\V0.16
+Item8=$(BCB)\include;$(BCB)\include\vcl;C:\BCI2000\shared\V0.16
+Item9=..\shared\V0.16;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=10
@@ -131,8 +133,9 @@ Count=1
 Item0=obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\tools\BCI2000toASCII
+Count=2
+Item0=..\..\..\tools\BCI2000toASCII\
+Item1=..\..\..\tools\BCI2000toASCII
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
