@@ -7,7 +7,7 @@
 #include "UOperatorCfg.h"
 #include "UMain.h"
 
-#include <assert>
+#include <cassert>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"

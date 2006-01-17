@@ -35,6 +35,9 @@
  *                      dimension names, e.g. PARAM::GetNumRows(),            *
  *                      PARAM::RowLabels(), jm                                *
  * $Log$
+ * Revision 1.30  2006/01/17 17:39:44  mellinger
+ * Fixed list of project files.
+ *
  * Revision 1.29  2006/01/11 19:05:40  mellinger
  * Revised PARAMLIST class interface; PARAMLIST will now preserve the order in which items were added to the list.
  *
@@ -351,9 +354,11 @@ class PARAM
 
  public:
   static void tolower( std::string& s )
-  { ct().tolower( s.begin(), s.end() ); }
+  { for( std::string::iterator i = s.begin(); i != s.end(); ++i )
+      *i = ct().tolower( *i ); }
   static void toupper( std::string& s )
-  { ct().toupper( s.begin(), s.end() ); }
+  { for( std::string::iterator i = s.begin(); i != s.end(); ++i )
+      *i = ct().toupper( *i ); }
 
   static bool ciless( char a, char b )
   { return ct().toupper( a ) < ct().toupper( b ); }

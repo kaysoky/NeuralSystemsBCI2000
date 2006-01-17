@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.21  2006/01/17 17:39:44  mellinger
+ * Fixed list of project files.
+ *
  * Revision 1.20  2006/01/12 20:19:18  mellinger
  * Various fixes.
  *
@@ -31,7 +34,7 @@
 
 #include "UState.h"
 
-#include <assert>
+#include <cassert>
 #include <sstream>
 #include <iomanip>
 #include <mem.h>

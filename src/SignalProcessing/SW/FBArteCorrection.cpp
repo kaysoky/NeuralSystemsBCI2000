@@ -20,7 +20,7 @@
 
 #include "UBCIError.h"
 #include <cmath>
-#include <assert>
+#include <cassert>
 
 #define SECTION "Filtering"
 

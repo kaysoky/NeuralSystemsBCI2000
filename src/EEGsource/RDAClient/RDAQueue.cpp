@@ -20,7 +20,7 @@
 #include "RDAQueue.h"
 
 #include "UBCIError.h"
-#include <assert>
+#include <cassert>
 #include <string>
 
 using namespace std;

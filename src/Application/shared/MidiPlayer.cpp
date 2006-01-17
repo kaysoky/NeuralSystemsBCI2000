@@ -18,7 +18,7 @@
 #pragma hdrstop
 #endif // __BORLANDC__
 
-#include <assert>
+#include <cassert>
 
 #include "MidiPlayer.h"
 #include "UBCIError.h"

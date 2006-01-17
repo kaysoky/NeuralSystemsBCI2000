@@ -4,6 +4,9 @@
 // File: UEnvironment.h
 //
 // $Log$
+// Revision 1.18  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.17  2006/01/11 19:08:44  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -33,9 +36,10 @@
 #include "StateRef.h"
 #include "UBCIError.h"
 #include <set>
-class std::ostream;
+#include <iostream>
 class SignalProperties;
 class EnvironmentExtension;
+class FilterWrapper;
 
 // Some utility macros for better readable constructors.
 #define BEGIN_PARAMETER_DEFINITIONS                                    \
@@ -100,7 +104,7 @@ class EnvironmentBase
   static class paramlistAccessor
   {
    private:
-    operator&();
+    paramlistAccessor* operator&();
    public:
     operator PARAMLIST*()   { return _paramlist; }
     PARAMLIST* operator->() { return _paramlist; }
@@ -111,7 +115,7 @@ class EnvironmentBase
   static class statelistAccessor
   {
    private:
-    operator&();
+    statelistAccessor* operator&();
    public:
     operator STATELIST*()   { return _statelist; }
     STATELIST* operator->() { return _statelist; }
@@ -122,7 +126,7 @@ class EnvironmentBase
   static class statevectorAccessor
   {
    private:
-    operator&();
+    statevectorAccessor* operator&();
    public:
     operator STATEVECTOR*()   { return _statevector; }
     STATEVECTOR* operator->() { return _statevector; }
@@ -134,7 +138,7 @@ class EnvironmentBase
   static class operatorAccessor
   {
    private:
-    operator&();
+    operatorAccessor* operator&();
    public:
     operator std::ostream*()   { return _operator; }
     std::ostream* operator->() { return _operator; }

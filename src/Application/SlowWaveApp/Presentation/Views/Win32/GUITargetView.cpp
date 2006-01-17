@@ -25,7 +25,7 @@
 #endif
 
 #include <mmsystem.hpp>
-#include <assert>
+#include <cassert>
 
 #include "GUITargetView.h"
 #include "Utils/Util.h"

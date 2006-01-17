@@ -5,6 +5,9 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
 // $Log$
+// Revision 1.9  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.8  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -18,7 +21,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <assert>
+#include <cassert>
 
 using namespace std;
 
@@ -125,7 +128,11 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   if( transmitData || transmitStates )
   {
     STATEVECTOR statevector( states, true );
-    assert( statevector.Length() == stateVectorLength );
+    if( statevector.Length() != stateVectorLength )
+    {
+      cerr << "Statevector's length differs from StateVectorLen field" << endl;
+      return illegalInput;
+    }
     int curSample = 0;
     GenericSignal outputSignal( sourceCh, sampleBlockSize, dataFormat );
     while( in && in.peek() != EOF )

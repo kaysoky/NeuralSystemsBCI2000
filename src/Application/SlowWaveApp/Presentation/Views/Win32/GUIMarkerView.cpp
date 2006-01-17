@@ -27,7 +27,7 @@
 #include "GUIMarkerView.h"
 #include "Utils/Util.h"
 
-#include <assert>
+#include <cassert>
 
 TGUIMarkerView::TGUIMarkerView()
 : TGUIView( markerViewZ ),

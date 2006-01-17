@@ -21,6 +21,9 @@
 //  be converted into numeric matrices by Matlab's str2double function.
 //
 // $Log$
+// Revision 1.2  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.1  2006/01/17 17:15:47  mellinger
 // Initial version.
 //
@@ -54,8 +57,10 @@ void
 mexFunction( int nargout, mxArray* varargout[],
              int nargin,  const mxArray* varargin[] )
 {
-  if( sizeof( int16 ) != 2 || sizeof( int32 ) != 4 || sizeof( float32 ) != 4 )
-    mexErrMsgTxt( "Numeric types don't agree with this function's assumptions." );
+  mxAssert(
+    sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4,
+    "Numeric types don't agree with this function's assumptions."
+  );
 
   if( nargin < 1 )
     mexErrMsgTxt( "No file name given." );

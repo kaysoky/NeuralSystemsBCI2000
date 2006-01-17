@@ -36,6 +36,9 @@
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
  * $Log$
+ * Revision 1.24  2006/01/17 17:39:44  mellinger
+ * Fixed list of project files.
+ *
  * Revision 1.23  2006/01/12 20:22:24  mellinger
  * Adaptation to changes in STATEVECTOR::Add( const STATE& ).
  *
@@ -64,7 +67,6 @@
 
 #include <string>
 #include <sstream>
-#include <assert>
 
 #pragma package(smart_init)
 #pragma resource "*.dfm"

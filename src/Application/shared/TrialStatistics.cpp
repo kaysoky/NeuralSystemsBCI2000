@@ -15,7 +15,7 @@
 #include "TrialStatistics.h"
 
 #include <cmath>
-#include <assert>
+#include <cassert>
 
 using namespace std;
 

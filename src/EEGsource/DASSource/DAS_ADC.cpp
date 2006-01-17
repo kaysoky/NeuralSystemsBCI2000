@@ -18,7 +18,6 @@
 
 #include "UBCIError.h"
 #include "DASQueue.h"
-#include <assert>
 
 using namespace std;
 

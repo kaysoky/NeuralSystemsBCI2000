@@ -15,7 +15,6 @@
 #include "FFTLibWrap.h"
 
 #include <windows.h>
-#include <assert>
 
 const char* FFTLibWrapper::sLibName = "fftw3";
 void* FFTLibWrapper::sLibRef = ::LoadLibrary( sLibName );

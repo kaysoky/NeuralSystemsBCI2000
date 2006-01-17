@@ -5,6 +5,9 @@
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
 // $Log$
+// Revision 1.5  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.4  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -13,12 +16,12 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <typeinfo>
 
 #include "bci_tool.h"
 #include "shared/UStatus.h"
 #include "shared/UParameter.h"
 #include "shared/UState.h"
-#include "shared/UGenericFilter.h"
 #include "shared/USysCommand.h"
 #include "shared/UGenericVisualization.h"
 #include "shared/MessageHandler.h"

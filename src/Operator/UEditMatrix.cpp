@@ -7,7 +7,7 @@
 #include "UOperatorUtils.h"
 
 #include <string>
-#include <assert>
+#include <cassert>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "CSPIN"

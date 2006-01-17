@@ -17,7 +17,7 @@
 
 #include "UParameter.h"
 #include <sstream>
-#include <assert>
+#include <cassert>
 
 using namespace std;
 

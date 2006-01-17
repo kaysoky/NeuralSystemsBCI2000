@@ -8,6 +8,9 @@
 // Date:   Jul 24, 2003
 //
 // $Log$
+// Revision 1.6  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.5  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -57,23 +60,24 @@ class MessageHandler
 
   private:
     template<typename content_type> struct Header;
-    template<> struct Header<class STATUS>
-    { enum { descSupp = 0x0100 }; };
-    template<> struct Header<class PARAM>
-    { enum { descSupp = 0x0200 }; };
-    template<> struct Header<class STATE>
-    { enum { descSupp = 0x0300 }; };
-    template<> struct Header<class VisSignal>
-    { enum { descSupp = 0x0401 }; };
-    template<> struct Header<class VisMemo>
-    { enum { descSupp = 0x0402 }; };
-    template<> struct Header<class VisCfg>
-    { enum { descSupp = 0x04ff }; };
-    template<> struct Header<class STATEVECTOR>
-    { enum { descSupp = 0x0500 }; };
-    template<> struct Header<class SYSCMD>
-    { enum { descSupp = 0x0600 }; };
 };
+
+template<> struct MessageHandler::Header<class STATUS>
+{ enum { descSupp = 0x0100 }; };
+template<> struct MessageHandler::Header<class PARAM>
+{ enum { descSupp = 0x0200 }; };
+template<> struct MessageHandler::Header<class STATE>
+{ enum { descSupp = 0x0300 }; };
+template<> struct MessageHandler::Header<class VisSignal>
+{ enum { descSupp = 0x0401 }; };
+template<> struct MessageHandler::Header<class VisMemo>
+{ enum { descSupp = 0x0402 }; };
+template<> struct MessageHandler::Header<class VisCfg>
+{ enum { descSupp = 0x04ff }; };
+template<> struct MessageHandler::Header<class STATEVECTOR>
+{ enum { descSupp = 0x0500 }; };
+template<> struct MessageHandler::Header<class SYSCMD>
+{ enum { descSupp = 0x0600 }; };
 
 #endif // MessageHandlerH
 

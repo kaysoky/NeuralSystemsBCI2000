@@ -21,7 +21,7 @@
 #include "GUITargetView.h"
 
 #include <string>
-#include <assert>
+#include <cassert>
 
 class TMidiPlayer;
 class TWavePlayer;

@@ -18,7 +18,7 @@
 #endif // __BORLANDC__
 
 #include <string>
-#include <assert>
+#include <cassert>
 #include <algorithm>
 
 #include "PresTaskModel.h"

@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <assert>
+#include <cassert>
 
 #define ALLFILES_FILTER "All files (*.*)|*.*"
 #define MATRIX_EXTENSION ".txt"

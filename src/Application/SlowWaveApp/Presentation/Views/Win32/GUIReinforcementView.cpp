@@ -26,7 +26,6 @@
 
 #include <vector>
 #include <sstream>
-#include <assert>
 
 #include "GUIReinforcementView.h"
 #include "Utils/Util.h"

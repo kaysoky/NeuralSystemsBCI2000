@@ -27,7 +27,6 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <assert>
 
 using namespace std;
 

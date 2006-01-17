@@ -19,6 +19,9 @@
 //          Introduced VisMemo, VisSignal, and VisCfg objects to allow for
 //          centralization of message processing in the MessageHandler class.
 // $Log$
+// Revision 1.16  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.15  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -143,7 +146,6 @@ class GenericVisualization : public std::ostream
     int  GetSourceID() const         { return mSourceID; }
 
     template<typename T> bool Send( CFGID::CFGID cfgID, const T& cfgValue );
-    template<>           bool Send( CFGID::CFGID cfgID, const std::string& );
     bool Send( const std::string& memoString );
     bool Send( const GenericSignal* signal );
     bool Send( const GenericSignal& signal ) { return Send( &signal ); }

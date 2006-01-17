@@ -33,7 +33,7 @@
 #include <set>
 #include <fstream>
 #include <sstream>
-#include <assert>
+#include <cassert>
 
 #include "SpellerTree.h"
 #include "PresErrors.h"

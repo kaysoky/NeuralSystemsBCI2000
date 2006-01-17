@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cstdlib>
-#include <assert>
+#include <cassert>
 
 #include "TargetSeq.h"
 #include "Utils/Util.h"

@@ -28,7 +28,7 @@
 # error This is the VCL implementation of TGUIView.
 #endif
 
-#include <assert>
+#include <cassert>
 
 #include "GUIView.h"
 #include "Utils/Util.h"

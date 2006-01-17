@@ -24,7 +24,7 @@
 # error This is the VCL implementation of TGUIStimulusView.
 #endif
 
-#include <assert>
+#include <cassert>
 #include <mmsystem.h>
 #include <mplayer.hpp>
 

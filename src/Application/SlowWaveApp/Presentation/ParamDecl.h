@@ -33,7 +33,7 @@
 #define PARAMDECLH
 
 // #includes for functions used in macros.
-#include <assert>
+#include <cassert>
 #include <string>
 #include <sstream>
 #include <cstring>

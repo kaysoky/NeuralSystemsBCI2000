@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.18  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.17  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -26,7 +29,7 @@
 #include <float.h>
 #include <math.h>
 
-#include <assert>
+#include <cassert>
 
 #if( USHRT_MAX != ( 1UL << 16 ) - 1 || UCHAR_MAX != ( 1UL << 8 ) - 1 )
 # error This file depends on 2-byte shorts and 1-byte chars.

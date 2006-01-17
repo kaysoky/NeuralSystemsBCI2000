@@ -37,7 +37,7 @@
 #include "defines.h"
 #include "UGenericVisualization.h"
 
-#include <assert>
+#include <cassert>
 #include <Registry.hpp>
 #include <math.h>
 #include <algorithm>

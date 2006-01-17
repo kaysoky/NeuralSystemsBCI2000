@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.4  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.3  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -28,7 +31,7 @@ class ParamRef
 {
  public:
   enum { none = -1 };
-  
+
  private:
   ParamRef& operator=( const ParamRef& );
  public:

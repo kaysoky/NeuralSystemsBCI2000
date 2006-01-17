@@ -17,7 +17,7 @@
 #ifndef STATEACCESSORH
 #define STATEACCESSORH
 
-#include <assert>
+#include <cassert>
 
 class STATEVECTOR;
 

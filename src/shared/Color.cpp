@@ -18,7 +18,7 @@
 #include <math.h>
 #include <iostream>
 #include <string>
-#include <assert>
+#include <cassert>
 
 using namespace std;
 

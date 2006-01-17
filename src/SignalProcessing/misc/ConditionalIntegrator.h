@@ -8,6 +8,9 @@
 //              This filter is intended for offline simulations of application
 //              module behavior.
 // $Log$
+// Revision 1.2  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.1  2006/01/13 15:04:46  mellinger
 // Initial version.
 //
@@ -31,5 +34,6 @@ class ConditionalIntegrator : public GenericFilter
  private:
    GenericSignal mSignal;
    Expression    mCondition;
+   bool          mPreviousConditionValue;
 };
 #endif // ConditionalIntegratorH

@@ -5,7 +5,7 @@
 #include "defines.h"
 #include <vector>
 #include <map>
-#include <assert>
+#include <cassert>
 #include <math.h>
 
 #define SECTION "Filtering"

@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.20  2006/01/17 17:39:44  mellinger
+ * Fixed list of project files.
+ *
  * Revision 1.19  2006/01/12 20:19:18  mellinger
  * Various fixes.
  *
@@ -120,7 +123,11 @@ class STATELIST : private state_container
   // Backward compatibility
   STATE* GetStatePtr( size_t idx )
          { return idx < size() ? &at( idx ) : NULL; }
-  STATE* GetStatePtr( const char* name ) 
+  const STATE* GetStatePtr( size_t idx ) const
+         { return idx < size() ? &at( idx ) : NULL; }
+  STATE* GetStatePtr( const char* name )
+         { return Exists( name ) ? &operator[]( name ) : NULL; }
+  const STATE* GetStatePtr( const char* name ) const
          { return Exists( name ) ? &operator[]( name ) : NULL; }
   bool   AddState2List( const char* statestring )
          { return Add( statestring ); }

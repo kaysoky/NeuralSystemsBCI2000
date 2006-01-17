@@ -8,6 +8,9 @@
 //              This filter is intended for offline simulations of application
 //              module behavior.
 // $Log$
+// Revision 1.2  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.1  2006/01/13 15:04:46  mellinger
 // Initial version.
 //
@@ -21,7 +24,9 @@ using namespace std;
 
 RegisterFilter( ConditionalIntegrator, 2.F ); // Place it last in signal processing.
 
+
 ConditionalIntegrator::ConditionalIntegrator()
+: mPreviousConditionValue( false )
 {
  BEGIN_PARAMETER_DEFINITIONS
   "ConditionalIntegrator float IntegrationCondition= Feedback % % % "
@@ -52,22 +57,24 @@ ConditionalIntegrator::Initialize2( const SignalProperties& input,
 {
   mSignal = GenericSignal( input );
   mCondition = Expression( Parameter( "IntegrationCondition" ) );
+  mPreviousConditionValue = false;
 }
 
 
 void
 ConditionalIntegrator::Process( const GenericSignal* input, GenericSignal* output )
 {
-  if( mCondition.Evaluate( input ) )
+  bool currentConditionValue = mCondition.Evaluate( input );
+  if( currentConditionValue )
     for( size_t channel = 0; channel < input->Channels(); ++channel )
       for( size_t sample = 0; sample < input->Elements(); ++sample )
         mSignal( channel, sample ) += ( *input )( channel, sample );
-  else
+  if( currentConditionValue && !mPreviousConditionValue )
     for( size_t channel = 0; channel < input->Channels(); ++channel )
       for( size_t sample = 0; sample < input->Elements(); ++sample )
         mSignal( channel, sample ) = 0;
+  mPreviousConditionValue = currentConditionValue;
 
   *output = mSignal;
 }
-
 

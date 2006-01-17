@@ -2,7 +2,7 @@ function [ signal, varargout ] = load_bcimat( filename, varargin )
 %LOAD_BCIMAT Load a matlab file written by bci_stream2mat.
 %
 %  [ signal, state1, state2, ... ] =
-%     myload_bcimat( 'filename', output_dimensions, 'state1', 'state2', ... )
+%     load_bcimat( 'filename', output_dimensions, 'state1', 'state2', ... )
 %
 %  loads signal and state data from the file given in the first argument.
 %
@@ -11,8 +11,8 @@ function [ signal, varargout ] = load_bcimat( filename, varargin )
 %  by channels) and 3 for spectral data (blocks by bins by channels).
 %  The default is 3.
 %
-%  Remaining arguments are treated as BCI2000 state names; the associated 
-%  state data will be written into the variables specified as remaining 
+%  Remaining input arguments are treated as BCI2000 state names; associated 
+%  state data will be copied into the variables specified as remaining 
 %  output arguments.
 %  State variables will always be one-dimensional, with their number of 
 %  entries matching the first dimension of the signal variable.
@@ -20,6 +20,7 @@ function [ signal, varargout ] = load_bcimat( filename, varargin )
 %  This file is a supplement to the bci_stream2mat command line tool which
 %  is part of the BCI2000 project (http://www.bciresearch.org).
 %
+%  $Id$
 %  Author: juergen.mellinger@uni-tuebingen.de
 %  Date:   May 16, 2005
 

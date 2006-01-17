@@ -2,8 +2,7 @@
 #define USysCommandH
 
 #include <string>
-class std::ostream;
-class std::istream;
+#include <iostream>
 
 #define SysCommand SYSCMD
 

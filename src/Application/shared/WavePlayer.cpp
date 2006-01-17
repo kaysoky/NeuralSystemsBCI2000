@@ -29,7 +29,7 @@
 
 #include <windows.h>
 #include <math.h>
-#include <assert>
+#include <cassert>
 #include <iostream>
 
 #include "WavePlayer.h"

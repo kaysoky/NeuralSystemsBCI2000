@@ -11,6 +11,9 @@
 //              variation corresponds to a unit range, i.e. a zero mean
 //              signal will be normalized to the range [-0.5, 0.5].
 // $Log$
+// Revision 1.2  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.1  2006/01/13 15:04:46  mellinger
 // Initial version.
 //
@@ -51,15 +54,6 @@ Normalizer::Normalizer()
     "% % % // Conditional expressions for segmenting  "
     "(rows correspond to groups, multiple columns will be ANDed within rows)",
 
-  // NumSegments corresponds to SignalWinLth.
-  "Normalizer int NumSegments= 3 "
-    "0 0 0 // number of past segments for each group that enters into adaptation",
-
-  "Normalizer int NormalizerPreprocessing= 1 "
-    "0 0 1 // data preprocessing prior to computation of statistic "
-             "0: none, "
-             "1: segment means",
-
   // OffsetAdaptation and GainAdaptation correspond to X/YTrendControl.
   "Normalizer intlist OffsetAdaptation= 2 2 0 "
     "0 0 1 // 0: no offset adaptation, "
@@ -71,6 +65,16 @@ Normalizer::Normalizer()
              "1: normalize by variance, "
              "2: normalize by mean difference, "
              "3: normalize by median difference",
+
+  "Normalizer int NormalizerPreprocessing= 1 "
+    "0 0 1 // data preprocessing prior to computation of statistic "
+             "0: none, "
+             "1: segment means "
+             "(enumeration)",
+
+  // NumSegments corresponds to SignalWinLth.
+  "Normalizer int NumSegments= 3 "
+    "0 0 0 // number of past segments for each group that enters into adaptation",
 
    "Visualize int VisualizeNormalFiltering= 1 "
      "0 0 1 // visualize normalized signals (0=no 1=yes) (boolean)",
@@ -88,8 +92,11 @@ void
 Normalizer::Preflight( const SignalProperties& input,
                              SignalProperties& output ) const
 {
-  PreflightCondition( Parameter( "NormalizerOffsets" )->GetNumValues() >= input.Channels() );
-  PreflightCondition( Parameter( "NormalizerGains" )->GetNumValues() >= input.Channels() );
+  PreflightCondition(
+    Parameter( "NormalizerOffsets" )->GetNumValues() >= input.Channels() );
+  PreflightCondition(
+    Parameter( "NormalizerGains" )->GetNumValues() >= input.Channels() );
+
   ParamRef OffsetAdaptation = Parameter( "OffsetAdaptation" ),
            GainAdaptation = Parameter( "GainAdaptation" );
   PreflightCondition( OffsetAdaptation->GetNumValues() >= input.Channels() );
@@ -102,14 +109,14 @@ Normalizer::Preflight( const SignalProperties& input,
   }
   if( adaptation )
   {
-    int NumSegments = Parameter( "NumSegments" );
-    PreflightCondition( NumSegments > 0 );
-
     // Evaluate all expressions to check for errors.
     ParamRef SegmentingConditions = Parameter( "SegmentingConditions" );
     for( size_t row = 0; row < SegmentingConditions->GetNumRows(); ++row )
       for( size_t col = 0; col < SegmentingConditions->GetNumColumns(); ++col )
         Expression( SegmentingConditions( row, col ) ).Evaluate();
+
+    int NumSegments = Parameter( "NumSegments" );
+    PreflightCondition( NumSegments > 0 );
   }
   // Request output signal properties:
   output = input;

@@ -11,6 +11,9 @@
 //          actually hold messages.
 //          Jul 22, 2003: Added implementations for command line tools.
 // $Log$
+// Revision 1.10  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.9  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -28,10 +31,14 @@
 #include "UBCIError.h"
 #include <iostream>
 
-#if( !defined( BCI_TOOL ) && !defined( BCI_DLL ) )
+#if( !defined( BCI_TOOL ) && !defined( BCI_DLL ) && !defined( BCI_MEX ) )
 # include "UEnvironment.h"
 # include "MessageHandler.h"
 # include "UStatus.h"
+#endif
+
+#ifdef BCI_MEX
+# include "mex.h"
 #endif
 
 using namespace std;
@@ -117,6 +124,34 @@ BCIError::LogicError( const string& message )
 {
   if( message.length() > 1 )
     _err << "Logic Error: " << message << endl;
+}
+#elif( defined( BCI_MEX ) ) // implementation for a Matlab mex file
+void
+BCIError::Warning( const string& message )
+{
+  if( message.length() > 1 )
+    mexWarnMsgTxt( message.c_str() );
+}
+
+void
+BCIError::ConfigurationError( const string& message )
+{
+  if( message.length() > 1 )
+    mexErrMsgTxt( message.c_str() );
+}
+
+void
+BCIError::RuntimeError( const string& message )
+{
+  if( message.length() > 1 )
+    mexErrMsgTxt( message.c_str() );
+}
+
+void
+BCIError::LogicError( const string& message )
+{
+  if( message.length() > 1 )
+    mexErrMsgTxt( message.c_str() );
 }
 #else // implementation for a module
 // A preliminary implementation of the error display/error handling mechanism

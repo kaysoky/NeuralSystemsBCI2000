@@ -11,6 +11,9 @@
 //          actually hold messages.
 //          Jul 22, 2003: Added implementations for command line tools.
 // $Log$
+// Revision 1.9  2006/01/17 17:39:44  mellinger
+// Fixed list of project files.
+//
 // Revision 1.8  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -28,8 +31,11 @@
 #include <sstream>
 
 // Info added to error output.
+#ifdef __GNUC__
+# define __FUNC__    __PRETTY_FUNCTION__
+#endif
 #if( defined( _DEBUG ) && !defined( NDEBUG ) )
-# define DEBUGINFO   /*__FILE__", "*/__FUNC__
+# define DEBUGINFO   __FUNC__
 #else
 # define DEBUGINFO
 #endif // _DEBUG && !NDEBUG

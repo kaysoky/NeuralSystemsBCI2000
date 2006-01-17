@@ -22,7 +22,7 @@
 
 #include "StateAccessor.h"
 #include "Views/PresView.h"
-#include <assert>
+#include <cassert>
 
 TPresModel::TPresModel( PARAMLIST   *inParamList )
 : curParamList( inParamList )

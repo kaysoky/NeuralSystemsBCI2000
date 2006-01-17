@@ -17,7 +17,6 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include <iomanip>
 #include <time.h>
 #include <cmath>
-#include <assert>
 
 // #undef if you don't want choice targets during suspended state.
 #define ALWAYS_SHOW_BACKGND

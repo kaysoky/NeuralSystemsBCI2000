@@ -42,7 +42,7 @@
 #include <sstream>
 #include <fstream>
 #include <set>
-#include <assert>
+#include <cassert>
 
 using namespace std;
 
@@ -766,7 +766,7 @@ PARAM::ReadFromStream( istream& is )
     while( commentPos < remainder.size() && ct().is( ct().space, remainder[ commentPos ] ) )
       ++commentPos;
     mComment = remainder.substr( commentPos );
-    remainder = remainder.substr( 0, commentSepPos );
+    remainder = remainder.substr( 0, commentSepPos ) + " ";
   }
 
   istringstream iss( remainder );

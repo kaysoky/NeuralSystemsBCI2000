@@ -19,7 +19,7 @@
 
 #include <string>
 #include <sstream>
-#include <assert>
+#include <cassert>
 
 #include "PresSpellerModel.h"
 #include "PresParams.h"
