@@ -13,18 +13,14 @@
 #include "CalibrationFilter.h"
 #include "SpatialFilter.h"
 #include "ARFilter.h"
-#include "RandomFilter.h"
 #include "ClassFilter.h"
-#include "LPFilter.h"
 #include "NormalFilter.h"
 #include "StatFilter.h"
 
 Filter( CalibrationFilter, 2.A );
 Filter( SpatialFilter, 2.B );
 Filter( ARTemporalFilter, 2.C );
-Filter( RandomFilter, 2.C1 );
 Filter( ClassFilter, 2.D );
-Filter( LPFilter, 2.D1 );
 Filter( StatFilter, 2.E1 );
 Filter( NormalFilter, 2.E2 );
 
