@@ -94,12 +94,17 @@ all cmdline docinfo prepare clean install update bindist pdf:
 ##################################################################################
 
 # Make all subprojects.
-all: prepare ${MAKEFILES:.mak=.all} cmdline
+all: prepare ${MAKEFILES:.mak=.all} cmdline mex
   ${DONE}
   
 # Make the command line tools.
 cmdline:
   ${SHELL} cd Tools\cmdline ${AND} make install
+  ${DONE}
+  
+# Make the mex files.
+mex:
+  ${SHELL} cd Tools\mex ${AND} make install
   ${DONE}
   
 # Do some automatic documentation.
@@ -123,6 +128,7 @@ clean: prepare ${MAKEFILES:.mak=.clean}
   -${SHELL} cd ..\${BINDIR} for /R %i in (${GARBAGE}) do del "%i"
   -${SHELL} cd ..\${TOOLSBINDIR} for /R %i in (${GARBAGE}) do del "%i"
   -${SHELL} cd Tools\cmdline ${AND} make clean
+  -${SHELL} cd Tools\mex ${AND} make clean
   ${DONE}
   
 # Install executables.
