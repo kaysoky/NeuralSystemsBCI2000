@@ -8,6 +8,9 @@
 // Date: Nov 30, 2005
 //
 // $Log$
+// Revision 1.2  2006/01/17 17:08:51  mellinger
+// Moved matlab includes and libraries to BCI2000/src/lib/matlab.
+//
 // Revision 1.1  2005/12/20 11:38:07  mellinger
 // Initial version.
 //
@@ -23,7 +26,7 @@
 #include <vector>
 #include "UParameter.h"
 #include "UGenericSignal.h"
-#include "Matlab/Engine.h"
+#include "Engine.h"
 
 class MatlabEngine
 {
