@@ -27,6 +27,9 @@
 //
 //
 // $Log$
+// Revision 1.4  2006/01/19 15:25:10  mellinger
+// Fixed potential memory leaks.
+//
 // Revision 1.3  2006/01/18 20:21:24  mellinger
 // Allowed for multiple input files.
 //
@@ -41,7 +44,6 @@
 
 #include "mex.h"
 #include "UBCI2000Data.h"
-#include "StateRef.h"
 #include <sstream>
 
 using namespace std;
@@ -50,7 +52,31 @@ typedef signed short int16;
 typedef signed int   int32;
 typedef float        float32;
 
-typedef vector<BCI2000DATA*> FileContainer;
+struct StateInfo
+{
+  int    location,
+         length;
+  int16* data;
+};
+
+struct FileContainer : public vector<BCI2000DATA*>
+{
+  public:
+    FileContainer() {}
+    ~FileContainer()
+    { for( iterator i = begin(); i != end(); ++i ) delete *i; }
+  private:
+    FileContainer( const FileContainer& );
+    const FileContainer& operator=( const FileContainer& );
+};
+
+template<typename T>
+T*
+MexAlloc( int inElements )
+{
+  // mxCalloc'ed memory will be freed automatically on return from mexFunction().
+  return reinterpret_cast<T*>( mxCalloc( inElements, sizeof( T ) ) );
+}
 
 template<typename T>
 void
@@ -190,15 +216,14 @@ mexFunction( int nargout, mxArray* varargout[],
   // Read state data if appropriate.
   if( nargout > 1 )
   {
-    const STATELIST* statelist = files[ 0 ]->GetStateListPtr();
-    int numStates = statelist->Size();
-    char** stateNames = new char*[ numStates ];
-    StateRef** stateRefs = new StateRef*[ numStates ];
-    int16** stateData = new int16*[ numStates ];
+    const STATELIST* mainStatelist = files[ 0 ]->GetStateListPtr();
+    int numStates = mainStatelist->Size();
+    char** stateNames = MexAlloc<char*>( numStates );
+    StateInfo* stateInfo = MexAlloc<StateInfo>( numStates );
     for( int i = 0; i < numStates; ++i )
     {
-      const STATE& s = ( *statelist )[ i ];
-      stateNames[ i ] = new char[ strlen( s.GetName() ) + 1 ];
+      const STATE& s = ( *mainStatelist )[ i ];
+      stateNames[ i ] = reinterpret_cast<char*>( mxMalloc( strlen( s.GetName() ) + 1 ) );
       strcpy( stateNames[ i ], s.GetName() );
     }
     mxArray* states = mxCreateStructMatrix(
@@ -212,34 +237,28 @@ mexFunction( int nargout, mxArray* varargout[],
       if( stateArray == NULL )
         mexErrMsgTxt( "Out of memory when allocating space for state variables." );
       mxSetFieldByNumber( states, 0, i, stateArray );
-      stateData[ i ] = reinterpret_cast<int16*>( mxGetData( stateArray ) );
+      stateInfo[ i ].data = reinterpret_cast<int16*>( mxGetData( stateArray ) );
     }
     for( FileContainer::iterator file = files.begin(); file != files.end(); ++file )
     { // StateRefs are not necessarily compatible across files, so we must
       // create StateRefs for each file individually.
+      const STATEVECTOR* statevector = ( *file )->GetStateVectorPtr();
+      const STATELIST& curStatelist = statevector->Statelist();
       for( int i = 0; i < numStates; ++i )
       {
-        const STATE& s = ( *statelist )[ stateNames[ i ] ];
-        stateRefs[ i ] = new StateRef(
-          const_cast<STATEVECTOR*>( ( *file )->GetStateVectorPtr() ),
-          s.GetLocation(), s.GetLength()
-        );
+        const STATE& s = curStatelist[ stateNames[ i ] ];
+        stateInfo[ i ].location = s.GetLocation();
+        stateInfo[ i ].length = s.GetLength();
       }
       for( size_t sample = 0; sample < ( *file )->GetNumSamples(); ++sample )
       { // Iterating over samples in the outer loop will avoid scanning
         // the file multiple times.
         ( *file )->ReadStateVector( sample );
         for( int i = 0; i < numStates; ++i )
-          *stateData[ i ]++ = ( *stateRefs[ i ] );
+          *stateInfo[ i ].data++
+            = statevector->GetStateValue( stateInfo[ i ].location, stateInfo[ i ].length );
       }
-      for( int i = 0; i < numStates; ++i )
-        delete stateRefs[ i ];
     }
-    for( int i = 0; i < numStates; ++i )
-      delete[] stateNames[ i ];
-    delete[] stateNames;
-    delete[] stateRefs;
-    delete[] stateData;
 
     __bcierr.clear();
     varargout[ 1 ] = states;
@@ -250,19 +269,16 @@ mexFunction( int nargout, mxArray* varargout[],
   {
     const PARAMLIST* paramlist = files[ 0 ]->GetParamListPtr();
     int numParams = paramlist->Size();
-    char** paramNames = new char*[ numParams ];
+    char** paramNames = MexAlloc<char*>( numParams );
     for( int i = 0; i < numParams; ++i )
     {
       const PARAM& param = ( *paramlist )[ i ];
-      paramNames[ i ] = new char[ strlen( param.GetName() ) + 1 ];
+      paramNames[ i ] = MexAlloc<char>( strlen( param.GetName() ) + 1 );
       strcpy( paramNames[ i ], param.GetName() );
     }
     mxArray* params = mxCreateStructMatrix(
       1, 1, numParams, const_cast<const char**>( paramNames )
     );
-    for( int i = 0; i < numParams; ++i )
-      delete[] paramNames[ i ];
-    delete[] paramNames;
     for( int i = 0; i < numParams; ++i )
     {
       const PARAM& p = ( *paramlist )[ i ];
@@ -278,6 +294,4 @@ mexFunction( int nargout, mxArray* varargout[],
     __bcierr.clear();
     varargout[ 2 ] = params;
   }
-  for( FileContainer::iterator i = files.begin(); i != files.end(); ++i )
-    delete *i;
 }
