@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.21  2006/01/19 15:24:35  mellinger
+ * Added const version of STATEVECTOR's Statelist() accessor.
+ *
  * Revision 1.20  2006/01/17 17:39:44  mellinger
  * Fixed list of project files.
  *
@@ -166,6 +169,8 @@ class STATEVECTOR
   const unsigned char* Data() const
                  { return mpData; }
   STATELIST&     Statelist()
+                 { return *mpStatelist; }
+  const STATELIST& Statelist() const
                  { return *mpStatelist; }
 
   STATE::value_type GetStateValue( const std::string& name ) const;
