@@ -14,10 +14,11 @@
 
 %\include{title}
 \title{BCI2000 g.USBamp Support}
-\author{Gerwin Schalk\\ \small{2004 Brain-Computer Interface Research and Development Program}\\ \small{Wadsworth Center, New York State Department of Health}}
+\author{Gerwin Schalk\\ \small{2004-06 Brain-Computer Interface Research and Development Program}\\ \small{Wadsworth Center, New York State Department of Health}}
 \maketitle
+\centerline{\includegraphics[height=2.4cm,keepaspectratio=true]{BCI2000logo}}
 
-\tableofcontents
+%\tableofcontents
 
 \newpage
 
@@ -27,10 +28,10 @@
 \section{Introduction}
 
 \sloppypar \emph{g.USBamp} is an amplifier/digitizer combination from g.tec 
-Technologies (\texttt{http://www.gtec.at}). This document describes support for 
-this device in BCI2000, which consists of two components: A BCI2000-compatible 
-Source Module (\texttt{gUSBamp.exe}) and a command-line tool 
-(\texttt{USBampgetinfo}). 
+medical engineering GmbH / Guger Technologies OEG (\texttt{http://www.gtec.at}). 
+This document describes support for this device in BCI2000, which consists of 
+two components: A BCI2000-compatible Source Module (\texttt{gUSBamp.exe}) and a 
+command-line tool (\texttt{USBampgetinfo}). 
 
 \section{g.USBamp Hardware}
 
@@ -61,11 +62,15 @@ parameters:
                         number of the device whose SYNC goes to
                         the slaves, i.e., the only device that 
                         has a cable connected at SYNC OUT, but 
-                        none connected to SYNC IN.
+                        none connected to SYNC IN. If only one
+                        device is connected, this parameter
+                        can be set to \emph{auto}.
  \item [DeviceIDs]      List of serial numbers of all devices.
                         If you have more than one device, this 
                         list determines the order of
-                        the channels in the data file.
+                        the channels in the data file. If only one
+                        device is connected, this parameter
+                        can be set to \emph{auto}.
  \item [FilterEnabled]  Choose 1 if you want a pass band filter,
                         and 0 if you don't. The gUSBamp is a 
                         DC amplifier and thus you most likely
@@ -84,19 +89,20 @@ parameters:
  \item [NotchLowPass]      Similar to FilterLowPass.
  \item [NotchModelOrder]   Similar to FilterModelOrder.
  \item [NotchType]         Similar to FilterType.
- \item [SampleBlockSize]   Samples per digitized block. The block size has to 
-                           be chosen such that $SoftwareChDevices*SampleBlockSize*4$
-                           is a multiple of 512. (This is apparently a limitation of
-                           the USB driver.)
- \item [SamplingRate]      The sampling rate of all connected USBamps. While there is
-                           no hardware constraint on the sampling rate, it has to
-                           be chosen so as to satisfy the constraint described for
-                           \textit{SampleBlockSize}. Furthermore, if one wants to 
+ \item [SampleBlockSize]   Samples per channel per digitized block. Together with the sampling rate,
+                           this parameter determines how often per second data are collected, processed,
+                           and feedback is updated.
+ \item [SamplingRate]      The sampling rate of all connected USBamps. If one wants to 
                            use a bandpass or a notch filter, there needs to be a filter
                            configuration for that particular sampling rate (see the section
                            on the \texttt{USBampgetinfo} tool). (Guger Technologies can
                            provide you with a new driver configuration file if you need
                            a different filter.)
+ \item [SignalType]        Defines the data type of the stored signal samples (int16 or float32).
+                           If the data type is int16, signal samples (which are produced by
+                           the amplifier in units of $\mu V$) are converted back into virtual A/D units
+                           (see Data Storage section below). If the data type is float32, the signals
+                           are stored in units of $\mu V$.
  \item [SoftwareCh]        The total number of channels across all USBamp devices.
  \item [SoftwareChDevices] The number of channels acquired from each device. 
                            If there is only one device, this parameter has to equal \textit{SoftwareCh}.
@@ -115,22 +121,13 @@ parameters:
 \end{description}
 
 
-\subsection{Assumptions}
-
-The USBamp source module assumes that the amplifier is not turned off during the 
-session. (Since the EEG display would stop, this is a fairly safe assumption.) 
-This assumption is made since it takes about 2.5 seconds to program new filter 
-settings into one USBamp (and correspondingly more time for more amps). Thus, 
-any click on \emph{Set Config} would be followed by a fairly long delay. In 
-consequence, the USBamp source module only programs the filter settings on the 
-first run or if the filter settings have changed.
-
 \subsection{Data Storage}
 
 Unlike other systems, the USBamp is a DC amplifier system that digitizes at 24 
 bit. Bandpass and notch filtering is performed on the digitized samples, 
-resulting in floating point signal samples in units of $\mu V$. Because BCI2000 
-currently only supports signed 16 bit integers, the floating point values have 
+resulting in floating point signal samples in units of $\mu V$. BCI2000 
+currently supports signed 16 bit integers and floating point numbers for its data storage.
+If \emph{SignalType} is set to int16, the floating point values have 
 to be converted back into integers before they can be stored and transmitted to 
 Signal Processing. This is done by the following transformation: 
 $sample_{stored}(A/D units)=\frac{sample_{acquired}(\mu V)}{SourceChGain}$. 
@@ -138,10 +135,10 @@ $sample_{stored}(A/D units)=\frac{sample_{acquired}(\mu V)}{SourceChGain}$.
 BCI2000 Signal Processing or any offline analysis routine can derive, as with 
 any other BCI2000 source module, sample values in $\mu V$ by subtracting, from 
 each stored sample, \emph{SourceChOffset} (i.e., zero), and multiplying it with 
-\emph{SourceChGain} for each channel.
-
-Once BCI2000 is able to support floating point samples, this conversion can be 
-removed.
+\emph{SourceChGain} for each channel. If \emph{SignalType} is set to float32,
+data samples are stored in units of $\mu V$. In this case \emph{SourceCh} should be
+a list of 1's (because the conversion factor between data samples into $\mu V$ is
+1.0 for each channel).
 
 \section{The \texttt{USBampgetinfo} Command Line Tool}
 
