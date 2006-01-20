@@ -368,12 +368,7 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
                         toRet = temp->CharDisplayInResult;
                         // VK play sound file if exists
                         if ((temp->SoundFile != "") && (temp->SoundFile != " "))
-                        {
-                         SpVoice *voice1 = new SpVoice;
-                          //voice1->Speak("hi");
                           temp->PlaySound();
-                        }
-                        
                       }
                 }
                 if(toRet == "")
