@@ -39,13 +39,13 @@ TRIALSEQUENCE::TRIALSEQUENCE()
  BEGIN_PARAMETER_DEFINITIONS
    "P3Speller matrix TargetDefinitionMatrix= "
       "36 "
-      "{Display Enter Display%20Size Icon%20File} "
-      "A A 1 % "  "B B 1 % "  "C C 1 % "  "D D 1 % "  "E E 1 % "  "F F 1 % "
-      "G G 1 % "  "H H 1 % "  "I I 1 % "  "J J 1 % "  "K K 1 % "  "L L 1 % "
-      "M M 1 % "  "N N 1 % "  "O O 1 % "  "P P 1 % "  "Q Q 1 % "  "R R 1 % "
-      "S S 1 % "  "T T 1 % "  "U U 1 % "  "V V 1 % "  "W W 1 % "  "X X 1 % "
-      "Y Y 1 % "  "Z Z 1 % "  "1 1 1 % "  "2 2 1 % "  "3 3 1 % "  "4 4 1 % "
-      "5 5 1 % "  "6 6 1 % "  "7 7 1 % "  "8 8 1 % "  "9 9 1 % "  "_ _ 1 % "
+      "{Display Enter Display%20Size Icon%20File Sound%20File} "
+      "A A 1 % % "  "B B 1 % % "  "C C 1 % % "  "D D 1 % % "  "E E 1 % % "  "F F 1 % % "
+      "G G 1 % % "  "H H 1 % % "  "I I 1 % % "  "J J 1 % % "  "K K 1 % % "  "L L 1 % % "
+      "M M 1 % % "  "N N 1 % % "  "O O 1 % % "  "P P 1 % % "  "Q Q 1 % % "  "R R 1 % % "
+      "S S 1 % % "  "T T 1 % % "  "U U 1 % % "  "V V 1 % % "  "W W 1 % % "  "X X 1 % % "
+      "Y Y 1 % % "  "Z Z 1 % % "  "1 1 1 % % "  "2 2 1 % % "  "3 3 1 % % "  "4 4 1 % % "
+      "5 5 1 % % "  "6 6 1 % % "  "7 7 1 % % "  "8 8 1 % % "  "9 9 1 % % "  "_ _ 1 % % "
       "% % % // Target Definition Matrix",
    "P3Speller int NumMatrixColumns= 6 "
       "6 0 6 // Display Matrix's Column Number",
@@ -106,40 +106,64 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
                         SignalProperties& outputProperties ) const
 {
-  int ret, row;
-  AnsiString fileName;
+  int ret, row, col;
+  AnsiString iFileName, sFileName;
   TImage *temp_icon;
-  row = Parameter("TargetDefinitionMatrix")->GetNumRows();
+  TWavePlayer testPlayer;
+  bool soundFlag = false;
 
-  // parse Target Definition Matrix for icon file names.
+  row = Parameter("TargetDefinitionMatrix")->GetNumRows();
+  col =  Parameter("TargetDefinitionMatrix")->GetNumColumns();
+  if (col != 5)
+    bciout << "P3Speller: Target Definition Matrix should have 5 columns!" ;
+    
+  // parse Target Definition Matrix for icon and sound file names.
   for (int i = 0; i<row; i++)
   {
-    fileName = "";
-    fileName =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
-    if(fileName != "" && fileName != " ")
+    iFileName = "";
+    sFileName = "";
+    iFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+    sFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
+    if(iFileName != "" && iFileName != " ")
     {
       temp_icon = new TImage(static_cast<TComponent*>(NULL));
       try
       {
-      temp_icon->Picture->LoadFromFile(fileName);
+      temp_icon->Picture->LoadFromFile(iFileName);
       }
       catch(...)
       {
-        bcierr << "P3 Speller: Could not open icon file - "
-               << fileName.c_str() << std::endl;
+        bcierr << "P3Speller: Could not open icon file - "
+               << iFileName.c_str() << std::endl;
       }
       delete temp_icon;
     }
+    if(sFileName != "" && sFileName != " ")
+    {
+      if(!soundFlag)
+        soundFlag = true;
+      TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
+      if( err == TWavePlayer::fileOpeningError )
+        bcierr << "P3Speller: Could not open sound file - "
+               << sFileName.c_str() << std::endl;
+      else if( err != TWavePlayer::noError )
+        bcierr << "P3Speller: Some general error prevents wave audio playback"
+               << std::endl;
+    }
   }
-
+  if(soundFlag)       //  need to play audio, check for sound card
+  {
+    if(waveOutGetNumDevs() <= 0)
+      bcierr << "P3Speller: Sound Card not found " << std::endl;
+  }
 
   if (Parameter("TextWindowEnabled") == 1)
   {
     if(Parameter("OnlineMode") == 0)
-      bcierr << "Cannot open text window in offline mode!"  << std::endl;
+      bcierr << "P3Speller: Cannot open text window in offline mode!"  << std::endl;
 
     if(AnsiString((const char*)Parameter("TextWindowFilePath")) == "")
-      bcierr << "Please enter path for saving text window files!"  << std::endl;
+      bcierr << "P3Speller: Please enter path for saving text window files!"  << std::endl;
   }
   outputProperties = inputProperties;
 }
@@ -250,8 +274,9 @@ for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
         cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0));
         cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 1));        //assign display result in column 2
         cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix", i, 2));//assign font size factor in column 3
-        // VK: add icon file
+        // VK: add icon file + sound file
         cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+        cur_target->SoundFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
 
         // VK: Parameters for testing icon highlighting
         if (Parameter("IconHighlight") == 0)

@@ -25,6 +25,7 @@
 #include <syncobjs.hpp>
 
 #include "UCursor.h"
+#include "WavePlayer.h"
 
 class TARGET
 {
@@ -35,6 +36,8 @@ private: 	// User declarations
 
         //VK
         TImage  *mono_icon;
+	TWavePlayer *wavplayer;
+
         /*shidong starts*/
         void __fastcall clickTarget( TObject* );
         /*shidong ends*/
@@ -68,6 +71,8 @@ public:		// User declarations
 	void	HighlightIcon(bool intensify);
         AnsiString IconHighlightMethod;
 	float   IconHighlightFactor;
+	AnsiString SoundFile;
+	void 	PlaySound();
 };
 
 

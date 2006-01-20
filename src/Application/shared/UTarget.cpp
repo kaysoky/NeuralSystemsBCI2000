@@ -4,6 +4,7 @@
 
 #include "UTarget.h"
 
+
 #include "UBCIError.h"
 
 //---------------------------------------------------------------------------
@@ -461,9 +462,12 @@ TARGET::TARGET(int my_targetID)
  mono_icon=NULL;
  IconHighlightMethod="DARKEN";
  IconHighlightFactor=2;
+ wavplayer=NULL;
 
  IconFile="";
  Caption="";
+ SoundFile="";
+
  /*shidong starts*/
         CharDisplayInMatrix = "";
         CharDisplayInResult = "";
@@ -508,6 +512,7 @@ TARGET::~TARGET()
  if (caption) delete caption;
  //VK
  if (mono_icon) delete mono_icon;
+ if (wavplayer) delete wavplayer;
  caption=NULL;
  Pen=NULL;
  shape=NULL;
@@ -555,6 +560,7 @@ TARGET *new_target;
   //VK
  new_target->IconHighlightFactor= IconHighlightFactor;
  new_target->IconHighlightMethod= IconHighlightMethod;
+ new_target->SoundFile=SoundFile;
  return(new_target);
 }
 
@@ -752,6 +758,13 @@ float   scalex, scaley;
     caption->OnClick = clickTarget;
     /*shidong ends*/
     }
+
+  //VK audio functionality
+  if ((SoundFile != "") && (!wavplayer) && (SoundFile != " "))
+  {
+    wavplayer = new TWavePlayer;
+    wavplayer->AttachFile(SoundFile.c_str());
+  }
 }
 
 
@@ -838,16 +851,29 @@ void TARGET::HighlightIcon(bool intensify)
 {
    if (icon && mono_icon)
    {
-        if (intensify)
-        {
-        icon->Visible=true;
-        mono_icon->Visible=false;
-        }
-        else
-        {
-        icon->Visible=false;
-        mono_icon->Visible=true;
-        }
+     if (intensify)
+     {
+       icon->Visible=true;
+       mono_icon->Visible=false;
+     }
+     else
+     {
+       icon->Visible=false;
+       mono_icon->Visible=true;
+     }
    }
- }
+}
+// **************************************************************************
+// Function:   PlaySound
+// Purpose:    This function plays sound file associated with this target
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+// VK
 
+void TARGET::PlaySound()
+{
+  if(!wavplayer->IsPlaying())
+    wavplayer->Play();
+  return;  
+}

@@ -18,6 +18,7 @@
 
 #include "Task.h"
 
+
 using namespace std;
 //ifstream& operator >> (ifstream& is, AnsiString& arg);
 RegisterFilter( TTask, 3 );
@@ -46,7 +47,7 @@ TTask::TTask()
       "User Window Y location",
   "P3Speller int WinWidth= 512 512 0 2000 // "
       "User Window Width",
-  "P3Speller int WinHeight= 512 512 0 2000 // "
+  "P3Speller int WinHeight= 512 512 0 2000 // "                           
       "User Window Height",
   "P3Speller int TargetWidth= 5 0 0 100 // "
       "TargetWidth in percent of screen width",
@@ -363,8 +364,16 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
                 {
                       temp = userdisplay->activetargets->GetTargetPtr(i+1);
                       if (temp->IsClickedOn())
-                      {         //get the last target that is clicked
-                                toRet = temp->CharDisplayInResult;
+                      {  //get the last target that is clicked
+                        toRet = temp->CharDisplayInResult;
+                        // VK play sound file if exists
+                        if ((temp->SoundFile != "") && (temp->SoundFile != " "))
+                        {
+                         SpVoice *voice1 = new SpVoice;
+                          //voice1->Speak("hi");
+                          temp->PlaySound();
+                        }
+                        
                       }
                 }
                 if(toRet == "")
@@ -376,7 +385,11 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
                         return toRet;
                 }
         }
+        // VK play sound file if exists
 
+        if ((pickedtargetptr->SoundFile != "") && (pickedtargetptr->SoundFile != " "))
+          pickedtargetptr->PlaySound();
+        
         return(pickedtargetptr->CharDisplayInResult);
 
  /*shidong ends*/
