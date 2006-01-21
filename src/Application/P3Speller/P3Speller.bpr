@@ -12,7 +12,8 @@
       obj\UEnvironment.obj obj\UBCIError.obj obj\Localization.obj 
       obj\TCPStream.obj obj\MessageHandler.obj obj\MeasurementUnits.obj 
       obj\UCoreMain.obj obj\ConnectorFilters.obj obj\EncodedString.obj 
-      obj\ParamRef.obj obj\Expression.obj obj\ExpressionParser.obj"/>
+      obj\ParamRef.obj obj\Expression.obj obj\ExpressionParser.obj 
+      obj\WavePlayer.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -23,7 +24,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -84,6 +85,7 @@
       <FILE FILENAME="..\..\shared\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
