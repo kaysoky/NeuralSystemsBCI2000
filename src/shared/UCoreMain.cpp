@@ -36,6 +36,9 @@
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
  * $Log$
+ * Revision 1.25  2006/01/25 20:25:36  mellinger
+ * Fixed behavior of connect/disconnect buttons in manual mode.
+ *
  * Revision 1.24  2006/01/17 17:39:44  mellinger
  * Fixed list of project files.
  *
@@ -608,6 +611,8 @@ TfMain::bConnectClick( TObject* )
     bConnect->Enabled = false;
     bDisconnect->Enabled = true;
   }
+  else
+    __bcierr.clear();
 }
 
 void __fastcall
@@ -616,6 +621,7 @@ TfMain::bDisconnectClick( TObject* )
   ShutdownSystem();
   bConnect->Enabled = true;
   bDisconnect->Enabled = false;
+  __bcierr.clear();
 }
 
 
