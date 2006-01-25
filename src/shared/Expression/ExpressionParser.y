@@ -33,6 +33,7 @@ namespace ExpressionParser
 /* Bison declarations.  */
 %token <value>  NUMBER
 %token <name>   NAME SIGNAL
+%left '?' ':'
 %left '&' '|'
 %left '=' '~' '!' '>' '<'
 %left '-' '+'
@@ -67,6 +68,7 @@ exp:     NAME                       { $$ = pInstance->State( $1 ); }
        | '~' exp %prec NEG          { $$ = !$2;      }
        | '!' exp %prec NEG          { $$ = !$2;      }
        | '(' exp ')'                { $$ = $2;       }
+       | exp '?' exp ':' exp        { $$ = $1 ? $3 : $5 }
        | SIGNAL '(' exp ',' exp ')' { $$ = pInstance->Signal( $3, $5 ); }
 ;
 %%
