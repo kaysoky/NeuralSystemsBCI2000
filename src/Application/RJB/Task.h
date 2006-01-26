@@ -17,6 +17,12 @@ Task.h is the header file for the Right Justified Boxes task
 class TTask : public GenericFilter
 {
 private:
+        enum
+        {
+          randomPermSeq = 0,
+          expressionSeq = 1,
+        };
+        
         Usr* mpUser;
         float x_pos;
         float y_pos;
@@ -28,6 +34,7 @@ private:
         float limit_bottom;
 
         int Ntargets;
+        int mNextTarget;
         int targetcount;
         int ranflag;
         int targs[Usr::NTARGS];

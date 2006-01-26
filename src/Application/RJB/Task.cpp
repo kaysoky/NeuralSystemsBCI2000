@@ -11,6 +11,7 @@ Task.cpp is the source code for the Right Justified Boxes task
 #include "UBCIError.h"
 #include "Localization.h"
 #include "MeasurementUnits.h"
+#include "Expression/Expression.h"
 
 #include <vector>
 #include <iostream>
@@ -36,6 +37,7 @@ TTask::TTask()
   limit_top( 0 ),
   limit_bottom( 0 ),
   Ntargets( 0 ),
+  mNextTarget( 0 ),
   targetcount( 0 ),
   ranflag( 0 ),
   Hits( 0 ),
@@ -86,6 +88,10 @@ TTask::TTask()
         "Duration of PostTrial Feedback",
     "UsrTask int NumberTargets= 2 0 0 1023 // "
         "Number of Targets",
+    "UsrTask int SequenceType= 0 0 0 1 // "
+        "0: random permutations, 1: from expression (enumeration)",
+    "UsrTask string TargetExpression= % % % % // "
+        "Expression that determines the next target during posttrial feedback",
     "UsrTask int BaselineInterval= 1 0 0 2 // "
         "Intercept Computation 0 = none 1 = targets 2 = ITI (enumeration)",
     "UsrTask int TimeLimit= 180 180 0 1000 // "
@@ -182,6 +188,16 @@ TTask::Preflight( const SignalProperties& inputProperties,
     }
   }
   mTaskLog.Preflight();
+  switch( int( Parameter( "SequenceType" ) ) )
+  {
+    case randomPermSeq:
+      break;
+    case expressionSeq:
+      Expression( Parameter( "TargetExpression" ) ).Evaluate();
+      break;
+    default:
+      bcierr << "Unknown SequenceType value" << endl;
+  }
   // TTask::Process() implies that the input signal has at least two integer channels
   // with one element each.
   PreflightCondition( inputProperties >= SignalProperties( 2, 1, SignalType::int16 ) );
@@ -279,6 +295,8 @@ void TTask::Initialize()
   Misses= 0;
   mpUser->PutO(false);
   mpUser->ShowBackground();
+
+  mNextTarget = GetTargetNo( Ntargets );
 
   WriteStateValues();
 }
@@ -519,7 +537,7 @@ void TTask::Iti( void )
         {
                 CurrentIti = 0;
                 ItiTime = 0;
-                CurrentTarget= GetTargetNo( Ntargets );
+                CurrentTarget = mNextTarget;
                 mpUser->PutTarget(CurrentTarget, Usr::TARGET_ON );
                 mpUser->ShowBackground();
                 mTaskAnnouncements[ CurrentTarget ].Play();
@@ -594,6 +612,17 @@ void TTask::Outcome()
 
         if( OutcomeTime >= OutcomeDuration-1 )
         {
+                switch( int( Parameter( "SequenceType" ) ) )
+                {
+                  case randomPermSeq:
+                    mNextTarget = GetTargetNo( Ntargets );
+                    break;
+                  case expressionSeq:
+                    mNextTarget = Expression( Parameter( "TargetExpression" ) ).Evaluate();
+                    break;
+                  default:
+                    bcierr << "Unknown value of SequenceType" << endl;
+                }
                 CurrentIti= 1;
                 CurrentOutcome= 0;
                 CurrentTarget= 0;
