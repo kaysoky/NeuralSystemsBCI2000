@@ -56,6 +56,8 @@ public:		// User declarations
                       { if( mOnParameterChange ) mOnParameterChange(); }
 
 private:
+        bool    LoadParameters( const AnsiString& inFileName );
+        
         Notification mOnParameterChange;
         PARAMLIST*   paramlist;
         PREFERENCES* preferences;

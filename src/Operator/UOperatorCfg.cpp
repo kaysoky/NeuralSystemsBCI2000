@@ -8,6 +8,7 @@
 #include "UBCIError.h"
 #include "UOperatorUtils.h"
 #include "UPreferences.h"
+#include "UBCI2000Data.h"
 
 using namespace std;
 //---------------------------------------------------------------------------
@@ -191,6 +192,32 @@ bool    ret;
 }
 //---------------------------------------------------------------------------
 
+bool
+TfConfig::LoadParameters( const AnsiString& inName )
+{
+  bool result = false;
+  AnsiString fileExtension = ExtractFileExt( inName );
+  if( fileExtension == ".dat" )
+  {
+    const char* tempdir = ::getenv( "TEMP" );
+    if( tempdir == NULL )
+      tempdir = ::getenv( "TMP" );
+    if( tempdir == NULL )
+      tempdir = "\\tmp";
+    AnsiString name = tempdir;
+    name = name + "\\" + ::tmpnam( NULL );
+    BCI2000DATA file;
+    if( file.Initialize( inName.c_str() ) == BCI2000ERR_NOERR )
+      file.GetParamListPtr()->Save( name.c_str() );
+    // do not import non-existing parameters; use the filter
+    result = paramlist->Load( name.c_str(), true, false );
+    ::unlink( name.c_str() );
+  }
+  else
+    result = paramlist->Load( inName.c_str(), true, false );
+  return  result;
+}
+
 void __fastcall TfConfig::bLoadParametersClick(TObject *Sender)
 {
 bool    ret;
@@ -201,8 +228,8 @@ bool    ret;
     {
     if (CfgTabControl->TabIndex > -1)
        UpdateParameters();
-    fShowParameters->UpdateParameterTags(paramlist, 1);             // update the tag (= filter) values in each parameter
-    ret=paramlist->Load(LoadDialog->FileName.c_str(), true, false); // do not import non-existing parameters; use the filter
+    fShowParameters->UpdateParameterTags(paramlist, 1); // update the tag (= filter) values in each parameter
+    ret=LoadParameters(LoadDialog->FileName);
     if (!ret)
        Application->MessageBox("Error reading parameter file", "Error", MB_OK);
     else
@@ -211,8 +238,6 @@ bool    ret;
        ParameterChange();
        }
     }
- else
-    return;
 }
 
 //---------------------------------------------------------------------------
