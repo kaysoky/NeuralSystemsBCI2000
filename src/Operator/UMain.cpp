@@ -632,7 +632,7 @@ TfMain::ReceivingThread::Execute()
   const socketTimeout = 500; // ms
   while( !TThread::Terminated )
     if( tcpsocket::wait_for_read( mParent.mSockets, socketTimeout, true ) )
-      TThread::Synchronize( mParent.ProcessBCIMessages );
+      TThread::Synchronize( &mParent.ProcessBCIMessages );
 }
 
 //--------------------- Handlers for BCI messages ------------------------------
