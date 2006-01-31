@@ -115,42 +115,45 @@ void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
   row = Parameter("TargetDefinitionMatrix")->GetNumRows();
   col =  Parameter("TargetDefinitionMatrix")->GetNumColumns();
   if (col != 5)
-    bciout << "P3Speller: Target Definition Matrix should have 5 columns!" ;
-    
-  // parse Target Definition Matrix for icon and sound file names.
-  for (int i = 0; i<row; i++)
+    bciout << "P3Speller: Target Definition Matrix should have 5 columns for icon and sound functions!"
+           << "1.Display 2.Enter 3.Display Size 4.Icon File 5.Sound File";
+  else
   {
-    iFileName = "";
-    sFileName = "";
-    iFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
-    sFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
-    if(iFileName != "" && iFileName != " ")
+    // parse Target Definition Matrix for icon and sound file names.
+    for (int i = 0; i<row; i++)
     {
-      temp_icon = new TImage(static_cast<TComponent*>(NULL));
-      try
+      iFileName = "";
+      sFileName = "";
+      iFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+      sFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
+      if(iFileName != "" && iFileName != " ")
       {
-      temp_icon->Picture->LoadFromFile(iFileName);
+        temp_icon = new TImage(static_cast<TComponent*>(NULL));
+        try
+        {
+          temp_icon->Picture->LoadFromFile(iFileName);
+        }
+        catch(...)
+        {
+          bcierr << "P3Speller: Could not open icon file - "
+                 << iFileName.c_str() << std::endl;
+        }
+        delete temp_icon;
       }
-      catch(...)
+      if(sFileName != "" && sFileName != " ")
       {
-        bcierr << "P3Speller: Could not open icon file - "
-               << iFileName.c_str() << std::endl;
-      }
-      delete temp_icon;
-    }
-    if(sFileName != "" && sFileName != " ")
-    {
-      if(!soundFlag)
-        soundFlag = true;
-      TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
-      if( err == TWavePlayer::fileOpeningError )
-        bcierr << "P3Speller: Could not open sound file - "
-               << sFileName.c_str() << std::endl;
-      else if( err != TWavePlayer::noError )
-        bcierr << "P3Speller: Some general error prevents wave audio playback"
+        if(!soundFlag)
+          soundFlag = true;
+        TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
+        if( err == TWavePlayer::fileOpeningError )
+          bcierr << "P3Speller: Could not open sound file - "
+                 << sFileName.c_str() << std::endl;
+        else if( err != TWavePlayer::noError )
+          bcierr << "P3Speller: Some general error prevents wave audio playback"
                << std::endl;
+      }
     }
-  }
+  }  
   if(soundFlag)       //  need to play audio, check for sound card
   {
     if(waveOutGetNumDevs() <= 0)

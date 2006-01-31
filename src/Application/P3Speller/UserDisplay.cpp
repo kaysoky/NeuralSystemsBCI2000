@@ -224,10 +224,11 @@ void USERDISPLAY::DisplayTextWindow(int FontSize, const char *FontName)
     textwindow->Color = clWhite;
     textwindow->ScrollBars = ssVertical;
     textwindow->Align = alClient;
-    textwindow->Font->Name = *FontName;
-    textwindow->Font->Size = FontSize;
     textwindow->Visible = true;
   }
+  textwindow->Font->Name = FontName;
+  textwindow->Font->Size = FontSize;
+
 }
 
 void USERDISPLAY::DisableTextWindow()
