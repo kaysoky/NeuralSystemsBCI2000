@@ -8,6 +8,9 @@
 // Date: Oct 28, 2003
 //
 // $Log$
+// Revision 1.8  2006/01/31 10:58:07  mellinger
+// Fixed const-incorrect iterator declarations.
+//
 // Revision 1.7  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -230,7 +233,7 @@ tcpsocket::wait_for_read( const tcpsocket::set_of_instances& inSockets,
   int max_fd = -1;
   ::fd_set readfds;
   FD_ZERO( &readfds );
-  for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
+  for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
     if( ( *i )->m_handle != INVALID_SOCKET )
     {
       max_fd = max( max_fd, ( *i )->m_handle );
@@ -251,7 +254,7 @@ tcpsocket::wait_for_read( const tcpsocket::set_of_instances& inSockets,
   int result = ::select( max_fd + 1, &readfds, NULL, NULL, timeoutPtr );
   if( result > 0 )
   {
-    for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
+    for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
       if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
       {
         ( *i )->accept();
@@ -280,7 +283,7 @@ tcpsocket::wait_for_write( const tcpsocket::set_of_instances& inSockets,
            readfds;
   FD_ZERO( &writefds );
   FD_ZERO( &readfds );
-  for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
+  for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
     if( ( *i )->m_handle != INVALID_SOCKET )
     {
       max_fd = max( max_fd, ( *i )->m_handle );
@@ -303,7 +306,7 @@ tcpsocket::wait_for_write( const tcpsocket::set_of_instances& inSockets,
   int result = ::select( max_fd + 1, &readfds, &writefds, NULL, timeoutPtr );
   if( result > 0 )
   {
-    for( set_of_instances::iterator i = inSockets.begin(); i != inSockets.end(); ++i )
+    for( set_of_instances::const_iterator i = inSockets.begin(); i != inSockets.end(); ++i )
       if( ( *i )->m_listening && FD_ISSET( ( *i )->m_handle, &readfds ) )
       {
         ( *i )->accept();
