@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File:    UVisual.h
 //
 // Authors: Gerwin Schalk, Juergen Mellinger
@@ -28,6 +28,11 @@
 //
 //          Dec 12, 2003, jm:
 //          Introduced bookkeeping for configuration settings.
+//
+// $Log$
+// Revision 1.15  2006/01/31 15:22:59  mellinger
+// Fixed list of #includes; introduced CVS Id and Log.
+//
 //
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UVisualH

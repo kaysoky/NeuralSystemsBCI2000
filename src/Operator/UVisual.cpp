@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File:    UVisual.cpp
 //
 // Authors: Gerwin Schalk, Juergen Mellinger
@@ -29,6 +29,11 @@
 //          display properties.
 //          Introduced colorized y axis ticks.
 //
+// $Log$
+// Revision 1.28  2006/01/31 15:22:59  mellinger
+// Fixed list of #includes; introduced CVS Id and Log.
+//
+//
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -39,10 +44,11 @@
 
 #include <cassert>
 #include <Registry.hpp>
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <limits>
 #include <vcl.h>
 #include <grids.hpp>
 
