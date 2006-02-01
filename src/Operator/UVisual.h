@@ -30,6 +30,9 @@
 //          Introduced bookkeeping for configuration settings.
 //
 // $Log$
+// Revision 1.16  2006/02/01 11:01:09  mellinger
+// Changed anonymous enum to constant definitions.
+//
 // Revision 1.15  2006/01/31 15:22:59  mellinger
 // Fixed list of #includes; introduced CVS Id and Log.
 //
@@ -175,13 +178,10 @@ class VISUAL
                  cMinValueDefault = - 1 << 15,
                  cMaxValueDefault = 1 << 16 - 1;
     static const RGBColor cChannelColorsDefault[];
-    enum
-    {
-      cChannelBase = 1, // displayed number of first channel
-      cSampleBase = 0,  // displayed number of first sample
-      cLabelWidth = 25,
-      cMaxDisplayGroups = 16,
-    };
+    static const int cChannelBase = 1, // displayed number of first channel
+                     cSampleBase = 0,  // displayed number of first sample
+                     cLabelWidth = 25,
+                     cMaxDisplayGroups = 16;
 
    protected:
     enum DisplayMode
