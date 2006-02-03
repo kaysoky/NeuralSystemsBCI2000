@@ -11,6 +11,9 @@
 //              variation corresponds to a unit range, i.e. a zero mean
 //              signal will be normalized to the range [-0.5, 0.5].
 // $Log$
+// Revision 1.3  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.2  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -478,14 +481,14 @@ Normalizer::GroupData::Median( size_t inChannel,
     if( IsEven( numValues ) )
     {
       // Partial sort until the two centermost values have their correct positions.
-      nth_element( values.begin(), &values[ numValues / 2 - 1 ], values.end() );
-      nth_element( values.begin(), &values[ numValues / 2 ], values.end() );
+      nth_element( values.begin(), values.begin() + numValues / 2 - 1, values.end() );
+      nth_element( values.begin(), values.begin() + numValues / 2, values.end() );
       median = ( values[ numValues / 2 - 1 ] + values[ numValues / 2 ] ) / 2;
     }
     else
     {
       // Partial sort until the median value has its correct position.
-      nth_element( values.begin(), &values[ ( numValues - 1 ) / 2 ], values.end() );
+      nth_element( values.begin(), values.begin() + ( numValues - 1 ) / 2, values.end() );
       median = values[ ( numValues - 1 ) / 2 ];
     }
   }

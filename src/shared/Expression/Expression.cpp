@@ -6,6 +6,9 @@
 // Description: A simple BCI2000 expression parser.
 //              See Expression.h for details about expressions.
 // $Log$
+// Revision 1.4  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.3  2006/01/11 19:00:43  mellinger
 // Removed VCL classes when compiled with BCI_TOOL flag; removed "using namespace" from header file; introduced CVS id and log.
 //
@@ -18,6 +21,7 @@
 #endif
 #include <cmath>
 #include <string>
+#include <stdexcept>
 #include "Expression.h"
 
 using namespace std;
@@ -88,6 +92,7 @@ Expression::ReportError( const char* message ) const
            << message << endl;
 }
 
+#ifndef __GNUC__
 // _matherr() error handling interface.
 static void
 ThrowMathError( const char* functionName )
@@ -108,4 +113,4 @@ _matherrl( struct _exceptionl* e )
   ThrowMathError( e->name );
   return true;
 }
-
+#endif // __GNUC__

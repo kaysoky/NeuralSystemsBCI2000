@@ -14,26 +14,47 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "FFTLibWrap.h"
 
-#include <windows.h>
+#if USE_DLL
+# include <windows.h>
+#else
+# include <fftw3.h>
+#endif
 
 const char* FFTLibWrapper::sLibName = "fftw3";
+#if USE_DLL
 void* FFTLibWrapper::sLibRef = ::LoadLibrary( sLibName );
-void* ( *FFTLibWrapper::libInit )( int, number*, number*, int, unsigned ) = NULL;
-void  ( *FFTLibWrapper::libExecute )( void* ) = NULL;
-void  ( *FFTLibWrapper::libDestroy )( void* ) = NULL;
-void  ( *FFTLibWrapper::libCleanup )() = NULL;
-void* ( *FFTLibWrapper::libMalloc )( unsigned long ) = NULL;
-void  ( *FFTLibWrapper::libFree )( void* ) = NULL;
+FFTLibWrapper::LibInitFn FFTLibWrapper::LibInit = NULL;
+FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute = NULL;
+FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy = NULL;
+FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup = NULL;
+FFTLibWrapper::LibMallocFn FFTLibWrapper::LibMalloc = NULL;
+FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree = NULL;
 
 FFTLibWrapper::ProcNameEntry FFTLibWrapper::sProcNames[] =
 {
-  { ( void** )&libInit,    "fftw_plan_r2r_1d" },
-  { ( void** )&libExecute, "fftw_execute" },
-  { ( void** )&libDestroy, "fftw_destroy_plan" },
-  { ( void** )&libCleanup, "fftw_cleanup" },
-  { ( void** )&libMalloc,  "fftw_malloc" },
-  { ( void** )&libFree,    "fftw_free" },
+  { ( void** )&LibInit,    "fftw_plan_r2r_1d" },
+  { ( void** )&LibExecute, "fftw_execute" },
+  { ( void** )&LibDestroy, "fftw_destroy_plan" },
+  { ( void** )&LibCleanup, "fftw_cleanup" },
+  { ( void** )&LibMalloc,  "fftw_malloc" },
+  { ( void** )&LibFree,    "fftw_free" },
 };
+#else // USE_DLL
+void* FFTLibWrapper::sLibRef = reinterpret_cast<void*>( 1 );
+FFTLibWrapper::LibInitFn FFTLibWrapper::LibInit
+  = reinterpret_cast<FFTLibWrapper::LibInitFn>( fftw_plan_r2r_1d );
+FFTLibWrapper::LibExecuteFn FFTLibWrapper::LibExecute
+  = reinterpret_cast<FFTLibWrapper::LibExecuteFn>( fftw_execute );
+FFTLibWrapper::LibDestroyFn FFTLibWrapper::LibDestroy
+  = reinterpret_cast<FFTLibWrapper::LibDestroyFn>( fftw_destroy_plan );
+FFTLibWrapper::LibCleanupFn FFTLibWrapper::LibCleanup
+  = reinterpret_cast<FFTLibWrapper::LibCleanupFn>( fftw_cleanup );
+FFTLibWrapper::LibMallocFn FFTLibWrapper::LibMalloc
+  = reinterpret_cast<FFTLibWrapper::LibMallocFn>( fftw_malloc );
+FFTLibWrapper::LibFreeFn FFTLibWrapper::LibFree
+  = reinterpret_cast<FFTLibWrapper::LibFreeFn>( fftw_free );
+#endif // USE_DLL
+
 
 FFTLibWrapper::FFTLibWrapper()
 : mFFTSize( 0 ),
@@ -41,7 +62,8 @@ FFTLibWrapper::FFTLibWrapper()
   mOutputData( NULL ),
   mLibPrivateData( NULL )
 {
-  if( sLibRef && !libInit )
+#if USE_DLL
+  if( sLibRef && !LibInit )
   {
     bool foundAllProcs = true;
     for( int i = 0; foundAllProcs && i < sizeof( sProcNames ) / sizeof( *sProcNames ); ++i )
@@ -54,6 +76,7 @@ FFTLibWrapper::FFTLibWrapper()
     if( !foundAllProcs )
       sLibRef = NULL;
   }
+#endif // USE_DLL
 }
 
 FFTLibWrapper::~FFTLibWrapper()
@@ -67,21 +90,21 @@ FFTLibWrapper::Cleanup()
 {
   if( mLibPrivateData )
   {
-    libDestroy( mLibPrivateData );
+    LibDestroy( mLibPrivateData );
     mLibPrivateData = NULL;
   }
   if( mInputData )
   {
-    libFree( mInputData );
+    LibFree( mInputData );
     mInputData = NULL;
   }
   if( mOutputData )
   {
-    libFree( mOutputData );
+    LibFree( mOutputData );
     mOutputData = NULL;
   }
   mFFTSize = 0;
-  libCleanup();
+  LibCleanup();
 }
 
 bool
@@ -89,16 +112,16 @@ FFTLibWrapper::Initialize( int inFFTSize, FFTDirection inDirection )
 {
   Cleanup();
   mFFTSize = inFFTSize;
-  mInputData = reinterpret_cast<number*>( libMalloc( mFFTSize * sizeof( number ) ) );
-  mOutputData = reinterpret_cast<number*>( libMalloc( mFFTSize * sizeof( number ) ) );
-  mLibPrivateData = libInit( mFFTSize, mInputData, mOutputData, inDirection, 1U << 6 );
+  mInputData = reinterpret_cast<number*>( LibMalloc( mFFTSize * sizeof( number ) ) );
+  mOutputData = reinterpret_cast<number*>( LibMalloc( mFFTSize * sizeof( number ) ) );
+  mLibPrivateData = LibInit( mFFTSize, mInputData, mOutputData, inDirection, 1U << 6 );
   return mInputData && mOutputData && mLibPrivateData;
 }
 
 void
 FFTLibWrapper::Transform()
 {
-  libExecute( mLibPrivateData );
+  LibExecute( mLibPrivateData );
 }
 
 

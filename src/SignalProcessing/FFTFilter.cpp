@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <cassert>
-#include <math.h>
+#include <cmath>
 
 #define SECTION "Filtering"
 
@@ -197,7 +197,7 @@ FFTFilter::Process( const GenericSignal* inputSignal, GenericSignal* outputSigna
     }
     else if( mFFTOutputSignal == eHalfcomplex )
     {
-      float normFactor = 1.0 / ::sqrt( bufferSize );
+      float normFactor = 1.0 / ::sqrt( 1.0 * bufferSize );
       for( int k = 0; k < bufferSize; ++k )
         spectrum( k, 0 ) = mFFT.Output( k ) * normFactor;
     }

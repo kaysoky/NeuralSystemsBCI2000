@@ -24,7 +24,7 @@
 
 using namespace std;
 
-const float infinity = 1e10;
+const float inf = 1e10;
 
 const char* itiStateName = "IntertrialInterval";
 
@@ -114,9 +114,9 @@ TSWFilter::Initialize()
     for( int m = 0; m < mSWCh; m++ )
       mAvgBlockBuffer( m, n ) = 0;
   mMaxValue.clear();
-  mMaxValue.resize( mSWCh, -infinity );
+  mMaxValue.resize( mSWCh, -inf );
   mMinValue.clear();
-  mMinValue.resize( mSWCh, infinity );
+  mMinValue.resize( mSWCh, inf );
 
   mPosInBuffer = mBufferOffset - 1;
 
@@ -169,9 +169,9 @@ TSWFilter::NewTrial()
   for( short m = 0; m < mSWCh; m++ )
     mTcAk[ m ] = 0;
   for( short m = 0; m < mSWCh; m++ )
-    mMaxValue[ m ] = -infinity;
+    mMaxValue[ m ] = -inf;
   for( short m = 0; m < mSWCh; m++ )
-    mMinValue[ m ] = infinity;
+    mMinValue[ m ] = inf;
 
   mPosInBuffer = mBufferOffset;
   State( "Artifact" ) = 0;

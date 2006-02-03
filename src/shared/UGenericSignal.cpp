@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.19  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.18  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -26,8 +29,8 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
-#include <float.h>
-#include <math.h>
+#include <cfloat>
+#include <cmath>
 
 #include <cassert>
 
@@ -54,7 +57,7 @@ static struct
   { SignalType::int32,   "int32",   4 },
 };
 
-static const numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties );
+static const int numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties );
 
 const char*
 SignalType::Name() const
@@ -131,8 +134,10 @@ ostream&
 SignalProperties::WriteBinary( ostream& os ) const
 {
   Type().WriteBinary( os );
-  LengthField<2>( Channels() ).WriteBinary( os );
-  LengthField<2>( Elements() ).WriteBinary( os );
+  LengthField<2> channelsField( Channels() ),
+                 elementsField( Elements() );
+  channelsField.WriteBinary( os );
+  elementsField.WriteBinary( os );
   return os;
 }
 

@@ -16,6 +16,9 @@
  *                      tools using the STATELIST class, jm                   *
  * V0.10 - 07/24/2003 - Introduced stream based i/o, jm                       *
  * $Log$
+ * Revision 1.22  2006/02/03 13:40:53  mellinger
+ * Compatibility with gcc and BCB 2006.
+ *
  * Revision 1.21  2006/01/17 17:39:44  mellinger
  * Fixed list of project files.
  *
@@ -34,10 +37,10 @@
 
 #include "UState.h"
 
-#include <cassert>
 #include <sstream>
 #include <iomanip>
-#include <mem.h>
+#include <cstring>
+#include <cassert>
 
 using namespace std;
 
@@ -120,7 +123,7 @@ STATELIST::Delete( const string& inName )
 {
   if( mIndex.find( inName ) != mIndex.end() )
   {
-    erase( &at( mIndex[ inName ] ) );
+    erase( begin() + mIndex[ inName ] );
     RebuildIndex();
   }
 }
@@ -430,9 +433,9 @@ STATE::value_type
 STATEVECTOR::GetStateValue( size_t inLocation, size_t inLength ) const
 {
   if( inLength > 8 * sizeof( STATE::value_type ) )
-    throw __FUNC__ ": Invalid state length";
+    throw "Invalid state length";
   if( inLocation + inLength > 8 * mByteLength )
-    throw __FUNC__ ": Accessing non-existent state vector data";
+    throw "Accessing non-existent state vector data";
 
   STATE::value_type result = 0;
   for( int bitIndex = inLocation + inLength - 1; bitIndex >= int( inLocation ); --bitIndex )
@@ -477,9 +480,9 @@ void
 STATEVECTOR::SetStateValue( size_t inLocation, size_t inLength, STATE::value_type inValue )
 {
   if( inLength > 8 * sizeof( STATE::value_type ) )
-    throw __FUNC__ ": Invalid state length";
+    throw "Invalid state length";
   if( inLocation + inLength > 8 * mByteLength )
-    throw __FUNC__ ": Accessing non-existent state vector data";
+    throw "Accessing non-existent state vector data";
 
   STATE::value_type value = inValue;
   for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )
@@ -519,7 +522,7 @@ void
 STATEVECTOR::PostStateChange( const string& inName, unsigned short inValue )
 {
   if( !mpStatelist->Exists( inName ) )
-    throw __FUNC__ " called for undeclared state";
+    throw "PostStateChange() called for undeclared state";
 
   ( *mpStatelist )[ inName ].SetValue( inValue ); // We use STATE::value as a buffer.
 }
@@ -578,7 +581,7 @@ STATEVECTOR::ReadBinary( istream& is )
   // stream buffers. See the comments in TCPStream.cpp, tcpbuf::underflow()
   // for details.
   if( mByteLength > 1 )
-    is.read( mpData, mByteLength - 1 );
+    is.read( reinterpret_cast<istream::char_type*>( mpData ), mByteLength - 1 );
   mpData[ mByteLength - 1 ] = is.get();
   return is;
 }
@@ -593,7 +596,7 @@ STATEVECTOR::ReadBinary( istream& is )
 ostream&
 STATEVECTOR::WriteBinary( ostream& os ) const
 {
-  return os.write( mpData, mByteLength );
+  return os.write( reinterpret_cast<istream::char_type*>( mpData ), mByteLength );
 }
 
 

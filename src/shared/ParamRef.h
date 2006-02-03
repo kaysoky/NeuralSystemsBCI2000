@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.5  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.4  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -24,7 +27,8 @@
 #define ParamRefH
 
 #include <sstream>
-#include <math.h>
+#include <string>
+#include <cmath>
 #include "UParameter.h"
 
 class ParamRef
@@ -47,27 +51,27 @@ class ParamRef
 
   // We need to override operators to avoid ambiguities
   // when the compiler resolves expressions.
-  double operator-( double d ) const
-  { return double( *this ) - d; }
-  double operator+( double d ) const
-  { return double( *this ) + d; }
-  double operator*( double d ) const
-  { return double( *this ) * d; }
-  double operator/( double d ) const
-  { return double( *this ) / d; }
+  template<class T> double operator-( T t ) const
+  { return double( *this ) - t; }
+  template<class T> double operator+( T t ) const
+  { return double( *this ) + t; }
+  template<class T> double operator*( T t) const
+  { return double( *this ) * t; }
+  template<class T> double operator/( T t ) const
+  { return double( *this ) / t; }
 
-  bool operator==( double d ) const
-  { return double( *this ) == d; }
-  bool operator!=( double d ) const
-  { return double( *this ) != d; }
-  bool operator<( double d ) const
-  { return double( *this ) < d; }
-  bool operator>( double d ) const
-  { return double( *this ) > d; }
-  bool operator<=( double d ) const
-  { return double( *this ) <= d; }
-  bool operator>=( double d ) const
-  { return double( *this ) >= d; }
+  template<class T> bool operator==( T t ) const
+  { return double( *this ) == t; }
+  template<class T> bool operator!=( T t ) const
+  { return double( *this ) != t; }
+  template<class T> bool operator<( T t ) const
+  { return double( *this ) < t; }
+  template<class T> bool operator>( T t ) const
+  { return double( *this ) > t; }
+  template<class T> bool operator<=( T t ) const
+  { return double( *this ) <= t; }
+  template<class T> bool operator>=( T t ) const
+  { return double( *this ) >= t; }
 
   // Dereferencing operator for access to PARAM members.
   PARAM* operator->() const;
@@ -89,6 +93,14 @@ class ParamRef
   int    mIdx1, mIdx2;
   static PARAM  sNullParam;
 };
+
+template<> bool
+ParamRef::operator==( const char* s ) const
+{ return std::string( this->operator const char*() ) == s; }
+
+template<> bool
+ParamRef::operator!=( const char* s ) const
+{ return std::string( this->operator const char*() ) != s; }
 
 inline
 ParamRef::ParamRef()
@@ -135,7 +147,7 @@ ParamRef::operator double() const
 {
   double result = 0.0;
   if( mpParam )
-    result = ::atof( mpParam->GetValue( index( mIdx1 ), index( mIdx2 ) ) );
+    result = std::atof( mpParam->GetValue( index( mIdx1 ), index( mIdx2 ) ) );
   return result;
 }
 

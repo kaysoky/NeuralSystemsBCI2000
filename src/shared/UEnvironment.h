@@ -4,6 +4,9 @@
 // File: UEnvironment.h
 //
 // $Log$
+// Revision 1.19  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.18  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -35,8 +38,10 @@
 #include "UState.h"
 #include "StateRef.h"
 #include "UBCIError.h"
+#include "ClassName.h"
 #include <set>
 #include <iostream>
+#include <sstream>
 class SignalProperties;
 class EnvironmentExtension;
 class FilterWrapper;
@@ -50,10 +55,20 @@ class FilterWrapper;
 #define END_PARAMETER_DEFINITIONS                                      \
   };                                                                   \
   for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
-    if( !Parameters->Add( _params[ i ] ) )               \
+  {                                                                    \
+    PARAM p;                                                           \
+    std::istringstream iss( _params[ i ] );                            \
+    if( !( iss >> p ) )                                                \
       bcierr << "error in parameter definition:\n"                     \
              << _params[ i ]                                           \
              << std::endl;                                             \
+    else                                                               \
+    {                                                                  \
+      if( p.Sections().size() < 2 )                                    \
+        p.Sections().push_back( ClassName( typeid( *this ) ) );        \
+      Parameters->Add( p );                                            \
+    }                                                                  \
+  }                                                                    \
 };
 
 #define BEGIN_STATE_DEFINITIONS                                        \
@@ -325,6 +340,15 @@ class EnvironmentBase
 
 class Environment: protected EnvironmentBase
 {
+ // Friends from framework classes.
+ friend class GenericVisualization;
+ friend class TfMain;
+
+ friend class CoreModule;
+ friend class Documentar;
+ friend class StatusMessage;
+ friend class FilterWrapper;
+
  // Protecting the constructor prevents instantiation of this class
  // outside its descendants.
  protected:

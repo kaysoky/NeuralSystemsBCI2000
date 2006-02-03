@@ -19,6 +19,9 @@
 //          Introduced VisMemo, VisSignal, and VisCfg objects to allow for
 //          centralization of message processing in the MessageHandler class.
 // $Log$
+// Revision 1.17  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.16  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -30,6 +33,8 @@
 #ifndef UGenericVisualizationH
 #define UGenericVisualizationH
 
+#include <iostream>
+#include <string>
 #include <sstream>
 #include "defines.h"
 #include "UGenericSignal.h"
@@ -43,11 +48,11 @@ class VisBase
     : mSourceID( inSourceID ) {}
     virtual ~VisBase() {}
 
-    class std::istream& ReadBinary( class std::istream& );
-    class std::ostream& WriteBinary( class std::ostream& ) const;
-    virtual void ReadBinarySelf( class std::istream& ) = 0;
-    virtual void WriteBinarySelf( class std::ostream& ) const = 0;
-    
+    std::istream& ReadBinary( std::istream& );
+    std::ostream& WriteBinary( std::ostream& ) const;
+    virtual void ReadBinarySelf( std::istream& ) = 0;
+    virtual void WriteBinarySelf( std::ostream& ) const = 0;
+
     int GetSourceID() const { return mSourceID; }
 
   private:
@@ -62,8 +67,8 @@ class VisCfg : public VisBase
     : mCfgID( invalidID ) {}
     VisCfg( int inSourceID, int inCfgID, const std::string& inCfgValue )
     : VisBase( inSourceID ), mCfgID( inCfgID ), mCfgValue( inCfgValue ) {}
-    virtual void ReadBinarySelf( class std::istream& );
-    virtual void WriteBinarySelf( class std::ostream& ) const;
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
     int GetCfgID() const { return mCfgID; }
     const std::string& GetCfgValue() const { return mCfgValue; }
@@ -79,8 +84,8 @@ class VisMemo : public VisBase
     VisMemo() {}
     VisMemo( int inSourceID, const std::string& inMemo )
     : VisBase( inSourceID ), mMemo( inMemo ) {}
-    virtual void ReadBinarySelf( class std::istream& );
-    virtual void WriteBinarySelf( class std::ostream& ) const;
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const std::string& GetMemoText() const { return mMemo; }
 
@@ -96,8 +101,8 @@ class VisSignal : public VisBase
     : VisBase( inSourceID ), mSignal( inSignal ) {}
     VisSignal( const GenericSignal& inSignal )
     : VisBase( 0 ), mSignal( inSignal ) {}
-    virtual void ReadBinarySelf( class std::istream& );
-    virtual void WriteBinarySelf( class std::ostream& ) const;
+    virtual void ReadBinarySelf( std::istream& );
+    virtual void WriteBinarySelf( std::ostream& ) const;
 
     const GenericSignal& GetSignal() const { return mSignal; }
     operator const GenericSignal&() const { return mSignal; }

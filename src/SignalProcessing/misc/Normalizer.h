@@ -11,6 +11,9 @@
 //              variation corresponds to a unit range, i.e. a zero mean
 //              signal will be normalized to the range [-0.5, 0.5].
 // $Log$
+// Revision 1.2  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.1  2006/01/13 15:04:46  mellinger
 // Initial version.
 //
@@ -38,7 +41,7 @@ class Normalizer : public GenericFilter
    static bool IsEven( int i ) { return ( i & 1 ) == 0; }
 
  private:
-   enum
+   enum NormalizerConstants
    {
      none = 0,
 
@@ -70,7 +73,7 @@ class Normalizer : public GenericFilter
 
     private:
      GroupData( const GroupData& );
-     operator=( const GroupData& );
+     GroupData& operator=( const GroupData& );
 
     public:
      GroupData& MaxBufferedSegments( size_t );

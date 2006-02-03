@@ -11,6 +11,9 @@
 //          actually hold messages.
 //          Jul 22, 2003: Added implementations for command line tools.
 // $Log$
+// Revision 1.10  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.9  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -31,9 +34,6 @@
 #include <sstream>
 
 // Info added to error output.
-#ifdef __GNUC__
-# define __FUNC__    __PRETTY_FUNCTION__
-#endif
 #if( defined( _DEBUG ) && !defined( NDEBUG ) )
 # define DEBUGINFO   __FUNC__
 #else

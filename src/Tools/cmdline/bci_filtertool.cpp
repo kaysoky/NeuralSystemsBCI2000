@@ -8,6 +8,9 @@
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
 // $Log$
+// Revision 1.12  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.11  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -24,6 +27,7 @@
 #include "shared/UGenericVisualization.h"
 #include "shared/UGenericFilter.h"
 #include "shared/MessageHandler.h"
+#include "ClassName.h"
 
 #define FILTER_NAME "$FILTER$"
 
@@ -119,7 +123,7 @@ FilterWrapper::FilterName()
          << "\"RegisterFilter\" statement linked into the executable."
          << endl;
   else
-    pName = typeid( *pFilter ).name();
+    pName = ClassName( typeid( *pFilter ) );
   return pName;
 }
 

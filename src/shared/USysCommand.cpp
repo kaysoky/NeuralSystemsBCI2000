@@ -31,7 +31,7 @@ SysCommand::WriteToStream( ostream& os ) const
 istream&
 SysCommand::ReadBinary( istream& is )
 {
-  return ::getline( is, mBuffer, '\0' );
+  return std::getline( is, mBuffer, '\0' );
 }
 
 

@@ -5,6 +5,9 @@
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
 // $Log$
+// Revision 1.6  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.5  2006/01/17 17:39:44  mellinger
 // Fixed list of project files.
 //
@@ -19,6 +22,7 @@
 #include <typeinfo>
 
 #include "bci_tool.h"
+#include "ClassName.h"
 #include "shared/UStatus.h"
 #include "shared/UParameter.h"
 #include "shared/UState.h"
@@ -94,7 +98,7 @@ template<typename T>
 void
 Print( ostream& arOut, const T& arObj )
 {
-  arOut << typeid( T ).name() << " { "
+  arOut << ClassName( typeid( T ) ) << " { "
         << setw( 2 ) << arObj << "\n}\n";
 }
 

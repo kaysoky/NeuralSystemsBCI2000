@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.20  2006/02/03 13:40:53  mellinger
+// Compatibility with gcc and BCB 2006.
+//
 // Revision 1.19  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -98,7 +101,7 @@ class SignalProperties
     bool operator<( const SignalProperties& sp ) const
                                         { return ( *this <= sp ) && ( *this != sp ); }
     bool operator>=( const SignalProperties& sp ) const
-                                        { return sp <= *this; } 
+                                        { return sp <= *this; }
     bool operator<=( const SignalProperties& ) const;
 
     // Stream i/o
@@ -178,6 +181,25 @@ class GenericSignal
     SignalProperties                      mProperties;
     std::vector<std::vector<value_type> > mValues;
 };
+
+template<> void
+GenericSignal::PutValueBinary<SignalType::int16>( std::ostream&, size_t, size_t ) const;
+template<> void
+GenericSignal::PutValueBinary<SignalType::int32>( std::ostream&, size_t, size_t ) const;
+template<> void
+GenericSignal::PutValueBinary<SignalType::float24>( std::ostream&, size_t, size_t ) const;
+template<> void
+GenericSignal::PutValueBinary<SignalType::float32>( std::ostream&, size_t, size_t ) const;
+
+template<> void
+GenericSignal::GetValueBinary<SignalType::int16>( std::istream&, size_t, size_t );
+template<> void
+GenericSignal::GetValueBinary<SignalType::int32>( std::istream&, size_t, size_t );
+template<> void
+GenericSignal::GetValueBinary<SignalType::float24>( std::istream&, size_t, size_t );
+template<> void
+GenericSignal::GetValueBinary<SignalType::float32>( std::istream&, size_t, size_t );
+
 
 inline std::ostream& operator<<( std::ostream& os, const SignalType& s )
 {

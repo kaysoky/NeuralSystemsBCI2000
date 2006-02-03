@@ -1,6 +1,5 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
 
 #include "UStatus.h"
 
@@ -9,8 +8,6 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
 
 using namespace std;
 

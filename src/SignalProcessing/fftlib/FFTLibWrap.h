@@ -15,6 +15,10 @@
 #ifndef FFTLibWrapH
 #define FFTLibWrapH
 
+#ifndef __GNUC__
+# define USE_DLL 1
+#endif
+
 class FFTLibWrapper
 {
   public:
@@ -36,7 +40,7 @@ class FFTLibWrapper
 
   private:
     void Cleanup();
-    
+
     int     mFFTSize;
     number* mInputData,
           * mOutputData;
@@ -44,14 +48,24 @@ class FFTLibWrapper
 
     static const char* sLibName;
     static void*  sLibRef;
-    static void* ( *libInit )( int, number*, number*, int, unsigned );
-    static void  ( *libExecute )( void* );
-    static void  ( *libDestroy )( void* );
-    static void  ( *libCleanup )();
-    static void* ( *libMalloc )( unsigned long );
-    static void  ( *libFree )( void* );
+
+    typedef void* ( *LibInitFn )( int, number*, number*, int, unsigned );
+    typedef void  ( *LibExecuteFn )( void* );
+    typedef void  ( *LibDestroyFn )( void* );
+    typedef void  ( *LibCleanupFn )();
+    typedef void* ( *LibMallocFn )( unsigned long );
+    typedef void  ( *LibFreeFn )( void* );
+
+    static LibInitFn    LibInit;
+    static LibExecuteFn LibExecute;
+    static LibDestroyFn LibDestroy;
+    static LibCleanupFn LibCleanup;
+    static LibMallocFn  LibMalloc;
+    static LibFreeFn    LibFree;
+#if USE_DLL
     typedef struct { void** mProc; const char* mName; } ProcNameEntry;
     static ProcNameEntry sProcNames[];
+#endif // USE_DLL
 };
 
 inline
@@ -60,7 +74,7 @@ FFTLibWrapper::Input( int index )
 {
 #if !defined( _NDEBUG ) || defined( _DEBUG )
   if( mInputData == 0 || index > mFFTSize )
-    throw __FUNC__ ": Index out of bounds";
+    throw "FFTLibWrapper::Input: Index out of bounds";
 #endif
   return mInputData[ index ];
 }
@@ -71,7 +85,7 @@ FFTLibWrapper::Output( int index ) const
 {
 #if !defined( _NDEBUG ) || defined( _DEBUG )
   if( mOutputData == 0 || index > mFFTSize )
-    throw __FUNC__ ": Index out of bounds";
+    throw "FFTLibWrapper::Output: Index out of bounds";
 #endif
   return mOutputData[ index ];
 }

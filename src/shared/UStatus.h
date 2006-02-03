@@ -1,14 +1,17 @@
-//---------------------------------------------------------------------------
 #ifndef UStatusH
 #define UStatusH
 
-#define ERRSTATUS_NOERR          0
-
-#define LENGTH_STATUSLINE        512
+#include <iostream>
 
 class STATUS
 {
  public:
+  enum
+  {
+    ERRSTATUS_NOERR = 0,
+    LENGTH_STATUSLINE = 512,
+  };
+
   typedef enum
   {
     unknown,
@@ -26,10 +29,10 @@ class STATUS
   int         GetCode()   const;
   ContentType Content()   const;
 
-  void                ReadFromStream( class std::istream& );
-  void                WriteToStream( class std::ostream& ) const;
-  class std::istream& ReadBinary( class std::istream& );
-  class std::ostream& WriteBinary( class std::ostream& ) const;
+  void                ReadFromStream( std::istream& );
+  void                WriteToStream( std::ostream& ) const;
+  std::istream& ReadBinary( std::istream& );
+  std::ostream& WriteBinary( std::ostream& ) const;
 
   static const STATUS Fail;
 
@@ -40,17 +43,19 @@ class STATUS
   int     mCode;
 };
 
-//---------------------------------------------------------------------------
-inline class std::ostream& operator<<( class std::ostream& os, const STATUS& s )
+
+inline
+std::ostream& operator<<( std::ostream& os, const STATUS& s )
 {
   s.WriteToStream( os );
   return os;
 }
 
-inline class std::istream& operator>>( class std::istream& is, STATUS& s )
+inline
+std::istream& operator>>( std::istream& is, STATUS& s )
 {
   s.ReadFromStream( is );
   return is;
 }
-#endif
+#endif // UStatusH
 
