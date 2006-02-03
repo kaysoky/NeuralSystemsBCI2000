@@ -89,7 +89,7 @@ TTask::TTask()
     "UsrTask int NumberTargets= 2 0 0 1023 // "
         "Number of Targets",
     "UsrTask int SequenceType= 0 0 0 1 // "
-        "0: random permutations, 1: from expression (enumeration)",
+        "0: block randomized, 1: from expression (enumeration)",
     "UsrTask string TargetExpression= % % % % // "
         "Expression that determines the next target during posttrial feedback",
     "UsrTask int BaselineInterval= 1 0 0 2 // "
