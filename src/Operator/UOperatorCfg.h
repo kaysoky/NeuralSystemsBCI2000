@@ -9,6 +9,7 @@
 #include <Controls.hpp>
 #include <Dialogs.hpp>
 #include <StdCtrls.hpp>
+#include <Forms.hpp>
 #include <map>
 #include <string>
 
@@ -31,6 +32,7 @@ __published:	// IDE-managed Components
         TSaveDialog *SaveDialog;
         TButton *bConfigureSaveFilter;
         TButton *bConfigureLoadFilter;
+    TScrollBox *ScrollBox;
         void __fastcall CfgTabControlChange(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall CfgTabControlChanging(TObject *Sender, bool &AllowChange);
@@ -57,10 +59,13 @@ public:		// User declarations
 
 private:
         bool    LoadParameters( const AnsiString& inFileName );
-        
+        void    DisposeControls();
+
         Notification mOnParameterChange;
         PARAMLIST*   paramlist;
         PREFERENCES* preferences;
+        typedef std::set<TControl*> ControlContainer;
+        ControlContainer mControls;
         typedef std::map<std::string, ParamDisplay> DisplayContainer;
         DisplayContainer mParamDisplays;
 };

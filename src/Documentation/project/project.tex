@@ -38,6 +38,9 @@
 % document
 \begin{document}
 
+\newcommand{\ie}{i.e.}
+\newcommand{\eg}{e.g.}
+
 \frontmatter
 \include{title}
 
@@ -339,6 +342,23 @@ in hexadecimal RGB encoding:
 Breakfast string TableClothColor= 0x00FF00 0xFFFFFF 0x000000 0xFFFFFF
   // Color of table cloth to put up for breakfast (color)
 \end{verbatim}
+
+\paragraph{Grouping Parameters}
+A user interface may use parameters' \texttt{Section} fields to collect parameters into
+groups, \eg{} by displaying all parameters with identical section fields on the same
+register tab of a GUI parameter editor dialog window.
+
+In the \texttt{Section} field, finer grained grouping may be expressed by specifying
+sub-sections separated by colon characters, \eg{} a \texttt{Section} value of
+\verb|UsrTask:WindowDimensions|
+will indicate that a parameter belongs to a \texttt{WindowDimensions} subsection of
+a section called \texttt{UsrTask}. A parameter editor implementation might 
+choose to display the respective parameter on a register tab called ``UsrTask'' and
+inside a group box labelled ``WindowDimensions''.
+
+Although any number of sub-sections may be present in the \texttt{Section} field, 
+a user interface implementation may ignore sub-section entries below a 
+level chosen by the implementer.
 
 \subsubsection{}
 The parameter format does not only apply to the interaction between core and 

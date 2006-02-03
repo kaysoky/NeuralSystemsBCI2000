@@ -270,6 +270,12 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
   comment->ShowHint = true;
   comment->Font->Style = TFontStyles() << fsItalic;
   comment->Visible = false;
+  static const AnsiString ellipsis = "...";
+  while( comment->Caption != ellipsis
+          && comment->Left + comment->Width > USERLEVEL_OFFSETX + USERLEVEL_WIDTH )
+    comment->Caption
+      = comment->Caption.SubString( 0, comment->Caption.LastDelimiter( " \t\n\r" ) - 1 )
+        + ellipsis;
   comment->Parent = inParent;
   AddControl( comment );
 }

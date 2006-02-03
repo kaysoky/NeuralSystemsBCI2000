@@ -35,6 +35,9 @@
  *                      dimension names, e.g. PARAM::GetNumRows(),            *
  *                      PARAM::RowLabels(), jm                                *
  * $Log$
+ * Revision 1.31  2006/02/03 13:24:45  mellinger
+ * Introduced grouping of parameters by multiple-level sections.
+ *
  * Revision 1.30  2006/01/17 17:39:44  mellinger
  * Fixed list of project files.
  *
@@ -102,6 +105,18 @@ class PARAM
       mutable bool needSync;
       mutable indexer_base forwardIndex;
    };
+
+  // A class that represents a parameter's grouping sections.
+  public:
+    class sectionList : public std::vector<EncodedString>
+    {
+      public:
+        sectionList() : std::vector<EncodedString>( 1, "" ) {}
+        bool operator<( const sectionList& ) const;
+        // Stream I/O.
+        std::ostream& WriteToStream( std::ostream& ) const;
+        std::istream& ReadFromStream( std::istream& );
+    };
 
   // A class that represents a single parameter value entry, accommodating
   // strings and subparameters.
@@ -194,8 +209,8 @@ class PARAM
 
         PARAM& operator=( const PARAM& );
 
-        void    SetSection( const std::string& s )
-                { mSection = s; }
+        void    SetSection( const std::string& s, size_t idx = 0 )
+                { if( mSections.size() <= idx ) mSections.resize( idx ); mSections[ idx ] = s; }
         void    SetType( const std::string& s )
                 { mType = s; tolower( mType ); }
  private:
@@ -223,8 +238,8 @@ class PARAM
                           const std::string& label_dim1, size_t index_dim2 )
                 { return SetValue( s, mDim1Index[ label_dim1 ], index_dim2 ); }
 
-  const char*   GetSection() const
-                { return mSection.c_str(); }
+  const char*   GetSection( size_t idx = 0 ) const
+                { return mSections.size() > idx ? mSections[ idx ].c_str() : ""; }
   const char*   GetType() const
                 { return mType.c_str(); }
   const char*   GetName() const
@@ -293,6 +308,11 @@ class PARAM
   paramValue& Value( const std::string& label_dim1, const std::string& label_dim2 )
                 { return Value( mDim1Index[ label_dim1 ], mDim2Index[ label_dim2 ] ); }
 
+  sectionList&  Sections()
+                { mChanged = true; return mSections; }
+  const sectionList& Sections() const
+                { return mSections; }
+
   labelIndexer& LabelsDimension1()
                 { mChanged = true; return mDim1Index; }
   labelIndexer& RowLabels()
@@ -332,8 +352,8 @@ class PARAM
         std::istream& ReadBinary( std::istream& );
 
  private:
-        EncodedString mSection,
-                      mName,
+        sectionList   mSections;
+        EncodedString mName,
                       mType,
                       mDefaultvalue,
                       mLowrange,
@@ -347,6 +367,15 @@ class PARAM
                       mArchive,
                       mTag;  // used for parameter save/load filters
 
+ // A comparator class that compares parameters by their section entries.
+ public:
+  class CompareBySection
+  {
+   public:
+    bool operator()( const PARAM& p1, const PARAM& p2 )
+    { return p1.mSections < p2.mSections; }
+  };
+  friend class CompareBySection;
 
  // Case insensitive string handling components.
  private:
@@ -397,6 +426,7 @@ class PARAMLIST : private param_container
         bool    Empty() const
                 { return empty(); }
         void    Clear();
+        void    Sort(); 
 
         bool    Exists( const std::string& name ) const
                 { return mIndex.find( name ) != mIndex.end(); }
@@ -459,6 +489,16 @@ inline std::ostream& operator<<( std::ostream& s, const PARAM::labelIndexer& i )
 inline std::istream& operator>>( std::istream& s, PARAM::labelIndexer& i )
 {
   return i.ReadFromStream( s );
+}
+
+inline std::ostream& operator<<( std::ostream& s, const PARAM::sectionList& l )
+{
+  return l.WriteToStream( s );
+}
+
+inline std::istream& operator>>( std::istream& s, PARAM::sectionList& l )
+{
+  return l.ReadFromStream( s );
 }
 
 inline std::ostream& operator<<( std::ostream& s, const PARAM::paramValue& p )

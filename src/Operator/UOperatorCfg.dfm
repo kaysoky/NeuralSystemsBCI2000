@@ -1,9 +1,12 @@
 object fConfig: TfConfig
   Left = 433
   Top = 200
-  Width = 702
-  Height = 561
+  HorzScrollBar.Visible = False
+  VertScrollBar.Visible = False
+  AutoScroll = False
   Caption = 'Configuration ...'
+  ClientHeight = 534
+  ClientWidth = 694
   Color = clBtnFace
   Constraints.MinWidth = 702
   Font.Charset = DEFAULT_CHARSET
@@ -19,14 +22,25 @@ object fConfig: TfConfig
   PixelsPerInch = 96
   TextHeight = 13
   object CfgTabControl: TTabControl
-    Left = 5
+    Left = 7
     Top = 5
-    Width = 556
-    Height = 521
-    Anchors = [akLeft, akTop, akRight]
+    Width = 573
+    Height = 524
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     OnChange = CfgTabControlChange
     OnChanging = CfgTabControlChanging
+    object ScrollBox: TScrollBox
+      Left = 4
+      Top = 6
+      Width = 565
+      Height = 514
+      HorzScrollBar.Visible = False
+      Align = alClient
+      BevelOuter = bvNone
+      BorderStyle = bsNone
+      TabOrder = 0
+    end
   end
   object bLoadParameters: TButton
     Left = 589

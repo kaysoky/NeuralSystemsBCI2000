@@ -42,6 +42,7 @@
 #include <sstream>
 #include <fstream>
 #include <set>
+#include <algorithm>
 #include <cassert>
 
 using namespace std;
@@ -198,7 +199,7 @@ PARAMLIST::Delete( const std::string& inName )
 {
   if( mIndex.find( inName ) != mIndex.end() )
   {
-    erase( &at( mIndex[ inName ] ) );
+    erase( begin() + mIndex[ inName ] );
     RebuildIndex();
   }
 }
@@ -339,7 +340,7 @@ PARAMLIST::Load( const string& inFileName, bool inUseTags, bool inImportNonexist
   const char* unwantedSections[] = { "System", };
   for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
     for( const_iterator i = paramsFromFile.begin(); i != paramsFromFile.end(); ++i )
-      if( PARAM::strciequal( i->mSection, unwantedSections[ j ] ) )
+      if( PARAM::strciequal( string( i->GetSection() ), unwantedSections[ j ] ) )
         unwantedParams.insert( i->mName );
 #endif
 
@@ -368,9 +369,24 @@ PARAMLIST::Load( const string& inFileName, bool inUseTags, bool inImportNonexist
 }
 
 // **************************************************************************
+// Function:   Sort
+// Purpose:    Sorts parameters by their section fields.
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void
+PARAMLIST::Sort()
+{
+  // stable_sort will retain the relative order of parameters with identical
+  // sections.
+  stable_sort( begin(), end(), PARAM::CompareBySection() );
+  RebuildIndex();
+}
+
+// **************************************************************************
 // Function:   RebuildIndex
-// Purpose:    Rebuilds the Name-to-Position index maintained for parameter
-//             access by name.
+// Purpose:    Rebuilds the Name-to-Position
+//             index maintained for parameter access by name.
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
@@ -484,7 +500,7 @@ PARAM::PARAM( const char* line )
 {
   istringstream iss( line );
   if( !( iss >> *this ) )
-    throw __FUNC__ ": invalid parameter line";
+    throw "invalid parameter line";
 }
 
 // **************************************************************************
@@ -696,7 +712,7 @@ PARAM::ReadFromStream( istream& is )
   mChanged = true;
   mArchive = false;
   mTag = false;
-  mSection.clear();
+  mSections.clear();
   mType.clear();
   mName.clear();
   mValues.clear();
@@ -714,10 +730,8 @@ PARAM::ReadFromStream( istream& is )
   }
   else
   {
-    is >> value;
-    SetSection( value );
-    is >> value;
-    SetType( value );
+    is >> mSections
+       >> mType;
     if( is >> value && value.length() > 0 && *value.rbegin() == '=' )
       SetName( value.substr( 0, value.length() - 1 ) );
     else
@@ -803,7 +817,7 @@ PARAM::WriteToStream( ostream& os ) const
   if( isUnnamed ) // Un-named parameters are enclosed in brackets.
     os << Brackets::OpeningDefault << ' ' << mType << ' ';
   else
-    os << GetSection() << ' ' << GetType() << ' ' << GetName() << "= ";
+    os << mSections << ' ' << mType << ' ' << mName << "= ";
 
   if( mType == "matrix" )
     os << LabelsDimension1() << ' ' << LabelsDimension2() << ' ';
@@ -873,7 +887,7 @@ PARAM::operator=( const PARAM& p )
     // name.
     if( mName.empty() || mName != p.mName )
     {
-      mSection = p.mSection;
+      mSections = p.mSections;
       mName = p.mName;
       mType = p.mType;
       mDefaultvalue = p.mDefaultvalue;
@@ -1098,7 +1112,72 @@ PARAM::labelIndexer::WriteToStream( ostream& os ) const
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// paramValue definitions                                                 //
+// sectionList definitions                                                 //
+/////////////////////////////////////////////////////////////////////////////
+static const char cSectionDelimiter = ':';
+
+// **************************************************************************
+// Function:   operator<
+// Purpose:    Compares section and subsections with another instance's
+//             values, thereby determining PARAMLIST sort order.
+// Parameters: Instance to compare to.
+// Returns:    Comparison result.
+// **************************************************************************
+bool
+PARAM::sectionList::operator<( const sectionList& s ) const
+{
+  for( size_t i = 0; i < size() && i < s.size(); ++i )
+    if( ( *this )[ i ] < s[ i ] )
+      return true;
+    else if( s[ i ] < ( *this )[ i ] )
+      return false;
+  return size() < s.size();
+}
+
+// **************************************************************************
+// Function:   ReadFromStream
+// Purpose:    Member function for formatted stream input of a single
+//             section list.
+//             All formatted input functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Input stream to read from.
+// Returns:    Input stream read from.
+// **************************************************************************
+istream&
+PARAM::sectionList::ReadFromStream( istream& is )
+{
+  clear();
+  EncodedString value;
+  is >> value;
+  istringstream iss( value );
+  while( getline( iss, value, cSectionDelimiter ) )
+    push_back( value );
+  return is;
+}
+
+// **************************************************************************
+// Function:   WriteToStream
+// Purpose:    Member function for formatted stream output of a single
+//             section list.
+//             All formatted output functions are, for consistency's sake,
+//             supposed to use this function.
+// Parameters: Output stream to write into.
+// Returns:    Output stream written into.
+// **************************************************************************
+ostream&
+PARAM::sectionList::WriteToStream( ostream& os ) const
+{
+  if( empty() )
+    os << EncodedString( "" );
+  else
+    os << ( *this )[ 0 ];
+  for( size_t i = 1; i < size(); ++i )
+    os << cSectionDelimiter << ( *this )[ i ];
+  return os;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// paramValue definitions                                                  //
 /////////////////////////////////////////////////////////////////////////////
 PARAM  PARAM::paramValue::sParamBuf;
 string PARAM::paramValue::sStringBuf;
