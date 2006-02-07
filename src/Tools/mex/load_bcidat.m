@@ -6,8 +6,19 @@
 %  loads signal, state, and parameter data from the files whose names are given
 %  as function arguments.
 %
+%  Examples for loading multiple files:
+%    files = dir( '*.dat' );
+%    [ signal, states, parameters ] = load_bcidat( files.name );
+%
+%    files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
+%    [ signal, states, parameters ] = load_bcidat( files.name );
+%
+%
 %  For multiple files, number of channels, states, and signal type must be
 %  consistent.
+%
+%  Signal data will be raw (now calibrated), and will be represented by the 
+%  smallest Matlab data type that accomodates them.
 %
 %  The 'states' output variable will be a Matlab struct with BCI2000 state
 %  names as struct member names, and the number of state value entries matching
@@ -27,6 +38,9 @@
 %  load_bcimat.mex.
 %  $Id$
 %  $Log$
+%  Revision 1.3  2006/02/07 13:23:32  mellinger
+%  Improved documentation regarding multiple files.
+%
 %  Revision 1.2  2006/01/18 20:21:24  mellinger
 %  Allowed for multiple input files.
 %
