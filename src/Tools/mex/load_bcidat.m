@@ -17,7 +17,7 @@
 %  For multiple files, number of channels, states, and signal type must be
 %  consistent.
 %
-%  Signal data will be raw (now calibrated), and will be represented by the 
+%  Signal data will be in raw A/D units, and will be represented by the 
 %  smallest Matlab data type that accomodates them.
 %
 %  The 'states' output variable will be a Matlab struct with BCI2000 state
@@ -38,6 +38,9 @@
 %  load_bcimat.mex.
 %  $Id$
 %  $Log$
+%  Revision 1.5  2006/02/07 13:26:59  mellinger
+%  Fixed more errors in help text.
+%
 %  Revision 1.4  2006/02/07 13:25:19  mellinger
 %  Fixed help text.
 %
