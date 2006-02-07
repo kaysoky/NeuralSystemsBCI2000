@@ -1,5 +1,5 @@
 [ signal, states, parameters ] = load_bcidat( varargin )
-%LOAD_BCIDAT Load a BCI2000 data file into Matlab workspace variables.
+%LOAD_BCIDAT Load BCI2000 data files into Matlab workspace variables.
 %
 %  [ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... )
 %
@@ -38,6 +38,9 @@
 %  load_bcimat.mex.
 %  $Id$
 %  $Log$
+%  Revision 1.4  2006/02/07 13:25:19  mellinger
+%  Fixed help text.
+%
 %  Revision 1.3  2006/02/07 13:23:32  mellinger
 %  Improved documentation regarding multiple files.
 %
