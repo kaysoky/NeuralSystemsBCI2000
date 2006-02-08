@@ -65,7 +65,7 @@ STATOBJ = bci_filtertool.o \
           Normalfilter.o \
           classfilter.o \
 
-BCIROOT = ../../..
+BCIROOT = ../..
 SRCROOT = ${BCIROOT}/EEGSource
 SIGROOT = ${BCIROOT}/SignalProcessing
 SIGPROC = ${SIGROOT}:${SIGROOT}/AR:${SIGROOT}/FIR:${SIGROOT}/P3:${SIGROOT}/PeakDetector:${SIGROOT}/SW:${SIGROOT}/fftlib:${SIGROOT}/misc
