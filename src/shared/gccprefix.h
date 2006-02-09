@@ -8,5 +8,6 @@
 #define NO_PCHINCLUDES
 #define __FUNC__        __PRETTY_FUNCTION__
 #define pow10( x )      pow( 10., (x) )
+#define stricmp         strcasecmp
 
 #endif /* GCC_PREFIX_H */
