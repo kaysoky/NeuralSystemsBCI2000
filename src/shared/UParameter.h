@@ -35,6 +35,9 @@
  *                      dimension names, e.g. PARAM::GetNumRows(),            *
  *                      PARAM::RowLabels(), jm                                *
  * $Log$
+ * Revision 1.32  2006/02/14 20:13:58  mellinger
+ * Re-introduced paramlen parameter into AddParameter2List().
+ *
  * Revision 1.31  2006/02/03 13:24:45  mellinger
  * Introduced grouping of parameters by multiple-level sections.
  *
@@ -464,7 +467,8 @@ class PARAMLIST : private param_container
 
         bool    AddParameter2List( const char* paramstring,
                                    size_t paramlen = 0 )
-                { if( paramlen != 0 ) throw "paramlen != 0"; return Add( paramstring ); }
+                { return Add( std::string( paramstring,
+                              paramlen != 0 ? paramlen : std::string::npos ) ); }
         bool    SaveParameterList( const char* filename,
                                    bool usetags = false ) const
                 { return Save( filename, usetags ); }
