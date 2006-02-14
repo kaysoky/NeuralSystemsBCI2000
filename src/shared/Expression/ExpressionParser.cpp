@@ -1113,6 +1113,11 @@ yyreduce:
     { yyval.value = yyvsp[-3].value == yyvsp[0].value; ;}
     break;
 
+  case 15:
+#line 62 "ExpressionParser.y"
+    { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
+    break;
+
   case 16:
 #line 63 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
@@ -1167,7 +1172,7 @@ yyreduce:
     }
 
 /* Line 999 of yacc.c.  */
-#line 1171 "ExpressionParser.cpp"
+#line 1176 "ExpressionParser.cpp"
 
   yyvsp -= yylen;
   yyssp -= yylen;
