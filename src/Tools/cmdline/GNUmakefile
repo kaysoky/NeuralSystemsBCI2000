@@ -113,7 +113,7 @@ StatFilter.exe: StatFilter.lib bci_tool.lib bci_tool.o
 	
 
 clean:
-	-${RM} *.o *.lib /*.BAK
+	-${RM} *.o *.lib *.bak
 
 distclean: clean
 	-${RM} *.exe
