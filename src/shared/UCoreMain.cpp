@@ -36,6 +36,9 @@
  *                    - Made sure that only a single instance of each module  *
  *                      type will run at a time, jm                           *
  * $Log$
+ * Revision 1.26  2006/02/18 12:06:06  mellinger
+ * Introduced conversion of command line arguments into parameters.
+ *
  * Revision 1.25  2006/01/25 20:25:36  mellinger
  * Fixed behavior of connect/disconnect buttons in manual mode.
  *
@@ -117,19 +120,39 @@ TfMain::TfMain( TComponent* Owner )
 
   AnsiString  connectto;
 
-  for( int i = 0; i <= ::ParamCount(); ++i )
+  int i = 1;
+  while( i <= ::ParamCount() )
   {
     if( ::ParamStr( i ) == "AUTOSTART" )
     {
       if( i + 1 <= ::ParamCount() )
-        connectto = ::ParamStr( i + 1 );
+        connectto = ::ParamStr( ++i );
       else
         connectto = "127.0.0.1";
-      Application->ShowMainForm = false;
-      Startup( connectto );
-      if( __bcierr.flushes() > 0 )
-        Application->Terminate();
     }
+    else if( ::ParamStr( i ).Pos( "--" ) == 1 )
+    {
+      string paramDef = string( ::ParamStr( i ).c_str() ).substr( 2 );
+      size_t nameEnd = paramDef.find_first_of( "-=:" );
+      string paramName = paramDef.substr( 0, nameEnd ),
+             paramValue;
+      if( nameEnd != string::npos )
+        paramValue = paramDef.substr( nameEnd + 1 );
+      PARAM param( paramName.c_str(),
+                   "System:Command Line Arguments",
+                   "variant",
+                   paramValue.c_str()
+                 );
+      mParamlist.Add( param );
+    }
+    ++i;
+  }
+  if( connectto != "" )
+  {
+    Application->ShowMainForm = false;
+    Startup( connectto );
+    if( __bcierr.flushes() > 0 )
+      Application->Terminate();
   }
 }
 
@@ -491,9 +514,11 @@ TfMain::ShutdownSystem()
 void
 TfMain::Startup( AnsiString inTarget )
 {
+#if 0
   // clear all parameters and states first
   mParamlist.Clear();
   mStatelist.Clear();
+#endif
 
   // creating connection to the operator
   mOperatorSocket.open( ( inTarget + ":" + eOperatorPort->Text ).c_str() );
