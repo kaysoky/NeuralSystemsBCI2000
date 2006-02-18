@@ -3,6 +3,9 @@
 //  BCIDirectry.cpp
 //  BCI Directory Management Functions
 //  $Log$
+//  Revision 1.14  2006/02/18 12:02:12  mellinger
+//  Introduced support for arbitrary file extensions.
+//
 //  Revision 1.13  2005/12/20 11:42:41  mellinger
 //  Added CVS id and log to comment.
 //
@@ -20,7 +23,7 @@
 
 using namespace std;
 
-static const char BCIFileExtension[] = ".dat";
+static const char* BCIFileExtension = ".dat";
 
 const string&
 BCIDirectory::InstallationDirectory()
@@ -30,13 +33,21 @@ BCIDirectory::InstallationDirectory()
   return installationDirectory;
 }
 
+BCIDirectory::BCIDirectory()
+: mFileExtension( BCIFileExtension ),
+  mSessionNumber( none ),
+  mDesiredRunNumber( none ),
+  mActualRunNumber( none )
+{
+}
+
 BCIDirectory&
 BCIDirectory::UpdateRunNumber()
 {
   mActualRunNumber = mDesiredRunNumber;
   if( mDesiredRunNumber != none )
   {
-    int largestRunNumber = GetLargestRun( DirectoryPath() ) + 1;
+    int largestRunNumber = GetLargestRun( DirectoryPath(), mFileExtension ) + 1;
     if( largestRunNumber > mDesiredRunNumber )
       mActualRunNumber = largestRunNumber;
   }
@@ -125,12 +136,12 @@ BCIDirectory::ConstructFileName() const
 
 
 int
-BCIDirectory::GetLargestRun( const string& inPath )
+BCIDirectory::GetLargestRun( const string& inPath, const string& inExtension )
 {
   int largestRun = 0;
   AnsiString path = inPath.c_str();
   path += "*";
-  path += BCIFileExtension;
+  path += inExtension.c_str();
   TSearchRec sr;
   if( !Sysutils::FindFirst( path, faAnyFile, sr ) )
   {

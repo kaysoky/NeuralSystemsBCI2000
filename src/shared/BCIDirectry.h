@@ -3,6 +3,9 @@
 //  BCIDirectory Class
 //  BCI Directory Management Functions
 //  $Log$
+//  Revision 1.11  2006/02/18 12:02:12  mellinger
+//  Introduced support for arbitrary file extensions.
+//
 //  Revision 1.10  2005/12/20 11:42:41  mellinger
 //  Added CVS id and log to comment.
 //
@@ -25,8 +28,7 @@ class BCIDirectory
  public:
   static const std::string& InstallationDirectory();
 
-  BCIDirectory()
-  : mSessionNumber( none ), mDesiredRunNumber( none ), mActualRunNumber( none ) {}
+  BCIDirectory();
   // Write accessors return an instance reference to allow for "named parameter"
   // constructs as in
   //   BCIDirectory().SubjectDirectory( "c:\\" ).SubjectName( "test" );
@@ -34,6 +36,8 @@ class BCIDirectory
                      { mSubjectDirectory = s; return UpdateRunNumber(); }
   BCIDirectory&      SubjectName( const char* s )
                      { mSubjectName = s; return UpdateRunNumber(); }
+  BCIDirectory&      FileExtension( const std::string& s )
+                     { mFileExtension = s; return UpdateRunNumber(); }
   BCIDirectory&      SessionNumber( int i )
                      { mSessionNumber = i; return UpdateRunNumber(); }
   BCIDirectory&      RunNumber( int i )
@@ -44,6 +48,8 @@ class BCIDirectory
                      { return mSubjectDirectory; }
   const std::string& SubjectName() const
                      { return mSubjectName; }
+  const std::string& FileExtension() const
+                     { return mFileExtension; }
   int                SessionNumber() const
                      { return mSessionNumber; }
   int                RunNumber() const
@@ -67,7 +73,8 @@ class BCIDirectory
 #endif // OLD_BCIDTRY
 
  private:
-  static int         GetLargestRun( const std::string& path );
+  static int         GetLargestRun( const std::string& path,
+                                    const std::string& extension );
   static int         ExtractRunNumber( const std::string& fileName );
   static int         ChangeForceDir( const std::string& );
 
@@ -78,7 +85,8 @@ class BCIDirectory
   static const char  DriveSeparator = ':';
 
   std::string        mSubjectDirectory,
-                     mSubjectName;
+                     mSubjectName,
+                     mFileExtension;
   int                mSessionNumber,
                      mDesiredRunNumber,
                      mActualRunNumber;
