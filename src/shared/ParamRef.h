@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.6  2006/02/18 12:03:55  mellinger
+// Added support for hex values when converting parameter values into numbers.
+//
 // Revision 1.5  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -147,7 +150,16 @@ ParamRef::operator double() const
 {
   double result = 0.0;
   if( mpParam )
-    result = std::atof( mpParam->GetValue( index( mIdx1 ), index( mIdx2 ) ) );
+  {
+    const char* val = mpParam->GetValue( index( mIdx1 ), index( mIdx2 ) );
+    result = std::atof( val );
+    if( result == 0.0 )
+    {
+      long long n = 0;
+      if( std::istringstream( val ) >> std::hex >> n )
+        result = n;
+    }
+  }
   return result;
 }
 
