@@ -17,6 +17,9 @@
 //            to avoid unwanted changes in filter sequence when using the new
 //            unified module framework code.
 // $Log$
+// Revision 1.15  2006/02/18 12:00:32  mellinger
+// GetFilter<>() will now only return owned filters.
+//
 // Revision 1.14  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -166,8 +169,8 @@ class GenericFilter : protected Environment
   template<typename T> static T* GetFilter()
   {
     T* filterFound = NULL;
-    filters_type::iterator i = AllFilters().begin();
-    while( i != AllFilters().end() && filterFound == NULL )
+    filters_type::iterator i = OwnedFilters().begin();
+    while( i != OwnedFilters().end() && filterFound == NULL )
     {
       filterFound = dynamic_cast<T*>( *i );
       ++i;
