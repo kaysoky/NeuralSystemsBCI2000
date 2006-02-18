@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.20  2006/02/18 12:07:21  mellinger
+// Introduced min() and max() members into SignalType class.
+//
 // Revision 1.19  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -49,12 +52,14 @@ static struct
   SignalType::Type type;
   const char*      name;
   size_t           size;
+  double           min,
+                   max;
 } SignalTypeProperties[] =
 {
-  { SignalType::int16,   "int16",   2 },
-  { SignalType::float24, "float24", 3 },
-  { SignalType::float32, "float32", 4 },
-  { SignalType::int32,   "int32",   4 },
+  { SignalType::int16,   "int16",   2, - ( 1 << 15 ), ( 1 << 15 ) - 1 },
+  { SignalType::float24, "float24", 3, - numeric_limits<float>::max(), numeric_limits<float>::max() },
+  { SignalType::float32, "float32", 4, - numeric_limits<float>::max(), numeric_limits<float>::max() },
+  { SignalType::int32,   "int32",   4, - ( 1LL << 31 ), ( 1LL << 31 ) - 1 },
 };
 
 static const int numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties );
@@ -74,6 +79,24 @@ SignalType::Size() const
   for( size_t i = 0; i < numSignalTypes; ++i )
     if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].size;
+  return sizeof( double );
+}
+
+double
+SignalType::Min() const
+{
+  for( size_t i = 0; i < numSignalTypes; ++i )
+    if( SignalTypeProperties[ i ].type == mType )
+      return SignalTypeProperties[ i ].min;
+  return sizeof( double );
+}
+
+double
+SignalType::Max() const
+{
+  for( size_t i = 0; i < numSignalTypes; ++i )
+    if( SignalTypeProperties[ i ].type == mType )
+      return SignalTypeProperties[ i ].max;
   return sizeof( double );
 }
 

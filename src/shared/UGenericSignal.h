@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.21  2006/02/18 12:07:21  mellinger
+// Introduced min() and max() members into SignalType class.
+//
 // Revision 1.20  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -46,6 +49,8 @@ class SignalType
 
   const char* Name() const;
   size_t      Size() const;
+  double      Min()  const;
+  double      Max()  const;
   static bool ConversionIsSafe( SignalType from, SignalType to );
 
   void ReadFromStream( std::istream& );
