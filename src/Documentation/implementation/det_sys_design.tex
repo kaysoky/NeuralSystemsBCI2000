@@ -1163,6 +1163,76 @@ Environment, GenericFilter, GenericADC, GenericSignal, SignalProperties here?}
 \section{EEG Source}
 \todo{Documentation for the most important EEG sources?}
 
+\subsection{Data File Formats}
+Support for various output formats is provided by ``File Writer'' classes descending 
+from \texttt{GenericFileWriter}.
+At runtime, selection of a file format is achieved by specifying a command line 
+parameter to the source module, e.\ g.\ \\
+\verb|DASSource --FileFormat-Null|.\\
+The value following the last minus character, appended with \texttt{FileWriter},
+will be matched against the names of
+all \texttt{GenericFileWriter} descendants present in the source module.
+In the example, the \texttt{NullFileWriter} class will be used for data output
+(which will not produce any output file).
+
+\subsubsection{BCIDat File Format}
+Parameters, BCI2000 state variables, and brain signal data will be written into a 
+BCI2000 data file
+as defined in the BCI2000 specification (``Project Outline'' document).
+This is also the default if no file format is selected.
+
+\subsubsection{Null File Format}
+No information is recorded. 
+Individual filters may still write log files to the directory defined
+by the \texttt{FileInitials}, \texttt{SubjectName}, and \texttt{SubjectSession}
+parameters.
+
+\subsubsection{EDF File Format}
+EDF (``European Data Format'') is a standard for biosignal data especially popular
+is sleep research.
+
+\begin{itemize}
+ \item EDF is limited to 16 bit data.
+ \item BCI2000 state variables will be mapped to additional signal channels that 
+       contain a single sample for each data block.
+ \item BCI2000 parameters cannot be represented in EDF format.
+       A separate BCI2000 parameter file may be saved along with an EDF data file.
+\end{itemize}
+
+\paragraph{EDF References} 
+\begin{itemize}
+ \item Bob Kemp, Alpo V\"arri, Agostinho C. Rosa, Kim D. Nielsen and John Gade 
+``A simple format for exchange of digitized polygraphic recordings'' 
+Electroencephalography and Clinical Neurophysiology, 82 (1992) 391-393.
+ \item \verb|http://www.hsr.nl/edf/|
+\end{itemize}
+
+\subsubsection{GDF File Format}
+GDF is a general data format for biosignals which is popular in BCI research.
+Building on EDF, GDF allows for arbitrary numeric data types, introduces
+an event table, and provides standardized encoding of events.
+
+\begin{itemize}
+ \item Currently, BCI2000 supports Version 1.25 of the GDF format specification.
+ \item BCI2000 does not prescribe the semantics of its state variables.
+       Thus, a general mapping of BCI2000 states onto GDF events is not 
+       possible.
+       Instead, GDF events are created via a user-defined set of rules
+       (predefined for the most important cases).
+ \item Additionally, all BCI2000 state variables will be mapped to additional 
+       signal channels the same way as for EDF.
+ \item BCI2000 parameters cannot be represented in GDF format.
+       A separate BCI2000 parameter file may be saved along with a GDF data file.
+\end{itemize}
+
+\paragraph{GDF References} 
+\begin{itemize}
+ \item A. Schl\"ogl et al, ``GDF: A General Data Format for Biosignal Data: Version 1.25'',
+       \verb|http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf|.
+ \item A. Schl\"ogl, BIOSIG, \verb|http://biosig.sf.net/|. 2003-2005.
+\end{itemize}
+
+
 \section{Signal Processing}
 \subsection{Calibration}
 
