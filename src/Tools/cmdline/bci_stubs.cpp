@@ -9,6 +9,14 @@
 #include "shared/BCIDirectry.h"
 #include "stdlib.h"
 
+BCIDirectory::BCIDirectory()
+: mSessionNumber( none ),
+  mDesiredRunNumber( none ),
+  mActualRunNumber( none ),
+  mFileExtension( "" )
+{
+}
+
 int
 BCIDirectory::ProcPath()
 {
