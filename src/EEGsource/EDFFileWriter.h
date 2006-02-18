@@ -1,29 +1,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// File: BCIDatFileWriter.cpp
+// File: EDFFileWriter.h
 //
-// Date: Jun 22, 2005
+// Date: Feb 3, 2006
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
-// Description: A filter that stores data into a BCI2000 dat file.
+// Description: A filter that stores data into a EDF data file.
 //
 // $Log$
-// Revision 1.3  2006/02/18 12:11:00  mellinger
+// Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
 //
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef BCIDatFileWriterH
-#define BCIDatFileWriterH
+#ifndef EDFFileWriterH
+#define EDFFileWriterH
 
-#include "FileWriterBase.h"
+#include "EDFFileWriterBase.h"
+#include <vector>
+#include <string>
 
-class BCIDatFileWriter: public FileWriterBase
+class EDFFileWriter: public EDFFileWriterBase
 {
  public:
-          BCIDatFileWriter();
-  virtual ~BCIDatFileWriter();
+          EDFFileWriter();
+  virtual ~EDFFileWriter();
   virtual void Publish() const;
   virtual void Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const;
@@ -35,11 +37,7 @@ class BCIDatFileWriter: public FileWriterBase
                       const STATEVECTOR&   Statevector );
 
  private:
-  virtual const char* DataFileExtension() const { return ".dat"; }
-
-  template<SignalType::Type T> void PutBlock( const GenericSignal&,
-                                              const STATEVECTOR& );
-  SignalProperties mInputProperties;
+  virtual const char* DataFileExtension() const { return ".edf"; }
 };
 
-#endif // BCIDatFileWriterH
+#endif // EDFFileWriterH

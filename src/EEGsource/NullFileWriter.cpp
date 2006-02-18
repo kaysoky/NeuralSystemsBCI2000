@@ -13,7 +13,6 @@
 #pragma hdrstop
 
 #include "NullFileWriter.h"
-#include "UBCIError.h"
 
 using namespace std;
 
@@ -28,6 +27,11 @@ NullFileWriter::NullFileWriter()
 
 
 NullFileWriter::~NullFileWriter()
+{
+}
+
+void
+NullFileWriter::Publish() const
 {
 }
 

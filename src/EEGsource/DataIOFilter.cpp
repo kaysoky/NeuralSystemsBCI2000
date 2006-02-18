@@ -22,11 +22,12 @@
 #include "BCIDirectry.h"
 #include "UBCItime.h"
 #include "MeasurementUnits.h"
+#include "ClassName.h"
 
-#include <stdio.h>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <set>
 
 using namespace std;
 
@@ -35,7 +36,7 @@ RegisterFilter( DataIOFilter, 0 );
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
-  mpFileWriter( GenericFilter::PassFilter<GenericFileWriter>() ),
+  mpFileWriter( NULL ),
   mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
   mVisualizeSourceDecimation( 1 ),
@@ -53,6 +54,8 @@ DataIOFilter::DataIOFilter()
        "5 1 128 // the number of samples transmitted at a time",
     "Source int SamplingRate= 256 "
        "128 1 4000 // the sample rate",
+    "Source list ChannelNames= 0 "
+       "% % % // list of channel names",
     "Filtering floatlist SourceChOffset= 16 "
       "0 0 0 0 "
       "0 0 0 0 "
@@ -78,8 +81,6 @@ DataIOFilter::DataIOFilter()
       "// three-digit session number",
     "Storage string SubjectRun= 00 00 0 0 "
       "// two-digit run number",
-    "Storage string StorageTime= 16:15 Time a z "
-      "// time of beginning of data storage",
 
     // Visualization of data as far as managed by the DataIOFilter:
     "Visualize int VisualizeRoundtrip= 1 1 0 1 "
@@ -102,6 +103,38 @@ DataIOFilter::DataIOFilter()
     "SourceTime 16 0 0 0",
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
+
+  typedef set<GenericFileWriter*> writerSet;
+  set<GenericFileWriter*> availableFileWriters;
+  for( GenericFileWriter* p = GenericFilter::PassFilter<GenericFileWriter>();
+       p != NULL;
+       p = GenericFilter::PassFilter<GenericFileWriter>() )
+    availableFileWriters.insert( p );
+
+  if( !availableFileWriters.empty() )
+  {
+    string fileFormat = "BCIDat";
+    if( Parameters->Exists( "FileFormat" ) )
+      fileFormat = string( Parameter( "FileFormat" ) );
+
+    for( writerSet::const_iterator i = availableFileWriters.begin();
+         i != availableFileWriters.end();
+         ++i )
+      if( string( ClassName( typeid( **i ) ) ).find( fileFormat ) == 0 )
+        mpFileWriter = *i;
+    if( mpFileWriter == NULL )
+      bcierr << "Could not identify writer for file format "
+             << fileFormat
+             << endl;
+
+    availableFileWriters.erase( mpFileWriter );
+    for( writerSet::const_iterator i = availableFileWriters.begin();
+         i != availableFileWriters.end();
+         ++i )
+      delete( *i );
+  }
+  if( mpFileWriter != NULL )
+    mpFileWriter->Publish();
 }
 
 

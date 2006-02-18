@@ -17,11 +17,12 @@
 
 class GenericFileWriter : public GenericFilter
 {
- protected:
+ protected: // No instantiation outside derived classes.
   GenericFileWriter() {}
-
  public:
   virtual ~GenericFileWriter() {}
+  // A separate function for publishing parameters and states.
+  virtual void Publish() const = 0;
   // GenericFilter inherited functions.
   virtual void Preflight( const SignalProperties&,
                                 SignalProperties& ) const = 0;

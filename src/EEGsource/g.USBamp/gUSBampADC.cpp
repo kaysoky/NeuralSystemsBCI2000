@@ -42,11 +42,11 @@ gUSBampADC::gUSBampADC()
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SoftwareCh=      16 16 1 128 "
        "// number of digitized channels total",
-   "Source intlist SoftwareChDevices=  1 16 16 1 16"
+   "Source intlist SoftwareChDevices=  1 16 16 1 16 "
        "// number of digitized channels per device",
    "Source int SampleBlockSize= 8 5 1 128 "
        "// number of samples per block",
-   "Source string DeviceIDMaster= auto 1 1 16"
+   "Source string DeviceIDMaster= auto 1 1 16 "
        "// deviceID for the device whose SYNC goes to the slaves",
    "Source int SamplingRate=    128 128 1 40000 "
        "// the signal sampling rate",
@@ -58,7 +58,7 @@ gUSBampADC::gUSBampADC()
        "// low pass filter for pass band",
    "Source int FilterModelOrder= 4 4 1 10 "
        "// filter model order for pass band",
-   "Source int FilterType= 1 1 1 2"
+   "Source int FilterType= 1 1 1 2 "
        "// filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)",
    "Source int NotchEnabled= 1 1 0 1 "
        "// Enable notch (0=no, 1=yes)",
@@ -68,11 +68,11 @@ gUSBampADC::gUSBampADC()
        "// low pass filter for notch filter",
    "Source int NotchModelOrder= 2 2 1 10 "
        "// filter model order for notch filter",
-   "Source int NotchType= 1 1 1 2"
+   "Source int NotchType= 1 1 1 2 "
        "// filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)",
-   "Source list DeviceIDs= 1 auto"
+   "Source list DeviceIDs= 1 auto "
        "// list of USBamps to be used (or auto)",
-   "Source int SignalType=           0 0 0 1"
+   "Source int SignalType=           0 0 0 1 "
         "// numeric type of output signal: "
             " 0: int16,"
             " 1: float32"

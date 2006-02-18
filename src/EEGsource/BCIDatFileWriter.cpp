@@ -1,12 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
-//
+// $Id$
 // File: BCIDatFileWriter.cpp
 //
-// Date: Nov 11, 2003
+// Date: Jun 22, 2005
 //
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // Description: A filter that stores data into a BCI2000 dat file.
+//
+// $Log$
+// Revision 1.5  2006/02/18 12:11:00  mellinger
+// Support for EDF and GDF data formats.
+//
 //
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
@@ -15,11 +20,11 @@
 #include "BCIDatFileWriter.h"
 
 #include "UBCIError.h"
-#include "BCIDirectry.h"
-
-#include <fstream>
+#include <string>
+#include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <ctime>
 
 using namespace std;
 
@@ -27,15 +32,9 @@ using namespace std;
 // that of the DataIOFilter.
 RegisterFilter( BCIDatFileWriter, 1 );
 
-static const char* bciDataExtension = ".dat",
-                 * bciParameterExtension = ".prm";
 
 BCIDatFileWriter::BCIDatFileWriter()
 {
-  BEGIN_PARAMETER_DEFINITIONS
-    "Storage int SavePrmFile= 0 1 0 1 "
-      "// save additional parameter file (0=no, 1=yes) (boolean)",
-  END_PARAMETER_DEFINITIONS
 }
 
 
@@ -45,59 +44,21 @@ BCIDatFileWriter::~BCIDatFileWriter()
 
 
 void
+BCIDatFileWriter::Publish() const
+{
+  FileWriterBase::Publish();
+
+  BEGIN_PARAMETER_DEFINITIONS
+    "Storage string StorageTime= % % % % "
+      "// time of beginning of data storage",
+  END_PARAMETER_DEFINITIONS
+}
+
+
+void
 BCIDatFileWriter::Preflight( const SignalProperties& Input,
                                    SignalProperties& Output ) const
 {
-  // File accessibility.
-  string baseFileName = BCIDirectory()
-    .SubjectDirectory( Parameter( "FileInitials" ) )
-    .SubjectName( Parameter( "SubjectName" ) )
-    .SessionNumber( Parameter( "SubjectSession" ) )
-    .RunNumber( Parameter( "SubjectRun" ) )
-    .CreatePath()
-    .FilePath();
-
-  {
-    string dataFileName = baseFileName + bciDataExtension;
-
-    // Does the data file exist?
-    ifstream dataRead( dataFileName.c_str() );
-    if( dataRead.is_open() )
-      bcierr << "Data file " << dataFileName << " already exists, "
-             << "will not be touched." << endl;
-    else
-    {
-      // It does not exist, can we write to it?
-      ofstream dataWrite( dataFileName.c_str() );
-      if( !dataWrite.is_open() )
-        bcierr << "Cannot write to file " << dataFileName << endl;
-      else
-      {
-        dataWrite.close();
-        ::remove( dataFileName.c_str() );
-      }
-    }
-  }
-  if( Parameter( "SavePrmFile" ) == 1 )
-  {
-    string paramFileName =  baseFileName + bciParameterExtension;
-    ifstream paramRead( paramFileName.c_str() );
-    if( paramRead.is_open() )
-      bcierr << "Parameter file " << paramFileName << " already exists, "
-             << "will not be touched." << endl;
-    else
-    {
-      ofstream paramWrite( paramFileName.c_str() );
-      if( !paramWrite.is_open() )
-        bcierr << "Cannot write to file " << paramFileName << endl;
-      else
-      {
-        paramWrite.close();
-        ::remove( paramFileName.c_str() );
-      }
-    }
-  }
-
   switch( Input.Type() )
   {
     case SignalType::int16:
@@ -111,7 +72,7 @@ BCIDatFileWriter::Preflight( const SignalProperties& Input,
              << " data type unsupported for BCI2000 files"
              << endl;
   }
-  Output = SignalProperties( 0, 0 );
+  FileWriterBase::Preflight( Input, Output );
 }
 
 
@@ -119,31 +80,23 @@ void
 BCIDatFileWriter::Initialize2( const SignalProperties& Input,
                                const SignalProperties& Output )
 {
-  mOutputFile.close();
-  mOutputFile.clear();
   mInputProperties = Input;
+  FileWriterBase::Initialize2( Input, Output );
 }
 
 
 void
 BCIDatFileWriter::StartRun()
 {
-  BCIDirectory bciDirectory = BCIDirectory()
-                              .SubjectDirectory( Parameter( "FileInitials" ) )
-                              .SubjectName( Parameter( "SubjectName" ) )
-                              .SessionNumber( Parameter( "SubjectSession" ) )
-                              .RunNumber( Parameter( "SubjectRun" ) );
-  string baseFileName = bciDirectory.FilePath(),
-         dataFileName = baseFileName + bciDataExtension;
-  // BCIDirectory will update the run number to the largest unused one
-  // -- we want this to be reflected by the "SubjectRun" parameter.
-  ostringstream oss;
-  oss << setfill( '0' ) << setw( 2 ) << bciDirectory.RunNumber();
-  Parameter( "SubjectRun" ) = oss.str().c_str();
+  FileWriterBase::StartRun();
 
-  mOutputFile.close();
-  mOutputFile.clear();
-  mOutputFile.open( dataFileName.c_str(), ios::out | ios::binary );
+  time_t now = ::time( NULL );
+  const char* dateTime = ::ctime( &now );
+  if( dateTime != NULL )
+  {
+    string strDateTime( dateTime, strlen( dateTime ) - 1 );
+    Parameter( "StorageTime" ) = strDateTime.c_str();
+  }
 
   // We write 16 bit data in the old format to maintain backward compatibility.
   bool useOldFormat = ( mInputProperties.Type() == SignalType::int16 );
@@ -188,30 +141,17 @@ BCIDatFileWriter::StartRun()
   } while( headerLengthField
            && ( headerLengthField.str().length() - headerBegin.length() != fieldLength++ ) );
 
-  mOutputFile.write( headerLengthField.str().data(), headerLengthField.str().size() );
-  mOutputFile.write( header.str().data(), header.str().size() );
-
-  if( !mOutputFile )
-    bcierr << "Error writing to file " << dataFileName << endl;
-
-  if( Parameter( "SavePrmFile" ) == 1 )
-  {
-    string paramFileName =  baseFileName + bciParameterExtension;
-    ofstream file( paramFileName.c_str() );
-    if( !( file << *Parameters << flush ) )
-      bcierr << "Error writing parameters to file "
-             << paramFileName
-             << endl;
-  }
+  OutputStream().write( headerLengthField.str().data(), headerLengthField.str().size() );
+  OutputStream().write( header.str().data(), header.str().size() );
 }
 
 
 void
 BCIDatFileWriter::StopRun()
 {
-  mOutputFile.close();
-  mOutputFile.clear();
+  FileWriterBase::StopRun();
 }
+
 
 template<SignalType::Type T>
 void
@@ -222,11 +162,12 @@ BCIDatFileWriter::PutBlock( const GenericSignal& inSignal, const STATEVECTOR& in
   for( size_t j = 0; j < inSignal.Elements(); ++j )
   {
     for( size_t i = 0; i < inSignal.Channels(); ++i )
-      inSignal.PutValueBinary<T>( mOutputFile, i, j );
-    mOutputFile.write( inStatevector.Data(),
+      inSignal.PutValueBinary<T>( OutputStream(), i, j );
+    OutputStream().write( inStatevector.Data(),
                        inStatevector.Length() );
   }
 }
+
 
 void
 BCIDatFileWriter::Write( const GenericSignal& inSignal, const STATEVECTOR& inStatevector )
@@ -248,8 +189,6 @@ BCIDatFileWriter::Write( const GenericSignal& inSignal, const STATEVECTOR& inSta
     default:
       bcierr << "Unsupported signal data type" << endl;
   }
-  if( !mOutputFile )
-    bcierr << "Error writing to file" << endl;
-  State( "Recording" ) = ( mOutputFile ? 1 : 0 );
+  FileWriterBase::Write( inSignal, inStatevector );
 }
 
