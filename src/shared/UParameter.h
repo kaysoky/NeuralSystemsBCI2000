@@ -35,6 +35,9 @@
  *                      dimension names, e.g. PARAM::GetNumRows(),            *
  *                      PARAM::RowLabels(), jm                                *
  * $Log$
+ * Revision 1.33  2006/02/20 16:26:29  mellinger
+ * Fixed string length parameter in PARAMLIST::AddParameter2List().
+ *
  * Revision 1.32  2006/02/14 20:13:58  mellinger
  * Re-introduced paramlen parameter into AddParameter2List().
  *
@@ -468,7 +471,7 @@ class PARAMLIST : private param_container
         bool    AddParameter2List( const char* paramstring,
                                    size_t paramlen = 0 )
                 { return Add( std::string( paramstring,
-                              paramlen != 0 ? paramlen : std::string::npos ) ); }
+                              paramlen != 0 ? paramlen : ::strlen( paramstring ) ) ); }
         bool    SaveParameterList( const char* filename,
                                    bool usetags = false ) const
                 { return Save( filename, usetags ); }
