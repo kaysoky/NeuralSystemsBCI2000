@@ -117,11 +117,13 @@ DataIOFilter::DataIOFilter()
     if( Parameters->Exists( "FileFormat" ) )
       fileFormat = string( Parameter( "FileFormat" ) );
 
+    string writerName = fileFormat + "FileWriter";
     for( writerSet::const_iterator i = availableFileWriters.begin();
-         i != availableFileWriters.end();
+         mpFileWriter == NULL && i != availableFileWriters.end();
          ++i )
-      if( string( ClassName( typeid( **i ) ) ).find( fileFormat ) == 0 )
+      if( writerName == ClassName( typeid( **i ) ) )
         mpFileWriter = *i;
+        
     if( mpFileWriter == NULL )
       bcierr << "Could not identify writer for file format "
              << fileFormat
