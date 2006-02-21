@@ -10,6 +10,9 @@
 //              output functions (e.g., for output into a file, or directly
 //              into an application via automation interfaces).
 // $Log$
+// Revision 1.6  2006/02/21 17:10:43  mellinger
+// Less strict consistency check between number of signal channels and number of offset/gain entries.
+//
 // Revision 1.5  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -126,10 +129,10 @@ TBCIReader::Process(    const TStrList& inChannelNames,
                << "does not match that in 'SourceChGain'" << endl;
         return;
       }
-      if( numTransmittedChannels != numSourceChannels )
+      if( numTransmittedChannels < numSourceChannels )
       {
         bcierr << "File format error in file " << mFileName << ":" << endl
-               << "'SourceCh' header entry does not match the "
+               << "'SourceCh' header entry exceeds the "
                << "number of entries in 'SourceChGain' and 'SourceChOffset'" << endl;
         return;
       }
