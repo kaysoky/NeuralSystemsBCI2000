@@ -13,10 +13,17 @@
 #              Aside from testing purposes, this may be useful
 #              for offline data analysis.
 # $Log$
+# Revision 1.22  2006/02/22 19:26:41  mellinger
+# Added Matlab filter and fixed BCB macro.
+#
 # Revision 1.21  2006/01/17 17:16:43  mellinger
 # Added StateTransform filter.
 #
 ####################################################################
+
+!if !$d(BCB)
+BCB = $(MAKEDIR)\..
+!endif
 
 AND = &&
 OR  = ||
@@ -28,6 +35,9 @@ TARGETS = obj\bci_tool.lib \
           bci_stream2asc.exe \
           bci_stream2table.exe \
           bci_stream2mat.exe \
+#         bci_stream2dat.exe \
+#         bci_stream2gdf.exe \
+#         bci_stream2edf.exe \
           CalibrationFilter.exe \
           ClassFilter.exe \
           Normalfilter.exe \
@@ -40,6 +50,7 @@ TARGETS = obj\bci_tool.lib \
           FFTFilter.exe \
           TransmissionFilter.exe \
           Normalizer.exe \
+          MatlabFilter.exe \
           ConditionalIntegrator.exe \
           ComplexDemodulator.exe \
           StateTransform.exe \
@@ -56,6 +67,7 @@ TARGETS = obj\bci_tool.lib \
           FFTFilter.dll \
           TransmissionFilter.dll \
           Normalizer.dll \
+          MatlabFilter.dll \
           ConditionalIntegrator.dll \
           ComplexDemodulator.dll \
           StateTransform.dll \
@@ -80,7 +92,8 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\ExpressionParser.obj \
           obj\getmem.obj \
           obj\getfir.obj \
-          obj\FFTLibWrap.obj 
+          obj\FFTLibWrap.obj \
+          obj\MatlabWrapper.obj
           
 DLLOBJ  = obj\bci_dll.obj \
           obj\bci_stubs.obj \
@@ -101,7 +114,8 @@ DLLOBJ  = obj\bci_dll.obj \
           obj\ExpressionParser.obj \
           obj\getmem.obj \
           obj\getfir.obj \
-          obj\FFTLibWrap.obj 
+          obj\FFTLibWrap.obj \
+          obj\MatlabWrapper.obj
           
 STATOBJ = obj\StatFilter.obj \
           obj\Statistics.obj \
@@ -111,10 +125,10 @@ STATOBJ = obj\StatFilter.obj \
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\misc
+SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\Matlab;${SIGROOT}\misc
 PATHOBJ = .\obj
 PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\Expression;${SIGPROC};${SRCROOT}
-INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${BCB}\include;${BCB}\include\vcl
+INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${SRCROOT};${BCIROOT}\lib\matlab;${BCB}\include;${BCB}\include\vcl
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib
 
 BINDIR = ..\..\..\Tools\cmdline
@@ -194,4 +208,4 @@ clean:
 	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds
 
 distclean: clean
-	-${RM} *.exe *.~* *.il*
+	-${RM} *.exe *.dll *.~* *.il*
