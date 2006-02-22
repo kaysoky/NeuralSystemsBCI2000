@@ -8,6 +8,9 @@
 // Date: Nov 30, 2005
 //
 // $Log$
+// Revision 1.2  2006/02/22 19:28:30  mellinger
+// Removed RegisterFilter statement from header file.
+//
 // Revision 1.1  2005/12/20 11:38:07  mellinger
 // Initial version.
 //
@@ -74,8 +77,6 @@
 #include "UGenericVisualization.h"
 #include "MatlabWrapper.h"
 
-RegisterFilter( MatlabFilter, 2.C );
-
 class MatlabFilter : public GenericFilter
 {
  public:
@@ -95,7 +96,7 @@ class MatlabFilter : public GenericFilter
   void ParamsToMatlabWS() const;
   void MatlabWSToParams();
   bool CallMatlab( MatlabFunction& ) const;
-  
+
   MatlabFunction         mBci_Process;
   GenericVisualization   mVisualization;
   bool                   mVisualize;
