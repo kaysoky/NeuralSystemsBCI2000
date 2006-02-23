@@ -172,7 +172,7 @@ OperatorUtils::LoadMatrix( const char* inFileName, PARAM& outParam )
     istringstream is( line );
     vector<string> row;
     string value;
-    while( is >> value )
+    while( getline( is, value, '\t' ) )
       row.push_back( value );
     if( !row.empty() )
       matrix.push_back( row );
@@ -198,11 +198,12 @@ int
 OperatorUtils::SaveMatrix( const char* inFileName, const PARAM& inParam ) 
 {
   ofstream output( inFileName );
-  for( size_t row = 0; row < inParam.GetNumValuesDimension1(); ++row )
+  for( size_t row = 0; row < inParam.GetNumRows(); ++row )
   {
-    for( size_t col = 0; col < inParam.GetNumValuesDimension2(); ++col )
-      output << ' ' << setw( 8 ) << inParam.GetValue( row, col );
-    output << endl;
+    size_t col = 0;
+    while( col < inParam.GetNumColumns() - 1 )
+      output << inParam.GetValue( row, col++ ) << '\t';
+    output << inParam.GetValue( row, col ) << endl;
   }
   return output ? ERR_NOERR : ERR_COULDNOTWRITE;
 }

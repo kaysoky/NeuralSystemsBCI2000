@@ -15,7 +15,7 @@
 
 #define ALLFILES_FILTER "All files (*.*)|*.*"
 #define MATRIX_EXTENSION ".txt"
-#define MATRIX_FILTER "Space delimited matrix file (*" MATRIX_EXTENSION ")"  \
+#define MATRIX_FILTER "Tab delimited matrix file (*" MATRIX_EXTENSION ")"  \
                                        "|*" MATRIX_EXTENSION "|" ALLFILES_FILTER
 using namespace std;
 
@@ -442,13 +442,13 @@ ParamDisplay::Matrix::OnLoadButtonClick( TObject* )
       case ERR_NOERR:
         break;
       case ERR_MATLOADCOLSDIFF:
-        Application->MessageBox( "Number of columns in rows is different", "Error", MB_OK );
+        Application->MessageBox( "Number of columns differs across rows", "Error", MB_ICONERROR | MB_OK );
         break;
       case ERR_MATNOTFOUND:
-        Application->MessageBox( "Could not open matrix data file", "Error", MB_OK );
+        Application->MessageBox( "Could not open matrix data file", "Error", MB_ICONERROR | MB_OK );
         break;
       default:
-        Application->MessageBox(" Error loading the matrix file", "Error", MB_OK );
+        Application->MessageBox(" Error loading the matrix file", "Error", MB_ICONERROR | MB_OK );
     }
     DisplayBase::OnContentChange();
   }
