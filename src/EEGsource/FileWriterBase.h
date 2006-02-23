@@ -10,6 +10,9 @@
 //              file writer classes that output into a file.
 //
 // $Log$
+// Revision 1.2  2006/02/23 19:34:08  mellinger
+// Moved OutputStream() accessor definition into cpp file.
+//
 // Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
@@ -39,7 +42,7 @@ class FileWriterBase: public GenericFileWriter
                       const STATEVECTOR&   Statevector );
 
  protected:
-  std::ostream& OutputStream() { return mOutputFile; }
+  std::ostream& OutputStream();
 
  private:
   // A descendant reports the file extension through the DataFileExtension()

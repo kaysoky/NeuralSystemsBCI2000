@@ -10,6 +10,9 @@
 //              file writer classes that output into a file.
 //
 // $Log$
+// Revision 1.2  2006/02/23 19:34:08  mellinger
+// Moved OutputStream() accessor definition into cpp file.
+//
 // Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
@@ -156,6 +159,7 @@ FileWriterBase::StopRun()
   mOutputFile.clear();
 }
 
+
 void
 FileWriterBase::Write( const GenericSignal& Signal,
                        const STATEVECTOR&   Statevector )
@@ -163,5 +167,12 @@ FileWriterBase::Write( const GenericSignal& Signal,
   if( !mOutputFile )
     bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
   State( "Recording" ) = ( mOutputFile ? 1 : 0 );
+}
+
+
+std::ostream&
+FileWriterBase::OutputStream()
+{
+  return mOutputFile;
 }
 
