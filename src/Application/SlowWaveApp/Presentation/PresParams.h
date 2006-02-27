@@ -35,7 +35,7 @@
 PARAM_DECL(
     SamplingRate,
     int,
-    ::Source,
+    ext_Source,
     "%",
     "",
     1, 1024
@@ -44,7 +44,7 @@ PARAM_DECL(
 PARAM_DECL(
     SampleBlockSize,
     int,
-    ::Source,
+    ext_Source,
     "%",
     "",
     1, 10000
@@ -54,7 +54,7 @@ PARAM_DECL(
 PARAM_DECL(
     ResourceDirectory,
     string,
-    ::Storage,
+    ext_Storage,
     "Resources Resources a z",
     "Resource directory relative to application module (directory)",
     0, 0
@@ -63,7 +63,7 @@ PARAM_DECL(
 PARAM_DECL(
     FBBegin,
     float,
-    ::Sequencer,
+    ext_Sequencer,
     "2.0 2.0 0 " TIME_MAX_STR,
     "Begin of cursor movement in s",
     0, TIME_MAX
@@ -72,7 +72,7 @@ PARAM_DECL(
 PARAM_DECL(
     FBEnd,
     float,
-    ::Sequencer,
+    ext_Sequencer,
     "5.5 5.5 0 " TIME_MAX_STR,
     "End of cursor movement in s",
     0, TIME_MAX
@@ -81,7 +81,7 @@ PARAM_DECL(
 PARAM_DECL(
     TaskBegin,
     float,
-    ::Sequencer,
+    ext_Sequencer,
     "0.0 0.0 0.0 " TIME_MAX_STR,
     "Task/stimulus presentation time",
     0, TIME_MAX
@@ -92,7 +92,7 @@ PARAM_DECL(
 PARAM_DECL(
     NumFBChannels,
     int,
-    ::Decider,
+    ext_Decider,
     "1 1 0 2",
     "number of FB channels",
     0, 2
@@ -112,7 +112,7 @@ PARAM_DECL(
 PARAM_DECL(
     NumberOfTargets,
     int,
-    ::Decider,
+    ext_Decider,
     "4 4 0 " MAX_NUM_TARGETS_STR,
     "number of target codes",
     0, MAX_NUM_TARGETS
@@ -158,7 +158,7 @@ PARAM_DECL(
 PARAM_DECL(
     FBCh__RS__L,
     floatlist,
-    ::Decider,
+    ext_Decider,
     "4 -101 -101 -101 -101 0 -101 101",
     "Lower target bounds for feedback channel " RUNTIME_SUFFIX,
     -101, 101
@@ -166,7 +166,7 @@ PARAM_DECL(
 PARAM_DECL(
     FBCh__RS__U,
     floatlist,
-    ::Decider,
+    ext_Decider,
     "4 101 101 101 101 0 -101 101",
     "Upper target bounds for feedback channel " RUNTIME_SUFFIX,
     -101, 101

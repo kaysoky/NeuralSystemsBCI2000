@@ -82,7 +82,7 @@ void
 _TParamDef::param_add_all( PARAMLIST* inList, const char* inSectionPrefix, long inDefaultDimension )
 {
   string  sectionPrefix( inSectionPrefix ),
-          externalPrefix( "::" ),
+          externalPrefix( "ext_" ),
           runtimeSuffix( RUNTIME_SUFFIX ),
           runtimeElement( RUNTIME_ELEMENT );
   for( list<_TParamDef*>::const_iterator i = _TParamDef::params().begin();
