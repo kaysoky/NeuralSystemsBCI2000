@@ -66,8 +66,13 @@ void RDAClientADC::Preflight( const SignalProperties&,
     {
       goodOffsets &=
         ( Parameter( "SourceChOffset", i ) == 0 );
-      goodGains &=
-        ( Parameter( "SourceChGain", i ) == preflightQueue.info().channelResolutions[ i ] );
+        
+      double gain = preflightQueue.info().channelResolutions[ i ];
+      goodGains &= (
+        gain != 0
+        &&
+        1e-3 > ::fabs( Parameter( "SourceChGain", i ) - gain ) / gain
+      );
     }
     if( !goodOffsets )
       bcierr << "The SourceChOffset values for the first "
