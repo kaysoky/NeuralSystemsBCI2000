@@ -609,10 +609,14 @@ BCI2000DATA::BufferSample( unsigned long inSample )
       throw __FUNC__ ": Could not seek to sample position";
 
     mBufferBegin = filepos;
-    mBufferEnd = mBufferBegin;
-    while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
-      mBufferEnd += mFile.readsome( mpBuffer + mBufferEnd - mBufferBegin,
-                                    mBufferSize - ( mBufferEnd - mBufferBegin ) );
+	mBufferEnd = mBufferBegin;
+	while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
+	{
+	  mFile.read( mpBuffer + mBufferEnd - mBufferBegin,
+									mBufferSize - ( mBufferEnd - mBufferBegin ) );
+	  mBufferEnd += mFile.gcount();
+	}
+	mFile.clear();
   }
   return mpBuffer + filepos - mBufferBegin;
 }
