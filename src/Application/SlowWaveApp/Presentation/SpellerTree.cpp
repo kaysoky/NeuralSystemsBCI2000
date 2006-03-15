@@ -34,6 +34,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <limits>
 
 #include "SpellerTree.h"
 #include "PresErrors.h"

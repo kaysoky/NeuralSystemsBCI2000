@@ -30,6 +30,9 @@
 //          Introduced bookkeeping for configuration settings.
 //
 // $Log$
+// Revision 1.17  2006/03/15 14:52:58  mellinger
+// Compatibility with BCB 2006.
+//
 // Revision 1.16  2006/02/01 11:01:09  mellinger
 // Changed anonymous enum to constant definitions.
 //
@@ -180,8 +183,8 @@ class VISUAL
     static const RGBColor cChannelColorsDefault[];
     static const int cChannelBase = 1, // displayed number of first channel
                      cSampleBase = 0,  // displayed number of first sample
-                     cLabelWidth = 25,
-                     cMaxDisplayGroups = 16;
+					 cLabelWidth = 25;
+    static const unsigned int cMaxDisplayGroups = 16;
 
    protected:
     enum DisplayMode

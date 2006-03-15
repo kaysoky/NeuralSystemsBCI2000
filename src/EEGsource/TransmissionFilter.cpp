@@ -18,6 +18,8 @@
 #include "defines.h"
 #include "UBCIError.h"
 
+#include <limits>
+
 using namespace std;
 
 RegisterFilter( TransmissionFilter, 1.1 );

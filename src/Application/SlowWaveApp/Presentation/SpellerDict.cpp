@@ -21,6 +21,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <limits>
 
 #include "SpellerDict.h"
 #include "PresErrors.h"

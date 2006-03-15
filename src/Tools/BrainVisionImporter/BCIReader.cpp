@@ -10,6 +10,9 @@
 //              output functions (e.g., for output into a file, or directly
 //              into an application via automation interfaces).
 // $Log$
+// Revision 1.7  2006/03/15 14:52:58  mellinger
+// Compatibility with BCB 2006.
+//
 // Revision 1.6  2006/02/21 17:10:43  mellinger
 // Less strict consistency check between number of signal channels and number of offset/gain entries.
 //
@@ -72,9 +75,9 @@ TBCIReader::Process(    const TStrList& inChannelNames,
 {
     mStatesInFile.clear();
 
-    unsigned long   numSourceChannels = mInputData.GetNumChannels(),
-                    numTransmittedChannels = 0;
-    float           samplingRate = mInputData.GetSamplingRate();
+	unsigned int numSourceChannels = mInputData.GetNumChannels(),
+				 numTransmittedChannels = 0;
+    float        samplingRate = mInputData.GetSamplingRate();
 
     const STATELIST& states = *mInputData.GetStateListPtr();
     for( size_t i = 0; i < states.Size(); ++i )

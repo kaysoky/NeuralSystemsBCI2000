@@ -10,6 +10,9 @@
 //              data format as defined in Kemp et al, 1992, and the
 //              GDF 1.25 data format as defined in Schloegl et al, 1998.
 // $Log$
+// Revision 1.2  2006/03/15 14:52:58  mellinger
+// Compatibility with BCB 2006.
+//
 // Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
@@ -25,6 +28,7 @@
 #include <iomanip>
 #include <string>
 #include <ctime>
+#include <limits>
 
 
 using namespace std;

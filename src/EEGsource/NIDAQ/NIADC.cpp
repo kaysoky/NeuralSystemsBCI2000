@@ -54,7 +54,11 @@ NIADC::NIADC()
  END_STATE_DEFINITIONS
 
  data_critsec=new TCriticalSection();
+ #if( __BORLANDC__ >= 0x0570 ) // no VCL version macro available
+ bufferdone = new TEvent( NULL, false, false, "", false );
+ #else
  bufferdone=new TEvent(NULL, false, false, "");
+ #endif
  piBuffer=NULL;
  for (int buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
   piHalfBuffer[buf]=NULL;

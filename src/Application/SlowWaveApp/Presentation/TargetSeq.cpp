@@ -26,6 +26,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <limits>
 #include <cstdlib>
 #include <cassert>
 

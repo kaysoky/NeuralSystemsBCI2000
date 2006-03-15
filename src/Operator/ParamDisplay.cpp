@@ -636,7 +636,7 @@ ParamDisplay::SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
   mComboBox->Top = VALUE_OFFSETY;
   mComboBox->Width = VALUE_WIDTH;
   mComboBox->Sorted = false;
-  mComboBox->Style = csDropDownList;
+  mComboBox->Style = Stdctrls::csDropDownList;
   mComboBox->Parent = inParent;
   for( size_t i = 0; i < inParam.Values().size(); ++i )
     mComboBox->Items->Add( inParam.Values()[ i ].c_str() );

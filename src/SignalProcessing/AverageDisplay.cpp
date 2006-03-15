@@ -8,6 +8,8 @@
 #include "Label.h"
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <limits>
 
 using namespace std;
 

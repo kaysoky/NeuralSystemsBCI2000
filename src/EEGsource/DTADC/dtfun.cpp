@@ -265,7 +265,11 @@ ECODE           errc;
  lpfnNotifyProc=(OLNOTIFYPROC)&BufferDone;
  errc= olDaSetNotificationProcedure( lphDass, lpfnNotifyProc, (LPARAM)this );   // tell the callback function which instance of DTADC called it
  if (bdone) delete bdone;
+ #if( __BORLANDC__ >= 0x0570 ) // no VCL version macro available
+ bdone = new TEvent( NULL, false, false, "", false );
+ #else
  bdone= new TEvent(NULL,false,false,"");
+ #endif 
 }
 
 //----------------------------------------------------------------

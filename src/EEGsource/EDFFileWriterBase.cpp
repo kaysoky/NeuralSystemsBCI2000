@@ -9,6 +9,9 @@
 // Description: A base class for EDF/GDF type file writers.
 //
 // $Log$
+// Revision 1.2  2006/03/15 14:52:58  mellinger
+// Compatibility with BCB 2006.
+//
 // Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
@@ -24,6 +27,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 using namespace std;
 

@@ -20,7 +20,7 @@
 
 #include <vcl.h>
 #include <windows.h>
-#include <math>
+#include <math.h>
 #include <algorithm>
 
 // The hook will be installed from the constructor at static initialization time,
