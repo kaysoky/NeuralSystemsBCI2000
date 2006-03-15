@@ -14,6 +14,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "CGAUGES"
+#pragma link "cgauges"
 #pragma resource "*.dfm"
 
 #define VERSION "0.5"

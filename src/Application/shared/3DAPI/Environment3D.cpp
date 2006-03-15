@@ -1704,15 +1704,16 @@ bool collide(int objType1, int index1, int objType2, int index2)
 {
 try
 {
-        if(debug) fprintf(f, "STARTING COLLIDE.\n");
-        //both objects are sphere
-        if (objType1 == 1 && objType2 == 1)     
-        {
-                if(debug) fprintf(f, "SPHERE AND SPHRE COLLISOIN DETECTION.\n");
+		//if(debug) fprintf(f, "STARTING COLLIDE.\n");
+		//both objects are sphere
+		if (objType1 == 1 && objType2 == 1)
+		{
+        //        if(debug) fprintf(f, "SPHERE AND SPHRE COLLISOIN DETECTION.\n");
                 if (index1 == index2)           //both input are a single sphere
                         return true;
-
-                GLfloat rad1, rad2;
+#undef rad1
+#undef rad2 // some Microsoft genius #defined these in dlgs.h
+				GLfloat rad1, rad2;
                 rad1 = sphereVec[index1].getSphereRad();
                 rad2 = sphereVec[index2].getSphereRad();
 

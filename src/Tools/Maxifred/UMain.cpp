@@ -49,6 +49,8 @@
 
 #pragma link "CSPIN"
 #pragma link "CGAUGES"
+#pragma link "cgauges"
+#pragma link "cspin"
 #pragma resource "*.dfm"
 #pragma package(smart_init)
 

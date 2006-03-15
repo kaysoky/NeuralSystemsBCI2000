@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "CGAUGES"
+#pragma link "cgauges"
 #pragma resource "*.dfm"
 
 #define MAX_STATES      100
