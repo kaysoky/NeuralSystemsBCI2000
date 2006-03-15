@@ -8,6 +8,7 @@ This document covers the following topics:
 (2) Compiling BCI2000 using the Borland IDE
 (3) Starting up BCI2000
 (4) Creating up-to date versions of the documentation in PDF format
+(5) Compiling BCI2000 with Borland C++ Builder 2006
 
 
 (1) Compiling BCI2000 from the command line
@@ -46,3 +47,16 @@ This document covers the following topics:
   - Make sure that the pdflatex executable is inside the search path
     defined by the PATH environment variable.
   - Execute "make pdf" from the BCI2000/src directory.
+
+(5) Compiling BCI2000 with Borland C++ Builder 2006
+    ===============================================
+  - Open the file "BCI2000.bpg" from within Borland Developer Studio.
+    This will import all existing projects into BDS project files.
+  - For each project, open the "Options..." dialog, go to
+    "C++ Compiler->Precompiled Headers", and uncheck all check boxes.
+  - In the project manager (at the top right), right-click the topmost 
+    project and choose "Make all from here".
+  - To get rid of possible inconsistencies from earlier builds, choose
+    "Build all from here" instead of "Make all from here".
+  - Command-line builds cannot be done with Borland C++ Builder 2006
+    because it lacks a project-to-makefile conversion utility.
