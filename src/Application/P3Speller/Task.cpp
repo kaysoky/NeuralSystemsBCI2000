@@ -41,13 +41,15 @@ TTask::TTask()
   f( NULL )
 {
  BEGIN_PARAMETER_DEFINITIONS
+  "P3Speller int NumberOfSequences= 15 15 0 0 // "
+      "Number of sets of 12 intensifications",
   "P3Speller int WinXpos= 5 0 0 5000 // "
       "User Window X location",
   "P3Speller int WinYpos= 5 0 0 5000 // "
       "User Window Y location",
   "P3Speller int WinWidth= 512 512 0 2000 // "
       "User Window Width",
-  "P3Speller int WinHeight= 512 512 0 2000 // "                           
+  "P3Speller int WinHeight= 512 512 0 2000 // "
       "User Window Height",
   "P3Speller int TargetWidth= 5 0 0 100 // "
       "TargetWidth in percent of screen width",
@@ -61,8 +63,6 @@ TTask::TTask()
       "Size of status bar text in percent of screen height",
   "P3Speller string BackgroundColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // "
       "Background Color (color)",
-  "P3Speller int NumberOfSequences= 15 15 0 0 // "
-      "Number of sets of 12 intensifications",
   "P3Speller int PostSetInterval= 60 60 0 10000 // "
       "Duration after set of n intensifications in units of SampleBlocks",
   "P3Speller int PreSetInterval= 60 60 0 10000 // "
