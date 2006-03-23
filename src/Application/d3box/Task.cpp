@@ -36,31 +36,31 @@ TTask::TTask()
 {
   BEGIN_PARAMETER_DEFINITIONS
 
-    "3DEnvironment int CameraX = 0 0 0 32767 // "
+    "3DEnvironment int CameraX= 0 0 0 32767 // "
       "Camera X coordinate in the unit of +- 32767",
-    "3DEnvironment int CameraY = 0 0 0 32767 // "
+    "3DEnvironment int CameraY= 0 0 0 32767 // "
       "Camera Y coordinate in the unit of +- 32767",
-    "3DEnvironment int CameraZ = 40959 40959 0 32767 // "
+    "3DEnvironment int CameraZ= 40959 40959 0 32767 // "
       "Camera Z coordinate in the unit of +- 32767",
-    "3DEnvironment int CameraAimX = 0 0 0 32767 // "
+    "3DEnvironment int CameraAimX= 0 0 0 32767 // "
       "Camera Aim X coordinate in the unit of +- 32767",
-    "3DEnvironment int CameraAimY = 0 0 0 32767 // "
+    "3DEnvironment int CameraAimY= 0 0 0 32767 // "
       "Camera Aim Y coordinate in the unit of +- 32767",
-    "3DEnvironment int CameraAimZ = 0 0 0 32767 // "
+    "3DEnvironment int CameraAimZ= 0 0 0 32767 // "
       "Camera Aim Z coordinate in the unit of +- 32767",
-    "3DEnvironment int LightSourceX = 0 0 0 32767 // "
+    "3DEnvironment int LightSourceX= 0 0 0 32767 // "
       "Light Source X coordinate in the unit of +- 32767",
-    "3DEnvironment int LightSourceY = 0 0 0 32767 // "
+    "3DEnvironment int LightSourceY= 0 0 0 32767 // "
       "Light Source Y coordinate in the unit of +- 32767",
-    "3DEnvironment int LightSourceZ = 32767 0 0 32767 // "
+    "3DEnvironment int LightSourceZ= 32767 0 0 32767 // "
       "Light Source Z coordinate in the unit of +- 32767",
-    "3DEnvironment int LightSourceColorR = 127 0 0 255 // "
+    "3DEnvironment int LightSourceColorR= 127 0 0 255 // "
       "Light Source Color's Red Value, range from 0~255",
-    "3DEnvironment int LightSourceColorG = 127 0 0 255 // "
+    "3DEnvironment int LightSourceColorG= 127 0 0 255 // "
       "Light Source Color's Green Value, range from 0~255",
-    "3DEnvironment int LightSourceColorB = 127 0 0 255 // "
+    "3DEnvironment int LightSourceColorB= 127 0 0 255 // "
       "Light Source Color's Blue Value, range from 0~255",
-    "3DEnvironment int LightSourceIntensity = 255 0 0 255 // "
+    "3DEnvironment int LightSourceIntensity= 255 0 0 255 // "
       "Light Source Color's Intensity Value, range from 0~255",
 
 
@@ -95,12 +95,12 @@ TTask::TTask()
       "Max Trial Duration",
 
     "UsrTask int BaselineInterval= 1 0 0 2 // "
-      "Intercept Computation 0 = none 1 = targets 2 = ITI (enumeration)",
+      "Intercept Computation 0= none 1= targets 2= ITI (enumeration)",
     "UsrTask int TimeLimit= 180 180 0 1000 // "
       "Time Limit for Runs in seconds",
     "UsrTask int RestingPeriod= 0 0 0 1 // "
       "rest period of data acquisition (boolean)",
-    "UsrTask int WorkspaceBoundaryVisible = 1 0 0 1"
+    "UsrTask int WorkspaceBoundaryVisible= 1 0 0 1"
       "Show the Workspace boundary (boolean)",
 
     "UsrTask string BorderTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z //"
@@ -111,9 +111,9 @@ TTask::TTask()
       "Path of cursor texture (inputfile)",
     "UsrTask float CursorSize= 2 0 0 1 // "
       "User Window Cursor Size",
-    "UsrTask int CursorColorFront = 0x000000 0x000000 0x000000 0xFFFFFF//"
+    "UsrTask int CursorColorFront= 0x000000 0x000000 0x000000 0xFFFFFF//"
        "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB (color)",
-    "UsrTask int CursorColorBack = 0x000000 0x000000 0x000000 0xFFFFFF//"
+    "UsrTask int CursorColorBack= 0x000000 0x000000 0x000000 0xFFFFFF//"
        "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB (color)",
     "UsrTask int WinHeight= 512 0 0 1 // "
         "User Window Height",
@@ -123,11 +123,11 @@ TTask::TTask()
         "User Window X location",
     "UsrTask int WinYpos= 5 0 0 1 // "
         "User Window Y location",
-    "UsrTask int WindowFullScreen = 0 0 0 1 // "
+    "UsrTask int WindowFullScreen= 0 0 0 1 // "
         "Full screen mode (0=no, 1=yes) (boolean)",
-    "UsrTask int DisplayMonitor = 0 0 0 1 // "
+    "UsrTask int DisplayMonitor= 0 0 0 1 // "
         "Check for secondary display, uncheck for primary display(0=no, 1=yes) (boolean)",
-    "UsrTask int ChangeResolution = 0 0 0 1 // "
+    "UsrTask int ChangeResolution= 0 0 0 1 // "
         "Apply changes in screen resolution (0=no, 1=yes) (boolean)",
 
   #ifdef DATAGLOVE
@@ -164,7 +164,7 @@ TTask::TTask()
     "Targets float StartCursorZ= 50.0 0 0 100.0 // "
       "Depth Cursor Starting Position",
 
-    "Targets matrix TargetPos= 10 6"
+    "Targets matrix TargetPos= 10 6 "
         "35 65 35 65 100 0 "
         "35 35 65 65 100 0 "
         "50 50 50 50 100 0 "
@@ -174,7 +174,8 @@ TTask::TTask()
         "0  0 -1  1   0  0 "
         "-1 1  0  0   0  0 "
         "0  0  0  0   0  0 "
-        "0  0  0  0   0  0 "// Target Position Matrix - Values are 0-100",
+        "0  0  0  0   0  0 "
+        "0 0 0 // Target Position Matrix - Values are 0-100",
 
 
   #ifdef DATAGLOVE
