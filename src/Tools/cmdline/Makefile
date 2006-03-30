@@ -13,6 +13,9 @@
 #              Aside from testing purposes, this may be useful
 #              for offline data analysis.
 # $Log$
+# Revision 1.24  2006/03/30 14:50:38  mellinger
+# Added ClassInfo object file.
+#
 # Revision 1.23  2006/03/30 10:22:33  mellinger
 # Introduced quotes into paths.
 #
@@ -93,6 +96,7 @@ BCIOBJ  = obj\bci_tool.obj \
           obj\MeasurementUnits.obj \
           obj\Expression.obj \
           obj\ExpressionParser.obj \
+          obj\ClassName.obj \
           obj\getmem.obj \
           obj\getfir.obj \
           obj\FFTLibWrap.obj \
@@ -115,6 +119,7 @@ DLLOBJ  = obj\bci_dll.obj \
           obj\MeasurementUnits.obj \
           obj\Expression.obj \
           obj\ExpressionParser.obj \
+          obj\ClassName.obj \
           obj\getmem.obj \
           obj\getfir.obj \
           obj\FFTLibWrap.obj \
