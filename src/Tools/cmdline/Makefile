@@ -13,6 +13,9 @@
 #              Aside from testing purposes, this may be useful
 #              for offline data analysis.
 # $Log$
+# Revision 1.23  2006/03/30 10:22:33  mellinger
+# Introduced quotes into paths.
+#
 # Revision 1.22  2006/02/22 19:26:41  mellinger
 # Added Matlab filter and fixed BCB macro.
 #
@@ -125,11 +128,11 @@ STATOBJ = obj\StatFilter.obj \
 BCIROOT = ..\..
 SRCROOT = ${BCIROOT}\EEGSource
 SIGROOT = ${BCIROOT}\SignalProcessing
-SIGPROC = ${SIGROOT};${SIGROOT}\AR;${SIGROOT}\FIR;${SIGROOT}\P3;${SIGROOT}\PeakDetector;${SIGROOT}\SW;${SIGROOT}\fftlib;${SIGROOT}\Matlab;${SIGROOT}\misc
+SIGPROC = "${SIGROOT}";"${SIGROOT}\AR";"${SIGROOT}\FIR";"${SIGROOT}\P3";"${SIGROOT}\PeakDetector";"${SIGROOT}\SW";"${SIGROOT}\fftlib";"${SIGROOT}\Matlab";"${SIGROOT}\misc"
 PATHOBJ = .\obj
-PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\Expression;${SIGPROC};${SRCROOT}
-INCLUDEPATH = ${BCIROOT};${BCIROOT}\shared;${SRCROOT};${BCIROOT}\lib\matlab;${BCB}\include;${BCB}\include\vcl
-LIBPATH = ${BCB}\lib\obj;${BCB}\lib
+PATHCPP = .;"${BCIROOT}\shared";"${BCIROOT}\shared\Expression";${SIGPROC};"${SRCROOT}"
+INCLUDEPATH = "${BCIROOT}";"${BCIROOT}\shared";"${SRCROOT}";"${BCIROOT}\lib\matlab";"${BCB}\include";"${BCB}\include\vcl"
+LIBPATH = "${BCB}\lib\obj";"${BCB}\lib"
 
 BINDIR = ..\..\..\Tools\cmdline
 DLLDIR = ..\..\..\Tools\dll
