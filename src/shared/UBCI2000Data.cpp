@@ -170,7 +170,7 @@ BCI2000DATA::CalculateSampleNumber()
   {
     streampos curPos = mFile.tellg();
     mFile.seekg( 0, ios_base::end );
-    size_t dataSize = mFile.tellg() - mHeaderLength;
+    long dataSize = static_cast<long>( mFile.tellg() ) - mHeaderLength;
     mFile.seekg( curPos, ios_base::beg );
     mSampleNumber = dataSize / ( mDataSize * mChannels + mStatevectorLength );
   }
@@ -456,10 +456,10 @@ BCI2000DATA::ReadHeader()
 // Returns:    run number, or 0 on error
 // **************************************************************************
 int
-BCI2000DATA::DetermineRunNumber(ULONG sample)
+BCI2000DATA::DetermineRunNumber(unsigned long sample)
 {
-int     firstrun, lastrun, cur_run, runnr;
-ULONG   samplesleft;
+int           firstrun, lastrun, cur_run, runnr;
+unsigned long samplesleft;
 
  if (!InitializedTotal()) return(0);
 
@@ -600,23 +600,23 @@ const char*
 BCI2000DATA::BufferSample( unsigned long inSample )
 {
   if( inSample >= GetNumSamples() )
-    throw __FUNC__ ": Sample position exceeds file size";
+    throw "BCI2000DATA::BufferSample: Sample position exceeds file size";
   long filepos = GetHeaderLength()
                + inSample * ( mDataSize * GetNumChannels() + GetStateVectorLength() );
   if( filepos < mBufferBegin || filepos + mDataSize * GetNumChannels() + GetStateVectorLength() >= mBufferEnd )
   {
     if( !mFile.seekg( filepos, ios_base::beg ) )
-      throw __FUNC__ ": Could not seek to sample position";
+      throw "BCI2000DATA::BufferSample: Could not seek to sample position";
 
     mBufferBegin = filepos;
-	mBufferEnd = mBufferBegin;
-	while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
-	{
-	  mFile.read( mpBuffer + mBufferEnd - mBufferBegin,
-									mBufferSize - ( mBufferEnd - mBufferBegin ) );
-	  mBufferEnd += mFile.gcount();
-	}
-	mFile.clear();
+    mBufferEnd = mBufferBegin;
+    while( mFile && ( mBufferEnd - mBufferBegin < GetStateVectorLength() ) )
+    {
+      mFile.read( mpBuffer + mBufferEnd - mBufferBegin,
+        mBufferSize - ( mBufferEnd - mBufferBegin ) );
+      mBufferEnd += mFile.gcount();
+    }
+    mFile.clear();
   }
   return mpBuffer + filepos - mBufferBegin;
 }

@@ -59,7 +59,7 @@ class BCI2000DATA
   int                InitializeTotal( const char* new_filename, int buffer_size  = defaultBufSize );
 
   // Please, use GetSamplingRate() instead.
-  int                GetSampleFrequency() const   { return mSamplingRate; }
+  int                GetSampleFrequency() const   { return static_cast<int>( mSamplingRate ); }
 
  private:
   void               Reset();
@@ -84,7 +84,7 @@ class BCI2000DATA
   std::ifstream      mFile;
   std::string        mFilename,
                      mFileFormatVersion;
-                     
+
   SignalType         mSignalType;
   int                mDataSize;
   GenericSignal::value_type ( *mfpReadValueBinary )( const char* );
