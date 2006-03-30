@@ -173,6 +173,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="wsock32.lib"
 				OutputFile=".\Debug/MFCdemo.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
