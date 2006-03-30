@@ -8,6 +8,9 @@
 // Date: Oct 28, 2003
 //
 // $Log$
+// Revision 1.7  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.6  2005/12/20 11:42:41  mellinger
 // Added CVS id and log to comment.
 //
@@ -210,6 +213,7 @@ class tcpstream : public std::iostream
     tcpstream();
     explicit tcpstream( tcpsocket& );
     virtual ~tcpstream()            {}
+	operator void*()                { return std::iostream::operator void*(); }
     bool is_open() const            { return buf.is_open(); }
     void open( tcpsocket& );
     void close();

@@ -17,6 +17,9 @@
 //            to avoid unwanted changes in filter sequence when using the new
 //            unified module framework code.
 // $Log$
+// Revision 1.16  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.15  2006/02/18 12:00:32  mellinger
 // GetFilter<>() will now only return owned filters.
 //
@@ -116,7 +119,7 @@ class GenericFilter : protected Environment
     friend struct less;
     struct less
     {
-      bool operator() ( const Registrar* a, const Registrar* b )
+      bool operator() ( const Registrar* a, const Registrar* b ) const
       { return ( a->pos == b->pos ) ? ( a->instance < b->instance ) : ( a->pos < b->pos ); }
     };
 

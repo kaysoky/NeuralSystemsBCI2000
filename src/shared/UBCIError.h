@@ -11,6 +11,9 @@
 //          actually hold messages.
 //          Jul 22, 2003: Added implementations for command line tools.
 // $Log$
+// Revision 1.11  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.10  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -35,7 +38,11 @@
 
 // Info added to error output.
 #if( defined( _DEBUG ) && !defined( NDEBUG ) )
-# define DEBUGINFO   __FUNC__
+# ifdef _MSC_VER
+#  define DEBUGINFO   __FUNCTION__
+# else
+#  define DEBUGINFO   __FUNC__
+# endif // _MSC_VER
 #else
 # define DEBUGINFO
 #endif // _DEBUG && !NDEBUG

@@ -8,6 +8,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.7  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.6  2006/02/18 12:03:55  mellinger
 // Added support for hex values when converting parameter values into numbers.
 //
@@ -97,11 +100,13 @@ class ParamRef
   static PARAM  sNullParam;
 };
 
-template<> bool
+template<> 
+inline bool
 ParamRef::operator==( const char* s ) const
 { return std::string( this->operator const char*() ) == s; }
 
-template<> bool
+template<> 
+inline bool
 ParamRef::operator!=( const char* s ) const
 { return std::string( this->operator const char*() ) != s; }
 

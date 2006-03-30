@@ -8,6 +8,9 @@
 // Date:   Jul 24, 2003
 //
 // $Log$
+// Revision 1.12  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.11  2006/01/11 19:08:44  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -127,12 +130,9 @@ MessageHandler::PutMessage( ostream& os, const STATELIST& states )
 // Enforce instantiation of all message construction functions here,
 // i.e. in this compilation unit.
 // Only those not used in one of the functions above need explicit instantiation.
-template ostream& MessageHandler::PutMessage( std::ostream&, const PARAMLIST& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const STATELIST& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const STATEVECTOR& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const STATUS& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const SYSCMD& );
-template ostream& MessageHandler::PutMessage( std::ostream&, const GenericSignal& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisCfg& );
 template ostream& MessageHandler::PutMessage( std::ostream&, const VisMemo& );
 

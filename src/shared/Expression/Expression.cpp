@@ -6,6 +6,9 @@
 // Description: A simple BCI2000 expression parser.
 //              See Expression.h for details about expressions.
 // $Log$
+// Revision 1.5  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.4  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -13,10 +16,14 @@
 // Removed VCL classes when compiled with BCI_TOOL flag; removed "using namespace" from header file; introduced CVS id and log.
 //
 //////////////////////////////////////////////////////////////////////////////////////
-#include "PCHIncludes.h"
+#include "../PCHIncludes.h"
 #pragma hdrstop
 
-#ifndef BCI_TOOL
+#if( defined( _BORLANDC_ ) && !defined( BCI_TOOL ) )
+# define VCL_EXCEPTIONS 1
+#endif
+
+#ifdef VCL_EXCEPTIONS
 # include <vcl.h>
 #endif
 #include <cmath>
@@ -54,7 +61,7 @@ Expression::Evaluate( const GenericSignal* signal )
     ReportError( e.what() );
     mValue = 0;
   }
-#ifndef BCI_TOOL
+#ifdef VCL_EXCEPTIONS
   catch( const class EMathError& e )
   {
     ReportError( e.Message.c_str() );
@@ -92,7 +99,7 @@ Expression::ReportError( const char* message ) const
            << message << endl;
 }
 
-#ifndef __GNUC__
+#ifdef VCL_EXCEPTIONS
 // _matherr() error handling interface.
 static void
 ThrowMathError( const char* functionName )
@@ -113,4 +120,4 @@ _matherrl( struct _exceptionl* e )
   ThrowMathError( e->name );
   return true;
 }
-#endif // __GNUC__
+#endif // BCI_TOOL

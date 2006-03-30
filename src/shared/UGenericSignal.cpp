@@ -6,6 +6,9 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 //
 // $Log$
+// Revision 1.21  2006/03/30 10:17:22  mellinger
+// VC++ compatibility.
+//
 // Revision 1.20  2006/02/18 12:07:21  mellinger
 // Introduced min() and max() members into SignalType class.
 //
@@ -460,7 +463,7 @@ GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inC
   else
   {
     exponent = ::ceil( ::log10( ::fabs( value ) ) );
-    mantissa = ( value / ::pow10( exponent ) ) * 10000;
+    mantissa = ( value / ::pow( 10.0, exponent ) ) * 10000;
     exponent -= 4;
   }
   os.put( mantissa & 0xff ).put( mantissa >> 8 );
@@ -474,7 +477,7 @@ GenericSignal::GetValueBinary<SignalType::float24>( std::istream& is, size_t inC
   signed short mantissa = is.get();
   mantissa |= is.get() << 8;
   signed char exponent = is.get();
-  SetValue( inChannel, inElement, mantissa * ::pow10( exponent ) );
+  SetValue( inChannel, inElement, mantissa * ::pow( 10.0, exponent ) );
 }
 
 template<>
