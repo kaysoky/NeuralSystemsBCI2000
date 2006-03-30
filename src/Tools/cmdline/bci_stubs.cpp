@@ -7,7 +7,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "shared/BCIDirectry.h"
-#include "stdlib.h"
+#include "EEGSource/FileWriterBase.h"
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
+// BCIDirectory
 
 BCIDirectory::BCIDirectory()
 : mSessionNumber( none ),
@@ -36,4 +42,68 @@ BCIDirectory&
 BCIDirectory::UpdateRunNumber()
 {
   return *this;
+}
+
+// FileWriterBase
+
+FileWriterBase::FileWriterBase()
+{
+}
+
+
+FileWriterBase::~FileWriterBase()
+{
+}
+
+
+void
+FileWriterBase::Publish() const
+{
+}
+
+
+void
+FileWriterBase::Preflight( const SignalProperties& Input,
+                                 SignalProperties& Output ) const
+{
+  Output = SignalProperties( 0, 0 );
+}
+
+
+void
+FileWriterBase::Initialize2( const SignalProperties& Input,
+                             const SignalProperties& Output )
+{
+  cout.clear();
+}
+
+
+void
+FileWriterBase::StartRun()
+{
+  cout.clear();
+}
+
+
+void
+FileWriterBase::StopRun()
+{
+  cout.clear();
+}
+
+
+void
+FileWriterBase::Write( const GenericSignal& Signal,
+                       const STATEVECTOR&   Statevector )
+{
+  if( !cout )
+    bcierr << "Error writing to stdout" << endl;
+  State( "Recording" ) = ( cout ? 1 : 0 );
+}
+
+
+std::ostream&
+FileWriterBase::OutputStream()
+{
+  return cout;
 }
