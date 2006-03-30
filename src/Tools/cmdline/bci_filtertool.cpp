@@ -8,6 +8,9 @@
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
 // $Log$
+// Revision 1.13  2006/03/30 10:20:20  mellinger
+// Added missing call to Environment::EnterNonaccessPhase().
+//
 // Revision 1.12  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -132,6 +135,7 @@ FilterWrapper::FinishProcessing()
 {
   if( Environment::GetPhase() == Environment::processing )
     StopRun();
+  Environment::EnterNonaccessPhase();
 }
 
 bool
