@@ -14,7 +14,7 @@
       obj\BCIDatFileWriter.obj obj\EncodedString.obj obj\ParamRef.obj 
       obj\Expression.obj obj\ExpressionParser.obj obj\EDFFileWriter.obj 
       obj\EDFFileWriterBase.obj obj\FileWriterBase.obj obj\GDF.obj 
-      obj\GDFFileWriter.obj obj\NullFileWriter.obj"/>
+      obj\GDFFileWriter.obj obj\NullFileWriter.obj obj\ClassName.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -25,7 +25,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;DAS_lib;DAS_lib;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..;..;..;..;..;.."/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;DAS_lib;DAS_lib;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..;..;..;..;..;..;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -35,8 +35,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="DASSource.cpp"/>
-    <INCLUDEPATH value="..\..\shared\Expression;..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\Expression;..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared\Expression;..;DAS_lib;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared\Expression;..;DAS_lib;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -90,6 +90,7 @@
       <FILE FILENAME="..\GDF.cpp" FORMNAME="" UNITNAME="GDF" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\NullFileWriter.cpp" FORMNAME="" UNITNAME="NullFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -127,69 +128,69 @@ c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation E
 
 [HistoryLists\hlIncludePath]
 Count=30
-Item0=..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\Modules;DAS_lib;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item3=..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;..\..\SHARED;..;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\..\SHARED;..\;$(BCB)\include;$(BCB)\include\vcl
-Item7=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item8=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item9=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include
-Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;D:\da_sdk\Include\
-Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;D:\da_sdk\Include
-Item12=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item13=..\..\shared\V0.17;..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item14=..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item15=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item16=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item17=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item18=..\..\shared\V0.14;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item19=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
-Item20=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include
-Item21=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\DaSDK_NT\include\
-Item22=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\DaSDK_NT\include
-Item23=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
-Item24=..\..\shared\V0.14;..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
-Item25=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
-Item26=..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
-Item27=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
-Item28=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
-Item29=C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
+Item0=..\..\shared\Expression;..\;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\shared\Expression;..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\Modules;DAS_lib;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item5=..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\;..\..\SHARED;..;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\..\SHARED;..\;$(BCB)\include;$(BCB)\include\vcl
+Item9=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include
+Item12=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;D:\da_sdk\Include\
+Item13=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;D:\da_sdk\Include
+Item14=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item15=..\..\shared\V0.17;..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item16=..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item17=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item18=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item19=..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item20=..\..\shared\V0.14;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item21=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include\
+Item22=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\da_sdk\Include
+Item23=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\DaSDK_NT\include\
+Item24=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\DaSDK_NT\include
+Item25=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+Item26=..\..\shared\V0.14;..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+Item27=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+Item28=..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
+Item29=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=30
-Item0=..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\Modules;DAS_lib;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item4=..\;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;..\..\SHARED;..;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..\..\SHARED;..\;$(BCB)\lib\obj;$(BCB)\lib
-Item7=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item8=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item9=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item10=..\..\shared\V0.17;..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item11=..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item12=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item13=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item14=..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item15=..\..\shared\V0.15;C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item16=..\..\shared\V0.14;C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item17=C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item18=C:\da_sdk\Lib\;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item19=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\da_sdk\Lib\
-Item20=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\da_sdk\Lib
-Item21=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item22=..\..\shared\V0.14;..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item23=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item24=..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item25=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
-Item26=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item27=C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item28=C:\Program Files\Borland\CBuilder5\Projects;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
-Item29=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item0=..\..\shared\Expression;..\;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\shared\Expression;..\;..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\Modules;DAS_lib;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\Modules;DAS_lib;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\;..\..\SHARED;..;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\..\SHARED;..\;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\..\SHARED;..\;..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item10=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\..\shared\V0.17;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item12=..\..\shared\V0.17;..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item13=..\..\shared\V0.16;C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item14=C:\Program Files\Borland\CBuilder5\Bin\;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item15=C:\Program Files\Borland\CBuilder5\Bin;..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item16=..\..\shared\V0.15;C:\da_sdk\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item17=..\..\shared\V0.15;C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item18=..\..\shared\V0.14;C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item19=C:\da_sdk\Lib\;..\..\shared\V0.15;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item20=C:\da_sdk\Lib\;..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item21=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\da_sdk\Lib\
+Item22=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\da_sdk\Lib
+Item23=..\..\shared\V0.14;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item24=..\..\shared\V0.14;..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item25=..\..\shared\V0.13;..\..\shared\V0.12;..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item26=..\..\shared\V0.11;..\..\shared\V0.10;..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item27=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib
+Item28=..\..\shared\V0.09;C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
+Item29=C:\Program Files\Borland\CBuilder5\Projects\;..\..\shared\V0.08;..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1

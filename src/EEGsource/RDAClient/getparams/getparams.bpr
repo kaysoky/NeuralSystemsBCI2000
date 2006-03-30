@@ -28,8 +28,8 @@
     <USERDEFINES value="BCI_TOOL;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="getparams.bpf"/>
-    <INCLUDEPATH value="..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -91,16 +91,18 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=3
-Item0=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Count=4
+Item0=..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=3
-Item0=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Count=4
+Item0=..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\;..\..\..\shared;EEGsource\RDAClient\getparams;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1

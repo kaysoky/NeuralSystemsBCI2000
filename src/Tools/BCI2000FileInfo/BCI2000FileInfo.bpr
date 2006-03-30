@@ -129,8 +129,9 @@ Count=1
 Item0=.\obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=..\..\..\tools\BCI2000FileInfo
+Count=2
+Item0=..\..\..\tools\BCI2000FileInfo\
+Item1=..\..\..\tools\BCI2000FileInfo
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

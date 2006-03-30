@@ -33,7 +33,7 @@
       SWSpeller.obj\UCoreMain.obj SWSpeller.obj\LogFile.obj 
       SWSpeller.obj\ConnectorFilters.obj SWSpeller.obj\EncodedString.obj 
       SWSpeller.obj\ParamRef.obj SWSpeller.obj\Expression.obj 
-      SWSpeller.obj\ExpressionParser.obj"/>
+      SWSpeller.obj\ExpressionParser.obj SWSpeller.obj\ClassName.obj"/>
     <RESFILES value="SWSpeller.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -44,7 +44,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression"/>
+    <PATHCPP value=".;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -54,8 +54,8 @@
     <USERDEFINES value="_DEBUG;BCI2000;BCI2000_SPELLER;PERUVIAN_BRIGHTNESS_HACK;MODTYPE=3"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SWSpeller.cpp"/>
-    <INCLUDEPATH value="..\..\shared\Expression;..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\Expression;..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared\Expression;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared\Expression;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -137,6 +137,7 @@
       <FILE FILENAME="..\..\shared\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -173,42 +174,46 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=16
-Item0=..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\Modules;..\;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item2=Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item3=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item6=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item7=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item8=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item9=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
-Item10=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
-Item11=..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
-Item12=..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
-Item13=..\;..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
-Item14=Presentation\src;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
-Item15=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Count=18
+Item0=..\..\shared\Expression;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\shared\Expression;..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\Modules;..\;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item4=Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\;..\shared;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item5=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item8=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item9=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item10=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\include;$(BCB)\include\vcl
+Item12=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
+Item13=..;..\..\SHARED;Presentation\src;$(BCB)\include;$(BCB)\include\vcl;..\..\..\SHARED
+Item14=..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
+Item15=..\;..;..\..\SHARED;Presentation;Presentation\src;Presentation\include;$(BCB)\include;$(BCB)\include\vcl
+Item16=Presentation\src;..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
+Item17=..\;..;..\..\SHARED;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=16
-Item0=..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\Modules;..\;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item2=Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item3=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item4=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item7=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item8=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item9=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
-Item10=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
-Item11=..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
-Item12=..;..\..\SHARED;Presentation\src;Presentation\src\Utils;Presentation\src\Models;Presentation\src\Views;$(BCB)\lib\obj;$(BCB)\lib
-Item13=Presentation\src;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item14=Presentation\src;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
-Item15=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Count=18
+Item0=..\..\shared\Expression;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\shared\Expression;..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\Modules;..;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\Modules;..\;Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item4=Presentation;Presentation\Views;Presentation\Views\Win32;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Models;..;..\shared;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item5=Presentation\Views\Win32;Presentation\Views;Presentation\Utils\BCI2000;Presentation\Utils;Presentation\Models;Presentation;..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\;..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item7=..\;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..;Presentation\src\Utils\BCI2000;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\;Presentation\src\Utils\BCI2000;..;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item10=Presentation\src\Utils\BCI2000;..\;Presentation\src\Views\Win32;Presentation\src\Utils\Win32;..;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item11=..\;..\shared;..\..\SHARED;..\..\..\SHARED;Presentation\src;Presentation\include;Presentation\src\Utils;Presentation\src\Views;Presentation\src\Models;$(BCB)\lib\obj;$(BCB)\lib
+Item12=..\;Presentation\src\Utils;Presentation\src\Views\Win32;Presentation\src\Views;Presentation\src\Models;Presentation\src\Utils\Win32;..\shared;..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
+Item13=..;..\..\SHARED;Presentation\src;$(BCB)\lib\obj;$(BCB)\lib
+Item14=..;..\..\SHARED;Presentation\src;Presentation\src\Utils;Presentation\src\Models;Presentation\src\Views;$(BCB)\lib\obj;$(BCB)\lib
+Item15=Presentation\src;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item16=Presentation\src;..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
+Item17=..\;..;..\..\SHARED;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
