@@ -113,3 +113,7 @@ void InitializeBlockRandomizedNumber()
  rannumbers_count=-1;
 }
 
+void ResetBlockCounter()
+{
+  rannumbers_count=0;
+}

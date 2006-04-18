@@ -1,9 +1,9 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
-
+#include <utilcls.h>
 #include "UTarget.h"
-
+#include "sapi.h"
 
 #include "UBCIError.h"
 
@@ -760,10 +760,14 @@ float   scalex, scaley;
     }
 
   //VK audio functionality
-  if ((SoundFile != "") && (!wavplayer) && (SoundFile != " "))
+  if ((SoundFile != "") && (SoundFile != " "))
   {
-    wavplayer = new TWavePlayer;
-    wavplayer->AttachFile(SoundFile.c_str());
+    // perform parsing to determine sound file or TextToSpeech
+    if (SoundFile.SubString(0,1) != "'" && (!wavplayer) )  // implies .wav file
+    {
+      wavplayer = new TWavePlayer;
+      wavplayer->AttachFile(SoundFile.c_str());
+    }
   }
 }
 
@@ -873,7 +877,36 @@ void TARGET::HighlightIcon(bool intensify)
 
 void TARGET::PlaySound()
 {
-  if(!wavplayer->IsPlaying())
-    wavplayer->Play();
-  return;  
+  if(wavplayer)
+  {
+    if(!wavplayer->IsPlaying())
+      wavplayer->Play();
+  }
+  else // if wavplayer does not exist, it means we have a text to speech conversion
+  {
+     ISpVoice  *spvoice =NULL;
+
+     if (FAILED(::CoInitialize(NULL)))
+        bciout << "P3Speller: Error playing sound" << std::endl;
+
+     HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL,
+                                   IID_ISpVoice, (void **)&spvoice);
+     if ( SUCCEEDED( hr ) )
+     {
+       unsigned long templong;
+       wchar_t *wstr=NULL;
+       int soundStrlen = SoundFile.Length()-1 ;
+       AnsiString soundStr = SoundFile.SubString(1, soundStrlen) ;
+       int destSize = soundStr.WideCharBufSize();
+       wstr = new wchar_t[destSize];
+       soundStr.WideChar(wstr,destSize);
+       hr = spvoice->Speak(wstr,SVSFDefault, &templong);
+       delete wstr;
+       spvoice->Release();
+       spvoice = NULL;
+     }
+     ::CoUninitialize();
+  }
+  return;
 }
+

@@ -11,4 +11,6 @@ int     GetBlockRandomizedNumber( int blocksize );
 void    ShuffleBlocks( int blocksize );
 float   ran1( long *idum );
 void    InitializeBlockRandomizedNumber();
+// VK adding
+void	ResetBlockCounter();
 #endif

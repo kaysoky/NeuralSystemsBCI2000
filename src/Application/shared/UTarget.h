@@ -26,6 +26,7 @@
 
 #include "UCursor.h"
 #include "WavePlayer.h"
+#include "sapi.h"
 
 class TARGET
 {
