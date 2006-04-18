@@ -33,6 +33,8 @@ private: 	// User declarations
         TColor  TextColor, TextColorIntensified;
         int     get_argument(int ptr, char *buf, const char *line, int maxlen) const;
         int     cur_stimuluscode;
+  	int	last_rowcode, last_colcode;	    // VK adding to store last row and col stimulus code
+	int     sequence_counter;		    //	to solve psuedorandom code issue
         // VK added for control icon hightlight type
         enum
 	{
@@ -40,6 +42,7 @@ private: 	// User declarations
 	   INVERT,
 	   DARKEN,
 	};
+	
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();
@@ -49,11 +52,11 @@ public:		// User declarations
         int     Process(const GenericSignal*);
         void    ResetTrialSequence();
         bool    onlinemode;
-        TARGETLIST      *GetActiveTargets();           // returns targets given a specific parentID (i.e., targetID of selection)
+        TARGETLIST      *GetActiveTargets(int index);           // returns targets given a specific parentID (i.e., targetID of selection)
         /*shidong starts*/
         int     LoadPotentialTargets(const int matrixColumn, const int matrixRow);
-        int     NumMatrixColumns;
-        int     NumMatrixRows;
+        int     *NumMatrixColumns;
+        int     *NumMatrixRows;
         int     NUM_STIMULI;      // in this case, we have 12 stimuli (6 columns and 6 rows)
         FILE    *f;
         bool    debug;
@@ -67,5 +70,13 @@ public:		// User declarations
         void            SetUserDisplayTexts();
         int             char2spellidx;
         AnsiString      TextToSpell, chartospell;
+	// VK added for nested menu	
+	int		cur_menu, prev_menu;
+	void		CheckTargetDefinitionMatrix(int index) const;
+	int		num_menus;
+	int		GetMenuNumber (AnsiString);	
 };
 #endif
+
+
+

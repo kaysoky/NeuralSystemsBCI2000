@@ -45,6 +45,7 @@ class TTask : public GenericFilter
         FILE            *logfile;
         int             cur_runnr;
 	AnsiString	ReturnScrolledString(AnsiString); //VK added
+	void		TransitionMenu(int); // VK added
 
  public:
           TTask();

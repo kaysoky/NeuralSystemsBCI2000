@@ -27,14 +27,16 @@
 // Returns:    N/A
 // **************************************************************************
 TRIALSEQUENCE::TRIALSEQUENCE()
-: vis( NULL ),
-  targets( new TARGETLIST )
+: vis( NULL )
+
 {
 
  /*shidong starts*/
  f = NULL;
  debug = false;
  if(debug) f = fopen("debug2.txt", "w");
+
+ targets = NULL;
 
  BEGIN_PARAMETER_DEFINITIONS
    "P3Speller matrix TargetDefinitionMatrix= "
@@ -47,12 +49,14 @@ TRIALSEQUENCE::TRIALSEQUENCE()
       "Y Y 1 % % "  "Z Z 1 % % "  "1 1 1 % % "  "2 2 1 % % "  "3 3 1 % % "  "4 4 1 % % "
       "5 5 1 % % "  "6 6 1 % % "  "7 7 1 % % "  "8 8 1 % % "  "9 9 1 % % "  "_ _ 1 % % "
       "% % % // Target Definition Matrix",
-   "P3Speller int NumMatrixColumns= 6 "
-      "6 0 6 // Display Matrix's Column Number",
-   "P3Speller int NumMatrixRows= 6 "
-      "6 0 6 // Display Matrix's Row Number",
+   "P3Speller intlist NumMatrixColumns= 1 "                 // VK changed to intlist for nested menu
+      "6 6 1 6 // Display Matrix's Column Number",
+   "P3Speller intlist NumMatrixRows= 1 "
+      "6 6 0 6 // Display Matrix's Row Number",
  /*shidong ends*/
-
+ // VK Added
+    "P3Speller int FirstActiveMenu= 1 "
+     "0 0 5000 // Index of first active menu",
   "P3Speller int OnTime= 4 "
     "10 0 5000 // Duration of intensification in units of SampleBlocks",
   "P3Speller int OffTime= 1 "
@@ -78,7 +82,10 @@ TRIALSEQUENCE::TRIALSEQUENCE()
   "StimulusCode 5 0 0 0",
   "StimulusType 3 0 0 0",
   "Flashing 1 0 0 0",
+// VK Adding for Nested Menu functionality
+  "Nested 1 0 0 0",
  END_STATE_DEFINITIONS
+
 }
 
 
@@ -94,8 +101,12 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
  delete targets;
  /*shidong starts*/
  if( f )
-   fclose( f );        
+   fclose( f );
  /*shidong ends*/
+ if (NumMatrixColumns)
+   free (NumMatrixColumns);
+ if (NumMatrixRows)
+   free (NumMatrixRows);
 }
 // **************************************************************************
 // Function:   Preflight
@@ -103,63 +114,31 @@ TRIALSEQUENCE::~TRIALSEQUENCE()
 // **************************************************************************
 
 // VK Adding to verify existence of files
+// VK Changed to accomodate nested matrices
 void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
                         SignalProperties& outputProperties ) const
 {
-  int ret, row, col;
-  AnsiString iFileName, sFileName;
-  TImage *temp_icon;
-  TWavePlayer testPlayer;
-  bool soundFlag = false;
+  unsigned int row, col, i;
 
   row = Parameter("TargetDefinitionMatrix")->GetNumRows();
   col =  Parameter("TargetDefinitionMatrix")->GetNumColumns();
-  if (col != 5)
-    bciout << "P3Speller: Target Definition Matrix should have 5 columns for icon and sound functions!"
-           << "1.Display 2.Enter 3.Display Size 4.Icon File 5.Sound File";
-  else
-  {
-    // parse Target Definition Matrix for icon and sound file names.
-    for (int i = 0; i<row; i++)
-    {
-      iFileName = "";
-      sFileName = "";
-      iFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
-      sFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
-      if(iFileName != "" && iFileName != " ")
-      {
-        temp_icon = new TImage(static_cast<TComponent*>(NULL));
-        try
-        {
-          temp_icon->Picture->LoadFromFile(iFileName);
-        }
-        catch(...)
-        {
-          bcierr << "P3Speller: Could not open icon file - "
-                 << iFileName.c_str() << std::endl;
-        }
-        delete temp_icon;
-      }
-      if(sFileName != "" && sFileName != " ")
-      {
-        if(!soundFlag)
-          soundFlag = true;
-        TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
-        if( err == TWavePlayer::fileOpeningError )
-          bcierr << "P3Speller: Could not open sound file - "
-                 << sFileName.c_str() << std::endl;
-        else if( err != TWavePlayer::noError )
-          bcierr << "P3Speller: Some general error prevents wave audio playback"
-               << std::endl;
-      }
-    }
-  }  
-  if(soundFlag)       //  need to play audio, check for sound card
-  {
-    if(waveOutGetNumDevs() <= 0)
-      bcierr << "P3Speller: Sound Card not found " << std::endl;
-  }
 
+  //VK adding for Nested Menus
+  if (col == 1)
+  {
+    if ( row != Parameter("NumMatrixColumns")->GetNumValues() &&
+         row != Parameter("NumMatrixRows")->GetNumValues() )
+      bcierr << "P3Spller: # of entries in NumMatrixRows & NumMatrixColumns should match the # rows in the target definition matrix\n";
+
+    // verify that first menu requested is correct  
+    if (Parameter("FirstActiveMenu") > row)
+       bcierr << "P3Spller: Incorrect 'First Active Menu'"  << std::endl;
+       
+    for (i=0; i<row; i++)
+      CheckTargetDefinitionMatrix(i);
+  }
+  else
+    CheckTargetDefinitionMatrix(-1);
   if (Parameter("TextWindowEnabled") == 1)
   {
     if(Parameter("OnlineMode") == 0)
@@ -167,6 +146,16 @@ void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
 
     if(AnsiString((const char*)Parameter("TextWindowFilePath")) == "")
       bcierr << "P3Speller: Please enter path for saving text window files!"  << std::endl;
+    else
+    {
+      // ensure that text window file save path is correct
+      AnsiString fileName = (const char*)Parameter("TextWindowFilePath");
+      fileName = fileName + "Test" + ".txt";
+      FILE *fp = fopen(fileName.c_str(),"w");
+      if (!fp)
+         bcierr << "P3Speller: Incorrect path for text window save"
+                << std::endl;
+    }
   }
   outputProperties = inputProperties;
 }
@@ -189,10 +178,39 @@ int     ret;
 
  // load and create all potential targets
  /*shidong starts*/
- ret=LoadPotentialTargets(Parameter("TargetDefinitionMatrix")->GetNumColumns(), Parameter("TargetDefinitionMatrix")->GetNumRows());
- NumMatrixColumns = Parameter("NumMatrixColumns");
- NumMatrixRows = Parameter("NumMatrixRows");
- NUM_STIMULI = NumMatrixColumns + NumMatrixRows;
+   // VK added for nested menus
+   if( Parameter("TargetDefinitionMatrix")->GetNumColumns() == 1) // implies nested menus
+   {
+     State("Nested") = 1;
+     num_menus = Parameter("TargetDefinitionMatrix")->GetNumRows();            // save number of menus
+   }
+   else
+   {
+     State("Nested") = 0;
+     num_menus = 1;
+   }
+
+  //VK keep track of what the current menu index is, index starts at 1
+  cur_menu = (int)(Parameter("FirstActiveMenu") - 1);
+  // VK assign prev_menu to be same as current menu at the beginning
+  prev_menu = cur_menu;
+
+  ret=LoadPotentialTargets(Parameter("TargetDefinitionMatrix")->GetNumColumns(), Parameter("TargetDefinitionMatrix")->GetNumRows());
+
+ //VK Changed these params to vectors for nested menus
+
+ NumMatrixColumns =  (int *)malloc(sizeof(int)* num_menus);
+ NumMatrixRows = (int *)malloc(sizeof(int) * num_menus);
+ // initialize array index 0 so as to start menu indices from 1
+// *NumMatrixColumns = 1;
+// *NumMatrixRows = 1;
+ for (int i=0; i<num_menus; i++)
+ {
+   *(NumMatrixColumns+i) = Parameter("NumMatrixColumns")(i);
+   *(NumMatrixRows+i) = Parameter("NumMatrixRows")(i);
+ }
+ NUM_STIMULI = *(NumMatrixColumns+cur_menu) + *(NumMatrixRows+cur_menu);
+
  /*shidong ends*/
  if (ret == 0)
     {
@@ -217,12 +235,14 @@ int     ret;
 
  // get the active targets as a subset of all the potential targets
  if (userdisplay->activetargets) delete userdisplay->activetargets;
- userdisplay->activetargets=GetActiveTargets();       // get the targets that are on the screen first
+
+ //VK Need to send index into the vector "targets" to accomodate for Nested menus
+ userdisplay->activetargets=GetActiveTargets(cur_menu);       // get the targets that are on the screen first
 
  /*shidong starts*/
         //tell the userdisplay the number of rows and columns
-        userdisplay->displayCol = NumMatrixColumns;
-        userdisplay->displayRow = NumMatrixRows;
+        userdisplay->displayCol = *(NumMatrixColumns+cur_menu);
+        userdisplay->displayRow = *(NumMatrixRows+cur_menu);
  /*shidong ends*/
 
  // set the initial position/sizes of the current targets, status bar, cursor
@@ -237,6 +257,8 @@ int     ret;
  userdisplay->DisplayMessage( LocalizableString( "Waiting to start ..." ) );
 
  oldrunning=0;
+ // VK set last row and column codes to -1 in the beginning
+ last_rowcode = last_colcode = -1;
 
  // reset the trial's sequence
  ResetTrialSequence();
@@ -249,37 +271,61 @@ int TRIALSEQUENCE::LoadPotentialTargets(const int col, const int row)
 {
 /*shidong starts*/
 TARGET  *cur_target;
-int     targetID, targettype;
+int     targetID, targettype, num_rows, i;
 
 // if we already have a list of potential targets, delete this list
 if (targets) delete targets;
-targets = new TARGETLIST();
+for (i=0; i<num_menus; i++)
+  targets = new TARGETLIST[num_menus];
 
-cur_target = new TARGET(0);    //assign targetID
-cur_target->Caption = "";
-cur_target->IconFile = "";
-cur_target->CharDisplayInMatrix="";
-cur_target->CharDisplayInResult="";
-cur_target->FontSizeFactor=1;
-cur_target->targettype=TARGETTYPE_NOTYPE;
-cur_target->IconHighlightFactor=2;       // VK
-cur_target->IconHighlightMethod="";
-targets->Add(cur_target);
-
-for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
+for (int j=0; j<num_menus; j++) // Do this for as many menus as we have
 {
+  cur_target = new TARGET(0);    //assign targetID
+  cur_target->Caption = "";
+  cur_target->IconFile = "";
+  cur_target->CharDisplayInMatrix="";
+  cur_target->CharDisplayInResult="";
+  cur_target->FontSizeFactor=1;
+  cur_target->targettype=TARGETTYPE_NOTYPE;
+  cur_target->IconHighlightFactor=2;            // VK
+  cur_target->IconHighlightMethod="";
+  (targets+j)->Add(cur_target);
+
+  if (State("Nested") == 1)
+    num_rows = Parameter("TargetDefinitionMatrix")(j,0)->GetNumRows();
+  else
+    num_rows = row;
+  for (i = 0; i<num_rows; i++)     //parse each row of the TargetDefinitionMatrix
+  {
         targetID = i+1;
         cur_target = new TARGET(targetID);    //assign targetID
-        cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0)) ;
-       //assign caption to character display in column 1
-
         cur_target->IconFile = "";
-        cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0));
-        cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 1));        //assign display result in column 2
-        cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix", i, 2));//assign font size factor in column 3
-        // VK: add icon file + sound file
-        cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
-        cur_target->SoundFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
+
+        if (State("Nested") == 0)
+        {
+          cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0)) ;
+          //assign caption to character display in column 1
+
+          cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0));
+          cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 1));        //assign display result in column 2
+          cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix", i, 2));//assign font size factor in column 3
+          // VK: add icon file + sound file
+          cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 3));
+          cur_target->SoundFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 4));
+        }
+        else
+        {
+          cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix") (j,0)(i, 0)) ;
+          //assign caption to character display in column 1
+
+          cur_target->CharDisplayInMatrix=AnsiString((const char*)Parameter("TargetDefinitionMatrix") (j,0)(i, 0));
+          cur_target->CharDisplayInResult=AnsiString((const char*)Parameter("TargetDefinitionMatrix") (j,0)(i, 1));        //assign display result in column 2
+          cur_target->FontSizeFactor=((float)Parameter("TargetDefinitionMatrix") (j,0)(i, 2));//assign font size factor in column 3
+          // VK: add icon file + sound file
+          cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix") (j,0)(i, 3));
+          cur_target->SoundFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix") (j,0)(i, 4));
+        }
+
 
         // VK: Parameters for testing icon highlighting
         if (Parameter("IconHighlight") == 0)
@@ -298,8 +344,9 @@ for (int i = 0; i<row; i++)     //parse each row of the TargetDefinitionMatrix
         if ((targetID >= TARGETID_ABCDEFGHI) && (targetID <= TARGETID_YZ_))
                 targettype=TARGETTYPE_CHARACTERS;
         cur_target->targettype=targettype;
-        targets->Add(cur_target);
-}//for
+        (targets+j)->Add(cur_target);
+  }//for i
+}
 
         return(1);
 
@@ -356,19 +403,24 @@ TARGET  *cur_target;
 // gets new targets, given a certain rootID
 // i.e., the targetID of the last selected target
 // parentID==TARGETID_ROOT on start
-TARGETLIST *TRIALSEQUENCE::GetActiveTargets()
+TARGETLIST *TRIALSEQUENCE::GetActiveTargets(int index)
 {
-TARGETLIST      *new_list;
+TARGETLIST      *new_list, *temp_list;
 TARGET          *target, *new_target;;
-int             targetID;
+int             targetID, num_targets;
 
  new_list=new TARGETLIST;                                               // the list of active targets
  new_list->parentID=0;
+
+ //VK added
+ num_targets = (*(NumMatrixColumns+index)) * (*(NumMatrixRows+index));
+ temp_list = (targets+index);
+
  /*shidong starts*/
- for (targetID=1; targetID<=NumMatrixColumns * NumMatrixRows; targetID++)
+ for (targetID=1; targetID<= num_targets; targetID++)
  /*shidong ends*/
   {
-  target=targets->GetTargetPtr(targetID);
+  target=temp_list->GetTargetPtr(targetID);
   if ((targetID >= 0) && (target))
      {
      // add to active targets
@@ -381,7 +433,9 @@ int             targetID;
      new_list->Add(new_target);
      }
    }
-
+ // VK Re-initialize storage for stimulus codes when getting new menu
+ last_rowcode = last_colcode = -1;
+ sequence_counter = 0;
  return(new_list);
 }
 
@@ -431,6 +485,10 @@ char    line[256];
  selectedtarget=NULL;
  cur_stimuluscode=0;
 
+ // VK initialize counter for shuffle blocks
+ sequence_counter = 0;
+ last_rowcode = last_colcode = -1;
+ 
  // initialize block randomized numbers
  InitializeBlockRandomizedNumber();
 
@@ -447,11 +505,37 @@ char    line[256];
 // **************************************************************************
 int TRIALSEQUENCE::GetRandomStimulusCode()
 {
-int     num;
+int     num, flag;
 
- num=GetBlockRandomizedNumber(NUM_STIMULI);
+ // VK Add checks to make sure first row or column code in a seq is not same as last one in prev seq.
+ if (sequence_counter > (NUM_STIMULI-1))    // end of one sequence
+ {
+   flag = 0;
+   sequence_counter = 0;
+   while (!flag)
+   {
+     num=GetBlockRandomizedNumber(NUM_STIMULI);
+     if ((num > 0) && (num <= *(NumMatrixColumns+cur_menu)))      // column code
+     {
+        if (num != last_colcode)
+          flag = 1;
+        else
+          ResetBlockCounter();
+     }
+     else if ((num > *(NumMatrixColumns+cur_menu)) && (num <= NUM_STIMULI )) // row code
+     {
+       if (num != last_rowcode)
+         flag = 1;
+       else
+         ResetBlockCounter();
+     }
+   }
+ }
+ else
+   num=GetBlockRandomizedNumber(NUM_STIMULI);
 
-return(num);
+ sequence_counter++;
+ return(num);
 }
 
 
@@ -485,7 +569,7 @@ short TRIALSEQUENCE::IntensifyTargets(int stimuluscode, bool intensify)
 TARGET  *cur_target, *chartospellptr;
 int     i, cur_row, cur_targetID, chartospellID;
 short   thisisit;
-
+  
  // find the ID of the character that we currently want to spell
  chartospellptr=userdisplay->activetargets->GetTargetPtr(chartospell);
  if (chartospellptr)
@@ -496,13 +580,14 @@ short   thisisit;
 
  // do we want to flash a column (stimuluscode 1..NumMatrixColumns) ?
  /*shidong starts*/
- if ((stimuluscode > 0) && (stimuluscode <= NumMatrixColumns))
+ if ((stimuluscode > 0) && (stimuluscode <= *(NumMatrixColumns+cur_menu)))
     {
+    last_colcode = stimuluscode;      // VK
     for (i=0; i<userdisplay->activetargets->GetNumTargets(); i++)
      {
      /*shidong starts*/
      //if (i%6+1 == stimuluscode)
-     if (i%NumMatrixColumns + 1 == stimuluscode)
+     if (i%(*(NumMatrixColumns+cur_menu)) + 1 == stimuluscode)
      /*shidong ends*/
         {
         cur_target=userdisplay->activetargets->GetTargetPtr(i+1);
@@ -519,15 +604,16 @@ short   thisisit;
     }
 
  // do we want to flash a row (stimuluscode NumMatrixColumns..NUM_STIMULI) ?
- if ((stimuluscode > NumMatrixColumns) && (stimuluscode <= NUM_STIMULI ))
+ if ((stimuluscode > *(NumMatrixColumns+cur_menu)) && (stimuluscode <= NUM_STIMULI ))
     {
+     last_rowcode = stimuluscode;    // VK
     /*shidong starts*/
-    for (i=0; i<NumMatrixColumns; i++)
+    for (i=0; i<*(NumMatrixColumns+cur_menu); i++)
      {
 //     cur_row=stimuluscode-6;
   //   cur_targetID=(cur_row-1)*6+i+1;
-        cur_row=stimuluscode-NumMatrixColumns;
-        cur_targetID=(cur_row-1)*NumMatrixColumns+i+1;
+        cur_row=stimuluscode-(*(NumMatrixColumns+cur_menu));
+        cur_targetID=(cur_row-1)*(*(NumMatrixColumns+cur_menu))+i+1;
      cur_target=userdisplay->activetargets->GetTargetPtr(cur_targetID);
      if (intensify)
         cur_target->SetTextColor(TextColorIntensified);
@@ -541,6 +627,8 @@ short   thisisit;
      /*shidong ends*/
     }
  /*shidong ends*/
+ //vk
+
  return(thisisit);
 }
 
@@ -649,4 +737,135 @@ int     ret;
  cur_trialsequence++;
  return(ret);
 }
+// VK Added for Preflight
+// **************************************************************************
+// Function:   CheckTargetDefinitionMatrix
+// Purpose:    Verifies that the TDM has good inputs
+// Parameters: -1 if TDM is not nested, else the index of the matrix being checked
+// Returns:    NA
+// **************************************************************************
+void TRIALSEQUENCE::CheckTargetDefinitionMatrix(int index) const
+{
+  int row,col, i, j, menuNum;
+  AnsiString iFileName, sFileName, gotoChar;
+  TImage *temp_icon;
+  TWavePlayer testPlayer;
+  bool soundFlag = false;
 
+  ParamRef TDMatrix = Parameter("TargetDefinitionMatrix");
+  if (index == -1)  // not a nested TDM
+  {
+    row = TDMatrix->GetNumRows();
+    col = TDMatrix->GetNumColumns();
+    if( (Parameter("NumMatrixRows")(0) * Parameter("NumMatrixColumns")(0)) != row)
+      bcierr << "P3Speller: NumMatrixRows*NumMatrixColumns should equal number of rows in Target Definition Matrix"
+             << std::endl;
+
+    // verify that all cells have a single value and not a matrix
+    for (i=0; i<row; i++)
+     for (j=0; j<col; j++)
+     {
+       int numSubRows = TDMatrix( i, j )->GetNumRows(),
+           numSubCols = TDMatrix( i, j )->GetNumColumns();
+       if( numSubRows != 1 || numSubCols != 1 )
+       {
+          bcierr << "P3Speller: Non-nested Target Definition matrix must have all single value cells"
+               << std::endl;
+          break;
+        }  
+     }
+  }
+  else
+  {
+    row = TDMatrix (index, 0)->GetNumRows();
+    col = TDMatrix (index, 0)->GetNumColumns();
+    if( (Parameter("NumMatrixRows")(index) * Parameter("NumMatrixColumns")(index)) != row)
+      bcierr << "P3Speller: NumMatrixRows*NumMatrixColumns should equal number of rows in Target Definition Matrix"
+             << std::endl;
+  }
+  if (col != 5)
+    bciout << "P3Speller: Target Definition Matrix should have 5 columns for icon and sound functions!"
+           << "1.Display 2.Enter 3.Display Size 4.Icon File 5.Sound File"
+           << std::endl;
+  else
+  {
+    // parse Target Definition Matrix for icon and sound file names.
+    for (i = 0; i<row; i++)
+    {
+      iFileName = "";
+      sFileName = "";
+      if  (index == -1)
+      {
+        iFileName = AnsiString((const char*)TDMatrix (i, 3));
+        sFileName = AnsiString((const char*)TDMatrix (i, 4));
+        gotoChar  = AnsiString((const char*)TDMatrix (index,0)(i, 1));
+        if (gotoChar.SubString(0,4) == "<GTO")
+          bcierr << "P3Speller: Incorrect target defintion matrix ! \n"
+                   << "Cannot have <GTO> character in non-nested matrix"
+                   << std::endl;
+      }
+      else
+      {
+        iFileName = AnsiString((const char*)TDMatrix (index,0)(i, 3));
+        sFileName = AnsiString((const char*)TDMatrix (index,0)(i, 4));
+        gotoChar  = AnsiString((const char*)TDMatrix (index,0)(i, 1));
+        if (gotoChar.SubString(0,4) == "<GTO")
+        {
+          unsigned int menuNum =  GetMenuNumber(gotoChar);
+          if(menuNum > TDMatrix->GetNumRows() - 1)
+            bcierr << "P3Speller: Wrong menu transition code! \n"
+                   << "Menu number requested should be <= # of rows in target defintion matrix"
+                   << std::endl;
+        }
+      }
+      if(iFileName != "" && iFileName != " ")
+      {
+        temp_icon = new TImage(static_cast<TComponent*>(NULL));
+        try
+        {
+          temp_icon->Picture->LoadFromFile(iFileName);
+        }
+        catch(...)
+        {
+          bcierr << "P3Speller: Could not open icon file - "
+                 << iFileName.c_str() << std::endl;
+        }
+        delete temp_icon;
+      }
+      if(sFileName != "" && sFileName != " ")
+      {
+        if(!soundFlag)
+          soundFlag = true;
+        // perform parsing to determine sound file or TextToSpeech
+        if (sFileName.SubString(0,1) != "'")  // implies .wav file else implies Text To Speech
+        {
+          TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
+          if( err == TWavePlayer::fileOpeningError )
+            bcierr << "P3Speller: Could not open sound file - "
+                   << sFileName.c_str() << std::endl;
+          else if( err != TWavePlayer::noError )
+            bcierr << "P3Speller: Some general error prevents wave audio playback"
+                   << std::endl;
+        }
+      }
+    }  // end for
+  }
+  if(soundFlag)       //  need to play audio, check for sound card
+  {
+    if(waveOutGetNumDevs() <= 0)
+      bcierr << "P3Speller: Sound Card not found " << std::endl;
+  }
+  return;
+}
+
+
+int TRIALSEQUENCE::GetMenuNumber(AnsiString inputStr) 
+{
+  AnsiString menuStr = inputStr.SubString(5, (inputStr.Length()-5));
+  return (menuStr.ToInt() - 1);      // offset so that menu index can start at 1
+}
+
+
+
+//(stimuluscode > *(NumMatrixColumns+cur_menu)) && (stimuluscode <= NUM_STIMULI ) -> row
+//(stimuluscode > 0) && (stimuluscode <= *(NumMatrixColumns+cur_menu)) -> column

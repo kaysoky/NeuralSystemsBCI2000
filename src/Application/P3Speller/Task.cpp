@@ -174,7 +174,7 @@ int     ret, numerpsamples, sampleblocksize;
 
 
 /*shidong starts*/
-  PreflightCondition( Parameter("NumMatrixColumns")*Parameter("NumMatrixRows") ==  Parameter("TargetDefinitionMatrix")->GetNumRows() );
+ // PreflightCondition( Parameter("NumMatrixColumns")*Parameter("NumMatrixRows") ==  Parameter("TargetDefinitionMatrix")->GetNumRows() );
   textresult = ( const char* )Parameter("TextResult");
   if(debug) fprintf(f, "In Initialize, its length is %d, andtextresult is %s.\n", textresult.Length(), textresult);
   P3TestMode = Parameter("P3TestMode");
@@ -294,7 +294,10 @@ float   maxval;
  maxval=-9999999999999999;
  /*shidong starts*/
 // for (i=0; i<6; i++)
- for (i=0; i<trialsequence->NumMatrixColumns; i++)
+  // VK added
+ int col = *(trialsequence->NumMatrixColumns+trialsequence->cur_menu);
+ int row = *(trialsequence->NumMatrixRows+trialsequence->cur_menu);
+ for (i=0; i<col; i++)
   {
         //if(debug)fprintf(f, "responsecount[%d] is %d.\n", i, responsecount[i]);
         //if(debug)fprintf(f, "response[%d] is %d.\n", i, response[i]);
@@ -311,7 +314,7 @@ float   maxval;
  // get the row with the highest classification result
  maxval=-9999999999999999;
  //for (i=6; i<12; i++)
- for (i=trialsequence->NumMatrixColumns; i< (trialsequence->NumMatrixColumns+trialsequence->NumMatrixRows); i++)
+ for (i=col; i< (col+row); i++)
   {
         //if(debug)fprintf(f, "responsecount[%d] is %d.\n", i, responsecount[i]);
         //if(debug)fprintf(f, "response[%d] is %d.\n", i, response[i]);
@@ -319,7 +322,7 @@ float   maxval;
      if (response[i]/(float)responsecount[i] > maxval)
         {
         maxval=response[i]/(float)responsecount[i];
-        pickedrow=i-trialsequence->NumMatrixColumns;
+        pickedrow=i-col;
         //if(debug)fprintf(f, "In row, maxval is %d and pickedrow is %d and i is %d.\n", maxval, pickedrow, i);
         }
   }
@@ -333,9 +336,9 @@ float   maxval;
 
  // from row and column, determine the targetID
 
- pickedtargetID=pickedrow*(trialsequence->NumMatrixColumns)+pickedcol+1;
+ pickedtargetID=pickedrow*col+pickedcol+1;
  /*shidong starts*/
- /*DEBUG 
+ /*DEBUG
  pickedtargetID = random(36);
  pickedtargetID ++;     //avoid id == 0
 */ /*shidong ends*/
@@ -492,7 +495,7 @@ LongTimeFormat = "hhmm";
          FILE *fp = fopen(fileName.c_str(),"w");
 
          if (!fp)
-           bcierr << "P3 Speller: Could not open text file for writing - "
+           bciout << "P3 Speller: Could not open text file for writing - "
                   << fileName.c_str() << std::endl;
          else
          {
@@ -531,6 +534,7 @@ LongTimeFormat = "hhmm";
              sprintf(memotext, "P3Speller: Retrieved file is empty!");
              mVis.Send( memotext );
            }
+           cp[fLength] = '\0';     // end the string, otherwise it puts garbage at the end
            FileClose(lastfile);
            userdisplay->textwindow->Text = AnsiString(cp);
 
@@ -538,6 +542,26 @@ LongTimeFormat = "hhmm";
            textresult = AnsiString(cp);
           delete cp;
          }
+       }
+       // VK Adding for Nested Menus
+       else if (predchar.SubString(0,4) == "<GTO")
+       {
+         if (State("Nested") == 1)             
+         {
+           int menuNum = trialsequence->GetMenuNumber(predchar);
+           trialsequence->prev_menu = trialsequence->cur_menu;      // save cur menu before transitioning
+           TransitionMenu(menuNum);
+         }
+       }
+       // VK "Return to previous menu" functionality
+       else if (predchar == "<BK>")
+       {
+         if (State("Nested") == 1)
+         {
+           int temp = trialsequence->cur_menu;
+           TransitionMenu(trialsequence->prev_menu);
+           trialsequence->prev_menu = temp;
+         }  
        }
        else
        {
@@ -548,8 +572,8 @@ LongTimeFormat = "hhmm";
         textresult += predchar;
        }
 
-       //VK     dont want to display text if it was just saved!
-       if ((Parameter("TextWindowEnabled")==1) && predchar != "<SAVE>" && predchar != "<RETR>" )
+       //VK     dont want to display text if it was just saved or retrieved!
+       if ((Parameter("TextWindowEnabled")==1) && predchar != "<SAVE>" && predchar != "<RETR>")
        {
          userdisplay->textwindow->Text = textresult;
        }
@@ -602,14 +626,14 @@ LongTimeFormat = "hhmm";
        // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
        // if we are in online mode, just reset the task sequence and continue
        if (!trialsequence->onlinemode)
-          {
+       {
           // we want the postsequence just one cycle longer so that the final
           // classification result gets reflected in the file
           if (trialsequence->char2spellidx > trialsequence->TextToSpell.Length())
              postpostsequence=true;
           else
              ResetTaskSequence();
-          }
+       }
        else
           ResetTaskSequence();
 
@@ -623,6 +647,15 @@ LongTimeFormat = "hhmm";
           {
           postpostsequence=false;
           postsequence=false;
+          // VK Adding 2.5 sec delay before resetting so as to allow last character to be seen in the display screen
+          unsigned short time_start, time_diff;
+          time_start = cur_time->GetBCItime_ms();
+          while (true)
+          {
+            time_diff = cur_time->GetBCItime_ms() - time_start;
+            if (time_diff > 2500)
+              break;
+          }
           State( "Running" ) = 0;
           running=0;
           /*shidong starts*/
@@ -821,6 +854,13 @@ void TTask::StopRun()
  /*shidong ends*/
 }
 
+//VK added
+// **************************************************************************
+// Function:   ReturnScrolledString
+// Purpose:    Return a substring of textresult scrolled to fit the speller window
+// Parameters: AnsiString
+// Returns:    AnsiString
+// **************************************************************************
 
 AnsiString TTask::ReturnScrolledString(AnsiString goaltxt)
 {
@@ -844,3 +884,26 @@ AnsiString TTask::ReturnScrolledString(AnsiString goaltxt)
 
   return(newgoaltxt);
 }
+//VK added
+// **************************************************************************
+// Function:   TransitionMenu
+// Purpose:    Performs necessary steps to carry out a menu transition
+// Parameters: int
+// Returns:    NA
+// **************************************************************************
+
+void TTask::TransitionMenu(int num)
+{
+  trialsequence->cur_menu = num;
+  if (userdisplay->activetargets)
+    delete userdisplay->activetargets;
+  userdisplay->activetargets = trialsequence->GetActiveTargets(num);
+  userdisplay->displayCol = *(trialsequence->NumMatrixColumns+num);
+  userdisplay->displayRow = *(trialsequence->NumMatrixRows+num);
+  trialsequence->NUM_STIMULI = userdisplay->displayCol + userdisplay->displayRow;
+  userdisplay->InitializeActiveTargetPosition();
+  userdisplay->DisplayActiveTargets();
+  trialsequence->ResetTrialSequence();
+  return;
+}
+

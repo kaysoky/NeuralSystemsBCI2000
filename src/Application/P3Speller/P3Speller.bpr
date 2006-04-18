@@ -13,18 +13,18 @@
       obj\TCPStream.obj obj\MessageHandler.obj obj\MeasurementUnits.obj 
       obj\UCoreMain.obj obj\ConnectorFilters.obj obj\EncodedString.obj 
       obj\ParamRef.obj obj\Expression.obj obj\ExpressionParser.obj 
-      obj\WavePlayer.obj obj\ClassName.obj"/>
+      obj\WavePlayer.obj obj\ClassName.obj obj\sapi.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value="vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
-    <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib"/>
+    <LIBRARIES value="dclusr.lib vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib dclusr.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..\shared;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..\shared;..\..\shared;..\shared\SAPILib"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -34,8 +34,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=3"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="P3Speller.cpp"/>
-    <INCLUDEPATH value="..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl;..\shared\SAPILib"/>
+    <LIBPATH value="..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib;..\shared\SAPILib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -87,6 +87,7 @@
       <FILE FILENAME="..\..\shared\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\shared\WavePlayer.cpp" FORMNAME="" UNITNAME="WavePlayer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+	  <FILE FILENAME="..\shared\SAPILib\sapi.cpp" FORMNAME="" UNITNAME="sapi" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>  
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -119,11 +120,8 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlIncludePath]
-Count=29
+Count=30
 Item0=..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item1=..\..\shared\Expression;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 Item2=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
@@ -153,9 +151,10 @@ Item25=..\..\shared\V0.07;$(BCB)\include;$(BCB)\include\vcl
 Item26=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 Item27=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 Item28=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
+Item29=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=29
+Count=30
 Item0=..\..\shared\Expression;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item1=..\..\shared\Expression;..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 Item2=..\..\Modules;..;..\shared;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
@@ -185,6 +184,7 @@ Item25=..\..\shared\V0.07;$(BCB)\lib\obj;$(BCB)\lib
 Item26=..\..\shared\V0.07;..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
 Item27=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
 Item28=..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Item29=..\..\shared\V0.06;..\..\shared\V0.05;..\..\shared\V0.04;..\..\shared\V0.03;..\..\shared\V0.02;..\..\shared\V0.01;..\shared\V0.01;..\..\..\..\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -222,6 +222,5 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
-LinkCGLIB=0
   </IDEOPTIONS>
 </PROJECT>
