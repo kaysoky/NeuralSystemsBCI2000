@@ -169,13 +169,19 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   @echo ^^ -_$^^(PROJECT) ^^>$^^(PROJECT:.exe=.info)              >>$@
   @echo ^^ -del _$^^(PROJECT)                                     >>$@
   @echo ^^ -del _*.tds                                            >>$@
+  @echo install_supplements:                                      >>$@
+  @echo !ifdef DESTDIR                                            >>$@
+  @echo ^^ if exist install.cmd install.cmd ^^"$^(DESTDIR)^\^"    >>$@
+  @echo !else                                                     >>$@
+  @echo ^^ if exist install.cmd install.cmd ^^"$^(PROJECT)^\..^\^">>$@
+  @echo !endif                                                    >>$@
   @echo prepare:                                                  >>$@
   @echo ^^ -attrib -r $^^(PROJECT)                                >>$@
   @echo ^^ if not exist obj mkdir obj                             >>$@
-  @echo install: $^^(PROJECT)                                     >>$@
+  @echo install: $^^(PROJECT) install_supplements                 >>$@
   @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"   >>$@
   @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                 >>$@
-  @echo update: $^^(PROJECT)                                      >>$@
+  @echo update: $^^(PROJECT) install_supplements                  >>$@
   @echo ^^ if exist ^^"$^(DESTDIR)^" \
             xcopy /d /u /y $^^(PROJECT) ^^"$^(DESTDIR)^"          >>$@
   @echo clean:                                                    >>$@
@@ -193,7 +199,8 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   ${DONE}
 
 .mak.all:
-  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS}
+  ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
+                    ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} install_supplements
   -del shared\obj\bci2000.csm shared\obj\bci2000.^#* > nul 2>&1
   ${DONE}
   
