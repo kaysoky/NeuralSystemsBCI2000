@@ -19,8 +19,8 @@
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) ..\..\shared\UCoreMain.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value="dclusr.lib vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
-    <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib dclusr.lib"/>
+    <LIBRARIES value="vclx.lib bcbsmp.lib tee.lib vcl.lib rtl.lib"/>
+    <SPARELIBS value="rtl.lib vcl.lib tee.lib bcbsmp.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
