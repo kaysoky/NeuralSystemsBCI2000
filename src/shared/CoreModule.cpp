@@ -7,34 +7,11 @@
 //
 // Description: A class that represents functionality common to all BCI2000
 //          core modules.
-//
-//          For a core module that does not use any GUI elements,
-//          CoreModule::Run() takes care of all framework functionality, such
-//          that a module's minimal main() function reads:
-//
-//          int main( int argc, char** argv )
-//          {
-//            bool success = CoreModule().Run( argc, argv );
-//            return ( success ? 0 : -1 );
-//          }
-//
-//          For core modules that use GUI elements, the GUI's message loop must
-//          be replaced by the message loop implemented within the CoreModule
-//          class. To process GUI messages, override CoreModule::ProcessGUIMessages()
-//          from a derived class:
-//
-//          class CoreModuleGUI : public CoreModule
-//          {
-//            public:
-//              CoreModuleGUI() {}
-//              virtual void ProcessGUIMessages()
-//              {
-//                // Example applying to Borland VCL
-//                Application->ProcessMessages();
-//              }
-//           };
-//
+////
 // $Log$
+// Revision 1.2  2006/04/19 16:17:11  mellinger
+// Removed Win32 API calls, introduced virtual functions for generic GUI interfacing.
+//
 // Revision 1.1  2006/03/30 15:42:32  mellinger
 // Initial version.
 //
@@ -54,8 +31,13 @@
 #include "UBCIError.h"
 #include "MeasurementUnits.h"
 
+#include <iostream>
 #include <string>
 #include <sstream>
+
+#ifndef _WIN32
+# include <sys/sem.h>
+#endif
 
 #define BCIERR (__bcierr << THISMODULE ": ")
 
@@ -67,8 +49,7 @@ CoreModule::CoreModule()
   mLastRunning( false ),
   mResting( false ),
   mStartRunPending( false ),
-  mStopRunPending( false ),
-  mMutex( NULL )
+  mStopRunPending( false )
 {
 }
 
@@ -77,8 +58,12 @@ CoreModule::~CoreModule()
   delete mpStatevector;
   if( mMutex != NULL )
   {
+#ifdef _WIN32
     ::ReleaseMutex( mMutex );
     ::CloseHandle( mMutex );
+#elif 0
+    ::semctl( reinterpret_cast<int>( mMutex ), 0, IPC_RMID, 0 );
+#endif // _WIN32
   }
 }
 
@@ -96,12 +81,21 @@ bool
 CoreModule::Initialize( int inArgc, char** inArgv )
 {
   // Make sure there is only one instance of each module running at a time.
-  // We achieve this by creating a mutex -- if it exists, there is
-  // another instance running, and we move that instance to the front and exit.
-  const char appTitle[] = THISMODULE " Module";
-  mMutex = ::CreateMutex( NULL, TRUE, appTitle );
+  // We create a mutex from the module name to encode that we are running.
+#ifdef _WIN32
+  mMutex = ::CreateMutex( NULL, true, THISMODULE " Module" );
   if( ::GetLastError() == ERROR_ALREADY_EXISTS )
     return false;
+#elif 0
+  key_t key = 'BCI0' | MODTYPE;
+  int semaphore = ::semget( key, 1, IPC_CREAT | IPC_EXCL | 0666 );
+  if( semaphore == -1 )
+  {
+    mMutex = NULL;
+    return false;
+  }
+  mMutex = reinterpret_cast<void*>( semaphore );
+#endif // _WIN32
 
   mInputSockets.insert( &mOperatorSocket );
   mInputSockets.insert( &mPreviousModuleSocket );
@@ -147,7 +141,7 @@ CoreModule::Initialize( int inArgc, char** inArgv )
     size_t pos = executableName.find_last_of( "/\\" );
     if( pos != string::npos )
       executableName = executableName.substr( pos + 1 );
-      
+
     __bciout << "Usage:\n"
              << executableName << " <address>:<port> --<option>-<value>\n"
              << " address:\tip address of operator module (default 127.0.0.1)\n"
@@ -181,7 +175,7 @@ CoreModule::MainMessageLoop()
   {
     while( !mTerminated )
     {
-      if( !mResting && !::GetQueueStatus( QS_ALLINPUT ) )
+      if( !mResting && !GUIMessagesPending() )
         tcpsocket::wait_for_read( mInputSockets, bciMessageTimeout );
       ProcessBCIAndGUIMessages();
       if( !mOperator.is_open() )
@@ -219,7 +213,7 @@ CoreModule::ProcessBCIAndGUIMessages()
   while( mPreviousModule && mPreviousModule.rdbuf()->in_avail()
         || mOperator && mOperator.rdbuf()->in_avail()
         || mResting
-        || ::GetQueueStatus( QS_ALLINPUT ) )
+        || GUIMessagesPending() )
   {
     // If there is a message from the previous module, it has highest priority.
     // For the SignalProcessing and the Application modules, these messages occur
@@ -245,7 +239,6 @@ CoreModule::ProcessBCIAndGUIMessages()
     mResting &= mOperator.is_open();
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
     ProcessGUIMessages();
-    ::Sleep( 0 );
   }
 }
 
@@ -371,7 +364,8 @@ CoreModule::ResetStatevector()
   short running = mpStatevector->GetStateValue( "Running" ),
         sourceTime = mpStatevector->GetStateValue( "SourceTime" ),
         stimulusTime = mpStatevector->GetStateValue( "StimulusTime" );
-  mpStatevector->ReadBinary( istringstream( mInitialStatevector ) );
+  istringstream iss( mInitialStatevector );
+  mpStatevector->ReadBinary( iss );
   mpStatevector->SetStateValue( "Running", running );
   mpStatevector->SetStateValue( "SourceTime", sourceTime );
   mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
@@ -401,7 +395,7 @@ CoreModule::InitializeFilters()
   else
     numInputChannels = 2;
   numInputElements = 1;
-#endif
+#endif // MODTYPE
   SignalProperties inputProperties = SignalProperties( numInputChannels, numInputElements ),
                    outputProperties( 0, 0 );
   Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );

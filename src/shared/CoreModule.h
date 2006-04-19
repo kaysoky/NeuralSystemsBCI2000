@@ -31,10 +31,18 @@
 //              {
 //                // Example applying to Borland VCL
 //                Application->ProcessMessages();
+//                ::Sleep( 0 );
+//              }
+//              virtual bool GUIMessagesPending()
+//              {
+//                return ::GetQueueStatus( QS_ALLINPUT );
 //              }
 //           };
 //
 // $Log$
+// Revision 1.2  2006/04/19 16:17:11  mellinger
+// Removed Win32 API calls, introduced virtual functions for generic GUI interfacing.
+//
 // Revision 1.1  2006/03/30 15:42:32  mellinger
 // Initial version.
 //
@@ -90,7 +98,8 @@ class CoreModule : private MessageHandler
  protected:
   // Override to integrate with a GUI library.
   virtual void ProcessGUIMessages() {}
-  // Allow calling Terminate() from a derived class.
+  virtual bool GUIMessagesPending() { return false; }
+  // Calling Terminate() will end message processing.
   void Terminate() { mTerminated = true; }
 
  private:
@@ -122,7 +131,6 @@ class CoreModule : private MessageHandler
   bool HandleSTATEVECTOR( std::istream& );
   bool HandleSYSCMD(      std::istream& );
 
-  HANDLE           mMutex;
   bool             mTerminated;
   PARAMLIST        mParamlist;
   STATELIST        mStatelist;
@@ -140,6 +148,7 @@ class CoreModule : private MessageHandler
                    mResting,
                    mStartRunPending,
                    mStopRunPending;
+  void*            mMutex;
 };
 
 #endif // CoreModuleH
