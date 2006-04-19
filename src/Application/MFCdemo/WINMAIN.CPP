@@ -9,6 +9,9 @@
 //              application module.
 //
 // $Log$
+// Revision 1.2  2006/04/19 16:14:09  mellinger
+// Adaptation to VS .NET 2003.
+//
 // Revision 1.1  2006/03/30 13:49:16  mellinger
 // Initial version.
 //
@@ -25,38 +28,46 @@
 class CoreModuleMFC : public CoreModule
 {
  public:
-	explicit CoreModuleMFC( CWinApp* inApp ) : mpApp( inApp ) {}
+	CoreModuleMFC() {}
 	virtual ~CoreModuleMFC() {}
 
+ private:
+	CoreModuleMFC( const CoreModuleMFC& );
+	CoreModuleMFC& operator=( const CoreModuleMFC& );
+
+  virtual bool GUIMessagesPending()
+  {
+	return ::GetQueueStatus( QS_ALLINPUT );
+  }
+  
   virtual void ProcessGUIMessages()
   {
     // Adapted from MFC's CWinThread::Run() (thrdcore.cpp).
 
-  // for tracking the idle time state
+	_AFX_THREAD_STATE* pState = AfxGetThreadState();
+	CWinApp* pApp = AfxGetApp();
     BOOL bIdle = TRUE;
     LONG lIdleCount = 0;
-      // phase1: check to see if we can do idle work
-      while (bIdle &&
-          !::PeekMessage(&mpApp->m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
-      {
-          // call OnIdle while in bIdle state
-          if (!mpApp->OnIdle(lIdleCount++))
-              bIdle = FALSE; // assume "no idle" state
-      }
-      // phase2: pump messages while available
-      while (::PeekMessage(&mpApp->m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
-      {
-          // pump message, but quit on WM_QUIT
-          if (!mpApp->PumpMessage())
+    // phase1: check to see if we can do idle work
+    while (bIdle &&
+        !::PeekMessage(&pState->m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
+    {
+      // call OnIdle while in bIdle state
+      if (!pApp->OnIdle(lIdleCount++))
+        bIdle = FALSE; // assume "no idle" state
+    }
+    // phase2: pump messages while available
+    while (::PeekMessage(&pState->m_msgCur, NULL, NULL, NULL, PM_NOREMOVE))
+    {
+      // pump message, but quit on WM_QUIT
+      if (!pApp->PumpMessage())
       {
         Terminate();
-        mpApp->ExitInstance();
+        pApp->ExitInstance();
       }
     }
+    ::Sleep(0);
   }
-
- private:
-	CWinApp* mpApp;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -78,7 +89,7 @@ int AFXAPI AfxWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	bool InitSuccess = AfxWinInit(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
     // App global initializations (rare)
 	if (pApp != NULL)
-    InitSuccess = InitSuccess && pApp->InitApplication();
+      InitSuccess = InitSuccess && pApp->InitApplication();
 
 	// Perform specific initializations
 	InitSuccess = InitSuccess && pThread->InitInstance();
@@ -86,7 +97,7 @@ int AFXAPI AfxWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     // Run the BCI2000 core module.
     if( InitSuccess )
     {
-      CoreModuleMFC coreModule( pApp );
+      CoreModuleMFC coreModule;
       nReturnCode = ( coreModule.Run( __argc, __argv ) ? 0 : -1 );
     }
     else

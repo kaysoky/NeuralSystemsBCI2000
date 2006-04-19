@@ -1,59 +1,33 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="7.10"
 	Name="MFCdemo"
 	ProjectGUID="{5ADB24EB-BCDF-4DB3-ACF5-6E101C2CCCA8}"
-	Keyword="MFCProj"
-	>
+	Keyword="MFCProj">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Release/MFCdemo.tlb"
-				HeaderFileName=""
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;MODTYPE=APP;NO_PCHINCLUDES"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Release/MFCdemo.pch"
@@ -61,95 +35,64 @@
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1031"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib"
 				OutputFile=".\Release/MFCdemo.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\Release/MFCdemo.pdb"
 				SubSystem="2"
-				TargetMachine="1"
-			/>
+				TargetMachine="1"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release/MFCdemo.tlb"
+				HeaderFileName=""/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Release/MFCdemo.bsc"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1031"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/MFCdemo.tlb"
-				HeaderFileName=""
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;MODTYPE=APP;NO_PCHINCLUDES"
-				MinimalRebuild="true"
+				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Debug/MFCdemo.pch"
@@ -157,59 +100,50 @@
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
-			/>
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1031"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib"
 				OutputFile=".\Debug/MFCdemo.exe"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				IgnoreAllDefaultLibraries="false"
+				SuppressStartupBanner="TRUE"
+				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/MFCdemo.pdb"
 				SubSystem="2"
-				TargetMachine="1"
-			/>
+				TargetMachine="1"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Debug/MFCdemo.tlb"
+				HeaderFileName=""/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Debug/MFCdemo.bsc"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1031"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -217,212 +151,128 @@
 	<Files>
 		<Filter
 			Name="Sources"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-			>
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="MFCdemo.cpp"
-				>
+				RelativePath="MFCdemo.cpp">
+			</File>
+			<File
+				RelativePath="MFCdemo.rc">
+			</File>
+			<File
+				RelativePath="MFCdemoDlg.cpp">
+			</File>
+			<File
+				RelativePath="StdAfx.cpp">
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						PreprocessorDefinitions=""
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
 						PreprocessorDefinitions=""
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="MFCdemo.rc"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+				RelativePath=".\TaskFilter.cpp">
 			</File>
 			<File
-				RelativePath="MFCdemoDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="StdAfx.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\TaskFilter.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\WINMAIN.CPP"
-				>
+				RelativePath=".\WINMAIN.CPP">
 			</File>
 			<Filter
-				Name="BCI2000_Framework"
-				>
+				Name="BCI2000_Framework">
 				<File
-					RelativePath="..\..\shared\ClassName.cpp"
-					>
+					RelativePath="..\..\shared\ClassName.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\CoreModule.cpp"
-					>
+					RelativePath="..\..\shared\CoreModule.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\EncodedString.cpp"
-					>
+					RelativePath="..\..\shared\EncodedString.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\Expression\Expression.cpp"
-					>
+					RelativePath="..\..\shared\Expression\Expression.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\Expression\ExpressionParser.cpp"
-					>
+					RelativePath="..\..\shared\Expression\ExpressionParser.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\MeasurementUnits.cpp"
-					>
+					RelativePath="..\..\shared\MeasurementUnits.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\MessageHandler.cpp"
-					>
+					RelativePath="..\..\shared\MessageHandler.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\TCPStream.cpp"
-					>
+					RelativePath="..\..\shared\TCPStream.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UBCIError.cpp"
-					>
+					RelativePath="..\..\shared\UBCIError.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UBCItime.cpp"
-					>
+					RelativePath="..\..\shared\UBCItime.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UEnvironment.cpp"
-					>
+					RelativePath="..\..\shared\UEnvironment.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UGenericFilter.cpp"
-					>
+					RelativePath="..\..\shared\UGenericFilter.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UGenericSignal.cpp"
-					>
+					RelativePath="..\..\shared\UGenericSignal.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UGenericVisualization.cpp"
-					>
+					RelativePath="..\..\shared\UGenericVisualization.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UParameter.cpp"
-					>
+					RelativePath="..\..\shared\UParameter.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UState.cpp"
-					>
+					RelativePath="..\..\shared\UState.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\UStatus.cpp"
-					>
+					RelativePath="..\..\shared\UStatus.cpp">
 				</File>
 				<File
-					RelativePath="..\..\shared\USysCommand.cpp"
-					>
+					RelativePath="..\..\shared\USysCommand.cpp">
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Headers"
-			Filter="h;hpp;hxx;hm;inl"
-			>
+			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="MFCdemo.h"
-				>
+				RelativePath="MFCdemo.h">
 			</File>
 			<File
-				RelativePath="MFCdemoDlg.h"
-				>
+				RelativePath="MFCdemoDlg.h">
 			</File>
 			<File
-				RelativePath="Resource.h"
-				>
+				RelativePath="Resource.h">
 			</File>
 			<File
-				RelativePath="StdAfx.h"
-				>
+				RelativePath="StdAfx.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resources"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-			>
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="res\MFCdemo.ico"
-				>
+				RelativePath=".\res\icon1.ico">
 			</File>
 			<File
-				RelativePath="res\MFCdemo.rc2"
-				>
+				RelativePath="res\MFCdemo.ico">
+			</File>
+			<File
+				RelativePath="res\MFCdemo.rc2">
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\ReadMe.txt"
-			>
+			RelativePath=".\ReadMe.txt">
 		</File>
 	</Files>
 	<Globals>

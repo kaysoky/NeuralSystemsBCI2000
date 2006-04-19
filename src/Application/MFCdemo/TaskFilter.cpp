@@ -9,6 +9,9 @@
 //          application module with Microsoft's MFC library.
 //
 // $Log$
+// Revision 1.2  2006/04/19 16:14:09  mellinger
+// Adaptation to VS .NET 2003.
+//
 // Revision 1.1  2006/03/30 13:49:16  mellinger
 // Initial version.
 //
@@ -59,8 +62,8 @@ void
 TaskFilter::Preflight( const SignalProperties& inputProperties,
                                    SignalProperties& outputProperties ) const
 {
-  PreflightCondition( Parameter( "WindowWidth" ) > 0 );
-  PreflightCondition( Parameter( "WindowHeight" ) > 0 );
+  PreflightCondition( Parameter( "WinWidth" ) > 0 );
+  PreflightCondition( Parameter( "WinHeight" ) > 0 );
   // TaskFilter::Process() implies that the input signal has at least two integer channels
   // with one element each.
   PreflightCondition( inputProperties >= SignalProperties( 2, 1, SignalType::int16 ) );

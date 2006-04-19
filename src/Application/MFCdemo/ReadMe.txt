@@ -16,4 +16,10 @@ MFCdemoDlg:
  An MFC dialog class that provides a window and a device context for
  graphics output.
 
-Building the demo requires Visual C++ 7.1 (released in 2003) or newer.
+Building the demo requires Visual C++ 7.1 (Visual Studio .NET 2003) 
+or newer.
+
+Note that run-time type information (RTTI) compiler switch is disabled for 
+new projects but must be enabled for the BCI2000 framework. 
+Otherwise, exceptions will be thrown when the framework tries to access 
+class name information.
