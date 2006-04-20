@@ -173,6 +173,43 @@ TfMain::UpdateState( const char* inName, unsigned short inValue )
   return ERR_NOERR;
 }
 
+bool
+TfMain::SetConfig()
+{
+  bool result = false;
+  switch( mSysstatus.SystemState )
+  {
+    case SYSSTATUS::Information:
+    case SYSSTATUS::Initialization:
+    case SYSSTATUS::Resting:
+    case SYSSTATUS::RestingParamsModified:
+    case SYSSTATUS::Suspended:
+    case SYSSTATUS::SuspendedParamsModified:
+      EnterState( SYSSTATUS::Initialization );
+      result = true;
+      break;
+  }
+  return result;
+}
+
+bool
+TfMain::Run()
+{
+  bool result = bRunSystem->Enabled;
+  if( bRunSystem->Enabled )
+    UpdateState( "Running", mSysstatus.SystemState != SYSSTATUS::Running );
+  return result;
+}
+
+bool
+TfMain::Quit()
+{
+  bool result = bQuit->Enabled;
+  if( bQuit->Enabled )
+    QuitOperator( false );
+  return result;
+}
+
 void
 TfMain::UserChangedParameters()
 {
@@ -464,9 +501,9 @@ TfMain::EnterState( SYSSTATUS::State inState )
 }
 
 void
-TfMain::QuitOperator()
+TfMain::QuitOperator( bool inConfirm )
 {
-  if( ID_YES == Application->MessageBox(
+  if( !inConfirm || ID_YES == Application->MessageBox(
     "Do you really want to quit BCI2000?", "Question", MB_YESNO ) )
   {
     // Execute the on-exit script ...
@@ -835,7 +872,7 @@ void __fastcall TfMain::FormClose( TObject*, TCloseAction &outAction )
 
 void __fastcall TfMain::bRunSystemClick( TObject* )
 {
-  UpdateState( "Running", mSysstatus.SystemState != SYSSTATUS::Running );
+  Run();
 }
 //---------------------------------------------------------------------------
 
@@ -853,18 +890,9 @@ void __fastcall TfMain::bSetConfigClick( TObject* )
   if( fConfig->Visible )
     fConfig->Close();
 
-  switch( mSysstatus.SystemState )
-  {
-    case SYSSTATUS::Information:
-    case SYSSTATUS::Initialization:
-    case SYSSTATUS::Resting:
-    case SYSSTATUS::RestingParamsModified:
-    case SYSSTATUS::Suspended:
-    case SYSSTATUS::SuspendedParamsModified:
-      EnterState( SYSSTATUS::Initialization );
-      break;
-  }
+  SetConfig();
 }
+
 //---------------------------------------------------------------------------
 
 void __fastcall TfMain::bShowConnectionInfoClick( TObject* )

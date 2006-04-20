@@ -74,6 +74,9 @@ class TfMain : public TForm
   __fastcall TfMain( TComponent* );
   __fastcall ~TfMain();
   int  UpdateState( const char* Name, unsigned short Value );
+  bool SetConfig();
+  bool Run();
+  bool Quit();
 
  private:
   void __fastcall ApplicationIdleHandler( TObject*, bool& );
@@ -86,7 +89,7 @@ class TfMain : public TForm
   void BroadcastEndOfParameter();
   void BroadcastStates();
   void BroadcastEndOfState();
-  void QuitOperator();
+  void QuitOperator( bool confirm = true );
   void UpdateDisplay();
   void SetFunctionButtons();
   static void UserChangedParameters();

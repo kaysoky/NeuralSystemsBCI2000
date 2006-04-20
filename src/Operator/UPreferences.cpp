@@ -45,7 +45,8 @@ void __fastcall TfPreferences::TrackBar1Change(TObject *Sender)
 void __fastcall TfPreferences::bCloseClick(TObject *Sender)
 {
   #define SAVE_SCRIPT( name ) \
-  preferences->Script[ PREFERENCES::name ] = e##name->Text.Trim();
+  if( !preferences->mCmdlineSpecified[ PREFERENCES::name ] ) \
+    preferences->Script[ PREFERENCES::name ] = e##name->Text.Trim();
   SAVE_SCRIPT( AfterModulesConnected );
   SAVE_SCRIPT( OnExit );
   SAVE_SCRIPT( OnResume );
@@ -84,7 +85,9 @@ void __fastcall TfPreferences::FormShow(TObject *Sender)
     }
 
   #define RESTORE_SCRIPT( name ) \
-  e##name->Text = preferences->Script[ PREFERENCES::name ];
+  e##name->Text = preferences->Script[ PREFERENCES::name ]; \
+  if( preferences->mCmdlineSpecified[ PREFERENCES::name ] ) \
+    e##name->ReadOnly = true;
   RESTORE_SCRIPT( AfterModulesConnected );
   RESTORE_SCRIPT( OnExit );
   RESTORE_SCRIPT( OnResume );
@@ -106,6 +109,34 @@ void __fastcall TfPreferences::FormShow(TObject *Sender)
 PREFERENCES::PREFERENCES()
 {
   UserLevel=USERLEVEL_BEGINNER;
+  for( int i = 0; i < PREFERENCES::numScriptEvents; ++i )
+    mCmdlineSpecified[ i ] = false;
+
+  const struct
+  {
+    const char* name;
+    int         event;
+  } paramNames[] =
+  {
+    { "--OnConnect", AfterModulesConnected },
+    { "--OnExit",    OnExit },
+    { "--OnSuspend", OnSuspend },
+    { "--OnResume",  OnResume },
+    { "--OnStart",   OnStart }
+  };
+  int i = 1;
+  while( i + 1 < __argc )
+  {
+    for( int j = 0; j < sizeof( paramNames ) / sizeof( *paramNames ); ++j )
+    {
+      if( std::string( __argv[ i ] ).find( paramNames[ j ].name ) == 0 )
+      {
+        mCmdlineSpecified[ paramNames[ j ].event ] = true;
+        Script[ paramNames[ j ].event ] = __argv[ ++i ];
+      }
+    }
+    ++i;
+  }
 }
 
 
@@ -117,9 +148,11 @@ void PREFERENCES::GetDefaultSettings()
   {
     UserLevel = storage->ReadInteger( "Various", "DefaultUserLevel", USERLEVEL_ADVANCED );
     #define READ_SCRIPT( name ) \
-    Script[ name ] = storage->ReadString( "Scripts", #name, "" );
+    if( !mCmdlineSpecified[ name ] ) \
+      Script[ name ] = storage->ReadString( "Scripts", #name, "" );
     READ_SCRIPT( AfterModulesConnected );
     READ_SCRIPT( OnExit );
+    READ_SCRIPT( OnResume );
     READ_SCRIPT( OnSuspend );
     READ_SCRIPT( OnStart );
 
@@ -144,7 +177,8 @@ void PREFERENCES::SetDefaultSettings()
   {
     storage->WriteInteger( "Various", "DefaultUserLevel", UserLevel );
     #define WRITE_SCRIPT( name ) \
-    storage->WriteString( "Scripts", #name, Script[ name ] );
+    if( !mCmdlineSpecified[ name ] ) \
+      storage->WriteString( "Scripts", #name, Script[ name ] );
     WRITE_SCRIPT( AfterModulesConnected );
     WRITE_SCRIPT( OnExit );
     WRITE_SCRIPT( OnResume );

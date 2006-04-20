@@ -36,6 +36,7 @@ public:		// User declarations
           numScriptEvents
         };
         AnsiString Script[ numScriptEvents ];
+        bool       mCmdlineSpecified[ numScriptEvents ];
 
         enum
         {
@@ -65,7 +66,7 @@ __published:	// IDE-managed Components
         TLabel *Label2;
         TLabel *Label3;
         TEdit *eAfterModulesConnected;
-    TEdit *eOnExit;
+        TEdit *eOnExit;
         TLabel *Label4;
         TLabel *Label5;
         TEdit *eOnResume;

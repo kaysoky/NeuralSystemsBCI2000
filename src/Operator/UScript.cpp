@@ -5,9 +5,11 @@
 
 #include "..\shared\defines.h"
 #include <stdio.h>
+#include <sstream>
 
 #include "UScript.h"
 #include "UParameter.h"
+#include "EncodedString.h"
 #include "UState.h"
 #include "USysLog.h"
 #include "UMain.h"
@@ -15,6 +17,7 @@
 
 #pragma package(smart_init)
 
+using namespace std;
 
 SCRIPT::SCRIPT(PARAMLIST *my_paramlist, STATELIST *my_statelist, SYSLOG *my_syslog, TfMain *my_fMain)
 : paramlist( my_paramlist ),
@@ -26,10 +29,18 @@ SCRIPT::SCRIPT(PARAMLIST *my_paramlist, STATELIST *my_statelist, SYSLOG *my_sysl
 }
 
 
-int SCRIPT::ExecuteScript(char *my_filename)
+int SCRIPT::ExecuteScript(const char *my_filename)
 {
 char    buf[256];
 FILE    *fp;
+
+ if( my_filename[ 0 ] == '-' )
+ {
+   string script( my_filename + 1 );
+   replace( script.begin(), script.end(), ';', '\n' );
+   istringstream iss( script );
+   return ExecuteScript( iss );
+ }
 
  strcpy(filename, my_filename);
 
@@ -60,6 +71,22 @@ FILE    *fp;
 }
 
 
+int
+SCRIPT::ExecuteScript( istream& inScript )
+{
+  ::strncpy( filename, "unnamed script", sizeof( filename ) - 1 );
+
+  string line;
+  cur_line = 0;
+  while( getline( inScript, line ) )
+  {
+    ++cur_line;
+    ExecuteCommand( line.c_str() );
+  }
+  return 1;
+}
+
+
 // **************************************************************************
 // Function:   ExecuteLine
 // Purpose:    executes one particular line in a scriptfile
@@ -67,7 +94,7 @@ FILE    *fp;
 // Returns:    1 ... OK
 //             0 ... Problem
 // **************************************************************************
-int SCRIPT::ExecuteCommand(char *line)
+int SCRIPT::ExecuteCommand( const char *line)
 {
 char    token[256], buf[256], value[256];
 int     idx;
@@ -89,7 +116,10 @@ bool    ok;
     if (stricmp(token, "PARAMETERFILE") == 0)
        {
        idx=get_argument(idx, token, line, 256);
-       if (!paramlist->Load(token))
+       EncodedString paramFileName;
+       istringstream iss( token );
+       iss >> paramFileName;
+       if (!paramlist->Load(paramFileName.c_str()))
           {
           sprintf(buf, "%s: Error in scriptfile on line %d: Couldn't load parameter file %s", filename, cur_line, token);
           syslog->AddSysLogEntry(buf);
@@ -149,7 +179,10 @@ bool    ok;
     {
     ok=true;
     idx=get_argument(idx, token, line, 256);
-    if (system(token) == 0)
+    istringstream iss( token );
+    EncodedString command;
+    iss >> command;
+    if (system(command.c_str()) == 0)
        {
        sprintf(buf, "%s: Successfully started %s", filename, token);
        syslog->AddSysLogEntry(buf);
@@ -162,6 +195,19 @@ bool    ok;
        return(0);
        }
     }
+
+ // command is SETCONFIG
+ bool success = false;
+ if( stricmp( token, "SETCONFIG" ) == 0 )
+ {
+   success = fMain->SetConfig();
+   if( success )
+     ::snprintf( buf, sizeof( buf ) - 1, "%s: Set configuration", filename );
+   else
+     ::snprintf( buf, sizeof( buf ) - 1, "%s: Could not set configuration", filename );
+   syslog->AddSysLogEntry( buf );
+   return success;
+ }
 
  // is it any command we don't know ?
  if (!ok)
@@ -186,7 +232,7 @@ bool    ok;
 //             maxlen - maximum length of the line
 // Returns:    the index into the line where the returned token ends
 // **************************************************************************
-int SCRIPT::get_argument(int ptr, char *buf, char *line, int maxlen)
+int SCRIPT::get_argument(int ptr, char *buf, const char *line, int maxlen)
 {
  // skip trailing spaces, if any
  while ((line[ptr] == '=') || (line[ptr] == ' ') && (ptr < maxlen))
