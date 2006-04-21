@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\prog\BCIlauncher.exe"/>
-    <OBJFILES value="obj\BCIlauncher.obj obj\Unit1.obj"/>
+    <OBJFILES value="obj\BCIlauncher.obj obj\Unit1.obj obj\EncodedString.obj"/>
     <RESFILES value="BCIlauncher.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) Unit1.dfm"/>
@@ -17,7 +17,7 @@
       vclie.bpi xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi 
       nmfast.bpi bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
       indy.bpi bcb2kaxserver.bpi"/>
-    <PATHCPP value=".;"/>
+    <PATHCPP value=".;..\..\shared"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -27,8 +27,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT;USEPACKAGES"/>
     <MAINSOURCE value="BCIlauncher.cpp"/>
-    <INCLUDEPATH value="..\..;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..;..;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..;..;$(BCB)\include;$(BCB)\include\vcl;..\..\shared"/>
+    <LIBPATH value="..\..\shared;..\..;..;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -51,6 +51,7 @@
       <FILE FILENAME="BCIlauncher.res" FORMNAME="" UNITNAME="BCIlauncher.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="BCIlauncher.cpp" FORMNAME="" UNITNAME="BCIlauncher" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="Unit1.cpp" FORMNAME="mainForm" UNITNAME="Unit1" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -84,21 +85,23 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=6
-Item0=..\..;..;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..;Tools\BCIlauncher;..;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
-Item2=..;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
-Item3=..;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include
-Item4=..\;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include
-Item5=..\;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl
+Count=7
+Item0=..\..;..;$(BCB)\include;$(BCB)\include\vcl;..\..\shared
+Item1=..\..;..;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..;Tools\BCIlauncher;..;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
+Item3=..;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
+Item4=..;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include
+Item5=..\;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl;C:\Program Files\MATLAB71\extern\include
+Item6=..\;CroneAnalysis;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=5
-Item0=..\..;..;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..;Tools\BCIlauncher;..;$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
-Item2=..;$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
-Item3=..;CroneAnalysis;$(BCB)\lib\obj;$(BCB)\lib
-Item4=..\;CroneAnalysis;$(BCB)\lib\obj;$(BCB)\lib
+Count=6
+Item0=..\..\shared;..\..;..;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..;..;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..;Tools\BCIlauncher;..;$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
+Item3=..;$(BCB)\lib\obj;$(BCB)\lib;C:\Documents and Settings\Adam\My Documents\Visual Studio Projects\FFTW
+Item4=..;CroneAnalysis;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\;CroneAnalysis;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1

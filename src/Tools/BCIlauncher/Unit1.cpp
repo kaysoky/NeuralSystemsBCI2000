@@ -23,7 +23,13 @@ __fastcall TmainForm::TmainForm(TComponent* Owner)
     appList->PopupMenu = appPopup;
     othersList->PopupMenu = othersPopup;
 
-    helpLoc = "..\\doc\\BCIlauncher_help.chm";
+
+    char curdirTmp[200];
+    current_directory(curdirTmp);
+    curdir = curdirTmp;
+    curdir.append("\\");
+    helpLoc = curdir.c_str();
+    helpLoc.Insert("BCIlauncher_help.chm", curdir.length()+1);
 }
 //---------------------------------------------------------------------------
 
@@ -36,9 +42,11 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
     bool haveFile = false;
     int boxDlg;
     vector<string> lines;
-    string label, value;
+    string label, value, tmp;
+    tmp = curdir.c_str();
+    tmp += "BCIlauncher.ini";
     ifstream in;
-    in.open("BCIlauncher.ini");
+    in.open(tmp.c_str());
 
     if (!in.fail())
         haveFile = true;
@@ -113,7 +121,7 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
 
     //start by getting the directory listing
     struct ffblk ffblk;
-    int done, count;
+    unsigned int done, count;
     vector<string>::iterator dirPos;
     
     done = findfirst("*.exe", &ffblk,0);
@@ -126,19 +134,19 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
 
     //now add the files to the appropriate list boxes
     // do the source programs first
-    for (int i = 0; i < sourceStr.size(); i++)
+    for (unsigned int i = 0; i < sourceStr.size(); i++)
     {
         if (ismember(sourceStr[i], dirListing))
             sourceList->Items->Add(sourceStr[i].c_str());
     }
 
-    for (int i = 0; i < SPStr.size(); i++)
+    for (unsigned int i = 0; i < SPStr.size(); i++)
     {
         if (ismember(SPStr[i], dirListing))
             sigProcList->Items->Add(SPStr[i].c_str());
     }
 
-    for (int i = 0; i < appStr.size(); i++)
+    for (unsigned int i = 0; i < appStr.size(); i++)
     {
         if (ismember(appStr[i], dirListing))
             appList->Items->Add(appStr[i].c_str());
@@ -170,7 +178,7 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
 bool TmainForm::ismember(string str, vector<string> strs)
 {
     string tmpStr;
-    for (int i=0; i < strs.size(); i++)
+    for (unsigned int i=0; i < strs.size(); i++)
     {
         //if (strcmp(str.c_str(), strs[i].c_str()) == 0)
         if (str == strs[i])
@@ -187,23 +195,38 @@ void removeAt(vector<string> &str, int pos)
 
     vector<string> newStr = str;
     str.clear();
-    for (int i=0; i < newStr.size(); i++)
+    for (unsigned int i=0; i < newStr.size(); i++)
     {
         if (i != pos)
             str.push_back(newStr[i]);
     }
 }
 
+//----------------------------------------------------------------
 void __fastcall TmainForm::launchButClick(TObject *Sender)
 {
     statusList->Clear();
     statusList->Items->Add("Launching Operator...");
-    FileRun1->FileName = "operat.exe";
+
+    FileRun1->FileName = curdir.c_str();
+    FileRun1->FileName.Insert("operat.exe", curdir.length()+1);
+    if (parmBox->Text.Length() > 0)
+    {
+        string comm = "--OnConnect \"-LOAD PARAMETERFILE ";
+        ostringstream oss;
+        oss << EncodedString(parmBox->Text.c_str());
+        comm.append(oss.str().c_str());
+        comm += "; SETCONFIG\"";
+        FileRun1->Parameters = comm.c_str();
+    }
+    else
+    {
+        FileRun1->Parameters = "";
+    }
     FileRun1->Execute();
 
     //wait a little bit
-    for (int i = 0; i < 100000; i+=2)
-        i--;
+    Sleep(500);
 
     if (sourceList->ItemIndex < 0)
     {
@@ -212,7 +235,8 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     else
     {
         statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
-        FileRun1->FileName = sourceList->Items->Strings[sourceList->ItemIndex];
+        FileRun1->FileName = curdir.c_str();
+        FileRun1->FileName.Insert(sourceList->Items->Strings[sourceList->ItemIndex], curdir.length()+1);
         if (sourceIPBox->Text.Length() > 0)
             FileRun1->Parameters = "AUTOSTART " + sourceIPBox->Text;
         else
@@ -228,7 +252,8 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     else
     {
         statusList->Items->Add("Launching " + sigProcList->Items->Strings[sigProcList->ItemIndex]);
-        FileRun1->FileName = sigProcList->Items->Strings[sigProcList->ItemIndex];
+        FileRun1->FileName = curdir.c_str();
+        FileRun1->FileName.Insert(sigProcList->Items->Strings[sigProcList->ItemIndex], curdir.length()+1);
         if (sigProcIPBox->Text.Length() > 0)
             FileRun1->Parameters = "AUTOSTART " + sigProcIPBox->Text;
         else
@@ -243,7 +268,8 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     else
     {
         statusList->Items->Add("Launching " + appList->Items->Strings[appList->ItemIndex]);
-        FileRun1->FileName = appList->Items->Strings[appList->ItemIndex];
+        FileRun1->FileName = curdir.c_str();
+        FileRun1->FileName.Insert(appList->Items->Strings[appList->ItemIndex], curdir.length()+1);
         if (appIPBox->Text.Length() > 0)
             FileRun1->Parameters = "AUTOSTART " + appIPBox->Text;
         else
@@ -259,7 +285,8 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
         {
             if (othersList->Selected[i])
             {
-                FileRun1->FileName = othersList->Items->Strings[i];
+                FileRun1->FileName = curdir.c_str();
+                FileRun1->FileName.Insert(othersList->Items->Strings[i], curdir.length()+1);
                 FileRun1->Parameters = "";
                 FileRun1->Execute();
             }
@@ -366,6 +393,7 @@ bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters)
 		//getchar();
 		found = true;
     }
+    return found;
 }
 
 void stringSplit(const string& str, vector<string>& tokens, string delimiters)
@@ -398,7 +426,7 @@ void stringSplit(const string& str, vector<string>& tokens, string delimiters)
 string lowerCase(string str)
 {
 	string returnStr = str;
-	for (int i = 0; i < returnStr.length(); i++)
+	for (unsigned int i = 0; i < returnStr.length(); i++)
 	{
 		returnStr[i] = tolower(returnStr[i]);
 	}
@@ -858,5 +886,13 @@ void __fastcall TmainForm::helpMnuClick(
     }
 }
 //---------------------------------------------------------------------------
+//------------------------------------------------------------------
+char *current_directory(char *path)
+{
+  strcpy(path, "X:\\");      /* fill string with form of response: X:\ */
+  path[0] = 'A' + getdisk();    /* replace X with current drive letter */
+  getcurdir(0, path+3);  /* fill rest of string with current directory */
+  return(path);
+}
 
 

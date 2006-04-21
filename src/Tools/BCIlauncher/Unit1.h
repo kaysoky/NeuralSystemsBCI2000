@@ -20,6 +20,9 @@
 #include <process.h>
 #include <iostream>
 #include <fstream>
+#include <dir.h>
+#include <sstream>
+#include "EncodedString.h"
 
 using namespace std;
 //---------------------------------------------------------------------------
@@ -118,7 +121,7 @@ private:	// User declarations
     vector<string> sourceStr;
     vector<string> SPStr;
     vector<string> appStr;
-
+    string curdir;
     AnsiString helpLoc;
 
     //for drag-n-drop
@@ -138,3 +141,4 @@ void removeAt(vector<string> &str, int pos);
 bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters);
 void stringSplit(const string& str, vector<string>& tokens, string delimiters);
 string lowerCase(string str);
+char *current_directory(char *path);
