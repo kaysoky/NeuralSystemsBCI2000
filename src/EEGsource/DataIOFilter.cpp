@@ -99,7 +99,9 @@ DataIOFilter::DataIOFilter()
 
   BEGIN_STATE_DEFINITIONS
     "Running 1 0 0 0",
-    "Recording 1 0 0 0",
+    "Recording 1 1 0 0", // "Recording" must have an initial value of 1 to avoid
+                         // it being set to zero by the other modules' initialization
+                         // code.
     "SourceTime 16 0 0 0",
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
@@ -133,7 +135,7 @@ DataIOFilter::DataIOFilter()
     for( writerSet::const_iterator i = availableFileWriters.begin();
          i != availableFileWriters.end();
          ++i )
-      delete( *i );
+      delete *i;
   }
   if( mpFileWriter != NULL )
     mpFileWriter->Publish();
@@ -289,12 +291,11 @@ DataIOFilter::Process( const GenericSignal* Input,
   // The BCI2000 standard requires that the state vector saved with a data block
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
-  // Buffering is done inside the GenericFileWriter class when we call
-  // its PushStatevector() function.
   bool visualizeRoundtrip = false;
   if( !mSignalBuffer.GetProperties().IsEmpty() )
   {
-    mpFileWriter->Write( mSignalBuffer, mStatevectorBuffer );
+    if( State( "Recording" ) == 1 )
+      mpFileWriter->Write( mSignalBuffer, mStatevectorBuffer );
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
   mpADC->Process( Input, Output );
