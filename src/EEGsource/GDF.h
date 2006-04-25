@@ -10,6 +10,9 @@
 //              data format as defined in Kemp et al, 1992, and the
 //              GDF 1.25 data format as defined in Schloegl et al, 1998.
 // $Log$
+// Revision 1.3  2006/04/25 18:05:21  mellinger
+// Some changes for gcc compatibility.
+//
 // Revision 1.2  2006/03/15 14:52:58  mellinger
 // Compatibility with BCB 2006.
 //
@@ -54,8 +57,8 @@ namespace GDF
   typedef GDFType< float,              4, 16 > float32;
   typedef GDFType< double,             8, 17 > float64;
 
-  const cInvalidDate = - ( 1LL << 62 );
-  const cSecondsPerYear = ( 60 * 60 * 24 * 3652422LL ) / 10000;
+  const long long cInvalidDate = - ( 1LL << 62 );
+  const long long cSecondsPerYear = ( 60 * 60 * 24 * 3652422LL ) / 10000;
 
   enum
   {
@@ -94,10 +97,10 @@ namespace GDF
     class Num // A numeric field with a binary representation.
     {
      public:
-      Num( T::ValueType t = 0 );
+      Num( typename T::ValueType = 0 );
       void WriteToStream( std::ostream& os ) const;
      private:
-      T::ValueType mValue;
+      typename T::ValueType mValue;
     };
 
   template<class F>
@@ -115,38 +118,38 @@ namespace GDF
 }; // namespace GDF
 
 
-inline
 template<class F>
+inline
 void
 GDF::PutField( std::ostream& os )
 {
   F().WriteToStream( os );
 }
 
-inline
 template<class F, class V>
+inline
 void
 GDF::PutField( std::ostream& os, const V& v )
 {
   F( v ).WriteToStream( os );
 }
 
-inline
 template<class F, class C>
+inline
 void
 GDF::PutArray( std::ostream& os, const C& c )
 {
-  for( C::const_iterator i = c.begin(); i != c.end(); ++i )
+  for( typename C::const_iterator i = c.begin(); i != c.end(); ++i )
     F().WriteToStream( os );
 }
 
-inline
 template<class F, class C, class P>
+inline
 void
 GDF::PutArray( std::ostream& os, const C& c, P p )
 {
-  for( C::const_iterator i = c.begin(); i != c.end(); ++i )
-	F( ( *i ).*p ).WriteToStream( os );
+  for( typename C::const_iterator i = c.begin(); i != c.end(); ++i )
+    F( ( *i ).*p ).WriteToStream( os );
 }
 
 template<int tLength>
@@ -187,7 +190,7 @@ GDF::Str<tLength>::WriteToStream( std::ostream& os ) const
 }
 
 template<class T>
-GDF::Num<T>::Num( T::ValueType t )
+GDF::Num<T>::Num( typename T::ValueType t )
 : mValue( t )
 {
 }
@@ -198,10 +201,10 @@ GDF::Num<T>::WriteToStream( std::ostream& os ) const
 {
   const char* value = reinterpret_cast<const char*>( &mValue );
   if( BigEndianMachine )
-    for( int i = sizeof( T::ValueType ) - 1; i >= 0; --i )
+    for( int i = sizeof( typename T::ValueType ) - 1; i >= 0; --i )
       os.put( value[ i ] );
   else
-    for( int i = 0; i < sizeof( T::ValueType ); ++i )
+    for( int i = 0; i < sizeof( typename T::ValueType ); ++i )
       os.put( value[ i ] );
 }
 

@@ -9,6 +9,9 @@
 // Description: A filter that stores data into a EDF data file.
 //
 // $Log$
+// Revision 1.2  2006/04/25 18:05:21  mellinger
+// Some changes for gcc compatibility.
+//
 // Revision 1.1  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //

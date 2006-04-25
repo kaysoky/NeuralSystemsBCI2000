@@ -29,6 +29,9 @@
 #include "MeasurementUnits.h"
 #include <stdio.h>
 #include <math.h>
+#ifndef _WIN32
+# include <sys/socket.h>
+#endif
 
 
 using namespace std;
@@ -213,12 +216,18 @@ int     stateval, cursorpos, cursorposx;
  BCITIME curtime=BCITIME::GetBCItime_ms();
  time2wait = 1e3 * signal->Elements() / sr - ( curtime - mLasttime );
  if (time2wait < 0) time2wait = 0;
+#ifdef _WIN32
  ::Sleep(time2wait);
+#else
+ struct timeval tv = { 0, 1e3 * time2wait };
+ ::select( 0, NULL, NULL, NULL, &tv );
+#endif
  mLasttime = BCITIME::GetBCItime_ms();
 
  sinevalrange=sinemaxamplitude-sineminamplitude;
  noisevalrange=noisemaxamplitude-noiseminamplitude;
 
+#ifdef _WIN32
  try{
   cur_mousexpos=Mouse->CursorPos.x;
   cur_mouseypos=Mouse->CursorPos.y;
@@ -246,13 +255,20 @@ int     stateval, cursorpos, cursorposx;
      { bciout << "Cursor position could not be determined (screen saver on?). Data not predictable." << endl; }
 
 // generate the noisy sine wave and write it into the signal
+ int screenWidth = Screen->Width,
+     screenHeight = Screen->Height;
+#else // _WIN32
+  int screenWidth = 1,
+      screenHeight = 1;
+#endif // _WIN32
+
  for (sample=0; sample<signal->Elements(); sample++)
   {
   cursorpos=cur_mouseypos/70+1;
-  if (cur_mousexpos >= Screen->Width) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
+  if (cur_mousexpos >= screenWidth) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
      cursorposx=1;
   else
-     cursorposx=(Screen->Width-cur_mousexpos)/70+1;
+     cursorposx=(screenWidth-cur_mousexpos)/70+1;
 
   for (channel=0; channel<signal->Channels(); channel++)
    {
@@ -262,7 +278,7 @@ int     stateval, cursorpos, cursorposx;
    if ((sinechannel == 0) || (sinechannel == channel+1))
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = sinevalrange * ( 1 - float( cur_mouseypos ) / Screen->Height ) + sineminamplitude;
+        value = sinevalrange * ( 1 - float( cur_mouseypos ) / screenHeight ) + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
@@ -272,7 +288,7 @@ int     stateval, cursorpos, cursorposx;
    if (sinechannelx == channel+1)
       {
       if( sinefrequency == 0 && modulateamplitude )
-        value = sinevalrange * ( 1 - float( cur_mousexpos ) / Screen->Width ) + sineminamplitude;
+        value = sinevalrange * ( 1 - float( cur_mousexpos ) / screenWidth ) + sineminamplitude;
       else
         value=(int)((sin(t*2*3.14159265)/2+0.5)*(double)sinevalrange+(double)sineminamplitude);
       if (sinefrequency != 0 && modulateamplitude)
@@ -288,8 +304,8 @@ int     stateval, cursorpos, cursorposx;
    {
      case SignalType::int16:
        {
-         const maxvalue = 1 << 15 - 1,
-               minvalue = - 1 << 15;
+         const float maxvalue = SignalType( SignalType::int16 ).Max(),
+                     minvalue = SignalType( SignalType::int16 ).Min();
          if( value > maxvalue )
            value = maxvalue;
          if( value < minvalue )
@@ -298,15 +314,15 @@ int     stateval, cursorpos, cursorposx;
        break;
      case SignalType::int32:
        {
-         const maxvalue = 1 << 31 - 1,
-                minvalue = - 1 << 31;
+         const float maxvalue = SignalType( SignalType::int32 ).Max(),
+                     minvalue = SignalType( SignalType::int32 ).Min();
          if( value > maxvalue )
            value = maxvalue;
          if( value < minvalue )
            value = minvalue;
        }
        break;
-   };
+   }
    signal->SetValue(channel, sample, value);
    }
   }

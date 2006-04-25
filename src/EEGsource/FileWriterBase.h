@@ -10,6 +10,9 @@
 //              file writer classes that output into a file.
 //
 // $Log$
+// Revision 1.3  2006/04/25 18:05:21  mellinger
+// Some changes for gcc compatibility.
+//
 // Revision 1.2  2006/02/23 19:34:08  mellinger
 // Moved OutputStream() accessor definition into cpp file.
 //

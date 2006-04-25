@@ -9,6 +9,9 @@
 // Description: A filter that stores data into a BCI2000 dat file.
 //
 // $Log$
+// Revision 1.6  2006/04/25 18:05:21  mellinger
+// Some changes for gcc compatibility.
+//
 // Revision 1.5  2006/02/18 12:11:00  mellinger
 // Support for EDF and GDF data formats.
 //
@@ -163,7 +166,7 @@ BCIDatFileWriter::PutBlock( const GenericSignal& inSignal, const STATEVECTOR& in
   {
     for( size_t i = 0; i < inSignal.Channels(); ++i )
       inSignal.PutValueBinary<T>( OutputStream(), i, j );
-    OutputStream().write( inStatevector.Data(),
+    OutputStream().write( reinterpret_cast<const char*>( inStatevector.Data() ),
                        inStatevector.Length() );
   }
 }
