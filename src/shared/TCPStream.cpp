@@ -8,6 +8,9 @@
 // Date: Oct 28, 2003
 //
 // $Log$
+// Revision 1.9  2006/04/25 18:12:28  mellinger
+// Changes to comment.
+//
 // Revision 1.8  2006/01/31 10:58:07  mellinger
 // Fixed const-incorrect iterator declarations.
 //
@@ -479,7 +482,7 @@ tcpbuf::underflow()
   int result = traits_type::eof();
   setg( eback(), eback(), eback() );
   // If your program blocks here, changing the timeout value will not help.
-  // Quite likely, this is due to a situation where all data is transmitted
+  // Quite likely, this is due to a situation where all transmitted data has been read
   // but underflow() is called from the stream via snextc() to examine whether
   // there is an eof pending. Making sure that the last transferred byte is
   // either a terminating character or reading it with get(), not with read(),

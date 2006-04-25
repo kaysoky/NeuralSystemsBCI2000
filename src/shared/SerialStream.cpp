@@ -53,7 +53,7 @@ serialbuf::set_timeout( int t )
   COMMTIMEOUTS c =
   {
     MAXDWORD, MAXDWORD, m_timeout,
-    MAXDWORD, m_timeout 
+    MAXDWORD, m_timeout
   };
   ::SetCommTimeouts( m_handle, &c );
 }
@@ -121,7 +121,7 @@ serialbuf::underflow()
   int result = traits_type::eof();
   setg( eback(), eback(), eback() );
   // If your program blocks here, changing the timeout value will not help.
-  // Quite likely, this is due to a situation where all data is transmitted
+  // Quite likely, this is due to a situation where all transmitted data has been read
   // but underflow() is called from the stream via snextc() to examine whether
   // there is an eof pending. Making sure that the last transferred byte is
   // either a terminating character or reading it with get(), not with read(),
