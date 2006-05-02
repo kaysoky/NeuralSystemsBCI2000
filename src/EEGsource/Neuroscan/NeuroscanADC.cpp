@@ -425,14 +425,12 @@ bool          retval;
             {
               for( int channel = 0; channel < num_channels; ++channel )
               {
-                long value = 0;
-                for( int byte = 0; byte < bitspersample / 8; ++byte )
-                {
-                  long byteVal = *pData++;
-                  value |= byteVal << ( 8 * byte );
-                }
-                if( value & 1 << ( bitspersample - 1 ) )
-                  value |= -1 << bitspersample;
+                signed long value = 0;
+                for( int byte = 0; byte < bitspersample / 8 - 1; ++byte )
+                  value |= ( *pData++ ) << ( 8 * byte );
+                // for little-endian data, the last byte determines the sign
+                signed char signedByte = *pData++;
+                value |= signedByte << ( bitspersample - 8 );
                 ( *signal )( channel, sample ) = value;
               }
               // Does the marker channels' bit width actually depend on the data bit width?
