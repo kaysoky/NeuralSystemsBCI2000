@@ -17,6 +17,7 @@
 
 #include "defines.h"
 #include "GenericADC.h"
+#include "NotchFilter.h"
 #include "GenericFileWriter.h"
 #include "UBCIError.h"
 #include "BCIDirectry.h"
@@ -36,6 +37,7 @@ RegisterFilter( DataIOFilter, 0 );
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
+  mpNotchFilter( GenericFilter::PassFilter<NotchFilter>() ),
   mpFileWriter( NULL ),
   mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
@@ -146,6 +148,7 @@ DataIOFilter::~DataIOFilter()
 {
   Halt();
   delete mpADC;
+  delete mpNotchFilter;
   delete mpFileWriter;
 }
 
@@ -175,6 +178,12 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   else
     mpADC->Preflight( Input, Output );
 
+  if( mpNotchFilter )
+  {
+    SignalProperties notchInput( Output );
+    mpNotchFilter->Preflight( notchInput, Output );
+  }
+
   if( !mpFileWriter )
     bcierr << "Expected a file writer filter instance to be present" << endl;
   else
@@ -198,6 +207,11 @@ DataIOFilter::Initialize2( const SignalProperties& inputProperties,
   mSignalBuffer = GenericSignal( 0, 0 );
   mRestingSignal.SetProperties( outputProperties );
   mpADC->Initialize2( inputProperties, outputProperties );
+  if( mpNotchFilter )
+  {
+    mpNotchFilter->Initialize2( outputProperties, outputProperties );
+    mpNotchFilter->StartRun();
+  }
   mpFileWriter->Initialize2( outputProperties, SignalProperties( 0, 0 ) );
 
   // Configure visualizations.
@@ -220,7 +234,7 @@ DataIOFilter::Initialize2( const SignalProperties& inputProperties,
     oss << ( 1.0 / Parameter( "SamplingRate" ) * mVisualizeSourceDecimation ) << "s";
     mEEGVis.Send( CFGID::sampleUnit, oss.str() );
     // This is a hack to keep compatibility with old parameter files; it will
-    // not treat individual offset/gain settings different channels properly.
+    // not treat individual offset/gain settings for different channels properly.
     // Ideally, the offset/gain parameters should not be used here, and the parameter
     // values should be treated as muV regardless of whether this is stated
     // explicitly or not.
@@ -299,6 +313,11 @@ DataIOFilter::Process( const GenericSignal* Input,
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
   mpADC->Process( Input, Output );
+  if( mpNotchFilter )
+  {
+    GenericSignal notchInput( *Output );
+    mpNotchFilter->Process( &notchInput, Output );
+  }
   BCITIME now = BCITIME::GetBCItime_ms();
   if( visualizeRoundtrip )
   {
@@ -327,6 +346,11 @@ void
 DataIOFilter::Resting()
 {
   mpADC->Process( NULL, &mRestingSignal );
+  if( mpNotchFilter )
+  {
+    GenericSignal notchInput( mRestingSignal );
+    mpNotchFilter->Process( &notchInput, &mRestingSignal );
+  }
   if( mVisualizeEEG )
   {
     for( size_t i = 0; i < mDecimatedSignal.Channels(); ++i )
