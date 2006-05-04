@@ -3,6 +3,9 @@
 // File:        NotchFilter.h
 // Description: A notch filter for removing power line noise.
 // $Log$
+// Revision 1.2  2006/05/04 17:17:01  mellinger
+// Changed value for passband ripples.
+//
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
@@ -75,7 +78,7 @@ NotchFilter::DesignFilter( num_seq_type& inputCoeff,
     {
       Ratpoly<FilterDesign::Complex> tf =
         FilterDesign::Chebyshev()
-        .Ripple_dB( -2 )
+        .Ripple_dB( -0.1 )
         .Order( 4 )
         .Bandstop( corner1, corner2 )
         .TransferFunction();
