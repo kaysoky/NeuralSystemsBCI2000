@@ -17,7 +17,6 @@
 
 #include "defines.h"
 #include "GenericADC.h"
-#include "NotchFilter.h"
 #include "GenericFileWriter.h"
 #include "UBCIError.h"
 #include "BCIDirectry.h"
@@ -37,7 +36,7 @@ RegisterFilter( DataIOFilter, 0 );
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
-  mpNotchFilter( GenericFilter::PassFilter<NotchFilter>() ),
+  mpSourceFilter( NULL ),
   mpFileWriter( NULL ),
   mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
@@ -108,6 +107,7 @@ DataIOFilter::DataIOFilter()
     "StimulusTime 16 0 0 0",
   END_STATE_DEFINITIONS
 
+  // Find available GenericFileWriter descendants and determine which one to use.
   typedef set<GenericFileWriter*> writerSet;
   set<GenericFileWriter*> availableFileWriters;
   for( GenericFileWriter* p = GenericFilter::PassFilter<GenericFileWriter>();
@@ -141,6 +141,12 @@ DataIOFilter::DataIOFilter()
   }
   if( mpFileWriter != NULL )
     mpFileWriter->Publish();
+
+  // If there is a GenericFilter descendant available with a position string
+  // before the DataIOFilter's "1", then use it as a "Source Filter":
+  GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
+  if( filter != this )
+    mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
 }
 
 
@@ -148,7 +154,7 @@ DataIOFilter::~DataIOFilter()
 {
   Halt();
   delete mpADC;
-  delete mpNotchFilter;
+  delete mpSourceFilter;
   delete mpFileWriter;
 }
 
@@ -178,10 +184,10 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   else
     mpADC->Preflight( Input, Output );
 
-  if( mpNotchFilter )
+  if( mpSourceFilter )
   {
-    SignalProperties notchInput( Output );
-    mpNotchFilter->Preflight( notchInput, Output );
+    SignalProperties sourceFilterInput( Output );
+    mpSourceFilter->Preflight( sourceFilterInput, Output );
   }
 
   if( !mpFileWriter )
@@ -207,10 +213,10 @@ DataIOFilter::Initialize2( const SignalProperties& inputProperties,
   mSignalBuffer = GenericSignal( 0, 0 );
   mRestingSignal.SetProperties( outputProperties );
   mpADC->Initialize2( inputProperties, outputProperties );
-  if( mpNotchFilter )
+  if( mpSourceFilter )
   {
-    mpNotchFilter->Initialize2( outputProperties, outputProperties );
-    mpNotchFilter->StartRun();
+    mpSourceFilter->Initialize2( outputProperties, outputProperties );
+    mpSourceFilter->StartRun();
   }
   mpFileWriter->Initialize2( outputProperties, SignalProperties( 0, 0 ) );
 
@@ -313,10 +319,10 @@ DataIOFilter::Process( const GenericSignal* Input,
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
   mpADC->Process( Input, Output );
-  if( mpNotchFilter )
+  if( mpSourceFilter )
   {
-    GenericSignal notchInput( *Output );
-    mpNotchFilter->Process( &notchInput, Output );
+    GenericSignal sourceFilterInput( *Output );
+    mpSourceFilter->Process( &sourceFilterInput, Output );
   }
   BCITIME now = BCITIME::GetBCItime_ms();
   if( visualizeRoundtrip )
@@ -346,10 +352,10 @@ void
 DataIOFilter::Resting()
 {
   mpADC->Process( NULL, &mRestingSignal );
-  if( mpNotchFilter )
+  if( mpSourceFilter )
   {
-    GenericSignal notchInput( mRestingSignal );
-    mpNotchFilter->Process( &notchInput, &mRestingSignal );
+    GenericSignal sourceFilterInput( mRestingSignal );
+    mpSourceFilter->Process( &sourceFilterInput, &mRestingSignal );
   }
   if( mVisualizeEEG )
   {

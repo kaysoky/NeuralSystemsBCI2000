@@ -17,7 +17,6 @@
 #include "UGenericVisualization.h"
 
 class GenericFileWriter;
-class NotchFilter;
 
 class DataIOFilter: public GenericFilter
 {
@@ -37,8 +36,8 @@ class DataIOFilter: public GenericFilter
   virtual void Halt();
 
  private:
-  GenericFilter*         mpADC;
-  NotchFilter*           mpNotchFilter;
+  GenericFilter*         mpADC,
+               *         mpSourceFilter;
   GenericFileWriter*     mpFileWriter;
   GenericSignal          mSignalBuffer;
   STATEVECTOR            mStatevectorBuffer;
