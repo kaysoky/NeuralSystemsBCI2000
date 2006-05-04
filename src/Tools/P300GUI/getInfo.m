@@ -18,7 +18,7 @@ if iscell(traindatfiles)==0
     traindatfiles={traindatfiles};
 end
 
-
+numstatp3av=numstat;
 numtrain=length(traindatfiles);
 signal=[];
 state.trialnr=[];
@@ -37,10 +37,10 @@ for kk=1:numtrain
     parms.SamplingRate(kk)=str2num(char(prm.SamplingRate));
     if isfield(prm, 'InterpretMode')       % P3AV        
         av=1;
-        numstat=numstat-3;
-%         if length(unique(DatHdr.Prm.P3AV_Stimuli.NumberOfSeq.val))==1
-%             fprintf(1,'\nWarning: Classification will not work with P300 oddball data.\n\n')
-%         end
+        numstat=numstatp3av-3;
+        if length(unique(str2num(char(prm.Sequence))))~=1
+            fprintf(1,'Warning: Classification will not work with P300 oddball data.\n')
+        end
         parms.NumMatrixRows(kk)=0;
         parms.NumMatrixColumns(kk)=length(str2num(char(prm.Sequence)));
 
@@ -118,11 +118,11 @@ for kk=1:numtrain
     else
         error('Data file must be valid P3Speller or P3AV format')
     end
-    
+   
     for zz=1:numstat
         idx1= strmatch(char(statestr(zz)),sts,'exact');
         state.(char(statestr(zz)))=cat(1,state.(char(statestr(zz))),sts.(char(statestr(zz))));
-    end
+    end   
 end
 
 clear sig sts
