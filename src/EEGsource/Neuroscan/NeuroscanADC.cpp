@@ -433,7 +433,6 @@ bool          retval;
                 value |= signedByte << ( bitspersample - 8 );
                 ( *signal )( channel, sample ) = value;
               }
-              // Does the marker channels' bit width actually depend on the data bit width?
               pData += num_markerchannels * ( bitspersample / 8 );
             }
           }
