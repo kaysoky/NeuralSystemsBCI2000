@@ -4,6 +4,9 @@
 // Description: Class templates for univariate polynomials and rational
 //              expressions.
 // $Log$
+// Revision 1.2  2006/05/05 16:07:40  mellinger
+// Added multiplication operators for Ratpoly class.
+//
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
@@ -48,6 +51,11 @@ class Ratpoly // A rational expression with a polynomial numerator and denominat
  public:
   Ratpoly();
   Ratpoly( const Polynomial<T>& numerator, const Polynomial<T>& denominator );
+
+  Ratpoly& operator*=( const T& );
+  Ratpoly& operator*=( const Polynomial<T>& );
+  Ratpoly& operator*=( const Ratpoly& );
+  template<class U> Ratpoly operator*( const U& ) const;
 
   const Polynomial<T>& Numerator() const;
   const Polynomial<T>& Denominator() const;
@@ -176,6 +184,40 @@ Ratpoly<T>::Ratpoly( const Polynomial<T>& numerator,
 }
 
 template<class T>
+Ratpoly<T>&
+Ratpoly<T>::operator*=( const T& f )
+{
+  mNumerator *= f;
+  return *this;
+}
+
+template<class T>
+Ratpoly<T>&
+Ratpoly<T>::operator*=( const Polynomial<T>& p )
+{
+  mNumerator *= p;
+  Simplify();
+  return *this;
+}
+
+template<class T>
+Ratpoly<T>&
+Ratpoly<T>::operator*=( const Ratpoly& r )
+{
+  mNumerator *= r.mNumerator;
+  mDenominator *= r.mDenominator;
+  Simplify();
+  return *this;
+}
+
+template<class T> template<class U>
+Ratpoly<T>
+Ratpoly<T>::operator*( const U& u ) const
+{
+  return Ratpoly<T>( *this ) *= u;
+}
+
+template<class T>
 const Polynomial<T>&
 Ratpoly<T>::Numerator() const
 {
@@ -214,7 +256,7 @@ Ratpoly<T>::Simplify()
   }
   for( std::vector<T>::const_iterator i = commonRoots.begin(); i != commonRoots.end(); ++i )
     numerRoots.erase( find( numerRoots.begin(), numerRoots.end(), *i ) );
-    
+
   if( !commonRoots.empty() )
   {
     mNumerator = Polynomial<T>::FromRoots( numerRoots, mNumerator.ConstantFactor() );
