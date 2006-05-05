@@ -6,7 +6,12 @@
 //       Based on mkfilter.C written by
 //         A.J. Fisher, University of York   <fisher@minster.york.ac.uk>
 //         September 1992
+//       Results have been tested again the mkfilter on-line version available at
+//       http://www-users.cs.york.ac.uk/~fisher/mkfilter/
 // $Log$
+// Revision 1.2  2006/05/05 15:27:39  mellinger
+// Comment now mentions on-line version of mkfilter.
+//
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
