@@ -367,7 +367,9 @@ void TTask::Initialize()
   // initialize user environment dispatcher
   if (m_pUsrEnvDispatcher != NULL)
   {
-    m_pUsrEnvDispatcher->Initialize(m_pUsrEnv);
+    bool shouldinterpret=false;
+    if (Parameter("InterpretMode") != 0) shouldinterpret=true;
+    m_pUsrEnvDispatcher->Initialize(m_pUsrEnv, shouldinterpret);
   }
 }
 

@@ -67,7 +67,7 @@ UsrEnvDispatcher::~UsrEnvDispatcher()
 // Returns:    0 ... if there was a problem (e.g., a necessary parameter does not exist)
 //             1 ... OK
 // **************************************************************************
-void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
+void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv, bool m_bInterpret_Results_new)
 {
   try
   {
@@ -92,6 +92,8 @@ void UsrEnvDispatcher::Initialize(UsrEnv * pUsrEnv)
 
     // 03/09/05 GS
     m_bDisplayResults = ( Parameter("DisplayResults") == 1 );
+    // 05/15/06 GS
+    m_bInterpret_Results = m_bInterpret_Results_new;
 
     // figure out whether a stimulus to appear in a sequence
     m_vStimulusPresent.clear();
@@ -228,7 +230,11 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
   m_bIsRunning = bIsStillRunning;
 
   // accumulate statistics
-  unsigned short uStimulusCodeRes = State( "StimulusCodeRes" );
+  unsigned short uStimulusCodeRes;
+  if (m_bInterpret_Results)          // don't check StimulusCodeRes unless we are interpreting results
+     uStimulusCodeRes = State( "StimulusCodeRes" );
+  else
+     uStimulusCodeRes = 0;
   if (uStimulusCodeRes > 0 && uStimulusCodeRes <= (unsigned short)m_vResultCounts.size() &&
       uStimulusCodeRes <= (unsigned short)m_vResultValues.size())
   {

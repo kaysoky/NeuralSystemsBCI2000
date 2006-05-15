@@ -44,7 +44,7 @@ public:
   UsrEnvDispatcher::~UsrEnvDispatcher();
 
   /// Member functions
-  void Initialize(UsrEnv * pUsrEnv);
+  void Initialize(UsrEnv * pUsrEnv, bool m_bInterpret_Results);
   void Process(const class GenericSignal*, UsrEnv * pUsrEnv,
                GenericVisualization * pGenericVisualization);
   void Reset(UsrEnv * pUsrEnv);
@@ -69,5 +69,6 @@ private: 	// User declarations
   bool m_bWaiting; // waiting for the m_iWaitTime to be over
   bool m_bDisplayResults; // 03/09/05 GS
   bool m_bIndividualOnTimes; // 12/01/05 jm
+  bool m_bInterpret_Results; // 05/15/06 GS
 };
 #endif
