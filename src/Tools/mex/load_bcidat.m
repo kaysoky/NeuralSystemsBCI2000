@@ -28,7 +28,7 @@
 %  parameter names as struct member names.
 %  Individual parameters are represented as cell arrays of strings, and may
 %  be converted into numeric matrices by Matlab's str2double function.
-%  If multiple files are given, parameter values will match the first files'
+%  If multiple files are given, parameter values will match the first file's
 %  parameters.
 %
 %  The load_bcidat function is part of the BCI2000 project 
@@ -38,6 +38,9 @@
 %  load_bcimat.mex.
 %  $Id$
 %  $Log$
+%  Revision 1.6  2006/05/17 15:42:11  mellinger
+%  Fixed comment/help text.
+%
 %  Revision 1.5  2006/02/07 13:26:59  mellinger
 %  Fixed more errors in help text.
 %

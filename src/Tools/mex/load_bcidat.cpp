@@ -11,8 +11,19 @@
 //  loads signal, state, and parameter data from the files whose names are given
 //  as function arguments.
 //
+//  Examples for loading multiple files:
+//    files = dir( '*.dat' );
+//    [ signal, states, parameters ] = load_bcidat( files.name );
+//
+//    files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
+//    [ signal, states, parameters ] = load_bcidat( files.name );
+//
+//
 //  For multiple files, number of channels, states, and signal type must be
 //  consistent.
+//
+//  Signal data will be in raw A/D units, and will be represented by the
+//  smallest Matlab data type that accomodates them.
 //
 //  The 'states' output variable will be a Matlab struct with BCI2000 state
 //  names as struct member names, and the number of state value entries matching
@@ -22,11 +33,13 @@
 //  parameter names as struct member names.
 //  Individual parameters are represented as cell arrays of strings, and may
 //  be converted into numeric matrices by Matlab's str2double function.
-//  If multiple files are given, parameter values will match the first files'
+//  If multiple files are given, parameter values will match the first file's
 //  parameters.
 //
-//
 // $Log$
+// Revision 1.5  2006/05/17 15:42:11  mellinger
+// Fixed comment/help text.
+//
 // Revision 1.4  2006/01/19 15:25:10  mellinger
 // Fixed potential memory leaks.
 //
@@ -240,8 +253,8 @@ mexFunction( int nargout, mxArray* varargout[],
       stateInfo[ i ].data = reinterpret_cast<int16*>( mxGetData( stateArray ) );
     }
     for( FileContainer::iterator file = files.begin(); file != files.end(); ++file )
-    { // StateRefs are not necessarily compatible across files, so we must
-      // create StateRefs for each file individually.
+    { // Locations and lengths are not necessarily compatible across files, so we must
+      // create StateInfos for each file individually.
       const STATEVECTOR* statevector = ( *file )->GetStateVectorPtr();
       const STATELIST& curStatelist = statevector->Statelist();
       for( int i = 0; i < numStates; ++i )
