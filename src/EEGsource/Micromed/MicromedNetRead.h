@@ -1,6 +1,9 @@
 #ifndef MicromedH
 #define MicromedH
 
+#pragma pack( push )
+#pragma pack( 2 ) // set structure alignment to 2 bytes
+
   #define MICROMED_HEADER_SIZE  10  //rememeber to set structure alignment on 2 bytes!
   #define MICROMED_PACKET_RATE  64  //fixed in SystemPlus 98 version 0.56
   #define POS_NOTE				83072
@@ -59,5 +62,7 @@ class AcqBasicInfo
  void Init()     { memset((void*)&dwSize, 0, sizeof(AcqBasicInfo));}
  BOOL Validate() { return (nBlockPnts && nRate && nEegChan && nDataSize); }
  };
+
+#pragma pack( pop ) // undo structure alignment setting
 
 #endif
