@@ -60,10 +60,10 @@ end
 % end
 
 if NumMatrixRows==0
-    tar=charvect(codecol,:);
+    tar=charvect(codecol,1);
     codecol=repmat(codecol',1,NumberOfSequences);
     numcorrect=[predictedcol==codecol];
-    predicted=charvect(predictedcol,:)';
+    predicted=reshape(charvect(predictedcol,1),cc-1,NumberOfSequences);      
 else
     tar=charvect((NumMatrixColumns*(coderow-1-NumMatrixColumns))+codecol);
     coderow=repmat(coderow',1,NumberOfSequences);
@@ -72,13 +72,11 @@ else
     predicted=charvect((NumMatrixColumns*(predictedrow-1-NumMatrixColumns))+predictedcol);
 end
 
-
 if size(numcorrect,1)>1
     numcorrect=sum(numcorrect);
 end
 
 result=numcorrect/double(cc-1)*100;
-
 
 fprintf(1, '                Target: %s \n',tar);
 fprintf(1, '\n  Flashes | %% Correct | Predicted Symbols' );
