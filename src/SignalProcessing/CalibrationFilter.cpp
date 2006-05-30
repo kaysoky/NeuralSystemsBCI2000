@@ -84,7 +84,6 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
                                          SignalProperties& outSignalProperties ) const
 {
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  PreflightCondition( Parameter( "SoftwareCh" ) >= Parameter( "TransmitCh" ) );
   PreflightCondition( Parameter( "TransmitCh" ) ==
                                 Parameter( "TransmitChList" )->GetNumValues() );
   for( size_t i = 0; i < Parameter( "TransmitChList" )->GetNumValues(); ++i )
@@ -93,6 +92,9 @@ void CalibrationFilter::Preflight( const SignalProperties& inSignalProperties,
   // if the number of channels does not match for offset and gain there is an error
   PreflightCondition( Parameter( "SourceChOffset" )->GetNumValues() ==
                                  Parameter( "SourceChGain" )->GetNumValues() );
+  // Offset and gain values must be provided for each digitized channel.
+  PreflightCondition( Parameter( "SoftwareCh" ) ==
+                               Parameter( "SourceChOffset" )->GetNumValues() );
 
   // check the SourceChTimeOffset; only check if we do not use the default value
   if (Parameter( "SourceChTimeOffset", 0 ) >= 0)
