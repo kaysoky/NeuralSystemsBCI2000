@@ -6,9 +6,12 @@
 //       Based on mkfilter.C written by
 //         A.J. Fisher, University of York   <fisher@minster.york.ac.uk>
 //         September 1992
-//       Results have been tested again the mkfilter on-line version available at
+//       Results have been tested against the mkfilter on-line version available at
 //       http://www-users.cs.york.ac.uk/~fisher/mkfilter/
 // $Log$
+// Revision 1.3  2006/06/20 14:25:48  mellinger
+// Local definition of m_pi constant; fixed usage of std::polar<>() template function.
+//
 // Revision 1.2  2006/05/05 15:27:39  mellinger
 // Comment now mentions on-line version of mkfilter.
 //
@@ -27,6 +30,8 @@
 #include "UBCIError.h"
 
 using namespace std;
+
+const FilterDesign::Real m_pi = 2.0 * ::acos( 0.0 );
 
 // Math helper functions.
 template<class T>
@@ -98,7 +103,7 @@ Butterworth::Bandstop( Real corner1, Real corner2 )
 Real
 Butterworth::Prewarp( Real a )
 {
-  return ::tan( M_PI * a ) / M_PI;
+  return ::tan( m_pi * a ) / m_pi;
 }
 
 void
@@ -116,8 +121,8 @@ Butterworth::S_Poles( ListOfComplex& outPoles ) const
   for( int i = 0; i < 2 * mOrder; ++i )
   {
     Real theta = ( mOrder & 1 ) ?
-                   ( i * M_PI ) / mOrder :
-                   ( ( i + 0.5 ) * M_PI ) / mOrder;
+                   ( i * m_pi ) / mOrder :
+                   ( ( i + 0.5 ) * m_pi ) / mOrder;
     Complex z = polar( 1.0, theta );
     if( z.real() < 0.0 )
       outPoles.push_back( z );
@@ -128,8 +133,8 @@ void
 Butterworth::Normalize( ListOfComplex& ioPoles,
                         ListOfComplex& outZeros ) const
 {
-  Real w1 = 2.0 * M_PI * mCorner1,
-       w2 = 2.0 * M_PI * mCorner2;
+  Real w1 = 2.0 * m_pi * mCorner1,
+       w2 = 2.0 * m_pi * mCorner2;
 
   bool badFreq = false;
   switch( mCharacter )
@@ -320,21 +325,21 @@ Resonator::TransferFunction() const
     zeros.resize( 2 );
     zeros[ 0 ] = 1;
     zeros[ 1 ] = -1;
-    Real theta = 2.0 * M_PI * mCenterFreq; /* where we want the peak to be */
+    Real theta = 2.0 * m_pi * mCenterFreq; /* where we want the peak to be */
     /* iterate to find exact pole positions */
     Real r = ::exp( -theta / 2.0 / mQFactor ),
          thm = theta,
          th1 = 0.0,
-         th2 = M_PI;
+         th2 = m_pi;
     poles.resize( 2 );
     bool converged = false;
     for( int i = 0; i < cMaxIterations && !converged; ++i )
     {
-      poles[ 0 ] = std::polar( r, thm );
-      poles[ 1 ] = std::polar( r, -thm );
+      poles[ 0 ] = polar( r, thm );
+      poles[ 1 ] = polar( r, -thm );
       Ratpoly<Complex> tf( Polynomial<Complex>::FromRoots( zeros ),
                            Polynomial<Complex>::FromRoots( poles ) );
-      Complex g = tf.Evaluate( std::polar( 1, theta ) );
+      Complex g = tf.Evaluate( polar( 1.0, theta ) );
       Real phi = g.imag() / g.real();
       if( phi > 0.0 )
         th2 = thm;
@@ -352,8 +357,8 @@ Resonator::TransferFunction() const
         break;
 
       case bandstop:
-        zeros[ 0 ] = std::polar( 1, theta );
-        zeros[ 1 ] = std::polar( 1, -theta );
+        zeros[ 0 ] = polar( 1.0, theta );
+        zeros[ 1 ] = polar( 1.0, -theta );
         break;
 
       case allpass:

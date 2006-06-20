@@ -6,9 +6,12 @@
 //       Based on mkfilter.C written by
 //         A.J. Fisher, University of York   <fisher@minster.york.ac.uk>
 //         September 1992
-//       Results have been tested again the mkfilter on-line version available at
+//       Results have been tested against the mkfilter on-line version available at
 //       http://www-users.cs.york.ac.uk/~fisher/mkfilter/
 // $Log$
+// Revision 1.3  2006/06/20 14:25:48  mellinger
+// Local definition of m_pi constant; fixed usage of std::polar<>() template function.
+//
 // Revision 1.2  2006/05/05 15:27:39  mellinger
 // Comment now mentions on-line version of mkfilter.
 //
