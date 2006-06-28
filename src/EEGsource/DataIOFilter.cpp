@@ -18,6 +18,7 @@
 #include "defines.h"
 #include "GenericADC.h"
 #include "GenericFileWriter.h"
+#include "NotchFilter.h"
 #include "UBCIError.h"
 #include "BCIDirectry.h"
 #include "UBCItime.h"
@@ -36,7 +37,7 @@ RegisterFilter( DataIOFilter, 0 );
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
-  mpSourceFilter( NULL ),
+  mpSourceFilter( GenericFilter::PassFilter<NotchFilter>() ),
   mpFileWriter( NULL ),
   mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
@@ -129,8 +130,8 @@ DataIOFilter::DataIOFilter()
         mpFileWriter = *i;
         
     if( mpFileWriter == NULL )
-      bcierr << "Could not identify writer for file format "
-             << fileFormat
+      bcierr << "Could not identify writer component for file format "
+             << "\"" << fileFormat << "\""
              << endl;
 
     availableFileWriters.erase( mpFileWriter );
@@ -141,12 +142,6 @@ DataIOFilter::DataIOFilter()
   }
   if( mpFileWriter != NULL )
     mpFileWriter->Publish();
-
-  // If there is a GenericFilter descendant available with a position string
-  // before the DataIOFilter's "1", then use it as a "Source Filter":
-  GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
-  if( filter != this )
-    mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
 }
 
 
@@ -188,6 +183,11 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   {
     SignalProperties sourceFilterInput( Output );
     mpSourceFilter->Preflight( sourceFilterInput, Output );
+    if( Output != sourceFilterInput )
+      bcierr << ClassName( typeid( *mpSourceFilter ) )
+             << " input and output signal properties must match"
+             << " when used as a source filter"
+             << endl;
   }
 
   if( !mpFileWriter )
