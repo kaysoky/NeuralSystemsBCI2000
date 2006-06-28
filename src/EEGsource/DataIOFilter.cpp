@@ -18,7 +18,6 @@
 #include "defines.h"
 #include "GenericADC.h"
 #include "GenericFileWriter.h"
-#include "NotchFilter.h"
 #include "UBCIError.h"
 #include "BCIDirectry.h"
 #include "UBCItime.h"
@@ -37,7 +36,7 @@ RegisterFilter( DataIOFilter, 0 );
 
 DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
-  mpSourceFilter( GenericFilter::PassFilter<NotchFilter>() ),
+  mpSourceFilter( NULL ),
   mpFileWriter( NULL ),
   mStatevectorBuffer( *States, true ),
   mVisualizeEEG( false ),
@@ -142,6 +141,11 @@ DataIOFilter::DataIOFilter()
   }
   if( mpFileWriter != NULL )
     mpFileWriter->Publish();
+
+  // Check whether the next filter in the chain is a notch filter.
+  GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
+  if( string( "NotchFilter" ) == ClassName( typeid( *filter ) ) )
+    mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
 }
 
 
