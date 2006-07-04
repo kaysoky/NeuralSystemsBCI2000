@@ -4,6 +4,9 @@
 // File: UEnvironment.h
 //
 // $Log$
+// Revision 1.20  2006/07/04 16:02:21  mellinger
+// Introduced namespace "bci", put the ClassName() global function inside that namespace.
+//
 // Revision 1.19  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -47,28 +50,28 @@ class EnvironmentExtension;
 class FilterWrapper;
 
 // Some utility macros for better readable constructors.
-#define BEGIN_PARAMETER_DEFINITIONS                                    \
-{                                                                      \
-  const char* _params[] =                                              \
+#define BEGIN_PARAMETER_DEFINITIONS                                      \
+{                                                                        \
+  const char* params_[] =                                                \
   {
 
-#define END_PARAMETER_DEFINITIONS                                      \
-  };                                                                   \
-  for( size_t i = 0; i < sizeof( _params ) / sizeof( *_params ); ++i ) \
-  {                                                                    \
-    PARAM p;                                                           \
-    std::istringstream iss( _params[ i ] );                            \
-    if( !( iss >> p ) )                                                \
-      bcierr << "error in parameter definition:\n"                     \
-             << _params[ i ]                                           \
-             << std::endl;                                             \
-    else                                                               \
-    {                                                                  \
-      if( p.Sections().size() < 2 )                                    \
-        p.Sections().push_back( ClassName( typeid( *this ) ) );        \
-      Parameters->Add( p );                                            \
-    }                                                                  \
-  }                                                                    \
+#define END_PARAMETER_DEFINITIONS                                        \
+  };                                                                     \
+  for( size_t i = 0; i < sizeof( params_ ) / sizeof( *params_ ); ++i )   \
+  {                                                                      \
+    PARAM p;                                                             \
+    std::istringstream iss( params_[ i ] );                              \
+    if( !( iss >> p ) )                                                  \
+      bcierr << "error in parameter definition:\n"                       \
+             << params_[ i ]                                             \
+             << std::endl;                                               \
+    else                                                                 \
+    {                                                                    \
+      if( p.Sections().size() < 2 )                                      \
+        p.Sections().push_back( bci::ClassName( typeid( *this ) ) );     \
+      Parameters->Add( p );                                              \
+    }                                                                    \
+  }                                                                      \
 };
 
 #define BEGIN_STATE_DEFINITIONS                                        \

@@ -30,6 +30,7 @@
 #include <set>
 
 using namespace std;
+using namespace bci;
 
 RegisterFilter( DataIOFilter, 0 );
 

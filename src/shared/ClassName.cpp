@@ -1,4 +1,5 @@
 ////////////////////////////////////////////////////////////////////
+// $Id$
 // File:        ClassName.cpp
 // Date:        Jan 31, 2006
 // Author:      juergen.mellinger@uni-tuebingen.de
@@ -6,14 +7,20 @@
 //              involved in translating the result of a
 //              typeinfo::name() call into a human readable class
 //              name.
+// $Log$
+// Revision 1.2  2006/07/04 16:02:21  mellinger
+// Introduced namespace "bci", put the ClassName() global function inside that namespace.
+//
 ////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "ClassName.h"
 
+using namespace bci;
+
 const char*
-ClassName( const std::type_info& inTypeid )
+bci::ClassName( const std::type_info& inTypeid )
 {
 #ifdef __GNUC__
   static std::string result;
@@ -31,3 +38,4 @@ ClassName( const std::type_info& inTypeid )
   return inTypeid.name();
 #endif
 }
+

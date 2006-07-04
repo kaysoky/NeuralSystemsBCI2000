@@ -5,6 +5,9 @@
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
 // $Log$
+// Revision 1.7  2006/07/04 16:02:21  mellinger
+// Introduced namespace "bci", put the ClassName() global function inside that namespace.
+//
 // Revision 1.6  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -31,6 +34,7 @@
 #include "shared/MessageHandler.h"
 
 using namespace std;
+using namespace bci;
 
 string ToolInfo[] =
 {

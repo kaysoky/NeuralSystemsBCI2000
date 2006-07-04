@@ -8,6 +8,9 @@
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
 // $Log$
+// Revision 1.14  2006/07/04 16:02:21  mellinger
+// Introduced namespace "bci", put the ClassName() global function inside that namespace.
+//
 // Revision 1.13  2006/03/30 10:20:20  mellinger
 // Added missing call to Environment::EnterNonaccessPhase().
 //
@@ -35,6 +38,7 @@
 #define FILTER_NAME "$FILTER$"
 
 using namespace std;
+using namespace bci;
 
 string ToolInfo[] =
 {
@@ -141,6 +145,9 @@ FilterWrapper::FinishProcessing()
 bool
 FilterWrapper::HandlePARAM( istream& arIn )
 {
+  if( Environment::GetPhase() != Environment::nonaccess )
+    FinishProcessing();
+
   PARAM p;
   p.ReadBinary( arIn );
   if( arIn )
@@ -172,7 +179,11 @@ bool
 FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpStatevector == NULL )
+  {
     mpStatevector = new STATEVECTOR( mStatelist, true );
+    for( size_t i = 0; i < mStatelist.Size(); ++i )
+      PutMessage( mrOut, mStatelist[ i ] );
+  }
   mpStatevector->ReadBinary( arIn );
   if( !mpStatevector->GetStateValue( "Running" )
       && Environment::GetPhase() == Environment::processing )
