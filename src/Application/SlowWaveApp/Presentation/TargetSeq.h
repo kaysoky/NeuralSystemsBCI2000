@@ -40,7 +40,7 @@ class TTargetSeq: public std::list< TTargetSeqEntry >
 {
   public:
     static const int    randomSeqLength = 100; // Length of sequence when created from probabilities.
-    TPresError  ReadFromFile(               const char  *inSequenceFileName );
+    TPresError  ReadFromFile(               const char  *inSequenceFileName, bool inCheckFiles = false );
     TPresError  ReadFromParam(              const PARAM *inParamPtr );
     TPresError  CreateFromProbabilities(    const PARAM *inParamPtr );
 };

@@ -34,11 +34,12 @@
 #include "Utils/Util.h"
 #include "PresParams.h"
 #include "UParameter.h"
+#include "WavePlayer.h"
 
 using namespace std;
 
 TPresError
-TTargetSeq::ReadFromFile( const char    *inSequenceFileName )
+TTargetSeq::ReadFromFile( const char* inSequenceFileName, bool inCheckFiles )
 {
     clear();
 
@@ -114,7 +115,21 @@ TTargetSeq::ReadFromFile( const char    *inSequenceFileName )
                             targetFileName = c + targetFileName;
                         }
                         if( targetFileName.length() > 0 )
+                        {
                             curEntry.audioFile = curPath + targetFileName;
+                            if( inCheckFiles &&
+                                TWavePlayer::noError != TWavePlayer().AttachFile( curEntry.audioFile.c_str() ) )
+                            {
+                              gPresErrors << "Could not open \""
+                                          << curEntry.audioFile
+                                          << "\" as an audio file.\n"
+                                          << "Referenced from sequence file \""
+                                          << inSequenceFileName
+                                          << "\"."
+                                          << endl;
+                              return presFileOpeningError;
+                            }
+                        }
 
                         lineStream >> c;
                         if( !lineStream.fail() )
@@ -127,7 +142,20 @@ TTargetSeq::ReadFromFile( const char    *inSequenceFileName )
                                 targetFileName = c + targetFileName;
                             }
                             if( targetFileName.length() > 0 )
+                            {
                                 curEntry.visFile = curPath + targetFileName;
+                                if( inCheckFiles && !ifstream( curEntry.visFile.c_str() ).is_open() )
+                                {
+                                  gPresErrors << "Could not open visual stimulus file \""
+                                              << curEntry.visFile
+                                              << "\".\n"
+                                              << "Referenced from sequence file \""
+                                              << inSequenceFileName
+                                              << "\"."
+                                              << endl;
+                                  return presFileOpeningError;
+                                }
+                            }
                         }
                     }
 
