@@ -1,0 +1,191 @@
+LIBRARY     BIORADIO150DLL.DLL
+
+EXPORTS
+    @$xp$8TChannel                 @67  ; __tpdsc__ TChannel
+    @@Basicobject@Finalize         @81  ; __linkproc__ Basicobject::Finalize
+    @@Basicobject@Initialize       @80  ; __linkproc__ Basicobject::Initialize
+    @@Bio150config@Finalize        @56  ; __linkproc__ Bio150config::Finalize
+    @@Bio150config@Initialize      @55  ; __linkproc__ Bio150config::Initialize
+    @@Bio150devicecls@Finalize     @38  ; __linkproc__ Bio150devicecls::Finalize
+    @@Bio150devicecls@Initialize   @37  ; __linkproc__ Bio150devicecls::Initialize
+    @@Channel@Finalize             @69  ; __linkproc__ Channel::Finalize
+    @@Channel@Initialize           @68  ; __linkproc__ Channel::Initialize
+    @@Consolelink@Finalize         @156 ; __linkproc__ Consolelink::Finalize
+    @@Consolelink@Initialize       @155 ; __linkproc__ Consolelink::Initialize
+    @@Daqboard@Finalize            @40  ; __linkproc__ Daqboard::Finalize
+    @@Daqboard@Initialize          @39  ; __linkproc__ Daqboard::Initialize
+    @@Hwlparser@Finalize           @42  ; __linkproc__ Hwlparser::Finalize
+    @@Hwlparser@Initialize         @41  ; __linkproc__ Hwlparser::Initialize
+    @@Ioport@Finalize              @113 ; __linkproc__ Ioport::Finalize
+    @@Ioport@Initialize            @112 ; __linkproc__ Ioport::Initialize
+    @@Iothread@Finalize            @44  ; __linkproc__ Iothread::Finalize
+    @@Iothread@Initialize          @43  ; __linkproc__ Iothread::Initialize
+    @@Messagereader@Finalize       @46  ; __linkproc__ Messagereader::Finalize
+    @@Messagereader@Initialize     @45  ; __linkproc__ Messagereader::Initialize
+    @@Messageroutines@Finalize     @52  ; __linkproc__ Messageroutines::Finalize
+    @@Messageroutines@Initialize   @51  ; __linkproc__ Messageroutines::Initialize
+    @@Messagewriter@Finalize       @54  ; __linkproc__ Messagewriter::Finalize
+    @@Messagewriter@Initialize     @53  ; __linkproc__ Messagewriter::Initialize
+    @@Overlapio@Finalize           @121 ; __linkproc__ Overlapio::Finalize
+    @@Overlapio@Initialize         @120 ; __linkproc__ Overlapio::Initialize
+    @@Programmingbioradiofrm@Finalize @71  ; __linkproc__ Programmingbioradiofrm::Finalize
+    @@Programmingbioradiofrm@Initialize @70  ; __linkproc__ Programmingbioradiofrm::Initialize
+    @@Seriallink2@Finalize         @185 ; __linkproc__ Seriallink2::Finalize
+    @@Seriallink2@Initialize       @184 ; __linkproc__ Seriallink2::Initialize
+    @@Serialport@Finalize          @154 ; __linkproc__ Serialport::Finalize
+    @@Serialport@Initialize        @153 ; __linkproc__ Serialport::Initialize
+    @@Stopwatch@Finalize           @77  ; __linkproc__ Stopwatch::Finalize
+    @@Stopwatch@Initialize         @76  ; __linkproc__ Stopwatch::Initialize
+    @@Threadbase@Finalize          @98  ; __linkproc__ Threadbase::Finalize
+    @@Threadbase@Initialize        @97  ; __linkproc__ Threadbase::Initialize
+    @CBasicObject@Error$qv         @79  ; CBasicObject::Error()
+    @CBasicObject@SetError$qul     @78  ; CBasicObject::SetError(unsigned long)
+    @CIOLink@BufferSize$qv         @179 ; CIOLink::BufferSize()
+    @CIOLink@Close$qv              @183 ; CIOLink::Close()
+    @CIOLink@InQueueLen$qv         @181 ; CIOLink::InQueueLen()
+    @CIOLink@Open$qv               @182 ; CIOLink::Open()
+    @CIOLink@Protocol$qv           @177 ; CIOLink::Protocol()
+    @CIOLink@SetBufferSize$ql      @180 ; CIOLink::SetBufferSize(long)
+    @CIOLink@SetProtocol$qp17TProtocolSettings @178 ; CIOLink::SetProtocol(TProtocolSettings *)
+    @CIOPort@$bctr$qv              @99  ; CIOPort::CIOPort()
+    @CIOPort@$bdtr$qv              @100 ; CIOPort::~CIOPort()
+    @CIOPort@BlockingRead$qpuculrul @104 ; CIOPort::BlockingRead(unsigned char *, unsigned long, unsigned long&)
+    @CIOPort@Close$qv              @102 ; CIOPort::Close()
+    @CIOPort@Handle$qv             @111 ; CIOPort::Handle()
+    @CIOPort@IsOpen$qv             @107 ; CIOPort::IsOpen()
+    @CIOPort@Name$qv               @109 ; CIOPort::Name()
+    @CIOPort@Open$qo               @101 ; CIOPort::Open(bool)
+    @CIOPort@Overlapped$qv         @108 ; CIOPort::Overlapped()
+    @CIOPort@OverlappedRead$qpuculrulul @105 ; CIOPort::OverlappedRead(unsigned char *, unsigned long, unsigned long&, unsigned long)
+    @CIOPort@Read$qpuculrulul      @103 ; CIOPort::Read(unsigned char *, unsigned long, unsigned long&, unsigned long)
+    @CIOPort@SetName$qpxc          @110 ; CIOPort::SetName(const char *)
+    @CIOPort@Write$qpucul          @106 ; CIOPort::Write(unsigned char *, unsigned long)
+    @CMutex@$bctr$qpc              @92  ; CMutex::CMutex(char *)
+    @CMutex@$bdtr$qv               @93  ; CMutex::~CMutex()
+    @CMutex@Release$qv             @96  ; CMutex::Release()
+    @CMutex@State$qv               @95  ; CMutex::State()
+    @CMutex@Wait$ql                @94  ; CMutex::Wait(long)
+    @COverlapIO@$bctr$qpv          @114 ; COverlapIO::COverlapIO(void *)
+    @COverlapIO@$bdtr$qv           @115 ; COverlapIO::~COverlapIO()
+    @COverlapIO@Overlap$qv         @117 ; COverlapIO::Overlap()
+    @COverlapIO@Reset$qv           @118 ; COverlapIO::Reset()
+    @COverlapIO@TransferredBytes$qv @116 ; COverlapIO::TransferredBytes()
+    @COverlapIO@Wait$qul           @119 ; COverlapIO::Wait(unsigned long)
+    @CSerialLink2@$bctr$qv         @157 ; CSerialLink2::CSerialLink2()
+    @CSerialLink2@$bdtr$qv         @158 ; CSerialLink2::~CSerialLink2()
+    @CSerialLink2@BufferSize$qv    @172 ; CSerialLink2::BufferSize()
+    @CSerialLink2@Close$qv         @166 ; CSerialLink2::Close()
+    @CSerialLink2@FreeRunning$qv   @163 ; CSerialLink2::FreeRunning()
+    @CSerialLink2@GetData$qpucul   @170 ; CSerialLink2::GetData(unsigned char *, unsigned long)
+    @CSerialLink2@GetHeader$qpuculpult3 @169 ; CSerialLink2::GetHeader(unsigned char *, unsigned long, unsigned long *, unsigned long *)
+    @CSerialLink2@GetSync$qv       @168 ; CSerialLink2::GetSync()
+    @CSerialLink2@InQueueLen$qv    @171 ; CSerialLink2::InQueueLen()
+    @CSerialLink2@Open$qv          @165 ; CSerialLink2::Open()
+    @CSerialLink2@Read$qpuculpul   @175 ; CSerialLink2::Read(unsigned char *, unsigned long, unsigned long *)
+    @CSerialLink2@ReadBuffer$qv    @174 ; CSerialLink2::ReadBuffer()
+    @CSerialLink2@ReadByte$qpuc    @167 ; CSerialLink2::ReadByte(unsigned char *)
+    @CSerialLink2@SerialPort$qv    @161 ; CSerialLink2::SerialPort()
+    @CSerialLink2@SetBufferSize$ql @173 ; CSerialLink2::SetBufferSize(long)
+    @CSerialLink2@SetFreeRunning$qo @164 ; CSerialLink2::SetFreeRunning(bool)
+    @CSerialLink2@SetSerialPort$qp11CSerialPort @162 ; CSerialLink2::SetSerialPort(CSerialPort *)
+    @CSerialLink2@SetSettings$qp13TLinkSettings @160 ; CSerialLink2::SetSettings(TLinkSettings *)
+    @CSerialLink2@Settings$qv      @159 ; CSerialLink2::Settings()
+    @CSerialLink2@Write$qpuculpul  @176 ; CSerialLink2::Write(unsigned char *, unsigned long, unsigned long *)
+    @CSerialPort@$bctr$qpxcllll    @122 ; CSerialPort::CSerialPort(const char *, long, long, long, long)
+    @CSerialPort@$bdtr$qv          @123 ; CSerialPort::~CSerialPort()
+    @CSerialPort@AbortOnError$qv   @145 ; CSerialPort::AbortOnError()
+    @CSerialPort@BaudRate$xqv      @126 ; CSerialPort::BaudRate() const
+    @CSerialPort@FlushInput$qv     @139 ; CSerialPort::FlushInput()
+    @CSerialPort@FlushOutput$qv    @140 ; CSerialPort::FlushOutput()
+    @CSerialPort@GetPortStatus$qv  @142 ; CSerialPort::GetPortStatus()
+    @CSerialPort@InBuffer$xqv      @131 ; CSerialPort::InBuffer() const
+    @CSerialPort@InQueueLen$qv     @144 ; CSerialPort::InQueueLen()
+    @CSerialPort@Initialize$qpxcllll @125 ; CSerialPort::Initialize(const char *, long, long, long, long)
+    @CSerialPort@Open$qo           @138 ; CSerialPort::Open(bool)
+    @CSerialPort@OutBuffer$xqv     @133 ; CSerialPort::OutBuffer() const
+    @CSerialPort@OutQueueLen$qv    @143 ; CSerialPort::OutQueueLen()
+    @CSerialPort@PMSetHWHandshake$qv @152 ; CSerialPort::PMSetHWHandshake()
+    @CSerialPort@Read$qpuculrulul  @147 ; CSerialPort::Read(unsigned char *, unsigned long, unsigned long&, unsigned long)
+    @CSerialPort@SetAbortOnError$qo @146 ; CSerialPort::SetAbortOnError(bool)
+    @CSerialPort@SetBaudRate$ql    @127 ; CSerialPort::SetBaudRate(long)
+    @CSerialPort@SetBreak$qo       @141 ; CSerialPort::SetBreak(bool)
+    @CSerialPort@SetHWHandshake$qo @3   ; CSerialPort::SetHWHandshake(bool)
+    @CSerialPort@SetInBuffer$ql    @130 ; CSerialPort::SetInBuffer(long)
+    @CSerialPort@SetOutBuffer$ql   @132 ; CSerialPort::SetOutBuffer(long)
+    @CSerialPort@SetReadTimeouts$qululul @135 ; CSerialPort::SetReadTimeouts(unsigned long, unsigned long, unsigned long)
+    @CSerialPort@SetSlowWriteMode$qul @149 ; CSerialPort::SetSlowWriteMode(unsigned long)
+    @CSerialPort@SetStopBits$ql    @129 ; CSerialPort::SetStopBits(long)
+    @CSerialPort@SetWriteTimeouts$qulul @136 ; CSerialPort::SetWriteTimeouts(unsigned long, unsigned long)
+    @CSerialPort@SetupDCB$qv       @124 ; CSerialPort::SetupDCB()
+    @CSerialPort@SlowWrite$qpucul  @150 ; CSerialPort::SlowWrite(unsigned char *, unsigned long)
+    @CSerialPort@StopBits$xqv      @128 ; CSerialPort::StopBits() const
+    @CSerialPort@Timeouts$qv       @134 ; CSerialPort::Timeouts()
+    @CSerialPort@UpdateTimeouts$qv @137 ; CSerialPort::UpdateTimeouts()
+    @CSerialPort@Write$qpucul      @148 ; CSerialPort::Write(unsigned char *, unsigned long)
+    @CStopWatch@$bctr$qv           @72  ; CStopWatch::CStopWatch()
+    @CStopWatch@Start$qv           @74  ; CStopWatch::Start()
+    @CStopWatch@Stop$qv            @75  ; CStopWatch::Stop()
+    @CStopWatch@TimeElapsed$qv     @73  ; CStopWatch::TimeElapsed()
+    @CThreadBase@$bctr$qv          @82  ; CThreadBase::CThreadBase()
+    @CThreadBase@$bdtr$qv          @83  ; CThreadBase::~CThreadBase()
+    @CThreadBase@Handle$qv         @86  ; CThreadBase::Handle()
+    @CThreadBase@Priority$qv       @90  ; CThreadBase::Priority()
+    @CThreadBase@SetPriority$qul   @89  ; CThreadBase::SetPriority(unsigned long)
+    @CThreadBase@Start$qv          @88  ; CThreadBase::Start()
+    @CThreadBase@Stop$qv           @87  ; CThreadBase::Stop()
+    @CThreadBase@Terminate$qv      @85  ; CThreadBase::Terminate()
+    @CThreadBase@Terminated$qv     @91  ; CThreadBase::Terminated()
+    @CThreadBase@ThreadFunc$qqspv  @84  ; __stdcall CThreadBase::ThreadFunc(void *)
+    @Channel@Register$qqrv         @66  ; __fastcall Channel::Register()
+    @TChannel@                     @187 ; TChannel::
+    @TChannel@$bctr$qqrp18Classes@TComponent @57  ; __fastcall TChannel::TChannel(Classes::TComponent *)
+    @TChannel@Restore$qqrp19Classes@TStringList @59  ; __fastcall TChannel::Restore(Classes::TStringList *)
+    @TChannel@Save$qqrp19Classes@TStringList @58  ; __fastcall TChannel::Save(Classes::TStringList *)
+    @TChannel@Scale$qqrus          @65  ; __fastcall TChannel::Scale(unsigned short)
+    @TChannel@UpdateSlopeAndOffset$qqrv @64  ; __fastcall TChannel::UpdateSlopeAndOffset()
+    @TChannel@set_ADCLower$qqrd    @61  ; __fastcall TChannel::set_ADCLower(double)
+    @TChannel@set_ADCUpper$qqrd    @60  ; __fastcall TChannel::set_ADCUpper(double)
+    @TChannel@set_LowerScale$qqrd  @63  ; __fastcall TChannel::set_LowerScale(double)
+    @TChannel@set_UpperScale$qqrd  @62  ; __fastcall TChannel::set_UpperScale(double)
+    @TLinkStatus@$bctr$qv          @31  ; TLinkStatus::TLinkStatus()
+    @TLinkStatus@$bdtr$qv          @18  ; TLinkStatus::~TLinkStatus()
+    @TLinkStatus@$bdtr$qv          @4   ; TLinkStatus::~TLinkStatus()
+    @TLinkStatus@Clear$qv          @34  ; TLinkStatus::Clear()
+    @TLinkStatus@GetBitErrors$qqruc @50  ; __fastcall TLinkStatus::GetBitErrors(unsigned char)
+    @TLinkStatus@UpdateBattery$qqruc @49  ; __fastcall TLinkStatus::UpdateBattery(unsigned char)
+    @TLinkStatus@UpdateLinkStatus$qqrpuco @47  ; __fastcall TLinkStatus::UpdateLinkStatus(unsigned char *, bool)
+    @TMovingAverage@$bctr$qi       @32  ; TMovingAverage::TMovingAverage(int)
+    @TMovingAverage@Filter$qqrd    @48  ; __fastcall TMovingAverage::Filter(double)
+    @TMovingAverage@Filter$qqrd    @8   ; __fastcall TMovingAverage::Filter(double)
+    @TMovingAverage@Reset$qqrd     @33  ; __fastcall TMovingAverage::Reset(double)
+    CreateBioRadio                 @1   ; CreateBioRadio
+    DestroyBioRadio                @2   ; DestroyBioRadio
+    GetBadPackets                  @21  ; GetBadPackets
+    GetBitErrCount                 @26  ; GetBitErrCount
+    GetBitErrRate                  @27  ; GetBitErrRate
+    GetBitResolution               @19  ; GetBitResolution
+    GetDownRSSI                    @24  ; GetDownRSSI
+    GetDroppedPackets              @22  ; GetDroppedPackets
+    GetEnabledChannels             @13  ; GetEnabledChannels
+    GetFreqHoppingMode             @151 ; GetFreqHoppingMode
+    GetFreqHoppingModeIndicator    @36  ; GetFreqHoppingModeIndicator
+    GetGoodPackets                 @20  ; GetGoodPackets
+    GetLinkBufferSize              @25  ; GetLinkBufferSize
+    GetNumChannels                 @16  ; GetNumChannels
+    GetRFChannel                   @28  ; GetRFChannel
+    GetSampleRate                  @11  ; GetSampleRate
+    GetUpRSSI                      @23  ; GetUpRSSI
+    GetUsableRFChannelList         @30  ; GetUsableRFChannelList
+    LoadConfig                     @7   ; LoadConfig
+    PingConfig                     @9   ; PingConfig
+    ProgramConfig                  @10  ; ProgramConfig
+    ReadScaled                     @12  ; ReadScaled
+    SetBadDataValue                @15  ; SetBadDataValue
+    SetDebugging                   @17  ; SetDebugging
+    SetFreqHoppingMode             @35  ; SetFreqHoppingMode
+    SetRFChannel                   @29  ; SetRFChannel
+    StartAcq                       @5   ; StartAcq
+    StopAcq                        @6   ; StopAcq
+    TransferBuffer                 @14  ; TransferBuffer
+    _ProgrammingBioRadioForm       @188 ; _ProgrammingBioRadioForm
+    ___CPPdebugHook                @186 ; ___CPPdebugHook
