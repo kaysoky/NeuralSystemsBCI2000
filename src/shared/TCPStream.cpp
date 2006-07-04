@@ -8,6 +8,9 @@
 // Date: Oct 28, 2003
 //
 // $Log$
+// Revision 1.10  2006/07/04 16:08:06  mellinger
+// Removed platform dependencies.
+//
 // Revision 1.9  2006/04/25 18:12:28  mellinger
 // Changes to comment.
 //
@@ -137,19 +140,31 @@ tcpsocket::set_address( const char* address )
 }
 
 void
-tcpsocket::set_address( const char* ip, u_short port )
+tcpsocket::set_address( const char* inIP, u_short inPort )
 {
+  char* buf = NULL;
+  const char* ip = "";
+  if( inIP != NULL )
+    ip = inIP;
+  else
+  {
+    const int buflen = 1024;
+    buf = new char[ buflen ];
+    if( SOCKET_ERROR != ::gethostname( buf, buflen ) )
+      ip = buf;
+  }
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sin_family = AF_INET;
-  m_address.sin_port = ::htons( port );
-  if( ip && *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
+  m_address.sin_port = ::htons( inPort );
+  if( *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
     m_address.sin_addr.s_addr = INADDR_ANY;
-  else if( !ip || INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
+  else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
   {
-    ::hostent* host = ::gethostbyname( ip ); // gethostbyname( NULL ) will return local host.
+    ::hostent* host = ::gethostbyname( ip ); 
     if( host && host->h_addr_list )
       m_address.sin_addr = *reinterpret_cast<in_addr*>( host->h_addr_list[ 0 ] );
   }
+  delete[] buf;
 }
 
 void
@@ -485,7 +500,7 @@ tcpbuf::underflow()
   // Quite likely, this is due to a situation where all transmitted data has been read
   // but underflow() is called from the stream via snextc() to examine whether
   // there is an eof pending. Making sure that the last transferred byte is
-  // either a terminating character or reading it with get(), not with read(),
+  // either a terminating character, or reading it with get(), not with read(),
   // will probably fix the situation.
   // The reason for this problem is fundamental because there is no "maybe eof"
   // alternative to returning eof().

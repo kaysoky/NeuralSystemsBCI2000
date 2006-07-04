@@ -3,6 +3,9 @@
 //  BCIDirectory Class
 //  BCI Directory Management Functions
 //  $Log$
+//  Revision 1.12  2006/07/04 16:08:06  mellinger
+//  Removed platform dependencies.
+//
 //  Revision 1.11  2006/02/18 12:02:12  mellinger
 //  Introduced support for arbitrary file extensions.
 //
@@ -77,12 +80,20 @@ class BCIDirectory
                                     const std::string& extension );
   static int         ExtractRunNumber( const std::string& fileName );
   static int         ChangeForceDir( const std::string& );
+  static std::string GetCWD();
+  static int         MkDir( const std::string& );
+  static bool        IsAbsolutePath( const std::string& );
 
   BCIDirectory&      UpdateRunNumber();
   std::string        ConstructFileName() const;
 
+#ifdef _WIN32
   static const char  DirSeparator = '\\';
   static const char  DriveSeparator = ':';
+#else
+  static const char  DirSeparator = '/';
+  static const char  DriveSeparator = '/';
+#endif
 
   std::string        mSubjectDirectory,
                      mSubjectName,
@@ -90,6 +101,7 @@ class BCIDirectory
   int                mSessionNumber,
                      mDesiredRunNumber,
                      mActualRunNumber;
+  static std::string sInstallationDirectory;
 #ifdef OLD_BCIDTRY
   std::string        mSubjectPath;
 #endif // OLD_BCIDTRY

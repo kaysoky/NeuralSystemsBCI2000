@@ -3,11 +3,11 @@
 //---------------------------------------------------------------------------
 #include "UBCItime.h"
 
-#include <windows.h>
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
-
+#ifdef _WIN32
+# include <windows.h>
+#else
+# include <sys/time.h>
+#endif
 
 // **************************************************************************
 // Function:   GetBCItime_ms
@@ -18,12 +18,18 @@
 // **************************************************************************
 unsigned short BCITIME::GetBCItime_ms()
 {
+#ifdef _WIN32
 LARGE_INTEGER   prectime, prectimebase;
 
  // calculate the current time
  QueryPerformanceCounter(&prectime);
  QueryPerformanceFrequency(&prectimebase);
  return (unsigned short)((double)prectime.QuadPart/(double)prectimebase.QuadPart*1000);
+#else
+  struct timespec t;
+  ::clock_gettime( CLOCK_REALTIME, &t );
+  return ( t.tv_sec * 1000 ) + t.tv_nsec / 1000000;
+#endif
 }
 
 

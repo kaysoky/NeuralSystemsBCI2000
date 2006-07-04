@@ -9,6 +9,9 @@
 //          core modules.
 ////
 // $Log$
+// Revision 1.3  2006/07/04 16:08:06  mellinger
+// Removed platform dependencies.
+//
 // Revision 1.2  2006/04/19 16:17:11  mellinger
 // Removed Win32 API calls, introduced virtual functions for generic GUI interfacing.
 //
@@ -31,7 +34,6 @@
 #include "UBCIError.h"
 #include "MeasurementUnits.h"
 
-#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -166,8 +168,8 @@ CoreModule::Initialize( int inArgc, char** inArgv )
 void
 CoreModule::MainMessageLoop()
 {
-  const int bciMessageTimeout = 100; // ms -- the maximum amount of time windows
-                                     // messages must wait to be processed. Windows
+  const int bciMessageTimeout = 100; // ms -- the maximum amount of time GUI
+                                     // messages must wait to be processed. GUI
                                      // messages resulting from BCI2000 messages
                                      // (e.g. WM_PAINT messages) will be processed
                                      // without additional delay.
