@@ -13,6 +13,9 @@
  * V0.02 - 1/1/2006   - Updated code for BCI integration                      *
  * V0.03 - 5/1/2006   - Mod for production, clean up                          *
  * $Log$
+ * Revision 1.2  2006/07/05 15:21:19  mellinger
+ * Formatting and naming changes.
+ *
  * Revision 1.1  2006/07/04 18:44:25  mellinger
  * Put files into CVS.
  *                                                                      *
@@ -27,22 +30,24 @@
 #include <string>
 
 using namespace std;
+using namespace bioutils;
 
 // Static vars
-DWORD BR150::br150        = NULL;
-bool  BR150::runningState = NOT_RUNNING;
+DWORD BR150::sBR150        = NULL;
+bool  BR150::sRunningState = NOT_RUNNING;
 
 
 // **************************************************************************
 // Constructor: Class BR150
 // **************************************************************************
 BR150::BR150()
+: mpPort( NULL ),
+  mNumRead( 0 )
 {
-  numRead                = ZERO;
-  flags[COM_STATUS]      = ZERO;
-  flags[PING_STATUS]     = ZERO;
-  flags[PROGRAM_SUCCESS] = ZERO;
-  purge();
+  mFlags[COM_STATUS]      = ZERO;
+  mFlags[PING_STATUS]     = ZERO;
+  mFlags[PROGRAM_SUCCESS] = ZERO;
+  Purge();
 }
 
 // **************************************************************************
@@ -60,23 +65,24 @@ BR150::~BR150()
 // Parameters:  port value  (char*)
 // Returns:    error or no error (int)
 // **************************************************************************
-int BR150::start(char *pt)
+int
+BR150::Start(const char *pt)
 {
-  port = pt;
-  if(runningState == RUNNING)
-    stop();
+  mpPort = pt;
+  if(sRunningState == RUNNING)
+    Stop();
 
-  br150 = CreateBioRadio();
-  flags[COM_STATUS] = StartAcq(br150,DISPLAY_PROGRESS,port);
+  sBR150 = CreateBioRadio();
+  mFlags[COM_STATUS] = StartAcq(sBR150,DISPLAY_PROGRESS,const_cast<char*>(mpPort));
 
-  if(flags[COM_STATUS])
+  if(mFlags[COM_STATUS])
   {
-    flags[PING_STATUS] = PingConfig(br150,DISPLAY_PROGRESS);
-    if(flags[PING_STATUS])
+    mFlags[PING_STATUS] = PingConfig(sBR150,DISPLAY_PROGRESS);
+    if(mFlags[PING_STATUS])
     {
-      SetBadDataValue(br150,BAD_DATA);
-      SetFreqHoppingMode(br150,HOP);
-      runningState = RUNNING;
+      SetBadDataValue(sBR150,BAD_DATA);
+      SetFreqHoppingMode(sBR150,HOP);
+      sRunningState = RUNNING;
       return XNO_ERROR;
     }
     else
@@ -94,13 +100,14 @@ int BR150::start(char *pt)
 //
 // Returns:    error or no error (int)
 // **************************************************************************
-int    BR150::stop(void)
+int
+BR150::Stop(void)
 {
-  if(runningState)
+  if(sRunningState)
   {
-    StopAcq(br150);
-    DestroyBioRadio(br150);
-    runningState = NOT_RUNNING;
+    StopAcq(sBR150);
+    DestroyBioRadio(sBR150);
+    sRunningState = NOT_RUNNING;
     return XNO_ERROR;
   }
   else
@@ -113,10 +120,11 @@ int    BR150::stop(void)
 // Parameters:  config file  (string)
 // Returns:    error or no error (int)
 // **************************************************************************
-int    BR150::program(const string& config)
+int
+BR150::Program(const string& config)
 {
-  flags[PROGRAM_SUCCESS] = ProgramConfig(br150,DISPLAY_PROGRESS,config.c_str());
-  if(flags[PROGRAM_SUCCESS])
+  mFlags[PROGRAM_SUCCESS] = ProgramConfig(sBR150,DISPLAY_PROGRESS,config.c_str());
+  if(mFlags[PROGRAM_SUCCESS])
     return XNO_ERROR;
   else
     return XERROR;
@@ -132,7 +140,8 @@ int    BR150::program(const string& config)
 //              finish [end point of buffer] (int)
 // Returns:    void
 // **************************************************************************
-void BR150::bufferMerge(double* buffer1,double* buffer2, int start, int finish)
+void
+BR150::BufferMerge(double* buffer1,const double* buffer2, int start, int finish)
 {
   for(int i = 0; i < finish; i++)
     *(buffer1+start+i) = *(buffer2+i);
@@ -147,23 +156,24 @@ void BR150::bufferMerge(double* buffer1,double* buffer2, int start, int finish)
 // Parameters:  block [sample block size] (int), chans [channels enabled] (int)
 // Returns:    returns pointer to filled data buffer (double*)
 // **************************************************************************
-double*    BR150::getData(int block, int chans)
+const double*
+BR150::GetData(int block, int chans)
 {
  int countSamplesCollected = ZERO;
  double tempBuffer[BUFFER_SIZE];
 
   while(countSamplesCollected < block*chans)
   {
-    while(TransferBuffer(br150) == ZERO)
+    while(TransferBuffer(sBR150) == ZERO)
       Sleep(SLEEP);
 
-    ReadScaled(br150,tempBuffer,BUFFER_SIZE,&numRead);
-    bufferMerge(data,tempBuffer,countSamplesCollected,numRead);
-    countSamplesCollected = numRead + countSamplesCollected;
+    ReadScaled(sBR150,tempBuffer,BUFFER_SIZE,&mNumRead);
+    BufferMerge(mData,tempBuffer,countSamplesCollected,mNumRead);
+    countSamplesCollected = mNumRead + countSamplesCollected;
   }
 
-  numRead = countSamplesCollected;
-  return data;
+  mNumRead = countSamplesCollected;
+  return mData;
 }
 
 // **************************************************************************
@@ -172,13 +182,14 @@ double*    BR150::getData(int block, int chans)
 // Parameters:  void
 // Returns:    returns pointer to filled data buffer (double*)
 // **************************************************************************
-double*    BR150::getData(void)
+const double*
+BR150::GetData(void)
 {
-  while(TransferBuffer(br150) == ZERO)
+  while(TransferBuffer(sBR150) == ZERO)
     Sleep(SLEEP);
 
-  ReadScaled(br150,data,BUFFER_SIZE,&numRead);
-  return data;
+  ReadScaled(sBR150,mData,BUFFER_SIZE,&mNumRead);
+  return mData;
 }
 
 // **************************************************************************
@@ -187,9 +198,10 @@ double*    BR150::getData(void)
 // Parameters:  void
 // Returns:    Returns the number of samples collected (int)
 // **************************************************************************
-int BR150::samplesRead(void)
+int
+BR150::SamplesRead(void) const
 {
-  return numRead;
+  return mNumRead;
 }
 
 // **************************************************************************
@@ -198,10 +210,11 @@ int BR150::samplesRead(void)
 // Parameters:  void
 // Returns:     void
 // **************************************************************************
-void BR150::purge(void)
+void
+BR150::Purge(void)
 {
   for(int i = ZERO; i < BUFFER_SIZE; i++)
-    data[i] = ZERO;
+    mData[i] = ZERO;
 }
 
 
@@ -212,9 +225,49 @@ void BR150::purge(void)
 // Parameters:  void
 // Returns:     runningState [State of the Bioradio150] (bool)
 // **************************************************************************
-bool BR150::getState(void)
+bool
+BR150::GetState(void)
 {
-  return runningState;
+  return sRunningState;
 }
 
+//**************************************************************************
+// Function:   PortTest
+// Purpose:    Port test, determine the port that the bioradio is attached to
+// Parameters: port [Port number] (int), BR150 [BR150 object]
+// Returns:    char* [returns the name of the COM port] (char*)
+// **************************************************************************
+const char*
+BR150::PortTest(int port)
+{
+
+  int foundIt = FALSE;
+
+  if(!Start(GetPort(port)) && port != AUTO)
+    {
+      Stop();
+      foundIt = TRUE;
+    }
+    else
+    {
+      for(int i = ZERO; i < ALLPORTS; ++i)
+      {
+        if(port != i && foundIt != 1)
+        {
+          if(!Start(GetPort(i)))
+          {
+            Stop();
+            foundIt = TRUE;
+            port = i;
+            break;
+          }
+        }
+       }
+      }
+
+  if(foundIt)
+    return GetPort(port);
+  else
+    return NULL;
+}
 

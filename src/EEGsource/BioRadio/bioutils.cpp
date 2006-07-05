@@ -15,6 +15,9 @@
  * V0.04 - 7/3/2006   - Minor changes for clarity,
  *                      juergen.mellinger@uni-tuebingen.de
  * $Log$
+ * Revision 1.2  2006/07/05 15:21:19  mellinger
+ * Formatting and naming changes.
+ *
  * Revision 1.1  2006/07/04 18:44:25  mellinger
  * Put files into CVS.
  *
@@ -36,7 +39,8 @@ using namespace std;
 // Parameters: num [COM number index] (int)
 // Returns:    The COM value associated with an index (char*)
 // **************************************************************************
-char* bioutils::getPort(int num)
+const char*
+bioutils::GetPort(int num)
 {
   switch(num)
   {
@@ -84,7 +88,8 @@ char* bioutils::getPort(int num)
 // Parameters:  range (int)
 // Returns:    range definition (double)
 // **************************************************************************
-double bioutils::getBioRadioRangeValue(int range)
+double
+bioutils::GetBioRadioRangeValue(int range)
 {
   switch(range)
   {
@@ -116,7 +121,8 @@ double bioutils::getBioRadioRangeValue(int range)
 // Parameters:  vRange (double)
 // Returns:    range index (int)
 // **************************************************************************
-int bioutils::vRange2IndexOfRange(double vRange)
+int
+bioutils::VRange2IndexOfRange(double vRange)
 {
   int indexOfRange = ZERO;
   double range[] = {RANGE750uV, RANGE1p5mV, RANGE3mV, RANGE6mV, RANGE12mV, RANGE25mV, RANGE50mV, RANGE100mV};
@@ -140,7 +146,8 @@ int bioutils::vRange2IndexOfRange(double vRange)
 //             pathFile [path of file to be created] (const char*)
 // Returns:    Returns success flag if no errors
 // **************************************************************************
-int bioutils::writeBioRadioConfig(int fs, int bitRes, double vRange, const char *pathFile)
+int
+bioutils::WriteBioRadioConfig(int fs, int bitRes, double vRange, const char *pathFile)
 {
   ofstream file;
   file.open( pathFile );
@@ -163,7 +170,7 @@ int bioutils::writeBioRadioConfig(int fs, int bitRes, double vRange, const char 
            << "ADCUpper=65536,"
            << "ADCLower=0,"
            << "Truncate=0,"
-           << "RangeIndex=" << vRange2IndexOfRange( vRange ) << ","
+           << "RangeIndex=" << VRange2IndexOfRange( vRange ) << ","
            << "Enabled=1,"
            << "InputType=0"
            << "\n";

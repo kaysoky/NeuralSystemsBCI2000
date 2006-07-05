@@ -1,6 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // $Log$
+// Revision 1.2  2006/07/05 15:21:19  mellinger
+// Formatting and naming changes.
+//
 // Revision 1.1  2006/07/04 18:44:25  mellinger
 // Put files into CVS.
 //
@@ -15,32 +18,30 @@
 class BioRadioADC : public GenericADC
 {
  public:
-               BioRadioADC();
-  virtual      ~BioRadioADC();
+                BioRadioADC();
+  virtual       ~BioRadioADC();
 
-  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void Initialize();
-  virtual void Process( const GenericSignal*, GenericSignal* );
-  virtual void Halt();
-
- private:
-          void GetData(int channel);
-          char*PortTest(int numPort, BR150 radio);
-          void ClearSampleIndices();
+  virtual void  Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void  Initialize();
+  virtual void  Process( const GenericSignal*, GenericSignal* );
+  virtual void  Halt();
 
  private:
-  int         mSamplerate;
-  int         mSoftwareCh;
-  int         mSampleBlockSize;
-  int         mVoltageRange;
-  double*     mpIndex;
-  BR150       mBioRadio150;
-  int         mDataRead;
-  int         mTracker;
-  int         mSampleIndex[ALL_CHANNELS];
-  int         mComPort;
-  std::string mFileLocation;
+          void  GetData(int channel);
+          void  ClearSampleIndices();
 
+ private:
+  int           mSamplerate;
+  int           mSoftwareCh;
+  int           mSampleBlockSize;
+  int           mVoltageRange;
+  const double* mpIndex;
+  BR150         mBioRadio150;
+  int           mDataRead;
+  int           mTracker;
+  int           mSampleIndex[ALL_CHANNELS];
+  int           mComPort;
+  std::string   mFileLocation;
  };
 
 #endif // BioRadioADCH

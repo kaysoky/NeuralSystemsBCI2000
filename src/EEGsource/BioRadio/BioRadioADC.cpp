@@ -16,6 +16,9 @@
  * V0.05 - 5/1/2006   - Mod for production, clean up & doc
  * V1.0  - 9/5/2006   - Delivered code
  * $Log$
+ * Revision 1.2  2006/07/05 15:21:19  mellinger
+ * Formatting and naming changes.
+ *
  * Revision 1.1  2006/07/04 18:44:25  mellinger
  * Put files into CVS.
  *
@@ -49,13 +52,15 @@ BioRadioADC::BioRadioADC()
   mSoftwareCh(8),
   mSampleBlockSize(10),
   mVoltageRange(7),
-  mComPort(2),
-  mDataRead(0)
+  mpIndex(NULL),
+  mDataRead(0),
+  mTracker(0),
+  mComPort(2)
 {
- ClearSampleIndices();
- 
- // add all the parameters that this ADC requests to the parameter list  comPort(3)
- BEGIN_PARAMETER_DEFINITIONS
+  ClearSampleIndices();
+
+  // add all the parameters that this ADC requests to the parameter list  comPort(3)
+  BEGIN_PARAMETER_DEFINITIONS
    "Source int SoftwareCh=       8 8 1 8 "
        "// the number of digitized and stored channels",
 
@@ -98,12 +103,13 @@ BioRadioADC::BioRadioADC()
    "Source int SampleBlockSize= 10 10 10 120 //"
        "// Sample Block Size",
 
- END_PARAMETER_DEFINITIONS
+  END_PARAMETER_DEFINITIONS
 }
 
 BioRadioADC::~BioRadioADC()
 {
 }
+
 // **************************************************************************
 // Function:   Preflight
 // Purpose:    (1) Validates input parmeters
@@ -113,22 +119,23 @@ BioRadioADC::~BioRadioADC()
 // Parameters: SignalProperties& (const), outSignalProperties (SignalProperties&)
 // Returns:    void
 // **************************************************************************
-void BioRadioADC::Preflight( const SignalProperties&,
-                                       SignalProperties& outSignalProperties ) const
+void
+BioRadioADC::Preflight( const SignalProperties&,
+                              SignalProperties& outSignalProperties ) const
 {
   int errorFlag = XNO_ERROR;
   BR150 radio;
 
-    Parameter("SourceChGain");
-    Parameter("SourceChOffset");
+  Parameter("SourceChGain");
+  Parameter("SourceChOffset");
 
-    if( Parameter("SourceChGain")->GetNumValues() != Parameter("SoftwareCh") )
-      bcierr << "# elements in SourceChGain has to match total # channels" << endl;
-    if( Parameter("SourceChOffset")->GetNumValues() != Parameter("SoftwareCh") )
-      bcierr << "# elements in SourceChOffset has to match total # channels" << endl;
+  if( Parameter("SourceChGain")->GetNumValues() != Parameter("SoftwareCh") )
+    bcierr << "# elements in SourceChGain has to match total # channels" << endl;
+  if( Parameter("SourceChOffset")->GetNumValues() != Parameter("SoftwareCh") )
+    bcierr << "# elements in SourceChOffset has to match total # channels" << endl;
 
-    bool goodSourceChGain = true;
-    bool goodSourceChOffset = true;
+  bool goodSourceChGain = true;
+  bool goodSourceChOffset = true;
   for (int ch = ZERO; ch<Parameter("SoftwareCh"); ch++)
    {
    goodSourceChGain = goodSourceChGain && ( fabs(Parameter("SourceChGain", ch)-1) < 0.0001  );
@@ -217,8 +224,8 @@ void BioRadioADC::Preflight( const SignalProperties&,
   if(errorFlag == XNO_ERROR)
   {
 
-    double vRange = getBioRadioRangeValue(Parameter("VoltageRange"));
-    if(writeBioRadioConfig( Parameter("SamplingRate"),
+    double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
+    if(WriteBioRadioConfig( Parameter("SamplingRate"),
                             BIT_RES,
                             vRange,
                             pathFileName.c_str()))
@@ -235,9 +242,9 @@ void BioRadioADC::Preflight( const SignalProperties&,
 
     int port = Parameter("ComPort");
 
-    if(! radio.start(getPort(port)) && port != AUTO)
+    if(! radio.Start(GetPort(port)) && port != AUTO)
     {
-      radio.stop();
+      radio.Stop();
     }
     else
     {
@@ -247,9 +254,9 @@ void BioRadioADC::Preflight( const SignalProperties&,
      {
        if(port != i && foundIt != TRUE)
        {
-         if(!radio.start(getPort(i)))
+         if(!radio.Start(GetPort(i)))
          {
-           radio.stop();
+           radio.Stop();
            foundIt = TRUE;
            port = i;
            break;
@@ -260,14 +267,14 @@ void BioRadioADC::Preflight( const SignalProperties&,
 
     // Start the bioradio150, ping and program it, then stop it
     // If it fails give error
-    if(!radio.start(getPort(port)))
+    if(!radio.Start(GetPort(port)))
     {
-      radio.purge();      // set internal buffer to zero
-      if(radio.program(pathFileName))
-      { radio.stop();       //kill
+      radio.Purge();      // set internal buffer to zero
+      if(radio.Program(pathFileName))
+      { radio.Stop();       //kill
         bcierr<<"Error programing device, path may be incorrect."<<endl;
       }
-      radio.stop();       //kill
+      radio.Stop();       //kill
     }
     else
     {
@@ -294,10 +301,11 @@ void BioRadioADC::Preflight( const SignalProperties&,
 // Parameters: void
 // Returns:    void
 // **************************************************************************
-void BioRadioADC::Initialize()
+void
+BioRadioADC::Initialize()
 {
   // Get the translated value for the voltage range
-  double vRange = getBioRadioRangeValue(Parameter("VoltageRange"));
+  double vRange = GetBioRadioRangeValue(Parameter("VoltageRange"));
   // Obtain path to the config file and concat it with the file name
   string path = string(Parameter("ConfigPath"));
   mFileLocation = path + CONFIG_FILE;
@@ -309,7 +317,7 @@ void BioRadioADC::Initialize()
   mComPort = Parameter("ComPort");
 
   // Write a new config file from the params obtained
-  writeBioRadioConfig( Parameter("SamplingRate"),
+  WriteBioRadioConfig( Parameter("SamplingRate"),
                        BIT_RES,
                        vRange,
                        mFileLocation.c_str());
@@ -317,15 +325,15 @@ void BioRadioADC::Initialize()
   // Start the bioradio, ping, and program it
   // Dump the first buffer
   // If the bioradio does not start, complain. This may happen on occassion.
-    if(!mBioRadio150.start(PortTest(mComPort, mBioRadio150)))
+    if(!mBioRadio150.Start(mBioRadio150.PortTest(mComPort)))
   {
     // set internal buffer to zero
-    mBioRadio150.purge();
-    mBioRadio150.program(mFileLocation);
-    mpIndex = mBioRadio150.getData();
-    mDataRead = mBioRadio150.samplesRead();
-    mpIndex = mBioRadio150.getData();
-    mDataRead = mBioRadio150.samplesRead();
+    mBioRadio150.Purge();
+    mBioRadio150.Program(mFileLocation);
+    mpIndex = mBioRadio150.GetData();
+    mDataRead = mBioRadio150.SamplesRead();
+    mpIndex = mBioRadio150.GetData();
+    mDataRead = mBioRadio150.SamplesRead();
     mTracker = ZERO;
   }
   else
@@ -344,7 +352,8 @@ void BioRadioADC::Initialize()
 // Parameters: GenericSignal* (const), signal (GenericSignal*)
 // Returns:    void
 // **************************************************************************
-void BioRadioADC::Process( const GenericSignal*, GenericSignal* signal )
+void
+BioRadioADC::Process( const GenericSignal*, GenericSignal* signal )
 {
   ClearSampleIndices();
   int j = ZERO;
@@ -370,7 +379,8 @@ void BioRadioADC::Process( const GenericSignal*, GenericSignal* signal )
 // Parameters: channel [channel indices to update] (int)
 // Returns:    void
 // **************************************************************************
-void BioRadioADC::GetData(int channel)
+void
+BioRadioADC::GetData(int channel)
 {
 
   mSampleIndex[channel]++;
@@ -378,8 +388,8 @@ void BioRadioADC::GetData(int channel)
 
   if(mTracker == mDataRead)
   {
-    mpIndex = mBioRadio150.getData(mSampleBlockSize,ALL_CHANNELS);
-    mDataRead = mBioRadio150.samplesRead();
+    mpIndex = mBioRadio150.GetData(mSampleBlockSize,ALL_CHANNELS);
+    mDataRead = mBioRadio150.SamplesRead();
     mTracker = ZERO;
 
     double tmp = mDataRead;
@@ -387,7 +397,7 @@ void BioRadioADC::GetData(int channel)
     while( tmp/MIN_BLOCK_SIZE != int(tmp/MIN_BLOCK_SIZE) )
     {
         tmp = ++mDataRead;
-        mpIndex[ mDataRead - ONE ] = ZERO;
+        const_cast<double*>( mpIndex)[ mDataRead - ONE ] = ZERO;
     }
 
     if(mDataRead == BUFFER_SIZE)
@@ -403,51 +413,14 @@ void BioRadioADC::GetData(int channel)
 // Parameters:  void
 // Returns:     void
 // **************************************************************************
-void BioRadioADC::Halt()
+void
+BioRadioADC::Halt()
 {
-  if(mBioRadio150.getState() == RUNNING)
-    mBioRadio150.stop();
+  if(mBioRadio150.GetState() == RUNNING)
+    mBioRadio150.Stop();
   ClearSampleIndices();
 }
 
-//**************************************************************************
-// Function:   PortTest
-// Purpose:    Port test, determine the port that the bioradio is attached to
-// Parameters: port [Port number] (int), BR150 [BR150 object]
-// Returns:    char* [returns the name of the COM port] (char*)
-// **************************************************************************
-char* BioRadioADC::PortTest(int port, BR150 radio)
-{
-
-  int foundIt = FALSE;
-
-  if(!radio.start(getPort(port)) && port != AUTO)
-    {
-      radio.stop();
-      foundIt = TRUE;
-    }
-    else
-    {
-      for(int i = ZERO; i < ALLPORTS; ++i)
-      {
-        if(port != i && foundIt != 1)
-        {
-          if(!radio.start(getPort(i)))
-          {
-            radio.stop();
-            foundIt = TRUE;
-            port = i;
-            break;
-          }
-        }
-       }
-      }
-
-  if(foundIt)
-    return getPort(port);
-  else
-    return NULL;
-}
 
 //**************************************************************************
 // Function:   ClearSampleIndices
@@ -455,7 +428,8 @@ char* BioRadioADC::PortTest(int port, BR150 radio)
 // Parameters: None
 // Returns:    N/A
 // **************************************************************************
-void BioRadioADC::ClearSampleIndices()
+void
+BioRadioADC::ClearSampleIndices()
 {
   for( int i = 0; i < sizeof( mSampleIndex ) / sizeof( *mSampleIndex ); ++i )
     mSampleIndex[ i ] = 0;
