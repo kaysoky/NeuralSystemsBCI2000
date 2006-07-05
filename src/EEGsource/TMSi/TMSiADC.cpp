@@ -17,6 +17,9 @@
  * V0.05 - 15/05/2006 - Using the features pull out unused channels from the  *
  *                      common reference pool                                 *
  * $Log$
+ * Revision 1.2  2006/07/05 15:20:10  mellinger
+ * Minor formatting and naming changes; removed unneeded data members.
+ *
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
  *                                                                      *
@@ -39,10 +42,20 @@ using namespace std;
 RegisterFilter( TMSiADC, 1 );
 
 TMSiADC::TMSiADC()
-: mSoftwareCh(19),
+: mpMaster( NULL ),
+  mValuesToRead( 0 ),
+  mBufferSize( 0 ),
+  mSrate( 0 ),
+  mBufferMulti( 4 ),
+  mSoftwareCh(19),
+  mHardwareCh( 0 ),
   mSampleBlockSize( 0 ),
   mSamplingRate( 0 )
-{ // the values below are echoed into the user interface:
+{
+  for( size_t i = 0; i < sizeof( mSignalBuffer ) / sizeof( *mSignalBuffer ); ++i )
+    mSignalBuffer[ i ] = 0;
+
+  // the values below are echoed into the user interface:
   // Parameters are 'adjustable' in the gui.
   BEGIN_PARAMETER_DEFINITIONS
     "Source intlist SoftwareChList= 19 "
@@ -54,9 +67,6 @@ TMSiADC::TMSiADC()
     "Source int SamplingRate= 1000 "
       "// this is the sample rate",
   END_PARAMETER_DEFINITIONS
-
-  BufferMulti=4;
-  StartDriver();
 }
 
 TMSiADC::~TMSiADC()
@@ -64,13 +74,14 @@ TMSiADC::~TMSiADC()
   Halt();
 }
 
-void TMSiADC::Preflight( const SignalProperties& ,SignalProperties& outputProperties ) const
+void
+TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties ) const
 {      // Might need a bit of work...
 
-  ULONG BS=BufferMulti*Parameter("SampleBlockSize");                // in samples: in waitfordata endblock is linked to this...
-  ULONG act_rate=1000*Parameter("SamplingRate");                             // samplingrate in mHz
+  ULONG BS=mBufferMulti*Parameter("SampleBlockSize");  // in samples: in waitfordata endblock is linked to this...
+  ULONG act_rate=1000*Parameter("SamplingRate");       // samplingrate in mHz
 
-  Master->SetSignalBuffer(&act_rate,&BS);
+  mpMaster->SetSignalBuffer(&act_rate,&BS);
 
   PreflightCondition( 1000*Parameter("SamplingRate") == act_rate );
   PreflightCondition( Parameter("SamplingRate") > Parameter("SampleBlockSize") );
@@ -79,25 +90,26 @@ void TMSiADC::Preflight( const SignalProperties& ,SignalProperties& outputProper
                       SignalType::int32 );
 }
 
-void TMSiADC::StartDriver()
+void
+TMSiADC::StartDriver()
 {
   // Calling functions from the TMSI SDK
-  for(Index=0;Index < MAX_DEVICE;Index++)
-          Device[Index] = NULL;
+  for(ULONG Index=0;Index < MAX_DEVICE;Index++)
+          mpDevice[Index] = NULL;
 
-  UseMasterSlave( Device , MAX_DEVICE );
+  UseMasterSlave( mpDevice , MAX_DEVICE );
 
-  Master = Device[0];
-  if( Master == NULL )
+  mpMaster = mpDevice[0];
+  if( mpMaster == NULL )
   {
           bcierr <<  "TMSiADC No actual master device is found" << endl;
           return;
   }
 
-  Master->Reset();
-  Master->MeasuringMode( MEASURE_MODE_NORMAL  , 1);
+  mpMaster->Reset();
+  mpMaster->MeasuringMode( MEASURE_MODE_NORMAL  , 1);
 
-  PSIGNAL_FORMAT psf = Master->GetSignalFormat( NULL );
+  PSIGNAL_FORMAT psf = mpMaster->GetSignalFormat( NULL );
 
   if( psf != NULL )
   {
@@ -109,44 +121,47 @@ void TMSiADC::StartDriver()
       }
 
       mHardwareCh = psf->Elements;
-      Master->Free( psf );
+      mpMaster->Free( psf );
   }
   else
     bcierr << "Signalformat Error" << endl;
 }
 
-void TMSiADC::Initialize()
+void
+TMSiADC::Initialize()
 {
   mSampleBlockSize   =Parameter( "SampleBlockSize" );
   mSamplingRate      =Parameter( "SamplingRate" );
 
 
-  BufferSize      =BufferMulti*mSampleBlockSize; // in samples!: in waitfordata endblock is linked to this...
-  srate           =1000*mSamplingRate;           // samplingrate in mHz
+  mBufferSize     =mBufferMulti*mSampleBlockSize; // in samples!: in waitfordata endblock is linked to this...
+  mSrate          =1000*mSamplingRate;           // samplingrate in mHz
 
-  Master->SetSignalBuffer(&srate,&BufferSize);
+  mpMaster->SetSignalBuffer(&mSrate,&mBufferSize);
 
-  valuesToRead    =mSampleBlockSize * mHardwareCh * 4;   // sizeof type? type dependent? TMS appears to only give 4 byte values.
+  mValuesToRead   =mSampleBlockSize * mHardwareCh * 4;   // sizeof type? type dependent? TMS appears to only give 4 byte values.
 
-  if (!Master->Start())
+  if (!mpMaster->Start())
     bcierr << "TMSiADC Initialize returned an error (Device Start)" << endl;
 }
 
-void TMSiADC::Halt()
+void
+TMSiADC::Halt()
 {
-  if (Master->GetDeviceState() == 1)
-    Master->Stop(); // if running
+  if (mpMaster->GetDeviceState() == 1)
+    mpMaster->Stop(); // if running
 }
 
-void TMSiADC::Process(const GenericSignal*, GenericSignal* outputSignal)
+void
+TMSiADC::Process(const GenericSignal*, GenericSignal* outputSignal)
 {
-  if (WaitForData(&SignalBuffer[0], valuesToRead)== TMSIOK)
+  if (WaitForData(&mSignalBuffer[0], mValuesToRead)== TMSIOK)
   {
     int i=0;
     for( unsigned int sample = 0; sample < mSampleBlockSize; ++sample )
         for( unsigned int channel = 0; channel < mHardwareCh; ++channel )
         {
-            ( *outputSignal )( channel, sample ) = SignalBuffer[i++];    // one on one copy: check!
+            ( *outputSignal )( channel, sample ) = mSignalBuffer[i++];    // one on one copy: check!
         }
   }
   else
@@ -165,17 +180,18 @@ void TMSiADC::Process(const GenericSignal*, GenericSignal* outputSignal)
 //
 //
 //----------------------------------------------------------------------------------------------------
-int TMSiADC::WaitForData(ULONG* SignalBuffer,ULONG size)
+int
+TMSiADC::WaitForData(ULONG* SignalBuffer,ULONG size)
 {
   ULONG PercentFull, Overflow;
   static unsigned int mOverflow=0;
-  ULONG endblock=100.00/BufferMulti;
-  Master->GetBufferInfo(&Overflow,&PercentFull);
+  ULONG endblock=100.00/mBufferMulti;
+  mpMaster->GetBufferInfo(&Overflow,&PercentFull);
 
   while( PercentFull < endblock)
   {
           Sleep(0);
-          Master->GetBufferInfo(&Overflow,&PercentFull);
+          mpMaster->GetBufferInfo(&Overflow,&PercentFull);
   }
 
   if (Overflow>mOverflow)
@@ -184,7 +200,7 @@ int TMSiADC::WaitForData(ULONG* SignalBuffer,ULONG size)
           bciout << "Overflow occurred: " << Overflow  << " % Full= " <<PercentFull << endl;
   }
 
-  BytesReturned = Master->GetSamples((PULONG)SignalBuffer,size);
+  ULONG BytesReturned = mpMaster->GetSamples((PULONG)SignalBuffer,size);
 
   if (BytesReturned!=size)
     bciout << "BytesReturned: "<< BytesReturned <<"; wanted: "<< size <<endl;
@@ -200,7 +216,8 @@ int TMSiADC::WaitForData(ULONG* SignalBuffer,ULONG size)
 //  Following function is (almost) verbatim from the TMSi SDK. Needed for driver loading
 ///----------------------------------------------------------------------------------------------------
 
-ULONG TMSiADC::UseMasterSlave( RTDeviceEx **Devices , ULONG Max )
+ULONG
+TMSiADC::UseMasterSlave( RTDeviceEx **Devices , ULONG Max )
 {
   ULONG x;
 
@@ -217,7 +234,7 @@ ULONG TMSiADC::UseMasterSlave( RTDeviceEx **Devices , ULONG Max )
     }
   }
 
-  NrOfDevices = x;
+  ULONG NrOfDevices = x;
 
   for( x = 0 ; x < NrOfDevices ; x++ )
   {

@@ -17,6 +17,9 @@
  * V0.05 - 15/05/2006 - Using the features pull out unused channels from the  *
  *                      common reference pool                                 *
  * $Log$
+ * Revision 1.2  2006/07/05 15:20:10  mellinger
+ * Minor formatting and naming changes; removed unneeded data members.
+ *
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
  *                                                                      *
@@ -56,33 +59,25 @@ class TMSiADC : public GenericADC
   void Halt();
 
  private:
-  int  WaitForData(ULONG*,ULONG);
-  void StartDriver();
+  int   WaitForData(ULONG*,ULONG);
+  void  StartDriver();
+  ULONG UseMasterSlave( RTDeviceEx** Devices , ULONG Max );
 
  private:
-  RTDeviceEx *Device[MAX_DEVICE];
-  RTDeviceEx *Master;
+  RTDeviceEx*  mpDevice[MAX_DEVICE];
+  RTDeviceEx*  mpMaster;
 
-  ULONG valuesToRead;
-  ULONG Index;
-  ULONG BufferSize;
-  ULONG NrOfSamples,Total;
-  ULONG PercentFull,Overflow;
-  ULONG BytesPerSample;
-  ULONG BytesReturned;
+  ULONG        mSignalBuffer[MAXBUFFERSIZE];
+  ULONG        mValuesToRead;
+  ULONG        mBufferSize;
+  ULONG        mSrate;
 
-  ULONG NrOfDevices;
+  unsigned int mBufferMulti;
 
-  ULONG SignalBuffer[MAXBUFFERSIZE];
-
-  unsigned int  BufferMulti;
-  ULONG         UseMasterSlave( RTDeviceEx **Devices , ULONG Max );
-
-  unsigned int mSoftwareCh,mHardwareCh,
+  unsigned int mSoftwareCh,
+               mHardwareCh,
                mSampleBlockSize,
                mSamplingRate;
-
-  ULONG        srate;
 };
 
 #endif // TMSiADCH
