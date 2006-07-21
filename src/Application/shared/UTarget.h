@@ -37,8 +37,7 @@ private: 	// User declarations
 
         //VK
         TImage  *mono_icon;
-	TWavePlayer *wavplayer;
-
+	
         /*shidong starts*/
         void __fastcall clickTarget( TObject* );
         /*shidong ends*/
@@ -73,6 +72,7 @@ public:		// User declarations
         AnsiString IconHighlightMethod;
 	float   IconHighlightFactor;
 	AnsiString SoundFile;
+	TWavePlayer *wavplayer;
 	void 	PlaySound();
 };
 
