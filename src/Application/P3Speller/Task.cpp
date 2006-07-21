@@ -36,6 +36,7 @@ TTask::TTask()
   cur_time( new BCITIME ),
   bcitime( new BCITIME ),
   logfile( NULL ),
+  summaryfilename( NULL),
   // this keeps track of the current run number and will be set to 0 only here
   cur_runnr( 0 ),
   f( NULL )
@@ -72,6 +73,13 @@ TTask::TTask()
       "User spell result",
   "P3Speller int P3TestMode= 0 0 0 1 // "
       "P3TestMode (0=no, 1=yes) (boolean)",
+  "P3Speller string ID_System= %20 %20 %20 %20 // "
+      "BCI2000 System Code",
+  "P3Speller string ID_Amp= %20 %20 %20 %20 // "
+      "BCI2000 Amp Code",
+  "P3Speller string ID_Montage= %20 %20 %20 %20 // "
+      "BCI2000 Cap Montage Code",
+
 
    /* VK text window stuff */
   "P3Speller int TextWindowEnabled= 0 "
@@ -89,7 +97,9 @@ TTask::TTask()
   "P3Speller int TextWinFontSize= 10 4 0 20 // "
       "Text Window Font Size",
   "P3Speller string TextWindowFilePath= % % % % // "
-      "Path for Saved Text File",
+      "Path for Saved Text File (directory)",
+  "P3Speller string DestinationIPAddress= % % % % // "
+      "IP address for output port",
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -113,6 +123,11 @@ TTask::TTask()
  debug = false;
  if(debug) f = fopen ("TaskDebug.txt", "w");
  /*shidong ends*/
+ // VK added for pause and sleep modes
+ sleep_counter = numselections = 0;
+ savedStatusbar = "";
+ paused = false;
+ sleepduration=0;
 }
 
 //-----------------------------------------------------------------------------
@@ -155,7 +170,6 @@ void TTask::Preflight( const SignalProperties& inputProperties,
   trialsequence->Preflight(inputProperties, outputProperties);
   outputProperties = inputProperties;
 }
-
 
 // **************************************************************************
 // Function:   Initialize
@@ -219,6 +233,8 @@ int     ret, numerpsamples, sampleblocksize;
     logfile= fopen(FName.c_str(), "a+");
   if( !logfile )
     bcierr << "Could not open " << FName << " for writing" << std::endl;
+
+
   ChDir(AnsiString(cur_dir));    // restore current directory
 
   State( "PhaseInSequence" ) = 0;
@@ -247,11 +263,112 @@ int     ret, numerpsamples, sampleblocksize;
     userdisplay->SetTextWindowSize(Ty, Tx, Tx1, Ty1);
     userdisplay->textform->Show();
   }
+    //VK Adding for time-date stamp for text window
+  DateSeparator = ' ';
+  ShortDateFormat = "mmmddyy";
+  TimeSeparator = ' ';
+  LongTimeFormat = "hhmm";
 
+  if (summaryfilename == NULL)          // first run after system start, create filename
+  {
+    AnsiString today = DateTimeToStr(Now());
+    // VK Adding for summary file
+    FName = BCIDirectory()
+           .SubjectDirectory( Parameter( "FileInitials" ) )
+           .SubjectName( Parameter( "SubjectName" ) )
+           .CreatePath()
+           .FilePath()
+          + today.c_str()
+          + "_summary.txt" + '\0';
+
+    summaryfilename.sprintf("%s",FName.c_str());
+    AnsiString tempstring="";
+    if ((const char *)Parameter("ID_System"))
+      tempstring.sprintf("System ID = %s\t", (const char *)Parameter("ID_System"));
+    if ((const char *)Parameter("ID_Amp"))
+      tempstring.cat_sprintf("Amp ID = %s\t", (const char *)Parameter("ID_Amp"));
+    if ((const char *)Parameter("ID_Montage"))
+      tempstring.cat_sprintf("Montage ID = %s\n", (const char *)Parameter("ID_Montage"));
+
+    tempstring.cat_sprintf("SW Versions:\nOperator: %s\tEEGSource: %s\nSignal Processing: %s\tApplication: %s\n---------------------------------------------------",
+                          (const char *)Parameter("OperatorVersion", "CVS"),
+                          (const char *)Parameter("EEGSourceVersion", "CVS"),
+                          (const char *)Parameter("SignalProcessingVersion", "CVS"),
+                          (const char *)Parameter("ApplicationVersion", "CVS"));
+    WriteToSummaryFile(summaryfilename, tempstring);
+
+    if ((double)Parameter("MUD"))
+    {
+      tempstring.sprintf("MUD Matrix:\n");
+      int mudrow = Parameter( "MUD" )->GetNumValuesDimension1();
+      int mudcol = Parameter( "MUD" )->GetNumValuesDimension2();
+      for (int i=0; i<mudrow; i++)
+      {
+        int val;
+        for (int j=0; j<mudcol; ++j)
+        {
+          val = Parameter("MUD", i, j );
+          tempstring.cat_sprintf("%d ",val);
+        }  
+        tempstring.cat_sprintf("\n");
+      }
+      WriteToSummaryFile(summaryfilename, tempstring);
+    }
+  }
   cur_sequence=0;
   oldrunning=0;
+
+   // VK adding for brainkeys
+  string destinationOutputAddress( Parameter( "DestinationIPAddress" ) );
+  if( destinationOutputAddress != "" )
+  {
+    mConnection.close();
+    mConnection.clear();
+    mSocket.close();
+    mSocket.open( destinationOutputAddress.c_str() );
+    mConnection.open( mSocket );
+    if( !mConnection.is_open() )
+      bciout << "Could not connect to " << destinationOutputAddress << endl;
+
+    mConnection2.close();
+    mConnection2.clear();
+    mSocket2.close();
+    mSocket2.open( destinationOutputAddress.c_str() );
+    mConnection2.open( mSocket2 );
+    if( !mConnection2.is_open() )
+      bciout << "Could not connect to " << destinationOutputAddress << endl;
+  }
 }
 
+
+// VK adding for summary file creation.
+void TTask::StartRun()
+{
+  Initialize();
+    
+  userdisplay->HideMessage();
+  sleepduration=0;
+  AnsiString tempstring;
+  if (trialsequence->onlinemode)
+    tempstring.sprintf("*** START OF RUN %d IN ONLINE MODE ***", cur_runnr+1);
+  else
+    tempstring.sprintf("*** START OF RUN %d IN OFFLINE MODE ***", cur_runnr+1);
+  WriteToSummaryFile(summaryfilename, tempstring);
+
+  tempstring = "Date = " + DateToStr(Now()) + "\t\t"
+             + "Time = " + TimeToStr(Now()) + "\n";
+
+  tempstring.cat_sprintf("Num of Sequences = %d \nMATRIX SIZE(s)",numberofsequences);
+  WriteToSummaryFile(summaryfilename, tempstring);
+
+  tempstring = "";
+  for (int i=0; i<trialsequence->num_menus; i++)
+   tempstring.cat_sprintf("%d x %d \n", *(trialsequence->NumMatrixRows+i),*(trialsequence->NumMatrixColumns+i));
+  WriteToSummaryFile(summaryfilename, tempstring);
+  // if new run, reset numselections & selectionsummary
+  numselections = 0;
+  selectionsummary = "Selections in this run:\n";
+}     
 
 void TTask::ResetTaskSequence()
 {
@@ -261,16 +378,15 @@ int     i;
 
  // reset the statistics for the results of the different stimuli
  for (i=0; i<trialsequence->NUM_STIMULI; i++)
-  {
+ {
   responsecount[i]=0;
   response[i]=0;
-  }
-
-
+ }
  postsequence=false;
  presequence=false;
  if (presetinterval > 0) presequence=true;
  presequencecount=0;
+
 }
 
 
@@ -435,28 +551,101 @@ AnsiString      predchar;
 char    memotext[256];
 int     i;
 
-//VK Adding for time-date stamp for text window
-DateSeparator = ' ';
-ShortDateFormat = "mmddyy";
-TimeSeparator = ' ';
-LongTimeFormat = "hhmm";
-
  if (postsequence)
     {
     State( "PhaseInSequence" ) = 3;
     if ((postsequencecount > postsetinterval) && (!postpostsequence))
-       {
-       // determine predicted character
-       predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
+    {
+      // determine predicted character
+      predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
 
-       //VK changed location of this function to enable proper scrolling
-       userdisplay->DisplayStatusBar();
+      //VK changed location of this function to enable proper scrolling
+      userdisplay->DisplayStatusBar();
 
-       /*shidong starts*/
-       if (predchar == "<END>")                         //check for user "end" input
+      // VK to ensure that system does not restart if two consecutive
+      //    <SLEEP> keys are not received.
+      if (sleep_counter == 1 && predchar != "<SLEEP>")
+        sleep_counter = 2;
+
+      // clean formatting for summaryselection string
+      if (numselections%10 == 0)
+        selectionsummary.cat_sprintf("\n");
+
+      // VK adding PAUSE and SLEEP Mode
+      if (predchar == "<SLEEP>" && !paused)
+      {
+        numselections++;          // VK adding for summary file
+        selectionsummary.cat_sprintf("%s ",predchar.c_str());
+
+        if (sleep_counter == 0)   // implies system not currently asleep
+        {
+          sleep_counter = 2;
+          // change status bar to indicate sleep mode
+          savedStatusbar = userdisplay->statusbar->goaltext;
+          userdisplay->statusbar->TextHeight = (int)5*655.36;
+          userdisplay->statusbar->goaltext = LocalizableString( "Sleeping..Select Sleep twice to restart" );
+          startPause = time(NULL);
+          State( "Recording" ) = 0;      // setting this to stop recording EEG data while sleeping
+        }
+        else
+        {
+          sleep_counter--;
+          if (sleep_counter == 0) // implies time to wake up
+          {
+            // re-instate status bar
+            userdisplay->statusbar->TextHeight = (int)(userdisplay->StatusBarTextHeight*655.36);
+            userdisplay->statusbar->goaltext = savedStatusbar;
+            savedStatusbar = "";
+            predchar = "";        // setting this to avoid <SLEEP> from appearing in the text result
+            endPause = time(NULL);
+            sleepduration+= difftime(endPause,startPause);
+
+            State("Recording") = 1;  // setting this to restart recording EEG data
+          }
+          else
+            // change msg in status bar - "one more sleep mode selection will restart system"
+             LocalizableString( "Select Sleep once more to restart" );
+        }
+
+      }
+      else if (predchar == "<PAUSE>" && sleep_counter == 0)
+      {
+        numselections++;       // VK adding for summary file
+        selectionsummary.cat_sprintf("%s ",predchar.c_str());
+        if (paused)            // implies already paused, hence restart
+        {
+          paused = false;
+          predchar = "";       // setting this to avoid <PAUSE> from appearing in text result
+          // re-instate status bar
+          userdisplay->statusbar->TextHeight = (int)(userdisplay->StatusBarTextHeight*655.36);
+          userdisplay->statusbar->goaltext = savedStatusbar;
+          savedStatusbar = "";
+          endPause = time(NULL);
+          sleepduration+= difftime(endPause,startPause);
+          State( "Recording" ) = 1;        // setting this to restart recording EEG data
+        }
+        else                   // enter PAUSE mode
+        {
+          paused = true;
+          // change msg in status bar
+          savedStatusbar = userdisplay->statusbar->goaltext;
+          userdisplay->statusbar->TextHeight = (int)5*655.36;
+          userdisplay->statusbar->goaltext = LocalizableString( "Paused..Select Pause again to restart" ) ;
+          State( "Recording" ) = 0;      // setting this to stop recording EEG data while in pause
+          startPause = time(NULL);
+        }
+      }
+      if (sleep_counter == 0 && !paused)
+      {
+        // VK adding for summary file
+        numselections++;
+        selectionsummary.cat_sprintf("%s ",predchar.c_str());
+
+         /*shidong starts*/
+       if (predchar == "<END>")                    //check for user "end" input
        {
-         State("Running")=0;
-        //return;
+          State("Running")=0;
+          //return;
        }
        else if (predchar == "<BS>")                     //check for backspace
        {
@@ -473,7 +662,7 @@ LongTimeFormat = "hhmm";
          int textIndex = textresult.LastDelimiter(" ");
          if (textIndex == textresult.Length())          // implies trailing space
          {
-           //remove trailing space so DW can work     
+           //remove trailing space so DW can work
            textresult = textresult.SubString(0, textIndex-1);
            textIndex = textresult.LastDelimiter(" ");
          }
@@ -546,22 +735,16 @@ LongTimeFormat = "hhmm";
        // VK Adding for Nested Menus
        else if (predchar.SubString(0,4) == "<GTO")
        {
-         if (State("Nested") == 1)             
-         {
-           int menuNum = trialsequence->GetMenuNumber(predchar);
-           trialsequence->prev_menu = trialsequence->cur_menu;      // save cur menu before transitioning
-           TransitionMenu(menuNum);
-         }
+         int menuNum = trialsequence->GetMenuNumber(predchar);
+         trialsequence->prev_menu = trialsequence->cur_menu;      // save cur menu before transitioning
+         TransitionMenu(menuNum);
        }
        // VK "Return to previous menu" functionality
        else if (predchar == "<BK>")
        {
-         if (State("Nested") == 1)
-         {
-           int temp = trialsequence->cur_menu;
-           TransitionMenu(trialsequence->prev_menu);
-           trialsequence->prev_menu = temp;
-         }  
+         int temp = trialsequence->cur_menu;
+         TransitionMenu(trialsequence->prev_menu);
+         trialsequence->prev_menu = temp;
        }
        else
        {
@@ -569,7 +752,12 @@ LongTimeFormat = "hhmm";
         mVis.Send(memotext);  */
         trialsequence->char2spellidx += 1;
          //userdisplay->statusbar->resulttext += predchar;
-        textresult += predchar;
+        textresult += predchar;        
+
+        // VK for brainkeys
+        if (mConnection.is_open())
+          mConnection << "P3Speller_Output " << predchar.c_str() << endl;
+
        }
 
        //VK     dont want to display text if it was just saved or retrieved!
@@ -594,13 +782,14 @@ LongTimeFormat = "hhmm";
         if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
                 userdisplay->statusbar->resulttext  = "";
         if (userdisplay->statusbar->goaltext.Length()==0)       //check for null
-                userdisplay->statusbar->goaltext  = "";  
+                userdisplay->statusbar->goaltext  = "";
        }
        /*shidong ends*/
 
        trialsequence->SetUserDisplayTexts();
        //VK moved this call to beginning of routine
       // userdisplay->DisplayStatusBar();
+
 
        // write the results in the log file
        if (logfile)
@@ -618,30 +807,31 @@ LongTimeFormat = "hhmm";
 
        sprintf(memotext, "Predicted character: %s\r", predchar.c_str());
        mVis.Send( memotext );
-       /*shidong starts  
+       /*shidong starts
        sprintf(memotext, "The cur_stimuluscode is %d.\r", trialsequence->c);
        mVis.Send(memotext);  */
        /*shidong ends*/
+     } // VK endif sleep & pause check
 
-       // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
-       // if we are in online mode, just reset the task sequence and continue
-       if (!trialsequence->onlinemode)
-       {
-          // we want the postsequence just one cycle longer so that the final
-          // classification result gets reflected in the file
-          if (trialsequence->char2spellidx > trialsequence->TextToSpell.Length())
-             postpostsequence=true;
-          else
-             ResetTaskSequence();
-       }
-       else
-          ResetTaskSequence();
+     // if we are in offline mode, suspend the run if we had spelled enough characters (otherwise, continue)
+     // if we are in online mode, just reset the task sequence and continue
+     if (!trialsequence->onlinemode)
+     {
+        // we want the postsequence just one cycle longer so that the final
+        // classification result gets reflected in the file
+        if (trialsequence->char2spellidx > trialsequence->TextToSpell.Length())
+           postpostsequence=true;
+        else
+           ResetTaskSequence();
+     }
+     else
+        ResetTaskSequence();
 
-       // always end the postsequence, except when we tuck on one extra cycle at the end of the offline mode
-       if (!postpostsequence) postsequence=false;
-       }
+     // always end the postsequence, except when we tuck on one extra cycle at the end of the offline mode
+     if (!postpostsequence) postsequence=false;
+    }
     else
-       {
+    {
        // turn it off one cycle afterwards; now, the classification of the final character is reflected in the file
        if (postpostsequence)
           {
@@ -663,7 +853,7 @@ LongTimeFormat = "hhmm";
           /*shidong ends*/
           trialsequence->SuspendTrial();
           }
-       }
+    }
     postsequencecount++;
     }
 }
@@ -742,6 +932,11 @@ int     ret;
     mVis.Send( memotext );
     if (logfile) fprintf(logfile, "******************************\r\n%s\n", memotext);
     trialsequence->char2spellidx=1;
+
+    // VK adding to reset sleep and pause
+    sleep_counter = 0;
+    paused = false;
+
     /*shidong starts*/
    // userdisplay->statusbar->resulttext="";
    // trialsequence->SetUserDisplayTexts();
@@ -828,6 +1023,15 @@ int     ret;
        postsequencecount=0;
        }
     }
+ // VK adding check for brainkeys
+ if( mConnection2.rdbuf()->in_avail() )
+ {
+   string name;
+   mConnection2  >> name ;
+   mConnection2.ignore();
+   sprintf(memotext,"%s", name);
+   mVis.Send( memotext );
+ }
 
  skipprocess:
  //Resting();
@@ -852,6 +1056,16 @@ void TTask::StopRun()
         
  }
  /*shidong ends*/
+
+ AnsiString tempstring;
+ tempstring.sprintf("*** RUN SUMMARY ***\nSystem Pause Duration (in seconds): %f\nNumber of Selections = %d",sleepduration,numselections);
+ WriteToSummaryFile(summaryfilename, tempstring);
+ if (!trialsequence->onlinemode)      // in copy spelling
+ {
+   tempstring.sprintf("Expected Copy Spelling Characters: %s",trialsequence->TextToSpell.c_str());
+   WriteToSummaryFile(summaryfilename, tempstring);
+ }
+ WriteToSummaryFile(summaryfilename, selectionsummary);
 }
 
 //VK added
@@ -907,3 +1121,17 @@ void TTask::TransitionMenu(int num)
   return;
 }
 
+void TTask::WriteToSummaryFile(AnsiString filename, AnsiString text)
+{
+  if (filename == NULL)
+    return;
+
+  FILE *summaryfile = fopen(filename.c_str(), "a+");
+  if( !summaryfile )
+    bcierr << "Could not open " << filename.c_str() << " for writing" << std::endl;
+  else
+  {
+    fprintf(summaryfile, "%s\n", text.c_str());
+    fclose (summaryfile);
+  }
+}

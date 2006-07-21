@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <time.h>
 
 #include "UBCITime.h"
 #include "UGenericVisualization.h"
@@ -11,6 +12,7 @@
 
 #include "UserDisplay.h"
 #include "UTrialSequence.h"
+#include "TCPStream.h"
 
 class TTask : public GenericFilter
 {
@@ -46,6 +48,20 @@ class TTask : public GenericFilter
         int             cur_runnr;
 	AnsiString	ReturnScrolledString(AnsiString); //VK added
 	void		TransitionMenu(int); // VK added
+	bool		paused;
+	int		sleep_counter;
+	AnsiString	savedStatusbar;
+	AnsiString	summaryfilename;
+	double		sleepduration;
+	time_t		startPause, endPause;
+	AnsiString	selectionsummary;
+	int		numselections;
+	// VK adding to support brainkeys
+	sending_udpsocket mSocket;
+	receiving_udpsocket mSocket2;
+  	tcpstream         mConnection, mConnection2;
+	
+	
 
  public:
           TTask();
@@ -55,5 +71,8 @@ class TTask : public GenericFilter
   virtual void Initialize();
   virtual void Process( const GenericSignal* Input, GenericSignal* Output );
   void StopRun();
+// VK adding for summary file creation
+  void StartRun();   
+  void WriteToSummaryFile(AnsiString, AnsiString);
 };
 #endif

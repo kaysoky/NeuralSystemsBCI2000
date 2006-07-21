@@ -82,8 +82,6 @@ TRIALSEQUENCE::TRIALSEQUENCE()
   "StimulusCode 5 0 0 0",
   "StimulusType 3 0 0 0",
   "Flashing 1 0 0 0",
-// VK Adding for Nested Menu functionality
-  "Nested 1 0 0 0",
  END_STATE_DEFINITIONS
 
 }
@@ -180,15 +178,9 @@ int     ret;
  /*shidong starts*/
    // VK added for nested menus
    if( Parameter("TargetDefinitionMatrix")->GetNumColumns() == 1) // implies nested menus
-   {
-     State("Nested") = 1;
      num_menus = Parameter("TargetDefinitionMatrix")->GetNumRows();            // save number of menus
-   }
    else
-   {
-     State("Nested") = 0;
-     num_menus = 1;
-   }
+    num_menus = 1;
 
   //VK keep track of what the current menu index is, index starts at 1
   cur_menu = (int)(Parameter("FirstActiveMenu") - 1);
@@ -291,17 +283,19 @@ for (int j=0; j<num_menus; j++) // Do this for as many menus as we have
   cur_target->IconHighlightMethod="";
   (targets+j)->Add(cur_target);
 
-  if (State("Nested") == 1)
-    num_rows = Parameter("TargetDefinitionMatrix")(j,0)->GetNumRows();
-  else
+  if (num_menus == 1)                           // not nested
     num_rows = row;
+  else
+    num_rows = Parameter("TargetDefinitionMatrix")(j,0)->GetNumRows();
+
+
   for (i = 0; i<num_rows; i++)     //parse each row of the TargetDefinitionMatrix
   {
         targetID = i+1;
-        cur_target = new TARGET(targetID);    //assign targetID
+        cur_target = new TARGET(targetID);      //assign targetID
         cur_target->IconFile = "";
 
-        if (State("Nested") == 0)
+        if (num_menus == 1)                     //  implies non-nested matrix
         {
           cur_target->Caption =  AnsiString((const char*)Parameter("TargetDefinitionMatrix", i, 0)) ;
           //assign caption to character display in column 1
@@ -799,9 +793,9 @@ void TRIALSEQUENCE::CheckTargetDefinitionMatrix(int index) const
         iFileName = AnsiString((const char*)TDMatrix (i, 3));
         sFileName = AnsiString((const char*)TDMatrix (i, 4));
         gotoChar  = AnsiString((const char*)TDMatrix (index,0)(i, 1));
-        if (gotoChar.SubString(0,4) == "<GTO")
+        if (gotoChar.SubString(0,4) == "<GTO"  || gotoChar.SubString(0,4) == "<BK>" )
           bcierr << "P3Speller: Incorrect target defintion matrix ! \n"
-                   << "Cannot have <GTO> character in non-nested matrix"
+                   << "Cannot have nested menu special characters in non-nested matrix"
                    << std::endl;
       }
       else
