@@ -30,8 +30,12 @@ if(debug)f = fopen("MuSpellerDebug.txt", "w");
   "Speller string DictionaryFile= odgenswords.voc "
     "% % % // Dictionary file for word prediction (inputfile)",
   /*shidong starts*/
-  "Speller matrix TargetDefinitionMatrix= 42 { ID Type Display FontSizeFactor IconFile } 0 4 %20 1 %20 1 4 Back-Up 1 %20 2 2 ABCDEFGHI 1 %20 3 2 JKLMNOPQR 1 %20 4 2 STUVWXYZ 1 %20 5 2 ABC 1 %20 6 2 DEF 1 %20 7 2 GHI 1 %20 8 2 JKL 1 %20 9 2 MNO 1 %20 10 2 PQR 1 %20 11 2 STU 1 %20 12 2 VWX 1 %20 13 2 YZ_ 1 %20 14 3 A 1 %20 15 3 B 1 %20 16 3 C 1 %20 17 3 D 1 %20 18 3 E 1 %20%20 19 3 F 1 %20 20 3 G 1 %20 21 3 H 1 %20 22 3 I 1 %20 23 3 J 1 %20 24 3 K 1 %20 25 3 L 1 %20 26 3 M 1 %20 27 3 N 1 %20 28 3 O 1 %20 29 3 P 1 %20 30 3 Q 1 %20 31 3 R 1 %20 32 3 S 1 %20 33 3 T 1 %20 34 3 U 1 %20 35 3 V 1 %20 36 3 W 1 %20 37 3 X 1 %20 38 3 Y 1 %20 39 3 Z 1 %20 40 3 _ 1 %20 999 5 DELETE 1 % 0 0 0 // "
+  //VK adding SoundFile for audio capability
+   "Speller matrix TargetDefinitionMatrix= 42 { ID Type Display FontSizeFactor IconFile SoundFile } 0 4 %20 1 %20 %20 1 4 Back-Up 1 %20 %20 2 2 ABCDEFGHI 1 %20 %20 3 2 JKLMNOPQR 1 %20 %20 4 2 STUVWXYZ 1 %20 %20 5 2 ABC 1 %20 %20 6 2 DEF 1 %20 %20 7 2 GHI 1 %20 %20 8 2 JKL 1 %20 %20 9 2 MNO 1 %20 %20 10 2 PQR 1 %20 %20 11 2 STU 1 %20 %20 12 2 VWX 1 %20 %20 13 2 YZ_ 1 %20 %20 14 3 A 1 %20 %20 15 3 B 1 %20 %20 16 3 C 1 %20 %20 17 3 D 1 %20 %20 18 3 E 1 %20 %20 19 3 F 1 %20 %20 20 3 G 1 %20 %20 21 3 H 1 %20 %20 22 3 I 1 %20 %20 23 3 J 1 %20 %20 24 3 K 1 %20 %20 25 3 L 1 %20 %20 26 3 M 1 %20 %20 27 3 N 1 %20 %20 28 3 O 1 %20 %20 29 3 P 1 %20 %20 30 3 Q 1 %20 %20 31 3 R 1 %20 %20 32 3 S 1 %20 %20 33 3 T 1 %20 %20 34 3 U 1 %20 %20 35 3 V 1 %20 %20 36 3 W 1 %20 %20 37 3 X 1 %20 %20 38 3 Y 1 %20 %20 39 3 Z 1 %20 %20 40 3 _ 1 %20 %20 999 5 DELETE 1 % % 0 0 0 // "
      "Target Definition Matrix",
+
+ /* "Speller matrix TargetDefinitionMatrix= 42 { ID Type Display FontSizeFactor IconFile } 0 4 %20 1 %20 1 4 Back-Up 1 %20 2 2 ABCDEFGHI 1 %20 3 2 JKLMNOPQR 1 %20 4 2 STUVWXYZ 1 %20 5 2 ABC 1 %20 6 2 DEF 1 %20 7 2 GHI 1 %20 8 2 JKL 1 %20 9 2 MNO 1 %20 10 2 PQR 1 %20 11 2 STU 1 %20 12 2 VWX 1 %20 13 2 YZ_ 1 %20 14 3 A 1 %20 15 3 B 1 %20 16 3 C 1 %20 17 3 D 1 %20 18 3 E 1 %20%20 19 3 F 1 %20 20 3 G 1 %20 21 3 H 1 %20 22 3 I 1 %20 23 3 J 1 %20 24 3 K 1 %20 25 3 L 1 %20 26 3 M 1 %20 27 3 N 1 %20 28 3 O 1 %20 29 3 P 1 %20 30 3 Q 1 %20 31 3 R 1 %20 32 3 S 1 %20 33 3 T 1 %20 34 3 U 1 %20 35 3 V 1 %20 36 3 W 1 %20 37 3 X 1 %20 38 3 Y 1 %20 39 3 Z 1 %20 40 3 _ 1 %20 999 5 DELETE 1 % 0 0 0 // "
+     "Target Definition Matrix",    */
   "Speller matrix TreeDefinitionMatrix= 65 { ParentID DisplayPosition TargetID } -1 1 1 -1 2 2 -1 3 3 -1 4 4 -1 5 999 2 1 1 2 2 5 2 3 6 2 4 7 2 5 999 3 1 1 3 2 8 3 3 9 3 4 10 3 5 999 4 1 1 4 2 11 4 3 12 4 4 13 4 5 999 5 1 1 5 2 14 5 3 15 5 4 16 5 5 999 6 1 1 6 2 17 6 3 18 6 4 19 6 5 999 7 1 1 7 2 20 7 3 21 7 4 22 7 5 999 8 1 1 8 2 23 8 3 24 8 4 25 8 5 999 9 1 1 9 2 26 9 3 27 9 4 28 9 5 999 10 1 1 10 2 29 10 3 30 10 4 31 10 5 999 11 1 1 11 2 32 11 3 33 11 4 34 11 5 999 12 1 1 12 2 35 12 3 36 12 4 37 12 5 999 13 1 1 13 2 38 13 3 39 13 4 40 13 5 999 0 0 0 // "
   "Tree Definition Matrix",
   /*shidong ends*/
@@ -153,19 +157,28 @@ int TARGETSEQUENCE::LoadPotentialTargets()
   targetID =
         AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,0)).ToInt();
  cur_target = new TARGET(targetID);
- cur_target->targettype =
-        AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,1)).ToInt();
+ cur_target->targettype = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,1)).ToInt();
  cur_target->Caption = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,2));
  cur_target->FontSizeFactor = (float)(Parameter("TargetDefinitionMatrix",i,3));
-  cur_target->IconFile =
- AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,4));
+ cur_target->IconFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,4));
+ cur_target->SoundFile = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,5));
  if(debug)fprintf(f, "%d\t", cur_target->targetID);
  if(debug)fprintf(f, "%d\t", cur_target->targettype);
  if(debug)fprintf(f, "%s\t", cur_target->Caption);
-  if(debug)fprintf(f, "%f\n", cur_target->FontSizeFactor);
+ if(debug)fprintf(f, "%f\n", cur_target->FontSizeFactor);
  if(debug)fprintf(f, "%s\n", cur_target->IconFile);
+ if(debug)fprintf(f, "%s\n", cur_target->SoundFile);
 
-
+ // VK adding for playing .wav files
+ if ((cur_target->SoundFile != "") && (cur_target->SoundFile != " "))
+ {
+   // perform parsing to determine sound file or TextToSpeech
+   if (cur_target->SoundFile.SubString(0,1) != "'" && (!cur_target->wavplayer) )  // implies .wav file
+   {
+     cur_target->wavplayer = new TWavePlayer;
+     cur_target->wavplayer->AttachFile(cur_target->SoundFile.c_str());
+   }
+ }
  targets->Add(cur_target);
  }//for
 

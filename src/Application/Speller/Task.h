@@ -37,6 +37,9 @@ private:
         bool            CheckTree(int  root) const;
         bool            checkInt(AnsiString input) const;
         /*shidong ends*/
+
+	//VK
+	bool		CheckTargetMatrix() const;
         
         AnsiString      DetermineNewResultText(AnsiString resulttext, AnsiString predicted);
         AnsiString      DetermineCurrentPrefix(AnsiString resulttext);

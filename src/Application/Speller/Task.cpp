@@ -50,18 +50,15 @@ TTask::TTask()
       "Height of target labels in percent of screen height",
   "Speller int TargetWidth= 50 0 0 100 // "
       "TargetWidth in percent of screen width",
-
-  "Speller int IgnoreMistakes = 0 0 0 1 //"
+  "Speller int IgnoreMistakes= 0 0 0 1 // "
     "Ignore changes made by the user (0=no, 1=yes) (boolean)",
-
-
   "SpellerSequence int ITITime= 16 10 0 5000 // "
       "Duration of ITI in units of SampleBlocks",
   "SpellerSequence int OutcomeTime= 16 15 0 5000 // "
       "Duration of outcome in units of SampleBlocks ",
   "SpellerSequence int PTPTime= 16 10 0 5000 // "
       "Duration of pre-trial period in units of SampleBlocks",
-  "SpellerSequence int FeedbackTime= 20000 30 0 5000 //"
+  "SpellerSequence int FeedbackTime= 20000 30 0 5000 // "
       "Duration of feedback in units of SampleBlocks",
  END_PARAMETER_DEFINITIONS
 
@@ -141,80 +138,78 @@ bool TTask::checkInt(AnsiString input) const
 
 bool TTask::CheckTree(int root) const
 {
-        bool toRet;
-        if(debug) fprintf(a, "toRet is default to %d.\n", toRet);
-        toRet = true;
+  bool toRet;
+  if(debug) fprintf(a, "toRet is default to %d.\n", toRet);
+  toRet = true;
 
-        size_t rowNum = 0;
-        int displayPos = 0;
-   
-
-        for(size_t row= 0; row<Parameter("TreeDefinitionMatrix")->GetNumRows(); row++)
-        {
-                for (size_t col=0; col<Parameter("TreeDefinitionMatrix")->GetNumColumns(); col++)
-                {
-                        //if(debug) fprintf(a, "checking matrix %d, %d, it's %s.\n", row, col,AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  );
-                        if(checkInt( AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  ) )
-                        {
-                        }
-                        else
-                        {
-                                return false;
-                        }
-                }
-        }
+  size_t rowNum = 0;
+  int displayPos = 0;
 
 
-        for(size_t i=0; i< Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
-        {
+  for(size_t row= 0; row<Parameter("TreeDefinitionMatrix")->GetNumRows(); row++)
+  {
+    for (size_t col=0; col<Parameter("TreeDefinitionMatrix")->GetNumColumns(); col++)
+    {
+    //if(debug) fprintf(a, "checking matrix %d, %d, it's %s.\n", row, col,AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  );
+      if(checkInt( AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", row, col))  ) )
+      {
+      }
+      else
+      {
+        return false;
+      }
+    }
+  }
 
-               // if(debug) fprintf(a, "In 1st Loop, Looking for targetID %d, rowNum is %d, 1st    column is %s.\n", root, rowNum, AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)) );
-                        //if 1st column in ith row contain the root targetID
-                        if (  AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)).ToInt() == root)
-                        {
-                                break;
-                        }
-                        rowNum ++;
-        }//for
+  for(size_t i=0; i< Parameter("TreeDefinitionMatrix")->GetNumRows(); i++)
+  {
+  // if(debug) fprintf(a, "In 1st Loop, Looking for targetID %d, rowNum is %d, 1st    column is %s.\n", root, rowNum, AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)) );
+  //if 1st column in ith row contain the root targetID
+    if (  AnsiString ( (const char*)Parameter("TreeDefinitionMatrix", i, 0)).ToInt() == root)
+    {
+      break;
+    }
+    rowNum ++;
+  }//for
 
         //if the ID to be searched is not in 1st column and it's not the root. It implies the ID has no children.
-        if(rowNum == Parameter("TreeDefinitionMatrix")->GetNumRows()  &&  root != -1)
-        {
-                return true;
-        }
+  if(rowNum == Parameter("TreeDefinitionMatrix")->GetNumRows()  &&  root != -1)
+  {
+    return true;
+  }
 
-        if(debug) fprintf(a, "          After 1st Loop, Looking for targetID %d, rowNum is %d.\n", root, rowNum);
+  if(debug) fprintf(a, "          After 1st Loop, Looking for targetID %d, rowNum is %d.\n", root, rowNum);
 
-        for (displayPos = 0; displayPos < Parameter("NumberTargets"); displayPos ++)
-        {
-                //if 1st column is same as the root AND the 3rd column is a real integer
-                if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 0)).ToInt()==root && checkInt( (const char*)Parameter("TreeDefinitionMatrix", displayPos+rowNum, 2) )   )
-                {
-                        if(debug) fprintf(a, "In 2nd Loop, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
-                        //if the 3rd column contains single letter
-                        if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() >= TARGETID_A  && AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt()<= TARGETID__)
-                        {
-                                //do nothing if target is a single letter
-                        }
-                        else if (  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BLANK
-                        ||  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BACKUP)
-                        {
-                                //do nothing if target is BLANK  or BACKUP
-                        }
-                        else    //else keep checking
-                        {
-                                toRet = CheckTree(    AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() );
-                        }
-                }
-                else
-                {
-                        if(debug) fprintf(a, "In 2nd Loop ELSE PART, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
+  for (displayPos = 0; displayPos < Parameter("NumberTargets"); displayPos ++)
+  {
+  //if 1st column is same as the root AND the 3rd column is a real integer
+    if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 0)).ToInt()==root && checkInt( (const char*)Parameter("TreeDefinitionMatrix", displayPos+rowNum, 2) )   )
+    {
+      if(debug) fprintf(a, "In 2nd Loop, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
+      //if the 3rd column contains single letter
+      if( AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() >= TARGETID_A  && AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt()<= TARGETID__)
+      {
+        //do nothing if target is a single letter
+      }
+      else if (  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BLANK
+             ||  AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() ==  TARGETID_BACKUP)
+      {
+        //do nothing if target is BLANK  or BACKUP
+      }
+      else    //else keep checking
+      {
+        toRet = CheckTree(    AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)).ToInt() );
+      }
+    }
+    else
+    {
+      if(debug) fprintf(a, "In 2nd Loop ELSE PART, display is %d, display+rowNum is %d, 3rd column has %s.\n", displayPos, displayPos+rowNum, AnsiString((const char*)Parameter("TreeDefinitionMatrix",  displayPos+rowNum, 2)) );
 
-                        return false;
-                }
-        }//for
+      return false;
+    }
+  }//for
 
-        return toRet;
+  return toRet;
 }
 /*shiodng ends*/
 
@@ -227,8 +222,54 @@ void TTask::Preflight( const SignalProperties& inputProperties,
 
         PreflightCondition( CheckTree(TARGETID_ROOT) == true);
 /*shidong ends*/
+
+        PreflightCondition( CheckTargetMatrix() == true);
         outputProperties = inputProperties;
 }
+
+// VK adding function to verify correct icon and sound file names in target definition matrix
+bool TTask::CheckTargetMatrix() const
+{
+  TImage *temp_icon;
+  TWavePlayer testPlayer;
+  bool errorflag=false;
+
+  for (size_t i = 0; i < Parameter("TargetDefinitionMatrix")->GetNumRows(); i++)
+  {
+     AnsiString iFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,4));
+     AnsiString sFileName = AnsiString((const char*)Parameter("TargetDefinitionMatrix",i,5));
+
+     if(iFileName != "" && iFileName != " ")
+     {
+       temp_icon = new TImage(static_cast<TComponent*>(NULL));
+       try
+       {
+         temp_icon->Picture->LoadFromFile(iFileName);
+       }
+       catch(...)
+       {
+         errorflag = true;
+       }
+       delete temp_icon;
+     }
+     if(sFileName != "" && sFileName != " ")
+     {
+       if (sFileName.SubString(0,1) != "'")  // implies .wav file else implies Text To Speech
+       {
+         TWavePlayer::Error err = testPlayer.AttachFile( sFileName.c_str() );
+         if( err == TWavePlayer::fileOpeningError)
+           errorflag = true;
+         else if( err != TWavePlayer::noError )
+           errorflag = true;
+       }
+     }
+     if (errorflag)
+       return false;
+  }
+  return true;
+}
+
+
 
 
 // **************************************************************************
@@ -531,6 +572,10 @@ AnsiString      selectedCaption;
 
  // if we did NOT select BACK-UP, traverse down the tree
  // otherwise, get the previous targets from the history of previous active targets
+
+ // VK added for audio
+ if ((selected->SoundFile != "") && (selected->SoundFile != " "))
+          selected->PlaySound();
 
 
  /*shidong starts*/
