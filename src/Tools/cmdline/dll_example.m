@@ -4,6 +4,32 @@ function dll_example
 % $Id$
 % Author: juergen.mellinger@uni-tuebingen.de
 % Date:   Jul 20, 2005
+%
+% This example shows how to use a BCI2000 filter compiled as a dll when
+% processing data from Matlab.
+% Because Matlab is the caller of the BCI2000 filter, it must play the role
+% of the BCI2000 framework in regard to the filter (or multiple filters).
+% This means
+% 1) providing state list information using the DLL's PutState()
+%    function;
+% 1) instantiating the filter by calling the DLL's Instantiate() function;
+% 2) providing state vector data as read, e.g., from a BCI2000 data file 
+%    using SetStatevector(), or setting states by their names using 
+%    SetState();
+% 3) providing parameter information from a data file or from PutParameter();
+% 4) initializing the filter -- Preflight(), Initialize(), StartRun();
+% 5) having the filter process data -- Process();
+% 6) de-initializing the filter -- StopRun(), Dispose().
+%
+% The call_bcidll function below is a wrapper to Matlab's callib() function 
+% that takes care of error handling. 
+%
+% For further information about BCI2000 filters in general and especially
+% the semantics of a BCI2000 filter's member functions, see the
+% filter interface discussion in section 6.6 of the Software Design 
+% Document at BCI2000/doc/implementation.pdf.
+% For further information about the BCI2000 dll interface, see the
+% bci_dll.h header file.
 
 filter_name = 'TransmissionFilter';
 loadlibrary( filter_name, 'bci_dll', 'alias', 'lib' );
