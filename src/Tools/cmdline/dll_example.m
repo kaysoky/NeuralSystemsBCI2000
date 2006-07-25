@@ -26,9 +26,9 @@ try
   
   % Add some parameters to the parameter list.
 % call_bcidll( 'lib', 'PutParameter', 'this is not a valid parameter line' );
-  call_bcidll( 'lib', 'PutParameter', 'Source int SoftwareCh= 3' );
-  call_bcidll( 'lib', 'PutParameter', 'Source int TransmitCh= 2' );
-  call_bcidll( 'lib', 'PutParameter', 'Source intlist TransmitChList= 2 2 1' );
+  call_bcidll( 'lib', 'PutParameter', 'Source int SoftwareCh= 3 0 0 0 //' );
+  call_bcidll( 'lib', 'PutParameter', 'Source int TransmitCh= 2 0 0 0 //' );
+  call_bcidll( 'lib', 'PutParameter', 'Source intlist TransmitChList= 2 2 1 0 0 0 //' );
 
   % Call Preflight() to obtain signal output dimensions.
   inputSignal = [ 1 2 3 4; 5 6 7 8; 9 10 11 12 ]
