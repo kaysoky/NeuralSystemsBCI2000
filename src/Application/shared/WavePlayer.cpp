@@ -254,24 +254,27 @@ TWavePlayer::AttachFile( const char* inFileName )
     mBitsPerSample = fileFormat.wBitsPerSample;
 
     DSBUFFERDESC bufdesc;
-    memset (&bufdesc, 0, sizeof(DSBUFFERDESC));
+    ::memset(&bufdesc, 0, sizeof(DSBUFFERDESC));
     bufdesc.dwSize = sizeof(DSBUFFERDESC);
 
     bufdesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN|DSBCAPS_GLOBALFOCUS;
     bufdesc.dwBufferBytes = childChunkInfo.cksize;
     bufdesc.lpwfxFormat = &fileFormat;
 
-    sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL );
-    void *write1 = 0, *write2 = 0;
-    unsigned long length1,length2;
-    mSecondaryBuffer->Lock (0, childChunkInfo.cksize, &write1, &length1, &write2, &length2, 0);
-    if(write1 > 0)
-      mmioRead (fileHandle, (char*)write1, length1);
-    if (write2 > 0)
-      mmioRead (fileHandle, (char*)write2, length2);
-    mSecondaryBuffer->Unlock (write1, length1, write2, length2);
-
-    mmioClose (fileHandle, 0);
+    err = genError;
+    if( DS_OK == sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL ) )
+    {
+      char* pWrite = NULL;
+      unsigned long length = 0;
+      if( DS_OK == mSecondaryBuffer->Lock( 0, childChunkInfo.cksize,
+                     &reinterpret_cast<void*>( pWrite ), &length, NULL, NULL, DSBLOCK_ENTIREBUFFER ) )
+      {
+        ::mmioRead( fileHandle, pWrite, length );
+        if( DS_OK == mSecondaryBuffer->Unlock( pWrite, length, NULL, NULL ) )
+          err = noError;
+      }
+    }
+    ::mmioClose( fileHandle, 0 );
   }
 
   if( err != noError )
@@ -350,7 +353,7 @@ TWavePlayer::Stop()
 bool
 TWavePlayer::IsPlaying() const
 {
-  unsigned long retval=-1;
+  unsigned long retval=false;
   if(mSecondaryBuffer!=NULL)
   {
     mSecondaryBuffer->GetStatus(&retval);
