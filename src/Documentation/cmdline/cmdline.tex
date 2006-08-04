@@ -90,9 +90,9 @@ As the command line tools are not automatically built from the main makefile,
 you need to do this manually. 
 On the Windows NT shell, change to the \texttt{BCI2000/src/Tools/cmdline} directory,
 and execute \texttt{make install} from there; this will also move the 
-resulting executable to the \texttt{BCI2000/Tools/cmdline} directory.
+resulting executables to the \texttt{BCI2000/Tools/cmdline} directory.
 To build an executable from a file \texttt{MyFilter.cpp} containing a 
-BCI2000 filter \texttt{MyFilter}, execute \texttt{MyFilter.install}.
+BCI2000 filter \texttt{MyFilter}, execute \texttt{make MyFilter.install}.
 This will build an executable \texttt{MyFilter.exe} and add it to the
 \texttt{BCI2000/Tools/cmdline} directory.
 
