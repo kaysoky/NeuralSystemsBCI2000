@@ -8,6 +8,9 @@
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
 // $Log$
+// Revision 1.15  2006/08/07 19:04:30  mellinger
+// Fixed handling of states that are requested by filters but not present in the input stream.
+//
 // Revision 1.14  2006/07/04 16:02:21  mellinger
 // Introduced namespace "bci", put the ClassName() global function inside that namespace.
 //
@@ -53,12 +56,17 @@ string ToolInfo[] =
   ""
 };
 
+
 class FilterWrapper : public MessageHandler
 {
  public:
   FilterWrapper( ostream& arOut )
-  : mrOut( arOut ), mpStatevector( NULL ), mStatesFromInput( false ) {}
-  ~FilterWrapper() { delete mpStatevector; }
+  : mrOut( arOut ),
+    mpInputStatevector( NULL ),
+    mpOutputStatevector( NULL ),
+    mSingleStatevector( true ) {}
+  ~FilterWrapper() { DisposeStatevectors(); }
+
   void RedirectOperator( string file ) { mOperator.open( file.c_str() ); }
   void FinishProcessing();
   static const char* FilterName();
@@ -68,9 +76,12 @@ class FilterWrapper : public MessageHandler
   ofstream mOperator;
   GenericSignal mOutputSignal;
   PARAMLIST mParamlist;
-  STATELIST mStatelist;
-  STATEVECTOR* mpStatevector;
-  bool      mStatesFromInput;
+  STATELIST mInputStatelist,
+            mOutputStatelist,
+            mFilterStatelist;
+  STATEVECTOR* mpInputStatevector,
+             * mpOutputStatevector;
+  bool      mSingleStatevector;
 
   virtual bool HandlePARAM(       istream& );
   virtual bool HandleSTATE(       istream& );
@@ -78,7 +89,12 @@ class FilterWrapper : public MessageHandler
   virtual bool HandleSTATEVECTOR( istream& );
 
   void StopRun();
+  void InitializeInputStatevector();
+  void InitializeOutputStatevector();
+  void DisposeStatevectors();
+  void SynchronizeStatevectors();
 };
+
 
 ToolResult
 ToolInit()
@@ -139,14 +155,14 @@ FilterWrapper::FinishProcessing()
 {
   if( Environment::GetPhase() == Environment::processing )
     StopRun();
-  Environment::EnterNonaccessPhase();
+  if( Environment::GetPhase() != Environment::nonaccess )
+    Environment::EnterNonaccessPhase();
 }
 
 bool
 FilterWrapper::HandlePARAM( istream& arIn )
 {
-  if( Environment::GetPhase() != Environment::nonaccess )
-    FinishProcessing();
+  FinishProcessing();
 
   PARAM p;
   p.ReadBinary( arIn );
@@ -158,34 +174,30 @@ FilterWrapper::HandlePARAM( istream& arIn )
 bool
 FilterWrapper::HandleSTATE( istream& arIn )
 {
-  if( mpStatevector != NULL )
+  if( Environment::GetPhase() == Environment::processing )
+    StopRun();
+
+  if( mpInputStatevector != NULL )
   {
-    if( Environment::GetPhase() == Environment::processing )
-      StopRun();
-    delete mpStatevector;
-    mpStatevector = NULL;
+     mInputStatelist.Clear();
+     DisposeStatevectors();
   }
+
   STATE s;
   s.ReadBinary( arIn );
   if( arIn )
-  {
-    mStatelist.Delete( s.GetName() );
-    mStatelist.Add( s );
-  }
+    mInputStatelist.Add( s );
   return true;
 }
 
 bool
 FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
-  if( mpStatevector == NULL )
-  {
-    mpStatevector = new STATEVECTOR( mStatelist, true );
-    for( size_t i = 0; i < mStatelist.Size(); ++i )
-      PutMessage( mrOut, mStatelist[ i ] );
-  }
-  mpStatevector->ReadBinary( arIn );
-  if( !mpStatevector->GetStateValue( "Running" )
+  if( mpInputStatevector == NULL )
+    InitializeInputStatevector();
+  mpInputStatevector->ReadBinary( arIn );
+  SynchronizeStatevectors();
+  if( !mpInputStatevector->GetStateValue( "Running" )
       && Environment::GetPhase() == Environment::processing )
     StopRun();
   return true;
@@ -206,8 +218,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           GenericFilter::DisposeFilters();
 
           PARAMLIST filterParams;
-          STATELIST filterStates;
-          Environment::EnterConstructionPhase( &filterParams, &filterStates, NULL, &mOperator );
+          Environment::EnterConstructionPhase( &filterParams, &mFilterStatelist, NULL, &mOperator );
           GenericFilter::InstantiateFilters();
           if( __bcierr.flushes() > 0 )
           {
@@ -219,22 +230,13 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           for( size_t i = 0; i < filterParams.Size(); ++i )
             if( !mParamlist.Exists( filterParams[ i ].GetName() ) )
               mParamlist[ filterParams[ i ].GetName() ] = filterParams[ i ];
-          // If there are no states in the input stream, use the filter's states.
-          if( mStatelist.Size() == 0 )
-          {
-            mStatelist = filterStates;
-            mStatesFromInput = false;
-          }
-          else
-            mStatesFromInput = true;
         }
         /* no break */
       case Environment::construction:
-        if( mpStatevector == NULL )
-          mpStatevector = new STATEVECTOR( mStatelist, true );
-        for( size_t i = 0; i < mStatelist.Size(); ++i )
-          PutMessage( mrOut, mStatelist[ i ] );
-        Environment::EnterPreflightPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+        if( mpInputStatevector == NULL )
+          InitializeInputStatevector();
+        InitializeOutputStatevector();
+        Environment::EnterPreflightPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         GenericFilter::PreflightFilters( inputSignal.GetProperties(), outputProperties );
         mOutputSignal.SetProperties( outputProperties );
         if( __bcierr.flushes() > 0 )
@@ -244,7 +246,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         }
         /* no break */
       case Environment::preflight:
-        Environment::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+        Environment::EnterInitializationPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         GenericFilter::InitializeFilters();
         for( size_t i = 0; i < mParamlist.Size(); ++i )
           PutMessage( mrOut, mParamlist[ i ] );
@@ -257,23 +259,23 @@ FilterWrapper::HandleVisSignal( istream& arIn )
       case Environment::initialization:
       case Environment::resting:
         /* no break */
-        Environment::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+        Environment::EnterStartRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         GenericFilter::StartRunFilters();
-        Environment::EnterProcessingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+        Environment::EnterProcessingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         /* no break */
       case Environment::processing:
         {
-          bool wasRunning = mpStatevector->GetStateValue( "Running" );
+          bool wasRunning = mpOutputStatevector->GetStateValue( "Running" );
           GenericFilter::ProcessFilters( &inputSignal, &mOutputSignal );
           if( __bcierr.flushes() > 0 )
           {
             arIn.setstate( ios::failbit );
             break;
           }
-          bool isRunning = mpStatevector->GetStateValue( "Running" );
+          bool isRunning = mpOutputStatevector->GetStateValue( "Running" );
           if( isRunning || wasRunning )
-            if( mpStatevector->Length() > 0 )
-              PutMessage( mrOut, *mpStatevector );
+            if( mpOutputStatevector->Length() > 0 )
+              PutMessage( mrOut, *mpOutputStatevector );
           if( isRunning )
             PutMessage( mrOut, mOutputSignal );
         }
@@ -289,12 +291,69 @@ FilterWrapper::HandleVisSignal( istream& arIn )
 void
 FilterWrapper::StopRun()
 {
-  Environment::EnterStopRunPhase( &mParamlist, &mStatelist, mpStatevector, &mrOut );
+  Environment::EnterStopRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mrOut );
   GenericFilter::StopRunFilters();
   Environment::EnterNonaccessPhase();
-  Environment::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mrOut );
+  Environment::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mrOut );
   GenericFilter::RestingFilters();
   Environment::EnterNonaccessPhase();
-  Environment::EnterRestingPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
+  Environment::EnterRestingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
 }
+
+void
+FilterWrapper::InitializeInputStatevector()
+{
+  delete mpInputStatevector;
+  mpInputStatevector = new STATEVECTOR( mInputStatelist, true );
+}
+
+void
+FilterWrapper::InitializeOutputStatevector()
+{
+  if( !mSingleStatevector )
+    delete mpOutputStatevector;
+
+  mSingleStatevector = mFilterStatelist.Empty();
+  if( mSingleStatevector )
+  {
+    mOutputStatelist = mInputStatelist;
+    mpOutputStatevector = mpInputStatevector;
+  }
+  else
+  {
+    for( size_t i = 0; i < mInputStatelist.Size(); ++i )
+      mOutputStatelist.Add( mInputStatelist[ i ] );
+    for( size_t i = 0; i < mFilterStatelist.Size(); ++i )
+      mOutputStatelist.Add( mFilterStatelist[ i ] );
+    mpOutputStatevector = new STATEVECTOR( mOutputStatelist, false );
+  }
+  SynchronizeStatevectors();
+  for( size_t i = 0; i < mOutputStatelist.Size(); ++i )
+    PutMessage( mrOut, mOutputStatelist[ i ] );
+}
+
+void
+FilterWrapper::SynchronizeStatevectors()
+{
+  if( !mSingleStatevector )
+    // Copy state values by name if input and output statevectors differ.
+    for( size_t i = 0; i < mInputStatelist.Size(); ++i )
+    {
+      const char* name = mInputStatelist[ i ].GetName();
+      STATE::value_type value = mpInputStatevector->GetStateValue( name );
+      mpOutputStatevector->SetStateValue( name, value );
+    }
+}
+
+void
+FilterWrapper::DisposeStatevectors()
+{
+  delete mpInputStatevector;
+  mpInputStatevector = NULL;
+  if( !mSingleStatevector )
+    delete mpOutputStatevector;
+  mpOutputStatevector = NULL;
+  mSingleStatevector = true;
+}
+
 
