@@ -62,6 +62,18 @@ int DLLEXPORT
 PutParameter( char* parameterLine );
 
 /*
+function:  GetParameter
+purpose:   Returns the parameter with the given index from the DLL's internal
+           parameter list.
+arguments: Parameter index.
+returns:   Pointer to a null-terminated string containing a parameter line, or NULL.
+           The output buffer is allocated inside the DLL, and not meant to be
+           deallocated by the caller.
+*/
+char* DLLEXPORT
+GetParameter( long index );
+
+/*
 function:  PutState
 purpose:   Parses a BCI2000 state definition line, and adds the resulting state
            object to the filter's state list.
@@ -78,7 +90,7 @@ arguments: Pointer to a NULL terminated state name string; new state value.
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-SetStateValue( char* stateName, short value );
+SetStateValue( char* stateName, long value );
 
 /*
 function:  GetState
@@ -87,7 +99,7 @@ arguments: Pointer to a NULL terminated state name string; pointer to state valu
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-GetStateValue( char* stateName, short* valuePtr );
+GetStateValue( char* stateName, long* valuePtr );
 
 /*
 function:  GetStatevectorLength

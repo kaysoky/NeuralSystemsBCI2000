@@ -14,6 +14,9 @@
 //              will create a new state vector using the states
 //              requested by the filter(s) present in the DLL.
 // $Log$
+// Revision 1.5  2006/08/07 19:02:45  mellinger
+// Added a GetParameter function; changed State accessor parameters from short to long.
+//
 // Revision 1.4  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -93,6 +96,17 @@ static class FilterWrapper : public Environment
     return true;
   }
 
+  const PARAM*
+  GetParameter( size_t index )
+  {
+    if( index >= mParameters.Size() )
+    {
+      sErr << "Parameter index out of bounds." << endl;
+      return NULL;
+    }
+    return &mParameters[ index ];
+  }
+
   bool
   PutState( const char* stateLine )
   {
@@ -120,7 +134,7 @@ static class FilterWrapper : public Environment
   }
 
   bool
-  GetStateValue( const char* stateName, short& value )
+  GetStateValue( const char* stateName, long& value )
   {
     __bcierr.clear();
     Environment::EnterInitializationPhase( &mParameters, &mStates, Statevector(), &sVis );
@@ -189,6 +203,7 @@ static class FilterWrapper : public Environment
     bool result = ( __bcierr.flushes() == 0 );
     Environment::EnterNonaccessPhase();
     delete mpStatevector;
+    mpStatevector = NULL;
     mStates.Clear();
     mParameters.Clear();
     return result;
@@ -368,6 +383,31 @@ PutParameter( char* parameterLine )
 }
 
 /*
+function:  GetParameter
+purpose:   Returns the parameter with the given index from the DLL's internal
+           parameter list.
+arguments: Parameter index.
+returns:   Pointer to a null-terminated string containing a parameter line, or NULL.
+           The output buffer is allocated inside the DLL, and not meant to be
+           deallocated by the caller.
+*/
+char* DLLEXPORT
+GetParameter( long index )
+{
+  ResetStreams();
+  strstreambuf* sb = dynamic_cast<strstreambuf*>( sOut.rdbuf() );
+  sb->freeze( false );
+
+  const PARAM* p = wrapper.GetParameter( index );
+  if( p == NULL )
+    return NULL;
+
+  sOut << *p
+       << ends;
+  return sb->str();
+}
+
+/*
 function:  PutState
 purpose:   Parses a BCI2000 state definition line, and adds the resulting state
            object to the filter's state list.
@@ -388,7 +428,7 @@ arguments: Pointer to a NULL terminated state name string; new state value.
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-SetStateValue( char* stateName, short value )
+SetStateValue( char* stateName, long value )
 {
   ResetStreams();
   return wrapper.SetStateValue( stateName, value );
@@ -401,7 +441,7 @@ arguments: Pointer to a NULL terminated state name string; pointer to state valu
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-GetStateValue( char* stateName, short* valuePtr )
+GetStateValue( char* stateName, long* valuePtr )
 {
   ResetStreams();
   return wrapper.GetStateValue( stateName, *valuePtr );
