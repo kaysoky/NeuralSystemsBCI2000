@@ -206,6 +206,22 @@ public:
         void checkPathHelper();
         bool checkInt(AnsiString input, AnsiString paraName) const;
         /*shidong ends*/
+
+// Tim's stuff
+        int mPush;
+        bool mMoving;
+        int mCursorRadius;
+        int mBumpRadius;
+
+        struct RunParams {
+          bool mClockwise;
+          float mSpeed; // defaults to .02, try from [0.005,0.03]
+          float mRadius;  // defaults to 14000 on [0,32768)
+        };
+
+        std::vector<RunParams> mRunVector;
+
 } ;
 
 #endif
+

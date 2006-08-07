@@ -32,7 +32,8 @@ TTask::TTask()
   my_glove( new DataGlove ),
 #endif
   OldRunning( 0 ),
-  OldCurrentTarget( 0 )
+  OldCurrentTarget( 0 ),
+  mPush ( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
 
@@ -109,7 +110,7 @@ TTask::TTask()
       "Path of target texture (inputfile)",
     "UsrTask string CursorTexture= C:/Documents%20and%20Settings/shidong/My%20Documents/BCI2000/BCIJuly20/Application/shared/3DAPI/texture/Glass.bmp a z //"
       "Path of cursor texture (inputfile)",
-    "UsrTask float CursorSize= 2 0 0 1 // "
+    "UsrTask float CursorSize= 5 0 0 10 // "
       "User Window Cursor Size",
     "UsrTask int CursorColorFront= 0x000000 0x000000 0x000000 0xFFFFFF//"
        "Cursor color when it is at the front of the workspace in the format of 0xRRGGBB (color)",
@@ -174,8 +175,7 @@ TTask::TTask()
         "0  0 -1  1   0  0 "
         "-1 1  0  0   0  0 "
         "0  0  0  0   0  0 "
-        "0  0  0  0   0  0 "
-        "0 0 0 // Target Position Matrix - Values are 0-100",
+        "0  0  0  0   0  0 // Target Position Matrix - Values are 0-100",
 
 
   #ifdef DATAGLOVE
@@ -195,6 +195,10 @@ TTask::TTask()
       " 1 1  1 1 1 1 1 ",
       " 0 0 0 // glove sensor weights for vertical movement",
   #endif // DATAGLOVE
+    "UsrTask int AAPush= 1 0 0 1 // "
+      "1 for pushing task, 0 for following",
+    "UsrTask int AABump= 20 0 0 200 // "
+      "Bump Radius for push task",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -605,6 +609,7 @@ void TTask::Initialize()
 /*shidong starts*/
 if(printFlow) fprintf(b, "In TTask::Initialize function.\n");
 /*shidong ends*/
+
 TEMPORARY_ENVIRONMENT_GLUE
         AnsiString FInit,SSes,SName,AName;
         AnsiString COMport;
@@ -829,6 +834,16 @@ if(printFlow) fprintf(b, "cursor start position are %f and %f.\n", cursor_x_star
            my_glove->StartStreaming(COMport);
            }
         #endif
+
+        //Tim's stuff
+        mPush= Parameter( "AAPush" );
+        mBumpRadius = Parameter( "AABump" );
+        char memotext[256];
+        sprintf(memotext, "Push: %d\r", mPush);
+        vis->SendMemo2Operator(memotext);
+        mMoving = true;
+        mCursorRadius= atoi(plist->GetParamPtr("CursorSize")->GetValue());
+
 
         WriteStateValues( svect );
 }
@@ -1363,8 +1378,8 @@ void TTask::GetMouse( )
 {
 // x_pos and y_pos are in pixels (i.e., the same as window size)
 
-  x_pos= 512*((float)Mouse->CursorPos.x)/((float)Screen->Width) * joy_xgain;
-  y_pos= 512*((float)Mouse->CursorPos.y)/((float)Screen->Height) * joy_ygain;
+  x_pos= WinWidth *((float)Mouse->CursorPos.x * joy_xgain)/((float)Screen->Width);
+  y_pos= WinHeight*((float)Mouse->CursorPos.y * joy_ygain)/((float)Screen->Height);
 }
 
 
@@ -1451,14 +1466,40 @@ if(printFlow) fprintf(b, "After mult scale Signals are %f and %f.\n", x_pos, y_p
            // ellipse
            if (tracking_shape == 1)
               {
-              x_radius-=cntr*ellipse_radius_decrement_x;
-              y_radius-=cntr*ellipse_radius_decrement_y;
-              x_trkpos=(16384+x_radius*cos(cntr))*User->scalex;
-              y_trkpos=(16384+y_radius*sin(cntr))*User->scaley;
+                //Begin Tim's Code!
+                double dist = sqrt((x_trkpos - x_pos) * (x_trkpos - x_pos) + (y_trkpos - y_pos) * (y_trkpos - y_pos));
+
+                if(mPush) {
+                        if(mMoving) {
+                              x_radius-=cntr*ellipse_radius_decrement_x;
+                              y_radius-=cntr*ellipse_radius_decrement_y;
+                              x_trkpos=(16384+x_radius*cos(cntr))*User->scalex;
+                              y_trkpos=(16384+y_radius*sin(cntr))*User->scaley;
+                              mMoving = false;
+                        }
+                        else {
+                             while(dist < mBumpRadius) {
+                                x_radius-=cntr*ellipse_radius_decrement_x;
+                                y_radius-=cntr*ellipse_radius_decrement_y;
+                                x_trkpos=(16384+x_radius*cos(cntr))*User->scalex;
+                                y_trkpos=(16384+y_radius*sin(cntr))*User->scaley;
+                                dist = sqrt((x_trkpos - x_pos) * (x_trkpos - x_pos) + (y_trkpos - y_pos) * (y_trkpos - y_pos));
+                                cntr+=tracking_speed;
+                             }
+                        }
+                }
+                else {
+                      x_radius-=cntr*ellipse_radius_decrement_x;
+                      y_radius-=cntr*ellipse_radius_decrement_y;
+                      x_trkpos=(16384+x_radius*cos(cntr))*User->scalex;
+                      y_trkpos=(16384+y_radius*sin(cntr))*User->scaley;
+                }
               }
            User->PutTrackingTarget( &x_trkpos, &y_trkpos, clRed );
 
-           cntr+=tracking_speed;
+           if(!mPush) {
+                   cntr+=tracking_speed;
+           }
            if (tracking_shape == 2)  // reset triangle if back at top
               if (cntr > 1) cntr=0;
            }
