@@ -8,6 +8,9 @@
 //          a BCI2000 filter, and writes its output to the
 //          standard output as a BCI2000 compliant binary stream.
 // $Log$
+// Revision 1.16  2006/08/08 15:27:39  mellinger
+// Fixed state list IO; removed suppression of signal blocks with the "Running" state bit cleared.
+//
 // Revision 1.15  2006/08/07 19:04:30  mellinger
 // Fixed handling of states that are requested by filters but not present in the input stream.
 //
@@ -60,12 +63,8 @@ string ToolInfo[] =
 class FilterWrapper : public MessageHandler
 {
  public:
-  FilterWrapper( ostream& arOut )
-  : mrOut( arOut ),
-    mpInputStatevector( NULL ),
-    mpOutputStatevector( NULL ),
-    mSingleStatevector( true ) {}
-  ~FilterWrapper() { DisposeStatevectors(); }
+  FilterWrapper( ostream& arOut );
+  ~FilterWrapper();
 
   void RedirectOperator( string file ) { mOperator.open( file.c_str() ); }
   void FinishProcessing();
@@ -128,6 +127,19 @@ ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
   if( !arIn )
     return illegalInput;
   return noError;
+}
+
+FilterWrapper::FilterWrapper( ostream& arOut )
+: mrOut( arOut ),
+  mpInputStatevector( NULL ),
+  mpOutputStatevector( NULL ),
+  mSingleStatevector( true )
+{
+}
+
+FilterWrapper::~FilterWrapper()
+{
+  DisposeStatevectors();
 }
 
 const char*
@@ -194,7 +206,11 @@ bool
 FilterWrapper::HandleSTATEVECTOR( istream& arIn )
 {
   if( mpInputStatevector == NULL )
+  {
     InitializeInputStatevector();
+    for( size_t i = 0; i < mInputStatelist.Size(); ++i )
+      PutMessage( mrOut, mInputStatelist[ i ] );
+  }
   mpInputStatevector->ReadBinary( arIn );
   SynchronizeStatevectors();
   if( !mpInputStatevector->GetStateValue( "Running" )
@@ -218,6 +234,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
           GenericFilter::DisposeFilters();
 
           PARAMLIST filterParams;
+          mFilterStatelist.Clear();
           Environment::EnterConstructionPhase( &filterParams, &mFilterStatelist, NULL, &mOperator );
           GenericFilter::InstantiateFilters();
           if( __bcierr.flushes() > 0 )
@@ -236,6 +253,8 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         if( mpInputStatevector == NULL )
           InitializeInputStatevector();
         InitializeOutputStatevector();
+        for( size_t i = 0; i < mOutputStatelist.Size(); ++i )
+          PutMessage( mrOut, mOutputStatelist[ i ] );
         Environment::EnterPreflightPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         GenericFilter::PreflightFilters( inputSignal.GetProperties(), outputProperties );
         mOutputSignal.SetProperties( outputProperties );
@@ -273,11 +292,17 @@ FilterWrapper::HandleVisSignal( istream& arIn )
             break;
           }
           bool isRunning = mpOutputStatevector->GetStateValue( "Running" );
+#if 0 // Suppressing blocks where Running is zero is not necessarily a good idea
+      // because it might be confusing for users.
           if( isRunning || wasRunning )
             if( mpOutputStatevector->Length() > 0 )
               PutMessage( mrOut, *mpOutputStatevector );
           if( isRunning )
             PutMessage( mrOut, mOutputSignal );
+#else
+          PutMessage( mrOut, *mpOutputStatevector );
+          PutMessage( mrOut, mOutputSignal );
+#endif
         }
         break;
       default:
