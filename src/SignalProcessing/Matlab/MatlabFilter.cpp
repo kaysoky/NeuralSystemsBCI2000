@@ -8,6 +8,9 @@
 // Date: Nov 30, 2005
 //
 // $Log$
+// Revision 1.3  2006/08/08 15:25:18  mellinger
+// Fixed a typing error in a Matlab expression that would lead to errors when requesting states from the constructor.
+//
 // Revision 1.2  2006/01/12 20:39:00  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
@@ -128,7 +131,7 @@ MatlabFilter::MatlabFilter()
       if( !Parameters->Add( paramDef ) )
         bcierr << "Error in parameter definition: " << paramDef << endl;
     }
-    int numStateDefs = MatlabEngine::GetScalar( "max(size('" STATE_DEFS "'))" );
+    int numStateDefs = MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" );
     for( int i = 1; i <= numStateDefs; ++i )
     {
       ostringstream expr;
