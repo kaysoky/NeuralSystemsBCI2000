@@ -8,7 +8,7 @@
 #include <math.h>
 #include "GenericADC.h"
 #include "TDTADC.h"
-#include "UBCITime.h"
+#include "UBCItime.h"
 #include "RPCOXLib_OCX.h"
 #include "ZBUSXLib_OCX.h"
 
@@ -58,10 +58,10 @@ private:
 	float *dataB;// = new float[valuesToRead];
 	float *dataC;// = new float[valuesToRead];
 	float *dataD;// = new float[valuesToRead];
-    float *dataA2;
+    /*float *dataA2;
     float *dataB2;
     float *dataC2;
-    float *dataD2;
+    float *dataD2;*/
     //float *ECGdata;
 };
 

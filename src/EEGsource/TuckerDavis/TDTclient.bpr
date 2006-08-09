@@ -37,8 +37,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
     <MAINSOURCE value="TDTclient.cpp"/>
-    <INCLUDEPATH value="..\;..\..\shared\Expression;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\;..\..\shared\Expression;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..;..\..\shared\Expression;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..;..\..\shared\Expression;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib;obj"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -125,31 +125,36 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=9
-Item0=..\..\shared\Expression;..\;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..;$(BCB)\Imports;..\..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\;$(BCB)\Imports;..\..;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item4=$(BCB)\Imports;..\..;..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\;..\..\shared;D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item7=D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
-Item8=D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Count=11
+Item0=..\;..;..\..\shared\Expression;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\;..\..\shared\Expression;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\shared\Expression;..\;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\;..;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\;..;$(BCB)\Imports;..\..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\;$(BCB)\Imports;..\..;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item6=$(BCB)\Imports;..\..;..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\;..\..\shared;D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item9=D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
+Item10=D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=9
-Item0=..\..\shared\Expression;..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item4=$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item6=..\;..\..\shared;D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item7=D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
-Item8=D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Count=12
+Item0=..\;..;..\..\shared\Expression;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib;obj
+Item1=..\;..;..\..\shared\Expression;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\shared\Expression;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\shared\Expression;..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item5=..\;..;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item7=$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item8=..\;..;..\..\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item9=..\;..\..\shared;D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item10=D:\Documents and Settings\jawilson\My Documents\bci2000work\shared;D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
+Item11=D:\Program Files\Borland\CBuilder6\Projects;D:\Documents and Settings\jawilson\My Documents\bci2000work\EEGsource\TDTClient;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1

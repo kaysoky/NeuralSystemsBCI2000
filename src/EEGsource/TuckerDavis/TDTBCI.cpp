@@ -20,7 +20,11 @@ RegisterFilter( TDTBCI, 1);
 TDTBCI::TDTBCI()
 : RPcoX1( NULL ),
 RPcoX2(NULL),
-ZBus(NULL)
+  ZBus(NULL),
+  dataA(NULL),
+  dataB(NULL),
+  dataC(NULL),
+  dataD(NULL)
 
 {
     mSoftwareCh = 0;
@@ -99,21 +103,28 @@ ZBus(NULL)
 TDTBCI::~TDTBCI()
 {
     // ...because memory leaks are bad!
-    delete [] dataA;
-    delete [] dataB;
-    delete [] dataC;
-    delete [] dataD;
-    delete [] dataA2;
+    if (dataA != NULL)
+        delete [] dataA;
+    if (dataB != NULL)
+        delete [] dataB;
+    if (dataC != NULL)
+        delete [] dataC;
+    if (dataD != NULL)
+        delete [] dataD;
+    /*delete [] dataA2;
     delete [] dataB2;
     delete [] dataC2;
-    delete [] dataD2;
+    delete [] dataD2;*/
     //delete [] ECGdata;
 	
     Halt();
-    
-    delete RPcoX1;
-    delete RPcoX2;
-    delete ZBus;
+
+    if (RPcoX1 != NULL)
+        delete RPcoX1;
+    if (RPcoX2 != NULL)
+        delete RPcoX2;
+    if (ZBus!= NULL)
+        delete ZBus;
 }
 
 //
@@ -318,7 +329,8 @@ void TDTBCI::Initialize()
 	{
 		bcierr << "Error setting TDT sample rate."	<< endl;
 	}
-	
+
+        /*
     // set up the second system if necessary
     if (use2RX5)
     {
@@ -344,6 +356,7 @@ void TDTBCI::Initialize()
 			bcierr << "Error setting TDT sample rate."	<< endl;
 		}
     }
+    */
 
     if (useECG)
     {
@@ -368,11 +381,12 @@ void TDTBCI::Initialize()
         dataC = new float[valuesToRead];
         dataD = new float[valuesToRead];
     }
-	
+
+    /*
     if (use2RX5)
     {
         dataA2 = new float[valuesToRead];
-		
+
         if (nProcessors2 == 5)
         {
             dataB2 = new float[valuesToRead];
@@ -380,6 +394,7 @@ void TDTBCI::Initialize()
             dataD2 = new float[valuesToRead];
         }
     }
+    */
     	
     // reset the hardware and all conditions
     ZBus->zBusTrigA(0, 0, 5);
@@ -418,7 +433,7 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 		while (curindex < stopIndex)
 		{
 			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-			Sleep(0);
+			Sleep(1);
 		}
     }
     else
@@ -428,40 +443,12 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
         bool done = false;
         while (!done)
         {
-			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
+            curindex = RPcoX1->GetTagVal(indexA.c_bstr());
             if  (curindex >= stopIndex && curindex < (TDTbufSize - valuesToRead))
                 done = true;
         }
     }
 
-
-    // repeat for ECG data buffer
-    if (ECGstopIndex < TDTbufSize)
-    {
-    /*
-		while (curindex < ECGstopIndex)
-		{
-			curindex = RPcoX1->GetTagVal(ECGindexTag.c_bstr());
-			Sleep(0);
-		}
-        */
-    }
-    else
-    {
-        ECGstopIndex = ECGstopIndex % TDTbufSize;
-        // this needs to be updated for the buffer wrap-around in the TDT
-        /*
-        bool done = false;
-        while (!done)
-        {
-			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-            if  (curindex >= stopIndex && curindex < (TDTbufSize - valuesToRead))
-                done = true;
-        }
-        */
-    }
-
-	
     // read	in each	data buffer
 	if(!RPcoX1->ReadTag(dataTagA.c_bstr(), dataA, mOffset, valuesToRead))
 	{
@@ -485,7 +472,8 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 			bcierr <<	"Error reading data	from Pentusa (D)."<<endl;
 		}
     }
-	
+
+    /*
     if (use2RX5)
     {
 		if(!RPcoX2->ReadTag(dataTagA.c_bstr(), dataA2, mOffset, valuesToRead))
@@ -511,6 +499,7 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
 			}
 		}
     }
+    */
 
     /*
     if (useECG)
@@ -543,6 +532,7 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
                 outputSignal->SetValue(ECGchannel-1, sample,
                 	outputSignal->GetValue(ECGchannel-1, sample)*ECGgain);
 
+                        /*
             if (nProcessors2 == 0)
                 continue;
 
@@ -554,6 +544,7 @@ void TDTBCI::Process(const GenericSignal*, GenericSignal* outputSignal)
                 outputSignal->SetValue(ch%16 + 96, sample, dataC2[curSample]);
             else if (ch >= 112 && ch < 128)
                 outputSignal->SetValue(ch%16 + 112, sample, dataD2[curSample]);
+                */
         }
     }
 	// END DATA	READ
