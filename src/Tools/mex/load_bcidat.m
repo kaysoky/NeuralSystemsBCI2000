@@ -26,10 +26,18 @@
 %
 %  The 'parameters' output variable will be a Matlab struct with BCI2000
 %  parameter names as struct member names.
-%  Individual parameters are represented as cell arrays of strings, and may
+%  Individual parameter values are represented as cell arrays of strings, and may
 %  be converted into numeric matrices by Matlab's str2double function.
-%  If multiple files are given, parameter values will match the first file's
-%  parameters.
+%  If multiple files are given, parameter values will match the ones contained 
+%  in the first file.
+%
+%  Optionally, sample ranges may be specified for individual files:
+%  [ signal, states, parameters ] = load_bcidat( 'filename', [first last] )
+%  will load a subset of samples defined by first and last sample index.
+%  Specifying [0 0] for an empty sample range allows to read states and 
+%  parameters from a file without reading sample data:
+%  [ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
+%
 %
 %  The load_bcidat function is part of the BCI2000 project 
 %  (http://www.bciresearch.org).
@@ -38,6 +46,9 @@
 %  load_bcimat.mex.
 %  $Id$
 %  $Log$
+%  Revision 1.7  2006/08/10 15:36:23  mellinger
+%  Extended parameter translation into Matlab; introduced partial file reading.
+%
 %  Revision 1.6  2006/05/17 15:42:11  mellinger
 %  Fixed comment/help text.
 %

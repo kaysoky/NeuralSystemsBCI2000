@@ -5,6 +5,9 @@
 # Author:      juergen.mellinger@uni-tuebingen.de
 # Description: Makefile for BCI2000 Matlab mex files.
 # $Log$
+# Revision 1.2  2006/08/10 15:36:23  mellinger
+# Extended parameter translation into Matlab; introduced partial file reading.
+#
 # Revision 1.1  2006/01/17 17:15:47  mellinger
 # Initial version.
 #
@@ -23,6 +26,7 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\UState.obj \
           obj\UGenericSignal.obj \
           obj\UBCIError_mex.obj \
+          obj\mexutils.obj \
           
 MATLIB = libmx.lib libmex.lib libmat.lib
           

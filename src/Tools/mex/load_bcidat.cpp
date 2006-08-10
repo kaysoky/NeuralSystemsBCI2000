@@ -33,10 +33,13 @@
 //  parameter names as struct member names.
 //  Individual parameters are represented as cell arrays of strings, and may
 //  be converted into numeric matrices by Matlab's str2double function.
-//  If multiple files are given, parameter values will match the first file's
-//  parameters.
+//  If multiple files are given, parameter values will match the parameters
+//  contained in the first file.
 //
 // $Log$
+// Revision 1.6  2006/08/10 15:36:23  mellinger
+// Extended parameter translation into Matlab; introduced partial file reading.
+//
 // Revision 1.5  2006/05/17 15:42:11  mellinger
 // Fixed comment/help text.
 //
@@ -57,7 +60,10 @@
 
 #include "mex.h"
 #include "UBCI2000Data.h"
+#include "mexutils.h"
 #include <sstream>
+#include <limits>
+#include <cmath>
 
 using namespace std;
 
@@ -72,24 +78,23 @@ struct StateInfo
   int16* data;
 };
 
-struct FileContainer : public vector<BCI2000DATA*>
+struct FileInfo
+{
+  int          begin, // range of samples to read
+               end;
+  BCI2000DATA* data;
+};
+
+struct FileContainer : public vector<FileInfo>
 {
   public:
     FileContainer() {}
     ~FileContainer()
-    { for( iterator i = begin(); i != end(); ++i ) delete *i; }
+    { for( iterator i = begin(); i != end(); ++i ) delete i->data; }
   private:
     FileContainer( const FileContainer& );
     const FileContainer& operator=( const FileContainer& );
 };
-
-template<typename T>
-T*
-MexAlloc( int inElements )
-{
-  // mxCalloc'ed memory will be freed automatically on return from mexFunction().
-  return reinterpret_cast<T*>( mxCalloc( inElements, sizeof( T ) ) );
-}
 
 template<typename T>
 void
@@ -99,17 +104,17 @@ ReadSignal( FileContainer& inFiles, mxArray* ioSignal )
   int sampleOffset = 0,
       totalSamples = 0;
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
-    totalSamples += ( *i )->GetNumSamples();
+    totalSamples += i->end - i->begin;
 
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
   {
-    BCI2000DATA* file = *i;
-    int numSamples = file->GetNumSamples(),
+    BCI2000DATA* file = i->data;
+    int numSamples = i->end - i->begin,
         numChannels = file->GetNumChannels();
     for( int sample = 0; sample < numSamples; ++sample )
       for( int channel = 0; channel < numChannels; ++channel )
         data[ totalSamples * channel + sample + sampleOffset ]
-          = file->ReadValue( channel, sample );
+          = file->ReadValue( channel, sample + i->begin );
     sampleOffset += numSamples;
   }
 }
@@ -128,15 +133,29 @@ mexFunction( int nargout, mxArray* varargout[],
 
   // Open the files.
   FileContainer files;
-  for( int i = 0; i < nargin; ++i )
+  int i = 0;
+  while( i < nargin )
   {
-    files.push_back( new BCI2000DATA );
+    if( mxGetClassID( varargin[ i ] ) != mxCHAR_CLASS )
+    {
+      ostringstream oss;
+      oss << "File name expected in argument " << i + 1 << ".";
+      mexErrMsgTxt( oss.str().c_str() );
+    }
     char* fileName = mxArrayToString( varargin[ i ] );
     if( fileName == NULL )
       mexErrMsgTxt( "Out of memory when reading file name." );
-    int result = files[ i ]->Initialize( fileName );
+
+    BCI2000DATA* file = new BCI2000DATA;
+    FileInfo fileInfo =
+    {
+      0, numeric_limits<int>::max(),
+      file
+    };
+    files.push_back( fileInfo );
+    int result = file->Initialize( fileName );
     if( result == BCI2000ERR_FILENOTFOUND )
-      result = files[ i ]->Initialize( ( string( fileName ) + ".dat" ).c_str() );
+      result = file->Initialize( ( string( fileName ) + ".dat" ).c_str() );
     switch( result )
     {
       case BCI2000ERR_NOERR:
@@ -157,44 +176,88 @@ mexFunction( int nargout, mxArray* varargout[],
           mexErrMsgTxt( oss.str().c_str() );
         }
     }
+
+    int samplesInFile = file->GetNumSamples(),
+        begin = 0,
+        end = numeric_limits<int>::max();
+
+    if( ( i + 1 < nargin )
+         && ( mxGetClassID( varargin[ i + 1 ] ) == mxDOUBLE_CLASS ) )
+    {
+      // If a file name is followed by a numeric argument, we interpret it as a sample range.
+      // [1 0] and [0 0] are considered an empty range.
+      ++i;
+      const int* dim = mxGetDimensions( varargin[ i ] );
+      int numEntries = dim[ 0 ] * dim[ 1 ];
+      double* range = mxGetPr( varargin[ i ] );
+      for( int j = 0; j < numEntries; ++j )
+        if( floor( abs( range[ j ] ) ) != range[ j ] )
+          mexErrMsgTxt( "Nonnegative integers expected in range vector." );
+
+      if( numEntries > 0 )
+        begin = range[ 0 ] - 1;
+      if( numEntries > 1 )
+        end = range[ 1 ];
+    }
+    if( begin == -1 && end == 0 ) // The [0 0] case.
+      begin = 0;
+    if( end > samplesInFile )
+      end = samplesInFile;
+    if( begin >= samplesInFile )
+      begin = end;
+    if( begin < 0 || ( end - begin ) < 0 )
+    {
+      ostringstream oss;
+      oss << "Invalid sample range specified for file \"" << fileName << "\".";
+      mexErrMsgTxt( oss.str().c_str() );
+    }
+    if( begin > end )
+      end = begin;
+    files.rbegin()->begin = begin;
+    files.rbegin()->end = end;
+
     mxFree( fileName );
     __bcierr.clear();
+    ++i;
   }
 
-  int totalSamples = files[ 0 ]->GetNumSamples(),
-      numChannels = files[ 0 ]->GetNumChannels();
-  SignalType dataType = files[ 0 ]->GetSignalType();
+  int totalSamples = files[ 0 ].end - files[ 0 ].begin,
+      numChannels = files[ 0 ].data->GetNumChannels();
+  SignalType dataType = files[ 0 ].data->GetSignalType();
   mxClassID classID = mxUNKNOWN_CLASS;
   switch( dataType )
   {
     case SignalType::int16:
       classID = mxINT16_CLASS;
       break;
+
     case SignalType::int32:
       classID = mxINT32_CLASS;
       break;
+
     case SignalType::float32:
       classID = mxSINGLE_CLASS;
       break;
+
     default:
       classID = mxDOUBLE_CLASS;
   }
 
   // Assess whether the files are compatible.
-  const STATELIST* statelist = files[ 0 ]->GetStateListPtr();
+  const STATELIST* statelist = files[ 0 ].data->GetStateListPtr();
   for( size_t i = 1; i < files.size(); ++i )
   {
-    totalSamples += files[ i ]->GetNumSamples();
-    if( files[ i ]->GetNumChannels() != numChannels )
+    totalSamples += files[ i ].end - files[ i ].begin;
+    if( files[ i ].data->GetNumChannels() != numChannels )
       mexErrMsgTxt( "All input files must have identical numbers of channels." );
 
-    if( files[ i ]->GetSignalType() != dataType )
+    if( files[ i ].data->GetSignalType() != dataType )
       classID = mxDOUBLE_CLASS;
 
     if( nargout > 1 ) // The caller wants us to read state information.
       for( size_t j = 0; j < statelist->Size(); ++j )
-        if( !files[ i ]->GetStateListPtr()->Exists( ( *statelist )[ j ].GetName() ) )
-          mexErrMsgTxt( "Incompatible state information in input files." );
+        if( !files[ i ].data->GetStateListPtr()->Exists( ( *statelist )[ j ].GetName() ) )
+          mexErrMsgTxt( "Incompatible state information across input files." );
   }
 
   // Read EEG data into the first output argument.
@@ -229,7 +292,7 @@ mexFunction( int nargout, mxArray* varargout[],
   // Read state data if appropriate.
   if( nargout > 1 )
   {
-    const STATELIST* mainStatelist = files[ 0 ]->GetStateListPtr();
+    const STATELIST* mainStatelist = files[ 0 ].data->GetStateListPtr();
     int numStates = mainStatelist->Size();
     char** stateNames = MexAlloc<char*>( numStates );
     StateInfo* stateInfo = MexAlloc<StateInfo>( numStates );
@@ -255,7 +318,7 @@ mexFunction( int nargout, mxArray* varargout[],
     for( FileContainer::iterator file = files.begin(); file != files.end(); ++file )
     { // Locations and lengths are not necessarily compatible across files, so we must
       // create StateInfos for each file individually.
-      const STATEVECTOR* statevector = ( *file )->GetStateVectorPtr();
+      const STATEVECTOR* statevector = file->data->GetStateVectorPtr();
       const STATELIST& curStatelist = statevector->Statelist();
       for( int i = 0; i < numStates; ++i )
       {
@@ -263,10 +326,10 @@ mexFunction( int nargout, mxArray* varargout[],
         stateInfo[ i ].location = s.GetLocation();
         stateInfo[ i ].length = s.GetLength();
       }
-      for( size_t sample = 0; sample < ( *file )->GetNumSamples(); ++sample )
+      for( int sample = file->begin; sample < file->end; ++sample )
       { // Iterating over samples in the outer loop will avoid scanning
         // the file multiple times.
-        ( *file )->ReadStateVector( sample );
+        file->data->ReadStateVector( sample );
         for( int i = 0; i < numStates; ++i )
           *stateInfo[ i ].data++
             = statevector->GetStateValue( stateInfo[ i ].location, stateInfo[ i ].length );
@@ -280,31 +343,8 @@ mexFunction( int nargout, mxArray* varargout[],
   // Read parameters if appropriate.
   if( nargout > 2 )
   {
-    const PARAMLIST* paramlist = files[ 0 ]->GetParamListPtr();
-    int numParams = paramlist->Size();
-    char** paramNames = MexAlloc<char*>( numParams );
-    for( int i = 0; i < numParams; ++i )
-    {
-      const PARAM& param = ( *paramlist )[ i ];
-      paramNames[ i ] = MexAlloc<char>( strlen( param.GetName() ) + 1 );
-      strcpy( paramNames[ i ], param.GetName() );
-    }
-    mxArray* params = mxCreateStructMatrix(
-      1, 1, numParams, const_cast<const char**>( paramNames )
-    );
-    for( int i = 0; i < numParams; ++i )
-    {
-      const PARAM& p = ( *paramlist )[ i ];
-      mxArray* paramArray = mxCreateCellMatrix( p.GetNumRows(), p.GetNumColumns() );
-      if( paramArray == NULL )
-        mexErrMsgTxt( "Out of memory when allocating space for state variables." );
-      int cell = 0;
-      for( size_t col = 0; col < p.GetNumColumns(); ++col )
-        for( size_t row = 0; row < p.GetNumRows(); ++row )
-          mxSetCell( paramArray, cell++, mxCreateString( p.GetValue( row, col ) ) );
-      mxSetFieldByNumber( params, 0, i, paramArray );
-    }
+    varargout[ 2 ] = ParamlistToStruct( *files[ 0 ].data->GetParamListPtr() );
     __bcierr.clear();
-    varargout[ 2 ] = params;
   }
 }
+
