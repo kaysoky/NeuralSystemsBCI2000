@@ -787,8 +787,10 @@ int     i;
        /*shidong ends*/
 
        trialsequence->SetUserDisplayTexts();
-       //VK moved this call to beginning of routine
-      // userdisplay->DisplayStatusBar();
+       //VK moved this call to beginning of routine for scrolling in online mode.
+       //VK 8/10/06 Bug Fix: display status bar here only for copy spelling to ensure last char appears on screen
+       if(!trialsequence->onlinemode)  //if offline
+         userdisplay->DisplayStatusBar();
 
 
        // write the results in the log file
