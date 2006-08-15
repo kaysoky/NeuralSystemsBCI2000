@@ -24,7 +24,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\shared;..\shared;..\..\SHARED;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\shared;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..\shared;..\..\shared;..\shared\SAPILib"/>
+    <PATHCPP value=".;..\..\shared;..\shared;..\..\shared\Expression;..\shared\SAPILib"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -119,6 +119,12 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
+
+[Excluded Packages]
+C:\PROGRA~1\Borland\CBUILD~1\Projects\Bpl\SignalLabScopePkgCB6.bpl=SignalLab Scope Package
+C:\Program Files\Borland\CBuilder6\Projects\Bpl\OpenWireLabPkgCB6.bpl=OpenWire Lab demo package
+C:\Program Files\Borland\CBuilder6\Projects\Bpl\AudioLabPkgCB6.bpl=AudioLab Package
+C:\Program Files\Borland\CBuilder6\Projects\Bpl\AudioLabDsnCB6.bpl=AudioLab Design Package
 
 [HistoryLists\hlIncludePath]
 Count=30
@@ -222,5 +228,11 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
+LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>

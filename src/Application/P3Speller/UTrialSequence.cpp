@@ -96,7 +96,13 @@ TRIALSEQUENCE::TRIALSEQUENCE()
 TRIALSEQUENCE::~TRIALSEQUENCE()
 {
  delete vis;
- delete targets;
+
+ if (targets)
+    {
+    for (int cur_menu=0; cur_menu<num_menus; cur_menu++)
+     delete (targets+cur_menu);
+    delete [] targets;
+    }
  /*shidong starts*/
  if( f )
    fclose( f );
@@ -266,7 +272,12 @@ TARGET  *cur_target;
 int     targetID, targettype, num_rows, i;
 
 // if we already have a list of potential targets, delete this list
-if (targets) delete targets;
+if (targets)
+   {
+   for (int cur_menu=0; cur_menu<num_menus; cur_menu++)
+    delete (targets+cur_menu);
+   delete [] targets;
+   }
 for (i=0; i<num_menus; i++)
   targets = new TARGETLIST[num_menus];
 
