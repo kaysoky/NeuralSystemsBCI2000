@@ -211,6 +211,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
              (samplerate != 256) &&
              (samplerate != 512) &&
              (samplerate != 600) &&
+             (samplerate != 1200) &&
              (samplerate != 2400) &&
              (samplerate != 4800))
             bciout << "Warning: Sampling rate does not seem to be supported. Be aware of your limited Karma!" << endl;
