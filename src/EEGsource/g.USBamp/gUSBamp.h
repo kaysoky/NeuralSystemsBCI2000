@@ -2,11 +2,13 @@
 //_____________________________________________________________________________
 //
 //    g.USBamp Windows - Function Prototypes
-//    Copyright    (C) Guger Technologies 2004.
+//    Copyright    (C) Guger Technologies 2004-2005.
 //
 //	  Created: Laundl 01. 05.2004
 //   
 //    Last modified : Laundl 06.08.2004
+//	  Last modified : Laundl 20.06.2005	
+//    Last modified : Laundl 02.12.2005
 //_____________________________________________________________________________
 
 #ifdef GUSBAMP_EXPORTS
@@ -23,8 +25,9 @@
 
 
 // FILTER
-#define F_CHEBYSHEV		1
-#define F_BUTTERWORTH	2
+#define F_CHEBYSHEV		0
+#define F_BUTTERWORTH	1
+#define F_BESSEL		2
 
 // MODES
 #define M_NORMAL		0
@@ -108,6 +111,13 @@ typedef struct _CHANNEL
 } CHANNEL, *PCHANNEL;
 
 
+typedef struct _SCALE
+{
+	float factor[16];
+	float offset[16];
+} SCALE, *PSCALE;
+
+
 #ifndef GUSBAMP_EXPORTS
 
 typedef struct _FILT
@@ -133,7 +143,7 @@ GUSBAMP_API		HANDLE	__stdcall	GT_OpenDevice(int iPortNumber);
 GUSBAMP_API		HANDLE	__stdcall	GT_OpenDeviceEx(LPSTR lpSerial);
 GUSBAMP_API		BOOL 	__stdcall	GT_CloseDevice(HANDLE *hDevice);
 GUSBAMP_API		BOOL	__stdcall	GT_GetData(HANDLE hDevice, BYTE *pData, DWORD dwSzBuffer, OVERLAPPED *ov);
-GUSBAMP_API		BOOL	__stdcall	GT_SetBufferSize(HANDLE hDevice, ULONG ulBufferSize);
+GUSBAMP_API		BOOL	__stdcall	GT_SetBufferSize(HANDLE hDevice, WORD wBufferSize);
 GUSBAMP_API		BOOL	__stdcall	GT_SetSampleRate(HANDLE hDevice, WORD wSampleRate);
 GUSBAMP_API		BOOL	__stdcall	GT_Start(HANDLE hDevice);
 GUSBAMP_API		BOOL	__stdcall	GT_Stop(HANDLE hDevice);
@@ -143,20 +153,24 @@ GUSBAMP_API		BOOL	__stdcall	GT_GetDigitalIO(HANDLE hDevice, PDigitalIO pDIO);
 GUSBAMP_API		BOOL	__stdcall	GT_GetLastError(WORD * wErrorCode, char *pLastError);
 GUSBAMP_API		BOOL	__stdcall	GT_ResetTransfer(HANDLE hDevice);
 GUSBAMP_API		BOOL	__stdcall	GT_GetSerial(HANDLE hDevice, LPSTR lpstrSerial,UINT uiSize);
-
-
+GUSBAMP_API		BOOL	__stdcall	GT_VR(int nargin, void *varargin[],int nargout, void *varargout[]);
+GUSBAMP_API		BOOL	__stdcall	GT_EnableTriggerLine(HANDLE hDevice, BOOL bEnable);
+GUSBAMP_API		BOOL	__stdcall	GT_GetImpedance(HANDLE hDevice, UCHAR Channel, double* Impedance);
+GUSBAMP_API		BOOL	__stdcall	GT_Calibrate(HANDLE hDevice,PSCALE Scaling);
 
 //_____________________________________________________________________________________
 //
 //									FILTER
 //_____________________________________________________________________________________							
 
+GUSBAMP_API		BOOL	__stdcall	GT_SetScale(HANDLE hDevice, PSCALE Scaling);
+GUSBAMP_API		BOOL	__stdcall	GT_GetScale(HANDLE hDevice, PSCALE Scaling);
 
-GUSBAMP_API		BOOL	__stdcall	GT_GetFilterSpec(_FILT *FilterSpec);
+GUSBAMP_API		BOOL	__stdcall	GT_GetFilterSpec(FILT *FilterSpec);
 GUSBAMP_API		BOOL	__stdcall	GT_GetNumberOfFilter(int* nof);
 GUSBAMP_API		BOOL	__stdcall	GT_SetBandPass(HANDLE hDevice, UCHAR ucChannel, int index);
 
-GUSBAMP_API		BOOL	__stdcall	GT_GetNotchSpec(_FILT *FilterSpec);
+GUSBAMP_API		BOOL	__stdcall	GT_GetNotchSpec(FILT *FilterSpec);
 GUSBAMP_API		BOOL	__stdcall	GT_GetNumberOfNotch(int* nof);
 GUSBAMP_API		BOOL	__stdcall	GT_SetNotch(HANDLE hDevice, UCHAR ucChannel, int index);
 
