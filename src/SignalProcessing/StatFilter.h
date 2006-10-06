@@ -44,8 +44,8 @@ class StatFilter : public GenericFilter
        int trend_flag;
        int intercept_flag;
        int weight_flag;
-       char FName[128];
-       char OName[128];
+       char FName[1024];
+       char OName[1024];
        FILE *Statfile;
        FILE *Sfile;
 
