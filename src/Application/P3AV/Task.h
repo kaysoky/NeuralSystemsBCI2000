@@ -11,7 +11,6 @@ class UsrEnvDispatcher;
 
 class TTask : public GenericFilter
 {
- friend class UsrEnvAlgorithmP3AV;
 public:
   /// Constructors and Destructors
   TTask();

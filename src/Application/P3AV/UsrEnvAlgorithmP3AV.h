@@ -2,14 +2,14 @@
 #define UsrEnvAlgorithmP3AVH
 
 #include "UsrEnvAlgorithm.h"
+#include "UEnvironment.h"
 
 /// forward declarations
 class UsrElementCollection;
-class TTask;
 class UsrElement;
 class UsrElementMixed;
 
-class UsrEnvAlgorithmP3AV : public UsrEnvAlgorithm
+class UsrEnvAlgorithmP3AV : public UsrEnvAlgorithm, private Environment
 {
 public:
   enum SequenceTypeEnum
@@ -32,8 +32,8 @@ public:
 
   /// Virtual Member function
   virtual void Initialize(UsrElementCollection * pActiveUsrElementColl,
-                          UsrElementCollection * pUsrElementColl, TTask * pTask,
-                          TApplication * pApplication);
+                          UsrElementCollection * pUsrElementColl,
+                          class TTask*, class TApplication* );
   virtual const unsigned int GenerateActiveElements(UsrElementCollection * pActiveUsrElementColl,
                                                       UsrElementCollection * pUsrElementColl,
                                                       const unsigned int & iPhaseInSequence);
@@ -41,12 +41,11 @@ public:
 private:
   /// Private Member functions
   void Reset(void);
-  void CreateElementCollection(UsrElementCollection * pUsrElementColl, TTask * pTask,
-                               TApplication * pApplication, const float & fWidthInPercentOfScreen);
-  void CreateStimuliSequence(TTask * pTask);
-  void CreateMiscellaneousElements(TTask * pTask, TApplication * pApplication,
-                                   const float & fWidthInPercentOfScreen);
-  void CreateStimuliSequenceToBeCopied(TTask * pTask);
+  void CreateElementCollection(UsrElementCollection * pUsrElementColl,
+                               const float & fWidthInPercentOfScreen);
+  void CreateStimuliSequence();
+  void CreateMiscellaneousElements(const float & fWidthInPercentOfScreen);
+  void CreateStimuliSequenceToBeCopied();
   void AddToActiveElements(UsrElementCollection * pActiveUsrElementColl, UsrElement * pUsrElement);
   
 private:

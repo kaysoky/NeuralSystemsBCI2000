@@ -2,12 +2,15 @@
 #pragma package(smart_init)
 #include "PCHIncludes.h"
 #include <stdio.h>
+#include <string>
 #include "UsrEnvAlgorithmP3AV.h"
 #include "UsrElementCollection.h"
 #include "Task.h"
 #include "UBCIError.h"
 #include "UTaskUtil.h"
 #include "UsrEnvDispatcher.h"
+
+using namespace std;
 
 // **************************************************************************
 // Function:   UsrEnvAlgorithmP3AV
@@ -90,13 +93,13 @@ void UsrEnvAlgorithmP3AV::Reset(void)
 // Returns:
 // **************************************************************************
 void UsrEnvAlgorithmP3AV::Initialize(UsrElementCollection * pActiveUsrElementColl,
-                                     UsrElementCollection * pUsrElementColl, TTask * pTask,
-                                     TApplication * pApplication)
+                                     UsrElementCollection * pUsrElementColl,
+                                     TTask*, TApplication* )
 {
-  if (pTask != NULL && pApplication != NULL && pUsrElementColl != NULL)
+  if (pUsrElementColl != NULL)
   {
     // find out about some of the user settings for the elements
-    float fWidthInPercentOfScreen = pTask->Parameter( "StimulusWidth" );
+    float fWidthInPercentOfScreen = Parameter( "StimulusWidth" );
 
     // reset all member variables
     Reset();
@@ -104,20 +107,20 @@ void UsrEnvAlgorithmP3AV::Initialize(UsrElementCollection * pActiveUsrElementCol
     // set some of the member varaibles to new values according to
     // parameters values
     // number of times the sequence has to be played
-    m_uNumOfTimesToPlay = pTask->Parameter("NumberOfSeq");
-    m_eInterpretMode = (InterpretationModeEnum)((int)pTask->Parameter( "InterpretMode" ));
+    m_uNumOfTimesToPlay = Parameter("NumberOfSeq");
+    m_eInterpretMode = InterpretationModeEnum( int( Parameter( "InterpretMode" ) ) );
 
     // creates a collection of elements existing inside the usr env
-    CreateElementCollection(pUsrElementColl, pTask, pApplication, fWidthInPercentOfScreen);
+    CreateElementCollection(pUsrElementColl, fWidthInPercentOfScreen);
 
     // create a stimuli sequence
-    CreateStimuliSequence(pTask);
+    CreateStimuliSequence();
 
     // create focuson and result elements
-    CreateMiscellaneousElements(pTask, pApplication, fWidthInPercentOfScreen);
+    CreateMiscellaneousElements(fWidthInPercentOfScreen);
 
     // create a list of stimuli to be copied in copy mode
-    CreateStimuliSequenceToBeCopied(pTask);
+    CreateStimuliSequenceToBeCopied();
 
     // finally create active elements
     GenerateActiveElements(pActiveUsrElementColl, pUsrElementColl, UsrEnvDispatcher::PHASE_PRIORSEQUENCE);
@@ -129,24 +132,22 @@ void UsrEnvAlgorithmP3AV::Initialize(UsrElementCollection * pActiveUsrElementCol
 // Function:   CreateElementCollection
 // Purpose:    Create a list of usr element available in the environment
 // Parameters: pUsrElementCollection - the list from which elements need to be extracted
-//             pTask  -  a task that is currently being executed
-//             pApplication - application that is currently running
 // Returns:
 // **************************************************************************
-void UsrEnvAlgorithmP3AV::CreateElementCollection(UsrElementCollection * pUsrElementColl, TTask * pTask,
-                                                  TApplication * pApplication, const float & fWidthInPercentOfScreen)
+void UsrEnvAlgorithmP3AV::CreateElementCollection(UsrElementCollection * pUsrElementColl,
+                                                  const float & fWidthInPercentOfScreen)
 {
-  if (pTask != NULL && pApplication != NULL && pUsrElementColl != NULL)
+  if (pUsrElementColl != NULL)
   {
     // create a collection
-    AnsiString applicationPath = ExtractFilePath(pApplication->ExeName);
-    for( size_t i = 0; i <  pTask->Parameter( "Matrix" )->GetNumValuesDimension2(); ++i )
+    string applicationPath = ExtractFilePath(Application->ExeName).c_str();
+    for( size_t i = 0; i < Parameter( "Matrix" )->GetNumValuesDimension2(); ++i )
     {
-      AnsiString iconFileName(AnsiString(( const char* )pTask->Parameter( "Matrix", "icon", i )));
+      string iconFileName( Parameter( "Matrix", "icon", i ) );
       if (iconFileName != "")
         iconFileName = applicationPath + iconFileName;
 
-      AnsiString soundFileName(AnsiString(( const char* )pTask->Parameter( "Matrix", "audio", i )));
+      string soundFileName( Parameter( "Matrix", "audio", i ) );
       if (soundFileName != "")
         soundFileName = applicationPath + soundFileName;
 
@@ -154,19 +155,19 @@ void UsrEnvAlgorithmP3AV::CreateElementCollection(UsrElementCollection * pUsrEle
        // initialize the position of elements
       pUsrElementMixed->SetCoordsRect(fWidthInPercentOfScreen, 1.0f, false);
       // check caption switch
-      if (pTask->Parameter( "CaptionSwitch" ) == 1)
-        pUsrElementMixed->SetCaptionText(AnsiString(( const char* )pTask->Parameter( "Matrix", "caption", i )));
+      if (Parameter( "CaptionSwitch" ) == 1)
+        pUsrElementMixed->SetCaptionText( ( const char* )( Parameter( "Matrix", "caption", i ) ) );
       else
-        pUsrElementMixed->SetCaptionText(AnsiString(""));
-      pUsrElementMixed->SetCaptionTextHeight(pTask->Parameter( "CaptionHeight" ));
+        pUsrElementMixed->SetCaptionText("");
+      pUsrElementMixed->SetCaptionTextHeight(Parameter( "CaptionHeight" ));
       // check audio switch
-      if (pTask->Parameter( "AudioSwitch" ) == 1)
-        pUsrElementMixed->SetAudioFileName(soundFileName);
+      if (Parameter( "AudioSwitch" ) == 1)
+        pUsrElementMixed->SetAudioFileName(soundFileName.c_str());
       else
         pUsrElementMixed->SetAudioFileName("");
       // check video switch
-      if (pTask->Parameter( "VideoSwitch" ) == 1)
-        pUsrElementMixed->SetIconFileName(iconFileName);
+      if (Parameter( "VideoSwitch" ) == 1)
+        pUsrElementMixed->SetIconFileName(iconFileName.c_str());
       else
         pUsrElementMixed->SetIconFileName("");
 
@@ -179,67 +180,64 @@ void UsrEnvAlgorithmP3AV::CreateElementCollection(UsrElementCollection * pUsrEle
 // **************************************************************************
 // Function:   CreateStimuliSequnce
 // Purpose:    Creates a stimuli sequence according to which elements are shown on the screen
-// Parameters: pTask -  a task that is currently being executed
+// Parameters: 
 // Returns:
 // **************************************************************************
-void UsrEnvAlgorithmP3AV::CreateStimuliSequence(TTask * pTask)
+void UsrEnvAlgorithmP3AV::CreateStimuliSequence()
 {
-  if (pTask != NULL)
+  if (m_uNumOfTimesToPlay == 0) return;
+  SequenceTypeEnum eSequenceType =
+                  (Parameter("SequenceType") == 0) ? SEQUENCE_DETERMINISTIC : SEQUENCE_RANDOM;
+
+  if (eSequenceType == SEQUENCE_DETERMINISTIC)
   {
-    if (m_uNumOfTimesToPlay == 0) return;
-    SequenceTypeEnum eSequenceType =
-                    (pTask->Parameter("SequenceType") == 0) ? SEQUENCE_DETERMINISTIC : SEQUENCE_RANDOM;
-
-    if (eSequenceType == SEQUENCE_DETERMINISTIC)
+    for (unsigned int uNumber(0); uNumber < m_uNumOfTimesToPlay; ++uNumber)
     {
-      for (unsigned int uNumber(0); uNumber < m_uNumOfTimesToPlay; ++uNumber)
-      {
-        for (size_t i = 0; i <  pTask->Parameter("Sequence")->GetNumValuesDimension1(); ++i)
-          m_listStimuliSequence.push_back(pTask->Parameter("Sequence", i));
-      }
+      for (size_t i = 0; i < Parameter("Sequence")->GetNumValuesDimension1(); ++i)
+        m_listStimuliSequence.push_back(Parameter("Sequence", i));
     }
-    else if (eSequenceType == SEQUENCE_RANDOM)
-    {
-      // create temporary Stimuli sequnce of type 1, 1, 1, 1, 2, 2, 3, 3, 3 where
-      // first stimulus is repeated as many times as specified in the parameter list
-      std::list<int> listStimuliSequnceTemp;
-      listStimuliSequnceTemp.clear();
-      for (size_t i = 0; i <  pTask->Parameter("Sequence")->GetNumValuesDimension1(); ++i)
-      {
-        unsigned int uNumOfTimesToRepeatStimulus(pTask->Parameter("Sequence", i));
-        for (unsigned int k(0); k < uNumOfTimesToRepeatStimulus; ++k)
-          listStimuliSequnceTemp.push_back(i + 1);
-      }
-
-      InitializeBlockRandomizedNumber();
-      // now get a permutation of the temporary stimuli sequence
-      unsigned int uBlockSize(listStimuliSequnceTemp.size());
-      for (unsigned int uNumber(0); uNumber < m_uNumOfTimesToPlay; ++uNumber)
-      {
-        unsigned int uNumOfPermutations(1);
-
-        // perform uBlockSize number of permutations
-        while (uNumOfPermutations <= uBlockSize)
-        {
-          unsigned int uWhatElementNeedsToBeCopied(GetBlockRandomizedNumber(uBlockSize) - 1);
-          // Search the list for the element to be erased
-          std::list< int >::iterator iter;
-          unsigned int i(0);
-          for (iter = listStimuliSequnceTemp.begin(); iter != listStimuliSequnceTemp.end(); ++iter, ++i)
-          {
-            if (uWhatElementNeedsToBeCopied == i)
-            {
-              int uValueOfElementWhichNeedsToBeCopied(*iter);
-              m_listStimuliSequence.push_back(uValueOfElementWhichNeedsToBeCopied);
-              break;
-            }
-          }
-          ++uNumOfPermutations;
-        } // while (uNumOfPermutations <= uBlockSize)
-      } // for (unsigned int uNumOfTimesToPlay(0)
-      listStimuliSequnceTemp.clear();
-    } // else if (eSequenceType == SEQUENCE_RANDOM)
   }
+  else if (eSequenceType == SEQUENCE_RANDOM)
+  {
+    // create temporary Stimuli sequnce of type 1, 1, 1, 1, 2, 2, 3, 3, 3 where
+    // first stimulus is repeated as many times as specified in the parameter list
+    std::list<int> listStimuliSequnceTemp;
+    listStimuliSequnceTemp.clear();
+    for (size_t i = 0; i < Parameter("Sequence")->GetNumValuesDimension1(); ++i)
+    {
+      unsigned int uNumOfTimesToRepeatStimulus(Parameter("Sequence", i));
+      for (unsigned int k(0); k < uNumOfTimesToRepeatStimulus; ++k)
+        listStimuliSequnceTemp.push_back(i + 1);
+    }
+
+    InitializeBlockRandomizedNumber();
+    // now get a permutation of the temporary stimuli sequence
+    unsigned int uBlockSize(listStimuliSequnceTemp.size());
+    for (unsigned int uNumber(0); uNumber < m_uNumOfTimesToPlay; ++uNumber)
+    {
+      unsigned int uNumOfPermutations(1);
+
+      // perform uBlockSize number of permutations
+      while (uNumOfPermutations <= uBlockSize)
+      {
+        unsigned int uWhatElementNeedsToBeCopied(GetBlockRandomizedNumber(uBlockSize) - 1);
+        // Search the list for the element to be erased
+        std::list< int >::iterator iter;
+        unsigned int i(0);
+        for (iter = listStimuliSequnceTemp.begin(); iter != listStimuliSequnceTemp.end(); ++iter, ++i)
+        {
+          if (uWhatElementNeedsToBeCopied == i)
+          {
+            int uValueOfElementWhichNeedsToBeCopied(*iter);
+            m_listStimuliSequence.push_back(uValueOfElementWhichNeedsToBeCopied);
+            break;
+          }
+        }
+        ++uNumOfPermutations;
+      } // while (uNumOfPermutations <= uBlockSize)
+    } // for (unsigned int uNumOfTimesToPlay(0)
+    listStimuliSequnceTemp.clear();
+  } // else if (eSequenceType == SEQUENCE_RANDOM)
 } // CreateStimuliSequnce
 
 
@@ -247,52 +245,47 @@ void UsrEnvAlgorithmP3AV::CreateStimuliSequence(TTask * pTask)
 // Function:   CreateMiscellaneousElements
 // Purpose:    Used to create FocusOn and Result elements. FocusOn is announced in
 //             the beginning of sequence, Result is announced in the end of a sequence
-// Parameters: pTask - the list from which elements need to be extracted
-//             pApplication - application that is currently running
+// Parameters: 
 // Returns:
 // **************************************************************************
-void UsrEnvAlgorithmP3AV::CreateMiscellaneousElements(TTask * pTask, TApplication * pApplication,
-                                                      const float & fWidthInPercentOfScreen)
+void UsrEnvAlgorithmP3AV::CreateMiscellaneousElements(const float & fWidthInPercentOfScreen)
 {
-  if (pTask != NULL && pApplication != NULL)
+  if (m_eInterpretMode != INTERPRETATION_NONE)
   {
-    if (m_eInterpretMode != INTERPRETATION_NONE)
-    {
-      // focus on element
-      AnsiString applicationPath = ExtractFilePath(pApplication->ExeName);
-      AnsiString iconFileName = AnsiString(( const char* )pTask->Parameter( "FocusOn", "icon", 0 ));
-      if (iconFileName != "")
-        iconFileName = applicationPath + iconFileName;
-      AnsiString soundFileName = AnsiString(( const char* )pTask->Parameter( "FocusOn", "audio", 0 ));
-      if (soundFileName != "")
-        soundFileName = applicationPath + soundFileName;
-      if (m_pFocusOnElement != NULL)
-        delete m_pFocusOnElement;
-      m_pFocusOnElement = NULL;
-      m_pFocusOnElement = new UsrElementMixed(1);
-      m_pFocusOnElement->SetCoordsRect(fWidthInPercentOfScreen, 1.0f, false);
-      m_pFocusOnElement->SetCaptionText(AnsiString(( const char* )pTask->Parameter( "FocusOn", "caption", 0 )));
-      m_pFocusOnElement->SetCaptionTextHeight(pTask->Parameter( "CaptionHeight" ));
-      m_pFocusOnElement->SetAudioFileName(soundFileName);
-      m_pFocusOnElement->SetIconFileName(iconFileName);
+    // focus on element
+    string applicationPath = ExtractFilePath(Application->ExeName).c_str();
+    string iconFileName( Parameter( "FocusOn", "icon", 0 ) );
+    if (iconFileName != "")
+      iconFileName = applicationPath + iconFileName;
+    string soundFileName( Parameter( "FocusOn", "audio", 0 ) );
+    if (soundFileName != "")
+      soundFileName = applicationPath + soundFileName;
+    if (m_pFocusOnElement != NULL)
+      delete m_pFocusOnElement;
+    m_pFocusOnElement = NULL;
+    m_pFocusOnElement = new UsrElementMixed(1);
+    m_pFocusOnElement->SetCoordsRect(fWidthInPercentOfScreen, 1.0f, false);
+    m_pFocusOnElement->SetCaptionText(( const char* )Parameter( "FocusOn", "caption", 0 ));
+    m_pFocusOnElement->SetCaptionTextHeight(Parameter( "CaptionHeight" ));
+    m_pFocusOnElement->SetAudioFileName(soundFileName.c_str());
+    m_pFocusOnElement->SetIconFileName(iconFileName.c_str());
 
-      // result element
-      iconFileName = AnsiString(( const char* )pTask->Parameter( "Result", "icon", 0 ));
-      if (iconFileName != "")
-        iconFileName = applicationPath + iconFileName;
-      soundFileName = AnsiString(( const char* )pTask->Parameter( "Result", "audio", 0 ));
-      if (soundFileName != "")
-        soundFileName = applicationPath + soundFileName;
-      if (m_pResultElement != NULL)
-        delete m_pResultElement;
-      m_pResultElement = NULL;
-      m_pResultElement = new UsrElementMixed(1);
-      m_pResultElement->SetCoordsRect(fWidthInPercentOfScreen, 1.0f, false);
-      m_pResultElement->SetCaptionText(AnsiString(( const char* )pTask->Parameter( "Result", "caption", 0 )));
-      m_pResultElement->SetCaptionTextHeight(pTask->Parameter( "CaptionHeight" ));
-      m_pResultElement->SetAudioFileName(soundFileName);
-      m_pResultElement->SetIconFileName(iconFileName);
-    }
+    // result element
+    iconFileName = string( Parameter( "Result", "icon", 0 ) );
+    if (iconFileName != "")
+      iconFileName = applicationPath + iconFileName;
+    soundFileName = string( Parameter( "Result", "audio", 0 ) );
+    if (soundFileName != "")
+      soundFileName = applicationPath + soundFileName;
+    if (m_pResultElement != NULL)
+      delete m_pResultElement;
+    m_pResultElement = NULL;
+    m_pResultElement = new UsrElementMixed(1);
+    m_pResultElement->SetCoordsRect(fWidthInPercentOfScreen, 1.0f, false);
+    m_pResultElement->SetCaptionText(( const char* )Parameter( "Result", "caption", 0 ));
+    m_pResultElement->SetCaptionTextHeight(Parameter( "CaptionHeight" ));
+    m_pResultElement->SetAudioFileName(soundFileName.c_str());
+    m_pResultElement->SetIconFileName(iconFileName.c_str());
   }
 }// CreateMiscellaneousElements
 
@@ -301,18 +294,17 @@ void UsrEnvAlgorithmP3AV::CreateMiscellaneousElements(TTask * pTask, TApplicatio
 // Function:   CreateStimuliSequenceToBeCopied
 // Purpose:    If we are in copy mode, we need to know the sequence according to which
 //             the stimuli will be copied
-// Parameters: pTask - the list from which elements need to be extracted
+// Parameters: void
 // Returns:    void
 // **************************************************************************
-void UsrEnvAlgorithmP3AV::CreateStimuliSequenceToBeCopied(TTask * pTask)
+void UsrEnvAlgorithmP3AV::CreateStimuliSequenceToBeCopied()
 {
-  if (pTask != NULL)
-    if (m_eInterpretMode == INTERPRETATION_COPYMODE)
-    {
-       for (size_t i = 0; i <  pTask->Parameter("ToBeCopied")->GetNumValuesDimension1(); ++i)
-          m_listStimuliToBeCopiedSeq.push_back(pTask->Parameter("ToBeCopied", i));
-       m_uNumOfTimesToCopy = m_listStimuliToBeCopiedSeq.size();
-    }
+  if (m_eInterpretMode == INTERPRETATION_COPYMODE)
+  {
+     for (size_t i = 0; i < Parameter("ToBeCopied")->GetNumValuesDimension1(); ++i)
+        m_listStimuliToBeCopiedSeq.push_back(Parameter("ToBeCopied", i));
+     m_uNumOfTimesToCopy = m_listStimuliToBeCopiedSeq.size();
+  }
 }// CreateStimuliSequenceToBeCopied
 
 
@@ -428,8 +420,8 @@ void UsrEnvAlgorithmP3AV::AddToActiveElements(UsrElementCollection * pActiveUsrE
     {
       if (UsrElementCaption * pUsrElementCaption = dynamic_cast<UsrElementCaption *>(pClonedUsrElement))
       {
-        pUsrElementCaption->SetCaptionBkgdColor(clYellow);
-        pUsrElementCaption->SetCaptionTextColor(clBlack);
+        pUsrElementCaption->SetCaptionBkgdColor( TColor( long( Parameter( "BackgroundColor" ) ) ) );
+        pUsrElementCaption->SetCaptionTextColor( TColor( long( Parameter( "CaptionColor" ) ) ) );
       }
       pActiveUsrElementColl->AddElement(pClonedUsrElement);
     }// if (pClonedUsrElement != NULL)

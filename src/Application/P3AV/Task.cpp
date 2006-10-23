@@ -52,7 +52,9 @@ TTask::TTask()
       "StimulusWidth in percent of screen width",
     "P3AV_Stimulus int CaptionHeight= 10 0 0 100 // "
       "Height of stimulus caption text in percent of screen height",
-    "P3AV_Stimulus string CaptionColor= 0x00FFFFFF 0x00505050 0x00000000 0x00000000 // "
+    "P3AV_Stimulus string CaptionColor= 0x00FFFFFF 0x00FFFFFF 0x00000000 0x00000000 // "
+      "Color of stimulus caption text (color)",
+    "P3AV_Stimulus string BackgroundColor= 0x00FFFF00 0x00FFFF00 0x00000000 0x00000000 // "
       "Color of stimulus caption text (color)",
     "P3AV_Stimulus float AudioVolume= 1 1 0 1 // "
       "Volume for audio playback",
