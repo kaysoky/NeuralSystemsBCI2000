@@ -30,6 +30,9 @@
 //          Introduced bookkeeping for configuration settings.
 //
 // $Log$
+// Revision 1.18  2006/10/26 17:03:02  mellinger
+// Added display filters.
+//
 // Revision 1.17  2006/03/15 14:52:58  mellinger
 // Compatibility with BCB 2006.
 //
@@ -46,11 +49,13 @@
 
 #include <vcl.h>
 #include <iostream>
+#include <vector>
 #include <map>
 #include <algorithm>
 #include "Color.h"
 #include "Label.h"
 #include "UGenericSignal.h"
+#include "DisplayFilter.h"
 
 #include "UGenericVisualization.h"
 
@@ -183,8 +188,9 @@ class VISUAL
     static const RGBColor cChannelColorsDefault[];
     static const int cChannelBase = 1, // displayed number of first channel
                      cSampleBase = 0,  // displayed number of first sample
-					 cLabelWidth = 25;
+                     cLabelWidth = 25;
     static const unsigned int cMaxDisplayGroups = 16;
+    static const char cSubmenuSeparator;
 
    protected:
     enum DisplayMode
@@ -211,51 +217,66 @@ class VISUAL
     struct MenuItemEntry
     {
       // The typedefs declare pointers to class instance member functions.
-      typedef void ( VISUAL::Graph::*MenuAction )();
-      typedef bool ( VISUAL::Graph::*MenuStateGetter )();
+      typedef void ( VISUAL::Graph::*MenuAction )( size_t );
+      typedef bool ( VISUAL::Graph::*MenuStateGetter )( size_t );
       MenuAction       mAction;
       MenuStateGetter  mGetEnabled,
                        mGetChecked;
       const char*      mCaption;
     };
     static struct MenuItemEntry sMenuItems[];
+    std::vector<TMenuItem*> mMenuItems;
     void BuildContextMenu();
 
-    void EnlargeSignal();
-    bool EnlargeSignal_Enabled() const;
+    void EnlargeSignal( size_t );
+    bool EnlargeSignal_Enabled( size_t ) const;
 
-    void ReduceSignal();
-    bool ReduceSignal_Enabled() const;
+    void ReduceSignal( size_t );
+    bool ReduceSignal_Enabled( size_t ) const;
     enum { maxUserScaling = 4 }; // The maximum number of scaling steps a user
                                  // can take from the default.
     int  mUserScaling;
 
-    void MoreChannels();
-    bool MoreChannels_Enabled() const;
+    void MoreChannels( size_t );
+    bool MoreChannels_Enabled( size_t ) const;
 
-    void LessChannels();
-    bool LessChannels_Enabled() const;
+    void LessChannels( size_t );
+    bool LessChannels_Enabled( size_t ) const;
 
-    void ToggleDisplayMode();
+    void ToggleDisplayMode( size_t );
 
-    void ToggleBaselines();
-    bool ToggleBaselines_Enabled() const;
-    bool ToggleBaselines_Checked() const;
+    void ToggleBaselines( size_t );
+    bool ToggleBaselines_Enabled( size_t ) const;
+    bool ToggleBaselines_Checked( size_t ) const;
 
-    void ToggleValueUnit();
-    bool ToggleValueUnit_Enabled() const;
-    bool ToggleValueUnit_Checked() const;
+    void ToggleValueUnit( size_t );
+    bool ToggleValueUnit_Enabled( size_t ) const;
+    bool ToggleValueUnit_Checked( size_t ) const;
 
-    void ToggleChannelLabels();
-    bool ToggleChannelLabels_Enabled() const;
-    bool ToggleChannelLabels_Checked() const;
+    void ToggleChannelLabels( size_t );
+    bool ToggleChannelLabels_Enabled( size_t ) const;
+    bool ToggleChannelLabels_Checked( size_t ) const;
 
-    void ToggleColor();
-    bool ToggleColor_Enabled() const;
-    bool ToggleColor_Checked() const;
+    void ToggleColor( size_t );
+    bool ToggleColor_Enabled( size_t ) const;
+    bool ToggleColor_Checked( size_t ) const;
 
-    void ChooseColors();
-    bool ChooseColors_Enabled() const;
+    void ChooseColors( size_t );
+    bool ChooseColors_Enabled( size_t ) const;
+
+    // Members related to display filter settings.
+    static double FilterUnitToValue( const std::string& );
+    double FilterItemToValue( size_t ) const;
+    bool Filter_Enabled( size_t ) const;
+
+    void SetHP( size_t );
+    bool SetHP_Checked( size_t ) const;
+
+    void SetLP( size_t );
+    bool SetLP_Checked( size_t ) const;
+
+    void SetNotch( size_t );
+    bool SetNotch_Checked( size_t ) const;
 
     void SetDisplayGroups( int );
     void SetBottomGroup( int );
@@ -318,6 +339,7 @@ class VISUAL
     Labellist     mChannelLabels,
                   mXAxisMarkers;
     GenericSignal mData;
+    DisplayFilter mDisplayFilter;
 
    // VCL/Win32 Graphics details.
    private:

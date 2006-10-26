@@ -30,6 +30,9 @@
 //          Introduced colorized y axis ticks.
 //
 // $Log$
+// Revision 1.29  2006/10/26 17:03:02  mellinger
+// Added display filters.
+//
 // Revision 1.28  2006/01/31 15:22:59  mellinger
 // Fixed list of #includes; introduced CVS Id and Log.
 //
@@ -331,9 +334,9 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
   inConfig.Get( CFGID::MINVALUE, mMinValue );
   inConfig.Get( CFGID::MAXVALUE, mMaxValue );
   for( int i = 0; i < userScaling; ++i )
-    EnlargeSignal();
+    EnlargeSignal( NULL );
   for( int i = 0; i > userScaling; --i )
-    ReduceSignal();
+    ReduceSignal( NULL );
 
   size_t newNumSamples = mNumSamples;
   inConfig.Get( CFGID::NUMSAMPLES, newNumSamples );
@@ -359,11 +362,18 @@ VISUAL::Graph::SetConfig( config_settings& inConfig )
   istringstream iss;
   if( inConfig.Get( CFGID::sampleUnit, unit ) )
   {
+    double oldSampleUnit = mUnitsPerSample * FilterUnitToValue( mSampleUnit );
     iss.clear();
     iss.str( unit );
     mUnitsPerSample = 1;
     mSampleUnit = "";
     iss >> mUnitsPerSample >> mSampleUnit;
+    if( oldSampleUnit != mUnitsPerSample * FilterUnitToValue( mSampleUnit ) )
+    {
+      mDisplayFilter.HPCorner( 0 );
+      mDisplayFilter.LPCorner( 0 );
+      mDisplayFilter.NotchCenter( 0 );
+    }
   }
 
   if( inConfig.Get( CFGID::channelUnit, unit ) )
@@ -431,9 +441,12 @@ VISUAL::Graph::HandleMessage( const VisSignal& v )
 void
 VISUAL::Graph::InstanceHandleMessage( const VisSignal& v )
 {
-  const GenericSignal& newData = v.GetSignal();
-  if( newData.Channels() < 1 || newData.Elements() < 1 )
+  if( v.GetSignal().Channels() < 1 || v.GetSignal().Elements() < 1 )
     return;
+
+  // Apply the visualization filter.
+  GenericSignal newData( v.GetSignal().GetProperties() );
+  mDisplayFilter.Process( &v.GetSignal(), &newData );
 
   // Any changes in the signal size that we must react to?
   bool reconfigure = false;
@@ -529,6 +542,7 @@ VISUAL::Graph::SyncGraphics()
   mDataHeight = std::max<int>( 0, mDataRect.bottom - mDataRect.top - cLabelWidth );
 }
 
+const char VISUAL::Graph::cSubmenuSeparator = ':';
 struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
 {
   { EnlargeSignal, EnlargeSignal_Enabled, NULL, "Enlarge Signal" },
@@ -544,20 +558,64 @@ struct VISUAL::Graph::MenuItemEntry VISUAL::Graph::sMenuItems[] =
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
   { ToggleValueUnit, ToggleValueUnit_Enabled, ToggleValueUnit_Checked, "Show Unit" },
   { ToggleChannelLabels, ToggleChannelLabels_Enabled, ToggleChannelLabels_Checked, "Show Legend" },
+  { NULL, NULL, NULL, "-" },
+  { NULL, Filter_Enabled, NULL, "High Pass:" },
+  { SetHP, Filter_Enabled, SetHP_Checked, "High Pass:off" },
+  { SetHP, Filter_Enabled, SetHP_Checked, "High Pass:0.1Hz" },
+  { SetHP, Filter_Enabled, SetHP_Checked, "High Pass:1Hz" },
+  { SetHP, Filter_Enabled, SetHP_Checked, "High Pass:5Hz" },
+  { NULL, Filter_Enabled, NULL, "Low Pass:" },
+  { SetLP, Filter_Enabled, SetLP_Checked, "Low Pass:off" },
+  { SetLP, Filter_Enabled, SetLP_Checked, "Low Pass:30Hz" },
+  { SetLP, Filter_Enabled, SetLP_Checked, "Low Pass:40Hz" },
+  { SetLP, Filter_Enabled, SetLP_Checked, "Low Pass:70Hz" },
+  { NULL, Filter_Enabled, NULL, "Notch:" },
+  { SetNotch, Filter_Enabled, SetNotch_Checked, "Notch:off" },
+  { SetNotch, Filter_Enabled, SetNotch_Checked, "Notch:50Hz" },
+  { SetNotch, Filter_Enabled, SetNotch_Checked, "Notch:60Hz" },
 };
 
 void
 VISUAL::Graph::BuildContextMenu()
 {
   assert( form != NULL );
+  mMenuItems.clear();
   TPopupMenu* menu = new TPopupMenu( form );
   for( int i = 0; i < sizeof( sMenuItems ) / sizeof( *sMenuItems ); ++i )
   {
     TMenuItem* newItem = new TMenuItem( menu );
-    menu->Items->Add( newItem );
-    newItem->Caption = sMenuItems[ i ].mCaption;
+    mMenuItems.push_back( newItem );
     newItem->Tag = i;
-    newItem->OnClick = PopupMenuItemClick;
+
+    string caption = sMenuItems[ i ].mCaption;
+    int pos = caption.find( cSubmenuSeparator );
+    if( pos != string::npos )
+    {
+      string topLevelCaption = caption.substr( 0, pos );
+      caption = caption.substr( pos + 1 );
+      if( caption == "" )
+      {
+        newItem->Caption = topLevelCaption.c_str();
+        menu->Items->Add( newItem );
+      }
+      else
+      {
+        TMenuItem* topLevelItem = menu->Items->Find( topLevelCaption.c_str() );
+        if( topLevelItem != NULL )
+        {
+          newItem->Caption = caption.c_str();
+          newItem->OnClick = PopupMenuItemClick;
+          newItem->RadioItem = true;
+          topLevelItem->Add( newItem );
+        }
+      }
+    }
+    else
+    {
+      newItem->Caption = caption.c_str();
+      newItem->OnClick = PopupMenuItemClick;
+      menu->Items->Add( newItem );
+    }
   }
   menu->OnPopup = PopupMenuPopup;
   form->PopupMenu = menu;
@@ -569,12 +627,13 @@ VISUAL::Graph::PopupMenuPopup( TObject* inSender )
 {
   TPopupMenu* menu = dynamic_cast<TPopupMenu*>( inSender );
   assert( menu != NULL );
-  for( int i = 0; i < menu->Items->Count && i < sizeof( sMenuItems ) / sizeof( *sMenuItems ); ++i )
+  for( size_t i = 0; i < mMenuItems.size() && i < sizeof( sMenuItems ) / sizeof( *sMenuItems ); ++i )
   {
+    TMenuItem* item = mMenuItems[ i ];
     if( sMenuItems[ i ].mGetChecked )
-      menu->Items->Items[ i ]->Checked = ( this->*sMenuItems[ i ].mGetChecked )();
+      item->Checked = ( this->*sMenuItems[ i ].mGetChecked )( i );
     if( sMenuItems[ i ].mGetEnabled )
-      menu->Items->Items[ i ]->Enabled = ( this->*sMenuItems[ i ].mGetEnabled )();
+      item->Enabled = ( this->*sMenuItems[ i ].mGetEnabled )( i );
   }
 }
 
@@ -586,17 +645,17 @@ VISUAL::Graph::PopupMenuItemClick( TObject* inSender )
   assert( item != NULL );
   MenuItemEntry::MenuAction action = sMenuItems[ item->Tag ].mAction;
   assert( action != NULL );
-  ( this->*action )();
+  ( this->*action )( item->Tag );
 }
 
 void
-VISUAL::Graph::ToggleDisplayMode()
+VISUAL::Graph::ToggleDisplayMode( size_t )
 {
   SetDisplayMode( DisplayMode( ( mDisplayMode + 1 ) % cNumDisplayModes ) );
 }
 
 void
-VISUAL::Graph::ToggleBaselines()
+VISUAL::Graph::ToggleBaselines( size_t )
 {
   mShowBaselines = !mShowBaselines;
   Visconfigs()[ sourceID ].Put( CFGID::showBaselines, mShowBaselines, UserDefined );
@@ -604,19 +663,19 @@ VISUAL::Graph::ToggleBaselines()
 }
 
 bool
-VISUAL::Graph::ToggleBaselines_Enabled() const
+VISUAL::Graph::ToggleBaselines_Enabled( size_t ) const
 {
   return mDisplayMode == polyline;
 }
 
 bool
-VISUAL::Graph::ToggleBaselines_Checked() const
+VISUAL::Graph::ToggleBaselines_Checked( size_t ) const
 {
   return mShowBaselines;
 }
 
 void
-VISUAL::Graph::ToggleValueUnit()
+VISUAL::Graph::ToggleValueUnit( size_t )
 {
   mShowValueUnit = !mShowValueUnit;
   Visconfigs()[ sourceID ].Put( CFGID::showValueUnit, mShowValueUnit, UserDefined );
@@ -624,57 +683,57 @@ VISUAL::Graph::ToggleValueUnit()
 }
 
 bool
-VISUAL::Graph::ToggleValueUnit_Enabled() const
+VISUAL::Graph::ToggleValueUnit_Enabled( size_t ) const
 {
   return mDisplayMode == polyline;
 }
 
 bool
-VISUAL::Graph::ToggleValueUnit_Checked() const
+VISUAL::Graph::ToggleValueUnit_Checked( size_t ) const
 {
   return mShowValueUnit;
 }
 
 void
-VISUAL::Graph::ToggleChannelLabels()
+VISUAL::Graph::ToggleChannelLabels( size_t )
 {
   mShowChannelLabels = !mShowChannelLabels;
   form->Invalidate();
 }
 
 bool
-VISUAL::Graph::ToggleChannelLabels_Enabled() const
+VISUAL::Graph::ToggleChannelLabels_Enabled( size_t ) const
 {
   return !mChannelLabels.empty();
 }
 
 bool
-VISUAL::Graph::ToggleChannelLabels_Checked() const
+VISUAL::Graph::ToggleChannelLabels_Checked( size_t ) const
 {
   return mShowChannelLabels;
 }
 
 void
-VISUAL::Graph::ToggleColor()
+VISUAL::Graph::ToggleColor( size_t )
 {
   mDisplayColors = !mDisplayColors;
   form->Invalidate();
 }
 
 bool
-VISUAL::Graph::ToggleColor_Enabled() const
+VISUAL::Graph::ToggleColor_Enabled( size_t ) const
 {
   return mDisplayMode == polyline || mDisplayMode == field2d;
 }
 
 bool
-VISUAL::Graph::ToggleColor_Checked() const
+VISUAL::Graph::ToggleColor_Checked( size_t ) const
 {
   return mDisplayColors;
 }
 
 void
-VISUAL::Graph::ChooseColors()
+VISUAL::Graph::ChooseColors( size_t )
 {
   // The dialog's "custom colors" are used to hold the user colors.
   // Maybe this should be changed in the future.
@@ -715,13 +774,13 @@ VISUAL::Graph::ChooseColors()
 }
 
 bool
-VISUAL::Graph::ChooseColors_Enabled() const
+VISUAL::Graph::ChooseColors_Enabled( size_t ) const
 {
   return mDisplayColors && mDisplayMode == polyline;
 }
 
 void
-VISUAL::Graph::EnlargeSignal()
+VISUAL::Graph::EnlargeSignal( size_t )
 {
 #if 0
   float offset = ( mMinValue + mMaxValue ) / 2,
@@ -738,13 +797,13 @@ VISUAL::Graph::EnlargeSignal()
 }
 
 bool
-VISUAL::Graph::EnlargeSignal_Enabled() const
+VISUAL::Graph::EnlargeSignal_Enabled( size_t ) const
 {
   return mUserScaling < maxUserScaling;
 }
 
 void
-VISUAL::Graph::ReduceSignal()
+VISUAL::Graph::ReduceSignal( size_t )
 {
 #if 0
   float offset = ( mMinValue + mMaxValue ) / 2,
@@ -761,33 +820,123 @@ VISUAL::Graph::ReduceSignal()
 }
 
 bool
-VISUAL::Graph::ReduceSignal_Enabled() const
+VISUAL::Graph::ReduceSignal_Enabled( size_t ) const
 {
   return mUserScaling > -maxUserScaling;
 }
 
 void
-VISUAL::Graph::LessChannels()
+VISUAL::Graph::LessChannels( size_t )
 {
   SetDisplayGroups( mNumDisplayGroups / 2 );
 }
 
 bool
-VISUAL::Graph::LessChannels_Enabled() const
+VISUAL::Graph::LessChannels_Enabled( size_t ) const
 {
   return mNumDisplayGroups > 1;
 }
 
 void
-VISUAL::Graph::MoreChannels()
+VISUAL::Graph::MoreChannels( size_t )
 {
   SetDisplayGroups( mNumDisplayGroups * 2 );
 }
 
 bool
-VISUAL::Graph::MoreChannels_Enabled() const
+VISUAL::Graph::MoreChannels_Enabled( size_t ) const
 {
   return mNumDisplayGroups < mData.Channels() / mChannelGroupSize;
+}
+
+double
+VISUAL::Graph::FilterItemToValue( size_t inMenuItem ) const
+{
+  const char* p = sMenuItems[ inMenuItem ].mCaption;
+  while( *p && !::isdigit( *p ) )
+    ++p;
+  return ::atof( p ) * mUnitsPerSample * FilterUnitToValue( mSampleUnit );
+}
+
+double
+VISUAL::Graph::FilterUnitToValue( const string& inUnit )
+{
+#ifdef TODO
+# error This should be handled through the MeasurementUnits class.
+#endif
+  if( inUnit.length() < 1 || inUnit[inUnit.length() - 1] != 's' )
+    return 0;
+
+  double unit = 1.0;
+  string unitString = inUnit.substr( 0, inUnit.length() - 1 );
+  const struct
+  {
+    const char* name;
+    float       value;
+  } prefixes[] =
+  {
+    "", 1.0,
+    "p", 1e-12,
+    "n", 1e-9,
+    "u", 1e-6, "mu", 1e-6,
+    "m", 1e-3,
+    "k", 1e3,
+    "M", 1e6,
+    "G", 1e9,
+    "T", 1e12,
+  };
+  const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
+  int i = 0;
+  while( i < numPrefixes && unitString != prefixes[ i ].name )
+    ++i;
+  if( i < numPrefixes )
+    unit *= prefixes[ i ].value;
+  else
+    unit = 0;
+
+  return unit;
+}
+
+bool
+VISUAL::Graph::Filter_Enabled( size_t ) const
+{
+  return mUnitsPerSample * FilterUnitToValue( mSampleUnit ) != 0;
+}
+
+void
+VISUAL::Graph::SetHP( size_t inMenuItem )
+{
+  mDisplayFilter.HPCorner( FilterItemToValue( inMenuItem ) );
+}
+
+bool
+VISUAL::Graph::SetHP_Checked( size_t inMenuItem ) const
+{
+  return mDisplayFilter.HPCorner() == FilterItemToValue( inMenuItem );
+}
+
+void
+VISUAL::Graph::SetLP( size_t inMenuItem )
+{
+  mDisplayFilter.LPCorner( FilterItemToValue( inMenuItem ) );
+}
+
+bool
+VISUAL::Graph::SetLP_Checked( size_t inMenuItem ) const
+{
+  return mDisplayFilter.LPCorner() == FilterItemToValue( inMenuItem );
+}
+
+void
+VISUAL::Graph::SetNotch( size_t inMenuItem )
+{
+  mDisplayFilter.NotchCenter( FilterItemToValue( inMenuItem ) );
+}
+
+bool
+VISUAL::Graph::SetNotch_Checked( size_t inMenuItem ) const
+{
+  return mDisplayFilter.NotchCenter() == FilterItemToValue( inMenuItem );
 }
 
 void
