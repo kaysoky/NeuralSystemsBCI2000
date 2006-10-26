@@ -9,6 +9,9 @@
 //              filter coefficients.
 //
 // $Log$
+// Revision 1.2  2006/10/26 17:05:00  mellinger
+// Rewrote IIR filter as a sequence of complex-valued first-order filters to improve numerical stability.
+//
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
@@ -20,6 +23,7 @@
 #include "IIRFilter.h"
 #include <numeric>
 #include <limits>
+#include <cassert>
 
 using namespace std;
 
@@ -34,65 +38,67 @@ IIRFilter::~IIRFilter()
 void
 IIRFilter::Preflight( const SignalProperties& input, SignalProperties& output ) const
 {
-  num_seq_type preflightB, preflightA;
-  DesignFilter( preflightB, preflightA );
-  if( !preflightB.empty() )
-  {
-    if( preflightA.empty() )
-      bcierr << "Output coefficients must contain at least one element" << endl;
-    else if( fabs( preflightA[ 0 ] ) < numeric_limits<num_type>::epsilon() )
-      bcierr << "First output coefficient must not be zero" << endl;
-  }
+  real_type      preflightGain;
+  complex_vector preflightZeros,
+                 preflightPoles;
+  DesignFilter( preflightGain, preflightZeros, preflightPoles );
+  if( preflightZeros.size() != preflightPoles.size() )
+    bcierr << "The numbers of zeros and poles must agree" << endl;
   output = input;
 }
 
 void
 IIRFilter::Initialize2( const SignalProperties& input, const SignalProperties& output )
 {
-  DesignFilter( mInputCoeffs, mOutputCoeffs );
-  if( !mInputCoeffs.empty() )
-  {
-    for( size_t i = 0; i < mInputCoeffs.size(); ++i )
-      mInputCoeffs[ i ] /= mOutputCoeffs[ 0 ];
-    for( size_t i = 1; i < mOutputCoeffs.size(); ++i )
-      mOutputCoeffs[ i ] /= mOutputCoeffs[ 0 ];
-    mOutputCoeffs.erase( mOutputCoeffs.begin() );
-    mDelayedInput.resize( input.Channels() );
-    mDelayedOutput.resize( input.Channels() );
-  }
+  DesignFilter( mGain, mZeros, mPoles );
+  mDelays.clear();
+  mDelays.resize( input.Channels(), complex_vector( mZeros.size() + 1, 0 ) );
 }
 
 void
 IIRFilter::StartRun()
 {
-  size_t numChannels = mDelayedInput.size();
-  mDelayedInput.clear();
-  mDelayedInput.resize( numChannels, num_seq_type( mInputCoeffs.size(), 0 ) );
-  mDelayedOutput.clear();
-  mDelayedOutput.resize( numChannels, num_seq_type( mOutputCoeffs.size(), 0 ) );
+  size_t numChannels = mDelays.size();
+  mDelays.clear();
+  mDelays.resize( numChannels, complex_vector( mZeros.size() + 1, 0 ) );
 }
 
 void
 IIRFilter::Process( const GenericSignal* input, GenericSignal* output )
 {
-  if( mInputCoeffs.empty() )
+  size_t numStages = mZeros.size();
+  if( numStages == 0 )
   {
     *output = *input;
   }
   else
   {
     for( size_t ch = 0; ch < input->Channels(); ++ch )
+    {
+      assert( mDelays[ch].size() == numStages + 1 );
       for( size_t sample = 0; sample < input->Elements(); ++sample )
       {
-        mDelayedInput[ ch ].push_front( ( *input )( ch, sample ) );
-        mDelayedInput[ ch ].pop_back();
-        ( *output )( ch, sample ) =
-          inner_product( mInputCoeffs.begin(), mInputCoeffs.end(), mDelayedInput[ ch ].begin(), 0 )
-          - inner_product( mOutputCoeffs.begin(), mOutputCoeffs.end(), mDelayedOutput[ ch ].begin(), 0 );
-        mDelayedOutput[ ch ].push_front( ( *output )( ch, sample ) );
-        mDelayedOutput[ ch ].pop_back();
+        // Implementing the filter as a sequence of complex-valued order 1
+        // stages in DF I form will give us higher numerical stability and
+        // lower code complexity than a sequence of real-valued order 2 stages.
+        // - Numerical stability: Greatest for lowest order stages.
+        // - Code complexity: Poles and zeros immediately translate into complex
+        //    coefficients, and need not be grouped into complex conjugate pairs
+        //    as would be the case for real-valued order 2 stages.
+        complex_type stageOutput = ( *input )( ch, sample ) * mGain;
+        for( size_t stage = 0; stage < numStages; ++stage )
+        {
+          complex_type stageInput = stageOutput;
+          stageOutput = stageInput
+            - mZeros[stage] * mDelays[ch][stage]
+            + mPoles[stage] * mDelays[ch][stage+1];
+          mDelays[ch][stage] = stageInput;
+        }
+        mDelays[ch][numStages] = stageOutput;
+        ( *output )( ch, sample ) = real( stageOutput );
       }
-   }
+    }
+  }
 }
 
 

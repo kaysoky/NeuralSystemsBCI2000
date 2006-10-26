@@ -4,6 +4,9 @@
 // Description: Class templates for univariate polynomials and rational
 //              expressions.
 // $Log$
+// Revision 1.3  2006/10/26 17:05:00  mellinger
+// Rewrote IIR filter as a sequence of complex-valued first-order filters to improve numerical stability.
+//
 // Revision 1.2  2006/05/05 16:07:40  mellinger
 // Added multiplication operators for Ratpoly class.
 //
@@ -49,7 +52,7 @@ template<class T>
 class Ratpoly // A rational expression with a polynomial numerator and denominator.
 {
  public:
-  Ratpoly();
+  Ratpoly( const T& = 1 );
   Ratpoly( const Polynomial<T>& numerator, const Polynomial<T>& denominator );
 
   Ratpoly& operator*=( const T& );
@@ -168,8 +171,8 @@ Polynomial<T>::operator*( const U& u ) const
 // Ratpoly definitions
 
 template<class T>
-Ratpoly<T>::Ratpoly()
-: mNumerator( Polynomial<T>::FromRoots( std::vector<T>( 1, 0 ) ) ),
+Ratpoly<T>::Ratpoly( const T& z )
+: mNumerator( Polynomial<T>::FromRoots( std::vector<T>( 0 ), z ) ),
   mDenominator( Polynomial<T>::FromRoots( std::vector<T>( 0 ), 1 ) )
 {
 }

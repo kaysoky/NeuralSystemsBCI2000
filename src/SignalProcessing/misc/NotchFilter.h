@@ -3,6 +3,9 @@
 // File:        NotchFilter.h
 // Description: A notch filter for removing power line noise.
 // $Log$
+// Revision 1.2  2006/10/26 17:05:00  mellinger
+// Rewrote IIR filter as a sequence of complex-valued first-order filters to improve numerical stability.
+//
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
@@ -19,9 +22,13 @@ class NotchFilter : public IIRFilter
   ~NotchFilter() {}
 
  private:
-  // Translate user settings into filter coefficients.
-  virtual void DesignFilter( num_seq_type& inputCoeff,
-                             num_seq_type& outputCoeff ) const;
+  // Translate user settings into a filter definition given by
+  // - overall gain,
+  // - complex roots of the numerator polynomial ("zeros"),
+  // - complex roots of the denominator polynomial ("poles").
+  virtual void DesignFilter( real_type& gain,
+                             complex_vector& zeros,
+                             complex_vector& poles ) const;
 };
 
 #endif // NotchFilterH

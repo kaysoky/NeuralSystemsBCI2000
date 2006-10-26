@@ -3,6 +3,9 @@
 // File:        NotchFilter.h
 // Description: A notch filter for removing power line noise.
 // $Log$
+// Revision 1.3  2006/10/26 17:05:00  mellinger
+// Rewrote IIR filter as a sequence of complex-valued first-order filters to improve numerical stability.
+//
 // Revision 1.2  2006/05/04 17:17:01  mellinger
 // Changed value for passband ripples.
 //
@@ -24,16 +27,18 @@ NotchFilter::NotchFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source int NotchFilter= 0 0 0 2 "
-      "// Power line notch filter: 0 disabled, 1: at 50 Hz, 2: at 60 Hz (enumeration)",
+      "// Power line notch filter: 0: disabled, 1: at 50 Hz, 2: at 60 Hz (enumeration)",
   END_PARAMETER_DEFINITIONS
 }
 
 void
-NotchFilter::DesignFilter( num_seq_type& inputCoeff,
-                           num_seq_type& outputCoeff ) const
+NotchFilter::DesignFilter( real_type& outGain,
+                           complex_vector& outZeros,
+                           complex_vector& outPoles ) const
 {
-  inputCoeff.clear();
-  outputCoeff.clear();
+  outGain = 1;
+  outZeros.clear();
+  outPoles.clear();
 
   enum
   {
@@ -42,8 +47,8 @@ NotchFilter::DesignFilter( num_seq_type& inputCoeff,
     at60Hz = 2,
   };
   int notchFilter = Parameter( "NotchFilter" );
-  num_type corner1 = 0.0,
-           corner2 = 0.0;
+  real_type corner1 = 0.0,
+            corner2 = 0.0;
 
   switch( notchFilter )
   {
@@ -82,11 +87,10 @@ NotchFilter::DesignFilter( num_seq_type& inputCoeff,
         .Order( 4 )
         .Bandstop( corner1, corner2 )
         .TransferFunction();
-      num_type dcGain = abs( tf.Evaluate( 1.0 ) );
-
-      FilterDesign::ComputeCoefficients( tf, inputCoeff, outputCoeff );
-      for( size_t i = 0; i < inputCoeff.size(); ++i )
-        inputCoeff[ i ] /= dcGain;
+      real_type dcGain = abs( tf.Evaluate( 1.0 ) );
+      outGain = 1 / dcGain;
+      outZeros = tf.Numerator().Roots();
+      outPoles = tf.Denominator().Roots();
     }
   }
 }
