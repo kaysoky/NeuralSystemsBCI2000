@@ -51,7 +51,7 @@ states = compressData(states);
 stateNames = fieldnames(states);
 
 EEG = eeg_emptyset;
-EEG.srate = str2num(parms.SamplingRate{1});
+EEG.srate = str2num(parms.SamplingRate.Value{1});
 EEG.nbchan = size(signal,2);
 EEG.pnts = size(signal,1);
 EEG.trials = 1;
