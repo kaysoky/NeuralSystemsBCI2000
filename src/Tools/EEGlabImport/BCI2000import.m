@@ -109,21 +109,45 @@ end
 % -------------------------------------------------------------
 function data = compressData(data, name)
 
-compressStates = {'TargetCode','ResultCode','IntertrialInterval','Feedback','Dwelling'};
+compressStates = {'TargetCode','ResultCode','IntertrialInterval','Feedback','Dwelling','StimulusCode'};
 
 if isstruct(data)
-    for i=1:length(compressStates)
-        if isfield(data,compressStates{i})
-            value = getfield(data,compressStates{i});
+    stateNames = fieldnames(data);
+    for i=1:length(stateNames)
+        if ismember(stateNames{i}, compressStates)
+            value = getfield(data, stateNames{i});
             if isstruct(value) continue; end
-            data = setfield(data, compressStates{i}, compressData(value,compressStates{i}));
+            data = setfield(data, stateNames{i}, compressData(value, stateNames{i}));
             clear value;
+        else
+            % use some trickery to see if we should try to compress it or
+            % not
+            value = getfield(data,stateNames{i});
+            if isstruct(value) continue; end
+            
+            % assume that the type of data that we will use as events is
+            % less than 5% of the total length of the data
+            U = unique(value);
+            if length(U) > 1 && length(U) < length(value)*.05
+                data = setfield(data, stateNames{i}, compressData(value, stateNames{i}));
+            else
+                disp(['Warning: ', stateNames{i}, ' is not a valid state for EEGlab, and is not being imported.']);
+                data = rmfield(data, stateNames{i});
+            end
         end
     end
+%     for i=1:length(compressStates)
+%         if isfield(data,compressStates{i})
+%             value = getfield(data,compressStates{i});
+%             if isstruct(value) continue; end
+%             data = setfield(data, compressStates{i}, compressData(value,compressStates{i}));
+%             clear value;
+%         end
+%     end
 else
-    if ~strFindCell(compressStates, name,'exact')
-        return;
-    end
+%     if ~strFindCell(compressStates, name,'exact')
+%         return;
+%     end
     
     lat = find(diff(data) > 0) + 1;
     pos = data(lat);
