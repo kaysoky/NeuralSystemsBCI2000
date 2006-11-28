@@ -11,6 +11,9 @@
 //              variation corresponds to a unit range, i.e. a zero mean
 //              signal will be normalized to the range [-0.5, 0.5].
 // $Log$
+// Revision 1.4  2006/11/28 18:36:48  gschalk
+// *** empty log message ***
+//
 // Revision 1.3  2006/02/03 13:40:53  mellinger
 // Compatibility with gcc and BCB 2006.
 //
@@ -52,8 +55,8 @@ Normalizer::Normalizer()
   // SegmentingConditions corresponds to BaselineCfg but contains general boolean
   // expressions.
   "Normalizer matrix SegmentingConditions= 2 1 "
-    "(TargetCode==1)&&Feedback "
-    "(TargetCode==2)&&Feedback "
+    "(TargetCode==1)&&(Feedback!=0) "
+    "(TargetCode==2)&&(Feedback!=0) "
     "% % % // Conditional expressions for segmenting  "
     "(rows correspond to groups, multiple columns will be ANDed within rows)",
 
