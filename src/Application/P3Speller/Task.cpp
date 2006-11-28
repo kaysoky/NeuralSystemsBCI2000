@@ -330,6 +330,8 @@ int     ret, numerpsamples, sampleblocksize;
     if( !mConnection.is_open() )
       bciout << "Could not connect to " << destinationOutputAddress << endl;
 
+// PB removed since brainkeys is no longer used      
+/*
     mConnection2.close();
     mConnection2.clear();
     mSocket2.close();
@@ -337,6 +339,7 @@ int     ret, numerpsamples, sampleblocksize;
     mConnection2.open( mSocket2 );
     if( !mConnection2.is_open() )
       bciout << "Could not connect to " << destinationOutputAddress << endl;
+*/      
   }
 }
 
@@ -559,6 +562,11 @@ int     i;
       // determine predicted character
       predchar=DeterminePredictedCharacter();          // given these responses, determine which character we have picked
 
+// PB added so that every selection is transmitted
+    // VK for brainkeys
+     if (mConnection.is_open())
+       mConnection << "P3Speller_Output " << predchar.c_str() << endl;
+
       //VK changed location of this function to enable proper scrolling
       userdisplay->DisplayStatusBar();
 
@@ -752,13 +760,16 @@ int     i;
         mVis.Send(memotext);  */
         trialsequence->char2spellidx += 1;
          //userdisplay->statusbar->resulttext += predchar;
-        textresult += predchar;        
+        textresult += predchar;
 
+// PB moved out of the if conditions
+/*
         // VK for brainkeys
         if (mConnection.is_open())
           mConnection << "P3Speller_Output " << predchar.c_str() << endl;
-
+*/
        }
+
 
        //VK     dont want to display text if it was just saved or retrieved!
        if ((Parameter("TextWindowEnabled")==1) && predchar != "<SAVE>" && predchar != "<RETR>")
@@ -1025,6 +1036,9 @@ int     ret;
        postsequencecount=0;
        }
     }
+
+// PB removed since brainkeys is no longer used
+/*
  // VK adding check for brainkeys
  if( mConnection2.rdbuf()->in_avail() )
  {
@@ -1034,6 +1048,7 @@ int     ret;
    sprintf(memotext,"%s", name);
    mVis.Send( memotext );
  }
+*/
 
  skipprocess:
  //Resting();
