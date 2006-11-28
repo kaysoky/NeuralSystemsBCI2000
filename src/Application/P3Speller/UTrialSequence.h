@@ -42,7 +42,16 @@ private: 	// User declarations
 	   INVERT,
 	   DARKEN,
 	};
-	
+
+  // PB added audio
+  typedef std::vector<TWavePlayer> WavePlayerContainer;
+  WavePlayerContainer     audioStimuli;
+  void CheckAudioFiles();
+  void LoadPotentialAudio();
+  bool ErrorLoadingAudioFile( AnsiString sAudioFile );
+  bool audioStimuliOn;
+
+
 public:		// User declarations
         TRIALSEQUENCE::TRIALSEQUENCE();
         TRIALSEQUENCE::~TRIALSEQUENCE();

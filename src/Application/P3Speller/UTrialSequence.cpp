@@ -31,6 +31,11 @@ TRIALSEQUENCE::TRIALSEQUENCE()
 
 {
 
+ // PB added audio
+ audioStimuli.clear();
+ audioStimuliOn = false;
+
+
  /*shidong starts*/
  f = NULL;
  debug = false;
@@ -76,6 +81,29 @@ TRIALSEQUENCE::TRIALSEQUENCE()
     "1 0 2 // Icon highlight method 0: GRAYSCALE, 1: INVERT, 2: DARKEN (enumeration)",
   "P3Speller int HighlightFactor= 2 "
     "2 1 5 // Scale factor to reduce icon pixel values",
+  "P3Speller int AudioStimuliOn= 0 "
+    "0 0 1 // Audio Stimuli Mode (0=no, 1=yes) (boolean)",
+  "P3Speller matrix AudioStimuliRowsFiles= "
+      "{ 1 2 3 4 5 6 } " // row labels
+      "{ filename } " // filename
+      "C:/bci2000/peter/bci2000/prog/voice/1.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/2.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/3.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/4.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/5.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/6.wav "
+      " // audio stimuli rows files ",
+  "P3Speller matrix AudioStimuliColsFiles= "
+      "{ 1 2 3 4 5 6 } " // column labels
+      "{ filename } " // filename
+      "C:/bci2000/peter/bci2000/prog/voice/a.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/b.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/c.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/d.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/e.wav "
+      "C:/bci2000/peter/bci2000/prog/voice/f.wav "
+      " // audio stimuli column files ",
+
  END_PARAMETER_DEFINITIONS
 
  BEGIN_STATE_DEFINITIONS
@@ -161,6 +189,13 @@ void TRIALSEQUENCE::Preflight(const SignalProperties& inputProperties,
                 << std::endl;
     }
   }
+
+  // PB added audio
+
+  if (Parameter("AudioStimuliOn") == 1) {
+    CheckAudioFiles();
+  }
+
   outputProperties = inputProperties;
 }
 
@@ -260,6 +295,14 @@ int     ret;
 
  // reset the trial's sequence
  ResetTrialSequence();
+
+ // PB added audio
+ if (Parameter("AudioStimuliOn") == 1) {
+   LoadPotentialAudio();
+   audioStimuliOn = true;
+ } else {
+   audioStimuliOn = false;
+ }
 
  return(ret);
 }
@@ -583,10 +626,24 @@ short   thisisit;
     chartospellID=0;
  thisisit=0;
 
+
  // do we want to flash a column (stimuluscode 1..NumMatrixColumns) ?
  /*shidong starts*/
  if ((stimuluscode > 0) && (stimuluscode <= *(NumMatrixColumns+cur_menu)))
     {
+
+    if (intensify & audioStimuliOn) {
+      // PB added audio
+      if (last_colcode != -1) {
+         if (audioStimuli[last_colcode-1].IsPlaying()) {
+            audioStimuli[last_colcode-1].SetVolume(0);
+            audioStimuli[last_colcode-1].Stop();
+         }
+      }
+      audioStimuli[ stimuluscode-1 ].SetVolume(1);
+      audioStimuli[ stimuluscode-1 ].Play();
+    }
+
     last_colcode = stimuluscode;      // VK
     for (i=0; i<userdisplay->activetargets->GetNumTargets(); i++)
      {
@@ -611,6 +668,17 @@ short   thisisit;
  // do we want to flash a row (stimuluscode NumMatrixColumns..NUM_STIMULI) ?
  if ((stimuluscode > *(NumMatrixColumns+cur_menu)) && (stimuluscode <= NUM_STIMULI ))
     {
+    // PB added audio
+    if (intensify & audioStimuliOn) {
+      if (last_rowcode != -1) {
+         if (audioStimuli[last_rowcode-1].IsPlaying()) {
+            audioStimuli[last_rowcode-1].SetVolume(0);
+            audioStimuli[last_rowcode-1].Stop();
+         }
+      }
+      audioStimuli[ stimuluscode-1 ].SetVolume(1);
+      audioStimuli[ stimuluscode-1 ].Play();
+     }
      last_rowcode = stimuluscode;    // VK
     /*shidong starts*/
     for (i=0; i<*(NumMatrixColumns+cur_menu); i++)
@@ -864,12 +932,111 @@ void TRIALSEQUENCE::CheckTargetDefinitionMatrix(int index) const
 }
 
 
-int TRIALSEQUENCE::GetMenuNumber(AnsiString inputStr) 
+int TRIALSEQUENCE::GetMenuNumber(AnsiString inputStr)
 {
   AnsiString menuStr = inputStr.SubString(5, (inputStr.Length()-5));
   return (menuStr.ToInt() - 1);      // offset so that menu index can start at 1
 }
 
+
+// PB added audio
+bool TRIALSEQUENCE::ErrorLoadingAudioFile( AnsiString sAudioFile )
+{
+  TWavePlayer testPlayer;
+  TWavePlayer::Error err;
+  if (Parameter( "AudioStimuliOn" ) == 1)
+    err = testPlayer.AttachFile(sAudioFile.c_str());
+  if( err == TWavePlayer::fileOpeningError )
+  {
+    bcierr << "Could not open \"" << sAudioFile.c_str() << "\" as a sound file" << std::endl;
+    return true;
+  }
+  else if( err != TWavePlayer::noError )
+  {
+    bcierr << "Some general error prevents wave audio playback" << std::endl;
+    return true;
+  }
+  return false;
+} // ErrorLoadingAudioFile
+
+void TRIALSEQUENCE::CheckAudioFiles()
+{
+  unsigned int rows_visual_num, cols_visual_num, rows_visual, cols_visual, rows_audio, cols_audio;
+
+  rows_visual_num = Parameter("NumMatrixRows")->GetNumValues();
+  cols_visual_num = Parameter("NumMatrixRows")->GetNumValues();
+
+  if (rows_visual_num != 1 || cols_visual_num != 1) {
+
+    bcierr << "P3Speller: audio stimuli only for single matrix in NumMatrixRows and NumMatrixRows\n" << std::endl;
+
+  } else {
+
+    rows_visual = Parameter( "NumMatrixRows" );
+    cols_visual = Parameter( "NumMatrixColumns" );
+
+    rows_audio  = Parameter("AudioStimuliRowsFiles")->GetNumRows();
+    cols_audio  = Parameter("AudioStimuliColsFiles")->GetNumRows();
+
+    if (rows_visual != rows_audio || cols_visual != cols_audio) {
+
+      bcierr << "P3Speller: rows in AudioStimuliRowsFiles and AudioStimuliRowsFiles must match NumMatrixRows and NumMatrixColumns\n" << std::endl;
+
+    } else {
+
+      PARAM* paramptr;
+      paramptr=Parameters->GetParamPtr("AudioStimuliRowsFiles");
+
+      for (int i=0; i<rows_audio; i++) {
+        AnsiString filename = paramptr->GetValue(i,0);
+        if (ErrorLoadingAudioFile(filename)) {
+          bcierr << "P3Speller: cannot load file " << filename.c_str() << " in AudioStimuliRowsFiles\n" << std::endl;
+        }
+      }
+
+      paramptr=Parameters->GetParamPtr("AudioStimuliColsFiles");
+      for (int i=0; i<rows_audio; i++) {
+        AnsiString filename = paramptr->GetValue(i,0);
+        if (ErrorLoadingAudioFile(filename)) {
+          bcierr << "P3Speller: cannot load file " << filename.c_str() << " in AudioStimuliColsFiles\n" << std::endl;
+        }
+      }
+
+    }
+  }
+}
+
+
+// PB added audio
+void TRIALSEQUENCE::LoadPotentialAudio()
+{
+
+  unsigned int rows_audio, cols_audio;
+
+  audioStimuli.clear();
+
+  rows_audio  = Parameter("AudioStimuliRowsFiles")->GetNumRows();
+  cols_audio  = Parameter("AudioStimuliColsFiles")->GetNumRows();
+
+  audioStimuli.resize( rows_audio+cols_audio );
+
+
+  PARAM* paramptr;
+  paramptr=Parameters->GetParamPtr("AudioStimuliRowsFiles");
+
+  int index=0;
+  for (int i=0; i<rows_audio; i++) {
+    AnsiString filename = paramptr->GetValue(i,0);
+    audioStimuli[ index++ ].AttachFile( filename.c_str() );
+  }
+
+  paramptr=Parameters->GetParamPtr("AudioStimuliColsFiles");
+  for (int i=0; i<rows_audio; i++) {
+    AnsiString filename = paramptr->GetValue(i,0);
+    audioStimuli[ index++ ].AttachFile( filename.c_str() );
+  }
+
+}
 
 
 //(stimuluscode > *(NumMatrixColumns+cur_menu)) && (stimuluscode <= NUM_STIMULI ) -> row
