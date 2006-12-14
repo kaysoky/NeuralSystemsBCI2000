@@ -13,7 +13,8 @@
       obj\EncodedString.obj obj\ParamRef.obj obj\Expression.obj 
       obj\ExpressionParser.obj obj\EDFFileWriter.obj obj\EDFFileWriterBase.obj 
       obj\FileWriterBase.obj obj\GDF.obj obj\GDFFileWriter.obj 
-      obj\NullFileWriter.obj obj\ClassName.obj"/>
+      obj\NullFileWriter.obj obj\ClassName.obj obj\NotchFilter.obj 
+      obj\FilterDesign.obj obj\IIRFilter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -24,7 +25,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..;..;..;..;..;..;..\..\shared"/>
+    <PATHCPP value=".;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..\..\shared;..;..;..\..\shared;..\..\shared;..;..\..\shared;..\..\shared;..\..\shared\Expression;..\..\shared\Expression;..;..;..;..;..;..;..\..\shared;..\..\SignalProcessing\misc;..\..\SignalProcessing\misc;..\..\SignalProcessing\misc"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -34,8 +35,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="gMOBIlab.cpp"/>
-    <INCLUDEPATH value="..\..\shared\Expression;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\Expression;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\SignalProcessing\misc;..\;..\..\shared\Expression;..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\SignalProcessing\misc;..\;..\..\shared\Expression;..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -88,6 +89,9 @@
       <FILE FILENAME="..\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\NullFileWriter.cpp" FORMNAME="" UNITNAME="NullFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SignalProcessing\misc\NotchFilter.cpp" FORMNAME="" UNITNAME="NotchFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SignalProcessing\misc\FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SignalProcessing\misc\IIRFilter.cpp" FORMNAME="" UNITNAME="IIRFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
