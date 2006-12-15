@@ -75,13 +75,16 @@ GetParameter( long index );
 
 /*
 function:  PutState
-purpose:   Parses a BCI2000 state definition line, and adds the resulting state
-           object to the filter's state list.
+purpose:   Adds a state to the filter's state list, and initializes its value
+           with 0.
+           Instead of a state name, a full BCI2000 state definition line may be given.
+           In this case, the line is parsed, and the resulting state object is added
+           to the filter's state list.
 arguments: Pointer to a NULL terminated state line string.
 returns:   True (1) if no error occurred.
 */
 int DLLEXPORT
-PutState( char* stateLine );
+PutState( char* stateName );
 
 /*
 function:  SetState

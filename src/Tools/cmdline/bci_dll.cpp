@@ -113,8 +113,13 @@ static class FilterWrapper : public Environment
     STATE state;
     if( !state.ReadFromStream( istrstream( stateLine ) ) )
     {
-      sErr << "Error parsing state definition line." << endl;
-      return false;
+      string line = stateLine;
+      line += " 16 0 0 0";
+      if( !state.ReadFromStream( istrstream( line.c_str() ) ) )
+      {
+        sErr << "Error parsing state definition line." << endl;
+        return false;
+      }
     }
     delete mpStatevector;
     mpStatevector = NULL;
