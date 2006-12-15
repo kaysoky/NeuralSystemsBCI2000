@@ -755,26 +755,21 @@ PARAM::ReadFromStream( istream& is )
     mDim2Index.resize( 1 );
   }
 
+  bool syntaxError = !is;
   // Not all matrix/list entries are required for a parameter definition.
   mValues.resize( mDim1Index.size() * mDim2Index.size(), sDefaultValue );
-  is >> ws;
   values_type::iterator i = mValues.begin();
   while( i != mValues.end() && is.peek() != EOF
                                && delimiters.find( is.peek() ) == string::npos )
-    is >> *i++ >> ws;
+    is >> ws >> *i++;
 
-  // The remaining elements are optional.
+  // Remaining elements are optional.
   string remainder;
-  {
-    int c = is.peek();
-    while( is && c != EOF && delimiters.find( c ) == string::npos )
-    {
-      remainder += is.get();
-      c = is.peek();
-    }
-  }
+  while( is && is.peek() != EOF && delimiters.find( is.peek() ) == string::npos )
+    remainder += is.get();
+
   size_t commentSepPos = remainder.rfind( sCommentSeparator );
-  if( commentSepPos != remainder.npos )
+  if( commentSepPos != string::npos )
   {
     size_t commentPos = commentSepPos + sCommentSeparator.length();
     while( commentPos < remainder.size() && ct().is( ct().space, remainder[ commentPos ] ) )
@@ -782,7 +777,6 @@ PARAM::ReadFromStream( istream& is )
     mComment = remainder.substr( commentPos );
     remainder = remainder.substr( 0, commentSepPos ) + " ";
   }
-
   istringstream iss( remainder );
   EncodedString* finalEntries[] =
   {
@@ -792,12 +786,17 @@ PARAM::ReadFromStream( istream& is )
   };
   size_t numFinalEntries = sizeof( finalEntries ) / sizeof( *finalEntries ),
          entry = 0;
-  while( entry < numFinalEntries && iss >> value >> ws )
+  while( entry < numFinalEntries && iss >> ws >> value )
     *finalEntries[ entry++ ] = value;
   while( entry < numFinalEntries )
     *finalEntries[ entry++ ] = EncodedString( "" );
+
   if( unnamedParam )
     is.get();
+  // Use the stream's failbit to report syntax errors.
+  is.clear();
+  if( syntaxError )
+    is.setstate( ios::failbit );
   return is;
 }
 
@@ -830,8 +829,11 @@ PARAM::WriteToStream( ostream& os ) const
        << mLowrange << ' '
        << mHighrange << ' ';
   if( !mComment.empty() )
-     os << sCommentSeparator << ' ' << mComment << ' ';
-
+  {
+    os << sCommentSeparator << ' ' << mComment;
+    if( isUnnamed )
+      os << ' ';
+  }
   if( isUnnamed )
     os << Brackets::ClosingDefault;
 
