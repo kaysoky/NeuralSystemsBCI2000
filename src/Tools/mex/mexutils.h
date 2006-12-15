@@ -19,8 +19,16 @@
 #include "mex.h"
 
 mxArray* ParamlistToStruct( const PARAMLIST& );
-mxArray* ParamToCells(      const PARAM& );
+mxArray* ParamToStruct(     const PARAM& );
+mxArray* ValuesToCells(     const PARAM& );
 mxArray* LabelsToCells(     const PARAM::labelIndexer&, size_t numEntries );
+
+void  StructToParamlist( const mxArray*, PARAMLIST& );
+PARAM StructToParam(     const mxArray*, const char* name );
+void  CellsToValues(     const mxArray*, PARAM& );
+void  CellsToLabels(     const mxArray*, PARAM::labelIndexer& );
+
+char* GetStringField( const mxArray*, const char* name );
 
 template<typename T>
 T*

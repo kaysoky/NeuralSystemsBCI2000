@@ -18,6 +18,7 @@ OR  = ||
 
 TARGETS = obj\bci_mex.lib \
           load_bcidat.dll \
+          convert_bciprm.dll \
                     
 MEXOBJ  = obj\bci_stubs.obj \
           obj\UBCI2000Data.obj \
@@ -43,7 +44,7 @@ MATLABPATH = ${BCIROOT}\lib\matlab
 
 BINDIR = ..\..\..\Tools\mex
 
-SUPPL = load_bcidat.m
+SUPPL = load_bcidat.m convert_bciprm.m
 
 DEFINES = _DEBUG;MATLAB_MEX_FILE;BCI_TOOL;BCI_MEX;NO_STRICT;_NO_VCL
 CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
