@@ -53,7 +53,7 @@ BINDISTNAME = BCI2000Setup
 # Names of top-level directories that should be contained in the binary distribution.
 BINDISTDIRS = batch data doc parms prog tools
 # Path/filename elements that should be excluded from the binary distribution
-NODISTFILES = *.tds *\CVS .empty
+NODISTFILES = *.tds *\CVS .empty *\.svn
 
 # Workaround macros to access shell operators.
 AND = &&
