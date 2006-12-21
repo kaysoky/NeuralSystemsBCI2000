@@ -447,6 +447,9 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
      // throw;
      }
   GetOverlappedResult(hdev.at(dev), &ov, &dwBytesReceived, FALSE);
+#ifdef TODO
+# error Use dwBytesReceived to loop until our buffer is actually filled.
+#endif
   if( mFloatOutput )
   {
     float* data = reinterpret_cast<float*>( pBuffer[ dev ] + HEADER_SIZE );
