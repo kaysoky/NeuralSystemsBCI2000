@@ -5,6 +5,7 @@
 
 #include <sys\types.h>
 #include <time.h>
+#include <vector>
 
 #include "UTaskUtil.h"
 
@@ -12,11 +13,9 @@
 
 #pragma package(smart_init)
 
-#define MAX_BLOCKSIZE   256
-
-int     rannumbers[MAX_BLOCKSIZE];
-time_t  randseed;
-int     rannumbers_count=-1;
+static std::vector<int>  rannumbers;
+static time_t            randseed;
+static int               rannumbers_count=-1;
 
 //--------------------------------------------------------------------
 // Random # generator ran1() from Press et. al.
@@ -69,6 +68,8 @@ void ShuffleBlocks( int blocksize )
 int     i,j;
 float   rval;
 
+ rannumbers.resize( blocksize );
+
  for (i=0; i<blocksize; i++)
   {
   rpt:    rval= ran1( &randseed );
@@ -87,6 +88,7 @@ int GetBlockRandomizedNumber( int blocksize )
 {
 int     retval;
 
+ rannumbers.resize( blocksize );
  // the first time, get a new seed
  if (rannumbers_count == -1)
     {
