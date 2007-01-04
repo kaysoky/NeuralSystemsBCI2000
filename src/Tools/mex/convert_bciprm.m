@@ -11,7 +11,8 @@ result = convert_bciprm( varargin )
 % definition strings.
 %
 % When the input is a cell array rather than a Matlab struct, convert_bciprm
-% will interpret the input as a list of BCI2000 parameter definition strings:
+% will interpret the input as a list of BCI2000 parameter definition strings,
+% and convert them into a parameter struct (as returned by load_bcidat):
 %
 %  parameter_struct = convert_bciprm( parameter_lines );
 %
