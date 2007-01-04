@@ -485,20 +485,22 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
 // **************************************************************************
 void gUSBampADC::Halt()
 {
- // stop the master first
+ // stop the slaves first?
+ // I had it backwards first (stopped the master first), but this
+ // apparently has problems with multiple amps
  for (unsigned int dev=0; dev<hdev.size(); dev++)
   {
-  if ((hdev.at(dev)) && (DeviceIDs.at(dev) == MasterDeviceID))
+  if ((hdev.at(dev)) && (DeviceIDs.at(dev) != MasterDeviceID))
      {
      GT_Stop(hdev.at(dev));
      GT_ResetTransfer(hdev.at(dev));
      GT_CloseDevice(&(hdev.at(dev)));
      }
   }
- // finally, stop the slaves
+ // stop the master last
  for (unsigned int dev=0; dev<hdev.size(); dev++)
   {
-  if ((hdev.at(dev)) && (DeviceIDs.at(dev) != MasterDeviceID))
+  if ((hdev.at(dev)) && (DeviceIDs.at(dev) == MasterDeviceID))
      {
      GT_Stop(hdev.at(dev));
      GT_ResetTransfer(hdev.at(dev));
