@@ -38,6 +38,7 @@ class gUSBampADC : public GenericADC
   string         MasterDeviceID;  // device ID for the master device (exactly one device has to be master)
   int            timeoutms;
   bool           mFloatOutput;
+  bool           digitalinput;
 };
 
 #endif // gUSBampADCH

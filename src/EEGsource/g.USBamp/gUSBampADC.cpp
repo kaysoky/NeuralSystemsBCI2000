@@ -56,22 +56,27 @@ gUSBampADC::gUSBampADC()
        "// high pass filter for pass band",
    "Source float FilterLowPass=    60 60 0 4000 "
        "// low pass filter for pass band",
-   "Source int FilterModelOrder= 4 4 1 10 "
+   "Source int FilterModelOrder= 8 8 1 12 "
        "// filter model order for pass band",
    "Source int FilterType= 1 1 1 2 "
        "// filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)",
    "Source int NotchEnabled= 1 1 0 1 "
        "// Enable notch (0=no, 1=yes)",
-   "Source float NotchHighPass=   50 50 0 70 "
+   "Source float NotchHighPass=   58 58 0 70 "
        "// high pass filter for notch filter",
-   "Source float NotchLowPass=    70 70 0 4000 "
+   "Source float NotchLowPass=    62 62 0 4000 "
        "// low pass filter for notch filter",
-   "Source int NotchModelOrder= 2 2 1 10 "
+   "Source int NotchModelOrder= 4 4 1 10 "
        "// filter model order for notch filter",
    "Source int NotchType= 1 1 1 2 "
        "// filter type for pass band (1=CHEBYSHEV, 2=BUTTERWORTH)",
    "Source list DeviceIDs= 1 auto "
        "// list of USBamps to be used (or auto)",
+   "Source int DigitalInput=     0 0 0 1 "
+        "// enable digital input: "
+            " 0: false,"
+            " 1: true"
+            " (enumeration)",
    "Source int SignalType=           0 0 0 1 "
         "// numeric type of output signal: "
             " 0: int16,"
@@ -143,7 +148,18 @@ void gUSBampADC::Preflight( const SignalProperties&,
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
    totalnumchannels += Parameter("SoftwareChDevices", dev);
   if( Parameter("SoftwareCh") != totalnumchannels )
-    bcierr << "# total channels has to equal sum of all channels over all devices" << endl;
+    bcierr << "# total channels has to equal sum of all channels over all devices. If the digital input is turned on, you have to take this into account." << endl;
+
+  // check for maximum # channels
+  for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
+   {
+   if (Parameter("DigitalInput") == 0)
+      if (Parameter("SoftwareChDevices", dev) > 16)
+         bcierr << "The g.USBamp only has 16 channels. Decrease SoftwareChDevices." << endl;
+   if (Parameter("DigitalInput") == 1)
+      if (Parameter("SoftwareChDevices", dev) > 17)
+         bcierr << "The g.USBamp only has 16 channels. You have DigitalInput turned on (which adds one channel), so you may specify a maximum of 17 channels. Decrease SoftwareChDevices." << endl;
+   }
 
   bool DeviceIDMaster=false;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
@@ -152,6 +168,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
   if( !DeviceIDMaster )
     bcierr << "the MasterDevice has to be one of the DeviceIDs" << endl;
 
+  /* the newest driver does not have this limitation
   bool goodBlockSize = true;
   for (unsigned int dev=0; dev<Parameter("DeviceIDs")->GetNumValues(); dev++)
    goodBlockSize = goodBlockSize && ((int)(Parameter("SoftwareChDevices", dev)*Parameter("SampleBlockSize")*sizeof(float))%512 == 0 );
@@ -159,6 +176,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
     bcierr << "currently, the size in bytes of each sample block has to be"
            << " a multiple of 512 (limitation of the driver)"
            << endl;
+  */
 
   //
   // From here down, determine device settings and verify if OK
@@ -278,6 +296,11 @@ bool    autoconfigure;
  else // otherwise configure the usual way (i.e., using serial numbers)
     autoconfigure=false;
 
+ if (Parameter("DigitalInput") == 1)
+    digitalinput=true;
+ else
+    digitalinput=false;
+
  for (unsigned int dev=0; dev<pBuffer.size(); dev++)
   if (pBuffer.at(dev)) delete [] pBuffer.at(dev);
 
@@ -367,6 +390,7 @@ bool    autoconfigure;
   ret=GT_SetGround(hdev.at(dev), CommonGround);         // connect the grounds from all four blocks on each device to common ground
   ret=GT_SetReference(hdev.at(dev), CommonReference);   // the same for the reference
   ret=GT_SetSampleRate(hdev.at(dev), samplingrate);
+  ret=GT_EnableTriggerLine(hdev.at(dev), digitalinput); // turn on the digital input if desired
   // ret=GT_EnableSC(hdev.at(dev), true);  // with the short cut mode, a TTL pulse on the SC connector puts the inputs on internal GND (we don't need this?)
 
   // here, we could check for whether or not the filter settings in the USBamp match what we want; if so; no need to change
@@ -384,7 +408,12 @@ bool    autoconfigure;
   for (int ch=0; ch<numchans.at(dev); ch++)
    channels[ch] = ch+1;
 
-  ret=GT_SetChannels(hdev.at(dev), channels, (UCHAR)numchans.at(dev));
+  // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
+  // (the last channel will be the digital input and transferred automatically
+  if (digitalinput)
+     ret=GT_SetChannels(hdev.at(dev), channels, (UCHAR)numchans.at(dev)-1);
+  else
+     ret=GT_SetChannels(hdev.at(dev), channels, (UCHAR)numchans.at(dev));
   delete [] channels;
   }
 
