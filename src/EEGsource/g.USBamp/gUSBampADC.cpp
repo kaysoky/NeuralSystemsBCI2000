@@ -256,6 +256,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
 // **************************************************************************
 void gUSBampADC::Initialize()
 {
+static  oldfilternumber=-999, oldnotchnumber=-999;
 bool    ret;
 int     filternumber, notchnumber;
 GND     CommonGround;
@@ -373,14 +374,11 @@ bool    autoconfigure;
   // in the current implementation, we set the same filter and notch on all channels
   // (otherwise, would be many parameters)
   // because it takes so long, set filters only when they have been changed
-  static oldfilternumber=-999, oldnotchnumber=-999;
   for (int ch=0; ch<numchans.at(dev); ch++)
    {
    if (oldfilternumber != filternumber) GT_SetBandPass(hdev.at(dev), ch+1, filternumber);
    if (oldnotchnumber != notchnumber) GT_SetNotch(hdev.at(dev), ch+1, notchnumber);
    }
-  oldfilternumber=filternumber;
-  oldnotchnumber=notchnumber;
 
   // set the channel list for sampling
   for (int ch=0; ch<numchans.at(dev); ch++)
@@ -400,7 +398,12 @@ bool    autoconfigure;
   if (DeviceIDs.at(dev) == MasterDeviceID)
      ret=GT_Start(hdev.at(dev));
 
-  mFloatOutput = ( Parameter( "SignalType" ) == 1 );
+ // let's remember the filternumbers for next time
+ // so we do not set the filters again if we do not have to
+ oldfilternumber=filternumber;
+ oldnotchnumber=notchnumber;
+
+ mFloatOutput = ( Parameter( "SignalType" ) == 1 );
 }
 
 
