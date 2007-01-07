@@ -91,7 +91,6 @@ gUSBampADC::gUSBampADC()
    "SourceTime 16 2347 0 0",
  END_STATE_DEFINITIONS
 
- m_hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
  pBuffer.resize(0);
  numdevices=0;
 
@@ -108,7 +107,6 @@ gUSBampADC::~gUSBampADC()
  Halt();
  for (unsigned int dev=0; dev<pBuffer.size(); dev++)
   if (pBuffer.at(dev)) delete [] pBuffer.at(dev);
- CloseHandle(m_hEvent);
 }
 
 
@@ -352,6 +350,14 @@ bool    autoconfigure;
  // configure all devices
  for (int dev=0; dev<numdevices; dev++)
   {
+  // create event handles for each device
+  m_hEvent[dev] = CreateEvent(NULL,FALSE,FALSE,NULL);
+  // set ov structure
+  ov[dev].hEvent = m_hEvent[dev];
+  ov[dev].Offset = 0;
+  ov[dev].OffsetHigh = 0;
+  //
+  ResetEvent(m_hEvent[dev]);
   numchans.at(dev)=Parameter("SoftwareChDevices", dev);
   iBytesperScan.at(dev)=numchans.at(dev)*sizeof(float);
   int pointsinbuffer=Parameter("SampleBlockSize")*numchans.at(dev);
@@ -379,6 +385,8 @@ bool    autoconfigure;
            << DeviceIDs.at( dev )
            << endl;
 
+  // set mode to normal ... this could also be impedance
+  GT_SetMode(hdev.at(dev), M_NORMAL);
   ret=GT_SetBufferSize(hdev.at(dev), Parameter( "SampleBlockSize" ) );
   // set all devices to slave except the one master
   // externally, the master needs to have its SYNC OUT wired to the SYNC IN
@@ -446,20 +454,18 @@ bool    autoconfigure;
 // **************************************************************************
 void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
 {
- OVERLAPPED ov;
+ bool  ret;
  DWORD dwBytesReceived = 0;
  DWORD dwOVret;
 
- ov.hEvent = m_hEvent;
- ov.Offset = 0;
- ov.OffsetHigh = 0;
+ for (unsigned int dev=0; dev<hdev.size(); dev++)
+  ret = GT_GetData(hdev.at(dev), pBuffer.at(dev), buffersize.at(dev), &(ov[dev]));
 
  // iterate through all devices
  int cur_ch=0;
  float *cur_sampleptr, cur_sample;
  for (unsigned int dev=0; dev<hdev.size(); dev++)
   {
-  bool ret = GT_GetData(hdev.at(dev), pBuffer.at(dev), buffersize.at(dev), &ov);
   // here one should implement a circular buffer running in a separate thread
   // to ensure that data are retrieved quickly enough
   // could use the Matlab 7.0 circular buffer: \MATLAB7\toolbox\daq\daq\src\include\cirbuf.h
@@ -467,7 +473,7 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
   //  Sleep(0);
   // we can't directly determine at the moment whether we lost some data
   // simply have a timeout that's 1.5 times one sample block and notify the operator that we were too slow :-(
-  dwOVret = WaitForSingleObject(m_hEvent, timeoutms);
+  dwOVret = WaitForSingleObject(m_hEvent[dev], timeoutms);
   if (dwOVret == WAIT_TIMEOUT)
      {
      bciout << "Signals lost during acquisition. "
@@ -478,7 +484,7 @@ void gUSBampADC::Process( const GenericSignal*, GenericSignal* signal )
      // GT_ResetTransfer(hdev.at(dev));
      // throw;
      }
-  GetOverlappedResult(hdev.at(dev), &ov, &dwBytesReceived, FALSE);
+  GetOverlappedResult(hdev.at(dev), &(ov[dev]), &dwBytesReceived, FALSE);
 #ifdef TODO
 # error Use dwBytesReceived to loop until our buffer is actually filled.
 #endif
@@ -539,6 +545,10 @@ void gUSBampADC::Halt()
      GT_CloseDevice(&(hdev.at(dev)));
      }
   }
+
+ // close event handles
+ for (unsigned int dev=0; dev<hdev.size(); dev++)
+  CloseHandle(m_hEvent[dev]);
 }
 
 // **************************************************************************

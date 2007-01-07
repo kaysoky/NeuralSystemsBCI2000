@@ -21,7 +21,8 @@ class gUSBampADC : public GenericADC
   virtual void Halt();
 
  private:
-  HANDLE         m_hEvent;
+  OVERLAPPED     ov[20];
+  HANDLE         m_hEvent[20];
   vector<string> DeviceIDs;
   vector<HANDLE> hdev;
   vector<BYTE *> pBuffer;
