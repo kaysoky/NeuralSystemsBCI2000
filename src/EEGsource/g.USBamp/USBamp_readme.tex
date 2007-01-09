@@ -74,7 +74,12 @@ parameters:
  \item [FilterEnabled]  Choose 1 if you want a pass band filter,
                         and 0 if you don't. The gUSBamp is a 
                         DC amplifier and thus you most likely
-                        will want a pass band filter.
+                        will want a pass band filter. Please note
+                        that, because the g.USBamp internally has
+                        a 5kHz antialiasing filter and always samples
+                        with 38.4kHz, you DO NOT need to enable any
+                        filter if you do not want. You will never
+                        experience aliasing.
  \item [FilterHighPass] High pass frequency for pass band. You need to query
                         the amp for possible values. See description
                         of the USBampgetinfo tool for more info.
