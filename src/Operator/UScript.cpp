@@ -164,10 +164,18 @@ bool    ok;
        {
        while ((line[idx] == '\0') || (line[idx] == ' '))
         idx++;
-       statelist->Add(&line[idx]);
-       idx=get_argument(idx, token, line, 256);
-       sprintf(buf, "%s: Added state %s to list", filename, token);
-       syslog->AddSysLogEntry(buf);
+       bool success = statelist->Add(&line[idx]);
+       if( success )
+       {
+         idx = get_argument( idx, token, line, 256 );
+         sprintf(buf, "%s: Added state \"%s\" to list of states.", filename, token);
+         syslog->AddSysLogEntry( buf, SYSLOG::logEntryNormal );
+       }
+       else
+       {
+         sprintf( buf, "%s: Could not parse state definition: \"%s\".", filename, &line[idx] );
+         syslog->AddSysLogEntry( buf, SYSLOG::logEntryError );
+       }
        return(1);
        }
     else
