@@ -22,7 +22,7 @@ function varargout = bci_muanalysis_gui(varargin)
 
 % Edit the above text to modify the response to help bci_muanalysis_gui
 
-% Last Modified by GUIDE v2.5 22-Jan-2007 15:32:36
+% Last Modified by GUIDE v2.5 23-Jan-2007 21:05:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,13 +67,13 @@ try
    evalin('base', 'BCI2k;');
 catch
 BCI2k = struct( ...
-   'General',        'empty', ...
-   'Files',          'empty', ...
-   'Protocol',       'empty', ...
-   'Conditioning',   'empty', ...
-   'FeatExtraction', 'empty', ...
-   'Statistics',     'empty' ...
-   )
+   'General',        [], ...
+   'Files',          [], ...
+   'Protocol',       [], ...
+   'Conditioning',   [], ...
+   'FeatExtraction', [], ...
+   'Statistics',     [] ...
+   );
 assignin('base', 'BCI2k', BCI2k);
 end% try
 
@@ -115,19 +115,19 @@ end% try
 if 0 == DatPathName
    return
 end% if
-nFiles = length(DatFileName);
 
 % convert to cell array even if single dat
-if nFiles ==1
+if isa(DatFileName, 'char')
    DatFileNames = {DatFileName};
-else
+else% if isa(DatFileName, 'cell')
    DatFileNames = DatFileName;
 end% if
+nFiles = length(DatFileNames);
 
 % Fill info into BCI2k structure
 BCI2k.Files.FileNames.Dats = {};
 for ff = 1:nFiles
-   BCI2k.Files.FileNames.Dats{ff} = fullfile(DatPathName, DatFileName{ff});
+   BCI2k.Files.FileNames.Dats{ff} = fullfile(DatPathName, DatFileNames{ff});
 end% for
 % guidata(hObject, handles);
 %
@@ -396,7 +396,7 @@ for module = 1:length(CommandList)
    try
       CurFun(hObject, eventdata, handles);
    catch
-      lasterr = lasterrror;
+      lasterr = lasterror;
       marioerror( 'guimodulefailed', ...
          [
          'Execution stopped in module: %s\n' ...
@@ -420,4 +420,16 @@ function Show_pushbutton_Callback(hObject, eventdata, handles)
 BCI2k = evalin('base', 'BCI2k');
 BCI_FeatVisualizer(BCI2k, 'Topo3','TopographViewer','SpectraViewer');
 % assignin('base', 'BCI2k', BCI2k);
+
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+handles.output = hObject;
+delete(hObject);
 

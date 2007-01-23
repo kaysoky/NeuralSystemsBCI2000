@@ -28,8 +28,10 @@ while (argn < nargin)
    argn = argn + 1;
    argument = varargin{argn};
    switch lower(argument)
-      case {'gui' '-gui'}
-         opt.LaunchGui = (argument(1) ~= '-');
+      case 'gui'
+         opt.LaunchGui = true;
+      case 'nogui'
+         opt.LaunchGui = false;
       % case bla bla
          %
       otherwise
@@ -52,7 +54,20 @@ addpath(mariopath{:});
 %% Launch
 if opt.LaunchGUI
    mariogui;
+else
+   
 end% if
+
+%% Clear BCI2k variable
+BCI2k = struct( ...
+   'General',        [], ...
+   'Files',          [], ...
+   'Protocol',       [], ...
+   'Conditioning',   [], ...
+   'FeatExtraction', [], ...
+   'Statistics',     [] ...
+   );
+% TODO: cleate full BCI2k structure
 
 %% ========================================================
 function pathchunk = findsubfolders(rootpath, excludenames)
