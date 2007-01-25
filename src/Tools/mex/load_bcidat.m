@@ -15,16 +15,16 @@
 %
 %
 %  For multiple files, number of channels, states, and signal type must be
-%  consistent.
+%  consistent; otherwise, load_bcidat will fail with an error message.
 %
 %  Signal data will be in raw A/D units, and will be represented by the 
 %  smallest Matlab data type that accomodates them.
 %
-%  The 'states' output variable will be a Matlab struct with BCI2000 state
+%  The optional 'states' output variable will be a Matlab struct with BCI2000 state
 %  names as struct member names, and the number of state value entries matching
 %  the first dimension of the 'signal' output variable.
 %
-%  The 'parameters' output variable will be a Matlab struct with BCI2000
+%  The optional 'parameters' output variable will be a Matlab struct with BCI2000
 %  parameter names as struct member names.
 %  Individual parameter values are represented as cell arrays of strings, and may
 %  be converted into numeric matrices by Matlab's str2double function.
