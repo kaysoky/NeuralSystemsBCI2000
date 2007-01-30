@@ -9,6 +9,9 @@
 function buildmex( varargin )
 % Usage: buildmex <options> <target>
 % For a list of possible options, see 'help mex'.
+%
+% If the buildmex function fails with a 'Could not detect a compiler 
+% on local system' error, run 'mex -setup'.
 
 TARGETS = { ...
     'load_bcidat', ...
@@ -57,6 +60,7 @@ switch( computer( 'arch' ) )
       };
 end;
 
+options = {};
 if( nargin < 1 )
   target = 'all';
 else
@@ -72,7 +76,7 @@ switch( target )
 
   case 'all'
     for( i = 1:length( TARGETS ) )
-      make( options{:}, TARGETS{i} );
+     buildmex( options{:}, TARGETS{i} );
     end
     
   otherwise
