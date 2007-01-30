@@ -17,11 +17,11 @@
 #pragma hdrstop
 
 #include "UBCI2000Data.h"
+#include "defines.h"
 
 #include <fstream>
 
 using namespace std;
-
 
 // **************************************************************************
 // Function:   BCI2000DATA
@@ -68,7 +68,7 @@ void BCI2000DATA::Reset()
   mSamplingRate = 1;
   mSignalType = SignalType::int16;
   mDataSize = 2;
-  mfpReadValueBinary = ReadValueInt16;
+  mfpReadValueBinary = IsBigEndianMachine() ? ReadValueInt16_BigEndian : ReadValueInt16_LittleEndian;
   mSampleNumber = 0;
 }
 
@@ -418,13 +418,16 @@ BCI2000DATA::ReadHeader()
   switch( mSignalType )
   {
     case SignalType::int16:
-      mfpReadValueBinary = ReadValueInt16;
+      mfpReadValueBinary 
+	    = IsBigEndianMachine() ? ReadValueInt16_BigEndian : ReadValueInt16_LittleEndian;
       break;
     case SignalType::int32:
-      mfpReadValueBinary = ReadValueInt32;
+      mfpReadValueBinary 
+	    = IsBigEndianMachine() ? ReadValueInt32_BigEndian : ReadValueInt32_LittleEndian;
       break;
     case SignalType::float32:
-      mfpReadValueBinary = ReadValueFloat32;
+      mfpReadValueBinary
+		= IsBigEndianMachine() ? ReadValueFloat32_BigEndian : ReadValueFloat32_LittleEndian;
       break;
   }
 
@@ -530,25 +533,57 @@ BCI2000DATA::ReadValue( int inChannel, unsigned long inSample )
   return mfpReadValueBinary( BufferSample( inSample ) + mDataSize * inChannel );
 }
 
-// These functions are not endianness-aware.
-GenericSignal::value_type
-BCI2000DATA::ReadValueInt16( const char* p )
+// Determine whether the code runs on a big endian machine.
+bool
+BCI2000DATA::IsBigEndianMachine()
 {
-  return *reinterpret_cast<const __int16*>( p );
+  uint8 t[] = { 0, 1 };
+  return *reinterpret_cast<uint16*>( t ) == 1;
+}
+
+// Read a little endian value on little endian machines.
+GenericSignal::value_type
+BCI2000DATA::ReadValueInt16_LittleEndian( const char* p )
+{
+  return *reinterpret_cast<const sint16*>( p );
 }
 
 GenericSignal::value_type
-BCI2000DATA::ReadValueInt32( const char* p )
+BCI2000DATA::ReadValueInt32_LittleEndian( const char* p )
 {
-  return *reinterpret_cast<const __int32*>( p );
+  return *reinterpret_cast<const sint32*>( p );
 }
 
 GenericSignal::value_type
-BCI2000DATA::ReadValueFloat32( const char* p )
+BCI2000DATA::ReadValueFloat32_LittleEndian( const char* p )
 {
-  return *reinterpret_cast<const float*>( p );
+  return *reinterpret_cast<const float32*>( p );
 }
 
+// Read a little endian value on big endian machines.
+GenericSignal::value_type
+BCI2000DATA::ReadValueInt16_BigEndian( const char* p )
+{
+  const uint8* bytes = reinterpret_cast<const uint8*>( p );
+  uint8 value[] = { bytes[1], bytes[0] };
+  return *reinterpret_cast<const sint16*>( value );
+}
+
+GenericSignal::value_type
+BCI2000DATA::ReadValueInt32_BigEndian( const char* p )
+{
+  const uint8* bytes = reinterpret_cast<const uint8*>( p );
+  uint8 value[] = { bytes[3], bytes[2], bytes[1], bytes[0] };
+  return *reinterpret_cast<const sint32*>( value );
+}
+
+GenericSignal::value_type
+BCI2000DATA::ReadValueFloat32_BigEndian( const char* p )
+{
+  const uint8* bytes = reinterpret_cast<const uint8*>( p );
+  uint8 value[] = { bytes[3], bytes[2], bytes[1], bytes[0] };
+  return *reinterpret_cast<const float32*>( value );
+}
 // **************************************************************************
 // Function:   ReadValue
 // Purpose:    Returns the value in the .raw file for a given sample, channel number, and run number

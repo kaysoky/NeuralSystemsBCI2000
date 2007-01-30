@@ -71,9 +71,13 @@ class BCI2000DATA
 
   int                DetermineRunNumber( unsigned long sample );
 
-  static GenericSignal::value_type ReadValueInt16( const char* );
-  static GenericSignal::value_type ReadValueInt32( const char* );
-  static GenericSignal::value_type ReadValueFloat32( const char* );
+  static bool                      IsBigEndianMachine();
+  static GenericSignal::value_type ReadValueInt16_LittleEndian( const char* );
+  static GenericSignal::value_type ReadValueInt32_LittleEndian( const char* );
+  static GenericSignal::value_type ReadValueFloat32_LittleEndian( const char* );
+  static GenericSignal::value_type ReadValueInt16_BigEndian( const char* );
+  static GenericSignal::value_type ReadValueInt32_BigEndian( const char* );
+  static GenericSignal::value_type ReadValueFloat32_BigEndian( const char* );
 
   PARAMLIST          mParamlist;
   STATELIST          mStatelist;
