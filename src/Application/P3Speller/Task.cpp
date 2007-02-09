@@ -106,6 +106,7 @@ TTask::TTask()
   "SelectedTarget 7 0 0 0",
   "SelectedRow 3 0 0 0",
   "SelectedColumn 3 0 0 0",
+  "CurrentMenu 5 0 0 0",
   "PhaseInSequence 2 0 0 0",
   "StimulusTime 16 17528 0 0",
  END_STATE_DEFINITIONS
@@ -1037,6 +1038,10 @@ int     ret;
        }
     }
 
+
+ //Write the value of cur_menu to the CurrentMenu state
+ State( "CurrentMenu" ) = trialsequence->cur_menu;
+ 
 // PB removed since brainkeys is no longer used
 /*
  // VK adding check for brainkeys
