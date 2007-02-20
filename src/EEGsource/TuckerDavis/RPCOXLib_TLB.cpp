@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -45,3 +48,5 @@ const GUID DIID__DRPcoXEvents = {0xD323A624, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0
 const GUID CLSID_RPcoX = {0xD323A625, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
 
 };     // namespace Rpcoxlib_tlb
+
+

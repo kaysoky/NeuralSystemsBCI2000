@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
@@ -704,4 +707,6 @@ void TTask::StopRun()
   for( size_t i = 0; i < mMissAnnouncements.size(); ++i )
     mMissAnnouncements[ i ].Stop();
 }
+
+
 

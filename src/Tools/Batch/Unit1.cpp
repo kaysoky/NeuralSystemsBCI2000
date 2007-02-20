@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -175,4 +178,6 @@ void __fastcall TForm1::RunParmClick(TObject *Sender)
         vRunParm->Text= RunParmfile->FileName;
 }
 //---------------------------------------------------------------------------
+
+
 

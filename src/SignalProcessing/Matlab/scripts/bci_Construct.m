@@ -8,6 +8,8 @@ function [ parameters, states ] = bci_Construct
 
 % BCI2000 filter interface for Matlab
 % juergen.mellinger@uni-tuebingen.de, 2005
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 parameters = { ...
   [ 'MatlabDemo matrix MyFilterMatrix= 3 2 1 2 3 4 5 6 0 0 0 ' ...

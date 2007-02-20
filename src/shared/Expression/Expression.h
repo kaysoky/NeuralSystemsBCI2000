@@ -29,6 +29,8 @@
 //   Operator precedence follows the order of appearance in the above list.
 //   As usual, braces ( ) may be used to override operator precedence.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////////////
 #ifndef EXPRESSION_H
 #define EXPRESSION_H

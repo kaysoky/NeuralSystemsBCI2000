@@ -16,6 +16,9 @@ result = convert_bciprm( varargin )
 %
 %  parameter_struct = convert_bciprm( parameter_lines );
 %
+% This file is part of the BCI2000 project.
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 %  This is a help file documenting the functionality contained in
 %  convert_bciprm.mex.

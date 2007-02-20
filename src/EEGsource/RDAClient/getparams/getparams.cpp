@@ -7,6 +7,8 @@
 // Description: A command line utility to get RDAClient source related parameters
 //              in BCI2000 parameter format.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <sstream>

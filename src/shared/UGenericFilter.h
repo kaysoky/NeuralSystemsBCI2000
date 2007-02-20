@@ -30,6 +30,8 @@
 // Description: This file declares a purely abstract GenericFilter interface
 //   which all BCI2000 filters are supposed to implement.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef UGenericFilterH
 #define UGenericFilterH

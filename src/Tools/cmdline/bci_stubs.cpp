@@ -4,6 +4,8 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A file to hold dummy implementations for functions that are
 //         unneeded/unwanted when a filter is wrapped into a command line tool.
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "shared/BCIDirectry.h"

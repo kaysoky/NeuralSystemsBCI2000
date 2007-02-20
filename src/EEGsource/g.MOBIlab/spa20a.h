@@ -76,6 +76,8 @@ typedef struct _ERRSTR// structure used to retrieve error strings
 
 SPA20A_API HANDLE __stdcall GT_OpenDevice(LPSTR lpPort);
 
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////
 // Close the serial interface
 // Input:	HANDLE hDevice: see OpenDevice

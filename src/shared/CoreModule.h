@@ -46,6 +46,8 @@
 // Revision 1.1  2006/03/30 15:42:32  mellinger
 // Initial version.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef CoreModuleH
 #define CoreModuleH

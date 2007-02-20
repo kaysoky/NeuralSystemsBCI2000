@@ -9,6 +9,8 @@
 //
 // Date:   Dec 10, 2003
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

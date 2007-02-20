@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 This "primObj" class resembls the objects in th 3D environment. There are two
 primitive objects:
@@ -492,3 +495,5 @@ void threeDText::threeDTextsetAll()
         threeDfontID = NULL;
         threeDoldFont = NULL;
 }//setAll
+
+

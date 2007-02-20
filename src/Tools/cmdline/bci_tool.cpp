@@ -4,6 +4,8 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Provides a basic structure for platform independent
 //              command line tools.
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"
 #include <iostream>

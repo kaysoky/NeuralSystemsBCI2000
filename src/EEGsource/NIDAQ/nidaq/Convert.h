@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /********************************* convert.h *******************************
 *
 *   Constant definitions used by the conversion functions
@@ -89,3 +92,5 @@ int Thermistor_CrntSrc_Buf_Convert (double Iex, unsigned long numPts,
 int Rt_to_Temp(double Rt, double *temp, int TempScale);
 
 #endif /* __convert_h__ */
+
+

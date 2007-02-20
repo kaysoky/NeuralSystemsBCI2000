@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
@@ -19,7 +22,9 @@ __fastcall TfAbout::TfAbout(TComponent* Owner)
 
 void __fastcall TfAbout::OKButtonClick(TObject *Sender)
 {
- Close();        
+ Close();
 }
 //---------------------------------------------------------------------------
+
+
 

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UBCItimeH
@@ -68,4 +71,8 @@ BCITIME::operator-( BCITIME timeToSubtract ) const
   return TimeDiff( timeToSubtract, *this );
 }
 #endif
+
+
+
+
 

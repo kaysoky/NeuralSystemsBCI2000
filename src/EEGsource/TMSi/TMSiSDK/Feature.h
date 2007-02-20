@@ -67,3 +67,5 @@ BOOLEAN FreeMem(LPCVOID Mem);
 LPVOID AllocateMem( UINT uBytes ) ;
 
 #endif // __FEATURE_H__
+
+

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #pragma hdrstop
 #include "FileCompare.h"
 #include "FileReader.h"
@@ -280,5 +283,7 @@ bool FileCompare::valuesDiffer(bool omitData, bool omitStates, bool omitTimes)
         }
         return differ;
 }
+
+
 
 

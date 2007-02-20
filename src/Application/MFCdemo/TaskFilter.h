@@ -12,6 +12,8 @@
 // Revision 1.1  2006/03/30 13:49:16  mellinger
 // Initial version.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef TaskFilterH
 #define TaskFilterH

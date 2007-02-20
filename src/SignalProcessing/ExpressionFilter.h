@@ -15,6 +15,8 @@
 //  Revision 1.2  2006/01/12 20:41:34  mellinger
 //  Added CVS id and log to comment.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ExpressionFilterH
 #define ExpressionFilterH

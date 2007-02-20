@@ -12,6 +12,8 @@
 //    This keeps operator windows from blocking
 //    the entire BCI2000 system when the user clicks a title bar.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////
 #ifndef WinMessageHookH
 #define WinMessageHookH

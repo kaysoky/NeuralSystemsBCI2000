@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef USysCommandH
 #define USysCommandH
 
@@ -54,3 +57,7 @@ std::istream& operator>>( std::istream& is, SysCommand& s )
   return is;
 }
 #endif // USysCommandH
+
+
+
+

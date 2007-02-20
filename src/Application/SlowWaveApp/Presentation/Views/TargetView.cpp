@@ -11,6 +11,8 @@
 // Changes: Thilo Hinterberger, Aug 21, 2002:
 //          Added continuous auditive result.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef __BORLANDC__

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /**************************************************************************/
 /* This file contains the defined names for all the registers that        */
 /* can be read/written by REG_Level_Read and REG_Level_Write.  The        */
@@ -350,3 +353,5 @@
 #define PCLPM16_DIGOUT_REG               11    /* Digital Output Register   |   0x04  | W/S  |  8-bit */
 #define PCLPM16_DIGIN_REG                12    /* Digital Input Register    |   0x05  |  R   |  8-bit */
 #define PCLPM16_MAX                      12
+
+

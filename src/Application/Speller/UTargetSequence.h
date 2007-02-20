@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UTargetSequenceH
@@ -55,5 +58,7 @@ public:		// User declarations
         TREE            *tree;                                          // tree that is being traversed down if the user makes selections
 };
 #endif
+
+
 
 

@@ -1,7 +1,10 @@
+function erg = make_movie(moviefilename, ressq, triallength, samplefreq, FPS, timestretch, displaymin, displaymax, titletxt, eloc_file)
 % erg = make_movie(moviefilename,  ressq, triallength, samplefreq, FPS, timestretch, displaymin, displaymax, titletxt)
 %
 % this function creates a movie from a given matrix (samples x channels)
-function erg = make_movie(moviefilename, ressq, triallength, samplefreq, FPS, timestretch, displaymin, displaymax, titletxt, eloc_file)
+%
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 % Generate the movie.
 figNumber=1;

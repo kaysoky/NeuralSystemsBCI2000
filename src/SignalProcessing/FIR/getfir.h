@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #define MAXORDER  512
 #define MAXCHANS   32
 #define MAXDATA   512
@@ -19,3 +22,5 @@ public:
         float mean( int, float * );
         float max( int, float * );
 } ;
+
+

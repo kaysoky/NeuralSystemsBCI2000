@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /********************************************************************
         BCIOutput contains the output routines for the
         BCITime application
@@ -543,6 +546,8 @@ void __fastcall BCIOutput::print_hdr(FILE *otf, char *time, int cols, int chans)
                 
         fprintf(otf,"\n");
  }
+
+
 
 
 

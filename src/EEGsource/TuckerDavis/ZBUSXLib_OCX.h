@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -169,3 +172,5 @@ using  namespace Zbusxlib_tlb;
 #pragma option pop
 
 #endif // ZBUSXLib_OCXH
+
+

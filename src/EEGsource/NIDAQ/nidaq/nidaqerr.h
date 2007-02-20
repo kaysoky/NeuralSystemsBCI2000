@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #if !defined (___nidaqerr_h___)
 #define ___nidaqerr_h___
 
@@ -349,3 +352,5 @@ struct sNIDAQErrorStruct
 #include "olderror.h" /* Included for backwards compatibility */
 
 #endif /* ___nidaqerr_h___ */
+
+

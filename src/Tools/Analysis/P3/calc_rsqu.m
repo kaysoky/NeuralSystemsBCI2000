@@ -10,6 +10,9 @@ function [ressq, amp1, amp2] = calc_rsqu(data1, data2, rorrsqu)
 %                  2 ... r values
 %       if rorrsq is not provided (i.e., function is called with two
 %       parameters only, it defaults to rsqu values)
+%
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 if (nargin == 2)
    rorrsqu=1;

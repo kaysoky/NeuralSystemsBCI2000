@@ -12,6 +12,8 @@
 // Changes:     Apr 3, 2003: Adaptations to the changes introduced by the error
 //              handling facilities.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

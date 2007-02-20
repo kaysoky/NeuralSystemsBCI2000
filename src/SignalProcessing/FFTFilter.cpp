@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -238,6 +241,8 @@ FFTFilter::ResetValueBuffers( size_t inSize )
     mValueBuffers[ i ].resize( inSize, 0 );
   }
 }
+
+
 
 
 

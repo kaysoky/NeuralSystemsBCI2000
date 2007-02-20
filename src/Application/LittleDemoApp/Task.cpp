@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -240,3 +243,5 @@ void TTask::Halt()
   for( WavePlayerContainer::iterator i = mWavePlayers.begin(); i != mWavePlayers.end(); ++i )
     i->Stop();
 }
+
+

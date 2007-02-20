@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UserDisplayH
@@ -27,3 +30,5 @@ public:		// User declarations
         float   TargetWidth, TargetHeight, TargetTextHeight;
 };
 #endif
+
+

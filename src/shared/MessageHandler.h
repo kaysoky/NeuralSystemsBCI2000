@@ -17,6 +17,8 @@
 //
 // Description: Facilities for centralized management of BCI2000 messages.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MessageHandlerH
 #define MessageHandlerH

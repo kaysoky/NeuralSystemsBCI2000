@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -656,4 +659,6 @@ int __fastcall TfMain::UserChannels( int inDefaultChannels ) const
   }
   return returnValue;
 }
+
+
 

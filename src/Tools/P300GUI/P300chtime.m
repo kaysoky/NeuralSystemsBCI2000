@@ -1,6 +1,8 @@
 %%%%%  function to plot the target and standard responses
 %%%%%  Dean Krusienski   1/2005
 %%%%%  Wadsworth Center/NYSDOH
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 function P300chtime(AllResponses,Type,windowlen,SamplingRate,tfile,SF)
 

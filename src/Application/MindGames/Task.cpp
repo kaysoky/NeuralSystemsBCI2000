@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*************************************************************************
 Task.cpp is the source code for the Right Justified Boxes task
 *************************************************************************/
@@ -207,5 +210,7 @@ static int OldRunning=0;
  OldRunning=CurrentRunning;
  WriteStateValues( svect );
 }
+
+
 
 

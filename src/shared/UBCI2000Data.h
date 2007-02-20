@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef UBCI2000DataH
 #define UBCI2000DataH
 
@@ -112,3 +115,7 @@ class BCI2000DATA
 };
 
 #endif // UBCI2000DataH
+
+
+
+

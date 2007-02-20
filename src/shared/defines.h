@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef DefinesH
 #define DefinesH
 
@@ -158,3 +161,7 @@ typedef signed int     sint32;
 typedef float          float32;
 
 #endif // DefinesH
+
+
+
+

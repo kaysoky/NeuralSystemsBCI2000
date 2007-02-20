@@ -38,6 +38,8 @@ BEGIN_MESSAGE_MAP(CMFCdemoDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 /////////////////////////////////////////////////////////////////////////////
 // CMFCdemoDlg Nachrichten-Handler
 

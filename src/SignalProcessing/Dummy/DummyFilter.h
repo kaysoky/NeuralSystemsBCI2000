@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef DummyFilterH
 #define DummyFilterH
 
@@ -14,5 +17,7 @@ class DummyFilter : public GenericFilter
 };
 
 #endif // DummyFilterH
+
+
 
 

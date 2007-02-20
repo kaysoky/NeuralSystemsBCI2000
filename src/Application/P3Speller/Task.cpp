@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -310,7 +313,7 @@ int     ret, numerpsamples, sampleblocksize;
         {
           val = Parameter("MUD", i, j );
           tempstring.cat_sprintf("%d ",val);
-        }  
+        }
         tempstring.cat_sprintf("\n");
       }
       WriteToSummaryFile(summaryfilename, tempstring);
@@ -331,7 +334,7 @@ int     ret, numerpsamples, sampleblocksize;
     if( !mConnection.is_open() )
       bciout << "Could not connect to " << destinationOutputAddress << endl;
 
-// PB removed since brainkeys is no longer used      
+// PB removed since brainkeys is no longer used
 /*
     mConnection2.close();
     mConnection2.clear();
@@ -340,7 +343,7 @@ int     ret, numerpsamples, sampleblocksize;
     mConnection2.open( mSocket2 );
     if( !mConnection2.is_open() )
       bciout << "Could not connect to " << destinationOutputAddress << endl;
-*/      
+*/
   }
 }
 
@@ -349,7 +352,7 @@ int     ret, numerpsamples, sampleblocksize;
 void TTask::StartRun()
 {
   Initialize();
-    
+
   userdisplay->HideMessage();
   sleepduration=0;
   AnsiString tempstring;
@@ -372,7 +375,7 @@ void TTask::StartRun()
   // if new run, reset numselections & selectionsummary
   numselections = 0;
   selectionsummary = "Selections in this run:\n";
-}     
+}
 
 void TTask::ResetTaskSequence()
 {
@@ -508,7 +511,7 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
 
         if ((pickedtargetptr->SoundFile != "") && (pickedtargetptr->SoundFile != " "))
           pickedtargetptr->PlaySound();
-        
+
         return(pickedtargetptr->CharDisplayInResult);
 
  /*shidong ends*/
@@ -517,7 +520,7 @@ sprintf(memotext, "selected targetID is %d, Display is %s, Result is %s.\r",
 
 // **************************************************************************
 // Function:   ProcessPreSequence
-// Purpose:    We just count how long we are in the pre-sequence period    
+// Purpose:    We just count how long we are in the pre-sequence period
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
@@ -962,13 +965,13 @@ int     ret;
         if(textresult.Length()>0)       //if textresult is not empty
         {
                 textresult = "";
-                
+
         }
         userdisplay->statusbar->resulttext="";
     }
     else // if we are in online mode
     {
-         if(debug) fprintf(f, "In OnlineMode.\n");  
+         if(debug) fprintf(f, "In OnlineMode.\n");
 
         if (textresult.Length()>0)
         {
@@ -982,18 +985,18 @@ int     ret;
                 }
                 // VK adding to fix scrolling when resumed
                 userdisplay->DisplayStatusBar();
-                
+
                 int textIndex = textresult.LastDelimiter(" ");          //get index of last space
                 userdisplay->statusbar->resulttext = textresult.SubString(textIndex+1, textresult.Length());
                 // VK Check if scrolling is needed?
                 //userdisplay->statusbar->goaltext = textresult.SubString(0, textIndex);
                 AnsiString goaltxt = textresult.SubString(0, textIndex);
                 userdisplay->statusbar->goaltext = ReturnScrolledString(goaltxt);
-                
+
                 if (userdisplay->statusbar->resulttext.Length()==0)    //check for null
                         userdisplay->statusbar->resulttext  = "";
                 if (userdisplay->statusbar->goaltext.Length()==0)       //check for null
-                        userdisplay->statusbar->goaltext  = ""; 
+                        userdisplay->statusbar->goaltext  = "";
         }
         else
         {
@@ -1075,7 +1078,7 @@ void TTask::StopRun()
  }
  else   //if offline
  {
-        
+
  }
  /*shidong ends*/
 
@@ -1157,3 +1160,5 @@ void TTask::WriteToSummaryFile(AnsiString filename, AnsiString text)
     fclose (summaryfile);
   }
 }
+
+

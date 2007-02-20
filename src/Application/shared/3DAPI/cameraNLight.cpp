@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 This "cameraNLight" class encapsulate the camera and the light in th 3D environment.
 */
@@ -108,3 +111,5 @@ void cameraNLight::setAll()
         lightBri=255;       //light brightness
 
 }//setAll
+
+

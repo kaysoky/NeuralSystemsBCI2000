@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef P3TemporalFilterH
@@ -48,5 +51,7 @@ private:
        int      numsamplesinERP, numchannels;
 };
 #endif // P3TemporalFilterH
+
+
 
 

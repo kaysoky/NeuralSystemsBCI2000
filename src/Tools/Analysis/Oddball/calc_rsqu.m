@@ -6,6 +6,9 @@ function [ressq, amp1, amp2] = calc_rsqu(data1, data2)
 %       in addition to r2 values, this function also calculates average amplitudes 
 %       for each sample and channel, for both data variables (i.e., conditions), and
 %       returns these in amp1 and amp2
+%
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 for ch=1:size(data1, 2)
  for samp=1:size(data1, 1)

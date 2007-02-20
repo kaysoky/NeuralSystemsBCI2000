@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 This "twoDOverlay" class resembles the 2D overlay on top of the 3D environment.
 The 2D
@@ -94,3 +97,5 @@ void twoDOverlay::setAll()
 
 
 }//setAll
+
+

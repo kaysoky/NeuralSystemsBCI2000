@@ -7,6 +7,8 @@
 // Revision 1.1  2006/07/04 18:44:25  mellinger
 // Put files into CVS.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef BR150_H
 #define BR150_H

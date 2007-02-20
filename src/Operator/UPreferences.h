@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UPreferencesH
@@ -102,4 +105,6 @@ public:		// User declarations
 extern PACKAGE TfPreferences *fPreferences;
 //---------------------------------------------------------------------------
 #endif
+
+
 

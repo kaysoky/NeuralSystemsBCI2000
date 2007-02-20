@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include <stdio.h>
 
 #ifndef BCInputH
@@ -63,7 +66,7 @@ class BCIInput
                 bool sfilterflag;
                 bool alignflag;
                 bool memflag;
-              
+
                 int tcount;                     // number of FIR coefficients
                 float tcoff[MAXLTH];            // FIR filter coefficients
 

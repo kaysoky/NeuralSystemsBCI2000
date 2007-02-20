@@ -13,6 +13,8 @@
 /*              will create a new state vector using the states
 /*              requested by the filter(s) present in the DLL.
 /*
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
 /*********************************************************************/
 #ifndef BCI_DLL_H
 #define BCI_DLL_H
@@ -240,3 +242,5 @@ typedef int __stdcall ( *HaltPtr )( void );
 #endif /* __cplusplus */
 
 #endif /* BCI_DLL_H */
+
+

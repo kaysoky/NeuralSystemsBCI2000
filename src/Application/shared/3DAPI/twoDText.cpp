@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 This "twoDText" class holds the variabled of the 2D text that is going to lay on
 the top of the 2D overlay
@@ -79,3 +82,5 @@ void twoDText::setAll()
         fontID = NULL;
         oldFont = NULL;
 }//setAll
+
+

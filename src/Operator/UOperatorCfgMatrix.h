@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UOperatorCfgMatrixH
@@ -19,3 +22,5 @@ public:		// User declarations
 extern PACKAGE TForm1 *Form1;
 //---------------------------------------------------------------------------
 #endif
+
+

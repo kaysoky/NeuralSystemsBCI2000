@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -597,6 +600,8 @@ void TfMain::ProcessCommandLineOptions()
   if( !batchMode )
     bConvert->Enabled = ( eDestinationFile->Text != "" && mFilenames->Text != "" );
 }
+
+
 
 
 

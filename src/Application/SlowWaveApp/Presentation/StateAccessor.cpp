@@ -14,6 +14,8 @@
 //              to improve BCI2000 compatibility. Note that optional states
 //              cannot be written to.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef __BORLANDC__

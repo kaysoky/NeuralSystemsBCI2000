@@ -21,6 +21,8 @@
 //           playback of audio files, with different volume and pan settings,
 //           on one device.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef WAVEPLAYERH

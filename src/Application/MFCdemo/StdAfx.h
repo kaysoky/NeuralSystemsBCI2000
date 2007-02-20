@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // stdafx.h : Include-Datei für Standard-System-Include-Dateien,
 //  oder projektspezifische Include-Dateien, die häufig benutzt, aber
 //      in unregelmäßigen Abständen geändert werden.
@@ -24,3 +27,5 @@
 // Microsoft Visual C++ fügt unmittelbar vor der vorhergehenden Zeile zusätzliche Deklarationen ein.
 
 #endif // !defined(AFX_STDAFX_H__D70ED245_AC69_4BE8_9886_C94F4BC70CEB__INCLUDED_)
+
+

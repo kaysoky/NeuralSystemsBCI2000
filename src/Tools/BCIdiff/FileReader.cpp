@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #pragma hdrstop
 #include "FileReader.h"
 
@@ -104,5 +107,7 @@ const char* FileReader::getFileName()
 {
         return mFileName;
 }
+
+
 
 

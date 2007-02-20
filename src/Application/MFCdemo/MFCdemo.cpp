@@ -20,6 +20,8 @@ BEGIN_MESSAGE_MAP(CMFCdemoApp, CWinApp)
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 /////////////////////////////////////////////////////////////////////////////
 // CMFCdemoApp Konstruktion
 

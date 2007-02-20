@@ -8,6 +8,8 @@
 //  Date:        May 27, 2005
 //  Author:      juergen.mellinger@uni-tuebingen.de
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy
 #pragma hdrstop

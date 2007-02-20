@@ -11,6 +11,8 @@
 //        is to allow using FFTW from a non-GPLed project by requiring
 //        user interaction and avoiding the use of copyrighted FFTW code.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef FFTLibWrapH
 #define FFTLibWrapH

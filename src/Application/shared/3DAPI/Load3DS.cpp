@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 
 #include "component.cpp"
 #pragma hdrstop
@@ -810,6 +813,8 @@ void Load3dsFile(t3DModel &g_3DModel)
 	glEnable(GL_COLOR_MATERIAL);						// Allow color
    */
 }//Load3dsFile
+
+
 
 
 

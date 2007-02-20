@@ -1,3 +1,5 @@
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 rows=5;
 columns=3;
@@ -42,3 +44,7 @@ for kk=1:steps:MUD.windowlen
     end
     
 end
+end
+
+
+

@@ -2,6 +2,9 @@ function erg = rvalue(q, r)
 %RSQU   erg=rvalue(r, q) computes the r-value for
 %       two one-dimensional distributions given by
 %       the vectors q and r
+%
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 
 q=double(q);

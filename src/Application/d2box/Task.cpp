@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*************************************************************************
 Task.cpp for the d2box task
 *************************************************************************/
@@ -944,5 +947,7 @@ void TTask::Process( const GenericSignal * Input, GenericSignal * Output )
         WriteStateValues();
         *Output = *Input;
 }
+
+
 
 

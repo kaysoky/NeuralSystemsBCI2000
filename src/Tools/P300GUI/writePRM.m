@@ -1,4 +1,6 @@
 function writePRM(filename,dir1,MUD)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 prmname=filename;
 filename=[filename '.mud'];

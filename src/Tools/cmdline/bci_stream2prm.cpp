@@ -3,6 +3,8 @@
 // Date:    Jan 26, 2005
 // Author:  juergen.mellinger@uni-tuebingen.de
 // Description: See the ToolInfo definition below.
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <string>

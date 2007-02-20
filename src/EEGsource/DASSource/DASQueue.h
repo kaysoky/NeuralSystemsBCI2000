@@ -9,6 +9,8 @@
 // Description: A class that interfaces with A/D boards supported by
 //              MeasurementComputing's Universal Library. 
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DASQUEUEH
 #define DASQUEUEH

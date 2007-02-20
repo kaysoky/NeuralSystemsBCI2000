@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #undef USE_LOGFILE
 //---------------------------------------------------------------------------
 #include "PCHIncludes.h"
@@ -236,6 +239,8 @@ void CalibrationFilter::Process(const GenericSignal *input, GenericSignal *outpu
     vis->Send2Operator(output);
   }
 }
+
+
 
 
 

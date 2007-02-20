@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #if !defined (___olderror_h___)
 #define ___olderror_h___
 
@@ -461,3 +464,5 @@ enum oldEasyioErrors
 };
 
 #endif /* ___olderror_h___ */
+
+

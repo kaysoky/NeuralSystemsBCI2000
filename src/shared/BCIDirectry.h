@@ -12,6 +12,8 @@
 //  Revision 1.10  2005/12/20 11:42:41  mellinger
 //  Added CVS id and log to comment.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ///////////////////////////////////////////////////
 #ifndef BCIDirectryH
 #define BCIDirectryH

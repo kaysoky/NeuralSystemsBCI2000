@@ -44,8 +44,8 @@ object User: TUser
   object tO: TLabel
     Left = 110
     Top = 24
-    Width = 283
-    Height = 483
+    Width = 311
+    Height = 447
     Alignment = taCenter
     Caption = 'O'
     Color = clBlack

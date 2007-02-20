@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*************************************************************************
 Task.cpp for the d3box task
 *************************************************************************/
@@ -1607,5 +1610,7 @@ if(printFlow) fprintf(b, "The input singal is %f, and %f.\n", ( *Input )( 1, 0 )
         WriteStateValues( Statevector );
         *Output = *Input;
 }
+
+
 
 

@@ -12,6 +12,8 @@
 //           Added copy constructor, assignment operator and related private
 //           member functions.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
 #include "PCHIncludes.h"

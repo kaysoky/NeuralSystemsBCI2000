@@ -30,6 +30,8 @@
 //              end of the file using the DLL_WRAPPER_<N>() macro where
 //              N stands for the number of arguments in the function call.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 

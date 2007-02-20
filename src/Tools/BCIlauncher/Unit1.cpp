@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -894,5 +897,7 @@ char *current_directory(char *path)
   getcurdir(0, path+3);  /* fill rest of string with current directory */
   return(path);
 }
+
+
 
 

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // MFCdemoDlg.h : Header-Datei
 //
 
@@ -56,3 +59,4 @@ protected:
 // Microsoft Visual C++ fügt unmittelbar vor der vorhergehenden Zeile zusätzliche Deklarationen ein.
 
 #endif // !defined(AFX_MFCDEMODLG_H__F7408965_B810_4100_A7B8_450D96E11AE9__INCLUDED_)
+

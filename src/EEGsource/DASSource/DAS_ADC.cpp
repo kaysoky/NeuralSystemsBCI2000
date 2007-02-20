@@ -10,6 +10,8 @@
 // Description: A source class that interfaces to the
 //              ComputerBoards/Measurement Computing Universal Library.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

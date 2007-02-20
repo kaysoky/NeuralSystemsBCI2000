@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "Environment3D.cpp"
 
 //demo program without textures, 2D overlay, 2D text
@@ -511,6 +514,8 @@ WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
                  }
         }//catch
 }//winMain
+
+
 
 
 

@@ -20,6 +20,8 @@
 // Support for EDF and GDF data formats.
 //
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GDF_H
 #define GDF_H

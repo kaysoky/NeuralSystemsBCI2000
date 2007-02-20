@@ -1,4 +1,6 @@
 function writeMUD(filename,dir1,MUD)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 prmname=filename;
 filename=[filename '.mud'];
@@ -26,5 +28,9 @@ dlmwrite([dir1 filename],' ','delimiter',' ','-append')
 
 dlmwrite([dir1 filename],'MUD:','delimiter',' ','-append')
 dlmwrite([dir1 filename],MUD.MUD,'delimiter',' ','-append')
+
+
+
+
 
 

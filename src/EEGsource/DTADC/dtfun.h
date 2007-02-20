@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // dtfun.h
 
 #include <olmem.h>
@@ -80,3 +83,5 @@ private:
 };
 
 __stdcall BufferDone( UINT, unsigned int, LPARAM );
+
+

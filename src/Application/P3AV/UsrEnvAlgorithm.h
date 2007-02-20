@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef UsrEnvAlgorithmH
 #define UsrEnvAlgorithmH
 
@@ -24,5 +27,7 @@ public:
   virtual const int GetStateValue(const unsigned int & uState) { return 0; }
 };
 #endif
+
+
 
 

@@ -1,10 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
+// $Id$
 //
 // File: ParallelSwitch.cpp
 //
 // Author: juergen.mellinger@uni-tuebingen.de
-//
-// Date: Oct 28, 2005
 //
 // Description: A program that uses the BCI2000 AppConnector interface to
 //       toggle the state of the printer port in response to zero crossings
@@ -17,6 +16,8 @@
 //       After successful driver installation, the program will work without
 //       administrator privileges as well.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include <windows.h>
 #include <iostream>

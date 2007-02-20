@@ -25,6 +25,8 @@
 # Revision 1.21  2006/01/17 17:16:43  mellinger
 # Added StateTransform filter.
 #
+# (C) 2000-2007, BCI2000 Project
+# http://www.bci2000.org
 ####################################################################
 
 !if !$d(BCB)

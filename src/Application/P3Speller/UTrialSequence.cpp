@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
@@ -1041,3 +1044,5 @@ void TRIALSEQUENCE::LoadPotentialAudio()
 
 //(stimuluscode > *(NumMatrixColumns+cur_menu)) && (stimuluscode <= NUM_STIMULI ) -> row
 //(stimuluscode > 0) && (stimuluscode <= *(NumMatrixColumns+cur_menu)) -> column
+
+

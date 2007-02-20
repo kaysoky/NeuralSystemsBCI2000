@@ -1,5 +1,7 @@
 function [MUD]=loadMUD(dir1,MUDfile)
-    
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
+
 % [MUDfile dir1]=uigetfile('*.mud','yo')
 
 % MUD.trainfile=dlmread([dir1 MUDfile],' ',[1 0 1 0])

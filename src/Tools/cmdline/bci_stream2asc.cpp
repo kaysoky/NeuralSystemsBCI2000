@@ -17,6 +17,8 @@
 // Revision 1.4  2006/01/12 20:37:14  mellinger
 // Adaptation to latest revision of parameter and state related class interfaces.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <iomanip>

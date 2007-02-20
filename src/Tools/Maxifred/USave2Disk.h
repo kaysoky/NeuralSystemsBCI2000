@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef USave2DiskH
@@ -33,3 +36,5 @@ public:		// User declarations
 extern PACKAGE TfSave2Disk *fSave2Disk;
 //---------------------------------------------------------------------------
 #endif
+
+

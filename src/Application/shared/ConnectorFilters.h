@@ -24,6 +24,8 @@
 //           ResultCode 2
 //           Signal(1,2) 1e-8
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ConnectorFiltersH
 #define ConnectorFiltersH

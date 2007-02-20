@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 
    file: modular_eeg_parser.h
@@ -48,3 +51,5 @@ typedef struct PACKETStruct        // the data structure for tranmission decodin
 } PACKETStruct;
 
 extern struct PACKETStruct PACKET;
+
+

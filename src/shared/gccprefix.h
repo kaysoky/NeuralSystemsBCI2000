@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef GCC_PREFIX_H
 #define GCC_PREFIX_H
 
@@ -11,3 +14,7 @@
 #define stricmp         strcasecmp
 
 #endif /* GCC_PREFIX_H */
+
+
+
+

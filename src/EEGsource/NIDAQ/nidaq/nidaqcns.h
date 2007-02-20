@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*********************************************************************/
 /*                                                                   */
 /* This file contains definitions for constants required for some    */
@@ -750,4 +753,6 @@
 #define ND_PARAM_SCAN_CLOCK_DEFAULT   	52880L
 #define ND_PARAM_NUM_CHANNELS         	52890L
 #endif
+
+
 

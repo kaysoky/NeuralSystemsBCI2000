@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #define HEADER_SIZE             6
 #define DISPLAY_CHANNELS        16
 #define DISPLAY_SAMPLES         768
@@ -43,4 +46,6 @@ typedef struct
         int     sample_freq;
         int     channels;
 } EEGFILEINFO;
+
+
 

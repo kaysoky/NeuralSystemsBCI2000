@@ -12,6 +12,8 @@
 // Changes: Feb 1, 2004, jm: Various adaptations to using the presentation
 //      classes within a BCI2000 application (#ifdef BCI2000).
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef PRESPARAMSH

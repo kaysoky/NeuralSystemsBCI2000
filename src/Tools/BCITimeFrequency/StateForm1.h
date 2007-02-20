@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 #define NSTATES 32
 #define NGROUPS 32
@@ -61,3 +64,5 @@ public:		// User declarations
 extern PACKAGE TUseStateForm *UseStateForm;
 //---------------------------------------------------------------------------
 #endif
+
+

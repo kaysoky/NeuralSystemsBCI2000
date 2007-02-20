@@ -1,10 +1,12 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
 #pragma hdrstop
 
 #include "Usr.h"
-#include "UParameter.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -1329,5 +1331,7 @@ void TUser::setTarget(int target[][NTARGS], int col, int row, AnsiString tTextur
         if (debug) fprintf(a, "cuboids vector's size is %d.\n",cuboidsVec.size());
 
 }//serTarget
+
+
 
 

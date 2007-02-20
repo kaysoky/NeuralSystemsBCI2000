@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef Unit1H
@@ -142,3 +145,5 @@ bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters);
 void stringSplit(const string& str, vector<string>& tokens, string delimiters);
 string lowerCase(string str);
 char *current_directory(char *path);
+
+

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -1183,3 +1186,5 @@ using  namespace Rpcoxlib_tlb;
 #pragma option pop
 
 #endif // RPCOXLib_TLBH
+
+

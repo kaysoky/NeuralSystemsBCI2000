@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //#include <stdio.h>
 #include <math.h>
 #include <stdarg.h>
@@ -16,5 +19,7 @@
 #include <gl\glaux.h>   // Header file for the GLaux library
 
 #pragma hdrstop
+
+
 
 

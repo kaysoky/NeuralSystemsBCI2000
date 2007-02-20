@@ -9,6 +9,8 @@
 // Description: A class that encapsulates connection details of the BrainAmp
 //              RDA socket interface.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 // Make sure Windows.h is _not_ included before the following line

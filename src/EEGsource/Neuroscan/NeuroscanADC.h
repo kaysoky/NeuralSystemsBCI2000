@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef NeuroscanADCH
 #define NeuroscanADCH
 
@@ -27,4 +30,6 @@ class NeuroscanADC : public GenericADC
 };
 
 #endif // NeuroscanADCH
+
+
 

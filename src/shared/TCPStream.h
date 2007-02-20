@@ -32,6 +32,8 @@
 //              tcpbuf: A helper class that does the actual send/receive
 //                calls.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef TCPSTREAMH
 #define TCPSTREAMH

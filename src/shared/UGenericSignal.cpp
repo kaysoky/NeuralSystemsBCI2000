@@ -25,6 +25,8 @@
 // Description: This file defines a SignalProperties base class and a
 //   GenericSignal class deriving from it.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

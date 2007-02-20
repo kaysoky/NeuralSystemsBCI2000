@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //--- ParmIO.h ---
 
 #ifndef PIO
@@ -22,7 +25,7 @@ private:
         void SaveStateForm( void );
         void SaveProcessForm( void );
         void SaveOutputForm( void );
-       
+
 public:
         ParIO( );
         void GetF( FILE *, TUseStateForm * ,TInputForm *, TProcessForm *, TOutputForm *);

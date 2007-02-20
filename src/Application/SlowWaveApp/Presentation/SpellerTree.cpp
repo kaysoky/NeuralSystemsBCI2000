@@ -21,6 +21,8 @@
 //                           considered infinitely costly unless someone
 //                           #defines REALLY_SHORTEST_PATHS.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef __BORLANDC__

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //*************************************************************************
 // MEM is the Maximum Entropy Method for Autoregressive
 //     spectral analysis adapted from Press et. al.
@@ -49,4 +52,6 @@ class MEM
       int get_mem( void );             // do computations
       int get_pwr( float * );          // fill array with data- returns # bins
 } ;
+
+
 

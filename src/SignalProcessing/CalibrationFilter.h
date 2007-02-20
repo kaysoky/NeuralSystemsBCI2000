@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef CalibrationFilterH
@@ -32,5 +35,7 @@ public:
   virtual void Process(const GenericSignal *Input, GenericSignal *Output);
 };
 #endif
+
+
 
 

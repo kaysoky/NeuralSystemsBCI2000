@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
@@ -46,4 +49,8 @@ unsigned short BCITIME::TimeDiff(unsigned short time1, unsigned short time2)
   const int maxdiffPlusOne = 1 << ( 8 * sizeof( time1 ) );
   return ( ( time2 + maxdiffPlusOne ) - time1 ) % maxdiffPlusOne;
 }
+
+
+
+
 

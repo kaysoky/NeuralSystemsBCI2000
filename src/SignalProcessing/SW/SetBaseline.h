@@ -11,6 +11,8 @@
 //           minor reformulations, reformatting.
 //           Feb 24, 2004, jm: Moved the TSetBaseline class into separate files.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SetBaselineH
 #define SetBaselineH

@@ -11,6 +11,8 @@
 // Revision 1.2  2006/07/04 16:02:21  mellinger
 // Introduced namespace "bci", put the ClassName() global function inside that namespace.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

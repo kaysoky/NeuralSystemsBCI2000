@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
@@ -146,4 +149,6 @@ const char *ptr;
 
  return(ptr);
 }
+
+
 

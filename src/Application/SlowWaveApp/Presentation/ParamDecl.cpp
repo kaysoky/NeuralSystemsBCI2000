@@ -27,6 +27,8 @@
 // Changes: Jan 31, 2004, jm: Made ParamDecl.cpp a separate file
 //      and introduced functions to replace extensive macros.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
 #include "PCHIncludes.h"

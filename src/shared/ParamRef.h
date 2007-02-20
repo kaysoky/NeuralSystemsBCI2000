@@ -28,6 +28,8 @@
 //         parameter values, and allows for convenient automatic type
 //         conversions.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////
 #ifndef ParamRefH
 #define ParamRefH

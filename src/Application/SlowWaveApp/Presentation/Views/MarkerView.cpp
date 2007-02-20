@@ -13,6 +13,8 @@
 //          May 13, 2003, jm: Introduced multiple auditory markers
 //          at arbitrary temporal offsets.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef __BORLANDC__

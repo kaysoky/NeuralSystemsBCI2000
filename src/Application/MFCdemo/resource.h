@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
 // Used by MFCdemo.rc
@@ -16,3 +19,5 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+

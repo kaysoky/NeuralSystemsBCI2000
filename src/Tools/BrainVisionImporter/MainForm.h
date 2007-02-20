@@ -10,6 +10,8 @@
 //              reads BCI 2000 compliant EEG files and outputs files needed
 //              for data import into the BrainVision Analyzer program.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef MainFormH

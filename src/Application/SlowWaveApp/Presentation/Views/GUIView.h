@@ -16,6 +16,8 @@
 //          Introduced separate handling of update region for fast updates
 //          without flicker.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef GUI_VIEW_H

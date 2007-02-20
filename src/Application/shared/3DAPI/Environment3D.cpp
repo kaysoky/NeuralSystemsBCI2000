@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 The "Environment3D" is the driver class for this project.  Most of the drawing
 will be taking place in the DrawScreen Function
@@ -5282,6 +5285,8 @@ LRESULT CALLBACK WndProc(HWND hWnd,     // Handle for this window
 
 
           
+
+
 
 
 

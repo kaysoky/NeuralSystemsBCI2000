@@ -15,6 +15,8 @@
 // Revision 1.3  2006/01/11 19:00:43  mellinger
 // Removed VCL classes when compiled with BCI_TOOL flag; removed "using namespace" from header file; introduced CVS id and log.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////////////
 #include "../PCHIncludes.h"
 #pragma hdrstop

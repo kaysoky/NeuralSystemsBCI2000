@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #pragma hdrstop
 #pragma package(smart_init)
 #include "UsrElementMixed.h"
@@ -76,4 +79,6 @@ void UsrElementMixed::Hide(void)
   UsrElementVideo::Hide();
   UsrElementAudio::Hide();
 }
+
+
 

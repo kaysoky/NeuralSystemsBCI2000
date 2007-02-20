@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef UsrEnvAlgorithmP3AVH
 #define UsrEnvAlgorithmP3AVH
 
@@ -63,5 +66,7 @@ private:
   InterpretationModeEnum m_eInterpretMode;
 };
 #endif
+
+
 
 

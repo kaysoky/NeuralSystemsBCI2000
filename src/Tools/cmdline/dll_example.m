@@ -3,7 +3,8 @@ function dll_example
 % MATLAB.
 % $Id$
 % Author: juergen.mellinger@uni-tuebingen.de
-% Date:   Jul 20, 2005
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 %
 % This example shows how to use a BCI2000 filter compiled as a dll when
 % processing data from Matlab.

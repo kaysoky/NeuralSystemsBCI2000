@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*
 
    file: modular_eeg_parser.cpp
@@ -275,3 +278,5 @@ void parse_byte_P3(unsigned char actbyte)   // parse a packet in P3 format
   The ID-string is currently "mEEGv1.0".
 
 */
+
+

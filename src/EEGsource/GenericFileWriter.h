@@ -9,6 +9,8 @@
 // Description: A virtual class interface for output filters encapsulating
 //       output file formats.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GenericFileWriterH
 #define GenericFileWriterH

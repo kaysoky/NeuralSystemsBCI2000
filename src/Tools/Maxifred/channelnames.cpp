@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include        <system.hpp>
 
 #include        "defines.h"
@@ -71,3 +74,5 @@ channelnames[61]="oz";
 channelnames[62]="o2";
 channelnames[63]="iz";
 }
+
+

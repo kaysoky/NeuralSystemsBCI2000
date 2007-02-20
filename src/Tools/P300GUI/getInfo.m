@@ -1,4 +1,6 @@
 function [signal,state,parms]=getInfo(traindatfiles,traindatdir,channels)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 fprintf(1,'Loading files...\n')
 

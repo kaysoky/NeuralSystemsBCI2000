@@ -7,6 +7,8 @@
 //
 // Description: A class that represents functionality common to all BCI2000
 //          core modules.
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////
 // $Log$
 // Revision 1.3  2006/07/04 16:08:06  mellinger

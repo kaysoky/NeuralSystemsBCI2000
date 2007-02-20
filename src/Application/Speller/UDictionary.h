@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UDictionaryH
@@ -24,3 +27,5 @@ public:		// User declarations
         const char    *GetMatchingWord(const char *prefix, bool casesensitive, int idx) const;
 };
 #endif
+
+

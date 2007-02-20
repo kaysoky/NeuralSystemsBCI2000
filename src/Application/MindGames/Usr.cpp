@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -281,6 +284,8 @@ float TUser::ran1( long *idum )
          if((temp=AM*iy) > RNMX) return RNMX;
          else return temp;
 }
+
+
 
 
 

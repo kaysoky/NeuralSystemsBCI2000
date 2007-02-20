@@ -12,6 +12,8 @@
 //
 // Changes: Feb 20, 2003, jm: Removed use of PJDropFiles component.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <vcl.h>

@@ -10,6 +10,8 @@
 //              output functions (e.g., for output into a file, or directly
 //              into an application via automation interfaces).
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 #ifndef BCIReaderH
 #define BCIReaderH

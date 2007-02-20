@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef UStatusH
 #define UStatusH
 
@@ -58,4 +61,8 @@ std::istream& operator>>( std::istream& is, STATUS& s )
   return is;
 }
 #endif // UStatusH
+
+
+
+
 

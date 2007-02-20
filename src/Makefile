@@ -1,10 +1,8 @@
 ##################################################################################
-#
+# $Id$
 # File:   Makefile
 #
 # Author: juergen.mellinger@uni-tuebingen.de
-#
-# Date:   Sept 20, 2002
 #
 # Description:
 #         Makefile for the BCI2000 project.
@@ -25,6 +23,8 @@
 #         broken and/or unneeded subprojects. If doing so, uncomment
 #         the line defining DONTCLEANME to protect your changes.
 #
+# (C) 2000-2007, BCI2000 Project
+# http://www.bci2000.org
 ###################################################################################
 
 # How to execute commands.

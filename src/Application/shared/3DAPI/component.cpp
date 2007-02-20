@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /*This is the object classes that store all the data structure needed to load .3ds file*/
 #include "header.h"
 
@@ -194,3 +197,5 @@ public:
         }
 
 };
+
+

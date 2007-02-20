@@ -1,6 +1,8 @@
 %%%%%  function to plot a 2D matrix of tiles
 %%%%%  Dean Krusienski   1/2005              
 %%%%%  Wadsworth Center/NYSDOH   
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 function Spectrogram(features,cax,ax1,ax2)
 

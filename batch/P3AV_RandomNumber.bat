@@ -1,3 +1,12 @@
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: $Id$
+::
+:: File: P3AV_RandomNumber.bat
+:: Description: BCI2000 startup script for the WinNT shell.
+::
+:: (C) 2000-2007, BCI2000 Project
+:: http://www.bci2000.org
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
 start operat.exe
 wait 0

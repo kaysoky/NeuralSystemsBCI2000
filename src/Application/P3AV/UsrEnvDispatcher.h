@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef UsrEnvDispatcherH
 #define UsrEnvDispatcherH
 
@@ -72,3 +75,5 @@ private: 	// User declarations
   bool m_bInterpret_Results; // 05/15/06 GS
 };
 #endif
+
+

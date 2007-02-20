@@ -10,6 +10,8 @@
 //              Feb 8, 2004, jm: Adaptations to changes in BCI2000 framework,
 //              minor reformulations, reformatting.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop

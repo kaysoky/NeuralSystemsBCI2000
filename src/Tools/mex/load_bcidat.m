@@ -39,8 +39,9 @@
 %  [ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
 %
 %
-%  The load_bcidat function is part of the BCI2000 project 
-%  (http://www.bciresearch.org).
+%  The load_bcidat function is part of the BCI2000 project.
+%  (C) 2000-2007, BCI2000 Project
+%  http://www.bci2000.org
 
 %  This is a help file documenting the functionality contained in
 %  load_bcimat.mex.

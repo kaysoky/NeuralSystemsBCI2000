@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef UTreeH
@@ -29,3 +32,5 @@ public:		// User declarations
         bool    HasChildren(int cur_parentID);
 };
 #endif
+
+

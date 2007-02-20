@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef _INC_RECORDERRDA
 #define _INC_RECORDERRDA
 // MODULE: RDA.h
@@ -77,3 +80,5 @@ struct RDA_MessageStop : RDA_MessageHeader
 #pragma pack()
 
 #endif //_INC_RECORDERRDA
+
+

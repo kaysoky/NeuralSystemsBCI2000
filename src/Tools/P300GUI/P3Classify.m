@@ -1,4 +1,6 @@
 function [predicted,result,score]=P3Classify(Responses,Code,Type,MUD,NumberOfSequences,trialnr,NumMatrixRows,NumMatrixColumns,charvect,wind);
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 windowlen=wind(2)-wind(1);
 numresponse=size(Responses,1);

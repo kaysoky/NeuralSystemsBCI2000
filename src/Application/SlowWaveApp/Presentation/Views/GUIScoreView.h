@@ -13,6 +13,8 @@
 //          Moved buffer update from Paint() into InvalidateBuffer() to
 //          adapt to new window invalidation scheme.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef GUI_SCORE_VIEW_H

@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include <stdio.h>
 #include <math.h>
 #include <conio.h>
@@ -362,3 +365,5 @@ int MEM::get_pwr( float values[] )
 
         return( n_bands );
 }                
+
+

@@ -1,4 +1,6 @@
 function [MUD]=SWLDA(Responses,Type,MAfilter,DecFact,windowlen,channels,SF,RS,trainfile,smprate,penter,premove,maxiter,softwarech,method)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 numchannels=size(Responses,3);
 Type=double(Type);

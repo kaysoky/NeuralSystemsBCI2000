@@ -1,4 +1,6 @@
 function [Responses]=GetP3Responses(signal,trialnr,windowlen,StimulusCode,StimulusType,Flashing,channels,SF,rndsmp)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
 fprintf(1, 'Collecting Responses...\n');
 
@@ -29,4 +31,8 @@ Responses.Type=StimulusType(ind);
 Responses.trial=trialnr(ind);
 Responses.channels=channels;
 Responses.SF=SF;
+
+
+
+
 

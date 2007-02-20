@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
@@ -102,4 +105,6 @@ void __fastcall TOKBottomDlg::cBit16Click(TObject *Sender)
  RecalculateBits();        
 }
 //---------------------------------------------------------------------------
+
+
 

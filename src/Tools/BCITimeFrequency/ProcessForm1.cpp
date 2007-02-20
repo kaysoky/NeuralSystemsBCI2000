@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
@@ -65,4 +68,6 @@ void __fastcall TProcessForm::vMemDataLengthChange(TObject *Sender)
         vMemDataLength->Text=  atoi(vMemWindows->Text.c_str() ) * atoi( vMemBlockSize->Text.c_str() );
 }
 //---------------------------------------------------------------------------
+
+
 

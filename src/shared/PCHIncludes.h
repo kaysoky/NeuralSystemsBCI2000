@@ -9,6 +9,8 @@
 //              Compile with the NO_PCHINCLUDES flag defined to compile without
 //              all these headers.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef PCHINCLUDES_H
 #define PCHINCLUDES_H

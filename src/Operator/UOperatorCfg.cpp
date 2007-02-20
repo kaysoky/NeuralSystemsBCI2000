@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
@@ -290,6 +293,8 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject *Sender)
  Application->MessageBox("The parameters that you select here will NOT be loaded !", "Reminder", MB_OK);
  fShowParameters->ShowModal();
 }
+
+
 
 
 

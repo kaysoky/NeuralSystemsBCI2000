@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 //---------------------------------------------------------------------------
 
 #ifndef InputForm1H
@@ -51,3 +54,5 @@ public:		// User declarations
 extern PACKAGE TInputForm *InputForm;
 //---------------------------------------------------------------------------
 #endif
+
+

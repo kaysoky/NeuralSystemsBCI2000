@@ -1,4 +1,6 @@
 function vers = eegplugin_BCI2000import(fig, trystrs, catchstrs)
+% (C) 2000-2007, BCI2000 Project
+% http://www.bci2000.org
 
     vers = 'BCI2000import1.00';
     if nargin < 3
@@ -24,3 +26,7 @@ function vers = eegplugin_BCI2000import(fig, trystrs, catchstrs)
     % create menus
     % ------------
     uimenu( menu, 'label', 'BCI2000 Data', 'callback', comcnt, 'separator', 'on' );
+    uimenu( menu, 'label', 'BCI2000 Data', 'callback', comcnt, 'separator', 'on' );
+
+
+

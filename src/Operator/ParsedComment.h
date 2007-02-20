@@ -9,6 +9,8 @@
 // Description: A class that handles parsing a parameter's comment
 //       for display purposes.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////
 #ifndef ParsedCommentH
 #define ParsedCommentH

@@ -384,3 +384,5 @@ PSIGNAL_FORMAT RTDevice::GetSignalFormat( PSIGNAL_FORMAT InfoBuffer )
 }
 
 
+
+

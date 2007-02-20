@@ -10,6 +10,8 @@
 // Revision 1.1  2006/01/17 18:16:05  mellinger
 // Initial version.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef StateTransformH
 #define StateTransformH

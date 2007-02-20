@@ -21,6 +21,8 @@
 //
 // Date:   Jun 18, 2004
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef LengthFieldH
 #define LengthFieldH

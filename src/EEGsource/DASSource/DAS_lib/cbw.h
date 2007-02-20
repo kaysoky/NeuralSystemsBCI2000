@@ -1345,3 +1345,5 @@
     short _pascal cbSetTrigger (short BoardNum, short TrigType, short LowThreshold, short HighThreshold);
 #endif  /* ifndef _NI_mswin16_ */
 #endif  /* ifndef NT_DRIVER */
+
+

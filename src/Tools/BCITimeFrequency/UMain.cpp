@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 /**************************************************************
         UMain is the main module of the BCITime application
 ***************************************************************/
@@ -542,3 +545,5 @@ void TfMain::ProcessCommandLineOptions()
     Application->Terminate();
   }
 }
+
+

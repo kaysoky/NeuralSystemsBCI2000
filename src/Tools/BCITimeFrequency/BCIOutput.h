@@ -1,3 +1,6 @@
+/* (C) 2000-2007, BCI2000 Project
+/* http://www.bci2000.org
+/*/
 #ifndef BCIOutputH
 #define BCIOutputH
 
@@ -23,7 +26,7 @@ class BCIOutput
                 float fstart;
                 double point[NGROUPS][MAXCHANS][MAXPOINTS];
                 float spoint[NGROUPS][MAXCHANS][MAXPOINTS];
-                float n[NGROUPS][MAXCHANS][MAXPOINTS];             // int ? float ? 
+                float n[NGROUPS][MAXCHANS][MAXPOINTS];             // int ? float ?
                 int sn[NGROUPS][MAXCHANS];                         // length of spectral data
                 double sspoint[NGROUPS][MAXCHANS][MAXPOINTS];
                 double xypoint[NGROUPS][MAXCHANS][MAXPOINTS];

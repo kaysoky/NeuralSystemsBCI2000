@@ -9,6 +9,8 @@
 // Revision 1.1  2006/05/04 17:06:43  mellinger
 // Initial revision.
 //
+// (C) 2000-2007, BCI2000 Project
+// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef NotchFilterH
 #define NotchFilterH
