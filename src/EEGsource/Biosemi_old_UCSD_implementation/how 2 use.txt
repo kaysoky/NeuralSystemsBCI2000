@@ -1,0 +1,12 @@
+Please find in a separate attachment the code / programs I developped to interface our BIOSEMI system to bci2000.
+Instructions:
+1. Unzip on a WinXP machine;
+2. Run disk1\setup.exe. This installs the ADAPT data suite ( you only need acquire.exe and the dlls). What it does is collect the biosemi data and write it to a buffer in a device independant format.
+3. Make sure that samplbuf.dll is in the search path.
+4. Copy BufferRead subdirectory under EEGsource in BCI2000. BufferRead.exd replaces EEGSource.exe. The actual code is in the class BufferReadADC. Since it is a work in progress and a rather old version, it is not very well documented, but the code is  simple and I believe there should be no problem getting it to work. I am currently working on a new version of the data acuisition, I will send you the update when it is ready.
+5. Running: You need to start acuire.exe before bci2000. Please note that acquisition parameters (sampling rate) are set in acuire.exe. Do not change the channel number default in acquire, just use the channels you need.
+
+Good luck!
+Andre Vankov, M.D,  Ph.D.
+
+Attachment follows.
