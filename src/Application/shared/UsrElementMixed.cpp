@@ -41,7 +41,7 @@ UsrElement * UsrElementMixed::GetClone(void) const
 {
   UsrElementMixed * pClonedElement = new UsrElementMixed(this->GetID());
   pClonedElement->SetCoordsRect(this->GetCoordsRect());
-  pClonedElement->SetCaptionAttributes(this->GetCaptionBkgdColor(), this->GetCaptionText(),
+  pClonedElement->SetCaptionAttributes(this->GetCaptionText(),
                                 this->GetCaptionTextColor(), this->GetCaptionTextHeight());
   // pClonedElement->SetIconFileName(this->GetIconFileName());    // DO NOT READ FROM DISC WHEN CLONING!!!
   pClonedElement->CloneIcon(this);
@@ -54,17 +54,32 @@ UsrElement * UsrElementMixed::GetClone(void) const
 
 // **************************************************************************
 // Function:   Render
-// Purpose:    This function renders the element
-// Parameters: form     - pointer to the form that will hold the element
-//             destRect - part of the form the element will be rendered into
+// Purpose:    This function renders the element onto a canvas
+// Parameters: canvas   - pointer to the canvas that the element will be
+//                        drawn upon
+//             destRect - part of the canvas the element will be rendered into
 // Returns:    N/A
 // **************************************************************************
-void UsrElementMixed::Render(TForm * form, const TRect & destRect)
+void UsrElementMixed::Render( TCanvas& ioCanvas, const TRect& inDestRect ) const
 {
-  UsrElementAudio::Render(form, destRect);
-  UsrElementCaption::Render(form, destRect);
-  UsrElementVideo::Render(form, destRect);
+  UsrElementAudio::Render(ioCanvas, inDestRect);
+  UsrElementCaption::Render(ioCanvas, inDestRect);
+  UsrElementVideo::Render(ioCanvas, inDestRect);
 }   // Render
+
+
+// **************************************************************************
+// Function:   Show
+// Purpose:    This function makes the element visible
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void UsrElementMixed::Show()
+{
+  UsrElementAudio::Show();
+  UsrElementCaption::Show();
+  UsrElementVideo::Show();
+}   // Show
 
 
 // **************************************************************************
@@ -75,10 +90,9 @@ void UsrElementMixed::Render(TForm * form, const TRect & destRect)
 // **************************************************************************
 void UsrElementMixed::Hide(void)
 {
+  UsrElementAudio::Hide();
   UsrElementCaption::Hide();
   UsrElementVideo::Hide();
-  UsrElementAudio::Hide();
-}
-
+}   // Hide
 
 

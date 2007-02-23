@@ -264,10 +264,11 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
   {
     m_ePhaseInSequence = PHASE_PRIORSEQUENCE;
     m_iCurrentPhaseDuration = 0;
+    m_bWaiting = false;
 
     pUsrEnv->HideElements(UsrEnv::COLL_ALL);
     // this will display 'focus on' message
-    pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
+    pUsrEnv->ShowElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::SELECT_FIRST);
 
     State( "SelectedStimulus" ) = 0;
     State( "PhaseInSequence" ) = 1;
@@ -286,6 +287,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
       m_ePhaseInSequence = PHASE_INTERSTIMULUS;
       m_iCurrentPhaseDuration = 0;
       m_bWaiting = true;
+      
       if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
         m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
                                       rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
@@ -306,7 +308,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
     {
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       // this will display what element we have to focus on message
-      pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_LAST, 0);
+      pUsrEnv->ShowElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::SELECT_LAST);
       if (pUsrEnv->GetActiveElements() != NULL)
         if (pUsrEnv->GetActiveElements()->GetElementPtrByIndex(1) != NULL)
         {
@@ -323,6 +325,8 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
   {
     m_ePhaseInSequence = PHASE_INTERSTIMULUS;
     m_iCurrentPhaseDuration = 0;
+    m_bWaiting = false;
+    
     if (m_iUsrElementMaxInterTime != m_iUsrElementMinInterTime)
       m_iUsrElementInterStimTime = m_iUsrElementOffTime + m_iUsrElementMinInterTime +
                                       rand() % (m_iUsrElementMaxInterTime - m_iUsrElementMinInterTime);
@@ -352,8 +356,9 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
   {
     m_ePhaseInSequence = PHASE_STIMULUS;
     m_iCurrentPhaseDuration = 0;
+    m_bWaiting = false;
 
-    pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_ALL, 0);
+    pUsrEnv->ShowElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::SELECT_ALL);
 
     State("SelectedStimulus")=0;
     State("PhaseInSequence")=2;
@@ -384,7 +389,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
                                                // when we are in no-interpret mode, then there won't be any active elements, and thus the command below won't do anything
                                                // now we're having a switch to simply show the results or not
       if (m_bDisplayResults)
-         pUsrEnv->DisplayElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::RENDER_FIRST, 0);
+         pUsrEnv->ShowElements(UsrEnv::COLL_ACTIVE, UsrElementCollection::SELECT_FIRST );
 
       if ((ePhaseInSequence == PHASE_FINISH) || (ePhaseInSequence == PHASE_FINISH_WO_RESULT))
          m_ePhaseInSequence = ePhaseInSequence;
@@ -397,8 +402,8 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
     }
     else if (m_iCurrentPhaseDuration == m_iUsrElementAfterSeqTime)
     {
-      m_iCurrentPhaseDuration = 0;
       m_ePhaseInSequence = PHASE_START;
+      m_iCurrentPhaseDuration = 0;
       m_bWaiting = true;
 
       pUsrEnv->HideElements(UsrEnv::COLL_ALL);
@@ -415,7 +420,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
       pUsrEnv->HideElements(UsrEnv::COLL_ACTIVE);
       const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
       if (m_bDisplayResults)   // 03/09/05 GS
-         pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
+         pUsrEnv->ShowElements(UsrEnv::COLL_GENERAL, UsrElementCollection::SELECT_SPECIFIC_ID, iPickedStimulusID);
 
       State("SelectedStimulus")=iPickedStimulusID;
     } // else
@@ -431,7 +436,7 @@ void UsrEnvDispatcher::Process(const GenericSignal * controlsignal, UsrEnv * pUs
          {
          const int iPickedStimulusID = ProcessResult(pGenericVisualization);  // display result
          if (m_bDisplayResults)                                   // 3/29/05 GS
-            pUsrEnv->DisplayElements(UsrEnv::COLL_GENERAL, UsrElementCollection::RENDER_SPECIFIC_ID, iPickedStimulusID);
+            pUsrEnv->ShowElements(UsrEnv::COLL_GENERAL, UsrElementCollection::SELECT_SPECIFIC_ID, iPickedStimulusID);
          State("SelectedStimulus")=iPickedStimulusID;
          }
       if (m_ePhaseInSequence == PHASE_FINISH_WO_RESULT)        // 1/28/04 GS

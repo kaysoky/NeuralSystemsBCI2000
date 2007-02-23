@@ -18,16 +18,14 @@ public:
   void SetIconFileName(const AnsiString & asIconFile);
   void CloneIcon(const UsrElementVideo *src);
   const AnsiString & GetIconFileName(void) const;
-  const TImage * GetIconImage(void) const;
+  const TPicture * GetIconPicture(void) const;
 
   /// Member functions
   virtual UsrElement * GetClone() const;
-  virtual void Render(TForm * form, const TRect & destRect);
-  virtual void Hide();
-  
-private:
+  virtual void Render( TCanvas& ioCanvas, const TRect& inDestRect ) const;
 
-  TImage * m_pIcon;
+private:
+  TPicture * m_pIcon;
   AnsiString m_asIconFile;
 };
 

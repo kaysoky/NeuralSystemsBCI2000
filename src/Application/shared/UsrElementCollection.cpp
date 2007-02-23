@@ -102,56 +102,73 @@ void UsrElementCollection::HideElements(void)
 
 
 // **************************************************************************
-// Function:   RenderElements
-// Purpose:    This function renders all elements onto the specified canvas
-// Parameters: canvas - pointer to the canvas that will hold the elements
+// Function:   ShowElements
+// Purpose:    This function marks specified elements as visible
+// Parameters: SelectionMode, ElementID specify which elements to mark
 // Returns:    N/A
 // **************************************************************************
-void UsrElementCollection::RenderElements(TForm * form, const RenderModeEnum eRenderMode,
-                                          const unsigned int & uElementID, const TRect & destRect)
+void UsrElementCollection::ShowElements( SelectionModeEnum inSelectionMode, unsigned int inElementID )
 {
   m_pCritSec->Acquire();
 
   std::list<UsrElement *>::const_iterator elementIter;
-  switch (eRenderMode)
+  switch (inSelectionMode)
   {
-    case RENDER_FIRST:
+    case SELECT_FIRST:
       if (m_usrElementList.size() != 0)
       {
         elementIter = m_usrElementList.begin();
         if ((*elementIter) != NULL)
-          (*elementIter)->Render(form, destRect);
+          (*elementIter)->Show();
       }
       break;
-    case RENDER_SPECIFIC_ID:
+    case SELECT_SPECIFIC_ID:
       for (elementIter = m_usrElementList.begin(); elementIter != m_usrElementList.end(); ++elementIter)
         if ((*elementIter) != NULL)
-          if ((*elementIter)->GetID() == uElementID)
+          if ((*elementIter)->GetID() == inElementID)
           {
-            (*elementIter)->Render(form, destRect);
+            (*elementIter)->Show();
             break;
           }
       break;
-    case RENDER_ALL:
+    case SELECT_ALL:
       for (elementIter = m_usrElementList.begin(); elementIter != m_usrElementList.end(); ++elementIter)
         if ((*elementIter) != NULL)
-          (*elementIter)->Render(form, destRect);
+          (*elementIter)->Show();
       break;
-    case RENDER_LAST:
+    case SELECT_LAST:
       {
         std::list<UsrElement *>::reverse_iterator relementIter;
         if (m_usrElementList.size() != 0)
         {
           relementIter = m_usrElementList.rbegin();
           if ((*relementIter) != NULL)
-            (*relementIter)->Render(form, destRect);
+            (*relementIter)->Show();
         }
       }
       break;
     default:
       break;
   }
-  
+
+  m_pCritSec->Release();
+} // ShowElements
+
+// **************************************************************************
+// Function:   RenderElements
+// Purpose:    This function renders all elements onto the specified canvas
+// Parameters: canvas - pointer to the canvas that will hold the elements
+// Returns:    N/A
+// **************************************************************************
+void UsrElementCollection::RenderElements( TCanvas& inCanvas, const TRect& inDestRect ) const
+{
+  m_pCritSec->Acquire();
+
+  for( std::list<UsrElement*>::const_iterator i = m_usrElementList.begin();
+       i != m_usrElementList.end(); ++i )
+    if( *i )
+      ( *i )->Render( inCanvas, inDestRect );
+
   m_pCritSec->Release();
 } // RenderElements
 

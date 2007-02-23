@@ -17,9 +17,9 @@ public:
 
   /// Member functions
   virtual UsrElement * GetClone() const;
-  virtual void Render(TForm * form, const TRect & destRect);
+  virtual void Render( TCanvas& ioCanvas, const TRect& inDestRect ) const;
+  virtual void Show();
   virtual void Hide();
-
 };
 
 #endif

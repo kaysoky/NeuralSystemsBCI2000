@@ -13,9 +13,7 @@
 // **************************************************************************
 UsrElementCaption::UsrElementCaption(const unsigned int & uElementID) : UsrElement(uElementID)
 {
-  m_pLabel = NULL;
   m_asText = "";
-  m_bkgdColor = clYellow;
   m_textColor = clBlack;
   m_uTextHeight = 8;
 }  // UsrElementCaption
@@ -29,8 +27,6 @@ UsrElementCaption::UsrElementCaption(const unsigned int & uElementID) : UsrEleme
 // **************************************************************************
 UsrElementCaption::~UsrElementCaption()
 {
-  if (m_pLabel != NULL) delete m_pLabel;
-  m_pLabel = NULL;
 }// ~UsrElementCaption
 
 
@@ -43,7 +39,7 @@ UsrElementCaption::~UsrElementCaption()
 UsrElement * UsrElementCaption::GetClone(void) const
 {
   UsrElementCaption * pClonedElement = new UsrElementCaption(this->GetID());
-  pClonedElement->SetCaptionAttributes(m_bkgdColor, m_asText, m_textColor, m_uTextHeight);
+  pClonedElement->SetCaptionAttributes(m_asText, m_textColor, m_uTextHeight);
   pClonedElement->SetCoordsRect(this->GetCoordsRect());
 
   return pClonedElement;
@@ -52,71 +48,31 @@ UsrElement * UsrElementCaption::GetClone(void) const
 
 // **************************************************************************
 // Function:   Render
-// Purpose:    This function renders this element onto the specified form
-// Parameters: form     - pointer to the form that will hold the element
-//             destRect - part of the form the element will be rendered into
+// Purpose:    This function renders the element onto a canvas
+// Parameters: canvas   - pointer to the canvas that the element will be
+//                        drawn upon
+//             destRect - part of the canvas the element will be rendered into
 // Returns:    N/A
 // **************************************************************************
-void UsrElementCaption::Render(TForm * form, const TRect & destRect)
+void UsrElementCaption::Render( TCanvas& ioCanvas, const TRect& inDestRect ) const
 {
-  // create the label, if not already exists
-  if ((m_asText != "") && (m_pLabel == NULL))
-    m_pLabel = new TLabel(static_cast<TComponent*>(NULL));
-    
-  if (m_pLabel != NULL)
+  if( Visible() )
   {
-    float fScaleY = ((float)destRect.Height()) / 65536.0f;
+    float fScaleY = ((float)inDestRect.Height()) / 65536.0f;
     int iScaledTextSize = (int)((float)m_uTextHeight * 655.36f * fScaleY);
-    form->Canvas->Font->Height = -iScaledTextSize;
-    form->Canvas->Font->Name = "Arial";
-    form->Canvas->Font->Style = TFontStyles() << fsBold;
-  
     // set the text's properties
-    m_pLabel->Parent = form;
-    m_pLabel->Caption = m_asText;
-    m_pLabel->Color = m_bkgdColor;
-    m_pLabel->Font->Color = m_textColor;
-    m_pLabel->Visible      = true;
-    m_pLabel->Enabled      = true;
-    m_pLabel->Layout       = tlBottom;
-    m_pLabel->Transparent  = true;
-    m_pLabel->Font->Height = -iScaledTextSize;
-    m_pLabel->Font->Name   = "Arial";
-    m_pLabel->Font->Style  = TFontStyles() << fsBold;
-    const TRect scaledRect(this->GetScaledCoordsRect(destRect));
-    const int iScaledTextPosX = abs((scaledRect.Left + scaledRect.Right) / 2 - form->Canvas->TextWidth(m_pLabel->Caption) / 2);
-    const int iScaledTextPosY = (scaledRect.Bottom + scaledRect.Top) / 2 - m_pLabel->Height - scaledRect.Height() / 2;
-    m_pLabel->Left = iScaledTextPosX;
-    m_pLabel->Top  = iScaledTextPosY;
+    ioCanvas.Font->Height = -iScaledTextSize;
+    ioCanvas.Font->Name = "Arial";
+    ioCanvas.Font->Style = TFontStyles() << fsBold;
+    ioCanvas.Font->Color = m_textColor;
+    ioCanvas.Brush->Style = bsClear;
+
+    const TRect scaledRect(this->GetScaledCoordsRect(inDestRect));
+    const int iScaledTextPosX = abs((scaledRect.Left + scaledRect.Right) / 2 - ioCanvas.TextWidth(m_asText) / 2);
+    const int iScaledTextPosY = (scaledRect.Bottom + scaledRect.Top) / 2 - ioCanvas.TextHeight(m_asText) - scaledRect.Height() / 2;
+    ioCanvas.TextOut( iScaledTextPosX, iScaledTextPosY, m_asText );
   }
 } // Render
-
-
-// **************************************************************************
-// Function:   Hide
-// Purpose:    This function hides this element
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void UsrElementCaption::Hide(void)
-{
-  // hide the text, if it exists
-  if (m_pLabel != NULL)
-    m_pLabel->Visible = false;
-}  // Hide
-
-
-// **************************************************************************
-// Function:   SetCaptionBkgdColor
-// Purpose:    This function sets the text color of this element
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void UsrElementCaption::SetCaptionBkgdColor(TColor bkgdColor)
-{
-  // set the color of the label
-  m_bkgdColor = bkgdColor;
-}// SetColor
 
 
 // **************************************************************************
@@ -164,10 +120,9 @@ void UsrElementCaption::SetCaptionTextHeight(const unsigned int & uTextHeight)
 // Parameters: N/A
 // Returns:    N/A
 // **************************************************************************
-void UsrElementCaption::SetCaptionAttributes(TColor bkgdColor, const AnsiString & asText,
+void UsrElementCaption::SetCaptionAttributes(const AnsiString & asText,
                                       TColor textColor, const unsigned int & uTextHeight)
 {
-  SetCaptionBkgdColor(bkgdColor);
   SetCaptionText(asText);
   SetCaptionTextColor(textColor);
   SetCaptionTextHeight(uTextHeight);

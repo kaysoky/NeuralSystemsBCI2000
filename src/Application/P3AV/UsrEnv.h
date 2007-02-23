@@ -17,9 +17,12 @@ public:
 
   enum ElementCollEnum
   {
-    COLL_GENERAL = 0,
-    COLL_ACTIVE,
-    COLL_ALL
+    BIT_GENERAL = 0,
+    BIT_ACTIVE,
+    // create flag values from bit numbers
+    COLL_GENERAL = ( 1 << BIT_GENERAL ),
+    COLL_ACTIVE  = ( 1 << BIT_ACTIVE ),
+    COLL_ALL     = COLL_GENERAL | COLL_ACTIVE,
   };
   /// Constructors and Destructors
   UsrEnv::UsrEnv(const AnsiString & asTaskName, UsrEnvAlgorithm * pAlgorithm);
@@ -34,8 +37,11 @@ public:
   void Initialize(TTask * pTask, TApplication * pApplication, const int & iTop, const int & iLeft,
                   const int & iWidth,const int & iHeight, TColor color);
   void HideElements(const ElementCollEnum eElementColl);
-  void DisplayElements(const ElementCollEnum eElementColl, const UsrElementCollection::RenderModeEnum eRenderMode,
-                       const unsigned int & uElementID);
+  void ShowElements( ElementCollEnum inElementColl,
+                     UsrElementCollection::SelectionModeEnum inSelectionMode,
+                     unsigned int inElementID = 0 );
+  void __fastcall RenderElements( TObject* );
+
   void DisplayMessage(const char * message);
   void HideMessage(void);
   void InitializeAlgorithm(TTask * pTask, TApplication * pApplication);
@@ -50,7 +56,24 @@ private:
   UsrElementCollection * m_pActiveUsrElementColl;
   UsrEnvAlgorithm * m_pAlgorithm;
   TLabel * m_pMessage;
-  TForm * m_pForm;
+  class UsrEnvForm : public TForm
+  {
+    public:
+      UsrEnvForm() : TForm( static_cast<TComponent*>(NULL), 1 ) {}
+      __fastcall ~UsrEnvForm() {}
+
+    private:
+      // Avoid flicker by specifying an empty WMEraseBkgnd handler.
+      void __fastcall WMEraseBkgnd( TWMEraseBkgnd& Message ) {}
+
+    BEGIN_MESSAGE_MAP
+      MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
+    END_MESSAGE_MAP( TForm )
+
+  }* m_pForm;
+  
+  Graphics::TBitmap* m_pOffscreenBuffer;
+
 };
 #endif
 

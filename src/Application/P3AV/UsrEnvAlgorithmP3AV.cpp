@@ -422,10 +422,7 @@ void UsrEnvAlgorithmP3AV::AddToActiveElements(UsrElementCollection * pActiveUsrE
     if (pClonedUsrElement != NULL)
     {
       if (UsrElementCaption * pUsrElementCaption = dynamic_cast<UsrElementCaption *>(pClonedUsrElement))
-      {
-        pUsrElementCaption->SetCaptionBkgdColor( TColor( long( Parameter( "BackgroundColor" ) ) ) );
         pUsrElementCaption->SetCaptionTextColor( TColor( long( Parameter( "CaptionColor" ) ) ) );
-      }
       pActiveUsrElementColl->AddElement(pClonedUsrElement);
     }// if (pClonedUsrElement != NULL)
   }//if (pUsrElement != NULL)

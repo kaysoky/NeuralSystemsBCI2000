@@ -57,12 +57,24 @@ UsrElement * UsrElementAudio::GetClone(void) const
 
 // **************************************************************************
 // Function:   Render
-// Purpose:    This function plays music for the element
-// Parameters: form     - pointer to the form that will hold the element
-//             destRect - part of the form the element will be rendered into
+// Purpose:    This function renders the element onto a canvas
+// Parameters: canvas   - pointer to the canvas that the element will be
+//                        drawn upon
+//             destRect - part of the canvas the element will be rendered into
 // Returns:    N/A
 // **************************************************************************
-void UsrElementAudio::Render(TForm * form, const TRect & destRect)
+void UsrElementAudio::Render( TCanvas& ioCanvas, const TRect& inDestRect ) const
+{
+}   // Render
+
+
+// **************************************************************************
+// Function:   Show
+// Purpose:    This function plays music for the element
+// Parameters: N/A
+// Returns:    N/A
+// **************************************************************************
+void UsrElementAudio::Show()
 {
   // plays the audio
   if (m_pAudio != NULL)
@@ -70,7 +82,7 @@ void UsrElementAudio::Render(TForm * form, const TRect & destRect)
     Hide();
     m_pAudio->Play();
   }
-}   // Render
+}   // Show
 
 
 // **************************************************************************
@@ -85,7 +97,7 @@ void UsrElementAudio::Hide(void)
   if (m_pAudio != NULL)
     if (m_pAudio->IsPlaying())
       m_pAudio->Stop();
-}
+}   // Hide
 
 
 // **************************************************************************

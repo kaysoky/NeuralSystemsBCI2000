@@ -11,13 +11,13 @@
 class UsrElementCollection
 {
 public:
-   // is used to tell the RenderElements function what element/s needs to be rendered
-  enum RenderModeEnum
+   // is used to tell the DisplayElements function what element/s needs to be displayed
+  enum SelectionModeEnum
   {
-    RENDER_FIRST = 0,
-    RENDER_SPECIFIC_ID,
-    RENDER_ALL,
-    RENDER_LAST
+    SELECT_FIRST = 0,
+    SELECT_SPECIFIC_ID,
+    SELECT_ALL,
+    SELECT_LAST
   };
   
   /// Constructors and Destructors
@@ -31,8 +31,8 @@ public:
   const bool AddElement(UsrElement * pElement);
   void DeleteElements(void);
   void HideElements(void);
-  void RenderElements(TForm * form, const RenderModeEnum eRenderMode,
-                      const unsigned int & uElementID, const TRect & destRect);
+  void ShowElements( SelectionModeEnum inSelectionMode, unsigned int inElementID );
+  void RenderElements( TCanvas& inCanvas, const TRect& inDestRect) const;
   UsrElement * GetElementPtrByID(const unsigned int & uElementID) const;
   UsrElement * GetElementPtrByIndex(const unsigned int & uIndex) const;
   const unsigned int GetElementID(const unsigned int & uIndex) const;

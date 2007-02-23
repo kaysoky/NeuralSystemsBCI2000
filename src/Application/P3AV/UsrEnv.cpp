@@ -19,6 +19,7 @@
 //
 // **************************************************************************
 UsrEnv::UsrEnv(const AnsiString & asTaskName, UsrEnvAlgorithm * pAlgorithm)
+: m_pOffscreenBuffer( new Graphics::TBitmap )
 {
   m_pUsrElementColl = NULL;
   m_pActiveUsrElementColl = NULL;
@@ -26,13 +27,14 @@ UsrEnv::UsrEnv(const AnsiString & asTaskName, UsrEnvAlgorithm * pAlgorithm)
   m_pAlgorithm = pAlgorithm;
 
   // create a new form
-  m_pForm = new TForm(static_cast<TComponent*>(NULL));
+  m_pForm = new UsrEnvForm;
   m_pForm->Top     = 50;
   m_pForm->Left    = 50;
   m_pForm->Width   = 300;
   m_pForm->Height  = 300;
   m_pForm->Caption = asTaskName;
   m_pForm->Color   = clDkGray;
+  m_pForm->OnPaint = &( this->RenderElements );
 
   // disable automatic scrollbars
   m_pForm->AutoScroll = false;
@@ -60,6 +62,7 @@ UsrEnv::~UsrEnv()
   if (m_pActiveUsrElementColl != NULL) delete m_pActiveUsrElementColl;
   if (m_pAlgorithm != NULL) delete m_pAlgorithm;
   if (m_pForm) m_pForm->Close(); delete m_pForm;
+  delete m_pOffscreenBuffer;
 
   m_pMessage = NULL;
   m_pUsrElementColl = NULL;
@@ -195,41 +198,24 @@ void UsrEnv::DisplayMessage(const char * message)
 
 
 // **************************************************************************
-// Function:   DisplayElements
+// Function:   ShowElements
 // Purpose:    To make active elements visible on the screen
-// Parameters: uElementID - what element needs to be displayed
-//             if uElementID = 0, display all the element
+// Parameters: SelectionMode, ElementID - what element(s) need to be displayed
 // Returns:    void
 //
 // **************************************************************************
-void UsrEnv::DisplayElements(const ElementCollEnum eElementColl, const UsrElementCollection::RenderModeEnum eRenderMode,
-                                   const unsigned int & uElementID)
+void UsrEnv::ShowElements( ElementCollEnum inElementColl,
+                           UsrElementCollection::SelectionModeEnum inSelectionMode,
+                           unsigned int inElementID )
 {
-  if (m_pForm == NULL) return;
-  switch (eElementColl)
-  {
-    case COLL_GENERAL:
-      if (m_pUsrElementColl != NULL)
-        m_pUsrElementColl->RenderElements(m_pForm, eRenderMode, uElementID,
-                                          TRect(0, 0, m_pForm->ClientWidth, m_pForm->ClientHeight));
-      break;
-    case COLL_ACTIVE:
-      if (m_pActiveUsrElementColl != NULL)
-        m_pActiveUsrElementColl->RenderElements(m_pForm, eRenderMode, uElementID,
-                                          TRect(0, 0, m_pForm->ClientWidth, m_pForm->ClientHeight));
-      break;
-    case COLL_ALL:
-      if (m_pUsrElementColl != NULL)
-        m_pUsrElementColl->RenderElements(m_pForm, eRenderMode, uElementID,
-                                          TRect(0, 0, m_pForm->ClientWidth, m_pForm->ClientHeight));
-      if (m_pActiveUsrElementColl != NULL)
-        m_pActiveUsrElementColl->RenderElements(m_pForm, eRenderMode, uElementID,
-                                          TRect(0, 0, m_pForm->ClientWidth, m_pForm->ClientHeight));
-      break;
-    default:
-      break;
-  }
-} // DisplayElements
+  if( ( inElementColl & COLL_GENERAL ) && ( m_pUsrElementColl != NULL ) )
+    m_pUsrElementColl->ShowElements( inSelectionMode, inElementID );
+
+  if( ( inElementColl & COLL_ACTIVE ) && ( m_pActiveUsrElementColl != NULL ) )
+    m_pActiveUsrElementColl->ShowElements( inSelectionMode, inElementID );
+
+  m_pForm->Invalidate();
+} // ShowElements
 
 
 // **************************************************************************
@@ -239,28 +225,48 @@ void UsrEnv::DisplayElements(const ElementCollEnum eElementColl, const UsrElemen
 // Returns:    void
 //
 // **************************************************************************
-void UsrEnv::HideElements(const ElementCollEnum eElementColl)
+void UsrEnv::HideElements(const ElementCollEnum inElementColl)
 {
-  switch (eElementColl)
+  if( inElementColl & COLL_GENERAL )
   {
-    case COLL_GENERAL:
-      if (m_pUsrElementColl != NULL)
-        m_pUsrElementColl->HideElements();
-      break;
-    case COLL_ACTIVE:
-      if (m_pActiveUsrElementColl != NULL)
-        m_pActiveUsrElementColl->HideElements();
-      break;
-    case COLL_ALL:
-      if (m_pUsrElementColl != NULL)
-        m_pUsrElementColl->HideElements();
-      if (m_pActiveUsrElementColl != NULL)
-        m_pActiveUsrElementColl->HideElements();
-      break;
-    default:
-      break;
+    if (m_pUsrElementColl != NULL)
+      m_pUsrElementColl->HideElements();
   }
+
+  if( inElementColl & COLL_ACTIVE )
+  {
+    if (m_pActiveUsrElementColl != NULL)
+      m_pActiveUsrElementColl->HideElements();
+  }
+
+  m_pForm->Invalidate();
 } // HideElements
+
+
+// **************************************************************************
+// Function:   RenderElements
+// Purpose:    Draw visible elements into a form
+// Parameters: Form to draw into
+// Returns:    void
+//
+// **************************************************************************
+void __fastcall UsrEnv::RenderElements( TObject* ioSender )
+{
+  TForm* pForm = dynamic_cast<TForm*>( ioSender );
+  if( pForm )
+  {
+    m_pOffscreenBuffer->Height = pForm->ClientHeight;
+    m_pOffscreenBuffer->Width = pForm->ClientWidth;
+    m_pOffscreenBuffer->Canvas->Brush->Color = pForm->Color;
+    m_pOffscreenBuffer->Canvas->FillRect( pForm->ClientRect );
+    if( m_pUsrElementColl != NULL )
+      m_pUsrElementColl->RenderElements( *m_pOffscreenBuffer->Canvas, pForm->ClientRect );
+    if( m_pActiveUsrElementColl != NULL )
+      m_pActiveUsrElementColl->RenderElements( *m_pOffscreenBuffer->Canvas, pForm->ClientRect );
+
+    pForm->Canvas->CopyRect( pForm->Canvas->ClipRect, m_pOffscreenBuffer->Canvas, pForm->ClientRect );
+  }
+} // RenderElements
 
 
 // **************************************************************************

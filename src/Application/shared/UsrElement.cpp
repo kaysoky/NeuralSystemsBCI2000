@@ -14,8 +14,10 @@
 // Parameters: uElementID - ID of the user element
 // Returns:    N/A
 // **************************************************************************
-UsrElement::UsrElement(const unsigned int & uElementID) : m_uElementID(uElementID),
-                                                          m_rectElementCoords(0, 0, 0, 0)
+UsrElement::UsrElement(const unsigned int & uElementID)
+: m_uElementID(uElementID),
+  m_rectElementCoords(0, 0, 0, 0),
+  m_bVisible( false )
 {
 }// UsrElement
 
@@ -29,22 +31,6 @@ UsrElement::UsrElement(const unsigned int & uElementID) : m_uElementID(uElementI
 UsrElement::~UsrElement()
 {
 } // ~UsrElement
-
-
-// **************************************************************************
-// Function:   GetClone
-// Purpose:    This function clones a particular element by "deep-copying" the old one
-// Parameters: N/A
-// Returns:    pointer to the cloned element
-// **************************************************************************
-UsrElement * UsrElement::GetClone(void) const
-{
- UsrElement * pClonedElement = new UsrElement(m_uElementID);
- if (pClonedElement)
-  pClonedElement->SetCoordsRect(m_rectElementCoords);
-
- return pClonedElement;
-}// GetClone
 
 
 // **************************************************************************

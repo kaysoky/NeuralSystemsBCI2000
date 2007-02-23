@@ -51,40 +51,20 @@ UsrElement * UsrElementVideo::GetClone(void) const
 
 // **************************************************************************
 // Function:   Render
-// Purpose:    This function renders this element onto the specified form
-// Parameters: form     - pointer to the form that will hold the element
-//             destRect - part of the form the element will be rendered into
+// Purpose:    This function renders the element onto a canvas
+// Parameters: canvas   - pointer to the canvas that the element will be
+//                        drawn upon
+//             destRect - part of the canvas the element will be rendered into
 // Returns:    N/A
 // **************************************************************************
-void UsrElementVideo::Render(TForm * form, const TRect & destRect)
+void UsrElementVideo::Render( TCanvas& ioCanvas, const TRect& inDestRect ) const
 {
-  // set the icon's properties
-  if (m_pIcon)
+  if( Visible() && m_pIcon != NULL )
   {
-    m_pIcon->Parent = form;
-    m_pIcon->Visible = true;
-    m_pIcon->Enabled = true;
-    m_pIcon->Stretch = true;
-    const TRect scaledRect(this->GetScaledCoordsRect(destRect));
-    m_pIcon->Left    = scaledRect.Left + 1;
-    m_pIcon->Top     = scaledRect.Top + 1;
-    m_pIcon->Width   = scaledRect.Width() - 2;
-    m_pIcon->Height  = scaledRect.Height() - 2;
+    TRect scaledRect( this->GetScaledCoordsRect( inDestRect ) );
+    ioCanvas.StretchDraw( scaledRect, m_pIcon->Graphic );
   }
 }   // Render
-
-
-// **************************************************************************
-// Function:   Hide
-// Purpose:    This function hides this element
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-void UsrElementVideo::Hide(void)
-{
-  // hide the icon, if it exists
-  if (m_pIcon) m_pIcon->Visible = false;
-}
 
 
 // **************************************************************************
@@ -98,14 +78,14 @@ void UsrElementVideo::SetIconFileName(const AnsiString & asIconFile)
   m_asIconFile = asIconFile;
   // create the icon, if not already exists
   if ((m_asIconFile != "") && (m_pIcon == NULL))
-    m_pIcon = new TImage(static_cast<TComponent*>(NULL));
+    m_pIcon = new TPicture;
   // set the icon's properties
   if (m_pIcon)
   {
     bool bError(false);
     try
     {
-      m_pIcon->Picture->LoadFromFile(m_asIconFile);
+      m_pIcon->LoadFromFile(m_asIconFile);
     }
     catch( EInOutError & )
     {
@@ -122,8 +102,8 @@ void UsrElementVideo::SetIconFileName(const AnsiString & asIconFile)
     }
     // change coordinates of the element according to aspect ration
     float fAspectRatio(0.0f);
-    if (m_pIcon->Picture->Width != 0)
-      fAspectRatio = (float)m_pIcon->Picture->Height / (float)m_pIcon->Picture->Width;
+    if (m_pIcon->Width != 0)
+      fAspectRatio = (float)m_pIcon->Height / (float)m_pIcon->Width;
     SetCoordsRect(GetCoordsRect().Width(), fAspectRatio, true);
   }
 } // SetIconFileName
@@ -140,13 +120,13 @@ void UsrElementVideo::CloneIcon(const UsrElementVideo *src)
   m_asIconFile = src->GetIconFileName();
   // create the icon, if not already exists
   if ((m_asIconFile != "") && (m_pIcon == NULL))
-     m_pIcon= new TImage(static_cast<TComponent*>(NULL));
+     m_pIcon= new TPicture;
   // set the icon's properties
   if (m_pIcon)
   {
     try
     {
-      m_pIcon->Picture->Assign((TPersistent *)(src->GetIconImage()->Picture));
+      m_pIcon->Assign(src->m_pIcon);
     }
     catch(...)
     {
@@ -157,8 +137,8 @@ void UsrElementVideo::CloneIcon(const UsrElementVideo *src)
     float fAspectRatio(0.0f);
     if (m_pIcon)
        {
-       if (m_pIcon->Picture->Width != 0)
-         fAspectRatio = (float)m_pIcon->Picture->Height / (float)m_pIcon->Picture->Width;
+       if (m_pIcon->Width != 0)
+         fAspectRatio = (float)m_pIcon->Height / (float)m_pIcon->Width;
        SetCoordsRect(GetCoordsRect().Width(), fAspectRatio, true);
        }
   }
@@ -179,11 +159,11 @@ const AnsiString & UsrElementVideo::GetIconFileName(void) const
 
 // **************************************************************************
 // Function:   GetIconPicture
-// Purpose:    This function returns the icon picture (i.e., TImage property)
+// Purpose:    This function returns the icon picture (i.e., TPicture property)
 // Parameters: N/A
-// Returns:    pointer to this icon's TImage
+// Returns:    pointer to this icon's TPicture
 // **************************************************************************
-const TImage * UsrElementVideo::GetIconImage(void) const
+const TPicture * UsrElementVideo::GetIconPicture(void) const
 {
   return m_pIcon;
 } // GetIconPicture

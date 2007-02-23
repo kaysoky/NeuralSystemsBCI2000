@@ -28,17 +28,19 @@ public:
   /// Member functions
   const TRect GetScaledCoordsRect(const TRect & destRect) const ;
   const bool SelectionSucceeded(CURSOR * pCursor) const;
+  bool Visible() const { return m_bVisible; }
 
   /// Virtual Member function
-  virtual UsrElement * GetClone() const;
-  virtual void Render(TForm * form, const TRect & destRect) {};
-  virtual void Hide() {};
+  virtual UsrElement * GetClone() const = 0;
+  virtual void Render( TCanvas& ioCanvas, const TRect& inDestRect ) const = 0;
+  virtual void Show() { m_bVisible = true; }
+  virtual void Hide() { m_bVisible = false; }
 
 private:
   /// Member variables
   unsigned int m_uElementID; // element ID
   TRect        m_rectElementCoords; // coords of element expressed by TRect class
-
+  bool         m_bVisible; // determines whether element will be rendered or not.
 };
 
 #endif
