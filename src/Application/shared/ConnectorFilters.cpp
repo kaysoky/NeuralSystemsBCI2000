@@ -44,7 +44,8 @@ RegisterFilter( ConnectorOutput, 3.0001 ); // Place the output filter
                                            // filter.
 
 ConnectorInput::ConnectorInput()
-: mInputFilter( "" ),
+: mConnectorInputAddress( "" ),
+  mInputFilter( "" ),
   mAllowAny( false )
 {
   BEGIN_PARAMETER_DEFINITIONS
@@ -77,17 +78,9 @@ ConnectorInput::Preflight( const SignalProperties& inSignalProperties,
 void
 ConnectorInput::Initialize()
 {
-  mConnection.close();
-  mConnection.clear();
-  mSocket.close();
-  string connectorInputAddress( Parameter( "ConnectorInputAddress" ) );
-  if( connectorInputAddress != "" )
+  mConnectorInputAddress = string( Parameter( "ConnectorInputAddress" ) );
+  if( mConnectorInputAddress != "" )
   {
-    mSocket.open( connectorInputAddress.c_str() );
-    mConnection.open( mSocket );
-    if( !mConnection.is_open() )
-      bcierr << "Could not connect to " << connectorInputAddress << endl;
-
     mInputFilter = "";
     mAllowAny = ( string( Parameter( "ConnectorInputFilter", 0 ) ) == "*" );
     if( !mAllowAny )
@@ -97,6 +90,26 @@ ConnectorInput::Initialize()
         mInputFilter += ' ';
       }
   }
+}
+
+void
+ConnectorInput::StartRun()
+{
+  if( mConnectorInputAddress != "" )
+  {
+    mSocket.open( mConnectorInputAddress.c_str() );
+    mConnection.open( mSocket );
+    if( !mConnection.is_open() )
+      bcierr << "Could not connect to " << mConnectorInputAddress << endl;
+  }
+}
+
+void
+ConnectorInput::StopRun()
+{
+  mConnection.close();
+  mConnection.clear();
+  mSocket.close();
 }
 
 void
@@ -140,7 +153,10 @@ ConnectorInput::Process( const GenericSignal* input, GenericSignal* output )
   }
 }
 
+
+// ConnectorOutput
 ConnectorOutput::ConnectorOutput()
+: mConnectorOutputAddress( "" )
 {
   BEGIN_PARAMETER_DEFINITIONS
     SECTION " string ConnectorOutputAddress= % "
@@ -169,17 +185,27 @@ ConnectorOutput::Preflight( const SignalProperties& inSignalProperties,
 void
 ConnectorOutput::Initialize()
 {
+  mConnectorOutputAddress = string( Parameter( "ConnectorOutputAddress" ) );
+}
+
+void
+ConnectorOutput::StartRun()
+{
+  if( mConnectorOutputAddress != "" )
+  {
+    mSocket.open( mConnectorOutputAddress.c_str() );
+    mConnection.open( mSocket );
+    if( !mConnection.is_open() )
+      bcierr << "Could not connect to " << mConnectorOutputAddress << endl;
+  }
+}
+
+void
+ConnectorOutput::StopRun()
+{
   mConnection.close();
   mConnection.clear();
   mSocket.close();
-  string connectorOutputAddress( Parameter( "ConnectorOutputAddress" ) );
-  if( connectorOutputAddress != "" )
-  {
-    mSocket.open( connectorOutputAddress.c_str() );
-    mConnection.open( mSocket );
-    if( !mConnection.is_open() )
-      bcierr << "Could not connect to " << connectorOutputAddress << endl;
-  }
 }
 
 void
@@ -197,4 +223,3 @@ ConnectorOutput::Process( const GenericSignal* input, GenericSignal* output )
       mConnection << "Signal(" << channel << "," << element << ") "
                   << ( *input )( channel, element ) << endl;
 }
-

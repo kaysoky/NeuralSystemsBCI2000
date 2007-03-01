@@ -42,9 +42,12 @@ class ConnectorInput : public GenericFilter
   virtual ~ConnectorInput();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
+  virtual void StartRun();
+  virtual void StopRun();
   virtual void Process( const GenericSignal*, GenericSignal* );
 
  private:
+  std::string         mConnectorInputAddress;
   receiving_udpsocket mSocket;
   tcpstream           mConnection;
   std::string         mInputFilter;
@@ -58,9 +61,12 @@ class ConnectorOutput : public GenericFilter
   virtual ~ConnectorOutput();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize();
+  virtual void StartRun();
+  virtual void StopRun();
   virtual void Process( const GenericSignal*, GenericSignal* );
 
  private:
+  std::string       mConnectorOutputAddress;
   sending_udpsocket mSocket;
   tcpstream         mConnection;
 };
