@@ -57,6 +57,7 @@ class RDAQueue : public std::queue<short>
     };
     static const size_t initialBufferSize = 1024;
     static const int blockDurationGuess = 40000; // microseconds
+    static const int startBlockTimeout = 5; // timeout in seconds when waiting for the start block
     static const int blockNumberMask = 0x00ffffff; // what we consider significant,
                                                    // i.e. wrap-around safe
     static const int RDAPortNumber = 51234;

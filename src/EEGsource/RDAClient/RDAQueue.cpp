@@ -148,24 +148,15 @@ RDAQueue::ReceiveData()
 {
   if( lastMessageType == RDAStop )
   {
-    // Wait for the start block to appear.
+    // Wait for the first block (presumably, the start block) to appear.
     if( connectionInfo.blockDuration < 1 )
       connectionInfo.blockDuration = 1;
-    ::timeval timeout = { 0, connectionInfo.blockDuration };
+    ::timeval timeout = { startBlockTimeout, 0 };
     ::fd_set readfds;
     FD_ZERO( &readfds );
     FD_SET( socketHandle, &readfds );
     int result = ::select( 1, &readfds, NULL, NULL, &timeout );
-    if( result == 0 )
-    {
-      size_t numEntries
-        = ( connectionInfo.blockDuration * connectionInfo.numChannels )
-            / connectionInfo.samplingInterval;
-      for( size_t i = 0; i < numEntries; ++i )
-        push( 0 );
-      return;
-    }
-    else if( result != 1 )
+    if( result != 1 )
     {
       failstate |= connectionFail;
       bcierr << "Could not read data" << endl;
