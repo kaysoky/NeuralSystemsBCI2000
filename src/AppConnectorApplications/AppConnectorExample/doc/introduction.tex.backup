@@ -1,0 +1,14 @@
+\section{Introduction and Setup}
+\subsection{AppConnectorExample}The AppConnectorExample (ACE) program was designed as an example of how to use the AppConnector functionality for BCI2000, and as an example of a cross-platform application. The AppConnector allows an external program to read and modify internal BCI2000 states (see the BCI2000 implementation guide and user manual for additional information about states). ACE was written using Qt 4, which runs on Linux/Unix, Windows, and MacOS, and uses the platform-independent TCPStream class included with BCI2000 for TCP/UDP communication. ACE makes two network connections (sending and receiving) on two separate ports to a running BCI2000 session. The purposes of this documentation are:
+\begin{enumerate}
+ \item Introduce the concept of cross-platform development using Qt 4
+ \item Provide an example program that can read BCI2000 states, locally or remotely
+ \item Show how to modify a state value, and send that state back to BCI2000
+\end{enumerate}
+
+\subsection{Qt4 Setup}
+Setting up Qt4 is largely dependent on your platform, and the distribution used (if on linux).
+\subsubsection{Windows}
+Installing Qt4 is reasonably straightforward on Windows. Go to \url{http://www.trolltech.com/products/qt/downloads}, and download the version that includes MinGW (it should say MinGW in the filename, as opposed to src). MinGW is a compiler for windows, and is needed because the open source version of Qt cannot be used with MS Visual Studio or the Borland Compiler. Download and setup Qt and MinGW. Next, you need to add the Qt/bin and MinGW/bin directories to your path. Do this by right-clicking on My Computer->Properties, go to Advanced, and click on Environment Variables. Under system variables, select Path, and add \texttt{c:$\backslash$Qt$\backslash$4.2.3$\backslash$bin;c:$\backslash$MinGW$\backslash$bin;} to the FRONT of the existing path. Note that this does depend on where you actually installed qt and mingw, so adjust these directories accordingly.\newline
+One caveat to be aware of if you also have Cygwin installed on windows (if you do not, you can safely skip this) is that some of the files and programs can conflict if MinGW and Cygwin are present simultaneously. The quick and dirty solution is to start a Cygwin shell, and rename the \texttt{sh.exe} file, like: \texttt{\# mv /usr/bin/sh /usr/bin/shold}. (\textit{A better solution may be to move sh to shold, and then link to bash, since sh is recreated every time a bash shell starts; I have not tried this yet though.}\\
+To work in the qt4 environment, go to the Start Menu->Qt 4 (Trolltech...), and select the Qt 4 Environment program. This opens a command window with all of the path variables set correctly, and 
