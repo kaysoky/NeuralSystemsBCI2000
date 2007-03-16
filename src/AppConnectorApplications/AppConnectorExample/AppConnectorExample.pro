@@ -15,11 +15,16 @@ OBJECTS_DIR += src/obj/
 MOC_DIR += src/moc/
 
 win32 {
-	CONFIG += windows debug
+	SUBDIRS = 
+	CONFIG += windows release
 	LIBS += -lwsock32
+	TARGET = ../../../../tools/AppConnectorExample/AppConnectorExample
 }
 
 unix {
-#any *nix/mac-specific stuff should go here
+#any *nix-specific stuff should go here
 	TARGET = ../../../tools/AppConnectorExample/AppConnectorExample
+}
+
+mac {
 }
