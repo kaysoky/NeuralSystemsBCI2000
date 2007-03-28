@@ -162,9 +162,18 @@ tcpsocket::set_address( const char* inIP, u_short inPort )
     m_address.sin_addr.s_addr = INADDR_ANY;
   else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
   {
-    ::hostent* host = ::gethostbyname( ip ); 
+    ::hostent* host = ::gethostbyname( ip );
     if( host && host->h_addr_list )
+    { // Bind to the first external address that is available.
+      size_t i = 0;
       m_address.sin_addr = *reinterpret_cast<in_addr*>( host->h_addr_list[ 0 ] );
+      while( string( "127.0.0.1" ) == ::inet_ntoa( *reinterpret_cast<in_addr*>( host->h_addr_list[ i ] ) )
+             && host->h_addr_list[ i + 1 ] != NULL
+             && string( "0.0.0.0" ) != ::inet_ntoa( *reinterpret_cast<in_addr*>( host->h_addr_list[ i + 1 ] ) )
+      )
+        ++i;
+      m_address.sin_addr = *reinterpret_cast<in_addr*>( host->h_addr_list[ i ] );
+    }
   }
   delete[] buf;
 }
