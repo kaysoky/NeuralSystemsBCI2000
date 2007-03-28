@@ -246,7 +246,7 @@ TfMain::HandleSTATE( istream& is )
       // changes are not overwritten with the content of the previous
       // state vector when it arrives from the application module.
       mpStatevector->PostStateChange( s.GetName(), s.GetValue() );
-      
+
       // For the "Running" state, the module will undergo a more complex
       // state transition than for other states.
       if( string( "Running" ) == s.GetName() )
@@ -530,7 +530,12 @@ TfMain::Startup( AnsiString inTarget )
     return;
   }
 
-  mPreviousModuleSocket.open();
+  if( mParamlist.Exists( THISMODULE "IP" ) )
+  {bciout << "exists" << endl;
+    mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value() );
+  }
+  else
+    mPreviousModuleSocket.open();
   mPreviousModule.clear();
   mPreviousModule.open( mPreviousModuleSocket );
   eReceivingPort->Text = AnsiString( mPreviousModuleSocket.port() );

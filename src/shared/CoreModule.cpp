@@ -260,7 +260,10 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
     return;
   }
 
-  mPreviousModuleSocket.open();
+  if( mParamlist.Exists( THISMODULE "IP" ) )
+    mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value() );
+  else
+    mPreviousModuleSocket.open();
   mPreviousModule.clear();
   mPreviousModule.open( mPreviousModuleSocket );
 
