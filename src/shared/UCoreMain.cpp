@@ -531,9 +531,7 @@ TfMain::Startup( AnsiString inTarget )
   }
 
   if( mParamlist.Exists( THISMODULE "IP" ) )
-  {bciout << "exists" << endl;
     mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value() );
-  }
   else
     mPreviousModuleSocket.open();
   mPreviousModule.clear();
