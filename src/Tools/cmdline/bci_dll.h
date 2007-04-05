@@ -53,6 +53,15 @@ char* DLLEXPORT
 GetError( void );
 
 /*
+function:  RedirectStdout
+purpose:   Redirect standard output to a file.
+arguments: File name, or NULL to terminate redirection.
+returns:   True (1) if successful.
+*/
+int DLLEXPORT
+RedirectStdout( char* );
+
+/*
 function:  PutParameter
 purpose:   Parses a BCI2000 parameter definition line, and adds the resulting
            parameter object to the filter's parameter list, or changes the value of
