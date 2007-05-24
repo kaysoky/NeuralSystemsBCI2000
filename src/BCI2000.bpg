@@ -11,7 +11,7 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = D2Box.exe D3Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe \
   P3Speller.exe RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe \
-  BufferRead.exe Biosemi2.exe DASSource.exe DT2000.exe gUSBamp.exe gMOBIlab.exe \
+  Biosemi2.exe BufferRead.exe DASSource.exe DT2000.exe gUSBamp.exe gMOBIlab.exe \
   Neuroscan.exe NISource.exe RandomNumber.exe RDAClient.exe TDTclient.exe \
   ModularEEG.exe MicroMed.exe operat.exe ARSignalProcessing.exe \
   DummySignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
@@ -164,10 +164,6 @@ BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-BufferRead.exe: EEGsource\Biosemi old UCSD implementation\BufferRead.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
 Biosemi2.exe: EEGsource\Biosemi\Biosemi2.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
@@ -205,6 +201,10 @@ BCIlauncher.exe: Tools\BCIlauncher\BCIlauncher.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 MicroMed.exe: EEGsource\Micromed\MicroMed.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BufferRead.exe: EEGsource\Biosemi_old_UCSD_implementation\BufferRead.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
