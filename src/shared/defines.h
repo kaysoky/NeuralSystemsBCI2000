@@ -130,6 +130,7 @@ namespace SOURCEID
     Baseline,
     Artefact,
     LowPass,
+    ADCFILT,
 
     Debug = 255
   };
