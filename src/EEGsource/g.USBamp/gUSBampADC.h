@@ -4,6 +4,7 @@
 #ifndef gUSBampADCH
 #define gUSBampADCH
 
+#include "UGenericVisualization.h"
 #include "TCPStream.h"
 
 #include <vector.h>
@@ -36,6 +37,7 @@ class gUSBampADC : public GenericADC
   int            DetectAutoMode() const;
   int            DetermineFilterNumber() const;
   int            DetermineNotchNumber() const;
+  GenericVisualization mVis;
   int            numdevices;
   float          filterhighpass, filterlowpass, notchhighpass, notchlowpass;   // at the moment, only one filter setting for all channels and all devices
   int            filtermodelorder, filtertype, notchmodelorder, notchtype;
@@ -43,6 +45,7 @@ class gUSBampADC : public GenericADC
   int            timeoutms;
   bool           mFloatOutput;
   bool           digitalinput;
+  int            acqmode;         // normal, calibrate, or impedance
 };
 
 #endif // gUSBampADCH

@@ -36,7 +36,8 @@ RegisterFilter( gUSBampADC, 1 );
 // Returns:    N/A
 // **************************************************************************
 gUSBampADC::gUSBampADC()
-: mFloatOutput( false )
+:  mVis( SOURCEID::ADCFILT, VISTYPE::MEMO ),
+   mFloatOutput( false )
 {
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
@@ -81,6 +82,22 @@ gUSBampADC::gUSBampADC()
         "// numeric type of output signal: "
             " 0: int16,"
             " 1: float32"
+            " (enumeration)",
+   "Source int AcquisitionMode=      0 0 0 2 "
+        "// data acquisition mode: "
+            " 0: analog signal acquisition,"
+            " 1: calibration,"
+            " 2: impedance"
+            " (enumeration)",
+   "Source int CommonGround=      1 0 0 1 "
+        "// internally connect GNDs from all blocks: "
+            " 0: false,"
+            " 1: true"
+            " (enumeration)",
+   "Source int CommonReference=      1 0 0 1 "
+        "// internally connect Refs from all blocks: "
+            " 0: false,"
+            " 1: true"
             " (enumeration)",
  END_PARAMETER_DEFINITIONS
 
@@ -279,6 +296,7 @@ GND     CommonGround;
 REF     CommonReference;
 bool    autoconfigure;
 
+
  // let's buffer up to 5 times as much data as we'll collect (using GetData)
  // this way, it is possible to be too slow to pick up data but still not lose data
  // (obviously, we should never be too slow in the first place)
@@ -321,16 +339,20 @@ bool    autoconfigure;
     notchnumber=DetermineNotchNumber();
     }
 
- // set the GND structure; connect the GNDs on all four blocks to common ground
- CommonGround.GND1=true;
- CommonGround.GND2=true;
- CommonGround.GND3=true;
- CommonGround.GND4=true;
+ // set the GND structure; connect the GNDs on all four blocks to common ground if requested
+ bool commongnd=true;
+ if (Parameter("CommonGround") == 0) commongnd=false;
+ CommonGround.GND1=commongnd;
+ CommonGround.GND2=commongnd;
+ CommonGround.GND3=commongnd;
+ CommonGround.GND4=commongnd;
  // the same with the reference
- CommonReference.ref1=true;
- CommonReference.ref2=true;
- CommonReference.ref3=true;
- CommonReference.ref4=true;
+ bool commonref=true;
+ if (Parameter("CommonReference") == 0) commonref=false;
+ CommonReference.ref1=commonref;
+ CommonReference.ref2=commonref;
+ CommonReference.ref3=commonref;
+ CommonReference.ref4=commonref;
 
  //
  // at the moment, we CANNOT determine whether we've lost some data
@@ -385,8 +407,31 @@ bool    autoconfigure;
            << DeviceIDs.at( dev )
            << endl;
 
-  // set mode to normal ... this could also be impedance
-  GT_SetMode(hdev.at(dev), M_NORMAL);
+  // set mode to normal, calibration, or impedance; default to M_NORMAL
+  acqmode=Parameter("AcquisitionMode");
+  // impedance measurement, if indicated
+  // this precedes normal configuration
+  if (acqmode == 2)
+     {
+     double impedance;
+     int totalch=1;
+     for (unsigned int dev=0; dev<hdev.size(); dev++)
+      for (int cur_ch=0; cur_ch<numchans.at(dev); cur_ch++)
+       {
+       char memotext[1024];
+       ret = GT_GetImpedance(hdev.at(dev), cur_ch, &impedance);
+       mVis.Send( CFGID::WINDOWTITLE, "g.USBamp Impedance Values" );
+       sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, DeviceIDs.at(dev).c_str(), cur_ch, (float)(impedance/1000));
+       mVis.Send(memotext);
+       totalch++;
+       }
+     // Parameter("AcquisitionMode")=1;  // update this parameter
+     }
+   if (acqmode == 1)
+      GT_SetMode(hdev.at(dev), M_CALIBRATE);
+   else
+     GT_SetMode(hdev.at(dev), M_NORMAL);
+
   ret=GT_SetBufferSize(hdev.at(dev), Parameter( "SampleBlockSize" ) );
   // set all devices to slave except the one master
   // externally, the master needs to have its SYNC OUT wired to the SYNC IN
