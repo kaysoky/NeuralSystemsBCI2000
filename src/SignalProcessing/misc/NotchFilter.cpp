@@ -86,7 +86,7 @@ NotchFilter::DesignFilter( real_type& outGain,
       Ratpoly<FilterDesign::Complex> tf =
         FilterDesign::Chebyshev()
         .Ripple_dB( -0.1 )
-        .Order( 4 )
+        .Order( 3 )
         .Bandstop( corner1, corner2 )
         .TransferFunction();
       real_type dcGain = abs( tf.Evaluate( 1.0 ) );
