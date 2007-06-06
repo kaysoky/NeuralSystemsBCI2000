@@ -14,7 +14,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                  Application->Initialize();
                  Application->Title = "EEGsource V0.20";
                  Application->CreateForm(__classid(TfMain), &fMain);
-     Application->Run();
+         Application->Run();
         }
         catch (Exception &exception)
         {

@@ -14,7 +14,7 @@
       obj\ExpressionParser.obj obj\Expression.obj obj\EDFFileWriter.obj 
       obj\EDFFileWriterBase.obj obj\FileWriterBase.obj obj\GDF.obj 
       obj\GDFFileWriter.obj obj\NullFileWriter.obj obj\ClassName.obj 
-      obj\FilterDesign.obj obj\IIRFilter.obj obj\NotchFilter.obj"/>
+      obj\FilterDesign.obj obj\IIRFilter.obj obj\SourceFilter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -90,7 +90,7 @@
       <FILE FILENAME="..\..\shared\ClassName.cpp" FORMNAME="" UNITNAME="ClassName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SignalProcessing\misc\FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\SignalProcessing\misc\IIRFilter.cpp" FORMNAME="" UNITNAME="IIRFilter.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\SignalProcessing\misc\NotchFilter.cpp" FORMNAME="" UNITNAME="NotchFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\SignalProcessing\misc\SourceFilter.cpp" FORMNAME="" UNITNAME="SourceFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

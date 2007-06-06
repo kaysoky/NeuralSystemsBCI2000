@@ -145,9 +145,9 @@ DataIOFilter::DataIOFilter()
   if( mpFileWriter != NULL )
     mpFileWriter->Publish();
 
-  // Check whether the next filter in the chain is a notch filter.
+  // Check whether the next filter in the chain is a source filter.
   GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
-  if( string( "NotchFilter" ) == ClassName( typeid( *filter ) ) )
+  if( string( "SourceFilter" ) == ClassName( typeid( *filter ) ) )
     mpSourceFilter = GenericFilter::PassFilter<GenericFilter>();
 }
 

@@ -37,8 +37,8 @@
     <USERDEFINES value="_DEBUG;MODTYPE=1"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
     <MAINSOURCE value="TDTclient.cpp"/>
-    <INCLUDEPATH value="..;..\..\shared\Expression;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..;..\..\shared\Expression;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib;obj"/>
+    <INCLUDEPATH value="..\;..;..\..\shared\Expression;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..;..\..\shared\Expression;$(BCB)\Projects\Lib;$(BCB)\Imports;..\..;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib;obj"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>

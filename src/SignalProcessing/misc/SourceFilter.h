@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// File:        NotchFilter.h
-// Description: A notch filter for removing power line noise.
+// File:        SourceFilter.h
+// Description: A notch filter for removing power line noise, and a high pass
+//              collected into a single filter.
 // $Log$
 // Revision 1.2  2006/10/26 17:05:00  mellinger
 // Rewrote IIR filter as a sequence of complex-valued first-order filters to improve numerical stability.
@@ -12,16 +13,16 @@
 // (C) 2000-2007, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef NotchFilterH
-#define NotchFilterH
+#ifndef SourceFilterH
+#define SourceFilterH
 
 #include "IIRFilter.h"
 
-class NotchFilter : public IIRFilter
+class SourceFilter : public IIRFilter
 {
  public:
-  NotchFilter();
-  ~NotchFilter() {}
+  SourceFilter();
+  ~SourceFilter() {}
 
  private:
   // Translate user settings into a filter definition given by
@@ -33,4 +34,5 @@ class NotchFilter : public IIRFilter
                              complex_vector& poles ) const;
 };
 
-#endif // NotchFilterH
+#endif // SourceFilterH
+
