@@ -4,7 +4,7 @@ object fPreferences: TfPreferences
   BorderIcons = [biMinimize, biMaximize]
   BorderStyle = bsSingle
   Caption = 'Preferences'
-  ClientHeight = 286
+  ClientHeight = 321
   ClientWidth = 495
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object fPreferences: TfPreferences
   TextHeight = 13
   object Label1: TLabel
     Left = 407
-    Top = 176
+    Top = 200
     Width = 76
     Height = 16
     Caption = 'User Level'
@@ -32,7 +32,7 @@ object fPreferences: TfPreferences
   end
   object tUserLevel: TLabel
     Left = 424
-    Top = 224
+    Top = 248
     Width = 42
     Height = 13
     Alignment = taCenter
@@ -42,7 +42,7 @@ object fPreferences: TfPreferences
     Left = 8
     Top = 16
     Width = 241
-    Height = 257
+    Height = 297
   end
   object Label2: TLabel
     Left = 16
@@ -66,28 +66,28 @@ object fPreferences: TfPreferences
   end
   object Label4: TLabel
     Left = 16
-    Top = 80
-    Width = 89
+    Top = 120
+    Width = 63
     Height = 13
-    Caption = 'On exit of BCI2000'
+    Caption = 'On SetConfig'
   end
   object Label5: TLabel
     Left = 16
-    Top = 128
+    Top = 168
     Width = 56
     Height = 13
     Caption = 'On Resume'
   end
   object Label6: TLabel
     Left = 16
-    Top = 176
+    Top = 216
     Width = 59
     Height = 13
     Caption = 'On Suspend'
   end
   object Label7: TLabel
     Left = 16
-    Top = 224
+    Top = 264
     Width = 39
     Height = 13
     Caption = 'On Start'
@@ -189,9 +189,16 @@ object fPreferences: TfPreferences
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label15: TLabel
+    Left = 16
+    Top = 76
+    Width = 89
+    Height = 13
+    Caption = 'On exit of BCI2000'
+  end
   object TrackBar1: TTrackBar
     Left = 408
-    Top = 192
+    Top = 216
     Width = 75
     Height = 33
     Hint = 'User Level'
@@ -212,7 +219,7 @@ object fPreferences: TfPreferences
   end
   object bClose: TButton
     Left = 408
-    Top = 248
+    Top = 288
     Width = 75
     Height = 25
     Caption = 'Close'
@@ -226,30 +233,30 @@ object fPreferences: TfPreferences
     Height = 21
     TabOrder = 2
   end
-  object eOnExit: TEdit
+  object eOnSetConfig: TEdit
     Left = 16
-    Top = 96
+    Top = 136
     Width = 225
     Height = 21
     TabOrder = 3
   end
   object eOnResume: TEdit
     Left = 16
-    Top = 144
+    Top = 184
     Width = 225
     Height = 21
     TabOrder = 4
   end
   object eOnSuspend: TEdit
     Left = 16
-    Top = 192
+    Top = 232
     Width = 225
     Height = 21
     TabOrder = 5
   end
   object eOnStart: TEdit
     Left = 16
-    Top = 240
+    Top = 280
     Width = 225
     Height = 21
     TabOrder = 6
@@ -309,5 +316,12 @@ object fPreferences: TfPreferences
     Width = 89
     Height = 21
     TabOrder = 14
+  end
+  object eOnExit: TEdit
+    Left = 16
+    Top = 92
+    Width = 225
+    Height = 21
+    TabOrder = 15
   end
 end

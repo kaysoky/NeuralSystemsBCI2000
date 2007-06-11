@@ -414,6 +414,11 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Resting ):
+      if( mPreferences.Script[ PREFERENCES::OnSetConfig ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing OnSetConfig script ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnSetConfig ].c_str() );
+      }
       break;
 
     case TRANSITION( SYSSTATUS::Initialization, SYSSTATUS::Initialization ):
@@ -430,7 +435,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       // Execute the on-start script ...
       if( mPreferences.Script[ PREFERENCES::OnStart ] != "" )
       {
-        mSyslog.AddSysLogEntry( "Executing on-start script ..." );
+        mSyslog.AddSysLogEntry( "Executing OnStart script ..." );
         mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnStart ].c_str() );
       }
       mStarttime = TDateTime::CurrentDateTime();
@@ -441,7 +446,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       // Execute the on-resume script ...
       if( mPreferences.Script[ PREFERENCES::OnResume ] != "" )
       {
-        mSyslog.AddSysLogEntry( "Executing on-resume script ..." );
+        mSyslog.AddSysLogEntry( "Executing OnResume script ..." );
         mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnResume ].c_str() );
       }
       mStarttime = TDateTime::CurrentDateTime();
@@ -452,12 +457,6 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Running, SYSSTATUS::SuspendInitiated ):
-      // Execute the on-suspend script ...
-      if( mPreferences.Script[ PREFERENCES::OnSuspend ] != "" )
-      {
-        mSyslog.AddSysLogEntry( "Executing on-suspend script ..." );
-        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnSuspend ].c_str() );
-      }
       mStarttime = TDateTime::CurrentDateTime();
       mSyslog.AddSysLogEntry( "Operator suspended operation" );
       break;
@@ -467,6 +466,13 @@ TfMain::EnterState( SYSSTATUS::State inState )
 
     case TRANSITION( SYSSTATUS::SuspendInitiated, SYSSTATUS::Suspended ):
       BroadcastParameters(); // no EndOfParameter
+
+      // Execute the on-suspend script ...
+      if( mPreferences.Script[ PREFERENCES::OnSuspend ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing OnSuspend script ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnSuspend ].c_str() );
+      }
       break;
 
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::SuspendedParamsModified ):
@@ -509,7 +515,7 @@ TfMain::QuitOperator( bool inConfirm )
     // Execute the on-exit script ...
     if( mPreferences.Script[ PREFERENCES::OnExit ] != "" )
     {
-      mSyslog.AddSysLogEntry( "Executing on-exit script ..." );
+      mSyslog.AddSysLogEntry( "Executing OnExit script ..." );
       mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::OnExit ].c_str() );
     }
     mSyslog.Close( true );

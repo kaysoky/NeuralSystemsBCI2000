@@ -26,12 +26,13 @@ class PREFERENCES
 private:	// User declarations
 public:		// User declarations
         PREFERENCES();
-        
+
         int     UserLevel;
 
         enum
         {
           AfterModulesConnected = 0,
+          OnSetConfig,
           OnExit,
           OnResume,
           OnSuspend,
@@ -69,7 +70,7 @@ __published:	// IDE-managed Components
         TLabel *Label2;
         TLabel *Label3;
         TEdit *eAfterModulesConnected;
-        TEdit *eOnExit;
+        TEdit *eOnSetConfig;
         TLabel *Label4;
         TLabel *Label5;
         TEdit *eOnResume;
@@ -93,6 +94,8 @@ __published:	// IDE-managed Components
         TEdit *eButton3Cmd;
         TEdit *eButton4Name;
         TEdit *eButton4Cmd;
+        TLabel *Label15;
+        TEdit *eOnExit;
         void __fastcall TrackBar1Change(TObject *Sender);
         void __fastcall bCloseClick(TObject *Sender);
         void __fastcall FormShow(TObject *Sender);

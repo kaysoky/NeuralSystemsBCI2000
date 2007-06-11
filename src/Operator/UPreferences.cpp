@@ -52,6 +52,7 @@ void __fastcall TfPreferences::bCloseClick(TObject *Sender)
     preferences->Script[ PREFERENCES::name ] = e##name->Text.Trim();
   SAVE_SCRIPT( AfterModulesConnected );
   SAVE_SCRIPT( OnExit );
+  SAVE_SCRIPT( OnSetConfig );
   SAVE_SCRIPT( OnResume );
   SAVE_SCRIPT( OnSuspend );
   SAVE_SCRIPT( OnStart );
@@ -93,6 +94,7 @@ void __fastcall TfPreferences::FormShow(TObject *Sender)
     e##name->ReadOnly = true;
   RESTORE_SCRIPT( AfterModulesConnected );
   RESTORE_SCRIPT( OnExit );
+  RESTORE_SCRIPT( OnSetConfig );
   RESTORE_SCRIPT( OnResume );
   RESTORE_SCRIPT( OnSuspend );
   RESTORE_SCRIPT( OnStart );
@@ -121,11 +123,12 @@ PREFERENCES::PREFERENCES()
     int         event;
   } paramNames[] =
   {
-    { "--OnConnect", AfterModulesConnected },
-    { "--OnExit",    OnExit },
-    { "--OnSuspend", OnSuspend },
-    { "--OnResume",  OnResume },
-    { "--OnStart",   OnStart }
+    { "--OnConnect",   AfterModulesConnected },
+    { "--OnExit",      OnExit },
+    { "--OnSetConfig", OnSetConfig },
+    { "--OnSuspend",   OnSuspend },
+    { "--OnResume",    OnResume },
+    { "--OnStart",     OnStart }
   };
   int i = 1;
   while( i + 1 < __argc )
@@ -155,6 +158,7 @@ void PREFERENCES::GetDefaultSettings()
       Script[ name ] = storage->ReadString( "Scripts", #name, "" );
     READ_SCRIPT( AfterModulesConnected );
     READ_SCRIPT( OnExit );
+    READ_SCRIPT( OnSetConfig );
     READ_SCRIPT( OnResume );
     READ_SCRIPT( OnSuspend );
     READ_SCRIPT( OnStart );
@@ -184,6 +188,7 @@ void PREFERENCES::SetDefaultSettings()
       storage->WriteString( "Scripts", #name, Script[ name ] );
     WRITE_SCRIPT( AfterModulesConnected );
     WRITE_SCRIPT( OnExit );
+    WRITE_SCRIPT( OnSetConfig );
     WRITE_SCRIPT( OnResume );
     WRITE_SCRIPT( OnSuspend );
     WRITE_SCRIPT( OnStart );

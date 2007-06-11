@@ -220,6 +220,13 @@ bool    ok;
    return success;
  }
 
+ // command is QUIT
+ if( stricmp( token, "QUIT" ) == 0 )
+ {
+   fMain->Quit();
+   return true;
+ }
+
  // is it any command we don't know ?
  if (!ok)
     {
