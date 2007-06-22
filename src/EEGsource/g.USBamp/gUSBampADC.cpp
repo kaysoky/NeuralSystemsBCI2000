@@ -419,9 +419,9 @@ bool    autoconfigure;
       for (int cur_ch=0; cur_ch<numchans.at(dev); cur_ch++)
        {
        char memotext[1024];
-       ret = GT_GetImpedance(hdev.at(dev), cur_ch, &impedance);
+       ret = GT_GetImpedance(hdev.at(dev), cur_ch+1, &impedance);
        mVis.Send( CFGID::WINDOWTITLE, "g.USBamp Impedance Values" );
-       sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, DeviceIDs.at(dev).c_str(), cur_ch, (float)(impedance/1000));
+       sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, DeviceIDs.at(dev).c_str(), cur_ch+1, (float)(impedance/1000));
        mVis.Send(memotext);
        totalch++;
        }
@@ -453,8 +453,9 @@ bool    autoconfigure;
   // because it takes so long, set filters only when they have been changed
   for (int ch=0; ch<numchans.at(dev); ch++)
    {
-   if (oldfilternumber != filternumber) GT_SetBandPass(hdev.at(dev), ch+1, filternumber);
-   if (oldnotchnumber != notchnumber) GT_SetNotch(hdev.at(dev), ch+1, notchnumber);
+   // if we are in calibration mode (acqmode == 2), set the filters every time even if not changed
+   if ((oldfilternumber != filternumber) | (acqmode == 2)) GT_SetBandPass(hdev.at(dev), ch+1, filternumber);
+   if ((oldnotchnumber != notchnumber) | (acqmode == 2))   GT_SetNotch(hdev.at(dev), ch+1, notchnumber);
    }
 
   // set the channel list for sampling

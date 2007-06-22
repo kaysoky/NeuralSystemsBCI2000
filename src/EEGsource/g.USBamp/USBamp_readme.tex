@@ -3,6 +3,8 @@
 \usepackage{rotating}
 \usepackage[american]{babel}
 
+%
+
 \selectlanguage{american}
 
 \newcommand{\ie}{i.e.,}
@@ -133,7 +135,10 @@ parameters:
                            (which can be used to verify correct system calibration). 
                            If set to \emph{Impedance}, regular analog signal acquisition is
                            preceded by an impedance test. This impedance test reports 
-                           input impedances for each channel in kOhms.
+                           input impedances for each channel in kOhms. In impedance mode,
+                           if the ground and reference is connected in the amp internally
+                           (using the \emph{CommonGround} and \emph{CommonReference} parameters),
+                           then you need to connect the ground and reference to block 4.
  \item [CommonGround]      This parameter determines whether the g.USBamp internally connects
                            the GND inputs from all blocks together. If enabled (default), then
                            the signal ground only needs to be connected to one input block, e.g.,
