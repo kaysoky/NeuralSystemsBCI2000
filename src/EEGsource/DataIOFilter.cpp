@@ -326,12 +326,12 @@ DataIOFilter::Process( const GenericSignal* Input,
     visualizeRoundtrip = mVisualizeRoundtrip;
   }
   mpADC->Process( Input, Output );
+  BCITIME now = BCITIME::GetBCItime_ms();
   if( mpSourceFilter )
   {
     GenericSignal sourceFilterInput( *Output );
     mpSourceFilter->Process( &sourceFilterInput, Output );
   }
-  BCITIME now = BCITIME::GetBCItime_ms();
   if( visualizeRoundtrip )
   {
     BCITIME sourceTime = static_cast<short>( State( "SourceTime" ) ),
@@ -340,9 +340,9 @@ DataIOFilter::Process( const GenericSignal* Input,
     mRoundtripSignal( 1, 0 ) = now - sourceTime;
     mRoundtripVis.Send( &mRoundtripSignal );
   }
-  State( "SourceTime" ) = now;
   mStatevectorBuffer = *Statevector;
   mSignalBuffer = *Output;
+  State( "SourceTime" ) = now;
 
   if( mVisualizeEEG )
   {
