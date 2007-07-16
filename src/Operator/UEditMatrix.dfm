@@ -8,7 +8,7 @@ object fEditMatrix: TfEditMatrix
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Default'
   Font.Style = []
   OldCreateOrder = False
   OnClose = FormClose
