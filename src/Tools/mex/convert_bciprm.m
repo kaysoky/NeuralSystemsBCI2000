@@ -1,4 +1,4 @@
-result = convert_bciprm( varargin )
+function result = convert_bciprm( varargin )
 %CONVERT_BCIPRM Convert between Matlab representations of BCI2000 parameters.
 %
 % A Matlab (mex) subroutine that converts BCI2000 parameters
