@@ -20,6 +20,7 @@
 #define POLYNOMIALS_H
 
 #include <vector>
+#include <algorithm>
 #include "UBCIError.h"
 
 template<class T>
