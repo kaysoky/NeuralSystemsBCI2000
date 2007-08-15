@@ -179,6 +179,17 @@ tcpsocket::set_address( const char* inIP, u_short inPort )
 }
 
 void
+tcpsocket::set_tcpnodelay( bool in_val )
+{
+  if( m_handle != INVALID_SOCKET )
+  {
+    int val = in_val;
+    ::setsockopt( m_handle, IPPROTO_TCP, TCP_NODELAY,
+                              reinterpret_cast<const char*>( &val ), sizeof( val ) );
+  }
+}
+
+void
 tcpsocket::update_address()
 {
   socklen_t addr_size = sizeof( m_address );
@@ -383,6 +394,7 @@ tcpsocket::accept()
     ::closesocket( m_handle );
     m_handle = new_handle;
     m_listening = false;
+    set_tcpnodelay( true );
     update_address();
   }
 }
@@ -425,7 +437,11 @@ client_tcpsocket::do_open()
   if( SOCKET_ERROR == ::connect( m_handle,
                                  reinterpret_cast<sockaddr*>( &m_address ),
                                  sizeof( m_address ) ) )
+  {
     close();
+    return;
+  }
+  set_tcpnodelay( true );
 }
 
 void

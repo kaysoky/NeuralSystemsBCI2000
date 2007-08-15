@@ -109,6 +109,7 @@ class tcpsocket
     void set_address( const char* ip, u_short port );
 
   protected:
+    void set_tcpnodelay( bool );
     void update_address();
 
   protected:
