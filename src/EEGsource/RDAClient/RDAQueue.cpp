@@ -119,6 +119,8 @@ RDAQueue::open( const char* inHostName )
     close();
     return;
   }
+  int val = 1;
+  ::setsockopt( socketHandle, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>( &val ), sizeof( val ) );
 
   connectionInfo.blockDuration = blockDurationGuess;
   ReceiveData();
