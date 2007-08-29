@@ -20,7 +20,20 @@
 #include <queue>
 #include <winsock.h>
 
-class RDAQueue : public std::queue<short>
+#ifndef RDA_FLOAT
+# define RDA_FLOAT 1
+#endif
+
+#ifdef RDA_FLOAT
+// RDAPort Numbers: 51244 -> float data, 51234 -> short data
+# define RDAPORTNUMBER 51244
+#else
+# define RDAPORTNUMBER 51234
+#endif
+
+typedef float queue_type;
+
+class RDAQueue : public std::queue<queue_type>
 {
   public:
     struct RDAInfo
@@ -43,7 +56,7 @@ class RDAQueue : public std::queue<short>
     void open( const char* inHostName );
     void close();
     void clear()          { c.clear(); failstate = ok; }
-    const short& front();
+    const queue_type& front();
     operator bool() const { return failstate == ok; }
     bool is_open() const  { return socketHandle != NULL; }
     const RDAInfo& info() const { return connectionInfo; }
@@ -54,13 +67,14 @@ class RDAQueue : public std::queue<short>
       RDAStart = 1,
       RDAData = 2,
       RDAStop = 3,
+      RDAData32 = 4,
     };
     static const size_t initialBufferSize = 1024;
     static const int blockDurationGuess = 40000; // microseconds
     static const int startBlockTimeout = 5; // timeout in seconds when waiting for the start block
     static const int blockNumberMask = 0x00ffffff; // what we consider significant,
                                                    // i.e. wrap-around safe
-    static const int RDAPortNumber = 51234;
+    static const int RDAPortNumber = RDAPORTNUMBER;        // 51244 -> float data, 51234 -> short data
 
     void ReceiveData();
     void GetServerMessage();

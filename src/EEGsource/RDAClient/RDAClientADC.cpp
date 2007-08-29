@@ -2,7 +2,8 @@
 //
 // File: RDAClientADC.cpp
 //
-// Author: juergen.mellinger@uni-tuebingen.de
+// Author: juergen.mellinger@uni-tuebingen.de,
+//         thomas.schreiner@tuebingen.mpg.de
 //
 // Date: Jan 3, 2003
 //
@@ -115,8 +116,15 @@ void RDAClientADC::Preflight( const SignalProperties&,
   }
 
   // Requested output signal properties.
+#ifdef RDA_FLOAT
+  outSignalProperties = SignalProperties(
+       numInputChannels, Parameter( "SampleBlockSize" ), SignalType::float32 );
+#else
+  bciout << "You are using the 16 bit variant of the RDA protocol, which is"
+         << " considered unreliable. Switching to float is recommended" << endl;
   outSignalProperties = SignalProperties(
        numInputChannels, Parameter( "SampleBlockSize" ), SignalType::int16 );
+#endif // RDA_FLOAT
 }
 
 // **************************************************************************

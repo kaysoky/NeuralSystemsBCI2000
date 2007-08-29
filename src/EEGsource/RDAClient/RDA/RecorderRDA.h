@@ -3,9 +3,9 @@
 // MODULE: RDA.h
 //: written by: Henning Nordholz
 //+       date: 14-Nov-00
-//+ 
+//+
 //+ Description:
-//+ 	Vision Recorder 
+//+ 	Vision Recorder
 //. 		Remote Data Access (RDA) structs and constants
 
 
@@ -51,7 +51,7 @@ struct RDA_MessageStart : RDA_MessageHeader
 	double				dSamplingInterval;	// Sampling interval in microseconds
 	double				dResolutions[1];	// Array of channel resolutions -> double dResolutions[nChannels]
 											// coded in microvolts. i.e. RealValue = resolution * A/D value
-	char 				sChannelNames[1];	// Channel names delimited by '\0'. The real size is 
+	char 				sChannelNames[1];	// Channel names delimited by '\0'. The real size is
 											// larger than 1.
 };
 
@@ -66,6 +66,15 @@ struct RDA_MessageData : RDA_MessageHeader
 	RDA_Marker			Markers[1];			// Array of markers -> RDA_Marker Markers[nMarkers]
 };
 
+struct RDA_MessageData32 : RDA_MessageHeader
+//; Block of data, Header -> nType = 4
+{
+	ULONG				nBlock;				// Block number, i.e. acquired blocks since acquisition started.
+	ULONG				nPoints;			// Number of data points in this block
+	ULONG				nMarkers;			// Number of markers in this data block
+	float		        nData[1];			// Data array -> float nData[nChannels * nPoints], multiplexed
+	RDA_Marker			Markers[1];			// Array of markers -> RDA_Marker Markers[nMarkers]
+};
 
 struct RDA_MessageStop : RDA_MessageHeader
 //; Data acquisition has been stopped. // Header -> nType = 3
