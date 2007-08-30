@@ -20,7 +20,8 @@
 #include <queue>
 #include <winsock.h>
 
-#ifndef RDA_FLOAT
+// #defining RDA_SHORT will switch to the older 16bit integer protocol.
+#if( !defined( RDA_FLOAT ) && !defined( RDA_SHORT ) )
 # define RDA_FLOAT 1
 #endif
 
