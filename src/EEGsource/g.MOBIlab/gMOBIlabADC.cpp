@@ -56,6 +56,12 @@ gMOBIlabADC::gMOBIlabADC()
    "Running 1 0 0 0",
    "SourceTime 16 2347 0 0",
  END_STATE_DEFINITIONS
+
+ // set the priority of the Source module a little higher
+ // (since its output clocks the whole system)
+ // this really seems to help against data loss; even under extreme load,
+ // data acquisition continues even though the display might be jerky
+ SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 }
 
 
