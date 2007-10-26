@@ -178,8 +178,6 @@ TfMain::HandleSTATEVECTOR( istream& is )
     bool running = mpStatevector->GetStateValue( "Running" );
     if( running && !mLastRunning )
       StartRunFilters();
-    else if( !running && mLastRunning )
-      StopRunFilters();
     // The EEG source does not receive a signal, so handling must take place
     // on arrival of a STATEVECTOR message.
     // This distinction could be avoided if the state vector was
@@ -192,6 +190,8 @@ TfMain::HandleSTATEVECTOR( istream& is )
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
       ProcessFilters( NULL );
+    if( !running && mLastRunning )
+      StopRunFilters();
 #else // EEGSRC
     bool running = mpStatevector->GetStateValue( "Running" );
     if( !running && mLastRunning )
