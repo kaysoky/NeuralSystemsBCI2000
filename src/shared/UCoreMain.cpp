@@ -514,71 +514,95 @@ TfMain::ShutdownSystem()
 void
 TfMain::Startup( AnsiString inTarget )
 {
-#if 0
-  // clear all parameters and states first
-  mParamlist.Clear();
-  mStatelist.Clear();
-#endif
-
-  // creating connection to the operator
-  mOperatorSocket.open( ( inTarget + ":" + eOperatorPort->Text ).c_str() );
-  mOperator.clear();
-  mOperator.open( mOperatorSocket );
-  if( !mOperator.is_open() )
+  try
   {
-    BCIERR << "Could not make a connection to the Operator" << endl;
-    return;
-  }
+  #if 0
+    // clear all parameters and states first
+    mParamlist.Clear();
+    mStatelist.Clear();
+  #endif
 
-  if( mParamlist.Exists( THISMODULE "IP" ) )
-    mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value() );
-  else
-    mPreviousModuleSocket.open();
-  mPreviousModule.clear();
-  mPreviousModule.open( mPreviousModuleSocket );
-  eReceivingPort->Text = AnsiString( mPreviousModuleSocket.port() );
-  eReceivingIP->Text = mPreviousModuleSocket.ip().c_str();
+    // creating connection to the operator
+    mOperatorSocket.open( ( inTarget + ":" + eOperatorPort->Text ).c_str() );
+    mOperator.clear();
+    mOperator.open( mOperatorSocket );
+    if( !mOperator.is_open() )
+    {
+      BCIERR << "Could not make a connection to the Operator" << endl;
+      return;
+    }
 
-  Environment::EnterConstructionPhase( &mParamlist, &mStatelist, NULL, &mOperator );
-  GenericFilter::InstantiateFilters();
-  Environment::EnterNonaccessPhase();
+    if( mParamlist.Exists( THISMODULE "IP" ) )
+      mPreviousModuleSocket.open( mParamlist[ THISMODULE "IP" ].Value() );
+    else
+      mPreviousModuleSocket.open();
+    mPreviousModule.clear();
+    mPreviousModule.open( mPreviousModuleSocket );
+    eReceivingPort->Text = AnsiString( mPreviousModuleSocket.port() );
+    eReceivingIP->Text = mPreviousModuleSocket.ip().c_str();
+
+    Environment::EnterConstructionPhase( &mParamlist, &mStatelist, NULL, &mOperator );
+    GenericFilter::InstantiateFilters();
+    Environment::EnterNonaccessPhase();
 
 #if( MODTYPE == SIGPROC )
-  // Add the NumControlSignals parameter.
-  mParamlist.Add(
-    "Filtering int NumControlSignals= 2"
-    " 1 1 128 // the number of transmitted control signals" );
+    // Add the NumControlSignals parameter.
+    mParamlist.Add(
+      "Filtering int NumControlSignals= 2"
+      " 1 1 128 // the number of transmitted control signals" );
 #endif // SIGPROC
 
-  // add parameters for socket connection
-  // my receiving socket port number
-  mParamlist.Add(
-    "System string " THISMODULE "Port= x"
-    " 4200 1024 32768 // the " THISMODULE " module's listening port" );
-  mParamlist[ THISMODULE "Port" ].Value() = AnsiString( mPreviousModuleSocket.port() ).c_str();
-  // and IP address
-  mParamlist.Add(
-    "System string " THISMODULE "IP= x"
-    " 127.0.0.1 127.0.0.1 127.0.0.1 // the " THISMODULE " module's listening IP" );
-  mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
+    // add parameters for socket connection
+    // my receiving socket port number
+    mParamlist.Add(
+      "System string " THISMODULE "Port= x"
+      " 4200 1024 32768 // the " THISMODULE " module's listening port" );
+    mParamlist[ THISMODULE "Port" ].Value() = AnsiString( mPreviousModuleSocket.port() ).c_str();
+    // and IP address
+    mParamlist.Add(
+      "System string " THISMODULE "IP= x"
+      " 127.0.0.1 127.0.0.1 127.0.0.1 // the " THISMODULE " module's listening IP" );
+    mParamlist[ THISMODULE "IP" ].Value() = mPreviousModuleSocket.ip();
 
-  // Version control
-  mParamlist.Add(
-    "System matrix " THISMODULE "Version= { Framework CVS Build } 1 " THISMODULE " % %"
-    " % % % // " THISMODULE " version information" );
-  mParamlist[ THISMODULE "Version" ].Value( "Framework" ) = THISVERSION;
-  mParamlist[ THISMODULE "Version" ].Value( "CVS" ) = "$Revision$ $Date$";
-  mParamlist[ THISMODULE "Version" ].Value( "Build" ) = __DATE__ ", " __TIME__;
+    // Version control
+    mParamlist.Add(
+      "System matrix " THISMODULE "Version= { Framework CVS Build } 1 " THISMODULE " % %"
+      " % % % // " THISMODULE " version information" );
+    mParamlist[ THISMODULE "Version" ].Value( "Framework" ) = THISVERSION;
+    mParamlist[ THISMODULE "Version" ].Value( "CVS" ) = "$Revision$ $Date$";
+    mParamlist[ THISMODULE "Version" ].Value( "Build" ) = __DATE__ ", " __TIME__;
 
-  // now, publish all parameters
-  MessageHandler::PutMessage( mOperator, mParamlist );
-  MessageHandler::PutMessage( mOperator, SYSCMD::EndOfParameter );
-  // and the states
-  MessageHandler::PutMessage( mOperator, mStatelist );
-  MessageHandler::PutMessage( mOperator, SYSCMD::EndOfState );
+    // now, publish all parameters
+    MessageHandler::PutMessage( mOperator, mParamlist );
+    MessageHandler::PutMessage( mOperator, SYSCMD::EndOfParameter );
+    // and the states
+    MessageHandler::PutMessage( mOperator, mStatelist );
+    MessageHandler::PutMessage( mOperator, SYSCMD::EndOfState );
 
-  MessageHandler::PutMessage( mOperator, STATUS( "Waiting for configuration ...", 100 ) );
-  Application->OnIdle = ApplicationIdleHandler;
+    MessageHandler::PutMessage( mOperator, STATUS( "Waiting for configuration ...", 100 ) );
+    Application->OnIdle = ApplicationIdleHandler;
+  }
+  catch( const char* s )
+  {
+    BCIERR << s << ", terminating module"
+           << endl;
+  }
+  catch( const exception& e )
+  {
+    BCIERR << "caught exception "
+           << typeid( e ).name() << " (" << e.what() << "),\n"
+           << "terminating module"
+           << endl;
+  }
+  catch( const Exception& e )
+  {
+    BCIERR << "caught exception "
+           << e.Message.c_str() << ",\n"
+           << "terminating module"
+           << endl;
+  }
+  if( __bcierr.flushes() > 0 )
+    Application->Terminate();
 }
 
 // **************************************************************************
