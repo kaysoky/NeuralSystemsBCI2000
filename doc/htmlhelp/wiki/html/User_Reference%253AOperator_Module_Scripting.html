@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>User Reference:Operator Module Scripting - BCI2000 Wiki</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="User Reference:Operator Module Scripting,Technical Reference:State Definition,Technical Reference:States of Operation,User Reference:Module Command Line Options,User Reference:Operator Module" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF' onload=''>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">Operator Module Scripting</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>Operator scripts automate actions that the otherwise would be performed by the user, e.g. starting or suspending system operation.
+Scripts may be contained in script files, or given immediately in the operator module's preferences dialog.
+There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module.
+Script execution is bound to a number of events that occur during various <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">stages of BCI2000 system operation</a>.
+</p>
+<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Events"><span class="tocnumber">1</span> <span class="toctext">Events</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#OnConnect"><span class="tocnumber">1.1</span> <span class="toctext">OnConnect</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#OnSetConfig"><span class="tocnumber">1.2</span> <span class="toctext">OnSetConfig</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#OnStart.2C_OnResume"><span class="tocnumber">1.3</span> <span class="toctext">OnStart, OnResume</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#OnSuspend"><span class="tocnumber">1.4</span> <span class="toctext">OnSuspend</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#OnExit"><span class="tocnumber">1.5</span> <span class="toctext">OnExit</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Commands"><span class="tocnumber">2</span> <span class="toctext">Commands</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#LOAD_PARAMETERFILE_.3Cfile.3E"><span class="tocnumber">2.1</span> <span class="toctext">LOAD PARAMETERFILE &lt;file&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SETCONFIG"><span class="tocnumber">2.2</span> <span class="toctext">SETCONFIG</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E"><span class="tocnumber">2.3</span> <span class="toctext">INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SET_STATE_.3Cname.3E_.3Cvalue.3E"><span class="tocnumber">2.4</span> <span class="toctext">SET STATE &lt;name&gt; &lt;value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#QUIT"><span class="tocnumber">2.5</span> <span class="toctext">QUIT</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SYSTEM_.3Ccommand_line.3E"><span class="tocnumber">2.6</span> <span class="toctext">SYSTEM &lt;command line&gt;</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Syntax"><span class="tocnumber">3</span> <span class="toctext">Syntax</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Specifying_Scripts"><span class="tocnumber">4</span> <span class="toctext">Specifying Scripts</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Examples"><span class="tocnumber">5</span> <span class="toctext">Examples</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Events"></a><h3>Events</h3>
+<a name="OnConnect"></a><h4>OnConnect</h4>
+<p>This event is triggered at startup, as soon as all modules are connected to the operator module.
+</p>
+<a name="OnSetConfig"></a><h4>OnSetConfig</h4>
+<p>This event is triggered each time a set of parameters is applied to the system. This happens when the user clicks the <i>SetConfig</i> button. Execution of the <i>SETCONFIG</i> command also triggers this event.
+</p>
+<a name="OnStart.2C_OnResume"></a><h4>OnStart, OnResume</h4>
+<p>These events correspond to the <i>Start</i>/<i>Resume</i> button. One of these events is also triggered when the <i>Running</i> state variable is set to 1 from a script. Whether <i>OnStart</i> or <i>OnResume</i> is triggered depends on whether the system has been running before with the current set of parameters.
+</p>
+<a name="OnSuspend"></a><h4>OnSuspend</h4>
+<p>Triggered when the system goes from running into suspended mode. This happens whenever the <i>Running</i> state variable changes from 1 to 0. This may happen when the user clicks <i>Suspend</i>, when the application module switches the system into suspended mode, or when a script sets the <i>Running</i> state variable to 0.
+</p>
+<a name="OnExit"></a><h4>OnExit</h4>
+<p>Triggered when the operator module quits. Execution of the <i>QUIT</i> command also triggers this event.
+</p>
+<a name="Commands"></a><h3>Commands</h3>
+<a name="LOAD_PARAMETERFILE_.3Cfile.3E"></a><h4>LOAD PARAMETERFILE &lt;file&gt;</h4>
+<p>Loads a parameter file specified by its path and name. Relative paths are interpreted relative to the operator module's executable.
+</p>
+<a name="SETCONFIG"></a><h4>SETCONFIG</h4>
+<p>Applies current parameters to the system. Corresponds to the <i>SetConfig</i> button.
+</p>
+<a name="INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E"></a><h4>INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;</h4>
+<p>Adds a state variable to the system. State variables are defined by name, bit width, and initial value (see <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">Technical Reference:State Definition</a>). This command may not be used after system initialization has completed, i.e. its use is restricted to the <i>OnConnect</i> event.
+</p>
+<a name="SET_STATE_.3Cname.3E_.3Cvalue.3E"></a><h4>SET STATE &lt;name&gt; &lt;value&gt;</h4>
+<p>Sets the named state variable to the specified integer value. Setting the <i>Running</i> state to 1 will start system operation, setting it to 0 will suspend the system.
+</p>
+<a name="QUIT"></a><h4>QUIT</h4>
+<p>Quits the operator module after terminating all BCI2000 modules.
+</p>
+<a name="SYSTEM_.3Ccommand_line.3E"></a><h4>SYSTEM &lt;command line&gt;</h4>
+<p>Executes a single-line shell command.
+</p>
+<a name="Syntax"></a><h3>Syntax</h3>
+<p>Scripts consist of sequences of the above commands, terminated with either a DOS line ending sequence, or a semicolon (;).
+When the semicolon is used to terminated commands, a line may contain multiple commands.
+Scripts are case-sensitive, and commands must be spelled uppercase as given above.
+</p>
+<a name="Specifying_Scripts"></a><h3>Specifying Scripts</h3>
+<p>In the operator module's preferences dialog, scripts may be entered for each of the events listed above.
+Scripts may be specified as paths to script files, or as immediate one-line scripts.
+Entries that start with a minus sign (-) are treated as one-line scripts, which may contain multiple commands separated with semicolons.
+</p><p>Scripts may also be specified from the command line used to start up the operator module. There, event names are followed with the content of the respective preference entry, enclosed in double quotes (").
+</p>
+<a name="Examples"></a><h3>Examples</h3>
+<p>To add a state variable called "Artifact", and to set it using the operator's function buttons, do this:
+</p>
+<ul><li>Enter the following line under "After All Modules Connected" in the operator's preferences dialog (note the minus sign):
+</li></ul>
+<pre>-INSERT STATE Artifact 1 0
+</pre>
+<ul><li>Under "Function Buttons", enter "Set Artifact" as the name of button 1, and as its command, enter (note there is no minus sign):
+</li></ul>
+<pre>SET STATE Artifact 1
+</pre>
+<ul><li>Enter "Clear Artifact" as the name of button 2, and as its command, enter
+</li></ul>
+<pre>SET STATE Artifact 0
+</pre>
+<p><br />
+The following example shows how to specify script commands from the command line.
+It fully automates BCI2000 operation by loading a parameter file, applying parameters, starting the system once the parameters are applied, and quitting the system once the run is over.
+</p>
+<pre>--OnConnect "-LOAD PARAMETERFILE ..\parms\CursorTask_SignalGenerator.prm; SETCONFIG" 
+--OnSetConfig "-SET STATE Running 1"  
+--OnSuspend "-QUIT"
+</pre>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">User Reference:Module Command Line Options</a>, <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">User Reference:Operator Module</a>, <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">Technical Reference:States of Operation</a>
+</p>
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Reference%253AContents.html">User Manual</a><br />
+<ul><li><a href="User_Reference%253AOperator_Module.html">Operator Module</a></li>
+<li><a href="User_Reference%253AFilters.html">Configuration Guide</a></li>
+<li>Applications</li>
+<li>Tools</li>
+</ul><a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+<!-- Served by bci2000.org in 0.18 secs. -->
+</body></html>

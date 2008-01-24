@@ -9,202 +9,85 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = D2Box.exe D3Box.exe LittleDemoApp.exe Oddball.exe P3AVTask.exe \
-  P3Speller.exe RJB.exe Screen.exe SWApp.exe SWSpeller.exe Speller.exe \
-  Biosemi2.exe BufferRead.exe DASSource.exe DT2000.exe gUSBamp.exe gMOBIlab.exe \
-  Neuroscan.exe NISource.exe RandomNumber.exe RDAClient.exe TDTclient.exe \
-  ModularEEG.exe MicroMed.exe operat.exe ARSignalProcessing.exe \
-  DummySignalProcessing.exe FIRProcessing.exe P3SignalProcessing.exe \
-  PeakDetectSignalProcessing.exe SWSignalProcessing.exe \
-  MatlabSignalProcessing.exe BCIBatch.exe BCI2000FileInfo.exe BCI2ASCII.exe \
-  BCI2GAB.exe BCIDiff.exe BCITimeFreq.exe BrainVisionImporter.exe calibgen.exe \
-  maxifred.exe USBampgetinfo.exe neurogetparams.exe getparams.exe \
-  TDTsampleRate.exe BCIlauncher.exe
+PROJECTS = operat.exe SignalGenerator.exe gUSBampSource.exe USBampgetinfo.exe \
+  gMOBIlab.exe ARSignalProcessing.exe FFTSignalProcessing.exe \
+  P3SignalProcessing.exe MatlabSignalProcessing.exe DummySignalProcessing.exe \
+  CursorTask.exe FeedbackDemo.exe StimulusPresentation.exe P3Speller.exe \
+  BCI2000Export.exe BCI2000FileInfo.exe BCI2000Viewer.exe BCI2000launcher.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
 
-LittleDemoApp.exe: Application\LittleDemoApp\LittleDemoApp.bpr
+
+SignalGenerator.exe: core\SignalSource\SignalGenerator\SignalGenerator.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-Oddball.exe: Application\Oddball\Oddball.bpr
+gUSBampSource.exe: core\SignalSource\g.USBamp\gUSBampSource.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-P3Speller.exe: Application\P3Speller\P3Speller.bpr
+gMOBIlab.exe: core\SignalSource\g.MOBIlab\gMOBIlab.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-RJB.exe: Application\RJB\RJB.bpr
+operat.exe: core\Operator\operat.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-Screen.exe: Application\Screening\Screen.bpr
+USBampgetinfo.exe: core\SignalSource\g.USBamp\getinfo\USBampgetinfo.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-SWApp.exe: Application\SlowWaveApp\SWApp.bpr
+ARSignalProcessing.exe: core\SignalProcessing\AR\ARSignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-Speller.exe: Application\Speller\Speller.bpr
+FFTSignalProcessing.exe: core\SignalProcessing\FFT\FFTSignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-DASSource.exe: EEGsource\DASSource\DASSource.bpr
+P3SignalProcessing.exe: core\SignalProcessing\P3\P3SignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-DT2000.exe: EEGsource\DTADC\DT2000.bpr
+MatlabSignalProcessing.exe: core\SignalProcessing\Matlab\MatlabSignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-NISource.exe: EEGsource\NIDAQ\NISource.bpr
+DummySignalProcessing.exe: core\SignalProcessing\Dummy\DummySignalProcessing.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-RandomNumber.exe: EEGsource\RandomNumber\RandomNumber.bpr
+CursorTask.exe: core\Application\CursorTask\CursorTask.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-operat.exe: Operator\operat.bpr
+FeedbackDemo.exe: core\Application\FeedbackDemo\FeedbackDemo.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-ARSignalProcessing.exe: SignalProcessing\AR\ARSignalProcessing.bpr
+StimulusPresentation.exe: core\Application\StimulusPresentation\StimulusPresentation.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-FIRProcessing.exe: SignalProcessing\FIR\FIRProcessing.bpr
+P3Speller.exe: core\Application\P3Speller\P3Speller.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-P3SignalProcessing.exe: SignalProcessing\P3\P3SignalProcessing.bpr
+BCI2000Export.exe: core\Tools\BCI2000Export\BCI2000Export.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-PeakDetectSignalProcessing.exe: SignalProcessing\PeakDetector\PeakDetectSignalProcessing.bpr
+BCI2000FileInfo.exe: core\Tools\BCI2000FileInfo\BCI2000FileInfo.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-SWSignalProcessing.exe: SignalProcessing\SW\SWSignalProcessing.bpr
+BCI2000Viewer.exe: core\Tools\BCI2000Viewer\BCI2000Viewer.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-BCI2ASCII.exe: Tools\BCI2000toASCII\BCI2ASCII.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCI2GAB.exe: Tools\BCI2000toGAB\BCI2GAB.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-calibgen.exe: Tools\GenerateCalibration\calibgen.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-maxifred.exe: Tools\Maxifred\maxifred.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-RDAClient.exe: EEGsource\RDAClient\RDAClient.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-D2Box.exe: Application\d2box\D2Box.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-DummySignalProcessing.exe: SignalProcessing\Dummy\DummySignalProcessing.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-P3AVTask.exe: Application\P3AV\P3AVTask.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-getparams.exe: EEGsource\RDAClient\getparams\getparams.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BrainVisionImporter.exe: Tools\BrainVisionImporter\BrainVisionImporter.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-SWSpeller.exe: Application\SlowWaveApp\SWSpeller.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-Neuroscan.exe: EEGsource\Neuroscan\Neuroscan.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCIBatch.exe: Tools\Batch\BCIBatch.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCI2000FileInfo.exe: Tools\BCI2000FileInfo\BCI2000FileInfo.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCITimeFreq.exe: Tools\BCITimeFrequency\BCITimeFreq.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-D3Box.exe: Application\d3box\D3Box.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-gUSBamp.exe: EEGsource\g.USBamp\gUSBamp.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-Biosemi2.exe: EEGsource\Biosemi\Biosemi2.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-TDTclient.exe: EEGsource\TuckerDavis\TDTclient.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-USBampgetinfo.exe: EEGsource\g.USBamp\getinfo\USBampgetinfo.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-neurogetparams.exe: EEGsource\Neuroscan\getparams\neurogetparams.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-TDTsampleRate.exe: EEGsource\TuckerDavis\TDTsampleRate\TDTsampleRate.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-gMOBIlab.exe: EEGsource\g.MOBIlab\gMOBIlab.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-ModularEEG.exe: EEGsource\ModularEEG\ModularEEG.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-MatlabSignalProcessing.exe: SignalProcessing\Matlab\MatlabSignalProcessing.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCIlauncher.exe: Tools\BCIlauncher\BCIlauncher.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-MicroMed.exe: EEGsource\Micromed\MicroMed.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BufferRead.exe: EEGsource\Biosemi_old_UCSD_implementation\BufferRead.bpr
+BCI2000launcher.exe: core\Tools\BCI2000Launcher\BCI2000launcher.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

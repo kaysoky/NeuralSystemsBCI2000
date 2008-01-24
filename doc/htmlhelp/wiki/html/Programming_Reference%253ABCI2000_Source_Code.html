@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>Programming Reference:BCI2000 Source Code - BCI2000 Wiki</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Programming Reference:BCI2000 Source Code,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:Cpp Coding Style,Programming Reference:Project Settings,Programming Reference:Matlab Coding Style" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF' onload=''>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">BCI2000 Source Code</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Version_Management"><span class="tocnumber">1</span> <span class="toctext">Version Management</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Browsing_the_Source_Code_Repository_Online"><span class="tocnumber">2</span> <span class="toctext">Browsing the Source Code Repository Online</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#TortoiseSVN_Client"><span class="tocnumber">3</span> <span class="toctext">TortoiseSVN Client</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Howto_Pages"><span class="tocnumber">4</span> <span class="toctext">Howto Pages</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Directory_Layout"><span class="tocnumber">5</span> <span class="toctext">Directory Layout</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Coding_Guidelines"><span class="tocnumber">6</span> <span class="toctext">Coding Guidelines</span></a></li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Version_Management"></a><h2>Version Management</h2>
+<p>The BCI2000 source code is managed with the help of <a href="http://subversion.tigris.org/" class='external text' title="http://subversion.tigris.org/" rel="nofollow">Subversion</a>, an open-source cross-platform versioning tool widely used in various kinds of projects.
+</p><p>Subversion (SVN) uses the HTTP-based <a href="http://en.wikipedia.org/wiki/WebDAV" class='external text' title="http://en.wikipedia.org/wiki/WebDAV" rel="nofollow">WebDAV</a> protocol, so even web browsers may be used as clients, although a true SVN client software is required to access all features of the versioning system.
+</p>
+<a name="Browsing_the_Source_Code_Repository_Online"></a><h2>Browsing the Source Code Repository Online</h2>
+<p>Online viewing, and comparison of different versions of all source code files, is possible with a web browser (<a href="http://www.bci2000.org/tracproj/browser" class='external free' title="http://www.bci2000.org/tracproj/browser" rel="nofollow">http://www.bci2000.org/tracproj/browser</a>).
+(If you get a message about "viewing privileges", click the "login" link at the top right to log in.)
+</p>
+<a name="TortoiseSVN_Client"></a><h2> TortoiseSVN Client </h2>
+<p>For Win32 platforms, we recommend <a href="http://www.tortoisesvn.org" class='external text' title="http://www.tortoisesvn.org" rel="nofollow">TortoiseSVN</a>, a comfortable-to-use SVN client integrated into the Explorer shell.
+</p>
+<a name="Howto_Pages"></a><h2>Howto Pages</h2>
+<ul><li>Accessing the BCI2000 source code:
+<ul><li> <a href="Programming_Howto%253ASVN_Client_Setup.html" title="Programming Howto:SVN Client Setup">SVN Client Setup</a>
+</li><li> <a href="Programming_Howto%253AUsing_TortoiseSVN.html" title="Programming Howto:Using TortoiseSVN">Using TortoiseSVN</a>
+</li></ul>
+</li><li>Building BCI2000 from the source code:
+<ul><li> <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Building BCI2000</a>
+</li></ul>
+</li></ul>
+<a name="Directory_Layout"></a><h2>Directory Layout</h2>
+<p>The SVN directory layout matches that of the BCI2000 binary distribution:
+</p>
+<table border="1" cellspacing="0">
+<tr>
+<th>batch
+</th><td>batch files for online modules
+</td></tr>
+<tr>
+<th>data
+</th><td>online data output
+</td></tr>
+<tr>
+<th>doc
+</th><td>information
+</td></tr>
+<tr>
+<th>parms
+</th><td>online parameter files
+</td></tr>
+<tr>
+<th>prog
+</th><td>online system executables
+</td></tr>
+<tr>
+<th>tools
+</th><td>off-line analysis tools
+</td></tr>
+<tr>
+<th>src
+</th><td>source code
+</td></tr></table>
+<p>Different from the binary distibution, there is a separate directory tree under <i>src</i>. 
+Below <i>src</i>, there should be no end-user executables, compiled LaTeX files, or pdf files converted from editable formats.
+Rather, their source files should go below <i>src</i>, and their end-user versions go into either <i>prog</i>/<i>doc</i> or the appropriate end-user directory below <i>tools</i>.
+In all makefiles or project files that are relevant for the binary distribution, the compiled output is directed into the appropriate executable directory (<i>prog</i> or <i>tools/mytool</i>).
+</p>
+<a name="Coding_Guidelines"></a><h2>Coding Guidelines</h2>
+<p>We maintain a loose set of guidelines/rules that is aimed at readability and maintenance efficiency.
+These rules are not obligatory but we ask contributors to consider them before handing in their code.
+</p>
+<ul><li> <a href="Programming_Reference%253ACpp_Coding_Style.html" title="Programming Reference:Cpp Coding Style">Programming Reference:Cpp Coding Style</a>
+</li><li> <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:Matlab_Coding_Style&amp;action=edit" class="new" title="Programming Reference:Matlab Coding Style">Programming Reference:Matlab Coding Style</a>
+</li><li> <a href="Programming_Reference%253AProject_Settings.html" title="Programming Reference:Project Settings">Programming Reference:Project Settings</a>
+</li></ul>
+
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Reference%253AContents.html">User Manual</a><br />
+<a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<ul><li>Concepts</li>
+<ul><li><a href="Programming_Reference%253AFilter_Chain.html">Filter Chain</a></li>
+<li><a href="Programming_Reference%253ASignals.html">Signals</a></li>
+<li><a href="Programming_Reference%253AError_Handling.html">Error Handling</a></li>
+<li><a href="Programming_Reference%253ALocalization.html">Localization</a></li>
+<li><a href="Programming_Reference%253ARapid_Development.html">Rapid Development</a></li>
+</ul><li>Reference</li>
+<ul><li><a href="Programming_Reference%253AGenericFilter_Class.html">GenericFilter Class</a></li>
+<li><a href="Programming_Reference%253AEnvironment_Class.html">Environment Class</a></li>
+<li><a href="Programming_Reference%253AGenericVisualization_Class.html">GenericVisuali-zation Class</a></li>
+<li><a href="Programming_Reference%253AErrors_and_Warnings.html">Errors and Warnings</a></li>
+<li><a href="Programming_Reference%253ADebug_Output.html">Debug Output</a></li>
+<li><a href="Programming_Reference%253A3D_API.html">3D API</a></li>
+</ul><li>Howtos</li>
+<li>Tutorials</li>
+</ul><hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+<!-- Served by bci2000.org in 0.18 secs. -->
+</body></html>

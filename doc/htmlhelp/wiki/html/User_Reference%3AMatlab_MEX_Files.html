@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>User Reference:Matlab MEX Files - BCI2000 Wiki</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="User Reference:Matlab MEX Files,Programming Reference:BCI2000 Source Code,User Reference:ARFilter" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF' onload=''>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">Matlab MEX Files</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Using_BCI2000_MEX_files"><span class="tocnumber">2</span> <span class="toctext">Using BCI2000 MEX files</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Microsoft_Windows"><span class="tocnumber">2.1</span> <span class="toctext">Microsoft Windows</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_Platforms"><span class="tocnumber">2.2</span> <span class="toctext">Other Platforms</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#BCI2000_MEX_functions"><span class="tocnumber">3</span> <span class="toctext">BCI2000 MEX functions</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat"><span class="tocnumber">3.1</span> <span class="toctext">load_bcidat</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#convert_bciprm"><span class="tocnumber">3.2</span> <span class="toctext">convert_bciprm</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">3.3</span> <span class="toctext">mem</span></a></li>
+</ul>
+</li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Introduction"></a><h2>Introduction</h2>
+<p>MEX files allow the execution of externally compiled code from within Matlab. Because Matlab code is interpreted at runtime, and MEX files contain binary code that has been compiled prior to use, MEX files are generally faster than equivalent Matlab code.
+</p><p>BCI2000 MEX files contain code that interfaces with BCI2000-specific data structures, i.e. BCI2000 data files, and parameter definitions. This allows access to the underlying data from Matlab, without duplicating code that implements these data structures.
+</p>
+<a name="Using_BCI2000_MEX_files"></a><h2>Using BCI2000 MEX files</h2>
+<a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
+<p>BCI2000 comes with pre-compiled MEX files for Microsoft Windows platforms.
+Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
+</p>
+<a name="Other_Platforms"></a><h3>Other Platforms</h3>
+<p>For other platforms, BCI2000 provides a Matlab script that can be used to build MEX files.
+</p>
+<ul><li>After downloading the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">BCI2000 source code</a>, start Matlab and make sure that the mex command is configured to use the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a>. Typing <tt>help mex</tt> from the Matlab command line will guide you in configuring the mex command.
+</li><li>Change Matlab's working directory to <tt>BCI2000/src/core/Tools/mex/</tt>.
+</li><li>Execute <tt>buildmex</tt> from the Matlab command line.
+</li><li>Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use the newly built MEX files.
+</li></ul>
+<a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
+<a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>
+<pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... )
+</pre>
+<p>loads signal, state, and parameter data from the files whose names are given
+as function arguments.
+</p><p>Examples for loading multiple files:
+</p>
+<pre>files = dir( '*.dat' );
+[ signal, states, parameters ] = load_bcidat( files.name );
+</pre>
+<pre>files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
+[ signal, states, parameters ] = load_bcidat( files.name );
+</pre>
+<p>For multiple files, number of channels, states, and signal type must be
+consistent.
+</p><p>By default, signal data will be in raw A/D units, and will be represented by the 
+smallest Matlab data type that accommodates them.
+To obtain signal data calibrated into physical units (microvolts),
+specify <tt>'-calibrated'</tt> as an option anywhere in the argument list.
+</p><p>The 'states' output variable will be a Matlab struct with BCI2000 state
+names as struct member names, and the number of state value entries matching
+the first dimension of the 'signal' output variable.
+</p><p>The 'parameters' output variable will be a Matlab struct with BCI2000
+parameter names as struct member names.
+Individual parameter values are represented as cell arrays of strings, and may
+be converted into numeric matrices by Matlab's str2double function.
+If multiple files are given, parameter values will match the ones contained 
+in the first file.
+</p><p>Optionally, sample ranges may be specified for individual files:
+</p>
+<pre>[ signal, states, parameters ] = load_bcidat( 'filename', [first last] )
+</pre>
+<p>will load a subset of samples defined by first and last sample index.
+Specifying [0 0] for an empty sample range allows to read states and 
+parameters from a file without reading sample data:
+</p>
+<pre>[ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
+</pre>
+<a name="convert_bciprm"></a><h3><tt>convert_bciprm</tt></h3>
+<p>A Matlab (mex) subroutine that converts BCI2000 parameters
+from Matlab struct into string representation and back.
+</p>
+<pre>parameter_lines = convert_bciprm( parameter_struct );
+</pre>
+<p>converts a BCI2000 parameter struct (as created by load_bcidat)
+into a cell array of strings containing valid BCI2000 parameter
+definition strings.
+</p><p>When the input is a cell array rather than a Matlab struct, convert_bciprm
+will interpret the input as a list of BCI2000 parameter definition strings:
+</p>
+<pre>parameter_struct = convert_bciprm( parameter_lines );
+</pre>
+<a name="mem"></a><h3><tt>mem</tt></h3>
+<p>This command estimates an amplitude spectrum, using the AR based spectral estimator
+that is also present in the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">ARFilter</a>.
+The calling syntax is:
+</p>
+<pre>[spectrum, frequencies] = mem(signal, parms)
+</pre>
+<p>with &lt;signal&gt; and &lt;spectrum&gt; having dimensions channels x values, and
+with &lt;parms&gt; being a vector of parameter values:
+</p>
+<ul><li>model order,
+</li><li>first bin center,
+</li><li>last bin center,
+</li><li>bin width,
+</li><li>evaluations per bin,
+</li><li>detrend option (optional, 0: none, 1: mean, 2: linear; defaults to none),
+</li><li>frequency (optional, defaults to 1).
+</li></ul>
+<p>For a detailed description of configuration parameters, see the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">User Reference:ARFilter</a> page.
+</p>
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Reference%253AContents.html">User Manual</a><br />
+<ul><li><a href="User_Reference%253AOperator_Module.html">Operator Module</a></li>
+<li><a href="User_Reference%253AFilters.html">Configuration Guide</a></li>
+<li>Applications</li>
+<li>Tools</li>
+<ul><li><a href="User_Reference%253ABCI2000Launcher.html">BCI2000Launcher</a></li>
+<li><a href="User_Reference%253ABCI2000Viewer.html">BCI2000Viewer</a></li>
+<li><a href="User_Reference%253ABCI2000FileInfo.html">BCI2000FileInfo</a></li>
+<li><a href="User_Reference%253ABCI2000Export.html">BCI2000Export</a></li>
+<li><a href="User_Reference%253AEEGLabImport.html">EEGLabImport</a></li>
+<li>Matlab MEX Files</li>
+<li><a href="User_Reference%253ACommand_Line_Processing.html">Command Line Processing</a></li>
+</ul></ul><a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+<!-- Served by bci2000.org in 0.18 secs. -->
+</body></html>

@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="..\..\..\..\tools\BCI2000FileInfo\BCI2000FileInfo.exe"/>
+    <OBJFILES value="obj\BCI2000FileInfo.obj obj\UMain.obj obj\UOperatorCfg.obj 
+      obj\UPreferences.obj obj\UEditMatrix.obj obj\UShowParameters.obj 
+      obj\UOperatorUtils.obj obj\BCI2000FileReader.obj obj\Brackets.obj 
+      obj\EncodedString.obj obj\GenericSignal.obj obj\HierarchicalLabel.obj 
+      obj\LabelIndex.obj obj\Param.obj obj\ParamList.obj obj\PhysicalUnit.obj 
+      obj\SignalProperties.obj obj\SignalType.obj obj\State.obj 
+      obj\StateList.obj obj\StateVector.obj obj\ParamRef.obj obj\AboutBox.obj 
+      obj\VersionInfo.obj obj\BCIError_guiapp.obj obj\BCIError.obj 
+      obj\ExpressionParser.obj obj\Expression.obj obj\ParsedComment.obj 
+      obj\ParamDisplay.obj obj\Color.obj obj\ExecutableHelp.obj"/>
+    <RESFILES value="BCI2000FileInfo.res"/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) UMain.dfm ..\..\Operator\UOperatorCfg.dfm 
+      ..\..\Operator\UPreferences.dfm ..\..\Operator\UEditMatrix.dfm 
+      ..\..\Operator\UShowParameters.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx.lib rtl.lib vcl.lib"/>
+    <SPARELIBS value="vcl.lib rtl.lib vclx.lib"/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
+    <PATHCPP value=".;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\Operator;..\..\..\shared\fileio\dat;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\Operator;..\..\Operator;..\..\..\shared\types;..\..\..\shared\gui"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="BCI2000FileInfo.cpp"/>
+    <INCLUDEPATH value="..\..\..\shared\utils\Expression;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\gui;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared;..\..\..\shared\config;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\shared\utils\Expression;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\gui;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\Operator;..\..\shared\utils;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-N2.\obj -N0.\obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-I.\obj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="BCI2000FileInfo.res" FORMNAME="" UNITNAME="BCI2000FileInfo.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="BCI2000FileInfo.cpp" FORMNAME="" UNITNAME="BCI2000FileInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="UMain.cpp" FORMNAME="fMain" UNITNAME="UMain" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\UOperatorCfg.cpp" FORMNAME="fConfig" UNITNAME="UOperatorCfg" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\UPreferences.cpp" FORMNAME="fPreferences" UNITNAME="UPreferences" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\UEditMatrix.cpp" FORMNAME="fEditMatrix" UNITNAME="UEditMatrix" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\UShowParameters.cpp" FORMNAME="fShowParameters" UNITNAME="UShowParameters" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\UOperatorUtils.cpp" FORMNAME="" UNITNAME="UOperatorUtils" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\dat\BCI2000FileReader.cpp" FORMNAME="" UNITNAME="BCI2000FileReader" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\Brackets.cpp" FORMNAME="" UNITNAME="Brackets" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\EncodedString.cpp" FORMNAME="" UNITNAME="EncodedString" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\GenericSignal.cpp" FORMNAME="" UNITNAME="GenericSignal" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\LabelIndex.cpp" FORMNAME="" UNITNAME="LabelIndex" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\Param.cpp" FORMNAME="" UNITNAME="Param" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\ParamList.cpp" FORMNAME="" UNITNAME="ParamList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\PhysicalUnit.cpp" FORMNAME="" UNITNAME="PhysicalUnit" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\SignalProperties.cpp" FORMNAME="" UNITNAME="SignalProperties" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\SignalType.cpp" FORMNAME="" UNITNAME="SignalType" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\State.cpp" FORMNAME="" UNITNAME="State" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\StateList.cpp" FORMNAME="" UNITNAME="StateList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\StateVector.cpp" FORMNAME="" UNITNAME="StateVector" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\AboutBox.cpp" FORMNAME="" UNITNAME="AboutBox" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\VersionInfo.cpp" FORMNAME="" UNITNAME="VersionInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIError_guiapp.cpp" FORMNAME="" UNITNAME="BCIError_guiapp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\ParsedComment.cpp" FORMNAME="" UNITNAME="ParsedComment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Operator\ParamDisplay.cpp" FORMNAME="" UNITNAME="ParamDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\Color.cpp" FORMNAME="" UNITNAME="Color" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\ExecutableHelp.cpp" FORMNAME="" UNITNAME="ExecutableHelp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlIncludePath]
+Count=5
+Item0=..\..\..\shared\utils\Expression;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\gui;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared;..\..\..\shared\config;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\shared;..\..\..\shared\config;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\shared\utils;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\shared\utils;..\..\shared\gui;..\..\shared\config;..\..\shared\bcistream;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\shared;..\..\Operator;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=4
+Item0=..\..\..\shared\utils\Expression;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\gui;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\Operator;..\..\shared\utils;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\Operator;$(BCB)\lib\obj;$(BCB)\lib;..\..\shared\utils
+Item2=..\..\Operator;$(BCB)\lib\obj;$(BCB)\lib;..\..\shared\utils
+Item3=..\..\shared\utils;..\..\shared\gui;..\..\shared\config;..\..\shared\bcistream;..\..\shared\accessors;..\..\shared\types;..\..\shared\fileio\dat;..\..\shared;..\..\Operator;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=2
+Item0=NO_WIN32_LEAN_AND_MEAN
+Item1=NO_WIN32_LEAN_AND_MEAN;_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=.\obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=..\..\..\..\tools\BCI2000FileInfo\
+Item1=..\..\..\tools\BCI2000FileInfo\
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=0
+  </IDEOPTIONS>
+</PROJECT>

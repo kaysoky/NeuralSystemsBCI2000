@@ -1,9 +1,0 @@
-# Version: Jul 29, 2005
-# The DASSource module has been reported to work with the boards listed here.
-# This list is maintained by juergen.mellinger@uni-tuebingen.de.
-# Board names are as displayed by the InstaCal program.
-DEMO-BOARD
-PC-CARD-DAS16/16
-PCM-DAS16S/16
-CIO-DAS1402/16
-PCIM-1602/16

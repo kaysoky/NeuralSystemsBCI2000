@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>Programming Reference:Cpp Coding Style - BCI2000 Wiki</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Programming Reference:Cpp Coding Style,Programming Reference:Project Settings" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF' onload=''>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">Cpp Coding Style</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p>We maintain a loose set of guidelines/rules that is aimed at readability and maintenance efficiency. These rules are not obligatory, but we ask contributors to consider them before handing in their code. 
+</p>
+<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Line_Formatting"><span class="tocnumber">1</span> <span class="toctext">Line Formatting</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Naming"><span class="tocnumber">2</span> <span class="toctext">Naming</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253ACpp_Coding_Style.html#Name_prefixes"><span class="tocnumber">2.1</span> <span class="toctext">Name prefixes</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Variable_Declaration"><span class="tocnumber">3</span> <span class="toctext">Variable Declaration</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Memory_Allocation"><span class="tocnumber">4</span> <span class="toctext">Memory Allocation</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Pointers_and_References"><span class="tocnumber">5</span> <span class="toctext">Pointers and References</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Control_Flow"><span class="tocnumber">6</span> <span class="toctext">Control Flow</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Example_Function"><span class="tocnumber">7</span> <span class="toctext">Example Function</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Line_Formatting"></a><h2> Line Formatting </h2>
+<ul><li> No tab characters (please configure your editor to insert spaces instead).
+</li><li> Indentation in steps of 2 or 3 space characters.
+</li><li> Opening braces have their own line, aligned with the previous line; corresponding closing braces are placed on their own lines, at the same character position as the opening brace.
+</li><li> For function definitions, return types appear on their own line, such that the function name is first in its line.
+</li></ul>
+<a name="Naming"></a><h2> Naming </h2>
+<ul><li> <b>ALL_UPPERCASE_NAMES</b> are reserved for preprocessor macros.
+</li><li> <b>CamelCase</b> (uppercase letters inside words) is used to indicate word boundaries.
+</li><li> Class names and namespaces begin with uppercase letters: <b>MyNameSpace</b>, <b>TheClass</b>.
+</li><li> Local variables and function arguments begin with lowercase letters: <b>theCounter</b>, <b>inSomeInput</b>.
+</li><li> Data members of true classes are private, and accessed via <b>Accessor Functions</b>.
+<ul><li> <b>Setters</b> use the prefix "Set" followed by the property's name: <b>SetValue()</b>. Setter functions should also return a non-const reference to the data object itself rather than <b>void</b>, this allows for chaining as in<br /><code>float result = MyComputation().SetOrder( 5 ).SetDepth( 10 ).EvaluateAt( 4 );</code>
+</li><li> <b>Getters</b> use the name of the property: <b>Value()</b>. Omitting the "Get" prefix allows the programmer to treat getters and reference accessors identically, as far as read access is concerned.
+</li><li> <b>Reference Accessors</b> use the name of the property, and are provided in a doubly <i>const</i> and a <i>non-const</i> version. This is important to allow const access from const object references, and to discriminate between read and write accesses (note the <i>mPossiblyChanged</i> flag):<br /><code>const int&amp; Value() const { return mValue; }</code><br /><code>int&amp;       Value() { mPossiblyChanged = true; return mValue; }</code>
+</li></ul>
+</li></ul>
+<a name="Name_prefixes"></a><h3> Name prefixes </h3>
+<p>Prefixes should carry information about the scope and usage of a variable but not its type.
+</p>
+<ul><li> <b>m</b> for class data members,
+</li><li> <b>s</b> for static class members and static variables,
+</li><li> <b>g</b> for globals,
+</li><li> <b>c</b> for constants,
+</li><li> <b>p</b> for pointers,
+</li><li> <b>fp</b> for function pointers,
+</li><li> <b>in</b> for function input arguments,
+</li><li> <b>out</b> for function output arguments,
+</li><li> <b>io</b> for function arguments used for input and output.
+</li></ul>
+<a name="Variable_Declaration"></a><h2>Variable Declaration</h2>
+<ul><li> Always use the narrowest possible scope for a name to avoid side effects.
+</li><li> Always initialize variables (at declaration resp. constructor).
+</li></ul>
+<a name="Memory_Allocation"></a><h2>Memory Allocation</h2>
+<ul><li> Allocate objects from the <b>stack</b> rather than the <b>heap</b> unless there is a good reason to use the <b>new</b> operator. This avoids memory leaks.
+</li><li> Use STL containers rather than allocating arrays with <b>new[]</b>. This eliminates a number of possible errors (initialization, allocation, deallocation).
+</li></ul>
+<a name="Pointers_and_References"></a><h2>Pointers and References</h2>
+<ul><li> Use references rather than pointers wherever possible.
+</li></ul>
+<a name="Control_Flow"></a><h2>Control Flow</h2>
+<ul><li> Avoid <b>goto</b>, <b>break</b> outside <b>switch</b>-<b>case</b> blocks, and multiple <b>return</b> statements.
+</li></ul>
+<a name="Example_Function"></a><h2> Example Function </h2>
+<pre>void
+MyClass::MyFunction( const SomeClass&amp; inTheInput, int&amp; outTheResult )
+{
+  outTheResult = mSomeDataMember;
+  for( int i = 0; i &lt; inTheInput.NumIterations(); ++i )
+  {
+    int k = 4;
+    while( --k &gt; 0 )
+      outTheResult -= k;
+  }
+}
+</pre>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="Programming_Reference%253AProject_Settings.html" title="Programming Reference:Project Settings">Programming Reference:Project Settings</a>
+</p>
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Reference%253AContents.html">User Manual</a><br />
+<a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<ul><li>Concepts</li>
+<ul><li><a href="Programming_Reference%253AFilter_Chain.html">Filter Chain</a></li>
+<li><a href="Programming_Reference%253ASignals.html">Signals</a></li>
+<li><a href="Programming_Reference%253AError_Handling.html">Error Handling</a></li>
+<li><a href="Programming_Reference%253ALocalization.html">Localization</a></li>
+<li><a href="Programming_Reference%253ARapid_Development.html">Rapid Development</a></li>
+</ul><li>Reference</li>
+<ul><li><a href="Programming_Reference%253AGenericFilter_Class.html">GenericFilter Class</a></li>
+<li><a href="Programming_Reference%253AEnvironment_Class.html">Environment Class</a></li>
+<li><a href="Programming_Reference%253AGenericVisualization_Class.html">GenericVisuali-zation Class</a></li>
+<li><a href="Programming_Reference%253AErrors_and_Warnings.html">Errors and Warnings</a></li>
+<li><a href="Programming_Reference%253ADebug_Output.html">Debug Output</a></li>
+<li><a href="Programming_Reference%253A3D_API.html">3D API</a></li>
+</ul><li>Howtos</li>
+<li>Tutorials</li>
+</ul><hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+<!-- Served by bci2000.org in 0.18 secs. -->
+</body></html>

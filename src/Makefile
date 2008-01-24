@@ -1,9 +1,6 @@
 ##################################################################################
 # $Id$
-# File:   Makefile
-#
 # Author: juergen.mellinger@uni-tuebingen.de
-#
 # Description:
 #         Makefile for the BCI2000 project.
 #         Must be run using Borland's make.exe from the Windows NT/2000 
@@ -23,12 +20,14 @@
 #         broken and/or unneeded subprojects. If doing so, uncomment
 #         the line defining DONTCLEANME to protect your changes.
 #
-# (C) 2000-2007, BCI2000 Project
+# (C) 2000-2008, BCI2000 Project
 # http://www.bci2000.org
 ###################################################################################
 
 # How to execute commands.
 SHELL = cmd /c @prompt $s && 
+# Ignore a command's return code (minus sign appears unreliable).
+IGNORE = || echo.
 # Name of file that contains list of subproject makefiles.
 MKNAM = .makefiles
 # How to zero the subproject makefile list.
@@ -46,12 +45,16 @@ TOOLSBINDIR = tools
 # Where to put documents.
 DOCDIR = doc
 
+# Path to TortoiseSVN
+TORTOISEDIR = %ProgramFiles%\TortoiseSVN\bin
 # Path to distribution creation tool.
 SEVENZIPDIR = %ProgramFiles%\7-Zip
 # Name of the binary distribution archive.
 BINDISTNAME = BCI2000Setup
 # Names of top-level directories that should be contained in the binary distribution.
 BINDISTDIRS = batch data doc parms prog tools
+# Additional files to include into the binary distribution
+BINDISTFILES = *.html
 # Path/filename elements that should be excluded from the binary distribution
 NODISTFILES = *.tds *\CVS .empty *\.svn
 
@@ -71,7 +74,7 @@ TOOLSINSTALLDIR = ${INSTALLDIR}\${TOOLSBINDIR}
 # Bootstrapping: Create list of subproject makefiles
 #
 ##################################################################################
-all cmdline docinfo prepare clean install update bindist pdf:
+all build cmdline prepare clean install update bindist pdf test:
   attrib -r ${MKNAM}
   ${EMPTYMK}
   echo ^#DONTCLEANME=true ^# Uncomment this line if you edit this file.   >>${MKNAM}
@@ -79,7 +82,10 @@ all cmdline docinfo prepare clean install update bindist pdf:
   echo ^#TOOLSINSTALLDIR= ^# Optionally, a separate tools destination\
                              directory for "make install".                >>${MKNAM}
   echo MAKEFILES =\                                                       >>${MKNAM}
-  -for /R %i in (*.bpr) do echo ^"%~di%~pi%~ni.mak^" \                    >>${MKNAM}
+  -for /R %i in (*.bpr) do \
+            echo %i | grep core ${AND} echo ^"%~di%~pi%~ni.mak^" \        >>${MKNAM}
+  -for /R %i in (*.bpr) do \
+            echo %i | grep contrib ${AND} echo ^#^"%~di%~pi%~ni.mak^" \   >>${MKNAM}
   echo.                                                                   >>${MKNAM}
   echo LATEXDOCS =\                                                       >>${MKNAM}
   -for /R %i in (*.tex) do grep \\documentclass "%i" ${AND} echo ^"%i^" \ >>${MKNAM}
@@ -97,38 +103,42 @@ all cmdline docinfo prepare clean install update bindist pdf:
 all: prepare ${MAKEFILES:.mak=.all} cmdline mex
   ${DONE}
   
-# Make the command line tools.
+# Update version and time stamp, then make all subprojects.
+build:
+  if exist ${TORTOISEDIR}\SubWCRev.exe \
+    ${TORTOISEDIR}\SubWCRev.exe . shared\config\Version.h.in shared\config\Version.h
+  ${MAKE} -${MAKEFLAGS} all
+  ${MAKE} -${MAKEFLAGS} test
+  ${DONE}
+  
+# Make command line tools.
 cmdline:
-  ${SHELL} cd Tools\cmdline ${AND} make install
+  ${SHELL} cd core\Tools\cmdline ${AND} make install
   ${DONE}
   
-# Make the mex files.
+# Make mex files.
 mex:
-  ${SHELL} cd Tools\mex ${AND} make install
+  ${SHELL} cd core\Tools\mex ${AND} make install
   ${DONE}
   
-# Do some automatic documentation.
-docinfo: ${MAKEFILES:.mak=.docinfo}
-  ${DONE}
-
 # Prepare source files for opening projects without confusing the Borland IDE.
 prepare: ${MAKEFILES:.mak=.prepare}
-  -${SHELL} for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r "%i"
+  ${SHELL} (for /R %i in (${FORCEWRITE} ${GARBAGE}) do attrib -r "%i") ${IGNORE}
 !ifndef DONTCLEANME
-  -${SHELL} attrib -r "${MKNAM}"
+  ${SHELL} attrib -r "${MKNAM}" ${IGNORE}
 !endif
   ${DONE}
 
 # Cleanup.
 clean: prepare ${MAKEFILES:.mak=.clean}
-  -${SHELL} for /R %i in (${GARBAGE}) do del "%i"
+  ${SHELL} (for /R %i in (${GARBAGE}) do del "%i") ${IGNORE}
 !ifndef DONTCLEANME
   ${EMPTYMK}
 !endif
-  -${SHELL} cd ..\${BINDIR} for /R %i in (${GARBAGE}) do del "%i"
-  -${SHELL} cd ..\${TOOLSBINDIR} for /R %i in (${GARBAGE}) do del "%i"
-  -${SHELL} cd Tools\cmdline ${AND} make clean
-  -${SHELL} cd Tools\mex ${AND} make clean
+  ${SHELL} cd ..\${BINDIR} ${AND} (for /R %i in (${GARBAGE}) do del "%i") ${IGNORE}
+  ${SHELL} cd ..\${TOOLSBINDIR} ${AND} (for /R %i in (${GARBAGE}) do del "%i") ${IGNORE}
+  ${SHELL} cd core\Tools\cmdline ${AND} make clean ${IGNORE}
+  ${SHELL} cd core\Tools\mex ${AND} make clean ${IGNORE}
   ${DONE}
   
 # Install executables.
@@ -140,19 +150,25 @@ update: ${MAKEFILES:.mak=.update}
   ${DONE}
   
 # Create an installation archive.
-bindist: all pdf
-  -del ..\${BINDISTNAME}.exe
+bindist: build
+  del ..\${BINDISTNAME}.exe ${IGNORE}
   ${SHELL} cd .. \
     ${AND} "${SEVENZIPDIR}\7z" a ${BINDISTNAME}.7z ${BINDISTDIRS} -ms=e \
+    ${AND} "${SEVENZIPDIR}\7z" a ${BINDISTNAME}.7z ${BINDISTFILES} -ms=e \
     ${AND} "${SEVENZIPDIR}\7z" d ${BINDISTNAME}.7z ${GARBAGE} ${NODISTFILES} -r \
     ${AND} copy /b  src\BCI2000.sfx + ${BINDISTNAME}.7z ${BINDISTNAME}.exe \
     ${AND} del ${BINDISTNAME}.7z
   ${DONE}
 
+# Test executables.
+test:
+  ${SHELL} cd buildutils\testing ${AND} run_tests
+  ${DONE}
+
 # Create pdfs from tex files.
 pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   ${DONE}
-  
+    
 ##################################################################################
 #
 # Suffix rules for creating and executing makefiles
@@ -162,13 +178,6 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   (bpr2mak $<) & echo.
   # Add our own additional targets to the makefile created by bpr2mak.
   @echo.                                                          >>$@
-  @echo docinfo: $^^(PROJECT) obj\Documentar.obj                  >>$@
-  @echo ^^ -$^^(BCB)\BIN\$^^(LINKER) $^^(LFLAGS) \                >>$@
-  @echo ^^ -L$^^(LIBPATH) obj\Documentar.obj $^^(ALLOBJ),\        >>$@
-  @echo ^^ _$^^(PROJECT),, $^^(ALLLIB), $^^(DEFFILE), $^^(ALLRES) >>$@
-  @echo ^^ -_$^^(PROJECT) ^^>$^^(PROJECT:.exe=.info)              >>$@
-  @echo ^^ -del _$^^(PROJECT)                                     >>$@
-  @echo ^^ -del _*.tds                                            >>$@
   @echo install_supplements:                                      >>$@
   @echo !ifdef DESTDIR                                            >>$@
   @echo ^^ if exist install.cmd install.cmd ^^"$^(DESTDIR)^\^"    >>$@
@@ -180,7 +189,7 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
   @echo ^^ if not exist obj mkdir obj                             >>$@
   @echo install: $^^(PROJECT) install_supplements                 >>$@
   @echo ^^ if not exist ^^"$^(DESTDIR)^" mkdir ^^"$^(DESTDIR)^"   >>$@
-  @echo ^^ xcopy /y $^^(PROJECT) ^^"$^(DESTDIR)^"                 >>$@
+  @echo ^^ xcopy /d /y $^^(PROJECT) ^^"$^(DESTDIR)^"              >>$@
   @echo update: $^^(PROJECT) install_supplements                  >>$@
   @echo ^^ if exist ^^"$^(DESTDIR)^" \
             xcopy /d /u /y $^^(PROJECT) ^^"$^(DESTDIR)^"          >>$@
@@ -200,8 +209,8 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
 
 .mak.all:
   ${SHELL} cd ${<D} ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} \
-                    ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} install_supplements
-  -del shared\obj\bci2000.csm shared\obj\bci2000.^#* > nul 2>&1
+                      ${AND} ${MAKE} -f${<F} -${MAKEFLAGS} install_supplements
+  del shared\obj\bci2000.csm shared\obj\bci2000.^#* > nul 2>&1 ${IGNORE}
   ${DONE}
   
 .mak.docinfo:

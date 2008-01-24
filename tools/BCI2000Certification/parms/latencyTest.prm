@@ -1,0 +1,26 @@
+Storage:Data%20Location string DataDirectory= ..\tools\BCI2000Certification\latencyData ..\data % % // path to top level data directory (directory)
+Storage:Session string SubjectSession= 001 001 % % // 3-digit session #
+Storage:Session string SubjectRun= 01 00 % % // 2 digit run #
+Application:Window int WindowWidth= 800 640 0 % // width of application window
+Application:Window int WindowHeight= 800 480 0 % // height of application window
+Application:Window int WindowLeft= 0 0 % % // screen coordinate of application window's left edge
+Application:Window int WindowTop= 0 0 % % // screen coordinate of application window's top edge
+Source:gUSBampADC int SourceCh= 16 16 1 128 // number of digitized channels total
+Source:gUSBampADC int SampleBlockSize= 25 5 1 128 // number of samples per block
+Source:gUSBampADC int SamplingRate= 512 128 1 40000 // the signal sampling rate
+Source:gUSBampADC int FilterEnabled= 0 1 0 1 // Enable pass band filter (0=no, 1=yes)
+Source:gUSBampADC int NotchEnabled= 0 1 0 1 // Enable notch (0=no, 1=yes)
+Source:gUSBampADC int SignalType= 1 0 0 1 // numeric type of output signal:  0: int16, 1: float32 (enumeration)
+Source:gUSBampADC int DigitalOutput= 1 0 0 1 // enable digital output on block acquisition (boolean)
+Source:gUSBampADC int DigitalInput= 1 0 0 1 // enable digital output on block acquisition (boolean)
+Visualize:Timing int VisualizeRoundtrip= 0 1 0 1 // visualize roundtrip time (0=no, 1=yes) (boolean)
+Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
+Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
+Visualize:Source%20Signal int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
+Visualize:Source%20Signal int SourceMin= -100muV -100muV % % // raw signal vis Min Value
+Visualize:Source%20Signal int SourceMax= 100muV 100muV % % // raw signal vis Max Value
+Visualize:Processing%20Stages int VisualizeSpatialFilter= 0 0 0 1 // Visualize SpatialFilter output (boolean)
+Visualize:Processing%20Stages int VisualizeARFilter= 0 0 0 1 // Visualize ARFilter output (boolean)
+Visualize:Processing%20Stages int VisualizeLinearClassifier= 0 0 0 1 // Visualize LinearClassifier output (boolean)
+Visualize:Processing%20Stages int VisualizeLPFilter= 0 0 0 1 // Visualize LPFilter output (boolean)
+Visualize:Processing%20Stages int VisualizeNormalizer= 0 0 0 1 // Visualize Normalizer output (boolean)

@@ -1,0 +1,117 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = BioRadio.exe Biosemi2.exe DASSource.exe DT2000.exe MicroMed.exe \
+  ModularEEG.exe Neuroscan.exe neurogetparams.exe NISource.exe RDAClient.exe \
+  getparams.exe TMSi.exe TDTclient.exe TDTsampleRate.exe FIRProcessing.exe \
+  PeakDetectSignalProcessing.exe SWSignalProcessing.exe SWApp.exe SWSpeller.exe \
+  Speller.exe BCIBatch.exe BCIDiff.exe BCITimeFreq.exe calibgen.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+BioRadio.exe: SignalSource\BioRadio\BioRadio.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Biosemi2.exe: SignalSource\Biosemi\Biosemi2.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DASSource.exe: SignalSource\DASSource\DASSource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+DT2000.exe: SignalSource\DTADC\DT2000.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+MicroMed.exe: SignalSource\Micromed\MicroMed.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+ModularEEG.exe: SignalSource\ModularEEG\ModularEEG.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Neuroscan.exe: SignalSource\Neuroscan\Neuroscan.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+NISource.exe: SignalSource\NIDAQ\NISource.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TMSi.exe: SignalSource\TMSi\TMSi.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TDTclient.exe: SignalSource\TuckerDavis\TDTclient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+FIRProcessing.exe: SignalProcessing\FIR\FIRProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+PeakDetectSignalProcessing.exe: SignalProcessing\PeakDetector\PeakDetectSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSignalProcessing.exe: SignalProcessing\SW\SWSignalProcessing.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWApp.exe: Application\SlowWaveApp\SWApp.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SWSpeller.exe: Application\SlowWaveApp\SWSpeller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+Speller.exe: Application\Speller\Speller.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCIBatch.exe: Tools\Batch\BCIBatch.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+BCITimeFreq.exe: Tools\BCITimeFrequency\BCITimeFreq.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+calibgen.exe: Tools\GenerateCalibration\calibgen.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+neurogetparams.exe: SignalSource\Neuroscan\getparams\neurogetparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+TDTsampleRate.exe: SignalSource\TuckerDavis\TDTsampleRate\TDTsampleRate.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+RDAClient.exe: SignalSource\RDAClient\RDAClient.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+getparams.exe: SignalSource\RDAClient\getparams\getparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+

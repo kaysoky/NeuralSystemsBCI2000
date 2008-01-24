@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>Programming Howto:Building BCI2000 - BCI2000 Wiki</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Programming Howto:Building BCI2000,Contributions:Contents,User Reference:Command Line Processing,User Reference:Matlab MEX Files" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF' onload=''>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">Building BCI2000</h1><p class="subtitle">Programming Howto</p><hr class="sep" /><p>This document describes how to build BCI2000, i.e. how to create the BCI2000 executables from their source code.
+</p>
+<table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Why_to_build"><span class="tocnumber">1</span> <span class="toctext">Why to build</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Tools_required"><span class="tocnumber">2</span> <span class="toctext">Tools required</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_to_build"><span class="tocnumber">3</span> <span class="toctext">How to build</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_from_the_command_line"><span class="tocnumber">3.1</span> <span class="toctext">Building BCI2000 from the command line</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE"><span class="tocnumber">3.2</span> <span class="toctext">Building BCI2000 using the Borland C++ Builder 6 IDE</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Starting_up_BCI2000"><span class="tocnumber">3.3</span> <span class="toctext">Starting up BCI2000</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Compiling_BCI2000_with_Borland_C.2B.2B_Builder_2006.2F2007"><span class="tocnumber">3.4</span> <span class="toctext">Compiling BCI2000 with Borland C++ Builder 2006/2007</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions"><span class="tocnumber">3.5</span> <span class="toctext">Building Contributions</span></a>
+<ul>
+<li class='toclevel-3'><a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_command_line"><span class="tocnumber">3.5.1</span> <span class="toctext">From the command line</span></a></li>
+<li class='toclevel-3'><a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_IDE"><span class="tocnumber">3.5.2</span> <span class="toctext">From the IDE</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+<a name="Why_to_build"></a><h2> Why to build </h2>
+<p>Typically, you will install BCI2000 from its binary distribution, and do not need to build BCI2000, unless
+</p>
+<ul><li>you want to always use its most current SVN version,
+</li><li>you want to use code from the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions</a> section,
+</li><li>you create your own module by modifying an existing one, or create a new one from scratch.
+</li></ul>
+<a name="Tools_required"></a><h2> Tools required </h2>
+<p>As of BCI2000 version 2.0, building all parts of BCI2000 requires Borland's C++ Builder 6, or a more recent version.
+The operator GUI and Application modules currently require the Borland VCL library.
+Non-GUI related parts of BCI2000 can be built using the freely available Borland C++ compiler:
+</p>
+<ul><li><a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> 
+</li><li><a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a>
+</li></ul>
+<a name="How_to_build"></a><h2>How to build</h2>
+<a name="Building_BCI2000_from_the_command_line"></a><h3>Building BCI2000 from the command line</h3>
+<p>Command-line builds require a working installation of Borland C++ Builder 6.
+</p>
+<ol><li> Open a Windows cmd shell, e.g. by choosing "Run..." from the Start Menu and entering "cmd". 
+</li><li> Change to the BCI2000 "src" directory.
+</li><li> Execute "make" from the command prompt.
+</li><li> If you updated or edited any of the source files, and experience linker errors or other unexpected behavior, execute "make clean &amp;&amp; make all".
+</li><li> For build versioning, execute "make build" rather than "make" or "make all". This will update the build information visible in the BCI2000 "Version" parameters, and in the "About" boxes of BCI2000 GUI applications.
+</li></ol>
+<a name="Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE"></a><h3>Building BCI2000 using the Borland C++ Builder 6 IDE</h3>
+<ol><li> Open the file "BCI2000.bpg" with the IDE by double-clicking it.
+</li><li> Make sure the "ProjectManager" view is visible to the left.
+</li><li> Right-click the topmost project (located immediately below the line reading "BCI2000"), and choose "Make all from here".
+</li><li> To get rid of possible inconsistencies from earlier builds, choose "Build all from here" rather than "Make all from here".
+</li></ol>
+<a name="Starting_up_BCI2000"></a><h3>Starting up BCI2000</h3>
+<ol><li> After compilation, a desired configuration of BCI2000 may be started by executing an appropriate batch file from the top level "batch" directory. Once a particular configuration of BCI2000 is started, simply load a parameter file with the same name as the batch file from the "parms" directory.
+</li><li> If you need a configuration for which no batch file exists, just modify a copy of a batch file that is close to your needs.
+</li></ol>
+<a name="Compiling_BCI2000_with_Borland_C.2B.2B_Builder_2006.2F2007"></a><h3>Compiling BCI2000 with Borland C++ Builder 2006/2007</h3>
+<ol><li> Open the file "BCI2000.bpg" from within Borland Developer Studio. This will import all existing projects into BDS project files.
+</li><li> In the project manager (at the top right), right-click the topmost project and choose "Make all from here".
+</li><li> To get rid of possible inconsistencies from earlier builds, choose "Build all from here" rather than "Make all from here".
+</li><li> Command-line builds cannot be done with Borland C++ Builder 2007 because it lacks a project-to-makefile conversion utility. Still, <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> and <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a> may be compiled from the command line as described in their documentation.
+</li><li> When using BCB2006, you may experience "invalid property" errors when running BCI2000. This may be due to imperfect import of *.dfm files. Make sure to install all available updates, then import a clean version of the BCI2000 source tree. If this doesn't help, consider updating to BCB2007.
+</li></ol>
+<a name="Building_Contributions"></a><h3>Building Contributions</h3>
+<a name="From_the_command_line"></a><h4>From the command line</h4>
+<p>After building BCI2000 from the command line, the <tt>.makefiles</tt> file in the <tt>src</tt> directory contains a full list of subprojects.
+Those from the contribution section are commented out with a # character in front. When you remove the # character, and do a "make all" or "make build", the additional project will be included into the build.
+Likewise, you may speed up builds by commenting out parts of the core distribution that you don't need.
+</p>
+<a name="From_the_IDE"></a><h4>From the IDE</h4>
+<p>Open the contrib project group in the <tt>src/contrib</tt> directory, and build the contributions you want.
+</p>
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Reference%253AContents.html">User Manual</a><br />
+<a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<ul><li>Concepts</li>
+<li>Reference</li>
+<li>Howtos</li>
+<ul><li>Building BCI2000</li>
+<li><a href="Programming_Howto%253ASVN_Client_Setup.html">SVN Client Setup</a></li>
+<li><a href="Programming_Howto%253AUsing_TortoiseSVN.html">Using Tortoise SVN</a></li>
+</ul><li>Tutorials</li>
+</ul><hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+<!-- Served by bci2000.org in 0.17 secs. -->
+</body></html>

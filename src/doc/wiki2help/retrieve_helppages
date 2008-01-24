@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Downloads BCI2000 wiki pages using the HTMLhelp user account.
+#
+# Execute this script from the directory where it is located 
+# in the BCI2000 source tree.
+# Requires wget >= 1.10.
+
+SERVER="www.bci2000.org"
+BASE="$SERVER/wiki"
+TARGET="../../../doc/htmlhelp"
+TMPFILE="~cookies"
+
+# Log in to the HTMLhelp account using /wiki/helplogin.php.
+wget --spider --keep-session-cookies --save-cookies $TMPFILE \
+     http://$BASE/helplogin
+# Get all content listed in Special:Allpages.
+wget --recursive --level=1 --convert-links --page-requisites \
+	 --restrict-file-names=windows \
+     --html-extension -e robots=off --load-cookies $TMPFILE \
+     http://$BASE/index.php/Special:Allpages
+# Log out of the server.
+wget --spider --load-cookies $TMPFILE \
+     http://$BASE/index.php/Special:Userlogout
+rm $TMPFILE
+
+# Some browsers have problems with URLs escaping the '%' character.
+# As a fix, we duplicate pages with ambiguous file names.
+for i in `find $SERVER -iname *.html`;
+do
+  if ( echo $i | grep % ); then
+    j=`echo $i | sed 's/%/%25/'`;
+    cp $i $j
+  fi;
+done;
+echo
+
+# Rename directories, and move content into the doc directory.
+mv $BASE/index.php $BASE/html
+mkdir $TARGET || true 
+cp -af $SERVER/* $TARGET && rm -r $SERVER
