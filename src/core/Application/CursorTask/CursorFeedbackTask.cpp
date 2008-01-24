@@ -416,6 +416,7 @@ CursorFeedbackTask::OnFeedbackEnd()
       RGBColor color = RGBColor::Yellow;
       mpCursor->setColor( color.R()/255., color.G()/255., color.B()/255. );
       mTargets[ State( "ResultCode" ) - 1 ]->setColor( color.R()/255., color.G()/255., color.B()/255. );
+      mpScene->Invalidate();
       AppLog.Screen << "-> hit" << endl;
     }
     else
