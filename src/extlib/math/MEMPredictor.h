@@ -40,6 +40,7 @@ template<typename T>
 const Ratpoly<MEMPredictor::Complex>&
 MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
 {
+  typedef double D;
   const T eps = std::numeric_limits<T>::epsilon();
   static DataVector  coeff, wkm,
                      wk1, wk2;
@@ -51,17 +52,17 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
   wk2.resize( n );
   wk2 = inData.shift( 1 );
 
-  T meanPower = std::inner_product( &wk1[0], &wk1[n], &wk1[0], 0.0 ) / n;
+  D meanPower = std::inner_product( &wk1[0], &wk1[n], &wk1[0], D( 0.0 ) ) / n;
   coeff[0] = 1.0;
   for( int k = 1; k <= mModelOrder; ++k )
   {
-    T num   = ( n > k ) ?
-                2.0 * std::inner_product( &wk1[0], &wk1[n-k], &wk2[0], 0.0 ) :
-                0.0,
+    D num   = ( n > k ) ?
+              2.0 * std::inner_product( &wk1[0], &wk1[n-k], &wk2[0], D( 0.0 ) ) :
+              0.0,
       denom = ( n > k ) ?
-                std::inner_product( &wk1[0], &wk1[n-k], &wk1[0], 0.0 )
-                + std::inner_product( &wk2[0], &wk2[n-k], &wk2[0], 0.0 ) :
-                0.0;
+              std::inner_product( &wk1[0], &wk1[n-k], &wk1[0], D( 0.0 ) )
+              + std::inner_product( &wk2[0], &wk2[n-k], &wk2[0], D( 0.0 ) ) :
+              0.0;
     if( denom < eps )
     { // limit for zero data
       num = 1.0;
