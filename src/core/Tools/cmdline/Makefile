@@ -26,6 +26,7 @@ TARGETS = obj\bci_tool.lib \
           obj\bci_dll.lib \
           bci_dat2stream.exe \
           bci_prm2stream.exe \
+          bci_decimate.exe \
           bci_stream2prm.exe \
           bci_stream2asc.exe \
           bci_stream2table.exe \
