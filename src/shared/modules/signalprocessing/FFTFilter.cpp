@@ -33,7 +33,7 @@ FFTFilter::FFTFilter()
               "2: Complex Amplitudes of selected Channels "
               "(enumeration)",
    "Filtering intlist FFTInputChannels= 1 1"
-     " 0 0 0 // Input Channels the FFT is performed on",
+     " % % % // Input Channels the FFT is performed on",
    "Filtering float FFTWindowLength= 0.5s"
       " 0.5s % % // Time window for spectrum computation",
    "Filtering int FFTWindow= 3"
@@ -55,17 +55,15 @@ void
 FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) const
 {
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
-    PreflightCondition(
-      Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) > 0
-      && Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) <= Input.Channels()
-    );
-
-  int fftWindowLength = Parameter( "SampleBlockSize" )
-       * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
-  PreflightCondition(
-    Parameter( "FFTInputChannels" )->NumValues() == 0
-    || fftWindowLength > 0
-  );
+  {
+    int channelIndex = Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) );
+    if( channelIndex < 0 || channelIndex >= Input.Channels() )
+      bcierr << "Invalid channel specification \""
+             << Parameter( "FFTInputChannels" )( i )
+             << "\" in FFTInputChannels, evaluates to "
+             << channelIndex
+             << endl;
+  }
 
   bool fftRequired = ( ( int )Parameter( "FFTOutputSignal" ) != eInput
                        || ( int )Parameter( "VisualizeFFT" ) )
@@ -75,6 +73,8 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
     if( mFFT.LibAvailable() )
     {
       FFTLibWrapper preflightFFT;
+      int fftWindowLength = Parameter( "SampleBlockSize" )
+                            * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
       if( !preflightFFT.Initialize( fftWindowLength ) )
         bcierr << "Requested parameters are not supported by FFT library" << endl;
     }
@@ -86,12 +86,15 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
              << endl;
   }
 
+  if( int( Parameter( "VisualizeFFT" ) ) )
+    DetermineSignalProperties( SignalProperties(), ePower );
+
   Output = Input;
   DetermineSignalProperties( Output, Parameter( "FFTOutputSignal" ) );
 }
 
 void
-FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& )
+FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& Output )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
   mFFTWindowLength = Parameter( "SampleBlockSize" )
@@ -105,12 +108,15 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& )
     mVisualizations[ i ].Send( CfgID::Visible, false );
   mVisualizations.clear();
   mVisualizeFFT = int( Parameter( "VisualizeFFT" ) );
-  mVisProperties = Input;
-  DetermineSignalProperties( mVisProperties, ePower );
+  if( mVisualizeFFT )
+  {
+    mVisProperties = Input;
+    DetermineSignalProperties( mVisProperties, ePower );
+  }
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
   {
     mFFTInputChannels.push_back( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) );
-    mSpectra.push_back( GenericSignal( mFFTWindowLength / 2 + 1, 1 ) );
+    mSpectra.push_back( GenericSignal( Output.Elements(), 1 ) );
     if( mVisualizeFFT )
     {
       ostringstream oss_i;
@@ -242,6 +248,12 @@ FFTFilter::ResetValueBuffers( size_t inSize )
 void
 FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTType ) const
 {
+  int numChannels = Parameter( "FFTInputChannels" )->NumValues(),
+      fftWindowLength = Parameter( "SampleBlockSize" )
+                        * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
+  if( numChannels > 0 && fftWindowLength == 0 )
+    bcierr << "FFTWindowLength must exceed a single sample's duration" << endl;
+
   switch( inFFTType )
   {
     case eInput:
@@ -250,8 +262,8 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
     case ePower:
     {
       ioProperties.SetName( "FFT Power Spectrum" )
-                  .SetChannels( Parameter( "FFTInputChannels" )->NumValues() )
-                  .SetElements( ( int )Parameter( "FFTWindowLength" ) / 2 + 1 );
+                  .SetChannels( numChannels )
+                  .SetElements( fftWindowLength / 2 + 1 );
       float freqScale = Parameter( "SamplingRate" ) / 2.0 / ioProperties.Elements();
       ioProperties.ElementUnit().SetOffset( freqScale / 2 )
                                 .SetGain( freqScale )
@@ -263,8 +275,8 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
 
     case eHalfcomplex:
       ioProperties.SetName( "FFT Coefficients" )
-                  .SetChannels( Parameter( "FFTInputChannels" )->NumValues() )
-                  .SetElements( ( int )Parameter( "FFTWindowLength" ) );
+                  .SetChannels( numChannels )
+                  .SetElements( fftWindowLength );
       break;
 
     default:
