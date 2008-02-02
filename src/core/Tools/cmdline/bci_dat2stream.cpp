@@ -136,6 +136,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     return illegalInput;
   }
 
+  SignalProperties outputProperties( sourceCh, sampleBlockSize, dataFormat );
   if( transmitData || transmitStates )
   {
     StateVector statevector( states, true );
@@ -144,9 +145,6 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
       cerr << "Statevector's length differs from StateVectorLen field" << endl;
       return illegalInput;
     }
-
-    SignalProperties outputProperties;
-    outputProperties.SetType( SignalType::float32 );
     if( calibrateData && parameters.Exists( "SamplingRate" ) )
     {
       outputProperties
@@ -182,7 +180,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
       MessageHandler::PutMessage( out, outputProperties );
 
     int curSample = 0;
-    GenericSignal outputSignal( sourceCh, sampleBlockSize, dataFormat );
+    GenericSignal outputSignal( outputProperties );
     while( in && in.peek() != EOF )
     {
       for( int i = 0; i < sourceCh; ++i )

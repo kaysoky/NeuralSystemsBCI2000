@@ -52,13 +52,14 @@ class StreamToAsc : public MessageHandler
   StateList mStatelist;
   StateVector* mpStatevector;
 
-  virtual bool HandleProtocolVersion( istream& );
-  virtual bool HandleStatus(          istream& );
-  virtual bool HandleParam(           istream& );
-  virtual bool HandleState(           istream& );
-  virtual bool HandleVisSignal(       istream& );
-  virtual bool HandleStateVector(     istream& );
-  virtual bool HandleSysCommand(      istream& );
+  virtual bool HandleProtocolVersion(     istream& );
+  virtual bool HandleStatus(              istream& );
+  virtual bool HandleParam(               istream& );
+  virtual bool HandleState(               istream& );
+  virtual bool HandleVisSignalProperties( istream& );
+  virtual bool HandleVisSignal(           istream& );
+  virtual bool HandleStateVector(         istream& );
+  virtual bool HandleSysCommand(          istream& );
 };
 
 template<typename T> void Convert( istream&, ostream& );
@@ -137,6 +138,13 @@ StreamToAsc::HandleState( istream& arIn )
     }
     Print( mrOut, s );
   }
+  return true;
+}
+
+bool
+StreamToAsc::HandleVisSignalProperties( istream& arIn )
+{
+  Convert<VisSignalProperties>( arIn, mrOut );
   return true;
 }
 

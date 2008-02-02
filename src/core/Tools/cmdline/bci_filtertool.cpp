@@ -100,20 +100,35 @@ ToolInit()
 ToolResult
 ToolMain( const OptionSet& arOptions, istream& arIn, ostream& arOut )
 {
-  FilterWrapper wrapper( arOut );
-  if( arOptions.size() == 1 )
+  ToolResult result = noError;
+  try
   {
-    string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
-    if( operatorFile == "" )
-      return illegalOption;
-    wrapper.RedirectOperator( operatorFile.c_str() );
+    FilterWrapper wrapper( arOut );
+    if( arOptions.size() == 1 )
+    {
+      string operatorFile = arOptions.getopt( "-o|-O|--operator", "" );
+      if( operatorFile == "" )
+        return illegalOption;
+      wrapper.RedirectOperator( operatorFile.c_str() );
+    }
+    while( arIn && arIn.peek() != EOF )
+      wrapper.HandleMessage( arIn );
+    wrapper.FinishProcessing();
   }
-  while( arIn && arIn.peek() != EOF )
-    wrapper.HandleMessage( arIn );
-  wrapper.FinishProcessing();
-  if( !arIn )
-    return illegalInput;
-  return noError;
+  catch( const char* s )
+  {
+    bcierr << s << endl;
+  }
+  catch( const exception& e )
+  {
+    bcierr << "caught exception "
+           << typeid( e ).name() << " (" << e.what() << "),\n"
+           << "terminating module"
+           << endl;
+  }
+  if( bcierr__.Flushes() > 0 || !arIn )
+    result = illegalInput;
+  return result;
 }
 
 FilterWrapper::FilterWrapper( ostream& arOut )
@@ -292,6 +307,7 @@ FilterWrapper::HandleVisSignal( istream& arIn )
         /* no break */
         EnvironmentBase::EnterStartRunPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         GenericFilter::StartRunFilters();
+        EnvironmentBase::EnterNonaccessPhase();
         EnvironmentBase::EnterProcessingPhase( &mParamlist, &mOutputStatelist, mpOutputStatevector, &mOperator );
         /* no break */
       case Environment::processing:
