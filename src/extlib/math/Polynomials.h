@@ -138,8 +138,7 @@ template<class T>
 T
 Polynomial<T>::Evaluate( const T& z, int d ) const
 {
-  typedef double D;
-  D result = 0;
+  T result = 0;
   if( mRootsKnown && d == 0 )
   {
     result = mConstantFactor;
@@ -149,7 +148,7 @@ Polynomial<T>::Evaluate( const T& z, int d ) const
   else
   {
     Coefficients();
-    D powerOfZ = 1;
+    T powerOfZ = 1;
     for( size_t i = 0; i < mCoefficients.size() - d; ++i, powerOfZ *= z )
       result += mCoefficients[ i + d ] * powerOfZ;
   }
