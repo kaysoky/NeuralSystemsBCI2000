@@ -135,7 +135,9 @@ for idxChar = 1:length(cond)
           
         end
         
-        curTok = cond(idxChar);
+        if isempty(delimIdx)
+          curTok = cond(idxChar);
+        end
       end
       
       curOp = '';
