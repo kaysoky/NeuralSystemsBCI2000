@@ -366,7 +366,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       subplot(num_plotchannels, 2, (cur_plotchannel-1)*2+1);
       plot(xData, res1(:, channels(cur_plotchannel)), 'r');
       hold on;
-      plot(xData, res2(:, channels(cur_plotchannel)), 'b:');
+      plot(xData, res2(:, channels(cur_plotchannel)), 'b');
       titletxt=sprintf(title1, channels(cur_plotchannel));
       title(titletxt); 
       axis tight;
