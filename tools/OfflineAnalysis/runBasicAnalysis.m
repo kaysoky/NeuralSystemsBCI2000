@@ -105,7 +105,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   files = struct();
   [files(1:length(params.dataFiles)).name] = deal(params.dataFiles{:});
   try
-    [signal, states, bciParams]=load_bcidat(files.name);
+    [signal, states, bciParams]=load_bcidat(files.name, '-calibrated');
   catch
     rethrow(lasterror);
   end
