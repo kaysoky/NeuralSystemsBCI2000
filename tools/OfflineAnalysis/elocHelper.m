@@ -12,6 +12,10 @@
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function varargout = elocHelper(varargin)
 function varargout = elocHelper(varargin)
+if ~strcmp(computer, 'PCWIN')
+  error('Eloc Helper currently works only on windows-based systems.');
+  return;
+end
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
