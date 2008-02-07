@@ -51,7 +51,7 @@ if nargin > 1
   for idx = 1:length(x)
     elecInfo(idx).elecNum = elecNums(idx);
     elecInfo(idx).coords = [x(idx) y(idx)];
-    elecInfo(idx).label = labels(idx, :);
+    elecInfo(idx).label = strtrim(labels(idx, :));
   end
   ha = gca;
   cla

@@ -829,18 +829,20 @@ strVals(curIdx) = [];
 set(handles.lstElecs, 'string', strVals);
 set(handles.lstElecs, 'userdata', elecInfo);
 
-if curIdx > length(elecInfo)
+if curIdx > 1
   curIdx = curIdx - 1;
-  if curIdx >= 1
-    set(handles.lstElecs, 'value', curIdx);
-    lstElecs_Callback(handles.lstElecs, 1, handles);
-  else
-    %last item was deleted
-    clearProperties(handles);
-    set(handles.btnUseGrid, 'enable', 'off');
-    set(handles.btnUpdate, 'enable', 'off');
-    set(handles.btnRemove, 'enable', 'off');
-  end
+elseif curIdx == length(elecInfo)
+  curIdx = 0;
+end
+if curIdx >= 1
+  set(handles.lstElecs, 'value', curIdx);
+  lstElecs_Callback(handles.lstElecs, 1, handles);
+else
+  %last item was deleted
+  clearProperties(handles);
+  set(handles.btnUseGrid, 'enable', 'off');
+  set(handles.btnUpdate, 'enable', 'off');
+  set(handles.btnRemove, 'enable', 'off');
 end
 
 
