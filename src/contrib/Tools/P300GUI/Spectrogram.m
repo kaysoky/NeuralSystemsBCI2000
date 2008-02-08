@@ -1,6 +1,4 @@
 %%%%%  function to plot a 2D matrix of tiles
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 %%%%%  Dean Krusienski   1/2005              
 %%%%%  Wadsworth Center/NYSDOH   
 

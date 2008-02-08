@@ -1,6 +1,4 @@
 function writePRM(filename,dir1,MUD)
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 
 prmname=filename;
 filename=[filename '.mud'];
@@ -20,7 +18,7 @@ end
 
 if MUD.SF==1
     fprintf(fid,['Filtering int SpatialFilteredChannels= ' num2str(MUD.softwarech) ' 4 1 128 // the number of transmitted channels\n']);
-    CARmat=eye(MUD.softwarech) + (1-eye(MUD.softwarech))/MUD.softwarech;
+    CARmat=eye(MUD.softwarech)-ones(MUD.softwarech)/MUD.softwarech;
     CARmat=reshape(CARmat,1,MUD.softwarech^2);    
     fprintf(fid,['Filtering matrix SpatialFilterKernal= ' num2str(MUD.softwarech) ' ' num2str(MUD.softwarech)]);
     fprintf(fid,' %2.5f',CARmat);

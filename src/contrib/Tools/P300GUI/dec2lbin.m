@@ -19,8 +19,6 @@ function s=dec2lbin(d,n)
 %   Developed after Hans Olsson's BIN2DEC
 %   Febo Cincotti, f.cincotti@hsantalucia.it
 %   $Revision$  $Date$
-%   (C) 2000-2008, BCI2000 Project
-%   http://www.bci2000.org
 
 [nrows ncols]=size(d);
 dt=d';

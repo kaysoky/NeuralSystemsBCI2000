@@ -21,7 +21,7 @@ function varargout = P300_GUI(varargin)
 % See also: GUIDE, GUIDATA, GUIHANDLES
 % Copyright 2002-2003 The MathWorks, Inc.
 % Edit the above text to modify the response to help P300_GUI
-% Last Modified by GUIDE v2.5 29-Mar-2006 21:41:06
+% Last Modified by GUIDE v2.5 15-Jan-2008 10:46:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,6 +71,7 @@ handles.penter=.1;
 handles.premove=.15;
 handles.enableCh2=0;
 handles.xls=0;
+handles.stde=0;
 handles.SF=2;
 handles.MUDprefix='MUD';
 handles.testindx=0;
@@ -121,7 +122,7 @@ function windowedit_Callback(hObject, eventdata, handles)
 handles.windlen=str2num(get(hObject,'String'));
 
 if length(handles.windlen)==1
-handles.windlen=[0 handles.windlen];
+    handles.windlen=[0 handles.windlen];
 end
 guidata(hObject,handles)
 % --- Executes during object creation, after setting all properties.
@@ -173,6 +174,7 @@ function mudnum_Callback(hObject, eventdata, handles)
 handles.nummud=str2num(get(hObject,'String'));
 set(handles.saveMUDbutton, 'Enable','on');
 set(handles.savePRMbutton, 'Enable','on');
+set(handles.prmv2, 'Enable','on');
 guidata(hObject,handles)
 % --- Executes during object creation, after setting all properties.
 function mudnum_CreateFcn(hObject, eventdata, handles)
@@ -292,7 +294,7 @@ if MUDdir~=0
         nnme=nnme(1:length(nnme)-4);
         [tMUD]=loadMUD(MUDdir,char(MUDnames(qq)));
         handles.tlabel(handles.MUDindx+qq)={[num2str(handles.MUDindx+qq) ': ' nnme]};
-        handles.tlabel2(handles.MUDindx+qq)={nnme};        
+        handles.tlabel2(handles.MUDindx+qq)={nnme};
         handles.MUD(handles.MUDindx+qq)=tMUD;
     end
 
@@ -397,7 +399,7 @@ for xsf=opt
                 end
                 guidata(hObject,handles)
                 if handles.rndsmp==100
-                    [predicted,result(:,zz)]=P3Classify(Responses.Responses(:,:,indm),Responses.Code,Responses.Type,tMUD.MUD,parms.NumberOfSequences,Responses.trial,parms.NumMatrixRows,parms.NumMatrixColumns,parms.TargetDef,tMUD.windowlen);
+                    [predicted,result(:,zz),score,resultthresh]=P3Classify(Responses.Responses(:,:,indm),Responses.Code,Responses.Type,tMUD.MUD,parms.NumberOfSequences,Responses.trial,parms.NumMatrixRows,parms.NumMatrixColumns,parms.TargetDef,tMUD.windowlen);
                 end
                 zz=zz+1;
             end
@@ -420,17 +422,76 @@ if handles.MUDindx>pind & handles.rndsmp==100
     xlabel('# Sequences')
     ylabel('Percent Correct')
     legend(handles.tlabel(pind+1:handles.MUDindx),'Location','BestOutside')
+    %AR%
+    hold on;
+    plot(resultthresh(:,2),resultthresh(:,3),'r','Linewidth',2);
+
+
+    %     subplot(2,1,2)
+    %     ribbon(result)
+    %     axis([.5  handles.MUDindx-pind+.5 1 parms.NumberOfSequences 0 100])
+    %     view(37.5,30)
+    %     set(gca,'YAxisLocation','right')
+    %     ylabel('# Sequences')
+    %     xlabel('MUD')
+    %     zlabel('Percent Correct')
+    %     legend(handles.tlabel(pind+1:handles.MUDindx),'Location','BestOutside')
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   
+    p=result/100-.0001;
+    n=parms.NumMatrixRows*parms.NumMatrixColumns;
+    br=log2(n)+p.*log2(p)+(1-p).*log2((1-p)/(n-1));
+    bx=br/log2(n); % symbols per trial
+    exval=2*bx-1;
+  
+        
+    time=[1:parms.NumberOfSequences]'*parms.ISI*(parms.NumMatrixRows+parms.NumMatrixColumns)/60000;
+    time=time+(parms.PostSetInterval+parms.PreSetInterval)/60000;
+    indx=find(exval<=0);
+    exval(indx)=zeros(1,length(indx));
+
+    for nn=1:size(result,2)
+        exval(:,nn)=exval(:,nn)./time;
+    end
 
     subplot(2,1,2)
-    ribbon(result)
-    axis([.5  handles.MUDindx-pind+.5 1 parms.NumberOfSequences 0 100])
-    view(37.5,30)
+    plot(exval,'linewidth',2)
     set(gca,'YAxisLocation','right')
-    ylabel('# Sequences')
-    xlabel('MUD')
-    zlabel('Percent Correct')
+    maxi=max(max(exval));
+    if maxi==0 
+        maxi=1;
+    end;
+    axis([1 parms.NumberOfSequences 0 maxi])
+    xlabel('# Sequences')
+    ylabel('Symbols/Minute')
     legend(handles.tlabel(pind+1:handles.MUDindx),'Location','BestOutside')
-
+    
+    %-------------------------------------------
+    % AR
+    %------------------------------------------
+    p=resultthresh(:,3)/100-.0001;
+    n=parms.NumMatrixRows*parms.NumMatrixColumns;
+    br=log2(n)+p.*log2(p)+(1-p).*log2((1-p)/(n-1));
+    bx=br/log2(n); % symbols per trial
+    exval=2*bx-1;
+    
+    time=[resultthresh(:,2)]*parms.ISI*(parms.NumMatrixRows+parms.NumMatrixColumns)/60000;
+    time=time+(parms.PostSetInterval+parms.PreSetInterval)/60000;
+    indx=find(exval<=0);
+    exval(indx)=zeros(1,length(indx));
+    exval=exval./time;
+    subplot(2,1,2); hold on
+    plot(resultthresh(:,2),exval,'r','linewidth',2)
+    [maxi2,ind]=max(exval);
+    if maxi2==0 
+        maxi2=1;
+    end;
+    axis([1 parms.NumberOfSequences 0 max([maxi maxi2])])    
+    fprintf('-----------------------------------------\n');
+    fprintf('Optimal value of T = %2.2f\n',resultthresh(ind,1));
+    fprintf('-----------------------------------------\n');
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     if handles.xls==1
         train=[handles.trainfile 'train'];
@@ -470,11 +531,11 @@ if handles.testindx~=0
         end
         for bb=1:handles.MUDindx % each mud file
             tMUD=handles.MUD(bb);
-            
+
             if parms.SoftwareCh<max(tMUD.channels)
                 error('*** Test data has less channels specified in the MUD ***')
             end
-                
+
             if tMUD.SF==1
                 signal1=CARfilter(signal);
                 signal1=signal1(:,tMUD.channels);
@@ -489,25 +550,25 @@ if handles.testindx~=0
             fprintf(1,['CAR: ' num2str(tMUD.SF) ' DF: ' num2str(round(tMUD.smprate/tMUD.DF)) ' RS: ' num2str(tMUD.RS) '\n\n']);
 
             [Responses]=GetP3Responses(signal1,state.trialnr,tMUD.windowlen,state.StimulusCode,state.StimulusType,state.Flashing,tMUD.channels,tMUD.SF,100);
-            [predicted,result(:,bb)] =P3Classify(Responses.Responses,Responses.Code,Responses.Type,tMUD.MUD,parms.NumberOfSequences,Responses.trial,parms.NumMatrixRows,parms.NumMatrixColumns,parms.TargetDef,tMUD.windowlen);
-            
+            [predicted,result(:,bb),score,resultthresh] =P3Classify(Responses.Responses,Responses.Code,Responses.Type,tMUD.MUD,parms.NumberOfSequences,Responses.trial,parms.NumMatrixRows,parms.NumMatrixColumns,parms.TargetDef,tMUD.windowlen);
+
             if parms.SamplingRate~=tMUD.smprate
                 fprintf(1, '***********************************************************\n' );
                 fprintf(1,   '***  Warning: Training and test sample rates differ!!!  ***\n');
                 fprintf(1,   '***           Classification may be incorrect           ***');
                 fprintf(1, '\n***********************************************************\n' );
             end
-            
+
             [a,indh1]=find(xm==tMUD.MA);
             [a,indh2]=find(xd==tMUD.DF);
-   
+
         end % each mud file
 
         if handles.xls==1;
             test=[handles.testfile{rr} 'test'];
             writeXLS(result,handles.trainfile,test,handles.traindatdir,handles.tlabel,handles.MUDindx);
         end
-        
+
         figure
         set(gcf,'Name',['All MUDs to ' handles.testfile{rr}])
         subplot(2,1,1)
@@ -518,19 +579,76 @@ if handles.testindx~=0
         xlabel('# Sequences')
         ylabel('Percent Correct')
         legend(handles.tlabel,'Location','BestOutside')
+        %AR%
+        hold on;
+        plot(resultthresh(:,2),resultthresh(:,3),'r','Linewidth',2);
+
+        %         subplot(2,1,2)
+        %         ribbon(result)
+        %         axis([.5 handles.MUDindx+.5 1 parms.NumberOfSequences 0 100])
+        %         view(37.5,30)
+        %         set(gca,'YAxisLocation','right')
+        %         ylabel('# Sequences')
+        %         xlabel('MUD')
+        %         zlabel('Percent Correct')
+        %         legend(handles.tlabel,'Location','BestOutside')
+        %
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        p=result/100-.0001;
+        n=parms.NumMatrixRows*parms.NumMatrixColumns;
+        br=log2(n)+p.*log2(p)+(1-p).*log2((1-p)/(n-1));
+        bx=br/log2(n); % symbols per trial
+        exval=2*bx-1;
+        time=[1:parms.NumberOfSequences]'*parms.ISI*(parms.NumMatrixRows+parms.NumMatrixColumns)/60000;
+        time=time+(parms.PostSetInterval+parms.PreSetInterval)/60000;
+        indx=find(exval<=0);
+        exval(indx)=zeros(1,length(indx));
+        for nn=1:size(result,2)
+            exval(:,nn)=exval(:,nn)./time;
+        end
 
         subplot(2,1,2)
-        ribbon(result)
-        axis([.5 handles.MUDindx+.5 1 parms.NumberOfSequences 0 100])
-        view(37.5,30)
+        plot(exval,'linewidth',2)
         set(gca,'YAxisLocation','right')
-        ylabel('# Sequences')
-        xlabel('MUD')
-        zlabel('Percent Correct')
+        maxi=max(max(exval));
+        if maxi==0 
+            maxi=1;
+        end;
+        axis([1 parms.NumberOfSequences 0 maxi])
+        xlabel('# Sequences')
+        ylabel('Symbols/Minute')
         legend(handles.tlabel,'Location','BestOutside')
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %-------------------------------------------
+        % AR
+        %------------------------------------------
+        p=resultthresh(:,3)/100-.0001;
+        n=parms.NumMatrixRows*parms.NumMatrixColumns;
+        br=log2(n)+p.*log2(p)+(1-p).*log2((1-p)/(n-1));
+        bx=br/log2(n); % symbols per trial
+        exval=2*bx-1;
+        
+        time=[resultthresh(:,2)]*parms.ISI*(parms.NumMatrixRows+parms.NumMatrixColumns)/60000;
+        time=time+(parms.PostSetInterval+parms.PreSetInterval)/60000;
+        indx=find(exval<=0);
+        exval(indx)=zeros(1,length(indx));
+        exval=exval./time;
+        subplot(2,1,2); hold on
+        plot(resultthresh(:,2),exval,'r','linewidth',2)
+        [maxi2,ind]=max(exval);
+        if maxi2==0 
+            maxi2=1;
+        end;
+        axis([1 parms.NumberOfSequences 0 max([maxi maxi2])]);
+        fprintf('-----------------------------------------\n');
+        fprintf('Optimal value of T = %2.2f\n',resultthresh(ind,1));
+        fprintf('-----------------------------------------\n');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
         plotresults(result,handles.MUD,'All MUDs',handles.testfile{rr})
-        
+
         if parms.NumberOfSequences<size(grandavg,1)
             grandavg(1:minseq,:,rr)=result;
         elseif parms.NumberOfSequences>size(grandavg,1)
@@ -538,15 +656,24 @@ if handles.testindx~=0
         else
             grandavg(:,:,rr)=result;
         end
-        
+
     end % each test file
-    
+
     if rr>1
         figure
         set(gcf,'Name',['All MUDs to All test files'])
         subplot(2,1,1)
+        
         gndavg=mean(grandavg,3);
-        plot(gndavg,'linewidth',2)
+        e=std(grandavg,0,3);
+        clr=['b' 'r' 'g' 'c' 'm' 'y' 'k' 'b' 'r' 'g' 'c' 'm' 'y' 'k'];
+        for jj=1:size(gndavg,2)
+            errorbar(1:minseq,gndavg(:,jj),e(:,jj),clr(jj))
+            hold on
+        end
+        % plot(gndavg,'linewidth',2)
+              
+        
         set(gca,'YAxisLocation','right')
         axis([1 minseq 0 100])
         title(['All MUDs to All test files'])
@@ -555,7 +682,7 @@ if handles.testindx~=0
         legend(handles.tlabel,'Location','BestOutside')
 
         subplot(2,1,2)
-        ribbon(gndavg)        
+        ribbon(gndavg)
         axis([.5 handles.MUDindx+.5 1 minseq 0 100])
         view(37.5,30)
         set(gca,'YAxisLocation','right')
@@ -594,6 +721,19 @@ for kk=1:length(handles.nummud)
     end
 end
 
+% --- Executes on button press in prmv2.
+function prmv2_Callback(hObject, eventdata, handles)
+% hObject    handle to prmv2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+for kk=1:length(handles.nummud)
+    if handles.nummud(kk)>handles.MUDindx
+    else
+        name=[handles.MUDprefix char(handles.tlabel2(handles.nummud(kk)))];
+        writePRMv2(name,handles.traindatdir,handles.MUD(handles.nummud(kk)));
+        set(handles.status, 'String', ['PRM file saved: ' handles.traindatdir name]);
+    end
+end
 
 
 % --- Executes on button press in cleartestbutton.
@@ -619,6 +759,7 @@ set(handles.applybutton, 'Enable','off');
 set(handles.clearmudbutton, 'Enable','off');
 set(handles.saveMUDbutton, 'Enable','off');
 set(handles.savePRMbutton, 'Enable','off');
+set(handles.prmv2, 'Enable','off');
 set(handles.status, 'String', 'Ready');
 guidata(hObject,handles)
 
@@ -638,9 +779,9 @@ SoftwareCh=parms.SoftwareCh;
 clear parms
 [Responses]=GetP3Responses(signal,state.trialnr,windowlen,state.StimulusCode,state.StimulusType,state.Flashing,1:SoftwareCh,handles.SF,handles.rndsmp);
 clear signal
-P300chtime(Responses.Responses,Responses.Type,windowlen,SamplingRate,handles.trainfile,handles.SF);
+P300chtime(Responses.Responses,Responses.Type,windowlen,SamplingRate,handles.trainfile,handles.SF,handles.stde);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% end buttons
+% end buttons
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % --- Executes on button press in useCh2.
@@ -684,5 +825,15 @@ function methodpopup_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in stderr.
+function stderr_Callback(hObject, eventdata, handles)
+handles.stde=get(hObject,'Value');
+guidata(hObject,handles)
+
+
+
+
 
 

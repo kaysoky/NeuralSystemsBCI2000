@@ -1,5 +1,3 @@
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 
 [MUDfile,dir1]=uigetfile('*.mud','Select the mud file');
 
@@ -40,5 +38,4 @@ for kk=1:steps:MUD.windowlen
     gg=gg+1;
     
     
-end
 end

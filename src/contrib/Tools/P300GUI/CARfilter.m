@@ -1,8 +1,6 @@
 %%%%%  applies common average reference to the channels
 %%%%%  Dean Krusienski   1/2005              
 %%%%%  Wadsworth Center/NYSDOH     
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 
 function CARSignal=CARfilter(signal)
 

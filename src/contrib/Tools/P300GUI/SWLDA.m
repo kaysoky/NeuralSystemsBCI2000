@@ -24,8 +24,6 @@ data=tresponse(indtn,:);
 Label=2*(Type(indtn)-.5);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 %%%% stepwise LDA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 switch method
@@ -42,6 +40,10 @@ switch method
         B=robustfit(data,Label,'logistic');
         B=B(2:length(B));
         in=ones(1,length(B));
+
+        % Ridge
+        %         B = ridge(Label,data,1000);
+        %         in=ones(1,length(B));
 end
 
 index=find(in~=0);

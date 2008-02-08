@@ -1,10 +1,8 @@
 %%%%%  function to plot the target and standard responses
 %%%%%  Dean Krusienski   1/2005
 %%%%%  Wadsworth Center/NYSDOH
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
 
-function P300chtime(AllResponses,Type,windowlen,SamplingRate,tfile,SF)
+function P300chtime(AllResponses,Type,windowlen,SamplingRate,tfile,SF,stde)
 
 totch=size(AllResponses,3);
 r2=zeros(totch,windowlen(2)-windowlen(1));
@@ -19,13 +17,17 @@ end
 
 tpe=find(Type==1);
 AvgTargets=mean(AllResponses(tpe,:,:));
+SETargets=std(AllResponses(tpe,:,:))/sqrt(length(tpe));
 tpe=find(Type==0);
 AvgNTargets=mean(AllResponses(tpe,:,:));
+SENTargets=std(AllResponses(tpe,:,:))/sqrt(length(tpe));
 
 clear AllResponses Type
 
 AvgTargets=reshape(AvgTargets,windowlen(2)-windowlen(1),totch);
 AvgNTargets=reshape(AvgNTargets,windowlen(2)-windowlen(1),totch);
+SETargets=reshape(SETargets,windowlen(2)-windowlen(1),totch);
+SENTargets=reshape(SENTargets,windowlen(2)-windowlen(1),totch);
 
 range=1000*[windowlen(1):windowlen(2)]/SamplingRate;
 range2=1000*[windowlen(1):windowlen(2)-1]/SamplingRate;
@@ -69,10 +71,27 @@ while button~=3
             title([num2str(range(x)) ' ms'])
         end
 
-        subplot(3,1,2)
-        plot(range2,AvgTargets(:,y),'r')
-        hold on
-        plot(range2,AvgNTargets(:,y),'g')
+        
+        min([AvgNTargets(:,y)-SENTargets(:,y); AvgTargets(:,y)-SETargets(:,y)])
+        max([AvgNTargets(:,y)+SENTargets(:,y); AvgTargets(:,y)+SETargets(:,y)])
+        
+        subplot(3,1,2)        
+        if stde==1;          
+            errorbar(range2,AvgTargets(:,y),SETargets(:,y),'r')
+            set (gca, 'YDir','reverse')
+            hold on
+            errorbar(range2,AvgNTargets(:,y),SENTargets(:,y),'g')
+            axis([min(range2) max(range2)...
+                min([AvgNTargets(:,y)-SENTargets(:,y); AvgTargets(:,y)-SETargets(:,y)])...
+                max([AvgNTargets(:,y)+SENTargets(:,y); AvgTargets(:,y)+SETargets(:,y)])]);
+        else
+            plot(range2,AvgTargets(:,y),'r')
+            set (gca, 'YDir','reverse')
+            hold on
+            plot(range2,AvgNTargets(:,y),'g')
+        end
+        
+        set (gca, 'YDir','reverse')
         title(['Channel ' str ' - Targets(red)'])
         xlabel('time(ms)')
         ylabel('Amplitude')

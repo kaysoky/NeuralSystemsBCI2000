@@ -20,20 +20,13 @@
 %  If multiple files are given, parameter values will match the first files'
 %  parameters.
 %
-%  The load_bcidat function is part of the BCI2000 project. 
-%  (C) 2000-2008, BCI2000 Project
-%  http://www.bci2000.org
+%  The load_bcidat function is part of the BCI2000 project 
+%  (http://www.bciresearch.org).
 
 %  This is a help file documenting the functionality contained in
 %  load_bcimat.mex.
 %  $Id$
-%  $Log$
-%  Revision 1.1  2006/05/02 20:23:17  dkrusienski
-%  first version on CVS
-%
-%  Revision 1.1  2006/04/18 12:31:52  dkrusienski
-%  *** empty log message ***
-%
+%  $Log: load_bcidat.m,v $
 %  Revision 1.1  2006/01/17 17:15:47  mellinger
 %  Initial version.
 %
