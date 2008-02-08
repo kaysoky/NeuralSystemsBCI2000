@@ -157,18 +157,18 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     if( calibrateData && parameters.Exists( "SourceChOffset" ) )
     {
       const Param& sourceChOffset = parameters[ "SourceChOffset" ];
-      for( int ch = 0; ch < sourceChOffset.NumValues(); ++ch )
+      for( int ch = 0; ch < min( sourceCh, sourceChOffset.NumValues() ); ++ch )
         offsets[ ch ] = atof( sourceChOffset.Value( ch ).c_str() );
     }
     if( calibrateData && parameters.Exists( "SourceChGain" ) )
     {
       const Param& sourceChGain = parameters[ "SourceChGain" ];
-      for( int ch = 0; ch < sourceChGain.NumValues(); ++ch )
+      for( int ch = 0; ch < min( sourceCh, sourceChGain.NumValues() ); ++ch )
         gains[ ch ] = atof( sourceChGain.Value( ch ).c_str() );
       outputProperties
         .ValueUnit().SetOffset( 0 )
-                    .SetGain( 1e-6 )
-                    .SetSymbol( "V" );
+        .SetGain( 1e-6 )
+        .SetSymbol( "V" );
     }
     if( parameters.Exists( "ChannelNames" ) && parameters[ "ChannelNames" ].NumValues() > 0 )
     {
