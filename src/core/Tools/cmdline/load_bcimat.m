@@ -65,8 +65,12 @@ switch outdim
     end
     
   case 3
-    signal = reshape( Data( Index.Signal.', : ).', ...
-      [], size( Index.Signal, 2 ), size( Index.Signal, 1 ) );
+    signal = zeros( size( Data, 2 ), ...
+      size( Index.Signal, 2 ), size( Index.Signal, 1 ), 'single' );
+    for( i = 1 : size( Index.Signal, 1 ) )
+      signal( :, :, i ) = reshape( Data( Index.Signal( i, : ), : ), ...
+        [], size( Index.Signal, 2 ), 1 );
+    end
     for( i = 1 : num_states )
       idx = eval( [ 'Index.' varargin{ i + 1 } ] ); 
       varargout{ i } = squeeze( Data( idx, : ).' );
