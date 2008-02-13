@@ -1,5 +1,5 @@
-System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x ,%20 Nov%2016%202007 // operator module version information
-System:State%20Vector int StateVectorLength= 13 16 1 30 // length of the state vector in bytes
+System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x ,%20 Jan%2015%202008 // operator module version information
+System:State%20Vector int StateVectorLength= 14 16 1 30 // length of the state vector in bytes
 Source:Signal%20Properties int SourceCh= 16 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
@@ -15,7 +15,7 @@ Storage:Documentation string ID_Amp= % // BCI2000 Amp Code
 Storage:Documentation string ID_Montage= % // BCI2000 Cap Montage Code
 Visualize:Timing int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
-Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
+Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 1 % // decimation factor for raw brain signal
 Visualize:Source%20Signal int VisualizeSourceTime= 2 2 0 % // how much time in Source visualization
 Visualize:Source%20Signal int SourceMin= -100muV -100muV % % // raw signal vis Min Value
 Visualize:Source%20Signal int SourceMax= 100muV 100muV % % // raw signal vis Max Value
@@ -34,18 +34,18 @@ Storage:BCI2000FileWriter int SavePrmFile= 0 1 0 1 // save additional parameter 
 Storage:BCI2000FileWriter string StorageTime= % // time of beginning of data storage
 Source:Alignment int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing list TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
-System:Core%20Connections string SignalSourcePort= 4541 4200 1024 65535 // the SignalSource module's listening port
-System:Core%20Connections string SignalSourceIP= 134.2.123.129 127.0.0.1 % % // the SignalSource module's listening IP
-System:Configuration matrix SignalSourceVersion= { Framework Revision Build } 1 2.x ,%20 Nov%2022%202007 // SignalSource version information
+Source:Online%20Processing list TransmitChList= 4 1 2 3 4 1 1 % // list of transmitted channels
+System:Core%20Connections string SignalSourcePort= 1242 4200 1024 65535 // the SignalSource module's listening port
+System:Core%20Connections string SignalSourceIP= 172.16.13.93 127.0.0.1 % % // the SignalSource module's listening IP
+System:Configuration matrix SignalSourceVersion= { Framework Revision Build } 1 2.x ,%20 Jan%2015%202008 // SignalSource version information
 System:Configuration matrix SignalSourceFilterChain= 8 { Filter%20Name Position%20String } DataIOFilter 0 SignalGeneratorADC 1 NullFileWriter 1 BCI2000FileWriter 1 EDFFileWriter 1 GDFFileWriter 1 AlignmentFilter 1.1 TransmissionFilter 1.2 // SignalSource filter chain
 Visualize:Processing%20Stages int VisualizeAlignmentFilter= 0 0 0 1 // Visualize AlignmentFilter output (boolean)
 Visualize:Processing%20Stages int VisualizeTransmissionFilter= 0 0 0 1 // Visualize TransmissionFilter output (boolean)
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
-Filtering:P3TemporalFilter int EpochLength= 400ms 500ms 0 % // Length of data epoch from stimulus onset
+Filtering:P3TemporalFilter int EpochLength= 600ms 500ms 0 % // Length of data epoch from stimulus onset
 Filtering:P3TemporalFilter int EpochsToAverage= 15 1 0 % // Number of epochs to average
-Visualize:P3TemporalFilter int VisualizeP3TemporalFiltering= 1 0 0 1 // visualize Temporal filtered signals (0=no 1=yes) (boolean)
-Visualize:P3TemporalFilter int TargetERPChannel= 1 1 0 128 // input channel for which to display ERP data
+Visualize:P3TemporalFilter int VisualizeP3TemporalFiltering= 1 0 0 1 // Visualize averaged epochs (0=no 1=yes) (boolean)
+Visualize:P3TemporalFilter int TargetERPChannel= 1 1 0 128 // Input channel for which to display ERP data
 Filtering:LinearClassifier matrix Classifier= 2 { input%20channel input%20element%20(bin) output%20channel weight } 1 4 1 1 1 6 2 1 // Linear classification matrix in sparse representation
 Filtering:Normalizer floatlist NormalizerOffsets= 2 0 0 0 % % // normalizer offsets
 Filtering:Normalizer floatlist NormalizerGains= 2 1 1 0 % % // normalizer gain values
@@ -53,9 +53,9 @@ Filtering:Normalizer intlist Adaptation= 2 0 0 0 0 2 // 0: no adaptation, 1: zer
 Filtering:Normalizer matrix BufferConditions= 2 1 (Feedback)&&(TargetCode==1) (Feedback)&&(TargetCode==2) // expressions corresponding to data buffers (columns correspond to output channels, multiple rows correspond to multiple buffers)
 Filtering:Normalizer float BufferLength= 9s 9s % % // time window of past data per buffer that enters into statistic
 Filtering:Normalizer string UpdateTrigger= (Feedback==0) // expression to trigger offset/gain update when changing from 0 (use empty string for continuous update)
-System:Core%20Connections string SignalProcessingPort= 4545 4200 1024 65535 // the SignalProcessing module's listening port
-System:Core%20Connections string SignalProcessingIP= 134.2.123.129 127.0.0.1 % % // the SignalProcessing module's listening IP
-System:Configuration matrix SignalProcessingVersion= { Framework Revision Build } 1 2.x ,%20 Nov%20%208%202007 // SignalProcessing version information
+System:Core%20Connections string SignalProcessingPort= 1243 4200 1024 65535 // the SignalProcessing module's listening port
+System:Core%20Connections string SignalProcessingIP= 172.16.13.93 127.0.0.1 % % // the SignalProcessing module's listening IP
+System:Configuration matrix SignalProcessingVersion= { Framework Revision Build } 1 2.x ,%20 Jan%2015%202008 // SignalProcessing version information
 System:Configuration matrix SignalProcessingFilterChain= 4 { Filter%20Name Position%20String } SpatialFilter 2.B P3TemporalFilter 2.C2 LinearClassifier 2.D Normalizer 2.E // SignalProcessing filter chain
 Visualize:Processing%20Stages int VisualizeSpatialFilter= 0 0 0 1 // Visualize SpatialFilter output (boolean)
 Visualize:Processing%20Stages int VisualizeLinearClassifier= 0 0 0 1 // Visualize LinearClassifier output (boolean)
@@ -72,8 +72,8 @@ Application:Sequencing float PostRunDuration= 2s 0 0 % // pause following last s
 Application:Sequencing float PreSequenceDuration= 1/2s 2s 0 % // pause preceding sequences/sets of intensifications
 Application:Sequencing float PostSequenceDuration= 3/4s 2s 0 % // pause following sequences/sets of intensifications
 Application:Sequencing float StimulusDuration= 31.25ms 40ms 0 % // stimulus duration
-Application:Sequencing float ISIMinDuration= 62.5ms 80ms 0 % // minimum duration of inter-stimulus interval
-Application:Sequencing float ISIMaxDuration= 62.5ms 80ms 0 % // maximum duration of inter-stimulus interval
+Application:Sequencing float ISIMinDuration= 125ms 80ms 0 % // minimum duration of inter-stimulus interval
+Application:Sequencing float ISIMaxDuration= 125ms 80ms 0 % // maximum duration of inter-stimulus interval
 Application:Result%20Processing int InterpretMode= 2 0 0 2 // interpretation of results: 0 none, 1 online free mode, 2 copy mode (enumeration)
 Application:Result%20Processing int DisplayResults= 0 1 0 1 // display results of copy/free spelling (boolean)
 Application:Sequencing int NumberOfSequences= 15 15 1 % // number of sequences in a set of intensifications
@@ -109,7 +109,7 @@ Application:Text%20Window string TextWindowFilePath= % // Path for Saved Text Fi
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
 Application:Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... // Localized user messages
-System:Core%20Connections string ApplicationPort= 4544 4200 1024 65535 // the Application module's listening port
-System:Core%20Connections string ApplicationIP= 134.2.123.129 127.0.0.1 % % // the Application module's listening IP
-System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.x ,%20 Nov%2030%202007 // Application version information
+System:Core%20Connections string ApplicationPort= 1241 4200 1024 65535 // the Application module's listening port
+System:Core%20Connections string ApplicationIP= 172.16.13.93 127.0.0.1 % % // the Application module's listening IP
+System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.x ,%20 Jan%2015%202008 // Application version information
 System:Configuration matrix ApplicationFilterChain= 3 { Filter%20Name Position%20String } ConnectorInput 2.9999 P3SpellerTask 3 ConnectorOutput 3.9999 // Application filter chain
