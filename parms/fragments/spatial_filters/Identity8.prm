@@ -1,0 +1,1 @@
+Filtering:SpatialFilter matrix SpatialFilter= 8 8 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
