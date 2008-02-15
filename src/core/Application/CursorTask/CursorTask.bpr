@@ -22,7 +22,9 @@
       obj\twoDCursor.obj obj\twoDOverlay.obj obj\twoDText.obj 
       obj\GraphObject.obj obj\DisplayWindow.obj obj\GraphDisplay.obj 
       obj\ExpressionParser.obj obj\Expression.obj obj\BCIDirectory.obj 
-      obj\TextField.obj obj\OSError.obj obj\RandomGenerator.obj"/>
+      obj\TextField.obj obj\OSError.obj obj\RandomGenerator.obj 
+      obj\BitmapImage.obj obj\Shapes.obj obj\FeedbackScene3D.obj 
+      obj\FeedbackScene2D.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -31,7 +33,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -127,6 +129,10 @@
       <FILE FILENAME="..\..\..\shared\gui\TextField.cpp" FORMNAME="" UNITNAME="TextField" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\Shapes.cpp" FORMNAME="" UNITNAME="Shapes" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FeedbackScene3D.cpp" FORMNAME="" UNITNAME="FeedbackScene3D" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="FeedbackScene2D.cpp" FORMNAME="" UNITNAME="FeedbackScene2D" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -186,9 +192,10 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=2
+Count=3
 Item0=MODTYPE=3
-Item1=_DEBUG;MODTYPE=3
+Item1=MODTYPE=3;_DEBUG
+Item2=_DEBUG;MODTYPE=3
 
 [HistoryLists\hlIntOutputDir]
 Count=1

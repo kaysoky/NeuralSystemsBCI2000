@@ -320,8 +320,12 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
       " % % % // " THISMODULE " version information" );
   mParamlist[ THISMODULE "Version" ].Value( "Framework" )
     = versionInfo[ VersionInfo::VersionID ];
-  mParamlist[ THISMODULE "Version" ].Value( "Revision" )
-    = versionInfo[ VersionInfo::Revision ] + ", " + versionInfo[ VersionInfo::SourceDate ];
+  if( versionInfo[ VersionInfo::Revision ].empty() )
+    mParamlist[ THISMODULE "Version" ].Value( "Revision" )
+      = versionInfo[ VersionInfo::SourceDate ];
+  else
+    mParamlist[ THISMODULE "Version" ].Value( "Revision" )
+      = versionInfo[ VersionInfo::Revision ] + ", " +  versionInfo[ VersionInfo::SourceDate ];
   mParamlist[ THISMODULE "Version" ].Value( "Build" )
     = versionInfo[ VersionInfo::BuildDate ];
   // Filter chain documentation

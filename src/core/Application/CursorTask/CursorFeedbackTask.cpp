@@ -13,6 +13,8 @@
 #include "MeasurementUnits.h"
 #include "Localization.h"
 #include "BCIDirectory.h"
+#include "FeedbackScene2D.h"
+#include "FeedbackScene3D.h"
 
 // These two lines should be kept consistent:
 #define CURSOR_POS_BITS   "13"
@@ -25,18 +27,17 @@ using namespace std;
 CursorFeedbackTask::CursorFeedbackTask()
 : FeedbackTask( &mWindow ),
   mpMessage( NULL ),
-  mpScene( NULL ),
-  mpCursor( NULL ),
-  mpBoundary( NULL ),
+  mRenderingQuality( 0 ),
+  mpFeedbackScene( NULL ),
   mRunCount( 0 ),
   mTrialCount( 0 ),
   mCurFeedbackDuration( 0 ),
   mMaxFeedbackDuration( 0 ),
+  mCursorColorFront( RGBColor::Red ),
+  mCursorColorBack( RGBColor::Red ),
   mCursorSpeedX( 1.0 ),
   mCursorSpeedY( 1.0 ),
-  mCursorSpeedZ( 1.0 ),
-  mCursorColorFront( RGBColor::Red ),
-  mCursorColorBack( RGBColor::Red )
+  mCursorSpeedZ( 1.0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Window int RenderingQuality= 1 0 0 1 "
@@ -105,16 +106,18 @@ CursorFeedbackTask::CursorFeedbackTask()
    "Be prepared ...",  "Achtung ...",
   END_LOCALIZED_STRINGS
 
-  GUI::Rect rect = { 0, 0, 1, 1 };
+  GUI::Rect rect = { 0.5, 0.4, 0.5, 0.6 };
   mpMessage = new TextField( mWindow );
   mpMessage->SetTextColor( RGBColor::Lime )
-            .SetTextHeight( 0.15 )
-            .SetColor( RGBColor::NullColor )
+            .SetTextHeight( 0.8 )
+            .SetColor( RGBColor::Gray )
+            .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
             .SetDisplayRect( rect );
 }
 
 CursorFeedbackTask::~CursorFeedbackTask()
 {
+  delete mpFeedbackScene;
 }
 
 void
@@ -196,115 +199,6 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 void
 CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
 {
-  mTargets.clear();
-  delete mpScene;
-  mpScene = new Scene( mWindow );
-  mpCursor = new sphere( *mpScene );
-  mpBoundary = new invertedCuboid( *mpScene );
-  // The drawingOrder property allows correct z ordering in the absence of depth
-  // testing.
-  mpBoundary->setDrawingOrder( -2 );
-  mpCursor->setDrawingOrder( -1 );
-
-  mpScene->CameraAndLight().setQuality( Parameter( "RenderingQuality" ) );
-
-  enum { x, y, z, dx, dy, dz };
-  ParamRef CameraPos = Parameter( "CameraPos" );
-  mpScene->CameraAndLight().setCamViewPoint(
-    CameraPos( x ),
-    CameraPos( y ),
-    CameraPos( z )
-  );
-  ParamRef CameraAim = Parameter( "CameraAim" );
-  mpScene->CameraAndLight().setCamAim(
-    CameraAim( x ),
-    CameraAim( y ),
-    CameraAim( z )
-  );
-  mpScene->CameraAndLight().setCamUp( 0, 1, 0 );
-
-  enum { flat = 0, wideAngle, narrowAngle };
-  switch( int( Parameter( "CameraProjection" ) ) )
-  {
-    case flat:
-      mpScene->CameraAndLight().setFieldOfView( 0 );
-      break;
-    case wideAngle:
-      mpScene->CameraAndLight().setFieldOfView( 60 );
-      break;
-    case narrowAngle:
-      mpScene->CameraAndLight().setFieldOfView( 35 );
-      break;
-  }
-  ParamRef LightSourcePos = Parameter( "LightSourcePos" );
-   mpScene->CameraAndLight().setLight(
-    LightSourcePos( x ),
-    LightSourcePos( y ),
-    LightSourcePos( z )
-  );
-  RGBColor lightSourceColor = RGBColor( Parameter( "LightSourceColor" ) );
-  mpScene->CameraAndLight().setLightColor(
-    lightSourceColor.R()/255.,
-    lightSourceColor.G()/255.,
-    lightSourceColor.B()/255.
-  );
-  mpScene->CameraAndLight().setLightBri( 0.8 );
-  mpScene->CameraAndLight().setAmbLightBri( 0.2 );
-
-  bool showTextures = ( Parameter( "RenderingQuality" ) > 0 );
-
-  mpBoundary->setOrigin( 50, 50, 50 );
-  mpBoundary->setDimensions( 100, 100, 100 );
-  mpBoundary->setFaceVisible( 0, false );
-  mpBoundary->setBrightness( 1 );
-  RGBColor boundaryColor = RGBColor( Parameter( "WorkspaceBoundaryColor" ) );
-  mpBoundary->setColor(
-    boundaryColor.R()/255.,
-    boundaryColor.G()/255.,
-    boundaryColor.B()/255.
-  );
-  mpBoundary->setVisible( boundaryColor != RGBColor::NullColor );
-  string boundaryTexture;
-  if( showTextures )
-    boundaryTexture = Parameter( "WorkspaceBoundaryTexture" );
-  if( !boundaryTexture.empty() )
-    boundaryTexture = BCIDirectory::AbsolutePath( boundaryTexture );
-  mpBoundary->setTexture( boundaryTexture );
-  mpScene->CameraAndLight().setBoundingBox( *mpBoundary );
-
-  mpCursor->setOrigin( 0, 0, 0 );
-  mpCursor->setRadius( Parameter( "CursorWidth" ) / 2 );
-  mCursorColorFront = RGBColor( Parameter( "CursorColorFront" ) );
-  mCursorColorBack = RGBColor( Parameter( "CursorColorBack" ) );
-  ParamRef CursorPos = Parameter( "CursorPos" );
-  CursorMoveTo( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
-  mpCursor->setBrightness( 1 );
-  string cursorTexture;
-  if( showTextures )
-    cursorTexture = Parameter( "CursorTexture" );
-  if( !cursorTexture.empty() )
-    cursorTexture = BCIDirectory::AbsolutePath( cursorTexture );
-  mpCursor->setTexture( cursorTexture );
-  mpCursor->setVisible( false );
-
-  string targetTexture;
-  if( showTextures )
-    targetTexture = Parameter( "TargetTexture" );
-  if( !targetTexture.empty() )
-    targetTexture = BCIDirectory::AbsolutePath( targetTexture );
-  ParamRef Targets = Parameter( "Targets" );
-  for( int i = 0; i < Parameter( "NumberTargets" ); ++i )
-  {
-    cuboid* pTarget = new cuboid( *mpScene,
-      Targets( i, x ),  Targets( i, y ),  Targets( i, z ),
-      Targets( i, dx ), Targets( i, dy ), Targets( i, dz )
-    );
-    pTarget->setBrightness( 1 );
-    pTarget->setTexture( targetTexture );
-    pTarget->setVisible( false );
-    mTargets.push_back( pTarget );
-  }
-
   // Cursor speed in pixels per signal block duration:
   float feedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
   // On average, we need to cross half the workspace during a trial.
@@ -318,11 +212,22 @@ CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
   mWindow.SetWidth( Parameter( "WindowWidth" ) );
   mWindow.SetHeight( Parameter( "WindowHeight" ) );
 
-  mpScene->SetBitDepth( Parameter( "WindowBitDepth" ) );
-  mpScene->SetDoubleBuffering( true );
-  mpScene->SetDisableVsync( true );
-  GUI::Rect rect = { 0, 0, 1, 1 };
-  mpScene->SetDisplayRect( rect );
+  mCursorColorFront = RGBColor( Parameter( "CursorColorFront" ) );
+  mCursorColorBack = RGBColor( Parameter( "CursorColorBack" ) );
+
+  int renderingQuality = Parameter( "RenderingQuality" );
+  if( renderingQuality != mRenderingQuality )
+  {
+    mWindow.Hide();
+    mRenderingQuality = renderingQuality;
+  }
+  delete mpFeedbackScene;
+  if( renderingQuality == 0 )
+    mpFeedbackScene = new FeedbackScene2D( mWindow );
+  else
+    mpFeedbackScene = new FeedbackScene3D( mWindow );
+  mpFeedbackScene->Initialize();
+  mpFeedbackScene->SetCursorColor( mCursorColorFront );
 
   mWindow.Show();
   DisplayMessage( LocalizableString( "Timeout" ) );
@@ -366,13 +271,12 @@ CursorFeedbackTask::OnTrialBegin()
                 << endl;
 
   DisplayMessage( "" );
-  RGBColor color = RGBColor( Parameter( "TargetColor" ) );
-  for( int i = 0; i < int( mTargets.size() ); ++i )
+  RGBColor targetColor = RGBColor( Parameter( "TargetColor" ) );
+  for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
   {
-    mTargets[ i ]->setVisible( State( "TargetCode" ) == i + 1 );
-    mTargets[ i ]->setColor( color.R()/255., color.G()/255., color.B()/255. );
+    mpFeedbackScene->SetTargetColor( targetColor, i );
+    mpFeedbackScene->SetTargetVisible( State( "TargetCode" ) == i + 1, i );
   }
-  mpScene->Invalidate();
   mWindow.Update();
 }
 
@@ -380,10 +284,9 @@ void
 CursorFeedbackTask::OnTrialEnd()
 {
   DisplayMessage( "" );
-  mpCursor->setVisible( false );
-  for( size_t i = 0; i < mTargets.size(); ++i )
-    mTargets[ i ]->setVisible( false );
-  mpScene->Invalidate();
+  mpFeedbackScene->SetCursorVisible( false );
+  for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
+    mpFeedbackScene->SetTargetVisible( false, i );
   mWindow.Update();
 }
 
@@ -394,9 +297,8 @@ CursorFeedbackTask::OnFeedbackBegin()
 
   enum { x, y, z };
   ParamRef CursorPos = Parameter( "CursorPos" );
-  CursorMoveTo( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
-  mpCursor->setVisible( true );
-  mpScene->Invalidate();
+  MoveCursorTo( CursorPos( x ), CursorPos( y ), CursorPos( z ) );
+  mpFeedbackScene->SetCursorVisible( true );
   mWindow.Update();
 }
 
@@ -413,10 +315,8 @@ CursorFeedbackTask::OnFeedbackEnd()
     mTrialStatistics.Update( State( "TargetCode" ), State( "ResultCode" ) );
     if( State( "TargetCode" ) == State( "ResultCode" ) )
     {
-      RGBColor color = RGBColor::Yellow;
-      mpCursor->setColor( color.R()/255., color.G()/255., color.B()/255. );
-      mTargets[ State( "ResultCode" ) - 1 ]->setColor( color.R()/255., color.G()/255., color.B()/255. );
-      mpScene->Invalidate();
+      mpFeedbackScene->SetCursorColor( RGBColor::Yellow );
+      mpFeedbackScene->SetTargetColor( RGBColor::Yellow, State( "ResultCode" ) - 1 );
       AppLog.Screen << "-> hit" << endl;
     }
     else
@@ -440,9 +340,11 @@ CursorFeedbackTask::DoPreFeedback( const GenericSignal&, bool& /*doProgress*/ )
 void
 CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgress )
 {
-  float x = mpCursor->getOriginX(),
-        y = mpCursor->getOriginY(),
-        z = mpCursor->getOriginZ();
+  // Update cursor position
+  float x = mpFeedbackScene->CursorXPosition(),
+        y = mpFeedbackScene->CursorYPosition(),
+        z = mpFeedbackScene->CursorZPosition();
+
   if( ControlSignal.Channels() > 0 )
     x += mCursorSpeedX * ControlSignal( 0, 0 );
   if( ControlSignal.Channels() > 1 )
@@ -451,21 +353,27 @@ CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProg
     z += mCursorSpeedZ * ControlSignal( 2, 0 );
 
   // Restrict cursor movement to the inside of the bounding box:
-  float r = mpCursor->getRadius();
+  float r = mpFeedbackScene->CursorRadius();
   x = std::max( r, std::min( 100 - r, x ) ),
   y = std::max( r, std::min( 100 - r, y ) ),
   z = std::max( r, std::min( 100 - r, z ) );
-  CursorMoveTo( x, y, z );
+  mpFeedbackScene->SetCursorPosition( x, y, z );
 
+  const float coordToState = ( 1 << cCursorPosBits - 1 ) / 100.0;
+  State( "CursorPosX" ) = x * coordToState;
+  State( "CursorPosY" ) = y * coordToState;
+  State( "CursorPosZ" ) = z * coordToState;
+
+  // Test for target hits
   if( Parameter( "TestAllTargets" ) != 0 )
   {
-    for( int i = 0; State( "ResultCode" ) == 0 && i < Parameter( "NumberTargets" ); ++i )
-      if( sceneObj::VolumeIntersection( *mpCursor, *mTargets[ i ] ) )
+    for( int i = 0; State( "ResultCode" ) == 0 && i < mpFeedbackScene->NumTargets(); ++i )
+      if( mpFeedbackScene->TargetHit( i ) )
         State( "ResultCode" ) = i + 1;
   }
   else
   {
-    if( sceneObj::VolumeIntersection( *mpCursor, *mTargets[ State( "TargetCode" ) - 1 ] ) )
+    if( mpFeedbackScene->TargetHit( State( "TargetCode" ) - 1 ) )
       State( "ResultCode" ) = State( "TargetCode" );
   }
   doProgress = ( ++mCurFeedbackDuration > mMaxFeedbackDuration );
@@ -483,28 +391,21 @@ CursorFeedbackTask::DoITI( const GenericSignal&, bool& /*doProgress*/ )
 {
 }
 
-// Access to 3D objects
+// Access to graphic objects
 void
-CursorFeedbackTask::CursorMoveTo( float inX, float inY, float inZ )
+CursorFeedbackTask::MoveCursorTo( float inX, float inY, float inZ )
 {
-  mpCursor->setOrigin( inX, inY, inZ );
   // Adjust the cursor's color according to its z position:
   float z = inZ / 100;
   RGBColor color = z * mCursorColorFront + ( 1 - z ) * mCursorColorBack;
-  mpCursor->setColor( color.R()/255., color.G()/255., color.B()/255. );
-  mpScene->Invalidate();
-
-  const float coordToState = ( 1 << cCursorPosBits - 1 ) / 100.0;
-  State( "CursorPosX" ) = inX * coordToState;
-  State( "CursorPosY" ) = inY * coordToState;
-  State( "CursorPosZ" ) = inZ * coordToState;
+  mpFeedbackScene->SetCursorColor( color );
+  mpFeedbackScene->SetCursorPosition( inX, inY, inZ );
 }
 
 void
 CursorFeedbackTask::DisplayMessage( const string& inMessage )
 {
-#if 0 // Does not work reliably in conjunction with OpenGL.
-  if( inMessage.empty() )
+  if( inMessage.empty() || mRenderingQuality > 0 )
   {
     mpMessage->Hide();
   }
@@ -513,7 +414,6 @@ CursorFeedbackTask::DisplayMessage( const string& inMessage )
     mpMessage->SetText( string( " " ) + inMessage + " " );
     mpMessage->Show();
   }
-#endif
 }
 
 

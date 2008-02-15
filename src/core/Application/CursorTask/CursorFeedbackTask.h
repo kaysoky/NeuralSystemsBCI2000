@@ -12,12 +12,10 @@
 #include "FeedbackTask.h"
 #include "TrialStatistics.h"
 #include "Color.h"
-#include "Scene.h"
-#include "Sphere.h"
-#include "Cuboids.h"
-#include "ThreeDText.h"
 #include "TextField.h"
 #include "DisplayWindow.h"
+
+#include "FeedbackScene.h"
 
 class CursorFeedbackTask : public FeedbackTask
 {
@@ -51,19 +49,17 @@ class CursorFeedbackTask : public FeedbackTask
   virtual void DoITI(          const GenericSignal&, bool& doProgress );
 
  private:
-  void    CursorMoveTo( float x, float y, float z );
-  void    DisplayMessage( const std::string& );
+  void MoveCursorTo( float x, float y, float z );
+  void DisplayMessage( const std::string& );
 
   // Graphic objects
-  GUI::DisplayWindow   mWindow;
-  TextField*           mpMessage;
-  Scene*               mpScene;
+  GUI::DisplayWindow mWindow;
+  FeedbackScene*     mpFeedbackScene;
+  int                mRenderingQuality;
+  TextField*         mpMessage;
 
-  sphere*              mpCursor;
-  invertedCuboid*      mpBoundary;
-  std::vector<cuboid*> mTargets;
-
-
+  RGBColor mCursorColorFront,
+           mCursorColorBack;
   int      mRunCount,
            mTrialCount,
            mCurFeedbackDuration,
@@ -71,8 +67,6 @@ class CursorFeedbackTask : public FeedbackTask
   float    mCursorSpeedX,
            mCursorSpeedY,
            mCursorSpeedZ;
-  RGBColor mCursorColorFront,
-           mCursorColorBack;
 
   TrialStatistics mTrialStatistics;
 };

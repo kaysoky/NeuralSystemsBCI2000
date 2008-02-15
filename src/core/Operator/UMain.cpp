@@ -105,8 +105,12 @@ TfMain::TfMain( TComponent* Owner )
     " % % % // operator module version information" );
   mParameters[ "OperatorVersion" ].Value( "Framework" )
     = mVersionInfo[ VersionInfo::VersionID ];
-  mParameters[ "OperatorVersion" ].Value( "Revision" )
-    = mVersionInfo[ VersionInfo::Revision ] + ", " +  mVersionInfo[ VersionInfo::SourceDate ];
+  if( mVersionInfo[ VersionInfo::Revision ].empty() )
+    mParameters[ "OperatorVersion" ].Value( "Revision" )
+      = mVersionInfo[ VersionInfo::SourceDate ];
+  else
+    mParameters[ "OperatorVersion" ].Value( "Revision" )
+      = mVersionInfo[ VersionInfo::Revision ] + ", " +  mVersionInfo[ VersionInfo::SourceDate ];
   mParameters[ "OperatorVersion" ].Value( "Build" )
     = mVersionInfo[ VersionInfo::BuildDate ];
   if( bcierr__.Flushes() == 0 )
