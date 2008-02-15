@@ -378,11 +378,11 @@ void StatFilter::GetStates( void )
 }
 
 // **************************************************************************
-// Function:   Resting
-// Purpose:    This function operates when the state running = 0
+// Function:   StopRun
+// Purpose:    This function operates when the state running switches to 0
 // **************************************************************************
 
-void StatFilter::Resting()
+void StatFilter::StopRun()
 {
   char memotext[256];
   int classmode;

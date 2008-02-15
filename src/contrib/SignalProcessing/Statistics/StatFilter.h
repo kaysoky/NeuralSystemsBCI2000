@@ -73,7 +73,7 @@ class StatFilter : public GenericFilter
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void Process( const GenericSignal&, GenericSignal& );
-  virtual void Resting();
+  virtual void StopRun();
 };
 #endif
 

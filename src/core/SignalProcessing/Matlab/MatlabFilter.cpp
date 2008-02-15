@@ -180,8 +180,7 @@ void
 MatlabFilter::Resting()
 {
   MatlabFunction bci_Resting( RESTING );
-  if( CallMatlab( bci_Resting ) )
-    MatlabWSToParams();
+  CallMatlab( bci_Resting );
 }
 
 void

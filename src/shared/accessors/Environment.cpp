@@ -53,6 +53,7 @@ EnvironmentBase::statevectorAccessor EnvironmentBase::Statevector;
 EnvironmentBase::operatorAccessor    EnvironmentBase::Operator;
 
 int EnvironmentBase::sNumInstances = 0;
+const void* EnvironmentBase::sObjectContext = NULL;
 
 EnvironmentBase::ExtensionsContainer&
 EnvironmentBase::Extensions()
@@ -100,7 +101,22 @@ EnvironmentBase::StatesAccessedDuringPreflight()
 void
 EnvironmentBase::ErrorContext( const std::string& inContext )
 {
+  if( inContext.empty() )
+    ObjectContext( NULL );
   BCIError::OutStream::SetContext( inContext );
+}
+
+// Maintaining an object context to keep track of Parameter/State access.
+void
+EnvironmentBase::ObjectContext( const void* inContext )
+{
+  sObjectContext = inContext;
+}
+
+const void*
+EnvironmentBase::ObjectContext()
+{
+  return sObjectContext;
 }
 
 // Convenient accessor functions.
@@ -175,7 +191,8 @@ EnvironmentBase::DescribeValue( const Param& inParam, size_t inIdx1, size_t inId
 void
 EnvironmentBase::ParamAccess( const string& inName ) const
 {
-  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ this ];
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ objectContext ];
   if( Phase() == preflight )
     accessedParams.insert( inName );
   OnParamAccess( inName );
@@ -183,7 +200,7 @@ EnvironmentBase::ParamAccess( const string& inName ) const
 
 bool
 EnvironmentBase::PreflightCondition_( const char* inConditionString,
-                                  bool inConditionValue ) const
+                                             bool inConditionValue ) const
 {
   if( !inConditionValue )
     bcierr_ << "A necessary condition is violated. "
@@ -259,7 +276,8 @@ EnvironmentBase::OptionalState( const std::string& name, short defaultValue ) co
 void
 EnvironmentBase::StateAccess( const string& inName ) const
 {
-  NameSet& accessedStates = StatesAccessedDuringPreflight()[ this ];
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedStates = StatesAccessedDuringPreflight()[ objectContext ];
   if( Phase() == preflight )
     accessedStates.insert( inName );
   OnStateAccess( inName );
@@ -277,10 +295,34 @@ void EnvironmentBase::EnterNonaccessPhase()
       break;
     case construction:
     case preflight:
-    case initialization:
-    case processing:
       break;
-    case resting:
+    case initialization:
+      for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
+      {
+        ErrorContext( "PostInitialize", *i );
+        ( *i )->PostInitialize();
+      }
+      break;
+    case startRun:
+      for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
+      {
+        ErrorContext( "PostStartRun", *i );
+        ( *i )->PostStartRun();
+      }
+      break;
+    case processing:
+      for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
+      {
+        ErrorContext( "PostProcess", *i );
+        ( *i )->PostProcess();
+      }
+      break;
+    case stopRun:
+      for( ExtensionsContainer::iterator i = Extensions().begin(); i != Extensions().end(); ++i )
+      {
+        ErrorContext( "PostStopRun", *i );
+        ( *i )->PostStopRun();
+      }
       if( paramlist_ && operator_ )
       {
         ParamList changedParameters;
@@ -294,6 +336,8 @@ void EnvironmentBase::EnterNonaccessPhase()
           ) )
             bcierr << "Could not publish changed parameters" << endl;
       }
+      break;
+    case resting:
       break;
     default:
       bcierr << "Unknown execution phase" << endl;
@@ -456,7 +500,7 @@ void EnvironmentBase::EnterStartRunPhase( ParamList*   inParamList,
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
-  phase_ = initialization;
+  phase_ = startRun;
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
@@ -498,7 +542,7 @@ void EnvironmentBase::EnterStopRunPhase( ParamList*   inParamList,
 {
   bcierr__.SetFlushHandler( BCIError::RuntimeError );
   bciout__.SetFlushHandler( BCIError::Warning );
-  phase_ = resting;
+  phase_ = stopRun;
   paramlist_ = inParamList;
   statelist_ = inStateList;
   statevector_ = inStateVector;
@@ -542,7 +586,8 @@ void EnvironmentBase::EnterRestingPhase( ParamList*   inParamList,
 void
 Environment::OnParamAccess( const string& inName ) const
 {
-  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ this ];
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedParams = ParamsAccessedDuringPreflight()[ objectContext ];
   switch( EnvironmentBase::Phase() )
   {
     case construction:
@@ -562,8 +607,9 @@ Environment::OnParamAccess( const string& inName ) const
 void
 Environment::OnStateAccess( const string& inName ) const
 {
-  NameSet& accessedStates = StatesAccessedDuringPreflight()[ this ],
-         & ownedStates = OwnedStates()[ this ];
+  const void* objectContext = ObjectContext() ? ObjectContext() : this;
+  NameSet& accessedStates = StatesAccessedDuringPreflight()[ objectContext ],
+         & ownedStates = OwnedStates()[ objectContext ];
   switch( EnvironmentBase::Phase() )
   {
     case construction:

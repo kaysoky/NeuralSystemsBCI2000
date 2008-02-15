@@ -226,7 +226,7 @@ FFTFilter::Process( const GenericSignal& inputSignal, GenericSignal& outputSigna
 }
 
 void
-FFTFilter::Resting()
+FFTFilter::StopRun()
 {
   ResetValueBuffers( mFFTWindowLength );
 }

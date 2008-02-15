@@ -169,6 +169,11 @@ class EnvironmentBase
   template<class T>
    static void ErrorContext( const std::string&, const T* );
   static void ErrorContext( const std::string& s );
+  static const void* ObjectContext();
+
+ private:
+  static void ObjectContext( const void* );
+  static const void* sObjectContext;
 
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
@@ -219,7 +224,9 @@ class EnvironmentBase
     construction,
     preflight,
     initialization,
+    startRun,
     processing,
+    stopRun,
     resting
   };
 
@@ -337,9 +344,13 @@ class EnvironmentExtension : protected Environment
    virtual void Publish() = 0;
    virtual void Preflight() const = 0;
    virtual void Initialize() = 0;
-   virtual void StartRun() { Initialize(); }
-   virtual void StopRun() { Resting(); }
-   virtual void Process() = 0;
+   virtual void PostInitialize() {}
+   virtual void StartRun() {}
+   virtual void PostStartRun() {}
+   virtual void StopRun() {}
+   virtual void PostStopRun() {}
+   virtual void Process() {}
+   virtual void PostProcess() {}
    virtual void Resting() {}
 };
 
@@ -352,6 +363,7 @@ template<class T>
 void
 EnvironmentBase::ErrorContext( const std::string& inQualifier, const T* inFilter )
 {
+  ObjectContext( inFilter );
   std::string context = bci::ClassName( typeid( *inFilter ) );
   context += "::";
   context += inQualifier;
