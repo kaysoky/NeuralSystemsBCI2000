@@ -37,17 +37,25 @@ class BitmapImage
       }
     operator RGBColor() const
       {
-        int r = *mpData >> 8 & 0xf0,
+        if( *mpData & 0x8000 )
+          return RGBColor::NullColor;
+          
+        int r = *mpData >> 4 & 0xf0,
             g = *mpData      & 0xf0,
-            b = *mpData << 8 & 0xf0;
-        return RGBColor( r, g, b );
+            b = *mpData << 4 & 0xf0;
+        return RGBColor( r | r >> 4, g | g >> 4, b | b >> 4 );
       }
     PixelRef& operator=( const RGBColor& c )
       {
-        int r = c >> 20 & 0xf,
-            g = c >> 12 & 0xf,
-            b = c >>  4 & 0xf;
-        *mpData = r << 8 | g << 4 | b;
+        if( c == RGBColor::NullColor )
+          *mpData = -1;
+        else
+        {
+          int r = c >> 20 & 0xf,
+              g = c >> 12 & 0xf,
+              b = c >>  4 & 0xf;
+          *mpData = r << 8 | g << 4 | b;
+        }
         return *this;
       }
 
@@ -60,7 +68,9 @@ class BitmapImage
     : mWidth( inWidth ),
       mHeight( inHeight ),
       mpData( new uint16[ inWidth * inHeight ] )
-    {}
+    {
+      SetBlack();
+    }
   BitmapImage( const BitmapImage& b )
     : mWidth( b.mWidth ),
       mHeight( b.mHeight ),
@@ -118,13 +128,13 @@ class BitmapImage
 
   BitmapImage& operator+=( const BitmapImage& b )
     {
-      for( int i = 0; i < b.mWidth * b.mHeight; ++i )
+      for( int i = 0; i < mWidth * mHeight; ++i )
         mpData[ i ] += b.mpData[ i ];
       return *this;
     }
   BitmapImage& operator-=( const BitmapImage& b )
     {
-      for( int i = 0; i < b.mWidth * b.mHeight; ++i )
+      for( int i = 0; i < mWidth * mHeight; ++i )
         mpData[ i ] -= b.mpData[ i ];
       return *this;
     }
@@ -136,6 +146,17 @@ class BitmapImage
     {
       return BitmapImage( *this ) += b;
     }
+  // For this function, negative values are interpreted as an inverted clipping
+  // region. Input pixels will only replace existing pixels with negative values,
+  // i.e. pixels outside the clipping region.
+  BitmapImage& SetBackground( const BitmapImage& b )
+    {
+      for( int i = 0; i < mWidth * mHeight; ++i )
+        if( mpData[ i ] & 0x8000 )
+          mpData[ i ] = b.mpData[ i ];
+      return *this;
+    }
+
 
   std::ostream& WriteBinary( std::ostream& ) const;
   std::istream& ReadBinary( std::istream& );

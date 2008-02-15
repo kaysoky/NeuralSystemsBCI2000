@@ -39,7 +39,14 @@ class DisplayWindow : public GraphDisplay
 
 #ifdef __BORLANDC__
  private:
+  DisplayWindow& Restore();
+  DisplayWindow& Clear();
   DisplayWindow& UpdateContext();
+  
+  int   mTop,
+        mLeft,
+        mWidth,
+        mHeight;
   void* mWinDC;
 
   class TDisplayForm : public TForm

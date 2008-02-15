@@ -22,7 +22,7 @@
       obj\StimulusTask.obj obj\GraphObject.obj obj\DisplayWindow.obj 
       obj\GraphDisplay.obj obj\AudioStimulus.obj obj\ImageStimulus.obj 
       obj\TextStimulus.obj obj\VisualStimulus.obj obj\TextToSpeech.obj 
-      obj\TextField.obj obj\sapi.obj obj\RandomGenerator.obj"/>
+      obj\TextField.obj obj\sapi.obj obj\RandomGenerator.obj obj\BitmapImage.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -31,7 +31,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\speller;..\..\..\shared\modules\application\speller;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\audio;..\..\..\shared\gui;..\..\..\extlib\SAPILib;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\speller;..\..\..\shared\modules\application\speller;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\gui;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\stimuli;..\..\..\shared\modules\application\audio;..\..\..\shared\gui;..\..\..\extlib\SAPILib;..\..\..\shared\utils;..\..\..\shared\types"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -124,6 +124,7 @@
       <FILE FILENAME="..\..\..\extlib\SAPILib\sapi.lib" FORMNAME="" UNITNAME="sapi.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\SAPILib\sapi.cpp" FORMNAME="" UNITNAME="sapi" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

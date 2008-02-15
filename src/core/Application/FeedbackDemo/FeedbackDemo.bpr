@@ -18,7 +18,8 @@
       obj\TrialStatistics.obj obj\BlockRandSeq.obj obj\Localization.obj 
       obj\GenericFilter.obj obj\ExpressionParser.obj obj\Expression.obj 
       obj\BCIDirectory.obj obj\MouseFilter.obj obj\JoystickFilter.obj 
-      obj\KeyLogFilter.obj obj\KeystrokeFilter.obj obj\RandomGenerator.obj"/>
+      obj\KeyLogFilter.obj obj\KeystrokeFilter.obj obj\RandomGenerator.obj 
+      obj\BitmapImage.obj obj\GraphDisplay.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -27,7 +28,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -107,6 +108,8 @@
       <FILE FILENAME="..\..\..\shared\modules\application\human_interface_devices\KeyLogFilter.cpp" FORMNAME="" UNITNAME="KeyLogFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\human_interface_devices\KeystrokeFilter.cpp" FORMNAME="" UNITNAME="KeystrokeFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\RandomGenerator.cpp" FORMNAME="" UNITNAME="RandomGenerator" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\gui\GraphDisplay.cpp" FORMNAME="" UNITNAME="GraphDisplay" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

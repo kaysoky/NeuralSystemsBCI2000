@@ -226,7 +226,7 @@ VisDisplay::VisDisplayBase::Restore()
   assert( mpForm != NULL );
   mpForm->BorderStyle = bsSizeToolWin;
   mpForm->OnSizeMove = FormSizeMove;
-    SetConfig( Visconfigs()[ mSourceID ] );
+  SetConfig( Visconfigs()[ mSourceID ] );
 }
 
 void
@@ -1061,10 +1061,12 @@ void
 VisDisplay::Bitmap::Restore()
 {
   if( mpForm == NULL )
+  {
     mpForm = new TVisBitmapForm();
-  VisDisplayBase::Restore();
-  mpForm->OnSizeMove = FormSizeMove;
-  mpForm->OnPaint = FormPaint;
+    VisDisplayBase::Restore();
+    mpForm->OnSizeMove = FormSizeMove;
+    mpForm->OnPaint = FormPaint;
+  }
   mpForm->Show();
 }
 
@@ -1092,16 +1094,20 @@ VisDisplay::Bitmap::InstanceHandleMessage( const VisBitmap& b )
 {
   const BitmapImage& image = b.BitmapImage();
   if( image.Empty() )
-  {
+  { // An empty image precedes a reference frame (rather than a difference frame).
     mImageBuffer.SetBlack();
   }
   else
   {
-    if( mpForm->ClientWidth != image.Width() || mpForm->ClientHeight != image.Height() )
+    if( ( mImageBuffer.Width() != image.Width() ) || ( mImageBuffer.Height() != image.Height() ) )
     {
-      mImageBuffer = BitmapImage( image.Width(), image.Height() );
-      mpForm->ClientWidth = image.Width();
-      mpForm->ClientHeight = image.Height();
+      mImageBuffer = image;
+      // Adapt the window's aspect ratio without changing its width.
+      if( image.Width() > 0 )
+      {
+        mpForm->ClientHeight = ( image.Height() * mpForm->ClientWidth ) / image.Width();
+        Visconfigs()[ mSourceID ].Put( CfgID::Height, mpForm->Height, UserDefined );
+      }
     }
     else
     {
@@ -1111,12 +1117,44 @@ VisDisplay::Bitmap::InstanceHandleMessage( const VisBitmap& b )
   }
 }
 
-void __fastcall
+void
+__fastcall
 VisDisplay::Bitmap::FormPaint( TObject* )
 {
-  TCanvas* pCanvas = mpForm->Canvas;
-  for( int x = 0; x < mImageBuffer.Width(); ++x )
-    for( int y = 0; y < mImageBuffer.Height(); ++y )
-      pCanvas->Pixels[x][y] = TColor( RGBColor( mImageBuffer( x, y ) ).ToWinColor() );
+  int formHeight = mpForm->ClientHeight,
+      formWidth = mpForm->ClientWidth;
+  HDC formDC = mpForm->Canvas->Handle,
+      tmpDC = ::CreateCompatibleDC( formDC );
+  HBITMAP offscreenBmp = ::CreateCompatibleBitmap( formDC, formWidth, formHeight );
+  ::DeleteObject( ::SelectObject( tmpDC, offscreenBmp ) );
+  ::SelectClipRgn( tmpDC, mpForm->mUpdateRgn );
+  ::SelectClipRgn( formDC, mpForm->mUpdateRgn );
+
+  if( mImageBuffer.Empty() )
+  {
+    RECT formRect = { 0, 0, formWidth, formHeight };
+    ::FillRect( tmpDC, &formRect, ::GetStockObject( BLACK_BRUSH ) );
+  }
+  else
+  {
+    for( int x = 0; x < mImageBuffer.Width(); ++x )
+      for( int y = 0; y < mImageBuffer.Height(); ++y )
+      {
+        RECT pixelRect =
+        {
+          ( x * formWidth ) / mImageBuffer.Width(),
+          ( y * formHeight ) / mImageBuffer.Height(),
+          ( ( x + 1 ) * formWidth ) / mImageBuffer.Width(),
+          ( ( y + 1 ) * formHeight ) / mImageBuffer.Height()
+        };
+        COLORREF pixelColor = RGBColor( mImageBuffer( x, y ) ).ToWinColor();
+        ::SetBkColor( tmpDC, pixelColor );
+        ::ExtTextOut( tmpDC, pixelRect.left, pixelRect.top, ETO_OPAQUE, &pixelRect, " ", 0, NULL );
+      }
+    ::Sleep( 0 );
+  }
+  ::BitBlt( formDC, 0, 0, formWidth, formHeight, tmpDC, 0, 0, SRCCOPY );
+  ::DeleteObject( tmpDC );
+  ::DeleteObject( offscreenBmp );
 }
 

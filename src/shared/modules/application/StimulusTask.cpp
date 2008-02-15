@@ -183,6 +183,7 @@ StimulusTask::Initialize( const SignalProperties& Input,
   OnInitialize( Input );
 
   mDisplay.Show();
+  mDisplay.Update();
 }
 
 void
@@ -230,6 +231,7 @@ StimulusTask::StopRun()
 
   bcidbg( 2 ) << "Event: StopRun" << endl;
   OnStopRun();
+  mDisplay.Update();
 }
 
 void
@@ -408,7 +410,6 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
   ++mBlocksInPhase;
   ++mBlocksSinceStimulus;
 }
-
 
 void
 StimulusTask::OnStimulusBegin( int inStimulusCode )

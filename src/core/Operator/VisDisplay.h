@@ -301,8 +301,8 @@ class VisDisplay
       // There is no inheritance for Message Maps.
       BEGIN_MESSAGE_MAP
         VCL_MESSAGE_HANDLER( WM_PAINT, TWMPaint, WMPaint )
-        VCL_MESSAGE_HANDLER( WM_EXITSIZEMOVE, TMessage, WMExitSizeMove )
         VCL_MESSAGE_HANDLER( WM_ERASEBKGND, TWMEraseBkgnd, WMEraseBkgnd )
+        VCL_MESSAGE_HANDLER( WM_EXITSIZEMOVE, TMessage, WMExitSizeMove )
       END_MESSAGE_MAP( TForm )
     };
   };

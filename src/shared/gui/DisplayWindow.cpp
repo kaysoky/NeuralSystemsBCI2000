@@ -16,92 +16,135 @@ using namespace GUI;
 
 #ifdef __BORLANDC__
 DisplayWindow::DisplayWindow()
-: mpForm( new TDisplayForm( *this ) ),
+: mpForm(  ),
   mWinDC( NULL )
 {
+  Restore();
   UpdateContext();
-  mpForm->BorderStyle = bsNone;
 }
 
 DisplayWindow::~DisplayWindow()
 {
-  delete mpForm;
+  Clear();
 }
 
 DisplayWindow&
 DisplayWindow::SetLeft( int inLeft )
 {
-  mpForm->Left = inLeft;
-  return UpdateContext();
+  mLeft = inLeft;
+  if( mpForm != NULL )
+  {
+    mpForm->Left = mLeft;
+    UpdateContext();
+  }
+  return *this;
 }
 
 int
 DisplayWindow::Left() const
 {
-  return mpForm->Left;
+  return mLeft;
 }
 
 DisplayWindow&
 DisplayWindow::SetTop( int inTop )
 {
-  mpForm->Top = inTop;
-  return UpdateContext();
+  mTop = inTop;
+  if( mpForm != NULL )
+  {
+    mpForm->Top = inTop;
+    UpdateContext();
+  }
+  return *this;
 }
 
 int
 DisplayWindow::Top() const
 {
-  return mpForm->Top;
+  return mTop;
 }
 
 DisplayWindow&
 DisplayWindow::SetWidth( int inWidth )
 {
-  mpForm->Width = inWidth;
-  return UpdateContext();
+  mWidth = inWidth;
+  if( mpForm != NULL )
+  {
+    mpForm->Width = inWidth;
+    UpdateContext();
+  }
+  return *this;
 }
 
 int
 DisplayWindow::Width() const
 {
-  return mpForm->Width;
+  return mWidth;
 }
 
 DisplayWindow&
 DisplayWindow::SetHeight( int inHeight )
 {
-  mpForm->Height = inHeight;
-  return UpdateContext();
+  mHeight = inHeight;
+  if( mpForm != NULL )
+  {
+    mpForm->Height = inHeight;
+    UpdateContext();
+  }
+  return *this;
 }
 
 int
 DisplayWindow::Height() const
 {
-  return mpForm->Height;
+  return mHeight;
 }
 
 DisplayWindow&
 DisplayWindow::Show()
 {
+  if( mpForm == NULL )
+    Restore();
   mpForm->Show();
   ::ReleaseDC( mpForm->Handle, mWinDC );
   mWinDC = ::GetDC( mpForm->Handle );
-  UpdateContext();
-  return *this;
+  return UpdateContext();
 }
 
 DisplayWindow&
 DisplayWindow::Hide()
 {
-  mpForm->Hide();
-  return *this;
+  return Clear();
 }
 
 bool
 DisplayWindow::Visible() const
 {
-  return mpForm->Visible;
+  return mpForm ? mpForm->Visible : false;
 }
+
+DisplayWindow&
+DisplayWindow::Restore()
+{
+  mpForm = new TDisplayForm( *this );
+  mpForm->BorderStyle = bsNone;
+  mpForm->Left = mLeft;
+  mpForm->Top = mTop;
+  mpForm->Height = mHeight;
+  mpForm->Width = mWidth;
+  return *this;
+}
+
+DisplayWindow&
+DisplayWindow::Clear()
+{
+  ::ReleaseDC( mpForm->Handle, mWinDC );
+  mWinDC = NULL;
+  delete mpForm;
+  mpForm = NULL;
+  return UpdateContext();
+}
+
 
 DisplayWindow&
 DisplayWindow::UpdateContext()
@@ -109,7 +152,7 @@ DisplayWindow::UpdateContext()
   DrawContext dc =
   {
     mWinDC,
-    { 0, 0, mpForm->ClientWidth, mpForm->ClientHeight }
+    { 0, 0, mWidth, mHeight }
   };
   GraphDisplay::SetContext( dc );
   return *this;

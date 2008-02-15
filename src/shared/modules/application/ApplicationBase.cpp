@@ -20,7 +20,7 @@
 using namespace std;
 
 ApplicationBase::ApplicationBase( const GUI::GraphDisplay* inDisplay )
-/*: mDisplayVis( inDisplay ) */
+: mDisplayVis( inDisplay )
 {
   AppLog.Screen.Send( CfgID::WindowTitle, "Application Log" );
 
@@ -63,11 +63,11 @@ ApplicationBase::DisplayVisualization::DisplayVisualization( const GUI::GraphDis
   if( mpDisplay != NULL )
   {
     BEGIN_PARAMETER_DEFINITIONS
-      "Visualize:Application int VisualizeApplicationWindow= 0 0 0 1 "
+      "Visualize:Application%20Window int VisualizeApplicationWindow= 0 0 0 1 "
         "// Display miniature copy of application window (boolean)",
-      "Visualize:Application int AppWindowSpatialDecimation= 16 16 1 % "
+      "Visualize:Application%20Window int AppWindowSpatialDecimation= 8 8 1 % "
         "// Application window decimation (shrinking) factor",
-      "Visualize:Application int AppWindowTemporalDecimation= 16 16 1 % "
+      "Visualize:Application%20Window int AppWindowTemporalDecimation= 4 16 1 % "
         "// Application window time decimation factor",
     END_PARAMETER_DEFINITIONS
   }
@@ -79,7 +79,7 @@ ApplicationBase::DisplayVisualization::Preflight() const
 }
 
 void
-ApplicationBase::DisplayVisualization::Initialize()
+ApplicationBase::DisplayVisualization::PostInitialize()
 {
   mDoVisualize = ( mpDisplay != NULL ) && ( Parameter( "VisualizeApplicationWindow" ) > 0 );
   if( mDoVisualize )
@@ -91,38 +91,47 @@ ApplicationBase::DisplayVisualization::Initialize()
     mHeight = ( mpDisplay->Context().rect.bottom - mpDisplay->Context().rect.top )
                 / applicationWindowDecimation;
 
-    mVis.Send( BitmapImage( 0, 0 ) ); // An empty image indicates that the next
-                                      // image is not a difference image
-    mImageBuffer = mpDisplay->BitmapData( mWidth, mHeight );
-    mVis.Send( mImageBuffer );
+    mVis.Send( CfgID::WindowTitle, "Application Window" );
+    SendReferenceFrame();
   }
+  mVis.Send( CfgID::Visible, mDoVisualize );
 }
 
 void
 ApplicationBase::DisplayVisualization::StartRun()
 {
-  if( mDoVisualize )
-  {
-    mVis.Send( BitmapImage( 0, 0 ) );
-    mImageBuffer.SetBlack();
-    mBlockCount = 0;
-  }
+  mBlockCount = mTemporalDecimation - 1;
 }
 
 void
-ApplicationBase::DisplayVisualization::StopRun()
+ApplicationBase::DisplayVisualization::PostStopRun()
 {
+  if( mDoVisualize )
+    SendReferenceFrame();
 }
 
 void
-ApplicationBase::DisplayVisualization::Process()
+ApplicationBase::DisplayVisualization::PostProcess()
 {
   if( mDoVisualize && ( ++mBlockCount %= mTemporalDecimation ) == 0 )
-  {
-    BitmapImage curImage = mpDisplay->BitmapData( mWidth, mHeight );
-    mVis.Send( curImage - mImageBuffer );
-    mImageBuffer = curImage;
-  }
+    SendDifferenceFrame();
 }
 
+void
+ApplicationBase::DisplayVisualization::SendReferenceFrame()
+{
+  mVis.Send( BitmapImage( 0, 0 ) ); // An empty image indicates that the next
+                                    // frame is a reference frame
+  mImageBuffer = mpDisplay->BitmapData( mWidth, mHeight );
+  mVis.Send( mImageBuffer );
+}
+
+void
+ApplicationBase::DisplayVisualization::SendDifferenceFrame()
+{
+  BitmapImage curImage = mpDisplay->BitmapData( mWidth, mHeight );
+  curImage.SetBackground( mImageBuffer );
+  mVis.Send( curImage - mImageBuffer );
+  mImageBuffer = curImage;
+}
 

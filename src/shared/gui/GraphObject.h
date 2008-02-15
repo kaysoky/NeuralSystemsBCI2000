@@ -43,11 +43,12 @@ class GraphObject
 
  protected:
   enum
-  {
+  { // Top to bottom
     MessageZOrder,
     StatusBarZOrder,
     TextStimulusZOrder,
     ImageStimulusZOrder,
+    ShapeZOrder,
     SceneDisplayZOrder,
   };
 

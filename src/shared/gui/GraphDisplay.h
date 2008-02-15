@@ -73,11 +73,18 @@ class GraphDisplay
  private:
   void Reorder();
 
-  DrawContext       mContext;
-  RGBColor          mColor;
-  SetOfGraphObjects mObjects;
-  bool              mNeedReorder;
+  DrawContext         mContext;
+  RGBColor            mColor;
+  SetOfGraphObjects   mObjects;
+  bool                mNeedReorder;
   QueueOfGraphObjects mObjectsClicked;
+
+#ifdef _WIN32
+  void ClearOffscreenBuffer();
+
+  HDC                 mOffscreenDC;
+  HBITMAP             mOffscreenBmp;
+#endif // _WIN32
 };
 
 } // namespace GUI

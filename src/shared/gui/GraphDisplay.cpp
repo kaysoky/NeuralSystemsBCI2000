@@ -24,6 +24,10 @@ GraphDisplay::GraphDisplay()
   mContext.rect.top = 0;
   mContext.rect.right = 0;
   mContext.rect.bottom = 0;
+#ifdef _WIN32
+  mOffscreenDC = NULL;
+  mOffscreenBmp = NULL;
+#endif // _WIN32
 }
 
 GraphDisplay&
@@ -43,6 +47,10 @@ GraphDisplay::Update() const
 void
 GraphDisplay::Change()
 {
+#ifdef _WIN32
+  ClearOffscreenBuffer();
+#endif // _WIN32
+
   for( SetOfGraphObjects::iterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->Change();
 }
@@ -54,7 +62,6 @@ GraphDisplay::Paint( void* inRegionHandle )
   {
 #ifdef _WIN32
     int formatFlags = PFD_SUPPORT_GDI;
-    HBITMAP offscreenBmp = NULL;
     HDC outputDC = mContext.handle,
         drawDC = outputDC;
     int width = mContext.rect.right - mContext.rect.left,
@@ -74,14 +81,18 @@ GraphDisplay::Paint( void* inRegionHandle )
 
         if( ( formatFlags & PFD_SUPPORT_GDI ) && !( formatFlags & PFD_DOUBLEBUFFER ) )
         {
-          drawDC = ::CreateCompatibleDC( outputDC );
-          offscreenBmp = ::CreateCompatibleBitmap( outputDC, width, height );
-          ::DeleteObject( ::SelectObject( drawDC, offscreenBmp ) );
+          if( mOffscreenDC == NULL )
+            mOffscreenDC = ::CreateCompatibleDC( outputDC );
+          if( mOffscreenBmp == NULL )
+            mOffscreenBmp = ::CreateCompatibleBitmap( outputDC, width, height );
+          ::DeleteObject( ::SelectObject( mOffscreenDC, mOffscreenBmp ) );
           if( inRegionHandle != NULL )
-            ::SelectClipRgn( drawDC, inRegionHandle );
+            ::SelectClipRgn( mOffscreenDC, inRegionHandle );
 
           if( formatFlags & PFD_SUPPORT_OPENGL )
-            ::SetPixelFormat( drawDC, formatID, &pfd );
+            ::SetPixelFormat( mOffscreenDC, formatID, &pfd );
+
+          drawDC = mOffscreenDC;
         }
       }
     }
@@ -111,7 +122,7 @@ GraphDisplay::Paint( void* inRegionHandle )
 
 #ifdef _WIN32
     // Copy the data from the buffer into the target device context (usually a window).
-    if( offscreenBmp )
+    if( mOffscreenBmp )
     {
       ::BitBlt( outputDC,
                 mContext.rect.left,
@@ -123,8 +134,6 @@ GraphDisplay::Paint( void* inRegionHandle )
                 0,
                 SRCCOPY
       );
-      ::DeleteObject( drawDC );
-      ::DeleteObject( offscreenBmp );
     }
     if( formatFlags & PFD_DOUBLEBUFFER )
       ::SwapBuffers( outputDC );
@@ -235,14 +244,61 @@ GraphDisplay::BitmapData( int inWidth, int inHeight ) const
   static BitmapImage image;
   image = BitmapImage( width, height );
 #ifdef _WIN32
-  for( int x = 0; x < width; ++x )
-    for( int y = 0; y < height; ++y )
-      image( x, y ) = ::GetPixel(
-                         mContext.handle,
-                         ( x * originalWidth ) / width + mContext.rect.left,
-                         ( y * originalHeight ) / height + mContext.rect.top
-                        );
+  HDC sourceDC = mOffscreenDC ? mOffscreenDC : mContext.handle;
+  if( sourceDC != NULL )
+  {
+    HDC miniDC = ::CreateCompatibleDC( sourceDC );
+    HBITMAP miniBmp = ::CreateCompatibleBitmap( sourceDC, width, height );
+    ::DeleteObject( ::SelectObject( miniDC, miniBmp ) );
+    // STRETCH_DELETESCANS is the only option that ignores intermediate pixels,
+    // thus is considerably faster.
+    ::SetStretchBltMode( miniDC, STRETCH_DELETESCANS );
+    ::StretchBlt(
+      miniDC, 0, 0, width, height,
+      sourceDC, 0, 0, originalWidth, originalHeight,
+      SRCCOPY
+    );
+
+    BITMAPINFO info;
+    ::memset( &info, 0, sizeof( BITMAPINFO ) );
+    info.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    info.bmiHeader.biHeight = -height;
+    info.bmiHeader.biWidth = width;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    info.bmiHeader.biCompression = 0;
+    uint32* pBitmapData = new uint32[ width * height ];
+    int result = ::GetDIBits(
+                     miniDC, miniBmp,
+                     0, height,
+                     pBitmapData,
+                     &info, DIB_RGB_COLORS
+                   );
+    if( result > 0 )
+      for( int x = 0; x < width; ++x )
+        for( int y = 0; y < height; ++y )
+          image( x, y ) = RGBColor( pBitmapData[ x + y * width ] & 0xffffff );
+    delete[] pBitmapData;
+    ::DeleteDC( miniDC );
+    ::DeleteObject( miniBmp );
+  }
 #endif // _WIN32
   return image;
 }
 
+#ifdef _WIN32
+void
+GraphDisplay::ClearOffscreenBuffer()
+{
+  if( mOffscreenDC != NULL )
+  {
+    ::DeleteDC( mOffscreenDC );
+    mOffscreenDC = NULL;
+  }
+  if( mOffscreenBmp != NULL )
+  {
+    ::DeleteObject( mOffscreenBmp );
+    mOffscreenBmp = NULL;
+  }
+}
+#endif // _WIN32

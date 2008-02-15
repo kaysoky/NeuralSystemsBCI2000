@@ -99,12 +99,16 @@ class ApplicationBase : public GenericFilter
     virtual void Publish()
       {}
     virtual void Preflight() const;
-    virtual void Initialize();
+    virtual void Initialize() {}
+    virtual void PostInitialize();
     virtual void StartRun();
-    virtual void StopRun();
-    virtual void Process();
+    virtual void PostStopRun();
+    virtual void PostProcess();
 
    private:
+    void SendReferenceFrame();
+    void SendDifferenceFrame();
+
     const GUI::GraphDisplay* mpDisplay;
     GenericVisualization     mVis;
     BitmapImage              mImageBuffer;
@@ -113,7 +117,7 @@ class ApplicationBase : public GenericFilter
                              mHeight,
                              mTemporalDecimation,
                              mBlockCount;
-  } /* mDisplayVis */;
+  } mDisplayVis;
 };
 
 #endif // APPLICATION_BASE_H
