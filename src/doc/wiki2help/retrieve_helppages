@@ -10,6 +10,7 @@ SERVER="www.bci2000.org"
 BASE="$SERVER/wiki"
 TARGET="../../../doc/htmlhelp"
 TMPFILE="~cookies"
+TOCFILE="htmlhelp.toc"
 
 # Log in to the HTMLhelp account using /wiki/helplogin.php.
 wget --spider --keep-session-cookies --save-cookies $TMPFILE \
@@ -37,5 +38,17 @@ echo
 
 # Rename directories, and move content into the doc directory.
 mv $BASE/index.php $BASE/html
-mkdir $TARGET || true 
+mkdir -p $TARGET
 cp -af $SERVER/* $TARGET && rm -r $SERVER
+
+# Create an index of section headers
+cd $TARGET/wiki/html
+rm -f $TOCFILE
+for i in *.html;
+do
+  ( 
+    echo && echo $i &&
+    sed '/<a name=\"[^\"]*\">/!d' < $i |
+    sed 's/.*<a name=\"\([^\"]*\)\"[^0-9]*\([0-9]*\).*/\2 \1/'
+  ) >> $TOCFILE
+done;
