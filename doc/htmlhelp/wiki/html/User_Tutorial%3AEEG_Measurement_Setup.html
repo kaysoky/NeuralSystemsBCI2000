@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:EEG Measurement Setup - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:EEG Measurement Setup,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
+<meta name="keywords" content="User Tutorial:EEG Measurement Setup,Contributions:ADCs,User Reference:Operator Module,User Reference:Parameters,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -38,24 +38,25 @@ Although setting up amplifiers and electrodes appears simple and straightforward
 <ul>
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Electrodes"><span class="tocnumber">1</span> <span class="toctext">Electrodes</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System"><span class="tocnumber">2</span> <span class="toctext">The 10-20 International System</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Montage_Instructions"><span class="tocnumber">3</span> <span class="toctext">Montage Instructions</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Identifying_Brain_Areas"><span class="tocnumber">4</span> <span class="toctext">Identifying Brain Areas</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#EEG_Artifacts"><span class="tocnumber">5</span> <span class="toctext">EEG Artifacts</span></a>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Identifying_Brain_Areas"><span class="tocnumber">3</span> <span class="toctext">Identifying Brain Areas</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Montage_Instructions"><span class="tocnumber">4</span> <span class="toctext">Montage Instructions</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Inspecting_EEG_Signals"><span class="tocnumber">5</span> <span class="toctext">Inspecting EEG Signals</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#EEG_Artifacts"><span class="tocnumber">6</span> <span class="toctext">EEG Artifacts</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Mains_Interference"><span class="tocnumber">5.1</span> <span class="toctext">Mains Interference</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Blink_Artifacts"><span class="tocnumber">5.2</span> <span class="toctext">Eye Blink Artifacts</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Movement_.28EOG.29_Artifacts"><span class="tocnumber">5.3</span> <span class="toctext">Eye Movement (EOG) Artifacts</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Muscular_.28EMG.29_Artifacts"><span class="tocnumber">5.4</span> <span class="toctext">Muscular (EMG) Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Mains_Interference"><span class="tocnumber">6.1</span> <span class="toctext">Mains Interference</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Blink_Artifacts"><span class="tocnumber">6.2</span> <span class="toctext">Eye Blink Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Movement_.28EOG.29_Artifacts"><span class="tocnumber">6.3</span> <span class="toctext">Eye Movement (EOG) Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Muscular_.28EMG.29_Artifacts"><span class="tocnumber">6.4</span> <span class="toctext">Muscular (EMG) Artifacts</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step"><span class="tocnumber">6</span> <span class="toctext">Next Step</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step"><span class="tocnumber">7</span> <span class="toctext">Next Step</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
 <a name="Electrodes"></a><h2>Electrodes</h2>
 <p>An EEG amplifier <a href="http://en.wikipedia.org/wiki/Differential_amplifier" class='external text' title="http://en.wikipedia.org/wiki/Differential_amplifier" rel="nofollow">measures voltage differences</a> between points on the scalp.
 This implies that each channel is connected to two electrodes. Usually, measurement is "unipolar" rather than "bipolar", which means that the second electrode is identical for all channels, and called "reference" (Ref).
-Also, amplifier inputs must be kept within a small voltage range relative to the amplifier's zero (ground) voltage level. This is achieved by connecting yet another electrode, a "ground" electrode, to the subject's scalp. 
+Also, amplifier inputs must be kept within a small voltage range relative to the amplifier's zero (ground) voltage level. This is achieved by connecting yet another electrode, a "ground" (Gnd)electrode, to the subject's scalp. 
 </p><p>EEG electrodes are small metal plates that are attached to the scalp using a conducting electrode gel.
 They can be made from various materials.
 Most frequently, tin (Sn) and silver/silver-chloride (Ag/AgCl) electrodes are used but there are gold (Au) and platinum (Pt) electrodes as well.
@@ -66,8 +67,8 @@ This applies to all amplifier inputs (channels, reference, ground).
 </p>
 <a name="The_10-20_International_System"></a><h2>The 10-20 International System</h2>
 <p>The 10-20 international system is the standard naming and positioning
-scheme for EEG applications. It is based on the iterative subdivision of arcs
-determined on the scalp starting from craniometric reference points: Nasion
+scheme for EEG applications. It is based on an iterative subdivision of arcs
+on the scalp starting from craniometric reference points: Nasion
 (Ns), Inion (In), Left (PAL) and Right (PAR) pre-auricular points. The
 intersection of the longitudinal (Ns-In) and lateral (PAL-PAR) is named the
 Vertex.
@@ -81,8 +82,21 @@ were: T3, T5, T4, and T6 for T7, P7, T8, and P8, respectively.
 reference channel. More often, ear lobe or mastoid (i.e. bony outgrowth behind
 the ear) are used.
 </p>
+<a name="Identifying_Brain_Areas"></a><h2>Identifying Brain Areas</h2>
+<p>Often, it is important to assess whether a given brain signal topology makes sense with regard to <a href="User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html#Geometry" title="User Tutorial:Introduction to the Mu Rhythm">a-priori knowledge about sources of interest</a>.
+In most cases, there is a direct correspondence between major brain features, and electrode positions in 
+the 10-20 international system.
+</p><p>In the image displaying electrode positions above, two of these features are indicated by thin lines, and may be identified easily when using a properly placed EEG cap:
+</p>
+<ul><li>The <b>central sulcus (rolandic fissure)</b> separates the frontal lobe from the parietal lobe. Its course corresponds to the thin lines touching CPz-C2-C4 and CPz-C1-C3, respectively. The two gyri immediately neighboring the central sulcus are the
+<ul><li><b>primary motor cortex</b> (in frontal direction), and
+</li><li><b>primary sensory cortex</b> (in occipital direction).
+</li></ul>
+</li><li>The course of the <b>lateral sulcus</b> corresponds to the lines C8-FT8-FT10 resp. C5-FT7-FT9. It separates the <b>temporal lobe</b> from the remaining parts of the brain.
+</li></ul>
 <a name="Montage_Instructions"></a><h2>Montage Instructions</h2>
-<p>Acquiring EEG from more than a single location allows to perform spatial filtering, which can improve signal-to-noise ratio. Also, recording from a larger number of electrodes provides spatial information that is useful in interpreting results, and to identify signals and artifacts by their spatial distribution characteristics.
+<p>Acquiring EEG from more than a single location provides spatial information that is useful in interpreting results, and to identify signals and artifacts by their spatial distribution characteristics.
+Also, linear combinations of signals from different locations may be used to extract signals originating from certain locations.
 </p><p>Attaching 16+2 (or worse 64+2) individual electrodes to the scalp of a subject is not
 a simple task. And doing it with high geometrical accuracy is a task for very
 experienced technicians. The difficulty may be greatly alleviated using EEG caps. They are made of
@@ -90,33 +104,31 @@ elastic fabric (available in different sizes), and electrodes are already fixed 
 the proper configuration. One proven technique to perform an accurate
 montage is the following:
 </p>
-<ul><li>Mark the vertex on the subject's scalp.
+<ul><li>Mark the vertex on the subject's scalp using a felt-tip pen or some other similar method.  To do so, begin by locating the nasion and inion on the subject as indicated on the diagram above.  Using a tape measure, find the distance between these two locations.  The point midway between the two points, or 50% of the distance, is the vertex.  Make a mark at that point for later reference.  Other 10-20 points can be located in a similar manner.  Distances between points are reported, as percentages of the total distance, in the diagram above.
 </li><li>Mark scalp positions for Fpz and Oz.
 </li><li>Identify the Cz electrode on the EEG cap and place the cap to position the Cz electrode on the vertex.
-</li><li>Keep Cz fixed, and slip the cap onto the head.
-</li><li>Paying attention that Cz does not shift, adjust the cap such that:
+</li><li>Keeping Cz fixed, slip the cap onto the head.
+</li><li>While ensuring that Cz does not shift, adjust the cap such that:
 <ul><li>the Fz, Cz Pz line is on the midline;
 </li><li>the Fp1-Fp2 line is horizontal, and at the level of the Fpz mark;
 </li><li>the O1-O2 line is horizontal, and at the level of the Oz mark.
 </li></ul>
 </li></ul>
-<p>You can now fix Ref and Gnd electrodes. Usually, Ref is attached to one of the earlobes, or one of the mastoids, in form of a cup electrode using collodium. 
+<p>You can now fix Ref and Gnd electrodes. Usually, Ref is attached to one of the earlobes, or one of the mastoids, in form of a cup electrode using collodium (an adhesive chemical). 
 Some caps have a Gnd electrode embedded on a scalp position; if this is not the case, Gnd is the same kind of electrode as Ref, and should be attached to the earlobe or mastoid opposing the Ref electrode.
-</p><p>Reasonable EEG traces should now be visible on the screen as soon as gel is injected.
-Visual inspection can detect the effect of poor contact (excessive
-<a href="User_Tutorial%253AEEG_Measurement_Setup.html#mains_interference" title="">mains interference</a>, frequent loss of contact, etc.). You may also want to use an impedance meter to make sure that electrodes have good contact (i.e. that their impedance is below <span class="texhtml">5 &minus; 10<i>k</i>&Omega;</span>).
 </p>
-<a name="Identifying_Brain_Areas"></a><h2>Identifying Brain Areas</h2>
-<p>Often, it is important to assess whether a given brain signal topology makes sense with regard to <a href="User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html#Geometry" title="User Tutorial:Introduction to the Mu Rhythm">a-priori knowledge about sources of interest</a>.
-In most cases, there is a direct correspondence between major brain features, and electrode positions in 
-the 10-20 international system.
-</p><p>In the image displaying electrode positions above, two of these features are indicated by thin lines, and may be identified easily when using a properly placed EEG cap:
+<a name="Inspecting_EEG_Signals"></a><h2>Inspecting EEG Signals</h2>
+<p>BCI2000 may be used to inspect EEG signals without actually recording them. For the sake of this tutorial, we will start up BCI2000 in a configuration suitable for stimulation experiments. However, any configuration will do, and usually you will inspect signals after starting up BCI2000 in the configuration that fits the desired experiment.
 </p>
-<ul><li>The course of the <b>central sulcus (rolandic fissure)</b> corresponds to the thin lines touching CPz-C2-C4 and CPz-C1-C3, respectively. The two gyri immediately neighboring the central sulcus are
-<ul><li><b>primary motor cortex</b> (in frontal direction), and
-</li><li><b>primary sensory cortex</b> (in occipital direction).
-</li></ul>
-</li><li>The course of the <b>lateral sulcus</b> corresponds to the lines C8-FT8-FT10 resp. C5-FT7-FT9. It separates the <b>temporal lobe</b> from the remaining parts of the brain.
+<ul><li>Make sure your amplifier is connected to your computer, drivers are installed according to the vendor's instruction, and the amplifier is switched on.
+</li><li>Start BCI2000 by double-clicking the file <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt> where <tt>YourAmplifier</tt> matches the name of your amplifier.
+</li><li>In the BCI2000 operator window, click <i>Config</i> and then <i>Load Parameters...</i> to load the file <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
+</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  Please see <a href="User_Reference%253AParameters.html" title="User Reference:Parameters">User Reference:Parameters</a> for a listing of currently supported parameters.
+</li><li>Close the parameter dialog by clicking the close box its top right corner.
+</li><li>Click <i>Set Config</i>.
+</li><li>A window will appear that displays the signal acquired from the amplifier. Initially, the window will be rather small and located in the top left corner of your screen. Adapt it to your liking by moving and resizing it -- its position and size will be remembered across BCI2000 sessions. Right-clicking will bring up a context menu with <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">various options</a>.
+</li><li>Reasonable EEG traces should now be visible on the screen as soon as gel is injected.<br />Visual inspection can detect the effect of poor contact (excessive <a href="User_Tutorial%253AEEG_Measurement_Setup.html#mains_interference" title="">mains interference</a>, frequent loss of contact, etc.). You may also want to use an impedance meter to make sure that electrodes have good contact (i.e. that their impedance is below <span class="texhtml">5 &minus; 10<i>k</i>&Omega;</span>).
+</li><li>When you are done, quit BCI2000 before going to the <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step" title="">next step</a>.
 </li></ul>
 <a name="EEG_Artifacts"></a><h2>EEG Artifacts</h2>
 <a name="Mains_Interference"></a><h3>Mains Interference</h3>
@@ -157,8 +169,8 @@ strategy to avoid jaw-generated EMG.
 </p><p><a href="../images/7/71/EMGArtifacts.PNG" class="image" title="Image:EMGArtifacts.PNG"><img src="../images/7/71/EMGArtifacts.PNG" alt="Image:EMGArtifacts.PNG" width="704" height="434" longdesc="/wiki/index.php/Image:EMGArtifacts.PNG" /></a>
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>
-<ul><li>When you came here doing the <a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">Mu Rhythm BCI Tutorial</a>, your next step is <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">Obtaining Mu Rhythm Parameters in an Initial Session</a>.
-</li><li>When doing the <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">P300 BCI Tutorial</a>, your next step is <a href="User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining P300 Parameters in an Initial Session">Obtaining P300 Parameters in an Initial Session</a>.
+<ul><li>If you're following the <a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">Mu Rhythm BCI Tutorial</a>, please proceed to <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">Obtaining Mu Rhythm Parameters in an Initial Session</a>.
+</li><li>If you're following the <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">P300 BCI Tutorial</a>, please proceed to <a href="User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining P300 Parameters in an Initial Session">Obtaining P300 Parameters in an Initial Session</a>.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">User Tutorial:P300 BCI Tutorial</a>
@@ -181,5 +193,5 @@ strategy to avoid jaw-generated EMG.
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.22 secs. -->
+<!-- Served by bci2000.org in 0.25 secs. -->
 </body></html>

@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Obtaining P300 Parameters in an Initial Session - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Obtaining P300 Parameters in an Initial Session,Contributions:ADCs,User Tutorial:Configuring P300 Online Classification,User Tutorial:EEG Measurement Setup,User Tutorial:Introduction to the P300 Response,User Tutorial:P300 BCI Tutorial,User Tutorial:Performing a Time-Domain Offline Analysis of ECoG Data,User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data" />
+<meta name="keywords" content="User Tutorial:Obtaining P300 Parameters in an Initial Session,Contributions:ADCs,User Reference:Parameters,User Tutorial:Configuring P300 Online Classification,User Tutorial:EEG Measurement Setup,User Tutorial:Introduction to the P300 Response,User Tutorial:P300 BCI Tutorial,User Tutorial:Performing a Time-Domain Offline Analysis of ECoG Data,User Tutorial:Performing a Time-Domain Offline Analysis of EEG Data" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -44,21 +44,21 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
 <a name="Experimental_Design"></a><h2>Experimental Design</h2>
-<p>In the initial session, the subject views a P300 speller matrix identical to the actual speller's one. As the only difference, the speller module runs in a <i>copy spelling mode</i>. Different from an actual spelling session, in <i>copy spelling mode</i> the speller module suggests a sequence of letters, and the subject is instructed to concentrate on the currently suggested letter, by counting the number of times the respective letter is flashed.
-</p><p>This way, it is possible to label evoked responses according to whether they occurred for a desired letter, or not. In data analysis, this allows to determine a configuration that is optimally suited to classify the P300 response.
+<p>In the initial session, the subject is presented with a P300 character matrix as pictured below.  During each trial, the subject is asked to focus on one character in the matrix (i.e., the target character).  Meanwhile, the rows and columns of the matrix will flash randomly and successively so that sometimes the flashing will correspond to the column or row containing the target character and sometimes it will not.  Each of these events will elicit a corresponding brain response.  The purpose of this initial session is to identify those features that discriminate between the desired and undesired rows/columns.  Thus, the only difference between the initial (i.e., calibration) session and subsequent sessions is that in the latter the speller module will not suggest a target character.  For this reason, the initial session is referred to as <i>copy spelling</i> while subsequent sessions are referred to as <i>free spelling</i>.
+</p><p><a href="../images/thumb/e/ea/P3SpellerMatrix.PNG/298px-P3SpellerMatrix.PNG" class="image" title=""><img src="../images/thumb/e/ea/P3SpellerMatrix.PNG/298px-P3SpellerMatrix.PNG" alt="" width="298" height="297" longdesc="/wiki/index.php/Image:P3SpellerMatrix.PNG" /></a>
 </p>
 <a name="Performing_the_Initial_Session"></a><h2>Performing the Initial Session</h2>
 <ul><li>Start BCI2000 by double-clicking <tt>batch/P3Speller_&lt;YourAmplifier&gt;.bat</tt>. For repeated use, placing a link to this file on the desktop might be a good idea.
 </li><li>In the operator module, click "Config".
 </li><li>Click "Load Parameters" to load the parameter file at <tt>parms/p3_tutorial/InitialP3Session.prm</tt>.
-</li><li>Additionally, load the configuration file appropriate for your amplifier. For source modules available in the BCI2000 core distribution, amplifier parameter files are found in <tt>parms/fragments/amplifiers</tt>. When using a source module from the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file, and adapt it to your needs.
+</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  Please see <a href="User_Reference%253AParameters.html" title="User Reference:Parameters">User Reference:Parameters</a> for a listing of currently supported parameters along with their descriptions.
 </li><li>When you have a separate monitor for experimenter and subject, load the parameter file at <tt>parms/fragments/stdlib/DualMonitor.prm</tt>.
 <ul><li>In your system's display properties configuration, make sure that the subject's monitor is configured to be located to the right of the main monitor.
 </li><li>Make sure the <i>WindowLeft</i> parameter matches the main monitor's actual pixel width.
 </li><li>You may need to adapt remaining window position parameters as well; click "Set Config" to try the effect of your changes.
 </li></ul>
 </li><li>Under the "Storage" tab, enter the subject's initials into the "SubjectName" parameter.
-</li><li>Switch to the "Source" tab; into the "ChannelNames" parameter, enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels, as a white-space separated list, e.g.<br /><tt>Fz CPz Cz CP3 ...</tt>
+</li><li>Switch to the "Source" tab; for the "ChannelNames" parameter enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels as a white-space separated list (e.g., <tt>Fz CPz Cz CP3 ...</tt>).
 </li><li>Click "Set Config".
 </li><li>Instruct the subject as described in the next section.
 </li><li>Click "Start".
@@ -110,5 +110,5 @@ Letters are flashed in rows and columns.
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.18 secs. -->
+<!-- Served by bci2000.org in 0.20 secs. -->
 </body></html>

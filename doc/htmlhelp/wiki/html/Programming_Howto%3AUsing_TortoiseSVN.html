@@ -35,8 +35,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Using_TortoiseSVN_for_Day-to-Day_Tasks"><span class="tocnumber">1</span> <span class="toctext">Using TortoiseSVN for Day-to-Day Tasks</span></a>
 <ul>
 <li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Updating_to_the_latest_version_of_the_BCI2000_project"><span class="tocnumber">1.1</span> <span class="toctext">Updating to the latest version of the BCI2000 project</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Committing_.28i.e..2C_writing_back.29_changes_you_made"><span class="tocnumber">1.2</span> <span class="toctext">Committing (i.e., writing back) changes you made</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Adding_new_files"><span class="tocnumber">1.3</span> <span class="toctext">Adding new files</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Caveats"><span class="tocnumber">1.2</span> <span class="toctext">Caveats</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Committing_.28i.e..2C_writing_back.29_changes_you_made"><span class="tocnumber">1.3</span> <span class="toctext">Committing (i.e., writing back) changes you made</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Adding_new_files"><span class="tocnumber">1.4</span> <span class="toctext">Adding new files</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Howto%253AUsing_TortoiseSVN.html#Comparison_with_other_Versioning_Software"><span class="tocnumber">2</span> <span class="toctext">Comparison with other Versioning Software</span></a>
@@ -61,11 +62,11 @@ edited a file, and did not commit your changes, a SVN update operation will
 merge possible changes made to the server version into your file (but keeping
 your original version as a backup with a different name). If you prefer,
 you might consider doing a "commit" prior to an "update".
-</p><p>Note: <b>There is no indication</b> that someone changed a file on the
-server since you downloaded it!
-Changes on the server will be unknown to
-your local SVN files unless you perform an "SVN update".
 </p>
+<a name="Caveats"></a><h3>Caveats</h3>
+<ol><li> <b>There is no indication</b> that someone <b>changed a file on the server</b> since you downloaded it! Changes on the server will be unknown to your local SVN files unless you perform an "SVN update".
+</li><li> An update will <b>not undo your local changes</b> but quietly merge them into the server version. To make sure that your local version is identical to the server version, do an "SVN Update" followed with a "Revert".
+</li></ol>
 <a name="Committing_.28i.e..2C_writing_back.29_changes_you_made"></a><h3> Committing (i.e., writing back) changes you made </h3>
 <p>If you edit a file on your local hard disk which is under SVN, TortoiseSVN
 will display it with a red overlay icon. This indicates that the file's content

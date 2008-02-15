@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:BCI2000 Tour - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:BCI2000 Tour,BCI2000 Glossary,Programming Reference:Contents,Programming Reference:MatlabFilter,Programming Reference:Rapid Development,Programming Tutorial:Implementing a Data Acquisition Module,Programming Tutorial:Implementing a Signal Processing Filter,Technical Reference:Contents,Technical Reference:Parameter File,Technical Reference:System Design,User Reference:BCI2000FileInfo" />
+<meta name="keywords" content="User Tutorial:BCI2000 Tour,BCI2000 Glossary,Main Page,Programming Reference:Contents,Programming Reference:MatlabFilter,Programming Reference:Rapid Development,Programming Tutorial:Implementing a Data Acquisition Module,Programming Tutorial:Implementing a Signal Processing Filter,Technical Reference:Contents,Technical Reference:Parameter File,Technical Reference:System Design" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -31,7 +31,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 
 <div id='article'>
 <h1 class="pagetitle">BCI2000 Tour</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>This page is intended to get you started, and make you comfortable using BCI2000.
-It shows you how to use BCI2000 in a simulation mode, without the need of brain signal data acquisition hardware.
+It shows you how to use BCI2000 in a simulation mode, without the need of brain signal data acquisition hardware.  Additionally, you will be introduced to some of the most important modules and tools available for use.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -71,7 +71,7 @@ Before performing an experiment, you will typically load a parameter file that c
 </p><p>Go to the <i>SubjectName</i> parameter, and enter an ID such as TEST, or your own initials.
 </p>
 <a name="Applying_Configuration_Parameters"></a><h2>Applying Configuration Parameters</h2>
-<p>Close the configuration dialog by using its close button (top right). This will accept your parameter changes (there is no "Cancel" option).
+<p>Close the configuration dialog by using its close button (the button labeled "X" located on the top right corner of the window). This will accept your parameter changes (there is no "Cancel" option).
 In the main operator window, click <i>Set Config</i>. This will prompt the operator module to send configuration parameters to the remaining BCI2000 modules, which will perform some sanity checks on them, configure themselves accordingly, and report back to the operator module.
 </p><p>Once you clicked the <i>Set Config</i> button, a signal source window will appear, displaying a simulated EEG. In a real BCI session, you will use this window to assess signal quality. When moving the mouse, you should notice a change in the simulated EEG signal. This is the signal that will later control the feedback cursor.
 </p><p>Right-clicking the EEG window will bring up a context menu with display options such as increasing/decreasing the number of channels displayed, choosing display colors, applying filters to the signal. (Details are described on the <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">Operator Module's reference page</a>.)
@@ -102,17 +102,17 @@ This module has many of the features of dedicated programs like <a href="http://
 </p><p>To try the stimulus presentation module, start BCI2000 using the <tt>batch/StimulusPresentation_SignalGenerator.bat</tt>.
 Then, click <i>Config</i>, and load the configuration file at <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
 Go to the <i>Storage</i> tab, and enter a subject ID into the <i>SubjectName</i> parameter.
-Run the experiment clicking <i>Set Config</i> and <i>Run</i>.
+Run the experiment clicking <i>Set Config</i> and <i>Start</i>.  (Note: The goal here is simply to introduce you to the stimulus presentation module.  You will not be able to affect the visual stimulus presentation.) 
 </p><p>Locate the resulting data file at <tt>data/&lt;SubjectName&gt;001/&lt;SubjectName&gt;S001R01.dat</tt>, and open it using BCI2000FileViewer, as you did earlier in this tour. In BCI2000FileViewer's main window, check the <i>StimulusCode</i> checkbox to display the <i>StimulusCode</i> state variable. During presentation of a stimulus, the <i>StimulusCode</i> state is set to a ordinal number corresponding to the stimulus; in data analysis, this information may then be used to segment data into epochs, and to group epochs according to stimuli.
 </p>
 <a name="P300_Speller"></a><h2>P300 Speller</h2>
 <p>As part of its core distribution, BCI2000 comes with a <a href="User_Reference%253AP3SpellerTask.html" title="User Reference:P3SpellerTask">P300 Speller</a> module. The P300 Speller module implements a BCI that uses evoked responses to select items from a rectangular matrix, as it was originally described by Farwell and Donchin (1988).
 </p><p>To calibrate the P300 Speller for an individual subject, it is operated in a "copy spelling" mode, prompting the user to concentrate on pre-defined letters in sequence.
-Start <tt>batch/P3Speller_SignalGenerator.bat</tt>, click <i>Config</i>, and load <tt>parms/examples/P3Speller_CopySpelling.prm</tt>. Close the configuration window, then click <i>Set Config</i> and <i>Run</i> to view copy spelling in action.
+Start <tt>batch/P3Speller_SignalGenerator.bat</tt>, click <i>Config</i>, and load <tt>parms/examples/P3Speller_CopySpelling.prm</tt>. Close the configuration window, then click <i>Set Config</i> and <i>Start</i> to view copy spelling in action.
 </p><p>In simulation mode, the simulated EEG will simulate evoked responses on the respective items, allowing to test signal classification and spelling functionality. Therefore, spelled letters will correspond to predefined letters when using the simulated EEG source module.
 </p><p>Once calibrated, the purpose of the P300 Speller is to choose arbitrary letters from the matrix, i.e. "free spelling" without a pre-defined letter sequence.
 Also, the speller is able to switch between multiple matrices.
-</p><p>To do a "free spelling" demo with multiple menus, click <i>Config</i>, and load <tt>parms/examples/P3Speller_Menus.prm</tt>. Then close the configuration window, click <i>Set Config</i>, and <i>Run</i>.
+</p><p>To do a "free spelling" demo with multiple menus, click <i>Config</i>, and load <tt>parms/examples/P3Speller_Menus.prm</tt>. Then close the configuration window, click <i>Set Config</i>, and <i>Start</i>.
 In simulation mode, selecting a matrix element is achieved by clicking it with the mouse. Actual P300 classification is done averaging over a fixed number of epochs, so clicking an item will not immediately select it. Rather, mouse selection will override classification after the number of epochs is reached, which takes a few seconds.
 </p>
 <a name="Where_to_go_from_here"></a><h2>Where to go from here</h2>
@@ -130,7 +130,7 @@ a tutorial on <a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_
 </li><li>and the <a href="Programming_Reference%253AMatlabFilter.html" title="Programming Reference:MatlabFilter">MatlabFilter Documentation</a> about piping the BCI2000 data flow through a set of Matlab scripts.
 </li></ul>
 <p>For other BCI2000 resources that support you in <b>rapid development</b> of data acquisition, signal processing, or user application modules, see <a href="Programming_Reference%253ARapid_Development.html" title="Programming Reference:Rapid Development">Rapid Development</a>.
-</p><p>All documentation is accessible through a hierarchy of content pages, starting at the Main Page.
+</p><p>All documentation is accessible through a hierarchy of content pages, starting at the <a href="Main_Page.html" title="Main Page">Main Page</a>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AContents.html" title="User Reference:Contents">User Reference:Contents</a>, <a href="Technical_Reference%253AContents.html" title="Technical Reference:Contents">Technical Reference:Contents</a>, <a href="Programming_Reference%253AContents.html" title="Programming Reference:Contents">Programming Reference:Contents</a>
@@ -153,5 +153,5 @@ a tutorial on <a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.22 secs. -->
+<!-- Served by bci2000.org in 0.29 secs. -->
 </body></html>

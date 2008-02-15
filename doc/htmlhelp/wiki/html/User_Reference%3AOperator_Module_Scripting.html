@@ -33,7 +33,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 <h1 class="pagetitle">Operator Module Scripting</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>Operator scripts automate actions that the otherwise would be performed by the user, e.g. starting or suspending system operation.
 Scripts may be contained in script files, or given immediately in the operator module's preferences dialog.
 There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module.
-Script execution is bound to a number of events that occur during various <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">stages of BCI2000 system operation</a>.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -58,11 +57,18 @@ Script execution is bound to a number of events that occur during various <a hre
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Syntax"><span class="tocnumber">3</span> <span class="toctext">Syntax</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Specifying_Scripts"><span class="tocnumber">4</span> <span class="toctext">Specifying Scripts</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Examples"><span class="tocnumber">5</span> <span class="toctext">Examples</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Examples"><span class="tocnumber">5</span> <span class="toctext">Examples</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#1"><span class="tocnumber">5.1</span> <span class="toctext">1</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#2"><span class="tocnumber">5.2</span> <span class="toctext">2</span></a></li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
 <a name="Events"></a><h3>Events</h3>
+<p>Script execution is bound to a number of events that occur during various <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">stages of BCI2000 system operation</a>:
+</p>
 <a name="OnConnect"></a><h4>OnConnect</h4>
 <p>This event is triggered at startup, as soon as all modules are connected to the operator module.
 </p>
@@ -109,6 +115,7 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 </p><p>Scripts may also be specified from the command line used to start up the operator module. There, event names are followed with the content of the respective preference entry, enclosed in double quotes (").
 </p>
 <a name="Examples"></a><h3>Examples</h3>
+<a name="1"></a><h4>1</h4>
 <p>To add a state variable called "Artifact", and to set it using the operator's function buttons, do this:
 </p>
 <ul><li>Enter the following line under "After All Modules Connected" in the operator's preferences dialog (note the minus sign):
@@ -124,7 +131,9 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 <pre>SET STATE Artifact 0
 </pre>
 <p><br />
-The following example shows how to specify script commands from the command line.
+</p>
+<a name="2"></a><h4>2</h4>
+<p>The following example shows how to specify script commands from the command line.
 It fully automates BCI2000 operation by loading a parameter file, applying parameters, starting the system once the parameters are applied, and quitting the system once the run is over.
 </p>
 <pre>--OnConnect "-LOAD PARAMETERFILE ..\parms\CursorTask_SignalGenerator.prm; SETCONFIG" 
@@ -156,5 +165,5 @@ It fully automates BCI2000 operation by loading a parameter file, applying param
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.18 secs. -->
+<!-- Served by bci2000.org in 0.19 secs. -->
 </body></html>

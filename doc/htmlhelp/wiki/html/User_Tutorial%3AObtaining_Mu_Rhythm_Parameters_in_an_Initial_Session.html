@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,Contributions:ADCs,User Tutorial:Configuring Online Feedback,User Tutorial:EEG Measurement Setup,User Tutorial:Interpreting the Results,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Performing an Offline Analysis of ECoG Data,User Tutorial:Performing an Offline Analysis of EEG Data,User Tutorial:Performing an Offline Analysis of MEG Data" />
+<meta name="keywords" content="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,Contributions:ADCs,User Reference:Parameters,User Tutorial:Configuring Online Feedback,User Tutorial:EEG Measurement Setup,User Tutorial:Interpreting the Results,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Performing an Offline Analysis of ECoG Data,User Tutorial:Performing an Offline Analysis of EEG Data,User Tutorial:Performing an Offline Analysis of MEG Data" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -52,14 +52,14 @@ Across frequencies, this results in a line spectrum; across electrode locations,
 <ul><li>Start BCI2000 by double-clicking <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt>. For repeated use, placing a link to this file on the desktop might be a good idea.
 </li><li>In the operator module, click "Config".
 </li><li>Click "Load Parameters" to load the parameter file at <tt>parms/mu_tutorial/InitialMuSession.prm</tt>.
-</li><li>Additionally, load the configuration file appropriate for your amplifier. For source modules available in the BCI2000 core distribution, amplifier parameter files are found in <tt>parms/fragments/amplifiers</tt>. When using a source module from the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file, and adapt it to your needs.
+</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  Please see <a href="User_Reference%253AParameters.html" title="User Reference:Parameters">User Reference:Parameters</a> for a listing of currently supported parameters along with their descriptions.
 </li><li>When you have a separate monitor for experimenter and subject, load the parameter file at <tt>parms/fragments/stdlib/DualMonitor.prm</tt>.
 <ul><li>In your system's display properties configuration, make sure that the subject's monitor is configured to be located to the right of the main monitor.
 </li><li>Make sure the <i>WindowLeft</i> parameter matches the main monitor's actual pixel width.
 </li><li>You may need to adapt remaining window position parameters as well; click "Set Config" to try the effect of your changes.
 </li></ul>
 </li><li>Under the "Storage" tab, enter the subject's initials into the "SubjectName" parameter.
-</li><li>Switch to the "Source" tab; into the "ChannelNames" parameter, enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels, as a white-space separated list, e.g.<br /><tt>Fz CPz Cz CP3 ...</tt>
+</li><li>Switch to the "Source" tab; for the "ChannelNames" parameter enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels as a white-space separated list (e.g., <tt>Fz CPz Cz CP3 ...</tt>).
 </li><li>Click "Set Config".
 </li><li>Instruct the subject as described in the next section.
 </li><li>Click "Start".
@@ -67,7 +67,7 @@ Across frequencies, this results in a line spectrum; across electrode locations,
 </li><li>Finally, click "Quit" to leave BCI2000.
 </li></ul>
 <a name="Subject_instruction"></a><h2>Subject instruction</h2>
-<p>During the initial session, the subject's screen will either be blank, or display an arrow pointing up, down, left or right.
+<p>During the initial session, the subject's screen will either be blank, or displaying an arrow pointing up, down, left or right.
 </p>
 <ul><li>When a left or right arrow is displayed, imagine movement of the respective hand. The imagined movement should be continuous opening and closing of the hand, similar to rotating a tennis ball in one's hand.
 </li><li>When an up arrow is displayed, imagine simultaneous movement of both hands. This should be the same kind of movement as described for a single hand.
@@ -119,5 +119,5 @@ Across frequencies, this results in a line spectrum; across electrode locations,
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.18 secs. -->
+<!-- Served by bci2000.org in 0.21 secs. -->
 </body></html>

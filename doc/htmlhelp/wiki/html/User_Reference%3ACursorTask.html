@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:CursorTask - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:CursorTask,BCI2000 Glossary,Programming Reference:3D API,Technical Reference:Core Modules,User Reference:FeedbackDemoTask,Programming Reference:FeedbackTask" />
+<meta name="keywords" content="User Reference:CursorTask,BCI2000 Glossary,Programming Reference:3D API,Technical Reference:Core Modules,User Reference:Normalizer,Programming Reference:FeedbackTask,User Reference:FeedbackDemoTask" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -152,8 +152,8 @@ Given in <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">s
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:FeedbackTaskParams&amp;action=edit&amp;section=3" title="Template:FeedbackTaskParams">edit</a>]</div><a name="FeedbackDuration"></a><h4>FeedbackDuration</h4>
 <p>The mean duration of feedback. 
-This parameter is not a hard limit to feedback duration but determines cursor speed such that, for a normalized control signal, feedback trials will have this duration on average.
 Given in <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">sample blocks</a>, or in time units when immediately followed with 's', 'ms', or similar.
+</p><p>This parameter is not a hard limit to feedback duration but determines cursor speed such that, for a normalized control signal, feedback trials will have this duration on average, provided that the cursor starts at the center of the screen (for further details, see <a href="User_Reference%253ANormalizer.html" title="User Reference:Normalizer">User Reference:Normalizer</a>).
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:FeedbackTaskParams&amp;action=edit&amp;section=4" title="Template:FeedbackTaskParams">edit</a>]</div><a name="PostFeedbackDuration"></a><h4>PostFeedbackDuration</h4>
 <p>The duration of result display after feedback.
@@ -305,5 +305,5 @@ Typically, this also implies that the cursor moves according to the <a href="BCI
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.33 secs. -->
+<!-- Served by bci2000.org in 0.27 secs. -->
 </body></html>
