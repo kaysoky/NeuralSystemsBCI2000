@@ -1,5 +1,3 @@
-System matrix OperatorVersion= { Framework Revision Build } 1 2.0%20pre 1366,%202007-05-25%2017:23:52%20+0200%20(Fr,%2025%20Mai%202007) May%2030%202007,%2011:29:35 // operator module version information
-System int StateVectorLength= 9 16 1 30 // length of the state vector in bytes
 Source:Signal%20Properties int SourceCh= 4 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
@@ -36,9 +34,6 @@ Source:Alignment int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=y
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Visualize:AlignmentFilter int VisualizeAlignment= 0 0 0 1 // visualize aligned channels (0=no, 1=yes) (boolean)
 Source:Online%20Processing intlist TransmitChList= 4 1 2 3 4 1 1 128 // list of transmitted channels
-System string EEGSourcePort= 2576 4200 1024 65535 // the EEGSource module's listening port
-System string EEGSourceIP= 134.2.123.129 127.0.0.1 % % // the EEGSource module's listening IP
-System matrix EEGSourceVersion= { Framework Revision Build } 1 2.0%20pre 1347,%202007-05-22%2019:30:25%20+0200%20(Di,%2022%20Mai%202007) May%2030%202007,%2011:33:19 // EEGSource version information
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 % % // columns represent input channels, rows represent output channels
 Visualize:SpatialFilter int VisualizeSpatialFiltering= 0 0 0 1 // visualize spatially filtered signals (0=no 1=yes) (boolean)
 Filtering:P3TemporalFilter int EpochLength= 500ms 500ms 0 % // Length of data epoch from stimulus onset
@@ -56,9 +51,6 @@ Filtering:Normalizer matrix BufferConditions= 2 1 (Feedback)&&(TargetCode==1) (F
 Filtering:Normalizer float BufferLength= 9s 9s % % // time window of past data per buffer that enters into statistic
 Filtering:Normalizer string UpdateTrigger= (Feedback==0) // expression to trigger offset/gain update when changing from 0 (use empty string for continuous update)
 Visualize:Normalizer int VisualizeNormalFiltering= 0 0 0 1 // visualize normalized signals (boolean)
-System string SignalProcessingPort= 2574 4200 1024 65535 // the SignalProcessing module's listening port
-System string SignalProcessingIP= 134.2.123.129 127.0.0.1 % % // the SignalProcessing module's listening IP
-System matrix SignalProcessingVersion= { Framework Revision Build } 1 2.0%20pre 1347,%202007-05-22%2019:30:25%20+0200%20(Di,%2022%20Mai%202007) May%2030%202007,%2011:40:34 // SignalProcessing version information
 Connector:ConnectorInput list ConnectorInputFilter= 0 // list of state names or signal elements to allow, "*" for any, signal elements as in "Signal(1,0)"
 Connector:ConnectorInput string ConnectorInputAddress= % localhost:20320 % % // IP address/port to read from, e.g. localhost:20320
 Application:Window int WindowWidth= 640 640 0 % // width of application window
@@ -94,6 +86,3 @@ Application:Stimuli float AudioVolume= 100 1 0 1 // Volume for audio playback (0
 Connector:ConnectorOutput string ConnectorOutputAddress= % localhost:20320 % % // IP address/port to write to, e.g. localhost:20320
 Application:Localization string Language= Default Default % % // Language for user messages
 Application:Localization matrix LocalizedStrings= { German } { TIME%20OUT%20!!! Waiting%20to%20start%20... } Zeit%20abgelaufen! Warte%20... // Localized user messages
-System string ApplicationPort= 2573 4200 1024 65535 // the Application module's listening port
-System string ApplicationIP= 134.2.123.129 127.0.0.1 % % // the Application module's listening IP
-System matrix ApplicationVersion= { Framework Revision Build } 1 2.0%20pre 1347,%202007-05-22%2019:30:25%20+0200%20(Di,%2022%20Mai%202007) May%2030%202007,%2011:44:40 // Application version information
