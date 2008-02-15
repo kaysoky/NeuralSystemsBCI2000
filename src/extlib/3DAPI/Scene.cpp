@@ -157,8 +157,10 @@ Scene::OnChange( DrawContext& inDC )
     {
       mDisableVsync = false;
       // glGetString will return non-NULL only the first time it is called.
-      static const char* extensions = ::glGetString( GL_EXTENSIONS );
-      if( string( extensions ).find( "WGL_EXT_swap_control" ) != string::npos )
+      static const char* extensions = NULL;
+      if( extensions == NULL )
+        extensions = ::glGetString( GL_EXTENSIONS );
+      if( extensions != NULL && string( extensions ).find( "WGL_EXT_swap_control" ) != string::npos )
       {  // Switch off VSYNC if possible.
          typedef void (APIENTRY *wglSwapProc)( int );
          wglSwapProc wglSwapIntervalEXT

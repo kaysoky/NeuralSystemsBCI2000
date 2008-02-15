@@ -91,8 +91,8 @@ public:
         GLfloat getLightBri() const             {return lightBri;}
         GLfloat getAmbLightBri() const          {return ambLightBri;}
         GLfloat getFieldOfView() const          {return fieldOfView;}
-        const geomObj& getSceneDim() const      {return sceneDimensions;}
-        int    getQuality() const               {return quality;} // rendering quality
+ const geomObj& getSceneDim() const             {return sceneDimensions;}
+            int getQuality() const              {return quality;} // rendering quality
 
 /****************************Modifiers*****************************************/
 
