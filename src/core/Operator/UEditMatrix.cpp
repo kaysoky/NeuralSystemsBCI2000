@@ -7,6 +7,7 @@
 
 #include "UEditMatrix.h"
 #include "BCIError.h"
+#include "ExecutableHelp.h"
 #include "UOperatorUtils.h"
 #include "defines.h"
 
@@ -37,6 +38,8 @@ struct TfEditMatrix::MenuItemEntry TfEditMatrix::sMenuItems[] =
   { EditSubMatrix, EditSubMatrix_Enabled, NULL, "Edit sub-matrix..." },
   { PlainCellToMatrix, PlainCellToMatrix_Enabled, NULL, "Convert to sub-matrix..." },
   { MatrixToPlainCell, MatrixToPlainCell_Enabled, NULL, "Replace by single cell..." },
+  { NULL, NULL, NULL, "-" },
+  { Help, Help_Enabled, NULL, "Help" },
 };
 
 __fastcall
@@ -327,6 +330,18 @@ TfEditMatrix::MatrixToPlainCell_Enabled( int inRow, int inCol ) const
   return inRow > 0 && inRow < StringGrid->RowCount
          && inCol > 0 && inCol < StringGrid->ColCount
          && StringGrid->Cells[ inCol ][ inRow ] == cSubEditTag;
+}
+
+void
+TfEditMatrix::Help( int, int )
+{
+  ExecutableHelp().ParamHelp().Open( mpMatrixParam->Name() );
+}
+
+bool
+TfEditMatrix::Help_Enabled( int, int ) const
+{
+  return ExecutableHelp().ParamHelp().Exists( mpMatrixParam->Name() );
 }
 
 void

@@ -13,14 +13,60 @@
 #pragma hdrstop
 
 #include "ExecutableHelp.h"
-#include <string>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
-static const string sHelpExtension = ".html";
+const class ExecutableHelp& ExecutableHelp()
+{
+  static class ExecutableHelp instance( 0 );
+  return instance;
+}
+
+static const string& HelpExtension()
+{
+  static string helpExtension = ".html";
+  return helpExtension;
+}
+
+static const string& TocFileName()
+{
+  static string tocFileName = "htmlhelp.toc";
+  return tocFileName;
+}
+
+ExecutableHelp::ExecutableHelp( int )
+{
+  Initialize();
+  InitializeContextHelp();
+}
+
+bool
+ExecutableHelp::Display() const
+{
+  bool result = false;
+#ifdef _WIN32
+  HINSTANCE err = ::ShellExecute( NULL, NULL, mHelpFile.c_str(), NULL, mHelpFileDir.c_str(), 0 );
+  result = ( reinterpret_cast<int>( err ) > 32 );
+  if( !result )
+  {
+    ::MessageBox(
+      NULL,
+      "Help files should be located in the\n"
+      "executable's directory.\n\n"
+      "Help files bear the executable's name,\n"
+      "and a .html extension.",
+      "Error Opening Help File",
+      MB_OK | MB_ICONERROR
+    );
+  }
+#endif // _WIN32
+  return result;
+}
 
 void
-ExecutableHelp::Display() const
+ExecutableHelp::Initialize()
 {
 #ifdef _WIN32
   const int increment = 512;
@@ -37,28 +83,211 @@ ExecutableHelp::Display() const
   string helpFile = buf;
   delete[] buf;
 
-  size_t pos = helpFile.find_last_of( ".\\//" );
+  size_t pos = helpFile.find_last_of( ".\\/" );
   if( pos != string::npos && helpFile[ pos ] != '.' )
     pos = string::npos;
-  helpFile = helpFile.substr( 0, pos ) + sHelpExtension;
-  pos = helpFile.find_last_of( "\\/" );
-  string helpFileDir = helpFile.substr( 0, pos );
-  HINSTANCE err = ::ShellExecute( NULL, NULL, helpFile.c_str(), NULL, helpFileDir.c_str(), 0 );
-  if( reinterpret_cast<int>( err ) <= 32 )
-  {
-    ::MessageBox(
-      NULL,
-      "Help files should be located in the\n"
-      "executable's directory.\n\n"
-      "Help files bear the executable's name,\n"
-      "and a .html extension.",
-      "Error Opening Help File",
-      MB_OK | MB_ICONERROR
-    );
-  }
+  mHelpFile = helpFile.substr( 0, pos ) + HelpExtension();
+  pos = mHelpFile.find_last_of( "\\/" );
+  if( pos != string::npos )
+    ++pos;
+  mHelpFileDir = mHelpFile.substr( 0, pos );
 #else // TODO
 # error Globally store the executable's path at startup, \
         make BCIDirectory use it rather than GetCWD().
 #endif // TODO
+}
+
+void
+ExecutableHelp::InitializeContextHelp()
+{
+  // When the help file contains a redirection, use it to infer the html
+  // document path.
+  string htmlPath;
+  {
+    fstream helpFileStream( mHelpFile.c_str() );
+    while( helpFileStream && htmlPath.empty() )
+    {
+      string line;
+      getline( helpFileStream, line );
+      if( line.find( "\"refresh\"" ) != string::npos )
+      {
+        const string tag = "url=";
+        size_t pos = line.find( tag );
+        if( pos != string::npos )
+        {
+          pos += tag.length();
+          line = line.substr( pos, line.find( "\"", pos ) - pos );
+          pos = line.find_last_of( "\\/" );
+          if( pos != string::npos )
+            ++pos;
+          htmlPath = line.substr( 0, pos );
+        }
+      }
+    }
+  }
+  htmlPath = mHelpFileDir + htmlPath;
+#ifdef _WIN32
+  for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
+    if( *i == '/' )
+      *i = '\\';
+  int bufLen = htmlPath.length() + 1;
+  char* pathBuffer = new char[ bufLen ];
+  if( ::GetFullPathName( htmlPath.c_str(), bufLen, pathBuffer, NULL ) )
+    htmlPath = string( pathBuffer );
+  delete[] pathBuffer;
+  for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
+    if( *i == '\\' )
+      *i = '/';
+#endif // _WIN32
+
+  // Build help maps from the TOC file.
+  mParamHelp.Clear();
+  mParamHelp.SetPath( htmlPath );
+  mStateHelp.Clear();
+  mStateHelp.SetPath( htmlPath );
+  {
+    fstream tocFileStream( ( htmlPath + TocFileName() ).c_str() );
+    string line;
+    getline( tocFileStream, line );
+
+    enum
+    {
+      outsideTOC,
+      insideTOC,
+      insideIgnoredTOC,
+      insideParams,
+      insideStates,
+      finished,
+      error
+    } parserState = outsideTOC;
+
+    string fileName;
+    int tocLevel = 0,
+        sectionLevel = 0;
+    while( ( parserState != error ) && ( parserState != finished ) )
+    {
+      getline( tocFileStream, line );
+      switch( parserState )
+      {
+        case outsideTOC:
+          fileName = line;
+          tocLevel = 1;
+          sectionLevel = 1;
+          if( line.empty() )
+            parserState = finished;
+          else if( fileName.find( "%3A" ) != string::npos )
+            parserState = insideIgnoredTOC;
+          else
+            parserState = insideTOC;
+          break;
+
+        case insideIgnoredTOC:
+          if( line.empty() )
+            parserState = outsideTOC;
+          break;
+
+        case insideTOC:
+        case insideParams:
+        case insideStates:
+          if( line.empty() )
+            parserState = outsideTOC;
+          else
+          {
+            istringstream iss( line );
+            int level;
+            iss >> level >> ws;
+            if( !iss )
+              parserState = error;
+            else
+            {
+              string heading;
+              getline( iss, heading );
+              switch( parserState )
+              {
+                case insideTOC:
+                  if( heading == "Parameters" )
+                  {
+                    parserState = insideParams;
+                    sectionLevel = level;
+                  }
+                  else if( heading.find( "States" ) == 0 )
+                  {
+                    parserState = insideStates;
+                    sectionLevel = level;
+                  }
+                  break;
+
+                case insideParams:
+                case insideStates:
+                  if( level < sectionLevel )
+                    parserState = insideTOC;
+                  else
+                  {
+                    string::const_iterator i = heading.begin();
+                    while( i != heading.end() )
+                    {
+                      string word;
+                      while( ::isalpha( *i ) )
+                        word += *i++;
+                      if( !word.empty() )
+                      {
+                        switch( parserState )
+                        {
+                          case insideParams:
+                            mParamHelp[ word ] = fileName + "#" + heading;
+                            break;
+                            
+                          case insideStates:
+                            mStateHelp[ word ] = fileName + "#" + heading;
+                            break;
+                        }
+                      }
+                      while( !::isalpha( *i ) && ( i != heading.end() ) )
+                        ++i;
+                    }
+                  }
+                  break;
+              }
+              tocLevel = level;
+            }
+          }
+      }
+    }
+    if( parserState == error )
+    {
+      mParamHelp.Clear();
+      mStateHelp.Clear();
+    }
+  }
+}
+
+bool
+ExecutableHelp::HelpMap::Open( const std::string& s ) const
+{
+  bool result = false;
+  const_iterator i = this->find( s );
+  if( i != this->end() )
+  {
+#ifdef _WIN32
+    string helpFileURL = string( "file:///" ) + mPath + i->second;
+    // ShellExecute doesn't treat anchors properly, so we create a
+    // temporary file containing a redirect.
+    int bufLen = ::GetTempPath( 0, NULL );
+    char* pathBuf = new char[ bufLen ];
+    ::GetTempPath( bufLen, pathBuf );
+    string tempFileName = string( pathBuf ) + "BCI2000Help" + HelpExtension();
+    delete[] pathBuf;
+    {
+      ofstream tempFile( tempFileName.c_str() );
+      tempFile << "<meta http-equiv=\"refresh\" content=\"0;url="
+               << helpFileURL
+               << "\" />"
+               << endl;
+    }
+    HINSTANCE err = ::ShellExecute( NULL, "open", tempFileName.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    result = ( reinterpret_cast<int>( err ) > 32 );
+#endif // _WIN32
+  }
+  return result;
 }
 

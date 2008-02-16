@@ -101,10 +101,14 @@ class ParamDisplay  // This class is the interface to the outside world.
         typedef ControlContainer::iterator ControlIterator;
         ControlContainer                   mControls;
 
-        bool       mModified;
-        int        mTop,
-                   mLeft;
-        TTrackBar* mpUserLevel;
+        std::string mParamName;
+        bool        mModified;
+        int         mTop,
+                    mLeft;
+        TTrackBar*  mpUserLevel;
+
+        TWndMethod  mWndProc;
+        void __fastcall HelpWndProc( TMessage& );
     };
 
     // This is the base class for all displays where there is a separate label

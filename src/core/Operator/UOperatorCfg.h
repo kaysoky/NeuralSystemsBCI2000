@@ -35,7 +35,7 @@ __published:  // IDE-managed Components
         TSaveDialog *SaveDialog;
         TButton *bConfigureSaveFilter;
         TButton *bConfigureLoadFilter;
-    TScrollBox *ScrollBox;
+        TScrollBox *ScrollBox;
         void __fastcall CfgTabControlChange(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall CfgTabControlChanging(TObject *Sender, bool &AllowChange);
@@ -51,7 +51,7 @@ public:  // User declarations
         void    RenderParameters( const std::string& section );
         void    RenderParameter( Param* );
         void    UpdateParameters();
-        
+
         typedef void ( *Notification )();
         void          OnParameterChange( Notification n )
                       { mOnParameterChange = n; }

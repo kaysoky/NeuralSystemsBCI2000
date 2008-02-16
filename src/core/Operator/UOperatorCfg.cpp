@@ -12,6 +12,7 @@
 #include "UOperatorUtils.h"
 #include "UPreferences.h"
 #include "BCI2000FileReader.h"
+#include "ExecutableHelp.h"
 
 #include <string>
 #include <vector>
@@ -28,6 +29,9 @@ TfConfig *fConfig;
 __fastcall TfConfig::TfConfig(TComponent* Owner) : TForm(Owner)
 {
   OperatorUtils::RestoreControl( this, KEY_OPERATOR );
+  this->BorderIcons = TBorderIcons() << biSystemMenu;
+  if( !ExecutableHelp().ParamHelp().Empty() )
+    this->BorderIcons = this->BorderIcons << biHelp;
 }
 
 __fastcall TfConfig::~TfConfig()
@@ -35,6 +39,7 @@ __fastcall TfConfig::~TfConfig()
   OperatorUtils::SaveControl( this, KEY_OPERATOR );
   DisposeControls();
 }
+
 //---------------------------------------------------------------------------
 
 static bool CompareTabNames( const string& s1, const string& s2 )
@@ -347,6 +352,5 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject*)
  Application->MessageBox("The parameters that you select here will NOT be loaded !", "Reminder", MB_OK);
  fShowParameters->ShowModal();
 }
-
 
 

@@ -7,6 +7,7 @@
 #include "UOperatorUtils.h"
 #include "UPreferences.h"
 #include "UEditMatrix.h"
+#include "ExecutableHelp.h"
 #include "ParsedComment.h"
 #include "Operator.h"
 
@@ -157,12 +158,14 @@ ParamDisplay::Modified() const
 ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
                                         TWinControl* inParent )
 : mpUserLevel( NULL ),
+  mParamName( inParam.Name() ),
   mTop( 0 ),
   mLeft( 0 ),
-  mModified( false )
+  mModified( false ),
+  mWndProc( NULL )
 {
   // render the parameter's name
-  TLabel* label = new TLabel( static_cast<TComponent*>( NULL ) );
+  TStaticText* label = new TStaticText( static_cast<TComponent*>( NULL ) );
   label->Left = labelsOffsetX;
   label->Top = labelsOffsetY;
   label->Caption = inParam.Name().c_str();
@@ -170,6 +173,8 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
   label->Visible = false;
   label->Hint = inParam.Comment().c_str();
   label->ShowHint = true;
+  mWndProc = label->WindowProc;
+  label->WindowProc = HelpWndProc;
   label->Parent = inParent;
   mControls.insert( label );
 
@@ -262,6 +267,19 @@ ParamDisplay::DisplayBase::ReadValuesFrom( const Param& inParam )
   mModified = false;
 }
 
+void
+__fastcall
+ParamDisplay::DisplayBase::HelpWndProc( TMessage& inMessage )
+{
+  if( inMessage.Msg == WM_HELP )
+  {
+    if( ExecutableHelp().ParamHelp().Exists( mParamName ) )
+      ExecutableHelp().ParamHelp().Open( mParamName );
+    else
+      ::MessageBeep( MB_ICONASTERISK );
+  }
+  mWndProc( inMessage );
+}
 ////////////////////////////////////////////////////////////////////////////////
 // ParamDisplay::SeparateComment definitions
 ////////////////////////////////////////////////////////////////////////////////

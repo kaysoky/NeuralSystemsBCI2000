@@ -12,10 +12,48 @@
 #ifndef EXECUTABLE_HELP_H
 #define EXECUTABLE_HELP_H
 
+#include <string>
+#include <map>
+#include "Param.h"
+
 class ExecutableHelp
 {
  public:
-  void Display() const;
+  ExecutableHelp( int );
+  bool Display() const;
+
+  class HelpMap : public std::map<std::string, std::string, Param::NameCmp>
+  {
+   public:
+    void Clear()
+      { this->clear(); }
+    bool Empty() const
+      { return this->empty(); }
+    bool Exists( const std::string& s ) const
+      { return this->find( s ) != end(); }
+    void SetPath( const std::string& s )
+      { mPath = s; }
+    bool Open( const std::string& ) const;
+
+   private:
+    std::string mPath;
+  };
+  const HelpMap& ParamHelp() const
+    { return mParamHelp; }
+  const HelpMap& StateHelp() const
+    { return mStateHelp; }
+
+ private:
+  void Initialize();
+  void InitializeContextHelp();
+
+  HelpMap mParamHelp,
+          mStateHelp;
+
+  std::string mHelpFile,
+              mHelpFileDir;
 };
+
+const class ExecutableHelp& ExecutableHelp();
 
 #endif // EXECUTABLE_HELP_H

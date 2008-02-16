@@ -56,6 +56,8 @@ private: // User declarations
         bool       PlainCellToMatrix_Enabled( int, int ) const;
         void       MatrixToPlainCell( int, int );
         bool       MatrixToPlainCell_Enabled( int, int ) const;
+        void       Help( int, int );
+        bool       Help_Enabled( int, int ) const;
 
         static int        sNumInstances;
         Param*            mpMatrixParam;
