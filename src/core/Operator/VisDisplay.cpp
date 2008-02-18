@@ -188,16 +188,16 @@ VisDisplay::VisDisplayBase::SetConfig( ConfigSettings& inConfig )
       formLeft = 10,
       formHeight = 100,
       formWidth = 100;
-  bool gotPosition = inConfig.Get( CfgID::Top, formTop )
-                  && inConfig.Get( CfgID::Left, formLeft )
-                  && inConfig.Get( CfgID::Height, formHeight )
-                  && inConfig.Get( CfgID::Width, formWidth );
-  if( !gotPosition )
+  bool posDefault  = !inConfig.Get( CfgID::Top, formTop ) ||
+                     !inConfig.Get( CfgID::Left, formLeft ),
+       sizeDefault = !inConfig.Get( CfgID::Height, formHeight ) ||
+                     !inConfig.Get( CfgID::Width, formWidth );
+  if( posDefault )
   {
-      formTop = newTop;
-      newTop += 10;
-      formLeft = newLeft;
-      newLeft += 10;
+    formTop = newTop;
+    newTop += 10;
+    formLeft = newLeft;
+    newLeft += 10;
   }
   mpForm->Top = formTop;
   mpForm->Left = formLeft;
@@ -205,16 +205,29 @@ VisDisplay::VisDisplayBase::SetConfig( ConfigSettings& inConfig )
   mpForm->Width = formWidth;
   if( !PtInRect( mpForm->ClientRect, TPoint( 10, 10 ) ) )
   {
+    sizeDefault = true;
     mpForm->Height = 100;
     mpForm->Width = 100;
   }
   if( !PtInRect( Screen->DesktopRect, mpForm->ClientOrigin ) )
   {
+    posDefault = true;
     mpForm->Top = newTop;
     newTop += 10;
     mpForm->Left = newLeft;
     newLeft += 10;
   }
+  if( posDefault )
+  {
+    Visconfigs()[ mSourceID ].Put( CfgID::Top, mpForm->Top, Default );
+    Visconfigs()[ mSourceID ].Put( CfgID::Left, mpForm->Left, Default );
+  }
+  if( sizeDefault )
+  {
+    Visconfigs()[ mSourceID ].Put( CfgID::Width, mpForm->Width, Default );
+    Visconfigs()[ mSourceID ].Put( CfgID::Height, mpForm->Height, Default );
+  }
+  
   bool visible = true;
   inConfig.Get( CfgID::Visible, visible );
   SetVisible( visible );
