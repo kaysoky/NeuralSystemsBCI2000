@@ -49,6 +49,8 @@ gUSBampADC::gUSBampADC()
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SourceCh=      16 16 1 128 "
        "// number of digitized channels total",
+   "Source intlist SourceChList= 0 0 1 128 "
+       "// list of channels to digitize",
    "Source intlist SourceChDevices=  1 16 16 1 16 "
        "// number of digitized channels per device",
    "Source int SampleBlockSize= 8 5 1 20000 "
@@ -144,12 +146,20 @@ void gUSBampADC::Preflight( const SignalProperties&,
        Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), signalType );
 
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  if( Parameter("SourceChGain")->NumValues() != Parameter("SourceCh") )
+    if ( Parameter("SourceChList")->NumValues() > 0 )
+    {
+        if (Parameter("SourceChList")->NumValues() != Parameter("SourceCh"))
+        {
+            bcierr << "# elements in SourceChList must match total # channels (SourceCh)" <<endl;
+            return;
+        }
+    }
+  if( Parameter("SourceChGain")->NumValues() != Parameter("SourceCh"))
   {
     bcierr << "# elements in SourceChGain has to match total # channels" << endl;
     return;
   }
-  if( Parameter("SourceChOffset")->NumValues() != Parameter("SourceCh") )
+  if( Parameter("SourceChOffset")->NumValues() != Parameter("SourceCh"))
   {
     bcierr << "# elements in SourceChOffset has to match total # channels" << endl;
     return;
@@ -178,7 +188,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
    totalnumchannels += Parameter("SourceChDevices")(dev);
   if( Parameter("SourceCh") != totalnumchannels )
   {
-    bcierr << "# total channels has to equal sum of all channels over all devices."
+    bcierr << "# total channels ("<< totalnumchannels<<") has to equal sum of all channels over all devices."
            << " If the digital input is turned on, you have to take this into account."
            << endl;
     return;
@@ -188,11 +198,46 @@ void gUSBampADC::Preflight( const SignalProperties&,
    {
    if (Parameter("DigitalInput") == 0)
       if (Parameter("SourceChDevices")(dev) > 16)
+      {
          bcierr << "The g.USBamp only has 16 channels. Decrease SourceChDevices." << endl;
+         return;
+      }
    if (Parameter("DigitalInput") == 1)
       if (Parameter("SourceChDevices")(dev) > 17)
+      {
          bcierr << "The g.USBamp only has 16 channels. You have DigitalInput turned on (which adds one channel), so you may specify a maximum of 17 channels. Decrease SourceChDevices." << endl;
+        return;
+      }
    }
+
+    //check for consistency between sourcechdevices and sourcechlist per device
+    int sourceChListOffset = 0;
+    for (int dev = 0; dev < Parameter("DeviceIDs")->NumValues() ; dev++)
+    {
+        if (Parameter("SourceChList")->NumValues() == 0)
+            continue;
+            
+        int devChs = Parameter("SourceChDevices")(dev);
+        int dig = Parameter("DigitalInput");
+        vector<int> tmpChList;
+        for (int i = sourceChListOffset; i < devChs + sourceChListOffset; i++)
+        {
+            int curCh = Parameter("SourceChList")(i);
+
+            if (curCh < 1 || curCh > 16+dig)
+            {
+                bcierr << "SourceChList values must be within the range of 1 to 16 (or 17 if digital input is enabled)" <<endl;
+                return;
+            }
+            if (find(tmpChList.begin(), tmpChList.end(), curCh) != tmpChList.end())
+            {
+                bcierr << "SourceChList may not contain duplicate values for an individual device"<<endl;
+                return;
+            }
+            tmpChList.push_back(curCh);
+        }
+    }
+    
 
   bool DeviceIDMaster=false;
   for (int dev=0; dev<Parameter("DeviceIDs")->NumValues(); dev++)
@@ -275,6 +320,10 @@ void gUSBampADC::Preflight( const SignalProperties&,
 
   //digital output check
   Parameter("DigitalOutput");
+  Parameter("DeviceIDs");
+  Parameter("DeviceIDMaster");
+  Parameter("SourceChList");
+  Parameter("SourceChGain");
 }
 
 
@@ -299,6 +348,7 @@ bool    autoconfigure;
 
  int samplingrate=Parameter("SamplingRate");
  mMasterDeviceID=Parameter("DeviceIDMaster");
+ mFloatOutput = ( Parameter( "SignalType" ) == 1 );
 
  // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
  if ((Parameter("DeviceIDs")->NumValues() == 1) && (Parameter("DeviceIDs")=="auto"))
@@ -372,6 +422,8 @@ bool    autoconfigure;
  m_buffersize.resize(m_numdevices);
  // configure all devices
  int totalch=1;
+ int sourceChListOffset = 0;
+ 
  for (int dev=0; dev<m_numdevices; dev++)
   {
   // create event handles for each device
@@ -460,8 +512,18 @@ bool    autoconfigure;
    }
 
   // set the channel list for sampling
-  for (int ch=0; ch<m_numchans.at(dev); ch++)
-   channels[ch] = ch+1;
+    if (Parameter("SourceChList")->NumValues() == 0)
+    {
+        for (int ch=0; ch<m_numchans.at(dev); ch++)
+            channels[ch] = ch+1;
+    }
+    else
+    {
+        for (int ch=0; ch<m_numchans.at(dev); ch++)
+            channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
+
+        sourceChListOffset += m_numchans.at(dev);
+    }
 
   // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
   // (the last channel will be the digital input and transferred automatically
@@ -492,8 +554,6 @@ bool    autoconfigure;
  // so we do not set the filters again if we do not have to
  oldfilternumber=filternumber;
  oldnotchnumber=notchnumber;
-
- mFloatOutput = ( Parameter( "SignalType" ) == 1 );
 
  if (m_digitalOutput)
     GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
@@ -529,6 +589,7 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
   // we can't directly determine at the moment whether we lost some data
   // simply have a timeout that's 1.5 times one sample block and notify the operator that we were too slow :-(
   dwOVret = WaitForSingleObject(m_hEvent[dev], m_timeoutms);
+  /*
   if (dwOVret == WAIT_TIMEOUT)
      {
      bciout << "Signals lost during acquisition. "
@@ -538,7 +599,8 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
      // ResetEvent(m_hEvent);
      // GT_ResetTransfer(hdev.at(dev));
      // throw;
-     }
+     }  */
+     
   GetOverlappedResult(m_hdev.at(dev), &(m_ov[dev]), &dwBytesReceived, FALSE);
   if( mFloatOutput )
   {
