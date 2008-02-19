@@ -116,6 +116,9 @@ private:
   /// Variable for the parameter LearningRateAverage.
   float                                     LearningRateAverage;
 
+  /// Variable for the parameter LearningRateAutoScale.
+  float                                     LearningRateAutoScale;
+
   /// Variable for the parameter CircleRadius.
   int                                       CircleRadius;
 

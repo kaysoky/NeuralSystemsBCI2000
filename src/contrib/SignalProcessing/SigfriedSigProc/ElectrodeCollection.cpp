@@ -37,7 +37,7 @@ const UINT TRACK_BAR_MAX_CHANGE =
 /// @param vautoscalechannellist Defines the channels that are used to estimate
 ///                              the min/max for the autoscale feature.
 ///////////////////////////////////////////////////////////////////////////////
-CElectrodeCollection::CElectrodeCollection(string title, string scalex, string scaley, float scalexvalue, float scaleyvalue, float learningratehist, float learningrateaverage, float baselineresolution, bool runningaverage, bool bcommonslider, int statisticdisplaytype, vector<int> vautoscalechannellist)
+CElectrodeCollection::CElectrodeCollection(string title, string scalex, string scaley, float scalexvalue, float scaleyvalue, float learningratehist, float learningrateaverage, float baselineresolution, bool runningaverage, bool bcommonslider, int statisticdisplaytype, vector<int> vautoscalechannellist, float learningrateautoscale)
 {
 
   this->firsttimeinitialized      = false;
@@ -74,6 +74,14 @@ CElectrodeCollection::CElectrodeCollection(string title, string scalex, string s
   // create TCheckBox
   this->pcheckboxautoscale        = new TCheckBox(static_cast<TComponent*>(NULL));
 
+  if (learningrateautoscale > 0) {
+    this->pcheckboxautoscale->Checked = true;
+    this->bautoscale                  = true;
+  } else {
+    this->pcheckboxautoscale->Checked = false;
+    this->bautoscale                  = false;
+  }
+
   // Initialize TShapes
   this->pboundingrectangle->Shape = stRectangle;
   this->pscalex->Shape            = stRectangle;
@@ -85,6 +93,7 @@ CElectrodeCollection::CElectrodeCollection(string title, string scalex, string s
   this->runningaverage            = runningaverage;
   this->learningratehist          = learningratehist;
   this->learningrateaverage       = learningrateaverage;
+  this->learningrateautoscale     = learningrateautoscale;
   this->baselineresolution        = baselineresolution;
   this->bcommonslider             = bcommonslider;
   this->statisticdisplaytype      = statisticdisplaytype;
@@ -111,7 +120,6 @@ CElectrodeCollection::CElectrodeCollection(string title, string scalex, string s
   // initialize boolean variables
   this->btrackbarminignore = false;
   this->btrackbarmaxignore = false;
-  this->bautoscale         = true;
 
   // initialize pointer
   this->prenderer                         = NULL;
@@ -1270,7 +1278,7 @@ void CElectrodeCollection::EstimateElectrodeMinMax()
   float value;
   float maxvalueallelectrodes = -1e32;
   float minvalueallelectrodes =  1e32;
-  float learningrate          = 0.99;
+//  float learningrate          = 0.99;
 
 
   // if list of channels to be used is empty use all avialible channels 
@@ -1313,8 +1321,8 @@ void CElectrodeCollection::EstimateElectrodeMinMax()
   } else {
     // when this was called before age the previously estimated value using
     // the 1st-order IIR filter with the filter coefficient 0.99.
-    this->maxvalueallelectrodes = this->maxvalueallelectrodes * learningrate + maxvalueallelectrodes * (1-learningrate);
-    this->minvalueallelectrodes = this->minvalueallelectrodes * learningrate + minvalueallelectrodes * (1-learningrate);
+    this->maxvalueallelectrodes = this->maxvalueallelectrodes * learningrateautoscale + maxvalueallelectrodes * (1-learningrateautoscale);
+    this->minvalueallelectrodes = this->minvalueallelectrodes * learningrateautoscale + minvalueallelectrodes * (1-learningrateautoscale);
   }
 
 

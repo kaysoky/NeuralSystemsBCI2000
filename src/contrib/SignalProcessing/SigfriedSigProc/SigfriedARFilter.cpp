@@ -109,7 +109,7 @@ SigfriedARFilter::SigfriedARFilter()
           "(enumeration)",
   "Filtering floatlist AutoScaleChannelList= 0 % % "
      " // channels used to autoscale display or leave emtpy for all channels",
-  "Filtering float AutoScaleLearningRate= 0.99 1.0 0.0 512.0 "
+  "Filtering float LearningRateAutoScale= 0.99 1.0 0.0 512.0 "
       "// learningrate for realtime display histogram baseline",
  END_PARAMETER_DEFINITIONS
 
@@ -446,6 +446,7 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   SamplingRate            = Parameter( "SamplingRate" );
   LearningRateHist        = Parameter( "LearningRateHist" );
   LearningRateAverage     = Parameter( "LearningRateAverage" );
+  LearningRateAutoScale   = Parameter( "LearningRateAutoScale" );
   CircleRadius            = Parameter( "CircleRadius" );
   StatisticDisplayType    = Parameter( "StatisticDisplayType" );
   ScoreType               = Parameter( "ScoreType" );
@@ -686,14 +687,14 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
     for (int index_condition=0; index_condition < num_electrodecondition_rows; index_condition++) {
       if (index_condition == 0) {
         // Create a real-time display
-        velectrodecollections[index_model][index_condition]   = new CElectrodeCollection(conditions[index_condition].szname,string(""),string(""),0,0,LearningRateHist,LearningRateAverage,0.1,false,false,StatisticDisplayType,vAutoScaleChannelList);
+        velectrodecollections[index_model][index_condition]   = new CElectrodeCollection(conditions[index_condition].szname,string(""),string(""),0,0,LearningRateHist,LearningRateAverage,0.1,false,false,StatisticDisplayType,vAutoScaleChannelList,LearningRateAutoScale);
       } else {
         // Create a referenced display.
         if (conditions[index_condition].reference > 0) {
-          velectrodecollections[index_model][index_condition] = new CElectrodeCollection(conditions[index_condition].szname,"","",0,0,0,0,0,true,true,StatisticDisplayType,vAutoScaleChannelList);
+          velectrodecollections[index_model][index_condition] = new CElectrodeCollection(conditions[index_condition].szname,"","",0,0,0,0,0,true,true,StatisticDisplayType,vAutoScaleChannelList,LearningRateAutoScale);
         } else {
           // Create a averaged display.
-          velectrodecollections[index_model][index_condition] = new CElectrodeCollection(conditions[index_condition].szname,"","",0,0,0,0,0,true,false,StatisticDisplayType,vAutoScaleChannelList);
+          velectrodecollections[index_model][index_condition] = new CElectrodeCollection(conditions[index_condition].szname,"","",0,0,0,0,0,true,false,StatisticDisplayType,vAutoScaleChannelList,LearningRateAutoScale);
         }
 
       }

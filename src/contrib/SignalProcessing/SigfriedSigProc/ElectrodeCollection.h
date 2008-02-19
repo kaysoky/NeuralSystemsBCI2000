@@ -37,7 +37,7 @@ class CElectrodeRenderer;
 class CElectrodeCollection
 {
   public:
-    CElectrodeCollection(string label, string scalex="", string scaley="",float scalexvalue=0,float scaleyvalue=0,float learningratehist=0, float learningrateaverage=0, float baselineresolution=0, bool runningaverage=false, bool bcommonslider=false, int statisticdisplaytype=0, vector<int> vautoscalechannellist=vector<int>());
+    CElectrodeCollection(string label, string scalex="", string scaley="",float scalexvalue=0,float scaleyvalue=0,float learningratehist=0, float learningrateaverage=0, float baselineresolution=0, bool runningaverage=false, bool bcommonslider=false, int statisticdisplaytype=0, vector<int> vautoscalechannellist=vector<int>(), float LearningRateAverage=0);
     ~CElectrodeCollection();
 
     void                AddElectrodeCircle          (float xpos, float ypos, float zpos, string label,
@@ -336,11 +336,18 @@ class CElectrodeCollection
 
     /// Filter coefficient of the 1st-order IIR filter that is used to age
     /// the histogram of all values assigned to one electrode.
+    /// Disables histogram learning if set to 0.
     float learningratehist;
 
     /// Filter coefficient of the 1st-order IIR filter that is used to age
     /// the running value of all values assigned to one electrode.
+    /// Disables average learning if set to 0.
     float learningrateaverage;
+
+    /// Filter coefficient of the 1st-order IIR filter that is used to age
+    /// the running value of all values assigned to one electrode.
+    /// Disables autoscale if set to 0.
+    float learningrateautoscale;
 
     /// Defines the resolution of the histogram of all values assigned to
     /// one electrode.
