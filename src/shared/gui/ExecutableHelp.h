@@ -14,7 +14,6 @@
 
 #include <string>
 #include <map>
-#include "Param.h"
 
 class ExecutableHelp
 {
@@ -22,7 +21,7 @@ class ExecutableHelp
   ExecutableHelp( int );
   bool Display() const;
 
-  class HelpMap : public std::map<std::string, std::string, Param::NameCmp>
+  class HelpMap : public std::map<std::string, std::string>
   {
    public:
     void Clear()
