@@ -432,6 +432,8 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   int                              errorcode;
   int                              numSamplesInOutputDisplay;
 
+  // Destroy any existing display.
+  DestroyDisplay();
 
   // get the geometric properties of the screen
   ScreenWidth         = GetSystemMetrics( SM_CXSCREEN );
@@ -547,9 +549,6 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
       this->vAutoScaleChannelList.at(idx_channel) = idx_channel;
     }
   } // if (Parameter( "AutoScaleChannelList" )->NumValues() > 0)
-
-  // Destroy any existing display.
-  DestroyDisplay();
 
   // Create new displays that fit the new parameters.
   CreateDisplay();
