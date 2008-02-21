@@ -141,7 +141,8 @@ depending on what your filter needs to do:
 <p><tt>StartRun</tt> is called when the system enters the running state. As opposed to <tt>Initialize</tt>, which is the place for tasks that need to be performed on each parameter change, <tt>StartRun</tt> is provided for tasks that need to be performed each time the user clicks "Run" or "Resume" in the operator window. As a canonical example, the <tt>DataIOFilter</tt> opens a new <tt>.dat</tt> file from its <tt>StartRun</tt> member function.
 </p>
 <a name="StopRun"></a><h3>StopRun</h3>
-<p><tt>StopRun</tt> is called each time the system leaves the running state, entering the suspended state. Typically, this happens whenever the user clicks "Suspend" in the operator window. The <tt>DataIOFilter</tt> provides an example for its usage: This filter closes the current <tt>.dat</tt> file from its <tt>StopRun</tt> member function. <tt>StopRun</tt> is also the only function from which a filter may change a parameter value. Any parameter changes inside <tt>StopRun</tt> will propagate to the other modules without any explicit request from your side. 
+<p><tt>StopRun</tt> is called each time the system leaves the running state, entering the suspended state. Typically, this happens whenever the user clicks "Suspend" in the operator window. The <tt>DataIOFilter</tt> provides an example for its usage: This filter closes the current <tt>.dat</tt> file from its <tt>StopRun</tt> member function.
+</p><p><tt>StopRun</tt> is also the only function from which a filter may change a parameter value. Any parameter changes inside <tt>StopRun</tt> will propagate to the other modules without any explicit request from your side.
 </p>
 <a name="Resting"></a><h3>Resting</h3>
 <p><tt>Resting</tt> is called instead of <tt>Process</tt> while the system is in suspended state. 
@@ -211,5 +212,5 @@ The filter itself may still maintain its own visualization parameters and <a hre
 </ul><hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.27 secs. -->
+<!-- Served by bci2000.org in 0.21 secs. -->
 </body></html>

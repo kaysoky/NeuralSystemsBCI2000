@@ -206,7 +206,7 @@ A value of <tt>0xff000000</tt> hides the workspace boundary.
 <a name="WorkspaceBoundaryTexture"></a><h4>WorkspaceBoundaryTexture</h4>
 <p>The path to a workspace boundary texture, or empty.
 Currently, Windows BMP files are accepted as textures.
-Paths may be absolute, or relative to the executable's location.
+Paths may be absolute, or relative to the executable's working directory at startup, which usually matches the executable's location.
 </p>
 <a name="CursorWidth"></a><h4>CursorWidth</h4>
 <p>The feedback cursor's width, given in percent of screen width.
@@ -233,7 +233,7 @@ Targets are always cuboids aligned with the three coordinate axes.
 <a name="TargetTexture"></a><h4>TargetTexture</h4>
 <p>Path to a texture file to be used for targets, or empty for none.
 Currently, Windows BMP files are accepted as textures.
-Paths may be absolute, or relative to the executable's location.
+Paths may be absolute, or relative to the executable's working directory at startup, which usually matches the executable's location.
 </p>
 <a name="TestAllTargets"></a><h4>TestAllTargets</h4>
 <p>An enumerated value that determines collision test behavior:
@@ -254,8 +254,8 @@ Paths may be absolute, or relative to the executable's location.
 <a name="RenderingQuality"></a><h4>RenderingQuality</h4>
 <p>An enumerated value specifying one of the following:
 </p>
-<ul><li>0: low<br />lighting, shading, and textures are switched off, even if specified otherwise for individual objects.
-</li><li>1: high<br />lighting, shading, and textures are applied as specified.
+<ul><li>0: low<br />2D rendering. Lighting, shading, and textures are switched off, even if specified otherwise for individual objects. Also, collision detection ignores object's z position.
+</li><li>1: high<br />3D rendering. Lighting, shading, and textures are applied as specified.
 </li></ul>
 <a name="States"></a><h2>States</h2>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:ApplicationBaseStates&amp;action=edit&amp;section=1" title="Template:ApplicationBaseStates">edit</a>]</div><a name="StimulusTime"></a><h3>StimulusTime</h3>
@@ -305,5 +305,5 @@ Typically, this also implies that the cursor moves according to the <a href="BCI
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.27 secs. -->
+<!-- Served by bci2000.org in 0.26 secs. -->
 </body></html>

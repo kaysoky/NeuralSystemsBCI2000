@@ -75,7 +75,7 @@ understood, the recording session may start.
 <a name="Multiple_Sessions"></a><h2>Multiple Sessions</h2>
 <p>Once a run has ended, BCI2000 goes into suspended state.
 Further runs will be added to the session when you click <i>Resume</i>.
-</p><p>When starting the next session, don't forget to increment the <i>SessionNumber</i> parameter on the <i>Storage</i> tab. Otherwise, new runs will be added to the previous session's directory. As a safety net, BCI2000 will never overwrite existing data files, and documents date and time in the <i>StorageTime</i> parameter. This allows to later separate data files into runs even if the <i>SessionNumber</i> parameter has not been increased.
+</p><p>When starting the next session, don't forget to increment the <i>SessionNumber</i> parameter on the <i>Storage</i> tab. Otherwise, new runs will be added to the previous session's directory. Still, as a safety net, BCI2000 will never overwrite existing data files but increment the largest run number that exists in a session directory. Moreover, it documents date and time in the <i>StorageTime</i> parameter. This allows to later associate data files with multiple sessions by their time and date, even if the <i>SessionNumber</i> parameter has not been increased.
 </p>
 <a name="Finished"></a><h2>Finished</h2>
 <p>Here, the P300 speller tutorial is finished. 
@@ -102,5 +102,5 @@ Further runs will be added to the session when you click <i>Resume</i>.
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.18 secs. -->
+<!-- Served by bci2000.org in 0.17 secs. -->
 </body></html>

@@ -1,0 +1,1740 @@
+# BCI2000 Help TOC file
+# Format:
+#  Each file TOC begins with the file name on its own line.
+#  For each TOC entry in the file, there is a line in the format:
+#  <toc level> <anchor name> <displayed heading>
+#  Each file TOC is concluded with a blank line.
+
+Administrator.html
+2 Administrator_Role Administrator Role
+2 Staff Staff
+
+Administrators.html
+2 Administrator_Role Administrator Role
+2 Staff Staff
+
+BCI2000Certification.html
+2 Introduction Introduction
+2 Latencies Latencies
+3 Defining_Latencies Defining Latencies
+4 Amplifier_Latency Amplifier Latency
+4 Processing_Latency Processing Latency
+4 Output_Latency Output Latency
+4 System_Latency System Latency
+4 Block_Duration.2C_Block_Duration_Jitter Block Duration, Block Duration Jitter
+3 Measuring_Latencies Measuring Latencies
+4 Measuring_Amplifier_Latency Measuring Amplifier Latency
+4 Measuring_Processing_Latency Measuring Processing Latency
+4 Measuring_Application_Display.2FSound_Output_Latency Measuring Application Display/Sound Output Latency
+4 Measuring_System_Latency Measuring System Latency
+4 Measuring_Block_Duration Measuring Block Duration
+3 Latency_Calculation_Overview Latency Calculation Overview
+2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
+3 Set_Default_Parameters Set Default Parameters
+4 Sampling_Rate Sampling Rate
+4 Display_parameters Display parameters
+3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
+3 Setup_Sensor_Thresholds Setup Sensor Thresholds
+4 Audio_Threshold Audio Threshold
+4 Video_Threshold Video Threshold
+3 Starting_the_Software Starting the Software
+3 Setting_up_the_Optical_Sensor Setting up the Optical Sensor
+4 CursorTask CursorTask
+4 P3Speller P3Speller
+4 StimulusPresentation StimulusPresentation
+3 Running_the_Tests Running the Tests
+2 BCI2000Certification:_Additional_Information BCI2000Certification: Additional Information
+3 Overview_of_Important_Files Overview of Important Files
+4 BCI2000Certification.ini BCI2000Certification.ini
+4 BCI2000Certification.cfg BCI2000Certification.cfg
+4 latencyTest.prm latencyTest.prm
+4 BCI2000Certification.exe BCI2000Certification.exe
+4 BCI2000CertAnalysis.exe BCI2000CertAnalysis.exe
+4 Parameter_Files Parameter Files
+3 Interpreting_Results Interpreting Results
+4 What_if_a_Task_Did_Not_Pass.3F What if a Task Did Not Pass?
+2 Certification_Protocol Certification Protocol
+3 Running_the_Tests_2 Running the Tests
+2 Software_Templates Software Templates
+3 Amplifier_Latency_2 Amplifier Latency
+3 Visual_and_Audio_Latency Visual and Audio Latency
+2 Supported_Hardware Supported Hardware
+3 Supported_and_Tested_Hardware Supported and Tested Hardware
+4 Amplifiers Amplifiers
+3 Minimum_Requirements Minimum Requirements
+3 Voltage_Divider_.26_Amplifier_Input Voltage Divider &amp; Amplifier Input
+3 Digital_I.2FO_Cable Digital I/O Cable
+
+BCI2000_Binaries.html
+2 Access Access
+2 Latest_Version Latest Version
+2 Version_History Version History
+3 Version_2_Builds Version 2 Builds
+4 Feb_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" rel="nofollow">Feb 2008 Build</a>
+4 Jan_2008_Version_2_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a>
+3 Version_2_Preview_Builds Version 2 Preview Builds
+3 Version_1_Builds Version 1 Builds
+
+BCI2000_Glossary.html
+2 Control_Signal Control Signal
+2 Core_Module Core Module
+2 Module Module
+2 Operator_Module Operator Module
+2 Parameter Parameter
+2 Roundtrip Roundtrip
+2 Run Run
+2 Sample_Block Sample Block
+2 Session Session
+2 Source_Signal Source Signal
+2 State State
+2 State_Vector State Vector
+2 Trial Trial
+2 Visualization Visualization
+
+BCI2000_Help.html
+
+BCPy2000.html
+
+Contributions%253AADCs.html
+2 See_also See also
+
+Contributions%253AApplications.html
+2 See_also See also
+
+Contributions%253ABCITimeFrequency.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Manual Manual
+2 See_also See also
+
+Contributions%253ABCIdiff.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Usage Usage
+2 See_also See also
+
+Contributions%253ABatch.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 See_also See also
+
+Contributions%253ABioRadioADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Installation Installation
+2 Parameters Parameters
+3 VoltageRange VoltageRange
+3 COMPort COMPort
+3 ConfigPath ConfigPath
+2 States States
+2 See_also See also
+
+Contributions%253ABiosemi2ADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+3 PostfixTriggers PostfixTriggers
+3 TriggerScaleMultiplier TriggerScaleMultiplier
+2 States States
+3 BatteryLow BatteryLow
+3 Mode Mode
+3 MK2 MK2
+2 See_also See also
+
+Contributions%253AContents.html
+2 Code_available_in_the_Contribution_section Code available in the Contribution section
+2 How_to_use_contributions How to use contributions
+2 How_to_contribute How to contribute
+2 Licensing_Issues Licensing Issues
+
+Contributions%253AContribution_Wiki_Template.html
+
+Contributions%253ADAS_ADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Boards_Tested Boards Tested
+2 Parameters Parameters
+3 BoardNumber BoardNumber
+3 ADRange ADRange
+2 States States
+2 See_also See also
+
+Contributions%253ADTADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Installation Installation
+2 Parameters Parameters
+3 SoftwareChBoard1 SoftwareChBoard1
+3 SoftwareChBoard2 SoftwareChBoard2
+3 BoardName BoardName
+3 BoardName2 BoardName2
+2 States States
+2 See_also See also
+
+Contributions%253ADataGlove5DTUFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Vendor Vendor
+2 Integration_into_BCI2000 Integration into BCI2000
+2 Parameters Parameters
+2 State_Variables State Variables
+2 See_also See also
+
+Contributions%253AFIRFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 FIRWindows FIRWindows
+3 FIRDetrend FIRDetrend
+3 Integration Integration
+3 FIRFilteredChannels FIRFilteredChannels
+3 FIRFilterKernal FIRFilterKernal
+3 VisualizeTemporalFiltering VisualizeTemporalFiltering
+2 States States
+2 See_also See also
+
+Contributions%253AFileWriters.html
+2 See_also See also
+
+Contributions%253AGenerateCalibration.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 See_also See also
+
+Contributions%253AMFCdemo.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Remarks Remarks
+2 See_also See also
+
+Contributions%253AMicromedADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+3 NotchFilter NotchFilter
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 ServerAddress ServerAddress
+3 SignalType SignalType
+3 SourceCh SourceCh
+2 States States
+2 See_also See also
+
+Contributions%253AModularEEG.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Data_Storage.2FCalibration Data Storage/Calibration
+2 Parameters Parameters
+3 ComPort ComPort
+3 Protocol Protocol
+3 SimulateEEG SimulateEEG
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceCh SourceCh
+2 States States
+2 See_also See also
+
+Contributions%253ANIADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 BoardNumber BoardNumber
+2 States States
+2 Comments Comments
+2 See_also See also
+
+Contributions%253ANeuroscanADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+3 Neuroscan_Source_Module Neuroscan Source Module
+3 Undocumented_Communication Undocumented Communication
+4 Request_Basic_Information Request Basic Information
+4 Receive_16-bit_Data_Packet Receive 16-bit Data Packet
+2 Parameters Parameters
+3 ServerAddress ServerAddress
+2 States States
+3 NeuroscanEvent1 NeuroscanEvent1
+2 The_neurogetparams_Command_Line_Tool The <tt>neurogetparams</tt> Command Line Tool
+2 See_also See also
+
+Contributions%253AP300GUI.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Further_information Further information
+2 See_also See also
+
+Contributions%253APeakDetector.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 PosPeakThreshold PosPeakThreshold
+3 NegPeakThreshold NegPeakThreshold
+3 HistoryLength HistoryLength
+3 TargetChannelPos TargetChannelPos
+3 TargetChannelNeg TargetChannelNeg
+3 VisualizePeakDetector VisualizePeakDetector
+2 States States
+2 See_also See also
+
+Contributions%253ARDAClientADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 SourceCh SourceCh
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 HostName HostName
+2 States States
+2 getparams_Tool <tt>getparams</tt> Tool
+2 See_also See also
+
+Contributions%253ASWSignalProcessing.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Source_Code_Revisions Source Code Revisions
+2 Description Description
+3 Temporal_SW-Filter Temporal SW-Filter
+4 Parameters Parameters
+4 States States
+3 Baseline_Setting Baseline Setting
+4 Parameters_2 Parameters
+4 States_2 States
+3 Artifact_Correction Artifact Correction
+4 Parameters_3 Parameters
+4 States_3 States
+2 See_also See also
+
+Contributions%253ASigfriedSigProc.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 AutoScaleChannelList AutoScaleChannelList
+3 CircleRadius CircleRadius
+3 ElectrodeCondition ElectrodeCondition
+3 ElectrodeLocation ElectrodeLocation
+3 FeedbackType FeedbackType
+3 LearningRateAutoScale LearningRateAutoScale
+3 LearningRateAverage LearningRateAverage
+3 LearningRateHist LearningRateHist
+3 MemWindows MemWindows
+3 ModelFiles ModelFiles
+3 ScoreType ScoreType
+3 StatisticDisplayType StatisticDisplayType
+3 VisualizeSigfried VisualizeSigfried
+2 States States
+2 Methodology Methodology
+3 Methodology_Concept Methodology Concept
+3 Methodology_Outline Methodology Outline
+3 Methodology_Step_By_Step Methodology Step By Step
+4 Step_1:_Record_Baseline_Data Step 1: Record Baseline Data
+4 Step_2:_Build_Model Step 2: Build Model
+5 Feature_Extraction Feature Extraction
+5 Model_Estimation Model Estimation
+4 Step_3:_Apply_Model Step 3: Apply Model
+5 Visual_Representation Visual Representation
+2 Tutorial Tutorial
+3 Step_0:_Compile_BCI2000_with_SigfriedSigProc Step 0: Compile BCI2000 with SigfriedSigProc
+3 Step_1:_Baseline_Recording Step 1: Baseline Recording
+3 Step_2:_Build_Model_2 Step 2: Build Model
+3 Step_3:_Run_SigfriedSigProc Step 3: Run SigfriedSigProc
+2 See_also See also
+
+Contributions%253ASignalProcessing.html
+2 See_also See also
+
+Contributions%253ASlowWaveApp.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 See_also See also
+
+Contributions%253ASpeller.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+2 States States
+2 See_also See also
+
+Contributions%253AStatistics.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Parameters_and_states Parameters and states
+2 See_also See also
+
+Contributions%253ATDTADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Installation_and_Requirements Installation and Requirements
+3 Install_TDT_Drivers Install TDT Drivers
+3 Install_TDT_ActiveX_Library Install TDT ActiveX Library
+2 Parameters Parameters
+3 Circuit_Name_and_Circuit_Path Circuit Name and Circuit Path
+3 HPFfreq HPFfreq
+3 LPFfreq LPFfreq
+3 notchBW notchBW
+3 nProcessorsBoard1 nProcessorsBoard1
+3 nProcessorsBoard2 nProcessorsBoard2
+3 SampleBlockSize SampleBlockSize
+3 SampleRate SampleRate
+3 SourceCh SourceCh
+3 SoftwareChBoard1 SoftwareChBoard1
+3 SoftwareChBoard2 SoftwareChBoard2
+3 TDTgain TDTgain
+2 States States
+2 TDTSampleRate TDTSampleRate
+2 Additional_Information Additional Information
+2 See_also See also
+
+Contributions%253ATMSiADC.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Parameters Parameters
+3 SoftwareChList SoftwareChList
+3 SamplingRate.2C_SampleBlockSize SamplingRate, SampleBlockSize
+2 States States
+2 See_also See also
+
+Contributions%253ATools.html
+2 See_also See also
+
+Creating_a_User_Account.html
+2 Do-it_yourself_Account_Management Do-it yourself Account Management
+3 Creating_a_new_account Creating a new account
+3 .22Upgrading.22_bciro "Upgrading" bciro
+2 Restrictions Restrictions
+3 Default_user_rights Default user rights
+3 Resetting.2Frecovering_a_password Resetting/recovering a password
+
+Gerwin_Schalk.html
+
+Glossary.html
+2 r2_.28Coefficient_of_Determination.29 <span class="texhtml"><i>r</i><sup>2</sup></span> (Coefficient of Determination)
+
+Jürgen_Mellinger.html
+
+MARIO%253AContents.html
+
+MARIO_Technical_Documentation.html
+2 MARIO_Architecture MARIO Architecture
+2 Data_Import_Module Data Import Module
+2 Data_Conditioning_Module Data Conditioning Module
+2 Feature_Extraction_Module Feature Extraction Module
+2 Spectral_Extimation_Module_.28for_Mu_rhythm_analysis.29 Spectral Extimation Module <i>(for Mu rhythm analysis)</i>
+2 Statistical_Analysis_Module Statistical Analysis Module
+2 Visualization_Module Visualization Module
+
+Main_Page.html
+2 News:_Version_2_Released News: Version 2 Released
+2 Getting_Started_with_BCI2000  Getting Started with BCI2000 
+2 User_Tutorials User Tutorials
+2 User_Reference_Manual User Reference Manual
+2 Technical_Reference Technical Reference
+2 Programming_Reference Programming Reference
+2 Contributions Contributions
+2 Additional_Information Additional Information
+2 BCI2000_Publications BCI2000 Publications
+
+Mu_Rhythm_Off-line_Analysis_Tutorial.html
+2 Starting_an_Analysis_Session  Starting an Analysis Session 
+2 Opening_Files_with_Mario  Opening Files with Mario 
+2 Selecting_Channels  Selecting Channels 
+2 Selecting_the_Spatial_Filter  Selecting the Spatial Filter 
+2 Feature_Extraction_Analysis  Feature Extraction Analysis 
+2 View_Results  View Results 
+3 R-square_Matrix  R-square Matrix 
+3 Power_Spectra_and_Topographic_Plots  Power Spectra and Topographic Plots 
+3 Interpretation_of_the_Results Interpretation of the Results
+2 Improving_the_Analysis Improving the Analysis
+2 Analyzing_the_Screening  Analyzing the Screening 
+2 Conclusions Conclusions
+2 Troubleshooting Troubleshooting
+
+P300_Off-line_Analysis_Tutorial.html
+2 Starting_an_Analysis_Session Starting an Analysis Session
+2 Opening_Files_with_Mario Opening Files with Mario
+2 Selecting_Channels Selecting Channels
+2 Selecting_the_Spatial_Filter Selecting the Spatial Filter 
+2 Feature_Extraction_Analysis Feature Extraction Analysis
+2 View_results View results
+3 R-square_Matrix R-square Matrix
+3 Amplitude_Waveform Amplitude Waveform
+3 ERP_Response ERP Response
+3 String_Prediction String Prediction
+
+Programming_Howto%253ABuilding_BCI2000.html
+2 Why_to_build  Why to build 
+2 Tools_required  Tools required 
+2 How_to_build How to build
+3 Building_BCI2000_from_the_command_line Building BCI2000 from the command line
+3 Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE Building BCI2000 using the Borland C++ Builder 6 IDE
+3 Starting_up_BCI2000 Starting up BCI2000
+3 Compiling_BCI2000_with_Borland_C.2B.2B_Builder_2006.2F2007 Compiling BCI2000 with Borland C++ Builder 2006/2007
+3 Building_Contributions Building Contributions
+4 From_the_command_line From the command line
+4 From_the_IDE From the IDE
+
+Programming_Howto%253ASVN_Client_Setup.html
+2 Setting_up_TortoiseSVN_to_access_the_BCI2000_code_repository  Setting up TortoiseSVN to access the BCI2000 code repository 
+2 Checking_out_older_versions  Checking out older versions 
+2 Working_on_Branches  Working on Branches 
+2 Troubleshooting Troubleshooting
+2 See_also See also
+
+Programming_Howto%253AUsing_TortoiseSVN.html
+2 Using_TortoiseSVN_for_Day-to-Day_Tasks  Using TortoiseSVN for Day-to-Day Tasks 
+3 Updating_to_the_latest_version_of_the_BCI2000_project  Updating to the latest version of the BCI2000 project 
+3 Caveats Caveats
+3 Committing_.28i.e..2C_writing_back.29_changes_you_made  Committing (i.e., writing back) changes you made 
+3 Adding_new_files  Adding new files 
+2 Comparison_with_other_Versioning_Software  Comparison with other Versioning Software 
+3 TortoiseSVN_vs._MS_VisualSourceSafe  TortoiseSVN vs. MS VisualSourceSafe 
+3 SVN_vs._CVS  SVN vs. CVS 
+2 See_also See also
+
+Programming_Reference%253A3D_API.html
+2 Introduction Introduction
+2 The_3D_Environment The 3D Environment
+3 Predefined_Graphic_Primitives Predefined Graphic Primitives
+3 Custom_Graphic_Primitives Custom Graphic Primitives
+3 3D_Text 3D Text
+3 Camera Camera
+3 Light_Source Light Source
+3 The_2D_Overlay The 2D Overlay
+4 Overlay_Picture Overlay Picture
+4 2D_Text 2D Text
+4 2D_Cursor 2D Cursor
+2 See_also See also
+
+Programming_Reference%253ABCI2000_Source_Code.html
+2 Version_Management Version Management
+2 Browsing_the_Source_Code_Repository_Online Browsing the Source Code Repository Online
+2 TortoiseSVN_Client  TortoiseSVN Client 
+2 Howto_Pages Howto Pages
+2 Directory_Layout Directory Layout
+2 Coding_Guidelines Coding Guidelines
+
+Programming_Reference%253AContents.html
+2 Getting_Started Getting Started
+2 Conceptual_Overview Conceptual Overview
+2 Programming_Interface_Documentation Programming Interface Documentation
+2 Tutorials Tutorials
+2 See_also See also
+
+Programming_Reference%253ACpp_Coding_Style.html
+2 Line_Formatting  Line Formatting 
+2 Naming  Naming 
+3 Name_prefixes  Name prefixes 
+2 Variable_Declaration Variable Declaration
+2 Memory_Allocation Memory Allocation
+2 Pointers_and_References Pointers and References
+2 Control_Flow Control Flow
+2 Example_Function  Example Function 
+2 See_also See also
+
+Programming_Reference%253ADebug_Output.html
+2 Debugging_Stream_bcidbg Debugging Stream <tt>bcidbg</tt>
+2 The_Debug_Level The Debug Level
+3 Message_Debug_Level Message Debug Level
+3 Global_Debug_Level Global Debug Level
+2 See_also See also
+
+Programming_Reference%253AEnvironment_Class.html
+2 Your_code.27s_Environment Your code's <tt>Environment</tt>
+2 Access_to_Parameters_and_States Access to Parameters and States
+2 Working_around_Borland_VCL_Inheritance_Restrictions Working around Borland VCL Inheritance Restrictions
+2 See_also See also
+
+Programming_Reference%253AError_Handling.html
+2 Handling_Errors Handling Errors
+3 Types_of_Errors Types of Errors
+3 Parameter_Setup_Errors Parameter Setup Errors
+4 Definition_of_the_Term Definition of the Term
+4 Strategies Strategies
+4 User_Interface_Details User Interface Details
+3 Runtime_Errors Runtime Errors
+4 Definition_of_the_Term_2 Definition of the Term
+4 Strategies_2 Strategies
+4 User_Interface_Details_2 User Interface Details
+3 Logic_Errors Logic Errors
+4 Definition_of_the_Term_3 Definition of the Term
+4 Strategies_3 Strategies
+4 User_Interface_Details_3 User Interface Details
+2 Implementation_Details Implementation Details
+3 Interface_to_the_Programmer Interface to the Programmer
+4 Reporting_Errors Reporting Errors
+4 Checking_Parameters Checking Parameters
+4 Accessing_Environment_Objects Accessing Environment Objects
+3 Implementation_on_the_Framework_Side Implementation on the Framework Side
+2 See_also See also
+
+Programming_Reference%253AErrors_and_Warnings.html
+2 Output_Streams Output Streams
+2 Writing_into_Error_and_Warning_Streams Writing into Error and Warning Streams
+2 Convenience_Macros Convenience Macros
+2 Throwing_Exceptions Throwing Exceptions
+2 See_also See also
+
+Programming_Reference%253AFilter_Chain.html
+2 The_Filter_Chain The Filter Chain
+2 Filter_Instantiation Filter Instantiation
+2 Signal_Processing_Filter_Instantiation Signal Processing Filter Instantiation
+
+Programming_Reference%253AGenericFilter_Class.html
+2 The_GenericFilter_class The <tt>GenericFilter</tt> class
+2 Required_Members Required Members
+3 Constructor Constructor
+3 Preflight Preflight
+3 Process Process
+2 Optional_Member_Functions Optional Member Functions
+3 StartRun StartRun
+3 StopRun StopRun
+3 Resting Resting
+3 Halt Halt
+3 Destructor Destructor
+3 AllowsVisualization AllowsVisualization
+2 Rules_for_Parameter_and_State_access Rules for Parameter and State access
+
+Programming_Reference%253AGenericVisualization_Class.html
+2 Presenting_data_to_the_operator_user Presenting data to the operator user
+
+Programming_Reference%253ALocalization.html
+2 Introduction  Introduction 
+2 Strategies  Strategies 
+2 Implementation  Implementation 
+3 Interface_to_the_operator_user  Interface to the operator user 
+3 Interface_to_the_programmer Interface to the programmer
+3 Further_implementation_details Further implementation details
+
+Programming_Reference%253AMatlabFilter.html
+2 Filter_Interface Filter Interface
+2 Accessing_Parameters_and_States Accessing Parameters and States
+2 Declaring_Parameters_and_States Declaring Parameters and States
+2 Signal_Format Signal Format
+2 Error_Reporting Error Reporting
+2 Combining_with_BCI2000_Signal_Processing_Filters Combining with BCI2000 Signal Processing Filters
+2 Troubleshooting Troubleshooting
+3 Debugging_your_scripts Debugging your scripts
+3 Matlab_doesn.27t_find_your_scripts Matlab doesn't find your scripts
+3 There_is_no_Matlab_engine_started_up There is no Matlab engine started up
+3 Changes_to_script_files_appear_to_have_no_effect Changes to script files appear to have no effect
+3 You_get_linker_errors_when_rebuilding_MatlabSignalProcessing You get linker errors when rebuilding <i>MatlabSignalProcessing</i>
+2 See_also See also
+
+Programming_Reference%253AProject_Settings.html
+2 Pre-Compiled_Headers Pre-Compiled Headers
+3 PCH_Policy_in_BCI2000 PCH Policy in BCI2000
+2 See_also  See also 
+
+Programming_Reference%253ARapid_Development.html
+2 Templates Templates
+2 Helper_Classes Helper Classes
+2 Matlab_Integration Matlab Integration
+
+Programming_Reference%253ASignals.html
+2 Signals Signals
+2 Signal_Properties Signal Properties
+
+Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html
+2 Scenario Scenario
+2 Writing_the_ADC_Header_File Writing the ADC Header File
+2 ADC_Implementation ADC Implementation
+2 ADC_Initialization ADC Initialization
+2 Data_Acquisition Data Acquisition
+2 Adding_the_SourceFilter Adding the <i>SourceFilter</i>
+2 Finished Finished
+
+Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html
+2 A_simple_low_pass_filter A simple low pass filter
+2 The_filter_skeleton The filter skeleton
+2 The_Process_function The <tt>Process</tt> function
+2 The_Initialize_member_function The <tt>Initialize</tt> member function
+2 The_Preflight_function The <tt>Preflight</tt> function
+2 Constructor_and_destructor Constructor and destructor
+2 Filter_instantiation Filter instantiation
+2 Visualizing_filter_output Visualizing filter output
+
+Special%253AAllpages.html
+
+Technical_Reference%253AApp_Connector.html
+2 Introduction Introduction
+3 Scope Scope
+3 Design Design
+2 Description Description
+2 Protocol Protocol
+2 Examples Examples
+2 Parameterization_from_within_BCI2000 Parameterization from within BCI2000
+2 Examples_2 Examples
+3 BCI2000_example_code BCI2000 example code
+3 An_external_application_reading_information_from_BCI2000.2C_running_locally An external application reading information from BCI2000, running locally
+3 An_external_application_reading_information_from_BCI2000.2C_running_on_a_remote_machine An external application reading information from BCI2000, running on a remote machine
+3 An_external_application_sending_information_to_BCI2000.2C_running_locally An external application sending information to BCI2000, running locally
+3 An_external_application_sending_information_to_BCI2000.2C_running_on_a_remote_machine An external application sending information to BCI2000, running on a remote machine
+2 See_also See also
+
+Technical_Reference%253ABCI2000_File_Format.html
+2 Header Header
+3 Meta_Information Meta Information
+3 State_Definitions State Definitions
+3 Parameter_Definitions Parameter Definitions
+3 Summary Summary
+2 Binary_Data Binary Data
+2 Required_Parameters Required Parameters
+3 Section_Source Section Source
+3 Section_Storage Section Storage
+3 Section_System Section System
+2 Required_States Required States
+2 Software_Components Software Components
+2 See_also See also
+
+Technical_Reference%253ABCI2000_Messages.html
+3 Protocol_Definition Protocol Definition
+3 Overview_of_Content_Descriptors Overview of Content Descriptors
+3 Descriptor.3D0:_Protocol_Version Descriptor=0: Protocol Version
+3 Descriptor.3D1:_Status_Information_Format Descriptor=1: Status Information Format
+3 Descriptor.3D2:_Parameter_Format Descriptor=2: Parameter Format
+3 Descriptor.3D3:_State_Format Descriptor=3: State Format
+3 Descriptor.3D4:_Visualization_and_Brain_Signal_Data_Format Descriptor=4: Visualization and Brain Signal Data Format
+4 Brain_Signal_Format Brain Signal Format
+4 Control_Signal_Format Control Signal Format
+3 Descriptor.3D5:_State_Vector Descriptor=5: State Vector
+3 Descriptor.3D6:_System_Command Descriptor=6: System Command
+2 See_also See also
+
+Technical_Reference%253AContents.html
+2 System_Design_and_Communication_Protocol System Design and Communication Protocol
+2 Transmission_Protocol_Specification Transmission Protocol Specification
+2 File_Format_Specifications File Format Specifications
+2 External_Interfaces External Interfaces
+
+Technical_Reference%253ACore_Modules.html
+2 Data_Acquisition_Module Data Acquisition Module
+2 Signal_Processing_Module Signal Processing Module
+3 Overview Overview
+3 Goals Goals
+3 Assumptions_and_Dependencies Assumptions and Dependencies
+2 Application_Module Application Module
+2 See_also See also
+
+Technical_Reference%253AParameter_Definition.html
+2 Parameter_Concept Parameter Concept
+2 Parameter_Lines Parameter Lines
+3 Data_Types Data Types
+3 Special_Characters Special Characters
+2 Sub-parameters Sub-parameters
+2 Display_Format Display Format
+3 .28enumeration.29 <tt>(enumeration)</tt>
+3 .28boolean.29 <tt>(boolean)</tt>
+3 .28inputfile.29.28outputfile.29.28directory.29 <tt>(inputfile)(outputfile)(directory)</tt>
+3 .28color.29 <tt>(color)</tt>
+2 Grouping_Parameters_into_Sections Grouping Parameters into Sections
+2 See_also See also
+
+Technical_Reference%253AParameter_File.html
+2 See_also See also
+
+Technical_Reference%253AState_Definition.html
+2 State_Concept State Concept
+2 State_Vector State Vector
+2 State_Lines State Lines
+2 See_also See also
+
+Technical_Reference%253AStates_of_Operation.html
+3 State_Diagram State Diagram
+2 System_Startup System Startup
+3 Introduction Introduction
+3 Startup_Sequence Startup Sequence
+3 Publishing_Phase Publishing Phase
+2 System_Initialization System Initialization
+3 Information_Phase Information Phase
+3 Preflight_Phase Preflight Phase
+3 Initialization_Phase Initialization Phase
+2 System_is_Suspended System is Suspended
+2 System_is_Running System is Running
+2 System_Termination System Termination
+
+Technical_Reference%253ASystem_Design.html
+2 Overview Overview
+2 Core-Operator_Communication Core-Operator Communication
+3 Introduction Introduction
+3 Status_Information_Messages Status Information Messages
+3 Parameter_Messages Parameter Messages
+3 State_Messages State Messages
+3 Visualization_Messages Visualization Messages
+3 System_Command_Messages System Command Messages
+2 Inter-Core_Communication Inter-Core Communication
+3 Introduction_2 Introduction
+3 State_Vector_Messages State Vector Messages
+3 Brain_Signal_Messages Brain Signal Messages
+3 Control_Signal_Messages Control Signal Messages
+2 See_also See also
+
+User_Reference%253AARFilter.html
+2 Function Function
+3 Obtaining_a_discrete_spectrum_from_an_AR_model Obtaining a discrete spectrum from an AR model
+2 Parameters Parameters
+3 WindowLength WindowLength
+3 Detrend Detrend
+3 ModelOrder ModelOrder
+3 OutputType OutputType
+3 FirstBinCenter FirstBinCenter
+3 LastBinCenter LastBinCenter
+3 BinWidth BinWidth
+3 EvaluationsPerBin EvaluationsPerBin
+2 States States
+2 Examples Examples
+2 See_also See also
+
+User_Reference%253AAlignmentFilter.html
+2 Function Function
+2 Parameters Parameters
+3 AlignChannels AlignChannels
+3 SourceChTimeOffset SourceChTimeOffset
+2 States States
+2 Example Example
+
+User_Reference%253ABCI2000Export.html
+2 General_Usage General Usage
+2 ASCII_Export ASCII Export
+2 BrainVisionAnalyzer_Import BrainVisionAnalyzer Import
+
+User_Reference%253ABCI2000FileInfo.html
+2 Viewing_and_Saving_Parameters Viewing and Saving Parameters
+2 Opening_Files Opening Files
+2 See_also See also
+
+User_Reference%253ABCI2000FileWriter.html
+2 Function Function
+2 Parameters Parameters
+3 Common_Data_Storage_Parameters Common Data Storage Parameters
+4 DataDirectory DataDirectory
+4 SubjectName SubjectName
+4 SubjectSession SubjectSession
+4 SubjectRun SubjectRun
+4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
+3 BCI2000FileWriter_Specific_Parameters BCI2000FileWriter Specific Parameters
+4 SavePrmFile SavePrmFile
+4 StorageTime StorageTime
+2 States States
+2 See_also See also
+
+User_Reference%253ABCI2000Launcher.html
+2 Introduction Introduction
+2 Using_BCI2000Launcher Using BCI2000Launcher
+3 Organizing_BCI2000_Modules Organizing BCI2000 Modules
+3 Selecting_Parameter_Files Selecting Parameter Files
+3 Starting_a_BCI2000_Session Starting a BCI2000 Session
+
+User_Reference%253ABCI2000Viewer.html
+2 Opening_Files Opening Files
+2 Browsing Browsing
+2 Selecting_States_and_Channels_for_Display Selecting States and Channels for Display
+2 Display_Properties Display Properties
+2 See_also See also
+
+User_Reference%253ABCI2000_Offline_Analysis.html
+2 Installing_and_Running  Installing and Running 
+3 Systems_with_MATLAB_v7.0_or_greater_installed Systems with MATLAB v7.0 or greater installed
+4 Startup_Script Startup Script
+4 From_the_MATLAB_command_line From the MATLAB command line
+3 Systems_that_do_not_have_MATLAB_installed_or_with_versions_that_predate_MATLAB_v7.0 Systems that do not have MATLAB installed or with versions that predate MATLAB v7.0
+2 Reference  Reference 
+2 Troubleshooting  Troubleshooting 
+
+User_Reference%253ACommand_Line_Processing.html
+2 Introduction Introduction
+2 Command_line_interfaces Command line interfaces
+2 Building_BCI2000_command_line_tools Building BCI2000 command line tools
+2 Stream_format Stream format
+3 Conversion_into_stream_format Conversion into stream format
+4 bci_dat2stream <tt>bci_dat2stream</tt>
+4 bci_prm2stream <tt>bci_prm2stream</tt>
+3 Conversion_from_stream_format Conversion from stream format
+4 bci_stream2prm <tt>bci_stream2prm</tt>
+4 bci_stream2asc <tt>bci_stream2asc</tt>
+4 bci_stream2table <tt>bci_stream2table</tt>
+4 bci_stream2mat <tt>bci_stream2mat</tt>
+2 Applying_BCI2000_filters_to_streams Applying BCI2000 filters to streams
+3 Compiling_an_existing_filter_as_a_command_line_tool Compiling an existing filter as a command line tool
+3 Off-line_only_filters Off-line only filters
+2 Examples Examples
+3 Extracting_parameters Extracting parameters
+3 Processing_data_with_parameters_different_from_the_ones_contained_in_the_file Processing data with parameters different from the ones contained in the file
+3 Processing_data_with_BCI2000_filters_and_importing_the_results_into_Matlab Processing data with BCI2000 filters and importing the results into Matlab
+3 Exporting_BCI2000_data_into_a_table_suitable_for_import_into_other_applications_.28MS_Excel.2C_SPSS.29 Exporting BCI2000 data into a table suitable for import into other applications (MS Excel, SPSS)
+3 Testing_a_modified_filter_on_existing_data Testing a modified filter on existing data
+2 Further_information Further information
+
+User_Reference%253AConditionalIntegrator.html
+2 Function Function
+2 Parameters Parameters
+3 IntegrationCondition IntegrationCondition
+2 States States
+2 Example Example
+2 See_also See also
+
+User_Reference%253AConnectorFilters.html
+2 Function Function
+3 Filter_Placement Filter Placement
+3 Detailed_Description Detailed Description
+2 Parameters Parameters
+3 ConnectorInputAddress ConnectorInputAddress
+3 ConnectorInputFilter ConnectorInputFilter
+3 ConnectorOutputAddress ConnectorOutputAddress
+2 States States
+2 See_also See also
+
+User_Reference%253AConnectorInput.html
+2 Function Function
+3 Filter_Placement Filter Placement
+3 Detailed_Description Detailed Description
+2 Parameters Parameters
+3 ConnectorInputAddress ConnectorInputAddress
+3 ConnectorInputFilter ConnectorInputFilter
+3 ConnectorOutputAddress ConnectorOutputAddress
+2 States States
+2 See_also See also
+
+User_Reference%253AConnectorOutput.html
+2 Function Function
+3 Filter_Placement Filter Placement
+3 Detailed_Description Detailed Description
+2 Parameters Parameters
+3 ConnectorInputAddress ConnectorInputAddress
+3 ConnectorInputFilter ConnectorInputFilter
+3 ConnectorOutputAddress ConnectorOutputAddress
+2 States States
+2 See_also See also
+
+User_Reference%253AContents.html
+2 Using_the_Online_System Using the Online System
+2 Configuring_the_Online_System Configuring the Online System
+2 Using_BCI2000_Tools Using BCI2000 Tools
+
+User_Reference%253ACursorTask.html
+2 Synopsis Synopsis
+2 Functional_Description Functional Description
+3 Timeline Timeline
+3 Introduction Introduction
+3 Visual_Representation Visual Representation
+2 Parameters Parameters
+3 Sequencing Sequencing
+4 PreRunDuration PreRunDuration
+4 PreFeedbackDuration PreFeedbackDuration
+4 FeedbackDuration FeedbackDuration
+4 PostFeedbackDuration PostFeedbackDuration
+4 ITIDuration ITIDuration
+4 MinRunLength MinRunLength
+4 NumberTargets NumberTargets
+4 MaxFeedbackDuration MaxFeedbackDuration
+3 Visual_Appearance Visual Appearance
+4 CameraPos CameraPos
+4 CameraAim CameraAim
+4 CameraProjection CameraProjection
+4 LightSourcePos LightSourcePos
+4 LightSourceColor LightSourceColor
+4 WorkspaceBoundaryColor WorkspaceBoundaryColor
+4 WorkspaceBoundaryTexture WorkspaceBoundaryTexture
+4 CursorWidth CursorWidth
+4 CursorColorFront.2C_CursorColorBack CursorColorFront, CursorColorBack
+4 CursorTexture CursorTexture
+4 CursorPos CursorPos
+4 Targets Targets
+4 TargetColor TargetColor
+4 TargetTexture TargetTexture
+4 TestAllTargets TestAllTargets
+3 Window_Properties Window Properties
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
+4 WindowBitDepth WindowBitDepth
+4 RenderingQuality RenderingQuality
+2 States States
+3 StimulusTime StimulusTime
+3 TargetCode TargetCode
+3 ResultCode ResultCode
+3 Feedback Feedback
+3 CursorPosX.2C_CursorPosY.2C_CursorPosZ CursorPosX, CursorPosY, CursorPosZ
+2 See_also See also
+
+User_Reference%253ADataIOFilter.html
+2 Function Function
+2 Parameters Parameters
+3 Data_Acquisition Data Acquisition
+4 SourceCh SourceCh
+4 SampleBlockSize SampleBlockSize
+4 SamplingRate SamplingRate
+4 ChannelNames ChannelNames
+4 SourceChOffset.2C_SourceChGain SourceChOffset, SourceChGain
+3 Common_Data_Storage_Parameters Common Data Storage Parameters
+4 DataDirectory DataDirectory
+4 SubjectName SubjectName
+4 SubjectSession SubjectSession
+4 SubjectRun SubjectRun
+4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
+3 Visualization Visualization
+4 VisualizeTiming VisualizeTiming
+4 VisualizeSource VisualizeSource
+4 VisualizeSourceDecimation VisualizeSourceDecimation
+4 VisualizeSourceTime VisualizeSourceTime
+4 SourceMin.2C_SourceMax SourceMin, SourceMax
+2 States States
+3 Running Running
+3 Recording Recording
+3 SourceTime SourceTime
+3 StimulusTime StimulusTime
+2 See_also See also
+
+User_Reference%253AData_File_Formats.html
+2 General_Information General Information
+2 BCI2000_File_Format BCI2000 File Format
+2 Null_File_Format Null File Format
+2 EDF_File_Format EDF File Format
+4 References References
+2 GDF_File_Format GDF File Format
+4 References_2 References
+2 See_also See also
+
+User_Reference%253AEDFFileWriter.html
+2 Function Function
+2 Parameters Parameters
+3 Common_Data_Storage_Parameters Common Data Storage Parameters
+4 DataDirectory DataDirectory
+4 SubjectName SubjectName
+4 SubjectSession SubjectSession
+4 SubjectRun SubjectRun
+4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
+3 EDFFileWriter_Specific_Parameters EDFFileWriter Specific Parameters
+4 SavePrmFile SavePrmFile
+4 SubjectYearOfBirth SubjectYearOfBirth
+4 SubjectSex SubjectSex
+4 LabID LabID
+4 TechnicianID TechnicianID
+4 EquipmentID EquipmentID
+4 TransducerType TransducerType
+4 SignalUnit SignalUnit
+2 States States
+2 See_also See also
+
+User_Reference%253AEEGLabImport.html
+
+User_Reference%253AEloc_Helper.html
+2 Installing_and_Running  Installing and Running 
+3 Systems_with_MATLAB_v7.0_or_greater_installed Systems with MATLAB v7.0 or greater installed
+4 Startup_Script Startup Script
+4 From_the_MATLAB_command_line From the MATLAB command line
+3 Systems_that_do_not_have_MATLAB_installed_or_with_versions_that_predate_MATLAB_v7.0 Systems that do not have MATLAB installed or with versions that predate MATLAB v7.0
+2 Reference  Reference 
+3 Menus_and_Buttons  Menus and Buttons 
+3 Fields  Fields 
+2 Troubleshooting  Troubleshooting 
+
+User_Reference%253AExpressionFilter.html
+2 Function Function
+2 Parameters Parameters
+3 WarningExpression WarningExpression
+3 Expressions Expressions
+2 States States
+2 Examples Examples
+2 See_also See also
+
+User_Reference%253AExpression_Syntax.html
+3 Syntactic_Elements Syntactic Elements
+4 .22Real.22_Numbers "Real" Numbers
+4 Operators Operators
+4 States States
+4 Signal_Values Signal Values
+3 Examples Examples
+3 Caveats Caveats
+
+User_Reference%253AFFTFilter.html
+2 Function Function
+3 Obtaining_FFTW3 Obtaining FFTW3
+2 Parameters Parameters
+3 FFTOutputSignal FFTOutputSignal
+3 FFTInputChannels FFTInputChannels
+3 FFTWindowLength FFTWindowLength
+3 FFTWindow FFTWindow
+3 VisualizeFFT VisualizeFFT
+2 States States
+2 See_also See also
+
+User_Reference%253AFilters.html
+2 Data_Processing_as_a_Pipe Data Processing as a Pipe
+2 Configuration_Overview Configuration Overview
+2 Data_Acquisition_Module Data Acquisition Module
+3 General_Filters General Filters
+3 Data_Acquisition Data Acquisition
+3 Data_Storage Data Storage
+2 Signal_Processing_Module Signal Processing Module
+3 Feature_Extraction Feature Extraction
+3 Translation_Algorithm Translation Algorithm
+3 Miscellaneous_Filters Miscellaneous Filters
+2 Application_Module Application Module
+3 Stimulus_Presentation_and_Feedback Stimulus Presentation and Feedback
+3 External_Interfaces External Interfaces
+3 Internationalization Internationalization
+2 See_also See also
+
+User_Reference%253AGDFFileWriter.html
+2 Function Function
+2 Parameters Parameters
+3 Common_Data_Storage_Parameters Common Data Storage Parameters
+4 DataDirectory DataDirectory
+4 SubjectName SubjectName
+4 SubjectSession SubjectSession
+4 SubjectRun SubjectRun
+4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
+3 GDFFileWriter_Specific_Parameters GDFFileWriter Specific Parameters
+4 SavePrmFile SavePrmFile
+4 SubjectYearOfBirth SubjectYearOfBirth
+4 SubjectSex SubjectSex
+4 LabID LabID
+4 TechnicianID TechnicianID
+4 EquipmentID EquipmentID
+4 TransducerType TransducerType
+4 SignalUnit SignalUnit
+4 EventCodes EventCodes
+2 States States
+2 See_also See also
+
+User_Reference%253AJoystickFilter.html
+2 Function Function
+2 Parameters Parameters
+3 JoystickEnable JoystickEnable
+2 States States
+3 JoystickXpos.2C_JoystickYpos.2C_JoystickZpos JoystickXpos, JoystickYpos, JoystickZpos
+3 JoystickButtons1.2C_JoystickButtons2.2C_JoystickButtons3.2C_JoystickButtons4 JoystickButtons1, JoystickButtons2, JoystickButtons3, JoystickButtons4
+2 See_also See also
+
+User_Reference%253AKeyLogFilter.html
+2 Function Function
+2 Parameters Parameters
+3 LogKeyPresses LogKeyPresses
+2 States States
+3 MouseKeys MouseKeys
+3 PressedKey1.2C_PressedKey2.2C_PressedKey3 PressedKey1, PressedKey2, PressedKey3
+2 See_also See also
+
+User_Reference%253AKeystrokeFilter.html
+2 Function Function
+2 Parameters Parameters
+3 KeystrokeStateName KeystrokeStateName
+2 States States
+2 See_also See also
+
+User_Reference%253ALPFilter.html
+2 Function Function
+2 Parameters Parameters
+3 LPTimeConstant LPTimeConstant
+2 States States
+2 See_also See also
+
+User_Reference%253ALinearClassifier.html
+2 Function Function
+2 Parameters Parameters
+3 Classifier Classifier
+2 States States
+2 Examples Examples
+3 SMR_Examples SMR Examples
+4 1D_cursor_movement 1D cursor movement
+4 2D_cursor_movement 2D cursor movement
+3 ERP_classification ERP classification
+2 See_also See also
+
+User_Reference%253ALocalization.html
+2 Function Function
+2 Parameters Parameters
+3 LocalizedStrings LocalizedStrings
+3 Language Language
+2 States States
+2 See_also See also
+
+User_Reference%253AMatlab_MEX_Files.html
+2 Introduction Introduction
+2 Using_BCI2000_MEX_files Using BCI2000 MEX files
+3 Microsoft_Windows Microsoft Windows
+3 Other_Platforms Other Platforms
+2 BCI2000_MEX_functions BCI2000 MEX functions
+3 load_bcidat <tt>load_bcidat</tt>
+3 convert_bciprm <tt>convert_bciprm</tt>
+3 mem <tt>mem</tt>
+
+User_Reference%253AModule_Command_Line_Options.html
+2 Core_Modules Core Modules
+3 Specifying_the_Operator_Module.27s_Network_Address Specifying the Operator Module's Network Address
+3 Specifying_Options Specifying Options
+4 Special_Options Special Options
+2 Operator_Module Operator Module
+2 See_also See also
+
+User_Reference%253AMouseFilter.html
+2 Function Function
+2 Parameters Parameters
+2 States States
+3 MousePosX.2C_MousePosY MousePosX, MousePosY
+2 See_also See also
+
+User_Reference%253ANormalizer.html
+2 Function Function
+3 Normalizing_Transform Normalizing Transform
+3 Adaptation Adaptation
+3 Adaptation_Rationale Adaptation Rationale
+3 Typical_Use Typical Use
+2 Parameters Parameters
+3 NormalizerOffsets.2C_NormalizerGains NormalizerOffsets, NormalizerGains
+3 Adaptation_2 Adaptation
+3 BufferConditions BufferConditions
+3 BufferLength BufferLength
+3 UpdateTrigger UpdateTrigger
+2 States States
+2 Examples Examples
+3 Trial-based_1D_Feedback_Task_with_3_Targets Trial-based 1D Feedback Task with 3 Targets
+3 Trial-based_2D_Feedback_Task_with_4_Targets Trial-based 2D Feedback Task with 4 Targets
+3 Continuous_1D_Control_without_pre-defined_Targets Continuous 1D Control without pre-defined Targets
+2 See_also See also
+
+User_Reference%253ANullFileWriter.html
+2 Function Function
+2 Parameters Parameters
+3 Common_Data_Storage_Parameters Common Data Storage Parameters
+4 DataDirectory DataDirectory
+4 SubjectName SubjectName
+4 SubjectSession SubjectSession
+4 SubjectRun SubjectRun
+4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
+3 NullFileWriter_Specific_Parameters NullFileWriter Specific Parameters
+4 SavePrmFile SavePrmFile
+2 States States
+2 See_also See also
+
+User_Reference%253AOperator_Module.html
+2 Starting_Up_BCI2000 Starting Up BCI2000
+2 Main_Window Main Window
+3 Operation_Buttons Operation Buttons
+3 Function_Buttons Function Buttons
+3 Status_Area Status Area
+3 Main_Menu_Bar Main Menu Bar
+4 File_Menu File Menu
+4 View_Menu View Menu
+4 Help_Menu Help Menu
+3 Preferences_Dialog Preferences Dialog
+3 Parameter_Configuration_Window Parameter Configuration Window
+3 Matrix_Editor_Window Matrix Editor Window
+3 Visualization_Windows Visualization Windows
+2 See_also See also
+
+User_Reference%253AOperator_Module_Scripting.html
+3 Events Events
+4 OnConnect OnConnect
+4 OnSetConfig OnSetConfig
+4 OnStart.2C_OnResume OnStart, OnResume
+4 OnSuspend OnSuspend
+4 OnExit OnExit
+3 Commands Commands
+4 LOAD_PARAMETERFILE_.3Cfile.3E LOAD PARAMETERFILE &lt;file&gt;
+4 SETCONFIG SETCONFIG
+4 INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;
+4 SET_STATE_.3Cname.3E_.3Cvalue.3E SET STATE &lt;name&gt; &lt;value&gt;
+4 QUIT QUIT
+4 SYSTEM_.3Ccommand_line.3E SYSTEM &lt;command line&gt;
+3 Syntax Syntax
+3 Specifying_Scripts Specifying Scripts
+3 Examples Examples
+4 1 1
+4 2 2
+2 See_also See also
+
+User_Reference%253AP3SpellerTask.html
+2 Synopsis Synopsis
+2 Functional_Description Functional Description
+3 Introduction Introduction
+3 Visual_Representation Visual Representation
+3 Nested_Matrices_Howto Nested Matrices Howto
+4 Set_up_the_Target_Definition_matrix Set up the Target Definition matrix
+4 Convert_each_cell_to_a_sub-matrix Convert each cell to a sub-matrix
+4 Configure_individual_sub_matrices Configure individual sub matrices
+4 Enable_transition_from_one_menu_to_another Enable transition from one menu to another
+4 Number_of_Rows_and_Columns_of_each_nested_menu_.28matrix.29 Number of Rows and Columns of each nested menu (matrix)
+4 Select_first_menu_to_be_displayed Select first menu to be displayed
+3 Testing_Matrix_Menus Testing Matrix Menus
+3 Pause_and_Sleep Pause and Sleep
+3 Text_Window Text Window
+2 Parameters Parameters
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
+4 WindowBackgroundColor WindowBackgroundColor
+4 PreRunDuration PreRunDuration
+4 PostRunDuration PostRunDuration
+4 PreSequenceDuration PreSequenceDuration
+4 PostSequenceDuration PostSequenceDuration
+4 StimulusDuration StimulusDuration
+4 ISIMinDuration.2C_ISIMaxDuration ISIMinDuration, ISIMaxDuration
+4 InterpretMode InterpretMode
+4 DisplayResults DisplayResults
+4 NumberOfSequences NumberOfSequences
+4 TargetDefinitions TargetDefinitions
+5 Speller_Commands Speller Commands
+5 Multiple_Menus Multiple Menus
+4 NumMatrixColumns.2C_NumMatrixRows NumMatrixColumns, NumMatrixRows
+4 AudioStimuliOn AudioStimuliOn
+4 AudioStimuliRowsFiles.2C_AudioStimuliRowsFiles AudioStimuliRowsFiles, AudioStimuliRowsFiles
+4 TargetWidth.2C_TargetHeight TargetWidth, TargetHeight
+4 TargetTextHeight TargetTextHeight
+4 BackgroundColor BackgroundColor
+4 TextColor.2C_TextColorIntensified TextColor, TextColorIntensified
+4 IconHighlightMode IconHighlightMode
+4 IconHighlightFactor IconHighlightFactor
+4 FirstActiveMenu FirstActiveMenu
+4 StatusBarSize.2C_StatusBarTextHeight StatusBarSize, StatusBarTextHeight
+4 TextToSpell TextToSpell
+4 TextResult TextResult
+4 TestMode TestMode
+4 DestinationAddress DestinationAddress
+4 TextWindowEnabled TextWindowEnabled
+4 TextWindowLeft.2C_TextWindowTop.2C_TextWindowWidth.2C_TextWindowHeight TextWindowLeft, TextWindowTop, TextWindowWidth, TextWindowHeight
+4 TextWindowFontName.2C_TextWindowFontSize TextWindowFontName, TextWindowFontSize
+4 TextWindowFilePath TextWindowFilePath
+2 States States
+3 StimulusTime StimulusTime
+3 StimulusCode StimulusCode
+3 StimulusType StimulusType
+3 StimulusBegin StimulusBegin
+3 PhaseInSequence PhaseInSequence
+3 SelectedTarget.2C_SelectedRow.2C_SelectedColumn SelectedTarget, SelectedRow, SelectedColumn
+2 Timeline Timeline
+2 See_also See also
+
+User_Reference%253AP3TemporalFilter.html
+2 Function Function
+2 Parameters Parameters
+3 EpochLength EpochLength
+3 EpochsToAverage EpochsToAverage
+3 VisualizeP3TemporalFiltering VisualizeP3TemporalFiltering
+3 TargetERPChannel TargetERPChannel
+2 States_used_for_Input States used for Input
+3 StimulusBegin_.28optional.29 StimulusBegin (optional)
+3 StimulusCode StimulusCode
+3 StimulusType StimulusType
+2 States_used_for_Output States used for Output
+3 StimulusCodeRes StimulusCodeRes
+3 StimulusTypeRes StimulusTypeRes
+2 See_also See also
+
+User_Reference%253AParameter_Changes_for_Version_2.html
+2 Source_Modules Source Modules
+3 SignalGeneratorADC_.28renamed_from_RandomNumberADC.29 SignalGeneratorADC (renamed from RandomNumberADC)
+2 SignalProcessing SignalProcessing
+3 AR_Filter AR Filter
+3 Normalizer_.28renamed_from_NormalFilter.2FStatFilter.29 Normalizer (renamed from NormalFilter/StatFilter)
+3 P3TemporalFilter P3TemporalFilter
+3 LinearClassifier_.28renamed_from_ClassFilter.29 LinearClassifier (renamed from ClassFilter)
+2 Application_Modules Application Modules
+3 StimulusPresentation_.28renamed_from_P3AV.29 StimulusPresentation (renamed from P3AV)
+3 P3_Speller P3 Speller
+3 Cursor_Task_.28renamed_from_D3Box_Task.29 Cursor Task (renamed from D3Box Task)
+3 RGB_Colors RGB Colors
+
+User_Reference%253AParameters.html
+
+User_Reference%253ASignalGeneratorADC.html
+2 Function Function
+2 Parameters Parameters
+3 ModulateAmplitude ModulateAmplitude
+3 SineChannelX SineChannelX
+3 SineChannelY SineChannelY
+3 SineChannelZ SineChannelZ
+3 SineFrequency SineFrequency
+3 SineAmplitude SineAmplitude
+3 NoiseAmplitude NoiseAmplitude
+3 DCOffset DCOffset
+3 OffsetMultiplier OffsetMultiplier
+3 RandomSeed RandomSeed
+3 SignalType SignalType
+2 States States
+2 See_also See also
+
+User_Reference%253ASourceFilter.html
+2 Function Function
+2 Parameters Parameters
+3 NotchFilter NotchFilter
+3 HighPassFilter HighPassFilter
+2 Remarks Remarks
+2 See_also See also
+
+User_Reference%253ASpatialFilter.html
+2 Function Function
+2 Parameters Parameters
+3 SpatialFilter SpatialFilter
+2 States States
+2 Examples Examples
+3 Linked_Mastoids Linked Mastoids
+3 Common_Average_Reference Common Average Reference
+2 See_also See also
+
+User_Reference%253AStateTransform.html
+2 Function Function
+2 Parameters Parameters
+3 StateTransforms StateTransforms
+2 States States
+2 Example Example
+2 See_also See also
+
+User_Reference%253AStates.html
+
+User_Reference%253AStimulusPresentationTask.html
+2 Synopsis Synopsis
+2 Functional_Description Functional Description
+3 Stimulus_Definition Stimulus Definition
+4 Stimulus_Codes Stimulus Codes
+3 Stimulus_Sequence Stimulus Sequence
+4 Deterministic_Sequence: Deterministic Sequence:
+4 Random_Sequence: Random Sequence:
+3 Stimulus_Delivery Stimulus Delivery
+2 Processing_of_Classification_Results Processing of Classification Results
+3 Free_Mode Free Mode
+3 Copy_Mode Copy Mode
+2 Parameters Parameters
+4 WindowWidth.2C_WindowHeight WindowWidth, WindowHeight
+4 WindowLeft.2C_WindowTop WindowLeft, WindowTop
+4 WindowBackgroundColor WindowBackgroundColor
+4 PreRunDuration PreRunDuration
+4 PostRunDuration PostRunDuration
+4 PreSequenceDuration PreSequenceDuration
+4 PostSequenceDuration PostSequenceDuration
+4 StimulusDuration StimulusDuration
+4 ISIMinDuration.2C_ISIMaxDuration ISIMinDuration, ISIMaxDuration
+4 InterpretMode InterpretMode
+4 DisplayResults DisplayResults
+4 SequenceType SequenceType
+4 Sequence Sequence
+4 NumberOfSequences NumberOfSequences
+4 ToBeCopied ToBeCopied
+4 UserComment UserComment
+4 Stimuli Stimuli
+4 FocusOn FocusOn
+4 Result Result
+4 StimulusWidth StimulusWidth
+4 CaptionHeight CaptionHeight
+4 CaptionColor CaptionColor
+4 BackgroundColor BackgroundColor
+4 CaptionSwitch CaptionSwitch
+4 IconSwitch IconSwitch
+4 AudioSwitch AudioSwitch
+4 AudioVolume AudioVolume
+2 States States
+3 StimulusTime StimulusTime
+3 StimulusCode StimulusCode
+3 StimulusType StimulusType
+3 StimulusBegin StimulusBegin
+3 PhaseInSequence PhaseInSequence
+3 SelectedStimulus SelectedStimulus
+2 Timeline Timeline
+2 See_also See also
+
+User_Reference%253ATiming.html
+2 Real-Time_Operation Real-Time Operation
+2 Measuring_Block_Duration Measuring Block Duration
+2 Measuring_Roundtrip_Time Measuring Roundtrip Time
+2 Measuring_Source-to-Stimulus_Delay Measuring Source-to-Stimulus Delay
+2 Timing_Display Timing Display
+2 See_also See also
+
+User_Reference%253ATransmissionFilter.html
+2 Function Function
+2 Parameters Parameters
+3 TransmitChList TransmitChList
+2 States States
+2 See_also See also
+
+User_Reference%253AgMOBIlabADC.html
+2 Function Function
+3 g.MOBIlab_Hardware g.MOBIlab Hardware
+2 Parameters Parameters
+3 COMport COMport
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceCh SourceCh
+2 States States
+2 See_also See also
+
+User_Reference%253AgUSBampADC.html
+2 Function Function
+3 g.USBamp_Hardware g.USBamp Hardware
+2 Parameters Parameters
+3 DeviceIDMaster DeviceIDMaster
+3 DeviceIDs DeviceIDs
+3 FilterEnabled FilterEnabled
+3 FilterHighPass FilterHighPass
+3 FilterLowPass FilterLowPass
+3 FilterModelOrder FilterModelOrder
+3 FilterType FilterType
+3 NotchEnabled NotchEnabled
+3 NotchHighPass NotchHighPass
+3 NotchLowPass NotchLowPass
+3 NotchModelOrder NotchModelOrder
+3 NotchType NotchType
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SignalType SignalType
+3 SourceCh SourceCh
+3 SourceChDevices SourceChDevices
+3 DigitalInput DigitalInput
+3 DigitalOutput DigitalOutput
+3 AcquisitionMode AcquisitionMode
+3 CommonGround CommonGround
+3 CommonReference CommonReference
+2 States States
+2 Additional_Information Additional Information
+3 Data_Storage Data Storage
+3 The_USBampgetinfo_Command_Line_Tool The <i>USBampgetinfo</i> Command Line Tool
+2 See_also See also
+
+User_Tutorial%253ABCI2000_Tour.html
+2 Starting_up_BCI2000 Starting up BCI2000
+2 BCI2000_Help BCI2000 Help
+2 Loading_a_Parameter_File Loading a Parameter File
+2 Entering_a_Subject_ID Entering a Subject ID
+2 Applying_Configuration_Parameters Applying Configuration Parameters
+2 Performing_a_Session Performing a Session
+2 Opening_Data_Files_in_BCI2000Viewer Opening Data Files in <a href="User_Reference%253ABCI2000Viewer.html" title="User Reference:BCI2000Viewer">BCI2000Viewer</a>
+2 Viewing_State_Information Viewing State Information
+2 Viewing_Parameters_using_BCI2000FileInfo Viewing Parameters using <a href="User_Reference%253ABCI2000FileInfo.html" title="User Reference:BCI2000FileInfo">BCI2000FileInfo</a>
+2 Stimulus_Presentation Stimulus Presentation
+2 P300_Speller P300 Speller
+2 Where_to_go_from_here Where to go from here
+2 See_also See also
+
+User_Tutorial%253AConfiguring_Online_Feedback.html
+2 Starting_up_BCI2000 Starting up BCI2000
+2 Spatial_Filtering Spatial Filtering
+3 Creating_a_CAR_Filter Creating a CAR Filter
+2 Subject-Specific_Parameters Subject-Specific Parameters
+3 Configuring_the_Classifier Configuring the Classifier
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AConfiguring_P300_Online_Classification.html
+2 Starting_up_BCI2000 Starting up BCI2000
+2 Spatial_Filtering Spatial Filtering
+3 Creating_an_Identity_Filter Creating an Identity Filter
+2 Subject-Specific_Parameters Subject-Specific Parameters
+3 Configuring_the_Classifier Configuring the Classifier
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253ADesigning_an_Eloc_File.html
+2 Creating_a_new_montage_file  Creating a new montage file 
+2 Modifying_an_existing_montage_file  Modifying an existing montage file 
+2 Exporting_your_montage_file_for_use_with_BCI2000_Offline_Analysis  Exporting your montage file for use with BCI2000 Offline Analysis 
+2 Exporting_your_montage_file_for_use_with_BCI2000  Exporting your montage file for use with BCI2000 
+2 See_also See also
+
+User_Tutorial%253AEEG_Measurement_Setup.html
+2 Electrodes Electrodes
+2 The_10-20_International_System The 10-20 International System
+2 Identifying_Brain_Areas Identifying Brain Areas
+2 Montage_Instructions Montage Instructions
+2 Inspecting_EEG_Signals Inspecting EEG Signals
+2 EEG_Artifacts EEG Artifacts
+3 Mains_Interference Mains Interference
+3 Eye_Blink_Artifacts Eye Blink Artifacts
+3 Eye_Movement_.28EOG.29_Artifacts Eye Movement (EOG) Artifacts
+3 Muscular_.28EMG.29_Artifacts Muscular (EMG) Artifacts
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AInterpreting_the_Results.html
+2 Imagined_vs._Real Imagined vs. Real
+2 Contralateral_Response Contralateral Response
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html
+2 Behavioral_Properties Behavioral Properties
+2 Physical_Properties Physical Properties
+3 Geometry Geometry
+3 Temporal_Properties Temporal Properties
+2 BCI_Construction BCI Construction
+3 Spatial_Selection Spatial Selection
+3 Frequency_Selection Frequency Selection
+3 Carrier_Demodulation Carrier Demodulation
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AIntroduction_to_the_P300_Response.html
+2 Behavioral_Properties Behavioral Properties
+2 Physical_Properties Physical Properties
+2 BCI_Construction BCI Construction
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html
+2 Tutorial_Steps Tutorial Steps
+
+User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html
+2 Experimental_Design Experimental Design
+2 Performing_the_Initial_Session Performing the Initial Session
+2 Subject_instruction Subject instruction
+2 Analyzing_the_Initial_Session Analyzing the Initial Session
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html
+2 Experimental_Design Experimental Design
+2 Performing_the_Initial_Session Performing the Initial Session
+2 Subject_instruction Subject instruction
+2 Analyzing_the_Initial_Session Analyzing the Initial Session
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253AP300_BCI_Tutorial.html
+2 Tutorial_Steps Tutorial Steps
+
+User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html
+2 Preparation Preparation
+2 Instructions_to_the_Subject Instructions to the Subject
+2 Monitoring_the_Recording Monitoring the Recording
+2 Multiple_Sessions Multiple Sessions
+2 Finished Finished
+2 See_also See also
+
+User_Tutorial%253APerforming_a_P300_Spelling_Session.html
+2 Preparation Preparation
+2 Instructions_to_the_Subject Instructions to the Subject
+2 Multiple_Sessions Multiple Sessions
+2 Finished Finished
+2 See_also See also
+
+User_Tutorial%253APerforming_a_Time-Domain_Offline_Analysis_of_ECoG_Data.html
+2 Experimental_Design  Experimental Design 
+2 The_Results The Results
+2 See_also See also
+
+User_Tutorial%253APerforming_a_Time-Domain_Offline_Analysis_of_EEG_Data.html
+2 Experimental_Design Experimental Design
+2 The_Feature_Plot The Feature Plot
+2 Waveform_Plots_and_Topographies Waveform Plots and Topographies
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253APerforming_an_Offline_Analysis.html
+2 Experimental_Design  Experimental Design 
+2 The_Feature_Plot  The Feature Plot 
+2 Spectra_and_Topographies Spectra and Topographies
+2 Choosing_the_Optimal_Features Choosing the Optimal Features
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253APerforming_an_Offline_Analysis_of_ECoG_Data.html
+2 Experimental_Design  Experimental Design 
+2 The_Results The Results
+2 See_also See also
+
+User_Tutorial%253APerforming_an_Offline_Analysis_of_EEG_Data.html
+2 Experimental_Design  Experimental Design 
+2 The_Feature_Plot  The Feature Plot 
+2 Spectra_and_Topographies Spectra and Topographies
+2 Choosing_the_Optimal_Features Choosing the Optimal Features
+2 Next_Step Next Step
+2 See_also See also
+
+User_Tutorial%253APerforming_an_Offline_Analysis_of_MEG_Data.html
+2 Experimental_Design  Experimental Design 
+2 The_Results The Results
+2 See_also See also
+

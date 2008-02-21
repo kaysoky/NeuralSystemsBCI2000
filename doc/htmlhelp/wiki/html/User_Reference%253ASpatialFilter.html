@@ -33,7 +33,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 <h1 class="pagetitle">SpatialFilter</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilter"><span class="tocnumber">2.1</span> <span class="toctext">SpatialFilter</span></a></li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Examples"><span class="tocnumber">4</span> <span class="toctext">Examples</span></a>
 <ul>
@@ -50,8 +54,9 @@ This linear transformation is described by a transformation matrix, and applied 
 </p><p>Typically, the SpatialFilter's input is the unfiltered brain signal from the source module.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
+<a name="SpatialFilter"></a><h3>SpatialFilter</h3>
 <div class="floatright"><span><a href="../images/thumb/f/f0/SpatialFilter.png/256px-SpatialFilter.png" class="image" title=""><img src="../images/thumb/f/f0/SpatialFilter.png/256px-SpatialFilter.png" alt="" width="256" height="181" longdesc="/wiki/index.php/Image:SpatialFilter.png" /></a></span></div>
-<p><i>SpatialFilter</i> is a matrix defining the linear transformation applied to the filter's input signal.
+<p>This is a matrix defining the linear transformation applied to the filter's input signal.
 In this matrix, columns represent input channels, and rows represent output channels.
 Each matrix element defines a weight with which the respective input channel (column) enters into the respective output channel (row).
 </p><p>If the spatial filter is an identity filter -- not modifying its input --, then the SpatialFilter matrix is a unit matrix (square matrix with ones on the main diagonal, and all other elements zero).

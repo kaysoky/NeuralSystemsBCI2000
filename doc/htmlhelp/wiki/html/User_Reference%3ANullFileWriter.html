@@ -66,7 +66,7 @@ Individual filters may still write log files to the directory defined by the <co
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StorageParams&amp;action=edit&amp;section=2" title="Template:StorageParams">edit</a>]</div><a name="DataDirectory"></a><h4>DataDirectory</h4>
 <p>Path to an existing directory. Recorded data will be stored below that directory.
-The path may be absolute or relative.
+The path may be absolute, or relative to the source module's working directory at startup. Usually, the working directory at startup matches the source module's executable location in the <tt>prog</tt> directory.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StorageParams&amp;action=edit&amp;section=3" title="Template:StorageParams">edit</a>]</div><a name="SubjectName"></a><h4>SubjectName</h4>
 <p>A textual ID for the subject. This text will appear in session directories, and data file names.
@@ -120,5 +120,5 @@ Within a session directory, data file names are constructed according to
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.20 secs. -->
+<!-- Served by bci2000.org in 0.18 secs. -->
 </body></html>

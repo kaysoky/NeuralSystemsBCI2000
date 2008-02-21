@@ -103,25 +103,22 @@ The BCI2000 command line interface may prove useful for
 </li><li><tt>stdout</tt> can be redirected to write to a file using the  <tt>&gt;</tt> operator; 
 </li><li>one program's <tt>stdout</tt> can be plugged into another program's  <tt>stdin</tt> using the <tt>|</tt> operator ("pipe"). 
 </li></ul>
-<p>Because redirection is a feature of the program's execution environment ("shell"), and not a feature of the program itself, programs can be very simple, avoiding handling of file names and associated I/O errors. 
+<p>Because redirection is a feature of the program's execution environment ("shell"), and not a feature of the program itself, programs can be very simple, avoiding all explicit handling of input or output files. 
 </p><p>The following example command line will extract the "sampling rate" parameter from the BCI2000 data file <tt>mydata.dat</tt>, and display the result on the text console:
 </p>
 <pre>bci_dat2stream &lt; mydata.dat | bci_stream2prm | grep SamplingRate
 </pre>
-<p><br />
-</p>
 <a name="Building_BCI2000_command_line_tools"></a><h2>Building BCI2000 command line tools</h2>
-<p>As the command line tools are not automatically built from the main makefile, 
-you need to do this manually. On the Windows NT shell, change to the <tt>BCI2000/src/Tools/cmdline</tt> directory, and execute <tt>make install</tt> from there; this will also move the resulting executables to the <tt>BCI2000/Tools/cmdline</tt> directory. To build an executable from a file <tt>MyFilter.cpp</tt> containing a BCI2000 filter <tt>MyFilter</tt>, execute 
+<p>Command line tools are built automatically from the main makefile, but to create a command line executable from your own <tt>GenericFilter</tt> descendant class, you will need to to it manually.
+</p><p>On the Windows NT shell, change to the <tt>BCI2000/src/Tools/cmdline</tt> directory, and execute <tt>make install</tt> from there; this will also move the resulting executables to the <tt>BCI2000/Tools/cmdline</tt> directory. To build an executable from a file <tt>MyFilter.cpp</tt> containing a BCI2000 filter <tt>MyFilter</tt>, execute 
 </p>
 <pre>make MyFilter.install
 </pre>
 <p>This will build an executable <tt>MyFilter.exe</tt> and add it to the <tt>BCI2000/Tools/cmdline</tt> directory.
-</p><p>Building command line tools does not require the full Borland C++ Builder IDE; you may use the <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external text' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">freely available command line version</a> of the Borland C++ compiler instead. In this case, you will need to out-comment the line reading <code>#include &lt;vcl.h&gt;</code> from the file <tt>BCI2000/src/shared/PCHIncludes.h</tt>
+</p><p>Building command line tools does not require the full Borland C++ Builder IDE; you may use the <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external text' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">freely available command line version</a> of the Borland C++ compiler instead. In this case, you will need to comment out the line reading <code>#include &lt;vcl.h&gt;</code> from the file <tt>BCI2000/src/shared/PCHIncludes.h</tt>
 </p><p>In order to use the command line tools, you will need to add the full path 
 to the <tt>BCI2000/Tools/cmdline</tt> directory to your system's PATH environment variable. 
 Please consult your operating system's documentation on how to do this.
-</p><p><br />
 </p>
 <a name="Stream_format"></a><h2>Stream format</h2>
 <p>The common format used to exchange data between BCI2000 command line tools is called a "BCI2000 binary stream," or just "stream." Such a "stream" transfers parameters, states, and data in exactly the same binary format as is used for socket communication between the four main modules of the BCI2000 real-time system.
@@ -191,8 +188,7 @@ Omitting a <tt>--transmit</tt> option corresponds to<tt>--transmit-spd</tt>. Thi
 <a name="Off-line_only_filters"></a><h3>Off-line only filters</h3>
 <p>For off-line analysis, data must often be partitioned into "segments" before performing statistics. As there is no notion of "segments" in the on-line data and file format, we suggest using the "Running" state to indicate segments in the following way:
 </p><p>When performing a segmenting task, a filter sets the "Running" state to zero outside segments. A statistics filter will then perform buffering from its <tt>Process()</tt> function, and act on the buffered data from its <tt>StartRun()</tt> and <tt>StopRun()</tt> functions.
-</p><p>Note that setting the "Running" state to zero will suspend the on-line system, so this kind of segmenting and statistics filtering cannot be used on-line.
-</p><p><br />
+</p><p>Note that setting the "Running" state to zero inside the on-line system will suspend the on-line system, so this kind of segmenting and statistics filtering cannot be used on-line.
 </p>
 <a name="Examples"></a><h2>Examples</h2>
 <p>The following examples work from the Windows NT command prompt. Nevertheless, we would like to point the reader to the free <i>cygwin</i>  collection of GNU tools ported to the Win32 API. <i>Cygwin</i>  provides the power of the <tt>bash</tt> shell, and of programs like the <tt>sed</tt> stream editor. 
@@ -268,5 +264,5 @@ Although the BCI2000 command line tools cannot be compiled with <tt>gcc</tt>, th
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.23 secs. -->
+<!-- Served by bci2000.org in 0.22 secs. -->
 </body></html>

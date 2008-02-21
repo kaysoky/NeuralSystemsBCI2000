@@ -86,7 +86,7 @@ There is also an option to specify scripts from the <a href="User_Reference%253A
 </p>
 <a name="Commands"></a><h3>Commands</h3>
 <a name="LOAD_PARAMETERFILE_.3Cfile.3E"></a><h4>LOAD PARAMETERFILE &lt;file&gt;</h4>
-<p>Loads a parameter file specified by its path and name. Relative paths are interpreted relative to the operator module's executable.
+<p>Loads a parameter file specified by its path and name. Relative paths are interpreted relative to the operator module's working directory at startup. Usually, this matches the executable's location in the <tt>prog</tt> directory.
 </p>
 <a name="SETCONFIG"></a><h4>SETCONFIG</h4>
 <p>Applies current parameters to the system. Corresponds to the <i>SetConfig</i> button.
@@ -165,5 +165,5 @@ It fully automates BCI2000 operation by loading a parameter file, applying param
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.19 secs. -->
+<!-- Served by bci2000.org in 0.18 secs. -->
 </body></html>

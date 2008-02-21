@@ -4,7 +4,7 @@
 <head>
 <title>BCI2000 Binaries - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="BCI2000 Binaries,Creating a User Account" />
+<meta name="keywords" content="BCI2000 Binaries,Creating a User Account,Programming Reference:GenericFilter Class,User Reference:BCI2000 Offline Analysis,User Reference:CursorTask,User Reference:Normalizer" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -36,7 +36,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Latest_Version"><span class="tocnumber">2</span> <span class="toctext">Latest Version</span></a></li>
 <li class='toclevel-1'><a href="BCI2000_Binaries.html#Version_History"><span class="tocnumber">3</span> <span class="toctext">Version History</span></a>
 <ul>
-<li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_2_Builds"><span class="tocnumber">3.1</span> <span class="toctext">Version 2 Builds</span></a></li>
+<li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_2_Builds"><span class="tocnumber">3.1</span> <span class="toctext">Version 2 Builds</span></a>
+<ul>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#Feb_2008_Build"><span class="tocnumber">3.1.1</span> <span class="toctext">Feb 2008 Build</span></a></li>
+<li class='toclevel-3'><a href="BCI2000_Binaries.html#Jan_2008_Version_2_Release_Build"><span class="tocnumber">3.1.2</span> <span class="toctext">Jan 2008 Version 2 Release Build</span></a></li>
+</ul>
+</li>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_2_Preview_Builds"><span class="tocnumber">3.2</span> <span class="toctext">Version 2 Preview Builds</span></a></li>
 <li class='toclevel-2'><a href="BCI2000_Binaries.html#Version_1_Builds"><span class="tocnumber">3.3</span> <span class="toctext">Version 1 Builds</span></a></li>
 </ul>
@@ -52,13 +57,28 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Version_History"></a><h2>Version History</h2>
 <a name="Version_2_Builds"></a><h3>Version 2 Builds</h3>
-<p><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a> 
-(<a href="http://bci2000.org/tracproj/changeset/1746" class='external text' title="http://bci2000.org/tracproj/changeset/1746" rel="nofollow">changeset 1746</a>)
+<a name="Feb_2008_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" rel="nofollow">Feb 2008 Build</a></h4>
+<p><a href="http://bci2000.org/tracproj/changeset/1790" class='external text' title="http://bci2000.org/tracproj/changeset/1790" rel="nofollow">Latest changeset: 1790</a>
+</p><p>New features in this version:
 </p>
+<ul><li>The <a href="User_Reference%253ACursorTask.html" title="User Reference:CursorTask">CursorTask</a> application module now uses fast 2D drawing when <i>RenderingQuality</i> is set to "low", and only uses OpenGL rendering when quality is set to "high".
+</li><li>It is now possible to display a downsized copy of the subject's application window in an operator visualization window.
+</li><li>Command line tools have been updated to support propagation of signal units as introduced in Version 2.
+</li></ul>
+<p>Bug fixes in this version:
+</p>
+<ul><li>Parameters updated in the <tt><a href="Programming_Reference%253AGenericFilter_Class.html#StopRun" title="Programming Reference:GenericFilter Class">GenericFilter::StopRun()</a></tt> function would not be propagated to the operator module. Most notably, the <a href="User_Reference%253ANormalizer.html" title="User Reference:Normalizer">Normalizer's</a> adapted offsets and gains would not be reflected in the operator module's parameter dialog. This has been fixed.
+</li><li>A number of minor fixes in the <a href="User_Reference%253ABCI2000_Offline_Analysis.html" title="User Reference:BCI2000 Offline Analysis">OfflineAnalysis</a> tool.
+</li></ul>
+<a name="Jan_2008_Version_2_Release_Build"></a><h4><a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a></h4>
+<p><a href="http://bci2000.org/tracproj/changeset/1746" class='external text' title="http://bci2000.org/tracproj/changeset/1746" rel="nofollow">Latest changeset: 1746</a>
+</p>
+<hr />
 <a name="Version_2_Preview_Builds"></a><h3>Version 2 Preview Builds</h3>
 <p><a href="http://bci2000.org/downloads/bin/archive/BCI2000v2Preview_071123.exe" class='external text' title="http://bci2000.org/downloads/bin/archive/BCI2000v2Preview_071123.exe" rel="nofollow">Nov 2007 Build</a> (<a href="http://bci2000.org/tracproj/changeset/1646" class='external text' title="http://bci2000.org/tracproj/changeset/1646" rel="nofollow">changeset 1646</a>)
 </p><p><a href="http://bci2000.org/downloads/bin/archive/BCI2000v2Preview_071026.exe" class='external text' title="http://bci2000.org/downloads/bin/archive/BCI2000v2Preview_071026.exe" rel="nofollow">Oct 2007 Build</a> (<a href="http://bci2000.org/tracproj/changeset/1577" class='external text' title="http://bci2000.org/tracproj/changeset/1577" rel="nofollow">changeset 1577</a>)
 </p>
+<hr />
 <a name="Version_1_Builds"></a><h3>Version 1 Builds</h3>
 <p><a href="http://bci2000.org/downloads/bin/archive/BCI2000Setup_070706.exe" class='external text' title="http://bci2000.org/downloads/bin/archive/BCI2000Setup_070706.exe" rel="nofollow">Jul 2007 Build</a> (<a href="http://bci2000.org/tracproj/changeset/1401" class='external text' title="http://bci2000.org/tracproj/changeset/1401" rel="nofollow">changeset 1401</a>)
 </p><p><a href="http://bci2000.org/downloads/bin/archive/BCI2000Setup_070405.exe" class='external text' title="http://bci2000.org/downloads/bin/archive/BCI2000Setup_070405.exe" rel="nofollow">Apr 2007 Build</a> (<a href="http://bci2000.org/tracproj/changeset/1299" class='external text' title="http://bci2000.org/tracproj/changeset/1299" rel="nofollow">changeset 1299</a>)
