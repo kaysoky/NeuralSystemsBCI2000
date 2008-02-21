@@ -158,11 +158,9 @@ ParamDisplay::Modified() const
 ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
                                         TWinControl* inParent )
 : mpUserLevel( NULL ),
-  mParamName( inParam.Name() ),
   mTop( 0 ),
   mLeft( 0 ),
-  mModified( false ),
-  mWndProc( NULL )
+  mModified( false )
 {
   // render the parameter's name
   TStaticText* label = new TStaticText( static_cast<TComponent*>( NULL ) );
@@ -173,10 +171,9 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
   label->Visible = false;
   label->Hint = inParam.Comment().c_str();
   label->ShowHint = true;
-  mWndProc = label->WindowProc;
-  label->WindowProc = HelpWndProc;
   label->Parent = inParent;
-  mControls.insert( label );
+  AddControl( label );
+  AddHelp( inParam, label );
 
   // render the parameter's User Level track bar
   // ONLY, if the current user level is "advanced"
@@ -194,12 +191,14 @@ ParamDisplay::DisplayBase::DisplayBase( const ParsedComment& inParam,
     mpUserLevel->Parent = inParent;
     mpUserLevel->OnChange = DisplayBase::OnContentChange;
     mpUserLevel->TabStop = false;
-    mControls.insert( mpUserLevel );
+    AddControl( mpUserLevel );
   }
 }
 
 ParamDisplay::DisplayBase::~DisplayBase()
 {
+  for( WndProcIterator i = mHelpWndProcs.begin(); i != mHelpWndProcs.end(); ++i )
+    delete *i;
   for( ControlIterator i = mControls.begin(); i != mControls.end(); ++i )
     delete *i;
 }
@@ -267,18 +266,32 @@ ParamDisplay::DisplayBase::ReadValuesFrom( const Param& inParam )
   mModified = false;
 }
 
+ParamDisplay::DisplayBase::HelpWndProc::HelpWndProc( const ParsedComment& inParam, TWinControl* iopControl )
+: mpControl( iopControl ),
+  mParamName( inParam.Name() ),
+  mHelpContext( inParam.HelpContext() )
+{
+  this->mWndProc = mpControl->WindowProc;
+  mpControl->WindowProc = &( this->WndProc );
+}
+
+ParamDisplay::DisplayBase::HelpWndProc::~HelpWndProc()
+{
+  mpControl->WindowProc = this->mWndProc;
+}
+
 void
 __fastcall
-ParamDisplay::DisplayBase::HelpWndProc( TMessage& inMessage )
+ParamDisplay::DisplayBase::HelpWndProc::WndProc( TMessage& inMessage )
 {
   if( inMessage.Msg == WM_HELP )
   {
     if( ExecutableHelp().ParamHelp().Exists( mParamName ) )
-      ExecutableHelp().ParamHelp().Open( mParamName );
+      ExecutableHelp().ParamHelp().Open( mParamName, mHelpContext );
     else
       ::MessageBeep( MB_ICONASTERISK );
   }
-  mWndProc( inMessage );
+  this->mWndProc( inMessage );
 }
 ////////////////////////////////////////////////////////////////////////////////
 // ParamDisplay::SeparateComment definitions
@@ -288,7 +301,7 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
 : DisplayBase( inParam, inParent )
 {
   // render the parameter's comment
-  TLabel* comment = new TLabel( static_cast<TComponent*>( NULL ) );
+  TStaticText* comment = new TStaticText( static_cast<TComponent*>( NULL ) );
   comment->Left = commentOffsetX;
   comment->Top = commentOffsetY;
   comment->Caption = inParam.Comment().c_str();
@@ -304,6 +317,7 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
         + ellipsis;
   comment->Parent = inParent;
   AddControl( comment );
+  AddHelp( inParam, comment );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -324,6 +338,7 @@ ParamDisplay::SingleEntryEdit::SingleEntryEdit( const ParsedComment& inParam,
   mpEdit->Visible = false;
   mpEdit->Parent = inParent;
   AddControl( mpEdit );
+  AddHelp( inParam, mpEdit );
 }
 
 void
@@ -658,30 +673,31 @@ ParamDisplay::SingleEntryColor::ButtonClick()
 ParamDisplay::SingleEntryEnum::SingleEntryEnum( const ParsedComment& inParam,
                                                 TWinControl* inParent )
 : SeparateComment( inParam, inParent ),
-  mComboBox( NULL ),
+  mpComboBox( NULL ),
   mIndexBase( inParam.IndexBase() )
 {
-  mComboBox = new TComboBox( static_cast<TComponent*>( NULL ) );
-  mComboBox->Left = valueOffsetX;
-  mComboBox->Top = valueOffsetY;
-  mComboBox->Width = valueWidth;
-  mComboBox->Sorted = false;
-  mComboBox->Style = Stdctrls::csDropDownList;
-  mComboBox->Parent = inParent;
+  mpComboBox = new TComboBox( static_cast<TComponent*>( NULL ) );
+  mpComboBox->Left = valueOffsetX;
+  mpComboBox->Top = valueOffsetY;
+  mpComboBox->Width = valueWidth;
+  mpComboBox->Sorted = false;
+  mpComboBox->Style = Stdctrls::csDropDownList;
+  mpComboBox->Parent = inParent;
   for( size_t i = 0; i < inParam.Values().size(); ++i )
-    mComboBox->Items->Add( inParam.Values()[ i ].c_str() );
-  mComboBox->Hint = inParam.Comment().c_str();
-  mComboBox->ShowHint = true;
-  mComboBox->Visible = false;
-  mComboBox->OnChange = DisplayBase::OnContentChange;
-  AddControl( mComboBox );
+    mpComboBox->Items->Add( inParam.Values()[ i ].c_str() );
+  mpComboBox->Hint = inParam.Comment().c_str();
+  mpComboBox->ShowHint = true;
+  mpComboBox->Visible = false;
+  mpComboBox->OnChange = DisplayBase::OnContentChange;
+  AddControl( mpComboBox );
+  AddHelp( inParam, mpComboBox );
 }
 
 void
 ParamDisplay::SingleEntryEnum::WriteValuesTo( Param& outParam ) const
 {
   ostringstream oss;
-  oss << mComboBox->ItemIndex + mIndexBase;
+  oss << mpComboBox->ItemIndex + mIndexBase;
   outParam.Value() = oss.str();
   SeparateComment::WriteValuesTo( outParam );
 }
@@ -689,7 +705,7 @@ ParamDisplay::SingleEntryEnum::WriteValuesTo( Param& outParam ) const
 void
 ParamDisplay::SingleEntryEnum::ReadValuesFrom( const Param& inParam )
 {
-  mComboBox->ItemIndex = ::atoi( inParam.Value().c_str() ) - mIndexBase;
+  mpComboBox->ItemIndex = ::atoi( inParam.Value().c_str() ) - mIndexBase;
   SeparateComment::ReadValuesFrom( inParam );
 }
 
@@ -699,32 +715,33 @@ ParamDisplay::SingleEntryEnum::ReadValuesFrom( const Param& inParam )
 ParamDisplay::SingleEntryBoolean::SingleEntryBoolean( const ParsedComment& inParam,
                                                       TWinControl* inParent )
 : DisplayBase( inParam, inParent ),
-  mCheckBox( NULL )
+  mpCheckBox( NULL )
 {
-  mCheckBox = new TCheckBox( static_cast<TComponent*>( NULL ) );
-  mCheckBox->Left = valueOffsetX;
-  mCheckBox->Top = valueOffsetY;
-  mCheckBox->Width = valueWidth;
-  mCheckBox->Caption = inParam.Comment().c_str();
-  mCheckBox->Hint = mCheckBox->Caption;
-  mCheckBox->ShowHint = true;
-  mCheckBox->Visible = false;
-  mCheckBox->Parent = inParent;
-  mCheckBox->OnClick = DisplayBase::OnContentChange;
-  AddControl( mCheckBox );
+  mpCheckBox = new TCheckBox( static_cast<TComponent*>( NULL ) );
+  mpCheckBox->Left = valueOffsetX;
+  mpCheckBox->Top = valueOffsetY;
+  mpCheckBox->Width = valueWidth;
+  mpCheckBox->Caption = inParam.Comment().c_str();
+  mpCheckBox->Hint = mpCheckBox->Caption;
+  mpCheckBox->ShowHint = true;
+  mpCheckBox->Visible = false;
+  mpCheckBox->Parent = inParent;
+  mpCheckBox->OnClick = DisplayBase::OnContentChange;
+  AddControl( mpCheckBox );
+  AddHelp( inParam, mpCheckBox );
 }
 
 void
 ParamDisplay::SingleEntryBoolean::WriteValuesTo( Param& outParam ) const
 {
-  outParam.Value() = ( mCheckBox->Checked ? "1" : "0" );
+  outParam.Value() = ( mpCheckBox->Checked ? "1" : "0" );
   DisplayBase::WriteValuesTo( outParam );
 }
 
 void
 ParamDisplay::SingleEntryBoolean::ReadValuesFrom( const Param& inParam )
 {
-  mCheckBox->Checked = ::atoi( inParam.Value().c_str() );
+  mpCheckBox->Checked = ::atoi( inParam.Value().c_str() );
   DisplayBase::ReadValuesFrom( inParam );
 }
 

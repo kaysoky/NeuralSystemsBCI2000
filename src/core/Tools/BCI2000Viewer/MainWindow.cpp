@@ -934,3 +934,53 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TMainForm::HelpOnChannelClick(TObject *Sender)
+{
+  TMenuItem* pItem = dynamic_cast<TMenuItem*>( Sender );
+  if( pItem )
+  {
+    string name = pItem->Caption.c_str();
+    size_t p1 = name.find( '\"' ),
+           p2 = name.find( '\"', p1 + 1 );
+    if( p1 != string::npos && p2 != string::npos )
+    {
+      name = name.substr( p1 + 1, p2 - p1 - 1 );
+
+      if( ExecutableHelp().StateHelp().Exists( name ) )
+        ExecutableHelp().StateHelp().Open( name );
+      else
+        ::MessageBeep( MB_ICONASTERISK );
+    }
+    else
+      HelpOpenHelp();
+  }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TMainForm::mChannelListBoxContextPopup(TObject *Sender,
+      TPoint &MousePos, bool &Handled)
+{
+  TCheckListBox* pListBox = dynamic_cast<TCheckListBox*>( Sender );
+  if( pListBox )
+  {
+    mHelpOnChannel->Caption = "BCI2000 Help";
+    int section = 0,
+        item = pListBox->ItemAtPos( MousePos, true );
+    if( item >= 0 && !pListBox->Header[item] )
+    {
+      for( int i = 0; i <= item; ++i )
+        if( pListBox->Header[i] )
+          ++section;
+      if( section == 1 )
+      {
+        string name = pListBox->Items->Strings[item].c_str();
+        if( ExecutableHelp().StateHelp().Exists( name ) )
+          mHelpOnChannel->Caption =
+            ( string( "Help on the \"" ) + name + "\" state variable" ).c_str();
+
+      }
+    }
+  }
+}
+//---------------------------------------------------------------------------
+

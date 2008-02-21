@@ -71,6 +71,8 @@ class TMainForm : public TForm
     TMenuItem *mHideChannel;
     TMenuItem *mFileClose;
     TLabel *mDragDropHint;
+    TMenuItem *mHelpOnChannel;
+    TMenuItem *N3;
     void __fastcall DragDropWindowProc( TMessage& msg );
     void __fastcall FormCanResize(TObject *Sender, int &NewWidth,
           int &NewHeight, bool &Resize);
@@ -82,6 +84,9 @@ class TMainForm : public TForm
     void __fastcall VerticalScrollerChange(TObject *Sender);
     void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
           TShiftState Shift);
+    void __fastcall HelpOnChannelClick(TObject *Sender);
+    void __fastcall mChannelListBoxContextPopup(TObject *Sender,
+          TPoint &MousePos, bool &Handled);
 
   private:
     void __fastcall WMEraseBkgnd( TWMEraseBkgnd& );

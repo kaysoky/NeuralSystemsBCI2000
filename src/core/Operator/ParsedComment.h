@@ -42,24 +42,27 @@ class ParsedComment
   public:
     ParsedComment( const Param& );
     // The parameter name.
-    const std::string& Name() const      { return mName; }
+    const std::string& Name() const        { return mName; }
+    // A parameter's help context, typically derived from its subsection.
+    const std::string& HelpContext() const { return mHelpContext; }
     // The parameter comment as modified by the interpretation.
-    const std::string& Comment() const   { return mComment; }
+    const std::string& Comment() const     { return mComment; }
 
-    Kind_type          Kind() const      { return mKind; }
-    const Values_type& Values() const    { return mValues; }
+    Kind_type          Kind() const        { return mKind; }
+    const Values_type& Values() const      { return mValues; }
 
     // This is only relevant for the singleValuedEnum type and represents
     // the numerical parameter value of the first enumeration entry.
-    int                IndexBase() const { return mIndexBase; }
+    int                IndexBase() const   { return mIndexBase; }
 
   // Private members.
   private:
     bool ExtractEnumValues( const Param& p );
     bool IsBooleanEnum() const;
 
-    std::string mName;
-    std::string mComment;
+    std::string mName,
+                mHelpContext,
+                mComment;
     Kind_type   mKind;
     Values_type mValues;
     int         mIndexBase;

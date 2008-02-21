@@ -156,6 +156,7 @@ object MainForm: TMainForm
     ItemHeight = 13
     PopupMenu = mListBoxPopupMenu
     TabOrder = 10
+    OnContextPopup = mChannelListBoxContextPopup
   end
   object mMainMenu: TMainMenu
     object mFileMenu: TMenuItem
@@ -252,6 +253,13 @@ object MainForm: TMainForm
     end
     object mHideChannel: TMenuItem
       Caption = 'Hide Channel(s)'
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object mHelpOnChannel: TMenuItem
+      Caption = 'Help'
+      OnClick = HelpOnChannelClick
     end
   end
 end

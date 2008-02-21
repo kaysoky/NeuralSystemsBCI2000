@@ -148,7 +148,8 @@ ExecutableHelp::InitializeContextHelp()
   {
     fstream tocFileStream( ( htmlPath + TocFileName() ).c_str() );
     string line;
-    getline( tocFileStream, line );
+    while( line.empty() || *line.begin() == '#' )
+      getline( tocFileStream, line );
 
     enum
     {
@@ -175,7 +176,8 @@ ExecutableHelp::InitializeContextHelp()
           sectionLevel = 1;
           if( line.empty() )
             parserState = finished;
-          else if( fileName.find( "%3A" ) != string::npos )
+          else if( fileName.find( "%253A" ) == string::npos )
+            // Valid documentation page names contain a ":" character.
             parserState = insideIgnoredTOC;
           else
             parserState = insideTOC;
@@ -200,7 +202,19 @@ ExecutableHelp::InitializeContextHelp()
               parserState = error;
             else
             {
-              string heading;
+              switch( parserState )
+              {
+                case insideTOC:
+                  break;
+                case insideParams:
+                case insideStates:
+                  if( level <= sectionLevel )
+                    parserState = insideTOC;
+                  break;
+              }
+              string anchor,
+                     heading;
+              iss >> anchor >> ws;
               getline( iss, heading );
               switch( parserState )
               {
@@ -219,34 +233,30 @@ ExecutableHelp::InitializeContextHelp()
 
                 case insideParams:
                 case insideStates:
-                  if( level < sectionLevel )
-                    parserState = insideTOC;
-                  else
+                {
+                  string::const_iterator i = heading.begin();
+                  while( i != heading.end() )
                   {
-                    string::const_iterator i = heading.begin();
-                    while( i != heading.end() )
+                    string word;
+                    while( ::isalpha( *i ) || *i == '_' )
+                      word += *i++;
+                    if( !word.empty() )
                     {
-                      string word;
-                      while( ::isalpha( *i ) )
-                        word += *i++;
-                      if( !word.empty() )
+                      switch( parserState )
                       {
-                        switch( parserState )
-                        {
-                          case insideParams:
-                            mParamHelp[ word ] = fileName + "#" + heading;
-                            break;
-                            
-                          case insideStates:
-                            mStateHelp[ word ] = fileName + "#" + heading;
-                            break;
-                        }
+                        case insideParams:
+                          mParamHelp.Add( word, fileName + "#" + anchor );
+                          break;
+
+                        case insideStates:
+                          mStateHelp.Add( word, fileName + "#" + anchor );
+                          break;
                       }
-                      while( !::isalpha( *i ) && ( i != heading.end() ) )
-                        ++i;
                     }
+                    while( !::isalpha( *i ) && ( i != heading.end() ) )
+                      ++i;
                   }
-                  break;
+                } break;
               }
               tocLevel = level;
             }
@@ -262,14 +272,19 @@ ExecutableHelp::InitializeContextHelp()
 }
 
 bool
-ExecutableHelp::HelpMap::Open( const std::string& s ) const
+ExecutableHelp::HelpMap::Open( const string& inKey, const string& inContext ) const
 {
   bool result = false;
-  const_iterator i = this->find( s );
-  if( i != this->end() )
+  pair<const_iterator, const_iterator> r = this->equal_range( inKey );
+  const_iterator match = r.first;
+  if( !inContext.empty() )
+    for( const_iterator i = r.first; i != r.second; ++i )
+      if( i->second.find( inContext ) != string::npos )
+        match = i;
+  if( match != this->end() )
   {
 #ifdef _WIN32
-    string helpFileURL = string( "file:///" ) + mPath + i->second;
+    string helpFileURL = string( "file:///" ) + mPath + match->second;
     // ShellExecute doesn't treat anchors properly, so we create a
     // temporary file containing a redirect.
     int bufLen = ::GetTempPath( 0, NULL );

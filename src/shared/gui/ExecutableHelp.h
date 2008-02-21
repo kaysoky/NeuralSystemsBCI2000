@@ -21,18 +21,20 @@ class ExecutableHelp
   ExecutableHelp( int );
   bool Display() const;
 
-  class HelpMap : public std::map<std::string, std::string>
+  class HelpMap : public std::multimap<std::string, std::string>
   {
    public:
     void Clear()
       { this->clear(); }
     bool Empty() const
       { return this->empty(); }
+    void Add( const std::string& key, const std::string& value )
+      { this->insert( make_pair( key, value ) ); }
     bool Exists( const std::string& s ) const
       { return this->find( s ) != end(); }
     void SetPath( const std::string& s )
       { mPath = s; }
-    bool Open( const std::string& ) const;
+    bool Open( const std::string& inKey, const std::string& inContext = "" ) const;
 
    private:
     std::string mPath;

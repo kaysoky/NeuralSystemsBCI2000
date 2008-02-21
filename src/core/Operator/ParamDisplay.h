@@ -93,6 +93,8 @@ class ParamDisplay  // This class is the interface to the outside world.
       protected:
         void AddControl( TControl* c )
              { mControls.insert( c ); }
+        void AddHelp( const ParsedComment& p, TWinControl* c )
+             { mHelpWndProcs.insert( new HelpWndProc( p, c ) ); }
         void __fastcall OnContentChange( TObject* = NULL )
              { mModified = true; }
 
@@ -101,14 +103,26 @@ class ParamDisplay  // This class is the interface to the outside world.
         typedef ControlContainer::iterator ControlIterator;
         ControlContainer                   mControls;
 
-        std::string mParamName;
+        class HelpWndProc
+        {
+         public:
+          HelpWndProc( const ParsedComment&, TWinControl* );
+          ~HelpWndProc();
+         private:
+          void __fastcall WndProc( TMessage& );
+          TWinControl* mpControl;
+          TWndMethod   mWndProc;
+          std::string  mParamName,
+                       mHelpContext;
+        };
+        typedef std::set<HelpWndProc*>     WndProcContainer;
+        typedef WndProcContainer::iterator WndProcIterator;
+        WndProcContainer                   mHelpWndProcs;
+
         bool        mModified;
         int         mTop,
                     mLeft;
         TTrackBar*  mpUserLevel;
-
-        TWndMethod  mWndProc;
-        void __fastcall HelpWndProc( TMessage& );
     };
 
     // This is the base class for all displays where there is a separate label
@@ -208,7 +222,7 @@ class ParamDisplay  // This class is the interface to the outside world.
         virtual void WriteValuesTo( Param& ) const;
         virtual void ReadValuesFrom( const Param& );
       private:
-        TComboBox* mComboBox;
+        TComboBox* mpComboBox;
         int        mIndexBase;
     };
 
@@ -219,7 +233,7 @@ class ParamDisplay  // This class is the interface to the outside world.
         virtual void WriteValuesTo( Param& ) const;
         virtual void ReadValuesFrom( const Param& );
       private:
-        TCheckBox* mCheckBox;
+        TCheckBox* mpCheckBox;
     };
 };
 

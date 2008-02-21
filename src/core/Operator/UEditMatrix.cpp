@@ -7,6 +7,7 @@
 
 #include "UEditMatrix.h"
 #include "BCIError.h"
+#include "ParsedComment.h"
 #include "ExecutableHelp.h"
 #include "UOperatorUtils.h"
 #include "defines.h"
@@ -335,7 +336,8 @@ TfEditMatrix::MatrixToPlainCell_Enabled( int inRow, int inCol ) const
 void
 TfEditMatrix::Help( int, int )
 {
-  ExecutableHelp().ParamHelp().Open( mpMatrixParam->Name() );
+  ParsedComment p( *mpMatrixParam );
+  ExecutableHelp().ParamHelp().Open( p.Name(), p.HelpContext() );
 }
 
 bool

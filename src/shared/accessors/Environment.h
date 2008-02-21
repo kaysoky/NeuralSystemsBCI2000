@@ -52,8 +52,7 @@ class FilterWrapper;
              << std::endl;                                               \
     else                                                                 \
     {                                                                    \
-      if( p.Sections().size() < 2 )                                      \
-        p.Sections().push_back( bci::ClassName( typeid( *this ) ) );     \
+      p.Sections().push_back( bci::ClassName( typeid( *this ) ) );       \
       Parameters->Add( p, -Instance() );                                 \
       bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        \
                    << "sorting by (" << -Instance() << ","               \

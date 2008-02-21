@@ -24,6 +24,9 @@ ParsedComment::ParsedComment( const Param& p )
   mKind( unknown ),
   mComment( p.Comment() )
 {
+  if( !p.Sections().empty() )
+    mHelpContext = *p.Sections().rbegin();
+
   // Look for "interpretation hints" in the comment.
   // Unknown hints (syntax errors) will show up in the operator's comment display.
   const struct
