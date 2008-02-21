@@ -1333,7 +1333,7 @@ void CElectrodeCollection::EstimateElectrodeMinMax()
 /// Performs the autoscaling and estimation of the minimum and maximum value
 /// of all or only the electrodes defined in #vautoscalechannellist.
 ///////////////////////////////////////////////////////////////////////////////
-void CElectrodeCollection::Process()
+void CElectrodeCollection::Process(bool bsilent)
 {
   AnsiString szminvalueelectrodes;
   AnsiString szmaxvalueelectrodes;
@@ -1342,7 +1342,9 @@ void CElectrodeCollection::Process()
 
   // estimate the minimum and maximum of all or only the electrodes
   // defined in vautoscalechannellist.
-  EstimateElectrodeMinMax();
+  if (!bsilent) {
+    EstimateElectrodeMinMax();
+  }
 
   // in the case of autoscaling
   if (bautoscale) {

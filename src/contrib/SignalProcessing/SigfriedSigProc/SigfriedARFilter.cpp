@@ -44,6 +44,8 @@ SigfriedARFilter::SigfriedARFilter()
 //      "// file that contains the signal model",
 
 
+
+
  BEGIN_PARAMETER_DEFINITIONS
   "Filtering matrix ModelFiles= "
       "{ 1 2 3} " // row labels
@@ -1301,7 +1303,6 @@ void SigfriedARFilter::StartRun()
 
 void SigfriedARFilter::StopRun()
 {
-  bprocessing             = false;
 
   TBorderIcons BorderIcons = TBorderIcons() << biSystemMenu << biMinimize << biMaximize;
 
@@ -1313,6 +1314,15 @@ void SigfriedARFilter::StopRun()
     Parameter("ModelFiles")(index_model,4) = vpForm[index_model]->Width;
 
   }
+
+  bprocessing             = false;
+
+  FormResize(NULL);
+
+  for (unsigned int index_model=0; index_model < num_models; index_model++) {
+    vpElectrodeRenderer[index_model]->Process(true);
+  }
+
 
 }
 

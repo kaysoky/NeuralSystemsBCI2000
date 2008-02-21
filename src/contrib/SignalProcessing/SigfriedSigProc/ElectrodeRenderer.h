@@ -59,7 +59,7 @@ class CElectrodeRenderer
                         int                    originy);
 
     void Render();
-    void Process();
+    void Process(bool bsilient=false);
 
     void SetCursorPos(int cursorposx, int cursorposy);
 

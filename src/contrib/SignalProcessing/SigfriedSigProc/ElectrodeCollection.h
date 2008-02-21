@@ -44,7 +44,7 @@ class CElectrodeCollection
                                                      TColor color, bool marked=false, TColor colormarker=clBlack);
 
     void                RegisterRenderer            (CElectrodeRenderer *prenderer);
-    void                Process                     ();
+    void                Process                     (bool bsilent=false);
     void                Render                      ();
     void                RenderInit                  (TForm *powner,
                                                      TRect  boundingboxelectrodes,

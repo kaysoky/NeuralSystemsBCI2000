@@ -241,11 +241,11 @@ void CElectrodeRenderer::UpdateCollectionDevice(int   index,
 /// Finishes iteration of all instances of #CElectrodeCollection added with
 /// #AddCollection.
 ///////////////////////////////////////////////////////////////////////////////
-void CElectrodeRenderer::Process()
+void CElectrodeRenderer::Process(bool bsilient)
 {
   for (unsigned int index=0; index < vcollection.size(); index++) {
     if (vcollection[index].brender) {
-      vcollection[index].pelectrodecollection->Process();
+      vcollection[index].pelectrodecollection->Process(bsilient);
     }
   }
 }
