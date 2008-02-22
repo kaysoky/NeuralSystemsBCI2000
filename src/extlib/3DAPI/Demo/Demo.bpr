@@ -28,8 +28,8 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
     <MAINSOURCE value="Demo.cpp"/>
-    <INCLUDEPATH value="..\..\..\shared\bcistream;..\..\..\shared\fileio;..\;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\shared\bcistream;..\..\..\shared\fileio;..\;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\;..\..\..\shared;..\..\..\shared\bcistream;..\..\..\shared\fileio;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\;..\..\..\shared\bcistream;..\..\..\shared\fileio;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -110,16 +110,19 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=3
-Item0=..\;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..\shared\utils;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\;..;..\..\..\..\shared\config;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Count=5
+Item0=..\..\..\shared;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\shared\bcistream;..\..\..\shared\fileio;..\;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..\shared\utils;..;..\..\..\shared\config;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\;..;..\..\..\..\shared\config;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=3
-Item0=..\;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..\shared\utils;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\;..;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=4
+Item0=..\..\..\shared\bcistream;..\..\..\shared\fileio;..\;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..\shared\utils;..;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\;..;..\..\..\..\shared\utils;..\..\..\..\shared\types;..\..\..\..\shared\gui;..\..\..\..;$(BCB)\Projects\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
