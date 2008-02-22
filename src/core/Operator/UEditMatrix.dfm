@@ -70,7 +70,7 @@ object fEditMatrix: TfEditMatrix
     Top = 48
     Width = 41
     Height = 22
-    MaxValue = 256
+    MaxValue = 32767
     MinValue = 1
     TabOrder = 1
     Value = 4
@@ -80,7 +80,7 @@ object fEditMatrix: TfEditMatrix
     Top = 48
     Width = 41
     Height = 22
-    MaxValue = 10000
+    MaxValue = 32767
     MinValue = 1
     TabOrder = 2
     Value = 4
