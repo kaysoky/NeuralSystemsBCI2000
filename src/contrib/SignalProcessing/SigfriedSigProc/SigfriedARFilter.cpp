@@ -1242,6 +1242,7 @@ void __fastcall SigfriedARFilter::FormResize(TObject *Sender)
     // Render the changes.
     for (unsigned int index_model=0; index_model < num_models; index_model++) {
       vpElectrodeRenderer[index_model]->RenderInit(10,20);
+      vpElectrodeRenderer[index_model]->Process(true);
       vpElectrodeRenderer[index_model]->Render();
     }
 
@@ -1318,10 +1319,6 @@ void SigfriedARFilter::StopRun()
   bprocessing             = false;
 
   FormResize(NULL);
-
-  for (unsigned int index_model=0; index_model < num_models; index_model++) {
-    vpElectrodeRenderer[index_model]->Process(true);
-  }
 
 
 }
