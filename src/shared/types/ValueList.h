@@ -32,7 +32,7 @@ ValueList<T>::ReadFromStream( std::istream& is )
   if( Brackets::IsOpening( is.peek() ) )
     closingBracket = Brackets::ClosingMatch( is.get() );
   else
-    is.setstate( ios::failbit );
+    is.setstate( std::ios::failbit );
   is >> ws;
 
   T t;
@@ -42,7 +42,7 @@ ValueList<T>::ReadFromStream( std::istream& is )
   if( is.peek() == closingBracket )
     is.get();
   else
-    is.setstate( ios::failbit );
+    is.setstate( std::ios::failbit );
   return is;
 }
 

@@ -24,7 +24,8 @@ using namespace std;
 // Parameters: Pointer into memory buffer.
 // Returns:    Data value.
 // **************************************************************************
-static template<typename T>
+template<typename T>
+static
 GenericSignal::ValueType
 ReadValue( const char* p )
 {
@@ -37,7 +38,8 @@ ReadValue( const char* p )
 // Parameters: Pointer into memory buffer.
 // Returns:    Data value.
 // **************************************************************************
-static template<typename T>
+template<typename T>
+static
 GenericSignal::ValueType
 ReadValue_SwapBytes( const char* p )
 {

@@ -60,7 +60,7 @@ class BCI2000FileReader
                 { return mNumSamples; }
   float SamplingRate() const
         { return mSamplingRate; }
-  const SignalProperties&
+  const class SignalProperties&
         SignalProperties() const
         { return mSignalProperties; }
   const std::string&
@@ -73,7 +73,7 @@ class BCI2000FileReader
                      { return &mParamlist; }
   const StateList*   States() const
                      { return &mStatelist; }
-  const StateVector* StateVector() const
+  const class StateVector* StateVector() const
                      { return mpStatevector; }
   const ParamRef     Parameter( const std::string& name ) const;
   const StateRef     State( const std::string& name ) const;

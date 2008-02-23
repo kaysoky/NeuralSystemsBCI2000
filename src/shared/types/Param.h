@@ -212,41 +212,41 @@ class Param
                      { return Value( mDim1Index[ rowLabel ], mDim2Index[ colLabel ] ); }
 
   // Labels
-  LabelIndex&       RowLabels()
-                    { mChanged = true; return mDim1Index; }
-  const LabelIndex& RowLabels() const
-                    { return mDim1Index; }
+  LabelIndex&         RowLabels()
+                      { mChanged = true; return mDim1Index; }
+  const LabelIndex&   RowLabels() const
+                      { return mDim1Index; }
 
-  LabelIndex&       ColumnLabels()
-                    { mChanged = true; return mDim2Index; }
-  const LabelIndex& ColumnLabels() const
-                    { return mDim2Index; }
+  LabelIndex&         ColumnLabels()
+                      { mChanged = true; return mDim2Index; }
+  const LabelIndex&   ColumnLabels() const
+                      { return mDim2Index; }
 
-  LabelIndex&       Labels()
-                    { mChanged = true; return mDim1Index; }
-  const LabelIndex& Labels() const
-                    { return mDim1Index; }
+  LabelIndex&         Labels()
+                      { mChanged = true; return mDim1Index; }
+  const LabelIndex&   Labels() const
+                      { return mDim1Index; }
 
   // Stream io
-  std::ostream&     WriteToStream( std::ostream& ) const;
-  std::istream&     ReadFromStream( std::istream& );
-  std::ostream&     WriteBinary( std::ostream& ) const;
-  std::istream&     ReadBinary( std::istream& );
+  std::ostream&       WriteToStream( std::ostream& ) const;
+  std::istream&       ReadFromStream( std::istream& );
+  std::ostream&       WriteBinary( std::ostream& ) const;
+  std::istream&       ReadBinary( std::istream& );
 
  private:
-  HierarchicalLabel mSections;
-  EncodedString     mName,
-                    mType,
-                    mDefaultValue,
-                    mLowRange,
-                    mHighRange;
-  std::string       mComment;
-  LabelIndex        mDim1Index,
-                    mDim2Index;
+  HierarchicalLabel   mSections;
+  EncodedString       mName,
+                      mType,
+                      mDefaultValue,
+                      mLowRange,
+                      mHighRange;
+  std::string         mComment;
+  LabelIndex          mDim1Index,
+                      mDim2Index;
   typedef std::vector<ParamValue> ValueContainer;
-  ValueContainer    mValues;
-  bool              mChanged;
-  const std::string cEmptyString;
+  ValueContainer      mValues;
+  bool                mChanged;
+  const EncodedString cEmptyString;
 
  // A comparator that compares parameters by their section entries.
  public:

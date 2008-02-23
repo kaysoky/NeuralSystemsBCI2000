@@ -93,36 +93,36 @@ class VisSignalProperties : public VisBase
 {
   public:
     VisSignalProperties() {}
-    VisSignalProperties( const std::string& inSourceID, const SignalProperties& inSignalProperties )
+    VisSignalProperties( const std::string& inSourceID, const ::SignalProperties& inSignalProperties )
     : VisBase( inSourceID ), mSignalProperties( inSignalProperties ) {}
-    VisSignalProperties( const SignalProperties& inSignalProperties )
+    VisSignalProperties( const ::SignalProperties& inSignalProperties )
     : mSignalProperties( inSignalProperties ) {}
     virtual void ReadBinarySelf( std::istream& );
     virtual void WriteBinarySelf( std::ostream& ) const;
 
-    const class SignalProperties& SignalProperties() const { return mSignalProperties; }
-    operator const class SignalProperties&() const         { return mSignalProperties; }
+    const ::SignalProperties& SignalProperties() const { return mSignalProperties; }
+    operator const ::SignalProperties&() const         { return mSignalProperties; }
 
   private:
-    class SignalProperties mSignalProperties;
+    ::SignalProperties mSignalProperties;
 };
 
 class VisBitmap : public VisBase
 {
   public:
     VisBitmap() {}
-    VisBitmap( const std::string& inSourceID, const BitmapImage& inBitmap )
+    VisBitmap( const std::string& inSourceID, const ::BitmapImage& inBitmap )
     : VisBase( inSourceID ), mBitmap( inBitmap ) {}
-    VisBitmap( const BitmapImage& inBitmap )
+    VisBitmap( const ::BitmapImage& inBitmap )
     : mBitmap( inBitmap ) {}
     virtual void ReadBinarySelf( std::istream& );
     virtual void WriteBinarySelf( std::ostream& ) const;
 
-    const class BitmapImage& BitmapImage() const { return mBitmap; }
-    operator const class BitmapImage&() const    { return mBitmap; }
+    const ::BitmapImage& BitmapImage() const { return mBitmap; }
+    operator const ::BitmapImage&() const    { return mBitmap; }
 
   private:
-    class BitmapImage mBitmap;
+    ::BitmapImage mBitmap;
 };
 
 class GenericVisualization : public std::ostream
