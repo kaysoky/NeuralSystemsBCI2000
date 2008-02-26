@@ -10,6 +10,7 @@
 #include "TDTADC.h"
 #include "RPCOXLib_OCX.h"
 #include "ZBUSXLib_OCX.h"
+#include <stdio.h>
 
 class TDTBCI : public GenericADC
 {
@@ -23,20 +24,21 @@ public:
     void Process( const GenericSignal&, GenericSignal&);
     void Halt();
 
+    void reset();
+
 private:
     class TRPcoX *RPcoX1;
     class TRPcoX *RPcoX2;
     class TZBUSx *ZBus;
+
+    void dropSamples(GenericSignal& outputSignal);
     
     int	mSourceCh;
     int	mSampleBlockSize;
     int mSamplingRate;
     int mOffset;
     int nChannels;
-    int nChannels1;
-    int nChannels2;
-    int nProcessors1;
-    int nProcessors2;
+    int nProcessors;
     double LPFfreq;
     double HPFfreq;
     double notchBW;
@@ -44,6 +46,7 @@ private:
     double TDTgain;
     int TDTbufSize;
     int blockSize;
+    short connectType;
     int curindex, stopIndex, indexMult;
     int devAddr[2];
     bool use2RX5;
@@ -52,11 +55,18 @@ private:
     int ECGchannel;
     int ECGoffset;
     int ECGstopIndex;
+    int mUseFrontPanel;
+    int mEEGchannels;
+    int mFrontPanelChannels;
+    float mDigitalGain;
+    float mFrontPanelGain;
+    FILE * logFile;
     
 	float *dataA;// = new float[valuesToRead];
 	float *dataB;// = new float[valuesToRead];
 	float *dataC;// = new float[valuesToRead];
 	float *dataD;// = new float[valuesToRead];
+    float *dataE;
     /*float *dataA2;
     float *dataB2;
     float *dataC2;

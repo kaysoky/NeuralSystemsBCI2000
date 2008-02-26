@@ -5,6 +5,7 @@
 #include "TDTBCI.h"
 #include "BCIError.h"
 
+#include "PrecisionTime.h"
 using namespace std;
 
 RegisterFilter( TDTBCI, 1);
@@ -17,17 +18,15 @@ RPcoX2(NULL),
   dataA(NULL),
   dataB(NULL),
   dataC(NULL),
-  dataD(NULL)
-
+  dataD(NULL),
+  dataE(NULL)
 {
+
     mSourceCh = 0;
     mSampleBlockSize = 0;
     mSamplingRate = 0;
     nChannels = 0;
-    nChannels1 = 0;
-    nChannels2 = 0;
-    nProcessors1 = 0;
-    nProcessors2 = 0;
+    nProcessors = 0;
     use2RX5 = false;
     mOffset = 0;
     LPFfreq = 0;
@@ -36,7 +35,7 @@ RPcoX2(NULL),
     TDTsampleRate = 24414.0625;
     TDTgain = 1;
     blockSize = 0;
-    TDTbufSize = 32000;
+    TDTbufSize = 32768;
     curindex = 0;
     stopIndex = 0;
     indexMult = 1;
@@ -46,39 +45,29 @@ RPcoX2(NULL),
     ECGgain = 0;
 	
     BEGIN_PARAMETER_DEFINITIONS
-        "Source int SourceCh= 64 64 1 128"
-		    "// The number of channels acquired",
-        "Source int SoftwareChBoard1= 64 64 1 64"
-		    "// Number of channels on first RX5 (ignored if only one RX5)",
-        "Source int SoftwareChBoard2= 64 64 1 64"
-		    "// Number of channels on 2nd RX5 (ignored if only one RX5)",
-        "Source int SampleBlockSize= 16 5 1 128"
-		    "//number of samples transmitted at a time",
-        "Source int SamplingRate=   512 128 1 4000"
-		    "//sample rate",
-        "Source string CircuitPath= c:\\bci2000\\src\\EEGsource\\TuckerDavis\\ 0 0 1024"
-		    "//RCO circuit path",
-        "Source string CircuitName= chAcquire64.rco 0 0 1024"
-		    "//RCO Circuit name",
-        "Source float LPFfreq= 256 256 0 1024"
+        "Source:TDT string CircuitPath= c:\\bci2000\\src\\EEGsource\\TuckerDavis\\chAcquire64.rco 0 0 1024"
+		    "//RCO circuit path (inputfile)",
+        "Source:TDT float LPFfreq= 256 256 0 1024 "
 		    "//Low Pass Filter Frequency",
-        "Source float HPFfreq= 3 3 0 256"
+        "Source:TDT float HPFfreq= 3 3 0 256"
 		    "//High Pass Filter Frequency",
-        "Source float notchBW= 10 10 1 30"
+        "Source:TDT float notchBW= 10 10 1 30 "
 		    "//60 Hz notch filter BW",
-        "Source float TDTgain= 1 1 1 32768"
+        "Source:TDT float TDTgain= 1 1 1 100000000"
 		    "//TDT pre-gain",
-        "Source int nProcessorsBoard1= 5 5 0 0"
-		    "// Number of 1st RX5 processors (set the RCO file accordingly!): ",
-        "Source int nProcessorsBoard2= 0 5 0 0"
-		    "// Number of 2nd RX5 processors (0 if only one board): ",
-        "Source int ECGchannel= -1 0 0 128"
-            "// The source channel of the ECG (-1 if not used)",
-        "Source float ECGgain= 5000 0 0 0 //"
-            "The gain of the ECG channel",
-		END_PARAMETER_DEFINITIONS
-		
-		try
+        "Source:TDT int nProcessors= 5 5 0 5 "
+		    "// Number of processors (set the RCO file accordingly!): ",
+        "Source:TDT int NumEEGchannels= 1 64 1 64 "
+            "// Number of EEG channels to be acquired",
+        "Source:TDT intlist FrontPanelList= 0 0 1 16 "
+            "// list of front panel components to acquire",
+        "Source:TDT float DigitalGain= 1 1 0 % "
+            "// the gain in converting from TTL to float",
+        "Source:TDT float FrontPanelGain= 1 1 0 % "
+            "// the gain in converting from front panel to float",
+    END_PARAMETER_DEFINITIONS
+
+    try
     {
 		RPcoX1 = new TRPcoX( ( TComponent* )NULL );
 		RPcoX2 = new TRPcoX( ( TComponent* )NULL );
@@ -96,19 +85,8 @@ RPcoX2(NULL),
 TDTBCI::~TDTBCI()
 {
     // ...because memory leaks are bad!
-    if (dataA != NULL)
-        delete [] dataA;
-    if (dataB != NULL)
-        delete [] dataB;
-    if (dataC != NULL)
-        delete [] dataC;
-    if (dataD != NULL)
-        delete [] dataD;
-    /*delete [] dataA2;
-    delete [] dataB2;
-    delete [] dataC2;
-    delete [] dataD2;*/
-    //delete [] ECGdata;
+
+    reset();
 	
     Halt();
 
@@ -118,133 +96,128 @@ TDTBCI::~TDTBCI()
         delete RPcoX2;
     if (ZBus!= NULL)
         delete ZBus;
+
+    #ifdef DEBUGLOG
+    fclose(logFile);
+    #endif
 }
 
+void TDTBCI::reset()
+{
+    if (dataA != NULL)
+        delete [] dataA;
+    if (dataB != NULL)
+        delete [] dataB;
+    if (dataC != NULL)
+        delete [] dataC;
+    if (dataD != NULL)
+        delete [] dataD;
+    if (dataE != NULL)
+        delete [] dataE;
+
+    dataA = dataB = dataC = dataD = dataE = NULL;
+}
 //
 void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperties)	const
 {
-    PreflightCondition( Parameter( "TransmitCh" ) <= Parameter( "SourceCh" ) );
-    PreflightCondition( Parameter( "ECGchannel" ) <= Parameter ("SourceCh"));
 	// checks whether the board	works with the parameters requested, and
 	// communicates	the	dimensions of its output signal
-	
-	bool twoBoards = false;
+    if ((Parameter("nProcessors") != 5) && (Parameter("nProcessors") != 2) && (Parameter("nProcessors") != 8))
+    {
+        bcierr << "The number of processors must be either 2, 5, or 8"<<endl;
+        return;
+    }
+
     int devAddrTemp[2];
-	WideString interfaceType("GB");
-    
-	// connect to the ZBus
+
+    WideString interfaceType("GB");
+    // connect to the ZBus
     ZBus->ConnectZBUS(interfaceType.c_bstr());
     devAddrTemp[0] = ZBus->GetDeviceAddr(45,1);
-    devAddrTemp[1] = ZBus->GetDeviceAddr(45,2);
-
-    if (devAddrTemp[0] == 0)
-       bcierr << "There do not seem to be any Pentusas on the rack. Quitting."<<endl;
-    if (devAddrTemp[1] == 0)
-       twoBoards = false;
-       
-    // check the the number of processors given is valid
-    if ((Parameter("nProcessorsBoard1") != 2) && (Parameter("nProcessorsBoard1") != 5))
-    {
-        bcierr << "The number of processors must be either 2 or 5."<<endl;
-    }
-	
-    if ((Parameter("nProcessorsBoard2") != 2) && (Parameter("nProcessorsBoard2") != 5) && (Parameter("nProcessorsBoard2") != 0))
-    {
-        bcierr << "The number of processors for the 2nd system must be either 2 or 5, or 0 if not being used."<<endl;
-    }
-	
-	
-    // check if a 2nd system is being used
-    if (Parameter("nProcessorsBoard2") > 0 && devAddrTemp[1] >= 2)
-        twoBoards=true;
+    devAddrTemp[1] = ZBus->GetDeviceAddr(50,1);
+    short tConnectType;
+    if (devAddrTemp[0] > 0)
+        tConnectType = 0;
+    else if (devAddrTemp[1] > 0)
+        tConnectType = 1;
     else
-        twoBoards=false;
+        bcierr << "There does not seem to be a compatible TDT device on the rack. Quitting."<<endl;
 
-	if (!twoBoards)
+    if ((Parameter("nProcessors") == 2) && tConnectType == 0)
     {
-        if ((Parameter("SourceCh") > 16) && (Parameter("nProcessorsBoard1") == 2))
-            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
-    }
-    else
-    {
-        if ((Parameter("SoftwareChBoard1") > 16) && (Parameter("nProcessorsBoard1") == 2))
-            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
-
-        if ((Parameter("SoftwareChBoard2") > 16) && (Parameter("nProcessorsBoard2") == 2))
-            bcierr << "The maximum number of channels for a 2 processor board must be 16 or less."<<endl;
+        if (Parameter("NumEEGchannels") > 16)
+        {
+            bcierr << "An RX5 with two processors may only use up to 16 channels."<<endl;
+            return;
+        }
     }
 
-    if (twoBoards)
-	{
-		if (Parameter( "SoftwareChBoard1" )+Parameter( "SoftwareChBoard2" ) != Parameter( "SourceCh" ))
-			bcierr << "If we have two systems, SoftwareChBoard1+SoftwareChBoard2 has to equal SourceCh" << endl;
-		
-	}	
-	
-	string circuit = Parameter("CircuitPath"),
-	       circuitName = Parameter("CircuitName");
-	
-	if(	!circuit.empty() &&	'\\' !=	circuit[circuit.size()-1]  ){
-		circuit.append("\\");
-	}
-	
-	circuit.append(circuitName);
+    if ((Parameter("nProcessors") == 5) && tConnectType == 0)
+    {
+        if (Parameter("NumEEGchannels") > 64)
+        {
+            bcierr << "An RX5 with 5 processors may only use up to 64 channels."<<endl;
+            return;
+        }
+    }
+
+    if ((Parameter("nProcessors") == 2) && tConnectType == 1)
+    {
+        if (Parameter("NumEEGchannels") > 16)
+        {
+            bcierr << "An RZ2 with two processors may only use up to 64 channels."<<endl;
+            return;
+        }
+    }
+
+    if ((Parameter("nProcessors") == 8) && tConnectType == 1)
+    {
+        bcierr << "This option has not been implemented yet! Please contact jawilson@cae.wisc.edu for more info"<<endl;
+        return;
+    }
+
+    if (Parameter("FrontPanelList")->NumValues() > 0)
+    {
+        Parameter("FrontPanelList"); // do consistency check
+        int mTotalChannelsTmp = Parameter("FrontPanelList")->NumValues() + (int)Parameter("NumEEGchannels");
+        if (mTotalChannelsTmp != (int)Parameter("SourceCh"))
+        {
+            bcierr << "When using FrontPanelList components, NumEEGchannels and the number of FrontPanelList entries must add to SourceCh."<<endl;
+            return;
+        }
+    }
+
+    string circuit = Parameter("CircuitPath");
+
     long* devNum;
     long* devName;
 
 
-    if (!twoBoards)
-    {
-		bciout <<"Connecting to	Pentusa..."<<endl;
-		if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
-		{
-			bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
-			// error
-		}
-		
-		bciout <<"Loading RCO file..."<<endl;
-		if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
-		{
-			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
-			//error
-		}
+    bciout <<"Connecting to	TDT..."<<endl;
+    switch (tConnectType){
+        case 0:
+            if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
+                bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
+            break;
+        case 1:
+            if (!RPcoX1->ConnectRZ2(interfaceType.c_bstr(),	1))
+                bcierr << "Error connecting	to the RZ2.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
+            break;
+        case 2:
+            bcierr << "Unknown connection (this is a software error!)"<<endl;
     }
-    else
+		
+    bciout <<"Loading RCO/RCX file..."<<endl;
+    if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
     {
-        bciout <<"Connecting to	Pentusa #1..."<<endl;
-		if (!RPcoX1->ConnectRX5(interfaceType.c_bstr(),	1))
-		{
-			bcierr << "Error connecting	to the RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
-			// error
-		}
-		
-        bciout <<"Connecting to	Pentusa #2..."<<endl;
-		if (!RPcoX2->ConnectRX5(interfaceType.c_bstr(),	2))
-		{
-			bcierr << "Error connecting	to the 2nd RX5.	Use	the	zBuzMon	to ensure you are connected, and that you are using an RX5 Pentusa." <<endl;
-			// error
-		}
-		
-		bciout <<"Loading RCO file #1..."<<endl;
-		if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
-		{
-			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
-			//error
-		}
-        bciout <<"Loading RCO file #2..."<<endl;
-		if (!RPcoX2->LoadCOF(WideString(circuit.c_str())))
-		{
-			bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
-			//error
-		}
+        bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
+        //error
     }
-	
-	//status = RPcoX1->GetStatus();
-	
+    
 	RPcoX1->Halt();
     RPcoX2->Halt();
 	
-	outputProperties = SignalProperties(Parameter( "SourceCh"	), Parameter( "SampleBlockSize"	), SignalType::int16);
+	outputProperties = SignalProperties(Parameter( "SourceCh"	), Parameter( "SampleBlockSize"	), SignalType::float32);
 }
 
 void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
@@ -257,13 +230,11 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
 	notchBW	= Parameter("notchBW");
 	blockSize =	Parameter("SampleBlockSize");
     TDTgain = Parameter("TDTgain");
-    nChannels1 = Parameter("SoftwareChBoard1");
-    nChannels2 = Parameter("SoftwareChBoard2");
-    nProcessors1 = Parameter("nProcessorsBoard1");
-    nProcessors2 = Parameter("nProcessorsBoard2");
-    ECGchannel = Parameter("ECGchannel");
-    ECGgain = Parameter("ECGgain");
-	
+    nProcessors = Parameter("nProcessors");
+    mEEGchannels = Parameter("NumEEGchannels");
+	mDigitalGain = (float)Parameter("DigitalGain");
+    mFrontPanelGain = (float)Parameter("FrontPanelGain");
+
     int nSamplesPerSec = floor(TDTsampleRate / mSamplingRate);
     double nSamplingRate = TDTsampleRate / nSamplesPerSec;
     bciout <<"The actual sampling rate is "<<nSamplingRate <<" Hz"<<endl;
@@ -275,24 +246,21 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
 	WideString blockSizeTag	= "blkSize";
     WideString TDTgainTag = "TDTgain";
     WideString nPerTag = "nPer";
-    WideString ECGgainTag = "ECGscale";
-    WideString ECGchannelTag = "ECGch";
+    WideString digGainTag = "DigGain";
+    WideString frontPanelGainTag = "FrontPanelGain";
 	
 	//make sure	we are connected
-	devAddr[0] = ZBus->GetDeviceAddr(45,1);
-    devAddr[1] = ZBus->GetDeviceAddr(45,2);
-
-	if (Parameter("nProcessorsBoard2") > 0 && devAddr[1] > 2 )
-        use2RX5 = true;
+    WideString interfaceType("GB");
+    // connect to the ZBus
+    ZBus->ConnectZBUS(interfaceType.c_bstr());
+    devAddr[0] = ZBus->GetDeviceAddr(45,1);
+    devAddr[1] = ZBus->GetDeviceAddr(50,1);
+    if (devAddr[0] > 0)
+        connectType = 0;
+    else if (devAddr[1] > 0)
+        connectType = 1;
     else
-        use2RX5 = false;
-	//...
-
-    if (Parameter("ECGchannel") < 0)
-        useECG = false;
-    else
-        useECG = true;
-
+        bcierr << "There does not seem to be a compatible TDT device on the rack. Quitting."<<endl;
 
 	// set the number of channels
 	// the real	number of channels should be a multiple	of four
@@ -318,54 +286,24 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
 	
     if (!RPcoX1->SetTagVal(nPerTag.c_bstr(), nSamplesPerSec))
 	{
-		bcierr << "Error setting TDT sample rate."	<< endl;
+		bcierr << "Error setting TDT sample rate." << endl;
 	}
 
-        /*
-    // set up the second system if necessary
-    if (use2RX5)
-    {
-		// set filtering stuff
-		if (!RPcoX2->SetTagVal(LPFfreqTag.c_bstr(),	LPFfreq))
-		{
-			bcierr << "Error setting LPF tag." << endl;
-		}
-		if (!RPcoX2->SetTagVal(HPFfreqTag.c_bstr(),	HPFfreq))
-		{
-			bcierr << "Error setting HPF tag." << endl;
-		}
-		if (!RPcoX2->SetTagVal(notchBWTag.c_bstr(),	notchBW))
-		{
-			bcierr << "Error setting notch BW tag."	<< endl;
-		}
-		if (!RPcoX2->SetTagVal(TDTgainTag.c_bstr(),	TDTgain))
-		{
-			bcierr << "Error setting TDT pre-gain."	<< endl;
-		}
-		if (!RPcoX2->SetTagVal(nPerTag.c_bstr(), nSamplesPerSec))
-		{
-			bcierr << "Error setting TDT sample rate."	<< endl;
-		}
-    }
-    */
+    if (!RPcoX1->SetTagVal(digGainTag.c_bstr(), mDigitalGain))
+	{
+		bciout << "Error setting Digital Gain gain." << endl;
+	}
 
-    if (useECG)
-    {
-    	/*
-        if (!RPcoX1->SetTagVal(ECGchannelTag.c_bstr(), ECGchannel))
-            bcierr << "Error setting ECG channel tag." <<endl;
+    if (!RPcoX1->SetTagVal(frontPanelGainTag.c_bstr(), mFrontPanelGain))
+	{
+		bciout << "Error setting Front Panel gain." << endl;
+	}
 
-        if (!RPcoX1->SetTagVal(ECGgainTag.c_bstr(), ECGgain))
-            bcierr << "Error setting ECG gain tag."<<endl;
-        bciout <<"ECGgain: "<<ECGgain<<endl;
-        */
-        ECGgain = ECGgain/TDTgain;
-    }
-	
     // initialize the data buffers
+    reset();
     dataA = new float[valuesToRead];
-	
-	if (nProcessors1 == 5)
+
+	if ((nProcessors == 5 && connectType == 0) || (connectType == 1))
     {
         // initialize data buffers
         dataB = new float[valuesToRead];
@@ -373,32 +311,26 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
         dataD = new float[valuesToRead];
     }
 
-    /*
-    if (use2RX5)
+    mUseFrontPanel = Parameter("FrontPanelList")->NumValues() > 0;
+    if (mUseFrontPanel)
     {
-        dataA2 = new float[valuesToRead];
-
-        if (nProcessors2 == 5)
-        {
-            dataB2 = new float[valuesToRead];
-            dataC2 = new float[valuesToRead];
-            dataD2 = new float[valuesToRead];
-        }
+        mFrontPanelChannels = Parameter("FrontPanelList")->NumValues();
+        dataE = new float[valuesToRead];
     }
-    */
-    	
-    // reset the hardware and all conditions
-    ZBus->zBusTrigA(0, 0, 5);
+
+    // reset the hardware and all conditions     
     mOffset = 0;
-    ECGoffset = 0;
-    
+    #ifdef DEBUGLOG
+    logFile = fopen("TDT_debugLog.txt","w");
+    #endif    
 	// Start TDT
 	RPcoX1->Run();
+    ZBus->zBusTrigA(0, 0, 5);
 }
 
 void TDTBCI::Halt()
 {
-	bciout <<"Halting the TDT..."<<endl;
+	//bciout <<"Halting the TDT..."<<endl;
 	RPcoX1->Halt();
 	// Halt	the	TDT
 }
@@ -408,139 +340,129 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
 {
 	int	valuesToRead = mSampleBlockSize*16;
     int curSample = 0;
+    unsigned short curTime;
 	
     stopIndex = mOffset + valuesToRead;
-    ECGstopIndex = ECGoffset + mSampleBlockSize;
 	
 	short* buffer;
-	WideString dataTagA("dataA"), dataTagB("dataB"), dataTagC("dataC"),	dataTagD("dataD");
-    WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD");
-    WideString ECGdataTag("ECGdata"), ECGindexTag("ECGindex");
+	WideString dataTagA("dataA"), dataTagB("dataB"), dataTagC("dataC"),	dataTagD("dataD"), dataTagE("dataE");
+    WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD"), indexE("indexE");
 
     curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-	
+
+    #ifdef DEBUGLOG
+        fprintf(logFile, "Offset: %d\tSI: %d\tCI: %d\t", mOffset, stopIndex, curindex);
+    #endif
+    int waitCount=0;
+    curTime = PrecisionTime::Now();
     if (stopIndex < TDTbufSize)
     {
 		while (curindex < stopIndex)
 		{
+            //Sleep(1);
 			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-			Sleep(1);
 		}
     }
     else
     {
-        stopIndex = stopIndex % TDTbufSize;
+        stopIndex = stopIndex % (TDTbufSize);
         // this needs to be updated for the buffer wrap-around in the TDT
         bool done = false;
         while (!done)
         {
+            //Sleep(1);
             curindex = RPcoX1->GetTagVal(indexA.c_bstr());
             if  (curindex >= stopIndex && curindex < (TDTbufSize - valuesToRead))
                 done = true;
         }
     }
+    unsigned short tDiff = PrecisionTime::TimeDiff(curTime, PrecisionTime::Now());
+
+    #ifdef DEBUGLOG
+        fprintf(logFile, "CI(end): %d\tT1:%d\t", curindex, tDiff);
+    #endif
 
     // read	in each	data buffer
 	if(!RPcoX1->ReadTag(dataTagA.c_bstr(), dataA, mOffset, valuesToRead))
 	{
-		bcierr << "Error reading data from Pentusa (A)."<<endl;
+		bcierr << "Error reading data from TDT (A)."<<endl;
 	}
-	
-	if (nProcessors1 == 5)
+
+	if ((nProcessors == 5 && connectType == 0) || connectType == 1)
     {
 		if(!RPcoX1->ReadTag(dataTagB.c_bstr(), dataB, mOffset, valuesToRead))
 		{
-			bcierr <<	"Error reading data	from Pentusa (B)."<<endl;
+			bcierr <<	"Error reading data from TDT (B)."<<endl;
 		}
 		
 		if(!RPcoX1->ReadTag(dataTagC.c_bstr(), dataC, mOffset, valuesToRead))
 		{
-			bcierr <<	"Error reading data	from Pentusa (C)."<<endl;
+			bcierr <<	"Error reading data from TDT (C)."<<endl;
 		}
 		
 		if(!RPcoX1->ReadTag(dataTagD.c_bstr(), dataD, mOffset, valuesToRead))
 		{
-			bcierr <<	"Error reading data	from Pentusa (D)."<<endl;
+			bcierr <<	"Error reading data from TDT (D)."<<endl;
 		}
     }
 
-    /*
-    if (use2RX5)
+    if (mUseFrontPanel > 0)
     {
-		if(!RPcoX2->ReadTag(dataTagA.c_bstr(), dataA2, mOffset, valuesToRead))
+        if(!RPcoX1->ReadTag(dataTagE.c_bstr(), dataE, mOffset, valuesToRead))
 		{
-			bcierr <<	"Error reading data	from Pentusa2 (A)."<<endl;
-		}
-		
-		if (nProcessors1 == 5)
-		{
-			if(!RPcoX2->ReadTag(dataTagB.c_bstr(), dataB2, mOffset, valuesToRead))
-			{
-				bcierr <<	"Error reading data	from Pentusa2 (B)."<<endl;
-			}
-			
-			if(!RPcoX2->ReadTag(dataTagC.c_bstr(), dataC2, mOffset, valuesToRead))
-			{
-				bcierr <<	"Error reading data	from Pentusa2 (C)."<<endl;
-			}
-			
-			if(!RPcoX2->ReadTag(dataTagD.c_bstr(), dataD2, mOffset, valuesToRead))
-			{
-				bcierr <<	"Error reading data	from Pentusa2 (D)."<<endl;
-			}
+			bcierr << "Error reading data from TDT front panel."<<endl;
 		}
     }
-    */
 
-    /*
-    if (useECG)
-    {
-        if (!RPcoX1->ReadTag(ECGdataTag.c_bstr(), ECGdata, ECGoffset, mSampleBlockSize))
-            bcierr << "Error reading ECG data from the Pentusa." <<endl;
-    }
-    */
-	
-    // update the index and offset
     mOffset = (mOffset + valuesToRead) % (TDTbufSize);
-    ECGoffset = (ECGoffset + mSampleBlockSize) % TDTbufSize;
-
-    for (int ch =0; ch < mSourceCh; ch++)
+    #ifdef DEBUGLOG
+    fprintf(logFile, "EndT: %d\tNewOffset: %d\t", mOffset,PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
+    #endif
+    curTime = PrecisionTime::Now();
+    for (int ch =0; ch < mEEGchannels; ch++)
     {
         for (int sample = 0; sample < mSampleBlockSize; sample++)
         {
-            curSample = sample*16+ch%16;
-
-            if (ch < 16)
-                outputSignal(ch, sample) = dataA[curSample];
-            else if (ch >= 16 && ch < 32)
-                outputSignal(ch%16 + 16, sample) = dataB[curSample];
-            else if (ch >= 32 && ch < 48)
-                outputSignal(ch%16 + 32, sample) = dataC[curSample];
-            else if (ch >= 48 && ch < 64)
-                outputSignal(ch%16 + 48, sample) = dataD[curSample];
-
-            if (useECG && (ch == (ECGchannel-1)))
-                outputSignal(ECGchannel-1, sample) =
-                	outputSignal(ECGchannel-1, sample)*ECGgain;
-
-                        /*
-            if (nProcessors2 == 0)
-                continue;
-
-            if (ch >= 64 && ch < 80)
-                outputSignal(ch%16 + 64, sample) = dataA2[curSample];
-            else if (ch >= 80 && ch < 96)
-                outputSignal(ch%16 + 80, sample) = dataB2[curSample];
-            else if (ch >= 96 && ch < 112)
-                outputSignal(ch%16 + 96, sample) = dataC2[curSample];
-            else if (ch >= 112 && ch < 128)
-                outputSignal(ch%16 + 112, sample) = dataD2[curSample];
-                */
+            curSample = sample*16+ch%(16);
+            if (ch < mEEGchannels)
+            {
+                if (ch < 16)
+                    outputSignal(ch, sample) = dataA[curSample];
+                else if (ch >= 16 && ch < 32)
+                    outputSignal(ch, sample) = dataB[curSample-16];
+                else if (ch >= 32 && ch < 48)
+                    outputSignal(ch, sample) = dataC[curSample-32];
+                else if (ch >= 48 && ch < 64)
+                    outputSignal(ch, sample) = dataD[curSample-48];
+            }
         }
     }
+    for (int fCh = 0; fCh < mFrontPanelChannels; fCh++)
+    {
+        for (int sample = 0; sample < mSampleBlockSize; sample++)
+        {
+            curSample = sample*16 + ((int)Parameter("FrontPanelList")(fCh)-1);
+            outputSignal(mEEGchannels+fCh, sample) = dataE[curSample];
+        }
+    }
+    #ifdef DEBUGLOG
+        fprintf(logFile,"WT: %d\n", PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
+    #endif
+    //bciout << "T: " << (unsigned short)PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()) << "ms"<<endl;
 	// END DATA	READ
 }
 //---------------------------------------------------------------------------
 
+void TDTBCI::dropSamples(GenericSignal& outputSignal)
+{
+    //just write zeros into the data
+    for (int ch =0; ch < mSourceCh; ch++)
+    {
+        for (int sample = 0; sample < mSampleBlockSize; sample++)
+        {
+            outputSignal(ch, sample) = 0;
+        }
+    }
+}
 #pragma	package(smart_init)
 

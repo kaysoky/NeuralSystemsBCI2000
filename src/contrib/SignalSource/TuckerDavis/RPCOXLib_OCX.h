@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -13,13 +10,13 @@
 // ************************************************************************ //
 
 // C++ TLBWRTR : $Revision$
-// File generated on 3/18/2005 11:28:45 AM from Type Library described below.
+// File generated on 1/23/2008 5:37:25 PM from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: c:\TDT\ActiveX\RPcoX.ocx (1)
+// Type Lib: c:\tdt\ActiveX\RPcoX.ocx (1)
 // LIBID: {D323A622-1D13-11D4-8858-444553540000}
 // LCID: 0
-// Helpfile: c:\TDT\ActiveX\RPcoX.hlp
+// Helpfile: c:\tdt\ActiveX\RPcoX.hlp
 // HelpString: RPcoX ActiveX Control module
 // DepndLst: 
 //   (1) v2.0 stdole, (C:\WINDOWS\System32\stdole2.tlb)
@@ -30,6 +27,7 @@
 #pragma option push -b -w-inl
 
 #include <olectrls.hpp>
+#include <oleserver.hpp>
 #include <utilcls.h>
 #if !defined(__UTILCLS_H_VERSION) || (__UTILCLS_H_VERSION < 0x0600)
 //
@@ -162,6 +160,13 @@ public:
   long            __fastcall ConnectRX5(BSTR IntName, long DevNum);
   long            __fastcall ConnectRX6(BSTR IntName, long DevNum);
   long            __fastcall ConnectRX7(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRX8(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRX9(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ2(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ3(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ4(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ5(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ6(BSTR IntName, long DevNum);
 
   // OCX properties
   //

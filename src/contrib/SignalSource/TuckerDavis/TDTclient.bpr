@@ -4,15 +4,15 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\prog\TDTclient.exe"/>
-    <OBJFILES value="obj\TDTclient.obj obj\TDTBCI.obj obj\RPCOXLib_OCX.obj obj\RPCOXLib_TLB.obj 
-      obj\ZBUSXLib_OCX.obj obj\ParamRef.obj obj\Environment.obj 
-      obj\BCIError_module.obj obj\BCIError.obj obj\NullFileWriter.obj 
-      obj\BCIDirectory.obj obj\FileWriterBase.obj obj\BCI2000FileWriter.obj 
-      obj\GDFFileWriter.obj obj\EDFFileWriter.obj obj\EDFFileWriterBase.obj 
-      obj\GDF.obj obj\MessageHandler.obj obj\CoreModule.obj 
-      obj\CoreModuleVCL.obj obj\SysCommand.obj obj\Color.obj 
-      obj\EncodedString.obj obj\GenericSignal.obj obj\GenericVisualization.obj 
-      obj\Label.obj obj\Param.obj obj\ParamList.obj obj\SignalProperties.obj 
+    <OBJFILES value="obj\TDTclient.obj obj\TDTBCI.obj obj\RPCOXLib_OCX.obj obj\ZBUSXLib_OCX.obj 
+      obj\ParamRef.obj obj\Environment.obj obj\BCIError_module.obj 
+      obj\BCIError.obj obj\NullFileWriter.obj obj\BCIDirectory.obj 
+      obj\FileWriterBase.obj obj\BCI2000FileWriter.obj obj\GDFFileWriter.obj 
+      obj\EDFFileWriter.obj obj\EDFFileWriterBase.obj obj\GDF.obj 
+      obj\MessageHandler.obj obj\CoreModule.obj obj\CoreModuleVCL.obj 
+      obj\SysCommand.obj obj\Color.obj obj\EncodedString.obj 
+      obj\GenericSignal.obj obj\GenericVisualization.obj obj\Label.obj 
+      obj\Param.obj obj\ParamList.obj obj\SignalProperties.obj 
       obj\SignalType.obj obj\State.obj obj\StateList.obj obj\StateVector.obj 
       obj\Status.obj obj\VersionInfo.obj obj\ClassName.obj 
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
@@ -27,14 +27,14 @@
     <LIBRARIES value="rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;MODTYPE=1"/>
+    <USERDEFINES value="MODTYPE=1;_DEBUG"/>
     <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
     <MAINSOURCE value="TDTclient.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -43,9 +43,8 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y 
-      -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$YD -$W -$O- -$A8 -v -JPHNE"/>
+    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zi"/>
     <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
@@ -61,8 +60,7 @@
       <FILE FILENAME="TDTclient.cpp" FORMNAME="" UNITNAME="TDTclient" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="TDTBCI.cpp" FORMNAME="" UNITNAME="TDTBCI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="RPCOXLib_OCX.cpp" FORMNAME="" UNITNAME="RPCOXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="RPCOXLib_TLB.cpp" FORMNAME="" UNITNAME="RPCOXLib_TLB" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="ZBUSXLib_OCX.cpp" FORMNAME="" UNITNAME="ZBUSXLib_OCX" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ZBUSXLib_OCX.cpp" FORMNAME="" UNITNAME="ZBUSXLib_OCX.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -139,26 +137,26 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlIncludePath]
 Count=2
 Item0=..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl
 Item1=..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalSource;..\..\..\SignalSource\filters;..;..\..;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalSource\filters;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalSource\filters;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;MODTYPE=1
+Count=3
+Item0=MODTYPE=1;_DEBUG
+Item1=MODTYPE=1
+Item2=_DEBUG;MODTYPE=1
 
 [HistoryLists\hlIntOutputDir]
 Count=1
@@ -187,5 +185,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>

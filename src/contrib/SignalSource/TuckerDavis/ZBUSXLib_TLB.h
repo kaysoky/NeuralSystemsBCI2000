@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -13,7 +10,7 @@
 // ************************************************************************ //
 
 // C++ TLBWRTR : $Revision$
-// File generated on 7/8/2005 9:11:44 AM from Type Library described below.
+// File generated on 1/23/2008 3:17:18 PM from Type Library described below.
 
 // ************************************************************************  //
 // Type Lib: c:\TDT\ActiveX\zBUSx.ocx (1)
@@ -22,7 +19,7 @@
 // Helpfile: c:\TDT\ActiveX\zBUSx.hlp
 // HelpString: zBUSx ActiveX Control module
 // DepndLst: 
-//   (1) v2.0 stdole, (C:\WINDOWS\system32\stdole2.tlb)
+//   (1) v2.0 stdole, (C:\WINDOWS\System32\stdole2.tlb)
 // ************************************************************************ //
 #ifndef   ZBUSXLib_TLBH
 #define   ZBUSXLib_TLBH

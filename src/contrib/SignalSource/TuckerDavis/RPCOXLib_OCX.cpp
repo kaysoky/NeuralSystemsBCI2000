@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -13,13 +10,13 @@
 // ************************************************************************ //
 
 // C++ TLBWRTR : $Revision$
-// File generated on 3/18/2005 11:28:45 AM from Type Library described below.
+// File generated on 1/23/2008 5:37:25 PM from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: c:\TDT\ActiveX\RPcoX.ocx (1)
+// Type Lib: c:\tdt\ActiveX\RPcoX.ocx (1)
 // LIBID: {D323A622-1D13-11D4-8858-444553540000}
 // LCID: 0
-// Helpfile: c:\TDT\ActiveX\RPcoX.hlp
+// Helpfile: c:\tdt\ActiveX\RPcoX.hlp
 // HelpString: RPcoX ActiveX Control module
 // DepndLst: 
 //   (1) v2.0 stdole, (C:\WINDOWS\System32\stdole2.tlb)
@@ -29,6 +26,7 @@
 #pragma hdrstop
 
 #include <olectrls.hpp>
+#include <oleserver.hpp>
 #if defined(USING_ATL)
 #include <atl\atlvcl.h>
 #endif
@@ -321,6 +319,41 @@ long __fastcall TRPcoX::ConnectRX6(BSTR IntName, long DevNum)
 long __fastcall TRPcoX::ConnectRX7(BSTR IntName, long DevNum)
 {
   return GetDefaultInterface()->ConnectRX7(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRX8(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRX8(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRX9(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRX9(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRZ2(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRZ2(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRZ3(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRZ3(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRZ4(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRZ4(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRZ5(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRZ5(IntName, DevNum);
+}
+
+long __fastcall TRPcoX::ConnectRZ6(BSTR IntName, long DevNum)
+{
+  return GetDefaultInterface()->ConnectRZ6(IntName, DevNum);
 }
 
 

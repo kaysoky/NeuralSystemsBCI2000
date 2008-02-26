@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // ************************************************************************ //
 // WARNING                                                                    
 // -------                                                                    
@@ -13,13 +10,13 @@
 // ************************************************************************ //
 
 // C++ TLBWRTR : $Revision$
-// File generated on 3/18/2005 11:28:44 AM from Type Library described below.
+// File generated on 1/23/2008 5:37:25 PM from Type Library described below.
 
 // ************************************************************************  //
-// Type Lib: c:\TDT\ActiveX\RPcoX.ocx (1)
+// Type Lib: c:\tdt\ActiveX\RPcoX.ocx (1)
 // LIBID: {D323A622-1D13-11D4-8858-444553540000}
 // LCID: 0
-// Helpfile: c:\TDT\ActiveX\RPcoX.hlp
+// Helpfile: c:\tdt\ActiveX\RPcoX.hlp
 // HelpString: RPcoX ActiveX Control module
 // DepndLst: 
 //   (1) v2.0 stdole, (C:\WINDOWS\System32\stdole2.tlb)
@@ -73,10 +70,10 @@ namespace Rpcoxlib_tlb
 //   DISPInterfaces     : DIID_xxxx                                       
 //   Non-DISP interfaces: IID_xxxx                                        
 // *********************************************************************//
-extern __declspec (package) const GUID LIBID_RPCOXLib;
-extern __declspec (package) const GUID DIID__DRPcoX;
-extern __declspec (package) const GUID DIID__DRPcoXEvents;
-extern __declspec (package) const GUID CLSID_RPcoX;
+extern "C" const __declspec(selectany) GUID LIBID_RPCOXLib = {0xD323A622, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
+extern "C" const __declspec(selectany) GUID DIID__DRPcoX = {0xD323A623, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
+extern "C" const __declspec(selectany) GUID DIID__DRPcoXEvents = {0xD323A624, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
+extern "C" const __declspec(selectany) GUID CLSID_RPcoX = {0xD323A625, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
 
 // *********************************************************************//
 // Forward declaration of types defined in TypeLibrary                    
@@ -525,6 +522,76 @@ interface _DRPcoX : public TDispWrapper<IDispatch>
     return _args.GetRetVariant();
   }
 
+  long __fastcall ConnectRX8(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRX8 */ DISPID(43));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRX9(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRX9 */ DISPID(44));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRZ2(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRZ2 */ DISPID(45));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRZ3(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRZ3 */ DISPID(46));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRZ4(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRZ4 */ DISPID(47));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRZ5(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRZ5 */ DISPID(48));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
+  long __fastcall ConnectRZ6(BSTR IntName, long DevNum)
+  {
+    _TDispID _dispid(/* ConnectRZ6 */ DISPID(49));
+    TAutoArgs<2> _args;
+    _args[1] = IntName /*[VT_BSTR:0]*/;
+    _args[2] = DevNum /*[VT_I4:0]*/;
+    OleFunction(_dispid, _args);
+    return _args.GetRetVariant();
+  }
+
 
 };
 // *********************************************************************//
@@ -632,6 +699,13 @@ public:
   long            __fastcall ConnectRX5(BSTR IntName, long DevNum);
   long            __fastcall ConnectRX6(BSTR IntName, long DevNum);
   long            __fastcall ConnectRX7(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRX8(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRX9(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ2(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ3(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ4(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ5(BSTR IntName, long DevNum);
+  long            __fastcall ConnectRZ6(BSTR IntName, long DevNum);
 
 };
 typedef _DRPcoXDispT<_DRPcoX> _DRPcoXDisp;
@@ -1114,6 +1188,83 @@ template <class T> long __fastcall
 _DRPcoXDispT<T>::ConnectRX7(BSTR IntName, long DevNum)
 {
   _TDispID _dispid(*this, OLETEXT("ConnectRX7"), DISPID(42));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRX8(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRX8"), DISPID(43));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRX9(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRX9"), DISPID(44));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRZ2(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRZ2"), DISPID(45));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRZ3(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRZ3"), DISPID(46));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRZ4(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRZ4"), DISPID(47));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRZ5(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRZ5"), DISPID(48));
+  TAutoArgs<2> _args;
+  _args[1] = IntName /*[VT_BSTR:0]*/;
+  _args[2] = DevNum /*[VT_I4:0]*/;
+  OleFunction(_dispid, _args);
+  return _args.GetRetVariant();
+}
+
+template <class T> long __fastcall
+_DRPcoXDispT<T>::ConnectRZ6(BSTR IntName, long DevNum)
+{
+  _TDispID _dispid(*this, OLETEXT("ConnectRZ6"), DISPID(49));
   TAutoArgs<2> _args;
   _args[1] = IntName /*[VT_BSTR:0]*/;
   _args[2] = DevNum /*[VT_I4:0]*/;
