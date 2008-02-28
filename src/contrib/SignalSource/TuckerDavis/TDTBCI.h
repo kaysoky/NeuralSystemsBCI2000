@@ -46,6 +46,7 @@ private:
     double TDTgain;
     int TDTbufSize;
     int blockSize;
+    int TDTbufBlocks;
     short connectType;
     int curindex, stopIndex, indexMult;
     int devAddr[2];

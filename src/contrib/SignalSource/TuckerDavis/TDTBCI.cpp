@@ -13,7 +13,6 @@ RegisterFilter( TDTBCI, 1);
 // Class constructor for TDTBCI
 TDTBCI::TDTBCI()
 : RPcoX1( NULL ),
-RPcoX2(NULL),
   ZBus(NULL),
   dataA(NULL),
   dataB(NULL),
@@ -47,6 +46,8 @@ RPcoX2(NULL),
     BEGIN_PARAMETER_DEFINITIONS
         "Source:TDT string CircuitPath= c:\\bci2000\\src\\EEGsource\\TuckerDavis\\chAcquire64.rco 0 0 1024"
 		    "//RCO circuit path (inputfile)",
+        "Source:TDT int TDTBufferBlocks= 32 0 1 128 "
+            "//determines the size of the TDT buffer as TDTBufferBlocks*16*blockSize",
         "Source:TDT float LPFfreq= 256 256 0 1024 "
 		    "//Low Pass Filter Frequency",
         "Source:TDT float HPFfreq= 3 3 0 256"
@@ -70,7 +71,7 @@ RPcoX2(NULL),
     try
     {
 		RPcoX1 = new TRPcoX( ( TComponent* )NULL );
-		RPcoX2 = new TRPcoX( ( TComponent* )NULL );
+		//RPcoX2 = new TRPcoX( ( TComponent* )NULL );
         ZBus = new TZBUSx( ( TComponent* )NULL );
     }
     catch( const EOleSysError& instantiationError )
@@ -92,8 +93,6 @@ TDTBCI::~TDTBCI()
 
     if (RPcoX1 != NULL)
         delete RPcoX1;
-    if (RPcoX2 != NULL)
-        delete RPcoX2;
     if (ZBus!= NULL)
         delete ZBus;
 
@@ -215,7 +214,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     }
     
 	RPcoX1->Halt();
-    RPcoX2->Halt();
+    //RPcoX2->Halt();
 	
 	outputProperties = SignalProperties(Parameter( "SourceCh"	), Parameter( "SampleBlockSize"	), SignalType::float32);
 }
@@ -234,7 +233,10 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
     mEEGchannels = Parameter("NumEEGchannels");
 	mDigitalGain = (float)Parameter("DigitalGain");
     mFrontPanelGain = (float)Parameter("FrontPanelGain");
+    TDTbufBlocks = Parameter("TDTBufferBlocks");
 
+    TDTbufSize = TDTbufBlocks*blockSize*16;
+    
     int nSamplesPerSec = floor(TDTsampleRate / mSamplingRate);
     double nSamplingRate = TDTsampleRate / nSamplesPerSec;
     bciout <<"The actual sampling rate is "<<nSamplingRate <<" Hz"<<endl;
@@ -248,6 +250,7 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
     WideString nPerTag = "nPer";
     WideString digGainTag = "DigGain";
     WideString frontPanelGainTag = "FrontPanelGain";
+    WideString TDTBufSizeTag = "bufSize";
 	
 	//make sure	we are connected
     WideString interfaceType("GB");
@@ -299,6 +302,10 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
 		bciout << "Error setting Front Panel gain." << endl;
 	}
 
+    if (!RPcoX1->SetTagVal(TDTBufSizeTag.c_bstr(), TDTbufSize))
+	{
+		bcierr << "Error setting TDT Buffer Size." << endl;
+	}
     // initialize the data buffers
     reset();
     dataA = new float[valuesToRead];
@@ -355,12 +362,12 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
     #endif
     int waitCount=0;
     curTime = PrecisionTime::Now();
-    if (stopIndex < TDTbufSize)
+    if (stopIndex <= TDTbufSize)
     {
-		while (curindex < stopIndex)
+		while (curindex <= stopIndex && curindex > mOffset)
 		{
-            //Sleep(1);
 			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
+            Sleep(1);
 		}
     }
     else
@@ -370,15 +377,15 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
         bool done = false;
         while (!done)
         {
-            //Sleep(1);
             curindex = RPcoX1->GetTagVal(indexA.c_bstr());
             if  (curindex >= stopIndex && curindex < (TDTbufSize - valuesToRead))
                 done = true;
+            Sleep(1);
         }
-    }
-    unsigned short tDiff = PrecisionTime::TimeDiff(curTime, PrecisionTime::Now());
+    }                  
 
     #ifdef DEBUGLOG
+        unsigned short tDiff = PrecisionTime::TimeDiff(curTime, PrecisionTime::Now());
         fprintf(logFile, "CI(end): %d\tT1:%d\t", curindex, tDiff);
     #endif
 
@@ -418,7 +425,7 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
     #ifdef DEBUGLOG
     fprintf(logFile, "EndT: %d\tNewOffset: %d\t", mOffset,PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
     #endif
-    curTime = PrecisionTime::Now();
+
     for (int ch =0; ch < mEEGchannels; ch++)
     {
         for (int sample = 0; sample < mSampleBlockSize; sample++)
@@ -429,11 +436,11 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
                 if (ch < 16)
                     outputSignal(ch, sample) = dataA[curSample];
                 else if (ch >= 16 && ch < 32)
-                    outputSignal(ch, sample) = dataB[curSample-16];
+                    outputSignal(ch, sample) = dataB[curSample];
                 else if (ch >= 32 && ch < 48)
-                    outputSignal(ch, sample) = dataC[curSample-32];
+                    outputSignal(ch, sample) = dataC[curSample];
                 else if (ch >= 48 && ch < 64)
-                    outputSignal(ch, sample) = dataD[curSample-48];
+                    outputSignal(ch, sample) = dataD[curSample];
             }
         }
     }
@@ -446,6 +453,7 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
         }
     }
     #ifdef DEBUGLOG
+        curTime = PrecisionTime::Now();
         fprintf(logFile,"WT: %d\n", PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
     #endif
     //bciout << "T: " << (unsigned short)PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()) << "ms"<<endl;

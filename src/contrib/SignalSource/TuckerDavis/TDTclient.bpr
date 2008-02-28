@@ -35,7 +35,7 @@
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
     <USERDEFINES value="MODTYPE=1;_DEBUG"/>
-    <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
+    <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="TDTclient.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Projects\Lib;$(BCB)\Imports;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
@@ -51,9 +51,9 @@
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
-    <ALLOBJ value="c0w32.obj Memmgr.Lib sysinit.obj $(OBJFILES)"/>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mti.lib"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
