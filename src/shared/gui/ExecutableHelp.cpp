@@ -53,6 +53,7 @@ ExecutableHelp::Display() const
   {
     ::MessageBox(
       NULL,
+      "The help file could not be found.\n\n"
       "Help files should be located in the\n"
       "executable's directory.\n\n"
       "Help files bear the executable's name,\n"
@@ -148,7 +149,7 @@ ExecutableHelp::InitializeContextHelp()
   {
     fstream tocFileStream( ( htmlPath + TocFileName() ).c_str() );
     string line;
-    while( line.empty() || *line.begin() == '#' )
+    while( tocFileStream && ( line.empty() || *line.begin() == '#' ) )
       getline( tocFileStream, line );
 
     enum
@@ -160,7 +161,7 @@ ExecutableHelp::InitializeContextHelp()
       insideStates,
       finished,
       error
-    } parserState = outsideTOC;
+    } parserState = tocFileStream ? outsideTOC : error;
 
     string fileName;
     int tocLevel = 0,
