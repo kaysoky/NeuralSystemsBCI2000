@@ -4,10 +4,11 @@
 // Description: A base class for application modules.
 //         This class defines parameters common to all application modules, and
 //         defines two output streams intended for logging purposes:
-//         - The AppLog stream is directed into a window displayed to the
+//         - The AppLog.Screen stream is directed into a window displayed to the
 //           operator user.
-//         - The AppLogFile stream is directed into a log file, and displayed
+//         - The AppLog.File stream is directed into a log file, and displayed
 //           in the operator user's log window.
+//         - Writing to AppLog results in logging both to screen and file.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
