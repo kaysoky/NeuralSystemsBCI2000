@@ -63,13 +63,14 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
 
   float outputSamples = MeasurementUnits::ReadAsTime( Parameter( "EpochLength" ) );
   outputSamples *= Input.Elements();
+  outputSamples = ::ceil( outputSamples );
   // Requested output signal properties.
   Output = Input;
   Output.SetChannels( Input.Channels() )
-        .SetElements( ::ceil( outputSamples ) )
+        .SetElements( outputSamples )
         .SetType( SignalType::float32 )
         .ElementUnit().SetRawMin( 0 )
-                      .SetRawMax( Output.Elements() - 1 );
+                      .SetRawMax( outputSamples - 1 );
 }
 
 void
@@ -91,7 +92,6 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
     mVisSignal = GenericSignal( visProperties );
 
     mVis.Send( CfgID::WindowTitle, "ERP" )
-        .Send( CfgID::NumSamples, Output.Elements() )
         .Send( mVisSignal.Properties() )
         .Send( mVisSignal );
   }
