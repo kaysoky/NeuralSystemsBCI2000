@@ -173,7 +173,7 @@ void __fastcall TfMain::HelpAbout(TObject*)
 }
 
 
-void __fastcall TfMain::HelpOpenHelp(TObject *Sender)
+void __fastcall TfMain::HelpOpenHelp(TObject*)
 {
   ExecutableHelp().Display();    
 }
