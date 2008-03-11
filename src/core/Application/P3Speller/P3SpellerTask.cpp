@@ -24,6 +24,7 @@
 #include "MeasurementUnits.h"
 #include "BCIDirectory.h"
 #include <algorithm>
+#include <iomanip>
 
 using namespace std;
 using namespace GUI;
@@ -395,9 +396,17 @@ P3SpellerTask::OnStartRun()
 
   ++mRunCount;
   if( mInterpretMode == InterpretModes::Free )
+  {
+    AppLog << "Start of run " << mRunCount << " in online (free) mode\n";
     mSummaryFile << "*** START OF RUN " << mRunCount << " IN ONLINE MODE ***\n";
+  }
   else
+  {
+    AppLog << "Start of run " << mRunCount << " in offline (copy) mode\n";
     mSummaryFile << "*** START OF RUN " << mRunCount << " IN OFFLINE MODE ***\n";
+  }
+  AppLog << flush;
+  
   mSummaryFile << "Date = " << StringDate() << "\t\t"
                << "Time = " << StringTime() << "\n"
                << "Num of Sequences = " << mNumberOfSequences
@@ -422,7 +431,9 @@ P3SpellerTask::OnStopRun()
 
   DisplayMessage( LocalizableString( "TIME OUT !!!" ) );
 
-
+  // App log
+  AppLog << "******************************" << endl;
+  
   // Summary file
   mSummaryFile << "*** RUN SUMMARY ***\n"
                << "System Pause Duration (in seconds): " << mSleepDuration << '\n'
@@ -533,7 +544,8 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
   // We override the standard ClassResult handler
   // - to additionally provide the SelectedTarget, SelectedRow, SelectedColumn
   //   states,
-  // - to handle user clicks on visual stimuli.
+  // - to handle user clicks on visual stimuli,
+  // - to log the classification result.
 
   // Clear the display's queue of clicked objects, and store a pointer to the
   // last clicked stimulus.
@@ -563,10 +575,33 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
   else
     pTarget = Associations().ClassifyTargets( inResult ).MostLikelyTarget();
 
+  // Compute the "Selected*" states from the result.
+  // These are for documentation purposes only, and may lose their meaning
+  // when targets are not grouped into rows and columns.
   int targetID = pTarget ? pTarget->Tag() : 0;
   State( "SelectedTarget" ) = targetID;
   State( "SelectedRow" )    = targetID ? targetID / mNumMatrixCols + 1 : 0;
   State( "SelectedColumn" ) = targetID ? targetID % mNumMatrixCols + 1 : 0;
+
+  // Write classification signal details into the application log.
+  int numEpochs = 0;
+  for( ClassResult::const_iterator i = inResult.begin(); i != inResult.end(); ++i )
+    numEpochs += i->second.size();
+  AppLog << "This is the end of this sequence: "
+         << numEpochs << " total intensifications (epochs)"
+         << endl;
+  // Report mean responses to log file but not to screen log.
+  AppLog.File << "Mean responses for each stimulus:\n";
+  for( ClassResult::const_iterator i = inResult.begin(); i != inResult.end(); ++i )
+  {
+    float mean = 0.0;
+    for( size_t j = 0; j < i->second.size(); ++j )
+      mean += i->second[ j ]( 0, 0 );
+    mean /= i->second.size();
+    AppLog.File << "Response for Stimulus Code " << i->first << ": "
+                << setprecision( 2 ) << fixed << mean
+                << "\n";
+  }
 
   return pTarget;
 }
@@ -575,6 +610,8 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
 void
 P3SpellerTask::OnEnter( const std::string& inText )
 {
+  AppLog << "Selected command: " << inText << endl;
+  
   if( mConnection.is_open() )
     mConnection << "P3Speller_Output " << inText << endl;
 
@@ -776,13 +813,13 @@ P3SpellerTask::OnRetrieve()
     getline( dirFile, path, '\0' );
     ifstream textFile( path.c_str() );
     if( !textFile.is_open() )
-      bciout << "No saved file to retrieve!" << endl;
+      AppLog.Screen << "No saved file to retrieve!" << endl;
     else
     {
       string text;
       getline( textFile, text, '\0' );
       if( text.empty() )
-        bciout << "Retrieved file is empty" << endl;
+        AppLog.Screen << "Retrieved file is empty" << endl;
       else
       {
         mpTextWindow->SetText( text );
