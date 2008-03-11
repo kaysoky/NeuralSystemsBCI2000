@@ -18,6 +18,7 @@ SERVER="www.bci2000.org"
 BASE="$SERVER/wiki"
 TARGET="../../../doc/htmlhelp"
 TMPFILE="~cookies"
+TMPEXT="~tmp"
 TOCFILE="htmlhelp.toc"
 
 # Log in to the HTMLhelp account using /wiki/helplogin.php.
@@ -35,6 +36,16 @@ rm $TMPFILE
 
 mv $BASE/index.php $BASE/html
 cd $BASE/html
+
+# Remove unwanted content (scripts, comments) from html files
+for i in *.html;
+do
+  mv $i $i.$TMPEXT &&
+  sed 's/<script .*<\/script>//' < $i.$TMPEXT |
+  sed 's/ onload=[^>]*>/>/' |
+  sed 's/<!-- Served by [^>]* -->//' > $i &&
+  rm $i.$TMPEXT
+done;
 
 # Create an index of section headers
 (
