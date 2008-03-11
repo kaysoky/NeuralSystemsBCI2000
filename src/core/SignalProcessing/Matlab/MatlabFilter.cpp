@@ -44,56 +44,65 @@ RegisterFilter( MatlabFilter, 2.C );
 MatlabFilter::MatlabFilter()
 : mBci_Process( PROCESS )
 {
-  MatlabFunction bci_Construct( CONSTRUCT );
-  bci_Construct.OutputArgument( PARAM_DEFS )
-               .OutputArgument( STATE_DEFS );
-  if( CallMatlab( bci_Construct ) )
+  if( !MatlabEngine::Initialized() )
   {
-    // Add the parameters and states requested by the Matlab bci_Construct function.
-    int numParamDefs = MatlabEngine::GetScalar( "max(size(" PARAM_DEFS "))" );
-    for( int i = 1; i <= numParamDefs; ++i )
-    {
-      ostringstream expr;
-      expr << PARAM_DEFS << "{" << i << "}";
-      string paramDef = MatlabEngine::GetString( expr.str() );
-      if( !Parameters->Add( paramDef ) )
-        bcierr << "Error in parameter definition: " << paramDef << endl;
-    }
-    int numStateDefs = MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" );
-    for( int i = 1; i <= numStateDefs; ++i )
-    {
-      ostringstream expr;
-      expr << STATE_DEFS << "{" << i << "}";
-      string stateDef = MatlabEngine::GetString( expr.str() );
-      if( !States->Add( stateDef ) )
-        bcierr << "Error in state definition: " << stateDef << endl;
-    }
-  }
-  MatlabEngine::ClearVariable( PARAM_DEFS );
-  MatlabEngine::ClearVariable( STATE_DEFS );
-
-  // Issue a warning to indicate potential mis-configuration if there is no
-  // Preflight, Initialize, or Process function available for Matlab.
-  const char* essentialFunctions[] =
-  {
-    PREFLIGHT,
-    INITIALIZE,
-    PROCESS,
-  };
-  ostringstream oss;
-  for( size_t i = 0; i < sizeof( essentialFunctions ) / sizeof( *essentialFunctions ); ++i )
-    if( !MatlabFunction( essentialFunctions[ i ] ).Exists() )
-      oss << ", " << essentialFunctions[ i ];
-  if( !oss.str().empty() )
-    bciout << "The following functions could not be found in the Matlab path:\n"
-           << oss.str().substr( 2 ) << ".\n"
-           << "Make sure that the m-files exist within the path, and contain "
-           << "appropriate function definitions."
+    bcierr << "Could not connect to Matlab engine. "
+           << "Please make sure that Matlab is available on your machine."
            << endl;
+  }
+  else
+  {
+    MatlabFunction bci_Construct( CONSTRUCT );
+    bci_Construct.OutputArgument( PARAM_DEFS )
+                 .OutputArgument( STATE_DEFS );
+    if( CallMatlab( bci_Construct ) )
+    {
+      // Add the parameters and states requested by the Matlab bci_Construct function.
+      int numParamDefs = MatlabEngine::GetScalar( "max(size(" PARAM_DEFS "))" );
+      for( int i = 1; i <= numParamDefs; ++i )
+      {
+        ostringstream expr;
+        expr << PARAM_DEFS << "{" << i << "}";
+        string paramDef = MatlabEngine::GetString( expr.str() );
+        if( !Parameters->Add( paramDef ) )
+          bcierr << "Error in parameter definition: " << paramDef << endl;
+      }
+      int numStateDefs = MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" );
+      for( int i = 1; i <= numStateDefs; ++i )
+      {
+        ostringstream expr;
+        expr << STATE_DEFS << "{" << i << "}";
+        string stateDef = MatlabEngine::GetString( expr.str() );
+        if( !States->Add( stateDef ) )
+          bcierr << "Error in state definition: " << stateDef << endl;
+      }
+    }
+    MatlabEngine::ClearVariable( PARAM_DEFS );
+    MatlabEngine::ClearVariable( STATE_DEFS );
 
-  // Initialize the bci_Process function for more efficient calling during Process().
-  mBci_Process.InputArgument( IN_SIGNAL )
-              .OutputArgument( OUT_SIGNAL );
+    // Issue a warning to indicate potential mis-configuration if there is no
+    // Preflight, Initialize, or Process function available for Matlab.
+    const char* essentialFunctions[] =
+    {
+      PREFLIGHT,
+      INITIALIZE,
+      PROCESS,
+    };
+    ostringstream oss;
+    for( size_t i = 0; i < sizeof( essentialFunctions ) / sizeof( *essentialFunctions ); ++i )
+      if( !MatlabFunction( essentialFunctions[ i ] ).Exists() )
+        oss << ", " << essentialFunctions[ i ];
+    if( !oss.str().empty() )
+      bciout << "The following functions could not be found in the Matlab path:\n"
+             << oss.str().substr( 2 ) << ".\n"
+             << "Make sure that the m-files exist within the path, and contain "
+             << "appropriate function definitions."
+             << endl;
+
+    // Initialize the bci_Process function for more efficient calling during Process().
+    mBci_Process.InputArgument( IN_SIGNAL )
+                .OutputArgument( OUT_SIGNAL );
+  }
 }
 
 MatlabFilter::~MatlabFilter()

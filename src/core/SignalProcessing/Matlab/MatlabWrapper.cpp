@@ -168,7 +168,7 @@ MatlabEngine::CreateGlobal( const string& inName )
 {
   string command;
   command += "global " + inName + ";";
-  return ( 0 == engEvalString( spEngineRef, command.c_str() ) );
+  return ( spEngineRef && ( 0 == engEvalString( spEngineRef, command.c_str() ) ) );
 }
 
 bool
@@ -176,7 +176,7 @@ MatlabEngine::ClearVariable( const string& inName )
 {
   string command;
   command += "clear " + inName + "; clear global " + inName + ";";
-  return ( 0 == engEvalString( spEngineRef, command.c_str() ) );
+  return ( spEngineRef && ( 0 == engEvalString( spEngineRef, command.c_str() ) ) );
 }
 
 string
@@ -437,19 +437,22 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
 MatlabFunction::MatlabFunction( const string& inName )
 : mName( inName ),
   mExists( false )
+{
+  if( spEngineRef )
   {
-  // Check whether there exists an M-file with the required name in the Matlab
-  // search path.
-  string command;
-  command += "exist('" + inName + "')";
-  if( engEvalString( spEngineRef, command.c_str() ) == 0 )
-  {
-    mxArray* ans = engGetVariable( spEngineRef, "ans" );
-    if( ans )
+    // Check whether there exists an M-file with the required name in the Matlab
+    // search path.
+    string command;
+    command += "exist('" + inName + "')";
+    if( engEvalString( spEngineRef, command.c_str() ) == 0 )
     {
-      double* value = mxGetPr( ans );
-      mExists = ( value[ 0 ] == 2 );
-      mxDestroyArray( ans );
+      mxArray* ans = engGetVariable( spEngineRef, "ans" );
+      if( ans )
+      {
+        double* value = mxGetPr( ans );
+        mExists = ( value[ 0 ] == 2 );
+        mxDestroyArray( ans );
+      }
     }
   }
 }

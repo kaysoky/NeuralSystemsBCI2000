@@ -48,6 +48,8 @@ class MatlabEngine
   virtual ~MatlabEngine();
 
  public:
+  static bool         Initialized() { return spEngineRef != NULL; }
+
   static bool         CreateGlobal( const std::string& name );
   static bool         ClearVariable( const std::string& name );
 

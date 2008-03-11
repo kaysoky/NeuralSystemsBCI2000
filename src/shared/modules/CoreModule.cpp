@@ -295,6 +295,8 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   EnvironmentBase::EnterConstructionPhase( &mParamlist, &mStatelist, NULL, &mOperator );
   GenericFilter::InstantiateFilters();
   EnvironmentBase::EnterNonaccessPhase();
+  if( bcierr__.Flushes() > 0 )
+    return;
 
   // add parameters for socket connection
   // my receiving socket port number
