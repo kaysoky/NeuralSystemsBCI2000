@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -49,7 +49,7 @@ Now you are going to create a subject-specific parameter configuration for on-li
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Next_Step"><span class="tocnumber">4</span> <span class="toctext">Next Step</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Starting_up_BCI2000"></a><h2>Starting up BCI2000</h2>
 <p>Start BCI2000 using the appropriate batch file at <tt>batch/CursorTask_&lt;YourAmplifier&gt;.bat</tt>. You might consider creating a link to this file on the desktop.
 </p>
@@ -96,7 +96,8 @@ They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> ta
 <ul><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 2; then, click <i>Set new matrix size</i> to apply your changes.
 </li><li>In the first column, labeled <i>input channel</i>, enter the location of the feedback electrode. If you did not specify electrode locations when configuring the spatial filter, enter the channel number associated with the feedback electrode.
 </li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <i>Hz</i>, as in <tt>12Hz</tt>.
-</li><li>In the third and fourth columns, enter 1 as output channel, and 1 as the weight.
+</li><li>In the third column, enter the value 2 corresponding to the control channel for vertical control of the cursor.
+</li><li>In the fourth column, enter 1 as the weight.
 </li><li>Finally, save your configuration to <tt>parms/subjects/mu_feedback/&lt;Subject&gt;002.prm</tt>, or whereever you find appropriate.
 </li></ul>
 <a name="Next_Step"></a><h2>Next Step</h2>
@@ -123,5 +124,5 @@ They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> ta
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.19 secs. -->
+
 </body></html>

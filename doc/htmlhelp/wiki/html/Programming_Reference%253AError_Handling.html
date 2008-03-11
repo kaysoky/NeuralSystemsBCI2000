@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -72,7 +72,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AError_Handling.html#See_also"><span class="tocnumber">3</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Handling_Errors"></a><h2>Handling Errors</h2>
 <a name="Types_of_Errors"></a><h3>Types of Errors</h3>
 <p>We assume that all errors we need to consider fall into one of the following categories, each of which implies a different type of approach to error avoidance/error handling:
@@ -246,7 +246,7 @@ Parameter( "My3rdParam" )( 2, 3 ) = my3rdValue;
 <pre>short currentStateOfAffairs = State( "OfAffairs" ); 
 State( "OfAffairs" ) = nextStateOfAffairs;
 </pre>
-<ul><li><tt>OptionalState(Default Value, Name)</tt> 
+<ul><li><tt>OptionalState(Name[, Default Value])</tt> 
 </li></ul>
 <p>Analagous to <tt>OptionalParameter()</tt>, this symbol does not report an error if the specified state does not exist but returns the given default value. Assignments to this symbol are not possible. 
 </p>
@@ -307,5 +307,5 @@ condition in the code following the detection of an error.
 </ul><hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.22 secs. -->
+
 </body></html>

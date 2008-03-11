@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Data File Formats - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Data File Formats,Technical Reference:BCI2000 File Format,User Reference:DataIOFilter" />
+<meta name="keywords" content="User Reference:Data File Formats,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileWriter,User Reference:DataIOFilter,User Reference:EDFFileWriter,User Reference:GDFFileWriter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -49,7 +49,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AData_File_Formats.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="General_Information"></a><h2>General Information</h2>
 <p>At runtime, selection of a file format is achieved by specifying a
 command line parameter to the source module, as in
@@ -69,6 +69,7 @@ Thus, a programmer can add support for a new output format by deriving a new cla
 </p><p>Parameters, BCI2000 state variables, and brain signal data will be
 written into a BCI2000 data file as defined in the <a href="Technical_Reference%253ABCI2000_File_Format.html" title="Technical Reference:BCI2000 File Format">BCI2000 specification</a>.
 This is also the default if no file format is specified explicitly.
+</p><p>Output in BCI2000 file format is implemented by the <a href="User_Reference%253ABCI2000FileWriter.html" title="User Reference:BCI2000FileWriter">BCI2000FileWriter</a> component.
 </p>
 <a name="Null_File_Format"></a><h2>Null File Format</h2>
 <p><code>--FileFormat-Null</code>
@@ -83,6 +84,8 @@ Individual filters may still write log files to the directory defined by the <co
 </li><li>BCI2000 state variables will be mapped to additional signal channels that contain a single sample for each data block.
 </li><li>BCI2000 parameters cannot be represented in EDF format. Setting the <code>SaveAdditionalParameterFile</code> parameter to <i>1</i> will save a separate BCI2000 parameter file along with the EDF data file.
 </li></ul>
+<p>Output in EDF format is implemented by the <a href="User_Reference%253AEDFFileWriter.html" title="User Reference:EDFFileWriter">EDFFileWriter</a> component.
+</p>
 <a name="References"></a><h4>References</h4>
 <ul><li>Bob Kemp, Alpo Värri, Agostinho C. Rosa, Kim D. Nielsen and John Gade, <i>A simple format for exchange of digitized polygraphic recordings</i>, Electroencephalography and Clinical Neurophysiology, 82 (1992), pp 391-393.
 </li><li>EDF home page at <a href="http://www.hsr.nl/edf/" class='external free' title="http://www.hsr.nl/edf/" rel="nofollow">http://www.hsr.nl/edf/</a>
@@ -99,6 +102,8 @@ introduces an event table, and provides standardized encoding of events.
 </li><li>Besides GDF events, BCI2000 state variables will also be mapped to additional signal channels the same way as for EDF.
 </li><li>BCI2000 parameters cannot be represented in GDF format. Setting the <code>SaveAdditionalParameterFile</code> parameter to <i>1</i> will save a separate BCI2000 parameter file along with the GDF data file.
 </li></ul>
+<p>Output in GDF file format is implemented by the <a href="User_Reference%253AGDFFileWriter.html" title="User Reference:GDFFileWriter">GDFFileWriter</a> component.
+</p>
 <a name="References_2"></a><h4>References</h4>
 <ul><li>A. Schlögl et al, <i>GDF: A General Data Format for Biosignal Data: Version 1.25</i>, <a href="http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf" class='external free' title="http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf" rel="nofollow">http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf</a>
 </li><li>A. Schlögl, <i>BIOSIG</i>, <a href="http://biosig.sf.net/" class='external free' title="http://biosig.sf.net/" rel="nofollow">http://biosig.sf.net/</a>, 2003-2007.
@@ -128,5 +133,5 @@ introduces an event table, and provides standardized encoding of events.
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.19 secs. -->
+
 </body></html>

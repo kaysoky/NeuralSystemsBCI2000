@@ -301,6 +301,21 @@ Contributions%253ANIADC.html
 2 Comments Comments
 2 See_also See also
 
+Contributions%253ANIDAQ-MX.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+3 NIDAQmx_Source_Module NIDAQmx Source Module
+2 Parameters Parameters
+3 BoardNumber BoardNumber
+2 States States
+2 Notes_on_recompiling Notes on recompiling
+2 See_also See also
+
 Contributions%253ANeuroscanADC.html
 2 Synopsis Synopsis
 2 Location Location
@@ -411,7 +426,6 @@ Contributions%253ASigfriedSigProc.html
 5 Feature_Extraction Feature Extraction
 5 Model_Estimation Model Estimation
 4 Step_3:_Apply_Model Step 3: Apply Model
-5 Visual_Representation Visual Representation
 2 Tutorial Tutorial
 3 Step_0:_Compile_BCI2000_with_SigfriedSigProc Step 0: Compile BCI2000 with SigfriedSigProc
 3 Step_1:_Baseline_Recording Step 1: Baseline Recording
@@ -460,18 +474,17 @@ Contributions%253ATDTADC.html
 3 Install_TDT_Drivers Install TDT Drivers
 3 Install_TDT_ActiveX_Library Install TDT ActiveX Library
 2 Parameters Parameters
-3 Circuit_Name_and_Circuit_Path Circuit Name and Circuit Path
+3 TDTgain TDTgain
+3 Circuit_Path Circuit Path
 3 HPFfreq HPFfreq
 3 LPFfreq LPFfreq
 3 notchBW notchBW
-3 nProcessorsBoard1 nProcessorsBoard1
-3 nProcessorsBoard2 nProcessorsBoard2
-3 SampleBlockSize SampleBlockSize
+3 nProcessors nProcessors
 3 SampleRate SampleRate
-3 SourceCh SourceCh
-3 SoftwareChBoard1 SoftwareChBoard1
-3 SoftwareChBoard2 SoftwareChBoard2
-3 TDTgain TDTgain
+3 NumEEGchannels NumEEGchannels
+3 FrontPanelList FrontPanelList
+3 DigitalGain DigitalGain
+3 FrontPanelGain FrontPanelGain
 2 States States
 2 TDTSampleRate TDTSampleRate
 2 Additional_Information Additional Information
@@ -505,6 +518,7 @@ Gerwin_Schalk.html
 
 Glossary.html
 2 r2_.28Coefficient_of_Determination.29 <span class="texhtml"><i>r</i><sup>2</sup></span> (Coefficient of Determination)
+2 Sensorimotor_Rhythm_.28SMR.29 Sensorimotor Rhythm (SMR)
 
 Jürgen_Mellinger.html
 
@@ -557,6 +571,14 @@ P300_Off-line_Analysis_Tutorial.html
 3 ERP_Response ERP Response
 3 String_Prediction String Prediction
 
+Programming_FAQ.html
+2 Contributing Contributing
+2 Debugging Debugging
+2 Source_Code_Access Source Code Access
+2 App_Connector App Connector
+2 Getting_Started_with_a_new_Module Getting Started with a new Module
+2 Writing_Filter_Components Writing Filter Components
+
 Programming_Howto%253ABuilding_BCI2000.html
 2 Why_to_build  Why to build 
 2 Tools_required  Tools required 
@@ -607,7 +629,15 @@ Programming_Reference%253ABCI2000_Source_Code.html
 2 TortoiseSVN_Client  TortoiseSVN Client 
 2 Howto_Pages Howto Pages
 2 Directory_Layout Directory Layout
+3 src.2Fbuildutils <tt>src/buildutils</tt>
+3 src.2Fbuildutils.2Ftesting <tt>src/buildutils/testing</tt>
+3 src.2Fcontrib <tt>src/contrib</tt>
+3 src.2Fcore <tt>src/core</tt>
+3 src.2Fshared <tt>src/shared</tt>
+3 src.2Fextlib <tt>src/extlib</tt>
+3 src.2Fdoc <tt>src/doc</tt>
 2 Coding_Guidelines Coding Guidelines
+2 See_also See also
 
 Programming_Reference%253AContents.html
 2 Getting_Started Getting Started
@@ -862,6 +892,17 @@ Technical_Reference%253ASystem_Design.html
 3 State_Vector_Messages State Vector Messages
 3 Brain_Signal_Messages Brain Signal Messages
 3 Control_Signal_Messages Control Signal Messages
+2 See_also See also
+
+User_FAQ.html
+2 Troubleshooting Troubleshooting
+3 Timing_Issues Timing Issues
+3 Startup Startup
+3 Feedback Feedback
+2 Configuration Configuration
+3 Replaying_Recorded_Data Replaying Recorded Data
+3 Random_Sequences Random Sequences
+3 Visual_Stimulation Visual Stimulation
 2 See_also See also
 
 User_Reference%253AARFilter.html
@@ -1230,7 +1271,7 @@ User_Reference%253ALinearClassifier.html
 3 Classifier Classifier
 2 States States
 2 Examples Examples
-3 SMR_Examples SMR Examples
+3 Mu_Rhythm_Examples Mu Rhythm Examples
 4 1D_cursor_movement 1D cursor movement
 4 2D_cursor_movement 2D cursor movement
 3 ERP_classification ERP classification
@@ -1573,6 +1614,7 @@ User_Reference%253AgUSBampADC.html
 3 SignalType SignalType
 3 SourceCh SourceCh
 3 SourceChDevices SourceChDevices
+3 SourceChList SourceChList
 3 DigitalInput DigitalInput
 3 DigitalOutput DigitalOutput
 3 AcquisitionMode AcquisitionMode
@@ -1589,6 +1631,7 @@ User_Tutorial%253ABCI2000_Tour.html
 2 BCI2000_Help BCI2000 Help
 2 Loading_a_Parameter_File Loading a Parameter File
 2 Entering_a_Subject_ID Entering a Subject ID
+2 Parameter_Help Parameter Help
 2 Applying_Configuration_Parameters Applying Configuration Parameters
 2 Performing_a_Session Performing a Session
 2 Opening_Data_Files_in_BCI2000Viewer Opening Data Files in <a href="User_Reference%253ABCI2000Viewer.html" title="User Reference:BCI2000Viewer">BCI2000Viewer</a>

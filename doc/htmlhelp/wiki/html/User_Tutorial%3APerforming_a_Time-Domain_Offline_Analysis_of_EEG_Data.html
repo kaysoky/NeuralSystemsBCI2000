@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -40,7 +40,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Tutorial%253APerforming_a_Time-Domain_Offline_Analysis_of_EEG_Data.html#Next_Step"><span class="tocnumber">4</span> <span class="toctext">Next Step</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253APerforming_a_Time-Domain_Offline_Analysis_of_EEG_Data.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Experimental_Design"></a><h2>Experimental Design</h2>
 <p>This tutorial will make use of the <tt>eeg2_1.dat</tt> and <tt>eeg2_2.dat</tt> sessions that are included with BCI2000 which can be found in <tt>data/samplefiles/</tt>. In these sessions, the subject was placed in front of a monitor displaying a P300 speller matrix.  A test sequence, consisting of a string of letters with a single letter highlighted, was also displayed.  In each run of the experiment, the subject was asked to focus on the symbol in the speller matrix that was currently highlighted in the test sequence.  This way, it was possible to label evoked responses according to whether they occurred for the highlighted symbol or for some other symbol in the matrix.  Such labels can be attached to <i>BCI2000</i> data using state variables.  In the case of the eeg2 data, we've used the state variable StimulusType such that StimulusType is equal to 1 when the letter that flashes is the letter that the subject is focused on (i.e., the letter that is currently highlighted).  When the symbol that flashes is not the symbol of focus, StimulusType will not be equal to 1. If you are relatively new to BCI2000, you may find it helpful to inspect the data files we'll be using with the <i>BCI2000 Viewer</i>. Using this tool, you will be able to see how state variables change with respect to the data over time. For instruction on how to inspect data using the BCI2000 Viewer, please see <a href="User_Reference%253ABCI2000Viewer.html" title="User Reference:BCI2000Viewer">User Reference:BCI2000Viewer</a>.
 </p><p><br />
@@ -112,5 +112,5 @@ response found in other studies (Sellers et. al.: A P300 event-related potential
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.21 secs. -->
+
 </body></html>

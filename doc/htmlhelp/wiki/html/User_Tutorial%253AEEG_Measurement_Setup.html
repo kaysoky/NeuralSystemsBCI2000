@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:EEG Measurement Setup - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:EEG Measurement Setup,Contributions:ADCs,User Reference:Operator Module,User Reference:Parameters,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
+<meta name="keywords" content="User Tutorial:EEG Measurement Setup,Contributions:ADCs,User Reference:Operator Module,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -52,11 +52,11 @@ Although setting up amplifiers and electrodes appears simple and straightforward
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step"><span class="tocnumber">7</span> <span class="toctext">Next Step</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Electrodes"></a><h2>Electrodes</h2>
 <p>An EEG amplifier <a href="http://en.wikipedia.org/wiki/Differential_amplifier" class='external text' title="http://en.wikipedia.org/wiki/Differential_amplifier" rel="nofollow">measures voltage differences</a> between points on the scalp.
 This implies that each channel is connected to two electrodes. Usually, measurement is "unipolar" rather than "bipolar", which means that the second electrode is identical for all channels, and called "reference" (Ref).
-Also, amplifier inputs must be kept within a small voltage range relative to the amplifier's zero (ground) voltage level. This is achieved by connecting yet another electrode, a "ground" (Gnd)electrode, to the subject's scalp. 
+Also, amplifier inputs must be kept within a small voltage range relative to the amplifier's zero (ground) voltage level. This is achieved by connecting yet another electrode, a "ground" (Gnd) electrode, to the subject's scalp. 
 </p><p>EEG electrodes are small metal plates that are attached to the scalp using a conducting electrode gel.
 They can be made from various materials.
 Most frequently, tin (Sn) and silver/silver-chloride (Ag/AgCl) electrodes are used but there are gold (Au) and platinum (Pt) electrodes as well.
@@ -123,7 +123,7 @@ Some caps have a Gnd electrode embedded on a scalp position; if this is not the 
 <ul><li>Make sure your amplifier is connected to your computer, drivers are installed according to the vendor's instruction, and the amplifier is switched on.
 </li><li>Start BCI2000 by double-clicking the file <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt> where <tt>YourAmplifier</tt> matches the name of your amplifier.
 </li><li>In the BCI2000 operator window, click <i>Config</i> and then <i>Load Parameters...</i> to load the file <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
-</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  Please see <a href="User_Reference%253AParameters.html" title="User Reference:Parameters">User Reference:Parameters</a> for a listing of currently supported parameters.
+</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  In this case, please consult your ADC module's reference page, which is accessible through <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>, for available parameters and their meanings.
 </li><li>Close the parameter dialog by clicking the close box its top right corner.
 </li><li>Click <i>Set Config</i>.
 </li><li>A window will appear that displays the signal acquired from the amplifier. Initially, the window will be rather small and located in the top left corner of your screen. Adapt it to your liking by moving and resizing it -- its position and size will be remembered across BCI2000 sessions. Right-clicking will bring up a context menu with <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">various options</a>.
@@ -133,7 +133,7 @@ Some caps have a Gnd electrode embedded on a scalp position; if this is not the 
 <a name="EEG_Artifacts"></a><h2>EEG Artifacts</h2>
 <a name="Mains_Interference"></a><h3>Mains Interference</h3>
 <p>Electrical power lines use sinusoidal voltages with a frequency of 50 or 60 Hz, depending on your
-<a href="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies" class='external text' title="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies" rel="nofollow">country</a>.
+<a href="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies#Table_of_mains_voltages_and_frequencies" class='external text' title="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies#Table_of_mains_voltages_and_frequencies" rel="nofollow">country</a>.
 Generally, 50Hz are used in Europe, Asia, Africa, and parts of South America; 60Hz are used in North America, and parts of South America.
 </p><p>Mains voltage is typically 110 or 230 Volts, and thus exceeds the EEG's 50 to 100 Microvolts by a factor of <span class="texhtml">2 * 10<sup>6</sup></span>. Therefore, mains interference is ubiquitous in EEG recordings, especially if taken outside specially equipped, shielded rooms, and EEG amplifiers usually provide a so-called notch filter that suppresses signals in a narrow band around the mains frequency in question.
 </p><p>Amplifier notch filters are designed to suppress a certain amount of mains interference. When there is mains interference still visible in the signal after activating the amplifier's notch filter, this is often due to high electrode impedance.
@@ -193,5 +193,5 @@ strategy to avoid jaw-generated EMG.
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.23 secs. -->
+
 </body></html>

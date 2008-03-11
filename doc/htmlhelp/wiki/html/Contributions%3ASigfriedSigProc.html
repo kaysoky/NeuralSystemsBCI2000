@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -71,11 +71,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-4'><a href="Contributions%253ASigfriedSigProc.html#Model_Estimation"><span class="tocnumber">6.3.2.2</span> <span class="toctext">Model Estimation</span></a></li>
 </ul>
 </li>
-<li class='toclevel-3'><a href="Contributions%253ASigfriedSigProc.html#Step_3:_Apply_Model"><span class="tocnumber">6.3.3</span> <span class="toctext">Step 3: Apply Model</span></a>
-<ul>
-<li class='toclevel-4'><a href="Contributions%253ASigfriedSigProc.html#Visual_Representation"><span class="tocnumber">6.3.3.1</span> <span class="toctext">Visual Representation</span></a></li>
-</ul>
-</li>
+<li class='toclevel-3'><a href="Contributions%253ASigfriedSigProc.html#Step_3:_Apply_Model"><span class="tocnumber">6.3.3</span> <span class="toctext">Step 3: Apply Model</span></a></li>
 </ul>
 </li>
 </ul>
@@ -90,7 +86,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 <li class='toclevel-1'><a href="Contributions%253ASigfriedSigProc.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
 <p>The SigfriedSigProc is a BCI2000 signal processing and visualization module using SIGFRIED (SIGnal modelling For Realtime Identification and Event Detection) to provide the following functionality to investigators:
 </p>
@@ -182,10 +178,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Controls the how quickly the auto-scale feature reacts to changes in the min/max of the data. Implemented using a 1st-order IIR filter with the filter coefficient <a href="Contributions%253ASigfriedSigProc.html#LearningRateAutoScale" title="Contributions:SigfriedSigProc">LearningRateAutoScale</a>. Filter is applied to the min and max of all channels defined by the channels listed in <a href="Contributions%253ASigfriedSigProc.html#AutoScaleChannelList" title="Contributions:SigfriedSigProc">AutoScaleChannelList</a>.
 </p>
 <a name="LearningRateAverage"></a><h3>LearningRateAverage</h3>
-<p>Controls the how quickly the real-time display display reacts to changes in the average of the data. Implemented using a 1st-order IIR filter with the filter coefficient <a href="Contributions%253ASigfriedSigProc.html#LearningRateAverage" title="Contributions:SigfriedSigProc">LearningRateAverage</a>. Filter is applied to the histogram of all data for each electrode.
+<p>Controls the how quickly the real-time display reacts to changes in the average of the data. Implemented using a 1st-order IIR filter with the filter coefficient <a href="Contributions%253ASigfriedSigProc.html#LearningRateAverage" title="Contributions:SigfriedSigProc">LearningRateAverage</a>. Filter is applied to the histogram of all data for each electrode.
 </p>
 <a name="LearningRateHist"></a><h3>LearningRateHist</h3>
-<p>Controls the how quickly the real-time display display reacts to changes in the histogram of the data. Implemented using a 1st-order IIR filter with the filter coefficient <a href="Contributions%253ASigfriedSigProc.html#LearningRateHist" title="Contributions:SigfriedSigProc">LearningRateHist</a>. Filter is applied to the histogram of all data for each electrode.
+<p>Controls the how quickly the real-time display reacts to changes in the histogram of the data. Implemented using a 1st-order IIR filter with the filter coefficient <a href="Contributions%253ASigfriedSigProc.html#LearningRateHist" title="Contributions:SigfriedSigProc">LearningRateHist</a>. Filter is applied to the histogram of all data for each electrode.
 </p>
 <a name="MemWindows"></a><h3>MemWindows</h3>
 <p>Number of blocks of the size SampleBlockSize (samples per channel per digitized block) that are used for the maximum entropy method to estimate the spectra. For the example settings bellow the spectra will be estimated 30 times per second (1200 / 40) for 600 samples (15 * 40) each. It is recommended that the number of samples to estimate the spectra are exactly the same in the SigfriedSigProc and the model (spectral_size).
@@ -208,9 +204,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>If the optional x-pos, y-pos and width are not provided then each window will be scaled to fill the full screen width.
 </p>
 <a name="ScoreType"></a><h3>ScoreType</h3>
-<p><a href="http://en.wikipedia.org/wiki/Mahalanobis_distance" class='external text' title="http://en.wikipedia.org/wiki/Mahalanobis_distance" rel="nofollow">Mahalanobis-Distance</a>
-</p><p><a href="http://en.wikipedia.org/wiki/Likelihood_function" class='external text' title="http://en.wikipedia.org/wiki/Likelihood_function" rel="nofollow">Negative-Log-Likelihood</a>
+<p>Two choices are provided to determine to score the likelihood of the task-related data:
 </p>
+<dl><dt> <a href="http://en.wikipedia.org/wiki/Mahalanobis_distance" class='external text' title="http://en.wikipedia.org/wiki/Mahalanobis_distance" rel="nofollow">Mahalanobis-Distance</a>&nbsp;</dt><dd> Simple score that provides smooth transition from task-related data to baseline data and vice versa. 
+</dd></dl>
+<dl><dt> <a href="http://en.wikipedia.org/wiki/Likelihood_function" class='external text' title="http://en.wikipedia.org/wiki/Likelihood_function" rel="nofollow">Negative-Log-Likelihood</a>&nbsp;</dt><dd> More complex measure that provides steep discrimination between task-related and baseline data.
+</dd></dl>
+<div class="center"><div class="thumb tnone"><div style="width:388px;"><a href="../images/9/99/ScoreType.png" class="internal" title="The two possible score types that can be used to visualize the difference between two conditions: mahalanobis-distance, neg-log-probablity"><img src="../images/9/99/ScoreType.png" alt="The two possible score types that can be used to visualize the difference between two conditions: mahalanobis-distance, neg-log-probablity" width="386" height="69" longdesc="/wiki/index.php/Image:ScoreType.png" /></a>  <div class="thumbcaption" >The two possible score types that can be used to visualize the difference between two conditions: mahalanobis-distance, neg-log-probablity</div></div></div></div>
 <a name="StatisticDisplayType"></a><h3>StatisticDisplayType</h3>
 <p>Defines the statistic that is used to visualize the difference between two conditions define in the ElectrodeCondition table:
 </p>
@@ -241,11 +241,15 @@ a.new, #quickbar a.new { color: #CC2200; }
 </dd><dt> Build Model&nbsp;</dt><dd> A model describing the baseline data is build.
 </dd><dt> Apply Model&nbsp;</dt><dd> The build model is applied to different active/passive task-related data (e.g. while the subject is performing multiple motor tasks).
 </dd></dl>
-<div class="center"><div class="thumb tnone"><div style="width:393px;"><a href="../images/d/da/Overview-bci2000-training.png" class="internal" title="The three steps of SIGFRIED: 1. Record Baseline Data, 2. Build Model, 3. Apply Model"><img src="../images/d/da/Overview-bci2000-training.png" alt="The three steps of SIGFRIED: 1. Record Baseline Data, 2. Build Model, 3. Apply Model" width="391" height="703" longdesc="/wiki/index.php/Image:Overview-bci2000-training.png" /></a>  <div class="thumbcaption" >The three steps of SIGFRIED: 1. Record Baseline Data, 2. Build Model, 3. Apply Model</div></div></div></div>
 <a name="Methodology_Step_By_Step"></a><h3>Methodology Step By Step</h3>
 <a name="Step_1:_Record_Baseline_Data"></a><h4>Step 1: Record Baseline Data</h4>
-<p>For this recording the subject is instructed to relax and stay motionless for the period of 5-10 minutes while data is recorded. It is particularly important that the data is not poisoned by movement artifacts since this will affect the quality of the model and thus the detection sensitivity for task related changes in the brain-signals.
+<p>The figure below illustrates the process of recording baseline data:
 </p>
+<ol><li> For this recording the subject is instructed to relax and stay motionless for the period of 5-10 minutes while data is recorded. 
+</li><li> It is particularly important that the data is not poisoned by movement artifacts since this will affect the quality of the model and thus the detection sensitivity for task related changes in the brain-signals.
+</li><li> Data is processed (amplified, bandpass filtered, digitized) and stored. 
+</li></ol>
+<div class="center"><div class="thumb tnone"><div style="width:465px;"><a href="../images/b/b7/Overview-bci2000-training-step1.png" class="internal" title="The three steps of SIGFRIED: 1. Record Baseline Data"><img src="../images/b/b7/Overview-bci2000-training-step1.png" alt="The three steps of SIGFRIED: 1. Record Baseline Data" width="463" height="262" longdesc="/wiki/index.php/Image:Overview-bci2000-training-step1.png" /></a>  <div class="thumbcaption" >The three steps of SIGFRIED: 1. Record Baseline Data</div></div></div></div>
 <a name="Step_2:_Build_Model"></a><h4>Step 2: Build Model</h4>
 <a name="Feature_Extraction"></a><h5>Feature Extraction</h5>
 <p>From both the task and the non-task related data the same features that capture the task-related changes are extracted using the <a href="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" class='external text' title="http://en.wikipedia.org/wiki/Maximum_entropy_spectral_estimation" rel="nofollow">Maximum Entropy Spectral Estimation Method</a>. This method has the following parameters:
@@ -276,15 +280,26 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> The model, i.e. the parameters of a <a href="http://en.wikipedia.org/wiki/Gaussian_distribution" class='external text' title="http://en.wikipedia.org/wiki/Gaussian_distribution" rel="nofollow">Gaussian-Mixture Model</a> are estimated for each channel using the <a href="http://en.wikipedia.org/wiki/Expectation-maximization_algorithm" class='external text' title="http://en.wikipedia.org/wiki/Expectation-maximization_algorithm" rel="nofollow">CEM-algorithm</a>.
 </li><li> The model is stored in a file.
 </li></ol>
+<div class="center"><div class="thumb tnone"><div style="width:414px;"><a href="../images/0/02/Overview-bci2000-training-step2.png" class="internal" title="The three steps of SIGFRIED: 2. Build Modell"><img src="../images/0/02/Overview-bci2000-training-step2.png" alt="The three steps of SIGFRIED: 2. Build Modell" width="412" height="118" longdesc="/wiki/index.php/Image:Overview-bci2000-training-step2.png" /></a>  <div class="thumbcaption" >The three steps of SIGFRIED: 2. Build Modell</div></div></div></div>
 <a name="Step_3:_Apply_Model"></a><h4>Step 3: Apply Model</h4>
-<a name="Visual_Representation"></a><h5>Visual Representation</h5>
+<p>The figure below illustrates the process of applying a model to either perform <b>Passive Functional Brain Mapping</b> or <b>Brain-Computer Interface Operation</b>:
+</p>
+<ol><li> The subject is exposed to different active (e.g. imagined and actual motor movement) and passive (e.g. auditory or tactile stimulation) tasks. 
+</li><li> Data is processed the same way as for the baseline data.
+</li><li> Features are extracted the same way as for the baseline data.
+</li><li> The likelihood of the data is determined using the baseline data model.
+</li><li> The estimated likelihood is visualized and/or used to operate a 1-dimensional Brain-Computer Interface.
+</li></ol>
+<div class="center"><div class="thumb tnone"><div style="width:465px;"><a href="../images/7/7d/Overview-bci2000-training-step3.png" class="internal" title="The three steps of SIGFRIED: 3. Apply Model"><img src="../images/7/7d/Overview-bci2000-training-step3.png" alt="The three steps of SIGFRIED: 3. Apply Model" width="463" height="420" longdesc="/wiki/index.php/Image:Overview-bci2000-training-step3.png" /></a>  <div class="thumbcaption" >The three steps of SIGFRIED: 3. Apply Model</div></div></div></div>
 <a name="Tutorial"></a><h2>Tutorial</h2>
 <a name="Step_0:_Compile_BCI2000_with_SigfriedSigProc"></a><h3>Step 0: Compile BCI2000 with SigfriedSigProc</h3>
 <p>As SigfriedSigProc is a contribution to BCI2000, a few <a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_command_line" title="Programming Howto:Building BCI2000">manual steps</a> are necessary to compile and install SigfriedSigProc:
 </p>
 <ul><li> Make sure that you can <a href="Creating_a_User_Account.html" title="Creating a User Account">access</a> and download to the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">source code</a>.
 </li></ul>
-<ul><li> Locate the /src/.makefile and navigate to the line ($PATHTOBCI2000$ will be the path of your BCI2000 installation)
+<ul><li> Open a console window in the BCI2000 <tt>src/</tt> directory, and execute <tt>make prepare</tt>.
+</li></ul>
+<ul><li> Locate the file /src/.makefiles and navigate to the line ($PATHTOBCI2000$ will be the path of your BCI2000 installation)
 </li></ul>
 <pre>
 #&quot;$PATHTOBCI2000$\src\contrib\SignalProcessing\SigfriedSigProc\SigfriedSigProc.mak&quot; 
@@ -335,9 +350,22 @@ cd ..\src\contrib\Tools\Sigfried\
 start data2model_gui.exe -inicfg data2model_gui.ini -inisig sigfried.ini -input ../$pathtobaseline$/baseline.dat -output /$pathtomodel$/baseline.mdl
 </pre>
 <p>Edit the data2model_gui.ini such that it suites your needs. The example below reflects settings for 16 channels recorded at 1000 Hz. Features are extracted from linearly detrended (<tt>detrend = 1</tt>) and common average referenced filtered (<tt>filter_car = 1</tt>) segments of 480 samples (<tt>spectral_size = 480</tt>)in steps of 480 samples from 8 to 40 Hz in 3 Hz steps using the bins 1 to 8. I.e. The frequency bins are 8-11 Hz, 11-14 Hz, 14-17 Hz, 17-20 Hz, 20-23 Hz, 23-26 Hz, 26-29 Hz, 29-32 Hz covering the mu and beta range of the EEG. 
-</p><p>The advanced settings in <b>[SpatialSettings]</b> allow to not only use the frequency features them self but also use the same features with a <b>spatial derivative</b> i.e. the difference between one feature from different channels at each time. To enable that add further lines with <tt>spatial1</tt>, <tt>spatial2</tt> a.s.o that define the difference relative to the <tt>spatial0</tt> channels. Each parameter has to have the same length as <tt>spatial0</tt>. Each the channels of each parameter must be a subset of <tt>spatial0</tt>.
-</p><p>The advanced settings in <b>[SpatialSettings]</b> allow to not only use the frequency features them self but also use the same features with a <b>temporal derivative</b> i.e. the difference between one feature from the same channel at different points in time. The lowest temporal derivative is 1. 
+</p><p>Detailed description of the parameters:
 </p>
+<dl><dt> SpectralSettings&nbsp;</dt><dd> Explained in the <a href="Contributions%253ASigfriedSigProc.html#Step_2:_Build_Model" title="Contributions:SigfriedSigProc">methodology section</a>.
+</dd></dl>
+<dl><dt> ModelSettings&nbsp;</dt><dd> Explained in the <a href="Contributions%253ASigfriedSigProc.html#Step_2:_Build_Model" title="Contributions:SigfriedSigProc">methodology section</a>.
+</dd></dl>
+<dl><dt> SpatialSettings&nbsp;</dt><dd> Allows to not only use the frequency features them self but also use the same features with a <b>spatial derivative</b> i.e. the difference between one feature from different channels at each time. To enable that add further lines with <tt>spatial1</tt>, <tt>spatial2</tt> a.s.o that define the difference relative to the <tt>spatial0</tt> channels. Each parameter has to have the same length as <tt>spatial0</tt>. Each the channels of each parameter must be a subset of <tt>spatial0</tt>.
+</dd></dl>
+<dl><dt> SpatialSettings&nbsp;</dt><dd> Allows to not only use the frequency features them self but also use the same features with a <b>temporal derivative</b> i.e. the difference between one feature from the same channel at different points in time. The lowest temporal derivative is 1. 
+</dd></dl>
+<dl><dt> FilterSettings&nbsp;</dt><dd> The parameter <b>filter_car</b> can be: 
+</dd></dl>
+<ul><li> 0 for no common average reference filtering.
+</li><li> 1 for common average reference filtering using all channels. 
+</li><li> 2 for common average reference filtering using only the channels in <tt>spatial0</tt>
+</li></ul>
 <pre>
 [SpectralSettings]
 start = 8
@@ -363,21 +391,43 @@ temporal =
 [FilterSettings]
 filter_car = 1
 </pre>
-<p><br />
+<p>Starting the data2model_gui using the created batch file and the custom data2model_gui will provide a visual interface that allows to review and verify the settings. For that reason the data2model_gui has a color coded scheme: 
 </p>
-<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/d/d2/Data2model_gui-data.PNG/400px-Data2model_gui-data.PNG" class="internal" title="Data panel:"><img src="../images/thumb/d/d2/Data2model_gui-data.PNG/400px-Data2model_gui-data.PNG" alt="Data panel:" width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-data.PNG" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Data panel:</div></div></div>
-<div class="thumb tnone"><div style="width:402px;"><a href="../images/thumb/f/f9/Data2model_gui-feature_extraction.png/400px-Data2model_gui-feature_extraction.png" class="internal" title="Feature Extraction panel:"><img src="../images/thumb/f/f9/Data2model_gui-feature_extraction.png/400px-Data2model_gui-feature_extraction.png" alt="Feature Extraction panel:" width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-feature_extraction.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Feature Extraction panel:</div></div></div>
+<ul><li> <span style="background-color:lightgreen"><b>settings ok</b></span>&nbsp;: The setting and all dependencies are valid.
+</li><li> <span style="background-color:yellow"><b>settings mismatch</b></span>&nbsp;: The settings may be valid but there is a mismatch with another parameter.
+</li><li> <span style="background-color:pink"><b>settings error</b></span>&nbsp;: The settings is invalid.
+</li></ul>
+<p>The model can be build by pressing the "Build Model" button, which becomes available when all settings are valid and green. The model building can take a few second to many minutes depending on the amount of data. The progress is indicated by progress bars and no changes can be made until the process is finished. 
+</p>
+<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/d/d2/Data2model_gui-data.PNG/400px-Data2model_gui-data.PNG" class="internal" title="Data panel: Shows that all settings are valid, i.e. that the input file is a valid BCI2000 data files, the ini files are valid and that the outfile can be written."><img src="../images/thumb/d/d2/Data2model_gui-data.PNG/400px-Data2model_gui-data.PNG" alt="Data panel: Shows that all settings are valid, i.e. that the input file is a valid BCI2000 data files, the ini files are valid and that the outfile can be written." width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-data.PNG" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Data panel: Shows that all settings are valid, i.e. that the input file is a valid BCI2000 data files, the ini files are valid and that the outfile can be written.</div></div></div>
+<div class="thumb tnone"><div style="width:402px;"><a href="../images/thumb/f/f9/Data2model_gui-feature_extraction.png/400px-Data2model_gui-feature_extraction.png" class="internal" title="Feature Extraction panel: Shows that all settings and their dependencies are valid."><img src="../images/thumb/f/f9/Data2model_gui-feature_extraction.png/400px-Data2model_gui-feature_extraction.png" alt="Feature Extraction panel: Shows that all settings and their dependencies are valid." width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-feature_extraction.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Feature Extraction panel: Shows that all settings and their dependencies are valid.</div></div></div>
 <p><br style="clear:both;" />
 </p>
-<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/2/27/Data2model_gui-core_parameters.PNG/400px-Data2model_gui-core_parameters.PNG" class="internal" title="Core Parameters panel:"><img src="../images/thumb/2/27/Data2model_gui-core_parameters.PNG/400px-Data2model_gui-core_parameters.PNG" alt="Core Parameters panel:" width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-core_parameters.PNG" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Core Parameters panel:</div></div></div>
-<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/3/30/Data2model_gui-details.png/400px-Data2model_gui-details.png" class="internal" title="Details Pannel:"><img src="../images/thumb/3/30/Data2model_gui-details.png/400px-Data2model_gui-details.png" alt="Details Pannel:" width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-details.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Details Pannel:</div></div></div>
+<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/2/27/Data2model_gui-core_parameters.PNG/400px-Data2model_gui-core_parameters.PNG" class="internal" title="Core Parameters panel: Shows that all settings and their dependencies are valid."><img src="../images/thumb/2/27/Data2model_gui-core_parameters.PNG/400px-Data2model_gui-core_parameters.PNG" alt="Core Parameters panel: Shows that all settings and their dependencies are valid." width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-core_parameters.PNG" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Core Parameters panel: Shows that all settings and their dependencies are valid.</div></div></div>
+<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/3/30/Data2model_gui-details.png/400px-Data2model_gui-details.png" class="internal" title="Details Pannel: Shows detailed information about the BCI2000 input data file as well as which and how many features will be extracted."><img src="../images/thumb/3/30/Data2model_gui-details.png/400px-Data2model_gui-details.png" alt="Details Pannel: Shows detailed information about the BCI2000 input data file as well as which and how many features will be extracted." width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-details.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Details Pannel: Shows detailed information about the BCI2000 input data file as well as which and how many features will be extracted.</div></div></div>
 <p><br style="clear:both;" />
 </p>
-<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/5/52/Data2model_gui-data-error.png/400px-Data2model_gui-data-error.png" class="internal" title="Data panel showing an error:"><img src="../images/thumb/5/52/Data2model_gui-data-error.png/400px-Data2model_gui-data-error.png" alt="Data panel showing an error:" width="400" height="571" longdesc="/wiki/index.php/Image:Data2model_gui-data-error.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Data panel showing an error:</div></div></div>
-<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/e/e7/Data2model_gui-feature_extraction-mismatch.png/400px-Data2model_gui-feature_extraction-mismatch.png" class="internal" title="Feature extraction panel showing an error:"><img src="../images/thumb/e/e7/Data2model_gui-feature_extraction-mismatch.png/400px-Data2model_gui-feature_extraction-mismatch.png" alt="Feature extraction panel showing an error:" width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-feature_extraction-mismatch.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Feature extraction panel showing an error:</div></div></div>
+<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/5/52/Data2model_gui-data-error.png/400px-Data2model_gui-data-error.png" class="internal" title="Data panel showing an error: This indicates that the BCI2000 input data file either does not exist or is not a valid BCI2000 data file."><img src="../images/thumb/5/52/Data2model_gui-data-error.png/400px-Data2model_gui-data-error.png" alt="Data panel showing an error: This indicates that the BCI2000 input data file either does not exist or is not a valid BCI2000 data file." width="400" height="571" longdesc="/wiki/index.php/Image:Data2model_gui-data-error.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Data panel showing an error: This indicates that the BCI2000 input data file either does not exist or is not a valid BCI2000 data file.</div></div></div>
+<div class="thumb tleft"><div style="width:402px;"><a href="../images/thumb/e/e7/Data2model_gui-feature_extraction-mismatch.png/400px-Data2model_gui-feature_extraction-mismatch.png" class="internal" title="Feature extraction panel showing an error: This indicates that their is a mismatch between the parameters start, stop, bandwidth and bins2use. A closer look shows that the number of bins defined in bins2use exceeds the range defined by start, stop, bandwidth."><img src="../images/thumb/e/e7/Data2model_gui-feature_extraction-mismatch.png/400px-Data2model_gui-feature_extraction-mismatch.png" alt="Feature extraction panel showing an error: This indicates that their is a mismatch between the parameters start, stop, bandwidth and bins2use. A closer look shows that the number of bins defined in bins2use exceeds the range defined by start, stop, bandwidth." width="400" height="545" longdesc="/wiki/index.php/Image:Data2model_gui-feature_extraction-mismatch.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Feature extraction panel showing an error: This indicates that their is a mismatch between the parameters <tt>start</tt>, <tt>stop</tt>, <tt>bandwidth</tt> and <tt>bins2use</tt>. A closer look shows that the number of bins defined in <tt>bins2use</tt> exceeds the range defined by <tt>start</tt>, <tt>stop</tt>, <tt>bandwidth</tt>.</div></div></div>
 <p><br style="clear:both;" />
 </p>
 <a name="Step_3:_Run_SigfriedSigProc"></a><h3>Step 3: Run SigfriedSigProc</h3>
+<p>To run SigfriedSigProc the following steps have to be performed:
+</p>
+<ul><li> Use the batch file created in <a href="Contributions%253ASigfriedSigProc.html#Step_0:_Compile_BCI2000_with_SigfriedSigProc" title="Contributions:SigfriedSigProc">step 0</a> to start BCI2000 v2.0 with the SigfriedSigProc module. 
+</li><li> Configure the parameters as described in the <a href="Contributions%253ASigfriedSigProc.html#Parameters" title="Contributions:SigfriedSigProc">parameters</a> section to either perform <b>Passive Functional Brain Mapping</b> or <b>Brain-Computer Interface Operation</b>.
+</li><li> Instruct the subject to perform the configured tasks (e.g. multiple cued motor movements or passive listening to a auditory task).
+</li><li> Start the task. 
+</li></ul>
+<p>The functionality of the visualization is illustrated in the following to figures. In general the visualization allows to:
+</p>
+<ul><li> Turn a condition on or off. 
+</li><li> Set the display range, e.g. to only display significant activity. 
+</li><li> Use the auto range feature to set the display range. 
+</li><li> Display the active condition.
+</li></ul>
+<div class="center"><div class="thumb tnone"><div style="width:802px;"><a href="../images/thumb/9/90/SigfriedSigProc-display.png/800px-SigfriedSigProc-display.png" class="internal" title="SigfriedSigProc visualization window for one model (mu/beta)."><img src="../images/thumb/9/90/SigfriedSigProc-display.png/800px-SigfriedSigProc-display.png" alt="SigfriedSigProc visualization window for one model (mu/beta)." width="800" height="442" longdesc="/wiki/index.php/Image:SigfriedSigProc-display.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>SigfriedSigProc visualization window for one model (mu/beta).</div></div></div></div>
+<div class="center"><div class="thumb tnone"><div style="width:802px;"><a href="../images/thumb/b/ba/SigfriedSigProc-display-detail-scale.png/800px-SigfriedSigProc-display-detail-scale.png" class="internal" title="Functionality of the scale trackbar."><img src="../images/thumb/b/ba/SigfriedSigProc-display-detail-scale.png/800px-SigfriedSigProc-display-detail-scale.png" alt="Functionality of the scale trackbar." width="800" height="728" longdesc="/wiki/index.php/Image:SigfriedSigProc-display-detail-scale.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Functionality of the scale trackbar.</div></div></div></div>
 <a name="See_also"></a><h2>See also</h2>
 
 <div class="printfooter">
@@ -403,5 +453,5 @@ filter_car = 1
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.35 secs. -->
+
 </body></html>

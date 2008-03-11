@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:BCI2000 Source Code - BCI2000 Wiki</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:BCI2000 Source Code,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:Cpp Coding Style,Programming Reference:Project Settings,Programming Reference:Matlab Coding Style" />
+<meta name="keywords" content="Programming Reference:BCI2000 Source Code,Contributions:Contents,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:Cpp Coding Style,Programming Reference:Environment Class,Programming Reference:GenericFilter Class,Programming Reference:Project Settings,Technical Reference:App Connector,Technical Reference:BCI2000 Messages" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -36,10 +36,21 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Browsing_the_Source_Code_Repository_Online"><span class="tocnumber">2</span> <span class="toctext">Browsing the Source Code Repository Online</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#TortoiseSVN_Client"><span class="tocnumber">3</span> <span class="toctext">TortoiseSVN Client</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Howto_Pages"><span class="tocnumber">4</span> <span class="toctext">Howto Pages</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Directory_Layout"><span class="tocnumber">5</span> <span class="toctext">Directory Layout</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Coding_Guidelines"><span class="tocnumber">6</span> <span class="toctext">Coding Guidelines</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Directory_Layout"><span class="tocnumber">5</span> <span class="toctext">Directory Layout</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fbuildutils"><span class="tocnumber">5.1</span> <span class="toctext">src/buildutils</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fbuildutils.2Ftesting"><span class="tocnumber">5.2</span> <span class="toctext">src/buildutils/testing</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fcontrib"><span class="tocnumber">5.3</span> <span class="toctext">src/contrib</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fcore"><span class="tocnumber">5.4</span> <span class="toctext">src/core</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fshared"><span class="tocnumber">5.5</span> <span class="toctext">src/shared</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fextlib"><span class="tocnumber">5.6</span> <span class="toctext">src/extlib</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fdoc"><span class="tocnumber">5.7</span> <span class="toctext">src/doc</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Coding_Guidelines"><span class="tocnumber">6</span> <span class="toctext">Coding Guidelines</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table>
 <a name="Version_Management"></a><h2>Version Management</h2>
 <p>The BCI2000 source code is managed with the help of <a href="http://subversion.tigris.org/" class='external text' title="http://subversion.tigris.org/" rel="nofollow">Subversion</a>, an open-source cross-platform versioning tool widely used in various kinds of projects.
 </p><p>Subversion (SVN) uses the HTTP-based <a href="http://en.wikipedia.org/wiki/WebDAV" class='external text' title="http://en.wikipedia.org/wiki/WebDAV" rel="nofollow">WebDAV</a> protocol, so even web browsers may be used as clients, although a true SVN client software is required to access all features of the versioning system.
@@ -66,7 +77,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <table border="1" cellspacing="0">
 <tr>
 <th>batch
-</th><td>batch files for online modules
+</th><td>on-line system startup scripts
 </td></tr>
 <tr>
 <th>data
@@ -74,11 +85,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 </td></tr>
 <tr>
 <th>doc
-</th><td>information
+</th><td>information, HTML help files
 </td></tr>
 <tr>
 <th>parms
-</th><td>online parameter files
+</th><td>on-line system parameter files
 </td></tr>
 <tr>
 <th>prog
@@ -92,10 +103,75 @@ a.new, #quickbar a.new { color: #CC2200; }
 <th>src
 </th><td>source code
 </td></tr></table>
-<p>Different from the binary distibution, there is a separate directory tree under <i>src</i>. 
+<p>Different from the binary distibution, there is an additional <i>src</i> subtree which holds the BCI2000 source code. 
 Below <i>src</i>, there should be no end-user executables, compiled LaTeX files, or pdf files converted from editable formats.
 Rather, their source files should go below <i>src</i>, and their end-user versions go into either <i>prog,</i> <i>doc,</i> or the appropriate end-user directory below <i>tools</i>.
-In all makefiles or project files that are relevant for the binary distribution, the compiled output is directed into the appropriate executable directory (<i>prog</i> or <i>tools/mytool</i>).
+In all makefiles or project files that are relevant to the binary distribution, the compiled output is directed into the appropriate executable directory (<i>prog</i> or <i>tools/mytool</i>).
+</p><p>The organization of the <i>src</i> subtree itself is as follows:
+</p>
+<a name="src.2Fbuildutils"></a><h3><tt>src/buildutils</tt></h3>
+<p>Holds small utility programs that are used for maintenance.
+</p>
+<a name="src.2Fbuildutils.2Ftesting"></a><h3><tt>src/buildutils/testing</tt></h3>
+<p>Scripts and data used to test executables during the build phase (<tt>make test</tt>).
+</p>
+<a name="src.2Fcontrib"></a><h3><tt>src/contrib</tt></h3>
+<p>Source code and project files from the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions</a> section.
+Paralleling organization of the <tt>core</tt> directory, there are subdirectories for application, signal processing, and source modules, and for tools. An additional directory, <tt>AppConnector</tt>, contains programs connecting via the <a href="Technical_Reference%253AApp_Connector.html" title="Technical Reference:App Connector">App Connector</a> interface.
+</p><p>Each project from the contrib directory should have its own documentation page accessible through the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions:Contents</a> hierarchy.
+</p><p>By default, contrib projects are excluded from the make process. For information about how to compile and use a piece of software located in the contrib directory, see the <a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions" title="Programming Howto:Building BCI2000">Building BCI2000 Howto</a> page.
+</p>
+<a name="src.2Fcore"></a><h3><tt>src/core</tt></h3>
+<p>Source code and project files for the BCI2000 core distribution. Below this directory, there are subdirectories for <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>, and tools.
+</p>
+<a name="src.2Fshared"></a><h3><tt>src/shared</tt></h3>
+<p>Core and contrib directories only contain project files (resp. make files), and source code that is unique to the respective piece of software. BCI2000 framework code is contained below the "shared" directory.
+</p><p>Inside the "shared" directory, code is organized into subdirectories as follows:
+</p>
+<ul><li><b>accessors</b>
+</li></ul>
+<dl><dd>contains code related to the <a href="Programming_Reference%253AEnvironment_Class.html" title="Programming Reference:Environment Class">Environment</a> accessor layer,
+</dd></dl>
+<ul><li><b>bcistream</b>
+</li></ul>
+<dl><dd>provides code for the <tt>bcierr, bciout,</tt> and <tt>bcidbg</tt> output streams, and error handling,
+</dd></dl>
+<ul><li><b>config</b>
+</li></ul>
+<dl><dd>contains configuration and versioning information in form of header files,
+</dd></dl>
+<ul><li><b>fileio</b>
+</li></ul>
+<dl><dd>contains code dealing with directories and files, and its subdirectories represent data formats used for output and input,
+</dd></dl>
+<ul><li><b>gui</b>
+</li></ul>
+<dl><dd>provides a very basic platform-independent interface layer to graphical elements.
+</dd></dl>
+<ul><li><b>modules</b>
+</li></ul>
+<dl><dd>holds code that is common to <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>, and one subdirectory for common code from each application, signal processing, and source modules. Most <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">BCI2000 filters</a> are located inside those subdirectories.
+</dd></dl>
+<ul><li><b>obj</b>
+</li></ul>
+<dl><dd>holds pre-compiled header files during make and build processes,
+</dd></dl>
+<ul><li><b>types</b>
+</li></ul>
+<dl><dd>contains BCI2000-specific data types that may be sent through <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">BCI2000 messages</a>, such as signals, parameters, and states.
+</dd></dl>
+<ul><li><b>utils</b>
+</li></ul>
+<dl><dd>miscellaneous utility functions.
+</dd></dl>
+<a name="src.2Fextlib"></a><h3><tt>src/extlib</tt></h3>
+<p>Unlike the <i>shared</i> directory, this directory contains libraries, or interfaces to libraries, that are used by BCI2000 but not part of BCI2000 itself.
+Typically, the code in <i>extlib</i> is independent of BCI2000, and in most cases external to the BCI2000 project itself, e.g. provided by library vendors.
+</p>
+<a name="src.2Fdoc"></a><h3><tt>src/doc</tt></h3>
+<p>Contents of this directory are related to the production of documentation, not documentation itself.
+Its <tt>figures</tt> subdirectory holds original vector format versions of PNG files uploaded into the wiki, and independent copies of the PNG files themselves.
+<tt>wiki2help</tt> contains software related to the conversion of Wiki pages into the HTML help files from the BCI2000 distribution's <tt>doc/htmlhelp</tt> directory.
 </p>
 <a name="Coding_Guidelines"></a><h2>Coding Guidelines</h2>
 <p>We maintain a loose set of guidelines/rules that is aimed at readability and maintenance efficiency.
@@ -105,7 +181,9 @@ These rules are not obligatory but we ask contributors to consider them before h
 </li><li> <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:Matlab_Coding_Style&amp;action=edit" class="new" title="Programming Reference:Matlab Coding Style">Programming Reference:Matlab Coding Style</a>
 </li><li> <a href="Programming_Reference%253AProject_Settings.html" title="Programming Reference:Project Settings">Programming Reference:Project Settings</a>
 </li></ul>
-
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="Programming_Howto%253ASVN_Client_Setup.html" title="Programming Howto:SVN Client Setup">SVN Client Setup</a>, <a href="Programming_Howto%253AUsing_TortoiseSVN.html" title="Programming Howto:Using TortoiseSVN">Using TortoiseSVN</a>, <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Building BCI2000</a>
+</p>
 <div class="printfooter">
 </div>
 
@@ -139,5 +217,5 @@ These rules are not obligatory but we ask contributors to consider them before h
 </ul><hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.18 secs. -->
+
 </body></html>

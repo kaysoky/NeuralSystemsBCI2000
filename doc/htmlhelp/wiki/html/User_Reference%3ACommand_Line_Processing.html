@@ -19,7 +19,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </style>
 </head>
 
-<body bgcolor='#FFFFFF' onload=''>
+<body bgcolor='#FFFFFF'>
 
 <div id='content'>
 <div id='topbar'>
@@ -70,7 +70,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ACommand_Line_Processing.html#Further_information"><span class="tocnumber">7</span> <span class="toctext">Further information</span></a></li>
 </ul>
-</td></tr></table><script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+</td></tr></table>
 <a name="Introduction"></a><h2>Introduction</h2>
 <p>Command line interfaces are a powerful tool for dynamically combining pieces of software which are typically small programs optimized for performing a very limited functionality. With a command line interface, data processing is usually performed <i>sequentially</i> on a stream of data. This allows the processing of indefinitely large amounts of data while consuming but a finite, and often very small, amount of memory.
 </p><p>Moreover, combining command line programs to perform complex tasks can be done interactively by entering complex commands directly and also in a "scripting" manner, by entering sequences of commands into text files which allow for iteration and branching. That way, automation of complex tasks can be achieved by rather simple means.
@@ -109,16 +109,21 @@ The BCI2000 command line interface may prove useful for
 <pre>bci_dat2stream &lt; mydata.dat | bci_stream2prm | grep SamplingRate
 </pre>
 <a name="Building_BCI2000_command_line_tools"></a><h2>Building BCI2000 command line tools</h2>
-<p>Command line tools are built automatically from the main makefile, but to create a command line executable from your own <tt>GenericFilter</tt> descendant class, you will need to to it manually.
-</p><p>On the Windows NT shell, change to the <tt>BCI2000/src/Tools/cmdline</tt> directory, and execute <tt>make install</tt> from there; this will also move the resulting executables to the <tt>BCI2000/Tools/cmdline</tt> directory. To build an executable from a file <tt>MyFilter.cpp</tt> containing a BCI2000 filter <tt>MyFilter</tt>, execute 
+<p>Usually, command line tools are built automatically from the main makefile.
+You will need to manually build the command line tools in one of the following situations:
+</p>
+<ul><li>You are using the Borland C++ Builder 6 IDE rather than <tt>make</tt>. 
+</li><li>You are using Borland C++ Builder 2006/2007, and thus [[Programming Howto:Building BCI2000#Compiling BCI2000 with Borland C++ Builder 2006/2007|cannot use]] <tt>make</tt>.
+</li><li>You are going create a command line executable from your own <tt>GenericFilter</tt> descendant class.
+</li></ul>
+<p>To do a manual build, open a shell (cmd) window. Change to the <tt>BCI2000/src/Tools/cmdline</tt> directory, and execute <tt>make install</tt> from there; this will also move the resulting executables to the <tt>BCI2000/Tools/cmdline</tt> directory. To build an executable from a file <tt>MyFilter.cpp</tt> containing a BCI2000 filter <tt>MyFilter</tt>, execute 
 </p>
 <pre>make MyFilter.install
 </pre>
 <p>This will build an executable <tt>MyFilter.exe</tt> and add it to the <tt>BCI2000/Tools/cmdline</tt> directory.
 </p><p>Building command line tools does not require the full Borland C++ Builder IDE; you may use the <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external text' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">freely available command line version</a> of the Borland C++ compiler instead. In this case, you will need to comment out the line reading <code>#include &lt;vcl.h&gt;</code> from the file <tt>BCI2000/src/shared/PCHIncludes.h</tt>
 </p><p>In order to use the command line tools, you will need to add the full path 
-to the <tt>BCI2000/Tools/cmdline</tt> directory to your system's PATH environment variable. 
-Please consult your operating system's documentation on how to do this.
+to the <tt>BCI2000/Tools/cmdline</tt> directory to your system's PATH environment variable. (Please consult your operating system documentation for details on environment variables.)
 </p>
 <a name="Stream_format"></a><h2>Stream format</h2>
 <p>The common format used to exchange data between BCI2000 command line tools is called a "BCI2000 binary stream," or just "stream." Such a "stream" transfers parameters, states, and data in exactly the same binary format as is used for socket communication between the four main modules of the BCI2000 real-time system.
@@ -264,5 +269,5 @@ Although the BCI2000 command line tools cannot be compiled with <tt>gcc</tt>, th
 <hr class='sep' />
 <a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
 </div>
-<!-- Served by bci2000.org in 0.22 secs. -->
+
 </body></html>
