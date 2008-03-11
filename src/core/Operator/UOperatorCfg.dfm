@@ -43,8 +43,8 @@ object fConfig: TfConfig
     end
   end
   object bLoadParameters: TButton
-    Left = 589
-    Top = 37
+    Left = 586
+    Top = 57
     Width = 100
     Height = 25
     Anchors = [akTop, akRight]
@@ -53,8 +53,8 @@ object fConfig: TfConfig
     OnClick = bLoadParametersClick
   end
   object bSaveParameters: TButton
-    Left = 589
-    Top = 5
+    Left = 586
+    Top = 25
     Width = 100
     Height = 25
     Anchors = [akTop, akRight]
@@ -63,8 +63,8 @@ object fConfig: TfConfig
     OnClick = bSaveParametersClick
   end
   object bConfigureSaveFilter: TButton
-    Left = 589
-    Top = 125
+    Left = 586
+    Top = 105
     Width = 100
     Height = 25
     Anchors = [akTop, akRight]
@@ -73,8 +73,8 @@ object fConfig: TfConfig
     OnClick = bConfigureSaveFilterClick
   end
   object bConfigureLoadFilter: TButton
-    Left = 589
-    Top = 157
+    Left = 586
+    Top = 137
     Width = 100
     Height = 25
     Anchors = [akTop, akRight]
@@ -82,18 +82,28 @@ object fConfig: TfConfig
     TabOrder = 4
     OnClick = bConfigureLoadFilterClick
   end
+  object bHelp: TButton
+    Left = 586
+    Top = 185
+    Width = 100
+    Height = 25
+    Anchors = [akTop, akRight]
+    Caption = 'Help'
+    TabOrder = 5
+    OnClick = bHelpClick
+  end
   object LoadDialog: TOpenDialog
     DefaultExt = '.prm'
     Filter = 'BCI2000 parameter file (*.prm)|*.prm|Any file (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 592
-    Top = 72
+    Left = 589
+    Top = 232
   end
   object SaveDialog: TSaveDialog
     DefaultExt = '.prm'
     Filter = 'BCI2000 parameter file (*.prm)|*.prm|Any file (*.*)|*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
-    Left = 624
-    Top = 72
+    Left = 621
+    Top = 232
   end
 end

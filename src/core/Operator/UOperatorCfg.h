@@ -36,6 +36,7 @@ __published:  // IDE-managed Components
         TButton *bConfigureSaveFilter;
         TButton *bConfigureLoadFilter;
         TScrollBox *ScrollBox;
+  TButton *bHelp;
         void __fastcall CfgTabControlChange(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
         void __fastcall CfgTabControlChanging(TObject *Sender, bool &AllowChange);
@@ -43,6 +44,8 @@ __published:  // IDE-managed Components
         void __fastcall bLoadParametersClick(TObject *Sender);
         void __fastcall bConfigureSaveFilterClick(TObject *Sender);
         void __fastcall bConfigureLoadFilterClick(TObject *Sender);
+  void __fastcall bHelpClick(TObject *Sender);
+
 public:  // User declarations
         __fastcall TfConfig(TComponent* Owner);
         __fastcall ~TfConfig();

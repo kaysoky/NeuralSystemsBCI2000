@@ -29,9 +29,8 @@ TfConfig *fConfig;
 __fastcall TfConfig::TfConfig(TComponent* Owner) : TForm(Owner)
 {
   OperatorUtils::RestoreControl( this, KEY_OPERATOR );
-  this->BorderIcons = TBorderIcons() << biSystemMenu;
-  if( !ExecutableHelp().ParamHelp().Empty() )
-    this->BorderIcons = this->BorderIcons << biHelp;
+  if( ExecutableHelp().ParamHelp().Empty() )
+    this->bHelp->Visible = false;
 }
 
 __fastcall TfConfig::~TfConfig()
@@ -353,4 +352,9 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject*)
  fShowParameters->ShowModal();
 }
 
+void __fastcall TfConfig::bHelpClick(TObject*)
+{
+  Perform( WM_SYSCOMMAND, SC_CONTEXTHELP, 0 );
+}
+//---------------------------------------------------------------------------
 
