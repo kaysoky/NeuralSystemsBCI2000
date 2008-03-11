@@ -31,14 +31,21 @@ OperatorUtils::SaveControl( const TControl* inControl, const string& inAppKey )
   TRegistry* pReg = NULL;
   try
   {
-    pReg = new TRegistry( KEY_WRITE );
-    pReg->RootKey = HKEY_CURRENT_USER;
-    string key = string( KEY_BCI2000 ) + inAppKey + KEY_CONFIG "\\" + typeid( *inControl ).name();
-    pReg->OpenKey( key.c_str(), true );
-    pReg->WriteInteger( "Left", inControl->Left );
-    pReg->WriteInteger( "Top", inControl->Top );
-    pReg->WriteInteger( "Height", inControl->Height );
-    pReg->WriteInteger( "Width", inControl->Width );
+    bool savePosition = true;
+    const TForm* pForm = dynamic_cast<const TForm*>( inControl );
+    if( pForm )
+      savePosition = ( pForm->WindowState == wsNormal );
+    if( savePosition )
+    {
+      pReg = new TRegistry( KEY_WRITE );
+      pReg->RootKey = HKEY_CURRENT_USER;
+      string key = string( KEY_BCI2000 ) + inAppKey + KEY_CONFIG "\\" + typeid( *inControl ).name();
+      pReg->OpenKey( key.c_str(), true );
+      pReg->WriteInteger( "Left", inControl->Left );
+      pReg->WriteInteger( "Top", inControl->Top );
+      pReg->WriteInteger( "Height", inControl->Height );
+      pReg->WriteInteger( "Width", inControl->Width );
+    }
   }
   catch( ERegistryException& )
   {
