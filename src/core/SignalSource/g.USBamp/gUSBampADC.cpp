@@ -15,6 +15,8 @@
 #include "defines.h"
 #include "GenericSignal.h"
 
+#include <algorithm>
+
 using namespace std;
 
 // Register the source class with the framework.
