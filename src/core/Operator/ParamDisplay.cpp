@@ -302,6 +302,7 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
 {
   // render the parameter's comment
   TStaticText* comment = new TStaticText( static_cast<TComponent*>( NULL ) );
+  comment->AutoSize = true;
   comment->Left = commentOffsetX;
   comment->Top = commentOffsetY;
   comment->Caption = inParam.Comment().c_str();
@@ -315,6 +316,8 @@ ParamDisplay::SeparateComment::SeparateComment( const ParsedComment& inParam,
     comment->Caption
       = comment->Caption.SubString( 0, comment->Caption.LastDelimiter( " \t\n\r" ) - 1 )
         + ellipsis;
+  comment->Caption = comment->Caption + ' ';
+  comment->Height = comment->Height - 2;
   comment->Parent = inParent;
   AddControl( comment );
   AddHelp( inParam, comment );
