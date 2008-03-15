@@ -23,9 +23,15 @@ trialLength = analysisParams.dataSegLength;
 condition1idxstr=sprintf(...
   'condition1idx=find((trialnr == cur_trial) & %s, 1);', ...
   analysisParams.targetConditions{1});
-condition2idxstr=sprintf(...
-  'condition2idx=find((trialnr == cur_trial) & %s, 1);', ...
-  analysisParams.targetConditions{2});
+  
+cond1 = eval(analysisParams.targetConditions{1});
+
+if length(analysisParams.targetConditions) == 2
+  condition2idxstr=sprintf(...
+    'condition2idx=find((trialnr == cur_trial) & %s, 1);', ...
+    analysisParams.targetConditions{2});
+  cond2 = eval(analysisParams.targetConditions{2});
+end
 
 triallength=ceil(analysisParams.dataSegLength*samplefreq/1000);                     % convert from ms into samples
 
@@ -42,8 +48,6 @@ trials=unique(trialnr);
 cond1Cnt = 0;
 cond2Cnt = 0;
 
-cond1 = eval(analysisParams.targetConditions{1});
-cond2 = eval(analysisParams.targetConditions{2});
 
 bInc1 = 0;
 bInc2 = 0;
@@ -67,8 +71,11 @@ for idxSamp = 1:length(trialnr)
   if ~bInc1 && cond1(idxSamp)
     bInc1 = 1;
   end
-  if ~bInc2 && cond2(idxSamp)
-    bInc2 = 1;
+
+  if length(analysisParams.targetConditions) == 2
+    if ~bInc2 && cond2(idxSamp)
+      bInc2 = 1;
+    end
   end
 end
 
@@ -123,18 +130,20 @@ for cur_trial=min(trials):max(trials)
     cond1Cnt = cond1Cnt + 1;
   end
   
-  % condition 2
-  eval(condition2idxstr);
-  if (isempty(condition2idx) == 0) && ...
-      length(signal) >= condition2idx + triallength
-  
-    if size(avgdata2, 3) < cond2Cnt
-      avgdata2(:,:,end+1:end+1000) = ...
-        zeros(triallength, num_channels, 1000);
+  if length(analysisParams.targetConditions) == 2
+    % condition 2
+    eval(condition2idxstr);
+    if (isempty(condition2idx) == 0) && ...
+        length(signal) >= condition2idx + triallength
+    
+      if size(avgdata2, 3) < cond2Cnt
+        avgdata2(:,:,end+1:end+1000) = ...
+          zeros(triallength, num_channels, 1000);
+      end
+      avgdata2(:,:,cond2Cnt)=signal(...
+        condition2idx:condition2idx+triallength-1, :);
+      cond2Cnt = cond2Cnt + 1;
     end
-    avgdata2(:,:,cond2Cnt)=signal(...
-      condition2idx:condition2idx+triallength-1, :);
-    cond2Cnt = cond2Cnt + 1;
   end
 end
 
@@ -143,8 +152,10 @@ end
 if size(avgdata1, 3) >= cond1Cnt
   avgdata1(:,:,cond1Cnt:end) = [];
 end
-if size(avgdata2, 3) >= cond2Cnt
-  avgdata2(:,:,cond2Cnt:end) = [];
+if length(analysisParams.targetConditions) == 2
+  if size(avgdata2, 3) >= cond2Cnt
+    avgdata2(:,:,cond2Cnt:end) = [];
+  end
 end
 
 %ensure we have enough data
@@ -153,12 +164,14 @@ if cond1Cnt < settings.minTrialsPerCondErr
 elseif ~errorOverride && cond1Cnt < settings.minTrialsPerCondWarn
   error([funcName ':sugTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
 end
-if cond2Cnt < settings.minTrialsPerCondErr
-  error([funcName ':minTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
-elseif ~errorOverride && cond2Cnt < settings.minTrialsPerCondWarn
-  error([funcName ':sugTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
+if length(analysisParams.targetConditions) == 2
+  if cond2Cnt < settings.minTrialsPerCondErr
+    error([funcName ':minTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
+  elseif ~errorOverride && cond2Cnt < settings.minTrialsPerCondWarn
+    error([funcName ':sugTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
+  end
 end
-      
+
 if verbose
   fprintf(1, '\r');
   fprintf(1, 'Calculating statistics\n');
@@ -166,9 +179,14 @@ end
 
 % calculate average trials for each condition and each channel
 res1=mean(avgdata1, 3);
-res2=mean(avgdata2, 3);
 
-% calculate rsqu for each channel and each sample between up and down target
-ressq = calc_rsqu(double(avgdata1), double(avgdata2), 1);
+if length(analysisParams.targetConditions) == 2
+  res2=mean(avgdata2, 3);
 
+  % calculate rsqu for each channel and each sample between up and down target
+  ressq = calc_rsqu(double(avgdata1), double(avgdata2), 1);
+else
+  res2 = [];
+  ressq = [];
+end
 
