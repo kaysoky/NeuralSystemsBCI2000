@@ -64,6 +64,7 @@ settings = settings.settings;
 set(handles.figTop, 'userdata', settings);
 axes(handles.axHead)
 elocVis(settings);
+axis square;
 
 
 % --- Outputs from this function are returned to the command line.
@@ -107,8 +108,8 @@ if isempty(lastSelectedIdx) || curIdx ~= lastSelectedIdx
     if ~isempty(elecData)
       elecIdx = get(hObject, 'value');
 
-      if ~isempty(lastSelectedIdx) && ~isempty(elecData(lastSelectedIdx).markerHandle)
-        set(elecData(lastSelectedIdx).markerHandle, 'facecolor', settings.markerColor);
+      if ~isempty(lastSelectedIdx) && ~isempty(elecData(lastSelectedIdx).markerTextHandle)
+        set(elecData(lastSelectedIdx).markerTextHandle, 'backgroundcolor', settings.markerColor);
       end
 
       if isempty(elecIdx)
@@ -131,11 +132,11 @@ if isempty(lastSelectedIdx) || curIdx ~= lastSelectedIdx
         set(handles.txtYCoord, 'string', tmp);
         set(handles.txtYCoord, 'userdata', tmp);
       end
-      if ~isempty(elecData(elecIdx).markerHandle)
+      if ~isempty(elecData(elecIdx).markerTextHandle)
         try
-          set(elecData(elecIdx).markerHandle, 'facecolor', settings.selectedMarkerColor);
+          set(elecData(elecIdx).markerTextHandle, 'backgroundcolor', settings.selectedMarkerColor);
         catch
-          elecData(elecIdx).markerHandle = [];
+          elecData(elecIdx).markerTextHandle = [];
           set(handles.lstElecs, 'userdata', elecData);
         end
       end
@@ -474,8 +475,13 @@ while isempty(button) || ~(button == settings.escKeyButtonCode || (button == set
   [xCord yCord button] = ginput(1);
 end
 if button == 1
-  if xCord^2 + yCord^2 > settings.headRadius^2
-    errordlg('Invalid electrode location');
+  mode = get(handles.axHead, 'userdata');
+
+  if strcmp(mode, 'ecog') && (any(max(xCord,yCord) > settings.ecogCoordRange(2)) || ...
+      any(min(xCord,yCord) < settings.ecogCoordRange(1))) 
+    errordlg('Invalid ECoG electrode location');
+  elseif strcmp(mode, 'eeg') && (xCord^2 + yCord^2 > settings.headRadius^2)
+    errordlg('Invalid EEG electrode location');
   else
     set(handles.txtXCoord, 'string', sprintf(settings.coordStrFormat, xCord));
     set(handles.txtYCoord, 'string', sprintf(settings.coordStrFormat, yCord));
@@ -516,22 +522,20 @@ if ~isempty(formVals)
   
   %remove marker from topoplot.  The try/catch is there just to be careful
   try
-    delete(elecInfo(curIdx).markerHandle);
     delete(elecInfo(curIdx).markerTextHandle);
   catch
   end
   
   %add new marker
   hold on;
-  [markerHandle markerTextHandle] = ...
+  [markerTextHandle] = ...
     addTopoMarker(elecInfo(curIdx).coords(1), ...
     elecInfo(curIdx).coords(2), int2str(elecInfo(curIdx).elecNum), ...
-    settings, get(handles.axHead, 'userdata'));
+    settings);
   hold off;
-  set(markerHandle, 'facecolor', settings.selectedMarkerColor);
+  set(markerTextHandle, 'backgroundcolor', settings.selectedMarkerColor);
   
   
-  elecInfo(curIdx).markerHandle = markerHandle;
   elecInfo(curIdx).markerTextHandle = markerTextHandle;
   
   %update lstElecs and marker text
@@ -650,15 +654,15 @@ switch(mode)
       return;
     end
   case 'ecog'
-    if xCoord < settings.ecogExtremes(1) || ...
-        xCoord > settings.ecogExtremes(2)
-      errordlg(sprintf('The specified x-coordinate is outside the valid range.  Please choose a number between %0.4f and %0.4f.', ...
-        settings.ecogExtremes(1), settings.ecogExtremes(2)));
+    if xCoord < settings.ecogCoordRange(1) || ...
+        xCoord > settings.ecogCoordRange(2)
+      errordlg(sprintf('The specified x-coordinate is outside the valid range.  Please choose a number between %d and %d.', ...
+        settings.ecogCoordRange(1), settings.ecogCoordRange(2)));
       return;
-    elseif yCoord < settings.ecogExtremes(3) || ...
-        yCoord > settings.ecogExtremes(4)
+    elseif yCoord < settings.ecogCoordRange(1) || ...
+        yCoord > settings.ecogCoordRange(2)
       errordlg(sprintf('The specified y-coordinate is outside the valid range.  Please choose a number between %0.4f and %0.4f.', ...
-        settings.ecogExtremes(3), settings.ecogExtremes(4)));  
+        settings.ecogCoordRange(1), settings.ecogCoordRange(2)));  
       return;
     end
 end
@@ -696,7 +700,6 @@ if isValid && checkForChanges(handles)
   elecInfo(newIdx).numLocked = 0;
   elecInfo(newIdx).elecNum = newElecNum;
   elecInfo(newIdx).coords = [];
-  elecInfo(newIdx).markerHandle = [];
   elecInfo(newIdx).markerTextHandle = [];
 
   vals = get(handles.lstElecs, 'string');
@@ -718,7 +721,7 @@ if isValid && checkForChanges(handles)
   
   %set the previously selected item back to the default color
   if ~isempty(curIdx)
-    set(elecInfo(curIdx).markerHandle, 'facecolor', settings.markerColor);
+    set(elecInfo(curIdx).markerTextHandle, 'backgroundcolor', settings.markerColor);
   end
 end
 
@@ -758,12 +761,23 @@ if isempty(elecData.coords)
     errordlg(errMsg, 'Data Error');
   end
   return;
-elseif sum(elecData.coords.^2) > settings.headRadius^2
-  errMsg = sprintf('The specified coordinates are outside the valid range (i.e., x^2 + y^2 must be less than or equal to %0.2f).  Please enter a valid X and Y coordinates for the current electrode and hit Update.', settings.headRadius);
-  if ~bQuiet
-    errordlg(errMsg, 'Data Error');
+else
+  mode = get(handles.axHead, 'userdata');
+
+  if strcmp(mode, 'eeg') && sum(elecData.coords.^2) > settings.headRadius^2
+    errMsg = sprintf('The specified coordinates are outside the valid range (i.e., x^2 + y^2 must be less than or equal to %0.2f).  Please enter valid X and Y coordinates for the current electrode and hit Update.', settings.headRadius);
+    if ~bQuiet
+      errordlg(errMsg, 'Data Error');
+    end
+    return;
+  elseif strcmp(mode, 'ecog') && (any(elecData.coords > settings.ecogCoordRange(2)) || ...
+      any(elecData.coords < settings.ecogCoordRange(1))) 
+    errMsg = sprintf('Please choose X and Y coordinates that are between the values of %d and %d.', ...
+      settings.ecogCoordRange(1), settings.ecogCoordRange(2));
+    if ~bQuiet
+      errordlg(errMsg, 'Data Error');
+    end
   end
-  return;
 end
 
 isValid = 1;
@@ -809,7 +823,6 @@ strVals = get(handles.lstElecs, 'string');
 
 %remove figure markers, try/catch for safety
 try
-  delete(elecInfo(curIdx).markerHandle);
   delete(elecInfo(curIdx).markerTextHandle);
 catch
 end
