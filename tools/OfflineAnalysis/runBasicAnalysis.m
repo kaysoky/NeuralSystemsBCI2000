@@ -77,25 +77,33 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     error([funcName ':invalidSpatialFilt'], 'Specified spatial filter is not supported');
   end
 
-  if bitand(plots, settings.pltSelTopos)
-    % Make sure montage file exists
-    if exist(params.montageFile, 'file')
-      eloc_file = params.montageFile;
+  if bitand(plots, settings.pltSelTopos) 
+    if isa(params.montageFile, 'char')
+      %Montage file is specified as a file rather than an electrode struct
+      % Make sure montage file exists
+      if exist(params.montageFile, 'file')
+        eloc_file = params.montageFile;
+      else
+        error([funcName ':invalidMontageFile'], 'params.monageFile can''t be found');
+      end
+
+      %Check that montage file is valid
+      [isValid numChans] = isValidMontageFile(params.montageFile, settings, ...
+        params.acqType);
+      if ~isValid
+        if strcmp(params.acqType, 'eeg')
+          mode = 'EEG';
+        else
+          mode = 'ECoG';
+        end
+        error([funcName ':invalidMontageFile'], sprintf('Specifited montage file is not in the accepted format for %s processing', mode));
+      end
     else
-      error([funcName ':invalidMontageFile'], 'params.monageFile can''t be found');
+      %Montage is specified as an electrode struct
+      numChans = length(params.montageFile);  
+      eloc_file = params.montageFile;
     end
 
-    %Check that montage file is valid
-    [isValid numChans] = isValidMontageFile(params.montageFile, settings, ...
-      params.acqType);
-    if ~isValid
-      if strcmp(params.acqType, 'eeg')
-        mode = 'EEG';
-      else
-        mode = 'ECoG';
-      end
-      error([funcName ':invalidMontageFile'], sprintf('Specifited montage file is not in the accepted format for %s processing', mode));
-    end
   end
 
   %Load data files
@@ -106,6 +114,13 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   [files(1:length(params.dataFiles)).name] = deal(params.dataFiles{:});
   try
     [signal, states, bciParams]=load_bcidat(files.name, '-calibrated');
+    
+    %load separate parameters
+%    bciParams = cell(length(files), 1);
+%     for idxFile = 1:length(files)
+%       [ignore1, ignore2, paramsTemp] = load_bcidat(files(idxFile).name, [0 0]);
+%       bciParams{idxFile} = paramsTemp;
+%     end
   catch
     rethrow(lasterror);
   end
@@ -129,21 +144,23 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   end
 
   samplefreq=str2num(bciParams.SamplingRate.Value{1});
+  if lp_cutoff > samplefreq/2
+    lp_cutoff = samplefreq/2;
+    %if the last bin has less samples, truncate it
+    lp_cutoff = lp_cutoff - mod(lp_cutoff-settings.hpCutoff, settings.freqBinWidth);
+  end
   if bitand(plots, settings.pltSelTopos)
     if strcmp(params.domain, 'freq')
       if any(params.topoParams < settings.hpCutoff) || ...
-          any(params.topoParams > lp_cutoff) || ...
-          any(params.topoParams > samplefreq/2)
-        error([funcName ':invalidSpecChans'], sprintf('One or more of the specified topographic frequencies are outside the range of available frequencies.  Please choose frequencies between %d and %d or the Nyquist frequency (half the sampling frequency) - whichever is lower.', settings.hpCutoff, lp_cutoff));
+          any(params.topoParams > lp_cutoff) 
+        error([funcName ':invalidSpecChans'], sprintf('One or more of the specified topographic frequencies are outside the range of available frequencies.  Please choose frequencies between %d and %d.', settings.hpCutoff, lp_cutoff));
       else
         %translate frequencies into bins - handle issue of user requesting
         %the right edge of the final bin
         topoParams = params.topoParams;
-        if samplefreq < lp_cutoff
-          topoParams(topoParams == samplefreq) = samplefreq-settings.freqBinWidth;
-        else
-          topoParams(topoParams == lp_cutoff) = lp_cutoff-settings.freqBinWidth;
-        end
+        %deal with right edge frequncies
+        topoParams(topoParams == lp_cutoff) = lp_cutoff-settings.freqBinWidth;
+        %translate into bins
         topoParams = (topoParams+settings.freqBinWidth/2)/settings.freqBinWidth;
         topofrequencybins=ceil(topoParams);
       end
@@ -189,23 +206,29 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     error([funcName ':invalidTargetCondition1'], 'Syntax error in target condition 1');
   end
 
-  try
-    targetIdxs2 = eval(sprintf('find(%s)', params.targetConditions{2}));
-  catch
-    error([funcName ':invalidTargetCondition2'], 'Syntax error in target condition 2');
-  end
   if length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondErr
     error([funcName ':minTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
   elseif ~errorOverride && length(unique(trialnr(targetIdxs1))) < settings.minTrialsPerCondWarn
     error([funcName ':sugTrialsCond1NotMet'], sprintf('Evaluation of target condition 1 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
   end
-  if length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondErr
-    error([funcName ':minTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
-  elseif ~errorOverride && length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondWarn
-    error([funcName ':sugTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
-  end
   condition1txt = params.conditionLabels{1};
-  condition2txt = params.conditionLabels{2};
+
+  if length(params.targetConditions) == 2
+    try
+      targetIdxs2 = eval(sprintf('find(%s)', params.targetConditions{2}));
+    catch
+      error([funcName ':invalidTargetCondition2'], 'Syntax error in target condition 2');
+    end
+
+    if length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondErr
+      error([funcName ':minTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  Please relax your conditions.', settings.minTrialsPerCondErr));
+    elseif ~errorOverride && length(unique(trialnr(targetIdxs2))) < settings.minTrialsPerCondWarn
+      error([funcName ':sugTrialsCond2NotMet'], sprintf('Evaluation of target condition 2 in conjunction with the trial change condition resulted in fewer than %d useable trials.  You may want to relax your conditions.', settings.minTrialsPerCondWarn));
+    end
+
+    condition2txt = params.conditionLabels{2};
+  end
+
 
 
   %remove signal DC
@@ -267,6 +290,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   
   if strcmp(params.domain, 'freq')
     modelOrd = 18+round(samplefreq/100);
+    
     parms = [modelOrd, settings.hpCutoff+settings.freqBinWidth/2, ...
       lp_cutoff-settings.freqBinWidth/2, settings.freqBinWidth, ...
       round(settings.freqBinWidth/.2), settings.trend, samplefreq];
@@ -288,23 +312,22 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
           'r^2 Channel %d', 'Spectra');
       end
       if bitand(plots, settings.pltSelFeatures)
-        plotFeatures(freq_bins, ...,
-          'r^2 as a function of frequency and channel', ...
-          'Frequency (Hz)', 'Channel');
+        if length(params.targetConditions) == 1
+          tmpTitle = 'Spectra Amplitude';
+        else
+          tmpTitle = 'Statistical r^2 Values Between Condtions 1 and 2';
+        end
+        
+        plotFeatures(freq_bins, tmpTitle, 'Frequency (Hz)', 'Channel');
       end
       if bitand(plots, settings.pltSelTopos)
-        if strcmp(params.acqType, 'eeg')
-          topoFcn = 'topoplotEEG';
-        else
-          topoFcn = 'topoplot';
-        end
         titleData = mat2cell(reshape(freq_bins(topofrequencybins) + settings.freqBinWidth/2, ...
           length(topofrequencybins), 1), ...
           ones(length(topofrequencybins), 1), 1);
         titleData(:, 2) = mat2cell(reshape(params.topoParams, ...
           length(topofrequencybins), 1), ...
           ones(length(topofrequencybins), 1), 1);
-        plotTopos(topoFcn, topofrequencybins, ...
+        plotTopos(params.acqType, topofrequencybins, ...
           '%0.2f Hz (%0.2f Hz requested)', titleData);
       end
   else
@@ -321,9 +344,12 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
         'Waveform r^2 (Channel %d)', 'Waveforms');
     end
     if bitand(plots, settings.pltSelFeatures)
-      plotFeatures(timems, ...,
-        'r^2 as a function of time and channel', ...
-        'Time (ms)', 'Channel');
+      if length(params.targetConditions) == 1
+        tmpTitle = 'Waveform Amplitude';
+      else
+        tmpTitle = 'Statistical r^2 Values Between Condtions 1 and 2';
+      end
+      plotFeatures(timems, tmpTitle, 'Time (ms)', 'Channel');
       shading interp;
     end
     if bitand(plots, settings.pltSelTopos)
@@ -338,12 +364,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       titleData(:, 2) = mat2cell(reshape(params.topoParams, ...
         length(topotimebins), 1), ...
         ones(length(topotimebins), 1), 1);
-      if strcmp(params.acqType, 'eeg')
-          topoFcn = 'topoplotEEG';
-        else
-          topoFcn = 'topoplot';
-        end
-      plotTopos(topoFcn, topotimebins, ...
+      plotTopos(params.acqType, topotimebins, ...
         '%0.2f ms (%0.2f ms requested)', titleData);    
     end
   end
@@ -363,125 +384,142 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     
     num_plotchannels=max(size(channels));
     for cur_plotchannel=1:num_plotchannels
-      subplot(num_plotchannels, 2, (cur_plotchannel-1)*2+1);
-      plot(xData, res1(:, channels(cur_plotchannel)), 'r');
-      hold on;
-      plot(xData, res2(:, channels(cur_plotchannel)), 'b');
-      titletxt=sprintf(title1, channels(cur_plotchannel));
-      title(titletxt); 
+      if length(params.targetConditions) == 2
+        subplot(num_plotchannels, 2, (cur_plotchannel-1)*2+1);
+        plot(xData, res1(:, channels(cur_plotchannel)), 'r');
+        hold on;
+        plot(xData, res2(:, channels(cur_plotchannel)), 'b');
+        titletxt=sprintf(title1, channels(cur_plotchannel));
+        title(titletxt); 
+        axis tight;
+        legend(condition1txt, condition2txt);
+
+        subplot(num_plotchannels, 2, cur_plotchannel*2);
+        plot(xData, ressq(:, channels(cur_plotchannel)), 'b');
+        titletxt=sprintf(title2, channels(cur_plotchannel));
+        title(titletxt); 
+        minY = min(ressq(:, channels(cur_plotchannel)));
+        maxY = max(ressq(:, channels(cur_plotchannel)));
+        if minY == maxY
+          minY = minY - .05
+          maxY == minY + .05;
+        end
+        axis([min(xData), max(xData), minY, maxY]);
+      else
+        subplot(num_plotchannels, 1, cur_plotchannel);
+        plot(xData, res1(:, channels(cur_plotchannel)), 'r');
+        titletxt=sprintf(title1, channels(cur_plotchannel));
+        title(titletxt); 
+        axis tight;
+      end
+    end
+  end
+
+    function plotFeatures(xData, pltTitle, xLabel, yLabel)
+      if isempty(handles.r2)
+        handles.r2 = figure;
+      else
+        figure(handles.r2);
+      end
+      clf;
+      set(handles.r2, 'name', 'Features');
+      
+      dispmin=min(min(ressq));
+      dispmax=max(max(ressq));
+
+      num_channels=size(signal, 2);
+
+      if length(params.targetConditions) == 2
+        data2plot=ressq';
+      else
+        data2plot = res1';
+      end
+      data2plot=cat(2, data2plot, zeros(size(data2plot, 1), 1));
+      data2plot=cat(1, data2plot, zeros(1, size(data2plot, 2)));
+
+      xData(end+1) = xData(end) + diff(xData(end-1:end));
+      surf(xData, [1:num_channels + 1], data2plot);
       axis tight;
-      legend(condition1txt, condition2txt);
+  %     xData(end) = [];
+  %     surf(xData, [1:num_channels], ressq');
+  % 
+  %     pcolor(xData, [1:num_channels], ressq');
 
-      subplot(num_plotchannels, 2, cur_plotchannel*2);
-      plot(xData, ressq(:, channels(cur_plotchannel)), 'b');
-      titletxt=sprintf(title2, channels(cur_plotchannel));
-      title(titletxt); 
-      minY = min(ressq(:, channels(cur_plotchannel)));
-      maxY = max(ressq(:, channels(cur_plotchannel)));
-      if minY == maxY
-        minY = minY - .05
-        maxY == minY + .05;
-      end
-      axis([min(xData), max(xData), minY, maxY]);
-    end
-  end
-
-  function plotFeatures(xData, pltTitle, xLabel, yLabel)
-    if isempty(handles.r2)
-      handles.r2 = figure;
-    else
-      figure(handles.r2);
-    end
-    clf;
-    set(handles.r2, 'name', 'Features');
-    
-    dispmin=min(min(ressq));
-    dispmax=max(max(ressq));
-
-    num_channels=size(signal, 2);
-    data2plot=ressq';
-    data2plot=cat(2, data2plot, zeros(size(data2plot, 1), 1));
-    data2plot=cat(1, data2plot, zeros(1, size(data2plot, 2)));
-    xData(end+1) = max(xData) + 1;
-    surf(xData, [1:num_channels + 1], data2plot);
-    axis tight;
-%     xData(end) = [];
-%     surf(xData, [1:num_channels], ressq');
-% 
-%     pcolor(xData, [1:num_channels], ressq');
-
-    view(2);
-    colormap jet;
-    colorbar;
-    
-    xlabel(xLabel);
-    ylabel(yLabel);
-    title(pltTitle);    
-  end
-
-  function plotTopos(topoFcn, topoBins, pltTitle, titleData)
-    if isempty(handles.topos)
-      handles.topos = figure;
-    else
-      figure(handles.topos);
-    end
-    clf;
-    set(handles.topos, 'name', 'Topographies');
-    
-    num_topos=length(params.topoParams);
-    topoHandles = zeros(num_topos, 1);
-    for cur_topo=1:num_topos
-      pltIdx = cur_topo;
-      hPlt = subplot(topogrid(1), topogrid(2), pltIdx);
-      topoHandles(cur_topo) = hPlt;
-      data2plot=ressq(topoBins(cur_topo), :);
-      %eval([topoFcn '(data2plot, eloc_file, ''maplimits'', [min(min(ressq)), max(max(ressq))], ''gridscale'', 200);']);
-      
-      if strcmp(topoFcn, 'topoplot')
-        topoplot(data2plot, eloc_file, 'maplimits', [min(min(ressq)), max(max(ressq))], 'gridscale', 200);
-      else
-        topoplotEEG(data2plot, eloc_file, 'maplimits', [min(min(ressq)), max(max(ressq))], 'gridscale', 200);
-      end
-      
-      titletxt=sprintf(pltTitle, titleData{cur_topo, :});
-      title(titletxt); 
+      view(2);
       colormap jet;
-      if cur_topo == 1
-        topoPos = get(hPlt, 'position');
-      end
+      colorbar;
       
-      if(cur_topo == num_topos)
-        hCb = colorbar;
-        
-        %compensate for matlab deforming the graph showing the colorbar
-        topoPosLast = get(hPlt, 'position');
-        topoPosLast(3) = topoPos(3);
-        set(gca, 'position', topoPosLast);
-      end      
-    end
-    lastRow = 0;
-    
-    cbPos = get(hCb, 'position');
-    bufLen = cbPos(1) - topoPosLast(1);
-    
-    for cur_topo=1:num_topos
-      pltIdx = cur_topo;
-      hPlt = topoHandles(cur_topo);
-      pos = get(hPlt, 'position');
-      
-      if cur_topo==1
-        shiftAmt = pos(1)/2;
-      end
-      if mod(pltIdx-1, topogrid(2)) == 0
-        rowY = pos(2);
-      else
-        pos(2) == rowY;
-      end
-      
-      pos(1) = pos(1)-shiftAmt;
-      set(hPlt, 'position', pos);
-    end
-  
-  end
+      xlabel(xLabel);
+      ylabel(yLabel);
+      title(pltTitle);    
 
-end
+      ticks = get(gca, 'ytick');
+      ticklabels = num2str(ticks');
+      set(gca, 'ytick', ticks+.5);
+      set(gca, 'yticklabel', ticklabels);
+    end
+
+    function plotTopos(acqType, topoBins, pltTitle, titleData)
+      if isempty(handles.topos)
+        handles.topos = figure;
+      else
+        figure(handles.topos);
+      end
+      clf;
+      set(handles.topos, 'name', 'Topographies');
+      
+      num_topos=length(params.topoParams);
+      topoHandles = zeros(num_topos, 1);
+      for cur_topo=1:num_topos
+        pltIdx = cur_topo;
+        hPlt = subplot(topogrid(1), topogrid(2), pltIdx);
+        topoHandles(cur_topo) = hPlt;
+        if length(params.targetConditions) == 2
+          data2plot=ressq(topoBins(cur_topo), :);
+        else
+          data2plot = res1(topoBins(cur_topo), :);
+        end
+        
+        topoplot(data2plot, eloc_file, acqType, 'maplimits', [min(min(data2plot)), max(max(data2plot))], 'gridscale', 200);
+        titletxt=sprintf(pltTitle, titleData{cur_topo, :});
+        title(titletxt); 
+        colormap jet;
+        if cur_topo == 1
+          topoPos = get(hPlt, 'position');
+        end
+        
+        if(cur_topo == num_topos)
+          hCb = colorbar;
+          
+          %compensate for matlab deforming the graph showing the colorbar
+          topoPosLast = get(hPlt, 'position');
+          topoPosLast(3) = topoPos(3);
+          set(gca, 'position', topoPosLast);
+        end      
+      end
+      lastRow = 0;
+      
+      cbPos = get(hCb, 'position');
+      bufLen = cbPos(1) - topoPosLast(1);
+      
+      for cur_topo=1:num_topos
+        pltIdx = cur_topo;
+        hPlt = topoHandles(cur_topo);
+        pos = get(hPlt, 'position');
+        
+        if cur_topo==1
+          shiftAmt = pos(1)/2;
+        end
+        if mod(pltIdx-1, topogrid(2)) == 0
+          rowY = pos(2);
+        else
+          pos(2) == rowY;
+        end
+        
+        pos(1) = pos(1)-shiftAmt;
+        set(hPlt, 'position', pos);
+      end
+    
+    end
+
+  end
