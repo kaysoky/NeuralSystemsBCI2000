@@ -11,21 +11,10 @@
 %% (C) 2000-2008, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [markerHandle markerTextHandle] = addTopoMarker(x, y, label, params,  mode)
-error(nargchk(5, 5,nargin));
-
-if nargin >=5 && strcmpi(mode, 'ecog')
-    markerWidth = params.markerWidthECoG;
-    markerHeight = params.markerHeightECoG;
-  else
-    markerWidth = params.markerWidth;
-    markerHeight = params.markerHeight;
-  end
-
-  markerHandle = ...
-    fill([x-markerWidth/2 x+markerWidth/2 x+markerWidth/2 x-markerWidth/2], ...
-      [y+markerHeight/2 y+markerHeight/2 y-markerHeight/2 y-markerHeight/2], params.markerColor);
+function [markerTextHandle] = addTopoMarker(x, y, label, params )
+error(nargchk(4, 4,nargin));
 
   markerTextHandle = text(x,y,label,'HorizontalAlignment',params.markerTextHorzAlign,...
     'VerticalAlignment',params.markerTextVerAlign,'Color',params.markerTextColor,...
-    'FontSize',params.markerTextFontSize);  
+    'FontSize',params.markerTextFontSize, 'backgroundcolor', params.markerColor, ...
+    'edgecolor', 'black');  
