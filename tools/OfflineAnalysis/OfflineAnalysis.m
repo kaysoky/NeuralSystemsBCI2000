@@ -53,15 +53,32 @@ if get(handles.radDomainTime, 'value') == 1
 else
   domain = 'freq';
 end
-params = getAnalysisParams(domain, acqMode, get(handles.lstDataFiles, 'userdata'));
+
+if bThourough
+  fileInfo = get(handles.lstDataFiles, 'userdata');
+  filePaths = {};
+  if length(fileInfo) > 0
+    [filePaths{1:length(fileInfo)}] = deal(fileInfo.path);
+  end
+  params = getAnalysisParams(domain, acqMode, filePaths);
+  params.fileInfo = rmfield(fileInfo, 'path');
+else
+  params = getAnalysisParams(domain, acqMode);
+end
+
 params.montageFile = strtrim(get(handles.txtMontageFile, 'string'));
 params.topoParams = strtrim(get(handles.txtTopoFreqs, 'string'));
 params.targetConditions{1} = strtrim(get(handles.txtTargetCond1, 'string'));
-params.targetConditions{2} = strtrim(get(handles.txtTargetCond2, 'string'));
 params.conditionLabels{1} = strtrim(get(handles.txtTargetLabel1, 'string'));
-params.conditionLabels{2} = strtrim(get(handles.txtTargetLabel2, 'string'));
+tmpCond = strtrim(get(handles.txtTargetCond2, 'string'));
+tmpTxt = strtrim(get(handles.txtTargetLabel2, 'string'));
+if ~isempty(tmpCond) || ~isempty(tmpTxt)
+  params.targetConditions{2} = tmpCond;
+  params.conditionLabels{2} = tmpTxt;
+end
 params.trialChangeCondition = strtrim(get(handles.txtTrialChangeCond, 'string'));
 params.channels = strtrim(get(handles.txtSpecChans, 'string'));
+
 tmp = get(handles.radGrpSpatialFilt, 'SelectedObject');
 params.spatialFilt = get(tmp, 'UserData');
   
@@ -80,19 +97,17 @@ if bThourough
     end
   end
 end
-if isempty(params.montageFile) || isempty(params.topoParams)
-  %make sure that both are empty
+if isempty(params.topoParams)
   params.montageFile = '';
-  params.topoParams = [];
-else
-  %user has requested generation of topographies
-  if isempty(params.montageFile)
-    errordlg('A montage file is required in order to generate topographies.  If you prefer not to generate the topograhies, please uncheck the appropriate box.  Otherwise, please specify a montage file.', 'File not specified')
-    return;
-  end
-  if bThourough && ~exist(params.montageFile, 'file')
-    errordlg('Specified montage file does not exist', 'File not found');
-    return;
+elseif isempty(params.montageFile) 
+  %check to see if channel names are available
+  allFilesInfo = get(handles.lblDataFiles, 'userdata');
+  if ~isempty(allFilesInfo) && ~isempty(allFilesInfo.elecs) && ...
+      allFilesInfo.is1020
+    %channel names are available and conform to 10-20 spec
+    params.montageFile = allFilesInfo.elecs;
+  else
+    params.topoParams = '';
   end
 end
 if ~isValidStateCondition(params.targetConditions{1}, 'states')
@@ -103,13 +118,15 @@ if isempty(params.conditionLabels{1})
   errordlg('Please specify a value for target label 1', 'Target label 1 not specified');
   return;
 end
-if ~isValidStateCondition(params.targetConditions{2}, 'states')
-  errordlg('The specified condition for target 2 is invalid', 'Invalid condition');
-  return;
-end
-if isempty(params.conditionLabels{2})
-  errordlg('Please specify a value for target label 2', 'Target label 2 not specified');
-  return;
+if length(params.targetConditions) == 2
+  if ~isValidStateCondition(params.targetConditions{2}, 'states')
+    errordlg('The specified condition for target 2 is invalid', 'Invalid condition');
+    return;
+  end
+  if isempty(params.conditionLabels{2})
+    errordlg('Please specify a value for target label 2', 'Target label 2 not specified');
+    return;
+  end
 end
 if ~isValidStateCondition(params.trialChangeCondition, 'states')
   errordlg('The specified trial change condition is invalid', 'Invalid trial change condition');
@@ -188,6 +205,11 @@ if ~isempty(params.montageFile) && ~isempty(params.topoParams)
   end
 end
 
+%fileInfo = get(handles.lstDataFiles, 'userdata');
+%numSamps = {};
+%[numSamps{1:length(fileInfo)}] = deal(fileInfo.numSamps);
+%params.dataFileSamps = numSamps;
+%
 paramsOut = params;
 return;
 
@@ -211,20 +233,15 @@ guidata(hObject, handles);
 
 % UIWAIT makes OfflineAnalysis wait for user response (see UIRESUME)
 % uiwait(handles.figTop);
-try
-  settings = load('settings.mat');
-catch
-  error('Some of the files necessary are missing or have been corrupted.  Please reinstall.');
-  return;
-end
-settings = settings.settings;
-set(handles.figTop, 'userdata', settings);
+reloadSettings(handles);
 
 
 bgColor = [.925 .914 .847];
 setBgColors(get(hObject, 'children'), bgColor);
 
 pnlDomain_SelectionChangeFcn(handles.pnlDomain, [], handles);
+
+
 
 function setBgColors(objects, bgColor)
 
@@ -406,17 +423,6 @@ else
     set(hObject,'BackgroundColor',get(0,'defaultUicontrolBackgroundColor'));
 end
 
-
-
-function txtMontageFile_Callback(hObject, eventdata, handles)
-% hObject    handle to txtMontageFile (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtMontageFile as text
-%        str2double(get(hObject,'String')) returns contents of txtMontageFile as a double
-
-
 % --- Executes during object creation, after setting all properties.
 function txtMontageFile_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to txtMontageFile (see GCBO)
@@ -448,7 +454,8 @@ end
 if fn ~= 0
   set(handles.txtMontageFile, 'string', [path fn]);
   settings.montageFileDir = fullfile(path, '.', filesep);
-  set(handles.figTop, 'userdata', settings);
+  saveSettings(settings, handles);
+  set(handles.lblUsingChanNames, 'visible', 'off');
 end
 
 
@@ -514,6 +521,9 @@ if ~isempty(params)
 
     hWait = waitdlg('Please wait for the analysis to be complete.', 'Please wait');
     %assignin('base', 'params', params);
+    %assignin('base', 'settings', settings);
+    %assignin('base', 'plots2Gen', plots2Gen);
+    
     if get(handles.chkOverwritePlots, 'value') == 1
       figHandles = get(handles.chkOverwritePlots, 'userdata');
       figHandles = runBasicAnalysis(params, settings, plots2Gen, get(handles.chkIgnoreWarnings, 'value'), 0, figHandles);
@@ -758,24 +768,286 @@ if ~isnumeric(fn)
   
   %save last path as the default
   settings.dataFileDir = fullfile(path, '.', filesep);
-  set(handles.figTop, 'userdata', settings);
+  saveSettings(settings, handles);
   
   curFiles = get(handles.lstDataFiles, 'string');
-  curFilePaths = get(handles.lstDataFiles, 'userdata');  
-  
-  for idxFile = 1:length(fn)
+  curFileInfo = get(handles.lstDataFiles, 'userdata');  
+  curFilePaths = cell(length(curFileInfo), 1);
+	if isempty(curFileInfo)
+		curFileInfo = [];
+	else
+		[curFilePaths{1:end}] = deal(curFileInfo.path);
+	end
+
+	issueErr = 1;
+
+	for idxFile = 1:length(fn)
     fp = [path fn{idxFile}];
-    %makee sure this file isn't already inserted
-    if isempty(find(ismember(curFilePaths, fp)==1))
-      curFiles{end+1} = fn{idxFile};
-      curFilePaths{end+1} = fp;
+    
+    %make sure this file isn't already inserted
+    if isempty(find(ismember(curFilePaths, fp)==1)) %get param, state and num samples info
+      [tmpSig, tmpStates, tmpParams, tmpNumSamps] = ...
+        load_bcidat(fp, [1 1]);
+			
+			%get the channel names for the data files that have been added so far if the names
+			%exist
+			allFilesInfo = get(handles.lblDataFiles, 'userdata');
+
+			[chkRes allFilesInfo] = checkFile(allFilesInfo, tmpSig, tmpStates, tmpParams, settings);
+
+      if ~isfield(allFilesInfo, 'warningsIssued')
+        allFilesInfo.warningsIssued = [];
+      end
+
+			if chkRes <= 2 
+        if allFilesInfo.is1020
+          switch chkRes
+          case 1
+            if (~isfield(settings, 'warnEmpty1020CnFollowing') || ...
+                settings.warnEmpty1020CnFollowing) && ~ismember(chkRes, allFilesInfo.warningsIssued)
+              allFilesInfo.warningsIssued = [allFilesInfo.warningsIssued 1 2]; 
+              uiwait(msgbox2(['The file "' fn{idxFile} '", does not have embedded channel name ' ...
+                'data.  Because it has the same number of channels as previously selected files, however, ' ...
+                'Offline Analysis will assume that the channel names corresponding to the data in this file ' ...
+                'are the same as the 10-20 compliant channel names specified in the other files. ' ...
+                'To indicate that there is a discrepancy, this file, and any others without channel ' ...
+                'name data that may be added later, will be marked with an asterix.'], ...
+                'Channel Names', 'warnEmpty1020CnFollowing', 'modal'));
+              reloadSettings(handles);
+            end
+
+            curFiles{end+1} = ['*' fn{idxFile}];
+          case 2
+            if (~isfield(settings, 'warnEmpty1020CnPreceeding') || ...
+                settings.warnEmpty1020CnPreceeding) && ~ismember(chkRes, allFilesInfo.warningsIssued)
+              allFilesInfo.warningsIssued = [allFilesInfo.warningsIssued 1 2]; 
+              uiwait(msgbox2(['Offline Analysis has detected that the file "' fn{idxFile} '" ' ...
+                'contains embedded channel name data that is compliant with the 10-20 standard. ' ...
+                'This data can be used, in place of a montage file, to generate topographies. ' ...
+                'While previously selected files do not contain any channel name data, ' ...
+                'Offline Analysis will assume that the channel names for these data are the ' ...
+                'same as those specified in "' fn{idxFile} '".  To indicate that there is a ' ...
+                'discrepancy, any file, including files that may be added later, ' ...
+                'will be marked with an asterix.'], ...
+                'Channel Names', 'warnEmpty1020CnPreceeding', 'modal'));
+              reloadSettings(handles);
+            end
+
+            %mark all other files with an astrix
+            for idxListedFile = 1:length(curFiles)
+              curFiles{idxListedFile} = ['*' curFiles{idxListedFile}];
+            end
+            curFiles{end+1} = fn{idxFile};
+          case 0
+            if (~isfield(settings, 'warnUsingChannelNames') || ...
+                settings.warnUsingChannelNames) 
+              numFiles = length(get(handles.lstDataFiles, 'string'));
+              if numFiles == 0
+                uiwait(msgbox2(['Offline Analysis has detected that the file "' fn{idxFile} '" ' ...
+                  'has embedded channel name data that is compliant with the 10-20 standard. ' ...
+                  'BCI2000 Offline Analysis will use these names, in place of a montage file, to ' ...
+                  'generate topographies. To override, simply specify a montage file and ' ...
+                  'proceed as usual.'], 'Channel Names', 'warnUsingChannelNames', 'modal'));
+                reloadSettings(handles);
+              end
+            end
+
+            curFiles{end+1} = fn{idxFile};
+          end
+
+          %update the montage file field if user hasn't already selected a montage file
+          montageFile = strtrim(get(handles.txtMontageFile, 'string'));
+          if length(montageFile) == 0
+            set(handles.lblUsingChanNames, 'visible', 'on');
+          end
+
+        else
+          %not 1020 issue warnings only when there's a mix of files without CN data and files
+          %with
+          switch chkRes
+          case 1
+            if (~isfield(settings, 'warnEmptyCnFollowing') || ...
+                settings.warnEmptyCnFollowing) && ~ismember(chkRes, allFilesInfo.warningsIssued)
+              allFilesInfo.warningsIssued = [allFilesInfo.warningsIssued 1 2]; 
+              uiwait(msgbox2(['BCI2000 allows for channel name data to be embedded within datafiles. ' ...
+                'To maintain consistency, Offline Analysis inspects added files to make ' ...
+                'sure that the channel names are the same.  While this is the case for all of the ' ...
+                'currently listed files, the file "' fn{idxFile} '" differs in that it does not ' ...
+                'contain any channel name data.' ...
+                'Please confirm that this file is intended to be grouped with the others listed. ' ...
+                'To indicate that there is a discrepancy, this file, and any others without channel ' ...
+                'name data that may be added later, will be marked with an asterix.'], ...
+                'Channel Names', 'warnEmptyCnFollowing', 'modal'));
+              reloadSettings(handles);
+            end
+
+            curFiles{end+1} = ['*' fn{idxFile}];
+          case 2
+            if (~isfield(settings, 'warnEmptyCnPreceeding') || ...
+                settings.warnEmptyCnPreceeding) && ~ismember(chkRes, allFilesInfo.warningsIssued)
+              allFilesInfo.warningsIssued = [allFilesInfo.warningsIssued 1 2]; 
+              uiwait(msgbox2(['BCI2000 allows for channel name data to be embedded within datafiles. ' ...
+                'To maintain consistency, Offline Analysis inspects added files to make ' ...
+                'sure that the channel names are the same.  The files added thus far do ' ...
+                'not contain channel name data.  The file "' fn{idxFile} '", however, does. ' ...
+                'Please confirm that this file is intended to be grouped with the others listed. ' ...
+                'To indicate that there is a discrepancy, files without channel name data, including ' ...
+                'those that may be added later, will be marked with an asterix.'], ...
+                'Channel Names', 'warnEmptyCnPreceeding', 'modal'));
+              reloadSettings(handles);
+            end
+
+            %mark all other files with an astrix
+            for idxListedFile = 1:length(curFiles)
+              curFiles{idxListedFile} = ['*' curFiles{idxListedFile}];
+            end
+            curFiles{end+1} = fn{idxFile};
+          case 0
+            curFiles{end+1} = fn{idxFile};
+          end
+				end
+
+        %save the channel label data to the global workspace
+        set(handles.lblDataFiles, 'userdata', allFilesInfo);
+
+				%update the file list 
+				set(handles.lstDataFiles, 'string', curFiles);
+
+				curFileInfo(end+1).path = fp;
+				curFileInfo(end).numSamps = tmpNumSamps;
+				curFileInfo(end).states = tmpStates;
+				curFileInfo(end).params = tmpParams;
+
+				set(handles.lstDataFiles, 'userdata', curFileInfo);  
+
+			elseif chkRes == 3 
+				errText = ['Channel name data in "' fn{idxFile} '" does not agree with ' ...
+					'previously added files.  Please ' ...
+					'review the selected datafiles to ensure the correct files have been chosen.'];
+				uiwait(warndlg(errText, 'Channel Names', 'modal'));
+			elseif chkRes == 4
+				errText = ['The number of channels in "' fn{idxFile} '" does not agree with ' ...
+				'previously added files.  Please review the selected datafiles to ensure ' ...
+				'the correct files have been chosen.'];
+				uiwait(warndlg(errText, 'Number of Channels', 'modal'));
+			end
     end
   end
-  set(handles.lstDataFiles, 'string', curFiles);
-  set(handles.lstDataFiles, 'userdata', curFilePaths);  
+
+  set(handles.lstDataFiles, 'userdata', curFileInfo);  
   
   set(handles.btnRemove, 'enable', 'on');
 end
+
+function [res allFilesInfo fileTypesChange] = checkFile(allFilesInfo, signal, states, params, settings)
+% This function will check to see if the ChannelNames parameter is the 
+% same for all files and that every channel name corresponds to a standard
+% 10-20 name and that the names aren't duplicted.
+
+res = 0;
+%0 - everything okay - nothing to comment about
+%1 - some files have channel name data, the new does not
+%2 - previous files do not have channel name data, the new one does
+%3 - some previous files have channel name data that conflicts with the new one
+%4 - new file has a different number of chanels
+
+%first make sure that the new file has the right number of channels
+numElecs = size(signal, 2); 
+if ~isempty(allFilesInfo) && numElecs ~= allFilesInfo.numElecs
+	res = 4;
+	return;
+end
+
+%Do the previously included files have channel data?
+%If yes, check if the new file has the same names as existing files or doesn't have channel
+%	name data at all
+%If no and the file has channel names, make sure they correspond to 10-20 names
+
+chanNamesSet = ~isempty(allFilesInfo) && ~isempty(allFilesInfo.elecs);
+all1020 = 0;
+elecsInFile = [];
+
+if chanNamesSet
+	if ~isempty(params.ChannelNames.Value)
+		%new file has channel names too, we need to make sure they're the same
+		chanNames = params.ChannelNames.Value;
+
+		res = 0;
+
+		if length(chanNames) ~= length(allFilesInfo.elecs)
+			res = 3;
+		else
+			%check to make sure all the channels are labeled the same
+			for idxCn = 1:length(chanNames)
+
+				if ~strcmp(chanNames{idxCn}, allFilesInfo.elecs(idxCn).label)
+					res = 3;
+					break;
+				end
+			end
+		end
+	else
+		%new file does not have channel names, old ones do
+		res = 1;
+	end
+else
+	%no channel names set yet
+	if ~isfield(params, 'ChannelNames') || isempty(params.ChannelNames.Value)
+		%nothing to set here
+		res = 0;
+	else
+		%set new chan names, are they 10-20?
+		elecsInFile = struct('elecNum', [], 'label', '', 'coords', []);
+		%initialize with proper size
+		chanNames = params.ChannelNames.Value; 
+		elecsInFile(length(chanNames)).label = '';
+
+    if length(chanNames) ~= numElecs
+      all1020 = 0
+    else
+      all1020 = 1;
+    end
+
+		for idxCn = 1:length(chanNames)
+			bFoundElec = 0;
+			elecsInFile(idxCn).label = strtrim(chanNames{idxCn});
+
+			if all1020
+				%determine if there's a 10-20 label that matches this label
+				for idxElec = 1:length(settings.elecs1020)
+					if strcmp(settings.elecs1020(idxElec).label, elecsInFile(idxCn).label)
+						elecsInFile(idxCn) = settings.elecs1020(idxElec);
+						settings.elecs1020(idxElec) = [];
+						bFoundElec = 1;
+						break;
+					end
+				end
+			end
+			
+			if all1020 && ~bFoundElec
+				%we still need to create the label name template for the files
+				%continue adding labels, but don't worry about checking for 10-20 match
+				all1020 = 0;
+			end
+		end
+
+		if isempty(allFilesInfo)
+			%this is the first file being added
+			res = 0;
+		else
+			res = 2;
+		end
+	end
+	
+	%for later reference, we'll save the label list here:
+	allFilesInfo.is1020 = all1020;
+	allFilesInfo.elecs = elecsInFile;
+	allFilesInfo.numElecs = numElecs;
+
+end
+
+
+
 
 % --- Executes on button press in btnRemove.
 function btnRemove_Callback(hObject, eventdata, handles)
@@ -783,21 +1055,53 @@ function btnRemove_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 curFiles = get(handles.lstDataFiles, 'string');
-curFilePaths = get(handles.lstDataFiles, 'userdata');
-selectedIdx = get(handles.lstDataFiles, 'value');
 
-curFiles(selectedIdx) = [];
-curFilePaths(selectedIdx) = [];
+if length(curFiles) == 1
+	%this is the last file, just clear
+	clearFiles(handles);
+else
+	curFileInfo = get(handles.lstDataFiles, 'userdata');
+	selectedIdx = get(handles.lstDataFiles, 'value');
 
-set(handles.lstDataFiles, 'string', curFiles);
-set(handles.lstDataFiles, 'userdata', curFilePaths);
+	curFiles(selectedIdx) = [];
+	curFileInfo(selectedIdx) = [];
 
-if length(curFiles) == 0
-  set(handles.btnRemove, 'enable', 'off');
-end
+	set(handles.lstDataFiles, 'string', curFiles);
+	set(handles.lstDataFiles, 'userdata', curFileInfo);
 
-if selectedIdx > length(curFiles) && selectedIdx > 1
-  set(handles.lstDataFiles, 'value', selectedIdx - 1);
+	if selectedIdx > length(curFiles) && selectedIdx > 1
+		set(handles.lstDataFiles, 'value', selectedIdx - 1);
+	end
+
+	%are the channel names set?
+	allFilesInfo = get(handles.lblDataFiles, 'userdata');
+	chanNamesSet = ~isempty(allFilesInfo) && ~isempty(allFilesInfo.elecs);
+	if chanNamesSet
+		%check to see if any of the files still present have channel name data
+		%and take appropriate action if not
+		chanNamesSet = 0;
+		for idxFile = 1:length(curFileInfo)
+			if ~isempty(curFileInfo(idxFile).params.ChannelNames.Value)
+				chanNamesSet = 1;
+				break;
+			end
+		end
+
+		if ~chanNamesSet
+			allFilesInfo.elecs = [];
+			allFilesInfo.is1020 = 0;
+      allFilesInfo.warningsIssued = [];
+			set(handles.lblDataFiles, 'userdata', allFilesInfo);
+
+      %also remaining files, without channel data, should have an astrix next to their name
+      %get rid of it
+      for idxFile = 1:length(curFiles)
+        curFiles{idxFile}(1) = [];
+      end
+      set(handles.lstDataFiles, 'string', curFiles);
+      set(handles.lblUsingChanNames, 'visible', 'off');
+		end
+	end
 end
 
 % --- Executes on button press in btnClear.
@@ -805,11 +1109,15 @@ function btnClear_Callback(hObject, eventdata, handles)
 % hObject    handle to btnClear (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+clearFiles(handles);
+
+function clearFiles(handles)
 set(handles.lstDataFiles, 'value', 1);
 set(handles.lstDataFiles, 'string', {});
 set(handles.lstDataFiles, 'userdata', {});
+set(handles.lblDataFiles, 'userdata', {});
 set(handles.btnRemove, 'enable', 'off');
-
+set(handles.lblUsingChanNames, 'visible', 'off');
 
 
 % --- Executes on button press in togglebutton7.
@@ -830,8 +1138,6 @@ function figTop_CloseRequestFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: delete(hObject) closes the figure
-settings = get(handles.figTop, 'userdata');
-save 'settings.mat' settings;
 delete(hObject);
 
 
@@ -899,12 +1205,30 @@ function mnuSaveSettings_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 params = fillParams(handles, 0);
+
 if ~isempty(params)
-  [fn path] = uiputfile('*.bws', 'Save settings as...');
+
+  %make sure that if there's montage file that it is a file name and not an electrode struct
+  if isa(params.montageFile, 'struct')
+    params.montageFile = [];
+  end
+
+  settings = get(handles.figTop, 'userdata');
+  if isfield(settings, 'wsFileDir') && ~isempty(settings.wsFileDir)
+    [fn path] = uiputfile('*.bws', 'Save Workspace Settings', ...
+      settings.wsFileDir);
+  else
+    [fn path] = uiputfile('*.bws', 'Save Workspace Settings');
+  end
+
   if fn ~= 0
     try
       save(fullfile(path, fn), 'params');
       msgbox('Current settings have been saved', 'Settings Saved', 'modal');
+
+      %save last path as the default
+      settings.wsFileDir = fullfile(path, '.', filesep);
+      saveSettings(settings, handles);
     catch
       [msg msgId] = lasterr;
       msg = regexprep(msg, '.*?\n(.*)', '$1');    
@@ -919,8 +1243,18 @@ function mnuLoadSettings_Callback(hObject, eventdata, handles)
 % hObject    handle to mnuLoadSettings (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[fn path] = uigetfile('*.bws', 'Load settings');
+settings = get(handles.figTop, 'userdata');
+if isfield(settings, 'wsFileDir') && ~isempty(settings.wsFileDir)
+  [fn path] = uigetfile('*.bws', 'Load Workspace Settings', ...
+    settings.wsFileDir);
+else
+  [fn path] = uigetfile('*.bws', 'Load Workspace Settings');
+end
 if fn ~= 0
+  %save last path as the default
+  settings.wsFileDir = fullfile(path, '.', filesep);
+  saveSettings(settings, handles);
+
   try
     params = load('-mat', fullfile(path, fn));
   catch
@@ -963,19 +1297,19 @@ if fn ~= 0
   end
   
 
-  dispStr = {};
-  for idxFile = 1:length(params.dataFiles)
-    [path, fn, ext, versn] = fileparts(params.dataFiles{idxFile});
-    dispStr{idxFile} = [fn ext versn];
-  end
-  set(handles.lstDataFiles, 'value', 1);
-  set(handles.lstDataFiles, 'string', dispStr);
-  set(handles.lstDataFiles, 'userdata', params.dataFiles);
-  if isempty(dispStr)
-    set(handles.btnRemove, 'enable', 'off');
-  else
-    set(handles.btnRemove, 'enable', 'on');
-  end
+  %dispStr = {};
+  %for idxFile = 1:length(params.dataFiles)
+    %[path, fn, ext, versn] = fileparts(params.dataFiles{idxFile});
+    %dispStr{idxFile} = [fn ext versn];
+  %end
+  %set(handles.lstDataFiles, 'value', 1);
+  %set(handles.lstDataFiles, 'string', dispStr);
+  %set(handles.lstDataFiles, 'userdata', params.dataFiles);
+  %if isempty(dispStr)
+    %set(handles.btnRemove, 'enable', 'off');
+  %else
+    %set(handles.btnRemove, 'enable', 'on');
+  %end
 
   set(handles.txtMontageFile, 'string', params.montageFile);
 
@@ -1050,3 +1384,55 @@ function radModeEEG_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of radModeEEG
 
 
+
+
+% --- Executes on key press over txtMontageFile with no controls selected.
+function txtMontageFile_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to txtMontageFile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%perform some sillyness to get MATLAB to behave correctly
+uicontrol(handles.lblMontageFile);
+uicontrol(hObject);
+uicontrol(handles.lblMontageFile);
+uicontrol(hObject);
+
+if length(strtrim(get(hObject, 'string'))) == 0
+	allFilesInfo = get(handles.lblDataFiles, 'userdata');
+
+	if ~isempty(allFilesInfo) && allFilesInfo.is1020
+    set(handles.lblUsingChanNames, 'visible', 'on');
+	end
+else
+  set(handles.lblUsingChanNames, 'visible', 'off');
+end
+
+
+
+
+
+
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over txtMontageFile.
+function txtMontageFile_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to txtMontageFile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+function reloadSettings(handles)
+try
+  settings = load('settings.mat');
+catch
+  error('Some of the files necessary are missing or have been corrupted.  Please reinstall.');
+  return;
+end
+settings = settings.settings;
+set(handles.figTop, 'userdata', settings);
+
+
+function saveSettings(settings, handles)
+set(handles.figTop, 'userdata', settings);
+save 'settings.mat' settings;
