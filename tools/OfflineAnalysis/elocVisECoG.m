@@ -18,9 +18,7 @@ error(nargchk(1,2,nargin));
 % User Defined Defaults:
 MAXCHANS = 256;
 
-rmax = params.headRadius;
-
-elecInfo = struct('elecNum', [], 'label', '', 'coords', [], 'markerHandle', [], 'markerTextHandle', []);
+elecInfo = struct('elecNum', [], 'label', '', 'coords', [], 'markerTextHandle', []);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 if nargin > 1
@@ -41,17 +39,18 @@ if nargin > 1
   elecNums = A(:,1);
   Th = pi/180*A(:,2);                              % convert degrees to radians
   Rd = A(:,3);
-  ii = find(Rd <= 0.5);                     % interpolate on-head channels only
-  Th = Th(ii);
-  Rd = Rd(ii);
-  labels = labels(ii,:);
 
   [y,x] = pol2cart(Th,Rd);      % transform from polar to cartesian coordinates
+
+  %normalize 
+  normVal = max(max(abs([x,y])));
+  x = x /normVal;
+  y = y /normVal;
   
   for idx = 1:length(x)
     elecInfo(idx).elecNum = elecNums(idx);
     elecInfo(idx).coords = [x(idx) y(idx)];
-    elecInfo(idx).label = labels(idx, :);
+    elecInfo(idx).label = strtrim(labels(idx, :));
   end
   ha = gca;
   cla
@@ -61,10 +60,9 @@ end
 hold on
 
 % Draw grid
-gridX([1 3]) = params.ecogExtremes(1:2);
-gridX([2 4]) = params.ecogExtremes([2 1]);
-gridY(1:2) = params.ecogExtremes(4);
-gridY(3:4) = params.ecogExtremes(3);
+gridX = [params.ecogCoordRange params.ecogCoordRange([2 1])];
+gridY(1:2) = params.ecogCoordRange(2);
+gridY(3:4) = params.ecogCoordRange(1);
 
 fill(gridX, gridY, params.headFillColor);
 
@@ -75,13 +73,13 @@ fill(gridX, gridY, params.headFillColor);
 if nargin > 1
   % Plot Electrodes
   for idx = 1:size(labels,1)
-    [markerHandle markerTextHandle] = addTopoMarker(x(idx), y(idx), int2str(elecInfo(idx).elecNum), params, 'ecog');
-    elecInfo(idx).markerHandle = markerHandle;
+    [markerTextHandle] = addTopoMarker(x(idx), y(idx), int2str(elecInfo(idx).elecNum), params);
     elecInfo(idx).markerTextHandle = markerTextHandle;
   end
 end
 
 hold off
 axis tight
+axis square
 axis off
 
