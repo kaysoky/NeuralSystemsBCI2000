@@ -19,13 +19,24 @@ error(nargchk(0,3,nargin));
 
 
 analysisParams = struct();
-if nargin == 0
+switch nargin
+case 3
+  if iscell(dataFiles)
+    analysisParams.dataFiles = dataFiles;
+  else
+    analysisParams.dataFiles = {dataFiles};
+  end
+case 2
   analysisParams.dataFiles = {};
-elseif iscell(dataFiles)
-  analysisParams.dataFiles = dataFiles;
-else
-  analysisParams.dataFiles = {dataFiles};
+case 1
+  analysisParams.dataFiles = {};
+  acqMode = '';
+case 0
+  analysisParams.dataFiles = {};
+  acqMode = '';
+  domain = '';
 end
+
 analysisParams.targetConditions = {};
 analysisParams.conditionLabels = {};
 analysisParams.trialChangeCondition = '';
