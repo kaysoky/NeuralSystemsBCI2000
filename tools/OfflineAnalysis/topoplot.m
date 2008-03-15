@@ -2,18 +2,19 @@
 %                circular view (looking down at the top of the head) 
 %                 using cointerpolation on a fine cartesian grid.
 % Usage:
-%        >>  topoplot(datavector,'eloc_file');
-%        >>  topoplot(datavector,'eloc_file', 'Param1','Value1', ...)
+%        >>  topoplot(datavector,'eloc_file','acquisition_type');
+%        >>  topoplot(datavector,'eloc_file','acquisition_type', 'Param1','Value1', ...)
 % Inputs:
 %    datavector = vector of values at the corresponding locations.
 %   'eloc_file' = name of an EEG electrode position file {0 -> 'chan_file'}
+%   'acquisition_type' = 'EEG' or 'ECoG'
 %
 % Optional Parameters & Values (in any order):
 %                  Param                         Value
 %                'colormap'         -  any sized colormap
 %                'interplimits'     - 'electrodes' to furthest electrode
-%                                     'head' to edge of head
-%                                        {default 'head'}
+%                                     'outline' to edge of outline
+%                                        {default 'outline'}
 %                'gridscale'        -  scaling grid size {default 67}
 %                'maplimits'        - 'absmax' +/- the absolute-max 
 %                                     'maxmin' scale to data range
@@ -23,12 +24,12 @@
 %                                     'contour' contour lines only
 %                                     'both' both colormap and contour lines
 %                                     'fill' constant color between lines
-%                                     'blank' just head and electrodes
+%                                     'blank' just outline and electrodes
 %                                        {default = 'both'}
 %                'numcontour'       - number of contour lines
 %                                        {default = 6}
 %                'shading'          - 'flat','interp'  {default = 'flat'}
-%                'headcolor'        - Color of head cartoon {default black}
+%                'outlinecolor'        - Color of outline {default black}
 %                'electrodes'       - 'on','off','labels','numbers'
 %                'efontsize','electcolor','emarker','emarkersize' - details
 %
@@ -40,7 +41,7 @@
 %
 %       For a sample eloc file:     >> topoplot('example')
 %
-% Note: topoplot() will ignore any electrode with a position outside 
+% Note: for acquisition type EEG, topoplot() will ignore any electrode with a position outside 
 %       the head (radius > 0.5)
 
 % Topoplot Version 2.1
@@ -62,16 +63,21 @@
 %   -removed OUTPUT parameter
 % 3-11-98 changed default emarkersize, improve help msg -sm
 
-function handle = topoplot(Vl,loc_file,varargin)
-
-% limits for topo display
-rmaxx=0.4375*1.05;
-rmaxy=0.1875*1.05;
+function handle = topoplot(Vl,loc_file,acq_type,varargin)
+%do initialization
+if strcmpi(acq_type, 'eeg')
+  RMAX=0.5;
+elseif strcmpi(acq_type, 'ecog')
+  % limits for topo display
+  RMAX=1;
+else
+  error('topoplot(); acq_type must be either ''eeg'' or ''ecog''');
+end
 
 % User Defined Defaults:
 MAXCHANS = 256;
 DEFAULT_ELOC = 'eloc64.txt';
-INTERPLIMITS = 'head';  % head, electrodes
+INTERPLIMITS = 'outline';  % head, electrodes
 MAPLIMITS = 'absmax';   % absmax, maxmin, [values]
 GRID_SCALE = 67;
 CONTOURNUM = 6;
@@ -124,17 +130,17 @@ end
 if isempty(loc_file)
   loc_file = 0;
 end
-if loc_file == 0
+if ~ischar(loc_file) && ~isstruct(loc_file)
   loc_file = DEFAULT_ELOC;
 end
 
 if nargs > 2
-  if ~(round(nargs/2) == nargs/2)
-    error('topoplot(): Odd number of inputs?')
+  if ~(round(nargs/2) ~= nargs/2)
+    error('topoplot(): Even number of inputs?')
   end
-  for i = 3:2:nargs
-    Param = varargin{i-2}; %eval(['p',int2str((i-3)/2 +1)]);
-    Value = varargin{i-1}; %eval(['v',int2str((i-3)/2 +1)]);
+  for i = 4:2:nargs
+    Param = varargin{i-3}; %eval(['p',int2str((i-3)/2 +1)]);
+    Value = varargin{i-2}; %eval(['v',int2str((i-3)/2 +1)]);
     if ~isstr(Param)
       error('topoplot(): Parameter must be a string')
     end
@@ -150,7 +156,7 @@ if nargs > 2
           error('topoplot(): interplimits value must be a string')
         end
         Value = lower(Value);
-        if ~strcmp(Value,'electrodes') & ~strcmp(Value,'head')
+        if ~strcmp(Value,'electrodes') & ~strcmp(Value,'outline')
           error('topoplot(): Incorrect value for interplimits')
         end
         INTERPLIMITS = Value;
@@ -166,7 +172,7 @@ if nargs > 2
 	ELECTROD = lower(Value);
       case 'emarker'
 	EMARKER = Value;
-      case {'headcolor','hcolor'}
+      case {'outlinecolor','hcolor'}
 	HCOLOR = Value;
       case {'electcolor','ecolor'}
 	ECOLOR = Value;
@@ -189,60 +195,91 @@ end
 if r>1 & c>1,
   error('topoplot(): data should be a single vector\n');
 end
-fid = fopen(loc_file);
-if fid<1,
-  fprintf('topoplot(): cannot open eloc_file (%s).\n',loc_file);
-  return
+
+if isa(loc_file, 'struct')
+  %data specified as electrode structure, translate to data structure used here
+  x = zeros(length(loc_file), 1);
+  y = x;
+  labels = repmat(' ', length(loc_file), 4);
+  for idxElec = 1:length(loc_file)
+    x(idxElec) = loc_file(idxElec).coords(2);
+    y(idxElec) = loc_file(idxElec).coords(1);
+    labels(idxElec, 1:length(loc_file(idxElec).label)) = loc_file(idxElec).label;
+  end
+else
+
+  fid = fopen(loc_file);
+  if fid<1,
+    fprintf('topoplot(): cannot open eloc_file (%s).\n',loc_file);
+    return
+  end
+  A = fscanf(fid,'%d %f %f %s',[7 MAXCHANS]);
+  fclose(fid);
+
+  A = A';
+
+  if length(Vl) ~= size(A,1),
+   fprintf(...
+     'topoplot(): data vector must have the same rows (%d) as eloc_file (%d)\n',...
+                 length(Vl),size(A,1));
+   A
+   error('');
+  end
+
+  labels = setstr(A(:,4:7));
+  idx = find(labels == '.');                       % some labels have dots
+  labels(idx) = setstr(abs(' ')*ones(size(idx)));  % replace them with spaces
+
+  Th = pi/180*A(:,2);                              % convert degrees to radians
+  Rd = A(:,3);
+  if strcmpi(acq_type, 'eeg')
+    ii = find(Rd <= 0.5);                     % interpolate on-head channels only
+    Th = Th(ii);
+    Rd = Rd(ii);
+    Vl = Vl(ii);
+    labels = labels(ii,:);
+  end
+
+  [x,y] = pol2cart(Th,Rd);      % transform from polar to cartesian coordinates
 end
-A = fscanf(fid,'%d %f %f %s',[7 MAXCHANS]);
-fclose(fid);
 
-A = A';
-
-if length(Vl) ~= size(A,1),
- fprintf(...
-   'topoplot(): data vector must have the same rows (%d) as eloc_file (%d)\n',...
-               length(Vl),size(A,1));
- %A
- error('');
+%normalize values for ecog
+if strcmpi(acq_type, 'ecog')
+  normVal = max(max(abs([x,y]))) * RMAX * 1.1;
+  x = x /normVal;
+  y = y /normVal;
 end
-
-labels = setstr(A(:,4:7));
-idx = find(labels == '.');                       % some labels have dots
-labels(idx) = setstr(abs(' ')*ones(size(idx)));  % replace them with spaces
-
-Th = pi/180*A(:,2);                              % convert degrees to radians
-Rd = A(:,3);
-ii = find(Rd <= 0.5);                     % interpolate on-head channels only
-Th = Th(ii);
-Rd = Rd(ii);
-Vl = Vl(ii);
-labels = labels(ii,:);
-
-[x,y] = pol2cart(Th,Rd);      % transform from polar to cartesian coordinates
-rmax = 0.5;
-
+  
 ha = gca;
 cla
 hold on
 
 if ~strcmp(STYLE,'blank')
   % find limits for interpolation
-  if strcmp(INTERPLIMITS,'head')
-    xmin = min(-.5,min(x)); xmax = max(0.5,max(x));
-    ymin = min(-.5,min(y)); ymax = max(0.5,max(y));
+  if strcmp(INTERPLIMITS,'outline')
+    xmin = -RMAX;
+    xmax = RMAX;
+    
+    ymin = -RMAX;
+    ymax = RMAX;
   else
-    xmin = max(-.5,min(x)); xmax = min(0.5,max(x));
-    ymin = max(-.5,min(y)); ymax = min(0.5,max(y));
+    xmin = min(x); 
+    xmax = max(x);
+
+    ymin = min(y); 
+    ymax = max(y);
   end
-  
   xi = linspace(xmin,xmax,GRID_SCALE);   % x-axis description (row vector)
   yi = linspace(ymin,ymax,GRID_SCALE);   % y-axis description (row vector)
   
   [Xi,Yi,Zi] = griddata(y,x,Vl,yi',xi,'invdist'); % Interpolate data
   
-  % Take data within head
-  mask = (sqrt(Xi.^2+Yi.^2) <= rmax);
+  % Exclude data outside the grid bounds
+  if strcmpi(acq_type, 'eeg')
+    mask = (sqrt(Xi.^2+Yi.^2) <= RMAX);
+  else
+    mask = ((Xi <= RMAX & Xi >= -RMAX) & (Yi <= RMAX & Yi >= -RMAX));
+  end
   ii = find(mask == 0);
   Zi(ii) = NaN;
   
@@ -280,15 +317,30 @@ if ~strcmp(STYLE,'blank')
   caxis([amin amax]) % set coloraxis
 end
 
-%set(ha,'Xlim',[-rmax*1.3 rmax*1.3],'Ylim',[-rmax*1.3 rmax*1.3])
-set(ha,'Xlim',[-rmaxx rmaxx],'Ylim',[-rmaxy rmaxy])
-
-% %%% Draw Head %%%%
 l = 0:2*pi/100:2*pi;
-basex = .18*rmax;  
-tip = rmax*1.15; base = rmax-.004;
-EarX = [.497 .510 .518 .5299 .5419 .54 .547 .532 .510 .489];
-EarY = [.0555 .0775 .0783 .0746 .0555 -.0055 -.0932 -.1313 -.1384 -.1199];
+if strcmpi(acq_type, 'eeg')
+  %plot ears, nose and head
+  basex = .18*RMAX;  
+  tip = RMAX*1.15; base = RMAX-.004;
+
+  set(ha,'Xlim',[-RMAX*1.3 RMAX*1.3],'Ylim',[-RMAX*1.3 RMAX*1.3])
+  EarX = [.497 .510 .518 .5299 .5419 .54 .547 .532 .510 .489];
+  EarY = [.0555 .0775 .0783 .0746 .0555 -.0055 -.0932 -.1313 -.1384 -.1199];
+  
+  plot(cos(l).*RMAX,sin(l).*RMAX,...
+      'color',HCOLOR,'Linestyle','-','LineWidth',HLINEWIDTH);
+
+  plot([.18*RMAX;0;-.18*RMAX],[base;tip;base],...
+      'Color',HCOLOR,'LineWidth',HLINEWIDTH);
+
+  plot(EarX,EarY,'color',HCOLOR,'LineWidth',HLINEWIDTH)
+  plot(-EarX,EarY,'color',HCOLOR,'LineWidth',HLINEWIDTH)   
+else
+  
+  %set(ha,'Xlim',[-RMAXX RMAXX],'Ylim',[-RMAXY RMAXY])
+end
+axis tight;
+axis square;
 
 % Plot Electrodes
 if strcmp(ELECTROD,'on') 
@@ -308,15 +360,7 @@ whos y x
   end
 end
 
-% Plot Head, Ears, Nose
-%plot(cos(l).*rmax,sin(l).*rmax,...
-%    'color',HCOLOR,'Linestyle','-','LineWidth',HLINEWIDTH);
-
-%plot([.18*rmax;0;-.18*rmax],[base;tip;base],...
-%    'Color',HCOLOR,'LineWidth',HLINEWIDTH);
    
-%plot(EarX,EarY,'color',HCOLOR,'LineWidth',HLINEWIDTH)
-%plot(-EarX,EarY,'color',HCOLOR,'LineWidth',HLINEWIDTH)   
 
 hold off
 axis off
