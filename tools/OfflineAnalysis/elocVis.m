@@ -20,7 +20,7 @@ MAXCHANS = 256;
 
 rmax = params.headRadius;
 
-elecInfo = struct('elecNum', [], 'label', '', 'coords', [], 'markerHandle', [], 'markerTextHandle', []);
+elecInfo = struct('elecNum', [], 'label', '', 'coords', [], 'markerTextHandle', []);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 if nargin > 1
@@ -85,8 +85,7 @@ plot(-EarX,EarY,'color',params.headOutlineColor,'LineWidth',params.headOutlineWi
 if nargin > 1
   % Plot Electrodes
   for idx = 1:size(labels,1)
-    [markerHandle markerTextHandle] = addTopoMarker(x(idx), y(idx), int2str(elecInfo(idx).elecNum), params, 'eeg');
-    elecInfo(idx).markerHandle = markerHandle;
+    [markerTextHandle] = addTopoMarker(x(idx), y(idx), int2str(elecInfo(idx).elecNum), params);
     elecInfo(idx).markerTextHandle = markerTextHandle;
   end
 end
