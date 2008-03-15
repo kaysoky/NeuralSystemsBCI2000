@@ -57,7 +57,7 @@ else
         end
       end
     end
-    if ~isa(params.montageFile, 'char')
+    if ~isa(params.montageFile, 'char') && ~isa(params.montageFile, 'struct')
       errorCode = errorCode + INVALID_MONTAGE_FILE;
     end
     if ~isa(params.acqType, 'char') || ...
@@ -74,14 +74,13 @@ else
     
     % check that targetCondions and conditionLabels are cell vectors
     if ~isa(params.targetConditions, 'cell') || ...
-        length(size(params.targetConditions)) ~= 2 || ...
+        max(size(params.targetConditions)) > 2 || ...
         min(size(params.targetConditions)) ~= 1
       
       errorCode = errorCode + INVALID_TARGET_CONDITIONS;
     end
     if ~isa(params.conditionLabels, 'cell') || ...
-        length(size(params.conditionLabels)) ~= 2 || ...
-        min(size(params.conditionLabels, 1)) ~= 1
+        ~all(size(params.targetConditions) == size(params.conditionLabels))
       errorCode = errorCode + INVALID_CONDITION_LABELS;
     end
 
