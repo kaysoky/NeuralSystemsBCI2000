@@ -13,7 +13,11 @@
 #pragma hdrstop
 
 #include "SigfriedARFilter.h"
+#include "LinearClassifier.h"
+#include "Normalizer.h"
 
 Filter( SigfriedARFilter, 2.C );
+Filter( LinearClassifier, 2.D );
+Filter( Normalizer, 2.E );
 
 

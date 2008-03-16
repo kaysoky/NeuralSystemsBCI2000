@@ -15,7 +15,8 @@
       obj\BCIError_module.obj obj\SockStream.obj obj\VersionInfo.obj 
       obj\SigfriedARFilter.obj obj\PhysicalUnit.obj obj\LabelIndex.obj 
       obj\Brackets.obj obj\HierarchicalLabel.obj obj\ElectrodeRenderer.obj 
-      obj\Electrode.obj obj\ElectrodeCircle.obj obj\ElectrodeCollection.obj"/>
+      obj\Electrode.obj obj\ElectrodeCircle.obj obj\ElectrodeCollection.obj 
+      obj\LinearClassifier.obj obj\Normalizer.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -27,7 +28,7 @@
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi bcbsmp.bpi qrpt.bpi dbrtl.bpi 
       vcldb.bpi bdertl.bpi ibsmp.bpi vcldbx.bpi nmfast.bpi dclocx.bpi Tee4C.bpi 
       TeeDB4C.bpi TeeUI4C.bpi TeePro4C.bpi TeeGL4C.bpi TeeQR4C.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\accessors"/>
+    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\modules\signalprocessing"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -37,19 +38,19 @@
     <USERDEFINES value="MODTYPE=2"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SigfriedSigProc.cpp"/>
-    <INCLUDEPATH value="..\..\..\..\..\SIGFRIED\display;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="..\..\..\shared\modules;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\modules\signalprocessing;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\..\shared\modules\signalprocessing;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-I..\..\..\..\..\SIGFRIED\display -I..\..\..\shared\config 
+    <IDLCFLAGS value="-I..\..\..\shared\modules -I..\..\..\..\..\SIGFRIED\display 
+      -I..\..\..\shared\modules\signalprocessing -I..\..\..\shared\config 
       -I..\..\..\shared\accessors -I..\..\..\shared\bcistream 
-      -I..\..\..\shared\modules -I..\..\..\shared\utils 
-      -I..\..\..\shared\utils\Expression -I..\..\..\shared\types -I.. -I..\.. 
-      -I..\..\..\shared -I$(BCB)\include -I$(BCB)\include\vcl -src_suffix cpp 
-      -DMODTYPE=2 -boa"/>
+      -I..\..\..\shared\utils -I..\..\..\shared\utils\Expression 
+      -I..\..\..\shared\types -I.. -I..\.. -I..\..\..\shared -I$(BCB)\include 
+      -I$(BCB)\include\vcl -src_suffix cpp -DMODTYPE=2 -boa"/>
     <CFLAG1 value="-O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -xf -xp -X- -a8 -6 -b- 
       -k- -vi -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
@@ -102,6 +103,8 @@
       <FILE FILENAME="Electrode.cpp" FORMNAME="" UNITNAME="Electrode.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ElectrodeCircle.cpp" FORMNAME="" UNITNAME="ElectrodeCircle.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="ElectrodeCollection.cpp" FORMNAME="" UNITNAME="ElectrodeCollection.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LinearClassifier.cpp" FORMNAME="" UNITNAME="LinearClassifier" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -135,14 +138,19 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
-Item1=C:\SIGFRIED\display;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Count=6
+Item0=..\..\..\shared\modules;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\modules\signalprocessing;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\modules\signalprocessing;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\modules;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\modules;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Item5=C:\SIGFRIED\display;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\config;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..;..\..;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=C:\SIGFRIED\display;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..\..\..\shared\modules\signalprocessing;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item2=C:\SIGFRIED\display;..\..\..\..\..\SIGFRIED\display;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\modules;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\Expression;..;..\..;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
