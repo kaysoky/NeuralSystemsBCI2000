@@ -411,7 +411,9 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
     }
   }
 
-  outSignalProperties = SignalProperties( inSignalProperties.Channels(), 1 );
+  outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
+  outSignalProperties.SetName( "SIGFRIED feedback" );
+
 }
 
 // **************************************************************************
@@ -834,7 +836,6 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   totaltimesum        = 0;
   counter             = 0;
 
-
 // Multi-Threading: Not yet finished!
 /*
   for (unsigned int index_model=0; index_model<num_models; index_model++) {
@@ -1110,7 +1111,7 @@ void SigfriedARFilter::Process(const GenericSignal& input, GenericSignal& output
 
         // finally set the output
         int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
-        output.SetValue( ch_out, 0, cur_output);
+        output.SetValue( ch_out, index_model, cur_output);
       }
 
 
