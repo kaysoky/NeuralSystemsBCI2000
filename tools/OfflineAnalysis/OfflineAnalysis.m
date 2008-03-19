@@ -59,9 +59,9 @@ if bThourough
   filePaths = {};
   if length(fileInfo) > 0
     [filePaths{1:length(fileInfo)}] = deal(fileInfo.path);
+    params.fileInfo = rmfield(fileInfo, 'path');
   end
   params = getAnalysisParams(domain, acqMode, filePaths);
-  params.fileInfo = rmfield(fileInfo, 'path');
 else
   params = getAnalysisParams(domain, acqMode);
 end
