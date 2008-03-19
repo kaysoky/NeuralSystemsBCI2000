@@ -70,6 +70,7 @@ BCI2000_Binaries.html
 2 Latest_Version Latest Version
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 Mar_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" rel="nofollow">Mar 2008 Build</a>
 4 Feb_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" rel="nofollow">Feb 2008 Build</a>
 4 Jan_2008_Version_2_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a>
 3 Version_2_Preview_Builds Version 2 Preview Builds
@@ -966,6 +967,8 @@ User_Reference%253ABCI2000Viewer.html
 2 Browsing Browsing
 2 Selecting_States_and_Channels_for_Display Selecting States and Channels for Display
 2 Display_Properties Display Properties
+4 Unit_Display Unit Display
+4 Choosing_Signal_Colors Choosing Signal Colors
 2 See_also See also
 
 User_Reference%253ABCI2000_Offline_Analysis.html
@@ -1357,6 +1360,8 @@ User_Reference%253AOperator_Module.html
 3 Parameter_Configuration_Window Parameter Configuration Window
 3 Matrix_Editor_Window Matrix Editor Window
 3 Visualization_Windows Visualization Windows
+4 Unit_Display Unit Display
+4 Choosing_Signal_Colors Choosing Signal Colors
 2 See_also See also
 
 User_Reference%253AOperator_Module_Scripting.html

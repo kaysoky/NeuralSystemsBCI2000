@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>User Reference:BCI2000Viewer - BCI2000 Wiki</title>
+<title>User Reference:BCI2000Viewer - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="User Reference:BCI2000Viewer,BCI2000 Glossary,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileInfo,User Reference:Operator Module" />
 <link rel="shortcut icon" href="../../favicon.ico" />
@@ -38,7 +38,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#Opening_Files"><span class="tocnumber">1</span> <span class="toctext">Opening Files</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#Browsing"><span class="tocnumber">2</span> <span class="toctext">Browsing</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#Selecting_States_and_Channels_for_Display"><span class="tocnumber">3</span> <span class="toctext">Selecting States and Channels for Display</span></a></li>
-<li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#Display_Properties"><span class="tocnumber">4</span> <span class="toctext">Display Properties</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#Display_Properties"><span class="tocnumber">4</span> <span class="toctext">Display Properties</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Viewer.html#Unit_Display"><span class="tocnumber">4.1</span> <span class="toctext">Unit Display</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Viewer.html#Choosing_Signal_Colors"><span class="tocnumber">4.2</span> <span class="toctext">Choosing Signal Colors</span></a></li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="User_Reference%253ABCI2000Viewer.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
@@ -62,7 +67,9 @@ To display one or more state, mark the respective checkbox.
 </p>
 <a name="Display_Properties"></a><h2>Display Properties</h2>
 <p>Similar to the <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">signal display</a> in the operator module, display properties may be changed from the <i>View</i> menu (which is reduplicated as a context menu that appears by right-clicking the signal display).
-</p><p>When the signal's physical unit is displayed, it is represented as a white bar:
+</p>
+<a name="Unit_Display"></a><h4>Unit Display</h4>
+<p>When the signal's physical unit is displayed, it is represented as a white bar:
 </p>
 <div class="center"><div class="floatnone"><span><a href="../images/c/c4/SignalUnitDisplay.PNG" class="image" title=""><img src="../images/c/c4/SignalUnitDisplay.PNG" alt="" width="104" height="104" longdesc="/wiki/index.php/Image:SignalUnitDisplay.PNG" /></a></span></div></div>
 <p>In the example, there are white markers above and below the bar, indicating the range corresponding to the value written in the bar.
@@ -71,6 +78,11 @@ These markers may be missing; then the range corresponds to the height of the ba
 </p>
 <div class="center"><div class="floatnone"><span><a href="../images/5/55/SignalUnitDisplay2.PNG" class="image" title=""><img src="../images/5/55/SignalUnitDisplay2.PNG" alt="" width="70" height="145" longdesc="/wiki/index.php/Image:SignalUnitDisplay2.PNG" /></a></span></div></div>
 <p>This display is used for nonnegative signals. Here, the physical unit corresponds to the distance of the white marker to the signal's baseline.
+</p>
+<a name="Choosing_Signal_Colors"></a><h4>Choosing Signal Colors</h4>
+<p>Clicking <i>Choose Signal Colors...</i> from the context menu will open up a color chooser dialog.
+This dialog provides fields for "User defined colors" to the left, defining a list of channel colors, terminated with a black entry.
+</p><p>Signal colors are taken from these fields in the order in which they appear; when there are more signals displayed than colors defined, colors will be re-used in order.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ABCI2000FileInfo.html" title="User Reference:BCI2000FileInfo">User Reference:BCI2000FileInfo</a>

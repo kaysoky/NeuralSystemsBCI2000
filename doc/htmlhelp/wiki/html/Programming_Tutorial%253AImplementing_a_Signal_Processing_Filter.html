@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>Programming Tutorial:Implementing a Signal Processing Filter - BCI2000 Wiki</title>
+<title>Programming Tutorial:Implementing a Signal Processing Filter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="Programming Tutorial:Implementing a Signal Processing Filter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
@@ -238,7 +238,7 @@ operations, there is nothing to be done inside the <tt>LPFilter</tt>
 <i>destructor</i> .
 Our <i>constructor</i>  will contain initializers for the members we
 declared,
-and a BCI2000 parameter definition for LPTimeConstant:
+and a BCI2000 parameter definition for LPTimeConstant. Specifying the empty string for both low and high range tells the framework not to perform an automatic range check on that parameter.
 </p>
 <pre>
 LPFilter::LPFilter()
@@ -247,7 +247,7 @@ LPFilter::LPFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     &quot;Filtering float LPTimeConstant= 16s&quot;
-      &quot; 16s 0 0 // time constant for the low pass filter in blocks or
+      &quot; 16s % % // time constant for the low pass filter in blocks or
       seconds&quot;,
   END_PARAMETER_DEFINITIONS
 }
@@ -320,13 +320,13 @@ LPFilter::LPFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     &quot;Filtering float LPTimeConstant= 16s&quot;
-      &quot; 16s 0 0 // time constant for the low pass filter in blocks or
+      &quot; 16s % % // time constant for the low pass filter in blocks or
       seconds&quot;,
     &quot;Visualize int VisualizeLowPass= 1&quot;
       &quot; 1 0 1 // visualize low pass output signal (0=no, 1=yes)&quot;,
-    &quot;Visualize int LPVisMin= -100 0 0 0 &quot;
+    &quot;Visualize int LPVisMin= -100 0 % % &quot;
       &quot;// low pass visualization min value&quot;,
-    &quot;Visualize int LPVisMax= 100 0 0 0 &quot;
+    &quot;Visualize int LPVisMax= 100 0 % % &quot;
       &quot;// low pass visualization max value&quot;,
   END_PARAMETER_DEFINITIONS
 }
@@ -338,7 +338,14 @@ an inversion
 of the displayed signal, so there is no need to check these parameters
 from
 <tt>Preflight</tt>.
-In <tt>Initialize</tt>, we add
+Still, the BCI2000 framework expects us to access parameters from <tt>Preflight</tt> when there are no range limits specified.
+Thus, we add two lines to <tt>Preflight</tt>:
+</p>
+<pre>
+  Parameter( &quot;LPVisMin&quot; );
+  Parameter( &quot;LPVisMax&quot; );
+</pre>
+<p>In <tt>Initialize</tt>, we add
 </p>
 <pre>
   mSignalVis.Send( CfgID::WindowTitle, &quot;Low Pass&quot; );

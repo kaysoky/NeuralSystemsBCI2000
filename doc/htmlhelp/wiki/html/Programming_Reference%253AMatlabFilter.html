@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>Programming Reference:MatlabFilter - BCI2000 Wiki</title>
+<title>Programming Reference:MatlabFilter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="Programming Reference:MatlabFilter,Programming Reference:BCI2000 Source Code,Programming Reference:Filter Chain,Programming Reference:GenericFilter Class,Technical Reference:Core Modules,Technical Reference:Parameter Definition,Technical Reference:State Definition,User Reference:Filters,User Reference:Operator Module,User Reference:SpatialFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
@@ -136,7 +136,7 @@ However, by editing <tt>src/core/SignalProcessing/Matlab/PipeDefinition.cpp</tt>
 <p>Execute<br /><code>matlab /regserver</code><br />from the command line when logged in with administrative privileges.
 </p>
 <a name="Changes_to_script_files_appear_to_have_no_effect"></a><h3>Changes to script files appear to have no effect</h3>
-<p>Switch to the Matlab engine's command window, and enter<br /><code>clear;</code><br />after each change you made to a script.
+<p>Switch to the Matlab engine's command window, and enter<br /><code>clear;</code><br /> or <br /><code>clear scriptname;</code><br />each time you change a script.
 </p>
 <a name="You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"></a><h3>You get linker errors when rebuilding <i>MatlabSignalProcessing</i></h3>
 <p>If you get linker errors after editing <tt>PipeDefinition.cpp</tt>, make sure that all filters' cpp files are part of the <i>MatlabSignalProcessing</i> project.

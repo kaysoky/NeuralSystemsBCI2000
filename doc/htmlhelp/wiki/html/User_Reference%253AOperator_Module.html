@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>User Reference:Operator Module - BCI2000 Wiki</title>
+<title>User Reference:Operator Module - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="User Reference:Operator Module,Programming Reference:GenericFilter Class,Technical Reference:Core Modules,Technical Reference:Parameter Definition,Technical Reference:Parameter File,Technical Reference:System Design,User Reference:BCI2000Launcher,User Reference:Module Command Line Options,User Reference:Operator Module Scripting,User Reference:Timing" />
 <link rel="shortcut icon" href="../../favicon.ico" />
@@ -51,7 +51,12 @@ It allows to view and edit system parameters, save and load parameter files, and
 <li class='toclevel-2'><a href="User_Reference%253AOperator_Module.html#Preferences_Dialog"><span class="tocnumber">2.5</span> <span class="toctext">Preferences Dialog</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AOperator_Module.html#Parameter_Configuration_Window"><span class="tocnumber">2.6</span> <span class="toctext">Parameter Configuration Window</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AOperator_Module.html#Matrix_Editor_Window"><span class="tocnumber">2.7</span> <span class="toctext">Matrix Editor Window</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AOperator_Module.html#Visualization_Windows"><span class="tocnumber">2.8</span> <span class="toctext">Visualization Windows</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module.html#Visualization_Windows"><span class="tocnumber">2.8</span> <span class="toctext">Visualization Windows</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253AOperator_Module.html#Unit_Display"><span class="tocnumber">2.8.1</span> <span class="toctext">Unit Display</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AOperator_Module.html#Choosing_Signal_Colors"><span class="tocnumber">2.8.2</span> <span class="toctext">Choosing Signal Colors</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module.html#See_also"><span class="tocnumber">3</span> <span class="toctext">See also</span></a></li>
@@ -135,7 +140,7 @@ Thus, it is possible to simplify the configuration dialog for less experienced u
 As a typical example, once you have set up a stimulation experiment, you will only change the <i>SubjectName</i> and <i>SubjectRun</i> parameters. Setting these two parameter's user levels to <i>beginner</i>, and leaving the other's at <i>advanced</i>, you may now switch the global user level to <i>beginner</i>, and will only see the two selected parameters displayed in the configuration dialog. 
 </p>
 <a name="Parameter_Configuration_Window"></a><h3>Parameter Configuration Window</h3>
-<div class="center"><div class="thumb tnone"><div style="width:704px;"><a href="../images/a/a1/OperatorConfiguration.png" class="internal" title="The Parameter Configuration Window"><img src="../images/a/a1/OperatorConfiguration.png" alt="The Parameter Configuration Window" width="702" height="597" longdesc="/wiki/index.php/Image:OperatorConfiguration.png" /></a>  <div class="thumbcaption" >The Parameter Configuration Window</div></div></div></div>
+<div class="center"><div class="thumb tnone"><div style="width:704px;"><a href="../images/a/a1/OperatorConfiguration.png" class="internal" title="The Parameter Configuration Window"><img src="../images/a/a1/OperatorConfiguration.png" alt="The Parameter Configuration Window" width="702" height="593" longdesc="/wiki/index.php/Image:OperatorConfiguration.png" /></a>  <div class="thumbcaption" >The Parameter Configuration Window</div></div></div></div>
 <p>On the left side, this window displays a number of register tabs that correspond to parameter sections. 
 Clicking on a tab will display the parameters from the corresponding section.
 </p><p>Within a section, parameters are grouped according to subsections. In most cases, subsections correspond to individual filters; however, filters with a large number of parameters might choose to group them into subsections to make configuration easier.
@@ -149,6 +154,8 @@ Matrix-valued parameters display a button to load or save a matrix in ASCII form
 Behavior of the load/save operation may be fine-tuned using the <i>Configure Load</i> and <i>Configure Save</i> buttons.
 These buttons both display a list of parameter names, allowing to select parameters to be ignored during load/save operations.
 This is especially useful to save only a subset of parameters, and thus factor out partial configurations depending on, e.g., the data acquisition module used rather than the experiment itself.
+</p><p>Below these buttons, there is another button labeled "Help". Clicking this button will change the mouse cursor into a question mark. Then, a click on a parameter name or edit field will open the appropriate help page when available.
+This help button is available only when a recent version of the BCI2000 <tt>doc</tt> directory is present along with the <tt>prog</tt> directory where the operator module resides.
 </p>
 <a name="Matrix_Editor_Window"></a><h3>Matrix Editor Window</h3>
 <div class="center"><div class="thumb tnone"><div style="width:500px;"><a href="../images/f/f7/OperatorMatrix.png" class="internal" title="The Matrix Editor Window"><img src="../images/f/f7/OperatorMatrix.png" alt="The Matrix Editor Window" width="498" height="339" longdesc="/wiki/index.php/Image:OperatorMatrix.png" /></a>  <div class="thumbcaption" >The Matrix Editor Window</div></div></div></div>
@@ -189,6 +196,7 @@ In a context menu, the following options are available:
 </li><li>switching between signal display as lines, and colored blocks ("display mode"),
 </li><li>switching signal baselines, and unit display on and off.
 </li></ul>
+<a name="Unit_Display"></a><h4>Unit Display</h4>
 <p>When the signal's physical unit is displayed, it is represented as a white bar:
 </p>
 <div class="center"><div class="floatnone"><span><a href="../images/c/c4/SignalUnitDisplay.PNG" class="image" title=""><img src="../images/c/c4/SignalUnitDisplay.PNG" alt="" width="104" height="104" longdesc="/wiki/index.php/Image:SignalUnitDisplay.PNG" /></a></span></div></div>
@@ -198,6 +206,11 @@ These markers may be missing; then the range corresponds to the height of the ba
 </p>
 <div class="center"><div class="floatnone"><span><a href="../images/5/55/SignalUnitDisplay2.PNG" class="image" title=""><img src="../images/5/55/SignalUnitDisplay2.PNG" alt="" width="70" height="145" longdesc="/wiki/index.php/Image:SignalUnitDisplay2.PNG" /></a></span></div></div>
 <p>This display is used for nonnegative signals. Here, the physical unit corresponds to the distance of the white marker to the signal's baseline.
+</p>
+<a name="Choosing_Signal_Colors"></a><h4>Choosing Signal Colors</h4>
+<p>Clicking <i>Choose Signal Colors...</i> from the context menu will open up a color chooser dialog.
+This dialog provides fields for "User defined colors" to the left, defining a list of channel colors, terminated with a black entry.
+</p><p>Signal colors are taken from these fields in the order in which they appear; when there are more signals displayed than colors defined, colors will be re-used in order.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Technical_Reference%253ASystem_Design.html" title="Technical Reference:System Design">Technical Reference:System Design</a>, <a href="User_Reference%253AOperator_Module_Scripting.html" title="User Reference:Operator Module Scripting">User Reference:Operator Module Scripting</a>, <a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">User Reference:Module Command Line Options</a>, <a href="User_Reference%253ATiming.html" title="User Reference:Timing">User Reference:Timing</a>
