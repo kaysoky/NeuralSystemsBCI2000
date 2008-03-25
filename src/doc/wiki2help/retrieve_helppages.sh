@@ -43,6 +43,7 @@ do
   mv $i $i.$TMPEXT &&
   sed 's/<script .*<\/script>//' < $i.$TMPEXT |
   sed 's/ onload=[^>]*>/>/' |
+  sed 's/BCI2000 Wiki/BCI2000 Help/' |
   sed 's/<!-- Served by [^>]* -->//' > $i &&
   rm $i.$TMPEXT
 done;
