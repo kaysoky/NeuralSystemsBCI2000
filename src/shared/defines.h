@@ -64,6 +64,7 @@ namespace CfgID
       SampleOffset,
 
       Visible,
+      InvertedDisplay,
   };
 };
 

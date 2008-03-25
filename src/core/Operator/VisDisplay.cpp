@@ -440,6 +440,11 @@ VisDisplay::Graph::SetConfig( ConfigSettings& inConfig )
   bool showBaselines = mDisplay.BaselinesVisible();
   if( inConfig.Get( CfgID::ShowBaselines, showBaselines ) )
     mDisplay.SetBaselinesVisible( showBaselines );
+    
+  bool invertedDisplay = mDisplay.Inverted();
+  if( inConfig.Get( CfgID::InvertedDisplay, invertedDisplay ) )
+    mDisplay.SetInverted( invertedDisplay );
+
   ColorList channelColors = mDisplay.ChannelColors();
   if( inConfig.Get( CfgID::ChannelColors, channelColors ) )
     mDisplay.SetChannelColors( channelColors );
@@ -571,6 +576,7 @@ struct VisDisplay::Graph::MenuItemEntry VisDisplay::Graph::sMenuItems[] =
   { NULL, NULL, NULL, "-" },
   { ToggleDisplayMode, NULL, NULL, "Toggle Display Mode" },
   { ToggleColor, ToggleColor_Enabled, ToggleColor_Checked, "Color Display" },
+  { InvertDisplay, NULL, InvertDisplay_Checked, "Invert" },
   { ChooseColors, ChooseColors_Enabled, NULL, "Choose Channel Colors..." },
   { NULL, NULL, NULL, "-" },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked, "Show Baselines" },
@@ -747,6 +753,19 @@ bool
 VisDisplay::Graph::ToggleColor_Checked( size_t ) const
 {
   return mDisplay.ColorDisplay();
+}
+
+void
+VisDisplay::Graph::InvertDisplay( size_t )
+{
+  mDisplay.SetInverted( !mDisplay.Inverted() );
+  Visconfigs()[ mSourceID ].Put( CfgID::InvertedDisplay, mDisplay.Inverted(), UserDefined );
+}
+
+bool
+VisDisplay::Graph::InvertDisplay_Checked( size_t ) const
+{
+  return mDisplay.Inverted();
 }
 
 void

@@ -59,6 +59,7 @@ class TMainForm : public TForm
     TMenuItem *mViewMoreChannels;
     TMenuItem *N2;
     TMenuItem *mViewChooseChannelColors;
+    TMenuItem *mViewInvert;
     TMenuItem *mViewShowBaselines;
     TMenuItem *mViewShowUnit;
     TMenuItem *N4;
@@ -151,6 +152,9 @@ class TMainForm : public TForm
     // Display attributes
     void ChooseChannelColors();
     bool ChooseChannelColors_Enabled() const;
+    void Invert();
+    bool Invert_Checked() const;
+    bool Invert_Enabled() const;
     void ToggleBaselines();
     bool ToggleBaselines_Checked() const;
     bool ToggleBaselines_Enabled() const;

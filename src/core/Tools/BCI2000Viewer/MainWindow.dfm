@@ -215,6 +215,9 @@ object MainForm: TMainForm
       object mViewChooseChannelColors: TMenuItem
         Caption = 'Choose Channel Colors...'
       end
+      object mViewInvert: TMenuItem
+        Caption = 'Invert'
+      end
       object mViewShowBaselines: TMenuItem
         AutoCheck = True
         Caption = 'Show Baselines'

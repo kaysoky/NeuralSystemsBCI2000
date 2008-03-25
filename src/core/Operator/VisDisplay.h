@@ -209,6 +209,9 @@ class VisDisplay
     bool ToggleColor_Enabled( size_t ) const;
     bool ToggleColor_Checked( size_t ) const;
 
+    void InvertDisplay( size_t );
+    bool InvertDisplay_Checked( size_t ) const;
+
     void ChooseColors( size_t );
     bool ChooseColors_Enabled( size_t ) const;
 

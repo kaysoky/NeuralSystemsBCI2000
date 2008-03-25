@@ -46,6 +46,7 @@ SignalDisplay::SignalDisplay()
   mShowChannelLabels( false ),
   mShowValueUnit( false ),
   mDisplayColors( true ),
+  mInverted( false ),
   mChannelGroupSize( 1 ),
   mMarkerChannels( 0 ),
   mMinValue( cMinValueDefault ),
@@ -429,7 +430,8 @@ SignalDisplay::Paint( void* inUpdateRegion )
     signalBrushes( mData.Channels() );
 
   // Background properties
-  const COLORREF backgroundColor = RGBColor( RGBColor::Black ).ToWinColor();
+  const COLORREF backgroundColor
+    = RGBColor( mInverted ? RGBColor::White : RGBColor::Black ).ToWinColor();
   gdi[ backgroundBrush ] = ::CreateSolidBrush( backgroundColor );
 
   // Cursor properties
@@ -438,26 +440,34 @@ SignalDisplay::Paint( void* inUpdateRegion )
   gdi[ cursorBrush ] = ::CreateSolidBrush( cursorColor );
 
   // Axis properties
-  const COLORREF axisColor = mAxisColor.ToWinColor();
-  gdi[ axisBrush ] = ::CreateSolidBrush( axisColor );
-  gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, axisColor );
-  const COLORREF markerColor = RGBColor( RGBColor::White ).ToWinColor();
+  RGBColor axisColor = mAxisColor;
+  if( mInverted && ( axisColor == RGBColor::White ) )
+    axisColor = RGBColor::Black;
+  const COLORREF winAxisColor = axisColor.ToWinColor();
+  gdi[ axisBrush ] = ::CreateSolidBrush( winAxisColor );
+  gdi[ baselinePen ] = ::CreatePen( PS_SOLID, 0, winAxisColor );
+  const COLORREF markerColor
+    = RGBColor( mInverted ? RGBColor::Black : RGBColor::White ).ToWinColor();
   const markerWidth = 1;
   gdi[ markerBrush ] = ::CreateSolidBrush( markerColor );
 
-  const labelColor = axisColor;
+  const COLORREF labelColor = winAxisColor;
   gdi[ labelFont ] = AxisFont();
 
   // Signal properties
   if( mDisplayColors )
     for( int i = 0; i < mData.Channels(); ++i )
     {
-      signalPens[ i ] = ::CreatePen( PS_SOLID, 0, ChannelColor( i ).ToWinColor() );
-      signalBrushes[ i ] = ::CreateSolidBrush( ChannelColor( i ).ToWinColor() );
+      RGBColor channelColor = ChannelColor( i );
+      if( mInverted && channelColor == RGBColor::White )
+        channelColor = RGBColor::Black;
+      signalPens[ i ] = ::CreatePen( PS_SOLID, 0, channelColor.ToWinColor() );
+      signalBrushes[ i ] = ::CreateSolidBrush( channelColor.ToWinColor() );
     }
   else
   {
-    HGDIOBJ pen = ::CreatePen( PS_SOLID, 0, RGBColor( RGBColor::White ).ToWinColor() );
+    RGBColor channelColor = mInverted? RGBColor::Black : RGBColor::White;
+    HGDIOBJ pen = ::CreatePen( PS_SOLID, 0, RGBColor( channelColor ).ToWinColor() );
     for( int i = 0; i < mData.Channels(); ++i )
       signalPens[ i ] = pen;
   }
@@ -806,7 +816,7 @@ SignalDisplay::Paint( void* inUpdateRegion )
   // Draw channel labels if channels don't coincide with groups.
   if( mShowChannelLabels && mChannelGroupSize > 1 )
   {
-    ::SetBkColor( dc, RGBColor( RGBColor::Black ).ToWinColor() );
+    ::SetBkColor( dc, backgroundColor );
     ::SetBkMode( dc, OPAQUE );
     RECT legendRect =
     {
@@ -814,7 +824,10 @@ SignalDisplay::Paint( void* inUpdateRegion )
     };
     for( size_t i = 0; i < mChannelLabels.size(); ++i )
     {
-      ::SetTextColor( dc, ChannelColor( mChannelLabels[ i ].Address() ).ToWinColor() );
+      RGBColor textColor = ChannelColor( mChannelLabels[ i ].Address() );
+      if( mInverted && textColor == RGBColor::White )
+        textColor = RGBColor::Black;
+      ::SetTextColor( dc, textColor.ToWinColor() );
       legendRect.top += ::DrawText( dc, mChannelLabels[ i ].Text().c_str(),
         mChannelLabels[ i ].Text().length(), &legendRect,
         DT_SINGLELINE | DT_LEFT | DT_NOCLIP | DT_EXTERNALLEADING );

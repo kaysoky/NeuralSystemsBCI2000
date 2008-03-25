@@ -161,6 +161,11 @@ class SignalDisplay
   bool           ColorDisplay() const
                  { return mDisplayColors; }
 
+  SignalDisplay& SetInverted( bool b )
+                 { mInverted = b; return Invalidate(); }
+  bool           Inverted() const
+                 { return mInverted; }
+
  // Functions that centralize sample/channel -> pixel conversion in painting
  // and invalidating contexts.
  private:
@@ -212,7 +217,8 @@ class SignalDisplay
                 mShowBaselines,
                 mShowChannelLabels,
                 mShowValueUnit,
-                mDisplayColors;
+                mDisplayColors,
+                mInverted;
   int           mNumSamples,
                 mSampleCursor,
                 mNumDisplayGroups,

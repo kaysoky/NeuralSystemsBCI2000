@@ -56,6 +56,7 @@ TMainForm::ActionEntry TMainForm::sActions[] =
   { HelpOpenHelp, NULL,           NULL, "mHelpOpenHelp" },
   { HelpAbout,    NULL,           NULL, "mHelpAbout" },
 
+  { Invert, Invert_Enabled, Invert_Checked, "mViewInvert" },
   { EnlargeSignal, ChangeResolution_Enabled, NULL, "mViewEnlargeSignal" },
   { ReduceSignal,  ChangeResolution_Enabled, NULL, "mViewReduceSignal" },
   { MoreChannels, MoreChannels_Enabled, NULL, "mViewMoreChannels" },
@@ -406,6 +407,13 @@ void TMainForm::ChooseChannelColors()
 bool TMainForm::ChooseChannelColors_Enabled() const
 { return mFile.IsOpen(); }
 
+void TMainForm::Invert()
+{ mDisplay.SetInverted( !mDisplay.Inverted() ); }
+bool TMainForm::Invert_Checked() const
+{ return mDisplay.Inverted(); }
+bool TMainForm::Invert_Enabled() const
+{ return mNumSignalChannels > 0; }
+
 void TMainForm::ToggleBaselines()
 { mDisplay.SetBaselinesVisible( !mDisplay.BaselinesVisible() ); }
 bool TMainForm::ToggleBaselines_Checked() const
@@ -527,6 +535,7 @@ TMainForm::SaveToRegistry() const
     ostringstream oss;
     if( oss << mDisplay.ChannelColors() )
       pReg->WriteString( "ChannelColors", oss.str().c_str() );
+    pReg->WriteInteger( "Invert", mDisplay.Inverted() ? 1 : 0 );
   }
   catch( ERegistryException& )
   {
@@ -565,6 +574,7 @@ TMainForm::RestoreFromRegistry()
     ColorList colors;
     if( iss >> colors )
       mDisplay.SetChannelColors( colors );
+    mDisplay.SetInverted( 1 == pReg->ReadInteger( "Invert" ) );
   }
   catch( ERegistryException& )
   {
