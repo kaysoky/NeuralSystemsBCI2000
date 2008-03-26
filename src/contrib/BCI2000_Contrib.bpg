@@ -12,8 +12,9 @@ BRCC = $(ROOT)\bin\brcc32.exe $**
 PROJECTS = BioRadio.exe Biosemi2.exe DASSource.exe DT2000.exe MicroMed.exe \
   ModularEEG.exe Neuroscan.exe neurogetparams.exe NISource.exe RDAClient.exe \
   getparams.exe TMSi.exe TDTclient.exe TDTsampleRate.exe FIRProcessing.exe \
-  PeakDetectSignalProcessing.exe SWSignalProcessing.exe SWApp.exe SWSpeller.exe \
-  Speller.exe BCIBatch.exe BCIDiff.exe BCITimeFreq.exe calibgen.exe
+  PeakDetectSignalProcessing.exe SWSignalProcessing.exe SWApp.exe \
+  SigfriedSigProc.exe SWSpeller.exe Speller.exe BCIBatch.exe BCIDiff.exe \
+  BCITimeFreq.exe calibgen.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -111,6 +112,10 @@ RDAClient.exe: SignalSource\RDAClient\RDAClient.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 getparams.exe: SignalSource\RDAClient\getparams\getparams.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+SigfriedSigProc.exe: SignalProcessing\SigfriedSigProc\SigfriedSigProc.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
