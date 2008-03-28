@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
+//         jeremy.hill@tuebingen.mpg.de
 // Description: Wrapper classes for convenient creation and manipulation of
 //              Matlab workspace variables, and calling of Matlab functions.
 //
@@ -145,7 +146,7 @@ MatlabEngine::MatlabEngine()
     { // Open the Matlab engine.
       spEngineRef = engOpen( NULL );
       if( !spEngineRef )
-        bcierr << "Could not open Matlab engine" << endl;
+        bcierr << "Could not open Matlab engine (maybe you need to run 'matlab /regserver'?)" << endl;
       else
         PutString( cErrorVariable, "" );
     }
@@ -345,21 +346,23 @@ MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
 MatlabEngine::GetMxArray( const string& inExp )
 {
   mxArray* ans = NULL;
-  if( 0 == engEvalString( spEngineRef, ( string( "ans=" ) + inExp ).c_str() ) )
-    ans = engGetVariable( spEngineRef, "ans" );
+  if( 0 == engEvalString( spEngineRef, ( string( "bci_Ans=" ) + inExp + string(";") ).c_str() ) )
+    ans = engGetVariable( spEngineRef, "bci_Ans" );
   if( !ans )
     bcierr << "Could not read \"" << inExp << "\" from Matlab workspace" << endl;
+  engEvalString(spEngineRef, "clear bci_Ans");
   return ans;
 }
 
 bool
 MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 {
-  bool success = ( 0 == engPutVariable( spEngineRef, "ans", inArray ) );
+  bool success = ( 0 == engPutVariable( spEngineRef, "bci_Ans", inArray ) );
   if( success )
-    success = ( 0 == engEvalString( spEngineRef, ( inExp + "=ans;" ).c_str() ) );
+    success = ( 0 == engEvalString( spEngineRef, ( inExp + "=bci_Ans;" ).c_str() ) );
   if( !success )
     bcierr << "Could not put value into \"" << inExp << "\"" << endl;
+  engEvalString(spEngineRef, "clear bci_Ans");
   return success;
 }
 
@@ -443,16 +446,20 @@ MatlabFunction::MatlabFunction( const string& inName )
     // Check whether there exists an M-file with the required name in the Matlab
     // search path.
     string command;
-    command += "exist('" + inName + "')";
+    command += "bci_Ans = exist('" + inName + "');";
     if( engEvalString( spEngineRef, command.c_str() ) == 0 )
     {
-      mxArray* ans = engGetVariable( spEngineRef, "ans" );
+      mxArray* ans = engGetVariable( spEngineRef, "bci_Ans" );
       if( ans )
       {
         double* value = mxGetPr( ans );
-        mExists = ( value[ 0 ] == 2 );
+        mExists = ( value[ 0 ] == 2
+                 || value[ 0 ] == 3
+                 || value[ 0 ] == 5
+                 || value[ 0 ] == 6 );
         mxDestroyArray( ans );
       }
+      engEvalString(spEngineRef, "clear bci_Ans");
     }
   }
 }
