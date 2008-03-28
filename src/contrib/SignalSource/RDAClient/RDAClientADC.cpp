@@ -2,6 +2,7 @@
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de,
 //         thomas.schreiner@tuebingen.mpg.de
+//         jeremy.hill@tuebingen.mpg.de
 // Description: A source class that interfaces to the BrainAmp RDA socket
 //              interface.
 //
@@ -94,20 +95,23 @@ RDAClientADC::Preflight( const SignalProperties&,
       for( int i = 0; i < numInputChannels - 1; ++i )
       {
         double gain = preflightQueue.info().channelResolutions[ i ];
-        goodGains &= (
-          gain != 0
-          &&
-          1e-3 > ::fabs( Parameter( "SourceChGain" )( i ) - gain ) / gain
-        );
+        double prmgain = Parameter( "SourceChGain")( i );
+        bool same = ( 1e-3 > ::fabs( prmgain - gain ) / ( gain ? gain : 1.0 ) );
+        goodGains &= same;
+        
+        // bciout<<"channel "<<i+1<<": server="<<gain<<"   prm="<<prmgain<<endl;
+        if ( !same ) bciout << "The RDA server says the gain of"
+                            << " channel " << i+1
+                            << " is " << gain
+                            << " whereas the corresponding value in the"
+                            << " SourceChGain parameter is " << prmgain << endl;
       }
 
     if( !goodGains )
       bcierr << "The SourceChGain values for the first "
              << numInputChannels - 1 << " channels "
              << "must match the channel resolutions settings "
-             << "in the recording software ("
-             << preflightQueue.info().channelResolutions[ 0 ]
-             << ")"
+             << "in the recording software"
              << endl;
 
 

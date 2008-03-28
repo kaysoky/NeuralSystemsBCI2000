@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
+//         jeremy.hill@tuebingen.mpg.de
 // Description: A class that encapsulates connection details of the BrainAmp
 //              RDA socket interface.
 //
@@ -238,7 +239,9 @@ RDAQueue::ReceiveData()
                markerIndex < dataMsg->nMarkers;
                ( char* )marker += marker->nSize, ++markerIndex )
             // Does the marker say anything about this point?
-            if( point >= marker->nPosition && point < marker->nPosition + marker->nPoints )
+            // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
+            // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
+            if( point == marker->nPosition || (point > marker->nPosition && point < marker->nPosition + marker->nPoints) )
             {
               const char* markerDesc = marker->sTypeDesc + ::strlen( marker->sTypeDesc ) + 1;
               switch( *markerDesc )
@@ -311,7 +314,9 @@ RDAQueue::ReceiveData()
                markerIndex < dataMsg->nMarkers;
                ( char* )marker += marker->nSize, ++markerIndex )
             // Does the marker say anything about this point?
-            if( point >= marker->nPosition && point < marker->nPosition + marker->nPoints )
+            // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
+            // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
+            if( point == marker->nPosition || (point > marker->nPosition && point < marker->nPosition + marker->nPoints) )
             {
               const char* markerDesc = marker->sTypeDesc + ::strlen( marker->sTypeDesc ) + 1;
               switch( *markerDesc )
