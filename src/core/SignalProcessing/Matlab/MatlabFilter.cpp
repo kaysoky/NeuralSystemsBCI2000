@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
+//         jeremy.hill@tuebingen.mpg.de
 // Description: This BCI2000 filter calls the Matlab engine to act upon signals,
 //    parameters, and states, thus providing the full BCI2000 filter interface
 //    to a Matlab filter implementation.
@@ -13,6 +14,7 @@
 
 #include "MatlabFilter.h"
 #include "defines.h"
+#include "BCIDirectory.h"
 
 using namespace std;
 
@@ -52,6 +54,21 @@ MatlabFilter::MatlabFilter()
   }
   else
   {
+    std::string wd;
+    MatlabFunction m1( "cd" );
+    m1.InputArgument( "bci_WD" );
+    // first, change matlab's working directory to this binary's working directory
+    wd = BCIDirectory::GetCWD();
+    MatlabEngine::PutString( "bci_WD", wd );
+    CallMatlab( m1 );
+    // next, change matlab's working directory to the directory specified by --MatlabWD
+    // (two-stage approach is necessary since MatlabWD may be expressed either as an
+    // absolute path, or as a path relative to the binary's WD)
+    wd = OptionalParameter( "MatlabWD", "." );
+    MatlabEngine::PutString( "bci_WD", wd );
+    CallMatlab( m1 );
+    MatlabEngine::ClearVariable( "bci_WD" );
+    
     MatlabFunction bci_Construct( CONSTRUCT );
     bci_Construct.OutputArgument( PARAM_DEFS )
                  .OutputArgument( STATE_DEFS );
