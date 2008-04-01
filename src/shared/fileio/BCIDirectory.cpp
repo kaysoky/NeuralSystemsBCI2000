@@ -78,7 +78,19 @@ BCIDirectory::DirectoryPath() const
 string
 BCIDirectory::AbsolutePath( const std::string& inPath )
 {
-  return IsAbsolutePath( inPath ) ? inPath : InstallationDirectory() + DirSeparator + inPath;
+  string result;
+  if( !IsAbsolutePath( inPath ) )
+  {
+    result = InstallationDirectory();
+    if( result.empty() || *result.rbegin() != DirSeparator )
+      result += DirSeparator;
+    result += inPath;
+  }
+  else
+  {
+    result = inPath;
+  }
+  return result;
 }
 
 string
