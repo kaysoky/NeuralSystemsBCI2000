@@ -29,6 +29,12 @@ BCIDirectory::UpdateRunNumber()
   return *this;
 }
 
+string
+BCIDirectory::AbsolutePath( const string& inPath )
+{
+  return inPath;
+}
+
 // FileWriterBase
 
 FileWriterBase::FileWriterBase()
