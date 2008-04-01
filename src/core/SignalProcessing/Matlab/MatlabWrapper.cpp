@@ -19,6 +19,7 @@
 using namespace std;
 
 static const string cErrorVariable = "bci_Error";
+static const string cAnsVariable = "bci_Ans";
 
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabEngine::DoubleMatrix definitions                                     //
@@ -75,6 +76,7 @@ MatlabEngine::StringMatrix::StringMatrix( const Param& p )
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabEngine definitions                                                   //
 ////////////////////////////////////////////////////////////////////////////////
+bool MatlabEngine::sAutoClose = true;
 int MatlabEngine::sNumInstances = 0;
 Engine* MatlabEngine::spEngineRef = NULL;
 
@@ -156,7 +158,16 @@ MatlabEngine::MatlabEngine()
 MatlabEngine::~MatlabEngine()
 {
   --sNumInstances;
-  if( sNumInstances < 1 && spEngineRef )
+  if( sAutoClose && sNumInstances < 1 )
+  {
+    Close();
+  }
+}
+
+void
+MatlabEngine::Close()
+{
+  if( spEngineRef )
   {
     ClearVariable( cErrorVariable );
     engClose( spEngineRef );
@@ -346,23 +357,23 @@ MatlabEngine::PutCells( const string& inExp, const StringMatrix& inValue )
 MatlabEngine::GetMxArray( const string& inExp )
 {
   mxArray* ans = NULL;
-  if( 0 == engEvalString( spEngineRef, ( string( "bci_Ans=" ) + inExp + string(";") ).c_str() ) )
-    ans = engGetVariable( spEngineRef, "bci_Ans" );
+  if( 0 == engEvalString( spEngineRef, ( cAnsVariable + "=" + inExp + ";" ).c_str() ) )
+    ans = engGetVariable( spEngineRef, cAnsVariable.c_str() );
   if( !ans )
     bcierr << "Could not read \"" << inExp << "\" from Matlab workspace" << endl;
-  engEvalString(spEngineRef, "clear bci_Ans");
+  ClearVariable( cAnsVariable );
   return ans;
 }
 
 bool
 MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 {
-  bool success = ( 0 == engPutVariable( spEngineRef, "bci_Ans", inArray ) );
+  bool success = ( 0 == engPutVariable( spEngineRef, cAnsVariable.c_str(), inArray ) );
   if( success )
-    success = ( 0 == engEvalString( spEngineRef, ( inExp + "=bci_Ans;" ).c_str() ) );
+    success = ( 0 == engEvalString( spEngineRef, ( inExp + "=" + cAnsVariable + ";" ).c_str() ) );
   if( !success )
     bcierr << "Could not put value into \"" << inExp << "\"" << endl;
-  engEvalString(spEngineRef, "clear bci_Ans");
+  ClearVariable( cAnsVariable );
   return success;
 }
 
@@ -443,23 +454,37 @@ MatlabFunction::MatlabFunction( const string& inName )
 {
   if( spEngineRef )
   {
-    // Check whether there exists an M-file with the required name in the Matlab
-    // search path.
+    // Check whether there exists a function with the required name in
+    // the Matlab search path.
     string command;
-    command += "bci_Ans = exist('" + inName + "');";
+    command += cAnsVariable + " = exist('" + inName + "');";
     if( engEvalString( spEngineRef, command.c_str() ) == 0 )
     {
-      mxArray* ans = engGetVariable( spEngineRef, "bci_Ans" );
+      mxArray* ans = engGetVariable( spEngineRef, cAnsVariable.c_str() );
       if( ans )
       {
-        double* value = mxGetPr( ans );
-        mExists = ( value[ 0 ] == 2
-                 || value[ 0 ] == 3
-                 || value[ 0 ] == 5
-                 || value[ 0 ] == 6 );
+        int result = mxGetPr( ans )[ 0 ];
+        enum
+        {
+          mfile = 2,
+          mexfile = 3,
+          mbuiltin = 5,
+          pfile = 6,
+        };
+        switch( result )
+        {
+          case mfile:
+          case mexfile:
+          case mbuiltin:
+          case pfile:
+            mExists = true;
+            break;
+          default:
+            mExists = false;
+        }
         mxDestroyArray( ans );
       }
-      engEvalString(spEngineRef, "clear bci_Ans");
+      ClearVariable( cAnsVariable );
     }
   }
 }

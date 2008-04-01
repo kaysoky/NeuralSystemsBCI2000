@@ -48,6 +48,10 @@ class MatlabEngine
   virtual ~MatlabEngine();
 
  public:
+  static void         Close();
+  static bool         AutoClose() { return sAutoClose; }
+  static void         SetAutoClose( bool b ) { sAutoClose = b; }
+
   static bool         Initialized() { return spEngineRef != NULL; }
 
   static bool         CreateGlobal( const std::string& name );
@@ -71,6 +75,7 @@ class MatlabEngine
   static bool     PutMxArray( const std::string& expr, const mxArray* value );
 
  protected:
+  static bool     sAutoClose;
   static int      sNumInstances;
   static Engine*  spEngineRef;
 

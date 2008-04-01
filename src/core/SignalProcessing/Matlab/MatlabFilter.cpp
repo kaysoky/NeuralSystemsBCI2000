@@ -54,19 +54,14 @@ MatlabFilter::MatlabFilter()
   }
   else
   {
-    std::string wd;
-    MatlabFunction m1( "cd" );
-    m1.InputArgument( "bci_WD" );
-    // first, change matlab's working directory to this binary's working directory
-    wd = BCIDirectory::GetCWD();
+    // Configure matlab engine behavior as specified by --MatlabStayOpen.
+    mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
+    MatlabEngine::SetAutoClose( mMatlabStayOpen == closeEngine );
+    // Change matlab's working directory to the directory specified by --MatlabWD.
+    string wd = OptionalParameter( "MatlabWD", "." );
+    wd = BCIDirectory::AbsolutePath( wd );
     MatlabEngine::PutString( "bci_WD", wd );
-    CallMatlab( m1 );
-    // next, change matlab's working directory to the directory specified by --MatlabWD
-    // (two-stage approach is necessary since MatlabWD may be expressed either as an
-    // absolute path, or as a path relative to the binary's WD)
-    wd = OptionalParameter( "MatlabWD", "." );
-    MatlabEngine::PutString( "bci_WD", wd );
-    CallMatlab( m1 );
+    CallMatlab( MatlabFunction( "cd" ).InputArgument( "bci_WD" ) );
     MatlabEngine::ClearVariable( "bci_WD" );
     
     MatlabFunction bci_Construct( CONSTRUCT );
@@ -112,8 +107,10 @@ MatlabFilter::MatlabFilter()
     if( !oss.str().empty() )
       bciout << "The following functions could not be found in the Matlab path:\n"
              << oss.str().substr( 2 ) << ".\n"
-             << "Make sure that the m-files exist within the path, and contain "
-             << "appropriate function definitions."
+             << "Make sure that the m-files exist within path or working directory, "
+             << "and contain appropriate function definitions.\n"
+             << "Consider using the --MatlabWD command line option to set Matlab's "
+             << "working directory at startup"
              << endl;
 
     // Initialize the bci_Process function for more efficient calling during Process().
@@ -127,16 +124,21 @@ MatlabFilter::~MatlabFilter()
   MatlabFunction bci_Destruct( DESTRUCT );
   CallMatlab( bci_Destruct );
 
-  MatlabEngine::ClearVariable( IN_SIGNAL );
-  MatlabEngine::ClearVariable( OUT_SIGNAL );
-  MatlabEngine::ClearVariable( PARAMETERS );
-  MatlabEngine::ClearVariable( STATES );
+  if( mMatlabStayOpen != dontClear )
+  {
+    MatlabEngine::ClearVariable( IN_SIGNAL );
+    MatlabEngine::ClearVariable( OUT_SIGNAL );
+    MatlabEngine::ClearVariable( PARAMETERS );
+    MatlabEngine::ClearVariable( STATES );
+  }
 }
 
 void
 MatlabFilter::Preflight( const SignalProperties& Input,
                                SignalProperties& Output ) const
 {
+  OptionalParameter( "MatlabStayOpen" );
+
   MatlabEngine::ClearVariable( PARAMETERS );
   MatlabEngine::CreateGlobal( PARAMETERS );
   ParamsToMatlabWS();
@@ -159,6 +161,10 @@ void
 MatlabFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
+  // Re-configure matlab engine behavior as specified by the MatlabStayOpen parameter.
+  mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
+  MatlabEngine::SetAutoClose( mMatlabStayOpen == closeEngine );
+
   MatlabEngine::PutMatrix( IN_SIGNAL_DIMS, Input );
   MatlabEngine::PutMatrix( OUT_SIGNAL_DIMS, Output );
   MatlabFunction bci_Initialize( INITIALIZE );

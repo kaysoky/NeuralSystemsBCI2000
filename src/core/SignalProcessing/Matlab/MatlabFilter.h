@@ -84,7 +84,15 @@ class MatlabFilter : public GenericFilter
   void MatlabWSToParams();
   bool CallMatlab( MatlabFunction& ) const;
 
+  enum
+  { // Accepted values for the MatlabStayOpen parameter
+    closeEngine = 0,
+    clearVariables = 1,
+    dontClear = 2,
+  };
+  int                    mMatlabStayOpen;
   MatlabFunction         mBci_Process;
+
 };
 
 #endif // MATLAB_FILTER_H
