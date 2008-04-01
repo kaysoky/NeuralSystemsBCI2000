@@ -137,7 +137,21 @@ void
 MatlabFilter::Preflight( const SignalProperties& Input,
                                SignalProperties& Output ) const
 {
-  OptionalParameter( "MatlabStayOpen" );
+  int matlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
+  switch( matlabStayOpen )
+  {
+    case closeEngine:
+    case clearVariables:
+    case dontClear:
+      break;
+    default:
+      bcierr << "Undefined value in MatlabStayOpen\n"
+             << "Allowed values are:\n"
+             << " 0: close engine;\n"
+             << " 1: keep engine open, clear variables;\n"
+             << " 2: keep engine open, keep variables."
+             << endl;
+  }
 
   MatlabEngine::ClearVariable( PARAMETERS );
   MatlabEngine::CreateGlobal( PARAMETERS );
