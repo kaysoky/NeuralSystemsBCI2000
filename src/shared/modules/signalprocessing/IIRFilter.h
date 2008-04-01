@@ -1,11 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author:      juergen.mellinger@uni-tuebingen.de
-// Description: An abstract base class that implements a direct form II
-//              transposed IIR filter.
-//              Subclasses will provide individual implementations for the
-//              DesignFilter() member which translates parameter settings into
-//              filter coefficients.
+// Description: An abstract base class that implements an IIR filter.
+//   Subclasses will provide individual implementations for the
+//   DesignFilter() member, which is supposed to translate parameter settings
+//   into a rational transfer function (complex poles and zeros).
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
