@@ -8,6 +8,6 @@
 cd ..\prog
 start operat.exe
 start SignalGenerator.exe 127.0.0.1
-start MatlabSignalProcessing.exe 127.0.0.1
+start MatlabSignalProcessing.exe --MatlabWD="./matlab" 127.0.0.1
 start FeedbackDemo.exe 127.0.0.1
 cd ..
