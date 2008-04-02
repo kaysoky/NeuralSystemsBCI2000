@@ -76,7 +76,6 @@ MatlabEngine::StringMatrix::StringMatrix( const Param& p )
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabEngine definitions                                                   //
 ////////////////////////////////////////////////////////////////////////////////
-bool MatlabEngine::sAutoClose = true;
 int MatlabEngine::sNumInstances = 0;
 Engine* MatlabEngine::spEngineRef = NULL;
 
@@ -139,8 +138,20 @@ MatlabEngine::ProcNameEntry MatlabEngine::sMxProcNames[] =
 
 MatlabEngine::MatlabEngine()
 {
-  ++sNumInstances;
-  if( sNumInstances == 1 && !spEngineRef )
+  sNumInstances++;
+  if( !MatlabEngine::IsOpen() )
+    MatlabEngine::Open();
+}
+
+MatlabEngine::~MatlabEngine()
+{
+  sNumInstances--;
+}
+
+void
+MatlabEngine::Open()
+{
+  if( !IsOpen() )
   {
     // Load libraries.
     if( LoadDLL( sLibEngName, sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames )
@@ -155,19 +166,14 @@ MatlabEngine::MatlabEngine()
   }
 }
 
-MatlabEngine::~MatlabEngine()
-{
-  --sNumInstances;
-  if( sAutoClose && sNumInstances < 1 )
-  {
-    Close();
-  }
-}
-
 void
 MatlabEngine::Close()
 {
-  if( spEngineRef )
+  if( sNumInstances > 0 )
+  {
+    bcierr << "Cannot close Matlab engine while client instances are still present" << endl;
+  }
+  else if( spEngineRef )
   {
     ClearVariable( cErrorVariable );
     engClose( spEngineRef );

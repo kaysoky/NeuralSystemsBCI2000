@@ -91,7 +91,7 @@ class MatlabFilter : public GenericFilter
     dontClear = 2,
   };
   int                    mMatlabStayOpen;
-  MatlabFunction         mBci_Process;
+  MatlabFunction*        mpBci_Process;
 
 };
 

@@ -44,9 +44,10 @@ RegisterFilter( MatlabFilter, 2.C );
 #define STATES          MATLAB_NAME( States )
 
 MatlabFilter::MatlabFilter()
-: mBci_Process( PROCESS )
+: mpBci_Process( NULL )
 {
-  if( !MatlabEngine::Initialized() )
+  MatlabEngine::Open();
+  if( !MatlabEngine::IsOpen() )
   {
     bcierr << "Could not connect to Matlab engine. "
            << "Please make sure that Matlab is available on your machine."
@@ -56,7 +57,6 @@ MatlabFilter::MatlabFilter()
   {
     // Configure matlab engine behavior as specified by --MatlabStayOpen.
     mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
-    MatlabEngine::SetAutoClose( mMatlabStayOpen == closeEngine );
     // Change matlab's working directory to the directory specified by --MatlabWD.
     string wd = OptionalParameter( "MatlabWD", "." );
     wd = BCIDirectory::AbsolutePath( wd );
@@ -114,15 +114,20 @@ MatlabFilter::MatlabFilter()
              << endl;
 
     // Initialize the bci_Process function for more efficient calling during Process().
-    mBci_Process.InputArgument( IN_SIGNAL )
-                .OutputArgument( OUT_SIGNAL );
+    mpBci_Process = new MatlabFunction( PROCESS );
+    mpBci_Process->InputArgument( IN_SIGNAL )
+                  .OutputArgument( OUT_SIGNAL );
   }
 }
 
 MatlabFilter::~MatlabFilter()
 {
-  MatlabFunction bci_Destruct( DESTRUCT );
-  CallMatlab( bci_Destruct );
+  { // Make sure bci_Destruct is out of scope when calling MatlabEngine::Close().
+    MatlabFunction bci_Destruct( DESTRUCT );
+    CallMatlab( bci_Destruct );
+  }
+
+  delete mpBci_Process;
 
   if( mMatlabStayOpen != dontClear )
   {
@@ -131,6 +136,9 @@ MatlabFilter::~MatlabFilter()
     MatlabEngine::ClearVariable( PARAMETERS );
     MatlabEngine::ClearVariable( STATES );
   }
+  if( mMatlabStayOpen == closeEngine )
+    MatlabEngine::Close();
+
 }
 
 void
@@ -145,8 +153,8 @@ MatlabFilter::Preflight( const SignalProperties& Input,
     case dontClear:
       break;
     default:
-      bcierr << "Undefined value in MatlabStayOpen\n"
-             << "Allowed values are:\n"
+      bcierr << "Undefined value of MatlabStayOpen\n"
+             << "Possible values are:\n"
              << " 0: close engine;\n"
              << " 1: keep engine open, clear variables;\n"
              << " 2: keep engine open, keep variables."
@@ -177,7 +185,6 @@ MatlabFilter::Initialize( const SignalProperties& Input,
 {
   // Re-configure matlab engine behavior as specified by the MatlabStayOpen parameter.
   mMatlabStayOpen = OptionalParameter( "MatlabStayOpen", closeEngine );
-  MatlabEngine::SetAutoClose( mMatlabStayOpen == closeEngine );
 
   MatlabEngine::PutMatrix( IN_SIGNAL_DIMS, Input );
   MatlabEngine::PutMatrix( OUT_SIGNAL_DIMS, Output );
@@ -196,7 +203,7 @@ MatlabFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   StatesToMatlabWS();
   MatlabEngine::PutMatrix( IN_SIGNAL, Input );
-  if( CallMatlab( mBci_Process ) )
+  if( CallMatlab( *mpBci_Process ) )
     Output = MatlabEngine::GetMatrix( OUT_SIGNAL );
   else
     Output = Input;

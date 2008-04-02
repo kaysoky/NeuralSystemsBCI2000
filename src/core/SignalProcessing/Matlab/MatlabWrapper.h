@@ -48,11 +48,9 @@ class MatlabEngine
   virtual ~MatlabEngine();
 
  public:
+  static void         Open();
+  static bool         IsOpen() { return spEngineRef != NULL; }
   static void         Close();
-  static bool         AutoClose() { return sAutoClose; }
-  static void         SetAutoClose( bool b ) { sAutoClose = b; }
-
-  static bool         Initialized() { return spEngineRef != NULL; }
 
   static bool         CreateGlobal( const std::string& name );
   static bool         ClearVariable( const std::string& name );
@@ -75,9 +73,8 @@ class MatlabEngine
   static bool     PutMxArray( const std::string& expr, const mxArray* value );
 
  protected:
-  static bool     sAutoClose;
-  static int      sNumInstances;
   static Engine*  spEngineRef;
+  static int      sNumInstances;
 
   typedef struct { void** mProc; const char* mName; } ProcNameEntry;
   static bool  LoadDLL( const char* name, int numProcs, ProcNameEntry* );
@@ -121,6 +118,7 @@ class MatlabFunction : private MatlabEngine
 
  private:
   MatlabFunction( const MatlabFunction& );
+  MatlabFunction& operator=( const MatlabFunction& );
 
  public:
   MatlabFunction& InputArgument( const std::string& );
