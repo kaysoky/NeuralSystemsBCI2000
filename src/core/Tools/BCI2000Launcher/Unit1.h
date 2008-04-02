@@ -15,7 +15,7 @@
 #include <ExtActns.hpp>
 #include <Dialogs.hpp>
 #include <Menus.hpp>
-#include <XPStyleActnCtrls.hpp>
+//#include <XPStyleActnCtrls.hpp>
 #include <string>
 #include <vector.h>
 #include <dir.h>
