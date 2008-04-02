@@ -12,6 +12,9 @@
 #ifndef PCHINCLUDES_H
 #define PCHINCLUDES_H
 
+// Suppress "never used value" warning on variable initialization
+#pragma warn -8004
+
 #ifndef NO_PCHINCLUDES
 
 #include <vcl.h>
