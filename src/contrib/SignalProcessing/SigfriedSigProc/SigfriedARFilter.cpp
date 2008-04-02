@@ -1335,7 +1335,7 @@ void SigfriedARFilter::CreateDisplay()
 
 
     AnsiString szdetails;
-    szdetails.sprintf("SIEGFRIED Score Topography (%s)",vmodel_label[index_model]);
+    szdetails.sprintf("SIGFRIED Score Topography (%s)",vmodel_label[index_model]);
 
     // create a form that will contain the SIGFRIED display
     vpForm[index_model]               = new TSigfriedForm;
