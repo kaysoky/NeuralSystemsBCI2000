@@ -12,8 +12,8 @@
 #ifndef PCHINCLUDES_H
 #define PCHINCLUDES_H
 
-// Suppress "never used value" warning on variable initialization
-#pragma warn -8004
+#pragma warn -8004 // suppress warning on proper initialization of variables
+#pragma warn -8027 // suppress warning on inline expansion failure
 
 #ifndef NO_PCHINCLUDES
 
