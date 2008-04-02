@@ -115,7 +115,7 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
             }
             else
             {
-                Application->MessageBoxA("The BCIlauncher.ini file is corrupted, or an invalid file was selected.","Invalid INI file",MB_OK);
+                Application->MessageBoxA("The BCI2000launcher.ini file is corrupted, or an invalid file was selected.","Invalid INI file",MB_OK);
             }
             lines.clear();
         }
@@ -160,7 +160,7 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
     {
         if ((!ismember(dirListing[count], appStr)) && (!ismember(dirListing[count], SPStr)) && (!ismember(dirListing[count], sourceStr)))
         {
-            if (!(dirListing[count] == "operat.exe") && !(dirListing[count] == "BCIlauncher.exe"))
+            if (!(dirListing[count] == "operat.exe") && !(dirListing[count] == "BCI2000launcher.exe"))
             {
                 othersList->Items->Add(dirListing[count].c_str());
             }
@@ -208,7 +208,9 @@ void removeAt(vector<string> &str, int pos)
 //----------------------------------------------------------------
 void __fastcall TmainForm::launchButClick(TObject *Sender)
 {
+    SetCurrentDir(curdir.c_str());
     statusList->Clear();
+    statusList->Items->Add(curdir.c_str());
     statusList->Items->Add("Launching Operator...");
 
     FileRun1->FileName = curdir.c_str();
@@ -795,7 +797,7 @@ bool TmainForm::updateINIFile()
     //first, open the file for writing, and erase contents in the process
     ofstream out;
     int i;
-    out.open("BCIlauncher.ini", ios::out);
+    out.open("BCI2000launcher.ini", ios::out);
 
     if (out.fail())
         return false;

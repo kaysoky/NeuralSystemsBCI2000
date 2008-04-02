@@ -13,7 +13,7 @@
     <LIBRARIES value="vclx.lib rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib vclx.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\utils"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
