@@ -25,6 +25,7 @@ evCount = 1;
 signal = [];
 states = [];
 [signal, states, parms] = load_bcidat(files.name);
+signal = single(signal);
 
 stateNames = fieldnames(states);
 commonStates = {'TargetCode','ResultCode','Dwelling','Feedback',...
