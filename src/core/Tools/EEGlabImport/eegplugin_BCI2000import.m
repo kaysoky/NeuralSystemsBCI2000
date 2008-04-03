@@ -25,5 +25,4 @@ function vers = eegplugin_BCI2000import(fig, trystrs, catchstrs)
     
     % create menus
     % ------------
-    uimenu( menu, 'label', 'BCI2000 Data', 'callback', comcnt, 'separator', 'on' );
-    uimenu( menu, 'label', 'BCI2000 Data', 'callback', comcnt, 'separator', 'on' );
+    uimenu( menu, 'label', 'From BCI2000 .DAT file', 'callback', comcnt, 'separator', 'on' );
