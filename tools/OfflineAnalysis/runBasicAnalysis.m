@@ -59,14 +59,16 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   end
 
   % Make sure data files exist
-  if isempty(params.dataFiles)
-    error([funcName ':noDataFileSpecified'], 'params.dataFiles must contain at least one valid data file');
-  else
-    for idxFile = 1:length(params.dataFiles)
-      if ~exist(params.dataFiles{idxFile}, 'file')
-        error([funcName ':invalidDataFile'], ...
-          sprintf('Specified data file %s does not exist', ...
-          params.dataFiles(idxFile)));
+  if ~isfield(params, 'signal')
+    if isempty(params.dataFiles)
+      error([funcName ':noDataFileSpecified'], 'params.dataFiles must contain at least one valid data file');
+    else
+      for idxFile = 1:length(params.dataFiles)
+        if ~exist(params.dataFiles{idxFile}, 'file')
+          error([funcName ':invalidDataFile'], ...
+            sprintf('Specified data file %s does not exist', ...
+            params.dataFiles(idxFile)));
+        end
       end
     end
   end
@@ -107,22 +109,28 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
   end
 
   %Load data files
-  if verbose
-    fprintf(1, 'Loading data file ...\n');
-  end
-  files = struct();
-  [files(1:length(params.dataFiles)).name] = deal(params.dataFiles{:});
-  try
-    [signal, states, bciParams]=load_bcidat(files.name, '-calibrated');
-    
-    %load separate parameters
-%    bciParams = cell(length(files), 1);
-%     for idxFile = 1:length(files)
-%       [ignore1, ignore2, paramsTemp] = load_bcidat(files(idxFile).name, [0 0]);
-%       bciParams{idxFile} = paramsTemp;
-%     end
-  catch
-    rethrow(lasterror);
+  if isfield(params, 'signal')
+    signal = params.signal;
+    states = params.states;
+    bciParams = params.bciParams;
+  else
+    if verbose
+      fprintf(1, 'Loading data file ...\n');
+    end
+    files = struct();
+    [files(1:length(params.dataFiles)).name] = deal(params.dataFiles{:});
+    try
+      [signal, states, bciParams]=load_bcidat(files.name, '-calibrated');
+      
+      %load separate parameters
+  %    bciParams = cell(length(files), 1);
+  %     for idxFile = 1:length(files)
+  %       [ignore1, ignore2, paramsTemp] = load_bcidat(files(idxFile).name, [0 0]);
+  %       bciParams{idxFile} = paramsTemp;
+  %     end
+    catch
+      rethrow(lasterror);
+    end
   end
 
   %make sure that data has same number of channels as the montage file
