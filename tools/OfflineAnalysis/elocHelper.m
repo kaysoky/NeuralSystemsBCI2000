@@ -12,8 +12,10 @@
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function varargout = elocHelper(varargin)
 function varargout = elocHelper(varargin)
-if ~strcmp(computer, 'PCWIN')
-  error('Eloc Helper currently works only on windows-based systems.');
+verNum = sscanf(version, '%d.%s');
+verNum = verNum(1);
+if ~strcmp(computer, 'PCWIN') || verNum < 7
+  error('Eloc Helper currently works only on windows-based systems with version 7.x or greater of MATLAB or the MATLAB Component Runtime.');
   return;
 end
 
@@ -237,7 +239,7 @@ if fn ~= 0
   end
 end
 
-function [elecDataSort newIdx] = sortElecData(elecData, trackIdx)
+function [elecDataSort, newIdx] = sortElecData(elecData, trackIdx)
 %sort the data in the structure by the electrode number
 elecNums = {};
 [elecNums{1:length(elecData)}] = deal(elecData.elecNum);
@@ -726,7 +728,7 @@ if isValid && checkForChanges(handles)
 end
 
 
-function [isValid errMsg] = validateElecData(elecData, handles, bQuiet)
+function [isValid, errMsg] = validateElecData(elecData, handles, bQuiet)
 if nargin < 3
   bQuiet = 0;
 end
