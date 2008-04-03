@@ -12,8 +12,10 @@
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function varargout = OfflineAnalysis(varargin)
-if ~strcmp(computer, 'PCWIN')
-  error('BCI2000 Offline Analysis currently works only on windows-based systems.');
+verNum = sscanf(version, '%d.%s');
+verNum = verNum(1);
+if ~strcmp(computer, 'PCWIN') || verNum < 7
+  error('BCI2000 Offline Analysis currently works only on windows-based systems with version 7.x or greater of MATLAB or the MATLAB Component Runtime.');
   return;
 end
 
@@ -939,7 +941,7 @@ if ~isnumeric(fn)
   set(handles.btnRemove, 'enable', 'on');
 end
 
-function [res allFilesInfo fileTypesChange] = checkFile(allFilesInfo, signal, states, params, settings)
+function [res, allFilesInfo, fileTypesChange] = checkFile(allFilesInfo, signal, states, params, settings)
 % This function will check to see if the ChannelNames parameter is the 
 % same for all files and that every channel name corresponds to a standard
 % 10-20 name and that the names aren't duplicted.
@@ -1436,3 +1438,38 @@ set(handles.figTop, 'userdata', settings);
 function saveSettings(settings, handles)
 set(handles.figTop, 'userdata', settings);
 save 'settings.mat' settings;
+
+
+% --------------------------------------------------------------------
+function mnuExportToPDF_Callback(hObject, eventdata, handles)
+% hObject    handle to mnuExportToPDF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+figHandles = get(handles.chkOverwritePlots, 'userdata');
+
+if isempty(figHandles)
+  uiwait(msgbox('Please run an analysis before trying to save your plots', 'Exporting to PDF'));
+  return;
+end
+
+settings = get(handles.figTop, 'userdata');
+
+if (~isfield(settings, 'warnSavePDFNameConvention') || settings.warnSavePDFNameConvention) 
+
+  uiwait(msgbox2(['In the dialog to follow, you will be asked to choose a file name ' ...
+    'under which to save your exported files.  After entering the name of your choosing ' ...
+    'BCI2000 Offline Analysis will save only your most recent plots ' ... 
+    'according to the following convention: ''<the name you enter> - <Plot Type>.pdf''.'], ...  
+    'Exporting to PDF', 'warnSavePDFNameConvention', 'modal'));
+  reloadSettings(handles);
+
+end
+
+if get(handles.radDomainTime, 'value') == 1
+  domain = 'time';
+else
+  domain = 'freq';
+end
+settings = exportPlotToPDF(settings, figHandles, domain);
+saveSettings(settings, handles);
