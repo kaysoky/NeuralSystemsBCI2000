@@ -47,13 +47,15 @@ else
     errorCode = INVALID_PARAMS;
   else
     % check that dataFile, montageFile acqMode and domain are strings
-    if isempty(params.dataFiles)
-      errorCode = errorCode + NO_DATA_FILE_SPECIFIED;
-    else
-      for idxFile = 1:length(params.dataFiles)
-        if ~isa(params.dataFiles{idxFile}, 'char')
-          errorCode = errorCode + INVALID_DATA_FILE;
-          break;
+    if ~isfield(params, 'signal')
+      if isempty(params.dataFiles)
+        errorCode = errorCode + NO_DATA_FILE_SPECIFIED;
+      else
+        for idxFile = 1:length(params.dataFiles)
+          if ~isa(params.dataFiles{idxFile}, 'char')
+            errorCode = errorCode + INVALID_DATA_FILE;
+            break;
+          end
         end
       end
     end
