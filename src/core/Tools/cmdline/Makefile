@@ -87,6 +87,7 @@ BCIOBJ  = obj\bci_stubs.obj \
           obj\FFTLibWrap.obj \
           obj\MatlabWrapper.obj \
           obj\RandomGenerator.obj \
+          obj\OSError.obj \
           
           
 BCIROOT = ..\..\..

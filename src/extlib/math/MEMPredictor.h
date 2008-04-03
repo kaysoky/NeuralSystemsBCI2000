@@ -37,7 +37,7 @@ MEMPredictor<T>::MEMPredictor()
 }
 
 template<typename T>
-const Ratpoly<MEMPredictor::Complex>&
+const class Ratpoly<typename MEMPredictor<T>::Complex>&
 MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
 {
   typedef double D;
@@ -45,7 +45,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
   static DataVector  coeff, wkm,
                      wk1, wk2;
   int n = inData.size();
-  coeff.resize( mModelOrder + 1 );
+  coeff.resize( LinearPredictor<T>::mModelOrder + 1 );
   wkm.resize( coeff.size() );
   wk1.resize( n );
   wk1 = inData;
@@ -54,7 +54,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
 
   D meanPower = std::inner_product( &wk1[0], &wk1[n], &wk1[0], D( 0.0 ) ) / n;
   coeff[0] = 1.0;
-  for( int k = 1; k <= mModelOrder; ++k )
+  for( int k = 1; k <= LinearPredictor<T>::mModelOrder; ++k )
   {
     D num   = ( n > k ) ?
               2.0 * std::inner_product( &wk1[0], &wk1[n-k], &wk2[0], D( 0.0 ) ) :
@@ -73,7 +73,7 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
     for( int i = 1; i < k; ++i )
       coeff[i] = wkm[i] + coeff[k] * wkm[k-i];
 
-    if( k < mModelOrder )
+    if( k < LinearPredictor<T>::mModelOrder )
     {
       for( int i = 1; i <= k; ++i )
         wkm[i] = coeff[i];

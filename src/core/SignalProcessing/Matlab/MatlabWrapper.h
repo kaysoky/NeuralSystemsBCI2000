@@ -76,9 +76,9 @@ class MatlabEngine
   static Engine*  spEngineRef;
   static int      sNumInstances;
 
+#ifdef _WIN32
   typedef struct { void** mProc; const char* mName; } ProcNameEntry;
   static bool  LoadDLL( const char* name, int numProcs, ProcNameEntry* );
-  static const std::string& OSError( long );
 
   // Matlab Engine DLL imports
   static const char* sLibEngName;
@@ -108,6 +108,7 @@ class MatlabEngine
   static void        ( *mxDestroyArray )( mxArray* );
   static void        ( *mxFree )( void* );
   static ProcNameEntry sMxProcNames[];
+#endif // _WIN32
 };
 
 class MatlabFunction : private MatlabEngine

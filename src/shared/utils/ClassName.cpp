@@ -37,7 +37,7 @@ bci::ClassName( const std::type_info& inTypeid )
 #endif
   const char* p = result;
   while( *p != '\0' )
-    if( ::iswspace( *p++ ) )
+    if( ::isspace( *p++ ) )
       result = p;
   return result;
 }

@@ -87,7 +87,10 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
   }
 
   if( int( Parameter( "VisualizeFFT" ) ) )
-    DetermineSignalProperties( SignalProperties(), ePower );
+  {
+    SignalProperties temp;
+    DetermineSignalProperties( temp, ePower );
+  }
 
   Output = Input;
   DetermineSignalProperties( Output, Parameter( "FFTOutputSignal" ) );

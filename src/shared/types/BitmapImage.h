@@ -21,7 +21,7 @@ class BitmapImage
 {
  public:
   class PixelRef;
-  friend PixelRef;
+  friend class PixelRef;
 
   class PixelRef
   {
@@ -39,7 +39,7 @@ class BitmapImage
       {
         if( *mpData & 0x8000 )
           return RGBColor::NullColor;
-          
+
         int r = *mpData >> 4 & 0xf0,
             g = *mpData      & 0xf0,
             b = *mpData << 4 & 0xf0;
@@ -48,7 +48,7 @@ class BitmapImage
     PixelRef& operator=( const RGBColor& c )
       {
         if( c == RGBColor::NullColor )
-          *mpData = -1;
+          *mpData = uint16( -1 );
         else
         {
           int r = c >> 20 & 0xf,

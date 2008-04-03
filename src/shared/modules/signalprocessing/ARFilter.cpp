@@ -64,7 +64,7 @@ ARFilter::Preflight( const SignalProperties& Input,
 {
   // Parameter consistency checks.
   float windowLength = MeasurementUnits::ReadAsTime( Parameter( "WindowLength" ) );
-  size_t samplesInWindow = windowLength * Parameter( "SampleBlockSize" );
+  int samplesInWindow = windowLength * Parameter( "SampleBlockSize" );
   if( samplesInWindow < Parameter( "ModelOrder" ) )
     bcierr << "WindowLength parameter must be large enough"
            << " for the number of samples to exceed the model order"

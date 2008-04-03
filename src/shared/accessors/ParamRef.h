@@ -84,6 +84,7 @@ class ParamRef
   bool operator>=( const ParamRef& p ) const
     { return double( *this ) >= double( p ); }
 
+  // double
   double operator-( double d ) const
     { return double( *this ) - d; }
   double operator+( double d ) const
@@ -105,6 +106,54 @@ class ParamRef
     { return double( *this ) <= d; }
   bool operator>=( double d ) const
     { return double( *this ) >= d; }
+
+#ifdef __GNUC__
+  // float
+  double operator-( float f ) const
+    { return double( *this ) - f; }
+  double operator+( float f ) const
+    { return double( *this ) + f; }
+  double operator*( float f ) const
+    { return double( *this ) * f; }
+  double operator/( float f ) const
+    { return double( *this ) / f; }
+
+  bool operator==( float f ) const
+    { return double( *this ) == f; }
+  bool operator!=( float f ) const
+    { return double( *this ) != f; }
+  bool operator<( float f ) const
+    { return double( *this ) < f; }
+  bool operator>( float f ) const
+    { return double( *this ) > f; }
+  bool operator<=( float f ) const
+    { return double( *this ) <= f; }
+  bool operator>=( float f ) const
+    { return double( *this ) >= f; }
+
+  // int
+  double operator-( int i ) const
+    { return double( *this ) - i; }
+  double operator+( int i ) const
+    { return double( *this ) + i; }
+  double operator*( int i ) const
+    { return double( *this ) * i; }
+  double operator/( int i ) const
+    { return double( *this ) / i; }
+
+  bool operator==( int i ) const
+    { return double( *this ) == i; }
+  bool operator!=( int i ) const
+    { return double( *this ) != i; }
+  bool operator<( int i ) const
+    { return double( *this ) < i; }
+  bool operator>( int i ) const
+    { return double( *this ) > i; }
+  bool operator<=( int i ) const
+    { return double( *this ) <= i; }
+  bool operator>=( int i ) const
+    { return double( *this ) >= i; }
+#endif // __GNUC__
 
   bool operator==( const std::string& s ) const
     { return (const std::string&)( *this ) == s; }
@@ -134,6 +183,7 @@ class ParamRef
   static std::string sNullString;
 };
 
+// double
 inline double operator-( double d, const ParamRef& p )
   { return d - double( p ); }
 inline double operator+( double d, const ParamRef& p )
@@ -155,6 +205,54 @@ inline bool operator<=( double d, const ParamRef& p )
   { return d <= double( p ); }
 inline bool operator>=( double d, const ParamRef& p )
   { return d >= double( p ); }
+
+#ifdef __GNUC__
+// float
+inline double operator-( float f, const ParamRef& p )
+  { return f - double( p ); }
+inline double operator+( float f, const ParamRef& p )
+  { return f + double( p ); }
+inline double operator*( float f, const ParamRef& p )
+  { return f * double( p ); }
+inline double operator/( float f, const ParamRef& p )
+  { return f / double( p ); }
+
+inline bool operator==( float f, const ParamRef& p )
+  { return f == double( p ); }
+inline bool operator!=( float f, const ParamRef& p )
+  { return f != double( p ); }
+inline bool operator<( float f, const ParamRef& p )
+  { return f < double( p ); }
+inline bool operator>( float f, const ParamRef& p )
+  { return f > double( p ); }
+inline bool operator<=( float f, const ParamRef& p )
+  { return f <= double( p ); }
+inline bool operator>=( float f, const ParamRef& p )
+  { return f >= double( p ); }
+
+// int
+inline double operator-( int i, const ParamRef& p )
+  { return i - double( p ); }
+inline double operator+( int i, const ParamRef& p )
+  { return i + double( p ); }
+inline double operator*( int i, const ParamRef& p )
+  { return i * double( p ); }
+inline double operator/( int i, const ParamRef& p )
+  { return i / double( p ); }
+
+inline bool operator==( int i, const ParamRef& p )
+  { return i == double( p ); }
+inline bool operator!=( int i, const ParamRef& p )
+  { return i != double( p ); }
+inline bool operator<( int i, const ParamRef& p )
+  { return i < double( p ); }
+inline bool operator>( int i, const ParamRef& p )
+  { return i > double( p ); }
+inline bool operator<=( int i, const ParamRef& p )
+  { return i <= double( p ); }
+inline bool operator>=( int i, const ParamRef& p )
+  { return i >= double( p ); }
+#endif // __GNUC__
 
 inline bool operator==( const std::string& s, const ParamRef& p )
   { return p == s; }

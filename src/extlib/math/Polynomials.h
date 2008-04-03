@@ -10,6 +10,12 @@
 #ifndef POLYNOMIALS_H
 #define POLYNOMIALS_H
 
+#ifdef __GNUC__
+# define TYPENAME typename
+#else
+# define TYPENAME
+#endif // __GNUC__
+
 #include <vector>
 #include <valarray>
 #include <algorithm>
@@ -47,7 +53,7 @@ class Polynomial
   T Evaluate( const T&, int derivative = 0 ) const;
 
  private:
-  void FindRoots() const { throw __FUNC__ ": Root finding not implemented."; }
+  void FindRoots() const { throw "Polynomial::FindRoots: Root finding not implemented."; }
 
   mutable bool   mRootsKnown;     //
   mutable T      mConstantFactor; // These may change during a call to Roots().
@@ -142,7 +148,7 @@ Polynomial<T>::Evaluate( const T& z, int d ) const
   if( mRootsKnown && d == 0 )
   {
     result = mConstantFactor;
-    for( Vector::const_iterator i = mRoots.begin(); i != mRoots.end(); ++i )
+    for( typename Vector::const_iterator i = mRoots.begin(); i != mRoots.end(); ++i )
       result *= ( z - *i );
   }
   else
@@ -163,7 +169,7 @@ Polynomial<T>::Order() const
 }
 
 template<class T>
-const Polynomial<T>::Vector&
+const typename Polynomial<T>::Vector&
 Polynomial<T>::Coefficients() const
 { // Compute coefficients by expanding the product of roots.
   if( mRootsKnown && mCoefficients.empty() )
@@ -171,7 +177,7 @@ Polynomial<T>::Coefficients() const
     mCoefficients = Vector( mRoots.size() + 1, 0 );
     mCoefficients[ 0 ] = 1;
     /* one after one, multiply a factor of (z-mRoots[i]) into coeffs */
-    for( Vector::const_iterator i = mRoots.begin(); i != mRoots.end(); ++i )
+    for( typename Vector::const_iterator i = mRoots.begin(); i != mRoots.end(); ++i )
     {
       for( size_t j = mCoefficients.size() - 1; j >= 1; --j )
       {
@@ -191,7 +197,7 @@ bool Polynomial<T>::RootsKnown() const
 }
 
 template<class T>
-const Polynomial<T>::Vector&
+const typename Polynomial<T>::Vector&
 Polynomial<T>::Roots() const
 {
   if( !mRootsKnown )
@@ -254,8 +260,8 @@ Polynomial<T>::operator*( const U& u ) const
 
 template<class T>
 Ratpoly<T>::Ratpoly( const T& z )
-: mNumerator( Polynomial<T>::FromRoots( Polynomial<T>::Vector(), z ) ),
-  mDenominator( Polynomial<T>::FromRoots( Polynomial<T>::Vector(), 1 ) )
+: mNumerator( Polynomial<T>::FromRoots( TYPENAME Polynomial<T>::Vector(), z ) ),
+  mDenominator( Polynomial<T>::FromRoots( TYPENAME Polynomial<T>::Vector(), 1 ) )
 {
 }
 
@@ -346,19 +352,20 @@ Ratpoly<T>::Simplify()
 {
   if( mNumerator.RootsKnown() && mDenominator.RootsKnown() )
   {
-    Polynomial<T>::Vector numerRoots = mNumerator.Roots(),
-                          denomRoots = mDenominator.Roots(),
-                          commonRoots;
-    for( Polynomial<T>::Vector::const_iterator i = numerRoots.begin(); i != numerRoots.end(); ++i )
+    class Polynomial<T>::Vector numerRoots = mNumerator.Roots(),
+                                denomRoots = mDenominator.Roots(),
+                                commonRoots;
+    typename Polynomial<T>::Vector::const_iterator i;
+    for( i = numerRoots.begin(); i != numerRoots.end(); ++i )
     {
-      Polynomial<T>::Vector::iterator j = find( denomRoots.begin(), denomRoots.end(), *i );
+      typename Polynomial<T>::Vector::iterator j = find( denomRoots.begin(), denomRoots.end(), *i );
       if( j != denomRoots.end() )
       {
         commonRoots.push_back( *i );
         denomRoots.erase( j );
       }
     }
-    for( Polynomial<T>::Vector::const_iterator i = commonRoots.begin(); i != commonRoots.end(); ++i )
+    for( i = commonRoots.begin(); i != commonRoots.end(); ++i )
       numerRoots.erase( find( numerRoots.begin(), numerRoots.end(), *i ) );
 
     if( !commonRoots.empty() )

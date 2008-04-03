@@ -26,17 +26,17 @@ template<typename T>
 std::istream&
 ValueList<T>::ReadFromStream( std::istream& is )
 {
-  clear();
-  is >> ws;
+  this->clear();
+  is >> std::ws;
   char closingBracket = '\0';
   if( Brackets::IsOpening( is.peek() ) )
     closingBracket = Brackets::ClosingMatch( is.get() );
   else
     is.setstate( std::ios::failbit );
-  is >> ws;
+  is >> std::ws;
 
   T t;
-  while( is.peek() != closingBracket && is >> t >> ws )
+  while( is.peek() != closingBracket && is >> t >> std::ws )
     push_back( t );
 
   if( is.peek() == closingBracket )
@@ -51,7 +51,8 @@ std::ostream&
 ValueList<T>::WriteToStream( std::ostream& os ) const
 {
   os << Brackets::OpeningDefault;
-  for( const_iterator i = begin(); i != end(); ++i )
+  typename ValueList<T>::const_iterator i;
+  for( i = this->begin(); i != this->end(); ++i )
     os << *i << " ";
   os << Brackets::ClosingDefault;
   return os;

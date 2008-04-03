@@ -12,6 +12,7 @@
 #pragma hdrstop
 
 #include "MatlabWrapper.h"
+#include "OSError.h"
 #include "BCIError.h"
 
 #include <sstream>
@@ -79,6 +80,7 @@ MatlabEngine::StringMatrix::StringMatrix( const Param& p )
 int MatlabEngine::sNumInstances = 0;
 Engine* MatlabEngine::spEngineRef = NULL;
 
+#ifdef _WIN32
 // Matlab Engine DLL imports
 const char* MatlabEngine::sLibEngName = "libeng";
 Engine*  ( *MatlabEngine::engOpen )( const char* ) = NULL;
@@ -135,6 +137,7 @@ MatlabEngine::ProcNameEntry MatlabEngine::sMxProcNames[] =
   PROC( mxDestroyArray )
   PROC( mxFree )
 };
+#endif // _WIN32
 
 MatlabEngine::MatlabEngine()
 {
@@ -154,8 +157,12 @@ MatlabEngine::Open()
   if( !IsOpen() )
   {
     // Load libraries.
-    if( LoadDLL( sLibEngName, sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames )
-        && LoadDLL( sLibMxName, sizeof( sMxProcNames ) / sizeof( *sMxProcNames ), sMxProcNames ) )
+    bool loaded = true;
+#ifdef _WIN32
+    loaded = LoadDLL( sLibEngName, sizeof( sEngProcNames ) / sizeof( *sEngProcNames ), sEngProcNames )
+          && LoadDLL( sLibMxName, sizeof( sMxProcNames ) / sizeof( *sMxProcNames ), sMxProcNames );
+#endif // _WIN32
+    if( loaded )
     { // Open the Matlab engine.
       spEngineRef = engOpen( NULL );
       if( !spEngineRef )
@@ -383,35 +390,7 @@ MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
   return success;
 }
 
-const std::string&
-MatlabEngine::OSError( long inErrorCode )
-{
-  static string message;
-  char* buf = NULL;
-  ::FormatMessage(
-    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-    NULL,
-    inErrorCode,
-    0, // Default language
-    reinterpret_cast<char*>( &buf ),
-    0,
-    NULL
-  );
-  if( buf )
-  {
-    message = buf;
-    ::LocalFree( buf );
-  }
-  else
-  {
-    ostringstream oss;
-    oss << "Unknown error " << inErrorCode;
-    message = oss.str();
-  }
-  message = message.substr( 0, message.find_last_of( "\n" ) - 1 );
-  return message;
-}
-
+#ifdef _WIN32
 bool
 MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
 {
@@ -429,9 +408,8 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
   if( !dllHandle )
   {
     success = false;
-    long err = ::GetLastError();
     bcierr << "Could not load libary " << inName << ":\n"
-           << OSError( err ) << endl;
+           << OSError().Message() << endl;
   }
   else
   {
@@ -441,15 +419,15 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
       if( !address )
       {
         success = false;
-        long err = ::GetLastError();
         bcierr << "Could not get address of " << inProcNames[ i ].mName << ":\n"
-               << OSError( err ) << endl;
+               << OSError().Message() << endl;
       }
       *inProcNames[ i ].mProc = address;
     }
   }
   return success;
 }
+#endif // _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // MatlabFunction definitions                                                 //

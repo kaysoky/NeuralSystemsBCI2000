@@ -17,6 +17,7 @@ OR  = ||
 
 TARGETS = bci_dat2stream \
           bci_prm2stream \
+          bci_decimate \
           bci_stream2prm \
           bci_stream2asc \
           bci_stream2table \
@@ -24,15 +25,15 @@ TARGETS = bci_dat2stream \
           LinearClassifier \
           Normalizer \
           SpatialFilter \
+          ARFilter \
           P3TemporalFilter \
           ConditionalIntegrator \
           ComplexDemodulator \
           StateTransform \
           FFTFilter \
           TransmissionFilter \
-#          StatFilter \
-#          ARFilter \
-#          FIRFilter \
+#          MatlabFilter \
+
 
 BCIOBJ  = bci_stubs.o \
           Param.o \
@@ -41,6 +42,9 @@ BCIOBJ  = bci_stubs.o \
           StateList.o \
           StateVector.o \
           EncodedString.o \
+          LabelIndex.o \
+          HierarchicalLabel.o \
+          Brackets.o \
           ParamRef.o \
           GenericSignal.o \
           SignalProperties.o \
@@ -48,24 +52,30 @@ BCIOBJ  = bci_stubs.o \
           Environment.o \
           GenericFilter.o \
           GenericVisualization.o \
+          BitmapImage.o \
           BCIError.o \
           BCIError_tool.o \
           Status.o \
           SysCommand.o \
           MessageHandler.o \
           MeasurementUnits.o \
+          PhysicalUnit.o \
           Expression.o \
           ExpressionParser.o \
           ClassName.o \
+          FFTLibWrap.o \
+#          MatlabWrapper.o \
 
 BCIROOT = ../../..
 SRCROOT = ${BCIROOT}/shared/modules/signalsource
 SIGROOT = ${BCIROOT}/shared/modules/signalprocessing
+SIGPROC = ${BCIROOT}/core/SignalProcessing
+EXTLIB =  ${BCIROOT}/extlib
 
 INCLUDEPATH = -I${SRCROOT} -I${BCIROOT}/shared -I${BCIROOT}/shared/config -I${BCIROOT}/shared/accessors\
  -I${BCIROOT}/shared/bcistream -I${BCIROOT}/shared/fileio -I${BCIROOT}/shared/types\
  -I${BCIROOT}/shared/modules -I${BCIROOT}/shared/utils -I${BCIROOT}/shared/utils/Expression\
- -I${EXTLIB}/matlab 
+ -I${EXTLIB}/matlab -I${EXTLIB}/fftlib -I${EXTLIB}/math
 
 PATHCPP = ${BCIROOT}:${BCIROOT}/shared:${BCIROOT}/shared/config:\
 ${BCIROOT}/shared/accessors:${BCIROOT}/shared/bcistream:\
@@ -73,7 +83,7 @@ ${BCIROOT}/shared/fileio:${BCIROOT}/shared/types:\
 ${BCIROOT}/shared/modules:${BCIROOT}/shared/utils:\
 ${BCIROOT}/shared/utils/Expression:${SIGROOT}:\
 ${SIGROOT}/AR:${SIGROOT}/P3:${EXTLIB}/fftlib:\
-${SIGROOT}/Matlab:${SIGROOT}/filters:${BCIROOT}/SignalSource:${BCIROOT}/extlib
+${SIGROOT}/Matlab:${SIGROOT}/filters:${SRCROOT}:${SIGPROC}/Matlab
 
 LDLIBS = -lfftw3
 
