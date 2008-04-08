@@ -1471,5 +1471,7 @@ if get(handles.radDomainTime, 'value') == 1
 else
   domain = 'freq';
 end
-settings = exportPlotToPDF(settings, figHandles, domain);
+settings = exportPlotsToPDF(settings, figHandles, domain);
 saveSettings(settings, handles);
+
+
