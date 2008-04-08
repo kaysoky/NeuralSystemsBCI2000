@@ -155,7 +155,9 @@ CellsToValues( const mxArray* inCells, Param& ioParam )
   const int* dim = mxGetDimensions( inCells );
   int numRows = dim[ 0 ],
       numCols = dim[ 1 ];
-  if( numRows * numCols > 1 )
+  if( ( ioParam.Type().find( "list" ) != string::npos ) && ( numCols == 1 ) )
+    ioParam.SetNumValues( numRows );
+  else if( numRows * numCols > 1 )
     ioParam.SetDimensions( dim[ 0 ], dim[ 1 ] );
   for( int row = 0; row < dim[ 0 ]; ++row )
     for( int col = 0; col < dim[ 1 ]; ++col )
