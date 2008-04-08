@@ -22,6 +22,8 @@ TARGETS = { ...
 BCIROOT = '../../../../';
 BCIFRM = [ BCIROOT 'src/shared/' ];
 CMDLINE = [ BCIROOT 'src/core/Tools/cmdline/' ];
+BCIDATA = [ BCIROOT 'data/samplefiles/' ];
+TESTFILE = 'eeg1_1';
                     
 MEXSRC = { ...
     [ CMDLINE 'bci_stubs.cpp' ], ...
@@ -103,6 +105,40 @@ switch( target )
     for( i = 1:length( TARGETS ) )
      buildmex( options{:}, TARGETS{i} );
     end
+    buildmex test;
+    
+  case 'test'
+    fprintf( 1, [ 'Testing mex files ... ' ] );
+    success = true;
+    try
+      [ signal, states, parameters ] = load_bcidat( [ BCIDATA TESTFILE '.dat' ] );
+      ref = load( [ TESTFILE '.mat' ] );
+      if( signal ~= ref.signal )
+        error( 'Testing load_bcidat: Signal data mismatch' );
+      end
+      if( ~equal_structs( states, ref.states ) )
+        error( 'Testing load_bcidat: State vector data mismatch' );
+      end
+      if( ~equal_structs( parameters, ref.parameters ) )
+        error( 'Testing load_bcidat: Parameter mismatch' );
+      end
+      if( ~equal_structs( parameters, convert_bciprm( convert_bciprm( parameters ) ) ) )
+        error( 'Testing convert_bciprm: Mismatch when converting forth and back' );
+      end
+      spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15] );
+      if( spectrum_ ~= ref.spectrum_ )
+        warning( 'Testing mem: Computed spectrum mismatch' );
+      end
+      clear signal states parameters spectrum ref;
+    catch
+      success = false;
+    end
+    if( success )
+      fprintf( 1, 'OK.\n' );
+    else
+      err = lasterror;
+      fprintf( 1, '%s.\n', err.message );
+    end
     
   otherwise
     fprintf( 1, [ 'Building ' target ' ...\n' ] );
@@ -116,3 +152,28 @@ switch( target )
     end
     
 end
+
+% A helper function to test structs for equality.
+function result = equal_structs( inStruct1, inStruct2 )
+
+  result = true;
+  fnames = fieldnames( inStruct1 );
+  if( ~strcmp( fnames, fieldnames( inStruct2 ) ) )
+    result = false;
+  else
+    for( i = 1:length( fnames ) )
+      if( isstruct( inStruct1.(fnames{i}) ) )
+        if( ~equal_structs( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
+          result = false;
+        end
+      elseif( ischar( inStruct1.(fnames{i}) ) || iscell( inStruct1.(fnames{i}) ) )
+        if( ~strcmp( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
+          result = false;
+        end
+      else
+        if( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) )
+          result = false;
+        end
+      end
+    end
+  end
