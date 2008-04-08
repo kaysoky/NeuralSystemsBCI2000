@@ -29,7 +29,7 @@
 #ifndef TMSiADCH
 #define TMSiADCH
 
-#define DEBUG
+// #define DEBUG
 
 #include "GenericADC.h"
 #include <windows.h>
@@ -75,10 +75,12 @@ class TMSiADC : public GenericADC
 
   unsigned int mBufferMulti;
 
-  unsigned int mSourceCh,
-               mHardwareCh,
+  double       Gain[75];
+  double       Offset[75];
+
+  unsigned int mHardwareCh,
                mSampleBlockSize,
-               mSamplingRate;
+               mSampleRate;
 };
 
 #endif // TMSiADCH

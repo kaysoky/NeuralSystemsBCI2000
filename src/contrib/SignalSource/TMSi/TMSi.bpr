@@ -36,7 +36,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=1;_DEBUG"/>
+    <USERDEFINES value="MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="TMSi.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalSource;..\..\..\SignalSource\filters;TMSiSDK;..;..\TMSi;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -46,15 +46,21 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-I..\. -I.. -I..\..\shared\Expression -I..\TMSi -I..\..\Modules 
-      -I..\..\shared -I$(BCB)\include -I$(BCB)\include\vcl -I.\TMSi_sdk 
-      -src_suffix cpp -DMODTYPE=1 -incl_files_code -obj_wrapper -boa"/>
-    <CFLAG1 value="-Od -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -r- -a8 -5 -b- -k 
-      -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
+    <IDLCFLAGS value="-I..\..\..\shared\modules\signalsource -I..\..\..\shared\config 
+      -I..\..\..\shared\utils\Expression -I..\..\..\shared\utils 
+      -I..\..\..\shared\types -I..\..\..\shared\modules 
+      -I..\..\..\shared\fileio\edf_gdf -I..\..\..\shared\fileio\dat 
+      -I..\..\..\shared\fileio -I..\..\..\shared\bcistream 
+      -I..\..\..\shared\accessors -I..\..\..\shared -I..\..\..\SignalSource 
+      -I..\..\..\SignalSource\filters -ITMSiSDK -I.. -I..\TMSi -I$(BCB)\include 
+      -I$(BCB)\include\vcl -src_suffix cpp -DMODTYPE=1 -incl_files_code 
+      -obj_wrapper -boa"/>
+    <CFLAG1 value="-O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -144,9 +150,6 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
@@ -166,5 +169,15 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
