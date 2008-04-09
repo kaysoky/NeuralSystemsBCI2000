@@ -25,7 +25,7 @@
       obj\BCIError_module.obj obj\BCIError.obj obj\BCIDirectory.obj 
       obj\ClassName.obj obj\LogFile.obj obj\MeasurementUnits.obj 
       obj\PrecisionTime.obj obj\SockStream.obj obj\VersionInfo.obj 
-      obj\ExpressionParser.obj obj\Expression.obj"/>
+      obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj"/>
     <RESFILES value="SWApp.res Presentation\Views\Win32\Views.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -34,7 +34,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression"/>
+    <PATHCPP value=".;Presentation;Presentation;Presentation;Presentation;Presentation;Presentation\Models;Presentation\Models;Presentation\Utils;Presentation\Utils\BCI2000;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;Presentation\Views\Win32;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\audio;..\..\..\shared\modules\application\audio;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -139,6 +139,7 @@
       <FILE FILENAME="..\..\..\shared\utils\VersionInfo.cpp" FORMNAME="" UNITNAME="VersionInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

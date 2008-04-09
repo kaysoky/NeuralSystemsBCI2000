@@ -81,6 +81,7 @@ BCIOBJ  = obj\bci_stubs.obj \
           obj\SysCommand.obj \
           obj\MessageHandler.obj \
           obj\MeasurementUnits.obj \
+          obj\ArithmeticExpression.obj \
           obj\Expression.obj \
           obj\ExpressionParser.obj \
           obj\ClassName.obj \

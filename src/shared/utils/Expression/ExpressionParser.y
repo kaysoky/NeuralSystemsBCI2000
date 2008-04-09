@@ -12,15 +12,18 @@
 #include <sstream>
 #include <string>
 #include <cmath>
-#include "Expression.h"
+#include "ArithmeticExpression.h"
+#include "BCIError.h"
+
+#pragma warn -8004
 
 using namespace std;
 
 %}
 
 %pure-parser
-%parse-param { ::Expression* pInstance }
-%lex-param   { ::Expression* pInstance }
+%parse-param { ::ArithmeticExpression* pInstance }
+%lex-param   { ::ArithmeticExpression* pInstance }
 %union
 {
   double      value;
@@ -76,7 +79,7 @@ exp:     NAME                       { $$ = pInstance->State( $1 ); }
 %%
 
   int
-  yylex( YYSTYPE* pLval, Expression* pInstance )
+  yylex( YYSTYPE* pLval, ArithmeticExpression* pInstance )
   {
     int token = -1;
 
@@ -114,7 +117,7 @@ exp:     NAME                       { $$ = pInstance->State( $1 ); }
   }
 
   void
-  yyerror( Expression* pInstance, const char* pError )
+  yyerror( ArithmeticExpression* pInstance, const char* pError )
   {
     bcierr__ << "Expression '" << pInstance->mExpression << "': "
              << pError << endl;

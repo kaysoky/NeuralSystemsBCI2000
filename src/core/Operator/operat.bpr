@@ -16,9 +16,9 @@
       obj\SysCommand.obj obj\Brackets.obj obj\Color.obj obj\EncodedString.obj 
       obj\FilterDesign.obj obj\SignalDisplay.obj obj\BCIError.obj 
       obj\BCIError_module.obj obj\BCI2000FileReader.obj obj\ParamRef.obj 
-      obj\Expression.obj obj\ExpressionParser.obj obj\GenericVisualization.obj 
-      obj\AboutBox.obj obj\Environment.obj obj\VisDisplay.obj 
-      obj\DisplayFilter.obj obj\BitmapImage.obj obj\ExecutableHelp.obj"/>
+      obj\ExpressionParser.obj obj\GenericVisualization.obj obj\AboutBox.obj 
+      obj\Environment.obj obj\VisDisplay.obj obj\DisplayFilter.obj 
+      obj\BitmapImage.obj obj\ExecutableHelp.obj obj\ArithmeticExpression.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,7 +28,7 @@
     <LIBRARIES value="bcbsmp.lib vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib bcbsmp.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui"/>
+    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui;..\..\shared\utils\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -100,7 +100,6 @@
       <FILE FILENAME="..\..\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\fileio\dat\BCI2000FileReader.cpp" FORMNAME="" UNITNAME="BCI2000FileReader" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\types\GenericVisualization.cpp" FORMNAME="" UNITNAME="GenericVisualization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\gui\AboutBox.cpp" FORMNAME="" UNITNAME="AboutBox" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -109,6 +108,7 @@
       <FILE FILENAME="DisplayFilter.cpp" FORMNAME="" UNITNAME="DisplayFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\gui\ExecutableHelp.cpp" FORMNAME="" UNITNAME="ExecutableHelp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

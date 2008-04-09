@@ -10,10 +10,6 @@
 #pragma hdrstop
 
 #include "MeasurementUnits.h"
-#include "Expression.h"
-
-#include "BCIError.h"
-#include <cmath>
 
 using namespace std;
 

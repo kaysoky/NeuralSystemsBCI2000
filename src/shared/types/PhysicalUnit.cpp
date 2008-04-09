@@ -18,7 +18,7 @@
 #pragma hdrstop
 
 #include "PhysicalUnit.h"
-#include "Expression.h"
+#include "ArithmeticExpression.h"
 #include "BCIError.h"
 #include <limits>
 #include <cmath>
@@ -92,7 +92,7 @@ PhysicalUnit::PhysicalToRaw( const string& inPhysicalValue ) const
             
   if( ::fabs( unit ) > numeric_limits<ValueType>::epsilon() )
   {
-    result = Expression( physValue ).Evaluate() / unit + mOffset;
+    result = ArithmeticExpression( physValue ).Evaluate() / unit + mOffset;
   }
   else
   {

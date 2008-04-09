@@ -28,37 +28,23 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
-#include <sstream>
-#include <string>
+#include "ArithmeticExpression.h"
 #include "Environment.h"
 #include "GenericSignal.h"
 
 #include "ExpressionParser.hpp"
 
-class Expression;
-
-namespace ExpressionParser
+class Expression : public ArithmeticExpression, private Environment
 {
-  int  yyparse( Expression* );
-  int  yylex( YYSTYPE*, Expression* );
-  void yyerror( Expression*, const char* );
-}
-
-class Expression : private EnvironmentBase
-{
-  friend int  ExpressionParser::yyparse( Expression* );
-  friend int  ExpressionParser::yylex( YYSTYPE*, Expression* );
-  friend void ExpressionParser::yyerror( Expression*, const char* );
-
  public:
   Expression()
-    : mValue( 0 ), mpSignal( NULL )
+    : mpSignal( NULL )
     {}
   Expression( const std::string& s )
-    : mExpression( s ), mValue( 0 ), mpSignal( NULL )
+    : ArithmeticExpression( s ), mpSignal( NULL )
     {}
   Expression( const Expression& e )
-    : mExpression( e.mExpression ), mValue( 0 ), mpSignal( NULL )
+    : ArithmeticExpression( e ), mpSignal( NULL )
     {}
   ~Expression()
     {}
@@ -67,13 +53,11 @@ class Expression : private EnvironmentBase
   double Evaluate( const GenericSignal* = NULL );
 
  private:
-  double Signal( double, double ) const;
-  void ReportError( const char* ) const;
+  virtual double State( const char* ) const;
+  virtual double Signal( double, double ) const;
 
-  std::string            mExpression;
   const GenericSignal*   mpSignal;
-  std::istringstream     mInput;
-  double                 mValue;
 };
 
 #endif // EXPRESSION_H
+

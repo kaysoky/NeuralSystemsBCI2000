@@ -10,57 +10,33 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#if( defined( _BORLANDC_ ) && !defined( BCI_TOOL ) )
-# define VCL_EXCEPTIONS 1
-#endif
-
-#ifdef VCL_EXCEPTIONS
-# include <vcl.h>
-#endif
 #include <cmath>
 #include <string>
 #include <stdexcept>
 #include "Expression.h"
-#include "ClassName.h"
 
 using namespace std;
+
 
 const Expression&
 Expression::operator=( const Expression& e )
 {
-  mExpression = e.mExpression;
+  *this = e;
   mpSignal = NULL;
-  mInput.str( "" );
-  mInput.clear();
-  mValue = 0;
   return *this;
 }
-
 
 double
 Expression::Evaluate( const GenericSignal* signal )
 {
-  mInput.clear();
-  mInput.str( mExpression );
   mpSignal = signal;
-  try
-  {
-    if( ExpressionParser::yyparse( this ) != 0 )
-      mValue = 0;
-  }
-  catch( const exception& e )
-  {
-    ReportError( e.what() );
-    mValue = 0;
-  }
-#ifdef VCL_EXCEPTIONS
-  catch( const class EMathError& e )
-  {
-    ReportError( e.Message.c_str() );
-    mValue = 0;
-  }
-#endif
-  return mValue;
+  return Evaluate();
+}
+
+double
+Expression::State( const char* inName ) const
+{
+  return Environment::State( inName );
 }
 
 double
@@ -84,32 +60,4 @@ Expression::Signal( double inChannel, double inElement ) const
   return ( *mpSignal )( inChannel, inElement );
 }
 
-void
-Expression::ReportError( const char* inMessage ) const
-{
-  bcierr__ << "Expression::Evaluate: When evaluating \"" << mExpression << "\": "
-           << inMessage << endl;
-}
 
-#ifdef VCL_EXCEPTIONS
-// _matherr() error handling interface.
-static void
-ThrowMathError( const char* functionName )
-{
-  throw runtime_error( string( "Error in function " ) + functionName + "()" );
-}
-
-int
-_matherr( struct _exception* e )
-{
-  ThrowMathError( e->name );
-  return true;
-}
-
-int
-_matherrl( struct _exceptionl* e )
-{
-  ThrowMathError( e->name );
-  return true;
-}
-#endif // BCI_TOOL
