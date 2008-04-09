@@ -57,12 +57,11 @@ guidata(hObject, handles);
 % uiwait(handles.figTop);
 
 try
-  settings = load('settings.mat');
+  settings = loadSettings();
 catch
   error('Some of the files necessary are missing or have been corrupted.  Please reinstall.');
   return;
 end
-settings = settings.settings;
 set(handles.figTop, 'userdata', settings);
 axes(handles.axHead)
 elocVis(settings);
@@ -199,7 +198,7 @@ if length(strVal) > 0
   end
 end
 
-if isfield(settings, 'dataFileDir')
+if isfield(settings, 'montageFileDir') && ~isempty(settings.montageFileDir)
   [fn path] = uigetfile('*.*', 'Choose a montage file', ...
     settings.montageFileDir);
 else
@@ -350,7 +349,7 @@ end
 
 %data is good, figure out where we're saving it
 
-if isfield(settings, 'dataFileDir')
+if isfield(settings, 'montageFileDir') && ~isempty(settings.montageFileDir)
   [fn path] = uiputfile('*.*', 'Export as...', ...
     settings.montageFileDir);
 else
@@ -1073,7 +1072,7 @@ function figTop_CloseRequestFcn(hObject, eventdata, handles)
 
 % Hint: delete(hObject) closes the figure
 settings = get(handles.figTop, 'userdata');
-save 'settings.mat' settings;
+storeSettings(settings);
 
 delete(hObject);
 
