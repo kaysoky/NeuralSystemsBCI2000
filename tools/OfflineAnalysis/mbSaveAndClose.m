@@ -13,10 +13,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function mbSaveAndClose(fig)
 %save settings
-settings = load('settings.mat');
-settings = settings.settings;
+settings = loadSettings();
 globalParams = get(fig, 'userdata');
 settings = setfield(settings, globalParams.paramName, get(globalParams.check, 'value')== 0); 
-save settings.mat settings;
+storeSettings(settings);
 delete(fig);
 
