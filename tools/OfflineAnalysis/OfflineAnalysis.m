@@ -235,7 +235,7 @@ guidata(hObject, handles);
 
 % UIWAIT makes OfflineAnalysis wait for user response (see UIRESUME)
 % uiwait(handles.figTop);
-reloadSettings(handles);
+settings = reloadSettings(handles);
 
 
 bgColor = [.925 .914 .847];
@@ -815,7 +815,7 @@ if ~isnumeric(fn)
                 'To indicate that there is a discrepancy, this file, and any others without channel ' ...
                 'name data that may be added later, will be marked with an asterix.'], ...
                 'Channel Names', 'warnEmpty1020CnFollowing', 'modal'));
-              reloadSettings(handles);
+              settings = reloadSettings(handles);
             end
 
             curFiles{end+1} = ['*' fn{idxFile}];
@@ -832,7 +832,7 @@ if ~isnumeric(fn)
                 'discrepancy, any file, including files that may be added later, ' ...
                 'will be marked with an asterix.'], ...
                 'Channel Names', 'warnEmpty1020CnPreceeding', 'modal'));
-              reloadSettings(handles);
+              settings = reloadSettings(handles);
             end
 
             %mark all other files with an astrix
@@ -850,7 +850,7 @@ if ~isnumeric(fn)
                   'BCI2000 Offline Analysis will use these names, in place of a montage file, to ' ...
                   'generate topographies. To override, simply specify a montage file and ' ...
                   'proceed as usual.'], 'Channel Names', 'warnUsingChannelNames', 'modal'));
-                reloadSettings(handles);
+                settings = reloadSettings(handles);
               end
             end
 
@@ -880,7 +880,7 @@ if ~isnumeric(fn)
                 'To indicate that there is a discrepancy, this file, and any others without channel ' ...
                 'name data that may be added later, will be marked with an asterix.'], ...
                 'Channel Names', 'warnEmptyCnFollowing', 'modal'));
-              reloadSettings(handles);
+              settings = reloadSettings(handles);
             end
 
             curFiles{end+1} = ['*' fn{idxFile}];
@@ -896,7 +896,7 @@ if ~isnumeric(fn)
                 'To indicate that there is a discrepancy, files without channel name data, including ' ...
                 'those that may be added later, will be marked with an asterix.'], ...
                 'Channel Names', 'warnEmptyCnPreceeding', 'modal'));
-              reloadSettings(handles);
+              settings = reloadSettings(handles);
             end
 
             %mark all other files with an astrix
@@ -1424,21 +1424,18 @@ function txtMontageFile_ButtonDownFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-function reloadSettings(handles)
+function settings = reloadSettings(handles)
 try
-  settings = load('settings.mat');
+  settings = loadSettings();
 catch
   error('Some of the files necessary are missing or have been corrupted.  Please reinstall.');
   return;
 end
-settings = settings.settings;
 set(handles.figTop, 'userdata', settings);
-
 
 function saveSettings(settings, handles)
 set(handles.figTop, 'userdata', settings);
-save 'settings.mat' settings;
-
+storeSettings(settings);
 
 % --------------------------------------------------------------------
 function mnuExportToPDF_Callback(hObject, eventdata, handles)
@@ -1462,7 +1459,7 @@ if (~isfield(settings, 'warnSavePDFNameConvention') || settings.warnSavePDFNameC
     'BCI2000 Offline Analysis will save only your most recent plots ' ... 
     'according to the following convention: ''<the name you enter> - <Plot Type>.pdf''.'], ...  
     'Exporting to PDF', 'warnSavePDFNameConvention', 'modal'));
-  reloadSettings(handles);
+  settings = reloadSettings(handles);
 
 end
 
