@@ -30,7 +30,7 @@ double
 Expression::Evaluate( const GenericSignal* signal )
 {
   mpSignal = signal;
-  return Evaluate();
+  return ArithmeticExpression::Evaluate();
 }
 
 double
