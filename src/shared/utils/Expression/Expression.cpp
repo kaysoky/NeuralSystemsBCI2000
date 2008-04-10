@@ -21,7 +21,7 @@ using namespace std;
 const Expression&
 Expression::operator=( const Expression& e )
 {
-  *this = e;
+  this->ArithmeticExpression::operator=( e );
   mpSignal = NULL;
   return *this;
 }
