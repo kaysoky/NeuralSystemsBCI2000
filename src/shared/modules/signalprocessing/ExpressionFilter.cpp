@@ -44,9 +44,10 @@ ExpressionFilter::Preflight( const SignalProperties& Input,
       Expression( Parameter( "Expressions" )( row, col ) ).Evaluate( &preflightInput );
 
   // Request output signal properties:
-  if( numRows == 0 || numCols == 0 )
-    Output = Input;
-  Output = SignalProperties( numRows, numCols );
+  Output = Input;
+  if( numRows != 0 && numCols != 0 )
+    Output.SetChannels( numRows )
+          .SetElements( numCols );
 }
 
 
