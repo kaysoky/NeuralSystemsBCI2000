@@ -16,11 +16,13 @@
 #include "ARFilter.h"
 #include "LinearClassifier.h"
 #include "LPFilter.h"
+#include "ExpressionFilter.h"
 #include "Normalizer.h"
 
 Filter( SpatialFilter, 2.B );
 Filter( ARFilter, 2.C );
 Filter( LinearClassifier, 2.D );
 Filter( LPFilter, 2.D1 );
+Filter( ExpressionFilter, 2.D2 );
 Filter( Normalizer, 2.E );
 
