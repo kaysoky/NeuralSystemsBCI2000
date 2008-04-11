@@ -54,9 +54,9 @@ class Expression : public ArithmeticExpression, private Environment
 
  private:
   virtual double State( const char* ) const;
-  virtual double Signal( double, double ) const;
+  virtual double Signal( const std::string&, const std::string& ) const;
 
-  const GenericSignal*   mpSignal;
+  const GenericSignal* mpSignal;
 };
 
 #endif // EXPRESSION_H

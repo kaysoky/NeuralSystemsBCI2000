@@ -26,8 +26,9 @@ using namespace std;
 %lex-param   { ::ArithmeticExpression* pInstance }
 %union
 {
-  double      value;
-  const char* name;
+  double       value;
+  const char*  name;
+  std::string* str;
 }
 
 %{
@@ -36,8 +37,8 @@ namespace ExpressionParser
 %}
 
 /* Bison declarations.  */
-%token <value>  NUMBER
-%token <name>   NAME SIGNAL
+%token <value>   NUMBER
+%token <name>    NAME SIGNAL
 %left '?' ':'
 %left '&' '|'
 %left '=' '~' '!' '>' '<'
@@ -47,35 +48,43 @@ namespace ExpressionParser
 %right '^'    /* exponentiation */
 
 %type <value> exp input
+%type <str>   addr
 
 %% /* The grammar follows.  */
 input: /* empty */                  { pInstance->mValue = 0; }
-       | exp                        { pInstance->mValue = $1; }
+     | exp                          { pInstance->mValue = $1; }
 ;
 
-exp:     NAME                       { $$ = pInstance->State( $1 ); }
-       | NUMBER                     { $$ = $1;       }
-       | exp '+' exp                { $$ = $1 + $3;  }
-       | exp '-' exp                { $$ = $1 - $3;  }
-       | exp '*' exp                { $$ = $1 * $3;  }
-       | exp '/' exp                { $$ = $1 / $3;  }
-       | '-' exp  %prec NEG         { $$ = -$2;      }
-       | exp '^' exp                { $$ = ::pow( $1, $3 ); }
-       | exp '&' '&' exp            { $$ = $1 && $4; }
-       | exp '|' '|' exp            { $$ = $1 || $4; }
-       | exp '=' '=' exp            { $$ = $1 == $4; }
-       | exp '!' '=' exp            { $$ = $1 != $4; }
-       | exp '~' '=' exp            { $$ = $1 != $4; }
-       | exp '>' exp                { $$ = $1 > $3;  }
-       | exp '<' exp                { $$ = $1 < $3;  }
-       | exp '>' '=' exp            { $$ = $1 >= $4; }
-       | exp '<' '=' exp            { $$ = $1 <= $4; }
-       | '~' exp %prec NEG          { $$ = !$2;      }
-       | '!' exp %prec NEG          { $$ = !$2;      }
-       | '(' exp ')'                { $$ = $2;       }
-       | exp '?' exp ':' exp        { $$ = $1 ? $3 : $5 }
-       | SIGNAL '(' exp ',' exp ')' { $$ = pInstance->Signal( $3, $5 ); }
+exp:   NAME                         { $$ = pInstance->State( $1 ); }
+     | NUMBER                       { $$ = $1;       }
+     | exp '+' exp                  { $$ = $1 + $3;  }
+     | exp '-' exp                  { $$ = $1 - $3;  }
+     | exp '*' exp                  { $$ = $1 * $3;  }
+     | exp '/' exp                  { $$ = $1 / $3;  }
+     | '-' exp %prec NEG            { $$ = -$2;      }
+     | exp '^' exp                  { $$ = ::pow( $1, $3 ); }
+     | exp '&' '&' exp              { $$ = $1 && $4; }
+     | exp '|' '|' exp              { $$ = $1 || $4; }
+     | exp '=' '=' exp              { $$ = $1 == $4; }
+     | exp '!' '=' exp              { $$ = $1 != $4; }
+     | exp '~' '=' exp              { $$ = $1 != $4; }
+     | exp '>' exp                  { $$ = $1 > $3;  }
+     | exp '<' exp                  { $$ = $1 < $3;  }
+     | exp '>' '=' exp              { $$ = $1 >= $4; }
+     | exp '<' '=' exp              { $$ = $1 <= $4; }
+     | '~' exp %prec NEG            { $$ = !$2;      }
+     | '!' exp %prec NEG            { $$ = !$2;      }
+     | '(' exp ')'                  { $$ = $2;       }
+     | exp '?' exp ':' exp          { $$ = $1 ? $3 : $5 }
+     | SIGNAL '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); delete $3; delete $5; }
 ;
+
+addr:  exp                          { ostringstream oss; oss << $1; $$ = new string( oss.str() ); }
+     | exp NAME                     { ostringstream oss; oss << $1 << $2; $$ = new string( oss.str() ); }
+     | '"' NAME '"'                 { $$ = new string( $2 ); }
+     | '\'' NAME '\''               { $$ = new string( $2 ); }
+;
+
 %%
 
   int

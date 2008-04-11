@@ -71,7 +71,7 @@ ArithmeticExpression::State( const char* ) const
 }
 
 double
-ArithmeticExpression::Signal( double, double ) const
+ArithmeticExpression::Signal( const string&, const string& ) const
 {
   ReportError( "Use an Expression rather than an ArithmeticExpression to access a signal" );
   return 0;

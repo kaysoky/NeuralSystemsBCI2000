@@ -14,13 +14,11 @@
 
 using namespace std;
 
-RegisterFilter( ExpressionFilter, 2.D1 );
+RegisterFilter( ExpressionFilter, 2.D2 );
 
 ExpressionFilter::ExpressionFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Filtering string WarningExpression= % "
-      " % % % // expression that results in a warning when it evaluates to true",
     "Filtering matrix Expressions= 0 1 "
       " % % % // expressions used to compute the output of the ExpressionFilter (empty matrix for none)",
   END_PARAMETER_DEFINITIONS
@@ -38,8 +36,6 @@ ExpressionFilter::Preflight( const SignalProperties& Input,
 {
   // Evaluate all expressions to check for errors.
   GenericSignal preflightInput( Input );
-  // Is the WarningExpression parameter ok?
-  Expression( Parameter( "WarningExpression" ) ).Evaluate( &preflightInput );
   // Are the entries of the Expressions parameter ok?
   int numRows = Parameter( "Expressions" )->NumRows(),
       numCols = Parameter( "Expressions" )->NumColumns();
@@ -58,8 +54,6 @@ void
 ExpressionFilter::Initialize( const SignalProperties& Input,
                               const SignalProperties& Output )
 {
-  // Initialize the warning expression.
-  mWarningExpression = Expression( Parameter( "WarningExpression" ) );
   // Read the expression matrix parameter into the mExpressions array.
   mExpressions.clear();
   int numRows = Parameter( "Expressions" )->NumRows(),
@@ -77,12 +71,6 @@ ExpressionFilter::Initialize( const SignalProperties& Input,
 void
 ExpressionFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  // Check whether to issue the warning.
-  if( mWarningExpression.Evaluate( &Input ) )
-    bciout << Parameter( "WarningExpression" )
-           << " evaluated to true"
-           << endl;
-
   if( !mExpressions.empty() )
   { // Use expressions to compute the output signal.
     for( size_t channel = 0; channel < mExpressions.size(); ++channel )

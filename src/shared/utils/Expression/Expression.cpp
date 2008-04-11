@@ -10,10 +10,8 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-#include <cmath>
-#include <string>
-#include <stdexcept>
 #include "Expression.h"
+#include <sstream>
 
 using namespace std;
 
@@ -40,24 +38,34 @@ Expression::State( const char* inName ) const
 }
 
 double
-Expression::Signal( double inChannel, double inElement ) const
+Expression::Signal( const string& inChannelAddress, const string& inElementAddress ) const
 {
   if( mpSignal == NULL )
   {
     ReportError( "Trying to access NULL signal" );
     return 0;
   }
-  if( inChannel < 0 || inChannel >= mpSignal->Channels() )
+  int channel = mpSignal->Properties().ChannelIndex( inChannelAddress );
+  if( channel < 0 || channel >= mpSignal->Channels() )
   {
-    ReportError( "Channel index out of range" );
+    ostringstream oss;
+    oss << "Channel index or address ("
+        << inChannelAddress
+        << ") out of range";
+    ReportError( oss.str().c_str() );
     return 0;
   }
-  if( inElement < 0 || inElement >= mpSignal->Elements() )
+  int element = mpSignal->Properties().ElementIndex( inElementAddress );
+  if( element < 0 || element >= mpSignal->Elements() )
   {
-    ReportError( "Element index out of range" );
+    ostringstream oss;
+    oss << "Element index or address ("
+        << inElementAddress
+        << ") out of range";
+    ReportError( oss.str().c_str() );
     return 0;
   }
-  return ( *mpSignal )( inChannel, inElement );
+  return ( *mpSignal )( channel, element );
 }
 
 

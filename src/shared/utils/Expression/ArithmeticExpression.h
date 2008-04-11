@@ -50,13 +50,13 @@ class ArithmeticExpression
 
  protected:
   virtual double State( const char* ) const;
-  virtual double Signal( double, double ) const;
+  virtual double Signal( const std::string&, const std::string& ) const;
   void ReportError( const char* ) const;
 
  private:
-  std::string            mExpression;
-  std::istringstream     mInput;
-  double                 mValue;
+  std::string        mExpression;
+  std::istringstream mInput;
+  double             mValue;
 };
 
 #endif // ARITHMETIC_EXPRESSION_H
