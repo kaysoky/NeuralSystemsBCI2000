@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = operat.exe SignalGenerator.exe gUSBampSource.exe USBampgetinfo.exe \
-  gMOBIlab.exe ARSignalProcessing.exe FFTSignalProcessing.exe \
+  gMOBIlab.exe gMOBIlabPlus.exe ARSignalProcessing.exe FFTSignalProcessing.exe \
   P3SignalProcessing.exe MatlabSignalProcessing.exe DummySignalProcessing.exe \
   CursorTask.exe FeedbackDemo.exe StimulusPresentation.exe P3Speller.exe \
   BCI2000Export.exe BCI2000FileInfo.exe BCI2000Viewer.exe BCI2000launcher.exe
@@ -88,6 +88,10 @@ BCI2000Viewer.exe: core\Tools\BCI2000Viewer\BCI2000Viewer.bpr
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 BCI2000launcher.exe: core\Tools\BCI2000Launcher\BCI2000launcher.bpr
+  $(ROOT)\bin\bpr2mak $**
+  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
+
+gMOBIlabPlus.exe: core\SignalSource\g.MOBIlabPlus\gMOBIlabPlus.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
