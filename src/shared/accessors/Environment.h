@@ -52,12 +52,15 @@ class FilterWrapper;
              << std::endl;                                               \
     else                                                                 \
     {                                                                    \
-      p.Sections().push_back( bci::ClassName( typeid( *this ) ) );       \
-      Parameters->Add( p, -Instance() );                                 \
-      bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        \
-                   << "sorting by (" << -Instance() << ","               \
-                   << p.Sections() << ")"                                \
-                   << std::endl;                                         \
+      if( !Parameters->Exists( p.Name() ) )                              \
+      {                                                                  \
+        p.Sections().push_back( bci::ClassName( typeid( *this ) ) );     \
+        Parameters->Add( p, -Instance() );                               \
+        bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "      \
+                     << "sorting by (" << -Instance() << ","             \
+                     << p.Sections() << ")"                              \
+                     << std::endl;                                       \
+      }                                                                  \
       OwnedParams()[ this ].insert( p.Name() );                          \
     }                                                                    \
   }                                                                      \
@@ -80,7 +83,8 @@ class FilterWrapper;
              << std::endl;                                             \
     else                                                               \
     {                                                                  \
-      States->Add( s );                                                \
+      if( !States->Exists( s.Name() ) )                                \
+        States->Add( s );                                              \
       OwnedStates()[ this ].insert( s.Name() );                        \
     }                                                                  \
   }                                                                    \
