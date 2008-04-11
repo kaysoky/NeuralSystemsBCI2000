@@ -22,12 +22,12 @@ function buildmex( varargin )
 %   GLIBCXX.
 % + Matlab, and all software started from within it, use their own
 %   copies of the GLIBC and GLIBCXX libraries, matching the gcc version
-%   that was used to compile Matlab. When building mex file, however,
-%   the installed gcc will use its own versions of those libraries,
-%   which are sometimes incompatible with Matlab's (note that the list of 
-%   officially supported gcc versions appears not to apply to MEX files
-%   using the C++ library, so you can't rely on your gcc version being
-%   listed there). Switching to the gcc version that your version of 
+%   that was used to compile Matlab. When building a mex file, however,
+%   the installed gcc will dynamically link with its own versions of those
+%   libraries, which are sometimes incompatible with Matlab's (note that 
+%   the list of officially supported gcc versions appears not to apply to 
+%   MEX files using the C++ library, so you can't rely on your gcc version 
+%   being listed there). Switching to the gcc version that your version of 
 %   Matlab was built with should fix the problem.
 
 TARGETS = { ...
