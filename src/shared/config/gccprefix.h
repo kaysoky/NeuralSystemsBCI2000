@@ -22,10 +22,6 @@
 # define __FUNC__        __PRETTY_FUNCTION__
 #endif
 
-#ifndef pow10
-# define pow10( x )      pow( 10., (x) )
-#endif
-
 #ifndef stricmp
 # define stricmp         strcasecmp
 #endif

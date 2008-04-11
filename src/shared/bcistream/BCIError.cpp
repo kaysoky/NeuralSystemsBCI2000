@@ -84,3 +84,4 @@ OutStream::StringBuf::sync()
 }
 
 } // namespace BCIError
+
