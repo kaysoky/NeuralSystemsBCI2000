@@ -38,8 +38,6 @@ RegisterFilter( JoystickFilter, 3.0 );
 // Purpose:    This is the constructor for the JoystickFilter class
 //             it requests parameters by adding parameters to the parameter list
 //             it also requests states by adding them to the state list
-// Parameters: plist - pointer to a list of parameters
-//             slist - pointer to a list of states
 // Returns:    N/A
 // **************************************************************************
 JoystickFilter::JoystickFilter()
@@ -237,7 +235,7 @@ void JoystickFilter::Initialize( const SignalProperties&, const SignalProperties
 // **************************************************************************
 // Function:   Process
 // Purpose:    This function applies the calibration routine
-// Parameters: input  - input signal for the
+// Parameters: input  - input signal,
 //             output - output signal for this filter
 // Returns:    N/A
 // **************************************************************************
