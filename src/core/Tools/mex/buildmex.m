@@ -89,6 +89,7 @@ DEFINES = { ...
   '-DNO_STRICT', ...
   '-D_NO_VCL', ...
   '-DNO_PCHINCLUDES', ...
+  '-D_USE_MATH_DEFINES', ...
   };
 
 switch( computer )
@@ -130,7 +131,7 @@ switch( target )
     try
       [ signal, states, parameters ] = load_bcidat( [ BCIDATA TESTFILE '.dat' ] );
       ref = load( [ TESTFILE '.mat' ] );
-      if( signal ~= ref.signal )
+      if( ~isempty( find( signal ~= ref.signal ) ) )
         error( 'Testing load_bcidat: Signal data mismatch' );
       end
       if( ~equal_structs( states, ref.states ) )
@@ -143,8 +144,9 @@ switch( target )
         error( 'Testing convert_bciprm: Mismatch when converting forth and back' );
       end
       spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15] );
-      if( spectrum_ ~= ref.spectrum_ )
-        warning( 'Testing mem: Computed spectrum mismatch' );
+      if( ~isempty( find( spectrum_ ~= ref.spectrum_ ) ) )
+        sqerr = norm( spectrum_ - ref.spectrum_, 'fro' );
+        warning( 'Testing mem: Mismatch between computed spectra (squared error is %d)', sqerr );
       end
       clear signal states parameters spectrum ref;
     catch
@@ -188,7 +190,7 @@ function result = equal_structs( inStruct1, inStruct2 )
           result = false;
         end
       else
-        if( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) )
+        if( ~isempty( find( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) ) ) )
           result = false;
         end
       end

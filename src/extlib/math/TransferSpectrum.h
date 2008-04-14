@@ -13,6 +13,7 @@
 
 #include <valarray>
 #include <complex>
+#include <cmath>
 #include "Polynomials.h"
 
 template<typename T>

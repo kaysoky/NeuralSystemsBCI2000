@@ -60,6 +60,7 @@ BCIOBJ  = bci_stubs.o \
           MessageHandler.o \
           MeasurementUnits.o \
           PhysicalUnit.o \
+          ArithmeticExpression.o \
           Expression.o \
           ExpressionParser.o \
           ClassName.o \

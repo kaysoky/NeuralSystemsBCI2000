@@ -10,12 +10,6 @@
 #ifndef POLYNOMIALS_H
 #define POLYNOMIALS_H
 
-#ifdef __GNUC__
-# define TYPENAME typename
-#else
-# define TYPENAME
-#endif // __GNUC__
-
 #include <vector>
 #include <valarray>
 #include <algorithm>
@@ -257,6 +251,11 @@ Polynomial<T>::operator*( const U& u ) const
 
 
 // Ratpoly definitions
+#ifdef __GNUC__
+# define TYPENAME typename
+#else
+# define TYPENAME
+#endif // __GNUC__
 
 template<class T>
 Ratpoly<T>::Ratpoly( const T& z )
@@ -264,6 +263,8 @@ Ratpoly<T>::Ratpoly( const T& z )
   mDenominator( Polynomial<T>::FromRoots( TYPENAME Polynomial<T>::Vector(), 1 ) )
 {
 }
+
+#undef TYPENAME
 
 template<class T>
 Ratpoly<T>::Ratpoly( const Polynomial<T>& numerator,
@@ -352,9 +353,9 @@ Ratpoly<T>::Simplify()
 {
   if( mNumerator.RootsKnown() && mDenominator.RootsKnown() )
   {
-    class Polynomial<T>::Vector numerRoots = mNumerator.Roots(),
-                                denomRoots = mDenominator.Roots(),
-                                commonRoots;
+    typename Polynomial<T>::Vector numerRoots = mNumerator.Roots(),
+                                   denomRoots = mDenominator.Roots(),
+                                   commonRoots;
     typename Polynomial<T>::Vector::const_iterator i;
     for( i = numerRoots.begin(); i != numerRoots.end(); ++i )
     {

@@ -26,7 +26,7 @@ class LinearPredictor
   virtual ~LinearPredictor() {}
 
   LinearPredictor& SetModelOrder( int inOrder )
-    { mModelOrder = inOrder; }
+    { mModelOrder = inOrder; return *this; }
   int ModelOrder() const
     { return mModelOrder; }
 

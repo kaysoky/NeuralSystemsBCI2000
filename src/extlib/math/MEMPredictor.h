@@ -36,8 +36,14 @@ MEMPredictor<T>::MEMPredictor()
 {
 }
 
+#ifdef __GNUC__
+# define TYPENAME class
+#else
+# define TYPENAME typename
+#endif // __GNUC__
+
 template<typename T>
-const class Ratpoly<typename MEMPredictor<T>::Complex>&
+const TYPENAME Ratpoly<typename MEMPredictor<T>::Complex>&
 MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
 {
   typedef double D;
@@ -94,6 +100,8 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
            );
   return result;
 }
+
+#undef TYPENAME
 
 #endif // MEM_PREDICTOR_H
 
