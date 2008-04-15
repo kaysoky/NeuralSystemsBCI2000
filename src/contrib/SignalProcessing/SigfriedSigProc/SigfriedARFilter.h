@@ -13,15 +13,14 @@
 #include "defines.h"
 #include "vector.h"
 
-#include "GenericFilter.h"
-#include "GenericVisualization.h"
-
 #include "array.h"
 #include "namespace.h"
 #include "exception.h"
 
 #include "ElectrodeRenderer.h"
 #include "ElectrodeCollection.h"
+#include "GenericFilter.h"
+#include "GenericVisualization.h"
 
 typedef struct ELECTRODEDESCRIPTION {
   string szlabel;

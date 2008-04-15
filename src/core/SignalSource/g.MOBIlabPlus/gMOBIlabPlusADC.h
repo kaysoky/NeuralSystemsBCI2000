@@ -9,12 +9,13 @@
 #ifndef gMOBIlabPlus_ADC_H
 #define gMOBIlabPlus_ADC_H
 
-#include "gMOBIlabplus.h"
 #include "GenericADC.h"
 
 #include <windows.h>
 #include <string>
 
+#define __CFG GFG__
+#include "gMOBIlabplus.h"
 
 class gMOBIlabPlusADC : public GenericADC
 {

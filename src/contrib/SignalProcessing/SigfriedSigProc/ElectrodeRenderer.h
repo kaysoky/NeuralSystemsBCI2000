@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <vcl>
+#include <vcl.h>
 #include <types.hpp>
 
 #include "ElectrodeCollection.h"

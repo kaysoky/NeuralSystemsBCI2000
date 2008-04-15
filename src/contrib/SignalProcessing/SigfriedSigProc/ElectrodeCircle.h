@@ -10,7 +10,7 @@
 #include <vector>
 
 #include <Graphics.hpp>
-#include <vcl>
+#include <vcl.h>
 #include <types.hpp>
 
 #include "Electrode.h"
