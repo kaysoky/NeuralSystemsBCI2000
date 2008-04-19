@@ -12,16 +12,25 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-
-#include <io.h>
 #include <fcntl.h>
+
+// Do we need to switch stdin/stdout into binary mode?
+#if defined( _WIN32 ) || defined( CYGWIN )
+# define HAVE_BIN_MODE 1
+#endif
+
+#ifdef HAVE_BIN_MODE
+# include <io.h>
+#endif
 
 using namespace std;
 
 int main( int argc, const char** argv )
 {
+#ifdef HAVE_BIN_MODE
   setmode( fileno( stdin ), O_BINARY );
   setmode( fileno( stdout ), O_BINARY );
+#endif
 
   if( ToolInfo[ name ] == "" )
   {
