@@ -94,8 +94,6 @@ BCI2000_Glossary.html
 
 BCI2000_Help.html
 
-BCPy2000.html
-
 Contributions%253AADCs.html
 2 See_also See also
 
@@ -119,6 +117,19 @@ Contributions%253ABCIdiff.html
 3 Source_Code_Revisions Source Code Revisions
 2 Usage Usage
 2 See_also See also
+
+Contributions%253ABCPy2000.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 SomeParameter SomeParameter
+3 AnotherParameter AnotherParameter
+2 States States
 
 Contributions%253ABatch.html
 2 Synopsis Synopsis
@@ -624,6 +635,52 @@ Programming_Reference%253A3D_API.html
 4 2D_Cursor 2D Cursor
 2 See_also See also
 
+Programming_Reference%253ABCI2000FileReader.html
+2 Methods Methods
+3 BCI2000FileReader.28.5Bfile_name.5D.29 BCI2000FileReader([file name])
+3 Open.28file_name.29 Open(file name)
+3 RawValue.28channel.2C_sample.29 RawValue(channel, sample)
+3 CalibratedValue.28channel.2C_sample.29 CalibratedValue(channel, sample)
+3 ReadStateVector.28sample.29 ReadStateVector(sample)
+2 Properties Properties
+3 IsOpen_.28r.29 IsOpen (r)
+3 ErrorState_.28r.29 ErrorState (r)
+3 NumSamples_.28r.29 NumSamples (r)
+3 SamplingRate_.28r.29 SamplingRate (r)
+3 SignalProperties_.28r.29 SignalProperties (r)
+3 FileFormatVersion_.28r.29 FileFormatVersion (r)
+3 HeaderLength_.28r.29 HeaderLength (r)
+3 StateVectorLength_.28r.29 StateVectorLength (r)
+3 Parameters_.28r.29 Parameters (r)
+3 Parameter_.28r.29 Parameter (r)
+3 States_.28r.29 States (r)
+3 State_.28r.29 State (r)
+3 StateVector_.28r.29 StateVector (r)
+2 See_also See also
+
+Programming_Reference%253ABCI2000FileReader_Class.html
+2 Methods Methods
+3 BCI2000FileReader.28.5Bfile_name.5D.29 BCI2000FileReader([file name])
+3 Open.28file_name.29 Open(file name)
+3 RawValue.28channel.2C_sample.29 RawValue(channel, sample)
+3 CalibratedValue.28channel.2C_sample.29 CalibratedValue(channel, sample)
+3 ReadStateVector.28sample.29 ReadStateVector(sample)
+2 Properties Properties
+3 IsOpen_.28r.29 IsOpen (r)
+3 ErrorState_.28r.29 ErrorState (r)
+3 NumSamples_.28r.29 NumSamples (r)
+3 SamplingRate_.28r.29 SamplingRate (r)
+3 SignalProperties_.28r.29 SignalProperties (r)
+3 FileFormatVersion_.28r.29 FileFormatVersion (r)
+3 HeaderLength_.28r.29 HeaderLength (r)
+3 StateVectorLength_.28r.29 StateVectorLength (r)
+3 Parameters_.28r.29 Parameters (r)
+3 Parameter_.28r.29 Parameter (r)
+3 States_.28r.29 States (r)
+3 State_.28r.29 State (r)
+3 StateVector_.28r.29 StateVector (r)
+2 See_also See also
+
 Programming_Reference%253ABCI2000_Source_Code.html
 2 Version_Management Version Management
 2 Browsing_the_Source_Code_Repository_Online Browsing the Source Code Repository Online
@@ -706,6 +763,16 @@ Programming_Reference%253AFilter_Chain.html
 2 Filter_Instantiation Filter Instantiation
 2 Signal_Processing_Filter_Instantiation Signal Processing Filter Instantiation
 
+Programming_Reference%253AGenericADC_Class.html
+2 Purely_Virtual_Halt Purely Virtual <tt>Halt</tt>
+2 Empty_Output Empty Output
+2 See_also See also
+
+Programming_Reference%253AGenericFileWriter_Class.html
+2 Publish.28.29_member_function <tt>Publish()</tt> member function
+2 Write.28.29_rather_than_Process.28.29 <tt>Write()</tt> rather than <tt>Process()</tt>
+2 See_also See also
+
 Programming_Reference%253AGenericFilter_Class.html
 2 The_GenericFilter_class The <tt>GenericFilter</tt> class
 2 Required_Members Required Members
@@ -739,11 +806,14 @@ Programming_Reference%253AMatlabFilter.html
 2 Signal_Format Signal Format
 2 Error_Reporting Error Reporting
 2 Combining_with_BCI2000_Signal_Processing_Filters Combining with BCI2000 Signal Processing Filters
+2 Command_Line_Options Command Line Options
+3 MatlabWD MatlabWD
+3 MatlabStayOpen MatlabStayOpen
 2 Troubleshooting Troubleshooting
-3 Debugging_your_scripts Debugging your scripts
-3 Matlab_doesn.27t_find_your_scripts Matlab doesn't find your scripts
+3 Debugging_Matlab_functions Debugging Matlab functions
+3 Matlab_doesn.27t_find_your_functions Matlab doesn't find your functions
 3 There_is_no_Matlab_engine_started_up There is no Matlab engine started up
-3 Changes_to_script_files_appear_to_have_no_effect Changes to script files appear to have no effect
+3 Changes_to_M-files_appear_to_have_no_effect Changes to M-files appear to have no effect
 3 You_get_linker_errors_when_rebuilding_MatlabSignalProcessing You get linker errors when rebuilding <i>MatlabSignalProcessing</i>
 2 See_also See also
 
@@ -769,6 +839,17 @@ Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html
 2 Data_Acquisition Data Acquisition
 2 Adding_the_SourceFilter Adding the <i>SourceFilter</i>
 2 Finished Finished
+
+Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html
+2 Online_Algorithm_Verification Online Algorithm Verification
+2 An_Example_Algorithm An Example Algorithm
+2 Transformation_into_BCI2000_Matlab_Scripts Transformation into BCI2000 Matlab Scripts
+3 Process Process
+3 Initialize Initialize
+3 StartRun StartRun
+3 Constructor Constructor
+3 Preflight Preflight
+2 See_also See also
 
 Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html
 2 A_simple_low_pass_filter A simple low pass filter
@@ -1170,7 +1251,6 @@ User_Reference%253AEloc_Helper.html
 User_Reference%253AExpressionFilter.html
 2 Function Function
 2 Parameters Parameters
-3 WarningExpression WarningExpression
 3 Expressions Expressions
 2 States States
 2 Examples Examples

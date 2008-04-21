@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:gMOBIlabADC - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:gMOBIlabADC,User Reference:AlignmentFilter,User Reference:DataIOFilter,Programming Reference:GenericADC" />
+<meta name="keywords" content="User Reference:gMOBIlabADC,Programming Reference:GenericADC Class,User Reference:AlignmentFilter,User Reference:DataIOFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -61,7 +61,7 @@ configuration, channels 1-2 have a sensitivity of <img class='tex' src="../image
 have a sensitivity of <img class='tex' src="../images/math/3/4/c/34c12b0fa022a7712b99a3209a8d5ea0.png" alt="\pm500\mu V" />, channels 5-6 have a sensitivity of 
 <img class='tex' src="../images/math/1/e/7/1e7e939ee0a5f0b5adbda8881e642aac.png" alt="\pm5mV" />, and channels 7-8 have a sensitivity of <img class='tex' src="../images/math/f/f/a/ffa5a96e81b5a2bd3eb4dda42cc6b9af.png" alt="\pm5V" />.
 The input range of the A/D converter is approximately equal to this sensitivity and thus, for example, 
-one LSB for channel 1 or 2 is roughly <img class='tex' src="../images/math/b/8/e/b8e1ca80b95f23289f50738f631218a0.png" alt="\frac{200\mu V}{65535}=0.003\mu V" />.
+one LSB for channel 1 or 2 is roughly <img class='tex' src="../images/math/5/8/c/58c12739767f150e3a0051f0913d0ff1.png" alt="\frac{200\mu V}{65536}=0.003\mu V" />.
 However, the actual input range of the A/D converter is slightly larger than the sensitivity
 of each channel (so that the A/D converter can detect when the amp saturates), and
 thus, exact LSB values have to be determined for each channel using a calibration signal.
@@ -88,7 +88,7 @@ If it is set to 9, then channels 1-8 represent 8 analog input channels, and chan
 <p>None.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>, <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:GenericADC&amp;action=edit" class="new" title="Programming Reference:GenericADC">Programming Reference:GenericADC</a>
+<p><a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>, <a href="Programming_Reference%253AGenericADC_Class.html" title="Programming Reference:GenericADC Class">Programming Reference:GenericADC Class</a>
 </p>
 <div class="printfooter">
 </div>

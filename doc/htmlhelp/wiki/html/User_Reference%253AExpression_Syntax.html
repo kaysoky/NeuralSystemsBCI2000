@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Expression Syntax - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Expression Syntax,BCI2000 Glossary" />
+<meta name="keywords" content="User Reference:Expression Syntax,BCI2000 Glossary,User Reference:LinearClassifier" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -64,11 +64,11 @@ all refer to the same number. Complex numbers are not supported.
 </dd></dl>
 <dl><dt>Logical operators</dt><dd>
 </dd><dd><pre>&nbsp;! ~ &amp;&amp; ||</pre>
-</dd><dd>Again,&nbsp;! and ~ are synonymous to match both C and Matlab conventions. When mixing boolean and numerical expression, values need to be converted back and forth between numbers and logical values. As usual, zero is treated as <i>false</i>, and nonzero values are treated as <i>true</i>. Reversely, <i>false</i> is converted into the number 0, and <i>true</i> is converted into 1. There are no literals for <i>true</i> and <i>false</i>; use 0 and 1 instead.
+</dd><dd>Again,&nbsp;! and ~ are synonymous to match both C and Matlab conventions. When mixing boolean and numerical expressions, values need to be converted back and forth between numbers and logical values. As usual, zero is treated as <i>false</i>, and nonzero values are treated as <i>true</i>. Reversely, <i>false</i> is converted into the number 0, and <i>true</i> is converted into 1. There are no literals for <i>true</i> and <i>false</i>; use 0 and 1 instead.
 </dd></dl>
 <dl><dt>Condition operator
 </dt><dd><pre> &lt;condition&gt;?&lt;if-expr&gt;:&lt;else-expr&gt;</pre>
-</dd><dd>As in C, the ternary condition operator&nbsp;?: allows for if-then-else-like constructs. If <i>condition</i> is true, it evaluates to <i>if-expr</i>, and to <i>else-expr</i> otherwise.
+</dd><dd>As in C, the ternary condition operator&nbsp;?: allows for if-then-else-like constructs. If <i>condition</i> is true, the condition operator evaluates to the value of <i>if-expr</i>, and to the value of <i>else-expr</i> otherwise.
 </dd></dl>
 <dl><dt>Precedence
 </dt><dd>Operator precedence follows the order of appearance in the above list. As usual, braces ( ) may be used to override operator precedence.
@@ -83,8 +83,14 @@ all refer to the same number. Complex numbers are not supported.
 <a name="Signal_Values"></a><h4>Signal Values</h4>
 <p>Depending on context, expressions may involve signal values:
 </p>
-<pre>10*Signal(0,3)</pre>
-<p>Here, "Signal" refers to the filter's input signal, and indices are <i>zero-based</i>.
+<pre>10*Signal(1,3)</pre>
+<p>Here, "Signal" refers to a filter's input signal.
+Consistently with configuration parameters (e.g., indices specified inside the <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">LinearClassifier</a> matrix), indices are <i>one-based</i>.
+Similarly, labels and physical units may be used when defined for the signal in question, e.g.
+</p>
+<pre>Signal( &quot;CPz&quot;, 10ms )</pre>
+<p>will address a channel labeled "CPz", and a physical sample position 10ms from the epoch begin when defined for the signal in question.
+(Note: In previous versions of BCI2000 (previous to the Apr 2008 build, up to source revision 1914), expressions used <i>zero-based</i> indices; you may have to update your configuration accordingly when using expressions that involving signals.)
 </p>
 <a name="Examples"></a><h3>Examples</h3>
 <ul><li>An expression that evaluates to the ResultCode state only if that equals the TargetCode state (i.e., in case of a successful trial):
@@ -107,7 +113,7 @@ all refer to the same number. Complex numbers are not supported.
 <dl><dd><pre>(TargetCode^(-3))/5</pre>
 </dd><dd>rather than
 </dd><dd><pre>TargetCode^-3/5</pre>
-</dd><dd>which is equivalent but may be misunderstood as
+</dd><dd>which is equivalent to the previous line but may be misunderstood as
 </dd><dd><pre>TargetCode^(-3/5)</pre>
 </dd></dl>
 

@@ -92,7 +92,7 @@ You achieve this by writing <pre>int numberOfItems = OptionalParameter( &quot;Nu
 short itiState = OptionalState( &quot;IntertrialInterval&quot;, 0 );
 </pre>
 <p>Omitting the default value from the <tt>OptionalState</tt> or <tt>OptionalParameter</tt> call implies
-a default value of 0.
+a default value of 0, or the empty string, whichever is appropriate.
 </p><p>The Environment class imposes <a href="Programming_Reference%253AGenericFilter_Class.html#Rules_for_Parameter_and_State_access" title="Programming Reference:GenericFilter Class">rules for parameter and state access</a> intended to help avoid parameterization inconsistencies.
 </p>
 <a name="Working_around_Borland_VCL_Inheritance_Restrictions"></a><h2>Working around Borland VCL Inheritance Restrictions</h2>

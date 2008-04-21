@@ -93,13 +93,14 @@ Also, pre-defined CAR parameter files do not specify electrode locations, so you
 <p>Subject-specific electrode location and Mu rhythm frequency are part of the classifier's configuration.
 They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> tab; there, click the <i>Edit Matrix</i> button associated with the <i>Classifier</i> parameter.
 </p>
-<ul><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 2; then, click <i>Set new matrix size</i> to apply your changes.
-</li><li>In the first column, labeled <i>input channel</i>, enter the location of the feedback electrode. If you did not specify electrode locations when configuring the spatial filter, enter the channel number associated with the feedback electrode.
+<ol><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1 (or the number of features that you wish to use); then, click <i>Set new matrix size</i> to apply your changes.
+</li><li>In the first column (of the first row), labeled <i>input channel</i>, enter the location of the feedback electrode. If you did not specify electrode locations when configuring the spatial filter, enter the channel number associated with the feedback electrode.
 </li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <i>Hz</i>, as in <tt>12Hz</tt>.
 </li><li>In the third column, enter the value 2 corresponding to the control channel for vertical control of the cursor.
 </li><li>In the fourth column, enter 1 as the weight.
+</li><li>If you wish to use more than one feature, repeat steps 2-5 for each additional feature moving down a row each time (i.e., enter the 2nd feature on the 2nd row, etc...).
 </li><li>Finally, save your configuration to <tt>parms/subjects/mu_feedback/&lt;Subject&gt;002.prm</tt>, or whereever you find appropriate.
-</li></ul>
+</li></ol>
 <a name="Next_Step"></a><h2>Next Step</h2>
 <p>In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using the configuration created in the present step.
 </p>

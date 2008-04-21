@@ -62,11 +62,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Authors"></a><h3>Authors</h3>
-<p>juergen.mellinger@uni-tuebingen.de, thomas.schreiner@tuebingen.mpg.de
+<p>juergen.mellinger@uni-tuebingen.de, thomas.schreiner@tuebingen.mpg.de, Jeremy Hill
 </p>
 <a name="Version_History"></a><h3>Version History</h3>
 <p>Feb 12, 2003: Initial version.
-Aug 29, 2007: Support for the RDA float protocol (Thomas Schreiner).
+</p><p>Aug 29, 2007: Support for the RDA float protocol (Thomas Schreiner).
+</p><p>Mar 28, 2008 (Jeremy Hill) (1) Fixed an issue whereby markers were ignored. Contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs. Therefore treat a marker that appears to be valid for 0 points as valid for 1 point. (two places, both the RDAData case and the RDAData32 case, in ReceiveData() in RDAQueue.cpp) 
+(2) When checking the SourceChGain parameters against the RDA gains, before issuing an error at the end to the effect that somewhere, one or more of the many gain values is wrong, additionally issue a warning about each and every SourceChGain position that differs. No longer necessary to announce the first gain value in the final error message. (Preflight() in RDAClientADC.cpp)
 </p>
 <a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
 <ul><li>Initial development: 156
