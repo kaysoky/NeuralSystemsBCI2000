@@ -38,8 +38,8 @@ template<int NumBytes> class LengthField
     operator size_t&() { return mValue; }
 
     // Formatted (ASCII) I/O:
-    std::ostream& WriteToStream( std::ostream& os ) const { os << mValue; }
-    std::istream& ReadFromStream( std::istream& is ) { is >> mValue; }
+    std::ostream& WriteToStream( std::ostream& os ) const { return os << mValue; }
+    std::istream& ReadFromStream( std::istream& is ) { return is >> mValue; }
 
     // Binary I/O according to the BCI2000 protocol:
     std::ostream& WriteBinary( std::ostream& os ) const;

@@ -34,9 +34,10 @@
 # define socklen_t int
 #else
 # include <unistd.h>
-# include <sys/streamsock.h>
+# include <sys/socket.h>
 # include <arpa/inet.h>
 # include <netinet/in.h>
+# include <netinet/tcp.h>
 # include <netdb.h>
 # define INVALID_SOCKET   (SOCKET)( ~0 )
 # define SOCKET_ERROR     ( -1 )
@@ -142,7 +143,7 @@ streamsock::set_address( const char* inIP, unsigned short inPort )
   }
   ::memset( &m_address, 0, sizeof( m_address ) );
   m_address.sin_family = AF_INET;
-  m_address.sin_port = ::htons( inPort );
+  m_address.sin_port = htons( inPort );
   if( *ip == '*' ) // A "*" as IP address means "any local address" (for bind() ).
     m_address.sin_addr.s_addr = INADDR_ANY;
   else if( INADDR_NONE == ( m_address.sin_addr.s_addr = ::inet_addr( ip ) ) )
@@ -153,8 +154,8 @@ streamsock::set_address( const char* inIP, unsigned short inPort )
 bool
 streamsock::ip_compare::operator()( const string& inAddr1, const string& inAddr2 )
 {
-  unsigned long addr1 = ::htonl( ::inet_addr( inAddr1.c_str() ) ),
-                addr2 = ::htonl( ::inet_addr( inAddr2.c_str() ) );
+  unsigned long addr1 = htonl( ::inet_addr( inAddr1.c_str() ) ),
+                addr2 = htonl( ::inet_addr( inAddr2.c_str() ) );
 
   const int priority[] = { 127, 169, 10, 192, NULL };
   const int* p_begin = priority,
@@ -207,7 +208,7 @@ streamsock::ip() const
 unsigned short
 streamsock::port() const
 {
-  return ::ntohs( m_address.sin_port );
+  return ntohs( m_address.sin_port );
 }
 
 bool

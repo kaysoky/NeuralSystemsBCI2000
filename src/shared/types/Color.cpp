@@ -61,7 +61,7 @@ RGBColor::ToWinColor() const
 RGBColor
 RGBColor::FromWinColor( int c )
 {
-  if( c == CLR_INVALID )
+  if( c == RGBColor::InvalidColor )
     return RGBColor::NullColor;
     
   int r = c & 0xff,

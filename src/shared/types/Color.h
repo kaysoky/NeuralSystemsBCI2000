@@ -15,30 +15,35 @@
 #include <string>
 #include "ValueList.h"
 
+#if defined( CLR_INVALID ) && ( CLR_INVALID != 0xffffffff )
+# error This file assumes CLR_INVALID == 0xffffffff.
+#endif
+
 class RGBColor
 {
  public:
   enum ColorNames
   { //                R G B
-    NullColor   = 0xff000000,
-    Black       = 0x00000000,
-    Maroon      = 0x00800000,
-    Green       = 0x00008000,
-    Olive       = 0x00808000,
-    Navy        = 0x00000080,
-    Purple      = 0x00800080,
-    Teal        = 0x00008080,
-    Gray        = 0x00808080,
-    Silver      = 0x00c0c0c0,
-    Red         = 0x00ff0000,
-    Lime        = 0x0000ff00,
-    Yellow      = 0x00ffff00,
-    Blue        = 0x000000ff,
-    Fuchsia     = 0x00ff00ff,
-    Aqua        = 0x0000ffff,
-    LtGray      = 0x00c0c0c0,
-    DkGray      = 0x00808080,
-    White       = 0x00ffffff,
+    InvalidColor = 0xffffffff,
+    NullColor    = 0xff000000,
+    Black        = 0x00000000,
+    Maroon       = 0x00800000,
+    Green        = 0x00008000,
+    Olive        = 0x00808000,
+    Navy         = 0x00000080,
+    Purple       = 0x00800080,
+    Teal         = 0x00008080,
+    Gray         = 0x00808080,
+    Silver       = 0x00c0c0c0,
+    Red          = 0x00ff0000,
+    Lime         = 0x0000ff00,
+    Yellow       = 0x00ffff00,
+    Blue         = 0x000000ff,
+    Fuchsia      = 0x00ff00ff,
+    Aqua         = 0x0000ffff,
+    LtGray       = 0x00c0c0c0,
+    DkGray       = 0x00808080,
+    White        = 0x00ffffff,
   };
 
   public:
