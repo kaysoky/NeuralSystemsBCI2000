@@ -46,8 +46,8 @@ namespace BCIError
 
   class OutStream : public std::ostream
   {
-   friend class EnvironmentBase;
-   friend class CoreModule;
+   friend class ::EnvironmentBase;
+   friend class ::CoreModule;
 
    public:
     OutStream()

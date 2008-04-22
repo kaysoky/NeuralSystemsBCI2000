@@ -108,7 +108,7 @@ streamsock::open( const char* address )
 }
 
 void
-streamsock::open( const char* ip, u_short port )
+streamsock::open( const char* ip, unsigned short port )
 {
   set_address( ip, port );
   do_open();
@@ -121,13 +121,13 @@ streamsock::set_address( const char* address )
   istringstream address_stream( address );
   string hostname;
   getline( address_stream, hostname, port_separator );
-  u_short port = 0;
+  unsigned short port = 0;
   address_stream >> port;
   set_address( hostname.c_str(), port );
 }
 
 void
-streamsock::set_address( const char* inIP, u_short inPort )
+streamsock::set_address( const char* inIP, unsigned short inPort )
 {
   char* buf = NULL;
   const char* ip = "";
@@ -204,7 +204,7 @@ streamsock::ip() const
   return ::inet_ntoa( m_address.sin_addr );
 }
 
-u_short
+unsigned short
 streamsock::port() const
 {
   return ::ntohs( m_address.sin_port );

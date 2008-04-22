@@ -66,12 +66,12 @@ class streamsock
     virtual     ~streamsock();
     void        open();
     void        open( const char* address );
-    void        open( const char* ip, u_short port );
+    void        open( const char* ip, unsigned short port );
     void        close();
     bool        is_open() const; // A streamsock may be open but not connected.
     bool        connected();
     std::string ip() const;
-    u_short     port() const;
+    unsigned short port() const;
     // If there is data available, this function returns true.
     bool        can_read()
                 { return wait_for_read( 0 ); }
@@ -105,7 +105,7 @@ class streamsock
     virtual void do_open() = 0;
     void         accept();
     void         set_address( const char* address );
-    void         set_address( const char* ip, u_short port );
+    void         set_address( const char* ip, unsigned short port );
 
   protected:
     virtual void set_socket_options()

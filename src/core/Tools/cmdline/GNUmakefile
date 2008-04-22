@@ -30,7 +30,7 @@ TARGETS = bci_dat2stream \
           ConditionalIntegrator \
           ComplexDemodulator \
           StateTransform \
-          FFTFilter \
+#          FFTFilter \
           TransmissionFilter \
 #          MatlabFilter \
 
@@ -64,7 +64,7 @@ BCIOBJ  = bci_stubs.o \
           Expression.o \
           ExpressionParser.o \
           ClassName.o \
-          FFTLibWrap.o \
+#          FFTLibWrap.o \
 #          MatlabWrapper.o \
 
 BCIROOT = ../../..

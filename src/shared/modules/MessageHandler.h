@@ -53,27 +53,48 @@ class MessageHandler
     template<typename content_type> struct Header;
 };
 
-template<> struct MessageHandler::Header<class ProtocolVersion>
+class ProtocolVersion;
+template<> struct MessageHandler::Header<ProtocolVersion>
 { enum { descSupp = 0x0000 }; };
-template<> struct MessageHandler::Header<class Status>
+
+class Status;
+template<> struct MessageHandler::Header<Status>
 { enum { descSupp = 0x0100 }; };
-template<> struct MessageHandler::Header<class Param>
+
+class Param;
+template<> struct MessageHandler::Header<Param>
 { enum { descSupp = 0x0200 }; };
-template<> struct MessageHandler::Header<class State>
+
+class State;
+template<> struct MessageHandler::Header<State>
 { enum { descSupp = 0x0300 }; };
-template<> struct MessageHandler::Header<class VisSignal>
+
+class VisSignal;
+template<> struct MessageHandler::Header<VisSignal>
 { enum { descSupp = 0x0401 }; };
-template<> struct MessageHandler::Header<class VisMemo>
+
+class VisMemo;
+template<> struct MessageHandler::Header<VisMemo>
 { enum { descSupp = 0x0402 }; };
-template<> struct MessageHandler::Header<class VisSignalProperties>
+
+class VisSignalProperties;
+template<> struct MessageHandler::Header<VisSignalProperties>
 { enum { descSupp = 0x0403 }; };
-template<> struct MessageHandler::Header<class VisBitmap>
+
+class VisBitmap;
+template<> struct MessageHandler::Header<VisBitmap>
 { enum { descSupp = 0x0404 }; };
-template<> struct MessageHandler::Header<class VisCfg>
+
+class VisCfg;
+template<> struct MessageHandler::Header<VisCfg>
 { enum { descSupp = 0x04ff }; };
-template<> struct MessageHandler::Header<class StateVector>
+
+class StateVector;
+template<> struct MessageHandler::Header<StateVector>
 { enum { descSupp = 0x0500 }; };
-template<> struct MessageHandler::Header<class SysCommand>
+
+class SysCommand;
+template<> struct MessageHandler::Header<SysCommand>
 { enum { descSupp = 0x0600 }; };
 
 #endif // MESSAGE_HANDLER_H
