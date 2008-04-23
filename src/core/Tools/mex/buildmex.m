@@ -98,10 +98,10 @@ switch( computer )
     LDFLAGS = {};
   otherwise % we assume gcc on all other platforms
     CXXFLAGS = { ...
-      'CXXFLAGS=$CXXFLAGS -fPIC -include gccprefix.h' ...
+      'CXXFLAGS="\$CXXFLAGS" -fPIC -include gccprefix.h' ...
       };
     LDFLAGS = { ...
-      'LDFLAGS=\$LDFLAGS -dead_strip' ...
+      'LDFLAGS="\$LDFLAGS" -dead_strip' ...
       };
 end;
 
@@ -145,8 +145,8 @@ switch( target )
       end
       spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15] );
       if( ~isempty( find( spectrum_ ~= ref.spectrum_ ) ) )
-        sqerr = norm( spectrum_ - ref.spectrum_, 'fro' );
-        warning( 'Testing mem: Mismatch between computed spectra (squared error is %d)', sqerr );
+        sqerr = norm( spectrum_ - ref.spectrum_, 'fro' ) / norm( spectrum_, 'fro' );
+        warning( 'Testing mem: Mismatch between computed spectra\n(relative error is %d)', sqrt(sqerr) );
       end
       clear signal states parameters spectrum ref;
     catch
