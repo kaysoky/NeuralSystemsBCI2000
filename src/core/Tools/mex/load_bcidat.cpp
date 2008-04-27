@@ -124,6 +124,9 @@ mexFunction( int nargout, mxArray* varargout[],
 {
   std::ios_base::Init();
 
+  if( PrintVersion( __FILE__, nargin, varargin ) )
+    return;
+  
   mxAssert(
     sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4
     && sizeof( uint8 ) == 1 && sizeof( uint16 ) == 2 && sizeof( uint32 ) == 4

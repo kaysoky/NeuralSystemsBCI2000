@@ -37,6 +37,9 @@ mexFunction( int nargout, mxArray* varargout[],
 {
   std::ios_base::Init();
 
+  if( PrintVersion( __FILE__, nargin, varargin ) )
+    return;
+
   if( nargin < 1 )
     mexErrMsgTxt( "No input given." );
 

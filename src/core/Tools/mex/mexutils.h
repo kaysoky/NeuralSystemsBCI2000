@@ -15,6 +15,8 @@
 #include "LabelIndex.h"
 #include "mex.h"
 
+bool PrintVersion( const char*, int, const mxArray** );
+
 mxArray* ParamlistToStruct( const ParamList& );
 mxArray* ParamToStruct(     const Param& );
 mxArray* ValuesToCells(     const Param& );

@@ -58,6 +58,7 @@ MEXSRC = { ...
     [ BCIFRM 'types/PhysicalUnit.cpp' ], ...
     [ BCIFRM 'utils/Expression/ArithmeticExpression.cpp' ], ...
     [ BCIFRM 'utils/Expression/ExpressionParser.cpp' ], ...
+    [ BCIFRM 'utils/VersionInfo.cpp' ], ...
     [ BCIFRM 'bcistream/BCIError.cpp' ], ...
     [ BCIFRM 'bcistream/BCIError_mex.cpp' ], ...
     'bci_mexstubs.cpp', ...
@@ -94,9 +95,11 @@ DEFINES = { ...
 
 switch( computer )
   case 'PCWIN'
+    build_version_header = 'cmd /c cd ..\..\..\shared\config && SubWCRev Version.h.in Version.h';
     CXXFLAGS = {};
     LDFLAGS = {};
   otherwise % we assume gcc on all other platforms
+    build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
     CXXFLAGS = { ...
       'CXXFLAGS="\$CXXFLAGS" -fPIC -include gccprefix.h' ...
       };
@@ -125,6 +128,10 @@ switch( target )
     end
     buildmex test;
     
+  case 'build'
+    system( build_version_header );
+    buildmex all;
+    
   case 'test'
     fprintf( 1, [ 'Testing mex files ... ' ] );
     success = true;
@@ -145,15 +152,19 @@ switch( target )
       end
       spectrum_ = mem( double( signal ), [16, 0, 0.4, 0.02, 15] );
       if( ~isempty( find( spectrum_ ~= ref.spectrum_ ) ) )
-        sqerr = norm( spectrum_ - ref.spectrum_, 'fro' ) / norm( spectrum_, 'fro' );
-        warning( 'Testing mem: Mismatch between computed spectra\n(relative error is %d)', sqrt(sqerr) );
+        rel_err = sqrt( norm( spectrum_ - ref.spectrum_, 'fro' ) / norm( spectrum_, 'fro' ) );
+        fprintf( 1, 'Warning: mem: Mismatch between computed spectra (relative error is %d)\n', rel_err );
+        err_limit = 1e-6;
+        if( rel_err > err_limit )
+          error( 'Testing mem: Mismatch between computed spectra exceeds relative error limit of %f\n', err_limit );
+        end
       end
       clear signal states parameters spectrum ref;
     catch
       success = false;
     end
     if( success )
-      fprintf( 1, 'OK.\n' );
+      fprintf( 1, 'Mex files tested OK.\n' );
     else
       err = lasterror;
       fprintf( 1, '%s.\n', err.message );

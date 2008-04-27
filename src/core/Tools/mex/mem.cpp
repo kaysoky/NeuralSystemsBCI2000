@@ -13,6 +13,7 @@
 
 #include "mex.h"
 
+#include "mexutils.h"
 #include "Detrend.h"
 #include "MEMPredictor.h"
 #include "TransferSpectrum.h"
@@ -46,6 +47,9 @@ void
 mexFunction( int nlhs, mxArray* plhs[],
              int nrhs, const mxArray* prhs[] )
 {
+  if( PrintVersion( __FILE__, nrhs, prhs ) )
+    return;
+  
   const mxArray* inSignalArray = prhs[ 0 ],
                * inParmsArray = prhs[ 1 ];
 

@@ -7,11 +7,46 @@
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////
+#pragma hdrstop
+
 #include "mexutils.h"
+#include "Version.h"
+#include "VersionInfo.h"
 #include "mex.h"
 #include <sstream>
 
 using namespace std;
+
+bool
+PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin )
+{
+  bool argFound = false;
+  for( int i = 0; i < inNargin && !argFound; ++i )
+  {
+    if( mxCHAR_CLASS == mxGetClassID( inVarargin[ i ] ) )
+	{
+	  char* arg = mxArrayToString( inVarargin[ i ] );
+	  if( 0 == stricmp( arg, "-version" ) )
+	    argFound = true;
+	  mxFree( arg );
+	}
+  }
+  if( argFound )
+  {
+    VersionInfo info;
+	istringstream iss( BCI2000_VERSION );
+	iss >> info;
+    string mexName( inSourceFile );
+    mexName = mexName.substr( 0, mexName.rfind( "." ) );
+	ostringstream oss;
+	oss << mexName << " BCI2000 mex file:\n";
+    for( VersionInfo::reverse_iterator i = info.rbegin(); i != info.rend(); ++i )
+      oss << " " << i->first + ": " << i->second << '\n';
+	oss << BCI2000_COPYRIGHT << '\n';
+    mexPrintf( "%s", oss.str().c_str() );
+  }
+  return argFound;
+}
 
 mxArray*
 ParamlistToStruct( const ParamList& inParamlist )
