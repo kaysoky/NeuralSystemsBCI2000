@@ -33,6 +33,7 @@ gUSBampADC::gUSBampADC()
   m_filterlowpass( 0 ),
   m_notchhighpass( 0 ),
   m_notchlowpass( 0 ),
+  NUM_BUFS(5),
   m_filtermodelorder( 0 ),
   m_filtertype( 0 ),
   m_notchmodelorder( 0 ),
@@ -42,7 +43,10 @@ gUSBampADC::gUSBampADC()
   m_digitalinput( false ),
   m_digitalOutput(false),
   m_acqmode( 0 ),
-  m_digitalOut1(false)
+  m_digitalOut1(false),
+  mpAcquireThread( NULL ),
+  mData(NULL),
+  mDataInt(NULL)
 {
   ::memset( m_ov, 0, sizeof( m_ov ) );
   ::memset( m_hEvent, 0, sizeof( m_hEvent ) );
@@ -53,10 +57,12 @@ gUSBampADC::gUSBampADC()
        "// number of digitized channels total",
    "Source intlist SourceChList= 0 0 1 128 "
        "// list of channels to digitize",
-   "Source intlist SourceChDevices=  1 16 16 1 16 "
+   "Source intlist SourceChDevices=  1 16 16 1 17 "
        "// number of digitized channels per device",
    "Source int SampleBlockSize= 8 5 1 20000 "
        "// number of samples per block",
+   "Source int NumBuffers= 1 1 2 32 "
+        "//number of software buffers to use",
    "Source string DeviceIDMaster= auto % % %"
        "// deviceID for the device whose SYNC goes to the slaves",
    "Source int SamplingRate=    128 128 1 40000 "
@@ -109,7 +115,7 @@ gUSBampADC::gUSBampADC()
    "Source int CommonReference=      1 0 0 1 "
         "// internally connect Refs from all blocks: "
             " 0: false,"
-            " 1: true"
+			" 1: true"
             " (enumeration)",
  END_PARAMETER_DEFINITIONS
 
@@ -117,16 +123,28 @@ gUSBampADC::gUSBampADC()
  // (since its output clocks the whole system)
  // this really seems to help against data loss; even under extreme load,
  // data acquisition continues even though the display might be jerky
- SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+ //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
+	//acquireEventRead = new TEvent(NULL, true, false, "ReadEvent", false);
+    acquireEventRead = new TEvent(NULL, true, false, "ReadEvent");
 }
 
 
 gUSBampADC::~gUSBampADC()
 {
- Halt();
- for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-  for (unsigned int dev=0; dev<m_pBuffer[cur_buf].size(); dev++)
-   if (m_pBuffer[cur_buf].at(dev)) delete [] m_pBuffer[cur_buf].at(dev);
+    Halt();
+
+    if (mBuffer != NULL){
+        for (int dev = 0; dev < m_numdevices; dev++)
+            if (mBuffer[dev] != NULL) delete [] mBuffer[dev];
+
+        delete [] mBuffer;
+    }
+
+    if (mData != NULL)
+        delete [] mData;
+    if (mDataInt != NULL)
+        delete [] mDataInt;
 }
 
 
@@ -326,6 +344,7 @@ void gUSBampADC::Preflight( const SignalProperties&,
   Parameter("DeviceIDMaster");
   Parameter("SourceChList");
   Parameter("SourceChGain");
+  Parameter("NumBuffers");
 }
 
 
@@ -335,309 +354,438 @@ void gUSBampADC::Preflight( const SignalProperties&,
 // **************************************************************************
 void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 {
-static  oldfilternumber=-999, oldnotchnumber=-999;
-int     filternumber, notchnumber;
-GND     CommonGround;
-REF     CommonReference;
-bool    autoconfigure;
+    static  oldfilternumber=-999, oldnotchnumber=-999;
+    int     filternumber, notchnumber;
+    GND     CommonGround;
+    REF     CommonReference;
+    bool    autoconfigure;                
 
+	//stop the acquire thread
+	if (mpAcquireThread != NULL)
+	{
+		mpAcquireThread->Suspend();
+		mpAcquireThread->Terminate();
+		//mpAcquireThread->WaitFor(); //wait for the thread to terminate
+		delete mpAcquireThread;
+		mpAcquireThread = NULL;
+	}
+    // let's buffer up to 5 times as much data as we'll collect (using GetData)
+    // this way, it is possible to be too slow to pick up data but still not lose data
+    // (obviously, we should never be too slow in the first place)
+    // this doesn't seem to work yet
+    // int numberofbuffers=3;
+    //suspend the acquisition thread
 
- // let's buffer up to 5 times as much data as we'll collect (using GetData)
- // this way, it is possible to be too slow to pick up data but still not lose data
- // (obviously, we should never be too slow in the first place)
- // this doesn't seem to work yet
- // int numberofbuffers=3;
+    mpAcquireThread = new AcquireThread(this);
 
- int samplingrate=Parameter("SamplingRate");
- mMasterDeviceID=Parameter("DeviceIDMaster");
- mFloatOutput = ( Parameter( "SignalType" ) == 1 );
+    mTotalChs = Parameter("SourceCh");
+    int samplingrate=Parameter("SamplingRate");
+    mMasterDeviceID=Parameter("DeviceIDMaster");
+    mFloatOutput = ( Parameter( "SignalType" ) == 1 );
+    NUM_BUFS = Parameter("NumBuffers");
+    //NUM_BUFS = 5; //overwriting for now
+    mSampleBlockSize = Parameter("SampleBlockSize");
+    // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
+    if ((Parameter("DeviceIDs")->NumValues() == 1) && (Parameter("DeviceIDs")=="auto"))
+        autoconfigure=true;
+    else // otherwise configure the usual way (i.e., using serial numbers)
+        autoconfigure=false;
 
- // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
- if ((Parameter("DeviceIDs")->NumValues() == 1) && (Parameter("DeviceIDs")=="auto"))
-    autoconfigure=true;
- else // otherwise configure the usual way (i.e., using serial numbers)
-    autoconfigure=false;
-
- if (Parameter("DigitalInput") == 1)
-    m_digitalinput=true;
- else
-	m_digitalinput=false;
-
- if (Parameter("DigitalOutput") == 1)
-	m_digitalOutput = true;
- else
- 	m_digitalOutput = false;
-
- for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-  for (unsigned int dev=0; dev<m_pBuffer[cur_buf].size(); dev++)
-   if (m_pBuffer[cur_buf].at(dev)) delete [] m_pBuffer[cur_buf].at(dev);
-
- // determine the LSB for each channel
- m_LSB.resize(Parameter("SourceChGain")->NumValues());
- for (unsigned int ch=0; ch<m_LSB.size(); ch++)
-  m_LSB.at(ch)=Parameter("SourceChGain")(ch);
-
- // determine the filter and notch number from the one selected
- //
- filternumber=notchnumber=-1;
- if (Parameter("FilterEnabled") == 1)
-    {
-    filternumber=DetermineFilterNumber();
-    }
-
- // get notch filter settings if notch is turned on
- if (Parameter("NotchEnabled") == 1)
-    {
-    notchnumber=DetermineNotchNumber();
-    }
-
- // set the GND structure; connect the GNDs on all four blocks to common ground if requested
- bool commongnd=true;
- if (Parameter("CommonGround") == 0) commongnd=false;
- CommonGround.GND1=commongnd;
- CommonGround.GND2=commongnd;
- CommonGround.GND3=commongnd;
- CommonGround.GND4=commongnd;
- // the same with the reference
- bool commonref=true;
- if (Parameter("CommonReference") == 0) commonref=false;
- CommonReference.ref1=commonref;
- CommonReference.ref2=commonref;
- CommonReference.ref3=commonref;
- CommonReference.ref4=commonref;
-
- //
- // at the moment, we CANNOT determine whether we've lost some data
- // thus, we set the timeout to be small, e.g., 1.5 times the size of
- // one sample block and simply give a warning
- // this is not perfect but I simply can't do it better at the moment
- m_timeoutms=(int)((Parameter("SampleBlockSize")/Parameter("SamplingRate"))*1000*1.5);
-
- // determine the number of devices and allocate the buffers accordingly
- m_numdevices=Parameter("DeviceIDs")->NumValues();
- m_DeviceIDs.resize(m_numdevices);
- m_hdev.resize(m_numdevices);
- for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-  m_pBuffer[cur_buf].resize(m_numdevices);
- m_numchans.resize(m_numdevices);
- m_iBytesperScan.resize(m_numdevices);
- m_buffersize.resize(m_numdevices);
- // configure all devices
- int totalch=1;
- int sourceChListOffset = 0;
- 
- for (int dev=0; dev<m_numdevices; dev++)
-  {
-  // create event handles for each device
-  m_hEvent[dev] = CreateEvent(NULL,FALSE,FALSE,NULL);
-  // set ov structure
-  m_ov[dev].hEvent = m_hEvent[dev];
-  m_ov[dev].Offset = 0;
-  m_ov[dev].OffsetHigh = 0;
-  //
-  ResetEvent(m_hEvent[dev]);
-  m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
-  m_iBytesperScan.at(dev)=m_numchans.at(dev)*sizeof(float);
-  int pointsinbuffer=Parameter("SampleBlockSize")*m_numchans.at(dev);
-  m_buffersize.at(dev)=pointsinbuffer*sizeof(float)+HEADER_SIZE;    // buffer size in bytes
-  UCHAR *channels=new UCHAR[m_numchans.at(dev)];
-  for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-   m_pBuffer[cur_buf].at(dev)=new BYTE[m_buffersize.at(dev)];
-  // m_pBuffer.at(dev)=new BYTE[pointsinbuffer*sizeof(float)*numberofbuffers+HEADER_SIZE];  // if we have one buffer, it equals buffersize.at(dev)
-  // determine the serial number either automatically (if autoconfigure mode) or from DeviceID parameter
-  if (autoconfigure)
-     {
-     char serialnr[16];
-     HANDLE hdev=GT_OpenDevice(DetectAutoMode());
-     if( !hdev ) // better safe than sorry ;-)
-       bcierr << "Could not open Amplifier device" << endl;
-     GT_GetSerial(hdev, (LPSTR)serialnr, 16);     // 16 according to documentation
-     GT_CloseDevice(&hdev);
-     m_DeviceIDs.at(dev)=string(serialnr);
-     mMasterDeviceID=m_DeviceIDs.at(dev);
-     }
-  else
-     m_DeviceIDs.at(dev)=Parameter("DeviceIDs")(dev);
-  m_hdev.at(dev) = GT_OpenDeviceEx((char *)m_DeviceIDs.at(dev).c_str());
-  if( !m_hdev.at( dev ) ) // better safe than sorry ;-)
-    bcierr << "Could not open Amplifier with ID "
-           << m_DeviceIDs.at( dev )
-           << endl;
-
-  // set mode to normal, calibration, or impedance; default to M_NORMAL
-  m_acqmode=Parameter("AcquisitionMode");
-  // impedance measurement, if indicated
-  // this precedes normal configuration
-  if (m_acqmode == 2)
-     {
-     double impedance;
-     for (int cur_ch=0; cur_ch<m_numchans.at(dev); cur_ch++)
-      {
-      char memotext[1024];
-      GT_GetImpedance(m_hdev.at(dev), cur_ch+1, &impedance);
-      mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
-      sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, m_DeviceIDs.at(dev).c_str(), cur_ch+1, (float)(impedance/1000));
-      mVis.Send(memotext);
-      totalch++;
-      }
-     // Parameter("AcquisitionMode")=1;  // update this parameter
-     }
-   if (m_acqmode == 1)
-      GT_SetMode(m_hdev.at(dev), M_CALIBRATE);
-   else
-     GT_SetMode(m_hdev.at(dev), M_NORMAL);
-
-  GT_SetBufferSize(m_hdev.at(dev), Parameter( "SampleBlockSize" ) );
-  // set all devices to slave except the one master
-  // externally, the master needs to have its SYNC OUT wired to the SYNC IN
-  // of the first slave (whos SYNC OUT is connected to the next slave's SYNC IN)
-  if (m_DeviceIDs.at(dev) == mMasterDeviceID)
-     GT_SetSlave(m_hdev.at(dev), false);
-  else
-     GT_SetSlave(m_hdev.at(dev), true);
-  GT_SetGround(m_hdev.at(dev), CommonGround);         // connect the grounds from all four blocks on each device to common ground
-  GT_SetReference(m_hdev.at(dev), CommonReference);   // the same for the reference
-  GT_SetSampleRate(m_hdev.at(dev), samplingrate);
-  GT_EnableTriggerLine(m_hdev.at(dev), m_digitalinput); // turn on the digital input if desired
-  //GT_EnableSC(m_hdev.at(dev), true);  // with the short cut mode, a TTL pulse on the SC connector puts the inputs on internal GND (we don't need this?)
-
-  // here, we could check for whether or not the filter settings in the USBamp match what we want; if so; no need to change
-  // this might take a long time
-  // in the current implementation, we set the same filter and notch on all channels
-  // (otherwise, would be many parameters)
-  // because it takes so long, set filters only when they have been changed
-  for (int ch=0; ch<m_numchans.at(dev); ch++)
-   {
-   // if we are in calibration mode (acqmode == 2), set the filters every time even if not changed
-   if ((oldfilternumber != filternumber) | (m_acqmode == 2)) GT_SetBandPass(m_hdev.at(dev), ch+1, filternumber);
-   if ((oldnotchnumber != notchnumber) | (m_acqmode == 2))   GT_SetNotch(m_hdev.at(dev), ch+1, notchnumber);
-   }
-
-  // set the channel list for sampling
-    if (Parameter("SourceChList")->NumValues() == 0)
-    {
-        for (int ch=0; ch<m_numchans.at(dev); ch++)
-            channels[ch] = ch+1;
-    }
+    if (Parameter("DigitalInput") == 1)
+        m_digitalinput=true;
     else
-    {
-        for (int ch=0; ch<m_numchans.at(dev); ch++)
-            channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
+        m_digitalinput=false;
 
-        sourceChListOffset += m_numchans.at(dev);
+    if (Parameter("DigitalOutput") == 1)
+        m_digitalOutput = true;
+    else
+        m_digitalOutput = false;
+
+    /*
+    for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
+    for (unsigned int dev=0; dev<m_pBuffer[cur_buf].size(); dev++)
+    if (m_pBuffer[cur_buf].at(dev)) delete [] m_pBuffer[cur_buf].at(dev);
+    */
+
+    // determine the LSB for each channel
+    m_LSB.resize(Parameter("SourceChGain")->NumValues());
+    for (unsigned int ch=0; ch<m_LSB.size(); ch++)
+        m_LSB.at(ch)=Parameter("SourceChGain")(ch);
+
+    // determine the filter and notch number from the one selected
+    //
+    filternumber=notchnumber=-1;
+    if (Parameter("FilterEnabled") == 1)
+    {
+        filternumber=DetermineFilterNumber();
     }
 
-  // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
-  // (the last channel will be the digital input and transferred automatically
-  if (m_digitalinput)
-    GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
-  else
-    GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev));
-  delete [] channels;
-  }
+    // get notch filter settings if notch is turned on
+    if (Parameter("NotchEnabled") == 1)
+    {
+        notchnumber=DetermineNotchNumber();
+    }
 
- // once the configuration is all done (which might take a while), start them up
- // now, start the slaves first
- for (int dev=0; dev<m_numdevices; dev++)
-  if (m_DeviceIDs.at(dev) != mMasterDeviceID)
-     GT_Start(m_hdev.at(dev));
- // at last, start the Master (so that the slaves are all ready when the Master starts sampling)
- for (int dev=0; dev<m_numdevices; dev++)
-  if (m_DeviceIDs.at(dev) == mMasterDeviceID)
-     GT_Start(m_hdev.at(dev));
+    // set the GND structure; connect the GNDs on all four blocks to common ground if requested
+    bool commongnd=true;
+    if (Parameter("CommonGround") == 0) commongnd=false;
 
- // queue some buffers before
- for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-  for (unsigned int dev=0; dev<m_hdev.size(); dev++)
-   GT_GetData(m_hdev.at(dev), m_pBuffer[cur_buf].at(dev), m_buffersize.at(dev), &(m_ov[dev]));
- current_buffer=0;
+    CommonGround.GND1=commongnd;
+    CommonGround.GND2=commongnd;
+    CommonGround.GND3=commongnd;
+    CommonGround.GND4=commongnd;
+    // the same with the reference
+    bool commonref=true;
+    if (Parameter("CommonReference") == 0) commonref=false;
+    
+    CommonReference.ref1=commonref;
+    CommonReference.ref2=commonref;
+    CommonReference.ref3=commonref;
+    CommonReference.ref4=commonref;
 
- // let's remember the filternumbers for next time
- // so we do not set the filters again if we do not have to
- oldfilternumber=filternumber;
- oldnotchnumber=notchnumber;
+    //
+    // at the moment, we CANNOT determine whether we've lost some data
+    // thus, we set the timeout to be small, e.g., 1.5 times the size of
+    // one sample block and simply give a warning
+    // this is not perfect but I simply can't do it better at the moment
+    m_timeoutms=(int)(float(mSampleBlockSize)/float(Parameter("SamplingRate"))*1000*1.5);
 
- if (m_digitalOutput)
-    GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
+    // determine the number of devices and allocate the buffers accordingly
+    m_numdevices=Parameter("DeviceIDs")->NumValues();
+    m_DeviceIDs.resize(m_numdevices);
+    m_hdev.resize(m_numdevices);
+
+    for (int dev = 0; dev < Parameter("DeviceIDs")->NumValues() && mBuffer != NULL; dev++)
+        if (mBuffer[dev] != NULL) delete [] mBuffer[dev];
+
+    if (mBuffer != NULL) delete [] mBuffer;
+    /*for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
+    m_pBuffer[cur_buf].resize(m_numdevices);
+    */
+    mBuffer = new BYTE* [m_numdevices];
+   
+    m_numchans.resize(m_numdevices);
+    m_iBytesperScan.resize(m_numdevices);
+    m_buffersize.resize(m_numdevices);
+    // configure all devices
+    int totalch=1;
+    int sourceChListOffset = 0;
+
+    mBufferSize = 0;
+    mBufferReadPos = 0;
+    mBufferWritePos = 0;
+ 
+    if (mData != NULL)
+        delete [] mData;
+    if (mDataInt != NULL)
+        delete [] mDataInt;   
+
+    for (int dev=0; dev<m_numdevices; dev++)
+    {
+        // create event handles for each device
+        m_hEvent[dev] = CreateEvent(NULL,FALSE,FALSE,NULL);
+        // set ov structure
+        m_ov[dev].hEvent = m_hEvent[dev];
+        m_ov[dev].Offset = 0;
+        m_ov[dev].OffsetHigh = 0;
+        //
+        ResetEvent(m_hEvent[dev]);
+        m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
+        m_iBytesperScan.at(dev)=m_numchans.at(dev)*sizeof(float);
+        int pointsinbuffer=mSampleBlockSize*m_numchans.at(dev);
+        m_buffersize.at(dev)=pointsinbuffer*sizeof(float)+HEADER_SIZE;    // buffer size in bytes
+        UCHAR *channels=new UCHAR[m_numchans.at(dev)];
+        mBufferSize += NUM_BUFS*pointsinbuffer;
+
+        //for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
+        //	m_pBuffer[cur_buf].at(dev)=new BYTE[m_buffersize.at(dev)];
+        mBuffer[dev] = new BYTE[m_buffersize.at(dev)];
+        //m_pBuffer.at(dev)=new BYTE[pointsinbuffer*sizeof(float)*numberofbuffers+HEADER_SIZE];  // if we have one buffer, it equals buffersize.at(dev)
+
+        // determine the serial number either automatically (if autoconfigure mode) or from DeviceID parameter
+        if (autoconfigure)
+        {
+            char serialnr[16];
+            HANDLE hdev=GT_OpenDevice(DetectAutoMode());
+            if( !hdev ) // better safe than sorry ;-)
+            bcierr << "Could not open Amplifier device" << endl;
+            GT_GetSerial(hdev, (LPSTR)serialnr, 16);     // 16 according to documentation
+            GT_CloseDevice(&hdev);
+            m_DeviceIDs.at(dev)=string(serialnr);
+            mMasterDeviceID=m_DeviceIDs.at(dev);
+        }
+        else{
+            m_DeviceIDs.at(dev)=Parameter("DeviceIDs")(dev);
+        }
+        m_hdev.at(dev) = GT_OpenDeviceEx((char *)m_DeviceIDs.at(dev).c_str());
+
+        if( !m_hdev.at( dev ) ) {// better safe than sorry ;-)
+            bcierr << "Could not open Amplifier with ID "
+            << m_DeviceIDs.at( dev )
+            << endl;
+        }
+
+        // set mode to normal, calibration, or impedance; default to M_NORMAL
+        m_acqmode=Parameter("AcquisitionMode");
+        // impedance measurement, if indicated
+        // this precedes normal configuration
+        if (m_acqmode == 2) {
+            double impedance;
+            for (int cur_ch=0; cur_ch<m_numchans.at(dev); cur_ch++)
+            {
+                char memotext[1024];
+                GT_GetImpedance(m_hdev.at(dev), cur_ch+1, &impedance);
+                mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
+                sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, m_DeviceIDs.at(dev).c_str(), cur_ch+1, (float)(impedance/1000));
+                mVis.Send(memotext);
+                totalch++;
+            }
+            // Parameter("AcquisitionMode")=1;  // update this parameter
+        }
+        if (m_acqmode == 1)
+            GT_SetMode(m_hdev.at(dev), M_CALIBRATE);
+        else
+            GT_SetMode(m_hdev.at(dev), M_NORMAL);
+
+        GT_SetBufferSize(m_hdev.at(dev), Parameter( "SampleBlockSize" ));
+        // set all devices to slave except the one master
+        // externally, the master needs to have its SYNC OUT wired to the SYNC IN
+        // of the first slave (whos SYNC OUT is connected to the next slave's SYNC IN)
+        if (m_DeviceIDs.at(dev) == mMasterDeviceID)
+            GT_SetSlave(m_hdev.at(dev), false);
+        else
+            GT_SetSlave(m_hdev.at(dev), true);
+        
+        GT_SetGround(m_hdev.at(dev), CommonGround);         // connect the grounds from all four blocks on each device to common ground
+        GT_SetReference(m_hdev.at(dev), CommonReference);   // the same for the reference
+        GT_SetSampleRate(m_hdev.at(dev), samplingrate);
+        GT_EnableTriggerLine(m_hdev.at(dev), m_digitalinput); // turn on the digital input if desired
+        //GT_EnableSC(m_hdev.at(dev), true);  // with the short cut mode, a TTL pulse on the SC connector puts the inputs on internal GND (we don't need this?)
+
+        // here, we could check for whether or not the filter settings in the USBamp match what we want; if so; no need to change
+        // this might take a long time
+        // in the current implementation, we set the same filter and notch on all channels
+        // (otherwise, would be many parameters)
+        // because it takes so long, set filters only when they have been changed
+        for (int ch=0; ch<m_numchans.at(dev); ch++)
+        {
+            // if we are in calibration mode (acqmode == 2), set the filters every time even if not changed
+            if ((oldfilternumber != filternumber) | (m_acqmode == 2)) GT_SetBandPass(m_hdev.at(dev), ch+1, filternumber);
+            if ((oldnotchnumber != notchnumber) | (m_acqmode == 2))   GT_SetNotch(m_hdev.at(dev), ch+1, notchnumber);
+        }
+
+        // set the channel list for sampling
+        if (Parameter("SourceChList")->NumValues() == 0)
+        {
+            for (int ch=0; ch<m_numchans.at(dev); ch++)
+                channels[ch] = ch+1;
+        }
+        else
+        {
+            for (int ch=0; ch<m_numchans.at(dev); ch++)
+                channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
+
+            sourceChListOffset += m_numchans.at(dev);
+        }
+
+        // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
+        // (the last channel will be the digital input and transferred automatically
+        if (m_digitalinput)
+            GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
+        else
+            GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev));
+
+        delete [] channels;
+
+    } //END device init loop
+
+	if (mFloatOutput)
+		mData = new float[mBufferSize];
+	else
+		mDataInt = new int[mBufferSize];
+
+    // once the configuration is all done (which might take a while), start them up
+    // now, start the slaves first
+    for (int dev=0; dev<m_numdevices; dev++)
+        if (m_DeviceIDs.at(dev) != mMasterDeviceID)
+            GT_Start(m_hdev.at(dev));
+    // at last, start the Master (so that the slaves are all ready when the Master starts sampling)
+    for (int dev=0; dev<m_numdevices; dev++)
+        if (m_DeviceIDs.at(dev) == mMasterDeviceID)
+            GT_Start(m_hdev.at(dev));
+
+    // queue some buffers before
+    /*for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
+    for (unsigned int dev=0; dev<m_hdev.size(); dev++)
+        GT_GetData(m_hdev.at(dev), m_pBuffer[cur_buf].at(dev), m_buffersize.at(dev), &(m_ov[dev]));   */
+    current_buffer=0;
+
+    // let's remember the filternumbers for next time
+    // so we do not set the filters again if we do not have to
+    oldfilternumber=filternumber;
+    oldnotchnumber=notchnumber;
+
+    if (m_digitalOutput)
+        GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
+
+    //start acquire thread
+    acquireEventRead->ResetEvent();
+    while (mpAcquireThread->Suspended)
+        mpAcquireThread->Resume();
 }
 
 
 // **************************************************************************
 // Function:   Process
-// Purpose:    This function is called within the data acquisition loop
-//             it fills its output signal with values
-//             and DOES NOT RETURN, UNTIL ALL DATA IS ACQUIRED
+// Purpose:    This function reads from the data buffer that is written to
+//              in the acquisition thread Execute function
+//
 // Parameters: References to input signal (ignored) and output signal
 // Returns:    N/A
 // **************************************************************************
 void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
-{
- DWORD dwBytesReceived = 0;
- DWORD dwOVret;
+{           
+	if (m_digitalOutput)
+		GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 0);
 
- if (m_digitalOutput)
-    GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 0);
+	if (acquireEventRead->WaitFor(m_timeoutms) != wrSignaled)
+	{
+		// we may or may not want to do this
+		//this says that if the thread times out, we jsut write 0s
+		//to the signal and move on
+		for (int sample = 0; sample < signal.Elements(); ++sample)
+			for (int channel = 0; channel < signal.Channels(); ++ channel)
+			{
+				signal( channel, sample ) = 0;
+			}
 
- // iterate through all devices
- int cur_ch=0;
- float *cur_sampleptr, cur_sample;
- for (unsigned int dev=0; dev<m_hdev.size(); dev++)
-  {
-  // here one should implement a circular buffer running in a separate thread
-  // to ensure that data are retrieved quickly enough
-  // could use the Matlab 7.0 circular buffer: \MATLAB7\toolbox\daq\daq\src\include\cirbuf.h
-  // while (!HasOverlappedIoCompleted(&ov))
-  //  Sleep(0);
-  // we can't directly determine at the moment whether we lost some data
-  // simply have a timeout that's 1.5 times one sample block and notify the operator that we were too slow :-(
-  dwOVret = WaitForSingleObject(m_hEvent[dev], m_timeoutms);
-  /*
-  if (dwOVret == WAIT_TIMEOUT)
-     {
-     bciout << "Signals lost during acquisition. "
-            << "Make sure that the g.USBamp is attached to a USB 2.0 port, or "
-            << "set SampleBlockSize larger !!"
-            << endl;
-     // ResetEvent(m_hEvent);
-     // GT_ResetTransfer(hdev.at(dev));
-     // throw;
-     }  */
-     
-  GetOverlappedResult(m_hdev.at(dev), &(m_ov[dev]), &dwBytesReceived, FALSE);
-  if( mFloatOutput )
-  {
-    float* data = reinterpret_cast<float*>( m_pBuffer[current_buffer].at(dev) + HEADER_SIZE );
-    for( int sample = 0; sample < signal.Elements(); ++sample )
-      for( int channel = 0; channel < m_numchans[ dev ]; ++channel )
-        signal( cur_ch + channel, sample ) = *data++ / m_LSB[ cur_ch + channel ];
-  }
-  else
-  {
-    for (int sample=0; sample<signal.Elements(); sample++)
-     {
-     for (int channel=0; channel<m_numchans.at(dev); channel++)
-      {
-      cur_sampleptr=(float *)(m_pBuffer[current_buffer].at(dev) + HEADER_SIZE + (m_iBytesperScan.at(dev))*sample + channel*4);
-      cur_sample=*cur_sampleptr/m_LSB.at(cur_ch+channel);  // multiplied with 1 over SourceChGain
-                                                         // with this scheme, the investigator can define what the resolution of the target signal is
-      if (cur_sample > 32767) cur_sample=32767;
-      if (cur_sample < -32767) cur_sample=-32767;
-      signal(cur_ch+channel, sample) = (short)(cur_sample+0.5);
-      }
-     }
-  }
-  cur_ch += m_numchans.at(dev);
- }
+		return;
+	}
+	
+	// iterate through all devices
+	int cur_ch=0;
+	float *cur_sampleptr, cur_sample;
 
- // set up the next buffer
- for (unsigned int dev=0; dev<m_hdev.size(); dev++)
-   GT_GetData(m_hdev.at(dev), m_pBuffer[current_buffer].at(dev), m_buffersize.at(dev), &(m_ov[dev]));
- current_buffer=(current_buffer+1)%NUM_BUFS;
-
+	if (mFloatOutput)
+	{
+		for (int sample = 0; sample < signal.Elements(); ++sample)
+		{
+			for (int channel = 0; channel < signal.Channels(); ++ channel)
+			{
+				signal( channel, sample ) = mData[mBufferWritePos];
+				mBufferWritePos = (mBufferWritePos+1) % mBufferSize;
+			}
+		}
+	}
+	else
+	{
+		for (int sample = 0; sample < signal.Elements(); ++sample)
+		{
+			for (int channel = 0; channel < signal.Channels(); ++ channel)
+			{
+				signal( channel, sample ) = mDataInt[mBufferWritePos];
+				mBufferWritePos = (mBufferWritePos+1) % mBufferSize;
+			}
+		}
+	}
+	acquireEventRead->ResetEvent();
+    
  if (m_digitalOutput)
     GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
 }
 
+
+// **************************************************************************
+// Function:   AcquireThread::Execute
+// Purpose:    This is the main thread function, which continually acquires
+//              data in a loop and writes it to a buffer. The Process function
+//              then copies the data from this buffer to the Signals
+//
+// Parameters: N/As
+// Returns:    N/A
+// **************************************************************************
+void
+__fastcall
+gUSBampADC::AcquireThread::Execute()
+{
+    DWORD dwBytesReceived = 0;
+    DWORD dwOVret;
+    int cur_ch = 0;
+    float *cur_sampleptr, cur_sample;
+    bool ret = false;
+    int curBufPos = 0;
+
+    //loop in the thread until it is terminateds
+    while( !TThread::Terminated )
+    {
+        dwBytesReceived = 0;
+		cur_ch =0;
+        curBufPos = 0;
+
+        //zero the read buffers first to eliminate any previous garbage
+        for (unsigned int dev = 0; dev<amp->m_hdev.size(); dev++)
+            for (int p = 0; p < amp->m_buffersize.at(dev); p++)
+                amp->mBuffer[dev][p] = 0;
+                
+        //call all of the GT_GetData functions first for all devices
+        for (unsigned int dev = 0; dev<amp->m_hdev.size(); dev++)
+            ret = GT_GetData(amp->m_hdev.at(dev),
+                        amp->mBuffer[dev],
+                        amp->m_buffersize.at(dev),
+                        &(amp->m_ov[dev]));
+
+        //now, read the data from the buffers
+        for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
+        {
+            int dwBytesRemaining = amp->m_buffersize.at(dev);
+            int sample = 0, channel = 0;                                  
+
+            dwOVret = WaitForSingleObject(amp->m_hEvent[dev],
+                                    amp->m_timeoutms);
+                                    
+            GetOverlappedResult(amp->m_hdev.at(dev),
+                                    &(amp->m_ov[dev]),
+                                    &dwBytesReceived,
+                                    false);
+            //if (curPos == 0)
+            //    bciout << dev << ": " << dwBytesReceived << "("<<amp->m_buffersize.at(dev)<<")"<<endl;
+            if( amp->mFloatOutput )
+            {
+                float* data = reinterpret_cast<float*>( amp->mBuffer[dev] + HEADER_SIZE );
+                for( int sample = 0; sample < amp->mSampleBlockSize; ++sample )
+                {
+                    for( int channel = 0; channel < amp->m_numchans[ dev ]; ++channel )
+                    {
+                        curBufPos = amp->mBufferReadPos + channel + cur_ch + sample*amp->mTotalChs;
+                        amp->mData[curBufPos] = (*data++)/amp->m_LSB[ cur_ch + channel ];
+
+                    }
+                }
+            }
+            else
+            {
+                for (int sample=0; sample < amp->mSampleBlockSize; sample++)
+                {
+                    for (int channel=0; channel < amp->m_numchans.at(dev); channel++)
+                    {
+                        curBufPos = amp->mBufferReadPos + channel + cur_ch + sample*amp->mTotalChs;
+                        //cur_sampleptr=(float *)(amp->m_pBuffer[amp->current_buffer].at(dev) + HEADER_SIZE + (amp->m_iBytesperScan.at(dev))*sample + channel*4);
+                        cur_sampleptr=(float *)(amp->mBuffer[dev] + HEADER_SIZE + (amp->m_iBytesperScan.at(dev))*sample + channel*4);
+                        cur_sample=*cur_sampleptr/amp->m_LSB.at(cur_ch+channel);  // multiplied with 1 over SourceChGain
+                                                                     // with this scheme, the investigator can define what the resolution of the target signal is
+                        if (cur_sample > 32767) cur_sample=32767;
+                        if (cur_sample < -32767) cur_sample=-32767;
+                        amp->mDataInt[curBufPos] = (short)(cur_sample+0.5);
+                    }
+                }
+            }
+            cur_ch += amp->m_numchans.at(dev);
+        }
+        amp->mBufferReadPos = (amp->mBufferReadPos+ amp->mTotalChs*amp->mSampleBlockSize) % amp->mBufferSize;
+		amp->current_buffer=(amp->current_buffer+1)%amp->NUM_BUFS;
+		amp->acquireEventRead->SetEvent();
+	}
+}  
 
 // **************************************************************************
 // Function:   Halt
@@ -647,6 +795,15 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
 // **************************************************************************
 void gUSBampADC::Halt()
 {
+	//stop the acquire thread
+	if (mpAcquireThread != NULL)
+	{
+		mpAcquireThread->Suspend();
+		mpAcquireThread->Terminate();
+		//mpAcquireThread->WaitFor(); //wait for the thread to terminate
+		delete mpAcquireThread;
+		mpAcquireThread = NULL;
+	}
  // stop the slaves first?
  // I had it backwards first (stopped the master first), but this
  // apparently has problems with multiple amps
@@ -657,6 +814,7 @@ void gUSBampADC::Halt()
      GT_Stop(m_hdev.at(dev));
      GT_ResetTransfer(m_hdev.at(dev));
      GT_CloseDevice(&(m_hdev.at(dev)));
+     CloseHandle(m_hEvent[dev]);
      }
   }
  // stop the master last
@@ -667,12 +825,13 @@ void gUSBampADC::Halt()
      GT_Stop(m_hdev.at(dev));
      GT_ResetTransfer(m_hdev.at(dev));
      GT_CloseDevice(&(m_hdev.at(dev)));
+     CloseHandle(m_hEvent[dev]);
      }
   }
 
  // close event handles
- for (unsigned int dev=0; dev<m_hdev.size(); dev++)
-  CloseHandle(m_hEvent[dev]);
+ //for (unsigned int dev=0; dev<m_hdev.size(); dev++)
+  //CloseHandle(m_hEvent[dev]);
 }
 
 // **************************************************************************

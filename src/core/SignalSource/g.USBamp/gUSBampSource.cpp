@@ -5,9 +5,12 @@
 #pragma hdrstop
 #include <vcl.h>
 #include "CoreModuleVCL.h"
+#include <float.h>
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+    _control87(MCW_EM,MCW_EM);
+
         try
         {
                  Application->Initialize();
