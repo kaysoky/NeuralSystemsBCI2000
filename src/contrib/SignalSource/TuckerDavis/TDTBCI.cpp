@@ -6,6 +6,7 @@
 #include "BCIError.h"
 
 #include "PrecisionTime.h"
+//#define DEBUGLOG
 using namespace std;
 
 RegisterFilter( TDTBCI, 1);
@@ -19,8 +20,7 @@ TDTBCI::TDTBCI()
   dataC(NULL),
   dataD(NULL),
   dataE(NULL)
-{
-
+{                 
     mSourceCh = 0;
     mSampleBlockSize = 0;
     mSamplingRate = 0;
@@ -60,6 +60,7 @@ TDTBCI::TDTBCI()
 		    "// Number of processors (set the RCO file accordingly!): ",
         "Source:TDT int NumEEGchannels= 1 64 1 64 "
             "// Number of EEG channels to be acquired",
+        "Source:TDT intlist SourceChList= 0 0 1 64 //the list of eeg channels to acquire (blank for all)",
         "Source:TDT intlist FrontPanelList= 0 0 1 16 "
             "// list of front panel components to acquire",
         "Source:TDT float DigitalGain= 1 1 0 % "
@@ -182,6 +183,15 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
         if (mTotalChannelsTmp != (int)Parameter("SourceCh"))
         {
             bcierr << "When using FrontPanelList components, NumEEGchannels and the number of FrontPanelList entries must add to SourceCh."<<endl;
+            return;
+        }
+    }
+
+    if (Parameter("SourceChList")->NumValues() > 0)
+    {
+        if (Parameter("SourceChList")->NumValues() != Parameter("NumEEGchannels"))
+        {
+            bcierr << "The number of values in SourceChList must equal NumEEGchannels"<<endl;
             return;
         }
     }
@@ -318,6 +328,13 @@ void TDTBCI::Initialize(const SignalProperties&, const SignalProperties&)
         dataD = new float[valuesToRead];
     }
 
+    if (Parameter("SourceChList")->NumValues() == 0)
+        for (int i = 0; i < 64; i++)
+            mChList[i] = i;
+    else
+        for (int i = 0; i < Parameter("SourceChList")->NumValues(); i++)
+            mChList[i] = Parameter("SourceChList")(i)-1;
+
     mUseFrontPanel = Parameter("FrontPanelList")->NumValues() > 0;
     if (mUseFrontPanel)
     {
@@ -355,6 +372,11 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
 	WideString dataTagA("dataA"), dataTagB("dataB"), dataTagC("dataC"),	dataTagD("dataD"), dataTagE("dataE");
     WideString indexA("indexA"), indexB("indexB"), indexC("indexC"), indexD("indexD"), indexE("indexE");
 
+    if (RPcoX1->GetStatus() < 5)
+    {
+        bcierr << "TDT system is not connected and/or not running!"<<endl;
+        return; 
+    }
     curindex = RPcoX1->GetTagVal(indexA.c_bstr());
 
     #ifdef DEBUGLOG
@@ -367,7 +389,7 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
 		while (curindex <= stopIndex && curindex > mOffset)
 		{
 			curindex = RPcoX1->GetTagVal(indexA.c_bstr());
-            Sleep(1);
+			Sleep(1);
 		}
     }
     else
@@ -423,14 +445,14 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
 
     mOffset = (mOffset + valuesToRead) % (TDTbufSize);
     #ifdef DEBUGLOG
-    fprintf(logFile, "EndT: %d\tNewOffset: %d\t", mOffset,PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
+    fprintf(logFile, "EndT: %d\tNewOffset: %d\t",PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()), mOffset);
     #endif
 
     for (int ch =0; ch < mEEGchannels; ch++)
     {
         for (int sample = 0; sample < mSampleBlockSize; sample++)
         {
-            curSample = sample*16+ch%(16);
+            curSample = sample*16+mChList[ch]%(16);
             if (ch < mEEGchannels)
             {
                 if (ch < 16)
@@ -443,18 +465,24 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
                     outputSignal(ch, sample) = dataD[curSample];
             }
         }
-    }
-    for (int fCh = 0; fCh < mFrontPanelChannels; fCh++)
-    {
+	}
+	#ifdef DEBUGLOG
+		//curTime = PrecisionTime::Now();
+		fprintf(logFile,"WT1: %d\t", PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
+	#endif
+	int curFrontCh = 0;
+	for (int fCh = 0; fCh < mFrontPanelChannels; fCh++)
+	{
+		curFrontCh = ((int)Parameter("FrontPanelList")(fCh)-1);
         for (int sample = 0; sample < mSampleBlockSize; sample++)
         {
-            curSample = sample*16 + ((int)Parameter("FrontPanelList")(fCh)-1);
+			curSample = sample*16 + curFrontCh;
             outputSignal(mEEGchannels+fCh, sample) = dataE[curSample];
         }
     }
     #ifdef DEBUGLOG
-        curTime = PrecisionTime::Now();
-        fprintf(logFile,"WT: %d\n", PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
+		//curTime = PrecisionTime::Now();
+        fprintf(logFile,"WT2: %d\n", PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()));
     #endif
     //bciout << "T: " << (unsigned short)PrecisionTime::TimeDiff(curTime, PrecisionTime::Now()) << "ms"<<endl;
 	// END DATA	READ

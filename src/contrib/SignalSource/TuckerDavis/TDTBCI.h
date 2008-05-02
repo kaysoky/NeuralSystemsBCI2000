@@ -58,6 +58,7 @@ private:
     int ECGstopIndex;
     int mUseFrontPanel;
     int mEEGchannels;
+    int mChList[64];
     int mFrontPanelChannels;
     float mDigitalGain;
     float mFrontPanelGain;
