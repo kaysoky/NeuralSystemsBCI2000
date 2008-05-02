@@ -967,8 +967,8 @@ void __fastcall TMainForm::HelpOnChannelClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TMainForm::mChannelListBoxContextPopup(TObject *Sender,
-      TPoint &MousePos, bool &Handled)
+void __fastcall TMainForm::mChannelListBoxContextPopup(TObject* Sender,
+      TPoint& MousePos, bool& )
 {
   TCheckListBox* pListBox = dynamic_cast<TCheckListBox*>( Sender );
   if( pListBox )

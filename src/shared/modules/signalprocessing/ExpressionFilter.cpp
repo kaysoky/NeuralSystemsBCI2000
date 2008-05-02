@@ -52,8 +52,8 @@ ExpressionFilter::Preflight( const SignalProperties& Input,
 
 
 void
-ExpressionFilter::Initialize( const SignalProperties& Input,
-                              const SignalProperties& Output )
+ExpressionFilter::Initialize( const SignalProperties&,
+                              const SignalProperties& )
 {
   // Read the expression matrix parameter into the mExpressions array.
   mExpressions.clear();
