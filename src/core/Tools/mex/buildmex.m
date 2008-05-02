@@ -1,11 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% $Id$
-% Author:      juergen.mellinger@uni-tuebingen.de
-% Description: Matlab M-file to build BCI2000 Matlab mex files.
-%
-% (C) 2000-2008, BCI2000 Project
-% http://www.bci2000.org
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function buildmex( varargin )
 % Usage: buildmex <options> <target>
 % For a list of options, see 'help mex'.
@@ -29,6 +21,13 @@ function buildmex( varargin )
 %   MEX files using the C++ library, so you can't rely on your gcc version 
 %   being listed there). Switching to the gcc version that your version of 
 %   Matlab was built with should fix the problem.
+%
+% This file is part of the BCI2000 project.
+% (C) 2000-2008, BCI2000 Project
+% http://www.bci2000.org
+
+%  Matlab M-file to build BCI2000 Matlab mex files.
+%  $Id$
 
 TARGETS = { ...
     'load_bcidat', ...
@@ -52,6 +51,7 @@ MEXSRC = { ...
     [ BCIFRM 'types/State.cpp' ], ...
     [ BCIFRM 'types/StateList.cpp' ], ...
     [ BCIFRM 'types/StateVector.cpp' ], ...
+    [ BCIFRM 'types/StateVectorSample.cpp' ], ...
     [ BCIFRM 'types/GenericSignal.cpp' ], ...
     [ BCIFRM 'types/SignalProperties.cpp' ], ...
     [ BCIFRM 'types/SignalType.cpp' ], ...
@@ -95,7 +95,7 @@ DEFINES = { ...
 
 switch( computer )
   case 'PCWIN'
-    build_version_header = 'cmd /c cd ..\..\..\shared\config && SubWCRev Version.h.in Version.h';
+    build_version_header = 'cmd /c "cd ..\..\..\shared\config && %ProgramFiles%\TortoiseSVN\bin\SubWCRev ..\.. Version.h.in Version.h"';
     CXXFLAGS = {};
     LDFLAGS = {};
   otherwise % we assume gcc on all other platforms
