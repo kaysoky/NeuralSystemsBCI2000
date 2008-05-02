@@ -68,7 +68,7 @@ protected:
 	int mBufferReadPos, mBufferWritePos;
 
 	class AcquireThread;
-	TEvent *acquireEventRead;
+	HANDLE acquireEventRead;
 	friend class AcquireThread;
 	class AcquireThread : public TThread
 	{

@@ -45,6 +45,7 @@ gUSBampADC::gUSBampADC()
   m_acqmode( 0 ),
   m_digitalOut1(false),
   mpAcquireThread( NULL ),
+  acquireEventRead( NULL ),
   mData(NULL),
   mDataInt(NULL)
 {
@@ -126,7 +127,7 @@ gUSBampADC::gUSBampADC()
  //SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
 	//acquireEventRead = new TEvent(NULL, true, false, "ReadEvent", false);
-    acquireEventRead = new TEvent(NULL, true, false, "ReadEvent");
+    acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
 }
 
 
@@ -145,6 +146,8 @@ gUSBampADC::~gUSBampADC()
         delete [] mData;
     if (mDataInt != NULL)
         delete [] mDataInt;
+
+    CloseHandle( acquireEventRead );
 }
 
 
@@ -629,7 +632,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
 
     //start acquire thread
-    acquireEventRead->ResetEvent();
+    ResetEvent( acquireEventRead );
     while (mpAcquireThread->Suspended)
         mpAcquireThread->Resume();
 }
@@ -648,7 +651,7 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
 	if (m_digitalOutput)
 		GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 0);
 
-	if (acquireEventRead->WaitFor(m_timeoutms) != wrSignaled)
+	if (WaitForSingleObject(acquireEventRead, m_timeoutms) != WAIT_OBJECT_0)
 	{
 		// we may or may not want to do this
 		//this says that if the thread times out, we jsut write 0s
@@ -688,7 +691,7 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
 			}
 		}
 	}
-	acquireEventRead->ResetEvent();
+	ResetEvent( acquireEventRead );
     
  if (m_digitalOutput)
     GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
@@ -783,7 +786,7 @@ gUSBampADC::AcquireThread::Execute()
         }
         amp->mBufferReadPos = (amp->mBufferReadPos+ amp->mTotalChs*amp->mSampleBlockSize) % amp->mBufferSize;
 		amp->current_buffer=(amp->current_buffer+1)%amp->NUM_BUFS;
-		amp->acquireEventRead->SetEvent();
+		SetEvent( amp->acquireEventRead );
 	}
 }  
 
