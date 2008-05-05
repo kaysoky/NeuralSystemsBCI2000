@@ -15,6 +15,10 @@
 #include <ExtActns.hpp>
 #include <Dialogs.hpp>
 #include <Menus.hpp>
+#include <FileCtrl.hpp>
+#include "functions.h"
+const SELDIRHELP = 1000;
+
 //#include <XPStyleActnCtrls.hpp>
 #include <string>
 #include <vector.h>
@@ -26,6 +30,7 @@
 #include <fstream>
 #include <dir.h>
 #include <sstream>
+#include "SIGFRIED_UI.h"
 #include "ExecutableHelp.h"
 #include "AboutBox.h"
 #include "EncodedString.h"
@@ -75,9 +80,6 @@ __published:	// IDE-managed Components
     TMenuItem *othersToSource;
     TMenuItem *othersToSp;
     TMenuItem *othersToApp;
-    TMainMenu *MainMenu1;
-    TMenuItem *Help1;
-    TMenuItem *helpMnu;
 	TLabel *Label7;
 	TEdit *appIPBox;
 	TLabel *Label8;
@@ -86,7 +88,19 @@ __published:	// IDE-managed Components
 	TLabel *Label6;
 	TButton *delParmBut;
 	TListBox *parmList;
+    TEdit *directoryBox;
+    TLabel *Label9;
+    TEdit *subjectNameBox;
+    TLabel *Label10;
+    TEdit *sessionNumBox;
+    TLabel *Label11;
+    TButton *getDirBtn;
+    TMainMenu *MainMenu1;
+    TMenuItem *Help1;
+    TMenuItem *helpMnu;
     TMenuItem *About1;
+    TMenuItem *Too1;
+    TMenuItem *SIGFRIED1;
     void __fastcall FormCreate(TObject *Sender);
     void __fastcall launchButClick(TObject *Sender);
     void __fastcall getParmButClick(TObject *Sender);
@@ -125,19 +139,26 @@ __published:	// IDE-managed Components
     void __fastcall helpMnuClick(TObject *Sender);
 	void __fastcall delParmButClick(TObject *Sender);
     void __fastcall About1Click(TObject *Sender);
+    void __fastcall getDirBtnClick(TObject *Sender);
+    void __fastcall sessionNumBoxChange(TObject *Sender);
+    void __fastcall sessionNumBoxExit(TObject *Sender);
+    void __fastcall sessionNumBoxKeyPress(TObject *Sender, char &Key);
+    void __fastcall SIGFRIED1Click(TObject *Sender);
 private:	// User declarations
     vector<string> dirListing;
     bool ismember(string str, vector<string> strs);
     vector<string> sourceStr;
     vector<string> SPStr;
     vector<string> appStr;
-    string curdir;
+    string curdir, progDir, iniFile;
     AnsiString helpLoc;
 	vector<string> parmFiles;
     //for drag-n-drop
     TPoint startPoint;
+    TSigfried_UIfrm *sigfriedUI;
 
     bool updateINIFile();
+    void addParm(string prm);
 public:		// User declarations
     __fastcall TmainForm(TComponent* Owner);
 };
@@ -146,11 +167,6 @@ extern PACKAGE TmainForm *mainForm;
 //---------------------------------------------------------------------------
 #endif
 
-bool ismember(string str, vector<string> strs);
-void removeAt(vector<string> &str, int pos);
-bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters);
-void stringSplit(const string& str, vector<string>& tokens, string delimiters);
-string lowerCase(string str);
-char *current_directory(char *path);
+
 
 

@@ -5,22 +5,23 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\prog\BCI2000launcher.exe"/>
     <OBJFILES value="obj\BCI2000launcher.obj obj\Unit1.obj obj\EncodedString.obj 
-      obj\ExecutableHelp.obj obj\AboutBox.obj obj\VersionInfo.obj"/>
+      obj\ExecutableHelp.obj obj\AboutBox.obj obj\VersionInfo.obj 
+      obj\SIGFRIED_UI.obj obj\functions.obj"/>
     <RESFILES value="BCI2000launcher.res"/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) Unit1.dfm"/>
+    <RESDEPEN value="$(RESFILES) Unit1.dfm SIGFRIED_UI.dfm"/>
     <LIBFILES value=""/>
     <LIBRARIES value="vclx.lib rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib vclx.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value=""/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="BCI2000launcher.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\utils;..\..\..\shared\gui;..\..\..\shared\types;..\..\..\shared\config;..\..;..;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -29,11 +30,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -5 -b- -k- -vi -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -5 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -50,6 +51,8 @@
       <FILE FILENAME="..\..\..\shared\gui\ExecutableHelp.cpp" FORMNAME="" UNITNAME="ExecutableHelp.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\gui\AboutBox.cpp" FORMNAME="" UNITNAME="AboutBox.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\VersionInfo.cpp" FORMNAME="" UNITNAME="VersionInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="SIGFRIED_UI.cpp" FORMNAME="Sigfried_UIfrm" UNITNAME="SIGFRIED_UI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="functions.cpp" FORMNAME="" UNITNAME="functions" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

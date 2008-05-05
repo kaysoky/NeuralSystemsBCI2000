@@ -7,6 +7,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 USEFORM("Unit1.cpp", mainForm);
+USEFORM("SIGFRIED_UI.cpp", Sigfried_UIfrm);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -16,6 +17,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
          Application->Title = "BCI Launcher";
          Application->HelpFile = "";
          Application->CreateForm(__classid(TmainForm), &mainForm);
+         Application->CreateForm(__classid(TSigfried_UIfrm), &Sigfried_UIfrm);
          Application->Run();
     }
     catch (Exception &exception)

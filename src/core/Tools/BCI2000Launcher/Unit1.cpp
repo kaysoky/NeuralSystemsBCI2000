@@ -29,8 +29,10 @@ __fastcall TmainForm::TmainForm(TComponent* Owner)
 
     char curdirTmp[200];
     current_directory(curdirTmp);
+    progDir = curdirTmp;
     curdir = curdirTmp;
     curdir.append("\\");
+    iniFile = progDir + "\\BCI2000Launcher.ini";
     helpLoc = curdir.c_str();
     helpLoc.Insert("BCIlauncher_help.chm", curdir.length()+1);
 }
@@ -46,10 +48,8 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
     int boxDlg;
     vector<string> lines;
     string label, value, tmp;
-    tmp = curdir.c_str();
-    tmp += "BCI2000Launcher.ini";
     ifstream in;
-    in.open(tmp.c_str());
+    in.open(iniFile.c_str());
 
     if (!in.fail())
         haveFile = true;
@@ -67,8 +67,8 @@ void __fastcall TmainForm::FormCreate(TObject *Sender)
                 break;
             case IDRETRY:
                 //get a new *.ini file
-                OpenParmDlg->FileName = "BCI2000Launcher.ini";
-                OpenParmDlg->Filter = "*.ini";
+                OpenParmDlg->FileName = iniFile.c_str();
+                OpenParmDlg->Filter = "INI File (*.ini)|*.ini";
                 if (OpenParmDlg->Execute())
                 {
                     in.open(OpenParmDlg->FileName.c_str());
@@ -190,20 +190,7 @@ bool TmainForm::ismember(string str, vector<string> strs)
     return false;
 }
 
-//---------------------------------------------------------------------------
-void removeAt(vector<string> &str, int pos)
-{
-    if (pos >= str.size() || pos < 0)
-        return;
 
-    vector<string> newStr = str;
-    str.clear();
-    for (unsigned int i=0; i < newStr.size(); i++)
-    {
-        if (i != pos)
-            str.push_back(newStr[i]);
-    }
-}
 
 //----------------------------------------------------------------
 void __fastcall TmainForm::launchButClick(TObject *Sender)
@@ -215,9 +202,11 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
 
     FileRun1->FileName = curdir.c_str();
 	FileRun1->FileName.Insert("operat.exe", curdir.length()+1);
+    string comm = "";
+    
 	if (parmList->Items->Count > 0 )
 	{
-		string comm;
+
 		comm = "--OnConnect \"-";
 
 		for (int i = 0; i < parmFiles.size(); i++)
@@ -229,12 +218,10 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
 			comm += "; ";
 		}
 		comm +=" SETCONFIG;\"";
-		FileRun1->Parameters = comm.c_str();
-	}
-	else
-	{
-		FileRun1->Parameters = "";
-	}
+    }
+
+	FileRun1->Parameters = comm.c_str();
+
 	/*if (parmBox->Text.Length() > 0)
     {
         string comm = "--OnConnect \"-LOAD PARAMETERFILE ";
@@ -259,14 +246,35 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     }
     else
     {
+        comm = "";
+
         statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
         FileRun1->FileName = curdir.c_str();
         FileRun1->FileName.Insert(sourceList->Items->Strings[sourceList->ItemIndex], curdir.length()+1);
         if (sourceIPBox->Text.Length() > 0)
-            FileRun1->Parameters = "AUTOSTART " + sourceIPBox->Text;
+        {
+            comm += "AUTOSTART ";
+            comm += sourceIPBox->Text.c_str();
+        }
         else
-            FileRun1->Parameters = "";
-            
+            comm = "";
+
+        if (directoryBox->Text.Length() > 0)
+        {
+            comm += " --DataDirectory-";
+            comm += EncodedString(directoryBox->Text.c_str());
+        }
+        if (subjectNameBox->Text.Length() > 0)
+        {
+            comm += " --SubjectName-";
+            comm += EncodedString(subjectNameBox->Text.c_str());
+        }
+        if (sessionNumBox->Text.Length() > 0)
+        {
+            comm += " --SubjectSession-";
+            comm += EncodedString(sessionNumBox->Text.c_str());
+        }
+        FileRun1->Parameters = comm.c_str();
         FileRun1->Execute();
     }
 
@@ -331,14 +339,18 @@ void __fastcall TmainForm::getParmButClick(TObject *Sender)
 		for (int i = OpenParmDlg->Files->Count-1;i>=0; i--)
 		{
 			string tmp = OpenParmDlg->Files->Strings[i].c_str();
-			parmFiles.push_back(tmp);
-			int pos = tmp.find_last_of("\\");
-			//parmList->Lines->Add(tmp);
-			parmList->Items->Add(tmp.substr(pos+1).c_str());
-			//parmList->Items->Insert(0,tmp.substr(pos+1).c_str());
+            addParm(tmp);
 		}
 	}
 	
+}
+
+void TmainForm::addParm(string prm)
+{
+    parmFiles.push_back(prm);
+    int pos = prm.find_last_of("\\");
+    //parmList->Lines->Add(tmp);
+    parmList->Items->Add(prm.substr(pos+1).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -358,114 +370,6 @@ void __fastcall TmainForm::clearButClick(TObject *Sender)
         othersList->Selected[i] = false;
 }
 //---------------------------------------------------------------------------
-
-bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters)
-{
-    bool found = false;
-    int pos;
-    string line;
-
-    if (in.eof())
-        return false;
-        
-    while (!found && !in.eof())
-    {
-        tokens.clear();
-        line.erase();
-
-        
-        if (in.eof())
-			return false;
-
-        //in.getline(line, 500, '\n');
-       // getline(in, line, '\n');
-       getline(in, line);
-
-       //remove comments
-       pos = line.find("//");
-       if (pos != string::npos)
-       {
-            line.erase(pos);
-       }
-
-       //remove leading spaces or tabs
-       pos = line.find_first_not_of(" \t");
-		if (pos != string::npos)
-		{
-			//cout << "erasing leading spaces..."<<endl;
-			line.erase(0, pos);
-		}
-
-		// remove trailing spaces
-		pos = line.find_last_not_of(" \t");
-		if (pos != string::npos)
-		{
-			
-			//cout <<"erasing trailing spaces..."<<endl;
-			//cout << "Pos = "<<pos<<endl;
-			line.erase(pos+1);
-		}
-
-		if (line.length() < 1)
-		{
-			//cout <<"going to next line..."<<endl;
-			// get the next line
-			continue;
-		}
-        if (line.length() == 1)
-		{
-			//cout <<"LENGTH = 1. Char is "<<(int)line[0]<<endl;
-		}
-
-		if (line.length() < 1)
-		{
-			//cout <<"Nothing left, going to next line..."<<endl;
-			// get next line
-			continue;
-		}
-        stringSplit(line, tokens, delimiters);
-		//getchar();
-		found = true;
-    }
-    return found;
-}
-
-void stringSplit(const string& str, vector<string>& tokens, string delimiters)
-{
-
-	tokens.clear();
-	// Find the first position in the string that is not a delimiter
-	int start = str.find_first_not_of(delimiters);
-	int endStr = 0;
-
-	//cout <<"String: ["<<str<<"]"<<endl;
-	//cout <<"Start: "<<start<<endl;
-	
-	while (start != string::npos)
-	{
-		endStr = str.find_first_of(delimiters, start+1);
-		if (endStr == string::npos)
-			endStr = str.length();
-
-		tokens.insert(tokens.end(), str.substr(start, endStr - start));
-
-		start = str.find_first_not_of(delimiters, endStr+1);
-		//cout << str.substr(start, endStr - start) <<endl;
-	}
-	
-
-	return;
-}
-
-string lowerCase(string str)
-{
-	string returnStr = str;
-	for (unsigned int i = 0; i < returnStr.length(); i++)
-	{
-		returnStr[i] = tolower(returnStr[i]);
-	}
-	return returnStr;
-}
 
 
 
@@ -797,7 +701,7 @@ bool TmainForm::updateINIFile()
     //first, open the file for writing, and erase contents in the process
     ofstream out;
     int i;
-    out.open("BCI2000launcher.ini", ios::out);
+    out.open(iniFile.c_str(), ios::out);
 
     if (out.fail())
         return false;
@@ -921,16 +825,6 @@ void __fastcall TmainForm::helpMnuClick(
     } */
 }
 //---------------------------------------------------------------------------
-//------------------------------------------------------------------
-char *current_directory(char *path)
-{
-  strcpy(path, "X:\\");      /* fill string with form of response: X:\ */
-  path[0] = 'A' + getdisk();    /* replace X with current drive letter */
-  getcurdir(0, path+3);  /* fill rest of string with current directory */
-  return(path);
-}
-
-
 
 
 void __fastcall TmainForm::delParmButClick(TObject *Sender)
@@ -957,6 +851,111 @@ void __fastcall TmainForm::About1Click(TObject *Sender)
 {
     AboutBox().SetApplicationName( "BCI2000Launcher" )
             .Display();    
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TmainForm::getDirBtnClick(TObject *Sender)
+{
+    AnsiString Dir = "";
+  if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))
+    directoryBox->Text = Dir;
+    
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TmainForm::sessionNumBoxChange(TObject *Sender)
+{               /*
+    if (sessionNumBox->Text.Length() == 0)
+        return;
+    if (sessionNumBox->Text.Length() < 3)
+    {
+        AnsiString tmp;
+        for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
+            tmp << "0";
+        for (int i=0; i < sessionNumBox->Text.Length(); i++)
+            tmp << sessionNumBox->Text[i];
+        sessionNumBox->Text = tmp;
+        return;
+    }
+    if (sessionNumBox->Text.Length() > 3)
+    {
+        AnsiString tmp;
+        for (int i=0; i < 3; i++)
+            tmp << sessionNumBox->Text[i];
+        sessionNumBox->Text = tmp;
+        return;
+    }
+    return;   */
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TmainForm::sessionNumBoxExit(TObject *Sender)
+{
+    if (sessionNumBox->Text.Length() == 0)
+        return;
+    if (sessionNumBox->Text.Length() < 3)
+    {
+        string tmp = "";
+        for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
+            tmp += "0";
+        tmp += sessionNumBox->Text.c_str();
+        sessionNumBox->Text = tmp.c_str();
+        return;
+    }
+    if (sessionNumBox->Text.Length() > 3)
+    {
+        AnsiString tmp = sessionNumBox->Text.SubString(0,3);
+        sessionNumBox->Text = tmp;
+        return;
+    }
+    return;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TmainForm::sessionNumBoxKeyPress(TObject *Sender,
+      char &Key)
+{
+    if (Key ==13)
+    {
+        if (sessionNumBox->Text.Length() == 0)
+            return;
+        if (sessionNumBox->Text.Length() < 3)
+        {
+            string tmp = "";
+            for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
+                tmp += "0";
+            tmp += sessionNumBox->Text.c_str();
+            sessionNumBox->Text = tmp.c_str();
+            return;
+        }
+        if (sessionNumBox->Text.Length() > 3)
+        {
+            AnsiString tmp = sessionNumBox->Text.SubString(0,3);
+            sessionNumBox->Text = tmp;
+            return;
+        }
+        return;
+    }    
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TmainForm::SIGFRIED1Click(TObject *Sender)
+{
+    if (sourceList->ItemIndex < 0)
+    {
+        statusList->Items->Add("No Acquisition program selected...");
+    }
+    string sigSource = sourceList->Items->Strings[sourceList->ItemIndex].c_str();
+    sigfriedUI = new TSigfried_UIfrm(this, sigSource, progDir);
+    sigfriedUI->ShowModal();
+    if (sigfriedUI->Status() == 1)
+    {
+        string tmp = sigfriedUI->ParmFile();
+        addParm(tmp);
+    }
 }
 //---------------------------------------------------------------------------
 

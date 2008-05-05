@@ -1,8 +1,8 @@
 object mainForm: TmainForm
-  Left = 545
-  Top = 660
-  Width = 710
-  Height = 430
+  Left = 218
+  Top = 200
+  Width = 709
+  Height = 470
   Caption = 'BCI2000 Launcher'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -111,7 +111,7 @@ object mainForm: TmainForm
     Left = 0
     Top = 208
     Width = 329
-    Height = 166
+    Height = 201
     Caption = 'Parameters'
     TabOrder = 1
     object Label5: TLabel
@@ -120,6 +120,27 @@ object mainForm: TmainForm
       Width = 67
       Height = 13
       Caption = 'Parameter File'
+    end
+    object Label9: TLabel
+      Left = 16
+      Top = 120
+      Width = 76
+      Height = 13
+      Caption = 'Save Directory: '
+    end
+    object Label10: TLabel
+      Left = 15
+      Top = 155
+      Width = 73
+      Height = 13
+      Caption = 'Subject Name: '
+    end
+    object Label11: TLabel
+      Left = 173
+      Top = 155
+      Width = 50
+      Height = 13
+      Caption = 'Session #:'
     end
     object getParmBut: TButton
       Left = 288
@@ -143,17 +164,50 @@ object mainForm: TmainForm
       Left = 16
       Top = 43
       Width = 266
-      Height = 110
+      Height = 70
       ItemHeight = 13
       MultiSelect = True
       TabOrder = 2
+    end
+    object directoryBox: TEdit
+      Left = 96
+      Top = 119
+      Width = 185
+      Height = 21
+      TabOrder = 3
+    end
+    object subjectNameBox: TEdit
+      Left = 88
+      Top = 151
+      Width = 73
+      Height = 21
+      TabOrder = 4
+    end
+    object sessionNumBox: TEdit
+      Left = 240
+      Top = 151
+      Width = 73
+      Height = 21
+      TabOrder = 5
+      OnChange = sessionNumBoxChange
+      OnExit = sessionNumBoxExit
+      OnKeyPress = sessionNumBoxKeyPress
+    end
+    object getDirBtn: TButton
+      Left = 284
+      Top = 117
+      Width = 27
+      Height = 20
+      Caption = '...'
+      TabOrder = 6
+      OnClick = getDirBtnClick
     end
   end
   object GroupBox4: TGroupBox
     Left = 336
     Top = 208
     Width = 345
-    Height = 166
+    Height = 201
     Caption = 'Status'
     TabOrder = 2
     object Label4: TLabel
@@ -165,7 +219,7 @@ object mainForm: TmainForm
     end
     object Label7: TLabel
       Left = 11
-      Top = 62
+      Top = 73
       Width = 103
       Height = 13
       Alignment = taRightJustify
@@ -173,7 +227,7 @@ object mainForm: TmainForm
     end
     object Label8: TLabel
       Left = 11
-      Top = 101
+      Top = 127
       Width = 71
       Height = 13
       Alignment = taRightJustify
@@ -189,7 +243,7 @@ object mainForm: TmainForm
     end
     object launchBut: TButton
       Left = 150
-      Top = 119
+      Top = 143
       Width = 75
       Height = 25
       Caption = 'Launch!'
@@ -200,7 +254,7 @@ object mainForm: TmainForm
       Left = 120
       Top = 40
       Width = 217
-      Height = 73
+      Height = 89
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -8
@@ -212,7 +266,7 @@ object mainForm: TmainForm
     end
     object appIPBox: TEdit
       Left = 11
-      Top = 121
+      Top = 147
       Width = 73
       Height = 21
       TabOrder = 2
@@ -220,7 +274,7 @@ object mainForm: TmainForm
     end
     object sigProcIPBox: TEdit
       Left = 11
-      Top = 81
+      Top = 92
       Width = 73
       Height = 21
       TabOrder = 3
@@ -340,6 +394,13 @@ object mainForm: TmainForm
       object About1: TMenuItem
         Caption = 'About...'
         OnClick = About1Click
+      end
+    end
+    object Too1: TMenuItem
+      Caption = 'Tools'
+      object SIGFRIED1: TMenuItem
+        Caption = 'SIGFRIED'
+        OnClick = SIGFRIED1Click
       end
     end
   end
