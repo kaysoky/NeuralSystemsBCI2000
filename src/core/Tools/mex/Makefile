@@ -40,6 +40,7 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\LabelIndex.obj \
           obj\HierarchicalLabel.obj \
           obj\Brackets.obj \
+          obj\VersionInfo.obj \
           obj\BCIError.obj \
           obj\BCIError_mex.obj \
           obj\mexutils.obj \
@@ -52,7 +53,7 @@ SRCROOT = ${BCIROOT}\shared\modules\signalsource
 SIGROOT = ${BCIROOT}\shared\modules\signalprocessing
 SIGPROC = ${BCIROOT}\shared\modules;${SIGROOT};${BCIROOT}\extlib\fftlib
 PATHOBJ = .\obj
-PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\types;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\utils\Expression;${SIGPROC};${SRCROOT};${CMDLINE};${BCIROOT}\extlib\math
+PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\types;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression;${SIGPROC};${SRCROOT};${CMDLINE};${BCIROOT}\extlib\math
 INCLUDES = -I${BCIROOT};${BCIROOT}\shared\modules;${BCIROOT}\shared;${BCIROOT}\extlib\math; \
            -I${BCIROOT}\shared\accessors;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\config; \
            -I${BCIROOT}\shared\fileio;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\types;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression; \
