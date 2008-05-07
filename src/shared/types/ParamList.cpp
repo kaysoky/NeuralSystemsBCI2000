@@ -273,7 +273,7 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
 
   for( ParamContainer::const_iterator i = paramsFromFile.mParams.begin();
                                        i != paramsFromFile.mParams.end(); ++i )
-    ( *this )[ i->Param.mName ] = i->Param;
+    ( *this )[ i->Param.mName ].AssignValues( i->Param );
 
   return !file.fail();
 }

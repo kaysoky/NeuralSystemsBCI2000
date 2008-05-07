@@ -296,7 +296,7 @@ TfConfig::LoadParameters( const AnsiString& inName )
 
   for( int i = 0; i < paramsFromFile.Size(); ++i )
     if( !fShowParameters->GetFilterStatus( &paramsFromFile[ i ], 1 ) )
-      ( *paramlist )[ paramsFromFile[ i ].Name() ] = paramsFromFile[ i ];
+      ( *paramlist )[ paramsFromFile[ i ].Name() ].AssignValues( paramsFromFile[ i ] );
 
   return  result;
 }

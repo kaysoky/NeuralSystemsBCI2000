@@ -37,6 +37,8 @@ class State
   int Length() const
       { return mLength; }
 
+  State& AssignValue( const State& s )
+      { return SetValue( s.Value() ); }
   State& SetValue( ValueType );
 
   std::ostream& WriteToStream( std::ostream& ) const;

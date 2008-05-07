@@ -328,9 +328,8 @@ Param::WriteBinary( ostream& os ) const
 
 // **************************************************************************
 // Function:   operator=
-// Purpose:    Assignment operator to prevent setting of certain properties
-//             from e.g. parameter files.
-// Parameters: Param instance to be assigned to *this.
+// Purpose:    Assignment from one parameter instance to another.
+// Parameters: Param instance to be assigned.
 // Returns:    *this.
 // **************************************************************************
 Param&
@@ -338,20 +337,29 @@ Param::operator=( const Param& p )
 {
   if( this != &p )
   {
-    // We prevent assignment of certain values if a parameter's name
-    // is set and the parameter that is to be copied has the same
-    // name.
-    if( mName.empty() || !strciequal( mName, p.mName ) )
-    {
-      mSections = p.mSections;
-      mName = p.mName;
-      mType = p.mType;
-      mDefaultValue = p.mDefaultValue;
-      mLowRange = p.mLowRange;
-      mHighRange = p.mHighRange;
-      mComment = p.mComment;
-    }
+    mSections = p.mSections;
+    mName = p.mName;
+    mType = p.mType;
+    mDefaultValue = p.mDefaultValue;
+    mLowRange = p.mLowRange;
+    mHighRange = p.mHighRange;
+    mComment = p.mComment;
+    AssignValues( p );
+  }
+  return *this;
+}
 
+// **************************************************************************
+// Function:   AssignValues
+// Purpose:    Assignment of parameter values
+// Parameters: Param instance to be assigned.
+// Returns:    *this.
+// **************************************************************************
+Param&
+Param::AssignValues( const Param& p )
+{
+  if( this != &p )
+  {
     mDim1Index = p.mDim1Index;
     mDim2Index = p.mDim2Index;
     mValues = p.mValues;

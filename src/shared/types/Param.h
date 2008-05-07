@@ -110,6 +110,7 @@ class Param
             explicit Param( const std::string& parameterDefinition );
                     ~Param() {}
   Param&             operator=( const Param& );
+  Param&             AssignValues( const Param& );
 
   // Sections
   HierarchicalLabel& Sections()

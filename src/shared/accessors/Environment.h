@@ -52,15 +52,14 @@ class FilterWrapper;
              << std::endl;                                               \
     else                                                                 \
     {                                                                    \
-      if( !Parameters->Exists( p.Name() ) )                              \
-      {                                                                  \
-        p.Sections().push_back( bci::ClassName( typeid( *this ) ) );     \
-        Parameters->Add( p, -Instance() );                               \
-        bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "      \
-                     << "sorting by (" << -Instance() << ","             \
-                     << p.Sections() << ")"                              \
-                     << std::endl;                                       \
-      }                                                                  \
+      p.Sections().push_back( bci::ClassName( typeid( *this ) ) );       \
+      if( Parameters->Exists( p.Name() ) )                               \
+        p.AssignValues( ( *Parameters )[ p.Name() ] );                   \
+      Parameters->Add( p, -Instance() );                                 \
+      bcidbg( 10 ) << "Registered parameter " << p.Name() << ", "        \
+                   << "sorting by (" << -Instance() << ","               \
+                   << p.Sections() << ")"                                \
+                   << std::endl;                                         \
       OwnedParams()[ this ].insert( p.Name() );                          \
     }                                                                    \
   }                                                                      \
@@ -83,7 +82,9 @@ class FilterWrapper;
              << std::endl;                                             \
     else                                                               \
     {                                                                  \
-      if( !States->Exists( s.Name() ) )                                \
+      if( States->Exists( s.Name() ) )                                 \
+        ( *States )[ s.Name() ].AssignValue( s );                      \
+      else                                                             \
         States->Add( s );                                              \
       OwnedStates()[ this ].insert( s.Name() );                        \
     }                                                                  \
