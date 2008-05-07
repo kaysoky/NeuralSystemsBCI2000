@@ -151,7 +151,10 @@ StateVector::StateValue( const string& inName ) const
 void
 StateVector::SetStateValue( size_t inLocation, size_t inLength, State::ValueType inValue )
 {
-  if( inValue < 0 || ( inValue & ~( -1 << inLength ) ) != inValue )
+  // Avoid undefined behavior when left-shifting a number by its number of bits.
+  State::ValueType valueMask =
+    ( inLength == 8 * sizeof( State::ValueType ) ) ? -1 : ~( -1 << inLength );
+  if( inValue < 0 || ( inValue & valueMask ) != inValue )
     throw "Value exceeds limit given by state length";
   if( inLength > 8 * sizeof( State::ValueType ) )
     throw "Invalid state length";
