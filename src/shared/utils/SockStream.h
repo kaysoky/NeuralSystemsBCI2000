@@ -251,6 +251,10 @@ class sockstream : public std::iostream
              {}
     operator void*()
              { return std::iostream::operator void*(); }
+    void     set_timeout( int t )
+             { buf.set_timeout( t ); }
+    int      get_timeout() const
+             { return buf.get_timeout(); }
     bool     is_open() const
              { return buf.is_open(); }
     void     open( streamsock& );
