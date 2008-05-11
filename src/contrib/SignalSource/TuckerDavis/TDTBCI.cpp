@@ -44,7 +44,7 @@ TDTBCI::TDTBCI()
     ECGgain = 0;
 	
     BEGIN_PARAMETER_DEFINITIONS
-        "Source:TDT string CircuitPath= c:\\bci2000\\src\\EEGsource\\TuckerDavis\\chAcquire64.rco 0 0 1024"
+        "Source:TDT string CircuitPath= ..\\src\\contrib\\SignalSource\\TuckerDavis\\chAcquire64_RZ2.rcx 0 0 1024"
 		    "//RCO circuit path (inputfile)",
         "Source:TDT int TDTBufferBlocks= 32 0 1 128 "
             "//determines the size of the TDT buffer as TDTBufferBlocks*16*blockSize",
@@ -54,7 +54,7 @@ TDTBCI::TDTBCI()
 		    "//High Pass Filter Frequency",
         "Source:TDT float notchBW= 10 10 1 30 "
 		    "//60 Hz notch filter BW",
-        "Source:TDT float TDTgain= 1 1 1 100000000"
+        "Source:TDT float TDTgain= 50000 1 1 100000000"
 		    "//TDT pre-gain",
         "Source:TDT int nProcessors= 5 5 0 5 "
 		    "// Number of processors (set the RCO file accordingly!): ",

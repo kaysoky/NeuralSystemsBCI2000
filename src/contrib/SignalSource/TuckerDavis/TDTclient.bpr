@@ -27,14 +27,14 @@
     <LIBRARIES value="rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules;..\..\..\shared\utils\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=1;_DEBUG"/>
+    <USERDEFINES value="MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="TDTclient.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalsource;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;..\..;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -43,11 +43,11 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
+    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -155,8 +155,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=MODTYPE=1;_DEBUG
-Item1=MODTYPE=1
+Item0=MODTYPE=1
+Item1=MODTYPE=1;_DEBUG
 Item2=_DEBUG;MODTYPE=1
 
 [HistoryLists\hlIntOutputDir]
