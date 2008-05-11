@@ -17,6 +17,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <dir.h>
 
 #include "EncodedString.h"
 #include "functions.h"
@@ -45,7 +46,6 @@ __published:	// IDE-managed Components
     TButton *modelDirBtn;
     TLabel *Label4;
     TEdit *modelIniBox;
-    TButton *modelIniBtn;
     TButton *buildModelBtn;
     TGroupBox *GroupBox4;
     TEdit *parmOutputBox;
@@ -66,6 +66,10 @@ __published:	// IDE-managed Components
     TLabel *Label7;
     TLabel *Label8;
     TCheckBox *visModelsCheck;
+    TEdit *baselineFileBox;
+    TButton *modelIniBtn;
+    TButton *getBaselineFileBtn;
+    TLabel *Label10;
     void __fastcall getDirBtnClick(TObject *Sender);
     void __fastcall sessionNumBoxExit(TObject *Sender);
     void __fastcall sessionNumBoxKeyPress(TObject *Sender, char &Key);
@@ -83,6 +87,8 @@ __published:	// IDE-managed Components
     void __fastcall parmOutputBtnClick(TObject *Sender);
     void __fastcall parmOutputBoxChange(TObject *Sender);
     void __fastcall returnBtnClick(TObject *Sender);
+    void __fastcall getBaselineFileBtnClick(TObject *Sender);
+    void __fastcall baselineFileBoxChange(TObject *Sender);
 private:	// User declarations
 
     struct Model

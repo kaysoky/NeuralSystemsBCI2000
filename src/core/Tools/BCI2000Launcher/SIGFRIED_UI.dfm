@@ -120,21 +120,21 @@ object Sigfried_UIfrm: TSigfried_UIfrm
     TabOrder = 2
     object Label3: TLabel
       Left = 8
-      Top = 49
+      Top = 68
       Width = 67
       Height = 13
       Caption = 'Model Output:'
     end
     object Label4: TLabel
       Left = 8
-      Top = 25
+      Top = 44
       Width = 71
       Height = 13
       Caption = 'Model *.ini File:'
     end
     object Label6: TLabel
       Left = 23
-      Top = 78
+      Top = 97
       Width = 56
       Height = 13
       Caption = 'Description:'
@@ -153,9 +153,16 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Height = 13
       Caption = 'Height'
     end
+    object Label10: TLabel
+      Left = 17
+      Top = 23
+      Width = 62
+      Height = 13
+      Caption = 'Baseline File:'
+    end
     object modelFileBox: TEdit
       Left = 84
-      Top = 46
+      Top = 65
       Width = 157
       Height = 21
       TabOrder = 0
@@ -163,7 +170,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
     end
     object modelDirBtn: TButton
       Left = 242
-      Top = 47
+      Top = 66
       Width = 27
       Height = 20
       Caption = '...'
@@ -172,20 +179,11 @@ object Sigfried_UIfrm: TSigfried_UIfrm
     end
     object modelIniBox: TEdit
       Left = 84
-      Top = 22
+      Top = 41
       Width = 157
       Height = 21
       TabOrder = 2
       OnChange = modelIniBoxChange
-    end
-    object modelIniBtn: TButton
-      Left = 242
-      Top = 23
-      Width = 27
-      Height = 20
-      Caption = '...'
-      TabOrder = 3
-      OnClick = modelIniBtnClick
     end
     object buildModelBtn: TButton
       Left = 341
@@ -194,7 +192,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Height = 25
       Caption = 'Build Models'
       Enabled = False
-      TabOrder = 4
+      TabOrder = 3
       OnClick = buildModelBtnClick
     end
     object modelList: TListBox
@@ -203,14 +201,14 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Width = 121
       Height = 113
       ItemHeight = 13
-      TabOrder = 5
+      TabOrder = 4
     end
     object modelDescBox: TEdit
       Left = 84
-      Top = 74
+      Top = 93
       Width = 121
       Height = 21
-      TabOrder = 6
+      TabOrder = 5
     end
     object addModelBtn: TButton
       Left = 285
@@ -218,7 +216,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Width = 25
       Height = 25
       Caption = '+'
-      TabOrder = 7
+      TabOrder = 6
       OnClick = addModelBtnClick
     end
     object remModelBtn: TButton
@@ -227,7 +225,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Width = 27
       Height = 25
       Caption = '-'
-      TabOrder = 8
+      TabOrder = 7
       OnClick = remModelBtnClick
     end
     object visModelWidthBox: TEdit
@@ -235,7 +233,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Top = 160
       Width = 41
       Height = 21
-      TabOrder = 9
+      TabOrder = 8
       Text = '200'
     end
     object visModelHeightBox: TEdit
@@ -243,7 +241,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Top = 160
       Width = 41
       Height = 21
-      TabOrder = 10
+      TabOrder = 9
       Text = '200'
     end
     object visModelsCheck: TCheckBox
@@ -254,7 +252,33 @@ object Sigfried_UIfrm: TSigfried_UIfrm
       Caption = 'Visualize Models?'
       Checked = True
       State = cbChecked
+      TabOrder = 10
+    end
+    object baselineFileBox: TEdit
+      Left = 84
+      Top = 18
+      Width = 156
+      Height = 21
       TabOrder = 11
+      OnChange = baselineFileBoxChange
+    end
+    object modelIniBtn: TButton
+      Left = 242
+      Top = 42
+      Width = 27
+      Height = 20
+      Caption = '...'
+      TabOrder = 12
+      OnClick = modelIniBtnClick
+    end
+    object getBaselineFileBtn: TButton
+      Left = 242
+      Top = 20
+      Width = 27
+      Height = 20
+      Caption = '...'
+      TabOrder = 13
+      OnClick = getBaselineFileBtnClick
     end
   end
   object GroupBox4: TGroupBox

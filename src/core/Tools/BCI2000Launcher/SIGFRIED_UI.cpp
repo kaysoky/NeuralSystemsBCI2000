@@ -180,6 +180,7 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject *Sender)
     mBaselineFile = EncodedString(directoryBox->Text.c_str()) + "\\baseline";
     mBaselineFile += string(sessionNumBox->Text.c_str()) + "\\";
     mBaselineFile += "baselineS" + string(sessionNumBox->Text.c_str()) + "R01.dat";
+    baselineFileBox->Text = mBaselineFile.c_str();
 
     string tmpModel = EncodedString(directoryBox->Text.c_str()) + "\\baseline";
     tmpModel += string(sessionNumBox->Text.c_str()) + "\\model.mdl";
@@ -215,14 +216,14 @@ void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject *Sender)
 void __fastcall TSigfried_UIfrm::modelFileBoxChange(TObject *Sender)
 {
     mModelFile = modelFileBox->Text.c_str();
-    mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0);
+    mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
 void __fastcall TSigfried_UIfrm::modelIniBoxChange(TObject *Sender)
 {
     mIniFile = modelIniBox->Text.c_str();
-    mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0);
+    mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
@@ -243,6 +244,7 @@ void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject *Sender)
         FileRun1->Execute();
     }
 }
+
 //---------------------------------------------------------------------------
 
 void __fastcall TSigfried_UIfrm::addModelBtnClick(TObject *Sender)
@@ -348,6 +350,26 @@ void __fastcall TSigfried_UIfrm::returnBtnClick(TObject *Sender)
     of.close();
     mStatus = 1;
     Close();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject *Sender)
+{
+    OpenFileDlg->FileName = "";
+    OpenFileDlg->Filter = "BCI2000 Dat file(*.dat)|*.dat";
+    if (OpenFileDlg->Execute())
+    {
+        mBaselineFile = OpenFileDlg->FileName.c_str();
+        baselineFileBox->Text = mBaselineFile.c_str();
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TSigfried_UIfrm::baselineFileBoxChange(TObject *Sender)
+{
+    mBaselineFile = baselineFileBox->Text.c_str();
+    mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
+    buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
 
