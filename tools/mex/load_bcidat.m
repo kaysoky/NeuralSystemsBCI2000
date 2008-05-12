@@ -50,6 +50,6 @@ function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
 
 %  This is a help file documenting the functionality contained in
 %  load_bcimat.mex.
-%  $Id: load_bcidat.m 1723 2008-01-16 17:46:33Z mellinger $
+%  $Id$
 %
 error( 'There is no load_bcidat mex file for your platform available.' );

@@ -21,5 +21,5 @@ function result = convert_bciprm( varargin )
 
 %  This is a help file documenting the functionality contained in
 %  convert_bciprm.mex.
-%  $Id: convert_bciprm.m 1723 2008-01-16 17:46:33Z mellinger $
+%  $Id$
 error( 'There is no convert_bciprm mex file for your platform available.' );
