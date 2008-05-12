@@ -239,7 +239,7 @@ EnvironmentBase::State( const std::string& name ) const
         bcierr_ << "State \"" << name << "\" has zero length." << endl;
     }
   }
-  return StateRef( Statevector, location, length );
+  return StateRef( Statevector, location, length, 0 );
 }
 
 // Read access to an optional state by its name.
@@ -301,6 +301,7 @@ void EnvironmentBase::EnterNonaccessPhase()
       {
         ErrorContext( "PostInitialize", *i );
         ( *i )->PostInitialize();
+        ErrorContext( "" );
       }
       break;
     case startRun:
@@ -308,6 +309,7 @@ void EnvironmentBase::EnterNonaccessPhase()
       {
         ErrorContext( "PostStartRun", *i );
         ( *i )->PostStartRun();
+        ErrorContext( "" );
       }
       break;
     case processing:
@@ -315,6 +317,7 @@ void EnvironmentBase::EnterNonaccessPhase()
       {
         ErrorContext( "PostProcess", *i );
         ( *i )->PostProcess();
+        ErrorContext( "" );
       }
       break;
     case stopRun:
@@ -322,6 +325,7 @@ void EnvironmentBase::EnterNonaccessPhase()
       {
         ErrorContext( "PostStopRun", *i );
         ( *i )->PostStopRun();
+        ErrorContext( "" );
       }
       if( paramlist_ && operator_ )
       {
