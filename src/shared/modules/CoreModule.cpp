@@ -19,8 +19,11 @@
 #include "SysCommand.h"
 #include "Status.h"
 #include "MessageHandler.h"
+#include "MeasurementUnits.h"
 #include "SockStream.h"
 #include "BCIError.h"
+#include "BCIEvent.h"
+#include "PrecisionTime.h"
 #include "VersionInfo.h"
 #include "Version.h"
 
@@ -45,11 +48,14 @@ CoreModule::CoreModule()
   mResting( false ),
   mFiltersInitialized( false ),
   mStartRunPending( false ),
-  mStopRunPending( false )
+  mStopRunPending( false ),
+  mBlockDuration( 0 ),
+  mSampleBlockSize( 0 )
 {
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
   mPreviousModuleSocket.set_tcpnodelay( true );
+  BCIEvent::SetEventQueue( mBCIEvents );
 }
 
 CoreModule::~CoreModule()
@@ -262,6 +268,68 @@ CoreModule::ProcessBCIAndGUIMessages()
   }
 }
 
+void
+CoreModule::ProcessBCIEvents()
+{
+  if( mpStatevector != NULL )
+  {
+    // When translating event time stamps into sample positions, we assume a block's
+    // source time stamp to match the next block's first sample.
+    PrecisionTime sourceTime = mpStatevector->StateValue( "SourceTime" );
+
+    while( !mBCIEvents.IsEmpty()
+           && PrecisionTime::SignedDiff( mBCIEvents.FrontTimeStamp(), sourceTime ) <= 0 )
+    {
+      int offset = ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) )
+                   * mSampleBlockSize ) / mBlockDuration;
+      istringstream iss( mBCIEvents.FrontDescriptor() );
+      string name;
+      iss >> name;
+      State::ValueType value;
+      iss >> value;
+      int duration;
+      if( !( iss >> duration ) )
+        duration = -1;
+
+      bcidbg( 10 ) << "Setting State \"" << name
+                   << "\" to " << value
+                   << " at offset " << offset
+                   << " with duration " << duration
+                   << " from event:\n" << mBCIEvents.FrontDescriptor()
+                   << endl;
+
+      offset = max( offset, 0 );
+      if( duration < 0 )
+      { // No duration given -- set the state at the current and following positions.
+        mpStatevector->SetStateValue( name, offset, value );
+      }
+      else if( duration == 0 )
+      { // Set the state at a single position only.
+        // For zero duration events, avoid overwriting a previous event by
+        // moving the current one if possible, and reposting if not.
+        while( offset <= mSampleBlockSize && mpStatevector->StateValue( name, offset ) != 0 )
+          ++offset;
+        if( offset == mSampleBlockSize )
+        { // Re-post the event to be processed in the next block
+          mBCIEvents.PushBack( mBCIEvents.FrontDescriptor(), mBCIEvents.FrontTimeStamp() );
+        }
+        else
+        {
+          mpStatevector->SetStateValue( name, offset, value );
+          mpStatevector->SetStateValue( name, offset + 1, 0 );
+        }
+      }
+      else
+      {
+        bcierr__ << "Event durations > 0 are currently unsupported "
+                 << "(" << iss.str() << ")"
+                 << endl;
+      }
+      mBCIEvents.PopFront();
+    }
+  }
+}
+
 
 void
 CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
@@ -418,7 +486,8 @@ CoreModule::ResetStatevector()
                    sourceTime = mpStatevector->StateValue( "SourceTime" ),
                    stimulusTime = mpStatevector->StateValue( "StimulusTime" );
   istringstream iss( mInitialStatevector );
-  mpStatevector->ReadBinary( iss );
+  for( int i = 0; i < mpStatevector->Samples(); ++i )
+    ( *mpStatevector )( i ).ReadBinary( iss );
   mpStatevector->SetStateValue( "Running", running );
   mpStatevector->SetStateValue( "SourceTime", sourceTime );
   mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
@@ -439,6 +508,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   errorOccurred |= ( bcierr__.Flushes() > 0 );
   if( !errorOccurred )
   {
+    mBlockDuration = 1.0 / MeasurementUnits::ReadAsTime( "1ms" );
 #if( MODTYPE != APP )
     MessageHandler::PutMessage( mNextModule, outputProperties );
 #endif // APP
@@ -575,11 +645,11 @@ CoreModule::HandleState( istream& is )
       // Changing a state's value via mpStatevector->PostStateChange()
       // will buffer the change, and postpone it until the next call to
       // mpStatevector->CommitStateChanges(). That call happens
-      // after arrival of a STATEVECTOR message to make sure that
+      // after arrival of a StateVector message to make sure that
       // changes are not overwritten with the content of the previous
       // state vector when it arrives from the application module.
-      mpStatevector->PostStateChange( s.Name(), s.Value() );
-
+       mpStatevector->PostStateChange( s.Name(), s.Value() );
+       
       // For the "Running" state, the module will undergo a more complex
       // state transition than for other states.
       if( string( "Running" ) == s.Name() )
@@ -590,6 +660,7 @@ CoreModule::HandleState( istream& is )
         {
           mLastRunning = true;
           StartRunFilters();
+          ProcessBCIEvents();
           static GenericSignal nullSignal( 0, 0 );
           ProcessFilters( nullSignal );
         }
@@ -653,9 +724,6 @@ CoreModule::HandleStateVector( istream& is )
       StartRunFilters();
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
-    // This distinction could be avoided if the state vector was
-    // sent _after_ its associated signal; then, all modules might call
-    // Process() from HandleStateVector().
     if( mLastRunning ) // For the first "Running" block, Process() is called from
                        // HandleState(), and may not be called here.
                        // For the first "Suspended" block, we need to call
@@ -663,6 +731,7 @@ CoreModule::HandleStateVector( istream& is )
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
     {
+      ProcessBCIEvents();
       static GenericSignal nullSignal( 0, 0 );
       ProcessFilters( nullSignal );
     }
@@ -685,6 +754,13 @@ CoreModule::HandleSysCommand( istream& is )
   SysCommand s;
   if( s.ReadBinary( is ) )
   {
+    int sampleBlockSize = 1;
+    if( mParamlist.Exists( "SampleBlockSize" ) )
+      sampleBlockSize = ::atoi( mParamlist[ "SampleBlockSize" ].Value().c_str() );
+    if( sampleBlockSize < 1 )
+      sampleBlockSize = 1;
+    mSampleBlockSize = sampleBlockSize;
+      
     if( s == SysCommand::EndOfState )
     {
       if( mpStatevector != NULL )
@@ -692,9 +768,12 @@ CoreModule::HandleSysCommand( istream& is )
 
       delete mpStatevector;
       // Initialize the state vector from the state list.
-      mpStatevector = new StateVector( mStatelist );
+      mStatelist.AssignPositions();
+      // The state vector holds an additional sample which is used to initialize
+      // the subsequent state vector.
+      mpStatevector = new StateVector( mStatelist, mSampleBlockSize + 1 );
       ostringstream oss;
-      mpStatevector->WriteBinary( oss );
+      ( *mpStatevector )( 0 ).WriteBinary( oss );
       mInitialStatevector = oss.str();
       mpStatevector->CommitStateChanges();
       InitializeCoreConnections();
@@ -705,6 +784,11 @@ CoreModule::HandleSysCommand( istream& is )
       // This happens for subsequent initializations.
       if( mpStatevector != NULL )
       {
+        delete mpStatevector;
+      // The state vector holds an additional sample which is used to initialize
+      // the subsequent state vector.
+        mpStatevector = new StateVector( mStatelist, mSampleBlockSize + 1 );
+        ResetStatevector();
         mFiltersInitialized = false;
       }
     }

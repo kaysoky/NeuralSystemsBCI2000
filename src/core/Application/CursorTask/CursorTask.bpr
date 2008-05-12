@@ -24,7 +24,8 @@
       obj\ExpressionParser.obj obj\Expression.obj obj\BCIDirectory.obj 
       obj\TextField.obj obj\OSError.obj obj\RandomGenerator.obj 
       obj\BitmapImage.obj obj\Shapes.obj obj\FeedbackScene3D.obj 
-      obj\FeedbackScene2D.obj obj\ArithmeticExpression.obj obj\JoystickFilter.obj"/>
+      obj\FeedbackScene2D.obj obj\ArithmeticExpression.obj 
+      obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -33,7 +34,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\modules\application\human_interface_devices"/>
+    <PATHCPP value=".;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application\utils;..\..\..\shared\modules;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\extlib\3DAPI;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\fileio;..\..\..\shared\gui;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\gui;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -134,7 +135,9 @@
       <FILE FILENAME="FeedbackScene3D.cpp" FORMNAME="" UNITNAME="FeedbackScene3D" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FeedbackScene2D.cpp" FORMNAME="" UNITNAME="FeedbackScene2D" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\application\human_interface_devices\JoystickFilter.cpp" FORMNAME="" UNITNAME="JoystickFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

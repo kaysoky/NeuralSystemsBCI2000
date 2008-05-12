@@ -150,7 +150,7 @@ EDFFileWriterBase::Initialize( const SignalProperties& Input,
   ChannelInfo markerChannel;
   markerChannel.TransducerType = "Marker";
   markerChannel.PhysicalDimension = "";
-  markerChannel.SamplesPerRecord = 1;
+  markerChannel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   markerChannel.DataType = GDF::int16::Code;
   for( int i = 0; i < States->Size(); ++i )
   {
@@ -200,10 +200,11 @@ EDFFileWriterBase::PutBlock( const GenericSignal& inSignal, const StateVector& i
     for( int j = 0; j < inSignal.Elements(); ++j )
       GDF::Num<T>( inSignal( i, j ) ).WriteToStream( OutputStream() );
   for( size_t i = 0; i < mStateNames.size(); ++i )
-    GDF::PutField< GDF::Num<GDF::int16> >(
-      OutputStream(),
-      inStatevector.StateValue( mStateNames[ i ] )
-    );
+    for( int j = 0; j < inSignal.Elements(); ++j )
+      GDF::PutField< GDF::Num<GDF::int16> >(
+        OutputStream(),
+        inStatevector.StateValue( mStateNames[ i ], min( j, inStatevector.Samples() - 1 ) )
+      );
 }
 
 

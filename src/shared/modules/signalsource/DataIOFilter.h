@@ -41,7 +41,7 @@ class DataIOFilter: public GenericFilter
   GenericFilter*         mpADC,
                *         mpSourceFilter;
   GenericFileWriter*     mpFileWriter;
-  GenericSignal          mSignalBuffer;
+  GenericSignal          mOutputBuffer;
   StateVector            mStatevectorBuffer;
 
   bool                   mVisualizeSource,
@@ -51,7 +51,7 @@ class DataIOFilter: public GenericFilter
                          mTimingVis;
   GenericSignal          mDecimatedSignal,
                          mTimingSignal;
-  mutable GenericSignal  mRestingSignal;
+  mutable GenericSignal  mInputBuffer;
   std::vector<float>     mSourceChOffset,
                          mSourceChGain;
 };

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
-// Description: BCI2000 type for the binary representation of a list of
-//   states (event markers).
+// Author: juergen.mellinger@uni-tuebingen.de
+// Description: BCI2000 type for the the binary representation of states
+//  (event markers) for an entire data block.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -11,36 +11,38 @@
 #define STATE_VECTOR_H
 
 #include <iostream>
-#include "State.h"
-#include "StateList.h"
+#include <vector>
+#include "StateVectorSample.h"
 
 class StateVector
 {
- public:
-  StateVector( const StateVector& );
-  explicit StateVector( class StateList& list, bool usePositions = false );
-  ~StateVector();
-  const StateVector& operator=( const StateVector& );
-
  private:
-  void           Initialize( bool useAssignedPositions = false );
+  StateVector( class StateList&, bool );
+  
+ public:
+  explicit StateVector( class StateList& list, size_t numSamples = 1 );
+  ~StateVector();
 
  public:
+  int            Samples() const
+                 { return mSamples.size(); }
   int            Length() const
                  { return mByteLength; }
-  unsigned char* Data()
-                 { return mpData; }
-  const unsigned char* Data() const
-                 { return mpData; }
-  class StateList& StateList()
-                 { return *mpStateList; }
+  StateVectorSample& operator()( size_t inIdx )
+                 { return mSamples[ inIdx ]; }
+  const StateVectorSample& operator()( size_t inIdx ) const
+                 { return mSamples[ inIdx ]; }
   const class StateList& StateList() const
                  { return *mpStateList; }
 
-  State::ValueType StateValue( const std::string& name ) const;
-  State::ValueType StateValue( size_t location, size_t length ) const;
-  void             SetStateValue( const std::string& name, State::ValueType value );
-  void             SetStateValue( size_t location, size_t length, State::ValueType value );
+  State::ValueType StateValue( const std::string& name, size_t sample = 0 ) const;
+  State::ValueType StateValue( size_t location, size_t length, size_t sample = 0 ) const;
+  void             SetStateValue( const std::string& name, State::ValueType value )
+                   { SetStateValue( name, 0, value ); }
+  void             SetStateValue( const std::string& name, size_t sample, State::ValueType value );
+  void             SetStateValue( size_t location, size_t length, State::ValueType value )
+                   { SetStateValue( location, length, 0, value ); }
+  void             SetStateValue( size_t location, size_t length, size_t sample, State::ValueType value );
   void             PostStateChange( const std::string& name, State::ValueType value );
   void             CommitStateChanges();
 
@@ -50,9 +52,9 @@ class StateVector
   std::istream&  ReadBinary( std::istream& );
 
  private:
-  unsigned char*    mpData;      // the actual state vector
-  size_t            mByteLength; // the length of the actual state vector
-  class StateList*  mpStateList; // a pointer to the list responsible for this vector
+  class StateList*               mpStateList;
+  size_t                         mByteLength;
+  std::vector<StateVectorSample> mSamples;
 };
 
 
@@ -64,5 +66,5 @@ inline
 std::istream& operator>>( std::istream& is, StateVector& s )
 { return s.ReadFromStream( is ); }
 
-#endif // STATE_VECTOR_H
+#endif // STATE_VECTOR_BLOCK_H
 

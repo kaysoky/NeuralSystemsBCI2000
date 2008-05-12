@@ -2,7 +2,7 @@
 // $Id$
 // Authors: juergen.mellinger@uni-tuebingen.de
 // Description: BCI2000 type for protocol version matching.
-//   Compatibility-breaking modifications to the protocol, will be reflected
+//   Compatibility-breaking modifications to the protocol will be reflected
 //   by an increment of the VersionID constant.
 //   Upon connecting to the operator module, core modules report their
 //   protocol version, and incompatible versions are rejected.
@@ -17,7 +17,8 @@
 
 class ProtocolVersion
 {
-   static const unsigned int CurrentVersionID = 1;
+   //static const unsigned int CurrentVersionID = 1; // 2.0 Release
+   static const unsigned int CurrentVersionID = 2;   // Multi-sample state vector
 
   public:
    ProtocolVersion()

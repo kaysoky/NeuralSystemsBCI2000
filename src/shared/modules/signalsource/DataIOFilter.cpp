@@ -36,7 +36,7 @@ DataIOFilter::DataIOFilter()
 : mpADC( GenericFilter::PassFilter<GenericADC>() ),
   mpSourceFilter( NULL ),
   mpFileWriter( NULL ),
-  mStatevectorBuffer( *States, true ),
+  mStatevectorBuffer( *States ),
   mVisualizeSource( false ),
   mVisualizeSourceDecimation( 1 ),
   mVisualizeTiming( false ),
@@ -48,13 +48,13 @@ DataIOFilter::DataIOFilter()
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
     "Source:Signal%20Properties int SourceCh= 16 "
-       "16 1 % // number of digitized and stored channels",
+      "16 1 % // number of digitized and stored channels",
     "Source:Signal%20Properties int SampleBlockSize= 32 "
-       "32 1 % // number of samples transmitted at a time",
+      "32 1 % // number of samples transmitted at a time",
     "Source:Signal%20Properties int SamplingRate= 256Hz "
-       "256Hz 1 % // sample rate",
+      "256Hz 1 % // sample rate",
     "Source:Signal%20Properties list ChannelNames= 0 "
-       "% % % // list of channel names",
+      "% % % // list of channel names",
     "Source:Signal%20Properties floatlist SourceChOffset= 16 "
       "0 0 0 0 "
       "0 0 0 0 "
@@ -202,7 +202,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   else
   {
     mpADC->CallPreflight( Input, Output );
-    mRestingSignal.SetProperties( Output );
+    mInputBuffer.SetProperties( Output );
   }
 
   if( mpSourceFilter )
@@ -258,9 +258,9 @@ void
 DataIOFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
-  const SignalProperties& adcOutput = mRestingSignal.Properties();
+  const SignalProperties& adcOutput = mInputBuffer.Properties();
   State( "Recording" ) = 0;
-  mSignalBuffer = GenericSignal( 0, 0 );
+  mOutputBuffer = GenericSignal( 0, 0 );
   mpADC->CallInitialize( Input, adcOutput );
   if( mpSourceFilter )
   {
@@ -270,9 +270,9 @@ DataIOFilter::Initialize( const SignalProperties& Input,
   mpFileWriter->CallInitialize( adcOutput, SignalProperties( 0, 0 ) );
 
   // Calibration is handled by the DataIOFilter as well.
-  mSourceChOffset.resize( mRestingSignal.Channels(), 0.0 );
-  mSourceChGain.resize( mRestingSignal.Channels(), 1.0 );
-  for( int channel = 0; channel < mRestingSignal.Channels(); ++channel )
+  mSourceChOffset.resize( mInputBuffer.Channels(), 0.0 );
+  mSourceChGain.resize( mInputBuffer.Channels(), 1.0 );
+  for( int channel = 0; channel < mInputBuffer.Channels(); ++channel )
   {
     mSourceChOffset[ channel ] = Parameter( "SourceChOffset" )( channel );
     mSourceChGain[ channel ] = Parameter( "SourceChGain" )( channel );
@@ -342,7 +342,7 @@ DataIOFilter::StopRun()
 {
   mpADC->CallStopRun();
   mpFileWriter->CallStopRun();
-  mSignalBuffer = GenericSignal( 0, 0 );
+  mOutputBuffer = GenericSignal( 0, 0 );
   State( "Recording" ) = 0;
 }
 
@@ -361,18 +361,18 @@ DataIOFilter::Process( const GenericSignal& Input,
   // is the one that existed when the data came out of the ADC.
   // So we also need to buffer the state vector between calls to Process().
   bool visualizeTiming = false;
-  if( !mSignalBuffer.Properties().IsEmpty() )
+  if( !mOutputBuffer.Properties().IsEmpty() )
   {
     if( State( "Recording" ) == 1 )
-      mpFileWriter->Write( mSignalBuffer, mStatevectorBuffer );
+      mpFileWriter->Write( mOutputBuffer, mStatevectorBuffer );
     visualizeTiming = mVisualizeTiming;
   }
-  mpADC->CallProcess( Input, Output );
+  mpADC->CallProcess( Input, mInputBuffer );
   PrecisionTime now = PrecisionTime::Now();
   if( mpSourceFilter )
   {
-    GenericSignal sourceFilterInput( Output );
-    mpSourceFilter->CallProcess( sourceFilterInput, Output );
+    GenericSignal sourceFilterInput( mInputBuffer );
+    mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
   }
   if( visualizeTiming )
   {
@@ -385,12 +385,15 @@ DataIOFilter::Process( const GenericSignal& Input,
     mTimingVis.Send( mTimingSignal );
   }
   mStatevectorBuffer = *Statevector;
-  mSignalBuffer = Output;
+  mOutputBuffer = mInputBuffer;
+  int nextSample = Statevector->Samples() - 1;
+  for( int i = 0; i < nextSample ; ++i )
+    ( *Statevector )( i ) = ( *Statevector )( nextSample );
   State( "SourceTime" ) = now;
 
   for( int i = 0; i < Output.Channels(); ++i )
     for( int j = 0; j < Output.Elements(); ++j )
-      Output( i, j )  = ( Output( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
+      Output( i, j )  = ( mInputBuffer( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
 
   if( mVisualizeSource )
   {
@@ -403,15 +406,15 @@ void
 DataIOFilter::Resting()
 {
   static GenericSignal adcInput( 0, 0 );
-  mpADC->CallProcess( adcInput, mRestingSignal );
+  mpADC->CallProcess( adcInput, mInputBuffer );
   if( mpSourceFilter )
   {
-    GenericSignal sourceFilterInput( mRestingSignal );
-    mpSourceFilter->CallProcess( sourceFilterInput, mRestingSignal );
+    GenericSignal sourceFilterInput( mInputBuffer );
+    mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
   }
   if( mVisualizeSource )
   {
-    Downsample( mRestingSignal, mDecimatedSignal );
+    Downsample( mInputBuffer, mDecimatedSignal );
     for( int i = 0; i < mDecimatedSignal.Channels(); ++i )
       for( int j = 0; j < mDecimatedSignal.Elements(); ++j )
         mDecimatedSignal( i, j )
@@ -424,7 +427,7 @@ DataIOFilter::Resting()
 void
 DataIOFilter::Halt()
 {
-  mSignalBuffer = GenericSignal( 0, 0 );
+  mOutputBuffer = GenericSignal( 0, 0 );
   if( mpADC )
     mpADC->CallHalt();
   if( mpFileWriter )

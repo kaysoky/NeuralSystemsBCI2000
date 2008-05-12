@@ -19,16 +19,22 @@ class MeasurementUnits
   public:
     static float ReadAsTime( const std::string& value )
     { return sTimeUnit.PhysicalToRaw( value ); }
+    static std::string TimeUnit()
+    { return sTimeUnit.RawToPhysical( 1 ); }
     static void InitializeTimeUnit( double inUnitsPerSec )
     { sTimeUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerSec ).SetSymbol( "s" ); }
 
     static float ReadAsFreq( const std::string& value )
     { return sFreqUnit.PhysicalToRaw( value ); }
+    static std::string FreqUnit()
+    { return sFreqUnit.RawToPhysical( 1 ); }
     static void InitializeFreqUnit( double inUnitsPerHertz )
     { sFreqUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerHertz ).SetSymbol( "Hz" ); }
 
     static float ReadAsVoltage( const std::string& value )
     { return sVoltageUnit.PhysicalToRaw( value ); }
+    static std::string VoltageUnit()
+    { return sVoltageUnit.RawToPhysical( 1 ); }
     static void InitializeVoltageUnit( double inUnitsPerVolt )
     { sVoltageUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerVolt ).SetSymbol( "V" ); }
 

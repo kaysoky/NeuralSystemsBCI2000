@@ -135,7 +135,7 @@ Decimate::HandleState( istream& arIn )
     if( mpStatevector != NULL )
     {
       delete mpStatevector;
-      mpStatevector = new StateVector( mStatelist, true );
+      mpStatevector = new StateVector( mStatelist );
     }
     MessageHandler::PutMessage( mrOut, s );
   }
@@ -163,7 +163,7 @@ bool
 Decimate::HandleStateVector( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new StateVector( mStatelist, true );
+    mpStatevector = new StateVector( mStatelist );
   mpStatevector->ReadBinary( arIn );
   // state vectors are sent first, so we increase
   // the count here rather than in the signal handler

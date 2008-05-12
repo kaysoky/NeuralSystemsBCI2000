@@ -421,6 +421,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
           "System:State%20Vector"
           " int StateVectorLength= 0 16 1 30 "
           "// length of the state vector in bytes" );
+        mStates.AssignPositions();
         AnsiString length = StateVector( mStates ).Length();
         mParameters[ "StateVectorLength" ].Value() = length.c_str();
       }

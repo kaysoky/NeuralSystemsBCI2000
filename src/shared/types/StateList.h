@@ -42,6 +42,7 @@ class StateList : private StateContainer
        { ( *this )[ s.Name() ] = s; }
   bool Add( const std::string& stateDefinition );
   void Delete( const std::string& name );
+  void AssignPositions();
 
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );

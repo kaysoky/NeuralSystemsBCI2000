@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
-// Description: BCI2000 type for the binary representation of a list of
-//   states (event markers).
+// Author: juergen.mellinger@uni-tuebingen.de
+// Description: BCI2000 type for the the binary representation of states
+//  (event markers) for an entire data block.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -18,32 +18,16 @@
 
 using namespace std;
 
-// **************************************************************************
-// Function:   Initialize
-// Purpose:    It initializes the state vector with the values of each state in the list
-// Parameters: use_assigned_positions = true  ... use the Byte/Bit of the states for the statevector
-//                                      false ... calculate the byte and bit position of each state in the statevector
-// Returns:    N/A
-// **************************************************************************
-void
-StateVector::Initialize( bool inUseAssignedPositions )
+StateVector::StateVector( class StateList& inList, size_t inSamples )
+: mByteLength( 0 ),
+  mpStateList( &inList )
 {
-  delete[] mpData;
-  mpData = NULL;
-
   // calculate the state vector length
   int bitLength = 0;
   for( int i = 0; i < mpStateList->Size(); ++i )
-  {
-    if( !inUseAssignedPositions )
-      ( *mpStateList )[ i ].SetLocation( bitLength );
     bitLength += ( *mpStateList )[ i ].Length();
-  }
-  mByteLength = ( bitLength / 8 ) + 1; // divide it by eight, add one to get the number of needed bytes
-  mpData = new unsigned char[ mByteLength ];
-  // at the very beginning, initialize the state vector to all 0 bytes
-  for( size_t i = 0; i < mByteLength; ++i )
-    mpData[ i ] = 0;
+  mByteLength = ( bitLength / 8 ) + 1;
+  mSamples.resize( inSamples, StateVectorSample( mByteLength ) );
 
   // initialize the content in the state vector, according to the content
   // of the current states in the state list
@@ -51,142 +35,75 @@ StateVector::Initialize( bool inUseAssignedPositions )
     SetStateValue( ( *mpStateList )[ i ].Name(), ( *mpStateList )[ i ].Value() );
 }
 
-StateVector::StateVector( const StateVector& s )
-: mByteLength( 0 ),
-  mpData( NULL ),
-  mpStateList( NULL )
-{
-  this->operator=( s );
-}
-
-// can specify, whether or not defined byte/bit positions should be used
-// true: use already specified ones
-StateVector::StateVector( class StateList& inList, bool inUsePositions )
-: mByteLength( 0 ),
-  mpData( NULL ),
-  mpStateList( &inList )
-{
-  Initialize( inUsePositions );
-}
-
 StateVector::~StateVector()
 {
-  delete[] mpData;
 }
-
-// **************************************************************************
-// Function:   operator=
-// Purpose:    Make a deep copy of a StateVector object.
-// Parameters: N/A
-// Returns:    N/A
-// **************************************************************************
-const StateVector&
-StateVector::operator=( const StateVector& s )
-{
-  if( &s != this )
-  {
-    mByteLength = s.mByteLength;
-    mpStateList = s.mpStateList;
-    delete[] mpData;
-    mpData = new unsigned char[ mByteLength ];
-    ::memcpy( mpData, s.mpData, mByteLength );
-  }
-  return *this;
-}
-
-// **************************************************************************
-// Function:   GetStateValue
-// Purpose:    returns a state's value, based upon the state's location and size
-// Parameters: location ... bit location of the state
-//             length   ... bit length of the state
-// Returns:    the value of the state
-// **************************************************************************
-State::ValueType
-StateVector::StateValue( size_t inLocation, size_t inLength ) const
-{
-  if( inLength > 8 * sizeof( State::ValueType ) )
-    throw "Invalid state length";
-  if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
-
-  State::ValueType result = 0;
-  for( int bitIndex = inLocation + inLength - 1; bitIndex >= int( inLocation ); --bitIndex )
-  {
-    result <<= 1;
-    if( mpData[ bitIndex / 8 ] & ( 1 << ( bitIndex % 8 ) ) )
-      result |= 1;
-  }
-  return result;
-}
-
 
 // **************************************************************************
 // Function:   StateValue
-// Purpose:    returns a state's value from the state vector
+// Purpose:    returns a state's value from the state vector block
 // Parameters: statename - the name of a state
 // Returns:    the value of the state
 //             0 on error (e.g., state not found)
 // **************************************************************************
 State::ValueType
-StateVector::StateValue( const string& inName ) const
+StateVector::StateValue( const string& inName, size_t inSample ) const
 {
   State::ValueType result = 0;
   if( mpStateList->Exists( inName ) )
   {
-    State& s = ( *mpStateList )[ inName ];
-    result = StateValue( s.Location(), s.Length() );
+    const State& s = ( *mpStateList )[ inName ];
+    result = mSamples[ inSample ].StateValue( s.Location(), s.Length() );
   };
   return result;
 }
 
+// **************************************************************************
+// Function:   StateValue
+// Purpose:    returns a state's value, based upon the state's location and
+//             size
+// Parameters: location ... bit location of the state
+//             length   ... bit length of the state
+//             sample   ... sample position for which to return the state's
+//                          value
+// Returns:    the value of the state
+// **************************************************************************
+State::ValueType
+StateVector::StateValue( size_t inLocation, size_t inLength, size_t inSample ) const
+{
+  return mSamples[ inSample ].StateValue( inLocation, inLength );
+}
+
+// **************************************************************************
+// Function:   SetStateValue
+// Purpose:    sets a state's value in the state vector block
+// Parameters: statename - name of the state
+// Returns:    N/A
+// **************************************************************************
+void
+StateVector::SetStateValue( const string& inName, size_t inSample, State::ValueType inValue )
+{
+  if( mpStateList->Exists( inName ) )
+  {
+    const State& s = ( *mpStateList )[ inName ];
+    SetStateValue( s.Location(), s.Length(), inSample, inValue );
+  };
+}
 
 // **************************************************************************
 // Function:   SetStateValue
 // Purpose:    sets a state's value in the state vector
 // Parameters: location ... bit location of the state
 //             length   ... bit length of the state
-//             value   ... value of the state
+//             sample   ... sample position from which to set the state value
+//             value    ... value of the state
 // Returns:    N/A
 // **************************************************************************
 void
-StateVector::SetStateValue( size_t inLocation, size_t inLength, State::ValueType inValue )
+StateVector::SetStateValue( size_t inLocation, size_t inLength, size_t inSample, State::ValueType inValue )
 {
-  // Avoid undefined behavior when left-shifting a number by its number of bits.
-  State::ValueType valueMask =
-    ( inLength == 8 * sizeof( State::ValueType ) ) ? -1 : ~( -1 << inLength );
-  if( inValue < 0 || ( inValue & valueMask ) != inValue )
-    throw "Value exceeds limit given by state length";
-  if( inLength > 8 * sizeof( State::ValueType ) )
-    throw "Invalid state length";
-  if( inLocation + inLength > 8 * mByteLength )
-    throw "Accessing non-existent state vector data";
-
-  State::ValueType value = inValue;
-  for( size_t bitIndex = inLocation; bitIndex < inLocation + inLength; ++bitIndex )
-  {
-    unsigned char mask = 1 << ( bitIndex % 8 );
-    if( value & 1 )
-      mpData[ bitIndex / 8 ] |= mask;
-    else
-      mpData[ bitIndex / 8 ] &= ~mask;
-    value >>= 1;
-  }
-}
-
-// **************************************************************************
-// Function:   SetStateValue
-// Purpose:    sets a state's value in the state vector
-// Parameters: statename - name of the state
-// Returns:    N/A
-// **************************************************************************
-void
-StateVector::SetStateValue( const string& inName, State::ValueType inValue )
-{
-  if( mpStateList->Exists( inName ) )
-  {
-    State& s = ( *mpStateList )[ inName ];
-    SetStateValue( s.Location(), s.Length(), inValue );
-  };
+  for( int i = inSample; i < Samples(); ++i )
+    mSamples[ i ].SetStateValue( inLocation, inLength, inValue );
 }
 
 // **************************************************************************
@@ -219,7 +136,7 @@ StateVector::CommitStateChanges()
 
 // **************************************************************************
 // Function:   WriteToStream
-// Purpose:    Member function for formatted output of a state vector
+// Purpose:    Member function for formatted output of a state vector block
 //             into a stream.
 // Parameters: Output stream to write into.
 // Returns:    Output stream.
@@ -229,24 +146,28 @@ StateVector::WriteToStream( ostream& os ) const
 {
   int indent = os.width();
   if( mpStateList == NULL )
-    for( size_t i = 0; i < mByteLength; ++i )
+    for( int i = 0; i < Length(); ++i )
+    {
       os << '\n' << setw( indent ) << ""
-         << i << ": "
-         << mpData[ i ];
+         << i << ":";
+      for( int j = 0; j < Samples(); ++j )
+        os << " " << mSamples[ j ].Data()[ i ];
+    }
   else
     for( int i = 0; i < mpStateList->Size(); ++i )
     {
       const State& state = ( *mpStateList )[ i ];
       os << '\n' << setw( indent ) << ""
-         << state.Name() << ": "
-         << StateValue( state.Location(), state.Length() );
+         << state.Name() << ":";
+      for( int j = 0; j < Samples(); ++j )
+        os << " " << mSamples[ j ].StateValue( state.Location(), state.Length() );
     }
   return os;
 }
 
 // **************************************************************************
 // Function:   ReadBinary
-// Purpose:    Member function for input of a state vector
+// Purpose:    Member function for input of a state vector block
 //             from a binary stream, as in a state vector message.
 // Parameters: Input stream to read from.
 // Returns:    Input stream.
@@ -254,18 +175,21 @@ StateVector::WriteToStream( ostream& os ) const
 istream&
 StateVector::ReadBinary( istream& is )
 {
-  // Reading the last byte with is.get() avoids possible problems with tcp
-  // stream buffers. See the comments in TCPStream.cpp, tcpbuf::underflow()
-  // for details.
-  if( mByteLength > 1 )
-    is.read( reinterpret_cast<istream::char_type*>( mpData ), mByteLength - 1 );
-  mpData[ mByteLength - 1 ] = is.get();
+  int length, samples;
+  ( is >> length ).get();
+  ( is >> samples ).get();
+  if( length != Length() )
+    mSamples.clear();
+  if( samples != Samples() )
+    mSamples.resize( samples, StateVectorSample( length ) );
+  for( size_t i = 0; i < mSamples.size(); ++i )
+    mSamples[ i ].ReadBinary( is );
   return is;
 }
 
 // **************************************************************************
 // Function:   WriteBinary
-// Purpose:    Member function for output of a state vector
+// Purpose:    Member function for output of a state vector block
 //             into a binary stream, as in a state vector message.
 // Parameters: Output stream to write into.
 // Returns:    Output stream.
@@ -273,7 +197,11 @@ StateVector::ReadBinary( istream& is )
 ostream&
 StateVector::WriteBinary( ostream& os ) const
 {
-  return os.write( reinterpret_cast<istream::char_type*>( mpData ), mByteLength );
+  ( os << Length() ).put( '\0' );
+  ( os << Samples() ).put( '\0' );
+  for( size_t i = 0; i < mSamples.size(); ++i )
+    mSamples[ i ].WriteBinary( os );
+  return os;
 }
 
 

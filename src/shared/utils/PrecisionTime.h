@@ -19,13 +19,14 @@ class PrecisionTime
   PrecisionTime( NumType value )
     : mValue( value ) {}
 
-  NumType operator-( PrecisionTime subtractor ) const
-    { return TimeDiff( subtractor, *this ); }
+  NumType operator-( PrecisionTime subtrahend ) const
+    { return TimeDiff( subtrahend, *this ); }
   operator NumType() const
     { return mValue; }
 
   static PrecisionTime Now();
   static NumType TimeDiff( NumType, NumType );
+  static int     SignedDiff( NumType, NumType );
 
  private:
   NumType mValue;

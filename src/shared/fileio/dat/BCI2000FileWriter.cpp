@@ -160,8 +160,10 @@ BCI2000FileWriter::PutBlock( const GenericSignal& inSignal, const StateVector& i
   {
     for( int i = 0; i < inSignal.Channels(); ++i )
       inSignal.PutValueBinary<T>( OutputStream(), i, j );
-    OutputStream().write( reinterpret_cast<const char*>( inStatevector.Data() ),
-                       inStatevector.Length() );
+    OutputStream().write(
+      reinterpret_cast<const char*>( inStatevector( min( j, inStatevector.Samples() - 1 ) ).Data() ),
+      inStatevector.Length()
+    );
   }
 }
 

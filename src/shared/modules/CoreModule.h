@@ -47,6 +47,7 @@
 #include "GenericSignal.h"
 #include "SockStream.h"
 #include "MessageHandler.h"
+#include "EventQueue.h"
 
 #define SIGSRC  1
 #define SIGSRC_NAME  "SignalSource"
@@ -101,6 +102,7 @@ class CoreModule : private MessageHandler
   bool Initialize( int argc, char** argv );
   void MainMessageLoop();
   void ProcessBCIAndGUIMessages();
+  void ProcessBCIEvents();
 
   void InitializeOperatorConnection( const std::string& operatorAddress );
   void InitializeCoreConnections();
@@ -142,6 +144,9 @@ class CoreModule : private MessageHandler
                    mStartRunPending,
                    mStopRunPending;
   void*            mMutex;
+  float            mBlockDuration;
+  int              mSampleBlockSize;
+  EventQueue       mBCIEvents;
 };
 
 #endif // CORE_MODULE_H

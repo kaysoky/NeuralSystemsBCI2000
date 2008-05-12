@@ -30,6 +30,7 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\State.obj \
           obj\StateList.obj \
           obj\StateVector.obj \
+          obj\StateVectorSample.obj \
           obj\GenericSignal.obj \
           obj\SignalProperties.obj \
           obj\SignalType.obj \

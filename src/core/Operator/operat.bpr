@@ -18,7 +18,8 @@
       obj\BCIError_module.obj obj\BCI2000FileReader.obj obj\ParamRef.obj 
       obj\ExpressionParser.obj obj\GenericVisualization.obj obj\AboutBox.obj 
       obj\Environment.obj obj\VisDisplay.obj obj\DisplayFilter.obj 
-      obj\BitmapImage.obj obj\ExecutableHelp.obj obj\ArithmeticExpression.obj"/>
+      obj\BitmapImage.obj obj\ExecutableHelp.obj obj\ArithmeticExpression.obj 
+      obj\StateVectorSample.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,7 +29,7 @@
     <LIBRARIES value="bcbsmp.lib vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib bcbsmp.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui;..\..\shared\utils\Expression"/>
+    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui;..\..\shared\utils\Expression;..\..\shared\types"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -109,6 +110,7 @@
       <FILE FILENAME="..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\gui\ExecutableHelp.cpp" FORMNAME="" UNITNAME="ExecutableHelp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>

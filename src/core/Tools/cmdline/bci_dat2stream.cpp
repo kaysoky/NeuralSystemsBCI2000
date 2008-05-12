@@ -139,7 +139,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
   SignalProperties outputProperties( sourceCh, sampleBlockSize, dataFormat );
   if( transmitData || transmitStates )
   {
-    StateVector statevector( states, true );
+    StateVector statevector( states, 1 );
     if( statevector.Length() != stateVectorLength )
     {
       cerr << "Statevector's length differs from StateVectorLen field" << endl;
@@ -185,7 +185,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     {
       for( int i = 0; i < sourceCh; ++i )
         outputSignal.ReadValueBinary( in, i, curSample );
-      statevector.ReadBinary( in );
+      in.read( statevector.Data( 0 ), statevector.Length() );
 
       if( ++curSample == sampleBlockSize )
       {

@@ -288,7 +288,7 @@ StreamToMat::HandleState( istream& arIn )
     if( mpStatevector != NULL )
     {
       delete mpStatevector;
-      mpStatevector = new StateVector( mStatelist, true );
+      mpStatevector = new StateVector( mStatelist );
     }
   }
   return true;
@@ -320,7 +320,7 @@ bool
 StreamToMat::HandleStateVector( istream& arIn )
 {
   if( mpStatevector == NULL )
-    mpStatevector = new StateVector( mStatelist, true );
+    mpStatevector = new StateVector( mStatelist );
   mpStatevector->ReadBinary( arIn );
   return true;
 }

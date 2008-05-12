@@ -60,3 +60,19 @@ PrecisionTime::TimeDiff( NumType time1, NumType time2 )
   return ( ( time2 + maxdiffPlusOne ) - time1 ) % maxdiffPlusOne;
 }
 
+// **************************************************************************
+// Function:   SignedDiff
+// Purpose:    calculates the signed difference between two times,
+//             taking roll-over into account.
+// Parameters: time1, time2 - two 16 bit integers
+// Returns:    signed difference
+// **************************************************************************
+int
+PrecisionTime::SignedDiff( NumType time1, NumType time2 )
+{
+  int wraparound = 1 << ( 8 * sizeof( time1 ) ),
+      diff1 = time1 - time2,
+      diff2 = ( time1 + wraparound ) - time2;
+  return ( diff2 >= wraparound / 2 ) ? diff1 : diff2;
+}
+

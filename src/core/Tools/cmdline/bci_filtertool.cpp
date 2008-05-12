@@ -346,7 +346,7 @@ void
 FilterWrapper::InitializeInputStatevector()
 {
   delete mpInputStatevector;
-  mpInputStatevector = new StateVector( mInputStatelist, true );
+  mpInputStatevector = new StateVector( mInputStatelist );
 }
 
 void
@@ -367,7 +367,8 @@ FilterWrapper::InitializeOutputStatevector()
       mOutputStatelist.Add( mInputStatelist[ i ] );
     for( int i = 0; i < mFilterStatelist.Size(); ++i )
       mOutputStatelist.Add( mFilterStatelist[ i ] );
-    mpOutputStatevector = new StateVector( mOutputStatelist, false );
+    mOutputStatelist.AssignPositions();
+    mpOutputStatevector = new StateVector( mOutputStatelist );
   }
   SynchronizeStatevectors();
   for( int i = 0; i < mOutputStatelist.Size(); ++i )

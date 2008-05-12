@@ -41,6 +41,7 @@ BCIOBJ  = bci_stubs.o \
           State.o \
           StateList.o \
           StateVector.o \
+          StateVectorSample.o \
           EncodedString.o \
           LabelIndex.o \
           HierarchicalLabel.o \

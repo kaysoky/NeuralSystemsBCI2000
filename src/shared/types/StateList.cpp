@@ -117,6 +117,23 @@ StateList::Delete( const string& inName )
 }
 
 // **************************************************************************
+// Function:   AssignPositions
+// Purpose:    assigns positions and lengths to states contained in the list
+// Parameters: none
+// Returns:    N/A
+// **************************************************************************
+void
+StateList::AssignPositions()
+{
+  int bitLength = 0;
+  for( int i = 0; i < Size(); ++i )
+  {
+    ( *this )[ i ].SetLocation( bitLength );
+    bitLength += ( *this )[ i ].Length();
+  }
+}
+
+// **************************************************************************
 // Function:   WriteToStream
 // Purpose:    Member function for formatted stream output of the entire
 //             state list.

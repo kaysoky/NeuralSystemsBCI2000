@@ -185,7 +185,7 @@ BCI2000FileReader::State( const std::string& name ) const
   else
     throw "BCI2000FileReader::State: Requested state is not accessible";
 
-  return StateRef( const_cast<class StateVector*>( StateVector() ), location, length );
+  return StateRef( const_cast<class StateVector*>( StateVector() ), location, length, 0 );
 }
 
 // **************************************************************************
@@ -228,7 +228,7 @@ BCI2000FileReader::CalibratedValue( int inChannel, long inSample )
 BCI2000FileReader&
 BCI2000FileReader::ReadStateVector( long inSample )
 {
-  ::memcpy( mpStatevector->Data(),
+  ::memcpy( ( *mpStatevector )( 0 ).Data(),
             BufferSample( inSample ) + mDataSize * SignalProperties().Channels(),
             StateVectorLength() );
   return *this;
@@ -319,7 +319,7 @@ BCI2000FileReader::ReadHeader()
     mParamlist.Add( line );
 
   // build statevector using specified positions
-  mpStatevector = new ( class StateVector )( mStatelist, true );
+  mpStatevector = new ( class StateVector )( mStatelist );
   if( !mParamlist.Exists( "SamplingRate" ) )
     return;
   mSamplingRate = ::atoi( mParamlist[ "SamplingRate" ].Value().c_str() );

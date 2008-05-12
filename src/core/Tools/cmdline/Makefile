@@ -60,6 +60,7 @@ BCIOBJ  = obj\bci_stubs.obj \
           obj\State.obj \
           obj\StateList.obj \
           obj\StateVector.obj \
+          obj\StateVectorSample.obj \
           obj\EncodedString.obj \
           obj\ParamRef.obj \
           obj\GenericSignal.obj \
