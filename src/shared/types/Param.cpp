@@ -19,6 +19,7 @@ using namespace std;
 
 static const char* sDefaultValue = "0";
 static const string sCommentSeparator = "//";
+static const string cEmptyString = "";
 
 const ctype<char>&
 Param::ct()
@@ -28,7 +29,19 @@ Param::ct()
   return _ct;
 }
 
-const string cEmptyString = "";
+void
+Param::tolower( string& s )
+{
+  for( string::iterator i = s.begin(); i != s.end(); ++i )
+    *i = ct().tolower( *i );
+}
+
+void
+Param::toupper( string& s )
+{
+  for( string::iterator i = s.begin(); i != s.end(); ++i )
+    *i = ct().toupper( *i );
+}
 
 // **************************************************************************
 // Function:   SetDimensions

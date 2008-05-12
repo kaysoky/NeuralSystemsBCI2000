@@ -229,7 +229,7 @@ void __fastcall TSigfried_UIfrm::modelIniBoxChange(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject *Sender)
 {
-    for (int i = 0; i < models.size(); i++)
+    for (size_t i = 0; i < models.size(); i++)
     {
         string comm = "";
         FileRun1->FileName = string(mProgDir + "\\data2model_gui.exe").c_str();
@@ -266,7 +266,7 @@ void __fastcall TSigfried_UIfrm::addModelBtnClick(TObject *Sender)
 void TSigfried_UIfrm::updateModelList()
 {
     modelList->Clear();
-    for (int i = 0; i < models.size(); i++)
+    for (size_t i = 0; i < models.size(); i++)
     {
         modelList->Items->Add(models[i].description.c_str());
     }
@@ -338,7 +338,7 @@ void __fastcall TSigfried_UIfrm::returnBtnClick(TObject *Sender)
     of << "Filtering:SigfriedARFilter matrix ModelFiles= " << models.size();
     of << " { filename label x-pos y-pos width } ";
 
-    for (int i = 0; i < models.size(); i++)
+    for (size_t i = 0; i < models.size(); i++)
     {
         of << EncodedString(models[i].modelOutput) << " ";
         of << EncodedString(models[i].description) << " ";

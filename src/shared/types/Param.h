@@ -259,12 +259,8 @@ class Param
   static const std::ctype<char>& ct();
 
  public:
-  static void tolower( std::string& s )
-  { for( std::string::iterator i = s.begin(); i != s.end(); ++i )
-      *i = ct().tolower( *i ); }
-  static void toupper( std::string& s )
-  { for( std::string::iterator i = s.begin(); i != s.end(); ++i )
-      *i = ct().toupper( *i ); }
+  static void tolower( std::string& );
+  static void toupper( std::string& );
 
   static bool ciless( char a, char b )
   { return ct().toupper( a ) < ct().toupper( b ); }

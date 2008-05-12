@@ -126,12 +126,12 @@ string lowerCase(string str)
 //---------------------------------------------------------------------------
 void removeAt(vector<string> &str, int pos)
 {
-    if (pos >= str.size() || pos < 0)
+    if (pos >= int( str.size() ) || pos < 0)
         return;
 
     vector<string> newStr = str;
     str.clear();
-    for (unsigned int i=0; i < newStr.size(); i++)
+    for (int i=0; i < int( newStr.size() ); i++)
     {
         if (i != pos)
             str.push_back(newStr[i]);
