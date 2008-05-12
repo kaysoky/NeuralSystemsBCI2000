@@ -209,7 +209,7 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
 
 		comm = "--OnConnect \"-";
 
-		for (int i = 0; i < parmFiles.size(); i++)
+		for (size_t i = 0; i < parmFiles.size(); i++)
 		{
 			comm += "LOAD PARAMETERFILE ";
 			ostringstream oss;
