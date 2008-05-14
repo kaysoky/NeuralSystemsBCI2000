@@ -185,7 +185,7 @@ ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
     {
       for( int i = 0; i < sourceCh; ++i )
         outputSignal.ReadValueBinary( in, i, curSample );
-      in.read( statevector.Data( 0 ), statevector.Length() );
+      in.read( statevector( 0 ).Data(), statevector.Length() );
 
       if( ++curSample == sampleBlockSize )
       {

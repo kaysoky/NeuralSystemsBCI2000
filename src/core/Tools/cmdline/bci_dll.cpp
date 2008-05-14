@@ -194,7 +194,7 @@ static class FilterWrapper : public Environment
   {
     bcierr__.Clear();
     for( int i = 0; i < Statevector()->Samples(); ++i )
-      ::memcpy( Statevector()->Data( i ), statevectorData, Statevector()->Length() );
+      ::memcpy( ( *Statevector() )( i ).Data(), statevectorData, Statevector()->Length() );
     return true;
   }
 
@@ -202,7 +202,7 @@ static class FilterWrapper : public Environment
   GetStatevector( unsigned char* statevectorData )
   {
     bcierr__.Clear();
-    ::memcpy( statevectorData, Statevector()->Data( 0 ), Statevector()->Length() );
+    ::memcpy( statevectorData, ( *Statevector() )( 0 ).Data(), Statevector()->Length() );
     return true;
   }
 
