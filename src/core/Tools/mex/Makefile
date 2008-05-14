@@ -35,6 +35,7 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\SignalProperties.obj \
           obj\SignalType.obj \
           obj\PhysicalUnit.obj \
+          obj\ArithmeticExpression.obj \
           obj\Expression.obj \
           obj\ExpressionParser.obj \
           obj\EncodedString.obj \

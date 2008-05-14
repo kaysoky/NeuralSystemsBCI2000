@@ -188,7 +188,9 @@ function result = equal_structs( inStruct1, inStruct2 )
 
   result = true;
   fnames = fieldnames( inStruct1 );
-  if( ~strcmp( fnames, fieldnames( inStruct2 ) ) )
+  if( length( fnames )~=length(fieldnames(inStruct2)) )
+    result = false;
+  elseif( ~strcmp( fnames, fieldnames( inStruct2 ) ) )
     result = false;
   else
     for( i = 1:length( fnames ) )
@@ -200,6 +202,8 @@ function result = equal_structs( inStruct1, inStruct2 )
         if( ~strcmp( inStruct1.(fnames{i}), inStruct2.(fnames{i}) ) )
           result = false;
         end
+      elseif( isnumeric( inStruct1.(fnames{i}) ) )
+        result = isequalwithequalnans( inStruct1.(fnames{i}), inStruct2.(fnames{i}) );
       else
         if( ~isempty( find( inStruct1.(fnames{i}) ~= inStruct2.(fnames{i}) ) ) )
           result = false;

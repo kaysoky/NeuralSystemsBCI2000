@@ -12,10 +12,14 @@
 #include "mexutils.h"
 #include "Version.h"
 #include "VersionInfo.h"
+#include "ArithmeticExpression.h"
 #include "mex.h"
 #include <sstream>
+#include <cmath>
 
 using namespace std;
+
+static const double cNaN = strtod( "+NAN", NULL );
 
 bool
 PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin )
@@ -24,25 +28,25 @@ PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin
   for( int i = 0; i < inNargin && !argFound; ++i )
   {
     if( mxCHAR_CLASS == mxGetClassID( inVarargin[ i ] ) )
-	{
-	  char* arg = mxArrayToString( inVarargin[ i ] );
-	  if( 0 == stricmp( arg, "-version" ) )
-	    argFound = true;
-	  mxFree( arg );
-	}
+    {
+      char* arg = mxArrayToString( inVarargin[ i ] );
+      if( 0 == stricmp( arg, "-version" ) )
+        argFound = true;
+      mxFree( arg );
+    }
   }
   if( argFound )
   {
     VersionInfo info;
-	istringstream iss( BCI2000_VERSION );
-	iss >> info;
+    istringstream iss( BCI2000_VERSION );
+    iss >> info;
     string mexName( inSourceFile );
     mexName = mexName.substr( 0, mexName.rfind( "." ) );
-	ostringstream oss;
-	oss << mexName << " BCI2000 mex file:\n";
+    ostringstream oss;
+    oss << mexName << " BCI2000 mex file:\n";
     for( VersionInfo::reverse_iterator i = info.rbegin(); i != info.rend(); ++i )
       oss << " " << i->first + ": " << i->second << '\n';
-	oss << BCI2000_COPYRIGHT << '\n';
+    oss << BCI2000_COPYRIGHT << '\n';
     mexPrintf( "%s", oss.str().c_str() );
   }
   return argFound;
@@ -76,8 +80,8 @@ ParamToStruct( const Param& p )
 
   struct
   {
-    const char*    name;
-    mxArray* value;
+    const char* name;
+    mxArray*    value;
   } fields[] =
   {
     { "Section",      mxCreateString( p.Section().c_str() ) },
@@ -87,6 +91,7 @@ ParamToStruct( const Param& p )
     { "HighRange",    mxCreateString( p.HighRange().c_str() ) },
     { "Comment",      mxCreateString( p.Comment().c_str() ) },
     { "Value",        ValuesToCells( p ) },
+    { "NumericValue", ValuesToNumbers( p ) },
     { "RowLabels",    p.RowLabels().IsTrivial()
                        ? NULL
                        : LabelsToCells( p.RowLabels(), p.NumRows() ) },
@@ -117,6 +122,49 @@ ValuesToCells( const Param& p )
         mxSetCell( paramArray, cell, ValuesToCells( *p.Value().ToParam() ) );
       else
         mxSetCell( paramArray, cell, mxCreateString( p.Value( row, col ).c_str() ) );
+
+  return paramArray;
+}
+
+mxArray*
+ValuesToNumbers( const Param& p )
+{
+  // Don't create a numeric array for nested matrices.
+  bool isNested = false;
+  for( int col = 0; !isNested && col < p.NumColumns(); ++col )
+    for( int row = 0; !isNested && row < p.NumRows(); ++row )
+      if( p.Value().Kind() != Param::ParamValue::Single )
+        isNested = true;
+  if( isNested )
+    return NULL;
+
+  mxArray* paramArray = mxCreateDoubleMatrix( p.NumRows(), p.NumColumns(), mxREAL );
+  if( paramArray == NULL )
+    mexErrMsgTxt( "Out of memory when allocating space for parameter values." );
+  double* pMatrix = mxGetPr( paramArray );
+  
+  int cell = 0;
+  for( int col = 0; col < p.NumColumns(); ++col )
+    for( int row = 0; row < p.NumRows(); ++row, ++cell )
+    {
+      // Remove trailing characters to account for units.
+      string value = p.Value( row, col );
+      int i = value.length() - 1;
+      while( i > 0 && isalpha( value[ i ] ) )
+        --i;
+      value = value.substr( 0, i + 1 );
+      // Evaluate the remaining string as an expression if possible.
+      if( value.empty() )
+        pMatrix[ cell ] = cNaN;
+      else
+      {
+        ArithmeticExpression expr( value );
+        if( expr.IsValid() )
+          pMatrix[ cell ] = expr.Evaluate();
+        else
+          pMatrix[ cell ] = cNaN;
+      }
+    }
 
   return paramArray;
 }

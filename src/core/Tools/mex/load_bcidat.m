@@ -28,8 +28,11 @@ function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
 %
 %  The 'parameters' output variable will be a Matlab struct with BCI2000
 %  parameter names as struct member names.
-%  Individual parameter values are represented as cell arrays of strings, and may
-%  be converted into numeric matrices by Matlab's str2double function.
+%  Individual parameter values are represented as cell arrays of strings in a 
+%  'Value' struct member, and additionally as numeric matrices in a 'NumericValue'
+%  struct member. When there is no numeric interpretation possible, the 
+%  corresponding matrix entry will be NaN. For nested matrices, no NumericValue
+%  field is provided.
 %  If multiple files are given, parameter values will match the ones contained 
 %  in the first file.
 %

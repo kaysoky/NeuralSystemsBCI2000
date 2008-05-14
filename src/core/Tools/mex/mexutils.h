@@ -20,6 +20,7 @@ bool PrintVersion( const char*, int, const mxArray** );
 mxArray* ParamlistToStruct( const ParamList& );
 mxArray* ParamToStruct(     const Param& );
 mxArray* ValuesToCells(     const Param& );
+mxArray* ValuesToNumbers(   const Param& );
 mxArray* LabelsToCells(     const LabelIndex&, size_t numEntries );
 
 void  StructToParamlist( const mxArray*, ParamList& );

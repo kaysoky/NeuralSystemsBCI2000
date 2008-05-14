@@ -9,36 +9,6 @@
 //  loads signal, state, and parameter data from the files whose names are given
 //  as function arguments.
 //
-//  Examples for loading multiple files:
-//    files = dir( '*.dat' );
-//    [ signal, states, parameters ] = load_bcidat( files.name );
-//
-//    files = struct( 'name', uigetfile( 'MultiSelect', 'on' ) );
-//    [ signal, states, parameters ] = load_bcidat( files.name );
-//
-//
-//  For multiple files, number of channels, states, and signal type must be
-//  consistent.
-//
-//  By default, signal data will be in raw A/D units, and will be represented by the
-//  smallest Matlab data type that accommodates them.
-//  To obtain signal data calibrated into physical units (microvolts),
-//  specify "-calibrated" as an additional option anywhere in the argument list.
-//
-//  The 'states' output variable will be a Matlab struct with BCI2000 state
-//  names as struct member names, and the number of state value entries matching
-//  the first dimension of the 'signal' output variable.
-//
-//  The 'parameters' output variable will be a Matlab struct with BCI2000
-//  parameter names as struct member names.
-//  Individual parameters are represented as cell arrays of strings, and may
-//  be converted into numeric matrices by Matlab's str2double function.
-//  If multiple files are given, parameter values will match the parameters
-//  contained in the first file.
-//
-//  The 'total_samples' output variable reports the total number of samples
-//  present in all files.
-//
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,6 +21,8 @@
 #include <sstream>
 #include <limits>
 #include <cmath>
+
+#include "ArithmeticExpression.h"
 
 using namespace std;
 
@@ -126,7 +98,7 @@ mexFunction( int nargout, mxArray* varargout[],
 
   if( PrintVersion( __FILE__, nargin, varargin ) )
     return;
-  
+
   mxAssert(
     sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4
     && sizeof( uint8 ) == 1 && sizeof( uint16 ) == 2 && sizeof( uint32 ) == 4
