@@ -20,7 +20,8 @@ ExpressionFilter::ExpressionFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Filtering matrix Expressions= 0 1 "
-      " % % % // expressions used to compute the output of the ExpressionFilter (empty matrix for none)",
+      " % % % // expressions used to compute the output of the ExpressionFilter"
+                                   " (rows are channels; empty matrix for none)",
   END_PARAMETER_DEFINITIONS
 }
 
