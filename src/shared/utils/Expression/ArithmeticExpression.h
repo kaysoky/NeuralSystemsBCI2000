@@ -33,29 +33,28 @@ class ArithmeticExpression
   friend void ExpressionParser::yyerror( ArithmeticExpression*, const char* );
 
  public:
-  ArithmeticExpression()
-    : mValue( 0 )
-    {}
-  ArithmeticExpression( const std::string& s )
-    : mExpression( s ), mValue( 0 )
-    {}
-  ArithmeticExpression( const ArithmeticExpression& e )
-    : mExpression( e.mExpression ), mValue( 0 )
-    {}
+  ArithmeticExpression();
+  ArithmeticExpression( const std::string& );
+  ArithmeticExpression( const ArithmeticExpression& );
   ~ArithmeticExpression()
     {}
   const ArithmeticExpression& operator=( const ArithmeticExpression& e );
 
+  bool   IsValid();
   double Evaluate();
 
  protected:
-  virtual double State( const char* ) const;
-  virtual double Signal( const std::string&, const std::string& ) const;
-  void ReportError( const char* ) const;
+  virtual double State( const char* );
+  virtual double Signal( const std::string&, const std::string& );
+  std::ostream& Errors()
+    { return mErrors; }
 
  private:
+  void Parse();
+
   std::string        mExpression;
   std::istringstream mInput;
+  std::ostringstream mErrors;
   double             mValue;
 };
 

@@ -24,6 +24,13 @@ Expression::operator=( const Expression& e )
   return *this;
 }
 
+bool
+Expression::IsValid( const GenericSignal* signal )
+{
+  mpSignal = signal;
+  return ArithmeticExpression::IsValid();
+}
+
 double
 Expression::Evaluate( const GenericSignal* signal )
 {
@@ -32,37 +39,33 @@ Expression::Evaluate( const GenericSignal* signal )
 }
 
 double
-Expression::State( const char* inName ) const
+Expression::State( const char* inName )
 {
   return Environment::State( inName );
 }
 
 double
-Expression::Signal( const string& inChannelAddress, const string& inElementAddress ) const
+Expression::Signal( const string& inChannelAddress, const string& inElementAddress )
 {
   if( mpSignal == NULL )
   {
-    ReportError( "Trying to access NULL signal" );
+    Errors() << "Trying to access NULL signal" << endl;
     return 0;
   }
   int channel = mpSignal->Properties().ChannelIndex( inChannelAddress );
   if( channel < 0 || channel >= mpSignal->Channels() )
   {
-    ostringstream oss;
-    oss << "Channel index or address ("
-        << inChannelAddress
-        << ") out of range";
-    ReportError( oss.str().c_str() );
+    Errors() << "Channel index or address ("
+             << inChannelAddress
+             << ") out of range";
     return 0;
   }
   int element = mpSignal->Properties().ElementIndex( inElementAddress );
   if( element < 0 || element >= mpSignal->Elements() )
   {
-    ostringstream oss;
-    oss << "Element index or address ("
-        << inElementAddress
-        << ") out of range";
-    ReportError( oss.str().c_str() );
+    Errors() << "Element index or address ("
+             << inElementAddress
+             << ") out of range";
     return 0;
   }
   return ( *mpSignal )( channel, element );

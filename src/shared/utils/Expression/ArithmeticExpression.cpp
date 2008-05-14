@@ -22,10 +22,26 @@
 #include <cmath>
 #include <string>
 #include <stdexcept>
+#include <iostream>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
 
 using namespace std;
+
+ArithmeticExpression::ArithmeticExpression()
+: mValue( 0 )
+{
+}
+
+ArithmeticExpression::ArithmeticExpression( const std::string& s )
+: mExpression( s ), mValue( 0 )
+{
+}
+
+ArithmeticExpression::ArithmeticExpression( const ArithmeticExpression& e )
+: mExpression( e.mExpression ), mValue( 0 )
+{
+}
 
 const ArithmeticExpression&
 ArithmeticExpression::operator=( const ArithmeticExpression& e )
@@ -33,6 +49,8 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
   mExpression = e.mExpression;
   mInput.str( "" );
   mInput.clear();
+  mErrors.str( "" );
+  mErrors.clear();
   mValue = 0;
   return *this;
 }
@@ -41,47 +59,71 @@ ArithmeticExpression::operator=( const ArithmeticExpression& e )
 double
 ArithmeticExpression::Evaluate()
 {
+  Parse();
+  if( !mErrors.str().empty() )
+    bcierr__ << "ArithmeticExpression::Evaluate: When evaluating \""
+             << mExpression << "\": "
+             << mErrors.str() << endl;
+  return mValue;
+}
+
+bool
+ArithmeticExpression::IsValid()
+{
+  Parse();
+  return mErrors.str().empty();
+}
+
+double
+ArithmeticExpression::State( const char* )
+{
+  Errors() << "Use an Expression rather than an ArithmeticExpression to access states"
+           << endl;
+  return 0;
+}
+
+double
+ArithmeticExpression::Signal( const string&, const string& )
+{
+  Errors() << "Use an Expression rather than an ArithmeticExpression to access a signal"
+           << endl;
+  return 0;
+}
+
+void
+ArithmeticExpression::Parse()
+{
   mInput.clear();
   mInput.str( mExpression );
+  mErrors.clear();
+  mErrors.str( "" );
   try
   {
     if( ExpressionParser::yyparse( this ) != 0 )
       mValue = 0;
   }
+  catch( const char* s )
+  {
+    Errors() << s << endl;
+    mValue = 0;
+  }
   catch( const exception& e )
   {
-    ReportError( e.what() );
+    Errors() << e.what() << endl;
     mValue = 0;
   }
 #ifdef VCL_EXCEPTIONS
   catch( const class EMathError& e )
   {
-    ReportError( e.Message.c_str() );
+    Errors() << e.Message.c_str() << endl;
     mValue = 0;
   }
 #endif
-  return mValue;
-}
-
-double
-ArithmeticExpression::State( const char* ) const
-{
-  ReportError( "Use an Expression rather than an ArithmeticExpression to access states" );
-  return 0;
-}
-
-double
-ArithmeticExpression::Signal( const string&, const string& ) const
-{
-  ReportError( "Use an Expression rather than an ArithmeticExpression to access a signal" );
-  return 0;
-}
-
-void
-ArithmeticExpression::ReportError( const char* inMessage ) const
-{
-  bcierr__ << "ArithmeticExpression::Evaluate: When evaluating \"" << mExpression << "\": "
-           << inMessage << endl;
+  catch( ... )
+  {
+    Errors() << "Unknown exception caught" << endl;
+    mValue = 0;
+  }
 }
 
 #ifdef VCL_EXCEPTIONS
@@ -105,4 +147,4 @@ _matherrl( struct _exceptionl* e )
   ThrowMathError( e->name );
   return true;
 }
-#endif // BCI_TOOL
+#endif // VCL_EXCEPTIONS

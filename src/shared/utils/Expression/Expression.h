@@ -50,11 +50,12 @@ class Expression : public ArithmeticExpression, private Environment
     {}
   const Expression& operator=( const Expression& e );
 
+  bool   IsValid( const GenericSignal* = NULL );
   double Evaluate( const GenericSignal* = NULL );
 
  private:
-  virtual double State( const char* ) const;
-  virtual double Signal( const std::string&, const std::string& ) const;
+  virtual double State( const char* );
+  virtual double Signal( const std::string&, const std::string& );
 
   const GenericSignal* mpSignal;
 };

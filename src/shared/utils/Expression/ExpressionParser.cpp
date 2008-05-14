@@ -1454,8 +1454,7 @@ yyreturn:
   void
   yyerror( ArithmeticExpression* pInstance, const char* pError )
   {
-    bcierr__ << "Expression '" << pInstance->mExpression << "': "
-             << pError << endl;
+    pInstance->mErrors << pError << endl;
   }
 
 } // namespace ExpressionParser
