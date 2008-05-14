@@ -56,11 +56,10 @@ class JoystickLogger : public EnvironmentExtension
 
    private:
     JOYCAPS      m_joycaps;
-    unsigned int m_nNumFound;
     unsigned int m_xPos, m_prevXPos,
                  m_yPos, m_prevYPos,
-                 m_zPos, m_prevZPos;
-    bool         m_button1, m_prevButton1,
+                 m_zPos, m_prevZPos,
+                 m_button1, m_prevButton1,
                  m_button2, m_prevButton2,
                  m_button3, m_prevButton3,
                  m_button4, m_prevButton4;

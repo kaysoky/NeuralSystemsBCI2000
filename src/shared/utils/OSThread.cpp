@@ -56,8 +56,9 @@ OSThread::Terminate()
 {
   mTerminating = true;
   if( mHandle != NULL )
-    while( !::PostThreadMessage( mThreadID, WM_QUIT, 0, 0 ) )
-      Sleep( 0 );
+    while( !::PostThreadMessage( mThreadID, WM_QUIT, 0, 0 )
+            && ::GetLastError() != ERROR_INVALID_THREAD_ID )
+      ::Sleep( 0 );
 }
 
 int
