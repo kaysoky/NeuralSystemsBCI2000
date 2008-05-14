@@ -8,7 +8,7 @@ function result = convert_bciprm( varargin )
 %
 % converts a BCI2000 parameter struct (as created by load_bcidat)
 % into a cell array of strings containing valid BCI2000 parameter
-% definition strings.
+% definition strings (ignoring the NumericValue field if present).
 %
 % When the input is a cell array rather than a Matlab struct, convert_bciprm
 % will interpret the input as a list of BCI2000 parameter definition strings:
