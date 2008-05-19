@@ -76,16 +76,11 @@ protected:
 		AcquireThread( gUSBampADC * parent )
 		: TThread( true ), amp( parent )
 		{
-			prevT = 0;
-			for (int i = 0; i < 100; i++) tDiffs[i] = 0;
-			curPos = 0;
             SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 		}
 		private:
 			virtual void __fastcall Execute();
 			gUSBampADC *amp;
-			int tDiffs[100], prevT;
-			int curPos;
 	} *mpAcquireThread;
 
 };

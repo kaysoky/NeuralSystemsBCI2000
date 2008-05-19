@@ -62,7 +62,7 @@ gUSBampADC::gUSBampADC()
        "// number of digitized channels per device",
    "Source int SampleBlockSize= 8 5 1 20000 "
        "// number of samples per block",
-   "Source int NumBuffers= 1 1 2 32 "
+   "Source int NumBuffers= 2 1 2 32 "
         "//number of software buffers to use",
    "Source string DeviceIDMaster= auto % % %"
        "// deviceID for the device whose SYNC goes to the slaves",
