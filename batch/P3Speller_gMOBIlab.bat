@@ -7,6 +7,6 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
 start operat.exe 
-start gMOBIlab.exe 127.0.0.1
+start gMOBIlabPlus.exe 127.0.0.1
 start P3SignalProcessing.exe 127.0.0.1
 start P3Speller.exe 127.0.0.1

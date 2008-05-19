@@ -7,7 +7,7 @@
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 cd ..\prog
 start operat.exe
-start gMOBIlab.exe 127.0.0.1
+start gMOBIlabPlus.exe 127.0.0.1
 start ARSignalProcessing.exe 127.0.0.1
 start CursorTask.exe 127.0.0.1
 cd ..
