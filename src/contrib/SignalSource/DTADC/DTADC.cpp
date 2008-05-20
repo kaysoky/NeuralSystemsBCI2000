@@ -27,7 +27,7 @@
 using namespace std;
 
 DTFUN dtfun, dtfun2;
- 
+
 RegisterFilter( DTADC, 1 );
 
 // **************************************************************************
@@ -48,17 +48,17 @@ DTADC::DTADC()
 {
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
-    "Source int SourceCh=      64 64 1 128 "
+    "Source int SourceCh=      64 64 1 % "
         "// this is the number of digitized channels",
-    "Source int SoftwareChBoard1= 64 64 1 128 "
+    "Source int SoftwareChBoard1= 64 64 1 % "
         "// # channels board1 (ignored when only one board)",
-    "Source int SoftwareChBoard2= 64 64 1 128 "
+    "Source int SoftwareChBoard2= 64 64 1 % "
         "// # channels board2 (ignored when only one board)",
-    "Source int TransmitCh=      16 5 1 128 "
+    "Source int TransmitCh=      16 5 1 % "
         "// this is the number of transmitted channels",
-    "Source int SampleBlockSize= 16 5 1 128 "
+    "Source int SampleBlockSize= 16 5 1 % "
         "// this is the number of samples transmitted at a time",
-    "Source int SamplingRate=    128 128 1 4000 "
+    "Source int SamplingRate=    128 128 1 % "
         "// this is the sample rate",
     "Source string BoardName=    BCI_IN "
         "// this is the name of the AD board",

@@ -54,11 +54,11 @@ MicromedADC::MicromedADC()
  BEGIN_PARAMETER_DEFINITIONS
    "Source string ServerAddress= *:5000 % % % "
        "// address and port of the Micromed BCI Server",
-   "Source int SourceCh=      128 16 1 128 "
+   "Source int SourceCh=      128 16 1 % "
        "// the number of digitized and stored channels",
-   "Source int SampleBlockSize= 8 5 1 128 "
+   "Source int SampleBlockSize= 8 5 1 % "
        "// the number of samples transmitted at a time",
-   "Source int SamplingRate=    512 128 1 4000 "
+   "Source int SamplingRate=    512 128 1 % "
        "// the sample rate",
    "Source int SignalType=           0 0 0 2"
         "// numeric type of output signal: "

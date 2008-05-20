@@ -30,11 +30,11 @@ RegisterFilter( RDAClientADC, 1 );
 RDAClientADC::RDAClientADC()
 {
  BEGIN_PARAMETER_DEFINITIONS
-    "Source:Signal%20Properties int SourceCh= 33 33 1 129"
+    "Source:Signal%20Properties int SourceCh= 33 33 1 %"
             " // the number of digitized and stored channels including marker channel",
-    "Source:Signal%20Properties int SampleBlockSize= 20 20 1 128"
+    "Source:Signal%20Properties int SampleBlockSize= 20 20 1 %"
             " // the number of samples transmitted at a time, incoming blocks are always 40ms",
-    "Source:Signal%20Properties int SamplingRate= 250 250 1 4000"
+    "Source:Signal%20Properties int SamplingRate= 250 250 1 %"
             " // the sample rate",
     "Source string HostName= localhost"
             " // the name of the host to connect to",
@@ -98,7 +98,7 @@ RDAClientADC::Preflight( const SignalProperties&,
         double prmgain = Parameter( "SourceChGain")( i );
         bool same = ( 1e-3 > ::fabs( prmgain - gain ) / ( gain ? gain : 1.0 ) );
         goodGains &= same;
-        
+
         // bciout<<"channel "<<i+1<<": server="<<gain<<"   prm="<<prmgain<<endl;
         if ( !same ) bciout << "The RDA server says the gain of"
                             << " channel " << i+1

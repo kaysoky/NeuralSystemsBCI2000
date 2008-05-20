@@ -69,9 +69,9 @@ Biosemi2ADC::Biosemi2ADC()
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SourceCh= 80 80 1 296 "
        "// number of digitized channels, includes triggers if postfix triggers is true.",
-   "Source int SampleBlockSize= 120 5 1 128 "
+   "Source int SampleBlockSize= 120 5 1 % "
        "// number of samples per block",
-   "Source int SamplingRate=    512 128 1 40000 "
+   "Source int SamplingRate=    512 128 1 % "
        "// the signal sampling rate",
    "Source int PostfixTriggers= 1 0 0 1 "
         "// Make the triggers 16 channels and place them after end of EEG channels"

@@ -42,11 +42,11 @@ NeuroscanADC::NeuroscanADC()
 {
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
-   "Source int SourceCh=      16 16 1 128 "
+   "Source int SourceCh=      16 16 1 % "
        "// number of digitized channels (has to match Neuroscan)",
-   "Source int SampleBlockSize= 32 5 1 128 "
+   "Source int SampleBlockSize= 32 5 1 % "
        "// number of samples per block (has to match Neuroscan)",
-   "Source int SamplingRate=    256 128 1 40000 "
+   "Source int SamplingRate=    256 128 1 % "
        "// the signal sampling rate (has to match Neuroscan)",
    "Source string ServerAddress= localhost:3999 "
        "// address and port of the Neuroscan Acquire server",
