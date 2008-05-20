@@ -24,7 +24,7 @@ RegisterFilter( TransmissionFilter, 1.2 );
 TransmissionFilter::TransmissionFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Source:Online%20Processing list TransmitChList= 4 1 2 3 4 1 1 % "
+    "Source:Online%20Processing list TransmitChList= 4 1 2 3 4 % % % "
       "// list of transmitted channels",
   END_PARAMETER_DEFINITIONS
 }
