@@ -443,8 +443,8 @@ DataIOFilter::Downsample( const GenericSignal& Input, GenericSignal& Output )
     {
       GenericSignal::ValueType value = 0.0;
       for( int insample = outsample * decimationFactor; insample < ( outsample + 1 ) * decimationFactor; ++insample )
-        value += Input( ch, insample );
-      Output( ch, outsample ) = value / decimationFactor;
+        value += Input( ch, insample ) / decimationFactor;
+      Output( ch, outsample ) = value;
     }
 }
 
