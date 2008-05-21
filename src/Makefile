@@ -12,11 +12,11 @@
 #         Use "make prepare" to avoid Borland IDE problems with write protected
 #         project files.
 #
-#         This makefile depends on the existence of a file called ".makefiles" 
+#         This makefile depends on the existence of a file called "makefiles" 
 #         in the same directory which is either empty or contains
 #         an automatically created list of makefiles in subdirectories.
 #
-#         You will probably want to edit the file ".makefiles" to exclude
+#         You will probably want to edit the file "makefiles" to exclude
 #         broken and/or unneeded subprojects. If doing so, uncomment
 #         the line defining DONTCLEANME to protect your changes.
 #
@@ -29,9 +29,9 @@ SHELL = cmd /c @prompt $s &&
 # Ignore a command's return code (minus sign appears unreliable).
 IGNORE = || echo.
 # Name of file that contains list of subproject makefiles.
-MKNAM = .makefiles
+MKNAM = makefiles
 # How to zero the subproject makefile list.
-EMPTYMK = echo ^# This file is used by MAKE. Do not delete it.>$(MKNAM)
+EMPTYMK = echo ^# Execute 'make prepare' to populate this file.>$(MKNAM)
 # Extensions of files that need to be always writeable.
 FORCEWRITE = *.bpr *.res *.mak *.pdf *.exe
 # Extensions of files that will be deleted by 'make clean'.
