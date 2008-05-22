@@ -65,9 +65,12 @@ void
 Scene::DeleteObjects()
 {
   Cleanup();
-  for( SetOfObjects::const_iterator i = mObjects.begin(); i != mObjects.end(); ++i )
-    delete *i;
-  mObjects.clear();
+  while( !mObjects.empty() )
+  {
+    primObj* p = *mObjects.begin();
+    mObjects.erase( p );
+    delete p;
+  }
 }
 
 
@@ -115,12 +118,9 @@ Scene::OnChange( DrawContext& inDC )
   {
     mHardwareAccelerated = false;
 
+    Cleanup();
     if( mGLRC )
-    {
-      ::wglMakeCurrent( mContextHandle, mGLRC );
-      Cleanup();
       ::wglDeleteContext( mGLRC );
-    }
 
     PIXELFORMATDESCRIPTOR pfd =
     {
@@ -196,17 +196,26 @@ Scene::Initialize()
 
   for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
     ( *i )->initialize();
-  mInitialized = true;
 
   ::chdir( cwd.c_str() );
+
+  mInitialized = true;
 }
 
 void
 Scene::Cleanup()
 {
   if( mInitialized )
+  {
+    HGLRC glrc = ::wglGetCurrentContext();
+    HDC   dc = ::wglGetCurrentDC();
+    ::wglMakeCurrent( mContextHandle, mGLRC );
+
     for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
       ( *i )->cleanup();
+
+    ::wglMakeCurrent( dc, glrc );
+  }
   mInitialized = false;
 }
 
