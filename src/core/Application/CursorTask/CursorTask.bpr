@@ -51,8 +51,8 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-vGc -vGt -vGd -O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -a8 
-      -5 -b- -k- -vi -c -tW -tWM"/>
+    <CFLAG1 value="-O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
+      -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
@@ -62,7 +62,7 @@
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
@@ -230,6 +230,6 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=0
-LinkCGLIB=1
+LinkCGLIB=0
   </IDEOPTIONS>
 </PROJECT>
