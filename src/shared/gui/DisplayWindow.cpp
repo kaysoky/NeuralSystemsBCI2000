@@ -16,7 +16,7 @@ using namespace GUI;
 
 #ifdef __BORLANDC__
 DisplayWindow::DisplayWindow()
-: mpForm(  ),
+: mpForm( NULL ),
   mWinDC( NULL )
 {
   Restore();
@@ -106,9 +106,11 @@ DisplayWindow::Show()
   if( mpForm == NULL )
     Restore();
   mpForm->Show();
-  ::ReleaseDC( mpForm->Handle, mWinDC );
+  HDC oldDC = mWinDC;
   mWinDC = ::GetDC( mpForm->Handle );
-  return UpdateContext();
+  UpdateContext();
+  ::ReleaseDC( mpForm->Handle, oldDC );
+  return *this;
 }
 
 DisplayWindow&
@@ -138,11 +140,13 @@ DisplayWindow::Restore()
 DisplayWindow&
 DisplayWindow::Clear()
 {
-  ::ReleaseDC( mpForm->Handle, mWinDC );
+  HDC oldDC = mWinDC;
   mWinDC = NULL;
+  UpdateContext();
+  ::ReleaseDC( mpForm->Handle, oldDC );
   delete mpForm;
   mpForm = NULL;
-  return UpdateContext();
+  return *this;
 }
 
 
