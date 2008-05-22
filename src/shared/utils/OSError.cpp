@@ -41,7 +41,7 @@ OSError::Message() const
   );
   if( success )
   {
-    spMessageBuffer = new char[ ::strlen( pMessage ) ];
+    spMessageBuffer = new char[ ::strlen( pMessage ) + 1 ];
     ::strcpy( pMessage, spMessageBuffer );
     ::LocalFree( pMessage );
   }
