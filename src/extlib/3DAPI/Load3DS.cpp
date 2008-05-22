@@ -11,6 +11,7 @@
 #pragma hdrstop
 
 #include "Load3DS.h"
+#include "buffers.h"
 #include <fstream>
 
 using namespace std;
@@ -736,7 +737,7 @@ void Create3dsTexture(UINT textureArray[], LPSTR strFileName, int textureID)
     if( !ifstream( strFileName ).is_open() ) // Does the file exist?
       return;
 
-	pBitmap = auxDIBImageLoad(strFileName);				// Load the bitmap and store the data
+	pBitmap = buffers::loadWindowsBitmap(strFileName);				// Load the bitmap and store the data
 
 	if(pBitmap == NULL)									// If we can't load the file, quit!
 		return;

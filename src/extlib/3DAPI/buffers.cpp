@@ -26,6 +26,55 @@ map<GLuint, buffers::Font2DEntry> buffers::sFontData2D;
 map<std::string, GLuint> buffers::sFontHandles3D;
 map<GLuint, buffers::Font3DEntry> buffers::sFontData3D;
 
+AUX_RGBImageRec*
+buffers::loadWindowsBitmap( const std::string& inBitmapFile )
+{
+   AUX_RGBImageRec* result = NULL;
+   HBITMAP bmp = ::LoadImage( NULL, inBitmapFile.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+   if( bmp != NULL )
+   {
+     result = reinterpret_cast<AUX_RGBImageRec*>( ::malloc( sizeof( AUX_RGBImageRec ) ) );
+     BITMAPINFO bmi;
+     bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+     bmi.bmiHeader.biBitCount = 0;
+     HDC dc = ::CreateCompatibleDC( NULL );
+     bool success = ::GetDIBits( dc, bmp, 0, 0, NULL, &bmi, DIB_RGB_COLORS );
+     if( success )
+     {
+       bmi.bmiHeader.biBitCount = 24;
+       bmi.bmiHeader.biCompression = BI_RGB;
+       bmi.bmiHeader.biPlanes = 1;
+       result->sizeX = bmi.bmiHeader.biWidth;
+       result->sizeY = bmi.bmiHeader.biHeight;
+       result->data = NULL;
+       success = ::GetDIBits( dc, bmp, 0, result->sizeY, NULL, &bmi, DIB_RGB_COLORS );
+       if( success )
+       {
+         result->data = reinterpret_cast<unsigned char*>( ::malloc( bmi.bmiHeader.biSizeImage ) );
+         success = ::GetDIBits( dc, bmp, 0, result->sizeY, result->data, &bmi, DIB_RGB_COLORS );
+         if( !success )
+           ::free( result->data );
+       }
+       if( success )
+       {
+         for( int i = 0; i < result->sizeX * result->sizeY; ++i )
+         { // Convert Windows BGR into GL RGB
+           unsigned char tmp = result->data[ 3 * i ];
+           result->data[ 3 * i ] = result->data[ 3 * i + 2 ];
+           result->data[ 3 * i + 2 ] = tmp;
+         }
+       }
+     }
+     if( !success )
+     {
+       ::free( result );
+       result = NULL;
+     }
+     ::DeleteDC( dc );
+     ::DeleteObject( bmp );
+   }
+   return result;
+}
 
 GLuint
 buffers::loadTexture( const std::string& inTextureFile )
@@ -39,7 +88,7 @@ buffers::loadTexture( const std::string& inTextureFile )
       bool fileExists = ifstream( inTextureFile.c_str() ).is_open();
       if( fileExists )
       {
-        AUX_RGBImageRec* texImg = auxDIBImageLoad( inTextureFile.c_str() );
+        AUX_RGBImageRec* texImg = loadWindowsBitmap( inTextureFile.c_str() );
         if( texImg )
         {
           glGenTextures( 1, &textureHandle );

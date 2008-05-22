@@ -14,7 +14,7 @@
     <RESFILES value="Demo.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) UDemoWindow.dfm"/>
-    <LIBFILES value="..\glaux.lib"/>
+    <LIBFILES value=""/>
     <LIBRARIES value="rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
@@ -52,7 +52,6 @@
       <FILE FILENAME="Demo.cpp" FORMNAME="" UNITNAME="Demo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="UDemoWindow.cpp" FORMNAME="DemoWindow" UNITNAME="UDemoWindow" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\Scene.cpp" FORMNAME="" UNITNAME="Scene" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\glaux.lib" FORMNAME="" UNITNAME="glaux.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\cameraNlight.cpp" FORMNAME="" UNITNAME="cameraNlight" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\cuboids.cpp" FORMNAME="" UNITNAME="cuboids" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\buffers.cpp" FORMNAME="" UNITNAME="buffers" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

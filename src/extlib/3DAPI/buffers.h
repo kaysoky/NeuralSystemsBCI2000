@@ -17,6 +17,8 @@
 class buffers
 {
  public:
+  static AUX_RGBImageRec* loadWindowsBitmap( const std::string& );
+
   static GLuint loadTexture( const std::string& );
   static void releaseTexture( const std::string& );
 
