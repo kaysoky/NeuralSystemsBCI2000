@@ -30,7 +30,7 @@
     <IDLFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="..\..\..\extlib\3DAPI\glaux.lib"/>
+    <LIBFILES value=""/>
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
@@ -51,8 +51,8 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -a8 -5 -b- -k- -vi 
-      -c -tW -tWM"/>
+    <CFLAG1 value="-vGc -vGt -vGd -O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -X- -a8 
+      -5 -b- -k- -vi -c -tW -tWM"/>
     <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zn"/>
@@ -62,7 +62,7 @@
   <LINKER>
     <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
@@ -106,7 +106,6 @@
       <FILE FILENAME="..\..\..\shared\modules\application\utils\BlockRandSeq.cpp" FORMNAME="" UNITNAME="BlockRandSeq" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\application\utils\Localization.cpp" FORMNAME="" UNITNAME="Localization" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\GenericFilter.cpp" FORMNAME="" UNITNAME="GenericFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\3DAPI\glaux.lib" FORMNAME="" UNITNAME="glaux.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\3DAPI\buffers.cpp" FORMNAME="" UNITNAME="buffers" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\3DAPI\cameraNlight.cpp" FORMNAME="" UNITNAME="cameraNlight" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\3DAPI\cuboids.cpp" FORMNAME="" UNITNAME="cuboids" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -174,23 +173,25 @@ Comments=
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=8
-Item0=..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\..\shared;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item6=..;$(BCB)\include;$(BCB)\include\vcl;..\shared\gui
-Item7=..\shared\gui;..\shared\utils;..\shared\filters;..\..\shared\gui;..\shared\3DAPI;..\..\shared\utils\Expression;..\..\shared\modules;..\..\shared\config;..\..\shared\fileio;..\..\shared\utils;..\..\shared\bcistream;..\..\shared\types;..\..\shared\accessors;..;DataGlove;..\..\shared;..\shared;$(BCB)\include;$(BCB)\include\vcl
+Count=9
+Item0=..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\..\shared;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\..\shared\accessors;..\..\..\shared\modules;..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item7=..;$(BCB)\include;$(BCB)\include\vcl;..\shared\gui
+Item8=..\shared\gui;..\shared\utils;..\shared\filters;..\..\shared\gui;..\shared\3DAPI;..\..\shared\utils\Expression;..\..\shared\modules;..\..\shared\config;..\..\shared\fileio;..\..\shared\utils;..\..\shared\bcistream;..\..\shared\types;..\..\shared\accessors;..;DataGlove;..\..\shared;..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=5
-Item0=..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..;..\shared\gui;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
-Item1=..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
-Item2=..\..\..\shared\accessors;..\..\..\shared\modules;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
-Item3=..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
-Item4=..\shared\gui;..\shared\utils;..\shared\filters;..\..\shared\gui;..\shared\3DAPI;..\..\shared\utils\Expression;..\..\shared\modules;..\..\shared\fileio;..\..\shared\utils;..\..\shared\bcistream;..\..\shared\types;..\..\shared\accessors;..;DataGlove;..\..\shared;..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Count=6
+Item0=..\..\..\shared\modules\application\human_interface_devices;..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..;..\shared\gui;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\..\..\shared\fileio;..\..\..\shared\utils\Expression;..\..\..\shared\gui;..\..\..\extlib\3DAPI;..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..;..\shared\gui;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item2=..\..\..\shared\modules\application\utils;..\..\..\shared\modules\application;..\..\..\shared\utils;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\modules;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
+Item3=..\..\..\shared\accessors;..\..\..\shared\modules;..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
+Item4=..;$(BCB)\lib\obj;$(BCB)\lib;..\shared\gui
+Item5=..\shared\gui;..\shared\utils;..\shared\filters;..\..\shared\gui;..\shared\3DAPI;..\..\shared\utils\Expression;..\..\shared\modules;..\..\shared\fileio;..\..\shared\utils;..\..\shared\bcistream;..\..\shared\types;..\..\shared\accessors;..;DataGlove;..\..\shared;..\shared;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -229,6 +230,6 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=0
-LinkCGLIB=0
+LinkCGLIB=1
   </IDEOPTIONS>
 </PROJECT>

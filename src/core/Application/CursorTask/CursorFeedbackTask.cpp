@@ -15,6 +15,7 @@
 #include "BCIDirectory.h"
 #include "FeedbackScene2D.h"
 #include "FeedbackScene3D.h"
+#include "buffers.h"
 
 // These two lines should be kept consistent:
 #define CURSOR_POS_BITS   "13"
@@ -168,7 +169,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       bool err = !ifstream( filename.c_str() ).is_open();
       if( !err )
       {
-        AUX_RGBImageRec* pImg = ::auxDIBImageLoad( filename.c_str() );
+        AUX_RGBImageRec* pImg = buffers::loadWindowsBitmap( filename );
         if( pImg != NULL )
         {
           ::free( pImg->data );
