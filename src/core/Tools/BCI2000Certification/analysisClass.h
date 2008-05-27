@@ -41,12 +41,17 @@ public:
 
     basicStats doThreshAnalysis(int chNum);
     basicStats doThreshAnalysis(int chNum, string stateName, int);
-	bool doThreshAnalysis();
+	bool doThreshAnalysis(double thresh);
     string getTaskName(){return thisTask.taskName;}
     bool getSkip(){return thisTask.skip;}
+    bool getExportData(){return thisTask.exportData;}
 
     void print(ofstream&, vector<basicStats> minReqs);
+    bool exportData(string expfile);
 	double thresh;
+    TaskType thisTask;
+    string getFileName(){return fName;}
+
 private:
 	string fName;
 	string FileInitials, SubjectName, SubjectSession, SubjectRun;
@@ -56,7 +61,7 @@ private:
     int nChannels;
     float sampleRate;
     int blockSize;
-    TaskType thisTask;
+
 
     void checkDroppedSamples(int ch);
     double getMin(double *d, int n);
@@ -68,7 +73,7 @@ private:
     double vStd(vector<double> *a);
     double vMax(vector<double> *a);
     double vMin(vector<double> *a);
-    double **signal;
+    //double **signal;
 
     map<string, double*> states;
     map<string, double*>::iterator it;
@@ -78,7 +83,7 @@ private:
     vector<basicStats> latencyStats;
 
     int nStates;
-    unsigned short droppedSamples;
+    unsigned int droppedSamples;
 };
 
 

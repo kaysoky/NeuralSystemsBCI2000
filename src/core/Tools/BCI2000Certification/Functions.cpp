@@ -25,7 +25,7 @@ string shortFname(string fname)
 parseDir
 description: recursively searches a directory, and stores all *.dat files found in a string vector
 input: string dir - the directory to search
-		vector<string> &fnames - the vector that stores the file names; this is passed by reference,
+		vector<string> &fnames - the vector that stores the file names; this is passed by reference, 
 			and is changed by this function
 output: bool - used by the recursion; returns true if the dir is a directory, and false if it is not
 	(and therefore is probably a file)
@@ -81,15 +81,15 @@ string getFullDir(string dirPath)
 	//get the current working directory
 	getcwd(curpath, _MAX_PATH);
 	//cout <<curpath<<endl;
-
+	
 	//create a new string to use (and return)
 	string fullpath(curpath);
-
+	
 	//go through the current dirPath, and find the first relative directory separator
     int pos = dirPath.find(".\\");
     if (pos != -1)
         dirPath.replace(pos, 2,"");
-
+        
 	pos = dirPath.find("..\\");
 	while (pos != -1)
 	{
@@ -123,7 +123,7 @@ vector<string> parseParm(string parmName)
 		cout << "Unable to find parameter file: "<< parmName<<". Quitting."<<endl;
 		exit(0);
 	}
-
+	
 	//if the file was found, go through the file to find the DataDirectory parameter
 	string line, DataDirectory="";
 	bool DataDirFound = false;
@@ -161,7 +161,7 @@ parseCfg
 description: parse the configuration file, which should never really be touched by the user, and get default settings
 input: double thresh - the threshold that is used for detection in analysis; usually 0.25
 	string outfilepath - the path of the file that will contain the analysis results
-	string datDir - the default data directory
+	string datDir - the default data directory 
 output: vector<basicStats> - this array of basicStats contains the minimum requirements for each task
 	for the task to be considered bci2000 compliant
 		- additionally, all input parameters are passed by reference and are modified by this function
@@ -172,13 +172,13 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
     datDir = "";
     thresh = .25;
     minReqs.clear();
-
+    
 	ifstream file;
 	file.open("BCI2000Certification.cfg");
 	if (!file.is_open())
 	{
 		file.close();
-		cout << "Error opening BCI2000Certification.cfg. Quitting."<<endl;
+		//cout << "Error opening BCI2000Certification.cfg. Quitting."<<endl;
 		return false;
 	}
 
@@ -196,7 +196,7 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
 	These values are NOT task specific; this must be true for all tests for a system
 	to be BCI2000 compatible.
 	*/
-
+	
 	//parse the file if it exists
 	string line;
 	while (getline(file, line))
@@ -223,23 +223,33 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
 			continue;
 		}
 
-		//if it is not one of the above tokens, then it describes a task component
-		basicStats tmpStat;
+        if (tolower(strTok) == "task")
+        {
+            //if it is not one of the above tokens, then it describes a task component
+            ss >> strTok;
+            basicStats tmpStat;
+		
+            //set default values for the mean and standard deviation
+            //generally, the mean is always set, but the stddev is not
+            //if we use the >> operator and ss is empty, then the values are not changed,
+            //and the acceptable "NA" values are stored
+            float sMean = 0, sStd = -1;
+            ss >> sMean;
+            ss >> sStd;
+            tmpStat.mean = sMean;
+            tmpStat.std = sStd;
+            tmpStat.taskName = strTok;
+            minReqs.push_back(tmpStat);
+            continue;
+        }
 
-		//set default values for the mean and standard deviation
-		//generally, the mean is always set, but the stddev is not
-		//if we use the >> operator and ss is empty, then the values are not changed,
-		//and the acceptable "NA" values are stored
-		float sMean = 0, sStd = -1;
-		ss >> sMean;
-		ss >> sStd;
-		tmpStat.mean = sMean;
-		tmpStat.std = sStd;
-		tmpStat.taskName = strTok;
-		minReqs.push_back(tmpStat);
+        //if we get here, then the configuration file is not setup correctly
+        file.close();
+        return false;
+
 	}
     file.close();
-
+    
     //add the date+time to the outfilepath
     char dateStr[10];
 	char timeStr[10];
@@ -275,22 +285,10 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
         cout << "The BCI2000Certification.cfg file does not contain the required settings."<<endl;
         return false;
     }
-
+    
 	return true;
 }
 
-/*---------------------------
-parseIni
-description: parses the BCI2000Certification.ini file, in which the task types are defined
-input: NA
-output: Tasks - an array of TaskType, which describes the task and how to analyze the data for that task
-*/
-Tasks parseIni()
-{
-	//check that the ini file exists, and gracefully exit if it does not
-    Tasks taskTypes;
-    taskTypes.init("BCI2000Certification.ini");
-    return taskTypes;
-}
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)

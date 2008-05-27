@@ -8,7 +8,7 @@ and providing help/output. These include:
 
 printHelp - print an abridged or verbose help to the screen giving info about the program and it use
 shortFName - extract the filename from the full path (e.g. for "c:\bci2000\latencyTest.prm", returns
-	"latencyTest.prm"
+	"latencyTest.prm"                  
 parseDir - recursively parses a directory tree looking for bci2000 *.dat files, returning
 	the file names in a string vector
 getFullDir - changes a relative path (e.g. with "..\..\" etc) into a full path
@@ -170,9 +170,9 @@ vector<string> parseInput(int argc, char* argv[],string datDir)
 	bool useDefDir = (argc < 2);
 
     int parmPos = 2;
-
+	
 	//go through each argument until there are none left
-	//this first loop is a first pass, checking for general errors in syntax and setting up
+	//this first loop is a first pass, checking for general errors in syntax and setting up 
 	//what to do on the 2nd pass
     while (pos < argc)
     {
@@ -223,7 +223,7 @@ vector<string> parseInput(int argc, char* argv[],string datDir)
         }
         pos++;
     }
-
+	
 	//only one analyis type can be used, so if more than one argument is used, print an error
 	if ((doParms && doList) || (doParms && doFile) || (doList && doFile))
     {
@@ -235,7 +235,7 @@ vector<string> parseInput(int argc, char* argv[],string datDir)
     pos = 1;
     if (doList)
     {
-		//each argument is a dat file to be analyzed
+		//each argument is a dat file to be analyzed 
 		//the actual analysis program later handles checking whther the file exists, and if it is valid
 		//so there is nothing left to do except add the file names
         for (int i = 1; i < argc; i++)
@@ -277,7 +277,12 @@ vector<string> parseInput(int argc, char* argv[],string datDir)
 }
 
 
-
+string getLogFile(TaskType *task)
+{
+    string logFile = "";
+    logFile += "Data\\" + task->taskName + "001\\" + task->taskName + ".log";
+    return logFile;
+}
 
 
 
@@ -301,9 +306,9 @@ int main(int argc, char* argv[])
 	//parse the configuration, input, and ini files to get the list of files to analyze
 	if (!parseCfg(thresh, outfilepath, datDir, minReqs))
         exit(-1);
-
+        
 	fnames = parseInput(argc, argv, datDir);
-	taskTypes = parseIni();
+	taskTypes.init("BCI2000Certification.ini");
 
 	//open the result file output stream, and quit if there is an error
 	ofstream resOut;
@@ -337,7 +342,7 @@ int main(int argc, char* argv[])
 	resOut << "\n---------------------------------"<<endl;
 	cout << "\nStarting BCI2000 Latency Analysis";
 	cout << "\n---------------------------------"<<endl;
-
+	
 	//run the analysis on each file found
     for (unsigned int i = 0; i < fnames.size(); i++)
     {
@@ -347,7 +352,7 @@ int main(int argc, char* argv[])
 		//open the file; this checks if the file is valid/exists, loads the data (signal, states, parms)
 		//and determines the task type based on the definitions loaded from the ini file
 		if (!an->open(fnames[i], taskTypes))
-        {
+        {                           		
             //if there is an error or the file cannot be classified, just continue with the next one
             if (an->getTaskName() == "Unknown")
             {
@@ -360,7 +365,7 @@ int main(int argc, char* argv[])
                 continue;
             }
         }
-
+		
 		//add the task to the checked types, which is used later for output
 		//checkedTypes.push_back(thisTask);
         //update the stdio and log
@@ -377,12 +382,16 @@ int main(int argc, char* argv[])
             resOut << "Testing " <<shortFname(fnames[i]) <<"..." <<endl;
     		cout << "Testing " <<shortFname(fnames[i]) <<"..." <<endl;
         }
-
+		
 		//actually run the analysis on this task
-        an->doThreshAnalysis();
+        an->doThreshAnalysis(thresh);
 
 		//close out the analysis
         analyses.push_back(an);
+
+        //write data to csv file if necessary
+        if (an->getExportData())
+            an->exportData(getLogFile(&(an->thisTask)));
         //an.clear();
     }
 
@@ -393,7 +402,7 @@ int main(int argc, char* argv[])
 	//the analyses vector now contains an array for the results for each file
 	//the results for each file contains results based on what was tested (e.g., video, audio, metronome, etc)
 	//based on what was specified in the ini file
-	//these results are compared against the minimum requires specified in the cfg file, and
+	//these results are compared against the minimum requires specified in the cfg file, and 
 	//compliance determination is output to the log and stdio
 	for (unsigned int i = 0; i < analyses.size(); i++)
 	{
@@ -410,3 +419,4 @@ int main(int argc, char* argv[])
     return 0;
 }
 //---------------------------------------------------------------------------
+ 

@@ -2,8 +2,6 @@
 Author: Adam Wilson, University of Wisconsin-Madison
 Date: 12-16-07
 
-This is the flowchart for
-
 (C) 2000-2008, BCI2000 Project
 http://www.bci2000.org
 */
@@ -45,6 +43,9 @@ bool CertLauncher::parseIni()
 {
     tasks.init("BCI2000Certification.ini");
 
+    if (tasks.getReturnCode() != 0)
+        return false;
+        
     bool allTasksOK = true;
     for (unsigned int i = 0; i < tasks.size(); i++)
     {
@@ -66,11 +67,7 @@ bool CertLauncher::parseIni()
             allTasksOK = false;
             curTaskOK = false;
         }
-        if (tasks[i].parmFile == ""){
-            allTasksOK = false;
-            curTaskOK = false;
-        }
-        if (tasks[i].taskFolder == ""){
+        if (tasks[i].parmFile.size() == 0){
             allTasksOK = false;
             curTaskOK = false;
         }
@@ -84,7 +81,8 @@ bool CertLauncher::parseIni()
             //it++;
         }
     }
-    mCurTask = 0;
+        
+    mCurTask = -1;
     mTasksRemaining = (tasks.size() > 0);
 
     return allTasksOK;
@@ -95,16 +93,21 @@ bool CertLauncher::launchProgs()
     //check that the programs exist
 
     //----------------------------
-
+    
     string fs = "\\";
 
     TaskType curTaskC = tasks[mCurTask];
     stringstream operat, comm;
     operat <<"cd .." << fs << ".." << fs << "prog & ";
     operat << "start operat --OnConnect \"-LOAD PARAMETERFILE ";
-    operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << "latencyTest.prm;";
-    operat << " LOAD PARAMETERFILE ";
-    operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << curTaskC.parmFile <<"; SETCONFIG;\"";
+    operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << "CertificationMain.prm;";
+    for (int i = 0; i < curTaskC.parmFile.size(); i++)
+    {
+        operat << " LOAD PARAMETERFILE ";
+        operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << curTaskC.parmFile[i] <<";";
+    }
+
+    operat <<" SETCONFIG;\"";
     operat << " --OnSuspend \"-Quit\";";
 
 
@@ -120,7 +123,8 @@ bool CertLauncher::launchProgs()
 
     //launch each module
     comm.str("");
-    comm << "start .." << fs << ".." << fs << "prog" << fs << ""<<curTaskC.SignalSource << " 127.0.0.1"<<endl;
+    comm << "start .." << fs << ".." << fs << "prog" << fs << curTaskC.SignalSource;
+    comm <<" --SubjectName-"<<curTaskC.taskName<<endl;
     system(comm.str().c_str());
 
     comm.str("");
@@ -208,17 +212,18 @@ bool CertLauncher::monitorProgs()
 string CertLauncher::getLogFile()
 {
     //setup the files
-    string fs = "\\";
-    string prmPath = "parms" + fs + tasks[mCurTask].parmFile;
-    stringstream logFile;
+    /*
+    string prmPath = "parms" + fs + tasks[mCurTask].taskName;
+
     logFile << "latencyData" << fs;
-    string subjName = "";
+    string subjName = tasks[mCurTask].taskName;
     //prepare to read and parse the parm file
     ifstream in;
     in.open(prmPath.c_str());
     if (!in.is_open())
-        return "";
+        return "";  */
 
+        /*
     string line;
     while (getline(in, line) && subjName == "")
     {
@@ -231,12 +236,14 @@ string CertLauncher::getLogFile()
         if (strTok == "SubjectName=")
             ss >> subjName;
     }
-    in.close();
+    in.close();  */
 
-    if (subjName == "")
-        return "";
+    //if (subjName == "")
+    //    return "";
     //just assume it is session1
-    logFile << subjName << "001" << fs << subjName <<"_CPU.log";
+    string fs = "\\";
+    stringstream logFile;
+    logFile << "Data" <<fs<<tasks[mCurTask].taskName << "001" << fs << tasks[mCurTask].taskName <<"_CPU.log";
     return logFile.str();
 }
 //---------------------------------------------------------------------------

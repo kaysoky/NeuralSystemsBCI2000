@@ -29,12 +29,14 @@ public:
     std::vector<std::string> parms;
     std::vector<std::string> states;
     std::string SignalSource, SigProc, App;
-    std::string parmFile;
+    std::vector<std::string> parmFile;
     analysisType amp;
+    analysisType dAmp;
     analysisType vid;
 	analysisType aud;
 	float blockSize, sampleRate;
     bool skip;
+    bool exportData;
     void initTasks();
 };
 
@@ -46,6 +48,8 @@ public:
     ~Tasks();
 
     void init(std::string fname);
+    void parseIni();
+    int getReturnCode(){return returnCode;}
 private:
     int returnCode;
 /*

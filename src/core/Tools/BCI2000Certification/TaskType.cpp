@@ -6,6 +6,7 @@
 #pragma hdrstop
 
 #include "TaskType.h"
+#include <iostream>
 using namespace std;
 //----------------------------------------
 Tasks::Tasks()
@@ -27,6 +28,13 @@ Tasks::~Tasks()
     clear();
 }
 
+/*---------------------------
+parseIni
+description: parses the BCI2000Certification.ini file, in which the task types are defined
+input: NA
+output: Tasks - an array of TaskType, which describes the task and how to analyze the data for that task
+*/
+
 //----------------------------------------
 void Tasks::init(std::string fname)
 {
@@ -36,7 +44,8 @@ void Tasks::init(std::string fname)
 	{
 		file.close();
 		//cout << "Error opening BCI2000Certification.ini. Quitting."<<endl;
-        returnCode = -1;
+
+        returnCode =  -1;
         return;
 	}
 
@@ -46,7 +55,8 @@ void Tasks::init(std::string fname)
 	//initTaskType(curTask);
 
     string strTok;
-
+    string globSigSrc = "";
+    bool exportData = false;
 	//go through each line of the ini and parse it
     while (getline(file, line))
     {
@@ -62,13 +72,23 @@ void Tasks::init(std::string fname)
 		if (strTok.length() == 0)
 			continue;
 
+        //this is a global signal source, which will be set for any task that does not
+        //specify one; individual tasks will overwrite this
+        if (tolower(strTok) == "source")
+        {
+            ss >> globSigSrc;
+        }
+        if (tolower(strTok) == "export")
+        {
+            exportData = true;
+        }
 		//go through and check out the possible acceptable tokens, and assign the values accordingly
-        if (tolower(strTok) == "name")
+        else if (tolower(strTok) == "name")
         {
             //create a new task, and give it its name
             TaskType curTask;
             ss >> curTask.taskName;
-
+            curTask.exportData = exportData;
             //go through until the END is found
             bool atEnd = false;
             while (getline(file, line) && ! atEnd)
@@ -92,6 +112,11 @@ void Tasks::init(std::string fname)
                 {
                     curTask.amp.flag = true;
                     ss2 >> curTask.amp.ch;
+                }
+                else if (tolower(strTok) == "damp")
+                {
+                    curTask.dAmp.flag = true;
+                    ss2 >> curTask.dAmp.ch;
                 }
                 else if (tolower(strTok) == "vid")
                 {
@@ -121,11 +146,10 @@ void Tasks::init(std::string fname)
                 }
                 else if (tolower(strTok) == "parm")
                 {
-                    ss2 >> curTask.parmFile;
-                }
-                else if (tolower(strTok) == "folder")
-                {
-                    ss2 >> curTask.taskFolder;
+                    string parmTmp;
+                    ss2 >> parmTmp;
+                    curTask.parmFile.push_back(parmTmp);
+                    //ss2 >> curTask.parmFile;
                 }
                 else if (tolower(strTok) == "skip")
                 {
@@ -156,6 +180,26 @@ void Tasks::init(std::string fname)
 
 	}
 	file.close();
+
+    //go through all tasks and set the global source for any that weren't specified
+    for (int i = 0; i < this->size(); i++)
+    {
+        if ((*this)[i].SignalSource == "" && globSigSrc != "")
+            (*this)[i].SignalSource = globSigSrc;
+    }
+
+    //now check for duplicate task names
+    for (unsigned int i = 0; i < this->size(); i++)
+    {
+        for (unsigned int j = i+1; j < this->size(); j++)
+        {
+            if (strcmpi((*this)[i].taskName.c_str(),(*this)[j].taskName.c_str()) == 0)
+            {
+                returnCode = -3;
+                return;
+            }
+        }
+    }
     returnCode = 0;
 }
 
@@ -171,6 +215,10 @@ TaskType::TaskType()
 	amp.state = "";
 	amp.stateVal = 0;
 	amp.flag = false;
+    dAmp.ch = -1;
+	dAmp.state = "";
+	dAmp.stateVal = 0;
+	dAmp.flag = false;
 	vid.ch = -1;
 	vid.state = "";
 	vid.stateVal = 0;
@@ -180,6 +228,7 @@ TaskType::TaskType()
 	aud.stateVal = 0;
 	aud.flag = false;
     skip = false;
+    exportData = false;
 }
 
 //-----------------------------------

@@ -10,6 +10,7 @@ typedef signed short int16;
 typedef signed int   int32;
 typedef float        float32;
 
+#define signal(ch,s) (dFile->CalibratedValue(ch, s))
 /*---------------------------
 analysis: class constructor
 */
@@ -17,14 +18,14 @@ analysis::analysis()
 {
     //set pointers to NULL values, and set a few variables to reasonable values
     dFile = NULL;
-    signal = NULL;
+    //signal = NULL;
     nStates = 0;
     thresh = 0.25;
 
     //add some default ignoreStates, which may or may not be used eventually...
     ignoreStates.push_back("CursorPosX");
     ignoreStates.push_back("CursorPosY");
-    ignoreStates.push_back("Running");
+    ignoreStates.push_back("Running");  
 }
 
 
@@ -68,17 +69,24 @@ bool analysis::open(string file, Tasks &taskTypes)
     sampleRate = dFile->SamplingRate();
     SignalType dataType = dFile->SignalProperties().Type();
 
+    //get the source channel gain in mV, not uV
+    /*double *sourceChGain;
+    sourceChGain = new double[nChannels];
+    for (int i = 0; i < nChannels; i++)
+        sourceChGain[i] = dFile->Parameter("SourceChGain")(0,i)/1000;
+    */
     //read in the signal -----------------------
-    signal = new double *[nChannels];
+    /*signal = new double *[nChannels];
     for (int ch = 0; ch < nChannels; ch++)
     {
         signal[ch] = new double[nSamples];
         for (int s = 0; s < nSamples; s++)
         {
-            signal[ch][s] = dFile->RawValue(ch, s);
+            signal[ch][s] = dFile->CalibratedValue(ch, s);
         }
-    }
-
+    }   */
+    //delete [] sourceChGain;
+    
     //get states -----------------------------
     nStates = dFile->States()->Size();
     for (int i = 0; i < nStates; i++)
@@ -90,7 +98,7 @@ bool analysis::open(string file, Tasks &taskTypes)
 
     const StateVector* stateVector = dFile->StateVector();
     //const StateList& curStateList = stateVector->StateList();
-
+    
     for (int s = 0; s < nSamples; s++)
     {
         dFile->ReadStateVector(s);
@@ -130,7 +138,7 @@ bool analysis::open(string file, Tasks &taskTypes)
 
         //first, check to see if the task folder and subject name are the same
         //if not, we should not continue at all
-		nameFound = (taskTypes[i].taskFolder == SubjectName);
+		nameFound = (taskTypes[i].taskName == SubjectName);
 
 		if (!nameFound)
 			continue;
@@ -182,6 +190,7 @@ description: clear all of the variables/arrays, including the signal, states, an
 void analysis::clear()
 {
     //free pointer memory for the signal, which is a double**
+    /*
     if (signal != NULL)
         {
         for (int i = 0; i < nChannels; i++)
@@ -195,7 +204,7 @@ void analysis::clear()
         delete[] signal;
         signal = NULL;
     }
-
+                 */
     //clear states, which is a map<string, double*>
     for (it = states.begin(); it != states.end(); it++)
     {
@@ -226,8 +235,9 @@ input: TaskType &taskType - the struct that tells the function which analyses to
 output: vector<basicStats> - an array of statistics structures for each analyses
     (e.g., video, audio, etc)
 */
-bool analysis::doThreshAnalysis()
+bool analysis::doThreshAnalysis(double threshTmp)
 {
+    thresh = threshTmp;
     //reset the latencyStats vector
     latencyStats.clear();
 
@@ -250,6 +260,20 @@ bool analysis::doThreshAnalysis()
 
         //check for dropped samples on this channel
         checkDroppedSamples(thisTask.amp.ch);
+    }
+
+    basicStats dAmpStats;
+    if (thisTask.dAmp.flag)
+    {
+        //the amp analysis does not depend on any specific state, so just do the
+        //analysis on the specified channel based on the latency from the block start
+        dAmpStats = doThreshAnalysis(thisTask.dAmp.ch);
+        dAmpStats.taskName = "DigAmp  ";
+        // add the stats to the stats vector
+        latencyStats.push_back(dAmpStats);
+
+        //check for dropped samples on this channel
+        //checkDroppedSamples(thisTask.dAmp.ch);
     }
 
     //do the analysis on each state for the video
@@ -331,7 +355,9 @@ bool analysis::doThreshAnalysis()
 	procStats.std = vStd(&procLat);
 	procStats.min = vMin(&procLat);
 	procStats.max = vMax(&procLat);
-	//procStats.vals = procLat;
+    if (thisTask.exportData)
+        procStats.vals = procLat;
+        
     procStats.taskName = "ProcLat ";
     procStats.desc = "StimulusTime - SourceTime";
 
@@ -341,6 +367,9 @@ bool analysis::doThreshAnalysis()
 	metronome.max = vMax(&metronomeDiff);
 	metronome.min = vMin(&metronomeDiff);
 	metronome.std = vStd(&metronomeDiff);
+    if (thisTask.exportData)
+        metronome.vals = metronomeDiff;
+        
     metronome.taskName = "Jitter  ";
     metronome.desc = "SourceTime[t+1] - SourceTime[t]";
 
@@ -352,26 +381,30 @@ bool analysis::doThreshAnalysis()
     //video system latency (actually, the video latency calculate above is the
     //video system latency, so we use that to find the output latency as:
     // vidOut = vidSys - amp - procLat)
-    if (thisTask.amp.flag && thisTask.vid.flag)
+    if (thisTask.amp.flag && thisTask.vid.flag && ampStats.mean != -1 && vidSystemStats.mean != -1)
     {
         basicStats vidOutputStats;
         vidOutputStats.mean = vidSystemStats.mean - ampStats.mean - procStats.mean;
 		vidOutputStats.std = sqrt(pow(vidSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
         vidOutputStats.min = vidSystemStats.min - ampStats.min - procStats.min;
         vidOutputStats.max = vidSystemStats.max - ampStats.max - procStats.max;
+        if (thisTask.exportData)
+            vidOutputStats.vals.clear();
         vidOutputStats.taskName = "VidOut  ";
         vidOutputStats.desc = "Video output latency";
         latencyStats.push_back(vidOutputStats);
     }
 
     //same as the video stats above
-    if (thisTask.amp.flag && thisTask.aud.flag)
+    if (thisTask.amp.flag && thisTask.aud.flag && ampStats.mean != -1 && audSystemStats.mean != -1)
     {
         basicStats audOutputStats;
         audOutputStats.mean = audSystemStats.mean - ampStats.mean - procStats.mean;
 		audOutputStats.std = sqrt(pow(audSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
         audOutputStats.min = audSystemStats.min - ampStats.min - procStats.min;
         audOutputStats.max = audSystemStats.max - ampStats.max - procStats.max;
+        if (thisTask.exportData)
+            audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
         audOutputStats.desc = "Audio output latency";
         latencyStats.push_back(audOutputStats);
@@ -400,6 +433,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
 	if (chNum >= nChannels || chNum < 0)
 		return tmpStat;
 
+    /*  Data is no longer being normalized!
     //normalize the data by subtracting the minimum value, and dividing by the max
     //giving us values between 0 and 1
 	double sMin = getMin(signal[chNum], nSamples);
@@ -414,7 +448,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
 
 	for (int i = 0; i < nSamples; i++)
 		sigTmp[i] /= sMax;
-
+    */
 	//get the time differences
     int sigPos = 0;
     for (int sample = blockSize; sample < nSamples-blockSize; sample += blockSize)
@@ -424,12 +458,12 @@ basicStats analysis::doThreshAnalysis(int chNum)
 
         //first check that the signal already is not above threshold,
         //and if it is, just continue
-        if (sigTmp[sigPos] > thresh && sigTmp[sigPos-1] >= thresh)
+        if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) >= thresh)
             continue;
 
         //go through the signal, and increment the signal position until it
         //crosses the threshold
-        while ((sigTmp[sigPos] < thresh) && ((sigPos-sample) < blockSize))
+        while ((signal(chNum, sigPos) < thresh) && ((sigPos-sample) < blockSize))
             sigPos++;
 
         //the signal has crossed the threshold, so record the time difference
@@ -443,11 +477,15 @@ basicStats analysis::doThreshAnalysis(int chNum)
 		return tmpStat;
 
     //find the mean, std, etc
-    tmpStat.mean = vMean(&tDiff);
-    tmpStat.std = vStd(&tDiff);
-    tmpStat.min = vMin(&tDiff);
-    tmpStat.max = vMax(&tDiff);
-    tmpStat.vals = tDiff;
+    if (tDiff.size() > 0)
+    {
+        tmpStat.mean = vMean(&tDiff);
+        tmpStat.std = vStd(&tDiff);
+        tmpStat.min = vMin(&tDiff);
+        tmpStat.max = vMax(&tDiff);
+        if (thisTask.exportData)
+            tmpStat.vals = tDiff;
+    }
 
     stringstream str;
     str << "Ch " << chNum <<" v. blocks";
@@ -484,6 +522,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 	if (itr == states.end())
 		return tmpStat;
 
+        /*  we are not normalizing any more...for now
     double sMin = getMin(signal[chNum], nSamples);
     double *sigTmp = new double[nSamples];
     for (int i = 0; i < nSamples; i++)
@@ -495,7 +534,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 		return tmpStat;
     for (int i = 0; i < nSamples; i++)
         sigTmp[i] /= sMax;
-
+                 */
     //get the time differences
     //this finds both EACH state transition and COMBINED state transitions
     map<int, vector<double> > stateTDiffs;
@@ -513,20 +552,27 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
         sigPos = sample;
         //first check that the signal already is not above threshold,
         //and if it is, just continue
-        if (sigTmp[sigPos] > thresh && sigTmp[sigPos-1] > thresh)
+        if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) > thresh)
             continue;
 
         //look for the sample in the signal where it crosses the threshold
-        while (sigTmp[sigPos] < thresh  && sigPos < nSamples)
+        bool nextState = false;
+        while (sigPos < nSamples && signal(chNum, sigPos) < thresh && !nextState )
+        {
             sigPos++;
+            if( states[stateName][sigPos] != 0 && states[stateName][sigPos] != dState)
+                nextState = true;
+        }
 
+        if (nextState)
+            continue;
         //calculate the time difference
 		float D = ((float)sigPos-(float)sample)/sampleRate*1000;
 
 		if (sigPos > sample && sigPos < nSamples)
 		{
             //store the time difference if the state change value is 0 or equal to what we specified
-
+            
 			if (stateVal == 0 || (stateVal == dState))
 				tDiff.push_back(D);
             else if (stateVal == -1)
@@ -543,16 +589,19 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 		return tmpStat;
 
     //calculate the stats on the tDiff vector
+
     tmpStat.mean = vMean(&tDiff);
     tmpStat.std = vStd(&tDiff);
     tmpStat.min = vMin(&tDiff);
     tmpStat.max = vMax(&tDiff);
-    //tmpStat.vals = tDiff;
+    if (thisTask.exportData)
+        tmpStat.vals = tDiff;
+
     stringstream str;
     str << "Ch " << chNum <<" v. " << stateName;
     if (stateVal > 0)
         str <<"("<<stateVal<<")";
-
+        
     tmpStat.desc = str.str();
 
     if (stateVal >= 0)
@@ -585,31 +634,25 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
     return tmpStat;
 }
 
+/*
+checks for dropped samples, by either checking for consecutive zeros, or
+values outside a reasonable range
+*/
 void analysis::checkDroppedSamples(int ch)
 {
-    //unsigned short droppedSamples = 0;
-    /*this checks for dropped samples, which appear as either repeating zeros or
-    //VERY large/small values
-    //the return values are
-    0 - no dropped samples
-    1 - dropped samples w/ repeating zeros
-    2 - dropped sampels w/ unreasonable numbers
-    3 - both 1 & 2
-    bitmasking is our friend here :-)
-    */
-
-    //for (int ch = 0; ch < nChannels; ch++)
-    //{
-        double prevVal = signal[ch][0];
+        if (ch >= nChannels || ch < 0)
+            return;
+            
+        double prevVal = signal(ch, 0);
         for (int s = 1; s < nSamples; s++)
         {
-            if (signal[ch][s] == 0 && prevVal == 0)
-                droppedSamples |= 1;
+            if (signal(ch, s) == 0 && prevVal == 0)
+                droppedSamples++;
 
-            if (abs(signal[ch][s]) >= 1e100)
-                droppedSamples |= 2;
+            if (abs(signal(ch, s)) >= 1e7) // 10 million uV, or 10 V
+                droppedSamples++;
 
-            prevVal = signal[ch][s];
+            prevVal = signal(ch, s);
       }
    // }
 }
@@ -668,8 +711,8 @@ double analysis::vMax(vector<double> *a)
 {
     if (a->size() == 0)
         return 0;
-
-    int v = (*a)[0];
+        
+    double v = (*a)[0];
     for (int i=1; i < (int)a->size(); i++)
         v = ((*a)[i] > v) ? ((*a)[i]) : v;
 
@@ -680,8 +723,8 @@ double analysis::vMin(vector<double> *a)
 {
     if (a->size() == 0)
         return 0;
-
-    int v = (*a)[0];
+        
+    double v = (*a)[0];
     for (int i=1; i < (int)a->size(); i++)
         v = ((*a)[i] < v) ? ((*a)[i]) : v;
 
@@ -706,27 +749,37 @@ void analysis::print(ofstream& resOut, vector<basicStats> minReqs)
     {
         basicStats tmpTask = latencyStats[t];
         resOut<<tmpTask.taskName<<": ";
-        bool tfound = false;
+        int tfound = 0;
 
         //compare this against the min requirements by searching through the minreqs array
         //and checking if the names match; if they do, see if the mean and stddev are within the bounds
+
         for (int a = 0; a < minReqs.size(); a++)
         {
             if (tolower(strtrim(tmpTask.taskName)) == tolower(strtrim(minReqs[a].taskName)))
             {
-                tfound = true;
+                tfound = 1;
                 if (tmpTask.mean <= (minReqs[a].mean) && tmpTask.mean >= 0)
                     resOut <<"OK";
+                else if (tmpTask.mean == -1)
+                {
+                    tfound = 2;
+                    resOut << "No Stimuli Detected!"<<endl;
+                    continue;
+                }
                 else
                 {
                     resOut <<"Failed!";
                     ok = false;
                 }
+
             }
         }
 
+        if (tfound == 2)
+            continue;
         //if the min requirement for this analysis was not defined, say so, otherwise output the results
-        if (!tfound)
+        if (tfound == 0)
             resOut<<"not defined in BCI2000Certification.cfg."<<endl;
         else
         {
@@ -736,7 +789,7 @@ void analysis::print(ofstream& resOut, vector<basicStats> minReqs)
     }
 
     if (droppedSamples > 0)
-        resOut << "Samples appear to have been dropped during program execution!"<<endl;
+        resOut << droppedSamples << "/"<<nSamples << "(" << (double)droppedSamples/(double)nSamples*100 << "%) Samples appear to have been dropped during program execution!"<<endl;
     else
         resOut <<"No samples appear to have been dropped during program execution."<<endl;
     //say whether this file passed the requirements
@@ -752,3 +805,29 @@ void analysis::print(ofstream& resOut, vector<basicStats> minReqs)
     }
 }
 
+
+bool analysis::exportData(string expfile)
+{
+    ofstream o;
+	o.open(expfile.c_str(), ios::trunc | ios::out);
+    if (!o.is_open())
+    {
+        cout << "Error opening data file " <<expfile <<endl;
+        return false;
+    }
+
+    for (int i = 0; i < latencyStats.size(); i++)
+    {
+        basicStats tmpTask = latencyStats[i];
+        if (tmpTask.vals.size() == 0)
+            continue;
+        o<<tmpTask.taskName;
+        o.precision(4);
+        for (int s = 0; s < tmpTask.vals.size(); s++)
+            o << ", " << tmpTask.vals[s];
+        o << endl;
+    }
+
+    o.close();
+    return true;
+}
