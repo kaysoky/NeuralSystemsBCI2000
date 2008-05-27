@@ -1,6 +1,5 @@
-Storage:Session string SubjectName= SimpleAV Name % % // subject alias
 Filtering:P3TemporalFilter int EpochLength= 500ms 500ms 0 % // Length of data epoch from stimulus onset
-Filtering:P3TemporalFilter int EpochsToAverage= 2 1 0 % // Number of epochs to average
+Filtering:P3TemporalFilter int EpochsToAverage= 1 1 0 % // Number of epochs to average
 Visualize:P3TemporalFilter int VisualizeP3TemporalFiltering= 0 0 0 1 // visualize Temporal filtered signals (0=no 1=yes) (boolean)
 Visualize:P3TemporalFilter int TargetERPChannel= 1 1 0 128 // input channel for which to display ERP data
 Filtering:LinearClassifier matrix Classifier= 2 { input%20channel input%20element%20(bin) output%20channel weight } 1 4 1 1 1 6 2 1 // Linear classification matrix in sparse representation
