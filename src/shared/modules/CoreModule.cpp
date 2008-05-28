@@ -485,9 +485,8 @@ CoreModule::ResetStatevector()
   State::ValueType running = mpStatevector->StateValue( "Running" ),
                    sourceTime = mpStatevector->StateValue( "SourceTime" ),
                    stimulusTime = mpStatevector->StateValue( "StimulusTime" );
-  istringstream iss( mInitialStatevector );
   for( int i = 0; i < mpStatevector->Samples(); ++i )
-    ( *mpStatevector )( i ).ReadBinary( iss );
+    ( *mpStatevector )( i ).ReadBinary( istringstream( mInitialStatevector ) );
   mpStatevector->SetStateValue( "Running", running );
   mpStatevector->SetStateValue( "SourceTime", sourceTime );
   mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
