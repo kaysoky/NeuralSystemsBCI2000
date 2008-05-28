@@ -455,13 +455,13 @@ void TDTBCI::Process(const GenericSignal&, GenericSignal& outputSignal)
             curSample = sample*16+mChList[ch]%(16);
             if (ch < mEEGchannels)
             {
-                if (ch < 16)
+                if (mChList[ch] < 16)
                     outputSignal(ch, sample) = dataA[curSample];
-                else if (ch >= 16 && ch < 32)
+                else if (mChList[ch] >= 16 && mChList[ch] < 32)
                     outputSignal(ch, sample) = dataB[curSample];
-                else if (ch >= 32 && ch < 48)
+                else if (mChList[ch] >= 32 && mChList[ch] < 48)
                     outputSignal(ch, sample) = dataC[curSample];
-                else if (ch >= 48 && ch < 64)
+                else if (mChList[ch] >= 48 && mChList[ch] < 64)
                     outputSignal(ch, sample) = dataD[curSample];
             }
         }
