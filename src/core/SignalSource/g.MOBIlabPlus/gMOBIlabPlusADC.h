@@ -29,18 +29,14 @@ class gMOBIlabPlusADC : public GenericADC
   virtual void Halt();
 
  private:
-  HANDLE        hEvent;
-  HANDLE        hDev;
-  short         *buffer;
-  _BUFFER_ST    myBuffer;
-  int           bufsize;
-  OVERLAPPED    ov;
-  int           numAChans;
-  int           numDChans;
-  int           numChans;
+  short* mpBuffer;
+  int    mBufsize,
+         mNumChans;
+  bool   mEnableDigOut;
 
-  int mEnableDigInput;
-  bool mEnableDigOut;
+  HANDLE     mEvent,
+             mDev;
+  OVERLAPPED mOv;
 
 };
 
