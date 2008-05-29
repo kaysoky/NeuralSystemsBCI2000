@@ -182,6 +182,8 @@ int main( int argc, char** argv )
   return 0;
 }
 </pre>
+<ul><li> <i>Note:</i> The above example program use BCI2000 socket stream utility classes contained in <tt>src/shared/utils/SockStream.cpp</tt>. You will need to add this file to your project to build the example program.
+</li></ul>
 <a name="An_external_application_reading_information_from_BCI2000.2C_running_locally"></a><h3>An external application reading information from BCI2000, running locally</h3>
 <ul><li> Set the <tt>ConnectorOutputAddress</tt> parameter to a local address above 1024, such as <code>localhost:5000</code>.
 </li><li> In the external application, create a UDP socket and bind it to BCI2000's output port, i.e. <code>localhost:5000</code>. 

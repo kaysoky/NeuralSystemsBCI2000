@@ -46,8 +46,11 @@ As another example, when the operator module receives a visualization message, t
 <li class='toclevel-1'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor.3D3:_State_Format"><span class="tocnumber">6</span> <span class="toctext">Descriptor=3: State Format</span></a></li>
 <li class='toclevel-1'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor.3D4:_Visualization_and_Brain_Signal_Data_Format"><span class="tocnumber">7</span> <span class="toctext">Descriptor=4: Visualization and Brain Signal Data Format</span></a>
 <ul>
-<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Brain_Signal_Format"><span class="tocnumber">7.1</span> <span class="toctext">Brain Signal Format</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Control_Signal_Format"><span class="tocnumber">7.2</span> <span class="toctext">Control Signal Format</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Content_Descriptor.3D1:_Signal_Data"><span class="tocnumber">7.1</span> <span class="toctext">Content Descriptor=1: Signal Data</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Content_Descriptor.3D2:_ASCII_Text"><span class="tocnumber">7.2</span> <span class="toctext">Content Descriptor=2: ASCII Text</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Content_Descriptor.3D255:_Visualization_Configuration"><span class="tocnumber">7.3</span> <span class="toctext">Content Descriptor=255: Visualization Configuration</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Brain_Signal_Format"><span class="tocnumber">7.4</span> <span class="toctext">Brain Signal Format</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Control_Signal_Format"><span class="tocnumber">7.5</span> <span class="toctext">Control Signal Format</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor.3D5:_State_Vector"><span class="tocnumber">8</span> <span class="toctext">Descriptor=5: State Vector</span></a></li>
@@ -73,7 +76,7 @@ byte. For other one- and two-byte length fields occurring in the protocol, the
 same scheme applies, generalized to be a "length field (original number of bytes)". (See Figure below)
 </p><p><br />
 </p>
-<div class="center"><div class="thumb tnone"><div style="width:302px;"><a href="../images/thumb/7/7a/BCI2000_Messages_LengthField.png/300px-BCI2000_Messages_LengthField.png" class="internal" title="Detailed layout of a length field (m) for a length "><img src="../images/thumb/7/7a/BCI2000_Messages_LengthField.png/300px-BCI2000_Messages_LengthField.png" alt="Detailed layout of a length field (m) for a length " width="300" height="98" longdesc="/wiki/index.php/Image:BCI2000_Messages_LengthField.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Detailed layout of a length field (m) for a length <img class='tex' src="../images/math/5/f/1/5f19185d167a2a96e684f87162778870.png" alt="n \geq 2^{m}-1" /></div></div></div></div>
+<div class="center"><div class="thumb tnone"><div style="width:302px;"><a href="../images/thumb/7/7a/BCI2000_Messages_LengthField.png/300px-BCI2000_Messages_LengthField.png" class="internal" title="Detailed layout of a length field(m) for a length "><img src="../images/thumb/7/7a/BCI2000_Messages_LengthField.png/300px-BCI2000_Messages_LengthField.png" alt="Detailed layout of a length field(m) for a length " width="300" height="98" longdesc="/wiki/index.php/Image:BCI2000_Messages_LengthField.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Detailed layout of a length field(m) for a length <img class='tex' src="../images/math/5/f/1/5f19185d167a2a96e684f87162778870.png" alt="n \geq 2^{m}-1" /></div></div></div></div>
 <table border="1" cellpadding="2">
 <caption>
 
@@ -145,6 +148,7 @@ The currently defined types are
 </li><li>4 bitmap data (e.g., a decimated version of the feedback display),
 </li><li>255 visualization configuration.
 </li></ul>
+<a name="Content_Descriptor.3D1:_Signal_Data"></a><h4>Content Descriptor=1: Signal Data</h4>
 <p>For brain signals, the content descriptor is 1. (See Figure below) 
 </p>
 <div class="center"><div class="thumb tnone"><div style="width:502px;"><a href="../images/thumb/d/d6/BCI2000_Messages_VisualizationData.png/500px-BCI2000_Messages_VisualizationData.png" class="internal" title="One message in the protocol of type &quot;visualization data&quot;."><img src="../images/thumb/d/d6/BCI2000_Messages_VisualizationData.png/500px-BCI2000_Messages_VisualizationData.png" alt="One message in the protocol of type &quot;visualization data&quot;." width="500" height="76" longdesc="/wiki/index.php/Image:BCI2000_Messages_VisualizationData.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>One message in the protocol of type "visualization data".</div></div></div></div>
@@ -165,14 +169,16 @@ The following figure illustrates how the data is transferred.
 </p><p><br />
 </p>
 <div class="center"><div class="thumb tnone"><div style="width:502px;"><a href="../images/thumb/1/1b/BCI2000_Messages_TransmittedVisualizationDataFormat.png/500px-BCI2000_Messages_TransmittedVisualizationDataFormat.png" class="internal" title="Graphical representation of the transmitted visualization data format."><img src="../images/thumb/1/1b/BCI2000_Messages_TransmittedVisualizationDataFormat.png/500px-BCI2000_Messages_TransmittedVisualizationDataFormat.png" alt="Graphical representation of the transmitted visualization data format." width="500" height="66" longdesc="/wiki/index.php/Image:BCI2000_Messages_TransmittedVisualizationDataFormat.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Graphical representation of the transmitted visualization data format.</div></div></div></div>
-<p><br />
-The following figure illustrates the protocol when the visualization type is 2. The source identifier is a number uniquely identifying the process/filter that generated the data. (0 for brain signals.)
+<a name="Content_Descriptor.3D2:_ASCII_Text"></a><h4>Content Descriptor=2: ASCII Text</h4>
+<p>The following figure illustrates the protocol when the visualization type is 2. The source identifier is a number uniquely identifying the process/filter that generated the data. (0 for brain signals.)
 The following ASCII text is zero delimited.
 </p><p><br />
 </p>
 <div class="center"><div class="thumb tnone"><div style="width:402px;"><a href="../images/thumb/4/49/BCI2000_Messages_vistype2(memo).png/400px-BCI2000_Messages_vistype2(memo).png" class="internal" title="One message if the visualization type is 2 (i.e., a text memo)."><img src="../images/thumb/4/49/BCI2000_Messages_vistype2(memo).png/400px-BCI2000_Messages_vistype2(memo).png" alt="One message if the visualization type is 2 (i.e., a text memo)." width="400" height="97" longdesc="/wiki/index.php/Image:BCI2000_Messages_vistype2%28memo%29.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>One message if the visualization type is 2 (i.e., a text memo).</div></div></div></div>
 <p><br />
-The following figure illustrates the protocol when the visualization type is 255. The source identifier is a number identifying the process/filter that generated the data. Configuration IDs are defined in the <code>CfgID</code> enumeration in the  <a href="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" rel="nofollow">shared/defines.h</a>
+</p>
+<a name="Content_Descriptor.3D255:_Visualization_Configuration"></a><h4>Content Descriptor=255: Visualization Configuration</h4>
+<p>The following figure illustrates the protocol when the visualization type is 255. The source identifier is a number identifying the process/filter that generated the data. Configuration IDs are defined in the <code>CfgID</code> enumeration in the  <a href="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" rel="nofollow">shared/defines.h</a>
 header file.
 </p><p>The ASCII string then contains the configuration option, as defined by the configuration ID. For example, it might contain "128" if the configuration ID is 4. This will configure the graph to contain exactly 128 samples. When the configuration ID is 5 or 6 (axis labels), the ASCII string consists of a sample number (three digits), a space, and the axis label. Thus, one message
 configures exactly one axis label. As an example, for an X-axis label, the string "003 4.75 Hz" would result in a graph, in which the third sample is labeled "4.75 Hz."
@@ -188,8 +194,14 @@ configures exactly one axis label. As an example, for an X-axis label, the strin
 <p>Control signals are transmitted identically to the Brain Signal.
 </p>
 <a name="Descriptor.3D5:_State_Vector"></a><h3>Descriptor=5: State Vector</h3>
-<p>The state vector is defined by a series of <i>StateVectorLength</i> 
-subsequent bytes.
+<p>Originally, state vector information was transmitted at single-block resolution, i.e. there was only a single state vector per block.
+At present, state vector resolution has been increased to match sample resolution; the protocol has been adapted to accommodate for the additional information, and state vectors are now transmitted as follows:
+</p>
+<ul><li>the number of bytes in the binary state vector <i>(StateVectorLength)</i>, in decimal ASCII representation, terminated with a zero byte;
+</li><li>the number of subsequent state vectors transmitted, in decimal ASCII representation, terminated with a zero byte;
+</li><li>binary state vector data.
+</li></ul>
+<p>Binary state vector data is given as a series of <i>StateVectorLength</i> bytes.
 The value of a given state within the state vector is determined by
 its byte/bit
 location and length definition. The bits in the state vector are

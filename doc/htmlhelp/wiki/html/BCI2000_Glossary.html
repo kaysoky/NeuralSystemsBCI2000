@@ -75,7 +75,6 @@ These are called core modules because they are involved in on-line processing, a
 </p>
 <a name="Sample_Block"></a><h2>Sample Block</h2>
 <p>BCI2000 processes data in chunks, which are called <i>Sample Blocks</i>, or <i>Data Blocks</i>.
-<a href="BCI2000_Glossary.html#State" title="">State variables</a> are saved with each sample, but may only change once per sample block.
 Sample block size is configured through the <a href="User_Reference%253ADataIOFilter.html#SampleBlockSize" title="User Reference:DataIOFilter"><i>SampleBlockSize</i> parameter</a>; often, ADC hardware imposes restrictions on sample block size.
 </p><p>The physical duration of a sample block is the inverse of the screen update rate, and determined by the ratio of sampling rate to sample block size.
 </p>
@@ -87,7 +86,7 @@ Sample block size is configured through the <a href="User_Reference%253ADataIOFi
 The <a href="User_Reference%253ATransmissionFilter.html" title="User Reference:TransmissionFilter">TransmissionFilter</a> reduces the source signal to a user-defined subset of channels to reduce processing load in the on-line system.
 </p>
 <a name="State"></a><h2>State</h2>
-<p>A system-wide variable similar to what in other data acquisition applications is often called "event marker." State variables reflect important events during real-time system operation, and are saved to the data file along with each sample. In the current version of BCI2000, the temporal resolution of the state variables is limited to a <a href="BCI2000_Glossary.html#Sample_Block" title="">sample block</a>, i.e., state variables cannot change during a sample block.
+<p>A system-wide variable similar to what in other data acquisition applications is often called "event marker." State variables reflect important events during real-time system operation, and are saved to the data file along with each sample.
 </p>
 <a name="State_Vector"></a><h2>State Vector</h2>
 <p>A data structure that contains all <a href="BCI2000_Glossary.html#State" title="">states</a> concatenated into a single bit string. The state vector is transmitted between modules once for each <a href="BCI2000_Glossary.html#Sample_Block" title="">sample block</a>, but a copy is saved with each sample of data.

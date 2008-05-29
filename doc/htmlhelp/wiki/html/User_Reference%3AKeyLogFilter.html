@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:KeyLogFilter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:KeyLogFilter,BCI2000 Glossary,User Reference:JoystickFilter,User Reference:KeystrokeFilter,User Reference:MouseFilter" />
+<meta name="keywords" content="User Reference:KeyLogFilter,BCI2000 Glossary,User Reference:JoystickFilter,User Reference:KeystrokeFilter,User Reference:Logging Input,User Reference:MouseFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -52,6 +52,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 This allows for tracking of user responses.
 </p><p>Temporal resolution of BCI2000 states is limited to the length of a <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">sample block</a>.
 A keypress at any time during a sample block interval will result in that key's code being recorded for all respective state values within this sample block.
+</p><p><b>Note:</b> The <i>KeyLogFilter</i> is superseded by BCI2000's <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">input logging facility</a>, and kept for compatibility with existing experiments.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="LogKeyPresses"></a><h3>LogKeyPresses</h3>
@@ -69,7 +70,7 @@ The association of keys with states depends on the order in which keys were pres
 A state value of zero indicates that no key was pressed.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="User_Reference%253AMouseFilter.html" title="User Reference:MouseFilter">User Reference:MouseFilter</a>, <a href="User_Reference%253AKeystrokeFilter.html" title="User Reference:KeystrokeFilter">User Reference:KeystrokeFilter</a>, <a href="User_Reference%253AJoystickFilter.html" title="User Reference:JoystickFilter">User Reference:JoystickFilter</a>
+<p><a href="User_Reference%253AMouseFilter.html" title="User Reference:MouseFilter">User Reference:MouseFilter</a>, <a href="User_Reference%253AKeystrokeFilter.html" title="User Reference:KeystrokeFilter">User Reference:KeystrokeFilter</a>, <a href="User_Reference%253AJoystickFilter.html" title="User Reference:JoystickFilter">User Reference:JoystickFilter</a>, <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">User Reference:Logging Input</a>
 </p>
 <div class="printfooter">
 </div>

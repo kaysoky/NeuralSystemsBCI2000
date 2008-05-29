@@ -54,17 +54,20 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Using_BCI2000_MEX_files"></a><h2>Using BCI2000 MEX files</h2>
 <a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
-<p>BCI2000 comes with pre-compiled MEX files for Microsoft Windows platforms.
+<p>The BCI2000 binary distribution comes with pre-compiled MEX files for Microsoft Windows platforms.
 Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
 </p>
 <a name="Other_Platforms"></a><h3>Other Platforms</h3>
-<p>For other platforms, BCI2000 provides a Matlab script that can be used to build MEX files.
+<p>For platforms other than 32-bit Windows, BCI2000 provides a Matlab script that can be used to build MEX files.
 </p>
-<ul><li>After downloading the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">BCI2000 source code</a>, start Matlab and make sure that the mex command is configured to use the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a>. Typing <tt>help mex</tt> from the Matlab command line will guide you in configuring the mex command.
+<ul><li>Independently of system libraries, Matlab creates its own execution environment for MEX files. For MEX files, this means that they usually won't work unless compiled with a version of the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a> that matches the one used to build Matlab itself, and linked against libraries that match the ones used by Matlab. To check, see the <a href="http://www.mathworks.com/support/compilers/current_release/" class='external text' title="http://www.mathworks.com/support/compilers/current_release/" rel="nofollow">list of compatible compiler versions</a>.
+</li><li>After downloading the <a href="Programming_Reference%253ABCI2000_Source_Code.html" title="Programming Reference:BCI2000 Source Code">BCI2000 source code</a>, start Matlab and make sure that the mex command is configured to use the <a href="http://gcc.gnu.org" class='external text' title="http://gcc.gnu.org" rel="nofollow">gcc compiler</a>. Typing <tt>help mex</tt> from the Matlab command line will guide you in configuring the mex command.
 </li><li>Change Matlab's working directory to <tt>BCI2000/src/core/Tools/mex/</tt>.
 </li><li>Execute <tt>buildmex</tt> from the Matlab command line.
 </li><li>Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use the newly built MEX files.
 </li></ul>
+<p><b>Pre-built non-Windows MEX files:</b> BCI2000 now comes with pre-built MEX files for a number of platforms, including Mac OS X and 32-bit as well as 64-bit Linux. Support for these MEX files is <i>experimental</i>, and they may or may not work on your particular configuration.
+</p>
 <a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
 <a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>
 <pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... )
@@ -90,8 +93,11 @@ names as struct member names, and the number of state value entries matching
 the first dimension of the 'signal' output variable.
 </p><p>The 'parameters' output variable will be a Matlab struct with BCI2000
 parameter names as struct member names.
-Individual parameter values are represented as cell arrays of strings, and may
-be converted into numeric matrices by Matlab's str2double function.
+Individual parameter values are represented as cell arrays of strings in a 
+'Value' struct member, and additionally as numeric matrices in a 'NumericValue'
+struct member. When there is no numeric interpretation possible, the 
+corresponding matrix entry will be NaN. For nested matrices, no NumericValue
+field is provided.
 If multiple files are given, parameter values will match the ones contained 
 in the first file.
 </p><p>Optionally, sample ranges may be specified for individual files:
@@ -114,7 +120,7 @@ from Matlab struct into string representation and back.
 into a cell array of strings containing valid BCI2000 parameter
 definition strings.
 </p><p>When the input is a cell array rather than a Matlab struct, convert_bciprm
-will interpret the input as a list of BCI2000 parameter definition strings:
+definition strings (ignoring the NumericValue field if present).
 </p>
 <pre>parameter_struct = convert_bciprm( parameter_lines );
 </pre>

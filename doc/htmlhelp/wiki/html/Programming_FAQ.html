@@ -96,7 +96,7 @@ ConnectorInput and ConnectorOutput filter as a minimum configuration.
 </li><li>Open the bpr file using the Borland IDE. 
 </li><li>In the IDE, choose View->Project Manager to get a list of project files, and check whether your filter or ADC class cpp file is listed there; if not, add your new cpp file to the list. 
 </li><li>Add any required .lib files or auxiliary cpp files to the list of project files. 
-</li><li>Compile and link using the IDE. When this works, do a command-line "make clean &amp;&amp; make prepare", open the file <tt>src/.makefiles</tt>, and remove the leading # character from your new project's entry. Then, doing a "make all" should include your new project.
+</li><li>Compile and link using the IDE. When this works, do a command-line "make clean &amp;&amp; make prepare", open the file <tt>src/makefiles</tt>, and remove the leading # character from your new project's entry. Then, doing a "make all" should include your new project.
 </li></ol>
 <a name="Writing_Filter_Components"></a><h2>Writing Filter Components</h2>
 <p>Q: I would like to write my own signal processing filter. Where is a good place to start?

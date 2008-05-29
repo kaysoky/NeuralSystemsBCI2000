@@ -78,11 +78,22 @@ short feedbackState = State( &quot;Feedback&quot; );
 State( &quot;Feedback&quot; ) = 0;
 </pre>
 <p>State values are treated as unsigned integers.
-If you try accessing a parameter or state that does not exist, an
-appropriate
-error message will be sent to <tt>bcierr</tt>, so you don't need to
-handle
-this type of error explicitly.
+</p><p>In more recent versions of BCI2000, state values are maintained individually for each sample position.
+Typically, this is used to record information such as mouse or keyboard input on a per-sample basis, while filter code acts per sample block, and will rarely need to access state information per-sample.
+Still, this is possible using an additional sample index in its own pair of brackets.
+</p>
+<pre>
+int mousePosX = State( &quot;MousePosX&quot; )( 3 );
+State( &quot;Artifact&quot; )( 5 ) = 1;
+</pre>
+<p>Note that setting a state at a certain sample position will set all future state samples to that value. To set a single sample, or range within the current sample block, use
+</p>
+<pre>
+State( &quot;Artifact&quot; )( 5 ) = 1;
+State( &quot;Artifact&quot; )( 6 ) = 0;
+</pre>
+<p>In addition to the state vector information provided for sample positions of the current data block there is an <i>additional</i> state vector sample appended, representing the subsequent block's first sample. Modifying this state vector sample allows to specify an initial value for the next block's state vector.
+</p><p>If you try to access a parameter or state that does not exist, an appropriate error message will be sent to <tt>bcierr</tt>, so you don't need to handle this type of error explicitly.
 For a greater independence between modules, it is sometimes desirable
 to
 read a parameter or state if it exists, and use a default value

@@ -70,6 +70,7 @@ BCI2000_Binaries.html
 2 Latest_Version Latest Version
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 Apr_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" rel="nofollow">Apr 2008 Build</a>
 4 Mar_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" rel="nofollow">Mar 2008 Build</a>
 4 Feb_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080215.exe" rel="nofollow">Feb 2008 Build</a>
 4 Jan_2008_Version_2_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080124.exe" rel="nofollow">Jan 2008 Version 2 Release Build</a>
@@ -127,8 +128,6 @@ Contributions%253ABCPy2000.html
 3 Source_Code_Revisions Source Code Revisions
 2 Functional_Description Functional Description
 2 Parameters Parameters
-3 SomeParameter SomeParameter
-3 AnotherParameter AnotherParameter
 2 States States
 
 Contributions%253ABatch.html
@@ -532,7 +531,7 @@ Glossary.html
 2 r2_.28Coefficient_of_Determination.29 <span class="texhtml"><i>r</i><sup>2</sup></span> (Coefficient of Determination)
 2 Sensorimotor_Rhythm_.28SMR.29 Sensorimotor Rhythm (SMR)
 
-Jürgen_Mellinger.html
+Juergen_Mellinger.html
 
 MARIO%253AContents.html
 
@@ -758,6 +757,14 @@ Programming_Reference%253AErrors_and_Warnings.html
 2 Throwing_Exceptions Throwing Exceptions
 2 See_also See also
 
+Programming_Reference%253AEvents.html
+2 Concept Concept
+2 Implementation Implementation
+2 Limitations Limitations
+2 Event_API Event API
+2 Descriptor_Syntax Descriptor Syntax
+2 See_also See also
+
 Programming_Reference%253AFilter_Chain.html
 2 The_Filter_Chain The Filter Chain
 2 Filter_Instantiation Filter Instantiation
@@ -902,6 +909,9 @@ Technical_Reference%253ABCI2000_Messages.html
 3 Descriptor.3D2:_Parameter_Format Descriptor=2: Parameter Format
 3 Descriptor.3D3:_State_Format Descriptor=3: State Format
 3 Descriptor.3D4:_Visualization_and_Brain_Signal_Data_Format Descriptor=4: Visualization and Brain Signal Data Format
+4 Content_Descriptor.3D1:_Signal_Data Content Descriptor=1: Signal Data
+4 Content_Descriptor.3D2:_ASCII_Text Content Descriptor=2: ASCII Text
+4 Content_Descriptor.3D255:_Visualization_Configuration Content Descriptor=255: Visualization Configuration
 4 Brain_Signal_Format Brain Signal Format
 4 Control_Signal_Format Control Signal Format
 3 Descriptor.3D5:_State_Vector Descriptor=5: State Vector
@@ -1368,6 +1378,19 @@ User_Reference%253ALocalization.html
 2 States States
 2 See_also See also
 
+User_Reference%253ALogging_Input.html
+2 Parameters Parameters
+3 LogKeyboard LogKeyboard
+3 LogMouse LogMouse
+3 LogJoystick LogJoystick
+2 States States
+3 KeyDown.2C_KeyUp KeyDown, KeyUp
+3 MouseKeys MouseKeys
+3 MousePosX.2C_MousePosY MousePosX, MousePosY
+3 JoystickXpos.2C_JoystickYpos.2C_JoystickZpos JoystickXpos, JoystickYpos, JoystickZpos
+3 JoystickButtons1.2C_JoystickButtons2.2C_JoystickButtons3.2C_JoystickButtons4 JoystickButtons1, JoystickButtons2, JoystickButtons3, JoystickButtons4
+2 See_also See also
+
 User_Reference%253AMatlab_MEX_Files.html
 2 Introduction Introduction
 2 Using_BCI2000_MEX_files Using BCI2000 MEX files
@@ -1776,6 +1799,9 @@ User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html
 2 Behavioral_Properties Behavioral Properties
 2 Physical_Properties Physical Properties
 3 Geometry Geometry
+4 Location Location
+4 Orientation Orientation
+4 Scalp_Potential Scalp Potential
 3 Temporal_Properties Temporal Properties
 2 BCI_Construction BCI Construction
 3 Spatial_Selection Spatial Selection

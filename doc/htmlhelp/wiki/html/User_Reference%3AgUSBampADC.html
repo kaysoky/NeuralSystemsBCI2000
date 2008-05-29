@@ -113,7 +113,7 @@ You will never experience aliasing.
 <a name="FilterHighPass"></a><h3>FilterHighPass</h3>
 <p>High pass frequency for pass band. 
 You need to query the amp for possible values. 
-See description of the [USBampgetinfo] tool for more info.
+See description of the <a href="User_Reference%253AgUSBampADC.html#The_USBampgetinfo_Command_Line_Tool" title="">USBampgetinfo</a> tool for more info.
 </p>
 <a name="FilterLowPass"></a><h3>FilterLowPass</h3>
 <p>High pass frequency for pass band.
@@ -157,7 +157,7 @@ If one wants to use a bandpass or a notch filter, there needs to be a filter con
 <p>Defines the data type of the stored signal samples (int16 or float32).
 If the data type is int16, signal samples (which are produced by the amplifier in units of <span class="texhtml">&mu;<i>V</i></span>) are converted back into virtual A/D units (see Data Storage section below). If the data type is float32, the signals are stored in units of <span class="texhtml">&mu;<i>V</i></span>.
 In this case, SourceChOffset should be 0, and SourceChGain should be
-1 (since the conversion factor from <span class="texhtml">&mu;<i>V</i></span> into <span class="texhtml">&mu;<i>V</i></span> is 1). 
+1 (since the conversion factor from <span class="texhtml">&mu;<i>V</i></span> into <span class="texhtml">&mu;<i>V</i></span> is 1).
 </p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
 <p>The total number of channels across all USBamp devices.
@@ -220,6 +220,7 @@ each stored sample, <i>SourceChOffset</i> (i.e., zero), and multiplying it with
 data samples are stored in units of <span class="texhtml">&mu;<i>V</i></span>. In this case, <i>SourceChGain</i> should be
 a list of 1's (because the conversion factor between data samples into <span class="texhtml">&mu;<i>V</i></span> is
 1.0 for each channel).
+</p><p>Still, when values other than 0 and 1 are specified, a consistent data file will be produced, i.e. values will be transformed before they are written to the file, such that applying SourceChOffset and SourceChGain will reproduce the original values in <span class="texhtml">&mu;<i>V</i></span>.
 </p>
 <a name="The_USBampgetinfo_Command_Line_Tool"></a><h3>The <i>USBampgetinfo</i> Command Line Tool</h3>
 <p>This command line tool displays all connected USBamps, including their serial 

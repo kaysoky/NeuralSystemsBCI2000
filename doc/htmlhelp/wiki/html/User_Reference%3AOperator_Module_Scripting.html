@@ -87,6 +87,7 @@ There is also an option to specify scripts from the <a href="User_Reference%253A
 <a name="Commands"></a><h3>Commands</h3>
 <a name="LOAD_PARAMETERFILE_.3Cfile.3E"></a><h4>LOAD PARAMETERFILE &lt;file&gt;</h4>
 <p>Loads a parameter file specified by its path and name. Relative paths are interpreted relative to the operator module's working directory at startup. Usually, this matches the executable's location in the <tt>prog</tt> directory.
+As the parameter file name must not contain white space, please use HTML-type encoding for white space characters, such as <tt>Documents%20and%20Settings</tt> when referring to a user's "Documents and Settings" folder.
 </p>
 <a name="SETCONFIG"></a><h4>SETCONFIG</h4>
 <p>Applies current parameters to the system. Corresponds to the <i>SetConfig</i> button.

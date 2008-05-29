@@ -144,9 +144,8 @@ with the same protocol as described above.
 </p>
 <a name="State_Vector_Messages"></a><h3>State Vector Messages</h3>
 <p>A <a href="BCI2000_Glossary.html#State_Vector" title="BCI2000 Glossary">State Vector</a> is a data structure consisting of a series of <i>StateVectorLength</i> 
-subsequent bytes, representing an overall system state that is saved into a data file along with each block of data.
-The state vector is always transmitted before the
-brain signal or control signal.
+subsequent bytes, representing an overall system state that is saved into a data file along with each sample of data.
+State vector data is always transmitted before the brain signal or control signal.
 </p>
 <a name="Brain_Signal_Messages"></a><h3>Brain Signal Messages</h3>
 <p>From the source to the signal processing module, selected channels from the brain signal are transmitted as 32-bit floating point numbers calibrated into microvolts.
