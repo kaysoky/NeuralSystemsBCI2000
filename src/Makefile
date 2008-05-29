@@ -162,7 +162,7 @@ bindist: build
 
 # Test executables.
 test:
-  ${SHELL} cd buildutils\testing ${AND} run_tests
+  ${SHELL} cd buildutils\tests ${AND} run_tests
   ${DONE}
 
 # Create pdfs from tex files.
@@ -257,7 +257,7 @@ pdf: ${LATEXDOCS:.tex=.pdf} ${LATEXDOCS:.tex=.install}
 !endif # !ifdef INSTALLDIR
 
 .tex.pdf:
-  # We run pdflatex twice to get the references right.
+  # We run pdflatex twice to get references right.
   ${SHELL} cd ${<D} ${AND} pdflatex ${<F} ${AND} pdflatex ${<F}
   ${DONE}
   

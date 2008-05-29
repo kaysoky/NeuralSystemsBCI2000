@@ -17,7 +17,7 @@ cd ..\..\..\prog
 
 echo Testing cursor task ...
 
-start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\testing\CursorTask_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
+start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\tests\CursorTask_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
 start SignalGenerator.exe 127.0.0.1
 start ARSignalProcessing.exe 127.0.0.1
 start /wait CursorTask.exe 127.0.0.1
@@ -25,7 +25,7 @@ start /wait CursorTask.exe 127.0.0.1
 
 echo Testing stimulus presentation task ...
 
-start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\testing\StimulusPresentation_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
+start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\tests\StimulusPresentation_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
 start SignalGenerator.exe 127.0.0.1
 start DummySignalProcessing.exe 127.0.0.1
 start /wait StimulusPresentation.exe 127.0.0.1
@@ -33,12 +33,12 @@ start /wait StimulusPresentation.exe 127.0.0.1
 
 echo Testing P3 speller task ...
 
-start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\testing\P3Speller_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
+start operat.exe --OnConnect "-LOAD PARAMETERFILE ..\src\buildutils\tests\P3Speller_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
 start SignalGenerator.exe 127.0.0.1
 start P3SignalProcessing.exe 127.0.0.1
 start /wait P3Speller.exe 127.0.0.1
 
-cd ..\src\buildutils\testing
+cd ..\src\buildutils\tests
 echo Comparing data files ...
 ( do_compare data\ref data\test && echo Success. ) || ( echo Executable test failed. && verify false 2> nul )
 
