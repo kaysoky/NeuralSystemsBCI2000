@@ -1,9 +1,9 @@
 object mainForm: TmainForm
   Left = 218
   Top = 200
-  Width = 709
-  Height = 470
   Caption = 'BCI2000 Launcher'
+  ClientHeight = 414
+  ClientWidth = 693
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -290,6 +290,7 @@ object mainForm: TmainForm
     end
   end
   object ActionManager1: TActionManager
+    StyleName = 'XP Style'
     object FileRun1: TFileRun
       Category = 'File'
       Browse = False

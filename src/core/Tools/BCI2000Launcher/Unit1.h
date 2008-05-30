@@ -17,6 +17,7 @@
 #include <Menus.hpp>
 #include <FileCtrl.hpp>
 #include "functions.h"
+#include <XPStyleActnCtrls.hpp>
 const SELDIRHELP = 1000;
 
 //#include <XPStyleActnCtrls.hpp>
