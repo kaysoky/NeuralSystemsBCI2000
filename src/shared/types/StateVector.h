@@ -16,9 +16,6 @@
 
 class StateVector
 {
- private:
-  StateVector( class StateList&, bool );
-  
  public:
   explicit StateVector( class StateList& list, size_t numSamples = 1 );
   ~StateVector();
