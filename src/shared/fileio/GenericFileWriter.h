@@ -1,8 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A virtual class interface for output filters encapsulating
-//       output file formats.
+// Description: A virtual class interface for output filters.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org

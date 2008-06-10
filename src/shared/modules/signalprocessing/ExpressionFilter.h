@@ -25,7 +25,6 @@ class ExpressionFilter : public GenericFilter
    void Process( const GenericSignal&, GenericSignal& );
 
  private:
-   Expression                             mWarningExpression;
    std::vector<std::vector<Expression> >  mExpressions;
 };
 #endif // EXPRESSION_FILTER_H

@@ -1,31 +1,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A base class for EDF/GDF type file writers.
+// Description: A base class for EDF/GDF type output formats.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef EDF_FILE_WRITER_BASE_H
-#define EDF_FILE_WRITER_BASE_H
+#ifndef EDF_OUTPUT_BASE_H
+#define EDF_OUTPUT_BASE_H
 
-#include "FileWriterBase.h"
+#include "GenericOutputFormat.h"
 
-class EDFFileWriterBase: public FileWriterBase
+class EDFOutputBase: public GenericOutputFormat
 {
  protected: // No instantiation outside derived classes.
-          EDFFileWriterBase();
+          EDFOutputBase();
  public:
-  virtual ~EDFFileWriterBase();
+  virtual ~EDFOutputBase();
+
   virtual void Publish() const;
-  virtual void Preflight( const SignalProperties& Input,
-                                SignalProperties& Output ) const;
-  virtual void Initialize( const SignalProperties& Input,
-                           const SignalProperties& Output );
-  virtual void StartRun();
-  virtual void StopRun();
-  virtual void Write( const GenericSignal& Signal,
-                      const StateVector&   Statevector );
+  virtual void Preflight( const SignalProperties&, const StateVector& ) const;
+  virtual void Initialize( const SignalProperties&, const StateVector& );
+  virtual void StartRun( std::ostream& );
+  virtual void StopRun( std::ostream& );
+  virtual void Write( std::ostream&, const GenericSignal&, const StateVector& );
+
+  virtual const char* DataFileExtension() const = 0;
 
  protected:
   struct ChannelInfo
@@ -46,13 +46,13 @@ class EDFFileWriterBase: public FileWriterBase
   long long NumRecords() const { return mNumRecords; }
 
  private:
-  virtual const char* DataFileExtension() const = 0;
-
-  template<typename T> void PutBlock( const GenericSignal&, const StateVector& );
+  template<typename T> void PutBlock( std::ostream&,
+                                      const GenericSignal&,
+                                      const StateVector& );
 
   ChannelContainer         mChannels;
   long long                mNumRecords;
   std::vector<std::string> mStateNames;
 };
 
-#endif // EDF_FILE_WRITER_BASE_H
+#endif // EDF_OUTPUT_BASE_H

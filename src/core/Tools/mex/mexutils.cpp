@@ -21,6 +21,17 @@ using namespace std;
 
 static const double cNaN = strtod( "+NAN", NULL );
 
+void
+TypeCheck()
+{
+  mxAssert(
+    sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4
+    && sizeof( uint8 ) == 1 && sizeof( uint16 ) == 2 && sizeof( uint32 ) == 4
+    && sizeof( uint64 ) == 8,
+    "Numeric types don't agree with this function's assumptions."
+  );
+}
+
 bool
 PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin )
 {
@@ -142,7 +153,7 @@ ValuesToNumbers( const Param& p )
   if( paramArray == NULL )
     mexErrMsgTxt( "Out of memory when allocating space for parameter values." );
   double* pMatrix = mxGetPr( paramArray );
-  
+
   int cell = 0;
   for( int col = 0; col < p.NumColumns(); ++col )
     for( int row = 0; row < p.NumRows(); ++row, ++cell )

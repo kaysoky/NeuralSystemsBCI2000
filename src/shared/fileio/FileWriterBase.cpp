@@ -23,10 +23,10 @@ using namespace std;
 
 static const char* bciParameterExtension = ".prm";
 
-FileWriterBase::FileWriterBase()
+FileWriterBase::FileWriterBase( GenericOutputFormat& inOutputFormat )
+: mrOutputFormat( inOutputFormat )
 {
 }
-
 
 FileWriterBase::~FileWriterBase()
 {
@@ -36,15 +36,19 @@ void
 FileWriterBase::Publish() const
 {
   BEGIN_PARAMETER_DEFINITIONS
-    "Storage int SavePrmFile= 0 1 0 1 "
+    "Storage:Documentation int SavePrmFile= 0 1 0 1 "
       "// save additional parameter file (0=no, 1=yes) (boolean)",
   END_PARAMETER_DEFINITIONS
+
+  mrOutputFormat.Publish();
 }
 
 void
-FileWriterBase::Preflight( const SignalProperties& /*Input*/,
+FileWriterBase::Preflight( const SignalProperties& Input,
                                  SignalProperties& Output ) const
 {
+  mrOutputFormat.Preflight( Input, *Statevector );
+
   // State availability.
   State( "Recording" );
 
@@ -54,12 +58,12 @@ FileWriterBase::Preflight( const SignalProperties& /*Input*/,
     .SetSubjectName( Parameter( "SubjectName" ) )
     .SetSessionNumber( Parameter( "SubjectSession" ) )
     .SetRunNumber( Parameter( "SubjectRun" ) )
-    .SetFileExtension( DataFileExtension() )
+    .SetFileExtension( mrOutputFormat.DataFileExtension() )
     .CreatePath()
     .FilePath();
 
   {
-    string dataFileName = baseFileName + DataFileExtension();
+    string dataFileName = baseFileName + mrOutputFormat.DataFileExtension();
 
     // Does the data file exist?
     ifstream dataRead( dataFileName.c_str() );
@@ -103,9 +107,11 @@ FileWriterBase::Preflight( const SignalProperties& /*Input*/,
 
 
 void
-FileWriterBase::Initialize( const SignalProperties& /*Input*/,
+FileWriterBase::Initialize( const SignalProperties& Input,
                             const SignalProperties& /*Output*/ )
 {
+  mrOutputFormat.Initialize( Input, *Statevector );
+
   mOutputFile.close();
   mOutputFile.clear();
 }
@@ -119,9 +125,9 @@ FileWriterBase::StartRun()
     .SetSubjectName( Parameter( "SubjectName" ) )
     .SetSessionNumber( Parameter( "SubjectSession" ) )
     .SetRunNumber( Parameter( "SubjectRun" ) )
-    .SetFileExtension( DataFileExtension() );
+    .SetFileExtension( mrOutputFormat.DataFileExtension() );
   string baseFileName = bciDirectory.FilePath();
-  mFileName = baseFileName + DataFileExtension();
+  mFileName = baseFileName + mrOutputFormat.DataFileExtension();
   // BCIDirectory will update the run number to the largest unused one
   // -- we want this to be reflected by the "SubjectRun" parameter.
   ostringstream oss;
@@ -141,6 +147,8 @@ FileWriterBase::StartRun()
              << paramFileName
              << endl;
   }
+
+  mrOutputFormat.StartRun( mOutputFile );
 }
 
 
@@ -149,22 +157,19 @@ FileWriterBase::StopRun()
 {
   mOutputFile.close();
   mOutputFile.clear();
+
+  mrOutputFormat.StopRun( mOutputFile );
 }
 
 
 void
-FileWriterBase::Write( const GenericSignal& /*Signal*/,
-                       const StateVector&   /*Statevector*/ )
+FileWriterBase::Write( const GenericSignal& Signal,
+                       const StateVector&   Statevector )
 {
+  mrOutputFormat.Write( mOutputFile, Signal, Statevector );
+
   if( !mOutputFile )
     bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
   State( "Recording" ) = ( mOutputFile ? 1 : 0 );
-}
-
-
-std::ostream&
-FileWriterBase::OutputStream()
-{
-  return mOutputFile;
 }
 

@@ -18,21 +18,12 @@
 #include "mexutils.h"
 #include "BCI2000FileReader.h"
 #include "BCIError.h"
+#include "ArithmeticExpression.h"
 #include <sstream>
 #include <limits>
 #include <cmath>
 
-#include "ArithmeticExpression.h"
-
 using namespace std;
-
-typedef unsigned char      uint8;
-typedef signed short       int16;
-typedef unsigned short     uint16;
-typedef signed int         int32;
-typedef unsigned int       uint32;
-typedef unsigned long long uint64;
-typedef float              float32;
 
 struct StateInfo
 {
@@ -99,12 +90,7 @@ mexFunction( int nargout, mxArray* varargout[],
   if( PrintVersion( __FILE__, nargin, varargin ) )
     return;
 
-  mxAssert(
-    sizeof( int16 ) == 2 && sizeof( int32 ) == 4 && sizeof( float32 ) == 4
-    && sizeof( uint8 ) == 1 && sizeof( uint16 ) == 2 && sizeof( uint32 ) == 4
-    && sizeof( uint64 ) == 8,
-    "Numeric types don't agree with this function's assumptions."
-  );
+  TypeCheck();
 
   if( nargin < 1 )
     mexErrMsgTxt( "No file name given." );

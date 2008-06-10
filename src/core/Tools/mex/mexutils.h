@@ -15,6 +15,16 @@
 #include "LabelIndex.h"
 #include "mex.h"
 
+typedef signed char        int8;
+typedef unsigned char      uint8;
+typedef signed short       int16;
+typedef unsigned short     uint16;
+typedef signed int         int32;
+typedef unsigned int       uint32;
+typedef unsigned long long uint64;
+typedef float              float32;
+
+void TypeCheck();
 bool PrintVersion( const char*, int, const mxArray** );
 
 mxArray* ParamlistToStruct( const ParamList& );

@@ -10,28 +10,16 @@
 #define BCI2000_FILE_WRITER_H
 
 #include "FileWriterBase.h"
+#include "BCI2000OutputFormat.h"
 
-class BCI2000FileWriter: public FileWriterBase
+class BCI2000FileWriter : public FileWriterBase
 {
  public:
-          BCI2000FileWriter();
-  virtual ~BCI2000FileWriter();
-  virtual void Publish() const;
-  virtual void Preflight( const SignalProperties& Input,
-                                SignalProperties& Output ) const;
-  virtual void Initialize( const SignalProperties& Input,
-                           const SignalProperties& Output );
-  virtual void StartRun();
-  virtual void StopRun();
-  virtual void Write( const GenericSignal& Signal,
-                      const StateVector&   Statevector );
-
+  BCI2000FileWriter()
+  : FileWriterBase( mOutputFormat )
+  {}
  private:
-  virtual const char* DataFileExtension() const { return ".dat"; }
-
-  template<SignalType::Type T> void PutBlock( const GenericSignal&,
-                                              const StateVector& );
-  SignalProperties mInputProperties;
+  BCI2000OutputFormat mOutputFormat;
 };
 
 #endif // BCI2000_FILE_WRITER_H

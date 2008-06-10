@@ -1,0 +1,5 @@
+; Copyright 1996 The MathWorks, Inc.
+; $Revision: 1751 $ $Date: 2008-01-24 16:48:06 +0100 (Do, 24 Jan 2008) $
+
+EXPORTS
+mexFunction = _mexFunction

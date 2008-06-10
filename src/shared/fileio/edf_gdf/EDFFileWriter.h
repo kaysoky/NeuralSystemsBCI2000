@@ -9,27 +9,17 @@
 #ifndef EDF_FILE_WRITER_H
 #define EDF_FILE_WRITER_H
 
-#include "EDFFileWriterBase.h"
-#include <vector>
-#include <string>
+#include "FileWriterBase.h"
+#include "EDFOutputFormat.h"
 
-class EDFFileWriter: public EDFFileWriterBase
+class EDFFileWriter: public FileWriterBase
 {
  public:
-          EDFFileWriter();
-  virtual ~EDFFileWriter();
-  virtual void Publish() const;
-  virtual void Preflight( const SignalProperties& Input,
-                                SignalProperties& Output ) const;
-  virtual void Initialize( const SignalProperties& Input,
-                           const SignalProperties& Output );
-  virtual void StartRun();
-  virtual void StopRun();
-  virtual void Write( const GenericSignal& Signal,
-                      const StateVector&   Statevector );
-
+  EDFFileWriter()
+  : FileWriterBase( mOutputFormat )
+  {}
  private:
-  virtual const char* DataFileExtension() const { return ".edf"; }
+  EDFOutputFormat mOutputFormat;
 };
 
 #endif // EDF_FILE_WRITER_H

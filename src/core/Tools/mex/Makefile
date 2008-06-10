@@ -20,13 +20,20 @@ OR  = ||
 
 TARGETS = obj\bci_mex.lib \
           load_bcidat.dll \
+          save_bcidat.dll \
           convert_bciprm.dll \
           mem.dll \
                     
 MEXOBJ  = obj\bci_stubs.obj \
           obj\BCI2000FileReader.obj \
+          obj\BCI2000OutputFormat.obj \
+          obj\EDFOutputFormat.obj \
+          obj\GDFOutputFormat.obj \
+          obj\EDFOutputBase.obj \
+          obj\GDF.obj \
           obj\Param.obj \
           obj\ParamList.obj \
+          obj\ParamRef.obj \
           obj\State.obj \
           obj\StateList.obj \
           obj\StateVector.obj \
@@ -35,6 +42,7 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\SignalProperties.obj \
           obj\SignalType.obj \
           obj\PhysicalUnit.obj \
+          obj\MeasurementUnits.obj \
           obj\ArithmeticExpression.obj \
           obj\Expression.obj \
           obj\ExpressionParser.obj \
@@ -42,7 +50,12 @@ MEXOBJ  = obj\bci_stubs.obj \
           obj\LabelIndex.obj \
           obj\HierarchicalLabel.obj \
           obj\Brackets.obj \
+          obj\MessageHandler.obj \
+          obj\SysCommand.obj \
+          obj\ClassName.obj \
           obj\VersionInfo.obj \
+          obj\Environment.obj \
+          obj\GenericFilter.obj \
           obj\BCIError.obj \
           obj\BCIError_mex.obj \
           obj\mexutils.obj \
@@ -55,10 +68,10 @@ SRCROOT = ${BCIROOT}\shared\modules\signalsource
 SIGROOT = ${BCIROOT}\shared\modules\signalprocessing
 SIGPROC = ${BCIROOT}\shared\modules;${SIGROOT};${BCIROOT}\extlib\fftlib
 PATHOBJ = .\obj
-PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\types;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression;${SIGPROC};${SRCROOT};${CMDLINE};${BCIROOT}\extlib\math
+PATHCPP = .;${BCIROOT}\shared;${BCIROOT}\shared\accessors;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\fileio\edf_gdf;${BCIROOT}\shared\types;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression;${SIGPROC};${SRCROOT};${CMDLINE};${BCIROOT}\extlib\math
 INCLUDES = -I${BCIROOT};${BCIROOT}\shared\modules;${BCIROOT}\shared;${BCIROOT}\extlib\math; \
            -I${BCIROOT}\shared\accessors;${BCIROOT}\shared\bcistream;${BCIROOT}\shared\config; \
-           -I${BCIROOT}\shared\fileio;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\types;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression; \
+           -I${BCIROOT}\shared\fileio;${BCIROOT}\shared\fileio\dat;${BCIROOT}\shared\fileio\edf_gdf;${BCIROOT}\shared\types;${BCIROOT}\shared\utils;${BCIROOT}\shared\utils\Expression; \
            -I${BCB}\include;${BCB}\include\vcl;${MATLABPATH}
 LIBPATH = ${BCB}\lib\obj;${BCB}\lib;${MATLABPATH}
 MATLABPATH = ${BCIROOT}\extlib\matlab 
@@ -72,7 +85,7 @@ CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -3 -P- -w- -pc -tW -tWM -w
 
 CPP = bcc32 ${CFLAGS} ${DEFINES} ${INCLUDES}
 LD  = bcc32 -laa -lc -lTpd -lx -lGn -L${LIBPATH}
-AR  = tlib /C /P128 /0 >nul # If this fails, try a larger value for the /P argument.
+AR  = tlib /C /P256 /0 >nul # If this fails, try a larger value for the /P argument.
 RM  = del 
 
 .autodepend

@@ -13,6 +13,7 @@
 #pragma hdrstop
 
 #include "ClassName.h"
+#include <ctype.h>
 
 using namespace bci;
 

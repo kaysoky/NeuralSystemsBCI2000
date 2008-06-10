@@ -59,7 +59,7 @@ OutStream::Debug( int inDebugLevel )
   return *this;
 }
 
-void
+OutStream::FlushHandler
 OutStream::StringBuf::SetFlushHandler( OutStream::FlushHandler f )
 {
   if( str().length() > 1 )
@@ -67,11 +67,13 @@ OutStream::StringBuf::SetFlushHandler( OutStream::FlushHandler f )
     string message = mContext.empty() ? str() : mContext + ": " + str();
     if( mpOnFlush )
       mpOnFlush( message );
-    else
+    else if( f )
       f( message );
   }
   str( "" );
+  FlushHandler h = mpOnFlush;
   mpOnFlush = f;
+  return h;
 }
 
 int

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A base class for EDF/GDF type file writers.
+// Description: A base class for EDF/GDF type output formats.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -15,7 +15,7 @@
 # pragma option -vi-
 #endif // __BORLANDC__
 
-#include "EDFFileWriterBase.h"
+#include "EDFOutputBase.h"
 
 #include "GDF.h"
 #include "BCIError.h"
@@ -27,22 +27,20 @@
 using namespace std;
 
 
-EDFFileWriterBase::EDFFileWriterBase()
+EDFOutputBase::EDFOutputBase()
 : mNumRecords( 0 )
 {
 }
 
 
-EDFFileWriterBase::~EDFFileWriterBase()
+EDFOutputBase::~EDFOutputBase()
 {
 }
 
 
 void
-EDFFileWriterBase::Publish() const
+EDFOutputBase::Publish() const
 {
-  FileWriterBase::Publish();
-
   BEGIN_PARAMETER_DEFINITIONS
     "Storage string SubjectYearOfBirth= % 1970 % % "
       "// year the subject was born",
@@ -58,15 +56,16 @@ EDFFileWriterBase::Publish() const
       "// e.g. \"EEG: Ag/AgCl\"",
     "Storage string SignalUnit= uV % % % "
       "// physical unit of calibrated signal",
+    "Storage stringlist ChannelNames= 0 % % % % "
+      "// channel names",
   END_PARAMETER_DEFINITIONS
 }
 
 
 void
-EDFFileWriterBase::Preflight( const SignalProperties& Input,
-                                    SignalProperties& Output ) const
+EDFOutputBase::Preflight( const SignalProperties&,
+                          const StateVector& ) const
 {
-  FileWriterBase::Preflight( Input, Output );
   Parameter( "TransducerType" );
   Parameter( "SignalUnit" );
   Parameter( "ChannelNames" );
@@ -80,20 +79,20 @@ EDFFileWriterBase::Preflight( const SignalProperties& Input,
     Parameter( "NotchHighPass" );
     Parameter( "NotchLowPass" );
   }
+  Parameter( "SampleBlockSize" );
   Parameter( "SourceChGain" );
   Parameter( "SourceChOffset" );
 }
 
 
 void
-EDFFileWriterBase::Initialize( const SignalProperties& Input,
-                               const SignalProperties& Output )
+EDFOutputBase::Initialize( const SignalProperties& inProperties,
+                           const StateVector& )
 {
-  FileWriterBase::Initialize( Input, Output );
   mChannels.clear();
   // Enter brain signal channels into the channel list.
   int typeCode = GDF::float64::Code;
-  switch( Input.Type() )
+  switch( inProperties.Type() )
   {
     case SignalType::int16:
       typeCode = GDF::int16::Code;
@@ -106,8 +105,8 @@ EDFFileWriterBase::Initialize( const SignalProperties& Input,
       typeCode = GDF::float32::Code;
       break;
   }
-  float digitalMin = Input.Type().Min(),
-        digitalMax = Input.Type().Max();
+  float digitalMin = inProperties.Type().Min(),
+        digitalMax = inProperties.Type().Max();
   // GDF 1.25 uses int64 for digital min and max.
   if( digitalMin < numeric_limits<GDF::int64::ValueType>::min() )
     digitalMin = numeric_limits<GDF::int64::ValueType>::min();
@@ -120,7 +119,7 @@ EDFFileWriterBase::Initialize( const SignalProperties& Input,
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
   channel.DigitalMaximum = digitalMax;
-  for( int i = 0; i < Input.Channels(); ++i )
+  for( int i = 0; i < inProperties.Channels(); ++i )
   {
     if( i < Parameter( "ChannelNames" )->NumValues() )
       channel.Label = Parameter( "ChannelNames" )( i );
@@ -178,58 +177,53 @@ EDFFileWriterBase::Initialize( const SignalProperties& Input,
 
 
 void
-EDFFileWriterBase::StartRun()
+EDFOutputBase::StartRun( ostream& )
 {
   mNumRecords = 0;
-  FileWriterBase::StartRun();
 }
 
 
 void
-EDFFileWriterBase::StopRun()
+EDFOutputBase::StopRun( ostream& )
 {
-  FileWriterBase::StopRun();
 }
 
 
 template<typename T>
 void
-EDFFileWriterBase::PutBlock( const GenericSignal& inSignal, const StateVector& inStatevector )
+EDFOutputBase::PutBlock( ostream& os, const GenericSignal& inSignal, const StateVector& inStatevector )
 {
   for( int i = 0; i < inSignal.Channels(); ++i )
     for( int j = 0; j < inSignal.Elements(); ++j )
-      GDF::Num<T>( inSignal( i, j ) ).WriteToStream( OutputStream() );
+      GDF::Num<T>( inSignal( i, j ) ).WriteToStream( os );
   for( size_t i = 0; i < mStateNames.size(); ++i )
     for( int j = 0; j < inSignal.Elements(); ++j )
       GDF::PutField< GDF::Num<GDF::int16> >(
-        OutputStream(),
-        inStatevector.StateValue( mStateNames[ i ], min( j, inStatevector.Samples() - 1 ) )
+        os, inStatevector.StateValue( mStateNames[ i ], min( j, inStatevector.Samples() - 1 ) )
       );
 }
 
 
 void
-EDFFileWriterBase::Write( const GenericSignal& inSignal, const StateVector& inStatevector )
+EDFOutputBase::Write( ostream& os, const GenericSignal& inSignal, const StateVector& inStatevector )
 {
   ++mNumRecords;
   switch( inSignal.Type() )
   {
     case SignalType::int16:
-      PutBlock<GDF::int16>( inSignal, inStatevector );
+      PutBlock<GDF::int16>( os, inSignal, inStatevector );
       break;
 
     case SignalType::int32:
-      PutBlock<GDF::int32>( inSignal, inStatevector );
+      PutBlock<GDF::int32>( os, inSignal, inStatevector );
       break;
 
     case SignalType::float24:
     case SignalType::float32:
-      PutBlock<GDF::float32>( inSignal, inStatevector );
+      PutBlock<GDF::float32>( os, inSignal, inStatevector );
       break;
 
     default:
       bcierr << "Unsupported signal data type" << endl;
   }
-  FileWriterBase::Write( inSignal, inStatevector );
 }
-

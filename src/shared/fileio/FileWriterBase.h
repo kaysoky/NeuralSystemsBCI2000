@@ -11,13 +11,15 @@
 #define FILE_WRITER_BASE_H
 
 #include "GenericFileWriter.h"
+#include "GenericOutputFormat.h"
 
+#include <string>
 #include <fstream>
 
 class FileWriterBase: public GenericFileWriter
 {
  protected:
-          FileWriterBase();
+          FileWriterBase( GenericOutputFormat& );
  public:
   virtual ~FileWriterBase();
   virtual void Publish() const;
@@ -30,14 +32,8 @@ class FileWriterBase: public GenericFileWriter
   virtual void Write( const GenericSignal& Signal,
                       const StateVector&   Statevector );
 
- protected:
-  std::ostream& OutputStream();
-
  private:
-  // A descendant reports the file extension through the DataFileExtension()
-  // function.
-  virtual const char* DataFileExtension() const = 0;
-
+  GenericOutputFormat&     mrOutputFormat;
   std::string              mFileName;
   std::ofstream            mOutputFile;
 };

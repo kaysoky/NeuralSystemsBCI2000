@@ -221,7 +221,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   else
   {
     SignalProperties writerOutput;
-    mpFileWriter->Preflight( Output, writerOutput );
+    mpFileWriter->CallPreflight( Output, writerOutput );
     if( !writerOutput.IsEmpty() )
       bcierr << "Expected empty output signal from file writer" << endl;
   }

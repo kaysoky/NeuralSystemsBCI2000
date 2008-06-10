@@ -68,6 +68,8 @@ namespace BCIError
       { clear(); }
     void clear()
       { std::ostream::clear(); mBuf.Clear(); }
+    void Reset()
+      { std::ostream::clear(); mBuf.Reset(); }
 
    private:
     static void SetContext( const std::string& s )
@@ -76,8 +78,8 @@ namespace BCIError
       { sDebugLevel = i; }
 
     typedef void ( *FlushHandler )( const std::string& );
-    void SetFlushHandler( FlushHandler f = NULL )
-      { mBuf.SetFlushHandler( f ); }
+    FlushHandler SetFlushHandler( FlushHandler f = NULL )
+      { return mBuf.SetFlushHandler( f ); }
 
     class StringBuf : public std::stringbuf
     {
@@ -90,13 +92,15 @@ namespace BCIError
 
       void SetContext( const std::string& s )
         { mContext = s; }
-      void SetFlushHandler( FlushHandler f = NULL );
+      FlushHandler SetFlushHandler( FlushHandler f = NULL );
       int Flushes()
         { return mNumFlushes; }
       void Clear()
         { clear(); }
       void clear()
         { SetFlushHandler( mpOnFlush ); mNumFlushes = 0; }
+      void Reset()
+        { str( "" ); mNumFlushes = 0; }
 
      private:
       FlushHandler mpOnFlush;
