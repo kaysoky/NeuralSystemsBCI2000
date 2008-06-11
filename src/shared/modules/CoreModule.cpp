@@ -480,14 +480,10 @@ CoreModule::ShutdownSystem()
 void
 CoreModule::ResetStatevector()
 {
-  // State "Running" is the actual memory for the module's running state,
-  // so we may not reset it.
-  State::ValueType running = mpStatevector->StateValue( "Running" ),
-                   sourceTime = mpStatevector->StateValue( "SourceTime" ),
+  State::ValueType sourceTime = mpStatevector->StateValue( "SourceTime" ),
                    stimulusTime = mpStatevector->StateValue( "StimulusTime" );
   for( int i = 0; i < mpStatevector->Samples(); ++i )
     ( *mpStatevector )( i ).ReadBinary( istringstream( mInitialStatevector ) );
-  mpStatevector->SetStateValue( "Running", running );
   mpStatevector->SetStateValue( "SourceTime", sourceTime );
   mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
 }
@@ -543,6 +539,7 @@ CoreModule::StartRunFilters()
   // there would be state information from the end of the (possibly
   // interrupted) previous run written with the first EEG data block.
   ResetStatevector();
+  mpStatevector->SetStateValue( "Running", 1 );
 
   EnvironmentBase::EnterStartRunPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
   GenericFilter::StartRunFilters();
@@ -788,6 +785,7 @@ CoreModule::HandleSysCommand( istream& is )
       // the subsequent state vector.
         mpStatevector = new StateVector( mStatelist, mSampleBlockSize + 1 );
         ResetStatevector();
+        mpStatevector->SetStateValue( "Running", 0 );
         mFiltersInitialized = false;
       }
     }
