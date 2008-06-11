@@ -142,7 +142,7 @@ DataIOFilter::DataIOFilter()
       delete *i;
   }
   if( mpFileWriter != NULL )
-    mpFileWriter->Publish();
+    mpFileWriter->CallPublish();
 
   // Check whether the next filter in the chain is a notch filter.
   // If this is the case, use it for preprocessing _before_ writing into the file.
@@ -364,7 +364,7 @@ DataIOFilter::Process( const GenericSignal& Input,
   if( !mOutputBuffer.Properties().IsEmpty() )
   {
     if( State( "Recording" ) == 1 )
-      mpFileWriter->Write( mOutputBuffer, mStatevectorBuffer );
+      mpFileWriter->CallWrite( mOutputBuffer, mStatevectorBuffer );
     visualizeTiming = mVisualizeTiming;
   }
   mpADC->CallProcess( Input, mInputBuffer );

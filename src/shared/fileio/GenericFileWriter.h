@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: A virtual class interface for output filters.
+// Description: A virtual class interface for data output filters.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -17,6 +17,8 @@ class GenericFileWriter : public GenericFilter
   GenericFileWriter() {}
  public:
   virtual ~GenericFileWriter() {}
+
+ protected:
   // A separate function for publishing parameters and states.
   virtual void Publish() const = 0;
   // GenericFilter inherited functions.
@@ -32,6 +34,10 @@ class GenericFileWriter : public GenericFilter
   virtual void Halt() {}
 
   virtual bool AllowsVisualization() const { return false; }
+
+ public:
+  void CallPublish();
+  void CallWrite( const GenericSignal&, const StateVector& );
 
  private:
   // The Process() function should not be called for the
