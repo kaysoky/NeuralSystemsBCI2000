@@ -170,8 +170,8 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   Parameter( "ApplicationIP" );
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
 
-  if( Parameter( "SourceChOffset" )->NumValues() < Parameter( "SourceCh" )
-      || Parameter( "SourceChGain" )->NumValues() < Parameter( "SourceCh" ) )
+  if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" )
+      || Parameter( "SourceChGain" )->NumValues() != Parameter( "SourceCh" ) )
     bcierr << "The number of entries in the SourceChOffset and SourceChGain "
            << "parameters must match the SourceCh parameter."
            << endl;
