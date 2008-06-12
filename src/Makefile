@@ -46,9 +46,9 @@ TOOLSBINDIR = tools
 DOCDIR = doc
 
 # Path to TortoiseSVN
-TORTOISEDIR = %ProgramFiles%\TortoiseSVN\bin
+TORTOISEDIR = "%ProgramFiles%\TortoiseSVN\bin"
 # Path to distribution creation tool.
-SEVENZIPDIR = %ProgramFiles%\7-Zip
+SEVENZIPDIR = "%ProgramFiles%\7-Zip"
 # Name of the binary distribution archive.
 BINDISTNAME = BCI2000Setup
 # Names of top-level directories that should be contained in the binary distribution.
@@ -105,8 +105,8 @@ all: prepare ${MAKEFILES:.mak=.all} cmdline mex
   
 # Update version and time stamp, then make all subprojects.
 build:
-  if exist ${TORTOISEDIR}\SubWCRev.exe \
-    ${TORTOISEDIR}\SubWCRev.exe . shared\config\Version.h.in shared\config\Version.h
+  if exist "${TORTOISEDIR}\SubWCRev.exe" \
+    "${TORTOISEDIR}\SubWCRev.exe" . shared\config\Version.h.in shared\config\Version.h
   ${MAKE} -${MAKEFLAGS} all
   ${MAKE} -${MAKEFLAGS} test
   ${DONE}
