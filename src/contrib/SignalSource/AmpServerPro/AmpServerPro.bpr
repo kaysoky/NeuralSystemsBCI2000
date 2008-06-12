@@ -16,12 +16,14 @@
       obj\ClassName.obj obj\MeasurementUnits.obj obj\PrecisionTime.obj 
       obj\SockStream.obj obj\ExpressionParser.obj obj\Expression.obj 
       obj\TransmissionFilter.obj obj\AlignmentFilter.obj obj\DataIOFilter.obj 
-      obj\FileWriterBase.obj obj\NullFileWriter.obj obj\BCI2000FileWriter.obj 
-      obj\EDFFileWriter.obj obj\EDFFileWriterBase.obj obj\GDF.obj 
+      obj\NullFileWriter.obj obj\BCI2000FileWriter.obj obj\GDF.obj 
       obj\GDFFileWriter.obj obj\SourceFilter.obj obj\IIRFilter.obj 
       obj\FilterDesign.obj obj\ArithmeticExpression.obj 
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
-      obj\KeyLogger.obj obj\JoystickLogger.obj obj\OSThread.obj obj\OSError.obj"/>
+      obj\KeyLogger.obj obj\JoystickLogger.obj obj\OSThread.obj obj\OSError.obj 
+      obj\FileWriterBase.obj obj\GDFOutputFormat.obj obj\EDFOutputBase.obj 
+      obj\EDFOutputFormat.obj obj\BCI2000OutputFormat.obj obj\EDFFileWriter.obj 
+      obj\GenericFileWriter.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -30,7 +32,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\utils;..\..\..\shared\utils"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\fileio;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -101,11 +103,8 @@
       <FILE FILENAME="..\..\..\shared\modules\signalsource\TransmissionFilter.cpp" FORMNAME="" UNITNAME="TransmissionFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\AlignmentFilter.cpp" FORMNAME="" UNITNAME="AlignmentFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\DataIOFilter.cpp" FORMNAME="" UNITNAME="DataIOFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\fileio\FileWriterBase.cpp" FORMNAME="" UNITNAME="FileWriterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\NullFileWriter.cpp" FORMNAME="" UNITNAME="NullFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\dat\BCI2000FileWriter.cpp" FORMNAME="" UNITNAME="BCI2000FileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFFileWriter.cpp" FORMNAME="" UNITNAME="EDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFFileWriterBase.cpp" FORMNAME="" UNITNAME="EDFFileWriterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDF.cpp" FORMNAME="" UNITNAME="GDF" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\SourceFilter.cpp" FORMNAME="" UNITNAME="SourceFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -119,6 +118,13 @@
       <FILE FILENAME="..\..\..\shared\modules\signalsource\JoystickLogger.cpp" FORMNAME="" UNITNAME="JoystickLogger" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\OSError.cpp" FORMNAME="" UNITNAME="OSError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\FileWriterBase.cpp" FORMNAME="" UNITNAME="FileWriterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDFOutputFormat.cpp" FORMNAME="" UNITNAME="GDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputBase.cpp" FORMNAME="" UNITNAME="EDFOutputBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputFormat.cpp" FORMNAME="" UNITNAME="EDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\dat\BCI2000OutputFormat.cpp" FORMNAME="" UNITNAME="BCI2000OutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFFileWriter.cpp" FORMNAME="" UNITNAME="EDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\fileio\GenericFileWriter.cpp" FORMNAME="" UNITNAME="GenericFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
