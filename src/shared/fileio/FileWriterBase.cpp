@@ -110,10 +110,10 @@ void
 FileWriterBase::Initialize( const SignalProperties& Input,
                             const SignalProperties& /*Output*/ )
 {
-  mrOutputFormat.Initialize( Input, *Statevector );
-
   mOutputFile.close();
   mOutputFile.clear();
+
+  mrOutputFormat.Initialize( Input, *Statevector );
 }
 
 
@@ -155,10 +155,10 @@ FileWriterBase::StartRun()
 void
 FileWriterBase::StopRun()
 {
+  mrOutputFormat.StopRun( mOutputFile );
+
   mOutputFile.close();
   mOutputFile.clear();
-
-  mrOutputFormat.StopRun( mOutputFile );
 }
 
 
