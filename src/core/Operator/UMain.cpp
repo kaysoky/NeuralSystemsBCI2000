@@ -391,7 +391,7 @@ TfMain::InitializeModules()
     ++mSysstatus.NumMessagesSent[ EEGSource ];
 }
 
-// Here we list the actions to be taken for the allowed state transitions.
+// Here we list the actions to be taken for allowed state transitions.
 #define TRANSITION( a, b )  ( ( int( a ) << 8 ) | int( b ) )
 void
 TfMain::EnterState( SYSSTATUS::State inState )
