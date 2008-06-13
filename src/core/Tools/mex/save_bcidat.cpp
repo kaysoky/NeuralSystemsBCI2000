@@ -28,6 +28,7 @@
 #include <sstream>
 #include <fstream>
 
+
 using namespace std;
 
 struct StateInfo
@@ -58,6 +59,7 @@ ReadSignal( void* inData, long inNumSamples, long inSampleOffset, GenericSignal&
   }
 }
 
+
 class FilterWrapper
 { // FilterWrapper classes are friends to the Environment class.
  public:
@@ -75,59 +77,59 @@ class FilterWrapper
   template<class T>
   void Instantiate()
   {
-    Environment::EnterConstructionPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::EnterConstructionPhase( &mParameters, &mStates, NULL, NULL );
     delete mpOutputFormat;
     mpOutputFormat = new T;
-    Environment::ErrorContext( "Publish", mpOutputFormat );
+    EnvironmentBase::ErrorContext( "Publish", mpOutputFormat );
     mpOutputFormat->Publish();
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
     mStates.AssignPositions();
   }
 
   void Preflight( const SignalProperties& inProperties, const StateVector& inStatevector )
   {
-    Environment::EnterPreflightPhase( &mParameters, &mStates, NULL, NULL );
-    Environment::ErrorContext( "Preflight", mpOutputFormat );
+    EnvironmentBase::EnterPreflightPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::ErrorContext( "Preflight", mpOutputFormat );
     mpOutputFormat->Preflight( inProperties, inStatevector );
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
   }
 
   void Initialize( const SignalProperties& inProperties, const StateVector& inStatevector )
   {
-    Environment::EnterInitializationPhase( &mParameters, &mStates, NULL, NULL );
-    Environment::ErrorContext( "Initialize", mpOutputFormat );
+    EnvironmentBase::EnterInitializationPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::ErrorContext( "Initialize", mpOutputFormat );
     mpOutputFormat->Initialize( inProperties, inStatevector );
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
   }
 
   void StartRun( ostream& os )
   {
-    Environment::EnterStartRunPhase( &mParameters, &mStates, NULL, NULL );
-    Environment::ErrorContext( "StartRun", mpOutputFormat );
+    EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::ErrorContext( "StartRun", mpOutputFormat );
     mpOutputFormat->StartRun( os );
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
   }
 
   void Write( ostream& os, const GenericSignal& inSignal, StateVector& inStatevector )
   {
-    Environment::EnterProcessingPhase( &mParameters, &mStates, &inStatevector, NULL );
-    Environment::ErrorContext( "Write", mpOutputFormat );
+    EnvironmentBase::EnterProcessingPhase( &mParameters, &mStates, &inStatevector, NULL );
+    EnvironmentBase::ErrorContext( "Write", mpOutputFormat );
     mpOutputFormat->Write( os, inSignal, inStatevector );
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
   }
 
   void StopRun( ostream& os )
   {
-    Environment::EnterStopRunPhase( &mParameters, &mStates, NULL, NULL );
-    Environment::ErrorContext( "StopRun", mpOutputFormat );
+    EnvironmentBase::EnterStopRunPhase( &mParameters, &mStates, NULL, NULL );
+    EnvironmentBase::ErrorContext( "StopRun", mpOutputFormat );
     mpOutputFormat->StopRun( os );
-    Environment::ErrorContext( "" );
-    Environment::EnterNonaccessPhase();
+    EnvironmentBase::ErrorContext( "" );
+    EnvironmentBase::EnterNonaccessPhase();
   }
 
   void Cleanup()

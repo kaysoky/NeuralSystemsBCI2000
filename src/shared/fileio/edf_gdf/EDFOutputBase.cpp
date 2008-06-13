@@ -113,8 +113,8 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   if( digitalMax > numeric_limits<GDF::int64::ValueType>::max() )
     digitalMax = numeric_limits<GDF::int64::ValueType>::max();
   ChannelInfo channel;
-  channel.TransducerType = Parameter( "TransducerType" );
-  channel.PhysicalDimension = Parameter( "SignalUnit" );
+  channel.TransducerType = string( Parameter( "TransducerType" ) );
+  channel.PhysicalDimension = string( Parameter( "SignalUnit" ) );
   channel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
@@ -122,7 +122,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   for( int i = 0; i < inProperties.Channels(); ++i )
   {
     if( i < Parameter( "ChannelNames" )->NumValues() )
-      channel.Label = Parameter( "ChannelNames" )( i );
+      channel.Label = string( Parameter( "ChannelNames" )( i ) );
     else
     {
       ostringstream oss;

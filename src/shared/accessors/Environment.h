@@ -32,6 +32,10 @@
 
 class SignalProperties;
 class EnvironmentExtension;
+
+class GenericVisualization;
+class CoreModule;
+class StatusMessage;
 class FilterWrapper;
 
 // Some utility macros for better readable code in filter constructors.

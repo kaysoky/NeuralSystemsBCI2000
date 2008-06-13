@@ -215,13 +215,14 @@ GDFOutputFormat::Write( ostream& os,
 {
   EDFOutputBase::Write( os, inSignal, inStatevector );
 
+  int sampleBlockSize = Parameter( "SampleBlockSize" );
   for( size_t i = 0; i < mEventConditions.size(); ++i )
   {
     bool curValue = mEventConditions[ i ].Evaluate( &inSignal );
     if( curValue && curValue != mPreviousConditionValues[ i ] )
     {
       EventInfo event;
-      event.SamplePosition = NumRecords() * Parameter( "SampleBlockSize" );
+      event.SamplePosition = NumRecords() * sampleBlockSize;
       event.Code = mEventCodes[ i ];
       mEvents.push_back( event );
     }
