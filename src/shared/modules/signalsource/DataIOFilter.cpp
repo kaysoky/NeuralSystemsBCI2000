@@ -170,11 +170,27 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   Parameter( "ApplicationIP" );
   PreflightCondition( Parameter( "SamplingRate" ) > 0 );
 
-  if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" )
-      || Parameter( "SourceChGain" )->NumValues() != Parameter( "SourceCh" ) )
-    bcierr << "The number of entries in the SourceChOffset and SourceChGain "
-           << "parameters must match the SourceCh parameter."
+
+  if( Parameter( "SourceChOffset" )->NumValues() != Parameter( "SourceCh" ) )
+  {
+    bcierr << "The number of entries in the SourceChOffset parameter (currently "
+           << Parameter( "SourceChOffset" )->NumValues()
+           << ") must match the SourceCh parameter (currently "
+           << Parameter( "SourceCh" )
+           << ")"
            << endl;
+  }
+
+  if( Parameter( "SourceChGain" )->NumValues() != Parameter( "SourceCh" ) )
+  {
+    bcierr << "The number of entries in the SourceChGain parameter (currently "
+           << Parameter( "SourceChGain" )->NumValues()
+           << ") must match the SourceCh parameter (currently "
+           << Parameter( "SourceCh" )
+           << ")"
+           << endl;
+  }
+
 
   if( Parameter( "VisualizeSource" ) == 1 )
   {
