@@ -51,7 +51,7 @@ countcond2=0;
 if verbose
   fprintf(1, 'Determining array sizes ...\n');
 end
-for cur_trial=min(trials):max(trials)-1
+for cur_trial=min(trials):max(trials)
  if verbose && (mod(cur_trial+1, 50) == 0)
     fprintf(1, '%03d ', cur_trial+1);
     if (mod(cur_trial+1, 150) == 0)
@@ -108,7 +108,7 @@ end
 countall=0;
 countcond1=0;
 countcond2=0;
-for cur_trial=min(trials)+1:max(trials)-1
+for cur_trial=min(trials):max(trials)
  if verbose && (mod(cur_trial+1, 50) == 0)
     fprintf(1, '%03d ', cur_trial+1);
     if (mod(cur_trial+1, 150) == 0)
