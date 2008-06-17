@@ -37,7 +37,7 @@ StimulusPresentationTask::StimulusPresentationTask()
 {
   // Sequencing
   BEGIN_PARAMETER_DEFINITIONS
-    "Application:Sequencing intlist Sequence= 4 1 3 4 2 1 1 % // "
+    "Application:Sequencing intlist Sequence= 4 1 3 4 2 % % % // "
       "Sequence in which stimuli are presented (deterministic mode)/"
       " Stimulus frequencies for each stimulus (random mode)",
 
@@ -123,6 +123,32 @@ StimulusPresentationTask::~StimulusPresentationTask()
 void
 StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 {
+  ParamRef Sequence = Parameter( "Sequence" );
+  switch( int( Parameter( "SequenceType" ) ) )
+  {
+    case SequenceTypes::Deterministic:
+      for( int i = 0; i < Sequence->NumValues(); ++i )
+        if( Sequence( i ) < 1 )
+          bcierr << "Invalid stimulus code "
+                 << "(" << Sequence( i ) << ") "
+                 << "at Sequence(" << i << ")"
+                 << endl;
+      break;
+
+    case SequenceTypes::Random:
+      for( int i = 0; i < Sequence->NumValues(); ++i )
+        if( Sequence( i ) < 0 )
+          bcierr << "Invalid frequency "
+                 << "(" << Sequence( i ) << ") "
+                 << "at Sequence(" << i << ")"
+                 << endl;
+      break;
+
+    default:
+      bcierr << "Unknown value in SequenceType parameter"
+             << endl;
+  }
+
   GUI::GraphDisplay preflightDisplay;
   ImageStimulus* pImageStimulus = NULL;
   if( Parameter( "IconSwitch" ) == 1 )
