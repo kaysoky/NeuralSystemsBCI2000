@@ -9,7 +9,7 @@ MUD.MUD(:,4)=MUD.MUD(:,3);
 MUD.MUD(:,3)=ones(size(MUD.MUD,1),1);
 fid = fopen([dir1 prmname '.prm'], 'wt');
 
-fprintf(fid,['Filtering:LinearClassifier matrix Classifier= ' num2str(size(MUD.MUD,1)) ' { input%%20channel input%%20element%%20(bin) output%%20channel 4 }']);
+fprintf(fid,['Filtering:LinearClassifier matrix Classifier= ' num2str(size(MUD.MUD,1)) ' { input%%20channel input%%20element%%20(bin) output%%20channel weight }']);
 fprintf(fid,' %d %d %d %2.5f',reshape(MUD.MUD',1,size(MUD.MUD,1)*size(MUD.MUD,2)));
 fprintf(fid,' // Linear classification matrix in sparse representation\n');
 fprintf(fid,['Filtering:P3TemporalFilter int EpochLength= ' num2str(floor(MUD.windowlen(2)*1000/MUD.smprate)) 'ms 500ms 0 %% // Length of data epoch from stimulus onset\n']);
