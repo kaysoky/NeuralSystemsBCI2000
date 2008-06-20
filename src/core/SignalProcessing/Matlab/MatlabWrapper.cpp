@@ -408,7 +408,7 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
   if( !dllHandle )
   {
     success = false;
-    bcierr << "Could not load libary " << inName << ":\n"
+    bcierr << "Could not load library " << inName << ":\n"
            << OSError().Message() << endl;
   }
   else
