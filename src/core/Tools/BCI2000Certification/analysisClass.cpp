@@ -51,6 +51,7 @@ bool analysis::open(string file, Tasks &taskTypes)
 	thisTask.taskName = "Unknown";
 
     droppedSamples = 0;
+    checkedSamples = 0;
 
     dFile = new BCI2000FileReader(fName.c_str());
 
@@ -224,6 +225,7 @@ void analysis::clear()
     latencyStats.clear();
 
     droppedSamples = 0;
+    checkedSamples = 0;
 }
 
 /*-------------------------------------
@@ -245,6 +247,9 @@ bool analysis::doThreshAnalysis(double threshTmp)
     if (!mIsOpen)
         return false;
 
+    //first, check dropped samples on all channels
+    //checkDroppedSamples();
+    
     //do the amp latency analysis
     //the task type struct has a flag for each possible analysis, which tells if
     //we should perform the analysis
@@ -386,8 +391,8 @@ bool analysis::doThreshAnalysis(double threshTmp)
         basicStats vidOutputStats;
         vidOutputStats.mean = vidSystemStats.mean - ampStats.mean - procStats.mean;
 		vidOutputStats.std = sqrt(pow(vidSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
-        vidOutputStats.min = vidSystemStats.min - ampStats.min - procStats.min;
-        vidOutputStats.max = vidSystemStats.max - ampStats.max - procStats.max;
+        vidOutputStats.min = 0;//vidSystemStats.min - ampStats.min - procStats.min;
+        vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
         if (thisTask.exportData)
             vidOutputStats.vals.clear();
         vidOutputStats.taskName = "VidOut  ";
@@ -401,8 +406,8 @@ bool analysis::doThreshAnalysis(double threshTmp)
         basicStats audOutputStats;
         audOutputStats.mean = audSystemStats.mean - ampStats.mean - procStats.mean;
 		audOutputStats.std = sqrt(pow(audSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
-        audOutputStats.min = audSystemStats.min - ampStats.min - procStats.min;
-        audOutputStats.max = audSystemStats.max - ampStats.max - procStats.max;
+        audOutputStats.min = 0;//audSystemStats.min - ampStats.min - procStats.min;
+        audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
         if (thisTask.exportData)
             audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
@@ -451,20 +456,28 @@ basicStats analysis::doThreshAnalysis(int chNum)
     */
 	//get the time differences
     int sigPos = 0;
+    bool risingEdge;
     for (int sample = blockSize; sample < nSamples-blockSize; sample += blockSize)
     {
         //record the starting sample
         sigPos = sample;
+        risingEdge = false;
 
         //first check that the signal already is not above threshold,
         //and if it is, just continue
-        if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) >= thresh)
-            continue;
+        //if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) >= thresh)
+        //    continue;
 
         //go through the signal, and increment the signal position until it
         //crosses the threshold
-        while ((signal(chNum, sigPos) < thresh) && ((sigPos-sample) < blockSize))
+        while (!risingEdge && (signal(chNum, sigPos) <= thresh) && ((sigPos-sample) < blockSize))
+        {
+            risingEdge = (signal(chNum, sigPos) >= thresh) && (signal(chNum, sigPos-1) < thresh);
             sigPos++;
+        }
+        /*while ((signal(chNum, sigPos) <= thresh)
+                && ((sigPos-sample) < blockSize))
+            sigPos++;*/
 
         //the signal has crossed the threshold, so record the time difference
         //from the first sample in the block to when this occurred,
@@ -541,6 +554,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 
     int sigPos = 0;
     int dState;
+    bool risingEdge = false;
 	for (int sample = 1; sample < nSamples-blockSize; sample += 1)
     {
 		//get the transition value
@@ -550,12 +564,14 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
             continue;
 
         sigPos = sample;
+        risingEdge = false;
         //first check that the signal already is not above threshold,
         //and if it is, just continue
-        if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) > thresh)
+        /*if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) > thresh)
             continue;
-
+        */
         //look for the sample in the signal where it crosses the threshold
+        /*
         bool nextState = false;
         while (sigPos < nSamples && signal(chNum, sigPos) < thresh && !nextState )
         {
@@ -565,7 +581,12 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
         }
 
         if (nextState)
-            continue;
+            continue;   */
+        while (!risingEdge && (sigPos < nSamples) && (signal(chNum, sigPos) <= thresh) )
+        {
+            risingEdge = (signal(chNum, sigPos) >= thresh) && (signal(chNum, sigPos-1) < thresh);
+            sigPos++;
+        }
         //calculate the time difference
 		float D = ((float)sigPos-(float)sample)/sampleRate*1000;
 
@@ -640,10 +661,30 @@ values outside a reasonable range
 */
 void analysis::checkDroppedSamples(int ch)
 {
-        if (ch >= nChannels || ch < 0)
-            return;
-            
-        double prevVal = signal(ch, 0);
+    if (ch >= nChannels || ch < 0)
+        return;
+
+    checkedSamples += nSamples;
+    double prevVal = signal(ch, 0);
+    for (int s = 1; s < nSamples; s++)
+    {
+        if (signal(ch, s) == 0 && prevVal == 0)
+            droppedSamples++;
+
+        if (abs(signal(ch, s)) >= 1e7) // 10 million uV, or 10 V
+            droppedSamples++;
+
+        prevVal = signal(ch, s);
+  }
+}
+
+void analysis::checkDroppedSamples()
+{
+    double prevVal;
+    droppedSamples = 0;
+    for (int ch = 0; ch < nChannels; ch++)
+    {
+        prevVal = signal(ch, 0);
         for (int s = 1; s < nSamples; s++)
         {
             if (signal(ch, s) == 0 && prevVal == 0)
@@ -653,8 +694,8 @@ void analysis::checkDroppedSamples(int ch)
                 droppedSamples++;
 
             prevVal = signal(ch, s);
-      }
-   // }
+        }
+    }
 }
 
 /*
@@ -741,14 +782,16 @@ bool analysis::isMember(vector<string> strArr, string str)
     return false;
 }
 
-void analysis::print(ofstream& resOut, vector<basicStats> minReqs)
+void analysis::print(FILE * out, vector<basicStats> minReqs)
 {
-    resOut << std::endl<<fName<<":"<<std::endl;
+    fprintf(out, "%s",shortFname(fName).c_str());
+    //resOut << std::endl<<fName<<":"<<std::endl;
     bool ok = true;
     for (int t = 0; t < latencyStats.size(); t++)
     {
         basicStats tmpTask = latencyStats[t];
-        resOut<<tmpTask.taskName<<": ";
+        fprintf(out, "\t%s\t",(tmpTask.taskName).c_str());
+        //resOut<<tmpTask.taskName<<": ";
         int tfound = 0;
 
         //compare this against the min requirements by searching through the minreqs array
@@ -760,49 +803,47 @@ void analysis::print(ofstream& resOut, vector<basicStats> minReqs)
             {
                 tfound = 1;
                 if (tmpTask.mean <= (minReqs[a].mean) && tmpTask.mean >= 0)
-                    resOut <<"OK";
+                    fprintf(out, "%s\t","pass");
                 else if (tmpTask.mean == -1)
                 {
                     tfound = 2;
-                    resOut << "No Stimuli Detected!"<<endl;
+                    fprintf(out, "%s\t","no stimuli");
                     continue;
                 }
                 else
                 {
-                    resOut <<"Failed!";
+                    fprintf(out, "%s\t","fail");
                     ok = false;
                 }
-
             }
         }
 
-        if (tfound == 2)
+        if (tfound == 2){
+            fprintf(out, "%\n");
             continue;
+        }
         //if the min requirement for this analysis was not defined, say so, otherwise output the results
         if (tfound == 0)
-            resOut<<"not defined in BCI2000Certification.cfg."<<endl;
+            fprintf(out, "%s\n","task requirements undefined\n");
         else
         {
-            resOut.precision(4);
-            resOut<<"\t("<<tmpTask.mean<<", "<< tmpTask.std<<", "<<tmpTask.min<<", "<<tmpTask.max<<")"<<endl;
+            fprintf(out, "%1.2f\t%1.2f\t%1.2f\t%1.2f\n",tmpTask.mean, tmpTask.std, tmpTask.min, tmpTask.max);
         }
     }
 
-    if (droppedSamples > 0)
-        resOut << droppedSamples << "/"<<nSamples << "(" << (double)droppedSamples/(double)nSamples*100 << "%) Samples appear to have been dropped during program execution!"<<endl;
-    else
-        resOut <<"No samples appear to have been dropped during program execution."<<endl;
+    fprintf(out,"\tDropped Samples\t\t%d/%d\n",droppedSamples, checkedSamples);
     //say whether this file passed the requirements
     if (ok)
     {
-        resOut<<"This task passed the minimum BCI2000 requirements."<<endl;
+        fprintf(out, "\tOverall\tPASSED\n");
         cout<<fName<< " passed the minimum BCI2000 requirements."<<endl;
     }
     else
     {
-        resOut<<"One or more components of this task did not meet minimum BCI2000 requirements!"<<endl;
+        fprintf(out, "\tOverall\tFAILED\n");
         cout<<fName<< " did not pass the minimum BCI2000 requirements."<<endl;
     }
+    fprintf(out,"\n\n");
 }
 
 

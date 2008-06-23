@@ -11,6 +11,14 @@
 #include <vector>
 
 using namespace std;
+struct basicStats
+{
+    double mean, std, min, max;
+    vector<double> vals;
+    string taskName;
+    string desc;
+};
+
 struct analysisType
 {
     int ch;

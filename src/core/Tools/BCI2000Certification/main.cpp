@@ -306,16 +306,17 @@ int main(int argc, char* argv[])
 	//parse the configuration, input, and ini files to get the list of files to analyze
 	if (!parseCfg(thresh, outfilepath, datDir, minReqs))
         exit(-1);
-        
+
 	fnames = parseInput(argc, argv, datDir);
 	taskTypes.init("BCI2000Certification.ini");
 
 	//open the result file output stream, and quit if there is an error
-	ofstream resOut;
-	resOut.open(outfilepath.c_str(), ios::trunc | ios::out);
-	if (!resOut.is_open())
+	FILE * resOut;
+	resOut = fopen(outfilepath.c_str(), "w");
+	if (resOut == NULL)
 	{
 		cout << "Error opening output file at: "<< outfilepath <<". Quitting."<<endl;
+        fclose(resOut);
 		exit(0);
 	}
 
@@ -337,9 +338,8 @@ int main(int argc, char* argv[])
 
     cout <<"* Writing results to " << outfilepath<<endl;
 	//write the header info to the log and the screen
-	resOut <<dateStr<<" - "<<timeStr<<endl;
-	resOut << "\nStarting BCI2000 Latency Analysis";
-	resOut << "\n---------------------------------"<<endl;
+
+	//resOut <<dateStr<<" - "<<timeStr<<endl;
 	cout << "\nStarting BCI2000 Latency Analysis";
 	cout << "\n---------------------------------"<<endl;
 	
@@ -351,17 +351,21 @@ int main(int argc, char* argv[])
 
 		//open the file; this checks if the file is valid/exists, loads the data (signal, states, parms)
 		//and determines the task type based on the definitions loaded from the ini file
+        cout <<"Opening "<< shortFname(fnames[i]) << "...";
 		if (!an->open(fnames[i], taskTypes))
         {                           		
             //if there is an error or the file cannot be classified, just continue with the next one
             if (an->getTaskName() == "Unknown")
             {
-                resOut <<fnames[i] <<": task undefined in BCI2000Certification.ini file. Skipping"<<endl;
+                //resOut <<fnames[i] <<": task undefined in BCI2000Certification.ini file. Skipping"<<endl;
+                cout << "undefined task. Skipping!"<<endl;
+                fprintf(resOut, "%s\tundefined\n",shortFname(fnames[i]).c_str());
                 continue;
             }
             if (an->getTaskName() == "")
             {
-                resOut <<fnames[i] <<": cannot find file. Skipping."<<endl;
+                cout <<"file not found!"<<endl;
+                fprintf(resOut, "%s\tNot Found\n",shortFname(fnames[i]).c_str());
                 continue;
             }
         }
@@ -373,14 +377,14 @@ int main(int argc, char* argv[])
 
         if (an->getSkip())
         {
-            resOut << "Skipping " <<shortFname(fnames[i]) <<"..." <<endl;
+            //fprintf(resOut, "%s\tSkipped\n",shortFname(fnames[i]).c_str());
     		cout << "Skipping " <<shortFname(fnames[i]) <<"..." <<endl;
             continue;
         }
         else
         {
-            resOut << "Testing " <<shortFname(fnames[i]) <<"..." <<endl;
-    		cout << "Testing " <<shortFname(fnames[i]) <<"..." <<endl;
+            //resOut << "Testing " <<shortFname(fnames[i]) <<"..." <<endl;
+    		cout << "Testing"<<endl;
         }
 		
 		//actually run the analysis on this task
@@ -396,8 +400,12 @@ int main(int argc, char* argv[])
     }
 
 	//finally, determine whether the system is BCI2000 compliant
-	resOut<<endl<<"--------------------------------------------"<<endl;
-	resOut<<"Results: (mean, std, min, max)"<<endl;
+	//resOut<<endl<<"--------------------------------------------"<<endl;
+	//resOut<<"Results: (mean, std, min, max)"<<endl;
+
+    fprintf(resOut, "Certification Results: %s %s\n", dateStr, timeStr);
+    fprintf(resOut, "File\tTask\tPass/Fail\tMean(s)\tStd(s)\tMin(s)\tMax(s)\n");
+
 	cout<<"Results..."<<endl;
 	//the analyses vector now contains an array for the results for each file
 	//the results for each file contains results based on what was tested (e.g., video, audio, metronome, etc)
@@ -410,7 +418,7 @@ int main(int argc, char* argv[])
             analyses[i]->print(resOut, minReqs);
 	}
 	//close the log file
-	resOut.close();
+	fclose(resOut);
 
     //clear the analyses
     for (int i = 0; i < analyses.size(); i++)

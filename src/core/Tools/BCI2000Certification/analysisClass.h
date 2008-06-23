@@ -11,21 +11,13 @@
 #include <stdio.h>
 #include "BCI2000FileReader.h"
 #include "TaskType.h"
+#include "Functions.h"
 
 #include <map>
 #include <vector>
 #include <math.h>
 
 using namespace std;
-
-struct basicStats
-{
-    double mean, std, min, max;
-    vector<double> vals;
-    string taskName;
-    string desc;
-};
-
 
 
 //void initTaskType(TaskType &t);
@@ -46,7 +38,7 @@ public:
     bool getSkip(){return thisTask.skip;}
     bool getExportData(){return thisTask.exportData;}
 
-    void print(ofstream&, vector<basicStats> minReqs);
+    void print(FILE*, vector<basicStats> minReqs);
     bool exportData(string expfile);
 	double thresh;
     TaskType thisTask;
@@ -64,6 +56,7 @@ private:
 
 
     void checkDroppedSamples(int ch);
+    void checkDroppedSamples();
     double getMin(double *d, int n);
     double getMax(double *d, int n);
     double dMin(double a, double b){return (a<b) ? (a) : (b);};
@@ -83,7 +76,7 @@ private:
     vector<basicStats> latencyStats;
 
     int nStates;
-    unsigned int droppedSamples;
+    unsigned int droppedSamples, checkedSamples;
 };
 
 

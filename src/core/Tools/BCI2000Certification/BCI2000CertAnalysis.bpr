@@ -24,7 +24,7 @@
       xmlrtl.bpi inet.bpi inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi 
       bcbie.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi indy.bpi 
       bcb2kaxserver.bpi dclusr.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\types"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio\dat;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>

@@ -17,7 +17,7 @@ string shortFname(string fname)
 {
 	//find the last directory separator position, and remove everything up to and including it
 	int pos = fname.find_last_of("\\");
-	pos = fname.find_last_of("\\",pos-1);
+	//pos = fname.find_last_of("\\",pos-1);
 	return fname.substr(pos+1);
 }
 
