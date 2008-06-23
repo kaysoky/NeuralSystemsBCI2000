@@ -55,8 +55,8 @@ handles.output = hObject;
 handles.windlen=[0 800];
 handles.DFfreq=[20];
 handles.maxiter=60;
-handles.Ch1=[2 6 11:16];
-handles.Ch2=[1:16];
+handles.Ch1=[1:8];
+handles.Ch2=[1:8];
 % handles.Ch1=[34 11 51 56 62 60 49 53];
 % handles.Ch2=[56 62 60];
 % handles.Ch1=[13:16];
@@ -239,6 +239,7 @@ end
 % --- Executes on button press in gettrain.
 function gettrain_Callback(hObject, eventdata, handles)
 [handles.traindatfiles,handles.traindatdir]=uigetfile('*.dat','Select the BCI2000 P300 (.dat) training data file(s)','multiselect','on');
+handles.traindatfiles = sort(handles.traindatfiles);
 if iscell(handles.traindatfiles)
     tname=char(handles.traindatfiles(1));
     handles.trainfile=tname(1:length(tname)-7);
