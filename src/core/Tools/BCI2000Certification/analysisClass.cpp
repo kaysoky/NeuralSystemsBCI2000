@@ -456,13 +456,14 @@ basicStats analysis::doThreshAnalysis(int chNum)
     */
 	//get the time differences
     int sigPos = 0;
-    bool risingEdge;
+	bool risingEdge, fallingEdge;
     for (int sample = blockSize; sample < nSamples-blockSize; sample += blockSize)
     {
         //record the starting sample
-        sigPos = sample;
-        risingEdge = false;
-
+		sigPos = sample;
+		risingEdge = false;
+		fallingEdge = false;
+		
         //first check that the signal already is not above threshold,
         //and if it is, just continue
         //if (signal(chNum, sigPos) > thresh && signal(chNum, sigPos-1) >= thresh)
@@ -474,7 +475,17 @@ basicStats analysis::doThreshAnalysis(int chNum)
         {
             risingEdge = (signal(chNum, sigPos) >= thresh) && (signal(chNum, sigPos-1) < thresh);
             sigPos++;
-        }
+		}
+		if (sigPos - sample >= blockSize)
+		{
+			sigPos = sample;
+			//try again with a falling edge
+            while (!fallingEdge && (signal(chNum, sigPos) >= thresh) && ((sigPos-sample) < blockSize))
+			{
+				fallingEdge = (signal(chNum, sigPos) < thresh) && (signal(chNum, sigPos-1) >= thresh);
+				sigPos++;
+			}
+		}
         /*while ((signal(chNum, sigPos) <= thresh)
                 && ((sigPos-sample) < blockSize))
             sigPos++;*/

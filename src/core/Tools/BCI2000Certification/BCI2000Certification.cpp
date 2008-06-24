@@ -84,7 +84,8 @@ int main(int argc, char* argv[])
 
     CT.nextTask();
     while (CT.tasksRemain())
-    {
+	{
+		Sleep(2000);
         CT.launchProgs();
         CT.monitorProgs();
         CT.nextTask();
