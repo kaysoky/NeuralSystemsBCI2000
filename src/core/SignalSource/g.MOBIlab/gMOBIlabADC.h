@@ -26,13 +26,13 @@ class gMOBIlabADC : public GenericADC
   virtual void Halt();
 
  private:
-  short*        mpBuffer;
-  int           mBufsize,
-                mNumChans;
+  sint16*    mpBuffer;
+  int        mBufsize,
+             mNumChans;
 
-  HANDLE        mEvent,
-                mDev;
-  OVERLAPPED    mOv;
+  HANDLE     mEvent,
+             mDev;
+  OVERLAPPED mOv;
 };
 
 #endif // GMOBILAB_ADC_H

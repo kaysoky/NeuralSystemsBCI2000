@@ -81,7 +81,7 @@ void gMOBIlabADC::Preflight( const SignalProperties&,
 
   // buffersize can't be > 1024
   int numSamplesPerScan = sourceCh * sampleBlockSize;
-  if ( numSamplesPerScan * sizeof(*mpBuffer) > 1024 )
+  if ( numSamplesPerScan * sizeof( sint16 ) > 1024 )
      bcierr << "Buffer size cannot be larger than 1024 bytes. Please decrease the SourceCh or SampleBlocksize." << endl;
 
   string COMport = Parameter("COMport");
@@ -127,9 +127,9 @@ void gMOBIlabADC::Initialize( const SignalProperties&,
 {
   mNumChans = Output.Channels();
   int numSamplesPerScan = mNumChans * Output.Elements();
-  mBufsize = numSamplesPerScan * sizeof( *mpBuffer );
+  mBufsize = numSamplesPerScan * sizeof( sint16 );
   delete[] mpBuffer;
-  mpBuffer = new short[mBufsize];
+  mpBuffer = new sint16[numSamplesPerScan];
 
   if( mEvent )
     CloseHandle( mEvent );
@@ -189,7 +189,8 @@ void gMOBIlabADC::Process( const GenericSignal&, GenericSignal& Output )
   while (totalbytesreceived < mBufsize)
   {
     _BUFFER_ST buf;
-    buf.pBuffer = mpBuffer + totalbytesreceived / sizeof( *mpBuffer );
+    uint8* p = reinterpret_cast<uint8*>( mpBuffer );
+    buf.pBuffer = reinterpret_cast<SHORT*>( p + totalbytesreceived );
     buf.size = mBufsize - totalbytesreceived;
     buf.validPoints = 0;
     bool ret = GT_GetData(mDev, &buf, &mOv); // extract data from driver
@@ -198,8 +199,7 @@ void gMOBIlabADC::Process( const GenericSignal&, GenericSignal& Output )
       bcierr << "Unexpected fatal error on GT_GetData()" << endl;
       return;
     }
-    WaitForSingleObject(mEvent, INFINITE);
-    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, FALSE);
+    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, TRUE);
     totalbytesreceived += dwBytesReceived;
   }
 
