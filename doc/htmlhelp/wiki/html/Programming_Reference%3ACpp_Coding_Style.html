@@ -59,7 +59,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> <b>CamelCase</b> (uppercase letters inside words) is used to indicate word boundaries.
 </li><li> Class names and namespaces begin with uppercase letters: <b>MyNameSpace</b>, <b>TheClass</b>.
 </li><li> Local variables and function arguments begin with lowercase letters: <b>theCounter</b>, <b>inSomeInput</b>.
-</li><li> Data members of true classes are private, and accessed via <b>Accessor Functions</b>.
+</li><li> Data members (properties) of true classes are private, and accessed via <b>Accessor Functions</b>.
 <ul><li> <b>Setters</b> use the prefix "Set" followed by the property's name: <b>SetValue()</b>. Setter functions should also return a non-const reference to the data object itself rather than <b>void</b>, this allows for chaining as in<br /><code>float result = MyComputation().SetOrder( 5 ).SetDepth( 10 ).EvaluateAt( 4 );</code>
 </li><li> <b>Getters</b> use the name of the property: <b>Value()</b>. Omitting the "Get" prefix allows the programmer to treat getters and reference accessors identically, as far as read access is concerned.
 </li><li> <b>Reference Accessors</b> use the name of the property, and are provided in a doubly <i>const</i> and a <i>non-const</i> version. This is important to allow const access from const object references, and to discriminate between read and write accesses (note the <i>mPossiblyChanged</i> flag):<br /><code>const int&amp; Value() const { return mValue; }</code><br /><code>int&amp;       Value() { mPossiblyChanged = true; return mValue; }</code>
@@ -88,9 +88,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 <a name="Pointers_and_References"></a><h2>Pointers and References</h2>
 <ul><li> Use references rather than pointers wherever possible.
+</li><li> When using pointers, treat the NULL case gracefully.
 </li></ul>
 <a name="Control_Flow"></a><h2>Control Flow</h2>
 <ul><li> Avoid <b>goto</b>, <b>break</b> outside <b>switch</b>-<b>case</b> blocks, and multiple <b>return</b> statements.
+</li><li> Multiple <b>return</b> statements are OK when they provide a readable alternative to deeply nested conditions.
 </li></ul>
 <a name="Example_Function"></a><h2> Example Function </h2>
 <pre>void

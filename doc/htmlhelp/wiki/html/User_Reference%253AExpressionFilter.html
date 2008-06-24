@@ -53,16 +53,26 @@ As arithmetic expressions may contain <a href="BCI2000_Glossary.html#State" titl
 </li></ul>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="Expressions"></a><h3>Expressions</h3>
-<p>A matrix of <a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">arithmetic expressions</a> that determines the filter's output signal; output signal dimensions are derived from matrix dimensions:
-Matrix rows correspond to signal channels, and matrix columns correspond to signal elements (samples).
-For each signal block, each of the expressions is evaluated, and the result is entered into the corresponding element in the output signal.
+<p>A matrix of strings which represent <a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">arithmetic expressions</a>. These expressions determine the filter's output signal.
+</p><p>Output signal dimensions are derived from matrix dimensions:
+</p>
+<ul><li>matrix rows correspond to signal channels, and
+</li><li>matrix columns correspond to signal elements (samples).
+</li></ul>
+<p>For each signal block, each of the expressions is evaluated, and the result is entered into the corresponding element in the output signal.
 Expressions may contain references to the filter's input signal, and to state variables (see examples).
-</p><p>When the Expressions parameter is an empty matrix, the ExpressionFilter will return its input unchanged.
+</p><p>When the Expressions parameter is an empty matrix, the ExpressionFilter will copy its input into its output unchanged.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>Any available state may enter into one of the expressions.
 </p>
 <a name="Examples"></a><h2>Examples</h2>
+<p>The following 2-by-2 matrix will replace a 2-by-2 input signal with its square. Additionally, when the <i>ResultCode</i> state variable is nonzero, the output will be zero.
+</p>
+<pre>Signal(1,1)^2*(ResultCode==0)   Signal(1,2)^2*(ResultCode==0)
+Signal(2,1)^2*(ResultCode==0)   Signal(2,2)^2*(ResultCode==0)
+</pre>
+<hr />
 <p>When the <a href="User_Reference%253AJoystickFilter.html" title="User Reference:JoystickFilter">JoystickFilter</a> is used to track a joystick position, the <i>JoystickXpos</i> and <i>JoystickYpos</i> state variables represent joystick position.
 When the ExpressionFilter is present in the signal processing module, placed between <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">LinearClassifier</a> and <a href="User_Reference%253ANormalizer.html" title="User Reference:Normalizer">Normalizer</a>, it may be configured to control the cursor directly by joystick position, using this 2-by-1 matrix:
 </p>
@@ -73,12 +83,6 @@ JoystickYpos
 </p>
 <pre>Signal(1,1)
 Signal(2,1)
-</pre>
-<hr />
-<p>The following 2-by-2 matrix will replace a 2-by-2 input signal with its square. Additionally, when the <i>ResultCode</i> state variable is nonzero, the output will be zero.
-</p>
-<pre>Signal(1,1)^2*(ResultCode==0)   Signal(1,2)^2*(ResultCode==0)
-Signal(2,1)^2*(ResultCode==0)   Signal(2,2)^2*(ResultCode==0)
 </pre>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">User Reference:Expression Syntax</a>

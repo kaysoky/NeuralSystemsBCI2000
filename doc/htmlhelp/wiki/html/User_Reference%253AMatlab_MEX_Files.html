@@ -56,6 +56,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
 <p>The BCI2000 binary distribution comes with pre-compiled MEX files for Microsoft Windows platforms.
 Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
+</p><p>Compiling MEX files under Windows requires the Borland C++ compiler (a free command line version is available at <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a>). To build MEX files, open a console window, and execute <tt>make</tt> from the <tt>BCI2000/src/Tools/mex</tt> directory.
+</p><p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more.
 </p>
 <a name="Other_Platforms"></a><h3>Other Platforms</h3>
 <p>For platforms other than 32-bit Windows, BCI2000 provides a Matlab script that can be used to build MEX files.
@@ -95,7 +97,7 @@ the first dimension of the 'signal' output variable.
 parameter names as struct member names.
 Individual parameter values are represented as cell arrays of strings in a 
 'Value' struct member, and additionally as numeric matrices in a 'NumericValue'
-struct member. When there is no numeric interpretation possible, the 
+struct member. When there is no numeric interpretation, the 
 corresponding matrix entry will be NaN. For nested matrices, no NumericValue
 field is provided.
 If multiple files are given, parameter values will match the ones contained 

@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Timing - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Technical Reference:Core Modules,User Reference:DataIOFilter,Programming Reference:GraphDisplay Class" />
+<meta name="keywords" content="User Reference:Timing,BCI2000 Glossary,Technical Reference:Core Modules,User Reference:DataIOFilter,Programming Reference:GUI:GraphDisplay Class" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -43,10 +43,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Real-Time_Operation"></a><h2>Real-Time Operation</h2>
 <p>Timing is a critical issue in a system that processes data in real time.
 Such a system must process data faster than they are acquired; this is the <i>real-time constraint</i>.
-In BCI2000, data is acquired and processed in <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">sample blocks</a>. Ideally, these sample blocks are acquired in regular intervals. To work in real-time, the system needs to finish processing, user display, and data storage within a <i>block duration</i>, i.e. the duration corresponding to a single sample block.
+In BCI2000, data is acquired and processed in <a href="BCI2000_Glossary.html#Sample_Block" title="BCI2000 Glossary">sample blocks</a>. Ideally, these sample blocks are acquired in regular intervals. To work in real-time, the system needs to finish processing, user display, and data storage within a <i>block duration</i>, i.e., the duration corresponding to a single sample block.
 </p><p><i>Roundtrip time</i> is the time needed for a sample block to traverse the <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>.
 Starting with the acquisition of a sample block, a block's roundtrip includes the time spent on signal processing and stimulus display. The roundtrip finishes when the block enters the data acquisition module again.
-</p><p>To fulfil the real-time constraint, roundtrip time may not exceed the physical duration of a sample block.
+</p><p>To fulfill the real-time constraint, roundtrip time may not exceed the physical duration of a sample block.
 For stable system operation, a weaker condition is sufficient: only the roundtrip's average value needs to stay below a sample block duration.
 </p>
 <a name="Measuring_Block_Duration"></a><h2>Measuring Block Duration</h2>
@@ -57,7 +57,7 @@ Block duration is measured as the difference between two consecutive time stamps
 <p>Roundtrip is measured by subtracting a data block's time stamp from the current time when it enters the data acquisition module coming from the application module.
 </p>
 <a name="Measuring_Source-to-Stimulus_Delay"></a><h2>Measuring Source-to-Stimulus Delay</h2>
-<p>In the <i>StimulusTime</i> state, the application module stores a time stamp when the module's Process() function has finished. By this time, video memory should have been updated, given that the module enforces a display update at the end of its Process() function; generally, this is done by calling the <tt><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:GraphDisplay_Class&amp;action=edit" class="new" title="Programming Reference:GraphDisplay Class">GraphDisplay::Update()</a></tt> function for the module's display window.
+<p>In the <i>StimulusTime</i> state, the application module stores a time stamp when the module's Process() function has finished. By this time, video memory should have been updated, given that the module enforces a display update at the end of its Process() function; generally, this is done by calling the <tt><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:GUI:GraphDisplay_Class&amp;action=edit" class="new" title="Programming Reference:GUI:GraphDisplay Class">GUI::GraphDisplay::Update()</a></tt> function for the module's display window.
 </p><p>The <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">DataIOFilter</a> then subtracts the source time stamp from the stimulus time stamp to compute the source-to-stimulus delay. Unlike roundtrip time, measurement of the source-to-stimulus delay requires that data acquisition and application modules share a common time base; when distributed over multiple machines in a network, source-to-stimulus delay cannot be measured.
 </p>
 <a name="Timing_Display"></a><h2>Timing Display</h2>

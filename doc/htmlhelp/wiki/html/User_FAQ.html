@@ -72,14 +72,14 @@ To remedy this:
 </li><li>Uncheck Internet Protocol, 
 </li><li>Click OK. 
 </li></ol>
-<p>Q: When I start the gUSBamp source module, I get the error message: "Cannot find ordinal 37 in dynamic library gUSBamp.dll".
+<p><br />
+Q: When I start the gUSBamp source module, I get the error message: "Cannot find ordinal 37 in dynamic library gUSBamp.dll".
 </p><p>A: Most likely, your gUSBamp source module finds an incompatible version of the gUSBamp.dll driver library. Make sure that, in the directory where gUSBampSource.exe resides, there is a file gUSBamp.dll in the exact version that originally came with your BCI2000 distribution.
 </p>
 <a name="Feedback"></a><h3>Feedback</h3>
-<p>Q: The first time a subject is run using the RJB protocol, during the first trial of the first run only, the cursor moves to the top of the screen and does not respond to use input. BCI2000 outputs increasingly large negative numbers during this run. 
+<p>Q: The first time a subject is run using the cursor feedback protocol, during the first trial of the first run only, the cursor moves to the top of the screen and does not respond to use input. BCI2000 outputs increasingly large negative numbers during this run. 
 </p><p>A: This is not so much a bug as a side effect of the way the adaptation mechanism works. Since the adaptation mechanism hasn't been trained, all it has are the initial values for offset and gain. For each subject, it will take a few trials to adapt BCI2000 to this subject's signals.
 </p><p>Therefore, you will typically save a subject's adapted parameters after each session, and use this as a starting point for the next session. Alternatively, you may load a subject's parameters from a previous session's <i>data</i> file by specifying the data file rather than a parameter file from the <i>Load parameters...</i> dialog.
-</p><p><br />
 </p>
 <a name="Configuration"></a><h2>Configuration</h2>
 <a name="Replaying_Recorded_Data"></a><h3>Replaying Recorded Data</h3>
@@ -94,8 +94,9 @@ To remedy this:
 </p>
 <a name="Random_Sequences"></a><h3>Random Sequences</h3>
 <p>Q: Is there a way to obtain the same random sequence each time BCI2000 is run? I don't care about the sequence itself, it should just be the same each time.
-</p><p>A: The SignalGenerator source module has a parameter, RandomSeed, that determines the pseudo random number generator's seed value. (If this parameter is zero, the generator will be initialized from the system timer.) While absent from other BCI2000 modules by default, each component that uses the BCI2000 pseudo random generator will behave according to this parameter if it is present.
-To introduce the RandomSeed parameter into a module, and assign it an initial value of 10, use <tt>--RandomSeed=10</tt> as a <a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">command line option</a> when starting up BCI2000. Note that the parameter will have the same value across all modules, and it will appear on the "System" tab in the operator module's parameter dialog.
+</p><p>A: The SignalGenerator source module has a parameter, RandomSeed, that determines the pseudo random number generator's seed value. If this parameter is zero, the generator will be initialized from the system timer.
+</p><p>While absent from other BCI2000 modules by default, each component that uses the BCI2000 pseudo random generator will behave according to this parameter if it is present.
+To introduce the RandomSeed parameter into a module that does not provide the RandomSeed parameter, use <tt>--RandomSeed=10</tt> as a <a href="User_Reference%253AModule_Command_Line_Options.html" title="User Reference:Module Command Line Options">command line option</a> when starting up BCI2000. Note that the parameter will have the same value across all modules (10 in the example), and it will appear on the "System" tab in the operator module's parameter dialog.
 </p>
 <a name="Visual_Stimulation"></a><h3>Visual Stimulation</h3>
 <p>Q: Is visual stimulation synchronized with screen refresh (vertical blanks)?

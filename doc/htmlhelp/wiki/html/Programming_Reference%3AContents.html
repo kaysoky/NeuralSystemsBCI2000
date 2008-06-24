@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:Contents - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:Contents,Programming FAQ,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:3D API,Programming Reference:BCI2000FileReader Class,Programming Reference:Debug Output,Programming Reference:Environment Class,Programming Reference:Error Handling,Programming Reference:Errors and Warnings" />
+<meta name="keywords" content="Programming Reference:Contents,Programming FAQ,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:3D API,Programming Reference:ApplicationBase Class,Programming Reference:BCI2000FileReader Class,Programming Reference:Debug Output,Programming Reference:Environment Class,Programming Reference:Error Handling" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -39,7 +39,20 @@ one as presented in the tutorial examples.
 <ul>
 <li class='toclevel-1'><a href="Programming_Reference%253AContents.html#Getting_Started"><span class="tocnumber">1</span> <span class="toctext">Getting Started</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AContents.html#Conceptual_Overview"><span class="tocnumber">2</span> <span class="toctext">Conceptual Overview</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AContents.html#Programming_Interface_Documentation"><span class="tocnumber">3</span> <span class="toctext">Programming Interface Documentation</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AContents.html#Programming_Interface_Documentation"><span class="tocnumber">3</span> <span class="toctext">Programming Interface Documentation</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Generic_Filter_Interface"><span class="tocnumber">3.1</span> <span class="toctext">Generic Filter Interface</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Text_Messages"><span class="tocnumber">3.2</span> <span class="toctext">Text Messages</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Data_I.2FO"><span class="tocnumber">3.3</span> <span class="toctext">Data I/O</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Signal_Processing_Modules"><span class="tocnumber">3.4</span> <span class="toctext">Signal Processing Modules</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Application_Modules"><span class="tocnumber">3.5</span> <span class="toctext">Application Modules</span></a>
+<ul>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Visual_Presentation"><span class="tocnumber">3.5.1</span> <span class="toctext">Visual Presentation</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Auditory_Presentation"><span class="tocnumber">3.5.2</span> <span class="toctext">Auditory Presentation</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="Programming_Reference%253AContents.html#Tutorials"><span class="tocnumber">4</span> <span class="toctext">Tutorials</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AContents.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
@@ -58,15 +71,36 @@ one as presented in the tutorial examples.
 </li><li><a href="Programming_Reference%253ARapid_Development.html" title="Programming Reference:Rapid Development">Programming Reference:Rapid Development</a>
 </li></ul>
 <a name="Programming_Interface_Documentation"></a><h2>Programming Interface Documentation</h2>
+<a name="Generic_Filter_Interface"></a><h3>Generic Filter Interface</h3>
 <ul><li><a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">Programming Reference:GenericFilter Class</a>
-</li><li><a href="Programming_Reference%253AGenericFileWriter_Class.html" title="Programming Reference:GenericFileWriter Class">Programming Reference:GenericFileWriter Class</a>
-</li><li><a href="Programming_Reference%253AGenericADC_Class.html" title="Programming Reference:GenericADC Class">Programming Reference:GenericADC Class</a>
 </li><li><a href="Programming_Reference%253AEnvironment_Class.html" title="Programming Reference:Environment Class">Programming Reference:Environment Class</a>
 </li><li><a href="Programming_Reference%253AGenericVisualization_Class.html" title="Programming Reference:GenericVisualization Class">Programming Reference:GenericVisualization Class</a>
-</li><li><a href="Programming_Reference%253ABCI2000FileReader_Class.html" title="Programming Reference:BCI2000FileReader Class">Programming Reference:BCI2000FileReader Class</a>
-</li><li><a href="Programming_Reference%253AErrors_and_Warnings.html" title="Programming Reference:Errors and Warnings">Programming Reference:Errors and Warnings</a>
+</li></ul>
+<a name="Text_Messages"></a><h3>Text Messages</h3>
+<ul><li><a href="Programming_Reference%253AErrors_and_Warnings.html" title="Programming Reference:Errors and Warnings">Programming Reference:Errors and Warnings</a>
 </li><li><a href="Programming_Reference%253ADebug_Output.html" title="Programming Reference:Debug Output">Programming Reference:Debug Output</a>
-</li><li><a href="Programming_Reference%253A3D_API.html" title="Programming Reference:3D API">Programming Reference:3D API</a>
+</li><li><a href="Programming_Reference%253ALogFile_Class.html" title="Programming Reference:LogFile Class">Programming Reference:LogFile Class</a>
+</li></ul>
+<a name="Data_I.2FO"></a><h3>Data I/O</h3>
+<ul><li><a href="Programming_Reference%253AGenericFileWriter_Class.html" title="Programming Reference:GenericFileWriter Class">Programming Reference:GenericFileWriter Class</a>
+</li><li><a href="Programming_Reference%253AGenericADC_Class.html" title="Programming Reference:GenericADC Class">Programming Reference:GenericADC Class</a>
+</li><li><a href="Programming_Reference%253ABCI2000FileReader_Class.html" title="Programming Reference:BCI2000FileReader Class">Programming Reference:BCI2000FileReader Class</a>
+</li></ul>
+<a name="Signal_Processing_Modules"></a><h3>Signal Processing Modules</h3>
+<ul><li><a href="Programming_Reference%253AIIRFilter_Class.html" title="Programming Reference:IIRFilter Class">Programming Reference:IIRFilter Class</a>
+</li></ul>
+<a name="Application_Modules"></a><h3>Application Modules</h3>
+<ul><li><a href="Programming_Reference%253AApplicationBase_Class.html" title="Programming Reference:ApplicationBase Class">Programming Reference:ApplicationBase Class</a>
+</li><li><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:FeedbackTask_Class&amp;action=edit" class="new" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
+</li><li><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:StimulusTask_Class&amp;action=edit" class="new" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>
+</li></ul>
+<a name="Visual_Presentation"></a><h4>Visual Presentation</h4>
+<ul><li><a href="Programming_Reference%253A3D_API.html" title="Programming Reference:3D API">Programming Reference:3D API</a>
+</li></ul>
+<a name="Auditory_Presentation"></a><h4>Auditory Presentation</h4>
+<ul><li><a href="Programming_Reference%253AMidiPlayer_Class.html" title="Programming Reference:MidiPlayer Class">Programming Reference:MidiPlayer Class</a>
+</li><li><a href="Programming_Reference%253AWavePlayer_Class.html" title="Programming Reference:WavePlayer Class">Programming Reference:WavePlayer Class</a>
+</li><li><a href="Programming_Reference%253ATextToSpeech_Class.html" title="Programming Reference:TextToSpeech Class">Programming Reference:TextToSpeech Class</a>
 </li></ul>
 <a name="Tutorials"></a><h2>Tutorials</h2>
 <ul><li><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html" title="Programming Tutorial:Implementing a Data Acquisition Module">Programming Tutorial:Implementing a Data Acquisition Module</a>

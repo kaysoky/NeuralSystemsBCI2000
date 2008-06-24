@@ -56,6 +56,7 @@ to a Matlab filter implementation.
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#There_is_no_Matlab_engine_started_up"><span class="tocnumber">8.3</span> <span class="toctext">There is no Matlab engine started up</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#Changes_to_M-files_appear_to_have_no_effect"><span class="tocnumber">8.4</span> <span class="toctext">Changes to M-files appear to have no effect</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"><span class="tocnumber">8.5</span> <span class="toctext">You get linker errors when rebuilding MatlabSignalProcessing</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AMatlabFilter.html#You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message"><span class="tocnumber">8.6</span> <span class="toctext">You get a message window with an "Entry Point Not Found" message</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AMatlabFilter.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
@@ -177,6 +178,18 @@ This behavior is controlled by another command-line parameter, <tt>MatlabStayOpe
 </p>
 <a name="You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"></a><h3>You get linker errors when rebuilding <i>MatlabSignalProcessing</i></h3>
 <p>If you get linker errors after editing <tt>PipeDefinition.cpp</tt>, make sure that all filters' cpp files are part of the <i>MatlabSignalProcessing</i> project.
+</p>
+<a name="You_get_a_message_window_with_an_.22Entry_Point_Not_Found.22_message"></a><h3>You get a message window with an "Entry Point Not Found" message</h3>
+<p>This error is likely to indicate confusion of multiple installations of Matlab on your machine.
+Check your Windows <i>%PATH%</i> environment variable, e.g. by opening a command console window and typing
+</p>
+<pre>echo %PATH%
+</pre>
+<p>When it contains references to more than a single Matlab installation, remove all apart from the reference to the installation you are going to use with BCI2000. Also, make sure to execute
+</p>
+<pre>matlab /regserver
+</pre>
+<p>for the Matlab installation you intend to use.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Technical_Reference%253ACore_Modules.html#Signal_Processing_Module" title="Technical Reference:Core Modules">Technical Reference:Core Modules#Signal Processing Module</a>, <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">Technical Reference:Parameter Definition</a>, <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">Technical Reference:State Definition</a>, <a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">Programming Reference:GenericFilter Class</a>, <a href="Programming_Reference%253AFilter_Chain.html" title="Programming Reference:Filter Chain">Programming Reference:Filter Chain</a>, <a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html" title="Programming Tutorial:Implementing a Matlab-based Filter">Programming Tutorial:Implementing a Matlab-based Filter</a>

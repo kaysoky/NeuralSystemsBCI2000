@@ -49,8 +49,8 @@ How do I proceed?
 <p>Q: How do I debug a BCI2000 module?
 </p><p>A:
 </p>
-<ol><li>Comment out the module from the startup batch file you are using. 
-</li><li>In the Borland IDE, go to "Project->Options->Compiler", and click "Full Debug". 
+<ol><li>Add the "rem" comment indicator in front of the module's startup command in the batch file you are using to start up BCI2000.
+</li><li>In the Borland IDE, go to "Project->Options->Compiler", click "Full Debug" and "OK", and recompile the module.
 </li><li>Execute the batch file. 
 </li><li>Change to the IDE, and run the module in the debugger. 
 </li></ol>
@@ -112,7 +112,7 @@ everything compiles and links fine, but I cannot use it -- everything appears as
 component were nonexistent. What is wrong?
 </p><p>A: Make sure that your component is instantiated. 
 </p>
-<ul><li>For source and application components, make sure that there is a line <tt>RegisterFilter( YourFilterClassName, Position );</tt> somewhere in its cpp file.
+<ul><li>For source and application components, make sure that there is a line <tt>RegisterFilter( YourFilterClassName, Position );</tt> somewhere in its cpp file (preferably at the top, following <tt>#include</tt> statements).
 </li><li>For signal processing filters, make sure that your filter is listed in the signal module's PipeDefinition.cpp as a statement <tt>Filter( YourFilterClassname, Position );</tt>
 </li></ul>
 

@@ -39,7 +39,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253ABCI2000_Source_Code.html#Directory_Layout"><span class="tocnumber">5</span> <span class="toctext">Directory Layout</span></a>
 <ul>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fbuildutils"><span class="tocnumber">5.1</span> <span class="toctext">src/buildutils</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fbuildutils.2Ftesting"><span class="tocnumber">5.2</span> <span class="toctext">src/buildutils/testing</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fbuildutils.2Ftests"><span class="tocnumber">5.2</span> <span class="toctext">src/buildutils/tests</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fcontrib"><span class="tocnumber">5.3</span> <span class="toctext">src/contrib</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fcore"><span class="tocnumber">5.4</span> <span class="toctext">src/core</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000_Source_Code.html#src.2Fshared"><span class="tocnumber">5.5</span> <span class="toctext">src/shared</span></a></li>
@@ -72,7 +72,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 </li></ul>
 <a name="Directory_Layout"></a><h2>Directory Layout</h2>
-<p>The SVN directory layout matches that of the BCI2000 binary distribution:
+<p>The SVN directory layout matches that of the BCI2000 binary distribution, and is as follows:
 </p>
 <table border="1" cellspacing="0">
 <tr>
@@ -103,7 +103,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <th>src
 </th><td>source code
 </td></tr></table>
-<p>Different from the binary distibution, there is an additional <i>src</i> subtree which holds the BCI2000 source code. 
+<p>The <i>src</i> subtree is not present in the binary distribution--it holds the BCI2000 source code.
 Below <i>src</i>, there should be no end-user executables, compiled LaTeX files, or pdf files converted from editable formats.
 Rather, their source files should go below <i>src</i>, and their end-user versions go into either <i>prog,</i> <i>doc,</i> or the appropriate end-user directory below <i>tools</i>.
 In all makefiles or project files that are relevant to the binary distribution, the compiled output is directed into the appropriate executable directory (<i>prog</i> or <i>tools/mytool</i>).
@@ -112,7 +112,7 @@ In all makefiles or project files that are relevant to the binary distribution, 
 <a name="src.2Fbuildutils"></a><h3><tt>src/buildutils</tt></h3>
 <p>Holds small utility programs that are used for maintenance.
 </p>
-<a name="src.2Fbuildutils.2Ftesting"></a><h3><tt>src/buildutils/testing</tt></h3>
+<a name="src.2Fbuildutils.2Ftests"></a><h3><tt>src/buildutils/tests</tt></h3>
 <p>Scripts and data used to test executables during the build phase (<tt>make test</tt>).
 </p>
 <a name="src.2Fcontrib"></a><h3><tt>src/contrib</tt></h3>
@@ -122,7 +122,7 @@ Paralleling organization of the <tt>core</tt> directory, there are subdirectorie
 </p><p>By default, contrib projects are excluded from the make process. For information about how to compile and use a piece of software located in the contrib directory, see the <a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions" title="Programming Howto:Building BCI2000">Building BCI2000 Howto</a> page.
 </p>
 <a name="src.2Fcore"></a><h3><tt>src/core</tt></h3>
-<p>Source code and project files for the BCI2000 core distribution. Below this directory, there are subdirectories for <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>, and tools.
+<p>Source code and project files for the BCI2000 core distribution. Below this directory, there are subdirectories for the <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">Operator module</a>, <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>, and tools.
 </p>
 <a name="src.2Fshared"></a><h3><tt>src/shared</tt></h3>
 <p>Core and contrib directories only contain project files (resp. make files), and source code that is unique to the respective piece of software. BCI2000 framework code is contained below the "shared" directory.
