@@ -127,7 +127,7 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 
   Halt();
   delete[] mpBuffer;
-  mpBuffer = new short[mBufsize];
+  mpBuffer = new sint16[numSamplesPerScan];
 
   if( mEvent )
     CloseHandle( mEvent );
@@ -222,7 +222,8 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
   while (totalbytesreceived < mBufsize)
   {
     _BUFFER_ST buf;
-    buf.pBuffer = mpBuffer + totalbytesreceived / sizeof( *mpBuffer );
+    uint8* p = reinterpret_cast<uint8*>( mpBuffer );
+    buf.pBuffer = reinterpret_cast<SHORT*>( p + totalbytesreceived );
     buf.size = mBufsize - totalbytesreceived;
     buf.validPoints = 0;
     bool ret = GT_GetData(mDev, &buf, &mOv); // extract data from driver
@@ -231,8 +232,7 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
       bcierr << "Unexpected fatal error on GT_GetData()" << endl;
       return;
     }
-    WaitForSingleObject(mEvent, INFINITE);
-    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, FALSE);
+    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, TRUE);
     totalbytesreceived += dwBytesReceived;
   }
 

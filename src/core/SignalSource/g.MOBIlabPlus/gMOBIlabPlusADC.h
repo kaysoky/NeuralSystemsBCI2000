@@ -29,10 +29,10 @@ class gMOBIlabPlusADC : public GenericADC
   virtual void Halt();
 
  private:
-  short* mpBuffer;
-  int    mBufsize,
-         mNumChans;
-  bool   mEnableDigOut;
+  sint16* mpBuffer;
+  int     mBufsize,
+          mNumChans;
+  bool    mEnableDigOut;
 
   HANDLE     mEvent,
              mDev;
