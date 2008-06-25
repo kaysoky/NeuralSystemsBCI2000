@@ -10,9 +10,7 @@
 #define GMOBILAB_ADC_H
 
 #include "GenericADC.h"
-
-#include <windows.h>
-#include "spa20a.h"
+#include "OSThread.h"
 
 class gMOBIlabADC : public GenericADC
 {
@@ -26,13 +24,27 @@ class gMOBIlabADC : public GenericADC
   virtual void Halt();
 
  private:
-  sint16*    mpBuffer;
-  int        mBufsize,
-             mNumChans;
+  HANDLE mDev;
 
-  HANDLE     mEvent,
-             mDev;
-  OVERLAPPED mOv;
+  class DAQueue : public OSThread
+  {
+   public:
+    DAQueue( int inBufSize, HANDLE inDevice );
+    virtual ~DAQueue();
+
+    sint16 ExtractSample();
+
+   private:
+    virtual int Execute();
+
+    int        mBufSize,
+               mWriteCursor,
+               mReadCursor;
+    uint8*     mpBuffer;
+    HANDLE     mEvent,
+               mDev;
+    OVERLAPPED mOv;
+  }* mpAcquisitionQueue;
 };
 
 #endif // GMOBILAB_ADC_H

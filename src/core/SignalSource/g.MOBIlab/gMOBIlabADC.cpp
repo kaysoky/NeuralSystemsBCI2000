@@ -10,25 +10,24 @@
 #pragma hdrstop
 
 #include "gMOBIlabADC.h"
+#include "spa20a.h"
 
 using namespace std;
 
 // Register the source class with the framework.
 RegisterFilter( gMOBIlabADC, 1 );
 
+const int cBufBlocks = 2;     // Size of data ring buffer in terms of sample blocks.
+const int cMaxReadBuf = 1024; // Restriction of gtec driver.
+
 // **************************************************************************
 // Function:   gMOBIlabADC
 // Purpose:    The constructor for the gMOBIlabADC.
 // **************************************************************************
 gMOBIlabADC::gMOBIlabADC()
-: mpBuffer( NULL ),
-  mBufsize( 0 ),
-  mNumChans( 0 ),
-  mEvent( NULL ),
-  mDev( NULL )
+: mDev( NULL ),
+  mpAcquisitionQueue( NULL )
 {
- ::memset( &mOv, 0, sizeof( mOv ) );
-
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
    "Source string COMport=      COM2: COM2: a z "
@@ -40,21 +39,12 @@ gMOBIlabADC::gMOBIlabADC()
    "Source int SamplingRate=    256 256 1 40000 "
        "// the signal sampling rate",
  END_PARAMETER_DEFINITIONS
-
-  // set the priority of the Source module a little higher
-  // (since its output clocks the whole system)
-  // this really seems to help against data loss; even under extreme load,
-  // data acquisition continues even though the display might be jerky
-  SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 }
 
 
 gMOBIlabADC::~gMOBIlabADC()
 {
   Halt();
-  if( mEvent )
-    CloseHandle( mEvent );
-
 }
 
 
@@ -79,15 +69,13 @@ void gMOBIlabADC::Preflight( const SignalProperties&,
   if ( Parameter("SourceCh") > 9 )
      bcierr << "Number of channels (SourceCh) cannot be more than 9." << endl;
 
-  // buffersize can't be > 1024
-  int numSamplesPerScan = sourceCh * sampleBlockSize;
-  if ( numSamplesPerScan * sizeof( sint16 ) > 1024 )
-     bcierr << "Buffer size cannot be larger than 1024 bytes. Please decrease the SourceCh or SampleBlocksize." << endl;
-
   string COMport = Parameter("COMport");
-  HANDLE hDev = GT_OpenDevice((LPSTR)COMport.c_str());
+  HANDLE hDev = GT_OpenDevice( const_cast<char*>( COMport.c_str() ) );
   if (hDev == NULL)
-     bcierr << "Could not open device at COM port " << COMport << endl;
+  {
+    bcierr << "Could not open device at COM port " << COMport << endl;
+    return;
+  }
 
   _AIN ain;
   _DIO dio;
@@ -125,52 +113,47 @@ void gMOBIlabADC::Preflight( const SignalProperties&,
 void gMOBIlabADC::Initialize( const SignalProperties&,
                               const SignalProperties& Output )
 {
-  mNumChans = Output.Channels();
-  int numSamplesPerScan = mNumChans * Output.Elements();
-  mBufsize = numSamplesPerScan * sizeof( sint16 );
-  delete[] mpBuffer;
-  mpBuffer = new sint16[numSamplesPerScan];
-
-  if( mEvent )
-    CloseHandle( mEvent );
-  mEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-  mOv.hEvent = mEvent;
-  mOv.Offset = 0;
-  mOv.OffsetHigh = 0;
-
-  mDev = GT_OpenDevice((LPSTR)Parameter("COMport").c_str());
+  mDev = ::GT_OpenDevice( const_cast<char*>( Parameter("COMport").c_str() ) );
   if (mDev == NULL)
   {
-   bcierr << "Could not open device" << endl;
-   return;
+    bcierr << "Could not open device" << endl;
+    return;
   }
 
   _AIN ain;
   _DIO dio;
 
-  ain.ain1 = (mNumChans > 0); // scan
-  ain.ain2 = (mNumChans > 1); // scan
-  ain.ain3 = (mNumChans > 2); // scan
-  ain.ain4 = (mNumChans > 3); // scan
-  ain.ain5 = (mNumChans > 4); // scan
-  ain.ain6 = (mNumChans > 5); // scan
-  ain.ain7 = (mNumChans > 6); // scan
-  ain.ain8 = (mNumChans > 7); // scan
-  dio.scan = (mNumChans > 8); // scan digital lines
+  int numChans = Output.Channels();
+  ain.ain1 = (numChans > 0); // scan
+  ain.ain2 = (numChans > 1); // scan
+  ain.ain3 = (numChans > 2); // scan
+  ain.ain4 = (numChans > 3); // scan
+  ain.ain5 = (numChans > 4); // scan
+  ain.ain6 = (numChans > 5); // scan
+  ain.ain7 = (numChans > 6); // scan
+  ain.ain8 = (numChans > 7); // scan
+  dio.scan = (numChans > 8); // scan digital lines
 
   dio.dio1_direction = true; // set dio1 to input
   dio.dio2_direction = true; // set dio2 to input
 
-  bool ret = GT_InitChannels(mDev, ain, dio); // init analog channels and digital lines on g.MOBIlab
+  bool ret = ::GT_InitChannels(mDev, ain, dio); // init analog channels and digital lines on g.MOBIlab
   if (!ret)
   {
      bcierr << "Could not initialize device" << endl;
      return;
   }
 
-  ret = GT_StartAcquisition(mDev);
+  ret = ::GT_StartAcquisition(mDev);
   if (!ret)
-     bcierr << "Could not start data acquisition" << endl;
+  {
+    bcierr << "Could not start data acquisition" << endl;
+    return;
+  }
+
+  int numSamplesPerScan = numChans * Output.Elements(),
+      bufSize = numSamplesPerScan * cBufBlocks * sizeof( sint16 );
+  mpAcquisitionQueue = new DAQueue( bufSize, mDev );
 }
 
 
@@ -184,28 +167,9 @@ void gMOBIlabADC::Initialize( const SignalProperties&,
 // **************************************************************************
 void gMOBIlabADC::Process( const GenericSignal&, GenericSignal& Output )
 {
-  DWORD dwBytesReceived = 0;
-  int   totalbytesreceived = 0;
-  while (totalbytesreceived < mBufsize)
-  {
-    _BUFFER_ST buf;
-    uint8* p = reinterpret_cast<uint8*>( mpBuffer );
-    buf.pBuffer = reinterpret_cast<SHORT*>( p + totalbytesreceived );
-    buf.size = mBufsize - totalbytesreceived;
-    buf.validPoints = 0;
-    bool ret = GT_GetData(mDev, &buf, &mOv); // extract data from driver
-    if ( !ret )
-    {
-      bcierr << "Unexpected fatal error on GT_GetData()" << endl;
-      return;
-    }
-    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, TRUE);
-    totalbytesreceived += dwBytesReceived;
-  }
-
-  for( int channel = 0; channel < mNumChans; ++channel )
-    for( int sample = 0; sample < Output.Elements(); ++sample )
-      Output( channel, sample ) = mpBuffer[ mNumChans * sample + channel ];
+  for( int sample = 0; sample < Output.Elements(); ++sample )
+    for( int channel = 0; channel < Output.Channels(); ++channel )
+      Output( channel, sample ) = mpAcquisitionQueue->ExtractSample();
 }
 
 
@@ -217,14 +181,76 @@ void gMOBIlabADC::Process( const GenericSignal&, GenericSignal& Output )
 // **************************************************************************
 void gMOBIlabADC::Halt()
 {
-  if (mDev)
+  delete mpAcquisitionQueue;
+  mpAcquisitionQueue = NULL;
+  
+  if( mDev )
   {
-    GT_StopAcquisition(mDev);
-    GT_CloseDevice(mDev);
+    ::GT_StopAcquisition( mDev );
+    ::GT_CloseDevice( mDev );
     mDev = NULL;
   }
-
-  delete[] mpBuffer;
-  mpBuffer = NULL;
 }
+
+// DAQueue runs a separate data acquisition thread.
+// The data buffer is filled from the separate thread, and is emptied from
+// the main thread.
+gMOBIlabADC::DAQueue::DAQueue( int inBufSize, HANDLE inDevice )
+: mBufSize( inBufSize ),
+  mWriteCursor( 0 ),
+  mReadCursor( 0 ),
+  mpBuffer( new uint8[mBufSize] ),
+  mEvent( NULL ),
+  mDev( inDevice )
+{
+  ::memset( &mOv, 0, sizeof( mOv ) );
+  mEvent = ::CreateEvent( NULL, FALSE, FALSE, NULL );
+  mOv.hEvent = mEvent;
+  mOv.Offset = 0;
+  mOv.OffsetHigh = 0;
+}
+
+gMOBIlabADC::DAQueue::~DAQueue()
+{
+  ::CloseHandle( mEvent );
+  delete[] mpBuffer;
+}
+
+sint16
+gMOBIlabADC::DAQueue::ExtractSample()
+{
+  while( mReadCursor == mWriteCursor )
+    ::Sleep( 0 );
+  sint16* p = reinterpret_cast<sint16*>( mpBuffer + mReadCursor );
+  mReadCursor += sizeof( sint16 );
+  mReadCursor %= mBufSize;
+  return *p;
+}
+
+int
+gMOBIlabADC::DAQueue::Execute()
+{
+  enum { ok = 0, errorOccurred = 1 };
+
+  while( !this->IsTerminating() )
+  {
+    DWORD bytesReceived = 0;
+    while( mWriteCursor < mBufSize )
+    {
+      _BUFFER_ST buf;
+      buf.pBuffer = reinterpret_cast<SHORT*>( mpBuffer + mWriteCursor );
+      buf.size = ( mBufSize - mWriteCursor ) % cMaxReadBuf;
+      buf.validPoints = 0;
+      if( !::GT_GetData( mDev, &buf, &mOv ) ) // extract data from driver
+        return errorOccurred;
+      ::GetOverlappedResult( mDev, &mOv, &bytesReceived, TRUE );
+      mWriteCursor += bytesReceived;
+    }
+    if( mWriteCursor > mBufSize )
+      return errorOccurred;
+    mWriteCursor = 0;
+  }
+  return ok;
+}
+
 
