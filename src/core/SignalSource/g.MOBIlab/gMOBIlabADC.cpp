@@ -239,7 +239,7 @@ gMOBIlabADC::DAQueue::Execute()
     {
       _BUFFER_ST buf;
       buf.pBuffer = reinterpret_cast<SHORT*>( mpBuffer + mWriteCursor );
-      buf.size = ( mBufSize - mWriteCursor ) % cMaxReadBuf;
+      buf.size = min( mBufSize - mWriteCursor, cMaxReadBuf );
       buf.validPoints = 0;
       if( !::GT_GetData( mDev, &buf, &mOv ) ) // extract data from driver
         return errorOccurred;
