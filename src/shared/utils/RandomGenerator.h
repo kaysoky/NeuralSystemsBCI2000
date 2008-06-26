@@ -38,7 +38,7 @@ class RandomGenerator : private EnvironmentExtension
   virtual NumberType Random();
 
   // STL functor interface: operator() returns a random integer between 0 and (N-1).
-  template<typename Int> operator()( Int inN )
+  template<typename Int> Int operator()( Int inN )
     { return ( Random() * inN ) / ( RandMax() + 1 ); }
 
   // EnvironmentExtension interface.
