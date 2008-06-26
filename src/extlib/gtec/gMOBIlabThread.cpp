@@ -15,8 +15,9 @@
 
 using namespace std;
 
-const int cBufBlocks = 32;    // Size of data ring buffer in terms of sample blocks.
-const int cMaxReadBuf = 1024; // Restriction of gtec driver.
+const int cBufBlocks = 32;        // Size of data ring buffer in terms of sample blocks.
+const int cMaxReadBuf = 1024;     // Restriction of gtec driver.
+const int cMinDataTimeout = 1000; // Minimum data timeout in ms.
 
 gMOBIlabThread::gMOBIlabThread( int inBlockSize, int inTimeout, HANDLE inDevice )
 : OSThread( true ),
@@ -61,7 +62,7 @@ gMOBIlabThread::Execute()
   ov.hEvent = mEvent;
   ov.Offset = 0;
   ov.OffsetHigh = 0;
-
+             
   while( !this->IsTerminating() )
   {
     DWORD bytesReceived = 0;
@@ -74,7 +75,8 @@ gMOBIlabThread::Execute()
       buf.validPoints = 0;
       if( !::GT_GetData( mDev, &buf, &ov ) )
         return errorOccurred;
-      if( WAIT_OBJECT_0 != ::WaitForSingleObject( mEvent, 2 * mTimeout ) )
+      int dataTimeout = max( cMinDataTimeout, 2 * mTimeout );
+      if( WAIT_OBJECT_0 != ::WaitForSingleObject( mEvent, dataTimeout ) )
         return errorOccurred;
       if( !::GetOverlappedResult( mDev, &ov, &bytesReceived, FALSE ) )
         return errorOccurred;
