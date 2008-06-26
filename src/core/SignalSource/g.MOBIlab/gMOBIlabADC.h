@@ -29,15 +29,21 @@ class gMOBIlabADC : public GenericADC
   class DAQueue : public OSThread
   {
    public:
-    DAQueue( int inBufSize, HANDLE inDevice );
+    DAQueue( int inBlockSize, int inTimeout, HANDLE inDevice );
     virtual ~DAQueue();
 
-    sint16 ExtractSample();
+    void   AcquireLock();
+    void   ReleaseLock();
+
+    sint16 Consume();
 
    private:
     virtual int Execute();
 
-    int        mBufSize,
+    bool       mLock;
+    int        mBlockSize,
+               mTimeout,
+               mBufSize,
                mWriteCursor,
                mReadCursor;
     uint8*     mpBuffer;

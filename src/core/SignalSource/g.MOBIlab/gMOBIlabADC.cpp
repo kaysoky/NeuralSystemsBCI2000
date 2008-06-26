@@ -17,7 +17,7 @@ using namespace std;
 // Register the source class with the framework.
 RegisterFilter( gMOBIlabADC, 1 );
 
-const int cBufBlocks = 2;     // Size of data ring buffer in terms of sample blocks.
+const int cBufBlocks = 32;    // Size of data ring buffer in terms of sample blocks.
 const int cMaxReadBuf = 1024; // Restriction of gtec driver.
 
 // **************************************************************************
@@ -113,6 +113,9 @@ void gMOBIlabADC::Preflight( const SignalProperties&,
 void gMOBIlabADC::Initialize( const SignalProperties&,
                               const SignalProperties& Output )
 {
+  delete mpAcquisitionQueue;
+  mpAcquisitionQueue = NULL;
+
   mDev = ::GT_OpenDevice( const_cast<char*>( Parameter("COMport").c_str() ) );
   if (mDev == NULL)
   {
@@ -152,8 +155,9 @@ void gMOBIlabADC::Initialize( const SignalProperties&,
   }
 
   int numSamplesPerScan = numChans * Output.Elements(),
-      bufSize = numSamplesPerScan * cBufBlocks * sizeof( sint16 );
-  mpAcquisitionQueue = new DAQueue( bufSize, mDev );
+      blockSize = numSamplesPerScan * sizeof( sint16 ),
+      blockDuration = 1e3 * Output.Elements() / Parameter( "SamplingRate" );
+  mpAcquisitionQueue = new DAQueue( blockSize, blockDuration, mDev );
 }
 
 
@@ -169,7 +173,7 @@ void gMOBIlabADC::Process( const GenericSignal&, GenericSignal& Output )
 {
   for( int sample = 0; sample < Output.Elements(); ++sample )
     for( int channel = 0; channel < Output.Channels(); ++channel )
-      Output( channel, sample ) = mpAcquisitionQueue->ExtractSample();
+      Output( channel, sample ) = mpAcquisitionQueue->Consume();
 }
 
 
@@ -195,19 +199,24 @@ void gMOBIlabADC::Halt()
 // DAQueue runs a separate data acquisition thread.
 // The data buffer is filled from the separate thread, and is emptied from
 // the main thread.
-gMOBIlabADC::DAQueue::DAQueue( int inBufSize, HANDLE inDevice )
-: mBufSize( inBufSize ),
+gMOBIlabADC::DAQueue::DAQueue( int inBlockSize, int inTimeout, HANDLE inDevice )
+: OSThread( true ),
+  mBlockSize( inBlockSize ),
+  mTimeout( inTimeout ),
+  mBufSize( inBlockSize * cBufBlocks ),
   mWriteCursor( 0 ),
   mReadCursor( 0 ),
-  mpBuffer( new uint8[mBufSize] ),
+  mpBuffer( NULL ),
   mEvent( NULL ),
   mDev( inDevice )
 {
   ::memset( &mOv, 0, sizeof( mOv ) );
-  mEvent = ::CreateEvent( NULL, FALSE, FALSE, NULL );
+  mEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );
   mOv.hEvent = mEvent;
   mOv.Offset = 0;
   mOv.OffsetHigh = 0;
+  mpBuffer = new uint8[mBufSize];
+  this->Resume();
 }
 
 gMOBIlabADC::DAQueue::~DAQueue()
@@ -216,15 +225,29 @@ gMOBIlabADC::DAQueue::~DAQueue()
   delete[] mpBuffer;
 }
 
+void
+gMOBIlabADC::DAQueue::AcquireLock()
+{
+  while( mLock )
+    ::Sleep( 0 );
+  mLock = true;
+}
+
+void
+gMOBIlabADC::DAQueue::ReleaseLock()
+{
+  mLock = false;
+}
+
 sint16
-gMOBIlabADC::DAQueue::ExtractSample()
+gMOBIlabADC::DAQueue::Consume()
 {
   while( mReadCursor == mWriteCursor )
-    ::Sleep( 0 );
-  sint16* p = reinterpret_cast<sint16*>( mpBuffer + mReadCursor );
+    ::WaitForSingleObject( mEvent, mTimeout );
+  sint16 value = *reinterpret_cast<sint16*>( mpBuffer + mReadCursor );
   mReadCursor += sizeof( sint16 );
   mReadCursor %= mBufSize;
-  return *p;
+  return value;
 }
 
 int
@@ -238,8 +261,9 @@ gMOBIlabADC::DAQueue::Execute()
     while( mWriteCursor < mBufSize )
     {
       _BUFFER_ST buf;
-      buf.pBuffer = reinterpret_cast<SHORT*>( mpBuffer + mWriteCursor );
-      buf.size = min( mBufSize - mWriteCursor, cMaxReadBuf );
+       buf.pBuffer = reinterpret_cast<SHORT*>( mpBuffer + mWriteCursor );
+      buf.size = min( mBlockSize, mBufSize - mWriteCursor );
+      buf.size = min( buf.size, cMaxReadBuf );
       buf.validPoints = 0;
       if( !::GT_GetData( mDev, &buf, &mOv ) ) // extract data from driver
         return errorOccurred;
