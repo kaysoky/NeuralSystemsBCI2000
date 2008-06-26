@@ -43,7 +43,7 @@ gMOBIlabThread::~gMOBIlabThread()
 sint16
 gMOBIlabThread::ExtractData()
 {
-  while( mReadCursor == mWriteCursor )
+  while( mReadCursor == mWriteCursor && !this->IsTerminated() )
     ::WaitForSingleObject( mEvent, mTimeout );
   sint16 value = *reinterpret_cast<sint16*>( mpBuffer + mReadCursor );
   mReadCursor += sizeof( sint16 );
@@ -74,7 +74,10 @@ gMOBIlabThread::Execute()
       buf.validPoints = 0;
       if( !::GT_GetData( mDev, &buf, &ov ) )
         return errorOccurred;
-      ::GetOverlappedResult( mDev, &ov, &bytesReceived, TRUE );
+      if( WAIT_OBJECT_0 != ::WaitForSingleObject( mEvent, 2 * mTimeout ) )
+        return errorOccurred;
+      if( !::GetOverlappedResult( mDev, &ov, &bytesReceived, FALSE ) )
+        return errorOccurred;
       mWriteCursor += bytesReceived;
     }
     if( mWriteCursor > mBufSize )
