@@ -335,6 +335,7 @@ Ratpoly<T>::Evaluate( const T& z ) const
   {
     num = mNumerator.Evaluate( z, derivative );
     denom = mDenominator.Evaluate( z, derivative );
+    ++derivative;
   }
   if( abs( denom ) < eps )
   {
