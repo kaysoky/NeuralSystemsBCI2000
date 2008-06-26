@@ -10,7 +10,7 @@
 #define GMOBILAB_ADC_H
 
 #include "GenericADC.h"
-#include "OSThread.h"
+#include "gMOBIlabThread.h"
 
 class gMOBIlabADC : public GenericADC
 {
@@ -24,33 +24,8 @@ class gMOBIlabADC : public GenericADC
   virtual void Halt();
 
  private:
-  HANDLE mDev;
-
-  class DAQueue : public OSThread
-  {
-   public:
-    DAQueue( int inBlockSize, int inTimeout, HANDLE inDevice );
-    virtual ~DAQueue();
-
-    void   AcquireLock();
-    void   ReleaseLock();
-
-    sint16 Consume();
-
-   private:
-    virtual int Execute();
-
-    bool       mLock;
-    int        mBlockSize,
-               mTimeout,
-               mBufSize,
-               mWriteCursor,
-               mReadCursor;
-    uint8*     mpBuffer;
-    HANDLE     mEvent,
-               mDev;
-    OVERLAPPED mOv;
-  }* mpAcquisitionQueue;
+  HANDLE          mDev;
+  gMOBIlabThread* mpAcquisitionThread;
 };
 
 #endif // GMOBILAB_ADC_H

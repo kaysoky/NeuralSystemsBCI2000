@@ -10,12 +10,7 @@
 #define gMOBIlabPlus_ADC_H
 
 #include "GenericADC.h"
-
-#include <windows.h>
-#include <string>
-
-#define __CFG GFG__
-#include "gMOBIlabplus.h"
+#include "gMOBIlabThread.h"
 
 class gMOBIlabPlusADC : public GenericADC
 {
@@ -29,15 +24,9 @@ class gMOBIlabPlusADC : public GenericADC
   virtual void Halt();
 
  private:
-  sint16* mpBuffer;
-  int     mBufsize,
-          mNumChans;
-  bool    mEnableDigOut;
-
-  HANDLE     mEvent,
-             mDev;
-  OVERLAPPED mOv;
-
+  bool            mEnableDigOut;
+  HANDLE          mDev;
+  gMOBIlabThread* mpAcquisitionThread;
 };
 
 #endif // GMOBILAB_ADC_H

@@ -13,6 +13,7 @@
 #pragma hdrstop
 
 #include "gMOBIlabPlusADC.h"
+#include "gMOBIlabDriver.h"
 
 using namespace std;
 
@@ -24,11 +25,8 @@ RegisterFilter( gMOBIlabPlusADC, 1 );
 // Purpose:    The constructor for the gMOBIlabPlusADC.
 // **************************************************************************
 gMOBIlabPlusADC::gMOBIlabPlusADC()
-: mpBuffer( NULL ),
-  mBufsize( 0 ),
-  mNumChans( 0 ),
-  mEvent( NULL ),
-  mDev( NULL )
+: mDev( NULL ),
+  mpAcquisitionThread( NULL )
 {
   // add all the parameters that this ADC requests to the parameter list
   BEGIN_PARAMETER_DEFINITIONS
@@ -53,20 +51,12 @@ gMOBIlabPlusADC::gMOBIlabPlusADC()
         "// enables streaming to an inserted SD card (boolean)",
    "Source string SDFileName= % % % % "
         "// file name for SD file; blank uses default BCI2000 filename (inputfile)" */
-
-  // set the priority of the Source module a little higher
-  // (since its output clocks the whole system)
-  // this really seems to help against data loss; even under extreme load,
-  // data acquisition continues even though the display might be jerky
-  SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 }
 
 
 gMOBIlabPlusADC::~gMOBIlabPlusADC()
 {
   Halt();
-  if( mEvent )
-    CloseHandle( mEvent );
 }
 
 
@@ -95,11 +85,6 @@ void gMOBIlabPlusADC::Preflight( const SignalProperties&,
   if (Parameter("DigitalEnable") == 0 && Parameter("DigitalOutBlock") == 1)
      bcierr << "DigitalEnable must be checked to use the DigitalOutBlock."<<endl;
 
-  // buffersize can't be > 1024
-  int numSamplesPerScan = sourceCh * sampleBlockSize;
-  if ( numSamplesPerScan * sizeof(*mpBuffer) > 1024 )
-     bcierr << "Buffer size cannot be larger than 1024 bytes. Please decrease the SourceCh or SampleBlocksize." << endl;
-
   // Requested output signal properties.
   Output = SignalProperties( sourceCh, sampleBlockSize, SignalType::int16 );
 }
@@ -115,36 +100,21 @@ void gMOBIlabPlusADC::Preflight( const SignalProperties&,
 void gMOBIlabPlusADC::Initialize( const SignalProperties&,
                                   const SignalProperties& Output )
 {
-  mNumChans = Output.Channels();
-  int numAChans = mNumChans;
-  if (Parameter("DigitalEnable") == 1)
-  {
-    numAChans = 8;
-    mNumChans = 9;
-  }
-  int numSamplesPerScan = mNumChans * Output.Elements();
-  mBufsize = numSamplesPerScan * sizeof( *mpBuffer );
-
   Halt();
-  delete[] mpBuffer;
-  mpBuffer = new sint16[numSamplesPerScan];
 
-  if( mEvent )
-    CloseHandle( mEvent );
-  mEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-  mOv.hEvent = mEvent;
-  mOv.Offset = 0;
-  mOv.OffsetHigh = 0;
+  int numAChans = Output.Channels();
+  if (Parameter("DigitalEnable") == 1)
+    numAChans = 8;
 
   string COMport = Parameter("COMport");
-  mDev = GT_OpenDevice((LPSTR)COMport.c_str());
+  mDev = GT_OpenDevice( const_cast<char*>( COMport.c_str() ) );
   if (mDev == NULL)
   {
     //there seems to be a bug (or feature...?) where if you open the device
     //after it is already opened, it actually disconnects the bluetooth connection
     //and it needs to be reconnected. This tests for this bug, since it will reconnect
     //on the 2nd try if possible; if there is another problem, it gives the error and returns
-    mDev = GT_OpenDevice((LPSTR)COMport.c_str());
+    mDev = GT_OpenDevice( const_cast<char*>( COMport.c_str() ) );
     if (mDev == NULL)
     {
       UINT lastErr;
@@ -200,6 +170,11 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
   ret = GT_StartAcquisition(mDev);
   if (!ret)
     bcierr << "Could not start data acquisition" << endl;
+
+  int numSamplesPerScan = Output.Channels() * Output.Elements(),
+      blockSize = numSamplesPerScan * sizeof( sint16 ),
+      blockDuration = 1e3 * Output.Elements() / Parameter( "SamplingRate" );
+  mpAcquisitionThread = new gMOBIlabThread( blockSize, blockDuration, mDev );
 }
 
 
@@ -213,53 +188,41 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 // **************************************************************************
 void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
 {
-  DWORD dwBytesReceived = 0;
-  int totalbytesreceived=0;
-
   if (mEnableDigOut)
     GT_SetDigitalOut(mDev, 0x10);
 
-  while (totalbytesreceived < mBufsize)
+  const int cMaxAChans = 8;
+  for( int sample = 0; sample < Output.Elements(); ++sample )
   {
-    _BUFFER_ST buf;
-    uint8* p = reinterpret_cast<uint8*>( mpBuffer );
-    buf.pBuffer = reinterpret_cast<SHORT*>( p + totalbytesreceived );
-    buf.size = mBufsize - totalbytesreceived;
-    buf.validPoints = 0;
-    bool ret = GT_GetData(mDev, &buf, &mOv); // extract data from driver
-    if ( !ret )
+    for( int channel = 0; channel < min( cMaxAChans, Output.Channels() ); ++channel )
+      Output( channel, sample ) = mpAcquisitionThread->ExtractData();
+
+    if( Output.Channels() > cMaxAChans )
     {
-      bcierr << "Unexpected fatal error on GT_GetData()" << endl;
-      return;
+      //the digital lines are stored in a single sample, with the values in each bit
+      // the order is (MSB) 8 7 6 5 2 4 3 1 (LSB)
+      uint16 mask[] =
+      {
+        0x0001,
+        0x0008, // intentionally out of sequence
+        0x0002,
+        0x0004,
+        0x0010,
+        0x0020,
+        0x0040,
+        0x0080
+      };
+      uint16 value = mpAcquisitionThread->ExtractData();
+      for( int channel = cMaxAChans; channel < Output.Channels(); ++channel )
+        Output( channel, sample ) = ( value & mask[ channel - cMaxAChans ] ) ? 100 : 0;
     }
-    GetOverlappedResult(mDev, &mOv, &dwBytesReceived, TRUE);
-    totalbytesreceived += dwBytesReceived;
   }
-
-  for( int channel = 0; channel < min( 8, Output.Channels() ); ++channel )
-    for( int sample = 0; sample < Output.Elements(); ++sample )
-      Output( channel, sample ) = mpBuffer[ mNumChans * sample + channel ];
-
-  //the digital lines are stored in a single sample, with the values in each bit
-  // the order is (MSB) 8 7 6 5 2 4 3 1 (LSB)
-  short mask[] =
-  {
-    0x0001,
-    0x0008, // intentionally out of order
-    0x0002,
-    0x0004,
-    0x0010,
-    0x0020,
-    0x0040,
-    0x0080
-  };
-  for( int channel = 8; channel < Output.Channels(); ++channel )
-    for( int sample = 0; sample < Output.Elements(); ++sample )
-      Output( channel, sample ) =
-        mpBuffer[ mNumChans * sample + 8 ] & mask[ channel - 8 ] ? 100 : 0;
 
   if (mEnableDigOut)
     GT_SetDigitalOut(mDev, 0x11);
+
+  if( mpAcquisitionThread->IsTerminated() )
+    bcierr << "Lost connection to device" << endl;
 }
 
 
@@ -271,14 +234,14 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
 // **************************************************************************
 void gMOBIlabPlusADC::Halt()
 {
+  delete mpAcquisitionThread;
+  mpAcquisitionThread = NULL;
+
   if (mDev)
   {
     GT_StopAcquisition(mDev);
     GT_CloseDevice(mDev);
     mDev = NULL;
   }
-
-  delete[] mpBuffer;
-  mpBuffer = NULL;
 }
 
