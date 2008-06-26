@@ -27,6 +27,9 @@ class PhysicalUnit
   PhysicalUnit() : mOffset( 0 ), mGain( 1 ), mRawMin( -1 ), mRawMax( 1 ) {}
   ~PhysicalUnit() {}
 
+  PhysicalUnit& Clear()
+                { return ( this = PhysicalUnit() ); }
+
   ValueType     Offset() const
                 { return mOffset; }
   PhysicalUnit& SetOffset( ValueType v )

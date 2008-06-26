@@ -78,7 +78,7 @@ LabelIndex::operator[]( size_t inIndex )
 // Parameters: New size.
 // Returns:    N/A
 // **************************************************************************
-void
+LabelIndex&
 LabelIndex::Resize( size_t inNewSize )
 {
   if( mForwardIndex.size() > 0 && inNewSize > mReverseIndex.size() )
@@ -86,6 +86,7 @@ LabelIndex::Resize( size_t inNewSize )
   while( mReverseIndex.size() < inNewSize )
     mReverseIndex.push_back( TrivialLabel( mReverseIndex.size() ) );
   mReverseIndex.resize( inNewSize );
+  return *this;
 }
 
 // **************************************************************************

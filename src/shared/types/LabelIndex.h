@@ -28,8 +28,8 @@ class LabelIndex
 
   // Forward lookup.
   IndexBase::mapped_type operator[]( const std::string& ) const;
-  // We need this because the above operator must return 0 for nonexisting
-  // labels.
+  // We need an additional Exists() function because operator[] must return 0
+  // for nonexisting labels.
   bool Exists( const std::string& ) const;
   // A reverse lookup operator.
   const std::string& operator[]( size_t ) const;
@@ -42,8 +42,11 @@ class LabelIndex
   std::ostream& WriteToStream( std::ostream& ) const;
   std::istream& ReadFromStream( std::istream& );
 
-  void Resize( size_t );
-  int Size() const { return mReverseIndex.size(); }
+  LabelIndex& Clear()
+              { return Resize( 0 ); }
+  LabelIndex& Resize( size_t );
+  int         Size() const
+              { return mReverseIndex.size(); }
 
  private:
   void Sync() const;
