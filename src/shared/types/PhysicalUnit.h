@@ -28,7 +28,7 @@ class PhysicalUnit
   ~PhysicalUnit() {}
 
   PhysicalUnit& Clear()
-                { return ( this = PhysicalUnit() ); }
+                { return ( *this = PhysicalUnit() ); }
 
   ValueType     Offset() const
                 { return mOffset; }
