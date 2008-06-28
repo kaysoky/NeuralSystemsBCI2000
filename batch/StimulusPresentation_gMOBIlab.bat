@@ -8,6 +8,6 @@
 cd ..\prog
 start operat.exe
 start gMOBIlab.exe 127.0.0.1
-start DummySignalProcessing.exe 127.0.0.1
+start P3SignalProcessing.exe 127.0.0.1
 start StimulusPresentation.exe 127.0.0.1
 cd ..
