@@ -99,14 +99,14 @@ main( int argc, char* argv[] )
                          // privileges.
 
   receiving_udpsocket socket( address );
-  sockstream connection( socket );
-  if( !connection.is_open() )
-    cerr << "Could not connect to " << address
+  sockstream input( socket );
+  if( !input.is_open() )
+    cerr << "Could not open " << address
          << "." << endl;
 
   string line;
   bool previousValueGreaterZero = false;
-  while( getline( connection, line ) )
+  while( getline( input, line ) )
   {
     istringstream linestream( line );
     string name;
