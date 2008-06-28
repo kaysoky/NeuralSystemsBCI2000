@@ -103,7 +103,7 @@ P3SpellerTask::P3SpellerTask()
    "Application:Speller%20Targets stringlist TextColorIntensified= 1 0x0000FF "
       "0x505050 % % // intensified text color (color)",
    "Application:Speller%20Targets intlist IconHighlightMode= 1 1 "
-      "1 0 2 // icon highlight method "
+      "1 0 4 // icon highlight method "
         "0: Show/Hide, "
         "1: Intensify, "
         "2: Grayscale, "
