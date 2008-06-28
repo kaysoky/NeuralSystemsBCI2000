@@ -181,9 +181,9 @@ EnvironmentBase::DescribeValue( const Param& inParam, size_t inIdx1, size_t inId
       << "\": Value";
 
   if( string( inParam.Type() ).find( "matrix" ) != string::npos )
-    oss << " at index (" << inIdx1 << ", " << inIdx2 << ")";
+    oss << " at index (" << inIdx1 + 1 << ", " << inIdx2 + 1 << ")";
   else if( string( inParam.Type() ).find( "list" ) != string::npos )
-    oss << " at index " << inIdx1;
+    oss << " at index " << inIdx1 + 1;
 
   return oss.str();
 }
