@@ -2,15 +2,21 @@
  * Program:   EEGsource.EXE                                                   *
  * Module:    MicromedADC.CPP                                                 *
  * Comment:   Definition for the GenericADC class                             *
- * Version:   0.02                                                            *
+ * Version:   2.00                                                            *
  * Author:    Gerwin Schalk, Juergen Mellinger, Erik Aarnoutse                *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
  *                                                                            *
- * V0.01 - 19/04/2006 - First working version, based on Neusoscan.exe         *                       *
+ * V0.01 - 19/04/2006 - First working version, based on Neuroscan.exe         *                       *
  * V0.02 - 08/05/2006 - Added condition testing, 22bit mode and downsampling  *
  * V0.03 - 17/05/2006 - Added notchfilter                                     *
+ * V0.04 - 19/09/2006 - Added digital trigger packets, changed note packet    *
+ * V0.05 - 27/11/2006 - Added Priority, fixed digital trigger code,           *
+ * V0.06 - 13/03/2007 - Added note output in textfile                         *
+ * V0.07 - 04/04/2007 - Added error handling: server shuts down if stalling   *
+ *                                                                            *
+ * V2.00 - 16/01/2008 - Updated for BCI2000 v2.0                              *
  ******************************************************************************/
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -18,8 +24,10 @@
 #include "MicromedADC.h"
 #include "BCIError.h"
 #include "GenericSignal.h"
-#include <stdio.h>
+#include "BCIDirectory.h"
+#include <cstdio.h>
 #include <math.h>
+#include <mmsystem.h>
 
 #ifndef _W32
   #define _W32
@@ -47,25 +55,36 @@ RegisterFilter( MicromedADC, 1 );
 // **************************************************************************
 MicromedADC::MicromedADC()
 : samplerate( 9 ),
+  mSignalType( SignalType::int16 ),
   MMblocksize( 9 ),
-  BCIblocksize( 9 )
+  BCIblocksize( 9 ),
+  mTimerID( 0 ),
+  mTimerDelay( 0 )
+  
 {
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
    "Source string ServerAddress= *:5000 % % % "
        "// address and port of the Micromed BCI Server",
-   "Source int SourceCh=      128 16 1 % "
+   "Source int SourceCh=      128 16 1 128 "
        "// the number of digitized and stored channels",
-   "Source int SampleBlockSize= 8 5 1 % "
+   "Source int SampleBlockSize= 8 5 1 128 "
        "// the number of samples transmitted at a time",
-   "Source int SamplingRate=    512 128 1 % "
+   "Source int PacketRate= 64 5 1 128 "
+       "// the number of Micromed packets per second (64 SD; 32 LTM)",
+   "Source int SamplingRate=    512 128 1 4000 "
        "// the sample rate",
-   "Source int SignalType=           0 0 0 2"
+   "Source int SignalType=           0 0 0 3"
         "// numeric type of output signal: "
             " 0: int16,"
-            " 1: float32,"
-            " 2: int32 "
+            " 1: float24,"
+            " 2: float32,"
+            " 3: int32 "
             "(enumeration)",
+    "Source int ConditionMask=   0x0F  1 0 0 "
+     "// Mask for conditions, other information is send as MicroMedCode",
+    "Source int Priority=   1 1 0 5 "
+     "// Set CPU priority for Source Module"
  END_PARAMETER_DEFINITIONS
 
  // add all states that this ADC requests to the list of states
@@ -73,7 +92,10 @@ MicromedADC::MicromedADC()
  BEGIN_STATE_DEFINITIONS
    "Running 1 0 0 0",
    "SourceTime 16 2347 0 0",
-   "MicromedEvent 8 0 0 0"
+   "MicromedNote 16 0 0 0",
+   //"MicromedSample 16 0 0 0",
+   "MicromedCode 8 0 0 0",
+   "MicromedCondition 8 0 0 0"
  END_STATE_DEFINITIONS
 }
 
@@ -82,7 +104,13 @@ MicromedADC::~MicromedADC()
 Halt();
 }
 
-
+static void CALLBACK TimerCallback( UINT, UINT, DWORD
+ inInstance, DWORD, DWORD )
+   {
+     bciout << "Connection with user application timed out" << endl;
+     MicromedADC* this_ = reinterpret_cast<MicromedADC*>( inInstance );
+     if (!waitforconn) this_->Halt();
+   }
 // **************************************************************************
 // Function:   Preflight
 // Purpose:    Checks parameters for availability and consistence with
@@ -94,31 +122,53 @@ Halt();
 void MicromedADC::Preflight( const SignalProperties&,
                                    SignalProperties& outSignalProperties ) const
 {
+  int signalType;
+  HANDLE PH;
+  DWORD Priority;
+  AnsiString FInit,SSes,SName,AName;
+  char FName[120];
+  BCIDirectory bcidtry;
+
+
+  PH = GetCurrentProcess();
+  switch ((int) Parameter( "Priority" )){
+
+  case 1 : Priority=NORMAL_PRIORITY_CLASS; break;
+  case 2 : Priority=ABOVE_NORMAL_PRIORITY_CLASS; break;
+  case 3 : Priority=HIGH_PRIORITY_CLASS; break;
+  case 4 : Priority=REALTIME_PRIORITY_CLASS; break;
+
+  default : Priority=NORMAL_PRIORITY_CLASS;
+
+  }
+
+  SetPriorityClass(PH, Priority  );
+
+
+
   // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-  Parameter( "ServerAddress" );
+  MICROMED_PACKET_RATE = Parameter( "PacketRate");
+  PreflightCondition( Parameter( "ServerAddress" ) != "" );
+  PreflightCondition( Parameter( "DataDirectory" ) != "" );
+  PreflightCondition( Parameter( "SubjectName" ) != "" );
+  PreflightCondition( Parameter( "SubjectSession" ) > 0 );
+  PreflightCondition( Parameter( "SubjectRun" ) > 0 );
   PreflightCondition( int( Parameter( "SamplingRate" ) ) % MICROMED_PACKET_RATE==0 );
   PreflightCondition( int( Parameter( "SampleBlockSize" ) ) % ( int(Parameter( "SamplingRate" )) / MICROMED_PACKET_RATE)==0);
+  PreflightCondition( int( Parameter( "SignalType" ) )== 0 || int(Parameter( "SignalType" ) )== 3);
   // Resource availability checks.
 
   // Input signal checks.
 
   // Requested output signal properties.
-  switch( int( Parameter( "SignalType" ) ) )
-  {
-    case 0:
-      outSignalProperties = SignalProperties(
-        Parameter( "SourceCh" ),Parameter( "SampleBlocksize" ),SignalType::int16 );
-      break;
+  signalType=Parameter( "SignalType" );
+  outSignalProperties = SignalProperties(
+  Parameter( "SourceCh" ),Parameter( "SampleBlocksize" ),SignalType::Type( signalType ));
 
-    case 2:
-      outSignalProperties = SignalProperties(
-        Parameter( "SourceCh" ),Parameter( "SampleBlocksize" ),SignalType::int32 );
-      break;
+  num_notes=0;
+  waitforconn = false;
 
-    default:
-      bcierr << "Unsupported output format" << endl;
   }
-}
 
 // **************************************************************************
 // Function:   ADInit
@@ -134,10 +184,27 @@ void MicromedADC::Preflight( const SignalProperties&,
 void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
   // store the value of the needed parameters
+  MICROMED_PACKET_RATE = Parameter( "PacketRate");
   samplerate = Parameter( "SamplingRate" );
+  mSignalType = Parameter( "SignalType" );
   MMblocksize=Parameter( "SamplingRate" ) / MICROMED_PACKET_RATE;
   BCIblocksize=Parameter( "SampleBlocksize" );
-
+  conditionmask = Parameter( "ConditionMask" );
+  num_channels = Parameter( "SourceCh" );
+  switch(mSignalType)
+            {
+              case 0:
+                bytespersample=2;
+                break;
+              case 3:
+                bytespersample=4;
+                break;
+              default:
+                  bcierr << "unknown signalType in Parameter File" << endl;
+                break;
+            }
+  const int blocksToWait = 10;
+  mTimerDelay = blocksToWait * 1000 * Parameter( "SampleBlockSize" )/ Parameter( "SamplingRate" );
   // Micromed systemPLUS is the client, BCI is the server, it passively listens.
 
   // start the server
@@ -160,6 +227,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 
   if( MmServerSocket.is_open() && !MmServerSocket.connected() )
     {
+    waitforconn = true;
     if (MmServerSocket.wait_for_read( cMmConnectionTimeout, true )) {
       bciout << "Connected with "
       << MmServerSocket.ip()
@@ -171,6 +239,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
       bcierr << "Connection failed" << endl;
       return;
       }
+    waitforconn = false;
      }
 
   MmServer.open( MmServerSocket );
@@ -185,9 +254,57 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
   }
   if( MmServerSocket.connected() )
     bciout << "Accepting connection with client" << endl;
+}
 
- }
+void
+MicromedADC::StartRun()
+{
+  AnsiString FInit,SSes,SName,AName;
+  char FName[120];
+  BCIDirectory bcidtry;
 
+  sampleNumber=0;
+  bcidtry
+    .SetDataDirectory( Parameter( "DataDirectory" ) )
+    .SetSubjectName( Parameter( "SubjectName" ) )
+    .SetSessionNumber( Parameter( "SubjectSession" ) )
+    .SetRunNumber( Parameter( "SubjectRun" ) );
+
+    /*
+    strcpy(FInit, ( const char* )Parameter( "FileInitials" )); //ASKGERV
+    SSes = ( const char* )Parameter( "SubjectSession" ); //ASKGERV
+    SName= ( const char* )Parameter( "SubjectName" ); //ASKGERV
+    bcidtry.SetDataDirectory( FInit.c_str() );
+    bcidtry.ProcPath(); //ASKGERV
+    bcidtry.SetName( SName.c_str() ); //ASKGERV
+    bcidtry.RunNumber( Parameter( "SubjectRun" ) ); //ASKGERV
+    bcidtry.SetSession( SSes.c_str() ); //ASKGERV
+    IntToStr(bcidtry.RunNumber());
+    strcpy(FName, bcidtry.ProcSubDir() ); //ASKGERV
+
+    //strcat(FName,"\\");
+
+    AName= SName + "S" + SSes;
+    strcat(FName, AName.c_str() );
+    strcat(FName,"R");
+    if (bcidtry.RunNumber()<10) strcat(FName,"0");
+    strcat(FName,IntToStr(bcidtry.RunNumber()).c_str());
+    */
+    strcpy(FName,( const char* ) bcidtry.FilePath().c_str());
+    strcat(FName,".txt");
+    bciout << "Notes in " << FName << endl;
+
+    hNotes = fopen(FName,"wt");
+    fprintf(hNotes,"%s\n",FName);
+
+}
+
+
+void
+MicromedADC::StopRun()
+{
+   fclose(hNotes);
+}
 
 // **************************************************************************
 // Function:   ADReadDataBlock
@@ -201,16 +318,20 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 void MicromedADC::Process( const GenericSignal&, GenericSignal& signal )
 {
 
-  bool finished=false;
+  bool finished;
   int bodyLen;
   int nrloops;
   int i;
-  int packet=0;
+  int packet;
 
-  State( "MicromedEvent" ) = 0;
+
   packet=0;
 
   nrloops=BCIblocksize / MMblocksize; //downsampling, because Micromed send 64 packets per second;
+  ::timeKillEvent( mTimerID );
+  mTimerID = ::timeSetEvent( mTimerDelay, 10,
+                    LPTIMECALLBACK( TimerCallback ), DWORD( this ), TIME_ONESHOT );
+
   while (packet<nrloops)
     {
     finished=false;
@@ -230,15 +351,15 @@ void MicromedADC::Process( const GenericSignal&, GenericSignal& signal )
       if ( !MmServer )
         {
         bcierr << "Connection closed by the client " << endl;
-        pMsg->m_dwSize=0;
-        finished=true;
-       Halt();
+        delete pMsg;
+        Halt();
        return;
        }
 
      if (strncmp(pMsg->m_chId,"MICM",4)!=0)    // "MICM" is Micromed
        {
        bcierr << "Sequence error" << endl;
+       delete pMsg;
        Halt();
        return;
        }
@@ -280,7 +401,10 @@ bool MicromedADC::ProcessDataMsg(CAcqMessage *pMsg, int packetnr, GenericSignal 
 {
 bool  retval;
 SignalProperties outSignalProperties;
-
+long trigSample = 0;
+long noteSample = 0;
+long trigCode = 0;
+unsigned int nbyte;
 
  retval=false;
  const unsigned char* pData = reinterpret_cast<unsigned char*>( pMsg->m_pBody );
@@ -308,7 +432,7 @@ SignalProperties outSignalProperties;
                   samplerate |= byteVal << ( 8 * byte );
                 }
             if (samplerate!=Parameter("SamplingRate"))
-            bcierr << "wrong sample rate in Header" << endl;
+            bcierr << "wrong sample rate in Header: " << samplerate << endl;
 
             //read bytespersample (int16)
             for( int byte = 0; byte < 2; ++byte )
@@ -336,11 +460,55 @@ SignalProperties outSignalProperties;
       }
     else if (pMsg->IsNotePacket()==0)
          {
-          State( "MicromedEvent" ) = 1; //Micromed does not send digital triggers in a packet,
-                                        //but we can switch on the Analog TriggerIn1, so it sends a note.
-                                        //This means that we can't read any serial code.
-                                        //Not sure about exact timing.
-          retval=false; //so BCI reads in a datapacket as well
+          num_notes++;
+
+
+          //do something: send strings or change some State according to first character?
+
+          char NoteStr[256];
+          for (nbyte=0;nbyte < 4;++nbyte) {
+               signed long signedbyteValNote = *pData++;
+               noteSample |= signedbyteValNote << ( 8 * nbyte );
+          }
+          for (nbyte=0;nbyte < (pMsg->m_dwSize-4);++nbyte) {
+            NoteStr[nbyte]=(unsigned char)*pData;
+            *pData++;
+          }
+            NoteStr[nbyte+1]=0;
+            //State( "MicromedNote" ) = noteSample;
+            if (hNotes != NULL) fprintf(hNotes,"%d %s\n",noteSample,NoteStr);
+
+            //bciout << num_notes << ": " << (char*)NoteStr << endl;
+
+            retval=false; //so BCI reads in a datapacket as well
+          }
+         else if (pMsg->IsDigTrigPacket()==0)
+          {
+            if (pMsg->m_dwSize != 6)
+            bcierr << "Incorrect Digital Trigger Packet Size: "
+            << pMsg->m_dwSize
+            << endl;
+            //read in trigger sample
+
+            for( int byte = 0; byte < 4; ++byte )
+                {
+                  signed long signedbyteVal = *pData++;
+                  trigSample |= signedbyteVal << ( 8 * byte );
+                }
+            //read in trigger code, the code is 2 byte, although serial input is only 1 byte (?)
+            for( int byte = 0; byte < 2; ++byte )
+                {
+                  //signed long signedbyteVal = *pData++;
+                  signed short int signedbyteVal = *pData++;
+                  trigCode |= signedbyteVal << ( 8 * byte );
+                }
+ //           bciout << trigSample << ": " << trigCode << endl;
+            State( "MicromedCode" ) = trigCode;
+
+            //State( "MicromedSample" ) = trigSample;
+            State( "MicromedCondition" ) = trigCode & conditionmask;
+            if (hNotes != NULL) fprintf(hNotes,"%d %d %d\n",trigSample,trigCode,trigCode & conditionmask);
+            retval=false; //so BCI reads in a datapacket as well
 
           }
       else if (pMsg->IsDataPacket()==0)
@@ -349,10 +517,12 @@ SignalProperties outSignalProperties;
 		  if (pMsg->m_dwSize != size_t(num_channels*MMblocksize*bytespersample))
             bcierr << "Inconsistent data message block size "
             << num_channels
-            << " "
+            << "*"
             << MMblocksize
-            << " "
+            << "*"
             << bytespersample
+            << "<>"
+            << pMsg->m_dwSize
             << endl;
 
 
@@ -361,6 +531,7 @@ SignalProperties outSignalProperties;
 
           for( int sample = 0; sample < MMblocksize; ++sample )
           {
+            sampleNumber++;
             for( int channel = 0; channel < num_channels; ++channel )
             {
               long value = 0;
@@ -403,6 +574,7 @@ SignalProperties outSignalProperties;
 // **************************************************************************
 void MicromedADC::Halt()
 {
+  ::timeKillEvent( mTimerID );
   MmServer.close();
   MmServerSocket.close();
 }
