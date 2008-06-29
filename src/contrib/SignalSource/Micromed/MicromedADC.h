@@ -6,6 +6,7 @@
 
 #include "SockStream.h"
 #include "GenericADC.h"
+#include "PrecisionTime.h"
 #include "MicromedNetRead.h"
 
 
@@ -19,6 +20,8 @@ class MicromedADC : public GenericADC
 
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
+  virtual void StartRun();
+  virtual void StopRun();
   virtual void Process( const GenericSignal&, GenericSignal& );
   virtual void Halt();
 
@@ -28,10 +31,15 @@ class MicromedADC : public GenericADC
   server_tcpsocket MmServerSocket;
   sockstream MmServer;
   int    samplerate;
+  int    mSignalType;
   int    num_channels;
   int    BCIblocksize;
   int    MMblocksize;
   int    bytespersample;
+  int    conditionmask;
+  int    mTimerID;
+  int    mTimerDelay;
+  
 
 };
 
