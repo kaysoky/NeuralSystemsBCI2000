@@ -1,22 +1,29 @@
 /* (C) 2000-2008, BCI2000 Project
 /* http://www.bci2000.org
 /*/
+#include <stdio.h>
+
 #ifndef MicromedH
 #define MicromedH
 
 #pragma pack( push )
 #pragma pack( 2 ) // set structure alignment to 2 bytes
 
-  #define MICROMED_HEADER_SIZE  10  //rememeber to set structure alignment on 2 bytes!
-  #define MICROMED_PACKET_RATE  64  //fixed in SystemPlus 98 version 0.56
+  #define MICROMED_HEADER_SIZE  10  //remember to set structure alignment on 2 bytes!
   #define POS_NOTE				83072
 
   #define	HEADER_TYPE		0
   #define	DATA_TYPE		1
   #define NOTE_TYPE		2
+  #define DIGTRIG_TYPE		3
 
   static const cMmConnectionTimeout = 60000; // ms
-
+  int MICROMED_PACKET_RATE;
+  int    num_notes;
+  unsigned long sampleNumber;
+  FILE *hNotes;
+  bool   waitforconn;
+  
   class CAcqMessage
 {
 public:
@@ -29,6 +36,7 @@ public:
     BOOL	IsHeaderPacket () { return (m_wCode-HEADER_TYPE);}
     BOOL	IsDataPacket () { return (m_wCode-DATA_TYPE);}
     BOOL	IsNotePacket () { return (m_wCode-NOTE_TYPE);}
+    BOOL	IsDigTrigPacket () { return (m_wCode-DIGTRIG_TYPE);}
 
 // Construction
 public:
