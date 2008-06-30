@@ -15,10 +15,8 @@
 #include "SpatialFilter.h"
 #include "P3TemporalFilter.h"
 #include "LinearClassifier.h"
-#include "Normalizer.h"
 
-Filter( SpatialFilter, 2.B );
-Filter( P3TemporalFilter, 2.C2 );
-Filter( LinearClassifier, 2.D );
-Filter( Normalizer, 2.E );
+Filter( SpatialFilter, 2.A );
+Filter( P3TemporalFilter, 2.B );
+Filter( LinearClassifier, 2.C );
 
