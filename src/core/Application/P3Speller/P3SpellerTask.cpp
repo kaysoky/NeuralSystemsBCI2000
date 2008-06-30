@@ -44,6 +44,7 @@ P3SpellerTask::P3SpellerTask()
   mAvoidStimulusRepetition( false ),
   mpTextWindow( NULL ),
   mSummaryFile( SummaryFileExtension().c_str() ),
+  mSleepMode( 0 ),
   mRunCount( 0 ),
   mNumSelections( 0 ),
   mSleepDuration( 0 )
@@ -225,6 +226,7 @@ P3SpellerTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     }
   }
   preflightStimuli.DeleteObjects();
+  preflightSpeller.DeleteObjects();
 
   if( interpretMode == InterpretModes::Copy )
   {
@@ -421,6 +423,7 @@ P3SpellerTask::OnStartRun()
 
   mNumSelections = 0;
   mSleepDuration = 0;
+  mSleepMode = 0;
 }
 
 void
