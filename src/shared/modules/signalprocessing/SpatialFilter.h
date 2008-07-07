@@ -13,6 +13,7 @@
 #define SPATIAL_FILTER_H
 
 #include "GenericFilter.h"
+#include <valarray>
 
 class SpatialFilter : public GenericFilter
 {
@@ -24,7 +25,23 @@ class SpatialFilter : public GenericFilter
   virtual void Process( const GenericSignal& Input, GenericSignal& Output );
 
  private:
-  std::vector<std::vector<double> > mFilterMatrix;
+	enum
+	{
+		none,
+		fullMatrix,
+		sparseMatrix,
+		commonAverage
+	};
+	int mSpatialFilterType;
+
+	typedef float NumType;
+	typedef std::valarray<NumType> DataVector;
+	std::vector< DataVector > mFilterMatrix;
+	DataVector                mSignalBuffer;
+
+	size_t numRows, numCols;
+	std::vector<int> mCARoutputList;
+	bool mUseSpatialFilter;
 };
 
 #endif // SPATIAL_FILTER_H
