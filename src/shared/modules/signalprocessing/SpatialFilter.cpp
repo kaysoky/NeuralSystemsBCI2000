@@ -56,9 +56,6 @@ void
 SpatialFilter::Preflight( const SignalProperties& Input,
                                 SignalProperties& Output ) const
 {
-	Output = Input;
-	Output.ChannelLabels().Clear();
-	Output.ChannelUnit().Clear();
   switch( int( Parameter( "SpatialFilterType" ) ) )
   {
     case none:
@@ -75,8 +72,8 @@ SpatialFilter::Preflight( const SignalProperties& Input,
         Output = Input;
         Output.SetChannels( 0 ).SetChannels( Parameter( "SpatialFilter" )->NumRows() );
         if( !Parameter( "SpatialFilter" )->RowLabels().IsTrivial() )
-      for( int i = 0; i < Parameter( "SpatialFilter" )->NumRows(); ++i )
-        Output.ChannelLabels()[ i ] = Parameter( "SpatialFilter" )->RowLabels()[ i ];
+        for( int i = 0; i < Parameter( "SpatialFilter" )->NumRows(); ++i )
+          Output.ChannelLabels()[ i ] = Parameter( "SpatialFilter" )->RowLabels()[ i ];
 
       break; // END CASE fullMatrix
 
@@ -112,6 +109,8 @@ SpatialFilter::Preflight( const SignalProperties& Input,
 
    case commonAverage:
      Output = Input;
+     Output.ChannelLabels().Clear();
+     Output.ChannelUnit().Clear();
 
      if ( Parameter( "SpatialFilterCAROutput" )->NumValues() > 0)
      {
@@ -175,9 +174,9 @@ SpatialFilter::Initialize( const SignalProperties& Input/*Input*/,
 			{
 				mFilterMatrix[row].resize(numCols);
         inputChannelAddress = Parameter( "SpatialFilter" )( row, 0 );
-        outputChannelAddress = Parameter( "SpatialFilter" )( row, 1 );
-        mFilterMatrix[ row ][ 0 ] = Input.ChannelIndex( inputChannelAddress );;
-        mFilterMatrix[ row ][ 1 ] = Output.ChannelIndex( outputChannelAddress );;
+        //outputChannelAddress = Parameter( "SpatialFilter" )( row, 1 );
+        mFilterMatrix[ row ][ 0 ] = Input.ChannelIndex( inputChannelAddress );
+        mFilterMatrix[ row ][ 1 ] = Parameter("SpatialFilter")(row,1) - 1;
         mFilterMatrix[ row ][ 2 ] = Parameter( "SpatialFilter" )( row, 2 );
 			}
 			break;
