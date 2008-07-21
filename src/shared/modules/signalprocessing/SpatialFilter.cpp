@@ -119,9 +119,9 @@ SpatialFilter::Preflight( const SignalProperties& Input,
        {
          string inputChannelAddress = Parameter( "SpatialFilterCAROutput" )( i );
          int inputIdx = Input.ChannelIndex( inputChannelAddress );
-         if( inputIdx < 0 || inputIdx > Input.Channels() )
+         if( inputIdx < 0 || inputIdx >= Input.Channels() )
          bcierr << "Invalid channel specification \"" << inputChannelAddress
-            << "\" in SpatialFilterCAROutput(" << i << ")"
+            << "\" in SpatialFilterCAROutput(" << i << "). The channel does not exist, or is outside of the allowed range."
             << endl;
 
         //propogate the channel labels
@@ -188,10 +188,12 @@ SpatialFilter::Initialize( const SignalProperties& Input/*Input*/,
 			if (Parameter("SpatialFilterCAROutput")->NumValues() > 0)
 			{
         string inputChannelAddress;
+        int inputIdx;
 				for (int i = 0; i < Parameter("SpatialFilterCAROutput")->NumValues(); ++i)
         {
           inputChannelAddress = Parameter("SpatialFilterCAROutput")(i);
-					mCARoutputList.push_back(Input.ChannelIndex(inputChannelAddress));
+          inputIdx = Input.ChannelIndex( inputChannelAddress );
+					mCARoutputList.push_back(inputIdx);
         }
 			}
 			else
@@ -244,7 +246,7 @@ SpatialFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 
 		case commonAverage:
 		{
-			double meanVal;
+			double meanVal = 0;
 			for (int sample = 0; sample < Input.Elements(); ++sample)
 			{
 				for (int channel = 0; channel < Input.Channels(); ++channel)
