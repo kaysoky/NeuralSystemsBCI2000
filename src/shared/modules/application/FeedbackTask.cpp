@@ -51,6 +51,8 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
      " // minimum duration of a run",
    "Application:Targets int NumberTargets= 2 2 0 15 "
      " // number of targets",
+   "Application:Sequencing int NumTrialBlocks= % 0 0 % "
+    "// number of times each target is shown; if blank, the MinRunLength is used",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -70,6 +72,11 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
 {
   OptionalParameter( "RandomSeed" );
   State( "Running" );
+
+  if (MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) ) != 0 &&
+	string(Parameter("NumTrialBlocks")).size() > 0)
+	bcierr << "MinRunLength and NumTrialBlocks cannot be set with non-empty values simultaneously." << endl;
+	
   bcidbg( 2 ) << "Event: Preflight" << endl;
   OnPreflight( Input );
   Output = Input;
@@ -80,6 +87,12 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
 {
   mBlockRandSeq.SetBlockSize( Parameter( "NumberTargets" ) );
 
+  mNumPresentations = 0;
+  mNumTotalPresentations = 0;
+  if(Parameter("NumTrialBlocks")->NumValues() > 0)
+	mNumTotalPresentations = Parameter("NumTrialBlocks") * Parameter("NumberTargets");
+
+  
   mPreRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
   mPreFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "PreFeedbackDuration" ) );
   mFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
@@ -95,6 +108,7 @@ FeedbackTask::StartRun()
 {
   mBlocksInRun = 0;
   mBlocksInPhase = 0;
+  mNumPresentations = 0;
   mPhase = preRun;
   bcidbg( 2 ) << "Event: StartRun" << endl;
   OnStartRun();
@@ -178,6 +192,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         case preRun:
         case ITI:
           State( "TargetCode" ) = mBlockRandSeq.NextElement();
+          mNumPresentations++;
           bcidbg( 2 ) << "Event: TrialBegin" << endl;
           OnTrialBegin();
           mPhase = preFeedback;
@@ -204,8 +219,13 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           State( "TargetCode" ) = 0;
           State( "ResultCode" ) = 0;
           bcidbg( 3 ) << "Blocks in Run: " << mBlocksInRun << "/" << mMinRunLength << endl;
-          if( mBlocksInRun >= mMinRunLength )
+          if( mBlocksInRun >= mMinRunLength && mNumTotalPresentations == 0)
           {
+            doProgress = false;
+            State( "Running" ) = false;
+            mPhase = postRun;
+          }
+          else if (mNumTotalPresentations > 0 && mNumPresentations >= mNumTotalPresentations){
             doProgress = false;
             State( "Running" ) = false;
             mPhase = postRun;
