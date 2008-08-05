@@ -23,10 +23,6 @@ using namespace std;
 void
 BCI2000OutputFormat::Publish() const
 {
-  BEGIN_PARAMETER_DEFINITIONS
-    "Storage:Documentation string StorageTime= % % % % "
-      "// time of beginning of data storage",
-  END_PARAMETER_DEFINITIONS
 }
 
 
@@ -35,11 +31,6 @@ BCI2000OutputFormat::Preflight( const SignalProperties& inProperties,
                                 const StateVector& ) const
 {
   Parameter( "SourceCh" );
-
-  if( !string( Parameter( "StorageTime" ) ).empty() )
-    bciout << "The StorageTime parameter will be overwritten with the"
-           << " recording's actual date and time"
-           << endl;
 
   switch( inProperties.Type() )
   {
@@ -67,14 +58,6 @@ BCI2000OutputFormat::Initialize( const SignalProperties& inProperties,
 void
 BCI2000OutputFormat::StartRun( ostream& os )
 {
-  time_t now = ::time( NULL );
-  const char* dateTime = ::ctime( &now );
-  if( dateTime != NULL )
-  {
-    std::string strDateTime( dateTime, strlen( dateTime ) - 1 );
-    Parameter( "StorageTime" ) = strDateTime;
-  }
-
   // We write 16 bit data in the old format to maintain backward compatibility.
   bool useOldFormat = ( mInputProperties.Type() == SignalType::int16 );
 
