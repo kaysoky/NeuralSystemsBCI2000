@@ -252,9 +252,9 @@ CellsToValues( const mxArray* inCells, Param& ioParam )
   if( ( ioParam.Type().find( "list" ) != string::npos ) && ( numCols == 1 ) )
     ioParam.SetNumValues( numRows );
   else if( numRows * numCols > 1 )
-    ioParam.SetDimensions( dim[ 0 ], dim[ 1 ] );
-  for( int row = 0; row < dim[ 0 ]; ++row )
-    for( int col = 0; col < dim[ 1 ]; ++col )
+    ioParam.SetDimensions( numRows, numCols );
+  for( int row = 0; row < numRows; ++row )
+    for( int col = 0; col < numCols; ++col )
     {
       int idx[] = { row, col };
       const mxArray* cell = mxGetCell( inCells, mxCalcSingleSubscript( inCells, 2, idx ) );
@@ -282,6 +282,8 @@ void
 CellsToLabels( const mxArray* inCells, LabelIndex& ioIndexer )
 {
   int numLabels = mxGetNumberOfElements( inCells );
+  if( numLabels > ioIndexer.Size() )
+    ioIndexer.Resize( numLabels );
   for( int i = 0; i < numLabels; ++i )
   {
     const mxArray* cell = mxGetCell( inCells, i );
