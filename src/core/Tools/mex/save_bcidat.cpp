@@ -333,9 +333,6 @@ mexFunction( int nargout, mxArray* varargout[],
   if( !Params.Exists( "SamplingRate" ) )
     Params.Add( "save_bcidat float SamplingRate= 1" );
 
-  if( Params.Exists( "StorageTime" ) )
-    Params["StorageTime"].Value() = "";
-
   // Choose an output format depending on the file name's extension.
   enum { bcidat, edf, gdf } format = bcidat;
   int p = ::strlen( outputFileName );
