@@ -38,17 +38,21 @@ class Expression : public ArithmeticExpression, private Environment
 {
  public:
   Expression()
-    : mpSignal( NULL )
+    : mpSignal( NULL ),
+      mOptionalAccess( false ),
+      mDefaultValue( 0 )
     {}
   Expression( const std::string& s )
-    : ArithmeticExpression( s ), mpSignal( NULL )
-    {}
-  Expression( const Expression& e )
-    : ArithmeticExpression( e ), mpSignal( NULL )
+    : ArithmeticExpression( s ),
+      mpSignal( NULL ),
+      mOptionalAccess( false ),
+      mDefaultValue( 0 )
     {}
   ~Expression()
     {}
-  const Expression& operator=( const Expression& e );
+
+  Expression& SetOptionalAccess( State::ValueType inDefault = 0 );
+  Expression& ClearOptionalAccess();
 
   bool   IsValid( const GenericSignal* = NULL );
   double Evaluate( const GenericSignal* = NULL );
@@ -58,6 +62,9 @@ class Expression : public ArithmeticExpression, private Environment
   virtual double Signal( const std::string&, const std::string& );
 
   const GenericSignal* mpSignal;
+  bool                 mOptionalAccess;
+  State::ValueType     mDefaultValue;
+
 };
 
 #endif // EXPRESSION_H

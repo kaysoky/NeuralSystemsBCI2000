@@ -16,32 +16,45 @@
 using namespace std;
 
 
-const Expression&
-Expression::operator=( const Expression& e )
+Expression&
+Expression::SetOptionalAccess( State::ValueType inDefaultValue )
 {
-  this->ArithmeticExpression::operator=( e );
-  mpSignal = NULL;
+  mOptionalAccess = true;
+  mDefaultValue = inDefaultValue;
+  return *this;
+}
+
+Expression&
+Expression::ClearOptionalAccess()
+{
+  mOptionalAccess = false;
   return *this;
 }
 
 bool
-Expression::IsValid( const GenericSignal* signal )
+Expression::IsValid( const GenericSignal* inSignal )
 {
-  mpSignal = signal;
-  return ArithmeticExpression::IsValid();
+  mpSignal = inSignal;
+  bool result = ArithmeticExpression::IsValid();
+  mpSignal = NULL;
+  return result;
 }
 
 double
-Expression::Evaluate( const GenericSignal* signal )
+Expression::Evaluate( const GenericSignal* inSignal )
 {
-  mpSignal = signal;
-  return ArithmeticExpression::Evaluate();
+  mpSignal = inSignal;
+  double result = ArithmeticExpression::Evaluate();
+  mpSignal = NULL;
+  return result;
 }
 
 double
 Expression::State( const char* inName )
 {
-  return Environment::State( inName );
+  return mOptionalAccess
+   ? Environment::OptionalState( inName, mDefaultValue )
+   : Environment::State( inName );
 }
 
 double

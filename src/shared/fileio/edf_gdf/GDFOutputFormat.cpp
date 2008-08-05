@@ -67,7 +67,9 @@ GDFOutputFormat::Preflight( const SignalProperties& inProperties,
   }
   GenericSignal preflightSignal( inProperties );
   for( int i = 0; i < Parameter( "EventCodes" )->NumRows(); ++i )
-    Expression( Parameter( "EventCodes" )( i, "Expression" ) ).Evaluate( &preflightSignal );
+    Expression( Parameter( "EventCodes" )( i, "Expression" ) )
+      .SetOptionalAccess()
+      .Evaluate( &preflightSignal );
 
   Parameter( "SubjectName" );
   Parameter( "SubjectYearOfBirth" );
@@ -96,7 +98,7 @@ GDFOutputFormat::Initialize( const SignalProperties& inProperties,
   GenericSignal initSignal( inProperties );
   for( int i = 0; i < Parameter( "EventCodes" )->NumRows(); ++i )
   {
-    mEventConditions.push_back( Expression( Parameter( "EventCodes" )( i, "Condition" ) ) );
+    mEventConditions.push_back( Expression( Parameter( "EventCodes" )( i, "Condition" ) ).SetOptionalAccess() );
     mEventCodes.push_back( Parameter( "EventCodes" )( i, "GDF Event" ) );
     mPreviousConditionValues.push_back( mEventConditions.back().Evaluate( &initSignal ) );
   }
