@@ -51,8 +51,8 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
      " // minimum duration of a run",
    "Application:Targets int NumberTargets= 2 2 0 15 "
      " // number of targets",
-   "Application:Sequencing int NumTrialBlocks= % 0 0 % "
-    "// number of times each target is shown; if blank, the MinRunLength is used",
+   "Application:Sequencing int NumberOfTrials= % 0 0 % "
+	"// number of trials; if blank, the MinRunLength is used",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -74,7 +74,7 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
   State( "Running" );
 
   if (MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) ) != 0 &&
-	string(Parameter("NumTrialBlocks")).size() > 0)
+	string(Parameter("NumberOfTrials")).size() > 0)
 	bcierr << "MinRunLength and NumTrialBlocks cannot be set with non-empty values simultaneously." << endl;
 	
   bcidbg( 2 ) << "Event: Preflight" << endl;
@@ -89,8 +89,8 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
 
   mNumPresentations = 0;
   mNumTotalPresentations = 0;
-  if(Parameter("NumTrialBlocks")->NumValues() > 0)
-	mNumTotalPresentations = Parameter("NumTrialBlocks") * Parameter("NumberTargets");
+  if(Parameter("NumberOfTrials")->NumValues() > 0)
+	mNumTotalPresentations = Parameter("NumberOfTrials");
 
   
   mPreRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
