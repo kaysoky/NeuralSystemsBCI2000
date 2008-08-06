@@ -25,23 +25,28 @@ class SpatialFilter : public GenericFilter
   virtual void Process( const GenericSignal& Input, GenericSignal& Output );
 
  private:
-	enum
-	{
-		none,
-		fullMatrix,
-		sparseMatrix,
-		commonAverage
-	};
-	int mSpatialFilterType;
+  template<int SpatialFilterType>
+   void DoPreflight( const SignalProperties&, SignalProperties& ) const;
+  template<int SpatialFilterType>
+   void DoInitialize( const SignalProperties&, const SignalProperties& );
+  template<int SpatialFilterType>
+   void DoProcess( const GenericSignal& Input, GenericSignal& Output );
 
-	typedef float NumType;
-	typedef std::valarray<NumType> DataVector;
-	std::vector< DataVector > mFilterMatrix;
-	DataVector                mSignalBuffer;
+  enum
+  {
+    none,
+    fullMatrix,
+    sparseMatrix,
+    commonAverage
+  };
+  int mSpatialFilterType;
 
-	size_t numRows, numCols;
-	std::vector<int> mCARoutputList;
-	bool mUseSpatialFilter;
+  typedef float NumType;
+  typedef std::valarray<NumType> DataVector;
+  std::vector< DataVector > mFilterMatrix;
+  DataVector                mSignalBuffer;
+
+  std::vector<int>          mCARoutputList;
 };
 
 #endif // SPATIAL_FILTER_H

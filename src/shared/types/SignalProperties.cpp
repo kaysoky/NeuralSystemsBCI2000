@@ -96,8 +96,13 @@ SignalProperties::AddressToIndex( const string& inAddress,
   else if( inUnit.IsPhysical( inAddress ) )
     result = inUnit.PhysicalToRaw( inAddress );
   // If neither, then we interpret it as a 1-based index.
-  else if( istringstream( inAddress ) >> result )
-    result -= 1;
+  else
+  {
+    istringstream is( inAddress );
+    float number;
+    if( is >> number && is.eof() )
+      result = number - 1;
+  }
   return result;
 }
 

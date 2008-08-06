@@ -272,47 +272,49 @@ VisDisplay::VisDisplayBase::HandleMessage( const VisSignalProperties& v )
   int numSamples = s.ElementUnit().RawMax() - s.ElementUnit().RawMin() + 1;
   Visconfigs()[ v.SourceID() ].Put( CfgID::NumSamples, numSamples, MessageDefined );
 
-  string symbol;
-  double value = s.ElementUnit().Gain() * numSamples;
-  int magnitude = ( ::log10( ::fabs( value ) ) + 1.0 ) / 3.0;
-  if( magnitude < -3 )
-    magnitude = -3;
-  if( magnitude > 3 )
-    magnitude = 3;
-  switch( magnitude )
+  if( numSamples > 0 )
   {
-    case -3:
-      symbol = "n";
-      value /= 1e-9;
-      break;
-    case -2:
-      symbol = "mu";
-      value /= 1e-6;
-      break;
-    case -1:
-      symbol = "m";
-      value /= 1e-3;
-      break;
-    case 0:
-      break;
-    case 1:
-      symbol = "k";
-      value /= 1e3;
-      break;
-    case 2:
-      symbol = "M";
-      value /= 1e6;
-      break;
-    case 3:
-      symbol = "G";
-      value /= 1e9;
-      break;
+    string symbol;
+    double value = s.ElementUnit().Gain() * numSamples;
+    int magnitude = ( ::log10( ::fabs( value ) ) + 1.0 ) / 3.0;
+    if( magnitude < -3 )
+      magnitude = -3;
+    if( magnitude > 3 )
+      magnitude = 3;
+    switch( magnitude )
+    {
+      case -3:
+        symbol = "n";
+        value /= 1e-9;
+        break;
+      case -2:
+        symbol = "mu";
+        value /= 1e-6;
+        break;
+      case -1:
+        symbol = "m";
+        value /= 1e-3;
+        break;
+      case 0:
+        break;
+      case 1:
+        symbol = "k";
+        value /= 1e3;
+        break;
+      case 2:
+        symbol = "M";
+        value /= 1e6;
+        break;
+      case 3:
+        symbol = "G";
+        value /= 1e9;
+        break;
+    }
+    ostringstream oss;
+    oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
+    Visconfigs()[ v.SourceID() ].Put( CfgID::SampleUnit, oss.str(), MessageDefined );
+    Visconfigs()[ v.SourceID() ].Put( CfgID::SampleOffset, s.ElementUnit().Offset(), MessageDefined );
   }
-  ostringstream oss;
-  oss << setprecision( 10 ) << value / numSamples << symbol << s.ElementUnit().Symbol();
-  Visconfigs()[ v.SourceID() ].Put( CfgID::SampleUnit, oss.str(), MessageDefined );
-  Visconfigs()[ v.SourceID() ].Put( CfgID::SampleOffset, s.ElementUnit().Offset(), MessageDefined );
-
   // Although the SignalProperties class allows for individual units for
   // individual channels, the SignalDisplay class is restricted a single
   // unit and range.
