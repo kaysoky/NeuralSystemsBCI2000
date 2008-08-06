@@ -4,13 +4,14 @@
 //---------------------------------------------------------------------------
 
 #include "analysisClass.h"
+#include "PrecisionTime.h"
 //---------------------------------------------------------------------------
 
 typedef signed short int16;
 typedef signed int   int32;
 typedef float        float32;
 
-#define signal(ch,s) (dFile->CalibratedValue(ch, s))
+//#define signal(ch,s) (dFile->CalibratedValue(ch, s))
 /*---------------------------
 analysis: class constructor
 */
@@ -71,21 +72,21 @@ bool analysis::open(string file, Tasks &taskTypes)
     SignalType dataType = dFile->SignalProperties().Type();
 
     //get the source channel gain in mV, not uV
-    /*double *sourceChGain;
-    sourceChGain = new double[nChannels];
-    for (int i = 0; i < nChannels; i++)
-        sourceChGain[i] = dFile->Parameter("SourceChGain")(0,i)/1000;
-    */
-    //read in the signal -----------------------
-    /*signal = new double *[nChannels];
-    for (int ch = 0; ch < nChannels; ch++)
-    {
-        signal[ch] = new double[nSamples];
-        for (int s = 0; s < nSamples; s++)
-        {
-            signal[ch][s] = dFile->CalibratedValue(ch, s);
+	/*double *sourceChGain;
+	sourceChGain = new double[nChannels];
+	for (int i = 0; i < nChannels; i++)
+		sourceChGain[i] = dFile->Parameter("SourceChGain")(0,i)/1000;
+	*/
+	//read in the signal -----------------------
+	signal = new double *[nChannels];
+	for (int ch = 0; ch < nChannels; ch++)
+	{
+		signal[ch] = new double[nSamples];
+		for (int s = 0; s < nSamples; s++)
+		{
+			signal[ch][s] = dFile->CalibratedValue(ch, s);
         }
-    }   */
+	}
     //delete [] sourceChGain;
     
     //get states -----------------------------
@@ -190,8 +191,7 @@ description: clear all of the variables/arrays, including the signal, states, an
 */
 void analysis::clear()
 {
-    //free pointer memory for the signal, which is a double**
-    /*
+	//free pointer memory for the signal, which is a double**
     if (signal != NULL)
         {
         for (int i = 0; i < nChannels; i++)
@@ -205,7 +205,7 @@ void analysis::clear()
         delete[] signal;
         signal = NULL;
     }
-                 */
+                 
     //clear states, which is a map<string, double*>
     for (it = states.begin(); it != states.end(); it++)
     {
@@ -471,18 +471,18 @@ basicStats analysis::doThreshAnalysis(int chNum)
 
         //go through the signal, and increment the signal position until it
         //crosses the threshold
-        while (!risingEdge && (signal(chNum, sigPos) <= thresh) && ((sigPos-sample) < blockSize))
-        {
-            risingEdge = (signal(chNum, sigPos) >= thresh) && (signal(chNum, sigPos-1) < thresh);
-            sigPos++;
+		while (!risingEdge && (signal[chNum][sigPos] <= thresh) && ((sigPos-sample) < blockSize))
+		{
+			risingEdge = (signal[chNum][sigPos] >= thresh) && (signal[chNum][sigPos-1]< thresh);
+			sigPos++;
 		}
 		if (sigPos - sample >= blockSize)
 		{
 			sigPos = sample;
 			//try again with a falling edge
-            while (!fallingEdge && (signal(chNum, sigPos) >= thresh) && ((sigPos-sample) < blockSize))
+            while (!fallingEdge && (signal[chNum][sigPos] >= thresh) && ((sigPos-sample) < blockSize))
 			{
-				fallingEdge = (signal(chNum, sigPos) < thresh) && (signal(chNum, sigPos-1) >= thresh);
+				fallingEdge = (signal[chNum][sigPos] < thresh) && (signal[chNum][sigPos-1] >= thresh);
 				sigPos++;
 			}
 		}
@@ -593,9 +593,9 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 
         if (nextState)
             continue;   */
-        while (!risingEdge && (sigPos < nSamples) && (signal(chNum, sigPos) <= thresh) )
+        while (!risingEdge && (sigPos < nSamples) && (signal[chNum][sigPos] <= thresh) )
         {
-            risingEdge = (signal(chNum, sigPos) >= thresh) && (signal(chNum, sigPos-1) < thresh);
+            risingEdge = (signal[chNum][sigPos] >= thresh) && (signal[chNum][sigPos-1] < thresh);
             sigPos++;
         }
         //calculate the time difference
@@ -676,16 +676,16 @@ void analysis::checkDroppedSamples(int ch)
         return;
 
     checkedSamples += nSamples;
-    double prevVal = signal(ch, 0);
+	double prevVal = signal[ch][0];
     for (int s = 1; s < nSamples; s++)
     {
-        if (signal(ch, s) == 0 && prevVal == 0)
+		if (signal[ch][s] == 0 && prevVal == 0)
             droppedSamples++;
 
-        if (abs(signal(ch, s)) >= 1e7) // 10 million uV, or 10 V
+		if (signal[ch][s] >= 1e7) // 10 million uV, or 10 V
             droppedSamples++;
 
-        prevVal = signal(ch, s);
+        prevVal = signal[ch][s];
   }
 }
 
@@ -695,16 +695,16 @@ void analysis::checkDroppedSamples()
     droppedSamples = 0;
     for (int ch = 0; ch < nChannels; ch++)
     {
-        prevVal = signal(ch, 0);
+		prevVal = signal[ch][0];
         for (int s = 1; s < nSamples; s++)
         {
-            if (signal(ch, s) == 0 && prevVal == 0)
+			if (signal[ch][s] == 0 && prevVal == 0)
                 droppedSamples++;
 
-            if (abs(signal(ch, s)) >= 1e7) // 10 million uV, or 10 V
+			if (abs(signal[ch][s]) >= 1e7) // 10 million uV, or 10 V
                 droppedSamples++;
 
-            prevVal = signal(ch, s);
+			prevVal = signal[ch][s];
         }
     }
 }
