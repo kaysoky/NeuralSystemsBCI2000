@@ -49,8 +49,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SampleBlockSize"><span class="tocnumber">6.2</span> <span class="toctext">SampleBlockSize</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SamplingRate"><span class="tocnumber">6.3</span> <span class="toctext">SamplingRate</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#ServerAddress"><span class="tocnumber">6.4</span> <span class="toctext">ServerAddress</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SignalType"><span class="tocnumber">6.5</span> <span class="toctext">SignalType</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SourceCh"><span class="tocnumber">6.6</span> <span class="toctext">SourceCh</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#Packet_Rate"><span class="tocnumber">6.5</span> <span class="toctext">Packet Rate</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SignalType"><span class="tocnumber">6.6</span> <span class="toctext">SignalType</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#Condition_Mask"><span class="tocnumber">6.7</span> <span class="toctext">Condition Mask</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#Priority"><span class="tocnumber">6.8</span> <span class="toctext">Priority</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SourceCh"><span class="tocnumber">6.9</span> <span class="toctext">SourceCh</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253AMicromedADC.html#States"><span class="tocnumber">7</span> <span class="toctext">States</span></a></li>
@@ -73,6 +76,11 @@ May 19, 2006
 <p>V0.01 - 19/04/2006 - First working version, based on Neusoscan.exe
 </p><p>V0.02 - 08/05/2006 - Added condition testing, 22bit mode and downsampling
 </p><p>V0.03 - 17/05/2006 - Added notchfilter
+</p><p>V0.04 - 19/09/2006 - Added digital trigger packets, changed note packet
+</p><p>V0.05 - 27/11/2006 - Added Priority, fixed digital trigger code
+</p><p>V0.06 - 13/03/2007 - Added note output in textfile
+</p><p>V0.07 - 04/04/2007 - Added error handling: server shuts down if stalling
+</p><p>V2.00 - 29/06/2008 - Updated for BCI2000 v2.0
 </p>
 <a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
 <p>(In this section, indicate the BCI2000 source code revisions (changesets) 
@@ -84,13 +92,13 @@ TortoiseSVN submenu.)
 </p>
 <ul><li>Initial development: 1126
 </li><li>Tested under: 1126
-</li><li>Known to compile under: 1528
+</li><li>Known to compile under: 2040
 </li><li>Broken since: --
 </li></ul>
 <a name="Functional_Description"></a><h2>Functional Description</h2>
-<p>The BCI source module that receives the data from the acquisition is the server so it must be in listening mode before the acquisition unit starts to save data (data is sent only during recording). Micromed sends 64 data packets per second. The connection is reset if the computer running BCI2000 is too slow to read all packets.
-A packet of data is structured in 2 sections the first is the header and the second is information data. The first packet sent from the client is the header of an EEG Micromed trace and is read for condition checking. If a note is added in SystemPLUS it is sent as a note packet to the source module and the state MicromedEvent is set to 1. The next sample block the state returns to 0.
-The header packet and the data packets are in the same format as in a Micromed trace file. The note packet sends the complete note buffer, but this information is ignored in the source module.
+<p>The BCI source module that receives the data from the acquisition is the server so it must be in listening mode before the acquisition unit starts to save data (data is sent only during recording). Micromed sends 64 data packets per second for SD, 32 for LTM. The connection is reset if the computer running BCI2000 is too slow to read all packets. This happens gracefully in version 2.0. Make sure you have SystemPlus 1.02.1091 or higher, in this version Micromed also gracefully closes the TCP/IP connection at BCI2000 errors.
+A packet of data is structured in 2 sections the first is the header and the second is information data. The first packet sent from the client is the header of an EEG Micromed trace and is read for condition checking. If a note is added in SystemPLUS it is sent as a note packet to the source module. If a digital trigger is sent the trigger code is sent to the source module in two ways: the complete code and a bitmasked code. This allows to send information on a condition (eg in SIGFRIED) and extra information for offline analysis.
+The header packet and the data packets are in the same format as in a Micromed trace file. The note packet sends the complete note buffer, and written in a textfile with the Micromed Samplenummer.
 </p>
 <a name="Installation"></a><h2>Installation</h2>
 <p>To active this function is necessary to add 3 registry keys on the acquisition unit under <tt>HKEY_CURRENT_USER\Software\VB and VBA Program Settings\Brain Quick - System 98\EEG_Settings</tt>:
@@ -116,6 +124,9 @@ The header packet and the data packets are in the same format as in a Micromed t
 <a name="ServerAddress"></a><h3>ServerAddress</h3>
 <p>Address and port of the Micromed BCI Server. The port number can be set in the acquisition unit by changing the registry setting "tcpPortNumber".
 </p>
+<a name="Packet_Rate"></a><h3>Packet Rate</h3>
+<p>Number of TCP/IP packets per second: 32 for LTM,64 for SD
+</p>
 <a name="SignalType"></a><h3>SignalType</h3>
 <p>Numeric type of output signal:
 </p>
@@ -124,11 +135,18 @@ The header packet and the data packets are in the same format as in a Micromed t
 </li></ul>
 <p>Other values are not allowed. Use 0 for Micromeds 16 bit mode, 3 for 22 bit mode: only the first 22 bits are used, but data packets are filled with 32 bit integers.
 </p>
+<a name="Condition_Mask"></a><h3>Condition Mask</h3>
+<p>Bitmask. Digital trigger code AND Condition Mask equals conditions without extra information. When not used set 0xFF
+</p>
+<a name="Priority"></a><h3>Priority</h3>
+<p>CPU Priority. Default=1, set higher if the CPU load is too heavy.
+</p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
 <p>The number of digitized and stored channels, must match the number of channels in the acquisition unit.
 </p>
 <a name="States"></a><h2>States</h2>
-<p>None.
+<p>MicromedCode
+MicromedCondition
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>

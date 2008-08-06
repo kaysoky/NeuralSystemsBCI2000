@@ -46,6 +46,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">3.3</span> <span class="toctext">mem</span></a></li>
 </ul>
 </li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Introduction"></a><h2>Introduction</h2>
@@ -57,7 +58,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The BCI2000 binary distribution comes with pre-compiled MEX files for Microsoft Windows platforms.
 Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
 </p><p>Compiling MEX files under Windows requires the Borland C++ compiler (a free command line version is available at <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a>). To build MEX files, open a console window, and execute <tt>make</tt> from the <tt>BCI2000/src/Tools/mex</tt> directory.
-</p><p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more.
+</p><p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more; still, using the <tt>make</tt> command as described above should work with newer versions of Matlab as well.
 </p>
 <a name="Other_Platforms"></a><h3>Other Platforms</h3>
 <p>For platforms other than 32-bit Windows, BCI2000 provides a Matlab script that can be used to build MEX files.
@@ -142,10 +143,12 @@ with &lt;parms&gt; being a vector of parameter values:
 </li><li>bin width,
 </li><li>evaluations per bin,
 </li><li>detrend option (optional, 0: none, 1: mean, 2: linear; defaults to none),
-</li><li>frequency (optional, defaults to 1).
+</li><li>sampling frequency (optional, defaults to 1).
 </li></ul>
 <p>For a detailed description of configuration parameters, see the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">User Reference:ARFilter</a> page.
 </p>
+<a name="See_also"></a><h2>See also</h2>
+
 <div class="printfooter">
 </div>
 

@@ -4,7 +4,7 @@
 <head>
 <title>Programming Tutorial:Implementing a Matlab-based Filter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Tutorial:Implementing a Matlab-based Filter,Programming Reference:MatlabFilter" />
+<meta name="keywords" content="Programming Tutorial:Implementing a Matlab-based Filter,Contributions:FieldTripBuffer,Programming Reference:MatlabFilter,User Reference:MatlabFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -68,34 +68,35 @@ A typical Matlab implementation of that algorithm might consist of about ten lin
 </p>
 <pre>
 function class_result = classify( data, band, classifier );
-%class_result = classify( data, band, classifier )
+
+% Use as
+%   class_result = classify( data, band, classifier )
 %
 % This function takes raw data as a [channels x samples] vector in the 'data'
-% input variable.
-% It requires the Matlab signal processing toolbox.
+% input variable. 
 %
 % Then, it computes bandpower features for the band specified in the 'band'
 % input variable, which is a number between 0 and 0.5, specifying
 % center frequency in terms of the sampling rate.
 %
 % As a last step, it applies the 'classifier' matrix to the features in order
-% to obtain a single classification result for each sample.
-% The 'classifier' vector specifies a 
-% classification weight for each processed channel.
+% to obtain a single classification result for each sample. The 'classifier' 
+% vector specifies a classification weight for each processed channel.
 % 
-% The result is a single classification result.
+% The result is a single classification result for each sample.
 %
-%
+% This requires the Matlab signal processing toolbox.
+
 % Design bandpass filters and apply them to the data matrix.
-% The filtered data will contain bandpass filtered data as additional
-% channels.
-processed_data=[];
+% The filtered data will contain bandpass filtered data as channels.
 [n,Wn]=buttord(band*[0.9 1.1]/2,band*[0.7 1.4]/2,1,60);
 [b,a]=butter(n,Wn);
-processed_data = [processed_data; filter(b,a,data)];
+processed_data = filter(b,a,data);
+
 % For demodulation, rectify and apply a low pass.
 [b,a]=butter(1,band/4);
 processed_data = filter(b,a,abs(processed_data));
+
 % Finally, apply the linear classifier.
 class_result = processed_data * classifier;
 </pre>
@@ -137,7 +138,9 @@ as in the offline version of the algorithm.
 </p>
 <pre>
 function out_signal = bci_Process( in_signal )
-% Apply a filter to in_signal, and return the result in out_signal.
+
+% Process a single block of data by applying a filter to in_signal, 
+% and return the result in out_signal.
 % Signal dimensions are ( channels x samples ).
 
 % We use global variables to store classifier, 
@@ -155,6 +158,7 @@ out_signal = out_signal * classifier;
 </p>
 <pre>
 function bci_Initialize( in_signal_dims, out_signal_dims )
+
 % Perform configuration for the bci_Process script.
 
 % Parameters and states are global variables.
@@ -165,14 +169,15 @@ global bci_Parameters bci_States;
 global a b z lpa lpb lpz classifier;
 
 % Configure the Bandpass filter
-band = str2double( bci_Parameters.Passband ) ...
-     / str2double( bci_Parameters.SamplingRate );
+band = str2double( bci_Parameters.Passband ) / str2double( bci_Parameters.SamplingRate );
 [n,Wn]=buttord(band*[0.9 1.1]/2,band*[0.7 1.4]/2,1,60);
 [b,a]=butter(n,Wn);
 z=zeros(max(length(a),length(b))-1,in_signal_dims(1));
+
 % Configure the Lowpass filter
 [lpb,lpa]=butter(1,band/4);
 lpz=zeros(max(length(lpa),length(lpb))-1,in_signal_dims(1));
+
 % Configure the Classifier vector
 classifier = str2double( bci_Parameters.ClassVector );
 </pre>
@@ -186,8 +191,8 @@ function bci_StartRun
 % Reset filter state at the beginning of a run.
 
 global z lpz;
-z=zeros(size(z));
-lpz=zeros(size(lpz));
+z   = zeros(size(z));
+lpz = zeros(size(lpz));
 </pre>
 <a name="Constructor"></a><h3>Constructor</h3>
 <p>To complete the Matlab filter code, we need to declare the <i>Band</i> and <i>Classifier</i>
@@ -196,15 +201,12 @@ parameters in a <i>Constructor</i> event handler:
 <pre>
 function [ parameters, states ] = bci_Construct
 
-% Request BCI2000 parameters
-% by returning parameter definition lines as demonstrated
-% below.
+% Request BCI2000 parameters by returning parameter definition 
+% lines as demonstrated below.
 
 parameters = { ...
-  [ 'BPClassifier float Passband= 10 10 0 % % ' ...
-    '// Bandpass frequency in Hz' ] ...
-  [ 'BPClassifier matrix ClassVector= 1 1 1 0 % % ' ...
-    '// Linear classifier vector' ] ...
+  [ 'BPClassifier float Passband= 10 10 0 % % // Bandpass frequency in Hz' ] ...
+  [ 'BPClassifier matrix ClassVector= 1 1 1 0 % % // Linear classifier vector' ] ...
 };
 </pre>
 <a name="Preflight"></a><h3>Preflight</h3>
@@ -222,28 +224,22 @@ function [ out_signal_dim ] = bci_Preflight( in_signal_dim )
 % Parameters and states are global variables.
 global bci_Parameters bci_States;
 
-band = str2double( bci_Parameters.Passband ) ...
-     / str2double( bci_Parameters.SamplingRate );
+band = str2double( bci_Parameters.Passband ) / str2double( bci_Parameters.SamplingRate );
 if( band &lt;= 0 )
-  error( [ ...
-    'The passband parameter must be greater zero'
-  ] );
-else if( band &gt; 0.5 / 1.4 )
-  error( [ ...
-    'The Passband parameter conflicts with the sampling rate'
-  ] ); 
+  error( 'The passband parameter must be greater zero' );
+elseif( band &gt; 0.5 / 1.4 )
+  error( 'The Passband parameter conflicts with the sampling rate' ); 
 end
 
 out_signal_dim = [ 1, size( in_signal_dim, 2 ) ];
 if( in_signal_dim( 1 ) ~= size( bci_Parameters.ClassVector, 2 ) )
-  error( [ ...
-    'ClassVector length must match the input' ...
-    ' signal''s number of channels' ...
-  ] );
+  error( 'ClassVector length must match the input signal''s number of channels' );
 end
 </pre>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="Programming_Reference%253AMatlabFilter.html" title="Programming Reference:MatlabFilter">Programming Reference:MatlabFilter</a>
+<p><a href="Programming_Reference%253AMatlabFilter.html" title="Programming Reference:MatlabFilter">Programming Reference:MatlabFilter</a>, 
+<a href="User_Reference%253AMatlabFilter.html" title="User Reference:MatlabFilter">User Reference:MatlabFilter</a>, 
+<a href="Contributions%253AFieldTripBuffer.html" title="Contributions:FieldTripBuffer">Contributions:FieldTripBuffer</a>
 </p>
 <div class="printfooter">
 </div>

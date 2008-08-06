@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:ApplicationBase Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:GenericVisualization Class,Programming Reference:LogFile Class,Technical Reference:BCI2000 Messages,User Reference:Operator Module,Programming Reference:StimulusPresentationTask Class,Programming Reference:GUI:GraphDisplay Class,Programming Reference:FeedbackTask Class,Programming Reference:RandomGenerator Class" />
+<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:GenericVisualization Class,Programming Reference:LogFile Class,Programming Reference:RandomGenerator Class,Technical Reference:BCI2000 Messages,User Reference:Operator Module,Programming Reference:StimulusPresentationTask Class,Programming Reference:GUI:GraphDisplay Class,Programming Reference:FeedbackTask Class" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -74,13 +74,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>An application module uses the <tt>ApplicationBase</tt> class by deriving its <a href="BCI2000_Glossary.html#Task" title="BCI2000 Glossary">task filter</a> from <tt>ApplicationBase</tt> rather than <tt>GenericFilter</tt> directly. It has then access to the facilities explained below.
 </p>
 <a name="RandomNumberGenerator"></a><h2>RandomNumberGenerator</h2>
-<p>The <tt>ApplicationBase</tt> class provides an object of type <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:RandomGenerator_Class&amp;action=edit" class="new" title="Programming Reference:RandomGenerator Class"><tt>RandomGenerator</tt></a> which may be used to obtain integer pseudo-random numbers uniformly distributed over a specified range:
+<p>The <tt>ApplicationBase</tt> class provides an object of type <a href="Programming_Reference%253ARandomGenerator_Class.html" title="Programming Reference:RandomGenerator Class"><tt>RandomGenerator</tt></a> which may be used to obtain integer pseudo-random numbers uniformly distributed over a specified range:
 </p>
 <pre>int rnd = RandomNumberGenerator(10);
 </pre>
 <p>will assign a number between 0 and 9 to the variable named "rnd".
 Compared with other options to obtain pseudo-random numbers, the advantage of using <tt>ApplicationBase::RandomNumberGenerator</tt> object is that its behavior is governed by a global random seed value; this allows consistent, predictable BCI2000 behavior, e.g. for testing purposes.
-For more information, refer to the <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:RandomGenerator_Class&amp;action=edit" class="new" title="Programming Reference:RandomGenerator Class"><tt>RandomGenerator</tt></a> reference page.
+For more information, refer to the <a href="Programming_Reference%253ARandomGenerator_Class.html" title="Programming Reference:RandomGenerator Class"><tt>RandomGenerator</tt></a> reference page.
 </p>
 <a name="Application_Log"></a><h2>Application Log</h2>
 <p>Typically, a BCI2000 application module displays messages to the operator user to indicate that a new trial has started, a target has been hit or missed, or to display statistics about the current run. Often, this is information, in conjunction with additional, more detailed information is written into a log file, and that log file is maintained side-by-side with recorded data in the current session directory.

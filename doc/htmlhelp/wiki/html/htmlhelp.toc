@@ -243,6 +243,13 @@ Contributions%253AFIRFilter.html
 2 States States
 2 See_also See also
 
+Contributions%253AFieldTripBuffer.html
+2 Synopsis Synopsis
+2 Location Location
+2 Parameters Parameters
+2 States States
+2 See_also See also
+
 Contributions%253AFileWriters.html
 2 See_also See also
 
@@ -278,7 +285,10 @@ Contributions%253AMicromedADC.html
 3 SampleBlockSize SampleBlockSize
 3 SamplingRate SamplingRate
 3 ServerAddress ServerAddress
+3 Packet_Rate Packet Rate
 3 SignalType SignalType
+3 Condition_Mask Condition Mask
+3 Priority Priority
 3 SourceCh SourceCh
 2 States States
 2 See_also See also
@@ -548,7 +558,6 @@ MARIO_Technical_Documentation.html
 2 Visualization_Module Visualization Module
 
 Main_Page.html
-2 BCI2000_Version_2 BCI2000 Version 2
 2 Getting_Started_with_BCI2000  Getting Started with BCI2000 
 2 User_Tutorials User Tutorials
 2 User_Reference_Manual User Reference Manual
@@ -813,6 +822,7 @@ Programming_Reference%253AGenericFilter_Class.html
 2 Required_Members Required Members
 3 Constructor Constructor
 3 Preflight Preflight
+3 Initialize Initialize
 3 Process Process
 2 Optional_Member_Functions Optional Member Functions
 3 StartRun StartRun
@@ -863,13 +873,14 @@ Programming_Reference%253ALogFile_Class.html
 2 Remarks Remarks
 2 See_also See also
 
+Programming_Reference%253AMatlab.html
+
 Programming_Reference%253AMatlabFilter.html
-2 Filter_Interface Filter Interface
-2 Accessing_Parameters_and_States Accessing Parameters and States
-2 Declaring_Parameters_and_States Declaring Parameters and States
-2 Signal_Format Signal Format
+2 Overview Overview
+2 Parameters_and_States Parameters and States
+2 Input_and_Output_Signal_Format Input and Output Signal Format
 2 Error_Reporting Error Reporting
-2 Combining_with_BCI2000_Signal_Processing_Filters Combining with BCI2000 Signal Processing Filters
+2 Combining_the_MatlabFilter_with_other_Signal_Processing_Filters Combining the MatlabFilter with other Signal Processing Filters
 2 Command_Line_Options Command Line Options
 3 MatlabWD MatlabWD
 3 MatlabStayOpen MatlabStayOpen
@@ -898,6 +909,20 @@ Programming_Reference%253AProject_Settings.html
 2 Pre-Compiled_Headers Pre-Compiled Headers
 3 PCH_Policy_in_BCI2000 PCH Policy in BCI2000
 2 See_also  See also 
+
+Programming_Reference%253ARandomGenerator_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 int_Seed_.28rw.29 int Seed (rw)
+3 int_RandMax_.28r.29 int RandMax (r)
+2 Events Events
+3 Initialize Initialize
+2 Methods Methods
+3 int_Random.28.29 int Random()
+3 int_operator.28.29.28int_N.29 int operator()(int N)
+2 Remarks Remarks
+2 See_also See also
 
 Programming_Reference%253ARapid_Development.html
 2 Templates Templates
@@ -1513,6 +1538,18 @@ User_Reference%253ALogging_Input.html
 3 JoystickButtons1.2C_JoystickButtons2.2C_JoystickButtons3.2C_JoystickButtons4 JoystickButtons1, JoystickButtons2, JoystickButtons3, JoystickButtons4
 2 See_also See also
 
+User_Reference%253AMatlab.html
+
+User_Reference%253AMatlabFilter.html
+2 Synopsis Synopsis
+2 Parameters Parameters
+2 States States
+2 Detailled_explanation Detailled explanation
+2 Troubleshooting: Troubleshooting:
+3 Matlab_doesn.27t_find_your_functions Matlab doesn't find your functions
+3 There_is_no_Matlab_engine_started_up There is no Matlab engine started up
+2 See_also See also
+
 User_Reference%253AMatlab_MEX_Files.html
 2 Introduction Introduction
 2 Using_BCI2000_MEX_files Using BCI2000 MEX files
@@ -1522,6 +1559,7 @@ User_Reference%253AMatlab_MEX_Files.html
 3 load_bcidat <tt>load_bcidat</tt>
 3 convert_bciprm <tt>convert_bciprm</tt>
 3 mem <tt>mem</tt>
+2 See_also See also
 
 User_Reference%253AModule_Command_Line_Options.html
 2 Core_Modules Core Modules
@@ -1730,11 +1768,21 @@ User_Reference%253ASourceFilter.html
 User_Reference%253ASpatialFilter.html
 2 Function Function
 2 Parameters Parameters
+3 SpatialFilterType SpatialFilterType
 3 SpatialFilter SpatialFilter
+4 Full_Matrix_Filter_Type Full Matrix Filter Type
+4 Sparse_Matrix_Filter_Type Sparse Matrix Filter Type
+3 SpatialFilterCAROutput SpatialFilterCAROutput
 2 States States
 2 Examples Examples
-3 Linked_Mastoids Linked Mastoids
-3 Common_Average_Reference Common Average Reference
+3 Linked_Mastoids_.28Full_Matrix.29 Linked Mastoids (Full Matrix)
+3 Sparse_Matrix Sparse Matrix
+3 Large_Laplacian_.28Sparse_Matrix.29 Large Laplacian (Sparse Matrix)
+2 Performance_Notes Performance Notes
+3 None None
+3 CAR CAR
+3 Sparse_Matrix_2 Sparse Matrix
+3 Full_Matrix Full Matrix
 2 See_also See also
 
 User_Reference%253AStateTransform.html
@@ -1875,7 +1923,6 @@ User_Tutorial%253ABCI2000_Tour.html
 User_Tutorial%253AConfiguring_Online_Feedback.html
 2 Starting_up_BCI2000 Starting up BCI2000
 2 Spatial_Filtering Spatial Filtering
-3 Creating_a_CAR_Filter Creating a CAR Filter
 2 Subject-Specific_Parameters Subject-Specific Parameters
 3 Configuring_the_Classifier Configuring the Classifier
 2 Next_Step Next Step

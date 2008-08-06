@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:IIRFilter Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:IIRFilter Class,Programming Reference:MidiPlayer Class,Programming Reference:TextToSpeech Class,User Reference:SourceFilter" />
+<meta name="keywords" content="Programming Reference:IIRFilter Class,Programming Reference:Rapid Development,User Reference:SourceFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -69,8 +69,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p><tt>BCI2000/src/shared/modules/signalprocessing</tt>
 </p>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>The <tt>IIRFilter</tt> class is a base class for BCI2000 filters that implement <a href="http://en.wikipedia.org/wiki/Digital_filter" class='external text' title="http://en.wikipedia.org/wiki/Digital_filter" rel="nofollow">digital filters</a>. Classes derived from <tt>IIRFilter</tt> are supposed to implement <tt>IIRFilter::DesignFilter()</tt>, specifying filter behavior by providing a transfer function.
-Differently from typical IIR filter implementations, which expect the transfer function in terms of filter coefficients, the BCI2000 <tt>IIRFilter</tt> class expects the transfer function in terms of its numerator's roots ("zeros") and denominator roots ("poles"); this approach reduces numerical instability at higher filter orders.
+<p>The <tt>IIRFilter</tt> class is a base class for BCI2000 filters that provide <a href="http://en.wikipedia.org/wiki/Digital_filter" class='external text' title="http://en.wikipedia.org/wiki/Digital_filter" rel="nofollow">digital filters</a>. Classes derived from <tt>IIRFilter</tt> are supposed to implement <tt>IIRFilter::DesignFilter()</tt>, specifying filter behavior by means of a transfer function.
+Differently from typical IIR filter implementations, which expect the transfer function in terms of filter coefficients, the BCI2000 <tt>IIRFilter</tt> class expects the transfer function in terms of its numerator's roots ("zeros") and denominator's roots ("poles"); this approach improves numerical stability at higher filter orders.
 </p>
 <a name="FilterDesign_Library"></a><h2>FilterDesign Library</h2>
 <p>While any method may be used to determine the transfer function, the FilterDesign library provides a convenient way to compute a transfer function from desired filter properties. It is located at <tt>BCI2000/src/extlib/math/FilterDesign</tt>, and was written for BCI2000 based on <a href="http://www-users.cs.york.ac.uk/~fisher/mkfilter/" class='external text' title="http://www-users.cs.york.ac.uk/~fisher/mkfilter/" rel="nofollow">public-domain code by A.J. Fisher</a>; it provides a number of classic filter design methods in form of C++ classes.
@@ -97,7 +97,7 @@ To use such a class, instantiate it, use its member functions to configure param
 From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials may be extracted using <tt>Ratpoly::Numerator()</tt> and <tt>Ratpoly::Denominator()</tt>, respectively. Both functions return a polynomial, from which roots may be obtained using <tt>Polynomial::Roots()</tt>, and coefficients may be obtained using <tt>Polynomial::Coefficients()</tt>.
 </p>
 <a name="FilterDesign::Chebychev"></a><h3>FilterDesign::Chebychev</h3>
-<p>The <tt>Chebychev</tt> class provides the same interface as the <tt>Butterworth</tt> class, and an additional function to specify ripple amplitude:
+<p>The <tt>Chebychev</tt> class provides an interface identical to the <tt>Butterworth</tt> class, and an additional function to specify ripple amplitude.
 </p>
 <a name="Ripple_dB.28amplitude.29"></a><h4>Ripple_dB(amplitude)</h4>
 <p>Set the amplitude of the filter's passband ripples in dB.
@@ -155,7 +155,7 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
        .Lowpass( corner )
        .TransferFunction();
 
-   outGain = 1.0 / abs( tf.Evaluate( 1.0 ) ); // LF gain
+   outGain = 1.0 / abs( tf.Evaluate( 1.0 ) ); // make sure that LF gain is unity
    outZeros = tf.Numerator().Roots();
    outPoles = tf.Denominator().Roots();
  }
@@ -163,7 +163,7 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
 <p>For an example that combines a notch filter with a high pass filter, please refer to the <a href="User_Reference%253ASourceFilter.html" title="User Reference:SourceFilter">SourceFilter</a>'s <a href="http://www.bci2000.org/svn/trunk/src/shared/modules/signalsource/SourceFilter.cpp" class='external text' title="http://www.bci2000.org/svn/trunk/src/shared/modules/signalsource/SourceFilter.cpp" rel="nofollow">source code</a>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="Programming_Reference%253ATextToSpeech_Class.html" title="Programming Reference:TextToSpeech Class">Programming Reference:TextToSpeech Class</a>, <a href="Programming_Reference%253AMidiPlayer_Class.html" title="Programming Reference:MidiPlayer Class">Programming Reference:MidiPlayer Class</a>
+<p><a href="Programming_Reference%253ARapid_Development.html" title="Programming Reference:Rapid Development">Programming Reference:Rapid Development</a>
 </p>
 <div class="printfooter">
 </div>

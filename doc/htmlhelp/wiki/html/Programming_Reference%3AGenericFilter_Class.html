@@ -37,7 +37,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Constructor"><span class="tocnumber">2.1</span> <span class="toctext">Constructor</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Preflight"><span class="tocnumber">2.2</span> <span class="toctext">Preflight</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Process"><span class="tocnumber">2.3</span> <span class="toctext">Process</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Initialize"><span class="tocnumber">2.3</span> <span class="toctext">Initialize</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericFilter_Class.html#Process"><span class="tocnumber">2.4</span> <span class="toctext">Process</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Programming_Reference%253AGenericFilter_Class.html#Optional_Member_Functions"><span class="tocnumber">3</span> <span class="toctext">Optional Member Functions</span></a>
@@ -108,8 +109,9 @@ versions of some of these member functions:
  } </pre>
 <p>Note that the <tt>const</tt> keyword following the function argument list forbids altering any data member of your filter object. This avoids diffusion of initialization code from <tt>Initialize</tt> into <tt>Preflight</tt>. If you have your own sub-objects instantiated and maintained by your filter, you should provide them with their own <tt>Preflight() const</tt> member functions, and call these from your filter's <tt>Preflight</tt>. 
 </p>
-<ul><li><tt>Initialize</tt> is called after a successful <tt>Preflight</tt>. Thus, it may safely omit all checks related to parameter consistency. In <tt>Initialize</tt>, your filter's data members are set to the values implied by the user's choices, or to the initial values required for the filter's operation:
-</li></ul>
+<a name="Initialize"></a><h3>Initialize</h3>
+<p><tt>Initialize</tt> is called after a successful <tt>Preflight</tt>. Thus, it may safely omit all checks related to parameter consistency. In <tt>Initialize</tt>, your filter's data members are set to the values implied by the user's choices, or to the initial values required for the filter's operation:
+</p>
 <pre>
  void MyFilter::Initialize( const SignalProperties&amp; Input,
                             const SignalProperties&amp; Output )
@@ -117,7 +119,7 @@ versions of some of these member functions:
    mMyParam = Parameter( &quot;MyParam&quot; );
    mMyOtherParam = Parameter( &quot;MyOtherParam&quot; );
    mCount = 0;
- } </pre> 
+ } </pre>
 <a name="Process"></a><h3>Process</h3>
 <p>The <tt>Process</tt> function is called once for each block of EEG data. It receives an input in its first argument, and sets the output signal to values resulting from the filter operation. In the current BCI2000 implementation, there is a single chain of filters; one filter's output signal is the next filter's input. A filter which does not perform any modification to the signal (e.g., a statistics filter) needs to copy its input signal into the output signal, as in the example:
 </p>

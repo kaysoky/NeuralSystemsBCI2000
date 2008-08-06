@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:SpatialFilter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:SpatialFilter,User Reference:LinearClassifier" />
+<meta name="keywords" content="User Reference:SpatialFilter,User Reference:DataIOFilter,User Reference:LinearClassifier" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -35,38 +35,83 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilter"><span class="tocnumber">2.1</span> <span class="toctext">SpatialFilter</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilterType"><span class="tocnumber">2.1</span> <span class="toctext">SpatialFilterType</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilter"><span class="tocnumber">2.2</span> <span class="toctext">SpatialFilter</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ASpatialFilter.html#Full_Matrix_Filter_Type"><span class="tocnumber">2.2.1</span> <span class="toctext">Full Matrix Filter Type</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ASpatialFilter.html#Sparse_Matrix_Filter_Type"><span class="tocnumber">2.2.2</span> <span class="toctext">Sparse Matrix Filter Type</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilterCAROutput"><span class="tocnumber">2.3</span> <span class="toctext">SpatialFilterCAROutput</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Examples"><span class="tocnumber">4</span> <span class="toctext">Examples</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Linked_Mastoids"><span class="tocnumber">4.1</span> <span class="toctext">Linked Mastoids</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Common_Average_Reference"><span class="tocnumber">4.2</span> <span class="toctext">Common Average Reference</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Linked_Mastoids_.28Full_Matrix.29"><span class="tocnumber">4.1</span> <span class="toctext">Linked Mastoids (Full Matrix)</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Sparse_Matrix"><span class="tocnumber">4.2</span> <span class="toctext">Sparse Matrix</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Large_Laplacian_.28Sparse_Matrix.29"><span class="tocnumber">4.3</span> <span class="toctext">Large Laplacian (Sparse Matrix)</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#Performance_Notes"><span class="tocnumber">5</span> <span class="toctext">Performance Notes</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#None"><span class="tocnumber">5.1</span> <span class="toctext">None</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#CAR"><span class="tocnumber">5.2</span> <span class="toctext">CAR</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Sparse_Matrix_2"><span class="tocnumber">5.3</span> <span class="toctext">Sparse Matrix</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#Full_Matrix"><span class="tocnumber">5.4</span> <span class="toctext">Full Matrix</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Function"></a><h2>Function</h2>
-<p>The SpatialFilter computes an instantaneous linear transformation of its input.
-This linear transformation is described by a transformation matrix, and applied for each sample separately, not linking data across different points in time.
-</p><p>Typically, the SpatialFilter's input is the unfiltered brain signal from the source module.
+<p>The SpatialFilter computes an instantaneous linear transformation of its input. Typically, the SpatialFilter's input is the unfiltered brain signal from the source module. The linear transformation that is applied by the spatial filter is described by a transformation matrix, and applied for each sample separately, not linking data across different points in time. This linear transformation can be parameterized in three different ways as described below.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
+<a name="SpatialFilterType"></a><h3>SpatialFilterType</h3>
+<p>This parameter defines the method that will be used to design the spatial filter. The choices are:
+</p>
+<ol><li> none
+</li><li> full matrix
+</li><li> sparse matrix
+</li><li> common average reference (CAR)
+</li></ol>
+<p>These choices are described below.
+</p>
+<dl><dt> None&nbsp;</dt><dd> In this case, no spatial filtering is performed; the input signal is copied to the output signal, and the spatial filter matrix is ignored.
+</dd></dl>
+<dl><dt> Full Matrix&nbsp;</dt><dd> This is the standard spatial filter present in previous versions BCI2000. The SpatialFilter matrix parameter defines the linear transformation applied to the input signal.
+</dd></dl>
+<dl><dt> Sparse Matrix&nbsp;</dt><dd> The sparse matrix filter uses the SpatialFilter to define an input channel, output channel, and weight for that channel.
+</dd></dl>
+<dl><dt> Common Average Reference (CAR)&nbsp;</dt><dd> The common average reference spatial filter calculates the mean of every channel, and subtracts this value from selected output channels. The output channels from this filter are defined with the SpatialFilterCAROutput parameter (see below for more information on this parameter). 
+</dd></dl>
 <a name="SpatialFilter"></a><h3>SpatialFilter</h3>
+<a name="Full_Matrix_Filter_Type"></a><h4>Full Matrix Filter Type</h4>
 <div class="floatright"><span><a href="../images/thumb/f/f0/SpatialFilter.png/256px-SpatialFilter.png" class="image" title=""><img src="../images/thumb/f/f0/SpatialFilter.png/256px-SpatialFilter.png" alt="" width="256" height="181" longdesc="/wiki/index.php/Image:SpatialFilter.png" /></a></span></div>
-<p>This is a matrix defining the linear transformation applied to the filter's input signal.
-In this matrix, columns represent input channels, and rows represent output channels.
-Each matrix element defines a weight with which the respective input channel (column) enters into the respective output channel (row).
+<p>The full matrix filter uses the SpatialFilter parameter to define the linear transformation applied to the filter's input signal. In this matrix, columns represent input channels, and rows represent output channels. Each matrix element defines a weight with which the respective input channel (column) enters into the respective output channel (row).
 </p><p>If the spatial filter is an identity filter -- not modifying its input --, then the SpatialFilter matrix is a unit matrix (square matrix with ones on the main diagonal, and all other elements zero).
-</p><p>In a typical EEG experiment with fixed montage, you might want column labels to reflect the respective electrode location, simplifying the task of further modifications to the spatial filter.
+</p><p>In a typical EEG experiment with fixed montage, you might want <i>column labels</i> to reflect the respective electrode location, simplifying the task of further modifications to the spatial filter.
+Also, specifying <i>row labels</i> to identify output channels allows you to use those labels in configuration of further stages of processing, such as the <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">LinearClassifier</a>.
+</p>
+<a name="Sparse_Matrix_Filter_Type"></a><h4>Sparse Matrix Filter Type</h4>
+<p>The sparse matrix filter uses the SpatialFilter parameter to define the relationship between input channels and output channels with a given weight. In this case, the SpatialFilter matrix must have 3 columns, and a row for each input/output relationship. The first column contains the input channel, the third column defines the weight that the input channel is multiplied by before being assigned to the output channel, which is defined in the second column.
+</p><p>When specifying input channels in the first column, you may use <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel names</a>. In order to assign labels to output channels in sparse representation, use arbitrary labels in the (third) output channel column.
+</p><p>See the example below for more information on how to use the sparse matrix.
+</p>
+<a name="SpatialFilterCAROutput"></a><h3>SpatialFilterCAROutput</h3>
+<p>This parameter is a list of channels that define which channels should be output from the common average reference spatial filter, and the order in which they should appear. That is, the location of the channel in this list determines the output channel position. For example, if input channels 6, 7, 10, and 12 should be passed to the output of the spatial filter as channels 3, 4, 1, and 2, then this parameter should be set to:
+</p><p><code>10 12 6 7</code>
+</p><p>Rather than numbers, channel names may be specified as defined in the <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">ChannelNames</a> parameter:
+</p><p><code>C3 C4 CP3 CP4 Cz</code>
+</p><p>It is important to note that <b>all</b> channels passed to the spatial filter (typically defined in the TransmitChList) are used in the CAR calculation, but only a subset of these channels are actually output and passed to the next step in the signal processing chain.
+</p><p>If this parameter is left blank, then all input channels are passed to the output, and the number of input channels equals the number of output channels.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.
 </p>
 <a name="Examples"></a><h2>Examples</h2>
-<a name="Linked_Mastoids"></a><h3>Linked Mastoids</h3>
+<a name="Linked_Mastoids_.28Full_Matrix.29"></a><h3>Linked Mastoids (Full Matrix)</h3>
 <p>Physical reference is to the left mastoid (A1). The right mastoid (A2) is recorded vs A1 on channel 1. All other electrodes are recorded vs A1 as well, and use the remaining channels.
 In your spatial filter, you will want to re-reference all channels against "linked mastoids", i.e. against the mean of A1 and A2.
 </p><p>In the spatial filter matrix, you want to subtract half of the A2 channel from each of the remaining channels:
@@ -91,36 +136,125 @@ In your spatial filter, you will want to re-reference all channels against "link
 <tr>
 <td> &nbsp; </td><td colspan="5"> ...
 </td></tr></table>
-<a name="Common_Average_Reference"></a><h3>Common Average Reference</h3>
-<p>Signals are to be re-referenced against the average of all channels.
-To achieve this, begin with an identity matrix, and subtract a matrix of all ones, divided by the number <span class="texhtml"><i>N</i></span> of input channels:
+<p><br />
 </p>
-<table border="1" cellspacing="0" style="text-align:center">
-<caption> Common Average Reference
+<a name="Sparse_Matrix"></a><h3>Sparse Matrix</h3>
+<p>In this example, the mean of channels 1-4 are passed to output channel 1, and the negative mean of channels 10-14 are passed to output channel 2. The SpatialFilter matrix definition is given below.
+</p>
+<table border="1" cellspacing="0" cellpadding="3" style="text-align:center">
+<caption> Sparse Matrix
 </caption><tr>
-<th> &nbsp; </th><th> Fz </th><th> Cz </th><th> Pz </th><th> Oz </th><th> ...
+<th> &nbsp; </th><th> In </th><th> Out </th><th> Wt
 </th></tr>
 <tr>
-<th> Fz'
-</th><td> 1-1/N </td><td> 1/N </td><td> 1/N </td><td> 1/N </td><td rowspan="4"> ...
+<th> 1
+</th><td> 1 </td><td> 1 </td><td> .25
 </td></tr>
 <tr>
-<th> Cz'
-</th><td> 1/N </td><td>  1-1/N </td><td> 1/N </td><td> 1/N
+<th> 2
+</th><td> 2 </td><td> 1 </td><td> .25
 </td></tr>
 <tr>
-<th> Pz'
-</th><td> 1/N </td><td> 1/N </td><td> 1-1/N </td><td> 1/N
+<th> 3
+</th><td> 3 </td><td> 1 </td><td> .25
 </td></tr>
 <tr>
-<th> Oz'
-</th><td> 1/N </td><td> 1/N </td><td> 1/N </td><td> 1-1/N
+<th> 4
+</th><td> 4 </td><td> 1 </td><td> .25
 </td></tr>
 <tr>
-<td> &nbsp; </td><td colspan="5"> ...
+<th> 5
+</th><td> 10 </td><td> 2 </td><td> -.2
+</td></tr>
+<tr>
+<th> 6
+</th><td> 11 </td><td> 2 </td><td> -.2
+</td></tr>
+<tr>
+<th> 7
+</th><td> 12 </td><td> 2 </td><td> -.2
+</td></tr>
+<tr>
+<th> 8
+</th><td> 13 </td><td> 2 </td><td> -.2
+</td></tr>
+<tr>
+<th> 9
+</th><td> 14 </td><td> 2 </td><td> -.2
+</td></tr>
+</table>
+<p>This results in:<br />
+<code>OutCh(1) = 0.25*InCh(1) + 0.25*InCh(2) + 0.25*InCh(3) + 0.25*InCh(4)</code><br />
+<code>OutCh(2) = (-0.25)*InCh(10) + (-0.25)*InCh(11) + (-0.25)*InCh(12) + (-0.25)*InCh(13)</code>
+</p>
+<a name="Large_Laplacian_.28Sparse_Matrix.29"></a><h3>Large Laplacian (Sparse Matrix)</h3>
+<p>In this example, the spatial filter computes Large-Laplacian filtered versions of channels <i>C3</i> and <i>C4</i> by re-referencing them to the mean of their mid-range neighbors <i>Cz</i>, <i>P3/4</i>, <i>T7/8</i>, and <i>F3/4</i>:<br />
+</p><p><code>C3'=C3-(Cz+P3+T7+F3)/4</code><br />
+<code>C4'=C4-(Cz+P4+T8+F4)/4</code>
+</p><p>Using channel names, the filter specification will be independent of the order and exact set of input channels, provided that all required channels are available and labeled correctly.
+</p>
+<table border="1" cellspacing="0" cellpadding="3" style="text-align:center">
+<caption> Sparse Matrix
+</caption><tr>
+<th> &nbsp; </th><th> In </th><th> Out </th><th> Wt
+</th></tr>
+<tr>
+<th> 1
+</th><td> C3 </td><td> C3 </td><td> 1
+</td></tr>
+<tr>
+<th> 2
+</th><td> Cz </td><td> C3 </td><td> -.25
+</td></tr>
+<tr>
+<th> 3
+</th><td> P3 </td><td> C3 </td><td> -.25
+</td></tr>
+<tr>
+<th> 4
+</th><td> T7 </td><td> C3 </td><td> -.25
+</td></tr>
+<tr>
+<th> 5
+</th><td> F3 </td><td> C3 </td><td> -.25
+</td></tr>
+<tr>
+<th> 6
+</th><td> C4 </td><td> C4 </td><td> 1
+</td></tr>
+<tr>
+<th> 7
+</th><td> Cz </td><td> C4 </td><td> -.25
+</td></tr>
+<tr>
+<th> 8
+</th><td> P4 </td><td> C4 </td><td> -.25
+</td></tr>
+<tr>
+<th> 9
+</th><td> T8 </td><td> C4 </td><td> -.25
+</td></tr>
+<tr>
+<th> 10
+</th><td> F4 </td><td> C4 </td><td> -.25
 </td></tr></table>
+<a name="Performance_Notes"></a><h2>Performance Notes</h2>
+<p>Each spatial filter uses a different algorithm to compute the linear transformation, and can therefore have implications on CPU load and performance. 
+</p>
+<a name="None"></a><h3>None</h3>
+<p>In general, use the "none" option has the best performance, since no computations are actually done. 
+</p>
+<a name="CAR"></a><h3>CAR</h3>
+<p>The common-average reference has the next best performance in most circumstances. It is possible to create a CAR using either the full-matrix or sparse matrix options; however, the CAR method only calculates the mean value once per sample, and subtracts it only from the selected output channels. In order to implement a CAR in a full-matrix, the mean must be recalculated for <i>every</i> output channel, which is not as efficient, particularly for high channel count systems.
+</p>
+<a name="Sparse_Matrix_2"></a><h3>Sparse Matrix</h3>
+<p>The sparse matrix method performance is determined completely by the number of elements (rows) in the SpatialFilter matrix. In the simplest case, a single channel is multiplied by the weight and assigned to the specified output channel; this would take far less CPU time than the CAR method, and possibly the "none" option as well. In the most complicated case, N*N rows would be created, where N is the number of input channels, and performance would be close to that of an NxN spatial filter matrix. (Actually, theoretically, more than N*N rows can be used, but this is unnecessary because some input/output combinations would overlap, which could be combined into a single weight).
+</p>
+<a name="Full_Matrix"></a><h3>Full Matrix</h3>
+<p>In general, the full matrix is going to have the highest CPU load of any spatial filtering method, although there are certainly circumstances in which performance could be better. That being said, this method has been used in BCI2000 since its inception, and is the simplest method of calculating complicated transformations, such as a Laplacian spatial filter. However, if the other methods of spatial filtering can be used, they should be in most cases. For example, if the identity matrix is specified (an NxN matrix with ones along the diagonal), then for every output channel, every input channel is multiplied by 0 or 1, utilizing CPU time unnecessarily.
+</p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
+<p><a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>, <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">User Reference:DataIOFilter#ChannelNames</a>
 </p>
 <div class="printfooter">
 </div>

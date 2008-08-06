@@ -36,11 +36,7 @@ Now you are going to create a subject-specific parameter configuration for on-li
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Starting_up_BCI2000"><span class="tocnumber">1</span> <span class="toctext">Starting up BCI2000</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Spatial_Filtering"><span class="tocnumber">2</span> <span class="toctext">Spatial Filtering</span></a>
-<ul>
-<li class='toclevel-2'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Creating_a_CAR_Filter"><span class="tocnumber">2.1</span> <span class="toctext">Creating a CAR Filter</span></a></li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Spatial_Filtering"><span class="tocnumber">2</span> <span class="toctext">Spatial Filtering</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Subject-Specific_Parameters"><span class="tocnumber">3</span> <span class="toctext">Subject-Specific Parameters</span></a>
 <ul>
 <li class='toclevel-2'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Configuring_the_Classifier"><span class="tocnumber">3.1</span> <span class="toctext">Configuring the Classifier</span></a></li>
@@ -55,37 +51,13 @@ Now you are going to create a subject-specific parameter configuration for on-li
 </p>
 <a name="Spatial_Filtering"></a><h2>Spatial Filtering</h2>
 <p>As a result of the initial session, you have some idea of the signal topography, and spatial filtering that extracts the signal best.
-In this tutorial, we use <i>Common Average Reference (CAR)</i> filtering because it gives generally good results, and has the advantage of being independent of the montage used. Also, this method is independent of subject specific parameters, so you will only need to configure it once for a given electrode montage.
-</p>
-<a name="Creating_a_CAR_Filter"></a><h3>Creating a CAR Filter</h3>
-<p>The idea behind CAR filtering is to subtract the spatial average of all <span class="texhtml"><i>N</i></span> channels from each individual channel.
-In terms of spatial filtering matrices, this means an identity matrix minus a matrix that has <span class="texhtml">1 / <i>N</i></span> in all entries:
-</p><p><span class="texhtml"><i>M</i><sub><i>i</i><i>j</i></sub> = &delta;<sub><i>i</i><i>j</i></sub> &minus; 1 / <i>N</i></span>.
-</p><p>For 16 and 64 channel recordings, you may load appropriate parameter fragments are available at <tt>parms/fragments/spatial_filters/CommonAverageN.prm</tt>.
-For other <span class="texhtml"><i>N</i></span>, you will need to configure the <i>TransmitChList</i> and <i>SpatialFilter</i> parameters as follows:
-</p>
-<ul><li>Go to the <i>Source</i> tab. In the <i>TransmitChList</i> parameter, enter a space-separated list of channel numbers beginning with 1:<br />1 2 3 4 ... N
-</li><li>Go to the <i>Filtering</i> tab. Click the <i>Edit Matrix</i> button associated with the <i>SpatialFilter</i> parameter.
-<ul><li>Set both <i>Number of columns</i> and <i>Number of rows</i> to <span class="texhtml"><i>N</i></span>, and click <i>Set new matrix size</i>.
-</li><li>In the diagonal entries of the matrix, enter the numerical value of <span class="texhtml">1 &minus; 1 / <i>N</i></span>.
-</li><li>In the non-diagonal entries, enter the numerical value of <span class="texhtml">1 / <i>N</i></span>.
-</li><li>Right-click the matrix, and choose <i>Edit labels</i> from the context menu.
-</li><li>As <b>row</b> labels, enter the electrode locations corresponding to channels.
-</li><li>Close the matrix editor window.
-</li></ul>
-</li><li>Click <i>Configure Save</i> in the configuration window, and check all parameter entries except <i>TransmitChList</i> and <i>SpatialFilter</i>; then close the window.
-</li><li>Click <i>Save Parameters</i>, and save your spatial filter configuration under <tt>parms/fragments/spatial_filters/CommonAverage&lt;YourMontage&gt;.prm</tt>.
-</li><li>Click <i>Configure Save</i> again, uncheck all parameter entries, close the window.
-</li></ul>
-<p>The step of entering electrode locations is not mandatory. However, it makes subject-specific configuration easier to set up later on.
-Also, pre-defined CAR parameter files do not specify electrode locations, so you will need to enter these locations manually, and save the resulting configuration as described above.
+In this tutorial, we use <i>Common Average Reference (CAR)</i> filtering because it gives generally good results, and has the advantage of being independent of the montage used. Also, this method is independent of subject specific parameters, so you will not need to configure it individually.
 </p>
 <a name="Subject-Specific_Parameters"></a><h2>Subject-Specific Parameters</h2>
 <p>In the next step, we construct a full parameter file for the subject:
 </p>
 <ul><li>In the configuration window, click <i>Load Parameters</i> to load <tt>parms/mu_tutorial/MuFeedback.prm</tt>.
 </li><li>Additionally, load your amplifier configuration from <tt>parms/fragments/amplifiers</tt>.
-</li><li>Load the spatial filtering parameter fragment created above.
 </li><li>Go to the <i>Storage</i> tab, and enter the subject's name or ID into the <i>SubjectName</i> parameter.
 </li><li>Into the <i>SubjectSession</i> parameter, enter <i>002</i>.
 </li></ul>

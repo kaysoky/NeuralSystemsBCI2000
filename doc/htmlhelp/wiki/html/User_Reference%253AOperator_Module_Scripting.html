@@ -137,7 +137,7 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 <p>The following example shows how to specify script commands from the command line.
 It fully automates BCI2000 operation by loading a parameter file, applying parameters, starting the system once the parameters are applied, and quitting the system once the run is over.
 </p>
-<pre>--OnConnect "-LOAD PARAMETERFILE ..\parms\CursorTask_SignalGenerator.prm; SETCONFIG" 
+<pre>--OnConnect "-LOAD PARAMETERFILE ..\parms\examples\CursorTask_SignalGenerator.prm; SETCONFIG" 
 --OnSetConfig "-SET STATE Running 1"  
 --OnSuspend "-QUIT"
 </pre>
