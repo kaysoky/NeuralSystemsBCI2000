@@ -26,7 +26,7 @@
 class BCI2000FileReader
 {
  public:
-  static const int cDefaultBufSize = 50000;
+  static const int cDefaultBufSize = 50 * 1024;
 
   enum
   {
@@ -110,15 +110,15 @@ class BCI2000FileReader
                      mFileFormatVersion;
 
   ::SignalProperties mSignalProperties;
+  SignalType         mSignalType;
   int                mDataSize;
-  GenericSignal::ValueType ( *mfpReadValueBinary )( const char* );
 
   int                mChannels,
                      mHeaderLength,
                      mStatevectorLength;
   float              mSamplingRate;
-  std::vector<float> mSourceOffsets,
-                     mSourceGains;
+  std::vector<GenericSignal::ValueType> mSourceOffsets,
+                                        mSourceGains;
 
   unsigned long      mNumSamples;
 

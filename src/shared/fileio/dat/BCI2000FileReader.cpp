@@ -60,7 +60,6 @@ ReadValue_SwapBytes( const char* p )
 BCI2000FileReader::BCI2000FileReader()
 : mpStatevector( NULL ),
   mpBuffer( NULL ),
-  mfpReadValueBinary( NULL ),
   mErrorState( NoError )
 {
 }
@@ -68,7 +67,6 @@ BCI2000FileReader::BCI2000FileReader()
 BCI2000FileReader::BCI2000FileReader( const char* inFileName )
 : mpStatevector( NULL ),
   mpBuffer( NULL ),
-  mfpReadValueBinary( NULL ),
   mErrorState( NoError )
 {
   Open( inFileName );
@@ -116,10 +114,13 @@ BCI2000FileReader::Reset()
   mHeaderLength = 0;
   mStatevectorLength = 0;
   mSamplingRate = 1;
-  mDataSize = 2;
-  mfpReadValueBinary = ReadValue<sint16>;
+  mSignalType = SignalType::int16;
+  mDataSize = mSignalType.Size();
+  mSourceOffsets.clear();
+  mSourceGains.clear();
   mNumSamples = 0;
-  mSignalProperties = ::SignalProperties( 0, 0, SignalType::int16 );
+  mSignalProperties = ::SignalProperties( 0, 0, mSignalType );
+
   mErrorState = NoError;
 }
 
@@ -199,7 +200,42 @@ BCI2000FileReader::State( const std::string& name ) const
 GenericSignal::ValueType
 BCI2000FileReader::RawValue( int inChannel, long inSample )
 {
-  return mfpReadValueBinary( BufferSample( inSample ) + mDataSize * inChannel );
+  GenericSignal::ValueType value = 0;
+  const char* address = BufferSample( inSample ) + mDataSize * inChannel;
+
+  // When running on a big endian machine, we need to swap bytes.
+  static const bool isBigEndian = ( *reinterpret_cast<const uint16*>( "\0\1" ) == 0x0001 );
+  if( isBigEndian )
+  {
+    switch( mSignalType )
+    {
+      case SignalType::int16:
+        value = ReadValue_SwapBytes<sint16>( address );
+        break;
+      case SignalType::int32:
+        value = ReadValue_SwapBytes<sint32>( address );
+        break;
+      case SignalType::float32:
+        value = ReadValue_SwapBytes<float32>( address );
+        break;
+    }
+  }
+  else
+  { // Little endian machine
+    switch( mSignalType )
+    {
+      case SignalType::int16:
+        value = ReadValue<sint16>( address );
+        break;
+      case SignalType::int32:
+        value = ReadValue<sint32>( address );
+        break;
+      case SignalType::float32:
+        value = ReadValue<float32>( address );
+        break;
+    }
+  }
+  return value;
 }
 
 // **************************************************************************
@@ -275,38 +311,7 @@ BCI2000FileReader::ReadHeader()
       return;
   }
   mDataSize = signalType.Size();
-  // When running on a big endian machine, we need to swap bytes.
-  bool isBigEndian = ( *reinterpret_cast<const uint16*>( "\0\1" ) == 0x0001 );
-  if( isBigEndian )
-  {
-    switch( signalType )
-    {
-      case SignalType::int16:
-        mfpReadValueBinary = ReadValue_SwapBytes<sint16>;
-        break;
-      case SignalType::int32:
-        mfpReadValueBinary = ReadValue_SwapBytes<sint32>;
-        break;
-      case SignalType::float32:
-        mfpReadValueBinary = ReadValue_SwapBytes<float32>;
-        break;
-    }
-  }
-  else
-  { // Little endian machine
-    switch( signalType )
-    {
-      case SignalType::int16:
-        mfpReadValueBinary = ReadValue<sint16>;
-        break;
-      case SignalType::int32:
-        mfpReadValueBinary = ReadValue<sint32>;
-        break;
-      case SignalType::float32:
-        mfpReadValueBinary = ReadValue<float32>;
-        break;
-    }
-  }
+
   // now go through the header and read all parameters and states
   getline( mFile >> ws, line, '\n' );
   if( line.find( "[ State Vector Definition ]" ) != 0 )
