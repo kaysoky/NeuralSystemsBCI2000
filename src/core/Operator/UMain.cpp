@@ -76,6 +76,7 @@
 #include "ExecutableHelp.h"
 #include "AboutBox.h"
 #include "Version.h"
+#include "BCIDirectory.h"
 
 #include <sstream>
 
@@ -429,6 +430,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
 
     case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Information ):
     case TRANSITION( SYSSTATUS::Information, SYSSTATUS::Initialization ):
+      MaintainDebugLog();
       BroadcastParameters();
       BroadcastEndOfParameter();
       BroadcastStates();
@@ -456,6 +458,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::SuspendedParamsModified, SYSSTATUS::Initialization ):
     case TRANSITION( SYSSTATUS::RestingParamsModified, SYSSTATUS::Initialization ):
+      MaintainDebugLog();
       BroadcastParameters();
       BroadcastEndOfParameter();
       InitializeModules();
@@ -463,6 +466,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Resting, SYSSTATUS::RunningInitiated ):
+      MaintainDebugLog();
       // Execute the on-start script ...
       if( mPreferences.Script[ PREFERENCES::OnStart ] != "" )
       {
@@ -474,6 +478,7 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Suspended, SYSSTATUS::RunningInitiated ):
+      MaintainDebugLog();
       // Execute the on-resume script ...
       if( mPreferences.Script[ PREFERENCES::OnResume ] != "" )
       {
@@ -729,6 +734,10 @@ TfMain::CoreConnection::HandleStatus( istream& is )
     mParent.mSysstatus.Status[ mOrigin ] = status.Message().c_str();
     switch( status.Content() )
     {
+      case Status::debug:
+        mParent.mSyslog.AddSysLogEntry( status.Message().c_str() );
+        mParent.mDebugLog << status.Message() << endl;
+        break;
       case Status::warning:
         // If we receive a warning message, add a line to the system log and bring it to front.
         mParent.mSyslog.AddSysLogEntry( status.Message().c_str(), SYSLOG::logEntryWarning );
@@ -1072,6 +1081,33 @@ BUTTON_CLICK( 2 )
 BUTTON_CLICK( 3 )
 BUTTON_CLICK( 4 )
 
+//---------------------------------------------------------------------------
+void
+TfMain::MaintainDebugLog()
+{
+  // Enable debug logging if requested.
+  // The method to obtain the debugging file's name is rather crude but difficult
+  // to get right in the presence of auto-incrementing run numbers.
+  if( mParameters.Exists( "DebugLog" ) && ::atoi( mParameters[ "DebugLog" ].Value().c_str() ) != 0 )
+  {
+    BCIDirectory bciDir;
+    bciDir.SetDataDirectory( mParameters[ "DataDirectory" ].Value() )
+          .SetSubjectName( mParameters[ "SubjectName" ].Value() )
+          .SetSessionNumber( ::atoi( mParameters[ "SubjectSession" ].Value().c_str() ) )
+          .SetRunNumber( ::atoi( mParameters[ "SubjectRun" ].Value().c_str() ) );
 
-
+    string extension = ".";
+    if( mParameters.Exists( "FileFormat" ) )
+    {
+      extension += mParameters[ "FileFormat" ].Value();
+      bciDir.SetFileExtension( extension );
+    }
+    string filePath = bciDir.CreatePath().FilePath() + ".dbg";
+    mDebugLog.close();
+    mDebugLog.clear();
+    mDebugLog.open( filePath.c_str(), ios_base::out | ios_base::app );
+  }
+  else
+    mDebugLog.close();
+}
 

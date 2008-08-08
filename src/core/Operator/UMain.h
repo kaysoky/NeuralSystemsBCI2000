@@ -10,6 +10,7 @@
 #include <Menus.hpp>
 
 #include <set>
+#include <fstream>
 #include "SockStream.h"
 #include "MessageHandler.h"
 #include "Param.h"
@@ -96,6 +97,7 @@ class TfMain : public TForm
   void QuitOperator( bool confirm = true );
   void UpdateDisplay();
   void SetFunctionButtons();
+  void MaintainDebugLog();
   static void UserChangedParameters();
 
  private:
@@ -108,6 +110,7 @@ class TfMain : public TForm
   bool             mTerminated;
   TDateTime        mStarttime;
   VersionInfo      mVersionInfo;
+  std::ofstream    mDebugLog;
 
   enum
   {
