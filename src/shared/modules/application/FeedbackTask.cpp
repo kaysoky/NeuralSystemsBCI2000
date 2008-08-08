@@ -33,6 +33,8 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
   mFeedbackDuration( 0 ),
   mPostFeedbackDuration( 0 ),
   mITIDuration( 0 ),
+  mCurrentTrial( 0 ),
+  mNumberOfTrials( 0 ),
   mMinRunLength( 0 ),
   mBlockRandSeq( RandomNumberGenerator )
 {
@@ -48,11 +50,11 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
    "Application:Sequencing float ITIDuration= 1s 1s 0 % "
      " // duration of inter-trial interval",
    "Application:Sequencing float MinRunLength= 120s 120s 0 % "
-     " // minimum duration of a run",
+     " // minimum duration of a run; if blank, NumberOfTrials is used",
+   "Application:Sequencing int NumberOfTrials= % 0 0 % "
+     " // number of trials; if blank, MinRunLength is used",
    "Application:Targets int NumberTargets= 2 2 0 15 "
      " // number of targets",
-   "Application:Sequencing int NumberOfTrials= % 0 0 % "
-	"// number of trials; if blank, the MinRunLength is used",
   END_PARAMETER_DEFINITIONS
 
   BEGIN_STATE_DEFINITIONS
@@ -73,10 +75,9 @@ FeedbackTask::Preflight( const SignalProperties& Input, SignalProperties& Output
   OptionalParameter( "RandomSeed" );
   State( "Running" );
 
-  if (MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) ) != 0 &&
-	string(Parameter("NumberOfTrials")).size() > 0)
-	bcierr << "MinRunLength and NumTrialBlocks cannot be set with non-empty values simultaneously." << endl;
-	
+  if (!string(Parameter("MinRunLength" )).empty() && !string(Parameter("NumberOfTrials")).empty())
+    bcierr << "Either MinRunLength or NumberOfTrials must be blank" << endl;
+
   bcidbg( 2 ) << "Event: Preflight" << endl;
   OnPreflight( Input );
   Output = Input;
@@ -87,12 +88,10 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
 {
   mBlockRandSeq.SetBlockSize( Parameter( "NumberTargets" ) );
 
-  mNumPresentations = 0;
-  mNumTotalPresentations = 0;
-  if(Parameter("NumberOfTrials")->NumValues() > 0)
-	mNumTotalPresentations = Parameter("NumberOfTrials");
+  mNumberOfTrials = 0;
+  if(!string(Parameter("NumberOfTrials")).empty())
+    mNumberOfTrials = Parameter("NumberOfTrials");
 
-  
   mPreRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
   mPreFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "PreFeedbackDuration" ) );
   mFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
@@ -108,7 +107,7 @@ FeedbackTask::StartRun()
 {
   mBlocksInRun = 0;
   mBlocksInPhase = 0;
-  mNumPresentations = 0;
+  mCurrentTrial = 0;
   mPhase = preRun;
   bcidbg( 2 ) << "Event: StartRun" << endl;
   OnStartRun();
@@ -192,7 +191,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         case preRun:
         case ITI:
           State( "TargetCode" ) = mBlockRandSeq.NextElement();
-          mNumPresentations++;
+          ++mCurrentTrial;
           bcidbg( 2 ) << "Event: TrialBegin" << endl;
           OnTrialBegin();
           mPhase = preFeedback;
@@ -214,18 +213,19 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
 
         case postFeedback:
+        {
           bcidbg( 2 ) << "Event: TrialEnd" << endl;
           OnTrialEnd();
           State( "TargetCode" ) = 0;
           State( "ResultCode" ) = 0;
           bcidbg( 3 ) << "Blocks in Run: " << mBlocksInRun << "/" << mMinRunLength << endl;
-          if( mBlocksInRun >= mMinRunLength && mNumTotalPresentations == 0)
+          bool runFinished = false;
+          if( mNumberOfTrials > 0 )
+            runFinished = ( mCurrentTrial >= mNumberOfTrials );
+          else
+            runFinished = ( mBlocksInRun >= mMinRunLength );
+          if( runFinished )
           {
-            doProgress = false;
-            State( "Running" ) = false;
-            mPhase = postRun;
-          }
-          else if (mNumTotalPresentations > 0 && mNumPresentations >= mNumTotalPresentations){
             doProgress = false;
             State( "Running" ) = false;
             mPhase = postRun;
@@ -235,7 +235,7 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
             mPhase = ITI;
           }
           break;
-
+        }
         default:
           throw __FUNC__ ": Unknown phase value";
       }

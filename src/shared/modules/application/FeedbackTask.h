@@ -106,8 +106,8 @@ class FeedbackTask : public ApplicationBase
             mFeedbackDuration,
             mPostFeedbackDuration,
             mITIDuration,
-            mNumPresentations,
-            mNumTotalPresentations;
+            mCurrentTrial,
+            mNumberOfTrials;
   long long mMinRunLength;
 
   BlockRandSeq    mBlockRandSeq;
