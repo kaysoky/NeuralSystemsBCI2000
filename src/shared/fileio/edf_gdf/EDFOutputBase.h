@@ -37,9 +37,15 @@ class EDFOutputBase: public GenericOutputFormat
     float       PhysicalMinimum,
                 PhysicalMaximum,
                 DigitalMinimum,
-                DigitalMaximum;
+                DigitalMaximum,
+                LowPass,
+                HighPass,
+                Notch,
+                ElectrodePosition[3];
     long        SamplesPerRecord;
-    int         DataType;
+    int         PhysicalDimensionCode,
+                ElectrodeImpedance,
+                DataType;
   };
   typedef std::vector<ChannelInfo> ChannelContainer;
   ChannelContainer& Channels() { return mChannels; }

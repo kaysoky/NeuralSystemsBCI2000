@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A C++ representation of a BCI2000 relevant subset of the EDF
 //              data format as defined in Kemp et al, 1992, and the
-//              GDF 1.25 data format as defined in Schloegl et al, 1998.
+//              GDF 2.10 data format as defined in Schloegl et al, 2008.
 //
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
@@ -46,7 +46,9 @@ namespace GDF
   typedef GDFType< double,             8, 17 > float64;
 
   const long long cInvalidDate = - ( 1LL << 62 );
-  const long long cSecondsPerYear = ( 60 * 60 * 24 * 3652422LL ) / 10000;
+  const long long cSecondsPerDay = ( 60 * 60 * 24 );
+  const long long cSecondsPerYear = ( cSecondsPerDay * 3652422LL ) / 10000;
+  const long long cDaysUpTo1970 = 719529;
 
   enum
   {
@@ -57,6 +59,13 @@ namespace GDF
     // Sex
     male = 1,
     female = 2,
+    // Tags
+    terminatingTag = 0,
+    eventDescriptionTag = 1,
+    BCI2000Tag = 2,
+    manufacturerTag = 3,
+    sensorOrientationTag = 4,
+    userSpecifiedTag = 255,
   };
 
   // An EncodedString replaces white space by underscores when written to a stream.
@@ -69,6 +78,10 @@ namespace GDF
 
   // Conversion of an extended time_t type into a string.
   std::string DateTimeToString( signed long long );
+  // Conversion of an extended time_t type into a GDF 64 bit time.
+  int64::ValueType DateTimeToGDFTime( signed long long );
+  // Expression of a year as a GDF 64 bit time value.
+  int64::ValueType YearToGDFTime( double y );
 
   // Field types as classes.
   template<int length> // A fixed-length string field.
@@ -81,14 +94,16 @@ namespace GDF
       void WriteToStream( std::ostream& ) const;
     };
 
-  template<class T>
+  template<class T, int N=1>
     class Num // A numeric field with a binary representation.
     {
      public:
       Num( typename T::ValueType = 0 );
+      template<class U>
+       Num( const U* );
       void WriteToStream( std::ostream& os ) const;
      private:
-      typename T::ValueType mValue;
+      typename T::ValueType mValues[N];
     };
 
   template<class F>
@@ -104,7 +119,6 @@ namespace GDF
     void PutArray( std::ostream&, const C& c, P p );
 
 }; // namespace GDF
-
 
 template<class F>
 inline
@@ -177,23 +191,36 @@ GDF::Str<tLength>::WriteToStream( std::ostream& os ) const
   os.write( this->data(), tLength );
 }
 
-template<class T>
-GDF::Num<T>::Num( typename T::ValueType t )
-: mValue( t )
+template<class T, int N>
+GDF::Num<T, N>::Num( typename T::ValueType t )
 {
+  for( int i = 0; i < N; ++i )
+    mValues[ i ] = t;
 }
 
-template<class T>
-void
-GDF::Num<T>::WriteToStream( std::ostream& os ) const
+template<class T, int N>
+template<class U>
+GDF::Num<T, N>::Num( const U* u )
 {
-  const char* value = reinterpret_cast<const char*>( &mValue );
-  if( BigEndianMachine )
-    for( int i = sizeof( typename T::ValueType ) - 1; i >= 0; --i )
-      os.put( value[ i ] );
-  else
-    for( size_t i = 0; i < sizeof( typename T::ValueType ); ++i )
-      os.put( value[ i ] );
+  for( int i = 0; i < N; ++i )
+    mValues[ i ] = u[ i ];
+}
+
+template<class T, int N>
+void
+GDF::Num<T, N>::WriteToStream( std::ostream& os ) const
+{
+  const int size = sizeof( typename T::ValueType );
+  for( int k = 0; k < N; ++k )
+  {
+    const char* value = reinterpret_cast<const char*>( &mValues[ k ] );
+    if( BigEndianMachine )
+      for( int i = size - 1; i >= 0; --i )
+        os.put( value[ i ] );
+    else
+      for( int i = 0; i < size; ++i )
+        os.put( value[ i ] );
+  }
 }
 
 inline

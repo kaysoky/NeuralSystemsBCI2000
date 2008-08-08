@@ -13,6 +13,7 @@
 
 #include "GDF.h"
 #include "BCIError.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace GDF;
@@ -111,32 +112,10 @@ GDFOutputFormat::StartRun( ostream& os )
   EDFOutputBase::StartRun( os );
 
   time_t now = ::time( NULL );
-  struct tm* time = ::localtime( &now );
-  ostringstream startdate;
-  startdate << setw( 4 ) << setfill( '0' ) << time->tm_year + 1900
-            << setw( 2 ) << setfill( '0' ) << time->tm_mon + 1
-            << setw( 2 ) << setfill( '0' ) << time->tm_mday
-            << setw( 2 ) << setfill( '0' ) << time->tm_hour
-            << setw( 2 ) << setfill( '0' ) << time->tm_min
-            << setw( 2 ) << setfill( '0' ) << time->tm_sec
-            << "00";
 
   ostringstream patient;
   patient << GDF::EncodedString( Parameter( "SubjectName" ) )
-          << " X ";
-  switch( int( Parameter( "SubjectSex" ) ) )
-  {
-    case GDF::unspecified:
-      patient << "X";
-      break;
-    case GDF::male:
-      patient << "M";
-      break;
-    case GDF::female:
-      patient << "F";
-      break;
-  }
-  patient << " XX-XXX-" << GDF::EncodedString( Parameter( "SubjectYearOfBirth" ) );
+          << " X X ";
 
   ostringstream recording;
   recording << GDF::DateTimeToString( now )
@@ -147,42 +126,71 @@ GDFOutputFormat::StartRun( ostream& os )
             << ' '
             << GDF::EncodedString( Parameter( "EquipmentID" ) );
 
-  GDF::uint64::ValueType numEquipmentID = 0,
-                         numLabID = 0,
-                         numTechnicianID = 0;
+  GDF::uint64::ValueType numEquipmentID = 0;
   istringstream iss;
   iss.str( Parameter( "EquipmentID" ) );
   iss >> numEquipmentID;
-  iss.str( Parameter( "LabID" ) );
-  iss >> numLabID;
-  iss.str( Parameter( "TechnicianID" ) );
-  iss >> numTechnicianID;
 
-  PutField< Str<8>            >( os, "GDF 1.25" );
-  PutField< Str<80>           >( os, patient.str() );
-  PutField< Str<80>           >( os, recording.str() );
-  PutField< Str<16>           >( os, startdate.str() );
-  PutField< Num<GDF::int64>   >( os, 256 * ( Channels().size() + 1 ) );
-  PutField< Num<GDF::uint64>  >( os, numEquipmentID );
-  PutField< Num<GDF::uint64>  >( os, numLabID );
-  PutField< Num<GDF::uint64>  >( os, numTechnicianID );
-  PutField< Str<20>           >( os );
-  PutField< Num<GDF::int64>   >( os, -1 );
-  PutField< Num<GDF::uint32>  >( os, Parameter( "SampleBlockSize" ) );
-  PutField< Num<GDF::uint32>  >( os, Parameter( "SamplingRate" ) );
-  PutField< Num<GDF::uint32>  >( os, Channels().size() );
+  ostringstream bci2000info;
+  bci2000info << *Parameters << ends;
+  int bci2000infoLength = bci2000info.str().length();
+  if( bci2000infoLength >= 1 << 24 )
+    bciout << "Losing BCI2000 header information due to GDF tag length limitation"
+           << endl;
+  int varHeaderLength = Channels().size(),
+      tlvHeaderLength = ( 4 + bci2000infoLength + 256 - 1 ) / 256,
+      tlvPaddingLength = tlvHeaderLength * 256 - 4 - bci2000infoLength;
 
-  PutArray< Str<16>           >( os, Channels(), &ChannelInfo::Label );
-  PutArray< Str<80>           >( os, Channels(), &ChannelInfo::TransducerType );
-  PutArray< Str<8>            >( os, Channels(), &ChannelInfo::PhysicalDimension );
-  PutArray< Num<GDF::float64> >( os, Channels(), &ChannelInfo::PhysicalMinimum );
-  PutArray< Num<GDF::float64> >( os, Channels(), &ChannelInfo::PhysicalMaximum );
-  PutArray< Num<GDF::int64>   >( os, Channels(), &ChannelInfo::DigitalMinimum );
-  PutArray< Num<GDF::int64>   >( os, Channels(), &ChannelInfo::DigitalMaximum );
-  PutArray< Str<80>           >( os, Channels(), &ChannelInfo::Filtering );
-  PutArray< Num<GDF::uint32>  >( os, Channels(), &ChannelInfo::SamplesPerRecord );
-  PutArray< Num<GDF::uint32>  >( os, Channels(), &ChannelInfo::DataType );
-  PutArray< Str<32>           >( os, Channels() );
+  const float cNaN = ::strtod( "+NAN", NULL );
+
+  PutField< Str<8>              >( os, "GDF 2.10" );
+  PutField< Str<66>             >( os, patient.str() );
+  PutField< Num<GDF::uint8,10>  >( os, 0 );
+  PutField< Num<GDF::uint8>     >( os, 0 );
+  PutField< Num<GDF::uint8>     >( os, 0 );
+  PutField< Num<GDF::uint8>     >( os, 0 );
+  PutField< Num<GDF::uint8>     >( os, int( Parameter( "SubjectSex" ) ) );
+  PutField< Str<80>             >( os, recording.str() );
+  PutField< Num<GDF::uint64>    >( os, GDF::DateTimeToGDFTime( now ) );
+  PutField< Num<GDF::uint64>    >( os, GDF::YearToGDFTime( Parameter( "SubjectYearOfBirth" ) ) );
+  PutField< Num<GDF::uint16>    >( os, 1 + varHeaderLength + tlvHeaderLength );
+  PutField< Num<GDF::uint8,6>   >( os, 0 );
+  PutField< Num<GDF::uint64>    >( os, numEquipmentID );
+  PutField< Num<GDF::uint8,6>   >( os, 0 );
+  PutField< Num<GDF::uint16,3>  >( os, 0 );
+  PutField< Num<GDF::float32,3> >( os, cNaN );
+  PutField< Num<GDF::float32,3> >( os, cNaN );
+  PutField< Num<GDF::int64>     >( os, -1 );
+  PutField< Num<GDF::uint32>    >( os, Parameter( "SampleBlockSize" ) );
+  PutField< Num<GDF::uint32>    >( os, Parameter( "SamplingRate" ) );
+  PutField< Num<GDF::uint16>    >( os, Channels().size() );
+  PutField< Num<GDF::uint16>    >( os, 0 );
+
+  PutArray< Str<16>             >( os, Channels(), &ChannelInfo::Label );
+  PutArray< Str<80>             >( os, Channels(), &ChannelInfo::TransducerType );
+  PutArray< Str<6>              >( os, Channels(), &ChannelInfo::PhysicalDimension );
+  PutArray< Num<GDF::uint16>    >( os, Channels(), &ChannelInfo::PhysicalDimensionCode );
+  PutArray< Num<GDF::float64>   >( os, Channels(), &ChannelInfo::PhysicalMinimum );
+  PutArray< Num<GDF::float64>   >( os, Channels(), &ChannelInfo::PhysicalMaximum );
+  PutArray< Num<GDF::float64>   >( os, Channels(), &ChannelInfo::DigitalMinimum );
+  PutArray< Num<GDF::float64>   >( os, Channels(), &ChannelInfo::DigitalMaximum );
+  PutArray< Str<68>             >( os, Channels(), &ChannelInfo::Filtering );
+  PutArray< Num<GDF::float32>   >( os, Channels(), &ChannelInfo::LowPass );
+  PutArray< Num<GDF::float32>   >( os, Channels(), &ChannelInfo::HighPass );
+  PutArray< Num<GDF::float32>   >( os, Channels(), &ChannelInfo::Notch );
+  PutArray< Num<GDF::uint32>    >( os, Channels(), &ChannelInfo::SamplesPerRecord );
+  PutArray< Num<GDF::uint32>    >( os, Channels(), &ChannelInfo::DataType );
+  PutArray< Num<GDF::float32,3> >( os, Channels(), &ChannelInfo::ElectrodePosition );
+  PutArray< Num<GDF::uint8>     >( os, Channels(), &ChannelInfo::ElectrodeImpedance );
+  PutArray< Num<GDF::uint8,19>  >( os, Channels() );
+
+  PutField< Num<GDF::uint8>     >( os, GDF::BCI2000Tag );
+  PutField< Num<GDF::uint8>     >( os, bci2000infoLength & 0xff );
+  PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 8 & 0xff );
+  PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 16 & 0xff );
+  os.write( bci2000info.str().data(), bci2000info.str().length() );
+  for( int i = 0; i < tlvPaddingLength; ++i )
+    os.put( 0 );
 }
 
 
@@ -192,12 +200,11 @@ GDFOutputFormat::StopRun( ostream& os )
   // Event Table
   if( !mEvents.empty() && os.seekp( 0, ios_base::end ) )
   {
-    GDF::uint64::ValueType intSamplingRate = Parameter( "SamplingRate" );
-    PutField< Num<GDF::uint8>  >( os, 1 );
-    PutField< Num<GDF::uint8>  >( os, intSamplingRate & 0xff );
-    PutField< Num<GDF::uint8>  >( os, intSamplingRate >> 8 & 0xff );
-    PutField< Num<GDF::uint8>  >( os, intSamplingRate >> 16 & 0xff );
-    PutField< Num<GDF::uint32> >( os, mEvents.size() );
+    PutField< Num<GDF::uint8>   >( os, 1 );
+    PutField< Num<GDF::uint8>   >( os, mEvents.size() & 0xff );
+    PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 8 & 0xff );
+    PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 16 & 0xff );
+    PutField< Num<GDF::float32> >( os, Parameter( "SamplingRate" ) );
     PutArray< Num<GDF::uint32> >( os, mEvents, &EventInfo::SamplePosition );
     PutArray< Num<GDF::uint16> >( os, mEvents, &EventInfo::Code );
   }

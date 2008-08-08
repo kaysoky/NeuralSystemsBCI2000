@@ -107,18 +107,44 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   }
   float digitalMin = inProperties.Type().Min(),
         digitalMax = inProperties.Type().Max();
-  // GDF 1.25 uses int64 for digital min and max.
-  if( digitalMin < numeric_limits<GDF::int64::ValueType>::min() )
-    digitalMin = numeric_limits<GDF::int64::ValueType>::min();
-  if( digitalMax > numeric_limits<GDF::int64::ValueType>::max() )
-    digitalMax = numeric_limits<GDF::int64::ValueType>::max();
   ChannelInfo channel;
   channel.TransducerType = string( Parameter( "TransducerType" ) );
   channel.PhysicalDimension = string( Parameter( "SignalUnit" ) );
+  channel.PhysicalDimensionCode = 0;
   channel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
   channel.DigitalMaximum = digitalMax;
+  const float cNaN = ::strtod( "+NAN", NULL );
+  for( int i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
+    channel.ElectrodePosition[ i ] = cNaN;
+  channel.ElectrodeImpedance = 255;
+  channel.LowPass = cNaN;
+  channel.HighPass = cNaN;
+  channel.Notch = cNaN;
+  ostringstream filtering;
+  if( OptionalParameter( "FilterEnabled", 0 ) == 1 )
+  {
+    channel.LowPass = Parameter( "FilterLowPass" );
+    channel.HighPass = Parameter( "FilterHighPass" );
+    filtering << "HP:" << channel.HighPass
+              << "LP:" << channel.LowPass;
+  }
+  else if( OptionalParameter( "FilterEnabled", 1 ) == 0 )
+  {
+    channel.LowPass = -1;
+    channel.HighPass = -1;
+  }
+  if( OptionalParameter( "NotchEnabled", 0 ) == 1 )
+  {
+    channel.Notch = ( Parameter( "NotchHighPass" ) + Parameter( "NotchLowPass" ) ) / 2.0;
+    filtering << "N:" << channel.Notch;
+  }
+  else if( OptionalParameter( "NotchEnabled", 1 ) == 0 )
+  {
+    channel.Notch = -1;
+  }
+  channel.Filtering = filtering.str();
   for( int i = 0; i < inProperties.Channels(); ++i )
   {
     if( i < Parameter( "ChannelNames" )->NumValues() )
@@ -129,14 +155,6 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
       oss << "Ch" << i + 1;
       channel.Label = oss.str();
     }
-    ostringstream filtering;
-    if( OptionalParameter( "FilterEnabled", 0 ) == 1 )
-      filtering << "HP:" << Parameter( "FilterHighPass" )
-                << "LP:" << Parameter( "FilterLowPass" );
-    if( OptionalParameter( "NotchEnabled", 0 ) == 1 )
-      filtering << "N:"
-                << ( Parameter( "NotchHighPass" ) + Parameter( "NotchLowPass" ) ) / 2.0;
-    channel.Filtering = filtering.str();
     channel.PhysicalMinimum = Parameter( "SourceChGain" )( i )
                                * ( digitalMin + Parameter( "SourceChOffset" )( i ) );
     channel.PhysicalMaximum = Parameter( "SourceChGain" )( i )

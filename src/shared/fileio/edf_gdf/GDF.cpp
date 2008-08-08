@@ -60,3 +60,14 @@ GDF::DateTimeToString( signed long long t )
   return oss.str();
 }
 
+GDF::int64::ValueType
+GDF::DateTimeToGDFTime( signed long long t )
+{
+  return ( double( t ) / cSecondsPerDay + cDaysUpTo1970 ) * ( 1LL << 32 );
+}
+
+GDF::int64::ValueType
+GDF::YearToGDFTime( double y )
+{
+  return y * cSecondsPerDay / cSecondsPerYear * ( 1LL << 32 );
+}
