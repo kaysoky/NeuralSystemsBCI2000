@@ -23,13 +23,15 @@ class SYSLOG
     void HideSysLog();
     bool Visible() const;
     bool Close( bool force = false );
-    void AddSysLogEntry( const char* text, LogEntryMode = logEntryNormal );
+    const char* AddSysLogEntry( const char* text, LogEntryMode = logEntryNormal );
 
   private:
     TForm*            mpForm;
     TRichEdit*        mpLog;
     TCriticalSection* mpCritsec;
     bool              mDontClose;
+    AnsiString        mLastLine;
+
 };
 #endif // USysLogH
 

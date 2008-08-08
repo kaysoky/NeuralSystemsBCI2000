@@ -421,7 +421,7 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
   MessageHandler::PutMessage( mOperator, mStatelist );
   MessageHandler::PutMessage( mOperator, SysCommand::EndOfState );
 
-  MessageHandler::PutMessage( mOperator, Status( "Waiting for configuration ...", 100 ) );
+  MessageHandler::PutMessage( mOperator, Status( "Waiting for configuration ...", Status::plainMessage ) );
 }
 
 
@@ -520,7 +520,7 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   }
   if( !errorOccurred )
   {
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", 199 + MODTYPE ) );
+    MessageHandler::PutMessage( mOperator, Status( THISMODULE " initialized", Status::firstInitializedMessage + MODTYPE - 1 ) );
     mFiltersInitialized = true;
   }
 #if( MODTYPE == SIGSRC )
@@ -546,7 +546,7 @@ CoreModule::StartRunFilters()
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
   {
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", 201 + 2 * MODTYPE ) );
+    MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
     mResting = false;
   }
 }
@@ -565,7 +565,7 @@ CoreModule::StopRunFilters()
 #if( MODTYPE == SIGSRC ) // The operator wants an extra invitation from the source module.
     MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
 #endif // SIGSRC
-    MessageHandler::PutMessage( mOperator, Status( THISMODULE " suspended", 202 + 2 * MODTYPE ) );
+    MessageHandler::PutMessage( mOperator, Status( THISMODULE " suspended", Status::firstSuspendedMessage + 2 * ( MODTYPE - 1 ) ) );
     mResting = true;
   }
 }

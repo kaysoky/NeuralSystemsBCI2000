@@ -20,9 +20,45 @@ class Status
     initialized,
     running,
     suspended,
+    debug,
     warning,
     error,
   } ContentType;
+
+  typedef enum
+  {
+    firstPlainMessageCode = 200,
+    plainMessage = 200,
+    lastPlainMessageCode = 298,
+
+    debugMessage = 299,
+
+    firstInitializedMessage = 200,
+    sourceInitialized = 200,
+    sigprocInitialized = 201,
+    appInitialized = 202,
+
+    firstRunningMessage = 203,
+    sourceRunning = 203,
+    sigprocRunning = 205,
+    appRunning = 207,
+
+    firstSuspendedMessage = 204,
+    sourceSuspended = 204,
+    sigprocSuspended = 206,
+    appSuspended = 208,
+
+    firstWarningCode = 300,
+    warningMessage = 301,
+    lastWarningCode = 399,
+
+    firstErrorCode = 400,
+    configurationError = 408,
+    runtimeError = 409,
+    fail = 498,
+    logicError = 499,
+    lastErrorCode = 499,
+  } MessageCode;
 
   Status();
   Status( const std::string& message, int code );

@@ -104,9 +104,9 @@ SYSLOG::Visible() const
 //             mode - either logEntryNormal  (normal attributes)
 //                           logEntryWarning (attributes for a warning message)
 //                           logEntryError   (attributes for an error message)
-// Returns:    N/A
+// Returns:    the line entered into the system log
 // **************************************************************************
-void
+const char*
 SYSLOG::AddSysLogEntry( const char* inText, LogEntryMode inMode )
 {
   mpCritsec->Acquire();
@@ -130,9 +130,10 @@ SYSLOG::AddSysLogEntry( const char* inText, LogEntryMode inMode )
     default:
       break;
   }
-  mpLog->Lines->Add(
-    TDateTime::CurrentDateTime().FormatString( "ddddd tt - " ) + AnsiString( inText ) );
+  mLastLine = TDateTime::CurrentDateTime().FormatString( "ddddd tt - " ) + AnsiString( inText );
+  mpLog->Lines->Add( mLastLine );
   mpLog->SelAttributes->Assign( mpLog->DefAttributes );
   mpCritsec->Release();
+  return mLastLine.c_str();
 }
 

@@ -60,39 +60,40 @@ struct StatusMessage
  }
 } StatusMessage;
 
+
 void
 BCIError::DebugMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), 299 );
+  StatusMessage( message.substr( 0, message.length() - 1 ), Status::debugMessage );
 }
 
 void
 BCIError::PlainMessage( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), 200 );
+  StatusMessage( message.substr( 0, message.length() - 1 ), Status::plainMessage );
 }
 
 void
 BCIError::Warning( const string& message )
 {
-  StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), 301 );
+  StatusMessage( string( "Warning: " ) + message.substr( 0, message.length() - 1 ), Status::warningMessage );
 }
 
 void
 BCIError::ConfigurationError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), 408 );
+  StatusMessage( message.substr( 0, message.length() - 1 ), Status::configurationError );
 }
 
 void
 BCIError::RuntimeError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), 409 );
+  StatusMessage( message.substr( 0, message.length() - 1 ), Status::runtimeError );
 }
 
 void
 BCIError::LogicError( const string& message )
 {
-  StatusMessage( message.substr( 0, message.length() - 1 ), 499 );
+  StatusMessage( message.substr( 0, message.length() - 1 ), Status::logicError );
 }
 

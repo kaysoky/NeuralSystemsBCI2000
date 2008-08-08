@@ -735,9 +735,11 @@ TfMain::CoreConnection::HandleStatus( istream& is )
     switch( status.Content() )
     {
       case Status::debug:
-        mParent.mSyslog.AddSysLogEntry( status.Message().c_str() );
-        mParent.mDebugLog << status.Message() << endl;
+      {
+        const char* logEntry = mParent.mSyslog.AddSysLogEntry( status.Message().c_str() );
+        mParent.mDebugLog << logEntry << endl;
         break;
+      }
       case Status::warning:
         // If we receive a warning message, add a line to the system log and bring it to front.
         mParent.mSyslog.AddSysLogEntry( status.Message().c_str(), SYSLOG::logEntryWarning );

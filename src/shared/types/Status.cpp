@@ -16,7 +16,7 @@
 
 using namespace std;
 
-const Status Status::Fail( "Error", 498 );
+const Status Status::Fail( "Error", fail );
 
 Status::Status()
 : mCode( 0 )
@@ -29,29 +29,32 @@ Status::Status( const string& inMessage, int inCode )
 {
 }
 
+
 Status::ContentType
 Status::Content() const
 {
   ContentType result = unknown;
-  if( ( Code() >= 300 ) && ( Code() < 400 ) )
+  if( Code() == debugMessage )
+    result = debug;
+  else if( ( Code() >= firstWarningCode ) && ( Code() <= lastWarningCode ) )
     result = warning;
-  else if( ( Code() >= 400 ) && ( Code() < 500 ) )
+  else if( ( Code() >= firstErrorCode ) && ( Code() <= lastErrorCode ) )
     result = error;
   else switch( Code() )
   {
-    case 200:
-    case 201:
-    case 202:
+    case sourceInitialized:
+    case sigprocInitialized:
+    case appInitialized:
       result = initialized;
       break;
-    case 203:
-    case 205:
-    case 207:
+    case sourceRunning:
+    case sigprocRunning:
+    case appRunning:
       result = running;
       break;
-    case 204:
-    case 206:
-    case 208:
+    case sourceSuspended:
+    case sigprocSuspended:
+    case appSuspended:
       result = suspended;
       break;
   }
