@@ -66,6 +66,8 @@ namespace GDF
     manufacturerTag = 3,
     sensorOrientationTag = 4,
     userSpecifiedTag = 255,
+    // Events
+    endOfEvent = 0x8000,
   };
 
   // An EncodedString replaces white space by underscores when written to a stream.

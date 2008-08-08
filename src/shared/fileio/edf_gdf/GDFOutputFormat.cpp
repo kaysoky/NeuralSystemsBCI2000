@@ -34,10 +34,9 @@ GDFOutputFormat::Publish() const
   EDFOutputBase::Publish();
 
   BEGIN_PARAMETER_DEFINITIONS
-    "Storage matrix EventCodes= 7 "
+    "Storage matrix EventCodes= 6 "
       "[Condition                                 GDF%20Event] "
       "TargetCode!=0                              0x0300 " // trial begin
-      "TargetCode==0                              0x8300 " // trial end
       "TargetCode==1                              0x030c " // cue up
       "TargetCode==2                              0x0306 " // cue down
       "(ResultCode!=0)&&(TargetCode==ResultCode)  0x0381 " // hit
@@ -228,11 +227,13 @@ GDFOutputFormat::Write( ostream& os,
   for( size_t i = 0; i < mEventConditions.size(); ++i )
   {
     bool curValue = mEventConditions[ i ].Evaluate( &inSignal );
-    if( curValue && curValue != mPreviousConditionValues[ i ] )
+    if( curValue != mPreviousConditionValues[ i ] )
     {
       EventInfo event;
       event.SamplePosition = NumRecords() * sampleBlockSize;
       event.Code = mEventCodes[ i ];
+      if( !curValue )
+        event.Code |= GDF::endOfEvent;
       mEvents.push_back( event );
     }
     mPreviousConditionValues[ i ] = curValue;
