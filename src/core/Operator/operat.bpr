@@ -19,7 +19,7 @@
       obj\ExpressionParser.obj obj\GenericVisualization.obj obj\AboutBox.obj 
       obj\Environment.obj obj\VisDisplay.obj obj\DisplayFilter.obj 
       obj\BitmapImage.obj obj\ExecutableHelp.obj obj\ArithmeticExpression.obj 
-      obj\StateVectorSample.obj"/>
+      obj\StateVectorSample.obj obj\BCIDirectory.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -29,7 +29,7 @@
     <LIBRARIES value="bcbsmp.lib vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib bcbsmp.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui;..\..\shared\utils\Expression;..\..\shared\types"/>
+    <PATHCPP value=".;..\..\shared\utils;..\..\shared\utils;..\..\shared\modules;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\shared\types;..\..\extlib\math;..\..\shared\gui;..\..\shared\bcistream;..\..\shared\bcistream;..\..\shared\fileio\dat;..\..\shared\accessors;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\gui;..\..\shared\accessors;..\..\shared\types;..\..\shared\gui;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared\fileio"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -39,8 +39,8 @@
     <USERDEFINES value="NO_WIN32_LEAN_AND_MEAN"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="operat.cpp"/>
-    <INCLUDEPATH value="..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
+    <INCLUDEPATH value="..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..\..\shared\fileio;..;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\shared\fileio;..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
     <OTHERFILES value=""/>
@@ -111,6 +111,7 @@
       <FILE FILENAME="..\..\shared\gui\ExecutableHelp.cpp" FORMNAME="" UNITNAME="ExecutableHelp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -143,20 +144,18 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
-[Excluded Packages]
-c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlIncludePath]
-Count=9
-Item0=..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item2=..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
-Item6=..;$(BCB)\include;$(BCB)\include\vcl
-Item7=..;$(BCB)\include;$(BCB)\include\vcl;..\shared\utils\Expression
-Item8=..\shared\utils\Expression;..\shared\gui;..\shared\accessors;..\shared\fileio\dat;..\shared\config;..\shared\bcistream;..\extlib\math;..\shared\types;..\shared\modules;..\shared\utils;..;..\shared;$(BCB)\include;$(BCB)\include\vcl
+Count=10
+Item0=..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..\..\shared\fileio;..;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\..\shared\utils\Expression;..\..\shared\accessors;..\..\shared\fileio\dat;..\..\shared\bcistream;..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\..\shared;..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\..\shared\gui;..\..\extlib\math;..\..\shared\types;..\..\shared\modules;..\..\shared\utils;..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\..\..\shared\config;..;$(BCB)\include;$(BCB)\include\vcl
+Item7=..;$(BCB)\include;$(BCB)\include\vcl
+Item8=..;$(BCB)\include;$(BCB)\include\vcl;..\shared\utils\Expression
+Item9=..\shared\utils\Expression;..\shared\gui;..\shared\accessors;..\shared\fileio\dat;..\shared\config;..\shared\bcistream;..\extlib\math;..\shared\types;..\shared\modules;..\shared\utils;..;..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=5
@@ -203,5 +202,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=1
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
