@@ -69,6 +69,7 @@ Application:Sequencing float FeedbackDuration= 2s 3s 0 % // duration of feedback
 Application:Sequencing float PostFeedbackDuration= 1s 1s 0 % // duration of result display after feedback
 Application:Sequencing float ITIDuration= 1s 1s 0 % // duration of inter-trial interval
 Application:Sequencing float MinRunLength= 120s 120s 0 % // minimum duration of a run
+Application:Sequencing int NumberOfTrials= % 0 0 % // number of trials; if blank, MinRunLength is used
 Application:Targets int NumberTargets= 4 2 0 15 // number of targets
 Application:Window int WindowBitDepth= 16 16 1 32 // color bit depth of feedback window
 Application:Window int WindowFullScreen= 0 0 0 1 // full screen display of feedback window (boolean)
