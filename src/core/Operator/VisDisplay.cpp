@@ -389,7 +389,10 @@ VisDisplay::VisDisplayBase::FormSizeMove( TObject* Sender )
 VisDisplay::Graph::Graph( const std::string& inSourceID )
 : VisDisplayBase( inSourceID ),
   mNumChannels( 0 ),
-  mUserScaling( 0 )
+  mUserScaling( 0 ),
+  mUserZoom( 0 ),
+  mDisplaySamples( 0 ),
+  mSignalElements( 0 )
 {
   Restore();
 }
@@ -420,7 +423,17 @@ VisDisplay::Graph::SetConfig( ConfigSettings& inConfig )
 
   size_t numSamples = mDisplay.NumSamples();
   if( inConfig.Get( CfgID::NumSamples, numSamples ) )
+  {
     mDisplay.SetNumSamples( numSamples );
+    mDisplaySamples = numSamples;
+  }
+  int userZoom = mUserZoom;
+  mUserZoom = 0;
+  for( int i = 0; i < userZoom; ++i )
+    FewerSamples( NULL );
+  for( int i = 0; i > userZoom; --i )
+    MoreSamples( NULL );
+
   size_t channelGroupSize = mDisplay.ChannelGroupSize();
   if( inConfig.Get( CfgID::ChannelGroupSize, channelGroupSize ) )
   {
@@ -522,6 +535,7 @@ VisDisplay::Graph::Restore()
   }
   VisDisplayBase::Restore();
   SyncDisplay();
+  mDisplaySamples = mDisplay.NumSamples();
   mpForm->OnSizeMove = FormSizeMove;
   mpForm->OnKeyUp = FormKeyUp;
   mpForm->OnPaint = FormPaint;
@@ -562,6 +576,7 @@ VisDisplay::Graph::InstanceHandleMessage( const VisSignal& v )
 
   mNumChannels = filteredSignal.Channels();
   mDisplay.WrapForward( filteredSignal );
+  mSignalElements = v.Signal().Elements();
 
   if( curChannels != mNumChannels || curSamples != mDisplay.NumSamples() )
     SetConfig( Visconfigs()[ mSourceID ] );
@@ -573,7 +588,10 @@ struct VisDisplay::Graph::MenuItemEntry VisDisplay::Graph::sMenuItems[] =
   { EnlargeSignal, EnlargeSignal_Enabled, NULL, "Enlarge Signal" },
   { ReduceSignal, ReduceSignal_Enabled, NULL, "Reduce Signal" },
   { NULL, NULL, NULL, "-" },
-  { LessChannels, LessChannels_Enabled, NULL, "Less Channels" },
+  { FewerSamples, FewerSamples_Enabled, NULL, "Fewer Samples" },
+  { MoreSamples, MoreSamples_Enabled, NULL, "More Samples" },
+  { NULL, NULL, NULL, "-" },
+  { FewerChannels, FewerChannels_Enabled, NULL, "Fewer Channels" },
   { MoreChannels, MoreChannels_Enabled, NULL, "More Channels" },
   { NULL, NULL, NULL, "-" },
   { ToggleDisplayMode, NULL, NULL, "Toggle Display Mode" },
@@ -848,7 +866,33 @@ VisDisplay::Graph::ReduceSignal_Enabled( size_t ) const
 }
 
 void
-VisDisplay::Graph::LessChannels( size_t )
+VisDisplay::Graph::FewerSamples( size_t )
+{
+  mDisplay.SetNumSamples( mDisplaySamples /= 2 );
+  ++mUserZoom;
+}
+
+bool
+VisDisplay::Graph::FewerSamples_Enabled( size_t ) const
+{
+  return ( 2 * mSignalElements <= mDisplaySamples ) && ( mUserZoom < maxUserScaling );
+}
+
+void
+VisDisplay::Graph::MoreSamples( size_t )
+{
+  mDisplay.SetNumSamples( mDisplaySamples *= 2 );
+  --mUserZoom;
+}
+
+bool
+VisDisplay::Graph::MoreSamples_Enabled( size_t ) const
+{
+  return ( 2 * mSignalElements <= mDisplaySamples ) && ( mUserZoom > -maxUserScaling );
+}
+
+void
+VisDisplay::Graph::FewerChannels( size_t )
 {
   // Round down to the nearest power of 2.
   int n = mDisplay.DisplayGroups(),
@@ -863,7 +907,7 @@ VisDisplay::Graph::LessChannels( size_t )
 }
 
 bool
-VisDisplay::Graph::LessChannels_Enabled( size_t ) const
+VisDisplay::Graph::FewerChannels_Enabled( size_t ) const
 {
   return mDisplay.DisplayGroups() > 1;
 }

@@ -60,7 +60,7 @@ TMainForm::ActionEntry TMainForm::sActions[] =
   { EnlargeSignal, ChangeResolution_Enabled, NULL, "mViewEnlargeSignal" },
   { ReduceSignal,  ChangeResolution_Enabled, NULL, "mViewReduceSignal" },
   { MoreChannels, MoreChannels_Enabled, NULL, "mViewMoreChannels" },
-  { LessChannels, LessChannels_Enabled, NULL, "mViewLessChannels" },
+  { FewerChannels, FewerChannels_Enabled, NULL, "mViewFewerChannels" },
   { ChooseChannelColors, ChooseChannelColors_Enabled, NULL,
       "mViewChooseChannelColors" },
   { ToggleBaselines, ToggleBaselines_Enabled, ToggleBaselines_Checked,
@@ -309,7 +309,7 @@ bool TMainForm::SampleZoomOut_Enabled() const
 { return mDisplay.NumSamples() < mFile.NumSamples(); }
 
 // Number of displayed channels
-void TMainForm::LessChannels()
+void TMainForm::FewerChannels()
 {
   int newNumChannels = mDisplay.DisplayGroups() / 2;
   if( newNumChannels < 1 )
@@ -318,7 +318,7 @@ void TMainForm::LessChannels()
           .SetTopGroup( mVerticalScroller->Position );
   UpdateVerticalScroller();
 }
-bool TMainForm::LessChannels_Enabled() const
+bool TMainForm::FewerChannels_Enabled() const
 { return mDisplay.DisplayGroups() > 1; }
 
 void TMainForm::MoreChannels()
@@ -993,4 +993,5 @@ void __fastcall TMainForm::mChannelListBoxContextPopup(TObject* Sender,
   }
 }
 //---------------------------------------------------------------------------
+
 

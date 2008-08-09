@@ -185,11 +185,17 @@ class VisDisplay
     void ReduceSignal( size_t );
     bool ReduceSignal_Enabled( size_t ) const;
 
+    void FewerSamples( size_t );
+    bool FewerSamples_Enabled( size_t ) const;
+
+    void MoreSamples( size_t );
+    bool MoreSamples_Enabled( size_t ) const;
+
     void MoreChannels( size_t );
     bool MoreChannels_Enabled( size_t ) const;
 
-    void LessChannels( size_t );
-    bool LessChannels_Enabled( size_t ) const;
+    void FewerChannels( size_t );
+    bool FewerChannels_Enabled( size_t ) const;
 
     void ToggleDisplayMode( size_t );
 
@@ -231,7 +237,10 @@ class VisDisplay
 
    private:
     int           mNumChannels,
-                  mUserScaling;
+                  mSignalElements,
+                  mUserScaling,
+                  mUserZoom;
+    float         mDisplaySamples;
     DisplayFilter mDisplayFilter;
     SignalDisplay mDisplay;
 

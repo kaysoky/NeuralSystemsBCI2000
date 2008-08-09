@@ -392,6 +392,7 @@ SignalDisplay::SetNumSamples( int inNumSamples )
   {
     mData = GenericSignal( mData.Channels(), newNumSamples );
     mSampleCursor = 0;
+    Invalidate();
   }
   mNumSamples = newNumSamples;
   return *this;

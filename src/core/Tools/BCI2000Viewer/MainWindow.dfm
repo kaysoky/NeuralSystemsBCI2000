@@ -200,14 +200,23 @@ object MainForm: TMainForm
       object mViewReduceSignal: TMenuItem
         Caption = 'Reduce Signal'
       end
+      object N4: TMenuItem
+        Caption = '-'
+      end
+      object mViewZoomOut: TMenuItem
+        Caption = 'Zoom Out'
+      end
+      object mViewZoomIn: TMenuItem
+        Caption = 'Zoom In'
+      end
       object N1: TMenuItem
         Caption = '-'
       end
       object mViewMoreChannels: TMenuItem
         Caption = 'More Channels'
       end
-      object mViewLessChannels: TMenuItem
-        Caption = 'Less Channels'
+      object mViewFewerChannels: TMenuItem
+        Caption = 'Fewer Channels'
       end
       object N2: TMenuItem
         Caption = '-'
@@ -225,15 +234,6 @@ object MainForm: TMainForm
       object mViewShowUnit: TMenuItem
         AutoCheck = True
         Caption = 'Show Unit'
-      end
-      object N4: TMenuItem
-        Caption = '-'
-      end
-      object mViewZoomOut: TMenuItem
-        Caption = 'Zoom Out'
-      end
-      object mViewZoomIn: TMenuItem
-        Caption = 'Zoom In'
       end
     end
     object mHelpMenu: TMenuItem

@@ -55,7 +55,7 @@ class TMainForm : public TForm
     TMenuItem *mViewEnlargeSignal;
     TMenuItem *mViewReduceSignal;
     TMenuItem *N1;
-    TMenuItem *mViewLessChannels;
+    TMenuItem *mViewFewerChannels;
     TMenuItem *mViewMoreChannels;
     TMenuItem *N2;
     TMenuItem *mViewChooseChannelColors;
@@ -134,8 +134,8 @@ class TMainForm : public TForm
     void SampleZoomOut();
     bool SampleZoomOut_Enabled() const;
     // Number of displayed channels
-    void LessChannels();
-    bool LessChannels_Enabled() const;
+    void FewerChannels();
+    bool FewerChannels_Enabled() const;
     void MoreChannels();
     bool MoreChannels_Enabled() const;
     // Channel scrolling
