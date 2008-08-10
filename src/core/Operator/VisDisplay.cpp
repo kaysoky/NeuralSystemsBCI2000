@@ -424,6 +424,7 @@ VisDisplay::Graph::SetConfig( ConfigSettings& inConfig )
   size_t numSamples = mDisplay.NumSamples();
   if( inConfig.Get( CfgID::NumSamples, numSamples ) )
   {
+    numSamples++; // TODO: it would be better to fix this off-by-one error at its source instead of doing this post-hoc correction
     mDisplay.SetNumSamples( numSamples );
     mDisplaySamples = numSamples;
   }
