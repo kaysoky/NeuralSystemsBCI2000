@@ -891,6 +891,8 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       || dynamic_cast<TCheckListBox*>( ActiveControl ) )
     return;
 
+  static int acc = 0;
+  int wipe_acc = 1;
   bool shift = Shift.Contains( ssShift ) || Shift.Contains( ssAlt ) || Shift.Contains( ssCtrl );
   switch( Key )
   {
@@ -913,11 +915,11 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       }
       break;
 
-    case VK_PRIOR:
+    case VK_PRIOR: case 'B': case 'b':
       if( ChannelUp_Enabled() )
         ChannelPagePrev();
       break;
-    case VK_NEXT:
+    case VK_NEXT: case VK_SPACE:
       if( ChannelDown_Enabled() )
         ChannelPageNext();
       break;
@@ -940,7 +942,33 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
           ToPrevBlock();
       }
       break;
+    case VK_OEM_COMMA:
+      if(FewerChannels_Enabled()) FewerChannels();
+      break;
+    case VK_OEM_PERIOD:
+      if(MoreChannels_Enabled()) MoreChannels();
+      break;
+    case VK_SUBTRACT: case VK_OEM_MINUS:
+      if(ChangeResolution_Enabled()) ReduceSignal();
+      break;
+    case VK_ADD: case VK_OEM_PLUS:
+      if(ChangeResolution_Enabled()) EnlargeSignal();
+      break;
+    case VK_HOME:
+      // TODO: jump to first channel
+      break; 
+    case VK_END:
+      // TODO: jump to last page full of channels
+      break;
+    case VK_RETURN: case 'G': case 'g':
+      // TODO: jump to channel #acc
+      break;      
+    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+      acc = acc * 10 + (Key - '0');
+      wipe_acc = 0;
+      break;
   }
+  if(wipe_acc) acc = 0;
 }
 //---------------------------------------------------------------------------
 
