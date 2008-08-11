@@ -303,7 +303,7 @@ DataIOFilter::Initialize( const SignalProperties& Input,
    .SetElements( Output.Elements() / mVisualizeSourceDecimation )
    .SetType( SignalType::float24 )
    .ElementUnit().SetGain( Output.ElementUnit().Gain() * mVisualizeSourceDecimation )
-                 .SetRawMax( Output.ElementUnit().RawMax() / mVisualizeSourceDecimation - 1 );
+                 .SetRawMax( Output.ElementUnit().RawMax() / mVisualizeSourceDecimation );
   mDecimatedSignal.SetProperties( d );
   if( mVisualizeSource )
     mSourceVis.Send( mDecimatedSignal.Properties() );
