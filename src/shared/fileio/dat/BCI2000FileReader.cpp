@@ -302,15 +302,15 @@ BCI2000FileReader::ReadHeader()
   if( element != "StatevectorLen=" )
     return;
 
-  SignalType signalType = SignalType::int16;
+  mSignalType = SignalType::int16;
   if( linestream >> element )
   {
     if( element != "DataFormat=" )
       return;
-    if( !( linestream >> signalType ) )
+    if( !( linestream >> mSignalType ) )
       return;
   }
-  mDataSize = signalType.Size();
+  mDataSize = mSignalType.Size();
 
   // now go through the header and read all parameters and states
   getline( mFile >> ws, line, '\n' );
@@ -333,7 +333,7 @@ BCI2000FileReader::ReadHeader()
   int sampleBlockSize = 1;
   if( mParamlist.Exists( "SampleBlockSize" ) )
     sampleBlockSize = ::atoi( mParamlist[ "SampleBlockSize" ].Value().c_str() );
-  mSignalProperties = ::SignalProperties( mChannels, sampleBlockSize, signalType );
+  mSignalProperties = ::SignalProperties( mChannels, sampleBlockSize, mSignalType );
 
   const float defaultOffset = 0.0;
   mSourceOffsets.clear();
