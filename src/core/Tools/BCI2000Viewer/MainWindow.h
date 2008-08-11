@@ -143,6 +143,8 @@ class TMainForm : public TForm
     void ChannelDown();
     void ChannelPageNext();
     void ChannelPagePrev();
+    void ChannelPageFirst();
+    void ChannelPageLast();
     bool ChannelUp_Enabled();
     bool ChannelDown_Enabled();
     // Signal resolution

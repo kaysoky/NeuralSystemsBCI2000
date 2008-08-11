@@ -59,7 +59,7 @@ TMainForm::ActionEntry TMainForm::sActions[] =
   { Invert, Invert_Enabled, Invert_Checked, "mViewInvert" },
   { EnlargeSignal, ChangeResolution_Enabled, NULL, "mViewEnlargeSignal" },
   { ReduceSignal,  ChangeResolution_Enabled, NULL, "mViewReduceSignal" },
-  { MoreChannels, MoreChannels_Enabled, NULL, "mViewMoreChannels" },
+  { MoreChannels,  MoreChannels_Enabled, NULL,  "mViewMoreChannels" },
   { FewerChannels, FewerChannels_Enabled, NULL, "mViewFewerChannels" },
   { ChooseChannelColors, ChooseChannelColors_Enabled, NULL,
       "mViewChooseChannelColors" },
@@ -343,6 +343,10 @@ void TMainForm::ChannelPageNext()
 void TMainForm::ChannelPagePrev()
 { mVerticalScroller->Position
   = max( mVerticalScroller->Min, mVerticalScroller->Position - mVerticalScroller->LargeChange ); }
+void TMainForm::ChannelPageFirst()
+{ mVerticalScroller->Position = mVerticalScroller->Min; }
+void TMainForm::ChannelPageLast()
+{ mVerticalScroller->Position = mVerticalScroller->Max; }
 
 bool TMainForm::ChannelUp_Enabled()
 { return mVerticalScroller->Enabled && mVerticalScroller->Position > mVerticalScroller->Min; }
@@ -878,8 +882,7 @@ void __fastcall TMainForm::ActionExecuteHandler( TObject* inSender )
 
 //---------------------------------------------------------------------------
 
-void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
-      TShiftState Shift)
+void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key, TShiftState Shift)
 {
   switch( Key )
   {
@@ -891,13 +894,14 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       || dynamic_cast<TCheckListBox*>( ActiveControl ) )
     return;
 
+  bool scrollerActive = ( ActiveControl == mVerticalScroller );
   static int acc = 0;
   int wipe_acc = 1;
   bool shift = Shift.Contains( ssShift ) || Shift.Contains( ssAlt ) || Shift.Contains( ssCtrl );
   switch( Key )
   {
     case VK_UP:
-      if( ChannelUp_Enabled() )
+      if( !scrollerActive && ChannelUp_Enabled() )
       {
         if( shift )
           ChannelPagePrev();
@@ -906,7 +910,7 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       }
       break;
     case VK_DOWN:
-      if( ChannelDown_Enabled() )
+      if( !scrollerActive && ChannelDown_Enabled() )
       {
         if( shift )
           ChannelPageNext();
@@ -915,11 +919,14 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       }
       break;
 
-    case VK_PRIOR: case 'B': case 'b':
+    case VK_PRIOR:
+    case 'B':
+    case 'b':
       if( ChannelUp_Enabled() )
         ChannelPagePrev();
       break;
-    case VK_NEXT: case VK_SPACE:
+    case VK_NEXT:
+    case VK_SPACE:
       if( ChannelDown_Enabled() )
         ChannelPageNext();
       break;
@@ -943,32 +950,54 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key,
       }
       break;
     case VK_OEM_COMMA:
-      if(FewerChannels_Enabled()) FewerChannels();
+      if(FewerChannels_Enabled())
+        FewerChannels();
       break;
     case VK_OEM_PERIOD:
-      if(MoreChannels_Enabled()) MoreChannels();
+      if(MoreChannels_Enabled())
+        MoreChannels();
       break;
-    case VK_SUBTRACT: case VK_OEM_MINUS:
-      if(ChangeResolution_Enabled()) ReduceSignal();
+    case VK_SUBTRACT:
+    case VK_OEM_MINUS:
+      if(ChangeResolution_Enabled())
+        ReduceSignal();
       break;
-    case VK_ADD: case VK_OEM_PLUS:
-      if(ChangeResolution_Enabled()) EnlargeSignal();
+    case VK_ADD:
+    case VK_OEM_PLUS:
+      if(ChangeResolution_Enabled())
+        EnlargeSignal();
       break;
     case VK_HOME:
-      // TODO: jump to first channel
+      if( ChannelUp_Enabled() )
+        ChannelPageFirst();
       break; 
     case VK_END:
-      // TODO: jump to last page full of channels
+      if( ChannelDown_Enabled() )
+        ChannelPageLast();
       break;
-    case VK_RETURN: case 'G': case 'g':
-      // TODO: jump to channel #acc
+    case VK_RETURN:
+    case 'G':
+    case 'g':
+      ChannelPageFirst();
+      for( int i = 1; i < acc; ++i )
+        ChannelDown();
       break;      
-    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
       acc = acc * 10 + (Key - '0');
       wipe_acc = 0;
       break;
   }
-  if(wipe_acc) acc = 0;
+  if(wipe_acc)
+    acc = 0;
 }
 //---------------------------------------------------------------------------
 
