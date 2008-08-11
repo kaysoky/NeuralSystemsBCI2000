@@ -183,7 +183,7 @@ GDFOutputFormat::StartRun( ostream& os )
   PutArray< Num<GDF::uint8>     >( os, Channels(), &ChannelInfo::ElectrodeImpedance );
   PutArray< Num<GDF::uint8,19>  >( os, Channels() );
 
-  PutField< Num<GDF::uint8>     >( os, GDF::BCI2000Tag );
+  PutField< Num<GDF::uint8>     >( os, int( GDF::BCI2000Tag ) );
   PutField< Num<GDF::uint8>     >( os, bci2000infoLength & 0xff );
   PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 8 & 0xff );
   PutField< Num<GDF::uint8>     >( os, bci2000infoLength >> 16 & 0xff );
