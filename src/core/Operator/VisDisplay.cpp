@@ -227,7 +227,7 @@ VisDisplay::VisDisplayBase::SetConfig( ConfigSettings& inConfig )
     Visconfigs()[ mSourceID ].Put( CfgID::Width, mpForm->Width, Default );
     Visconfigs()[ mSourceID ].Put( CfgID::Height, mpForm->Height, Default );
   }
-  
+
   bool visible = true;
   inConfig.Get( CfgID::Visible, visible );
   SetVisible( visible );
@@ -424,7 +424,6 @@ VisDisplay::Graph::SetConfig( ConfigSettings& inConfig )
   size_t numSamples = mDisplay.NumSamples();
   if( inConfig.Get( CfgID::NumSamples, numSamples ) )
   {
-    numSamples++; // TODO: it would be better to fix this off-by-one error at its source instead of doing this post-hoc correction
     mDisplay.SetNumSamples( numSamples );
     mDisplaySamples = numSamples;
   }
@@ -456,7 +455,7 @@ VisDisplay::Graph::SetConfig( ConfigSettings& inConfig )
   bool showBaselines = mDisplay.BaselinesVisible();
   if( inConfig.Get( CfgID::ShowBaselines, showBaselines ) )
     mDisplay.SetBaselinesVisible( showBaselines );
-    
+
   bool invertedDisplay = mDisplay.Inverted();
   if( inConfig.Get( CfgID::InvertedDisplay, invertedDisplay ) )
     mDisplay.SetInverted( invertedDisplay );
@@ -1071,7 +1070,7 @@ VisDisplay::Graph::FormKeyUp( TObject*, WORD& keyref, TShiftState modkey)
       break;
     case 'G':
       mDisplay.SetTopGroup(acc-1);
-      break;      
+      break;
     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
       acc = acc * 10 + (key - '0');
       wipe_acc = 0;
