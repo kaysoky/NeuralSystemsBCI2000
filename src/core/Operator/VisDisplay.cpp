@@ -1023,10 +1023,14 @@ VisDisplay::Graph::FormSizeMove( TObject* Sender )
 
 void
 __fastcall
-VisDisplay::Graph::FormKeyUp( TObject*, WORD& key, TShiftState )
+VisDisplay::Graph::FormKeyUp( TObject*, WORD& keyref, TShiftState modkey)
 {
   static int acc = 0;
   int wipe_acc = 1;
+  WORD key = keyref;
+  if(key == VK_SPACE && modkey.Contains( ssShift )) key = VK_PRIOR;
+  if(acc == 0 && key == 'G' && modkey.Contains( ssShift )) key = VK_END;
+  if(acc != 0 && key == VK_RETURN) key = 'G';
   switch( key )
   {
     case VK_UP:
@@ -1035,7 +1039,7 @@ VisDisplay::Graph::FormKeyUp( TObject*, WORD& key, TShiftState )
     case VK_DOWN:
       mDisplay.SetTopGroup( mDisplay.TopGroup() + 1 );
       break;
-    case VK_PRIOR: case 'B': case 'b':
+    case VK_PRIOR: case 'B':
       mDisplay.SetTopGroup( mDisplay.TopGroup() - mDisplay.DisplayGroups() );
       break;
     case VK_NEXT: case VK_SPACE:
@@ -1065,7 +1069,7 @@ VisDisplay::Graph::FormKeyUp( TObject*, WORD& key, TShiftState )
     case VK_END:
       mDisplay.SetTopGroup( 9999 );
       break;
-    case VK_RETURN: case 'G': case 'g':
+    case 'G':
       mDisplay.SetTopGroup(acc-1);
       break;      
     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
