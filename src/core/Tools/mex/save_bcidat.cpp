@@ -105,11 +105,11 @@ class FilterWrapper
     EnvironmentBase::EnterNonaccessPhase();
   }
 
-  void StartRun( ostream& os )
+  void StartRun( ostream& os, const string& inName )
   {
     EnvironmentBase::EnterStartRunPhase( &mParameters, &mStates, NULL, NULL );
     EnvironmentBase::ErrorContext( "StartRun", mpOutputFormat );
-    mpOutputFormat->StartRun( os );
+    mpOutputFormat->StartRun( os, inName );
     EnvironmentBase::ErrorContext( "" );
     EnvironmentBase::EnterNonaccessPhase();
   }
@@ -365,7 +365,7 @@ mexFunction( int nargout, mxArray* varargout[],
   }
   wrapper.Preflight( properties, statevector );
   wrapper.Initialize( properties, statevector );
-  wrapper.StartRun( outputFile );
+  wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
   for( long blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
