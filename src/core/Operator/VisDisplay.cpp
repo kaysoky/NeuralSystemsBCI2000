@@ -1027,9 +1027,12 @@ VisDisplay::Graph::FormKeyUp( TObject*, WORD& keyref, TShiftState modkey)
   static int acc = 0;
   int wipe_acc = 1;
   WORD key = keyref;
-  if(key == VK_SPACE && modkey.Contains( ssShift )) key = VK_PRIOR;
-  if(acc == 0 && key == 'G' && modkey.Contains( ssShift )) key = VK_END;
-  if(acc != 0 && key == VK_RETURN) key = 'G';
+  if(key == VK_SPACE && modkey.Contains( ssShift ))
+    key = VK_PRIOR;
+  if(acc == 0 && key == 'G' && modkey.Contains( ssShift ))
+    key = VK_END;
+  if(acc != 0 && key == VK_RETURN)
+    key = 'G';
   switch( key )
   {
     case VK_UP:
@@ -1038,45 +1041,65 @@ VisDisplay::Graph::FormKeyUp( TObject*, WORD& keyref, TShiftState modkey)
     case VK_DOWN:
       mDisplay.SetTopGroup( mDisplay.TopGroup() + 1 );
       break;
-    case VK_PRIOR: case 'B':
+    case VK_PRIOR:
+    case 'B':
       mDisplay.SetTopGroup( mDisplay.TopGroup() - mDisplay.DisplayGroups() );
       break;
-    case VK_NEXT: case VK_SPACE:
+    case VK_NEXT:
+    case VK_SPACE:
       mDisplay.SetTopGroup( mDisplay.TopGroup() + mDisplay.DisplayGroups() );
       break;
     case VK_RIGHT:
-      if(FewerSamples_Enabled(0)) FewerSamples(0);
+      if(FewerSamples_Enabled(0))
+        FewerSamples(0);
       break;
     case VK_LEFT:
-      if(MoreSamples_Enabled(0)) MoreSamples(0);
+      if(MoreSamples_Enabled(0))
+        MoreSamples(0);
       break;
     case VK_OEM_COMMA:
-      if(FewerChannels_Enabled(0)) FewerChannels(0);
+      if(FewerChannels_Enabled(0))
+        FewerChannels(0);
       break;
     case VK_OEM_PERIOD:
-      if(MoreChannels_Enabled(0)) MoreChannels(0);
+      if(MoreChannels_Enabled(0))
+        MoreChannels(0);
       break;
-    case VK_SUBTRACT: case VK_OEM_MINUS:
-      if(ReduceSignal_Enabled(0)) ReduceSignal(0);
+    case VK_SUBTRACT:
+    case VK_OEM_MINUS:
+      if(ReduceSignal_Enabled(0))
+        ReduceSignal(0);
       break;
-    case VK_ADD: case VK_OEM_PLUS:
-      if(EnlargeSignal_Enabled(0)) EnlargeSignal(0);
+    case VK_ADD:
+    case VK_OEM_PLUS:
+      if(EnlargeSignal_Enabled(0))
+        EnlargeSignal(0);
       break;
     case VK_HOME:
       mDisplay.SetTopGroup( 0 );
       break;
     case VK_END:
-      mDisplay.SetTopGroup( 9999 );
+      mDisplay.SetTopGroup( mNumChannels / mDisplay.ChannelGroupSize() );
       break;
     case 'G':
       mDisplay.SetTopGroup(acc-1);
       break;
-    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
       acc = acc * 10 + (key - '0');
       wipe_acc = 0;
       break;
   }
-  if(wipe_acc) acc = 0;
+  if(wipe_acc)
+    acc = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
