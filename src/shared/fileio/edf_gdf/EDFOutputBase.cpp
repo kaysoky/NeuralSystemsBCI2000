@@ -46,10 +46,6 @@ EDFOutputBase::Publish() const
       "// year the subject was born",
     "Storage int SubjectSex= 0 0 0 2 "
       "// 0: not specfied, 1: male, 2: female (enumeration)",
-    "Storage string LabID= % % % % "
-      "// laboratory identification",
-    "Storage string TechnicianID= % % % % "
-      "// technician identification",
     "Storage string EquipmentID= BCI2000 % % % "
       "// equipment provider identification",
     "Storage string TransducerType= EEG % % % "
@@ -110,7 +106,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   ChannelInfo channel;
   channel.TransducerType = string( Parameter( "TransducerType" ) );
   channel.PhysicalDimension = string( Parameter( "SignalUnit" ) );
-  channel.PhysicalDimensionCode = 0;
+  channel.PhysicalDimensionCode = GDF::PhysicalUnitToGDFUnit( channel.PhysicalDimension );
   channel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
@@ -167,8 +163,15 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   ChannelInfo markerChannel;
   markerChannel.TransducerType = "Marker";
   markerChannel.PhysicalDimension = "";
+  markerChannel.PhysicalDimensionCode = GDF::PhysicalUnitToGDFUnit( "" );
   markerChannel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   markerChannel.DataType = GDF::int16::Code;
+  for( int i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
+    markerChannel.ElectrodePosition[ i ] = cNaN;
+  markerChannel.ElectrodeImpedance = 255;
+  markerChannel.LowPass = cNaN;
+  markerChannel.HighPass = cNaN;
+  markerChannel.Notch = cNaN;
   for( int i = 0; i < States->Size(); ++i )
   {
     static string statesToIgnore[] = { "Running", "Recording" };
@@ -195,7 +198,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
 
 
 void
-EDFOutputBase::StartRun( ostream& )
+EDFOutputBase::StartRun( ostream&, const string& )
 {
   mNumRecords = 0;
 }

@@ -84,6 +84,9 @@ namespace GDF
   int64::ValueType DateTimeToGDFTime( signed long long );
   // Expression of a year as a GDF 64 bit time value.
   int64::ValueType YearToGDFTime( double y );
+  // Conversion of a physical unit in ASCII format into an
+  // ISO/IEEE 11073-10101:2004 number code.
+  uint16::ValueType PhysicalUnitToGDFUnit( const std::string& );
 
   // Field types as classes.
   template<int length> // A fixed-length string field.

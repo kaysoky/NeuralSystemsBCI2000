@@ -23,7 +23,7 @@ class GDFOutputFormat: public EDFOutputBase
   virtual void Publish() const;
   virtual void Preflight( const SignalProperties&, const StateVector& ) const;
   virtual void Initialize( const SignalProperties&, const StateVector& );
-  virtual void StartRun( std::ostream& );
+  virtual void StartRun( std::ostream&, const std::string& );
   virtual void StopRun( std::ostream& );
   virtual void Write( std::ostream&, const GenericSignal&, const StateVector& );
 

@@ -27,7 +27,7 @@ class GenericOutputFormat : public Environment
   // Apply parameters and states from Initialize().
   virtual void Initialize( const SignalProperties&, const StateVector& ) = 0;
   // Write a header in StartRun(), and a footer in StopRun().
-  virtual void StartRun( std::ostream& ) {}
+  virtual void StartRun( std::ostream&, const std::string& ) {}
   virtual void StopRun( std::ostream& ) {}
   // The Write() function takes as argument the state vector
   // that existed at the time of the signal argument's time stamp.

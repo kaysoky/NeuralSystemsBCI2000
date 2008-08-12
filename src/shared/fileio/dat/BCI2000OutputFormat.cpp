@@ -56,7 +56,7 @@ BCI2000OutputFormat::Initialize( const SignalProperties& inProperties,
 }
 
 void
-BCI2000OutputFormat::StartRun( ostream& os )
+BCI2000OutputFormat::StartRun( ostream& os, const string& )
 {
   // We write 16 bit data in the old format to maintain backward compatibility.
   bool useOldFormat = ( mInputProperties.Type() == SignalType::int16 );

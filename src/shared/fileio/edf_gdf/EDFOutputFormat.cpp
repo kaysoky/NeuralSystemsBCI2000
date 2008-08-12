@@ -30,6 +30,13 @@ void
 EDFOutputFormat::Publish() const
 {
   EDFOutputBase::Publish();
+
+  BEGIN_PARAMETER_DEFINITIONS
+    "Storage string LabID= % % % % "
+      "// laboratory identification",
+    "Storage string TechnicianID= % % % % "
+      "// technician identification",
+  END_PARAMETER_DEFINITIONS
 }
 
 
@@ -69,9 +76,9 @@ EDFOutputFormat::Initialize( const SignalProperties& inProperties,
 
 
 void
-EDFOutputFormat::StartRun( ostream& os )
+EDFOutputFormat::StartRun( ostream& os, const string& inFileName )
 {
-  EDFOutputBase::StartRun( os );
+  EDFOutputBase::StartRun( os, inFileName );
 
   time_t now = ::time( NULL );
   struct tm* time = ::localtime( &now );

@@ -34,6 +34,8 @@ GDFOutputFormat::Publish() const
   EDFOutputBase::Publish();
 
   BEGIN_PARAMETER_DEFINITIONS
+    "Storage string InvestigationID= % % % % "
+      "// an identifier for the current investigation",
     "Storage matrix EventCodes= 6 "
       "[Condition                                 GDF%20Event] "
       "TargetCode!=0                              0x0300 " // trial begin
@@ -74,11 +76,7 @@ GDFOutputFormat::Preflight( const SignalProperties& inProperties,
   Parameter( "SubjectName" );
   Parameter( "SubjectYearOfBirth" );
   Parameter( "EquipmentID" );
-  Parameter( "TechnicianID" );
-  Parameter( "LabID" );
-  Parameter( "EquipmentID" );
-  Parameter( "LabID" );
-  Parameter( "TechnicianID" );
+  Parameter( "InvestigationID" );
   Parameter( "SampleBlockSize" );
   Parameter( "SamplingRate" );
 }
@@ -106,29 +104,32 @@ GDFOutputFormat::Initialize( const SignalProperties& inProperties,
 
 
 void
-GDFOutputFormat::StartRun( ostream& os )
+GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
 {
-  EDFOutputBase::StartRun( os );
+  EDFOutputBase::StartRun( os, inFileName );
 
   time_t now = ::time( NULL );
 
   ostringstream patient;
-  patient << GDF::EncodedString( Parameter( "SubjectName" ) )
-          << " X X ";
+  patient << GDF::EncodedString( Parameter( "SubjectName" ) );
 
   ostringstream recording;
-  recording << GDF::DateTimeToString( now )
-            << ' '
-            << GDF::EncodedString( Parameter( "LabID" ) )
-            << ' '
-            << GDF::EncodedString( Parameter( "TechnicianID" ) )
-            << ' '
-            << GDF::EncodedString( Parameter( "EquipmentID" ) );
+  recording << GDF::EncodedString( Parameter( "InvestigationID" ) )
+            << ' ';
+  int pos = inFileName.find_last_of( ":/\\" );
+  recording << inFileName.substr( pos == string::npos ? 0 : pos + 1 );
 
   GDF::uint64::ValueType numEquipmentID = 0;
   istringstream iss;
   iss.str( Parameter( "EquipmentID" ) );
   iss >> numEquipmentID;
+  if( numEquipmentID == 0 )
+  {
+    iss.clear();
+    char* p = reinterpret_cast<char*>( &numEquipmentID );
+    for( int i = 0; i < sizeof( numEquipmentID ); ++i )
+      p[ i ] = iss.get();
+  }
 
   ostringstream bci2000info;
   bci2000info << *Parameters << ends;
@@ -204,8 +205,8 @@ GDFOutputFormat::StopRun( ostream& os )
     PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 8 & 0xff );
     PutField< Num<GDF::uint8>   >( os, mEvents.size() >> 16 & 0xff );
     PutField< Num<GDF::float32> >( os, Parameter( "SamplingRate" ) );
-    PutArray< Num<GDF::uint32> >( os, mEvents, &EventInfo::SamplePosition );
-    PutArray< Num<GDF::uint16> >( os, mEvents, &EventInfo::Code );
+    PutArray< Num<GDF::uint32>  >( os, mEvents, &EventInfo::SamplePosition );
+    PutArray< Num<GDF::uint16>  >( os, mEvents, &EventInfo::Code );
   }
   // Number of Records
   const int NumRecFieldPos = 236;

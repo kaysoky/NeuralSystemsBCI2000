@@ -148,7 +148,7 @@ FileWriterBase::StartRun()
              << endl;
   }
 
-  mrOutputFormat.StartRun( mOutputFile );
+  mrOutputFormat.StartRun( mOutputFile, mFileName );
 }
 
 
