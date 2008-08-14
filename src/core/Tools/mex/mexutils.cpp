@@ -41,7 +41,7 @@ PrintVersion( const char* inSourceFile, int inNargin, const mxArray** inVarargin
     if( mxCHAR_CLASS == mxGetClassID( inVarargin[ i ] ) )
     {
       char* arg = mxArrayToString( inVarargin[ i ] );
-      if( 0 == stricmp( arg, "-version" ) )
+      if( 0 == stricmp( arg, "--version" ) || 0 == stricmp( arg, "-v" ) )
         argFound = true;
       mxFree( arg );
     }

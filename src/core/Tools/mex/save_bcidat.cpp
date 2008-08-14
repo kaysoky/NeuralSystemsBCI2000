@@ -159,14 +159,7 @@ mexFunction( int nargout, mxArray* varargout[],
 
   if( nargin < 1 || !mxIsChar( varargin[0] ) )
     bcierr__ << "No file name given." << endl;
-
   const char* outputFileName = mxArrayToString( varargin[0] );
-  ofstream outputFile( outputFileName, ios::out | ios::binary );
-  if( !outputFile.is_open() )
-    bcierr__ << "Could not open file \""
-             << outputFileName
-             << "\" for output."
-             << endl;
 
   if( nargin < 2 || !mxIsNumeric( varargin[1] ) )
     bcierr__ << "No signal data given." << endl;
@@ -306,8 +299,11 @@ mexFunction( int nargout, mxArray* varargout[],
              << endl;
 
   StructToParamlist( varargin[3], wrapper.Parameters() );
-
   ParamList& Params = wrapper.Parameters();
+
+  if( nargin > 4 )
+    bciout__ << "Ignored additional argument(s)."
+             << endl;
 
   int sampleBlockSize = 1;
   if( !Params.Exists( "SampleBlockSize" ) )
@@ -365,6 +361,13 @@ mexFunction( int nargout, mxArray* varargout[],
   }
   wrapper.Preflight( properties, statevector );
   wrapper.Initialize( properties, statevector );
+
+  ofstream outputFile( outputFileName, ios::out | ios::binary );
+  if( !outputFile.is_open() )
+    bcierr__ << "Could not open file \""
+             << outputFileName
+             << "\" for output."
+             << endl;
   wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
