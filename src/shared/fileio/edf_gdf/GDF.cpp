@@ -20,7 +20,6 @@
 #include <ctime>
 #include <limits>
 
-
 using namespace std;
 
 void
@@ -69,7 +68,7 @@ GDF::DateTimeToGDFTime( signed long long t )
 GDF::int64::ValueType
 GDF::YearToGDFTime( double y )
 {
-  return y * cSecondsPerDay / cSecondsPerYear * ( 1LL << 32 );
+  return y == 0 ? 0 : DateTimeToGDFTime( ( y - 1970 ) * cSecondsPerYear );
 }
 
 GDF::uint16::ValueType
