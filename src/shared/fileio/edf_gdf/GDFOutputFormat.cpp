@@ -127,8 +127,9 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   {
     iss.clear();
     char* p = reinterpret_cast<char*>( &numEquipmentID );
-    for( int i = 0; i < sizeof( numEquipmentID ); ++i )
-      p[ i ] = iss.eof() ? 0 : iss.get();
+    int i = 0;
+    while( i < sizeof( numEquipmentID ) && iss.peek() != EOF )
+      p[ i++ ] = iss.get();
   }
 
   ostringstream bci2000info;
