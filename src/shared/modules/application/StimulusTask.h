@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A base class for application modules that present a sequence
 //   of stimuli.
-//   Inheriting from ApplicationBase, descendants of FeedbackTask have access
+//   Inheriting from ApplicationBase, descendants of StimulusTask have access
 //   to the AppLog, AppLog.File and AppLog.Screen streams declared in
 //   ApplicationBase.
 //
@@ -203,8 +203,6 @@ class StimulusTask : public ApplicationBase
   ClassResult    mClassResult;
   std::set<int>  mCodesPresented;
   Target*        mpAttendedTarget;
-
-  RandomGenerator mRandomGenerator;
 };
 
 #endif // STIMULUS_TASK_H
