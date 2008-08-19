@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:ApplicationBase Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:GenericVisualization Class,Programming Reference:LogFile Class,Programming Reference:RandomGenerator Class,Technical Reference:BCI2000 Messages,User Reference:Operator Module,Programming Reference:StimulusPresentationTask Class,Programming Reference:GUI:GraphDisplay Class,Programming Reference:FeedbackTask Class" />
+<meta name="keywords" content="Programming Reference:ApplicationBase Class,BCI2000 Glossary,Programming Reference:FeedbackTask Class,Programming Reference:GenericVisualization Class,Programming Reference:LogFile Class,Programming Reference:RandomGenerator Class,Programming Reference:StimulusTask Class,Technical Reference:BCI2000 Messages,User Reference:Operator Module,Programming Reference:GUI::GraphDisplay Class" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -100,7 +100,7 @@ AppLog &lt;&lt; "This message is displayed by the operator module, and written i
 </p><p>Operator log window messages have <i>APLG</i> as their <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">visualization source ID</a>.
 </p>
 <a name="Display_Parameterization_and_Visualization"></a><h2>Display Parameterization and Visualization</h2>
-<p>Typically, a BCI2000 application module displays feedback or other stimuli in an application window. In the GUI abstraction layer of the BCI2000 framework, the application window's drawing area is represented as an object that inherits the <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:GUI:GraphDisplay_Class&amp;action=edit" class="new" title="Programming Reference:GUI:GraphDisplay Class"><tt>GUI::GraphDisplay</tt></a> interface.
+<p>Typically, a BCI2000 application module displays feedback or other stimuli in an application window. In the GUI abstraction layer of the BCI2000 framework, the application window's drawing area is represented as an object that inherits the <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:GUI::GraphDisplay_Class&amp;action=edit" class="new" title="Programming Reference:GUI::GraphDisplay Class"><tt>GUI::GraphDisplay</tt></a> interface.
 </p><p>When a derived class provides its underlying <tt>ApplicationBase</tt> with a <tt>GUI::GraphDisplay</tt> pointer at construction time, the <tt>ApplicationBase</tt> class will handle display visualization transparently.
 The <tt>ApplicationBase</tt> class uses the <tt>GraphDisplay</tt>'s <tt>BitmapData</tt> method to obtain a copy of its contents, and to send these to the operator module for display in a visualization window using a message source ID of <i>APSC</i>.
 </p>
@@ -132,11 +132,11 @@ Enlarging the factor reduces the visualization window's resolution, and its init
 <ul><li>evoking responses using stimulus presentation,
 </li><li>continuously presenting feedback of brain activity.
 </li></ul>
-<p>A BCI2000 task filter implementing one of these paradigms will not inherit from the <tt>ApplicationBase</tt> directly but either from the <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:StimulusPresentationTask_Class&amp;action=edit" class="new" title="Programming Reference:StimulusPresentationTask Class">StimulusPresentationTask</a> or <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:FeedbackTask_Class&amp;action=edit" class="new" title="Programming Reference:FeedbackTask Class">FeedbackTask</a>.
+<p>A BCI2000 task filter implementing one of these paradigms will not inherit from the <tt>ApplicationBase</tt> directly but either from the <a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">StimulusTask</a> or <a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">FeedbackTask</a>.
 Still, such a task filter has access to all functionality provided by <tt>ApplicationBase</tt>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:StimulusPresentationTask_Class&amp;action=edit" class="new" title="Programming Reference:StimulusPresentationTask Class">Programming Reference:StimulusPresentationTask Class</a>, <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:FeedbackTask_Class&amp;action=edit" class="new" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
+<p><a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>, <a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
 </p>
 <div class="printfooter">
 </div>

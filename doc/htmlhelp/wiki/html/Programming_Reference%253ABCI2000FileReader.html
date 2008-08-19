@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:BCI2000FileReader Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:BCI2000FileReader Class,User Reference:BCI2000FileWriter" />
+<meta name="keywords" content="Programming Reference:BCI2000FileReader Class,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileWriter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -37,7 +37,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253ABCI2000FileReader.html#Methods"><span class="tocnumber">1</span> <span class="toctext">Methods</span></a>
 <ul>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#BCI2000FileReader.28.5Bfile_name.5D.29"><span class="tocnumber">1.1</span> <span class="toctext">BCI2000FileReader([file name])</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#Open.28file_name.29"><span class="tocnumber">1.2</span> <span class="toctext">Open(file name)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#Open.28file_name.2C_.5Bbuffer_size.3D50kB.5D.29"><span class="tocnumber">1.2</span> <span class="toctext">Open(file name, [buffer size=50kB])</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#RawValue.28channel.2C_sample.29"><span class="tocnumber">1.3</span> <span class="toctext">RawValue(channel, sample)</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#CalibratedValue.28channel.2C_sample.29"><span class="tocnumber">1.4</span> <span class="toctext">CalibratedValue(channel, sample)</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#ReadStateVector.28sample.29"><span class="tocnumber">1.5</span> <span class="toctext">ReadStateVector(sample)</span></a></li>
@@ -60,15 +60,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253ABCI2000FileReader.html#StateVector_.28r.29"><span class="tocnumber">2.13</span> <span class="toctext">StateVector (r)</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000FileReader.html#See_also"><span class="tocnumber">3</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000FileReader.html#Performance_Considerations"><span class="tocnumber">3</span> <span class="toctext">Performance Considerations</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABCI2000FileReader.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Methods"></a><h2>Methods</h2>
 <a name="BCI2000FileReader.28.5Bfile_name.5D.29"></a><h3>BCI2000FileReader([file name])</h3>
 <p>With a file name given as an argument, the constructor will try to open the specified file.
 </p>
-<a name="Open.28file_name.29"></a><h3>Open(file name)</h3>
+<a name="Open.28file_name.2C_.5Bbuffer_size.3D50kB.5D.29"></a><h3>Open(file name, [buffer size=50kB])</h3>
 <p>Will open the specified data file. Use the <tt>IsOpen</tt> and <tt>ErrorState</tt> properties to check whether a file is actually open.
+In a second argument, the size of <tt>BCI2000FileReader</tt>'s internal data buffer may be specified in bytes; when no buffer size argument is given, a default size of 50kB is used.
 </p>
 <a name="RawValue.28channel.2C_sample.29"></a><h3>RawValue(channel, sample)</h3>
 <p>Sets the current sample position to the value specified in the second argument, and returns the raw sample value for the channel specified in the first argument.
@@ -123,10 +125,14 @@ The calibrated sample value is obtained by applying channel-specific sample offs
 </p>
 <a name="StateVector_.28r.29"></a><h3>StateVector (r)</h3>
 <p>Access to the full state vector, with state values matching those at the current sample position.
-</p><p><br />
+</p>
+<a name="Performance_Considerations"></a><h2>Performance Considerations</h2>
+<p>To improve performance when reading data, <tt>BCI2000FileReader</tt> uses an internal buffer which is 50kB in size by default but may be set to a different value using an optional second argument to <tt>BCI2000FileReader::Open()</tt>.
+</p><p>Buffering strategy is optimized for <i>sequential forward access</i>, which is supposed to be the most relevant use case. Buffering is non-overlapping, with the requested sample always the first one in the buffer in case the buffer needs updating. In case of sequential access in <i>reverse</i> direction, this buffering scheme breaks down and becomes maximally inefficient because the entire buffer is updated on each access.
+</p><p>In a BCI2000 data file, data is organized such that, for each sample, values from all channels and states are stored, followed with all values from the next sample point, etc. When reading data from multiple channels, this implies that it is favorable to iterate over <i>channels</i> in an <i>inner</i> loop, and over <i>samples</i> in an <i>outer</i> loop; otherwise, buffering will become less efficient by a factor identical to the number of channels read.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="User_Reference%253ABCI2000FileWriter.html" title="User Reference:BCI2000FileWriter">User Reference:BCI2000FileWriter</a>
+<p><a href="Technical_Reference%253ABCI2000_File_Format.html" title="Technical Reference:BCI2000 File Format">Technical Reference:BCI2000 File Format</a>, <a href="User_Reference%253ABCI2000FileWriter.html" title="User Reference:BCI2000FileWriter">User Reference:BCI2000FileWriter</a>
 </p>
 <div class="printfooter">
 </div>

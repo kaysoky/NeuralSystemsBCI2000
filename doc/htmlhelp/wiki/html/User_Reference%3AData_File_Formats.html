@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Data File Formats - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Data File Formats,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileWriter,User Reference:DataIOFilter,User Reference:EDFFileWriter,User Reference:GDFFileWriter" />
+<meta name="keywords" content="User Reference:Data File Formats,Technical Reference:BCI2000 File Format,Technical Reference:Parameter Definition,Technical Reference:Parameter File,User Reference:BCI2000FileWriter,User Reference:DataIOFilter,User Reference:EDFFileWriter,User Reference:GDFFileWriter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -53,9 +53,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="General_Information"></a><h2>General Information</h2>
 <p>At runtime, selection of a file format is achieved by specifying a
 command line parameter to the source module, as in
-</p><p><code>gUSBampSource --FileFormat-Null</code>
+</p><p><code>gUSBampSource --FileFormat=Null</code>
 </p><p>or
-</p><p><code>SignalGenerator --FileFormat-GDF</code>
+</p><p><code>SignalGenerator --FileFormat=GDF</code>
 </p><p>Typically, source modules are launched from batch files contained in the <i>batch</i> directory, and their command line parameters are specified there.
 </p><p>The value following the last minus character, appended with <code>FileWriter</code>, will be matched against the names of all <code>GenericFileWriter</code> descendants present in the source
 module.
@@ -65,19 +65,19 @@ classes (pieces of software) implementing the interface defined by the <code>Gen
 Thus, a programmer can add support for a new output format by deriving a new class from <code>GenericFileWriter</code>, and adding it to existing source modules.
 </p>
 <a name="BCI2000_File_Format"></a><h2>BCI2000 File Format</h2>
-<p><code>--FileFormat-BCI2000</code>
+<p><code>--FileFormat=BCI2000</code>
 </p><p>Parameters, BCI2000 state variables, and brain signal data will be
 written into a BCI2000 data file as defined in the <a href="Technical_Reference%253ABCI2000_File_Format.html" title="Technical Reference:BCI2000 File Format">BCI2000 specification</a>.
 This is also the default if no file format is specified explicitly.
 </p><p>Output in BCI2000 file format is implemented by the <a href="User_Reference%253ABCI2000FileWriter.html" title="User Reference:BCI2000FileWriter">BCI2000FileWriter</a> component.
 </p>
 <a name="Null_File_Format"></a><h2>Null File Format</h2>
-<p><code>--FileFormat-Null</code>
+<p><code>--FileFormat=Null</code>
 </p><p>No information is recorded.
 Individual filters may still write log files to the directory defined by the <code>DataDirectory</code>, <code>SubjectName</code>, and <code>SubjectSession</code> parameters.
 </p>
 <a name="EDF_File_Format"></a><h2>EDF File Format</h2>
-<p><code>--FileFormat-EDF</code>
+<p><code>--FileFormat=EDF</code>
 </p><p>EDF (<i>European Data Format</i>) is a standard for biosignal data especially popular in the area of sleep research.
 </p>
 <ul><li>EDF is limited to 16 bit data.
@@ -91,22 +91,22 @@ Individual filters may still write log files to the directory defined by the <co
 </li><li>EDF home page at <a href="http://www.hsr.nl/edf/" class='external free' title="http://www.hsr.nl/edf/" rel="nofollow">http://www.hsr.nl/edf/</a>
 </li></ul>
 <a name="GDF_File_Format"></a><h2>GDF File Format</h2>
-<p><code>--FileFormat-GDF</code>
+<p><code>--FileFormat=GDF</code>
 </p><p>GDF is a general data format for biosignals which is popular in BCI
 research.
 Building on EDF, GDF allows for arbitrary numeric data types,
 introduces an event table, and provides standardized encoding of events.
 </p>
-<ul><li>Currently, BCI2000 supports Version 1.25 of the GDF format specification.
+<ul><li>Currently, BCI2000 supports Version 2.10 of the GDF format specification.
 </li><li>BCI2000 does not prescribe the semantics of its state variables. GDF, on the other hand, associates a fixed set of events with certain numeric codes. Thus, a general mapping of BCI2000 states onto GDF events is not possible. Instead, GDF events are created via a user-defined set of mapping rules in the <code>EventCode</code> parameter, which also has a set of rules predefined for the most important cases.
 </li><li>Besides GDF events, BCI2000 state variables will also be mapped to additional signal channels the same way as for EDF.
-</li><li>BCI2000 parameters cannot be represented in GDF format. Setting the <code>SaveAdditionalParameterFile</code> parameter to <i>1</i> will save a separate BCI2000 parameter file along with the GDF data file.
+</li><li>Since version 2.0, GDF provides additional header space for metadata which is organized as a sequence of tag/length/value structures. BCI2000 uses such a structure--tagged with a "BCI2000" tag--to store parameters. Within the GDF data field, the same human readable format is used as it applies to <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">BCI2000 parameter files</a>, i.e. a sequence of <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter definition lines</a>.
 </li></ul>
 <p>Output in GDF file format is implemented by the <a href="User_Reference%253AGDFFileWriter.html" title="User Reference:GDFFileWriter">GDFFileWriter</a> component.
 </p>
 <a name="References_2"></a><h4>References</h4>
-<ul><li>A. Schlögl et al, <i>GDF: A General Data Format for Biosignal Data: Version 1.25</i>, <a href="http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf" class='external free' title="http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf" rel="nofollow">http://bci.tugraz.at/~schloegl/matlab/eeg/gdf4/TR_GDF.pdf</a>
-</li><li>A. Schlögl, <i>BIOSIG</i>, <a href="http://biosig.sf.net/" class='external free' title="http://biosig.sf.net/" rel="nofollow">http://biosig.sf.net/</a>, 2003-2007.
+<ul><li>A. Schlögl et al, <i>GDF: A General Data Format for Biosignal Data: Version 2.10</i>, <a href="http://arxiv.org/abs/cs.DB/0608052" class='external free' title="http://arxiv.org/abs/cs.DB/0608052" rel="nofollow">http://arxiv.org/abs/cs.DB/0608052</a>
+</li><li>A. Schlögl, <i>BIOSIG</i>, <a href="http://biosig.sf.net/" class='external free' title="http://biosig.sf.net/" rel="nofollow">http://biosig.sf.net/</a>, 2003-2008.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>

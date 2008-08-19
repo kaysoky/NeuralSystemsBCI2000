@@ -42,18 +42,18 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectSession"><span class="tocnumber">2.1.3</span> <span class="toctext">SubjectSession</span></a></li>
 <li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectRun"><span class="tocnumber">2.1.4</span> <span class="toctext">SubjectRun</span></a></li>
 <li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#ID_System.2C_ID_Amp.2C_ID_Montage"><span class="tocnumber">2.1.5</span> <span class="toctext">ID_System, ID_Amp, ID_Montage</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SavePrmFile"><span class="tocnumber">2.1.6</span> <span class="toctext">SavePrmFile</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="User_Reference%253AEDFFileWriter.html#EDFFileWriter_Specific_Parameters"><span class="tocnumber">2.2</span> <span class="toctext">EDFFileWriter Specific Parameters</span></a>
 <ul>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SavePrmFile"><span class="tocnumber">2.2.1</span> <span class="toctext">SavePrmFile</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectYearOfBirth"><span class="tocnumber">2.2.2</span> <span class="toctext">SubjectYearOfBirth</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectSex"><span class="tocnumber">2.2.3</span> <span class="toctext">SubjectSex</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#LabID"><span class="tocnumber">2.2.4</span> <span class="toctext">LabID</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#TechnicianID"><span class="tocnumber">2.2.5</span> <span class="toctext">TechnicianID</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#EquipmentID"><span class="tocnumber">2.2.6</span> <span class="toctext">EquipmentID</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#TransducerType"><span class="tocnumber">2.2.7</span> <span class="toctext">TransducerType</span></a></li>
-<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SignalUnit"><span class="tocnumber">2.2.8</span> <span class="toctext">SignalUnit</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectYearOfBirth"><span class="tocnumber">2.2.1</span> <span class="toctext">SubjectYearOfBirth</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SubjectSex"><span class="tocnumber">2.2.2</span> <span class="toctext">SubjectSex</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#TransducerType"><span class="tocnumber">2.2.3</span> <span class="toctext">TransducerType</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#SignalUnit"><span class="tocnumber">2.2.4</span> <span class="toctext">SignalUnit</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#EquipmentID"><span class="tocnumber">2.2.5</span> <span class="toctext">EquipmentID</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#LabID"><span class="tocnumber">2.2.6</span> <span class="toctext">LabID</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AEDFFileWriter.html#TechnicianID"><span class="tocnumber">2.2.7</span> <span class="toctext">TechnicianID</span></a></li>
 </ul>
 </li>
 </ul>
@@ -68,7 +68,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Parameters"></a><h2>Parameters</h2>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StorageParams&amp;action=edit&amp;section=1" title="Template:StorageParams">edit</a>]</div><a name="Common_Data_Storage_Parameters"></a><h3>Common Data Storage Parameters</h3>
 <p>These are storage parameters common to all <a href="User_Reference%253AData_File_Formats.html" title="User Reference:Data File Formats">Data File Formats</a>.
-</p><p><br />
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StorageParams&amp;action=edit&amp;section=2" title="Template:StorageParams">edit</a>]</div><a name="DataDirectory"></a><h4>DataDirectory</h4>
 <p>Path to an existing directory. Recorded data will be stored below that directory.
@@ -94,36 +93,36 @@ Within a session directory, data file names are constructed according to
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StorageParams&amp;action=edit&amp;section=6" title="Template:StorageParams">edit</a>]</div><a name="ID_System.2C_ID_Amp.2C_ID_Montage"></a><h4>ID_System, ID_Amp, ID_Montage</h4>
 <p>These parameters are provided for documentation purposes and may contain arbitrary text.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=1" title="Template:EDFGDFParams">edit</a>]</div><a name="EDFFileWriter_Specific_Parameters"></a><h3>EDFFileWriter Specific Parameters</h3>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=2" title="Template:EDFGDFParams">edit</a>]</div><a name="SavePrmFile"></a><h4>SavePrmFile</h4>
+<a name="SavePrmFile"></a><h4>SavePrmFile</h4>
 <p>Determines whether a BCI2000 <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">parameter file</a> is saved along with the EDF file.
 As EDF cannot represent BCI2000 parameters, parameter information is lost if <i>SavePrmFile</i> is switched off.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=3" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectYearOfBirth"></a><h4>SubjectYearOfBirth</h4>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=1" title="Template:EDFGDFParams">edit</a>]</div><a name="EDFFileWriter_Specific_Parameters"></a><h3>EDFFileWriter Specific Parameters</h3>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=2" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectYearOfBirth"></a><h4>SubjectYearOfBirth</h4>
 <p>Year the subject was born, in the format specified in the <a href="User_Reference%253AData_File_Formats.html#EDF_File_Format" title="User Reference:Data File Formats">EDF File Format</a> specification.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=4" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectSex"></a><h4>SubjectSex</h4>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=3" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectSex"></a><h4>SubjectSex</h4>
 <p>An enumerated value specifying the subject's sex:
 </p>
 <ul><li>0: not specified,
 </li><li>1: male, 
 </li><li>2: female.
 </li></ul>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=5" title="Template:EDFGDFParams">edit</a>]</div><a name="LabID"></a><h4>LabID</h4>
-<p>A string identifying the recording laboratory.
-</p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=6" title="Template:EDFGDFParams">edit</a>]</div><a name="TechnicianID"></a><h4>TechnicianID</h4>
-<p>A string identifying the recording technician.
-</p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=7" title="Template:EDFGDFParams">edit</a>]</div><a name="EquipmentID"></a><h4>EquipmentID</h4>
-<p>A string identifying the equipment provider.
-</p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=8" title="Template:EDFGDFParams">edit</a>]</div><a name="TransducerType"></a><h4>TransducerType</h4>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=4" title="Template:EDFGDFParams">edit</a>]</div><a name="TransducerType"></a><h4>TransducerType</h4>
 <p>A string describing the transducer (sensor) type, e.g. <tt>EEG: Ag/AgCl</tt>.
 </p>
-<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=9" title="Template:EDFGDFParams">edit</a>]</div><a name="SignalUnit"></a><h4>SignalUnit</h4>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=5" title="Template:EDFGDFParams">edit</a>]</div><a name="SignalUnit"></a><h4>SignalUnit</h4>
 <p>A string specifying the physical unit of the calibrated signal.
-Differently from the notation used throughout the rest of BCI2000, this is usually "uV".
+Differently from the notation used throughout the rest of BCI2000, this is usually "uV" rather than "muV".
+</p>
+<div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=6" title="Template:EDFGDFParams">edit</a>]</div><a name="EquipmentID"></a><h4>EquipmentID</h4>
+<p>A string identifying the equipment provider.
+</p>
+<a name="LabID"></a><h4>LabID</h4>
+<p>A string identifying the recording laboratory.
+</p>
+<a name="TechnicianID"></a><h4>TechnicianID</h4>
+<p>A string identifying the recording technician.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.

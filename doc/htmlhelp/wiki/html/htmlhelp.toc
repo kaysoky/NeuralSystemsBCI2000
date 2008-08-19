@@ -246,7 +246,15 @@ Contributions%253AFIRFilter.html
 Contributions%253AFieldTripBuffer.html
 2 Synopsis Synopsis
 2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
+3 FTBufferAddress FTBufferAddress
+3 FTInitialOutput FTInitialOutput
+3 FTOutputEventType FTOutputEventType
+3 FTStatesToBuffer FTStatesToBuffer
+3 FTStatesFromBuffer FTStatesFromBuffer
 2 States States
 2 See_also See also
 
@@ -667,7 +675,7 @@ Programming_Reference%253AApplicationBase_Class.html
 Programming_Reference%253ABCI2000FileReader.html
 2 Methods Methods
 3 BCI2000FileReader.28.5Bfile_name.5D.29 BCI2000FileReader([file name])
-3 Open.28file_name.29 Open(file name)
+3 Open.28file_name.2C_.5Bbuffer_size.3D50kB.5D.29 Open(file name, [buffer size=50kB])
 3 RawValue.28channel.2C_sample.29 RawValue(channel, sample)
 3 CalibratedValue.28channel.2C_sample.29 CalibratedValue(channel, sample)
 3 ReadStateVector.28sample.29 ReadStateVector(sample)
@@ -685,12 +693,13 @@ Programming_Reference%253ABCI2000FileReader.html
 3 States_.28r.29 States (r)
 3 State_.28r.29 State (r)
 3 StateVector_.28r.29 StateVector (r)
+2 Performance_Considerations Performance Considerations
 2 See_also See also
 
 Programming_Reference%253ABCI2000FileReader_Class.html
 2 Methods Methods
 3 BCI2000FileReader.28.5Bfile_name.5D.29 BCI2000FileReader([file name])
-3 Open.28file_name.29 Open(file name)
+3 Open.28file_name.2C_.5Bbuffer_size.3D50kB.5D.29 Open(file name, [buffer size=50kB])
 3 RawValue.28channel.2C_sample.29 RawValue(channel, sample)
 3 CalibratedValue.28channel.2C_sample.29 CalibratedValue(channel, sample)
 3 ReadStateVector.28sample.29 ReadStateVector(sample)
@@ -708,6 +717,7 @@ Programming_Reference%253ABCI2000FileReader_Class.html
 3 States_.28r.29 States (r)
 3 State_.28r.29 State (r)
 3 StateVector_.28r.29 StateVector (r)
+2 Performance_Considerations Performance Considerations
 2 See_also See also
 
 Programming_Reference%253ABCI2000_Source_Code.html
@@ -726,6 +736,17 @@ Programming_Reference%253ABCI2000_Source_Code.html
 2 Coding_Guidelines Coding Guidelines
 2 See_also See also
 
+Programming_Reference%253ABlockRandSeq_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 int_BlockSize_.28rw.29 int BlockSize (rw)
+3 list_Frequencies_.28r.29 list Frequencies (r)
+2 Methods Methods
+3 BlockRandSeq.28_RandomGenerator.26_.29 BlockRandSeq( RandomGenerator&amp; )
+3 unsigned_int_NextElement.28.29 unsigned int NextElement()
+2 See_also See also
+
 Programming_Reference%253AContents.html
 2 Getting_Started Getting Started
 2 Conceptual_Overview Conceptual Overview
@@ -737,6 +758,7 @@ Programming_Reference%253AContents.html
 3 Application_Modules Application Modules
 4 Visual_Presentation Visual Presentation
 4 Auditory_Presentation Auditory Presentation
+3 Miscellaneous Miscellaneous
 2 Tutorials Tutorials
 2 See_also See also
 
@@ -756,6 +778,7 @@ Programming_Reference%253ADebug_Output.html
 2 The_Debug_Level The Debug Level
 3 Message_Debug_Level Message Debug Level
 3 Global_Debug_Level Global Debug Level
+2 Logging_into_Files Logging into Files
 2 See_also See also
 
 Programming_Reference%253AEnvironment_Class.html
@@ -800,6 +823,49 @@ Programming_Reference%253AEvents.html
 2 Limitations Limitations
 2 Event_API Event API
 2 Descriptor_Syntax Descriptor Syntax
+2 See_also See also
+
+Programming_Reference%253AFeedbackTask_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Events Events
+3 Events_Summary Events Summary
+3 Events_forwarded_from_the_GenericFilter_interface Events forwarded from the GenericFilter interface
+4 OnPreflight.28SignalProperties_.28r.29.29 OnPreflight(SignalProperties (r))
+4 OnInitialize.28SignalProperties_.28r.29.29 OnInitialize(SignalProperties (r))
+4 OnStartRun OnStartRun
+4 OnStopRun OnStopRun
+4 OnHalt OnHalt
+3 Phase_transition_Events Phase transition Events 
+4 OnTrialBegin OnTrialBegin
+4 OnTrialEnd OnTrialEnd
+4 OnFeedbackBegin OnFeedbackBegin
+4 OnFeedbackEnd OnFeedbackEnd
+3 Input_Events Input Events
+4 DoPreRun.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPreRun(GenericSignal (r), bool doProgress (rw))
+4 DoPreFeedback.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPreFeedback(GenericSignal (r), bool doProgress (rw))
+4 DoFeedback.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoFeedback(GenericSignal (r), bool doProgress (rw))
+4 DoPostFeedback.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPostFeedback(GenericSignal (r), bool doProgress (rw))
+4 DoITI.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoITI(GenericSignal (r), bool doProgress (rw))
+2 Properties Properties
+3 ostream_AppLog.2C_AppLog.File.2C_AppLog.Screen_.28w.29 ostream AppLog, AppLog.File, AppLog.Screen (w)
+3 RandomGenerator_RandomNumberGenerator_.28rw.29 RandomGenerator RandomNumberGenerator (rw)
+2 Methods Methods
+3 FeedbackTask.28GUI::GraphDisplay.2A.3DNULL.29 FeedbackTask(GUI::GraphDisplay*=NULL)
+2 Parameters Parameters
+4 PreRunDuration PreRunDuration
+4 PreFeedbackDuration PreFeedbackDuration
+4 FeedbackDuration FeedbackDuration
+4 PostFeedbackDuration PostFeedbackDuration
+4 ITIDuration ITIDuration
+4 NumberOfTrials NumberOfTrials
+4 MinRunLength MinRunLength
+4 NumberTargets NumberTargets
+2 States States
+3 TargetCode TargetCode
+3 ResultCode ResultCode
+3 Feedback Feedback
+2 Timeline Timeline
 2 See_also See also
 
 Programming_Reference%253AFilter_Chain.html
@@ -873,8 +939,6 @@ Programming_Reference%253ALogFile_Class.html
 2 Remarks Remarks
 2 See_also See also
 
-Programming_Reference%253AMatlab.html
-
 Programming_Reference%253AMatlabFilter.html
 2 Overview Overview
 2 Parameters_and_States Parameters and States
@@ -921,6 +985,8 @@ Programming_Reference%253ARandomGenerator_Class.html
 2 Methods Methods
 3 int_Random.28.29 int Random()
 3 int_operator.28.29.28int_N.29 int operator()(int N)
+2 Parameters Parameters
+3 RandomSeed_.28optional.29 RandomSeed (optional)
 2 Remarks Remarks
 2 See_also See also
 
@@ -933,6 +999,62 @@ Programming_Reference%253ASignals.html
 2 Signals Signals
 2 Signal_Properties Signal Properties
 
+Programming_Reference%253AStimulusTask_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Events Events
+3 Events_Summary Events Summary
+3 Stimulus_Code_Event Stimulus Code Event
+4 int_OnNextStimulusCode int OnNextStimulusCode
+3 Events_forwarded_from_the_GenericFilter_interface Events forwarded from the GenericFilter interface
+4 OnPreflight.28SignalProperties_.28r.29.29 OnPreflight(SignalProperties (r))
+4 OnInitialize.28SignalProperties_.28r.29.29 OnInitialize(SignalProperties (r))
+4 OnStartRun OnStartRun
+4 OnStopRun OnStopRun
+4 OnHalt OnHalt
+3 Phase_transition_Events Phase transition Events 
+4 OnPreSequence OnPreSequence
+4 OnSequenceBegin OnSequenceBegin
+4 OnSequenceEnd OnSequenceEnd
+4 OnStimulusBegin.28int_stimulusCode_.28r.29.29 OnStimulusBegin(int stimulusCode (r))
+4 OnStimulusEnd.28int_stimulusCode_.28r.29.29 OnStimulusEnd(int stimulusCode (r))
+4 OnPostRun OnPostRun
+3 Input_Events Input Events
+4 DoPreRun.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPreRun(GenericSignal (r), bool doProgress (rw))
+4 DoPreSequence.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPreSequence(GenericSignal (r), bool doProgress (rw))
+4 DoStimulus.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoStimulus(GenericSignal (r), bool doProgress (rw))
+4 DoISI.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoISI(GenericSignal (r), bool doProgress (rw))
+4 DoPostSequence.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPostSequence(GenericSignal (r), bool doProgress (rw))
+4 DoPostRun.28GenericSignal_.28r.29.2C_bool_doProgress_.28rw.29.29 DoPostRun(GenericSignal (r), bool doProgress (rw))
+3 Classification_Events Classification Events
+4 OnClassInput.28stimulusCode_.28r.29.2C_GenericSignal_.28r.29.29 OnClassInput(stimulusCode (r), GenericSignal (r))
+4 Target.2A_OnClassResult.28ClassResult_.28r.29.29 Target* OnClassResult(ClassResult (r))
+2 Properties Properties
+3 AssociationMap_Associations_.28rw.29 AssociationMap Associations (rw)
+3 Target.2A_AttendedTarget_.28rw.29 Target* AttendedTarget (rw)
+3 GUI::GraphDisplay_Display_.28r.29 GUI::GraphDisplay Display (r)
+3 ostream_AppLog.2C_AppLog.File.2C_AppLog.Screen_.28w.29 ostream AppLog, AppLog.File, AppLog.Screen (w)
+3 RandomGenerator_RandomNumberGenerator_.28rw.29 RandomGenerator RandomNumberGenerator (rw)
+2 Methods Methods
+3 DisplayMessage.28string.29 DisplayMessage(string)
+2 Parameters Parameters
+4 WindowBackgroundColor WindowBackgroundColor
+4 PreRunDuration PreRunDuration
+4 PostRunDuration PostRunDuration
+4 PreSequenceDuration PreSequenceDuration
+4 PostSequenceDuration PostSequenceDuration
+4 StimulusDuration StimulusDuration
+4 ISIMinDuration.2C_ISIMaxDuration ISIMinDuration, ISIMaxDuration
+4 InterpretMode InterpretMode
+4 DisplayResults DisplayResults
+2 States States
+3 StimulusCode StimulusCode
+3 StimulusType StimulusType
+3 StimulusBegin StimulusBegin
+3 PhaseInSequence PhaseInSequence
+2 Timeline Timeline
+2 See_also See also
+
 Programming_Reference%253ATextToSpeech_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -943,6 +1065,24 @@ Programming_Reference%253ATextToSpeech_Class.html
 3 Default_Constructor.2C_Destructor Default Constructor, Destructor
 3 Speak.28.29 Speak()
 3 Stop.28.29 Stop()
+2 See_also See also
+
+Programming_Reference%253ATrialStatistics_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 int_Hits_.28r.29 int Hits (r)
+3 int_Total_.28r.29 int Total (r)
+3 int_Invalid_.28r.29 int Invalid (r)
+3 float_Bits_.28r.29 float Bits (r)
+2 Events Events
+3 Initialize Initialize
+2 Methods Methods
+3 Reset.28.29 Reset()
+3 Update.28int_TargetCode.2C_int_ResultCode.29 Update(int TargetCode, int ResultCode)
+3 UpdateInvalid.28.29 UpdateInvalid()
+2 Remarks Remarks
+2 Limitations Limitations
 2 See_also See also
 
 Programming_Reference%253AWavePlayer_Class.html
@@ -975,8 +1115,8 @@ Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html
 
 Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html
 2 Online_Algorithm_Verification Online Algorithm Verification
-2 An_Example_Algorithm An Example Algorithm
-2 Transformation_into_BCI2000_Matlab_Scripts Transformation into BCI2000 Matlab Scripts
+2 An_Example_Algorithm_in_MATLAB An Example Algorithm in MATLAB
+2 Translating_the_existing_MATLAB_code_into_BCI2000_functions Translating the existing MATLAB code into BCI2000 functions
 3 Process Process
 3 Initialize Initialize
 3 StartRun StartRun
@@ -1301,6 +1441,7 @@ User_Reference%253ACursorTask.html
 4 FeedbackDuration FeedbackDuration
 4 PostFeedbackDuration PostFeedbackDuration
 4 ITIDuration ITIDuration
+4 NumberOfTrials NumberOfTrials
 4 MinRunLength MinRunLength
 4 NumberTargets NumberTargets
 4 MaxFeedbackDuration MaxFeedbackDuration
@@ -1380,15 +1521,15 @@ User_Reference%253AEDFFileWriter.html
 4 SubjectSession SubjectSession
 4 SubjectRun SubjectRun
 4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
-3 EDFFileWriter_Specific_Parameters EDFFileWriter Specific Parameters
 4 SavePrmFile SavePrmFile
+3 EDFFileWriter_Specific_Parameters EDFFileWriter Specific Parameters
 4 SubjectYearOfBirth SubjectYearOfBirth
 4 SubjectSex SubjectSex
-4 LabID LabID
-4 TechnicianID TechnicianID
-4 EquipmentID EquipmentID
 4 TransducerType TransducerType
 4 SignalUnit SignalUnit
+4 EquipmentID EquipmentID
+4 LabID LabID
+4 TechnicianID TechnicianID
 2 States States
 2 See_also See also
 
@@ -1460,15 +1601,13 @@ User_Reference%253AGDFFileWriter.html
 4 SubjectSession SubjectSession
 4 SubjectRun SubjectRun
 4 ID_System.2C_ID_Amp.2C_ID_Montage ID_System, ID_Amp, ID_Montage
-3 GDFFileWriter_Specific_Parameters GDFFileWriter Specific Parameters
 4 SavePrmFile SavePrmFile
+3 GDFFileWriter_Specific_Parameters GDFFileWriter Specific Parameters
 4 SubjectYearOfBirth SubjectYearOfBirth
 4 SubjectSex SubjectSex
-4 LabID LabID
-4 TechnicianID TechnicianID
-4 EquipmentID EquipmentID
 4 TransducerType TransducerType
 4 SignalUnit SignalUnit
+4 EquipmentID EquipmentID
 4 EventCodes EventCodes
 2 States States
 2 See_also See also
@@ -1538,13 +1677,11 @@ User_Reference%253ALogging_Input.html
 3 JoystickButtons1.2C_JoystickButtons2.2C_JoystickButtons3.2C_JoystickButtons4 JoystickButtons1, JoystickButtons2, JoystickButtons3, JoystickButtons4
 2 See_also See also
 
-User_Reference%253AMatlab.html
-
 User_Reference%253AMatlabFilter.html
 2 Synopsis Synopsis
 2 Parameters Parameters
 2 States States
-2 Detailled_explanation Detailled explanation
+2 Detailed_explanation Detailed explanation
 2 Troubleshooting: Troubleshooting:
 3 Matlab_doesn.27t_find_your_functions Matlab doesn't find your functions
 3 There_is_no_Matlab_engine_started_up There is no Matlab engine started up

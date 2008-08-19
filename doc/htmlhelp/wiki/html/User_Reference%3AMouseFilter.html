@@ -46,6 +46,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The <i>MouseFilter</i> captures the mouse position on the screen in device coordinates. 
 Coordinates are always recorded.
 </p><p><b>Note:</b> The <i>MouseFilter</i> is superseded by BCI2000's <a href="User_Reference%253ALogging_Input.html" title="User Reference:Logging Input">input logging facility</a>, and kept for backward compatibility.
+Make sure not to activate input logging in a configuration where the <i>MouseFilter</i> is present as well; otherwise, corruption of logged data may occur.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>None.

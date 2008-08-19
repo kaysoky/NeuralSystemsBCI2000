@@ -31,23 +31,21 @@ a.new, #quickbar a.new { color: #CC2200; }
 
 <div id='article'>
 <h1 class="pagetitle">Project Settings</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p>This page deals with project settings, i.e. compiler/linker switches which are typically stored in IDE project files.
-</p><p>Generally, BCI2000 code tries to be portable, i.e. independent of machine type (little/big endian, byte lengths), or tests for necessary conditions at compile time.
+</p><p>Generally, BCI2000 code tries to be portable, i.e. independent of machine type (little/big endian, byte lengths); where this is not feasible, it tests for necessary conditions at compile time.
 However, some aspects of compiler configuration need to be taken care of manually, and kept consistent across a number of project files.
 </p>
 <a name="Pre-Compiled_Headers"></a><h2>Pre-Compiled Headers</h2>
 <p>Most modern compilers offer a feature to store so-called "Pre-Compiled Headers (PCHs)". During the compilation process, parsing header files is responsible for a large amount of compiling time; at the same time, most source files include rather similar sets of header files. Thus, caching parsed headers offers a way to significantly speed up compiles and builds.
 </p><p>Unfortunately, PCHs may become invalid when compiler settings change, leading to the following situations when the same PCH cache is used by multiple project with differing header sets, or compiler settings:
-1) Obsolete PCHs are detected correctly; as a consequence, PCHs are frequently recreated, resulting in slow builds.
-2) Obsolete PCHs are not detected; as a consequence, linking or runtime errors may occur. Obviously, this is the worse situation, because the reason for the errors is quite difficult to understand.
 </p>
+<ol><li>Obsolete PCHs are detected correctly; as a consequence, PCHs are frequently recreated, resulting in slow builds.
+</li><li>Obsolete PCHs are not detected; as a consequence, linking or runtime errors may occur. Obviously, this is the worse situation, because the reason for the errors is quite difficult to understand.
+</li></ol>
 <a name="PCH_Policy_in_BCI2000"></a><h3>PCH Policy in BCI2000</h3>
-<p>The general BCI2000 policy regarding PCHs consists of the following aspects:
+<p>The general BCI2000 policy regarding PCHs consists of three elements:
 </p>
-<ul><li>There is a specialized set of headers to include into PCHs, located at 
-</li></ul>
-<p><tt>BCI2000/shared/config/PCHIncludes</tt>, which contains a list of #includes.
-</p>
-<ul><li>In each BCI2000 cpp file, the first lines of code are
+<ul><li>There is a specialized set of headers to include into PCHs, located at <br /><tt>BCI2000/shared/config/PCHIncludes</tt>, which contains a list of #includes.
+</li><li>In each BCI2000 cpp file, the first lines of code are
 </li></ul>
 <pre>#include "PCHIncludes.h"
 #pragma hdrstop
@@ -59,8 +57,8 @@ However, some aspects of compiler configuration need to be taken care of manuall
 </li><li>For tools, PCH configuration should be set to "none".
 </li></ul>
 </li></ul>
-<p>The rationale for this is that experimenting with compiler settings makes less sense for online components than it does for tools, and online components make up most of the BCI2000 code. So the ratio of speedup to inconsistency trouble would be minimized that way.
-</p>
+<dl><dd>The rationale for this is that experimenting with compiler settings makes less sense for online components than it does for tools, and online components make up most of the BCI2000 code. So the ratio of speedup to inconsistency trouble would be minimized that way.
+</dd></dl>
 <a name="See_also"></a><h2> See also </h2>
 <p><a href="Programming_Reference%253ACpp_Coding_Style.html" title="Programming Reference:Cpp Coding Style">Programming Reference:Cpp Coding Style</a>
 </p>
