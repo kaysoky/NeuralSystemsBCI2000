@@ -1,6 +1,6 @@
 #ifdef __BORLANDC__
   #include <windows.h>
-  #include <gettimeofday.h>
+  #include "gettimeofday.c"
 #else
   #include <unistd.h>
   #include <strings.h>
