@@ -17,10 +17,11 @@
 #include <Menus.hpp>
 #include <FileCtrl.hpp>
 #include "functions.h"
-//#include <XPStyleActnCtrls.hpp>
-const SELDIRHELP = 1000;
+#include <StdStyleActnCtrls.hpp>
+#include <XPStyleActnCtrls.hpp>
 
-//#include <XPStyleActnCtrls.hpp>
+
+const SELDIRHELP = 1000;
 #include <string>
 #include <vector.h>
 #include <dir.h>
@@ -47,8 +48,6 @@ __published:	// IDE-managed Components
     TListBox *appList;
     TGroupBox *GroupBox2;
     TListBox *othersList;
-    TActionManager *ActionManager1;
-    TFileRun *FileRun1;
     TLabel *Label1;
     TLabel *Label2;
     TLabel *Label3;

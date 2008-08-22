@@ -289,18 +289,6 @@ object mainForm: TmainForm
       Text = '127.0.0.1'
     end
   end
-  object ActionManager1: TActionManager
-    StyleName = 'XP Style'
-    object FileRun1: TFileRun
-      Category = 'File'
-      Browse = False
-      BrowseDlg.Title = 'Run'
-      Caption = '&Run...'
-      Hint = 'Run|Runs an application'
-      Operation = 'open'
-      ShowCmd = scShowNormal
-    end
-  end
   object OpenParmDlg: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
     Left = 288

@@ -14,6 +14,7 @@
 #include <ExtActns.hpp>
 #include <Grids.hpp>
 #include <Menus.hpp>
+#include <XPStyleActnCtrls.hpp>
 #include <string>
 #include <iostream>
 #include <fstream>

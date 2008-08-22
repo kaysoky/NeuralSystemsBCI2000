@@ -327,6 +327,7 @@ object Sigfried_UIfrm: TSigfried_UIfrm
   end
   object ActionManager1: TActionManager
     Left = 240
+    StyleName = 'XP Style'
     object FileRun1: TFileRun
       Category = 'File'
       Browse = False

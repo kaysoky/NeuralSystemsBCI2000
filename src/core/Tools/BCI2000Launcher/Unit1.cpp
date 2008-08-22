@@ -1,4 +1,4 @@
-/* (C) 2000-2008, BCI2000 Project
+﻿/* (C) 2000-2008, BCI2000 Project
 /* http://www.bci2000.org
 /*/
 //---------------------------------------------------------------------------
@@ -11,6 +11,7 @@
 #include <io.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -198,29 +199,31 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     SetCurrentDir(curdir.c_str());
     statusList->Clear();
     statusList->Items->Add(curdir.c_str());
-    statusList->Items->Add("Launching Operator...");
+	statusList->Items->Add("Launching Operator...");
 
-    FileRun1->FileName = curdir.c_str();
+	string fs = "\\";
+	stringstream comm;
+	comm <<curdir << "operat.exe";
+
+	/*FileRun1->FileName = curdir.c_str();
 	FileRun1->FileName.Insert("operat.exe", curdir.length()+1);
-    string comm = "";
+    string comm = "";*/
     
 	if (parmList->Items->Count > 0 )
 	{
 
-		comm = "--OnConnect \"-";
+		comm << " --OnConnect \"-";
 
 		for (size_t i = 0; i < parmFiles.size(); i++)
 		{
-			comm += "LOAD PARAMETERFILE ";
-			ostringstream oss;
-			oss << EncodedString(parmFiles[i]);
-			comm.append(oss.str().c_str());
-			comm += "; ";
+			comm << "LOAD PARAMETERFILE ";
+			comm << EncodedString(parmFiles[i]) << "; ";
 		}
-		comm +=" SETCONFIG;\"";
-    }
+		comm << " SETCONFIG;\"";
+	}
+	//comm << " ";
 
-	FileRun1->Parameters = comm.c_str();
+	//FileRun1->Parameters = comm.c_str();
 
 	/*if (parmBox->Text.Length() > 0)
     {
@@ -235,81 +238,113 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
     {
         FileRun1->Parameters = "";
     }      */
-    FileRun1->Execute();
+	//FileRun1->Execute();
+	//system(comm.str().c_str());
+	STARTUPINFO operatSI,sourceSI, sigSI, appSI;
+	PROCESS_INFORMATION operatPI, sourcePI, sigPI, appPI;
+	ZeroMemory(&operatSI, sizeof(operatSI));
+	operatSI.cb = sizeof(operatSI);
+	ZeroMemory(&sourceSI, sizeof(sourceSI));
+	sourceSI.cb = sizeof(sourceSI);
+	ZeroMemory(&sigSI, sizeof(sigSI));
+	sigSI.cb = sizeof(sigSI);
+	ZeroMemory(&appSI, sizeof(appSI));
+	appSI.cb = sizeof(appSI);
 
+	char *procName = new char[1024];
+	strcpy(procName, comm.str().c_str());
+	int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
+
+	if (!proc)
+	{
+		statusList->Items->Add(GetLastError());
+		return;
+	}
+   
     //wait a little bit
-    Sleep(500);
+	Sleep(500);
 
+	comm.str("");  
     if (sourceList->ItemIndex < 0)
     {
         statusList->Items->Add("No Acquisition program selected...");
     }
     else
-    {
-        comm = "";
-
-        statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
-        FileRun1->FileName = curdir.c_str();
-        FileRun1->FileName.Insert(sourceList->Items->Strings[sourceList->ItemIndex], curdir.length()+1);
+	{
+		statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
+		comm << curdir << sourceList->Items->Strings[sourceList->ItemIndex].c_str();
         if (sourceIPBox->Text.Length() > 0)
         {
-            comm += "AUTOSTART ";
-            comm += sourceIPBox->Text.c_str();
-        }
-        else
-            comm = "";
+            comm << " AUTOSTART " << sourceIPBox->Text.c_str();
+		}
 
         if (directoryBox->Text.Length() > 0)
         {
-            comm += " --DataDirectory-";
-            comm += EncodedString(directoryBox->Text.c_str());
+            comm << " --DataDirectory-" << EncodedString(directoryBox->Text.c_str());
         }
         if (subjectNameBox->Text.Length() > 0)
         {
-            comm += " --SubjectName-";
-            comm += EncodedString(subjectNameBox->Text.c_str());
+			comm << " --SubjectName-" << EncodedString(subjectNameBox->Text.c_str());
         }
         if (sessionNumBox->Text.Length() > 0)
         {
-            comm += " --SubjectSession-";
-            comm += EncodedString(sessionNumBox->Text.c_str());
-        }
-        FileRun1->Parameters = comm.c_str();
-        FileRun1->Execute();
-    }
+            comm << " --SubjectSession-" << EncodedString(sessionNumBox->Text.c_str());
+		}
+		strcpy(procName, comm.str().c_str());
+		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
 
+		if (!proc)
+		{
+			statusList->Items->Add(GetLastError());
+			return;
+		}
+	}
+
+	comm.str("");
     if (sigProcList->ItemIndex < 0)
     {
         statusList->Items->Add("No SigProc program selected...");
     }
     else
     {
-        statusList->Items->Add("Launching " + sigProcList->Items->Strings[sigProcList->ItemIndex]);
-        FileRun1->FileName = curdir.c_str();
-        FileRun1->FileName.Insert(sigProcList->Items->Strings[sigProcList->ItemIndex], curdir.length()+1);
-        if (sigProcIPBox->Text.Length() > 0)
-            FileRun1->Parameters = "AUTOSTART " + sigProcIPBox->Text;
-        else
-            FileRun1->Parameters = "";
-        FileRun1->Execute();
-    }
+		statusList->Items->Add("Launching " + sigProcList->Items->Strings[sigProcList->ItemIndex]);
+		comm << curdir.c_str() << sigProcList->Items->Strings[sigProcList->ItemIndex].c_str();
+		if (sigProcIPBox->Text.Length() > 0)
+			comm << " AUTOSTART" << sigProcIPBox->Text.c_str();
+		strcpy(procName, comm.str().c_str());
+		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
 
+		if (!proc)
+		{
+			statusList->Items->Add(GetLastError());
+			return;
+		}
+	}
+
+	comm.str("");
     if (appList->ItemIndex < 0)
     {
         statusList->Items->Add("No Applications program selected...");
     }
     else
     {
-        statusList->Items->Add("Launching " + appList->Items->Strings[appList->ItemIndex]);
-        FileRun1->FileName = curdir.c_str();
-        FileRun1->FileName.Insert(appList->Items->Strings[appList->ItemIndex], curdir.length()+1);
+		statusList->Items->Add("Launching " + appList->Items->Strings[appList->ItemIndex]);
+        comm << curdir.c_str() << appList->Items->Strings[appList->ItemIndex].c_str();
         if (appIPBox->Text.Length() > 0)
-            FileRun1->Parameters = "AUTOSTART " + appIPBox->Text;
-        else
-            FileRun1->Parameters = "";
-            
-        FileRun1->Execute();
-    }
+			comm << " AUTOSTART" << appIPBox->Text.c_str();
+		strcpy(procName, comm.str().c_str());
+		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
+
+		if (!proc)
+		{
+			statusList->Items->Add(GetLastError());
+			return;
+		}
+	}
 
     if (othersList->ItemIndex >= 0)
     {
@@ -317,15 +352,21 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
         for (int i =0; i < othersList->Items->Count; i++)
         {
             if (othersList->Selected[i])
-            {
-                FileRun1->FileName = curdir.c_str();
-                FileRun1->FileName.Insert(othersList->Items->Strings[i], curdir.length()+1);
-                FileRun1->Parameters = "";
-                FileRun1->Execute();
+			{
+				comm << curdir << othersList->Items->Strings[i].c_str();
+				strcpy(procName, comm.str().c_str());
+				int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+					HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
+
+				if (!proc)
+				{
+					statusList->Items->Add(GetLastError());
+					return;
+				}
             }
         }
-    }
-    statusList->Items->Add("Finished!");
+	}
+	statusList->Items->Add("Finished!");
 }
 //---------------------------------------------------------------------------
 
