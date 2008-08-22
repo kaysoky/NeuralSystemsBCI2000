@@ -325,19 +325,6 @@ object Sigfried_UIfrm: TSigfried_UIfrm
   object OpenFileDlg: TOpenDialog
     Left = 264
   end
-  object ActionManager1: TActionManager
-    Left = 240
-    StyleName = 'XP Style'
-    object FileRun1: TFileRun
-      Category = 'File'
-      Browse = False
-      BrowseDlg.Title = 'Run'
-      Caption = '&Run...'
-      Hint = 'Run|Runs an application'
-      Operation = 'open'
-      ShowCmd = scShowNormal
-    end
-  end
   object SaveFileDlg: TSaveDialog
     Left = 208
   end

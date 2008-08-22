@@ -123,7 +123,8 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject *Sender)
     ofstream of;
     string fragTmp;
     fragTmp = mProgDir + "\\..\\parms\\fragTmp.prm";
-    of.open(fragTmp.c_str(), ios::out);
+	of.open(fragTmp.c_str(), ios::out);
+	stringstream comm;
     if (of.fail())
     {
     }
@@ -139,43 +140,69 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject *Sender)
 
     of.close();
 
-    //now start the recording session based on the parameters passed
-    string comm = "";
-    FileRun1->FileName = mProgDir.c_str();
-	FileRun1->FileName.Insert("\\operat.exe", mProgDir.length()+1);
+	//now start the recording session based on the parameters passed
 
-    comm = "--OnConnect \"-";
-    comm += "LOAD PARAMETERFILE ";
-    comm += EncodedString(baselinePrmBox->Text.c_str()) + "; ";
-    comm += "LOAD PARAMETERFILE " + EncodedString(fragTmp) + "; ";
+	STARTUPINFO operatSI,sourceSI, sigSI, appSI;
+	PROCESS_INFORMATION operatPI, sourcePI, sigPI, appPI;
+	ZeroMemory(&operatSI, sizeof(operatSI));
+	operatSI.cb = sizeof(operatSI);
+	ZeroMemory(&sourceSI, sizeof(sourceSI));
+	sourceSI.cb = sizeof(sourceSI);
+	ZeroMemory(&sigSI, sizeof(sigSI));
+	sigSI.cb = sizeof(sigSI);
+	ZeroMemory(&appSI, sizeof(appSI));
+	appSI.cb = sizeof(appSI);
 
-    comm +=" SETCONFIG;\"";
+	comm << mProgDir << "\\operat.exe --OnConnect \" LOAD PARAMETERFILE "<< EncodedString(baselinePrmBox->Text.c_str()) << "; ";
+	comm << "LOAD PARAMETERFILE " <<EncodedString(fragTmp) << ";  SETCONFIG;\"";
 
-    FileRun1->Parameters = comm.c_str();
+	char *procName = new char[1024];
+	strcpy(procName, comm.str().c_str());
+	int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
 
-    FileRun1->Execute();
+	if (!proc)
+	{
+		return;
+	}
+
 
     //wait a little bit
     Sleep(500);
 
     //now, launch the provided sigsource, and dummysignalprocessing and stimulus presentation
-    comm = "";
-    FileRun1->FileName = string(mProgDir + "\\" + mSigSource).c_str();
-    comm += "AUTOSTART 127.0.0.7";
-    FileRun1->Parameters = comm.c_str();
-    FileRun1->Execute();
+	comm.str("");
+	comm << mProgDir << "\\" << mSigSource << "AUTOSTART 127.0.0.7";
+	strcpy(procName, comm.str().c_str());
+	proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &sourceSI, &sourcePI);
 
-    comm = "";
-    FileRun1->FileName = string(mProgDir + "\\dummysignalprocessing.exe").c_str();
-    comm += "AUTOSTART 127.0.0.7";
-    FileRun1->Parameters = comm.c_str();
-    FileRun1->Execute();
+	if (!proc)
+	{
+		return;
+	}
 
-    comm = "";
-    FileRun1->FileName = string(mProgDir + "\\StimulusPresentation.exe").c_str();
-    comm += "AUTOSTART 127.0.0.7";
-    FileRun1->Parameters = comm.c_str();
-    FileRun1->Execute();
+	comm.str("");
+	comm << mProgDir << "\\dummysignalprocessing.exe AUTOSTART 127.0.0.7";
+	strcpy(procName, comm.str().c_str());
+	 proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &sourceSI, &sourcePI);
+
+	if (!proc)
+	{
+		return;
+	}
+
+    comm.str("");
+	comm << mProgDir <<"\\StimulusPresentation.exe AUTOSTART 127.0.0.7";
+	strcpy(procName, comm.str().c_str());
+	proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &sigSI, &sigPI);
+
+	if (!proc)
+	{
+		return;
+	}
 
     mBaselineFile = EncodedString(directoryBox->Text.c_str()) + "\\baseline";
     mBaselineFile += string(sessionNumBox->Text.c_str()) + "\\";
@@ -231,17 +258,19 @@ void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject *Sender)
 {
     for (size_t i = 0; i < models.size(); i++)
     {
-        string comm = "";
-        FileRun1->FileName = string(mProgDir + "\\data2model_gui.exe").c_str();
+		stringstream comm;
+		comm << mProgDir << "\\data2model_gui.exe ";
 
         //mBaselineFile = "baseline.dat";
-        comm += "-inicfg " + models[i].iniFile;
-        comm += " -inisig " + mProgDir + "\\sigfried.ini";
-        comm += " -input " + mBaselineFile;
-        comm += " -output " + models[i].modelOutput;
+		comm << "-inicfg " + models[i].iniFile;
+		comm << " -inisig " + mProgDir + "\\sigfried.ini";
+		comm << " -input " + mBaselineFile;
+        comm << " -output " + models[i].modelOutput;
 
-        FileRun1->Parameters = comm.c_str();
-        FileRun1->Execute();
+		char *procName = new char[1024];
+		strcpy(procName, comm.str().c_str());
+		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, NULL, NULL);
     }
 }
 

@@ -14,10 +14,11 @@
 #include <ExtActns.hpp>
 #include <Grids.hpp>
 #include <Menus.hpp>
-#include <XPStyleActnCtrls.hpp>
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <stdlib>
 #include <dir.h>
 
 #include "EncodedString.h"
@@ -53,8 +54,6 @@ __published:	// IDE-managed Components
     TLabel *Label5;
     TButton *parmOutputBtn;
     TButton *returnBtn;
-    TActionManager *ActionManager1;
-    TFileRun *FileRun1;
     TSaveDialog *SaveFileDlg;
     TPopupMenu *PopupMenu1;
     TListBox *modelList;
