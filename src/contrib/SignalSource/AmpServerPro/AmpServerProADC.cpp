@@ -395,7 +395,7 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   
   //samples are always 4-byte floats
   outSignalProperties = SignalProperties(
-       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::int32 );
+       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32);
   nScanRes = sscanf(Parameter( "SampleBlockSize" ).c_str(), "%d", &nBlockSize);
   if(nScanRes <= 0 || nScanRes == EOF)
   {
