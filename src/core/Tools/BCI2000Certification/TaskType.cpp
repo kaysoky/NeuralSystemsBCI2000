@@ -50,12 +50,12 @@ void Tasks::init(std::string fname)
 	}
 
 	//setup the initial tasks
-    string line;
+	string line;
+	GlobalSource = "";
 	//TaskType curTask;
 	//initTaskType(curTask);
 
     string strTok;
-    string globSigSrc = "";
     bool exportData = false;
 	//go through each line of the ini and parse it
     while (getline(file, line))
@@ -76,7 +76,7 @@ void Tasks::init(std::string fname)
         //specify one; individual tasks will overwrite this
         if (tolower(strTok) == "source")
         {
-            ss >> globSigSrc;
+			ss >> GlobalSource;
         }
         if (tolower(strTok) == "export")
         {
@@ -146,11 +146,11 @@ void Tasks::init(std::string fname)
                 }
                 else if (tolower(strTok) == "parm")
                 {
-                    string parmTmp;
-                    ss2 >> parmTmp;
-                    curTask.parmFile.push_back(parmTmp);
+					string parmTmp;
+					ss2 >> parmTmp;
+					curTask.addParm(parmTmp);
                     //ss2 >> curTask.parmFile;
-                }
+				}
                 else if (tolower(strTok) == "skip")
                 {
                     curTask.skip = true;
@@ -181,12 +181,13 @@ void Tasks::init(std::string fname)
 	}
 	file.close();
 
-    //go through all tasks and set the global source for any that weren't specified
+	//go through all tasks and set the global source for any that weren't specified
+	/*
     for (int i = 0; i < this->size(); i++)
     {
-        if ((*this)[i].SignalSource == "" && globSigSrc != "")
-            (*this)[i].SignalSource = globSigSrc;
-    }
+		if ((*this)[i].SignalSource == "" && GlobalSource != "")
+            (*this)[i].SignalSource = GlobalSource;
+    }  */
 
     //now check for duplicate task names
     for (unsigned int i = 0; i < this->size(); i++)
@@ -202,6 +203,17 @@ void Tasks::init(std::string fname)
     }
     returnCode = 0;
 }
+void TaskType::addParm(std::string str)
+{
+	parmFile.push_back(str);
+	int pos = str.find_last_of("\\");
+	if (pos != string::npos)
+	{
+		parmFileDisp.push_back(str.substr(pos+1));
+	}
+	else
+		parmFileDisp.push_back(str);
+}
 
 //-----------------------------------
 TaskType::TaskType()
@@ -209,6 +221,8 @@ TaskType::TaskType()
     taskName = "";
 	taskFolder = "";
 	parms.clear();
+	parmFile.clear();
+	parmFileDisp.clear();
 	states.clear();
 	sampleRate = 0;
 	amp.ch = -1;

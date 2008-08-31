@@ -54,7 +54,8 @@ bool analysis::open(string file, Tasks &taskTypes)
     droppedSamples = 0;
     checkedSamples = 0;
 
-    dFile = new BCI2000FileReader(fName.c_str());
+	dFile = new BCI2000FileReader;
+	dFile->Open(fName.c_str());//, 1000000000);
 
     if (!dFile->IsOpen())
     {
@@ -78,17 +79,19 @@ bool analysis::open(string file, Tasks &taskTypes)
 		sourceChGain[i] = dFile->Parameter("SourceChGain")(0,i)/1000;
 	*/
 	//read in the signal -----------------------
+	//unsigned short t1 = PrecisionTime::Now();
 	signal = new double *[nChannels];
 	for (int ch = 0; ch < nChannels; ch++)
-	{
 		signal[ch] = new double[nSamples];
-		for (int s = 0; s < nSamples; s++)
+	for (int s = 0; s < nSamples; s++)
+	{
+        for (int ch = 0; ch < nChannels; ch++)
 		{
-			signal[ch][s] = dFile->CalibratedValue(ch, s);
+			signal[ch][s] = dFile->RawValue(ch, s);
         }
 	}
     //delete [] sourceChGain;
-    
+	//cout <<"Read time= "<<PrecisionTime::TimeDiff(t1, PrecisionTime::Now()) <<" ms"<<endl;
     //get states -----------------------------
     nStates = dFile->States()->Size();
     for (int i = 0; i < nStates; i++)
@@ -360,6 +363,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	procStats.std = vStd(&procLat);
 	procStats.min = vMin(&procLat);
 	procStats.max = vMax(&procLat);
+	procStats.max = vMedian(&procLat);
     if (thisTask.exportData)
         procStats.vals = procLat;
         
@@ -372,6 +376,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	metronome.max = vMax(&metronomeDiff);
 	metronome.min = vMin(&metronomeDiff);
 	metronome.std = vStd(&metronomeDiff);
+	metronome.median = vMedian(&metronomeDiff);
     if (thisTask.exportData)
         metronome.vals = metronomeDiff;
         
@@ -392,7 +397,8 @@ bool analysis::doThreshAnalysis(double threshTmp)
         vidOutputStats.mean = vidSystemStats.mean - ampStats.mean - procStats.mean;
 		vidOutputStats.std = sqrt(pow(vidSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
         vidOutputStats.min = 0;//vidSystemStats.min - ampStats.min - procStats.min;
-        vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
+		vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
+		vidOutputStats.median = 0;//vidSystemStats.max - ampStats.max - procStats.max;
         if (thisTask.exportData)
             vidOutputStats.vals.clear();
         vidOutputStats.taskName = "VidOut  ";
@@ -407,7 +413,8 @@ bool analysis::doThreshAnalysis(double threshTmp)
         audOutputStats.mean = audSystemStats.mean - ampStats.mean - procStats.mean;
 		audOutputStats.std = sqrt(pow(audSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
         audOutputStats.min = 0;//audSystemStats.min - ampStats.min - procStats.min;
-        audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
+		audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
+		audOutputStats.median = 0;
         if (thisTask.exportData)
             audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
@@ -434,6 +441,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
 	tmpStat.std = -1;
 	tmpStat.min = -1;
 	tmpStat.max = -1;
+	tmpStat.median = -1;
 
 	if (chNum >= nChannels || chNum < 0)
 		return tmpStat;
@@ -506,7 +514,8 @@ basicStats analysis::doThreshAnalysis(int chNum)
         tmpStat.mean = vMean(&tDiff);
         tmpStat.std = vStd(&tDiff);
         tmpStat.min = vMin(&tDiff);
-        tmpStat.max = vMax(&tDiff);
+		tmpStat.max = vMax(&tDiff);
+		tmpStat.median = vMedian(&tDiff);
         if (thisTask.exportData)
             tmpStat.vals = tDiff;
     }
@@ -536,6 +545,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 	tmpStat.std = -1;
 	tmpStat.min = -1;
 	tmpStat.max = -1;
+	tmpStat.median = -1;
 
     //normalize the data by subtracting the minimum value, and dividing by the max
     //giving us values between 0 and 1
@@ -625,7 +635,8 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
     tmpStat.mean = vMean(&tDiff);
     tmpStat.std = vStd(&tDiff);
     tmpStat.min = vMin(&tDiff);
-    tmpStat.max = vMax(&tDiff);
+	tmpStat.max = vMax(&tDiff);
+	tmpStat.median = vMedian(&tDiff);
     if (thisTask.exportData)
         tmpStat.vals = tDiff;
 
@@ -654,7 +665,8 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
                 tmpStat.mean = vMean(&it->second);
                 tmpStat.std = vStd(&it->second);
                 tmpStat.min = vMin(&it->second);
-                tmpStat.max = vMax(&it->second);
+				tmpStat.max = vMax(&it->second);
+				tmpStat.median = vMedian(&it->second);
                 tmpStat.vals = it->second;
 
                 stringstream str;
@@ -745,6 +757,13 @@ double analysis::vMean(vector<double> *a)
     return v;
 }
 
+double analysis::vMedian(vector<double> *a)
+{
+	vector<double> tmp = *a;
+	std::sort(tmp.begin(), tmp.end());
+	return *(tmp.begin()+tmp.size()/2);
+}
+
 double analysis::vStd(vector<double> *a)
 {
     double m = vMean(a);
@@ -790,14 +809,15 @@ bool analysis::isMember(vector<string> strArr, string str)
         if (strArr[i] == str)
             return true;
     }
-    return false;
+	return false;
 }
 
 void analysis::print(FILE * out, vector<basicStats> minReqs)
 {
-    fprintf(out, "%s",shortFname(fName).c_str());
+    fprintf(out, "%s\n",shortFname(fName).c_str());
     //resOut << std::endl<<fName<<":"<<std::endl;
-    bool ok = true;
+	bool ok = true;
+
     for (int t = 0; t < latencyStats.size(); t++)
     {
         basicStats tmpTask = latencyStats[t];
@@ -838,7 +858,7 @@ void analysis::print(FILE * out, vector<basicStats> minReqs)
             fprintf(out, "%s\n","task requirements undefined\n");
         else
         {
-            fprintf(out, "%1.2f\t%1.2f\t%1.2f\t%1.2f\n",tmpTask.mean, tmpTask.std, tmpTask.min, tmpTask.max);
+            fprintf(out, "%1.2f\t%1.2f\t%1.2f\t%1.2f\t%1.2f\n",tmpTask.mean, tmpTask.median, tmpTask.std, tmpTask.min, tmpTask.max);
         }
     }
 

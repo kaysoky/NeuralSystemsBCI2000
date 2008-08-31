@@ -19,6 +19,7 @@ using namespace std;
 string shortFname(string fname);
 bool parseDir(string dir, vector<string> &fnames);
 bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs);
+bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs, string fileLoc);
 //Tasks parseIni();
 vector<string> parseParm(string parmName);
 string getFullDir(string dirPath);

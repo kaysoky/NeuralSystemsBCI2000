@@ -13,7 +13,7 @@
 using namespace std;
 struct basicStats
 {
-    double mean, std, min, max;
+    double mean, std, min, max, median;
     vector<double> vals;
     string taskName;
     string desc;
@@ -37,7 +37,8 @@ public:
     std::vector<std::string> parms;
     std::vector<std::string> states;
     std::string SignalSource, SigProc, App;
-    std::vector<std::string> parmFile;
+	std::vector<std::string> parmFile;
+	std::vector<std::string> parmFileDisp;
     analysisType amp;
     analysisType dAmp;
     analysisType vid;
@@ -45,7 +46,8 @@ public:
 	float blockSize, sampleRate;
     bool skip;
     bool exportData;
-    void initTasks();
+	void initTasks();
+	void addParm(std::string);
 };
 
 class Tasks : public std::vector<TaskType>
@@ -57,7 +59,8 @@ public:
 
     void init(std::string fname);
     void parseIni();
-    int getReturnCode(){return returnCode;}
+	int getReturnCode(){return returnCode;}
+	string GlobalSource;
 private:
     int returnCode;
 /*

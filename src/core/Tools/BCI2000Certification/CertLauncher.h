@@ -62,15 +62,15 @@ private:
 
     bool mTasksRemaining;
     int mCurTask;
+	string getLogFile();
 
-    Tasks tasks;
-
-    string getLogFile();
 public:
     CertLauncher();
-    ~CertLauncher();
+	~CertLauncher();
+	Tasks tasks;
 
-    bool nextTask();
+	bool nextTask();
+	void reset(){mCurTask = 0;}
     bool tasksRemain(){return mTasksRemaining;}
 
     bool parseIni();
@@ -80,7 +80,13 @@ public:
     int nTasks(){return tasks.size();}
     int taskReturnCode(){return tasks.getReturnCode();}
 
-    TaskType& operator[](const int i){return tasks[i];}
+	TaskType& operator[](const int i){return tasks[i];}
+	string GlobalSource(){return tasks.GlobalSource;}
+	void setGlobalSource(string s){tasks.GlobalSource = s;}
+	int GetCurrentTask(){return mCurTask;}
+	string mDataDir;
+	int mWinLeft, mWinTop, mWinWidth, mWinHeight;
+	bool useWinLeft, useWinTop, useWinWidth, useWinHeight;
 };
 //---------------------------------------------------------------------------
 #endif

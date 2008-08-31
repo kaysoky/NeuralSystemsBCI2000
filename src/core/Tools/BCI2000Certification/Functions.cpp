@@ -168,13 +168,17 @@ output: vector<basicStats> - this array of basicStats contains the minimum requi
 */
 bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs)
 {
+	parseCfg(thresh, outfilepath, datDir, minReqs, string("BCI2000Certification.cfg"));
+}
+bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs, string fileLoc)
+{
     outfilepath = "";
     datDir = "";
     thresh = .25;
     minReqs.clear();
     
 	ifstream file;
-	file.open("BCI2000Certification.cfg");
+	file.open(fileLoc.c_str());
 	if (!file.is_open())
 	{
 		file.close();

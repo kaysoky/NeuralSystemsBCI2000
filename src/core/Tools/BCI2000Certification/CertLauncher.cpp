@@ -14,7 +14,10 @@ http://www.bci2000.org
 CertLauncher::CertLauncher()
 {
     mTasksRemaining = false;
-    mCurTask = -1;
+	mCurTask = -1;
+	mDataDir = "";
+	mWinLeft = mWinTop = mWinWidth = mWinHeight = 0;
+	useWinLeft = useWinTop = useWinWidth = useWinHeight = false;
     //tasks.clear();
 }
 
@@ -51,11 +54,11 @@ bool CertLauncher::parseIni()
     {
         bool curTaskOK = true;
 
-        if (tasks[i].taskName == ""){
+		if (tasks[i].taskName == "" ){
             allTasksOK = false;
             curTaskOK = false;
         }
-        if (tasks[i].SignalSource == ""){
+        if (tasks[i].SignalSource == "" && tasks.GlobalSource == ""){
             allTasksOK = false;
             curTaskOK = false;
         }
@@ -122,9 +125,20 @@ bool CertLauncher::launchProgs()
         i++;
 
     //launch each module
-    comm.str("");
-    comm << "start .." << fs << ".." << fs << "prog" << fs << curTaskC.SignalSource;
-    comm <<" --SubjectName-"<<curTaskC.taskName<<endl;
+	comm.str("");
+	if (curTaskC.SignalSource != "")
+		comm << "start .." << fs << ".." << fs << "prog" << fs << curTaskC.SignalSource;
+	else
+		comm << "start .." << fs << ".." << fs << "prog" << fs << tasks.GlobalSource;
+		
+	comm <<" --SubjectName-"<<curTaskC.taskName;
+
+	if (mDataDir != "")
+		comm << " --DataDirectory-" << mDataDir;
+
+	comm << endl;
+
+	string tmp(comm.str());
     system(comm.str().c_str());
 
     comm.str("");
@@ -133,7 +147,16 @@ bool CertLauncher::launchProgs()
 
     Sleep(500);
     comm.str("");
-    comm << "start .." << fs << ".." << fs << "prog" << fs << ""<<curTaskC.App << " 127.0.0.1"<<endl;
+	comm << "start .." << fs << ".." << fs << "prog" << fs << ""<<curTaskC.App << " 127.0.0.1";
+	if (useWinLeft)
+		comm << " --WindowLeft-" << mWinLeft;
+	if (useWinTop)
+		comm << " --WindowTop-" << mWinTop;
+	if (useWinWidth)
+		comm << " --WindowWidth-" << mWinWidth;
+	if (useWinHeight)
+		comm << " --WindowHeight-" << mWinHeight;
+	comm << endl;
     system(comm.str().c_str());
     return true;
 }
