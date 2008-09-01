@@ -35,10 +35,10 @@ struct StateInfo
 {
   int   mLength, mLocation;
   void* mpData;
-  State::ValueType ( StateInfo::*mfpCopyState )( long, StateVector& ) const;
+  void ( StateInfo::*mfpCopyState )( long, StateVector& ) const;
 
   template<typename T>
-  State::ValueType CopyState( long inBlockStart, StateVector& outStatevector ) const
+  void CopyState( long inBlockStart, StateVector& outStatevector ) const
   {
     T* data = reinterpret_cast<T*>( mpData ) + inBlockStart;
     for( int sample = 0; sample < outStatevector.Samples(); ++sample )

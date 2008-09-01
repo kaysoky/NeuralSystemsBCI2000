@@ -107,7 +107,7 @@ class ParamRef
   bool operator>=( double d ) const
     { return double( *this ) >= d; }
 
-#ifdef __GNUC__
+#ifndef __BORLANDC__
   // float
   double operator-( float f ) const
     { return double( *this ) - f; }
@@ -153,7 +153,7 @@ class ParamRef
     { return double( *this ) <= i; }
   bool operator>=( int i ) const
     { return double( *this ) >= i; }
-#endif // __GNUC__
+#endif // !__BORLANDC__
 
   bool operator==( const std::string& s ) const
     { return (const std::string&)( *this ) == s; }
@@ -206,7 +206,7 @@ inline bool operator<=( double d, const ParamRef& p )
 inline bool operator>=( double d, const ParamRef& p )
   { return d >= double( p ); }
 
-#ifdef __GNUC__
+#ifndef __BORLANDC__
 // float
 inline double operator-( float f, const ParamRef& p )
   { return f - double( p ); }
@@ -252,7 +252,7 @@ inline bool operator<=( int i, const ParamRef& p )
   { return i <= double( p ); }
 inline bool operator>=( int i, const ParamRef& p )
   { return i >= double( p ); }
-#endif // __GNUC__
+#endif // !__BORLANDC__
 
 inline bool operator==( const std::string& s, const ParamRef& p )
   { return p == s; }
