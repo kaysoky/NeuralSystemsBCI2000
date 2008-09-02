@@ -230,12 +230,12 @@ class sockbuf : public std::streambuf
 #else
   protected:
 #endif // IN_AVAIL_BROKEN
-    virtual int showmanyc();        // Called from streambuf::in_avail().
+    virtual std::streamsize showmanyc();           // Called from streambuf::in_avail().
 
   protected:
-    virtual int underflow();        // Called from read operations if empty.
-    virtual int overflow( int c );  // Called if write buffer is filled.
-    virtual int sync();             // Called from iostream::flush().
+    virtual std::ios::int_type underflow();        // Called from read operations if empty.
+    virtual std::ios::int_type overflow( int c );  // Called if write buffer is filled.
+    virtual int sync();                            // Called from iostream::flush().
 
   protected:
     streamsock* m_socket;

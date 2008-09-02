@@ -80,11 +80,11 @@ serialbuf::close()
   return this;
 }
 
-int
+streamsize
 serialbuf::showmanyc()
 {
   // Are there any data available in the streambuffer?
-  int result = egptr() - gptr();
+  streamsize result = egptr() - gptr();
   if( result < 1 )
   {
     // Are there data waiting in the serial device buffer?
@@ -101,7 +101,7 @@ serialbuf::showmanyc()
   return result;
 }
 
-int
+ios::int_type
 serialbuf::underflow()
 {
   if( sync() == traits_type::eof() )
@@ -115,7 +115,7 @@ serialbuf::underflow()
     setg( buf, buf, buf );
   }
 
-  int result = traits_type::eof();
+  ios::int_type result = traits_type::eof();
   setg( eback(), eback(), eback() );
   // If your program blocks here, changing the timeout value will not help.
   // Quite likely, this is due to a situation where all transmitted data has been read
@@ -133,7 +133,7 @@ serialbuf::underflow()
   return result;
 }
 
-int
+ios::int_type
 serialbuf::overflow( int c )
 {
   if( sync() == traits_type::eof() )

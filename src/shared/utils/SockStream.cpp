@@ -510,18 +510,18 @@ sockbuf::~sockbuf()
   delete[] pbase();
 }
 
-int
+streamsize
 sockbuf::showmanyc()
 {
   // Are there any data available in the streambuffer?
-  int result = egptr() - gptr();
+  streamsize result = egptr() - gptr();
   // Are there data waiting in the streamsock buffer?
   if( result < 1 && m_socket && m_socket->can_read() && underflow() != traits_type::eof() )
     result = egptr() - gptr();
   return result;
 }
 
-int
+ios::int_type
 sockbuf::underflow()
 {
   if( sync() == traits_type::eof() )
@@ -535,7 +535,7 @@ sockbuf::underflow()
     setg( buf, buf, buf );
   }
 
-  int result = traits_type::eof();
+  ios::int_type result = traits_type::eof();
   setg( eback(), eback(), eback() );
   // If your program blocks here, changing the timeout value will not help.
   // Quite likely, this is due to a situation where all transmitted data has been read
@@ -560,7 +560,7 @@ sockbuf::underflow()
   return result;
 }
 
-int
+ios::int_type
 sockbuf::overflow( int c )
 {
   if( sync() == traits_type::eof() )

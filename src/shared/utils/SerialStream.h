@@ -45,12 +45,12 @@ class serialbuf : public std::streambuf
     serialbuf* close();
 
   protected:
-    virtual int showmanyc();        // Called from streambuf::in_avail().
+    virtual std::streamsize showmanyc();           // Called from streambuf::in_avail().
 
   protected:
-    virtual int underflow();        // Called from read operations if empty.
-    virtual int overflow( int c );  // Called if write buffer is filled.
-    virtual int sync();             // Called from iostream::flush().
+    virtual std::ios::int_type underflow();        // Called from read operations if empty.
+    virtual std::ios::int_type overflow( int c );  // Called if write buffer is filled.
+    virtual int sync();                            // Called from iostream::flush().
 
   protected:
     void* m_handle;
