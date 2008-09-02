@@ -19,39 +19,39 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <OutputExt>exe</OutputExt>
     <ILINK_IntermediateOutputPath>obj</ILINK_IntermediateOutputPath>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <BCC_OutputDir>obj\</BCC_OutputDir>
     <BRCC_OutputDir>obj\</BRCC_OutputDir>
     <DCC_DebugInformation>false</DCC_DebugInformation>
-    <ILINK_wdup>false</ILINK_wdup>
     <ILINK_ObjectSearchPath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</ILINK_ObjectSearchPath>
-    <NoVCL>true</NoVCL>
-    <DCC_MakeModifiedUnits>true</DCC_MakeModifiedUnits>
+    <ILINK_wdup>false</ILINK_wdup>
     <BCC_ZeroLengthEmptyMemberFuncs>true</BCC_ZeroLengthEmptyMemberFuncs>
+    <DCC_MakeModifiedUnits>true</DCC_MakeModifiedUnits>
+    <NoVCL>true</NoVCL>
     <FinalOutputDir>..\..\..\..\tools\BCI2000Certification\</FinalOutputDir>
     <BCC_GenerateConsoleApp>true</BCC_GenerateConsoleApp>
-    <PackageImports>vcl.bpi;rtl.bpi;vclx.bpi;bcbsmp.bpi;dbrtl.bpi;adortl.bpi;vcldb.bpi;bdertl.bpi;vcldbx.bpi;dsnap.bpi;dsnap.bpi;dsnapcon.bpi;teeui.bpi;teedb.bpi;tee.bpi;ibxpress.bpi;vclie.bpi;xmlrtl.bpi;inet.bpi;inetdbbde.bpi;inetdbxpress.bpi;inetdb.bpi;bcbie.bpi;soaprtl.bpi;dbexpress.bpi;dbxcds.bpi;indycore.bpi;indysystem.bpi;bcboffice2k.bpi;dclusr.bpi</PackageImports>
     <TASM_AdditionalSwitches> /w2 obj\</TASM_AdditionalSwitches>
+    <PackageImports>vcl.bpi;rtl.bpi;vclx.bpi;bcbsmp.bpi;dbrtl.bpi;adortl.bpi;vcldb.bpi;bdertl.bpi;vcldbx.bpi;dsnap.bpi;dsnap.bpi;dsnapcon.bpi;teeui.bpi;teedb.bpi;tee.bpi;ibxpress.bpi;vclie.bpi;xmlrtl.bpi;inet.bpi;inetdbbde.bpi;inetdbxpress.bpi;inetdb.bpi;bcbie.bpi;soaprtl.bpi;dbexpress.bpi;dbxcds.bpi;indycore.bpi;indysystem.bpi;bcboffice2k.bpi;dclusr.bpi</PackageImports>
     <DCC_UnitSearchPath>.\;$(BDS)\lib;$(BDS)\lib\obj</DCC_UnitSearchPath>
     <BRCC_UserSuppliedOptions> -I.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_UserSuppliedOptions>
-    <DCC_DcuOutput>obj\</DCC_DcuOutput>
     <IncludePath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</IncludePath>
+    <DCC_DcuOutput>obj\</DCC_DcuOutput>
     <BCC_IntegerSizedEnums>false</BCC_IntegerSizedEnums>
-    <DCC_IncludePath>.\;$(BDS)\lib;$(BDS)\lib\obj</DCC_IncludePath>
-    <BRCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_IncludePath>
-    <TASM_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</TASM_IncludePath>
     <BCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BCC_IncludePath>
-    <ILINK_LibraryPath>$(BDS)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\lib\obj;$(BDS)\lib</ILINK_LibraryPath>
+    <TASM_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</TASM_IncludePath>
+    <BRCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_IncludePath>
+    <DCC_IncludePath>.\;$(BDS)\lib;$(BDS)\lib\obj</DCC_IncludePath>
     <BCC_ZeroLengthEmptyBaseClass>true</BCC_ZeroLengthEmptyBaseClass>
-    <TASM_Defines>NO_STRICT;_NO_VCL</TASM_Defines>
-    <BRCC_Defines>NO_STRICT;_NO_VCL</BRCC_Defines>
-    <DCC_ObjOutput>obj\</DCC_ObjOutput>
+    <ILINK_LibraryPath>..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\lib\obj;$(BDS)\lib;$(BDS)\lib\psdk</ILINK_LibraryPath>
     <BCC_Defines>NO_STRICT</BCC_Defines>
-    <TASM_Debugging>None</TASM_Debugging>
+    <DCC_ObjOutput>obj\</DCC_ObjOutput>
+    <BRCC_Defines>NO_STRICT;_NO_VCL</BRCC_Defines>
+    <TASM_Defines>NO_STRICT;_NO_VCL</TASM_Defines>
     <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+    <TASM_Debugging>None</TASM_Debugging>
     <DCC_SymbolReferenceInfo>2</DCC_SymbolReferenceInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -60,14 +60,14 @@
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
-    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     <DCC_DebugInformation>true</DCC_DebugInformation>
+    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
     <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
     <IntermediateOutputDir>Debug_Build</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <BCC_Defines>_DEBUG;$(BCC_Defines)</BCC_Defines>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
@@ -81,20 +81,7 @@
     <Borland.Personality>CPlusPlusBuilder.Personality</Borland.Personality>
     <Borland.ProjectType>CppConsoleApplication</Borland.ProjectType>
     <BorlandProject>
-<BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">4</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item1">.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item2">.\;..\..\..\shared\;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath>  <HistoryLists_hlIncludePath Name="Item3">..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath>
-    </HistoryLists_hlIncludePath><HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Count">3</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item0">$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item1">$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item2">..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath></HistoryLists_hlLibraryPath><HistoryLists_hlDebugSourcePath><HistoryLists_hlDebugSourcePath Name="Count">1</HistoryLists_hlDebugSourcePath><HistoryLists_hlDebugSourcePath Name="Item0">$(BCB)\source\vcl</HistoryLists_hlDebugSourcePath></HistoryLists_hlDebugSourcePath><HistoryLists_hlConditionals><HistoryLists_hlConditionals Name="Count">1</HistoryLists_hlConditionals><HistoryLists_hlConditionals Name="Item0">_DEBUG</HistoryLists_hlConditionals></HistoryLists_hlConditionals><HistoryLists_hlIntOutputDir><HistoryLists_hlIntOutputDir Name="Count">1</HistoryLists_hlIntOutputDir><HistoryLists_hlIntOutputDir Name="Item0">obj</HistoryLists_hlIntOutputDir></HistoryLists_hlIntOutputDir><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">1</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">..\..\..\..\tools\BCI2000Certification\</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><Debugging><Debugging Name="DebugSourceDirs">$(BCB)\source\vcl</Debugging></Debugging><Parameters><Parameters Name="RunParams"></Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD"></Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Compiler><Compiler Name="ShowInfoMsgs">0</Compiler><Compiler Name="LinkDebugVcl">0</Compiler><Compiler Name="LinkCGLIB">0</Compiler></Compiler><Language><Language Name="ActiveLang"></Language><Language Name="ProjectLang"></Language><Language Name="RootDir"></Language></Language><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties>  <HistoryLists_hlILINK_LibraryPath>
-      <HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath>
-      <HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib\release;$(BDS)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\lib\obj;$(BDS)\lib</HistoryLists_hlILINK_LibraryPath>
-    </HistoryLists_hlILINK_LibraryPath>
-    <HistoryLists_hlIntermediateOutputDir>
-      <HistoryLists_hlIntermediateOutputDir Name="Count">1</HistoryLists_hlIntermediateOutputDir>
-      <HistoryLists_hlIntermediateOutputDir Name="Item0">Release_Build</HistoryLists_hlIntermediateOutputDir>
-    </HistoryLists_hlIntermediateOutputDir>
-    <HistoryLists_hlBCC_MaxIdentifierLength>
-      <HistoryLists_hlBCC_MaxIdentifierLength Name="Count">1</HistoryLists_hlBCC_MaxIdentifierLength>
-      <HistoryLists_hlBCC_MaxIdentifierLength Name="Item0">250</HistoryLists_hlBCC_MaxIdentifierLength>
-    </HistoryLists_hlBCC_MaxIdentifierLength>
-  </CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
+<BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1033</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">4</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item1">.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item2">.\;..\..\..\shared\;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item3">..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\include;$(BCB)\include\vcl</HistoryLists_hlIncludePath></HistoryLists_hlIncludePath><HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Count">3</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item0">$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item1">$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath><HistoryLists_hlLibraryPath Name="Item2">..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib</HistoryLists_hlLibraryPath></HistoryLists_hlLibraryPath><HistoryLists_hlDebugSourcePath><HistoryLists_hlDebugSourcePath Name="Count">1</HistoryLists_hlDebugSourcePath><HistoryLists_hlDebugSourcePath Name="Item0">$(BCB)\source\vcl</HistoryLists_hlDebugSourcePath></HistoryLists_hlDebugSourcePath><HistoryLists_hlConditionals><HistoryLists_hlConditionals Name="Count">1</HistoryLists_hlConditionals><HistoryLists_hlConditionals Name="Item0">_DEBUG</HistoryLists_hlConditionals></HistoryLists_hlConditionals><HistoryLists_hlIntOutputDir><HistoryLists_hlIntOutputDir Name="Count">1</HistoryLists_hlIntOutputDir><HistoryLists_hlIntOutputDir Name="Item0">obj</HistoryLists_hlIntOutputDir></HistoryLists_hlIntOutputDir><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">1</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">..\..\..\..\tools\BCI2000Certification\</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><Debugging><Debugging Name="DebugSourceDirs">$(BCB)\source\vcl</Debugging></Debugging><Parameters><Parameters Name="RunParams"></Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD"></Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Compiler><Compiler Name="ShowInfoMsgs">0</Compiler><Compiler Name="LinkDebugVcl">0</Compiler><Compiler Name="LinkCGLIB">0</Compiler></Compiler><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\lib\obj;$(BDS)\lib;$(BDS)\lib\psdk</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Count">1</HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Item0">250</HistoryLists_hlBCC_MaxIdentifierLength></HistoryLists_hlBCC_MaxIdentifierLength></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Cpp.Targets" />
   <ItemGroup>
@@ -173,6 +160,10 @@
     <CppCompile Include="analysisClass.cpp">
       <BuildOrder>2</BuildOrder>
     </CppCompile>
+    <CppCompile Include="CertLauncher.cpp">
+      <DependentOn>CertLauncher.h</DependentOn>
+      <BuildOrder>28</BuildOrder>
+    </CppCompile>
     <CppCompile Include="Functions.cpp">
       <BuildOrder>27</BuildOrder>
     </CppCompile>
@@ -182,6 +173,9 @@
     <CppCompile Include="TaskType.cpp">
       <BuildOrder>3</BuildOrder>
     </CppCompile>
+    <LibFiles Include="C:\Program Files\CodeGear\RAD Studio\5.0\lib\psdk\psapi.lib">
+      <BuildOrder>29</BuildOrder>
+    </LibFiles>
     <BuildConfiguration Include="Debug Build">
       <Key>Cfg_1</Key>
     </BuildConfiguration>

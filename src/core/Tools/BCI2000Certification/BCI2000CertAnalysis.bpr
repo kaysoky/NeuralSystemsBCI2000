@@ -15,7 +15,7 @@
     <RESFILES value="BCI2000CertAnalysis.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value=""/>
+    <LIBFILES value="psapi.lib"/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi bcbsmp.bpi dbrtl.bpi adortl.bpi vcldb.bpi 
@@ -35,7 +35,7 @@
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="BCI2000CertAnalysis.bpf"/>
     <INCLUDEPATH value=".;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <LIBPATH value="..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\psdk;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
