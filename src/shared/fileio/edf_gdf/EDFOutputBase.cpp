@@ -112,7 +112,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   channel.DigitalMinimum = digitalMin;
   channel.DigitalMaximum = digitalMax;
   const float cNaN = ::strtod( "+NAN", NULL );
-  for( int i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
+  for( size_t i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
     channel.ElectrodePosition[ i ] = cNaN;
   channel.ElectrodeImpedance = 255;
   channel.LowPass = cNaN;
@@ -166,7 +166,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   markerChannel.PhysicalDimensionCode = GDF::PhysicalUnitToGDFUnit( "" );
   markerChannel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   markerChannel.DataType = GDF::int16::Code;
-  for( int i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
+  for( size_t i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
     markerChannel.ElectrodePosition[ i ] = cNaN;
   markerChannel.ElectrodeImpedance = 255;
   markerChannel.LowPass = cNaN;

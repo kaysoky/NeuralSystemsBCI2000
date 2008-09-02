@@ -42,7 +42,7 @@ __fastcall TmainForm::TmainForm(TComponent* Owner)
 
 
 
-void __fastcall TmainForm::FormCreate(TObject *Sender)
+void __fastcall TmainForm::FormCreate(TObject */*Sender*/)
 {
     //lists of programs
     bool haveFile = false;
@@ -194,7 +194,7 @@ bool TmainForm::ismember(string str, vector<string> strs)
 
 
 //----------------------------------------------------------------
-void __fastcall TmainForm::launchButClick(TObject *Sender)
+void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
 {
     SetCurrentDir(curdir.c_str());
     statusList->Clear();
@@ -371,7 +371,7 @@ void __fastcall TmainForm::launchButClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::getParmButClick(TObject *Sender)
+void __fastcall TmainForm::getParmButClick(TObject */*Sender*/)
 {
     OpenParmDlg->FileName = "*.prm";
 	OpenParmDlg->DefaultExt = "prm";
@@ -395,7 +395,7 @@ void TmainForm::addParm(string prm)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::clearButClick(TObject *Sender)
+void __fastcall TmainForm::clearButClick(TObject */*Sender*/)
 {
     int i=0;
     for (i =0; i < sourceList->Count; i++)
@@ -414,7 +414,7 @@ void __fastcall TmainForm::clearButClick(TObject *Sender)
 
 
 
-void __fastcall TmainForm::sourceToSPClick(TObject *Sender)
+void __fastcall TmainForm::sourceToSPClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -439,7 +439,7 @@ void __fastcall TmainForm::sourceToSPClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sourceToAppClick(TObject *Sender)
+void __fastcall TmainForm::sourceToAppClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -463,7 +463,7 @@ void __fastcall TmainForm::sourceToAppClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sourceToOthersClick(TObject *Sender)
+void __fastcall TmainForm::sourceToOthersClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -487,7 +487,7 @@ void __fastcall TmainForm::sourceToOthersClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::spToSourceClick(TObject *Sender)
+void __fastcall TmainForm::spToSourceClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -511,7 +511,7 @@ void __fastcall TmainForm::spToSourceClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::spToAppClick(TObject *Sender)
+void __fastcall TmainForm::spToAppClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -535,7 +535,7 @@ void __fastcall TmainForm::spToAppClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::spToOthersClick(TObject *Sender)
+void __fastcall TmainForm::spToOthersClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -559,7 +559,7 @@ void __fastcall TmainForm::spToOthersClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::appToSourceClick(TObject *Sender)
+void __fastcall TmainForm::appToSourceClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -583,7 +583,7 @@ void __fastcall TmainForm::appToSourceClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::appToSpClick(TObject *Sender)
+void __fastcall TmainForm::appToSpClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -607,7 +607,7 @@ void __fastcall TmainForm::appToSpClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::appToOthersClick(TObject *Sender)
+void __fastcall TmainForm::appToOthersClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -631,7 +631,7 @@ void __fastcall TmainForm::appToOthersClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::othersToSourceClick(TObject *Sender)
+void __fastcall TmainForm::othersToSourceClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -655,7 +655,7 @@ void __fastcall TmainForm::othersToSourceClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::othersToSpClick(TObject *Sender)
+void __fastcall TmainForm::othersToSpClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -679,7 +679,7 @@ void __fastcall TmainForm::othersToSpClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::othersToAppClick(TObject *Sender)
+void __fastcall TmainForm::othersToAppClick(TObject */*Sender*/)
 {
     //this loop finds all of the items selected, and moves them to the correct
     //list. Only one item can actually be selected, but this is included to avoid
@@ -704,8 +704,8 @@ void __fastcall TmainForm::othersToAppClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::sourceListDragDrop(TObject *Sender,
-      TObject *Source, int X, int Y)
+void __fastcall TmainForm::sourceListDragDrop(TObject */*Sender*/,
+      TObject */*Source*/, int X, int Y)
 {
     TPoint dropPoint;
     int dropPos, startPos;
@@ -722,15 +722,15 @@ void __fastcall TmainForm::sourceListDragDrop(TObject *Sender,
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sourceListDragOver(TObject *Sender,
-      TObject *Source, int X, int Y, TDragState State, bool &Accept)
+void __fastcall TmainForm::sourceListDragOver(TObject */*Sender*/,
+      TObject *Source, int /*X*/, int /*Y*/, TDragState /*State*/, bool &Accept)
 {
-    Accept = Source = sourceList;
+    Accept = (Source == sourceList);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sourceListMouseDown(TObject *Sender,
-      TMouseButton Button, TShiftState Shift, int X, int Y)
+void __fastcall TmainForm::sourceListMouseDown(TObject */*Sender*/,
+      TMouseButton /*Button*/, TShiftState /*Shift*/, int X, int Y)
 {
     startPoint.x = X;
     startPoint.y = Y;
@@ -765,14 +765,14 @@ bool TmainForm::updateINIFile()
     return true;
 
 }
-void __fastcall TmainForm::FormClose(TObject *Sender, TCloseAction &Action)
+void __fastcall TmainForm::FormClose(TObject */*Sender*/, TCloseAction &/*Action*/)
 {
     updateINIFile();    
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sigProcListDragDrop(TObject *Sender,
-      TObject *Source, int X, int Y)
+void __fastcall TmainForm::sigProcListDragDrop(TObject */*Sender*/,
+      TObject */*Source*/, int X, int Y)
 {
     TPoint dropPoint;
     int dropPos, startPos;
@@ -789,39 +789,39 @@ void __fastcall TmainForm::sigProcListDragDrop(TObject *Sender,
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sigProcListDragOver(TObject *Sender,
-      TObject *Source, int X, int Y, TDragState State, bool &Accept)
+void __fastcall TmainForm::sigProcListDragOver(TObject */*Sender*/,
+      TObject *Source, int /*X*/, int /*Y*/, TDragState /*State*/, bool &Accept)
 {
-    Accept = Source = sigProcList;
+    Accept = (Source == sigProcList);
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sigProcListMouseDown(TObject *Sender,
-      TMouseButton Button, TShiftState Shift, int X, int Y)
-{
-    startPoint.x = X;
-    startPoint.y = Y;
-}
-//---------------------------------------------------------------------------
-
-
-void __fastcall TmainForm::appListDragOver(TObject *Sender,
-      TObject *Source, int X, int Y, TDragState State, bool &Accept)
-{
-    Accept = Source = appList;
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TmainForm::appListMouseDown(TObject *Sender,
-      TMouseButton Button, TShiftState Shift, int X, int Y)
+void __fastcall TmainForm::sigProcListMouseDown(TObject */*Sender*/,
+      TMouseButton /*Button*/, TShiftState /*Shift*/, int X, int Y)
 {
     startPoint.x = X;
     startPoint.y = Y;
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::appListDragDrop(TObject *Sender,
-      TObject *Source, int X, int Y)
+
+void __fastcall TmainForm::appListDragOver(TObject */*Sender*/,
+      TObject *Source, int /*X*/, int /*Y*/, TDragState /*State*/, bool &Accept)
+{
+    Accept = (Source == appList);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TmainForm::appListMouseDown(TObject */*Sender*/,
+      TMouseButton /*Button*/, TShiftState /*Shift*/, int X, int Y)
+{
+    startPoint.x = X;
+    startPoint.y = Y;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TmainForm::appListDragDrop(TObject */*Sender*/,
+      TObject */*Source*/, int X, int Y)
 {
     TPoint dropPoint;
     int dropPos, startPos;
@@ -840,7 +840,7 @@ void __fastcall TmainForm::appListDragDrop(TObject *Sender,
 
 
 void __fastcall TmainForm::helpMnuClick(
-      TObject *Sender)
+      TObject */*Sender*/)
 {
     ExecutableHelp().Display();
 /*    if (access(helpLoc.c_str(), 0) != 0)
@@ -868,7 +868,7 @@ void __fastcall TmainForm::helpMnuClick(
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::delParmButClick(TObject *Sender)
+void __fastcall TmainForm::delParmButClick(TObject */*Sender*/)
 {
 	int i = 0;
 	vector<string>::iterator it = parmFiles.begin();
@@ -888,7 +888,7 @@ void __fastcall TmainForm::delParmButClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::About1Click(TObject *Sender)
+void __fastcall TmainForm::About1Click(TObject */*Sender*/)
 {
     AboutBox().SetApplicationName( "BCI2000Launcher" )
             .Display();    
@@ -896,7 +896,7 @@ void __fastcall TmainForm::About1Click(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::getDirBtnClick(TObject *Sender)
+void __fastcall TmainForm::getDirBtnClick(TObject */*Sender*/)
 {
     AnsiString Dir = "";
   if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))
@@ -906,7 +906,7 @@ void __fastcall TmainForm::getDirBtnClick(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::sessionNumBoxChange(TObject *Sender)
+void __fastcall TmainForm::sessionNumBoxChange(TObject */*Sender*/)
 {               /*
     if (sessionNumBox->Text.Length() == 0)
         return;
@@ -932,7 +932,7 @@ void __fastcall TmainForm::sessionNumBoxChange(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sessionNumBoxExit(TObject *Sender)
+void __fastcall TmainForm::sessionNumBoxExit(TObject */*Sender*/)
 {
     if (sessionNumBox->Text.Length() == 0)
         return;
@@ -955,7 +955,7 @@ void __fastcall TmainForm::sessionNumBoxExit(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TmainForm::sessionNumBoxKeyPress(TObject *Sender,
+void __fastcall TmainForm::sessionNumBoxKeyPress(TObject */*Sender*/,
       char &Key)
 {
     if (Key ==13)
@@ -983,7 +983,7 @@ void __fastcall TmainForm::sessionNumBoxKeyPress(TObject *Sender,
 //---------------------------------------------------------------------------
 
 
-void __fastcall TmainForm::SIGFRIED1Click(TObject *Sender)
+void __fastcall TmainForm::SIGFRIED1Click(TObject */*Sender*/)
 {
     if (sourceList->ItemIndex < 0)
     {

@@ -15,10 +15,10 @@
 
 using namespace std;
 
-const int cBufBlocks = 32;        // Size of data ring buffer in terms of sample blocks.
-const int cMaxReadBuf = 1024;     // Restriction of gtec driver.
-const int cMinDataTimeout = 1000; // Minimum data timeout in ms.
-const int cMaxVoidLoopCount = 3;  // Maximum number of zero reads in data acquisition loop.
+const size_t cBufBlocks = 32;      // Size of data ring buffer in terms of sample blocks.
+const size_t cMaxReadBuf = 1024;   // Restriction of gtec driver.
+const int cMinDataTimeout = 1000;  // Minimum data timeout in ms.
+const int cMaxVoidLoopCount = 3;   // Maximum number of zero reads in data acquisition loop.
 
 gMOBIlabThread::gMOBIlabThread( int inBlockSize, int inTimeout, HANDLE inDevice )
 : OSThread( true ),

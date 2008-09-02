@@ -18,7 +18,7 @@ char *current_directory(char *path)
 bool getNextLine(ifstream &in, vector<string> &tokens, string delimiters)
 {
     bool found = false;
-    int pos;
+    size_t pos;
     string line;
 
     if (in.eof())
@@ -91,8 +91,8 @@ void stringSplit(const string& str, vector<string>& tokens, string delimiters)
 
 	tokens.clear();
 	// Find the first position in the string that is not a delimiter
-	int start = str.find_first_not_of(delimiters);
-	int endStr = 0;
+	size_t start = str.find_first_not_of(delimiters);
+	size_t endStr = 0;
 
 	//cout <<"String: ["<<str<<"]"<<endl;
 	//cout <<"Start: "<<start<<endl;

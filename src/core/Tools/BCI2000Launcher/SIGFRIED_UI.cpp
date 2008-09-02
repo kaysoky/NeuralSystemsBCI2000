@@ -23,14 +23,14 @@ __fastcall TSigfried_UIfrm::TSigfried_UIfrm(TComponent* Owner, string sigSource,
     models.clear();
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::getDirBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::getDirBtnClick(TObject */*Sender*/)
 {
     AnsiString Dir = "";
     if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,1000))
         directoryBox->Text = Dir;
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::sessionNumBoxExit(TObject *Sender)
+void __fastcall TSigfried_UIfrm::sessionNumBoxExit(TObject */*Sender*/)
 {
     if (sessionNumBox->Text.Length() == 0)
     {
@@ -54,7 +54,7 @@ void __fastcall TSigfried_UIfrm::sessionNumBoxExit(TObject *Sender)
     return;    
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::sessionNumBoxKeyPress(TObject *Sender,
+void __fastcall TSigfried_UIfrm::sessionNumBoxKeyPress(TObject */*Sender*/,
       char &Key)
 {
     if (Key ==13)
@@ -81,7 +81,7 @@ void __fastcall TSigfried_UIfrm::sessionNumBoxKeyPress(TObject *Sender,
     }      
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::baselinePrmBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::baselinePrmBtnClick(TObject */*Sender*/)
 {
     OpenFileDlg->FileName = "";
     OpenFileDlg->Filter = "PRM Files(*.prm)|*.prm";
@@ -92,7 +92,7 @@ void __fastcall TSigfried_UIfrm::baselinePrmBtnClick(TObject *Sender)
     }
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::directoryBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::directoryBoxChange(TObject */*Sender*/)
 {
     updateRecordReady();
 }
@@ -106,12 +106,12 @@ void TSigfried_UIfrm::updateRecordReady()
     recordBaselineBtn->Enabled = mRecordReady;
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::baselinePrmBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::baselinePrmBoxChange(TObject */*Sender*/)
 {
     updateRecordReady();    
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject */*Sender*/)
 {
     //check here if a dat file already exists in the current location
     //check if dat file exists, warn, and backup
@@ -215,7 +215,7 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject *Sender)
     
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::modelIniBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::modelIniBtnClick(TObject */*Sender*/)
 {
     OpenFileDlg->FileName = "";
     OpenFileDlg->Filter = "INI files(*.ini)|*.ini";
@@ -226,7 +226,7 @@ void __fastcall TSigfried_UIfrm::modelIniBtnClick(TObject *Sender)
     }
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject */*Sender*/)
 {
     SaveFileDlg->DefaultExt = "mdl";
     SaveFileDlg->FileName = modelFileBox->Text;
@@ -240,21 +240,21 @@ void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::modelFileBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::modelFileBoxChange(TObject */*Sender*/)
 {
     mModelFile = modelFileBox->Text.c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::modelIniBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::modelIniBoxChange(TObject */*Sender*/)
 {
     mIniFile = modelIniBox->Text.c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
-void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject */*Sender*/)
 {
     for (size_t i = 0; i < models.size(); i++)
     {
@@ -269,14 +269,14 @@ void __fastcall TSigfried_UIfrm::buildModelBtnClick(TObject *Sender)
 
 		char *procName = new char[1024];
 		strcpy(procName, comm.str().c_str());
-		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
+		/*int proc =*/ CreateProcess(NULL,procName, NULL, NULL, FALSE,
 			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, NULL, NULL);
     }
 }
 
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::addModelBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::addModelBtnClick(TObject */*Sender*/)
 {
     if (modelIniBox->Text.Length() == 0 ||
         modelFileBox->Text.Length() == 0 ||
@@ -300,7 +300,7 @@ void TSigfried_UIfrm::updateModelList()
         modelList->Items->Add(models[i].description.c_str());
     }
 }
-void __fastcall TSigfried_UIfrm::remModelBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::remModelBtnClick(TObject */*Sender*/)
 {
     int i = 0;
 	vector<Model>::iterator it = models.begin();
@@ -320,7 +320,7 @@ void __fastcall TSigfried_UIfrm::remModelBtnClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::parmOutputBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::parmOutputBtnClick(TObject */*Sender*/)
 {
     SaveFileDlg->DefaultExt = "prm";
     SaveFileDlg->FileName = modelFileBox->Text;
@@ -335,13 +335,13 @@ void __fastcall TSigfried_UIfrm::parmOutputBtnClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::parmOutputBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::parmOutputBoxChange(TObject */*Sender*/)
 {
     returnBtn->Enabled = (parmOutputBox->Text.Length() > 0);    
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::returnBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::returnBtnClick(TObject */*Sender*/)
 {
     int width = atoi(visModelWidthBox->Text.c_str());
     int height = atoi(visModelHeightBox->Text.c_str());
@@ -382,7 +382,7 @@ void __fastcall TSigfried_UIfrm::returnBtnClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject *Sender)
+void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject */*Sender*/)
 {
     OpenFileDlg->FileName = "";
     OpenFileDlg->Filter = "BCI2000 Dat file(*.dat)|*.dat";
@@ -394,7 +394,7 @@ void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TSigfried_UIfrm::baselineFileBoxChange(TObject *Sender)
+void __fastcall TSigfried_UIfrm::baselineFileBoxChange(TObject */*Sender*/)
 {
     mBaselineFile = baselineFileBox->Text.c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);

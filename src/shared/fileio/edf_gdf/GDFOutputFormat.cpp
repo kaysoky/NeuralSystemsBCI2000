@@ -116,7 +116,7 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   ostringstream recording;
   recording << GDF::EncodedString( Parameter( "InvestigationID" ) )
             << ' ';
-  int pos = inFileName.find_last_of( ":/\\" );
+  size_t pos = inFileName.find_last_of( ":/\\" );
   recording << inFileName.substr( pos == string::npos ? 0 : pos + 1 );
 
   GDF::uint64::ValueType numEquipmentID = 0;
@@ -127,7 +127,7 @@ GDFOutputFormat::StartRun( ostream& os, const string& inFileName )
   {
     iss.clear();
     char* p = reinterpret_cast<char*>( &numEquipmentID );
-    int i = 0;
+    size_t i = 0;
     while( i < sizeof( numEquipmentID ) && iss.peek() != EOF )
       p[ i++ ] = iss.get();
   }

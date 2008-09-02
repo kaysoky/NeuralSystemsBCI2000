@@ -141,8 +141,8 @@ SpatialFilter::DoPreflight<SpatialFilter::none>( const SignalProperties& Input,
 
 template<>
 void
-SpatialFilter::DoInitialize<SpatialFilter::none>( const SignalProperties& Input,
-                                                  const SignalProperties& Output )
+SpatialFilter::DoInitialize<SpatialFilter::none>( const SignalProperties& /*Input*/,
+                                                  const SignalProperties& /*Output*/ )
 {
 }
 
@@ -178,7 +178,7 @@ SpatialFilter::DoPreflight<SpatialFilter::fullMatrix>( const SignalProperties& I
 template<>
 void
 SpatialFilter::DoInitialize<SpatialFilter::fullMatrix>( const SignalProperties& Input,
-                                                        const SignalProperties& Output )
+                                                        const SignalProperties& /*Output*/ )
 {
   size_t numRows = Parameter( "SpatialFilter" )->NumRows(),
          numCols = Parameter( "SpatialFilter" )->NumColumns();
@@ -346,7 +346,7 @@ SpatialFilter::DoPreflight<SpatialFilter::commonAverage>( const SignalProperties
 template<>
 void
 SpatialFilter::DoInitialize<SpatialFilter::commonAverage>( const SignalProperties& Input,
-                                                           const SignalProperties& Output )
+                                                           const SignalProperties& /*Output*/ )
 {
   mCARoutputList.clear();
   if (Parameter("SpatialFilterCAROutput")->NumValues() > 0)

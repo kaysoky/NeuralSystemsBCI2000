@@ -118,7 +118,7 @@ GDF::PhysicalUnitToGDFUnit( const std::string& inUnit )
 
   int pos = 0,
       prefixValue = 0;
-  for( int i = 0; prefixValue == 0 && i < sizeof( prefixes ) / sizeof( *prefixes ); ++i )
+  for( size_t i = 0; prefixValue == 0 && i < sizeof( prefixes ) / sizeof( *prefixes ); ++i )
     if( inUnit.find( prefixes[ i ].name ) == 0 )
     {
       pos += ::strlen( prefixes[ i ].name );
@@ -127,7 +127,7 @@ GDF::PhysicalUnitToGDFUnit( const std::string& inUnit )
 
   string unit = inUnit.substr( pos );
   int unitValue = 0;
-  for( int i = 0; unitValue == 0 && i < sizeof( units ) / sizeof( *units ); ++i )
+  for( size_t i = 0; unitValue == 0 && i < sizeof( units ) / sizeof( *units ); ++i )
     if( unit == units[ i ].name )
       unitValue = units[ i ].value;
 
