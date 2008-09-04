@@ -25,7 +25,7 @@
 
 using namespace std;
 
-static KeyLogger sInstance;
+Extension( KeyLogger );
 
 int  KeyLogger::HookThread::sInstances = 0;
 bool KeyLogger::HookThread::sKeyPressed[ 1 << KeyLogger::KeyboardBits ];

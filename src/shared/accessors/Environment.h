@@ -38,6 +38,9 @@ class CoreModule;
 class StatusMessage;
 class FilterWrapper;
 
+// A macro to register extensions for automatic instantiation.
+#define Extension(x) static x x##instance_;
+
 // Some utility macros for better readable code in filter constructors.
 #define BEGIN_PARAMETER_DEFINITIONS                                      \
 {                                                                        \

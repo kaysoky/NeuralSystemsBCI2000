@@ -34,7 +34,7 @@
 
 using namespace std;
 
-static JoystickLogger sInstance;
+Extension( JoystickLogger );
 
 // **************************************************************************
 // Function:   JoystickLogger
