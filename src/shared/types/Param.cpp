@@ -125,7 +125,7 @@ Param::Param( const std::string& line )
 {
   istringstream iss( line );
   if( !( iss >> *this ) )
-    throw "invalid parameter line";
+    throw "Invalid parameter line";
 }
 
 // **************************************************************************

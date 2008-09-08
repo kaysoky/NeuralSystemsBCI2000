@@ -41,7 +41,7 @@ class JoystickLogger : public EnvironmentExtension
   virtual void Initialize();
   virtual void StartRun();
   virtual void StopRun();
-  void Halt();
+  virtual void Halt();
 
  private:
   bool    m_joystickenable;
