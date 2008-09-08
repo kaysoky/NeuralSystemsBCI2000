@@ -23,7 +23,8 @@ ParamRef::operator double() const
   double result = 0.0;
   if( mpParam )
   {
-    const std::string& val = mpParam->Value( index( mIdx1 ), index( mIdx2 ) );
+    const Param* p = mpParam; // const access
+    const std::string& val = p->Value( index( mIdx1 ), index( mIdx2 ) );
     result = std::atof( val.c_str() );
     if( result == 0.0 )
     {

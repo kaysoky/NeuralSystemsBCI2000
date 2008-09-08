@@ -330,7 +330,10 @@ ParamRef::operator const std::string&() const
 {
   const std::string* result = &sNullString;
   if( mpParam )
-    result = &mpParam->Value( index( mIdx1 ), index( mIdx2 ) ).ToString();
+  {
+    const Param* p = mpParam;
+    result = &p->Value( index( mIdx1 ), index( mIdx2 ) ).ToString();
+  }
   return *result;
 }
 
@@ -377,3 +380,4 @@ ParamRef::ReadFromStream( std::istream& is )
 }
 
 #endif // PARAM_REF_H
+
