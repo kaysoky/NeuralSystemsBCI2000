@@ -12,8 +12,6 @@
 
 #include "DisplayFilter.h"
 #include "FilterDesign.h"
-#include <numeric>
-#include <limits>
 #include <cassert>
 
 using namespace std;
@@ -30,7 +28,7 @@ DisplayFilter::~DisplayFilter()
 }
 
 DisplayFilter&
-DisplayFilter::HPCorner( num_type inCorner )
+DisplayFilter::HPCorner( Real inCorner )
 {
   if( inCorner != mHPCorner )
   {
@@ -40,14 +38,14 @@ DisplayFilter::HPCorner( num_type inCorner )
   return *this;
 }
 
-DisplayFilter::num_type
+DisplayFilter::Real
 DisplayFilter::HPCorner() const
 {
   return mHPCorner;
 }
 
 DisplayFilter&
-DisplayFilter::LPCorner( num_type inCorner )
+DisplayFilter::LPCorner( Real inCorner )
 {
   if( inCorner != mLPCorner )
   {
@@ -57,14 +55,14 @@ DisplayFilter::LPCorner( num_type inCorner )
   return *this;
 }
 
-DisplayFilter::num_type
+DisplayFilter::Real
 DisplayFilter::LPCorner() const
 {
   return mLPCorner;
 }
 
 DisplayFilter&
-DisplayFilter::NotchCenter( num_type inCenter )
+DisplayFilter::NotchCenter( Real inCenter )
 {
   if( inCenter != mNotchCenter )
   {
@@ -74,7 +72,7 @@ DisplayFilter::NotchCenter( num_type inCenter )
   return *this;
 }
 
-DisplayFilter::num_type
+DisplayFilter::Real
 DisplayFilter::NotchCenter() const
 {
   return mNotchCenter;
@@ -86,7 +84,7 @@ DisplayFilter::DesignFilter()
 {
   typedef Ratpoly<FilterDesign::Complex> TransferFunction;
   TransferFunction tf( 1.0 );
-  num_type gain = 1.0;
+  Real gain = 1.0;
 
   // Design a HP.
   if( mHPCorner > 0 && mHPCorner < 0.5 )
@@ -111,8 +109,8 @@ DisplayFilter::DesignFilter()
     gain *= abs( lp.Evaluate( 1.0 ) ); // LF gain
   }
   // Add a notch filter.
-  num_type corner1 = 0.9 * mNotchCenter,
-           corner2 = 1.1 * mNotchCenter;
+  Real corner1 = 0.9 * mNotchCenter,
+       corner2 = 1.1 * mNotchCenter;
   if( corner1 > 0 && corner2 < 0.5 )
   {
     TransferFunction notch =
@@ -126,65 +124,24 @@ DisplayFilter::DesignFilter()
   }
 
   assert( gain > 0 );
-  mGain = 1 / gain;
-  mZeros = tf.Numerator().Roots();
-  mPoles = tf.Denominator().Roots();
+  mFilter.SetGain( 1 / gain )
+         .SetZeros( tf.Numerator().Roots() )
+         .SetPoles( tf.Denominator().Roots() );
   Reset();
 }
 
 void
 DisplayFilter::Reset()
 {
-  Initialize( 0 );
-}
-
-void
-DisplayFilter::Initialize( size_t inChannels )
-{
-  mDelays.clear();
-  mDelays.resize( inChannels, complex_vector( mZeros.size() + 1, 0 ) );
+  mFilter.Initialize();
 }
 
 void
 DisplayFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  if( Input.Channels() != int( mDelays.size() ) )
-    Initialize( Input.Channels() );
-
-  assert( mZeros.size() == mPoles.size() );
-  size_t numStages = mZeros.size();
-  if( numStages == 0 )
-  {
-    Output = Input;
-  }
-  else
-  {
-    for( int ch = 0; ch < Input.Channels(); ++ch )
-    {
-      assert( mDelays[ch].size() == numStages + 1 );
-      for( int sample = 0; sample < Input.Elements(); ++sample )
-      {
-        // Implementing the filter as a sequence of complex-valued order 1
-        // stages in DF I form will give us higher numerical stability and
-        // lower code complexity than a sequence of real-valued order 2 stages.
-        // - Numerical stability: Greatest for lowest order stages.
-        // - Code complexity: Poles and zeros immediately translate into complex
-        //    coefficients, and need not be grouped into complex conjugate pairs
-        //    as would be the case for real-valued order 2 stages.
-        FilterDesign::Complex stageOutput = Input( ch, sample ) * mGain;
-        for( size_t stage = 0; stage < numStages; ++stage )
-        {
-          FilterDesign::Complex stageInput = stageOutput;
-          stageOutput = stageInput
-            - mZeros[stage] * mDelays[ch][stage]
-            + mPoles[stage] * mDelays[ch][stage+1];
-          mDelays[ch][stage] = stageInput;
-        }
-        mDelays[ch][numStages] = stageOutput;
-        Output( ch, sample ) = real( stageOutput );
-      }
-    }
-  }
+  if( Input.Channels() != mFilter.Channels() )
+    mFilter.Initialize( Input.Channels() );
+  mFilter.Process( Input, Output );
 }
 
 

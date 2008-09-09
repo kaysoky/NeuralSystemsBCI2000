@@ -9,9 +9,9 @@
 #ifndef SOURCE_FILTER_H
 #define SOURCE_FILTER_H
 
-#include "IIRFilter.h"
+#include "IIRFilterBase.h"
 
-class SourceFilter : public IIRFilter
+class SourceFilter : public IIRFilterBase
 {
  public:
   SourceFilter();

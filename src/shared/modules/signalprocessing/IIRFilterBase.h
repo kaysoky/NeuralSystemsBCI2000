@@ -9,24 +9,21 @@
 // (C) 2000-2008, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef IIR_FILTER_H
-#define IIR_FILTER_H
+#ifndef IIR_FILTER_BASE_H
+#define IIR_FILTER_BASE_H
 
 #include "GenericFilter.h"
-#include "Polynomials.h"
-#include <complex>
-#include <vector>
+#include "IIRFilter.h"
 
-class IIRFilter : public GenericFilter
+class IIRFilterBase : public GenericFilter
 {
  public:
-  typedef double               Real;
-  typedef std::complex<Real>   Complex;
-  typedef std::vector<Complex> ComplexVector;
+  typedef double                         Real;
+  typedef IIRFilter<Real>::ComplexVector ComplexVector;
 
  protected:
-  IIRFilter();
-  ~IIRFilter();
+  IIRFilterBase();
+  ~IIRFilterBase();
 
  public:
   void Preflight( const SignalProperties&, SignalProperties& ) const;
@@ -43,11 +40,7 @@ class IIRFilter : public GenericFilter
                              ComplexVector& zeros,
                              ComplexVector& poles ) const = 0;
 
- private:
-  Real                       mGain;
-  ComplexVector              mZeros,
-                             mPoles;
-  std::vector<ComplexVector> mDelays;
+  IIRFilter<Real> mFilter;
 };
 
-#endif // IIR_FILTER_H
+#endif // IIR_FILTER_BASE_H

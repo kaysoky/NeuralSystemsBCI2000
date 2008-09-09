@@ -11,41 +11,35 @@
 #define DISPLAY_FILTER_H
 
 #include "GenericSignal.h"
-#include "FilterDesign.h"
-#include <vector>
+#include "IIRFilter.h"
 
 class DisplayFilter
 {
- typedef double                               num_type;
- typedef std::vector<std::complex<num_type> > complex_vector;
+ typedef double          Real;
+ typedef IIRFilter<Real> ComplexVector;
 
  public:
   DisplayFilter();
   ~DisplayFilter();
 
-  DisplayFilter& HPCorner( num_type );
-  num_type       HPCorner() const;
-  DisplayFilter& LPCorner( num_type );
-  num_type       LPCorner() const;
-  DisplayFilter& NotchCenter( num_type );
-  num_type       NotchCenter() const;
+  DisplayFilter& HPCorner( Real );
+  Real           HPCorner() const;
+  DisplayFilter& LPCorner( Real );
+  Real           LPCorner() const;
+  DisplayFilter& NotchCenter( Real );
+  Real           NotchCenter() const;
 
   void Reset();
   void Process( const GenericSignal&, GenericSignal& );
 
  private:
-  void Initialize( size_t numChannels );
   void DesignFilter();
 
  private:
-  num_type                    mHPCorner,
-                              mLPCorner,
-                              mNotchCenter;
-
-  num_type                    mGain;
-  complex_vector              mZeros,
-                              mPoles;
-  std::vector<complex_vector> mDelays;
+  Real            mHPCorner,
+                  mLPCorner,
+                  mNotchCenter;
+  IIRFilter<Real> mFilter;
 };
 
 #endif // DISPLAY_FILTER_H

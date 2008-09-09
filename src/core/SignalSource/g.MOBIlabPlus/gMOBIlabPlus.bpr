@@ -18,7 +18,7 @@
       obj\TransmissionFilter.obj obj\AlignmentFilter.obj obj\DataIOFilter.obj 
       obj\FileWriterBase.obj obj\NullFileWriter.obj obj\BCI2000FileWriter.obj 
       obj\EDFFileWriter.obj obj\GDF.obj obj\GDFFileWriter.obj 
-      obj\SourceFilter.obj obj\IIRFilter.obj obj\FilterDesign.obj 
+      obj\SourceFilter.obj obj\IIRFilterBase.obj obj\FilterDesign.obj 
       obj\ArithmeticExpression.obj obj\StateVectorSample.obj obj\EventQueue.obj 
       obj\BCIEvent.obj obj\OSThread.obj obj\OSError.obj obj\KeyLogger.obj 
       obj\JoystickLogger.obj obj\BCI2000OutputFormat.obj obj\GDFOutputFormat.obj 
@@ -110,7 +110,7 @@
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDF.cpp" FORMNAME="" UNITNAME="GDF" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\GDFFileWriter.cpp" FORMNAME="" UNITNAME="GDFFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\modules\signalsource\SourceFilter.cpp" FORMNAME="" UNITNAME="SourceFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\IIRFilter.cpp" FORMNAME="" UNITNAME="IIRFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\IIRFilterBase.cpp" FORMNAME="" UNITNAME="IIRFilterBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\math\FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\gtec\gMOBIlabPlus\gMOBIlabplus.lib" FORMNAME="" UNITNAME="gMOBIlabplus.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>

@@ -156,7 +156,7 @@ mexFunction( int nargout, mxArray* varargout[],
         int numEntries = dim[ 0 ] * dim[ 1 ];
         double* range = mxGetPr( varargin[ i ] );
         for( int j = 0; j < numEntries; ++j )
-          if( floor( abs( range[ j ] ) ) != range[ j ] )
+          if( floor( fabs( range[ j ] ) ) != range[ j ] )
             mexErrMsgTxt( "Nonnegative integers expected in range vector." );
 
         if( numEntries > 0 )
