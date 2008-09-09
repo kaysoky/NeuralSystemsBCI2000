@@ -44,7 +44,12 @@ bool CertLauncher::nextTask()
 
 bool CertLauncher::parseIni()
 {
-    tasks.init("BCI2000Certification.ini");
+    parseIni("BCI2000Certification.ini");
+}
+bool CertLauncher::parseIni(string file)
+{
+	tasks.clear();
+    tasks.init(file);
 
     if (tasks.getReturnCode() != 0)
         return false;
@@ -90,6 +95,8 @@ bool CertLauncher::parseIni()
 
     return allTasksOK;
 }
+
+
 
 bool CertLauncher::launchProgs()
 {

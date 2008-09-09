@@ -203,6 +203,62 @@ void Tasks::init(std::string fname)
     }
     returnCode = 0;
 }
+
+bool Tasks::writeIni(string fname)
+{
+	ofstream out(fname.c_str(), ios::out);
+	if (!out.is_open())
+		return false;
+
+	//first write the global setting if it exists
+	if (GlobalSource.size() > 0)
+		out << "source " << GlobalSource <<endl << endl;
+
+	for (int i = 0; i < this->size(); i++)
+	{
+		TaskType tmpTask = (*this)[i];
+		out << "Name " << tmpTask.taskName << endl;
+		if (!tmpTask.skip)
+			out << "%";
+		out << "skip"<<endl;
+
+		if (tmpTask.amp.flag)
+			out << "amp " << tmpTask.amp.ch << endl;
+
+		if (tmpTask.dAmp.flag)
+			out << "damp " << tmpTask.dAmp.ch << endl;
+
+		if (tmpTask.vid.flag)
+			out << "vid " << tmpTask.vid.ch << " " << tmpTask.vid.state << " " << tmpTask.vid.stateVal << endl;
+
+		if (tmpTask.aud.flag)
+			out << "aud " << tmpTask.aud.ch << " " << tmpTask.aud.state << " " << tmpTask.aud.stateVal << endl;
+
+		if (tmpTask.SignalSource.size() > 0)
+			out << "source " << tmpTask.SignalSource << endl;
+
+		if (tmpTask.SigProc.size() > 0)
+			out << "sigproc " << tmpTask.SigProc << endl;
+
+		if (tmpTask.App.size() > 0)
+			out << "app " << tmpTask.App << endl;
+
+		for (int j = 0; j < tmpTask.parmFile.size(); j++)
+			out << "parm " << tmpTask.parmFile[j] << endl;
+
+		for (int j = 0; j < tmpTask.parms.size(); j++)
+			out << "parms " << tmpTask.parms[j] << endl;
+
+		for (int j = 0; j < tmpTask.states.size(); j++)
+			out << "states " << tmpTask.states[j] << endl;
+
+		out << "end" <<endl<<endl;
+    }
+
+	out.close();
+	return true;
+}
+
 void TaskType::addParm(std::string str)
 {
 	parmFile.push_back(str);

@@ -73,7 +73,8 @@ public:
 	void reset(){mCurTask = 0;}
     bool tasksRemain(){return mTasksRemaining;}
 
-    bool parseIni();
+	bool parseIni();
+	bool parseIni(string);
     bool launchProgs();
     bool monitorProgs();
 

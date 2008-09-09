@@ -13,6 +13,7 @@
 #include "CertLauncher.h"
 #include "Functions.h"
 #include <Dialogs.hpp>
+#include <Menus.hpp>
 #include <vector>
 #include <string>
 #include <stdio.h>
@@ -68,6 +69,11 @@ __published:	// IDE-managed Components
 	TButton *getGlobSigSrcBtn;
 	TMemo *infoBox;
 	TLabeledEdit *winTopBox;
+	TMainMenu *MainMenu1;
+	TMenuItem *File1;
+	TMenuItem *Openini1;
+	TMenuItem *Saveini1;
+	TSaveDialog *SaveDialog1;
 	void __fastcall addPrmBtnClick(TObject *Sender);
 	void __fastcall dataSaveBtnClick(TObject *Sender);
 	void __fastcall taskListClick(TObject *Sender);
@@ -99,8 +105,11 @@ __published:	// IDE-managed Components
 	void __fastcall globalSigSrcBoxExit(TObject *Sender);
 	void __fastcall addTaskBtnClick(TObject *Sender);
 	void __fastcall delTaskBtnClick(TObject *Sender);
+	void __fastcall analyzeBtnClick(TObject *Sender);
+	void __fastcall Openini1Click(TObject *Sender);
+	void __fastcall Saveini1Click(TObject *Sender);
 private:	// User declarations
-	bool init();
+	bool init(string);
 	void updateParmPanel();
 	void updateParm();
 	void updateGlobal();
@@ -118,6 +127,7 @@ private:	// User declarations
 			TBCICertificationGUI* p;
 	};
 	RunThread *runThread;
+	string mCurIni;
 
 	int mCurTask;
 

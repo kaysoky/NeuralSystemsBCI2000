@@ -10,6 +10,7 @@ object BCICertificationGUI: TBCICertificationGUI
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  Menu = MainMenu1
   OldCreateOrder = False
   OnClose = FormClose
   PixelsPerInch = 96
@@ -465,6 +466,7 @@ object BCICertificationGUI: TBCICertificationGUI
       Height = 25
       Caption = 'Analyze'
       TabOrder = 2
+      OnClick = analyzeBtnClick
     end
     object infoBox: TMemo
       Left = 3
@@ -477,5 +479,24 @@ object BCICertificationGUI: TBCICertificationGUI
   object OpenDialog1: TOpenDialog
     Left = 560
     Top = 272
+  end
+  object MainMenu1: TMainMenu
+    Left = 344
+    Top = 8
+    object File1: TMenuItem
+      Caption = 'File'
+      object Openini1: TMenuItem
+        Caption = 'Open *.ini'
+        OnClick = Openini1Click
+      end
+      object Saveini1: TMenuItem
+        Caption = 'Save *.ini'
+        OnClick = Saveini1Click
+      end
+    end
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 376
+    Top = 8
   end
 end

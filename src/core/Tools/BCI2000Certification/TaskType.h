@@ -61,6 +61,7 @@ public:
     void parseIni();
 	int getReturnCode(){return returnCode;}
 	string GlobalSource;
+	bool writeIni(string);
 private:
     int returnCode;
 /*

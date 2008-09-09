@@ -14,25 +14,26 @@ __fastcall TBCICertificationGUI::TBCICertificationGUI(TComponent* Owner)
 {
 	mCurTask = -1;
 	runThread = NULL;
-	if (!init())
+	mCurIni = "BCI2000Certification.ini";
+	if (!init("BCI2000Certification.ini"))
 	{
         exit(-1);
     }
 }
 //---------------------------------------------------------------------------
 
-bool TBCICertificationGUI::init()
+bool TBCICertificationGUI::init(string iniFile)
 {
     if (!parseCfg(mThresh,mResFile, mDatDir, mMinReqs))
 	{
 		ShowMessage("Unable to locate BCI2000Certification.cfg. Make sure this file is located in BCI2000/tools/BCI2000Certification before continuing.");
 		return false;
 	}
-	if (!mCT.parseIni())
+	if (!mCT.parseIni(iniFile))
 	{
 		if (mCT.taskReturnCode() == -1)
         {
-			ShowMessage("Unable to find BCI2000Certification.ini. Make sure this file is located in BCI2000/tools/BCI2000Certification before continuing.");
+			ShowMessage(string("Unable to find " + iniFile + ". Make sure this file is located in BCI2000/tools/BCI2000Certification before continuing.").c_str());
 			return false;
         }
 		else if (mCT.taskReturnCode() == -3)
@@ -52,6 +53,7 @@ bool TBCICertificationGUI::init()
 	}
 
 	TListItem *tmpParmItem;
+	taskList->Clear();
 	for (int i = 0; i < mCT.nTasks(); i++)
 	{
 		tmpParmItem = taskList->Items->Add();
@@ -524,6 +526,46 @@ void __fastcall TBCICertificationGUI::delTaskBtnClick(TObject *Sender)
 		return;
 		
 	mCT.tasks.erase(mCT.tasks.begin()+pos);	
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBCICertificationGUI::analyzeBtnClick(TObject *Sender)
+{
+	infoBox->Lines->Add("Starting analysis...");
+	stringstream comm;
+	comm << "start BCI2000CertAnalysis.exe -d " << dataSaveBox->Text.c_str();
+	system(comm.str().c_str());
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TBCICertificationGUI::Openini1Click(TObject *Sender)
+{
+	OpenDialog1->DefaultExt = "ini";
+	OpenDialog1->Filter = "BCI2000 Cert ini Files (*.ini)|*.ini";
+	OpenDialog1->Options.Clear();
+	OpenDialog1->Options << ofFileMustExist << ofAllowMultiSelect;
+	if (OpenDialog1->Execute())
+	{
+		mCurIni=(OpenDialog1->FileName.c_str());
+		init(mCurIni);
+		updateParmPanel();
+	}
+
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBCICertificationGUI::Saveini1Click(TObject *Sender)
+{
+	SaveDialog1->DefaultExt = "ini";
+	SaveDialog1->FileName = mCurIni.c_str();
+	SaveDialog1->Filter = string("BCI2000 Cert Ini File (*.ini)|*.ini").c_str();
+	SaveDialog1->Options.Clear();
+	SaveDialog1->Options << ofOverwritePrompt << ofNoChangeDir;
+	if (SaveDialog1->Execute()){
+        mCT.tasks.writeIni(SaveDialog1->FileName.c_str());
+	}
+		
 }
 //---------------------------------------------------------------------------
 
