@@ -136,11 +136,11 @@ Butterworth::Normalize( ComplexVector& ioPoles,
     case bandstop:
       if( w1 > w2 )
         swap( w1, w2 );
-      badFreq = ( mCorner2 <= 0 || mCorner2 >= 0.5 );
+      badFreq = ( mCorner2 <= Prewarp( 0 ) || mCorner2 >= Prewarp( 0.5 ) );
       /* no break */
     case lowpass:
     case highpass:
-      badFreq = badFreq || ( mCorner1 <= 0 || mCorner1 >= 0.5 );
+      badFreq = badFreq || ( mCorner1 <= Prewarp( 0 ) || mCorner1 >= Prewarp( 0.5 ) );
       break;
   }
   if( badFreq )
