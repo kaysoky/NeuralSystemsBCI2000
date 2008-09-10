@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Association is a class that associates sets of stimuli with
 //   sets of targets.
-//   AssociationMap is a map that maps stimulus codes to Associations, and
+//   AssociationMapss maps stimulus codes to Associations, and
 //   sorts targets according to classification results given over stimulus
 //   codes.
 //   ClassResult and TargetClassification are auxiliary classes designed as

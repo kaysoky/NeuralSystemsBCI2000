@@ -6,8 +6,8 @@
 //   A "Stimulus" is defined as "an object that can present and conceal itself."
 //
 //   Descendants of the Stimulus class may be members of one or more sets of
-//   stimuli (class StimulusSet), which in turn are associated with stimulus
-//   codes (class StimulusMap).
+//   stimuli (class SetOfStimuli), and may be associated with stimulus
+//   codes (class Association).
 //   The StimulusTask framework class uses an AssociationMap to keep track of
 //   the association between stimulus codes, stimuli, and targets.
 //   Examples:
