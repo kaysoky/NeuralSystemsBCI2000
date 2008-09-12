@@ -21,13 +21,10 @@
 %  parameters.
 %
 %  The load_bcidat function is part of the BCI2000 project 
-%  (http://www.bciresearch.org).
+%  (http://www.bci2000.org).
 
 %  This is a help file documenting the functionality contained in
 %  load_bcimat.mex.
 %  $Id$
-%  $Log: load_bcidat.m,v $
-%  Revision 1.1  2006/01/17 17:15:47  mellinger
-%  Initial version.
 %
 error( 'There is no load_bcidat mex file for your platform available.' );

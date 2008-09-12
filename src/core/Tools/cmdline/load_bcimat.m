@@ -18,7 +18,7 @@ function [ signal, varargout ] = load_bcimat( filename, varargin )
 %  entries matching the first dimension of the signal variable.
 %  
 %  This file is a supplement to the bci_stream2mat command line tool which
-%  is part of the BCI2000 project (http://www.bciresearch.org).
+%  is part of the BCI2000 project (http://www.bci2000.org).
 %
 %  $Id$
 %  Author: juergen.mellinger@uni-tuebingen.de
