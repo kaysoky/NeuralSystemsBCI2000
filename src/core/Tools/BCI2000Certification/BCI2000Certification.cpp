@@ -10,7 +10,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	try
 	{
 		Application->Initialize();
-		SetApplicationMainFormOnTaskBar(Application, true);
+		//SetApplicationMainFormOnTaskBar(Application, true);
 		Application->CreateForm(__classid(TBCICertificationGUI), &BCICertificationGUI);
 		Application->Run();
 	}
