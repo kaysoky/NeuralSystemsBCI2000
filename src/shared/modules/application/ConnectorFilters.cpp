@@ -79,14 +79,15 @@ void
 ConnectorInput::Initialize( const SignalProperties&, const SignalProperties& )
 {
   mConnectorInputAddress = Parameter( "ConnectorInputAddress" );
+  ParamRef ConnectorInputFilter = Parameter( "ConnectorInputFilter" );
   if( mConnectorInputAddress != "" )
   {
     mInputFilter = "";
-    mAllowAny = ( Parameter( "ConnectorInputFilter" )( 0 ) == "*" );
+    mAllowAny = ( ConnectorInputFilter->NumValues() > 0 && ConnectorInputFilter( 0 ) == "*" );
     if( !mAllowAny )
-      for( int i = 0; i < Parameter( "ConnectorInputFilter" )->NumValues(); ++i )
+      for( int i = 0; i < ConnectorInputFilter->NumValues(); ++i )
       {
-        mInputFilter += Parameter( "ConnectorInputFilter" )( i );
+        mInputFilter += ConnectorInputFilter( i );
         mInputFilter += ' ';
       }
   }
