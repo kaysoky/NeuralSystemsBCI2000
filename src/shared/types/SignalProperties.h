@@ -97,8 +97,9 @@ class SignalProperties
 
     bool IsEmpty() const
                       { return Channels() == 0 || Elements() == 0; }
+
     bool operator==( const SignalProperties& sp ) const
-                      { return Type() == sp.Type() && Elements() == sp.Elements(); }
+                      { return Type() == sp.Type() && Elements() == sp.Elements() && Channels() == sp.Channels(); }
     bool operator!=( const SignalProperties& sp ) const
                       { return !( *this == sp ); }
     bool Accommodates( const SignalProperties& sp ) const;
