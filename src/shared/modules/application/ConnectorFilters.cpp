@@ -119,15 +119,14 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
   Output = Input;
   while( mConnection.rdbuf()->in_avail() )
   {
+    string line;
+    getline( mConnection, line );
+    istringstream iss( line );
     string name;
     float  value;
-    mConnection >> name >> value;
-    mConnection.ignore();
-    if( !mConnection )
-    {
+    iss >> name >> value;
+    if( !iss )
       bciout << "Unexpected input" << endl;
-      mConnection.clear();
-    }
     else if( mAllowAny || mInputFilter.find( name + ' ' ) != string::npos )
     {
       if( name.find( "Signal" ) == 0 )
