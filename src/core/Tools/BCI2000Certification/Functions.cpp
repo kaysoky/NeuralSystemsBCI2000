@@ -6,6 +6,7 @@
 #pragma hdrstop
 
 #include "Functions.h"
+#include <time.h>
 
 /*------------------------------------------
 shortFname

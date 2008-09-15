@@ -19,39 +19,39 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <OutputExt>exe</OutputExt>
-    <ILINK_IntermediateOutputPath>obj</ILINK_IntermediateOutputPath>
+    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <ILINK_IntermediateOutputPath>obj</ILINK_IntermediateOutputPath>
     <BCC_OutputDir>obj\</BCC_OutputDir>
     <BRCC_OutputDir>obj\</BRCC_OutputDir>
     <DCC_DebugInformation>false</DCC_DebugInformation>
-    <ILINK_ObjectSearchPath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</ILINK_ObjectSearchPath>
     <ILINK_wdup>false</ILINK_wdup>
-    <BCC_ZeroLengthEmptyMemberFuncs>true</BCC_ZeroLengthEmptyMemberFuncs>
-    <DCC_MakeModifiedUnits>true</DCC_MakeModifiedUnits>
+    <ILINK_ObjectSearchPath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</ILINK_ObjectSearchPath>
     <NoVCL>true</NoVCL>
+    <DCC_MakeModifiedUnits>true</DCC_MakeModifiedUnits>
+    <BCC_ZeroLengthEmptyMemberFuncs>true</BCC_ZeroLengthEmptyMemberFuncs>
     <FinalOutputDir>..\..\..\..\tools\BCI2000Certification\</FinalOutputDir>
     <BCC_GenerateConsoleApp>true</BCC_GenerateConsoleApp>
-    <TASM_AdditionalSwitches> /w2 obj\</TASM_AdditionalSwitches>
     <PackageImports>vcl.bpi;rtl.bpi;vclx.bpi;bcbsmp.bpi;dbrtl.bpi;adortl.bpi;vcldb.bpi;bdertl.bpi;vcldbx.bpi;dsnap.bpi;dsnap.bpi;dsnapcon.bpi;teeui.bpi;teedb.bpi;tee.bpi;ibxpress.bpi;vclie.bpi;xmlrtl.bpi;inet.bpi;inetdbbde.bpi;inetdbxpress.bpi;inetdb.bpi;bcbie.bpi;soaprtl.bpi;dbexpress.bpi;dbxcds.bpi;indycore.bpi;indysystem.bpi;bcboffice2k.bpi;dclusr.bpi</PackageImports>
+    <TASM_AdditionalSwitches> /w2 obj\</TASM_AdditionalSwitches>
     <DCC_UnitSearchPath>.\;$(BDS)\lib;$(BDS)\lib\obj</DCC_UnitSearchPath>
     <BRCC_UserSuppliedOptions> -I.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_UserSuppliedOptions>
-    <IncludePath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</IncludePath>
     <DCC_DcuOutput>obj\</DCC_DcuOutput>
+    <IncludePath>..\..\..\shared\utils\Expression;..\..\..\shared\fileio\dat;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\bcistream</IncludePath>
     <BCC_IntegerSizedEnums>false</BCC_IntegerSizedEnums>
-    <BCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BCC_IncludePath>
-    <TASM_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</TASM_IncludePath>
-    <BRCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_IncludePath>
     <DCC_IncludePath>.\;$(BDS)\lib;$(BDS)\lib\obj</DCC_IncludePath>
-    <BCC_ZeroLengthEmptyBaseClass>true</BCC_ZeroLengthEmptyBaseClass>
+    <BRCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_IncludePath>
+    <TASM_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</TASM_IncludePath>
+    <BCC_IncludePath>.;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BCC_IncludePath>
     <ILINK_LibraryPath>..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BDS)\lib\obj;$(BDS)\lib;$(BDS)\lib\psdk</ILINK_LibraryPath>
-    <BCC_Defines>NO_STRICT</BCC_Defines>
-    <DCC_ObjOutput>obj\</DCC_ObjOutput>
-    <BRCC_Defines>NO_STRICT;_NO_VCL</BRCC_Defines>
+    <BCC_ZeroLengthEmptyBaseClass>true</BCC_ZeroLengthEmptyBaseClass>
     <TASM_Defines>NO_STRICT;_NO_VCL</TASM_Defines>
-    <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+    <BRCC_Defines>NO_STRICT;_NO_VCL</BRCC_Defines>
+    <DCC_ObjOutput>obj\</DCC_ObjOutput>
+    <BCC_Defines>NO_STRICT</BCC_Defines>
     <TASM_Debugging>None</TASM_Debugging>
+    <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
     <DCC_SymbolReferenceInfo>2</DCC_SymbolReferenceInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -60,14 +60,14 @@
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
-    <DCC_DebugInformation>true</DCC_DebugInformation>
     <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    <DCC_DebugInformation>true</DCC_DebugInformation>
     <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
     <IntermediateOutputDir>Debug_Build</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <BCC_Defines>_DEBUG;$(BCC_Defines)</BCC_Defines>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
@@ -160,10 +160,6 @@
     <CppCompile Include="analysisClass.cpp">
       <BuildOrder>2</BuildOrder>
     </CppCompile>
-    <CppCompile Include="CertLauncher.cpp">
-      <DependentOn>CertLauncher.h</DependentOn>
-      <BuildOrder>28</BuildOrder>
-    </CppCompile>
     <CppCompile Include="Functions.cpp">
       <BuildOrder>27</BuildOrder>
     </CppCompile>
@@ -174,7 +170,7 @@
       <BuildOrder>3</BuildOrder>
     </CppCompile>
     <LibFiles Include="C:\Program Files\CodeGear\RAD Studio\5.0\lib\psdk\psapi.lib">
-      <BuildOrder>29</BuildOrder>
+      <BuildOrder>28</BuildOrder>
     </LibFiles>
     <BuildConfiguration Include="Debug Build">
       <Key>Cfg_1</Key>
