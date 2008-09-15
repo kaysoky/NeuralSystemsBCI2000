@@ -27,7 +27,7 @@
     <SYSDEFINES value="_RTLDLL;NO_STRICT"/>
     <MAINSOURCE value="BCI2000Certification.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared;..\..\..\shared\config;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;&quot;C:\Program Files\Borland\CBuilder6\Projects&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <LIBPATH value="..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
@@ -124,8 +124,9 @@ Item1=..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat
 Item2=..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;C:\Program Files\Borland\CBuilder6\Projects;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;C:\Program Files\Borland\CBuilder6\Projects;$(BCB)\lib\obj;$(BCB)\lib
+Count=2
+Item0=..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\lib\psdk
+Item1=..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\fileio\dat;C:\Program Files\Borland\CBuilder6\Projects;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
