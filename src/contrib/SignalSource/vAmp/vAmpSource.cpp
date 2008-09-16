@@ -1,18 +1,21 @@
 //---------------------------------------------------------------------------
 
 #include <vcl.h>
+#include "CoreModuleVCL.h"
+#include <float.h>
 #pragma hdrstop
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-USEFORM("impedanceGUI.cpp", impGUI);
+//USEFORM("impedanceGUI.cpp", impGUI);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
         try
         {
-                 Application->Initialize();
-                 Application->Run();
+				 Application->Initialize();
+				 Application->Title = "V-Amp Signal Source";
+                 CoreModuleVCL().Run( _argc, _argv );
         }
         catch (Exception &exception)
         {
