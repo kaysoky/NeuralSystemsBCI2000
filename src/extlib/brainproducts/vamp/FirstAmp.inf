@@ -1,0 +1,93 @@
+;------------------------------------------------------------------------------;
+;
+; FirstAmp
+;
+; INF file for Win2000/WinXP/Vista
+; 
+; Copyright (c) Brain Products GmbH
+;
+;------------------------------------------------------------------------------;
+
+[Version]
+Signature="$CHICAGO$"
+Class = BrainProductsClass
+ClassGUID = {49DB6ABA-9926-4332-82A9-8205C8CBDF93}
+Provider = %Bp.Name%
+DriverVer=02/26/2007, 1.10.0.0
+
+;------------------------------------------------------------------------------;
+
+[ClassInstall32]
+AddReg = BpClassAddReg 
+CopyFiles = Bp.Class.Files
+
+[ClassInstall]
+AddReg = BpClassAddReg
+CopyFiles = Bp.Class.Files
+
+[BpClassAddReg]
+HKR,,,,%Bp.ClassName%
+HKR,,EnumPropPages32,,"DiBpGmbH.dll,BrainProductsPropPageProvider"
+HKR,,Icon,,2
+
+[Bp.Class.Files]
+DiBpGmbH.dll
+
+;------------------------------------------------------------------------------;
+
+[SourceDisksNames]
+1=,,,
+
+[SourceDisksFiles]
+
+[DestinationDirs]
+Bp.Class.Files = 10,System32
+Bp.FirstAmp.Files.Drv = 10,System32\Drivers
+;------------------------------------------------------------------------------;
+
+[Manufacturer]
+; Brain Products GmbH
+%Bp.Name% = Bp
+
+[Bp]
+; FirstAmp
+%Bp.FirstAmp.DeviceDesc% = Bp.FirstAmp, USB\VID_1103&PID_0002
+
+;------------------------------------------------------------------------------;
+
+[Bp.FirstAmp]
+CopyFiles = Bp.FirstAmp.Files.Drv
+AddReg = Bp.FirstAmp.AddReg
+DriverVer=02/26/2007, 1.10.0.0
+
+[Bp.FirstAmp.NT]
+CopyFiles = Bp.FirstAmp.Files.Drv
+AddReg = Bp.FirstAmp.AddReg.NT
+DriverVer=02/26/2007, 1.10.0.0
+
+[Bp.FirstAmp.NT.Services]
+AddService = FirstAmp, 0x00000002, Bp.FirstAmp.AddService
+
+[Bp.FirstAmp.AddService]
+ServiceType    = 1 ; SERVICE_KERNEL_DRIVER
+StartType      = 3 ; SERVICE_DEMAND_START
+ErrorControl   = 1 ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\FirstAmp.sys
+
+[Bp.FirstAmp.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,FirstAmp.sys
+
+[Bp.FirstAmp.AddReg.NT]
+HKLM,SYSTEM\CurrentControlSet\Control\UsbFlags,IgnoreHWSerNum11030002,1,1
+
+[Bp.FirstAmp.Files.Drv]
+FirstAmp.sys
+
+;------------------------------------------------------------------------------;
+
+[Strings]
+Bp.Name = "Brain Products GmbH"
+Bp.ClassName = "Brain Products neurophysiological devices"
+Bp.FirstAmp.DeviceDesc = "V-Amp / FirstAmp EEG amplifier"
+;------------------------------------------------------------------------------;
