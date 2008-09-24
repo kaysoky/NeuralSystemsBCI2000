@@ -78,7 +78,7 @@ MessageHandler::HandleMessage( istream& is )
 
 // Functions that construct messages.
 
-// The generic implementation.
+// Generic implementation.
 template<typename content_type>
 ostream&
 MessageHandler::PutMessage( ostream& os, const content_type& content )
@@ -95,7 +95,7 @@ MessageHandler::PutMessage( ostream& os, const content_type& content )
   return os;
 }
 
-// Specializations. The protocol could be changed to remove them.
+// Specializations.
 template<>
 ostream&
 MessageHandler::PutMessage( ostream& os, const GenericSignal& signal )

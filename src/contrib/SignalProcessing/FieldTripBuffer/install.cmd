@@ -1,7 +1,7 @@
 :: $Id$
-:: Additional script for installation of support files.
+:: Support file installation script.
 :: This script gets called with the binary target directory as its
-:: argument.
+:: argument, and with its location as its working directory.
 
 @if [%1]==[] goto error
 
