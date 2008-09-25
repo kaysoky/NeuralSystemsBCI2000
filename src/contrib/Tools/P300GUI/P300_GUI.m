@@ -239,7 +239,11 @@ end
 % --- Executes on button press in gettrain.
 function gettrain_Callback(hObject, eventdata, handles)
 [handles.traindatfiles,handles.traindatdir]=uigetfile('*.dat','Select the BCI2000 P300 (.dat) training data file(s)','multiselect','on');
-handles.traindatfiles = sort(handles.traindatfiles);
+
+if iscell(handles.traindatfiles),
+    handles.traindatfiles = sort(handles.traindatfiles);
+end
+
 if iscell(handles.traindatfiles)
     tname=char(handles.traindatfiles(1));
     handles.trainfile=tname(1:length(tname)-7);
