@@ -54,11 +54,6 @@ void
 LinearClassifier::Preflight( const SignalProperties& Input,
                                    SignalProperties& Output ) const
 {
-  for( ParamIterator p = FirstParameter(); p != NULL; p = NextParameter( p ) )
-    bcidbg << Parameter( p )->Name() << "=" << Parameter( p )( 0 ) << endl;
-  for( StateIterator s = FirstState(); s != NULL; s = NextState( s ) )
-    bcidbg << State( s )->Name() << "=" << State( s ) << endl;
-
   // Determine the classifier matrix format:
   int controlSignalChannels = 0;
   const ParamRef& Classifier = Parameter( "Classifier" );
