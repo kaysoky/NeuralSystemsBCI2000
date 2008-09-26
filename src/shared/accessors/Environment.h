@@ -190,9 +190,11 @@ class EnvironmentBase
  // the caller by its "this" pointer.
  protected:
   // Iteration over all available parameters.
-  // At the end of the list, NextParameter() will return ParamRef::Null.
-  ParamRef FirstParameter() const;
-  ParamRef NextParameter( const ParamRef& ) const;
+  // At the end of the list, NextParameter() will return NULL.
+  typedef int ParamIterator;
+  ParamIterator FirstParameter() const;
+  ParamIterator NextParameter( ParamIterator ) const;
+  ParamRef Parameter( ParamIterator ) const;
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   ParamRef Parameter( const std::string& name ) const;
   ParamRef OptionalParameter( const std::string& name,
@@ -210,9 +212,11 @@ class EnvironmentBase
   #define PreflightCondition( x )        (PreflightCondition_(#x,double(x)))
   bool PreflightCondition_( const char*, bool ) const;
   // Iteration over all available state variables.
-  // At the end of the list, NextState() will return StateRef::Null.
-  StateRef FirstState() const;
-  StateRef NextState( const StateRef& ) const;
+  // At the end of the list, NextState() will return NULL.
+  typedef int StateIterator;
+  StateIterator FirstState() const;
+  StateIterator NextState( StateIterator ) const;
+  StateRef State( StateIterator ) const;
   // Read/write access a state by its name.
   StateRef State( const std::string& name ) const;
   // Read-only access to states that are not required.
@@ -220,6 +224,7 @@ class EnvironmentBase
   StateRef OptionalState( const std::string& name, short defaultValue = 0 ) const;
 
  private:
+  const StateList* StateListAccess() const;
   void StateAccess( const std::string& name ) const;
   virtual void OnStateAccess( const std::string& name ) const {}
 

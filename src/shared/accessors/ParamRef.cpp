@@ -15,7 +15,6 @@
 
 using namespace std;
 
-const ParamRef ParamRef::Null;
 Param  ParamRef::sNullParam;
 string ParamRef::sNullString;
 

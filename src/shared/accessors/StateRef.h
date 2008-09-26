@@ -17,8 +17,6 @@
 class StateRef
 {
  public:
-  static const StateRef Null;
-
   StateRef();
   StateRef( const State*,
             StateVector*,
@@ -35,8 +33,6 @@ class StateRef
   StateVector* mpStateVector;
   int          mSample;
   long         mDefaultValue;
-
-  static State sNullState;
 };
 
 
@@ -98,13 +94,7 @@ inline
 const State*
 StateRef::operator->() const
 {
-  const State* result = mpState;
-  if( result == NULL )
-  {
-    sNullState = State();
-    result = &sNullState;
-  }
-  return result;
+  return mpState;
 }
 
 #endif // STATE_REF_H

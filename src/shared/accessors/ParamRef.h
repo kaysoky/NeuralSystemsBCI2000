@@ -16,12 +16,10 @@
 #include <cmath>
 #include "Param.h"
 
-
 class ParamRef
 {
  public:
   enum { none = -1 };
-  static const ParamRef Null;
 
  private:
   ParamRef& operator=( const ParamRef& );
@@ -29,6 +27,8 @@ class ParamRef
  public:
   ParamRef();
   ParamRef( Param* param, size_t row = none, size_t column = none );
+  bool IsNull() const
+    { return mpParam == NULL; }
   // Assignment operators for write access.
   ParamRef& operator=( const std::string& );
   ParamRef& operator=( double );
