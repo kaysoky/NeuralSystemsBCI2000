@@ -15,6 +15,7 @@
 
 using namespace std;
 
+const ParamRef ParamRef::Null;
 Param  ParamRef::sNullParam;
 string ParamRef::sNullString;
 
@@ -39,28 +40,27 @@ ParamRef::operator double() const
 ParamRef
 ParamRef::operator()( size_t row, const string& col_label ) const
 {
-  Param* subParam = operator->();
+  const Param* subParam = operator->();
   size_t col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( subParam, row, col_idx );
+  return ParamRef( const_cast<Param*>( subParam ), row, col_idx );
 }
 
 ParamRef
 ParamRef::operator()( const string& row_label, size_t col ) const
 {
-  Param* subParam = operator->();
+  const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ];
-  return ParamRef( subParam, row_idx, col );
+  return ParamRef( const_cast<Param*>( subParam ), row_idx, col );
 }
 
 ParamRef
 ParamRef::operator()( const string& row_label, const string& col_label ) const
 {
-  Param* subParam = operator->();
+  const Param* subParam = operator->();
   size_t row_idx = subParam->RowLabels()[ row_label ],
          col_idx = subParam->ColumnLabels()[ col_label ];
-  return ParamRef( subParam, row_idx, col_idx );
+  return ParamRef( const_cast<Param*>( subParam ), row_idx, col_idx );
 }
-
 
 
 

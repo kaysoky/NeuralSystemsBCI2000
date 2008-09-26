@@ -17,43 +17,45 @@
 class StateRef
 {
  public:
+  static const StateRef Null;
+
   StateRef();
-  StateRef( StateVector*,
-            size_t location, size_t length, size_t sample,
+  StateRef( const State*,
+            StateVector*,
+            int sample,
             long defaultValue = 0 );
   StateRef& operator=( const StateRef& );
   const StateRef& operator=( long );
   operator long() const;
   StateRef operator()( size_t offset ) const;
+  const State* operator->() const;
 
  private:
+  const State* mpState;
   StateVector* mpStateVector;
-  size_t       mLocation,
-               mLength,
-               mSample;
+  int          mSample;
   long         mDefaultValue;
+
+  static State sNullState;
 };
 
 
 inline
 StateRef::StateRef()
-: mpStateVector( NULL ),
-  mLocation( 0 ),
-  mLength( 0 ),
+: mpState( NULL ),
+  mpStateVector( NULL ),
   mSample( 0 ),
   mDefaultValue( 0 )
 {
 }
 
 inline
-StateRef::StateRef( StateVector* inStateVector,
-                    size_t inLocation,
-                    size_t inLength,
-                    size_t inSample,
+StateRef::StateRef( const State* inState,
+                    StateVector* inStateVector,
+                    int inSample,
                     long inDefaultValue )
-: mpStateVector( inStateVector ),
-  mLocation( inLocation ),
-  mLength( inLength ),
+: mpState( inState ),
+  mpStateVector( inStateVector ),
   mSample( inSample ),
   mDefaultValue( inDefaultValue )
 {
@@ -71,8 +73,8 @@ inline
 const StateRef&
 StateRef::operator=( long inValue )
 {
-  if( mpStateVector != NULL )
-    mpStateVector->SetStateValue( mLocation, mLength, mSample, inValue );
+  if( mpState != NULL && mpStateVector != NULL )
+    mpStateVector->SetStateValue( mpState->Location(), mpState->Length(), mSample, inValue );
   return *this;
 }
 
@@ -81,7 +83,7 @@ StateRef::operator long() const
 {
   long value = mDefaultValue;
   if( mpStateVector != NULL )
-    value = mpStateVector->StateValue( mLocation, mLength, mSample );
+    value = mpStateVector->StateValue( mpState->Location(), mpState->Length(), mSample );
   return value;
 }
 
@@ -89,7 +91,20 @@ inline
 StateRef
 StateRef::operator()( size_t inOffset ) const
 {
-  return StateRef( mpStateVector, mLocation, mLength, mSample + inOffset, mDefaultValue );
+  return StateRef( mpState, mpStateVector, mSample + inOffset, mDefaultValue );
+}
+
+inline
+const State*
+StateRef::operator->() const
+{
+  const State* result = mpState;
+  if( result == NULL )
+  {
+    sNullState = State();
+    result = &sNullState;
+  }
+  return result;
 }
 
 #endif // STATE_REF_H

@@ -34,6 +34,8 @@ class ParamList
 
         bool    Exists( const std::string& name ) const
                 { return mNameIndex.find( name ) != mNameIndex.end(); }
+        int     Index( const std::string& name ) const
+                { return Exists( name ) ? mNameIndex.find( name )->second : Size(); };
         void    Add( const Param& p, float sortingHint = 0.0 );
         bool    Add( const std::string& paramDefinition );
         void    Delete( const std::string& name );

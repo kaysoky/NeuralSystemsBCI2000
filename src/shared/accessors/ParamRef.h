@@ -21,6 +21,7 @@ class ParamRef
 {
  public:
   enum { none = -1 };
+  static const ParamRef Null;
 
  private:
   ParamRef& operator=( const ParamRef& );
@@ -160,8 +161,9 @@ class ParamRef
   bool operator!=( const std::string& s ) const
     { return (const std::string&)( *this ) != s; }
 
-  // Dereferencing operator for access to Param members.
-  Param* operator->() const;
+  // Dereferencing operators for access to Param members.
+  Param* operator->();
+  const Param* operator->() const;
   // Indexing operators for sub-parameters.
   ParamRef operator()( size_t row, size_t col = none ) const;
   ParamRef operator()( size_t row, const std::string&  ) const;
@@ -339,7 +341,7 @@ ParamRef::operator const std::string&() const
 
 
 inline Param*
-ParamRef::operator->() const
+ParamRef::operator->()
 {
   Param* result = mpParam;
   if( mpParam && ( mIdx1 != none || mIdx2 != none ) )
@@ -353,10 +355,17 @@ ParamRef::operator->() const
 }
 
 
+inline const Param*
+ParamRef::operator->() const
+{
+  return const_cast<ParamRef*>( this )->operator->();
+}
+
+
 inline ParamRef
 ParamRef::operator()( size_t row, size_t col ) const
 {
-  return ParamRef( operator->(), row, col );
+  return ParamRef( const_cast<Param*>( operator->() ), row, col );
 }
 
 

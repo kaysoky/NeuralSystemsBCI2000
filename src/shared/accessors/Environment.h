@@ -189,6 +189,11 @@ class EnvironmentBase
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
  protected:
+  // Iteration over all available parameters.
+  // At the end of the list, NextParameter() will return ParamRef::Null.
+  ParamRef FirstParameter() const;
+  ParamRef NextParameter( const ParamRef& ) const;
+  // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   ParamRef Parameter( const std::string& name ) const;
   ParamRef OptionalParameter( const std::string& name,
                               const std::string& defaultValue = "" ) const;
@@ -204,12 +209,15 @@ class EnvironmentBase
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (PreflightCondition_(#x,double(x)))
   bool PreflightCondition_( const char*, bool ) const;
-
+  // Iteration over all available state variables.
+  // At the end of the list, NextState() will return StateRef::Null.
+  StateRef FirstState() const;
+  StateRef NextState( const StateRef& ) const;
   // Read/write access a state by its name.
   StateRef State( const std::string& name ) const;
   // Read-only access to states that are not required.
   // The second argument is a default value.
-  const StateRef OptionalState( const std::string& name, short defaultValue = 0 ) const;
+  StateRef OptionalState( const std::string& name, short defaultValue = 0 ) const;
 
  private:
   void StateAccess( const std::string& name ) const;

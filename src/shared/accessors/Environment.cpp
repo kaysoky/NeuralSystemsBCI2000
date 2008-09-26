@@ -120,8 +120,23 @@ EnvironmentBase::ObjectContext()
 }
 
 // Convenient accessor functions.
-// Read/write access a parameter by its name.
-// New syntax: Separate brackets for indices (nested matrices).
+
+// Iteration over parameters.
+ParamRef
+EnvironmentBase::FirstParameter() const
+{
+  return NextParameter( ParamRef::Null );
+}
+
+ParamRef
+EnvironmentBase::NextParameter( const ParamRef& inRef ) const
+{
+  int idx = ( inRef == ParamRef::Null ) ? 0 : Parameters->Index( inRef->Name() ) + 1;
+  return idx >= Parameters->Size() ? ParamRef::Null : ParamRef( &( *Parameters )[ 0 ] );
+}
+
+// Read/write access to a parameter by its name.
+// Use an additional pair of brackets for indices.
 ParamRef
 EnvironmentBase::Parameter( const string& name ) const
 {
@@ -209,68 +224,76 @@ EnvironmentBase::PreflightCondition_( const char* inConditionString,
   return inConditionValue;
 }
 
+// Iteration over states.
+StateRef
+EnvironmentBase::FirstState() const
+{
+  return NextState( StateRef::Null );
+}
+
+StateRef
+EnvironmentBase::NextState( const StateRef& inRef ) const
+{
+  int idx = ( inRef == StateRef::Null ) ? 0 : States->Index( inRef->Name() ) + 1;
+  return idx >= States->Size() ? StateRef::Null : StateRef( &( *States )[ 0 ], Statevector.operator->(), 0 );
+}
+
 // Read/write access to a state by its name.
 StateRef
 EnvironmentBase::State( const std::string& name ) const
 {
-  int location = 0,
-      length = 0;
-  const StateList* statelist = NULL;
+  const class State* pState = NULL;
+  const class StateList* pStatelist = NULL;
 
   if( phase_ != processing )
-    statelist = States;
+    pStatelist = States;
   else if( Statevector != NULL )
-    statelist = &Statevector->StateList();
+    pStatelist = &Statevector->StateList();
 
-  if( statelist == NULL )
+  if( pStatelist == NULL )
     bcierr_ << "States are inaccessible at this time."
             << endl;
   else
   {
-    if( !statelist->Exists( name ) )
+    if( !pStatelist->Exists( name ) )
       bcierr_ << "State \"" << name << "\" is inaccessible." << endl;
     else
     {
       StateAccess( name );
-      const class State& state = ( *statelist )[ name ];
-      location = state.Location();
-      length = state.Length();
-      if( length < 1 )
+      pState = &( *pStatelist )[ name ];
+      if( pState->Length() < 1 )
         bcierr_ << "State \"" << name << "\" has zero length." << endl;
     }
   }
-  return StateRef( Statevector, location, length, 0 );
+  return StateRef( pState, Statevector, 0 );
 }
 
 // Read access to an optional state by its name.
-const StateRef
+StateRef
 EnvironmentBase::OptionalState( const std::string& name, short defaultValue ) const
 {
   StateAccess( name );
 
-  int location = 0,
-      length = 0;
-  StateVector* statevector = NULL;
-  const StateList* statelist = NULL;
+  const class State* pState = NULL;
+  StateVector* pStatevector = NULL;
+  const StateList* pStatelist = NULL;
 
   if( phase_ != processing )
-    statelist = States;
+    pStatelist = States;
   else if( Statevector != NULL )
-    statelist = &Statevector->StateList();
+    pStatelist = &Statevector->StateList();
 
-  if( statelist == NULL )
+  if( pStatelist == NULL )
     bcierr_ << "States are inaccessible at this time."
             << endl;
-  else if( statelist->Exists( name ) )
+  else if( pStatelist->Exists( name ) )
   {
-    const class State& state = ( *statelist )[ name ];
-    statevector = Statevector;
-    location = state.Location();
-    length = state.Length();
-    if( length < 1 )
+    pState = &( *pStatelist )[ name ];
+    pStatevector = Statevector;
+    if( pState->Length() < 1 )
       bcierr_ << "State \"" << name << "\" has zero length." << endl;
   }
-  return StateRef( statevector, location, length, defaultValue );
+  return StateRef( pState, pStatevector, 0, defaultValue );
 }
 
 void

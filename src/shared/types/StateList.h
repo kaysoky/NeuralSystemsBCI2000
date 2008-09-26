@@ -38,6 +38,8 @@ class StateList : private StateContainer
 
   bool Exists( const std::string& name ) const
        { return mIndex.find( name ) != mIndex.end(); }
+  int  Index( const std::string& name ) const
+       { return Exists( name ) ? mIndex.find( name )->second : Size(); };
   void Add( const State& s )
        { ( *this )[ s.Name() ] = s; }
   bool Add( const std::string& stateDefinition );

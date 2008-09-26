@@ -173,20 +173,17 @@ BCI2000FileReader::Parameter( const std::string& name ) const
 const StateRef
 BCI2000FileReader::State( const std::string& name ) const
 {
-  int location = 0,
-      length = 0;
+  const class State* pState = NULL;
   if( StateVector() != NULL && States() != NULL && States()->Exists( name ) )
   {
-    const class State& state = ( *States() )[ name ];
-    location = state.Location();
-    length = state.Length();
-    if( length < 1 )
+    pState = &( *States() )[ name ];
+    if( pState->Length() < 1 )
       throw "BCI2000FileReader::State: Requested state has zero length";
   }
   else
     throw "BCI2000FileReader::State: Requested state is not accessible";
 
-  return StateRef( const_cast<class StateVector*>( StateVector() ), location, length, 0 );
+  return StateRef( const_cast<class State*>( pState ), const_cast<class StateVector*>( StateVector() ), 0 );
 }
 
 // **************************************************************************
