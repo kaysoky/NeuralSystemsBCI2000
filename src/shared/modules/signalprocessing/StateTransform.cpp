@@ -40,7 +40,7 @@ StateTransform::Preflight( const SignalProperties& Input,
   ParamRef StateTransforms = Parameter( "StateTransforms" );
   for( int i = 0; i < StateTransforms->NumRows(); ++i )
   {
-    State( StateTransforms( i, 0 ) );
+    State( string( StateTransforms( i, 0 ) ) );
     Expression( StateTransforms( i, 1 ) ).Evaluate( &preflightSignal );
   }
   // Request output signal properties:
