@@ -4,8 +4,10 @@
 #   of the BCPy2000 framework.
 # 
 #   Copyright (C) 2007-8  Jeremy Hill
-#
-#   This prgram is free software: you can redistribute it
+#   
+#   bcpy2000@bci2000.org
+#   
+#   This program is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
 #   as published by the Free Software Foundation, either version 3 of
 #   the License, or (at your option) any later version.

@@ -6,7 +6,9 @@
 # 
 #   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
 #                         Christian Puzicha, Jason Farquhar
-#
+#   
+#   bcpy2000@bci2000.org
+#   
 #   The BCPy2000 framework is free software: you can redistribute it
 #   and/or modify it under the terms of the GNU General Public License
 #   as published by the Free Software Foundation, either version 3 of
