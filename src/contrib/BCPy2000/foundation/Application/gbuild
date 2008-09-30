@@ -1,0 +1,84 @@
+#!/bin/bash
+
+OUTDIR="."
+OUTNAME="appmod"
+LANGFLAGS="-DMODTYPE=3 -DDYNAMIC_PYTHON=1 -DNO_STRICT -D_NO_VCL -D_GNU_SOURCE -include gccprefix.h"
+OBJDIR="obj"
+
+SHARED="../../../shared"
+
+INCS="\
+-I../shared \
+-I$SHARED \
+-I$SHARED/accessors \
+-I$SHARED/bcistream \
+-I$SHARED/config \
+-I$SHARED/fileio \
+-I$SHARED/modules \
+-I$SHARED/types \
+-I$SHARED/utils \
+-I$SHARED/utils/Expression \
+"
+
+SRC="\
+../shared/PythonFilter.cpp \
+../shared/PythonWrapper.cpp \
+../shared/PythonLink24.cpp \
+../shared/PythonLink25.cpp \
+$SHARED/modules/MessageHandler.cpp \
+$SHARED/modules/CoreModule.cpp \
+$SHARED/modules/CoreModuleVCL.cpp \
+$SHARED/modules/GenericFilter.cpp \
+$SHARED/types/Brackets.cpp \
+$SHARED/types/PhysicalUnit.cpp \
+$SHARED/utils/VersionInfo.cpp \
+$SHARED/utils/MeasurementUnits.cpp \
+$SHARED/utils/PrecisionTime.cpp \
+$SHARED/utils/SockStream.cpp \
+$SHARED/utils/ClassName.cpp \
+$SHARED/types/SysCommand.cpp \
+$SHARED/types/GenericSignal.cpp \
+$SHARED/types/GenericVisualization.cpp \
+$SHARED/types/HierarchicalLabel.cpp \
+$SHARED/types/Param.cpp \
+$SHARED/types/ParamList.cpp \
+$SHARED/types/StateList.cpp \
+$SHARED/types/StateVector.cpp \
+$SHARED/types/Status.cpp \
+$SHARED/types/SignalProperties.cpp \
+$SHARED/types/SignalType.cpp \
+$SHARED/types/State.cpp \
+$SHARED/types/EncodedString.cpp \
+$SHARED/types/LabelIndex.cpp \
+$SHARED/accessors/Environment.cpp \
+$SHARED/accessors/ParamRef.cpp \
+$SHARED/bcistream/BCIError.cpp \
+$SHARED/bcistream/BCIError_module.cpp \
+$SHARED/types/BitmapImage.cpp \
+$SHARED/types/Color.cpp \
+$SHARED/fileio/BCIDirectory.cpp \
+$SHARED/utils/OSError.cpp \
+$SHARED/utils/Expression/ExpressionParser.cpp \
+$SHARED/utils/Expression/Expression.cpp \
+$SHARED/utils/Expression/ArithmeticExpression.cpp  \
+$SHARED/types/StateVectorSample.cpp \
+$SHARED/utils/EventQueue.cpp \
+$SHARED/accessors/BCIEvent.cpp \
+PythonApplication.cpp \
+"
+if test "$1" != -l
+then
+	test "$1" && SRC="$*"
+fi
+for x in $SRC
+do
+	xo="$OBJDIR"/`basename "$x" | perl -pe 's!\.cpp!.o!'`
+	if test -f "$xo" && test "$xo" -nt "$x"
+	then
+		echo "$x" is compiled
+	else
+		echo need to compile "$x"
+		test "$1" = -l || g++ $LANGFLAGS $INCS -c $x -o $xo 2>&1
+	fi
+done
+

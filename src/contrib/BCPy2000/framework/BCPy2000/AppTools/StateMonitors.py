@@ -1,0 +1,93 @@
+#   $Id$
+#   
+#   This file is part of the BCPy2000 framework, a Python framework for
+#   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
+#   platform, for the purpose of realtime biosignal processing.
+# 
+#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#                         Christian Puzicha, Jason Farquhar
+#
+#   The BCPy2000 framework is free software: you can redistribute it
+#   and/or modify it under the terms of the GNU General Public License
+#   as published by the Free Software Foundation, either version 3 of
+#   the License, or (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+__all__ = ['addstatemonitor', 'updatestatemonitors', 'statemonitor']
+
+import VisionEgg.Text
+import time
+
+##############################################################################################
+# state monitors
+##############################################################################################
+
+# During Initialize, call
+#	addstatemonitor(bci, STATENAME)
+# in order to extend bci.stimulus_definitions and set things up ready to monitor states.
+# In Frame or Process, just call
+#	updatestatemonitors(bci)
+
+def addstatemonitor(bci,name,showtime=False,**kwargs):
+	if not hasattr(bci, 'statemonitors'):
+		bci.statemonitors = {}
+	defaultfontsize = 20
+	if hasattr(bci, 'monofont') and not kwargs.has_key('font_name'):
+		kwargs['font_name'] = bci.monofont
+		defaultfontsize = 13
+	if not kwargs.has_key('font_size'):
+		kwargs['font_size'] = defaultfontsize
+	nmon = len(bci.statemonitors.keys()) + 1
+	right,top=bci.screen.get_size()
+	m = statemonitor(name=name, position=(150,top-nmon*15), showtime=showtime, params=kwargs)
+	m.value.parameters.text = str(bci.states.get(name, 'no such state'))
+	bci.statemonitors[name] = m
+	bci.stimulus('smlabel_'+name, m.label, z=10)
+	bci.stimulus('smvalue_'+name, m.value, z=10)
+	bci.add_callback('Frame', updatestatemonitors, (bci,))
+	bci.add_callback('StopRun', updatestatemonitors, (bci,))
+	return m
+	
+def updatestatemonitors(bci):
+	t = bci.prectime()/1000.0
+	if not hasattr(bci, 'statemonitors'): bci.statemonitors = {}
+	for name,m in bci.statemonitors.items(): m.update(bci.states.get(name), t)
+
+class statemonitor(object):
+	def __init__(self, name, position, showtime, params, func=None, pargs=(), kwargs={}):
+		lpos = position
+		vpos = (position[0]+5, position[1])
+		self.statename = name
+		self.showtime = showtime
+		self.label = VisionEgg.Text.Text(position=lpos,anchor='right',on=True,text=name+':',**params)
+		self.value = VisionEgg.Text.Text(position=vpos,anchor='left', on=True,text=' ',**params)
+		self.lastval = 0
+		self.time = 0
+		self.func = func
+		self.pargs = pargs
+		self.kwargs = kwargs
+		
+	def update(self, val, t):
+		if val==None and self.func != None: val = self.func(*self.pargs, **self.kwargs)
+		if val==None: s = 'no such state'
+		else: s = str(val)		
+		if self.time == 0 or val != self.lastval: self.lastval,self.time = val,t
+		if val and self.showtime: s += '   (%.1f sec)' % (t - self.time)
+		p = self.value.parameters
+		if p.text != s: p.text = s
+
+try:
+	try: from BCI2000PythonApplication import BciGenericApplication
+	except: from BCPy2000.GenericApplication import BciGenericApplication
+except:
+	pass
+else:
+	BciGenericApplication.addstatemonitor = addstatemonitor
+	BciGenericApplication.updatestatemonitors = updatestatemonitors
