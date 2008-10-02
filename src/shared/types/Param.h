@@ -182,10 +182,8 @@ class Param
   Param&             SetDimensions( size_t rows, size_t cols );
 
   // Accessors for bounds-checked, recursive access to parameter entries
-  const ParamValue&  Value( size_t idx  = 0 ) const
-                     { return mValues.at( idx ); }
-  ParamValue&        Value( size_t idx = 0 )
-                     { mChanged = true; return mValues.at( idx ); }
+  const ParamValue&  Value( size_t idx = 0 ) const;
+  ParamValue&        Value( size_t idx = 0 );
 
   const ParamValue&  Value( size_t row, size_t col ) const
                      { return Value( row * NumColumns() + col ); }

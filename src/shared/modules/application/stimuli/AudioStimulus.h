@@ -27,6 +27,7 @@ class AudioStimulus : public Stimulus
   const std::string& Sound() const;
   AudioStimulus& SetVolume( float );
   float Volume() const;
+  const std::string& Error() const;
 
  protected:
   virtual void OnPresent();
@@ -36,6 +37,7 @@ class AudioStimulus : public Stimulus
   Stimulus*   mpStimulus;
   std::string mSound;
   float       mVolume;
+  std::string mError;
 };
 
 #endif // AUDIO_STIMULUS_H

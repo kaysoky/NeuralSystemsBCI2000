@@ -15,6 +15,7 @@
 #include "AudioStimulus.h"
 #include "SpeechStimulus.h"
 #include "SoundStimulus.h"
+#include "BCIError.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ AudioStimulus::SetSound( const string& inSound )
 {
   delete mpStimulus;
   mSound = "";
+  mError = "";
 
   if( !inSound.empty() )
   {
@@ -50,6 +52,8 @@ AudioStimulus::SetSound( const string& inSound )
     {
       SoundStimulus* pSound = new SoundStimulus;
       pSound->SetFile( inSound );
+      if( pSound->ErrorState() != WavePlayer::noError )
+        mError = "Could not open \"" + inSound + "\" as a sound file";
       mpStimulus = pSound;
     }
   }
@@ -65,6 +69,7 @@ AudioStimulus::Sound() const
 AudioStimulus&
 AudioStimulus::SetVolume( float inVolume )
 {
+  mError = "";
   mVolume = inVolume;
   return *this;
 }
@@ -73,6 +78,12 @@ float
 AudioStimulus::Volume() const
 {
   return mVolume;
+}
+
+const string&
+AudioStimulus::Error() const
+{
+  return mError;
 }
 
 void

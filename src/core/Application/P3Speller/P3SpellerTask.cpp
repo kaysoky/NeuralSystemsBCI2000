@@ -1055,8 +1055,12 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
         int row = ::atoi( AudioStimuliRowsFiles->RowLabels()[ i ].c_str() );
         AudioStimulus* pStimulus = new AudioStimulus;
         pStimulus->SetSound( AudioStimuliRowsFiles( i, entry ) );
+        if( !pStimulus->Error().empty() )
+          bcierr << "AudioStimulusRowsFiles(" << i << ", " << entry << "): "
+                 << pStimulus->Error()
+                 << endl;
         ioStimuli.Add( pStimulus );
-        ioAssociations[ row + 1 ].Add( pStimulus );
+        ioAssociations[ row ].Add( pStimulus );
       }
       ParamRef AudioStimuliColsFiles = Parameter( "AudioStimuliColsFiles" );
       entry = 0;
@@ -1067,8 +1071,12 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
         int col = ::atoi( AudioStimuliColsFiles->RowLabels()[ i ].c_str() );
         AudioStimulus* pStimulus = new AudioStimulus;
         pStimulus->SetSound( AudioStimuliColsFiles( i, entry ) );
+        if( !pStimulus->Error().empty() )
+          bcierr << "AudioStimulusColsFiles(" << i << ", " << entry << "): "
+                 << pStimulus->Error()
+                 << endl;
         ioStimuli.Add( pStimulus );
-        ioAssociations[ numMatrixRows + col + 1 ].Add( pStimulus );
+        ioAssociations[ numMatrixRows + col ].Add( pStimulus );
       }
     }
   }

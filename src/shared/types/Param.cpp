@@ -167,6 +167,30 @@ Param::SetSection( const std::string& s )
 }
 
 // **************************************************************************
+// Function:   Value
+// Purpose:    bounds-checked access to a parameter's value
+// Parameters: value index
+// Returns:    value reference
+// **************************************************************************
+const Param::ParamValue&
+Param::Value( size_t idx ) const
+{
+  if( idx >= mValues.size() )
+    throw "Index out of range when accessing a parameter value";
+  return mValues[idx];
+}
+
+Param::ParamValue&
+Param::Value( size_t idx )
+{
+  if( idx >= mValues.size() )
+    throw "Index out of range when accessing a parameter value";
+  mChanged = true;
+  return mValues[idx];
+}
+
+
+// **************************************************************************
 // Function:   ReadFromStream
 // Purpose:    Member function for formatted stream input of a single
 //             parameter.
