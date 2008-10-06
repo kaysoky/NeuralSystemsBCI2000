@@ -122,6 +122,7 @@ EnvironmentBase::ObjectContext()
 // Convenient accessor functions.
 
 // Iteration over parameters.
+#if 0
 EnvironmentBase::ParamIterator
 EnvironmentBase::FirstParameter() const
 {
@@ -149,6 +150,7 @@ EnvironmentBase::Parameter( ParamIterator inIterator ) const
   }
   return ParamRef( pParam );
 }
+#endif
 
 // Read/write access to a parameter by its name.
 // Use an additional pair of brackets for indices.
@@ -240,6 +242,7 @@ EnvironmentBase::PreflightCondition_( const char* inConditionString,
 }
 
 // Iteration over states.
+#if 0
 EnvironmentBase::StateIterator
 EnvironmentBase::FirstState() const
 {
@@ -275,6 +278,7 @@ EnvironmentBase::State( StateIterator inIterator ) const
   }
   return StateRef( pState, Statevector, 0 );
 }
+#endif
 
 // Read/write access to a state by its name.
 StateRef

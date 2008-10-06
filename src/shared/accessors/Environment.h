@@ -189,12 +189,14 @@ class EnvironmentBase
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
  protected:
+#if 0
   // Iteration over all available parameters.
   // At the end of the list, NextParameter() will return NULL.
   typedef int ParamIterator;
   ParamIterator FirstParameter() const;
   ParamIterator NextParameter( ParamIterator ) const;
   ParamRef Parameter( ParamIterator ) const;
+#endif
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   ParamRef Parameter( const std::string& name ) const;
   ParamRef OptionalParameter( const std::string& name,
@@ -211,12 +213,14 @@ class EnvironmentBase
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (PreflightCondition_(#x,double(x)))
   bool PreflightCondition_( const char*, bool ) const;
+#if 0
   // Iteration over all available state variables.
   // At the end of the list, NextState() will return NULL.
   typedef int StateIterator;
   StateIterator FirstState() const;
   StateIterator NextState( StateIterator ) const;
   StateRef State( StateIterator ) const;
+#endif
   // Read/write access a state by its name.
   StateRef State( const std::string& name ) const;
   // Read-only access to states that are not required.
