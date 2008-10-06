@@ -1,0 +1,541 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>User Reference:BCI2000Certification - BCI2000 Help</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="User Reference:BCI2000Certification" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF'>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">BCI2000Certification</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Latencies"><span class="tocnumber">2</span> <span class="toctext">Latencies</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Defining_Latencies"><span class="tocnumber">2.1</span> <span class="toctext">Defining Latencies</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Amplifier_Latency"><span class="tocnumber">2.1.1</span> <span class="toctext">Amplifier Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Processing_Latency"><span class="tocnumber">2.1.2</span> <span class="toctext">Processing Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Output_Latency"><span class="tocnumber">2.1.3</span> <span class="toctext">Output Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#System_Latency"><span class="tocnumber">2.1.4</span> <span class="toctext">System Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Block_Duration.2C_Block_Duration_Jitter"><span class="tocnumber">2.1.5</span> <span class="toctext">Block Duration, Block Duration Jitter</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Measuring_Latencies"><span class="tocnumber">2.2</span> <span class="toctext">Measuring Latencies</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Measuring_Amplifier_Latency"><span class="tocnumber">2.2.1</span> <span class="toctext">Measuring Amplifier Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Measuring_Processing_Latency"><span class="tocnumber">2.2.2</span> <span class="toctext">Measuring Processing Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Measuring_Application_Display.2FSound_Output_Latency"><span class="tocnumber">2.2.3</span> <span class="toctext">Measuring Application Display/Sound Output Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Measuring_System_Latency"><span class="tocnumber">2.2.4</span> <span class="toctext">Measuring System Latency</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Measuring_Block_Duration"><span class="tocnumber">2.2.5</span> <span class="toctext">Measuring Block Duration</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Latency_Calculation_Overview"><span class="tocnumber">2.3</span> <span class="toctext">Latency Calculation Overview</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Getting_Started_With_the_Default_Tests"><span class="tocnumber">3</span> <span class="toctext">Getting Started With the Default Tests</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Set_Default_Parameters"><span class="tocnumber">3.1</span> <span class="toctext">Set Default Parameters</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Sampling_Rate"><span class="tocnumber">3.1.1</span> <span class="toctext">Sampling Rate</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Display_parameters"><span class="tocnumber">3.1.2</span> <span class="toctext">Display parameters</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors"><span class="tocnumber">3.2</span> <span class="toctext">Connect the Amplifier to the Trigger Box, and Attach Sensors</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Setup_Sensor_Thresholds"><span class="tocnumber">3.3</span> <span class="toctext">Setup Sensor Thresholds</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Audio_Threshold"><span class="tocnumber">3.3.1</span> <span class="toctext">Audio Threshold</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Video_Threshold"><span class="tocnumber">3.3.2</span> <span class="toctext">Video Threshold</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Starting_the_Software"><span class="tocnumber">3.4</span> <span class="toctext">Starting the Software</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Setting_up_the_Optical_Sensor"><span class="tocnumber">3.5</span> <span class="toctext">Setting up the Optical Sensor</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#P3Speller"><span class="tocnumber">3.5.1</span> <span class="toctext">P3Speller</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#CursorTask"><span class="tocnumber">3.5.2</span> <span class="toctext">CursorTask</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#StimulusPresentation"><span class="tocnumber">3.5.3</span> <span class="toctext">StimulusPresentation</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Running_the_Tests"><span class="tocnumber">3.6</span> <span class="toctext">Running the Tests</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#BCI2000Certification:_Additional_Information"><span class="tocnumber">4</span> <span class="toctext">BCI2000Certification: Additional Information</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Overview_of_Important_Files"><span class="tocnumber">4.1</span> <span class="toctext">Overview of Important Files</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#BCI2000Certification.ini"><span class="tocnumber">4.1.1</span> <span class="toctext">BCI2000Certification.ini</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#BCI2000Certification.cfg"><span class="tocnumber">4.1.2</span> <span class="toctext">BCI2000Certification.cfg</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#CertificationMain.prm"><span class="tocnumber">4.1.3</span> <span class="toctext">CertificationMain.prm</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#BCI2000Certification.exe"><span class="tocnumber">4.1.4</span> <span class="toctext">BCI2000Certification.exe</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#BCI2000CertAnalysis.exe"><span class="tocnumber">4.1.5</span> <span class="toctext">BCI2000CertAnalysis.exe</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Parameter_Files"><span class="tocnumber">4.1.6</span> <span class="toctext">Parameter Files</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Interpreting_Results"><span class="tocnumber">4.2</span> <span class="toctext">Interpreting Results</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#What_if_a_Task_Did_Not_Pass.3F"><span class="tocnumber">4.2.1</span> <span class="toctext">What if a Task Did Not Pass?</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Certification_Protocol"><span class="tocnumber">5</span> <span class="toctext">Certification Protocol</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Running_the_Tests_2"><span class="tocnumber">5.1</span> <span class="toctext">Running the Tests</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Software_Templates"><span class="tocnumber">6</span> <span class="toctext">Software Templates</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Amplifier_Latency_2"><span class="tocnumber">6.1</span> <span class="toctext">Amplifier Latency</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Visual_and_Audio_Latency"><span class="tocnumber">6.2</span> <span class="toctext">Visual and Audio Latency</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253ABCI2000Certification.html#Supported_Hardware"><span class="tocnumber">7</span> <span class="toctext">Supported Hardware</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Supported_and_Tested_Hardware"><span class="tocnumber">7.1</span> <span class="toctext">Supported and Tested Hardware</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253ABCI2000Certification.html#Amplifiers"><span class="tocnumber">7.1.1</span> <span class="toctext">Amplifiers</span></a></li>
+</ul>
+</li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Minimum_Requirements"><span class="tocnumber">7.2</span> <span class="toctext">Minimum Requirements</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Voltage_Divider_.26_Amplifier_Input"><span class="tocnumber">7.3</span> <span class="toctext">Voltage Divider &amp; Amplifier Input</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ABCI2000Certification.html#Digital_I.2FO_Cable"><span class="tocnumber">7.4</span> <span class="toctext">Digital I/O Cable</span></a></li>
+</ul>
+</li>
+</ul>
+</td></tr></table>
+<a name="Introduction"></a><h2>Introduction</h2>
+<p>BCI2000 v2.0 and higher includes a certification procedure that can determine whether a computer system is capable of running all or some BCI2000 applications.  Because BCI2000 does not have a standardized hardware configuration, i.e., it can run on potentially <i>any</i>  PC, this testing procedure is capable of running on any PC with BCI2000, with the results reporting which standard BCI2000  applications meet the minimum timing requirements. Different configurations are included in the certification procedure to test a range of likely setups for a given application, in which timing characteristics such as the sampling rate, inter-stimulus intervals, and stimulus duration, and other parameters, such as the number and size of the stimuli, are changed for each configuration.
+</p><p>This document serves as the instruction manual for using the certification procedure, and describes how the procedure works to determine the timing characteristics of the BCI2000 system. The primary use for the certification procedure is to determine if the PC configuration used with BCI2000 is capable of running the core BCI2000 system, which is comprised of:
+</p>
+<ul><li>Support for the the g.tec series of amplifiers, including the g.USBamp, g.MOBIlab, and the g.MOBIlab+ (bluetooth) amplifiers.  
+</li><li>The AR, P3, FFT, and Matlab signal processing modules.  
+</li><li>The CursorTask, P3Speller, and StimulusPresentation application modules.  
+</li></ul>
+<p>Additionally, due to the extensibility of BCI2000, researchers who develop custom algorithms and applications, or use amplifiers not made by g.tec, can use the certification procedure to determine whether their custom modules are capable of running on a particular PC configuration.
+</p><p>The certification procedure works by comparing the differences in time of when BCI2000 <i>expects</i>  an event to occur to when that event <i>actually</i>  occurred. These events include a change in the display, an audio output through the system speakers, or an EEG sample being stored in the amplifier buffer. The times at which such events occur are recorded with the amplifier and stored in a data file. Changes in the display are found using an optical sensor in combination with the g.TRIGbox. The g.TRIGbox is a signal conditioner that generates trigger pulses for various sensors or input signals. When the sensor exceeds a threshold, the g.TRIGbox outputs a digital signal which is recorded on the amplifier. A similar procedure is used for audio detection: the sound output from the PC is input to the g.TRIGbox, and when the volume exceeds threshold, a high digital signal is output and recorded by the amplifier. This information can be used because BCI2000 stores a time-stamp for every event during an experiment. The difference between a time-stamp value and the time that the recorded event changes values are compared to find the latency for that particular event. 
+</p><p>These latencies can be affected by many external influences, including hardware deficiencies (such as low RAM, slow CPU speed, or a video card of low quality), and other software running in the background while the experiment is being run.
+</p>
+<a name="Latencies"></a><h2>Latencies</h2>
+<p>Briefly, the different latencies inherent in the BCI2000 system include amplifier latency, processing latency, output latency, and the sum of these, the system latency. Additionally, the block duration jitter will be measured.  Figure \ref{fig:timeline} provides a timeline of events that occur within a single block of data, with significant time points labeled. This figure provides an accurate account of the order in which events occur within a block of data, although the time intervals are not necessarily to scale.
+<span id="TimeLine"></span>
+</p>
+<div class="thumb tnone"><div style="width:952px;"><a href="../images/f/f5/TimeLine.png" class="internal" title="Timeline of events. Time intervals are not to scale."><img src="../images/f/f5/TimeLine.png" alt="Timeline of events. Time intervals are not to scale." width="950" height="374" longdesc="/wiki/index.php/Image:TimeLine.png" /></a>  <div class="thumbcaption" >Timeline of events. Time intervals are not to scale.</div></div></div>
+<a name="Defining_Latencies"></a><h3>Defining Latencies</h3>
+<a name="Amplifier_Latency"></a><h4>Amplifier Latency</h4>
+<p>Amplifier Latency is the minimum delay between the time that a signal is presented at the amplifier input, to when it has been acquired in the source module. Depending on configuration, this may comprise physical signal delay in the amplifier, digitization, transmission from the amplifier to the PC, and processing time inside a hardware driver. That minimum delay occurs for the last sample of a data block, which, unlike its preceding samples in the same block, will spend only a minimum time in hardware and software buffers. In <a href="User_Reference%253ABCI2000Certification.html#TimeLine" title="">Timeline</a>,
+</p><p>Amplifier latency = <span class="texhtml"><i>t</i><sub>0</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>.
+</p><p>For amplifiers connected via bandwidth-limited serial interfaces, transmission latency may have a measurable impact on amplifier latency, depending on the hardware. When using USB 2.0, as is the case for the g.USBamp, transmission latency may generally neglected, as illustrated by the following example: USB 2.0 has a maximum transmission rate of 480 Mbit/s. If we are acquiring 16 channels of 32-bit data, and transmitting in blocks of 16 samples, this is 8192 bits of data; at USB 2.0 speed, this should take roughly 17 <span class="texhtml">&mu;</span>s to transfer. However, a more realistic approximation for USB 2.0 speeds is 240 Mbit/s, which increases the transfer delay to 34 <span class="texhtml">&mu;</span>s. For sampling rates below 30 kHz, this is less than a single sample's duration.
+</p><p>In addition to amplifier latency, system performance will be influenced by buffering latency. Buffering latency is dependent on the sample block buffer size: When a data sample is digitized, it is not immediately transferred to the PC, but is stored in memory on the amplifier. The PC then makes the appropriate request to the amplifier, and a block of data is transferred all at once to reduce the processing load. This implies that a signal that is digitized at the start of the buffer must wait until the buffer is full to be read into the PC. For example, if the sample block size is 16 samples, the first sample must wait 15 more samples before it can be used in the application. Fortunately, this latency is always known, and can be reduced with a higher sampling rate and/or smaller block sizes, assuming the PC can handle the increased overhead. Buffering latency does not affect the acquisition-to-display latency, because processing occurs immediately after a block's last sample, which is not affected. Still, it is an important factor to keep in mind, because a large sample block size and/or a small sample rate will decrease the refresh rate for the application (e.g., at a sample rate of 256 Hz and a sample block size of 128 samples, the application will only be refreshed every 0.5 s.)
+</p>
+<a name="Processing_Latency"></a><h4>Processing Latency</h4>
+<p>Processing Latency is the total time it takes for the data to be processed by all BCI2000 modules (SignalSource, SignalProcessing, and Application).
+</p><p>Processing latency = <span class="texhtml"><i>t</i><sub>4</sub> &minus; <i>t</i><sub>0</sub></span>.
+</p><p>Processing latency strongly depends on CPU speed, and if this latency becomes too large, high CPU load will probably be the cause, implying decreased or unsuitable BCI2000 performance.
+</p>
+<a name="Output_Latency"></a><h4>Output Latency</h4>
+<p>Output Latency is the latency from the time that the Application module issues a command to change the display or issue a sound (or another output), to the time that this output actually occurs.
+</p><p>Output latency = <span class="texhtml"><i>t</i><sub>5</sub> &minus; <i>t</i><sub>4</sub></span>.
+</p>
+<a name="System_Latency"></a><h4>System Latency</h4>
+<p>System Latency is the minimum time interval between a change in amplifier input, and a causally related change in application output. This is the sum of the above latencies, Amplifier, Processing, and Output. 
+</p><p>System latency = <span class="texhtml"><i>t</i><sub>5</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>.
+</p>
+<a name="Block_Duration.2C_Block_Duration_Jitter"></a><h4>Block Duration, Block Duration Jitter</h4>
+<p>Block Duration is the time interval between adjacent blocks of data, normalized to the ideal duration of a data block as determined from sampling rate and sample block size:
+</p><p>Block Duration = <img class='tex' src="../images/math/d/c/f/dcf9d6f8ced608f8697bf1a00a491105.png" alt="\frac{t_{8}-t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" />.
+</p><p>When the system operates in real time, mean Block Duration will always be 1. Measuring Block Duration has the purpose of obtaining Block Duration Jitter as its standard deviation.
+</p><p>The procedures that will be used to measure the quantities introduced, follow below. Figure \ref{fig:overview} gives an overview of the system latencies with the testing equipment shown.
+</p><p><span id="overview"></span>
+</p>
+<div class="thumb tnone"><div style="width:1221px;"><a href="../images/5/53/TimingOverview.png" class="internal" title="Data flow during timing measurement. Event labels correspond to those in Image:TimeLine.png"><img src="../images/5/53/TimingOverview.png" alt="Data flow during timing measurement. Event labels correspond to those in Image:TimeLine.png" width="1219" height="296" longdesc="/wiki/index.php/Image:TimingOverview.png" /></a>  <div class="thumbcaption" >Data flow during timing measurement. Event labels correspond to those in <a href="http://www.bci2000.org/wiki/index.php/Image:TimeLine.png" title="Image:TimeLine.png">Image:TimeLine.png</a></div></div></div>
+<a name="Measuring_Latencies"></a><h3>Measuring Latencies</h3>
+<a name="Measuring_Amplifier_Latency"></a><h4>Measuring Amplifier Latency</h4>
+<p>In <a href="User_Reference%253ABCI2000Certification.html#TimeLine" title="">TimeLine</a>, Amplifier Latency is the time interval between the sampling of a data block's last sample, and its acquisition into the source module's data buffer:
+</p>
+<div class="center"><span class="texhtml">AmplifierLatency = <i>t</i><sub>0</sub> &minus; <i>t</i><sub> &minus; 1</sub></span></div>
+<p>To measure this latency, the SignalSource module will set a digital output on the amplifier to a high value at time <span class="texhtml"><i>t</i><sub>0</sub></span> immediately following data acquisition, as indicated in <a href="User_Reference%253ABCI2000Certification.html#overview" title="">Overview</a>. The digital output level is 3.3 V, so a voltage divider may required to attenuate the signal level to the range of amplifier input. This signal is then recorded on an input channel on the amplifier (time <span class="texhtml"><i>t</i><sub>1</sub></span>).
+</p><p>In the recorded data, we may then identify <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span>, which is the beginning of sample block <span class="texhtml"><i>n</i></span>, by its sample offset, which also coincides with BCI2000 state changes. <span class="texhtml"><i>t</i><sub>1</sub></span> may be identified by a change in the recorded signal, occurring in the channel that was connected to the digital output during measurement. Neglecting the very small delay between issuing the change in the digital output at <span class="texhtml"><i>t</i><sub>0</sub></span>, and the changed signal appearing at the amplifier's input at time <span class="texhtml"><i>t</i><sub>1</sub></span>, we measure (<a href="User_Reference%253ABCI2000Certification.html#SignalSourceLatency" title="">Signal Source Latency</a>)
+</p>
+<div class="center"><img class='tex' src="../images/math/2/d/a/2da9f71c1be4e409bf9120b33ec8180e.png" alt="\mathrm{AmplifierLatency} \approx t_{1} - t_{-1}." /></div>
+<p><span id="SignalSourceLatency"></span>
+</p>
+<div class="thumb tnone"><div style="width:916px;"><a href="../images/d/d1/SignalSourceLatency.png" class="internal" title="Latency of the Amplifier, using a digital trigger software output and encoded analog input."><img src="../images/d/d1/SignalSourceLatency.png" alt="Latency of the Amplifier, using a digital trigger software output and encoded analog input." width="914" height="254" longdesc="/wiki/index.php/Image:SignalSourceLatency.png" /></a>  <div class="thumbcaption" >Latency of the Amplifier, using a digital trigger software output and encoded analog input.</div></div></div>
+<a name="Measuring_Processing_Latency"></a><h4>Measuring Processing Latency</h4>
+<p>Processing latency is defined as the amount of time that it takes for the computer to process the data from the time that it has been acquired by the source module, to when the application module's output is changed. In <a href="User_Reference%253ABCI2000Certification.html#TimeLine" title="">TimeLine</a> and <a href="User_Reference%253ABCI2000Certification.html#overview" title="">Overview</a>, this is the time from <span class="texhtml"><i>t</i><sub>0</sub></span> to <span class="texhtml"><i>t</i><sub>4</sub></span>. Processing latency is calculated using two timestamps saved with every block of data, <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span>. <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>0</sub></span>, immediately following data acquisition in the SignalSource module, and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>4</sub></span> immediately following application presentation in an application module. Therefore, processing latency for each block of data is calculated as the difference between time stamps:
+</p>
+<div class="center"><span class="texhtml">ProcessingLatency = StimulusTime &minus; SourceTime = <i>t</i><sub>4</sub> &minus; <i>t</i><sub>0</sub>.</span></div>
+<a name="Measuring_Application_Display.2FSound_Output_Latency"></a><h4>Measuring Application Display/Sound Output Latency</h4>
+<p><span id="outOverview"></span>
+There are many possible application output types, including visual (i.e., the computer screen), audio, or mechanical (e.g., a robotic arm). The core BCI2000 system primarily uses visual and audio output, and so the default testing system will focus on these.
+</p><p>Both visual and audio output can be measured using the g.TRIGbox signal conditioner, which accepts inputs from optical sensors, microphones, or any other input. The user sets a threshold for the input signals, and the g.TRIGbox outputs a digital pulse whenever this threshold is exceeded. This output is then recorded back into the amplifier system, so that the analysis program can measure the response times for each output.
+</p><p>Again, neglecting <span class="texhtml"><i>t</i><sub>1</sub> &minus; <i>t</i><sub>0</sub></span> as well as <span class="texhtml"><i>t</i><sub>6</sub> &minus; <i>t</i><sub>5</sub></span>, we identify event <span class="texhtml"><i>t</i><sub>0</sub></span> by a change in the data channel connected to the amplifier's digital output, and event <span class="texhtml"><i>t</i><sub>5</sub></span> by a change in the data channel connected to the g.TRIGbox, and compute their difference. Also, both events are affected by Amplifier Latency in the same way, so we may ignore Amplifier Latency, and have
+</p>
+<div class="center"><img class='tex' src="../images/math/1/7/6/1767690a010047d05c6523d084820db6.png" alt="\begin{matrix} \mathrm{Output Latency} = t_{5} - t_{4} = (t_5-t_0)-(t_4-t_0) = (t_5-t_0)-\mathrm{ProcessingLatency}. \end{matrix}" /></div>
+<div class="thumb tnone"><div style="width:1113px;"><a href="../images/6/63/OutputLatency.png" class="internal" title="Application output latency."><img src="../images/6/63/OutputLatency.png" alt="Application output latency." width="1111" height="296" longdesc="/wiki/index.php/Image:OutputLatency.png" /></a>  <div class="thumbcaption" >Application output latency.</div></div></div>
+<a name="Measuring_System_Latency"></a><h4>Measuring System Latency</h4>
+<p>As defined above, System Latency is the sum of Amplifier Latency, Processing Latency, and Output Latency.
+It may be measured
+</p>
+<ol><li>directly, by identifying <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span> as the beginning of a data block by its sample index, and <img class='tex' src="../images/math/f/1/5/f153606f2bb2bd62c64a168fd85fa500.png" alt="t_6\approx t_5" /> by the signal change in the channel connected to the g.TRIGbox, and then calculating<br /><span class="texhtml">SystemLatency = <i>t</i><sub>5</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>,
+</li><li>or indirectly, by using the previously measured quantities<br /><span class="texhtml">SystemLatency = AmplifierLatency + ProcessingLatency + OutputLatency</span>.
+</li></ol>
+<a name="Measuring_Block_Duration"></a><h4>Measuring Block Duration</h4>
+<p>Block Duration is measured as the time between adjacent blocks of data, divided by the theoretical ideal value, which is the sample block duration. For the actual measurement, we use the difference between subsequent <span class="texhtml">SourceTime</span> time stamps which are recorded at <span class="texhtml"><i>t</i><sub>0</sub></span> and <span class="texhtml"><i>t</i><sub>8</sub></span> in <a href="User_Reference%253ABCI2000Certification.html#TimeLine" title="">Timeline</a>:
+</p>
+<div class="center"><img class='tex' src="../images/math/7/8/8/78884cbea4d107c12f0ce642433dc5f5.png" alt="\mathrm{BlockDuration} = \frac{t_{8} - t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}} =\frac{\Delta \mathrm{SourceTime}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" /></div>
+<a name="Latency_Calculation_Overview"></a><h3>Latency Calculation Overview</h3>
+<p>Latencies are calculated by comparing changes in a BCI2000 state value to changes in a recorded signal. The analysis program follows these general steps in calculating the various latencies:
+</p>
+<ol><li>Determine which threshold values to use based on the <i>thresh</i>  definition in the BCI2000Certification.cfg file, which defines a threshold based on the amplifier used. For example, the g.USBamp has an input range of -250 mV to + 250 mV, and the g.TRIGbox outputs from 0 to 200 mV, so the threshold used is about 12.5 mV.
+</li><li>Traverse the state values for a selected state and find where the state changes from 0 to a given value (or any value). The sample at which this occurs is saved for later use in <span class="texhtml"><i>s</i><i>t</i><i>a</i><i>t</i><i>e</i><i>C</i><i>h</i><i>a</i><i>n</i><i>g</i><i>e</i><i>P</i><i>o</i><i>s</i></span>.
+</li><li>When this occurs, start looking through <span class="texhtml"><i>S</i><i>i</i><i>g</i><i>n</i><i>a</i><i>l</i><sub><i>n</i><i>o</i><i>r</i><i>m</i></sub></span> to find when a rising edge exceeds the determined threshold value. The sample at which this occurs is saved in <span class="texhtml"><i>s</i><i>i</i><i>g</i><i>C</i><i>h</i><i>a</i><i>n</i><i>g</i><i>e</i><i>P</i><i>o</i><i>s</i></span>.
+</li><li>The latency for the <span class="texhtml"><i>n</i></span>th state change is calculated as: 
+<dl><dd><div class="center"><img class='tex' src="../images/math/9/5/f/95fd51e97808edba0b0e78535c6f0a2a.png" alt="\begin{matrix} latency_n = \frac{sigChangePos_n-stateChangePos_n}{SampleRate} \end{matrix}" /></div> 
+</dd><dd>and is stored in an array.
+</dd></dl>
+</li><li>Once the entire state vector is traversed, the mean, standard deviation, minimum and maximum values for this latency are calculated and reported.
+</li></ol>
+<a name="Getting_Started_With_the_Default_Tests"></a><h2>Getting Started With the Default Tests</h2>
+<p>This section provides step-by-step instructions on running the default certification procedure. Note that some cables must be assembled before the testing can be done; see Appendix \ref{sec:ampcables} for information on assembling the cables.
+</p>
+<a name="Set_Default_Parameters"></a><h3>Set Default Parameters</h3>
+<p>Using a text editor, open the CertificationMain.prm file in the BCI2000/tools/BCI2000Certification/parms/ folder. Many of the settings should be left alone, except for some of the following cases. 
+</p>
+<a name="Sampling_Rate"></a><h4>Sampling Rate</h4>
+<p>This is set to 512 by default. This can be changed to another value that will apply to all tests, except those that explicitly override it in their own parameter file.
+</p>
+<a name="Display_parameters"></a><h4>Display parameters</h4>
+<p>These are on the lines that begin with <code>Application:Window</code>. For many labs, the default settings should work fine; the window is setup to appear in the top-left corner of the main window (<code>WindowLeft= 0</code> &amp; <code>WindowTop= 0</code> ), and is 800 wide by 800 pixels tall (<code>WindowWidth= 800</code> &amp; <code>WindowHeight= 800</code> ).
+</p><p>Users with a dual-screen configuration may wish to change this so that the BCI2000 window is on the secondary monitor; to do so, the <code>WindowLeft</code>  parameter should be changed, which depends on the resolution and orientation of both monitors. For example, if the 2nd monitor is to the right of the primary monitor, and both monitors have a resolution of 1280x1024 pixels, setting <code>WindowLeft</code>  to <code>1280</code>  will place the window on the 2nd monitor. Similarly, if the 2nd monitor is to the left of the primary monitor, setting <code>WindowLeft</code>  to <code>-1280</code>  will accomplish the same thing. If the monitors have different resolutions (e.g., monitor 1 is 1600x1200 and monitor 2 is 1024x768, located to the right of the 1st monitor), the position should change accordingly. For example, in this scenario, to set the window to the right of the main window, set <code>WindowLeft</code>  to <code>1600</code> . Finally, set the <code>WindowWidth</code> &amp; <code>WindowHeight</code>  to appropriate values for full-screen, if desired. To summarize, for the dual-screen case in which monitor 1 is 1600x1200 pixels, and monitor 2, to the right of 1, is 1024x768 pixels, and the BCI2000 window should be full-screen on monitor 2, the parameters should look like:
+</p><p><code>Application:Window int WindowWidth= 1024 ...<br />
+Application:Window int WindowHeight= 768 ...<br />
+Application:Window int WindowLeft= 1600 ...<br />
+Application:Window int WindowTop= 0 ...<br />
+</code>
+Note that nothing following the ... needs to be changed above in the parameter file.
+</p>
+<a name="Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors"></a><h3>Connect the Amplifier to the Trigger Box, and Attach Sensors</h3>
+<div class="thumb tnone"><div style="width:806px;"><a href="../images/7/7c/Connections.png" class="internal" title="Connections overview"><img src="../images/7/7c/Connections.png" alt="Connections overview" width="804" height="624" longdesc="/wiki/index.php/Image:Connections.png" /></a>  <div class="thumbcaption" >Connections overview</div></div></div>
+<p>This section describes the steps for connecting the necessary hardware. Refer to the Connections Overview figure above for additional information; each step is numbered in this figure.
+</p>
+<ol><li>Connect the amplifier to the computer; the supported g.tec amps are connected via USB, RS232, or Bluetooth.
+</li><li>Connect the Digital I/O cable (see \ref{sec:digicable}) to the amplifier on the Digital I/O port.
+</li><li>Connect the reference and ground wires from the assembled amplifier cables to the amplifier reference and ground connections.
+</li><li>Connect the amplifier cables with the safety connectors into channels 1, 2, and 3 on the g.USBamp.
+</li><li>Connect the digital output line to the channel 1 amplifier cable.
+</li><li>Connect the A output from the trigger box to the channel 2 amplifier cable.
+</li><li>Connect the B output from the trigger box to the channel 3 amplifier cable.
+</li><li>Connect the optical sensor plug to the g.TRIGbox, using the optical sensor input channel A.
+</li><li>Connect the computer audio output using a stereo cable to the g.TRIGbox, using the high-level input channel B.
+</li></ol>
+<a name="Setup_Sensor_Thresholds"></a><h3>Setup Sensor Thresholds</h3>
+<p>The audio and optical sensors each have a threshold setting on the g.TRIGbox, along with an LED indicating whether the current input is above threshold for each channel. At rest, each trigger should be off; if any is on, turn the threshold knob counter-clockwise until the LED is off.
+</p>
+<a name="Audio_Threshold"></a><h4>Audio Threshold</h4>
+<p>To set the audio threshold, set audio volume on the computer to maximum. On Windows, to make this process easier in the future, go to the Start menu, click the Control Panel, and go to Sounds. In the Sound window, click the box that puts the volume icon in the task bar. A small speaker should now appear in the bottom-right of the screen in the task bar. Click this icon, and slide the volume up to the max; when you click on this slider, Windows emits a short beep to give an idea of the volume level, which can be used to set the threshold. To do so, make sure that the stereo audio cable is plugged into the g.TRIGbox, and click the slider to emit a sound, checking that the green LED is flashing when you click the slider. If it is not, turn the threshold knob for channel B counter-clockwise, and click the slider again. If it is still not working after several tries, unplug the audio cable from the computer, and check that you can hear the beep through the speakers. If you cannot, make sure that the sound is not muted, and that the sound drivers are properly installed. If you can hear it, plug the audio cable back into the computer audio output (NOT the microphone input), and make sure the g.TRIGbox has power; the light next to the power switch should flash momentarily if the battery levels are OK. You can also use a wall power source (see the g.TRIGbox manual for more information). The threshold is set correctly when the channel B LED is off at rest, and is on when a sound is played.
+</p>
+<a name="Video_Threshold"></a><h4>Video Threshold</h4>
+<p>To set the video threshold, first tape the optical sensor to the monitor in approximately the correct location, based on the information in the latencyTest.prm file for the window position and dimensions. To activate the optical trigger on the g.TRIGbox, drag a white window, such as a Notepad window, in the background under the sensor. Move the threshold knob for channel A until the LED for that channel is just on (i.e., turning it down just a little turns the trigger off). The sensor will be placed more accurately in the following step.
+</p>
+<a name="Starting_the_Software"></a><h3>Starting the Software</h3>
+<p>Navigate to BCI2000/tools/BCI2000Certification, and double-click the BCI2000Certification.exe program. The BCI2000 program should start, with the output window in the location specified in the latencyTest.prm file. If there are any errors at startup, the BCI2000 error log will report them. If there are errors, correct them, exit out of the BCI2000Certification.exe program, and restart the program.
+</p>
+<a name="Setting_up_the_Optical_Sensor"></a><h3>Setting up the Optical Sensor</h3>
+<p>Each application has a unique display configuration, where the visual target of interest is located in a specific position on the monitor. Generally, the optical sensor will not likely have to be moved far in between tasks due to the design of the parameter files. However, it is still necessary to ensure that the sensor is in the correct position for each task, and to be able to change the position if necessary. This section describes the process to find the correct location on the monitor for the sensor. To begin, the certification procedure should be started.
+</p>
+<a name="P3Speller"></a><h4>P3Speller</h4>
+<p>The P3Speller task has an group of letters arranged into rows and columns. The analysis uses the letter in the 3rd column and 3rd row, which will contain the letter X when the program is run. This location should be very close to that specified for the CursorTask, described above. Fortunately, the arrangement of the letters is shown before the test starts, which allows the sensor to be adjusted if necessary. All of the following default tasks are setup so that the optical sensor does not need to be moved from this position.
+</p>
+<a name="CursorTask"></a><h4>CursorTask</h4>
+<p>In the default configuration, the optical sensory does not need to be moved from the position used for the P3Speller task. For custom tests, the flashing object must either be placed under the sensor, or the sensor needs to be moved to the correct position.
+</p>
+<a name="StimulusPresentation"></a><h4>StimulusPresentation</h4>
+<p>For the StimulusPresentation tasks, a single large icon appears in the center of the screen, which will be detected by the sensor. The default location of the sensor as defined for the CursorTask should be able to capture the icon on the screen. However, if the task begins and it appears that it is outside the icon location, move the sensor to the middle of the icon. Keep in mind that it may have to be relocated for following tasks.
+</p>
+<a name="Running_the_Tests"></a><h3>Running the Tests</h3>
+<p>Once the optical sensor is setup and calibrated for a task, begin the testing process. To start the process, press the Start button in the BCI2000 operator window. At the end of each task, the program will quit automatically, and the next one will start automatically. For each task, press the Start button to begin.
+</p><p>Occasionally, the optical sensor may not be in the exact correct place for a given task.You should be able to see changes in on the video channel (channel 2 by default) in the window showing the recorded channels. If the signal is not changing when it should be (e.g., during the correct visual stimulus), you may try increasing the threshold to catch the stimulus, or you may need to place the sensor in the correct location. To do this, place the sensor in the better location, then quit the current BCI2000 test, and quit the BCI2000Certification program. The procedure will need to be restarted.
+</p><p>When the testing is complete, the BCI2000CertAnalysis program will automatically start. It will analyze the data that have been collected, and return the results in the results.txt file. In general, a Pass or Fail will be written next to a task, and each task component, if it passed or failed the test. For more information on interpreting results, see Sec. \ref{sec:results}.
+</p>
+<a name="BCI2000Certification:_Additional_Information"></a><h2>BCI2000Certification: Additional Information</h2>
+<p>The previous section on Getting Started provided information to quickly setup and run the default tests. This section provides detailed information about each file used, and how to modify the files for your specific system and applications.
+</p>
+<a name="Overview_of_Important_Files"></a><h3>Overview of Important Files</h3>
+<p>There are several important files that are used in the BCI2000 Certification procedure. These files and their contents are described in this section. 
+</p>
+<a name="BCI2000Certification.ini"></a><h4>BCI2000Certification.ini</h4>
+<p>The BCI2000Certification.ini file contains the information that defines each task configuration. It is located in the BCI2000/tools/BCI2000Certification/ folder. It specifies the parameter file, the SignalSource, SignalProcessing, and Application modules, and the analysis definitions for each task. It contains all of the default tests, although it can easily be expanded to include additional or customized task configurations.
+</p><p>Each task is defined by a set of <b>case-insensitive</b> , space-separated fields, as described below. A * indicates an optional field. The % character indicates a comment, and everything following that character is ignored.
+</p>
+<ul><li><b>name</b> The name of the task, which should be unique. This generally describes the task. It must not contain any spaces. This value determines the path to the saved data file, and the name of the file itself. For example, the name StimulusPresentation_512 would create a file at <code>./Data/StimulusPresentation_512001/StimulusPresentation_512S001R01.dat</code> Example:
+<ul><li><code>name StimulusPresentation_512</code>
+</li></ul>
+</li></ul>
+<ul><li><b>parm</b>The BCI2000 *.prm file used for this task. It should be placed in the BCI2000/tools/BCI2000Certification/parms/ folder. Note that the CertificationMain.prm is included in <i>all</i>  configurations by default, and does not need to be listed here. This file contains the information for this specific task configuration. See above for further information.
+<ul><li><code>parm SimpleAV.prm</code>
+</li></ul>
+</li></ul>
+<ul><li><b>source</b> The SignalSource module to be used for this test. The g.tec g.USBamp system is used in all configurations by default. If the g.MOBIlab or g.MOBIlab+ are used, the SignalSource module should be changed to the appropriate executable. All BCI2000 executables are located in BCI2000/prog/. Examples:
+<ul><li><code>'source gUSBampSource.exe<b></code></b>
+</li><li><code>source gMOBIlabSource.exe</code>
+</li></ul>
+</li></ul>
+<ul><li><b>sigproc</b> The SignalProcessing module that is used for this configuration. This is likely dependent on the application used as well. This program should be located in BCI2000/prog/. Example:
+<ul><li><code>sigproc P3SignalProcessing.exe</code>
+</li></ul>
+</li></ul>
+<ul><li><b>app</b> The application for this configuration. This program should be located in BCI2000/prog/. Example:
+<ul><li><code>app StimulusPresentation.exe</code>
+</li></ul>
+</li></ul>
+<ul><li><b>*amp</b> This is a single value that gives the channel that is used to compute the amplifier latency. Example:
+<ul><li><code>amp 0</code>
+</li></ul>
+</li></ul>
+<ul><li><b>*dAmp</b> This is a single value that specifies a digital input channel that is used to compute the amplifier latency. Example:
+<ul><li><code>dAmp 15</code>
+</li></ul>
+</li></ul>
+<ul><li><b>*vid</b> This field is followed by 3 values, that give the channel number that is recording the video output, and the state name and state value to use as a trigger for the comparison. See the example entry for more information. Example:
+<ul><li><code>vid 1 StimulusCode 1</code>
+</li></ul>
+</li></ul>
+<ul><li><b>*aud</b>  This field is followed by 3 values, that give the channel number that is recording the audio output, and the state name and state value to use as a trigger for the comparison. See the example entry for more information. Example:
+<ul><li><code>aud 1 StimulusCode 1</code>
+</li></ul>
+</li></ul>
+<ul><li><b>skip</b> Entering <b>skip</b>  will cause this task to not be run or analyzed. This is used to reduce the number of tasks that are run, which helps to repeat individual tasks that may have had problems in previous sessions.
+</li></ul>
+<ul><li><b>end</b> This must come at the end of each task definition.
+</li></ul>
+<p>In addition to task-specific entries, there are several global entries that will apply to every task, unless explicitly overwritten in that task. This allows the user to quickly change settings for all tasks simultaneously, e.g., if tests will be run using a g.tec g.USBamp for one set of tests, and a g.tec g.MOBIlab for another. Global entries must be defined at the beginning of the BCI2000Certification.ini file outside of the task definitions. These entries are defined as:
+</p>
+<ul><li><b>source</b> The SourceModule to be used for all tests, unless explicitly overwritten by an individual task. Otherwise identical to the <b>source</b>  definition in a task entry.
+</li><li><b>export</b> This entry does not use any other parameters on the line on which it is defined. If <b>export</b>  is present in the BCI2000Certification.ini file, test results will be written to a comma-separated-value (CSV) text file that is located in the folder where data is saved for each task. For example, if the data folder is BCI2000/tools/BCI2000Certification/latencyData/, then the export file for the SimpleTarget task will be placed in the folder BCI2000/tools/BCI2000Certification/latencyData/SimpleTarget.
+</li></ul>
+<p>Here is a full example entry that includes two tasks.
+</p>
+<pre>
+source gUSBampSource
+export
+
+name StimulusPresentation_512
+parm StimulusPresentation_512.prm
+sigproc P3SignalProcessing
+app StimulusPresentation
+amp 0
+dAmp 15
+vid 1 StimulusCode 3
+aud 2 StimulusCode 3
+end
+
+name CursorTask_1200
+parm CursorTask_1200.prm
+source gMOBIlab
+sigproc ARSignalProcessing
+app CursorTask
+amp 0
+dAmp 15
+vid 1 TargetCode 1
+end
+</pre>
+<p>The <code>StimulusPresentation</code>  task uses the <code>gUSBampSource</code>  source module, and records block-triggered digital outputs on channel 0, video output triggered off of stimulus code 3 on channel 1, and audio output triggered off of stimulus code 3 on channel 2. The <code>SimpleTarget</code>  tasks overrides the global <code>source</code> entry, and uses its own <code>source</code>  definition, specifying that a gMOBIlab should be used for acquisition instead of a gUSBamp. Finally, the <code>export</code>  entry is set at the beginning, so test results for all files are output to a CSV file.
+</p><p>The BCI2000Certification.ini file contains many task definitions. Each entry is read by the BCI2000Certification.exe program, and is entered as a separate task to be run and then analyzed.
+</p>
+<a name="BCI2000Certification.cfg"></a><h4>BCI2000Certification.cfg</h4>
+<p>The latencyTest.prm file is located in the BCI2000/tools/BCI2000Certification/ folder. It contains many default settings and definitions that determine how the results are interpreted, and should generally not be changed by the user. The timing definitions provide the absolute maximum latencies in ms for each step in the system chain, and include the Amp, ProcLat, VidOut, AudOut, VidSys, AudSys, and Jitter (see below for explanations). Timing definitions can include either one or two fields; the first field is mandatory, and is the mean value in ms, while the second field is optional, and is the standard deviation in ms.
+</p>
+<ul><li><b>Amp</b> The amplifier latency.
+</li><li><b>ProcLat</b> The processing latency.
+</li><li><b>VidOut</b> The video output latency.
+</li><li><b>AudOut</b> The audio output latency.
+</li><li><b>VidSys</b> The video system latency.
+</li><li><b>AudSys</b> The audio system latency.
+</li><li><b>Jitter</b> The system jitter. This is the difference, in ms, between the actual block duration and theoretical block duration, which is determined by the block size.
+</li><li><b>Threshold Source Value</b> This is the threshold defined for a specific SignalSource module. Individual amplifiers may have different input ranges, resulting in recording signals with different ranges of magnitude. The <b>Source</b>  entry is a value in mV. For example, the threshold setting for the g.USBamp is <b>Threshold gUSBampSource 12.5</b> .
+</li><li><b>ResultOut</b> This is the file that contains the testing results.
+</li><li><b>DataDir</b> The default data directory. It defaults to latencyData in the BCI2000/tools/BCI2000Certification/ folder. 
+</li></ul>
+<p>These values should not generally be changed by the user, although they may be updated in future BCI2000 versions.
+</p>
+<a name="CertificationMain.prm"></a><h4>CertificationMain.prm</h4>
+<p>This parameter file contains some of the default task parameters common to every test, including the save location, monitor configuration, sampling rate, and visualization settings. Note that these parameters can be overwritten in the *.prm files for each individual test configuration.
+</p>
+<a name="BCI2000Certification.exe"></a><h4>BCI2000Certification.exe</h4>
+<p>This file controls the execution of each task. It parses the BCI2000Certification.ini and BCI2000Certification.cfg files to determine which files and tasks to run, and controls the CPU load monitor. When all tasks are complete, this program calls the BCI2000Analysis.exe program to handle the analysis of the collected data.
+</p>
+<a name="BCI2000CertAnalysis.exe"></a><h4>BCI2000CertAnalysis.exe</h4>
+<p>This program analyzes the data collected, and reports results to a data file. It uses the DataDir parameter in the BCI2000Certification.cfg file to determine where the data is located. Results are output to results.txt in the BCI2000/tools/BCI2000Certification/ folder.
+</p>
+<a name="Parameter_Files"></a><h4>Parameter Files</h4>
+<p>Each task should have it's own parameter file that contains the unique configuration and settings for that task. For example, there may be several configurations that use the g.USBamp, ARSignalProcessing, and CursorTask, each with its own parameter file. These files end in .prm, and are placed in the BCI2000/tools/BCI2000Certification/parms/ folder.
+</p>
+<a name="Interpreting_Results"></a><h3>Interpreting Results</h3>
+<p>Results are recorded to the BCI2000/tools/BCI2000Certification/results.txt file. The results for each task, and each applicable latency tested, are reported here. If the entire task  passed, then each test performed met the minimum timing requirements specified in the BCI2000Certification.cfg file. If one or more did not pass, then the specific test that did not pass the test has Fail written next to it.
+</p>
+<a name="What_if_a_Task_Did_Not_Pass.3F"></a><h4>What if a Task Did Not Pass?</h4>
+<p>TO BE ADDED.
+</p>
+<a name="Certification_Protocol"></a><h2>Certification Protocol</h2>
+<p>This section describes how the testing protocol is run, the various components involved in the certification analysis, and how to interpret results.
+</p>
+<a name="Running_the_Tests_2"></a><h3>Running the Tests</h3>
+<p>The certification protocol consists of running several BCI2000 applications in multiple configurations to determine if each application meets the minimum requirements for BCI2000, and to determine if individual configurations of an application meet the requirements. For example, the CursorFeedback task may be tested with several combinations of sampling rates, sample block sizes, and processed channels, only some of which may work with a given computer setup.
+</p><p>The testing set is run from a single batch file called LatencyAnalysis.bat. This file is located in the folder BCI2000/tools/BCI2000Certification/batch. This batch file executes additional batch files in this folder, each corresponding to a different application configuration. Each of these batch files starts the Operator module, automatically loading multiple parameter files used for a given configuration. There is a general-purpose parameter file called latencyTest.prm that all configurations use. This file configures the save location for all latency tests, as well as default window positions and sampling rates. A second parameter file is passed to the operator that contains the parameters for a unique application configuration. After starting the operator module, the batch file starts the SignalSource module, SignalProcessing module, and Application module. The loaded configuration is set automatically, and the user needs only to press the start button to start the analysis.
+</p>
+<a name="Software_Templates"></a><h2>Software Templates</h2>
+<p>This describes how to implement the testing protocols for your own amplifier system and custom applications. This is useful for determining if your hardware setup and software is capable of maintaining an acceptable level of performance for real-time testing.
+</p>
+<a name="Amplifier_Latency_2"></a><h3>Amplifier Latency</h3>
+<p>The amplifier latency requires an output that can be recorded by the amplifier. In the case of the g.USBamp, a digital output line is used, although either analog or digital outputs could be used in a system. 
+</p><p>In the SignalSource module code for your custom amp, find the Process function. Near the beginning of this function, before any data is acquired, set the output signal to 0, either a digital low or analog value of 0 V. This will be dependent on the particular amplifier and API used; for the g.USBamp, this function call looks like: 
+<br /><code>
+GT_SetDigitalOut ( m_hdev.at(0), (UCHAR)1, (UCHAR)0);
+</code><br />
+</p><p>This sets the digital output 1 on device 0 to a value of 0.
+</p><p>At the end of the Process function, the output should be set to a high level. A similar function call will be used to above, only the value is 1 instead of 0; again, the function will be dependent on the system used, and whether analog or digital output is used. Here is the code for the g.USBamp:
+<br /><code>
+GT_SetDigitalOut ( m_hdev.at(0), (UCHAR)1, (UCHAR)1);
+</code><br />
+</p><p>This sets the digital output 1 on device 0 to a value of 1.
+</p>
+<a name="Visual_and_Audio_Latency"></a><h3>Visual and Audio Latency</h3>
+<p>Developing new video and optical latency tests does not necessarily require adding additional code to existing modules (beyond any customization already done). 
+</p>
+<a name="Supported_Hardware"></a><h2>Supported Hardware</h2>
+<p>A list of officially supported hardware configurations, and suggested minimum requirements is provided.
+</p>
+<a name="Supported_and_Tested_Hardware"></a><h3>Supported and Tested Hardware</h3>
+<a name="Amplifiers"></a><h4>Amplifiers</h4>
+<ul><li>g.USBamp  
+</li><li>gMOBIlab (Serial RS232)  
+</li><li>gMOBIlab (Bluetooth)  
+</li><li>TDT Pentusa (RX5)  
+</li></ul>
+<a name="Minimum_Requirements"></a><h3>Minimum Requirements</h3>
+<p>Table \ref{tab:minreqs} shows the minimum requirements for running BCI2000. THESE WILL BE UPDATED LATER BASED ON OUR RESULTS!
+</p>
+<table border="1">
+<caption> Minimum System Requirements for BCI2000
+</caption><tr>
+<th> CPU
+</th><td> 1 GHz
+</td></tr>
+<tr>
+<th> RAM
+</th><td>512 MB (dependent on OS; 1 GB for Windows Vista)
+</td></tr>
+<tr>
+<th> Video Card
+</th><td>32 MB VRam; Hardware OpenGL Support
+</td></tr>
+<tr>
+<th> Sound Card
+</th><td>
+</td></tr>
+<tr>
+<th> Monitor
+</th><td>
+</td></tr>
+<tr>
+<th> OS
+</th><td>Windows 2000; Windows XP SP2 or Greater; Windows Vista
+</td></tr></table>
+<a name="Voltage_Divider_.26_Amplifier_Input"></a><h3>Voltage Divider &amp; Amplifier Input</h3>
+<p>Parts List:
+</p>
+<ul><li>4 Male Mono Audio Connectors  
+</li><li>6 12in Safety Connector Wires (to USB amplifier input), different colors  
+</li><li>4 3in Wires  
+</li><li>Soldering Iron and Solder   
+</li><li>resistors for voltage dividers  
+</li></ul>
+<p>This section describes how to assemble cables that connect the output of the g.TRIGbox to the amplifier input channels.
+</p><p>Strip the free ends of all 6 safety connector wires, about <img class='tex' src="../images/math/5/e/1/5e1f9f7bb7a4598e9053848c42af89d2.png" alt="\frac{1}{4}" /> in. If you are not using voltage dividers, solder 4 of the wires directly  to the center signal connection on the 4 mono audio connectors (Fig. \ref{fig:ampPlug1}). Cover the connection.
+</p>
+<div class="thumb tnone"><div style="width:320px;"><a href="../images/4/4d/AmpPlug_1.png" class="internal" title="g.USBamp Amplifier Plug"><img src="../images/4/4d/AmpPlug_1.png" alt="g.USBamp Amplifier Plug" width="318" height="90" longdesc="/wiki/index.php/Image:AmpPlug_1.png" /></a>  <div class="thumbcaption" >g.USBamp Amplifier Plug</div></div></div>
+<p>Next, twist the two remaining safety connector wire ends together, and solder them together. Solder the 4 short wires to the ground connections on the mono plugs. Finally, solder the 4 ground wires to the two safety connector wires that were twisted together and soldered previously, as in Fig. \ref{fig:ampPlugs2}.
+</p>
+<div class="thumb tnone"><div style="width:456px;"><a href="../images/7/7d/AmpPlugs_2.png" class="internal" title="g.USBamp Amplifier Plugs"><img src="../images/7/7d/AmpPlugs_2.png" alt="g.USBamp Amplifier Plugs" width="454" height="317" longdesc="/wiki/index.php/Image:AmpPlugs_2.png" /></a>  <div class="thumbcaption" >g.USBamp Amplifier Plugs</div></div></div>
+<p>These plugs can plug directly into the g.TRIGbox outputs, and the safety connectors plug into the channels 1-4 inputs on the g.USBamp; the ground wires plug into the ground and reference on the g.USBamp.
+</p>
+<a name="Digital_I.2FO_Cable"></a><h3>Digital I/O Cable</h3>
+<p>Parts List:
+</p>
+<ul><li>3 Colored Wires  
+</li><li>7-Pin Digital Connector from g.tec  
+</li><li>Soldering Iron and Solder  
+</li><li>Silicone or electrical tape for insulation  
+</li><li>1 Female Mono Audio Plug  
+</li></ul>
+<p>In order to access the digital I/O pins on the g.USBamp, a connector needs to be assembled. The 7-pin digital I/O connector should be ordered through g.TEC, the manufacturer of the g.USBamp.
+</p><p>At least three wires are needed for the circuit, which connect to the digital output 1 pin, the digital input 0 pin,  and the ground pin (Fig. \ref{fig:digIO}).
+</p>
+<div class="thumb tnone"><div style="width:290px;"><a href="../images/0/0e/DigIO.png" class="internal" title="g.USBamp Digital I/O Pins"><img src="../images/0/0e/DigIO.png" alt="g.USBamp Digital I/O Pins" width="288" height="104" longdesc="/wiki/index.php/Image:DigIO.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Pins</div></div></div>
+<p>To start, cut three 10 in wires, preferably with  different colors to differentiate between the signal and ground wires. Cut back a small portion of the ground wire, and solder it to the center ground pin on the connector. Now, find the top of the connector by locating the small plastic notch, and locate pins 3 and 4 relative to the notch. Solder one wire to pin 3, and the remaining wire to pin 4. It may be helpful to insulate the wires from the casing using either a piece of black electrical tape, or an insulating gel, like silicone. If a gel is used, be sure to let it set for several hours or overnight. It is also probably a good idea to check the electrical connection with a multimeter prior to insulating.
+</p>
+<div class="thumb tnone"><div style="width:207px;"><a href="../images/5/5e/DigConnector.png" class="internal" title="g.USBamp Digital I/O Pins"><img src="../images/5/5e/DigConnector.png" alt="g.USBamp Digital I/O Pins" width="205" height="100" longdesc="/wiki/index.php/Image:DigConnector.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Pins</div></div></div>
+<p>Next, attach the rubber sleeve over the end of the part with the female threads, as shown in Fig. \ref{fig:digFinal} in the left side of the figure. Slide the smaller metal sleeve over the wires, then slide the larger rubber sleeve over the wires, as shown in Fig. \ref{fig:digFinal}.
+</p><p>For the next step, attach the two metallic pieces that surround the cables, shown laying to the sides in Fig. \ref{fig:digFinal}. One of the metal pieces has a small groove in it, which should be placed over the notch on the connector; the other metal piece fits on the opposite side of the connector. Push the small metal sleeve up to the side piece with the groove, and rotate the sleeve until the notch fits in the groove.
+</p><p>Place the  end piece over the connector, with the red dot on top and aligned with the connector notch. Finally, slide the rubber sleeve over the connector, and screw the sleeve into the end piece.
+</p>
+<div class="thumb tnone"><div style="width:805px;"><a href="../images/e/e9/FinalDigCable.png" class="internal" title="g.USBamp Digital I/O Cable"><img src="../images/e/e9/FinalDigCable.png" alt="g.USBamp Digital I/O Cable" width="803" height="406" longdesc="/wiki/index.php/Image:FinalDigCable.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Cable</div></div></div>
+<p>The plug is assembled next. Solder the signal wire from Pin 3 (Digital Out 1) on the digital I/O connector to the signal connector on the female mono plug, and solder the ground wire to the outer ground connector on the plug. Figure \ref{fig:digplug} shows this; in this figure, the red wire is the signal wire, and the brown wire is the ground.
+</p>
+<div class="thumb tnone"><div style="width:320px;"><a href="../images/6/6a/DigPlug.png" class="internal" title="g.USBamp Digital Wire Plug"><img src="../images/6/6a/DigPlug.png" alt="g.USBamp Digital Wire Plug" width="318" height="90" longdesc="/wiki/index.php/Image:DigPlug.png" /></a>  <div class="thumbcaption" >g.USBamp Digital Wire Plug</div></div></div>
+
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Tutorial%253ABCI2000_Tour.html">Getting Started</a><br />
+<a href="User_Reference%253AContents.html">User Manual</a><br />
+<ul><li><a href="User_Reference%253AOperator_Module.html">Operator Module</a></li>
+<li><a href="User_Reference%253AFilters.html">Configuration Guide</a></li>
+<li>Applications</li>
+<li>Tools</li>
+<ul><li><a href="User_Reference%253ABCI2000Launcher.html">BCI2000Launcher</a></li>
+<li><a href="User_Reference%253ABCI2000Viewer.html">BCI2000Viewer</a></li>
+<li><a href="User_Reference%253ABCI2000FileInfo.html">BCI2000FileInfo</a></li>
+<li><a href="User_Reference%253ABCI2000Export.html">BCI2000Export</a></li>
+<li><a href="User_Reference%253AEEGLabImport.html">EEGLabImport</a></li>
+<li><a href="User_Reference%253AMatlab_MEX_Files.html">Matlab MEX Files</a></li>
+<li><a href="User_Reference%253ACommand_Line_Processing.html">Command Line Processing</a></li>
+</ul></ul><a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+
+</body></html>

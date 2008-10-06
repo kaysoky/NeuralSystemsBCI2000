@@ -62,8 +62,8 @@ They can be made from various materials.
 Most frequently, tin (Sn) and silver/silver-chloride (Ag/AgCl) electrodes are used but there are gold (Au) and platinum (Pt) electrodes as well.
 </p><p>While Sn electrodes have the advantage of being cheap, they introduce a large amount of low-frequency noise ("drifting") below 1Hz. For low-frequency recordings, such as Slow Cortical Potential measurements, or low-noise ERP recordings, Ag/AgCl electrodes are typically used.
 </p><p><i>Important but often neglected:</i> Using electrodes made from different materials in the same recording will result in DC voltage offsets between electrodes, due to electrochemical <a href="http://en.wikipedia.org/wiki/Galvanic_series" class='external text' title="http://en.wikipedia.org/wiki/Galvanic_series" rel="nofollow">contact potentials</a>.
-Such contact potentials are generally larger than what a typical amplifier tolerates. The result will be a zero or much diminished signal amplitude, and a low signal-to-noise ratio.
-This applies to all amplifier inputs (channels, reference, ground).
+Such contact potentials are generally larger than what a typical amplifier tolerates. The result will be a zero or much diminished signal amplitude, and a bad signal-to-noise ratio.
+This applies to all amplifier inputs, i.e. channels, reference, and ground electrodes must all be made from the same material.
 </p>
 <a name="The_10-20_International_System"></a><h2>The 10-20 International System</h2>
 <p>The 10-20 international system is the standard naming and positioning
@@ -135,7 +135,7 @@ Some caps have a Gnd electrode embedded on a scalp position; if this is not the 
 <p>Electrical power lines use sinusoidal voltages with a frequency of 50 or 60 Hz, depending on your
 <a href="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies#Table_of_mains_voltages_and_frequencies" class='external text' title="http://en.wikipedia.org/wiki/List_of_countries_with_mains_power_plugs%2C_voltages_and_frequencies#Table_of_mains_voltages_and_frequencies" rel="nofollow">country</a>.
 Generally, 50Hz are used in Europe, Asia, Africa, and parts of South America; 60Hz are used in North America, and parts of South America.
-</p><p>Mains voltage is typically 110 or 230 Volts, and thus exceeds the EEG's 50 to 100 Microvolts by a factor of <span class="texhtml">2 * 10<sup>6</sup></span>. Therefore, mains interference is ubiquitous in EEG recordings, especially if taken outside specially equipped, shielded rooms, and EEG amplifiers usually provide a so-called notch filter that suppresses signals in a narrow band around the mains frequency in question.
+</p><p>Mains voltage is typically 110 or 230 Volts, and thus exceeds the EEG's 50 to 100 Microvolts by a factor of <span class="texhtml">2 * 10<sup>6</sup></span>, or 126 dB. Therefore, mains interference is ubiquitous in EEG recordings, especially if taken outside specially equipped, shielded rooms, and EEG amplifiers usually provide a so-called notch filter that suppresses signals in a narrow band around the mains frequency in question.
 </p><p>Amplifier notch filters are designed to suppress a certain amount of mains interference. When there is mains interference still visible in the signal after activating the amplifier's notch filter, this is often due to high electrode impedance.
 </p><p><a href="../images/0/0f/MainsInterference.PNG" class="image" title="Image:MainsInterference.PNG"><img src="../images/0/0f/MainsInterference.PNG" alt="Image:MainsInterference.PNG" width="694" height="131" longdesc="/wiki/index.php/Image:MainsInterference.PNG" /></a>
 </p>

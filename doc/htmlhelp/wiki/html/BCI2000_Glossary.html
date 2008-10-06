@@ -4,7 +4,7 @@
 <head>
 <title>BCI2000 Glossary - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="BCI2000 Glossary,Technical Reference:Core Modules,Technical Reference:Parameter Definition,User Reference:DataIOFilter,User Reference:Normalizer,User Reference:Operator Module,User Reference:TransmissionFilter" />
+<meta name="keywords" content="BCI2000 Glossary,Programming Reference:Filter Chain,Technical Reference:Core Modules,Technical Reference:Parameter Definition,User Reference:DataIOFilter,User Reference:Normalizer,User Reference:Operator Module,User Reference:TransmissionFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -36,19 +36,20 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-1'><a href="BCI2000_Glossary.html#Control_Signal"><span class="tocnumber">1</span> <span class="toctext">Control Signal</span></a></li>
 <li class='toclevel-1'><a href="BCI2000_Glossary.html#Core_Module"><span class="tocnumber">2</span> <span class="toctext">Core Module</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Module"><span class="tocnumber">3</span> <span class="toctext">Module</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Operator_Module"><span class="tocnumber">4</span> <span class="toctext">Operator Module</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Parameter"><span class="tocnumber">5</span> <span class="toctext">Parameter</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Roundtrip"><span class="tocnumber">6</span> <span class="toctext">Roundtrip</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Run"><span class="tocnumber">7</span> <span class="toctext">Run</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Sample_Block"><span class="tocnumber">8</span> <span class="toctext">Sample Block</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Session"><span class="tocnumber">9</span> <span class="toctext">Session</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Source_Signal"><span class="tocnumber">10</span> <span class="toctext">Source Signal</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#State"><span class="tocnumber">11</span> <span class="toctext">State</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#State_Vector"><span class="tocnumber">12</span> <span class="toctext">State Vector</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Task"><span class="tocnumber">13</span> <span class="toctext">Task</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Trial"><span class="tocnumber">14</span> <span class="toctext">Trial</span></a></li>
-<li class='toclevel-1'><a href="BCI2000_Glossary.html#Visualization"><span class="tocnumber">15</span> <span class="toctext">Visualization</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Filter"><span class="tocnumber">3</span> <span class="toctext">Filter</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Module"><span class="tocnumber">4</span> <span class="toctext">Module</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Operator_Module"><span class="tocnumber">5</span> <span class="toctext">Operator Module</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Parameter"><span class="tocnumber">6</span> <span class="toctext">Parameter</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Roundtrip"><span class="tocnumber">7</span> <span class="toctext">Roundtrip</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Run"><span class="tocnumber">8</span> <span class="toctext">Run</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Sample_Block"><span class="tocnumber">9</span> <span class="toctext">Sample Block</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Session"><span class="tocnumber">10</span> <span class="toctext">Session</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Source_Signal"><span class="tocnumber">11</span> <span class="toctext">Source Signal</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#State"><span class="tocnumber">12</span> <span class="toctext">State</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#State_Vector"><span class="tocnumber">13</span> <span class="toctext">State Vector</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Task"><span class="tocnumber">14</span> <span class="toctext">Task</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Trial"><span class="tocnumber">15</span> <span class="toctext">Trial</span></a></li>
+<li class='toclevel-1'><a href="BCI2000_Glossary.html#Visualization"><span class="tocnumber">16</span> <span class="toctext">Visualization</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Control_Signal"></a><h2>Control Signal</h2>
@@ -57,6 +58,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Core_Module"></a><h2>Core Module</h2>
 <p>One of <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">Data Acquisition, Signal Processing, and User Application Module</a>.
 These are called core modules because they are involved in on-line processing, as opposed to the <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">Operator Module</a>, which controls operation, and passively displays data sent by core modules, but is not actively involved in processing.
+</p>
+<a name="Filter"></a><h2>Filter</h2>
+<p>A software component that is part of the BCI2000 processing pipe, or <a href="Programming_Reference%253AFilter_Chain.html" title="Programming Reference:Filter Chain">filter chain</a>. Once per <a href="BCI2000_Glossary.html#Sample_Block" title="">sample block</a>, filters are called to act on data in a sequential fashion. A filter maintains its own <a href="BCI2000_Glossary.html#Parameter" title="">parameters</a>, and enables the user to configure its behavior from the <a href="BCI2000_Glossary.html#Operator_Module" title="">operator module</a>.
 </p>
 <a name="Module"></a><h2>Module</h2>
 <p>A single executable that may act as <a href="BCI2000_Glossary.html#Operator_Module" title="">Operator Module</a> or one of the <a href="BCI2000_Glossary.html#Core_Module" title="">Core Modules</a>.

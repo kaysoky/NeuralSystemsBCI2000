@@ -94,18 +94,19 @@ Thus, they can occur independent of activity in the brain's normal output channe
 <a name="Geometry"></a><h3>Geometry</h3>
 <a name="Location"></a><h4>Location</h4>
 <p><a href="../images/thumb/d/de/SensorimotorAreas.PNG/376px-SensorimotorAreas.PNG" class="image" title=""><img src="../images/thumb/d/de/SensorimotorAreas.PNG/376px-SensorimotorAreas.PNG" alt="" width="376" height="198" longdesc="/wiki/index.php/Image:SensorimotorAreas.PNG" /></a>
-</p><p>In its center, the figure displays a human brain viewed from above, with the frontal direction pointing downward. At the top of the figure, a vertical cross-section of the brain is depicted, taken along motor resp. sensory cortex. On the left side, the <i>motor</i> cortex is displayed in red, associated with a "motor homunculus" illustrating which regions are allocated for controlling the respective limb and facial muscles. Similarly, on the right, <i>sensory</i> areas are illustrated by a "sensory homunculus".
-The mu rhythm originates from the hand area of the motor cortex. Also, there is a similar rhythm originating from the motor cortex' foot area.
+</p><p>In its center, the figure displays a human brain viewed from above, with the frontal direction pointing downward. At the top of the figure, a vertical cross-section of the brain is depicted, taken along motor resp. sensory cortex. On the left side, the <i>motor</i> cortex is displayed in red, associated with a "motor homunculus" illustrating which regions are allocated for controlling the respective limb and facial muscles. Similarly, on the right, <i>sensory</i> areas are illustrated by a "sensory homunculus" indicating which regions are allocated for processing sensory information from the respective parts of the body.
+The <i>separation</i> between motor and sensory cortices is a <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Identifying_Brain_Areas" title="User Tutorial:EEG Measurement Setup">major landmark of brain anatomy</a>, and is called the <b>central sulcus</b> or <b>rolandic fissure</b>.
+</p><p>The mu rhythm originates from the hand area of the motor cortex. Also, there is a similar rhythm originating from the motor cortex' foot area, which is located between hemispheres.
 </p>
 <a name="Orientation"></a><h4>Orientation</h4>
 <p><a href="../images/thumb/f/fb/GyrusSulcus.PNG/400px-GyrusSulcus.PNG" class="image" title=""><img src="../images/thumb/f/fb/GyrusSulcus.PNG/400px-GyrusSulcus.PNG" alt="" width="400" height="300" longdesc="/wiki/index.php/Image:GyrusSulcus.PNG" /></a>
-</p><p>The mu rhythm's geometric source character is that of a dipole, with the dipole moment pointing perpendicular to the folded cortical surface. Thus, the orientation of the dipole moment is determined by the dipole's location: With regard to the scalp, a location in a <i>gyrus</i> will have a radial orientiation (1), while a location in a <i>sulcus</i> will result in a dipole orientation that is tangential to the scalp (2). In the latter case, the dipole moment will be perpendicular to the central sulcus as well as tangential to the scalp.
+</p><p>The mu rhythm's geometric source character is that of a dipole, with the dipole moment pointing perpendicular to the folded cortical surface. Thus, the orientation of the dipole moment is determined by the dipole's location: With regard to the scalp, a location in a <i>gyrus</i> will have a radial orientiation (1), while a location in a <i>sulcus</i> will result in a dipole orientation that is tangential to the scalp (2). In the latter case, the dipole moment will be perpendicular to the <b>central sulcus</b> as well as tangential to the scalp.
 </p>
 <a name="Scalp_Potential"></a><h4>Scalp Potential</h4>
 <p><a href="../images/thumb/a/a1/MuScalpPotentials.PNG/347px-MuScalpPotentials.PNG" class="image" title=""><img src="../images/thumb/a/a1/MuScalpPotentials.PNG/347px-MuScalpPotentials.PNG" alt="" width="347" height="263" longdesc="/wiki/index.php/Image:MuScalpPotentials.PNG" /></a>
 </p><p>The figure displays typical mu rhythm scalp potential distributions (adapted from B Blankertz, R Tomioka, S Lemm, M Kawanabe, and KR M&uuml;ller: Optimizing spatial filters for robust EEG single-trial analysis. IEEE Signal Proc. Magazine, 25(1):41-56, January 2008, reproduced with permission of the authors).
-</p><p>The distribution on the left illustrates the topography associated with a radially oriented source dipole (1) located on the right hemispheric motor gyrus.
-The distribution to the right is due to a tangentially oriented source dipole located in the  central sulcus (2).
+</p><p>The distribution on the left illustrates the topography associated with a radially oriented source dipole (1) located on the right hemispheric motor <b>gyrus</b>.
+The distribution to the right is due to a tangentially oriented source dipole located in the  central <b>sulcus</b> (2).
 </p><p>For source locations intermediate between (1) and (2), dipole orientation will be a linear combination of radial and tangential orientations. On the scalp, this results in a linear combination of associated scalp potential distributions (1) and (2).
 </p>
 <a name="Temporal_Properties"></a><h3>Temporal Properties</h3>
@@ -120,10 +121,10 @@ Most often, relative modulation (i.e., change in amplitude relative to mean ampl
 Consequently, its signal processing chain is analogous to that of an AM receiver.
 </p>
 <a name="Spatial_Selection"></a><h3>Spatial Selection</h3>
-<p>Using a linear combination of simultaneous input samples, the <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">spatial filtering</a> step favors signals originating from hand/feet areas. In the AM receiver analogy, this step corresponds to a directional antenna that favors radio signals originating from the spatial direction corresponding to a desired broadcasting station's position over signals from undesired broadcasting stations, or noise.
+<p>Using a linear combination of simultaneous input samples, the <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">spatial filtering</a> step favors signals originating from hand/feet areas over signals that originate from other areas. In the AM receiver analogy, this step corresponds to a directional antenna that favors radio signals originating from the spatial direction corresponding to a desired broadcasting station's position over signals from undesired broadcasting stations, or spatially inhomogeneous noise.
 </p>
 <a name="Frequency_Selection"></a><h3>Frequency Selection</h3>
-<p>All mu rhythm BCIs employ some type of frequency selection, favoring signals in a narrow band around a single, or multiple, peaks of the mu rhythm's spectrum. There is a number of possibilities to implement frequency selection; most common are 
+<p>All mu rhythm BCIs employ some type of frequency selection, favoring signals in a narrow band around a single peak, or multiple peaks, of the mu rhythm's spectrum. There is a number of possibilities to implement frequency selection; most common are 
 </p>
 <ul><li>IIR bandpass filtering, 
 </li><li>windowed spectral estimation methods such as 
@@ -134,7 +135,7 @@ Consequently, its signal processing chain is analogous to that of an AM receiver
 <p>While IIR bandpass filtering is the direct computational analog of an AM receiver's tuning circuit, spectral estimation methods provide amplitudes for all frequency bands simultaneously, and require actual frequency selection in a separate <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">classification step</a>.
 </p>
 <a name="Carrier_Demodulation"></a><h3>Carrier Demodulation</h3>
-<p>After extracting the carrier signal, its amplitude time series (envelope) must be computed to obtain the original signal impressed onto the carrier. In a simple AM receiver, this is done using a rectifier diode in conjunction with a low pass circuit. If a BCI employs bandpass filtering for frequency selection, calculating the mean amplitude over a short interval usually performs the equivalent function.
+<p>After extracting the carrier signal by spatial and temporal filtering, its amplitude time series (envelope) must be computed to obtain the original signal impressed onto the carrier. In a simple AM receiver, this is done using a rectifier diode in conjunction with a low pass circuit. If a BCI employs bandpass filtering for frequency selection, calculating the mean amplitude over a short interval usually performs the equivalent function.
 </p><p>For BCIs using spectral estimation methods, demodulation is often implemented inside the spectral estimation step, with its output being a distribution of absolute amplitude values.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>

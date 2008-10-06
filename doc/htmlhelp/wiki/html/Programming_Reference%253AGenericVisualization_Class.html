@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:GenericVisualization Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:GenericVisualization Class,Programming Tutorial:Implementing a Signal Processing Filter" />
+<meta name="keywords" content="Programming Reference:GenericVisualization Class,Programming Reference:GenericFilter Class,Programming Tutorial:Implementing a Signal Processing Filter,Technical Reference:BCI2000 Messages" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,19 +30,51 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">GenericVisualization Class</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><a name="Presenting_data_to_the_operator_user"></a><h2>Presenting data to the operator user</h2>
-<p>Your filter may have information that it wants to present to the user
--
-e.g., the EEG signal might appear graphically in a window, or an
-application
-task log should be presented. Packaging this information into core
-messages,
-and sending these to the operator module, is handled by the
+<h1 class="pagetitle">GenericVisualization Class</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="Programming_Reference%253AGenericVisualization_Class.html#Location"><span class="tocnumber">1</span> <span class="toctext">Location</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AGenericVisualization_Class.html#Synopsis"><span class="tocnumber">2</span> <span class="toctext">Synopsis</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AGenericVisualization_Class.html#Methods"><span class="tocnumber">3</span> <span class="toctext">Methods</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericVisualization_Class.html#GenericVisualization.28string_SourceID.29"><span class="tocnumber">3.1</span> <span class="toctext">GenericVisualization(string SourceID)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericVisualization_Class.html#Send.28string.7CGenericSignal.7CSignalProperties.7CBitmapImage.29"><span class="tocnumber">3.2</span> <span class="toctext">Send(string|GenericSignal|SignalProperties|BitmapImage)</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="Programming_Reference%253AGenericVisualization_Class.html#Properties"><span class="tocnumber">4</span> <span class="toctext">Properties</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253AGenericVisualization_Class.html#string_SourceID_.28rw.29"><span class="tocnumber">4.1</span> <span class="toctext">string SourceID (rw)</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="Programming_Reference%253AGenericVisualization_Class.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table>
+<a name="Location"></a><h2>Location</h2>
+<p><tt>src/shared/types</tt>
+</p>
+<a name="Synopsis"></a><h2>Synopsis</h2>
+<p>A filter may have information that it wants to present to the user - e.g., the EEG signal might appear graphically in a window, or an
+application task log should be presented. Packaging this information into core messages, and sending these to the operator module, is handled by the
 <tt>GenericVisualization</tt> class.
-Typically, to visualize data this way, you will add a data member of
-type
-<tt>GenericVisualization</tt> to your filter class - see 
-<a href="Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html" title="Programming Tutorial:Implementing a Signal Processing Filter">Programming Tutorial:Implementing a Signal Processing Filter</a> for an example.
+Typically, to visualize data this way, one will add a data member of type <tt>GenericVisualization</tt> to a filter class.
+</p><p>Note that visualization of a filter's output signal is handled transparently by the BCI2000 framework, and no code involving <tt>GenericVisualization</tt> needs to be written unless non-standard visualization behavior is required.
+</p>
+<a name="Methods"></a><h2>Methods</h2>
+<a name="GenericVisualization.28string_SourceID.29"></a><h3>GenericVisualization(string SourceID)</h3>
+<p>Typically, a visualization's sourceID property is set from its constructor, and remains unchanged throughout the object's lifetime.
+</p>
+<a name="Send.28string.7CGenericSignal.7CSignalProperties.7CBitmapImage.29"></a><h3>Send(string|GenericSignal|SignalProperties|BitmapImage)</h3>
+<p>Sends the specified object to the operator module, packaging it into an appropriate <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">BCI2000 message</a>. Strings are sent as log messages, a SignalProperties object is converted into a sequence of corresponding messages of type <a href="Technical_Reference%253ABCI2000_Messages.html#Content_Descriptor.3D255:_Visualization_Configuration" title="Technical Reference:BCI2000 Messages">Visualization Configuration</a>.
+</p><p>Rather than using <tt>GenericVisualization::Send(string)</tt> to send a log message, it is possible to use the <tt>std::ostream::operator&lt;&lt;()</tt> inserter:
+</p>
+<pre>GenericVisualization vis("MYLOG");
+vis &lt;&lt; "Starting run number " &lt;&lt; runNumber &lt;&lt; endl;
+</pre>
+<a name="Properties"></a><h2>Properties</h2>
+<a name="string_SourceID_.28rw.29"></a><h3>string SourceID (rw)</h3>
+<p>The visualization source ID, identifying a target visualization window. This property corresponds to a <a href="Technical_Reference%253ABCI2000_Messages.html#Content_Descriptor.3D1:_Signal_Data" title="Technical Reference:BCI2000 Messages">visualization messages'</a> source identifier field.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="Programming_Reference%253AGenericFilter_Class.html" title="Programming Reference:GenericFilter Class">Programming Reference:GenericFilter Class</a>, <a href="Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html" title="Programming Tutorial:Implementing a Signal Processing Filter">Programming Tutorial:Implementing a Signal Processing Filter</a>
 </p>
 <div class="printfooter">
 </div>

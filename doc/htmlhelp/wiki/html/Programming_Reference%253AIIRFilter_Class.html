@@ -2,9 +2,9 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>Programming Reference:IIRFilter Class - BCI2000 Help</title>
+<title>Programming Reference:IIRFilterBase Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:IIRFilter Class,Programming Reference:Rapid Development,User Reference:SourceFilter" />
+<meta name="keywords" content="Programming Reference:IIRFilterBase Class,Programming Reference:Rapid Development,User Reference:SourceFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,7 +30,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">IIRFilter Class</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<h1 class="pagetitle">IIRFilterBase Class</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#Location"><span class="tocnumber">1</span> <span class="toctext">Location</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#Synopsis"><span class="tocnumber">2</span> <span class="toctext">Synopsis</span></a></li>
@@ -61,16 +61,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#Example"><span class="tocnumber">4</span> <span class="toctext">Example</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#Remarks"><span class="tocnumber">4</span> <span class="toctext">Remarks</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#Example"><span class="tocnumber">5</span> <span class="toctext">Example</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AIIRFilter_Class.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Location"></a><h2>Location</h2>
 <p><tt>BCI2000/src/shared/modules/signalprocessing</tt>
 </p>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>The <tt>IIRFilter</tt> class is a base class for BCI2000 filters that provide <a href="http://en.wikipedia.org/wiki/Digital_filter" class='external text' title="http://en.wikipedia.org/wiki/Digital_filter" rel="nofollow">digital filters</a>. Classes derived from <tt>IIRFilter</tt> are supposed to implement <tt>IIRFilter::DesignFilter()</tt>, specifying filter behavior by means of a transfer function.
-Differently from typical IIR filter implementations, which expect the transfer function in terms of filter coefficients, the BCI2000 <tt>IIRFilter</tt> class expects the transfer function in terms of its numerator's roots ("zeros") and denominator's roots ("poles"); this approach improves numerical stability at higher filter orders.
+<p>The <tt>IIRFilterBase</tt> class is a base class for BCI2000 filters that provide <a href="http://en.wikipedia.org/wiki/Digital_filter" class='external text' title="http://en.wikipedia.org/wiki/Digital_filter" rel="nofollow">digital filters</a>. Classes derived from <tt>IIRFilterBase</tt> are supposed to implement <tt>IIRFilterBase::DesignFilter()</tt>, specifying filter behavior by means of a transfer function.
+Differently from typical IIR filter implementations, which expect the transfer function in terms of filter coefficients, the BCI2000 <tt>IIRFilterBase</tt> class expects the transfer function in terms of its numerator's roots ("zeros") and denominator's roots ("poles"); this approach improves numerical stability at higher filter orders.
 </p>
 <a name="FilterDesign_Library"></a><h2>FilterDesign Library</h2>
 <p>While any method may be used to determine the transfer function, the FilterDesign library provides a convenient way to compute a transfer function from desired filter properties. It is located at <tt>BCI2000/src/extlib/math/FilterDesign</tt>, and was written for BCI2000 based on <a href="http://www-users.cs.york.ac.uk/~fisher/mkfilter/" class='external text' title="http://www-users.cs.york.ac.uk/~fisher/mkfilter/" rel="nofollow">public-domain code by A.J. Fisher</a>; it provides a number of classic filter design methods in form of C++ classes.
@@ -117,18 +118,23 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
 <a name="Allpass.28center_frequency.29"></a><h4>Allpass(center frequency)</h4>
 <p>Design a filter with a constant frequency response but altering phase at the center frequency.
 </p>
+<a name="Remarks"></a><h2>Remarks</h2>
+<ul><li>You may obtain a <i>combination of filters</i> by multiplying their individual transfer functions prior to extracting gain, zeros, and poles.
+</li><li>The actual IIR filter implementation uses a sequence of order-one filter stages corresponding to pairs of zeros and poles. Thus, there is no limitation to the filter order, as it would be the case for implementations based on coefficients, due to numerical instability.
+</li><li>Roots common to both numerator and denominator will be automatically removed from the overall transfer function, so the combined filter may be of an order which is lower than the sum of individual filter orders.
+</li></ul>
 <a name="Example"></a><h2>Example</h2>
-<p>To implement a 2nd order Butterworth low pass filter, you might derive a class <tt>ButterworthLP</tt> from <tt>IIRFilter</tt>, with its declaration being
+<p>To implement a 2nd order Butterworth low pass filter, you might derive a class <tt>ButterworthLP</tt> from <tt>IIRFilterBase</tt>, with its declaration being
 </p>
-<pre>class ButterworthLP&nbsp;: public IIRFilter
+<pre>class ButterworthLP&nbsp;: public IIRFilterBase
 {
   public:
     ButterworthLP();
     virtual ~ButterworthLP() {}
   private:
-    virtual void DesignFilter( IIRFilter::Real gain, 
-                               IIRFilter::ComplexVector&amp; zeros, 
-                               IIRFilter::ComplexVector&amp; poles ) const;
+    virtual void DesignFilter( IIRFilterBase::Real&amp; gain, 
+                               IIRFilterBase::ComplexVector&amp; zeros, 
+                               IIRFilterBase::ComplexVector&amp; poles ) const;
 };
 </pre>
 <p>The filter's corner frequency is specified in a parameter "ButterworthLPCorner":
@@ -140,17 +146,19 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
   END_PARAMETER_DEFINITIONS
 }
 </pre>
-<p>In the <tt>DesignFilter</tt> method, we use the FilterDesign library to obtain poles and zeros from our parameters:
+<p>In the <tt>DesignFilter</tt> method, we use the FilterDesign library to obtain poles and zeros from parameters:
 </p>
 <pre>
  void
- ButterwortLP::ButterworthLP( IIRFilter::Real outGain, IIRFilter::ComplexVector&amp; outZeros, IIRFilter::ComplexVector&amp; outPoles ) const
+ ButterwortLP::ButterworthLP( IIRFilterBase::Real&amp; outGain,
+                              IIRFilterBase::ComplexVector&amp; outZeros, 
+                              IIRFilterBase::ComplexVector&amp; outPoles ) const
  {
    float corner = MeasurementUnits::ReadAsFreq( Parameter( &quot;ButterworthLPCorner&quot; ) );
    if( corner &lt; 0.0 || corner &gt; 0.5 )
      bcierr &lt;&lt; &quot;ButterworthLPCorner exceeds range&quot; &lt;&lt; endl;
 
-   Ratpoly&lt;FilterDesign::Complex&gt;  TransferFunction tf = FilterDesign::Butterworth()
+   Ratpoly&lt;FilterDesign::Complex&gt; tf = FilterDesign::Butterworth()
        .Order( 2 )
        .Lowpass( corner )
        .TransferFunction();
@@ -198,7 +206,7 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
 <ul><li><a href="Programming_Reference%253AGenericFileWriter_Class.html">GenericFileWriter</a></li>
 <li><a href="Programming_Reference%253ABCI2000FileReader_Class.html">BCI2000FileReader</a></li>
 </ul><li>Signal Processing</li>
-<ul><li>IIR Filters</li>
+<ul><li><a href="Programming_Reference%253AIIRFilter_Class.html">IIR Filters</a></li>
 </ul><li>Application Modules</li>
 <ul><li><a href="Programming_Reference%253AApplicationBase_Class.html">ApplicationBase</a></li>
 <li><a href="Programming_Reference%253AFeedbackTask_Class.html">FeedbackTask</a></li>

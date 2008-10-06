@@ -73,8 +73,8 @@ it were a hardware filter built into the amplifier.
 </p><p>To add the <i>SourceFilter</i> to a new or existing source module, add the following files to the project, and recompile:
 </p>
 <pre>BCI2000/src/shared/modules/signalsource/SourceFilter.cpp
-                          /signalprocessing/IIRFilter.cpp
-                                            FilterDesign.cpp
+BCI2000/src/shared/modules/signalprocessing/IIRFilterBase.cpp
+BCI2000/src/extlib/math/FilterDesign.cpp
 </pre>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Programming Howto:Building BCI2000</a>

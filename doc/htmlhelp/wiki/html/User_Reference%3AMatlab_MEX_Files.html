@@ -42,8 +42,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#BCI2000_MEX_functions"><span class="tocnumber">3</span> <span class="toctext">BCI2000 MEX functions</span></a>
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat"><span class="tocnumber">3.1</span> <span class="toctext">load_bcidat</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#convert_bciprm"><span class="tocnumber">3.2</span> <span class="toctext">convert_bciprm</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">3.3</span> <span class="toctext">mem</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat"><span class="tocnumber">3.2</span> <span class="toctext">save_bcidat</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#convert_bciprm"><span class="tocnumber">3.3</span> <span class="toctext">convert_bciprm</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">3.4</span> <span class="toctext">mem</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
@@ -73,7 +74,7 @@ Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
 </p>
 <a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
 <a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>
-<pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... )
+<pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... );
 </pre>
 <p>loads signal, state, and parameter data from the files whose names are given
 as function arguments.
@@ -105,7 +106,7 @@ If multiple files are given, parameter values will match the ones contained
 in the first file.
 </p><p>Optionally, sample ranges may be specified for individual files:
 </p>
-<pre>[ signal, states, parameters ] = load_bcidat( 'filename', [first last] )
+<pre>[ signal, states, parameters ] = load_bcidat( 'filename', [first last] );
 </pre>
 <p>will load a subset of samples defined by first and last sample index.
 Specifying [0 0] for an empty sample range allows to read states and 
@@ -113,6 +114,19 @@ parameters from a file without reading sample data:
 </p>
 <pre>[ ignored, states, parameters ] = load_bcidat( 'filename', [0 0] );
 </pre>
+<a name="save_bcidat"></a><h3><tt>save_bcidat</tt></h3>
+<pre>save_bcidat( 'filename', signal, states, parameters );
+</pre>
+<p>saves signal, state, and parameter data into the named file.
+</p><p>The signal, state, and parameter arguments must be Matlab structs as 
+created by the <tt>load_bcidat</tt>, or <tt>convert_bciprm</tt> mex
+files.
+Signal data is always interpreted as raw data, i.e. it will be written
+into the output file unchanged.
+</p><p>The output file format is deduced from the output file's extension, 
+which may be <i>.dat</i>, <i>.edf</i>, or <i>.gdf</i>. When no extension is recognized, 
+the BCI2000 <i>dat</i> file format is used.
+</p>
 <a name="convert_bciprm"></a><h3><tt>convert_bciprm</tt></h3>
 <p>A Matlab (mex) subroutine that converts BCI2000 parameters
 from Matlab struct into string representation and back.
@@ -132,7 +146,7 @@ definition strings (ignoring the NumericValue field if present).
 that is also present in the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">ARFilter</a>.
 The calling syntax is:
 </p>
-<pre>[spectrum, frequencies] = mem(signal, parms)
+<pre>[spectrum, frequencies] = mem(signal, parms);
 </pre>
 <p>with &lt;signal&gt; and &lt;spectrum&gt; having dimensions channels x values, and
 with &lt;parms&gt; being a vector of parameter values:

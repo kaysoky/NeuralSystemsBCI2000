@@ -89,7 +89,7 @@ versions of some of these member functions:
      &quot;MyState 1 0 0 0&quot;,
    END_STATE_DEFINITIONS
  } </pre>
-<p>The data between the <code>BEGIN_...</code> and <code>END_...</code> macros are lists of comma-separated C-strings, which are additionally broken across lines to improve readability. For the compiler, anything is fine here that can go between the curly braces in
+<p>The data between the <code>BEGIN_...</code> and <code>END_...</code> macros are lists of comma-separated C-strings, which are additionally broken across lines to improve readability. For the compiler, anything is fine here that is allowed between the curly braces in
 </p>
 <pre>const char* array[] = { "entry 1", "entry 2", "entry 3", };
 </pre>
@@ -147,7 +147,8 @@ depending on what your filter needs to do:
 </p><p><tt>StopRun</tt> is also the only function from which a filter may change a parameter value. Any parameter changes inside <tt>StopRun</tt> will propagate to the other modules without any explicit request from your side.
 </p>
 <a name="Resting"></a><h3>Resting</h3>
-<p><tt>Resting</tt> is called instead of <tt>Process</tt> while the system is in suspended state. 
+<p><tt>Resting</tt> is called instead of <tt>Process</tt> while the system is in suspended state.
+Typically, <tt>Resting</tt> is called repeatedly for filters inside source modules; in the remaining modules, <tt>Resting</tt> is called once when the system enters suspended state. Except that it is called at least once in suspended state, you should not make any assumption how often <tt>Resting</tt> is called.
 </p>
 <a name="Halt"></a><h3>Halt</h3>
 <p>The <tt>Halt</tt> function is called before any reconfiguration of the system takes place. If your filter initiates asynchronous operations such as playing a sound file, acquiring EEG data, or executing threads, its <tt>Halt</tt> member function should terminate all such operations immediately. Failure to do so might result in a non-responding module, or in other errors difficult to track down. For descendants of <tt>GenericADC</tt>, implementing the <tt>Halt</tt> function is mandatory. 

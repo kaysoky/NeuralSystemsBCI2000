@@ -30,7 +30,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Obtaining Mu Rhythm Parameters in an Initial Session</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>Although the <a href="User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html" title="User Tutorial:Introduction to the Mu Rhythm">basic properties of the Mu rhythm</a> are identical for all humans, its spatial pattern and its exact frequency will differ.
+<h1 class="pagetitle">Obtaining Mu Rhythm Parameters in an Initial Session</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>Although the <a href="User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html" title="User Tutorial:Introduction to the Mu Rhythm">basic properties of the Mu rhythm</a> are identical for all humans, spatial patterns and exact frequencies will differ.
 Thus, it is necessary to obtain these individual parameters prior to any feedback experiments, in an initial session.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
@@ -56,12 +56,12 @@ Across frequencies, this results in a line spectrum; across electrode locations,
 </li><li>When you have a separate monitor for experimenter and subject, load the parameter file at <tt>parms/fragments/stdlib/DualMonitor.prm</tt>.
 <ul><li>In your system's display properties configuration, make sure that the subject's monitor is configured to be located to the right of the main monitor.
 </li><li>Make sure the <i>WindowLeft</i> parameter matches the main monitor's actual pixel width.
-</li><li>You may need to adapt remaining window position parameters as well; click "Set Config" to try the effect of your changes.
+</li><li>You may need to adapt <i>WindowTop</i>, <i>WindowWidth</i>, and <i>WindowHeight</i> parameters as well; click "Set Config" to try the effect of your changes.
 </li></ul>
 </li><li>Under the "Storage" tab, enter the subject's initials into the "SubjectName" parameter.
 </li><li>Switch to the "Source" tab; for the "ChannelNames" parameter enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels as a white-space separated list (e.g., <tt>Fz CPz Cz CP3 ...</tt>).
 </li><li>Click "Set Config".
-</li><li>Instruct the subject as described in the next section.
+</li><li>Instruct the subject as described in the section below.
 </li><li>Click "Start".
 </li><li>The recording will finish automatically. If you want to acquire more data, just click "Resume" as often as you like.
 </li><li>Finally, click "Quit" to leave BCI2000.
@@ -75,7 +75,7 @@ Across frequencies, this results in a line spectrum; across electrode locations,
 </li><li>When you see a blank screen, please relax and stop any movement imagery.
 </li></ul>
 <a name="Analyzing_the_Initial_Session"></a><h2>Analyzing the Initial Session</h2>
-<p>In the previous section, we completed an initial BCI session using <i>BCI2000</i> that culminated in an EEG data file.  Now, we'll want to analyze the recorded data to determine what features will best facilitate on-line control.  To begin with we'll set aside the data recorded in the previous sections and analyze some sample data that is included with <i>BCI2000</i>:
+<p>In the previous section, we completed an initial BCI session using <i>BCI2000</i> that resulted in an EEG data file.  Now, we'll want to analyze the recorded data to determine which features will best facilitate on-line control.  To begin with we'll set aside the data recorded in the previous sections and analyze some sample data that is included with <i>BCI2000</i>:
 </p>
 <ul><li><a href="User_Tutorial%253APerforming_an_Offline_Analysis_of_EEG_Data.html" title="User Tutorial:Performing an Offline Analysis of EEG Data">Performing an Offline Analysis of EEG Data</a>
 </li></ul>

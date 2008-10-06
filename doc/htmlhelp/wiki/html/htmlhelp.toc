@@ -39,15 +39,15 @@ BCI2000Certification.html
 4 Video_Threshold Video Threshold
 3 Starting_the_Software Starting the Software
 3 Setting_up_the_Optical_Sensor Setting up the Optical Sensor
-4 CursorTask CursorTask
 4 P3Speller P3Speller
+4 CursorTask CursorTask
 4 StimulusPresentation StimulusPresentation
 3 Running_the_Tests Running the Tests
 2 BCI2000Certification:_Additional_Information BCI2000Certification: Additional Information
 3 Overview_of_Important_Files Overview of Important Files
 4 BCI2000Certification.ini BCI2000Certification.ini
 4 BCI2000Certification.cfg BCI2000Certification.cfg
-4 latencyTest.prm latencyTest.prm
+4 CertificationMain.prm CertificationMain.prm
 4 BCI2000Certification.exe BCI2000Certification.exe
 4 BCI2000CertAnalysis.exe BCI2000CertAnalysis.exe
 4 Parameter_Files Parameter Files
@@ -71,6 +71,7 @@ BCI2000_Binaries.html
 2 Contributed_Code Contributed Code
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 August_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" rel="nofollow">August 2008 Build</a>
 4 May_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" rel="nofollow">May 2008 Build</a>
 4 Apr_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080421.exe" rel="nofollow">Apr 2008 Build</a>
 4 Mar_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080312.exe" rel="nofollow">Mar 2008 Build</a>
@@ -82,6 +83,7 @@ BCI2000_Binaries.html
 BCI2000_Glossary.html
 2 Control_Signal Control Signal
 2 Core_Module Core Module
+2 Filter Filter
 2 Module Module
 2 Operator_Module Operator Module
 2 Parameter Parameter
@@ -149,10 +151,23 @@ Contributions%253ABCPy2000.html
 2 Versioning Versioning
 3 Author Author
 3 Version_History Version History
+4 2008-09-30:__BCPy2000_1.0 2008-09-30:  BCPy2000 1.0
 3 Source_Code_Revisions Source Code Revisions
-2 Functional_Description Functional Description
 2 Parameters Parameters
+4 ShowSignalTime ShowSignalTime
+4 TrialsPerBlock TrialsPerBlock
+4 BlocksPerRun BlocksPerRun
+4 WarpFactor WarpFactor
+4 EnslavePython EnslavePython
+4 ApplicationDescription ApplicationDescription
+4 SignalProcessingDescription SignalProcessingDescription
+4 SourceDescription SourceDescription
 2 States States
+4 PresentationPhase PresentationPhase
+4 EventOffset EventOffset
+4 CurrentTrial CurrentTrial
+4 CurrentBlock CurrentBlock
+4 VEStimulusTime VEStimulusTime
 
 Contributions%253ABatch.html
 2 Synopsis Synopsis
@@ -559,6 +574,21 @@ Contributions%253ATMSiADC.html
 Contributions%253ATools.html
 2 See_also See also
 
+Contributions%253AvAmpADC.html
+2 Function Function
+3 V-Amp_Hardware V-Amp Hardware
+2 Parameters Parameters
+3 SamplingRate SamplingRate
+3 DeviceIDs DeviceIDs
+3 HPFilterCorner HPFilterCorner
+3 SampleBlockSize SampleBlockSize
+3 SourceCh SourceCh
+3 SourceChDevices SourceChDevices
+3 SourceChList SourceChList
+3 AcquisitionMode AcquisitionMode
+2 Additional_Information Additional Information
+3 Data_Storage Data Storage
+
 Creating_a_User_Account.html
 2 Do-it_yourself_Account_Management Do-it yourself Account Management
 3 Creating_a_new_account Creating a new account
@@ -693,6 +723,60 @@ Programming_Reference%253AApplicationBase_Class.html
 2 Remarks Remarks
 2 See_also See also
 
+Programming_Reference%253AAssociationMap_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Association_Class Association Class
+3 Properties Properties
+4 int_StimulusDuration_.28rw.29 int StimulusDuration (rw)
+4 int_ISIMinDuration_.28rw.29 int ISIMinDuration (rw)
+4 int_ISIMaxDuration_.28rw.29 int ISIMaxDuration (rw)
+4 SetOfStimuli_Stimuli_.28rw.29 SetOfStimuli Stimuli (rw)
+4 SetOfTargets_Targets_.28rw.29 SetOfTargets Targets (rw)
+3 Methods Methods
+4 Clear.28.29 Clear()
+4 DeleteObjects.28.29 DeleteObjects()
+4 Add.28Stimulus_pointer.7CTarget_pointer.29 Add(Stimulus pointer|Target pointer)
+4 Remove.28Stimulus_pointer.7CTarget_pointer.29 Remove(Stimulus pointer|Target pointer)
+4 bool_Contains.28Stimulus_pointer.7CTarget_pointer.29 bool Contains(Stimulus pointer|Target pointer)
+4 bool_Intersects.28SetOfStimuli.7CSetOfTargets.29 bool Intersects(SetOfStimuli|SetOfTargets)
+4 Present.28.29 Present()
+4 Conceal.28.29 Conceal()
+4 Select.28.29 Select()
+2 AssociationMap_Class AssociationMap Class
+3 Methods_2 Methods
+4 bool_StimuliIntersect.28StimulusCode1.2C_StimulusCode2.29 bool StimuliIntersect(StimulusCode1, StimulusCode2)
+4 bool_TargetsIntersect.28StimulusCode1.2C_StimulusCode2.29 bool TargetsIntersect(StimulusCode1, StimulusCode2)
+4 SetOfStimuli_TargetToStimuli.28Target_pointer.29 SetOfStimuli TargetToStimuli(Target pointer)
+4 TargetClassification_ClassifyTargets.28ClassResult.29 TargetClassification ClassifyTargets(ClassResult)
+2 ClassResult_Class ClassResult Class
+2 TargetClassification_Class TargetClassification Class
+3 Methods_3 Methods
+4 Target_pointer_MostLikelyTarget.28.29 Target pointer MostLikelyTarget()
+2 See_also See also
+
+Programming_Reference%253AAudioSpellerTarget_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 AudioSpellerTarget.28Speller.29 AudioSpellerTarget(Speller)
+3 Select Select
+2 Properties Properties
+4 string_EntryText_.28rw.29 string EntryText (rw)
+3 string_Sound_.28rw.29 string Sound (rw)
+2 See_also See also
+
+Programming_Reference%253AAudioStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_Sound_.28rw.29 string Sound (rw)
+3 float_Volume_.28rw.29 float Volume (rw)
+2 Methods Methods
+3 Present.28.29 Present()
+3 Conceal.28.29 Conceal()
+2 See_also See also
+
 Programming_Reference%253ABCI2000FileReader.html
 2 Methods Methods
 3 BCI2000FileReader.28.5Bfile_name.5D.29 BCI2000FileReader([file name])
@@ -757,6 +841,21 @@ Programming_Reference%253ABCI2000_Source_Code.html
 2 Coding_Guidelines Coding Guidelines
 2 See_also See also
 
+Programming_Reference%253ABitmapImage_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 BitmapImage.28width.3D0.2C_height.3D0.29 BitmapImage(width=0, height=0)
+3 SetBlack.28.29 SetBlack()
+3 SetBackground.28BitmapImage.29 SetBackground(BitmapImage)
+3 WriteBinary.28ostream.29.2C_ReadBinary.28istream.29 WriteBinary(ostream), ReadBinary(istream)
+2 Properties Properties
+3 bool_Empty_.28r.29 bool Empty (r)
+3 int_Width.2C_Height_.28r.29 int Width, Height (r)
+2 Pixel_Access Pixel Access
+2 Addition_and_Subtraction Addition and Subtraction
+2 See_also See also
+
 Programming_Reference%253ABlockRandSeq_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -777,8 +876,10 @@ Programming_Reference%253AContents.html
 3 Data_I.2FO Data I/O
 3 Signal_Processing_Modules Signal Processing Modules
 3 Application_Modules Application Modules
-4 Visual_Presentation Visual Presentation
-4 Auditory_Presentation Auditory Presentation
+4 Feedback_Applications Feedback Applications
+4 Stimulus_Presentation.2FERP_Spelling_Applications Stimulus Presentation/ERP Spelling Applications
+4 Visual_Output Visual Output
+4 Audio_Output Audio Output
 3 Miscellaneous Miscellaneous
 2 Tutorials Tutorials
 2 See_also See also
@@ -802,9 +903,82 @@ Programming_Reference%253ADebug_Output.html
 2 Logging_into_Files Logging into Files
 2 See_also See also
 
+Programming_Reference%253ADisplayWindow_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 DisplayWindow.28.29 DisplayWindow()
+3 .7EDisplayWindow.28.29 ~DisplayWindow()
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Add.28GraphObject_pointer.29.2C_Remove.28GraphObject_pointer.29 Add(GraphObject pointer), Remove(GraphObject pointer)
+3 DeleteObjects.28.29 DeleteObjects()
+3 Invalidate.28.29 Invalidate()
+3 InvalidateRect.28GUI::Rect.29 InvalidateRect(GUI::Rect)
+3 Update.28.29 Update()
+3 GUI::Rect_NormalizedToPixelCoordinates.28GUI::Rect.29 GUI::Rect NormalizedToPixelCoordinates(GUI::Rect)
+3 GUI::Rect_PixelToNormalizedCoordinates.28GUI::Rect.29 GUI::Rect PixelToNormalizedCoordinates(GUI::Rect)
+3 Paint.28RegionHandle.3DNULL.29 Paint(RegionHandle=NULL)
+3 Change.28.29 Change()
+3 Click.28int_x.2C_int_y.29 Click(int x, int y)
+3 QueueOfGraphObjects_ObjectsClicked.28.29 QueueOfGraphObjects ObjectsClicked()
+3 ClearClicks.28.29 ClearClicks()
+3 BitmapImage_BitmapData.28width.3D0.2C_height.3D0.29 BitmapImage BitmapData(width=0, height=0)
+2 Properties Properties
+3 bool_Visible_.28r.29 bool Visible (r)
+3 int_Left.2C_Top.2C_Width.2C_Height_.28rw.29 int Left, Top, Width, Height (rw)
+3 RGBColor_Color_.28rw.29 RGBColor Color (rw)
+3 GUI::DrawContext_Context_.28rw.29 GUI::DrawContext Context (rw)
+2 See_also See also
+
+Programming_Reference%253AEllipticShape_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Properties Properties
+3 GUI::Point_Center GUI::Point Center
+3 float_LineWidth float LineWidth
+3 RGBColor_FillColor RGBColor FillColor
+3 RGBColor_Color RGBColor Color
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 See_also See also
+
+Programming_Reference%253AEnvironmentExtension_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Events Events
+3 Publish Publish
+3 Preflight Preflight
+3 Initialize Initialize
+3 PostInitialize PostInitialize
+3 StartRun StartRun
+3 PostStartRun PostStartRun
+3 StopRun StopRun
+3 PostStopRun PostStopRun
+3 Process Process
+3 PostProcess PostProcess
+3 Resting Resting
+2 Methods Methods
+3 ParamRef_Parameter.28string_Name.29 ParamRef Parameter(string Name)
+3 ParamRef_OptionalParameter.28string_Name.2C_value_Default.29 ParamRef OptionalParameter(string Name, value Default)
+3 StateRef_State.28string_Name.29 StateRef State(string Name)
+3 StateRef_OptionalState.28string_Name.29 StateRef OptionalState(string Name)
+2 Instantiation Instantiation
+2 See_also See also
+
 Programming_Reference%253AEnvironment_Class.html
 2 Your_code.27s_Environment Your code's <tt>Environment</tt>
 2 Access_to_Parameters_and_States Access to Parameters and States
+2 Iterating_over_Parameters_and_States Iterating over Parameters and States
 2 Working_around_Borland_VCL_Inheritance_Restrictions Working around Borland VCL Inheritance Restrictions
 2 See_also See also
 
@@ -844,6 +1018,22 @@ Programming_Reference%253AEvents.html
 2 Limitations Limitations
 2 Event_API Event API
 2 Descriptor_Syntax Descriptor Syntax
+2 Example Example
+2 See_also See also
+
+Programming_Reference%253AFeedbackDemo_Application.html
+2 Location Location
+2 Synopsis Synopsis
+2 Inheritance Inheritance
+2 Feedback_Window Feedback Window
+2 Parameters Parameters
+3 CursorColor CursorColor
+3 CursorWidth CursorWidth
+2 Localization Localization
+2 Cursor_Speed Cursor Speed
+2 Feedback Feedback
+2 Trial_Statistics Trial Statistics
+2 Application_Log Application Log
 2 See_also See also
 
 Programming_Reference%253AFeedbackTask_Class.html
@@ -921,7 +1111,83 @@ Programming_Reference%253AGenericFilter_Class.html
 2 Rules_for_Parameter_and_State_access Rules for Parameter and State access
 
 Programming_Reference%253AGenericVisualization_Class.html
-2 Presenting_data_to_the_operator_user Presenting data to the operator user
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 GenericVisualization.28string_SourceID.29 GenericVisualization(string SourceID)
+3 Send.28string.7CGenericSignal.7CSignalProperties.7CBitmapImage.29 Send(string|GenericSignal|SignalProperties|BitmapImage)
+2 Properties Properties
+3 string_SourceID_.28rw.29 string SourceID (rw)
+2 See_also See also
+
+Programming_Reference%253AGraphDisplay_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 GraphDisplay.28.29 GraphDisplay()
+3 .7EGraphDisplay.28.29 ~GraphDisplay()
+3 Add.28GraphObject_pointer.29.2C_Remove.28GraphObject_pointer.29 Add(GraphObject pointer), Remove(GraphObject pointer)
+3 DeleteObjects.28.29 DeleteObjects()
+3 Invalidate.28.29 Invalidate()
+3 InvalidateRect.28GUI::Rect.29 InvalidateRect(GUI::Rect)
+3 Update.28.29 Update()
+3 GUI::Rect_NormalizedToPixelCoordinates.28GUI::Rect.29 GUI::Rect NormalizedToPixelCoordinates(GUI::Rect)
+3 GUI::Rect_PixelToNormalizedCoordinates.28GUI::Rect.29 GUI::Rect PixelToNormalizedCoordinates(GUI::Rect)
+3 Paint.28RegionHandle.3DNULL.29 Paint(RegionHandle=NULL)
+3 Change.28.29 Change()
+3 Click.28int_x.2C_int_y.29 Click(int x, int y)
+3 QueueOfGraphObjects_ObjectsClicked.28.29 QueueOfGraphObjects ObjectsClicked()
+3 ClearClicks.28.29 ClearClicks()
+3 BitmapImage_BitmapData.28width.3D0.2C_height.3D0.29 BitmapImage BitmapData(width=0, height=0)
+2 Properties Properties
+3 GUI::DrawContext_Context_.28rw.29 GUI::DrawContext Context (rw)
+3 RGBColor_Color_.28rw.29 RGBColor Color (rw)
+2 See_also See also
+
+Programming_Reference%253AGraphObject_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 GraphObject.28GraphDisplay.2C_int_zOrder.29 GraphObject(GraphDisplay, int zOrder)
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Properties Properties
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 Events Events
+3 OnPaint.28GUI::DrawContext.29 OnPaint(GUI::DrawContext)
+3 OnChange.28GUI::DrawContext.29 OnChange(GUI::DrawContext)
+3 bool_OnClick.28GUI::Point.29 bool OnClick(GUI::Point)
+2 Descendants Descendants
+2 See_also See also
+
+Programming_Reference%253AIIRFilterBase_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 FilterDesign_Library FilterDesign Library
+3 FilterDesign::Butterworth FilterDesign::Butterworth
+4 Order.28order.29 Order(order)
+4 Lowpass.28corner_frequency.29 Lowpass(corner frequency)
+4 Highpass.28corner_frequency.29 Highpass(corner frequency)
+4 Bandpass.28low_corner.2C_high_corner.29 Bandpass(low corner, high corner)
+4 Bandstop.28low_corner.2C_high_corner.29 Bandstop(low corner, high corner)
+4 TransferFunction TransferFunction
+3 FilterDesign::Chebychev FilterDesign::Chebychev
+4 Ripple_dB.28amplitude.29 Ripple_dB(amplitude)
+3 FilterDesign::Resonator FilterDesign::Resonator
+4 QFactor.28q.29 QFactor(q)
+4 Bandpass.28center_frequency.29 Bandpass(center frequency)
+4 Bandstop.28center_frequency.29 Bandstop(center frequency)
+4 Allpass.28center_frequency.29 Allpass(center frequency)
+2 Remarks Remarks
+2 Example Example
+2 See_also See also
 
 Programming_Reference%253AIIRFilter_Class.html
 2 Location Location
@@ -941,7 +1207,47 @@ Programming_Reference%253AIIRFilter_Class.html
 4 Bandpass.28center_frequency.29 Bandpass(center frequency)
 4 Bandstop.28center_frequency.29 Bandstop(center frequency)
 4 Allpass.28center_frequency.29 Allpass(center frequency)
+2 Remarks Remarks
 2 Example Example
+2 See_also See also
+
+Programming_Reference%253AImageStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_File_.28rw.29 string File (rw)
+3 enum_RenderingMode_.28rw.29 enum RenderingMode (rw)
+3 Inherited_from_VisualStimulus Inherited from <a href="Programming_Reference%253AVisualStimulus_Class.html" title="Programming Reference:VisualStimulus Class">VisualStimulus</a>
+3 enum_PresentationMode_.28rw.29 enum PresentationMode (rw)
+3 float_DimFactor_.28rw.29 float DimFactor (rw)
+3 Inherited_from_GraphObject Inherited from <a href="Programming_Reference%253AGraphObject_Class.html" title="Programming Reference:GraphObject Class">GraphObject</a>
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 Methods Methods
+3 Inherited_from_GraphObject_2 Inherited from <a href="Programming_Reference%253AGraphObject_Class.html" title="Programming Reference:GraphObject Class">GraphObject</a>
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 See_also See also
+
+Programming_Reference%253ALabelIndex_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 LabelIndex.28.29 LabelIndex()
+3 bool_Exists.28string_Label.29 bool Exists(string Label)
+3 Clear.28.29 Clear()
+3 Resize.28Size.29 Resize(Size)
+2 WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29 WriteToStream(ostream), ReadFromStream(istream)
+2 Properties Properties
+3 bool_IsTrivial_.28r.29 bool IsTrivial (r)
+3 int_Size_.28r.29 int Size (r)
+2 Operators Operators
 2 See_also See also
 
 Programming_Reference%253ALocalization.html
@@ -990,6 +1296,40 @@ Programming_Reference%253AMidiPlayer_Class.html
 2 Remarks Remarks
 2 See_also See also
 
+Programming_Reference%253AOSThread_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 OSThread.28bool_createSuspended.3Dfalse.29 OSThread(bool createSuspended=false)
+3 .7EOSThread.28.29 ~OSThread()
+3 Suspend.28.29 Suspend()
+3 Resume.28.29 Resume()
+3 Terminate.28.29 Terminate()
+2 Events Events
+3 int_Execute int Execute
+2 Properties Properties
+3 int_ID_.28r.29 int ID (r)
+3 bool_IsTerminating_.28r.29 bool IsTerminating (r)
+3 bool_IsTerminated_.28r.29 bool IsTerminated (r)
+3 int_Result_.28r.29 int Result (r)
+
+Programming_Reference%253APhysicalUnit_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 PhysicalUnit.28.29 PhysicalUnit()
+3 Clear.28.29 Clear()
+3 bool_IsPhysical.28string.29 bool IsPhysical(string)
+3 number_PhysicalToRaw.28string.29 number PhysicalToRaw(string)
+3 string_RawToPhysical.28number.29 string RawToPhysical(number)
+3 WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29 WriteToStream(ostream), ReadFromStream(istream)
+2 Properties Properties
+3 number_Offset_.28rw.29.2C_Gain_.28rw.29 number Offset (rw), Gain (rw)
+3 string_Symbol_.28rw.29 string Symbol (rw)
+3 number_RawMin.2C_RawMax_.28rw.29 number RawMin, RawMax (rw)
+2 Magnitude_Prefixes Magnitude Prefixes
+2 See_also See also
+
 Programming_Reference%253AProject_Settings.html
 2 Pre-Compiled_Headers Pre-Compiled Headers
 3 PCH_Policy_in_BCI2000 PCH Policy in BCI2000
@@ -1016,9 +1356,196 @@ Programming_Reference%253ARapid_Development.html
 2 Helper_Classes Helper Classes
 2 Matlab_Integration Matlab Integration
 
+Programming_Reference%253ARectangularShape_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Properties Properties
+3 GUI::Point_Center GUI::Point Center
+3 float_LineWidth float LineWidth
+3 RGBColor_FillColor RGBColor FillColor
+3 RGBColor_Color RGBColor Color
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 See_also See also
+
+Programming_Reference%253AScene_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 Scene.28GraphDisplay.29 Scene(GraphDisplay)
+3 Add.28primObj_pointer.29 Add(primObj pointer)
+3 Remove.28primObj_pointer.29 Remove(primObj pointer)
+3 DeleteObjects.28.29 DeleteObjects()
+3 Move.28float_deltaT.29 Move(float deltaT)
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Properties Properties
+3 OnCollideFunc_OnCollide_.28w.29 OnCollideFunc OnCollide (w)
+3 SetOfObjects_Objects_.28r.29 SetOfObjects Objects (r)
+3 string_ImagePath_.28rw.29 string ImagePath (rw)
+3 float_CameraX.2C_CameraY.2C_CameraZ_.28rw.29 float CameraX, CameraY, CameraZ (rw)
+3 cameraNLight_CameraAndLight_.28rw.29 cameraNLight CameraAndLight (rw)
+3 int_BitDepth_.28rw.29 int BitDepth (rw)
+3 bool_DoubleBuffering_.28rw.29 bool DoubleBuffering (rw)
+3 bool_DisableVsync_.28rw.29 bool DisableVsync (rw)
+3 bool_HardwareAccelerated_.28r.29 bool HardwareAccelerated (r)
+2 See_also See also
+
+Programming_Reference%253AShape_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 Shape.28GraphDisplay.2C_int_zOrder_.3D_ShapeZOrder.29 Shape(GraphDisplay, int zOrder = ShapeZOrder)
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Methods_for_Intersection_Testing Methods for Intersection Testing
+3 enum_TestResult enum TestResult
+3 TestResult_Contains.28Point.29 TestResult Contains(Point)
+3 TestResult_IntersectsArea.28Shape.29 TestResult IntersectsArea(Shape)
+3 static_bool_AreaIntersection.28Shape.2C_Shape.29 static bool AreaIntersection(Shape, Shape)
+2 Properties Properties
+3 GUI::Point_Center GUI::Point Center
+3 float_LineWidth float LineWidth
+3 RGBColor_FillColor RGBColor FillColor
+3 RGBColor_Color RGBColor Color
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 Events Events
+3 OnPaint.28GUI::DrawContext.29 OnPaint(GUI::DrawContext)
+2 See_also See also
+
 Programming_Reference%253ASignals.html
-2 Signals Signals
-2 Signal_Properties Signal Properties
+2 GenericSignal_Class GenericSignal Class
+3 Location Location
+3 Synopsis Synopsis
+3 Methods Methods
+4 GenericSignal.28int_Channels.2C_int_Elements.2C_SignalType.3Dint16.29 GenericSignal(int Channels, int Elements, SignalType=int16)
+4 GenericSignal.28SignalProperties.29 GenericSignal(SignalProperties)
+4 WriteToStream.28ostream.29.2FReadFromStream.28istream.29 WriteToStream(ostream)/ReadFromStream(istream)
+4 WriteBinary.28ostream.29.2FReadBinary.28istream.29 WriteBinary(ostream)/ReadBinary(istream)
+4 WriteValueBinary.28ostream.2C_channel.2C_element.29.2FReadValueBinary.28istream.2C_channel.2C_element.29 WriteValueBinary(ostream, channel, element)/ReadValueBinary(istream, channel, element)
+3 Properties Properties
+4 SignalProperties_Properties_.28rw.29 SignalProperties Properties (rw)
+4 int_Channels_.28r.29 int Channels (r)
+4 int_Elements_.28r.29 int Elements (r)
+4 SignalType_Type_.28r.29 SignalType Type (r)
+4 number_Value.28Channel.2C_Element.29_.28rw.29 number Value(Channel, Element) (rw)
+2 SignalProperties_Class SignalProperties Class
+3 Location_2 Location
+3 Synopsis_2 Synopsis
+3 Methods_2 Methods
+4 SignalProperties.28Channels.2C_Elements.2C_SignalType.3Dint16.29 SignalProperties(Channels, Elements, SignalType=int16)
+4 bool_Accommodates.28SignalProperties.29 bool Accommodates(SignalProperties)
+4 float_ChannelIndex.28string_Address.29.2C_ElementIndex.28string_Address.29 float ChannelIndex(string Address), ElementIndex(string Address)
+3 Properties_2 Properties
+4 int_Channels.2C_Elements_.28rw.29 int Channels, Elements (rw)
+4 SignalType_Type_.28rw.29.3D SignalType Type (rw)=
+4 string_Name_.28rw.29 string Name (rw)
+4 LabelIndex_ChannelLabels.2C_ElementLabels_.28rw.29 LabelIndex ChannelLabels, ElementLabels (rw)
+4 PhysicalUnit_ChannelUnit.2C_ElementUnit.2C_ValueUnit_.28rw.29 PhysicalUnit ChannelUnit, ElementUnit, ValueUnit (rw)
+4 bool_IsEmpty bool IsEmpty
+
+Programming_Reference%253ASoundStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_File_.28rw.29 string File (rw)
+3 float_Volume_.28rw.29 float Volume (rw)
+3 float_Pan_.28rw.29 float Pan (rw)
+3 float_PlayingPos_.28r.29 float PlayingPos (r)
+3 bool_IsPlaying_.28r.29 bool IsPlaying (r)
+3 enum_Error_ErrorState_.28r.29 enum Error ErrorState (r)
+2 Enumerations Enumerations
+3 enum_Error enum Error
+2 Methods Methods
+3 Present.28.29 Present()
+3 Conceal.28.29 Conceal()
+2 See_also See also
+
+Programming_Reference%253ASpeechStimulus.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_Text_.28rw.29 string Text (rw)
+3 float_Volume_.28rw.29 float Volume (rw)
+2 Methods Methods
+3 Present.28.29 Present()
+3 Conceal.28.29 Conceal()
+2 See_also See also
+
+Programming_Reference%253ASpeechStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_Text_.28rw.29 string Text (rw)
+3 float_Volume_.28rw.29 float Volume (rw)
+2 Methods Methods
+3 Present.28.29 Present()
+3 Conceal.28.29 Conceal()
+2 See_also See also
+
+Programming_Reference%253ASpellerCommand_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 SpellerCommand.28string.29 SpellerCommand(string)
+3 ReadFromStream.28istream.29.2C_WriteToStream.28ostream.29 ReadFromStream(istream), WriteToStream(ostream)
+2 Properties Properties
+3 string_Code_.28rw.29 string Code (rw)
+3 string_Value_.28rw.29 string Value (rw)
+2 See_also See also
+
+Programming_Reference%253ASpeller_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Speller_Class Speller Class
+3 Methods Methods
+4 Enter.28string.29 Enter(string)
+4 Add.28SpellerTarget_pointer.29 Add(SpellerTarget pointer)
+4 Remove.28SpellerTarget_pointer.29 Remove(SpellerTarget pointer)
+4 DeleteObjects.28.29 DeleteObjects()
+4 SpellerTarget_pointer_SuggestTarget.28string_from.2C_string_to.29 SpellerTarget pointer SuggestTarget(string from, string to)
+3 Events Events
+4 OnEnter.28string.29 OnEnter(string)
+2 SpellerTarget_Class SpellerTarget Class
+3 Methods_2 Methods
+4 SpellerTarget.28Speller.29 SpellerTarget(Speller)
+4 Select.28.29 Select()
+3 Properties Properties
+4 string_EntryText_.28rw.29 string EntryText (rw)
+2 See_also See also
+
+Programming_Reference%253AStatusBar_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 StatusBar.28GraphDisplay.29 StatusBar(GraphDisplay)
+2 Properties Properties
+3 string_GoalText_.28rw.29 string GoalText (rw)
+3 string_ResultText_.28rw.29 string ResultText (rw)
+3 float_TextHeight_.28rw.29 float TextHeight (rw)
+3 RGBColor_TextColor_.28rw.29 RGBColor TextColor (rw)
+3 RGBColor_Color_.28rw.29 RGBColor Color (rw)
+2 See_also See also
 
 Programming_Reference%253AStimulusTask_Class.html
 2 Location Location
@@ -1076,6 +1603,107 @@ Programming_Reference%253AStimulusTask_Class.html
 2 Timeline Timeline
 2 See_also See also
 
+Programming_Reference%253AStimulus_Class.html
+2 Stimulus_Class Stimulus Class
+3 Location Location
+3 Synopsis Synopsis
+3 Properties Properties
+4 int_Tag_.28rw.29 int Tag (rw)
+3 Methods Methods
+4 Present.28.29 Present()
+4 Conceal.28.29 Conceal()
+3 Events Events
+4 OnPresent.28.29 OnPresent()
+4 OnConceal.28.29 OnConceal()
+3 Descendants Descendants
+2 SetOfStimuli_Class SetOfStimuli Class
+3 Location_2 Location
+3 Synopsis_2 Synopsis
+3 Methods_2 Methods
+4 Add.28Stimulus_pointer.29 Add(Stimulus pointer)
+4 Remove.28Stimulus_pointer.29 Remove(Stimulus pointer)
+4 Clear.28.29 Clear()
+4 DeleteObjects.28.29 DeleteObjects()
+4 bool_Contains.28Stimulus_pointer.29 bool Contains(Stimulus pointer)
+4 bool_Intersects.28SetOfStimuli.29 bool Intersects(SetOfStimuli)
+4 Present.28.29_2 Present()
+4 Conceal.28.29_2 Conceal()
+2 See_also See also
+
+Programming_Reference%253ATarget_Class.html
+2 Target_Class Target Class
+3 Location Location
+3 Synopsis Synopsis
+3 Properties Properties
+4 int_Tag_.28rw.29 int Tag (rw)
+3 Methods Methods
+4 Select.28.29 Select()
+3 Events Events
+4 OnSelect.28.29 OnSelect()
+3 Descendants Descendants
+2 SetOfTargets_Class SetOfTargets Class
+3 Location_2 Location
+3 Synopsis_2 Synopsis
+3 Methods_2 Methods
+4 Add.28Target_pointer.29 Add(Target pointer)
+4 Remove.28Target_pointer.29 Remove(Target pointer)
+4 Clear.28.29 Clear()
+4 DeleteObjects.28.29 DeleteObjects()
+4 bool_Contains.28Target_pointer.29 bool Contains(Target pointer)
+4 bool_Intersects.28SetOfTargets.29 bool Intersects(SetOfTargets)
+4 Select.28.29_2 Select()
+2 See_also See also
+
+Programming_Reference%253ATextField_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Methods Methods
+3 TextField.28GraphDisplay.2C_int_zOrder.3DMessageZOrder.29 TextField(GraphDisplay, int zOrder=MessageZOrder)
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 Properties Properties
+3 string_Text string Text
+3 float_TextHeight float TextHeight
+3 RGBColor_TextColor RGBColor TextColor
+3 RGBColor_Color RGBColor Color
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 See_also See also
+
+Programming_Reference%253ATextStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 string_Text_.28rw.29 string Text (rw)
+3 RGBColor_IntensifiedColor RGBColor IntensifiedColor
+3 Inherited_from_VisualStimulus Inherited from <a href="Programming_Reference%253AVisualStimulus_Class.html" title="Programming Reference:VisualStimulus Class">VisualStimulus</a>
+3 enum_PresentationMode_.28rw.29 enum PresentationMode (rw)
+3 float_DimFactor_.28rw.29 float DimFactor (rw)
+3 Inherited_from_TextField Inherited from <a href="Programming_Reference%253ATextField_Class.html" title="Programming Reference:TextField Class">TextField</a>
+3 string_Text string Text
+3 float_TextHeight float TextHeight
+3 RGBColor_TextColor RGBColor TextColor
+3 RGBColor_Color RGBColor Color
+3 GraphDisplay_Display_.28r.29 GraphDisplay Display (r)
+3 bool_Visible_.28r.29 bool Visible (r)
+3 enum_AspectRatioMode_.28rw.29 enum AspectRatioMode (rw)
+3 GUI::Rect_DisplayRect_.28rw.29 GUI::Rect DisplayRect (rw)
+2 Methods Methods
+3 Inherited_from_TextField_2 Inherited from <a href="Programming_Reference%253ATextField_Class.html" title="Programming Reference:TextField Class">TextField</a>
+3 Show.28.29 Show()
+3 Hide.28.29 Hide()
+3 Invalidate.28.29 Invalidate()
+3 Paint.28.29 Paint()
+3 Change.28.29 Change()
+3 bool_Click.28GUI::Point.29 bool Click(GUI::Point)
+2 See_also See also
+
 Programming_Reference%253ATextToSpeech_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -1104,6 +1732,17 @@ Programming_Reference%253ATrialStatistics_Class.html
 3 UpdateInvalid.28.29 UpdateInvalid()
 2 Remarks Remarks
 2 Limitations Limitations
+2 See_also See also
+
+Programming_Reference%253AVisualStimulus_Class.html
+2 Location Location
+2 Synopsis Synopsis
+2 Properties Properties
+3 enum_PresentationMode_.28rw.29 enum PresentationMode (rw)
+3 float_DimFactor_.28rw.29 float DimFactor (rw)
+2 Methods Methods
+3 Present.28.29 Present()
+3 Conceal.28.29 Conceal()
 2 See_also See also
 
 Programming_Reference%253AWavePlayer_Class.html
@@ -1154,6 +1793,16 @@ Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html
 2 Constructor_and_destructor Constructor and destructor
 2 Filter_instantiation Filter instantiation
 2 Visualizing_filter_output Visualizing filter output
+
+Programming_Tutorial%253AImplementing_an_Input_Logger.html
+2 Overview Overview
+2 Implementation Implementation
+3 Device_API Device API
+3 Event_Interface Event Interface
+3 Thread_Interface Thread Interface
+3 EnvironmentExtension_Class EnvironmentExtension Class
+2 Finished Finished
+2 See_also See also
 
 Special%253AAllpages.html
 
@@ -1278,6 +1927,7 @@ User_FAQ.html
 3 Timing_Issues Timing Issues
 3 Startup Startup
 3 Feedback Feedback
+3 gUSBamp_not_recognized gUSBamp not recognized
 2 Configuration Configuration
 3 Replaying_Recorded_Data Replaying Recorded Data
 3 Random_Sequences Random Sequences
@@ -1307,6 +1957,58 @@ User_Reference%253AAlignmentFilter.html
 3 SourceChTimeOffset SourceChTimeOffset
 2 States States
 2 Example Example
+
+User_Reference%253ABCI2000Certification.html
+2 Introduction Introduction
+2 Latencies Latencies
+3 Defining_Latencies Defining Latencies
+4 Amplifier_Latency Amplifier Latency
+4 Processing_Latency Processing Latency
+4 Output_Latency Output Latency
+4 System_Latency System Latency
+4 Block_Duration.2C_Block_Duration_Jitter Block Duration, Block Duration Jitter
+3 Measuring_Latencies Measuring Latencies
+4 Measuring_Amplifier_Latency Measuring Amplifier Latency
+4 Measuring_Processing_Latency Measuring Processing Latency
+4 Measuring_Application_Display.2FSound_Output_Latency Measuring Application Display/Sound Output Latency
+4 Measuring_System_Latency Measuring System Latency
+4 Measuring_Block_Duration Measuring Block Duration
+3 Latency_Calculation_Overview Latency Calculation Overview
+2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
+3 Set_Default_Parameters Set Default Parameters
+4 Sampling_Rate Sampling Rate
+4 Display_parameters Display parameters
+3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
+3 Setup_Sensor_Thresholds Setup Sensor Thresholds
+4 Audio_Threshold Audio Threshold
+4 Video_Threshold Video Threshold
+3 Starting_the_Software Starting the Software
+3 Setting_up_the_Optical_Sensor Setting up the Optical Sensor
+4 P3Speller P3Speller
+4 CursorTask CursorTask
+4 StimulusPresentation StimulusPresentation
+3 Running_the_Tests Running the Tests
+2 BCI2000Certification:_Additional_Information BCI2000Certification: Additional Information
+3 Overview_of_Important_Files Overview of Important Files
+4 BCI2000Certification.ini BCI2000Certification.ini
+4 BCI2000Certification.cfg BCI2000Certification.cfg
+4 CertificationMain.prm CertificationMain.prm
+4 BCI2000Certification.exe BCI2000Certification.exe
+4 BCI2000CertAnalysis.exe BCI2000CertAnalysis.exe
+4 Parameter_Files Parameter Files
+3 Interpreting_Results Interpreting Results
+4 What_if_a_Task_Did_Not_Pass.3F What if a Task Did Not Pass?
+2 Certification_Protocol Certification Protocol
+3 Running_the_Tests_2 Running the Tests
+2 Software_Templates Software Templates
+3 Amplifier_Latency_2 Amplifier Latency
+3 Visual_and_Audio_Latency Visual and Audio Latency
+2 Supported_Hardware Supported Hardware
+3 Supported_and_Tested_Hardware Supported and Tested Hardware
+4 Amplifiers Amplifiers
+3 Minimum_Requirements Minimum Requirements
+3 Voltage_Divider_.26_Amplifier_Input Voltage Divider &amp; Amplifier Input
+3 Digital_I.2FO_Cable Digital I/O Cable
 
 User_Reference%253ABCI2000Export.html
 2 General_Usage General Usage
@@ -1707,6 +2409,7 @@ User_Reference%253AMatlab_MEX_Files.html
 3 Other_Platforms Other Platforms
 2 BCI2000_MEX_functions BCI2000 MEX functions
 3 load_bcidat <tt>load_bcidat</tt>
+3 save_bcidat <tt>save_bcidat</tt>
 3 convert_bciprm <tt>convert_bciprm</tt>
 3 mem <tt>mem</tt>
 2 See_also See also
@@ -1889,6 +2592,7 @@ User_Reference%253AParameter_Changes_for_Version_2.html
 3 RGB_Colors RGB Colors
 
 User_Reference%253AParameters.html
+2 See_also See also
 
 User_Reference%253ASignalGeneratorADC.html
 2 Function Function
@@ -1944,6 +2648,7 @@ User_Reference%253AStateTransform.html
 2 See_also See also
 
 User_Reference%253AStates.html
+2 See_also See also
 
 User_Reference%253AStimulusPresentationTask.html
 2 Synopsis Synopsis

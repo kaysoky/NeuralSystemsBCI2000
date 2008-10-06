@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:Contents - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:Contents,Programming FAQ,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:3D API,Programming Reference:ApplicationBase Class,Programming Reference:BCI2000FileReader Class,Programming Reference:BlockRandSeq Class,Programming Reference:Debug Output,Programming Reference:Environment Class" />
+<meta name="keywords" content="Programming Reference:Contents,Programming FAQ,Programming Howto:Building BCI2000,Programming Howto:SVN Client Setup,Programming Howto:Using TortoiseSVN,Programming Reference:3D API,Programming Reference:ApplicationBase Class,Programming Reference:AssociationMap Class,Programming Reference:BCI2000FileReader Class,Programming Reference:BlockRandSeq Class,Programming Reference:Debug Output" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -47,8 +47,10 @@ one as presented in the tutorial examples.
 <li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Signal_Processing_Modules"><span class="tocnumber">3.4</span> <span class="toctext">Signal Processing Modules</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Application_Modules"><span class="tocnumber">3.5</span> <span class="toctext">Application Modules</span></a>
 <ul>
-<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Visual_Presentation"><span class="tocnumber">3.5.1</span> <span class="toctext">Visual Presentation</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Auditory_Presentation"><span class="tocnumber">3.5.2</span> <span class="toctext">Auditory Presentation</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Feedback_Applications"><span class="tocnumber">3.5.1</span> <span class="toctext">Feedback Applications</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Stimulus_Presentation.2FERP_Spelling_Applications"><span class="tocnumber">3.5.2</span> <span class="toctext">Stimulus Presentation/ERP Spelling Applications</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Visual_Output"><span class="tocnumber">3.5.3</span> <span class="toctext">Visual Output</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253AContents.html#Audio_Output"><span class="tocnumber">3.5.4</span> <span class="toctext">Audio Output</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="Programming_Reference%253AContents.html#Miscellaneous"><span class="tocnumber">3.6</span> <span class="toctext">Miscellaneous</span></a></li>
@@ -88,17 +90,28 @@ one as presented in the tutorial examples.
 </li><li><a href="Programming_Reference%253ABCI2000FileReader_Class.html" title="Programming Reference:BCI2000FileReader Class">Programming Reference:BCI2000FileReader Class</a>
 </li></ul>
 <a name="Signal_Processing_Modules"></a><h3>Signal Processing Modules</h3>
-<ul><li><a href="Programming_Reference%253AIIRFilter_Class.html" title="Programming Reference:IIRFilter Class">Programming Reference:IIRFilter Class</a>
+<ul><li><a href="Programming_Reference%253AIIRFilterBase_Class.html" title="Programming Reference:IIRFilterBase Class">Programming Reference:IIRFilterBase Class</a>
 </li></ul>
 <a name="Application_Modules"></a><h3>Application Modules</h3>
 <ul><li><a href="Programming_Reference%253AApplicationBase_Class.html" title="Programming Reference:ApplicationBase Class">Programming Reference:ApplicationBase Class</a>
-</li><li><a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
-</li><li><a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>
 </li></ul>
-<a name="Visual_Presentation"></a><h4>Visual Presentation</h4>
-<ul><li><a href="Programming_Reference%253A3D_API.html" title="Programming Reference:3D API">Programming Reference:3D API</a>
+<a name="Feedback_Applications"></a><h4>Feedback Applications</h4>
+<ul><li><a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>
+</li><li><a href="Programming_Reference%253AFeedbackDemo_Application.html" title="Programming Reference:FeedbackDemo Application">Programming Reference:FeedbackDemo Application</a>
 </li></ul>
-<a name="Auditory_Presentation"></a><h4>Auditory Presentation</h4>
+<a name="Stimulus_Presentation.2FERP_Spelling_Applications"></a><h4>Stimulus Presentation/ERP Spelling Applications</h4>
+<ul><li><a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">Programming Reference:StimulusTask Class</a>
+</li><li><a href="Programming_Reference%253AStimulus_Class.html" title="Programming Reference:Stimulus Class">Programming Reference:Stimulus Class</a>
+</li><li><a href="Programming_Reference%253ATarget_Class.html" title="Programming Reference:Target Class">Programming Reference:Target Class</a>
+</li><li><a href="Programming_Reference%253AAssociationMap_Class.html" title="Programming Reference:AssociationMap Class">Programming Reference:AssociationMap Class</a>
+</li><li><a href="Programming_Reference%253ASpeller_Class.html" title="Programming Reference:Speller Class">Programming Reference:Speller Class</a>
+</li></ul>
+<a name="Visual_Output"></a><h4>Visual Output</h4>
+<ul><li><a href="Programming_Reference%253AGraphDisplay_Class.html" title="Programming Reference:GraphDisplay Class">Programming Reference:GraphDisplay Class</a>
+</li><li><a href="Programming_Reference%253AGraphObject_Class.html" title="Programming Reference:GraphObject Class">Programming Reference:GraphObject Class</a>
+</li><li><a href="Programming_Reference%253A3D_API.html" title="Programming Reference:3D API">Programming Reference:3D API</a>
+</li></ul>
+<a name="Audio_Output"></a><h4>Audio Output</h4>
 <ul><li><a href="Programming_Reference%253AMidiPlayer_Class.html" title="Programming Reference:MidiPlayer Class">Programming Reference:MidiPlayer Class</a>
 </li><li><a href="Programming_Reference%253AWavePlayer_Class.html" title="Programming Reference:WavePlayer Class">Programming Reference:WavePlayer Class</a>
 </li><li><a href="Programming_Reference%253ATextToSpeech_Class.html" title="Programming Reference:TextToSpeech Class">Programming Reference:TextToSpeech Class</a>
@@ -107,13 +120,14 @@ one as presented in the tutorial examples.
 <ul><li><a href="Programming_Reference%253ATrialStatistics_Class.html" title="Programming Reference:TrialStatistics Class">Programming Reference:TrialStatistics Class</a>
 </li><li><a href="Programming_Reference%253ABlockRandSeq_Class.html" title="Programming Reference:BlockRandSeq Class">Programming Reference:BlockRandSeq Class</a>
 </li><li><a href="Programming_Reference%253ARandomGenerator_Class.html" title="Programming Reference:RandomGenerator Class">Programming Reference:RandomGenerator Class</a>
-</li><li><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Reference:EnvironmentExtension_Class&amp;action=edit" class="new" title="Programming Reference:EnvironmentExtension Class">Programming Reference:EnvironmentExtension Class</a>
+</li><li><a href="Programming_Reference%253AEnvironmentExtension_Class.html" title="Programming Reference:EnvironmentExtension Class">Programming Reference:EnvironmentExtension Class</a>
 </li></ul>
 <a name="Tutorials"></a><h2>Tutorials</h2>
 <ul><li><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html" title="Programming Tutorial:Implementing a Data Acquisition Module">Programming Tutorial:Implementing a Data Acquisition Module</a>
 </li><li><a href="Programming_Tutorial%253AImplementing_a_Signal_Processing_Filter.html" title="Programming Tutorial:Implementing a Signal Processing Filter">Programming Tutorial:Implementing a Signal Processing Filter</a>
 </li><li><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html" title="Programming Tutorial:Implementing a Matlab-based Filter">Programming Tutorial:Implementing a Matlab-based Filter</a>
 </li><li><a href="http://www.bci2000.org/wiki/index.php?title=Programming_Tutorial:Implementing_another_Matlab-based_Filter&amp;action=edit" class="new" title="Programming Tutorial:Implementing another Matlab-based Filter">Programming Tutorial:Implementing another Matlab-based Filter</a>
+</li><li><a href="Programming_Tutorial%253AImplementing_an_Input_Logger.html" title="Programming Tutorial:Implementing an Input Logger">Programming Tutorial:Implementing an Input Logger</a>
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Technical_Reference%253AContents.html" title="Technical Reference:Contents">Technical Reference:Contents</a>, <a href="User_Reference%253AContents.html" title="User Reference:Contents">User Reference:Contents</a>

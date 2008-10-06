@@ -37,6 +37,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_FAQ.html#Timing_Issues"><span class="tocnumber">1.1</span> <span class="toctext">Timing Issues</span></a></li>
 <li class='toclevel-2'><a href="User_FAQ.html#Startup"><span class="tocnumber">1.2</span> <span class="toctext">Startup</span></a></li>
 <li class='toclevel-2'><a href="User_FAQ.html#Feedback"><span class="tocnumber">1.3</span> <span class="toctext">Feedback</span></a></li>
+<li class='toclevel-2'><a href="User_FAQ.html#gUSBamp_not_recognized"><span class="tocnumber">1.4</span> <span class="toctext">gUSBamp not recognized</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_FAQ.html#Configuration"><span class="tocnumber">2</span> <span class="toctext">Configuration</span></a>
@@ -80,6 +81,10 @@ Q: When I start the gUSBamp source module, I get the error message: "Cannot find
 <p>Q: The first time a subject is run using the cursor feedback protocol, during the first trial of the first run only, the cursor moves to the top of the screen and does not respond to use input. BCI2000 outputs increasingly large negative numbers during this run. 
 </p><p>A: This is not so much a bug as a side effect of the way the adaptation mechanism works. Since the adaptation mechanism hasn't been trained, all it has are the initial values for offset and gain. For each subject, it will take a few trials to adapt BCI2000 to this subject's signals.
 </p><p>Therefore, you will typically save a subject's adapted parameters after each session, and use this as a starting point for the next session. Alternatively, you may load a subject's parameters from a previous session's <i>data</i> file by specifying the data file rather than a parameter file from the <i>Load parameters...</i> dialog.
+</p>
+<a name="gUSBamp_not_recognized"></a><h3>gUSBamp not recognized</h3>
+<p>Q: The BCI2000 gUSBamp source module does not recognize my gUSBamp amplifier. When I click "Set Config", I get the an error message: <tt>gUSBampADC::Preflight: Could not detect any amplifier. Make sure there is a single gUSBamp amplifier connected to your system, and switched on.</tt> I made sure that the amplifier was attached, switched one, and would work with Guger's demonstration program.
+</p><p>A: The current version of the BCI2000 gUSBamp source module will not work with the first generation of gUSBamps. Please contact <a href="http://www.gtec.at/" class='external text' title="http://www.gtec.at/" rel="nofollow">gtec</a> for a firmware update, or amplifier replacement.
 </p>
 <a name="Configuration"></a><h2>Configuration</h2>
 <a name="Replaying_Recorded_Data"></a><h3>Replaying Recorded Data</h3>
