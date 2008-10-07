@@ -11,3 +11,4 @@ Source:Signal%20Properties floatlist SourceChGain= 32 1 1 1 1 1 1 1 1 1 1 1 1 1 
 Source:gUSBampADC intlist SourceChDevices= 2 16 16 16 1 16 // number of digitized channels per device
 Source:gUSBampADC string DeviceIDMaster= UA-2007.04.12 // deviceID for the device whose SYNC goes to the slaves
 Source:gUSBampADC list DeviceIDs= 2 UA-2007.04.12 UA-2006.10.13 // list of USBamps to be used (or auto)
+Source:gUSBampADC int NumBuffers= 5 1 2 32 // number of software buffers to use
