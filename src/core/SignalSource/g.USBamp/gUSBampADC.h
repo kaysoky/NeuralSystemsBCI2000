@@ -35,12 +35,11 @@ class gUSBampADC : public GenericADC
 	virtual void Halt();
 
 protected:
-	OVERLAPPED     m_ov[20];
-	HANDLE         m_hEvent[20];
+
 	std::vector<std::string> m_DeviceIDs;
-	std::vector<HANDLE>      m_hdev;
+	std::vector< HANDLE >     m_hdev;
 	//std::vector<BYTE *>      m_pBuffer[20];
-    BYTE **mBuffer;
+
 	std::vector<int>         m_buffersize;
 	std::vector<int>         m_iBytesperScan;
 	std::vector<int>         m_numchans;
@@ -60,12 +59,10 @@ protected:
 	bool 			 m_digitalOutput;
 	int            m_acqmode;         // normal, calibrate, or impedance
 	bool 			 m_digitalOut1;
-	int            current_buffer;
     int mTotalChs;
 	int NUM_BUFS, mBufferSize;
-	float *mData;
-	int *mDataInt;
-	int mBufferReadPos, mBufferWritePos;
+
+
 
 	class AcquireThread;
 	HANDLE acquireEventRead;
@@ -78,9 +75,16 @@ protected:
 		{
             SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 		}
+		float getNextValue();
+		int getNextValueInt();
 		private:
 			virtual void __fastcall Execute();
 			gUSBampADC *amp;
+			int mBufferReadPos, mBufferWritePos;
+			float *mData;
+			int *mDataInt;
+			std::vector< std::vector<OVERLAPPED> >     m_ov;
+			std::vector< std::vector<HANDLE> >         m_hEvent;
 	} *mpAcquireThread;
 
 };
