@@ -3,6 +3,7 @@
 /*/
 //---------------------------------------------------------------------------
 
+#include <algorithm>
 #include "analysisClass.h"
 //---------------------------------------------------------------------------
 
@@ -360,6 +361,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	procStats.std = vStd(&procLat);
 	procStats.min = vMin(&procLat);
 	procStats.max = vMax(&procLat);
+	procStats.median = vMedian(&procLat);
     if (thisTask.exportData)
         procStats.vals = procLat;
         
@@ -369,6 +371,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
     //...now do the same for the metronome
     basicStats metronome;
 	metronome.mean = vMean(&metronomeDiff);
+	metronome.median = vMedian(&metronomeDiff);
 	metronome.max = vMax(&metronomeDiff);
 	metronome.min = vMin(&metronomeDiff);
 	metronome.std = vStd(&metronomeDiff);
@@ -392,7 +395,8 @@ bool analysis::doThreshAnalysis(double threshTmp)
         vidOutputStats.mean = vidSystemStats.mean - ampStats.mean - procStats.mean;
 		vidOutputStats.std = sqrt(pow(vidSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
         vidOutputStats.min = 0;//vidSystemStats.min - ampStats.min - procStats.min;
-        vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
+		vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
+		vidOutputStats.median = 0;//vidSystemStats.max - ampStats.max - procStats.max;
         if (thisTask.exportData)
             vidOutputStats.vals.clear();
         vidOutputStats.taskName = "VidOut  ";
@@ -406,8 +410,9 @@ bool analysis::doThreshAnalysis(double threshTmp)
         basicStats audOutputStats;
         audOutputStats.mean = audSystemStats.mean - ampStats.mean - procStats.mean;
 		audOutputStats.std = sqrt(pow(audSystemStats.std,2) + pow(ampStats.std,2) + pow(procStats.std,2));
-        audOutputStats.min = 0;//audSystemStats.min - ampStats.min - procStats.min;
-        audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
+		audOutputStats.min = 0;//audSystemStats.min - ampStats.min - procStats.min;
+		audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
+		audOutputStats.median = 0;//audSystemStats.max - ampStats.max - procStats.max;
         if (thisTask.exportData)
             audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
@@ -431,6 +436,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
 	vector<double> tDiff;
 	basicStats tmpStat;
 	tmpStat.mean = -1;
+	tmpStat.median = -1;
 	tmpStat.std = -1;
 	tmpStat.min = -1;
 	tmpStat.max = -1;
@@ -506,7 +512,8 @@ basicStats analysis::doThreshAnalysis(int chNum)
         tmpStat.mean = vMean(&tDiff);
         tmpStat.std = vStd(&tDiff);
         tmpStat.min = vMin(&tDiff);
-        tmpStat.max = vMax(&tDiff);
+		tmpStat.max = vMax(&tDiff);
+		tmpStat.median = vMedian(&tDiff);
         if (thisTask.exportData)
             tmpStat.vals = tDiff;
     }
@@ -532,7 +539,8 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 {
 	vector<double> tDiff;
 	basicStats tmpStat;
-	tmpStat.mean = -1;
+	tmpStat.mean = -1;   
+	tmpStat.median = -1;
 	tmpStat.std = -1;
 	tmpStat.min = -1;
 	tmpStat.max = -1;
@@ -625,7 +633,8 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
     tmpStat.mean = vMean(&tDiff);
     tmpStat.std = vStd(&tDiff);
     tmpStat.min = vMin(&tDiff);
-    tmpStat.max = vMax(&tDiff);
+    tmpStat.max = vMax(&tDiff);  
+	tmpStat.median = vMedian(&tDiff);
     if (thisTask.exportData)
         tmpStat.vals = tDiff;
 
@@ -651,7 +660,8 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
         if (tmpMean < minMean)
         {
                 minMean = tmpMean;
-                tmpStat.mean = vMean(&it->second);
+				tmpStat.mean = vMean(&it->second);
+				tmpStat.median = vMean(&it->second);
                 tmpStat.std = vStd(&it->second);
                 tmpStat.min = vMin(&it->second);
                 tmpStat.max = vMax(&it->second);
@@ -745,6 +755,14 @@ double analysis::vMean(vector<double> *a)
     return v;
 }
 
+double analysis::vMedian(vector<double> *a)
+{
+	vector<double> tmp = *a;
+	std::sort(tmp.begin(), tmp.end());
+    double v = *(tmp.begin()+tmp.size()/2);
+
+    return v;
+}
 double analysis::vStd(vector<double> *a)
 {
     double m = vMean(a);
@@ -795,13 +813,13 @@ bool analysis::isMember(vector<string> strArr, string str)
 
 void analysis::print(FILE * out, vector<basicStats> minReqs)
 {
-    fprintf(out, "%s",shortFname(fName).c_str());
+	fprintf(out, "%s\tDuration=%1.2fs\n",shortFname(fName).c_str(), float(this->nSamples)/this->sampleRate);
     //resOut << std::endl<<fName<<":"<<std::endl;
     bool ok = true;
     for (int t = 0; t < latencyStats.size(); t++)
     {
         basicStats tmpTask = latencyStats[t];
-        fprintf(out, "\t%s\t",(tmpTask.taskName).c_str());
+		fprintf(out, "\t%s\t",(tmpTask.taskName).c_str());
         //resOut<<tmpTask.taskName<<": ";
         int tfound = 0;
 
@@ -838,11 +856,11 @@ void analysis::print(FILE * out, vector<basicStats> minReqs)
             fprintf(out, "%s\n","task requirements undefined\n");
         else
         {
-            fprintf(out, "%1.2f\t%1.2f\t%1.2f\t%1.2f\n",tmpTask.mean, tmpTask.std, tmpTask.min, tmpTask.max);
+            fprintf(out, "%1.2f\t%1.2f\t%1.2f\t%1.2f\t%1.2f\n",tmpTask.mean, tmpTask.median,tmpTask.std, tmpTask.min, tmpTask.max);
         }
     }
 
-    fprintf(out,"\tDropped Samples\t\t%d/%d\n",droppedSamples, checkedSamples);
+    //fprintf(out,"\tDropped Samples\t\t%d/%d\n",droppedSamples, checkedSamples);
     //say whether this file passed the requirements
     if (ok)
     {

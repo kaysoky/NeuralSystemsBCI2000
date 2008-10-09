@@ -432,7 +432,7 @@ int main(int argc, char* argv[])
 	//resOut<<"Results: (mean, std, min, max)"<<endl;
 
     fprintf(resOut, "Certification Results: %s %s\n", dateStr, timeStr);
-    fprintf(resOut, "File\tTask\tPass/Fail\tMean(ms)\tStd(ms)\tMin(ms)\tMax(ms)\n");
+    fprintf(resOut, "File\tTask\tPass/Fail\tAvg(ms)\tStd(ms)\tMin(ms)\tMax(ms)\n");
 
 	cout<<"Results..."<<endl;
 	//the analyses vector now contains an array for the results for each file

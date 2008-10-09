@@ -407,6 +407,7 @@ __fastcall TBCICertificationGUI::RunThread::RunThread(bool s, TBCICertificationG
 void __fastcall TBCICertificationGUI::RunThread::Execute()
 {
 	p->mCT.reset();
+	p->mCT.nextTask();
 	p->infoBox->Clear();
 	while (p->mCT.tasksRemain() && !Terminated)
 	{
@@ -421,6 +422,7 @@ void __fastcall TBCICertificationGUI::RunThread::Execute()
 
 void TBCICertificationGUI::updateGlobal()
 {
+	mCT.mDataDir = dataSaveBox->Text.c_str();
 	try{
 		mCT.mWinWidth = atoi(winWidthBox->Text.c_str());
 		mCT.useWinWidth = true;
@@ -456,7 +458,10 @@ void TBCICertificationGUI::updateGlobal()
 		mCT.setGlobalSource(tmp.substr(pos+1));
 	}
 	else
-		mCT.setGlobalSource(tmp); 
+		mCT.setGlobalSource(tmp);
+
+	for (int i = 0; i < taskList->Items[0].Count; i++)
+		mCT[i].skip = !taskList->Items[0][i]->Checked;
 }
 void __fastcall TBCICertificationGUI::startBtnClick(TObject *Sender)
 {
@@ -471,6 +476,26 @@ void __fastcall TBCICertificationGUI::startBtnClick(TObject *Sender)
 	runThread = new RunThread(true, this);
 	runThread->FreeOnTerminate = false;
 	runThread->Resume();
+}
+
+bool TBCICertificationGUI::checkRemoveData()
+{
+	//get files to delete
+    vector<string> fNames;
+	parseDir(mCT.mDataDir, fNames);
+	if (fNames.size() > 0)
+    {
+		int ret = MessageDlg("Data exists in the specified output directory. Do you want to remove this data before continuing? If you answer no, this data will be included in the analysis",
+							   mtInformation, TMsgDlgButtons() << mbYes << mbNo << mbAbort, 0);
+
+		if (ret == mrAbort)
+			return false;
+
+		if (mrYes){
+			for (int i = 0; i < fNames.size(); i++)
+				remove(fNames[i].c_str());
+		}
+    }
 }
 //---------------------------------------------------------------------------
 
@@ -568,4 +593,5 @@ void __fastcall TBCICertificationGUI::Saveini1Click(TObject *Sender)
 		
 }
 //---------------------------------------------------------------------------
+
 

@@ -1,9 +1,9 @@
 object BCICertificationGUI: TBCICertificationGUI
   Left = 296
   Top = 225
-  Width = 636
-  Height = 654
   Caption = 'BCI2000 Certification'
+  ClientHeight = 598
+  ClientWidth = 620
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -56,8 +56,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.Width = 52
       EditLabel.Height = 13
       EditLabel.Caption = 'Task Name'
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       TabOrder = 0
       OnExit = taskNameBoxExit
     end
@@ -72,8 +70,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Amp Channel'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 9
       Text = '1'
@@ -90,8 +86,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Digital Amp Channel'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 10
       Text = '16'
@@ -108,8 +102,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Video Channel'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 11
       Text = '2'
@@ -126,8 +118,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'State'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 12
       Text = 'StimulusCode'
@@ -144,8 +134,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Values'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 13
       Text = '3'
@@ -162,8 +150,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Audio Channel'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 14
       Text = '2'
@@ -180,8 +166,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'State'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 15
       Text = 'StimulusCode'
@@ -198,8 +182,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Values'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 16
       Text = '3'
@@ -363,8 +345,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Window Left'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 0
       Text = '0'
@@ -381,8 +361,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Window Width'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 2
       Text = '800'
@@ -399,8 +377,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Window Height'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 3
       Text = '800'
@@ -451,8 +427,6 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.BiDiMode = bdLeftToRight
       EditLabel.Caption = 'Window Top'
       EditLabel.ParentBiDiMode = False
-      LabelPosition = lpAbove
-      LabelSpacing = 3
       ParentBiDiMode = False
       TabOrder = 1
       Text = '0'

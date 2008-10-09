@@ -128,25 +128,8 @@ bool CertLauncher::launchProgs()
     system(operat.str().c_str());
 
     //wait a bit...
-    for (int i = 0 ;i < 1000000; )
-        i++;
+	Sleep(500);
 
-    //launch each module
-	comm.str("");
-	if (curTaskC.SignalSource != "")
-		comm << "start .." << fs << ".." << fs << "prog" << fs << curTaskC.SignalSource;
-	else
-		comm << "start .." << fs << ".." << fs << "prog" << fs << tasks.GlobalSource;
-		
-	comm <<" --SubjectName-"<<curTaskC.taskName;
-
-	if (mDataDir != "")
-		comm << " --DataDirectory-" << mDataDir;
-
-	comm << endl;
-
-	string tmp(comm.str());
-    system(comm.str().c_str());
 
     comm.str("");
     comm << "start .." << fs << ".." << fs << "prog" << fs << ""<<curTaskC.SigProc << " 127.0.0.1"<<endl;
@@ -164,7 +147,26 @@ bool CertLauncher::launchProgs()
 	if (useWinHeight)
 		comm << " --WindowHeight-" << mWinHeight;
 	comm << endl;
-    system(comm.str().c_str());
+	system(comm.str().c_str());
+
+	//launch each module
+	comm.str("");
+	if (curTaskC.SignalSource != "")
+		comm << "start .." << fs << ".." << fs << "prog" << fs << curTaskC.SignalSource;
+	else
+		comm << "start .." << fs << ".." << fs << "prog" << fs << tasks.GlobalSource;
+
+	comm <<" --SubjectName-"<<curTaskC.taskName;
+
+	if (mDataDir != "")
+		comm << " --DataDirectory-" << mDataDir;
+
+	comm << endl;
+
+	Sleep(100);
+	string tmp(comm.str());
+	cout << tmp;
+	system(comm.str().c_str());
     return true;
 }
 

@@ -65,7 +65,8 @@ private:
     double vMean(vector<double> *a);
     double vStd(vector<double> *a);
     double vMax(vector<double> *a);
-    double vMin(vector<double> *a);
+	double vMin(vector<double> *a);
+	double vMedian(vector<double> *a);
     //double **signal;
 
     map<string, double*> states;

@@ -70,7 +70,7 @@ public:
 	Tasks tasks;
 
 	bool nextTask();
-	void reset(){mCurTask = 0;}
+	void reset(){mCurTask = -1;}
     bool tasksRemain(){return mTasksRemaining;}
 
 	bool parseIni();
