@@ -70,9 +70,12 @@ PrecisionTime::TimeDiff( NumType time1, NumType time2 )
 int
 PrecisionTime::SignedDiff( NumType time1, NumType time2 )
 {
-  int wraparound = 1 << ( 8 * sizeof( time1 ) ),
-      diff1 = time1 - time2,
-      diff2 = ( time1 + wraparound ) - time2;
-  return ( diff2 >= wraparound / 2 ) ? diff1 : diff2;
+  const int wraparound = 1 << ( 8 * sizeof( time1 ) );
+  int diff = time1 - time2;
+  if( diff >= wraparound / 2 )
+    diff -= wraparound;
+  else if( diff < -wraparound / 2 )
+    diff += wraparound;
+  return diff;
 }
 
