@@ -656,7 +656,6 @@ CoreModule::HandleState( istream& is )
         {
           mLastRunning = true;
           StartRunFilters();
-          ProcessBCIEvents();
           static GenericSignal nullSignal( 0, 0 );
           ProcessFilters( nullSignal );
         }
