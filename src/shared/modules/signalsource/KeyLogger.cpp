@@ -136,24 +136,32 @@ KeyLogger::HookThread::Execute()
 {
   if( mLogKeyboard )
     InstallKeyboardHook();
-  if( mLogMouse )
-    InstallMouseHook();
+  if( mLogMouse && InstallMouseHook() )
+  {
+    POINT p;
+    if( ::GetCursorPos( &p ) )
+    {
+      bcievent << "MousePosX " << p.x;
+      bcievent << "MousePosY " << p.y;
+    }
+  }
   int result = OSThread::Execute();
   UninstallHooks();
   return result;
 }
 
-void
+bool
 KeyLogger::HookThread::InstallKeyboardHook()
 {
   HINSTANCE module = ::GetModuleHandle( NULL );
   if( sKeyboardHook == NULL )
     sKeyboardHook = ::SetWindowsHookEx( WH_KEYBOARD_LL,
       reinterpret_cast<HOOKPROC>( LowLevelKeyboardProc ), module, 0 );
+  return sKeyboardHook != NULL;
 }
 
 
-void
+bool
 KeyLogger::HookThread::InstallMouseHook()
 {
   HINSTANCE module = ::GetModuleHandle( NULL );
@@ -163,6 +171,7 @@ KeyLogger::HookThread::InstallMouseHook()
     sMouseHook = ::SetWindowsHookEx( WH_MOUSE_LL,
       reinterpret_cast<HOOKPROC>( LowLevelMouseProc ), module, 0 );
   }
+  return sMouseHook != NULL;
 }
 
 

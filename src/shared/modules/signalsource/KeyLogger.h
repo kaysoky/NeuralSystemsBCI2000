@@ -56,8 +56,8 @@ class KeyLogger : public EnvironmentExtension
 
    private:
     virtual int Execute();
-    void InstallKeyboardHook();
-    void InstallMouseHook();
+    bool InstallKeyboardHook();
+    bool InstallMouseHook();
     void UninstallHooks();
 
     static LRESULT CALLBACK LowLevelKeyboardProc( int, WPARAM, LPARAM );
