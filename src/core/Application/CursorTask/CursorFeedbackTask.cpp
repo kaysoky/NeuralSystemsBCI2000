@@ -240,6 +240,7 @@ CursorFeedbackTask::OnStartRun()
 {
   ++mRunCount;
   mTrialCount = 0;
+  mTrialStatistics.Reset();
   AppLog << "Run #" << mRunCount << " started" << endl;
 
   DisplayMessage( LocalizableString( "Be prepared ..." ) );
