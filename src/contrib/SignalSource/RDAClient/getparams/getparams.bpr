@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="getparams.exe"/>
+    <PROJECT value="..\..\..\..\..\prog\getparams.exe"/>
     <OBJFILES value="obj\getparams.obj obj\RDAQueue.obj obj\BCIError.obj obj\ParamList.obj 
       obj\Param.obj obj\HierarchicalLabel.obj obj\Brackets.obj 
       obj\EncodedString.obj obj\LabelIndex.obj obj\BCIError_tool.obj"/>
@@ -125,9 +125,10 @@ Count=1
 Item0=.\obj
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
-Item0=..\..\..\..\..\tools\BrainAmpGetParams\
-Item1=..\..\..\..\tools\BrainAmpGetParams\
+Count=3
+Item0=..\..\..\..\..\prog
+Item1=..\..\..\..\..\tools\BrainAmpGetParams\
+Item2=..\..\..\..\tools\BrainAmpGetParams\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
