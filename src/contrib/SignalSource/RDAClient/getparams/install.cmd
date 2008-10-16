@@ -13,6 +13,7 @@
 
 :doit
 :: Put your installation actions here.
-copy /Y README.bat %1\
+mkdir %1\..\tools\BrainAmpGetparams > nul
+copy /Y README.bat getparams.exe %1\..\tools\BrainAmpGetParams > nul
 
 :end

@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\..\..\tools\BrainAmpGetParams\getparams.exe"/>
+    <PROJECT value="getparams.exe"/>
     <OBJFILES value="obj\getparams.obj obj\RDAQueue.obj obj\BCIError.obj obj\ParamList.obj 
       obj\Param.obj obj\HierarchicalLabel.obj obj\Brackets.obj 
       obj\EncodedString.obj obj\LabelIndex.obj obj\BCIError_tool.obj"/>
@@ -94,6 +94,7 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
@@ -104,11 +105,12 @@ Item2=..\..\..\shared\bcistream;..\..\..\shared\types;..\;..;..\..\..\..\extlib\
 Item3=..\;..;..\..\..\extlib\RDA;..\..\..\shared\config;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=4
-Item0=..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\;..\..\..\shared\bcistream;..\..\..\shared\types;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\..\..\shared\bcistream;..\..\..\shared\types;..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
-Item3=..\;..;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Count=5
+Item0=..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\;..\..\..\shared\bcistream;..\..\..\shared\types;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\..\shared\bcistream;..\..\..\shared\types;..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Item4=..\;..;..\..\..\shared\bcistream;..\..\..\shared\types;..\..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
