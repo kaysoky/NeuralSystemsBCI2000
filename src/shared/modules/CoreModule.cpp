@@ -83,22 +83,22 @@ CoreModule::Run( int inArgc, char** inArgv )
   }
   catch( const char* s )
   {
-    BCIERR << s << ", terminating module"
+    bcierr << s << ", terminating " THISMODULE " module"
            << endl;
   }
   catch( const exception& e )
   {
-    BCIERR << "caught exception "
+    bcierr << "unhandled exception "
            << typeid( e ).name() << " (" << e.what() << "),\n"
-           << "terminating module"
+           << "terminating " THISMODULE " module"
            << endl;
   }
 #ifdef __BORLANDC__
   catch( const Exception& e )
   {
-    BCIERR << "caught exception "
+    bcierr << "unhandled exception "
            << e.Message.c_str() << ",\n"
-           << "terminating module"
+           << "terminating " THISMODULE " module"
            << endl;
   }
 #endif // __BORLANDC__
