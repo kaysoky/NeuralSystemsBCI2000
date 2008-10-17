@@ -72,36 +72,34 @@ LinearClassifier::Preflight( const SignalProperties& Input,
       float ch = Input.ChannelIndex( Classifier( row, 0 ) );
       if( ch < 0 )
         bcierr << DescribeEntry( row, 0 )
-               << " points to negative input index"
+               << "\npoints to negative input index"
                << endl;
-      else if( ::floor( ch ) > Input.Channels() )
-        bcierr << "Channel specification in "
-               << DescribeEntry( row, 0 )
-               << " exceeds number of input channels"
+      else if( ::floor( ch ) >= Input.Channels() )
+        bcierr << DescribeEntry( row, 0 )
+               << "\nexceeds range of input channels"
                << endl;
       if( ::fmod( ch, 1.0f ) > 1e-2 )
-        bciout << "Channel specification in physical units: "
+        bciout << "Channel specification in physical units:\n\t"
                << DescribeEntry( row, 0 )
-               << " does not exactly meet a single channel"
+               << "\ndoes not exactly meet a single channel"
                << endl;
 
       float el = Input.ElementIndex( Classifier( row, 1 ) );
       if( el < 0 )
         bcierr << DescribeEntry( row, 1 )
-               << " points to negative input index"
+               << "\npoints to negative input index"
                << endl;
-      if( ::floor( el ) > Input.Elements() )
-        bcierr << "Element (bin) specification in "
-               << DescribeEntry( row, 1 )
-               << " exceeds number of input elements"
+      if( ::floor( el ) >= Input.Elements() )
+        bcierr << DescribeEntry( row, 1 )
+               << "\nexceeds range of input elements"
                << endl;
       if( ::fmod( el, 1.0f ) > 1e-2 )
-        bciout << "Element (bin) specification in physical units: "
+        bciout << "Specification in physical units:\n\t"
                << DescribeEntry( row, 1 )
-               << " does not exactly meet a single element"
+               << "\ndoes not exactly meet a single element"
                << endl;
 
-      int outputChannel =  Classifier( row, 2 );
+      int outputChannel = Classifier( row, 2 );
       controlSignalChannels = max( controlSignalChannels, outputChannel );
     }
   }
