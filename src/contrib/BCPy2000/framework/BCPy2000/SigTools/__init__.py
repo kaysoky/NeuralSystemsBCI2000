@@ -26,5 +26,6 @@ from NumTools import *
 from Basic import *
 from LearningTools import *
 from Filtering import *
+from Buffering import *
 from Plotting import *
 from Stimuli import *

@@ -392,7 +392,7 @@ SUCH DAMAGES.
 			if not th.read('ready'):
 				th.post('stop')
 				th.read('ready', wait=True)
-			self._check_threads()
+		self._check_threads()
 
 	#############################################################
 			
@@ -534,9 +534,13 @@ SUCH DAMAGES.
 	#############################################################
 		
 	def _check_threads(self):
+		retval = False
 		for t in self._threads.values():
 			e = t.check()
-			if e != None: self._handle_error(e)
+			if e != None:
+				self._handle_error(e)
+				retval = True
+		return retval
 			
 	##########################################################
 

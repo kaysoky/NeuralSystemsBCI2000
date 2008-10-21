@@ -26,8 +26,8 @@ __all__ = [
 	'isnumpyarray', 'msec2samples', 'samples2msec',
 	'across_samples', 'across_channels',
 	'samples', 'channels',
-	'silence', 'rise', 'fall', 'hanningwindow',
-	'cat', 'autoscale', 'center', 'cut', 'padendto', 'padstartto', 'reverse', 'trim',
+	'silence', 'rise', 'plateau', 'fall', 'hanningwindow',
+	'cat', 'stack', 'autoscale', 'center', 'cut', 'padendto', 'padstartto', 'reverse', 'trim',
 	'panhelper', 'interpsamples',
 	'wav'
 ]
@@ -69,7 +69,8 @@ def channels(a):
 def silence(nsamp, nchan, dtype=None, dc=0):
 	if hasattr(dtype, 'wav') and hasattr(dtype.wav, 'y') and isnumpyarray(dtype.wav.y): dtype = dtype.wav.y.dtype
 	elif hasattr(dtype, 'y') and isnumpyarray(dtype.y): dtype = dtype.y.dtype
-	elif hasattr(dtype, 'dtype'): dtype = dtype.dtype
+	elif isnumpyarray(dtype): dtype = dtype.dtype
+	if nsamp < 0: nsamp = 0
 	z = numpy.zeros((nsamp, nchan), dtype)
 	if dc: z += dc
 	return z
@@ -80,17 +81,29 @@ def rise(duration, fs=1000, hanning=False):
 	if hanning: y = 0.5 - 0.5 * numpy.cos(y * numpy.pi)
 	w = wav(fs=fs); w.y = y; return w
 
+def plateau(duration, fs=1000, dc=1.0):
+	y = silence(msec2samples(duration*1000.0, fs), 1, dtype=numpy.float64, dc=dc)
+	w = wav(fs=fs); w.y = y; return w
+	
 def fall(duration, fs=1000, hanning=False):
 	y = numpy.linspace(1.0, 0.0, msec2samples(duration*1000.0, fs))
 	y.shape = (y.shape[0], 1)
 	if hanning: y = 0.5 - 0.5 * numpy.cos(y * numpy.pi)
 	w = wav(fs=fs); w.y = y; return w
 
-def hanningwindow(duration, fs=1000, plateau=0):
-	duration -= plateau
-	return rise(float(duration)/2.0, fs=fs, hanning=True) % fall(float(duration)/2.0, fs=fs, hanning=True)
+def hanningwindow(duration, fs=1000, plateau_duration=0):
+	risetime = (float(duration) - float(plateau_duration)) / 2.0
+	r = rise(risetime, fs=fs, hanning=True)
+	f = fall(risetime, fs=fs, hanning=True)
+	ns = msec2samples(duration*1000.0, fs) - r.samples() - f.samples()
+	if ns > 0: p = silence(ns, 1, dc=1.0)
+	else: p = 0.0
+	return r % p % f
 
 def cat(args, *xargs):
+	"""
+	Concatenate wavs in time
+	"""###
 	if isinstance(args,tuple): args = list(args)
 	if not isinstance(args,list): args = [args]
 	args += list(xargs)
@@ -117,13 +130,30 @@ def cat(args, *xargs):
 			dat = args[i].y
 			if channels(dat) == 1 and nchan > 1:
 				dat = dat.repeat(nchan, axis=across_channels)
-		if isinstance(args[i],float) or isinstance(args[i],int):
+		elif isinstance(args[i], numpy.ndarray):
+			dat = args[i]
+		elif isinstance(args[i],float) or isinstance(args[i],int):
 			nsamp = round(float(args[i]) * fs)
 			nsamp = max(0, nsamp)
 			dat = silence(nsamp, nchan, w)
+		else:
+			raise TypeError, "don't know how to concatenate type %s" % args[i].__class__.__name__
 		args[i] = dat
 	w.y = numpy.concatenate(args, axis=across_samples)
 	return w
+
+def stack(*pargs):
+	"""
+	Stack multiple wav objects to make one multi-channel wav object.
+	"""###
+	w = []
+	for arg in pargs:
+		if isinstance(arg,(list,tuple)): w.append(stack(*arg))
+		elif isinstance(arg, wav): w.append(arg)
+		else: raise TypeError, "arguments must be wav objects (or sequences thereof)"
+	out = w.pop(0).copy()
+	while len(w): out &= w.pop(0)
+	return out	
 
 def autoscale(w, max_abs_amp=0.95):
 	w = w.copy()
@@ -401,6 +431,11 @@ class wav:
 	def left(self):
 		return self.extractchannels(0)
 
+	def mono(self):
+		w = self.copy()
+		w.y = numpy.asmatrix(w.y).mean(axis=across_channels).A
+		return w
+		
 	def padendto(self, seconds):
 		if isinstance(seconds, wav):
 			seconds = seconds.duration()
@@ -422,6 +457,7 @@ class wav:
 	
 	def right(self):
 		return self.extractchannels(self.channels()-1)
+			
 	
 	def trim(self, thresh=0.05, tailoff=0.2):
 		y = numpy.max(abs(self.y), axis=across_channels)
@@ -522,26 +558,36 @@ class wav:
 	def __neg__(self): return -1.0 * self
 	def __pos__(self): return self.copy()
 
-	# Slicing with [] indexing, ranges expressed in seconds:
+	# Slicing with [] indexing, (first ranges expressed in seconds, second channel index or range):
 	def __getitem__(self, range):
-		if not isinstance(range, slice): raise TypeError, 'indices must be ranges, expressed in seconds'
-		w = wav(fs=self.fs, bits=self.bits, nchan=channels(self))
 		subs = self.translate_slice(range)
+		w = wav(fs=self.fs, bits=self.bits, nchan=channels(self))
 		w.y = self.y[subs[0],subs[1]]
 		return w
 
 	def __setitem__(self, range, val):
-		if not isinstance(range, slice): raise TypeError, 'indices must be ranges, expressed in seconds'
 		subs = self.translate_slice(range)
 		if isinstance(val,wav): val = val.y
 		self.y[subs[0],subs[1]] = val
 
 	def translate_slice(self, range):
-		subs = [slice(None), slice(None)]
-		args = {}
-		for field in ['start', 'stop', 'step']:
-			val = getattr(range, field)
-			if val != None: val = msec2samples(float(val) * 1000.0, self)
-			args[field] = val
-		subs[across_samples] = slice(args['start'], args['stop'], args['step'])
+		chans = slice(None)
+		if isinstance(range, (tuple,list)): range,chans = range
+		if not isinstance(range, slice): raise TypeError, 'indices must be ranges, expressed in seconds'
+		if isinstance(chans, (int,float)): chans = [chans]
+		subs = [None,None]
+
+		start,stop,step = None,None,None
+		if range.step != None:
+			raise ValueError, 'custom step sizes are not possible when slicing %s objects in time' % self.__class__.__name__
+		if range.start != None:
+			start = int(msec2samples(float(range.start) * 1000.0, self))
+			if range.stop != None:
+				duration = float(range.stop) - float(range.start)
+				stop  = int(msec2samples(duration * 1000.0, self)) + start
+		elif range.stop != None:
+			stop = int(msec2samples(float(range.stop) * 1000.0, self))
+
+		subs[across_samples] = slice(start, stop, step)
+		subs[across_channels] = chans
 		return subs

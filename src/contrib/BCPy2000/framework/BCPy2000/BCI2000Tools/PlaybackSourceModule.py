@@ -34,6 +34,11 @@ class BciSource(BciGenericSource):
 
 	#############################################################
 
+	def Description(self):
+		return 'plays back a pre-recorded .dat file in "slave" mode'
+	
+	#############################################################
+
 	def Construct(self):
 		parameters = [
 			"Source:Playback string PlaybackFileName= % % % % // play back the named BCI2000 file (inputfile)",

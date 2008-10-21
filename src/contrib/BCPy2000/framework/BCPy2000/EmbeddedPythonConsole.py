@@ -96,7 +96,9 @@ class tee:
 	def write(self, s):
 		for x in self.streamlist:
 			if hasattr(x, 'write'): x.write(s)
-			if sys._getframe(1).f_code.co_name == 'raw_input': break
+			try: callername = sys._getframe(1).f_code.co_name
+			except: callername = '?'
+			if callername == 'raw_input': break
 			# Ideally, it would be nice to include IPython's full input and output in the log.
 			# However, the *only* thing that IPython seems to pump into the ordinary sys.stdout is
 			# the annoying garbage-encoded prompt. If we can't have the meaningful stuff, let's at
