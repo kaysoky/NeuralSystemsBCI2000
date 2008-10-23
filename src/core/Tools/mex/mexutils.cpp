@@ -19,8 +19,6 @@
 
 using namespace std;
 
-static const double cNaN = strtod( "+NAN", NULL );
-
 void
 TypeCheck()
 {
@@ -166,14 +164,14 @@ ValuesToNumbers( const Param& p )
       value = value.substr( 0, i + 1 );
       // Evaluate the remaining string as an expression if possible.
       if( value.empty() )
-        pMatrix[ cell ] = cNaN;
+        pMatrix[ cell ] = mxGetNaN();
       else
       {
         ArithmeticExpression expr( value );
         if( expr.IsValid() )
           pMatrix[ cell ] = expr.Evaluate();
         else
-          pMatrix[ cell ] = cNaN;
+          pMatrix[ cell ] = mxGetNaN();
       }
     }
 
