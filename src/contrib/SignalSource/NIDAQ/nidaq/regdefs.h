@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 /**************************************************************************/
 /* This file contains the defined names for all the registers that        */
 /* can be read/written by REG_Level_Read and REG_Level_Write.  The        */

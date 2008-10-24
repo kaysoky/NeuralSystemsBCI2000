@@ -1,10 +1,7 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 //---------------------------------------------------------------------------
 /*  TDTADC Class definition
 	Authors: Adam Wilson & Samuel Inverso
-    
+
     Description: The TDTADC class implements functions required for the TDT to
     	operate, such as connect, start, stop, read data, etc.
 

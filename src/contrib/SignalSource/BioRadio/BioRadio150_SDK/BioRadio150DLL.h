@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 #ifndef _BIORADIO_150_DLL_H_
 #define _BIORADIO_150_DLL_H_
 

@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 /*********************************************************************/
 /*                                                                   */
 /* This file contains definitions for constants required for some    */

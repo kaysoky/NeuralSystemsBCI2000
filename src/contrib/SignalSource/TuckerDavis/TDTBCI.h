@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 //---------------------------------------------------------------------------
 
 #ifndef TDTBCIH
@@ -32,7 +29,7 @@ private:
     class TZBUSx *ZBus;
 
     void dropSamples(GenericSignal& outputSignal);
-    
+
     int	mSourceCh;
     int	mSampleBlockSize;
     int mSamplingRate;
@@ -63,7 +60,7 @@ private:
     float mDigitalGain;
     float mFrontPanelGain;
     FILE * logFile;
-    
+
 	float *dataA;// = new float[valuesToRead];
 	float *dataB;// = new float[valuesToRead];
 	float *dataC;// = new float[valuesToRead];

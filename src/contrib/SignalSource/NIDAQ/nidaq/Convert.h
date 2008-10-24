@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 /********************************* convert.h *******************************
 *
 *   Constant definitions used by the conversion functions

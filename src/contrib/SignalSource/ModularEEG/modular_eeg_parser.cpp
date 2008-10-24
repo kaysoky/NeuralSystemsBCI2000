@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 /*
 
    file: modular_eeg_parser.cpp
@@ -265,16 +262,16 @@ void parse_byte_P3(unsigned char actbyte)   // parse a packet in P3 format
   channel is transmitted in the current packet.
 
   Aux Channel Allocations:
- 
+
   0: Zero-terminated ID-string (ASCII encoded).
-  1: 
+  1:
   2:
   3:
   4: Port D status bits
   5:
   6:
   7:
- 
+
   The ID-string is currently "mEEGv1.0".
 
 */

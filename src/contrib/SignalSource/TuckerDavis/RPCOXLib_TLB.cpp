@@ -1,15 +1,12 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // ************************************************************************ //
-// WARNING                                                                    
-// -------                                                                    
-// The types declared in this file were generated from data read from a       
-// Type Library. If this type library is explicitly or indirectly (via        
-// another type library referring to this type library) re-imported, or the   
-// 'Refresh' command of the Type Library Editor activated while editing the   
-// Type Library, the contents of this file will be regenerated and all        
-// manual modifications will be lost.                                         
+// WARNING
+// -------
+// The types declared in this file were generated from data read from a
+// Type Library. If this type library is explicitly or indirectly (via
+// another type library referring to this type library) re-imported, or the
+// 'Refresh' command of the Type Library Editor activated while editing the
+// Type Library, the contents of this file will be regenerated and all
+// manual modifications will be lost.
 // ************************************************************************ //
 
 // C++ TLBWRTR : $Revision$
@@ -21,7 +18,7 @@
 // LCID: 0
 // Helpfile: c:\TDT\ActiveX\RPcoX.hlp
 // HelpString: RPcoX ActiveX Control module
-// DepndLst: 
+// DepndLst:
 //   (1) v2.0 stdole, (C:\WINDOWS\System32\stdole2.tlb)
 // ************************************************************************ //
 
@@ -40,7 +37,7 @@ namespace Rpcoxlib_tlb
 
 
 // *********************************************************************//
-// GUIDS declared in the TypeLibrary                                      
+// GUIDS declared in the TypeLibrary
 // *********************************************************************//
 const GUID LIBID_RPCOXLib = {0xD323A622, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };
 const GUID DIID__DRPcoX = {0xD323A623, 0x1D13, 0x11D4,{ 0x88, 0x58, 0x44,0x45, 0x53, 0x54,0x00, 0x00} };

@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 #include <stdio.h>
 
 #ifndef MicromedH
@@ -23,7 +20,7 @@
   unsigned long sampleNumber;
   FILE *hNotes;
   bool   waitforconn;
-  
+
   class CAcqMessage
 {
 public:

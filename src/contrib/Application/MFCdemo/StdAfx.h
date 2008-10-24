@@ -1,6 +1,3 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
 // stdafx.h : Include-Datei für Standard-System-Include-Dateien,
 //  oder projektspezifische Include-Dateien, die häufig benutzt, aber
 //      in unregelmäßigen Abständen geändert werden.
