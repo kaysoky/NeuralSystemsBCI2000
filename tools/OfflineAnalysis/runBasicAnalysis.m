@@ -151,7 +151,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     end
   end
 
-  samplefreq=str2num(bciParams.SamplingRate.Value{1});
+  samplefreq=bciParams.SamplingRate.NumericValue;
   if lp_cutoff > samplefreq/2
     lp_cutoff = samplefreq/2;
     %if the last bin has less samples, truncate it
@@ -323,7 +323,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
         if length(params.targetConditions) == 1
           tmpTitle = 'Spectra Amplitude';
         else
-          tmpTitle = 'Statistical r^2 Values Between Condtions 1 and 2';
+          tmpTitle = 'r^2 Values Between Condtions 1 and 2';
         end
         
         plotFeatures(freq_bins, tmpTitle, 'Frequency (Hz)', 'Channel');
@@ -355,7 +355,7 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
       if length(params.targetConditions) == 1
         tmpTitle = 'Waveform Amplitude';
       else
-        tmpTitle = 'Statistical r^2 Values Between Condtions 1 and 2';
+        tmpTitle = 'r^2 Values Between Condtions 1 and 2';
       end
       plotFeatures(timems, tmpTitle, 'Time (ms)', 'Channel');
       shading interp;

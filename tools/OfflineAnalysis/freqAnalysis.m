@@ -30,7 +30,7 @@ end
 
 eloc_file = analysisParams.montageFile;
 
-samplefreq=str2num(params.SamplingRate.Value{1});
+samplefreq=params.SamplingRate.NumericValue;
 
 
 
