@@ -1,8 +1,7 @@
-/**
+/*
  * Program:   Biosemi2ADC
  * Module:    Biosemi2ADC.CPP
- * Comment:   Acquires from a Biosemi Act2, tested with a MK1 may work
- *      on a MK2
+
  * Version:   0.01
  * Liecense:
  * Copyright (C) 2005 Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen
@@ -27,6 +26,8 @@
  *  Revision 1.1  2005/12/12 00:05:24  sinverso
  *  Initial Revision: Working and tested offline. Not tested in real experiments.
  *
+ * Revision 1.3 2008/10/25  Maria Laura  Blefari
+ * Fixed battery warning
  */
 #ifndef Biosemi2ADCH
 #define Biosemi2ADCH
@@ -54,27 +55,27 @@ protected:
     static const int BATTERY_LOW = true;
     static const int BATTERY_NOT_LOW = false;
 
-    int _samplingRate;
-    int _softwareCh;     // number of channels to send
+    int samplingRate;
+	int softwareCh;
 
-    /**
+	/*
      * The number of signal channels
      * If we are postfixing triggers than:
-     *  _softwareCh = _signalChannels + NUM_TRIGGERS
+	 *  softwareCh = signalChannels + NUM_TRIGGERS
      * else
-     *  _softwareCh = _signalChannels
+	 *  softwareCh = signalChannels
      */
-    int _signalChannels;
+
+    int signalChannels;
 
 
-    int _sampleBlockSize; // sample blocksize to send
+    int sampleBlockSize; // sample blocksize to send
     mutable Biosemi2Client _biosemi;
 
     Biosemi2Client::DataBlock *_dataBlock;
-    std::vector<std::string> _triggerNames;
-    bool _postfixTriggers; // if true, place the triggers after the
-                            // the eeg channels
-    int _triggerScaleMultiplier;
+    std::vector<std::string> triggerNames;
+	bool postfixTriggers; // if true, place the triggers after the eeg channels
+    int triggerScaleMultiplier;
 
 };
 
