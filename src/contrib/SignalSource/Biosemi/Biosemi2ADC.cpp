@@ -21,15 +21,14 @@
  * USA
  *
  * Revisions:
- *  $Log$
- *  Revision 1.2  2005/12/14 15:24:15  mellinger
- *  Fixed state name typo in Process().
- *
  *  Revision 1.1  2005/12/12 00:05:24  sinverso
  *  Initial Revision: Working and tested offline. Not tested in real experiments.
  *
- * Revision 1.3 2008/10/25  Maria Laura  Blefari
- * Fixed battery warning
+ *  Revision 1.2  2005/12/14 15:24:15  mellinger
+ *  Fixed state name typo in Process().
+ *
+ *  Revision 1.3 2008/10/25  Maria Laura  Blefari
+ *  Fixed battery warning
  */
 
 #include "PCHIncludes.h"
@@ -52,18 +51,18 @@ RegisterFilter( Biosemi2ADC, 1 );
 /*******************************************************************************
 Function:   Biosemi2ADC
 Purpose:    The constructor for the Biosemi2ADC
-			it fills the provided list of parameters and states with the
-			parameters and states it requests from the operator
+            it fills the provided list of parameters and states with the
+            parameters and states it requests from the operator
 Parameters: plist - the list of parameters
-			slist - the list of states
+            slist - the list of states
 Returns:    N/A
 *******************************************************************************/
 Biosemi2ADC::Biosemi2ADC()
-: samplingRate( 0 ),
-  softwareCh(0),
-  sampleBlockSize(0),
-  postfixTriggers(false),
-  triggerScaleMultiplier(1)
+: mSamplingRate( 0 ),
+  mSoftwareCh(0),
+  mSampleBlockSize(0),
+  mPostfixTriggers(false),
+  mTriggerScaleMultiplier(1)
 {
 
  BEGIN_PARAMETER_DEFINITIONS
@@ -93,145 +92,140 @@ Biosemi2ADC::Biosemi2ADC()
 
 Biosemi2ADC::~Biosemi2ADC()
 {
-	Halt();
+    Halt();
 }
 
 
 /*******************************************************************************
 Function:   Preflight
 Purpose:    Checks parameters for availability and consistence with input signal
-			properties; requests minimally needed properties for the output
-			signal; checks whether resources are available.
+            properties; requests minimally needed properties for the output
+            signal; checks whether resources are available.
 Parameters: Input and output signal properties pointers.
 Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Preflight( const SignalProperties&,
-								   SignalProperties& outSignalProperties ) const
+                                   SignalProperties& outSignalProperties ) const
 {
 
 //Required states
 
-	State("BatteryLow");
-	State("MODE");
-	State("MK2");
+    State("BatteryLow");
+    State("MODE");
+    State("MK2");
 
 
-	if( Parameter("SampleBlockSize") < 1 ){
-		bcierr << "Sample block Size of " << Parameter("SampleBlockSize")
-			   << " is less than 1" << endl;
-	}
+    if( Parameter("SampleBlockSize") < 1 ){
+        bcierr << "Sample block Size of " << Parameter("SampleBlockSize")
+               << " is less than 1" << endl;
+    }
 
-	if( Parameter("TriggerScaleMultiplier") <= 0 ){
-		bcierr << "Trigger scale multiplier is: "
-			<< Parameter("TriggerScaleMultiplier")
-			<< ", but it must be greater than 0."
-			<< endl;
-	}
-	try{
-		int reqChannels = Parameter("SourceCh");
+    if( Parameter("TriggerScaleMultiplier") <= 0 ){
+        bcierr << "Trigger scale multiplier is: "
+            << Parameter("TriggerScaleMultiplier")
+            << ", but it must be greater than 0."
+            << endl;
+    }
+
+    int reqChannels = Parameter("SourceCh");
 
 // The number of Channels requested includes the triggers, so if the user wants
 //to append the triggers, we need NUM_TRIGGERS less than software channels
 
-		if( 1 == Parameter("PostfixTriggers" )){
-			reqChannels -= Biosemi2Client::NUM_TRIGGERS;
-			if( reqChannels <= 0 ){
-				bcierr << "Requested eeg channels is <= 0. "
-					<< "You probably didn't mean this." << endl
-					<< "Remeber if you want to postfix triggers, softwareCh "
-					<< endl
-					<< "should equal the number of EEG channels you want + "
-					<< "the total number of Trigger channels ( "
-					<< Biosemi2Client::NUM_TRIGGERS << ")." << endl;
+    if( 1 == Parameter("PostfixTriggers" )){
+        reqChannels -= Biosemi2Client::NUM_TRIGGERS;
+        if( reqChannels <= 0 ){
+            bcierr << "Requested eeg channels is <= 0. "
+                << "You probably didn't mean this." << endl
+                << "Remeber if you want to postfix triggers, softwareCh "
+                << endl
+                << "should equal the number of EEG channels you want + "
+                << "the total number of Trigger channels ( "
+                << Biosemi2Client::NUM_TRIGGERS << ")." << endl;
 
-			}
-		}
-		else{
-			bciout << "Warning: you are not post-fixing triggers."
-					  " Triggers will not be saved." << endl;
-		}
-		_biosemi.initialize(Parameter("SamplingRate"),
-			Parameter("SampleBlockSize"), reqChannels, false );
+        }
+    }
+    else{
+        bciout << "Warning: you are not post-fixing triggers."
+                  " Triggers will not be saved." << endl;
+        }
 
-	}
-	catch(char * error ){
-		bcierr << "Unable to initialize biosemi client.\n Error: " <<
-			error << endl;
-	}
+    mBiosemi.initialize(Parameter("SamplingRate"),
+            Parameter("SampleBlockSize"), reqChannels, false );
 
-	if( Parameter("SourceCh") > _biosemi.getNumChannels() ){
-		bcierr << "Number of channels requested, "
-			<< Parameter("SourceCh")
-			<< " is greater than the number"
-			<< endl
-			<< " of channels the biosemi can send, "
-			<< _biosemi.getNumChannels()
-			<< ", at current mode: "
-			<< _biosemi.getMode() << endl;
-	}
+    if( Parameter("SourceCh") > mBiosemi.getNumChannels() ){
+        bcierr << "Number of channels requested, "
+            << Parameter("SourceCh")
+            << " is greater than the number"
+            << endl
+            << " of channels the biosemi can send, "
+            << mBiosemi.getNumChannels()
+            << ", at current mode: "
+            << mBiosemi.getMode() << endl;
+    }
 
-	if( 0 != (_biosemi.getSamplingRate() % (int)Parameter("SamplingRate")) ){
-		bcierr << "Sampling rate requested: " << Parameter("SamplingRate")
-			<< " does not evenly divide biosemi sampling rate: "
-			<< _biosemi.getSamplingRate() << endl;
+    if( 0 != (mBiosemi.getSamplingRate() % (int)Parameter("SamplingRate")) ){
+        bcierr << "Sampling rate requested: " << Parameter("SamplingRate")
+            << " does not evenly divide biosemi sampling rate: "
+            << mBiosemi.getSamplingRate() << endl;
 
-	}
+    }
 
 // Requested output signal properties.
 
    outSignalProperties = SignalProperties(
-		Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ),
-			SignalType::float32);
+        Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ),
+            SignalType::float32);
 }
 
 
 /*******************************************************************************
 Function:   Initialize
 Purpose:    This function parameterizes the Biosemi2ADC
-			It is called each time the operator first starts,or suspends and then
-			resumes, the system i.e., each time the system goes into the main
-			data acquisition loop (fMain->MainDataAcqLoop())
+            It is called each time the operator first starts,or suspends and then
+            resumes, the system i.e., each time the system goes into the main
+            data acquisition loop (fMain->MainDataAcqLoop())
 Parameters: N/A
 Returns:   N/A
 
 *******************************************************************************/
 void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-	_dataBlock = &_biosemi.getDataBlock();
+    mpDataBlock = &mBiosemi.getDataBlock();
 
 // store the value of the needed parameters
 
-	samplingRate = Parameter( "SamplingRate" );
-	softwareCh = Parameter("SourceCh");
-	sampleBlockSize = Parameter("SampleBlockSize");
-	triggerScaleMultiplier = Parameter("TriggerScaleMultiplier");
-	postfixTriggers = Parameter("PostfixTriggers") != 0;
+    mSamplingRate = Parameter( "SamplingRate" );
+    mSoftwareCh = Parameter("SourceCh");
+    mSampleBlockSize = Parameter("SampleBlockSize");
+    mTriggerScaleMultiplier = Parameter("TriggerScaleMultiplier");
+    mPostfixTriggers = Parameter("PostfixTriggers") != 0;
 
-	if( postfixTriggers ){
-		signalChannels = softwareCh - Biosemi2Client::NUM_TRIGGERS;
-	}
-	else{
-		signalChannels = softwareCh;
-	}
+    if( mPostfixTriggers ){
+        mSignalChannels = mSoftwareCh - Biosemi2Client::NUM_TRIGGERS;
+    }
+    else{
+        mSignalChannels = mSoftwareCh;
+    }
 
-	// Setup the State
+    // Setup the State
 
-	State("BatteryLow") = _biosemi.isBatteryLow();
-	if( State("BatteryLow" ) ){
-		bciout << "Warnning: Battery low " << endl;
-	}
-	State("MODE") =_biosemi.getMode();
-	State("MK2") = _biosemi.isMK2();
- 
+    State("BatteryLow") = mBiosemi.isBatteryLow();
+    if( State("BatteryLow" ) ){
+        bciout << "Warning: Battery low " << endl;
+    }
+    State("MODE") =mBiosemi.getMode();
+    State("MK2") = mBiosemi.isMK2();
+
 
 }
 
 
 /*******************************************************************************
 Function:   Process
-Purpose:    This function is called within fMain->MainDataAcqLoop()	it fills the
-			already initialized array RawEEG with values and DOES NOT RETURN,
-			UNTIL ALL DATA IS ACQUIRED
+Purpose:    This function is called within fMain->MainDataAcqLoop()    it fills the
+            already initialized array RawEEG with values and DOES NOT RETURN,
+            UNTIL ALL DATA IS ACQUIRED
 Parameters: N/A
 Returns:
 *******************************************************************************/
@@ -240,54 +234,54 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
 
 // wait for data to become ready
 
-	_biosemi.isDataReady();
+    mBiosemi.isDataReady();
 
 
 // Make sure the block is valid.
 
-	if( !_dataBlock->isDataValid() ){
-		if( _biosemi.isBatteryLow() && !State("BatteryLow")){
-			bciout << "Warning: Battery Low" << endl;
+    if( !mpDataBlock->isDataValid() ){
+        if( mBiosemi.isBatteryLow() && !State("BatteryLow")){
+            bciout << "Warning: Battery Low" << endl;
 
 // we don't want to send messages to bicout everytime Process function is called,
 // only send once and hope the user is paying attention.
 
-			State("BatteryLow") = BATTERY_LOW;
-		}
-		else{
-		  // TODO  make this more descriptive
-			bcierr << "Data is invalid for unkown reason." << endl;
-		}
-	}
+            State("BatteryLow") = BATTERY_LOW;
+        }
+        else{
+          // TODO  make this more descriptive
+            bcierr << "Data is invalid for unkown reason." << endl;
+        }
+    }
 
 
 // place the data and triggers to the out signal
 
-	int triggerChan(0);
-	for( int sample(0) ; sample < sampleBlockSize ; ++sample ){
+    int triggerChan(0);
+    for( int sample(0) ; sample < mSampleBlockSize ; ++sample ){
 
-		for( int  channel(0); channel < softwareCh ; ++channel ){
-			triggerChan = 0;
-			if( channel < signalChannels ){
-				// this is a signal channel
-				signal(channel, sample)=
-					_dataBlock->getSignal(sample,channel)/8192.0;
+        for( int  channel(0); channel < mSoftwareCh ; ++channel ){
+            triggerChan = 0;
+            if( channel < mSignalChannels ){
+                // this is a signal channel
+                signal(channel, sample)=
+                    mpDataBlock->getSignal(sample,channel)/8192.0;
 
 //The USB receiver converts the 24-bit values to 32-bit integers by adding a
 //least significant byte of zero's to every data word. So, in order to convert
 //the incoming I32 values in ActiView to muV, the numbers should be divided by 8192
 
-			}
+            }
 
-			else if(postfixTriggers) {
-				// this is a trigger channel
-				signal(channel, sample)=
-					_dataBlock->getTrigger(sample, triggerChan );
-				++triggerChan;
-			}
+            else if(mPostfixTriggers) {
+                // this is a trigger channel
+                signal(channel, sample)=
+                    mpDataBlock->getTrigger(sample, triggerChan );
+                ++triggerChan;
+            }
 
-		}
-	}
+        }
+    }
 
 }
 
@@ -295,12 +289,12 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
 /******************************************************************************
 Function:   Halt
 Purpose:    This routine shuts down data acquisition.
-			In this special case, it does not do anything (since the random number
-			generator does not have to be turned off)
+            In this special case, it does not do anything (since the random number
+            generator does not have to be turned off)
 Parameters: N/A
 Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Halt()
 {
-	_biosemi.halt();
+    mBiosemi.halt();
 }

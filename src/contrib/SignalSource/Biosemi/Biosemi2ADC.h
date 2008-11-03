@@ -5,29 +5,31 @@
  * Version:   0.01
  * Liecense:
  * Copyright (C) 2005 Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  * USA
  *
  * Revisions:
- *  $Log$
  *  Revision 1.1  2005/12/12 00:05:24  sinverso
  *  Initial Revision: Working and tested offline. Not tested in real experiments.
  *
- * Revision 1.3 2008/10/25  Maria Laura  Blefari
- * Fixed battery warning
+ *  Revision 1.2  2005/12/14 15:24:15  mellinger
+ *  Fixed state name typo in Process().
+ *
+ *  Revision 1.3 2008/10/25  Maria Laura  Blefari
+ *  Fixed battery warning
  */
 #ifndef Biosemi2ADCH
 #define Biosemi2ADCH
@@ -55,27 +57,27 @@ protected:
     static const int BATTERY_LOW = true;
     static const int BATTERY_NOT_LOW = false;
 
-    int samplingRate;
-	int softwareCh;
+    int mSamplingRate;
+    int mSoftwareCh;
 
-	/*
+    /*
      * The number of signal channels
      * If we are postfixing triggers than:
-	 *  softwareCh = signalChannels + NUM_TRIGGERS
+     *  softwareCh = signalChannels + NUM_TRIGGERS
      * else
-	 *  softwareCh = signalChannels
+     *  softwareCh = signalChannels
      */
 
-    int signalChannels;
+    int mSignalChannels;
 
 
-    int sampleBlockSize; // sample blocksize to send
-    mutable Biosemi2Client _biosemi;
+    int mSampleBlockSize; // sample blocksize to send
+    mutable Biosemi2Client mBiosemi;
 
-    Biosemi2Client::DataBlock *_dataBlock;
-    std::vector<std::string> triggerNames;
-	bool postfixTriggers; // if true, place the triggers after the eeg channels
-    int triggerScaleMultiplier;
+    Biosemi2Client::DataBlock *mpDataBlock;
+    std::vector<std::string> mTriggerNames;
+    bool mPostfixTriggers; // if true, place the triggers after the eeg channels
+    int mTriggerScaleMultiplier;
 
 };
 

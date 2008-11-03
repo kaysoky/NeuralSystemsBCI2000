@@ -4,23 +4,24 @@
  * Description: Client to acquire from the USB BIOSEMI 2 Labview_DLL.
  * License:
  * Copyright (C) 2005  Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
+ *
  * Revisions:
- *  $Log$
+ *
  *  Revision 1.1  2005/12/12 00:05:24  sinverso
  *  Initial Revision: Working and tested offline. Not tested in real experiments.
  *
@@ -37,18 +38,18 @@
 class Biosemi2Client{
 
 public:
-    // forward declaration 
+    // forward declaration
 
-	class DataBlock;
+    class DataBlock;
 
 
-	// C O N S T A N T S //
+    // C O N S T A N T S //
 
-	static const long BUFFER_SIZE_IN_BYTES = 1024*1024*32; // 33,554,432
+    static const long BUFFER_SIZE_IN_BYTES = 1024*1024*32; // 33,554,432
     static const long BYTES_PER_INT = 4; // the number of chars that make up an
                                         // int. 1 byte per char, 4 bytes per int
                                         // so 4 chars per int
-	// size of the int data buffer
+    // size of the int data buffer
 
     static const long BUFFER_SIZE_IN_INT = BUFFER_SIZE_IN_BYTES / BYTES_PER_INT;
     static const int SYNC_CHANNEL = 0;
@@ -60,19 +61,19 @@ public:
 
     virtual ~Biosemi2Client();
 
-	/*
+    /*
      * Call initialize before calling anything else to setup everything
      *
      * @param desiredSamplingRate the sampling rate you want in Hz
      *      (as in samples per channel)
      *      Must be evenly divisable into the biosemi's sampling rate
-	 *      e.g. Biosemi Mode 4 in Mk2 = 2048 Hz,
-	 *      so 2408 % desiredSamplingrate must equal 0
+     *      e.g. Biosemi Mode 4 in Mk2 = 2048 Hz,
+     *      so 2408 % desiredSamplingrate must equal 0
      *
-     * @param desiredSampleBlockSize the number of samples wait for  
+     * @param desiredSampleBlockSize the number of samples wait for
      *      per channel before isDataReady becomes true.
      *      e.g. 32 would wait for 32 samples per channel
-     *      at your desired sampling rate 
+     *      at your desired sampling rate
      *
      * @param desiredNumChannels the number of channels you want. This
      *      does not include the sync or status channel
@@ -86,41 +87,41 @@ public:
      *     when checking valid status if the battery is low, otherwise
      *     we just return true. (Basically how bad to care if the battery
      *     is low during your experiment, use false if you don't want
-	 *     the experiment to crash to a halt when the battery becomes
-	 *     low) Default = false
+     *     the experiment to crash to a halt when the battery becomes
+     *     low) Default = false
      */
     virtual void  initialize(const int &desiredSamplingRate,
         const int &desiredSampleBlockSize, const int &desiredNumChannels,
         const bool &throwBatteryLowException=false);
 
-	/*
+    /*
      * Data block allows you to access the data as if it was actually
-	 * sampled at your desired sampling rate with your desired number of
+     * sampled at your desired sampling rate with your desired number of
      * channels, and not have to worry about the offset into the data buffer
      *
-	 * Note: Call isDataReady automatically makes datablock access the new data
-	 * just acquired.
-	 *
-	 * @return Datablock to access the data
-	 * @see DataBlock
-	 */
-	virtual DataBlock& getDataBlock();
+     * Note: Call isDataReady automatically makes datablock access the new data
+     * just acquired.
+     *
+     * @return Datablock to access the data
+     * @see DataBlock
+     */
+    virtual DataBlock& getDataBlock();
 
-	/*
-	 * Allows access to the data buffer. You should normally use
-	 * getDataBlock instead.
-	 *
-	 * @return pointer to the data buffer in ints
-	 */
-	 virtual const int * getData() const;
+    /*
+     * Allows access to the data buffer. You should normally use
+     * getDataBlock instead.
+     *
+     * @return pointer to the data buffer in ints
+     */
+     virtual const int * getData() const;
 
-	/*
-	 * Returns when there is enough data in the buffer to fulfill your
-	 * sample block size request.
-	 */
-	virtual void isDataReady();
+    /*
+     * Returns when there is enough data in the buffer to fulfill your
+     * sample block size request.
+     */
+    virtual void isDataReady();
 
-	/*
+    /*
      * Returns when there is enough data in the buffer to fulfill your
      * sample block size request.
      *
@@ -129,71 +130,71 @@ public:
      */
     virtual void isDataReady(int &startPos);
 
-	/*
-	 * Return the actual number of channels the biosemi is sending
+    /*
+     * Return the actual number of channels the biosemi is sending
      * including sync and status channels
      */
-	virtual int getNumChannels() const;
+    virtual int getNumChannels() const;
 
-	/* Return biosemi's speedmode set in the front end of the AD box*/
+    /* Return biosemi's speedmode set in the front end of the AD box*/
 
-	virtual int getMode() const;
+    virtual int getMode() const;
 
-	/*
-	 * Return biosemi's actual sampling rate in Hz
+    /*
+     * Return biosemi's actual sampling rate in Hz
      */
     virtual int getSamplingRate() const;
 
 
-	/*
-	 * Return the actual sampleBlockSize we are waiting for, which
-	 * differs from the one you desired based on the difference
-	 * in sampling rate
+    /*
+     * Return the actual sampleBlockSize we are waiting for, which
+     * differs from the one you desired based on the difference
+     * in sampling rate
      */
     virtual int getSampleBlockSize() const;
 
 
-	 /* Halts data acquisition */
+     /* Halts data acquisition */
 
-	virtual void halt();
+    virtual void halt();
 
-	virtual bool isDataValid(const int * data, const int &position ) const;
+    virtual bool isDataValid(const int * data, const int &position ) const;
 
-	virtual bool Biosemi2Client::isDataValid() const;
+    virtual bool Biosemi2Client::isDataValid() const;
 
 
-	/* Checks if the first sample  starting at startPos  in data is synced*/
+    /* Checks if the first sample  starting at startPos  in data is synced*/
 
-	virtual bool isDataSynced(const int * data, const int &position) const;
+    virtual bool isDataSynced(const int * data, const int &position) const;
 
-	virtual bool isSampleSynced(const int &sample) const;
+    virtual bool isSampleSynced(const int &sample) const;
 
-	virtual bool isStatusValid(const int &sample) const;
+    virtual bool isStatusValid(const int &sample) const;
 
     virtual bool isTriggerHigh( const int &trigger, const int &datum) const;
 
-	/*
-	 * True if the battery based on the last bit status sample is low. The current
-	 * data block only call this after isDataReady.
+    /*
+     * True if the battery based on the last bit status sample is low. The current
+     * data block only call this after isDataReady.
      */
     virtual bool isBatteryLow() const;
 
-	/* Return true if the battery is low in this status sample */
+    /* Return true if the battery is low in this status sample */
 
-	virtual bool isBatteryLow( const int &status ) const;
+    virtual bool isBatteryLow( const int &status ) const;
 
-	/* True if this is an MK2 system, only works after initialization */
+    /* True if this is an MK2 system, only works after initialization */
 
-	virtual bool isMK2() const;
+    virtual bool isMK2() const;
 
-	/* Return true if the status sample says this is an MK2 */
+    /* Return true if the status sample says this is an MK2 */
 
-	virtual bool isMK2(const int &status) const;
+    virtual bool isMK2(const int &status) const;
 
 
 protected:
 
-	virtual int statusToMode(const int * data, int position) const;
+    virtual int statusToMode(const int * data, int position) const;
     virtual int statusToMode(int status) const;
 
     virtual int determineNumChannels(int mode, bool isMk2) const;
@@ -208,13 +209,13 @@ protected:
 
     virtual void setupDriver();
 
-	/*
-	 * Calculate the real index into the data buffer based on sample and channel,
-	 * the start position of the data, number of actual channels, and decimation
-	 * factor.
-	 * Note: channel 0 is the sync, 1 is status, and 2 starts the EEG signal
-	 *
-	 */
+    /*
+     * Calculate the real index into the data buffer based on sample and channel,
+     * the start position of the data, number of actual channels, and decimation
+     * factor.
+     * Note: channel 0 is the sync, 1 is status, and 2 starts the EEG signal
+     *
+     */
     inline virtual int calcIndex(const int &sample,
         const int &channel) const;
 
@@ -224,30 +225,30 @@ protected:
 
 protected:
 
-	// C O N S T A N T S //
+    // C O N S T A N T S //
 
 
-	static const int USB_DATA_SIZE = 64;
+    static const int USB_DATA_SIZE = 64;
 
     static const int MK2_MASK = 0x80000000; // Status mask MK2 bit
-	static const int BATT_LOW_MASK = 0x40000000; // Status mask for battery low
+    static const int BATT_LOW_MASK = 0x40000000; // Status mask for battery low
     static const int CMS_WITHIN_RANGE_MASK=0x10000000; // Status mask if CMS
-											// is within range
+                                            // is within range
 
-	static const int MODE_MASK = 0x2E000000;
-	//http://www.biosemi.nl/forum/viewtopic.php?t=26&highlight=readmultiplesweeps
+    static const int MODE_MASK = 0x2E000000;
+    //http://www.biosemi.nl/forum/viewtopic.php?t=26&highlight=readmultiplesweeps
 
-	static const int MODE_SHIFT_TO_INT = 25; // How bits to shift the masked
-											 // mode bits, to get a mode int
+    static const int MODE_SHIFT_TO_INT = 25; // How bits to shift the masked
+                                             // mode bits, to get a mode int
 
     static const int NEW_EPOCH_MASK = 0x01000000; // status mask if this
-												 // is a new epoch
+                                                 // is a new epoch
 
-	static const int IS_SYNCED_MASK = 0xFFFFFF00; // mask if this sample is synced
-	
+    static const int IS_SYNCED_MASK = 0xFFFFFF00; // mask if this sample is synced
 
 
-	// Mask if trigger is high using 32bits
+
+    // Mask if trigger is high using 32bits
 
     static const int TRIGGER_0  = 0x00000010;
     static const int TRIGGER_1  = 0x00000020;
@@ -266,87 +267,87 @@ protected:
     static const int TRIGGER_14 = 0x00080000;
     static const int TRIGGER_15 = 0x00100000;
 
-	// M E M B E R  V A R I A B L E S //
+    // M E M B E R  V A R I A B L E S //
 
 
-	/* Pointer to send start and stop codes to the usb driver*/
-	PCHAR usbdata;   
+    /* Pointer to send start and stop codes to the usb driver*/
+    PCHAR mpUsbdata;
 
-	/* Data buffer in bytes */
-	PCHAR data;
+    /* Data buffer in bytes */
+    PCHAR mpData;
 
-	/* Data buffer as ints */
-    int * dataAsInt;
+    /* Data buffer as ints */
+    int * mpDataAsInt;
 
-	/* True if this is an ActiveTwo Mk2 */
-    bool Mk2; 
+    /* True if this is an ActiveTwo Mk2 */
+    bool mMk2;
 
-	/* True if the battery is low, Note this is only updated
+    /* True if the battery is low, Note this is only updated
      * at initialization and on calles to isBatteryLow
      */
-    bool BattLow; 
+    bool mBattLow;
 
-	/* Sampling rate of biosemi in Hz */
-	int samplingRate;
+    /* Sampling rate of biosemi in Hz */
+    int mSamplingRate;
 
-	/* The actual sample block size we are using based */
-	int sampleBlockSize;
+    /* The actual sample block size we are using based */
+    int mSampleBlockSize;
 
-	/* Sampling rate the user desires */
-    int DESIREDSamplingRate;
+    /* Sampling rate the user desires */
+    int mDesiredSamplingRate;
 
-	/* Number of channels the user desires. */
-    int DESIREDNumChannels;
+    /* Number of channels the user desires. */
+    int mDesiredNumChannels;
 
-	/* Sample block size the user desires */
-    int DESIREDSampleBlockSize;
+    /* Sample block size the user desires */
+    int mDesiredSampleBlockSize;
 
-	/* Number of channels the biosemi is transmitting, including status and sync */
-    int numChannels;
+    /* Number of channels the biosemi is transmitting, including status and sync */
+    int mNumChannels;
 
-	/* Biosemi's mode, only updated on initialization*/
-	int Mode;
+    /* Biosemi's mode, only updated on initialization*/
+    int mMode;
 
-	/* handle to the biosemi device */
-	HANDLE Hdevice;
+    /* handle to the biosemi device */
+    HANDLE mDevice;
 
-	/* The position of BIOSEMI's buffer cursor */
-	PDWORD bufferCursorPos;
+    /* The position of BIOSEMI's buffer cursor */
+    PDWORD mpBufferCursorPos;
 
-	/* Number of ints that were buffered between sucessive callsto GET_POINTER*/
-	long intsBuffered;
+    /* Number of ints that were buffered between sucessive callsto GET_POINTER*/
+    long mIntsBuffered;
 
-	/* The previous position of the buffer cursor */
-    DWORD  oldBufferCursorPos;
+    /* The previous position of the buffer cursor */
+    DWORD  mOldBufferCursorPos;
 
-	/* The position to start reading from the data buffer as an int*/
-	long STARTPos;
+    /* The position to start reading from the data buffer as an int*/
+    long mStartPos;
 
-	/* The next position to start reading in the data buffer */
-    long nextPos; 
+    /* The next position to start reading in the data buffer */
+    long mNextPos;
 
-	/* Number of ints ready to be read from the buffer */
-    long intsAvailable;         
+    /* Number of ints ready to be read from the buffer */
+    long mIntsAvailable;
 
-	/* The number of ints that are ready to be read, these are accumulated */
-    int numIntsToRead;
+    /* The number of ints that are ready to be read, these are accumulated */
+    int mNumIntsToRead;
 
-	/* True if the get data function has been called */
-    bool isDataReadyCalledYet;    
+    /* True if the get data function has been called */
+    bool mIsDataReadyCalledYet;
 
-	/* If initialized was called */
-	bool wasDriverSetup;
+    /* If initialized was called */
+    bool mWasDriverSetup;
 
-	/* How many samples you need to skip to achieve the desired sampling rate*/
-    int DecimationFactor;          
-   
-	/* Pointer to the datablock that helps the user travers the data received on
-	the last call to isDataReady */
-    DataBlock * dataBlock;
+    /* How many samples you need to skip to achieve the desired sampling rate*/
+    int mDecimationFactor;
 
-	/* True if we should throw an exception if the battery is low when checking
-	if the status is valid.*/
-	bool THROWBatteryLowException;
+    /* Pointer to the datablock that helps the user travers the data received on
+    the last call to isDataReady */
+    DataBlock * mpDataBlock;
+
+    /* True if we should throw an exception if the battery is low when checking
+    if the status is valid.*/
+    bool mThrowBatteryLowException;
 
 /*******************************************************************************
     To interface your own acquisition software directly with our USB2 interface,
@@ -362,17 +363,17 @@ protected:
     BOOL CLOSE_DRIVER_ASYNC(HANDLE hdevice);
 *******************************************************************************/
 
-	dOPEN_DRIVER_ASYNC OPEN_DRIVER_ASYNC;      // function pointer
-	dUSB_WRITE USB_WRITE;
-	dREAD_MULTIPLE_SWEEPS READ_MULTIPLE_SWEEPS;
-	dREAD_POINTER READ_POINTER;
-    dCLOSE_DRIVER_ASYNC CLOSE_DRIVER_ASYNC;
+    dOPEN_DRIVER_ASYNC mfpOPEN_DRIVER_ASYNC;      // function pointer
+    dUSB_WRITE mfpUSB_WRITE;
+    dREAD_MULTIPLE_SWEEPS mfpREAD_MULTIPLE_SWEEPS;
+    dREAD_POINTER mfpREAD_POINTER;
+    dCLOSE_DRIVER_ASYNC mfpCLOSE_DRIVER_ASYNC;
 
-	// I N N E R  C L A S S E S //
+    // I N N E R  C L A S S E S //
 
-	public:
-	/*
-     * Datablock presents the data with the sampleblockSize, number of 
+    public:
+    /*
+     * Datablock presents the data with the sampleblockSize, number of
      * channels, and sampingRate the caller desires (i.e. what
      * they passed to Biosemi2Client::initilaize
      *
@@ -383,50 +384,50 @@ protected:
     class DataBlock{
       public:
 
-		DataBlock( const Biosemi2Client *BIOSEMI );
+        DataBlock( const Biosemi2Client *BIOSEMI );
 
-		virtual ~DataBlock();
+        virtual ~DataBlock();
 
-		/*
+        /*
          * Get's the data for the sample and channel specified. Acceses
          * basically like a 2d matrix. It ignores sync and status channels
          * so channel 0 is the first EEG channel
          * Signal is returned with least significat bit as 1/8192 microVolts
          * see http://www.biosemi.com/faq/make_own_acquisition_software.htm
          */
-        inline virtual int getSignal(const int &sample, 
+        inline virtual int getSignal(const int &sample,
             const int &channel) const;
 
-		/*
+        /*
          * Gets the value of the trigger specified, scaled if desired.
-		 * Scaled defaults to 1. Triggers are 0 for low and 1 for high
+         * Scaled defaults to 1. Triggers are 0 for low and 1 for high
          * so scalling by 1000 would be 0 low 1000 high.
          * Scalling can be used to bring the value in range with
          * the signal for display purposes
          */
-		inline virtual int getTrigger(const int &sample, const int &trigger,
+        inline virtual int getTrigger(const int &sample, const int &trigger,
             const int &scaled=1 ) const;
 
-		/*
+        /*
          * Loop through the sync and status channels and make sure this data
-		 * is valid. Throws an exception stating what was invalid otherwise
-		 * returns true. TODO should probably return a status
+         * is valid. Throws an exception stating what was invalid otherwise
+         * returns true. TODO should probably return a status
          */
         virtual bool isDataValid() const;
-        
-		virtual const int &getNumChannels();
+
+        virtual const int &getNumChannels();
 
         virtual const int &getSampleBlockSize();
 
         virtual const int &getSamplingRate();
 
 protected:
-        const Biosemi2Client *biosemi;
+        const Biosemi2Client *mpBiosemi;
     };
 
-	/*
-	 * Allow DataBlock access to Biosem2Client's protected and private member
-	 variables.
+    /*
+     * Allow DataBlock access to Biosem2Client's protected and private member
+     variables.
      */
     friend DataBlock;
 
