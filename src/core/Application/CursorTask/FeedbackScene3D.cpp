@@ -204,6 +204,15 @@ FeedbackScene3D::TargetHit( int inIdx ) const
   return geomObj::VolumeIntersection( *mpCursor, *mTargets[ inIdx ] );
 }
 
+float
+FeedbackScene3D::CursorTargetDistance( int inIdx ) const
+{
+  CVector3 targetOrigin = mTargets[ inIdx ]->getOrigin(),
+           cursorOrigin = mpCursor->getOrigin(),
+           diff = targetOrigin - cursorOrigin;
+  return ::sqrt( diff.x * diff.x + diff.y * diff.y + diff.z * diff.z );
+}
+
 FeedbackScene3D&
 FeedbackScene3D::SetTargetVisible( bool inVisible, int inIdx )
 {

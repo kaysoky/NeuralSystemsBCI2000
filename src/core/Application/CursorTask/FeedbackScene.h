@@ -35,6 +35,7 @@ class FeedbackScene : protected Environment
 
   virtual int   NumTargets() const = 0;
   virtual bool  TargetHit( int ) const = 0;
+  virtual float CursorTargetDistance( int ) const = 0;
   virtual self& SetTargetVisible( bool, int ) = 0;
   virtual self& SetTargetColor( RGBColor, int ) = 0;
 };

@@ -19,6 +19,19 @@ namespace GUI
 struct Point
 {
   float x, y;
+
+  Point operator+( const Point& p )
+  {
+    Point r = { x + p.x, y + p.y };
+    return r;
+  }
+
+  Point operator-( const Point& p )
+  {
+    Point r = { x - p.x, y - p.y };
+    return r;
+  }
+
 };
 
 // A rectangle in continuous coordinates.

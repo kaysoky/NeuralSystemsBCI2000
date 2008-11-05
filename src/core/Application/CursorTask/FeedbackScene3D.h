@@ -36,6 +36,7 @@ class FeedbackScene3D : public FeedbackScene
 
   virtual int   NumTargets() const;
   virtual bool  TargetHit( int ) const;
+  virtual float CursorTargetDistance( int ) const;
   virtual self& SetTargetVisible( bool, int );
   virtual self& SetTargetColor( RGBColor, int );
 

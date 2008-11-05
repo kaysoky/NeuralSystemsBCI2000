@@ -17,9 +17,8 @@
 #include "FeedbackScene3D.h"
 #include "buffers.h"
 
-// These two lines should be kept consistent:
-#define CURSOR_POS_BITS   "13"
-const int cCursorPosBits = 13;
+#define CURSOR_POS_BITS "13"
+const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
 RegisterFilter( CursorFeedbackTask, 3 );
 
@@ -369,9 +368,14 @@ CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProg
   // Test for target hits
   if( Parameter( "TestAllTargets" ) != 0 )
   {
-    for( int i = 0; State( "ResultCode" ) == 0 && i < mpFeedbackScene->NumTargets(); ++i )
+    int hitTarget = 0;
+    for( int i = 0; i < mpFeedbackScene->NumTargets(); ++i )
       if( mpFeedbackScene->TargetHit( i ) )
-        State( "ResultCode" ) = i + 1;
+      { // In case of a positive hit test for multiple targets, take the closer one.
+        if( hitTarget == 0 || mpFeedbackScene->CursorTargetDistance( hitTarget - 1 ) > mpFeedbackScene->CursorTargetDistance( i ) )
+          hitTarget = i + 1;
+      }
+    State( "ResultCode" ) = hitTarget;
   }
   else
   {

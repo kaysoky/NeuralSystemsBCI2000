@@ -162,6 +162,17 @@ FeedbackScene2D::TargetHit( int inIdx ) const
   return Shape::AreaIntersection( *mpCursor, *mTargets[ inIdx ] );
 }
 
+float
+FeedbackScene2D::CursorTargetDistance( int inIdx ) const
+{
+  GUI::Point targetCenter = mTargets[ inIdx ]->Center(),
+             cursorCenter = mpCursor->Center();
+  ObjectToSceneCoords( targetCenter, point );
+  ObjectToSceneCoords( cursorCenter, point );
+  GUI::Point diff = targetCenter - cursorCenter;
+  return ::sqrt( diff.x * diff.x + diff.y * diff.y );
+}
+
 FeedbackScene2D&
 FeedbackScene2D::SetTargetVisible( bool inVisible, int inIdx )
 {
