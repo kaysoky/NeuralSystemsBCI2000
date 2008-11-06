@@ -65,8 +65,8 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
              << endl;
   }
 
-  bool fftRequired = ( ( int )Parameter( "FFTOutputSignal" ) != eInput
-                       || ( int )Parameter( "VisualizeFFT" ) )
+  bool fftRequired = ( int( Parameter( "FFTOutputSignal" ) ) != eInput
+                       || int( Parameter( "VisualizeFFT" ) ) )
                      && ( Parameter( "FFTInputChannels" )->NumValues() > 0 );
   if( fftRequired )
   {
@@ -86,7 +86,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
              << endl;
   }
 
-  if( int( Parameter( "VisualizeFFT" ) ) )
+  if( int( Parameter( "VisualizeFFT" ) ) || int( Parameter( "FFTOutputSignal" ) ) == ePower )
   {
     SignalProperties temp;
     DetermineSignalProperties( temp, ePower );
@@ -100,26 +100,31 @@ void
 FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& Output )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
-  mFFTWindowLength = Parameter( "SampleBlockSize" )
+  mFFTWindowLength = Input.Elements()
                      * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
   mFFTWindow = ( eFFTWindow )( int )Parameter( "FFTWindow" );
 
   mFFTInputChannels.clear();
-  mSpectra.clear();
 
   for( size_t i = 0; i < mVisualizations.size(); ++i )
     mVisualizations[ i ].Send( CfgID::Visible, false );
   mVisualizations.clear();
   mVisualizeFFT = int( Parameter( "VisualizeFFT" ) );
-  if( mVisualizeFFT )
+  if( mVisualizeFFT || mFFTOutputSignal == ePower )
   {
     mVisProperties = Input;
     DetermineSignalProperties( mVisProperties, ePower );
+    PhysicalUnit elementUnit = mVisProperties.ElementUnit();
+    mVisProperties.SetChannels( mVisProperties.Elements() );
+    mVisProperties.ChannelUnit() = elementUnit;
+    mVisProperties.SetElements( 1 );
+    mVisProperties.ElementUnit() = Input.ElementUnit();
+    mVisProperties.ElementUnit().SetGain( mVisProperties.ElementUnit().Gain() * Input.Elements() );
+    mPowerSpectrum = GenericSignal( mVisProperties );
   }
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
   {
     mFFTInputChannels.push_back( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) );
-    mSpectra.push_back( GenericSignal( Output.Elements(), 1 ) );
     if( mVisualizeFFT )
     {
       ostringstream oss_i;
@@ -133,9 +138,9 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& Ou
       else
         oss_ch << Parameter( "FFTInputChannels" )->Labels()[ i ];
 
-      mVisualizations.back().Send( CfgID::WindowTitle, oss_ch.str().c_str() )
+      mVisualizations.back().Send( mVisProperties )
+                            .Send( CfgID::WindowTitle, oss_ch.str().c_str() )
                             .Send( CfgID::GraphType, CfgID::Field2d )
-                            .Send( mVisProperties )
                             .Send( CfgID::Visible, true );
     }
   }
@@ -158,30 +163,30 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& Ou
   bool fftRequired = ( mVisualizeFFT || mFFTOutputSignal != eInput)
                      && mFFTInputChannels.size() > 0;
   if( !fftRequired )
-  {
     mFFTInputChannels.clear();
-    mSpectra.clear();
-  }
   else
     mFFT.Initialize( mFFTWindowLength );
 }
 
 void
-FFTFilter::Process( const GenericSignal& inputSignal, GenericSignal& outputSignal )
+FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
+  if( mFFTOutputSignal == eInput )
+    Output = Input;
+    
   for( size_t i = 0; i < mFFTInputChannels.size(); ++i )
   {
-    // Copy the input signal values to the value buffer.
+    // Copy input signal values to the value buffer.
     vector<float>& buffer = mValueBuffers[ i ];
-    int inputSize = inputSignal.Elements(),
+    int inputSize = Input.Elements(),
         bufferSize = buffer.size();
     // Move old values towards the beginning of the buffer, if any.
     for( int j = 0; j < bufferSize - inputSize; ++j )
       buffer[ j ] = buffer[ j + inputSize ];
     // Copy new values to the end of the buffer;
-    // the buffer size may be greater of smaller than the input size.
+    // buffer size may be greater or less than input size.
     for( int j = ::max( 0, bufferSize - inputSize ); j < bufferSize; ++j )
-      buffer[ j ] = inputSignal( mFFTInputChannels[ i ], j + inputSize - bufferSize );
+      buffer[ j ] = Input( mFFTInputChannels[ i ], j + inputSize - bufferSize );
     // Prepare the buffer.
     if( mFFTWindow == eNone )
       for( int j = 0; j < bufferSize; ++j )
@@ -190,41 +195,34 @@ FFTFilter::Process( const GenericSignal& inputSignal, GenericSignal& outputSigna
       for( int j = 0; j < bufferSize; ++j )
         mFFT.Input( j ) = buffer[ j ] * mWindow[ j ];
     // Compute the power spectrum and visualize it if requested.
-    mFFT.Transform();
-    GenericSignal& spectrum = mSpectra[ i ];
+    mFFT.Compute();
     if( mVisualizeFFT || mFFTOutputSignal == ePower )
     {
+      int maxIdx = mPowerSpectrum.Channels() - 1;
       float normFactor = 1.0 / bufferSize;
-      spectrum( 0, 0 ) = mFFT.Output( 0 ) * mFFT.Output( 0 ) * normFactor;
+      mPowerSpectrum( maxIdx, 0 ) = mFFT.Output( 0 ) * mFFT.Output( 0 ) * normFactor;
       for( int k = 1; k < ( bufferSize + 1 ) / 2; ++k )
-        spectrum( k, 0 ) = (
+        mPowerSpectrum( maxIdx - k, 0 ) = (
           mFFT.Output( k ) * mFFT.Output( k ) +
           mFFT.Output( bufferSize - k ) * mFFT.Output( bufferSize - k ) ) * normFactor;
       if( bufferSize % 2 == 0 )
-        spectrum( bufferSize / 2, 0 ) = mFFT.Output( bufferSize / 2 ) * mFFT.Output( bufferSize / 2 ) * normFactor;
+        mPowerSpectrum( maxIdx - bufferSize / 2, 0 )
+          = mFFT.Output( bufferSize / 2 ) * mFFT.Output( bufferSize / 2 ) * normFactor;
+    }
+    if( mVisualizeFFT )
+      mVisualizations[ i ].Send( mPowerSpectrum );
+
+    if( mFFTOutputSignal == ePower )
+    {
+      for( int j = 0; j < Output.Elements(); ++j )
+        Output( i, j ) = mPowerSpectrum( mPowerSpectrum.Channels() - 1 - j, 0 );
     }
     else if( mFFTOutputSignal == eHalfcomplex )
     {
       float normFactor = 1.0 / ::sqrt( 1.0 * bufferSize );
-      for( int k = 0; k < bufferSize; ++k )
-        spectrum( k, 0 ) = mFFT.Output( k ) * normFactor;
+      for( int j = 0; j < Output.Elements(); ++j )
+        Output( i, j ) = mFFT.Output( j ) * normFactor;
     }
-    if( mVisualizeFFT )
-      mVisualizations[ i ].Send( spectrum );
-  }
-  switch( mFFTOutputSignal )
-  {
-    case eInput:
-      outputSignal = inputSignal;
-      break;
-    case ePower:
-    case eHalfcomplex:
-      for( size_t channel = 0; channel < mSpectra.size(); ++channel )
-        for( int element = 0; element < mSpectra[ channel ].Channels(); ++element )
-          outputSignal( channel, element ) = mSpectra[ channel ]( element, 0 );
-      break;
-    default:
-      assert( false );
   }
 }
 
@@ -274,12 +272,19 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       float amplitude = ioProperties.ValueUnit().RawMax() - ioProperties.ValueUnit().RawMin();
       ioProperties.ValueUnit().SetRawMin( 0 )
                               .SetRawMax( amplitude * amplitude );
+      ioProperties.ElementUnit().SetRawMin( 0 )
+                                .SetRawMax( ioProperties.Elements() - 1 );
     } break;
 
     case eHalfcomplex:
       ioProperties.SetName( "FFT Coefficients" )
                   .SetChannels( numChannels )
                   .SetElements( fftWindowLength );
+      ioProperties.ElementUnit().SetRawMin( 0 )
+                                .SetRawMax( fftWindowLength - 1 )
+                                .SetOffset( 0 )
+                                .SetGain( 1 )
+                                .SetSymbol( "" );
       break;
 
     default:

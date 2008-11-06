@@ -24,7 +24,6 @@ class FFTFilter : public GenericFilter
   virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void Process( const GenericSignal&, GenericSignal& );
   virtual void StopRun();
-  virtual bool AllowsVisualization() const { return false; }
 
  private:
   bool mVisualizeFFT;
@@ -48,8 +47,8 @@ class FFTFilter : public GenericFilter
   void DetermineSignalProperties( SignalProperties&, int ) const;
 
   SignalProperties                  mVisProperties;
+  GenericSignal                     mPowerSpectrum;
   std::vector<GenericVisualization> mVisualizations;
-  std::vector<GenericSignal>        mSpectra;
   std::vector<std::vector<float> >  mValueBuffers;
   std::vector<float>                mWindow;
 

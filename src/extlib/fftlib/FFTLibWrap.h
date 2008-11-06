@@ -27,10 +27,13 @@ class FFTLibWrapper
     };
     FFTLibWrapper();
     ~FFTLibWrapper();
+
     bool Initialize( int FFTSize, FFTDirection = FFTForward );
-    void Transform();
+    int Size() const;
     number& Input( int index );
     const number& Output( int index ) const;
+
+    void Compute();
 
     static const char* LibName() { return sLibName; }
     static bool LibAvailable()   { return sLibRef != 0; }

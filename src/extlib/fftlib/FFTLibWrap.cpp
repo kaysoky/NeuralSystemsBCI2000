@@ -115,8 +115,14 @@ FFTLibWrapper::Initialize( int inFFTSize, FFTDirection inDirection )
   return mInputData && mOutputData && mLibPrivateData;
 }
 
+int
+FFTLibWrapper::Size() const
+{
+  return mFFTSize;
+}
+
 void
-FFTLibWrapper::Transform()
+FFTLibWrapper::Compute()
 {
   LibExecute( mLibPrivateData );
 }
