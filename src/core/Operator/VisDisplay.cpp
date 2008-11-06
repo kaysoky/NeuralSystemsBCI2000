@@ -276,7 +276,12 @@ VisDisplay::VisDisplayBase::HandleMessage( const VisSignalProperties& v )
   {
     string symbol;
     double value = s.ElementUnit().Gain() * numSamples;
-    int magnitude = ( ::log10( ::fabs( value ) ) + 1.0 ) / 3.0;
+    int magnitude = ::log10( ::fabs( value ) );
+    if( magnitude > 0 )
+      --magnitude;
+    else if( magnitude < 0 )
+      ++magnitude;
+    magnitude /= 3;
     if( magnitude < -3 )
       magnitude = -3;
     if( magnitude > 3 )
@@ -316,7 +321,7 @@ VisDisplay::VisDisplayBase::HandleMessage( const VisSignalProperties& v )
     Visconfigs()[ v.SourceID() ].Put( CfgID::SampleOffset, s.ElementUnit().Offset(), MessageDefined );
   }
   // Although the SignalProperties class allows for individual units for
-  // individual channels, the SignalDisplay class is restricted a single
+  // individual channels, the SignalDisplay class is restricted to a single
   // unit and range.
   string valueUnit = s.ValueUnit().RawToPhysical( s.ValueUnit().Offset() + 1 );
   Visconfigs()[ v.SourceID() ].Put( CfgID::ValueUnit, valueUnit, MessageDefined );
