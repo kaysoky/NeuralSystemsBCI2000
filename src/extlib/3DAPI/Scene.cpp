@@ -66,11 +66,7 @@ Scene::DeleteObjects()
 {
   Cleanup();
   while( !mObjects.empty() )
-  {
-    primObj* p = *mObjects.begin();
-    mObjects.erase( p );
-    delete p;
-  }
+    delete *mObjects.begin();
 }
 
 
@@ -99,12 +95,11 @@ Scene::OnPaint( const DrawContext& inDC )
   mCameraAndLight.apply();
   ::glEnable( GL_NORMALIZE );
 
-  SetOfObjects s;
+  DrawingOrderedSetOfObjects s;
   for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
     s.insert( *i );
-  mObjects = s;
 
-  for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
+  for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
     ( *i )->render();
 
   ::glFlush();

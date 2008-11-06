@@ -66,10 +66,13 @@ class Scene : public GUI::GraphObject
   void Remove( primObj* );
   void DeleteObjects();
 
-  typedef std::set<primObj*, primObj::compare>  SetOfObjects;
+  typedef std::set<primObj*> SetOfObjects;
   typedef Scene::SetOfObjects::const_iterator ObjectIterator;
   const SetOfObjects& Objects()
     { return mObjects; }
+
+  typedef std::set<primObj*, primObj::compareByDrawingOrder> DrawingOrderedSetOfObjects;
+  typedef Scene::DrawingOrderedSetOfObjects::const_iterator DrawingOrderedIterator;
 
   void Move( float deltaT ); // moves all objects according to their velocities, and tests for
                              // collisions

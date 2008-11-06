@@ -53,7 +53,7 @@ class primObj
   // Rendering
   virtual void render() const = 0;
 
-  struct compare
+  struct compareByDrawingOrder
   {
     bool operator()( primObj* p1, primObj* p2 ) const
     {
