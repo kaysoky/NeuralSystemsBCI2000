@@ -18,7 +18,11 @@ function [res1, res2, ressq, timeBinsMs] = timeAnalysis(...
 funcName = 'p300Analysis';
 num_channels=size(signal, 2);
 
-samplefreq = sigParams.SamplingRate.NumericValue;
+if isfield(sigParams.SamplingRate, 'NumericValue')
+  samplefreq=sigParams.SamplingRate.NumericValue;
+else
+  samplefreq = str2double(sigParams.SamplingRate.Value);
+end
 trialLength = analysisParams.dataSegLength;
 condition1idxstr=sprintf(...
   'condition1idx=find((trialnr == cur_trial) & %s, 1);', ...

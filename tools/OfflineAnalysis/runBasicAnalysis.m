@@ -151,7 +151,12 @@ function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, ve
     end
   end
 
-  samplefreq=bciParams.SamplingRate.NumericValue;
+  if isfield(bciParams.SamplingRate, 'NumericValue')
+    samplefreq=bciParams.SamplingRate.NumericValue;
+  else
+    samplefreq = str2double(bciParams.SamplingRate.Value);
+  end
+
   if lp_cutoff > samplefreq/2
     lp_cutoff = samplefreq/2;
     %if the last bin has less samples, truncate it
