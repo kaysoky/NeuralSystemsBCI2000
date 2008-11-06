@@ -54,7 +54,7 @@ Filtering:Normalizer floatlist NormalizerOffsets= 3 190 160 0 0 % % // normalize
 Filtering:Normalizer floatlist NormalizerGains= 3 0.02 0.02 0 0 % % // normalizer gain values
 Filtering:Normalizer intlist Adaptation= 3 2 2 0 0 0 2 // 0: no adaptation, 1: zero mean, 2: zero mean, unit variance (enumeration)
 Filtering:Normalizer matrix BufferConditions= 2 2 (Feedback)&&(TargetCode==4) (Feedback)&&(TargetCode==1) (Feedback)&&(TargetCode==2) (Feedback)&&(TargetCode==3) // expressions corresponding to data buffers (columns correspond to output channels, multiple rows correspond to multiple buffers)
-Filtering:Normalizer float BufferLength= 9s 9s % % // time window of past data per buffer that enters into statistic
+Filtering:Normalizer float BufferLength= 4s 9s % % // time window of past data per buffer that enters into statistic
 Filtering:Normalizer string UpdateTrigger= (Feedback==0) // expression to trigger offset/gain update when changing from 0 (use empty string for continuous update)
 Visualize:Normalizer int VisualizeNormalFiltering= 1 0 0 1 // visualize normalized signals (boolean)
 Connector:ConnectorInput list ConnectorInputFilter= 0 // list of state names or signal elements to allow, "*" for any, signal elements as in "Signal(1,0)"
