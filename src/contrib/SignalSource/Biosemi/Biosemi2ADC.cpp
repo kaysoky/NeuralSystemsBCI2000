@@ -29,6 +29,10 @@
  *
  *  Revision 1.3 2008/10/25  Maria Laura  Blefari
  *  Fixed battery warning
+ *
+ *  Revison 2.0 2008/11/07  Jeremy Hill
+ *  Updated design, including support for an auxiliary Analog Input Box (AIB)
+ *  EEG + AIB acquisition tested---triggers not.
  */
 
 #include "PCHIncludes.h"
@@ -59,25 +63,28 @@ Returns:    N/A
 *******************************************************************************/
 Biosemi2ADC::Biosemi2ADC()
 : mSamplingRate( 0 ),
-  mSoftwareCh(0),
+  mSourceCh(0),
   mSampleBlockSize(0),
-  mPostfixTriggers(false),
-  mTriggerScaleMultiplier(1)
+  mChInd(NULL)
 {
 
  BEGIN_PARAMETER_DEFINITIONS
    "Source int SourceCh= 80 80 1 296 "
-       "// number of digitized channels, includes triggers if postfix triggers is true.",
+       "// number of digitized channels, including AIB and trigger channels.",
    "Source int SampleBlockSize= 120 5 1 % "
        "// number of samples per block",
-   "Source int SamplingRate= 512 128 1 % "
+   "Source int SamplingRate=    512 128 1 % "
        "// the signal sampling rate",
-   "Source int PostfixTriggers= 1 0 0 1 "
-        "// Make the triggers 16 channels and place them after end of EEG channels"
-            " 0: no (warnning they will not be saved at all),"
-            " 1: yes, post fix them (enumeration)",
-   "Source int TriggerScaleMultiplier= 3000 1 1 % "
-        "//number to multiply triggers by to scale them to the visualization range",
+   "Source intlist EEGChList=     64   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64   % 1 % "
+       "// list of physical channel indices for the EEG channels in use",
+   "Source intlist AIBChList=      0          % 1 32"
+       "// list of Auxiliary Input Box channels to acquire after the EEG channels (included in the SourceCh total)",
+   "Source intlist TriggerChList= 16   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   % 1 16"
+       "// list of one-bit trigger channels to append to the end (included in the SourceCh total)",
+    "Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset=  80     0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0            0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0        0 % %"
+       "// offset for channels in A/D units",
+    "Source:Signal%20Properties:DataIOFilter floatlist SourceChGain=    80     0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125    100     100     100     100     100     100     100     100     100     100     100     100     100     100     100     100        % % %"
+       "// gain for each channel (A/D units -> muV)",
  END_PARAMETER_DEFINITIONS
 
 
@@ -120,48 +127,62 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
                << " is less than 1" << endl;
     }
 
-    if( Parameter("TriggerScaleMultiplier") <= 0 ){
-        bcierr << "Trigger scale multiplier is: "
-            << Parameter("TriggerScaleMultiplier")
-            << ", but it must be greater than 0."
-            << endl;
+    int reqChannels     = Parameter("SourceCh");
+    int nEegRequested   = Parameter( "EEGChList" )->NumValues();
+    int nAibRequested   = Parameter( "AIBChList" )->NumValues();
+    int nTrigRequested  = Parameter( "TriggerChList" )->NumValues();
+    int nTotalRequested = nEegRequested + nAibRequested + nTrigRequested;
+
+    if ( reqChannels !=  nTotalRequested ) {
+        bcierr << "Combined number of indices in EEGChList + AIBChList + TriggerChList"
+               << " (" << nEegRequested
+               << "+"  << nAibRequested
+               << "+"  << nTrigRequested
+               << "="  << nTotalRequested << ")"
+               << " does not match SourceCh parameter value"
+               << " (=" << reqChannels << ")"
+               << endl;
     }
-
-    int reqChannels = Parameter("SourceCh");
-
-// The number of Channels requested includes the triggers, so if the user wants
-//to append the triggers, we need NUM_TRIGGERS less than software channels
-
-    if( 1 == Parameter("PostfixTriggers" )){
-        reqChannels -= Biosemi2Client::NUM_TRIGGERS;
-        if( reqChannels <= 0 ){
-            bcierr << "Requested eeg channels is <= 0. "
-                << "You probably didn't mean this." << endl
-                << "Remeber if you want to postfix triggers, softwareCh "
-                << endl
-                << "should equal the number of EEG channels you want + "
-                << "the total number of Trigger channels ( "
-                << Biosemi2Client::NUM_TRIGGERS << ")." << endl;
-
-        }
-    }
-    else{
-        bciout << "Warning: you are not post-fixing triggers."
-                  " Triggers will not be saved." << endl;
-        }
 
     mBiosemi.initialize(Parameter("SamplingRate"),
             Parameter("SampleBlockSize"), reqChannels, false );
 
-    if( Parameter("SourceCh") > mBiosemi.getNumChannels() ){
-        bcierr << "Number of channels requested, "
-            << Parameter("SourceCh")
-            << " is greater than the number"
-            << endl
-            << " of channels the biosemi can send, "
-            << mBiosemi.getNumChannels()
-            << ", at current mode: "
-            << mBiosemi.getMode() << endl;
+    int eegChannelsAvailable = mBiosemi.getNumEEGChannels();
+    for( int i = 0 ; i < nEegRequested ; ++i ) {
+        int ind = Parameter( "EEGChList" )( i );
+        if( ind < 1 || ind > eegChannelsAvailable ) {
+            bcierr << "Illegal EEGChList index " << ind
+                   << ". Legal range is [1," << eegChannelsAvailable << "]."
+                   << endl;
+        }
+        double gain = Parameter( "SourceChGain" )( i );
+        if( ::fabs( gain - 0.03125 ) > 1e-10) {
+            bcierr << "SourceChGain should be equal to 0.03125 microvolts for all EEG channels";
+            if( nEegRequested < reqChannels) bcierr << "(i.e. the first " << nEegRequested << " entries)";
+            bcierr << " but the value for channel #" << (i+1) << " is " << gain << endl;
+        }
+    }
+
+    int aibChannelsAvailable = mBiosemi.getNumAIBChannels();
+    if( aibChannelsAvailable == 0 && nAibRequested != 0 ) {
+        bcierr << "AIBChList must be empty if AIB box is not connected" << endl;
+    }
+    for( int i = 0 ; i < nAibRequested ; ++i ) {
+        int ind = Parameter( "AIBChList" )( i );
+        if( ind < 1 || ind > Biosemi2Client::NUM_AIB_CHANNELS ) {
+            bcierr << "Illegal AIBChList index " << ind
+                   << ". Legal range is [1," << Biosemi2Client::NUM_AIB_CHANNELS << "]."
+                   << endl;
+        } 
+    }
+
+    for( int i = 0 ; i < nTrigRequested ; ++i ) {
+        int ind = Parameter( "TriggerChList" )( i );
+        if( ind < 1 || ind > Biosemi2Client::NUM_TRIGGERS ) {
+            bcierr << "Illegal TriggerChList index " << ind
+                   << ". Legal range is [1," << Biosemi2Client::NUM_TRIGGERS << "]."
+                   << endl;
+        } 
     }
 
     if( 0 != (mBiosemi.getSamplingRate() % (int)Parameter("SamplingRate")) ){
@@ -196,16 +217,29 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 // store the value of the needed parameters
 
     mSamplingRate = Parameter( "SamplingRate" );
-    mSoftwareCh = Parameter("SourceCh");
+    mSourceCh = Parameter("SourceCh");
     mSampleBlockSize = Parameter("SampleBlockSize");
-    mTriggerScaleMultiplier = Parameter("TriggerScaleMultiplier");
-    mPostfixTriggers = Parameter("PostfixTriggers") != 0;
 
-    if( mPostfixTriggers ){
-        mSignalChannels = mSoftwareCh - Biosemi2Client::NUM_TRIGGERS;
+    delete [] mChInd;
+    mChInd = new int[mSourceCh];
+    int chInd_ind = 0;
+    
+    int nEegRequested   = Parameter( "EEGChList" )->NumValues();
+    for( int i = 0 ; i < nEegRequested ; ++i ) {
+        int ind = Parameter( "EEGChList" )( i );
+        mChInd[chInd_ind++] = Biosemi2Client::FIRST_EEG_CHANNEL + ind - 1;
     }
-    else{
-        mSignalChannels = mSoftwareCh;
+
+    int nAibRequested   = Parameter( "AIBChList" )->NumValues();
+    for( int i = 0 ; i < nAibRequested ; ++i ) {
+        int ind = Parameter( "AIBChList" )( i );
+        mChInd[chInd_ind++] = Biosemi2Client::FIRST_AIB_CHANNEL + ind - 1;
+    }
+
+    int nTrigRequested  = Parameter( "TriggerChList" )->NumValues();
+    for( int i = 0 ; i < nTrigRequested ; ++i ) {
+        int ind = Parameter( "TriggerChList" )( i );
+        mChInd[chInd_ind++] = -ind;
     }
 
     // Setup the State
@@ -250,36 +284,23 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
         }
         else{
           // TODO  make this more descriptive
-            bcierr << "Data is invalid for unkown reason." << endl;
+            bcierr << "Data is invalid for unknown reason." << endl;
         }
     }
 
 
 // place the data and triggers to the out signal
 
-    int triggerChan(0);
+    int ind;
     for( int sample(0) ; sample < mSampleBlockSize ; ++sample ){
-
-        for( int  channel(0); channel < mSoftwareCh ; ++channel ){
-            triggerChan = 0;
-            if( channel < mSignalChannels ){
-                // this is a signal channel
-                signal(channel, sample)=
-                    mpDataBlock->getSignal(sample,channel)/8192.0;
-
-//The USB receiver converts the 24-bit values to 32-bit integers by adding a
-//least significant byte of zero's to every data word. So, in order to convert
-//the incoming I32 values in ActiView to muV, the numbers should be divided by 8192
-
+        for(int channel(0) ; channel < mSourceCh ; ++channel ) {
+            ind = mChInd[channel];
+            if ( ind < 0) {
+                signal( channel, sample ) = mpDataBlock->getTrigger( sample, -ind );
             }
-
-            else if(mPostfixTriggers) {
-                // this is a trigger channel
-                signal(channel, sample)=
-                    mpDataBlock->getTrigger(sample, triggerChan );
-                ++triggerChan;
+            else {
+                signal( channel, sample ) = mpDataBlock->getSignal( sample, ind ) / 256.0;
             }
-
         }
     }
 

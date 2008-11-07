@@ -28,6 +28,10 @@
  *
  *  Revison 1.2 2008/10/25  Maria Laura Blefari
  *  Fixed the ERROR: Mode changed from 4 to 0
+ *
+ *  Revison 2.0 2008/11/07  Jeremy Hill
+ *  Updated design, including support for an auxiliary Analog Input Box (AIB)
+ *  EEG + AIB acquisition tested---triggers not.
  */
 
 #include "stdafx.h"
@@ -51,7 +55,7 @@ Biosemi2Client::Biosemi2Client() :
     mStartPos(0),
     mNextPos(0),
     mIsDataReadyCalledYet(false),
-    mWasDriverSetup(true),
+    mWasDriverSetup(false),
     mpDataBlock(NULL)
 {
 
@@ -169,10 +173,18 @@ Your acquisition program should read the proper data for the ringbuffer.
     mWasDriverSetup = true;
 }
 
+bool done_once = false; // This is a temporary hack until the re-initialization problem can be figured out.
+                        // When you press "set config" more than once per launch of bci2000, the Biosemi Mk2
+                        // seems to respond unstably with a lot of periodic broadband spikes.
+                        
 void Biosemi2Client::initialize(const int &desiredSamplingRate,
     const int &desiredSampleBlockSize, const int &desiredNumChannels,
     const bool &throwBatteryLowException ){
-
+    
+    
+    if(done_once) bciout << "re-initializing the biosemi module without restarting BCI2000 may lead to unpredictable amp behaviour, for reasons unknown..." << endl;
+	done_once = true;
+	
 // Store the signal attributes the caller wants
 
     mDesiredSamplingRate = desiredSamplingRate;
@@ -296,6 +308,15 @@ int Biosemi2Client::getNumChannels() const{
     return mNumChannels;
 }
 
+int Biosemi2Client::getNumAIBChannels() const{
+    if (mMode == 8) return NUM_AIB_CHANNELS;
+    else return 0;
+}
+
+int Biosemi2Client::getNumEEGChannels() const{
+    return mNumChannels - FIRST_EEG_CHANNEL - getNumAIBChannels();
+}
+
 int Biosemi2Client::determineNumChannels(int mode, bool isMk2) const{
     int result = -1;
     if( isMk2 ){
@@ -314,7 +335,9 @@ int Biosemi2Client::determineNumChannelsMk1(int mode) const
     switch(mode){
         case 0:
         case 4:
+        case 8:
             result = 258;
+            if(mode == 8) result += NUM_AIB_CHANNELS;  // 2 + 256 + 32 = 290
             break;
         case 1:
         case 5:
@@ -328,12 +351,9 @@ int Biosemi2Client::determineNumChannelsMk1(int mode) const
         case 7:
             result = 34;
             break;
-        case 8:
-            result = 290; // 2 + 256 + 32
-            break;
         default:
+            result= -1;
             throw("mode unacceptable");
-            //result= -1;
     }
     return result;
 }
@@ -350,7 +370,9 @@ int Biosemi2Client::determineNumChannelsMk2(int mode) const
             result = 610; // 2+4*152
             break;
         case 4:
+        case 8:
             result = 282;
+            if(mode == 8) result += NUM_AIB_CHANNELS; // 2 + 280 + 32 = 314
             break;
         case 5:
             result = 154;
@@ -361,12 +383,9 @@ int Biosemi2Client::determineNumChannelsMk2(int mode) const
         case 7:
             result = 58;
             break;
-        case 8:
-            result = 314; // 2 + 280+32
-            break;
         default:
+            result= -1;
             throw("mode unacceptable");
-            //result= -1;
     }
     return result;
 }
@@ -377,6 +396,7 @@ int Biosemi2Client::determineSamplingRate(int mode) const{
     switch(mode){
         case 0:
         case 4:
+        case 8: // AIB mode (which means the ADC's must be in speed mode 4 according to http://www.biosemi.com/faq/adjust_samplerate.htm )
             result = 2048;  // 2 kHz
             break;
         case 1:
@@ -391,13 +411,9 @@ int Biosemi2Client::determineSamplingRate(int mode) const{
         case 7:
             result = 16384; // 16 kHz
             break;
-        case 8:
-            // AIB-mode, don't know how to deal wit this so throw exception
-            throw("ERROR: Mode 8, AIB-mode, don't know how to deal with this");
-            //break;
         default:
+            result= -1;
             throw("mode unacceptable");
-            //result= -1;
     }
     return result;
 }
@@ -499,9 +515,8 @@ int Biosemi2Client::getSampleBlockSize() const{
 
 bool Biosemi2Client::isStatusValid( const int &sample ) const{
     bool result = true;
-
-
-     return result;
+    // ??
+    return result;
 }
 
 /*******************************************************************************
@@ -634,7 +649,7 @@ bool Biosemi2Client::isTriggerHigh( const int & trigger, const int &datum ) cons
             result = datum & TRIGGER_15;
             break;
         default:
-            bcierr << "Unkown trigger: " << trigger
+            bcierr << "Unknown trigger: " << trigger
                 << ". Note triggers are numbered starting from 0."
                 << endl;
     }
@@ -646,7 +661,7 @@ bool Biosemi2Client::isBatteryLow(const int &datum) const{
 }
 
 bool Biosemi2Client::isBatteryLow() const{
-    return isBatteryLow(calcIndex(mDesiredSampleBlockSize-1,STATUS_CHANNEL));
+    return isBatteryLow(mpDataAsInt[calcIndex(mDesiredSampleBlockSize-1,STATUS_CHANNEL)]);
 }
 
 bool Biosemi2Client::isMK2() const{
@@ -674,6 +689,13 @@ int Biosemi2Client::calcIndex(const int &sample,
 int Biosemi2Client::calcIndex(const int &sample,
     const int &channel) const{
     return calcIndex(sample, channel, mStartPos);
+}
+double Biosemi2Client::averageSamples(const int &sample,
+    const int &channel) const{
+    double total = 0.0;
+    for(int i=0,offset=mStartPos; i<mDecimationFactor; i++,offset+=mNumChannels)
+        total += (double)mpDataAsInt[calcIndex(sample, channel, offset)];
+    return total / (double)mDecimationFactor;
 }
 
 
@@ -707,13 +729,16 @@ int Biosemi2Client::DataBlock::getSignal(const int &sample,
         bcierr << "Sample out of bounds error." << endl;
         return 0;
     }
-    else if( channel > mpBiosemi->mDesiredNumChannels ){
-        bcierr << "Channel out of bounds error." << endl;
+    else if( channel > mpBiosemi->mNumChannels ){
+        bcierr << "Channel out of bounds error"
+               << " (" << channel << ">" << mpBiosemi->mNumChannels << ")"
+               << "." << endl;
         return 0;
     }
     // skip the sync and status channels
 
-    return mpBiosemi->mpDataAsInt[mpBiosemi->calcIndex(sample,channel+2)];
+    // return mpBiosemi->mpDataAsInt[mpBiosemi->calcIndex(sample,channel)];
+    return mpBiosemi->averageSamples(sample, channel);
 }
 
 // Loop through the sync and status channels and make sure this data is valid

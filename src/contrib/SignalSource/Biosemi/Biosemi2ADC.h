@@ -30,6 +30,10 @@
  *
  *  Revision 1.3 2008/10/25  Maria Laura  Blefari
  *  Fixed battery warning
+ *
+ *  Revison 2.0 2008/11/07  Jeremy Hill
+ *  Updated design, including support for an auxiliary Analog Input Box (AIB)
+ *  EEG + AIB acquisition tested---triggers not.
  */
 #ifndef Biosemi2ADCH
 #define Biosemi2ADCH
@@ -58,27 +62,14 @@ protected:
     static const int BATTERY_NOT_LOW = false;
 
     int mSamplingRate;
-    int mSoftwareCh;
-
-    /*
-     * The number of signal channels
-     * If we are postfixing triggers than:
-     *  softwareCh = signalChannels + NUM_TRIGGERS
-     * else
-     *  softwareCh = signalChannels
-     */
-
-    int mSignalChannels;
-
+    int mSourceCh;
+    int * mChInd;
 
     int mSampleBlockSize; // sample blocksize to send
     mutable Biosemi2Client mBiosemi;
 
     Biosemi2Client::DataBlock *mpDataBlock;
     std::vector<std::string> mTriggerNames;
-    bool mPostfixTriggers; // if true, place the triggers after the eeg channels
-    int mTriggerScaleMultiplier;
-
 };
 
 #endif // Biosemi2ADCH

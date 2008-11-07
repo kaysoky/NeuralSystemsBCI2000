@@ -27,6 +27,10 @@
  *
  *  Revison 1.2 2008/10/25  Maria Laura Blefari
  *  Fixed the ERROR: Mode changed from 4 to 0
+ *
+ *  Revison 2.0 2008/11/07  Jeremy Hill
+ *  Updated design, including support for an auxiliary Analog Input Box (AIB)
+ *  EEG + AIB acquisition tested---triggers not.
  */
 
 #ifndef Biosemi2ClientH
@@ -54,6 +58,9 @@ public:
     static const long BUFFER_SIZE_IN_INT = BUFFER_SIZE_IN_BYTES / BYTES_PER_INT;
     static const int SYNC_CHANNEL = 0;
     static const int STATUS_CHANNEL = 1;
+    static const int FIRST_EEG_CHANNEL =   2;
+    static const int FIRST_AIB_CHANNEL = 282;
+    static const int NUM_AIB_CHANNELS  =  32;
     static const int NUM_TRIGGERS = 16; // the number of triggers
 
 
@@ -132,9 +139,20 @@ public:
 
     /*
      * Return the actual number of channels the biosemi is sending
-     * including sync and status channels
+     * including sync, status and AIB channels
      */
     virtual int getNumChannels() const;
+
+    /**
+     * @return the actual number of EEG channels the biosemi is sending
+     * excluding sync, status and AIB channels
+     */
+    virtual int getNumEEGChannels() const;
+
+    /**
+     * @return the actual number of AIB channels the biosemi is sending
+     */
+    virtual int getNumAIBChannels() const;
 
     /* Return biosemi's speedmode set in the front end of the AD box*/
 
@@ -221,6 +239,9 @@ protected:
 
     inline virtual int calcIndex( const int &sample,
         const int &channel, const int &startPos ) const;
+
+    inline virtual double averageSamples(const int &sample,
+        const int &channel) const;
 
 
 protected:
