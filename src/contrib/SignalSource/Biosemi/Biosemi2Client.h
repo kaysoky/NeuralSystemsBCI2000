@@ -97,9 +97,8 @@ public:
      *     the experiment to crash to a halt when the battery becomes
      *     low) Default = false
      */
-    virtual void  initialize(const int &desiredSamplingRate,
-        const int &desiredSampleBlockSize, const int &desiredNumChannels,
-        const bool &throwBatteryLowException=false);
+    virtual void  initialize( int desiredSamplingRate,
+        int desiredSampleBlockSize, int desiredNumChannels );
 
     /*
      * Data block allows you to access the data as if it was actually
@@ -176,20 +175,20 @@ public:
 
     virtual void halt();
 
-    virtual bool isDataValid(const int * data, const int &position ) const;
+    virtual bool isDataValid(const int * data, int position ) const;
 
     virtual bool Biosemi2Client::isDataValid() const;
 
 
     /* Checks if the first sample  starting at startPos  in data is synced*/
 
-    virtual bool isDataSynced(const int * data, const int &position) const;
+    virtual bool isDataSynced(const int * data, int position) const;
 
-    virtual bool isSampleSynced(const int &sample) const;
+    virtual bool isSampleSynced(int sample) const;
 
-    virtual bool isStatusValid(const int &sample) const;
+    virtual bool isStatusValid(int sample) const;
 
-    virtual bool isTriggerHigh( const int &trigger, const int &datum) const;
+    virtual bool isTriggerHigh( int trigger, int datum) const;
 
     /*
      * True if the battery based on the last bit status sample is low. The current
@@ -199,7 +198,7 @@ public:
 
     /* Return true if the battery is low in this status sample */
 
-    virtual bool isBatteryLow( const int &status ) const;
+    virtual bool isBatteryLow( int status ) const;
 
     /* True if this is an MK2 system, only works after initialization */
 
@@ -207,7 +206,7 @@ public:
 
     /* Return true if the status sample says this is an MK2 */
 
-    virtual bool isMK2(const int &status) const;
+    virtual bool isMK2(int status) const;
 
 
 protected:
@@ -234,14 +233,14 @@ protected:
      * Note: channel 0 is the sync, 1 is status, and 2 starts the EEG signal
      *
      */
-    inline virtual int calcIndex(const int &sample,
-        const int &channel) const;
+    virtual int calcIndex(int sample,
+        int channel) const;
 
-    inline virtual int calcIndex( const int &sample,
-        const int &channel, const int &startPos ) const;
+    virtual int calcIndex( int sample,
+        int channel, int startPos ) const;
 
-    inline virtual double averageSamples(const int &sample,
-        const int &channel) const;
+    virtual double averageSamples(int sample,
+        int channel) const;
 
 
 protected:
@@ -366,10 +365,6 @@ protected:
     the last call to isDataReady */
     DataBlock * mpDataBlock;
 
-    /* True if we should throw an exception if the battery is low when checking
-    if the status is valid.*/
-    bool mThrowBatteryLowException;
-
 /*******************************************************************************
     To interface your own acquisition software directly with our USB2 interface,
     your acquisition software should make the function calls described below.
@@ -416,8 +411,8 @@ protected:
          * Signal is returned with least significat bit as 1/8192 microVolts
          * see http://www.biosemi.com/faq/make_own_acquisition_software.htm
          */
-        inline virtual int getSignal(const int &sample,
-            const int &channel) const;
+        virtual int getSignal(int sample,
+            int channel) const;
 
         /*
          * Gets the value of the trigger specified, scaled if desired.
@@ -426,8 +421,8 @@ protected:
          * Scalling can be used to bring the value in range with
          * the signal for display purposes
          */
-        inline virtual int getTrigger(const int &sample, const int &trigger,
-            const int &scaled=1 ) const;
+        virtual int getTrigger(int sample, int trigger,
+            int scaled=1 ) const;
 
         /*
          * Loop through the sync and status channels and make sure this data
@@ -436,11 +431,11 @@ protected:
          */
         virtual bool isDataValid() const;
 
-        virtual const int &getNumChannels();
+        virtual int getNumChannels();
 
-        virtual const int &getSampleBlockSize();
+        virtual int getSampleBlockSize();
 
-        virtual const int &getSamplingRate();
+        virtual int getSamplingRate();
 
 protected:
         const Biosemi2Client *mpBiosemi;

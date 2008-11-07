@@ -55,10 +55,7 @@ RegisterFilter( Biosemi2ADC, 1 );
 /*******************************************************************************
 Function:   Biosemi2ADC
 Purpose:    The constructor for the Biosemi2ADC
-            it fills the provided list of parameters and states with the
-            parameters and states it requests from the operator
-Parameters: plist - the list of parameters
-            slist - the list of states
+Parameters: N/A
 Returns:    N/A
 *******************************************************************************/
 Biosemi2ADC::Biosemi2ADC()
@@ -108,11 +105,11 @@ Function:   Preflight
 Purpose:    Checks parameters for availability and consistence with input signal
             properties; requests minimally needed properties for the output
             signal; checks whether resources are available.
-Parameters: Input and output signal properties pointers.
+Parameters: Input and output signal properties.
 Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Preflight( const SignalProperties&,
-                                   SignalProperties& outSignalProperties ) const
+                                   SignalProperties& Output ) const
 {
 
 //Required states
@@ -145,7 +142,7 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
     }
 
     mBiosemi.initialize(Parameter("SamplingRate"),
-            Parameter("SampleBlockSize"), reqChannels, false );
+            Parameter("SampleBlockSize"), reqChannels);
 
     int eegChannelsAvailable = mBiosemi.getNumEEGChannels();
     for( int i = 0 ; i < nEegRequested ; ++i ) {
@@ -194,7 +191,7 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
 
 // Requested output signal properties.
 
-   outSignalProperties = SignalProperties(
+   Output = SignalProperties(
         Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ),
             SignalType::float32);
 }
@@ -203,11 +200,8 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
 /*******************************************************************************
 Function:   Initialize
 Purpose:    This function parameterizes the Biosemi2ADC
-            It is called each time the operator first starts,or suspends and then
-            resumes, the system i.e., each time the system goes into the main
-            data acquisition loop (fMain->MainDataAcqLoop())
-Parameters: N/A
-Returns:   N/A
+Parameters: Input and output signal properties
+Returns:    N/A
 
 *******************************************************************************/
 void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
@@ -257,13 +251,11 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 
 /*******************************************************************************
 Function:   Process
-Purpose:    This function is called within fMain->MainDataAcqLoop()    it fills the
-            already initialized array RawEEG with values and DOES NOT RETURN,
-            UNTIL ALL DATA IS ACQUIRED
-Parameters: N/A
-Returns:
+Purpose:    Blocking mode data acquisition
+Parameters: Input (ignored) and output signal
+Returns:    N/A
 *******************************************************************************/
-void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
+void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& Output )
 {
 
 // wait for data to become ready
@@ -296,10 +288,10 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
         for(int channel(0) ; channel < mSourceCh ; ++channel ) {
             ind = mChInd[channel];
             if ( ind < 0) {
-                signal( channel, sample ) = mpDataBlock->getTrigger( sample, -ind );
+                Output( channel, sample ) = mpDataBlock->getTrigger( sample, -ind );
             }
             else {
-                signal( channel, sample ) = mpDataBlock->getSignal( sample, ind ) / 256.0;
+                Output( channel, sample ) = mpDataBlock->getSignal( sample, ind ) / 256.0;
             }
         }
     }
@@ -309,9 +301,7 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& signal )
 
 /******************************************************************************
 Function:   Halt
-Purpose:    This routine shuts down data acquisition.
-            In this special case, it does not do anything (since the random number
-            generator does not have to be turned off)
+Purpose:    Halting of all asynchronous activity.
 Parameters: N/A
 Returns:    N/A
 *******************************************************************************/

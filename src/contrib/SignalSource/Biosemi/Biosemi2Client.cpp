@@ -177,20 +177,18 @@ bool done_once = false; // This is a temporary hack until the re-initialization 
                         // When you press "set config" more than once per launch of bci2000, the Biosemi Mk2
                         // seems to respond unstably with a lot of periodic broadband spikes.
                         
-void Biosemi2Client::initialize(const int &desiredSamplingRate,
-    const int &desiredSampleBlockSize, const int &desiredNumChannels,
-    const bool &throwBatteryLowException ){
+void Biosemi2Client::initialize( int desiredSamplingRate,
+    int desiredSampleBlockSize, int desiredNumChannels ){
     
     
     if(done_once) bciout << "re-initializing the biosemi module without restarting BCI2000 may lead to unpredictable amp behaviour, for reasons unknown..." << endl;
-	done_once = true;
-	
+    done_once = true;
+
 // Store the signal attributes the caller wants
 
     mDesiredSamplingRate = desiredSamplingRate;
     mDesiredNumChannels  =  desiredNumChannels;
     mDesiredSampleBlockSize = desiredSampleBlockSize;
-    mThrowBatteryLowException =  throwBatteryLowException;
 
 // setup the biosemi driver
 
@@ -353,7 +351,7 @@ int Biosemi2Client::determineNumChannelsMk1(int mode) const
             break;
         default:
             result= -1;
-            throw("mode unacceptable");
+            bcierr << "mode unacceptable" << endl;
     }
     return result;
 }
@@ -385,7 +383,7 @@ int Biosemi2Client::determineNumChannelsMk2(int mode) const
             break;
         default:
             result= -1;
-            throw("mode unacceptable");
+            bcierr << "mode unacceptable" << endl;
     }
     return result;
 }
@@ -413,7 +411,7 @@ int Biosemi2Client::determineSamplingRate(int mode) const{
             break;
         default:
             result= -1;
-            throw("mode unacceptable");
+            bcierr << "mode unacceptable" << endl;
     }
     return result;
 }
@@ -442,12 +440,12 @@ void Biosemi2Client::decodeStatus(const int * data, int position,
 }
 
 // Checks if the first sample  starting at startPos  in data is synced
-bool  Biosemi2Client::isDataSynced(const int * data, const int &position) const{
+bool  Biosemi2Client::isDataSynced(const int * data, int position) const{
     return isSampleSynced(data[position]);
 }
 
 
-bool Biosemi2Client::isSampleSynced( const int &sample ) const{
+bool Biosemi2Client::isSampleSynced( int sample ) const{
     return IS_SYNCED_MASK == sample;
 }
 
@@ -479,11 +477,9 @@ int Biosemi2Client::getSamplingRate() const{
 }
 
 
-//Returns true if the data is valid, false if the battery is low otherwise it
-//throws an exception indicating what is wrong e.g. data is not synced, changed
-//in mode, battery low if  THROWBatteryLowException is true
+//Returns true if the data is valid, false if the battery is low
 
-bool Biosemi2Client::isDataValid(const int * data, const int &startPos ) const{
+bool Biosemi2Client::isDataValid(const int * data, int startPos ) const{
     int datum;
     bool result = true;
     for( int sample =0 ; sample < mSampleBlockSize ; sample++ ){
@@ -513,7 +509,7 @@ int Biosemi2Client::getSampleBlockSize() const{
     return mSampleBlockSize;
 }
 
-bool Biosemi2Client::isStatusValid( const int &sample ) const{
+bool Biosemi2Client::isStatusValid( int sample ) const{
     bool result = true;
     // ??
     return result;
@@ -597,7 +593,7 @@ void Biosemi2Client::isDataReady(int &startPos){
     isDataReady();
 }
 
-bool Biosemi2Client::isTriggerHigh( const int & trigger, const int &datum ) const{
+bool Biosemi2Client::isTriggerHigh( int trigger, int datum ) const{
     bool result = false;
     switch( trigger ){
         case 0:
@@ -656,7 +652,7 @@ bool Biosemi2Client::isTriggerHigh( const int & trigger, const int &datum ) cons
     return result;
 }
 
-bool Biosemi2Client::isBatteryLow(const int &datum) const{
+bool Biosemi2Client::isBatteryLow(int datum) const{
     return datum & BATT_LOW_MASK;
 }
 
@@ -667,7 +663,7 @@ bool Biosemi2Client::isBatteryLow() const{
 bool Biosemi2Client::isMK2() const{
     return mMk2;
 }
-bool Biosemi2Client::isMK2(const int &status) const{
+bool Biosemi2Client::isMK2(int status) const{
     return status & MK2_MASK;
 }
 
@@ -678,20 +674,20 @@ Biosemi2Client::DataBlock& Biosemi2Client::getDataBlock(){
     return * mpDataBlock;
 }
 
-int Biosemi2Client::calcIndex(const int &sample,
-    const int &channel, const int &startPos) const{
+int Biosemi2Client::calcIndex(int sample,
+    int channel, int startPos) const{
     return ( startPos+sample
           * mNumChannels
           * mDecimationFactor
           + channel)% Biosemi2Client::BUFFER_SIZE_IN_INT;
 
 }
-int Biosemi2Client::calcIndex(const int &sample,
-    const int &channel) const{
+int Biosemi2Client::calcIndex(int sample,
+    int channel) const{
     return calcIndex(sample, channel, mStartPos);
 }
-double Biosemi2Client::averageSamples(const int &sample,
-    const int &channel) const{
+double Biosemi2Client::averageSamples(int sample,
+    int channel) const{
     double total = 0.0;
     for(int i=0,offset=mStartPos; i<mDecimationFactor; i++,offset+=mNumChannels)
         total += (double)mpDataAsInt[calcIndex(sample, channel, offset)];
@@ -712,8 +708,8 @@ Biosemi2Client::DataBlock::~DataBlock(){
 }
 
 
-int Biosemi2Client::DataBlock::getTrigger(const int &sample, const int &trigger,
-    const int &scaled ) const{
+int Biosemi2Client::DataBlock::getTrigger(int sample, int trigger,
+    int scaled ) const{
     return mpBiosemi->isTriggerHigh(trigger,
         mpBiosemi->mpDataAsInt[
             mpBiosemi->calcIndex(sample,Biosemi2Client::STATUS_CHANNEL)]
@@ -723,8 +719,8 @@ int Biosemi2Client::DataBlock::getTrigger(const int &sample, const int &trigger,
 // Loops through the signal channels starting at 0
 //(so it pretends sync and status do not exist)
 
-int Biosemi2Client::DataBlock::getSignal(const int &sample,
-    const int &channel) const{
+int Biosemi2Client::DataBlock::getSignal(int sample,
+    int channel) const{
     if( sample > mpBiosemi->mDesiredSampleBlockSize ){
         bcierr << "Sample out of bounds error." << endl;
         return 0;
@@ -747,14 +743,14 @@ bool Biosemi2Client::DataBlock::isDataValid() const{
     return mpBiosemi->isDataValid();
 }
 
-const int &Biosemi2Client::DataBlock::getNumChannels(){
+int Biosemi2Client::DataBlock::getNumChannels(){
     return mpBiosemi->mDesiredNumChannels;
 }
 
-const int &Biosemi2Client::DataBlock::getSampleBlockSize(){
+int Biosemi2Client::DataBlock::getSampleBlockSize(){
     return  mpBiosemi->mDesiredSampleBlockSize;
 }
 
-const int &Biosemi2Client::DataBlock::getSamplingRate(){
+int Biosemi2Client::DataBlock::getSamplingRate(){
     return mpBiosemi->mDesiredSamplingRate;
 }
