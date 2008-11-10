@@ -1,10 +1,5 @@
-Storage:Data%20Location string DataDirectory= Data ..\data % % // path to top level data directory (directory)
 Storage:Session string SubjectSession= 001 001 % % // 3-digit session #
 Storage:Session string SubjectRun= 01 00 % % // 2 digit run #
-Application:Window int WindowWidth= 800 640 0 % // width of application window
-Application:Window int WindowHeight= 800 480 0 % // height of application window
-Application:Window int WindowLeft= 0 0 % % // screen coordinate of application window's left edge
-Application:Window int WindowTop= 0 0 % % // screen coordinate of application window's top edge
 Visualize:Timing int VisualizeRoundtrip= 0 1 0 1 // visualize roundtrip time (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
