@@ -472,6 +472,9 @@ SUCH DAMAGES.
 			
 	def _Destruct(self):
 		if self.verbose: print "calling Destruct hook"
+		if 'pylab' in sys.modules:
+			import pylab
+			pylab.close('all')
 
 	##########################################################
 
@@ -769,6 +772,7 @@ SUCH DAMAGES.
 		Enable the <manual> option to delay the countdown until
 		self.acknowledge(statename) is called.
 		"""###
+		if not statename in self.states: raise KeyError, 'no such state "%s"' % statename
 		rec = self._transient_states[statename] = {}
 		rec['manual'] = manual
 		rec['npackets'] = npackets
@@ -784,6 +788,7 @@ SUCH DAMAGES.
 		transient() has been received, and that the state value can be
 		set back to 0 after the appropriate number of packets.
 		"""###
+		if not statename in self.states: raise KeyError, 'no such state "%s"' % statename
 		rec = self._transient_states.get(statename)
 		if rec == None: return
 		rec['acknowledged'] = self.states[statename]

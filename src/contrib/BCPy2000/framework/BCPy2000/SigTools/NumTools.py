@@ -106,6 +106,7 @@ def cat(*pargs,**kwargs):
 	"""###
 	axis=kwargs.pop('axis',1)
 	if len(kwargs): raise TypeError, "%s() got an unexpected keyword argument '%s'"%(whoami(),kwargs.keys()[0])
+	if len(pargs) == 1 and isinstance(pargs[0], (tuple,list)): pargs = pargs[0]
 	pargs = list(pargs) # makes a copy, at least of the list container
 	nd = max([axis] + [len(x.shape)-1 for x in pargs if isinstance(x,numpy.ndarray)])
 	for i in range(0,len(pargs)):
@@ -239,11 +240,19 @@ class sdict(dict):
 	in "lazy" fashion, like .this  as well as like ['this'], unless a genuine
 	attribute of the same name exists.
 	"""###
+	def __init__(self, *pargs, **kwargs):
+		if len(pargs)==1 and len(kwargs)==0 and isinstance(pargs[0], (tuple,list)):
+			z = zip(xrange(len(pargs[0])), pargs[0])
+			dict.__init__(self, z)
+		else:
+			dict.__init__(self, *pargs, **kwargs)
+		
 	def __repr__(self):
 		s = "<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))
-		k = ["'%s'"%x for x in sorted(self.keys())]
-		fmt = '% '+str(4+max([0]+map(len,k)))+"s: %s"
-		return '\n'.join([s] + [fmt%(x,summarize(self[x[1:-1]])) for x in k])
+		k = sorted(self.keys())
+		ks = ["'%s'"%str(x) for x in sorted(self.keys())]
+		fmt = '% '+str(4+max([0]+map(len,ks)))+"s: %s"
+		return '\n'.join([s] + [fmt%(str(x),summarize(self[x])) for x in k])
 	def copy(self):
 		return self.__class__(self)
 	def __setattr__(self, key, value):

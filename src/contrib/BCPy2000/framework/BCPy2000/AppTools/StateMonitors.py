@@ -22,7 +22,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['addstatemonitor', 'updatestatemonitors', 'statemonitor']
+__all__ = ['addstatemonitor', 'addphasemonitor', 'updatestatemonitors', 'statemonitor']
 
 import VisionEgg.Text
 import time
@@ -56,6 +56,11 @@ def addstatemonitor(bci,name,showtime=False,**kwargs):
 	bci.add_callback('Frame', updatestatemonitors, (bci,))
 	bci.add_callback('StopRun', updatestatemonitors, (bci,))
 	return m
+
+def addphasemonitor(bci, name='phase', showtime=True, **kwargs):
+	m = addstatemonitor(bci, name, showtime, **kwargs)
+	m.func = lambda x: '%12s' % x.current_presentation_phase
+	m.pargs = (bci,)
 	
 def updatestatemonitors(bci):
 	t = bci.prectime()/1000.0
@@ -92,4 +97,5 @@ except:
 	pass
 else:
 	BciGenericApplication.addstatemonitor = addstatemonitor
+	BciGenericApplication.addphasemonitor = addphasemonitor
 	BciGenericApplication.updatestatemonitors = updatestatemonitors

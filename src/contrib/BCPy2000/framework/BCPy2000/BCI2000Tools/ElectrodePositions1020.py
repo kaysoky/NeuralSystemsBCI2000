@@ -23,6 +23,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 electrode_positions = {
+
 	'fp1' :   (  -0.26  ,  +0.78  ),
 	'fpz' :   (   0.00  ,  +0.82  ),
 	'fp2' :   (  +0.26  ,  +0.78  ),
@@ -113,3 +114,70 @@ electrode_positions = {
 	'raud'  :   (  +1.30  ,  +0.80  ),
 	'vmrk'  :   (  +1.30  ,  +0.70  ),
 }
+
+s = electrode_positions
+s['a01'] = s['fp1']
+s['a02'] = s['af7']
+s['a03'] = s['af3']
+s['a04'] = s['f1']
+s['a05'] = s['f3']
+s['a06'] = s['f5']
+s['a07'] = s['f7']
+s['a08'] = s['ft7']
+s['a09'] = s['fc5']
+s['a10'] = s['fc3']
+s['a11'] = s['fc1']
+s['a12'] = s['c1']
+s['a13'] = s['c3']
+s['a14'] = s['c5']
+s['a15'] = s['t7']
+s['a16'] = s['tp7']
+s['a17'] = s['cp5']
+s['a18'] = s['cp3']
+s['a19'] = s['cp1']
+s['a20'] = s['p1']
+s['a21'] = s['p3']
+s['a22'] = s['p5']
+s['a23'] = s['p7']
+s['a24'] = s['p9']
+s['a25'] = s['po7']
+s['a26'] = s['po3']
+s['a27'] = s['o1']
+s['a28'] = s['iz']
+s['a29'] = s['oz']
+s['a30'] = s['poz']
+s['a31'] = s['pz']
+s['a32'] = s['cpz']
+s['b01'] = s['fpz']
+s['b02'] = s['fp2']
+s['b03'] = s['af8']
+s['b04'] = s['af4']
+s['b05'] = s['afz']
+s['b06'] = s['fz']
+s['b07'] = s['f2']
+s['b08'] = s['f4']
+s['b09'] = s['f6']
+s['b10'] = s['f8']
+s['b11'] = s['ft8']
+s['b12'] = s['fc6']
+s['b13'] = s['fc4']
+s['b14'] = s['fc2']
+s['b15'] = s['fcz']
+s['b16'] = s['cz']
+s['b17'] = s['c2']
+s['b18'] = s['c4']
+s['b19'] = s['c6']
+s['b20'] = s['t8']
+s['b21'] = s['tp8']
+s['b22'] = s['cp6']
+s['b23'] = s['cp4']
+s['b24'] = s['cp2']
+s['b25'] = s['p2']
+s['b26'] = s['p4']
+s['b27'] = s['p6']
+s['b28'] = s['p8']
+s['b29'] = s['p10']
+s['b30'] = s['po8']
+s['b31'] = s['po4']
+s['b32'] = s['o2']
+

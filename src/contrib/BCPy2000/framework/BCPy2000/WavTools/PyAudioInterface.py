@@ -114,11 +114,11 @@ class player(Background.ongoing):
 		self.speed = 1.0
 		self.pan = 0.0
 		self.verbose = verbose
-		self.timestamps = {'play':None, 'core':None, 'before':[], 'after':[]}
 		self.buffersize = buffersize
 		self.playing = False
 		self.preplay = None
 		self.postplay = None
+		self.reset_timestamps()
 		if self.verbose: print repr(self), "has been initialized"
 		self.open(w, dev=dev)
 		
@@ -127,6 +127,9 @@ class player(Background.ongoing):
 		if self.verbose: print repr(self), "is about to be destroyed"
 		Background.ongoing.__del__(self)
 	
+	def reset_timestamps(self):
+		self.timestamps = {'play':None, 'core':None, 'before':[], 'after':[]}
+		
 	def open(self, w=None, dev=None):
 		if isinstance(w,str): w = Base.wav(w)
 		if w == None: w = self.wav

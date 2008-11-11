@@ -328,16 +328,16 @@ class bcistream(object):
 		sc = numpy.max(v,1)
 		sc[numpy.where(sc==0.0)] = 1.0
 		v = v / sc
-		offsets = numpy.asmatrix(numpy.arange(1.0,ntraces+1.0))
-		v = v.T * -0.7 + offsets
-		t = numpy.matrix(range(nsamp), dtype=numpy.float32).T / self.samplingfreq_hz
+		offsets = numpy.asmatrix(numpy.arange(1.0,ntraces+1.0)).A
+		v = v.T.A * -0.7 + offsets
+		t = numpy.matrix(range(nsamp), dtype=numpy.float32).T.A / self.samplingfreq_hz
 
 		pylab = load_pylab()
 		pylab.cla()
 		ax = pylab.gca()
 		h = pylab.plot(t, v)
 		ax.set_xlim(0,nsamp/self.samplingfreq_hz)
-		ax.set_yticks(offsets.A.flatten())
+		ax.set_yticks(offsets.flatten())
 		ax.set_yticklabels(labels)
 		ax.set_ylim(ntraces+1,0)
 		ax.grid(True)
@@ -349,22 +349,22 @@ class bcistream(object):
 		labels = self.params.get('ChannelNames', '')
 		if len(labels)==0: labels = map(str, range(1,ntraces+1))
 
-		v = sig.T
+		v = numpy.asmatrix(sig).T
 		v = v - numpy.median(v)
 		offsets = numpy.asmatrix(numpy.arange(-1.0,ntraces+1.0))
-		offsets = offsets * max(v.A.std(axis=0)) * fac
-		v = v + offsets[:,1:-1]
+		offsets = offsets.A * max(v.A.std(axis=0)) * fac
+		v = v.A + offsets[:,1:-1]
 		
-		t = numpy.matrix(range(nsamp), dtype=numpy.float32).T / self.samplingfreq_hz
+		t = numpy.matrix(range(nsamp), dtype=numpy.float32).T.A / self.samplingfreq_hz
 
 		pylab = load_pylab()
 		pylab.cla()
 		ax = pylab.gca()
 		h = pylab.plot(t, v)
 		ax.set_xlim(0,nsamp/self.samplingfreq_hz)
-		ax.set_yticks(offsets.A.flatten()[1:-1])
+		ax.set_yticks(offsets.flatten()[1:-1])
 		ax.set_yticklabels(labels)
-		ax.set_ylim(offsets.A.flatten()[-1],offsets.A.flatten()[0])
+		ax.set_ylim(offsets.flatten()[-1],offsets.flatten()[0])
 		ax.grid(True)
 		pylab.draw()
 		return h

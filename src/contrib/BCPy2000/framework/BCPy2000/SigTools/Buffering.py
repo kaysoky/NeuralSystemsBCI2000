@@ -41,31 +41,37 @@ class trap(object):
 	    t(packet_3)           # packets are channels-by-samples
 	    
 	This simply stores the last 1000 samples at any given time,
-	accessible as t.buffer.
+	accessible with t.read()
 	
 	Non-leaky traps, on the other hand, are most effective when triggered
 	by a particular signal channel.  t.trigger_channel specifies the 0-
 	based index of the channel to watch, and t.trigger_threshold specifies
-	the threshold that will "spring" the trap when the absolute value of
-	the trigger signal exceeds it.  Before the trap is sprung, no samples
-	are collected---the signal will only start being collected from the
-	sample at which the threshold is exceeded (although if no trigger
-	channel was specified, the trap will spring as soon as anything is put
-	into it).  Once a non-leaky trap is full, no further samples will be
-	stored, until the trap is emptied and re-armed with t.flush()
+	the threshold that will "spring" the trap when the value of the
+	(processed) trigger signal exceeds it.  t.trigger_processing (defaulting
+	to numpy.abs) specifies the function by which the trigger channel is
+	processed before comparison against the threshold.
+	
+	Before the trap is sprung, no samples are collected---the signal will
+	only start being collected from the sample at which the threshold is
+	exceeded (although if no trigger channel was specified, the trap will
+	spring as soon as anything is put into it).  Once a non-leaky trap is
+	full, no further samples will be stored, until the trap is emptied and
+	re-armed with t.flush()
 	
 	In either case, t.full() queries whether the target number of samples
 	has yet been reached.		
 	"""###
-	def __init__(self, nsamples, trigger_channel=None, trigger_threshold=0.0, leaky=False):
+	def __init__(self, nsamples, nchannels, trigger_channel=None, trigger_threshold=0.0, trigger_processing=numpy.abs, leaky=False):
 		"""
 		Initializes self.nsamples, self.trigger_channel,
-		self.trigger_threshold and self.leaky with the specified values.
+		self.trigger_threshold, self.trigger_processing and self.leaky with
+		the specified values.
 		"""###
-		self.buffer = None
+		self.ring = ring(nsamples, nchannels)
 		self.sprung = False
 		self.trigger_channel = trigger_channel
 		self.trigger_threshold = trigger_threshold
+		self.trigger_processing = trigger_processing
 		self.nsamples = nsamples
 		self.leaky = leaky
 	
@@ -85,8 +91,8 @@ class trap(object):
 		returns 0.
 		
 		When accumulating: if the trap is leaky and already full, as many
-		samples are discarded as are accumulated.  If the trap is non-leaky
-		and full, nothing is accumulated.
+		samples are discarded as they are accumulated.  If the trap is
+		non-leaky and full, nothing is accumulated.
 		
 		The optional argument <arm> can be set to False in order to suppress
 		the ability of the trap to spring on this packet. If the trap is
@@ -97,45 +103,54 @@ class trap(object):
 		if not isinstance(x, numpy.ndarray):
 			x = numpy.array(x)
 			if len(x.shape)==1: x.shape += (1,)
+		startx,stopx = 0,x.shape[1]
 		if arm and not self.sprung:
 			if self.trigger_channel == None:  # in this case, the trap springs
 				self.sprung = True            # as soon as it is used
 				output = 1
 			else:
 				tr = numpy.asarray(x[self.trigger_channel, :]).ravel()
-				tr = numpy.abs(tr) > self.trigger_threshold
-				tr = numpy.argwhere(tr)
+				if self.trigger_processing != None: tr = self.trigger_processing(tr)
+				tr = numpy.argwhere(tr > self.trigger_threshold)
 				if len(tr):
 					self.sprung = True
-					x = x[:, tr[0,0]:]
+					startx = tr[0,0]
 					output = tr[0,0] + 1
 		if self.sprung:
-			if self.buffer == None:
-				self.buffer = x[:,:self.nsamples].copy()
-			else:
-				excess = self.buffer.shape[1] + x.shape[1] - self.nsamples
-				if excess > 0:
-					if self.leaky: self.buffer = self.buffer[:, excess:] # excess leaks out the bottom
-					else:          x = x[:, :-excess]                    # excess spills over the top
-				self.buffer = numpy.concatenate((self.buffer, x), axis=1)
+			excess = self.collected() + (stopx-startx) - self.nsamples
+			if excess > 0:
+				if self.leaky: self.ring.forget(excess) # excess leaks out the bottom
+				else: stopx -= excess  # excess spills over the top
+			if stopx > startx: self.ring.write(x[:, startx:stopx])
 		return output
 
 	__call__ = process
+	
+	def read(self):
+		rh = self.ring.readhead
+		x = self.ring.read()
+		self.ring.readhead = rh
+		return x
+		
+	def collected(self):
+		"""
+		Returns the number of samples accumulated in the trap.
+		"""###
+		return self.ring.to_read()
 	
 	def full(self):
 		"""
 		Return a boolean indicating whether the trap has yet accumulated
 		the requested number of samples.
 		"""###
-		return self.buffer != None and self.buffer.shape[1] >= self.nsamples
+		return self.collected() >= self.nsamples
 	
 	def flush(self):
 		"""
-		Return the contents of self.buffer after removing it and re-arming
+		Return the contents of the trap after removing it and re-arming
 		(un-springing) the trap.
 		"""###
-		b = self.buffer
-		self.buffer = None
+		b = self.ring.read(self.nsamples)
 		self.sprung = False
 		return b
 
@@ -200,12 +215,14 @@ class ring(object):
 		self.buf[:, :m] = x[:, n:n+m]
 		self.writehead += m
 	
-	def read(self, nsamp):
+	def read(self, nsamp=None):
 		"""
 		Reads <nsamp> samples from the buffer, returning a channels-by-samples
 		numpy array.
 		"""###
-		if nsamp > self.to_read(): raise RuntimeError, "ring buffer underflow"
+		available = self.to_read()
+		if nsamp == None: nsamp = available
+		if nsamp > available: raise RuntimeError, "ring buffer underflow"
 		x = numpy.zeros((self.channels(), nsamp), dtype=self.buf.dtype)
 		n = min([nsamp, self.samples() - self.readhead])
 		x[:, :n] = self.buf[:, self.readhead:self.readhead+n]
@@ -214,3 +231,7 @@ class ring(object):
 		x[:, n:n+m] = self.buf[:, :m]
 		self.readhead += m
 		return x
+
+	def forget(self, nsamp):
+		nsamp = min([nsamp, self.to_read()])
+		self.readhead = (self.readhead + n) % self.samples()

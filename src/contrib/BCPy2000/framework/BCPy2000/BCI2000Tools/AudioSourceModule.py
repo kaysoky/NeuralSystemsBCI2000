@@ -89,14 +89,16 @@ class BciSource(BciGenericSource):
 		nch = min([x.shape[0], sig.shape[0]])		
 		x = numpy.asarray(x[:nch, :])
 		out = numpy.asarray(sig[:nch, :])
-		sig[nch:, :] = 0
+		#sig[nch:, :] = 0
+		packetsize = self.nominal['SamplesPerPacket']
+		sig[nch:, :] = self.packet_count * packetsize + numpy.array(range(packetsize), ndmin=2).repeat(sig.shape[0]-nch, axis=0)
 
 		if self.use_env:
 			for i in xrange(sig.shape[1]):
 				out[:, i] = numpy.sign((i%2) - 0.5) * x[:, self.dsind[i]:self.dsind[i+1]].ptp(axis=1)
 		else:
 			out[:, :] = x[:, self.dsind[:-1]]
-			
+		
 		return sig
 		
 	#############################################################

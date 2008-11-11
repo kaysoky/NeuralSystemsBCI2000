@@ -137,9 +137,9 @@ class BciGenericApplication(Core.BciCore):
 		appdesc = appdesc.replace(" ", "%20")
 		parameters += [ 
 			"PythonApp        string ApplicationDescription= " + appdesc + " % a z // Identifies the stimulus presentation module",
-			"PythonApp        int    ShowSignalTime=  0    0  0   1 // show a timestamp based on the number of processed samples (boolean)",
-			"PythonApp:Design int    TrialsPerBlock= 20   20  1 100 // number of trials in one block",
-			"PythonApp:Design int    BlocksPerRun=    1   20  1 100 // number of sub-blocks in one run",
+			"PythonApp        int    ShowSignalTime=  0    0  0 1 // show a timestamp based on the number of processed samples (boolean)",
+			"PythonApp:Design int    TrialsPerBlock= 20   20  1 % // number of trials in one block",
+			"PythonApp:Design int    BlocksPerRun=    1   20  1 % // number of sub-blocks in one run",
 		]
 		states += [
 			"VEStimulusTime    16 0 0 0",
@@ -613,14 +613,18 @@ class BciGenericApplication(Core.BciCore):
 
 			mythread.read('init', remove=True)
 			redraw_time = None
+						
 			while not mythread.read('stop'):
+				self.ftdb('newframe') # first column of frame timing log is filled in now
 				events = pygame.event.get()
+				self.ftdb()
 				if self.states['Running']:
 					self._lock.acquire('Frame')
 					for event in events: self.Event(self.current_presentation_phase, event)
 					self.Frame(self.current_presentation_phase)
 					self._run_callbacks('Frame')
 					self._lock.release('Frame')
+				self.ftdb()
 				
 				sleeptime = self._ve_sleep_msec
 				safety_margin = 3.0
@@ -633,15 +637,21 @@ class BciGenericApplication(Core.BciCore):
 						sleeptime = int(allowed - elapsed - redraw_time - safety_margin)
 						sleeptime = max(0, min(int(allowed - safety_margin), sleeptime))
 						self._sleeptime = (elapsed, redraw_time, sleeptime)
+				self.ftdb()
 				time.sleep(float(sleeptime)/1000.0)
-				
+				self.ftdb()
 				if self._redraw_lock: self._lock.acquire('Frame')
+				self.ftdb()
 				self.screen.clear()  # at least on some graphics cards, THIS is what blocks (and takes full CPU) until the interrupt
+				self.ftdb()
 				t = self.prectime()
 				self._update_stimlist()
+				self.ftdb()
 				self.viewport.draw()
+				self.ftdb()
 				redraw_time = self.prectime() - t
 				VisionEgg.Core.swap_buffers()
+				self.ftdb()
 				self.frame_timer.tick()
 				t = self.prectime()
 				if self.frame_count > 0: self._estimate_rate('FramesPerSecond', t)
@@ -669,7 +679,54 @@ class BciGenericApplication(Core.BciCore):
 		# VisionEgg 1.0 didn't cache, so we never ran across the problem under Python 2.4.
 		# Andrew fixed it in VE 1.1.1.
 		pygame.quit()
+	
+	#############################################################
+
+	def ftdb(self, subcmd=None, *pargs):
+		if subcmd == 'setup': # create an array to hold the timings (one row per frame)
+			(nframes,ntimings) = pargs
+			self._ftlog = {'t':numpy.zeros((nframes,ntimings),dtype=numpy.float64), 'i':0, 'j':0, 'started':False, 'rows_used':0, 'cols_used':0}
+			return
+		ftlog = getattr(self, '_ftlog', None)
+		if ftlog == None: return
+		t = self.prectime()
+		if subcmd == 'start':
+			ftlog['i'] = 0
+			ftlog['j'] = 0
+			ftlog['rows_used'] = 0
+			ftlog['cols_used'] = 0
+			ftlog['started'] = True
+			return
+		if subcmd == 'stop':
+			ftlog['started'] = False
+			return
+		if subcmd == 'save':
+			(filename,) = pargs
+			m = ftlog['t'][:ftlog['rows_used'],:ftlog['cols_used']]
+			f = open(filename, 'wt')
+			f.write('[\n')
+			for i in xrange(m.shape[0]):
+				f.write('  [')
+				for j in xrange(m.shape[1]):
+					f.write('%8.3f, '%m[i,j])
+				f.write('  ],\n')
+			f.write(']\n')
+			f.close()
+			return
+	
+		if not ftlog['started']: return
+		if subcmd == 'newframe':
+			if ftlog['j']: ftlog['i'] += 1
+			ftlog['j'] = 0
+			ftlog['rows_used'] = max([ftlog['rows_used'], ftlog['i']])
+		elif subcmd != None:
+			raise oops,'unknown subcommand'
 		
+		m,i,j = ftlog['t'],ftlog['i'],ftlog['j']
+		if i < m.shape[0] and j < m.shape[1]: m[i,j] = t
+		ftlog['j'] += 1
+		ftlog['cols_used'] = max([ftlog['cols_used'], ftlog['j']])
+			
 	#############################################################
 	#### extra visual widgets
 	#############################################################
@@ -1093,6 +1150,17 @@ class BciGenericApplication(Core.BciCore):
 		the customizable buttons on the BCI2000 operator.
 		"""###
 		self._block_structure.update({'start':start, 'new_trial':new_trial, 'interblock':interblock, 'end':end})
+		
+	#############################################################
+
+	def in_phase(self, phasename, min_packets=1):
+		"""
+		This API method queries whether we are in the presentation phase
+		denoted by <phasename> and have been so for at least <min_packets>
+		packets.
+		"""###
+		if self.states['PresentationPhase'] != getattr(self,'_phasedefs',{}).get('byname',{}).get(phasename, {}).get('id'): return False
+		return self.since('transition')['packets'] >= min_packets
 		
 	#############################################################
 
