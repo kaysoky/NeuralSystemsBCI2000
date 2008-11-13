@@ -54,7 +54,6 @@ AmpServerProADC::AmpServerProADC()
   //strcpy(m_sServerIP, "172.16.2.183"); //imac
   strcpy(m_sServerIP, ASP_DEF_IP); //mac pro
 
-
 #ifndef STANDALONE
   //TODO: Replace max values with actual max values
   // add all the parameters that this ADC requests to the parameter list
@@ -261,7 +260,7 @@ bool AmpServerProADC::BeginListening()
   aCmd[2] = m_nAmpId;
 
   sCmd = reinterpret_cast<char *>(aCmd);
-  ReorderToNetworkOrder(sCmd, 3*sizeof(__int64) );
+  ReorderToNetworkOrder(sCmd, 3);
 
   m_oDataConn.stream->write( sCmd, ASP_DATA_MSG_SIZE );
   m_oDataConn.stream->flush();
@@ -278,43 +277,22 @@ bool AmpServerProADC::BeginListening()
 // Purpose:    This function converts a string of 64-bit integers from host
 //             order to network order.
 // Parameters: sData - a pointer to the data to be reordered
-//             nLen - the number of bytes that should be reordered
+//             nLen - the number of 64 bit ints that should be reordered
 // Returns:    N/A
 // **************************************************************************
 inline void AmpServerProADC::ReorderToNetworkOrder(char *sData, int nLen)
 {
-  char tmpStr[4];
-  for(int i=0; i<nLen/8;i++) {
-    memcpy(tmpStr, sData+i*8, 4);
-    for(int ii=0; ii<4; ii++)
-      sData[ii+i*8] = sData[i*8+7-ii];
-
-    for(int ii=0; ii<4; ii++)
-      sData[i*8+ii+4] = tmpStr[3-ii];
-  }                           
-  /*  
-      //An alternative way of accomplishing the reordering.
-      // Register to listen to amp id 0;
-      char *register_command = new char [4096];
-      (reinterpret_cast<__int64 *>(register_command))[0] = 0; // This field is not really used yet.
-      (reinterpret_cast<__int64 *>(register_command))[1] = 101; // Use: AS_Network_Types::cmd_ListenToAmp
-      (reinterpret_cast<__int64 *>(register_command))[2] = 0;
-
-      __int32 *tmpData = reinterpret_cast<__int32 *>(register_command);
-      for(int i=0;i<3;i++){
-      int location = i*2;
-      __int32 tmpValue = -1;
-      tmpData[location] =htonl(tmpData[location]);
-      tmpData[location+1] =htonl(tmpData[location+1]);
-      tmpValue = tmpData[location];
-      tmpData[location] = tmpData[location+1];
-      tmpData[location+1] = tmpValue;
-      }
-
-      m_oDataConn.stream->write( register_command, 4096 );
-      m_oDataConn.stream->flush();
-
-  */
+  __int32 *tmpData = reinterpret_cast<__int32 *>(sData);
+  for(int i=0;i<nLen;i++)
+  {
+    int location = i*2;
+    __int32 tmpValue = -1;
+    tmpData[location] =htonl(tmpData[location]);
+    tmpData[location+1] =htonl(tmpData[location+1]);
+    tmpValue = tmpData[location];
+    tmpData[location] = tmpData[location+1];
+    tmpData[location+1] = tmpValue;
+  }
 }
 
 // **************************************************************************
@@ -322,23 +300,22 @@ inline void AmpServerProADC::ReorderToNetworkOrder(char *sData, int nLen)
 // Purpose:    This function converts a string of 64-bit integers from network
 //             order to host order.
 // Parameters: sData - a pointer to the data to be reordered
-//             nLen - the number of bytes that should be reordered
+//             nLen - the number of 64 bit ints that should be reordered
 // Returns:    N/A
 // **************************************************************************
 inline void AmpServerProADC::ReorderToHostOrder(char *sData, int nLen)
 {
-  //cout << "Before: ";
-  //DataOut(sData, nLen);
-	  __int32 *tmpData = reinterpret_cast<__int32 *>(sData);
-	  for(int i=0;i<nLen/8;i++){
-	    int location = i*2;
-	    __int32 tmpValue = -1;
-	    tmpData[location] =ntohl(tmpData[location]);
-	    tmpData[location+1] =ntohl(tmpData[location+1]);
-	    tmpValue = tmpData[location];
-	    tmpData[location] = tmpData[location+1];
-	    tmpData[location+1] = tmpValue;
-	  }
+  __int32 *tmpData = reinterpret_cast<__int32 *>(sData);
+  for(int i=0;i<nLen;i++)
+  {
+    int location = i*2;
+    __int32 tmpValue = -1;
+    tmpData[location] =ntohl(tmpData[location]);
+    tmpData[location+1] =ntohl(tmpData[location+1]);
+    tmpValue = tmpData[location];
+    tmpData[location] = tmpData[location+1];
+    tmpData[location+1] = tmpValue;
+  }
 }
 
 // **************************************************************************
@@ -938,23 +915,24 @@ void AmpServerProADC::Process( const GenericSignal&, GenericSignal& signal )
     for(unsigned int nSamp=nTotalSampsRead; nSamp< nTotalSampsRead + nSampsRead; nSamp++)
     {
       //reorder only the first m_nNumChans floats and ignore the preceding 32-byte header
-      ReorderToHostOrder(m_aLastDataPack + nOffset, 32 + sizeof(float) * m_nNumChans);
+      //ReorderToHostOrder(m_aLastDataPack + nOffset, 32 + sizeof(float) * m_nNumChans);
 
       //there's a header in front of each sample - ignore it
       nOffset += 32;
 
       for(unsigned int nChan=0; nChan<m_nNumChans; nChan++)
       {
+        __int32* p = reinterpret_cast<__int32*>( m_aLastDataPack + nOffset );
+        *p = ntohl( *p );
 #ifdef STANDALONE
-        sampBlock[nSamp][nChan] = *(reinterpret_cast<float *>(m_aLastDataPack + nOffset));
+        sampBlock[nSamp][nChan] = *reinterpret_cast<float *>( p );
 #else
-        //signal(nChan, nSamp) = *(reinterpret_cast<float *>(m_aLastDataPack + nOffset));
-        signal(nChan, nSamp) = *(reinterpret_cast<float *>(m_aLastDataPack + nOffset))+rand()%10000;
+        signal(nChan, nSamp) = *reinterpret_cast<float *>( p );
 #endif
         nOffset += sizeof(float);
       }
     }
-    
+
     nTotalSampsRead += nSampsRead;
 
   }
@@ -985,7 +963,7 @@ inline bool AmpServerProADC::ReadDataHeader()
   m_oDataConn.stream->read(sData, 15);
   sData[15] = m_oDataConn.stream->get();
 
-  ReorderToHostOrder(sData, 16);
+  ReorderToHostOrder(sData, 2);
 
   //save the header values into m_oLastHeader
   m_oLastHeader.ampID = *(reinterpret_cast<__int64*>(sData));
@@ -1038,4 +1016,3 @@ inline bool AmpServerProADC::ReadDataBlock(unsigned int nMaxBytes, unsigned int 
 
   return true;
 }
-

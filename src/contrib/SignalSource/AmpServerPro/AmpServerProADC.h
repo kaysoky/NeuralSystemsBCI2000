@@ -121,4 +121,3 @@ class AmpServerProADC
 
 #endif // AmpServerProADCH
 
-
