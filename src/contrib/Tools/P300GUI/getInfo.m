@@ -24,47 +24,52 @@ signal=[];
 state.trialnr=[];
 for kk=1:numtrain
     fprintf(1,'   run %d...\n',kk)
-    [sig,sts,prm] = load_bcidat([traindatdir char(traindatfiles(kk))]);      
+    [sig,sts,prm] = load_bcidat([traindatdir char(traindatfiles(kk))]);   
+    if ~strcmp(class(sts.StimulusType),class(sts.StimulusCode))
+        sts.StimulusType=cast(sts.StimulusType,class(sts.StimulusCode));
+    end
     sig=single(sig);
     NSamples=length(sig); 
-    Gains   = repmat(str2num(char(prm.SourceChGain)), [1 NSamples])';
-    Offsets = repmat(str2num(char(prm.SourceChOffset)), [1 NSamples])';
+    Gains   = repmat((prm.SourceChGain.NumericValue), [1 NSamples])';
+    Offsets = repmat((prm.SourceChOffset.NumericValue), [1 NSamples])';
     Gains=single(Gains);
     Offsets=single(Offsets);
     sig = Gains .* (sig-Offsets);
     signal=cat(1,signal,sig);    
     parms.SoftwareCh(kk)=size(signal,2);
-    parms.SamplingRate(kk)=str2num(char(prm.SamplingRate));
+    parms.SamplingRate(kk)=(prm.SamplingRate.NumericValue);
     
     if isfield(prm,'OffTime')
-        OffTime=prm.OffTime;
-        OnTime=prm.OnTime;
-        PreSetInterval=prm.PreSetInterval;
-        PostSetInterval=prm.PostSetInterval;
+        OffTime=prm.OffTime.NumericValue;
+        OnTime=prm.OnTime.NumericValue;
+        PreSetInterval=prm.PreSetInterval.NumericValue;
+        PostSetInterval=prm.PostSetInterval.NumericValue;
         if isfield(prm,'TargetDefinitionMatrix')
-            TargetDefinitionMatrix=prm.TargetDefinitionMatrix;
+            TargetDefinitionMatrix=prm.TargetDefinitionMatrix.Value;
         end
         v2=0;
     else
-        OffTime=prm.ISIMinDuration;
-        OnTime=prm.StimulusDuration;
-        PreSetInterval=prm.PreSequenceDuration;
-        PostSetInterval=prm.PostSequenceDuration;
-        TargetDefinitionMatrix=prm.TargetDefinitions;
+        OffTime=prm.ISIMinDuration.NumericValue;
+        OnTime=prm.StimulusDuration.NumericValue;
+        PreSetInterval=prm.PreSequenceDuration.NumericValue;
+        PostSetInterval=prm.PostSequenceDuration.NumericValue;
+        TargetDefinitionMatrix=prm.TargetDefinitions.Value;
         v2=1;
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    parms.ISI=str2num(char(prm.SampleBlockSize))*(str2num(char(OffTime))+str2num(char(OnTime)))*1000/parms.SamplingRate(kk);
+    parms.ISI=(prm.SampleBlockSize.NumericValue)*(OffTime+OnTime)*1000/parms.SamplingRate(kk);
     [x,ok]=str2num(char(PostSetInterval));
     
     if ok==1
-        parms.PostSetInterval=str2num(char(prm.SampleBlockSize))*str2num(char(PostSetInterval))*1000/parms.SamplingRate(kk);
-        parms.PreSetInterval=str2num(char(prm.SampleBlockSize))*str2num(char(PreSetInterval))*1000/parms.SamplingRate(kk);
+        parms.PostSetInterval=(prm.SampleBlockSize.NumericValue)*PostSetInterval*1000/parms.SamplingRate(kk);
+        parms.PreSetInterval=(prm.SampleBlockSize.NumericValue)*PreSetInterval*1000/parms.SamplingRate(kk);
     else
-        PostSetInterval=char(PostSetInterval);
-        PreSetInterval=char(PreSetInterval);
-        parms.PostSetInterval=str2num((PostSetInterval(1:length(PostSetInterval)-1)));
-        parms.PreSetInterval=str2num((PreSetInterval(1:length(PreSetInterval)-1)));
+%         PostSetInterval=char(PostSetInterval);
+%         PreSetInterval=char(PreSetInterval);
+%         parms.PostSetInterval=str2num((PostSetInterval(1:length(PostSetInterval)-1)));
+%         parms.PreSetInterval=str2num((PreSetInterval(1:length(PreSetInterval)-1)));
+         parms.PostSetInterval=PostSetInterval;
+         parms.PreSetInterval=PreSetInterval;
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    if isfield(prm, 'InterpretMode') | isfield(prm, 'TextToSpell')
@@ -72,19 +77,19 @@ for kk=1:numtrain
 %         av=1;
 %         numstat=numstatp3av-3;
 % 
-%         if length(unique(str2num(char(prm.Sequence))))~=1
+%         if length(unique((prm.Sequence.NumericValue)))~=1
 %             fprintf(1,'Warning: Classification will not work with P300 oddball data.\n')
 %         end
 % 
 %         parms.NumMatrixRows(kk)=0;
-%         parms.NumMatrixColumns(kk)=length(str2num(char(prm.Sequence)));
+%         parms.NumMatrixColumns(kk)=length((prm.Sequence.NumericValue));
 % 
 %         tval=char(prm.Matrix(1,:)');
 % 
 %         TargetDef(kk)={tval};
-%         parms.NumberOfSequences(kk)=str2num(char(prm.NumberOfSeq));
+%         parms.NumberOfSequences(kk)=(prm.NumberOfSeq.NumericValue);
 % 
-%         indx=str2num(char(prm.ToBeCopied));
+%         indx=(prm.ToBeCopied.NumericValue);
 %         parms.target(kk)={tval(indx,1)};
 % 
 %         samps=size(sig,1);
@@ -95,12 +100,12 @@ for kk=1:numtrain
 
         av=0;
         if isfield(prm, 'OnlineMode')
-            if char(prm.OnlineMode)=='0'
+            if char(prm.OnlineMode.NumericValue)=='0'
                 %%%%space
                 cc=[];
                 spchar={'%20' '%f6' '%d6' '%e4' '%c4' '%fc' '%dc' '%eb' '%ec'};
-                repchar={' ' 'ö' 'Ö' 'ä' 'Ä' 'ü' 'Ü' 'ë' 'Ë'};
-                TextToSpell=char(prm.TextToSpell);
+                repchar={' ' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½'};
+                TextToSpell=char(prm.TextToSpell.Value);
                 for qq=1:size(spchar,2)
                     spce=strfind(TextToSpell,char(spchar(qq)));
                     if ~isempty(spce)
@@ -123,13 +128,13 @@ for kk=1:numtrain
 
             end
         end
-        parms.NumberOfSequences(kk)=str2num(char(prm.NumberOfSequences));
+        parms.NumberOfSequences(kk)=(prm.NumberOfSequences.NumericValue);
         if isfield(prm, 'NumMatrixRows')
-            parms.NumMatrixRows(kk)=str2num(char(prm.NumMatrixRows));
-            parms.NumMatrixColumns(kk)=str2num(char(prm.NumMatrixColumns));
+            parms.NumMatrixRows(kk)=(prm.NumMatrixRows.NumericValue);
+            parms.NumMatrixColumns(kk)=(prm.NumMatrixColumns.NumericValue);
 
             spchar={'%20' '%f6' '%d6' '%e4' '%c4' '%fc' '%dc' '%eb' '%ec'};
-            repchar={' ' 'ö' 'Ö' 'ä' 'Ä' 'ü' 'Ü' 'ë' 'Ë'};
+            repchar={' ' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½' 'ï¿½'};
             TDef=char(TargetDefinitionMatrix(:,2));
             %             TDef=TDef(:,1);
 
@@ -185,7 +190,7 @@ parms.trainfiles=traindatfiles;
 
 
 
-if isfield(prm, 'TextToSpell') & isfield(prm, 'OnlineMode') & char(prm.OnlineMode)=='1'
+if isfield(prm, 'TextToSpell') & isfield(prm, 'OnlineMode') & char(prm.OnlineMode.NumericValue)=='1'
     fprintf(1,'\n*********************************************************')
     fprintf(1,'\nWarning: Online Mode - Results are based on the assumtion')
     fprintf(1,'\n                       that the selected cell is correct.')
