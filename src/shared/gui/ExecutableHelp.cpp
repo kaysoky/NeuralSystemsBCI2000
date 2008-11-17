@@ -47,7 +47,7 @@ ExecutableHelp::Display() const
 {
   bool result = false;
 #ifdef _WIN32
-  HINSTANCE err = ::ShellExecute( NULL, NULL, mHelpFile.c_str(), NULL, mHelpFileDir.c_str(), 0 );
+  HINSTANCE err = ::ShellExecute( NULL, "open", mHelpFile.c_str(), NULL, mHelpFileDir.c_str(), SW_SHOWNORMAL );
   result = ( reinterpret_cast<int>( err ) > 32 );
   if( !result )
   {
