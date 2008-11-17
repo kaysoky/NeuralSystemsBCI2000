@@ -263,9 +263,17 @@ DataIOFilter::Preflight( const SignalProperties& Input,
                     .SetRawMax( rangeMax );
   if( Parameters->Exists( "ChannelNames" ) && Parameter( "ChannelNames" )->NumValues() > 0 )
   {
+    set<string> names;
     LabelIndex& outputLabels = Output.ChannelLabels();
     for( int i = 0; i < min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() ); ++i )
-      outputLabels[ i ] = Parameter( "ChannelNames" )( i );
+    {
+      string name = Parameter( "ChannelNames" )( i );
+      if( names.find( name ) == names.end() )
+        names.insert( name );
+      else
+        bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
+      outputLabels[ i ] = name;
+    }
   }
 }
 
