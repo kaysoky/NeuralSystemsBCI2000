@@ -33,7 +33,6 @@ private:
        int datawindows;
        bool visualize;
        FIR *fir;
-       GenericVisualization *vis;
        int nPoints;
 
 public:

@@ -27,29 +27,26 @@ RegisterFilter( FIRFilter, 2.C );
 // **************************************************************************
 FIRFilter::FIRFilter()
 : fir( NULL ),
-  vis( NULL ),
   nPoints( 0 )
 {
 
   nPoints= 1;               // for now, a constant at 1- only one output/channel
 
   BEGIN_PARAMETER_DEFINITIONS
-    "FIRFilter int FIRWindows= 2 2 1 8 "
+    "FIRFilter int FIRWindows= 2 2 1 % "
       "// FIR- number of input blocks",
     "FIRFilter int FIRDetrend= 0 0 0 2 "
       "// Detrend data?  0=no 1=mean 2= linear",
-    "FIRFilter int Integration= 1 0 0 1 "
+    "FIRFilter int Integration= 1 0 0 3 "
       "// FIR Integration 0 = none, 1= mean 2 = rms 3 = max",
-    "FIRFilter int FIRFilteredChannels= 4 4 1 64 "
-      "// Number of FIR Filtered Filtered Channels",
+    "FIRFilter int FIRFilteredChannels= 4 4 1 % "
+      "// Number of FIR Filtered Channels",
     "FIRFilter matrix FIRFilterKernal= 4 4 "
       " 1 0 0 0"
-      " 0 1 0 0"
-      " 0 0 1 0"
-      " 0 0 0 1"
-             " 64 -100 100  // Fir Filter Kernal Weights",
-    "Visualize int VisualizeTemporalFiltering= 1 0 0 1 "
-      "// visualize Temporal filtered signals (0=no 1=yes)",
+      " 1 0 0 0"
+      " 1 0 0 0"
+      " 1 0 0 0"
+             " 1 % % // FIR Filter Coefficients (rows correspond to channels)",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -62,7 +59,6 @@ FIRFilter::FIRFilter()
 // **************************************************************************
 FIRFilter::~FIRFilter()
 {
-  delete vis;
   delete fir;
 }
 
@@ -87,9 +83,6 @@ void FIRFilter::Preflight( const SignalProperties& inSignalProperties,
      Parameter( "FIRFilterKernal" )->NumRows() <= MAX_M );
   PreflightCondition(
      Parameter( "FIRFilterKernal" )->NumColumns() <= MAX_N );
-
-  // Resource availability checks.
-  /* The FIR filter seems not to depend on external resources. */
 
   // Input signal checks.
   PreflightCondition( Parameter( "FIRFilteredChannels" ) <= inSignalProperties.Channels() );
@@ -125,7 +118,6 @@ void FIRFilter::Preflight( const SignalProperties& inSignalProperties,
 void FIRFilter::Initialize(const SignalProperties&, const SignalProperties&)
 {
 int     i,j;
-int     visualizeyn;
 char    cur_buf[256];
 int     nBuf;
 
@@ -135,7 +127,6 @@ int     nBuf;
         samples=     Parameter( "SampleBlockSize" );
         datawindows= Parameter( "FIRWindows" );
         detrend=     Parameter("FIRDetrend" );
-        visualizeyn= Parameter("VisualizeTemporalFiltering");
         integrate=   Parameter("Integration");
         hz=          Parameter("SamplingRate");
         m_coef=      Parameter("FIRFilteredChannels");     // get output dim of spatial filtering
@@ -158,22 +149,6 @@ int     nBuf;
   for(i=0;i<MAX_M;i++)
         for(j=0;j<MAX_N;j++)
                 datwin[i][j]= 0;
-
-
- if( visualizeyn == 1 )
- {
-        visualize=true;
-        vis= new GenericVisualization("FIR");
-        vis->Send(CfgID::WindowTitle, "Temporal Filter");
-        sprintf(cur_buf, "%d", 200);
-        vis->Send(CfgID::NumSamples, cur_buf);
-        vis->Send(CfgID::MinValue, "-60");
-        vis->Send(CfgID::MaxValue, "60");
- }
- else
- {
-        visualize=false;
- }
 }
 
 // **************************************************************************
@@ -247,12 +222,6 @@ static count= 0;
                         max= fir->max( winlgth - (n_coef-1), result );
                         output( i, 0 ) = max;
                 }
-        }
-
-
-        if( visualize )
-        {
-              vis->Send(output);
         }
 }
 
