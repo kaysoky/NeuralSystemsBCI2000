@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Matlab MEX Files - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Matlab MEX Files,Programming Reference:BCI2000 Source Code,User Reference:ARFilter" />
+<meta name="keywords" content="User Reference:Matlab MEX Files,BCI2000 Binaries,Programming Reference:BCI2000 Source Code,User Reference:ARFilter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -35,31 +35,50 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Using_BCI2000_MEX_files"><span class="tocnumber">2</span> <span class="toctext">Using BCI2000 MEX files</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Microsoft_Windows"><span class="tocnumber">2.1</span> <span class="toctext">Microsoft Windows</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_Platforms"><span class="tocnumber">2.2</span> <span class="toctext">Other Platforms</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Microsoft_Windows_32"><span class="tocnumber">2.1</span> <span class="toctext">Microsoft Windows 32</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_platforms"><span class="tocnumber">2.2</span> <span class="toctext">Other platforms</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#BCI2000_MEX_functions"><span class="tocnumber">3</span> <span class="toctext">BCI2000 MEX functions</span></a>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#Building_BCI2000_MEX_files"><span class="tocnumber">3</span> <span class="toctext">Building BCI2000 MEX files</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat"><span class="tocnumber">3.1</span> <span class="toctext">load_bcidat</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat"><span class="tocnumber">3.2</span> <span class="toctext">save_bcidat</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#convert_bciprm"><span class="tocnumber">3.3</span> <span class="toctext">convert_bciprm</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">3.4</span> <span class="toctext">mem</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Microsoft_Windows"><span class="tocnumber">3.1</span> <span class="toctext">Microsoft Windows</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#Other_Platforms"><span class="tocnumber">3.2</span> <span class="toctext">Other Platforms</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#BCI2000_MEX_functions"><span class="tocnumber">4</span> <span class="toctext">BCI2000 MEX functions</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat"><span class="tocnumber">4.1</span> <span class="toctext">load_bcidat</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat"><span class="tocnumber">4.2</span> <span class="toctext">save_bcidat</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#convert_bciprm"><span class="tocnumber">4.3</span> <span class="toctext">convert_bciprm</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AMatlab_MEX_Files.html#mem"><span class="tocnumber">4.4</span> <span class="toctext">mem</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AMatlab_MEX_Files.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Introduction"></a><h2>Introduction</h2>
 <p>MEX files allow the execution of externally compiled code from within Matlab. Because Matlab code is interpreted at runtime, and MEX files contain binary code that has been compiled prior to use, MEX files are generally faster than equivalent Matlab code.
-</p><p>BCI2000 MEX files contain code that interfaces with BCI2000-specific data structures, i.e. BCI2000 data files, and parameter definitions. This allows access to the underlying data from Matlab, without duplicating code that implements these data structures.
+</p><p>BCI2000 MEX files contain code that interfaces with BCI2000-specific data structures, i.e. BCI2000 data files, and parameter definitions. This allows access to BCI2000 data from Matlab, without duplicating code that implements those data structures.
 </p>
 <a name="Using_BCI2000_MEX_files"></a><h2>Using BCI2000 MEX files</h2>
-<a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
-<p>The BCI2000 binary distribution comes with pre-compiled MEX files for Microsoft Windows platforms.
+<a name="Microsoft_Windows_32"></a><h3>Microsoft Windows 32</h3>
+<p>The BCI2000 <a href="BCI2000_Binaries.html" title="BCI2000 Binaries">binary distribution</a> comes with pre-compiled MEX files for 32-bit Microsoft Windows platforms.
 Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
-</p><p>Compiling MEX files under Windows requires the Borland C++ compiler (a free command line version is available at <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a>). To build MEX files, open a console window, and execute <tt>make</tt> from the <tt>BCI2000/src/Tools/mex</tt> directory.
-</p><p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more; still, using the <tt>make</tt> command as described above should work with newer versions of Matlab as well.
+</p>
+<a name="Other_platforms"></a><h3>Other platforms</h3>
+<p>BCI2000 comes with pre-built MEX files for a number of platforms, including 64-bit Windows, Mac OS X, and Linux 32-bit as well as 64-bit. Support for these MEX files is <i>experimental</i> at present, and they may or may not work on your particular configuration.
+</p>
+<a name="Building_BCI2000_MEX_files"></a><h2>Building BCI2000 MEX files</h2>
+<p>Typically, you will use pre-built binary versions of BCI2000 MEX files as described above. If you need to build BCI2000 MEX files yourself, the following information applies.
+</p>
+<a name="Microsoft_Windows"></a><h3>Microsoft Windows</h3>
+<p>Compiling MEX files under Windows requires the Borland C++ compiler (a free command line version is available at <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external free' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">http://www.borland.com/downloads/download_cbuilder.html</a>). To build MEX files, 
+</p>
+<ul><li>open a console window, 
+</li><li>change to the <tt>BCI2000/src/Tools/mex</tt> directory,
+</li><li>execute <tt>make</tt> from there.
+</li></ul>
+<p>For Matlab versions up to 7.5 (Release 2007b), alternatively the <tt>buildmex</tt> script may be used after configuring the <tt>mex</tt> command to use the Borland compiler. For newer versions of Matlab, the <tt>mex</tt> command does not support the Borland compiler any more; still, using the <tt>make</tt> command as described above should work with newer versions of Matlab as well.
 </p>
 <a name="Other_Platforms"></a><h3>Other Platforms</h3>
 <p>For platforms other than 32-bit Windows, BCI2000 provides a Matlab script that can be used to build MEX files.
@@ -70,8 +89,6 @@ Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use these files.
 </li><li>Execute <tt>buildmex</tt> from the Matlab command line.
 </li><li>Add <tt>BCI2000/tools/mex</tt> to your Matlab path to use the newly built MEX files.
 </li></ul>
-<p><b>Pre-built non-Windows MEX files:</b> BCI2000 now comes with pre-built MEX files for a number of platforms, including Mac OS X and 32-bit as well as 64-bit Linux. Support for these MEX files is <i>experimental</i>, and they may or may not work on your particular configuration.
-</p>
 <a name="BCI2000_MEX_functions"></a><h2>BCI2000 MEX functions</h2>
 <a name="load_bcidat"></a><h3><tt>load_bcidat</tt></h3>
 <pre>[ signal, states, parameters ] = load_bcidat( 'filename1', 'filename2', ... );

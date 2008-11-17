@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:EEG Measurement Setup - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:EEG Measurement Setup,Contributions:ADCs,User Reference:Operator Module,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
+<meta name="keywords" content="User Tutorial:EEG Measurement Setup,User Tutorial:EEG Measurement Setup,Contributions:ADCs,Contributions:How to use a Contributed Source Module,User Reference:Operator Module,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -32,7 +32,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">EEG Measurement Setup</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>This page describes the physical setup required for EEG measurements.
 EEG utilizes metal electrodes attached to a human subject's scalp, measuring tiny electrical potentials which reflect the brain's electrical activity.
-Although setting up amplifiers and electrodes appears simple and straightforward, a successful, good quality EEG recording requires attention to not-so obvious details, and some practice.
+Although setting up amplifier and electrodes appears simple and straightforward, a successful, good quality EEG recording requires attention to not-so obvious details, and some practice.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -104,7 +104,7 @@ elastic fabric (available in different sizes), and electrodes are already fixed 
 the proper configuration. One proven technique to perform an accurate
 montage is the following:
 </p>
-<ul><li>Mark the vertex on the subject's scalp using a felt-tip pen or some other similar method.  To do so, begin by locating the nasion and inion on the subject as indicated on the diagram above.  Using a tape measure, find the distance between these two locations.  The point midway between the two points, or 50% of the distance, is the vertex.  Make a mark at that point for later reference.  Other 10-20 points can be located in a similar manner.  Distances between points are reported, as percentages of the total distance, in the diagram above.
+<ul><li>Mark the vertex on the subject's scalp using a felt-tip pen or some other similar method.  To do so, begin by locating the nasion and inion on the subject as indicated in subfigure (A) above.  Using a tape measure, find the distance between these two locations.  The point midway between the two points, or 50% of the distance, is the vertex.  Make a mark at that point for later reference.  Other 10-20 points can be located in a similar manner.  Distances between points are reported, as percentages of the total distance, in subfigure (A) above.
 </li><li>Mark scalp positions for Fpz and Oz.
 </li><li>Identify the Cz electrode on the EEG cap and place the cap to position the Cz electrode on the vertex.
 </li><li>Keeping Cz fixed, slip the cap onto the head.
@@ -120,12 +120,18 @@ Some caps have a Gnd electrode embedded on a scalp position; if this is not the 
 <a name="Inspecting_EEG_Signals"></a><h2>Inspecting EEG Signals</h2>
 <p>BCI2000 may be used to inspect EEG signals without actually recording them. For the sake of this tutorial, we will start up BCI2000 in a configuration suitable for stimulation experiments. However, any configuration will do, and usually you will inspect signals after starting up BCI2000 in the configuration that fits the desired experiment.
 </p>
-<ul><li>Make sure your amplifier is connected to your computer, drivers are installed according to the vendor's instruction, and the amplifier is switched on.
-</li><li>Start BCI2000 by double-clicking the file <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt> where <tt>YourAmplifier</tt> matches the name of your amplifier.
-</li><li>In the BCI2000 operator window, click <i>Config</i> and then <i>Load Parameters...</i> to load the file <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
-</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. If you're unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  In this case, please consult your ADC module's reference page, which is accessible through <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>, for available parameters and their meanings.
+<ul><li>Make sure that
+<ul><li>your amplifier is connected to your computer, 
+</li><li>the amplifier's drivers are installed as described in the manual that came with your amplifier, and
+</li><li>the amplifier is switched on.
+</li></ul>
+</li><li>Start BCI2000 by double-clicking the file <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt> where <tt>YourAmplifier</tt> matches the name of your amplifier. <br />If there is no such file in the <tt>batch</tt> directory, and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, the <a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html" title="Contributions:How to use a Contributed Source Module">how-to page on using a contributed source module</a> will provide you with instructions on how to use it with BCI2000.
+</li><li>In the BCI2000 operator window, click "Config" and then "Load Parameters..." to load the file <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
+</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. <br />If you are unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  In this case, please consult your ADC module's reference page, which is accessible through <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>, for available parameters and their meanings.
+</li><li>Switch to the <i>Source</i> tab; for the <i>ChannelNames</i> parameter enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels as a white-space separated list (e.g., <tt>Fz CPz Cz CP3 ...</tt>).
+</li><li>Click "Save", and save your adapted configuration as a system-specific parameter file for later use at <tt>parms/fragments/&lt;YourSystem&gt;.prm</tt>, or whereever you find appropriate.
 </li><li>Close the parameter dialog by clicking the close box its top right corner.
-</li><li>Click <i>Set Config</i>.
+</li><li>Click "Set Config".
 </li><li>A window will appear that displays the signal acquired from the amplifier. Initially, the window will be rather small and located in the top left corner of your screen. Adapt it to your liking by moving and resizing it -- its position and size will be remembered across BCI2000 sessions. Right-clicking will bring up a context menu with <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">various options</a>.
 </li><li>Reasonable EEG traces should now be visible on the screen as soon as gel is injected.<br />Visual inspection can detect the effect of poor contact (excessive <a href="User_Tutorial%253AEEG_Measurement_Setup.html#mains_interference" title="">mains interference</a>, frequent loss of contact, etc.). You may also want to use an impedance meter to make sure that electrodes have good contact (i.e. that their impedance is below <span class="texhtml">5 &minus; 10<i>k</i>&Omega;</span>).
 </li><li>When you are done, quit BCI2000 before going to the <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step" title="">next step</a>.

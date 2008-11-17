@@ -123,7 +123,7 @@ Expressions may involve <a href="BCI2000_Glossary.html#State" title="BCI2000 Glo
 </li></ul>
 <a name="UpdateTrigger"></a><h3>UpdateTrigger</h3>
 <p>A <a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">boolean expression</a> that triggers adaptation when changing to <i>true</i> from <i>false</i>.
-Generally, continuous adaptation within trials is not desired. Rather, one wants adaptation to occur at the end of a trial. This is achieved with <i>UpdateTrigger</i> expressions such as <code>Feedback==0</code> or <code>TargetCode!=0</code>.
+Generally, continuous adaptation within trials is not desired. Rather, one wants adaptation to occur at the end of a trial. This is achieved with <i>UpdateTrigger</i> expressions such as <code>Feedback==0</code> or <code>TargetCode==0</code>.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>Buffer condition expressions, and the UpdateTrigger expression may involve any <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">state</a> present in the system. Expressions are checked for syntactical correctness and whether referred-to states are present during the <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">Preflight Phase</a>.

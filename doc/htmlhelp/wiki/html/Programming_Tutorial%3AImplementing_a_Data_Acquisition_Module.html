@@ -44,7 +44,7 @@ Together these functions form a class derived from
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#Scenario"><span class="tocnumber">1</span> <span class="toctext">Scenario</span></a></li>
+<li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#Example_Scenario"><span class="tocnumber">1</span> <span class="toctext">Example Scenario</span></a></li>
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#Writing_the_ADC_Header_File"><span class="tocnumber">2</span> <span class="toctext">Writing the ADC Header File</span></a></li>
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#ADC_Implementation"><span class="tocnumber">3</span> <span class="toctext">ADC Implementation</span></a></li>
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#ADC_Initialization"><span class="tocnumber">4</span> <span class="toctext">ADC Initialization</span></a></li>
@@ -53,7 +53,7 @@ Together these functions form a class derived from
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Data_Acquisition_Module.html#Finished"><span class="tocnumber">7</span> <span class="toctext">Finished</span></a></li>
 </ul>
 </td></tr></table>
-<a name="Scenario"></a><h2>Scenario</h2>
+<a name="Example_Scenario"></a><h2>Example Scenario</h2>
 <p>Your <i>Tachyon Corporation</i>  A/D card comes with a C-style
 software interface
 declared in a header file <tt>"TachyonLib.h"</tt> that consists of
@@ -223,7 +223,7 @@ void TachyonADC::Process( const GenericSignal&amp;, GenericSignal&amp; outputSig
 </pre>
 <a name="Adding_the_SourceFilter"></a><h2>Adding the <i>SourceFilter</i></h2>
 <p>Most measurement equipment comes with hardware filters that allow you to filter out line noise.
-For equipment that does not offer such an option, consider adding the <a href="User_Reference%253ASourceFilter.html" title="User Reference:SourceFilter">SourceFilter</a> to your data acquisition module.
+For equipment that does not offer such an option, consider adding the <a href="User_Reference%253ASourceFilter.html" title="User Reference:SourceFilter">SourceFilter</a> to your data acquisition module as described <a href="User_Reference%253ASourceFilter.html#Remarks" title="User Reference:SourceFilter">here</a>.
 </p>
 <a name="Finished"></a><h2>Finished</h2>
 <p>You are done! Use your <tt>TachyonADC.cpp</tt> to replace the

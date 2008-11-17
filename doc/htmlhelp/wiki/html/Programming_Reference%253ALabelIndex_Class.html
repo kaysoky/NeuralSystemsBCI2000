@@ -40,17 +40,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#bool_Exists.28string_Label.29"><span class="tocnumber">3.2</span> <span class="toctext">bool Exists(string Label)</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#Clear.28.29"><span class="tocnumber">3.3</span> <span class="toctext">Clear()</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#Resize.28Size.29"><span class="tocnumber">3.4</span> <span class="toctext">Resize(Size)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29"><span class="tocnumber">3.5</span> <span class="toctext">WriteToStream(ostream), ReadFromStream(istream)</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29"><span class="tocnumber">4</span> <span class="toctext">WriteToStream(ostream), ReadFromStream(istream)</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#Properties"><span class="tocnumber">5</span> <span class="toctext">Properties</span></a>
+<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#Properties"><span class="tocnumber">4</span> <span class="toctext">Properties</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#bool_IsTrivial_.28r.29"><span class="tocnumber">5.1</span> <span class="toctext">bool IsTrivial (r)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#int_Size_.28r.29"><span class="tocnumber">5.2</span> <span class="toctext">int Size (r)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#bool_IsTrivial_.28r.29"><span class="tocnumber">4.1</span> <span class="toctext">bool IsTrivial (r)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ALabelIndex_Class.html#int_Size_.28r.29"><span class="tocnumber">4.2</span> <span class="toctext">int Size (r)</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#Operators"><span class="tocnumber">6</span> <span class="toctext">Operators</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#Operators"><span class="tocnumber">5</span> <span class="toctext">Operators</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ALabelIndex_Class.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Location"></a><h2>Location</h2>
@@ -72,7 +72,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Resize.28Size.29"></a><h3>Resize(Size)</h3>
 <p>Adapts index size to the specified number of entries.
 </p>
-<a name="WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29"></a><h2>WriteToStream(ostream), ReadFromStream(istream)</h2>
+<a name="WriteToStream.28ostream.29.2C_ReadFromStream.28istream.29"></a><h3>WriteToStream(ostream), ReadFromStream(istream)</h3>
 <p>Writes/reads the index object from/to the specified stream. Stream representation is human readable, and corresponds to the way indices are specified in a <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter line</a>. Beginning with an opening bracket, indices are listed in sequence, separated with space characters. Brackets and whitespace that are part of labels are encoded as described <a href="Technical_Reference%253AParameter_Definition.html#Special_Characters" title="Technical Reference:Parameter Definition">here</a>.
 </p>
 <a name="Properties"></a><h2>Properties</h2>
@@ -89,7 +89,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <pre>int idx = Parameter( "MyParameter" ).RowLabels()["SecondRow"];
 </pre>
 <p>will return 1 if "SecondRow" exists as a string, and refers to the parameter's second row.
-For nonexistent labels, an index of zero will be returned.
+For nonexistent labels, an index of zero will be returned, i.e. a nonexistent label will be mapped to the first entry.
 </p><p>In the second case, specifying a zero-based index will provide access to the string label associated with that index:
 </p>
 <pre>string label = Parameter( "MyParameter" ).RowLabels()[1];

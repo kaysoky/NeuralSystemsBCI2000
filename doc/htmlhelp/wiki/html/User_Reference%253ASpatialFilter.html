@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:SpatialFilter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:SpatialFilter,User Reference:DataIOFilter,User Reference:LinearClassifier" />
+<meta name="keywords" content="User Reference:SpatialFilter,User Reference:DataIOFilter,User Reference:LinearClassifier,User Reference:Parameters" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -69,22 +69,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="SpatialFilterType"></a><h3>SpatialFilterType</h3>
-<p>This parameter defines the method that will be used to design the spatial filter. The choices are:
+<p>This parameter defines the method that will be used to design the spatial filter. Choices are:
 </p>
-<ol><li> none
-</li><li> full matrix
-</li><li> sparse matrix
-</li><li> common average reference (CAR)
-</li></ol>
-<p>These choices are described below.
-</p>
-<dl><dt> None&nbsp;</dt><dd> In this case, no spatial filtering is performed; the input signal is copied to the output signal, and the spatial filter matrix is ignored.
-</dd></dl>
-<dl><dt> Full Matrix&nbsp;</dt><dd> This is the standard spatial filter present in previous versions BCI2000. The SpatialFilter matrix parameter defines the linear transformation applied to the input signal.
-</dd></dl>
-<dl><dt> Sparse Matrix&nbsp;</dt><dd> The sparse matrix filter uses the SpatialFilter to define an input channel, output channel, and weight for that channel.
-</dd></dl>
-<dl><dt> Common Average Reference (CAR)&nbsp;</dt><dd> The common average reference spatial filter calculates the mean of every channel, and subtracts this value from selected output channels. The output channels from this filter are defined with the SpatialFilterCAROutput parameter (see below for more information on this parameter). 
+<dl><dt>0 None
+</dt><dd>No spatial filtering is performed; the input signal is copied to the output signal, and the spatial filter matrix is ignored.
+</dd><dt>1 Full Matrix
+</dt><dd>The linear transformation applied to the input signal is defined by the <i>SpatialFilter</i> matrix parameter. This is the is also the default, and matches behavior in previous versions of BCI2000.
+</dd><dt>2 Sparse Matrix
+</dt><dd>The sparse matrix filter uses the <i>SpatialFilter</i> matrix parameter to define non-zero matrix entries. Each non-zero entry is given by an input channel, output channel, and weight for that channel.
+</dd><dt>3 Common Average Reference (CAR)
+</dt><dd>The common average reference spatial filter calculates the mean of every channel, and subtracts this value from selected output channels. This filter's output channels may be defined by the <i>SpatialFilterCAROutput</i> parameter.
 </dd></dl>
 <a name="SpatialFilter"></a><h3>SpatialFilter</h3>
 <a name="Full_Matrix_Filter_Type"></a><h4>Full Matrix Filter Type</h4>
@@ -104,7 +98,7 @@ Also, specifying <i>row labels</i> to identify output channels allows you to use
 </p><p><code>10 12 6 7</code>
 </p><p>Rather than numbers, channel names may be specified as defined in the <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">ChannelNames</a> parameter:
 </p><p><code>C3 C4 CP3 CP4 Cz</code>
-</p><p>It is important to note that <b>all</b> channels passed to the spatial filter (typically defined in the TransmitChList) are used in the CAR calculation, but only a subset of these channels are actually output and passed to the next step in the signal processing chain.
+</p><p>It is important to note that <b>all</b> channels passed to the spatial filter (typically defined in the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters">TransmitChList parameter</a>) are used in the CAR calculation, but only a subset of these channels are actually output and passed to the next step in the signal processing chain.
 </p><p>If this parameter is left blank, then all input channels are passed to the output, and the number of input channels equals the number of output channels.
 </p>
 <a name="States"></a><h2>States</h2>
@@ -239,20 +233,27 @@ In your spatial filter, you will want to re-reference all channels against "link
 </th><td> F4 </td><td> C4 </td><td> -.25
 </td></tr></table>
 <a name="Performance_Notes"></a><h2>Performance Notes</h2>
-<p>Each spatial filter uses a different algorithm to compute the linear transformation, and can therefore have implications on CPU load and performance. 
+<p>Each spatial filter type uses a different algorithm to compute the linear transformation, and can therefore have implications on CPU load and performance. In the following, <span class="texhtml"><i>N</i></span> denotes the filter's number of input channels, and <img class='tex' src="../images/math/0/f/4/0f40d29daf45fd641ba8d2ddfdd493aa.png" alt="M \leq N" /> denotes its number of output channels.
 </p>
 <a name="None"></a><h3>None</h3>
-<p>In general, use the "none" option has the best performance, since no computations are actually done. 
+<p>No computations are actually done, but input data is being copied into the filter's output, resulting in a complexity <span class="texhtml"><i>O</i>(<i>N</i>)</span>.
 </p>
 <a name="CAR"></a><h3>CAR</h3>
-<p>The common-average reference has the next best performance in most circumstances. It is possible to create a CAR using either the full-matrix or sparse matrix options; however, the CAR method only calculates the mean value once per sample, and subtracts it only from the selected output channels. In order to implement a CAR in a full-matrix, the mean must be recalculated for <i>every</i> output channel, which is not as efficient, particularly for high channel count systems.
+<p>The common-average reference has a complexity of <span class="texhtml"><i>O</i>(<i>N</i> + <i>M</i>)</span>, providing the next best performance in most circumstances. It is possible to create a CAR using either the full-matrix or sparse matrix options; however, the CAR method only calculates the mean value once per sample, and subtracts it only from the selected output channels. In order to implement a CAR in a full-matrix, the mean must be recalculated for <i>every</i> output channel, which is not as efficient, particularly for high channel count systems.
 </p>
 <a name="Sparse_Matrix_2"></a><h3>Sparse Matrix</h3>
-<p>The sparse matrix method performance is determined completely by the number of elements (rows) in the SpatialFilter matrix. In the simplest case, a single channel is multiplied by the weight and assigned to the specified output channel; this would take far less CPU time than the CAR method, and possibly the "none" option as well. In the most complicated case, N*N rows would be created, where N is the number of input channels, and performance would be close to that of an NxN spatial filter matrix. (Actually, theoretically, more than N*N rows can be used, but this is unnecessary because some input/output combinations would overlap, which could be combined into a single weight).
+<p>The sparse matrix method performance is determined completely by the number of elements (rows) in the <i>SpatialFilter</i> matrix. In the best case, a single channel is multiplied by the weight and assigned to the specified output channel; this would take far less CPU time than the CAR method, and possibly the "none" option as well. 
+</p><p>In a realistic scenario, all <span class="texhtml"><i>N</i></span> input channels will be used to calculate <img class='tex' src="../images/math/0/f/4/0f40d29daf45fd641ba8d2ddfdd493aa.png" alt="M \leq N" /> output channels; thus, complexity is between <span class="texhtml"><i>O</i>(<i>N</i>)</span> and <span class="texhtml"><i>O</i>(<i>N</i> * <i>M</i>)</span>, with <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span> in the worst case.
+</p><p>Sparse matrix worst-case performance will be close to that of an <img class='tex' src="../images/math/3/9/5/395a9af17f8642e02a32af8637542947.png" alt="N\times N" /> "full" spatial filter matrix. Thus, for spatial filter configurations that depend on electrode/sensor locations such as Laplacian filtering, filter definition in terms of a sparse matrix using <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel labels</a> appears most advantageous.
 </p>
 <a name="Full_Matrix"></a><h3>Full Matrix</h3>
-<p>In general, the full matrix is going to have the highest CPU load of any spatial filtering method, although there are certainly circumstances in which performance could be better. That being said, this method has been used in BCI2000 since its inception, and is the simplest method of calculating complicated transformations, such as a Laplacian spatial filter. However, if the other methods of spatial filtering can be used, they should be in most cases. For example, if the identity matrix is specified (an NxN matrix with ones along the diagonal), then for every output channel, every input channel is multiplied by 0 or 1, utilizing CPU time unnecessarily.
+<p>Full matrix representation is the most general way to specify a spatial filter, and recommended for situations not allowed for by the remaining spatial filter types.
+Compared to those, it is associated with a number of disadvantages:
 </p>
+<ul><li>Complexity is <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
+</li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be assumed, and all output labels must be specified manually.
+</li><li>The filter's specification depends on the order of input channels, which makes it interdependent with the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters"><i>TransmitChList</i> parameter</a>.
+</li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>, <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">User Reference:DataIOFilter#ChannelNames</a>
 </p>

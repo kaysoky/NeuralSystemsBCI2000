@@ -53,7 +53,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </td></tr></table>
 <a name="Version_Management"></a><h2>Version Management</h2>
 <p>The BCI2000 source code is managed with the help of <a href="http://subversion.tigris.org/" class='external text' title="http://subversion.tigris.org/" rel="nofollow">Subversion</a>, an open-source cross-platform versioning tool widely used in various kinds of projects.
-</p><p>Subversion (SVN) uses the HTTP-based <a href="http://en.wikipedia.org/wiki/WebDAV" class='external text' title="http://en.wikipedia.org/wiki/WebDAV" rel="nofollow">WebDAV</a> protocol, so even web browsers may be used as clients, although a true SVN client software is required to access all features of the versioning system.
+</p><p>Subversion (SVN) uses the HTTP-based <a href="http://en.wikipedia.org/wiki/WebDAV" class='external text' title="http://en.wikipedia.org/wiki/WebDAV" rel="nofollow">WebDAV</a> protocol, so even web browsers may be used to browse directories and files. Still, a true SVN client software is required to access all features of the versioning system.
 </p>
 <a name="Browsing_the_Source_Code_Repository_Online"></a><h2>Browsing the Source Code Repository Online</h2>
 <p>Online viewing, and comparison of different versions of all source code files, is possible with a web browser (<a href="http://www.bci2000.org/tracproj/browser" class='external free' title="http://www.bci2000.org/tracproj/browser" rel="nofollow">http://www.bci2000.org/tracproj/browser</a>).
@@ -119,7 +119,7 @@ In all makefiles or project files that are relevant to the binary distribution, 
 <p>Source code and project files from the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions</a> section.
 Paralleling organization of the <tt>core</tt> directory, there are subdirectories for application, signal processing, and source modules, and for tools. An additional directory, <tt>AppConnector</tt>, contains programs connecting via the <a href="Technical_Reference%253AApp_Connector.html" title="Technical Reference:App Connector">App Connector</a> interface.
 </p><p>Each project from the contrib directory should have its own documentation page accessible through the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions:Contents</a> hierarchy.
-</p><p>By default, contrib projects are excluded from the make process. For information about how to compile and use a piece of software located in the contrib directory, see the <a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions" title="Programming Howto:Building BCI2000">Building BCI2000 Howto</a> page.
+</p><p>By default, contrib projects are excluded from the build process. For information about how to compile and use a piece of software located in the contrib directory, see the <a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions" title="Programming Howto:Building BCI2000">Building BCI2000 Howto</a> page.
 </p>
 <a name="src.2Fcore"></a><h3><tt>src/core</tt></h3>
 <p>Source code and project files for the BCI2000 core distribution. Below this directory, there are subdirectories for the <a href="User_Reference%253AOperator_Module.html" title="User Reference:Operator Module">Operator module</a>, <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">core modules</a>, and tools.
@@ -162,16 +162,16 @@ Paralleling organization of the <tt>core</tt> directory, there are subdirectorie
 </dd></dl>
 <ul><li><b>utils</b>
 </li></ul>
-<dl><dd>miscellaneous utility functions.
+<dl><dd>contains miscellaneous utility classes and functions.
 </dd></dl>
 <a name="src.2Fextlib"></a><h3><tt>src/extlib</tt></h3>
 <p>Unlike the <i>shared</i> directory, this directory contains libraries, or interfaces to libraries, that are used by BCI2000 but not part of BCI2000 itself.
-Typically, the code in <i>extlib</i> is independent of BCI2000, and in most cases external to the BCI2000 project itself, e.g. provided by library vendors.
+Typically, the code in <i>extlib</i> is independent of BCI2000, and in most cases external to the BCI2000 project, e.g. provided by library vendors.
 </p>
 <a name="src.2Fdoc"></a><h3><tt>src/doc</tt></h3>
-<p>Contents of this directory are related to the production of documentation, not documentation itself.
-Its <tt>figures</tt> subdirectory holds original vector format versions of PNG files uploaded into the wiki, and independent copies of the PNG files themselves.
-<tt>wiki2help</tt> contains software related to the conversion of Wiki pages into the HTML help files from the BCI2000 distribution's <tt>doc/htmlhelp</tt> directory.
+<p>Contents of this directory are related to the <i>production</i> of documentation, they do not represent documentation itself.
+Its <tt>figures</tt> subdirectory holds original vector format versions of PNG files uploaded into the wiki, and additional versioned copies of those PNG files.
+<tt>wiki2help</tt> contains maintenance software related to the conversion of Wiki pages into the HTML help files located in the BCI2000 distribution's <tt>doc/htmlhelp</tt> directory.
 </p>
 <a name="Coding_Guidelines"></a><h2>Coding Guidelines</h2>
 <p>We maintain a loose set of guidelines/rules that is aimed at readability and maintenance efficiency.

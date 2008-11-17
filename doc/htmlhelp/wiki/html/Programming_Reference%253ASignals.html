@@ -70,7 +70,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Reference%253ASignals.html#Properties_2"><span class="tocnumber">2.4</span> <span class="toctext">Properties</span></a>
 <ul>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#int_Channels.2C_Elements_.28rw.29"><span class="tocnumber">2.4.1</span> <span class="toctext">int Channels, Elements (rw)</span></a></li>
-<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#SignalType_Type_.28rw.29.3D"><span class="tocnumber">2.4.2</span> <span class="toctext">SignalType Type (rw)=</span></a></li>
+<li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#SignalType_Type_.28rw.29"><span class="tocnumber">2.4.2</span> <span class="toctext">SignalType Type (rw)</span></a></li>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#string_Name_.28rw.29"><span class="tocnumber">2.4.3</span> <span class="toctext">string Name (rw)</span></a></li>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#LabelIndex_ChannelLabels.2C_ElementLabels_.28rw.29"><span class="tocnumber">2.4.4</span> <span class="toctext">LabelIndex ChannelLabels, ElementLabels (rw)</span></a></li>
 <li class='toclevel-3'><a href="Programming_Reference%253ASignals.html#PhysicalUnit_ChannelUnit.2C_ElementUnit.2C_ValueUnit_.28rw.29"><span class="tocnumber">2.4.5</span> <span class="toctext">PhysicalUnit ChannelUnit, ElementUnit, ValueUnit (rw)</span></a></li>
@@ -87,7 +87,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Synopsis"></a><h3>Synopsis</h3>
 <p>Many classes in both Data Acquisition and Signal Processing work on
-signals, i.e., continuously flowing data organized in channels and samples.
+signals, i.e., continuously flowing data organized into channels and samples.
 The <tt>GenericSignal</tt> class contains floating point data
 organized as a matrix of channels and "elements" (a generalized
 notion
@@ -115,7 +115,7 @@ The signal type argument may be one of
 <p>Read/write from/to <tt>std::iostream</tt> streams as a <a href="Technical_Reference%253ABCI2000_Messages.html#Brain_Signal_Format" title="Technical Reference:BCI2000 Messages">BCI2000 signal message</a>.
 </p>
 <a name="WriteValueBinary.28ostream.2C_channel.2C_element.29.2FReadValueBinary.28istream.2C_channel.2C_element.29"></a><h4>WriteValueBinary(ostream, channel, element)/ReadValueBinary(istream, channel, element)</h4>
-<p>Binary I/O of individual values, depending on the signal's type. These functions are provided for use in <a href="Programming_Reference%253AGenericFileWriter_Class.html" title="Programming Reference:GenericFileWriter Class">FileWriter</a> and input components.
+<p>Binary I/O of individual values, depending on the signal's type. These functions are provided for use in <a href="Programming_Reference%253AGenericFileWriter_Class.html" title="Programming Reference:GenericFileWriter Class">FileWriter</a> components, and components that read data from input files.
 </p>
 <a name="Properties"></a><h3>Properties</h3>
 <a name="SignalProperties_Properties_.28rw.29"></a><h4>SignalProperties Properties (rw)</h4>
@@ -131,13 +131,11 @@ The signal type argument may be one of
 <p>The signal type.
 </p>
 <a name="number_Value.28Channel.2C_Element.29_.28rw.29"></a><h4>number Value(Channel, Element) (rw)</h4>
-<p>The signal's value at the specified channel/element combination. Access to signal values is also possible (and recommended) using bracket notation on the signal object itself:
+<p>The signal's value at the specified channel/element combination. Access to signal values is also possible (and recommended) using parentheses notation on the signal object itself:
 </p>
 <pre>GenericSignal mySignal( 5, 4 );
 mySignal( 2, 3 ) = 4.5;
 </pre>
-<p><br />
-</p>
 <a name="SignalProperties_Class"></a><h2>SignalProperties Class</h2>
 <a name="Location_2"></a><h3>Location</h3>
 <p><tt>src/shared/types</tt>
@@ -183,7 +181,7 @@ The signal type argument may be one of
 <a name="int_Channels.2C_Elements_.28rw.29"></a><h4>int Channels, Elements (rw)</h4>
 <p>The number of channels and elements.
 </p>
-<a name="SignalType_Type_.28rw.29.3D"></a><h4>SignalType Type (rw)=</h4>
+<a name="SignalType_Type_.28rw.29"></a><h4>SignalType Type (rw)</h4>
 <p>The signal's numeric type.
 </p>
 <a name="string_Name_.28rw.29"></a><h4>string Name (rw)</h4>

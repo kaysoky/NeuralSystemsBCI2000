@@ -58,9 +58,10 @@ The computed spectra may be displayed in visualization windows.
 <a name="Obtaining_FFTW3"></a><h3>Obtaining FFTW3</h3>
 <p>The FFTFilter requires the FFTW3 library which, for licensing reasons, you need to <b>obtain separately</b> from BCI2000. 
 </p><p>The FFTFilter uses the <a href="http://www.fftw.org/" class='external text' title="http://www.fftw.org/" rel="nofollow">FFTW3</a> library to do the actual FFT computation, which is released under the <a href="http://www.gnu.org/copyleft/gpl.html" class='external text' title="http://www.gnu.org/copyleft/gpl.html" rel="nofollow">GNU public license (GPL)</a>.
-This makes it impossible for us to distribute the FFTW3 library along with BCI2000. Instead, please download the latest version of fftw3.dll it from <a href="http://www.fftw.org/install/windows.html" class='external free' title="http://www.fftw.org/install/windows.html" rel="nofollow">http://www.fftw.org/install/windows.html</a>.
-</p><p>In order to make the FFTW library available to BCI2000, put FFTW3.DLL into your BCI2000 installation's <tt>prog</tt> directory.
-When using the command line version of the FFTFilter, put a copy of FFTW3.DLL into your BCI2000 installation's <tt>tools/cmdline</tt> directory.
+This makes it impossible for us to distribute the FFTW3 library along with BCI2000. Instead, please download the windows version of FFTW 3.01 from <a href="http://www.fftw.org/install/windows.html" class='external free' title="http://www.fftw.org/install/windows.html" rel="nofollow">http://www.fftw.org/install/windows.html</a>.
+</p><p>In order to make the FFTW library available to BCI2000, put <tt>FFTW3.DLL</tt> into your BCI2000 installation's <tt>prog</tt> directory.
+When using the command line version of the FFTFilter, put a copy of <tt>FFTW3.DLL</tt> into your BCI2000 installation's <tt>tools/cmdline</tt> directory.
+</p><p>For recent Windows builds of FFTW 3, the naming scheme has been changed. If you would like to use such a build with BCI2000, put a copy of the file <tt>libfftw3-3.dll</tt> into <tt>BCI2000/prog</tt> and rename it to <tt>FFTW3.DLL</tt> (untested so far).
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="FFTOutputSignal"></a><h3>FFTOutputSignal</h3>
@@ -81,6 +82,9 @@ Possible values are
 500ms
 5
 </pre>
+<p>The FFT will be computed once per data block. If the length of the input data window exceeds that of a data block, FFT windows will overlap. 
+If the data window is shorter than a data block, only the most recent samples will enter into the FFT.
+</p>
 <a name="FFTWindow"></a><h3>FFTWindow</h3>
 <p>Selects the type of <a href="http://en.wikipedia.org/wiki/Window_function" class='external text' title="http://en.wikipedia.org/wiki/Window_function" rel="nofollow">sidelobe suppression window</a>. Possible values are
 </p>
@@ -89,7 +93,7 @@ Possible values are
 </li><li>3 for a Blackman window.
 </li></ul>
 <a name="VisualizeFFT"></a><h3>VisualizeFFT</h3>
-<p>A nonzero value selects visualization of the FFT-computed power spectrum. Independently of the FFTOutputSignal parameter value, it is always the power spectrum that is visualized.
+<p>A nonzero value selects visualization of the FFT-computed power spectrum. Independently of the FFTOutputSignal parameter's value, it is always the power spectrum that is visualized.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.

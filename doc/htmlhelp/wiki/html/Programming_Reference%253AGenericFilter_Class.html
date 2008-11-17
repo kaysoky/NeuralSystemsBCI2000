@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:GenericFilter Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:GenericFilter Class,BCI2000 Glossary,Programming Reference:GenericVisualization Class,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation,User Reference:Expression Syntax" />
+<meta name="keywords" content="Programming Reference:GenericFilter Class,BCI2000 Glossary,Programming Reference:Error Handling,Programming Reference:GenericVisualization Class,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation,User Reference:Expression Syntax" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -96,7 +96,7 @@ versions of some of these member functions:
 <p>For successful filter instantiation at runtime, the strings must also be valid <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter</a> and <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">state definitions</a>.
 </p>
 <a name="Preflight"></a><h3>Preflight</h3>
-<p>The <tt>Preflight</tt> function checks whether the preconditions for successful operation are met. This function is called whenever parameter values are re- applied, i.e., whenever the user presses "Set Config", "Start", or "Resume" in the operator window. If <tt>Preflight</tt> does not report an error via <tt>bcierr</tt>, this counts as a statement that <tt>Initialize</tt> and <tt>Process</tt> will work properly with the current parameters. The first argument to <tt>Preflight</tt> will inform you about what kind of input signal your filter is going to receive, and your filter is expected to report the properties of its output signal via the second parameter:
+<p>The <tt>Preflight</tt> function checks whether the preconditions for successful operation are met. This function is called whenever parameter values are re- applied, i.e., whenever the user presses "Set Config", "Start", or "Resume" in the operator window. If <tt>Preflight</tt> does not report an error, this counts as a statement that <tt>Initialize</tt> and <tt>Process</tt> will work properly with the current parameters. The first argument to <tt>Preflight</tt> will inform you about what kind of input signal your filter is going to receive, and your filter is expected to report the properties of its output signal via the second parameter:
 </p>
 <pre>
  void MyFilter::Preflight( const SignalProperties&amp; Input,
@@ -104,10 +104,10 @@ versions of some of these member functions:
  {
    PreflightCondition( Parameter( &quot;MyOtherParam&quot; ) &gt; 0.0 );
    PreflightCondition( Input.Channels() &gt; 0 );
-   PreflightCondition( Output.Elements( 0 ) &gt; 0 );
    Output = Input;
  } </pre>
-<p>Note that the <tt>const</tt> keyword following the function argument list forbids altering any data member of your filter object. This avoids diffusion of initialization code from <tt>Initialize</tt> into <tt>Preflight</tt>. If you have your own sub-objects instantiated and maintained by your filter, you should provide them with their own <tt>Preflight() const</tt> member functions, and call these from your filter's <tt>Preflight</tt>. 
+<p>Note that the <tt>const</tt> keyword following the function argument list forbids altering any data member of your filter object. This avoids diffusion of initialization code from <tt>Initialize</tt> into <tt>Preflight</tt>. If you have your own sub-objects instantiated and maintained by your filter, you should provide them with their own <tt>Preflight() const</tt> member functions, and call these from your filter's <tt>Preflight</tt>.
+</p><p>In the same way as other BCI2000 code does, the <tt>Preflight()</tt> function reports errors by writing descriptive text into the <a href="Programming_Reference%253AError_Handling.html#Reporting_Errors" title="Programming Reference:Error Handling"><tt>bcierr</tt> output stream</a>.
 </p>
 <a name="Initialize"></a><h3>Initialize</h3>
 <p><tt>Initialize</tt> is called after a successful <tt>Preflight</tt>. Thus, it may safely omit all checks related to parameter consistency. In <tt>Initialize</tt>, your filter's data members are set to the values implied by the user's choices, or to the initial values required for the filter's operation:
@@ -121,7 +121,7 @@ versions of some of these member functions:
    mCount = 0;
  } </pre>
 <a name="Process"></a><h3>Process</h3>
-<p>The <tt>Process</tt> function is called once for each block of EEG data. It receives an input in its first argument, and sets the output signal to values resulting from the filter operation. In the current BCI2000 implementation, there is a single chain of filters; one filter's output signal is the next filter's input. A filter which does not perform any modification to the signal (e.g., a statistics filter) needs to copy its input signal into the output signal, as in the example:
+<p>The <tt>Process</tt> function is called once for each block of EEG data. It receives an input in its first argument, and sets its output signal to values resulting from filter operation. In the current BCI2000 implementation, there is a single chain of filters--one filter's output signal is the next filter's input. A filter which does not perform any modification to the signal (e.g., a statistics filter) needs to copy its input signal into the output signal, as in the example:
 </p>
 <pre>
  void MyFilter::Process( const GenericSignal&amp; Input,

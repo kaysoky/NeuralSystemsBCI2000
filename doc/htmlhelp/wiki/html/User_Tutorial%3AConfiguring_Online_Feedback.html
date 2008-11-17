@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Configuring Online Feedback - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Configuring Online Feedback,User Reference:LinearClassifier,User Reference:SpatialFilter,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Performing a Mu Rhythm Feedback Session" />
+<meta name="keywords" content="User Tutorial:Configuring Online Feedback,User Reference:LinearClassifier,User Tutorial:Analyzing the Initial Mu Rhythm Session,User Tutorial:EEG Measurement Setup,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Performing a Mu Rhythm Feedback Session" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,18 +30,14 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Configuring Online Feedback</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>This tutorial step assumes that you have <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">obtained Mu rhythm parameters</a> in an initial session.
+<h1 class="pagetitle">Configuring Online Feedback</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>This tutorial step assumes that you have performed and <a href="User_Tutorial%253AAnalyzing_the_Initial_Mu_Rhythm_Session.html" title="User Tutorial:Analyzing the Initial Mu Rhythm Session">analyzed an initial session</a>.
 Now you are going to create a subject-specific parameter configuration for on-line feedback.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Starting_up_BCI2000"><span class="tocnumber">1</span> <span class="toctext">Starting up BCI2000</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Spatial_Filtering"><span class="tocnumber">2</span> <span class="toctext">Spatial Filtering</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Subject-Specific_Parameters"><span class="tocnumber">3</span> <span class="toctext">Subject-Specific Parameters</span></a>
-<ul>
-<li class='toclevel-2'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Configuring_the_Classifier"><span class="tocnumber">3.1</span> <span class="toctext">Configuring the Classifier</span></a></li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Subject-Specific_Parameters"><span class="tocnumber">2</span> <span class="toctext">Subject-Specific Parameters</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Configuring_the_Classifier"><span class="tocnumber">3</span> <span class="toctext">Configuring the Classifier</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Next_Step"><span class="tocnumber">4</span> <span class="toctext">Next Step</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
@@ -49,35 +45,37 @@ Now you are going to create a subject-specific parameter configuration for on-li
 <a name="Starting_up_BCI2000"></a><h2>Starting up BCI2000</h2>
 <p>Start BCI2000 using the appropriate batch file at <tt>batch/CursorTask_&lt;YourAmplifier&gt;.bat</tt>. You might consider creating a link to this file on the desktop.
 </p>
-<a name="Spatial_Filtering"></a><h2>Spatial Filtering</h2>
-<p>As a result of the initial session, you have some idea of the signal topography, and spatial filtering that extracts the signal best.
-In this tutorial, we use <i>Common Average Reference (CAR)</i> filtering because it gives generally good results, and has the advantage of being independent of the montage used. Also, this method is independent of subject specific parameters, so you will not need to configure it individually.
-</p>
 <a name="Subject-Specific_Parameters"></a><h2>Subject-Specific Parameters</h2>
-<p>In the next step, we construct a full parameter file for the subject:
+<p>Now, we will construct a full parameter file that is specific to that subject:
 </p>
-<ul><li>In the configuration window, click <i>Load Parameters</i> to load <tt>parms/mu_tutorial/MuFeedback.prm</tt>.
-</li><li>Additionally, load your amplifier configuration from <tt>parms/fragments/amplifiers</tt>.
+<ul><li>In the configuration window, click "Load Parameters", and load the system-specific parameter file <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Inspecting_EEG_Signals" title="User Tutorial:EEG Measurement Setup">saved previously</a> at <tt>parms/fragments/&lt;YourSystem&gt;.prm</tt>.
+</li><li>Again, click "Load Parameters" to load <tt>parms/mu_tutorial/MuFeedback.prm</tt>.
+</li><li>When you have a separate monitor for experimenter and subject, load the parameter file at <tt>parms/fragments/stdlib/DualMonitor.prm</tt>.
+<ul><li>In your system's display properties configuration, make sure that the subject's monitor is configured to be located to the right of the main monitor.
+</li><li>Make sure the <i>WindowLeft</i> parameter matches the main monitor's actual pixel width.
+</li><li>You may need to adapt <i>WindowTop</i>, <i>WindowWidth</i>, and <i>WindowHeight</i> parameters as well; click "Set Config" to try the effect of your changes.
+</li></ul>
 </li><li>Go to the <i>Storage</i> tab, and enter the subject's name or ID into the <i>SubjectName</i> parameter.
 </li><li>Into the <i>SubjectSession</i> parameter, enter <i>002</i>.
 </li></ul>
-<a name="Configuring_the_Classifier"></a><h3>Configuring the Classifier</h3>
-<p>Subject-specific electrode location and Mu rhythm frequency are part of the classifier's configuration.
-They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> tab; there, click the <i>Edit Matrix</i> button associated with the <i>Classifier</i> parameter.
+<a name="Configuring_the_Classifier"></a><h2>Configuring the Classifier</h2>
+<p>Subject-specific electrode location and mu rhythm frequency are part of the classifier's configuration.
+They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> tab.
 </p>
-<ol><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1 (or the number of features that you wish to use); then, click <i>Set new matrix size</i> to apply your changes.
-</li><li>In the first column (of the first row), labeled <i>input channel</i>, enter the location of the feedback electrode, e.g. <tt>CP3</tt>. If you did not specify electrode locations when configuring the spatial filter, enter the channel number associated with the feedback electrode.
+<ul><li>There, click the <i>Edit Matrix</i> button associated with the <i>Classifier</i> parameter.
+</li><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1 (or the number of features that you wish to use); then, click <i>Set new matrix size</i> to apply your changes.
+</li><li>In the first column (of the first row), labeled <i>input channel</i>, enter the location of the desired location, e.g. <tt>CP3</tt>. If you did not specify electrode locations when configuring your system, enter the channel number associated with the feedback electrode.
 </li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <i>Hz</i>, as in <tt>12Hz</tt>.
 </li><li>In the third column, enter the value 2 corresponding to the control channel for vertical control of the cursor.
 </li><li>In the fourth column, enter 1 as the weight.
-</li><li>If you wish to use more than one feature, repeat steps 2-5 for each additional feature moving down a row each time (i.e., enter the 2nd feature on the 2nd row, etc...).
+</li><li>Repeat steps 2-5 for each additional feature moving down a row each time (i.e., enter the 2nd feature on the 2nd row, etc...).
 </li><li>Finally, save your configuration to <tt>parms/subjects/mu_feedback/&lt;Subject&gt;002.prm</tt>, or whereever you find appropriate.
-</li></ol>
+</li></ul>
 <a name="Next_Step"></a><h2>Next Step</h2>
 <p>In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using the configuration created in the present step.
 </p>
 <a name="See_also"></a><h2>See also</h2>
-<p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">User Reference:SpatialFilter</a>, <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
+<p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
 </p>
 <div class="printfooter">
 </div>

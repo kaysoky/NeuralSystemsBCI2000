@@ -34,7 +34,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#Online_Algorithm_Verification"><span class="tocnumber">1</span> <span class="toctext">Online Algorithm Verification</span></a></li>
 <li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#An_Example_Algorithm_in_MATLAB"><span class="tocnumber">2</span> <span class="toctext">An Example Algorithm in MATLAB</span></a></li>
-<li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#Translating_the_existing_MATLAB_code_into_BCI2000_functions"><span class="tocnumber">3</span> <span class="toctext">Translating the existing MATLAB code into BCI2000 functions</span></a>
+<li class='toclevel-1'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#Transforming_the_existing_MATLAB_code_into_BCI2000_event_handlers"><span class="tocnumber">3</span> <span class="toctext">Transforming the existing MATLAB code into BCI2000 event handlers</span></a>
 <ul>
 <li class='toclevel-2'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#Process"><span class="tocnumber">3.1</span> <span class="toctext">Process</span></a></li>
 <li class='toclevel-2'><a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html#Initialize"><span class="tocnumber">3.2</span> <span class="toctext">Initialize</span></a></li>
@@ -109,7 +109,7 @@ delay between input and output data.)
 this may be done easily by pre-multiplying the data with a spatial filter matrix
 if desired.
 </p>
-<a name="Translating_the_existing_MATLAB_code_into_BCI2000_functions"></a><h2>Translating the existing MATLAB code into BCI2000 functions</h2>
+<a name="Transforming_the_existing_MATLAB_code_into_BCI2000_event_handlers"></a><h2>Transforming the existing MATLAB code into BCI2000 event handlers</h2>
 <p>For use with BCI2000, the signal processing code needs to be cast into a form
 that suits the BCI2000 filter interface.
 In this event-based model, portions of code are called at certain times to configure

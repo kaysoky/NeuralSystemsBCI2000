@@ -44,7 +44,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Preparation"></a><h2>Preparation</h2>
 <p>If you quit BCI2000 after the <a href="User_Tutorial%253AConfiguring_P300_Online_Classification.html" title="User Tutorial:Configuring P300 Online Classification">previous step,</a> start it using the appropriate batch file at <tt>batch/P3Speller_&lt;YourAmplifier&gt;.bat</tt>, or the link to that file which you created on the desktop.
 </p><p>Then, load the configuration file that you saved in the previous step.
-</p><p>Click <i>Set Config</i> to view the EEG signal, and <a href="User_Tutorial%253AEEG_Measurement_Setup.html" title="User Tutorial:EEG Measurement Setup">prepare the subject for EEG recording</a> as you did for the <a href="User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining P300 Parameters in an Initial Session">initial session</a>.
+</p><p>Click "Set Config" to view the EEG signal, and <a href="User_Tutorial%253AEEG_Measurement_Setup.html" title="User Tutorial:EEG Measurement Setup">prepare the subject for EEG recording</a> as you did for the <a href="User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining P300 Parameters in an Initial Session">initial session</a>.
+<br /><i>Note:</i> When your latency value does not refer to an exact sample position, a warning message will be displayed once you click "SetConfig". You may safely ignore that warning message for now.
 </p>
 <a name="Instructions_to_the_Subject"></a><h2>Instructions to the Subject</h2>
 <p>On the subject's screen, a speller matrix is presented as already familiar from the initial session.
@@ -70,11 +71,12 @@ experimenter must carefully monitor the EEG and alert the subject in the case
 he/she has forgotten some of the instructions.
 When the experimenter is sure that his/her instructions have been well
 understood, the recording session may start.
-</p><p>Click the <i>Start</i> button to start the spelling experiment.
 </p>
+<ul><li>Click the "Start" button to start the spelling experiment.
+</li></ul>
 <a name="Multiple_Sessions"></a><h2>Multiple Sessions</h2>
 <p>Once a run has ended, BCI2000 goes into suspended state.
-Further runs will be added to the session when you click <i>Resume</i>.
+Further runs will be added to the session when you click "Resume".
 </p><p>When starting the next session, don't forget to increment the <i>SessionNumber</i> parameter on the <i>Storage</i> tab. Otherwise, new runs will be added to the previous session's directory. Still, as a safety net, BCI2000 will never overwrite existing data files but increment the largest run number that exists in a session directory. Moreover, it documents date and time in the <i>StorageTime</i> parameter. This allows to later associate data files with multiple sessions by their time and date, even if the <i>SessionNumber</i> parameter has not been increased.
 </p>
 <a name="Finished"></a><h2>Finished</h2>

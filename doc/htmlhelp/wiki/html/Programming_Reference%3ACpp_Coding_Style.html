@@ -66,7 +66,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 </li></ul>
 <a name="Name_prefixes"></a><h3> Name prefixes </h3>
-<p>Prefixes should carry information about the scope and usage of a variable but not its type.
+<p>Prefixes should carry information about the <i>scope and usage</i> of a variable but <i>not its type</i>.
+</p>
+<ul><li>The rationale behind representing <i>scope</i> is to avoid accidental hiding of names from a wider scope by names with a narrower scope, which may lead to difficult-to-detect bugs.
+</li><li>Representing <i>usage</i> makes it easier to maintain an overview over householding tasks, such as calling <tt>delete</tt> on pointers whose objects are owned by the code under review.
+</li><li><i>Not</i> representing <i>type</i> avoids name and type going out of sync--a variable's type is more likely to change than its scope and usage, and unreliable type information is less desirable than having no type information at all.
+</li></ul>
+<p>Suggested prefixes are
 </p>
 <ul><li> <b>m</b> for class data members,
 </li><li> <b>s</b> for static class members and static variables,
@@ -80,18 +86,22 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 <a name="Variable_Declaration"></a><h2>Variable Declaration</h2>
 <ul><li> Always use the narrowest possible scope for a name to avoid side effects.
-</li><li> Always initialize variables (at declaration resp. constructor).
+</li><li> Always initialize variables of elementary type at declaration resp. constructor to avoid reading from uninitialized memory. Examples of elementary types are <tt>int</tt>, <tt>float</tt>, and <tt>const char*</tt>.
 </li></ul>
 <a name="Memory_Allocation"></a><h2>Memory Allocation</h2>
 <ul><li> Allocate objects from the <b>stack</b> rather than the <b>heap</b> unless there is a good reason to use the <b>new</b> operator. This avoids memory leaks.
 </li><li> Use STL containers rather than allocating arrays with <b>new[]</b>. This eliminates a number of possible errors (initialization, allocation, deallocation).
 </li></ul>
 <a name="Pointers_and_References"></a><h2>Pointers and References</h2>
-<ul><li> Use references rather than pointers wherever possible.
-</li><li> When using pointers, treat the NULL case gracefully.
+<ul><li> When using pointers, treat the NULL case gracefully.
+</li><li> Use references rather than pointers wherever possible. When used in place of a pointer, a reference gives a number of hints about the code in question: 
+<ul><li>unlike a pointer, a reference always refers to a valid object,
+</li><li>the referred-to object will stay the same during the reference's lifetime,
+</li><li>no code is supposed to delete the object a reference refers to.
+</li></ul>
 </li></ul>
 <a name="Control_Flow"></a><h2>Control Flow</h2>
-<ul><li> Avoid <b>goto</b>, <b>break</b> outside <b>switch</b>-<b>case</b> blocks, and multiple <b>return</b> statements.
+<ul><li> Avoid <b>goto</b>, <b>break</b> outside <b>switch</b>-<b>case</b> blocks, and avoid multiple <b>return</b> statements.
 </li><li> Multiple <b>return</b> statements are OK when they provide a readable alternative to deeply nested conditions.
 </li></ul>
 <a name="Example_Function"></a><h2> Example Function </h2>

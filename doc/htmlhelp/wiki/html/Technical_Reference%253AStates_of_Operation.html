@@ -4,7 +4,7 @@
 <head>
 <title>Technical Reference:States of Operation - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Technical Reference:States of Operation,Technical Reference:BCI2000 Messages,Technical Reference:State Definition" />
+<meta name="keywords" content="Technical Reference:States of Operation,BCI2000 Glossary,Technical Reference:BCI2000 Messages" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -31,7 +31,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 
 <div id='article'>
 <h1 class="pagetitle">States of Operation</h1><p class="subtitle">Technical Reference</p><hr class="sep" /><p>This page describes the states of operation that apply to a BCI2000 system as a whole.
-These are different from the concept of <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">BCI2000 States</a> which are saved to data files on a per-data block basis.
+These are different from the concept of <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">BCI2000 state variables</a> which are saved to data files.
 </p><p>Driven by user interaction from the operator module, the system cycles through five phases of operation:
 Startup, Initialization, Suspended, Running, Termination.
 </p>
@@ -66,66 +66,50 @@ Startup, Initialization, Suspended, Running, Termination.
 </pre>
 <a name="System_Startup"></a><h2>System Startup</h2>
 <a name="Introduction"></a><h3>Introduction</h3>
-<p>Since the
-system is a
-distributed system of encapsulated modules, this procedure ensures a
-proper and
-well defined information flow at start-up.
+<p>Since the system is a distributed system of encapsulated modules, a proper and well defined information flow at start-up needs to be ensured.
 Each module publishes its requests for parameters and states to
 the Operator module, which configures those and sends them back.
-After Data Acquisition receives all parameters and states, it tries to
+Once the Signal Source module receives all parameters and states, it tries to
 connect
-to Signal Processing and -- upon successful connection -- sends a
+to Signal Processing and, upon successful connection, sends a
 positive status
 message to the Operator.
 In the same way, Signal Processing connects to the Application and the
-Application module connects to the Data Acquisition module.
+Application module connects to the Signal Source module.
 After the Operator receives status messages from all three core
 modules, the
 system is fully initialized and is triggered to start, as soon as the
 Operator
-sends the state <tt>Running</tt> with a value of 1 to the Data
-Acquisition module.
+sends the state <tt>Running</tt> with a value of 1 to the Signal Source module.
 </p>
 <a name="Startup_Sequence"></a><h3>Startup Sequence</h3>
-<p>The operator module must be started first. Since in most cases the IP
-address of
-the operator module can be more easily statically defined, its IP
-address and
-port number(s) have to be provided to the core modules.
-The operator module listens on ports 4000
-(for Source), 4001 (for Signal Processing), and 4002 (for Application)
+<p>The operator module must be started first. Its IP
+address is provided to core modules when they are executed, defaulting to <i>localhost</i> to match the most typical configuration.
+</p><p>The operator module listens on ports 4000
+(for Source), 4001 (for Signal Processing), and 4002 (for Application),
 and
 waits for the respective core module to connect. Each can connect to
 its
-assigned port on the operator module in any order. Upon start-up,
-each core
-module opens a listening socket on an arbitrary port number.
+assigned port on the operator module in any order.
+</p><p>Once connected to the operator module, each core
+module opens its own listening socket on an arbitrary available port, and creates a parameter to contain this port number. Later on, these sockets will be used to create connections between core modules.
 </p>
 <a name="Publishing_Phase"></a><h3>Publishing Phase</h3>
 <p>Upon connection, each core module sends a <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">protocol version message</a> which is then matched with the operator module's protocol version, making sure that only modules with matching protocol versions are combined. 
-Following its protocol version, each core module publishes its parameters to the
+</p><p>Following its protocol version, each core module publishes its parameters to the
 operator module as a sequence of <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">parameter messages</a>.
 After
 publishing its
 parameters, each core module publishes the states it requests as
 a sequence of <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">state messages</a>.
-At this time, the operator module ignores
-every
-field except <i>Name</i>  and <i>Length</i> , which it needs to
-construct the
-state vector.
-For this and all subsequent communication, the modules use the <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">BCI2000 messages</a>
-protocol. Following the last
+Following the last
 state, each core module sends a system command containing the string
 <tt>EndOfState</tt>.
-On receiving this command from all core modules, the operator module
+</p><p>On receiving this command from all core modules, the operator module
 processes the received parameters and states. It
 creates a
-list of all parameters and all states and creates the state vector
-(duplicate
-parameters or states are ignored), and ends
-this initial publishing phase.
+list of all parameters and all states, and creates a global state vector, ignoring all 
+fields from state messages, except <i>Name</i>  and <i>Length</i>.
 In order to maintain integrity throughout operation, no parameters or
 states
 should be added to or removed from the system beyond this point.
@@ -135,88 +119,90 @@ should be added to or removed from the system beyond this point.
 <p>At this point, the operator module
 may modify
 the value of the parameters and states (depending on the
-investigator's input or
-the parameter file). The operator module then uses the same channel on
+investigator's manual input or loading a parameter file). 
+The operator module then uses the same connections on
 which it
 received data from the core modules to send back to all core modules a
 list of
-all system-wide parameters and system-wide states (in any order).
-Since the IP
-address and port number on which the core modules listen for data from
+system-wide parameters and system-wide states, in any order.
+Since IP
+addresses and port numbers on which the core modules listen for data from
 other
-core modules are published in system parameters as described, each
+core modules are represented in system parameters as described above, each
 module now
-knows where to send its data. The connections from the core modules to
+knows where to connect to.
+Accordingly, each core module opens a client
+connection
+to the core module it must connect to, i.e., Source opens a
+connection to Signal Processing, Signal Processing to Application, and
+Application to Source.
+</p><p>The connections from core modules to
 the
-operator module remain open (all subsequent traffic will go through
+operator module remain open. All subsequent core-to-operator communication will go through
 these
-connections).
-As in the publishing phase, the Information Phase ends when a system
+connections.
+</p><p>As for the publishing phase, the Information Phase ends when a system
 command
 <tt>EndOfState</tt> is sent.
 </p>
 <a name="Preflight_Phase"></a><h3>Preflight Phase</h3>
-<p>In the preflight phase, each core module declares whether it can process data with the
-received parameters and states, and reports the properties of its output signal.
-</p><p>The operator module opens the preflight phase by sending an empty <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">signal properties message</a> to the source module.
-The source module then reports its output signal properties to the signal processing module by sending it an appropriate signal properties message.
-The signal processing module, in turn, sends its output signal properties to the application module.
-</p><p>During the preflight phase, modules indicate errors by sending descriptions
-into an error channel.
-If any errors are indicated during the preflight phase, the module will not initiate the initialization phase; the operator module will display the errors, prompting the user to fix the problems detected, and not offer the "Start" option.
+<p>In the preflight phase, each core module declares to the Operator module whether it is able to properly process data using current parameters and states.
+In addition, it reports the properties of its output signal to the core module next in the chain.
+</p><p>The Operator module opens the preflight phase by sending an empty <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">signal properties message</a> to the Source module.
+The Source module then reports its output signal properties to the Signal Processing module by sending it an appropriate signal properties message.
+The Signal Processing module, in turn, sends its output signal properties to the Application module.
+</p><p>During the preflight phase, modules indicate errors by sending <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">status messages</a> containing plain-text error descriptions.
+If any errors are found during the preflight phase, a module will not initiate its initialization phase. The operator module will display error messages received from core modules, prompting the user to fix the problems detected rather than offering a "Start" option.
 </p>
 <a name="Initialization_Phase"></a><h3>Initialization Phase</h3>
 <p>Each core module uses the information in the received parameters to
 configure and
-initialize its operation. It also opens an active (i.e., client)
-connection
-to the other core module it must connect to, i.e., Source opens a
-connection to Signal Processing, Signal Processing to Application and
-Application to Source.
-Each core module sends a <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">status message</a>
+initialize its operation.
+Then, each core module sends a <a href="Technical_Reference%253ABCI2000_Messages.html" title="Technical Reference:BCI2000 Messages">status message</a>
 to the
 operator that indicates either successful or failed initialization.
-The
+</p><p>The
 Initialization Phase ends when all core modules indicate successful
 configuration.
 </p>
 <a name="System_is_Suspended"></a><h2>System is Suspended</h2>
 <p>At the end of the Initialization Phase, the system is fully
-configured. All
-parameters and states (and positions thereof in the state vector) are
-defined.
-The system is suspended when <i>Running</i>  is 0. Any module shall
+configured. 
+All parameters, states, and state vector, are now defined and available globally.
+</p><p>The system's state is now determined by a special <i>Running</i> state variable, which is initially set to "0", indicating that the system is suspended.
+</p><p>As long as operation is suspended, any module might update system parameters and send them back to the Operator.
+Any module shall
 disregard a
-change in parameters if the system is not suspended. Data flows
+change in parameters unless the system is in suspended state.
+</p><p>While the system is suspended, data may still flow
 through the
-system and it is up to each module to decide how to process these
-data. The
-Application, for example, might give visual feedback that indicates
-that the
-system is suspended. As long as operation is suspended (i.e.,
-<i>Running</i> 
-is 0), any module might update system parameters and send them back to
-the
-Operator.
+system. 
+It is up to each module to decide how to process these
+data.
+The Application, for example, might give visual feedback that indicates
+that the system is suspended.
 </p>
 <a name="System_is_Running"></a><h2>System is Running</h2>
-<p>During system operation, the Operator module must send states only to
+<p>The system is started when the Operator module sets the special state variable
+<i>Running</i> 
+to 1 and sends it to the Source module.
+</p><p>During system operation, the Operator module may modify any state variable by sending
+state messages to the Source module.
+The Operator module must send states only to
 the Source
 module; Signal Processing and Application must disregard any state
 that the
 Operator does send to them.
-The system is started when the Operator module sets the state
-<i>Running</i> 
-to 1 and sends it to the Source module.
 </p>
 <a name="System_Termination"></a><h2>System Termination</h2>
 <p>To each of the three core modules, the operator module indicates
-system termination
+regular system termination
 by closing the connection to that module.
-</p><p>When a core module loses connection to the two other core modules it
+</p><p>Irregular system termination takes place when a core module loses connection to any of the two other core modules it
 is connected
-to, it will send an error message to the operator, and then quit.
-The operator module, in turn, will close the connections to the
+to.
+In this case, it will send an error message to the operator, and then quit.
+The operator module, in turn, will close connections to the
 remaining core
 modules.
 </p>

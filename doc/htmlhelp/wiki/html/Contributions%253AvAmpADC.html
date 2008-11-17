@@ -62,8 +62,8 @@ The <i>V-Amp</i> is an amplifier/digitizer combination from Brain Products.
 Support for this device in BCI2000 consists of a BCI2000-compatible Source Module (<i>vAmpSource.exe</i>).
 </p>
 <a name="V-Amp_Hardware"></a><h3>V-Amp Hardware</h3>
-<p>The V-Ampconsists of 16 independent 16-bit A/D converters that can sample at 
-up to 2 kHz per channel (16 channels, plus 2 auxiliary) or 20kHz per channel (4 channels). 
+<p>The V-Amp consists of 16 independent 24-bit A/D converters that can sample at 
+up to 2 kHz per channel (16 channels, plus 2 auxiliary) or 20kHz per channel (4 channels).
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>Parameters common to all source modules are described under <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>.
@@ -97,7 +97,7 @@ If you have more than one device, this list determines the order of the channels
 </p>
 <a name="SampleBlockSize"></a><h3>SampleBlockSize</h3>
 <p>Samples per channel per digitized block. 
-Together with the sampling rate, this parameter determines how often per second data are collected, processed, and feedback is updated. For example, at 600 Hz sampling and a SampleBlockSize of 20, the system (e.g., source signal display, signal processing, and stimulus presentation) would be update 30 times per second.
+Together with the sampling rate, this parameter determines how often per second data are collected, processed, and feedback is updated. For example, at 600 Hz sampling and a SampleBlockSize of 20, the system (e.g., source signal display, signal processing, and stimulus presentation) will be updated 30 times per second.
 </p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
 <p>The total number of channels across all USBamp devices.

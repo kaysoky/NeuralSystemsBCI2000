@@ -35,20 +35,18 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Technical_Reference%253ASystem_Design.html#Overview"><span class="tocnumber">1</span> <span class="toctext">Overview</span></a></li>
 <li class='toclevel-1'><a href="Technical_Reference%253ASystem_Design.html#Core-Operator_Communication"><span class="tocnumber">2</span> <span class="toctext">Core-Operator Communication</span></a>
 <ul>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Introduction"><span class="tocnumber">2.1</span> <span class="toctext">Introduction</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Status_Information_Messages"><span class="tocnumber">2.2</span> <span class="toctext">Status Information Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Parameter_Messages"><span class="tocnumber">2.3</span> <span class="toctext">Parameter Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#State_Messages"><span class="tocnumber">2.4</span> <span class="toctext">State Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Visualization_Messages"><span class="tocnumber">2.5</span> <span class="toctext">Visualization Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#System_Command_Messages"><span class="tocnumber">2.6</span> <span class="toctext">System Command Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Status_Information_Messages"><span class="tocnumber">2.1</span> <span class="toctext">Status Information Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Parameter_Messages"><span class="tocnumber">2.2</span> <span class="toctext">Parameter Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#State_Messages"><span class="tocnumber">2.3</span> <span class="toctext">State Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Visualization_Messages"><span class="tocnumber">2.4</span> <span class="toctext">Visualization Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#System_Command_Messages"><span class="tocnumber">2.5</span> <span class="toctext">System Command Messages</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253ASystem_Design.html#Inter-Core_Communication"><span class="tocnumber">3</span> <span class="toctext">Inter-Core Communication</span></a>
 <ul>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Introduction_2"><span class="tocnumber">3.1</span> <span class="toctext">Introduction</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#State_Vector_Messages"><span class="tocnumber">3.2</span> <span class="toctext">State Vector Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Brain_Signal_Messages"><span class="tocnumber">3.3</span> <span class="toctext">Brain Signal Messages</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Control_Signal_Messages"><span class="tocnumber">3.4</span> <span class="toctext">Control Signal Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#State_Vector_Messages"><span class="tocnumber">3.1</span> <span class="toctext">State Vector Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Brain_Signal_Messages"><span class="tocnumber">3.2</span> <span class="toctext">Brain Signal Messages</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ASystem_Design.html#Control_Signal_Messages"><span class="tocnumber">3.3</span> <span class="toctext">Control Signal Messages</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253ASystem_Design.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
@@ -92,7 +90,6 @@ For modules other than the operator module, executable file names vary, reflecti
 <td> Application </td><td> CursorTask.exe </td><td> moving a cursor by brain activity
 </td></tr></table>
 <a name="Core-Operator_Communication"></a><h2>Core-Operator Communication</h2>
-<a name="Introduction"></a><h3>Introduction</h3>
 <p>The same communication protocol is used between each of the three core
 modules
 and the operator module. Although it can be implemented on top of any
@@ -133,7 +130,6 @@ implementation of
 the modules.
 </p>
 <a name="Inter-Core_Communication"></a><h2>Inter-Core Communication</h2>
-<a name="Introduction_2"></a><h3>Introduction</h3>
 <p>Unlike the bidirectional communication between core modules and the
 operator
 module, communication within the core modules is unidirectional. The

@@ -280,7 +280,9 @@ external" linker error that reminds us to add our
 <tt>LPFilter.cpp</tt> to that module's project.
 </p>
 <a name="Visualizing_filter_output"></a><h2>Visualizing filter output</h2>
-<p>In order to present the LPFilter's output signal in an operator window, we introduce a member of type
+<p>Once our filter has been added to the filter chain, the BCI2000 framework will automatically create a parameter <i>VisualizeLPFilter</i> that is accessible under <i>Visualize-&gt;Processing Stages</i> in the operator module's configuration dialog. This parameter allows the user to view the <i>LPfilter's</i> output signal in a visualization window. In most cases, this visualization approach is sufficient. For the sake of this tutorial, however, we will disable automatic visualization, and implement our own signal visualization.
+</p><p>To disable automatic visualization, we override the <tt>GenericFilter::AllowsVisualization()</tt> member function to return <tt>false</tt>.
+In addition, to present the LPFilter's output signal in an operator window, we introduce a member of type
 <tt>GenericVisualization</tt>
 into our filter class, adding
 </p>
@@ -289,34 +291,28 @@ into our filter class, adding
 ...
 class LPFilter&nbsp;: public GenericFilter
 {
+  public:
 ...
+    virtual bool AllowsVisualization() const { return false; }
+
   private:
 ...
     GenericVisualization  mSignalVis;
 };
 ...
 </pre>
-<p><tt>GenericVisualization</tt>'s constructor takes a one-byte
+<p><tt>GenericVisualization</tt>'s constructor takes a string-valued
 visualization
 ID as a parameter; we need to get a unique ID in order to get our data
 routed
-to the correct operator window.
-This can be done by adding an entry
-<tt>LowPass</tt> at the end of the <tt>SourceID</tt> enumeration in
-the file
-<tt>shared/defines.h</tt>.
-Then, in our <tt>.cpp</tt> file, we add
-</p>
-<pre>
-#include &quot;defines.h&quot;
-</pre>
-<p>and change the <tt>LPFilter</tt> constructor to read
+to the correct operator window. Given the circumstances, a string consisting of the letters "LPFLT" appears unique enough, so we
+change the <tt>LPFilter</tt> constructor to read
 </p>
 <pre>
 LPFilter::LPFilter()
 : mDecayFactor( 0 ),
   mPreviousOutput( 0 ),
-  mSignalVis( SourceID::LowPass )
+  mSignalVis( &quot;LPFLT&quot; )
 {
   BEGIN_PARAMETER_DEFINITIONS
     &quot;Filtering float LPTimeConstant= 16s&quot;
@@ -324,34 +320,14 @@ LPFilter::LPFilter()
       seconds&quot;,
     &quot;Visualize int VisualizeLowPass= 1&quot;
       &quot; 1 0 1 // visualize low pass output signal (0=no, 1=yes)&quot;,
-    &quot;Visualize int LPVisMin= -100 0 % % &quot;
-      &quot;// low pass visualization min value&quot;,
-    &quot;Visualize int LPVisMax= 100 0 % % &quot;
-      &quot;// low pass visualization max value&quot;,
   END_PARAMETER_DEFINITIONS
 }
-</pre>
-<p>where LPVisMin and LPVisMax parameters determine the default scaling
-of the
-displayed signal; these parameters may even be reversed, resulting in
-an inversion
-of the displayed signal, so there is no need to check these parameters
-from
-<tt>Preflight</tt>.
-Still, the BCI2000 framework expects us to access parameters from <tt>Preflight</tt> when there are no range limits specified.
-Thus, we add two lines to <tt>Preflight</tt>:
-</p>
-<pre>
-  Parameter( &quot;LPVisMin&quot; );
-  Parameter( &quot;LPVisMax&quot; );
 </pre>
 <p>In <tt>Initialize</tt>, we add
 </p>
 <pre>
   mSignalVis.Send( CfgID::WindowTitle, &quot;Low Pass&quot; );
   mSignalVis.Send( CfgID::GraphType, CfgID::Polyline );
-  mSignalVis.Send( CfgID::MinValue, Parameter( &quot;LPVisMin&quot; ) );
-  mSignalVis.Send( CfgID::MaxValue, Parameter( &quot;LPVisMax&quot; ) );
   mSignalVis.Send( CfgID::NumSamples, 2 * Parameter( &quot;SamplingRate&quot; ) );
 </pre>
 <p>Finally, to update the display in regular intervals, we add the
@@ -384,10 +360,9 @@ LPFilter::LPFilter()
 <pre>
   if( output( 0, 0 ) &gt; 10 )
   {
-    ostringstream oss;
-    oss &lt;&lt; &quot;LPFilter: (0,0) entry of output exceeds 10 and is &quot;
-        &lt;&lt; output( 0, 0 );
-    mTaskLogVis.Send( oss.str() );
+    mTaskLogVis &lt;&lt; &quot;LPFilter: (0,0) entry of output exceeds 10 and is &quot;
+                &lt;&lt; output( 0, 0 )
+                &lt;&lt; endl;
   }
 </pre>
 
