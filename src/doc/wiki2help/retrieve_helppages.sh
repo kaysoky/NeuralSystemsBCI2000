@@ -79,6 +79,6 @@ done;
 echo
 
 # Rename directories, and move content into the doc directory.
-cd $INITIALWD
-mkdir -p $TARGET
-cp -af $SERVER/* $TARGET && rm -r $SERVER
+cd "$INITIALWD"
+mkdir -p "$TARGET"
+cp -af $SERVER/* "$TARGET" && rm -r $SERVER

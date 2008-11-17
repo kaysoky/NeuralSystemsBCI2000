@@ -4,6 +4,8 @@ tocfile=../../../doc/htmlhelp/wiki/html/htmlhelp.toc
 beginmsg="<!-- Content created automatically by BCI2000/src/doc/wiki2help/create_lists.sh -->"
 endmsg="<!-- End of auto-created content -->"
 
+make toc2wiki
+
 ( \
   echo $beginmsg && \
   ( ./toc2wiki "^Parameters$" "^[^ ,]+(, [^ ,]+)*$" < $tocfile ) && \
