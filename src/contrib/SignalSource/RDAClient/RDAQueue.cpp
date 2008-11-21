@@ -197,7 +197,7 @@ RDAQueue::ReceiveData()
                 != ( dataMsg->nBlock & blockNumberMask ) )
             {
               failstate |= connectionFail;
-              bcierr << "RDA block numbers not in sequence" << endl;
+              bciout << "RDA block numbers not in sequence" << endl;
               lastMessageType = RDAStop;
             }
             break;
