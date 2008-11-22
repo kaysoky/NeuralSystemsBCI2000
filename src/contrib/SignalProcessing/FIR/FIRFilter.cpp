@@ -26,7 +26,7 @@ FIRFilter::FIRFilter()
       " 1 0 0 0"
       " 1 0 0 0"
       " 1 0 0 0"
-             " 1 % % // FIR Filter Coefficients (rows correspond to channels; empty matrix for off)",
+        " 1 % % // FIR Filter Coefficients (rows correspond to channels; empty matrix for off)",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -92,7 +92,9 @@ FIRFilter::Initialize( const SignalProperties& Input, const SignalProperties& Ou
 void
 FIRFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
-  for( size_t channel = 0; channel < mBuffer.size(); ++channel )
+  if( mBuffer.empty() )
+    Output = Input;
+  else for( size_t channel = 0; channel < mBuffer.size(); ++channel )
   {
     int bufferLength = mBuffer[channel].size(),
         filterLength = mFilter[channel].size(),
