@@ -1,7 +1,10 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
-
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+// Description: A finite impulse response (FIR) filter for temporal filtering.
+//
+// (C) 2000-2008, BCI2000 Project
+// http://www.bci2000.org
+////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -38,7 +41,7 @@ FIRFilter::Preflight( const SignalProperties& Input,
                             SignalProperties& Output ) const
 {
   PreflightCondition( Parameter( "FIRCoefficients" )->NumRows() <= Input.Channels() );
-  
+
   // Output signal dimensions.
   Output = Input;
   if( Parameter( "FIRCoefficients" )->NumValues() > 0 )

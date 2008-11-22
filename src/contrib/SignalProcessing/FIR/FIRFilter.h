@@ -1,8 +1,10 @@
-/* (C) 2000-2008, BCI2000 Project
-/* http://www.bci2000.org
-/*/
-//---------------------------------------------------------------------------
-
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+// Description: A finite impulse response (FIR) filter for temporal filtering.
+//
+// (C) 2000-2008, BCI2000 Project
+// http://www.bci2000.org
+////////////////////////////////////////////////////////////////////////////////
 #ifndef FIR_FILTER_H
 #define FIR_FILTER_H
 
@@ -28,10 +30,10 @@ class FIRFilter : public GenericFilter
     max,
   };
   int mFIRIntegration;
-  
+
   typedef std::valarray<float> DataVector;
-  std::vector<DataVector> mFilter,
-                          mBuffer;
+  std::vector<DataVector>      mFilter,
+                               mBuffer;
 };
 #endif // FIR_FILTER_H
 
