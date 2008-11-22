@@ -14,13 +14,13 @@
 
 #include "SpatialFilter.h"
 #include "FIRFilter.h"
-#include "ClassFilter.h"
-#include "StatFilter.h"
-#include "Normalfilter.h"
+#include "LinearClassifier.h"
+#include "LPFilter.h"
+#include "Normalizer.h"
 
 Filter( SpatialFilter, 2.B );
 Filter( FIRFilter, 2.C );
-Filter( ClassFilter, 2.D );
-Filter( StatFilter, 2.E1 );
-Filter( NormalFilter, 2.E2 );
+Filter( LinearClassifier, 2.D );
+Filter( LPFilter, 2.E1 );
+Filter( Normalizer, 2.E2 );
 

@@ -5,21 +5,20 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="..\..\..\..\prog\FIRProcessing.exe"/>
     <OBJFILES value="obj\FIRProcessing.obj obj\FIRFilter.obj obj\PipeDefinition.obj 
-      obj\getfir.obj obj\ParamRef.obj obj\Environment.obj 
-      obj\BCIError_module.obj obj\BCIError.obj obj\BCIDirectory.obj 
-      obj\MessageHandler.obj obj\CoreModule.obj obj\CoreModuleVCL.obj 
-      obj\SysCommand.obj obj\Color.obj obj\EncodedString.obj 
-      obj\GenericSignal.obj obj\GenericVisualization.obj obj\Label.obj 
-      obj\Param.obj obj\ParamList.obj obj\SignalProperties.obj 
+      obj\ParamRef.obj obj\Environment.obj obj\BCIError_module.obj 
+      obj\BCIError.obj obj\BCIDirectory.obj obj\MessageHandler.obj 
+      obj\CoreModule.obj obj\CoreModuleVCL.obj obj\SysCommand.obj obj\Color.obj 
+      obj\EncodedString.obj obj\GenericSignal.obj obj\GenericVisualization.obj 
+      obj\Label.obj obj\Param.obj obj\ParamList.obj obj\SignalProperties.obj 
       obj\SignalType.obj obj\State.obj obj\StateList.obj obj\StateVector.obj 
       obj\Status.obj obj\VersionInfo.obj obj\ClassName.obj 
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
-      obj\ExpressionParser.obj obj\Expression.obj obj\Statistics.obj 
-      obj\classfilter.obj obj\Normalfilter.obj obj\StatFilter.obj 
-      obj\BitmapImage.obj obj\Brackets.obj obj\HierarchicalLabel.obj 
-      obj\LabelIndex.obj obj\PhysicalUnit.obj obj\GenericFilter.obj 
-      obj\SpatialFilter.obj obj\ArithmeticExpression.obj obj\EventQueue.obj 
-      obj\OSError.obj obj\OSThread.obj obj\BCIEvent.obj obj\StateVectorSample.obj"/>
+      obj\ExpressionParser.obj obj\Expression.obj obj\BitmapImage.obj 
+      obj\Brackets.obj obj\HierarchicalLabel.obj obj\LabelIndex.obj 
+      obj\PhysicalUnit.obj obj\GenericFilter.obj obj\SpatialFilter.obj 
+      obj\ArithmeticExpression.obj obj\EventQueue.obj obj\OSError.obj 
+      obj\OSThread.obj obj\BCIEvent.obj obj\StateVectorSample.obj 
+      obj\LinearClassifier.obj obj\LPFilter.obj obj\Normalizer.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,14 +27,14 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\Statistics;..\Statistics;..\Statistics;..\Statistics;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\modules\signalprocessing;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\types;..\..\..\shared\modules\signalprocessing;..\..\..\shared\modules\signalprocessing;..\..\..\shared\modules\signalprocessing"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="_DEBUG;MODTYPE=2"/>
+    <USERDEFINES value="MODTYPE=2"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="FIRProcessing.cpp"/>
     <INCLUDEPATH value="..\..\..\shared\modules\signalprocessing;..\..\..\SignalProcessing\filters;..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -45,12 +44,12 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-Od -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -xf -xp -X- -r- -a8 -5 
-      -b- -k -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
+    <CFLAG1 value="-O2 -H=..\..\..\shared\obj\bci2000.csm -Hc -Vx -Ve -xf -xp -X- -a8 -5 -b- 
+      -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -63,7 +62,6 @@
       <FILE FILENAME="FIRProcessing.cpp" FORMNAME="" UNITNAME="FIRProcessing" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="FIRFilter.cpp" FORMNAME="" UNITNAME="FIRFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="PipeDefinition.cpp" FORMNAME="" UNITNAME="PipeDefinition" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="getfir.cpp" FORMNAME="" UNITNAME="getfir" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\ParamRef.cpp" FORMNAME="" UNITNAME="ParamRef" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\Environment.cpp" FORMNAME="" UNITNAME="Environment" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\bcistream\BCIError_module.cpp" FORMNAME="" UNITNAME="BCIError_module" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -93,10 +91,6 @@
       <FILE FILENAME="..\..\..\shared\utils\SockStream.cpp" FORMNAME="" UNITNAME="SockStream" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\ExpressionParser.cpp" FORMNAME="" UNITNAME="ExpressionParser" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\Expression\Expression.cpp" FORMNAME="" UNITNAME="Expression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Statistics\Statistics.cpp" FORMNAME="" UNITNAME="Statistics" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Statistics\classfilter.cpp" FORMNAME="" UNITNAME="classfilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Statistics\Normalfilter.cpp" FORMNAME="" UNITNAME="Normalfilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\Statistics\StatFilter.cpp" FORMNAME="" UNITNAME="StatFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\BitmapImage.cpp" FORMNAME="" UNITNAME="BitmapImage" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\Brackets.cpp" FORMNAME="" UNITNAME="Brackets" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\HierarchicalLabel.cpp" FORMNAME="" UNITNAME="HierarchicalLabel" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
@@ -110,6 +104,9 @@
       <FILE FILENAME="..\..\..\shared\utils\OSThread.cpp" FORMNAME="" UNITNAME="OSThread" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LinearClassifier.cpp" FORMNAME="" UNITNAME="LinearClassifier" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\LPFilter.cpp" FORMNAME="" UNITNAME="LPFilter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\shared\modules\signalprocessing\Normalizer.cpp" FORMNAME="" UNITNAME="Normalizer" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -143,25 +140,29 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\include;$(BCB)\include\vcl
-Item1=..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalProcessing;..\..\..\SignalProcessing\filters;..;.;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Count=3
+Item0=..\..\..\shared\modules\signalprocessing;..\..\..\SignalProcessing\filters;..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\include;$(BCB)\include\vcl
+Item1=..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\include;$(BCB)\include\vcl
+Item2=..\Statistics;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalProcessing;..\..\..\SignalProcessing\filters;..;.;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=2
-Item0=..\Statistics;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\lib\obj;$(BCB)\lib
-Item1=..\Statistics;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalProcessing\filters;..;..\..\shared\Expression;.;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
+Count=3
+Item0=..\..\..\shared\modules\signalprocessing;..\..\..\SignalProcessing\filters;..\Statistics;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+Item1=..\Statistics;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..;.;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\Statistics;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared;..\..\..\SignalProcessing\filters;..;..\..\shared\Expression;.;..\..\shared;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=1
-Item0=_DEBUG;MODTYPE=2
+Count=2
+Item0=MODTYPE=2
+Item1=_DEBUG;MODTYPE=2
 
 [HistoryLists\hlIntOutputDir]
 Count=1
