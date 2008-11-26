@@ -123,7 +123,7 @@ FIRFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 
       case rms:
         result *= result;
-        Output( channel, 0 ) = ::sqrt( result.sum() ) / inputLength;
+        Output( channel, 0 ) = ::sqrt( result.sum() / inputLength );
         break;
 
       case max:
