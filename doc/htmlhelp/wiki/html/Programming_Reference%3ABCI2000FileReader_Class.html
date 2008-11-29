@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:BCI2000FileReader Class - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:BCI2000FileReader Class,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileWriter" />
+<meta name="keywords" content="Programming Reference:BCI2000FileReader Class,Programming Reference:Environment Class,Technical Reference:BCI2000 File Format,User Reference:BCI2000FileWriter" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -115,13 +115,13 @@ The calibrated sample value is obtained by applying channel-specific sample offs
 <p>A parameter list object that contains all parameters present in the file.
 </p>
 <a name="Parameter_.28r.29"></a><h3>Parameter (r)</h3>
-<p>Access to an individual parameter, following the syntax provided by the <tt>Environment</tt> class.
+<p>Access to an individual parameter, following the <a href="Programming_Reference%253AEnvironment_Class.html#Access_to_Parameters_and_States" title="Programming Reference:Environment Class">syntax provided by the <tt>Environment</tt> class</a>.
 </p>
 <a name="States_.28r.29"></a><h3>States (r)</h3>
 <p>A state list object containing all state variables present in the file.
 </p>
 <a name="State_.28r.29"></a><h3>State (r)</h3>
-<p>Access to an individual state variable, following the syntax provided by the <tt>Environment</tt> class. The returned value will match the state variable's value at the current sample position, as specified by one the <tt>RawValue</tt>, <tt>CalibratedValue</tt>, or <tt>ReadStateVector</tt> methods.
+<p>Access to an individual state variable, following the <a href="Programming_Reference%253AEnvironment_Class.html#Access_to_Parameters_and_States" title="Programming Reference:Environment Class">syntax provided by the <tt>Environment</tt> class</a>. The returned value will match the state variable's value at the current sample position, as specified by one the <tt>RawValue</tt>, <tt>CalibratedValue</tt>, or <tt>ReadStateVector</tt> methods.
 </p>
 <a name="StateVector_.28r.29"></a><h3>StateVector (r)</h3>
 <p>Access to the full state vector, with state values matching those at the current sample position.

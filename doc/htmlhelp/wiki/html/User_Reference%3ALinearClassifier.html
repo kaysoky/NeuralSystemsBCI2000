@@ -112,13 +112,12 @@ In the <a href="User_Reference%253ACursorTask.html" title="User Reference:Cursor
 <td>          CP4  </td><td>        12Hz  </td><td>            1  </td><td>    0.5
 </td></tr>
 <tr>
-<td>          CP3  </td><td>        24Hz  </td><td>            2  </td><td>    0.5
+<td>          CP3  </td><td>        24Hz  </td><td>            2  </td><td>  -0.5
 </td></tr>
 <tr>
-<td>          CP4  </td><td>        24Hz  </td><td>            2  </td><td>   -0.5
+<td>          CP4  </td><td>        24Hz  </td><td>            2  </td><td>    0.5
 </td></tr></table>
-<p>Note that, in the above example, subtracting CP3 from CP4 in the classifier is not equivalent to taking the difference in the <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">Spatial Filter</a>. This is because, for a Mu Rhythm BCI, the spectrum is computed between spatial filtering and feature combination. Computing the spectrum involves taking the absolute value (or its square), which is a nonlinear operation:
-<img class='tex' src="../images/math/5/0/f/50f4b67ab2d097775c74b65d6437c637.png" alt="|A-B| \neq |A|-|B|" />
+<p>Note that, in the above example, subtracting CP3 from CP4 in the classifier is not equivalent to taking the difference in the <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">SpatialFilter</a>. This is because, for a Mu Rhythm BCI, spatial filtering is followed with computing spectral amplitudes, and feature combination amounts to an addition of spectral amplitudes. Computing spectral amplitudes involves taking the absolute value (or its square), which is a nonlinear operation, with <img class='tex' src="../images/math/5/0/f/50f4b67ab2d097775c74b65d6437c637.png" alt="|A-B| \neq |A|-|B|" /> in general.
 </p>
 <a name="ERP_classification"></a><h3>ERP classification</h3>
 <p>Often, you will use a computer program to optimize the classifier for use with ERPs. However, for the sake of an instructive example, let us assume that you want to classify based on the temporal mean between 280 and 300ms, and the spatial mean from electrodes Cz and Pz, that your sampling rate is 250Hz.

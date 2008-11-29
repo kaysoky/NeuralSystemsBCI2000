@@ -124,6 +124,8 @@ When <i>ISIMinDuration</i> is different from <i>ISIMaxDuration</i>, the <a href=
 </p>
 <a name="DeleteObjects.28.29"></a><h4>DeleteObjects()</h4>
 <p>Deletes all stimulus and target objects that are part of the association, and clears the association.
+</p><p><i>NB:</i> You should not call this function for an <tt>Association</tt> object unless you can be sure that no stimulus is part of multiple associations. Otherwise, you will risk multiple deallocation of stimulus pointers.
+Typically, you will keep track of existing stimuli in a separate <a href="Programming_Reference%253AStimulus_Class.html#DeleteObjects.28.29" title="Programming Reference:Stimulus Class"><tt>SetOfStimuli</tt></a> object, and call that set's <tt>DeleteObjects()</tt> member function in order to dispose of stimulus objects.
 </p>
 <a name="Add.28Stimulus_pointer.7CTarget_pointer.29"></a><h4>Add(Stimulus pointer|Target pointer)</h4>
 <p>Adds a stimulus or target object to the association.
@@ -153,10 +155,16 @@ When <i>ISIMinDuration</i> is different from <i>ISIMaxDuration</i>, the <a href=
 <a name="Methods_2"></a><h3>Methods</h3>
 <p><tt>AssociationMap</tt> inherits publicly from <tt>std::map&lt;int, Association</tt>, and provides all its member functions.
 In a <a href="Programming_Reference%253AStimulusTask_Class.html" title="Programming Reference:StimulusTask Class">StimulusTask</a> descendant, the <i>Associations</i> property provides access to the single <tt>AssociationMap</tt> object stored inside the <tt>StimulusTask</tt> object.
+</p><p>Typically, only the subscript operator <tt>[]</tt> is required to assign stimulus codes to associations:
 </p>
-Typically, only the subscript operator <pre>[]</pre> is required to assign stimulus codes to associations, and to read that information back, creating an empty <tt>Association</tt> object if the stimulus code is used for the first time:
 <pre>Associations()[ myStimulusCode ].Add( pMyStimulus );
 </pre>
+<p>Similarly, association information may be read when the subscript operator appears on the right hand side of an assignment:
+</p>
+<pre>int stimulusDuration = Associations()[ myStimulusCode ].StimulusDuration();
+</pre>
+<p>In case there exists no <tt>Association</tt> object for a specified stimulus code, an empty <tt>Association</tt> object will be created with default properties.
+</p>
 <a name="bool_StimuliIntersect.28StimulusCode1.2C_StimulusCode2.29"></a><h4>bool StimuliIntersect(StimulusCode1, StimulusCode2)</h4>
 <p>Returns <i>true</i> if there is at least one stimulus object common to the two stimulus codes specified, <i>false</i> otherwise.
 </p>

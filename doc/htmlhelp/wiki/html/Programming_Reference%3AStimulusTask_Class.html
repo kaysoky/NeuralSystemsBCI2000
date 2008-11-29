@@ -223,7 +223,7 @@ parameters</a>, or if requested by a handler via its <tt>doProgress</tt> output 
 </td></tr></table>
 <a name="Stimulus_Code_Event"></a><h3>Stimulus Code Event</h3>
 <a name="int_OnNextStimulusCode"></a><h4>int OnNextStimulusCode</h4>
-<p>By returning a sequence of stimulus codes, this event handler determines the sequence in which stimuli (or associations thereof) are presented.
+<p>This event handler is called immediately before stimulus presentation, and determines the sequence in which stimuli (or associations thereof) are presented.
 This handler should return the next element of the current sequence of stimulus codes, or zero to indicate the end of the sequence.
 A null sequence indicates the end of a <a href="BCI2000_Glossary.html#Run" title="BCI2000 Glossary">run</a>, i.e. the current run will end when <i>OnNextStimulusCode</i> returns two zeros in a row.
 </p><p>The <i>OnNextStimulusCode</i> event handler is mandatory for a <tt>StimulusPresentation</tt> descendant to implement.

@@ -54,7 +54,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>The <i>FieldTripBuffer</i> filter is an interface between BCI2000 and the FieldTrip Toolbox. The filter hosts a <a href="http://www2.ru.nl/fcdonders/fieldtrip/doku.php?id=fieldtrip:development:realtime" class='external text' title="http://www2.ru.nl/fcdonders/fieldtrip/doku.php?id=fieldtrip:development:realtime" rel="nofollow">FieldTrip realtime buffer</a>, and writes its input into that buffer, formatted as <i>buffer data</i>.
+<p>The <i>FieldTripBuffer</i> filter is an interface between BCI2000 and the FieldTrip Toolbox. The filter hosts a <a href="http://neuroimaging.ruhosting.nl/fieldtrip/doku.php?id=fieldtrip:development:realtime" class='external text' title="http://neuroimaging.ruhosting.nl/fieldtrip/doku.php?id=fieldtrip:development:realtime" rel="nofollow">FieldTrip realtime buffer</a>, and writes its input into that buffer, formatted as <i>buffer data</i>.
 </p><p>FieldTrip software agents may then use the FieldTrip realtime protocol to communicate with the buffer asynchronously, reading data from BCI2000, and writing back results into BCI2000.
 </p><p>BCI2000 <a href="BCI2000_Glossary.html#State_Variable" title="BCI2000 Glossary">state variables</a> may be translated into FieldTrip buffer events; in turn, buffer events are read back from the buffer into BCI2000 state variables. A dedicated FieldTrip buffer event type may be used to determine the filter's output into the BCI2000 processing pipe.
 </p>

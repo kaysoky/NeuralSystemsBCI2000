@@ -251,7 +251,7 @@ In your spatial filter, you will want to re-reference all channels against "link
 Compared to those, it is associated with a number of disadvantages:
 </p>
 <ul><li>Complexity is <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
-</li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be assumed, and all output labels must be specified manually.
+</li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be inferred, and all output labels must be specified manually.
 </li><li>The filter's specification depends on the order of input channels, which makes it interdependent with the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters"><i>TransmitChList</i> parameter</a>.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>

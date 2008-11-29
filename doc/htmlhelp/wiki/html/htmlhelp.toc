@@ -71,6 +71,7 @@ BCI2000_Binaries.html
 2 Contributed_Code Contributed Code
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 November_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" rel="nofollow">November 2008 Build</a>
 4 October_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" rel="nofollow">October 2008 Build</a>
 4 August_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080819.exe" rel="nofollow">August 2008 Build</a>
 4 May_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_080529.exe" rel="nofollow">May 2008 Build</a>
@@ -270,15 +271,11 @@ Contributions%253AFIRFilter.html
 2 Synopsis Synopsis
 2 Location Location
 2 Versioning Versioning
-3 Author Author
+3 Authors Authors
 3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
-3 FIRWindows FIRWindows
-3 FIRDetrend FIRDetrend
-3 Integration Integration
-3 FIRFilteredChannels FIRFilteredChannels
-3 FIRFilterKernal FIRFilterKernal
-3 VisualizeTemporalFiltering VisualizeTemporalFiltering
+3 FIRIntegration FIRIntegration
+3 FIRCoefficients FIRCoefficients
 2 States States
 2 See_also See also
 
@@ -999,7 +996,6 @@ Programming_Reference%253AEnvironmentExtension_Class.html
 Programming_Reference%253AEnvironment_Class.html
 2 Your_code.27s_Environment Your code's <tt>Environment</tt>
 2 Access_to_Parameters_and_States Access to Parameters and States
-2 Iterating_over_Parameters_and_States Iterating over Parameters and States
 2 Working_around_Borland_VCL_Inheritance_Restrictions Working around Borland VCL Inheritance Restrictions
 2 See_also See also
 

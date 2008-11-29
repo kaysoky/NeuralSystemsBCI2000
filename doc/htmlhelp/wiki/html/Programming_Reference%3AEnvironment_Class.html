@@ -34,9 +34,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Your_code.27s_Environment"><span class="tocnumber">1</span> <span class="toctext">Your code's Environment</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Access_to_Parameters_and_States"><span class="tocnumber">2</span> <span class="toctext">Access to Parameters and States</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Iterating_over_Parameters_and_States"><span class="tocnumber">3</span> <span class="toctext">Iterating over Parameters and States</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Working_around_Borland_VCL_Inheritance_Restrictions"><span class="tocnumber">4</span> <span class="toctext">Working around Borland VCL Inheritance Restrictions</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#Working_around_Borland_VCL_Inheritance_Restrictions"><span class="tocnumber">3</span> <span class="toctext">Working around Borland VCL Inheritance Restrictions</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253AEnvironment_Class.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Your_code.27s_Environment"></a><h2>Your code's <tt>Environment</tt></h2>
@@ -106,21 +105,8 @@ short itiState = OptionalState( &quot;IntertrialInterval&quot;, 0 );
 <p>Omitting the default value from the <tt>OptionalState</tt> or <tt>OptionalParameter</tt> call implies
 a default value of 0, or the empty string, whichever is appropriate.
 </p><p>The Environment class imposes <a href="Programming_Reference%253AGenericFilter_Class.html#Rules_for_Parameter_and_State_access" title="Programming Reference:GenericFilter Class">rules for parameter and state access</a> intended to help avoid parameterization inconsistencies.
+</p><p><br />
 </p>
-<a name="Iterating_over_Parameters_and_States"></a><h2>Iterating over Parameters and States</h2>
-<p>The <i>Environment</i> class provides functions that allow to iterate over all parameters and states that exist in the system.
-These functions return <tt>ParamIterator</tt> and <tt>StateIterator</tt> objects that may be used to access parameters and states via overloaded versions of the <tt>Parameter()</tt> and <tt>State()</tt> accessor functions.
-<tt>FirstParameter()</tt> returns an iterator to the first parameter in the system, and <tt>NextParameter()</tt> returns an iterator to the parameter following the parameter represented by its argument. When <tt>NextParameter()</tt> is called for the last parameter present in the system, it will return NULL to indicate the end of the list.
-Similarly, there exists a <tt>FirstState()</tt> and a <tt>NextState()</tt> function.
-</p><p>To iterate over parameters and states, use code as in the following examples:
-</p>
-<pre>
- for( ParamIterator p = FirstParameter(); p&nbsp;!= NULL; p = NextParameter( p ) )
-   bcidbg &lt;&lt; Parameter( p )-&gt;Name() &lt;&lt; endl;
-
- for( StateIterator s = FirstState(); s&nbsp;!= NULL; s = NextState( s ) )
-   bcidbg &lt;&lt; State( s )-&gt;Name() &lt;&lt; &quot;=&quot; &lt;&lt; State( s ) &lt;&lt; endl;
-</pre>
 <a name="Working_around_Borland_VCL_Inheritance_Restrictions"></a><h2>Working around Borland VCL Inheritance Restrictions</h2>
 <p>Due to some non-standard conventions in Borland's VCL library, you
 cannot create a VCL class such as a <tt>TForm</tt> descendant that

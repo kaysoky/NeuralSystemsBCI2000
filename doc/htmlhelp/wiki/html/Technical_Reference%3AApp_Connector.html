@@ -4,7 +4,7 @@
 <head>
 <title>Technical Reference:App Connector - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Technical Reference:App Connector,BCI2000 Glossary,Technical Reference:State Definition,Technical Reference:System Design" />
+<meta name="keywords" content="Technical Reference:App Connector,BCI2000 Glossary,Technical Reference:State Definition,Technical Reference:System Design,User Reference:Operator Module Scripting" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -82,7 +82,10 @@ data file. In contrast, control of an external device using the External
 Application Interface implies that the configuration of the external device has 
 to be done outside of BCI2000, that this corresponding configuration is not 
 stored along with the data file, and that the internal state of the output 
-device is not saved together with the brain signals. This will make it more 
+device is not automatically saved together with the brain signals 
+(although it is possible to introduce your own state variables
+for this purpose using the operator module's <a href="User_Reference%253AOperator_Module_Scripting.html#INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E" title="User Reference:Operator Module Scripting">INSERT STATE</a> scripting command).
+Having no configuration and state information present in the data file will make it more 
 difficult to reconstruct what exactly was going on during an experimental 
 session. It is thus important to keep this in mind when using this 
 possibility.
