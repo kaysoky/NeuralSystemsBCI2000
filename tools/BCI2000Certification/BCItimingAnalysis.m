@@ -1,4 +1,8 @@
-function res = BCItimingAnalysis
+function res = BCItimingAnalysis(res)
+if exist('res')
+    analysisFuncs(res);
+    return;
+end
 fpath = uigetdir;
 if fpath == 0 return; end
 
@@ -11,7 +15,7 @@ for i=1:length(fList)
     fprintf('Analyzing %d/%d: %s\n',i, length(fList),fList{i});
     res{i} = doThreshAnalysis(fList{i}, taskDefs);
 end
-
+%analysisFuncs(res);
 %-------------------------------------------
 function res = doThreshAnalysis(fname, taskDefs)
 res = [];
@@ -42,6 +46,7 @@ fs = parms.SamplingRate.NumericValue;
 res.name = thisTask.name;
 res.fs = fs;
 res.SBS = SBS;
+res.nChs = size(signal,2);
 res.amp = [];
 if thisTask.amp.flag
     a = find(diff(signal(:,thisTask.amp.ch+1)) >= std(diff(signal(:,thisTask.amp.ch+1))))+1;
@@ -54,12 +59,19 @@ end
 
 res.dAmp = [];
 if thisTask.dAmp.flag
-    a = find(signal(:,thisTask.dAmp.ch+1) == max(signal(:,thisTask.dAmp.ch+1)));
-    a(find(a <= ignoreDur)) = [];
-    b = find(diff(a) < SBS/3)+1;
-    a(b) = [];
-    res.dAmp.vals = 1000*mod(a-1, SBS)/fs;
-    res.dAmp.ts = a;
+    tmpsig = reshape(signal(:,thisTask.dAmp.ch+1),[SBS length(signal)/SBS]);
+    [q,r] = max(tmpsig);
+    ts = 1:length(q);
+    a = find(q == 0);    
+    q(a) = [];
+    r(a) = [];
+    ts(a) = [];
+%     a = find(signal(:,thisTask.dAmp.ch+1) == max(signal(:,thisTask.dAmp.ch+1)));
+%     a(find(a <= ignoreDur)) = [];
+%     b = find(diff(a) < SBS/3)+1;
+%     a(b) = [];
+    res.dAmp.vals = 1000*(r-1)/fs;
+    res.dAmp.ts = ts;
 end
 
 res.vid = [];
@@ -77,6 +89,9 @@ if thisTask.vid.flag
     st = sort(st);
     st(find(st <= ignoreDur)) = [];
     res.vid.vals = [];
+    res.vid.stim = [];
+    res.vid.sigProc = [];
+    res.vid.jitter = [];
     p = 1;
     for i=1:length(st)-1
         b = intersect(find(a >= st(i)), find(a < st(i+1)));
@@ -121,6 +136,9 @@ if thisTask.aud.flag
     st = sort(st);
     st(find(st <= ignoreDur)) = [];
     res.aud.vals = [];
+    res.aud.stim = [];
+    res.aud.sigProc = [];
+    res.aud.jitter = [];
     p = 1;
     for i=1:length(st)-1
         b = intersect(find(a >= st(i)), find(a < st(i+1)));
@@ -272,10 +290,11 @@ end
 
 
 %---------------------------------
-function lineToks = tokLine(str)
+function lineToks = tokLine(str,del)
+if ~exist('del') del = ' '; end
 lineToks = [];
 while ~isempty(str)
-    [tok, str] = strtok(str);
+    [tok, str] = strtok(str, del);
     lineToks{end+1} = tok;
 end
 
@@ -301,41 +320,249 @@ newTask.source = '';
 newTask.sigproc = '';
 newTask.app = '';
 newTask.parm = [];
+newTask.nChs = 0;
+%%
+function analysisFuncs(res)
 
-function analysisCode
-%% analysis config
-
-%a = [13 3 7 10];
-%a = [11 1 5 8];
-%a = [13 1 5 9];
-%a = [14 2 6 10];
-%a = [15 3 7 11];
-a = [23 17 19 21];
-SR = [512 1200 2400 4800];
-
-for i=1:length(a)
-    ampm(i) = mean(res{a(i)}.dAmp.vals);
-    amps(i) = std(res{a(i)}.dAmp.vals);
-    spm(i) = mean(res{a(i)}.sigProc);
-    sps(i) = std(res{a(i)}.sigProc);
-	jitterm(i) = mean(res{a(i)}.jitter);
-    jitters(i) = std(res{a(i)}.jitter);
-    vidm(i) = mean(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
-    vids(i) = std(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
-    SBlen(i) = 1000*res{a(i)}.SBS/res{a(i)}.fs;
+tasksAll = struct;
+for i=1:length(res)
+    tmp = tokLine(res{i}.name, '_');
+    tmpTaskName = sprintf('%s%s%s', tmp{1}, tmp{end-1}, tmp{end});
+    tmpBaseName = tmp{1};
+    if ~isfield(tasksAll, tmpTaskName)        
+        newTask.fs = [];
+        newTask.idx = [];
+        newTask.SBS = [];
+        newTask.baseName = tmp{1};
+        newTask.nChs = res{i}.nChs;
+        newTask.dt = tmp{end};
+       
+        tasksAll = setfield(tasksAll, tmpTaskName, newTask);
+    end
+    tmpTask = getfield(tasksAll, tmpTaskName);
+    tmpTask.fs = [tmpTask.fs, res{i}.fs];
+    tmpTask.idx = [tmpTask.idx, i];
+    tmpTask.SBS = [tmpTask.SBS, res{i}.SBS];
+    tasksAll = setfield(tasksAll, tmpTaskName, tmpTask);
+    clear newTask tmpTask tmpTaskName tmp;
 end
-figure; 
-hold on;
-pd = 4;
-plot(SR(1:pd),SBlen(1:pd),'color',[0 0 0])
-errorbar(SR(1:pd), ampm(1:pd), amps(1:pd));
-errorbar(SR(1:pd), spm(1:pd), sps(1:pd),'r');
-errorbar(SR(1:pd), jitterm(1:pd), jitters(1:pd),'g');
-errorbar(SR(1:pd), vidm(1:pd), vids(1:pd));
+
+taskfields = fieldnames(tasksAll);
+for i=1:length(taskfields)
+    tmpTask = getfield(tasksAll, taskfields{i});
+    [tmpfs, idx] = sort(tmpTask.fs);
+    tmpTask.fs = tmpfs;
+    tmpTask.idx = tmpTask.idx(idx);
+    tmpTask.SBS = tmpTask.SBS(idx);
+    tasksAll = setfield(tasksAll, taskfields{i}, tmpTask);
+end
+
+taskChGrp = struct;
+totalSamplesGrp = struct;
+for i=1:length(taskfields)
+    tmpTask = getfield(tasksAll, taskfields{i});
+    if ~isfield(taskChGrp, tmpTask.baseName)
+        taskChGrp = setfield(taskChGrp, tmpTask.baseName,[]);
+        newTask.idx = [];
+        newTask.nSamples = [];
+        newTask.SBS = [];
+        totalSamplesGrp = setfield(totalSamplesGrp, tmpTask.baseName, newTask);
+    end
+    tmpField = getfield(taskChGrp, tmpTask.baseName);
+    tmpField{end+1} = tmpTask;
+    taskChGrp = setfield(taskChGrp, tmpTask.baseName, tmpField);
+    
+    tmpField = getfield(totalSamplesGrp, tmpTask.baseName);
+    tmpField.idx = [tmpField.idx, tmpTask.idx];
+    tmpField.nSamples = [tmpField.nSamples, tmpTask.SBS*tmpTask.nChs];
+    tmpField.SBS = max([tmpField.SBS, tmpTask.SBS*1000./tmpTask.fs]);
+    totalSamplesGrp = setfield(totalSamplesGrp, tmpTask.baseName, tmpField);
+end
+taskChFields = fieldnames(taskChGrp);
+for i=1:length(taskChFields)
+    tmpField = getfield(taskChGrp, taskChFields{i});
+    chTmp = [];
+    for c=1:length(tmpField)
+        chTmp(c) = tmpField{c}.nChs;
+    end
+    [q,idx] = sort(chTmp);
+    for c=1:length(idx)
+        newField{c} = tmpField{idx(c)};
+    end
+    taskChGrp = setfield(taskChGrp, taskChFields{i}, newField);
+end
+
+for i=1:length(taskChFields)
+    newField = struct;
+    tmpField = getfield(totalSamplesGrp, taskChFields{i});
+    [q,idx] = sort(tmpField.nSamples);
+    newField.nSamples = tmpField.nSamples(idx);
+    newField.idx = tmpField.idx(idx);
+    newField.SBS = tmpField.SBS;
+    totalSamplesGrp = setfield(totalSamplesGrp, taskChFields{i}, newField);
+end
+clear taskfields tmpTask;
+%%
+taskfields = fieldnames(tasksAll);
+outdir = uigetdir;
+if outdir == 0 return; end
+LW = 1;
+for i=1:length(taskfields)
+    figtmp = figure('name', taskfields{i},'position',[0 0 800 800],'color',[1 1 1]);
+    tmptask = getfield(tasksAll, taskfields{i});
+    for k=1:length(tmptask.idx)
+        subplot(2,2,k);
+        set(gca,'fontsize',16);
+        
+        %set(gca,'color',[0 0 0])
+        hold on;
+        p = tmptask.idx(k);
+        SBS = res{p}.SBS;
+        fs = res{p}.fs;
+        SBlen = 1000*SBS/fs;
+        if mean(res{p}.jitter) >= SBlen continue; end
+        
+        plot([0, max(res{p}.vid.stim(end),res{p}.dAmp.ts(end))*SBS/fs],[0 0]+SBlen,':','color',[0 0 0])
+        %plot(res{p}.vid.stim, res{p}.vid.vals);
+        plot(res{p}.vid.stim*SBS/fs, res{p}.vid.vals-res{p}.vid.sigProc,'linewidth',LW);
+        plot(res{p}.vid.stim*SBS/fs,res{p}.vid.sigProc,'r','linewidth',LW);
+        plot(res{p}.vid.stim*SBS/fs,res{p}.vid.jitter,'g','linewidth',LW);
+        if ~isempty(res{p}.aud)
+            plot(res{p}.aud.stim*SBS/fs, res{p}.aud.vals-res{p}.aud.sigProc,'color',[1 0 1], 'linewidth', LW);%[1.0000    0.6941    0.3922],'linewidth',2);
+        end
+        b = find(res{p}.vid.stim < length(res{p}.amp.ts));
+        plot(res{p}.dAmp.ts*SBS/fs, res{p}.dAmp.vals,'color',[0 0 0],'linewidth',LW);
+        axis tight;
+        YL = ylim;
+        XL = xlim;
+        set(gca,'ylim',[0 YL(end)*1.1]);
+
+        title(sprintf('%s Hz', num2str(res{p}.fs)));
+        xlabel('Time (s)');
+        if k==1
+            
+            ylabel('Delay (ms)');
+        end        
+    end
+    saveas(figtmp, sprintf('%s%s%s.fig', outdir, filesep, taskfields{i}));
+    saveas(figtmp, sprintf('%s%s%s.png', outdir, filesep, taskfields{i}));
+    saveas(figtmp, sprintf('%s%s%s.eps', outdir, filesep, taskfields{i}),'epsc2');
+    close(figtmp);
+end
 
 %%
+taskChFields = fieldnames(taskChGrp);
+for j=1:length(taskChFields)
+    tmpField = getfield(taskChGrp, taskChFields{j});
+    figtmp = figure('name', taskChFields{j},'position',[0 0 800 800],'color',[1 1 1]);
+    sysLatAll = [];
+    
+    for k=1:length(tmpField)
+        a = tmpField{k}.idx;
+        subplot(2,2,k);
+        set(gca,'fontsize',16);
+        hold on;
+        clear ampm amps spm sps jitterm jitters vidm vids SBlen audm auds SR sysm
+        audm = [];
+        auds = [];
+        p=1;
+        for i=1:length(a)
+            if mean(res{a(i)}.jitter) >= 1000*res{a(i)}.SBS/res{a(i)}.fs continue; end
+            SR(p) = res{a(i)}.fs;
+            ampm(p) = mean(res{a(i)}.dAmp.vals);
+            amps(p) = std(res{a(i)}.dAmp.vals);
+            spm(p) = mean(res{a(i)}.sigProc);
+            sps(p) = std(res{a(i)}.sigProc);
+            jitterm(p) = mean(res{a(i)}.jitter);
+            jitters(p) = std(res{a(i)}.jitter);
+            vidm(p) = mean(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc-ampm(p));
+            vids(p) = std(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc-ampm(p));
+            if ~isempty(res{a(i)}.aud)
+                audm(p) = mean(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+                auds(p) = std(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+            end
+            sysm(p) = mean(res{a(i)}.vid.vals);
+            syss(p) = std(res{a(i)}.vid.vals);
+            SBlen(p) = 1000*res{a(i)}.SBS/res{a(i)}.fs;
+            p=p+1;
+        end
+        
+        plot(SR,SBlen,'color',[0 0 0])
+        errorbar(SR, ampm, amps,'linewidth',LW);
+        errorbar(SR, spm, sps,'r','linewidth',LW);
+        errorbar(SR, jitterm, jitters,'g','linewidth',LW);
+
+        errorbar(SR, vidm, vids,'color',[.5 .5 .5],'linewidth',LW);
+        if ~isempty(audm)
+            errorbar(SR, audm, auds,'color',[1.0000    0.6941    0.3922],'linewidth',LW);
+        end        
+        axis tight;
+        YL = ylim;
+        XL = xlim;
+        set(gca,'ylim',[0 YL(end)*1.1]);
+
+        title(sprintf('%s Chs', num2str(tmpField{k}.nChs)));
+        
+        if k==1        
+            xlabel('Sample Rate');
+            ylabel('Delay (ms)');
+        end   
+        
+        sysLatAll{k} = [sysm; SR];
+    end
+    subplot(2,2,4);
+    hold on;
+    set(gca,'fontsize',16);
+    for i=1:length(sysLatAll)
+        plot(sysLatAll{i}(2,:), sysLatAll{i}(1,:),'color',[0 0 0],'linewidth',LW);
+    end
+     axis tight;
+    YL = ylim;
+    XL = xlim;
+    set(gca,'ylim',[0 100*1.1], 'xlim',[0 XL(end)*1.1]);
+    title(sprintf('System Latency'));
+
+    xlabel('Sample Rate');
+    
+    saveas(figtmp, sprintf('%s%s%s.fig', outdir, filesep, taskChFields{j}));
+    saveas(figtmp, sprintf('%s%s%s.png', outdir, filesep, taskChFields{j}));
+    saveas(figtmp, sprintf('%s%s%s.eps', outdir, filesep, taskChFields{j}),'epsc2');
+    close(figtmp);
+%     clear ampm amps spm sps jitterm jitters vidm vids SBlen audm auds SR nSamples
+%     audm = [];
+%     auds = [];
+%     tmpField = getfield(totalSamplesGrp, taskChFields{j});
+%     a = tmpField.idx;
+%     p=1;
+%     for i=1:length(a)
+%         if mean(res{a(i)}.jitter) >= 1000*res{a(i)}.SBS/res{a(i)}.fs continue; end
+%         nSamples(p) = tmpField.nSamples(i);
+%         ampm(p) = mean(res{a(i)}.dAmp.vals);
+%         amps(p) = std(res{a(i)}.dAmp.vals);
+%         spm(p) = mean(res{a(i)}.sigProc);
+%         sps(p) = std(res{a(i)}.sigProc);
+%         jitterm(p) = mean(res{a(i)}.jitter);
+%         jitters(p) = std(res{a(i)}.jitter);
+%         vidm(p) = mean(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
+%         vids(p) = std(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
+%         if ~isempty(res{a(i)}.aud)
+%             audm(p) = mean(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+%             auds(p) = std(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+%         end
+%         p=p+1;
+%     end
+%     plot(nSamples, spm,'r');
+%     plot(nSamples, ampm,'color',[0 0 0]);
+%     plot(nSamples, vidm,'color',[0 0 1]);
+%     plot(nSamples, jitterm,'g');
+   
+end
+
+save(sprintf('%s%sresults.mat', outdir, filesep), 'res');
+return;
+%%
 figure;
-for i=1:4
+for i=1:length(a)
     subplot(2,2,i);
     set(gca,'color',[0 0 0])
     hold on;
@@ -359,6 +586,40 @@ for i=1:4
     end
 end
 %%
+    
+clear ampm amps spm sps jitterm jitters vidm vids SBlen audm auds
+audm = [];
+auds = [];
+for i=1:length(a)
+    ampm(i) = mean(res{a(i)}.dAmp.vals);
+    amps(i) = std(res{a(i)}.dAmp.vals);
+    spm(i) = mean(res{a(i)}.sigProc);
+    sps(i) = std(res{a(i)}.sigProc);
+	jitterm(i) = mean(res{a(i)}.jitter);
+    jitters(i) = std(res{a(i)}.jitter);
+    vidm(i) = mean(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
+    vids(i) = std(res{a(i)}.vid.vals-res{a(i)}.vid.sigProc);
+    if ~isempty(res{a(i)}.aud)
+        audm(i) = mean(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+        auds(i) = std(res{a(i)}.aud.vals-res{a(i)}.aud.sigProc);
+    end
+    SBlen(i) = 1000*res{a(i)}.SBS/res{a(i)}.fs;
+end
+figure; 
+hold on;
+pd = 4;
+plot(SR,SBlen,'color',[0 0 0])
+errorbar(SR, ampm, amps);
+errorbar(SR, spm, sps,'r');
+errorbar(SR, jitterm, jitters,'g');
+
+errorbar(SR, vidm, vids,'color',[.5 .5 .5]);
+if ~isempty(audm)
+    errorbar(SR, audm, auds,'color',[1.0000    0.6941    0.3922]);
+end
+%%
+% setup figure
+set(gca,'fontsize',16);
 
 %% print tasks
 for i=1:length(res) 
