@@ -14,11 +14,11 @@ __fastcall TBCICertificationGUI::TBCICertificationGUI(TComponent* Owner)
 {
 	mCurTask = -1;
 	runThread = NULL;
-	mCurIni = "BCI2000Certification.ini";
-	if (!init("BCI2000Certification.ini"))
+	mCurIni = "";
+	if (!init(mCurIni))
 	{
-        exit(-1);
-    }
+		exit(-1);
+	}
 }
 //---------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ bool TBCICertificationGUI::init(string iniFile)
 		ShowMessage("Unable to locate BCI2000Certification.cfg. Make sure this file is located in BCI2000/tools/BCI2000Certification before continuing.");
 		return false;
 	}
+	if (iniFile != ""){
 	if (!mCT.parseIni(iniFile))
 	{
 		if (mCT.taskReturnCode() == -1)
@@ -51,6 +52,7 @@ bool TBCICertificationGUI::init(string iniFile)
 		if (ret == mrCancel)
 			return false;    */
 	}
+	}
 
 	TListItem *tmpParmItem;
 	taskList->Clear();
@@ -64,6 +66,20 @@ bool TBCICertificationGUI::init(string iniFile)
 	return true;
 }
 
+//---------------------------------------------------------------------------
+
+void __fastcall TBCICertificationGUI::delPrmBtnClick(TObject *Sender)
+{
+	if (mCurTask < 0 || mCurTask > mCT.nTasks())
+		return;
+	TListItem *tmpItem = parmsList->Selected;
+	if (tmpItem == NULL) return;
+	int pos = tmpItem->Index;
+	mCT[mCurTask].delParm(pos);
+	updateParmPanel();
+}
+//---------------------------------------------------------------------------
+
 void __fastcall TBCICertificationGUI::addPrmBtnClick(TObject *Sender)
 {
 	if (mCurTask < 0 || mCurTask > mCT.nTasks())
@@ -76,7 +92,7 @@ void __fastcall TBCICertificationGUI::addPrmBtnClick(TObject *Sender)
 	{
 		for (int i = 0; i < OpenDialog1->Files->Count; i++)
 		{
-			mCT[mCurTask].addParm(OpenDialog1->Files[i].GetText());
+			mCT[mCurTask].addParm(string(OpenDialog1->Files[i].Text.c_str()));
 		}
 	}
 	updateParmPanel();
@@ -131,14 +147,23 @@ void TBCICertificationGUI::updateParmPanel()
 	else
 		vidBox->Text = mCT[mCurTask].vid.ch+1;
 	vidStateBox->Text = mCT[mCurTask].vid.state.c_str();
-	vidStateValuesBox->Text = mCT[mCurTask].vid.stateVal;
+	stringstream strTmp;
+	for (int k = 0; k < mCT[mCurTask].vid.stateVal.size(); k++)
+		 strTmp << mCT[mCurTask].vid.stateVal[k] << " ";
 
+	vidStateValuesBox->Text = strTmp.str().c_str();
 	if (mCT[mCurTask].aud.ch < 0)
 		audioBox->Text = "";
 	else
 		audioBox->Text = mCT[mCurTask].aud.ch+1;
 	audioStateBox->Text = mCT[mCurTask].aud.state.c_str();
-	audioStateValuesBox->Text = mCT[mCurTask].aud.stateVal;
+	strTmp.str("");
+	for (int k = 0; k < mCT[mCurTask].aud.stateVal.size(); k++)
+		strTmp << mCT[mCurTask].aud.stateVal[k] << " ";
+
+	audioStateValuesBox->Text = strTmp.str().c_str();
+	sampleRateBox->Text = mCT[mCurTask].sampleRate;
+	SBSbox->Text = mCT[mCurTask].blockSize;
 
 	sigSourceBox->Text = mCT[mCurTask].SignalSource.c_str();
 	sigProcBox->Text = mCT[mCurTask].SigProc.c_str();
@@ -186,7 +211,13 @@ void TBCICertificationGUI::updateParm()
 
 
 	try{
-		mCT[mCurTask].vid.stateVal = atoi(vidStateValuesBox->Text.c_str());
+		stringstream ss;
+		ss.str(vidStateValuesBox->Text.c_str());
+		int tmpV, pos = 0;
+		while (!ss.eof()){
+			ss >> tmpV;
+			mCT[mCurTask].vid.stateVal[pos++] = tmpV;
+		}
 	}
 	catch(...){
 	}
@@ -205,7 +236,15 @@ void TBCICertificationGUI::updateParm()
 
 
 	try{
-		mCT[mCurTask].aud.stateVal = atoi(audioStateValuesBox->Text.c_str());
+		//mCT[mCurTask].aud.stateVal = atoi(audioStateValuesBox->Text.c_str());
+		stringstream ss;
+		ss.str(audioStateValuesBox->Text.c_str());
+		int tmpV;
+		int pos = 0;
+		while (!ss.eof()){
+			ss >>tmpV;
+			mCT[mCurTask].aud.stateVal[pos++] = tmpV;
+		}
 	}
 	catch(...){
 	}
@@ -213,6 +252,9 @@ void TBCICertificationGUI::updateParm()
 	mCT[mCurTask].SignalSource = sigSourceBox->Text.c_str();
 	mCT[mCurTask].SigProc = sigProcBox->Text.c_str();
 	mCT[mCurTask].App = appBox->Text.c_str();
+
+	mCT[mCurTask].sampleRate = atof(sampleRateBox->Text.c_str());
+	mCT[mCurTask].blockSize = atof(SBSbox->Text.c_str());
 
 	updateParmPanel();
 }
@@ -540,11 +582,15 @@ void __fastcall TBCICertificationGUI::addTaskBtnClick(TObject *Sender)
 	tmpParmItem->Caption = mCT[mCT.tasks.size()-1].taskName.c_str();
 	tmpParmItem->Checked = false;
 }
+
+
+
 //---------------------------------------------------------------------------
 
 void __fastcall TBCICertificationGUI::delTaskBtnClick(TObject *Sender)
 {
 	TListItem *tmpItem = taskList->Selected;
+	if (tmpItem == NULL) return;
 	int pos = tmpItem->Index;
 	taskList->DeleteSelected();
 	if (pos < 0 || pos >= mCT.tasks.size())
@@ -594,4 +640,37 @@ void __fastcall TBCICertificationGUI::Saveini1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+
+void __fastcall TBCICertificationGUI::sampleRateBoxExit(TObject *Sender)
+{
+	updateParm();	
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBCICertificationGUI::SBSboxExit(TObject *Sender)
+{
+	updateParm();	
+}
+//---------------------------------------------------------------------------
+
+
+
+
+void __fastcall TBCICertificationGUI::copyBtnClick(TObject *Sender)
+{
+	TListItem *tmpItem = taskList->Selected;
+	if (tmpItem == NULL) return;
+	int pos = tmpItem->Index;
+	if (pos < 0 || pos >= mCT.tasks.size())
+		return;
+
+	TaskType newTask = mCT[pos];
+	TListItem *tmpParmItem;
+	//newTask.taskName = "newTask";
+	mCT.tasks.push_back(newTask);
+	tmpParmItem = taskList->Items->Add();
+	tmpParmItem->Caption = mCT[mCT.tasks.size()-1].taskName.c_str();
+	tmpParmItem->Checked = false;
+}
+//---------------------------------------------------------------------------
 

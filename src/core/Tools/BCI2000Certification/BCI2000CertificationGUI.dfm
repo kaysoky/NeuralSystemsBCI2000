@@ -2,7 +2,7 @@ object BCICertificationGUI: TBCICertificationGUI
   Left = 296
   Top = 225
   Caption = 'BCI2000 Certification'
-  ClientHeight = 598
+  ClientHeight = 701
   ClientWidth = 620
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object BCICertificationGUI: TBCICertificationGUI
     Left = 224
     Top = 8
     Width = 388
-    Height = 425
+    Height = 517
     Caption = 'Task Details'
     Color = clBtnFace
     ParentColor = False
@@ -61,7 +61,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object ampBox: TLabeledEdit
       Left = 32
-      Top = 289
+      Top = 385
       Width = 65
       Height = 21
       BiDiMode = bdLeftToRight
@@ -77,7 +77,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object digAmpBox: TLabeledEdit
       Left = 120
-      Top = 289
+      Top = 385
       Width = 65
       Height = 21
       BiDiMode = bdLeftToRight
@@ -93,7 +93,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object vidBox: TLabeledEdit
       Left = 32
-      Top = 337
+      Top = 433
       Width = 65
       Height = 21
       BiDiMode = bdLeftToRight
@@ -109,7 +109,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object vidStateBox: TLabeledEdit
       Left = 120
-      Top = 337
+      Top = 433
       Width = 105
       Height = 21
       BiDiMode = bdLeftToRight
@@ -125,7 +125,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object vidStateValuesBox: TLabeledEdit
       Left = 240
-      Top = 337
+      Top = 433
       Width = 105
       Height = 21
       BiDiMode = bdLeftToRight
@@ -141,7 +141,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object audioBox: TLabeledEdit
       Left = 32
-      Top = 385
+      Top = 481
       Width = 65
       Height = 21
       BiDiMode = bdLeftToRight
@@ -157,7 +157,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object audioStateBox: TLabeledEdit
       Left = 120
-      Top = 385
+      Top = 481
       Width = 105
       Height = 21
       BiDiMode = bdLeftToRight
@@ -173,7 +173,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object audioStateValuesBox: TLabeledEdit
       Left = 239
-      Top = 385
+      Top = 481
       Width = 105
       Height = 21
       BiDiMode = bdLeftToRight
@@ -203,6 +203,7 @@ object BCICertificationGUI: TBCICertificationGUI
       Height = 25
       Caption = '-'
       TabOrder = 7
+      OnClick = delPrmBtnClick
     end
     object parmsList: TListView
       Left = 200
@@ -271,17 +272,39 @@ object BCICertificationGUI: TBCICertificationGUI
       TabOrder = 6
       OnClick = getAppBtnClick
     end
+    object sampleRateBox: TLabeledEdit
+      Left = 16
+      Top = 280
+      Width = 81
+      Height = 21
+      EditLabel.Width = 60
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Sample Rate'
+      TabOrder = 18
+      OnExit = sampleRateBoxExit
+    end
+    object SBSbox: TLabeledEdit
+      Left = 120
+      Top = 280
+      Width = 81
+      Height = 21
+      EditLabel.Width = 83
+      EditLabel.Height = 13
+      EditLabel.Caption = 'Sample Block Size'
+      TabOrder = 19
+      OnExit = SBSboxExit
+    end
   end
   object GroupBox2: TGroupBox
     Left = 8
     Top = 8
     Width = 210
-    Height = 329
+    Height = 419
     Caption = 'Task List'
     TabOrder = 1
     object addTaskBtn: TButton
       Left = 168
-      Top = 295
+      Top = 383
       Width = 27
       Height = 25
       Caption = '+'
@@ -290,7 +313,7 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object delTaskBtn: TButton
       Left = 135
-      Top = 295
+      Top = 383
       Width = 27
       Height = 25
       Caption = '-'
@@ -299,9 +322,9 @@ object BCICertificationGUI: TBCICertificationGUI
     end
     object taskList: TListView
       Left = 3
-      Top = 32
+      Top = 24
       Width = 204
-      Height = 257
+      Height = 353
       Checkboxes = True
       Columns = <
         item
@@ -312,10 +335,19 @@ object BCICertificationGUI: TBCICertificationGUI
       ViewStyle = vsReport
       OnClick = taskListClick
     end
+    object copyBtn: TButton
+      Left = 80
+      Top = 383
+      Width = 49
+      Height = 25
+      Caption = 'Copy'
+      TabOrder = 3
+      OnClick = copyBtnClick
+    end
   end
   object GroupBox3: TGroupBox
     Left = 224
-    Top = 439
+    Top = 531
     Width = 388
     Height = 162
     Caption = 'Global Settings'
@@ -435,7 +467,7 @@ object BCICertificationGUI: TBCICertificationGUI
   end
   object GroupBox4: TGroupBox
     Left = 8
-    Top = 341
+    Top = 433
     Width = 210
     Height = 260
     Caption = 'Controls'
@@ -476,8 +508,8 @@ object BCICertificationGUI: TBCICertificationGUI
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 560
-    Top = 272
+    Left = 488
+    Top = 240
   end
   object MainMenu1: TMainMenu
     Left = 344

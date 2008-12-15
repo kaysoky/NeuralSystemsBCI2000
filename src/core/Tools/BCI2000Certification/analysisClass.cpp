@@ -535,7 +535,7 @@ input: int chNum - the channel to use in the analysis
             (0 triggers ANY positive state change)
 output: basicStats - the results of the analysis
 */
-basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
+basicStats analysis::doThreshAnalysis(int chNum, string stateName, vector<int> stateVal)
 {
 	vector<double> tDiff;
 	basicStats tmpStat;
@@ -613,14 +613,22 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 		{
             //store the time difference if the state change value is 0 or equal to what we specified
             
-			if (stateVal == 0 || (stateVal == dState))
+			if (stateVal[0] == 0)
 				tDiff.push_back(D);
-            else if (stateVal == -1)
+            else if (stateVal[0] == -1)
 			{
                 //if we set state val to -1, we record all differences, and keep track of
                 //the times for each dState value
 				tDiff.push_back(D);
 				stateTDiffs[dState].push_back(D);
+			}
+			else
+			{
+				for (int k = 0; k < stateVal.size(); k++)
+				{
+					if (dState == stateVal[k])
+						tDiff.push_back(D);
+				}
 			}
         }
     }
@@ -640,12 +648,20 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 
     stringstream str;
     str << "Ch " << chNum <<" v. " << stateName;
-    if (stateVal > 0)
-        str <<"("<<stateVal<<")";
+	if (stateVal[0] > 0){
+		str <<"(";
+		for (int k = 0; k < stateVal.size(); k++){
+			if (k < stateVal.size() -1)
+				str << stateVal[k] << " || ";
+			else
+				str << stateVal[k];
+			str << ")" <<endl;
+		}
+	}
         
     tmpStat.desc = str.str();
 
-    if (stateVal >= 0)
+    if (stateVal[0] >= 0)
         return tmpStat;
 
     //now compare all of the states if stateVal == -1
@@ -675,6 +691,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, int stateVal)
 
     return tmpStat;
 }
+
 
 /*
 checks for dropped samples, by either checking for consecutive zeros, or
@@ -819,7 +836,7 @@ void analysis::print(FILE * out, vector<basicStats> minReqs)
     for (int t = 0; t < latencyStats.size(); t++)
     {
         basicStats tmpTask = latencyStats[t];
-		fprintf(out, "\t%s\t",(tmpTask.taskName).c_str());
+        fprintf(out, "\t%s\t&Duration: %1.3f\n\t",(tmpTask.taskName).c_str(), float(this->nSamples)/this->sampleRate);
         //resOut<<tmpTask.taskName<<": ";
         int tfound = 0;
 

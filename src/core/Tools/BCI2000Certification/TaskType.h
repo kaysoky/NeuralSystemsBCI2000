@@ -23,7 +23,7 @@ struct analysisType
 {
     int ch;
     std::string state;
-    int stateVal;
+    std::vector<int> stateVal;
     bool flag;
 };
 
@@ -48,6 +48,7 @@ public:
     bool exportData;
 	void initTasks();
 	void addParm(std::string);
+	void delParm(int);
 };
 
 class Tasks : public std::vector<TaskType>

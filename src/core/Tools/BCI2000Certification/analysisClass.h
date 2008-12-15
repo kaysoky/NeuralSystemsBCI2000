@@ -32,7 +32,7 @@ public:
     void clear();
 
     basicStats doThreshAnalysis(int chNum);
-    basicStats doThreshAnalysis(int chNum, string stateName, int);
+    basicStats doThreshAnalysis(int chNum, string stateName, vector<int>);
 	bool doThreshAnalysis(double thresh);
     string getTaskName(){return thisTask.taskName;}
     bool getSkip(){return thisTask.skip;}

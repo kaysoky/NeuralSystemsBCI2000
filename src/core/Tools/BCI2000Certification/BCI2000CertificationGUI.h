@@ -74,6 +74,9 @@ __published:	// IDE-managed Components
 	TMenuItem *Openini1;
 	TMenuItem *Saveini1;
 	TSaveDialog *SaveDialog1;
+	TLabeledEdit *sampleRateBox;
+	TLabeledEdit *SBSbox;
+	TButton *copyBtn;
 	void __fastcall addPrmBtnClick(TObject *Sender);
 	void __fastcall dataSaveBtnClick(TObject *Sender);
 	void __fastcall taskListClick(TObject *Sender);
@@ -108,6 +111,10 @@ __published:	// IDE-managed Components
 	void __fastcall analyzeBtnClick(TObject *Sender);
 	void __fastcall Openini1Click(TObject *Sender);
 	void __fastcall Saveini1Click(TObject *Sender);
+	void __fastcall sampleRateBoxExit(TObject *Sender);
+	void __fastcall SBSboxExit(TObject *Sender);
+	void __fastcall delPrmBtnClick(TObject *Sender);
+	void __fastcall copyBtnClick(TObject *Sender);
 private:	// User declarations
 	bool init(string);
 	void updateParmPanel();

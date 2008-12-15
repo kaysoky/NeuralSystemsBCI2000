@@ -114,10 +114,12 @@ bool CertLauncher::launchProgs()
     for (int i = 0; i < curTaskC.parmFile.size(); i++)
     {
         operat << " LOAD PARAMETERFILE ";
-        operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << curTaskC.parmFile[i] <<";";
+		//operat << " .." << fs << "tools" << fs << "BCI2000Certification"<<fs<<"parms" << fs << curTaskC.parmFile[i] <<";";
+		operat <<  curTaskC.parmFile[i] <<";";
     }
 
-    operat <<" SETCONFIG;\"";
+	operat <<" SETCONFIG;\"";
+	operat <<" --OnSetConfig \"-SET STATE Running 1\""; 
     operat << " --OnSuspend \"-Quit\";";
 
 
@@ -158,10 +160,15 @@ bool CertLauncher::launchProgs()
 
 	comm <<" --SubjectName-"<<curTaskC.taskName;
 
+	if (curTaskC.sampleRate > 0)
+		comm << " --SamplingRate-" << curTaskC.sampleRate;
+
+	if (curTaskC.blockSize > 0)
+		comm << " --SampleBlockSize-" << curTaskC.blockSize;
+
 	if (mDataDir != "")
 		comm << " --DataDirectory-" << mDataDir;
 
-	comm << endl;
 
 	Sleep(100);
 	string tmp(comm.str());

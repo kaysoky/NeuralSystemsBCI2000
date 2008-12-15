@@ -122,15 +122,25 @@ void Tasks::init(std::string fname)
                 {
                     curTask.vid.flag = true;
                     ss2 >> curTask.vid.ch;
-                    ss2 >> curTask.vid.state;
-                    ss2 >> curTask.vid.stateVal;
+					ss2 >> curTask.vid.state;
+					int tmpV;
+					curTask.vid.stateVal.clear();
+					while (!ss2.eof()){
+						ss2 >> tmpV;
+						curTask.vid.stateVal.push_back(tmpV);
+					}
                 }
                 else if (tolower(strTok) == "aud")
                 {
                     curTask.aud.flag = true;
                     ss2 >> curTask.aud.ch;
-                    ss2 >> curTask.aud.state;
-                    ss2 >> curTask.aud.stateVal;
+					ss2 >> curTask.aud.state;
+					int tmpV;
+					curTask.aud.stateVal.clear();
+                    while (!ss2.eof()){
+						ss2 >> tmpV;
+						curTask.aud.stateVal.push_back(tmpV);
+					}
                 }
                 else if (tolower(strTok) == "source")
                 {
@@ -144,12 +154,20 @@ void Tasks::init(std::string fname)
                 {
                     ss2 >> curTask.App;
                 }
-                else if (tolower(strTok) == "parm")
+				else if (tolower(strTok) == "parm")
                 {
 					string parmTmp;
 					ss2 >> parmTmp;
 					curTask.addParm(parmTmp);
                     //ss2 >> curTask.parmFile;
+				}
+				else if (tolower(strTok) == "samplingrate")
+				{
+					ss2 >> curTask.sampleRate;
+				}
+				else if (tolower(strTok) == "blocksize")
+				{
+					ss2 >> curTask.blockSize;
 				}
                 else if (tolower(strTok) == "skip")
                 {
@@ -228,17 +246,31 @@ bool Tasks::writeIni(string fname)
 		if (tmpTask.dAmp.flag)
 			out << "damp " << tmpTask.dAmp.ch << endl;
 
-		if (tmpTask.vid.flag)
-			out << "vid " << tmpTask.vid.ch << " " << tmpTask.vid.state << " " << tmpTask.vid.stateVal << endl;
+		if (tmpTask.vid.flag){
+			out << "vid " << tmpTask.vid.ch << " " << tmpTask.vid.state;
+			for (int k = 0; k < tmpTask.vid.stateVal.size(); k++)
+				out << " " << tmpTask.vid.stateVal[k];
+			out << endl;
+		}
 
-		if (tmpTask.aud.flag)
-			out << "aud " << tmpTask.aud.ch << " " << tmpTask.aud.state << " " << tmpTask.aud.stateVal << endl;
+		if (tmpTask.aud.flag){
+			out << "aud " << tmpTask.aud.ch << " " << tmpTask.aud.state;
+			for (int k = 0; k < tmpTask.aud.stateVal.size(); k++)
+				out << " " << tmpTask.aud.stateVal[k];
+			out << endl;
+		}
 
 		if (tmpTask.SignalSource.size() > 0)
 			out << "source " << tmpTask.SignalSource << endl;
 
 		if (tmpTask.SigProc.size() > 0)
 			out << "sigproc " << tmpTask.SigProc << endl;
+
+		if (tmpTask.sampleRate > 0)
+			out << "samplingrate " << tmpTask.sampleRate << endl;
+
+		if (tmpTask.blockSize > 0)
+			out << "blocksize " << tmpTask.blockSize << endl;
 
 		if (tmpTask.App.size() > 0)
 			out << "app " << tmpTask.App << endl;
@@ -271,6 +303,15 @@ void TaskType::addParm(std::string str)
 		parmFileDisp.push_back(str);
 }
 
+void TaskType::delParm(int id)
+{
+	if (id < 0 || id >= parmFile.size())
+		return;
+
+	parmFile.erase(parmFile.begin()+id);
+	parmFileDisp.erase(parmFileDisp.begin()+id);
+}
+
 //-----------------------------------
 TaskType::TaskType()
 {
@@ -281,24 +322,27 @@ TaskType::TaskType()
 	parmFileDisp.clear();
 	states.clear();
 	sampleRate = 0;
+	blockSize = 0;
 	amp.ch = -1;
 	amp.state = "";
-	amp.stateVal = 0;
+	amp.stateVal.resize(0);
 	amp.flag = false;
-    dAmp.ch = -1;
+	dAmp.ch = -1;
 	dAmp.state = "";
-	dAmp.stateVal = 0;
+	dAmp.stateVal.resize(0);
 	dAmp.flag = false;
 	vid.ch = -1;
 	vid.state = "";
-	vid.stateVal = 0;
+	vid.stateVal.resize(1);
+	vid.stateVal[0] = 0;
 	vid.flag = false;
 	aud.ch = -1;
 	aud.state = "";
-	aud.stateVal = 0;
+	aud.stateVal.resize(1);
+	aud.stateVal[0] = 0;
 	aud.flag = false;
     skip = false;
-    exportData = false;
+	exportData = false;
 }
 
 //-----------------------------------
