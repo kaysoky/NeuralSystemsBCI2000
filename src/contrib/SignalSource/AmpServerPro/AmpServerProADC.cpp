@@ -393,6 +393,12 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   bResp = SendCommand(sCmd, &oCmdConn, sCmdResp);
   delete[] sCmd;
 
+  //Allow amp to settle into stable state
+  //Sleep(1000);
+  sCmd = BuildCmdString(ASP_CMD_SETTEST1, 0, 0, 0);
+  //bResp = SendCommand(sCmd, &oCmdConn, sCmdResp);
+  delete[] sCmd;
+
   if(!bResp)
   {
     bcierr << "Unable to communicate via the command layer." << endl;

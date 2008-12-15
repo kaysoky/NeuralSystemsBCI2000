@@ -39,6 +39,7 @@
 #define ASP_CMD_GETSTARTTIME "GetStartTime"
 #define ASP_CMD_GETCURRENTTIME "GetCurrentTime"
 #define ASP_CMD_NUMBEROFAMPS "NumberOfAmps"
+#define ASP_CMD_SETTEST1 "SetTest1"
 
 #define ASP_SEXP_NUMBEROFAMPS "number_of_amps \d+"
 
