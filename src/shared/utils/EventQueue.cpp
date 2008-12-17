@@ -15,6 +15,9 @@
 #pragma hdrstop
 
 #include "EventQueue.h"
+#include <cstring>
+
+using namespace std;
 
 void
 EventQueue::PushBack( const char* inDescriptor, PrecisionTime inTimeStamp )

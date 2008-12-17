@@ -15,6 +15,7 @@
 #define EVENT_QUEUE_H
 
 #include "PrecisionTime.h"
+#include <cstddef>
 
 class EventQueue
 {

@@ -10,9 +10,7 @@
 #pragma hdrstop
 
 #include "GenericVisualization.h"
-
 #include "Environment.h"
-#include "GenericSignal.h"
 #include "MessageHandler.h"
 
 #include <iostream>
@@ -137,9 +135,8 @@ VisBitmap::WriteBinarySelf( ostream& os ) const
   mBitmap.WriteBinary( os );
 }
 
-template<>
 GenericVisualization&
-GenericVisualization::Send( CfgID::CfgID inCfgID, const string& inCfgString )
+GenericVisualization::SendCfgString( CfgID::CfgID inCfgID, const std::string& inCfgString )
 {
   MessageHandler::PutMessage( *EnvironmentBase::Operator, VisCfg( mSourceID, inCfgID, inCfgString ) );
   EnvironmentBase::Operator->flush();

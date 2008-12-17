@@ -177,13 +177,15 @@ class GenericVisualization : public std::ostream
     GenericVisualization& Send( const BitmapImage& );
 
   private:
+    GenericVisualization& SendCfgString( CfgID::CfgID, const std::string& );
+
     std::string  mSourceID;
     class VisStringbuf : public std::stringbuf
     {
       public:
-        VisStringbuf( GenericVisualization* parent )
+        VisStringbuf( GenericVisualization* inParent )
         : std::stringbuf( std::ios_base::out ),
-          mpParent( parent )
+          mpParent( inParent )
         {}
       private:
         virtual int sync();
@@ -191,18 +193,13 @@ class GenericVisualization : public std::ostream
     } mBuf;
 };
 
-template<>
-GenericVisualization&
-GenericVisualization::Send( CfgID::CfgID inCfgID, const std::string& inCfgString );
-
 template<typename T>
 GenericVisualization&
 GenericVisualization::Send( CfgID::CfgID cfgID, const T& cfgValue )
 {
   std::ostringstream oss;
   oss << cfgValue;
-  return Send<std::string>( cfgID, oss.str() );
+  return SendCfgString( cfgID, oss.str() );
 }
 
 #endif // GENERIC_VISUALIZATION_H
-

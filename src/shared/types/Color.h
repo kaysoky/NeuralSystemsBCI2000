@@ -15,8 +15,10 @@
 #include <string>
 #include "ValueList.h"
 
-#if defined( CLR_INVALID ) && ( CLR_INVALID != 0xffffffff )
-# error This file assumes CLR_INVALID == 0xffffffff.
+#if defined( CLR_INVALID )
+# if( CLR_INVALID != 0xffffffff )
+#  error This file assumes CLR_INVALID == 0xffffffff.
+# endif
 #endif
 
 class RGBColor

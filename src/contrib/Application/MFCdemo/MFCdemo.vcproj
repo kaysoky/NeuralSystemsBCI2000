@@ -188,10 +188,16 @@
 			<Filter
 				Name="BCI2000_Framework">
 				<File
+					RelativePath="..\..\..\shared\utils\Expression\ArithmeticExpression.cpp">
+				</File>
+				<File
 					RelativePath="..\..\..\shared\bcistream\BCIError.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\shared\bcistream\BCIError_module.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\shared\accessors\BCIEvent.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\shared\types\BitmapImage.cpp">
@@ -213,6 +219,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\shared\accessors\Environment.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\shared\utils\EventQueue.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\shared\utils\Expression\Expression.cpp">
@@ -276,6 +285,9 @@
 				</File>
 				<File
 					RelativePath="..\..\..\shared\types\StateVector.cpp">
+				</File>
+				<File
+					RelativePath="..\..\..\shared\types\StateVectorSample.cpp">
 				</File>
 				<File
 					RelativePath="..\..\..\shared\types\Status.cpp">
