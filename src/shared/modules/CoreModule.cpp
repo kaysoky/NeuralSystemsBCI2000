@@ -22,8 +22,6 @@
 #include "MeasurementUnits.h"
 #include "SockStream.h"
 #include "BCIError.h"
-#include "BCIEvent.h"
-#include "PrecisionTime.h"
 #include "VersionInfo.h"
 #include "Version.h"
 
@@ -49,13 +47,11 @@ CoreModule::CoreModule()
   mFiltersInitialized( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
-  mBlockDuration( 0 ),
   mSampleBlockSize( 0 )
 {
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
   mPreviousModuleSocket.set_tcpnodelay( true );
-  BCIEvent::SetEventQueue( mBCIEvents );
 }
 
 CoreModule::~CoreModule()
@@ -152,6 +148,9 @@ CoreModule::Initialize( int inArgc, char** inArgv )
       Param param( paramName,
                    "System:Command Line Arguments",
                    "variant",
+                   paramValue,
+                   paramValue,
+                   paramValue,
                    paramValue
                  );
       mParamlist.Add( param );
@@ -265,68 +264,6 @@ CoreModule::ProcessBCIAndGUIMessages()
     mResting &= mOperator.is_open();
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
     ProcessGUIMessages();
-  }
-}
-
-void
-CoreModule::ProcessBCIEvents()
-{
-  if( mpStatevector != NULL )
-  {
-    // When translating event time stamps into sample positions, we assume a block's
-    // source time stamp to match the next block's first sample.
-    PrecisionTime sourceTime = mpStatevector->StateValue( "SourceTime" );
-
-    while( !mBCIEvents.IsEmpty()
-           && PrecisionTime::SignedDiff( mBCIEvents.FrontTimeStamp(), sourceTime ) <= 0 )
-    {
-      int offset = ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) )
-                   * mSampleBlockSize ) / mBlockDuration;
-      istringstream iss( mBCIEvents.FrontDescriptor() );
-      string name;
-      iss >> name;
-      State::ValueType value;
-      iss >> value;
-      int duration;
-      if( !( iss >> duration ) )
-        duration = -1;
-
-      bcidbg( 10 ) << "Setting State \"" << name
-                   << "\" to " << value
-                   << " at offset " << offset
-                   << " with duration " << duration
-                   << " from event:\n" << mBCIEvents.FrontDescriptor()
-                   << endl;
-
-      offset = max( offset, 0 );
-      if( duration < 0 )
-      { // No duration given -- set the state at the current and following positions.
-        mpStatevector->SetStateValue( name, offset, value );
-      }
-      else if( duration == 0 )
-      { // Set the state at a single position only.
-        // For zero duration events, avoid overwriting a previous event by
-        // moving the current one if possible, and reposting if not.
-        while( offset <= mSampleBlockSize && mpStatevector->StateValue( name, offset ) != 0 )
-          ++offset;
-        if( offset == mSampleBlockSize )
-        { // Re-post the event to be processed in the next block
-          mBCIEvents.PushBack( mBCIEvents.FrontDescriptor(), mBCIEvents.FrontTimeStamp() );
-        }
-        else
-        {
-          mpStatevector->SetStateValue( name, offset, value );
-          mpStatevector->SetStateValue( name, offset + 1, 0 );
-        }
-      }
-      else
-      {
-        bcierr__ << "Event durations > 0 are currently unsupported "
-                 << "(" << iss.str() << ")"
-                 << endl;
-      }
-      mBCIEvents.PopFront();
-    }
   }
 }
 
@@ -503,7 +440,6 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   errorOccurred |= ( bcierr__.Flushes() > 0 );
   if( !errorOccurred )
   {
-    mBlockDuration = 1.0 / MeasurementUnits::ReadAsTime( "1ms" );
 #if( MODTYPE != APP )
     MessageHandler::PutMessage( mNextModule, outputProperties );
 #endif // APP
@@ -726,7 +662,6 @@ CoreModule::HandleStateVector( istream& is )
                        // By evaluating at "mLastRunning" instead of "running" we
                        // obtain this behavior.
     {
-      ProcessBCIEvents();
       static GenericSignal nullSignal( 0, 0 );
       ProcessFilters( nullSignal );
     }

@@ -18,11 +18,11 @@
 
 #define bcievent BCIEvent()()
 
-class CoreModule;
+class DataIOFilter;
 
 class BCIEvent : public std::ostream
 {
- friend class ::CoreModule;
+ friend class ::DataIOFilter;
 
  class StringBuf;
  friend class StringBuf;
@@ -55,3 +55,4 @@ class BCIEvent : public std::ostream
 };
 
 #endif // BCI_EVENT_H
+

@@ -16,6 +16,7 @@
 #include "GenericADC.h"
 #include "GenericFileWriter.h"
 #include "BCIError.h"
+#include "BCIEvent.h"
 #include "BCIDirectory.h"
 #include "PrecisionTime.h"
 #include "MeasurementUnits.h"
@@ -42,8 +43,12 @@ DataIOFilter::DataIOFilter()
   mVisualizeTiming( false ),
   mSourceVis( "SRCD" ),
   mTimingVis( "RNDT" ),
-  mTimingSignal( 3, 1 )
+  mTimingSignal( 3, 1 ),
+  mBlockDuration( 0 ),
+  mSampleBlockSize( 0 )
 {
+  BCIEvent::SetEventQueue( mBCIEvents );
+
   BEGIN_PARAMETER_DEFINITIONS
     // Parameters required to interpret a data file are listed here
     // to enforce their presence:
@@ -282,6 +287,9 @@ void
 DataIOFilter::Initialize( const SignalProperties& Input,
                           const SignalProperties& Output )
 {
+  mBlockDuration = 1.0 / MeasurementUnits::ReadAsTime( "1ms" );
+  mSampleBlockSize = Statevector->Samples() - 1;
+
   const SignalProperties& adcOutput = mInputBuffer.Properties();
   State( "Recording" ) = 0;
   mOutputBuffer = GenericSignal( 0, 0 );
@@ -414,6 +422,7 @@ DataIOFilter::Process( const GenericSignal& Input,
   for( int i = 0; i < nextSample ; ++i )
     ( *Statevector )( i ) = ( *Statevector )( nextSample );
   State( "SourceTime" ) = now;
+  ProcessBCIEvents();
 
   for( int i = 0; i < Output.Channels(); ++i )
     for( int j = 0; j < Output.Elements(); ++j )
@@ -471,4 +480,64 @@ DataIOFilter::Downsample( const GenericSignal& Input, GenericSignal& Output )
       Output( ch, outsample ) = value;
     }
 }
+
+void
+DataIOFilter::ProcessBCIEvents()
+{
+  // When translating event time stamps into sample positions, we assume a block's
+  // source time stamp to match the subsequent block's first sample.
+  PrecisionTime sourceTime = Statevector->StateValue( "SourceTime" );
+
+  while( !mBCIEvents.IsEmpty()
+         && PrecisionTime::SignedDiff( mBCIEvents.FrontTimeStamp(), sourceTime ) <= 0 )
+  {
+    int offset = ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) )
+                 * mSampleBlockSize ) / mBlockDuration;
+    istringstream iss( mBCIEvents.FrontDescriptor() );
+    string name;
+    iss >> name;
+    State::ValueType value;
+    iss >> value;
+    int duration;
+    if( !( iss >> duration ) )
+      duration = -1;
+
+    bcidbg( 10 ) << "Setting State \"" << name
+                 << "\" to " << value
+                 << " at offset " << offset
+                 << " with duration " << duration
+                 << " from event:\n" << mBCIEvents.FrontDescriptor()
+                 << endl;
+
+    offset = max( offset, 0 );
+    if( duration < 0 )
+    { // No duration given -- set the state at the current and following positions.
+      Statevector->SetStateValue( name, offset, value );
+    }
+    else if( duration == 0 )
+    { // Set the state at a single position only.
+      // For zero duration events, avoid overwriting a previous event by
+      // moving the current one if possible, and reposting if not.
+      while( offset <= mSampleBlockSize && Statevector->StateValue( name, offset ) != 0 )
+        ++offset;
+      if( offset == mSampleBlockSize )
+      { // Re-post the event to be processed in the next block
+        mBCIEvents.PushBack( mBCIEvents.FrontDescriptor(), mBCIEvents.FrontTimeStamp() );
+      }
+      else
+      {
+        Statevector->SetStateValue( name, offset, value );
+        Statevector->SetStateValue( name, offset + 1, 0 );
+      }
+    }
+    else
+    {
+      bcierr__ << "Event durations > 0 are currently unsupported "
+               << "(" << iss.str() << ")"
+               << endl;
+    }
+    mBCIEvents.PopFront();
+  }
+}
+
 

@@ -12,6 +12,7 @@
 
 #include "GenericFilter.h"
 #include "GenericVisualization.h"
+#include "EventQueue.h"
 
 class GenericFileWriter;
 
@@ -37,6 +38,7 @@ class DataIOFilter: public GenericFilter
  private:
   static void Downsample( const GenericSignal& Input,
                                 GenericSignal& Output );
+  void ProcessBCIEvents();
 
   GenericFilter*         mpADC,
                *         mpSourceFilter;
@@ -54,6 +56,9 @@ class DataIOFilter: public GenericFilter
   mutable GenericSignal  mInputBuffer;
   std::vector<float>     mSourceChOffset,
                          mSourceChGain;
+  EventQueue             mBCIEvents;
+  float                  mBlockDuration;
+  int                    mSampleBlockSize;
 };
 
 #endif // DATA_IO_FILTER_H
