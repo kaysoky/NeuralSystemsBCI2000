@@ -127,8 +127,8 @@ ValuesToCells( const Param& p )
   int cell = 0;
   for( int col = 0; col < p.NumColumns(); ++col )
     for( int row = 0; row < p.NumRows(); ++row, ++cell )
-      if( p.Value().Kind() != Param::ParamValue::Single )
-        mxSetCell( paramArray, cell, ValuesToCells( *p.Value().ToParam() ) );
+      if( p.Value( row, col ).Kind() != Param::ParamValue::Single )
+        mxSetCell( paramArray, cell, ValuesToCells( *p.Value( row, col ).ToParam() ) );
       else
         mxSetCell( paramArray, cell, mxCreateString( p.Value( row, col ).c_str() ) );
 
