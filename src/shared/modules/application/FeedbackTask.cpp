@@ -53,7 +53,7 @@ FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
      " // minimum duration of a run; if blank, NumberOfTrials is used",
    "Application:Sequencing int NumberOfTrials= % 0 0 % "
      " // number of trials; if blank, MinRunLength is used",
-   "Application:Targets int NumberTargets= 2 2 0 15 "
+   "Application:Targets int NumberTargets= 2 2 0 % "
      " // number of targets",
   END_PARAMETER_DEFINITIONS
 
