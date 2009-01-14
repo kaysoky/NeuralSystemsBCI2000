@@ -48,7 +48,7 @@ class DataGlove5DTUFilter : public GenericFilter
   int                               glovesensors;
   bool                              datagloveenable;
 
-  unsigned short                    sensor_data[5];
+  unsigned short                    sensor_data[14];
 
 
 

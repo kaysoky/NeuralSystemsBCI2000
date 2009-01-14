@@ -39,6 +39,15 @@ DataGlove5DTUFilter::DataGlove5DTUFilter()
     "GloveSensor3 12 0 0 0",
     "GloveSensor4 12 0 0 0",
     "GloveSensor5 12 0 0 0",
+    "GloveSensor6 12 0 0 0",
+    "GloveSensor7 12 0 0 0",
+    "GloveSensor8 12 0 0 0",
+    "GloveSensor9 12 0 0 0",
+    "GloveSensor10 12 0 0 0",
+    "GloveSensor11 12 0 0 0",
+    "GloveSensor12 12 0 0 0",
+    "GloveSensor13 12 0 0 0",
+    "GloveSensor14 12 0 0 0",
   END_STATE_DEFINITIONS
 
 
@@ -151,7 +160,7 @@ void DataGlove5DTUFilter::Preflight( const SignalProperties& Input,
 
             int parameter_hand_type = Parameter( "DataGloveHandType" );
 
-            if (glovetype == FD_GLOVE5U_USB) {
+            if (glovetype == FD_GLOVE5U_USB || glovetype == FD_GLOVE14U_USB) {
 
               if (parameter_hand_type == 0) {
                 bciout << "Left handed data glove 5DTU found on USB port." << std::endl;
@@ -163,7 +172,7 @@ void DataGlove5DTUFilter::Preflight( const SignalProperties& Input,
 
               bciout << "Recording form data glove 5DTU is disabled. To enable recording check DataGloveEnable in section HumanInterface Devices" << std::endl;
 
-            } // if (glovetype == FD_GLOVE5U_USB)
+            } // if (glovetype == FD_GLOVE5U_USB || glovetype == FD_GLOVE14U_USB)
           } // if (pGlove != NULL)
         } //if (nNumFound > 0)
       } // if call == NULL
@@ -232,7 +241,7 @@ void DataGlove5DTUFilter::Preflight( const SignalProperties& Input,
         glovesensors = fdGetNumSensorsCall(pGlove);
 
 
-        if (glovetype != FD_GLOVE5U_USB) {
+        if (glovetype != FD_GLOVE5U_USB && glovetype != FD_GLOVE14U_USB) {
           bcierr << "Wrong type of data glove is connected to the USB port" << std::endl;
           return;
         }
@@ -312,7 +321,7 @@ void DataGlove5DTUFilter::Initialize( const SignalProperties&, const SignalPrope
 
             int parameter_hand_type = Parameter( "DataGloveHandType" );
 
-            if (glovetype == FD_GLOVE5U_USB) {
+            if (glovetype == FD_GLOVE5U_USB || glovetype == FD_GLOVE14U_USB) {
 
               if (parameter_hand_type == 0) {
                 bciout << "Left handed data glove 5DTU found on USB port." << std::endl;
@@ -324,7 +333,7 @@ void DataGlove5DTUFilter::Initialize( const SignalProperties&, const SignalPrope
 
               bciout << "Recording form data glove 5DTU is disabled. To enable recording check DataGloveEnable in section HumanInterface Devices" << std::endl;
 
-            } // if (glovetype == FD_GLOVE5U_USB)
+            } // if (glovetype == FD_GLOVE5U_USB || glovetype == FD_GLOVE14U_US)
           } // if (pGlove != NULL)
         } //if (nNumFound > 0)
       } // if call == NULL
@@ -394,7 +403,7 @@ void DataGlove5DTUFilter::Initialize( const SignalProperties&, const SignalPrope
         glovesensors = fdGetNumSensorsCall(pGlove);
 
 
-        if (glovetype != FD_GLOVE5U_USB) {
+        if (glovetype != FD_GLOVE5U_USB && glovetype != FD_GLOVE14U_USB) {
           bcierr << "Wrong type of data glove is connected to the USB port" << std::endl;
           return;
         }
@@ -431,17 +440,48 @@ void DataGlove5DTUFilter::Process(const GenericSignal& Input, GenericSignal& Out
 
   if (datagloveenable) {
 
-    sensor_data[0] = fdGetSensorRawCall(pGlove,FD_THUMBNEAR);
-    sensor_data[1] = fdGetSensorRawCall(pGlove,FD_INDEXNEAR);
-    sensor_data[2] = fdGetSensorRawCall(pGlove,FD_MIDDLENEAR);
-    sensor_data[3] = fdGetSensorRawCall(pGlove,FD_RINGNEAR);
-    sensor_data[4] = fdGetSensorRawCall(pGlove,FD_LITTLENEAR);
+    sensor_data[0]  = fdGetSensorRawCall(pGlove,FD_THUMBNEAR);
+    sensor_data[1]  = fdGetSensorRawCall(pGlove,FD_INDEXNEAR);
+    sensor_data[2]  = fdGetSensorRawCall(pGlove,FD_MIDDLENEAR);
+    sensor_data[3]  = fdGetSensorRawCall(pGlove,FD_RINGNEAR);
+    sensor_data[4]  = fdGetSensorRawCall(pGlove,FD_LITTLENEAR);
+
+    if (glovetype == FD_GLOVE14U_USB) {
+      sensor_data[5]  = fdGetSensorRawCall(pGlove,FD_THUMBFAR);
+      sensor_data[6]  = fdGetSensorRawCall(pGlove,FD_INDEXFAR);
+      sensor_data[7]  = fdGetSensorRawCall(pGlove,FD_MIDDLEFAR);
+      sensor_data[8]  = fdGetSensorRawCall(pGlove,FD_RINGFAR);
+      sensor_data[9]  = fdGetSensorRawCall(pGlove,FD_LITTLEFAR);
+      sensor_data[10] = fdGetSensorRawCall(pGlove,FD_THUMBINDEX);
+      sensor_data[11] = fdGetSensorRawCall(pGlove,FD_INDEXMIDDLE);
+      sensor_data[12] = fdGetSensorRawCall(pGlove,FD_MIDDLERING);
+      sensor_data[13] = fdGetSensorRawCall(pGlove,FD_RINGLITTLE);
+    } else {
+      sensor_data[5]  = 0;
+      sensor_data[6]  = 0;
+      sensor_data[7]  = 0;
+      sensor_data[8]  = 0;
+      sensor_data[9]  = 0;
+      sensor_data[10] = 0;
+      sensor_data[11] = 0;
+      sensor_data[12] = 0;
+      sensor_data[13] = 0;
+    }
 
     State("GloveSensor1")=sensor_data[0];
     State("GloveSensor2")=sensor_data[1];
     State("GloveSensor3")=sensor_data[2];
     State("GloveSensor4")=sensor_data[3];
     State("GloveSensor5")=sensor_data[4];
+    State("GloveSensor6")=sensor_data[5];
+    State("GloveSensor7")=sensor_data[6];
+    State("GloveSensor8")=sensor_data[7];
+    State("GloveSensor9")=sensor_data[8];
+    State("GloveSensor10")=sensor_data[9];
+    State("GloveSensor11")=sensor_data[10];
+    State("GloveSensor12")=sensor_data[11];
+    State("GloveSensor13")=sensor_data[12];
+    State("GloveSensor14")=sensor_data[13];
 
   } else {
 
@@ -450,6 +490,15 @@ void DataGlove5DTUFilter::Process(const GenericSignal& Input, GenericSignal& Out
     State("GloveSensor3")=0;
     State("GloveSensor4")=0;
     State("GloveSensor5")=0;
+    State("GloveSensor6")=0;
+    State("GloveSensor7")=0;
+    State("GloveSensor8")=0;
+    State("GloveSensor9")=0;
+    State("GloveSensor10")=0;
+    State("GloveSensor11")=0;
+    State("GloveSensor12")=0;
+    State("GloveSensor13")=0;
+    State("GloveSensor14")=0;
   }
 
    Output = Input;
