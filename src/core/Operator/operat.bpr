@@ -19,7 +19,7 @@
       obj\ExpressionParser.obj obj\GenericVisualization.obj obj\AboutBox.obj 
       obj\Environment.obj obj\VisDisplay.obj obj\DisplayFilter.obj 
       obj\BitmapImage.obj obj\ExecutableHelp.obj obj\ArithmeticExpression.obj 
-      obj\StateVectorSample.obj obj\BCIDirectory.obj"/>
+      obj\StateVectorSample.obj obj\BCIDirectory.obj obj\WinMessageHook.obj"/>
     <RESFILES value="operat.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -112,6 +112,7 @@
       <FILE FILENAME="..\..\shared\utils\Expression\ArithmeticExpression.cpp" FORMNAME="" UNITNAME="ArithmeticExpression" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\shared\fileio\BCIDirectory.cpp" FORMNAME="" UNITNAME="BCIDirectory" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="WinMessageHook.cpp" FORMNAME="" UNITNAME="WinMessageHook" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
