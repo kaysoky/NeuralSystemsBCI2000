@@ -420,7 +420,10 @@ CoreModule::ResetStatevector()
   State::ValueType sourceTime = mpStatevector->StateValue( "SourceTime" ),
                    stimulusTime = mpStatevector->StateValue( "StimulusTime" );
   for( int i = 0; i < mpStatevector->Samples(); ++i )
-    ( *mpStatevector )( i ).ReadBinary( istringstream( mInitialStatevector ) );
+  {
+    istringstream iss( mInitialStatevector );
+    ( *mpStatevector )( i ).ReadBinary( iss );
+  }
   mpStatevector->SetStateValue( "SourceTime", sourceTime );
   mpStatevector->SetStateValue( "StimulusTime", stimulusTime );
 }
@@ -581,7 +584,7 @@ CoreModule::HandleState( istream& is )
       // changes are not overwritten with the content of the previous
       // state vector when it arrives from the application module.
        mpStatevector->PostStateChange( s.Name(), s.Value() );
-       
+
       // For the "Running" state, the module will undergo a more complex
       // state transition than for other states.
       if( string( "Running" ) == s.Name() )
@@ -690,7 +693,7 @@ CoreModule::HandleSysCommand( istream& is )
     if( sampleBlockSize < 1 )
       sampleBlockSize = 1;
     mSampleBlockSize = sampleBlockSize;
-      
+
     if( s == SysCommand::EndOfState )
     {
       if( mpStatevector != NULL )
