@@ -23,8 +23,8 @@ class SignalDisplay
 {
  private:
   static const int cNumSamplesDefault = 128,
-                   cMinValueDefault = - 1 << 15,
-                   cMaxValueDefault = 1 << 16 - 1,
+                   cMinValueDefault = - ( 1 << 15 ),
+                   cMaxValueDefault = ( 1 << 16 ) - 1,
 
                    cChannelBase = 1, // displayed number of first channel
                    cSampleBase = 0,  // displayed number of first sample

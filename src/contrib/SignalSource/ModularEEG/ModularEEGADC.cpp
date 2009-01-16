@@ -165,8 +165,8 @@ int     value;
 long    longvalue;
 double  t;
 double  cursorpos, cursorposx;
-const   maxvalue = 1 << 15 - 1,
-        minvalue = - 1 << 15;
+const   maxvalue = ( 1 << 15 ) - 1,
+        minvalue = - ( 1 << 15 );
 float   sr = samplerate;
 
   // if simulation was chosen, generate sinewaves using cursorpos and wait for sampling period

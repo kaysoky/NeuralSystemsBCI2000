@@ -17,7 +17,7 @@
 #include "FeedbackScene3D.h"
 #include "buffers.h"
 
-#define CURSOR_POS_BITS "13"
+#define CURSOR_POS_BITS "12"
 const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
 RegisterFilter( CursorFeedbackTask, 3 );
@@ -360,7 +360,7 @@ CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProg
   z = std::max( r, std::min( 100 - r, z ) );
   mpFeedbackScene->SetCursorPosition( x, y, z );
 
-  const float coordToState = ( 1 << cCursorPosBits - 1 ) / 100.0;
+  const float coordToState = ( ( 1 << cCursorPosBits ) - 1 ) / 100.0;
   State( "CursorPosX" ) = x * coordToState;
   State( "CursorPosY" ) = y * coordToState;
   State( "CursorPosZ" ) = z * coordToState;
