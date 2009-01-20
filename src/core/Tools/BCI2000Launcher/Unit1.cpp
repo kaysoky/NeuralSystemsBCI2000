@@ -203,7 +203,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
 
 	string fs = "\\";
 	stringstream comm;
-	comm <<curdir << "operat.exe";
+	comm << "\"" << curdir << "operat.exe\"";
 
 	/*FileRun1->FileName = curdir.c_str();
 	FileRun1->FileName.Insert("operat.exe", curdir.length()+1);
@@ -273,7 +273,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
     else
 	{
 		statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
-		comm << curdir << sourceList->Items->Strings[sourceList->ItemIndex].c_str();
+		comm << "\"" << curdir << sourceList->Items->Strings[sourceList->ItemIndex].c_str() << "\"";
         if (sourceIPBox->Text.Length() > 0)
         {
             comm << " AUTOSTART " << sourceIPBox->Text.c_str();
@@ -310,7 +310,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
     else
     {
 		statusList->Items->Add("Launching " + sigProcList->Items->Strings[sigProcList->ItemIndex]);
-		comm << curdir.c_str() << sigProcList->Items->Strings[sigProcList->ItemIndex].c_str();
+		comm << "\"" << curdir.c_str() << sigProcList->Items->Strings[sigProcList->ItemIndex].c_str() << "\"";
 		if (sigProcIPBox->Text.Length() > 0)
 			comm << " AUTOSTART" << sigProcIPBox->Text.c_str();
 		strcpy(procName, comm.str().c_str());
@@ -332,7 +332,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
     else
     {
 		statusList->Items->Add("Launching " + appList->Items->Strings[appList->ItemIndex]);
-        comm << curdir.c_str() << appList->Items->Strings[appList->ItemIndex].c_str();
+        comm << "\"" << curdir.c_str() << appList->Items->Strings[appList->ItemIndex].c_str() << "\"";
         if (appIPBox->Text.Length() > 0)
 			comm << " AUTOSTART" << appIPBox->Text.c_str();
 		strcpy(procName, comm.str().c_str());
@@ -353,7 +353,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
         {
             if (othersList->Selected[i])
 			{
-				comm << curdir << othersList->Items->Strings[i].c_str();
+				comm << "\"" << curdir << othersList->Items->Strings[i].c_str() << "\"";
 				strcpy(procName, comm.str().c_str());
 				int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
 					HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
