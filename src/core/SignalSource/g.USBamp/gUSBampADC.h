@@ -61,6 +61,7 @@ protected:
 	bool 			 m_digitalOut1;
     int mTotalChs;
 	int NUM_BUFS, mBufferSize;
+	int mThreadBlock, mProcBlock;
 
 
 
