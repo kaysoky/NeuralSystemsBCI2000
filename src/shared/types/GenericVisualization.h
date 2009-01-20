@@ -203,3 +203,4 @@ GenericVisualization::Send( CfgID::CfgID cfgID, const T& cfgValue )
 }
 
 #endif // GENERIC_VISUALIZATION_H
+

@@ -1,6 +1,17 @@
 /* (C) 2000-2008, BCI2000 Project
 /* http://www.bci2000.org
 /*/
+#ifdef _NO_VCL
+
+#include "CoreModule.h"
+int main( int argc, char** argv )
+{
+  bool success = CoreModule().Run( argc, argv );
+  return ( success ? 0 : -1 );
+}
+
+#else // _NO_VCL
+
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -22,4 +33,4 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
   return 0;
 }
 
-
+#endif // _NO_VCL

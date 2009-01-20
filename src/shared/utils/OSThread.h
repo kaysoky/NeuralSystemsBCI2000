@@ -12,6 +12,8 @@
 #ifndef OS_THREAD_H
 #define OS_THREAD_H
 
+#include "Windows.h"
+
 class OSThread
 {
  public:

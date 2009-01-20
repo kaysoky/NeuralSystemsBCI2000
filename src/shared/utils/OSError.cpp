@@ -11,6 +11,10 @@
 
 #include "OSError.h"
 
+#ifdef _WIN32
+#include "Windows.h"
+#endif
+
 using namespace std;
 
 char* OSError::spMessageBuffer = NULL;

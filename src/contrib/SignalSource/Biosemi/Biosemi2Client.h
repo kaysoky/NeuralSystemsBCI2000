@@ -445,7 +445,7 @@ protected:
      * Allow DataBlock access to Biosem2Client's protected and private member
      variables.
      */
-    friend DataBlock;
+    friend class DataBlock;
 
 };
 #endif

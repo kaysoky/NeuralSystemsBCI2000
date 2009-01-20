@@ -125,8 +125,9 @@ DataIOFilter::DataIOFilter()
   if( !availableFileWriters.empty() )
   {
     string fileFormat = "BCI2000";
-    if( Parameters->Exists( "FileFormat" ) )
-      fileFormat = Parameter( "FileFormat" );
+    if( Parameters->Exists( "FileFormat" ) ) {
+      fileFormat = string( Parameter( "FileFormat" ) );
+    }
 
     string writerName = fileFormat + "FileWriter";
     for( writerSet::const_iterator i = availableFileWriters.begin();

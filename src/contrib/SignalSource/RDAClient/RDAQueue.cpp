@@ -237,7 +237,8 @@ RDAQueue::ReceiveData()
           const RDA_Marker* marker;
           for( marker = markersBegin, markerIndex = 0;
                markerIndex < dataMsg->nMarkers;
-               ( char* )marker += marker->nSize, ++markerIndex )
+               marker = (const RDA_Marker*)(((char*)marker) + marker->nSize),
+               ++markerIndex )
             // Does the marker say anything about this point?
             // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
             // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
@@ -312,7 +313,8 @@ RDAQueue::ReceiveData()
           const RDA_Marker* marker;
           for( marker = markersBegin, markerIndex = 0;
                markerIndex < dataMsg->nMarkers;
-               ( char* )marker += marker->nSize, ++markerIndex )
+               marker = (const RDA_Marker*)(((char*)(marker)) + marker->nSize),
+               ++markerIndex )
             // Does the marker say anything about this point?
             // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
             // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
