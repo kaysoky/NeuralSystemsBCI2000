@@ -88,7 +88,8 @@ all build cmdline prepare clean install update bindist pdf test:
             echo %i | grep contrib ${AND} echo ^#^"%~di%~pi%~ni.mak^" \   >>${MKNAM}
   echo.                                                                   >>${MKNAM}
   echo LATEXDOCS =\                                                       >>${MKNAM}
-  -for /R %i in (*.tex) do grep \\documentclass "%i" ${AND} echo ^"%i^" \ >>${MKNAM}
+  (for /R %i in (*.tex) do grep \\documentclass "%i" ${AND} echo ^"%i^" \ >>${MKNAM}\
+  ) ${IGNORE}
   echo.                                                                   >>${MKNAM}
   ${MAKE} -${MAKEFLAGS} $@
 
