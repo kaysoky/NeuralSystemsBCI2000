@@ -245,9 +245,21 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       }
       // Test availability of icon and audio files.
       if( pImageStimulus != NULL )
-        pImageStimulus->SetFile( Parameter( stimParams[ i ] )( icon, j ) );
+      {
+        string file = Parameter( stimParams[ i ] )( icon, j );
+        if( !file.empty() )
+          pImageStimulus->SetFile( file );
+      }
       if( pAudioStimulus != NULL )
-        pAudioStimulus->SetSound( Parameter( stimParams[ i ] )( audio, j ) );
+      {
+        string file = Parameter( stimParams[ i ] )( audio, j );
+        if( !file.empty() )
+        {
+          pAudioStimulus->SetSound( file );
+          if( !pAudioStimulus->Error().empty() )
+            bcierr << pAudioStimulus->Error() << endl;
+        }
+      }
     }
 
   int minStimToClassInterval = minStimDuration + minISIDuration + postSequenceDuration;
@@ -349,7 +361,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
       mStimuli.Add( pStimulus );
       Associations()[ i + 1 ].Add( pStimulus );
     }
-    if( iconSwitch )
+    if( iconSwitch && Stimuli( icon, i ) != "" )
     {
       int iconSizeMode = GUI::AspectRatioModes::AdjustHeight;
       if( stimulusWidth <= 0 )
@@ -368,7 +380,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
       mStimuli.Add( pStimulus );
       Associations()[ i + 1 ].Add( pStimulus );
     }
-    if( audioSwitch )
+    if( audioSwitch && Stimuli( audio, i ) != "" )
     {
       AudioStimulus* pStimulus = new AudioStimulus;
       pStimulus->SetSound( Stimuli( audio, i ) )
@@ -413,7 +425,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mFocusAnnouncement.Add( pStimulus );
       }
-      if( iconSwitch )
+      if( iconSwitch && FocusOn( icon, i ) != "" )
       {
         int iconSizeMode = GUI::AspectRatioModes::AdjustHeight;
         if( stimulusWidth <= 0 )
@@ -431,7 +443,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mFocusAnnouncement.Add( pStimulus );
       }
-      if( audioSwitch )
+      if( audioSwitch && FocusOn( icon, i ) != "" )
       {
         AudioStimulus* pStimulus = new AudioStimulus;
         pStimulus->SetSound( FocusOn( audio, i ) )
@@ -471,7 +483,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mResultAnnouncement.Add( pStimulus );
       }
-      if( iconSwitch )
+      if( iconSwitch && Result( icon, i ) != "" )
       {
         int iconSizeMode = GUI::AspectRatioModes::AdjustHeight;
         if( stimulusWidth <= 0 )
@@ -489,7 +501,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
         pStimulus->SetPresentationMode( VisualStimulus::ShowHide );
         mResultAnnouncement.Add( pStimulus );
       }
-      if( audioSwitch )
+      if( audioSwitch && Result( icon, i ) != "" )
       {
         AudioStimulus* pStimulus = new AudioStimulus;
         pStimulus->SetSound( Result( audio, i ) )
