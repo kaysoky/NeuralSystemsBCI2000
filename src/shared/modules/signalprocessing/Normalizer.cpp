@@ -158,7 +158,7 @@ Normalizer::Initialize( const SignalProperties& Input,
     size_t bufferSize = MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) )
                         * Input.Elements();
     ParamRef BufferConditions = Parameter( "BufferConditions" );
-    mBufferConditions.resize( BufferConditions->NumRows() );
+    mBufferConditions.resize( BufferConditions->NumColumns() );
     for( int col = 0; col < BufferConditions->NumColumns(); ++col )
       for( int row = 0; row < BufferConditions->NumRows(); ++row )
         mBufferConditions[ col ].push_back( Expression( BufferConditions( row, col ) ) );
