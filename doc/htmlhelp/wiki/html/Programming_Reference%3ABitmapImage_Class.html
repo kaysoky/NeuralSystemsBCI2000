@@ -75,7 +75,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>This function replaces an image's "background" with pixels from the image specified as argument. "Background" pixels are pixels with the most significant bit set to 1.
 </p>
 <a name="WriteBinary.28ostream.29.2C_ReadBinary.28istream.29"></a><h3>WriteBinary(ostream), ReadBinary(istream)</h3>
-<p>Writes/reads the image's data to or from the specified streams. An image's stream representation is always run-length encoded, which is especially efficient in conjunction with temporal compression, i.e. sending sequences of image differences.
+<p>Writes/reads the image's data to or from the specified streams. An image's stream representation is always run-length encoded, which is especially efficient in conjunction with temporal compression, i.e. sending sequences of difference images.
 </p>
 <a name="Properties"></a><h2>Properties</h2>
 <a name="bool_Empty_.28r.29"></a><h3>bool Empty (r)</h3>
@@ -92,7 +92,7 @@ myImage( 3, 4 ) = RGBColor::Red;
 RGBColor myPixel = myImage( 5, 6 );
 </pre>
 <a name="Addition_and_Subtraction"></a><h2>Addition and Subtraction</h2>
-<p>Difference images, and restoring original images from a reference frame followed with difference frames, is possible using addition and subtraction:
+<p>Computing difference images, and restoring original images from a reference frame followed with difference frames, is possible using addition and subtraction:
 </p>
 <pre> BitmapImage image1, image2;
  BitmapImage diff = image1 - image2;

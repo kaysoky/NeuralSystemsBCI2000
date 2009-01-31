@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:EEG Measurement Setup - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:EEG Measurement Setup,User Tutorial:EEG Measurement Setup,Contributions:ADCs,Contributions:How to use a Contributed Source Module,User Reference:Operator Module,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in an Initial Session,User Tutorial:P300 BCI Tutorial" />
+<meta name="keywords" content="User Tutorial:EEG Measurement Setup,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Obtaining P300 Parameters in a Calibration Session,User Tutorial:P300 BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -40,17 +40,16 @@ Although setting up amplifier and electrodes appears simple and straightforward,
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System"><span class="tocnumber">2</span> <span class="toctext">The 10-20 International System</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Identifying_Brain_Areas"><span class="tocnumber">3</span> <span class="toctext">Identifying Brain Areas</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Montage_Instructions"><span class="tocnumber">4</span> <span class="toctext">Montage Instructions</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Inspecting_EEG_Signals"><span class="tocnumber">5</span> <span class="toctext">Inspecting EEG Signals</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#EEG_Artifacts"><span class="tocnumber">6</span> <span class="toctext">EEG Artifacts</span></a>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#EEG_Artifacts"><span class="tocnumber">5</span> <span class="toctext">EEG Artifacts</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Mains_Interference"><span class="tocnumber">6.1</span> <span class="toctext">Mains Interference</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Blink_Artifacts"><span class="tocnumber">6.2</span> <span class="toctext">Eye Blink Artifacts</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Movement_.28EOG.29_Artifacts"><span class="tocnumber">6.3</span> <span class="toctext">Eye Movement (EOG) Artifacts</span></a></li>
-<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Muscular_.28EMG.29_Artifacts"><span class="tocnumber">6.4</span> <span class="toctext">Muscular (EMG) Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Mains_Interference"><span class="tocnumber">5.1</span> <span class="toctext">Mains Interference</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Blink_Artifacts"><span class="tocnumber">5.2</span> <span class="toctext">Eye Blink Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Eye_Movement_.28EOG.29_Artifacts"><span class="tocnumber">5.3</span> <span class="toctext">Eye Movement (EOG) Artifacts</span></a></li>
+<li class='toclevel-2'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Muscular_.28EMG.29_Artifacts"><span class="tocnumber">5.4</span> <span class="toctext">Muscular (EMG) Artifacts</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step"><span class="tocnumber">7</span> <span class="toctext">Next Step</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step"><span class="tocnumber">6</span> <span class="toctext">Next Step</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AEEG_Measurement_Setup.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Electrodes"></a><h2>Electrodes</h2>
@@ -101,8 +100,8 @@ Also, linear combinations of signals from different locations may be used to ext
 a simple task. And doing it with high geometrical accuracy is a task for very
 experienced technicians. The difficulty may be greatly alleviated using EEG caps. They are made of
 elastic fabric (available in different sizes), and electrodes are already fixed in
-the proper configuration. One proven technique to perform an accurate
-montage is the following:
+the proper configuration. 
+</p><p>Placing an EEG cap onto a subject is easy:
 </p>
 <ul><li>Mark the vertex on the subject's scalp using a felt-tip pen or some other similar method.  To do so, begin by locating the nasion and inion on the subject as indicated in subfigure (A) above.  Using a tape measure, find the distance between these two locations.  The point midway between the two points, or 50% of the distance, is the vertex.  Make a mark at that point for later reference.  Other 10-20 points can be located in a similar manner.  Distances between points are reported, as percentages of the total distance, in subfigure (A) above.
 </li><li>Mark scalp positions for Fpz and Oz.
@@ -117,25 +116,6 @@ montage is the following:
 <p>You can now fix Ref and Gnd electrodes. Usually, Ref is attached to one of the earlobes, or one of the mastoids, in form of a cup electrode using collodium (an adhesive chemical). 
 Some caps have a Gnd electrode embedded on a scalp position; if this is not the case, Gnd is the same kind of electrode as Ref, and should be attached to the earlobe or mastoid opposing the Ref electrode.
 </p>
-<a name="Inspecting_EEG_Signals"></a><h2>Inspecting EEG Signals</h2>
-<p>BCI2000 may be used to inspect EEG signals without actually recording them. For the sake of this tutorial, we will start up BCI2000 in a configuration suitable for stimulation experiments. However, any configuration will do, and usually you will inspect signals after starting up BCI2000 in the configuration that fits the desired experiment.
-</p>
-<ul><li>Make sure that
-<ul><li>your amplifier is connected to your computer, 
-</li><li>the amplifier's drivers are installed as described in the manual that came with your amplifier, and
-</li><li>the amplifier is switched on.
-</li></ul>
-</li><li>Start BCI2000 by double-clicking the file <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt> where <tt>YourAmplifier</tt> matches the name of your amplifier. <br />If there is no such file in the <tt>batch</tt> directory, and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, the <a href="Contributions%253AHow_to_use_a_Contributed_Source_Module.html" title="Contributions:How to use a Contributed Source Module">how-to page on using a contributed source module</a> will provide you with instructions on how to use it with BCI2000.
-</li><li>In the BCI2000 operator window, click "Config" and then "Load Parameters..." to load the file <tt>parms/examples/StimulusPresentation_SignalGenerator.prm</tt>.
-</li><li>Load additional parameters for your amplifier by clicking "Load Parameters" again and choosing the parameter file from <tt>parms/fragments/amplifiers</tt> that corresponds to your amplifier. <br />If you are unable to find a parameter file that corresponds to your amplifier and your amplifier is listed in the <a href="Contributions%253AADCs.html" title="Contributions:ADCs">contributions section</a>, load the <tt>SignalGenerator.prm</tt> parameter file (also located in <tt>parms/fragments/amplifiers</tt>) and modify parameters as necessary.  In this case, please consult your ADC module's reference page, which is accessible through <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>, for available parameters and their meanings.
-</li><li>Switch to the <i>Source</i> tab; for the <i>ChannelNames</i> parameter enter <a href="User_Tutorial%253AEEG_Measurement_Setup.html#The_10-20_International_System" title="User Tutorial:EEG Measurement Setup">electrode locations</a> corresponding to amplifier channels as a white-space separated list (e.g., <tt>Fz CPz Cz CP3 ...</tt>).
-</li><li>Click "Save", and save your adapted configuration as a system-specific parameter file for later use at <tt>parms/fragments/&lt;YourSystem&gt;.prm</tt>, or whereever you find appropriate.
-</li><li>Close the parameter dialog by clicking the close box its top right corner.
-</li><li>Click "Set Config".
-</li><li>A window will appear that displays the signal acquired from the amplifier. Initially, the window will be rather small and located in the top left corner of your screen. Adapt it to your liking by moving and resizing it -- its position and size will be remembered across BCI2000 sessions. Right-clicking will bring up a context menu with <a href="User_Reference%253AOperator_Module.html#Visualization_Windows" title="User Reference:Operator Module">various options</a>.
-</li><li>Reasonable EEG traces should now be visible on the screen as soon as gel is injected.<br />Visual inspection can detect the effect of poor contact (excessive <a href="User_Tutorial%253AEEG_Measurement_Setup.html#mains_interference" title="">mains interference</a>, frequent loss of contact, etc.). You may also want to use an impedance meter to make sure that electrodes have good contact (i.e. that their impedance is below <span class="texhtml">5 &minus; 10<i>k</i>&Omega;</span>).
-</li><li>When you are done, quit BCI2000 before going to the <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Next_Step" title="">next step</a>.
-</li></ul>
 <a name="EEG_Artifacts"></a><h2>EEG Artifacts</h2>
 <a name="Mains_Interference"></a><h3>Mains Interference</h3>
 <p>Electrical power lines use sinusoidal voltages with a frequency of 50 or 60 Hz, depending on your
@@ -176,7 +156,7 @@ strategy to avoid jaw-generated EMG.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>
 <ul><li>If you're following the <a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">Mu Rhythm BCI Tutorial</a>, please proceed to <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">Obtaining Mu Rhythm Parameters in an Initial Session</a>.
-</li><li>If you're following the <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">P300 BCI Tutorial</a>, please proceed to <a href="User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining P300 Parameters in an Initial Session">Obtaining P300 Parameters in an Initial Session</a>.
+</li><li>If you're following the <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">P300 BCI Tutorial</a>, please proceed to <a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html" title="User Tutorial:Obtaining P300 Parameters in a Calibration Session">Obtaining P300 Parameters in a Calibration Session</a>.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">User Tutorial:P300 BCI Tutorial</a>

@@ -56,7 +56,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Enter <tt>states.StimulusBegin == 1</tt> into the <b>Trial Change Condition</b> field.
 </li><li>Into the field labeled <b>Target Condition 1</b>, enter <tt>states.StimulusCode == 0</tt>.
 </li><li>Enter the word "Rest" into the field labeled <b>Target Condition Label 1</b>.
-</li><li>Similarly, enter <tt>states.StimulusCode == 2</tt> into the <b>Target Condition 1</b> field, and "Right Hand" into <b>Target Condition Label 2</b>.
+</li><li>Similarly, enter <tt>states.StimulusCode == 2</tt> into the <b>Target Condition 2</b> field, and "Right Hand" into <b>Target Condition Label 2</b>.
 </li><li>Click the "Add" button located besides the <b>Data Files</b> field. A file chooser dialog will appear; navigate to <tt>data/&lt;Subject&gt;001</tt>, and select all <tt>.dat</tt> files available there (use your keyboard's <i>ctrl</i> button to click-select multiple files), then click the dialog's "Open" button.
 </li><li>Click "Generate Plots", and wait for the feature plot to appear.
 </li></ul>
@@ -88,11 +88,9 @@ The generated <b>spectra plots</b> display amplitude distributions, and r-square
 </li></ul>
 </li></ul>
 <a name="Picking_Optimal_Features"></a><h2>Picking Optimal Features</h2>
-<p>By now, you should have identified a number of maximum r-squared values for each condition, and you should have some impression how plausible corresponding channels and frequencies are.
+<p>Here we are looking for the frequency with the highest r-squared value and is between 9Hz and 36Hz. Further, acceptable readings are centered on the proper electrode for the predicted stimulus; C3 for readings from the right hand, C4 for the left hand, both C3 and C4 for both hands, and Cz for both feet.
+</p><p>Equipped with the frequency and electrode that provides the reading with the highest r-squared value, we can begin configuring the setup for proper use.
 </p>
-<ul><li>Remove all implausible maxima from your list.
-</li><li>From the remaining entries, pick the one with the largest r-squared value. Note this entry's frequency and electrode name, and the subject instruction (condition) that is associated with it. These are the parameters that you will use to configure the online system.
-</li></ul>
 <a name="Next_Step"></a><h2>Next Step</h2>
 <p><a href="User_Tutorial%253AConfiguring_Online_Feedback.html" title="User Tutorial:Configuring Online Feedback">Configuring Online Feedback</a> shows you how to configure the BCI system using the parameters obtained in the analysis.
 </p>

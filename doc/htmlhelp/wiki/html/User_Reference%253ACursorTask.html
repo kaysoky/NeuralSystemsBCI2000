@@ -38,6 +38,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253ACursorTask.html#Timeline"><span class="tocnumber">2.1</span> <span class="toctext">Timeline</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253ACursorTask.html#Introduction"><span class="tocnumber">2.2</span> <span class="toctext">Introduction</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253ACursorTask.html#Visual_Representation"><span class="tocnumber">2.3</span> <span class="toctext">Visual Representation</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ACursorTask.html#Control_Signal"><span class="tocnumber">2.4</span> <span class="toctext">Control Signal</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ACursorTask.html#Parameters"><span class="tocnumber">3</span> <span class="toctext">Parameters</span></a>
@@ -140,6 +141,13 @@ For any color between these extremes, the cursor's color will be linearly
 interpolated between the two colors. (Specifically, each of the three color 
 components (i.e., red, green, and blue) will be interpolated to result in the 
 cursor's color for a given Z position.)
+</p>
+<a name="Control_Signal"></a><h3>Control Signal</h3>
+<p>Cursor movement is controlled by the output of the <a href="Technical_Reference%253ACore_Modules.html" title="Technical Reference:Core Modules">Signal Processing Module</a>.
+In this signal, channels 1, 2, and 3 correspond to dimensions X, Y, and Z, and there is a single value (element) 
+present in each channel, defining cursor speed in the respective dimension.
+</p><p>Additional channels or elements that might be present in the control signal will be ignored by the <i>CursorTask</i>
+application module.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="Sequencing"></a><h3>Sequencing</h3>
@@ -281,7 +289,7 @@ When a time of <i>PostTrialDuration</i> has passed, <i>ResultCode</i> is reset t
 Typically, this also implies that the cursor moves according to the <a href="BCI2000_Glossary.html#Control_Signal" title="BCI2000 Glossary">control signal</a>.
 </p>
 <a name="CursorPosX.2C_CursorPosY.2C_CursorPosZ"></a><h3>CursorPosX, CursorPosY, CursorPosZ</h3>
-<p>These states record the cursor's position, translated into the <tt>0..8191</tt> range such that the 3D scene's left, top, and down planes all correspond to 0, and the right, bottom, and up planes correspond to <tt>8191</tt>.
+<p>These states record the cursor's position, translated into the <tt>0..4095</tt> range such that the 3D scene's left, top, and down planes all correspond to 0, and the right, bottom, and up planes correspond to <tt>4095</tt>.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253A3D_API.html" title="Programming Reference:3D API">Programming Reference:3D API</a>, <a href="Programming_Reference%253AFeedbackTask_Class.html" title="Programming Reference:FeedbackTask Class">Programming Reference:FeedbackTask Class</a>

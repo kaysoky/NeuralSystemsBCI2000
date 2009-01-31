@@ -60,16 +60,18 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Peter Brunner (pbrunner@wadsworth.org).
 </p>
 <a name="Version_History"></a><h3>Version History</h3>
-<p>5/17/2007: Initial version.
+<p>05/17/2007: Initial version; 
+01/14/2009: Added support for the 14 sensor data glove.
 </p>
 <a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
 <ul><li>Initial development: 1506
-</li><li>Tested under: 1509
-</li><li>Known to compile under: 1509
+</li><li>Tested under: 2222
+</li><li>Known to compile under: 2222
 </li><li>Broken since: --
 </li></ul>
 <a name="Functional_Description"></a><h2>Functional Description</h2>
 <p>The 5DT Data Glove 5 Ultra is a 5 sensor data glove with 1 sensor per finger that measures average of knuckle and first joint movement. The data glove is interfaced over its full-speed USB 1.1 interface to the computer. The sensor resolution is 12 bit with at least 8 bit dynamic range. The temporal resolution is 13.33ms which equals a sampling rate of 75 Hz. 
+</p><p>The 5DT Data Glove 14 Ultra is a 14 sensor data glove with 2 sensors per finger  that measures average of knuckle and first and second joint movement and the abduction between the 5 fingers. The data glove is interfaced over its full-speed USB 1.1 interface to the computer. The sensor resolution is 12 bit with at least 8 bit dynamic range. The temporal resolution is 13.33ms which equals a sampling rate of 75 Hz. 
 </p>
 <a name="Vendor"></a><h2>Vendor</h2>
 <p>The 5DT Data Glove 5 Ultra can be purchased from 5DT (www.5dt.com) as a right handed (5DT Data Glove Ultra 5 Right-handed) and left handed (5DT Data Glove Ultra 5 Left-handed) version for 995 USD each (as of 5/17/2007). The warranty involves a 30 day customer satisfaction guarantee and 1 year product warranty. It comes in a hard-plastic transport case (28cm x 10cm x 10cm) with the data glove, a manual, a CD and a 3m USB cable. 
@@ -85,16 +87,27 @@ DataGloveHandType = left/right
 <a name="State_Variables"></a><h2>State Variables</h2>
 <p>For each of the 5 sensors of the 5DT Data Glove 5 Ultra, one state variable is stored with the data.
 </p>
-<pre>----------------------
-StateName    == Finger
-----------------------
-GloveSensor1 == thumb
-GloveSensor2 == index
-GloveSensor3 == middle
-GloveSensor4 == ring
-GloveSensor5 == little
-----------------------
+<pre>---------------------------------------------------------------
+StateName     == Finger       | 5 sensor | 14 sensor 
+---------------------------------------------------------------
+GloveSensor1  == thumb        | flexure  | flexure lower joint   
+GloveSensor2  == index        | flexure  | flexure at knuckle 
+GloveSensor3  == middle       | flexure  | flexure at knuckle
+GloveSensor4  == ring         | flexure  | flexure at knuckle
+GloveSensor5  == little       | flexure  | flexure at knuckle
+GloveSensor6  == thumb        | N/A      | flexure second joint
+GloveSensor7  == index        | N/A      | flexure second joint
+GloveSensor8  == middle       | N/A      | flexure second joint
+GloveSensor9  == ring         | N/A      | flexure second joint
+GloveSensor10 == little       | N/A      | flexure second joint 
+GloveSensor11 == thumb        | N/A      | abduction
+GloveSensor12 == index/middle | N/A      | abduction 
+GloveSensor13 == middle/ring  | N/A      | abduction
+GloveSensor14 == ring/ring    | N/A      | abduction
+---------------------------------------------------------------
 </pre>
+<p><br />
+</p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AApplications.html" title="Contributions:Applications">Contributions:Applications</a>
 </p>

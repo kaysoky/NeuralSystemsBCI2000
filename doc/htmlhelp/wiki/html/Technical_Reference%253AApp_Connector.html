@@ -4,7 +4,7 @@
 <head>
 <title>Technical Reference:App Connector - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Technical Reference:App Connector,BCI2000 Glossary,Technical Reference:State Definition,Technical Reference:System Design,User Reference:Operator Module Scripting" />
+<meta name="keywords" content="Technical Reference:App Connector,BCI2000 Glossary,Technical Reference:State Definition,Technical Reference:System Design,User Reference:CursorTask,User Reference:Operator Module Scripting" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -128,16 +128,21 @@ and terminated with a single newline (<code>'\n'==0x0a</code>) character.
 Names may identify
 </p>
 <ul><li>BCI2000 states by name -- then followed by an integer value in decimal ASCII representation;
-</li><li>Signal elements in the form <tt>Signal(&lt;channel&gt;,&lt;element&gt;)</tt> -- then followed by a float value in decimal ASCII representation.
+</li><li>Signal elements in the form <tt>Signal(&lt;channel&gt;,&lt;element&gt;)</tt> -- then followed by a float value in decimal ASCII representation. Channel and element indices are given in zero-based form.
 </li></ul>
 <a name="Examples"></a><h2>Examples</h2>
 <pre>
 Running 0\n
 ResultCode 2\n
-Signal(1,2) 1e-8\n
+Signal(1,0) 1e-8\n
 </pre>
 <p>Note that the first example will switch BCI2000 into a suspended state.
 While the system is in that state, no communication is possible over the application protocol.
+</p><p>The meaning of control signal indices depends on the application module used. For the <a href="BCI2000_Glossary.html#Control_Signal" title="BCI2000 Glossary">control signal</a> in a typical <a href="User_Reference%253ACursorTask.html#Control_Signal" title="User Reference:CursorTask">cursor task</a>, there are up to three channels holding a single element each, with channel indices 0, 1, and 2 corresponding to movement in X, Y, and Z direction, such that
+</p>
+<pre>Signal(1,0) 1e-2\n
+</pre>
+<p>would indicate a value of 1e-2 for the control signal representing movement in Y direction.
 </p>
 <a name="Parameterization_from_within_BCI2000"></a><h2>Parameterization from within BCI2000</h2>
 <p>BCI2000 reads data from a local IP socket specified by the 

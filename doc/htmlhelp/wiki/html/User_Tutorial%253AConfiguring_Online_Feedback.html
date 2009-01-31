@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Configuring Online Feedback - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Configuring Online Feedback,User Reference:LinearClassifier,User Tutorial:Analyzing the Initial Mu Rhythm Session,User Tutorial:EEG Measurement Setup,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Performing a Mu Rhythm Feedback Session" />
+<meta name="keywords" content="User Tutorial:Configuring Online Feedback,User Reference:LinearClassifier,User Tutorial:Analyzing the Initial Mu Rhythm Session,User Tutorial:Mu Rhythm BCI Tutorial,User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Performing a Mu Rhythm Feedback Session" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -37,42 +37,50 @@ Now you are going to create a subject-specific parameter configuration for on-li
 <ul>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Starting_up_BCI2000"><span class="tocnumber">1</span> <span class="toctext">Starting up BCI2000</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Subject-Specific_Parameters"><span class="tocnumber">2</span> <span class="toctext">Subject-Specific Parameters</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Configuring_the_Classifier"><span class="tocnumber">3</span> <span class="toctext">Configuring the Classifier</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Next_Step"><span class="tocnumber">4</span> <span class="toctext">Next Step</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#The_Spatial_Filter"><span class="tocnumber">3</span> <span class="toctext">The Spatial Filter</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#The_Classifier_Matrix"><span class="tocnumber">4</span> <span class="toctext">The Classifier Matrix</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#Performing_Mu_Rhythm_Feedback_Sessions"><span class="tocnumber">5</span> <span class="toctext">Performing Mu Rhythm Feedback Sessions</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AConfiguring_Online_Feedback.html#See_also"><span class="tocnumber">6</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Starting_up_BCI2000"></a><h2>Starting up BCI2000</h2>
 <p>Start BCI2000 using the appropriate batch file at <tt>batch/CursorTask_&lt;YourAmplifier&gt;.bat</tt>. You might consider creating a link to this file on the desktop.
+</p><p>This CursorTask will be used to configure the BCI2000 program for this specific subject. Multiple configuration sessions are typically needed to determine the proper classifier matrix for any one subject.
 </p>
 <a name="Subject-Specific_Parameters"></a><h2>Subject-Specific Parameters</h2>
 <p>Now, we will construct a full parameter file that is specific to that subject:
 </p>
-<ul><li>In the configuration window, click "Load Parameters", and load the system-specific parameter file <a href="User_Tutorial%253AEEG_Measurement_Setup.html#Inspecting_EEG_Signals" title="User Tutorial:EEG Measurement Setup">saved previously</a> at <tt>parms/fragments/&lt;YourSystem&gt;.prm</tt>.
-</li><li>Again, click "Load Parameters" to load <tt>parms/mu_tutorial/MuFeedback.prm</tt>.
-</li><li>When you have a separate monitor for experimenter and subject, load the parameter file at <tt>parms/fragments/stdlib/DualMonitor.prm</tt>.
-<ul><li>In your system's display properties configuration, make sure that the subject's monitor is configured to be located to the right of the main monitor.
-</li><li>Make sure the <i>WindowLeft</i> parameter matches the main monitor's actual pixel width.
-</li><li>You may need to adapt <i>WindowTop</i>, <i>WindowWidth</i>, and <i>WindowHeight</i> parameters as well; click "Set Config" to try the effect of your changes.
+<ul><li>Begin by loading the parameter file <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">saved previously</a>
+</li><li>In the <b>Storage</b> tab:
+<ul><li>Change the <i>SourceData</i> field to <tt>\task</tt> as opposed to <tt>\screening</tt>
+</li><li>Change the <i>SubjectName</i> field to the subject's initials
+</li><li>Make sure the <i>SubjectSession</i> field is set to <tt>001</tt> and <i>SubjectRun</i> is set to <tt>01</tt>
 </li></ul>
-</li><li>Go to the <i>Storage</i> tab, and enter the subject's name or ID into the <i>SubjectName</i> parameter.
-</li><li>Into the <i>SubjectSession</i> parameter, enter <i>002</i>.
 </li></ul>
-<a name="Configuring_the_Classifier"></a><h2>Configuring the Classifier</h2>
-<p>Subject-specific electrode location and mu rhythm frequency are part of the classifier's configuration.
-They are entered into the <i>Classifier</i> parameter on the <i>Filtering</i> tab.
+<a name="The_Spatial_Filter"></a><h2>The Spatial Filter</h2>
+<div class="floatright"><span><a href="../images/8/80/SpatialFilter.PNG" class="image" title=""><img src="../images/8/80/SpatialFilter.PNG" alt="" width="350" height="193" longdesc="/wiki/index.php/Image:SpatialFilter.PNG" /></a></span></div>
+<p>The Spatial Filter artificially weighs the incoming data from the electrodes based on their placement on the scalp of the subject. 
+</p><p>Because we are targeting specific areas of the brain to monitor, the spatial filter allows the program to identify when the electrode of interest is activating specifically.
+</p><p>This is done by subtracting the average of the surrounding electrodes' data from the electrode of interest. For example, as seen to the right the output channel <tt>C3_OUT</tt> is the data from <tt>C3</tt> minus one-quarter each of <tt>F3</tt>, <tt>T7</tt>, <tt>Cz</tt>, and <tt>Pz</tt>.
 </p>
-<ul><li>There, click the <i>Edit Matrix</i> button associated with the <i>Classifier</i> parameter.
-</li><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1 (or the number of features that you wish to use); then, click <i>Set new matrix size</i> to apply your changes.
-</li><li>In the first column (of the first row), labeled <i>input channel</i>, enter the location of the desired location, e.g. <tt>CP3</tt>. If you did not specify electrode locations when configuring your system, enter the channel number associated with the feedback electrode.
-</li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <i>Hz</i>, as in <tt>12Hz</tt>.
-</li><li>In the third column, enter the value 2 corresponding to the control channel for vertical control of the cursor.
-</li><li>In the fourth column, enter 1 as the weight.
-</li><li>Repeat steps 2-5 for each additional feature moving down a row each time (i.e., enter the 2nd feature on the 2nd row, etc...).
-</li><li>Finally, save your configuration to <tt>parms/subjects/mu_feedback/&lt;Subject&gt;002.prm</tt>, or whereever you find appropriate.
+<table>
+<tr>
+<td height="120px">
+</td></tr></table>
+<a name="The_Classifier_Matrix"></a><h2>The Classifier Matrix</h2>
+<p>The Classifier Matrix applies weights to the incoming data that allows the program to accurately identify Mu Rhythm signals. This is opened by selecting <b>Edit Matrix</b> next to the <i>Classifier</i> parameter in the <b>Filtering</b> tab.
+</p>
+<ul><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1. Click <i>Set new matrix size</i> to apply your changes.
+</li><li>In the first column (of the first row), labeled <i>input channel</i>, enter <tt>C3_OUT</tt> if the right hand are being used, <tt>C4_OUT</tt> for the left hand, or <tt>Cz_OUT</tt> for the feet.
+<ul><li>If both hands are being used, set <i>Number of rows</i> to 2, and click <b>Set new matrix size</b>. Enter <tt>C3_OUT</tt> under <i>input channel</i> in the first row, and <tt>C4_OUT</tt> in the second.
 </li></ul>
-<a name="Next_Step"></a><h2>Next Step</h2>
-<p>In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using the configuration created in the present step.
+</li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <tt>Hz</tt>, as in <tt>12Hz</tt>.
+</li><li>In the third column, enter the value <tt>2</tt>. This corresponds to the control channel for vertical control of the cursor.
+</li><li>In the fourth column, enter 1 as the weight. For further calibration, this weight can be increased to give stronger control or decreased to give finer control.
+</li><li>Finally, save your configuration in a parameter file wherever you find appropriate.
+</li></ul>
+<a name="Performing_Mu_Rhythm_Feedback_Sessions"></a><h2>Performing Mu Rhythm Feedback Sessions</h2>
+<p>Proper calibration of the Classifier and Spatial matrices are what take the most time. A Mu Rhythm Feedback Session should be performed with the classifier matrix to gauge the efficacy of the settings. In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using this configuration.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
