@@ -5,6 +5,7 @@ beginmsg="<!-- Content created automatically by BCI2000/src/doc/wiki2help/create
 endmsg="<!-- End of auto-created content -->"
 
 make toc2wiki
+echo Running toc2wiki ...
 
 ( \
   echo $beginmsg && \
@@ -17,3 +18,5 @@ make toc2wiki
   ( ./toc2wiki "^States$" "^[^ ,]+(, [^ ,]+)*$" < $tocfile ) && \
   echo $endmsg \
 ) > states.wiki
+
+echo Done.

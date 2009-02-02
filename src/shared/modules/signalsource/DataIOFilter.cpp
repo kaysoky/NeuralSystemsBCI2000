@@ -150,7 +150,7 @@ DataIOFilter::DataIOFilter()
   if( mpFileWriter != NULL )
     mpFileWriter->CallPublish();
 
-  // Check whether the next filter in the chain is a notch filter.
+  // Check whether the next filter in the chain is of type SourceFilter.
   // If this is the case, use it for preprocessing _before_ writing into the file.
   GenericFilter* filter = GenericFilter::GetFilter<GenericFilter>();
   if( string( "SourceFilter" ) == ClassName( typeid( *filter ) ) )
