@@ -19,6 +19,7 @@
 #include <string>
 #include <ctime>
 #include <limits>
+#include <cstring>
 
 using namespace std;
 

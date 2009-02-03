@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <cstring>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
 

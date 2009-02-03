@@ -11,6 +11,7 @@
 
 #include <valarray>
 #include <algorithm>
+#include <numeric>
 
 class Detrend
 {

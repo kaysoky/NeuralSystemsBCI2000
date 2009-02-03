@@ -10,6 +10,7 @@
 #define STATE_H
 
 #include <iostream>
+#include <cstring>
 
 class StateVector;
 

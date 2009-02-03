@@ -22,6 +22,7 @@
 #include <sstream>
 #include <limits>
 #include <cmath>
+#include <cstring>
 
 using namespace std;
 
@@ -270,7 +271,7 @@ mexFunction( int nargout, mxArray* varargout[],
     {
       const State& s = ( *mainStatelist )[ i ];
       stateNames[ i ] = reinterpret_cast<char*>( mxMalloc( s.Name().length() + 1 ) );
-      strcpy( stateNames[ i ], s.Name().c_str() );
+      ::strcpy( stateNames[ i ], s.Name().c_str() );
     }
     mxArray* states = mxCreateStructMatrix(
       1, 1, numStates, const_cast<const char**>( stateNames )

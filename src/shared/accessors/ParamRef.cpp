@@ -12,6 +12,7 @@
 #pragma hdrstop
 
 #include "ParamRef.h"
+#include <cstdlib>
 
 using namespace std;
 

@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 

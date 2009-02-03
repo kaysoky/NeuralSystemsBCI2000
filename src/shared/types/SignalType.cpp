@@ -14,6 +14,7 @@
 #include <string>
 #include <limits>
 #include <cfloat>
+#include <climits>
 
 #if( USHRT_MAX != ( 1UL << 16 ) - 1 || UCHAR_MAX != ( 1UL << 8 ) - 1 )
 # error This file depends on 2-byte shorts and 1-byte chars.
