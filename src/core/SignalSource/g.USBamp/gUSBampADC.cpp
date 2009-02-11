@@ -559,8 +559,12 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 
         // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
         // (the last channel will be the digital input and transferred automatically
-        if (m_digitalinput)
-            GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
+		if (m_digitalinput){
+			if (m_numchans.at(dev) > 1)
+				GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev)-1);
+			else
+				GT_SetChannels(m_hdev.at(dev), NULL, 0);
+		}
         else
             GT_SetChannels(m_hdev.at(dev), channels, (UCHAR)m_numchans.at(dev));
 
@@ -816,30 +820,35 @@ gUSBampADC::AcquireThread::Execute()
         delete [] mBuffer;
     } */
 
-    for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
-    {
-        if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) != amp->mMasterDeviceID))
-        {
-            GT_Stop(amp->m_hdev.at(dev));
-            GT_ResetTransfer(amp->m_hdev.at(dev));
-            GT_CloseDevice(&(amp->m_hdev.at(dev)));
-
-            for (int buf = 0; buf < amp->NUM_BUFS; buf++)
-                CloseHandle(m_hEvent[dev][buf]);
-        }
-    }
-    for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
-    {
-        if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) == amp->mMasterDeviceID))
-        {
-            GT_Stop(amp->m_hdev.at(dev));
-            GT_ResetTransfer(amp->m_hdev.at(dev));
-            GT_CloseDevice(&(amp->m_hdev.at(dev)));
-
-            for (int buf = 0; buf < amp->NUM_BUFS; buf++)
-                CloseHandle(m_hEvent[dev][buf]);
-        }
-    }
+	for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
+	{
+		if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) != amp->mMasterDeviceID))
+		{
+			GT_Stop(amp->m_hdev.at(dev));
+			GT_ResetTransfer(amp->m_hdev.at(dev));
+			GT_CloseDevice(&(amp->m_hdev.at(dev)));
+			
+			for (int buf = 0; buf < amp->NUM_BUFS; buf++)   {
+				CloseHandle(m_hEvent[dev][buf]);
+				delete [] buffers[dev][buf];
+			}
+		}		
+	}
+	for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
+	{
+		if ((amp->m_hdev.at(dev)) && (amp->m_DeviceIDs.at(dev) == amp->mMasterDeviceID))
+		{
+			GT_Stop(amp->m_hdev.at(dev));
+			GT_ResetTransfer(amp->m_hdev.at(dev));
+			GT_CloseDevice(&(amp->m_hdev.at(dev)));
+			
+			for (int buf = 0; buf < amp->NUM_BUFS; buf++){
+				CloseHandle(m_hEvent[dev][buf]);
+				delete [] buffers[dev][buf];
+			}
+		}
+		delete [] buffers[dev];		
+	}
 }
 
 float gUSBampADC::AcquireThread::getNextValue()
