@@ -209,12 +209,18 @@ void gUSBampADC::Preflight( const SignalProperties&,
          bcierr << "The g.USBamp only has 16 channels. Decrease SourceChDevices." << endl;
          return;
       }
-   if (Parameter("DigitalInput") == 1)
+   if (Parameter("DigitalInput") == 1){
       if (Parameter("SourceChDevices")(dev) > 17)
       {
          bcierr << "The g.USBamp only has 16 channels. You have DigitalInput turned on (which adds one channel), so you may specify a maximum of 17 channels. Decrease SourceChDevices." << endl;
         return;
-      }
+	  }
+	  if (Parameter("SourceChDevices")(dev) <= 1)
+	  {
+		bcierr <<"Due to a limitation of the g.USBamp driver, at least one analog channel must be acquired with a digital channel. Therefore, SourceChDevices must be >= 2 with digital input enabled."<<endl;
+		return;
+	  }
+	  }
    }
 
     //check for consistency between sourcechdevices and sourcechlist per device
