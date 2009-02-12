@@ -162,6 +162,9 @@ AnsiString      keyname;
 int
 OperatorUtils::LoadMatrix( const char* inFileName, Param& outParam )
 {
+  if( inFileName == NULL )
+    return ERR_MATNOTFOUND;
+
   vector<vector<string> > matrix;
 
   ifstream input( inFileName );
@@ -196,6 +199,9 @@ OperatorUtils::LoadMatrix( const char* inFileName, Param& outParam )
 int
 OperatorUtils::SaveMatrix( const char* inFileName, const Param& inParam )
 {
+  if( inFileName == NULL )
+	return ERR_COULDNOTWRITE;
+
   ofstream output( inFileName );
   for( int row = 0; row < inParam.NumRows(); ++row )
   {

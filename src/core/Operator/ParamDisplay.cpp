@@ -10,6 +10,7 @@
 #include "ExecutableHelp.h"
 #include "ParsedComment.h"
 #include "Operator.h"
+#include "VCLDefines.h"
 
 #include <vector>
 #include <string>
@@ -483,19 +484,29 @@ ParamDisplay::Matrix::OnLoadButtonClick( TObject* )
   loadDialog->Options << ofFileMustExist;
   if( loadDialog->Execute() )
   {
-    int result = OperatorUtils::LoadMatrix( loadDialog->FileName.c_str(), mParam );
+	AnsiString name = loadDialog->FileName;
+	int result = OperatorUtils::LoadMatrix( name.c_str(), mParam );
     switch( result )
     {
       case ERR_NOERR:
         break;
       case ERR_MATLOADCOLSDIFF:
-        Application->MessageBox( "Number of columns differs across rows", "Error", MB_ICONERROR | MB_OK );
+		Application->MessageBox(
+		  VCLSTR( "Number of columns differs across rows" ),
+		  VCLSTR( "Error" ),
+		  MB_ICONERROR | MB_OK );
         break;
       case ERR_MATNOTFOUND:
-        Application->MessageBox( "Could not open matrix data file", "Error", MB_ICONERROR | MB_OK );
+		Application->MessageBox(
+		  VCLSTR( "Could not open matrix data file" ),
+		  VCLSTR( "Error" ),
+		  MB_ICONERROR | MB_OK );
         break;
       default:
-        Application->MessageBox(" Error loading the matrix file", "Error", MB_ICONERROR | MB_OK );
+		Application->MessageBox(
+		  VCLSTR( " Error loading the matrix file" ),
+		  VCLSTR( "Error" ),
+		  MB_ICONERROR | MB_OK );
     }
     DisplayBase::OnContentChange();
   }
@@ -511,7 +522,8 @@ ParamDisplay::Matrix::OnSaveButtonClick( TObject* )
   saveDialog->Filter = MATRIX_FILTER;
   if( saveDialog->Execute() )
   {
-    int result = OperatorUtils::SaveMatrix( saveDialog->FileName.c_str(), mParam );
+	AnsiString name = saveDialog->FileName;
+	int result = OperatorUtils::SaveMatrix( name.c_str(), mParam );
     switch( result )
     {
       case ERR_NOERR:
@@ -522,7 +534,10 @@ ParamDisplay::Matrix::OnSaveButtonClick( TObject* )
           AnsiString message;
           message = "Could not write to file ";
           message += saveDialog->FileName;
-          Application->MessageBox( message.c_str(), "Error", MB_OK );
+		  Application->MessageBox(
+			VCLSTR( message.c_str() ),
+			VCLSTR( "Error" ),
+			MB_OK );
         }
         break;
     }

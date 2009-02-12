@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "VCLDefines.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -58,8 +59,14 @@ void __fastcall TmainForm::FormCreate(TObject */*Sender*/)
     {
         in.close();
         in.clear();
-        boxDlg = Application->MessageBoxA("The BCI2000Launcher.ini file cannot be found, so a new one will be created in the BCI2000/prog folder. Press Ignore, and move the programs from the Others list to the appropriate list (a new ini file will be created), or press Retry to select a file.",
-            "*.ini file not found",MB_ABORTRETRYIGNORE);
+		boxDlg = Application->MessageBox(
+		  VCLSTR( "The BCI2000Launcher.ini file cannot be found, so a new one"
+				  " will be created in the BCI2000/prog folder. Press Ignore,"
+				  " and move the programs from the Others list to the"
+				  " appropriate list (a new ini file will be created),"
+				  " or press Retry to select a file." ),
+		  VCLSTR( "*.ini file not found" ),
+		  MB_ABORTRETRYIGNORE);
 
         switch (boxDlg)
         {
@@ -72,7 +79,7 @@ void __fastcall TmainForm::FormCreate(TObject */*Sender*/)
                 OpenParmDlg->Filter = "INI File (*.ini)|*.ini";
                 if (OpenParmDlg->Execute())
                 {
-                    in.open(OpenParmDlg->FileName.c_str());
+                    in.open(AnsiString(OpenParmDlg->FileName).c_str());
                     if (!in.fail())
                         haveFile = true;
                     else
@@ -116,7 +123,11 @@ void __fastcall TmainForm::FormCreate(TObject */*Sender*/)
             }
             else
             {
-                Application->MessageBoxA("The BCI2000launcher.ini file is corrupted, or an invalid file was selected.","Invalid INI file",MB_OK);
+				Application->MessageBox(
+				  VCLSTR( "The BCI2000launcher.ini file is corrupted, or an"
+						  " invalid file was selected." ),
+				  VCLSTR( "Invalid INI file" ),
+				  MB_OK);
             }
             lines.clear();
         }
@@ -898,9 +909,9 @@ void __fastcall TmainForm::About1Click(TObject */*Sender*/)
 
 void __fastcall TmainForm::getDirBtnClick(TObject */*Sender*/)
 {
-    AnsiString Dir = "";
+	VclStringType Dir = "";
   if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))
-    directoryBox->Text = Dir;
+	directoryBox->Text = Dir;
     
 }
 //---------------------------------------------------------------------------

@@ -27,6 +27,7 @@
 #include "MouseCursor.h"
 #include "BCIError.h"
 #include "defines.h"
+#include "VCLDefines.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -114,7 +115,6 @@ __fastcall TMainForm::TMainForm( TComponent* inOwner )
 
 __fastcall TMainForm::~TMainForm()
 {
-  SaveToRegistry();
 }
 
 void __fastcall TMainForm::DragDropWindowProc( TMessage& msg )
@@ -126,8 +126,11 @@ void __fastcall TMainForm::DragDropWindowProc( TMessage& msg )
         HDROP handle = ( HDROP )msg.WParam;
         size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
         if( numFiles > 1 )
-          Application->MessageBox( "You can only drop one file at a time", "Warning", MB_OK );
-        if( numFiles > 0 )
+		  Application->MessageBox(
+			VCLSTR( "You can only drop one file at a time" ),
+			VCLSTR( "Warning" ),
+			MB_OK );
+		if( numFiles > 0 )
         {
           size_t nameLen = ::DragQueryFile( handle, 0, NULL, 0 );
           char* name = new char[ nameLen + 1 ];
@@ -174,8 +177,8 @@ void __fastcall TMainForm::EditPositionExit( TObject* inSender )
   TEdit* editField = dynamic_cast<TEdit*>( inSender );
   if( editField != NULL && editField->Modified )
   {
-    TimeValue t;
-    istringstream iss( editField->Text.c_str() );
+	TimeValue t;
+	istringstream iss( editField->Text.c_str() );
     if( iss >> t )
       SetSamplePos( t * mFile.SamplingRate() - mDisplay.NumSamples() / 2 );
   }
@@ -222,7 +225,10 @@ void TMainForm::FileOpen()
   TOpenDialog* pDialog = new TOpenDialog( ( TComponent* )NULL );
   pDialog->Filter = "BCI2000 data files (*.dat)|*.DAT";
   if( pDialog->Execute() )
-    DoFileOpen( pDialog->FileName.c_str() );
+  {
+	AnsiString name = pDialog->FileName;
+	DoFileOpen( name.c_str() );
+  }
   delete pDialog;
 }
 
@@ -461,7 +467,10 @@ TMainForm::DoFileOpen( const char* inName )
     {
       ostringstream oss;
       oss << "Could not open \n\"" << inName << "\"\nas a BCI2000 file." << endl;
-      Application->MessageBox( oss.str().c_str(), cProgramName, MB_OK | MB_ICONERROR );
+	  Application->MessageBox(
+		VCLSTR( oss.str().c_str() ),
+		VCLSTR( cProgramName ),
+		MB_OK | MB_ICONERROR );
     }
     mDragDropHint->Visible = true;
     mSignalArea->Visible = false;
@@ -525,7 +534,7 @@ TMainForm::SaveToRegistry() const
   TRegistry* pReg = NULL;
   try
   {
-    pReg = new TRegistry( KEY_WRITE );
+	pReg = new TRegistry( KEY_WRITE );
     pReg->RootKey = HKEY_CURRENT_USER;
     pReg->OpenKey( KEY_BCI2000 KEY_VIEWER KEY_CONFIG, true );
     if( this->WindowState == wsNormal )
@@ -827,7 +836,7 @@ TMainForm::SetupActions()
     if( control != NULL )
     {
       int size = control->GetTextLen();
-      char* caption = new char[ size + 1 ];
+	  VclCharType* caption = new VclCharType[ size + 1 ];
       control->GetTextBuf( caption, size + 1 );
       action->Caption = caption;
       delete[] caption;
@@ -1006,7 +1015,7 @@ void __fastcall TMainForm::HelpOnChannelClick(TObject *Sender)
   TMenuItem* pItem = dynamic_cast<TMenuItem*>( Sender );
   if( pItem )
   {
-    string name = pItem->Caption.c_str();
+	string name = pItem->Caption.c_str();
     size_t p1 = name.find( '\"' ),
            p2 = name.find( '\"', p1 + 1 );
     if( p1 != string::npos && p2 != string::npos )
@@ -1051,4 +1060,8 @@ void __fastcall TMainForm::mChannelListBoxContextPopup(TObject* Sender,
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
+{
+  SaveToRegistry();
+}
 

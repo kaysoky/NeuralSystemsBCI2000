@@ -137,7 +137,8 @@ BCI2000FileReader::Open( const char* inFilename, int inBufSize )
 {
   Reset();
 
-  mFile.open( inFilename, ios::in | ios::binary );
+  if( inFilename != NULL )
+    mFile.open( inFilename, ios::in | ios::binary );
   if( !mFile.is_open() )
   {
     mErrorState = FileOpenError;

@@ -88,6 +88,7 @@ class TMainForm : public TForm
     void __fastcall HelpOnChannelClick(TObject *Sender);
     void __fastcall mChannelListBoxContextPopup(TObject *Sender,
           TPoint &MousePos, bool &Handled);
+	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
 
   private:
     void __fastcall WMEraseBkgnd( TWMEraseBkgnd& );

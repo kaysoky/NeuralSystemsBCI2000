@@ -11,6 +11,7 @@
 #include "UMain.h"
 #include "AboutBox.h"
 #include "ExecutableHelp.h"
+#include "VCLDefines.h"
 
 #include <sstream>
 //---------------------------------------------------------------------------
@@ -54,7 +55,10 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
         HDROP handle = ( HDROP )msg.WParam;
         size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
         if( numFiles > 1 )
-          Application->MessageBox( "You can only drop one file at a time", "Warning", MB_OK );
+		  Application->MessageBox(
+			VCLSTR( "You can only drop one file at a time" ),
+			VCLSTR( "Warning" ),
+			MB_OK );
         if( numFiles > 0 )
         {
           size_t nameLen = ::DragQueryFile( handle, 0, NULL, 0 );
@@ -94,7 +98,10 @@ bool TfMain::RetrieveFileInfo( const char* inFileName )
   {
     ostringstream oss;
     oss << "Could not open \"" << inFileName << "\" as a BCI2000 data file.";
-    Application->MessageBox( oss.str().c_str(), "Error", MB_OK );
+	Application->MessageBox(
+	  VCLSTR( oss.str().c_str() ),
+	  VCLSTR( "Error" ),
+	  MB_OK );
     bShowParams->Enabled=false;
     return(false);
   }
@@ -159,8 +166,9 @@ void __fastcall TfMain::Open1Click(TObject*)
 {
 if (OpenDialog1->Execute())
    {
-   tFileName->Caption = OpenDialog1->FileName;
-   if (RetrieveFileInfo(OpenDialog1->FileName.c_str()))
+   AnsiString name = OpenDialog1->FileName;
+   tFileName->Caption = name;
+   if (RetrieveFileInfo(name.c_str()))
       DisplayFileInfo();
    }
 }

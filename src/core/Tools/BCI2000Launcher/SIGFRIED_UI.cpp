@@ -4,6 +4,7 @@
 #pragma hdrstop
 
 #include "SIGFRIED_UI.h"
+#include "VCLDefines.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -25,7 +26,7 @@ __fastcall TSigfried_UIfrm::TSigfried_UIfrm(TComponent* Owner, string sigSource,
 //---------------------------------------------------------------------------
 void __fastcall TSigfried_UIfrm::getDirBtnClick(TObject */*Sender*/)
 {
-    AnsiString Dir = "";
+    VclStringType Dir = "";
     if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,1000))
         directoryBox->Text = Dir;
 }
@@ -87,7 +88,8 @@ void __fastcall TSigfried_UIfrm::baselinePrmBtnClick(TObject */*Sender*/)
     OpenFileDlg->Filter = "PRM Files(*.prm)|*.prm";
     if (OpenFileDlg->Execute())
     {
-        mParmFile = OpenFileDlg->FileName.c_str();
+		AnsiString name = OpenFileDlg->FileName;
+		mParmFile = name.c_str();
         baselinePrmBox->Text = mParmFile.c_str();
     }
 }
@@ -221,7 +223,7 @@ void __fastcall TSigfried_UIfrm::modelIniBtnClick(TObject */*Sender*/)
     OpenFileDlg->Filter = "INI files(*.ini)|*.ini";
     if (OpenFileDlg->Execute())
     {
-        mIniFile = OpenFileDlg->FileName.c_str();
+        mIniFile = AnsiString(OpenFileDlg->FileName).c_str();
         modelIniBox->Text = mIniFile.c_str();
     }
 }
@@ -234,7 +236,7 @@ void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject */*Sender*/)
 
     if (SaveFileDlg->Execute())
     {
-        mModelFile = SaveFileDlg->FileName.c_str();
+        mModelFile = AnsiString(SaveFileDlg->FileName).c_str();
         modelFileBox->Text = mModelFile.c_str();
     }
 
@@ -328,7 +330,7 @@ void __fastcall TSigfried_UIfrm::parmOutputBtnClick(TObject */*Sender*/)
 
     if (SaveFileDlg->Execute())
     {
-        mParmOutputFile = SaveFileDlg->FileName.c_str();
+        mParmOutputFile = AnsiString( SaveFileDlg->FileName ).c_str();
         parmOutputBox->Text = mParmOutputFile.c_str();
     }
     
@@ -388,7 +390,7 @@ void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject */*Sender*/)
     OpenFileDlg->Filter = "BCI2000 Dat file(*.dat)|*.dat";
     if (OpenFileDlg->Execute())
     {
-        mBaselineFile = OpenFileDlg->FileName.c_str();
+        mBaselineFile = AnsiString( OpenFileDlg->FileName ).c_str();
         baselineFileBox->Text = mBaselineFile.c_str();
     }
 }

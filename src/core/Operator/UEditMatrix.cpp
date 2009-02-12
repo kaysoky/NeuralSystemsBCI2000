@@ -11,6 +11,7 @@
 #include "ExecutableHelp.h"
 #include "UOperatorUtils.h"
 #include "defines.h"
+#include "VCLDefines.h"
 
 #include <string>
 #include <cassert>
@@ -269,9 +270,9 @@ TfEditMatrix::PlainCellToMatrix( int inRow, int inCol )
   StringGrid->Canvas->DrawFocusRect( cellRect );
   bool convert = (
     IDYES == Application->MessageBox(
-      "You are about to change this cell into a 1x1-sub-matrix.\n"
-      "Proceed?",
-      "Confirmation",
+	  VCLSTR( "You are about to change this cell into a 1x1-sub-matrix.\n"
+              "Proceed?" ),
+      VCLSTR( "Confirmation" ),
       MB_YESNO | MB_ICONQUESTION )
   );
   StringGrid->Canvas->DrawFocusRect( cellRect );
@@ -310,7 +311,10 @@ TfEditMatrix::MatrixToPlainCell( int inRow, int inCol )
   message += "Proceed?";
 
   bool convert = (
-    IDYES == Application->MessageBox( message.c_str(), "Confirmation", MB_YESNO | MB_ICONQUESTION )
+	IDYES == Application->MessageBox(
+	  VCLSTR( message.c_str() ),
+	  VCLSTR( "Confirmation" ),
+	  MB_YESNO | MB_ICONQUESTION )
   );
   StringGrid->Canvas->DrawFocusRect( cellRect );
   if( convert )
@@ -407,8 +411,8 @@ TfEditMatrix::bChangeMatrixSizeClick( TObject* )
   int res, row, col;
 
   if( IDYES == Application->MessageBox(
-        "Do you really want to change the size of the matrix?",
-        "Confirmation",
+		VCLSTR( "Do you really want to change the size of the matrix?" ),
+        VCLSTR( "Confirmation" ),
         MB_YESNO | MB_ICONQUESTION ) )
   {
     Lock();

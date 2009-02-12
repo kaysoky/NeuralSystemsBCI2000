@@ -5,6 +5,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 #include "defines.h"
+#include "VCLDefines.h"
 #include "UShowParameters.h"
 #include "UEditMatrix.h"
 #include "UOperatorCfg.h"
@@ -80,7 +81,10 @@ int TfConfig::Initialize( ParamList *my_paramlist, PREFERENCES* new_preferences 
   if( CfgTabControl->Tabs->Count == 0 )
   {
     CfgTabControl->Tabs->Insert( 0, "No parameter visible" );
-    Application->MessageBox( "No parameter visible! Increase user level", "Message", MB_OK );
+	Application->MessageBox(
+	  VCLSTR( "No parameter visible! Increase user level" ),
+	  VCLSTR( "Message" ),
+	  MB_OK );
   }
 
   if( find( tabNames.begin(), tabNames.end(), mCurTab ) == tabNames.end() )
@@ -262,9 +266,13 @@ void __fastcall TfConfig::bSaveParametersClick(TObject*)
     if( !fShowParameters->GetFilterStatus( &( *paramlist )[ i ], 2 ) )
       paramsToSave.Add( ( *paramlist )[ i ] );
 
-  bool ret=paramsToSave.Save(SaveDialog->FileName.c_str());  // save parameters using the filter
+  AnsiString name = SaveDialog->FileName;
+  bool ret=paramsToSave.Save(name.c_str());  // save parameters using the filter
   if (!ret)
-     Application->MessageBox("Error writing parameter file", "Error", MB_OK);
+	 Application->MessageBox(
+	   VCLSTR( "Error writing parameter file" ),
+	   VCLSTR( "Error" ),
+	   MB_OK);
   }
 }
 //---------------------------------------------------------------------------
@@ -322,7 +330,10 @@ bool    ret;
 
     ret=LoadParameters(LoadDialog->FileName);
     if (!ret)
-       Application->MessageBox("Error reading parameter file", "Error", MB_OK);
+	   Application->MessageBox(
+		 VCLSTR( "Error reading parameter file" ),
+		 VCLSTR( "Error" ),
+		 MB_OK);
     else
        {
        RenderParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex].c_str());
@@ -338,7 +349,10 @@ void __fastcall TfConfig::bConfigureSaveFilterClick(TObject*)
  fShowParameters->parameterlist=paramlist;
  fShowParameters->filtertype=2;                 // filter for saving parameters
  fShowParameters->Caption="Save Filter";
- Application->MessageBox("The parameters that you select here will NOT be saved !", "Reminder", MB_OK);
+ Application->MessageBox(
+   VCLSTR( "The parameters that you select here will NOT be saved !" ),
+   VCLSTR( "Reminder" ),
+   MB_OK);
  fShowParameters->ShowModal();
 }
 //---------------------------------------------------------------------------
@@ -348,7 +362,10 @@ void __fastcall TfConfig::bConfigureLoadFilterClick(TObject*)
  fShowParameters->parameterlist=paramlist;
  fShowParameters->filtertype=1;                 // filter for loading parameters
  fShowParameters->Caption="Load Filter";
- Application->MessageBox("The parameters that you select here will NOT be loaded !", "Reminder", MB_OK);
+ Application->MessageBox(
+   VCLSTR( "The parameters that you select here will NOT be loaded !" ),
+   VCLSTR( "Reminder" ),
+   MB_OK);
  fShowParameters->ShowModal();
 }
 

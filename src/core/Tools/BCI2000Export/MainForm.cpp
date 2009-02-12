@@ -20,6 +20,7 @@
 #include "AboutBox.h"
 #include "ExecutableHelp.h"
 #include "defines.h"
+#include "VCLDefines.h"
 
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -160,7 +161,7 @@ TImporterForm::ProcessFiles( StringSet& inFilesToProcess, bool scanOnly )
           i != inFilesToProcess.end(); ++i )
   {
     StatusBar->Panels->Items[ 1 ]->Text
-        = IntToStr( ++curFile ) + "/" + IntToStr( inFilesToProcess.size() );
+        = IntToStr( ++curFile ) + "/" + IntToStr( int( inFilesToProcess.size() ) );
     StatusBar->Refresh();
 
     Converter.Open( i->c_str() );
@@ -169,13 +170,21 @@ TImporterForm::ProcessFiles( StringSet& inFilesToProcess, bool scanOnly )
     if( OutContent.length() )
     {
       Application->BringToFront();
-      Application->MessageBox( OutContent.c_str(), Application->Title.c_str(), MB_ICONWARNING|MB_OK );
+	  AnsiString title = Application->Title;
+	  Application->MessageBox(
+		VCLSTR( OutContent.c_str() ),
+		VCLSTR( title.c_str() ),
+		MB_ICONWARNING|MB_OK );
       OutContent = "";
     }
     if( ErrContent.length() )
     {
       Application->BringToFront();
-      Application->MessageBox( ErrContent.c_str(), Application->Title.c_str(), MB_ICONERROR|MB_OK );
+	  AnsiString title = Application->Title;
+	  Application->MessageBox(
+		VCLSTR( ErrContent.c_str() ),
+		VCLSTR( title.c_str() ),
+		MB_ICONERROR|MB_OK );
       ErrContent = "";
       break;
     }

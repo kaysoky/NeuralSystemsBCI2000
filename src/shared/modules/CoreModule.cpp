@@ -90,9 +90,9 @@ CoreModule::Run( int inArgc, char** inArgv )
            << endl;
   }
 #ifdef __BORLANDC__
-  catch( const Exception& e )
+  catch( Exception& e )
   {
-    bcierr << "unhandled exception "
+	bcierr << "unhandled exception "
            << e.Message.c_str() << ",\n"
            << "terminating " THISMODULE " module"
            << endl;
@@ -617,19 +617,19 @@ bool
 CoreModule::HandleVisSignal( istream& is )
 {
   VisSignal s;
-  if( s.ReadBinary( is ) && s.SourceID() == 0 )
+  if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
-    const GenericSignal& inputSignal = s;
-    if( !mFiltersInitialized )
-      bcierr << "Unexpected VisSignal message" << endl;
-    else
-    {
-      if( mStartRunPending )
-        StartRunFilters();
-      ProcessFilters( inputSignal );
-      if( mStopRunPending )
-        StopRunFilters();
-    }
+	const GenericSignal& inputSignal = s;
+	if( !mFiltersInitialized )
+	  bcierr << "Unexpected VisSignal message" << endl;
+	else
+	{
+	  if( mStartRunPending )
+		StartRunFilters();
+	  ProcessFilters( inputSignal );
+	  if( mStopRunPending )
+		StopRunFilters();
+	}
   }
   return is;
 }
@@ -639,7 +639,7 @@ bool
 CoreModule::HandleVisSignalProperties( istream& is )
 {
   VisSignalProperties s;
-  if( s.ReadBinary( is ) && s.SourceID() == 0 )
+  if( s.ReadBinary( is ) && s.SourceID() == "" )
     if( !mFiltersInitialized )
       InitializeFilters( s );
   return is;

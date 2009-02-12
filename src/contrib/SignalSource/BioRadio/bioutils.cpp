@@ -143,7 +143,8 @@ int
 bioutils::WriteBioRadioConfig(int fs, int bitRes, double vRange, const char *pathFile)
 {
   ofstream file;
-  file.open( pathFile );
+  if( pathFile != NULL )
+    file.open( pathFile );
   if( file.is_open() )
   {
     file << "[System]\n"

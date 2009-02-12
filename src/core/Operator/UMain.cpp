@@ -58,6 +58,7 @@
 #include "UMain.h"
 
 #include "defines.h"
+#include "VCLDefines.h"
 #include "Operator.h"
 #include "USysStatus.h"
 #include "USysLog.h"
@@ -546,7 +547,9 @@ void
 TfMain::QuitOperator( bool inConfirm )
 {
   if( !inConfirm || ID_YES == Application->MessageBox(
-    "Do you really want to quit BCI2000?", "Question", MB_YESNO ) )
+	VCLSTR( "Do you really want to quit BCI2000?" ),
+	VCLSTR( "Question" ),
+	MB_YESNO ) )
   {
     // Execute the on-exit script ...
     if( mPreferences.Script[ PREFERENCES::OnExit ] != "" )
