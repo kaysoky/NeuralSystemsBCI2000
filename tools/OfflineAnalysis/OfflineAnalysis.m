@@ -8,7 +8,7 @@
 %% Description: This file defines a class of functions that control the
 %% operation of the OfflineAnalysis GUI and perform data validation.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function varargout = OfflineAnalysis(varargin)

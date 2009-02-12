@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A filter that stores data into a GDF data file.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GDF_FILE_WRITER_H

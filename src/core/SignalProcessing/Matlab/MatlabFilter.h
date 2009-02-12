@@ -55,7 +55,7 @@
 //      matlab /regserver
 //    from the command line when logged in with administrative privileges.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MATLAB_FILTER_H

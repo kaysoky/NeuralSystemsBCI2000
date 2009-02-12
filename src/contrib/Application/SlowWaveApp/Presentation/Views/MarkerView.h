@@ -13,7 +13,7 @@
 //          May 13, 2003, jm: Introduced multiple auditory markers
 //          at arbitrary temporal offsets.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 

@@ -8,7 +8,7 @@
 %% Description: This function determines the r^2 values of two
 %% distributions
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function erg = rsqu(q, r)

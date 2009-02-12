@@ -3,7 +3,7 @@
 // Description: This file declares a purely abstract GenericFilter interface
 //   which all BCI2000 filters are supposed to implement.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GENERIC_FILTER_H

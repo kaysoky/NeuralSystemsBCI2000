@@ -8,7 +8,7 @@
 %% Description: This function performs a time-domain analysis of the input
 %% data
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [res1, res2, ressq, timeBinsMs] = timeAnalysis(...

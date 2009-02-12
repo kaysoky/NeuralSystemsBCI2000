@@ -6,7 +6,7 @@
 //   For plain strings without command codes, the Code property is empty, and
 //   the Value property contains the string.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

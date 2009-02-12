@@ -4,7 +4,7 @@
 // Description: BCI2000 type for the binary representation of a list of
 //   state variables corresponding to a single sample.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef STATE_VECTOR_SAMPLE_H

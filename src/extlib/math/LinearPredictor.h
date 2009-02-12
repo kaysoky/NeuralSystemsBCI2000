@@ -6,7 +6,7 @@
 //   function with the estimated coefficients in the denominator, and the
 //   explained signal variance in the numerator.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef LINEAR_PREDICTOR_H

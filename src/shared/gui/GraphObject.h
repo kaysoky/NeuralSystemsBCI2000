@@ -11,7 +11,7 @@
 //     OnClick:  The user clicked the area occupied by the object. The object
 //       considers itself clicked when it returns true (the default).
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GRAPH_OBJECT_H

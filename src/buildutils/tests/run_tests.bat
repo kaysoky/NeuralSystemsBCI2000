@@ -4,7 +4,7 @@
 ::   BCI2000 configurations, and compares resulting data files to set of
 ::   reference files. Assumes to be run from where it resides.
 ::
-:: (C) 2000-2007, BCI2000 Project
+:: (C) 2000-2009, BCI2000 Project
 :: http://www.bci2000.org
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 @echo off

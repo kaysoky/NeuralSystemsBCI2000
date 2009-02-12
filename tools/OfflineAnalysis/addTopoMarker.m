@@ -8,7 +8,7 @@
 %% Description: This function adds an electrode marker to either a ECoG or 
 %%  EEG topography plot
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [markerTextHandle] = addTopoMarker(x, y, label, params )

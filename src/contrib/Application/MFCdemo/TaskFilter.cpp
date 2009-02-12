@@ -4,7 +4,7 @@
 // Description: A simple task filter that illustrates how to implement a
 //   BCI2000 application module based on Microsoft's MFC library.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

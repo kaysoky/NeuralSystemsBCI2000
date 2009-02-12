@@ -8,7 +8,7 @@
 //   The speller's NextTarget() method returns the target best suited to modify
 //   its SpelledText() property into its GoalText() property.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

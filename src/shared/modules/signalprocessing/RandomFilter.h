@@ -4,7 +4,7 @@
 //  Description: A filter that returns zero-mean white noise multiplied by the
 //               input signal's value.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef RANDOM_FILTER_H

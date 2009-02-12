@@ -4,7 +4,7 @@
 // Description: A BCI2000 filter performing temporal alignment of its input
 //   data using linear interpolation between subsequent samples.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

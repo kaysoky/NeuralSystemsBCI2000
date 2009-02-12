@@ -3,7 +3,7 @@
 // Authors: shzeng, schalk@wadsworth.org
 // Description: A 2D cursor displayed on top of the 2D overlay.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

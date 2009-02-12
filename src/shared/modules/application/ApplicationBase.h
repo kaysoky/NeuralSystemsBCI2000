@@ -10,7 +10,7 @@
 //           in the operator user's log window.
 //         - Writing to AppLog results in logging both to screen and file.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef APPLICATION_BASE_H

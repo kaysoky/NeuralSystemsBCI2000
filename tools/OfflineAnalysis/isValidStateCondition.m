@@ -8,7 +8,7 @@
 %% Description: This function checks to make sure that the syntax of a
 %% given condition is valid
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [isValid] = isValidStateCondition(cond, stateVarName)

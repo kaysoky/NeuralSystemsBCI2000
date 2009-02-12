@@ -6,7 +6,7 @@
 //   DesignFilter() member, which is supposed to translate parameter settings
 //   into a rational transfer function (complex poles and zeros).
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

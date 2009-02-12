@@ -4,7 +4,7 @@
 // Description: A class that handles parsing a parameter's comment
 //       for display purposes.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

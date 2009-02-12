@@ -4,7 +4,7 @@
 // Description: A base class that implements functionality common to all
 //              file writer classes that output into a file.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

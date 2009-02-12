@@ -48,7 +48,7 @@ function [ signal, states, parameters, total_samples ] = load_bcidat( varargin )
 %
 %
 %  The load_bcidat function is part of the BCI2000 project. 
-%  (C) 2000-2008, BCI2000 Project
+%  (C) 2000-2009, BCI2000 Project
 %  http://www.bci2000.org
 
 %  This is a help file documenting the functionality contained in

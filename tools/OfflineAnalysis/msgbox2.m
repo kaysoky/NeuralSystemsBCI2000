@@ -9,7 +9,7 @@
 %% allows the user to choose whether or not the message should be displayed
 %% in the future.  State is maintained via settings.mat.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function varargout=msgbox2(varargin)

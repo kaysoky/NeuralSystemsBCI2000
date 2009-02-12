@@ -6,7 +6,7 @@
 //    parameters, and states, thus providing the full BCI2000 filter interface
 //    to a Matlab filter implementation.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

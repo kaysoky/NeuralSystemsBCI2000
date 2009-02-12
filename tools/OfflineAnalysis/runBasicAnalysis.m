@@ -9,7 +9,7 @@
 %% of multiple BCI2000 data files and then generates a number of plots
 %% useful in determining the best feature set for the data.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [handles] = runBasicAnalysis(params, settings, plots, errorOverride, verbose, handles)

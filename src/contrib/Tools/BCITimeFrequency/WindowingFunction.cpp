@@ -7,7 +7,7 @@
 // Description: A class that encapsulates details about windowing functions
 //              used for sidelobe suppression in spectral analysis.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop

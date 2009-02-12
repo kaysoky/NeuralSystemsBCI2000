@@ -1,5 +1,5 @@
 function EEG = BCI2000import
-% (C) 2000-2008, BCI2000 Project
+% (C) 2000-2009, BCI2000 Project
 % http://www.bci2000.org
 
 addpath(genpath('..\..\functions'));

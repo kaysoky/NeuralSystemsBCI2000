@@ -4,7 +4,7 @@
 // Description: An IIR filter class containing a HighPass, LowPass, and Notch
 //              filter.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DISPLAY_FILTER_H

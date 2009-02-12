@@ -4,7 +4,7 @@
 // Description: A program that converts newlines and tabs.
 //              See the sUsage variable for details.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include <iostream>

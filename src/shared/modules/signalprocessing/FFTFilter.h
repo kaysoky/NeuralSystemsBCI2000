@@ -3,7 +3,7 @@
 // Description: A BCI2000 filter that applies a short-term FFT to its input
 //   signal.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef FFT_FILTER_H

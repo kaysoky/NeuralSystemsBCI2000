@@ -3,7 +3,7 @@
 // Authors: shzeng, schalk@wadsworth.org
 // Description: This "threeDText" class resembles the 3D text in the 3D environment.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////////
 #ifndef THREE_D_TEXT_H

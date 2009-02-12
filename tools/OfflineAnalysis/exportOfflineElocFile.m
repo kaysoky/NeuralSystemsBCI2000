@@ -8,7 +8,7 @@
 %% Description: This function generates an electrode location file
 %% compatible with topoplot and topoplotEEG.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function success = exportOfflineElocFile(elecData, fn, settings)

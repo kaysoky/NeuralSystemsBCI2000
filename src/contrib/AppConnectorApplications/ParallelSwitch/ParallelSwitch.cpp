@@ -13,7 +13,7 @@
 //       After successful driver installation, the program will work without
 //       administrator privileges as well.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include <windows.h>

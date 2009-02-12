@@ -4,7 +4,7 @@
 // Description: A small framework for platform independent command
 //   line tools.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include "bci_tool.h"

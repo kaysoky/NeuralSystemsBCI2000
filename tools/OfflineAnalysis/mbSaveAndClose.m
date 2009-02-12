@@ -8,7 +8,7 @@
 %% Description: This function is a helper function for msgbox2 that enables
 %% writing to the settings.mat state file.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function mbSaveAndClose(fig)

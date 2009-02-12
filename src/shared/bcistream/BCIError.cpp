@@ -7,7 +7,7 @@
 //              For an informational message, write
 //               bciout << "My info message" << endl;
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

@@ -17,7 +17,7 @@
 //   - For the StimulusPresentation application, stimulus codes are associated
 //     with single stimuli, thus associations contain one stimulus each.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef STIMULUS_H

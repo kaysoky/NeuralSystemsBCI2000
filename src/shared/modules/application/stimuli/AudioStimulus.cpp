@@ -6,7 +6,7 @@
 //   When a sound string is enclosed in single quotes ('text'), it is rendered
 //   using the OS's text-to-speech engine.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

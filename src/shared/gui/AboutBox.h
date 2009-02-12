@@ -4,7 +4,7 @@
 // Description: A class that displays a dialog window showing
 //   the BCI2000 logo, and versioning information.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ABOUT_BOX_H

@@ -6,7 +6,7 @@
 //   by lexical comparison, defines the relative position of the filter in the
 //   sequence.
 //
-// (C) 2000-2007, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

@@ -16,7 +16,7 @@
 //              broadcaster concept to adapt to BCI2000 needs.
 //              Changed the name from PresListener.h to PresBroadcasting.h
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 

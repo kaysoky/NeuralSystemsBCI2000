@@ -6,7 +6,7 @@
 //        is to allow using FFTW from a non-GPLed project by requiring
 //        user interaction and avoiding the use of copyrighted FFTW code.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef FFT_LIB_WRAP_H

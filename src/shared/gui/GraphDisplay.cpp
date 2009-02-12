@@ -4,7 +4,7 @@
 // Description: A class that represents a display rectangle for a set of
 //   GraphObjects.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

@@ -6,7 +6,7 @@
 //   number sequences for identical seeds across software elements that use
 //   random numbers.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef RANDOM_GENERATOR_H

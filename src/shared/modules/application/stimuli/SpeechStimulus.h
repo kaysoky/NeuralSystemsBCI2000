@@ -4,7 +4,7 @@
 // Description: A TextToSpeech descendant that acts as a stimulus by speaking
 //   text on the Stimulus::Present event.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SPEECH_STIMULUS_H

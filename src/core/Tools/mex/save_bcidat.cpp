@@ -12,7 +12,7 @@
 //  Signal data is always interpreted as raw data, i.e. it will be written
 //  into the output file unchanged.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop

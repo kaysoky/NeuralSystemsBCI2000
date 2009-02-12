@@ -27,7 +27,7 @@
 // Changes: Jan 31, 2004: Introduced function calls, moved definitions into
 //      a new file ParamDecl.cpp.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 

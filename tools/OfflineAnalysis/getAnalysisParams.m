@@ -7,7 +7,7 @@
 %%
 %% Description: This function returns an empty analysis params structure.
 %%
-%% (C) 2000-2008, BCI2000 Project
+%% (C) 2000-2009, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function analysisParams = getAnalysisParams(domain, acqMode, dataFiles)

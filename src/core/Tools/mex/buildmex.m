@@ -23,7 +23,7 @@ function buildmex( varargin )
 %   Matlab was built with should fix the problem.
 %
 % The buildmex function is part of the BCI2000 project.
-% (C) 2000-2008, BCI2000 Project
+% (C) 2000-2009, BCI2000 Project
 % http://www.bci2000.org
 
 %  Matlab M-file to build BCI2000 Matlab mex files.

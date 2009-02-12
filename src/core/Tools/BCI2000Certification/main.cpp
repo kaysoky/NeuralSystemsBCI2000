@@ -20,7 +20,7 @@ main - controls the main program
 
 The analysis itself is handled by the analysis class. See the analysisClass.cpp/h file for more info.
 
-(C) 2000-2008, BCI2000 Project
+(C) 2000-2009, BCI2000 Project
 http://www.bci2000.org
 */
 //---------------------------------------------------------------------------

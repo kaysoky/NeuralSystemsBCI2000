@@ -3,7 +3,7 @@
 // Authors: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
 // Description: Classes that represent BCI2000 visualization messages.
 //
-// (C) 2000-2008, BCI2000 Project
+// (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
