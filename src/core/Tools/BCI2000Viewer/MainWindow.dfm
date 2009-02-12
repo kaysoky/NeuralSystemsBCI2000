@@ -14,7 +14,6 @@ object MainForm: TMainForm
   Font.Style = []
   Menu = mMainMenu
   OldCreateOrder = False
-  Position = poScreenCenter
   OnCanResize = FormCanResize
   OnKeyDown = FormKeyDown
   OnResize = FormResize
