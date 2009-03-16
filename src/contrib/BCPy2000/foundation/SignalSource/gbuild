@@ -13,15 +13,14 @@
 #         -r       recompile even if apparently up-to-date
 
 CPP="g++"
-CPPFLAGS="-DMODTYPE=3 -DDYNAMIC_PYTHON=1"
-
+CPPFLAGS="-DMODTYPE=1 -DDYNAMIC_PYTHON=1"
 LD="g++"
 LDFLAGS=""
 
 SHARED="../../../../shared"
 OBJDIR="obj"
 OUTDIR="../../demo/prog"
-OUTNAME="PythonApplication"
+OUTNAME="PythonSource"
 
 LIBS_POSIX="-lrt -ldl"
 LIBS_WIN32="-lws2_32"
@@ -34,14 +33,14 @@ $SHARED/bcistream \
 $SHARED/config \
 $SHARED/fileio \
 $SHARED/modules \
+$SHARED/modules/signalsource \
 $SHARED/types \
 $SHARED/utils \
 $SHARED/utils/Expression \
 "
 
-
 SRC="\
-PythonApplication.cpp \
+PythonSource.cpp \
 ../shared/PythonFilter.cpp \
 ../shared/PythonLink24.cpp \
 ../shared/PythonLink25.cpp \
@@ -52,9 +51,22 @@ $SHARED/accessors/ParamRef.cpp \
 $SHARED/bcistream/BCIError.cpp \
 $SHARED/bcistream/BCIError_module.cpp \
 $SHARED/fileio/BCIDirectory.cpp \
+$SHARED/fileio/FileWriterBase.cpp \
+$SHARED/fileio/GenericFileWriter.cpp \
+$SHARED/fileio/NullFileWriter.cpp \
+$SHARED/fileio/dat/BCI2000FileWriter.cpp \
+$SHARED/fileio/dat/BCI2000OutputFormat.cpp \
+$SHARED/fileio/edf_gdf/EDFFileWriter.cpp \
+$SHARED/fileio/edf_gdf/EDFOutputBase.cpp \
+$SHARED/fileio/edf_gdf/EDFOutputFormat.cpp \
+$SHARED/fileio/edf_gdf/GDF.cpp \
+$SHARED/fileio/edf_gdf/GDFFileWriter.cpp \
+$SHARED/fileio/edf_gdf/GDFOutputFormat.cpp \
 $SHARED/modules/CoreModule.cpp \
 $SHARED/modules/GenericFilter.cpp \
 $SHARED/modules/MessageHandler.cpp \
+$SHARED/modules/signalsource/DataIOFilter.cpp \
+$SHARED/modules/signalsource/TransmissionFilter.cpp \
 $SHARED/types/BitmapImage.cpp \
 $SHARED/types/Brackets.cpp \
 $SHARED/types/Color.cpp \

@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -26,7 +26,6 @@
 #ifndef PythonFilterH
 #define PythonFilterH
 
-//#include "defines.h"
 #include "PrecisionTime.h"
 
 #ifndef DYNAMIC_PYTHON
@@ -38,7 +37,6 @@
 #include "Python.h"
 #include "numpy/arrayobject.h"
 #endif
-
 
 #define PYTHON_CONSOLE              "EmbeddedPythonConsole"
 #define PYTHON_CONSOLE_INSTALLED    "BCPy2000.EmbeddedPythonConsole"
@@ -78,6 +76,13 @@
 #define    DEFAULT_CLASS_FILE       "BciApplication.py"
 #endif
 
+#ifndef __BORLANDC__
+class Exception { // quack! quack!
+    public:
+        Exception(const char*s){Message=s;}
+        std::string Message;
+};
+#endif // __BORLANDC__
 
 class EndUserError : public Exception {
 	public:
@@ -100,9 +105,10 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 	private:
 		PrecisionTime* cur_time;
 		PyObject*      bci2000_instance;
-		PyThreadState* _save;
-		bool           stay_open;
 		bool           use_console;
+
+		mutable bool           stay_open;
+		mutable PyThreadState* _save;
 		
 		PyArrayObject* shared_insignal;
 		PyArrayObject* shared_outsignal;
@@ -119,8 +125,8 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        ReceiveStatesFromPython() const;
 		void        SendStatePrecisionsToPython() const;
 	
-		PyObject*   ConvertSignalToPyArrayObject(const GenericSignal& inSignal, PyArrayObject* array=NULL) const;
-		void        ConvertPyArrayObjectToSignal(PyObject* pyOutSignal, GenericSignal& outSignal) const;
+		PyArrayObject* ConvertSignalToPyArrayObject(const GenericSignal& inSignal, PyArrayObject* array=NULL) const;
+		void           ConvertPyArrayObjectToSignal(PyArrayObject* pyOutSignal, GenericSignal& outSignal) const;
 	
 		PyObject*   ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const;
 		void        ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, SignalProperties& outSignalProperties) const;
@@ -137,15 +143,15 @@ class FILTER_NAME : public FILTER_SUPERCLASS
 		void        ChangeDir(std::string& d);
 		void        OpenConsole(const char *title);
                     
-		void        BlockThreads();
-		void        UnblockThreads();
+		void        BlockThreads() const;
+		void        UnblockThreads() const;
 
 		std::string EscapePythonString(std::string in);
 		void        EvalPythonString(std::string s);
 		PyObject*   CallModuleMember(std::string module, std::string member, PyObject* arg=NULL);
 		PyObject*   CallMethod(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL, PyObject* arg3=NULL) const;
 		PyObject*   CallHook(const char* name, PyObject* arg1=NULL, PyObject* arg2=NULL) const;
-		void        HandlePythonError(std::string msg, bool errorCodeReturned=false);
+		void        HandlePythonError(std::string msg, bool errorCodeReturned=false) const;
 		
 };
 

@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# A BCPy2000-specific intermediate layer between the project's
+# gbuild script and the normal plug-in trunk/src/shared/gbuild
+# Does some BCPy2000-specific housekeeping and cross-platform
+# finessing.  Don't call this directly: call ./gbuild from the
+# project directory. See trunk/src/shared/gbuild for details.
+
+# if an obj_$PLATFORM directory has been created, use that as OBJDIR
+uname | grep -iq '^cygwin' && test -d obj_cygwin && OBJDIR=obj_cygwin
+uname | grep -iq '^darwin' && test -d obj_darwin && OBJDIR=obj_darwin
+uname | grep -iq '^linux'  && test -d obj_linux  && OBJDIR=obj_linux
+
+# force recompilation of CoreModule.o so that BCI_VERSION includes the __TIME__
+rm -f "$OBJDIR"/CoreModule.o
+
+uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DDYNAMIC_PYTHON=0"
+# TODO: dynamic linking doesn't work on MacOS yet (product crashes with "Illegal Instruction" message)
+#       comment out the line above to try it
+
+test -z "$FINK" && FINK=0
+
+if (echo "$CPPFLAGS" | grep -q '\-DDYNAMIC_PYTHON=0')
+then
+	test -z "$PYVER" && PYVER=2.4
+    echo using static linking to python $PYVER
+    INCS_POSIX="$INCS_POSIX /usr/include/python$PYVER"
+    LIBS="$LIBS -lpython$PYVER"
+	
+	# ...except that all the headers and libraries will be in strange places on MACOS
+    if test "$FINK" == 1
+	then
+		LIBS_MACOS="$LIBS_MACOS -L/sw/lib/python$PYVER/config" \
+		INCS_MACOS="$INCS_MACOS \
+		/sw/include/python$PYVER
+		/sw/lib/python$PYVER/site-packages/numpy/core/include \
+		"
+	else
+		LIBS_MACOS="$LIBS_MACOS -L/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
+		INCS_MACOS="$INCS_MACOS \
+		/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER
+		/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/site-packages/numpy/core/include \
+		"
+	fi
+else
+	# ... which affects us in the dynamic case too (conflict of minor-version-numbers between headers on different platforms perhaps?)
+	if test "$FINK" == 1
+	then
+		INCS_MACOS="$INCS_MACOS \
+		/sw/include \
+		/sw/lib/python2.4/site-packages/numpy/core/include \
+		/sw/lib/python2.5/site-packages/numpy/core/include \
+		"
+	else
+		INCS_MACOS="$INCS_MACOS \
+		/Library/Frameworks/Python.framework/Versions/2.4/include \
+		/Library/Frameworks/Python.framework/Versions/2.5/include \
+		/Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/numpy/core/include \
+		/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/include \
+		"
+	fi
+fi
+. $SHARED/gbuild
+

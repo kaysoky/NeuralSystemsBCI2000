@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -26,10 +26,10 @@ import Basic
 import WavTools.Base
 import numpy
 
-def amstim(msec=1000, modfreq=20, carrierfreq=200, samplingfreq=1000, amplitude=1.0):
-	"""create an amplitude-modulated sinewave"""###
-	carrier = Basic.sinewave(freq_hz=carrierfreq, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav())
-	stim = Basic.ampmod(carrier, freq_hz=modfreq)
+def amstim(msec=1000, modfreq=20, carrierfreq=200, samplingfreq=1000, amplitude=1.0, carriershape=numpy.sin, modshape=numpy.sin):
+	"""create an amplitude-modulated periodic wave"""###
+	carrier = Basic.wavegen(freq_hz=carrierfreq, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav(), waveform=carriershape)
+	stim = Basic.ampmod(carrier, freq_hz=modfreq, waveform=modshape)
 	stim.autoscale(amplitude)
 	return stim
 
@@ -37,7 +37,7 @@ def zap(msec=10, samplingfreq=44100, amplitude=0.95, shape='sine'):
 	"""create a bipolar pulse"""###	
 	f = 1000.0 / float(msec)
 	if shape in ['sine', 'sin', 'square']:
-		carrier = Basic.sinewave(freq_hz=f, phase_deg=90, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav())
+		carrier = Basic.wavegen(freq_hz=f, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav(), waveform=numpy.sin)
 		stim = Basic.ampmod(carrier, freq_hz=f)
 	else:
 		raise ValueError, 'unrecognized shape "%s"' % shape

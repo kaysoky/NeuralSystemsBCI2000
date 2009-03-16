@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -24,12 +24,14 @@
 #
 __all__ = [
 	'getfs', 'msec2samples', 'samples2msec', 
-	'ampmod', 'sinewave', 
+	'ampmod', 'wavegen', 'sinewave',
+	'squarewave', 'trianglewave',
 	'fft2ap', 'ap2fft',
 	'toy', 'reconstruct',
 ]
 import numpy
 from scipy.signal import fft,ifft,hanning
+import scipy.signal.waveforms
 from NumTools import isnumpyarray,project,trimtrailingdims
 
 class ArgConflictError(Exception): pass
@@ -73,31 +75,32 @@ def samples2msec(samples, samplingfreq_hz):
 	else: samples = float(samples)
 	return 1000.0 * samples / float(fs)
 
-def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None):
+def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.sin):
 	"""
 	Return a copy of <w> (a numpy.ndarray or a WavTools.wav object) in which
 	the amplitude is modulated sinusoidally along the specified time <axis>.
 	
 	Default phase is such that amplitude is 0 at time 0, which corresponds to
-	phase_deg=180. To change this, specify either <phase_rad> or <phase_deg>.
+	phase_deg=90 if <waveform> follows sine phase. To change this, specify
+	either <phase_rad> or <phase_deg>.
 	
-	Uses sinewave()
+	Uses wavegen()
 	"""###
 	if isnumpyarray(w): y = w
 	elif hasattr(w, 'y'): y = w.y
 	else: raise TypeError, "don't know how to handle this kind of carrier object"
 
 	if samplingfreq_hz==None: samplingfreq_hz = getfs(w)	
-	if phase_rad==None and phase_deg==None: phase_deg = 180.0
+	if phase_rad==None and phase_deg==None: phase_deg = 90.0
 	if duration_samples==None and duration_msec==None: duration_samples = project(y,0).shape[0]
-	envelope = sinewave(freq_hz=freq_hz,phase_rad=phase_rad,phase_deg=phase_deg,amplitude=amplitude,dc=dc,samplingfreq_hz=samplingfreq_hz,duration_msec=duration_msec,duration_samples=duration_samples,axis=axis)
+	envelope = wavegen(freq_hz=freq_hz,phase_rad=phase_rad,phase_deg=phase_deg,amplitude=amplitude,dc=dc,samplingfreq_hz=samplingfreq_hz,duration_msec=duration_msec,duration_samples=duration_samples,axis=axis,waveform=waveform)
 	envelope = project(envelope, len(y.shape)-1)
 	y = y * envelope
 	if isnumpyarray(w): w = y
 	else: w.y = y
 	return w
 	
-def sinewave(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,container=None):
+def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.cos,container=None):
 	"""
 	Create a signal (or multiple signals, if the input arguments are arrays)
 	which is a sine function of time (time being defined along the specified
@@ -111,11 +114,15 @@ def sinewave(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samp
 	
 	A <container> object may be supplied: if so, it should be a WavTools.wav
 	object. container.fs is then used as a fallback in case <samplingfreq_hz> is
-	unspecified, the <axis> is set to 0, and the sinewave is put into container.y
+	unspecified, the <axis> is set to 0, and the signal is put into container.y
 	
 	If <duration_samples> is specified and <samplingfreq_hz> is not, then the
 	sampling frequency is chosen such that the duration is 1 second, so <freq_hz>
 	can be interpreted as cycles per signal.
+
+	The default <waveform> function is numpy.cos which means that amplitude, phase
+	and frequency arguments can be taken straight from the kind of dictionary
+	returned by fft2ap() for an accurate reconstruction.
 	"""###
 	fs = getfs(samplingfreq_hz)
 	if fs == None and container != None: fs = getfs(container)
@@ -165,7 +172,7 @@ def sinewave(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samp
 	x = x * (project(freq_hz,maxaxis) * duration_sec) # *= won't work for broadcasting here
 	# if you get an error here, try setting axis=1 and transposing the return value ;-)
 	x = x - (project(phase_rad,maxaxis))              # += won't work for broadcasting here
-	x = numpy.cos(x)
+	x = waveform(x)
 	x = x * project(amplitude,maxaxis)                # *= won't work for broadcasting here
 	if numpy.any(dc.flatten()):
 		x = x + project(dc,maxaxis)                   # += won't work for broadcasting here
@@ -238,22 +245,56 @@ def ap2fft(amplitude,phase_rad=None,phase_deg=None,samplingfreq_hz=2.0,axis=0,fr
 	f = numpy.concatenate((f, numpy.conj(f[sub])), axis=axis)
 	return f
 
+def squarewave(theta, tol=1e-8):
+	"""
+	A square wave with its peaks and troughs in sine phase
+	"""###
+	x = numpy.sin(theta)
+	if tol:
+		f = x.flat
+		f[numpy.where(numpy.abs(f)<tol)] = 0
+	return numpy.sign(x)
+
+def trianglewave(theta):
+	"""
+	A triangle wave with its peaks and troughs in sine phase
+	"""###
+	return scipy.signal.waveforms.sawtooth(theta+numpy.pi/2, width=0.5)
+
 def toy(n=11,f=None,a=[1.0,0.1],p=0):
 	"""
-	Toy sinewave signals for testing fft2ap() and ap2fft().
+	Toy sinusoidal signals for testing fft2ap() and ap2fft().
 	Check both odd and even <n>.
 	"""###
 	if f==None: f = [1.0,int(n/2)]
-	return sinewave(duration_samples=n,samplingfreq_hz=n,freq_hz=f,phase_deg=p,amplitude=a,axis=1).transpose()
+	return wavegen(duration_samples=n,samplingfreq_hz=n,freq_hz=f,phase_deg=p,amplitude=a,axis=1).transpose()
 	
 def reconstruct(ap,**kwargs):
 	"""
-	Check the accuracy of fft2ap() and sinewave() by reconstructing
-	a signal as the sum of sinewaves with amplitudes and phases
+	Check the accuracy of fft2ap() and wavegen() by reconstructing
+	a signal as the sum of cosine waves with amplitudes and phases
 	specified in dict ap, which is of the form output by fft2ap.
 	"""###
 	ap = dict(ap) # makes a copy, at least of the container dict
 	ap['duration_samples'] = len(ap.pop('fullfreq_hz'))
 	ap.update(kwargs)
-	return sinewave(**ap)
+	axis=ap.pop('axis', -1)
+	extra_axis = axis+1
+	for v in ap.values(): extra_axis = max([extra_axis, len(getattr(v, 'shape', []))])
+	ap['freq_hz'] = project(ap['freq_hz'], extra_axis).swapaxes(axis,0)
+	ap['axis'] = extra_axis
+	r = wavegen(**ap)
+	r = r.swapaxes(extra_axis, axis)
+	r = r.sum(axis=extra_axis)
+	return r
 
+sinewave = wavegen
+sinewave.__doc__ = \
+	"""
+	sinewave() is a deprecated synonym for wavegen().
+	Meanwhile, however, other functions, such as trianglewave() and squarewave()
+	can be used as the <waveform> argument, so this function does not strictly
+	always return sine waves. Note also that the default <waveform> is and always
+	has been numpy.cos rather than numpy.sin, so by default, a wave with a phase
+	of 0 starts at its maximum.
+	"""###

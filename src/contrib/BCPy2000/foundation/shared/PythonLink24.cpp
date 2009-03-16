@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -23,6 +23,13 @@
 //   You should have received a copy of the GNU Lesser General Public License
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef DYNAMIC_PYTHON
+#define DYNAMIC_PYTHON 1
+#endif // DYNAMIC_PYTHON
+
+#if DYNAMIC_PYTHON
+
+#define NO_IMPORT_ARRAY
 #ifdef _WIN32
 #include "python24/include/Python.h"
 #include "python24/include/numpy/arrayobject.h"
@@ -32,3 +39,5 @@
 #endif
 #define PYTHON_API_NAMESPACE PyAPI24
 #include "PythonWrapper.cpp"
+
+#endif // DYNAMIC_PYTHON

@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -67,8 +67,9 @@ class BciSource(BciGenericSource):
 		if fs != pbfs:
 			raise PlaybackError, 'mismatch between sampling rate in SamplingRate parameter (%gHz) and playback file (%gHz)' % (fs,pbfs)
 		
-		self.out_signal_props['Type'] = self.stream.headline['DataFormat']
-				
+		self.out_signal_props['Type'] = self.stream.headline.get('DataFormat', 'float32')
+		# default data format is actually int16, but float32 is safe to cast the other formats into 
+		
 	#############################################################
 
 	def StartRun(self):

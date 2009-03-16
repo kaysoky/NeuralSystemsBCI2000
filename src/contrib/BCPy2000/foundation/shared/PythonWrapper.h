@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -30,6 +30,12 @@
 // corresponding to the loaded DLL are made available. For the subset of the
 // Python and NumPy APIs that we need, only very minimal changes were needed to
 // the client code, and the client code can still be compiled without the wrapper.
+#ifndef DYNAMIC_PYTHON
+#define DYNAMIC_PYTHON 1
+#endif // DYNAMIC_PYTHON
+
+#if DYNAMIC_PYTHON
+
 #ifndef PYTHON_LINK_HEADER_MODE
 #define PYTHON_LINK_HEADER_MODE 1
 #endif
@@ -127,10 +133,10 @@ PYTHON_LINK(    int             ,   PyTuple_Size                 , (PyObject*)  
 PYTHON_LINK(    void            ,   Py_Initialize                , (void)                            )
 
 PYTHON_MACRO(   void            ,   Py_DECREF                    , (PyObject*)                       )
-PYTHON_MACRO(   double*         ,   PyArray_DATA                 , (PyArrayObject*)                  )
-PYTHON_MACRO(   int*            ,   PyArray_DIMS                 , (PyArrayObject*)                  )
-PYTHON_MACRO(   int*            ,   PyArray_STRIDES              , (PyArrayObject*)                  )
 PYTHON_MACRO(   void            ,   PyList_SET_ITEM              , (PyObject*,int,PyObject*)         )
+PYTHON_MACRO(   double*         ,   PyArray_DATA                 , (PyArrayObject*)                  )
+PYTHON_MACRO(   size_t          ,   PyArray_DIM                  , (PyArrayObject*,int)              )
+PYTHON_MACRO(   size_t          ,   PyArray_STRIDE               , (PyArrayObject*,int)              )
 
 
 #if   PYTHON_LINK_HEADER_MODE == 1
@@ -154,3 +160,5 @@ int PyString_Check(PyObject* x);
 #undef PYTHON_MACRO
 #undef PYTHON_LINK
 #undef PYTHON_LINK_HEADER_MODE
+
+#endif // DYNAMIC_PYTHON

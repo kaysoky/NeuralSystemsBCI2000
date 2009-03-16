@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -29,6 +29,9 @@ import sys, time
 if not hasattr(sys, 'argv'): sys.argv = [""]
 import IPython
 
+import platform
+win32 = (platform.system().lower() == 'windows')
+
 # If this is the very first time IPython is run, it will create a user _ipython
 # directory if none existed before, and then <groan> wait for return to be pressed.
 # We can't hack around this in the postinstall script because the user who installs
@@ -42,33 +45,42 @@ def Shell(): # call the returned instance to start the shell
 	
 def ReplaceStreams():
 	# save previous stream objects
-	global previous
+	global original # should be what python started up with
+	original = {'stdin':sys.__stdin__, 'stdout':sys.__stdout__, 'stderr':sys.__stderr__}
+	global previous # may have been replaced by log files
 	previous = {'stdin':sys.stdin, 'stdout':sys.stdout, 'stderr':sys.stderr}
 	
 	############################################################################
 	# replace stdout
 	############################################################################
-	enc = 'cp437'
-	try:
-		# In its later versions, pyreadline.unicode_helper.pyreadline_codepage is set
-		# from sys.stdout.encoding *once* when pyreadline.unicode_helper is imported
-		# for the first time. If sys.stdout changes, the codepage setting doesn't get
-		# updated and this causes a bug. So we have to set it explictly. In earlier
-		# versions, pyreadline.unicode_helper doesn't exist, so we have to just try:
-		import pyreadline.unicode_helper
-		pyreadline.unicode_helper.pyreadline_codepage = enc
-	except:
-		pass
-	sys.stdout = IPython.genutils.Term.cout
-	
+	if win32:
+		enc = 'cp437'
+		try:
+			# In its later versions, pyreadline.unicode_helper.pyreadline_codepage is set
+			# from sys.stdout.encoding *once* when pyreadline.unicode_helper is imported
+			# for the first time. If sys.stdout changes, the codepage setting doesn't get
+			# updated and this causes a bug. So we have to set it explictly. In earlier
+			# versions, pyreadline.unicode_helper doesn't exist, so we have to just try:
+			import pyreadline.unicode_helper
+			pyreadline.unicode_helper.pyreadline_codepage = enc
+		except:
+			pass
+		sys.stdout = IPython.genutils.Term.cout
+	else:
+		sys.stdout = original['stdout']
+		# TODO: On linux, something else in IPython obviously needs to be reset here too.
+		#       When log file and shell are on, IPython's [Out]put goes only to the file
+		#       whereas it should go (only) to the screen.
+		
 	if previous['stdout'].fileno() > 0  and not previous['stdout'].isatty():
 		sys.stdout = tee((sys.stdout, previous['stdout']))
 	
 	############################################################################
 	# replace stdin
 	############################################################################
-	sys.stdin = IPython.rlineimpl._rl.rl
-	sys.stdin.encoding = enc
+	if win32:
+		sys.stdin = IPython.rlineimpl._rl.rl
+		sys.stdin.encoding = enc
 	
 	############################################################################
 	# define traceback behaviour in case of exceptions (after the IPython shell
@@ -81,7 +93,12 @@ def ReplaceStreams():
 	############################################################################
 	# replace stderr (make this the last thing, in case errors occur above)
 	############################################################################
-	sys.stderr = sys.stdout
+	if win32:
+		sys.stderr = sys.stdout
+	else:
+		sys.stderr = original['stderr']
+		if previous['stderr'].fileno() > 0  and not previous['stderr'].isatty():
+			sys.stdout = tee((sys.stderr, previous['stderr']))
 
 
 ############################################################################

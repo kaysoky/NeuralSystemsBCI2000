@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -24,11 +24,12 @@
 #
 __all__ = ['prectime', 'SetProcessPriority', 'SetThreadPriority', 'SetProcessAffinity', 'SetThreadAffinity']
 import platform
-import ctypes
 
 kernel32dll = None
 
 prectime = None
+SetProcessPriority = None
+SetThreadPriority = None
 SetProcessAffinity = None
 SetThreadAffinity = None
 
@@ -37,6 +38,7 @@ class ThreadAPIError(Exception): pass
 
 
 if platform.system().lower() == 'windows':
+	import ctypes
 	try: kernel32dll = ctypes.windll.kernel32 
 	except: pass
 	
@@ -106,9 +108,24 @@ if kernel32dll != None:
 		if isinstance(aff, (tuple,list)): aff = sum(map(lambda x:2**x, aff))
 		res = kernel32dll.SetThreadAffinityMask(HANDLE(kernel32dll.GetCurrentThread()), DWORD(aff))
 		if res == 0: raise ThreadAPIError, 'SetThreadAffinityMask call failed'
-
+		
 if prectime == None:
 	from time import time
-	print __name__,'module could not find a precision timer---using less-precise time.time instead'
 	def prectime(): return time() * 1000.0 
-	# TODO:  anything more precise available on other platforms?
+
+	a = b = prectime()
+	while (b-a) == 0: b = prectime()
+	a = b
+	while (b-a) == 0: b = prectime()
+	if (b-a) > 0.08:
+		print __name__,'module could not find a precision timer: using less-precise time.time instead'
+
+if SetThreadAffinity == None:
+	def SetThreadAffinity(aff): print "failed to set thread affinity"
+if SetThreadPriority == None:
+	def SetThreadPriority(p): print "failed to set thread priority"
+if SetProcessAffinity == None:
+	def SetProcessAffinity(aff): print "failed to set process affinity"
+if SetProcessPriority == None:
+	def SetProcessPriority(p): print "failed to set thread priority"
+	

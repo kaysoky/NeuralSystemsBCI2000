@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -22,7 +22,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__version__   = '1.0'
+__version__   = '11336'
 __author__    = 'Jeremy Hill, Thomas Schreiner, Christian Puzicha, Jason Farquhar'
-__copyright__ = 'Copyright (c) 2007-8'
+__copyright__ = 'Copyright (c) 2007-9'
 __email__     = 'bcpy2000@bci2000.org'

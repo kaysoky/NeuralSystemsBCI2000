@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -26,15 +26,35 @@
 #include "PCHIncludes.h"
 #pragma hdrstop
 
-
-#ifdef _WIN32
-#include <dir.h>
-#else
-#include <sys/stat.h>
-#endif
-
 #include "BCIDirectory.h"
 #include "PythonFilter.h"
+
+
+#ifdef _WIN32
+
+#define FILESEP "\\"
+#include <dir.h>
+
+#ifndef __BORLANDC__
+#define _WIN32_WINNT 0x500
+#include <Windows.h>
+#endif // __BORLANDC__
+
+#else // _WIN32
+
+#define FILESEP "/"
+#include <sys/stat.h>
+#include <time.h>
+void Sleep(long msec)
+{
+    struct timeval t;
+    t.tv_sec = msec / 1000L;
+    t.tv_usec = (msec % 1000L) * 1000L;
+    select(0,0,0,0,&t);
+}
+
+#endif // _WIN32
+
 
 using namespace std;
 #if MODTYPE == 1
@@ -46,7 +66,6 @@ Filter( FILTER_NAME, 2.C );
 #elif MODTYPE == 3
 RegisterFilter( FILTER_NAME, 3 );
 #endif
-
 
 std::string FAILURE;
 #define FAIL(a) throw Exception(((FAILURE="") + a).c_str())
@@ -79,7 +98,7 @@ FILTER_NAME::FILTER_NAME()
 		std::string dllname       = OptionalParameter(FILTER_ABBREV "DLL",       "");
 		std::string logFile       = OptionalParameter(FILTER_ABBREV "Log",       "");
 		std::string frameworkDir  = OptionalParameter(FILTER_ABBREV "Framework", "");
-		std::string workingDir    = OptionalParameter(FILTER_ABBREV "WD",        "..\\python");
+		std::string workingDir    = OptionalParameter(FILTER_ABBREV "WD",        std::string("..") + FILESEP + "python");
 		std::string developerFile = OptionalParameter(FILTER_ABBREV "ClassFile", DEFAULT_CLASS_FILE);
 		int         ipshell       = OptionalParameter(FILTER_ABBREV "Shell",      1);
 				
@@ -119,6 +138,8 @@ FILTER_NAME::FILTER_NAME()
 
 		if(frameworkDir.length()) {
 			ChangeDir(frameworkDir); // ...and then redo it. <sigh>
+			EvalPythonString("import sys,os");
+			EvalPythonString("if not os.getcwd() in sys.path: sys.path.append(os.getcwd())");
 			conmod = PYTHON_CONSOLE;    
 			coremod = PYTHON_COREMODULE;
 			genmod = PYTHON_MODULE;     
@@ -128,7 +149,7 @@ FILTER_NAME::FILTER_NAME()
 			coremod = PYTHON_COREMODULE_INSTALLED;
 			genmod = PYTHON_MODULE_INSTALLED;
 		}
-		
+				
 		if(use_console) {
 			PyImport_ImportModule((char*)conmod.c_str());
 			HandlePythonError("attempt to import " + conmod);
@@ -205,7 +226,11 @@ FILTER_NAME::~FILTER_NAME()
 {
 	if(stay_open) {
 		if(use_console) {
+#ifdef _WIN32
 			while(GetConsoleWindow()) ::Sleep(1);
+#else // _WIN32
+			while(1) ::Sleep(1);
+#endif // _WIN32
 		}
 	}
 	else {
@@ -221,7 +246,9 @@ FILTER_NAME::~FILTER_NAME()
 		catch(Exception& e) {
 			HandleException(e, "Destruct");
 		}
+#ifdef _WIN32
 		if(use_console) FreeConsole();
+#endif // _WIN32
 	}
 }
 
@@ -243,7 +270,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
 		Py_DECREF(pyOutSignalProperties);
 		
  		PyObject* py_list;
- 		py_list = PyObject_GetAttrString(bci2000_instance, "_writeable_params");
+ 		py_list = PyObject_GetAttrString(bci2000_instance, (char*)"_writeable_params");
 		if(py_list && PyList_Check(py_list)) {
 			int n = PyList_Size(py_list);
 			for(int i = 0; i < n; i++) {
@@ -308,8 +335,8 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
 			SendStatesToPython();
 			// Watch out for the memory leaks. They come when you least expect them.
 			// http://www-cgi.uni-regensburg.de/WWW_Server/Dokumentation/Python/ext.pdf
-			PyObject* py_input = ConvertSignalToPyArrayObject(input);
-			PyObject* py_output = CallHook("_Process", py_input);
+			PyArrayObject* py_input = ConvertSignalToPyArrayObject(input);
+			PyArrayObject* py_output = (PyArrayObject*)CallHook("_Process", (PyObject*)py_input);
 			Py_DECREF(py_input);
 			ReceiveStatesFromPython();
 			ConvertPyArrayObjectToSignal(py_output, output);
@@ -419,7 +446,7 @@ FILTER_NAME::SendParametersToPython() const
 			Py_DECREF(value);
 			continue;
 		}
-		if(strcmp(p.Type().c_str(), "matrix") == 0) {
+		if(p.Type().size() >= 6 && strcmp(p.Type().c_str() + p.Type().size() - 6, "matrix") == 0) {
 			int nrows = p.NumRows();
 			int ncols = p.NumColumns();
 			
@@ -685,26 +712,28 @@ FILTER_NAME::Share(const GenericSignal &inSignal, GenericSignal &outSignal)
 // Converters between BCI2000 classes and Python objects
 ////////////////////////////////////////////////////////////////////////////////
 
-PyObject*
+PyArrayObject*
 FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObject* array) const
 {
 	// see http://projects.scipy.org/scipy/numpy/wiki/NumPyCAPI
-	if(array == NULL) array = (PyArrayObject *)PyObject_CallMethod(bci2000_instance, "_zeros", "ii", sig.Channels(), sig.Elements());
+	if(array == NULL) array = (PyArrayObject *)PyObject_CallMethod(bci2000_instance, (char*)"_zeros", (char*)"ii", sig.Channels(), sig.Elements());
 
-	int* dims = PyArray_DIMS(array);
-	int* strides = PyArray_STRIDES(array);
+	size_t nrows = PyArray_DIM(array, 0);
+	size_t ncols = PyArray_DIM(array, 1);
+	size_t rrstride = PyArray_STRIDE(array, 0);
+	size_t ccstride = PyArray_STRIDE(array, 1);
 	char *data = (char*)PyArray_DATA(array);
-	if(dims[0] != sig.Channels() || dims[1] != sig.Elements())
+	if(nrows != sig.Channels() || ncols != sig.Elements())
 	{
 		std::ostringstream s;
-		s << "PyArrayObject (" << dims[0] << " by " << dims[1] << ") is the wrong shape for the expected incoming BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
+		s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected incoming BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
 		throw Exception(s.str().c_str());
 	}	
-	for(int i = 0; i < dims[0]; ++i )
-		for( int j = 0; j < dims[1]; ++j)
-			*((double*)(data + i*strides[0] + j*strides[1])) = sig(i, j);
+	for(size_t i = 0; i < nrows; ++i)
+		for(size_t j = 0; j < ncols; ++j)
+			*((double*)(data + i*rrstride + j*ccstride)) = sig(i, j);
 			
-	return (PyObject*)array;
+	return array;
 }
 
 void
@@ -716,18 +745,20 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
 	//    Check that it has float64 precision
 	//    Check that it is 2-dimensional
 	
-	int* dims = PyArray_DIMS(array);
-	int* strides = PyArray_STRIDES(array);
+	size_t nrows = PyArray_DIM(array, 0);
+	size_t ncols = PyArray_DIM(array, 1);
+	size_t rrstride = PyArray_STRIDE(array, 0);
+	size_t ccstride = PyArray_STRIDE(array, 1);
 	char* data = (char*)PyArray_DATA(array);
-	if(dims[0] != sig.Channels() || dims[1] != sig.Elements())
+	if(nrows != sig.Channels() || ncols != sig.Elements())
 	{
 		std::ostringstream s;
-		s << "PyArrayObject (" << dims[0] << " by " << dims[1] << ") is the wrong shape for the expected outgoing BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
+		s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected outgoing BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
 		throw Exception(s.str().c_str());
 	}
-	for(int i = 0; i < dims[0]; ++i )
-		for( int j = 0; j < dims[1]; ++j)
-			sig(i,j) = *((double*)(data + i*strides[0] + j*strides[1]));
+	for(size_t i = 0; i < nrows; ++i)
+		for(size_t j = 0; j < ncols; ++j)
+			sig(i,j) = *((double*)(data + i*rrstride + j*ccstride));
 }
 
 PyObject* 
@@ -801,7 +832,7 @@ FILTER_NAME::ConvertLabelIndexToPyList(LabelIndex from) const
 void
 FILTER_NAME::ConvertPyListToLabelIndex(PyObject* from, LabelIndex& to) const
 {
-	stringstream converter = stringstream();
+	stringstream converter;
 	
 	to.Resize(PyList_Size(from));
 	for(int i = 0; i < to.Size(); i++){
@@ -880,11 +911,13 @@ FILTER_NAME::ChangeDir(std::string& d)
 void
 FILTER_NAME::OpenConsole(const char *title)
 {
+#ifdef _WIN32
 	AllocConsole();
 	if(title && *title) SetConsoleTitle(title);
-	freopen("conin$", "r", stdin);
-	freopen("conout$", "w", stdout);
-	freopen("conout$", "w", stderr);
+	//freopen("conin$", "r", stdin);   // why were these calls necessary?
+	//freopen("conout$", "w", stdout);
+	//freopen("conout$", "w", stderr);
+#endif // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -892,7 +925,7 @@ FILTER_NAME::OpenConsole(const char *title)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-FILTER_NAME::BlockThreads()
+FILTER_NAME::BlockThreads() const
 {
 	// always run this before calling Python functions, otherwise we get random crashes...
 	// see http://docs.python.org/api/threads.html
@@ -900,7 +933,7 @@ FILTER_NAME::BlockThreads()
 }
 
 void
-FILTER_NAME::UnblockThreads()
+FILTER_NAME::UnblockThreads() const
 {
 	// ... and call this when done calling them, otherwise we're not multithreading anymore.
 	// Make sure that the singlethreaded code is much faster than a frame length,
@@ -968,7 +1001,7 @@ PyObject*
 FILTER_NAME::CallHook(const char* name, PyObject* arg1, PyObject* arg2) const
 {
 	HandlePythonError("Python Engine is in the error state before CallHook");
- 	PyObject* py_method = PyObject_GetAttrString(bci2000_instance, name);
+ 	PyObject* py_method = PyObject_GetAttrString(bci2000_instance, (char*)name);
 	PyObject* py_wrappername = PyString_FromString("_call_hook");
 	PyObject* out = PyObject_CallMethodObjArgs(bci2000_instance, py_wrappername, py_method, arg1, arg2, NULL);
 	HandlePythonError(name);
@@ -978,20 +1011,20 @@ FILTER_NAME::CallHook(const char* name, PyObject* arg1, PyObject* arg2) const
 }
 
 void
-FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned)
+FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned) const
 {
 	int error = 0;
 	int isForEndUser = 0;
 	std::string report;
 
 	if(bci2000_instance) {
-		PyObject* py_error_occurred = PyObject_GetAttrString(bci2000_instance, "_error_reported");
+		PyObject* py_error_occurred = PyObject_GetAttrString(bci2000_instance, (char*)"_error_reported");
 		if(py_error_occurred != NULL) {
 			error = PyInt_AsLong(py_error_occurred);
 			Py_DECREF(py_error_occurred);
 		}
 		if(error) {
-			PyObject* py_error_info = PyObject_CallMethod(bci2000_instance, "_flush_error_info", NULL);
+			PyObject* py_error_info = PyObject_CallMethod(bci2000_instance, (char*)"_flush_error_info", NULL);
 			report =  PyString_AsString(PyTuple_GetItem(py_error_info, 0));
 			isForEndUser = PyInt_AsLong(PyTuple_GetItem(py_error_info, 1));
 			Py_DECREF(py_error_info);

@@ -3,7 +3,7 @@
 #   This file is a BCPy2000 demo file, which illustrates the capabilities
 #   of the BCPy2000 framework.
 # 
-#   Copyright (C) 2007-8  Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill
 #   
 #   bcpy2000@bci2000.org
 #   

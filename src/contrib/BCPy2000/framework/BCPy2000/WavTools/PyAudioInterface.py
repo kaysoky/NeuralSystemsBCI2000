@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -100,6 +100,17 @@ class player(Background.ongoing):
 
 		Then the only thing left to do is p.play(), possibly adjusting p.vol, p.speed
 		and p.pan along the way.
+		
+		p.vol   :  scalar volume from 0.0 to 1.0 (default is 1.0)
+		p.pan   :  either: a list/array of per-channel volumes, each in the range 0.0 to 1.0
+		               or: a scalar from -1.0 (left) to +1.0 (right). Default is 0.0 (centre).
+		p.norm  :  determines how a scalar p.pan value is translated into per-channel gain
+		           values. Suggested values are 1, 2 or 'inf',  meaning L1, L2 or L-infinity
+		           normalization of the gain values across channels. Default is 'inf' which
+		           means that panning attenuates one side while leaving the other on full.
+		p.speed :  scalar multiplication factor for playback speed, affecting the pitch
+		           (default is 1.0)
+		
 		"""###
 		if buffersize==None:
 			buffersize=300
@@ -113,6 +124,7 @@ class player(Background.ongoing):
 		self.vol = 1.0
 		self.speed = 1.0
 		self.pan = 0.0
+		self.norm = 'inf'
 		self.verbose = verbose
 		self.buffersize = buffersize
 		self.playing = False
@@ -239,7 +251,7 @@ class player(Background.ongoing):
 					xi %= float(nsamp)
 					dd = Base.interpsamples(data, xi)
 
-				vols = float(self.vol) * Base.panhelper(self.pan, dd)
+				vols = float(self.vol) * Base.panhelper(self.pan, nchan=dd, norm=self.norm)
 				dd = dd * vols  #   *= won't work for broadcasting here
 
 				raw = w.dat2str(data=dd)
@@ -259,12 +271,15 @@ class player(Background.ongoing):
 		towrite = self.stream.get_write_available()	
 		bytes_per_frame = self.interface.get_sample_size(self.format) * self.stream._channels
 		if towrite > 0: self.stream.write('\0' * towrite * bytes_per_frame)
+		while self.stream.get_write_available() < self.stream._frames_per_buffer: sleep(0.001)
 		sleep(float(self.stream._frames_per_buffer) / float(self.stream._rate) + self.stream.get_output_latency())
 	
 	def set_preplay_hook(self, func, *pargs, **kwargs):
+		# currently only one hook at a time. if changing this, also change the DirectSoundInterface overload of this method
 		self.preplay = {'func':func,'pargs':pargs,'kwargs':kwargs}
 
 	def set_postplay_hook(self, func, *pargs, **kwargs):
+		# currently only one hook at a time. if changing this, also change the DirectSoundInterface overload of this method
 		self.postplay = {'func':func,'pargs':pargs,'kwargs':kwargs}
 	
 	def get_timestamp(self):

@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -26,30 +26,40 @@ __all__ = ['monitor', 'number_of_monitors', 'init_screen', 'split_33_66', 'fulls
 
 import Boxes
 
-try:
-	import win32api
+import platform
+if platform.system().lower() == 'windows':
+	try:
+		import win32api
+		def monitor(id=0):
+			m = win32api.EnumDisplayMonitors()
+			m = map(lambda x: Boxes.box(rect=x[2]), m)
+			rebase = m[0].height
+			for i in range(1,len(m)): m[i].bottom,m[i].top = rebase-m[i].top,rebase-m[i].bottom
+			if id == None: return m
+			else: return m[id]
+		def number_of_monitors():
+			return len(monitor(None))
+			
+	except:
+		print __name__,"module failed to import win32api"
+		import ctypes
+		GetSystemMetrics = ctypes.windll.user32.GetSystemMetrics
+		def monitor(id=0):
+			m = Boxes.box(rect=(0,0,GetSystemMetrics(0),GetSystemMetrics(1)))
+			if id != 0: print "win32api not available---cannot get information about multiple displays"
+			if id == None: return [m]
+			else: return m
+		def number_of_monitors():
+			return 0
+else:
+	print __name__,"module does not know how to get information about the number and size of displays"
 	def monitor(id=0):
-		m = win32api.EnumDisplayMonitors()
-		m = map(lambda x: Boxes.box(rect=x[2]), m)
-		rebase = m[0].height
-		for i in range(1,len(m)): m[i].bottom,m[i].top = rebase-m[i].top,rebase-m[i].bottom
-		if id == None: return m
-		else: return m[id]
-	def number_of_monitors():
-		return len(monitor(None))
-		
-except:
-	print __name__,"module failed to import win32api"
-	import ctypes
-	GetSystemMetrics = ctypes.windll.user32.GetSystemMetrics
-	def monitor(id=0):
-		m = Boxes.box(rect=(0,0,GetSystemMetrics(0),GetSystemMetrics(1)))
-		if id != 0: print "win32api not available---cannot get information about multiple displays"
+		m = Boxes.box(rect=(0,0,640,480))
+		if id != 0: print "do not know how to enumerate displays on this system"
 		if id == None: return [m]
 		else: return m
 	def number_of_monitors():
 		return 0
-
 
 
 import os

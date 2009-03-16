@@ -3,7 +3,7 @@
 #   This file is a BCPy2000 demo file, which illustrates the capabilities
 #   of the BCPy2000 framework.
 # 
-#   Copyright (C) 2007-8  Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill
 #   
 #   bcpy2000@bci2000.org
 #   
@@ -53,6 +53,7 @@ class BciApplication(BciGenericApplication):
 	def Construct(self):
 		params = [
 			"PythonApp:Design   int    AlternateTargets=    0     0     0   1  // alternate target classes rather than choosing randomly (boolean)",
+			"PythonApp:Design   int    ShowFixation=        0     0     0   1  // show a fixation point in the center (boolean)",
 			"PythonApp:Screen   int    ScreenId=           -1    -1     %   %  // on which screen should the VisionEgg window be opened - use -1 for last",
 			"PythonApp:Screen   float  WindowSize=         0.8   1.0   0.0 1.0 // size of the VisionEgg window, proportional to the screen",
 			"PythonApp:Stimuli  float  CircleRadius=       1.0   1.0   0.0 5.0 // size of the background circle",
@@ -99,6 +100,8 @@ class BciApplication(BciGenericApplication):
 	#############################################################
 
 	def Initialize(self, indim, outdim):
+		
+		#self._lock.enabled = False
 		
 		# compute how big everything should be
 		itf = float(self.params['InnerTriangleSize'])
@@ -160,6 +163,7 @@ class BciApplication(BciGenericApplication):
 		self.stimulus('cursor2',  z=4,   stim=FilledCircle(position=center, radius=8,  color=(0,0,0), on=False))
 		self.stimulus('arrow',    z=4.5, stim=arrow)
 		self.stimulus('cue',      z=5,   stim=Text(text='?', position=center, anchor='center', color=(1,1,1), font_size=50, on=False))
+		self.stimulus('fixation', z=4.2, stim=FilledCircle(position=center, radius=5, color=(1,1,1), on=False))
 		
 		# set up the strings that are going to be presented in the 'cue' stimulus
 		self.cuetext = ['relax', 'feet', 'left', 'right']
@@ -206,6 +210,13 @@ class BciApplication(BciGenericApplication):
 					
 		self.distance = lambda a,b: numpy.sqrt((numpy.asarray(a-b)**2).sum(axis=-1))
 		self.distance_scaling = (2.0 ** self.bits['DistanceFromCenter'] - 1.0) / self.distance(self.positions['green'], self.positions['red'])
+		
+	#############################################################
+	
+	def StartRun(self):
+		
+		if int(self.params['ShowFixation']):
+			self.stimuli['fixation'].parameters.on = True
 		
 	#############################################################
 	
@@ -306,6 +317,7 @@ class BciApplication(BciGenericApplication):
  		self.stimuli['cursor1'].parameters.position = self.positions['origin'].A.ravel().tolist()
  		self.stimuli['cursor2'].parameters.on = False
  		self.stimuli['cursor2'].parameters.position = self.positions['origin'].A.ravel().tolist()
+ 		self.stimuli['fixation'].parameters.on = False
  		for s in self.sounds: s.set_volume(0.0)
 
 #################################################################

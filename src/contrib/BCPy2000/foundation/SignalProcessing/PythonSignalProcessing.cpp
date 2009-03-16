@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -23,6 +23,17 @@
 //   You should have received a copy of the GNU Lesser General Public License
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifdef _NO_VCL
+
+#include "CoreModule.h"
+int main( int argc, char** argv )
+{
+	bool success = CoreModule().Run( argc, argv );
+	return ( success ? 0 : -1 );
+}
+
+#else // _NO_VCL
+
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -45,4 +56,6 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         return 0;
 }
 //---------------------------------------------------------------------------
+
+#endif // _NO_VCL
 

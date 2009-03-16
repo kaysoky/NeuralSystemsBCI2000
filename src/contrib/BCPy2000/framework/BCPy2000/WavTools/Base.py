@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -190,26 +190,41 @@ def trim(w, thresh=0.05, tailoff=0.2):
 	w.trim(thresh=thresh, tailoff=tailoff)
 	return w
 
-def panhelper(v, w):
-	nc = channels(w)
-	if isinstance(v,tuple): v = list(v)
-	if isinstance(v,list) or isnumpyarray(v):
+def panhelper(v, nchan=None, norm='inf'):
+	
+	if isinstance(nchan,(float,int)): nchan = int(nchan)
+	elif nchan != None: nchan = channels(nchan)
+	
+	if isinstance(v,(tuple,list,numpy.ndarray)):
 		v = numpy.array(v, dtype='float')
 		v = v.flatten()
 		if len(v)==1:
-			v = float(v[0])
+			v = float(v[0]) # scalar numpy value
 		else:
-			if len(v) > nc: v = v[:nc]
+			# Interpret any kind of multi-element tuple/list/array
+			# as a per-channel list of volumes. Just standardize its
+			# shape and size. Ignore the norm parameter.
+			if nchan == None: nchan = len(v)
+			elif len(v) < nchan: v = numpy.tile(v, numpy.ceil(float(nchan)/len(v)))
+			if len(v) > nchan: v = v[:nchan]
 			shape = [1,1]
-			shape[across_channels] = nc
+			shape[across_channels] = nchan
 			v.shape = tuple(shape)
 	else:
-		v = float(v)
-	if isinstance(v,float):
-		if nc != 2: return 1.0
-		v = 0.5 + 0.5 * numpy.clip(v, -1.0, 1.0)
-		v = panhelper([1.0-v, v], w)
+		v = float(v) # could be converting from modulator, etc
 		
+	if isinstance(v,float):
+		# Interpret any kind of scalar as a stereo pan value in the
+		# range -1 to +1. Normalize according to the specified norm.
+		if nchan == None: nchan = 2
+		v = 0.5 + 0.5 * numpy.clip([-v,v], -1.0, 1.0)
+		if nchan > 2: v = numpy.tile(v, nchan/2)
+		if len(v) == nchan-1: v = numpy.concatenate((v,[1.0]))
+		if isinstance(norm, str) and norm.lower()=='inf': norm = numpy.inf
+		if norm in [numpy.inf, 'inf', 'INF']: v /= max(v)
+		else: v /= sum(v ** norm) ** (1.0 / {0.0:1.0}.get(norm,norm))
+		v = panhelper(v, nchan=nchan)
+
 	return v
 
 def interpsamples(y, xi):
@@ -274,6 +289,7 @@ class wav:
 		                 'signed':None,
 		                 'fac':None,
 		                 'comptype':('NONE','not compressed'),
+		                 'revision':0,
 		                }
 		if filename != None: self.read(filename)
 		if self.bits==None and bits==None: bits = 16
@@ -303,6 +319,8 @@ class wav:
 		elif key == 'bits':
 			self.set_bitdepth(val)
 		elif key == 'filename':
+			pass
+		elif key == 'revision':
 			pass
 		elif key == 'comptype':
 			if len(val) != 2 or not isinstance(val,tuple) \
@@ -334,6 +352,7 @@ class wav:
 			raise ValueError, 'unrecognized bit precision'
 		self.__dict__['signed'] = (self.dtype[1]=='i')
 		self.__dict__['fac'] = float(2 ** (bits-1))
+		self.revision += 1
 					
 	def channels(self):
 		"""
@@ -392,10 +411,12 @@ class wav:
 		self.center()
 		m = abs(self.y).max()
 		self.y *= (max_abs_amp / m)
+		self.revision += 1
 	
 	def cat(self, *xargs):
 		w = cat(self, *xargs)
 		self.y = w.y
+		self.revision += 1
 
 	def center(self):
 		if across_samples != 0:
@@ -403,6 +424,7 @@ class wav:
 		med = numpy.median(self.y)
 		med.shape = (1, self.channels())
 		self.y -= med
+		self.revision += 1
 		
 	def cut(self, start=None, stop=None):
 		if start==None:  start = 0.0
@@ -413,6 +435,7 @@ class wav:
 		stop = min(self.samples(), round(float(stop) * float(self.fs)))
 		stop = max(start,stop)
 		self.y = self.y[start:stop,:]
+		self.revision += 1
 		
 	def extractchannels(self, ind):
 		w = self.copy()
@@ -424,6 +447,7 @@ class wav:
 	def fade(self, risetime=0, falltime=0, hanning=False):
 		if risetime: self[:float(risetime)] *= rise(risetime, fs=self.fs, hanning=hanning)
 		if falltime: self[-float(falltime):] *= fall(falltime, fs=self.fs, hanning=hanning)
+		self.revision += 1
 	
 	def hanningwindow(self):
 		return hanningwindow(self.duration(), self.fs)
@@ -443,6 +467,7 @@ class wav:
 		if extra_sec > 0.0:
 			w = cat(self, extra_sec)
 			self.y = w.y
+		self.revision += 1
 	
 	def padstartto(self, seconds):
 		if isinstance(seconds, wav):
@@ -451,9 +476,11 @@ class wav:
 		if extra_sec > 0.0:
 			w = cat(extra_sec, self)
 			self.y = w.y
+		self.revision += 1
 	
 	def reverse(self):
 		self.y = numpy.flipud(self.y)
+		self.revision += 1
 	
 	def right(self):
 		return self.extractchannels(self.channels()-1)
@@ -466,6 +493,7 @@ class wav:
 		stop = min(stop, self.samples())
 		y = self.y[start:stop,:]
 		self.y = y.copy()
+		self.revision += 1
 		
 		
 	def numprep(self, other, equalize_channels=True, equalize_duration=True):
@@ -499,6 +527,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me += other
 		self.y = me
+		self.revision += 1
 		return self
 	def __add__(self,other):
 		return self.copy().__iadd__(other)
@@ -508,6 +537,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me -= other
 		self.y = me
+		self.revision += 1
 		return self
 	def __sub__(self,other):
 		return self.copy().__isub__(other)
@@ -521,6 +551,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me *= other
 		self.y = me		
+		self.revision += 1
 		return self
 	def __mul__(self,other):
 		return self.copy().__imul__(other)
@@ -530,6 +561,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me /= other
 		self.y = me		
+		self.revision += 1
 		return self
 	def __div__(self,other):
 		return self.copy().__idiv__(other)
@@ -541,6 +573,7 @@ class wav:
 		(me,other) = self.numprep(other, equalize_channels=False)
 		me = numpy.concatenate((me,other), axis=across_channels)
 		self.y = me
+		self.revision += 1
 		return self
 	def __and__(self,other):
 		return self.copy().__iand__(other)
@@ -548,6 +581,7 @@ class wav:
 	# Concatenation using the % operator
 	def __imod__(self,other):
 		self.cat(other)
+		self.revision += 1
 		return self
 	def __mod__(self,other):
 		return cat(self,other)
@@ -569,6 +603,7 @@ class wav:
 		subs = self.translate_slice(range)
 		if isinstance(val,wav): val = val.y
 		self.y[subs[0],subs[1]] = val
+		self.revision += 1
 
 	def translate_slice(self, range):
 		chans = slice(None)

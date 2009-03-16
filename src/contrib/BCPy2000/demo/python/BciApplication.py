@@ -3,7 +3,7 @@
 #   This file is a BCPy2000 demo file, which illustrates the capabilities
 #   of the BCPy2000 framework.
 # 
-#   Copyright (C) 2007-8  Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill
 #   
 #   bcpy2000@bci2000.org
 #   
@@ -83,10 +83,10 @@ class BciApplication(BciGenericApplication):
 	def Transition(self, phase):
 		# present stimuli and update state variables to record what is going on
 		if phase == 'flip':
-			p = self.stimuli['SomeText'].parameters.anchor = 'top'
+			self.stimuli['SomeText'].parameters.anchor = 'top'
 			self.states['SomeState'] = 1
 		if phase == 'flop':
-			p = self.stimuli['SomeText'].parameters.anchor = 'bottom'
+			self.stimuli['SomeText'].parameters.anchor = 'bottom'
 			self.states['SomeState'] = 0
 		
 	#############################################################

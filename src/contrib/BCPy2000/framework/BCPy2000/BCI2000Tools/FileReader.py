@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -22,17 +22,20 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['bcistream']
+__all__ = ['bcistream', 'ParseState', 'ParseParam', 'unescape']
 
 import os
 import struct
-import numpy
+try: import numpy
+except: pass
 
 class DatFileError(Exception): pass
 
 class bcistream(object):
 	
 	def __init__(self, filename):
+		import numpy
+		
 		self.filename        = filename
 		self.headerlen       = 0
 		self.stateveclen     = 0
@@ -57,11 +60,11 @@ class bcistream(object):
 
 		self.gains = self.params.get('SourceChGain')
 		if self.gains != None:
-			self.gains = numpy.array(map(float,self.gains))
+			self.gains = numpy.array([float(x) for x in self.gains])
 			self.gains.shape = (self.nchan,1)
 		self.offsets = self.params.get('SourceChOffset')
 		if self.offsets != None:
-			self.offsets = numpy.array(map(float,self.offsets))
+			self.offsets = numpy.array([float(x) for x in self.offsets])
 			self.offsets.shape = (self.nchan,1)
 		
 		for k,v in self.statedefs.items():
@@ -123,7 +126,7 @@ class bcistream(object):
 		
 	def readHeader(self):
 		line = self.file.readline().split()
-		k = map(lambda x:x.rstrip('='), line[::2])
+		k = [x.rstrip('=') for x in line[::2]]
 		v = line[1::2]
 		self.headline = dict(zip(k,v))
 		self.headerlen = int(self.headline['HeaderLen'])
@@ -143,7 +146,9 @@ class bcistream(object):
 		while True:
 			line = self.file.readline()
 			if len(line) == 0 or line[0] == '[': break
-			self.initState(line)
+			rec = ParseState(line)
+			name = rec.pop('name')
+			self.statedefs[name] = rec
 		
 		if line.strip() != '[ Parameter Definition ]':
 			raise DatFileError, 'failed to find parameter definition section where expected'
@@ -151,101 +156,12 @@ class bcistream(object):
 		while True:
 			line = self.file.readline()
 			if self.file.tell() >= self.headerlen: break
-			self.initParam(line)
+			rec = ParseParam(line)
+			name = rec.pop('name')
+			self.paramdefs[name] = rec
+			self.params[name] = rec.get('scaled', rec['val'])
 
 		self.samplingfreq_hz = float(str(self.params['SamplingRate']).rstrip('Hz'))
-
-		
-	def initState(self, state):
-		state = state.split()
-		self.statedefs[state[0]] = {
-			'length'  : int(state[1]),
-			'startVal': int(state[2]),
-			'bytePos' : int(state[3]),
-			'bitPos'  : int(state[4])
-		}
-			
-	def initParam(self, param):
-		param = param.split('//', 1)
-		comment = ''
-		if len(param) > 1:
-			comment = param[1]
-			
-		param = map(unescape, param[0].split())
-		category = param.pop(0).split(':')
-		category += [''] * (3-len(category))
-		datatype = param.pop(0)
-		name = param.pop(0).rstrip('=')
-		self.paramdefs[name] = rec = {
-			'name':name, 'comment':comment, 'category':category, 'type':datatype,
-			'defaultVal':'', 'minVal':'', 'maxVal':'',
-		}
-
-		scaled = None
-		if datatype in ('int', 'float'):
-			datatype = {'float':float, 'int':int}.get(datatype)
-			val = param[0]
-			unscaled,units,scaled = decode_units(val, datatype)
-			rec.update({
-				'val'        : unscaled,
-				'units'      : units,
-			})
-
-		elif 'list' in datatype:
-			listtype = datatype.replace('list','')
-			listtype = {'float':float, 'int':int, '':str}.get(listtype, listtype)
-			if isinstance(listtype,str):
-				raise DatFileError, 'Unknown list type "%s"' % listtype			
-			numel = int(param.pop(0))
-			val = param[:numel]
-			if listtype==str:
-				unscaled = val
-				units = [''] * len(val)
-			else:
-				val = map(lambda x:decode_units(x,listtype), val)
-				unscaled,units,scaled = map(lambda x:x[0],val),map(lambda x:x[1],val),map(lambda x:x[2],val)
-			rec.update({
-				'valtype'    : listtype,
-				'len'        : numel,
-				'val'        : unscaled,
-				'units'      : units,
-			})
-		
-		elif datatype in ('string', 'variant'):
-			val = param.pop(0)
-			rec.update({
-				'val'        : val,
-			})
-			
-		elif datatype == 'matrix':
-			nrows,rowlabels = parsedim(param)
-			ncols,collabels = parsedim(param)
-			val = []
-			for i in range(nrows):
-				val.append([])
-				for j in range(ncols):
-					val[-1].append(param.pop(0))
-			rec.update({
-				'val'        : val,
-				'shape'      : (nrows,ncols),
-				'dimlabels'  : (rowlabels,collabels),
-			})
-					
-		else:
-			print "unsupported parameter type",datatype
-			rec.update({
-				'val'        : param,
-			})
-
-		param.reverse()
-		if len(param): rec['maxVal'] = param.pop(0)
-		if len(param): rec['minVal'] = param.pop(0)
-		if len(param): rec['defaultVal'] = param.pop(0)
-
-		if scaled == None:
-			self.params[name] = rec['val']
-		else:
-			self.params[name] = scaled
 			
 	
 	def read(self, nsamp=1):
@@ -309,7 +225,7 @@ class bcistream(object):
 		if len(t) > 3:
 			raise DatFileError, 'too many colons in timestamp "%s"' % value
 		t.reverse()
-		t = map(float,t) + [0]*(3-len(t))
+		t = [float(x) for x in t] + [0]*(3-len(t))
 		t = t[0] + 60.0 * t[1] + 3600.0 * t[2]
 		return int(round(t * self.samplingfreq_hz))
 		
@@ -347,7 +263,7 @@ class bcistream(object):
 	def plotsig(self, sig, fac=3.0): # TODO: plot subsets of channels which don't necessarily correspond to ChannelNames param		
 		ntraces,nsamp = sig.shape
 		labels = self.params.get('ChannelNames', '')
-		if len(labels)==0: labels = map(str, range(1,ntraces+1))
+		if len(labels)==0: labels = [str(x) for x in range(1,ntraces+1)]
 
 		v = numpy.asmatrix(sig).T
 		v = v - numpy.median(v)
@@ -370,20 +286,133 @@ class bcistream(object):
 		return h
 		
 def unescape(s):
-	if s in ['%', '%0', '%00']:
-		return ''
+	# unfortunately there are two slight difference between the BCI2000 standard and urllib.unquote
+	if s in ['%', '%0', '%00']: return ''  # here's one (empty string)
 	out = ''
 	s = list(s)
 	while len(s):
 		c = s.pop(0)
 		if c == '%':
-			out += chr(int(''.join(s[:2]),16))
-			s = s[2:]
+			c = ''.join(s[:2])
+			if c.startswith('%'):  # here's the other ('%%' maps to '%')
+				out += '%'
+				s = s[1:]
+			else:
+				try: c = int(c,16)
+				except: pass
+				else:
+					out += chr(c)
+					s = s[2:]
 		else:
 			out += c
 	return out
 	
-def parsedim(param):
+def ParseState(state):
+	state = state.split()
+	return {
+		'name'    : state[0],
+		'length'  : int(state[1]),
+		'startVal': int(state[2]),
+		'bytePos' : int(state[3]),
+		'bitPos'  : int(state[4])
+	}
+
+def ParseParam(param):
+	param = param.strip().split('//', 1)
+	comment = ''
+	if len(param) > 1:
+		comment = param[1].strip()
+		
+	param = param[0].split()
+	category = [unescape(x) for x in param.pop(0).split(':')]
+	param = [unescape(x) for x in param]
+	category += [''] * (3-len(category))
+	if len(category)>3: # this shouldn't happen, but some modules seem to register parameters with the string '::' inside one of the category elements. Let's assume this only happens in the third element
+		category = category[:2] + [':'.join(category[2:])]
+	datatype = param.pop(0)
+	name = param.pop(0).rstrip('=')
+	rec = {
+		'name':name, 'comment':comment, 'category':category, 'type':datatype,
+		'defaultVal':'', 'minVal':'', 'maxVal':'',
+	}
+
+	scaled = None
+	if datatype in ('int', 'float'):
+		datatype = {'float':float, 'int':int}.get(datatype)
+		val = param[0]
+		unscaled,units,scaled = DecodeUnits(val, datatype)
+		rec.update({
+			'valstr'     : val,
+			'val'        : unscaled,
+			'units'      : units,
+		})
+
+	elif datatype in ('string', 'variant'):
+		val = param.pop(0)
+		rec.update({
+			'valstr'     : val,
+			'val'        : val,
+		})
+		
+	elif datatype.endswith('list'):
+		listtype = datatype[:-4]
+		listtype = {'float':float, 'int':int, '':str, 'string':str}.get(listtype, listtype)
+		if isinstance(listtype,str):
+			raise DatFileError, 'Unknown list type "%s"' % listtype			
+		numel,labels,labelstr = ParseDim(param)
+		val = param[:numel]
+		valstr = ' '.join(filter(len, [labelstr]+val))
+		if listtype==str:
+			unscaled = val
+			units = [''] * len(val)
+		else:
+			val = [DecodeUnits(x,listtype) for x in val]
+			if len(val): unscaled,units,scaled = zip(*val)[:3]
+			else: unscaled,units,scaled = [],[],[]
+		rec.update({
+			'valstr'     : valstr,
+			'valtype'    : listtype,
+			'len'        : numel,
+			'val'        : unscaled,
+			'units'      : units,
+		})
+	
+	elif datatype.endswith('matrix'):
+		matrixtype = datatype[:-6]
+		nrows,rowlabels,rowlabelstr = ParseDim(param)
+		ncols,collabels,collabelstr = ParseDim(param)
+		valstr = ' '.join(filter(len, [rowlabelstr, collabelstr] + param[:nrows*ncols]))
+		val = []
+		for i in range(nrows):
+			val.append([])
+			for j in range(ncols):
+				val[-1].append(param.pop(0))
+		rec.update({
+			'valstr'     : valstr,
+			'val'        : val,
+			'shape'      : (nrows,ncols),
+			'dimlabels'  : (rowlabels,collabels),
+		})
+				
+	else:
+		print "unsupported parameter type",datatype
+		rec.update({
+			'valstr'     : ' '.join(param),
+			'val'        : param,
+		})
+
+	param.reverse()
+	if len(param): rec['maxVal'] = param.pop(0)
+	if len(param): rec['minVal'] = param.pop(0)
+	if len(param): rec['defaultVal'] = param.pop(0)
+
+	if scaled == None:
+		rec['scaled'] = rec['val']
+	else:
+		rec['scaled'] = scaled
+	return rec
+
+def ParseDim(param):
 	extent = param.pop(0)
 	labels = []
 	if extent == '{':
@@ -392,12 +421,14 @@ def parsedim(param):
 			if p == '}': break
 			labels.append(p)
 		extent = len(labels)
+		labelstr = ' '.join(['{'] + labels + ['}'])
 	else:
+		labelstr = extent
 		extent = int(extent)
-		labels = map(str, range(1,extent+1))			
-	return extent,labels
+		labels = [str(x) for x in range(1,extent+1)]
+	return extent,labels,labelstr
 
-def decode_units(s, datatype=float):
+def DecodeUnits(s, datatype=float):
 	units = ''
 	while len(s) and not s[-1] in '0123456789.':
 		units = s[-1] + units
@@ -405,10 +436,10 @@ def decode_units(s, datatype=float):
 	try: unscaled = datatype(s)
 	except: unscaled = float(s)
 	scaled = unscaled * {
-		  'hz':1, 'khz':1000, 'mhz':1000000,
-		 'muv':1,  'mv':1000,   'v':1000000,
-		'msec':1, 'sec':1000, 'min':60000,
-		  'ms':1,   's':1000,
+		                 'hz':1, 'khz':1000, 'mhz':1000000,
+		                'muv':1,  'mv':1000,   'v':1000000,
+		'musec':0.001, 'msec':1, 'sec':1000, 'min':60000,
+		                 'ms':1,   's':1000,
 	}.get(units.lower(), 1)
 	return unscaled,units,scaled
 

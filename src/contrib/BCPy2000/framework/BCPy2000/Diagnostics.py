@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -29,7 +29,6 @@ some diagnostic information about your installation.
 You can call output() with a filename or stream as the argument:
 then the output is redirected to the specified file.
 """###
-output()
 def output(out=None):
 	"""
 	Prints diagnostic information (to stdout by default, but
@@ -57,7 +56,7 @@ def output(out=None):
 			ver = getattr(ver, 'ver', ver)
 			if callable(ver): ver = ver()
 			v[i] = ver
-		if i in v: out.write('%30s: %s\n' % (m.__name__,str(v[i])))
+		if i in v: out.write('%30s: %s\n' % (i,str(v[i])))
 	
 	out.write('\n')
 	
@@ -94,3 +93,5 @@ def output(out=None):
 	for k,v in sorted(os.environ.items()): out.write("%30s: %s\n" % (k,v))
 
 	if openfile: out.close()
+
+output()

@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -116,21 +116,27 @@ class BciGenericApplication(Core.BciCore):
 		self.forget('block')
 		self.forget('cycle')
 
-		self._optimize_threads = False
-		self._ve_sleep_msec = None
-			# 10 msec sleep was what we used for 16.666 ms/frame to prevent VE from eating 100% CPU.
-			# Can be increased if desired, but remember that you are living on the edge, depending
-			# how long your Frame, Process and Transition calls take.  Set to None for auto.
-
 		self._add_thread('phase machine', self._phase_machine)
 		self._add_thread('vision egg', self._vision_egg)
-		#self._add_thread('share', self._share)  # four-thread model doesn't seem to improve frame timing in practice
-		self._redraw_lock = False  # doesn't seem to improve frame timing
 		
+		## Various things that might affect frame timing:
+		#self._add_thread('share', self._share)  # four-thread model doesn't seem to improve things in practice
+		self._optimize_vethread_affinity = False
+		self._optimize_vethread_priority = True
+		self._optimize_process_priority = False
+		self._ve_sleep_msec = -1
+			# positive value: absolute number of milliseconds to sleep per frame. 10 msec sleep was what we used
+			#                 for 16.666 ms/frame in the early days. Can be increased if desired, but remember
+			#                 that you are living on the edge, depending how long the rest of the frame (and the
+			#                 releasing of locks from other threads) takes.
+			#              0: no sleep at all
+			# negative value: safety margin, in milliseconds, to be subtracted from the nominal time-left-to-wait
+			#                 in this frame in order to ascertain sleep time
+
 	#############################################################
 
 	def _Construct(self):
-		if self._optimize_threads: PrecisionTiming.SetThreadAffinity([0])
+		if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([0])
 		parameters,states = super(BciGenericApplication, self)._Construct()    # superclass
 		appdesc = self.Description()
 		appdesc = appdesc.replace("%", "%%")
@@ -213,7 +219,8 @@ class BciGenericApplication(Core.BciCore):
 		th = self._threads['vision egg']
 		ready = th.read('ready', remove=True)
 		if not ready: raise oops, 'vision egg thread is not running'
-		th.post('init', wait=True)		
+		th.post('init', wait=True)
+		self._initvolume()
 		
 	#############################################################
 
@@ -245,6 +252,7 @@ class BciGenericApplication(Core.BciCore):
 		# playback support
 		self._slave_memory = None
 		if 'SignalStopRun' in self.states: self.states.__setitem__('SignalStopRun', 0, 'really')
+		if self._optimize_process_priority: PrecisionTiming.SetProcessPriority(3)
 		
 	#############################################################
 
@@ -281,7 +289,7 @@ class BciGenericApplication(Core.BciCore):
 			elif eo == 0: change = False
 			elif eo != self._slave_memory['eo']: change = True
 			else: change = False
-			if change: self.change_phase(self._phasedefs['bynumber'][pp]['name'])
+			if change: self._really_change_phase(self._phasedefs['bynumber'][pp]['name'])
 			self._slave_memory = {'pp':pp, 'eo':eo}
 
 		self._lock.release('Process')
@@ -347,8 +355,8 @@ class BciGenericApplication(Core.BciCore):
 
 	def _trial_update(self):
 		start = self._block_structure.get('start')
-		if self.current_presentation_phase == None: self.change_phase(start)
-		if self.current_presentation_phase == None: self.change_phase('idle')
+		if self.current_presentation_phase == None: self._really_change_phase(start)
+		if self.current_presentation_phase == None: self._really_change_phase('idle')
 		
 		inc = self._block_structure.get('new_trial')
 		if inc != self.current_presentation_phase: return 
@@ -377,6 +385,16 @@ class BciGenericApplication(Core.BciCore):
 
 	#############################################################
 
+	def _really_change_phase(self, phasename=None):
+		if phasename==None:
+			rec = self._phasedefs['byname'].get(self.current_presentation_phase)
+			if rec != None: phasename = rec.get('next')
+		if phasename != None:
+			self.current_presentation_phase = phasename
+		self._phase_must_change = True
+
+	#############################################################
+
 	def _estimate_rate(self, what, t=None, init=0.0):
 		if t==None: t = self.prectime()
 		if what == 'FramesPerSecond':
@@ -387,7 +405,7 @@ class BciGenericApplication(Core.BciCore):
 			batch = self.nominal['SamplesPerPacket']
 		else:
 			raise oops,what
-			
+		
 		if not hasattr(self, 'estimated'): self.estimated = Core.BciDict(lazy=True)
 		if init or not self.estimated.has_key(what): self.estimated[what] = Core.BciDict(lazy=True)
 		d = self.estimated[what]
@@ -514,19 +532,95 @@ class BciGenericApplication(Core.BciCore):
 		try:
 			import ctypes  # !! Windows-specific code.
 			dll = ctypes.windll.user32
-			self._focus = {'func': (dll.SetForegroundWindow, dll.SetActiveWindow),
-			               'arg': ctypes.c_voidp(dll.GetForegroundWindow()),}
-			self.add_callback('StartRun', self.focus)
 		except:
 			self._focus = None
+			print "failed to initialize window focus handlers"
+		else:
+			vewin = dll.FindWindowA(0, "Vision Egg") # find window by title
+			opwin = dll.FindWindowA("TfMain", 0)  # find window by class name
+			self._focus = {
+				'visionegg': Core.BciFunc(func=self._raise_window, pargs=(vewin,)),
+			    'operator':  Core.BciFunc(func=self._raise_window, pargs=(opwin,)),
+			}
+			self.add_callback('StartRun', self.focus, ('visionegg',))
+			self.add_callback('StopRun',  self.focus, ('operator',))
 
 	#############################################################
 
-	def focus(self):
-		f = getattr(self,'_focus')
-		if f != None:
-			for func in f['func']: func(f['arg'])
+	def focus(self, which='visionegg'):
+		"""
+		Depending on the string argument, raise the 'visionegg' window
+		or the 'operator' window (Windows-specific implementation).
+		"""###
+		f = getattr(self,'_focus',{}).get(which.lower())
+		if f != None: f()
 
+	#############################################################
+
+	def _raise_window(self, hdl, keepFocus=1):
+		try:
+			import ctypes  # !! Windows-specific code.
+			dll = ctypes.windll.user32
+			foregroundWnd = dll.GetForegroundWindow()                                   # current foreground window
+		except:
+			pass
+		else:
+			hdl = ctypes.c_voidp(hdl)
+			threadID1 = ctypes.c_voidp(dll.GetWindowThreadProcessId(foregroundWnd, 0))
+			threadID2 = ctypes.c_voidp(dll.GetWindowThreadProcessId(hdl, 0))
+
+			if threadID1 != threadID2:
+				dll.AttachThreadInput(threadID1, threadID2, 1)    # 1: attach (i.e. make sure the thread that owns the window to focus actually has the user input, so that even WinXP and later will actually consent to raise it)
+			
+			ret = dll.SetForegroundWindow(hdl)                    # set to foreground
+			if not keepFocus:
+				dll.AttachThreadInput(threadID1, threadID2, 0)    # 0: detach
+				dll.ShowWindow(hdl, 5)                            # 5: SW_SHOW (keep current size and position)
+				
+			return ret
+
+	#############################################################
+	
+	def _initvolume(self):
+		try:
+			from WavTools.MasterVolume import GetMasterVolume
+			try:    sysvol = GetMasterVolume(channel=0)
+			except: sysvol = GetMasterVolume(channel=1)
+		except:
+			print "failed to get master volume and install master volume handlers"
+		else:
+			self.add_callback('StartRun', self.volume, (1.0,))
+			self.add_callback('StopRun',  self.volume, (sysvol,))
+	
+	#############################################################	
+	
+	def volume(self, volume):
+		"""
+		Use the WavTools.MasterVolume module to set the system's master 
+		volume to the specified level. By default, this is called during
+		StartRun to turn the volume up to maximum, and during StopRun
+		to put it back to what it was during initialization.
+		"""###
+		try:
+			from WavTools.MasterVolume import SetMasterVolume
+		except:
+			return
+		#print "vol", volume
+		try:
+			SetMasterVolume(volume, channel=0)
+		except:
+			SetMasterVolume(volume, channel=1)
+		
+	#############################################################
+	
+	def _safe_sleep_until_frame(self, timestamp=None, safety_margin_msec=1.0):
+		if self.frame_count < 1: return 0.0
+		elapsed = self.since('frame', timestamp=timestamp)
+		self._last_frametime = elapsed['msec']
+		sleeptime = 1000.0 * self.nominal['SecondsPerFrame'] - elapsed['msec']
+		sleeptime = numpy.floor(sleeptime - safety_margin_msec)
+		return max(sleeptime, 0.0)
+	
 	#############################################################
 	#### main thread controllers
 	#############################################################
@@ -534,7 +628,7 @@ class BciGenericApplication(Core.BciCore):
 	def _phase_machine(self, mythread):
 		try:
 			class PhaseChangeErr(Exception): pass
-			if self._optimize_threads: PrecisionTiming.SetThreadAffinity([0])
+			if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([0])
 			mythread.read('stop', remove=True)
 			mythread.post('ready')
 			mythread.read('go', wait=True, remove=True)
@@ -547,11 +641,9 @@ class BciGenericApplication(Core.BciCore):
 				self.Phases()
 				self._trial_update()
 				if not self.states['Running']: break
-					
 				if not isinstance(self.current_presentation_phase, str): raise PhaseChangeErr, 'phase names must be strings'
 				rec = self._phasedefs['byname'].get(self.current_presentation_phase)
 				if rec == None: raise PhaseChangeErr, 'unrecognized phase "'+self.current_presentation_phase+'"'
-				
 				t = self.prectime()
 				if previous_phase != None:
 					self.event_offset(state="EventOffset", timestamp=t)
@@ -576,7 +668,7 @@ class BciGenericApplication(Core.BciCore):
 						elapsed = self.since('transition')
 						if elapsed['msec'] >= duration: self.change_phase(next)
 					if not self._phase_must_change:
-						time.sleep(0.001)		
+						if self._safe_sleep_until_frame(safety_margin_msec=3.0) > 0.0: time.sleep(0.001)
 		except:
 			mythread.fail()
 		self._lock.release('Transition')
@@ -604,60 +696,53 @@ class BciGenericApplication(Core.BciCore):
 			self._hud_setup()
 			self.viewport = VisionEgg.Core.Viewport (screen=self.screen, stimuli=self._stimlist)
 			self.frame_count = 0
-			self.nominal['FramesPerSecond'] = float(self.screen.query_refresh_rate())
+			try:
+				self.nominal['FramesPerSecond'] = float(self.screen.query_refresh_rate())
+			except:
+				print "VisionEgg failed to query refresh rate"
+				self.nominal['FramesPerSecond'] = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
 			self.nominal['SecondsPerFrame'] = 1.0 / self.nominal['FramesPerSecond']
 			self._estimate_rate('FramesPerSecond', init=2.0) # will be re-initialized at StartRun
 			
-			if self._optimize_threads: PrecisionTiming.SetThreadAffinity([1])
-			if self._optimize_threads: PrecisionTiming.SetThreadPriority(3)
-
+			if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([1])
+			if self._optimize_vethread_priority: PrecisionTiming.SetThreadPriority(3)
 			mythread.read('init', remove=True)
-			redraw_time = None
-						
+
 			while not mythread.read('stop'):
-				self.ftdb('newframe') # first column of frame timing log is filled in now
+				self.ftdb('newframe') # first column of frame timing log is filled in now         # 1
 				events = pygame.event.get()
-				self.ftdb()
+				self.ftdb()                                                                       # 2
+				self._lock.acquire('Frame')
+				self.ftdb()                                                                       # 3
 				if self.states['Running']:
-					self._lock.acquire('Frame')
 					for event in events: self.Event(self.current_presentation_phase, event)
 					self.Frame(self.current_presentation_phase)
 					self._run_callbacks('Frame')
-					self._lock.release('Frame')
-				self.ftdb()
-				
-				sleeptime = self._ve_sleep_msec
-				safety_margin = 3.0
-				if sleeptime == None:
-					if redraw_time == None:
-						sleeptime = 1
-					else:
-						elapsed = self.since('frame')['msec']
-						allowed = self.nominal['SecondsPerFrame'] * 1000.0
-						sleeptime = int(allowed - elapsed - redraw_time - safety_margin)
-						sleeptime = max(0, min(int(allowed - safety_margin), sleeptime))
-						self._sleeptime = (elapsed, redraw_time, sleeptime)
-				self.ftdb()
-				time.sleep(float(sleeptime)/1000.0)
-				self.ftdb()
-				if self._redraw_lock: self._lock.acquire('Frame')
-				self.ftdb()
-				self.screen.clear()  # at least on some graphics cards, THIS is what blocks (and takes full CPU) until the interrupt
-				self.ftdb()
-				t = self.prectime()
+				self.ftdb()                                                                       # 4				
+				self.screen.clear()
+				self.ftdb()                                                                       # 5
 				self._update_stimlist()
-				self.ftdb()
+				self.ftdb()                                                                       # 6
 				self.viewport.draw()
-				self.ftdb()
-				redraw_time = self.prectime() - t
+				self.ftdb()                                                                       # 7
+				self._lock.release('Frame')
+				self.ftdb()                                                                       # 8
+				sleeptime = self._ve_sleep_msec
+				if sleeptime < 0.0:
+					sleeptime = self._safe_sleep_until_frame(safety_margin_msec=abs(sleeptime))
+				if sleeptime > 0.0 and sleeptime/1000.0 < self.nominal['SecondsPerFrame']:
+					time.sleep(sleeptime / 1000.0)
+				self._last_sleeptime = sleeptime
+				self.ftdb()                                                                       # 9
 				VisionEgg.Core.swap_buffers()
-				self.ftdb()
-				self.frame_timer.tick()
+				self.ftdb()                                                                       # 10
+				VisionEgg.GL.glFlush()
+				self.ftdb()                                                                       # 11
 				t = self.prectime()
+				self.frame_timer.tick()
 				if self.frame_count > 0: self._estimate_rate('FramesPerSecond', t)
 				self.remember('frame', t)
 				self.frame_count += 1
-				if self._redraw_lock: self._lock.release('Frame')
 		except:
 			einfo = mythread.fail()
 			self._lock.release('Frame')
@@ -688,7 +773,7 @@ class BciGenericApplication(Core.BciCore):
 			self._ftlog = {'t':numpy.zeros((nframes,ntimings),dtype=numpy.float64), 'i':0, 'j':0, 'started':False, 'rows_used':0, 'cols_used':0}
 			return
 		ftlog = getattr(self, '_ftlog', None)
-		if ftlog == None: return
+		if ftlog == None: return # practically zero overhead if not already called with 'setup' subcommand
 		t = self.prectime()
 		if subcmd == 'start':
 			ftlog['i'] = 0
@@ -834,11 +919,12 @@ class BciGenericApplication(Core.BciCore):
 		'packets' and 'frames'.
 		"""###
 		d = super(BciGenericApplication, self).since(event_type=event_type, timestamp=timestamp)
-		rec = self.last.get(event_type)
-		if rec == None:
+		rec = self.last.get(event_type, {})
+		nf = rec.get('frame')
+		if nf == None:
 			d['frames'] = None
 		else:
-			d['frames'] = self.frame_count - rec['frame']
+			d['frames'] = self.frame_count - nf
 		return d
 
 	#############################################################
@@ -1169,12 +1255,7 @@ class BciGenericApplication(Core.BciCore):
 		This is an API method which immediately, manually changes the
 		presentation phase. The target phase is specified by name.
 		"""###
-		if phasename==None:
-			rec = self._phasedefs['byname'].get(self.current_presentation_phase)
-			if rec != None: phasename = rec.get('next')
-		if phasename != None:
-			self.current_presentation_phase = phasename
-		self._phase_must_change = True
+		if not self._slave: self._really_change_phase(phasename)
 			
 	#############################################################
 	#### application-specific hooks (or hooks with application-
@@ -1249,7 +1330,7 @@ class BciGenericApplication(Core.BciCore):
 		here and then registered using calls to self.stimulus().
 		It's not necessary to attach them as attributes of self
 		as well, since they will be available in a dict called 
-		self.stimuli, but it you may also find it useful to
+		self.stimuli, but you may also find it useful to
 		(redundantly) do so. Note that the initial configuration
 		of VisionEgg.Config parameters and the (x,y) position
 		of the VisionEgg window *cannot* be done here: that must

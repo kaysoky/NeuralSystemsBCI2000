@@ -4,7 +4,7 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill
+#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
 #                         Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
@@ -706,16 +706,25 @@ SUCH DAMAGES.
 	##########################################################
 
 	def _find_newest_file(self, directory):
+		#t = self.prectime()
+		if not os.path.isdir(directory): return None
 		files = os.listdir(directory)
+		files = [x for x in files if x.lower().endswith('.dat')]
 		datestamps = {}
 		for i in files:
 			fullfile = os.path.join(directory, i)
-			datestamps[max(os.stat(fullfile)[-3:-2])] = i
+			st = os.stat(fullfile)
+			datestamps[st.st_mtime] = (fullfile,st)
 		if len(datestamps) == 0: return None
 		newestStamp = max(datestamps.keys())
-		newest = datestamps[newestStamp]
-		return os.path.realpath(os.path.join(directory, newest))
-
+		newest,st = datestamps[newestStamp]
+		age = time.time() - newestStamp
+		kb = st.st_size / 1024.0
+		if kb > 1024 or age < 0 or age > 10: # file is bigger than 1MB or believes it comes from the future or doesn't seem to have been modified in the last 10 seconds
+			return None  # these aren't the files you're looking for: move along.
+		newest = os.path.realpath(newest)
+		#print self.prectime() - t # takes about a millisecond for 10 files
+		return newest
 
 	#############################################################
 	
@@ -932,6 +941,28 @@ SUCH DAMAGES.
 		self.db[ref].append(rec)
 		return rec,firsttime
 					
+	#############################################################
+
+	def build(self):
+		"""
+		Return build datestamp information for all three modules,
+		extracted from the SignalSourceVersion, SignalProcessingVersion
+		and ApplicationVersion parameters (available after Set Config).
+		"""###
+		if len(self.params)==0: return None
+		l = (('src','SignalSourceVersion'), ('sig','SignalProcessingVersion'), ('app','ApplicationVersion'))
+		fmts = ('%Y-%m-%d %H:%M:%S', '%H:%M:%S %b %d %Y', '%b %d %Y %H:%M:%S', '%a %b %d %H:%M:%S %Y', '%b %d %Y')
+		d = dict(l)
+		for k,p in d.items():
+			d[k] = self.params[p]['Build',0]
+			for fmt in fmts:
+				try:
+					d[k] = time.strptime(d[k].strip(), fmt)
+					d[k] = time.strftime(fmts[0], d[k])
+					break
+				except: pass
+		return [(k,d[k]) for k,v in l]
+
 	#############################################################
 	#### hooks for the developer to overshadow
 	#############################################################
@@ -1369,12 +1400,11 @@ class BciList(list):
 			out = list.__getitem__(self,i)
 			if isinstance(i, int): scalar_out = True
 			lab = self.labels[i]
-		keepgoing = lambda x: x[furtherdims]
 		if scalar_out:
-			if len(furtherdims): out = keepgoing(out)
+			if len(furtherdims): out = out[furtherdims]
 		else:
 			out = self.__class__(out, labels=lab)
-			if len(furtherdims): out = map(keepgoing, out)
+			if len(furtherdims): out = [x[furtherdims] for x in out]
 		return out		
 
 	#############################################################

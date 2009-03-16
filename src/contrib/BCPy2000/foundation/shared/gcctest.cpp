@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -43,8 +43,11 @@ int main(int argc, const char * argv[])
 	if(LoadPythonLinks(dllname.c_str())!=0) return -1;
 #endif
 	Py_Initialize();
+	std::cout << std::endl;
 	PyRun_SimpleString("import sys; print sys.version");
+	std::cout << std::endl;
+	PyRun_SimpleString("import sys; sys.argv=[]; import IPython; IPython.Shell.start().mainloop()");
 	return 0;
 }
-// g++ -DDYNAMIC_PYTHON=1 try.cpp PythonWrapper.cpp PythonLink24.cpp PythonLink25.cpp -lpython2.5
-
+// g++ -DDYNAMIC_PYTHON=1 gcctest.cpp PythonWrapper.cpp PythonLink24.cpp PythonLink25.cpp -ldl
+// g++ -DDYNAMIC_PYTHON=0 gcctest.cpp -I/usr/include/python2.5 -lpython2.5

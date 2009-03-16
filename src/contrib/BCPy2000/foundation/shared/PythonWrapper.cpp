@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-8  Thomas Schreiner, Jeremy Hill, 
+//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org
@@ -30,6 +30,11 @@
 // corresponding to the loaded DLL are made available. For the subset of the
 // Python and NumPy APIs that we need, only very minimal changes were needed to
 // the client code, and the client code can still be compiled without the wrapper.
+#ifndef DYNAMIC_PYTHON
+#define DYNAMIC_PYTHON 1
+#endif // DYNAMIC_PYTHON
+
+#if DYNAMIC_PYTHON
 
 ////////////////////////////////////////////////////////////////
 #ifndef PYTHON_API_NAMESPACE  //////// Define and load functions
@@ -46,7 +51,7 @@ namespace PyAPI25 {void Macros2Functions(void);};
 #define bcierr               std::cerr
 #include <dlfcn.h>
 #define HINSTANCE            void*
-#define LoadLibrary(a)       dlopen(a, RTLD_LAZY)
+#define LoadLibrary(a)       dlopen(a, RTLD_NOW | RTLD_GLOBAL)
 #define GetProcAddress(a,b)  dlsym((a),(b))
 #endif
 
@@ -137,10 +142,10 @@ namespace PYTHON_API_NAMESPACE { ///////////////////////////////
 ////////////////////////////////////////////////////////////////
 
 void    PyWrapMacro_Py_DECREF(PyObject* a) {Py_DECREF(a);}
-void    PyWrapMacro_PyList_SET_ITEM(PyObject* op,int i,PyObject* v) {PyList_SET_ITEM(op, i, v);}
-double* PyWrapMacro_PyArray_DATA(PyArrayObject* a)    {return (double*)PyArray_DATA(a);}
-int*    PyWrapMacro_PyArray_DIMS(PyArrayObject* a)    {return    (int*)PyArray_DIMS(a);}
-int*    PyWrapMacro_PyArray_STRIDES(PyArrayObject* a) {return    (int*)PyArray_STRIDES(a);}
+void    PyWrapMacro_PyList_SET_ITEM(PyObject* op, int i, PyObject* v) {PyList_SET_ITEM(op, i, v);}
+double* PyWrapMacro_PyArray_DATA(PyArrayObject* a)          {return (double*)PyArray_DATA(a);}
+size_t  PyWrapMacro_PyArray_DIM(PyArrayObject* a, int n)    {return  (size_t)PyArray_DIM(a,n);}
+size_t  PyWrapMacro_PyArray_STRIDE(PyArrayObject* a, int n) {return  (size_t)PyArray_STRIDE(a,n);}
 
  ////////////////////////////////////////////////////////////////
 void Macros2Functions(void)
@@ -148,10 +153,12 @@ void Macros2Functions(void)
 	Py_DECREF = PyWrapMacro_Py_DECREF;
 	PyList_SET_ITEM = PyWrapMacro_PyList_SET_ITEM;
 	PyArray_DATA = PyWrapMacro_PyArray_DATA;
-	PyArray_DIMS = PyWrapMacro_PyArray_DIMS;
-	PyArray_STRIDES = PyWrapMacro_PyArray_STRIDES;
+	PyArray_DIM = PyWrapMacro_PyArray_DIM;
+	PyArray_STRIDE = PyWrapMacro_PyArray_STRIDE;
 }
 ////////////////////////////////////////////////////////////////
 } // end of namespace PYTHON_API_NAMESPACE /////////////////////
 #endif /////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
+
+#endif // DYNAMIC_PYTHON

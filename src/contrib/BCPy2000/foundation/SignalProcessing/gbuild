@@ -13,15 +13,14 @@
 #         -r       recompile even if apparently up-to-date
 
 CPP="g++"
-CPPFLAGS="-DMODTYPE=3 -DDYNAMIC_PYTHON=1"
-
+CPPFLAGS="-DMODTYPE=2 -DDYNAMIC_PYTHON=1"
 LD="g++"
 LDFLAGS=""
 
 SHARED="../../../../shared"
 OBJDIR="obj"
 OUTDIR="../../demo/prog"
-OUTNAME="PythonApplication"
+OUTNAME="PythonSignalProcessing"
 
 LIBS_POSIX="-lrt -ldl"
 LIBS_WIN32="-lws2_32"
@@ -34,14 +33,14 @@ $SHARED/bcistream \
 $SHARED/config \
 $SHARED/fileio \
 $SHARED/modules \
+$SHARED/modules/signalprocessing \
 $SHARED/types \
 $SHARED/utils \
 $SHARED/utils/Expression \
 "
 
-
 SRC="\
-PythonApplication.cpp \
+PythonSignalProcessing.cpp \
 ../shared/PythonFilter.cpp \
 ../shared/PythonLink24.cpp \
 ../shared/PythonLink25.cpp \
@@ -55,6 +54,7 @@ $SHARED/fileio/BCIDirectory.cpp \
 $SHARED/modules/CoreModule.cpp \
 $SHARED/modules/GenericFilter.cpp \
 $SHARED/modules/MessageHandler.cpp \
+$SHARED/modules/signalprocessing/SpatialFilter.cpp \
 $SHARED/types/BitmapImage.cpp \
 $SHARED/types/Brackets.cpp \
 $SHARED/types/Color.cpp \
