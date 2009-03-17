@@ -1,6 +1,7 @@
-function res = BCItimingAnalysis(res)
+function res = BCItimingAnalysis(res, doPlot,outfile)
 if exist('res')
-    analysisFuncs(res);
+    if ~exist('doPlot') doPlot = 1; end
+    analysisFuncs(res, doPlot,outfile);
     return;
 end
 fpath = uigetdir;
@@ -59,58 +60,76 @@ end
 
 res.dAmp = [];
 if thisTask.dAmp.flag
-    tmpsig = reshape(signal(:,thisTask.dAmp.ch+1),[SBS length(signal)/SBS]);
-    [q,r] = max(tmpsig);
-    ts = 1:length(q);
-    a = find(q == 0);    
-    q(a) = [];
-    r(a) = [];
-    ts(a) = [];
-%     a = find(signal(:,thisTask.dAmp.ch+1) == max(signal(:,thisTask.dAmp.ch+1)));
-%     a(find(a <= ignoreDur)) = [];
-%     b = find(diff(a) < SBS/3)+1;
-%     a(b) = [];
-    res.dAmp.vals = 1000*(r-1)/fs;
-    res.dAmp.ts = ts;
+    a = find(diff(signal(:,thisTask.dAmp.ch+1)) >= std(diff(signal(:,thisTask.dAmp.ch+1))))+1;
+    a(find(a <= ignoreDur)) = [];
+    b = find(diff(a) < SBS/3)+1;
+    a(b) = [];
+    res.dAmp.vals = 1000*mod(a-1, SBS)/fs;
+    res.dAmp.ts = a;
+%     tmpsig = reshape(signal(:,thisTask.dAmp.ch+1),[SBS length(signal)/SBS]);
+%     [q,r] = max(tmpsig);
+%     ts = 1:length(q);
+%     a = find(q == 0);    
+%     q(a) = [];
+%     r(a) = [];
+%     ts(a) = [];
+% %     a = find(signal(:,thisTask.dAmp.ch+1) == max(signal(:,thisTask.dAmp.ch+1)));
+% %     a(find(a <= ignoreDur)) = [];
+% %     b = find(diff(a) < SBS/3)+1;
+% %     a(b) = [];
+%     res.dAmp.vals = 1000*(r-1)/fs;
+%     res.dAmp.ts = ts;
 end
 
 res.vid = [];
 if thisTask.vid.flag
-    a = [];
-    a = find(diff(signal(:,thisTask.vid.ch+1)) >= std(diff(signal(:,thisTask.vid.ch+1))))+1;
-    a(find(a <= ignoreDur)) = [];
-    b = find(diff(a) < SBS)+1;
-    a(b) = [];
-    state = double(getfield(states,thisTask.vid.state));
-    st = [];
-    for i=1:length(thisTask.vid.stateVal)
-        st = [st;find(diff(state) == thisTask.vid.stateVal(i))+1];
+    try
+        a = [];
+        a = find(diff(signal(:,thisTask.vid.ch+1)) >= std(diff(signal(:,thisTask.vid.ch+1))))+1;
+        a(find(a <= ignoreDur)) = [];
+        b = find(diff(a) < SBS)+1;
+        a(b) = [];
+        state = double(getfield(states,thisTask.vid.state));
+        st = [];
+        for i=1:length(thisTask.vid.stateVal)
+            st = [st;find(diff(state) == thisTask.vid.stateVal(i))+1];
+        end
+        st = sort(st);
+        st(find(st <= ignoreDur)) = [];
+        res.vid.vals = [];
+        res.vid.stim = [];
+        res.vid.sigProc = [];
+        res.vid.jitter = [];
+        p = 1;
+        if length(st) > 0
+            for i=1:length(st)-1
+                b = intersect(find(a >= st(i)), find(a < st(i+1)));
+                if isempty(b) continue; end
+                if length(b) > 1 b(2:end) = []; end
+                res.vid.vals(p) = 1000*(a(b(1)) - st(i))/fs;
+                res.vid.sigProc(p) = double(states.StimulusTime(st(i)) - states.SourceTime(st(i)));
+                res.vid.jitter(p) = double(states.SourceTime(st(i)) - states.SourceTime(st(i)-SBS));
+                res.vid.stim(p) = round(st(i)/SBS);
+                p = p+1;
+            end
+
+            b = find(a >= st(end));
+            if ~isempty(b)
+                res.vid.vals = [res.vid.vals, 1000*(a(b(1)) - st(end))/fs];
+                res.vid.stim(end+1) = round(st(end)/SBS);
+                res.vid.sigProc(end+1) = double(states.StimulusTime(st(end)) - states.SourceTime(st(end)));
+                res.vid.jitter(end+1) = double(states.SourceTime(st(end)) - states.SourceTime(st(end)-SBS));
+            end
+        else
+            res.vid.vals(1) = nan;
+            res.vid.stim = [];
+            res.vid.sigProc = nan;
+            res.vid.jitter = nan;
+        end
+    catch
+        mmm= 1+1;
     end
-    st = sort(st);
-    st(find(st <= ignoreDur)) = [];
-    res.vid.vals = [];
-    res.vid.stim = [];
-    res.vid.sigProc = [];
-    res.vid.jitter = [];
-    p = 1;
-    for i=1:length(st)-1
-        b = intersect(find(a >= st(i)), find(a < st(i+1)));
-        if isempty(b) continue; end
-        if length(b) > 1 b(2:end) = []; end
-        res.vid.vals(p) = 1000*(a(b(1)) - st(i))/fs;
-        res.vid.sigProc(p) = double(states.StimulusTime(st(i)) - states.SourceTime(st(i)));
-        res.vid.jitter(p) = double(states.SourceTime(st(i)) - states.SourceTime(st(i)-SBS));
-        res.vid.stim(p) = round(st(i)/SBS);
-        p = p+1;
-    end
-    b = find(a >= st(end));
-    if ~isempty(b) 
-        res.vid.vals = [res.vid.vals, 1000*(a(b(1)) - st(end))/fs];
-        res.vid.stim(end+1) = round(st(end)/SBS);
-        res.vid.sigProc(end+1) = double(states.StimulusTime(st(end)) - states.SourceTime(st(end)));
-        res.vid.jitter(end+1) = double(states.SourceTime(st(end)) - states.SourceTime(st(end)-SBS));
-    end
-    
+
 %     
 %     while ~isempty(a)
 %         c = find(st >= a(1));
@@ -173,9 +192,13 @@ res.sigProc = double(states.StimulusTime(1:SBS:end) - states.SourceTime(1:SBS:en
 a = find(res.sigProc < 0);
 res.sigProc(a) = res.sigProc(a) + 2^15;
 
-res.jitter = diff(double(states.SourceTime(1:SBS:end)));
-a = find(res.jitter < 0);
-res.jitter(a) = res.jitter(a)+2^16;
+if 0
+    res.jitter = diff(double(states.SourceTime(1:SBS:end)));
+    a = find(res.jitter < 0);
+    res.jitter(a) = res.jitter(a)+2^16;
+else
+    res.jitter = 1000*diff(res.dAmp.ts/fs);
+end
 %res.jitter = res.jitter./(1000*SBS/fs);
 %-------------------------------------------
 function fileList = getFileList(fpath, fileList)
@@ -322,7 +345,7 @@ newTask.app = '';
 newTask.parm = [];
 newTask.nChs = 0;
 %%
-function analysisFuncs(res)
+function analysisFuncs(res, doPlot, outdir)
 
 tasksAll = struct;
 for i=1:length(res)
@@ -386,6 +409,7 @@ for i=1:length(taskChFields)
         chTmp(c) = tmpField{c}.nChs;
     end
     [q,idx] = sort(chTmp);
+    clear newField;
     for c=1:length(idx)
         newField{c} = tmpField{idx(c)};
     end
@@ -401,11 +425,122 @@ for i=1:length(taskChFields)
     newField.SBS = tmpField.SBS;
     totalSamplesGrp = setfield(totalSamplesGrp, taskChFields{i}, newField);
 end
+
+%%
+%get equations
+taskEqns = [];
+for i=1:length(taskChFields)
+    tmpField = getfield(taskChGrp, taskChFields{i});
+    p = [];
+    p2 = [];
+    p3 = [];
+    NCHS = [];
+    LATc = [];
+    SLATc = [];
+    ASLATc = [];
+    ALATc=[];
+    meanOS = 0;
+    AmeanOS=0;
+    VV=0;
+    AVV=0;
+    nn = 1;
+    for j=1:length(tmpField)
+        if tmpField{j}.nChs == 8 || tmpField{j}.nChs == 24 continue; end
+        SR = [];
+        LAT = [];
+        SLAT = [];
+        ASLAT = [];
+        ALAT = [];
+        NCHS = [NCHS, tmpField{j}.nChs];
+        doAud = 0;
+        for k=1:length(tmpField{j}.idx)
+            IDX = tmpField{j}.idx(k);
+            tmpV = mean(res{IDX}.vid.sigProc);
+            if tmpV <= res{IDX}.SBS/res{IDX}.fs*1000
+                SR = [SR,res{IDX}.fs];
+                LAT = [LAT, tmpV];
+                SLAT = [SLAT, median(res{IDX}.vid.vals)];
+                SLATc = [SLATc;  res{IDX}.fs, tmpField{j}.nChs, median(res{IDX}.vid.vals), 0, 0];
+                LATc = [LATc; res{IDX}.fs, tmpField{j}.nChs, tmpV, 0, 0];
+                meanOS = meanOS + (mean(res{IDX}.vid.vals-res{IDX}.vid.sigProc)-mean(res{IDX}.dAmp.vals));
+                VV=VV+1;
+            else
+                break;
+            end   
+            if ~isempty(res{IDX}.aud)
+                doAud = 1;
+                tmpA = median(res{IDX}.aud.sigProc);
+                if tmpV <= res{IDX}.SBS/res{IDX}.fs*1000
+                    ASR = [SR,res{IDX}.fs];
+                    ALAT = [LAT, tmpV];
+                    ASLAT = [ASLAT, median(res{IDX}.aud.vals)];
+                    ASLATc = [ASLATc;  res{IDX}.fs, tmpField{j}.nChs, median(res{IDX}.aud.vals), 0, 0];
+                    ALATc = [ALATc; res{IDX}.fs, tmpField{j}.nChs, tmpV, 0, 0];
+                    AmeanOS = AmeanOS + (mean(res{IDX}.aud.vals-res{IDX}.aud.sigProc)-mean(res{IDX}.dAmp.vals));
+                    AVV=AVV+1;
+                else
+                    break;
+                end
+            end
+        end
+        p(nn,:) = polyfit(SR, SLAT, 1);    
+        if doAud 
+            pa(nn,:) = polyfit(SR, ASLAT, 1); end
+        pp(nn,:) = polyfit(SR, LAT, 1);
+        nn=nn+1;
+        
+    end
+    p1(1,:) = polyfit(NCHS, p(:,1)',1);
+    p1(2,:) = polyfit(NCHS, p(:,2)',1);
+    if doAud
+        p1a(1,:) = polyfit(NCHS, pa(:,1)',1);
+        p1a(2,:) = polyfit(NCHS, pa(:,2)',1);
+    end
+    p11(1,:) = polyfit(NCHS, pp(:,1)',1);
+    p11(2,:) = polyfit(NCHS, pp(:,2)',1);
+    p11(2,2) = p11(2,2)+meanOS/VV;
+    p2(1,:) = polyfit(NCHS, p(:,1)',2);
+    p2(2,:) = polyfit(NCHS, p(:,2)',2);
+   %  p2(2,3) = p2(2,3)+meanVid/VV;
+    for j=1:size(LATc,1)
+        SLATc(j,end-1) = polyval(p1(1,:), SLATc(j,2))*SLATc(j,1) + polyval(p1(2,:), SLATc(j,2));
+        if doAud ASLATc(j,end-1) = polyval(p1a(1,:), ASLATc(j,2))*ASLATc(j,1) + polyval(p1a(2,:), ASLATc(j,2)); end
+        LATc(j,end-1) = polyval(p11(1,:), LATc(j,2))*LATc(j,1) + polyval(p11(2,:), LATc(j,2));
+        %SLATc(j,end) = polyval(p2(1,:), SLATc(j,2))*SLATc(j,1) + polyval(p2(2,:), SLATc(j,2));
+    end
+    gof1 = 1 - sum((SLATc(:,4)-SLATc(:,3)).^2)/sum((SLATc(:,3)-mean(SLATc(:,3))).^2);
+    if doAud gof1a = 1 - sum((ASLATc(:,4)-ASLATc(:,3)).^2)/sum((ASLATc(:,3)-mean(ASLATc(:,3))).^2); end
+    gof11 = 1 - sum((LATc(:,4)-SLATc(:,3)).^2)/sum((SLATc(:,3)-mean(SLATc(:,3))).^2);
+    %gof2 = 1 - sum((LATc(:,5)-LATc(:,3)).^2)/sum((LATc(:,3)-mean(LATc(:,3))).^2);
+    str1 = sprintf('L = (%1.2e*C + %1.2e)*f_{s} + %1.2g*C + %1.3g',...
+        p1(1,1), p1(1,2), p1(2,1), p1(2,2));
+    if doAud
+        str1a = sprintf('L = (%1.2e*C + %1.2e)*f_{s} + %1.2g*C + %1.3g',...
+            p1a(1,1), p1a(1,2), p1a(2,1), p1a(2,2));
+    end
+    %str2 = sprintf('L = (%1.2g*C^2 + %1.2e*C + %1.2e)*f_{s} +%1.2g*C^2 + %1.2g*C + %1.3g',...
+    %    p2(1,1), p2(1,2), p2(1,3),p2(2,1), p2(2,2), p2(2,3));
+    taskEqns = setfield(taskEqns, taskChFields{i}, {p1});
+    taskEqns = setfield(taskEqns, [taskChFields{i}, '_latex'], {str1});
+    taskEqns = setfield(taskEqns, [taskChFields{i}, '_gof'], [gof1]);
+    if doAud
+        taskEqns = setfield(taskEqns, [taskChFields{i}, '_aud'], {p1a});
+        taskEqns = setfield(taskEqns, [taskChFields{i}, '_aud_latex'], {str1a});
+        taskEqns = setfield(taskEqns, [taskChFields{i}, '_aud_gof'], [gof1a]);
+    end
+end
+
+%%
 clear taskfields tmpTask;
+%outdir = uigetdir;
+if outdir == 0 return; end
+save(sprintf('%s%sresults.mat', outdir, filesep), 'res','tasksAll','taskChGrp','taskEqns');
+if ~doPlot
+    return;
+end
 %%
 taskfields = fieldnames(tasksAll);
-outdir = uigetdir;
-if outdir == 0 return; end
+
 LW = 1;
 for i=1:length(taskfields)
     figtmp = figure('name', taskfields{i},'position',[0 0 800 800],'color',[1 1 1]);
@@ -558,7 +693,62 @@ for j=1:length(taskChFields)
    
 end
 
-save(sprintf('%s%sresults.mat', outdir, filesep), 'res');
+X = [512 1200 2400 4800];
+
+tasknames = fields(taskChGrp);
+for k=1:length(tasknames)
+    task = getfield(taskChGrp,tasknames{k});
+    Y = [];
+    doAUD = 0;
+    plotIDX = [1 4 7]-1;
+    bw = 1;
+    for i=1:length(task)
+        idx = task{i}.idx;
+        for j=1:length(idx)
+            id = idx(j);
+            ytmp = [median(res{id}.dAmp.vals), median(res{id}.vid.sigProc), median(res{id}.vid.vals)-median(res{id}.vid.sigProc),0];
+            if mean(res{id}.jitter) >= res{id}.SBS/res{id}.fs*1000*1.02
+                ytmp = [0 0 0 100];
+            end
+            Y = [Y; ytmp];
+            if ~isempty(res{id}.aud)
+                doAUD = 1;
+                bw = .8;
+                plotIDX = [1 2 5 6 9 10]-1;
+                ytmp = [median(res{id}.dAmp.vals), median(res{id}.aud.sigProc), median(res{id}.aud.vals)-median(res{id}.aud.sigProc),0];
+                if mean(res{id}.jitter) >= res{id}.SBS/res{id}.fs*1000*1.02
+                    ytmp = [0 0 0 100];
+                end
+                Y = [Y; ytmp];
+            end
+        end
+    end
+    figtmp = figure('color','w','position',[0 0 1024 768]);
+    hold on;
+    if ~doAUD
+        rng = 0:2;
+        drng = 1:4:13;
+        xlocs = [2:4:14];
+    else
+        rng = 0:5;
+        drng = 1:7:25;
+        xlocs = [3.5:6:26];
+    end
+    for i=1:4
+        bar([rng+drng(i)], Y(plotIDX+i,:),1,'stacked')
+    end
+    set(gca,'xtick',xlocs,'xticklabel',X,'fontsize',16)
+    xlabel('Sample Rate (Hz)');
+    ylabel('Latency');
+    title(tasknames{k})
+    legend('Amp','SigProc','Video','Fail','location','northwest')
+    saveas(figtmp, sprintf('%s%s%s_bar.fig', outdir, filesep, tasknames{k}));
+    saveas(figtmp, sprintf('%s%s%s_bar.png', outdir, filesep, tasknames{k}));
+    saveas(figtmp, sprintf('%s%s%s_bar.eps', outdir, filesep, tasknames{k}),'epsc2');
+    close(figtmp);
+end
+
+
 return;
 %%
 figure;
