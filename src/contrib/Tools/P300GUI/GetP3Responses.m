@@ -10,6 +10,7 @@ end
 numchannels=size(signal,2);
 lenflash=length(Flashing);
 ind=find(Flashing(1:lenflash-1)==0 & Flashing(2:lenflash)==1)+1;
+ind=ind(find(ind+windowlen(2)-2<=lenflash)); % this makes sure that we do not try to use data beyond whatever is available (3/26/09 Javier Temprano)
 xx=length(ind);
 
 if rndsmp~=100
