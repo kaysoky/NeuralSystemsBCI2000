@@ -14,7 +14,11 @@ fprintf(1, 'Classifying Responses...\n\n');
 
 % avg responses by row/col
 choices=NumMatrixRows+NumMatrixColumns;
-numletters=max(trialnr);
+if length(find(trialnr==max(unique(trialnr))))==NumberOfSequences*choices 
+    numletters=max(trialnr);
+else
+    numletters=max(trialnr)-1;
+end
 
 epoch=NumberOfSequences*choices;    
 cflash=zeros(choices,NumberOfSequences);
