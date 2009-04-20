@@ -18,7 +18,8 @@
 #include "LinearPredictor.h"
 #include <numeric>
 #include <limits>
-
+#include <math>
+ 
 template<typename T>
 class MEMPredictor : public LinearPredictor<T>
 {
