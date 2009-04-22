@@ -37,21 +37,22 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#V-Amp_Hardware"><span class="tocnumber">1.1</span> <span class="toctext">V-Amp Hardware</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
+<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Installation"><span class="tocnumber">2</span> <span class="toctext">Installation</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Parameters"><span class="tocnumber">3</span> <span class="toctext">Parameters</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SamplingRate"><span class="tocnumber">2.1</span> <span class="toctext">SamplingRate</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#DeviceIDs"><span class="tocnumber">2.2</span> <span class="toctext">DeviceIDs</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#HPFilterCorner"><span class="tocnumber">2.3</span> <span class="toctext">HPFilterCorner</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SampleBlockSize"><span class="tocnumber">2.4</span> <span class="toctext">SampleBlockSize</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceCh"><span class="tocnumber">2.5</span> <span class="toctext">SourceCh</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChDevices"><span class="tocnumber">2.6</span> <span class="toctext">SourceChDevices</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChList"><span class="tocnumber">2.7</span> <span class="toctext">SourceChList</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#AcquisitionMode"><span class="tocnumber">2.8</span> <span class="toctext">AcquisitionMode</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SamplingRate"><span class="tocnumber">3.1</span> <span class="toctext">SamplingRate</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#DeviceIDs"><span class="tocnumber">3.2</span> <span class="toctext">DeviceIDs</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#HPFilterCorner"><span class="tocnumber">3.3</span> <span class="toctext">HPFilterCorner</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SampleBlockSize"><span class="tocnumber">3.4</span> <span class="toctext">SampleBlockSize</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceCh"><span class="tocnumber">3.5</span> <span class="toctext">SourceCh</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChDevices"><span class="tocnumber">3.6</span> <span class="toctext">SourceChDevices</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChList"><span class="tocnumber">3.7</span> <span class="toctext">SourceChList</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#AcquisitionMode"><span class="tocnumber">3.8</span> <span class="toctext">AcquisitionMode</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Additional_Information"><span class="tocnumber">3</span> <span class="toctext">Additional Information</span></a>
+<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Additional_Information"><span class="tocnumber">4</span> <span class="toctext">Additional Information</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#Data_Storage"><span class="tocnumber">3.1</span> <span class="toctext">Data Storage</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#Data_Storage"><span class="tocnumber">4.1</span> <span class="toctext">Data Storage</span></a></li>
 </ul>
 </li>
 </ul>
@@ -65,6 +66,16 @@ Support for this device in BCI2000 consists of a BCI2000-compatible Source Modul
 <p>The V-Amp consists of 16 independent 24-bit A/D converters that can sample at 
 up to 2 kHz per channel (16 channels, plus 2 auxiliary) or 20kHz per channel (4 channels).
 </p>
+<a name="Installation"></a><h2>Installation</h2>
+<p>The necessary system drivers are located in the BCI2000\src\extlib\brainproducts\vamp\ folder. To install the driver, follow these steps:
+</p>
+<ol><li> Plug in the V-Amp to a USB port. Windows should recognize it, and start to install drivers.
+</li><li> Depending on the version of Windows being used, a Found New Hardware dialog should appear. Do NOT search online for drivers; instead, select Don't Search Online.
+</li><li> When it asks you to insert the disc that came with the amplifier, select the option that allows you to browse for the driver.
+</li><li> Navigate to BCI2000\src\extlib\brainproducts\vamp\. It should find the driver files, and installed the necessary software.
+</li><li> For the last step, copy the files DiBpGmbH.dll and FirstAmp.dll to the BCI2000\prog\ folder.
+</li><li> You should now be able to run the vAmpSource.exe module in BCI2000.
+</li></ol>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>Parameters common to all source modules are described under <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>.
 In addition, the <i>vAmpADC</i> provides the following parameters:

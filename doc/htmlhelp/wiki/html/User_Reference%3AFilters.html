@@ -71,44 +71,10 @@ Thus, each data portion acquired by the data acquisition module will run through
 <a name="Configuration_Overview"></a><h2>Configuration Overview</h2>
 <p>In principle, these filters may be placed in any order by the writer (programmer) of a BCI2000 module, and it is <a href="Programming_Reference%253AFilter_Chain.html" title="Programming Reference:Filter Chain">technically easy</a> to change the number, and order, of filters. 
 However, not all combinations or orderings of filters make sense.
-</p><p>The table shows modules and filters for BCI2000 configurations included in the core distribution:
+</p><p>The flowchart shows modules and filters for BCI2000's configurations included in the core distribution:
 </p>
-<table border="1" style="text-align:center">
-<tr>
-<th> &nbsp; </th><th colspan="3"> Data Acquisition
-</th><th colspan="5"> Signal Processing
-</th><th colspan="3"> Application
-</th></tr>
-<tr>
-<th> SMR Feedback
-</th><td rowspan="3">
-<table border="0" style="text-align:center">
-<tr>
-<td colspan="2"> <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">DataIOFilter</a>
-</td></tr>
-<tr>
-<td> ADC </td><td> FileWriter
-</td></tr></table>
-</td><td rowspan="3"> <a href="User_Reference%253AAlignmentFilter.html" title="User Reference:AlignmentFilter">AlignmentFilter</a>
-</td><td rowspan="3"> <a href="User_Reference%253ATransmissionFilter.html" title="User Reference:TransmissionFilter">TransmissionFilter</a>
-</td><td rowspan="3"> <a href="User_Reference%253ASpatialFilter.html" title="User Reference:SpatialFilter">SpatialFilter</a>
-</td><td> <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">ARFilter</a> or <a href="User_Reference%253AFFTFilter.html" title="User Reference:FFTFilter">FFTFilter</a>
-</td><td rowspan="3"> <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">LinearClassifier</a>
-</td><td rowspan="3"> <a href="User_Reference%253ALPFilter.html" title="User Reference:LPFilter">LPFilter</a>
-</td><td rowspan="3"> <a href="User_Reference%253ANormalizer.html" title="User Reference:Normalizer">Normalizer</a>
-</td><td rowspan="3"> <a href="User_Reference%253AConnectorInput.html" title="User Reference:ConnectorInput">ConnectorInput</a>
-</td><td> <a href="User_Reference%253ACursorTask.html" title="User Reference:CursorTask">CursorTask</a>
-</td><td rowspan="3"> <a href="User_Reference%253AConnectorOutput.html" title="User Reference:ConnectorOutput">ConnectorOutput</a>
-</td></tr>
-<tr>
-<th> P3 Speller
-</th><td rowspan="2"> <a href="User_Reference%253AP3TemporalFilter.html" title="User Reference:P3TemporalFilter">P3TemporalFilter</a>
-</td><td> <a href="User_Reference%253AP3SpellerTask.html" title="User Reference:P3SpellerTask">P3SpellerTask</a>
-</td></tr>
-<tr>
-<th> Stimulus Presentation
-</th><td> <a href="User_Reference%253AStimulusPresentationTask.html" title="User Reference:StimulusPresentationTask">StimulusPresentationTask</a>
-</td></tr></table>
+<div align="center"><a href="../images/thumb/7/71/FilterPipelineFlowchart.png/792px-FilterPipelineFlowchart.png" class="image" title="Flowchart of the Data moving through the Filter Pipeline"><img src="../images/thumb/7/71/FilterPipelineFlowchart.png/792px-FilterPipelineFlowchart.png" alt="Flowchart of the Data moving through the Filter Pipeline" width="792" height="260" longdesc="/wiki/index.php/Image:FilterPipelineFlowchart.png" /></a><br />
+<b>Flowchart of the Data moving through the Filter Pipeline</b></div>
 <a name="Data_Acquisition_Module"></a><h2>Data Acquisition Module</h2>
 <p>In the data acquisition (source) module, the DataIOFilter manages data acquisition and storage in a general manner.
 Actual acquisition of data is provided by ADC filters,
@@ -126,6 +92,7 @@ In addition to managing the operation of ADC and FileWriter filters, the DataIOF
 <ul><li><a href="User_Reference%253ASignalGeneratorADC.html" title="User Reference:SignalGeneratorADC">User Reference:SignalGeneratorADC</a>: A signal generator for testing purposes.
 </li><li><a href="User_Reference%253AgUSBampADC.html" title="User Reference:gUSBampADC">User Reference:gUSBampADC</a>: Interface to the g.tec gUSBamp amplifier.
 </li><li><a href="User_Reference%253AgMOBIlabADC.html" title="User Reference:gMOBIlabADC">User Reference:gMOBIlabADC</a>: Interface to the g.tec gMOBIlab amplifier.
+</li><li><a href="User_Reference%253AgMOBIlabPlusADC.html" title="User Reference:gMOBIlabPlusADC">User Reference:gMOBIlabPlusADC</a>: Interface to the g.tec gMOBIlab+ wireless amplifier.
 </li><li><a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>: Contributed code interfacing to other hardware.
 </li></ul>
 <a name="Data_Storage"></a><h3>Data Storage</h3>

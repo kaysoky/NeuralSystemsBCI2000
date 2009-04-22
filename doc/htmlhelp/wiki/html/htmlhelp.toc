@@ -71,6 +71,7 @@ BCI2000_Binaries.html
 2 Contributed_Code Contributed Code
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 February_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" rel="nofollow">February 2009 Build</a>
 4 December_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" rel="nofollow">December 2008 Build</a>
 4 November_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" rel="nofollow">November 2008 Build</a>
 4 October_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081006.exe" rel="nofollow">October 2008 Build</a>
@@ -154,7 +155,8 @@ Contributions%253ABCPy2000.html
 2 Versioning Versioning
 3 Author Author
 3 Version_History Version History
-4 2008-09-30:__BCPy2000_1.0 2008-09-30:  BCPy2000 1.0
+4 2008-09-30:__BCPy2000_8570_.28also_known_as_1.0.29 2008-09-30:  BCPy2000 8570 (also known as 1.0)
+4 2009-03-16:__BCPy2000_11336 2009-03-16:  BCPy2000 11336
 3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
 4 ShowSignalTime ShowSignalTime
@@ -596,6 +598,7 @@ Contributions%253Actfneurod.html
 Contributions%253AvAmpADC.html
 2 Function Function
 3 V-Amp_Hardware V-Amp Hardware
+2 Installation Installation
 2 Parameters Parameters
 3 SamplingRate SamplingRate
 3 DeviceIDs DeviceIDs
@@ -2768,6 +2771,21 @@ User_Reference%253AgMOBIlabADC.html
 3 SampleBlockSize SampleBlockSize
 3 SamplingRate SamplingRate
 3 SourceCh SourceCh
+2 States States
+2 See_also See also
+
+User_Reference%253AgMOBIlabPlusADC.html
+2 Function Function
+3 g.MOBIlab_Hardware g.MOBIlab Hardware
+2 Installation Installation
+2 Parameters Parameters
+3 COMport COMport
+3 SourceCh SourceCh
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 InfoMode InfoMode
+3 DigitalEnable DigitalEnable
+3 DigitalOutBlock DigitalOutBlock
 2 States States
 2 See_also See also
 
