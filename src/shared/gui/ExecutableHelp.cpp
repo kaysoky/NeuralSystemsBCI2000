@@ -69,7 +69,6 @@ ExecutableHelp::Display() const
 void
 ExecutableHelp::Initialize()
 {
-#ifdef _WIN32
   const int increment = 512;
   char* buf = NULL;
   int bufSize = 0,
@@ -92,10 +91,6 @@ ExecutableHelp::Initialize()
   if( pos != string::npos )
     ++pos;
   mHelpFileDir = mHelpFile.substr( 0, pos );
-#else // TODO
-# error Globally store the executable's path at startup, \
-        make BCIDirectory use it rather than GetCWD().
-#endif // TODO
 }
 
 void

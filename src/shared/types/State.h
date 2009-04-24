@@ -69,9 +69,6 @@ class State
   size_t    BitLocation() const
             { return mLocation % 8; }
 
-#ifdef TODO
-# error Try to do without the Commit() function.
-#endif
   void      Commit( StateVector* );
 
  private:
