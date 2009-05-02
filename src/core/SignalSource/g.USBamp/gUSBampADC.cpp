@@ -463,19 +463,29 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     mBufferSize = 0;
 
     for (int dev=0; dev<m_numdevices; dev++)
-    {
+	{
+		m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
+		// set the channel list for sampling
+		UCHAR *channels=new UCHAR[m_numchans.at(dev)];
+        if (Parameter("SourceChList")->NumValues() == 0)
+        {
+            for (int ch=0; ch<m_numchans.at(dev); ch++)
+                channels[ch] = ch+1;
+        }
+        else
+        {
+            for (int ch=0; ch<m_numchans.at(dev); ch++)
+                channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
 
-        m_numchans.at(dev)=Parameter("SourceChDevices")(dev);
+            sourceChListOffset += m_numchans.at(dev);
+        }
+
+
         m_iBytesperScan.at(dev)=m_numchans.at(dev)*sizeof(float);
-        int pointsinbuffer=mSampleBlockSize*m_numchans.at(dev);
+		int pointsinbuffer=mSampleBlockSize*m_numchans.at(dev);
         m_buffersize.at(dev)=pointsinbuffer*sizeof(float)+HEADER_SIZE;    // buffer size in bytes
-        UCHAR *channels=new UCHAR[m_numchans.at(dev)];
+
         mBufferSize += NUM_BUFS*pointsinbuffer;
-
-        //for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-        //	m_pBuffer[cur_buf].at(dev)=new BYTE[m_buffersize.at(dev)];
-
-        //m_pBuffer.at(dev)=new BYTE[pointsinbuffer*sizeof(float)*numberofbuffers+HEADER_SIZE];  // if we have one buffer, it equals buffersize.at(dev)
 
         // determine the serial number either automatically (if autoconfigure mode) or from DeviceID parameter
         if (autoconfigure)
@@ -506,13 +516,13 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         // this precedes normal configuration
         if (m_acqmode == 2) {
             double impedance;
-            for (int cur_ch=0; cur_ch<m_numchans.at(dev); cur_ch++)
+            for (int cur_ch=0; cur_ch < m_numchans.at(dev); cur_ch++)
             {
                 char memotext[1024];
-                GT_GetImpedance(m_hdev.at(dev), cur_ch+1, &impedance);
+				GT_GetImpedance(m_hdev.at(dev), channels[cur_ch], &impedance);
                 mVis.Send( CfgID::WindowTitle, "g.USBamp Impedance Values" );
-                sprintf(memotext, "ch %02d (%s/%02d): %.1f kOhms\r", totalch, m_DeviceIDs.at(dev).c_str(), cur_ch+1, (float)(impedance/1000));
-                mVis.Send(memotext);
+				sprintf(memotext, "Amp %d ch %02d (%s/%02d): %.1f kOhms\r", dev, channels[cur_ch], m_DeviceIDs.at(dev).c_str(), channels[cur_ch], (float)(impedance/1000));
+				mVis.Send(memotext);
                 totalch++;
             }
             // Parameter("AcquisitionMode")=1;  // update this parameter
@@ -542,25 +552,13 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         // in the current implementation, we set the same filter and notch on all channels
         // (otherwise, would be many parameters)
         // because it takes so long, set filters only when they have been changed
-        for (int ch=0; ch<m_numchans.at(dev); ch++)
+        for (int ch=0; ch < m_numchans.at(dev); ch++)
         {
             // if we are in calibration mode (acqmode == 2), set the filters every time even if not changed
-            if ((oldfilternumber != filternumber) | (m_acqmode == 2)) GT_SetBandPass(m_hdev.at(dev), ch+1, filternumber);
-            if ((oldnotchnumber != notchnumber) | (m_acqmode == 2))   GT_SetNotch(m_hdev.at(dev), ch+1, notchnumber);
-        }
-
-        // set the channel list for sampling
-        if (Parameter("SourceChList")->NumValues() == 0)
-        {
-            for (int ch=0; ch<m_numchans.at(dev); ch++)
-                channels[ch] = ch+1;
-        }
-        else
-        {
-            for (int ch=0; ch<m_numchans.at(dev); ch++)
-                channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
-
-            sourceChListOffset += m_numchans.at(dev);
+			if ((oldfilternumber != filternumber) || (m_acqmode == 2))
+				GT_SetBandPass(m_hdev.at(dev), channels[ch], filternumber);
+			if ((oldnotchnumber != notchnumber) || (m_acqmode == 2))
+				GT_SetNotch(m_hdev.at(dev), channels[ch], notchnumber);
         }
 
         // if we have the digital input enabled, only provide a list of 1..(numchans.at(dev)-1)
@@ -577,15 +575,6 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         delete [] channels;
 
     } //END device init loop
-
-
-
-
-
-    // queue some buffers before
-    /*for (unsigned int cur_buf=0; cur_buf<NUM_BUFS; cur_buf++)
-    for (unsigned int dev=0; dev<m_hdev.size(); dev++)
-        GT_GetData(m_hdev.at(dev), m_pBuffer[cur_buf].at(dev), m_buffersize.at(dev), &(m_ov[dev]));   */
 
     // let's remember the filternumbers for next time
     // so we do not set the filters again if we do not have to
