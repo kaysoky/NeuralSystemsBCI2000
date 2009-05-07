@@ -71,8 +71,10 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
         .SetType( SignalType::float32 )
         .ElementUnit().SetRawMin( 0 )
                       .SetRawMax( outputSamples - 1 );
-  if( Output.ChannelIndex( Parameter( "TargetERPChannel" ) ) < 0 )
-    bcierr << "Invalid channel in Parameter \"TargetERPChannel\"" << endl;
+                      
+  float targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
+  if( targetERPChannel < 0 || targetERPChannel >= Output.Channels() )
+    bcierr << "Invalid channel specification in Parameter \"TargetERPChannel\"" << endl;
 }
 
 void
