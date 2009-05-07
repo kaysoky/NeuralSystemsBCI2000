@@ -34,7 +34,7 @@ P3TemporalFilter::P3TemporalFilter()
 
   "Visualize int VisualizeP3TemporalFiltering= 1 0 0 1 "
     "// Visualize averaged epochs (0=no 1=yes) (boolean)",
-  "Visualize int TargetERPChannel= 1 1 1 % "
+  "Visualize int TargetERPChannel= 1 1 % % "
     "// Input channel for which to display ERP data",
  END_PARAMETER_DEFINITIONS
 
@@ -72,9 +72,12 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
         .ElementUnit().SetRawMin( 0 )
                       .SetRawMax( outputSamples - 1 );
                       
-  float targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
-  if( targetERPChannel < 0 || targetERPChannel >= Output.Channels() )
-    bcierr << "Invalid channel specification in Parameter \"TargetERPChannel\"" << endl;
+  if( Parameter( "VisualizeP3TemporalFiltering" ) != 0 )
+  {
+    float targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
+    if( targetERPChannel < 0 || targetERPChannel >= Output.Channels() )
+      bcierr << "Invalid channel specification in Parameter \"TargetERPChannel\"" << endl;
+  }
 }
 
 void
@@ -92,8 +95,8 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
   {
     mTargetERPChannel = Parameter( "TargetERPChannel" );
     SignalProperties visProperties = Output;
-    visProperties.SetChannels( 12 );
     visProperties.ChannelLabels().Clear();
+    visProperties.SetChannels( 12 );
     mVisSignal = GenericSignal( visProperties );
     
     string windowTitle = "ERP for channel ";
