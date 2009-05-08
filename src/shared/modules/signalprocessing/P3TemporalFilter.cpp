@@ -97,12 +97,11 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
     SignalProperties visProperties = Output;
     visProperties.ChannelLabels().Clear();
     visProperties.SetChannels( 12 );
-    mVisSignal = GenericSignal( visProperties );
-    
     string windowTitle = "ERP for channel ";
     windowTitle += Parameter( "TargetERPChannel" );
-    mVis.Send( CfgID::WindowTitle, windowTitle )
-        .Send( mVisSignal.Properties() )
+    visProperties.SetName( windowTitle );
+    mVisSignal = GenericSignal( visProperties );
+    mVis.Send( mVisSignal.Properties() )
         .Send( mVisSignal );
   }
 }
