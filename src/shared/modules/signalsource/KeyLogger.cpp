@@ -8,7 +8,8 @@
 //   In the "MouseKeys" state, bit 0 represents left and bit 1 represents the
 //   right mouse button.
 //   In the MousePosX and MousePosY states, mouse cursor position is stored in
-//   device coordinates (i.e. coordinates that are in units of screen pixels).
+//   device coordinates (i.e. coordinates that are in units of screen pixels)
+//   with an additional offset of 32768 to cover negative coordinates.
 //
 // (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
@@ -26,6 +27,8 @@
 using namespace std;
 
 Extension( KeyLogger );
+
+static const int cMouseOffset = 1 << 15;
 
 int  KeyLogger::HookThread::sInstances = 0;
 bool KeyLogger::HookThread::sKeyPressed[ 1 << KeyLogger::KeyboardBits ];
@@ -141,8 +144,8 @@ KeyLogger::HookThread::Execute()
     POINT p;
     if( ::GetCursorPos( &p ) )
     {
-      bcievent << "MousePosX " << p.x;
-      bcievent << "MousePosY " << p.y;
+      bcievent << "MousePosX " << p.x + cMouseOffset;
+      bcievent << "MousePosY " << p.y + cMouseOffset;
     }
   }
   int result = OSThread::Execute();
@@ -259,9 +262,9 @@ KeyLogger::HookThread::LowLevelMouseProc( int inCode, WPARAM inWParam, LPARAM in
 
       case WM_MOUSEMOVE:
       {
-        MSLLHOOKSTRUCT* pData = reinterpret_cast<MSLLHOOKSTRUCT*>( inLParam );
-        bcievent << "MousePosX " << pData->pt.x;
-        bcievent << "MousePosY " << pData->pt.y;
+        const MSLLHOOKSTRUCT* pData = reinterpret_cast<MSLLHOOKSTRUCT*>( inLParam );
+        bcievent << "MousePosX " << pData->pt.x + cMouseOffset;
+        bcievent << "MousePosY " << pData->pt.y + cMouseOffset;
       } break;
 
       default:

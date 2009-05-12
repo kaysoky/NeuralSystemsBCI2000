@@ -8,7 +8,8 @@
 //   In the "MouseKeys" state, bit 0 represents left and bit 1 represents the
 //   right mouse button.
 //   In the MousePosX and MousePosY states, mouse cursor position is stored in
-//   device coordinates (i.e. coordinates that are in units of screen pixels).
+//   device coordinates (i.e. coordinates that are in units of screen pixels)
+//   with an additional offset of 32768 to cover negative coordinates.
 //
 // (C) 2000-2009, BCI2000 Project
 // http://www.bci2000.org
