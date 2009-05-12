@@ -14,7 +14,7 @@
 #include "ParamList.h"
 #include "RDAQueue.h"
 
-#define PROGRAM "getparams"
+#define PROGRAM "RDAgetparams"
 
 using namespace std;
 

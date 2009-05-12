@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="neurogetparams.exe"/>
+    <PROJECT value="..\..\..\..\..\prog\neurogetparams.exe"/>
     <OBJFILES value="obj\neuroscanget.obj obj\SockStream.obj obj\Param.obj obj\ParamList.obj 
       obj\EncodedString.obj obj\HierarchicalLabel.obj obj\LabelIndex.obj 
       obj\Brackets.obj"/>
@@ -87,7 +87,32 @@ ProductVersion=1.0.0.0
 Comments=
 
 [Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
 c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=..\..\..\..\shared\config;..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;..;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=..\..\..\..\shared;..\..\..\..\shared\types;..\..\..\..\shared\utils;$(BCB)\Projects\Lib;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=obj
+
+[HistoryLists\hlFinalOutputDir]
+Count=1
+Item0=..\..\..\..\..\prog\
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

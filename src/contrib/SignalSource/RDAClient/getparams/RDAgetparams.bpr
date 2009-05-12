@@ -3,11 +3,11 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\..\..\prog\getparams.exe"/>
-    <OBJFILES value="obj\getparams.obj obj\RDAQueue.obj obj\BCIError.obj obj\ParamList.obj 
+    <PROJECT value="..\..\..\..\..\prog\RDAgetparams.exe"/>
+    <OBJFILES value="obj\RDAgetparams.obj obj\RDAQueue.obj obj\BCIError.obj obj\ParamList.obj 
       obj\Param.obj obj\HierarchicalLabel.obj obj\Brackets.obj 
       obj\EncodedString.obj obj\LabelIndex.obj obj\BCIError_tool.obj"/>
-    <RESFILES value="getparams.res"/>
+    <RESFILES value="RDAgetparams.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value=""/>
@@ -28,7 +28,7 @@
     <LINKER value="ilink32"/>
     <USERDEFINES value="BCI_TOOL;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
-    <MAINSOURCE value="getparams.bpf"/>
+    <MAINSOURCE value="RDAgetparams.bpf"/>
     <INCLUDEPATH value="..\;..;..\..\..\..\extlib\RDA;..\..\..\..\shared\config;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\include;$(BCB)\include\vcl"/>
     <LIBPATH value="..\;..;..\..\..\..\shared\bcistream;..\..\..\..\shared\types;..\..\..\..\shared;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par"/>
@@ -49,9 +49,9 @@
     <OTHERFILES value=""/>
   </LINKER>
   <FILELIST>
-      <FILE FILENAME="getparams.res" FORMNAME="" UNITNAME="getparams.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="getparams.bpf" FORMNAME="" UNITNAME="getparams" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="getparams.cpp" FORMNAME="" UNITNAME="getparams" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="RDAgetparams.res" FORMNAME="" UNITNAME="RDAgetparams.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="RDAgetparams.bpf" FORMNAME="" UNITNAME="RDAgetparams" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="RDAgetparams.cpp" FORMNAME="" UNITNAME="RDAgetparams" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\RDAQueue.cpp" FORMNAME="" UNITNAME="RDAQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\bcistream\BCIError.cpp" FORMNAME="" UNITNAME="BCIError" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\..\shared\types\ParamList.cpp" FORMNAME="" UNITNAME="ParamList" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
