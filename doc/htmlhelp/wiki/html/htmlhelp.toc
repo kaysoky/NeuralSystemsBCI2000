@@ -69,8 +69,10 @@ BCI2000_Binaries.html
 2 Access Access
 2 Latest_Version Latest Version
 2 Contributed_Code Contributed Code
+2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 April_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" rel="nofollow">April 2009 Build</a>
 4 February_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" rel="nofollow">February 2009 Build</a>
 4 December_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" rel="nofollow">December 2008 Build</a>
 4 November_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081117.exe" rel="nofollow">November 2008 Build</a>
@@ -451,7 +453,7 @@ Contributions%253ARDAClientADC.html
 3 SamplingRate SamplingRate
 3 HostName HostName
 2 States States
-2 getparams_Tool <tt>getparams</tt> Tool
+2 RDAgetparams_Tool <tt>RDAgetparams</tt> Tool
 2 See_also See also
 
 Contributions%253ASWSignalProcessing.html
@@ -610,6 +612,7 @@ Contributions%253AvAmpADC.html
 3 AcquisitionMode AcquisitionMode
 2 Additional_Information Additional Information
 3 Data_Storage Data Storage
+3 Known_Issues Known Issues
 
 Creating_a_User_Account.html
 2 Do-it_yourself_Account_Management Do-it yourself Account Management

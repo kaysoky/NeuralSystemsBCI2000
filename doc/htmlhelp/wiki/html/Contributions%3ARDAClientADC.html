@@ -50,7 +50,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253ARDAClientADC.html#States"><span class="tocnumber">5</span> <span class="toctext">States</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253ARDAClientADC.html#getparams_Tool"><span class="tocnumber">6</span> <span class="toctext">getparams Tool</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253ARDAClientADC.html#RDAgetparams_Tool"><span class="tocnumber">6</span> <span class="toctext">RDAgetparams Tool</span></a></li>
 <li class='toclevel-1'><a href="Contributions%253ARDAClientADC.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
@@ -73,7 +73,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
 <ul><li>Initial development: 156
 </li><li>Tested under: 1537
-</li><li>Known to compile under: 1537
+</li><li>Known to compile under: 2351
 </li><li>Broken since: --
 </li></ul>
 <a name="Parameters"></a><h2>Parameters</h2>
@@ -94,12 +94,12 @@ The <i>VisionRecorder</i> appears to send one block each 40ms, so <i>SampleBlock
 <a name="States"></a><h2>States</h2>
 <p>None.
 </p>
-<a name="getparams_Tool"></a><h2><tt>getparams</tt> Tool</h2>
-<p><tt>getparams</tt> is a command line utility that allows to obtain appropriate source module parameters from a host running BrainAmp's VisionRecorder.
-</p><p>On the target host, start the VisionRecorder program, check that RDA is enabled under Configuration-&gt;Preferences, and click the monitor (eye) button before running <tt>getparams</tt> with the host's IP address as the only parameter (when omitted, this defaults to <i>localhost</i>).
+<a name="RDAgetparams_Tool"></a><h2><tt>RDAgetparams</tt> Tool</h2>
+<p><tt>RDAgetparams</tt> is a command line utility that allows to obtain appropriate source module parameters from a host running BrainAmp's VisionRecorder.
+</p><p>On the target host, start the VisionRecorder program, check that RDA is enabled under Configuration-&gt;Preferences, and click the monitor (eye) button before running <tt>RDAgetparams</tt> with the host's IP address as the only parameter (when omitted, this defaults to <i>localhost</i>).
 </p><p>To direct the output into a file that can later be loaded into the operator module's configuration dialog, append a redirection to the command:
 </p>
-<pre>getparams localhost &gt; myparamfile.prm
+<pre>RDAgetparams localhost &gt; myparamfile.prm
 </pre>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>

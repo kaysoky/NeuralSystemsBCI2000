@@ -53,6 +53,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Additional_Information"><span class="tocnumber">4</span> <span class="toctext">Additional Information</span></a>
 <ul>
 <li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#Data_Storage"><span class="tocnumber">4.1</span> <span class="toctext">Data Storage</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#Known_Issues"><span class="tocnumber">4.2</span> <span class="toctext">Known Issues</span></a></li>
 </ul>
 </li>
 </ul>
@@ -155,6 +156,9 @@ For the V-Amp 16, channels 1-16 are EEG channels, 17-18 are Auxiliary channels, 
 </li><li>(<i>SourceChOffset</i> is assumed (and required) to be zero for all channels.) 
 </li></ul>
 <p>BCI2000 Signal Processing or any offline analysis routine can derive, as with any other BCI2000 source module, sample values in <span class="texhtml">&mu;<i>V</i></span> by subtracting, from each stored sample, <i>SourceChOffset</i> (i.e., zero), and multiplying it with <i>SourceChGain</i> for each channel. If <i>SignalType</i> is set to float32, data samples are stored in units of <span class="texhtml">&mu;<i>V</i></span>. In this case, <i>SourceChGain</i> should be a list of 1's (because the conversion factor between data samples into <span class="texhtml">&mu;<i>V</i></span> is 1.0 for each channel). Still, when values other than 0 and 1 are specified, a consistent data file will be produced, i.e. values will be transformed before they are written to the file, such that applying SourceChOffset and SourceChGain will reproduce the original values in <span class="texhtml">&mu;<i>V</i></span>.
+</p>
+<a name="Known_Issues"></a><h3>Known Issues</h3>
+<p>Please note that when BrainVision Recorder was running on the computer before you are using BCI2000 there might be some errors ("VampADC::Initialize error opening device" or even a complete crash of BCI2000). There is a daemon process called "VAmpService.exe" running on the computer everytime you start BrainVision Recorder until the next reboot. If you encounter such an error just reboot the computer without running BrainVision Recorder after that again or simply kill the process "VampService.exe" in the task manager.
 </p>
 <div class="printfooter">
 </div>
