@@ -25,6 +25,6 @@ Source:gUSBampADC int SignalType= 1 0 0 1 // numeric type of output signal:  0: 
 Source:gUSBampADC int AcquisitionMode= 0 0 0 2 // data acquisition mode:  0: analog signal acquisition, 1: calibration, 2: impedance (enumeration)
 Source:gUSBampADC int CommonGround= 1 0 0 1 // internally connect GNDs from all blocks:  0: false, 1: true (enumeration)
 Source:gUSBampADC int CommonReference= 1 0 0 1 // internally connect Refs from all blocks:  0: false, 1: true (enumeration)
-Source:Alignment:AlignmentFilter int AlignChannels= 1 0 0 1 // align channels in time (0=no, 1=yes)
+Source:Alignment:AlignmentFilter int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment:AlignmentFilter floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Source:Online%20Processing:TransmissionFilter list TransmitChList= 16 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 // list of transmitted channels
