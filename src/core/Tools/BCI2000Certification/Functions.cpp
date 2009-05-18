@@ -31,7 +31,7 @@ input: string dir - the directory to search
 output: bool - used by the recursion; returns true if the dir is a directory, and false if it is not
 	(and therefore is probably a file)
 */
-bool parseDir(string dir, vector<string> &fnames)
+bool parseDir(string dir, vector<string> *fnames)
 {
 	//first check that the directory exists
 	DIR *dp;
@@ -53,7 +53,7 @@ bool parseDir(string dir, vector<string> &fnames)
 				//check if it ends with .dat
 				int datPos = nextEntry.find(".dat");
 				if (datPos != -1)
-					fnames.push_back(nextEntry);
+					fnames->push_back(nextEntry);
 			}
 			else
 			{
@@ -113,12 +113,12 @@ description: parses a bci2000 parameter file to find the save location for the f
 input: string parmName - the path of the parameter file
 output: vector<string> - a string array containing every dat file in the location specified by the parm file
 */
-vector<string> parseParm(string parmName)
+vector<string>* parseParm(string parmName)
 {
 	//open the parm file, and do initial error checking
 	ifstream file;
 	file.open(parmName.c_str());
-	vector<string> fnames;
+	vector<string> *fnames = new vector<string>;
 	if (!file.is_open())
 	{
 		cout << "Unable to find parameter file: "<< parmName<<". Quitting."<<endl;
@@ -167,16 +167,16 @@ output: vector<basicStats> - this array of basicStats contains the minimum requi
 	for the task to be considered bci2000 compliant
 		- additionally, all input parameters are passed by reference and are modified by this function
 */
-bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs)
+bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicStats*> *minReqs)
 {
-	parseCfg(thresh, outfilepath, datDir, minReqs, string("BCI2000Certification.cfg"));
+	return parseCfg(thresh, outfilepath, datDir, minReqs, string("BCI2000Certification.cfg"));
 }
-bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicStats> &minReqs, string fileLoc)
+bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicStats*> *minReqs, string fileLoc)
 {
-    outfilepath = "";
-    datDir = "";
-    thresh = .25;
-    minReqs.clear();
+	*outfilepath = "";
+	*datDir = "";
+    *thresh = .25;
+	minReqs->clear();
     
 	ifstream file;
 	file.open(fileLoc.c_str());
@@ -204,6 +204,7 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
 	
 	//parse the file if it exists
 	string line;
+	datDir->clear();
 	while (getline(file, line))
 	{
 		//bool ok = true;
@@ -214,17 +215,17 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
 		//check the string tokens for acceptable keywords
 		if (tolower(strTok) == "threshold")
 		{
-			ss >> thresh;
+			ss >> *thresh;
 			continue;
 		}
 		if (tolower(strTok) == "resultout")
 		{
-			ss >> outfilepath;
+			ss >> *outfilepath;
 			continue;
 		}
 		if (tolower(strTok) == "datadir")
 		{
-			ss >> datDir;
+			ss >> (*datDir);
 			continue;
 		}
 
@@ -232,7 +233,7 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
         {
             //if it is not one of the above tokens, then it describes a task component
             ss >> strTok;
-            basicStats tmpStat;
+            basicStats *tmpStat = new basicStats;
 		
             //set default values for the mean and standard deviation
             //generally, the mean is always set, but the stddev is not
@@ -241,10 +242,10 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
             float sMean = 0, sStd = -1;
             ss >> sMean;
             ss >> sStd;
-            tmpStat.mean = sMean;
-            tmpStat.std = sStd;
-            tmpStat.taskName = strTok;
-            minReqs.push_back(tmpStat);
+			tmpStat->mean = sMean;
+			tmpStat->std = sStd;
+            tmpStat->taskName = strTok;
+            minReqs->push_back(tmpStat);
             continue;
         }
 
@@ -264,28 +265,28 @@ bool parseCfg(double &thresh, string &outfilepath, string &datDir, vector<basicS
     //remove the extension temporarily
     int pos = 0;
     string ext = "";
-    pos = outfilepath.find('.',0);
-    ext = outfilepath.substr(pos, string::npos);
-    outfilepath.erase(pos, string::npos);
+	pos = outfilepath->find('.',0);
+    ext = outfilepath->substr(pos, string::npos);
+	outfilepath->erase(pos, string::npos);
 
-    outfilepath = outfilepath + "_" + dateStr + "_" + timeStr + ext;
+    *outfilepath = *outfilepath + "_" + dateStr + "_" + timeStr + ext;
     //replace slashes with -s
     pos = 0;
     while (pos != string::npos)
     {
-        pos = outfilepath.find_first_of('/',pos);
-        if (pos != string::npos)
-            outfilepath.replace(pos, 1, "-");
+		pos = outfilepath->find_first_of('/',pos);
+		if (pos != string::npos)
+            outfilepath->replace(pos, 1, "-");
     }
     pos = 0;
     while (pos != string::npos)
     {
-        pos = outfilepath.find_first_of(':',pos);
+        pos = outfilepath->find_first_of(':',pos);
         if (pos != string::npos)
-            outfilepath.replace(pos, 1, "-");
+            outfilepath->replace(pos, 1, "-");
     }
 
-    if (outfilepath == "" || datDir == "")
+    if (*outfilepath == "" || *datDir == "")
     {
         cout << "The BCI2000Certification.cfg file does not contain the required settings."<<endl;
         return false;

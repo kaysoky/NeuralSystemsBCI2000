@@ -344,6 +344,15 @@ object BCICertificationGUI: TBCICertificationGUI
       TabOrder = 3
       OnClick = copyBtnClick
     end
+    object selectAllCheck: TCheckBox
+      Left = 3
+      Top = 383
+      Width = 74
+      Height = 17
+      Caption = 'Select All'
+      TabOrder = 4
+      OnClick = selectAllCheckClick
+    end
   end
   object GroupBox3: TGroupBox
     Left = 224
@@ -355,16 +364,16 @@ object BCICertificationGUI: TBCICertificationGUI
     object Label4: TLabel
       Left = 16
       Top = 61
-      Width = 64
+      Width = 248
       Height = 13
-      Caption = 'Signal Source'
+      Caption = 'Global Signal Source (Overwritten by *.ini contents)'
     end
     object Label6: TLabel
       Left = 17
       Top = 102
-      Width = 97
+      Width = 298
       Height = 13
-      Caption = 'Data Save Directory'
+      Caption = 'Data Save Directory (In BCI2000/Tools/BCI2000Certification/)'
     end
     object winLeftBox: TLabeledEdit
       Left = 16
@@ -411,7 +420,7 @@ object BCICertificationGUI: TBCICertificationGUI
       EditLabel.ParentBiDiMode = False
       ParentBiDiMode = False
       TabOrder = 3
-      Text = '800'
+      Text = '600'
       OnExit = winHeightBoxExit
     end
     object dataSaveBox: TEdit
@@ -430,23 +439,25 @@ object BCICertificationGUI: TBCICertificationGUI
       Height = 21
       Caption = '...'
       TabOrder = 7
+      Visible = False
       OnClick = dataSaveBtnClick
     end
     object globalSigSrcBox: TEdit
       Left = 16
       Top = 75
-      Width = 145
+      Width = 329
       Height = 21
       TabOrder = 4
       OnExit = globalSigSrcBoxExit
     end
     object getGlobSigSrcBtn: TButton
-      Left = 160
+      Left = 344
       Top = 73
       Width = 26
       Height = 21
       Caption = '...'
       TabOrder = 5
+      OnClick = getGlobSigSrcBtnClick
     end
     object winTopBox: TLabeledEdit
       Left = 96

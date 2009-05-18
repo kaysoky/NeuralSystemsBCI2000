@@ -14,7 +14,10 @@ using namespace std;
 struct basicStats
 {
     double mean, std, min, max, median;
-    vector<double> vals;
+	vector<double> vals;
+	vector<double> sigProc;
+	vector<double> jitter;
+	vector<double> stim;
     string taskName;
     string desc;
 };

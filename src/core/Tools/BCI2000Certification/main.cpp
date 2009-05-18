@@ -159,45 +159,25 @@ input: int argc, char* argv[] - standard c/c++ input arguments
 	string datDir - the path of the default data directory, specified in the .cfg file
 output: vector<string> - the array of files to be tested, dependent on the input parameters
 */
-vector<string> parseInput(int argc, char* argv[],string datDir)
+void parseInput(int argc, char* argv[],string *datDir, string *iniFile, vector<string> *fnames)
 {
 	//setup variables to use
-    vector<string> fnames;
     int pos = 1;
-    bool doParms = false;
-    bool doFile = false;
-	bool doList = false;
-	bool doDir = false;
-	bool useDefDir = (argc < 2);
 
-	int parmPos = 2, dirPos = 2;
-	
+	(*iniFile) = "BCI2000Certification.ini";
 	//go through each argument until there are none left
 	//this first loop is a first pass, checking for general errors in syntax and setting up 
 	//what to do on the 2nd pass
     while (pos < argc)
     {
-        if (strcmp(argv[pos],"-f") == 0)
-        {
-			//the -f parameter means that the next parm should be a file name containing the names of files
-			//to analyze
-            pos++;
-            if (pos >= argc)
-            {
-				printHelp(0);
-                exit(0);
-            }
-            doFile = true;
-		}
-		else if (strcmp(argv[pos],"-d") == 0)
+		if (strcmp(argv[pos],"-d") == 0)
 		{
-			doDir = true;
 			pos++;
-			dirPos = pos;
 			if (pos >= argc){
 				printHelp(0);
 				exit(0);
 			}
+			*datDir = argv[pos];
         }
 		else if (strcmp(argv[pos],"-h") == 0)
 		{
@@ -205,94 +185,23 @@ vector<string> parseInput(int argc, char* argv[],string datDir)
 			printHelp(1);
 			exit(0);
 		}
-        else if (strcmp(argv[pos],"-p") == 0)
-        {
-			//-p means a specific parameter file is used to find files to analyze
-            pos++;
-            if (pos >= argc)
-            {
+		else if (strcmp(argv[pos],"-i") == 0){
+			//use the ini file specified
+			pos++;
+			if (pos >= argc){
 				printHelp(0);
-                exit(0);
-            }
-            parmPos = pos;
-            doParms = true;
+				exit(0);
+			}
+			(*iniFile) = argv[pos];
 		}
-		else if (useDefDir)
-		{
-			//if there are no parameters, then use the default data directory
-		}
-        else
-        {
-			//if there are additional arguments, then the program assumes that these are file names to be
-			//explicitly analyzed
-            if (pos >= argc)
-            {
-				printHelp(0);
-                exit(0);
-            }
-            doList = true;
-        }
         pos++;
-    }
-	
-	//only one analyis type can be used, so if more than one argument is used, print an error
-	if ((doParms && doList) || (doParms && doFile) || (doParms && doDir) ||
-		(doList && doFile) || (doList && doDir) || (doFile && doDir))
-    {
-		printHelp(1);
-        exit(0);
     }
 
 	//from here, we create the list of files to analyze
-    pos = 1;
-    if (doList)
-    {
-		//each argument is a dat file to be analyzed 
-		//the actual analysis program later handles checking whther the file exists, and if it is valid
-		//so there is nothing left to do except add the file names
-        for (int i = 1; i < argc; i++)
-            fnames.push_back(argv[i]);
-        return fnames;
-    }
-    if (doParms)
-    {
-		//use a parameter file to get the directory location, and get all possible dat files
-        char ftmp[512];
-        ifstream file;
-    	fnames = parseParm(argv[parmPos]);
-        return fnames;
-	}
-	if (doDir)
-	{
-		string fullpath(argv[dirPos]);
-		parseDir(fullpath, fnames);
-		return fnames;
-    }
-	if (useDefDir)
-	{
-		//use the default directory, and find all dat files
-		string fullpath = getFullDir(datDir);
-		parseDir(fullpath, fnames);
-		return fnames;
-	}
-    if (doFile)
-    {
-		//extract file names from a text file
-		//each line contains a separate dat file
-		//existence and validity are checked later
-        pos++;
-        fnames.clear();
-        string line;
-        ifstream file;
-        file.open(argv[pos]);
-		while(getline(file, line))
-		{
-			fnames.push_back(line);
-		}
-        file.close();
-        return fnames;
-    }
-    return fnames;
+	string fullpath;
+	fullpath = (*datDir);
+	parseDir(fullpath, fnames);
+    return;
 }
 
 
@@ -323,20 +232,25 @@ int main(int argc, char* argv[])
 	cout << "Press enter to begin testing." <<endl;
 	char tmpc[255];
 	cin.getline(tmpc,1);
-	//initial variables
+	
+	//variable declaration
 	vector<string> fnames;
 	Tasks taskTypes;
-	vector<basicStats> minReqs;
+	vector<basicStats*> minReqs;
 	double thresh;
 	string outfilepath;
-	string datDir;
+	string *datDir = new string;
+	string iniFile;
 
 	//parse the configuration, input, and ini files to get the list of files to analyze
-	if (!parseCfg(thresh, outfilepath, datDir, minReqs))
+	if (!parseCfg(&thresh, &outfilepath, datDir, &minReqs))
         exit(-1);
 
-	fnames = parseInput(argc, argv, datDir);
-	taskTypes.init("BCI2000Certification.ini");
+	//parse the command line arguments, and get the list of files to process
+	parseInput(argc, argv, datDir, &iniFile, &fnames);
+
+	//initialize the tasks based on the input file
+	taskTypes.init(iniFile);
 
 	//open the result file output stream, and quit if there is an error
 	FILE * resOut;
@@ -449,8 +363,12 @@ int main(int argc, char* argv[])
 	fclose(resOut);
 
     //clear the analyses
-    for (int i = 0; i < analyses.size(); i++)
-        delete analyses[i];
+    for (size_t i = 0; i < analyses.size(); i++)
+		delete analyses[i];
+
+	for (size_t i = 0; i < minReqs.size(); i++)
+		delete minReqs[i];
+	delete datDir;
 
 	cout << "Press enter to exit"<<endl;
 	waitForExit();

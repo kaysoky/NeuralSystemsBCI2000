@@ -232,7 +232,7 @@ bool Tasks::writeIni(string fname)
 	if (GlobalSource.size() > 0)
 		out << "source " << GlobalSource <<endl << endl;
 
-	for (int i = 0; i < this->size(); i++)
+	for (size_t i = 0; i < this->size(); i++)
 	{
 		TaskType tmpTask = (*this)[i];
 		out << "Name " << tmpTask.taskName << endl;
@@ -248,14 +248,14 @@ bool Tasks::writeIni(string fname)
 
 		if (tmpTask.vid.flag){
 			out << "vid " << tmpTask.vid.ch << " " << tmpTask.vid.state;
-			for (int k = 0; k < tmpTask.vid.stateVal.size(); k++)
+			for (size_t k = 0; k < tmpTask.vid.stateVal.size(); k++)
 				out << " " << tmpTask.vid.stateVal[k];
 			out << endl;
 		}
 
 		if (tmpTask.aud.flag){
 			out << "aud " << tmpTask.aud.ch << " " << tmpTask.aud.state;
-			for (int k = 0; k < tmpTask.aud.stateVal.size(); k++)
+			for (size_t k = 0; k < tmpTask.aud.stateVal.size(); k++)
 				out << " " << tmpTask.aud.stateVal[k];
 			out << endl;
 		}
@@ -275,13 +275,13 @@ bool Tasks::writeIni(string fname)
 		if (tmpTask.App.size() > 0)
 			out << "app " << tmpTask.App << endl;
 
-		for (int j = 0; j < tmpTask.parmFile.size(); j++)
+		for (size_t j = 0; j < tmpTask.parmFile.size(); j++)
 			out << "parm " << tmpTask.parmFile[j] << endl;
 
-		for (int j = 0; j < tmpTask.parms.size(); j++)
+		for (size_t j = 0; j < tmpTask.parms.size(); j++)
 			out << "parms " << tmpTask.parms[j] << endl;
 
-		for (int j = 0; j < tmpTask.states.size(); j++)
+		for (size_t j = 0; j < tmpTask.states.size(); j++)
 			out << "states " << tmpTask.states[j] << endl;
 
 		out << "end" <<endl<<endl;
@@ -294,7 +294,7 @@ bool Tasks::writeIni(string fname)
 void TaskType::addParm(std::string str)
 {
 	parmFile.push_back(str);
-	int pos = str.find_last_of("\\");
+	size_t pos = str.find_last_of("\\");
 	if (pos != string::npos)
 	{
 		parmFileDisp.push_back(str.substr(pos+1));
@@ -305,7 +305,7 @@ void TaskType::addParm(std::string str)
 
 void TaskType::delParm(int id)
 {
-	if (id < 0 || id >= parmFile.size())
+	if (id < 0 || id >= (int)parmFile.size())
 		return;
 
 	parmFile.erase(parmFile.begin()+id);

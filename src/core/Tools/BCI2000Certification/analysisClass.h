@@ -38,7 +38,7 @@ public:
     bool getSkip(){return thisTask.skip;}
     bool getExportData(){return thisTask.exportData;}
 
-    void print(FILE*, vector<basicStats> minReqs);
+	void print(FILE*, vector<basicStats*> minReqs);
     bool exportData(string expfile);
 	double thresh;
     TaskType thisTask;
@@ -53,7 +53,7 @@ private:
     int nChannels;
     float sampleRate;
     int blockSize;
-
+	int mIgnoreDur;
 
     void checkDroppedSamples(int ch);
     void checkDroppedSamples();

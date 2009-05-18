@@ -77,6 +77,7 @@ __published:	// IDE-managed Components
 	TLabeledEdit *sampleRateBox;
 	TLabeledEdit *SBSbox;
 	TButton *copyBtn;
+	TCheckBox *selectAllCheck;
 	void __fastcall addPrmBtnClick(TObject *Sender);
 	void __fastcall dataSaveBtnClick(TObject *Sender);
 	void __fastcall taskListClick(TObject *Sender);
@@ -115,6 +116,8 @@ __published:	// IDE-managed Components
 	void __fastcall SBSboxExit(TObject *Sender);
 	void __fastcall delPrmBtnClick(TObject *Sender);
 	void __fastcall copyBtnClick(TObject *Sender);
+	void __fastcall getGlobSigSrcBtnClick(TObject *Sender);
+	void __fastcall selectAllCheckClick(TObject *Sender);
 private:	// User declarations
 	bool init(string);
 	void updateParmPanel();
@@ -142,7 +145,7 @@ private:	// User declarations
 	CertLauncher mCT;
 	string mDatDir, mResFile;
 	double mThresh;
-	vector<basicStats> mMinReqs;
+	vector<basicStats*> mMinReqs;
 public:		// User declarations
 	__fastcall TBCICertificationGUI(TComponent* Owner);
 };

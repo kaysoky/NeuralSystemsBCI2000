@@ -24,7 +24,7 @@ __fastcall TBCICertificationGUI::TBCICertificationGUI(TComponent* Owner)
 
 bool TBCICertificationGUI::init(string iniFile)
 {
-    if (!parseCfg(mThresh,mResFile, mDatDir, mMinReqs))
+    if (!parseCfg(&mThresh,&mResFile, &mDatDir, &mMinReqs))
 	{
 		ShowMessage("Unable to locate BCI2000Certification.cfg. Make sure this file is located in BCI2000/tools/BCI2000Certification before continuing.");
 		return false;
@@ -102,10 +102,10 @@ void __fastcall TBCICertificationGUI::addPrmBtnClick(TObject *Sender)
 void __fastcall TBCICertificationGUI::dataSaveBtnClick(TObject *Sender)
 {
 	/*AnsiString newDir;
-	if (SelectDirectory(newDir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt, 0);
+	if (SelectDirectory(newDir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt, 0))
 	{
 		dataSaveBox->Text = newDir;
-    } */
+	} */
 }
 //---------------------------------------------------------------------------
 
@@ -523,8 +523,8 @@ void __fastcall TBCICertificationGUI::startBtnClick(TObject *Sender)
 bool TBCICertificationGUI::checkRemoveData()
 {
 	//get files to delete
-    vector<string> fNames;
-	parseDir(mCT.mDataDir, fNames);
+	vector<string> fNames;
+	parseDir(mCT.mDataDir, &fNames);
 	if (fNames.size() > 0)
     {
 		int ret = MessageDlg("Data exists in the specified output directory. Do you want to remove this data before continuing? If you answer no, this data will be included in the analysis",
@@ -671,6 +671,37 @@ void __fastcall TBCICertificationGUI::copyBtnClick(TObject *Sender)
 	tmpParmItem = taskList->Items->Add();
 	tmpParmItem->Caption = mCT[mCT.tasks.size()-1].taskName.c_str();
 	tmpParmItem->Checked = false;
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TBCICertificationGUI::getGlobSigSrcBtnClick(TObject *Sender)
+{
+ //	if (mCurTask < 0 || mCurTask > mCT.nTasks())
+   //		return;
+	OpenDialog1->DefaultExt = "exe";
+	OpenDialog1->Filter = "BCI2000 Executable (*.exe)|*.exe";
+	OpenDialog1->Options.Clear();
+	OpenDialog1->Options << ofFileMustExist;
+	if (OpenDialog1->Execute())
+	{
+		globalSigSrcBox->Text = OpenDialog1->FileName;
+		/*for (int i = 0; i < OpenDialog1->Files->Count; i++)
+		{
+			mCT[mCurTask].addParm(string(OpenDialog1->Files[i].Text.c_str()));
+		} */
+	}
+	updateParmPanel();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TBCICertificationGUI::selectAllCheckClick(TObject *Sender)
+{
+	bool st = selectAllCheck->Checked;
+	for (int i = 0; i < taskList->Items[0].Count; i++){
+		taskList->Items[0][i]->Checked = st;
+		mCT[mCurTask].skip = !st;
+	}	
 }
 //---------------------------------------------------------------------------
 
