@@ -88,7 +88,7 @@ int DLLEXPORT
 PutState( char* stateName );
 
 /*
-function:  SetState
+function:  SetStateValue
 purpose:   Sets the value of a state to a given value.
 arguments: Pointer to a NULL terminated state name string; new state value.
 returns:   True (1) if no error occurred.
@@ -97,7 +97,7 @@ int DLLEXPORT
 SetStateValue( char* stateName, long value );
 
 /*
-function:  GetState
+function:  GetStateValue
 purpose:   Gets the value of a state.
 arguments: Pointer to a NULL terminated state name string; pointer to state value.
 returns:   True (1) if no error occurred.
