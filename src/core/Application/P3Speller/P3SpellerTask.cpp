@@ -587,11 +587,11 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
   State( "SelectedColumn" ) = targetID ? targetID % mNumMatrixCols + 1 : 0;
 
   // Write classification signal details into the application log.
-  int numEpochs = 0;
+  int numAverages = 0;
   for( ClassResult::const_iterator i = inResult.begin(); i != inResult.end(); ++i )
-    numEpochs += i->second.size();
+    numAverages += i->second.size();
   AppLog << "This is the end of this sequence: "
-         << numEpochs << " total intensifications (epochs)"
+         << numAverages * mNumberOfSequences << " total intensifications"
          << endl;
   // Report mean responses to log file but not to screen log.
   AppLog.File << "Mean responses for each stimulus:\n";
