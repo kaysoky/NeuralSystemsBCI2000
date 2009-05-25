@@ -11,6 +11,7 @@
 
 #include "SourceFilter.h"
 #include "FilterDesign.h"
+#include "MeasurementUnits.h"
 
 using namespace std;
 
@@ -27,10 +28,13 @@ SourceFilter::SourceFilter()
 }
 
 void
-SourceFilter::DesignFilter( Real& outGain,
+SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
+                            Real& outGain,
                             ComplexVector& outZeros,
                             ComplexVector& outPoles ) const
 {
+  Real samplingRate = MeasurementUnits::ReadAsTime( "1s" ) * inSignalProperties.Elements();
+
   outGain = 1.0;
   outZeros.clear();
   outPoles.clear();
@@ -70,8 +74,8 @@ SourceFilter::DesignFilter( Real& outGain,
 
     if( notchFilter != disabled )
     {
-      corner1 /= Parameter( "SamplingRate" );
-      corner2 /= Parameter( "SamplingRate" );
+      corner1 /= samplingRate;
+      corner2 /= samplingRate;
       if( corner1 >= 0.5 || corner2 >= 0.5 )
       {
         bciout << "Power line frequency is outside sampling bandwidth. "
@@ -114,7 +118,7 @@ SourceFilter::DesignFilter( Real& outGain,
     }
     if( highPassFilter != disabled )
     {
-      corner /= Parameter( "SamplingRate" );
+      corner /= samplingRate;
       if( corner >= 0.5 )
       {
         bciout << "High pass corner frequency is outside sampling bandwidth. "

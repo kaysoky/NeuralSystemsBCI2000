@@ -30,7 +30,7 @@ IIRFilterBase::Preflight( const SignalProperties& Input, SignalProperties& Outpu
   Real          preflightGain;
   ComplexVector preflightZeros,
                 preflightPoles;
-  DesignFilter( preflightGain, preflightZeros, preflightPoles );
+  DesignFilter( Input, preflightGain, preflightZeros, preflightPoles );
   if( preflightZeros.size() != preflightPoles.size() )
     bcierr << "The numbers of zeros and poles must agree" << endl;
   Output = Input;
@@ -41,7 +41,7 @@ IIRFilterBase::Initialize( const SignalProperties& Input, const SignalProperties
 {
   Real gain;
   ComplexVector zeros, poles;
-  DesignFilter( gain, zeros, poles );
+  DesignFilter( Input, gain, zeros, poles );
   mFilter.SetGain( gain )
          .SetZeros( zeros )
          .SetPoles( poles )
