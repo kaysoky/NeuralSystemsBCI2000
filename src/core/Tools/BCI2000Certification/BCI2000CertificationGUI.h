@@ -123,6 +123,7 @@ private:	// User declarations
 	void updateParmPanel();
 	void updateParm();
 	void updateGlobal();
+	void updateSkips();
 	bool checkRemoveData();
 
 	class RunThread;

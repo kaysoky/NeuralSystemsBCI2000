@@ -55,7 +55,7 @@ bool analysis::open(string file, Tasks &taskTypes)
     checkedSamples = 0;
 
 	dFile = new BCI2000FileReader;
-	dFile->Open(fName.c_str(),1e8);
+	dFile->Open(fName.c_str());
 
     if (!dFile->IsOpen())
     {
@@ -98,13 +98,13 @@ bool analysis::open(string file, Tasks &taskTypes)
     //i.e., FileInitials is v1 and DataDirectory is v2
 	blockSize = dFile->Parameter("SampleBlockSize");
 	if (dFile->Parameters()->Exists("FileInitials"))
-		FileInitials = dFile->Parameter("FileInitials");
+		FileInitials = (string)dFile->Parameter("FileInitials");
 	else if (dFile->Parameters()->Exists("DataDirectory"))
-		FileInitials = dFile->Parameter("DataDirectory");
+		FileInitials = (string)dFile->Parameter("DataDirectory");
 
-	SubjectSession = dFile->Parameter("SubjectSession");
-	SubjectName = dFile->Parameter("SubjectName");
-	SubjectRun = dFile->Parameter("SubjectRun");
+	SubjectSession = (string)dFile->Parameter("SubjectSession");
+	SubjectName = (string)dFile->Parameter("SubjectName");
+	SubjectRun = (string)dFile->Parameter("SubjectRun");
 
     //cleanup
     //delete stateVector; //handled by delete dFile;
@@ -164,7 +164,20 @@ bool analysis::open(string file, Tasks &taskTypes)
 //clear the file name
 bool analysis::close()
 {
-    fName = "";
+	fName = "";
+	if (dFile != NULL)
+		delete dFile;
+	dFile = NULL;
+    //clear states, which is a map<string, double*>
+	for (it = states.begin(); it != states.end(); it++)
+    {
+        if (it->second != NULL)
+        {
+            delete []it->second;
+            it->second = NULL;
+        }
+    }
+	stateNames.clear();
     return true;
 }
 
@@ -174,21 +187,9 @@ description: clear all of the variables/arrays, including the signal, states, an
 */
 void analysis::clear()
 {
-    //clear states, which is a map<string, double*>
-    for (it = states.begin(); it != states.end(); it++)
-    {
-        if (it->second != NULL)
-        {
-            delete []it->second;
-            it->second = NULL;
-        }
-    }
-
-    //delete the file pointer
-    if (dFile != NULL)
-        delete dFile;
-    dFile = NULL;
-
+	
+	close();
+	
     //clear the statss
     latencyStats.clear();
 
@@ -285,17 +286,21 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	//float nMod1 = 0, nMod2 = 0;
     //loop through the states, starting at the 2nd block, and increase
 	//by the block size
-	unsigned short t2, t1;
-	for (int i = blockSize; i < nSamples; i += blockSize)
+	unsigned short t2, t1, tans;
+	for (int i = mIgnoreDur; i < nSamples; i += blockSize)
 	{
 		t2 = states["StimulusTime"][i];
 		t1 = states["SourceTime"][i];
-		procLat.push_back(double(t2-t1));
+		tans = t2-t1;
+		procLat.push_back(tans);
 
 		t2 = states["SourceTime"][i];
 		t1 = states["SourceTime"][i-blockSize];
-		metronomeDiff.push_back(double(t2-t1));
+		tans = t2-t1;
+		metronomeDiff.push_back(tans);
     }
+	for (int i = 0; i < metronomeDiff.size(); i++)
+		metronomeDiff[i] = 100*((blockSize*1000/sampleRate) - metronomeDiff[i])/((blockSize*1000/sampleRate));
 
     //calculate the stats for the processing latency using our vector helper functions
 	basicStats procStats;
@@ -336,13 +341,17 @@ bool analysis::doThreshAnalysis(double threshTmp)
 		basicStats vidOutputStats;
 		double spMean = vMean(&vidSystemStats.sigProc);
 
-		vidOutputStats.mean = vidSystemStats.mean - spMean - ampStats.mean;
-		vidOutputStats.std = sqrt(pow(vidSystemStats.std,2) + pow(ampStats.std,2) + pow(vStd(&vidSystemStats.sigProc),2));
-        vidOutputStats.min = 0;//vidSystemStats.min - ampStats.min - procStats.min;
-		vidOutputStats.max = 0;//vidSystemStats.max - ampStats.max - procStats.max;
-		vidOutputStats.median = 0;//vidSystemStats.max - ampStats.max - procStats.max;
-        if (thisTask.exportData)
-            vidOutputStats.vals.clear();
+		vidOutputStats.vals.insert(vidOutputStats.vals.begin(),
+									vidSystemStats.vals.begin(),
+									vidSystemStats.vals.end());
+		for (size_t i = 0; i < vidOutputStats.vals.size(); i++)
+			vidOutputStats.vals[i] -= (spMean + ampStats.mean);
+
+		vidOutputStats.mean = vMean(&vidOutputStats.vals);
+		vidOutputStats.std = vStd(&vidOutputStats.vals);
+		vidOutputStats.min = vMin(&vidOutputStats.vals);
+		vidOutputStats.max = vMax(&vidOutputStats.vals);
+		vidOutputStats.median = vMedian(&vidOutputStats.vals);
         vidOutputStats.taskName = "VidOut  ";
         vidOutputStats.desc = "Video output latency";
         latencyStats.push_back(vidOutputStats);
@@ -353,11 +362,18 @@ bool analysis::doThreshAnalysis(double threshTmp)
     {
 		basicStats audOutputStats;
 		double spMean = vMean(&audSystemStats.sigProc);
-		audOutputStats.mean = audSystemStats.mean - spMean - ampStats.mean;
-		audOutputStats.std = sqrt(pow(audSystemStats.std,2) + pow(ampStats.std,2) + pow(vStd(&audSystemStats.sigProc),2));
-		audOutputStats.min = 0;//audSystemStats.min - ampStats.min - procStats.min;
-		audOutputStats.max = 0;//audSystemStats.max - ampStats.max - procStats.max;
-		audOutputStats.median = 0;//audSystemStats.max - ampStats.max - procStats.max;
+		audOutputStats.vals.insert(audOutputStats.vals.begin(),
+									audSystemStats.vals.begin(),
+									audSystemStats.vals.end());
+		for (size_t i = 0; i < audOutputStats.vals.size(); i++)
+			audOutputStats.vals[i] -= (spMean + ampStats.mean);
+
+		audOutputStats.mean = vMean(&audOutputStats.vals);
+		audOutputStats.std = vStd(&audOutputStats.vals);
+		audOutputStats.min = vMin(&audOutputStats.vals);
+		audOutputStats.max = vMax(&audOutputStats.vals);
+		audOutputStats.median = vMedian(&audOutputStats.vals);
+		
         if (thisTask.exportData)
             audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
@@ -365,7 +381,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
         latencyStats.push_back(audOutputStats);
     }
 
-    //return our stats
+	//return our stats	
     return true;
 }
 
@@ -395,6 +411,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
 		dSig[s] = signal(chNum, s+1) - signal(chNum, s);
 		dMean += dSig[s];
 	}
+	dMean /= (nSamples-1);
 	double std = 0;
 	for (int s = 0; s < nSamples-1; s++)
 		std += (dSig[s] - dMean)*(dSig[s] - dMean);
@@ -419,8 +436,7 @@ basicStats analysis::doThreshAnalysis(int chNum)
         tmpStat.min = vMin(&tDiff);
 		tmpStat.max = vMax(&tDiff);
 		tmpStat.median = vMedian(&tDiff);
-        if (thisTask.exportData)
-            tmpStat.vals = tDiff;
+        tmpStat.vals = tDiff;
     }
 
     stringstream str;
@@ -467,6 +483,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, vector<int> s
 		dSig[s] = signal(chNum, s+1) - signal(chNum, s);
 		dMean += dSig[s];
 	}
+	dMean /= (nSamples-1);
 	double std = 0;
 	for (int s = 0; s < nSamples-1; s++)
 		std += (dSig[s] - dMean)*(dSig[s] - dMean);
@@ -527,8 +544,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, vector<int> s
 		tmpStat.min = vMin(&tDiff);
 		tmpStat.max = vMax(&tDiff);
 		tmpStat.median = vMedian(&tDiff);
-		if (thisTask.exportData)
-			tmpStat.vals = tDiff;
+		tmpStat.vals = tDiff;
 	}
 
 	stringstream str;
@@ -598,102 +614,17 @@ From here, these are all helper functions to find the mean, min, max etc of
 the vector<double> arrays
 */
 
-double analysis::getMin(double *d, int n)
+
+
+bool analysis::print(FILE * out, vector<basicStats*> minReqs, int num)
 {
-    double v = 0;
-    for (int i = 0; i < n; i++)
-        v = dMin(d[i], v);
-
-    return v;
-}
-
-double analysis::getMax(double *d, int n)
-{
-    double v = 0;
-    for (int i = 0; i < n; i++)
-        v = dMax(d[i], v);
-
-    return v;
-}
-
-
-double analysis::vMean(vector<double> *a)
-{
-    double v = 0;
-    for (int i=0; i < (int)a->size(); i++)
-        v += (*a)[i];
-
-    if (a->size() > 0)
-        v /= a->size();
-
-    return v;
-}
-
-double analysis::vMedian(vector<double> *a)
-{
-	vector<double> tmp = *a;
-	std::sort(tmp.begin(), tmp.end());
-    double v = *(tmp.begin()+tmp.size()/2);
-
-    return v;
-}
-double analysis::vStd(vector<double> *a)
-{
-    double m = vMean(a);
-    double v = 0;
-    for (int i = 0; i < (int)a->size(); i++)
-        v += ((*a)[i] - m)*((*a)[i] - m);
-
-    if (a->size() > 0)
-        v /= a->size();
-
-    v = sqrt(v);
-    return v;
-}
-
-double analysis::vMax(vector<double> *a)
-{
-    if (a->size() == 0)
-        return 0;
-        
-    double v = (*a)[0];
-    for (int i=1; i < (int)a->size(); i++)
-        v = ((*a)[i] > v) ? ((*a)[i]) : v;
-
-    return v;
-}
-
-double analysis::vMin(vector<double> *a)
-{
-    if (a->size() == 0)
-        return 0;
-        
-    double v = (*a)[0];
-    for (int i=1; i < (int)a->size(); i++)
-        v = ((*a)[i] < v) ? ((*a)[i]) : v;
-
-    return v;
-}
-
-bool analysis::isMember(vector<string> strArr, string str)
-{
-    for (int i = 0; i < (int)strArr.size(); i++)
-    {
-        if (strArr[i] == str)
-            return true;
-    }
-    return false;
-}
-
-void analysis::print(FILE * out, vector<basicStats*> minReqs)
-{
-	fprintf(out, "%s\tDuration=%1.2fs\n",shortFname(fName).c_str(), float(this->nSamples)/this->sampleRate);
+	fprintf(out, "[%d] %s\tDuration=%1.2fs\n",num, shortFname(fName).c_str(), float(this->nSamples)/this->sampleRate);
     //resOut << std::endl<<fName<<":"<<std::endl;
     bool ok = true;
 	for (size_t t = 0; t < latencyStats.size(); t++)
     {
         basicStats tmpTask = latencyStats[t];
-        fprintf(out, "\t%s\t&Duration: %1.3f\n\t",(tmpTask.taskName).c_str(), float(this->nSamples)/this->sampleRate);
+        fprintf(out, "\t%s: ",(tmpTask.taskName).c_str());
         //resOut<<tmpTask.taskName<<": ";
         int tfound = 0;
 
@@ -705,8 +636,13 @@ void analysis::print(FILE * out, vector<basicStats*> minReqs)
 			if (tolower(strtrim(tmpTask.taskName)) == tolower(strtrim(minReqs[a]->taskName)))
             {
                 tfound = 1;
-                if (tmpTask.mean <= (minReqs[a]->mean) && tmpTask.mean >= 0)
-                    fprintf(out, "%s\t","pass");
+				if (tmpTask.mean <= (minReqs[a]->mean)){
+					if (tolower(strtrim(tmpTask.taskName)) == "jitter" ||
+							tmpTask.mean >= 0){
+						fprintf(out, "%s\t\t","pass");
+					}
+					
+				}
                 else if (tmpTask.mean == -1)
                 {
                     tfound = 2;
@@ -715,7 +651,7 @@ void analysis::print(FILE * out, vector<basicStats*> minReqs)
                 }
                 else
                 {
-                    fprintf(out, "%s\t","fail");
+                    fprintf(out, "%s\t\t","fail");
                     ok = false;
                 }
             }
@@ -747,6 +683,7 @@ void analysis::print(FILE * out, vector<basicStats*> minReqs)
         cout<<fName<< " did not pass the minimum BCI2000 requirements."<<endl;
     }
     fprintf(out,"\n\n");
+	return ok;
 }
 
 

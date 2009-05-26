@@ -78,9 +78,9 @@ output: string - the full path of dirPath
 */
 string getFullDir(string dirPath)
 {
-	char curpath[_MAX_PATH];
+	char curpath[512];
 	//get the current working directory
-	getcwd(curpath, _MAX_PATH);
+	getcwd(curpath, 512);
 	//cout <<curpath<<endl;
 	
 	//create a new string to use (and return)
@@ -173,7 +173,7 @@ bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicS
 }
 bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicStats*> *minReqs, string fileLoc)
 {
-	*outfilepath = "";
+    *outfilepath = "";
 	*datDir = "";
     *thresh = .25;
 	minReqs->clear();
@@ -242,7 +242,7 @@ bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicS
             float sMean = 0, sStd = -1;
             ss >> sMean;
             ss >> sStd;
-			tmpStat->mean = sMean;
+            tmpStat->mean = sMean;
 			tmpStat->std = sStd;
             tmpStat->taskName = strTok;
             minReqs->push_back(tmpStat);
@@ -257,19 +257,15 @@ bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicS
     file.close();
     
     //add the date+time to the outfilepath
-    char dateStr[10];
-	char timeStr[10];
-	_strdate(dateStr);
-	_strtime(timeStr);
-
+	string dateTime = getCurDateTime();
     //remove the extension temporarily
     int pos = 0;
     string ext = "";
-	pos = outfilepath->find('.',0);
+    pos = outfilepath->find('.',0);
     ext = outfilepath->substr(pos, string::npos);
 	outfilepath->erase(pos, string::npos);
 
-    *outfilepath = *outfilepath + "_" + dateStr + "_" + timeStr + ext;
+    *outfilepath = *outfilepath + "_" + dateTime + ext;
     //replace slashes with -s
     pos = 0;
     while (pos != string::npos)
@@ -293,6 +289,130 @@ bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicS
     }
     
 	return true;
+}
+
+double getMin(double *d, int n)
+{
+    double v = 0;
+    for (int i = 0; i < n; i++)
+        v = dMin(d[i], v);
+
+    return v;
+}
+
+double getMax(double *d, int n)
+{
+    double v = 0;
+    for (int i = 0; i < n; i++)
+        v = dMax(d[i], v);
+
+    return v;
+}
+
+
+double vMean(vector<double> *a)
+{
+    double v = 0;
+    for (int i=0; i < (int)a->size(); i++)
+        v += (*a)[i];
+
+    if (a->size() > 0)
+        v /= a->size();
+
+    return v;
+}
+
+double vMedian(vector<double> *a)
+{
+	vector<double> tmp = *a;
+	std::sort(tmp.begin(), tmp.end());
+    double v = *(tmp.begin()+tmp.size()/2);
+
+    return v;
+}
+double vStd(vector<double> *a)
+{
+    double m = vMean(a);
+    double v = 0;
+    for (int i = 0; i < (int)a->size(); i++)
+        v += ((*a)[i] - m)*((*a)[i] - m);
+
+    if (a->size() > 0)
+        v /= a->size();
+
+    v = sqrt(v);
+    return v;
+}
+
+double vMax(vector<double> *a)
+{
+    if (a->size() == 0)
+        return 0;
+        
+    double v = (*a)[0];
+    for (int i=1; i < (int)a->size(); i++)
+        v = ((*a)[i] > v) ? ((*a)[i]) : v;
+
+    return v;
+}
+
+double vMin(vector<double> *a)
+{
+    if (a->size() == 0)
+        return 0;
+        
+    double v = (*a)[0];
+    for (int i=1; i < (int)a->size(); i++)
+        v = ((*a)[i] < v) ? ((*a)[i]) : v;
+
+    return v;
+}
+
+bool isMember(vector<string> strArr, string str)
+{
+    for (int i = 0; i < (int)strArr.size(); i++)
+    {
+        if (strArr[i] == str)
+            return true;
+    }
+    return false;
+}
+
+string getCurDateTime()
+{
+	char dateStr[80];
+	time_t rawtime;
+	struct tm *timeInfo;
+	time(&rawtime);
+	timeInfo = localtime(&rawtime);
+	//char timeStr[10];
+	strftime(dateStr, 80,"%Y%m%d-%H%M%S", timeInfo);
+	string str(dateStr);
+	return str;
+}
+
+string tolower(string str)
+{
+    for (unsigned int i = 0; i < str.length(); i++)
+        str[i] = tolower(str[i]);
+    return str;
+}
+
+string strtrim(string str)
+{
+	string::size_type pos = str.find_last_not_of(' ');
+	if (pos != string::npos)
+	{
+		str.erase(pos+1);
+		pos = str.find_first_not_of(' ');
+		if (pos != string::npos)
+			str.erase(0,pos);
+	}
+	else
+	{
+    	str.erase(str.begin(), str.end());
+	}
+	return str;
 }
 
 

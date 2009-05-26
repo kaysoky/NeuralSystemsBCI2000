@@ -256,6 +256,7 @@ void TBCICertificationGUI::updateParm()
 	mCT[mCurTask].sampleRate = atof(sampleRateBox->Text.c_str());
 	mCT[mCurTask].blockSize = atof(SBSbox->Text.c_str());
 
+	updateSkips();
 	updateParmPanel();
 }
 
@@ -266,7 +267,11 @@ void __fastcall TBCICertificationGUI::parmsListInfoTip(TObject *Sender,
 }
 //---------------------------------------------------------------------------
 
-
+void TBCICertificationGUI::updateSkips()
+{
+	for (size_t i = 0; i < taskList->Items[0].Count; i++)
+		mCT[i].skip = !taskList->Items[0][i]->Checked;
+}
 
 void __fastcall TBCICertificationGUI::taskNameBoxExit(TObject *Sender)
 {
@@ -628,6 +633,8 @@ void __fastcall TBCICertificationGUI::Openini1Click(TObject *Sender)
 
 void __fastcall TBCICertificationGUI::Saveini1Click(TObject *Sender)
 {
+	updateParm();
+	updateSkips();
 	SaveDialog1->DefaultExt = "ini";
 	SaveDialog1->FileName = mCurIni.c_str();
 	SaveDialog1->Filter = string("BCI2000 Cert Ini File (*.ini)|*.ini").c_str();

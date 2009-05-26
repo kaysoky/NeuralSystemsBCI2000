@@ -24,18 +24,13 @@ The analysis itself is handled by the analysis class. See the analysisClass.cpp/
 http://www.bci2000.org
 */
 //---------------------------------------------------------------------------
-//#include <stdio.h>
-#include <time.h>
+#include <stdio.h>
 #include <string>
-//#include <fstream>
 #include <vector>
-#include <dirent.h>
-//#include <stdlib.h>
-#include <direct.h>
-#include <sys/types.h>
-#include "Functions.h"
-#include "analysisClass.h"
+#include <algorithm>
+//#include "Functions.h"
 #include "TaskType.h"
+#include "analysisClass.h"
 
 using namespace std;
 
@@ -164,7 +159,8 @@ void parseInput(int argc, char* argv[],string *datDir, string *iniFile, vector<s
 	//setup variables to use
     int pos = 1;
 
-	(*iniFile) = "BCI2000Certification.ini";
+	(*iniFile) = "BCI2000Certification_comprehensive_100ms.ini";
+	(*datDir) = "data";
 	//go through each argument until there are none left
 	//this first loop is a first pass, checking for general errors in syntax and setting up 
 	//what to do on the 2nd pass
@@ -232,8 +228,7 @@ int main(int argc, char* argv[])
 	cout << "Press enter to begin testing." <<endl;
 	char tmpc[255];
 	cin.getline(tmpc,1);
-	
-	//variable declaration
+	//initial variables
 	vector<string> fnames;
 	Tasks taskTypes;
 	vector<basicStats*> minReqs;
@@ -273,10 +268,8 @@ int main(int argc, char* argv[])
 	}
 
 	//character strings that hold the date and time for logging purposes
-	char dateStr[10];
-	char timeStr[10];
-	_strdate(dateStr);
-	_strtime(timeStr);
+	string dateTime;
+	dateTime = getCurDateTime();
 
     cout <<"* Writing results to " << outfilepath<<endl;
 	//write the header info to the log and the screen
@@ -286,7 +279,7 @@ int main(int argc, char* argv[])
 	cout << "\n---------------------------------"<<endl;
 	
 	//run the analysis on each file found
-    for (unsigned int i = 0; i < fnames.size(); i++)
+	for (unsigned int i = 0; i < fnames.size(); i++)
     {
 		//create an analysis object to use for this file
         analysis *an = new analysis;
@@ -331,7 +324,7 @@ int main(int argc, char* argv[])
 		
 		//actually run the analysis on this task
         an->doThreshAnalysis(thresh);
-
+        an->close();
 		//close out the analysis
         analyses.push_back(an);
 
@@ -345,21 +338,59 @@ int main(int argc, char* argv[])
 	//resOut<<endl<<"--------------------------------------------"<<endl;
 	//resOut<<"Results: (mean, std, min, max)"<<endl;
 
-    fprintf(resOut, "Certification Results: %s %s\n", dateStr, timeStr);
-    fprintf(resOut, "File\tTask\tPass/Fail\tAvg(ms)\tStd(ms)\tMin(ms)\tMax(ms)\n");
-
+    fprintf(resOut, "Certification Results: %s\n", dateTime.c_str());
+    
 	cout<<"Results..."<<endl;
 	//the analyses vector now contains an array for the results for each file
 	//the results for each file contains results based on what was tested (e.g., video, audio, metronome, etc)
 	//based on what was specified in the ini file
 	//these results are compared against the minimum requires specified in the cfg file, and 
 	//compliance determination is output to the log and stdio
+	int passed = 0;
+	vector<double> amplat, damplat, vidlat, audlat;
+	vector<int> failedList;
 	for (unsigned int i = 0; i < analyses.size(); i++)
 	{
-        if (!analyses[i]->getSkip())
-            analyses[i]->print(resOut, minReqs);
+		if (i % 10 == 0)
+			fprintf(resOut, "\nFile\tTask\tPass/Fail\tAvg(ms)\tMed(ms)\tStd(ms)\tMin(ms)\tMax(ms)\n");
+		if (!analyses[i]->getSkip())
+			if(analyses[i]->print(resOut, minReqs, i))
+				passed++;
+			else
+				failedList.push_back(i);
+
+			//get average amp, video, and audio latencies
+			for (int j = 0; j < analyses[i]->latencyStats.size(); j++){
+				if (tolower(strtrim(analyses[i]->latencyStats[j].taskName)) == "vidout"){
+					cout << "here"<<endl;
+					vidlat.insert(vidlat.begin(),
+						analyses[i]->latencyStats[j].vals.begin(),
+						analyses[i]->latencyStats[j].vals.end());
+				}
+				else if (tolower(strtrim(analyses[i]->latencyStats[j].taskName)) == "audout"){
+					audlat.insert(audlat.begin(),
+						analyses[i]->latencyStats[j].vals.begin(),
+						analyses[i]->latencyStats[j].vals.end());
+				}
+			}
+
 	}
+	fprintf(resOut,"\n-------------------------------\n");
+
+	if (vidlat.size() > 0)
+		fprintf(resOut,"Video Output Latency: %1.2f +/- %1.2f ms\n", vMean(&vidlat), vStd(&vidlat));
+	if (audlat.size() > 0)
+		fprintf(resOut,"Audio Output Latency: %1.2f +/- %1.2f ms\n", vMean(&audlat), vStd(&audlat));
+
+	fprintf(resOut,"\n-------------------------------\n%d/%d tests passed.\n",passed, analyses.size());
+	printf("\n-------------------------------\n%d/%d tests passed.\n",passed, analyses.size());
 	//close the log file
+	if (passed != analyses.size()){
+		fprintf(resOut, "\nWarning: the following test configurations did not pass:\n");
+		for (size_t i=0; i < failedList.size(); i++)
+			fprintf(resOut, " %d", failedList[i]);
+		fprintf(resOut, "\n");
+	}
 	fclose(resOut);
 
     //clear the analyses

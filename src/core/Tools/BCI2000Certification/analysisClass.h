@@ -38,12 +38,12 @@ public:
     bool getSkip(){return thisTask.skip;}
     bool getExportData(){return thisTask.exportData;}
 
-	void print(FILE*, vector<basicStats*> minReqs);
+	bool print(FILE * out, vector<basicStats*> minReqs, int);
     bool exportData(string expfile);
 	double thresh;
     TaskType thisTask;
     string getFileName(){return fName;}
-
+	vector<basicStats> latencyStats;
 private:
 	string fName;
 	string FileInitials, SubjectName, SubjectSession, SubjectRun;
@@ -57,24 +57,12 @@ private:
 
     void checkDroppedSamples(int ch);
     void checkDroppedSamples();
-    double getMin(double *d, int n);
-    double getMax(double *d, int n);
-    double dMin(double a, double b){return (a<b) ? (a) : (b);};
-    double dMax(double a, double b){return (a>b) ? (a) : (b);};
-    double dAbs(double d){return (d >= 0) ? (d) : (d*-1);};
-    double vMean(vector<double> *a);
-    double vStd(vector<double> *a);
-    double vMax(vector<double> *a);
-	double vMin(vector<double> *a);
-	double vMedian(vector<double> *a);
     //double **signal;
 
     map<string, double*> states;
     map<string, double*>::iterator it;
     vector<string> stateNames;
-    vector<string> ignoreStates;
-    bool isMember(vector<string>, string);
-    vector<basicStats> latencyStats;
+    vector<string> ignoreStates;  
 
     int nStates;
     unsigned int droppedSamples, checkedSamples;
