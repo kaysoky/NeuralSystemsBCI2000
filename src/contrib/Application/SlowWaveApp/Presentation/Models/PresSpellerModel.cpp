@@ -270,7 +270,7 @@ TPresSpellerModel::NextTarget()
   }
 
   if( showingProposal )
-    spellerWavePlayer.SetFile( NULL );
+    spellerWavePlayer.SetFile( ( const char* )( NULL ) );
   else
     spellerWavePlayer.SetFile( spellerTree.GetAudioLabel().c_str() );
 }

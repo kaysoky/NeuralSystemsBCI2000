@@ -53,19 +53,19 @@ void __fastcall TProcessForm::MemWinTypeClick(TObject *Sender)
 
 void __fastcall TProcessForm::vMemWindowsChange(TObject *Sender)
 {
-        vMemDataLength->Text=  atoi(vMemWindows->Text.c_str() ) * atoi( vMemBlockSize->Text.c_str() );
+		vMemDataLength->Text=  atoi(AnsiString(vMemWindows->Text).c_str() ) * atoi( AnsiString(vMemBlockSize->Text).c_str() );
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TProcessForm::vMemBlockSizeChange(TObject *Sender)
 {
-        vMemDataLength->Text=  atoi(vMemWindows->Text.c_str() ) * atoi( vMemBlockSize->Text.c_str() );
+		vMemDataLength->Text=  atoi(AnsiString(vMemWindows->Text).c_str() ) * atoi( AnsiString(vMemBlockSize->Text).c_str() );
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TProcessForm::vMemDataLengthChange(TObject *Sender)
 {
-        vMemDataLength->Text=  atoi(vMemWindows->Text.c_str() ) * atoi( vMemBlockSize->Text.c_str() );
+		vMemDataLength->Text=  atoi(AnsiString(vMemWindows->Text).c_str() ) * atoi( AnsiString(vMemBlockSize->Text).c_str() );
 }
 //---------------------------------------------------------------------------
 

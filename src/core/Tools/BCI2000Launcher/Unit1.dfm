@@ -1,9 +1,9 @@
 object mainForm: TmainForm
   Left = 218
   Top = 200
-  Width = 717
-  Height = 460
   Caption = 'BCI2000 Launcher'
+  ClientHeight = 414
+  ClientWidth = 709
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

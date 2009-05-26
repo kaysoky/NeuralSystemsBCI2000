@@ -7,6 +7,7 @@
 #pragma hdrstop
 
 #include "StateForm1.h"
+#include "VCLDefines.h"
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -51,12 +52,12 @@ __fastcall TUseStateForm::~TUseStateForm()
 //---------------------------------------------------------------------------
 void __fastcall TUseStateForm::vNStatesChange(TObject *Sender)
 {
-        Grid->ColCount= atoi( vNStates->Text.c_str() ) * 2 + 2;
+        Grid->ColCount= atoi( AnsiString(vNStates->Text).c_str() ) * 2 + 2;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUseStateForm::vNValuesChange(TObject *Sender)
 {
-        Grid->RowCount= atoi( vNValues->Text.c_str() ) + 1;
+        Grid->RowCount= atoi( AnsiString(vNValues->Text).c_str() ) + 1;
 }
 //---------------------------------------------------------------------------
 void __fastcall TUseStateForm::ClearClick(TObject *Sender)
@@ -69,8 +70,8 @@ void __fastcall TUseStateForm::ClearGrid( void )
         int i;
         int j;
 
-        cols= atoi( vNStates->Text.c_str() ) * 2 + 2;
-        rows= atoi( vNValues->Text.c_str() ) +1;
+		cols= atoi( AnsiString(vNStates->Text).c_str() ) * 2 + 2;
+        rows= atoi( AnsiString(vNValues->Text).c_str() ) +1;
 
         for(i=1;i<cols;i++)
                 for(j=1;j<rows;j++)
@@ -90,9 +91,9 @@ void __fastcall TUseStateForm::SetVals( void )
         int k;
         int statecount;
 
-        nstates= atoi( vNStates->Text.c_str() );
+		nstates= atoi( AnsiString(vNStates->Text).c_str() );
         cols= nstates * 2 + 2;
-        ntargs= atoi( vNValues->Text.c_str() );
+        ntargs= atoi( AnsiString(vNValues->Text).c_str() );
         rows= ntargs +1;
 
  // clear everything
@@ -119,11 +120,11 @@ void __fastcall TUseStateForm::SetVals( void )
                 {
                         for(k=0;k<statecount;k++)
                         {
-                                if(strcmp(StateList[k],Grid->Cells[j][i].c_str() )== 0 )
+                                if(strcmp(StateList[k],AnsiString(Grid->Cells[j][i]).c_str() )== 0 )
                                         goto jmpout;
                         }
 
-                        strcpy( StateList[statecount], Grid->Cells[j][i].c_str() );
+                        strcpy( StateList[statecount], AnsiString(Grid->Cells[j][i]).c_str() );
                         statecount++;
 
 jmpout:
@@ -132,16 +133,16 @@ jmpout:
 
          for(i=1;i<rows;i++)
          {
-                Group[i-1]= atoi( Grid->Cells[1][i].c_str() );
+                Group[i-1]= atoi( AnsiString(Grid->Cells[1][i]).c_str() );
 
                 for(j=2;j<cols;j+=2)
                 {
                         for(k=0;k<statecount;k++)
                         {
-                                if( strcmp(StateList[k],Grid->Cells[j][i].c_str() )== 0 )
+								if( strcmp(StateList[k],AnsiString(Grid->Cells[j][i]).c_str() )== 0 )
                                         State[i-1][j/2-1]= k;
                         }
-                        Value[i-1][j/2-1]=  atoi( Grid->Cells[j+1][i].c_str() );
+                        Value[i-1][j/2-1]=  atoi( AnsiString(Grid->Cells[j+1][i]).c_str() );
                 }
          }
          NUstates= statecount;
@@ -166,9 +167,9 @@ void __fastcall TUseStateForm::InputClick(TObject *Sender)
         OpenInput->Execute();
         vInput->Text= OpenInput->FileName;
 
-        if( (infile= fopen(vInput->Text.c_str(),"r") ) == NULL )
+        if( (infile= fopen(AnsiString(vInput->Text).c_str(),"r") ) == NULL )
         {
-                Application->MessageBox("Error opening Input","File Error",MB_OK);
+                Application->MessageBox(VCLSTR("Error opening Input"),VCLSTR("File Error"),MB_OK);
                 return;
         }
 
@@ -209,18 +210,18 @@ void __fastcall TUseStateForm::SaveClick(TObject *Sender)
         SaveOutput->Execute();
         vSave->Text= SaveOutput->FileName;
 
-        if(  (outfile= fopen(vSave->Text.c_str(),"w+" ) )  == NULL )
+        if(  (outfile= fopen(AnsiString(vSave->Text).c_str(),"w+" ) )  == NULL )
         {
-                Application->MessageBox("Error opening output","File Error",MB_OK);
+				Application->MessageBox(VCLSTR("Error opening output"),VCLSTR("File Error"),MB_OK);
                 return;
         }
 
-        fprintf(outfile,"NumStates= %s \n",vNStates->Text.c_str() );
-        fprintf(outfile,"NumGroups= %s \n",vNValues->Text.c_str() );
+		fprintf(outfile,"NumStates= %s \n",AnsiString(vNStates->Text).c_str() );
+        fprintf(outfile,"NumGroups= %s \n",AnsiString(vNValues->Text).c_str() );
 
         for(i=1;i<cols;i++)
                 for(j=1;j<rows;j++)
-                        fprintf(outfile,"Cell %2d %2d = %s \n",i,j,Grid->Cells[i][j]);
+                        fprintf(outfile,"Cell %2d %2d = %s \n",i,j,AnsiString(Grid->Cells[i][j]));
 
         fclose( outfile );
 

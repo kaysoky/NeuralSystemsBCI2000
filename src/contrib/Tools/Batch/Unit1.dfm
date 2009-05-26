@@ -1,9 +1,9 @@
 object Form1: TForm1
   Left = 203
   Top = 119
-  Width = 496
-  Height = 438
   Caption = 'BCI2000 Batching'
+  ClientHeight = 411
+  ClientWidth = 488
   Color = clSkyBlue
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

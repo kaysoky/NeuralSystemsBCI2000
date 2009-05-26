@@ -190,8 +190,8 @@ Localization::ApplyLocalizations( void* inObject )
       GUIObjectStrings()[ inObject ].resize( numLocalizableProperties );
       for( int i = 0; i < numLocalizableProperties; ++i )
         if( Typinfo::IsPublishedProp( vclObject, localizableProperties[ i ] ) )
-          GUIObjectStrings()[ inObject ][ i ] = Typinfo::GetStrProp( vclObject,
-                                                localizableProperties[ i ] ).c_str();
+		  GUIObjectStrings()[ inObject ][ i ] = AnsiString( Typinfo::GetStrProp( vclObject,
+                                                            localizableProperties[ i ] ) ).c_str();
     }
     for( int i = 0; i < numLocalizableProperties; ++i )
       if( Typinfo::IsPublishedProp( vclObject, localizableProperties[ i ] ) )

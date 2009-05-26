@@ -22,6 +22,7 @@
 #include "OutputForm1.h"
 #include "InputForm1.h"
 #include "ProcessForm1.h"
+#include "VCLDefines.h"
 
 
 
@@ -59,7 +60,7 @@ __fastcall TfMain::~TfMain( void )
 void __fastcall TfMain::ConvertClick(TObject *Sender)
 {
         if( Process() )
-          Application->MessageBox("Conversion process finished successfully", "Message", MB_OK);
+          Application->MessageBox(VCLSTR("Conversion process finished successfully"), VCLSTR("Message"), MB_OK);
 }
 
 bool TfMain::Process()
@@ -97,7 +98,7 @@ bool TfMain::Process()
       nfiles= FileList->Items->Count;
 
       if( nfiles > 0 )
-        strcpy( CurrentFile, FileList->Items->Strings[0].c_str() );
+        strcpy( CurrentFile, AnsiString(FileList->Items->Strings[0]).c_str() );
       else
         return false;
 
@@ -106,19 +107,19 @@ bool TfMain::Process()
 
         if (ret != BCI2000FileReader::NoError)
         {
-                Application->MessageBox("Error opening input file", "Error", MB_OK);
+                Application->MessageBox(VCLSTR("Error opening input file"), VCLSTR("Error"), MB_OK);
                 delete bci2000data;
                 bci2000data = NULL;
                 return false;
         }
 
-        bciinput->CheckCalibration( bci2000data, vCalibrationFile->Text.c_str(), FileType->Checked );
+        bciinput->CheckCalibration( bci2000data, AnsiString(vCalibrationFile->Text).c_str(), FileType->Checked );
 
         channels=bci2000data->SignalProperties().Channels();
         samplingrate=bci2000data->SamplingRate();
 
-        fstart= atof( OutputForm->vStart->Text.c_str() );
-        fend=   atof( OutputForm->vEnd->Text.c_str() );
+		fstart= atof( AnsiString(OutputForm->vStart->Text).c_str() );
+        fend=   atof( AnsiString(OutputForm->vEnd->Text).c_str() );
 
         bciinput->start= ( fstart * samplingrate ) / 1000.0;
         bciinput->end= ( fend * samplingrate ) / 1000.0;
@@ -138,12 +139,12 @@ bool TfMain::Process()
 
         for(i=0;i<bciinput->nchans;i++)
         {
-                bciinput->chan_list[i]= atoi( InputForm->ChanList->Lines->Strings[i].c_str() ) - 1;
+                bciinput->chan_list[i]= atoi( AnsiString(InputForm->ChanList->Lines->Strings[i]).c_str() ) - 1;
         }
 
         for(i=0;i<bciinput->nstates;i++)
         {
-                strcpy( bciinput->state_list[i], InputForm->StateList->Lines->Strings[i].c_str()  );
+                strcpy( bciinput->state_list[i], AnsiString(InputForm->StateList->Lines->Strings[i]).c_str()  );
 
         }
 
@@ -152,12 +153,12 @@ bool TfMain::Process()
 
         for(i=0;i<bciinput->ntimes;i++)
         {
-                timeval= atoi( OutputForm->Times->Lines->Strings[i].c_str() );
+                timeval= atoi( AnsiString(OutputForm->Times->Lines->Strings[i]).c_str() );
 
                 if( ProcessForm->UseMEM->Checked )
                 {
-                   start= atof( ProcessForm->vStart->Text.c_str() );
-                   bandwidth= atof( ProcessForm->vBandwidth->Text.c_str() );
+				   start= atof( AnsiString(ProcessForm->vStart->Text).c_str() );
+                   bandwidth= atof( AnsiString(ProcessForm->vBandwidth->Text).c_str() );
                    bcioutput->value_list[i]= (int)( ( ( (float)timeval ) - ( (float)start ) + 0.5 ) / bandwidth ) ;
                 }
                 else
@@ -168,7 +169,7 @@ bool TfMain::Process()
                 bcioutput->time_list[i]= timeval;
         }
 
-        bcioutput->Config( eDestinationFile->Text.c_str(), samplingrate, fstart,
+        bcioutput->Config( AnsiString(eDestinationFile->Text).c_str(), samplingrate, fstart,
                 OutputForm->OutputOrder->ItemIndex,
                 OutputForm->Statistics->ItemIndex );
 
@@ -178,9 +179,9 @@ bool TfMain::Process()
         bciinput->tfilterflag= InputForm->CheckTemporalFilter->Checked;
         if(  InputForm->CheckTemporalFilter->Checked == true)
         {
-                if( (pfile= fopen( InputForm->vTemporalFile->Text.c_str(),"r") ) == NULL )
+                if( (pfile= fopen( AnsiString(InputForm->vTemporalFile->Text).c_str(),"r") ) == NULL )
                 {
-                        Application->MessageBox("Error","Opening Temporal Filter File",MB_OK);
+                        Application->MessageBox(VCLSTR("Error"),VCLSTR("Opening Temporal Filter File"),MB_OK);
                 }
                 else
                 {
@@ -190,7 +191,7 @@ bool TfMain::Process()
                                 bciinput->tcoff[count]= atof( line );
                                 if( count < MAXLTH ) count++;
                                 else
-                                    Application->MessageBox("Error","Temporal Coefficients Exceed Limit",MB_OK);
+                                    Application->MessageBox(VCLSTR("Error"),VCLSTR("Temporal Coefficients Exceed Limit"),MB_OK);
                         }
                         bciinput->tcount= count;
                         fclose( pfile );
@@ -200,17 +201,17 @@ bool TfMain::Process()
 
 
         bciinput->BaselineUse= InputForm->Baseline->ItemIndex;
-        bciinput->BaseStart= (int)(( atof( InputForm->vStartBase->Text.c_str() ) * samplingrate) / 1000.0);
-        bciinput->BaseEnd= (int)((atof( InputForm->vEndBase->Text.c_str() )* samplingrate) / 1000.0);
+		bciinput->BaseStart= (int)(( atof( AnsiString(InputForm->vStartBase->Text).c_str() ) * samplingrate) / 1000.0);
+        bciinput->BaseEnd= (int)((atof( AnsiString(InputForm->vEndBase->Text).c_str() )* samplingrate) / 1000.0);
 
         bciinput->sfilterflag= InputForm->CheckSpatialFilter->Checked;
         bciinput->alignflag= InputForm->CheckAlign->Checked;
 
         if( InputForm->CheckSpatialFilter->Checked == true )
         {
-                if( (lpfile=fopen(InputForm->vSpatialFile->Text.c_str(),"r"))==NULL )
+                if( (lpfile=fopen(AnsiString(InputForm->vSpatialFile->Text).c_str(),"r"))==NULL )
                 {
-                        Application->MessageBox("Error","Opening Spatial Filter File",MB_OK);
+                        Application->MessageBox(VCLSTR("Error"),VCLSTR("Opening Spatial Filter File"),MB_OK);
                         return false;
                 }
 
@@ -241,23 +242,23 @@ bool TfMain::Process()
                 fclose(lpfile);
         }
 
-        bcioutput->decimate=  atoi( OutputForm->vDecimate->Text.c_str() );
+		bcioutput->decimate=  atoi( AnsiString(OutputForm->vDecimate->Text).c_str() );
 
         bcioutput->memflag= ProcessForm->UseMEM->Checked;
         bciinput->memflag= ProcessForm->UseMEM->Checked;
 
         if( ProcessForm->UseMEM->Checked == true )
         {
-                mem->setStart( atof( ProcessForm->vStart->Text.c_str() ) );
-                mem->setStop( atof( ProcessForm->vEnd->Text.c_str() ) );
-                mem->setDelta( atof( ProcessForm->vDensity->Text.c_str() ) );
-                mem->setBandWidth( atof( ProcessForm->vBandwidth->Text.c_str() ) );
-                mem->setModelOrder( atoi( ProcessForm->vModel->Text.c_str() ) );
+				mem->setStart( atof( AnsiString(ProcessForm->vStart->Text).c_str() ) );
+				mem->setStop( atof( AnsiString(ProcessForm->vEnd->Text).c_str() ) );
+				mem->setDelta( atof( AnsiString(ProcessForm->vDensity->Text).c_str() ) );
+				mem->setBandWidth( atof( AnsiString(ProcessForm->vBandwidth->Text).c_str() ) );
+				mem->setModelOrder( atoi( AnsiString(ProcessForm->vModel->Text).c_str() ) );
                 mem->setTrend( ProcessForm->Remove->ItemIndex );
                 bcioutput->setWindow( ProcessForm->MemWinType->ItemIndex,
-                                 atoi( ProcessForm->vMemWindows->Text.c_str()),
-                                 atoi( ProcessForm->vMemBlockSize->Text.c_str() ),
-                                 atoi( ProcessForm->vMemDataLength->Text.c_str() ),
+								 atoi( AnsiString(ProcessForm->vMemWindows->Text).c_str()),
+								 atoi( AnsiString(ProcessForm->vMemBlockSize->Text).c_str() ),
+                                 atoi( AnsiString(ProcessForm->vMemDataLength->Text).c_str() ),
                                  ProcessForm->cbSidelobeSuppression->ItemIndex );
         }
 
@@ -270,7 +271,7 @@ bool TfMain::Process()
 
         for (cur_run=0; cur_run < nfiles; cur_run++)
         {
-                strcpy(CurrentFile, FileList->Items->Strings[cur_run].c_str() );
+                strcpy(CurrentFile, AnsiString(FileList->Items->Strings[cur_run]).c_str() );
 
                 if( bci2000data->Open(CurrentFile, 50000).ErrorState() == BCI2000FileReader::NoError )
                 {
@@ -336,12 +337,12 @@ void __fastcall TfMain::AddDirectoryClick(TObject *Sender)
         struct ffblk ffblk;
         int done;
 
-        strcpy( filename, eSourceFile->Text.c_str() );
+		strcpy( filename, AnsiString(eSourceFile->Text).c_str() );
 
-        // if the last 4 characters in the filename are not ".dat", then the file name
-        // does not follow the BCI2000 filename conventions
-        idx=strlen(filename)-4;
-        if (idx < 0) return;
+		// if the last 4 characters in the filename are not ".dat", then the file name
+		// does not follow the BCI2000 filename conventions
+		idx=strlen(filename)-4;
+		if (idx < 0) return;
         pos=stricmp(&(filename[idx]), ".DAT");
         if (pos != 0) return;
 
@@ -422,9 +423,9 @@ void __fastcall TfMain::Button5Click(TObject *Sender)
         SaveParameterFile->Execute();
         vParmFile->Text= SaveParameterFile->FileName;
 
-        if( ( saveIO= fopen( vParmFile->Text.c_str(), "w+" ) ) == NULL )
+        if( ( saveIO= fopen( AnsiString(vParmFile->Text).c_str(), "w+" ) ) == NULL )
         {
-                Application->MessageBox("Error","Opening Parameter File ",MB_OK);
+                Application->MessageBox(VCLSTR("Error"),VCLSTR("Opening Parameter File "),MB_OK);
                 return;
         }
 
@@ -443,7 +444,7 @@ void __fastcall TfMain::Button4Click(TObject *Sender)
         if( OpenParameterFile->Execute() )
         {
           vParmFile->Text= OpenParameterFile->FileName;
-          ApplyParamFile( vParmFile->Text.c_str() );
+          ApplyParamFile( AnsiString(vParmFile->Text).c_str() );
         }
 }
 
@@ -455,7 +456,7 @@ void TfMain::ApplyParamFile( const char* inParamFile )
 
         if( ( getIO= fopen( inParamFile, "r" )) == NULL )
         {
-                Application->MessageBox("Error","Opening Parameter File ",MB_OK);
+                Application->MessageBox(VCLSTR("Error"),VCLSTR("Opening Parameter File "),MB_OK);
                 return;
         }
 
@@ -479,7 +480,7 @@ void TfMain::ProcessCommandLineOptions()
   {
     char* optionBuffer = new char[ ParamStr( i ).Length() + 1 ],
         * option = optionBuffer;
-    ::strcpy( optionBuffer, ParamStr( i ).c_str() );
+    ::strcpy( optionBuffer, AnsiString(ParamStr( i )).c_str() );
     switch( *option )
     {
       case '\0':
@@ -516,17 +517,18 @@ void TfMain::ProcessCommandLineOptions()
             messageMode = "help";
             /* no break */
           default:
-            Application->MessageBox(
+			Application->MessageBox( VCLSTR(
               "The following parameters are accepted:\n\n"
               " -h\t                 \tshow this help\n"
               " -b\t                 \tprocess and quit (batch mode)\n"
               " -o<output file>      \toutput file name\n"
               " -p<parameter file>   \tload named parameter file at startup\n"
               " -c<calibration file> \tcalibration file name\n"
-              " <file1> <file2> ...  \tany number of input file names\n",
-              ( programName + " command line " + messageMode ).c_str(),
+			  " <file1> <file2> ...  \tany number of input file names\n"
+			  ),
+			  VCLSTR( ( programName + " command line " + messageMode ).c_str() ),
               MB_OK | MB_ICONINFORMATION
-            );
+			);
             Application->Terminate();
         }
         break;

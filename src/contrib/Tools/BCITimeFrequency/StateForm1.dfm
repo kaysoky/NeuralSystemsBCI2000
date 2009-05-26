@@ -1,9 +1,9 @@
 object UseStateForm: TUseStateForm
   Left = 151
   Top = 209
-  Width = 709
-  Height = 416
   Caption = 'UseStateForm'
+  ClientHeight = 389
+  ClientWidth = 701
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

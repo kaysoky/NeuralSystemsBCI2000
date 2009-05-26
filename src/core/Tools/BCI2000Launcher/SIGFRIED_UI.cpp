@@ -43,7 +43,7 @@ void __fastcall TSigfried_UIfrm::sessionNumBoxExit(TObject */*Sender*/)
         string tmp = "";
         for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
             tmp += "0";
-        tmp += sessionNumBox->Text.c_str();
+        tmp += AnsiString(sessionNumBox->Text).c_str();
         sessionNumBox->Text = tmp.c_str();
     }
     if (sessionNumBox->Text.Length() > 3)
@@ -70,7 +70,7 @@ void __fastcall TSigfried_UIfrm::sessionNumBoxKeyPress(TObject */*Sender*/,
             string tmp = "";
             for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
                 tmp += "0";
-            tmp += sessionNumBox->Text.c_str();
+            tmp += AnsiString(sessionNumBox->Text).c_str();
             sessionNumBox->Text = tmp.c_str();
         }
         if (sessionNumBox->Text.Length() > 3)
@@ -133,7 +133,7 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject */*Sender*/)
 
     //write the parameter information
     of <<"Storage:Data%20Location:DataIOFilter string DataDirectory= ";
-    of << EncodedString(directoryBox->Text.c_str()) << " ..\\data % % //"<<endl;
+    of << EncodedString(AnsiString(directoryBox->Text).c_str()) << " ..\\data % % //"<<endl;
 
     of <<"Storage:Session:DataIOFilter string SubjectSession= ";
     of << sessionNumBox->Text.c_str() << " 001 % % //" <<endl;
@@ -155,7 +155,7 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject */*Sender*/)
 	ZeroMemory(&appSI, sizeof(appSI));
 	appSI.cb = sizeof(appSI);
 
-	comm << mProgDir << "\\operat.exe --OnConnect \" LOAD PARAMETERFILE "<< EncodedString(baselinePrmBox->Text.c_str()) << "; ";
+	comm << mProgDir << "\\operat.exe --OnConnect \" LOAD PARAMETERFILE "<< EncodedString(AnsiString(baselinePrmBox->Text).c_str()) << "; ";
 	comm << "LOAD PARAMETERFILE " <<EncodedString(fragTmp) << ";  SETCONFIG;\"";
 
 	char *procName = new char[1024];
@@ -206,13 +206,13 @@ void __fastcall TSigfried_UIfrm::recordBaselineBtnClick(TObject */*Sender*/)
 		return;
 	}
 
-    mBaselineFile = EncodedString(directoryBox->Text.c_str()) + "\\baseline";
-    mBaselineFile += string(sessionNumBox->Text.c_str()) + "\\";
-    mBaselineFile += "baselineS" + string(sessionNumBox->Text.c_str()) + "R01.dat";
+    mBaselineFile = EncodedString(AnsiString(directoryBox->Text).c_str()) + "\\baseline";
+    mBaselineFile += string(AnsiString(sessionNumBox->Text).c_str()) + "\\";
+    mBaselineFile += "baselineS" + string(AnsiString(sessionNumBox->Text).c_str()) + "R01.dat";
     baselineFileBox->Text = mBaselineFile.c_str();
 
-    string tmpModel = EncodedString(directoryBox->Text.c_str()) + "\\baseline";
-    tmpModel += string(sessionNumBox->Text.c_str()) + "\\model.mdl";
+    string tmpModel = EncodedString(AnsiString(directoryBox->Text).c_str()) + "\\baseline";
+    tmpModel += string(AnsiString(sessionNumBox->Text).c_str()) + "\\model.mdl";
     modelFileBox->Text = tmpModel.c_str();
     
 }
@@ -244,14 +244,14 @@ void __fastcall TSigfried_UIfrm::modelDirBtnClick(TObject */*Sender*/)
 //---------------------------------------------------------------------------
 void __fastcall TSigfried_UIfrm::modelFileBoxChange(TObject */*Sender*/)
 {
-    mModelFile = modelFileBox->Text.c_str();
+    mModelFile = AnsiString(modelFileBox->Text).c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
 //---------------------------------------------------------------------------
 void __fastcall TSigfried_UIfrm::modelIniBoxChange(TObject */*Sender*/)
 {
-    mIniFile = modelIniBox->Text.c_str();
+    mIniFile = AnsiString(modelIniBox->Text).c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }
@@ -286,9 +286,9 @@ void __fastcall TSigfried_UIfrm::addModelBtnClick(TObject */*Sender*/)
         return;
 
     Model tmpModel;
-    tmpModel.iniFile = modelIniBox->Text.c_str();
-    tmpModel.modelOutput = modelFileBox->Text.c_str();
-    tmpModel.description = modelDescBox->Text.c_str();
+    tmpModel.iniFile = AnsiString(modelIniBox->Text).c_str();
+	tmpModel.modelOutput = AnsiString(modelFileBox->Text).c_str();
+	tmpModel.description = AnsiString(modelDescBox->Text).c_str();
     models.push_back(tmpModel);
     updateModelList();
 }
@@ -345,8 +345,8 @@ void __fastcall TSigfried_UIfrm::parmOutputBoxChange(TObject */*Sender*/)
 
 void __fastcall TSigfried_UIfrm::returnBtnClick(TObject */*Sender*/)
 {
-    int width = atoi(visModelWidthBox->Text.c_str());
-    int height = atoi(visModelHeightBox->Text.c_str());
+	int width = atoi(AnsiString(visModelWidthBox->Text).c_str());
+    int height = atoi(AnsiString(visModelHeightBox->Text).c_str());
     bool visModels = visModelsCheck->Checked;
     
     ofstream of;
@@ -398,7 +398,7 @@ void __fastcall TSigfried_UIfrm::getBaselineFileBtnClick(TObject */*Sender*/)
 
 void __fastcall TSigfried_UIfrm::baselineFileBoxChange(TObject */*Sender*/)
 {
-    mBaselineFile = baselineFileBox->Text.c_str();
+    mBaselineFile = AnsiString(baselineFileBox->Text).c_str();
     mModelReady = (mModelFile.size() > 0) && (mIniFile.size() > 0 && mBaselineFile.size() > 0);
     buildModelBtn->Enabled = mModelReady;
 }

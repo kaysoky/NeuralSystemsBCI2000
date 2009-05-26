@@ -1,7 +1,6 @@
 object fEditMatrix: TfEditMatrix
   Left = 534
   Top = 252
-  AutoScroll = False
   Caption = 'Edit Matrix'
   ClientHeight = 328
   ClientWidth = 363
@@ -39,14 +38,14 @@ object fEditMatrix: TfEditMatrix
   object Label1: TLabel
     Left = 8
     Top = 32
-    Width = 61
+    Width = 62
     Height = 13
     Caption = '# of columns'
   end
   object Label2: TLabel
     Left = 87
     Top = 32
-    Width = 44
+    Width = 47
     Height = 13
     Caption = '# of rows'
   end

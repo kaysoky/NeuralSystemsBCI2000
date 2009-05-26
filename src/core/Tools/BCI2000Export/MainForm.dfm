@@ -1,9 +1,9 @@
 object ImporterForm: TImporterForm
   Left = 795
   Top = 242
-  Width = 420
-  Height = 355
   Caption = 'BCI2000Export'
+  ClientHeight = 328
+  ClientWidth = 412
   Color = clBtnFace
   Constraints.MinHeight = 325
   Constraints.MinWidth = 420
@@ -17,12 +17,12 @@ object ImporterForm: TImporterForm
   Position = poScreenCenter
   DesignSize = (
     412
-    309)
+    328)
   PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 288
+    Top = 307
     Width = 412
     Height = 21
     Panels = <
@@ -34,7 +34,7 @@ object ImporterForm: TImporterForm
       item
         Width = 330
       end>
-    SimplePanel = False
+    ExplicitTop = 288
   end
   object Panel: TPanel
     Left = 0
@@ -179,7 +179,7 @@ object ImporterForm: TImporterForm
       Height = 21
       Style = csDropDownList
       Anchors = [akLeft, akRight, akBottom]
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 3
     end
   end

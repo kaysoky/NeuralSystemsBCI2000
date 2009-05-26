@@ -108,7 +108,7 @@ __fastcall TMainForm::TMainForm( TComponent* inOwner )
   UpdateSignalDisplayContext();
 
   if( ParamCount() > 0 )
-    DoFileOpen( ParamStr( 1 ).c_str() );
+    DoFileOpen( AnsiString( ParamStr( 1 ) ).c_str() );
   else
     DoFileOpen( NULL );
 }
@@ -178,7 +178,7 @@ void __fastcall TMainForm::EditPositionExit( TObject* inSender )
   if( editField != NULL && editField->Modified )
   {
 	TimeValue t;
-	istringstream iss( editField->Text.c_str() );
+	istringstream iss( AnsiString( editField->Text ).c_str() );
     if( iss >> t )
       SetSamplePos( t * mFile.SamplingRate() - mDisplay.NumSamples() / 2 );
   }
@@ -583,7 +583,7 @@ TMainForm::RestoreFromRegistry()
       this->Width = storedRect.Width();
     }
     istringstream iss;
-    iss.str( pReg->ReadString( "ChannelColors" ).c_str() );
+    iss.str( AnsiString( pReg->ReadString( "ChannelColors" ) ).c_str() );
     ColorList colors;
     if( iss >> colors )
       mDisplay.SetChannelColors( colors );
@@ -679,7 +679,7 @@ TMainForm::UpdateChannelLabels()
         channelLabels.push_back(
           Label(
             channelLabels.size(),
-            mChannelListBox->Items->Strings[ i ].c_str()
+            AnsiString( mChannelListBox->Items->Strings[ i ] ).c_str()
           )
         );
         ++numMarkerChannels;
@@ -737,7 +737,7 @@ TMainForm::ConstructDisplaySignal( long inPos, long inLength )
     vector<StateRef> states;
     for( ; i < mChannelListBox->Count && !mChannelListBox->Header[ i ]; ++i )
       if( mChannelListBox->Checked[ i ] )
-        states.push_back( mFile.State( mChannelListBox->Items->Strings[ i ].c_str() ) );
+        states.push_back( mFile.State( AnsiString( mChannelListBox->Items->Strings[ i ] ).c_str() ) );
     vector<size_t> channels;
     int base = ++i;
     for( ; i < mChannelListBox->Count && !mChannelListBox->Header[ i ]; ++i )
@@ -1015,7 +1015,7 @@ void __fastcall TMainForm::HelpOnChannelClick(TObject *Sender)
   TMenuItem* pItem = dynamic_cast<TMenuItem*>( Sender );
   if( pItem )
   {
-	string name = pItem->Caption.c_str();
+	string name = AnsiString( pItem->Caption ).c_str();
     size_t p1 = name.find( '\"' ),
            p2 = name.find( '\"', p1 + 1 );
     if( p1 != string::npos && p2 != string::npos )
@@ -1049,7 +1049,7 @@ void __fastcall TMainForm::mChannelListBoxContextPopup(TObject* Sender,
           ++section;
       if( section == 1 )
       {
-        string name = pListBox->Items->Strings[item].c_str();
+        string name = AnsiString( pListBox->Items->Strings[item] ).c_str();
         if( ExecutableHelp().StateHelp().Exists( name ) )
           mHelpOnChannel->Caption =
             ( string( "Help on the \"" ) + name + "\" state variable" ).c_str();

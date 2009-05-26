@@ -1,9 +1,9 @@
 object Form2: TForm2
   Left = 728
   Top = 323
-  Width = 238
-  Height = 237
   Caption = 'TDT Sample Rate'
+  ClientHeight = 210
+  ClientWidth = 230
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

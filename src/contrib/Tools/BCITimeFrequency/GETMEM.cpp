@@ -6,6 +6,7 @@
 #include <conio.h>
 #include <vcl.h>
 #include "getmem.h"
+#include "VCLDefines.h"
 
 MEM::MEM( void )
 {
@@ -237,8 +238,8 @@ int MEM::get_mem( void )
 
                 if(n_bins < 1)
                 {
-                        Application->MessageBox("Error for n_bins out of bounds",
-                                "Error",MB_ICONWARNING|MB_OK);
+						Application->MessageBox(VCLSTR("Error for n_bins out of bounds"),
+                                VCLSTR("Error"),MB_ICONWARNING|MB_OK);
                                 return(-1);
                 }
                 else
@@ -341,8 +342,8 @@ int MEM::setData( int length, float values[] )
 
         if( length > MAXDATA )
         {
-								Application->MessageBox("Data Exceeds Max Length",
-                        "Error",MB_ICONWARNING|MB_OK);
+								Application->MessageBox(VCLSTR("Data Exceeds Max Length"),
+                        VCLSTR("Error"),MB_ICONWARNING|MB_OK);
                         return(-1);
         }
                         

@@ -9,6 +9,7 @@
 
 #include "UTargetSequence.h"
 #include "BCIError.h"
+#include "VCLDefines.h"
 //---------------------------------------------------------------------------
 
 #pragma package(smart_init)
@@ -94,8 +95,8 @@ int ret;
         if(debug) fprintf(f, "After LoadPotentialTargets, ret is %d.\n", ret);
 
   // possibly replace this with something better
-  if (ret == 0)  Application->MessageBox("Could not load target definition matrix.", "Error", MB_OK);
-  if (ret == -1) Application->MessageBox("Could not load tree definition matrix.", "Error", MB_OK);
+  if (ret == 0)  Application->MessageBox(VCLSTR("Could not load target definition matrix."), VCLSTR("Error"), MB_OK);
+  if (ret == -1) Application->MessageBox(VCLSTR("Could not load tree definition matrix."), VCLSTR("Error"), MB_OK);
   if (ret <= 0)  return(0);
 
         if(debug) fprintf(f, "After App->msgBox, ret is %d.\n", ret);
@@ -110,7 +111,7 @@ int ret;
 
  // possibly replace this with something better
  if ((ret == 0) && (prediction))
-    Application->MessageBox("Could not find dictionary file. Wrong directory ?", "Error", MB_OK);
+    Application->MessageBox(VCLSTR("Could not find dictionary file. Wrong directory ?"), VCLSTR("Error"), MB_OK);
 
  return(ret);
 }

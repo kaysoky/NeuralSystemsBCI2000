@@ -92,7 +92,7 @@ int TfConfig::Initialize( ParamList *my_paramlist, PREFERENCES* new_preferences 
   size_t curTabIdx = find( tabNames.begin(), tabNames.end(), mCurTab ) - tabNames.begin();
   if( curTabIdx != tabNames.size() )
     CfgTabControl->TabIndex = curTabIdx;
-  mCurTab = CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex].c_str();
+  mCurTab = AnsiString( CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex] ).c_str();
   RenderParameters( mCurTab );
   return 0;
 }
@@ -231,7 +231,7 @@ void TfConfig::UpdateParameters()
 
 void __fastcall TfConfig::CfgTabControlChange(TObject*)
 {
-  mCurTab = CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex].c_str();
+  mCurTab = AnsiString( CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex] ).c_str();
   RenderParameters( mCurTab );
 }
 //---------------------------------------------------------------------------
@@ -336,7 +336,7 @@ bool    ret;
 		 MB_OK);
     else
        {
-       RenderParameters(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex].c_str());
+       RenderParameters(AnsiString(CfgTabControl->Tabs->Strings[CfgTabControl->TabIndex]).c_str());
        ParameterChange();
        }
     }

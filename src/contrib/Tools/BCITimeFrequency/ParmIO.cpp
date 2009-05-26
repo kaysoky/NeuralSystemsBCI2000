@@ -5,6 +5,7 @@
 
 #include "ParmIO.h"
 #include <string.h>
+#include "VCLDefines.h"
 
 ParIO::ParIO(  )
 {
@@ -68,7 +69,7 @@ void ParIO::SaveInputForm( void )
 
         fprintf(sfile,"Input_ChanCount %d \n",iform->ChanList->Lines->Count);
         for(i=0;i<iform->ChanList->Lines->Count;i++)
-                fprintf(sfile,"Input_ChanValue %d \n",atoi( iform->ChanList->Lines->Strings[i].c_str() ) );
+                fprintf(sfile,"Input_ChanValue %d \n",atoi( AnsiString(iform->ChanList->Lines->Strings[i]).c_str() ) );
 
         fprintf( sfile, "Input_Baseline %d \n", iform->Baseline->ItemIndex );
         fprintf( sfile, "Input_StartBase %s \n", iform->vStartBase->Text.c_str() );
@@ -80,17 +81,17 @@ void ParIO::SaveProcessForm( void )
         if( pform->UseMEM->Checked == true )
         {
                 fprintf(sfile,"Process_UseMEM true \n");
-                fprintf(sfile,"Process_MEMStart= %6.2f \n",atof( pform->vStart->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMEnd= %6.2f \n",atof( pform->vEnd->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMDensity= %6.2f \n",atof( pform->vDensity->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMBandwidth= %6.2f \n",atof( pform->vBandwidth->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMModel= %2d \n",atoi( pform->vModel->Text.c_str() ) );
+				fprintf(sfile,"Process_MEMStart= %6.2f \n",atof( AnsiString(pform->vStart->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMEnd= %6.2f \n",atof( AnsiString(pform->vEnd->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMDensity= %6.2f \n",atof( AnsiString(pform->vDensity->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMBandwidth= %6.2f \n",atof( AnsiString(pform->vBandwidth->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMModel= %2d \n",atoi( AnsiString(pform->vModel->Text).c_str() ) );
                 fprintf(sfile,"Process_MEMRemove= %2d \n",pform->Remove->ItemIndex );
                 fprintf(sfile,"Process_MEMWinType= %2d \n",pform->MemWinType->ItemIndex );
-                fprintf(sfile,"Process_MEMWindows= %2d \n", atoi( pform->vMemWindows->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMBlockSize= %2d \n", atoi( pform->vMemBlockSize->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMDataLength= %2d \n", atoi( pform->vMemDataLength->Text.c_str() ) );
-                fprintf(sfile,"Process_MEMSidelobeSuppression= %s \n", pform->cbSidelobeSuppression->Text.c_str() );
+				fprintf(sfile,"Process_MEMWindows= %2d \n", atoi( AnsiString(pform->vMemWindows->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMBlockSize= %2d \n", atoi( AnsiString(pform->vMemBlockSize->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMDataLength= %2d \n", atoi( AnsiString(pform->vMemDataLength->Text).c_str() ) );
+				fprintf(sfile,"Process_MEMSidelobeSuppression= %s \n", AnsiString(pform->cbSidelobeSuppression->Text).c_str() );
         }
         else
                 fprintf(sfile,"Process_UseMEM false \n");
@@ -100,8 +101,8 @@ void ParIO::SaveOutputForm( void )
 {
         int i;
         
-        fprintf(sfile,"Output_Start= %6.2f \n",atof( oform->vStart->Text.c_str() ) );
-        fprintf(sfile,"Output_End= %6.2f \n",atof( oform->vEnd->Text.c_str() ) );
+		fprintf(sfile,"Output_Start= %6.2f \n",atof( AnsiString(oform->vStart->Text).c_str() ) );
+		fprintf(sfile,"Output_End= %6.2f \n",atof( AnsiString(oform->vEnd->Text).c_str() ) );
 
         if( oform->OverlapMode->Checked == true )
                 fprintf(sfile,"Output_Overlap true \n");
@@ -111,18 +112,18 @@ void ParIO::SaveOutputForm( void )
         if( oform->SubGroups->Checked == true )
         {
                 fprintf(sfile,"Output_SubGroups true \n");
-                fprintf(sfile,"Output_ComputeMeans %s \n",oform->vCompuMeans->Text.c_str() );
+				fprintf(sfile,"Output_ComputeMeans %s \n",AnsiString(oform->vCompuMeans->Text).c_str() );
         }
         else
                 fprintf(sfile,"Output_SubGroups false \n");
                 
-        fprintf(sfile,"Output_Decimate %3d \n",atoi(oform->vDecimate->Text.c_str() ) );
-        fprintf(sfile,"Output_Statistics= %1d \n",oform->Statistics->ItemIndex );
+		fprintf(sfile,"Output_Decimate %3d \n",atoi(AnsiString(oform->vDecimate->Text).c_str() ) );
+		fprintf(sfile,"Output_Statistics= %1d \n",oform->Statistics->ItemIndex );
         fprintf(sfile,"Output_OutOrder= %1d \n",oform->OutputOrder->ItemIndex );
 
         fprintf(sfile,"Output_TimesCount %d \n",oform->Times->Lines->Count);
         for(i=0;i<oform->Times->Lines->Count;i++)
-                fprintf(sfile,"Output_TimeVals %d \n",atoi( oform->Times->Lines->Strings[i].c_str() ) );
+                fprintf(sfile,"Output_TimeVals %d \n",atoi( AnsiString(oform->Times->Lines->Strings[i]).c_str() ) );
 
 
 }
@@ -260,7 +261,7 @@ void ParIO::GetF( FILE *getfile, TUseStateForm *usesform, TInputForm *inform,
                   int index = pform->cbSidelobeSuppression->Items->IndexOf( l2 );
                   if( index == -1 )
                   {
-                    Application->MessageBox( "Unknown value of \"Process_MEMSidelobeSuppression\"", "Error", MB_OK );
+                    Application->MessageBox( VCLSTR("Unknown value of \"Process_MEMSidelobeSuppression\""), VCLSTR("Error"), MB_OK );
                     index = 0;
                   }
                   pform->cbSidelobeSuppression->ItemIndex = index;

@@ -3,7 +3,6 @@ object fConfig: TfConfig
   Top = 203
   HorzScrollBar.Visible = False
   VertScrollBar.Visible = False
-  AutoScroll = False
   Caption = 'Configuration ...'
   ClientHeight = 534
   ClientWidth = 694

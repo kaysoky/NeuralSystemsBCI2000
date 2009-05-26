@@ -9,6 +9,7 @@
 #include <string.h>
 #include "OutputForm1.h"
 #include "BCIInput.h"
+#include "VCLDefines.h"
 
 // FILE *bciin;
 
@@ -55,7 +56,7 @@ void __fastcall BCIInput::Config( BCIOutput *BCIOut )
         if( OutputForm->SubGroups->Checked == true )  subgroups= 1;
         else                                          subgroups= 0;
 
-        strcpy( ComputeWhen, OutputForm->vCompuMeans->Text.c_str() );
+        strcpy( ComputeWhen, AnsiString(OutputForm->vCompuMeans->Text).c_str() );
 
         for(i=0;i<UseStateForm->NUstates;i++)
                 strcpy(Fstatelist[i],UseStateForm->StateList[i]);
@@ -85,7 +86,7 @@ void __fastcall BCIInput::Config( BCIOutput *BCIOut )
          }
          else
          {
-                Application->MessageBox("Error","Number of Channels < 1 ",MB_OK);
+                Application->MessageBox(VCLSTR("Error"),VCLSTR("Number of Channels < 1 "),MB_OK);
          }
 
 }

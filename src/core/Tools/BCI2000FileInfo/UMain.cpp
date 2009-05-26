@@ -73,7 +73,7 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
     case WM_USER:
       // If called with command line arguments, process the files and quit.
       if( ParamCount() > 0 )
-        ProcessFile( ParamStr( 1 ).c_str() );
+        ProcessFile( AnsiString( ParamStr( 1 ) ).c_str() );
       break;
     default:
       defaultDropPanelWindowProc( msg );

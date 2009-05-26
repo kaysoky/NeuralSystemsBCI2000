@@ -9,7 +9,7 @@
 #pragma hdrstop
 
 #include "FIRFilter.h"
-#include <algorithm>
+#include <numeric>
 
 using namespace std;
 

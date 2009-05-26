@@ -292,15 +292,15 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
 
         if (directoryBox->Text.Length() > 0)
         {
-            comm << " --DataDirectory-" << EncodedString(directoryBox->Text.c_str());
+            comm << " --DataDirectory-" << EncodedString(AnsiString(directoryBox->Text).c_str());
         }
         if (subjectNameBox->Text.Length() > 0)
         {
-			comm << " --SubjectName-" << EncodedString(subjectNameBox->Text.c_str());
+			comm << " --SubjectName-" << EncodedString(AnsiString(subjectNameBox->Text).c_str());
         }
         if (sessionNumBox->Text.Length() > 0)
         {
-            comm << " --SubjectSession-" << EncodedString(sessionNumBox->Text.c_str());
+            comm << " --SubjectSession-" << EncodedString(AnsiString(sessionNumBox->Text).c_str());
 		}
 		strcpy(procName, comm.str().c_str());
 		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
@@ -390,7 +390,7 @@ void __fastcall TmainForm::getParmButClick(TObject */*Sender*/)
 	{
 		for (int i = OpenParmDlg->Files->Count-1;i>=0; i--)
 		{
-			string tmp = OpenParmDlg->Files->Strings[i].c_str();
+			string tmp = AnsiString(OpenParmDlg->Files->Strings[i]).c_str();
             addParm(tmp);
 		}
 	}
@@ -952,7 +952,7 @@ void __fastcall TmainForm::sessionNumBoxExit(TObject */*Sender*/)
         string tmp = "";
         for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
             tmp += "0";
-        tmp += sessionNumBox->Text.c_str();
+        tmp += AnsiString(sessionNumBox->Text).c_str();
         sessionNumBox->Text = tmp.c_str();
         return;
     }
@@ -978,7 +978,7 @@ void __fastcall TmainForm::sessionNumBoxKeyPress(TObject */*Sender*/,
             string tmp = "";
             for (int i=0; i < 3-sessionNumBox->Text.Length(); i++)
                 tmp += "0";
-            tmp += sessionNumBox->Text.c_str();
+            tmp += AnsiString(sessionNumBox->Text).c_str();
             sessionNumBox->Text = tmp.c_str();
             return;
         }
@@ -1000,7 +1000,7 @@ void __fastcall TmainForm::SIGFRIED1Click(TObject */*Sender*/)
     {
         statusList->Items->Add("No Acquisition program selected...");
     }
-    string sigSource = sourceList->Items->Strings[sourceList->ItemIndex].c_str();
+    string sigSource = AnsiString(sourceList->Items->Strings[sourceList->ItemIndex]).c_str();
     sigfriedUI = new TSigfried_UIfrm(this, sigSource, progDir);
     sigfriedUI->ShowModal();
     if (sigfriedUI->Status() == 1)

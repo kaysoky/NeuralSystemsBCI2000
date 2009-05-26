@@ -31,22 +31,22 @@ void __fastcall TForm1::Button1Click(TObject *Sender)
         char cpy[256];
 
         strcpy(cpy,"copy ");
-        strcat(cpy,vParmfile->Text.c_str());
+		strcat(cpy,AnsiString(vParmfile->Text).c_str());
         strcat(cpy," ");
-        strcat(cpy,vRunParm->Text.c_str() );
+		strcat(cpy,AnsiString(vRunParm->Text).c_str() );
         system( cpy );
 
-        delay= atoi( vDelay->Text.c_str() );
+		delay= atoi( AnsiString(vDelay->Text).c_str() );
 
 
 
-        res= spawnl(P_NOWAIT,vOperator->Text.c_str(),"",NULL);
+		res= spawnl(P_NOWAIT,AnsiString(vOperator->Text).c_str(),"",NULL);
         Sleep(delay);
-        res= spawnl(P_NOWAIT,vSource->Text.c_str(),vSource->Text.c_str(),"AUTOSTART",vIp->Text.c_str(),NULL);
+		res= spawnl(P_NOWAIT,AnsiString(vSource->Text).c_str(),AnsiString(vSource->Text).c_str(),"AUTOSTART",AnsiString(vIp->Text).c_str(),NULL);
         Sleep(delay);
-        res= spawnl(P_NOWAIT,vSignalProcessing->Text.c_str(),vSignalProcessing->Text.c_str(),"AUTOSTART",vIp->Text.c_str(),NULL);
+		res= spawnl(P_NOWAIT,AnsiString(vSignalProcessing->Text).c_str(),AnsiString(vSignalProcessing->Text).c_str(),"AUTOSTART",AnsiString(vIp->Text).c_str(),NULL);
         Sleep(delay);
-        res= spawnl(P_NOWAIT,vApplication->Text.c_str(),vApplication->Text.c_str(),"AUTOSTART",vIp->Text.c_str(),NULL);
+        res= spawnl(P_NOWAIT,AnsiString(vApplication->Text).c_str(),AnsiString(vApplication->Text).c_str(),"AUTOSTART",AnsiString(vIp->Text).c_str(),NULL);
 
 }
 //---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ void __fastcall TForm1::SaveClick(TObject *Sender)
         SaveFile->Execute();
         vSave->Text= SaveFile->FileName;
 
-        if( ( save= fopen( vSave->Text.c_str(),"w+") ) == NULL )
+        if( ( save= fopen( AnsiString(vSave->Text).c_str(),"w+") ) == NULL )
         {
            //     Application->MessageBox("Could not Open Output File", "Fatal Error",MB_OK);
                 return;
@@ -92,7 +92,7 @@ void __fastcall TForm1::GetClick(TObject *Sender)
         OpenSaved->Execute();
         vGet->Text= OpenSaved->FileName;
 
-        if( ( saved= fopen(vGet->Text.c_str(),"r")) == NULL )
+        if( ( saved= fopen(AnsiString(vGet->Text).c_str(),"r")) == NULL )
         {
         //        Application->MessageBox("Could not Open Input File", "Fatal Error",MB_OK);
                 return;

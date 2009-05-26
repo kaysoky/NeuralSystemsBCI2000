@@ -154,15 +154,15 @@ TfEditMatrix::UpdateParam()
 
   // set the column and row labels
   for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
-    mpMatrixParam->ColumnLabels()[ col ] = StringGrid->Cells[ col + 1 ][ 0 ].c_str();
+    mpMatrixParam->ColumnLabels()[ col ] = AnsiString( StringGrid->Cells[ col + 1 ][ 0 ] ).c_str();
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
-    mpMatrixParam->RowLabels()[ row ] = StringGrid->Cells[ 0 ][ row + 1 ].c_str();
+    mpMatrixParam->RowLabels()[ row ] = AnsiString( StringGrid->Cells[ 0 ][ row + 1 ] ).c_str();
 
   // set the values in the parameter according to the values in the spreadsheet
   for( int row = 0; row < mpMatrixParam->NumRows(); ++row )
     for( int col = 0; col < mpMatrixParam->NumColumns(); ++col )
       if( StringGrid->Cells[ col + 1 ][ row + 1 ] != cSubEditTag )
-        mpMatrixParam->Value( row, col ) = StringGrid->Cells[ col + 1 ][ row + 1 ].c_str();
+        mpMatrixParam->Value( row, col ) = AnsiString( StringGrid->Cells[ col + 1 ][ row + 1 ] ).c_str();
 
   Unlock();
 }
@@ -282,7 +282,7 @@ TfEditMatrix::PlainCellToMatrix( int inRow, int inCol )
     if( selection.Top == inRow && selection.Left == inCol )
       SelectTopLeftCell();
     Param p( "{ matrix 1 1 0 }" );
-    p.Value( 0, 0 ) = StringGrid->Cells[ inCol ][ inRow ].c_str();
+    p.Value( 0, 0 ) = AnsiString( StringGrid->Cells[ inCol ][ inRow ] ).c_str();
     mpMatrixParam->Value( inRow - 1, inCol - 1 ) = p;
     StringGrid->Cells[ inCol ][ inRow ] = cSubEditTag;
     AdaptColumnWidth( inRow, inCol );

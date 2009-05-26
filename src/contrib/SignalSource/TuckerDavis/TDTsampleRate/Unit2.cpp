@@ -20,7 +20,7 @@ __fastcall TForm2::TForm2(TComponent* Owner)
 
 void __fastcall TForm2::calcButClick(TObject *Sender)
 {
-    float sr = atof(desiredSRbox->Text.c_str());
+    float sr = atof(AnsiString(desiredSRbox->Text).c_str());
 
     int per = floor(TDTsampleRate / sr);
 

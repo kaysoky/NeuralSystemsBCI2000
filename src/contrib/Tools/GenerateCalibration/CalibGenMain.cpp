@@ -10,6 +10,7 @@
 
 #include "CalibGenHelp.h"
 #include "CalibGenMain.h"
+#include "VCLDefines.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma link "CSPIN"
@@ -40,7 +41,7 @@ void __fastcall TfMain::bSelectInputClick(TObject *Sender)
        tNumChannelsInput->Caption=AnsiString(sourceconfig.channels);
        bSelectCalib->Enabled=true;
        bSelectInput->Enabled=false;
-       sourceconfig.targetvalue=atof(eTargetVal->Text.c_str());
+       sourceconfig.targetvalue=atof(AnsiString(eTargetVal->Text).c_str());
        }
     else
        ResetGUI();
@@ -88,7 +89,7 @@ short   num_channels, dummy, sample_freq;
  fp=fopen(sourceconfig->filename.c_str(), "rb");
  if (!fp)
   {
-  Application->MessageBox("Could not open source file", "Error", MB_OK);
+  Application->MessageBox(VCLSTR("Could not open source file"), VCLSTR("Error"), MB_OK);
   return;
   }
 

@@ -1,9 +1,9 @@
 object MainForm: TMainForm
   Left = 329
   Top = 269
-  Width = 718
-  Height = 472
   Caption = 'BCI2000 Viewer'
+  ClientHeight = 426
+  ClientWidth = 710
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 680

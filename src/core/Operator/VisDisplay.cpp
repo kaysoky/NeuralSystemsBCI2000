@@ -120,7 +120,7 @@ VisDisplay::VisDisplayBase::ConfigContainer::Restore()
      for( int i = 0; i < keys->Count; ++i )
      {
        AnsiString key = key_base + keys->Strings[ i ];
-       std::string visID = keys->Strings[ i ].c_str();
+       std::string visID = AnsiString( keys->Strings[ i ] ).c_str();
        if( reg->OpenKeyReadOnly( key ) )
        {
          TStringList* valueNames = new TStringList;
@@ -130,7 +130,7 @@ VisDisplay::VisDisplayBase::ConfigContainer::Restore()
 
            if( valueNames->Strings[ j ].SubString( 0, as_cfgid_prefix.Length() ) == as_cfgid_prefix )
            {
-             IDType cfgID = ::atoi( valueNames->Strings[ j ].c_str() + as_cfgid_prefix.Length() );
+             IDType cfgID = ::atoi( AnsiString( valueNames->Strings[ j ] ).c_str() + as_cfgid_prefix.Length() );
              try
              {
                ( *this )[ visID ].Put( cfgID,

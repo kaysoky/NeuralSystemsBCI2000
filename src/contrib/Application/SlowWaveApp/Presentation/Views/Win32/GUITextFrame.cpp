@@ -100,7 +100,7 @@ TGUITextFrame::SetText( const TInputSequence& inText )
 const TInputSequence&
 TGUITextFrame::GetText() const
 {
-    return DisplayToInput( memo->Text.c_str() );
+    return DisplayToInput( AnsiString( memo->Text ).c_str() );
 }
 
 TPresError

@@ -217,7 +217,7 @@ void TDTBCI::Preflight(const SignalProperties&,	SignalProperties& outputProperti
     }
 		
     bciout <<"Loading RCO/RCX file..."<<endl;
-    if (!RPcoX1->LoadCOF(WideString(circuit.c_str())))
+	if (!RPcoX1->LoadCOF(WideString(circuit.c_str()).c_bstr()))
     {
         bcierr << "Error loading RCO file. Check the file name and path, and that your Pentusa has 5 processors."<<endl;
         //error

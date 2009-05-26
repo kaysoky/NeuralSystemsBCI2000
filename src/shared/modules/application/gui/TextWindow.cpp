@@ -104,7 +104,7 @@ TextWindow::SetText( const std::string& inText )
 const std::string&
 TextWindow::Text() const
 {
-  mTextBuf = mpEditField->Text.c_str();
+  mTextBuf = AnsiString( mpEditField->Text ).c_str();
   return mTextBuf;
 }
 
@@ -119,7 +119,7 @@ TextWindow::SetFontName( const std::string& inFontName )
 const std::string&
 TextWindow::FontName() const
 {
-  mTextBuf = mpEditField->Font->Name.c_str();
+  mTextBuf = AnsiString( mpEditField->Font->Name ).c_str();
   return mTextBuf;
 }
 

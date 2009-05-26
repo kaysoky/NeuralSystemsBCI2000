@@ -348,7 +348,7 @@ ParamDisplay::SingleEntryEdit::SingleEntryEdit( const ParsedComment& inParam,
 void
 ParamDisplay::SingleEntryEdit::WriteValuesTo( Param& outParam ) const
 {
-  outParam.Value() = mpEdit->Text.c_str();
+  outParam.Value() = AnsiString( mpEdit->Text ).c_str();
   DisplayBase::WriteValuesTo( outParam );
 }
 
@@ -378,7 +378,7 @@ ParamDisplay::List::List( const ParsedComment& inParam, TWinControl* inParent )
 void
 ParamDisplay::List::WriteValuesTo( Param& outParam ) const
 {
-  istringstream is( mpEdit->Text.c_str() );
+  istringstream is( AnsiString( mpEdit->Text ).c_str() );
   EncodedString value;
   int index = 0;
   outParam.SetNumValues( 0 );
@@ -673,7 +673,7 @@ ParamDisplay::SingleEntryColor::ButtonClick()
 {
   TColorDialog* dialog = new TColorDialog( static_cast<TComponent*>( NULL ) );
   RGBColor color;
-  istringstream iss( mpEdit->Text.c_str() );
+  istringstream iss( AnsiString( mpEdit->Text ).c_str() );
   if( !( iss >> color ) )
     color = RGBColor::Black;
   dialog->Color = TColor( color.ToWinColor() );

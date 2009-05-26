@@ -148,11 +148,11 @@ TImporterForm::ProcessFiles( StringSet& inFilesToProcess, bool scanOnly )
   StringSet  statesToIgnore;
   for( int i = 0; i < StatesList->Items->Count; ++i )
       if( !StatesList->Checked[ i ] )
-          statesToIgnore.insert( StatesList->Items->Strings[ i ].c_str() );
+          statesToIgnore.insert( AnsiString( StatesList->Items->Strings[ i ] ).c_str() );
 
   StringList  channelNames;
   for( int i = 0; i < ChannelNamesMemo->Lines->Count; ++i )
-      channelNames.push_back( ChannelNamesMemo->Lines->Strings[ i ].c_str() );
+      channelNames.push_back( AnsiString( ChannelNamesMemo->Lines->Strings[ i ] ).c_str() );
 
   int idx = FormatsBox->ItemIndex;
   BCIReader& Converter = *sOutputFormats[ idx >= 0 ? idx : 0 ].ConverterInstance;
@@ -191,7 +191,7 @@ TImporterForm::ProcessFiles( StringSet& inFilesToProcess, bool scanOnly )
 
     StringSet newStates = Converter.GetStates();
     for( int i = 0; i < StatesList->Items->Count; ++i )
-      newStates.erase( StatesList->Items->Strings[ i ].c_str() );
+      newStates.erase( AnsiString( StatesList->Items->Strings[ i ] ).c_str() );
     for( StringSet::const_iterator i = newStates.begin(); i != newStates.end(); ++i )
       StatesList->Checked[ StatesList->Items->Add( i->c_str() ) ] = true;
   }
@@ -326,7 +326,7 @@ TImporterForm::DropPanelWindowProc( TMessage& msg )
       {
         StringSet s;
         for( int i = 1; i <= ParamCount(); ++i )
-            s.insert( std::string( ParamStr( i ).c_str() ) );
+            s.insert( std::string( AnsiString( ParamStr( i ) ).c_str() ) );
         ProcessFiles( s, false );
         Application->Terminate();
       }
@@ -406,7 +406,7 @@ TImporterForm::FileOpenClick( TObject* )
   {
     StringSet files;
     for( int i = 0; i < pDialog->Files->Count; ++i )
-      files.insert( pDialog->Files->Strings[ i ].c_str() );
+      files.insert( AnsiString( pDialog->Files->Strings[ i ] ).c_str() );
     if( !files.empty() )
       ProcessFiles( files, false );
   }
