@@ -111,7 +111,7 @@ RDAClient.exe: SignalSource\RDAClient\RDAClient.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-getparams.exe: SignalSource\RDAClient\getparams\getparams.bpr
+getparams.exe: SignalSource\RDAClient\getparams\RDAgetparams.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
