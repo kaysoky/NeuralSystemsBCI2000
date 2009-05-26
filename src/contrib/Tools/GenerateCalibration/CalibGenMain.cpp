@@ -200,7 +200,7 @@ char buf[255];
     {
     tCalibFile->Caption=SaveDialog->FileName;
     calibconfig.filename=SaveDialog->FileName;
-    calibconfig.target=(float)atof(eTargetVal->Text.c_str());
+    calibconfig.target=(float)atof(AnsiString(eTargetVal->Text).c_str());
     bGo->Enabled=true;
     bSelectCalib->Enabled=false;
     }
@@ -223,7 +223,7 @@ bool    pos_slope[MAX_CHANNELS], neg_slope[MAX_CHANNELS];
  fpout=fopen(calibconfig.filename.c_str(), "wb");
  if ((!fpin) || (!fpout))
   {
-  Application->MessageBox("Could not open source or destination file", "Error", MB_OK);
+  Application->MessageBox(VCLSTR("Could not open source or destination file"), VCLSTR("Error"), MB_OK);
   if (fpin)  fclose(fpin);
   if (fpout) fclose(fpout);
   ResetGUI();
@@ -232,7 +232,7 @@ bool    pos_slope[MAX_CHANNELS], neg_slope[MAX_CHANNELS];
 
  // read and copy header
  if (sourceconfig.headerlength > 50000)
-    Application->MessageBox("Header in raw file > 50000", "Error", MB_OK);
+    Application->MessageBox(VCLSTR("Header in raw file > 50000"), VCLSTR("Error"), MB_OK);
  fread(buf, sourceconfig.headerlength, 1, fpin);
 
  // read first sample and initialize variables
