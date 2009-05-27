@@ -31,6 +31,10 @@
  *  Revison 2.0 2008/11/07  Jeremy Hill
  *  Updated design, including support for an auxiliary Analog Input Box (AIB)
  *  EEG + AIB acquisition tested---triggers not.
+ *
+ *  Revison 2.1 2009/05/27  Jeremy Hill
+ *  Trigger signal acquisition fixed and tested.
+ *  Added option to acquire trigger signals simultaneously in one 16-bit channel.
  */
 
 #ifndef Biosemi2ClientH
