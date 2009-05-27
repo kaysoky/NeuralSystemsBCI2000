@@ -445,7 +445,7 @@ for i=1:length(taskChFields)
     AVV=0;
     nn = 1;
     for j=1:length(tmpField)
-        if tmpField{j}.nChs == 8 || tmpField{j}.nChs == 24 continue; end
+        
         SR = [];
         LAT = [];
         SLAT = [];
@@ -482,6 +482,10 @@ for i=1:length(taskChFields)
                     break;
                 end
             end
+        end
+        if tmpField{j}.nChs == 8 || tmpField{j}.nChs == 24 
+            NCHS(end) = [];
+            continue; 
         end
         p(nn,:) = polyfit(SR, SLAT, 1);    
         if doAud 
