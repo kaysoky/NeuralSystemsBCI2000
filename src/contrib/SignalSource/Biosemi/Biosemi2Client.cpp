@@ -645,8 +645,8 @@ bool Biosemi2Client::isTriggerHigh( int trigger, int datum ) const{
             result = datum & TRIGGER_15;
             break;
         default:
-            bcierr << "Unknown trigger: " << trigger
-                << ". Note triggers are numbered starting from 0."
+            bcierr << "Illegal trigger " << trigger
+                << " (note triggers are numbered starting from 0 in Biosemi2Client::isTriggerHigh)."
                 << endl;
     }
     return result;
@@ -686,8 +686,7 @@ int Biosemi2Client::calcIndex(int sample,
     int channel) const{
     return calcIndex(sample, channel, mStartPos);
 }
-double Biosemi2Client::averageSamples(int sample,
-    int channel) const{
+double Biosemi2Client::averageSamples(int sample, int channel) const{
     double total = 0.0;
     for(int i=0,offset=mStartPos; i<mDecimationFactor; i++,offset+=mNumChannels)
         total += (double)mpDataAsInt[calcIndex(sample, channel, offset)];
@@ -708,16 +707,29 @@ Biosemi2Client::DataBlock::~DataBlock(){
 }
 
 
-int Biosemi2Client::DataBlock::getTrigger(int sample, int trigger,
-    int scaled ) const{
-    return mpBiosemi->isTriggerHigh(trigger,
-        mpBiosemi->mpDataAsInt[
-            mpBiosemi->calcIndex(sample,Biosemi2Client::STATUS_CHANNEL)]
-        ) * scaled;
+int Biosemi2Client::DataBlock::getTrigger(int sample, int trigger, int scaled ) const{
+    int val, out = 0;
+    for(int i=0, offset=mpBiosemi->mStartPos; i<mpBiosemi->mDecimationFactor; i++, offset+=mpBiosemi->mNumChannels) {
+        val = mpBiosemi->mpDataAsInt[mpBiosemi->calcIndex(sample,Biosemi2Client::STATUS_CHANNEL,offset)];
+        val = mpBiosemi->isTriggerHigh(trigger, val);
+        out |= val;
+    }
+    return out * scaled;
+}
+
+unsigned int Biosemi2Client::DataBlock::getAllTriggers(int sample) const{
+    unsigned int val, out = 0;
+    for(int i=0, offset=mpBiosemi->mStartPos; i<mpBiosemi->mDecimationFactor; i++, offset+=mpBiosemi->mNumChannels) {
+        val  = (unsigned int)mpBiosemi->mpDataAsInt[mpBiosemi->calcIndex(sample,Biosemi2Client::STATUS_CHANNEL,offset)];
+        val &= (unsigned int)Biosemi2Client::TRIGGER_MASK;
+        val /= (unsigned int)Biosemi2Client::TRIGGER_0;
+        out |= val;
+    }
+    return out;
 }
 
 // Loops through the signal channels starting at 0
-//(so it pretends sync and status do not exist)
+// (so it pretends sync and status do not exist)
 
 int Biosemi2Client::DataBlock::getSignal(int sample,
     int channel) const{
@@ -734,7 +746,7 @@ int Biosemi2Client::DataBlock::getSignal(int sample,
     // skip the sync and status channels
 
     // return mpBiosemi->mpDataAsInt[mpBiosemi->calcIndex(sample,channel)];
-    return mpBiosemi->averageSamples(sample, channel);
+    return (int)(0.5 + mpBiosemi->averageSamples(sample, channel));
 }
 
 // Loop through the sync and status channels and make sure this data is valid

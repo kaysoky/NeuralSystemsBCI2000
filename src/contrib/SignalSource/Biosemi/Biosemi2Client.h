@@ -54,14 +54,15 @@ public:
                                         // int. 1 byte per char, 4 bytes per int
                                         // so 4 chars per int
     // size of the int data buffer
-
     static const long BUFFER_SIZE_IN_INT = BUFFER_SIZE_IN_BYTES / BYTES_PER_INT;
-    static const int SYNC_CHANNEL = 0;
-    static const int STATUS_CHANNEL = 1;
-    static const int FIRST_EEG_CHANNEL =   2;
-    static const int FIRST_AIB_CHANNEL = 282;
-    static const int NUM_AIB_CHANNELS  =  32;
-    static const int NUM_TRIGGERS = 16; // the number of triggers
+
+    static const int SYNC_CHANNEL          =   0;
+    static const int STATUS_CHANNEL        =   1;
+    static const int FIRST_EEG_CHANNEL     =   2;
+    static const int FIRST_AIB_CHANNEL_MK1 = 258;
+    static const int FIRST_AIB_CHANNEL_MK2 = 282;
+    static const int NUM_AIB_CHANNELS      =  32;
+    static const int NUM_TRIGGERS          =  16; // the number of triggers
 
 
     Biosemi2Client();
@@ -270,22 +271,23 @@ protected:
 
     // Mask if trigger is high using 32bits
 
-    static const int TRIGGER_0  = 0x00000010;
-    static const int TRIGGER_1  = 0x00000020;
-    static const int TRIGGER_2  = 0x00000040;
-    static const int TRIGGER_3  = 0x00000080;
-    static const int TRIGGER_4  = 0x00000100;
-    static const int TRIGGER_5  = 0x00000200;
-    static const int TRIGGER_6  = 0x00000400;
-    static const int TRIGGER_7  = 0x00000800;
-    static const int TRIGGER_8  = 0x00001000;
-    static const int TRIGGER_9  = 0x00002000;
-    static const int TRIGGER_10 = 0x00004000;
-    static const int TRIGGER_11 = 0x00008000;
-    static const int TRIGGER_12 = 0x00010000;
-    static const int TRIGGER_13 = 0x00020000;
-    static const int TRIGGER_14 = 0x00080000;
-    static const int TRIGGER_15 = 0x00100000;
+    static const unsigned int TRIGGER_0    = 0x00000100;
+    static const unsigned int TRIGGER_1    = 0x00000200;
+    static const unsigned int TRIGGER_2    = 0x00000400;
+    static const unsigned int TRIGGER_3    = 0x00000800;
+    static const unsigned int TRIGGER_4    = 0x00001000;
+    static const unsigned int TRIGGER_5    = 0x00002000;
+    static const unsigned int TRIGGER_6    = 0x00004000;
+    static const unsigned int TRIGGER_7    = 0x00008000;
+    static const unsigned int TRIGGER_8    = 0x00010000;
+    static const unsigned int TRIGGER_9    = 0x00020000;
+    static const unsigned int TRIGGER_10   = 0x00040000;
+    static const unsigned int TRIGGER_11   = 0x00080000;
+    static const unsigned int TRIGGER_12   = 0x00100000;
+    static const unsigned int TRIGGER_13   = 0x00200000;
+    static const unsigned int TRIGGER_14   = 0x00400000;
+    static const unsigned int TRIGGER_15   = 0x00800000;
+    static const unsigned int TRIGGER_MASK = 0x00ffff00;
 
     // M E M B E R  V A R I A B L E S //
 
@@ -423,6 +425,8 @@ protected:
          */
         virtual int getTrigger(int sample, int trigger,
             int scaled=1 ) const;
+
+        virtual unsigned int getAllTriggers(int sample) const;
 
         /*
          * Loop through the sync and status channels and make sure this data

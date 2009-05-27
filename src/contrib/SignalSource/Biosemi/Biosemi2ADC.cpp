@@ -76,8 +76,9 @@ Biosemi2ADC::Biosemi2ADC()
        "// list of physical channel indices for the EEG channels in use",
    "Source intlist AIBChList=      0          % 1 32"
        "// list of Auxiliary Input Box channels to acquire after the EEG channels (included in the SourceCh total)",
-   "Source intlist TriggerChList= 16   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   % 1 16"
-       "// list of one-bit trigger channels to append to the end (included in the SourceCh total)",
+   "Source intlist TriggerChList= 16   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16   % 0 16"
+       "// list of one-bit trigger channels to append to the end (included in the SourceCh total)"
+         " or a single 0 to acquire all trigger channels as a single 16-bit channel",
     "Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset=  80     0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0            0       0       0       0       0       0       0       0       0       0       0       0       0       0       0       0        0 % %"
        "// offset for channels in A/D units",
     "Source:Signal%20Properties:DataIOFilter floatlist SourceChGain=    80     0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125 0.03125    100     100     100     100     100     100     100     100     100     100     100     100     100     100     100     100        % % %"
@@ -86,10 +87,10 @@ Biosemi2ADC::Biosemi2ADC()
 
 
  BEGIN_STATE_DEFINITIONS
-   "Running 1 0 0 0",
+   "Running    1 0 0 0",
    "BatteryLow 1 0 0 0",
-   "MODE 4 0 0 0",      // 4 bits encode the speedmode. Bit 17,18,19 21 of the Status channel
-   "MK2 1 0 0 0",
+   "MODE       4 0 0 0",      // 4 bits encode the speedmode. Bit 17,18,19 21 of the Status channel
+   "MK2        1 0 0 0",
  END_STATE_DEFINITIONS
 
 }
@@ -175,9 +176,10 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
 
     for( int i = 0 ; i < nTrigRequested ; ++i ) {
         int ind = Parameter( "TriggerChList" )( i );
-        if( ind < 1 || ind > Biosemi2Client::NUM_TRIGGERS ) {
+        if( ind > Biosemi2Client::NUM_TRIGGERS || ind < 0 || (ind == 0 && nTrigRequested > 1)) {
             bcierr << "Illegal TriggerChList index " << ind
-                   << ". Legal range is [1," << Biosemi2Client::NUM_TRIGGERS << "]."
+                   << ". Legal range is [1," << Biosemi2Client::NUM_TRIGGERS << "]"
+                   << " although a single 0 (meaning all triggers as 16-bit integer) is also acceptable."
                    << endl;
         } 
     }
@@ -224,10 +226,11 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
         mChInd[chInd_ind++] = Biosemi2Client::FIRST_EEG_CHANNEL + ind - 1;
     }
 
+	int first_aib = (mBiosemi.isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
     int nAibRequested   = Parameter( "AIBChList" )->NumValues();
     for( int i = 0 ; i < nAibRequested ; ++i ) {
         int ind = Parameter( "AIBChList" )( i );
-        mChInd[chInd_ind++] = Biosemi2Client::FIRST_AIB_CHANNEL + ind - 1;
+        mChInd[chInd_ind++] = first_aib + ind - 1;
     }
 
     int nTrigRequested  = Parameter( "TriggerChList" )->NumValues();
@@ -288,7 +291,10 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& Output )
         for(int channel(0) ; channel < mSourceCh ; ++channel ) {
             ind = mChInd[channel];
             if ( ind < 0) {
-                Output( channel, sample ) = mpDataBlock->getTrigger( sample, -ind );
+                Output( channel, sample ) = mpDataBlock->getTrigger( sample, -ind - 1 );
+            }
+            else if ( ind == 0) {
+                Output( channel, sample ) = mpDataBlock->getAllTriggers( sample );
             }
             else {
                 Output( channel, sample ) = mpDataBlock->getSignal( sample, ind ) / 256.0;
