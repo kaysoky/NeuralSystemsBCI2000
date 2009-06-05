@@ -54,6 +54,7 @@ class vAmpThread : public OSThread
 		 mAnalogChannels;
 	float  mSampleRate;
 	unsigned int mImpBuf[17];
+	unsigned short mPrevTime;
 	float mHPcorner;
 	stringstream mLastErr;
 	vector<int> mChList;

@@ -257,6 +257,7 @@ vAmpThread::Execute()
 	int curCh=0, curSample = 0, chCount;
 	map<int,int>::iterator mapIt;
 	int waitTime;
+	mPrevTime = PrecisionTime::Now();
 
 	while (!this->IsTerminating() && mOk)
 	{
@@ -469,28 +470,34 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 {
 	int nReturnLen = 0,			// Current return length in bytes.
 		nLenToRead = nReadLen;	// len in bytes.
-	unsigned short nTimeStart = PrecisionTime::Now();
+	unsigned short nTimeStart;
     int nLoops = 0;
 	do
 	{
+		//wait until at least one block has passed
+		nTimeStart = PrecisionTime::Now();
+		unsigned short tdiff = (unsigned short)((float(mBlockSize)*1000)/(mSampleRate)) - (nTimeStart - mPrevTime);
+		if (tdiff >0 && tdiff < (float(mBlockSize)*1000)/(mSampleRate) )
+			Sleep(tdiff);
 		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
 		if (nReturnLen < 0) // Device error.
 		{
 			return -1;
 		}
-		else if (nReturnLen == 0)
+		/*else if (nReturnLen == 0)
 		{
-			Sleep(15); // previous 1 ms: causes trigger problem. 
-		}
+			Sleep(0); // previous 1 ms: causes trigger problem. 
+		} */
 		else
 		{
 			nLenToRead -= nReturnLen; // decrement the read length.
 			pBuffer += nReturnLen;
 		}
-		if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
+		/*if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
 		{
 			return -1;
-		}
-	} while (nLenToRead > 0);
+		}  */
+	} while (nLenToRead > 0 && !this->IsTerminating()); 
+	mPrevTime = PrecisionTime::Now();
 	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
 }

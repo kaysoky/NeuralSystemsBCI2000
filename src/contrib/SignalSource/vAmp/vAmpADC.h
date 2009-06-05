@@ -41,8 +41,6 @@ class vAmpADC : public GenericADC
 	virtual void Halt();
 
  private:
-	friend class vAmpThread;
-	vAmpThread *mAcquire;
 	int mNumEEGchannels;
 	vector<int> mChList;
 	int mTimeoutMs;
@@ -51,6 +49,9 @@ class vAmpADC : public GenericADC
 
 	float getSampleRate(float);
 	int getDecimation() const;
+
+	friend class vAmpThread;
+	vAmpThread *mAcquire;
 };
 
 #endif // VAMP_ADC_H
