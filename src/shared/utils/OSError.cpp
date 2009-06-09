@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Author: sjuergen.mellinger@uni-tuebingen.de
+// Author: juergen.mellinger@uni-tuebingen.de
 // Description: A class for OS error codes and messages.
 //
 // (C) 2000-2009, BCI2000 Project
