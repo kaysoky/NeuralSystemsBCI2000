@@ -64,7 +64,11 @@ SignalDisplay::SignalDisplay()
   mDataHeight( 0 ),
   mLabelWidth( cLabelWidth ),
   mMarkerHeight( 0 ),
+#ifdef BUNCH_OF_HANDLES
   mpHandles( NULL )
+#else
+  mTargetDC( NULL )
+#endif
 {
   RECT r = { 0, 0, 0, 0 };
   mDisplayRect = r;
@@ -72,7 +76,9 @@ SignalDisplay::SignalDisplay()
 
 SignalDisplay::~SignalDisplay()
 {
+#ifdef BUNCH_OF_HANDLES
   delete mpHandles;
+#endif
   ::DeleteObject( mRedrawRgn );
   ::DeleteObject( mDisplayRgn );
 }
@@ -89,16 +95,25 @@ SignalDisplay::SetContext( const GUI::DrawContext& dc )
   };
   mDisplayRect = r;
   ::SetRectRgn( mDisplayRgn, r.left, r.top, r.right, r.bottom );
+#ifdef BUNCH_OF_HANDLES
   delete mpHandles;
   mpHandles = new BunchOfHandles( dc.handle );
+#else
+  mTargetDC = dc.handle;
+#endif
   return Invalidate();
 }
 
 SignalDisplay&
 SignalDisplay::Invalidate()
 {
+#ifdef BUNCH_OF_HANDLES
   if( mpHandles != NULL && mpHandles->targetWindow != NULL )
     ::InvalidateRect( mpHandles->targetWindow, &mDisplayRect, false );
+#else
+  if( mTargetDC != NULL )
+    ::InvalidateRect( ::WindowFromDC( mTargetDC ), &mDisplayRect, false );
+#endif
   return *this;
 }
 
@@ -134,8 +149,13 @@ SignalDisplay::AdaptTo( const GenericSignal& inSignal )
 SignalDisplay&
 SignalDisplay::WrapForward( const GenericSignal& inSignal )
 {
+#ifdef BUNCH_OF_HANDLES
   if( mpHandles == NULL )
     return *this;
+#else
+  if( mTargetDC == NULL )
+    return *this;
+#endif
 
   AdaptTo( inSignal );
 
@@ -174,9 +194,16 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
 
   // We maintain a redraw region to make sure the
   // cursor is deleted from its old position.
-  if( mpHandles->targetWindow != NULL )
+#ifdef BUNCH_OF_HANDLES
+  HWND targetWindow = mpHandles->targetWindow;
+#else
+  HWND targetWindow = NULL;
+  if( mTargetDC )
+    targetWindow = ::WindowFromDC( mTargetDC );
+#endif
+  if( targetWindow != NULL )
   {
-    ::InvalidateRgn( mpHandles->targetWindow, mRedrawRgn, false );
+    ::InvalidateRgn( targetWindow, mRedrawRgn, false );
     ::SetRectRgn( mRedrawRgn, 0, 0, 0, 0 );
 
     RECT invalidRect = mDataRect;
@@ -185,19 +212,19 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
     invalidRect.left = max( firstInvalidPixel, mDataRect.left );
     invalidRect.right = min( firstValidPixel, mDataRect.right );
     if( invalidRect.left < invalidRect.right )
-      ::InvalidateRect( mpHandles->targetWindow, &invalidRect, false );
+      ::InvalidateRect( targetWindow, &invalidRect, false );
 
     // The area wrapped around the left edge.
     invalidRect.left = max( firstInvalidPixel + mDataWidth, mDataRect.left );
     invalidRect.right = min( firstValidPixel + mDataWidth, mDataRect.right );
     if( invalidRect.left < invalidRect.right )
-      ::InvalidateRect( mpHandles->targetWindow, &invalidRect, false );
+      ::InvalidateRect( targetWindow, &invalidRect, false );
 
     // The area wrapped around the right edge.
     invalidRect.left = max( firstInvalidPixel - mDataWidth, mDataRect.left );
     invalidRect.right = min( firstValidPixel - mDataWidth, mDataRect.right );
     if( invalidRect.left < invalidRect.right )
-      ::InvalidateRect( mpHandles->targetWindow, &invalidRect, false );
+      ::InvalidateRect( targetWindow, &invalidRect, false );
   }
   return *this;
 }
@@ -205,8 +232,13 @@ SignalDisplay::WrapForward( const GenericSignal& inSignal )
 SignalDisplay&
 SignalDisplay::ScrollForward( const GenericSignal& inSignal )
 {
+#ifdef BUNCH_OF_HANDLES
   if( mpHandles == NULL )
     return *this;
+#else
+  if( mTargetDC == NULL )
+    return *this;
+#endif
 
   if( inSignal.Elements() < 1 )
     return *this;
@@ -234,8 +266,13 @@ SignalDisplay::ScrollForward( const GenericSignal& inSignal )
 SignalDisplay&
 SignalDisplay::ScrollBack( const GenericSignal& inSignal )
 {
+#ifdef BUNCH_OF_HANDLES
   if( mpHandles == NULL )
     return *this;
+#else
+  if( mTargetDC == NULL )
+    return *this;
+#endif
 
   if( inSignal.Elements() < 1 )
     return *this;
@@ -274,14 +311,19 @@ void
 SignalDisplay::SyncLabelWidth()
 {
   mChannelNameCache.clear();
-  if( mpHandles == NULL )
+#ifdef BUNCH_OF_HANDLES
+  HDC targetDC = mpHandles ? mpHandles->targetDC : NULL;
+#else
+  HDC targetDC = mTargetDC;
+#endif
+  if( targetDC == NULL )
   {
     mLabelWidth = cLabelWidth;
     mMarkerHeight = mLabelWidth;
   }
   else
   {
-    HDC dc = mpHandles->targetDC;
+    HDC dc = targetDC;
     HGDIOBJ font = AxisFont();
     ::SelectObject( dc, font );
     SIZE size = { cLabelWidth, 0 };
@@ -401,8 +443,13 @@ SignalDisplay::SetNumSamples( int inNumSamples )
 SignalDisplay&
 SignalDisplay::Paint( void* inUpdateRegion )
 {
+#ifdef BUNCH_OF_HANDLES
   if( mpHandles == NULL )
     return *this;
+#else
+  if( mTargetDC == NULL )
+    return *this;
+#endif
 
   HRGN updateRgn
    = inUpdateRegion ? static_cast<HRGN>( inUpdateRegion ) : mDisplayRgn;
@@ -478,7 +525,11 @@ SignalDisplay::Paint( void* inUpdateRegion )
       height = mDisplayRect.bottom - mDisplayRect.top;
 
   HBITMAP offscreenBmp = NULL;
+#ifdef BUNCH_OF_HANDLES
   HDC dc = mpHandles->targetDC;
+#else
+  HDC dc = mTargetDC;
+#endif
   switch( ::GetObjectType( dc ) )
   {
     case OBJ_METADC:
@@ -486,13 +537,22 @@ SignalDisplay::Paint( void* inUpdateRegion )
       break;
 
     default:
+#ifdef BUNCH_OF_HANDLES
       dc = ::CreateCompatibleDC( mpHandles->targetDC );
       offscreenBmp = ::CreateCompatibleBitmap( mpHandles->targetDC, width, height );
+#else
+      dc = ::CreateCompatibleDC( mTargetDC );
+      offscreenBmp = ::CreateCompatibleBitmap( mTargetDC, width, height );
+#endif
       ::DeleteObject( ::SelectObject( dc, offscreenBmp ) );
       ::SelectClipRgn( dc, updateRgn );
       ::OffsetClipRgn( dc, -mDisplayRect.left, -mDisplayRect.top );
   }
+#ifdef BUNCH_OF_HANDLES
   ::SelectClipRgn( mpHandles->targetDC, updateRgn );
+#else
+  ::SelectClipRgn( mTargetDC, updateRgn );
+#endif
 
   // Clear the background.
   RECT fullArea = { 0, 0, width, height };
@@ -933,7 +993,12 @@ SignalDisplay::Paint( void* inUpdateRegion )
   // Copy the data from the buffer into the target device context (usually a window).
   if( offscreenBmp )
   {
-    ::BitBlt( mpHandles->targetDC,
+#ifdef BUNCH_OF_HANDLES
+    HDC targetDC = mpHandles->targetDC;
+#else
+    HDC targetDC = mTargetDC;
+#endif
+    ::BitBlt( targetDC,
               mDisplayRect.left,
               mDisplayRect.top,
               mDisplayRect.right - mDisplayRect.left,

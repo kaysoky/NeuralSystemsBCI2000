@@ -247,6 +247,7 @@ class SignalDisplay
  private:
   HGDIOBJ            AxisFont();
 
+#ifdef BUNCH_OF_HANDLES
   struct BunchOfHandles
   {
     BunchOfHandles( HDC inDC )
@@ -256,9 +257,13 @@ class SignalDisplay
     ~BunchOfHandles()
       {}
 
-    HDC targetWindow,
-        targetDC;
+    HWND targetWindow;
+    HDC  targetDC;
   }*                 mpHandles;
+
+#else
+  HDC mTargetDC;
+#endif // BUNCH_OF_HANDLES
   RECT               mDisplayRect;
   HRGN               mDisplayRgn,
                      mRedrawRgn;
