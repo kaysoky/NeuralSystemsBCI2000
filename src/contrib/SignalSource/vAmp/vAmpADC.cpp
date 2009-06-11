@@ -375,6 +375,7 @@ void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 		for (int sample = 0; sample < signal.Elements(); sample++)
 			for (int ch = 0; ch < signal.Channels(); ch++)
 				signal(ch, sample) = 0;
+		ResetEvent( mAcquire->acquireEventRead );
 		return;
 	}
 

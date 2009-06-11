@@ -9,13 +9,15 @@
 //---------------------------------------------------------------------------
 //USEFORM("impedanceGUI.cpp", impGUI);
 //---------------------------------------------------------------------------
+USEFORM("impedanceGUI.cpp", impGUI);
+//---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
         try
         {
 				 Application->Initialize();
 				 Application->Title = "V-Amp Signal Source";
-                 CoreModuleVCL().Run( _argc, _argv );
+                 CoreModule().Run( _argc, _argv );
         }
         catch (Exception &exception)
         {

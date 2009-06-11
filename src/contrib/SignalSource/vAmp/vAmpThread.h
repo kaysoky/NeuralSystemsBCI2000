@@ -16,6 +16,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <stdio.h>
 #include "GenericSignal.h"
 #include "defines.h"
 #include "OSThread.h"
@@ -106,6 +107,7 @@ class vAmpThread : public OSThread
 	IIRFilter<float> mFilter;
 	typedef Ratpoly<FilterDesign::Complex> TransferFunction;
 
+	FILE *logFile;
 };
 
 #endif // VAMP_THREAD_H

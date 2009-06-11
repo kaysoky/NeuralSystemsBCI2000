@@ -193,6 +193,8 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 		.Initialize();
 
   acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
+
+  logFile = fopen("c:\\vampthread.txt","w");
 }
 
 vAmpThread::~vAmpThread()
@@ -204,6 +206,7 @@ vAmpThread::~vAmpThread()
 		faStop(mDevList[dev]);
 		faClose(mDevList[dev]);
 	}
+  fclose(logFile);
 }
 
 void vAmpThread::AdvanceReadBlock()
@@ -470,34 +473,86 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 {
 	int nReturnLen = 0,			// Current return length in bytes.
 		nLenToRead = nReadLen;	// len in bytes.
-	unsigned short nTimeStart;
-    int nLoops = 0;
+	int nLoops = 0;
+	unsigned short readTime, startTime = PrecisionTime::Now();
+	int tdiff, remTime;
+    DWORD sleepTime;
 	do
 	{
 		//wait until at least one block has passed
-		nTimeStart = PrecisionTime::Now();
-		unsigned short tdiff = (unsigned short)((float(mBlockSize)*1000)/(mSampleRate)) - (nTimeStart - mPrevTime);
-		if (tdiff >0 && tdiff < (float(mBlockSize)*1000)/(mSampleRate) )
-			Sleep(tdiff);
+
+		if (nLoops == 0){
+			tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
+			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
+			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate) )
+				Sleep(remTime);
+		}
+		
+		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
+		nLenToRead -= nReturnLen;
+		readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
+		if (readTime >(int)((float(2*mBlockSize)*1000)/(mSampleRate)) && nLenToRead > 0)
+			return -1;
+		fprintf(logFile,"%d ", readTime);
+		if (nReturnLen < 0) // Device error.
+		{
+			return -1;
+		}
+
+		if (nReturnLen == 0){
+			fprintf(logFile,"(LEN=0)");
+			Sleep((int)((float(mBlockSize)*1000)/(mSampleRate)));
+			continue;
+		}
+		if (nLenToRead > 0)
+		{
+			 // decrement the read length.
+			pBuffer += nReturnLen;
+			tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
+			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
+			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate)) {
+				sleepTime = remTime;
+				Sleep(remTime);
+				fprintf(logFile,"(S%d) ", remTime);
+			}
+		}
+		//nLoops++;
+		/*if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
+		{
+			return -1;
+		}  */
+	} while (nLenToRead > 0 && !this->IsTerminating());
+	fprintf(logFile,"\n\n");
+	mPrevTime = PrecisionTime::Now();
+	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
+
+	//original FirstAmp code
+	/*
+	int nReturnLen = 0,			// Current return length in bytes.
+		nLenToRead = nReadLen;	// len in bytes.
+	UINT nTimeOut = timeGetTime() + DEVICE_SERVE_TIMEOUT; 
+
+	do
+	{
 		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
 		if (nReturnLen < 0) // Device error.
 		{
 			return -1;
 		}
-		/*else if (nReturnLen == 0)
+		else if (nReturnLen == 0)
 		{
-			Sleep(0); // previous 1 ms: causes trigger problem. 
-		} */
+			Sleep(DEVICE_GET_DATA_INTERVAL); // previous 1 ms: causes trigger problem. 
+		}
 		else
 		{
 			nLenToRead -= nReturnLen; // decrement the read length.
 			pBuffer += nReturnLen;
 		}
-		/*if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
+		if (timeGetTime() >= nTimeOut) // Timeout
 		{
 			return -1;
-		}  */
-	} while (nLenToRead > 0 && !this->IsTerminating()); 
-	mPrevTime = PrecisionTime::Now();
+		}
+	} while (m_bRun && nLenToRead > 0);
 	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
+	*/
 }
