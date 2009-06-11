@@ -6,6 +6,8 @@
     <PROJECT value="..\..\..\..\..\tools\USBampgetinfo\USBampgetinfo.exe"/>
     <OBJFILES value="obj\UMain.obj"/>
     <RESFILES value="USBampgetinfo.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="..\gUSBamp.lib"/>

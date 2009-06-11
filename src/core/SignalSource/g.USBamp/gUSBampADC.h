@@ -19,8 +19,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <Classes.hpp>
-#include <SyncObjs.hpp>
+#include "OSThread.h"
 #include "PrecisionTime.h"
 
 class gUSBampADC : public GenericADC
@@ -68,18 +67,18 @@ class gUSBampADC : public GenericADC
     class AcquireThread;
     HANDLE acquireEventRead;
     friend class AcquireThread;
-    class AcquireThread : public TThread
+    class AcquireThread : public OSThread
     {
       public:
         AcquireThread( gUSBampADC * parent )
-        : TThread( true ), amp( parent )
+        : OSThread( true ), amp( parent )
         {
             SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
         }
         float getNextValue();
         int getNextValueInt();
         private:
-            virtual void __fastcall Execute();
+            int Execute();
             gUSBampADC *amp;
             int mBufferReadPos, mBufferWritePos;
             float *mData;
