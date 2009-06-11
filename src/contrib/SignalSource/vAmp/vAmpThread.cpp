@@ -52,7 +52,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 
   //open the devices
   mNumChannels = 0;
-  mRingBufferSize = int(mBlockSize*DEVICE_BUFTIME);
+  mRingBufferSize = int(mBlockSize*1);
   mTrigBuffer.resize(MAX_ALLOWED_DEVICES);
 
   int nMaxPoints = mBlockSize*decimate;
@@ -194,7 +194,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 
   acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
 
-  logFile = fopen("c:\\vampthread.txt","w");
+  //logFile = fopen("c:\\vampthread.txt","w");
 }
 
 vAmpThread::~vAmpThread()
@@ -206,7 +206,7 @@ vAmpThread::~vAmpThread()
 		faStop(mDevList[dev]);
 		faClose(mDevList[dev]);
 	}
-  fclose(logFile);
+  //fclose(logFile);
 }
 
 void vAmpThread::AdvanceReadBlock()
@@ -481,27 +481,27 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 	{
 		//wait until at least one block has passed
 
-		if (nLoops == 0){
+		/*if (nLoops == 0){
 			tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
 			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
 			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate) )
 				Sleep(remTime);
-		}
+		} */
 		
 		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
 		nLenToRead -= nReturnLen;
 		readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
 		if (readTime >(int)((float(2*mBlockSize)*1000)/(mSampleRate)) && nLenToRead > 0)
 			return -1;
-		fprintf(logFile,"%d ", readTime);
+		//fprintf(logFile,"%d ", readTime);
 		if (nReturnLen < 0) // Device error.
 		{
 			return -1;
 		}
 
 		if (nReturnLen == 0){
-			fprintf(logFile,"(LEN=0)");
-			Sleep((int)((float(mBlockSize)*1000)/(mSampleRate)));
+			//fprintf(logFile,"(LEN=0)");
+			Sleep(3);
 			continue;
 		}
 		if (nLenToRead > 0)
@@ -512,8 +512,8 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
 			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate)) {
 				sleepTime = remTime;
-				Sleep(remTime);
-				fprintf(logFile,"(S%d) ", remTime);
+				Sleep(1);
+				//fprintf(logFile,"(S%d) ", remTime);
 			}
 		}
 		//nLoops++;
@@ -522,7 +522,7 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 			return -1;
 		}  */
 	} while (nLenToRead > 0 && !this->IsTerminating());
-	fprintf(logFile,"\n\n");
+	//fprintf(logFile,"\n\n");
 	mPrevTime = PrecisionTime::Now();
 	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
 

@@ -415,7 +415,7 @@ void vAmpADC::Halt()
 	{
 		//mAcquire->Suspend();
 		mAcquire->Terminate();
-		while (mAcquire->IsTerminated())
+		while (!mAcquire->IsTerminated())
 			Sleep(10); 
 		delete mAcquire;
 		mAcquire = NULL;
