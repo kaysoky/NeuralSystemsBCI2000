@@ -512,7 +512,7 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
 			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate)) {
 				sleepTime = remTime;
-				Sleep(1);
+				Sleep(0);
 				//fprintf(logFile,"(S%d) ", remTime);
 			}
 		}

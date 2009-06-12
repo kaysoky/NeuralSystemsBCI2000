@@ -39,7 +39,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=1"/>
+    <USERDEFINES value="MODTYPE=1;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="vAmpSource.cpp"/>
     <INCLUDEPATH value="..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp"/>
@@ -56,12 +56,12 @@
       -I..\..\..\shared\types -I..\..\..\shared\modules -I..\..\..\shared\fileio 
       -I..\..\..\shared\bcistream -I..\..\..\shared\accessors -I.. 
       -I$(BCB)\include -I$(BCB)\include\vcl -I..\..\..\extlib\brainproducts\vamp 
-      -src_suffix cpp -DMODTYPE=1 -boa"/>
-    <CFLAG1 value="-O2 -Vx -Ve -xf -xp -X- -a8 -6 -b- -k- -vi -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
+      -src_suffix cpp -DMODTYPE=1 -D_DEBUG -boa"/>
+    <CFLAG1 value="-Od -Vx -Ve -xf -xp -X- -r- -a8 -6 -b- -k -y -v -vi- -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -197,8 +197,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=MODTYPE=1
-Item1=MODTYPE=1;_DEBUG
+Item0=MODTYPE=1;_DEBUG
+Item1=MODTYPE=1
 Item2=_DEBUG;MODTYPE=1
 
 [HistoryLists\hlIntOutputDir]
