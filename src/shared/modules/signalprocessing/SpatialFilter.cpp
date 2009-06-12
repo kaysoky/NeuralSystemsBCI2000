@@ -48,6 +48,7 @@ SpatialFilter::~SpatialFilter()
 {
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // SpatialFilter::none
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -208,8 +209,8 @@ SpatialFilter::DoInitialize<SpatialFilter::sparseMatrix>( const SignalProperties
   for( size_t row = 0; row < numRows; ++row )
   {
     mFilterMatrix[row].resize(numCols);
-    inputChannelAddress = Parameter( "SpatialFilter" )( row, 0 );
-    outputChannelAddress = Parameter( "SpatialFilter" )( row, 1 );
+    inputChannelAddress = string( Parameter( "SpatialFilter" )( row, 0 ) );
+    outputChannelAddress = string( Parameter( "SpatialFilter" )( row, 1 ) );
     mFilterMatrix[ row ][ 0 ] = Input.ChannelIndex( inputChannelAddress );
     mFilterMatrix[ row ][ 1 ] = Output.ChannelIndex( outputChannelAddress );
     if( mFilterMatrix[ row ][ 1 ] < 0 )
@@ -275,7 +276,7 @@ SpatialFilter::DoInitialize<SpatialFilter::commonAverage>( const SignalPropertie
     int inputIdx;
     for (int i = 0; i < Parameter("SpatialFilterCAROutput")->NumValues(); ++i)
     {
-      inputChannelAddress = Parameter("SpatialFilterCAROutput")(i);
+      inputChannelAddress = string( Parameter("SpatialFilterCAROutput")(i) );
       inputIdx = Input.ChannelIndex( inputChannelAddress );
       mCARoutputList.push_back(inputIdx);
     }
@@ -303,6 +304,7 @@ SpatialFilter::DoProcess<SpatialFilter::commonAverage>( const GenericSignal& Inp
       Output(outChannel, sample) = Input(mCARoutputList[outChannel], sample) - meanVal;
   }
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -385,3 +387,4 @@ SpatialFilter::Process( const GenericSignal& Input,
       break;
   }
 }
+
