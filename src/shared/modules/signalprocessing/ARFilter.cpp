@@ -85,39 +85,39 @@ ARFilter::Preflight( const SignalProperties& Input,
         bcierr << "FirstBinCenter and LastBinCenter must be greater zero and"
                << " less than half the sampling rate"
                << endl;
-      if( firstBinCenter >= lastBinCenter )
+      else if( firstBinCenter >= lastBinCenter )
         bcierr << "FirstBinCenter must be less than LastBinCenter" << endl;
-      if( binWidth <= 0 )
+      else if( binWidth <= 0 )
         bcierr << "BinWidth must be greater zero" << endl;
       else
       {
         int numBins = ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 );
         Output.SetElements( numBins );
-      }
-      Output.ElementUnit().SetOffset( firstBinCenter / binWidth )
-                          .SetGain( binWidth * Parameter( "SamplingRate" ) )
-                          .SetSymbol( "Hz" );
-      Output.ValueUnit().SetRawMin( 0 );
-      float inputAmplitude = Input.ValueUnit().RawMax() - Input.ValueUnit().RawMin(),
-            whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
-      switch( int( Parameter( "OutputType" ) ) )
-      {
-        case SpectralAmplitude:
-          Output.SetName( "AR Amplitude Spectrum" );
-          Output.ValueUnit().SetOffset( 0 )
-                            .SetGain( 1e-6 )
-                            .SetSymbol( "V/sqrt(Hz)" )
-                            .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
-          break;
-
-        case SpectralPower:
+        Output.ElementUnit().SetOffset( firstBinCenter / binWidth )
+                            .SetGain( binWidth * Parameter( "SamplingRate" ) )
+                            .SetSymbol( "Hz" );
+        Output.ValueUnit().SetRawMin( 0 );
+        float inputAmplitude = Input.ValueUnit().RawMax() - Input.ValueUnit().RawMin(),
+              whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
+        switch( int( Parameter( "OutputType" ) ) )
         {
-          Output.SetName( "AR Power Spectrum" );
-          Output.ValueUnit().SetOffset( 0 )
-                            .SetGain( 1 )
-                            .SetSymbol( "(muV)^2/Hz" )
-                            .SetRawMax( whiteNoisePowerPerBin );
-        } break;
+          case SpectralAmplitude:
+            Output.SetName( "AR Amplitude Spectrum" );
+            Output.ValueUnit().SetOffset( 0 )
+                              .SetGain( 1e-6 )
+                              .SetSymbol( "V/sqrt(Hz)" )
+                              .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
+            break;
+
+          case SpectralPower:
+          {
+            Output.SetName( "AR Power Spectrum" );
+            Output.ValueUnit().SetOffset( 0 )
+                              .SetGain( 1 )
+                              .SetSymbol( "(muV)^2/Hz" )
+                              .SetRawMax( whiteNoisePowerPerBin );
+          } break;
+        }
       }
     } break;
 
