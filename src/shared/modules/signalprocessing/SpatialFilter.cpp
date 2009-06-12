@@ -48,86 +48,6 @@ SpatialFilter::~SpatialFilter()
 {
 }
 
-
-void
-SpatialFilter::Preflight( const SignalProperties& Input,
-                                SignalProperties& Output ) const
-{
-  switch( int( Parameter( "SpatialFilterType" ) ) )
-  {
-    case none:
-      DoPreflight<none>( Input, Output );
-      break;
-
-    case fullMatrix:
-      DoPreflight<fullMatrix>( Input, Output );
-      break;
-
-    case sparseMatrix:
-      DoPreflight<sparseMatrix>( Input, Output );
-      break;
-
-    case commonAverage:
-      DoPreflight<commonAverage>( Input, Output );
-      break;
-
-    default:
-      bcierr << "Unexpected filter type ("
-             << int( Parameter( "SpatialFilterType" ) )
-             << ")"
-             << endl;
-   }
-}
-
-void
-SpatialFilter::Initialize( const SignalProperties& Input,
-                           const SignalProperties& Output )
-{
-  mSpatialFilterType = Parameter( "SpatialFilterType" );
-  switch( mSpatialFilterType )
-  {
-    case none:
-      DoInitialize<none>( Input, Output );
-      break;
-
-    case fullMatrix:
-      DoInitialize<fullMatrix>( Input, Output );
-      break;
-
-    case sparseMatrix:
-      DoInitialize<sparseMatrix>( Input, Output );
-      break;
-
-    case commonAverage:
-      DoInitialize<commonAverage>( Input, Output );
-      break;
-  }
-}
-
-void
-SpatialFilter::Process( const GenericSignal& Input,
-                              GenericSignal& Output )
-{
-  switch( mSpatialFilterType )
-  {
-    case none:
-      DoProcess<none>( Input, Output );
-      break;
-
-    case fullMatrix:
-      DoProcess<fullMatrix>( Input, Output );
-      break;
-    
-    case sparseMatrix:
-      DoProcess<sparseMatrix>( Input, Output );
-      break;
-
-    case commonAverage:
-      DoProcess<commonAverage>( Input, Output );
-      break;
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////
 // SpatialFilter::none
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -384,5 +304,84 @@ SpatialFilter::DoProcess<SpatialFilter::commonAverage>( const GenericSignal& Inp
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 
+void
+SpatialFilter::Preflight( const SignalProperties& Input,
+                                SignalProperties& Output ) const
+{
+  switch( int( Parameter( "SpatialFilterType" ) ) )
+  {
+    case none:
+      DoPreflight<none>( Input, Output );
+      break;
 
+    case fullMatrix:
+      DoPreflight<fullMatrix>( Input, Output );
+      break;
+
+    case sparseMatrix:
+      DoPreflight<sparseMatrix>( Input, Output );
+      break;
+
+    case commonAverage:
+      DoPreflight<commonAverage>( Input, Output );
+      break;
+
+    default:
+      bcierr << "Unexpected filter type ("
+             << int( Parameter( "SpatialFilterType" ) )
+             << ")"
+             << endl;
+   }
+}
+
+void
+SpatialFilter::Initialize( const SignalProperties& Input,
+                           const SignalProperties& Output )
+{
+  mSpatialFilterType = Parameter( "SpatialFilterType" );
+  switch( mSpatialFilterType )
+  {
+    case none:
+      DoInitialize<none>( Input, Output );
+      break;
+
+    case fullMatrix:
+      DoInitialize<fullMatrix>( Input, Output );
+      break;
+
+    case sparseMatrix:
+      DoInitialize<sparseMatrix>( Input, Output );
+      break;
+
+    case commonAverage:
+      DoInitialize<commonAverage>( Input, Output );
+      break;
+  }
+}
+
+void
+SpatialFilter::Process( const GenericSignal& Input,
+                              GenericSignal& Output )
+{
+  switch( mSpatialFilterType )
+  {
+    case none:
+      DoProcess<none>( Input, Output );
+      break;
+
+    case fullMatrix:
+      DoProcess<fullMatrix>( Input, Output );
+      break;
+    
+    case sparseMatrix:
+      DoProcess<sparseMatrix>( Input, Output );
+      break;
+
+    case commonAverage:
+      DoProcess<commonAverage>( Input, Output );
+      break;
+  }
+}
