@@ -110,6 +110,7 @@ class P3SpellerTask : public StimulusTask, public Speller
 
   };
   int mSleepMode;
+  bool mPaused;
 
   std::string mGoalText;
   // Histories for "back" and "undo" functionality.

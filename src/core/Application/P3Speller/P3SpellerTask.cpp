@@ -44,6 +44,7 @@ P3SpellerTask::P3SpellerTask()
   mAvoidStimulusRepetition( false ),
   mpTextWindow( NULL ),
   mSummaryFile( SummaryFileExtension().c_str() ),
+  mPaused( false ),
   mSleepMode( 0 ),
   mRunCount( 0 ),
   mNumSelections( 0 ),
@@ -423,7 +424,8 @@ P3SpellerTask::OnStartRun()
 
   mNumSelections = 0;
   mSleepDuration = 0;
-  mSleepMode = 0;
+  mSleepMode = dontSleep;
+  mPaused = false;
 }
 
 void
@@ -625,10 +627,16 @@ P3SpellerTask::OnEnter( const std::string& inText )
     if( mDisplayResults )
     {
       if( command.Code() == "SLEEP" )
-        OnSleep();
+      {
+        if( !mPaused )
+          OnSleep();
+      }
       else if( command.Code() == "PAUSE" )
-        OnPause();
-      else if( mSleepMode == 0 )
+      {
+        if( mSleepMode == dontSleep )
+          OnPause();
+      }
+      else if( !mPaused && mSleepMode == dontSleep )
       {
         if( command.Code() == "" )
           OnText( command.Value() );
@@ -650,6 +658,12 @@ P3SpellerTask::OnEnter( const std::string& inText )
           OnRetrieve();
         else
           bcierr << "Unknown command: " << command << endl;
+      }
+
+      if( mSleepMode == sleep2 && command.Code() != "SLEEP" )
+      { // Reset to sleeping.
+        mSleepMode = dontSleep;
+        OnSleep();
       }
     }
     else if( command.Code() == "" )
@@ -745,16 +759,15 @@ void
 P3SpellerTask::OnPause()
 {
   // stop writing to file, and continue after one additional PAUSE command
-  mSleepMode = !mSleepMode;
-  switch( mSleepMode )
+  mPaused = !mPaused;
+  if( !mPaused )
   {
-    case dontSleep:
-      State( "Recording" ) = 1;
-      mpStatusBar->SetGoalText( mGoalText );
-      mSleepDuration += ::difftime( ::time( NULL ), mStartPause );
-      break;
-
-    default:
+    State( "Recording" ) = 1;
+    mpStatusBar->SetGoalText( mGoalText );
+    mSleepDuration += ::difftime( ::time( NULL ), mStartPause );
+  }
+  else
+  {
      mpStatusBar->SetGoalText( LocalizableString( "Paused--Select PAUSE again to resume" ) );
      mStartPause = ::time( NULL );
   }
