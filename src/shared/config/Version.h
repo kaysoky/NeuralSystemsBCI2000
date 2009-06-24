@@ -11,7 +11,7 @@
 #define VERSION_H
 
 #define BCI2000_VERSION  "$Version: 2.x $ " \
-                         "$Build Date: " __DATE__ " $"
+                         "$Build Date: " __TIME__ " " __DATE__ " $"
 
 #define BCI2000_COPYRIGHT "(C) 2000-2009, BCI2000 Project\n" \
                           "http://www.bci2000.org"
