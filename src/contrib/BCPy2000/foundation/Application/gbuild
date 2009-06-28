@@ -45,6 +45,7 @@ PythonApplication.cpp \
 ../shared/PythonFilter.cpp \
 ../shared/PythonLink24.cpp \
 ../shared/PythonLink25.cpp \
+../shared/PythonLink26.cpp \
 ../shared/PythonWrapper.cpp \
 $SHARED/accessors/BCIEvent.cpp \
 $SHARED/accessors/Environment.cpp \
@@ -86,5 +87,6 @@ $SHARED/utils/SockStream.cpp \
 $SHARED/utils/VersionInfo.cpp \
 "
 
-. ../shared/gbuild
+. ../shared/gbuild-pyprep # extra BCPy2000-specific fiddling before calling gbuild-bci2000
+. "$SHARED/../contrib/BCPy2000/foundation/shared/gbuild-bci2000"  # general-purpose script for building BCI2000 modules with gcc, managed as part of the BCPy2000 project
 

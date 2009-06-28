@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# This plug-in script is not call directly: it should be included from
+# a build wrapper script in the project directory of each build. The
+# build wrapper should define the following project-specific settings:
+# 
+#  $CPP         the c++ compiler
+#  $CPPFLAGS    command-line options to the c++ compiler re language
+#  $SRC         a list of c++ source files
+#  $INCS        a list of include directories
+#  $INCS_WIN32  optional windows-specific include directories
+#  $INCS_POSIX  optional posix-specific include directories
+#  $INCS_MACOS  optional OSX-specific include directories
+# 
+#  $LD          the linker
+#  $LDFLAGS     command-line options to the linker
+#  $LIBS        a list of -L and -l flags to the linker
+#  $LIBS_WIN32  optional windows-specific -L and -l flags
+#  $LIBS_POSIX  optional posix-specific -L and -l flags 
+#  $LIBS_MACOS  optional OSX-specific -L and -l flags 
+# 
+#  $OBJDIR      directory in which the *.o files are to be placed
+#  $OUTDIR      directory in which the final executable is to be placed
+#  $OUTNAME     name for the final executable
+# 
+#  Directory paths in $OBJDIR, $OUTDIR, $INCS, $SRC, etc should be expressed relative
+#  to the working directory from where the build wrapper script will be executed (for
+#  simplicity let's say that's the project directory).
+# 
+#  All the build wrapper script needs to do is define the above variables and call this
+#  plug-in script.  The plugin provides the following syntax (assuming your build wrapper
+#  is called "gbuild"):
+# 
+#      ./gbuild [OPTS] ../../../shared/modules/CoreModule.cpp
+#                  compile one or more named modules if not already up-to-date
+#
+#      ./gbuild [OPTS]
+#                  compile all non-up-to-date sources and (if all successful) link
+# 
+#      Options:
+#         -l       do not compile: just print whether or not module would be compiled
+#         -r       recompile even if apparently up-to-date
+
+
+if test "$1" == -l; then FORREAL=""; shift; else FORREAL="1"; fi
+if test "$1" == -r; then FORREAL="1"; FORCE="1"; shift; else FORCE=""; fi
+if test "$1"; then SRC="$*"; elif test "$FORREAL"; then ALLTHEWAY="1"; fi
+
+EXTRA_CPPFLAGS="-DNO_STRICT -D_NO_VCL -D_GNU_SOURCE -include gccprefix.h"
+
+if   uname | grep -iq '^cygwin'  # even if using cygwin, we'll be compiling
+then                             # in mingw (non-posix) mode
+	MACHINEFLAGS="-mno-cygwin -mwindows"
+	LIBS="$LIBS $LIBS_WIN32"
+	INCS="$INCS $INCS_WIN32"
+	XTN=".exe"
+elif uname | grep -iq '^darwin'
+then
+	MACHINEFLAGS=""
+	LIBS="$LIBS $LIBS_MACOS"
+	INCS="$INCS $INCS_MACOS"
+	XTN=".exe"
+else
+	MACHINEFLAGS=""
+	LIBS="$LIBS $LIBS_POSIX"
+	INCS="$INCS $INCS_POSIX"
+	XTN=".exe"
+fi
+
+INCFLAGS=""; for x in $INCS; do INCFLAGS="$INCFLAGS -I$x"; done
+OBJS=""
+for x in $SRC
+do
+	xo="$OBJDIR"/`basename "$x" | sed 's/\.cpp$/.o/'`
+	OBJS="$OBJS $xo"
+	if test -f "$xo" -a "$xo" -nt "$x" -a -z "$FORCE"
+	then
+		SKIP=1
+		#echo "$x" is compiled
+	else
+		if test "$FORREAL"
+		then
+			echo compiling "$x"
+			"$CPP" $MACHINEFLAGS $EXTRA_CPPFLAGS $CPPFLAGS $INCFLAGS -c "$x" -o "$xo" 2>&1 || ALLTHEWAY=""
+		else
+			echo need to compile "$x"
+		fi
+	fi
+done
+if test "$ALLTHEWAY"
+then
+	echo linking...
+	"$LD" -o "$OUTDIR"/"$OUTNAME$XTN" $MACHINEFLAGS $LDFLAGS $OBJS $LIBS && \
+	ls -lh "$OUTDIR"/"$OUTNAME$XTN"
+fi
+

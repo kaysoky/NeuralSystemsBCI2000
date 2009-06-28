@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # A BCPy2000-specific intermediate layer between the project's
-# gbuild script and the normal plug-in trunk/src/shared/gbuild
+# gbuild script and the normal plug-in gbuild-bci2000
 # Does some BCPy2000-specific housekeeping and cross-platform
 # finessing.  Don't call this directly: call ./gbuild from the
 # project directory. See trunk/src/shared/gbuild for details.
@@ -67,5 +67,4 @@ else
 		"
 	fi
 fi
-. $SHARED/gbuild
 
