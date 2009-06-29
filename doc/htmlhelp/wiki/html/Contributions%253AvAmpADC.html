@@ -4,7 +4,7 @@
 <head>
 <title>Contributions:vAmpADC - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Contributions:vAmpADC,User Reference:DataIOFilter" />
+<meta name="keywords" content="Contributions:vAmpADC,Contributions:ADCs,User Reference:DataIOFilter,User Reference:Filters" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -56,6 +56,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#Known_Issues"><span class="tocnumber">4.2</span> <span class="toctext">Known Issues</span></a></li>
 </ul>
 </li>
+<li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#See_also"><span class="tocnumber">5</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Function"></a><h2>Function</h2>
@@ -95,9 +96,9 @@ In addition, the <i>vAmpADC</i> provides the following parameters:
 </li><li>222.22
 </li><li>200
 </li></ul>
-<p>In 20 kHz mode, the 10 times the above rates are valid.
+<p>In 20 kHz mode, 10 times the above rates are valid.
 Prior to decimation, a 2nd-order anti-aliasing Butterworth filter with a corner frequency of 0.45 times the sample rate is applied to the signal.
-All sampling rates are supported for one or more amplifiers. If you are sampling at high rates and from multiple amplifiers, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize->VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display. 
+All sampling rates are supported for one or more amplifiers. If you are sampling at high rates and from multiple amplifiers, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize->VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display.
 </p>
 <a name="DeviceIDs"></a><h3>DeviceIDs</h3>
 <p>List of serial numbers (e.g., 70) of all devices.
@@ -105,14 +106,14 @@ Serial numbers of found devices will be listed in the BCI2000 log window.
 If you have more than one device, this list determines the order of the channels in the data file. 
 </p>
 <a name="HPFilterCorner"></a><h3>HPFilterCorner</h3>
-<p>A high-pass digital filter for removing dc-offsets. This occurs after data has been read into BCI2000.
+<p>A high-pass digital filter for removing DC offsets. This occurs after data has been read into BCI2000.
 </p>
 <a name="SampleBlockSize"></a><h3>SampleBlockSize</h3>
 <p>Samples per channel per digitized block. 
 Together with the sampling rate, this parameter determines how often per second data are collected, processed, and feedback is updated. For example, at 600 Hz sampling and a SampleBlockSize of 20, the system (e.g., source signal display, signal processing, and stimulus presentation) will be updated 30 times per second.
 </p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
-<p>The total number of channels across all USBamp devices.
+<p>The total number of channels across all vAmp devices.
 </p>
 <a name="SourceChDevices"></a><h3>SourceChDevices</h3>
 <p>The number of channels acquired from each device. 
@@ -144,7 +145,7 @@ For the V-Amp 16, channels 1-16 are EEG channels, 17-18 are Auxiliary channels, 
 </li><li> Red: 30-1000 kOhm
 </li><li> Purple: > 1 MOhm
 </li></ul>
-<p>Values are updated real-time. Channels are shown in columns, and devices in rows.
+<p>Values are updated in real-time. Channels are shown in columns, and devices in rows.
 <a href="../images/thumb/2/25/VAmpImpedanceChecker.jpg/700px-VAmpImpedanceChecker.jpg" class="image" title=""><img src="../images/thumb/2/25/VAmpImpedanceChecker.jpg/700px-VAmpImpedanceChecker.jpg" alt="" width="700" height="98" longdesc="/wiki/index.php/Image:VAmpImpedanceChecker.jpg" /></a>
 </p>
 <ul><li>If set to <i>high-speed calibration</i>, a square wave is generated at 20 kHz.
@@ -159,6 +160,23 @@ For the V-Amp 16, channels 1-16 are EEG channels, 17-18 are Auxiliary channels, 
 </p>
 <a name="Known_Issues"></a><h3>Known Issues</h3>
 <p>Please note that when BrainVision Recorder was running on the computer before you are using BCI2000 there might be some errors ("VampADC::Initialize error opening device" or even a complete crash of BCI2000). There is a daemon process called "VAmpService.exe" running on the computer everytime you start BrainVision Recorder until the next reboot. If you encounter such an error just reboot the computer without running BrainVision Recorder after that again or simply kill the process "VampService.exe" in the task manager.
+</p><p>A more convenient way to solve this problem is to edit the *.bat-file for your experiment like described below, especially if you are using BCI2000 and BrainVision Recorder alternately. This avoids problems with BrainVision Recorder that you might encounter when killing the "VampService.exe" process.
+</p>
+<pre><b>start C:\Vision\Recorder\VAmpService.exe -Uninstall</b>
+cd ..\prog
+start <b>vAmpSource.exe</b> 127.0.0.1
+start ARSignalProcessing 127.0.0.1
+start CursorTask.exe 127.0.0.1
+<b>operat.exe</b>
+<b>start C:\Vision\Recorder\VAmpService.exe -Install</b>
+cd ..
+</pre>
+<p>Make sure that the path to "VAmpService.exe" is correct on your system.
+Please keep in mind that you have to customize the *.bat-file shown above regarding your experiment. For using the vAmp in the way described, the highlightened parts are importand.
+Please note that the commandline-window will stay open during the usage of BCI2000 (unlike when using the other *.bat-files) because of the operat.exe is started without the "start"-parameter. This is necessary to make sure that the VAmpService.exe process is started again just when BCI2000 is closed.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>
 </p>
 <div class="printfooter">
 </div>

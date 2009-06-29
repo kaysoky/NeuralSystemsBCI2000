@@ -59,9 +59,9 @@ Now you are going to create a subject-specific parameter configuration for on-li
 </li></ul>
 <a name="The_Spatial_Filter"></a><h2>The Spatial Filter</h2>
 <div class="floatright"><span><a href="../images/8/80/SpatialFilter.PNG" class="image" title=""><img src="../images/8/80/SpatialFilter.PNG" alt="" width="350" height="193" longdesc="/wiki/index.php/Image:SpatialFilter.PNG" /></a></span></div>
-<p>The Spatial Filter artificially weighs the incoming data from the electrodes based on their placement on the scalp of the subject. 
-</p><p>Because we are targeting specific areas of the brain to monitor, the spatial filter allows the program to identify when the electrode of interest is activating specifically.
-</p><p>This is done by subtracting the average of the surrounding electrodes' data from the electrode of interest. For example, as seen to the right the output channel <tt>C3_OUT</tt> is the data from <tt>C3</tt> minus one-quarter each of <tt>F3</tt>, <tt>T7</tt>, <tt>Cz</tt>, and <tt>Pz</tt>.
+<p>The Spatial Filter computes a weighted combination of the incoming data from the electrodes based on their placement on the scalp of the subject. 
+</p><p>Because we are targeting specific areas of the brain to monitor, we use a spatial filter that allows the program to identify when the electrode of interest is activating specifically.
+</p><p>This is done by subtracting the average of the surrounding electrodes' data from the electrode of interest. For example, as seen to the right the output channel <tt>C3_OUT</tt> is the data from <tt>C3</tt> minus one-quarter each of <tt>F3</tt>, <tt>T7</tt>, <tt>Cz</tt>, and <tt>Pz</tt>. Such a filter is called a "Laplacian filter".
 </p>
 <table>
 <tr>

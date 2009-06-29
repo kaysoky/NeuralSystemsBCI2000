@@ -36,8 +36,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Normalizing_Transform"><span class="tocnumber">1.1</span> <span class="toctext">Normalizing Transform</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Adaptation"><span class="tocnumber">1.2</span> <span class="toctext">Adaptation</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Adaptation_Rationale"><span class="tocnumber">1.3</span> <span class="toctext">Adaptation Rationale</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Typical_Use"><span class="tocnumber">1.4</span> <span class="toctext">Typical Use</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Adaptation_Delay"><span class="tocnumber">1.3</span> <span class="toctext">Adaptation Delay</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Adaptation_Rationale"><span class="tocnumber">1.4</span> <span class="toctext">Adaptation Rationale</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ANormalizer.html#Typical_Use"><span class="tocnumber">1.5</span> <span class="toctext">Typical Use</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ANormalizer.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
@@ -76,10 +77,13 @@ For each channel (index denoted with <span class="texhtml"><i>i</i></span>), an 
 These rules are called <i>buffer conditions</i> because they are given in terms of boolean expressions.
 Each data buffer is associated with such a boolean expression. Whenever an expression evaluates to <i>true</i>, the current input will be appended to the associated buffer.
 Whenever it comes to updating offset and gain values, the Normalizer will use the content of its buffers to estimate data mean and variance. The offset will then be set to the data mean, and the gain to the inverse square root of the data variance, i.e., the inverse of the data standard deviation.
-</p><p>One may suggest that the adaptation time may affect the accuracy of the cursor movement in mu rhythm experiments. However, the following reference shows that computing the normalization parameters either during or at the end of the trials leaded to similar results. Hence, in the current version of BCI2000, adaptation of the signal mean is accomplished at the end of each trial and using a Moving Average Algorithm.
-</p><p>Ramoser H, Wolpaw JR, Pfurtscheller G, "EEG-based communication: evaluation of alternative signal prediction methods". Biomed Tech (Berl); 42(9)&nbsp;: 226-33,  Sep, 1997.
-</p><p><b>Article abstract</b>-Individuals can learn to control the amplitude of EEG activity in specific frequency bands over sensorimotor cortex and use it to move a cursor to a target on a computer screen. For one-dimensional (i.e., vertical) cursor movement, a linear equation translates the EEG activity into cursor movement. To translate an individual's EEG control into cursor control as effectively as possible, the intercept in this equation, which determines whether upward or downward movement occurs, should be set so that top and bottom targets are equally accessible. The present study compares alternative methods for using an individual's previous performance to select the intercept for subsequent trials. In offline analyses, five different intercept selection methods were applied to EEG data collected while trained subjects were moving the cursor to targets at the top or bottom edge of the screen. In the first two methods-moving average, and weighted sum-a single intercept was selected for the entire 1-2 sec period of each trial. In the other three methods-blocked moving average, blocked weighted sum, and blocked recursive sum (a variation of the weighted sum)-an intercept was selected for each 200-ms segment of the trial. The results from these methods were compared in regard to their balance between upward and downward movements and their consistency of performance across trials. For all subjects combined, the five methods performed similarly. However, performance across subjects was more consistent for the moving average, blocked moving average, and blocked recursive sum methods than for the weighted sum and blocked weighted sum methods. Due to its consistent performance and its computational simplicity, the moving average method, using the five most recent pairs of top and bottom trials, appears to be the method of choice.
 </p>
+<a name="Adaptation_Delay"></a><h3>Adaptation Delay</h3>
+<p>One may suggest that the adaptation time may affect the accuracy of the cursor movement in mu rhythm experiments. However, the reference below shows that computing the normalization parameters either during or at the end of the trials leaded to similar results. Hence, in the current version of BCI2000, adaptation of the signal mean is accomplished at the end of each trial and using a Moving Average Algorithm.
+</p><p>Ramoser H, Wolpaw JR, Pfurtscheller G, "EEG-based communication: evaluation of alternative signal prediction methods". Biomed Tech (Berl); 42(9)&nbsp;: 226-33,  Sep, 1997.
+</p>
+<dl><dd><b>From the article abstract</b>-Individuals can learn to control the amplitude of EEG activity in specific frequency bands over sensorimotor cortex and use it to move a cursor to a target on a computer screen. For one-dimensional (i.e., vertical) cursor movement, a linear equation translates the EEG activity into cursor movement. To translate an individual's EEG control into cursor control as effectively as possible, the intercept in this equation, which determines whether upward or downward movement occurs, should be set so that top and bottom targets are equally accessible. The present study compares alternative methods for using an individual's previous performance to select the intercept for subsequent trials. In offline analyses, five different intercept selection methods were applied to EEG data collected while trained subjects were moving the cursor to targets at the top or bottom edge of the screen. ... Due to its consistent performance and its computational simplicity, the moving average method, using the five most recent pairs of top and bottom trials, appears to be the method of choice.
+</dd></dl>
 <a name="Adaptation_Rationale"></a><h3>Adaptation Rationale</h3>
 <p>It may appear crude to use the total data variance for the adaptation -- why not use linear regression on data labels (target codes) to separate into user controlled (task determined) and noise variance? User controlled variance would then correspond to target separation on the feedback screen, which is what we want to normalize in the first place.
 </p><p>However, a closer look reveals that the <i>relative size</i> of user controlled variance, and noise variance is crucial. When that "signal" variance is small compared to noise variance, we would be ill advised to use it in normalization -- this would only lead to enlarged noise, and an erratically moving cursor on the feedback screen.
@@ -97,7 +101,7 @@ Offsets, Gains, and Adaptation kind are represented as list parameters, with eac
 Buffer configuration is done in matrix form, with columns corresponding to signal channels, and rows corresponding to multiple buffers.
 </p>
 <a name="NormalizerOffsets.2C_NormalizerGains"></a><h3>NormalizerOffsets, NormalizerGains</h3>
-<p>Lists of offset and gain values, with entries corresponding to signal channels. These values will be updated depending on the channel's adaptation configuration in the Adaptation parameter.
+<p>Lists of offset and gain values, with entries corresponding to signal channels. These values will be updated depending on the channel's adaptation configuration in the <i>Adaptation</i> parameter.
 </p>
 <a name="Adaptation_2"></a><h3>Adaptation</h3>
 <p>A list of values that determines adaptation strategy individually for each channel. Possible values are
@@ -135,7 +139,7 @@ Generally, continuous adaptation within trials is not desired. Rather, one wants
 <a name="Examples"></a><h2>Examples</h2>
 <a name="Trial-based_1D_Feedback_Task_with_3_Targets"></a><h3>Trial-based 1D Feedback Task with 3 Targets</h3>
 <ul><li>Only data from the feedback phase should enter into the adaptation.
-</li><li>To make sure that targets contribute equally to the adaptation, we use a single buffer for each target. We use a 3-rows-by-1-column BufferConditions (see below).  Depending on which control signal should be adapted on, these conditions need to be entered in the first, second, or third column of the matrix (corresponding to x, y, and z direction when used with the <a href="User_Reference%253ACursorTask.html" title="User Reference:CursorTask">CursorTask</a> application module).
+</li><li>To make sure that targets contribute equally to the adaptation, we use a single buffer for each target. We use a 3-rows-by-1-column <i>BufferConditions</i> matrix (see below).  Depending on which control signal should be adapted on, all of these conditions need to be entered in the first, second, or third column of the matrix (corresponding to x, y, and z direction when used with the <a href="User_Reference%253ACursorTask.html" title="User Reference:CursorTask">CursorTask</a> application module).
 </li></ul>
 <pre>(Feedback)&amp;&amp;(TargetCode==1)
 (Feedback)&amp;&amp;(TargetCode==2)
@@ -154,7 +158,7 @@ Generally, continuous adaptation within trials is not desired. Rather, one wants
 </li></ul>
 <pre>Adaptation= 0
 NormalizerOffset= -1
-NormalizerGain= 1 or 2, respectively.
+NormalizerGain= 2 or 1, respectively.
 </pre>
 <a name="Trial-based_2D_Feedback_Task_with_4_Targets"></a><h3>Trial-based 2D Feedback Task with 4 Targets</h3>
 <ul><li>Leaving everything else as in the previous example, we now have two dimensions corresponding to left-right (channel 1) and up-down (channel 2).

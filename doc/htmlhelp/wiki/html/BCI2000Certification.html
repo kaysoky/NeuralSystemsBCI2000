@@ -48,7 +48,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_Amplifier_Latency"><span class="tocnumber">2.2.1</span> <span class="toctext">Measuring Amplifier Latency</span></a></li>
 <li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_Processing_Latency"><span class="tocnumber">2.2.2</span> <span class="toctext">Measuring Processing Latency</span></a></li>
-<li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_Application_Display.2FSound_Output_Latency"><span class="tocnumber">2.2.3</span> <span class="toctext">Measuring Application Display/Sound Output Latency</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_Application_Output_Latency"><span class="tocnumber">2.2.3</span> <span class="toctext">Measuring Application Output Latency</span></a></li>
 <li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_System_Latency"><span class="tocnumber">2.2.4</span> <span class="toctext">Measuring System Latency</span></a></li>
 <li class='toclevel-3'><a href="BCI2000Certification.html#Measuring_Block_Duration"><span class="tocnumber">2.2.5</span> <span class="toctext">Measuring Block Duration</span></a></li>
 </ul>
@@ -58,10 +58,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li>
 <li class='toclevel-1'><a href="BCI2000Certification.html#Getting_Started_With_the_Default_Tests"><span class="tocnumber">3</span> <span class="toctext">Getting Started With the Default Tests</span></a>
 <ul>
-<li class='toclevel-2'><a href="BCI2000Certification.html#Set_Default_Parameters"><span class="tocnumber">3.1</span> <span class="toctext">Set Default Parameters</span></a>
+<li class='toclevel-2'><a href="BCI2000Certification.html#Starting_the_Procedure"><span class="tocnumber">3.1</span> <span class="toctext">Starting the Procedure</span></a>
 <ul>
-<li class='toclevel-3'><a href="BCI2000Certification.html#Sampling_Rate"><span class="tocnumber">3.1.1</span> <span class="toctext">Sampling Rate</span></a></li>
-<li class='toclevel-3'><a href="BCI2000Certification.html#Display_parameters"><span class="tocnumber">3.1.2</span> <span class="toctext">Display parameters</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#Load_a_Configuration_File"><span class="tocnumber">3.1.1</span> <span class="toctext">Load a Configuration File</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#Sampling_Rate"><span class="tocnumber">3.1.2</span> <span class="toctext">Sampling Rate</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#Display_parameters"><span class="tocnumber">3.1.3</span> <span class="toctext">Display parameters</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="BCI2000Certification.html#Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors"><span class="tocnumber">3.2</span> <span class="toctext">Connect the Amplifier to the Trigger Box, and Attach Sensors</span></a></li>
@@ -139,10 +140,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p><p>These latencies can be affected by many external influences, including hardware deficiencies (such as low RAM, slow CPU speed, or a video card of low quality), and other software running in the background while the experiment is being run.
 </p>
 <a name="Latencies"></a><h2>Latencies</h2>
-<p>Briefly, the different latencies inherent in the BCI2000 system include amplifier latency, processing latency, output latency, and the sum of these, the system latency. Additionally, the block duration jitter will be measured.  Figure \ref{fig:timeline} provides a timeline of events that occur within a single block of data, with significant time points labeled. This figure provides an accurate account of the order in which events occur within a block of data, although the time intervals are not necessarily to scale.
+<p>Briefly, the different latencies inherent in the BCI2000 system include amplifier latency, processing latency, output latency, and the sum of these, the system latency. Additionally, the block duration jitter will be measured.  The figure below provides a timeline of events that occur within a single block of data, with significant time points labeled. This figure provides an accurate account of the order in which events occur within a block of data, although the time intervals are not necessarily to scale.
 <span id="TimeLine"></span>
 </p>
-<div class="thumb tnone"><div style="width:952px;"><a href="../images/f/f5/TimeLine.png" class="internal" title="Timeline of events. Time intervals are not to scale."><img src="../images/f/f5/TimeLine.png" alt="Timeline of events. Time intervals are not to scale." width="950" height="374" longdesc="/wiki/index.php/Image:TimeLine.png" /></a>  <div class="thumbcaption" >Timeline of events. Time intervals are not to scale.</div></div></div>
+<div class="thumb tnone"><div style="width:586px;"><a href="../images/3/3c/Timeline3.png" class="internal" title="Timeline of events. Time intervals are not to scale."><img src="../images/3/3c/Timeline3.png" alt="Timeline of events. Time intervals are not to scale." width="584" height="304" longdesc="/wiki/index.php/Image:Timeline3.png" /></a>  <div class="thumbcaption" >Timeline of events. Time intervals are not to scale.</div></div></div>
 <a name="Defining_Latencies"></a><h3>Defining Latencies</h3>
 <a name="Amplifier_Latency"></a><h4>Amplifier Latency</h4>
 <p>Amplifier Latency is the minimum delay between the time that a signal is presented at the amplifier input, to when it has been acquired in the source module. Depending on configuration, this may comprise physical signal delay in the amplifier, digitization, transmission from the amplifier to the PC, and processing time inside a hardware driver. That minimum delay occurs for the last sample of a data block, which, unlike its preceding samples in the same block, will spend only a minimum time in hardware and software buffers. In <a href="BCI2000Certification.html#TimeLine" title="">Timeline</a>,
@@ -152,60 +153,56 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Processing_Latency"></a><h4>Processing Latency</h4>
 <p>Processing Latency is the total time it takes for the data to be processed by all BCI2000 modules (SignalSource, SignalProcessing, and Application).
-</p><p>Processing latency = <span class="texhtml"><i>t</i><sub>4</sub> &minus; <i>t</i><sub>0</sub></span>.
+</p><p>Processing latency = <span class="texhtml"><i>t</i><sub>2</sub> &minus; <i>t</i><sub>0</sub></span>.
 </p><p>Processing latency strongly depends on CPU speed, and if this latency becomes too large, high CPU load will probably be the cause, implying decreased or unsuitable BCI2000 performance.
 </p>
 <a name="Output_Latency"></a><h4>Output Latency</h4>
 <p>Output Latency is the latency from the time that the Application module issues a command to change the display or issue a sound (or another output), to the time that this output actually occurs.
-</p><p>Output latency = <span class="texhtml"><i>t</i><sub>5</sub> &minus; <i>t</i><sub>4</sub></span>.
+</p><p>Output latency = <span class="texhtml"><i>t</i><sub>3</sub> &minus; <i>t</i><sub>2</sub></span>.
 </p>
 <a name="System_Latency"></a><h4>System Latency</h4>
 <p>System Latency is the minimum time interval between a change in amplifier input, and a causally related change in application output. This is the sum of the above latencies, Amplifier, Processing, and Output. 
-</p><p>System latency = <span class="texhtml"><i>t</i><sub>5</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>.
+</p><p>System latency = <span class="texhtml"><i>t</i><sub>3</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>.
 </p>
 <a name="Block_Duration.2C_Block_Duration_Jitter"></a><h4>Block Duration, Block Duration Jitter</h4>
 <p>Block Duration is the time interval between adjacent blocks of data, normalized to the ideal duration of a data block as determined from sampling rate and sample block size:
-</p><p>Block Duration = <img class='tex' src="../images/math/d/c/f/dcf9d6f8ced608f8697bf1a00a491105.png" alt="\frac{t_{8}-t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" />.
+</p><p>Block Duration = <img class='tex' src="../images/math/b/3/7/b37366435332fd3a5f49b5c6b862a00e.png" alt="\frac{t_{5}-t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" />.
 </p><p>When the system operates in real time, mean Block Duration will always be 1. Measuring Block Duration has the purpose of obtaining Block Duration Jitter as its standard deviation.
-</p><p>The procedures that will be used to measure the quantities introduced, follow below. Figure \ref{fig:overview} gives an overview of the system latencies with the testing equipment shown.
-</p><p><span id="overview"></span>
 </p>
-<div class="thumb tnone"><div style="width:1221px;"><a href="../images/5/53/TimingOverview.png" class="internal" title="Data flow during timing measurement. Event labels correspond to those in Image:TimeLine.png"><img src="../images/5/53/TimingOverview.png" alt="Data flow during timing measurement. Event labels correspond to those in Image:TimeLine.png" width="1219" height="296" longdesc="/wiki/index.php/Image:TimingOverview.png" /></a>  <div class="thumbcaption" >Data flow during timing measurement. Event labels correspond to those in <a href="http://www.bci2000.org/wiki/index.php/Image:TimeLine.png" title="Image:TimeLine.png">Image:TimeLine.png</a></div></div></div>
 <a name="Measuring_Latencies"></a><h3>Measuring Latencies</h3>
+<p>The procedure for measuring the system latencies are below. In general, a combination of recorded events and software time-stamps recorded in BCI2000 data files to determine when important events occur, with ms or better time resolution.
+</p>
+<div class="thumb tnone"><div style="width:502px;"><a href="../images/thumb/9/9f/OutTimeline1.png/500px-OutTimeline1.png" class="internal" title="Recorded events used for measuring latencies."><img src="../images/thumb/9/9f/OutTimeline1.png/500px-OutTimeline1.png" alt="Recorded events used for measuring latencies." width="500" height="279" longdesc="/wiki/index.php/Image:OutTimeline1.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>Recorded events used for measuring latencies.</div></div></div>
 <a name="Measuring_Amplifier_Latency"></a><h4>Measuring Amplifier Latency</h4>
 <p>In <a href="BCI2000Certification.html#TimeLine" title="">TimeLine</a>, Amplifier Latency is the time interval between the sampling of a data block's last sample, and its acquisition into the source module's data buffer:
 </p>
 <div class="center"><span class="texhtml">AmplifierLatency = <i>t</i><sub>0</sub> &minus; <i>t</i><sub> &minus; 1</sub></span></div>
-<p>To measure this latency, the SignalSource module will set a digital output on the amplifier to a high value at time <span class="texhtml"><i>t</i><sub>0</sub></span> immediately following data acquisition, as indicated in <a href="BCI2000Certification.html#overview" title="">Overview</a>. The digital output level is 3.3 V, so a voltage divider may required to attenuate the signal level to the range of amplifier input. This signal is then recorded on an input channel on the amplifier (time <span class="texhtml"><i>t</i><sub>1</sub></span>).
-</p><p>In the recorded data, we may then identify <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span>, which is the beginning of sample block <span class="texhtml"><i>n</i></span>, by its sample offset, which also coincides with BCI2000 state changes. <span class="texhtml"><i>t</i><sub>1</sub></span> may be identified by a change in the recorded signal, occurring in the channel that was connected to the digital output during measurement. Neglecting the very small delay between issuing the change in the digital output at <span class="texhtml"><i>t</i><sub>0</sub></span>, and the changed signal appearing at the amplifier's input at time <span class="texhtml"><i>t</i><sub>1</sub></span>, we measure (<a href="BCI2000Certification.html#SignalSourceLatency" title="">Signal Source Latency</a>)
+<p>To measure this latency, the Source module will set a digital output on the amplifier to a high value at time <span class="texhtml"><i>t</i><sub>0</sub></span> immediately following data acquisition, as indicated in <a href="BCI2000Certification.html#overview" title="">Overview</a>. The digital output level is 3.3 V, so a voltage divider may required to attenuate the signal level to the range of amplifier input. This signal is then recorded on an input channel on the amplifier (time <span class="texhtml"><i>t</i><sub>1</sub></span>).
+</p><p>In the recorded data, we may then identify <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span>, which is the beginning of sample block <span class="texhtml"><i>n</i></span>, by its sample offset, which also coincides with BCI2000 state changes. <span class="texhtml"><i>t</i><sub>1</sub></span> may be identified by a change in the recorded signal, occurring in the channel that was connected to the digital output during measurement.
 </p>
-<div class="center"><img class='tex' src="../images/math/2/d/a/2da9f71c1be4e409bf9120b33ec8180e.png" alt="\mathrm{AmplifierLatency} \approx t_{1} - t_{-1}." /></div>
-<p><span id="SignalSourceLatency"></span>
-</p>
-<div class="thumb tnone"><div style="width:916px;"><a href="../images/d/d1/SignalSourceLatency.png" class="internal" title="Latency of the Amplifier, using a digital trigger software output and encoded analog input."><img src="../images/d/d1/SignalSourceLatency.png" alt="Latency of the Amplifier, using a digital trigger software output and encoded analog input." width="914" height="254" longdesc="/wiki/index.php/Image:SignalSourceLatency.png" /></a>  <div class="thumbcaption" >Latency of the Amplifier, using a digital trigger software output and encoded analog input.</div></div></div>
+<div class="center"><img class='tex' src="../images/math/f/2/f/f2f5f29ac4ac47e67e55c43e3aa88671.png" alt="\mathrm{AmplifierLatency} \approx t_{0} - t_{-1}." /></div>
 <a name="Measuring_Processing_Latency"></a><h4>Measuring Processing Latency</h4>
-<p>Processing latency is defined as the amount of time that it takes for the computer to process the data from the time that it has been acquired by the source module, to when the application module's output is changed. In <a href="BCI2000Certification.html#TimeLine" title="">TimeLine</a> and <a href="BCI2000Certification.html#overview" title="">Overview</a>, this is the time from <span class="texhtml"><i>t</i><sub>0</sub></span> to <span class="texhtml"><i>t</i><sub>4</sub></span>. Processing latency is calculated using two timestamps saved with every block of data, <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span>. <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>0</sub></span>, immediately following data acquisition in the SignalSource module, and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>4</sub></span> immediately following application presentation in an application module. Therefore, processing latency for each block of data is calculated as the difference between time stamps:
+<p>The processing latency is defined as the amount of time that it takes for the computer to process the data after acquiring it, to when the application module output is changed. In <a href="BCI2000Certification.html#TimeLine" title="">TimeLine</a>, this is the time from <span class="texhtml"><i>t</i><sub>0</sub></span> to <span class="texhtml"><i>t</i><sub>2</sub></span>. Processing latency is calculated using two timestamps saved with every block of data, <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span>. <span class="texhtml"><i>S</i><i>o</i><i>u</i><i>r</i><i>c</i><i>e</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>0</sub></span>, immediately following data acquisition in the Source module, and <span class="texhtml"><i>S</i><i>t</i><i>i</i><i>m</i><i>u</i><i>l</i><i>u</i><i>s</i><i>T</i><i>i</i><i>m</i><i>e</i></span> is saved at <span class="texhtml"><i>t</i><sub>2</sub></span> immediately following application presentation in the Application module. Therefore, processing latency for each block of data is calculated as the difference between time stamps:
 </p>
-<div class="center"><span class="texhtml">ProcessingLatency = StimulusTime &minus; SourceTime = <i>t</i><sub>4</sub> &minus; <i>t</i><sub>0</sub>.</span></div>
-<a name="Measuring_Application_Display.2FSound_Output_Latency"></a><h4>Measuring Application Display/Sound Output Latency</h4>
+<div class="center"><span class="texhtml">ProcessingLatency = StimulusTime &minus; SourceTime = <i>t</i><sub>2</sub> &minus; <i>t</i><sub>0</sub>.</span></div>
+<a name="Measuring_Application_Output_Latency"></a><h4>Measuring Application Output Latency</h4>
 <p><span id="outOverview"></span>
 There are many possible application output types, including visual (i.e., the computer screen), audio, or mechanical (e.g., a robotic arm). The core BCI2000 system primarily uses visual and audio output, and so the default testing system will focus on these.
 </p><p>Both visual and audio output can be measured using the g.TRIGbox signal conditioner, which accepts inputs from optical sensors, microphones, or any other input. The user sets a threshold for the input signals, and the g.TRIGbox outputs a digital pulse whenever this threshold is exceeded. This output is then recorded back into the amplifier system, so that the analysis program can measure the response times for each output.
-</p><p>Again, neglecting <span class="texhtml"><i>t</i><sub>1</sub> &minus; <i>t</i><sub>0</sub></span> as well as <span class="texhtml"><i>t</i><sub>6</sub> &minus; <i>t</i><sub>5</sub></span>, we identify event <span class="texhtml"><i>t</i><sub>0</sub></span> by a change in the data channel connected to the amplifier's digital output, and event <span class="texhtml"><i>t</i><sub>5</sub></span> by a change in the data channel connected to the g.TRIGbox, and compute their difference. Also, both events are affected by Amplifier Latency in the same way, so we may ignore Amplifier Latency, and have
+</p><p>We identify event <span class="texhtml"><i>t</i><sub>0</sub></span> by a change in the data channel connected to the amplifier's digital output, and event <span class="texhtml"><i>t</i><sub>3</sub></span> by a change in the data channel connected to the g.TRIGbox, and compute their difference. Also, both events are affected by Amplifier Latency in the same way, so we may ignore Amplifier Latency, and have
 </p>
-<div class="center"><img class='tex' src="../images/math/1/7/6/1767690a010047d05c6523d084820db6.png" alt="\begin{matrix} \mathrm{Output Latency} = t_{5} - t_{4} = (t_5-t_0)-(t_4-t_0) = (t_5-t_0)-\mathrm{ProcessingLatency}. \end{matrix}" /></div>
-<div class="thumb tnone"><div style="width:1113px;"><a href="../images/6/63/OutputLatency.png" class="internal" title="Application output latency."><img src="../images/6/63/OutputLatency.png" alt="Application output latency." width="1111" height="296" longdesc="/wiki/index.php/Image:OutputLatency.png" /></a>  <div class="thumbcaption" >Application output latency.</div></div></div>
+<div class="center"><img class='tex' src="../images/math/c/d/2/cd27c71a3e58171695df46cff564c404.png" alt="\begin{matrix} \mathrm{Output Latency} = t_{3} - t_{2} = (t_3-t_0)-(t_2-t_0) = (t_3-t_0)-\mathrm{ProcessingLatency}. \end{matrix}" /></div>
 <a name="Measuring_System_Latency"></a><h4>Measuring System Latency</h4>
-<p>As defined above, System Latency is the sum of Amplifier Latency, Processing Latency, and Output Latency.
-It may be measured
+<p>As defined above, System Latency is the sum of Amplifier Latency, Processing Latency, and Output Latency. It is important to realize that the system latency is dependent on the output modality used, i.e., the video system latency and the audio system latency will vary on the same system due to the differences in output latencies.
+The system latency may be measured
 </p>
-<ol><li>directly, by identifying <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span> as the beginning of a data block by its sample index, and <img class='tex' src="../images/math/f/1/5/f153606f2bb2bd62c64a168fd85fa500.png" alt="t_6\approx t_5" /> by the signal change in the channel connected to the g.TRIGbox, and then calculating<br /><span class="texhtml">SystemLatency = <i>t</i><sub>5</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>,
+<ol><li>directly, by identifying <span class="texhtml"><i>t</i><sub> &minus; 1</sub></span> as the beginning of a data block by its sample index, and <span class="texhtml"><i>t</i><sub>3</sub></span> by the signal change in the channel connected to the g.TRIGbox, and then calculating<br /><span class="texhtml">SystemLatency = <i>t</i><sub>3</sub> &minus; <i>t</i><sub> &minus; 1</sub></span>,
 </li><li>or indirectly, by using the previously measured quantities<br /><span class="texhtml">SystemLatency = AmplifierLatency + ProcessingLatency + OutputLatency</span>.
 </li></ol>
 <a name="Measuring_Block_Duration"></a><h4>Measuring Block Duration</h4>
 <p>Block Duration is measured as the time between adjacent blocks of data, divided by the theoretical ideal value, which is the sample block duration. For the actual measurement, we use the difference between subsequent <span class="texhtml">SourceTime</span> time stamps which are recorded at <span class="texhtml"><i>t</i><sub>0</sub></span> and <span class="texhtml"><i>t</i><sub>8</sub></span> in <a href="BCI2000Certification.html#TimeLine" title="">Timeline</a>:
 </p>
-<div class="center"><img class='tex' src="../images/math/7/8/8/78884cbea4d107c12f0ce642433dc5f5.png" alt="\mathrm{BlockDuration} = \frac{t_{8} - t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}} =\frac{\Delta \mathrm{SourceTime}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" /></div>
+<div class="center"><img class='tex' src="../images/math/1/4/6/146a3b490dffb0c80713e632ae80bc55.png" alt="\mathrm{BlockDuration} = \frac{t_{5} - t_{0}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}} =\frac{\Delta \mathrm{SourceTime}}{\mathrm{SampleBlockSize}/\mathrm{SamplingRate}}" /></div>
 <a name="Latency_Calculation_Overview"></a><h3>Latency Calculation Overview</h3>
 <p>Latencies are calculated by comparing changes in a BCI2000 state value to changes in a recorded signal. The analysis program follows these general steps in calculating the various latencies:
 </p>
@@ -219,10 +216,16 @@ It may be measured
 </li><li>Once the entire state vector is traversed, the mean, standard deviation, minimum and maximum values for this latency are calculated and reported.
 </li></ol>
 <a name="Getting_Started_With_the_Default_Tests"></a><h2>Getting Started With the Default Tests</h2>
-<p>This section provides step-by-step instructions on running the default certification procedure. Note that some cables must be assembled before the testing can be done; see Appendix \ref{sec:ampcables} for information on assembling the cables.
+<p>This section provides step-by-step instructions on running the default certification procedure. Note that some cables must be assembled before the testing can be done; see the end of this document for information on assembling the cables.
 </p>
-<a name="Set_Default_Parameters"></a><h3>Set Default Parameters</h3>
-<p>Using a text editor, open the CertificationMain.prm file in the BCI2000/tools/BCI2000Certification/parms/ folder. Many of the settings should be left alone, except for some of the following cases. 
+<a name="Starting_the_Procedure"></a><h3>Starting the Procedure</h3>
+<p>The BCI2000 certification procedure uses different combinations of BCI2000 parameter fragments to control the tests. While it is possible to edit these by hand, in most circumstances it is simpler to use the graphical user interface provided. To do so, navigate to the BCI2000/tools/BCI2000Certification folder, and start the BCI2000Certification.exe program. This program appears as:
+</p>
+<div class="thumb tnone"><div style="width:627px;"><a href="../images/c/cf/Certificationtool.png" class="internal" title="The BCI2000Certification user interface."><img src="../images/c/cf/Certificationtool.png" alt="The BCI2000Certification user interface." width="625" height="747" longdesc="/wiki/index.php/Image:Certificationtool.png" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface.</div></div></div>
+<p>This program shows a list of all of the procedures to be tested for the loaded configuration. Detailed instructions for using the interface follow.
+</p>
+<a name="Load_a_Configuration_File"></a><h4>Load a Configuration File</h4>
+<p>To get started, load a provided configuration file by selecting File-&gt;Open INI. The standard configurations are for 8, 16, and 32 channels, and are located in the BCI2000/tools/BCI2000Certification/ folder. These are named BCI2000Certification_32ch_100ms.ini, BCI2000Certification_16ch_100ms.ini, and BCI2000Certification_8ch_100ms.ini, respectively.
 </p>
 <a name="Sampling_Rate"></a><h4>Sampling Rate</h4>
 <p>This is set to 512 by default. This can be changed to another value that will apply to all tests, except those that explicitly override it in their own parameter file.
@@ -238,11 +241,11 @@ Application:Window int WindowTop= 0 ...<br />
 Note that nothing following the ... needs to be changed above in the parameter file.
 </p>
 <a name="Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors"></a><h3>Connect the Amplifier to the Trigger Box, and Attach Sensors</h3>
-<div class="thumb tnone"><div style="width:806px;"><a href="../images/7/7c/Connections.png" class="internal" title="Connections overview"><img src="../images/7/7c/Connections.png" alt="Connections overview" width="804" height="624" longdesc="/wiki/index.php/Image:Connections.png" /></a>  <div class="thumbcaption" >Connections overview</div></div></div>
+<div class="thumb tnone"><div style="width:762px;"><a href="../images/7/7c/Connections.png" class="internal" title="Connections overview"><img src="../images/7/7c/Connections.png" alt="Connections overview" width="760" height="450" longdesc="/wiki/index.php/Image:Connections.png" /></a>  <div class="thumbcaption" >Connections overview</div></div></div>
 <p>This section describes the steps for connecting the necessary hardware. Refer to the Connections Overview figure above for additional information; each step is numbered in this figure.
 </p>
 <ol><li>Connect the amplifier to the computer; the supported g.tec amps are connected via USB, RS232, or Bluetooth.
-</li><li>Connect the Digital I/O cable (see \ref{sec:digicable}) to the amplifier on the Digital I/O port.
+</li><li>Connect the Digital I/O cable (see bottom of this document) to the amplifier on the Digital I/O port.
 </li><li>Connect the reference and ground wires from the assembled amplifier cables to the amplifier reference and ground connections.
 </li><li>Connect the amplifier cables with the safety connectors into channels 1, 2, and 3 on the g.USBamp.
 </li><li>Connect the digital output line to the channel 1 amplifier cable.
@@ -278,7 +281,7 @@ Note that nothing following the ... needs to be changed above in the parameter f
 <a name="Running_the_Tests"></a><h3>Running the Tests</h3>
 <p>Once the optical sensor is setup and calibrated for a task, begin the testing process. To start the process, press the Start button in the BCI2000 operator window. At the end of each task, the program will quit automatically, and the next one will start automatically. For each task, press the Start button to begin.
 </p><p>Occasionally, the optical sensor may not be in the exact correct place for a given task.You should be able to see changes in on the video channel (channel 2 by default) in the window showing the recorded channels. If the signal is not changing when it should be (e.g., during the correct visual stimulus), you may try increasing the threshold to catch the stimulus, or you may need to place the sensor in the correct location. To do this, place the sensor in the better location, then quit the current BCI2000 test, and quit the BCI2000Certification program. The procedure will need to be restarted.
-</p><p>When the testing is complete, the BCI2000CertAnalysis program will automatically start. It will analyze the data that have been collected, and return the results in the results.txt file. In general, a Pass or Fail will be written next to a task, and each task component, if it passed or failed the test. For more information on interpreting results, see Sec. \ref{sec:results}.
+</p><p>When the testing is complete, the BCI2000CertAnalysis program will automatically start. It will analyze the data that have been collected, and return the results in the results.txt file. In general, a Pass or Fail will be written next to a task, and each task component, if it passed or failed the test. For more information on interpreting results, see below.
 </p>
 <a name="BCI2000Certification:_Additional_Information"></a><h2>BCI2000Certification: Additional Information</h2>
 <p>The previous section on Getting Started provided information to quickly setup and run the default tests. This section provides detailed information about each file used, and how to modify the files for your specific system and applications.
@@ -436,7 +439,7 @@ GT_SetDigitalOut ( m_hdev.at(0), (UCHAR)1, (UCHAR)1);
 </li><li>TDT Pentusa (RX5)  
 </li></ul>
 <a name="Minimum_Requirements"></a><h3>Minimum Requirements</h3>
-<p>Table \ref{tab:minreqs} shows the minimum requirements for running BCI2000. THESE WILL BE UPDATED LATER BASED ON OUR RESULTS!
+<p>This table shows the minimum requirements for running BCI2000.
 </p>
 <table border="1">
 <caption> Minimum System Requirements for BCI2000
@@ -474,10 +477,10 @@ GT_SetDigitalOut ( m_hdev.at(0), (UCHAR)1, (UCHAR)1);
 </li><li>resistors for voltage dividers  
 </li></ul>
 <p>This section describes how to assemble cables that connect the output of the g.TRIGbox to the amplifier input channels.
-</p><p>Strip the free ends of all 6 safety connector wires, about <img class='tex' src="../images/math/5/e/1/5e1f9f7bb7a4598e9053848c42af89d2.png" alt="\frac{1}{4}" /> in. If you are not using voltage dividers, solder 4 of the wires directly  to the center signal connection on the 4 mono audio connectors (Fig. \ref{fig:ampPlug1}). Cover the connection.
+</p><p>Strip the free ends of all 6 safety connector wires, about <img class='tex' src="../images/math/5/e/1/5e1f9f7bb7a4598e9053848c42af89d2.png" alt="\frac{1}{4}" /> in. If you are not using voltage dividers, solder 4 of the wires directly  to the center signal connection on the 4 mono audio connectors. Cover the connection.
 </p>
 <div class="thumb tnone"><div style="width:320px;"><a href="../images/4/4d/AmpPlug_1.png" class="internal" title="g.USBamp Amplifier Plug"><img src="../images/4/4d/AmpPlug_1.png" alt="g.USBamp Amplifier Plug" width="318" height="90" longdesc="/wiki/index.php/Image:AmpPlug_1.png" /></a>  <div class="thumbcaption" >g.USBamp Amplifier Plug</div></div></div>
-<p>Next, twist the two remaining safety connector wire ends together, and solder them together. Solder the 4 short wires to the ground connections on the mono plugs. Finally, solder the 4 ground wires to the two safety connector wires that were twisted together and soldered previously, as in Fig. \ref{fig:ampPlugs2}.
+<p>Next, twist the two remaining safety connector wire ends together, and solder them together. Solder the 4 short wires to the ground connections on the mono plugs. Finally, solder the 4 ground wires to the two safety connector wires that were twisted together and soldered previously, as shown here.
 </p>
 <div class="thumb tnone"><div style="width:456px;"><a href="../images/7/7d/AmpPlugs_2.png" class="internal" title="g.USBamp Amplifier Plugs"><img src="../images/7/7d/AmpPlugs_2.png" alt="g.USBamp Amplifier Plugs" width="454" height="317" longdesc="/wiki/index.php/Image:AmpPlugs_2.png" /></a>  <div class="thumbcaption" >g.USBamp Amplifier Plugs</div></div></div>
 <p>These plugs can plug directly into the g.TRIGbox outputs, and the safety connectors plug into the channels 1-4 inputs on the g.USBamp; the ground wires plug into the ground and reference on the g.USBamp.
@@ -492,18 +495,18 @@ GT_SetDigitalOut ( m_hdev.at(0), (UCHAR)1, (UCHAR)1);
 </li><li>1 Female Mono Audio Plug  
 </li></ul>
 <p>In order to access the digital I/O pins on the g.USBamp, a connector needs to be assembled. The 7-pin digital I/O connector should be ordered through g.TEC, the manufacturer of the g.USBamp.
-</p><p>At least three wires are needed for the circuit, which connect to the digital output 1 pin, the digital input 0 pin,  and the ground pin (Fig. \ref{fig:digIO}).
+</p><p>At least three wires are needed for the circuit, which connect to the digital output 1 pin, the digital input 0 pin,  and the ground pin.
 </p>
 <div class="thumb tnone"><div style="width:290px;"><a href="../images/0/0e/DigIO.png" class="internal" title="g.USBamp Digital I/O Pins"><img src="../images/0/0e/DigIO.png" alt="g.USBamp Digital I/O Pins" width="288" height="104" longdesc="/wiki/index.php/Image:DigIO.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Pins</div></div></div>
 <p>To start, cut three 10 in wires, preferably with  different colors to differentiate between the signal and ground wires. Cut back a small portion of the ground wire, and solder it to the center ground pin on the connector. Now, find the top of the connector by locating the small plastic notch, and locate pins 3 and 4 relative to the notch. Solder one wire to pin 3, and the remaining wire to pin 4. It may be helpful to insulate the wires from the casing using either a piece of black electrical tape, or an insulating gel, like silicone. If a gel is used, be sure to let it set for several hours or overnight. It is also probably a good idea to check the electrical connection with a multimeter prior to insulating.
 </p>
 <div class="thumb tnone"><div style="width:207px;"><a href="../images/5/5e/DigConnector.png" class="internal" title="g.USBamp Digital I/O Pins"><img src="../images/5/5e/DigConnector.png" alt="g.USBamp Digital I/O Pins" width="205" height="100" longdesc="/wiki/index.php/Image:DigConnector.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Pins</div></div></div>
-<p>Next, attach the rubber sleeve over the end of the part with the female threads, as shown in Fig. \ref{fig:digFinal} in the left side of the figure. Slide the smaller metal sleeve over the wires, then slide the larger rubber sleeve over the wires, as shown in Fig. \ref{fig:digFinal}.
-</p><p>For the next step, attach the two metallic pieces that surround the cables, shown laying to the sides in Fig. \ref{fig:digFinal}. One of the metal pieces has a small groove in it, which should be placed over the notch on the connector; the other metal piece fits on the opposite side of the connector. Push the small metal sleeve up to the side piece with the groove, and rotate the sleeve until the notch fits in the groove.
+<p>Next, attach the rubber sleeve over the end of the part with the female threads, as shown in the panel. Slide the smaller metal sleeve over the wires, then slide the larger rubber sleeve over the wires.
+</p><p>For the next step, attach the two metallic pieces that surround the cables, shown laying to the sides below. One of the metal pieces has a small groove in it, which should be placed over the notch on the connector; the other metal piece fits on the opposite side of the connector. Push the small metal sleeve up to the side piece with the groove, and rotate the sleeve until the notch fits in the groove.
 </p><p>Place the  end piece over the connector, with the red dot on top and aligned with the connector notch. Finally, slide the rubber sleeve over the connector, and screw the sleeve into the end piece.
 </p>
 <div class="thumb tnone"><div style="width:805px;"><a href="../images/e/e9/FinalDigCable.png" class="internal" title="g.USBamp Digital I/O Cable"><img src="../images/e/e9/FinalDigCable.png" alt="g.USBamp Digital I/O Cable" width="803" height="406" longdesc="/wiki/index.php/Image:FinalDigCable.png" /></a>  <div class="thumbcaption" >g.USBamp Digital I/O Cable</div></div></div>
-<p>The plug is assembled next. Solder the signal wire from Pin 3 (Digital Out 1) on the digital I/O connector to the signal connector on the female mono plug, and solder the ground wire to the outer ground connector on the plug. Figure \ref{fig:digplug} shows this; in this figure, the red wire is the signal wire, and the brown wire is the ground.
+<p>The plug is assembled next. Solder the signal wire from Pin 3 (Digital Out 1) on the digital I/O connector to the signal connector on the female mono plug, and solder the ground wire to the outer ground connector on the plug. The below figure shows this; in this figure, the red wire is the signal wire, and the brown wire is the ground.
 </p>
 <div class="thumb tnone"><div style="width:320px;"><a href="../images/6/6a/DigPlug.png" class="internal" title="g.USBamp Digital Wire Plug"><img src="../images/6/6a/DigPlug.png" alt="g.USBamp Digital Wire Plug" width="318" height="90" longdesc="/wiki/index.php/Image:DigPlug.png" /></a>  <div class="thumbcaption" >g.USBamp Digital Wire Plug</div></div></div>
 

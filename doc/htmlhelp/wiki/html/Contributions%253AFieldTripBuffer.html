@@ -83,12 +83,12 @@ In the matrix, rows map to signal channels, and columns map to elements.
 For each block of data, the <i>FieldTripBuffer</i> filter checks whether an event of that type has been inserted into the buffer; whenever this is the case, the filter's output signal will be updated from the values contained in the event. If the event's data dimensions do not fit the output signal, parts of the output signal will not be updated, or event data will be ignored silently.
 </p>
 <a name="FTStatesToBuffer"></a><h3>FTStatesToBuffer</h3>
-<p>A list of states that are to be converted into events, and written into the buffer. The buffer event type matches the BCI2000 state name.
+<p>A list of states that are to be converted into FieldTrip events, and written into the buffer. The buffer event type matches the BCI2000 state name.
 An asterisk (*) represents any state name; a minus (-) sign before a state name means to exclude the respective state from the transmission.
 States may either be written to, or read from, the buffer, but not both; states listed in the <i>FTStatesFromBuffer</i> parameter are always excluded from writing.
 </p>
 <a name="FTStatesFromBuffer"></a><h3>FTStatesFromBuffer</h3>
-<p>A list of states that are to be set from events. When no event of matching type has been posted to the buffer, the state will not change; when multiple events have been posted since the FieldTrip buffer processed the last block of data, then the most recent event determines the state's value.
+<p>A list of states that are to be set from FieldTrip events. When no event of matching type has been posted to the buffer, the state will not change; when multiple events have been posted since the FieldTrip buffer processed the last block of data, then the most recent event determines the state's value.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>Any state name may be specified in the <i>FTStatesToBuffer</i> and <i>FTStatesFromBuffer</i> parameters.

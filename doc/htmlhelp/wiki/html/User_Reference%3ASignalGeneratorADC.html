@@ -56,7 +56,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The <i>SignalGeneratorADC</i> filter generates a test signal suited for BCI purposes.
 The test signal is a sine wave overlayed with white noise and a DC component.
 Test signal amplitude may be controlled using the system's pointing device, which is useful in testing SMR type BCI setups.
-The signal's DC component may follow the value of a state variable, which is useful in testing ERP type BCI setups.
+The signal's DC component may reflect the value of a state variable, which is useful in testing ERP type BCI setups.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>Parameters common to all source modules are described under <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>.
@@ -76,7 +76,7 @@ If the index is zero, then the test signal is given on all channels.
 For mouse key control, the pattern of pressed keys is translated into its corresponding 2-bit number. Signal amplitude is then proportional to this number.
 </p>
 <a name="SineFrequency"></a><h3>SineFrequency</h3>
-<p>Test signal frequency. When given as a raw number, the frequency is given in terms of the sampling rate. Absolute frequencies may be given as decimal numbers or fractions when directly followed with <i>Hz</i>.
+<p>Test signal frequency. When specified as a raw number, the frequency is given in terms of the sampling rate. Absolute frequencies may be given as decimal numbers or fractions when directly followed with <i>Hz</i>.
 Examples:
 </p>
 <ul><li> <i>0.25</i> (half the Nyquist frequency),
@@ -103,8 +103,8 @@ E.g., to create a simulated evoked response in the <a href="User_Reference%253AP
 </p>
 <a name="RandomSeed"></a><h3>RandomSeed</h3>
 <p>An initialization value for the system's random number generator.
-When a nonzero value is specified, the random number generator will always produce the same sequence, leading to identical pseudorandom noise.
-If this is zero, the random number generator will be initialized from system time, leading to different noise each time.
+When a nonzero value is specified, the random number generator will always produce the same sequence, leading to identical pseudorandom noise, which is most useful for testng purposes.
+</p><p>If this is zero, the random number generator will be initialized from system time, leading to different noise each time.
 </p>
 <a name="SignalType"></a><h3>SignalType</h3>
 <p>Selects the output signal's numeric type. The following options are provided:

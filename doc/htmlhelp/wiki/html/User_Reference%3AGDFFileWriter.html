@@ -99,7 +99,7 @@ As of version 2.1, GDF is able to represent BCI2000 parameters, and parameter in
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=1" title="Template:EDFGDFParams">edit</a>]</div><a name="GDFFileWriter_Specific_Parameters"></a><h3>GDFFileWriter Specific Parameters</h3>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=2" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectYearOfBirth"></a><h4>SubjectYearOfBirth</h4>
-<p>Year the subject was born, in the format specified in the <a href="User_Reference%253AData_File_Formats.html#EDF_File_Format" title="User Reference:Data File Formats">EDF File Format</a> specification.
+<p>Year the subject was born, in YYYY format.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:EDFGDFParams&amp;action=edit&amp;section=3" title="Template:EDFGDFParams">edit</a>]</div><a name="SubjectSex"></a><h4>SubjectSex</h4>
 <p>An enumerated value specifying the subject's sex:
@@ -120,9 +120,9 @@ Differently from the notation used throughout the rest of BCI2000, this is usual
 Since GDF version 2.0, the equipment ID field has been 8-byte numeric rather than string-valued. Consequently, the EquipmentID parameter is treated as an integer value, and written into the numeric field. If the parameter string evaluates to 0 -- e.g., because it begins with a letter rather than a digit -- its first 8 bytes are copied into the numeric equipment ID field in a byte-wise manner. Remaining bytes are padded with zero bytes if the parameter's string representation contains fewer than 8 characters.
 </p>
 <a name="EventCodes"></a><h4>EventCodes</h4>
-<p>BCI2000 does not prescribe the semantics of its state variables. GDF, on the other hand, associates a fixed set of events with certain numeric codes. Thus, a general mapping of BCI2000 states onto GDF events is not possible. Instead, GDF events are created via a user-defined set of mapping rules in the <code>EventCode</code> parameter, which also has a set of rules predefined for the most important cases.
+<p>BCI2000 does not prescribe the meaning of its state variables. GDF, on the other hand, associates a fixed set of events with certain numeric codes. Thus, a general mapping of BCI2000 states onto GDF events is not possible. Instead, GDF events are created via a user-defined set of mapping rules in the <code>EventCode</code> parameter, which also has a set of rules predefined for the most important cases.
 </p><p>The <i>EventCodes</i> parameter is a two-column matrix, with each row associating a <a href="User_Reference%253AExpression_Syntax.html" title="User Reference:Expression Syntax">boolean expression</a> with a hexadecimal event code as defined in the <a href="User_Reference%253AData_File_Formats.html#GDF_File_Format" title="User Reference:Data File Formats">GDF File Format</a>.
-The expression is evaluated for each data block. Whenever its value switches from "false" to "true", the GDF event code from the second column is entered into the GDF event table; whenever its value switches back from "true" to "false", the same event code is entered into the table but with the terminating bit set (bitmask 0x8000).
+The expression is evaluated for each data block. Whenever its value switches from "false" to "true", the GDF event code from the second column is entered into the GDF event table; whenever its value switches back from "true" to "false", the same event code is entered into the table but with the most significant bit set to 1 (bitmask 0x8000).
 </p><p>The default value of the <i>EventCodes</i> parameter defines the most common mappings between BCI2000 states and GDF event codes:
 </p>
 <table border="1">
@@ -147,7 +147,7 @@ The expression is evaluated for each data block. Whenever its value switches fro
 <tr>
 <td>Feedback!=0</td><td>0x030d</td><td>feedback onset
 </td></tr></table>
-<p>In addition to GDF events, BCI2000 state variables will also be mapped to additional signal channels the same way as for EDF.
+<p>In addition to GDF events, BCI2000 state variables will be mapped to additional signal channels the same way as for EDF.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.

@@ -132,7 +132,8 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
     ButterworthLP();
     virtual ~ButterworthLP() {}
   private:
-    virtual void DesignFilter( IIRFilterBase::Real&amp; gain, 
+    virtual void DesignFilter( const SignalProperties&amp;,
+                               IIRFilterBase::Real&amp; gain, 
                                IIRFilterBase::ComplexVector&amp; zeros, 
                                IIRFilterBase::ComplexVector&amp; poles ) const;
 };
@@ -150,11 +151,13 @@ From the <tt>Ratpoly</tt> object returned, numerator and denominator polynomials
 </p>
 <pre>
  void
- ButterwortLP::ButterworthLP( IIRFilterBase::Real&amp; outGain,
+ ButterworthLP::DesignFilter( const SignalProperties&amp; inSignalProperties,
+                              IIRFilterBase::Real&amp; outGain,
                               IIRFilterBase::ComplexVector&amp; outZeros, 
                               IIRFilterBase::ComplexVector&amp; outPoles ) const
  {
-   float corner = MeasurementUnits::ReadAsFreq( Parameter( &quot;ButterworthLPCorner&quot; ) );
+   float corner = MeasurementUnits::ReadAsFreq( Parameter( &quot;ButterworthLPCorner&quot; ) ) 
+                / inSignalProperties.Elements() * Parameter( &quot;SampleBlockSize&quot; );
    if( corner &lt; 0.0 || corner &gt; 0.5 )
      bcierr &lt;&lt; &quot;ButterworthLPCorner exceeds range&quot; &lt;&lt; endl;
 

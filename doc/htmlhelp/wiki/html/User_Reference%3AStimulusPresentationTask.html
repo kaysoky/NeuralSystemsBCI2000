@@ -139,7 +139,7 @@ For further details, see the <a href="User_Reference%253AStimulusPresentationTas
 <p>When defining a stimulus sequence, stimuli are referred to an integer ID called <i>stimulus code</i>.
 The stimulus code associated with a stimulus corresponds to the column in which that stimulus is defined in the <a href="User_Reference%253AStimulusPresentationTask.html#Stimuli" title="">Stimuli</a> matrix parameter.
 </p><p>In the recorded data file, stimulus presentation is indicated by the <a href="User_Reference%253AStimulusPresentationTask.html#StimulusCode" title="">StimulusCode</a> state.
-During presentation of a stimulus, this state is set to its stimulus code.
+During presentation of a stimulus, this state is set to the associated stimulus code.
 </p>
 <a name="Stimulus_Sequence"></a><h3>Stimulus Sequence</h3>
 <p>Stimuli are presented in a certain sequence. This sequence can either be deterministic, i.e., defined by the investigator, or pseudo-random. 
@@ -185,7 +185,7 @@ When both caption and icon are defined, the caption appears overlaying the icon.
 <a name="Processing_of_Classification_Results"></a><h2>Processing of Classification Results</h2>
 <p>The task can be configured to interpret results communicated to it by the <a href="User_Reference%253AP3TemporalFilter.html" title="User Reference:P3TemporalFilter">P3 Signal Processing</a> module. These results represent a judgment of which of the stimuli was most likely selected. Handling of these results is identical to the <a href="User_Reference%253AP3SpellerTask.html" title="User Reference:P3SpellerTask">P3 Spelling Task</a>. 
 </p><p>When it transmits a classification result, Signal Processing sets the state <i>StimulusCodeRes</i> to the stimulus code that was originally transmitted to it by the user application. For example, when Signal Processing sets <i>StimulusCodeRes</i>  to 3, it transmits classification results for stimulus 3. In addition, it sets <i>StimulusTypeRes</i>  to reflect the type of stimulus 
-(0=non-target, 1=target) when the system is in copy mode. Signal Processing transmits the classication result as one number (i.e., the first control signal).
+(0=non-target, 1=target) when the system is in copy mode. Signal Processing transmits the classification result as one number (i.e., the first control signal).
 </p>
 <a name="Free_Mode"></a><h3>Free Mode</h3>
 <p>The task can be configured to operate in free mode. In this case, the sequence of stimulus deliveries is followed by a time period, in which the Signal Processing classification result is presented. The final classification result is the stimulus with the highest classification result.
@@ -346,7 +346,7 @@ This time stamp is set immediately after the application module has updated the 
 The notion of an "attended" stimulus requires data recording in <a href="User_Reference%253AStimulusPresentationTask.html#InterpretMode" title="">copy mode</a>.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StimulusTaskStates&amp;action=edit&amp;section=3" title="Template:StimulusTaskStates">edit</a>]</div><a name="StimulusBegin"></a><h3>StimulusBegin</h3>
-<p>This state is 1 during first block of stimulus presentation, and 0 otherwise.
+<p>This state is 1 during the first block of stimulus presentation, and 0 otherwise.
 </p>
 <div class="editsection" style="float:right;margin-left:5px;">[<a href="http://www.bci2000.org/wiki/index.php?title=Template:StimulusTaskStates&amp;action=edit&amp;section=4" title="Template:StimulusTaskStates">edit</a>]</div><a name="PhaseInSequence"></a><h3>PhaseInSequence</h3>
 <p>This state is 1 during pre-sequence, 2 during sequence and 3 during post-sequence (see <a href="User_Reference%253AStimulusPresentationTask.html#Timeline" title="">Timeline</a>).

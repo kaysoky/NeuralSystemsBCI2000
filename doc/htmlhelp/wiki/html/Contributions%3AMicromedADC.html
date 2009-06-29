@@ -56,7 +56,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#SourceCh"><span class="tocnumber">6.9</span> <span class="toctext">SourceCh</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253AMicromedADC.html#States"><span class="tocnumber">7</span> <span class="toctext">States</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253AMicromedADC.html#States"><span class="tocnumber">7</span> <span class="toctext">States</span></a>
+<ul>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#MicromedCode"><span class="tocnumber">7.1</span> <span class="toctext">MicromedCode</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AMicromedADC.html#MicromedCondition"><span class="tocnumber">7.2</span> <span class="toctext">MicromedCondition</span></a></li>
+</ul>
+</li>
 <li class='toclevel-1'><a href="Contributions%253AMicromedADC.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
@@ -96,16 +101,16 @@ TortoiseSVN submenu.)
 </li><li>Broken since: --
 </li></ul>
 <a name="Functional_Description"></a><h2>Functional Description</h2>
-<p>The BCI source module that receives the data from the acquisition is the server so it must be in listening mode before the acquisition unit starts to save data (data is sent only during recording). Micromed sends 64 data packets per second for SD, 32 for LTM. The connection is reset if the computer running BCI2000 is too slow to read all packets. This happens gracefully in version 2.0. Make sure you have SystemPlus 1.02.1091 or higher, in this version Micromed also gracefully closes the TCP/IP connection at BCI2000 errors.
+<p>The BCI source module that receives the data from the acquisition is the server, so it must be in listening mode before the acquisition unit starts to save data (data is sent only during recording). Micromed sends 64 data packets per second for SD, 32 for LTM. The connection is reset if the computer running BCI2000 is too slow to read all packets. This happens gracefully in version 2.0. Make sure you have SystemPlus 1.02.1091 or higher, in this version Micromed also gracefully closes the TCP/IP connection at BCI2000 errors.
 A packet of data is structured in 2 sections the first is the header and the second is information data. The first packet sent from the client is the header of an EEG Micromed trace and is read for condition checking. If a note is added in SystemPLUS it is sent as a note packet to the source module. If a digital trigger is sent the trigger code is sent to the source module in two ways: the complete code and a bitmasked code. This allows to send information on a condition (eg in SIGFRIED) and extra information for offline analysis.
-The header packet and the data packets are in the same format as in a Micromed trace file. The note packet sends the complete note buffer, and written in a textfile with the Micromed Samplenummer.
+The header packet and the data packets are in the same format as in a Micromed trace file. The note packet sends the complete note buffer, and written in a textfile with the Micromed Sample Number.
 </p>
 <a name="Installation"></a><h2>Installation</h2>
-<p>To active this function is necessary to add 3 registry keys on the acquisition unit under <tt>HKEY_CURRENT_USER\Software\VB and VBA Program Settings\Brain Quick - System 98\EEG_Settings</tt>:
+<p>To activate data transfer via TCP, it is necessary to add 3 registry keys on the acquisition unit under <tt>HKEY_CURRENT_USER\Software\VB and VBA Program Settings\Brain Quick - System 98\EEG_Settings</tt>:
 </p>
-<ol><li>"tcpSendAcq" that is a string type. Set "1" to active the eeg sending data via tcp function otherwise "0".
-</li><li>"tcpServerName" that is a string type that represent the server name of the computer that receive the eeg trace data.
-</li><li>"tcpPortNumber" that is a string type that represent the port number. (e.g. 5000)
+<ol><li>"tcpSendAcq" is a string type key which must be set to "1" to activate data transfer via TCP, and to "0" to deactivate it
+</li><li>"tcpServerName" is a string type key that represents the IP address of the computer to receive EEG data.
+</li><li>"tcpPortNumber" is a string type key that represents the port number used (e.g., "5000").
 </li></ol>
 <a name="Parameters"></a><h2>Parameters</h2>
 <a name="NotchFilter"></a><h3>NotchFilter</h3>
@@ -136,7 +141,7 @@ The header packet and the data packets are in the same format as in a Micromed t
 <p>Other values are not allowed. Use 0 for Micromeds 16 bit mode, 3 for 22 bit mode: only the first 22 bits are used, but data packets are filled with 32 bit integers.
 </p>
 <a name="Condition_Mask"></a><h3>Condition Mask</h3>
-<p>Bitmask. Digital trigger code AND Condition Mask equals conditions without extra information. When not used set 0xFF
+<p>Bitmask. Digital trigger code AND Condition Mask equals conditions without extra information. When not used, set to 0xFF.
 </p>
 <a name="Priority"></a><h3>Priority</h3>
 <p>CPU Priority. Default=1, set higher if the CPU load is too heavy.
@@ -145,9 +150,8 @@ The header packet and the data packets are in the same format as in a Micromed t
 <p>The number of digitized and stored channels, must match the number of channels in the acquisition unit.
 </p>
 <a name="States"></a><h2>States</h2>
-<p>MicromedCode
-MicromedCondition
-</p>
+<a name="MicromedCode"></a><h3>MicromedCode</h3>
+<a name="MicromedCondition"></a><h3>MicromedCondition</h3>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>
 </p>

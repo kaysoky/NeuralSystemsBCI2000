@@ -61,7 +61,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The P3TemporalFilter performs buffering and averaging of epochs of data as required for online classification of ERP responses.
 It averages over epochs of data that are recorded in response to a number of stimuli; averaging is done separately for each stimulus.
 When a fixed number of epochs have been accumulated for a given stimulus, the P3TemporalFilter computes their temporal average, and reports the average wave form(s) in its output signal.
-Whenever a temporal average is reported, the associated stimulus code is reported in the StimulusCodeRes state.
+Whenever a temporal average is reported, the StimulusCodeRes state is set to the associated stimulus code.
 </p><p>Typically, the P3TemporalFilter's output is sent into the <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">LinearClassifier</a> which takes waveform data from multiple locations and time points to linearly combine them into a single number. 
 A specialized application module such as the <a href="User_Reference%253AStimulusPresentationTask.html" title="User Reference:StimulusPresentationTask">StimulusPresentation</a> and <a href="User_Reference%253AP3SpellerTask.html" title="User Reference:P3SpellerTask">P3Speller</a> modules can then determine which of the stimuli in question was attended.
 </p>

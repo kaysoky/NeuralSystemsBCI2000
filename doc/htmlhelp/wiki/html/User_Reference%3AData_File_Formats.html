@@ -81,7 +81,7 @@ Individual filters may still write log files to the directory defined by the <co
 </p><p>EDF (<i>European Data Format</i>) is a standard for biosignal data especially popular in the area of sleep research.
 </p>
 <ul><li>EDF is limited to 16 bit data.
-</li><li>BCI2000 state variables will be mapped to additional signal channels that contain a single sample for each data block.
+</li><li>BCI2000 state variables will be mapped to additional signal channels.
 </li><li>BCI2000 parameters cannot be represented in EDF format. Setting the <code>SaveAdditionalParameterFile</code> parameter to <i>1</i> will save a separate BCI2000 parameter file along with the EDF data file.
 </li></ul>
 <p>Output in EDF format is implemented by the <a href="User_Reference%253AEDFFileWriter.html" title="User Reference:EDFFileWriter">EDFFileWriter</a> component.
@@ -98,7 +98,7 @@ Building on EDF, GDF allows for arbitrary numeric data types,
 introduces an event table, and provides standardized encoding of events.
 </p>
 <ul><li>Currently, BCI2000 supports Version 2.10 of the GDF format specification.
-</li><li>BCI2000 does not prescribe the semantics of its state variables. GDF, on the other hand, associates a fixed set of events with certain numeric codes. Thus, a general mapping of BCI2000 states onto GDF events is not possible. Instead, GDF events are created via a user-defined set of mapping rules in the <code>EventCode</code> parameter, which also has a set of rules predefined for the most important cases.
+</li><li>BCI2000 does not prescribe the meaning of its state variables. GDF, on the other hand, associates a fixed set of events with certain numeric codes. Thus, a general mapping of BCI2000 states onto GDF events is not possible. Instead, GDF events are created via a user-defined set of mapping rules in the <code>EventCode</code> parameter, which also has a set of rules predefined for the most important cases.
 </li><li>Besides GDF events, BCI2000 state variables will also be mapped to additional signal channels the same way as for EDF.
 </li><li>Since version 2.0, GDF provides additional header space for metadata which is organized as a sequence of tag/length/value structures. BCI2000 uses such a structure--tagged with a "BCI2000" tag--to store parameters. Within the GDF data field, the same human readable format is used as it applies to <a href="Technical_Reference%253AParameter_File.html" title="Technical Reference:Parameter File">BCI2000 parameter files</a>, i.e. a sequence of <a href="Technical_Reference%253AParameter_Definition.html" title="Technical Reference:Parameter Definition">parameter definition lines</a>.
 </li></ul>

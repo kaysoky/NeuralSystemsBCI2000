@@ -25,12 +25,13 @@ BCI2000Certification.html
 3 Measuring_Latencies Measuring Latencies
 4 Measuring_Amplifier_Latency Measuring Amplifier Latency
 4 Measuring_Processing_Latency Measuring Processing Latency
-4 Measuring_Application_Display.2FSound_Output_Latency Measuring Application Display/Sound Output Latency
+4 Measuring_Application_Output_Latency Measuring Application Output Latency
 4 Measuring_System_Latency Measuring System Latency
 4 Measuring_Block_Duration Measuring Block Duration
 3 Latency_Calculation_Overview Latency Calculation Overview
 2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
-3 Set_Default_Parameters Set Default Parameters
+3 Starting_the_Procedure Starting the Procedure
+4 Load_a_Configuration_File Load a Configuration File
 4 Sampling_Rate Sampling Rate
 4 Display_parameters Display parameters
 3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
@@ -72,6 +73,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 May_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" rel="nofollow">May 2009 Build</a>
 4 April_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" rel="nofollow">April 2009 Build</a>
 4 February_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" rel="nofollow">February 2009 Build</a>
 4 December_2008_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_081201.exe" rel="nofollow">December 2008 Build</a>
@@ -345,6 +347,8 @@ Contributions%253AMicromedADC.html
 3 Priority Priority
 3 SourceCh SourceCh
 2 States States
+3 MicromedCode MicromedCode
+3 MicromedCondition MicromedCondition
 2 See_also See also
 
 Contributions%253AModularEEG.html
@@ -613,6 +617,7 @@ Contributions%253AvAmpADC.html
 2 Additional_Information Additional Information
 3 Data_Storage Data Storage
 3 Known_Issues Known Issues
+2 See_also See also
 
 Creating_a_User_Account.html
 2 Do-it_yourself_Account_Management Do-it yourself Account Management
@@ -1979,6 +1984,7 @@ User_FAQ.html
 3 Replaying_Recorded_Data Replaying Recorded Data
 3 Random_Sequences Random Sequences
 3 Visual_Stimulation Visual Stimulation
+3 Joystick_Control Joystick Control
 2 See_also See also
 
 User_Reference%253AARFilter.html
@@ -2017,12 +2023,13 @@ User_Reference%253ABCI2000Certification.html
 3 Measuring_Latencies Measuring Latencies
 4 Measuring_Amplifier_Latency Measuring Amplifier Latency
 4 Measuring_Processing_Latency Measuring Processing Latency
-4 Measuring_Application_Display.2FSound_Output_Latency Measuring Application Display/Sound Output Latency
+4 Measuring_Application_Output_Latency Measuring Application Output Latency
 4 Measuring_System_Latency Measuring System Latency
 4 Measuring_Block_Duration Measuring Block Duration
 3 Latency_Calculation_Overview Latency Calculation Overview
 2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
-3 Set_Default_Parameters Set Default Parameters
+3 Starting_the_Procedure Starting the Procedure
+4 Load_a_Configuration_File Load a Configuration File
 4 Sampling_Rate Sampling Rate
 4 Display_parameters Display parameters
 3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
@@ -2484,6 +2491,7 @@ User_Reference%253ANormalizer.html
 2 Function Function
 3 Normalizing_Transform Normalizing Transform
 3 Adaptation Adaptation
+3 Adaptation_Delay Adaptation Delay
 3 Adaptation_Rationale Adaptation Rationale
 3 Typical_Use Typical Use
 2 Parameters Parameters
@@ -2585,7 +2593,7 @@ User_Reference%253AP3SpellerTask.html
 5 Multiple_Menus Multiple Menus
 4 NumMatrixColumns.2C_NumMatrixRows NumMatrixColumns, NumMatrixRows
 4 AudioStimuliOn AudioStimuliOn
-4 AudioStimuliRowsFiles.2C_AudioStimuliRowsFiles AudioStimuliRowsFiles, AudioStimuliRowsFiles
+4 AudioStimuliRowsFiles.2C_AudioStimuliColsFiles AudioStimuliRowsFiles, AudioStimuliColsFiles
 4 TargetWidth.2C_TargetHeight TargetWidth, TargetHeight
 4 TargetTextHeight TargetTextHeight
 4 BackgroundColor BackgroundColor
@@ -2886,8 +2894,8 @@ User_Tutorial%253ADesigning_an_Eloc_File.html
 User_Tutorial%253AEEG_Measurement_Setup.html
 2 Electrodes Electrodes
 2 The_10-20_International_System The 10-20 International System
-2 Identifying_Brain_Areas Identifying Brain Areas
-2 Montage_Instructions Montage Instructions
+2 Important_Brain_Areas_and_Landmarks Important Brain Areas and Landmarks
+2 Electrode_Placement Electrode Placement
 2 EEG_Artifacts EEG Artifacts
 3 Mains_Interference Mains Interference
 3 Eye_Blink_Artifacts Eye Blink Artifacts
