@@ -147,6 +147,8 @@ void gUSBampADC::Preflight( const SignalProperties&,
 {
   // Requested output signal properties.
   SignalType signalType = SignalType::int16;
+  int driVer = GT_GetDriverVersion();
+  bciout << "g.USBamp driver version = " << driVer <<endl;
   if( Parameter( "SignalType" ) == 1 )
     signalType = SignalType::float32;
   outSignalProperties = SignalProperties(
@@ -475,7 +477,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
         else
         {
             for (int ch=0; ch<m_numchans.at(dev); ch++)
-                channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch);
+                channels[ch] = (int)Parameter("SourceChList")(sourceChListOffset + ch)-sourceChListOffset;
 
             sourceChListOffset += m_numchans.at(dev);
         }
