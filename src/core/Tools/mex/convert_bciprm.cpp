@@ -62,8 +62,8 @@ mxArray*
 StringsToStruct( const mxArray* inStrings )
 {
   ParamList params;
-  int numStrings = mxGetNumberOfElements( inStrings );
-  for( int i = 0; i < numStrings; ++i )
+  mwSize numStrings = mxGetNumberOfElements( inStrings );
+  for( mwSize i = 0; i < numStrings; ++i )
   {
     const mxArray* cell = mxGetCell( inStrings, i );
     if( mxGetClassID( cell ) == mxCHAR_CLASS )

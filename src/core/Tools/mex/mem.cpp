@@ -49,7 +49,7 @@ mexFunction( int nlhs, mxArray* plhs[],
 {
   if( PrintVersion( __FILE__, nrhs, prhs ) )
     return;
-  
+
   const mxArray* inSignalArray = prhs[ 0 ],
                * inParmsArray = prhs[ 1 ];
 
@@ -59,9 +59,9 @@ mexFunction( int nlhs, mxArray* plhs[],
   if( nlhs > 2 )
     ::mexErrMsgTxt( "Too many output arguments -- " USAGE );
 
-  int numSamples  = ::mxGetM( inSignalArray ),
-      numChannels = ::mxGetN( inSignalArray ),
-      numParms    = ::mxGetNumberOfElements( inParmsArray );
+  size_t numSamples  = ::mxGetM( inSignalArray ),
+         numChannels = ::mxGetN( inSignalArray );
+  mwSize numParms    = ::mxGetNumberOfElements( inParmsArray );
 
   if( !::mxIsDouble( inSignalArray ) || ::mxIsComplex( inSignalArray ) )
     ::mexErrMsgTxt( "Expected real double input signal -- " USAGE );

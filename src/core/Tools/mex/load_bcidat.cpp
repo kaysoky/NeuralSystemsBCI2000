@@ -153,10 +153,10 @@ mexFunction( int nargout, mxArray* varargout[],
         // If a file name is followed by a numeric argument, we interpret it as a sample range.
         // [1 0] and [0 0] are considered an empty range.
         ++i;
-        const int* dim = mxGetDimensions( varargin[ i ] );
-        int numEntries = dim[ 0 ] * dim[ 1 ];
+        const mwSize* dim = mxGetDimensions( varargin[ i ] );
+        mwSize numEntries = dim[ 0 ] * dim[ 1 ];
         double* range = mxGetPr( varargin[ i ] );
-        for( int j = 0; j < numEntries; ++j )
+        for( mwSize j = 0; j < numEntries; ++j )
           if( floor( fabs( range[ j ] ) ) != range[ j ] )
             mexErrMsgTxt( "Nonnegative integers expected in range vector." );
 
@@ -229,7 +229,7 @@ mexFunction( int nargout, mxArray* varargout[],
   }
 
   // Read EEG data into the first output argument.
-  int dim[] = { totalSamples, numChannels };
+  mwSize dim[] = { totalSamples, numChannels };
   mxArray* signal = mxCreateNumericArray( 2, dim, classID, mxREAL );
   if( signal == NULL )
     mexErrMsgTxt( "Out of memory when allocating space for the signal variable." );

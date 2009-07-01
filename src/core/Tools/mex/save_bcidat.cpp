@@ -165,11 +165,11 @@ mexFunction( int nargout, mxArray* varargout[],
     bcierr__ << "No signal data given." << endl;
 
   const mxArray* pSignal = varargin[1];
-  int nDim = mxGetNumberOfDimensions( pSignal );
-  const int* dims = mxGetDimensions( pSignal );
+  mwSize nDim = mxGetNumberOfDimensions( pSignal );
+  const mwSize* dims = mxGetDimensions( pSignal );
   if( nDim != 2 )
     bcierr__ << "Signal data must have two dimensions." << endl;
-  unsigned long totalSamples = dims[0];
+  mwSize totalSamples = dims[0];
 
   void ( *fpReadSignal )( void*, long, long, GenericSignal& ) = NULL;
   SignalType type = SignalType::int16;
@@ -236,7 +236,7 @@ mexFunction( int nargout, mxArray* varargout[],
   {
     const char* name = mxGetFieldNameByNumber( pStates, i );
     const mxArray* pField = mxGetFieldByNumber( pStates, 0, i );
-    const int* dims = mxGetDimensions( pField );
+    const mwSize* dims = mxGetDimensions( pField );
     if( dims[0] < totalSamples )
       bcierr__ << "Too little samples in state \"" << name << "\": "
                << "state variables should provide a value for each sample point."

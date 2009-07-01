@@ -245,17 +245,17 @@ StructToParam( const mxArray* inStruct, const char* inName )
 void
 CellsToValues( const mxArray* inCells, Param& ioParam )
 {
-  const int* dim = mxGetDimensions( inCells );
-  int numRows = dim[ 0 ],
-      numCols = dim[ 1 ];
+  const mwSize* dim = mxGetDimensions( inCells );
+  mwSize numRows = dim[ 0 ],
+         numCols = dim[ 1 ];
   if( ( ioParam.Type().find( "list" ) != string::npos ) && ( numCols == 1 ) )
     ioParam.SetNumValues( numRows );
   else if( numRows * numCols > 1 )
     ioParam.SetDimensions( numRows, numCols );
-  for( int row = 0; row < numRows; ++row )
-    for( int col = 0; col < numCols; ++col )
+  for( mwIndex row = 0; row < numRows; ++row )
+    for( mwIndex col = 0; col < numCols; ++col )
     {
-      int idx[] = { row, col };
+      mwIndex idx[] = { row, col };
       const mxArray* cell = mxGetCell( inCells, mxCalcSingleSubscript( inCells, 2, idx ) );
       switch( cell ? mxGetClassID( cell ) : mxUNKNOWN_CLASS )
       {
@@ -280,7 +280,7 @@ CellsToValues( const mxArray* inCells, Param& ioParam )
 void
 CellsToLabels( const mxArray* inCells, LabelIndex& ioIndexer )
 {
-  int numLabels = mxGetNumberOfElements( inCells );
+  mwSize numLabels = mxGetNumberOfElements( inCells );
   if( numLabels > ioIndexer.Size() )
     ioIndexer.Resize( numLabels );
   for( int i = 0; i < numLabels; ++i )
