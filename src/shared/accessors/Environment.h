@@ -49,6 +49,9 @@ class FilterWrapper;
 
 #define END_PARAMETER_DEFINITIONS                                        \
   };                                                                     \
+  EncodedString className_( bci::ClassName( typeid( *this ) ) );         \
+  ostringstream oss_;                                                    \
+  className_.WriteToStream( oss_, ":" );                                 \
   for( size_t i = 0; i < sizeof( params_ ) / sizeof( *params_ ); ++i )   \
   {                                                                      \
     Param p;                                                             \
@@ -59,7 +62,7 @@ class FilterWrapper;
              << std::endl;                                               \
     else                                                                 \
     {                                                                    \
-      p.Sections().push_back( bci::ClassName( typeid( *this ) ) );       \
+      p.Sections().push_back( oss_.str() );                              \
       if( Parameters->Exists( p.Name() ) )                               \
         p.AssignValues( ( *Parameters )[ p.Name() ] );                   \
       Parameters->Add( p, -Instance() );                                 \
