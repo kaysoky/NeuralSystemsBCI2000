@@ -38,7 +38,7 @@ sys.argv = sys.argv[:1] + args
 from distutils.core import setup
 setup(
 	name = 'BCPy2000',
-	version = '1.0',
+	version = '11336',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',
