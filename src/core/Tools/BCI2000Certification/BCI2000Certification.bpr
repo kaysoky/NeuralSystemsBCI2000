@@ -10,13 +10,15 @@
       obj\ParamList.obj obj\State.obj obj\StateList.obj obj\StateVector.obj 
       obj\ParamRef.obj obj\LabelIndex.obj"/>
     <RESFILES value="BCI2000Certification.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) BCI2000CertificationGUI.dfm"/>
     <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder6\Lib\Psdk\psapi.lib&quot;"/>
     <LIBRARIES value="rtl.lib vcl.lib"/>
     <SPARELIBS value="vcl.lib rtl.lib"/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\fileio\dat;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\accessors;..\..\..\shared\types"/>
+    <PATHCPP value=".;..\..\..\shared\fileio\dat;..\..\..\shared\types;..\..\..\shared\accessors"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>

@@ -609,7 +609,7 @@ void __fastcall TBCICertificationGUI::analyzeBtnClick(TObject *Sender)
 {
 	infoBox->Lines->Add("Starting analysis...");
 	stringstream comm;
-	comm << "start BCI2000CertAnalysis.exe -d " << dataSaveBox->Text.c_str();
+	comm << "start BCI2000CertAnalysis.exe -d " << dataSaveBox->Text.c_str() << " -i " << mCurIni.c_str() <<endl;
 	system(comm.str().c_str());
 }
 //---------------------------------------------------------------------------
@@ -641,7 +641,8 @@ void __fastcall TBCICertificationGUI::Saveini1Click(TObject *Sender)
 	SaveDialog1->Options.Clear();
 	SaveDialog1->Options << ofOverwritePrompt << ofNoChangeDir;
 	if (SaveDialog1->Execute()){
-        mCT.tasks.writeIni(SaveDialog1->FileName.c_str());
+                mCT.tasks.writeIni(SaveDialog1->FileName.c_str());
+                mCurIni = SaveDialog1->FileName.c_str();
 	}
 		
 }

@@ -13,9 +13,11 @@
       obj\StateList.obj obj\ClassName.obj obj\Expression.obj 
       obj\ExpressionParser.obj obj\LabelIndex.obj obj\StateVectorSample.obj"/>
     <RESFILES value="BCI2000CertAnalysis.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="psapi.lib"/>
+    <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
     <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi bcbsmp.bpi dbrtl.bpi adortl.bpi vcldb.bpi 
@@ -31,7 +33,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value=""/>
+    <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="BCI2000CertAnalysis.bpf"/>
     <INCLUDEPATH value=".;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -40,11 +42,16 @@
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
-    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <IDLCFLAGS value="-I. -I..\..\..\shared -I..\..\..\shared\config 
+      -I..\..\..\shared\utils\Expression -I..\..\..\shared\utils 
+      -I..\..\..\shared\types -I..\..\..\shared\fileio\dat 
+      -I..\..\..\shared\bcistream -I..\..\..\shared\accessors -I$(BCB)\include 
+      -I$(BCB)\include\vcl -src_suffix cpp -D_DEBUG -boa"/>
+    <CFLAG1 value="-Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -tWC -tWM- -c"/>
+    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zn"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -ap -Tpe -x -Gn -w-dup"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -ap -Tpe -x -Gn -w-dup -v"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -121,10 +128,11 @@ Item1=.\;..\..\..\shared\;..\..\..\shared\config;..\..\..\shared\utils\Expressio
 Item2=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=3
-Item0=$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\obj;$(BCB)\lib
-Item1=$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib
+Count=4
+Item0=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\psdk;$(BCB)\lib\obj;$(BCB)\lib
+Item1=$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;$(BCB)\lib\obj;$(BCB)\lib
+Item2=$(BCB)\Projects\Lib;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\fileio\dat;..\..\..\shared\bcistream;..\..\..\shared\accessors;C:\Documents and Settings\Adam\My Documents\BCI2000.v2.0\src\core\Tools\BCI2000Certification;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -146,7 +154,7 @@ Item0=..\..\..\..\tools\BCI2000Certification\
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=
+RunParams=-d data -i outfilepath BCI2000Certification_32ch_100ms.ini
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -162,9 +170,9 @@ ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
 
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
   </IDEOPTIONS>
 </PROJECT>

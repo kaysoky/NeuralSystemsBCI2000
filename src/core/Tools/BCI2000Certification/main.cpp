@@ -28,6 +28,7 @@ http://www.bci2000.org
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stdlib.h>
 //#include "Functions.h"
 #include "TaskType.h"
 #include "analysisClass.h"
@@ -159,7 +160,7 @@ void parseInput(int argc, char* argv[],string *datDir, string *iniFile, vector<s
 	//setup variables to use
     int pos = 1;
 
-	(*iniFile) = "BCI2000Certification_comprehensive_100ms.ini";
+	(*iniFile) = "BCI2000Certification_32ch_100ms.ini";
 	(*datDir) = "data";
 	//go through each argument until there are none left
 	//this first loop is a first pass, checking for general errors in syntax and setting up 
@@ -400,6 +401,13 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < minReqs.size(); i++)
 		delete minReqs[i];
 	delete datDir;
+
+    cout << "Analysis complete. Would you like to see the results ([y]/n)?"<<endl;
+    char c[255];
+	cin.getline(c,1);
+    if (c[0] != 'n' && c[0] != 'N'){
+        system(string("notepad.exe " + outfilepath).c_str());
+    }
 
 	cout << "Press enter to exit"<<endl;
 	waitForExit();
