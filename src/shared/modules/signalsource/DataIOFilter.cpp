@@ -222,10 +222,7 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   if( !mpADC )
     bcierr << "Expected an ADC filter instance to be present" << endl;
   else
-  {
     mpADC->CallPreflight( Input, Output );
-    mInputBuffer.SetProperties( Output );
-  }
 
   if( mpSourceFilter )
   {
@@ -252,6 +249,23 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   if( !Input.IsEmpty() )
     bcierr << "Expected empty input signal" << endl;
 
+  // Channel labels.
+  if( Parameters->Exists( "ChannelNames" ) && Parameter( "ChannelNames" )->NumValues() > 0 )
+  {
+    set<string> names;
+    LabelIndex& outputLabels = Output.ChannelLabels();
+    for( int i = 0; i < min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() ); ++i )
+    {
+      string name = Parameter( "ChannelNames" )( i );
+      if( names.find( name ) == names.end() )
+        names.insert( name );
+      else
+        bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
+      outputLabels[ i ] = name;
+    }
+  }
+  mInputBuffer.SetProperties( Output );
+
   // We output calibrated signals in float32 format.
   Output.SetType( SignalType::float32 );
   Output.ElementUnit().SetOffset( 0 )
@@ -267,20 +281,6 @@ DataIOFilter::Preflight( const SignalProperties& Input,
         rangeMax = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMax" ) );
   Output.ValueUnit().SetRawMin( rangeMin )
                     .SetRawMax( rangeMax );
-  if( Parameters->Exists( "ChannelNames" ) && Parameter( "ChannelNames" )->NumValues() > 0 )
-  {
-    set<string> names;
-    LabelIndex& outputLabels = Output.ChannelLabels();
-    for( int i = 0; i < min( Output.Channels(), Parameter( "ChannelNames" )->NumValues() ); ++i )
-    {
-      string name = Parameter( "ChannelNames" )( i );
-      if( names.find( name ) == names.end() )
-        names.insert( name );
-      else
-        bcierr << "Duplicate name: \"" << name << "\" in ChannelNames parameter" << endl;
-      outputLabels[ i ] = name;
-    }
-  }
 }
 
 
