@@ -31,7 +31,7 @@
 
 using namespace std;
 
-RegisterFilter( ConnectorInput,  2.9999 ); // Place the input filter 
+RegisterFilter( ConnectorInput,  2.9999 ); // Place the input filter
                                            // immediately before the task
                                            // filter.
 RegisterFilter( ConnectorOutput, 3.9999 ); // Place the output filter
@@ -67,7 +67,7 @@ ConnectorInput::Preflight( const SignalProperties& inSignalProperties,
       bcierr << "Could not connect to " << connectorInputAddress << endl;
   }
   Parameter( "ConnectorInputFilter" );
-  
+
   // Pre-flight access each state in the list.
   for( int state = 0; state < States->Size(); ++state )
     State( ( *States )[ state ].Name() );
@@ -129,7 +129,7 @@ ConnectorInput::Process( const GenericSignal& Input, GenericSignal& Output )
       bciout << "Unexpected input" << endl;
     else if( mAllowAny || mInputFilter.find( name + ' ' ) != string::npos )
     {
-      if( name.find( "Signal" ) == 0 )
+      if( name.find( "Signal(" ) == 0 )
       {
         istringstream iss( name.substr( name.find( '(' ) ) );
         char ignore;
