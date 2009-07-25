@@ -409,7 +409,7 @@ P3SpellerTask::OnStartRun()
     mSummaryFile << "*** START OF RUN " << mRunCount << " IN OFFLINE MODE ***\n";
   }
   AppLog << flush;
-  
+
   mSummaryFile << "Date = " << StringDate() << "\t\t"
                << "Time = " << StringTime() << "\n"
                << "Num of Sequences = " << mNumberOfSequences
@@ -438,7 +438,7 @@ P3SpellerTask::OnStopRun()
 
   // App log
   AppLog << "******************************" << endl;
-  
+
   // Summary file
   mSummaryFile << "*** RUN SUMMARY ***\n"
                << "System Pause Duration (in seconds): " << mSleepDuration << '\n'
@@ -585,8 +585,8 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
   // when targets are not grouped into rows and columns.
   int targetID = pTarget ? pTarget->Tag() : 0;
   State( "SelectedTarget" ) = targetID;
-  State( "SelectedRow" )    = targetID ? targetID / mNumMatrixCols + 1 : 0;
-  State( "SelectedColumn" ) = targetID ? targetID % mNumMatrixCols + 1 : 0;
+  State( "SelectedRow" )    = targetID ? ( targetID - 1 ) / mNumMatrixCols + 1 : 0;
+  State( "SelectedColumn" ) = targetID ? ( targetID - 1 ) % mNumMatrixCols + 1 : 0;
 
   // Write classification signal details into the application log.
   int numAverages = 0;
@@ -616,7 +616,7 @@ void
 P3SpellerTask::OnEnter( const std::string& inText )
 {
   AppLog << "Selected command: " << inText << endl;
-  
+
   if( mConnection.is_open() )
     mConnection << "P3Speller_Output " << inText << endl;
 
