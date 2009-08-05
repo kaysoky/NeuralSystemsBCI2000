@@ -39,7 +39,9 @@ gMOBIlabPlusADC::gMOBIlabPlusADC()
    "Source int SamplingRate=    256 256 1 40000 "
        "// the signal sampling rate",
    "Source int InfoMode= 0 0 0 1"
-        "// display information about the g.MOBIlabPlus",
+		"// display information about the g.MOBIlabPlus",
+   "Source int TestMode= 0 0 0 1"
+   		"// generate a test signal (boolean)",
    "Source int DigitalEnable= 0 0 0 1 "
         "// read digital inputs 1-8 as channels (boolean)",
    "Source int DigitalOutBlock= 0 0 0 1 "
@@ -102,9 +104,16 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 {
   Halt();
 
-  int numAChans = Output.Channels();
-  if (Parameter("DigitalEnable") == 1)
-    numAChans = 8;
+  int numAChans;
+  int numDChans = 0;
+  bool useDigInputs = (int)Parameter("DigitalEnable");
+  if (useDigInputs){
+	numAChans = 8;
+	numDChans = 1;
+  }
+  else{                 
+	numAChans = Output.Channels();
+  }
 
   string COMport = Parameter("COMport");
   mDev = GT_OpenDevice( const_cast<char*>( COMport.c_str() ) );
@@ -138,7 +147,7 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
   ain.ain7 = (numAChans > 6); // scan
   ain.ain8 = (numAChans > 7); // scan
 
-  bool useDigInputs = (int)Parameter("DigitalEnable");
+
   dio.dio1_enable = useDigInputs; // set dio1 to input
   dio.dio2_enable = useDigInputs; // set dio2 to input
   dio.dio3_enable = useDigInputs;
@@ -167,11 +176,15 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
     return;
   }
 
+  if (Parameter("TestMode") == 1)
+	  GT_SetTestmode(mDev, true);
+  else
+  	GT_SetTestmode(mDev, false);
   ret = GT_StartAcquisition(mDev);
   if (!ret)
     bcierr << "Could not start data acquisition" << endl;
 
-  int numSamplesPerScan = Output.Channels() * Output.Elements(),
+  int numSamplesPerScan = (numAChans+numDChans) * Output.Elements(),
       blockSize = numSamplesPerScan * sizeof( sint16 ),
       blockDuration = 1e3 * Output.Elements() / Parameter( "SamplingRate" );
   mpAcquisitionThread = new gMOBIlabThread( blockSize, blockDuration, mDev );
@@ -192,16 +205,7 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
     GT_SetDigitalOut(mDev, 0x10);
 
   const int cMaxAChans = 8;
-  for( int sample = 0; sample < Output.Elements(); ++sample )
-  {
-    for( int channel = 0; channel < min( cMaxAChans, Output.Channels() ); ++channel )
-      Output( channel, sample ) = mpAcquisitionThread->ExtractData();
-
-    if( Output.Channels() > cMaxAChans )
-    {
-      //the digital lines are stored in a single sample, with the values in each bit
-      // the order is (MSB) 8 7 6 5 2 4 3 1 (LSB)
-      uint16 mask[] =
+  uint16 mask[] =
       {
         0x0001,
         0x0008, // intentionally out of sequence
@@ -211,7 +215,18 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
         0x0020,
         0x0040,
         0x0080
-      };
+	  };
+	  
+  for( int sample = 0; sample < Output.Elements(); ++sample )
+  {
+    for( int channel = 0; channel < min( cMaxAChans, Output.Channels() ); ++channel )
+      Output( channel, sample ) = mpAcquisitionThread->ExtractData();
+
+    if( Output.Channels() > cMaxAChans )
+    {
+      //the digital lines are stored in a single sample, with the values in each bit
+      // the order is (MSB) 8 7 6 5 2 4 3 1 (LSB)
+
       uint16 value = mpAcquisitionThread->ExtractData();
       for( int channel = cMaxAChans; channel < Output.Channels(); ++channel )
         Output( channel, sample ) = ( value & mask[ channel - cMaxAChans ] ) ? 100 : 0;

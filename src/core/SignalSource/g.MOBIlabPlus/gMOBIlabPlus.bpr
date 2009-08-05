@@ -26,13 +26,14 @@
       obj\gMOBIlabThread.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="..\..\..\extlib\gtec\gMOBIlabPlus\gMOBIlabplus.lib"/>
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\extlib\gtec"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\extlib\gtec"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
