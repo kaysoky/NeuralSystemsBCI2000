@@ -73,18 +73,23 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
     num = 0;
     for (int t = 0; t < n-k; t++)
         num += wk1[t+1]*wk2[t];
-    
-    den = den*q - wk1[0]*wk1[0] - wk2[n-k]*wk2[n-k];
-   
+
+	den = den*q - wk1[0]*wk1[0] - wk2[n-k]*wk2[n-k];
+
+	if (den < eps){
+		num = 0.5;
+		den = 1.0;
+	}
+	else{
+		if (coeff[k] >= 1 || coeff[k] <= -1){
+			den = 0;
+			for (int t = 0; t < n-k; t++)
+				den += wk1[t+1]*wk1[t+1] + wk2[t]*wk2[t];
+		}
+	}
     coeff[k] = 2*num / den;
-    if (coeff[k] >= 1 || coeff[k] <= -1){
-        den = 0;
-        for (int t = 0; t < n-k; t++)
-            den += wk1[t+1]*wk1[t+1] + wk2[t]*wk2[t];
-        
-        coeff[k] = 2*num/den;
-    }
-    q = 1.0 - coeff[k] * coeff[k];
+
+	q = 1.0 - coeff[k] * coeff[k];
     meanPower *= q;
     for( int i = 1; i < k; ++i )
       coeff[i] = wkm[i] - coeff[k] * wkm[k-i];
