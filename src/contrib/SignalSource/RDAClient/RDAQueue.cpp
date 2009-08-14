@@ -162,14 +162,17 @@ RDAQueue::ReceiveData()
     }
   }
 
-  GetServerMessage();
+  const RDA_MessageHeader* msg
+    = reinterpret_cast<const RDA_MessageHeader*>( receiveBuffer );
+  do
+  {  // Ignore undocumented message types.
+    GetServerMessage();
+  } while( msg->nType < RDAStart || msg->nType > RDAData32 );
   if( failstate )
   {
     lastMessageType = RDAStop;
     return;
   }
-  const RDA_MessageHeader* msg
-    = reinterpret_cast<const RDA_MessageHeader*>( receiveBuffer );
   switch( msg->nType )
   {
     case RDAStart:
