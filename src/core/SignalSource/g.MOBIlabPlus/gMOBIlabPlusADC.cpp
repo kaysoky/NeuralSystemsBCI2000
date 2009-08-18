@@ -165,8 +165,9 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
   if (Parameter("DigitalOutBlock") == 1)
   {
     dio.dio7_direction = false;   //set to digital output
-    mEnableDigOut = true;
-    GT_SetDigitalOut(mDev, 0x11);
+	mEnableDigOut = true;
+	mDigState = 0;
+	GT_SetDigitalOut(mDev, 0x10);
   }
 
   bool ret = GT_InitChannels(mDev, ain, dio); // init analog channels and digital lines on g.MOBIlab
@@ -201,8 +202,6 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 // **************************************************************************
 void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
 {
-  if (mEnableDigOut)
-    GT_SetDigitalOut(mDev, 0x10);
 
   const int cMaxAChans = 8;
   uint16 mask[] =
@@ -233,8 +232,13 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
     }
   }
 
-  if (mEnableDigOut)
-    GT_SetDigitalOut(mDev, 0x11);
+  if (mEnableDigOut){
+  	mDigState = (mDigState+1) % 2;
+	if (mDigState == 0)
+		GT_SetDigitalOut(mDev, 0x10);
+	else
+		GT_SetDigitalOut(mDev, 0x11);
+  }
 
   if( mpAcquisitionThread->IsTerminated() )
     bcierr << "Lost connection to device" << endl;

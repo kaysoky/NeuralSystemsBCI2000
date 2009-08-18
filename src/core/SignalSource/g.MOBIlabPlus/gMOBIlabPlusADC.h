@@ -26,6 +26,7 @@ class gMOBIlabPlusADC : public GenericADC
  private:
   bool            mEnableDigOut;
   HANDLE          mDev;
+  int mDigState;
   gMOBIlabThread* mpAcquisitionThread;
 };
 
