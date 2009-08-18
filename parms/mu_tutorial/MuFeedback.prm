@@ -1,11 +1,5 @@
 System:Configuration matrix OperatorVersion= { Framework Revision Build } 1 2.x ,%20 Dec%2014%202007 // operator module version information
 System:State%20Vector int StateVectorLength= 11 16 1 30 // length of the state vector in bytes
-Source:Signal%20Properties int SourceCh= 16 16 1 % // number of digitized and stored channels
-Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
-Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
-Source:Signal%20Properties list ChannelNames= 0 // list of channel names
-Source:Signal%20Properties floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties floatlist SourceChGain= 16 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.033 0.003 % % // gain for each channel (A/D units -> muV)
 Visualize:Timing int VisualizeTiming= 1 1 0 1 // visualize system timing (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
@@ -25,9 +19,6 @@ Source:SignalGeneratorADC int RandomSeed= 0 0 0 1 // Initialization value for ra
 Source:SignalGeneratorADC int SignalType= 0 0 0 2 // numeric type of output signal:  0: int16, 1: float32, 2: int32 (enumeration)
 Storage:BCI2000FileWriter int SavePrmFile= 0 1 0 1 // save additional parameter file (0=no, 1=yes) (boolean)
 Storage:BCI2000FileWriter string StorageTime= % // time of beginning of data storage
-Source:Alignment int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
-Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing list TransmitChList= 16 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 1 1 128 // list of transmitted channels
 System:Core%20Connections string SignalSourcePort= 4353 4200 1024 65535 // the SignalSource module's listening port
 System:Core%20Connections string SignalSourceIP= 134.2.123.129 127.0.0.1 % % // the SignalSource module's listening IP
 System:Configuration matrix SignalSourceVersion= { Framework Revision Build } 1 2.x ,%20 Dec%2017%202007 // SignalSource version information
@@ -64,10 +55,6 @@ Visualize:Processing%20Stages int VisualizeLPFilter= 0 0 0 1 // Visualize LPFilt
 Visualize:Processing%20Stages int VisualizeNormalizer= 0 0 0 1 // Visualize Normalizer output (boolean)
 Connector:ConnectorInput list ConnectorInputFilter= 0 // list of state names or signal elements to allow, "*" for any, signal elements as in "Signal(1,0)"
 Connector:ConnectorInput string ConnectorInputAddress= % localhost:20320 % % // IP address/port to read from, e.g. localhost:20320
-Application:Window int WindowWidth= 640 640 0 % // width of application window
-Application:Window int WindowHeight= 480 480 0 % // height of application window
-Application:Window int WindowLeft= 0 0 % % // screen coordinate of application window's left edge
-Application:Window int WindowTop= 0 0 % % // screen coordinate of application window's top edge
 Application:Sequencing float PreRunDuration= 2s 2s 0 % // duration of pause preceding first trial
 Application:Sequencing float PreFeedbackDuration= 2s 2s 0 % // duration of target display prior to feedback
 Application:Sequencing float FeedbackDuration= 2s 3s 0 % // duration of feedback
@@ -101,3 +88,6 @@ System:Core%20Connections string ApplicationPort= 4356 4200 1024 65535 // the Ap
 System:Core%20Connections string ApplicationIP= 134.2.123.129 127.0.0.1 % % // the Application module's listening IP
 System:Configuration matrix ApplicationVersion= { Framework Revision Build } 1 2.x ,%20 Dec%2014%202007 // Application version information
 System:Configuration matrix ApplicationFilterChain= 3 { Filter%20Name Position%20String } ConnectorInput 2.9999 CursorFeedbackTask 3 ConnectorOutput 3.9999 // Application filter chain
+Filtering:SpatialFilter int SpatialFilterType= 1 2 0 3 // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)
+Filtering:SpatialFilter:SpatialFilter intlist SpatialFilterCAROutput= 0 // list of output channels for the CAR if used
+Filtering:SpatialFilter:SpatialFilter matrix SpatialFilter= { C3_OUT Cz_OUT C4_OUT } 8 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 % % // columns represent input channels, rows represent output channels

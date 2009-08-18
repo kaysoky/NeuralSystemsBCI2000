@@ -1,9 +1,9 @@
-Source:Signal%20Properties:DataIOFilter int SourceCh= 16 16 1 % // number of digitized and stored channels
+Source:Signal%20Properties:DataIOFilter int SourceCh= 8 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties:DataIOFilter int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties:DataIOFilter int SamplingRate= 256 256Hz 1 % // sample rate
 Source:Signal%20Properties:DataIOFilter list ChannelNames= 0 // list of channel names
-Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 16 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.003 % % // gain for each channel (A/D units -> muV)
+Source:Signal%20Properties:DataIOFilter floatlist SourceChOffset= 8 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
+Source:Signal%20Properties:DataIOFilter floatlist SourceChGain= 8 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.003 % % // gain for each channel (A/D units -> muV)
 Source:gUSBampADC intlist SourceChList= 0 0 1 128 // list of channels to digitize
 Source:gUSBampADC intlist SourceChDevices= 1 16 16 1 17 // number of digitized channels per device
 Source:gUSBampADC int NumBuffers= 2 1 2 32 // number of software buffers to use
@@ -27,4 +27,4 @@ Source:gUSBampADC int CommonGround= 1 0 0 1 // internally connect GNDs from all 
 Source:gUSBampADC int CommonReference= 1 0 0 1 // internally connect Refs from all blocks:  0: false, 1: true (enumeration)
 Source:Alignment:AlignmentFilter int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment:AlignmentFilter floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
-Source:Online%20Processing:TransmissionFilter list TransmitChList= 16 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 // list of transmitted channels
+Source:Online%20Processing:TransmissionFilter list TransmitChList= 8 1 2 3 4 5 6 7 8 // list of transmitted channels

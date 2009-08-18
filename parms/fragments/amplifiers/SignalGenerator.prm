@@ -1,9 +1,9 @@
-Source:Signal%20Properties int SourceCh= 16 16 1 % // number of digitized and stored channels
+Source:Signal%20Properties int SourceCh= 8 16 1 % // number of digitized and stored channels
 Source:Signal%20Properties int SampleBlockSize= 8 32 1 % // number of samples transmitted at a time
 Source:Signal%20Properties int SamplingRate= 256 256Hz 1 % // sample rate
 Source:Signal%20Properties list ChannelNames= 0 // list of channel names
-Source:Signal%20Properties floatlist SourceChOffset= 16 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
-Source:Signal%20Properties floatlist SourceChGain= 16 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.003 % % // gain for each channel (A/D units -> muV)
+Source:Signal%20Properties floatlist SourceChOffset= 8 0 0 0 0 0 0 0 0 0 % % // Offset for channels in A/D units
+Source:Signal%20Properties floatlist SourceChGain= 8 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.008 0.003 % % // gain for each channel (A/D units -> muV)
 Visualize:DataIOFilter int VisualizeRoundtrip= 1 1 0 1 // visualize roundtrip time (0=no, 1=yes) (boolean)
 Visualize:DataIOFilter int VisualizeSource= 1 1 0 1 // visualize raw brain signal (0=no, 1=yes) (boolean)
 Visualize:DataIOFilter int VisualizeSourceDecimation= 1 1 0 % // decimation factor for raw brain signal
@@ -25,3 +25,4 @@ Source:Source%20Filter int HighPassFilter= 0 0 0 1 // Source high pass filter: 0
 Source:Alignment int AlignChannels= 0 0 0 1 // align channels in time (0=no, 1=yes)
 Source:Alignment floatlist SourceChTimeOffset= 0 0 % % // time offsets for all source channels (may be empty)
 Visualize:AlignmentFilter int VisualizeAlignment= 0 0 0 1 // visualize aligned channels (0=no, 1=yes) (boolean)
+Source:Online%20Processing:TransmissionFilter list TransmitChList= 8 1 2 3 4 5 6 7 8 // list of transmitted channels
