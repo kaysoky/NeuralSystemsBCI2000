@@ -107,7 +107,7 @@ class TfMain : public TForm
   SYSLOG           mSyslog;
   PREFERENCES      mPreferences;
   SCRIPT           mScript;
-  bool             mTerminated;
+  volatile bool    mTerminated;
   TDateTime        mStarttime;
   VersionInfo      mVersionInfo;
   std::ofstream    mDebugLog;

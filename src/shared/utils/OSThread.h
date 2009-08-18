@@ -31,7 +31,7 @@ class OSThread
     { return mTerminating; }
   bool IsTerminated() const
     { return mHandle == NULL; }
-    
+
   int  Result() const
     { return mResult; }
 
@@ -44,7 +44,7 @@ class OSThread
   HANDLE mHandle;
   DWORD  mThreadID;
   int    mResult;
-  bool   mTerminating;
+  volatile bool mTerminating;
 };
 
 #endif // OS_THREAD_H
