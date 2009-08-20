@@ -56,7 +56,7 @@ main( int argc, char** argv )
     return 0;
   }
   
-  ifstream inputFile( inputFileName );
+  ifstream inputFile( inputFileName, ios::in | ios::binary );
   if( !inputFile.is_open() )
   {
     cerr << "Could not open " << inputFileName << " for input" << endl;
@@ -104,14 +104,14 @@ main( int argc, char** argv )
     nBlocks = 1;
   char* pBuffer = new char[blockSize];
   int part = 1;
-  while( !inputFile.eof() )
+  while( inputFile )
   {
     string outputFileName = inputFileName;
     outputFileName = outputFileName.substr( 0, outputFileName.length() - 4 );
     ostringstream oss;
     oss << "P" << setw(2) << setfill('0') << part << ".dat";
     outputFileName = outputFileName + oss.str();
-    ofstream outputFile( outputFileName.c_str() );
+    ofstream outputFile( outputFileName.c_str(), ios::out | ios::binary );
     if( !outputFile.is_open() )
     {
       cerr << "Could not open " << outputFileName << " for output" << endl;
@@ -120,7 +120,7 @@ main( int argc, char** argv )
     if( verbose )
       cout << "Writing " << outputFileName << endl;
     outputFile.write( pHeader, headerLen ); 
-    for( int block = 0; ( block < nBlocks ) && !inputFile.eof(); ++block )
+	for( int block = 0; ( block < nBlocks ) && inputFile; ++block )
     {
       inputFile.read( pBuffer, blockSize );
       outputFile.write( pBuffer, inputFile.gcount() );
