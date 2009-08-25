@@ -199,9 +199,7 @@ RDAQueue::ReceiveData()
             if( ( ++connectionInfo.blockNumber & blockNumberMask )
                 != ( dataMsg->nBlock & blockNumberMask ) )
             {
-              failstate |= connectionFail;
-              bciout << "RDA block numbers not in sequence" << endl;
-              lastMessageType = RDAStop;
+              bciout << "Lost one or more data blocks" << endl;
             }
             break;
           case RDAData32:
@@ -278,9 +276,7 @@ RDAQueue::ReceiveData()
             if( ( ++connectionInfo.blockNumber & blockNumberMask )
                 != ( dataMsg->nBlock & blockNumberMask ) )
             {
-              failstate |= connectionFail;
-              bcierr << "RDA block numbers not in sequence" << endl;
-              lastMessageType = RDAStop;
+              bciout << "Lost one or more data blocks" << endl;
             }
             break;
           case RDAStart:
