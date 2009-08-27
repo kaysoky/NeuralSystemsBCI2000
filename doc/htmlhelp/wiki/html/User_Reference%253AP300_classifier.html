@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
+<head>
+<title>User Reference:P300 classifier - BCI2000 Help</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="User Reference:P300 classifier,User Reference:P300 classifier" />
+<link rel="shortcut icon" href="../../favicon.ico" />
+<link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
+<link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
+<link rel="stylesheet" href="../skins/common/common.css" type="text/css" />
+<link rel="stylesheet" href="../skins/common/htmlhelp.css" type="text/css" />
+
+<style type='text/css'>
+a.new, #quickbar a.new { color: #CC2200; }
+.editsection { display: none; }
+#quickbar { position: absolute; top: 4px; left: 4px;  }
+#article { margin-left: 152px; margin-right: 4px; }
+</style>
+</head>
+
+<body bgcolor='#FFFFFF'>
+
+<div id='content'>
+<div id='topbar'>
+<table border='0' cellspacing='0' width='98%'>
+<tr>
+</tr>
+</table>
+</div>
+
+<div id='article'>
+<h1 class="pagetitle">P300 classifier</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Synopsis"><span class="tocnumber">1</span> <span class="toctext">Synopsis</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Location"><span class="tocnumber">2</span> <span class="toctext">Location</span></a></li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Versioning"><span class="tocnumber">3</span> <span class="toctext">Versioning</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Author"><span class="tocnumber">3.1</span> <span class="toctext">Author</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Source_Code_Revisions"><span class="tocnumber">3.2</span> <span class="toctext">Source Code Revisions</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Control_Panel"><span class="tocnumber">4</span> <span class="toctext">Control Panel</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Data_Pane"><span class="tocnumber">4.1</span> <span class="toctext">Data Pane</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Parameters_Pane"><span class="tocnumber">4.2</span> <span class="toctext">Parameters Pane</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Details_Pane"><span class="tocnumber">4.3</span> <span class="toctext">Details Pane</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Methodology"><span class="tocnumber">5</span> <span class="toctext">Methodology</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Methodology_Concept"><span class="tocnumber">5.1</span> <span class="toctext">Methodology Concept</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Methodology_Step_By_Step"><span class="tocnumber">5.2</span> <span class="toctext">Methodology Step By Step</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253AP300_classifier.html#Step_1:_Load_BCI2000_data_files"><span class="tocnumber">5.2.1</span> <span class="toctext">Step 1: Load BCI2000 data files</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AP300_classifier.html#Step_2:_Get_P300_responses"><span class="tocnumber">5.2.2</span> <span class="toctext">Step 2: Get P300 responses</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AP300_classifier.html#Step_3:_Generate_feature_weights_for_a_linear_model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29"><span class="tocnumber">5.2.3</span> <span class="toctext">Step 3: Generate feature weights for a linear model using Stepwise Linear Discriminant Analysis (SWLDA)</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AP300_classifier.html#Step_4:_Apply_linear_classifier_to_get_scores"><span class="tocnumber">5.2.4</span> <span class="toctext">Step 4: Apply linear classifier to get scores</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253AP300_classifier.html#Step_5:_Interpret_scores"><span class="tocnumber">5.2.5</span> <span class="toctext">Step 5: Interpret scores</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Tutorial"><span class="tocnumber">6</span> <span class="toctext">Tutorial</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Step_0:_..."><span class="tocnumber">6.1</span> <span class="toctext">Step 0: ...</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Step_1:_..."><span class="tocnumber">6.2</span> <span class="toctext">Step 1: ...</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AP300_classifier.html#Step_2:_..."><span class="tocnumber">6.3</span> <span class="toctext">Step 2: ...</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table>
+<a name="Synopsis"></a><h2>Synopsis</h2>
+<p>The P300 Classifier GUI (Graphical User Interface) is a tool that allows to train and test a linear classifier for detection of evoked related potentials collected with <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a>. This GUI is designed for the analysis of BCI2000 data collected using the P3Speller or Stimuli Presentation paradigms. The program generates feature weights derived via the Stepwise Linear Regression technique. The specifics of the feature space and training routine can be manipulated using the GUI. The feature weights derived from the GUI can be saved and imported into <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> as a parameter file fragment for online testing. The GUI provides the following functionality to investigators: 
+</p>
+<dl><dt> Classifier Training</dt><dd> Generates feature weights from <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> P3Speller or Stimuli Presentation data files 
+</dd></dl>
+<dl><dt> Classifier Testing</dt><dd> Applies current feature weights to <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> P3Speller or Stimuli Presentation data files and compares the results
+</dd></dl>
+<a name="Location"></a><h2>Location</h2>
+<p><a href="http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier" class='external free' title="http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier" rel="nofollow">http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier</a>
+</p>
+<a name="Versioning"></a><h2>Versioning</h2>
+<a name="Author"></a><h3>Author</h3>
+<p>Cristhian Potes
+</p>
+<a name="Source_Code_Revisions"></a><h3>Source Code Revisions</h3>
+<ul><li>Initial development: --
+</li><li>Tested under: --
+</li><li>Known to compile under: --
+</li><li>Broken since: --
+</li></ul>
+<a name="Control_Panel"></a><h2>Control Panel</h2>
+<p>The P300 Classifier GUI is composed of three panels: Data, Parameters, and Details. 
+</p>
+<a name="Data_Pane"></a><h3>Data Pane</h3>
+<p>Data Pane allows the user to:
+</p>
+<ul><li> Load training and testing data files and an INI file. 
+</li><li> Generate and apply feature weights
+</li><li> Write a parameter file fragment
+</li></ul>
+<div class="center"><div class="thumb tnone"><div style="width:562px;"><a href="../images/c/cf/DataPaneLabels.png" class="internal" title="Data pane"><img src="../images/c/cf/DataPaneLabels.png" alt="Data pane" width="560" height="738" longdesc="/wiki/index.php/Image:DataPaneLabels.png" /></a>  <div class="thumbcaption" >Data pane</div></div></div></div>
+<p><br />
+</p>
+<ul><li> <font color="red"> [1] </font> <b>Load Training Data Files:</b> Use this button to load <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> data files for classifier training. The information for the selected files will appear at the top of the button.
+</li></ul>
+<ul><li> <font color="red"> [2] </font> <b>Load Testing Data Files:</b> Use this button to load <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> data files for classifier testing. The information for the selected files will appear at the top of the button. Training and testing data files must be compatible.
+</li></ul>
+<ul><li> <font color="red"> [3] </font> <b>Load Ini File:</b> Use this button to load an <a href="http://en.wikipedia.org/wiki/INI_file" class='external text' title="http://en.wikipedia.org/wiki/INI_file" rel="nofollow">INI file</a> with all the parameters needed for the feature extraction.
+</li></ul>
+<pre>
+[Initialization]
+
+maxiter = 60 // to set the Max Model Features
+penter = 0.1000 // to set the Penter
+premove = 0.1500 // to set Premove
+spatial_filter = 1 // to set the Spatial Filter. Set 1 for RAW and 2 for CAR
+decimation_frequency_Hz = 20 // to set the  Decimation Frequency
+channel_set = 1 2 3 4 5 6 7 8 // to set the Channel Set
+Resp_window_ms = 0 800 // to set the Response Window
+</pre>
+<ul><li> <font color="red"> [4] </font> <b>Generate Feature Weights:</b> Use this button to generate the feature weights after properly configuring all of the parameters in the  <a href="User_Reference%253AP300_classifier.html#Author" title="User Reference:P300 classifier">Parameters</a> pane. The suggested name for the parameter file fragment (*.prm) will appear at the top of the <a href="User_Reference%253AP300_classifier.html#Write_.2A.prm_File" title="User Reference:P300 classifier">Write *.prm File</a> button. This button will be enable only if the parameters are properly configured and there exists training data files.  
+</li></ul>
+<ul><li> <font color="red"> [5] </font> <b>Apply Feature Weights:</b> Use this button to test the classification accuracy of the parameter file fragment currently stored in the GUI. The classification results will appear in the <a href="User_Reference%253AP300_classifier.html#Author" title="User Reference:P300 classifier">Details</a> pane.
+</li></ul>
+<ul><li> <font color="red"> [6] </font> <b>Write *.prm File:</b> Use this button to save the parameters file fragment with the name suggested at the top of this button. The *.prm file is a <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> parameter file fragment that can be imported into <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> for online testing of the feature weights.
+</li></ul>
+<a name="Parameters_Pane"></a><h3>Parameters Pane</h3>
+<p>Parameters Pane contains all the parameters needed to generate the feature weights. These parameters can be loaded using the <a href="User_Reference%253AP300_classifier.html#DataPane" title="User Reference:P300 classifier">Load Ini File </a> button. If the parameters are properly configured the <a href="User_Reference%253AP300_classifier.html#Data_Pane" title="User Reference:P300 classifier">Generate Feature Weights</a> button is enabled.
+</p>
+<div class="center"><div class="thumb tnone"><div style="width:564px;"><a href="../images/1/1d/ParametersPaneLabel.png" class="internal" title="Parameters pane"><img src="../images/1/1d/ParametersPaneLabel.png" alt="Parameters pane" width="562" height="737" longdesc="/wiki/index.php/Image:ParametersPaneLabel.png" /></a>  <div class="thumbcaption" >Parameters pane</div></div></div></div>
+<ul><li> <font color="red"> [7] </font> <b>Max Model Features:</b> Used to specify the maximum number of features to be kept in the SWLDA (Stepwise Linear Discriminant Analysis model). Only a single value can be entered for evaluation. The defaults is 60.
+</li></ul>
+<ul><li> <font color="red"> [8] </font> <b>Penter:</b> Used to specify the maximum <a href="http://en.wikipedia.org/wiki/P-value" class='external text' title="http://en.wikipedia.org/wiki/P-value" rel="nofollow">p-value</a> for  a variable to be entered. The default is 0.1000. Penter must be less than Premove and 0&lt;Penter&lt;1. Only a single value can be entered for evaluation.
+</li></ul>
+<ul><li> <font color="red"> [9] </font> <b>Premove:</b> Used to specify the maximum  <a href="http://en.wikipedia.org/wiki/P-value" class='external text' title="http://en.wikipedia.org/wiki/P-value" rel="nofollow">p-value</a> for a variable to be removed. The default is 0.1500. Premove must be greater than Penter and 0&lt;Premove&lt;1. Only a single value can be entered for evaluation.
+</li></ul>
+<ul><li> <font color="red"> [10] </font> <b>Spatial Filter:</b> Selects the spatial filter applied to the training data. Select <b>RAW</b> or <b>CAR</b> from the drop-down menu. <b>RAW</b> is no spatial filter applied to the data, and <b>CAR</b> is a common average reference filter using all of the channels contained in the data file <b>(not just the channels specified in the GUI channel set)</b>. The default is <b>RAW</b>.
+</li></ul>
+<ul><li> <font color="red"> [11] </font> <b>Decimation Frequency:</b> Used to specify the temporal decimation frequency of the data in Hz. Only a single value can be entered for evaluation. Set this parameter to the <a href="User_Reference%253AP300_classifier.html#Details_Pane" title="User Reference:P300 classifier">Sampling Rate</a> value for no decimation. The lower the Decimation Frequency, the less original data retained for processing.   
+</li></ul>
+<ul><li> <font color="red"> [12] </font> <b>Channel Set:</b> Used to specify the channel set that will be used to create feature weights. The specified channels must be a subset of the channels contained in the training data file. 
+</li></ul>
+<ul><li> <font color="red"> [13] </font> <b>Response Window:</b> Used to specify the <i>Begin</i> and <i>End</i> time points in milliseconds (ms) following the stimuli collected for the analysis. These two values are automatically converted into samples according to the sampling rate of the data (rounded). Only a single data window can be entered and will be evaluated. <i>Begin</i> must be less than <i>End</i>.
+</li></ul>
+<p><br />
+</p>
+<a name="Details_Pane"></a><h3>Details Pane</h3>
+<p>Details Pane displays information about the <a href="http://www.bci2000.org/wiki" class='external text' title="http://www.bci2000.org/wiki" rel="nofollow">BCI2000</a> training data files and the classification results. 
+</p>
+<div class="center"><div class="thumb tnone"><div style="width:563px;"><a href="../images/f/f9/DetailsPaneLabel.png" class="internal" title="Details pane"><img src="../images/f/f9/DetailsPaneLabel.png" alt="Details pane" width="561" height="736" longdesc="/wiki/index.php/Image:DetailsPaneLabel.png" /></a>  <div class="thumbcaption" >Details pane</div></div></div></div>
+<ul><li> <font color="red"> [14] </font> <b>Sampling Rate:</b> Displays the sampling rate in (Hz) contained in the training data files.
+</li></ul>
+<ul><li> <font color="red"> [15] </font> <b>Number of Channels:</b> Displays the total number of channels contained in the training data files. 
+</li></ul>
+<ul><li> <font color="red"> [16] </font> <b>Number of Classifier:</b> Displays the classifier applied to generate the feature weights.
+</li></ul>
+<ul><li> <font color="red"> [17] </font> <b>Application:</b> Displays the type of application used for the investigator. The application can be either <i>P3SpellerTask</i> or <i>StimulusPresentationTask</i>.
+</li></ul>
+<ul><li> <font color="red"> [18] </font> <b>Interpret Mode:</b> Displays the interpret mode used for the investigator. The mode can be either <i>Copy Mode</i> or <i>Online Free Mode</i>.
+</li></ul>
+<ul><li> <font color="red"> [19] </font> <b>Duration:</b> Displays the duration in (s) of the whole training data files. 
+</li></ul>
+<ul><li> <font color="red"> [20] </font> The text editor displays the classification results for the training and testing data files. 
+</li></ul>
+<p><br />
+</p>
+<a name="Methodology"></a><h2>Methodology</h2>
+<a name="Methodology_Concept"></a><h3>Methodology Concept</h3>
+<p>The idea behind the P300Classifier is to train and test a linear classifier (SWLDA) for detection of evoked potentials collected from brain signals. This is achieved in five steps for training data and in four steps for testing data.
+</p>
+<ul><li> Training Data Files
+</li></ul>
+<ol><li> Load BCI2000 data files
+</li><li> Get P300 responses
+</li><li> Generate feature weights for a linear model using SWLDA
+</li><li> Apply linear classifier to get scores 
+</li><li> Interpret scores according to the given application 
+</li></ol>
+<ul><li> Testing Data Files
+</li></ul>
+<ol><li> Load BCI2000 data files
+</li><li> Get P300 responses
+</li><li> Apply linear classifier to get scores 
+</li><li> Interpret scores according to the given application
+</li></ol>
+<p><br />
+</p>
+<a name="Methodology_Step_By_Step"></a><h3>Methodology Step By Step</h3>
+<a name="Step_1:_Load_BCI2000_data_files"></a><h4>Step 1: Load BCI2000 data files </h4>
+<p>The first step of the P300Classifier GUI is to load the training and testing BCI2000 data files specified by the investigator. The BCI2000 data files are checked for compatibility and consistency. If the training data files are valid then the <i>Generate Feature Weights</i> is enable.  Each file is colored according to the following color coded scheme:
+</p>
+<ul><li> <span style="background-color:lightgreen"><b>files ok</b></span>&nbsp;: The files are valid.
+</li><li> <span style="background-color:yellow"><b>files mismatch</b></span>&nbsp;: The files may be valid but there is a mismatch with another file.
+</li><li> <span style="background-color:pink"><b>files error</b></span>&nbsp;: The files are invalid.
+</li></ul>
+<a name="Step_2:_Get_P300_responses"></a><h4>Step 2: Get P300 responses </h4>
+<p>Signals, states, and parameters are extracted from the BCI2000 data files. However, the signals that are only extracted are those defined by the user in the response window. Only these signals are filtered and downsampled. The filter employed is a <a href="http://en.wikipedia.org/wiki/Moving_average" class='external text' title="http://en.wikipedia.org/wiki/Moving_average" rel="nofollow">Moving Average Filter</a> implemented as a <i>Direct form II Transposed</i>.  The <a href="http://en.wikipedia.org/wiki/Downsampling" class='external text' title="http://en.wikipedia.org/wiki/Downsampling" rel="nofollow">downsampling</a> factor is computed as:
+</p><p><center>
+<img class='tex' src="../images/math/2/a/5/2a54fc3c425ddd2093599e099f6cc166.png" alt="\frac{Sampling Rate}{Decimation Frequency}" />
+</center>
+</p>
+<a name="Step_3:_Generate_feature_weights_for_a_linear_model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29"></a><h4>Step 3: Generate feature weights for a linear model using Stepwise Linear Discriminant Analysis (SWLDA) </h4>
+<p>The idea behind SWLDA is to use specific statistical procedures for selecting the <i>best</i> variables in a linear regression. In each step, there is a re-examination of the previous variables incorporated into the model. The SWLDA algorithm can be summarized in the following three steps:
+</p>
+<ul><li> STEP 1: Compute the autocorrelation matrix to select the variable most highly correlated to the response. The selected variable is included in the linear model.  
+</li></ul>
+<ul><li> STEP 2: Control the inclusion and exclusion of variables in the linear model by using F-tests.
+</li></ul>
+<ul><li> STEP 3: Perform a linear regression equation with the included variables using least squares.
+</li></ul>
+<p><br />
+</p>
+<a name="Step_4:_Apply_linear_classifier_to_get_scores"></a><h4>Step 4: Apply linear classifier to get scores </h4>
+<p>Scores are computed based on the final variables included in the linear model and the corresponding feature weights. 
+</p>
+<a name="Step_5:_Interpret_scores"></a><h4>Step 5: Interpret scores </h4>
+<p>Scores are interpreted according to the given application, which can be either P300SpellerTask or StimulusPresentationTask.
+</p>
+<a name="Tutorial"></a><h2>Tutorial</h2>
+<a name="Step_0:_..."></a><h3>Step 0: ...</h3>
+<a name="Step_1:_..."></a><h3>Step 1: ...</h3>
+<a name="Step_2:_..."></a><h3>Step 2: ...</h3>
+<a name="See_also"></a><h2>See also</h2>
+
+<div class="printfooter">
+</div>
+
+</div><br style="clear:both" />
+
+<div id='footer'><table border="0" cellspacing="0"><tr><td width='152' rowspan='1'>&nbsp;</td><td class='bottom' align='left' valign='top'></td></tr></table>
+</div>
+</div>
+
+<div id='quickbar'>
+<table class="image"><caption align="bottom"><h2>BCI2000 Help</h2></caption><tr><td><a href="BCI2000_Help.html"><img src='../../images/bci2000logo_small.png' height=100 width=100 alt='[BCI2000 Help]' /></a></td></tr></table>
+<hr class='sep' /><a href="User_Tutorial%253ABCI2000_Tour.html">Getting Started</a><br />
+<a href="User_Reference%253AContents.html">User Manual</a><br />
+<ul><li><a href="User_Reference%253AOperator_Module.html">Operator Module</a></li>
+<li><a href="User_Reference%253AFilters.html">Configuration Guide</a></li>
+<li>Applications</li>
+<li>Tools</li>
+</ul><a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
+<a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
+<a href="Contributions%253AContents.html">Contributions</a><br />
+<hr class='sep' />
+<a href="BCI2000_Glossary.html">BCI2000 Glossary</a><br />
+</div>
+
+</body></html>

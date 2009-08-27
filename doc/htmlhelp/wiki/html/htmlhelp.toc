@@ -15,56 +15,23 @@ Administrators.html
 
 BCI2000Certification.html
 2 Introduction Introduction
-2 Latencies Latencies
-3 Defining_Latencies Defining Latencies
-4 Amplifier_Latency Amplifier Latency
-4 Processing_Latency Processing Latency
-4 Output_Latency Output Latency
-4 System_Latency System Latency
-4 Block_Duration.2C_Block_Duration_Jitter Block Duration, Block Duration Jitter
-3 Measuring_Latencies Measuring Latencies
-4 Measuring_Amplifier_Latency Measuring Amplifier Latency
-4 Measuring_Processing_Latency Measuring Processing Latency
-4 Measuring_Application_Output_Latency Measuring Application Output Latency
-4 Measuring_System_Latency Measuring System Latency
-4 Measuring_Block_Duration Measuring Block Duration
-3 Latency_Calculation_Overview Latency Calculation Overview
-2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
-3 Starting_the_Procedure Starting the Procedure
-4 Load_a_Configuration_File Load a Configuration File
-4 Sampling_Rate Sampling Rate
-4 Display_parameters Display parameters
-3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
-3 Setup_Sensor_Thresholds Setup Sensor Thresholds
-4 Audio_Threshold Audio Threshold
-4 Video_Threshold Video Threshold
-3 Starting_the_Software Starting the Software
-3 Setting_up_the_Optical_Sensor Setting up the Optical Sensor
-4 P3Speller P3Speller
-4 CursorTask CursorTask
-4 StimulusPresentation StimulusPresentation
-3 Running_the_Tests Running the Tests
-2 BCI2000Certification:_Additional_Information BCI2000Certification: Additional Information
-3 Overview_of_Important_Files Overview of Important Files
-4 BCI2000Certification.ini BCI2000Certification.ini
-4 BCI2000Certification.cfg BCI2000Certification.cfg
-4 CertificationMain.prm CertificationMain.prm
-4 BCI2000Certification.exe BCI2000Certification.exe
-4 BCI2000CertAnalysis.exe BCI2000CertAnalysis.exe
-4 Parameter_Files Parameter Files
-3 Interpreting_Results Interpreting Results
-4 What_if_a_Task_Did_Not_Pass.3F What if a Task Did Not Pass?
-2 Certification_Protocol Certification Protocol
-3 Running_the_Tests_2 Running the Tests
-2 Software_Templates Software Templates
-3 Amplifier_Latency_2 Amplifier Latency
-3 Visual_and_Audio_Latency Visual and Audio Latency
-2 Supported_Hardware Supported Hardware
-3 Supported_and_Tested_Hardware Supported and Tested Hardware
-4 Amplifiers Amplifiers
-3 Minimum_Requirements Minimum Requirements
-3 Voltage_Divider_.26_Amplifier_Input Voltage Divider &amp; Amplifier Input
+2 Compiling_the_BCI2000Certification_Programs Compiling the BCI2000Certification Programs
+2 Using_the_BCI2000Certification_Procedure Using the BCI2000Certification Procedure
+3 Starting_the_User_Interface Starting the User Interface
+3 Loading_Configuration_Files Loading Configuration Files
+3 User_Interface_Components User Interface Components
+4 1._Task_List 1. Task List
+4 2._Task_Details 2. Task Details
+4 3._Global_Settings 3. Global Settings
+4 4._Controls 4. Controls
+3 Setting_Up_and_Running_the_Certification_Procedure Setting Up and Running the Certification Procedure
+3 Analyzing_Data Analyzing Data
+3 Interpreting_Analysis_Results Interpreting Analysis Results
+4 A_Note_on_.22Pass.2FFail.22 A Note on "Pass/Fail"
+2 Assembling_Required_Cables Assembling Required Cables
+3 Amplifier_Input Amplifier Input
 3 Digital_I.2FO_Cable Digital I/O Cable
+2 Troubleshooting  Troubleshooting 
 
 BCI2000_Binaries.html
 2 Access Access
@@ -73,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 June_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" rel="nofollow">June 2009 Build</a>
 4 May_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" rel="nofollow">May 2009 Build</a>
 4 April_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" rel="nofollow">April 2009 Build</a>
 4 February_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090203.exe" rel="nofollow">February 2009 Build</a>
@@ -913,6 +881,15 @@ Programming_Reference%253ABlockRandSeq_Class.html
 3 BlockRandSeq.28_RandomGenerator.26_.29 BlockRandSeq( RandomGenerator&amp; )
 3 unsigned_int_NextElement.28.29 unsigned int NextElement()
 2 See_also See also
+
+Programming_Reference%253ABuild_System.html
+2 Introduction  Introduction 
+2 Dependencies  Dependencies 
+2 Supported_Environments  Supported Environments 
+2 How_To_Build_Using_CMake  How To Build Using CMake 
+2 How_To_Test  How To Test 
+2 Known_Issues  Known Issues 
+2 Conclusions  Conclusions 
 
 Programming_Reference%253AContents.html
 2 Getting_Started Getting Started
@@ -1850,6 +1827,22 @@ Programming_Tutorial%253AImplementing_an_Input_Logger.html
 2 Finished Finished
 2 See_also See also
 
+Programming_Tutorial%253AImplementing_another_Matlab-based_Filter.html
+2 What_is_Matlab.3F What is Matlab?
+3 Advantages_of_Matlab Advantages of Matlab
+3 Disadvantages_of_Matlab Disadvantages of Matlab
+2 Real_time_processing_for_BCI Real time processing for BCI
+2 Motivation_for_combining_BCI2000_and_Matlab Motivation for combining BCI2000 and Matlab
+2 Matlab_in_the_BCI2000_pipeline Matlab in the BCI2000 pipeline
+2 Filter_example:_linear_classification_using_a_beamformer Filter example: linear classification using a beamformer
+3 Adaptive_Spatial_Filtering Adaptive Spatial Filtering
+3 Implementation_with_the_BCI2000_Matlab_filter Implementation with the BCI2000 Matlab filter
+4 bci_StartRun_function bci_StartRun function
+4 bci_Process_Function bci_Process Function
+3 Beamformer_source_reconstruction Beamformer source reconstruction
+2 Conclusions Conclusions
+2 See_also See also
+
 Programming_Tutorial%253AWorking_with_the_FieldTrip_buffer.html
 2 Getting_the_data_in_Matlab Getting the data in Matlab
 2 Closing_the_loop.2C_writing_a_control_signal_from_Matlab_to_BCI2000 Closing the loop, writing a control signal from Matlab to BCI2000
@@ -2013,56 +2006,23 @@ User_Reference%253AAlignmentFilter.html
 
 User_Reference%253ABCI2000Certification.html
 2 Introduction Introduction
-2 Latencies Latencies
-3 Defining_Latencies Defining Latencies
-4 Amplifier_Latency Amplifier Latency
-4 Processing_Latency Processing Latency
-4 Output_Latency Output Latency
-4 System_Latency System Latency
-4 Block_Duration.2C_Block_Duration_Jitter Block Duration, Block Duration Jitter
-3 Measuring_Latencies Measuring Latencies
-4 Measuring_Amplifier_Latency Measuring Amplifier Latency
-4 Measuring_Processing_Latency Measuring Processing Latency
-4 Measuring_Application_Output_Latency Measuring Application Output Latency
-4 Measuring_System_Latency Measuring System Latency
-4 Measuring_Block_Duration Measuring Block Duration
-3 Latency_Calculation_Overview Latency Calculation Overview
-2 Getting_Started_With_the_Default_Tests Getting Started With the Default Tests
-3 Starting_the_Procedure Starting the Procedure
-4 Load_a_Configuration_File Load a Configuration File
-4 Sampling_Rate Sampling Rate
-4 Display_parameters Display parameters
-3 Connect_the_Amplifier_to_the_Trigger_Box.2C_and_Attach_Sensors Connect the Amplifier to the Trigger Box, and Attach Sensors
-3 Setup_Sensor_Thresholds Setup Sensor Thresholds
-4 Audio_Threshold Audio Threshold
-4 Video_Threshold Video Threshold
-3 Starting_the_Software Starting the Software
-3 Setting_up_the_Optical_Sensor Setting up the Optical Sensor
-4 P3Speller P3Speller
-4 CursorTask CursorTask
-4 StimulusPresentation StimulusPresentation
-3 Running_the_Tests Running the Tests
-2 BCI2000Certification:_Additional_Information BCI2000Certification: Additional Information
-3 Overview_of_Important_Files Overview of Important Files
-4 BCI2000Certification.ini BCI2000Certification.ini
-4 BCI2000Certification.cfg BCI2000Certification.cfg
-4 CertificationMain.prm CertificationMain.prm
-4 BCI2000Certification.exe BCI2000Certification.exe
-4 BCI2000CertAnalysis.exe BCI2000CertAnalysis.exe
-4 Parameter_Files Parameter Files
-3 Interpreting_Results Interpreting Results
-4 What_if_a_Task_Did_Not_Pass.3F What if a Task Did Not Pass?
-2 Certification_Protocol Certification Protocol
-3 Running_the_Tests_2 Running the Tests
-2 Software_Templates Software Templates
-3 Amplifier_Latency_2 Amplifier Latency
-3 Visual_and_Audio_Latency Visual and Audio Latency
-2 Supported_Hardware Supported Hardware
-3 Supported_and_Tested_Hardware Supported and Tested Hardware
-4 Amplifiers Amplifiers
-3 Minimum_Requirements Minimum Requirements
-3 Voltage_Divider_.26_Amplifier_Input Voltage Divider &amp; Amplifier Input
+2 Compiling_the_BCI2000Certification_Programs Compiling the BCI2000Certification Programs
+2 Using_the_BCI2000Certification_Procedure Using the BCI2000Certification Procedure
+3 Starting_the_User_Interface Starting the User Interface
+3 Loading_Configuration_Files Loading Configuration Files
+3 User_Interface_Components User Interface Components
+4 1._Task_List 1. Task List
+4 2._Task_Details 2. Task Details
+4 3._Global_Settings 3. Global Settings
+4 4._Controls 4. Controls
+3 Setting_Up_and_Running_the_Certification_Procedure Setting Up and Running the Certification Procedure
+3 Analyzing_Data Analyzing Data
+3 Interpreting_Analysis_Results Interpreting Analysis Results
+4 A_Note_on_.22Pass.2FFail.22 A Note on "Pass/Fail"
+2 Assembling_Required_Cables Assembling Required Cables
+3 Amplifier_Input Amplifier Input
 3 Digital_I.2FO_Cable Digital I/O Cable
+2 Troubleshooting  Troubleshooting 
 
 User_Reference%253ABCI2000Export.html
 2 General_Usage General Usage
@@ -2464,6 +2424,8 @@ User_Reference%253AMatlab_MEX_Files.html
 3 Other_platforms Other platforms
 2 Building_BCI2000_MEX_files Building BCI2000 MEX files
 3 Microsoft_Windows Microsoft Windows
+4 Using_the_Borland_C.2B.2B_compiler Using the Borland C++ compiler
+4 Using_the_Microsoft_Visual_C.2B.2B_compiler Using the Microsoft Visual C++ compiler
 3 Other_Platforms Other Platforms
 2 BCI2000_MEX_functions BCI2000 MEX functions
 3 load_bcidat <tt>load_bcidat</tt>
@@ -2558,6 +2520,30 @@ User_Reference%253AOperator_Module_Scripting.html
 3 Examples Examples
 4 1 1
 4 2 2
+2 See_also See also
+
+User_Reference%253AP300_classifier.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Source_Code_Revisions Source Code Revisions
+2 Control_Panel Control Panel
+3 Data_Pane Data Pane
+3 Parameters_Pane Parameters Pane
+3 Details_Pane Details Pane
+2 Methodology Methodology
+3 Methodology_Concept Methodology Concept
+3 Methodology_Step_By_Step Methodology Step By Step
+4 Step_1:_Load_BCI2000_data_files Step 1: Load BCI2000 data files 
+4 Step_2:_Get_P300_responses Step 2: Get P300 responses 
+4 Step_3:_Generate_feature_weights_for_a_linear_model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29 Step 3: Generate feature weights for a linear model using Stepwise Linear Discriminant Analysis (SWLDA) 
+4 Step_4:_Apply_linear_classifier_to_get_scores Step 4: Apply linear classifier to get scores 
+4 Step_5:_Interpret_scores Step 5: Interpret scores 
+2 Tutorial Tutorial
+3 Step_0:_... Step 0: ...
+3 Step_1:_... Step 1: ...
+3 Step_2:_... Step 2: ...
 2 See_also See also
 
 User_Reference%253AP3SpellerTask.html
@@ -2797,12 +2783,14 @@ User_Reference%253AgMOBIlabPlusADC.html
 3 InfoMode InfoMode
 3 DigitalEnable DigitalEnable
 3 DigitalOutBlock DigitalOutBlock
+3 DigitalOutputEx DigitalOutputEx
 2 States States
 2 See_also See also
 
 User_Reference%253AgUSBampADC.html
 2 Function Function
 3 g.USBamp_Hardware g.USBamp Hardware
+4 Drivers Drivers
 2 Parameters Parameters
 3 DeviceIDMaster DeviceIDMaster
 3 DeviceIDs DeviceIDs
@@ -2824,6 +2812,7 @@ User_Reference%253AgUSBampADC.html
 3 SourceChList SourceChList
 3 DigitalInput DigitalInput
 3 DigitalOutput DigitalOutput
+3 DigitalOutputEx DigitalOutputEx
 3 AcquisitionMode AcquisitionMode
 3 CommonGround CommonGround
 3 CommonReference CommonReference
@@ -2947,8 +2936,11 @@ User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html
 User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html
 2 Obtaining_P300_Parameters_in_the_Calibration_Session Obtaining P300 Parameters in the Calibration Session
 2 Design_of_Calibration_Session Design of Calibration Session
-2 Performing_the_Configuration_Session Performing the Configuration Session
+2 Performing_the_Calibration_Session Performing the Calibration Session
 2 Analyzing_The_Calibration_Session_with_Offline_Analysis Analyzing The Calibration Session with Offline Analysis
+2 Creating_a_subject-specific_parameter_file Creating a subject-specific parameter file
+2 Next_Step Next Step
+2 See_also See also
 
 User_Tutorial%253AObtaining_P300_Parameters_in_an_Calibration_Session.html
 2 Obtaining_P300_Parameters_in_the_Calibration_Session Obtaining P300 Parameters in the Calibration Session
@@ -3027,4 +3019,8 @@ User_Tutorial%253APerforming_an_Offline_Analysis_of_MEG_Data.html
 2 See_also See also
 
 User_Tutorial%253APreparing_your_BCI2000_system_for_P300_BCI_experiments_for_the_first_time.html
+2 Preparing_for_Configuration Preparing for Configuration
+2 Configuring_BCI2000 Configuring BCI2000
+2 Next_Step Next Step
+2 See_also See also
 

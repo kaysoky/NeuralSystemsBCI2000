@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:MatlabFilter - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:MatlabFilter,Contributions:FieldTripBuffer,Programming Reference:MatlabFilter,Programming Tutorial:Implementing a Matlab-based Filter,User Reference:Operator Module,Programming Tutorial:Implementing another Matlab-based Filter" />
+<meta name="keywords" content="User Reference:MatlabFilter,Contributions:FieldTripBuffer,Programming Reference:MatlabFilter,Programming Tutorial:Implementing a Matlab-based Filter,Programming Tutorial:Implementing another Matlab-based Filter,User Reference:Operator Module" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -72,7 +72,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p><p>However, the above example already shows that the Matlab engine is not intended to be used concurrently from the BCI2000 MatlabFilter and from the command window. Instead of typing your own commands in the command window, you will have to give full control of command execution to the MatlabFilter to ensure that timing is controlled. The way that BCI2000 and Matlab interact is that each of the components of a standard filter is mapped onto a corresponding Matlab function. If the Matlab filter is running within BCI2000, it will call the Matlab engine and execute the required Matlab function. The easiest way of getting started with the Matlab filter is by using one of the provided programming tutorials: 
 </p>
 <ul><li> <a href="Programming_Tutorial%253AImplementing_a_Matlab-based_Filter.html" title="Programming Tutorial:Implementing a Matlab-based Filter">IIR bandpass filtering, followed with RMS envelope computation, and linear classification</a>
-</li><li> <a href="http://www.bci2000.org/wiki/index.php?title=Programming_Tutorial:Implementing_another_Matlab-based_Filter&amp;action=edit" class="new" title="Programming Tutorial:Implementing another Matlab-based Filter">adaptive spatial filtering using a beamformer, power computation and normalization</a>
+</li><li> <a href="Programming_Tutorial%253AImplementing_another_Matlab-based_Filter.html" title="Programming Tutorial:Implementing another Matlab-based Filter">adaptive spatial filtering using a beamformer, power computation and normalization</a>
 </li></ul>
 <p>A detailed description of how to implement your own signal processing functions in Matlab can be found in the <a href="Programming_Reference%253AMatlabFilter.html" title="Programming Reference:MatlabFilter">Programming reference for the Matlab filter</a>.
 </p>

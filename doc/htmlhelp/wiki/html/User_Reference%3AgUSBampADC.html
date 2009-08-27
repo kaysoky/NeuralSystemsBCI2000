@@ -34,7 +34,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#Function"><span class="tocnumber">1</span> <span class="toctext">Function</span></a>
 <ul>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#g.USBamp_Hardware"><span class="tocnumber">1.1</span> <span class="toctext">g.USBamp Hardware</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#g.USBamp_Hardware"><span class="tocnumber">1.1</span> <span class="toctext">g.USBamp Hardware</span></a>
+<ul>
+<li class='toclevel-3'><a href="User_Reference%253AgUSBampADC.html#Drivers"><span class="tocnumber">1.1.1</span> <span class="toctext">Drivers</span></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#Parameters"><span class="tocnumber">2</span> <span class="toctext">Parameters</span></a>
@@ -59,9 +63,10 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#SourceChList"><span class="tocnumber">2.18</span> <span class="toctext">SourceChList</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalInput"><span class="tocnumber">2.19</span> <span class="toctext">DigitalInput</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutput"><span class="tocnumber">2.20</span> <span class="toctext">DigitalOutput</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#AcquisitionMode"><span class="tocnumber">2.21</span> <span class="toctext">AcquisitionMode</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonGround"><span class="tocnumber">2.22</span> <span class="toctext">CommonGround</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonReference"><span class="tocnumber">2.23</span> <span class="toctext">CommonReference</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutputEx"><span class="tocnumber">2.21</span> <span class="toctext">DigitalOutputEx</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#AcquisitionMode"><span class="tocnumber">2.22</span> <span class="toctext">AcquisitionMode</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonGround"><span class="tocnumber">2.23</span> <span class="toctext">CommonGround</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonReference"><span class="tocnumber">2.24</span> <span class="toctext">CommonReference</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
@@ -89,6 +94,44 @@ converter. BCI2000 has a feature that can align samples in time (parameter
 <a href="User_Reference%253AAlignmentFilter.html#AlignChannels" title="User Reference:AlignmentFilter">AlignChannels</a>).
 Because this feature is not needed in conjunction with the USBamp, it needs to be turned off (i.e., <i>AlignChannels</i> needs to be 0).
 </p>
+<a name="Drivers"></a><h4>Drivers</h4>
+<p>With the release of the Version 3.0 g.USBamp, there is now a small problem with the gUSBamp.dll included in BCI2000.  The DLL included with BCI2000 was intended to be used with g.USBamp Version 2.0 hardware.  If Version 3.0 hardware is used with the current BCI2000 distribution, the gUSBampADC module will default to using the Version 2.0 DLL which will not function.
+</p><p>Drivers come with the g.USBamp hardware - the correct drivers to match the version of the hardware.  If the installer is used to install the drivers for the g.USBamp, it will also place the g.USBamp DLL into your <tt>WINDOWS/system32</tt> folder.  If the DLL in <tt>BCI2000/prog</tt> is deleted, the DLL appropriate for use with your g.USBamp hardware should be used.
+</p><p>In short, in order to make Version 3.0 amps work with the current BCI2000 distribution, simply delete the <tt>gUSBamp.dll</tt> file from your <tt>BCI2000/prog</tt> folder.
+</p><p>Here is a grid of what driver/amp/dll combinations work:
+</p>
+<table border="1">
+<tr>
+<td><b>Version 2.0 amp</b>
+</td><td>2.0 DLL
+</td><td>3.0 DLL
+</td></tr>
+<tr>
+<td>2.0 Driver
+</td><td>Works
+</td><td>Works
+</td></tr>
+<tr>
+<td>3.0 Driver
+</td><td>Does Not Work
+</td><td>Does Not Work
+</td></tr></table>
+<table border="1">
+<tr>
+<td><b>Version 3.0 amp</b>
+</td><td>2.0 DLL
+</td><td>3.0 DLL
+</td></tr>
+<tr>
+<td>2.0 Driver
+</td><td>Does Not Work
+</td><td>Does Not Work
+</td></tr>
+<tr>
+<td>3.0 Driver
+</td><td>Does Not Work
+</td><td>Works
+</td></tr></table>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>Parameters common to all source modules are described under <a href="User_Reference%253ADataIOFilter.html" title="User Reference:DataIOFilter">User Reference:DataIOFilter</a>.
 In addition, the <i>gUSBampADC</i> provides the following parameters:
@@ -151,7 +194,7 @@ Together with the sampling rate, this parameter determines how often per second 
 <a name="SamplingRate"></a><h3>SamplingRate</h3>
 <p>The sampling rate of all connected USBamps. 
 If one wants to use a bandpass or a notch filter, there needs to be a filter configuration for that particular sampling rate (see the section on the <i>[USBampgetinfo]</i> tool). (Guger Technologies can provide you with a new driver configuration file if you need a different filter.)
-</p><p>The USBamp supports the following sampling rates: 32, 64, 128, 256, 512, 600, 1200, 2400, 4800, 9600, 19200, and 38400 Hz.  All sampling rates are supported for one or more amplifiers. If you are sampling at high rates and from multiple amplifiers, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize->VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display. For example, at 38400 Hz, 4 amplifiers (64 channels), and a system update of 30 Hz, the computer would have to draw more than 73 million lines per second in the Source display!
+</p><p>The USBamp supports the following sampling rates: 32, 64, 128, 256, 512, 600, 1200, 2400, 4800, 9600, 19200, and 38400 Hz.  All sampling rates are supported for one or more amplifiers. If you are sampling at high rates and from multiple amplifiers, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize-&gt;VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display. For example, at 38400 Hz, 4 amplifiers (64 channels), and a system update of 30 Hz, the computer would have to draw more than 73 million lines per second in the Source display!
 </p>
 <a name="SignalType"></a><h3>SignalType</h3>
 <p>Defines the data type of the stored signal samples (int16 or float32).
@@ -186,6 +229,10 @@ Thus, if DigitalInput is turned on, <i>SourceCh</i> and <i>SourceChDevices</i> m
 <a name="DigitalOutput"></a><h3>DigitalOutput</h3>
 <p>Turn on digital output.
 If turned on, the digital output channel 0 is set low for the duration of data acquisition, and set high at the end. This is primarily used for the BCI2000 Certification process, but may also be employed for other purposes, such as synchronizing acquisition with an external device.
+</p>
+<a name="DigitalOutputEx"></a><h3>DigitalOutputEx</h3>
+<p><b>New in Version 3.0</b>
+If an expression is put here, digital output 1 will be set high whenever this expression evaluates true (nonzero) and low when the expression evaluates false (zero).  Boolean expressions work well for this ( ex. <tt>( ( StimulusCode == 0 ) &amp;&amp; Running )</tt> ).
 </p>
 <a name="AcquisitionMode"></a><h3>AcquisitionMode</h3>
 <p>If set to <i>analog signal acquisition</i>, the g.USBamp records analog signal voltages (default). If set to <i>Calibration</i>, the signal output is a sine wave test signal generated by the g.USBamp (which can be used to verify correct system calibration). 

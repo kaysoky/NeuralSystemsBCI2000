@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Preparing your BCI2000 system for P300 BCI experiments for the first time - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Preparing your BCI2000 system for P300 BCI experiments for the first time,User Tutorial:EEG Measurement Setup" />
+<meta name="keywords" content="User Tutorial:Preparing your BCI2000 system for P300 BCI experiments for the first time,User Tutorial:EEG Measurement Setup,User Tutorial:P300 BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,7 +30,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Preparing your BCI2000 system for P300 BCI experiments for the first time</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><p>To begin, you first need to gather some system data. For setup, this tutorial will assume that you will be using a dual-monitor setup as shown below, with the administrator of the sessions operating on monitor 1, and the volunteer will be watching monitor 2. 
+<h1 class="pagetitle">Preparing your BCI2000 system for P300 BCI experiments for the first time</h1><p class="subtitle">User Tutorial</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<ul>
+<li class='toclevel-1'><a href="User_Tutorial%253APreparing_your_BCI2000_system_for_P300_BCI_experiments_for_the_first_time.html#Preparing_for_Configuration"><span class="tocnumber">1</span> <span class="toctext">Preparing for Configuration</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253APreparing_your_BCI2000_system_for_P300_BCI_experiments_for_the_first_time.html#Configuring_BCI2000"><span class="tocnumber">2</span> <span class="toctext">Configuring BCI2000</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253APreparing_your_BCI2000_system_for_P300_BCI_experiments_for_the_first_time.html#Next_Step"><span class="tocnumber">3</span> <span class="toctext">Next Step</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253APreparing_your_BCI2000_system_for_P300_BCI_experiments_for_the_first_time.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
+</ul>
+</td></tr></table>
+<a name="Preparing_for_Configuration"></a><h2>Preparing for Configuration</h2>
+<p>To begin, you first need to gather some system data. This tutorial will assume that you will be using a dual-monitor setup as shown below, with the experimenter of the sessions operating on monitor 1, and the subject will be watching monitor 2. 
 </p><p>Open Display Properties by right-clicking on an empty portion of the desktop and clicking <b>Properties</b>, and navigating to the <b>Settings</b> tab.
 </p>
 <table>
@@ -38,7 +47,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <td colspan="2" align="center"><div class="center"><div class="floatnone"><span><a href="../images/b/b5/MonitorSetupOrientation.PNG" class="image" title=""><img src="../images/b/b5/MonitorSetupOrientation.PNG" alt="" width="403" height="449" longdesc="/wiki/index.php/Image:MonitorSetupOrientation.PNG" /></a></span></div></div>
 </td></tr>
 <tr>
-<td colspan="2" align="center">Make sure that Monitor 2, which displays the character matrix, is on the right of Monitor 1, the experimenter's screen, and is aligned along the top.
+<td colspan="2" align="center">Make sure that Monitor 2, (which displays the instructions to the subject), is on the right of Monitor 1, (the experimenter's screen), and is aligned along the top.
 </td></tr>
 <tr>
 <td colspan="2" align="center" height="50px">
@@ -56,8 +65,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <tr>
 <td colspan="2" align="center" height="50px">
 </td></tr></table>
-<p>Plug your adapter into the computer and turn it on.
-</p><p>Now we will determine what port your amplifier is connected to by going through <b>Start &rarr; Settings &rarr; Control Panel &rarr; System &rarr; Hardware &rarr; Device Manager &rarr; Ports (COM &amp; LPT)</b>. In this example, we see that the amplifier is connected to <i>COM8</i>.
+<p>Connect your amplifier to the computer, and turn it on.
+</p><p>If your amplifier is from the gMOBIlab family, you will need to make a note of the port it is connected to. In order to determine that port, go to the Windows Start Menu, and choose <b>Start &rarr; Settings &rarr; Control Panel &rarr; System &rarr; Hardware &rarr; Device Manager &rarr; Ports (COM &amp; LPT)</b>. In this example, we see that the amplifier is connected to <i>COM8</i>.
 </p>
 <table class="gallery" cellspacing="0" cellpadding="0"><tr><td><div class="gallerybox"><div class="thumb" style="padding: 32px 0;"><a href="http://www.bci2000.org/wiki/index.php/Image:ControlPanel-Circled.PNG" title="Image:ControlPanel-Circled.PNG"><img src="../images/thumb/7/7c/ControlPanel-Circled.PNG/120px-ControlPanel-Circled.PNG" width="120" height="82" alt="" /></a></div><div class="gallerytext">
 <p>Accessing the Control Panel
@@ -73,43 +82,33 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p></div></div></td>
 </tr></table>
 <p>You can now close all open windows.
-</p><p>Run the <tt>batch\P3Speller_&lt;your amplifier&gt;.bat</tt> file. In this example, we are using the gMOBIlab amplifier, so we would run <tt>batch\P3Speller_gMOBIlab.bat</tt>
-</p><p>Press the <b>Config</b> button to bring up the BCI2000 Configuration window
-</p><p>Press <b>Load Parameters</b> and load <tt>parameters\&lt;your_amplifier&gt;\parms\P300_copy_speller.prm</tt>
-</p><p>In the <b>Visualize</b> tab, set <i>VisualizeSourceTime</i> (Third line under ‘Source Signal’) to 6
 </p>
-<ul><li>This sets the window showing the brain waves to show 6 seconds of information at a time
+<a name="Configuring_BCI2000"></a><h2>Configuring BCI2000</h2>
+<ul><li>Start BCI2000 by double-clicking <tt>batch\P3Speller_&lt;your amplifier&gt;.bat</tt>.
+<ul><li>For repeated use, placing a link to this file on the desktop might be a good idea.
 </li></ul>
-<p><br />
-</p>
-<div class="floatright"><span><a href="../images/thumb/7/78/SourceTabCircled.PNG/500px-SourceTabCircled.PNG" class="image" title=""><img src="../images/thumb/7/78/SourceTabCircled.PNG/500px-SourceTabCircled.PNG" alt="" width="500" height="536" longdesc="/wiki/index.php/Image:SourceTabCircled.PNG" /></a></span></div>
+</li><li>In the operator module, click <b>Config</b>.
+</li><li>Click <b>Load Parameters</b>, and load <tt>parms/p3_tutorial/InitialP3Session.prm</tt>. Then, load <tt>parms/fragments/amplifiers/&lt;YourAmplifier&gt;.prm</tt>.
+</li><li>In the <b>Storage</b> tab:
+<ul><li>Set <i>SubjectName</i> to the subject’s initials.
+</li><li>Set <i>SubjectSession</i> to <tt>001</tt>
+</li><li>Set <i>SubjectRun</i> to <tt>01</tt>
+</li></ul>
+</li></ul>
+<div class="floatright"><span><a href="../images/thumb/e/e7/SourceTabCircledMu.PNG/500px-SourceTabCircledMu.PNG" class="image" title=""><img src="../images/thumb/e/e7/SourceTabCircledMu.PNG/500px-SourceTabCircledMu.PNG" alt="" width="500" height="536" longdesc="/wiki/index.php/Image:SourceTabCircledMu.PNG" /></a></span></div>
 <p>In the <b>Source</b> tab, set:
 </p>
-<ul><li><i>SourceCh</i> to <tt>8</tt>
-<ul><li>This tells the program that only 8 channels will be sending data
+<ul><li><i>ChannelNames</i> to the electrode positions according to the 10-20 convention
+<ul><li>This names the channels to the respective electrode positions
+</li><li>In our example, <tt>F3 F4 T7 C3 Cz C4 T8 Pz</tt> has been entered
 </li></ul>
-</li><li><i>ChannelNames</i> to <tt>Fz Cz P3 Pz P4 PO3 PO4 Oz</tt>
-<ul><li>This names the channels to the electrode positions they report
-</li></ul>
-</li><li><i>SourceChOffset</i> to <tt>0 0 0 0 0 0 0 0</tt>
-<ul><li>This tells the program that none of the channels have an offset
-</li></ul>
-</li><li><i>SourceChGain</i> to <tt>0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019</tt>
-<ul><li>This is the conversion for each channel for A/D information into microvolts
-</li></ul>
-</li><li><i>COM port</i> to the port name that you found earlier
+</li><li>If using a gMOBIlab amplifier, set <i>COM port</i> to the port name that you found earlier
 <ul><li>In this example we would put in <tt>COM8:</tt>
-</li></ul>
-</li><li><i>NotchFilter</i> to <tt>disable</tt>
-<ul><li>We will use this to identify any poorly-gelled electrodes
-</li></ul>
-</li><li><i>TransmitChList</i> to <tt>Fz Cz P3 Pz P4 PO3 PO4 Oz</tt>
-<ul><li>This will label the graph with which electrode is which display
 </li></ul>
 </li></ul>
 <table>
 <tr>
-<td height="230px">
+<td height="320px">
 </td></tr></table>
 <p>In the <b>Application</b> tab, set:
 </p>
@@ -117,16 +116,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li><i>WindowHeight</i> to the height of the display monitor, found earlier
 <ul><li>In our example, <i>WindowWidth</i> would be set to <tt>1024</tt> and <i>WindowHeight</i> would be set to <tt>768</tt>
 </li></ul>
-</li><li><i>WindowLeft</i> to the width of the experimenter’s monitor plus one
-<ul><li>In our example, this would be <tt>2049</tt>
-</li><li>This shifts the character display to the right 2049 pixels, making it display on the secondary monitor
+</li><li><i>WindowLeft</i> to the width of the experimenter’s monitor
+<ul><li>In our example, this would be <tt>2048</tt>
+</li><li>This shifts the character display to the right 2048 pixels, making it display on the secondary monitor
 </li></ul>
+</li><li>Finally, save the parameter file where you deem appropriate.
 </li></ul>
-<p><br />
-</p><p>Press <i>‘Save Parameters</i>’, and save to a file named <tt>P300_copy_speller_&lt;Your_Amplifier&gt;.prm</tt>, or however you deem fit
-</p><p>This file is now the base parameter file for your amplifier when configuring the system to user-specific settings. 
-</p><p><br />
-</p><p>To continue this tutorial, please continue to <a href="User_Tutorial%253AEEG_Measurement_Setup.html" title="User Tutorial:EEG Measurement Setup">EEG Measurement Setup</a>
+<a name="Next_Step"></a><h2>Next Step</h2>
+<p>Once the system has been configured, the <a href="User_Tutorial%253AEEG_Measurement_Setup.html" title="User Tutorial:EEG Measurement Setup">EEG Measurement Setup</a> page shows you how to physically set up an EEG measurement.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="User_Tutorial%253AP300_BCI_Tutorial.html" title="User Tutorial:P300 BCI Tutorial">User Tutorial:P300 BCI Tutorial</a>
 </p>
 <div class="printfooter">
 </div>

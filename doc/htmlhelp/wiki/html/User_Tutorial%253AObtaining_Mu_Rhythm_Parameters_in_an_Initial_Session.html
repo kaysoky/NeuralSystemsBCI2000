@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Reference:gUSBampADC,User Tutorial:Analyzing the Initial Mu Rhythm Session,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial" />
+<meta name="keywords" content="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session,User Tutorial:Analyzing the Initial Mu Rhythm Session,User Tutorial:Introduction to the Mu Rhythm,User Tutorial:Mu Rhythm BCI Tutorial" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -48,7 +48,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 To identify a subject's Mu Rhythm, offline analyses then determine the frequency and location whose activity changes the most across conditions (e.g., hand imagery and rest).  These analyses result in spectra calculated at different locations or in topographical plots at particular frequencies. 
 </p>
 <a name="Preparing_for_the_Initial_.28Screening.29_Session"></a><h2>Preparing for the Initial (Screening) Session</h2>
-<p>To begin, you first need to gather some system data. For setup, this tutorial will assume that you will be using a dual-monitor setup as shown below, with the administrator of the sessions operating on monitor 1, and the volunteer will be watching monitor 2. 
+<p>To begin, you first need to gather some system data. This tutorial will assume that you will be using a dual-monitor setup as shown below, with the experimenter of the sessions operating on monitor 1, and the subject will be watching monitor 2. 
 </p><p>Open Display Properties by right-clicking on an empty portion of the desktop and clicking <b>Properties</b>, and navigating to the <b>Settings</b> tab.
 </p>
 <table>
@@ -74,8 +74,7 @@ To identify a subject's Mu Rhythm, offline analyses then determine the frequency
 <tr>
 <td colspan="2" align="center" height="50px">
 </td></tr></table>
-<p>Plug your adapter into the computer and turn it on.
-</p><p>The next section is unnecessary for the gUSB amplifier. For more information regarding the gUSB amplifier, please consult the <a href="User_Reference%253AgUSBampADC.html" title="User Reference:gUSBampADC">gUSB amplifier user reference.</a>
+<p>Connect your amplifier to the computer, and turn it on.
 </p><p>If your amplifier is from the gMOBIlab family, you will need to make a note of the port it is connected to. In order to determine that port, go to the Windows Start Menu, and choose <b>Start &rarr; Settings &rarr; Control Panel &rarr; System &rarr; Hardware &rarr; Device Manager &rarr; Ports (COM &amp; LPT)</b>. In this example, we see that the amplifier is connected to <i>COM8</i>.
 </p>
 <table class="gallery" cellspacing="0" cellpadding="0"><tr><td><div class="gallerybox"><div class="thumb" style="padding: 32px 0;"><a href="http://www.bci2000.org/wiki/index.php/Image:ControlPanel-Circled.PNG" title="Image:ControlPanel-Circled.PNG"><img src="../images/thumb/7/7c/ControlPanel-Circled.PNG/120px-ControlPanel-Circled.PNG" width="120" height="82" alt="" /></a></div><div class="gallerytext">
@@ -91,45 +90,30 @@ To identify a subject's Mu Rhythm, offline analyses then determine the frequency
 <p>Identifying the COM Port
 </p></div></div></td>
 </tr></table>
+<p>You can now close all open windows.
+</p>
 <a name="Configuring_BCI2000"></a><h2>Configuring BCI2000</h2>
-<ul><li>Start BCI2000 by double-clicking <tt>batch/StimulusPresentation_screening_&lt;YourAmplifier&gt;.bat</tt>.
+<ul><li>Start BCI2000 by double-clicking <tt>batch/StimulusPresentation_&lt;YourAmplifier&gt;.bat</tt>.
 <ul><li>For repeated use, placing a link to this file on the desktop might be a good idea.
 </li></ul>
 </li><li>In the operator module, click <b>Config</b>.
-</li><li>Click <b>Load Parameters</b>, and load <tt>parameters/fragments/parms/fragment_&lt;YourAmplifier&gt;.prm</tt> and <tt>parameters/fragments/parms/Mu_screening.prm</tt>
+</li><li>Click <b>Load Parameters</b>, and load <tt>parms/mu_tutorial/InitialMuSession.prm</tt>. Then, load <tt>parms/fragments/amplifiers/&lt;YourAmplifier&gt;.prm</tt>.
 </li><li>In the <b>Storage</b> tab:
-<ul><li>Set <i>SubjectName</i> to the volunteer’s initials.
+<ul><li>Set <i>SubjectName</i> to the subject’s initials.
 </li><li>Set <i>SubjectSession</i> to <tt>001</tt>
 </li><li>Set <i>SubjectRun</i> to <tt>01</tt>
-</li><li>Please note that the data will be stored into a directory dedicated to the screening data.
 </li></ul>
 </li></ul>
 <div class="floatright"><span><a href="../images/thumb/e/e7/SourceTabCircledMu.PNG/500px-SourceTabCircledMu.PNG" class="image" title=""><img src="../images/thumb/e/e7/SourceTabCircledMu.PNG/500px-SourceTabCircledMu.PNG" alt="" width="500" height="536" longdesc="/wiki/index.php/Image:SourceTabCircledMu.PNG" /></a></span></div>
 <p>In the <b>Source</b> tab, set:
 </p>
-<ul><li><i>SourceCh</i> to <tt>8</tt>
-<ul><li>This tells the program that only 8 channels will be sending data
+<ul><li><i>ChannelNames</i> to the electrode positions according to the 10-20 convention.
+<ul><li>This names the channels according to their respective electrode positions.
+</li><li>In our example, <tt>F3 F4 T7 C3 Cz C4 T8 Pz</tt> has been entered.
 </li></ul>
-</li><li><i>ChannelNames</i> to the electrode positions according to the 10-20 convention
-<ul><li>This names the channels to the electrode positions they report
-</li><li>In our example, <tt>F3 F4 T7 C3 Cz C4 T8 Pz</tt> has been entered
+</li><li>If using a gMOBIlab amplifier, set <i>COM port</i> to the port name that you found earlier.
+<ul><li>In this example, we would put in <tt>COM8:</tt>
 </li></ul>
-</li><li><i>SourceChOffset</i> to <tt>0 0 0 0 0 0 0 0</tt>
-<ul><li>This tells the program that none of the channels have an offset
-</li></ul>
-</li><li><i>SourceChGain</i> to <tt>0.019 0.019 0.019 0.019 0.019 0.019 0.019 0.019</tt>
-<ul><li>This is the conversion for each channel for A/D information into microvolts
-</li></ul>
-</li><li><i>COM port</i> to the port name that you found earlier
-<ul><li>In this example we would put in <tt>COM8:</tt>
-</li></ul>
-</li><li><i>NotchFilter</i> to <tt>disable</tt>
-<ul><li>We will use this to identify any poorly-gelled electrodes
-</li></ul>
-</li><li><i>AlignChannels</i> to <tt>0</tt>
-<ul><li>This makes sure that the electrodes, which gather data simultaneously, will be treated as such.
-</li></ul>
-</li><li><i>TransmitChList</i> to the electrode names entered into <i>ChannelNames</i>
 </li></ul>
 <table>
 <tr>
@@ -137,17 +121,17 @@ To identify a subject's Mu Rhythm, offline analyses then determine the frequency
 </td></tr></table>
 <p>In the <b>Application</b> tab, set:
 </p>
-<ul><li><i>WindowWidth</i> to the width of the display monitor, found earlier
-</li><li><i>WindowHeight</i> to the height of the display monitor, found earlier
-<ul><li>In our example, <i>WindowWidth</i> would be set to <tt>1024</tt> and <i>WindowHeight</i> would be set to <tt>768</tt>
+<ul><li><i>WindowWidth</i> to the width of the display monitor, found earlier.
+</li><li><i>WindowHeight</i> to the height of the display monitor, found earlier.
+<ul><li>In our example, <i>WindowWidth</i> would be set to <tt>1024</tt> and <i>WindowHeight</i> would be set to <tt>768</tt>.
 </li></ul>
-</li><li><i>WindowLeft</i> to the width of the experimenter’s monitor plus one
-<ul><li>In our example, this would be <tt>2049</tt>
-</li><li>This shifts the character display to the right 2049 pixels, making it display on the secondary monitor
+</li><li><i>WindowLeft</i> to the width of the experimenter’s monitor.
+<ul><li>In our example, this would be <tt>2048</tt>.
+</li><li>This shifts the character display to the right 2048 pixels, making it display on the secondary monitor.
 </li></ul>
 </li><li>Take note of the <i>Sequence</i> field:
-<ul><li>This field calls for four single-digit numbers separated by one space. Initially it will be <tt>1 1 1 1</tt>.
-</li><li>These numbers are the relative frequency of calling for the different subject activity. The first number corresponds to the left hand, the second is the right hand, the third for both hands, the fourth for both feet.
+<ul><li>This field contains four single-digit numbers separated by one space. Initially it will be <tt>1 1 1 1</tt>.
+</li><li>These numbers are frequencies of calling for the different subject activity. The first number corresponds to the left hand, the second is the right hand, the third for both hands, the fourth for both feet.
 </li><li>Therefore, setting this field to <tt>2 1 0 1</tt> will call for the subject to move the left hand twice as often as the right or both feet, and will never call for both hands to be moved.
 </li></ul>
 </li><li>Finally, save the parameter file where you deem appropriate.
@@ -155,18 +139,18 @@ To identify a subject's Mu Rhythm, offline analyses then determine the frequency
 </li><li>Instruct the subject as described in the section below.
 </li></ul>
 <a name="Instructions_to_the_Subject"></a><h2>Instructions to the Subject</h2>
-<p>During the initial session, the subject's screen will either be blank, or displaying a message of "Right Hand", "Left Hand", "Both Hands", or "Both Feet".
+<p>During the initial session, the subject's screen will either be blank, or displaying an arrow pointing up, down, left, or right.
 </p>
-<ul><li>When "Left Hand" or "Right Hand" is displayed, imagine movement of the respective hand. The imagined movement should be continuous opening and closing of the hand (e.g., squeezing a tennis ball) at a rate of about one opening/closing per second.
-</li><li>When "Both Hands" is displayed, imagine simultaneous movement of both hands. This should be the same kind of movement as described for a single hand.
-</li><li>When "Both Feet" is displayed, imagine movements of both feet. The movement should be similar to the one described for hands, i.e., imagine opening and closing your feet as if you could use them to grip an object.
+<ul><li>When a left or right arrow is displayed, imagine movement of the respective hand. The imagined movement should be continuous opening and closing of the hand (e.g., squeezing a tennis ball) at a rate of about one opening/closing per second.
+</li><li>When an up arrow is displayed, imagine simultaneous movement of both hands. This should be the same kind of movement as described for a single hand.
+</li><li>When a down arrow is displayed, imagine movements of both feet. The movement should be similar to the one described for hands, i.e., imagine opening and closing your feet as if you could use them to grip an object.
 </li><li>When you see a blank screen, please relax and stop any movement imagery.
 </li></ul>
 <a name="Performing_the_Initial_Session"></a><h2>Performing the Initial Session</h2>
-<p>Each run gathers 20 data points that differentiate between moving the left hand, the right hand, both hands, and both feet. Ideally, there should be 100 points of data, meaning that five runs are suggested. This is done as five separate runs instead of one to allow the subject a chance between each run to rest, blink, swallow, speak, or have some water if so desired.
+<p>To start an experimental run, click <b>Run</b> in the operator window. Each run gathers 20 data points, or "trials", that differentiate between moving the left hand, the right hand, both hands, and both feet. Ideally, there should be 100 trials, meaning that five runs are suggested. This is done as five separate runs instead of one to allow the subject a chance between each run to rest, blink, swallow, speak, or have some water if so desired.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>
-<p>Once all data points have been collected, the <a href="User_Tutorial%253AAnalyzing_the_Initial_Mu_Rhythm_Session.html" title="User Tutorial:Analyzing the Initial Mu Rhythm Session">Analyzing the Initial Mu Rhythm Session</a> page shows you how to analyze data from the initial session in order to determine parameters for online feedback.
+<p>Once all data have been collected, the <a href="User_Tutorial%253AAnalyzing_the_Initial_Mu_Rhythm_Session.html" title="User Tutorial:Analyzing the Initial Mu Rhythm Session">Analyzing the Initial Mu Rhythm Session</a> page shows you how to analyze data from the initial session in order to determine parameters for online feedback.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>

@@ -57,7 +57,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Into the field labeled <b>Target Condition 1</b>, enter <tt>states.StimulusCode == 0</tt>.
 </li><li>Enter the word "Rest" into the field labeled <b>Target Condition Label 1</b>.
 </li><li>Similarly, enter <tt>states.StimulusCode == 2</tt> into the <b>Target Condition 2</b> field, and "Right Hand" into <b>Target Condition Label 2</b>.
-</li><li>Click the "Add" button located besides the <b>Data Files</b> field. A file chooser dialog will appear; navigate to <tt>data/&lt;Subject&gt;001</tt>, and select all <tt>.dat</tt> files available there (use your keyboard's <i>ctrl</i> button to click-select multiple files), then click the dialog's "Open" button.
+</li><li>Click the "Add" button located besides the <b>Data Files</b> field. A file chooser dialog will appear; navigate to <tt>data/mu/&lt;Subject&gt;001</tt>, and select all <tt>.dat</tt> files available there (use your keyboard's <i>ctrl</i> button to click-select multiple files), then click the dialog's "Open" button.
 </li><li>Click "Generate Plots", and wait for the feature plot to appear.
 </li></ul>
 <p>Once the computation is complete, you will see a feature plot similar to the one below. In that plot, the horizontal axis corresponds to frequencies, and the vertical axis corresponds to individual channels. Color codes represent <a href="Glossary.html#r-squared" title="Glossary">r-squared</a> values, which are numbers between 0 and 1. R-squared values provide a measure for the amount to which a particular EEG feature (i.e., amplitude at a particular frequency and location) is influenced by the subject's task (e.g., hand vs. foot imagery).
@@ -88,7 +88,7 @@ The generated <b>spectra plots</b> display amplitude distributions, and r-square
 </li></ul>
 </li></ul>
 <a name="Picking_Optimal_Features"></a><h2>Picking Optimal Features</h2>
-<p>Here we are looking for the frequency with the highest r-squared value and is between 9Hz and 36Hz. Further, acceptable readings are centered on the proper electrode for the predicted stimulus; C3 for readings from the right hand, C4 for the left hand, both C3 and C4 for both hands, and Cz for both feet.
+<p>Here we are looking for the frequency with the highest r-squared value between 9Hz and 36Hz. Further, acceptable readings are centered on the proper electrode for the predicted stimulus; C3 for readings from the right hand, C4 for the left hand, both C3 and C4 for both hands, and Cz for both feet.
 </p><p>Equipped with the frequency and electrode that provides the reading with the highest r-squared value, we can begin configuring the setup for proper use.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>

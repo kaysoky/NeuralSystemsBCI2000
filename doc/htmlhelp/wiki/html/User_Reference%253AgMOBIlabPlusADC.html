@@ -47,6 +47,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AgMOBIlabPlusADC.html#InfoMode"><span class="tocnumber">3.5</span> <span class="toctext">InfoMode</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgMOBIlabPlusADC.html#DigitalEnable"><span class="tocnumber">3.6</span> <span class="toctext">DigitalEnable</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgMOBIlabPlusADC.html#DigitalOutBlock"><span class="tocnumber">3.7</span> <span class="toctext">DigitalOutBlock</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgMOBIlabPlusADC.html#DigitalOutputEx"><span class="tocnumber">3.8</span> <span class="toctext">DigitalOutputEx</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AgMOBIlabPlusADC.html#States"><span class="tocnumber">4</span> <span class="toctext">States</span></a></li>
@@ -89,6 +90,10 @@ A value of 8 corresponds to a BCI2000 system rate of 32 Hz (<img class='tex' src
 </p>
 <a name="DigitalOutBlock"></a><h3>DigitalOutBlock</h3>
 <p>If this is true, then digital line 8 is set to output mode, and is set low at the onset of block acquisition, and set high after the block is read. This allows the system timing to be measured, or to synchronize with other external device.
+</p>
+<a name="DigitalOutputEx"></a><h3>DigitalOutputEx</h3>
+<p><b>New in Version 3.0</b>
+If an expression is put here, digital output 4 will be set high whenever this expression evaluates true (nonzero) and low when the expression evaluates false (zero).  Boolean expressions work well for this (ex. <tt>( (StimulusCode == 0) &amp;&amp; Running )</tt>).
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.

@@ -45,16 +45,15 @@ Now you are going to create a subject-specific parameter configuration for on-li
 </td></tr></table>
 <a name="Starting_up_BCI2000"></a><h2>Starting up BCI2000</h2>
 <p>Start BCI2000 using the appropriate batch file at <tt>batch/CursorTask_&lt;YourAmplifier&gt;.bat</tt>. You might consider creating a link to this file on the desktop.
-</p><p>This CursorTask will be used to configure the BCI2000 program for this specific subject. Multiple configuration sessions are typically needed to determine the proper classifier matrix for any one subject.
 </p>
 <a name="Subject-Specific_Parameters"></a><h2>Subject-Specific Parameters</h2>
 <p>Now, we will construct a full parameter file that is specific to that subject:
 </p>
-<ul><li>Begin by loading the parameter file <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">saved previously</a>
+<ul><li>In the configuration window, click "Load Parameters" to load  the parameter file <a href="User_Tutorial%253AObtaining_Mu_Rhythm_Parameters_in_an_Initial_Session.html" title="User Tutorial:Obtaining Mu Rhythm Parameters in an Initial Session">saved previously</a>.
+</li><li>Again, click "Load Parameters", and load the parameter file at <tt>parms/mu_tutorial/MuFeedback.prm</tt>.
 </li><li>In the <b>Storage</b> tab:
-<ul><li>Change the <i>SourceData</i> field to <tt>\task</tt> as opposed to <tt>\screening</tt>
-</li><li>Change the <i>SubjectName</i> field to the subject's initials
-</li><li>Make sure the <i>SubjectSession</i> field is set to <tt>001</tt> and <i>SubjectRun</i> is set to <tt>01</tt>
+<ul><li>Change the <i>SubjectName</i> field to the subject's initials.
+</li><li>Make sure the <i>SubjectSession</i> field is set to <tt>002</tt> and <i>SubjectRun</i> is set to <tt>01</tt>.
 </li></ul>
 </li></ul>
 <a name="The_Spatial_Filter"></a><h2>The Spatial Filter</h2>
@@ -63,12 +62,13 @@ Now you are going to create a subject-specific parameter configuration for on-li
 </p><p>Because we are targeting specific areas of the brain to monitor, we use a spatial filter that allows the program to identify when the electrode of interest is activating specifically.
 </p><p>This is done by subtracting the average of the surrounding electrodes' data from the electrode of interest. For example, as seen to the right the output channel <tt>C3_OUT</tt> is the data from <tt>C3</tt> minus one-quarter each of <tt>F3</tt>, <tt>T7</tt>, <tt>Cz</tt>, and <tt>Pz</tt>. Such a filter is called a "Laplacian filter".
 </p>
-<table>
-<tr>
-<td height="120px">
-</td></tr></table>
+<ul><li>On the <b>Filtering</b> tab, go to <i>SpatialFilter</i>, and make sure that "full matrix" is selected in the <i>SpatialFilterType</i> field. Then, click the <b>Edit matrix</b> button next to <i>SpatialFilter</i> to open the matrix editor.
+</li><li>Right-click the empty top-left matrix entry, and choose "Edit labels" from the context menu.
+</li><li>For column headings, enter channel names in the same order as you did previously.
+</li><li>Enter Laplacian filter coefficients as appropriate for your montage--you might need to reorder columns from the example above.
+</li></ul>
 <a name="The_Classifier_Matrix"></a><h2>The Classifier Matrix</h2>
-<p>The Classifier Matrix applies weights to the incoming data that allows the program to accurately identify Mu Rhythm signals. This is opened by selecting <b>Edit Matrix</b> next to the <i>Classifier</i> parameter in the <b>Filtering</b> tab.
+<p>The Classifier Matrix applies weights to the incoming data that allows the program to accurately identify Mu Rhythm signals. This matrix is opened by clicking <b>Edit Matrix</b> next to the <i>Classifier</i> parameter in the <b>Filtering</b> tab.
 </p>
 <ul><li>Set <i>Number of columns</i> to 4, and <i>Number of rows</i> to 1. Click <i>Set new matrix size</i> to apply your changes.
 </li><li>In the first column (of the first row), labeled <i>input channel</i>, enter <tt>C3_OUT</tt> if the right hand are being used, <tt>C4_OUT</tt> for the left hand, or <tt>Cz_OUT</tt> for the feet.
@@ -76,11 +76,11 @@ Now you are going to create a subject-specific parameter configuration for on-li
 </li></ul>
 </li><li>In the second column, labeled <i>input element (bin)</i>, enter feedback frequency in Hz, immediately followed with <tt>Hz</tt>, as in <tt>12Hz</tt>.
 </li><li>In the third column, enter the value <tt>2</tt>. This corresponds to the control channel for vertical control of the cursor.
-</li><li>In the fourth column, enter 1 as the weight. For further calibration, this weight can be increased to give stronger control or decreased to give finer control.
+</li><li>In the fourth column, enter -1 (<i>minus one</i>) as the weight. For further calibration, this weight can be increased to give stronger control or decreased to give finer control.
 </li><li>Finally, save your configuration in a parameter file wherever you find appropriate.
 </li></ul>
 <a name="Performing_Mu_Rhythm_Feedback_Sessions"></a><h2>Performing Mu Rhythm Feedback Sessions</h2>
-<p>Proper calibration of the Classifier and Spatial matrices are what take the most time. A Mu Rhythm Feedback Session should be performed with the classifier matrix to gauge the efficacy of the settings. In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using this configuration.
+<p>Proper calibration of the Classifier and Spatial matrices are what takes the most time. A Mu Rhythm Feedback Session should be performed with the classifier matrix to gauge the efficacy of the settings. In the next step, you will learn how to actually <a href="User_Tutorial%253APerforming_a_Mu_Rhythm_Feedback_Session.html" title="User Tutorial:Performing a Mu Rhythm Feedback Session">perform a Mu rhythm feedback session</a> using this configuration.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Tutorial%253AMu_Rhythm_BCI_Tutorial.html" title="User Tutorial:Mu Rhythm BCI Tutorial">User Tutorial:Mu Rhythm BCI Tutorial</a>, <a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>
