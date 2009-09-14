@@ -20,6 +20,7 @@
 #include <limits>
 
 #define USAGE \
+  "The mem command estimates a power spectrum using Burg's MEM algorithm.\n" \
   "The calling syntax is:\n" \
   "[spectrum, frequencies] = mem(signal, parms)\n" \
   " with <signal> and <spectrum> having dimensions channels x values, and\n" \
