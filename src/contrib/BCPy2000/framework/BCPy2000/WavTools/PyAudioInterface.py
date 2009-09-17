@@ -174,7 +174,7 @@ class player(Background.ongoing):
 		self.format = self.interface.get_format_from_width(w.nbytes)
 		nchan = w.channels()
 		rate = int(w.fs)
-		self.stream = self.interface.open(format=self.format, start = True, channels=nchan, rate=rate,input=True, output=True, frames_per_buffer=self.buffersize, output_device_index=dev)
+		self.stream = self.interface.open(format=self.format, start = True, channels=nchan, rate=rate,input=False, output=True, frames_per_buffer=self.buffersize, output_device_index=dev)
 		if self.verbose: print repr(self.stream), "has been opened"
 		
 	def closestream(self):

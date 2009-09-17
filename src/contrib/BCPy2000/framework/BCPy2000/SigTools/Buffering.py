@@ -90,9 +90,10 @@ class trap(object):
 		sample at which the trap is sprung. At all other times the method
 		returns 0.
 		
-		When accumulating: if the trap is leaky and already full, as many
-		samples are discarded as they are accumulated.  If the trap is
-		non-leaky and full, nothing is accumulated.
+		The trap's .leaky attribute determines what happens when the trap
+		is already full: a leaky trap will discard as many samples as it
+		accumulates (first in, first out), whereas a non-leaky trap will
+		simply ignore input after it is full.
 		
 		The optional argument <arm> can be set to False in order to suppress
 		the ability of the trap to spring on this packet. If the trap is
@@ -127,10 +128,7 @@ class trap(object):
 	__call__ = process
 	
 	def read(self):
-		rh = self.ring.readhead
-		x = self.ring.read()
-		self.ring.readhead = rh
-		return x
+		return self.ring.read(remove=False)
 		
 	def collected(self):
 		"""
@@ -215,10 +213,11 @@ class ring(object):
 		self.buf[:, :m] = x[:, n:n+m]
 		self.writehead += m
 	
-	def read(self, nsamp=None):
+	def read(self, nsamp=None, remove=True):
 		"""
 		Reads <nsamp> samples from the buffer, returning a channels-by-samples
-		numpy array.
+		numpy array. By default, reading removes these samples from the buffer:
+		set <remove> to False if you want to prevent this.
 		"""###
 		available = self.to_read()
 		if nsamp == None: nsamp = available
@@ -226,12 +225,11 @@ class ring(object):
 		x = numpy.zeros((self.channels(), nsamp), dtype=self.buf.dtype)
 		n = min([nsamp, self.samples() - self.readhead])
 		x[:, :n] = self.buf[:, self.readhead:self.readhead+n]
-		self.readhead = (self.readhead + n) % self.samples()
-		m = max([0, nsamp - n])
+		m = max(0, nsamp - n)
 		x[:, n:n+m] = self.buf[:, :m]
-		self.readhead += m
+		if remove: self.readhead = ((self.readhead + n) % self.samples()) + m
 		return x
 
 	def forget(self, nsamp):
 		nsamp = min([nsamp, self.to_read()])
-		self.readhead = (self.readhead + n) % self.samples()
+		self.readhead = (self.readhead + nsamp) % self.samples()

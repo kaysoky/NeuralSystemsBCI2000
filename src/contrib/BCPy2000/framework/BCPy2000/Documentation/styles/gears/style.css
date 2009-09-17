@@ -23,6 +23,10 @@ code, pre {
     color: #000;
     font-size: 110%;
 }
+body h1 {font-size: 140%;}
+body h2 {font-size: 120%;}
+body h3 {font-size: 100%;}
+
 
 /* PyDoc */
 
@@ -44,6 +48,7 @@ code, pre {
     padding-bottom: 2em;
 }
 .header h1 {
+	font-size: 200%;
     margin: 0;
     padding: 1em;
     clear: none;

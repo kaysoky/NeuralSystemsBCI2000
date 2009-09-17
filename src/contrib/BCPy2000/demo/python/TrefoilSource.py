@@ -26,20 +26,11 @@ import numpy
 #################################################################
 
 class BciSource(BciGenericSource):	
-
+	
 	#############################################################
-
-	def Construct(self):
-		parameters = [
-		]
-		states = [
-		]
-		return (parameters, states)
-
-	#############################################################
-
+	
 	def Initialize(self, indim, outdim):
-
+		
 		nch = int(self.params['SourceCh'])
 		self.phase = numpy.arange(nch,dtype=numpy.float64) * numpy.pi * 2.0/3.0
 		self.freq = [0.07] * nch
@@ -53,12 +44,7 @@ class BciSource(BciGenericSource):
 		self.dc = numpy.matrix(self.dc).T.A
 		
 	#############################################################
-
-	def StartRun(self):
-		pass
-		
-	#############################################################
-
+	
 	def Process(self, sig):
 		
 		sig = sig.A
@@ -69,6 +55,6 @@ class BciSource(BciGenericSource):
 		sig = self.dc + amp * sig
 
 		return sig
-
+		
 #################################################################
 #################################################################

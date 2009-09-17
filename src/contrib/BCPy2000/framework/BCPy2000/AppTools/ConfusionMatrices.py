@@ -29,16 +29,17 @@ __all__ = ['confusion_matrix']
 ##############################################################################################
 
 import numpy
-import pygame
-import VisionEgg.Text
+from CurrentRenderer import VisualStimuli
+from Displays import scr
 
-from ScreenCoordinates import setscreensize, screensizeset, scr
+def settext(obj, t):
+	obj = getattr(obj, 'parameters', obj) # .parameters would be for VisionEgg objects
+	obj.text = t
 
 class confusion_matrix:
 	def __init__(self, bci, classes=None, styles=('', '%d/%d', '%d%%')):
 		if classes==None: classes = range(len(bci.introwavs)+1)
-		if not screensizeset(): setscreensize(bci.screen.get_size())
-						
+
 		self.classes = classes
 		self.celltxt = []
 		self.rowlabeltxt = []
@@ -48,8 +49,7 @@ class confusion_matrix:
 		self.grandtotaltxt = None
 		self.styles = styles
 		
-		fonts = ('lucida console', 'monaco', 'courier new', 'courier')
-		font_name = (filter(None,map(pygame.font.match_font,fonts))+[None])[0]
+		font_name = getattr(VisualStimuli.screen, 'monofont', None)
 		font_size = 20
 		
 		labelprops = {'font_name':font_name, 'font_size':int(font_size*0.75), 'color':(0.8, 0.8, 0.8)}
@@ -57,6 +57,7 @@ class confusion_matrix:
 		cellprops =  {'font_name':font_name, 'font_size':int(font_size*1.0),  'anchor':'center'}
 		
 		nc = len(self.classes)
+		
 		br = scr(1.0, -1.0)
 		tl = scr(0.1, -0.1)
 		mw = min(br[0]-tl[0], tl[1]-br[1])
@@ -72,20 +73,20 @@ class confusion_matrix:
 				x = tl[0] + mw * (float(xstep)+0.5)/(float(nc)+2.0)
 				xin = (xstep > 0 and xstep <= nc)
 				if xstep == 0 and yin:
-					stim = VisionEgg.Text.Text(position=(x,y), text=str(self.classes[ystep-1]), anchor='right', **labelprops)
+					stim = VisualStimuli.Text(position=(x,y), text=str(self.classes[ystep-1]), anchor='right', **labelprops)
 					self.rowlabeltxt.append(stim)
 				elif ystep == 0 and xin:
-					stim = VisionEgg.Text.Text(position=(x,y), text=str(self.classes[xstep-1]), anchor='center', **labelprops)
+					stim = VisualStimuli.Text(position=(x,y), text=str(self.classes[xstep-1]), anchor='center', **labelprops)
 					self.collabeltxt.append(stim)
 				elif xstep > 0 and ystep > 0 and (xstep > nc or ystep > nc):
-					stim = VisionEgg.Text.Text(position=(x,y), text='', **totalprops)
+					stim = VisualStimuli.Text(position=(x,y), text='', **totalprops)
 					if yin: self.rowtotaltxt.append(stim)
 					elif xin: self.coltotaltxt.append(stim)
 					else: self.grandtotaltxt = stim
 				elif xin and yin:
 					if xstep==ystep: color = (0, 0.7, 0)
 					else: color = (0.4, 0.2, 0.2)
-					stim = VisionEgg.Text.Text(position=(x,y), text = '', color=color, **cellprops)
+					stim = VisualStimuli.Text(position=(x,y), text = '', color=color, **cellprops)
 					self.celltxt[-1].append(stim)
 				if stim != None:
 					if callable(getattr(bci, 'stimulus', None)):
@@ -111,10 +112,10 @@ class confusion_matrix:
 		ct = a.sum(0)
 		rt = a.sum(1)
 		for i in range(nc):
-			self.coltotaltxt[i].parameters.text = self.displaystr(a[i,i],ct[i], self.styles[0])
-			self.rowtotaltxt[i].parameters.text = self.displaystr(a[i,i],rt[i], self.styles[1])
-			self.grandtotaltxt.parameters.text  = self.displaystr(a.trace(), rt.sum(), self.styles[2])
-			for j in range(nc): self.celltxt[i][j].parameters.text = '%d' % a[i,j]
+			settext(self.coltotaltxt[i], self.displaystr(a[i,i],ct[i], self.styles[0]) )
+			settext(self.rowtotaltxt[i], self.displaystr(a[i,i],rt[i], self.styles[1]) )
+			settext(self.grandtotaltxt,  self.displaystr(a.trace(), rt.sum(), self.styles[2]) )
+			for j in range(nc): settext(self.celltxt[i][j], '%d' % a[i,j])
 	
 	def displaystr(self, nright, ntotal, style='%d/%d'):
 		if '/' in style: return style % (nright, ntotal)

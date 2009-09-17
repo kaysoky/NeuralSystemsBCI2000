@@ -24,36 +24,22 @@
 #
 import BCPy2000.Generic as Core
 from BCPy2000.Generic import *
-__all__ = ['BciGenericApplication', 'SetDefaultFont'] + Core.__all__
+__all__ = ['BciGenericApplication', 'BciGenericRenderer', 'SetDefaultFont', 'VisualStimuli'] + Core.__all__
 
 import os
 import sys
 import time
 import copy
 import numpy
-import pygame
-import VisionEgg.Core
-import VisionEgg.Text
 
 import PrecisionTiming
 
-#################################################################
-#################################################################
-
-def SetDefaultFont(name=None, size=None):
-	"""
-	Set the name and/or size of the font that VisionEgg uses
-	by default for Text stimuli. Returns True if the named font
-	can be found, False if not.
-	"""###
-	d = VisionEgg.Text.Text.constant_parameters_and_defaults
-	if name != None:
-		font = pygame.font.match_font(name)
-		if font == None: return False
-		d['font_name'] = (font,) + d['font_name'][1:]
-	if size != None:
-		d['font_size'] = (size,) + d['font_size'][1:]
-	return True
+import imp
+VisualStimuli = imp.new_module('VisualStimuli')
+VisualStimuli.__all__ = []
+VisualStimuli.__doc__ = """
+TODO: document this
+"""
 
 #################################################################
 #################################################################
@@ -95,15 +81,11 @@ class BciGenericApplication(Core.BciCore):
 	def __init__(self):
 		super(BciGenericApplication, self).__init__()
 				
-		fonts = ('lucida console', 'monaco', 'courier new', 'courier')
-		self.monofont = (filter(None,map(pygame.font.match_font,fonts))+[None])[0]
-		SetDefaultFont(self.monofont, 26)
-		self.screen = 0
-		self.viewport = 0
 		self.frame_count = 0
-		self.frame_timer = VisionEgg.Core.FrameTimer()
 		self.current_presentation_phase = None
 		self.estimated = Core.BciDict(lazy=True)
+		self.screen = None
+		
 		self._regfs = Core.BciDict(lazy=True)
 		self._block_structure = {}
 		self._previous_srctime_stateval = None
@@ -117,14 +99,14 @@ class BciGenericApplication(Core.BciCore):
 		self.forget('cycle')
 
 		self._add_thread('phase machine', self._phase_machine)
-		self._add_thread('vision egg', self._vision_egg)
+		self._add_thread('visual display', self._visual_display)
 		
 		## Various things that might affect frame timing:
 		#self._add_thread('share', self._share)  # four-thread model doesn't seem to improve things in practice
-		self._optimize_vethread_affinity = False
-		self._optimize_vethread_priority = True
+		self._optimize_display_thread_affinity = False
+		self._optimize_display_thread_priority = False
 		self._optimize_process_priority = False
-		self._ve_sleep_msec = -1
+		self._display_sleep_msec = -1
 			# positive value: absolute number of milliseconds to sleep per frame. 10 msec sleep was what we used
 			#                 for 16.666 ms/frame in the early days. Can be increased if desired, but remember
 			#                 that you are living on the edge, depending how long the rest of the frame (and the
@@ -132,39 +114,40 @@ class BciGenericApplication(Core.BciCore):
 			#              0: no sleep at all
 			# negative value: safety margin, in milliseconds, to be subtracted from the nominal time-left-to-wait
 			#                 in this frame in order to ascertain sleep time
-
+	
 	#############################################################
 
 	def _Construct(self):
-		if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([0])
-		parameters,states = super(BciGenericApplication, self)._Construct()    # superclass
-		appdesc = self.Description()
-		appdesc = appdesc.replace("%", "%%")
-		appdesc = appdesc.replace(" ", "%20")
-		parameters += [ 
-			"PythonApp        string ApplicationDescription= " + appdesc + " % a z // Identifies the stimulus presentation module",
+		if self._optimize_display_thread_affinity: PrecisionTiming.SetThreadAffinity([0])
+		paramdefs,statedefs = super(BciGenericApplication, self)._Construct()    # superclass
+		desc = self.Description().replace("%", "%%").replace(" ", "%20")
+		paramdefs += [ 
+			"PythonApp        string ApplicationDescription= " + desc + " % a z // Identifies the stimulus presentation module",
 			"PythonApp        int    ShowSignalTime=  0    0  0 1 // show a timestamp based on the number of processed samples (boolean)",
 			"PythonApp:Design int    TrialsPerBlock= 20   20  1 % // number of trials in one block",
 			"PythonApp:Design int    BlocksPerRun=    1   20  1 % // number of sub-blocks in one run",
 		]
-		states += [
-			"VEStimulusTime    16 0 0 0",
+		statedefs += [
 			"EventOffset       10 0 0 0",
 			"PresentationPhase  5 0 0 0",
 			"CurrentTrial       9 0 0 0",
 			"CurrentBlock       7 0 0 0",
 		]
-		subclass_parameters,subclass_states = self.Construct()                 # subclass	
-		parameters += list(subclass_parameters)
-		if isinstance(subclass_states, dict):
-			for name,state in subclass_states.items():
-				states.append(name + " " + str(state["bits"]) + " 0 0 0")
-		else:
-			states += list(subclass_states)		
+		self._merge_defs(paramdefs, statedefs, self.Construct())                 # subclass
+		
+		if self.screen == None:
+			if not hasattr(BciGenericRenderer, 'subclass'): import VisionEggRenderer
+			self.screen = BciGenericRenderer.subclass()
+		module = sys.modules[self.screen.__class__.__module__]
+		for x in module.__all__: setattr(VisualStimuli, x, getattr(module, x))
+		VisualStimuli.screen = self.screen
+		VisualStimuli.__all__ += module.__all__ + ['screen']
+
 		# Memorize internal variables, to delete all additional ones during restart
 		if self._creation_parameters == None: self._creation_parameters = dir(self)
-		
-		return (parameters, states)
+				
+		statedefs.reverse() # puts developer's definitions first (allows developer to override bit depth for built-in states)
+		return (paramdefs, statedefs)
 	
 	#############################################################
 
@@ -176,20 +159,21 @@ class BciGenericApplication(Core.BciCore):
 		self.Halt()                                                     # subclass
 		self._run_callbacks('Halt')
 		self._lock.release('Halt')
-		for threadname in ['phase machine', 'vision egg']:
+		for threadname in ['phase machine', 'visual display']:
 			th = self._threads[threadname]
 			if not th.read('ready'):
 				th.post('stop')
 				th.read('ready', wait=True)
 		self._check_threads()
 		for i in dir(self):
-			if i not in self._creation_parameters: delattr(self, i)
-
+			if i not in self._creation_parameters:
+				try: delattr(self, i)
+				except: pass
+		
 	#############################################################
 
 	def _Preflight(self, in_signal_props):
 		super(BciGenericApplication, self)._Preflight(in_signal_props)    # superclass
-		VisionEgg.config.VISIONEGG_MAX_PRIORITY = 0
 		out_signal_props = self.Preflight(self.in_signal_props)           # subclass
 		self._store_out_signal_props(out_signal_props)
 		return self.out_signal_props
@@ -216,11 +200,12 @@ class BciGenericApplication(Core.BciCore):
 		self.forget('block')
 		self.forget('cycle')
 
-		th = self._threads['vision egg']
+		th = self._threads['visual display']
 		ready = th.read('ready', remove=True)
-		if not ready: raise oops, 'vision egg thread is not running'
+		if not ready: raise oops, 'visual display thread is not running'
 		th.post('init', wait=True)
-		self._initvolume()
+		if not self.volume in [x.get('func') for x in getattr(self,'_callbacks',{}).get('StartRun',[])]:
+			self.init_volume()
 		
 	#############################################################
 
@@ -483,13 +468,14 @@ class BciGenericApplication(Core.BciCore):
 
 	def event_offset(self, timestamp=None, state=None):
 		if timestamp == None: timestamp = self.prectime()
+		
+		# use regressed sampling rate (with event offsets probably doesn't help much
+		# and may fail if packets are late, and badly if packets are skipped)
 		d = self._regfs
-		self.states["VEStimulusTime"] = uintwrap(timestamp, self.bits["VEStimulusTime"])
-		EventTimeSeconds = timestamp/1000.0
 		SamplesSinceStart = d['OffsetSamples'] + d['SamplesPerSecond'] * timestamp / 1000.0
 		EventOffset = int(round(SamplesSinceStart - d['PacketStartSamples']))
 		
-		#EventOffset = self.samples_since_packet(timestamp=timestamp)
+		# EventOffset = self.samples_since_packet(timestamp=timestamp)
 		# This would be a safer and *much* simpler method than all the regression-based stuff above
 		# However, it measured up with +/- 5 msec in an 68-channel RDA test, whereas the regression
 		# method yielded +/-1.4.  The regression is only unsafe when late packets occur, which real EEG
@@ -512,8 +498,9 @@ class BciGenericApplication(Core.BciCore):
 
 	#############################################################
 
-	def add_callback(self, hookname, func, pargs=(), kwargs={}):
+	def add_callback(self, hookname, func, pargs=(), kwargs=None):
 		class CallbackRegErr(Exception): pass
+		if kwargs == None: kwargs = {}
 		if not hasattr(self, '_callbacks'): self._callbacks = {'StartRun':[], 'Process':[], 'Frame':[], 'StopRun':[], 'Halt':[]}
 		if not self._callbacks.has_key(hookname): raise CallbackRegErr, 'cannot register callbacks for %s, only for %s'%(hookname,str(self._callbacks.keys()))
 		c = {'func':func,'pargs':pargs,'kwargs':kwargs}
@@ -522,8 +509,8 @@ class BciGenericApplication(Core.BciCore):
 	#############################################################
 
 	def _run_callbacks(self, hookname):
-		if not hasattr(self, '_callbacks'): return
-		if not self._callbacks.has_key(hookname): return
+		if getattr(self, '_callbacks',None) == None: return
+		if not hookname in self._callbacks: return
 		for c in self._callbacks[hookname]: c['func'](*c['pargs'],**c['kwargs'])
 			
 	#############################################################
@@ -531,33 +518,22 @@ class BciGenericApplication(Core.BciCore):
 	def _initfocus(self):
 		try:
 			import ctypes  # !! Windows-specific code.
-			dll = ctypes.windll.user32
+			opwin   = ctypes.windll.user32.FindWindowA("TfMain", 0)  # find window by class name
 		except:
-			self._focus = None
+			self._focus = {}
 			print "failed to initialize window focus handlers"
 		else:
-			vewin = dll.FindWindowA(0, "Vision Egg") # find window by title
-			opwin = dll.FindWindowA("TfMain", 0)  # find window by class name
 			self._focus = {
-				'visionegg': Core.BciFunc(func=self._raise_window, pargs=(vewin,)),
-			    'operator':  Core.BciFunc(func=self._raise_window, pargs=(opwin,)),
+				 'stimuli':  self.screen.RaiseWindow,
+			    'operator':  Core.BciFunc(self._raise_window, opwin),
 			}
-			self.add_callback('StartRun', self.focus, ('visionegg',))
+			self.add_callback('StartRun', self.focus, ('stimuli',))
 			self.add_callback('StopRun',  self.focus, ('operator',))
 
 	#############################################################
 
-	def focus(self, which='visionegg'):
-		"""
-		Depending on the string argument, raise the 'visionegg' window
-		or the 'operator' window (Windows-specific implementation).
-		"""###
-		f = getattr(self,'_focus',{}).get(which.lower())
-		if f != None: f()
-
-	#############################################################
-
 	def _raise_window(self, hdl, keepFocus=1):
+		if hdl == None or hdl == 0: return
 		try:
 			import ctypes  # !! Windows-specific code.
 			dll = ctypes.windll.user32
@@ -581,38 +557,6 @@ class BciGenericApplication(Core.BciCore):
 
 	#############################################################
 	
-	def _initvolume(self):
-		try:
-			from WavTools.MasterVolume import GetMasterVolume
-			try:    sysvol = GetMasterVolume(channel=0)
-			except: sysvol = GetMasterVolume(channel=1)
-		except:
-			print "failed to get master volume and install master volume handlers"
-		else:
-			self.add_callback('StartRun', self.volume, (1.0,))
-			self.add_callback('StopRun',  self.volume, (sysvol,))
-	
-	#############################################################	
-	
-	def volume(self, volume):
-		"""
-		Use the WavTools.MasterVolume module to set the system's master 
-		volume to the specified level. By default, this is called during
-		StartRun to turn the volume up to maximum, and during StopRun
-		to put it back to what it was during initialization.
-		"""###
-		try:
-			from WavTools.MasterVolume import SetMasterVolume
-		except:
-			return
-		#print "vol", volume
-		try:
-			SetMasterVolume(volume, channel=0)
-		except:
-			SetMasterVolume(volume, channel=1)
-		
-	#############################################################
-	
 	def _safe_sleep_until_frame(self, timestamp=None, safety_margin_msec=1.0):
 		if self.frame_count < 1: return 0.0
 		elapsed = self.since('frame', timestamp=timestamp)
@@ -628,7 +572,7 @@ class BciGenericApplication(Core.BciCore):
 	def _phase_machine(self, mythread):
 		try:
 			class PhaseChangeErr(Exception): pass
-			if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([0])
+			if self._optimize_display_thread_affinity: PrecisionTiming.SetThreadAffinity([0])
 			mythread.read('stop', remove=True)
 			mythread.post('ready')
 			mythread.read('go', wait=True, remove=True)
@@ -650,6 +594,7 @@ class BciGenericApplication(Core.BciCore):
 				self.states['PresentationPhase'] = rec['id']
 				elapsed = self.since('transition', timestamp=t)
 				self.remember('transition', timestamp=t)
+				if self._slave: self.last['transition']['packet'] -= 1
 				#self.debug('transition', from_phase=previous_phase, to_phase=self.current_presentation_phase, after=elapsed['msec'], pp=self.states['PresentationPhase'], eo=self.states['EventOffset'])
 				self.Transition(self.current_presentation_phase)
 				if elapsed['packets'] == 0 and previous_phase != None:
@@ -675,18 +620,15 @@ class BciGenericApplication(Core.BciCore):
 			
 	#############################################################
 
-	def _vision_egg(self, mythread):
-					
+	def _visual_display(self, mythread):
 		try:
 			mythread.read('init', remove=True)
 			mythread.read('stop', remove=True)
 			mythread.post('ready')
 			mythread.read('init', wait=True) # removed when initialization is complete
 			
-			import logging; logging.raiseExceptions = 0 # suppresses the "No handlers could be found" chatter
-
-			self.screen = VisionEgg.Core.get_default_screen()
-			self._initfocus() # TODO: seems to raise the correct window on some machines/experiments, and the wrong one (the operator) on others
+			self.screen.Initialize(self)
+			self._initfocus()
 			self.stimuli = Core.BciDict(lazy=True)
 			self._stimlist = []
 			self._stimz = []
@@ -694,83 +636,77 @@ class BciGenericApplication(Core.BciCore):
 			self.Initialize(self.in_signal_dim, self.out_signal_dim)    # subclass
 			self._stimq = [] # list object is a sign that stimuli must be queued
 			self._hud_setup()
-			self.viewport = VisionEgg.Core.Viewport (screen=self.screen, stimuli=self._stimlist)
 			self.frame_count = 0
-			try:
-				self.nominal['FramesPerSecond'] = float(self.screen.query_refresh_rate())
-			except:
-				print "VisionEgg failed to query refresh rate"
-				self.nominal['FramesPerSecond'] = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
+			
+			self.focus('stimuli')
+			fr = self.screen.GetFrameRate()
+			if fr == None or fr == 0.0:
+				print "WARNING: self.screen.GetFrameRate() is returning nonsense"
+				fr = 1.0  # obviously not a sensible value (renderer developer should have overshadowed this)
+		                  # but not None and not 0 (so nothing will break) 
+			self.nominal['FramesPerSecond'] = float(fr)
 			self.nominal['SecondsPerFrame'] = 1.0 / self.nominal['FramesPerSecond']
 			self._estimate_rate('FramesPerSecond', init=2.0) # will be re-initialized at StartRun
 			
-			if self._optimize_vethread_affinity: PrecisionTiming.SetThreadAffinity([1])
-			if self._optimize_vethread_priority: PrecisionTiming.SetThreadPriority(3)
-			mythread.read('init', remove=True)
-
+			if self._optimize_display_thread_affinity: PrecisionTiming.SetThreadAffinity([1])
+			if self._optimize_display_thread_priority: PrecisionTiming.SetThreadPriority(3)
+			self.focus('operator')
+			mythread.read('init', remove=False)
+	
 			while not mythread.read('stop'):
-				self.ftdb('newframe') # first column of frame timing log is filled in now         # 1
-				events = pygame.event.get()
-				self.ftdb()                                                                       # 2
+				self.ftdb('newframe', label='screen.GetEvents') #-------------------- (first column of frame timing log is filled in now)
+				events = self.screen.GetEvents()
+
+				self.ftdb(label='lock.acquire')        #--------------------
 				self._lock.acquire('Frame')
-				self.ftdb()                                                                       # 3
+				self.ftdb(label='Event+Frame')         #--------------------
 				if self.states['Running']:
 					for event in events: self.Event(self.current_presentation_phase, event)
 					self.Frame(self.current_presentation_phase)
 					self._run_callbacks('Frame')
-				self.ftdb()                                                                       # 4				
-				self.screen.clear()
-				self.ftdb()                                                                       # 5
+				self.ftdb(label='update_stimlist')     #--------------------
 				self._update_stimlist()
-				self.ftdb()                                                                       # 6
-				self.viewport.draw()
-				self.ftdb()                                                                       # 7
+				self.screen.StartFrame(self._stimlist) #-------------------- (also contains ftdb calls)
+				self.ftdb(label='lock.release')        #--------------------
 				self._lock.release('Frame')
-				self.ftdb()                                                                       # 8
-				sleeptime = self._ve_sleep_msec
+				self.ftdb(label='sleep')               #--------------------
+				
+				sleeptime = self._display_sleep_msec
 				if sleeptime < 0.0:
 					sleeptime = self._safe_sleep_until_frame(safety_margin_msec=abs(sleeptime))
 				if sleeptime > 0.0 and sleeptime/1000.0 < self.nominal['SecondsPerFrame']:
 					time.sleep(sleeptime / 1000.0)
 				self._last_sleeptime = sleeptime
-				self.ftdb()                                                                       # 9
-				VisionEgg.Core.swap_buffers()
-				self.ftdb()                                                                       # 10
-				VisionEgg.GL.glFlush()
-				self.ftdb()                                                                       # 11
+
+				self.screen.FinishFrame()              #-------------------- (also contains ftdb calls)
+				self.ftdb(label='end')                 #--------------------
 				t = self.prectime()
-				self.frame_timer.tick()
 				if self.frame_count > 0: self._estimate_rate('FramesPerSecond', t)
 				self.remember('frame', t)
 				self.frame_count += 1
+				mythread.read('init', remove=True, wait=False)
 		except:
-			einfo = mythread.fail()
+			if self.frame_count == 0 or self.states['Running']:
+				einfo = mythread.fail() # Initialize or Process will pick this up via _check_threads
+			else:
+				sys.excepthook(*sys.exc_info()) # we are not running, so nobody will pick this up: at least print a backtrace 
 			self._lock.release('Frame')
 			if not isinstance(einfo[1], EndUserError):
 				while mythread.exception != None and not mythread.read('stop'):
 					time.sleep(0.001)  # cannot use mythread.read to wait for 'stop' in the normal way until the exception is cleared
 				mythread.read('stop', wait=True) # because waits normally fall through if the thread has posted an exception
 		self._lock.release('Frame')	
-		self.screen.close()
-		self.screen = 0
-		self.viewport = 0
 		if hasattr(self, 'stimuli'): delattr(self, 'stimuli')
 		if hasattr(self, '_stimlist'): delattr(self, '_stimlist')
 		if hasattr(self, '_stimz'): delattr(self, '_stimz')
 		if hasattr(self, '_stimq'): delattr(self, '_stimq')
-		VisionEgg.Text._font_objects = {}
-		# VisionEgg 1.1 allowed these cached pygame.font.Font objects to persist even
-		# after pygame quits or is reloaded: this causes a crash the second time around.
-		# VisionEgg 1.0 didn't cache, so we never ran across the problem under Python 2.4.
-		# Andrew fixed it in VE 1.1.1.
-		pygame.quit()
+		self.screen.Cleanup()
 	
 	#############################################################
 
-	def ftdb(self, subcmd=None, *pargs):
-		if subcmd == 'setup': # create an array to hold the timings (one row per frame)
-			(nframes,ntimings) = pargs
-			self._ftlog = {'t':numpy.zeros((nframes,ntimings),dtype=numpy.float64), 'i':0, 'j':0, 'started':False, 'rows_used':0, 'cols_used':0}
+	def ftdb(self, subcmd=None, nframes=1000, ntimings=20, filename=None, label=None):
+		if subcmd == 'setup': # create an array to hold the timings (one row per frame, maximally ntimings columns although may use fewer)
+			self._ftlog = {'t':numpy.zeros((nframes,ntimings),dtype=numpy.float64), 'i':0, 'j':0, 'started':False, 'rows_used':0, 'cols_used':0, 'labels':[]}
 			return
 		ftlog = getattr(self, '_ftlog', None)
 		if ftlog == None: return # practically zero overhead if not already called with 'setup' subcommand
@@ -781,21 +717,28 @@ class BciGenericApplication(Core.BciCore):
 			ftlog['rows_used'] = 0
 			ftlog['cols_used'] = 0
 			ftlog['started'] = True
+			ftlog['labels'] = [None] * ftlog['t'].shape[1]
 			return
 		if subcmd == 'stop':
 			ftlog['started'] = False
 			return
 		if subcmd == 'save':
-			(filename,) = pargs
+			if filename == None: raise ValueError, "no filename supplied"
 			m = ftlog['t'][:ftlog['rows_used'],:ftlog['cols_used']]
 			f = open(filename, 'wt')
-			f.write('[\n')
-			for i in xrange(m.shape[0]):
+			f.write('ft = [\n')
+			for i in range(m.shape[0]):
 				f.write('  [')
 				for j in xrange(m.shape[1]):
 					f.write('%8.3f, '%m[i,j])
 				f.write('  ],\n')
-			f.write(']\n')
+			f.write('];\n')
+			labels = ftlog['labels']
+			f.write('labels = [#\n')
+			for label in labels:
+				if label == None: label = ''
+				f.write("'%s', " % str(label))
+			f.write('];#\n')
 			f.close()
 			return
 	
@@ -805,10 +748,16 @@ class BciGenericApplication(Core.BciCore):
 			ftlog['j'] = 0
 			ftlog['rows_used'] = max([ftlog['rows_used'], ftlog['i']])
 		elif subcmd != None:
-			raise oops,'unknown subcommand'
+			raise ValueError,'unknown subcommand'
 		
 		m,i,j = ftlog['t'],ftlog['i'],ftlog['j']
-		if i < m.shape[0] and j < m.shape[1]: m[i,j] = t
+		if i < m.shape[0] and j < m.shape[1]:
+			m[i,j] = t
+			labels = ftlog['labels']
+			if label != None and j < len(labels):
+				if labels[j] == None or i < 2: labels[j] = label
+				#elif label != labels[j]: raise ValueError,"ftdb label %d changed: was '%s' now '%s'" %(j,old,label)
+					
 		ftlog['j'] += 1
 		ftlog['cols_used'] = max([ftlog['cols_used'], ftlog['j']])
 			
@@ -817,26 +766,47 @@ class BciGenericApplication(Core.BciCore):
 	#############################################################
 
 	def _hud_setup(self):
+				
 		if int(self.params['ShowSignalTime']):
 			t = self.params.get('PlaybackStart','0')
 			t = t.split(':'); t.reverse()
 			if len(t) > 3: t = [0]
-			t = map(float,t) + [0]*(3-len(t))
-			stim1 = self.stimulus('_signalclock1', VisionEgg.Text.Text(text=' ', color=(1,1,1),on=False, position=(self.screen.size[0]-5,5), anchor='lowerright',font_name=self.monofont,font_size=20), z=100)
-			stim2 = self.stimulus('_signalclock2', VisionEgg.Text.Text(text=' ', color=(1,1,1),on=False, position=(self.screen.size[0]-5,25), anchor='lowerright',font_name=self.monofont,font_size=20), z=100)
-			self._signalclock = {
-				'stim1'  : stim1.parameters,
-				'stim2'  : stim2.parameters,
-				'offset': 1000.0 * (t[0] + 60.0 * t[1] + 3600.0 * t[2]),
-				'mspp'  : 1000.0 * float(self.params['SampleBlockSize']) / self.samplingrate()
-			}
-			self.add_callback('Process', self._signalclock_update) # by definition only updates per packet
-		# playback support
+			t = [float(ti) for ti in t] + [0.0]*(3-len(t))
+			
+			try:
+				# This relies on VisionEggRenderer classes and conventions for creating text stimuli
+				window_width = self.screen.size[0]                 # must be available
+				Text = VisualStimuli.Text                                # must be available, and must accept keyword args as below
+				font_name = getattr(self.screen, 'monofont', None) # used if available (initialized in VisionEggRenderer.Construct): None must be valid if not
+				stim1 = Text(text=' ', color=(1,1,1), on=False, position=(window_width-5,5),  anchor='lowerright', font_name=font_name, font_size=20)
+				stim2 = Text(text=' ', color=(1,1,1), on=False, position=(window_width-5,25), anchor='lowerright', font_name=font_name, font_size=20)
+			except:
+				print "cannot honour ShowSignalTime: VisionEggRenderer conventions for text implementation are not available"
+			else:
+				stim1 = self.stimulus('_signalclock1', stim1, z=100)
+				stim2 = self.stimulus('_signalclock2', stim2, z=100)
+				self._signalclock = {
+					'stim1'  : stim1.parameters,
+					'stim2'  : stim2.parameters,
+					'offset': 1000.0 * (t[0] + 60.0 * t[1] + 3600.0 * t[2]),
+					'mspp'  : 1000.0 * float(self.params['SampleBlockSize']) / self.samplingrate()
+				}
+				self.add_callback('Process', self._signalclock_update) # by definition, only updates per packet
+				
+		# playback indicator
 		if len(self.params.get('PlaybackFileName','')):
-			self._replay = self.stimulus('_replay', VisionEgg.Text.Text(text='REPLAY',color=(1,1,1),on=False,font_size=35,position=(5,5),font_name=self.monofont), z=100)
-			self.forget('_replay')
-			self.add_callback('Frame', self._replay_update) # keep flashing even while paused
-			self.add_callback('StartRun', self.forget, ('_replay',))
+			try:
+				# This relies on VisionEggRenderer classes and conventions for creating text stimuli
+				Text = VisualStimuli.Text                                # must be available, and must accept keyword args as below
+				font_name = getattr(self.screen, 'monofont', None) # used if available (initialized in VisionEggRenderer.Construct): None must be valid if not
+				stim3 = Text(text='REPLAY', color=(1,1,1), on=False, position=(5,5), anchor='lowerleft', font_name=font_name, font_size=35)
+			except:
+				pass # no message. really this is just an easter egg
+			else:
+				self._replay = self.stimulus('_replay', stim3, z=100)
+				self.forget('_replay')
+				self.add_callback('Frame', self._replay_update) # keep flashing even while paused
+				self.add_callback('StartRun', self.forget, ('_replay',))
 		
 	#############################################################
 
@@ -861,6 +831,34 @@ class BciGenericApplication(Core.BciCore):
 		self._replay.parameters.on = not self._replay.parameters.on
 		
 
+	#############################################################
+
+	def _update_stimlist(self, s=None):
+		if s==None:
+			while len(self._stimq):
+				self._update_stimlist(self._stimq.pop(0))
+		else:
+			obj = s.obj
+			if obj == None:
+				try:
+					obj = s.obj = s._maker()
+				except:
+					a,b,c = sys.exc_info()
+					if self.frame_count == 0 or self.states['Running']:
+						raise a,b,c  # Initialize or Process will pick it up via _check_threads
+					else:
+						sys.excepthook(a,b,c) # print backtrace
+						sys.exc_clear() # carry on: this stimulus has been removed from the queue but not entered into 
+						return          # the rendering list, so will cause no further trouble until re-enter()ed
+			if obj in self._stimlist:
+				ind = self._stimlist.index(obj)
+				self._stimlist.pop(ind)
+				self._stimz.pop(ind)
+			newz = s.z
+			ind = [ z > newz for z in self._stimz+[newz+1] ].index(True)
+			self._stimz.insert(ind, newz)
+			self._stimlist.insert(ind, s.obj)
+			
 	#############################################################
 	#### useful callbacks for the developer
 	#############################################################
@@ -966,6 +964,64 @@ class BciGenericApplication(Core.BciCore):
 		return r,firsttime
 		
 	#############################################################
+	
+	def init_volume(self, during=1.0, between=None):
+		"""
+		Pre-set the system volume levels to be used during and
+		between runs. This method installs callbacks instructing
+		StartRun and StopRun to call self.volume() automatically,
+		setting the system volume to <during> at the start of
+		every run, and back to <between> at the end of every run.
+		If not supplied, <between> defaults to whatever the system
+		volume is when init_volume() is called.
+		
+		To avoid accidental inconsistencies in stimulus
+		presentation as far as possible, the system will call this
+		function (with the default values during=1.0, between=None)
+		after your Initialize hook if it detects that you have not
+		already called it explicitly. 
+		"""###
+		try:
+			from WavTools.MasterVolume import GetMasterVolume
+			try:    sysvol = GetMasterVolume(channel=0)
+			except: sysvol = GetMasterVolume(channel=1)
+		except:
+			print "failed to get master volume and install master volume handlers"
+		else:
+			if between == None: between = sysvol
+			self.add_callback('StartRun', self.volume, (during,))
+			self.add_callback('StopRun',  self.volume, (between,))
+	
+	#############################################################	
+	
+	def volume(self, volume):
+		"""
+		Use the WavTools.MasterVolume module to set the system's master 
+		volume to the specified level. By default, this is called during
+		StartRun to turn the volume up to maximum, and during StopRun
+		to put it back to what it was during initialization.
+		"""###
+		try:
+			from WavTools.MasterVolume import SetMasterVolume
+		except:
+			return
+		#print "vol", volume
+		try:
+			SetMasterVolume(volume, channel=0)
+		except:
+			SetMasterVolume(volume, channel=1)
+		
+	#############################################################
+
+	def focus(self, which='stimuli'):
+		"""
+		Depending on the string argument, raise the 'stimuli' window
+		or the 'operator' window (Windows-specific implementation).
+		"""###
+		f = getattr(self,'_focus',{}).get(which.lower())
+		if f != None: f()
+
+	#############################################################
 
 	def animate(self, list, mode=None, countername='transition'):
 		"""
@@ -995,60 +1051,22 @@ class BciGenericApplication(Core.BciCore):
 
 	#############################################################
 
-	def set_ve_window_pos(self, pos):
-		"""
-		This is an API method for setting the (x,y) screen offset, in
-		pixels, of the upper-left corner of the VisionEgg window before
-		it opens. See also self.get_ve_window_pos() and
-		self.shift_ve_window_pos()
-		"""###
-		if pos==None: return
-		if not isinstance(pos, str): pos = ','.join(map(lambda x:str(int(round(x))),pos))
-		os.environ['SDL_VIDEO_WINDOW_POS'] = pos
-
-	#############################################################
-
-	def get_ve_window_pos(self):
-		"""
-		This is an API method for getting the screen offset, in pixels,
-		of the setting for the upper-left corner of the VisionEgg window.
-		A tuple (x,y) is returned. See also self.set_ve_window_pos() and
-		self.shift_ve_window_pos().
-		"""###
-		pos = os.environ.get('SDL_VIDEO_WINDOW_POS', '')
-		if len(pos) == 0: pos = "0,0"
-		return tuple(map(float, pos.split(",")))
-		
-	#############################################################
-
-	def shift_ve_window_pos(self, xy=None, x=None, y=None):
-		"""
-		This is an API method with which you can alter the screen offset
-		of the upper-left corner of the VisionEgg window before it opens.
-		Supply an (x,y) tuple of pixel offsets as argument xy, or
-		alternatively supply the x and y offsets as separate named
-		arguments. See also self.set_ve_window_pos() and
-		self.get_ve_window_pos().
-		"""###
-		pos = list(self.get_ve_window_pos())
-		if xy != None: x,y=xy
-		if x != None: pos[0] += x
-		if y != None: pos[1] += y
-		self.set_ve_window_pos(pos)
-			
-	#############################################################
-
 	def stimulus(self, name, stim, z=0, **kwargs):
 		"""
-		This is an API method for registering VisionEgg objects as stimuli to
+		This is an API method for registering objects as stimuli to
 		be rendered automatically.
 		
-		name is a string identifying the stimulus object.
+		<name> is a string identifying the stimulus object.
 		
-		stim is a VisionEgg stimulus object (such as a VisionEgg.Text.Text
-		instance).
+		<stim> is a stimulus instance (for example, a VisionEgg.Text.Text
+		instance if you are using VisionEggRenderer). Alternatively (if
+		for example you are calling from outside the display thread) you
+		can supply the class (e.g. VisionEgg.Text.Text itself) plus any
+		keyword-args you want to pass through to that class constructor.
+		This defers construction of the stimulus to the display thread
+		itself.
 		
-		z is the optional depth parameter, determining the order in which
+		<z> is the optional depth parameter, determining the order in which
 		stimuli are drawn.
 		
 		Call this function (and any higher-level AppTools functions that make
@@ -1059,9 +1077,9 @@ class BciGenericApplication(Core.BciCore):
 		attributes of self (for example, you could store cue stimuli in a list
 		indexed by target class, or whatever can be accessed conveniently).
 		
-		Each registered stimulus is drawn and updated automatically, so you
-		only need to play with its .parameters attribute to change its
-		appearance during run-time.
+		Each registered stimulus is drawn and updated automatically, so (for
+		example, with VisionEgg stimuli) you only need to play with their
+		.parameters attribute to change their appearance during run-time.
 		"""###
 		class StimDefErr(Exception): pass
 		if not hasattr(self, 'stimuli'): self.stimuli = Core.BciDict(lazy=True)
@@ -1078,33 +1096,12 @@ class BciGenericApplication(Core.BciCore):
 				maker = Core.BciFunc(maker)
 			maker.kwargs.update(kwargs)
 			s._maker = maker
-		elif isinstance(stim, VisionEgg.Core.Stimulus):
-			if len(kwargs): raise TypeError, "extra keyword arguments are only expected when stim is callable"
-			s.Stimulus = stim
 		else:
-			raise TypeError, "stim should be a VisionEgg stimulus instance, or a function for making one"
+			if len(kwargs): raise TypeError, "extra keyword arguments are only expected when stim is callable"
+			s.obj = stim
 		s.enter()
 		return s
 
-	#############################################################
-
-	def _update_stimlist(self, s=None):
-		if s==None:
-			while len(self._stimq):
-				self._update_stimlist(self._stimq.pop(0))
-		else:
-			vestim = s.Stimulus
-			if vestim == None:
-				vestim = s.Stimulus = s._maker()
-			if vestim in self._stimlist:
-				ind = self._stimlist.index(vestim)
-				self._stimlist.pop(ind)
-				self._stimz.pop(ind)
-			newz = s.z
-			ind = [ z > newz for z in self._stimz+[newz+1] ].index(True)
-			self._stimz.insert(ind, newz)
-			self._stimlist.insert(ind, s.Stimulus)
-			
 	#############################################################
 
 	def phase(self, name, duration=None, next='idle', id=None):
@@ -1292,11 +1289,10 @@ class BciGenericApplication(Core.BciCore):
 		simplified information on input.
 
 		For the application module, there is one further twist:
-		this is the place to perform initial configuration of
-		VisionEgg.config settings, and/or the window position
-		using self.set_ve_window_pos().  The Initialize() hook
-		will only be called after the VisionEgg window has been
-		opened.
+		this is the place to perform initial configuration by
+		using self.screen.setup() and/or by setting VisionEgg.config
+		attributes. The Initialize() hook will only be called after
+		the stimulus window has been opened.
 		"""###
 		pass
 		
@@ -1326,16 +1322,16 @@ class BciGenericApplication(Core.BciCore):
 
 		For the application module, this is the best place to
 		set up stimuli (indeed, for visual stimuli, it is the
-		only place to do so). VisionEgg stimuli are created
+		only place to do so). Visual stimulus objects are created
 		here and then registered using calls to self.stimulus().
 		It's not necessary to attach them as attributes of self
 		as well, since they will be available in a dict called 
 		self.stimuli, but you may also find it useful to
 		(redundantly) do so. Note that the initial configuration
-		of VisionEgg.Config parameters and the (x,y) position
-		of the VisionEgg window *cannot* be done here: that must
-		be done in Preflight, since Initialize is called after
-		the window has been opened.
+		of (for example VisionEgg.config parameters and the [x,y]
+		position of the VisionEgg window) *cannot* be done here:
+		that must be done in Preflight, since Initialize is called
+		after the window has been opened.
 		"""###
 		if not hasattr(self, '_warned'): self._warned = False
 		if not self._warned:
@@ -1417,29 +1413,65 @@ class BciGenericApplication(Core.BciCore):
 		"""
 		This hook, which you may or may not wish to implement in your
 		BciApplication class, exists only for the application module.
-		It is called for keyboard and mouse events. For each element
-		of pygame.event.get(), this hook is called with the result,
-		together with the name of the current presentation phase
-		as a string. Compare event.type against various constants
-		defined in pygame.locals in order to handle it
-		appropriately.
+		It is called for keyboard and mouse events. If you are using
+		the default VisionEggRenderer, lists of events are obtained
+		via pygame.event.get(). This hook is called for each element
+		of that list together with the name of the current presentation
+		phase as a string. For pygame events, event.type can be
+		compared against various constants defined in pygame.locals
+		in order to handle it appropriately.
 		"""###
-		if (event.type == pygame.locals.QUIT) or (event.type == pygame.locals.KEYDOWN and event.key == pygame.locals.K_ESCAPE):
-			self.add_callback('StopRun', self._threads['vision egg'].post, ('stop',))
-			self.states['Running'] = False
+		if hasattr(self.screen, 'DefaultEventHandler'):
+			if self.screen.DefaultEventHandler(event):
+				self.add_callback('StopRun', self._threads['visual display'].post, ('stop',))
+				self.states['Running'] = False
+
 
 #################################################################
 #################################################################
 
 class BciStimulus(object):
+	"""
+	This class of object is automatically created and registered
+	for you when you call BciGenericApplication.stimulus(). You
+	should not need to construct such objects directly.
+	
+	When created, BciStimulus objects are entered into the queue
+	of stimuli to be drawn, but they may leave() the queue and
+	enter() it again as you wish.
 
+	A BciStimulus has the following attributes of interest:
+	
+		.z   governs the order in which stimuli are drawn: stimuli
+		     with lower z values are "deeper into" the screen and
+		     are drawn first.
+		.obj is the actual stimulus instance, of the type that the
+		     renderer self.screen expects (for example, a
+		     VisionEgg.Core.Stimulus instance for the default
+		     VisionEggRenderer).
+
+	In addition, for VisionEgg stimuli, any self.obj.parameters.*
+	attributes are accessible as top-level attributes of self.
+	For example:
+	
+	class BciApplication(BciGenericApplication):
+	
+		def Initialize(self, indims, outdims):
+			self.stimulus('foo', VisionEgg.Text.Text, text='Hello')
+	
+		def Transition(self, phase_name):
+			if phase_name == 'turn red and jump on top':
+				self.stimuli['foo'].z = +100
+				self.stimuli['foo'].color = (1,0,0)  # there you go
+	"""###
+	
 	#############################################################
 
 	def __init__(self, bci, name, z):		
 		self.__dict__['_bci'] = bci
-		self.__dict__['_maker'] = None
-		self.__dict__['Stimulus'] = None
 		self.__dict__['_name'] = name
+		self.__dict__['_maker'] = None
+		self.__dict__['obj'] = None
 		self.__dict__['z'] = z
 		
 	#############################################################
@@ -1448,8 +1480,8 @@ class BciStimulus(object):
 		z = kwargs.pop('z')
 		if z != None: self.z = float(z)
 		if len(kwargs) == 0: return
-		v = self.__dict__.get('Stimulus')
-		if v == None: raise AttributeError, "a VisionEgg Stimulus has not yet been instantiated inside this object"
+		v = self.__dict__.get('obj')
+		if v == None: raise AttributeError, "a stimulus has not yet been instantiated inside this object"
 		v.set(**kwargs)
 		
 	#############################################################
@@ -1462,35 +1494,47 @@ class BciStimulus(object):
 				if not hasattr(b, '_stimq'): b._stimq = []
 				if not self in b._stimq: b._stimq.append(self)
 		else:
-			v = self.__dict__.get('Stimulus')
-			p = getattr(v, 'parameters', None)
-			if p != None and hasattr(p, key): setattr(p, key, value)
-			elif v != None and hasattr(v, key): setattr(v, key, value)
-			elif v == None: raise AttributeError, "a VisionEgg Stimulus has not yet been instantiated inside this object"
-			else: raise AttributeError, "'%s' object has no attribute or stimulus parameter '%s'"%(self.__class__.__name__, key)
+			v = self.__dict__.get('obj')
+			if v == None: raise AttributeError, "a stimulus has not yet been instantiated inside this object"
+			if not self.__delegate_setattr__(v, key, value):
+				raise AttributeError, "'%s' object has no attribute or stimulus parameter '%s'"%(self.__class__.__name__, key)
 
+	#############################################################
+
+	def __delegate_setattr__(self, v, key, value, restrict_to=None):
+		if v != None and hasattr(v, key):
+			if restrict_to != None and not key in restrict_to: raise AttributeError, "the '%s' attribute is read-only" % key
+			setattr(v, key, value)
+			return True
+		return False
+		
 	#############################################################
 
 	def __getattr__(self, key):
 		if key in self.__dict__: return self.__dict__[key]
-		v = self.__dict__.get('Stimulus')
-		p = getattr(v, 'parameters', None)
-		if p != None and hasattr(p, key): return getattr(p, key)
-		if v != None and hasattr(v, key): return getattr(v, key)
-		if v == None: raise AttributeError, "a VisionEgg Stimulus has not yet been instantiated inside this object"
-		raise AttributeError, "'%s' object has no attribute or stimulus parameter '%s'"%(self.__class__.__name__, key)
-
+		v = self.__dict__.get('obj')
+		if v == None: raise AttributeError, "a stimulus has not yet been instantiated inside this object"
+		gotit,val = self.__delegate_getattr__(v, key)
+		if not gotit: raise AttributeError, "'%s' object has no attribute or stimulus parameter '%s'"%(self.__class__.__name__, key)
+		return val
+	
+	#############################################################
+	
+	def _getAttributeNames(self):
+		v = self.__dict__.get('obj')
+		if v == None: return ()
+		else: return v.__dict__.keys()
+		
 	#############################################################
 
-	def _getAttributeNames(self):
-		p = getattr(self.__dict__.get('Stimulus'), 'parameters', None)
-		if p == None: return ()
-		return p.__dict__.keys()
+	def __delegate_getattr__(self, v, key):
+		if v != None and hasattr(v, key): return True, getattr(v, key)
+		return False, None
 
 	#############################################################
 
 	def __repr__(self):
-		v = self.__dict__.get('Stimulus')
+		v = self.__dict__.get('obj')
 		if v == None: s = ''
 		else: s = ' containing %s.%s' % (v.__class__.__module__,v.__class__.__name__)
 		s = '<%s "%s" at 0x%08X%s, z=%g>' % (self.__class__.__name__,str(self._name),id(self),s,float(self.z))
@@ -1499,7 +1543,12 @@ class BciStimulus(object):
 	#############################################################
 
 	def leave(self):
-		v = self.__dict__.get('Stimulus')
+		"""
+		Leave the queue of stimuli to be drawn. By default, newly
+		created stimuli are in the queue. You may invite them to
+		enter() again after they have left.
+		"""###
+		v = self.__dict__.get('obj')
 		b = self.__dict__.get('_bci')
 		if hasattr(b, '_stimlist') and v in b._stimlist:
 			ind = b._stimlist.index(v)
@@ -1513,6 +1562,11 @@ class BciStimulus(object):
 	#############################################################
 
 	def enter(self):
+		"""
+		Enter the queue of stimuli to be drawn. By default, newly
+		created stimuli are in the queue already, but you may have
+		asked them to leave().
+		"""###
 		b = self.__dict__.get('_bci')
 		if isinstance(b._stimq, list):
 			if not self in b._stimq:
@@ -1526,5 +1580,150 @@ class BciStimulus(object):
 	def __del__(self):
 		self.leave()
 		
+#################################################################
+#################################################################
+
+class BciGenericRenderer(object):
+	"""
+	We already supply a renderer subclass called VisionEggRenderer, but
+	if you want to remove the dependency on VisionEgg, or implement extra
+	functionality, then you may wish to replace this with your own subclass
+	of BciGenericRenderer. Note that our optional AppTools make use of
+	stimulus classes called Text, Block, Disc and ImageStimulus which they
+	will expect your module to export, so you may not be able to use some
+	of the tools unless you create workalikes of these.
+	
+	You can tell the BCPy2000 framework to use your custom renderer by
+	defining your class, and then attaching the class definition as the
+	.subclass attribute of BciGenericRenderer. For example:
+
+		class MyRenderer(BciGenericRenderer): pass
+
+		BciGenericRenderer.subclass = MyRenderer
+	
+	Then, simply ensure that your developer file BciApplication.py imports
+	this code.  The renderer instance will be available from Preflight()
+	onwards, at self.screen
+	
+	The important methods to implement in your renderer subclass are
+	Initialize(), GetFrameRate(), GetEvents(), StartFrame(), FinishFrame()
+	and Cleanup()	
+	"""###
+	
+	def __init__(self):
+		self._setup = {}
+		
+	def setup(self, left=None,top=None,width=None,height=None,changemode=None,framerate=None,bitdepth=None, **kwargs):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. The developer will want to call
+		this during BciApplication.Preflight(), before the stimulus window opens,
+		in order to pre-specify certain commonly-defined parameters screen/window
+		parameters. Your renderer subclass should store these parameters and access
+		them during Initialize(), which is called to open the window just before
+		BciApplication.Initialize() is called.
+		"""###
+		if not hasattr(self, '_setup'): self.__dict__['_setup'] = {}
+		if left != None: self._setup['left'] = left
+		if top != None: self._setup['top'] = top
+		if width != None: self._setup['width'] = width
+		if height != None: self._setup['height'] = height
+		if changemode != None: self._setup['changemode'] = changemode
+		if framerate != None: self._setup['framerate'] = framerate
+		if bitdepth != None: self._setup['bitdepth'] = bitdepth
+		for k,v in kwargs.items():
+			if v != None: self._setup[k] = v
+	
+	def center(self):
+		size = getattr(self, 'size', (0,0))
+		return (size[0]/2.0, size[1]/2.0)
+	
+	def SetDefaultFont(self, name=None, size=None):
+		"""\
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		allow convenient selection of a default font for text stimuli.
+		"""###
+		pass
+		
+	def Initialize(self, bci):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		open and initialize the stimulus window. It is called just before
+		BciApplication.Initialize() in _visual_stimuli() .
+		
+		The argument bci is a pointer to the BciApplication object that is calling.
+		"""###
+		pass
+		
+	def GetFrameRate(self):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. Your subclass should overshadow
+		this method, which must return an estimate of the screen refresh rate in Hz.
+		"""###
+		pass
+	
+	def RaiseWindow(self):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		ensure that the stimulus window is raised at the beginning of each run.
+		"""###
+		pass
+		
+	def GetEvents(self):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		return a list of events (such as keyboard and mouse events), each in some
+		format that your BciApplication.Event() handler expects. The VisionEggRenderer
+		calls pygame.event.get() to obtain such a list.		
+		"""###
+		return []
+
+	def StartFrame(self, objlist):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		render the stimuli in <objlist>, which is a depth-sorted list of
+		objects of your renderer's native type (for example,
+		VisionEgg.Core.Stimulus objects for the VisionEggRenderer). It is called
+		immediately after BciApplication.Frame()
+		"""###
+		pass
+
+	def FinishFrame(self):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		It is called at the close of each frame, for example in order to swap
+		buffers.
+		"""###
+		pass
+		
+	def Cleanup(self):
+		"""
+		You only need to worry about this if you want to write a BciGenericRenderer
+		subclass to replace our VisionEggRenderer. You can overshadow this to
+		close the window and clean up.		
+		"""###
+		pass
+
+#################################################################
+#################################################################
+
+def SetDefaultFont(name=None, size=None):
+	"""\
+	See the documentation for self.screen.SetDefaultFont (where
+	self is your BciApplication instance, and self.screen is some
+	subclass of BciGenericRenderer).
+	"""###
+	print "The SetDefaultFont() function is deprecated. Please use self.screen.SetDefaultFont() instead, from Preflight onwards, where self is your BciApplication object"
+	try: VisualStimuli.screen
+	except: raise Exception,"SetDefaultFont failed to find global renderer object"
+	else: VisualStimuli.screen.SetDefaultFont(name=name, size=size)
+	
 #################################################################
 #################################################################

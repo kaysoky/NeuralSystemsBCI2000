@@ -30,6 +30,10 @@ from BCPy2000.GenericApplication      import BciGenericApplication      as app
 import os,webbrowser
 def browse(page='index'):
 	page = page.replace(' ', '_')
-	page = page.rstrip('.html')+'.html'
-	webbrowser.open(os.path.join(os.path.dirname(__file__), page))
+	if not page.lower().endswith('.html'): page += '.html'
+	fullpath = os.path.join(os.path.dirname(__file__), page)
+	if os.path.isfile(fullpath):
+		webbrowser.open(fullpath)
+	else:
+		print page + " not found"
 if __name__ == '__main__': browse()

@@ -22,7 +22,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import numpy,os
+import os,sys,re
+import numpy
 from BCI2000Tools.FileReader import bcistream
 
 class PlaybackError(EndUserError): pass
@@ -43,6 +44,7 @@ class BciSource(BciGenericSource):
 		parameters = [
 			"Source:Playback string PlaybackFileName= % % % % // play back the named BCI2000 file (inputfile)",
 			"Source:Playback string PlaybackStart= 00:00:00.000 % % % // offset at which to start",
+			"Source:Playback matrix TestSignals= 0 { Channel Frequency Amplitude } % % % // sinusoidal signals may be added to the source signal here",
 		]
 		states = [
 			"SignalStopRun 1 0 0 0",
@@ -53,7 +55,21 @@ class BciSource(BciGenericSource):
 	#############################################################
 	def Preflight(self, inprop):
 		fn = self.params['PlaybackFileName']
-		fn = fn.replace('$DATA'+os.path.sep, os.path.realpath(os.path.join(self.data_dir, '..'))+os.path.sep)
+		
+		# start with environmental variables but add a couple of extra possible expansions:
+		# (1) %DATA% or $DATA maps to the data subdir of the installation directory
+		dataroot = os.path.realpath(os.path.join(self.data_dir, '..'))
+		mappings = dict(os.environ.items() + [('DATA',dataroot)])
+		sub = lambda x: mappings.get(x.group(1), x.group())
+		if sys.platform.lower().startswith('win'):
+			# (2) make %HOME% or $HOME equivalent to %USERPROFILE% or %HOMEDRIVE%%HOMEPATH%  
+			if not 'HOME' in mappings: mappings['HOME'] = mappings.get('USERPROFILE', mappings.get('HOMEDRIVE') + mappings.get('HOMEPATH'))
+			# expand Windoze-style environmental variables on Windoze
+			fn = re.sub('%(.+?)%', sub, fn)
+		# expand POSIX-style environmental variables on all platforms
+		fn = re.sub(r'\$\{(.+?)\}', sub, fn)
+		fn = re.sub(r'\$([A-Za-z0-9_]+)', sub, fn)
+
 		try: self.stream = bcistream(fn)
 		except Exception, e: raise PlaybackError(str(e))
 		self.blocksize = int(self.params['SampleBlockSize'])
@@ -67,8 +83,30 @@ class BciSource(BciGenericSource):
 		if fs != pbfs:
 			raise PlaybackError, 'mismatch between sampling rate in SamplingRate parameter (%gHz) and playback file (%gHz)' % (fs,pbfs)
 		
-		self.out_signal_props['Type'] = self.stream.headline.get('DataFormat', 'float32')
+		#self.out_signal_props['Type'] = self.stream.headline.get('DataFormat', 'float32')
+		self.out_signal_props['Type'] = 'float32' # Hmm
 		# default data format is actually int16, but float32 is safe to cast the other formats into 
+
+		self.testsig = []
+		ts = self.params['TestSignals']
+		if isinstance(ts, list):
+			if ts.matrixlabels()[1] != ['Channel', 'Frequency', 'Amplitude']: raise EndUserError, "TestSignals matrix must have 3 columns labelled Channel, Frequency and Amplitude"
+			for x in ts:
+				if x == ['','','']: continue
+				chan,freq,amp = x['Channel'], x['Frequency'], x['Amplitude']
+				try: chan = float(chan)
+				except:
+					if chan in self.params['ChannelNames']: chan = self.params['ChannelNames'].index(chan)
+					else: raise EndUserError, "unrecognized Channel name '%s' in TestSignals matrix" % chan
+				else:
+					if chan < 1 or chan > nch or chan != round(chan): raise EndUserError, "invalid Channel index %d in TestSignals matrix" % chan
+					chan = int(chan+0.5) - 1
+				try: freq = float(freq)
+				except: raise EndUserError, "invalid Frequency value '%s' in TestSignals matrix" % freq
+				try: amp = float(amp)
+				except: raise EndUserError, "invalid Amplitude value '%s' in TestSignals matrix" % amp
+				self.testsig.append([chan,freq,amp])
+					
 		
 	#############################################################
 
@@ -88,7 +126,12 @@ class BciSource(BciGenericSource):
 			self.states['Running'] = 0
 			self.states['SignalStopRun'] = 0
 		
-		newsig,states = self.stream.decode(self.blocksize)
+		newsig,states = self.stream.decode(self.blocksize, apply_gains=False)
+		
+		for chan,freq,amp in self.testsig:
+			amp /= float(self.params['SourceChGain'][chan])
+			newsig[chan,:] += amp * numpy.sin(2.0 * numpy.pi * freq * sig[0, :newsig.shape[1]])
+		
 		if newsig.shape[1] < self.blocksize:
 			self.states['SignalStopRun'] = 1
 			return sig * 0

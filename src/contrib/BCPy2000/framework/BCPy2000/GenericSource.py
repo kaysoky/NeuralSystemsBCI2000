@@ -60,24 +60,17 @@ class BciGenericSource(Core.BciCore):
 		super(BciGenericSource, self).__init__()
 
 	def _Construct(self):
-		parameters,states = super(BciGenericSource, self)._Construct()    # superclass
-		srcdesc = self.Description()
-		srcdesc = srcdesc.replace("%", "%%")
-		srcdesc = srcdesc.replace(" ", "%20")
-		parameters += [ 
-			"Source string SignalSourceDescription= " + srcdesc + " % a z // Identifies the source generation module",
+		paramdefs,statedefs = super(BciGenericSource, self)._Construct()    # superclass
+		desc = self.Description().replace("%", "%%").replace(" ", "%20")
+		paramdefs += [ 
+			"Source string SignalSourceDescription= " + desc + " % a z // Identifies the source generation module",
 			"Source:Playback float  WarpFactor= 1.0   1.0  0.0 % // slows down or speeds up the source generator's concept of time",
 		]
-		states += [
+		statedefs += [
 		]
-		subclass_parameters,subclass_states = self.Construct()            # subclass	
-		parameters += list(subclass_parameters)
-		if isinstance(subclass_states, dict):
-			for name,state in subclass_states.items():
-				states.append(name + " " + str(state["bits"]) + " 0 0 0")
-		else:
-			states += list(subclass_states)
-		return (parameters, states)
+		self._merge_defs(paramdefs, statedefs, self.Construct())            # subclass
+		statedefs.reverse() # puts developer's definitions first (allows developer to override bit depth for built-in states)
+		return (paramdefs, statedefs)
 
 	def _Halt(self):
 		super(BciGenericSource, self)._Halt()                      # superclass

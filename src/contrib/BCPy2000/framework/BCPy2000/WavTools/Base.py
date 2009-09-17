@@ -352,7 +352,7 @@ class wav:
 			raise ValueError, 'unrecognized bit precision'
 		self.__dict__['signed'] = (self.dtype[1]=='i')
 		self.__dict__['fac'] = float(2 ** (bits-1))
-		self.revision += 1
+		self.bump_revision()
 					
 	def channels(self):
 		"""
@@ -406,25 +406,29 @@ class wav:
 		data = data.astype(self.dtype)
 		data = data.tostring()
 		return data
-	
+
+	def bump_revision(self):
+		self.revision += 1
+		
 	def autoscale(self, max_abs_amp=0.95):
 		self.center()
 		m = abs(self.y).max()
 		self.y *= (max_abs_amp / m)
-		self.revision += 1
+		self.bump_revision()
 	
 	def cat(self, *xargs):
 		w = cat(self, *xargs)
 		self.y = w.y
-		self.revision += 1
+		self.bump_revision()
 
 	def center(self):
-		if across_samples != 0:
-			raise WavBug, 'numpy.median currently can only work along axis 0 - need to re-implement wav.wav.center() using a loop'
-		med = numpy.median(self.y)
-		med.shape = (1, self.channels())
+		try: med = numpy.median(self.y, axis=across_samples) # newer numpy versions only
+		except: med = numpy.median(self.y) # older numpy versions only (grr!)
+		shape = list(self.y.shape)
+		shape[across_samples] = 1
+		med.shape = shape
 		self.y -= med
-		self.revision += 1
+		self.bump_revision()
 		
 	def cut(self, start=None, stop=None):
 		if start==None:  start = 0.0
@@ -435,7 +439,7 @@ class wav:
 		stop = min(self.samples(), round(float(stop) * float(self.fs)))
 		stop = max(start,stop)
 		self.y = self.y[start:stop,:]
-		self.revision += 1
+		self.bump_revision()
 		
 	def extractchannels(self, ind):
 		w = self.copy()
@@ -447,7 +451,7 @@ class wav:
 	def fade(self, risetime=0, falltime=0, hanning=False):
 		if risetime: self[:float(risetime)] *= rise(risetime, fs=self.fs, hanning=hanning)
 		if falltime: self[-float(falltime):] *= fall(falltime, fs=self.fs, hanning=hanning)
-		self.revision += 1
+		self.bump_revision()
 	
 	def hanningwindow(self):
 		return hanningwindow(self.duration(), self.fs)
@@ -467,7 +471,7 @@ class wav:
 		if extra_sec > 0.0:
 			w = cat(self, extra_sec)
 			self.y = w.y
-		self.revision += 1
+		self.bump_revision()
 	
 	def padstartto(self, seconds):
 		if isinstance(seconds, wav):
@@ -476,11 +480,11 @@ class wav:
 		if extra_sec > 0.0:
 			w = cat(extra_sec, self)
 			self.y = w.y
-		self.revision += 1
+		self.bump_revision()
 	
 	def reverse(self):
 		self.y = numpy.flipud(self.y)
-		self.revision += 1
+		self.bump_revision()
 	
 	def right(self):
 		return self.extractchannels(self.channels()-1)
@@ -493,7 +497,7 @@ class wav:
 		stop = min(stop, self.samples())
 		y = self.y[start:stop,:]
 		self.y = y.copy()
-		self.revision += 1
+		self.bump_revision()
 		
 		
 	def numprep(self, other, equalize_channels=True, equalize_duration=True):
@@ -527,7 +531,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me += other
 		self.y = me
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __add__(self,other):
 		return self.copy().__iadd__(other)
@@ -537,7 +541,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me -= other
 		self.y = me
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __sub__(self,other):
 		return self.copy().__isub__(other)
@@ -551,7 +555,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me *= other
 		self.y = me		
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __mul__(self,other):
 		return self.copy().__imul__(other)
@@ -561,7 +565,7 @@ class wav:
 		(me,other) = self.numprep(other)
 		me /= other
 		self.y = me		
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __div__(self,other):
 		return self.copy().__idiv__(other)
@@ -573,7 +577,7 @@ class wav:
 		(me,other) = self.numprep(other, equalize_channels=False)
 		me = numpy.concatenate((me,other), axis=across_channels)
 		self.y = me
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __and__(self,other):
 		return self.copy().__iand__(other)
@@ -581,7 +585,7 @@ class wav:
 	# Concatenation using the % operator
 	def __imod__(self,other):
 		self.cat(other)
-		self.revision += 1
+		self.bump_revision()
 		return self
 	def __mod__(self,other):
 		return cat(self,other)
@@ -603,7 +607,7 @@ class wav:
 		subs = self.translate_slice(range)
 		if isinstance(val,wav): val = val.y
 		self.y[subs[0],subs[1]] = val
-		self.revision += 1
+		self.bump_revision()
 
 	def translate_slice(self, range):
 		chans = slice(None)

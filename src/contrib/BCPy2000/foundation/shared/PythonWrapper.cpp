@@ -42,6 +42,7 @@
 
 namespace PyAPI24 {void Macros2Functions(void);};
 namespace PyAPI25 {void Macros2Functions(void);};
+namespace PyAPI26 {void Macros2Functions(void);};
 
 #ifdef _WIN32
 #include "BCIError.h"
@@ -86,15 +87,34 @@ int LoadPythonLinks(const char *dllname)
 
 	std::string lowername = "";
 	for(const char *s = dllname; s && *s; s++) lowername += tolower(*s);
-	if(dll) {
-		if      (lowername.find("python24") !=std::string::npos) PyAPI24::Macros2Functions();
-		else if (lowername.find("python2.4")!=std::string::npos) PyAPI24::Macros2Functions();
-		else if (lowername.find("python25") !=std::string::npos) PyAPI25::Macros2Functions();
-		else if (lowername.find("python2.5")!=std::string::npos) PyAPI25::Macros2Functions();
-		else {
-			all_loaded = false;
-			bcierr << "failed to recognize version from dll name \"" << dllname << "\"" << std::endl;
-		}
+	if(dll == NULL) all_loaded = false;
+#ifndef SUPPORT_PY24
+#define SUPPORT_PY24 1
+#endif
+#if SUPPORT_PY24
+	else if (lowername.find("python24") !=std::string::npos) PyAPI24::Macros2Functions();
+	else if (lowername.find("python2.4")!=std::string::npos) PyAPI24::Macros2Functions();
+	else if (lowername.find("/2.4/")!=std::string::npos)     PyAPI24::Macros2Functions();
+#endif
+#ifndef SUPPORT_PY25
+#define SUPPORT_PY25 1
+#endif
+#if SUPPORT_PY25
+	else if (lowername.find("python25") !=std::string::npos) PyAPI25::Macros2Functions();
+	else if (lowername.find("python2.5")!=std::string::npos) PyAPI25::Macros2Functions();
+	else if (lowername.find("/2.5/")!=std::string::npos)     PyAPI25::Macros2Functions();
+#endif
+#ifndef SUPPORT_PY26
+#define SUPPORT_PY26 1
+#endif
+#if SUPPORT_PY26
+	else if (lowername.find("python26") !=std::string::npos) PyAPI26::Macros2Functions();
+	else if (lowername.find("python2.6")!=std::string::npos) PyAPI26::Macros2Functions();
+	else if (lowername.find("/2.6/")!=std::string::npos)     PyAPI26::Macros2Functions();
+#endif
+	else {
+		all_loaded = false;
+		bcierr << "failed to recognize version from dll name \"" << dllname << "\"" << std::endl;
 	}
 	return !all_loaded;
 }

@@ -44,6 +44,7 @@ PythonSource.cpp \
 ../shared/PythonFilter.cpp \
 ../shared/PythonLink24.cpp \
 ../shared/PythonLink25.cpp \
+../shared/PythonLink26.cpp \
 ../shared/PythonWrapper.cpp \
 $SHARED/accessors/BCIEvent.cpp \
 $SHARED/accessors/Environment.cpp \

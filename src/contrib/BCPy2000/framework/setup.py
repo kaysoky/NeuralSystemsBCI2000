@@ -31,14 +31,22 @@ if args == ['installer']:
 	args = [
 		'bdist_wininst',
 		'--bitmap', 'installer.bmp',
-		'--install-script', 'post_install.py',
+		'--install-script', 'BCPy2000_postinstall.py',
 	]
 sys.argv = sys.argv[:1] + args
 
-from distutils.core import setup
+try: import setuptools
+except ImportError: print "WARNING: failed to import setuptools"
+from distutils.core import setup, Extension
+
+dependencies = {
+	    'numpy': '>=1.3',
+	  'IPython': '>=0.8.1',
+	'VisionEgg': '>=1.1',
+}
 setup(
 	name = 'BCPy2000',
-	version = '11336',
+	version = '13582',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',
@@ -52,7 +60,8 @@ setup(
 		'BCPy2000.Documentation': ['*.*', 'styles/gears/*.*'],
 	},
 	scripts = [
-		'post_install.py',
+		'BCPy2000_postinstall.py',
 	],
-	#requires = ['VisionEgg (>=1.0)', 'numpy (>=1.0)', 'IPython (>=0.8.1)'],
+	requires = [('%s (%s)' % (p,v)).replace(' ()','') for p,v in dependencies.items()],  # available in distutils from Python 2.5 onwards
+	install_requires = ['%s%s' % (p,v) for p,v in dependencies.items()], # available if using setuptools,  acted on by easy_install
 )

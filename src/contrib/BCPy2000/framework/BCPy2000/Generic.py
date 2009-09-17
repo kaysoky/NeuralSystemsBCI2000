@@ -46,6 +46,9 @@ if __name__.startswith('BCPy2000.'):
 	from BCPy2000 import __version__,__author__,__copyright__,__email__
 else:
 	__copyright__ = None
+	__version__ = '$Revision: 13521 $'.split(' ')[-2] # development version (NB: this is not so definitive:
+	                                                  # it only tracks changes to this particular file - see
+	                                                  # http://subversion.tigris.org/faq.html#version-value-in-source
 
 #################################################################
 ### exception types
@@ -70,9 +73,10 @@ def authors():
 	return a
 
 def register_framework_dir():
+	global whereami
 	whereami = os.path.realpath(os.path.dirname(__file__))
 	if len(whereami)==0: whereami = os.getcwd()
-	print ('%04d-%02d-%02d %02d:%02d:%02d'%time.localtime()[:6]) + (' - BCPy2000 is running under Python %s\n' % sys.version)
+	print ('%04d-%02d-%02d %02d:%02d:%02d'%time.localtime()[:6]) + (' - BCPy2000 %s is running under\nPython %s\n' % (__version__,sys.version))
 	if __copyright__ != None:
 		print 
 		print 'BCPy2000 ', __copyright__, ', '.join(authors())
@@ -81,8 +85,8 @@ def register_framework_dir():
 		print 
 	print     "framework directory is " + whereami
 	if not whereami in sys.path: sys.path.append(whereami)
-	suitable = lambda x: os.path.isdir(x) and not x.startswith('.') and not x.startswith('_') and not os.path.isfile(os.path.join(x, '__init__.py'))
-	extensions = filter(suitable, os.listdir(whereami))
+	extensions = [os.path.join(whereami, x) for x in os.listdir(whereami) if not x.startswith('.') and not x.startswith('_')]
+	extensions = [x for x in extensions if os.path.isdir(x) and not os.path.isfile(os.path.join(x, '__init__.py'))]
 	for x in extensions:
 		x = os.path.realpath(x)
 		print "found extension subdir " + x
@@ -227,6 +231,7 @@ SUCH DAMAGES.
 	def __init__(self):
 		super(BciCore, self).__init__()
 
+		self._frameworkdir = whereami
 		self._threads = {}
 		self._ipshell = None
 		self._shell_running = False
@@ -262,33 +267,42 @@ SUCH DAMAGES.
 		self.forget('run')
 
 		self.keyboard = self.dbstop
+		#PrecisionTiming.SetProcessPriority(+2)
 
 	#############################################################
 			
-	def _get_states(self):    
-		self.states.block = True
-		self.packet_count += 1
-		s = dict(self.states) # makes a copy
-		self.states.block = False
-		self._handle_transients()
-		return s
-
-	#############################################################
-			
-	def _set_states(self, states):
+	def _set_states(self, states): # transfer states from C++ to Python before _Process
+		self._lock.acquire('_set_states') # TODO ???
 		if len(self._oldstates) == 0:
 			self._oldstates = states.copy()
 		if len(self.states) == 0:
 			self.states = BciDict(states, complete=True, lazy=True)
+		self.states.block = True # TODO: ???
 		for i in states.keys():
-			if (not self.states.has_key(i)) or self._oldstates[i] == self.states[i]:
-				self.states.__setitem__(i,states[i], 'really')
+			# if state coming from c++ is not listed in python, or if the state variable hasn't changed since last time, update python according to c++
+			if (not self.states.has_key(i)) or self._oldstates[i] == self.states[i]:  # TODO:  "and the value coming from c++ is different...."?
+				dict.__setitem__(self.states, i, states[i])     # bypasses 'read_only' and 'block'
+				#self.states.__setitem__(i,states[i], 'really') # bypasses 'read_only'
+			# whereas if the state has changed since last time, but not to the same value that C++ thinks it should change to, issue a warning
+			# (this python module and some other module have tried to change the same state on the same packet, to different values)
 			elif self._oldstates[i] != states[i] and states[i] != self.states[i]:
 				r,firsttime = self.debug('state collision in '+i, old=self._oldstates[i], newpython=self.states[i], newbci=states[i])
 				if firsttime: print 'Collision in state',i,': Oldvalue:', self._oldstates[i],'  New Python Value:',self.states[i],'  New BCI Value:',states[i]
+		self.states.block = False # TODO ???
 		self.states._bits = self.bits
-		self._oldstates = self.states.copy()
+		self._oldstates = self.states.copy() # TODO: move this to ^^^ ??? probably not
+		self._lock.release('_set_states') # TODO ???
 		
+	#############################################################
+			
+	def _get_states(self): # transfer states from Python to C++ after _Process
+		self.states.block = True
+		self.packet_count += 1
+		s = dict(self.states) # makes a copy   TODO:  update _oldstates here instead of ^^^ ???
+		self.states.block = False
+		self._handle_transients()
+		return s
+
 	#############################################################
 			
 	def _set_state_precisions(self, bits):
@@ -354,6 +368,7 @@ SUCH DAMAGES.
 	#############################################################
 	
 	def _shell(self, mythread):
+		del mythread # anything we leave lying around in this namespace becomes available at the shell prompt
 		self._shell_running = True
 		self._ipshell()
 		self._shell_running = False
@@ -367,6 +382,71 @@ SUCH DAMAGES.
 	
 	def _copy_signal(self, m):
 		return numpy.asmatrix(numpy.array(m, dtype=numpy.float64, order='C'))
+
+	#############################################################
+
+	def define_param(self, *pargs):
+		"""
+		As an alternative to returning (paramdefs,statedefs) from your
+		Construct() hook, you can simply call
+		
+			self.define_param(paramdef1)
+			self.define_param(paramdef2)
+			self.define_state(statedef1)
+			self.define_state(statedef2)
+			
+			or
+
+			self.define_param(paramdef1, paramdef2, ...)
+			self.define_state(statedef1, statedef2, ...)
+
+		inside the hook.			
+		"""###
+		self._subclass_paramdefs = getattr(self, '_subclass_paramdefs', [])
+		self._subclass_paramdefs += list(pargs)
+
+	#############################################################
+
+	def define_state(self, *pargs):
+		"""
+		As an alternative to returning (paramdefs,statedefs) from your
+		Construct() hook, you can simply call
+		
+			self.define_param(paramdef1)
+			self.define_param(paramdef2)
+			self.define_state(statedef1)
+			self.define_state(statedef2)
+			
+			or
+
+			self.define_param(paramdef1, paramdef2, ...)
+			self.define_state(statedef1, statedef2, ...)
+
+		inside the hook.			
+		"""###
+		self._subclass_statedefs = getattr(self, '_subclass_statedefs', [])
+		self._subclass_statedefs += list(pargs)
+
+	#############################################################
+
+	def _merge_defs(self, paramdefs, statedefs, constructor_output):
+
+		if constructor_output == None:
+			subclass_paramdefs,subclass_statedefs = [],[]
+		else:
+			subclass_paramdefs,subclass_statedefs = constructor_output
+		self._subclass_paramdefs = getattr(self, '_subclass_paramdefs', [])
+		self._subclass_paramdefs += list(subclass_paramdefs)
+		paramdefs += self._subclass_paramdefs
+		
+		self._subclass_statedefs = getattr(self, '_subclass_statedefs', [])
+		if isinstance(subclass_statedefs, dict):
+			for name,bits in subclass_statedefs.items():
+				if isinstance(bits, dict): bits = bits['bits']
+				self._subclass_statedefs.append(name + " " + str(bits) + " 0 0 0")
+		else:
+			self._subclass_statedefs += list(subclass_statedefs)
+		statedefs += self._subclass_statedefs
 
 	##########################################################
 	
@@ -707,7 +787,9 @@ SUCH DAMAGES.
 
 	def _find_newest_file(self, directory):
 		#t = self.prectime()
-		if not os.path.isdir(directory): return None
+		if not os.path.isdir(directory):
+			print "failed to find directory",directory
+			return None
 		files = os.listdir(directory)
 		files = [x for x in files if x.lower().endswith('.dat')]
 		datestamps = {}
@@ -715,14 +797,16 @@ SUCH DAMAGES.
 			fullfile = os.path.join(directory, i)
 			st = os.stat(fullfile)
 			datestamps[st.st_mtime] = (fullfile,st)
-		if len(datestamps) == 0: return None
+		if len(datestamps) == 0:
+			return 0 # 0 means try again later
 		newestStamp = max(datestamps.keys())
 		newest,st = datestamps[newestStamp]
+		newest = os.path.realpath(newest)
 		age = time.time() - newestStamp
 		kb = st.st_size / 1024.0
 		if kb > 1024 or age < 0 or age > 10: # file is bigger than 1MB or believes it comes from the future or doesn't seem to have been modified in the last 10 seconds
+			print "_find_newest_file() would have chosen r'%s' but rejected it (size %gkb, age %gs)" % (newest,kb,age)
 			return None  # these aren't the files you're looking for: move along.
-		newest = os.path.realpath(newest)
 		#print self.prectime() - t # takes about a millisecond for 10 files
 		return newest
 
@@ -806,7 +890,7 @@ SUCH DAMAGES.
 
 	def forget(self, event_type):
 		"""
-		Sets the counter for the specified event_type such that the
+		Sets the counter for the specified <event_type> such that the
 		object's "remembers" its last occurrence as having occurred at
 		time 0, packet 0. See self.remember() and self.since().
 		"""###
@@ -816,7 +900,7 @@ SUCH DAMAGES.
 
 	def remember(self, event_type, timestamp=None):
 		"""
-		event_type is a string describing something whose time of
+		<event_type> is a string describing something whose time of
 		occurrence you wish to remember.
 
 		Packets and runs are remembered automatically by the
@@ -840,7 +924,7 @@ SUCH DAMAGES.
 
 	def since(self, event_type, timestamp=None):
 		"""
-		event_type is a string that you have previously remembered
+		<event_type> is a string that you have previously remembered
 		with self.remember(event_type), or at least initialized with
 		self.forget(event_type).  self.since(event_type) returns a
 		dict containing the number of elapsed milliseconds and the
@@ -884,7 +968,7 @@ SUCH DAMAGES.
 		Get self.params['SamplingRate'], strip off the 'Hz' and
 		return the result as a number.
 		"""###
-		return float(self.params['SamplingRate'].lower().rstrip('hz'))
+		return float(str(self.params['SamplingRate']).lower().rstrip('hz'))
 
 	#############################################################
 
@@ -916,7 +1000,7 @@ SUCH DAMAGES.
 			
 	def debug(self, ref, **kwargs):
 		"""
-		ref is the name of a kind of occurrence which you wish
+		<ref> is the name of a kind of occurrence which you wish
 		to record (for example "frame skips").  When you call
 		self.debug, the dict entry self.db[ref] is initialized
 		to an empty list if it didn't already exist. Then a
@@ -1121,7 +1205,8 @@ class BciThread(threading.Thread):
 
 	#############################################################
 	
-	def __init__(self, func, pargs=(), kwargs={}, loop=True, debug=False):
+	def __init__(self, func, pargs=(), kwargs=None, loop=True, debug=False):
+		if kwargs == None: kwargs = {}
 		self.debug = debug
 		self.loop = loop
 		self.func = func
@@ -1269,6 +1354,7 @@ class BciDict(dict):  # a dict, but with super-powers
 		self.__dict__['lazy'] = False       # set the lazy flag, and elements can be addressed (and tab-completed) as if they were attributes (unless a genuine attribute with the same name overrides)
 		self.__dict__['_bits'] = {}
 		
+		if isinstance(d, (list,tuple)): d = dict(d)
 		for k,v in d.items():
 			dict.__setitem__(self, k, v)
 			
@@ -1490,15 +1576,19 @@ class BciFunc:
 
 	#############################################################
 
-	def __init__(self, func, pargs=(), kwargs={}):
+	def __init__(self, func, *pargs, **kwargs):
 		self.func = func
 		self.pargs = pargs
 		self.kwargs = kwargs
-
+		
 	#############################################################
 
-	def __call__(self):
-		return self.func(*self.pargs, **self.kwargs)
+	def __call__(self, *pargs, **kwargs):
+		k = dict(self.kwargs)
+		k.update(kwargs)
+		if len(pargs): p = pargs
+		else: p = self.pargs
+		return self.func(*p, **k)
 		
 	#############################################################
 

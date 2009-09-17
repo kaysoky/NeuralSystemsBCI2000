@@ -22,9 +22,127 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['box', 'union_of_boxes']
+__all__ = ['point', 'size', 'box', 'union_of_boxes']
 
 import copy
+import operator
+
+class point(list):
+	"""
+	A list subclass intended for 2- and 3-dimensional coordinates.
+
+	p = point()         # defaults to (0,0)
+	p = point([1,2])
+	p = point([1,2,3])
+	
+	Arithmetic with other points, lists, tuples and scalars is possible, using
+	operators +, -, *, /, +=, -=, *= and /= .
+		
+	p[0] can also be referred to as p.x,  p[1] as p.y and p[2] (if present) as p.z
+	
+	Using the p.step attribute, a default step size in each of the dimensions
+	can be specified. This is used in the methods p.up(), p.down(), p.left()
+	and p.right() each of which move the point p one step in the specified 
+	direction. No copy of p is created: the original is updated, but the
+	updated object p is returned (a multidimensional analog of ++x from C).
+	
+	The p.box attribute can be used to specify a box object in whose internal
+	coordinates the point p is defined. The virtual attribute p.mapped returns
+	a point transformed according to this internal->external coordinate mapping.
+	Example:
+	
+	   src = box(left=-1,right=+1,bottom=-1,top=+1)
+	   dst = box(position=(0,0), size=(100,50), anchor='lower left', internal=src)
+	   p = point((0,0), box=dst)
+	
+	p.mapped then returns point([50,25])
+	
+	"""###
+	def __init__(self, position=(0,0), x=None, y=None, z=None, step=None, box=None):
+		list.__init__(self,position)
+		if x != None: self.x = x
+		if y != None: self.y = y
+		if z != None: self.z = z
+		self.step = step
+		self.__dict__['box']  = box
+		self.__dict__['_mapping_type'] = 'position'
+		
+	def __getattr__(self, key):
+		if   key is 'x': return self[0]
+		elif key is 'y':
+			if len(self) < 2: return 0
+			else: return self[1]
+		elif key is 'z':
+			if len(self) < 3: return 0
+			else: return self[2]
+		elif key is 'mapped':
+			if self.box == None: return self.copy()
+			return self.__class__(self.box.map(self, self._mapping_type))
+		elif key is 'A': import numpy; return numpy.array(self, dtype=numpy.float64)
+		elif key is 'M': import numpy; return numpy.matrix(self, dtype=numpy.float64).T
+		else: raise AttributeError, "'%s' object has no attribute '%s'" % (self.__class__.__name__, key)
+
+	def __setattr__(self, key, value):
+		if   key is 'x': self[0] = value
+		elif key is 'y':
+			if len(self) == 1: self.append(value)
+			else: self[1] = value
+		elif key is 'z':
+			if len(self) == 2: self.append(value)
+			else: self[2] = value
+		elif key is 'step':
+			if value is not 0:
+				if value == None: value = 1
+				try: len(value)
+				except: value = [value]
+				value = list(value)
+				if len(value) == 1: value = value * len(self)
+				value = self.__class__(value, step=0)
+			self.__dict__[key] = value
+		elif key in ['A','M','mapped']: raise AttributeError, "the '%s' attribute is read-only" % key
+		elif hasattr(self, key): self.__dict__[key] = value
+		else: raise AttributeError, "'%s' object has no attribute '%s'" % (self.__class__.__name__, key)
+		
+	def up(self):    self.y += self.step.y; return self
+	def down(self):  self.y -= self.step.y; return self
+	def left(self):  self.x -= self.step.x; return self
+	def right(self): self.x += self.step.x; return self
+
+	def __repr__(self): return '%s(%s)' % (self.__class__.__name__, list.__repr__(self))
+	def _getAttributeNames(self): return ('x', 'y', 'z', 'mapped', 'A', 'M')
+
+	def __op__(self, op, other, swap=False):
+		try: len(other)
+		except: other = [other] * len(self)
+		other = list(other)
+		other += [0] * (len(self) - len(other))
+		list.__iadd__(self, [0] * (len(other)-len(self)))
+		if swap: a,b = other,self
+		else:    a,b = self,other
+		for i in range(len(self)): self[i] = op(a[i], b[i])
+		return self
+		
+	def map(self, f): return self.__class__([f(x) for x in self], step=self.step, box=self.box)		
+	def copy(self): return self.__class__(self, step=self.step, box=self.box)
+	def __iadd__(self, other): return self.__op__(operator.add, other)
+	def __isub__(self, other): return self.__op__(operator.sub, other)
+	def __imul__(self, other): return self.__op__(operator.mul, other)
+	def __idiv__(self, other): return self.__op__(operator.div, other)
+	def __add__(self, other): return self.copy().__op__(operator.add, other)
+	def __sub__(self, other): return self.copy().__op__(operator.sub, other)
+	def __mul__(self, other): return self.copy().__op__(operator.mul, other)
+	def __div__(self, other): return self.copy().__op__(operator.div, other)
+	def __radd__(self, other): return self.copy().__op__(operator.add, other)
+	def __rsub__(self, other): return self.copy().__op__(operator.sub, other, swap=True)
+	def __rmul__(self, other): return self.copy().__op__(operator.mul, other)
+	def __rdiv__(self, other): return self.copy().__op__(operator.div, other, swap=True)
+	def __neg__(self): return self * -1
+
+class size(point):
+	def __init__(self, *pargs, **kwargs):
+		point.__init__(self, *pargs, **kwargs)
+		self._mapping_type = 'size'
+
 class box(object):
 	"""
 	A class that groks the rectangle problem.
@@ -71,23 +189,52 @@ class box(object):
 		the class documentation as named keyword arguments.  For example:
 		   b = box(position=(100,100), size=(10,10), anchor='top right') 
 		"""###
-		if rect != None and not 'rect' in kwargs: kwargs['rect'] = rect
-		self.__dict__.update({
-		     'rect':None, 
+		start = {
+		     'rect':(-50,-50,+50,+50), 
 			 'left':None, 'bottom':None, 'right':None, 'top':None,
-			 'sticky':kwargs.pop('sticky', True), 
-			 'anchor':kwargs.pop('anchor', 'center'), 
+			 'sticky':True, 'anchor':'center',
 		     'x':None, 'y':None, 'position':None,
 		     'width':None, 'height':None, 'size':None,
 		     'internal':None,
-		})
-		self.rect = (-50,-50,+50,+50)
+		}
+		self.__dict__.update(start)
+
+		if isinstance(rect, box):
+			for k in ['sticky', 'anchor', 'internal', 'rect']:
+				self.__dict__[k] = getattr(rect, k)
+			self.rect = rect.rect
+			rect = None
+		
+		if rect != None and not 'rect' in kwargs: kwargs['rect'] = rect
+		
+		init_anchor = ''
+		if 'bottom' in kwargs: init_anchor = 'bottom '
+		elif 'top' in kwargs: init_anchor = 'top '
+		if 'left' in kwargs: init_anchor += 'left '
+		elif 'right' in kwargs: init_anchor += 'right '
+		init_anchor = init_anchor.rstrip()
+		if init_anchor == '': init_anchor = kwargs.get('anchor', 'center')
+		final_anchor = kwargs.pop('anchor', self.__dict__.get('anchor', 'center'))
+		final_sticky = kwargs.pop('sticky', self.__dict__.get('sticky', True))
+		self.__dict__['anchor'] = init_anchor
+		self.__dict__['sticky'] = True
+		self.rect = kwargs.pop('rect', self.__dict__.get('rect'))
+		for k in ['bottom', 'top', 'left', 'right']:
+			v = kwargs.pop(k, None)
+			if v != None: setattr(self, k, v)
 		for k in kwargs.keys(): setattr(self, k, kwargs[k])
+		self.anchor = final_anchor
+		self.sticky = final_sticky
+		
+		self.position = self.position
+		self.size = self.size
 		
 	def __setattr__(self, key, val):
 		class BoxError(Exception): pass
 		if not key in self.__dict__.keys(): raise KeyError, 'no such attribute '+key
 		if key in ['rect', 'size', 'position']: val = tuple(map(float, val))
+		if key in ['position']: val = point(val)
+		if key in ['size']: val = size(val)
 		if key in ['width', 'height', 'x', 'y']:
 			if isinstance(val, tuple) or isinstance(val, list): val = val[0]
 			val = float(val)
@@ -132,7 +279,7 @@ class box(object):
 			
 	def __repr__(self):
 		s = "<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))
-		s += "\n    " + "rectangle " + repr(self.rect)
+		s += "\n    " + "rectangle (left=%g,bottom=%g,right=%g,top=%g)" % self.rect
 		s += "\n    " + "size %g x %g, %s anchor point at (%g , %g), %s" % (self.width, self.height, str(self.anchor), self.x, self.y, (self.sticky and "sticky" or "non-sticky"))
 		if self.internal != None:
 			s += "\n    " + "internal coordinates X [%+g %+g] by Y [%+g %+g]" % (self.internal.left,self.internal.right,self.internal.bottom,self.internal.top)
@@ -230,6 +377,8 @@ class box(object):
 		if attr in ['width']:  val = float(val) * self.width / src.width
 		if attr in ['height']: val = float(val) * self.height / src.height
 		if box != None: setattr(box, attr, val)
+		if attr in['position']: val = point(val)
+		if attr in['size']: val = size(val)
 		return val
 	
 	def split(self, x=None, y=None):

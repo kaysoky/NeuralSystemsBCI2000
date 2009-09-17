@@ -24,7 +24,7 @@
 #
 __all__ = ['addstatemonitor', 'addphasemonitor', 'updatestatemonitors', 'statemonitor']
 
-import VisionEgg.Text
+from CurrentRenderer import VisualStimuli
 import time
 
 ##############################################################################################
@@ -41,15 +41,16 @@ def addstatemonitor(bci,name,showtime=False,**kwargs):
 	if not hasattr(bci, 'statemonitors'):
 		bci.statemonitors = {}
 	defaultfontsize = 20
-	if hasattr(bci, 'monofont') and not kwargs.has_key('font_name'):
-		kwargs['font_name'] = bci.monofont
+	if hasattr(bci.screen, 'monofont') and not kwargs.has_key('font_name'):
+		kwargs['font_name'] = bci.screen.monofont
 		defaultfontsize = 13
 	if not kwargs.has_key('font_size'):
 		kwargs['font_size'] = defaultfontsize
 	nmon = len(bci.statemonitors.keys()) + 1
 	right,top=bci.screen.get_size()
 	m = statemonitor(name=name, position=(150,top-nmon*15), showtime=showtime, params=kwargs)
-	m.value.parameters.text = str(bci.states.get(name, 'no such state'))
+	mp = getattr(m.value, 'parameters', m.value) # .parameters would be for VisionEgg objects
+	mp.text = str(bci.states.get(name, 'no such state'))
 	bci.statemonitors[name] = m
 	bci.stimulus('smlabel_'+name, m.label, z=10)
 	bci.stimulus('smvalue_'+name, m.value, z=10)
@@ -73,8 +74,8 @@ class statemonitor(object):
 		vpos = (position[0]+5, position[1])
 		self.statename = name
 		self.showtime = showtime
-		self.label = VisionEgg.Text.Text(position=lpos,anchor='right',on=True,text=name+':',**params)
-		self.value = VisionEgg.Text.Text(position=vpos,anchor='left', on=True,text=' ',**params)
+		self.label = VisualStimuli.Text(position=lpos,anchor='right',on=True,text=name+':',**params)
+		self.value = VisualStimuli.Text(position=vpos,anchor='left', on=True,text=' ',**params)
 		self.lastval = 0
 		self.time = 0
 		self.func = func
@@ -87,7 +88,7 @@ class statemonitor(object):
 		else: s = str(val)		
 		if self.time == 0 or val != self.lastval: self.lastval,self.time = val,t
 		if val and self.showtime: s += '   (%.1f sec)' % (t - self.time)
-		p = self.value.parameters
+		p = getattr(self.value, 'parameters', self.value) # .parameters would be for VisionEgg objects
 		if p.text != s: p.text = s
 
 try:

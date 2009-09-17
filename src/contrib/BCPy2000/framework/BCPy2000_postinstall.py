@@ -23,7 +23,8 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import sys
-if sys.argv[1] == '-install':
+arg = (getattr(sys, 'argv', [])[1:] + [''])[0]
+if arg == '-install':
 
 	#####################################
 	## Patch VisionEgg 1.0 FilledCircle

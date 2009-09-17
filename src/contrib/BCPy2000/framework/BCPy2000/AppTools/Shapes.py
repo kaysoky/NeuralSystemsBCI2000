@@ -22,37 +22,72 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['PolygonTexture']
+__all__ = ['PolygonTexture', 'Disc', 'Block']
 
-from Boxes import box
+import Boxes
 
-import Image, ImageDraw, VisionEgg.Textures
-from VisionEgg.Textures import gl
+import Image, ImageDraw
 
-def PolygonTexture(frame, vertices=((0.0,1.0), (1.0,1.0), (0.5,0.0)), color=(0,0,0), anchor=None, position=None, **kwargs):
-	if isinstance(frame, (list,tuple)):
-		if len(frame)==2: frame = [0,0] + list(frame)
-		frame = box(rect=frame)
-	size = tuple(map(int, frame.size))
-	if anchor==None: anchor = frame.anchor
-	if position==None: position = frame.position
+def PolygonTexture(frame=None, vertices=((0.0,1.0), (1.0,1.0), (0.5,0.0)), color=(0,0,0), anchor=None, position=None, size=None, **kwargs):
+	if frame==None:
+		if size == None: size = (100,100)
+		if position == None: position = (50,50)
+		if anchor == None: anchor = 'center'
+		frame = Boxes.box(size=size, position=position, anchor=anchor)
+	else:
+		if isinstance(frame, (list,tuple)):
+			if len(frame)==2: frame = [0,0] + list(frame)
+			frame = Boxes.box(rect=frame, sticky=True)
+			if anchor != None: frame.anchor = anchor
+		if size==None: size = frame.size
+		if anchor==None: anchor = frame.anchor
+		if position==None: position = frame.position
+		frame = frame.copy()
+		
+	if len(color) >= 4: alpha = color[3]
+	else: alpha = 1.0
+	mask = (255,255,255,int(round(255.0*alpha)))
+	csize = (int(round(size[0])), int(round(size[1])))
 
-	# map from lowerleft-upward normalized coordinates to upperleft-downward pixel coordinates
-	mapvertex = lambda x: (size[0]*x[0], size[1]-size[1]*x[1])
-	vertices = map(mapvertex, vertices)
+	if isinstance(vertices, (float,int)): vertices = [i/float(vertices) for i in range(int(vertices)+1)[:-1]]
+	if False not in [isinstance(i, (float,int)) for i in vertices]:
+		from math import cos, sin, pi
+		vertices = [(0.5+0.5*cos(2*pi*a), 0.5+0.5*sin(2*pi*a)) for a in vertices]
+		
+	# map from source coordinates (default to lowerleft-upward normalized)
+	# to upperleft-downward pixel coordinates
+	if frame.internal == None: frame.internal = Boxes.box(left=0.0,right=1.0,bottom=0.0,top=1.0)
+	frame.internal.bottom,frame.internal.top = frame.internal.top,frame.internal.bottom
+	frame.anchor, frame.position, frame.size = 'lowerleft', (0,0), csize
+	vertices = [tuple(frame.map(v)) for v in vertices]
 	
-	# map colours from normalized to 8-bit integer, and add alpha channel if absent
-	color = map(lambda x:int(round(x*255.0)), color)
-	if len(color)==3: color += [255]
-
-	canvas = Image.new("RGBA", size, (0,0,0,0))
+	canvas = Image.new("RGBA", csize, (0,0,0,0))
 	draw = ImageDraw.Draw(canvas)
-	draw.polygon(vertices, fill=tuple(color))
+	draw.polygon(vertices, fill=mask, outline=None)
+	from CurrentRenderer import VisualStimuli
+	return VisualStimuli.ImageStimulus(texture=canvas, size=size, anchor=anchor, position=position, color=color[:3], **kwargs)
 
-	vestim = VisionEgg.Textures.TextureStimulus(
-		texture=VisionEgg.Textures.Texture(canvas),
-		size=size, anchor=anchor, position=position, 
-		mipmaps_enabled=0, internal_format=gl.GL_RGBA, texture_min_filter=gl.GL_LINEAR,
-		**kwargs
-	)
-	return vestim
+def Disc(position=(10,10), size=(1,1), radius=1, color=(0,0,1), anchor='center', **kwargs):
+
+	size = tuple([x*radius*2 for x in size])
+	if len(color) >= 4: alpha = color[3]
+	else: alpha = 1.0
+	mask = (255,255,255,int(round(255.0*alpha)))	
+	csize = (max(int(round(size[0])),100), max(int(round(size[1])),100))
+	
+	canvas = Image.new("RGBA", csize, (0,0,0,0))
+	draw = ImageDraw.Draw(canvas)
+	draw.ellipse(((0.0,0.0),csize), fill=mask, outline=None)	
+	from CurrentRenderer import VisualStimuli
+	return VisualStimuli.ImageStimulus(texture=canvas, size=size, anchor=anchor, position=position, color=color[:3], **kwargs)
+
+
+def Block(position=(10,10), size=(10,10), color=(0,0,1), anchor='center', **kwargs):
+
+	if len(color) >= 4: alpha = color[3]
+	else: alpha = 1.0
+	mask = (255,255,255,int(round(255.0*alpha)))
+	csize = (1,1)	
+	canvas = Image.new("RGBA", csize, mask)	
+	from CurrentRenderer import VisualStimuli
+	return VisualStimuli.ImageStimulus(texture=canvas, size=size, anchor=anchor, position=position, color=color[:3], **kwargs)

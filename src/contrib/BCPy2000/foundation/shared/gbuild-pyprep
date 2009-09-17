@@ -14,6 +14,7 @@ uname | grep -iq '^linux'  && test -d obj_linux  && OBJDIR=obj_linux
 # force recompilation of CoreModule.o so that BCI_VERSION includes the __TIME__
 rm -f "$OBJDIR"/CoreModule.o
 
+uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DSUPPORT_PY24=0 -DSUPPORT_PY26=0" # support these as and when you can manage to install them...
 uname | grep -iq '^darwin' && CPPFLAGS="$CPPFLAGS -DDYNAMIC_PYTHON=0"
 # TODO: dynamic linking doesn't work on MacOS yet (product crashes with "Illegal Instruction" message)
 #       comment out the line above to try it
@@ -39,10 +40,10 @@ then
 	else
 		LIBS_MACOS="$LIBS_MACOS -L/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
 		INCS_MACOS="$INCS_MACOS \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/Extras/lib/python/numpy/core/include \
 		/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
 		/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/site-packages/numpy/core/include \
+ 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
+		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/Extras/lib/python/numpy/core/include \
 		"
 	fi
 else
@@ -56,14 +57,14 @@ else
 		"
 	else
 		INCS_MACOS="$INCS_MACOS \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/include \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/Extras/lib/python/numpy/core/include \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/Extras/lib/python/numpy/core/include \
 		/Library/Frameworks/Python.framework/Versions/2.5/include \
 		/Library/Frameworks/Python.framework/Versions/2.4/include \
 		/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/include \
 		/Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/numpy/core/include \
+ 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include \
+ 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/include \
+		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/Extras/lib/python/numpy/core/include \
+		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/Extras/lib/python/numpy/core/include \
 		"
 	fi
 fi

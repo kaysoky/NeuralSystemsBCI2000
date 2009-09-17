@@ -36,6 +36,9 @@ except:
 		raise WindowsError, 'inpout32.dll may not be installed - copy ' + os.path.join(os.path.dirname(__file__),'inpout32.dll') + ' to ' + os.path.join(os.environ['WINDIR'], 'system32', '')
 	else:
 		print __name__,'module could not find a parallel port interface'
+		Inp32 = lambda x: 0
+		Out32 = lambda x,y: 0
+
 
 def lookup_lpt_port(default=2):
 	"""

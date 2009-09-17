@@ -22,37 +22,41 @@
 #
 import numpy
 import VisionEgg
-
+	
 #################################################################
 #################################################################
 
 class BciApplication(BciGenericApplication):
-				
+	
 	#############################################################
-
+	
 	def Description(self):
 		return "I bet you won't bother to change this to reflect what the application is actually doing"
-
+		
 	#############################################################
-
+	
 	def Construct(self):
+		# supply any BCI2000 definition strings for parameters and
+		# states needed by this module
 		params = [
+			
 		]
 		states = [
 			"SomeState 1 0 0 0",
 		]
+		
 		return params,states
-
+		
 	#############################################################
-
+	
 	def Preflight(self, sigprops):
-		# Here is where you would set VisionEgg.config parameters
-		# In particular, if you don't fancy using the VisionEgg GUI
-		# every time, do this:
-		VisionEgg.config.VISIONEGG_GUI_INIT = 0
-				
+		# Here is where you would set VisionEgg.config parameters,
+		# either using self.screen.setup(), or (for more advanced
+		# options) directly like, e.g. this to make the window draggable:
+		VisionEgg.config.VISIONEGG_FRAMELESS_WINDOW = 0  # gives the window a title bar
+		
 	#############################################################
-
+	
 	def Initialize(self, indim, outdim):
 		# Set up stimuli. Visual stimuli use calls to
 		# self.stimulus(). Attach whatever you like as attributes
@@ -60,55 +64,62 @@ class BciApplication(BciGenericApplication):
 		# attributes, however:  using names that start with a capital
 		# letter is a good insurance against this.
 		
-		SetDefaultFont('comic sans ms', 30)
-		w,h = VisionEgg.config.VISIONEGG_SCREEN_W,VisionEgg.config.VISIONEGG_SCREEN_H
-		t = VisionEgg.Text.Text(text='BCPy2000: Python bindings for your brain', position=(w/2,h/2), anchor='top')
-		self.stimulus('SomeText', t)
+		w,h = self.screen.size
+		self.screen.SetDefaultFont('comic sans ms', 30)
+		self.stimulus('SomeText', VisionEgg.Text.Text, text='BCPy2000: Python bindings for your brain',
+		                                               position=(w/2,h/2),
+		                                               anchor='top'         )
+		self.color = numpy.array([1.0, 0.0, 0.0])
 		
 	#############################################################
 	
 	def StartRun(self):
 		pass
- 			
+		
 	#############################################################
 	
 	def Phases(self):
 		# define phase machine using calls to self.phase and self.design
 		self.phase(name='flip', next='flop', duration=2000)
 		self.phase(name='flop', next='flip', duration=2000)
- 		self.design(start='flip')
- 		
+		self.design(start='flip')
+		
 	#############################################################
-
+	
 	def Transition(self, phase):
 		# present stimuli and update state variables to record what is going on
 		if phase == 'flip':
-			self.stimuli['SomeText'].parameters.anchor = 'top'
+			self.stimuli['SomeText'].anchor = 'top'
 			self.states['SomeState'] = 1
 		if phase == 'flop':
-			self.stimuli['SomeText'].parameters.anchor = 'bottom'
+			self.stimuli['SomeText'].anchor = 'bottom'
 			self.states['SomeState'] = 0
 		
 	#############################################################
-
+	
 	def Process(self, sig):
 		# process the new signal packet
-		pass
-
+		pass  # or not.
+		
 	#############################################################
-
+	
 	def Frame(self, phase):
 		# update stimulus parameters if they need to be animated on a frame-by-frame basis
-		red = 0.5 + 0.5 * numpy.sin(2.0 * numpy.pi * 0.5 * self.since('run')['msec']/1000.0)
-		self.screen.parameters.bgcolor = (red, 0, 0)
+		intensity = 0.5 + 0.5 * numpy.sin(2.0 * numpy.pi * 0.5 * self.since('run')['msec']/1000.0)
+		self.screen.bgcolor = intensity * self.color
 		
 	#############################################################
-
+	
 	def Event(self, phase, event):
-		pass
+		# respond to pygame keyboard and mouse events
+		import pygame.locals
+		if event.type == pygame.locals.KEYDOWN:
+			if event.key == ord('r'): self.color[:] = [1,0,0]
+			if event.key == ord('g'): self.color[:] = [0,1,0]
+			if event.key == ord('b'): self.color[:] = [0,0,1]
 		
 	#############################################################
-
+	
 	def StopRun(self):
 		pass
 		

@@ -205,21 +205,21 @@ def summarize(a):
 
 def loadmat(filename):
 	"""
-	Wraps scipy.io.mio.loadmat to understand '/' as a universal
+	Wraps scipy.io.loadmat to understand '/' as a universal
 	file-separator, and to yield easier-to-inspect output (sdict
 	class).
 	"""###
-	import os,scipy.io.mio
+	import os,scipy.io
 	if isinstance(filename,str): filename = filename.replace('/', os.path.sep)
-	return sdict(scipy.io.mio.loadmat(filename, squeeze_me=False))
+	return sdict(scipy.io.loadmat(filename, squeeze_me=False))
 
 def savemat(filename, d, append=False):
 	"""
-	Wraps scipy.io.mio.savemat to understand '/' as a universal
+	Wraps scipy.io.savemat to understand '/' as a universal
 	file-separator, to save d.__dict__ if d is not itself a dict,
 	and to filter out (and warn about) any unsaveable items.
 	"""###
-	import os,scipy.io.mio
+	import os,scipy.io
 	if isinstance(filename,str): filename = filename.replace('/', os.path.sep)
 	if not filename.lower().endswith('.mat'): filename += '.mat'
 	if not isinstance(d, dict): d = d.__dict__
@@ -231,7 +231,7 @@ def savemat(filename, d, append=False):
 	gone = before.difference(dd.keys())
 	for k in gone: print "warning: unable to save item  %s: %s" % (repr(k), summarize(d[k]))
 	if len(dd) == 0: raise TypeError, 'nothing to save'
-	scipy.io.mio.savemat(filename, dd, appendmat=append)
+	scipy.io.savemat(filename, dd, appendmat=append)
 
 class sdict(dict):
 	"""

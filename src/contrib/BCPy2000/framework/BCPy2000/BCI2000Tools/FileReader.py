@@ -22,7 +22,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-__all__ = ['bcistream', 'ParseState', 'ParseParam', 'unescape']
+__all__ = ['bcistream', 'ParseState', 'ParseParam', 'ReadPrmFile', 'FormatPrmList', 'unescape']
 
 import os
 import struct
@@ -52,6 +52,7 @@ class bcistream(object):
 		self.offsets         = None
 		self.params          = {}
 		
+		if os.path.isdir(self.filename): raise IOError, self.filename+" is a directory"
 		self.file = open(self.filename, 'r')
 		self.readHeader()
 		self.file.close()
@@ -100,7 +101,7 @@ class bcistream(object):
 	def __str__(self):
 		nsamp = self.samples()
 		s = ["<%s.%s instance at 0x%08X>" % (self.__class__.__module__,self.__class__.__name__,id(self))]
-		s.append('file ' + self.filename)
+		s.append('file ' + self.filename.replace('\\', '/'))
 		s.append('recorded ' + self.params['StorageTime'])
 		s.append('%d samples @ %gHz = %s' % (nsamp, self.samplingfreq_hz, self.sample2time(nsamp),) )
 		s.append('%d channels, total %.3g MB' % (self.nchan, self.datasize()/1024.0**2,) )
@@ -164,7 +165,7 @@ class bcistream(object):
 		self.samplingfreq_hz = float(str(self.params['SamplingRate']).rstrip('Hz'))
 			
 	
-	def read(self, nsamp=1):
+	def read(self, nsamp=1, apply_gains=True):
 		if nsamp==-1:
 			nsamp = self.samples() - self.tell()
 		if nsamp=='all':
@@ -179,15 +180,14 @@ class bcistream(object):
 		rawstates = numpy.zeros((self.stateveclen,nsamp), dtype=numpy.uint8)
 		fmt = '<' + self.unpackstates * nsamp
 		rawstates.T.flat = struct.unpack(fmt, raw)
-		if self.gains != None:
-			sig = sig * self.gains
-		if self.offsets != None:
-			sig = sig + self.offsets
+		if apply_gains:
+			if self.gains != None: sig = sig * self.gains
+			if self.offsets != None: sig = sig + self.offsets
 		sig = numpy.asmatrix(sig)
 		return sig,rawstates
 	
-	def decode(self, nsamp=1, states='all'):
-		sig,rawstates = self.read(nsamp)
+	def decode(self, nsamp=1, states='all', apply_gains=True):
+		sig,rawstates = self.read(nsamp, apply_gains=apply_gains)
 		states,statenames = {},states
 		if statenames == 'all':
 			statenames = self.statedefs.keys()
@@ -266,7 +266,7 @@ class bcistream(object):
 		if len(labels)==0: labels = [str(x) for x in range(1,ntraces+1)]
 
 		v = numpy.asmatrix(sig).T
-		v = v - numpy.median(v)
+		v = v - numpy.median(v, axis=0)
 		offsets = numpy.asmatrix(numpy.arange(-1.0,ntraces+1.0))
 		offsets = offsets.A * max(v.A.std(axis=0)) * fac
 		v = v.A + offsets[:,1:-1]
@@ -317,6 +317,14 @@ def ParseState(state):
 		'bitPos'  : int(state[4])
 	}
 
+def ReadPrmFile(f):
+	open_here = isinstance(f, str)
+	if open_here: f = open(f)
+	f.seek(0)
+	p = [ParseParam(line) for line in f.readlines() if len(line.strip())]
+	if open_here: f.close()
+	return p
+
 def ParseParam(param):
 	param = param.strip().split('//', 1)
 	comment = ''
@@ -355,30 +363,31 @@ def ParseParam(param):
 		})
 		
 	elif datatype.endswith('list'):
-		listtype = datatype[:-4]
-		listtype = {'float':float, 'int':int, '':str, 'string':str}.get(listtype, listtype)
-		if isinstance(listtype,str):
-			raise DatFileError, 'Unknown list type "%s"' % listtype			
+		valtype = datatype[:-4]
+		valtype = {'float':float, 'int':int, '':str, 'string':str, 'variant':str}.get(valtype, valtype)
+		if isinstance(valtype,str): raise DatFileError, 'Unknown list type "%s"' % valtype			
 		numel,labels,labelstr = ParseDim(param)
 		val = param[:numel]
 		valstr = ' '.join(filter(len, [labelstr]+val))
-		if listtype==str:
+		if valtype==str:
 			unscaled = val
 			units = [''] * len(val)
 		else:
-			val = [DecodeUnits(x,listtype) for x in val]
+			val = [DecodeUnits(x,valtype) for x in val]
 			if len(val): unscaled,units,scaled = zip(*val)[:3]
 			else: unscaled,units,scaled = [],[],[]
 		rec.update({
 			'valstr'     : valstr,
-			'valtype'    : listtype,
+			'valtype'    : valtype,
 			'len'        : numel,
 			'val'        : unscaled,
 			'units'      : units,
 		})
 	
 	elif datatype.endswith('matrix'):
-		matrixtype = datatype[:-6]
+		valtype = datatype[:-6]
+		valtype = {'float':float, 'int':int, '':str, 'string':str, 'variant':str}.get(valtype, valtype)
+		if isinstance(valtype,str): raise DatFileError, 'Unknown matrix type "%s"' % valtype			
 		nrows,rowlabels,rowlabelstr = ParseDim(param)
 		ncols,collabels,collabelstr = ParseDim(param)
 		valstr = ' '.join(filter(len, [rowlabelstr, collabelstr] + param[:nrows*ncols]))
@@ -389,6 +398,7 @@ def ParseParam(param):
 				val[-1].append(param.pop(0))
 		rec.update({
 			'valstr'     : valstr,
+			'valtype'    : valtype,
 			'val'        : val,
 			'shape'      : (nrows,ncols),
 			'dimlabels'  : (rowlabels,collabels),
@@ -442,6 +452,80 @@ def DecodeUnits(s, datatype=float):
 		                 'ms':1,   's':1000,
 	}.get(units.lower(), 1)
 	return unscaled,units,scaled
+
+def FormatPrmList(p, sort=False):
+	max_element_width = 6
+	max_value_width = 20
+	max_treat_string_as_number = 1
+	def escape(s):
+		s = s.replace('%', '%%')
+		s = s.replace(' ', '%20')
+		if len(s) == 0: s = '%'
+		return s
+		
+	def FormatDimLabels(p):
+		dl = p.get('dimlabels', None)
+		if dl == None:
+			if isinstance(p['val'], (tuple,list)): return ['', str(len(p['val']))]
+			else: return ['', '']
+		sh = p['shape']
+		dl = list(dl)
+		for i in range(len(dl)):
+			if len(dl[i]):
+				t = ' '.join([escape(x) for x in dl[i]])
+				td = ' '.join([str(j+1) for j in range(len(dl[i]))])
+				if t == td: dl[i] = str(len(dl[i]))
+				else: dl[i] = '{ ' + t + ' }'
+			else: dl[i] = str(sh[i])
+		return dl
+	
+	def FormatVal(p):
+		if isinstance(p, dict): p = p['val']
+		if isinstance(p, (tuple,list)): return ' '.join([FormatVal(x) for x in p])
+		return escape(str(p))
+	
+	vv = []
+	pp = [{} for i in range(len(p))]
+	for i in range(len(p)):
+		pp[i]['category'] = ':'.join([x for x in p[i]['category'] if len(x.strip())])
+		pp[i]['type'] = p[i]['type']
+		pp[i]['name'] = p[i]['name'] + '='
+		pp[i]['rows'],pp[i]['cols'] = FormatDimLabels(p[i])
+		v = FormatVal(p[i]).split()
+		if len(v) == 0: v = ['%']
+		pp[i]['val'] = range(len(vv), len(vv)+len(v))
+		vv += v
+		pp[i]['comment'] = '// ' + p[i]['comment']
+	align = [len(v) <= max_element_width for v in vv]
+	numalign = [len(v) <= max_treat_string_as_number or v[0] in '+-.0123456789' for v in vv]
+	n = [(vv[i]+' ').replace('.', ' ').index(' ') * int(align[i] and numalign[i]) for i in range(len(vv))]
+	maxn = max(n)
+	for i in range(len(vv)):
+		if align[i] and numalign[i]: vv[i] = ' ' * (maxn-n[i]) + vv[i]
+		if align[i]: n[i] = len(vv[i])
+	maxn = max(n)
+	for i in range(len(vv)):
+		if align[i] and numalign[i]: vv[i] = vv[i].ljust(maxn, ' ')
+		elif align[i]: vv[i] = vv[i].rjust(maxn, ' ')
+	for i in range(len(pp)):
+		pp[i]['val'] = ' '.join([vv[j] for j in pp[i]['val']])
+	align = [len(pp[i]['val']) <= max_value_width for i in range(len(pp))]
+	maxn = max([0]+[len(pp[i]['val']) for i in range(len(pp)) if align[i]])
+	for i in range(len(pp)):
+		if align[i]: pp[i]['val'] = pp[i]['val'].ljust(maxn, ' ')
+	for x in pp[0].keys():
+		n = [len(pp[i][x]) for i in range(len(pp))]
+		n = max(n)
+		for i in range(len(pp)):
+			if x in ['rows','cols']: pp[i][x] = pp[i][x].rjust(n, ' ')
+			elif not x in ['comment', 'val']: pp[i][x] = pp[i][x].ljust(n, ' ')
+			if not x in ['rows', 'cols', 'category']: pp[i][x] = '  ' + pp[i][x]
+	if sort: pp = sorted(pp, cmp=lambda x,y:cmp((x['category'],x['name']), (y['category'],y['name'])) )
+	fields = 'category type name rows cols val comment'.split()
+	for i in range(len(pp)): pp[i] = ' '.join([pp[i][x] for x in fields])
+		
+	return pp
+	
 
 def load_pylab():
 	try:

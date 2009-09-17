@@ -23,10 +23,14 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 from Boxes import *
-from Meters import *
 from StimulusQueue import *
-from ConfusionMatrices import *
-from StateMonitors import *
-from ScreenCoordinates import *
-from Shapes import *
+
 from Displays import *
+from ConfusionMatrices import *
+from Meters import *
+from StateMonitors import *
+from Shapes import *
+
+# The following never was in the default list
+
+#from ParallelPort import *

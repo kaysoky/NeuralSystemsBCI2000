@@ -58,26 +58,19 @@ class BciGenericSignalProcessing(Core.BciCore):
 		self.forget('packet')
 
 	def _Construct(self):
-		parameters,states = super(BciGenericSignalProcessing, self)._Construct()    # superclass
-		sigdesc = self.Description()
-		sigdesc = sigdesc.replace("%", "%%")
-		sigdesc = sigdesc.replace(" ", "%20")
-		parameters += [ 
-			"PythonSig string SignalProcessingDescription= " + sigdesc + " % a z // Identifies the signal processing module",
+		paramdefs,statedefs = super(BciGenericSignalProcessing, self)._Construct()    # superclass
+		desc = self.Description().replace("%", "%%").replace(" ", "%20")
+		paramdefs += [ 
+			"PythonSig string SignalProcessingDescription= " + desc + " % a z // Identifies the signal processing module",
 			"Filtering:SpatialFilter int SpatialFilterType= 0 0 0 3 // spatial filter type 0: none, 1: full matrix, 2: sparse matrix, 3: common average reference (CAR) (enumeration)",
 		]
-		states += [
+		statedefs += [
 			
 		]
-		subclass_parameters,subclass_states = self.Construct()                      # subclass	
-		parameters += list(subclass_parameters)
-		if isinstance(subclass_states, dict):
-			for name,state in subclass_states.items():
-				states.append(name + " " + str(state["bits"]) + " 0 0 0")
-		else:
-			states += list(subclass_states)
+		self._merge_defs(paramdefs, statedefs, self.Construct())                      # subclass
 
-		return (parameters, states)
+		statedefs.reverse() # puts developer's definitions first (allows developer to override bit depth for built-in states)
+		return (paramdefs, statedefs)
 
 	def _Halt(self):
 		super(BciGenericSignalProcessing, self)._Halt()                      # superclass

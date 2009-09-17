@@ -41,6 +41,7 @@ def output(out=None):
 	
 	v = {}
 	for i in 'sys ctypes Numeric numarray numpy PIL OpenGL pygame setuptools VisionEgg scipy matplotlib win32api pyaudio pyreadline IPython BCPy2000'.split():
+		if i=='PIL': i = 'Image'
 		try:
 			exec 'import '+i
 		except ImportError:
@@ -52,7 +53,7 @@ def output(out=None):
 			sys.excepthook(*a)
 		else:
 			m = sys.modules[i]
-			ver = getattr(m, '__version__', getattr(m, 'version', '?'))
+			ver = getattr(m, '__version__', getattr(m, 'version', getattr(m, 'VERSION', '?')))
 			ver = getattr(ver, 'ver', ver)
 			if callable(ver): ver = ver()
 			v[i] = ver

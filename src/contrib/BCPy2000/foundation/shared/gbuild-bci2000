@@ -52,22 +52,34 @@ if   uname | grep -iq '^cygwin'  # even if using cygwin, we'll be compiling
 then                             # in mingw (non-posix) mode
 	MACHINEFLAGS="-mno-cygwin -mwindows"
 	LIBS="$LIBS $LIBS_WIN32"
-	INCS="$INCS $INCS_WIN32"
+	SYSINCS="$INCS_WIN32"
 	XTN=".exe"
 elif uname | grep -iq '^darwin'
 then
 	MACHINEFLAGS=""
 	LIBS="$LIBS $LIBS_MACOS"
-	INCS="$INCS $INCS_MACOS"
+	SYSINCS="$INCS_MACOS"
 	XTN=".exe"
 else
 	MACHINEFLAGS=""
 	LIBS="$LIBS $LIBS_POSIX"
-	INCS="$INCS $INCS_POSIX"
+	SYSINCS="$INCS_POSIX"
 	XTN=".exe"
 fi
 
-INCFLAGS=""; for x in $INCS; do INCFLAGS="$INCFLAGS -I$x"; done
+if gcc -dumpversion | grep -iq '^[0-3]'
+then
+	INCSEPFLAG="-I-"
+	IQUOTE="-I"
+else
+	INCSEPFLAG=""
+	IQUOTE="-iquote"
+fi
+INCFLAGS="";
+for x in $INCS;    do INCFLAGS="$INCFLAGS $IQUOTE $x"; done
+INCFLAGS="$INCFLAGS $INCSEPFLAG"
+for x in $SYSINCS; do INCFLAGS="$INCFLAGS -I $x"; done
+
 OBJS=""
 for x in $SRC
 do

@@ -90,8 +90,8 @@ class BciSource(BciGenericSource):
 		x = numpy.asarray(x[:nch, :])
 		out = numpy.asarray(sig[:nch, :])
 		#sig[nch:, :] = 0
-		packetsize = self.nominal['SamplesPerPacket']
-		sig[nch:, :] = self.packet_count * packetsize + numpy.array(range(packetsize), ndmin=2).repeat(sig.shape[0]-nch, axis=0)
+		packetsize = int(self.nominal['SamplesPerPacket'])
+		sig[nch:, :] = self.packet_count * packetsize + numpy.array(range(packetsize), ndmin=2, dtype='float').repeat(sig.shape[0]-nch, axis=0)
 
 		if self.use_env:
 			for i in xrange(sig.shape[1]):

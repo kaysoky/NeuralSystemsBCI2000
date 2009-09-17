@@ -27,6 +27,17 @@ __all__ = []
 import Base
 import wave
 import os.path
+import StringIO
+import struct
+
+little_endian = struct.unpack('=H', 'ab') == struct.unpack('<H', 'ab')
+
+def endianswap(s, nbytes):
+	if little_endian or nbytes == 1: return s
+	fmt = {2:'H', 4:'L'}
+	if not nbytes in fmt: raise ValueError,"failed to swap endianness for %d-byte values"%nbytes
+	fmt = str(len(s)/nbytes) + fmt[nbytes]
+	return struct.pack('<'+fmt, *struct.unpack('>'+fmt, s))
 
 def read(self, filename):
 	wf = wave.open(filename, 'rb')
@@ -37,9 +48,13 @@ def read(self, filename):
 	comptype = (wf.getcomptype(),wf.getcompname())
 	strdat = wf.readframes(nsamp)
 	wf.close()
+	strdat = endianswap(strdat, nbytes)
 	self.set_bitdepth(nbytes*8)
 	self.fs = fs
-	self.filename = os.path.abspath(filename)
+	if isinstance(filename, StringIO.StringIO):
+		self.filename = "(StringStream)"
+	else:
+		self.filename = os.path.abspath(filename)
 	self.comptype = comptype
 	self.y = self.str2dat(strdat, nsamp, nchan)
 	if strdat != self.dat2str():
@@ -55,7 +70,9 @@ def write(self, filename=None):
 	wf.setnframes(self.samples())
 	wf.setframerate(self.fs)
 	wf.setcomptype(*self.comptype)
-	wf.writeframes(self.dat2str())
+	s = self.dat2str()
+	s = endianswap(s, self.nbytes)
+	wf.writeframes(s)
 	wf.close()
 	self.filename = filename
 Base.wav.write = write

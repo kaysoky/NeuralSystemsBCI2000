@@ -24,14 +24,14 @@
 #
 __all__ = [
 	'getfs', 'msec2samples', 'samples2msec', 
-	'ampmod', 'wavegen', 'sinewave',
-	'squarewave', 'trianglewave',
-	'fft2ap', 'ap2fft',
-	'toy', 'reconstruct',
+	'ampmod', 'wavegen',
+	'sinewave', 'squarewave', 'trianglewave', 'sawtoothwave',
+	'fftfreqs', 'fft2ap', 'ap2fft', 'reconstruct', 'toy',
+	'fft', 'ifft', 'hanning',
 ]
 import numpy
+import scipy.signal
 from scipy.signal import fft,ifft,hanning
-import scipy.signal.waveforms
 from NumTools import isnumpyarray,project,trimtrailingdims
 
 class ArgConflictError(Exception): pass
@@ -81,8 +81,8 @@ def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,sam
 	the amplitude is modulated sinusoidally along the specified time <axis>.
 	
 	Default phase is such that amplitude is 0 at time 0, which corresponds to
-	phase_deg=90 if <waveform> follows sine phase. To change this, specify
-	either <phase_rad> or <phase_deg>.
+	phase_deg=-90 if <waveform> follows sine phase, since the modulator is a
+	raised waveform. To change this, specify either <phase_rad> or <phase_deg>.
 	
 	Uses wavegen()
 	"""###
@@ -91,7 +91,7 @@ def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,sam
 	else: raise TypeError, "don't know how to handle this kind of carrier object"
 
 	if samplingfreq_hz==None: samplingfreq_hz = getfs(w)	
-	if phase_rad==None and phase_deg==None: phase_deg = 90.0
+	if phase_rad==None and phase_deg==None: phase_deg = -90.0
 	if duration_samples==None and duration_msec==None: duration_samples = project(y,0).shape[0]
 	envelope = wavegen(freq_hz=freq_hz,phase_rad=phase_rad,phase_deg=phase_deg,amplitude=amplitude,dc=dc,samplingfreq_hz=samplingfreq_hz,duration_msec=duration_msec,duration_samples=duration_samples,axis=axis,waveform=waveform)
 	envelope = project(envelope, len(y.shape)-1)
@@ -100,7 +100,7 @@ def ampmod(w, freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=0.5,dc=0.5,sam
 	else: w.y = y
 	return w
 	
-def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.cos,container=None):
+def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,samplingfreq_hz=None,duration_msec=None,duration_samples=None,axis=None,waveform=numpy.cos,container=None,**kwargs):
 	"""
 	Create a signal (or multiple signals, if the input arguments are arrays)
 	which is a sine function of time (time being defined along the specified
@@ -113,8 +113,10 @@ def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,sampl
 	or <duration_msec> (or both, as long as the values are consistent).
 	
 	A <container> object may be supplied: if so, it should be a WavTools.wav
-	object. container.fs is then used as a fallback in case <samplingfreq_hz> is
-	unspecified, the <axis> is set to 0, and the signal is put into container.y
+	object. <axis> is set then set to 0, and the container object's duration
+	(if non-zero), sampling frequency, and number of channels are used as fallback
+	values if these are not specified elsewhere. The resulting signal is put into
+	container.y and the pointer to the container is returned.
 	
 	If <duration_samples> is specified and <samplingfreq_hz> is not, then the
 	sampling frequency is chosen such that the duration is 1 second, so <freq_hz>
@@ -125,7 +127,12 @@ def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,sampl
 	returned by fft2ap() for an accurate reconstruction.
 	"""###
 	fs = getfs(samplingfreq_hz)
-	if fs == None and container != None: fs = getfs(container)
+	default_duration_msec = 1000.0
+	nrep = 1
+	if container != None:
+		if fs == None: fs = getfs(container)
+		if hasattr(container,'duration') and container.duration(): default_duration_msec = container.duration() * 1000.0
+		if hasattr(container,'channels') and container.channels() and container.y.size: nrep = container.channels()
 	for j in range(0,2):
 		for i in range(0,2):
 			if duration_msec==None:
@@ -137,7 +144,7 @@ def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,sampl
 			if fs==None and duration_samples!=None and duration_msec!=None: fs = 1000.0 * float(duration_samples) / float(duration_msec)
 			if fs==None and duration_samples!=None: fs = float(duration_samples)
 			if fs==None and duration_msec!=None: fs = float(duration_msec)
-		if duration_msec==None: duration_msec = 1000.0
+		if duration_msec==None: duration_msec = default_duration_msec	
 	duration_sec = duration_msec / 1000.0
 	duration_samples = float(round(duration_samples))
 	if duration_msec != samples2msec(duration_samples,fs) or duration_samples != msec2samples(duration_msec,fs):
@@ -155,8 +162,7 @@ def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,sampl
 		if phase_rad.shape != phase_deg.shape: raise ArgConflictError, "conflicting phase_rad and phase_deg arguments"
 		if numpy.max(numpy.abs(phase_rad * (180.0/numpy.pi) - phase_deg) > 1e-10): raise ArgConflictError, "conflicting phase_rad and phase_deg arguments"
 	if phase_rad == None:
-		phase_rad = phase_deg
-		phase_rad *= (numpy.pi/180.0)
+		phase_rad = numpy.array(phase_deg * (numpy.pi/180.0))
 
 	amplitude = trimtrailingdims(numpy.array(amplitude,dtype='float'))
 	dc = trimtrailingdims(numpy.array(dc,dtype='float'))
@@ -171,14 +177,35 @@ def wavegen(freq_hz=1.0,phase_rad=None,phase_deg=None,amplitude=1.0,dc=0.0,sampl
 	x = project(x,maxaxis).swapaxes(0,axis)
 	x = x * (project(freq_hz,maxaxis) * duration_sec) # *= won't work for broadcasting here
 	# if you get an error here, try setting axis=1 and transposing the return value ;-)
-	x = x - (project(phase_rad,maxaxis))              # += won't work for broadcasting here
-	x = waveform(x)
+	x = x + (project(phase_rad,maxaxis))              # += won't work for broadcasting here
+	x = waveform(x, **kwargs)
 	x = x * project(amplitude,maxaxis)                # *= won't work for broadcasting here
 	if numpy.any(dc.flatten()):
 		x = x + project(dc,maxaxis)                   # += won't work for broadcasting here
-	if container != None: container.y = project(x,1); container.fs = int(round(fs)); x = container
+	if container != None:
+		across_channels = 1
+		x = project(x, across_channels)
+		if x.shape[across_channels] == 1 and nrep > 1: x = x.repeat(nrep, across_channels)
+		container.y = x
+		container.fs = int(round(fs))
+		x = container
 	return x
-	
+
+def fftfreqs(nsamp, samplingfreq_hz=1.0):
+	"""
+	Return a 1-D numpy.array of length <nsamp> containing the positive and
+	negative frequency values corresponding to the elements of an <nsamp>-point FFT.
+	If <samplingfreq_hz> is not supplied, 1.0 is assumed so the result has 0.5 as
+	the Nyquist frequency).  
+	"""###
+	nsamp = int(nsamp)
+	fs = getfs(samplingfreq_hz)
+	biggest_pos_freq = float(numpy.floor(nsamp/2))       # floor(nsamp/2)
+	biggest_neg_freq = -float(numpy.floor((nsamp-1)/2))  # -floor((nsamp-1)/2)
+	posfreq = numpy.arange(0.0, biggest_pos_freq+1.0) * (float(fs) / float(nsamp))
+	negfreq = numpy.arange(biggest_neg_freq, 0.0) * (float(fs) / float(nsamp))
+	return numpy.concatenate((posfreq,negfreq))
+
 def fft2ap(X, samplingfreq_hz=2.0, axis=0):
 	"""
 	Given discrete Fourier transform(s) <X> (with time along the
@@ -186,19 +213,19 @@ def fft2ap(X, samplingfreq_hz=2.0, axis=0):
 	amplitude spectrum, a phase spectrum in degrees and in radians,
 	and a frequency axis (coping with all the fiddly edge conditions).
 	
-	The inverse of   d=fft2ap(X)  is  X = ap2fft(*d)
+	The inverse of   d=fft2ap(X)  is  X = ap2fft(**d)
 	"""###
 	fs = getfs(samplingfreq_hz)	
 	nsamp = int(X.shape[axis])
-	biggest_pos_freq = float(nsamp/2)       # floor(nsamp/2)
-	biggest_neg_freq = -float((nsamp-1)/2)  # -floor((nsamp-1)/2)
+	biggest_pos_freq = float(numpy.floor(nsamp/2))       # floor(nsamp/2)
+	biggest_neg_freq = -float(numpy.floor((nsamp-1)/2))  # -floor((nsamp-1)/2)
 	posfreq = numpy.arange(0.0, biggest_pos_freq+1.0) * (float(fs) / float(nsamp))
 	negfreq = numpy.arange(biggest_neg_freq, 0.0) * (float(fs) / float(nsamp))
 	fullfreq = numpy.concatenate((posfreq,negfreq))
 	sub = [slice(None)] * max(axis+1, len(X.shape))
 	sub[axis] = slice(0,len(posfreq))
 	X = project(X, axis)[sub]
-	ph = -numpy.angle(X)
+	ph = numpy.angle(X)
 	amp = numpy.abs(X) * (2.0 / float(nsamp))
 	if nsamp%2 == 0:
 		sub[axis] = -1
@@ -210,7 +237,7 @@ def ap2fft(amplitude,phase_rad=None,phase_deg=None,samplingfreq_hz=2.0,axis=0,fr
 	Keyword arguments match the fields of the dict
 	output by that fft2ap() .
 
-	The inverse of   d=fft2ap(X)  is  X = ap2fft(*d)
+	The inverse of   d=fft2ap(X)  is  X = ap2fft(**d)
 	"""###
 	fs = getfs(samplingfreq_hz)	
 	if nsamp==None:
@@ -230,8 +257,7 @@ def ap2fft(amplitude,phase_rad=None,phase_deg=None,samplingfreq_hz=2.0,axis=0,fr
 		if phase_rad.shape != phase_deg.shape: raise ArgConflictError, "conflicting phase_rad and phase_deg arguments"
 		if numpy.max(numpy.abs(phase_rad * (180.0/numpy.pi) - phase_deg) > 1e-10): raise ArgConflictError, "conflicting phase_rad and phase_deg arguments"
 	if phase_rad == None:
-		phase_rad = phase_deg
-		phase_rad *= (numpy.pi/180.0)
+		phase_rad = phase_deg * (numpy.pi/180.0)
 
 	f = phase_rad * 1j
 	f = numpy.exp(f)
@@ -245,21 +271,74 @@ def ap2fft(amplitude,phase_rad=None,phase_deg=None,samplingfreq_hz=2.0,axis=0,fr
 	f = numpy.concatenate((f, numpy.conj(f[sub])), axis=axis)
 	return f
 
-def squarewave(theta, tol=1e-8):
+def sinewave(theta, maxharm=None, rescale=False):
 	"""
-	A square wave with its peaks and troughs in sine phase
+	A sine wave, no different from numpy.sin but with a function
+	signature compatible with squarewave(), trianglewave() and
+	sawtoothwave(). <maxharm> and <rescale> are disregarded.
 	"""###
-	x = numpy.sin(theta)
-	if tol:
-		f = x.flat
-		f[numpy.where(numpy.abs(f)<tol)] = 0
-	return numpy.sign(x)
+	return numpy.sin(theta) # maxharm and rescale have no effect
+	
+def squarewave(theta, maxharm=None, rescale=False, tol=1e-8):
+	"""
+	A square wave with its peaks and troughs in sine phase.
+	If <maxharm> is an integer, then an anti-aliased approximation
+	to the square wave (containing no components of higher frequency
+	than <maxharm> times the fundamental) is returned instead. In
+	this case, the <rescale> flag can be set to ensure that the
+	waveform does not exceed +/- 1.0
+	"""###
+	if maxharm == None or maxharm == numpy.inf:
+		y = numpy.sin(theta)
+		if tol:
+			f = y.flat
+			f[numpy.where(numpy.abs(f)<tol)] = 0
+		return numpy.sign(y)
+			
+	y = 0.0
+	for h in numpy.arange(1.0, 1.0+maxharm, 2.0): y = y + numpy.sin(h*theta)/h
+	y *= 4.0 / numpy.pi
+	if rescale: y /= 1.01 * numpy.abs(squarewave(numpy.pi / maxharm, maxharm=maxharm, rescale=False))
+	return y
 
-def trianglewave(theta):
+def trianglewave(theta, maxharm=None, rescale=False):
 	"""
-	A triangle wave with its peaks and troughs in sine phase
+	A triangle wave with its peaks and troughs in sine phase.
+	If <maxharm> is an integer, then an anti-aliased approximation
+	to the triangle wave (containing no components of higher frequency
+	than <maxharm> times the fundamental) is returned instead. The
+	<rescale> flag, included for compatibility with sawtoothwave() and
+	squarewave(), has no effect.
 	"""###
-	return scipy.signal.waveforms.sawtooth(theta+numpy.pi/2, width=0.5)
+	if maxharm == None or maxharm == numpy.inf:
+		return scipy.signal.sawtooth(theta+numpy.pi/2.0, width=0.5)
+
+	y = 0.0
+	for h in numpy.arange(1.0, 1.0+maxharm, 2.0):
+		y = y + numpy.sin(h * numpy.pi / 2.0) * numpy.sin(h*theta) / h**2
+	y *= 8.0 / numpy.pi**2
+	# rescale not necessary -- never overshoots
+	return y
+	
+def sawtoothwave(theta, maxharm=None, rescale=False):
+	"""
+	A sawtooth wave with its polarity and zero-crossings in sine phase.
+	If <maxharm> is an integer, then an anti-aliased approximation
+	to the sawtooth wave (containing no components of higher frequency
+	than <maxharm> times the fundamental) is returned instead. In
+	this case, the <rescale> flag can be set to ensure that the
+	waveform does not exceed +/- 1.0
+	"""###
+	shift = -numpy.pi
+	theta = theta + shift
+	if maxharm == None or maxharm == numpy.inf:
+		return scipy.signal.sawtooth(theta, width=1.0)
+
+	y = 0.0
+	for h in numpy.arange(1.0, 1.0+maxharm, 1.0): y = y + numpy.sin(h*theta)/h
+	y *= -2.0 / numpy.pi
+	if rescale: y /= 1.01 * numpy.abs(sawtoothwave(numpy.pi / maxharm - shift, maxharm=maxharm, rescale=False))
+	return y
 
 def toy(n=11,f=None,a=[1.0,0.1],p=0):
 	"""
@@ -287,14 +366,3 @@ def reconstruct(ap,**kwargs):
 	r = r.swapaxes(extra_axis, axis)
 	r = r.sum(axis=extra_axis)
 	return r
-
-sinewave = wavegen
-sinewave.__doc__ = \
-	"""
-	sinewave() is a deprecated synonym for wavegen().
-	Meanwhile, however, other functions, such as trianglewave() and squarewave()
-	can be used as the <waveform> argument, so this function does not strictly
-	always return sine waves. Note also that the default <waveform> is and always
-	has been numpy.cos rather than numpy.sin, so by default, a wave with a phase
-	of 0 starts at its maximum.
-	"""###

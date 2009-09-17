@@ -30,16 +30,15 @@ __all__ = ['bcibar', 'addbar', 'updatebars', 'EQBars']
 
 import os
 import numpy
-import pygame
-import VisionEgg.Core
-import ScreenCoordinates
 
-	
+from Displays import main_coordinate_frame
+from CurrentRenderer import VisualStimuli
+
 class bcibar(object):
 	def __init__(self, color=(0,0,1), font_size=26, pos=None, thickness=10, fliplr=False, fac=200.0/10.0, horiz=False, fmt='%+.2f', font_name=None):
+		
 		if font_name == None:
-			fonts = ('lucida console', 'monaco', 'courier new', 'courier')
-			font_name = (filter(None,map(pygame.font.match_font,fonts))+[None])[0]
+			font_name = getattr(VisualStimuli.screen, 'monofont', None)
 
 		opposite = {'left':'right', 'right':'left', 'top':'bottom', 'bottom':'top'}
 		txtanchor = 'right'
@@ -50,14 +49,14 @@ class bcibar(object):
 			txtanchor = opposite[txtanchor]
 		if horiz: baranchor = opposite[txtanchor]
 		else:     baranchor = 'bottom'
-		vetext = VisionEgg.Text.Text(position=txtpos,  anchor=txtanchor, on=True, text=' ??? ', font_size=font_size, color=color, font_name=font_name)
-		verect = VisionEgg.Core.FixationSpot(position=barpos, anchor=baranchor, on=True, size=(1,1), color=color)
-		self.__dict__.update({'fac':fac, 'horiz':horiz, 'fmt':fmt, 'thickness':thickness, 'length':0, 'vetext':vetext, 'verect':verect})  # fac is pixels/maxval
+		textobj = VisualStimuli.Text(position=txtpos,  anchor=txtanchor, on=True, text=' ??? ', font_size=font_size, color=color, font_name=font_name)
+		rectobj = VisualStimuli.Block(position=barpos, anchor=baranchor, on=True, size=(1,1), color=color)
+		self.__dict__.update({'fac':fac, 'horiz':horiz, 'fmt':fmt, 'thickness':thickness, 'length':0, 'textobj':textobj, 'rectobj':rectobj})  # fac is pixels/maxval
 		self.set(val=0, text=' ??? ')
 
 	def __setattr__(self, key, val):
-		tp = self.vetext.parameters
-		rp = self.verect.parameters
+		tp = getattr(self.textobj, 'parameters', self.textobj) # .parameters would be for VisionEgg objects
+		rp = getattr(self.rectobj, 'parameters', self.rectobj) # .parameters would be for VisionEgg objects
 		if key == 'thickness':
 			if self.horiz: rp.size = (rp.size[0], val)
 			else:          rp.size = (val, rp.size[1])
@@ -81,25 +80,26 @@ class bcibar(object):
 	def set(self, val, text=None):
 		if val==None:  length = self.length
 		else:          length = float(val) * float(self.fac)
-		self.thickness = self.thickness # updates underlying visionegg parameter value
-		self.length = length  # updates underlying visionegg parameter value
+		self.thickness = self.thickness # updates underlying stimulus object's parameter value
+		self.length = length  # updates underlying stimulus object's parameter value
 		if text==None: text = val
 		if text != None:
 			if not isinstance(text, str): text = self.fmt % text
-			self.vetext.parameters.text = text
+			tp = getattr(self.textobj, 'parameters', self.textobj) # .parameters would be for VisionEgg objects
+			tp.text = text
 		
 def addbar(bci, *pargs, **kwargs):
 	defaultfontsize = 20
-	if hasattr(bci, 'monofont') and not kwargs.has_key('font_name'):
-		kwargs['font_name'] = bci.monofont
+	if hasattr(bci.screen, 'monofont') and not kwargs.has_key('font_name'):
+		kwargs['font_name'] = bci.screen.monofont
 		defaultfontsize = 13
 	if not kwargs.has_key('font_size'):
 		kwargs['font_size'] = defaultfontsize
 	b = bcibar(*pargs, **kwargs)
 	if not hasattr(bci, 'bars'): bci.bars = []
 	ind = len(bci.bars) + 1
-	bci.stimulus('bartext_'+str(ind), b.vetext)
-	bci.stimulus('barrect_'+str(ind), b.verect)
+	bci.stimulus('bartext_'+str(ind), b.textobj)
+	bci.stimulus('barrect_'+str(ind), b.rectobj)
 	bci.bars.append(b)
 	return b
 	
@@ -112,18 +112,28 @@ def updatebars(bci, vals):
 
 
 class EQBars(object):
-	def __init__(self, bci, freqs, boundingbox=(0.9,0.6), maxval=800.0, color=(1,0,0), font_size=30, thickness=0.4):
+	def __init__(self, bci, freqs, boundingbox=(0.9,0.6), maxval=800.0, color=(1,0,0), font_size=30, thickness=0.4, dB=True, gains=1.0, baselines=0.0):
 		if isinstance(boundingbox, (tuple,list,float,int)):
 			scaling = boundingbox
-			boundingbox = ScreenCoordinates.default_coordinate_frame.copy()
+			boundingbox = main_coordinate_frame().copy()
 			boundingbox.anchor='bottom'
 			boundingbox.scale(scaling)
 		boundingbox = boundingbox.copy()
 		boundingbox.internal.rect = [0,0,1,1]
-		self.freqs = numpy.array(freqs).flatten()
+		self.dB = bool(dB)
 		self.maxval = float(maxval)
 		self.bars = [[], []]
-		nfreqs = len(self.freqs)
+		self.freqs = numpy.array(freqs)
+		if len(self.freqs.shape)==2 and self.freqs.shape[1]==2:
+			nfreqs = self.freqs.shape[0]
+		elif max(self.freqs.shape)==self.freqs.size:
+			nfreqs = self.freqs.size
+			self.freqs = numpy.expand_dims(self.freqs.flatten(), 1) * [1,1]
+		else:
+			raise ValueError, "freqs should be a vector or a 2-column array"
+		self.vals = numpy.array([[0.0,0.0]] * nfreqs)
+		self.gains = gains
+		self.baselines = baselines
 		y = numpy.arange(1,nfreqs+1) / float(nfreqs+1)
 		y = map(lambda h:boundingbox.map(h,'y'), y)
 		thickness *= boundingbox.map(1.0/float(nfreqs), 'height')
@@ -138,17 +148,44 @@ class EQBars(object):
 			b = addbar(bci, pos=(rightbase,y[i]), thickness=thickness, horiz=1, fmt=' ', font_size=font_size, color=color, fac=rfac, fliplr=False) # right bar
 			self.bars[1].append(b)
 			
+	@apply
+	def gains():
+		def fget(self): return self.__gains
+		def fset(self,val):
+			val = numpy.array(val)
+			if val.size == 1: val = val * numpy.ones(self.vals.shape)
+			elif val.shape == (2,) or val.shape == (1,2): val = numpy.repeat(val, self.vals.shape[0], axis=0)
+			if val.shape != self.vals.shape: raise ValueError, "wrong shape gains "+str(val.shape)
+			self.__gains = val
+		return property(fget,fset)
+	@apply
+	def baselines():
+		def fget(self): return self.__baselines
+		def fset(self,val):
+			val = numpy.array(val)
+			if val.size == 1: val = val * numpy.ones(self.vals.shape)
+			elif val.shape == (2,) or val.shape == (1,2): val = numpy.repeat(val, self.vals.shape[0], axis=0)
+			if val.shape != self.vals.shape: raise ValueError, "wrong shape baselines "+str(val.shape)
+			self.__baselines = val
+		return property(fget,fset)
+	
 	def update(self, freq_hz, amplitudes, side=0):
 		available = numpy.array(freq_hz).flatten()
 		amplitudes = numpy.array(amplitudes).flatten()			
-		ind = map(lambda f:numpy.abs(f - available).argmin(), self.freqs)
-		freq = map(lambda i:available[i], ind)
-		amp = map(lambda i:amplitudes[i], ind)
-		freqstr = map(lambda f:'% 3d Hz'%f, freq)
-		for i in range(len(freq)):
+		fmin = numpy.array([available[numpy.abs(min(f) - available).argmin()] for f in self.freqs])
+		fmax = numpy.array([available[numpy.abs(max(f) - available).argmin()] for f in self.freqs])
+		freqstr = ['% 3d Hz' % round(f) for f in (fmin+fmax)/2.0]
+		text = ' '
+		for i in range(len(fmin)):
+			val = amplitudes[numpy.logical_and(available >= fmin[i], available <= fmax[i])]
+			val = numpy.sqrt(sum(val ** 2.0))
+			if self.dB: val = 20.0 * numpy.log10(val)
+				
+			self.vals[i,side] = val
+			val -= self.baselines[i,side]
+			val *= self.gains[i,side]
 			if side == 1: text = freqstr[i]
-			else: text = ' '
-			self.bars[side][i].set(val=min(self.maxval,amp[i]), text=text)
+			self.bars[side][i].set(val=max(0.0,min(self.maxval,val)), text=text)
 
 try:
 	try: from BCI2000PythonApplication import BciGenericApplication

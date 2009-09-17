@@ -25,8 +25,14 @@
 import sys, time
 
 # Embedded calls don't provide a shell and thus no sys.argv, but IPython needs it to
-# avoid a bug on importing.
-if not hasattr(sys, 'argv'): sys.argv = [""]
+# exist in order avoid a bug on importing. Furthermore, pygame on macosx seems to
+# have problems if sys.argv[0] is not an absolute path.
+if not hasattr(sys, 'argv'):
+	try:
+		import os.path, distutils.sysconfig
+		sys.argv = [os.path.join(distutils.sysconfig.EXEC_PREFIX, 'bin', 'python')]
+	except:
+		sys.argv = ['/foo']
 import IPython
 
 import platform
@@ -98,12 +104,17 @@ def ReplaceStreams():
 	else:
 		sys.stderr = original['stderr']
 		if previous['stderr'].fileno() > 0  and not previous['stderr'].isatty():
-			sys.stdout = tee((sys.stderr, previous['stderr']))
+			sys.stderr = tee((sys.stderr, previous['stderr']))
+			
+	IPython.ultraTB.Term.cout = sys.stdout
+	IPython.ultraTB.Term.cerr = sys.stderr
 
 
 ############################################################################
 # helper class to deal with the simultaneous console + log-file case
 ############################################################################
+import re
+ansi_escape = re.compile('\x01?\x1b.*?m\x02?') # for removing ANSI colour mojibake from log files
 class tee:
 	def __init__(self, streamlist):
 		self.streamlist = streamlist
@@ -111,18 +122,18 @@ class tee:
 		for x in self.streamlist:
 			if hasattr(x, 'flush'): x.flush()
 	def write(self, s):
+		try: callername = sys._getframe(1).f_code.co_name
+		except: callername = '?'
+		s_clean = re.sub(ansi_escape, '', s)
 		for x in self.streamlist:
-			if hasattr(x, 'write'): x.write(s)
-			try: callername = sys._getframe(1).f_code.co_name
-			except: callername = '?'
-			if callername == 'raw_input': break
-			# Ideally, it would be nice to include IPython's full input and output in the log.
-			# However, the *only* thing that IPython seems to pump into the ordinary sys.stdout is
-			# the annoying garbage-encoded prompt. If we can't have the meaningful stuff, let's at
-			# least use this very nasty hack to cut out the garbage. IPython has its own sophisticated
-			# input and output logging mechanism, but that's separate from the sys.stdout and
-			# sys.stderr messages coming from the other threads, which is the main thing we want to
-			# log here. If you want to log something interactively, issue a print statement.
+			if not hasattr(x, 'write'): continue
+			if isinstance(x, IPython.genutils.IOStream): x.write(s)
+			elif callername != 'raw_input':   x.write(s_clean)
+			# We can't capture the user's In [*]:  commands, so don't bother to output the
+			# (non-newline-terminated) prompt. Note that IPython has its own mechanisms
+			# for logging In and Out traffic.
+				
+							
 
 ############################################################################
 # extremely annoying section to help stop the IPython thread from vying for
