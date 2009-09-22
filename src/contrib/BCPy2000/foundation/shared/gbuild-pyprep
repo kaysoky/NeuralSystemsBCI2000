@@ -39,11 +39,12 @@ then
 		"
 	else
 		LIBS_MACOS="$LIBS_MACOS -L/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
+		#LIBS_MACOS="$LIBS_MACOS -L/System/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/config"
 		INCS_MACOS="$INCS_MACOS \
 		/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
 		/Library/Frameworks/Python.framework/Versions/$PYVER/lib/python$PYVER/site-packages/numpy/core/include \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/$PYVER/Extras/lib/python/numpy/core/include \
+		/System/Library/Frameworks/Python.framework/Versions/$PYVER/include/python$PYVER \
+		/System/Library/Frameworks/Python.framework/Versions/$PYVER/Extras/lib/python/numpy/core/include \
 		"
 	fi
 else
@@ -58,13 +59,11 @@ else
 	else
 		INCS_MACOS="$INCS_MACOS \
 		/Library/Frameworks/Python.framework/Versions/2.5/include \
-		/Library/Frameworks/Python.framework/Versions/2.4/include \
 		/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/numpy/core/include \
+		/Library/Frameworks/Python.framework/Versions/2.4/include \
 		/Library/Frameworks/Python.framework/Versions/2.4/lib/python2.4/site-packages/numpy/core/include \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include \
- 		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/include \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/Extras/lib/python/numpy/core/include \
-		/Developer/SDKs/MacOSX$OSXVER.sdk/System/Library/Frameworks/Python.framework/Versions/2.4/Extras/lib/python/numpy/core/include \
+		/System/Library/Frameworks/Python.framework/Versions/2.6/include \
+		/System/Library/Frameworks/Python.framework/Versions/2.6/Extras/lib/python/numpy/core/include \
 		"
 	fi
 fi

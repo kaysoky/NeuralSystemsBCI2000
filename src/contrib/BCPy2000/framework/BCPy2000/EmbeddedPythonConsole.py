@@ -33,6 +33,11 @@ if not hasattr(sys, 'argv'):
 		sys.argv = [os.path.join(distutils.sysconfig.EXEC_PREFIX, 'bin', 'python')]
 	except:
 		sys.argv = ['/foo']
+
+try: # if setuptools installed, avoid the warning that happens for no apparent good
+	import pkg_resources  # reason when pyreadline is added to the path *after*
+except: pass              # IPython has loaded some sort of readline of its own
+
 import IPython
 
 import platform

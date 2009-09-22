@@ -41,6 +41,14 @@ class BciSource(BciGenericSource):
 
 	def Construct(self):
 		parameters = [
+			#"Source:Signal%20Properties:DataIOFilter int        SampleBlockSize=  20        20 1 % // the number of samples transmitted at a time",
+			#"Source:Signal%20Properties:DataIOFilter int        SamplingRate=    441Hz     441 1 % // the sample rate",
+			"Source:Signal%20Properties:DataIOFilter int        SourceCh=          2         2 1 % // number of digitized and stored channels",
+			"Source:Signal%20Properties:DataIOFilter list       ChannelNames=      2  L R    % % % // list of channel names",
+			"Source:Signal%20Properties:DataIOFilter floatlist  SourceChOffset=    2  0 0    0 % %  // Offset for channels in A/D units",
+			"Source:Signal%20Properties:DataIOFilter floatlist  SourceChGain=      2  1e-3 1e-3    1 % %  // gain for each channel (A/D units -> muV)",
+			"Source:Online%20Processing:TransmissionFilter list TransmitChList=    2  1 2    % % %  // list of transmitted channels",
+			
 			"Source:Audio%20Recording int   UseAudioEnvelope=          1        1       0 1 // check to clean up the signal by matching its envelope rather than just subsampling (boolean)",
 			"Source:Audio%20Recording int   NumberOfAudioChannels=     2        2       1 % // number of audio channels to record",
 			"Source:Audio%20Recording int   AudioSamplingRate=     44100    44100   11025 % // sampling rate at which to record sound",
