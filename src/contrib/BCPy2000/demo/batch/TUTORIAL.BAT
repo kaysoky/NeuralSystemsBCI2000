@@ -1,5 +1,5 @@
 cd ..\prog
 start operat.exe
-start PythonSource.exe --PythonSrcClassFile=BCI2000Tools/AudioSourceModule.py
+start PythonSource.exe
 start PythonSignalProcessing.exe
 start PythonApplication.exe --PythonAppClassFile=Tutorial.py

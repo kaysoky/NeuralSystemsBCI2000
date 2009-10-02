@@ -429,7 +429,7 @@ class BciGenericApplication(Core.BciCore):
 			d['PacketStartSamples'] = 0.0
 			d['PacketStartSeconds'] = 0.0
 			d['OffsetSamples'] = 0.0
-			d['FakePackets'] = round(0.5 * d['SamplesPerSecond'] / d['SamplesPerPacket'])
+			d['FakePackets'] = 0  # round(0.5 * d['SamplesPerSecond'] / d['SamplesPerPacket'])
 		if init: return
 		if d['Packets'] == None: d['Packets'] = 0
 		y = d['Packets'] * d['SamplesPerPacket']  # y is measured in samples, 

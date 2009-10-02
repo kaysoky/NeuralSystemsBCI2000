@@ -46,7 +46,7 @@ dependencies = {
 }
 setup(
 	name = 'BCPy2000',
-	version = '13637',
+	version = '13718',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',
