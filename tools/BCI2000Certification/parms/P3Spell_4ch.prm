@@ -15,8 +15,8 @@ Application:Speller%20Targets intlist NumMatrixRows= 1 7 6 0 % // display matric
 Application:Audio%20Stimuli int AudioStimuliOn= 0 0 0 1 // Audio Stimuli Mode (0=no, 1=yes) (boolean)
 Application:Audio%20Stimuli matrix AudioStimuliRowsFiles= 6 { filename } ./voice/1.wav ./voice/2.wav ./voice/3.wav ./voice/4.wav ./voice/5.wav ./voice/6.wav // audio stimuli rows files 
 Application:Audio%20Stimuli matrix AudioStimuliColsFiles= 6 { filename } ./voice/a.wav ./voice/b.wav ./voice/c.wav ./voice/d.wav ./voice/e.wav ./voice/f.wav // audio stimuli column files 
-Application:Speller%20Targets floatlist TargetWidth= 1 10 0 0 100 // target width in percent of screen width
-Application:Speller%20Targets floatlist TargetHeight= 1 10 0 0 100 // target height in percent of screen height
+Application:Speller%20Targets floatlist TargetWidth= 1 15 0 0 100 // target width in percent of screen width
+Application:Speller%20Targets floatlist TargetHeight= 1 15 0 0 100 // target height in percent of screen height
 Application:Speller%20Targets floatlist TargetTextHeight= 1 10 0 0 100 // height of target labels in percent of screen height
 Application:Speller%20Targets stringlist BackgroundColor= 1 0xFFFFFF 0x505050 % % // target background color (color)
 Application:Speller%20Targets stringlist TextColor= 1 0x444444 0x505050 % % // text color (color)
@@ -30,3 +30,5 @@ Application:Audio%20Stimuli:P3SpellerTask matrix AudioStimuliColsFiles= 6 { file
 Filtering:Normalizer intlist Adaptation= 2 0 0 0 0 2 // 0: no adaptation, 1: zero mean, 2: zero mean, unit variance (enumeration)
 Source:Online%20Processing:TransmissionFilter list TransmitChList= 4 1 2 3 4 1 1 % // list of transmitted channels
 Filtering:SpatialFilter matrix SpatialFilter= 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 % % // columns represent input channels, rows represent output channels
+Application:Speller:P3SpellerTask float StatusBarSize= 0 0 0 100 // size of status bar in percent of screen height
+Application:Speller:P3SpellerTask float StatusBarTextHeight= 0 0 0 100 // size of status bar text in percent of screen height
