@@ -1,3 +1,14 @@
+#ifdef _NO_VCL
+
+#include "CoreModule.h"
+int main( int argc, char** argv )
+{
+  bool success = CoreModule().Run( argc, argv );
+  return ( success ? 0 : -1 );
+}
+
+#else // _NO_VCL
+
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -21,3 +32,4 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 }
 
 
+#endif // _NO_VCL

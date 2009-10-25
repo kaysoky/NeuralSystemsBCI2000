@@ -16,17 +16,27 @@
  * V0.04 - 03/04/2006 - Porti Synchro disbanded. Working on selecting channels*
  * V0.05 - 15/05/2006 - Using the features pull out unused channels from the  *
  *                      common reference pool                                 *
- * $Log$
- * Revision 1.2  2006/07/05 15:20:10  mellinger
- * Minor formatting and naming changes; removed unneeded data members.
- *
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
- *                                                                      *
+ * 
+ * Revision 1.2  2006/07/05 15:20:10  mellinger
+ * Minor formatting and naming changes; removed unneeded data members.
+ * 
+ * Revision 2.0  2009/10/25 jhill
+ * - Allow selection of a subset of physical channels to acquire.
+ * - Support impedance measurement and acquisition of digital channel values.
+ * - Various OptionalParameters for tweaking performance.
+ * - Crash fixes.
+ *                                                                            *
  ******************************************************************************/
 
 #include "PCHIncludes.h"
 #pragma hdrstop
+
+//#define DEBUG
+#ifdef DEBUG
+#include <string>
+#endif
 
 #include "TMSiADC.h"
 #include "BCIError.h"
@@ -42,41 +52,56 @@ TMSiADC::TMSiADC()
   mValuesToRead( 0 ),
   mBufferSize( 0 ),
   mSrate( 0 ),
-  mBufferMulti( 4 ),
+  mBufferMulti( 0 ),
   mHardwareCh( 0 ),
+  mSoftwareCh( 0 ),
   mSampleBlockSize( 0 ),
-  mSampleRate( 0 )
+  mSampleRate( 0 ),
+  mDigitalChannel( 0 )
 {
         for( size_t i = 0; i < sizeof( mSignalBuffer ) / sizeof( *mSignalBuffer ); ++i )
                 mSignalBuffer[ i ] = 0;
 
         BEGIN_PARAMETER_DEFINITIONS
-        "Source:TMSiADC int SourceCh= 19 "
-        "19 1 % // number of digitized and stored channels",
-        "Source:TMSiADC int SampleBlockSize= 32 "
-        "32 1 % // number of samples transmitted at a time",
-        "Source:TMSiADC int SamplingRate= 250Hz "
-        "250 125 2000 % // SampleRate of the Input Device",
+        "Source:TMSiADC int       SourceCh=            16      19       1    % // number of digitized and stored channels",
+        "Source:TMSiADC int       SampleBlockSize=     12      10       1    % // number of samples transmitted at a time (multiples of 6 seem smoothest)",
+        "Source:TMSiADC int       SamplingRate=       250Hz   250     125 2000 // SampleRate of the Input Device",
+        "Source:TMSiADC intlist   PhysicalChannels= 16  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 "
+                                                               "1       1    % // hardware indices of channels to record",
+        "Source:TMSiADC floatlist SourceChGain=     16  0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 0.0715 "
+                                                               "0.0715  0    % // ",
+        "Source:TMSiADC floatlist SourceChOffset=   16  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 "
+                                                               "0       %    % // ",
         END_PARAMETER_DEFINITIONS
-        mBufferMulti=4;
+
+
+        mBufferMulti = OptionalParameter("TMSiBufferSizeInSampleBlocks", 4);
+        double x = 100.0 / (double)mBufferMulti;
+        if(x != floor(x)) bcierr << "TMSiBufferSizeInSampleBlocks should be an integer factor of 100" << endl;
+        
+        int priority = OptionalParameter("TMSiProcessPriority", 0);
+        switch(priority) 
+        {
+            case +3: SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS); break;
+            case +2: SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS); break;
+            case +1: SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS); break;
+            case  0: SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS); break;
+            case -1: SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS); break;
+            case -2: SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS); break;
+            default: bcierr << "unsupported value --TMSiProcessPriority=" << priority << endl;
+        }
+        mSleepMsec = OptionalParameter("TMSiSleepMsec", 1);
+
+        mMeasureImpedance = bool(int(OptionalParameter("TMSiCheckImpedance", 0)));
+
         StartDriver();
+        
+        mpMaster->Reference((BOOL)(OptionalParameter("TMSiAutoReference", 1)));
 }
 
 TMSiADC::~TMSiADC()
 {
         Halt();
-}
-
-void
-TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties ) const
-{      // Might need a bit of work...
-        ULONG BS=mBufferMulti*Parameter("SampleBlockSize");  // in samples: in waitfordata endblock is linked to this...
-        ULONG act_rate=1000*Parameter("SamplingRate");       // samplerate in mHz
-        mpMaster->SetSignalBuffer(&act_rate,&BS);
-        Parameter("SamplingRate") = act_rate/1000;
-        outputProperties        = SignalProperties( Parameter("SourceCh"),
-                                                    Parameter("SampleBlockSize"),
-                                                    SignalType::float32 );
 }
 
 void
@@ -96,8 +121,6 @@ TMSiADC::StartDriver()
         }
 
         mpMaster->Reset();
-        mpMaster->MeasuringMode( MEASURE_MODE_NORMAL  , 1);
-
         PSIGNAL_FORMAT psf = mpMaster->GetSignalFormat( NULL );
 
         if( psf != NULL )
@@ -110,29 +133,39 @@ TMSiADC::StartDriver()
                 }
 
                 mHardwareCh = psf->Elements;
+                Gain = std::vector<double>( mHardwareCh, 0);
+                Offset = std::vector<double>( mHardwareCh, 0);
 #ifdef DEBUG
-                String _format[3]={"Unsigned Integer","Signed Integer","Floating Point"};
-                String _units[6]={"BIT","VOLT^-6","PERCENT","BPM","BAR","PSI"};
+                std::string _format[3]={"Unsigned Integer","Signed Integer","Floating Point"};
+                std::string _units[6]={"BIT","VOLT^-6","PERCENT","BPM","BAR","PSI"};
 #endif
                 for (unsigned int i=0; i< mHardwareCh; i++)
                 {
                         int Exponent=psf[i].UnitExponent;
-                        if (Exponent)
+                        if (mMeasureImpedance) 
                         {
-                                if (psf[i].UnitId==1) {     // if volts
-                                        Gain[i]         = (psf[i].UnitGain  *(pow(10.0,Exponent)))*1000000;     // in uV
-                                        Offset[i]       = (psf[i].UnitOffSet*(pow(10.0,Exponent)))*1000000;
-                                }
+                            Gain[i]   = 1.0;
+                            Offset[i] = 0.0;
                         }
                         else {
-                                Gain[i]=1000000;
-                                Offset[i]=0;
+                            if (Exponent)
+                            {
+                                    if (psf[i].UnitId==1) 
+                                    {     // if volts
+                                            Gain[i]         = (psf[i].UnitGain  *(pow(10.0,Exponent)))*1000000;     // in uV
+                                            Offset[i]       = (psf[i].UnitOffSet*(pow(10.0,Exponent)))*1000000;
+                                    }
+                            }
+                            else {
+                                    mDigitalChannel = i+1;
+                                    Gain[i]   = 1.0;
+                                    Offset[i] = 0.0;
+                            }
                         }
-                        // Parameter()
 #ifdef DEBUG
-                        bciout << "Channel #" <<i+1<< " - Gain: " << Gain[i] << " Offset : " << Offset[i] <<
+                        bciout << "Physical channel #" <<i+1<< " - Gain: " << Gain[i] << " Offset : " << Offset[i] <<
                                 " Format: "  << _format[psf[i].Format].c_str() <<
-                                " Unit: " << _units[psf[i].UnitId].c_str() << std::endl;;
+                                " Unit: " << ((psf[i].UnitId > 5)? "unknown" :_units[psf[i].UnitId].c_str()) << std::endl;;
 #endif
                 }
 #ifdef DEBUG
@@ -145,18 +178,120 @@ TMSiADC::StartDriver()
 }
 
 void
+TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties ) const
+{      // Might need a bit of work...
+
+        int softwareCh = Parameter( "SourceCh" );
+        if ( softwareCh > mHardwareCh )
+        {
+         bcierr << "Trying to read more channels than available" << std::endl;
+        }
+        outputProperties        = SignalProperties( softwareCh,
+                                                    Parameter("SampleBlockSize"),
+                                                    SignalType::float32 );
+        if ( Parameter("PhysicalChannels")->NumValues() != softwareCh )
+        {
+            bcierr << "Number of elements in PhysicalChannels must match SourceCh" << endl;
+        }
+        bool goodVals = true;
+        bool gainWarning = false;
+        bool offsetWarning = false;
+        for ( int i = 0; i < softwareCh ; ++i )
+        {
+            int ind = int(Parameter("PhysicalChannels")(i)) - 1;
+            if(ind < 0) bcierr << "A PhysicalChannels index of " << ind+1 << "is illegal" << endl;
+            if(ind >= mHardwareCh) bcierr << "A PhysicalChannels index of " << ind+1 << "exceeds the hardware's maximum of " << mHardwareCh << endl;
+            
+            //Impedance has gain/offset of 1/0, warn if different but set anyway
+            if ( mMeasureImpedance ) 
+            {
+                if (float(Parameter("SourceChGain")(i)) != Gain[ind] && !gainWarning) 
+                {
+                    bciout << "Using user-defined SourceChGain values for impedance measurement, and assuming that you have correctly calibrated these ";
+                    bciout << "(e.g. channel " << i+1 << " has gain " << Parameter("SourceChGain")(i) << ")." << std::endl;
+                    gainWarning = true;
+                }
+                if (float(Parameter("SourceChOffset")(i)) != Offset[ind] && !offsetWarning) 
+                {
+                    bciout << "Using user-defined SourceChOffset values for impedance measurement, and assuming that you have correctly calibrated these ";
+                    bciout << "(e.g. channel " << i+1 << " has offset " << Parameter("SourceChOffset")(i) << ")." << std::endl;
+                    offsetWarning = true;
+                }
+            }
+            //Check whether BCI Gains are correct
+            else
+            {
+                double prmVal = Parameter("SourceChGain")(i);
+                double hardwareVal = Gain[ind];
+                bool same = ( 1e-3 > ::fabs( prmVal - hardwareVal ) / ( hardwareVal ? hardwareVal : 1.0 ) );
+                goodVals &= same;
+                if ( !same ) bciout << "The amp driver says the gain of"
+                                    << " channel " << ind+1
+                                    << " is " << hardwareVal
+                                    << " whereas the corresponding value in the"
+                                    << " SourceChGain parameter is " << prmVal << endl;
+            }
+        }
+        if( !goodVals )
+          bcierr << "The SourceChGain values "
+                 << "must match the hardware channel resolutions"
+                 << endl;
+        
+        //Sampling Rate has to be 8Hz (Check for other Amps?), warn if data is updated less than once a second
+        if ( mMeasureImpedance ) 
+        { 
+            int trueSamplingRate = 8;
+            if (int(Parameter("SamplingRate")) != trueSamplingRate){
+                bcierr << "For impedance checking sampling rate must be " << trueSamplingRate << "Hz, yours is " << int(Parameter("SamplingRate")) << "Hz." << std::endl;
+            }
+            if (int(Parameter("SampleBlockSize")) > 8){
+                bciout << "SampleBlockSize=" << int(Parameter("SampleBlockSize")) << " is very big for a SamplingRate of " << int(Parameter("SamplingRate")) << "\n";
+            }
+        }
+        else {
+            goodVals = true;
+            for ( int i = 0; i < softwareCh ; ++i )
+            {
+                int ind = int(Parameter("PhysicalChannels")(i)) - 1;
+                double prmVal = Parameter("SourceChOffset")(i);
+                double hardwareVal = - Gain[ind] * Offset[ind]; // amp offset is used as y = g*x + o  whereas SourceChOffset is used as y = (x - o) * g
+                bool same = ( 1e-3 > ::fabs( prmVal - hardwareVal ) / ( hardwareVal ? hardwareVal : 1.0 ) );
+                goodVals &= same;
+                if ( !same ) bciout << "The amp driver says the offset of"
+                                    << " channel " << ind+1
+                                    << " is " << hardwareVal
+                                    << " whereas the corresponding value in the"
+                                    << " SourceChOffset parameter is " << prmVal << endl;
+            }
+            if( !goodVals )
+              bcierr << "The SourceChOffset values "
+                     << "must match the hardware channel offsets"
+                     << endl;
+       }
+}
+
+void
 TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
+        mSoftwareCh           = Parameter( "SourceCh" );
         mSampleBlockSize      = Parameter( "SampleBlockSize" );
         mSampleRate           = Parameter( "SamplingRate" );
 
         mBufferSize           = mBufferMulti*mSampleBlockSize; // in samples!: in waitfordata endblock is linked to this...
         mSrate                = 1000*mSampleRate;           // samplerate in mHz
 
+        mPhysChanInd.clear();
+        for ( int i = 0; i < mSoftwareCh ; ++i) mPhysChanInd.push_back(int(Parameter("PhysicalChannels")(i)) - 1);
         mpMaster->SetSignalBuffer(&mSrate,&mBufferSize);
-
+        
+        //I wonder where the difference to mBuffersize is...
         mValuesToRead         = mSampleBlockSize * mHardwareCh * 4;   // sizeof type? type dependent? TMS appears to only give 4 byte values.
 
+        if ( mMeasureImpedance )
+        {
+            mpMaster->MeasuringMode( MEASURE_MODE_IMPEDANCE, 0);
+        }
+        
         if (!mpMaster->Start())
                 bcierr << "TMSiADC Initialize returned an error (Device Start)" << endl;
 }
@@ -173,12 +308,17 @@ TMSiADC::Process(const GenericSignal&, GenericSignal& outputSignal)
 {
         if (WaitForData(&mSignalBuffer[0], mValuesToRead)== TMSIOK)
         {
-                int i=0;
+                const LONG * base = mSignalBuffer;
                 for( unsigned int sample = 0; sample < mSampleBlockSize; ++sample )
-                        for( unsigned int channel = 0; channel < mHardwareCh; ++channel )
+                {
+                        for( unsigned int channel = 0; channel < mSoftwareCh; ++channel )
                         {
-                                outputSignal( channel, sample ) = ((LONG)(mSignalBuffer[i++])*Gain[channel])+Offset[channel];    // one on one copy: check!
+                            int phys = mPhysChanInd[channel];
+                            if(phys == mDigitalChannel - 1) outputSignal(channel, sample) = (float)((UCHAR)(~base[phys]));
+                            else outputSignal( channel, sample ) = (float)(base[phys]);
                         }
+                        base += mHardwareCh;
+                }
         }
         else
                 bcierr << "Error reading data" << endl;
@@ -197,23 +337,23 @@ TMSiADC::Process(const GenericSignal&, GenericSignal& outputSignal)
 //
 //----------------------------------------------------------------------------------------------------
 int
-TMSiADC::WaitForData(ULONG* SignalBuffer,ULONG size)
+TMSiADC::WaitForData(LONG* SignalBuffer,ULONG size)
 {
         ULONG PercentFull, Overflow;
-        static unsigned int mOverflow=0;
-        ULONG endblock=100.00/mBufferMulti;
+        static unsigned int mOverflow = 0;
+        ULONG endblock = 100.00 / mBufferMulti;
         mpMaster->GetBufferInfo(&Overflow,&PercentFull);
 
         while( PercentFull < endblock)
         {
-                Sleep(0);
+                Sleep(mSleepMsec);
                 mpMaster->GetBufferInfo(&Overflow,&PercentFull);
         }
 
         if (Overflow>mOverflow)
         {
                 mOverflow=Overflow;
-                bciout << "Overflow occurred: " << Overflow  << " % Full= " << PercentFull << endl;
+                bcierr << "Overflow occurred: " << Overflow  << " % Full= " << PercentFull << endl;
         }
 
         ULONG BytesReturned = mpMaster->GetSamples((PULONG)SignalBuffer,size);

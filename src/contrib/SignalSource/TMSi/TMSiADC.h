@@ -16,13 +16,19 @@
  * V0.04 - 03/04/2006 - Porti Synchro disbanded. Working on selecting channels*
  * V0.05 - 15/05/2006 - Using the features pull out unused channels from the  *
  *                      common reference pool                                 *
- * $Log$
- * Revision 1.2  2006/07/05 15:20:10  mellinger
- * Minor formatting and naming changes; removed unneeded data members.
- *
+ * 
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
- *                                                                      *
+ *  
+ * Revision 1.2  2006/07/05 15:20:10  mellinger
+ * Minor formatting and naming changes; removed unneeded data members.
+ * 
+ * Revision 2.0  2009/10/25 jhill
+ * - Allow selection of a subset of physical channels to acquire.
+ * - Support impedance measurement and acquisition of digital channel values.
+ * - Various OptionalParameters for tweaking performance.
+ * - Crash fixes.
+ * 
  ******************************************************************************/
 // MMS adaption from the TMSiDemo in driver
 
@@ -33,6 +39,8 @@
 
 #include "GenericADC.h"
 #include <windows.h>
+#include <vector.h>
+
 #include "RTDevice.h"     // from TMSi driver
 #include "Feature.h"      // from TMSi driver
 
@@ -60,7 +68,7 @@ class TMSiADC : public GenericADC
   void Halt();
 
  private:
-  int   WaitForData(ULONG*,ULONG);
+  int   WaitForData(LONG*,ULONG);
   void  StartDriver();
   ULONG UseMasterSlave( RTDeviceEx** Devices , ULONG Max );
 
@@ -68,19 +76,26 @@ class TMSiADC : public GenericADC
   RTDeviceEx*  mpDevice[MAX_DEVICE];
   RTDeviceEx*  mpMaster;
 
-  ULONG        mSignalBuffer[MAXBUFFERSIZE];
+  LONG         mSignalBuffer[MAXBUFFERSIZE];
   ULONG        mValuesToRead;
   ULONG        mBufferSize;
   ULONG        mSrate;
+  ULONG        mSleepMsec;
 
   unsigned int mBufferMulti;
 
-  double       Gain[75];
-  double       Offset[75];
+  std::vector<double> Gain;
+  std::vector<double> Offset;
+
+  std::vector<int>    mPhysChanInd;
+  
+  boolean             mMeasureImpedance;
 
   unsigned int mHardwareCh,
+               mSoftwareCh,
                mSampleBlockSize,
-               mSampleRate;
+               mSampleRate,
+               mDigitalChannel;
 };
 
 #endif // TMSiADCH
