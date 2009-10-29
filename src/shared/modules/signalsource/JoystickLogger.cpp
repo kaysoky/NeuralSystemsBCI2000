@@ -221,13 +221,13 @@ JoystickLogger::JoystickThread::JoystickThread( const JOYCAPS& inJoycaps )
   m_button2( 0 ),
   m_button3( 0 ),
   m_button4( 0 ),
-  m_prevXPos( 0 ),
-  m_prevYPos( 0 ),
-  m_prevZPos( 0 ),
-  m_prevButton1( 0 ),
-  m_prevButton2( 0 ),
-  m_prevButton3( 0 ),
-  m_prevButton4( 0 )
+  m_prevXPos( -1 ),
+  m_prevYPos( -1 ),
+  m_prevZPos( -1 ),
+  m_prevButton1( -1 ),
+  m_prevButton2( -1 ),
+  m_prevButton3( -1 ),
+  m_prevButton4( -1 )
 {
 }
 
