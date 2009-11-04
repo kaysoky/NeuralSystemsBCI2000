@@ -53,16 +53,18 @@ class JoystickLogger : public EnvironmentExtension
             JoystickThread( const JOYCAPS& );
     virtual ~JoystickThread();
     virtual int Execute();
+    void GetJoyPos( unsigned int& x, unsigned int& y, unsigned int& z,
+                    unsigned int& b1, unsigned int& b2, unsigned int& b3, unsigned int& b4 );
 
    private:
     JOYCAPS      m_joycaps;
-    unsigned int m_xPos, m_prevXPos,
-                 m_yPos, m_prevYPos,
-                 m_zPos, m_prevZPos,
-                 m_button1, m_prevButton1,
-                 m_button2, m_prevButton2,
-                 m_button3, m_prevButton3,
-                 m_button4, m_prevButton4;
+    unsigned int m_prevXPos,
+                 m_prevYPos,
+                 m_prevZPos,
+                 m_prevButton1,
+                 m_prevButton2,
+                 m_prevButton3,
+                 m_prevButton4;
 
   } *mpJoystickThread;
 };

@@ -47,6 +47,7 @@ CoreModule::CoreModule()
   mFiltersInitialized( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
+  mFirstStatevectorPending( false ),
   mSampleBlockSize( 0 )
 {
   mOperatorSocket.set_tcpnodelay( true );
@@ -92,7 +93,7 @@ CoreModule::Run( int inArgc, char** inArgv )
 #ifdef __BORLANDC__
   catch( Exception& e )
   {
-	bcierr << "unhandled exception "
+    bcierr << "unhandled exception "
            << e.Message.c_str() << ",\n"
            << "terminating " THISMODULE " module"
            << endl;
@@ -472,6 +473,7 @@ void
 CoreModule::StartRunFilters()
 {
   mStartRunPending = false;
+  mFirstStatevectorPending = true;
   // The first state vector written to disk is not the one
   // received in response to the first EEG data block. Without resetting it
   // to its initial value,
@@ -619,17 +621,17 @@ CoreModule::HandleVisSignal( istream& is )
   VisSignal s;
   if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
-	const GenericSignal& inputSignal = s;
-	if( !mFiltersInitialized )
-	  bcierr << "Unexpected VisSignal message" << endl;
-	else
-	{
-	  if( mStartRunPending )
-		StartRunFilters();
-	  ProcessFilters( inputSignal );
-	  if( mStopRunPending )
-		StopRunFilters();
-	}
+    const GenericSignal& inputSignal = s;
+    if( !mFiltersInitialized )
+      bcierr << "Unexpected VisSignal message" << endl;
+    else
+    {
+      if( mStartRunPending )
+        StartRunFilters();
+      ProcessFilters( inputSignal );
+      if( mStopRunPending )
+        StopRunFilters();
+    }
   }
   return is;
 }
@@ -649,13 +651,23 @@ CoreModule::HandleVisSignalProperties( istream& is )
 bool
 CoreModule::HandleStateVector( istream& is )
 {
-  if( mpStatevector->ReadBinary( is ) )
-  {
 #if( MODTYPE == SIGSRC )
+  bool success = false;
+  if( mFirstStatevectorPending )
+  { // To avoid overwriting state values with their initial values,
+    // we ignore the first statevector that comes in from the application
+    // module.
+    success = StateVector( mStatelist ).ReadBinary( is );
+    mFirstStatevectorPending = false;
+  }
+  else
+  {
+    success = mpStatevector->ReadBinary( is );
+  }
+  if( success )
+  {
     mpStatevector->CommitStateChanges();
     bool running = mpStatevector->StateValue( "Running" );
-    if( running && !mLastRunning )
-      StartRunFilters();
     // The source module does not receive a signal, so handling must take place
     // on arrival of a StateVector message.
     if( mLastRunning ) // For the first "Running" block, Process() is called from
@@ -670,13 +682,17 @@ CoreModule::HandleStateVector( istream& is )
     }
     if( !running && mLastRunning )
       StopRunFilters();
+    mLastRunning = running;
+  }
 #else // SIGSRC
+  if( mpStatevector->ReadBinary( is ) )
+  {
     bool running = mpStatevector->StateValue( "Running" );
     if( !running && mLastRunning )
       mStopRunPending = true;
-#endif // SIGSRC
     mLastRunning = running;
   }
+#endif // SIGSRC
   return is;
 }
 

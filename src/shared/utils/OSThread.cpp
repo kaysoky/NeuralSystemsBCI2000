@@ -84,3 +84,4 @@ OSThread::StartThread( void* inInstance )
   this_->mHandle = NULL;
   return this_->mResult;
 }
+

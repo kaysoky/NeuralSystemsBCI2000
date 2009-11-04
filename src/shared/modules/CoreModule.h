@@ -141,7 +141,8 @@ class CoreModule : private MessageHandler
                    mLastRunning,
                    mResting,
                    mStartRunPending,
-                   mStopRunPending;
+                   mStopRunPending,
+                   mFirstStatevectorPending;
   void*            mMutex;
   int              mSampleBlockSize;
 };

@@ -105,12 +105,12 @@ void JoystickLogger::Preflight() const
   joystickenable = ( ( int )OptionalParameter( "LogJoystick" ) != 0 );
   if( joystickenable )
   {
-    nNumFound = joyGetNumDevs();
+    nNumFound = ::joyGetNumDevs();
     if (nNumFound == 0)
       bcierr << "No joystick driver installed" << endl;
     else
     {
-      ret = joyGetPos( JOYSTICKID1, &joyinfo );
+      ret = ::joyGetPos( JOYSTICKID1, &joyinfo );
       if (ret != JOYERR_NOERROR)
       {
         switch( ret )
@@ -119,22 +119,18 @@ void JoystickLogger::Preflight() const
             bcierr << "The joystick driver is not present" << endl;
             break;
           case MMSYSERR_INVALPARAM:
-            bcierr << "The specified joystick identifier is invalid" << endl;
-            break;
           case MMSYSERR_BADDEVICEID:
-            bcierr << "The specified joystick identifier is invalid" << endl;
+          case JOYERR_PARMS:
+            bcierr << "Could not find joystick #1" << endl;
             break;
           case JOYERR_UNPLUGGED:
             bcierr << "The specified joystick is not connected to the system" << endl;
-            break;
-          case JOYERR_PARMS:
-            bcierr << "The specified joystick identifier is invalid" << endl;
             break;
         }
       }
       else
       {
-        ret = joyGetDevCaps( JOYSTICKID1,&joycaps,sizeof(joycaps));
+        ret = ::joyGetDevCaps( JOYSTICKID1,&joycaps,sizeof(joycaps));
         if (ret == JOYERR_NOERROR)
           bcidbg( 0 ) << "Joystick " << joycaps.szPname << " with " << joycaps.wNumAxes
                       << " axes and " << joycaps.wNumButtons << " buttons found"
@@ -154,14 +150,9 @@ void JoystickLogger::Preflight() const
 // **************************************************************************
 void JoystickLogger::Initialize()
 {
-  MMRESULT ret = -1;
-
   m_joystickenable = ( ( int )OptionalParameter( "LogJoystick" ) != 0 );
-
   if( m_joystickenable )
-  {
-    ret = joyGetDevCaps( JOYSTICKID1,&m_joycaps,sizeof(m_joycaps));
-  }
+    ::joyGetDevCaps( JOYSTICKID1, &m_joycaps, sizeof(m_joycaps) );
 }
 
 // **************************************************************************
@@ -214,13 +205,6 @@ void JoystickLogger::Halt()
 JoystickLogger::JoystickThread::JoystickThread( const JOYCAPS& inJoycaps )
 : OSThread( false ),
   m_joycaps( inJoycaps ),
-  m_xPos( 0 ),
-  m_yPos( 0 ),
-  m_zPos( 0 ),
-  m_button1( 0 ),
-  m_button2( 0 ),
-  m_button3( 0 ),
-  m_button4( 0 ),
   m_prevXPos( -1 ),
   m_prevYPos( -1 ),
   m_prevZPos( -1 ),
@@ -251,54 +235,65 @@ int JoystickLogger::JoystickThread::Execute()
 {
   while( !IsTerminating() )
   {
-    JOYINFO joyinfo;
-    MMRESULT ret = joyGetPos( JOYSTICKID1, &joyinfo );
-    if (ret == JOYERR_NOERROR)
-    {
-      m_xPos = ((float)(joyinfo.wXpos - m_joycaps.wXmin) / (float)(m_joycaps.wXmax - m_joycaps.wXmin) * MAXJOYSTICK); //- MAXJOYSTICK/2;
-      m_yPos = ((float)(joyinfo.wYpos - m_joycaps.wYmin) / (float)(m_joycaps.wYmax - m_joycaps.wYmin) * MAXJOYSTICK); //- MAXJOYSTICK/2;
-      m_zPos = ((float)(joyinfo.wZpos - m_joycaps.wZmin) / (float)(m_joycaps.wZmax - m_joycaps.wZmin) * MAXJOYSTICK); //- MAXJOYSTICK/2;
-      m_button1 = (joyinfo.wButtons & JOY_BUTTON1) == JOY_BUTTON1 ? 1 : 0;
-      m_button2 = (joyinfo.wButtons & JOY_BUTTON2) == JOY_BUTTON2 ? 1 : 0;
-      m_button3 = (joyinfo.wButtons & JOY_BUTTON3) == JOY_BUTTON3 ? 1 : 0;
-      m_button4 = (joyinfo.wButtons & JOY_BUTTON4) == JOY_BUTTON4 ? 1 : 0;
-    }
-    else
-    {
-      m_xPos = 0;
-      m_yPos = 0;
-      m_zPos = 0;
-      m_button1 = 0;
-      m_button2 = 0;
-      m_button3 = 0;
-      m_button4 = 0;
-    }
+    unsigned int xPos, yPos, zPos,
+                 button1, button2, button3, button4;
+    GetJoyPos( xPos, yPos, zPos, button1, button2, button3, button4 );
 
-    if( m_xPos != m_prevXPos )
-      bcievent << "JoystickXpos " << m_xPos;
-    if( m_yPos != m_prevYPos )
-      bcievent << "JoystickYpos " << m_yPos;
-    if( m_zPos != m_prevZPos )
-      bcievent << "JoystickZpos " << m_zPos;
-    if( m_button1 != m_prevButton1 )
-      bcievent << "JoystickButtons1 " << m_button1;
-    if( m_button2 != m_prevButton2 )
-      bcievent << "JoystickButtons2 " << m_button2;
-    if( m_button3 != m_prevButton3 )
-      bcievent << "JoystickButtons3 " << m_button3;
-    if( m_button4 != m_prevButton4 )
-      bcievent << "JoystickButtons4 " << m_button4;
+    if( xPos != m_prevXPos )
+      bcievent << "JoystickXpos " << xPos;
+    if( yPos != m_prevYPos )
+      bcievent << "JoystickYpos " << yPos;
+    if( zPos != m_prevZPos )
+      bcievent << "JoystickZpos " << zPos;
+    if( button1 != m_prevButton1 )
+      bcievent << "JoystickButtons1 " << button1;
+    if( button2 != m_prevButton2 )
+      bcievent << "JoystickButtons2 " << button2;
+    if( button3 != m_prevButton3 )
+      bcievent << "JoystickButtons3 " << button3;
+    if( button4 != m_prevButton4 )
+      bcievent << "JoystickButtons4 " << button4;
 
-    m_prevXPos = m_xPos;
-    m_prevYPos = m_yPos;
-    m_prevZPos = m_zPos;
-    m_prevButton1 = m_button1;
-    m_prevButton2 = m_button2;
-    m_prevButton3 = m_button3;
-    m_prevButton4 = m_button4;
+    m_prevXPos = xPos;
+    m_prevYPos = yPos;
+    m_prevZPos = zPos;
+    m_prevButton1 = button1;
+    m_prevButton2 = button2;
+    m_prevButton3 = button3;
+    m_prevButton4 = button4;
 
     ::Sleep(1);
   }
   return 0;
 }
+
+void
+JoystickLogger::JoystickThread::GetJoyPos(
+                    unsigned int& outX, unsigned int& outY, unsigned int& outZ,
+                    unsigned int& outB1, unsigned int& outB2,
+                    unsigned int& outB3, unsigned int& outB4 )
+{
+  JOYINFO joyinfo;
+  if( JOYERR_NOERROR == ::joyGetPos( JOYSTICKID1, &joyinfo ) )
+  {
+    outX = ((float)(joyinfo.wXpos - m_joycaps.wXmin) / (float)(m_joycaps.wXmax - m_joycaps.wXmin) * MAXJOYSTICK);
+    outY = ((float)(joyinfo.wYpos - m_joycaps.wYmin) / (float)(m_joycaps.wYmax - m_joycaps.wYmin) * MAXJOYSTICK);
+    outZ = ((float)(joyinfo.wZpos - m_joycaps.wZmin) / (float)(m_joycaps.wZmax - m_joycaps.wZmin) * MAXJOYSTICK);
+    outB1 = (joyinfo.wButtons & JOY_BUTTON1) == JOY_BUTTON1 ? 1 : 0;
+    outB2 = (joyinfo.wButtons & JOY_BUTTON2) == JOY_BUTTON2 ? 1 : 0;
+    outB3 = (joyinfo.wButtons & JOY_BUTTON3) == JOY_BUTTON3 ? 1 : 0;
+    outB4 = (joyinfo.wButtons & JOY_BUTTON4) == JOY_BUTTON4 ? 1 : 0;
+  }
+  else
+  {
+    outX = 0;
+    outY = 0;
+    outZ = 0;
+    outB1 = 0;
+    outB2 = 0;
+    outB3 = 0;
+    outB4 = 0;
+  }
+}
+
 
