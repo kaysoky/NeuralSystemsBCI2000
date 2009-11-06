@@ -44,7 +44,7 @@ class EventQueue
   void Unlock()
     { mLocked = false; }
 
-  bool mLocked;
+  volatile bool mLocked;
 
   struct Entry
   {
