@@ -194,7 +194,6 @@ assumptions:
 </p>
 <ol><li>The time constant is not zero -- otherwise, a division by zero will occur. 
 </li><li>The time constant is not negative -- otherwise, the output signal is no longer guaranteed to be finite, and a numeric overflow may occur. 
-</li><li>Input and output signal pointers are assumed to point to valid locations in memory. 
 </li><li>The output signal is assumed to hold at least as much data as the input signal contains. 
 </li></ol>
 <p>The first two assumptions may be violated if a user enters an illegal
@@ -202,9 +201,6 @@ value into the LPTimeConstant parameter; we need to make sure that an
 error
 is reported, and no code is executed that depends on these two
 assumptions.
-The third assumption will hold if the framework code does what it is
-supposed
-to do, so we do not need to check for it.
 For the last assumption, we request an appropriate output signal from
 the
 <tt>Preflight</tt> function. Thus, the <tt>Preflight</tt> code reads

@@ -58,7 +58,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 Input data has 2 indices (N channels x M elements), and output data
 has a single index (C channels x 1 element), thus the linear classifier
 acts as a N x M x C matrix, determining the output after summation over
-N and M:
+channels and elements:
 </p><p><img class='tex' src="../images/math/0/f/2/0f2a48bb35bb4b08af3c20f280ba7064.png" alt="\textrm{output}_k=\sum_{i=1}^N \sum_{j=1}^M \textrm{input}_{ij}\, \textrm{Classifier}_{ijk}" />
 </p>
 <ul><li>In a BCI based on demodulation of a periodic EEG component (such as the <a href="User_Tutorial%253AIntroduction_to_the_Mu_Rhythm.html#BCI_Construction" title="User Tutorial:Introduction to the Mu Rhythm">Mu Rhythm BCI</a>), the LinearClassifier's input is the time-varying amplitude or power spectrum for a number of spatially filtered EEG channels. Its output is later <a href="User_Reference%253ANormalizer.html" title="User Reference:Normalizer">normalized with respect to mean and variance</a>, and then used as a <a href="BCI2000_Glossary.html#Control_Signal" title="BCI2000 Glossary">control signal</a> to determine cursor movement.

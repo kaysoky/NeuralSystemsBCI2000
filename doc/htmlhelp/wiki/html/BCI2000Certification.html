@@ -103,6 +103,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ol><li> In the BCI2000Certification tool, select <code>File-&gt;Open *.ini</code>
 </li><li> Navigate to the folder <code>BCI2000/tools/BCI2000Certification</code>.
 </li><li> Load the file named <code>BCI2000Certification_32ch_100ms.ini</code> if using a 32-channel system, or <code>BCI2000Certification_16ch_100ms.ini</code> if using 16 channels. (This tutorial assumes a 32-channel system). 
+</li><li> If using more than 16 channels, then the amplifier parameter files must be modified.
+<ol><li> Navigate to <code>BCI2000/tools/BCI2000Certification/parms/</code>, and open the file <code>Certification_gUSBamp_24.prm</code> in Notepad.
+</li><li> Find the parameter titled <b>DeviceIDMaster</b>, and replace the existing device ID (e.g., <code>UA-2007.04.12</code> with the ID of your master device.
+</li><li> Next, find the parameter titled <b>DeviceIDs</b>, and replace the IDs with the IDs of your amplifiers. The first in the list should be identical to the <b>DeviceIDMaster</b> value. For example, you might enter: <code>DeviceIDs= 2 UA-2007.04.12 UA-2006.10.13</code> (the \#2 corresponds to the number of devices being used).
+</li><li> Repeat these steps for the file <code>Certification_gUSBamp_32.prm</code>.
+</li><li> Note that these steps are not necessary if only one g.USBamp is being used.
+</li></ol>
 </li><li> All 100 tests in this configuration are loaded into the GUI.
 </li></ol>
 <a name="User_Interface_Components"></a><h3>User Interface Components</h3>
@@ -212,13 +219,19 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> When all tasks are complete, press the <code>Analyze</code> button to analyze the collected data. This procedure is detailed later in this document.
 </li></ol>
 <a name="Analyzing_Data"></a><h3>Analyzing Data</h3>
-<p>Simply pressing the <code>Analyze</code> button will pass the appropriate parameters to the program. It is also possible to run the program manually from the command line.
+<div class="thumb tnone"><div style="width:582px;"><a href="../images/2/26/CertAnalysis.png" class="internal" title="The BCI2000 analysis tool."><img src="../images/2/26/CertAnalysis.png" alt="The BCI2000 analysis tool." width="580" height="701" longdesc="/wiki/index.php/Image:CertAnalysis.png" /></a>  <div class="thumbcaption" >The BCI2000 analysis tool.</div></div></div>
+<p>Simply pressing the <code>Analyze</code> button will start the Analysis program. It is also possible to run the program manually from the command line.
 </p>
-<ol><li> If using the GUI to analyze data, be sure to save the current <code>*.ini</code> file prior to starting. The analysis program uses the information in this file to determine how to analyze and interpret the data files.
+<ol><li> If using the GUI to analyze data, be sure to save the current <code>*.ini</code> file in the BCI2000Certification program prior to starting the analysis. The analysis program uses the information in this file to determine how to analyze and interpret the data files.
 </li><li> If the tasks have been altered in the BCI2000Certification program, go to <code>File-&gt;Save *.ini</code>, and create a new ini file. We recommend not overwriting the existing configuration files, and instead creating new ones if necessary.
-</li><li> The analysis program will open in a new console window. The process will take several minutes.
+</li><li> The analysis program will open in a new console window. The appropriate folders and files must be entered for this session.
+<ol><li> Press the "+" button to select the folder containing your data files. When you select the folder, all data files contained within its subfolders are added automatically.
+</li><li> Select the *.ini file used for this session.
+</li><li> The configuration file should be left as-is, i.e., as <code>BCI2000Certification.cfg</code>.
+</li><li> Finally, set the directory for the output file. Typically, this should be the same folder that contains all of the data files.
+</li></ol>
+</li><li> When the parameters have been correctly configured, press "Run" to start the analysis, which can take several minutes.
 </li><li> When it is finished, the results are saved to a text file, which can be found in the BCI2000 Certification folder. The file name will have the format <code>results_(date)_(time).txt</code>. Additionally, this file will be opened automatically at the end of the process.
-</li><li> In order to run the analysis program from the command line, two parameters are required: the data folder, and the *.ini file used. The program is run like: <code>BCI2000CertAnalysis.exe -d data -i BCI2000Certification_32ch_100ms.ini</code>
 </li></ol>
 <a name="Interpreting_Analysis_Results"></a><h3>Interpreting Analysis Results</h3>
 <p>The results text file contains detailed results for all tasks. A sample output for a single task is shown here:

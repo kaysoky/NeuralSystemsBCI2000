@@ -199,7 +199,7 @@ void TachyonADC::Halt()
 }
 </pre>
 <a name="Data_Acquisition"></a><h2>Data Acquisition</h2>
-<p>Note that the function may not return unless the output signal is filled with data, so it is
+<p>Note that the <tt>Process</tt> function may not return unless the output signal is filled with data, so it is
 crucial that <tt>TachyonWaitForData</tt> is a blocking function.
 (If your card does not provide such a function, and you need to poll
 for data, don't forget to call <tt>Sleep( 0 )</tt> inside your polling loop to

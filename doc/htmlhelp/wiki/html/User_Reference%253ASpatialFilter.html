@@ -90,7 +90,7 @@ Also, specifying <i>row labels</i> to identify output channels allows you to use
 </p>
 <a name="Sparse_Matrix_Filter_Type"></a><h4>Sparse Matrix Filter Type</h4>
 <p>The sparse matrix filter uses the SpatialFilter parameter to define the relationship between input channels and output channels with a given weight. In this case, the SpatialFilter matrix must have 3 columns, and a row for each input/output relationship. The first column contains the input channel, the third column defines the weight that the input channel is multiplied by before being assigned to the output channel, which is defined in the second column.
-</p><p>When specifying input channels in the first column, you may use <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel names</a>. In order to assign labels to output channels in sparse representation, use arbitrary labels in the (third) output channel column.
+</p><p>When specifying input channels in the first column, you may use <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">channel names</a>. In order to assign labels to output channels in sparse representation, use arbitrary labels in the (second) output channel column.
 </p><p>See the example below for more information on how to use the sparse matrix.
 </p>
 <a name="SpatialFilterCAROutput"></a><h3>SpatialFilterCAROutput</h3>
@@ -250,7 +250,7 @@ In your spatial filter, you will want to re-reference all channels against "link
 <p>Full matrix representation is the most general way to specify a spatial filter, and recommended for situations not allowed for by the remaining spatial filter types.
 Compared to those, it is associated with a number of disadvantages:
 </p>
-<ul><li>Complexity is <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
+<ul><li>Complexity of matrix-vector multiplication is <span class="texhtml"><i>O</i>(<i>N</i><sup>2</sup>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
 </li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be inferred, and all output labels must be specified manually.
 </li><li>The filter's specification depends on the order of input channels, which makes it interdependent with the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters"><i>TransmitChList</i> parameter</a>.
 </li></ul>

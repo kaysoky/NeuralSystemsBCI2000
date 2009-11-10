@@ -165,12 +165,12 @@ from Matlab struct into string representation and back.
 into a cell array of strings containing valid BCI2000 parameter
 definition strings.
 </p><p>When the input is a cell array rather than a Matlab struct, convert_bciprm
-definition strings (ignoring the NumericValue field if present).
+will interpret the input as a list of BCI2000 parameter definition strings (ignoring the NumericValue field if present).
 </p>
 <pre>parameter_struct = convert_bciprm( parameter_lines );
 </pre>
 <a name="mem"></a><h3><tt>mem</tt></h3>
-<p>This command estimates an amplitude spectrum, using the AR based spectral estimator
+<p>This command estimates a power spectrum, using the AR based spectral estimator
 that is also present in the <a href="User_Reference%253AARFilter.html" title="User Reference:ARFilter">ARFilter</a>.
 The calling syntax is:
 </p>

@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 August_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" rel="nofollow">August 2009 Build</a>
 4 June_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" rel="nofollow">June 2009 Build</a>
 4 May_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090514.exe" rel="nofollow">May 2009 Build</a>
 4 April_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090422.exe" rel="nofollow">April 2009 Build</a>
@@ -129,6 +130,7 @@ Contributions%253ABCPy2000.html
 3 Version_History Version History
 4 2008-09-30:__BCPy2000_8570_.28also_known_as_1.0.29 2008-09-30:  BCPy2000 8570 (also known as 1.0)
 4 2009-03-16:__BCPy2000_11336 2009-03-16:  BCPy2000 11336
+4 2009-09-22:_BCPy2000_13637 2009-09-22: BCPy2000 13637
 3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
 4 ShowSignalTime ShowSignalTime
@@ -144,7 +146,6 @@ Contributions%253ABCPy2000.html
 4 EventOffset EventOffset
 4 CurrentTrial CurrentTrial
 4 CurrentBlock CurrentBlock
-4 VEStimulusTime VEStimulusTime
 
 Contributions%253ABatch.html
 2 Synopsis Synopsis
@@ -530,7 +531,7 @@ Contributions%253ATDTADC.html
 3 LPFfreq LPFfreq
 3 notchBW notchBW
 3 nProcessors nProcessors
-3 SampleRate SampleRate
+3 SamplingRate SamplingRate
 3 NumEEGchannels NumEEGchannels
 3 FrontPanelList FrontPanelList
 3 DigitalGain DigitalGain
@@ -548,8 +549,13 @@ Contributions%253ATMSiADC.html
 3 Version_History Version History
 3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
-3 SoftwareChList SoftwareChList
-3 SamplingRate.2C_SampleBlockSize SamplingRate, SampleBlockSize
+3 PhysicalChannels PhysicalChannels
+3 Optional_Parameters_.28command-line_options_to_TMSi.exe.29 Optional Parameters (command-line options to TMSi.exe)
+4 TMSiBufferSizeInSampleBlocks TMSiBufferSizeInSampleBlocks
+4 TMSiProcessPriority TMSiProcessPriority
+4 TMSiSleepMsec TMSiSleepMsec
+4 TMSiAutoReference TMSiAutoReference
+4 TMSiCheckImpedance TMSiCheckImpedance
 2 States States
 2 See_also See also
 
@@ -1966,6 +1972,11 @@ Technical_Reference%253ASystem_Design.html
 3 Control_Signal_Messages Control Signal Messages
 2 See_also See also
 
+UserReference%253AP300ClassifierMethods.html
+2 Load_BCI2000_Data_Files  Load BCI2000 Data Files 
+2 Get_P300_Responses  Get P300 Responses 
+2 Generate_Feature_Weights_for_a_Linear_Model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29  Generate Feature Weights for a Linear Model using Stepwise Linear Discriminant Analysis (SWLDA) 
+
 User_FAQ.html
 2 Troubleshooting Troubleshooting
 3 Timing_Issues Timing Issues
@@ -2434,6 +2445,11 @@ User_Reference%253AMatlab_MEX_Files.html
 3 mem <tt>mem</tt>
 2 See_also See also
 
+User_Reference%253AMethods.html
+2 Load_BCI2000_Data_Files  Load BCI2000 Data Files 
+2 Get_P300_Responses  Get P300 Responses 
+2 Generate_Feature_Weights_for_a_Linear_Model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29  Generate Feature Weights for a Linear Model using Stepwise Linear Discriminant Analysis (SWLDA) 
+
 User_Reference%253AModule_Command_Line_Options.html
 2 Core_Modules Core Modules
 3 Specifying_the_Operator_Module.27s_Network_Address Specifying the Operator Module's Network Address
@@ -2527,6 +2543,7 @@ User_Reference%253AP300_classifier.html
 2 Location Location
 2 Versioning Versioning
 3 Author Author
+3 e-mail e-mail
 3 Source_Code_Revisions Source Code Revisions
 2 Control_Panel Control Panel
 3 Data_Pane Data Pane
@@ -2535,16 +2552,17 @@ User_Reference%253AP300_classifier.html
 2 Methodology Methodology
 3 Methodology_Concept Methodology Concept
 3 Methodology_Step_By_Step Methodology Step By Step
-4 Step_1:_Load_BCI2000_data_files Step 1: Load BCI2000 data files 
-4 Step_2:_Get_P300_responses Step 2: Get P300 responses 
-4 Step_3:_Generate_feature_weights_for_a_linear_model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29 Step 3: Generate feature weights for a linear model using Stepwise Linear Discriminant Analysis (SWLDA) 
-4 Step_4:_Apply_linear_classifier_to_get_scores Step 4: Apply linear classifier to get scores 
-4 Step_5:_Interpret_scores Step 5: Interpret scores 
+4 Step_1:_Load_BCI2000_Data_Files Step 1: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Load BCI2000 Data Files</a>
+4 Step_2:_Get_P300_Responses Step 2: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Get P300 Responses</a> 
+4 Step_3:_Generate_Feature_Weights_for_a_Linear_Model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29 Step 3: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Generate Feature Weights for a Linear Model using Stepwise Linear Discriminant Analysis (SWLDA)</a>
+4 Step_4:_Apply_Linear_Classifier_to_Get_Scores Step 4: Apply Linear Classifier to Get Scores 
+4 Step_5:_Interpret_Scores Step 5: Interpret Scores 
 2 Tutorial Tutorial
-3 Step_0:_... Step 0: ...
-3 Step_1:_... Step 1: ...
-3 Step_2:_... Step 2: ...
-2 See_also See also
+3 Training_the_SWLDA_Classifier Training the SWLDA Classifier
+3 Testing_the_SWLDA_Classifier Testing the SWLDA Classifier
+3 Example Example
+2 Future_work Future work
+2 References References
 
 User_Reference%253AP3SpellerTask.html
 2 Synopsis Synopsis
@@ -2613,13 +2631,14 @@ User_Reference%253AP3TemporalFilter.html
 3 EpochsToAverage EpochsToAverage
 3 VisualizeP3TemporalFiltering VisualizeP3TemporalFiltering
 3 TargetERPChannel TargetERPChannel
-2 States_used_for_Input States used for Input
-3 StimulusBegin_.28optional.29 StimulusBegin (optional)
-3 StimulusCode StimulusCode
-3 StimulusType StimulusType
-2 States_used_for_Output States used for Output
-3 StimulusCodeRes StimulusCodeRes
-3 StimulusTypeRes StimulusTypeRes
+2 States States
+3 States_used_for_Input States used for Input
+4 StimulusBegin_.28optional.29 StimulusBegin (optional)
+4 StimulusCode StimulusCode
+4 StimulusType StimulusType
+3 States_used_for_Output States used for Output
+4 StimulusCodeRes StimulusCodeRes
+4 StimulusTypeRes StimulusTypeRes
 2 See_also See also
 
 User_Reference%253AParameter_Changes_for_Version_2.html
@@ -2840,7 +2859,7 @@ User_Tutorial%253AAnalyzing_the_Initial_P300_Session.html
 User_Tutorial%253ABCI2000_Tour.html
 2 Starting_up_BCI2000 Starting up BCI2000
 2 BCI2000_Help BCI2000 Help
-2 Loading_a_Parameter_File Loading a Parameter File
+2 Parameter_Files Parameter Files
 2 Entering_a_Subject_ID Entering a Subject ID
 2 Parameter_Help Parameter Help
 2 Applying_Configuration_Parameters Applying Configuration Parameters

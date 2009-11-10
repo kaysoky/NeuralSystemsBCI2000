@@ -116,7 +116,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 <ul><li>With these four points, close the feature plot, and enter the channel numbers of the data points you found into the <i>Waveform Channels</i> field and the time points into the <i>Topo Times</i> field.
 <ul><li>In the example above, the four best data points have r-squared values <tt>0.02218</tt>, <tt>0.02179</tt>, <tt>0.01928</tt>, and <tt>0.019</tt>, occur at times <tt>388.7ms</tt>, <tt>392.6ms</tt>, <tt>384.8ms</tt>, and <tt>365.2ms</tt> respectively, and all four are located in channel six. <tt>6, 6, 6, 6</tt> would be entered into <i>Waveform Channels</i> and <tt>388.7, 392.6, 384.8, 365.2</tt> would be entered into the <i>Topo Times</i> field. The order of the data points here does not matter, only that they are in the same order in both fields.
-</li><li>If there are less than four points that seem appropriate, either because they are at the wrong electrodes, at the wrong times, or simply have too low of an r-squared value, that is fine, three or two values can work, though the fewer values used the lower the accuracy will be. 
+</li><li>If there are less than four points that seem appropriate, either because they are at the wrong electrodes, at the wrong times, or simply have too low of an r-squared value, that is fine, three or two values can work, though the fewer values used the lower the accuracy will be.
+</li><li>Additionally, it may be helpful to re-run the analysis by setting the <i>Spatial Filter</i> to <b>None</b>, particularly when few channels are used.
 </li></ul>
 </li><li>Click <b>Generate Plots</b> to create the features plot again with a set of four graphs that show the correlation between the selected times after the desired stimulus is given (the red line) and the brain’s responses to when the desired stimulus is not given (the blue line).
 <ul><li>As seen below, the attended-stimulus reaction will typically be stronger than for the unattended stimuli, but in some cases the reverse is true. If the ‘unattended’ curve is larger than the ‘attended’ curve then make a note of this before moving on. The waveform seen here is similar to the others generated, only one is shown here for simplicity.
@@ -124,9 +125,6 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 </li></ul>
 <div class="center"><div class="floatnone"><span><a href="../images/thumb/1/1d/Waveform.PNG/800px-Waveform.PNG" class="image" title=""><img src="../images/thumb/1/1d/Waveform.PNG/800px-Waveform.PNG" alt="" width="800" height="391" longdesc="/wiki/index.php/Image:Waveform.PNG" /></a></span></div></div>
-<p><br />
-</p><p><br />
-</p>
 <a name="Creating_a_subject-specific_parameter_file"></a><h2>Creating a subject-specific parameter file</h2>
 <p>Now we will save these customizations to a subject-specific parameter file that will allow the subject to free-spell with very high accuracy.
 </p>
@@ -139,13 +137,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>In the second column, labeled <i>Input Element (bin)</i>, enter the time of the best classification, immediately followed with <tt>ms</tt>, as in <tt>388.7ms</tt>
 </li><li>In the third column, enter 1 as the output channel
 </li><li>In the fourth column, enter 1 if the <i>Attended</i> line was larger than the <i>Unattended</i> line, -1 if the <i>unattended</i> line was larger than the <i>attended</i> line
-</li><li>Repeat these steps for the remaining rows
+</li><li>Repeat these steps for the remaining rows, and close the matrix when finished
 </li></ul>
-</li><li>Close this matrix, and click <b>Save Parameters</b> to save this file, naming it however you deem fit
+</li><li> If a <b>Common Average Reference</b> was used in the analysis, under the <b>Filtering</b> tab change the <b>SpatialFilterType</b> parameter to <b>Common Average Reference (CAR)</b>; otherwise, leave it as <b>None</b>.
+</li><li>Click <b>Save Parameters</b> to save this file, naming it however you deem fit
 </li><li>Use this new parameter file to repeat the configuration session and data analysis a few times, adding new rows to the classifier matrix each time for new data points to be utilized.
 </li><li>When accuracy is reliably above 90%, click <b>Config,</b> and click on the <b>Application</b> tab:
-<ul><li>Set <i>NumberOfSequences</i> to this number as well <b>(to which number? jm)</b>
-</li><li>Delete the contents of the <i>Text to Spell</i> field
+<ul><li>Delete the contents of the <i>Text to Spell</i> field
 </li><li>Set <i>InterpretMode</i> &rarr; <tt>online free mode</tt>
 </li><li>Make sure the <i>DisplayResults</i> box is checked
 </li><li>Click on <b>Edit Matrix</b> next to <i>TargetDefinitions</i> and scroll to the bottom:

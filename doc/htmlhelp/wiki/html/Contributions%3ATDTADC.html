@@ -54,7 +54,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#LPFfreq"><span class="tocnumber">5.4</span> <span class="toctext">LPFfreq</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#notchBW"><span class="tocnumber">5.5</span> <span class="toctext">notchBW</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#nProcessors"><span class="tocnumber">5.6</span> <span class="toctext">nProcessors</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253ATDTADC.html#SampleRate"><span class="tocnumber">5.7</span> <span class="toctext">SampleRate</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ATDTADC.html#SamplingRate"><span class="tocnumber">5.7</span> <span class="toctext">SamplingRate</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#NumEEGchannels"><span class="tocnumber">5.8</span> <span class="toctext">NumEEGchannels</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#FrontPanelList"><span class="tocnumber">5.9</span> <span class="toctext">FrontPanelList</span></a></li>
 <li class='toclevel-2'><a href="Contributions%253ATDTADC.html#DigitalGain"><span class="tocnumber">5.10</span> <span class="toctext">DigitalGain</span></a></li>
@@ -127,7 +127,7 @@ Neural Interfaces Technology and Research Optimization (NITRO) Lab
 <a name="nProcessors"></a><h3>nProcessors</h3>
 <p>The number of processors on the TDT system. This value must correspond to the rco file used in <i>CircuitPath</i>. For example, the chAcquire64_RZ2.rcx and chAcquire16.rco should have <i>nProcessors</i> set to 2, while chAcquire64.rco should use 5.
 </p>
-<a name="SampleRate"></a><h3>SampleRate</h3>
+<a name="SamplingRate"></a><h3>SamplingRate</h3>
 <p>The sampling rate of the system. Use the TDTsampleRate program to calculate the value to enter here! The TDT has a fixed rate of 24414.0625 Hz, so the requested sample rate must be some integer fraction of this value. For example, a sample rate of 512 Hz is not possible, because it is impossible to find an integer that will divide 24414.0625 to get 512. The closest rate to 512 Hz that can be used is 519.448, because 24414.0625 / 519.448 = 47. This value (47) is used to set the period of the PulseTrain in figure 1.
 </p>
 <a name="NumEEGchannels"></a><h3>NumEEGchannels</h3>
