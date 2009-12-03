@@ -80,7 +80,7 @@ Q: When I start the gUSBamp source module, I get the error message: "Cannot find
 </p><p>A: Most likely, your gUSBamp source module finds an incompatible version of the gUSBamp.dll driver library. Make sure that, in the directory where gUSBampSource.exe resides, there is a file gUSBamp.dll in the exact version that originally came with your BCI2000 distribution.
 </p>
 <a name="Feedback"></a><h3>Feedback</h3>
-<p>Q: The first time a subject is run using the cursor feedback protocol, during the first trial of the first run only, the cursor moves to the top of the screen and does not respond to use input. BCI2000 outputs increasingly large negative numbers during this run. 
+<p>Q: The first time a subject is run using the cursor feedback protocol, during the first trial of the first run only, the cursor moves to the top of the screen and does not respond to user input. BCI2000 outputs increasingly large negative numbers during this run. 
 </p><p>A: This is not so much a bug as a side effect of the way the adaptation mechanism works. Since the adaptation mechanism hasn't been trained, all it has are the initial values for offset and gain. For each subject, it will take a few trials to adapt BCI2000 to this subject's signals.
 </p><p>Therefore, you will typically save a subject's adapted parameters after each session, and use this as a starting point for the next session. Alternatively, you may load a subject's parameters from a previous session's <i>data</i> file by specifying the data file rather than a parameter file from the <i>Load parameters...</i> dialog.
 </p>
