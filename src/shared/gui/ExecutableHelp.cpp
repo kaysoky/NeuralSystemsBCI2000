@@ -234,7 +234,7 @@ ExecutableHelp::InitializeContextHelp()
                   while( i != heading.end() )
                   {
                     string word;
-                    while( ::isalpha( *i ) || *i == '_' )
+                    while( ( i != heading.end() ) && ( ::isalnum( *i ) || *i == '_' ) )
                       word += *i++;
                     if( !word.empty() )
                     {
@@ -249,7 +249,7 @@ ExecutableHelp::InitializeContextHelp()
                           break;
                       }
                     }
-                    while( !::isalpha( *i ) && ( i != heading.end() ) )
+                    while( ( i != heading.end() ) && !::isalnum( *i ) )
                       ++i;
                   }
                 } break;
