@@ -55,7 +55,7 @@ main( int argc, char** argv )
     cout << "Usage: split_bcidat -s<output size in MB> <input file>" << endl;
     return 0;
   }
-  
+
   ifstream inputFile( inputFileName, ios::in | ios::binary );
   if( !inputFile.is_open() )
   {
@@ -71,7 +71,7 @@ main( int argc, char** argv )
   inputFile >> token;
   if( token == "BCI2000V=" )
   {
-    inputFile >> token >> token >> headerLen 
+    inputFile >> token >> token >> headerLen
               >> token >> sourceCh
               >> token >> statevectorLen
               >> token >> token;
@@ -94,7 +94,7 @@ main( int argc, char** argv )
     cerr << "Could not read " << inputFileName << " as a BCI2000 data file" << endl;
     return -1;
   }
-  
+
   char* pHeader = new char[headerLen];
   inputFile.seekg( 0, ios_base::beg );
   inputFile.read( pHeader, headerLen );
@@ -119,8 +119,8 @@ main( int argc, char** argv )
     }
     if( verbose )
       cout << "Writing " << outputFileName << endl;
-    outputFile.write( pHeader, headerLen ); 
-	for( int block = 0; ( block < nBlocks ) && inputFile; ++block )
+    outputFile.write( pHeader, headerLen );
+    for( int block = 0; ( block < nBlocks ) && inputFile; ++block )
     {
       inputFile.read( pBuffer, blockSize );
       outputFile.write( pBuffer, inputFile.gcount() );
