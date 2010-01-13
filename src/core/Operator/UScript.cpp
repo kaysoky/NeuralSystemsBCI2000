@@ -170,9 +170,12 @@ bool    ok;
        {
        while ((line[idx] == '\0') || (line[idx] == ' '))
         idx++;
-       statelist->Add(&line[idx]);
+       bool result = statelist->Add(&line[idx]);
        idx=get_argument(idx, token, line, 256);
-       sprintf(buf, "%s: Added state %s to list", filename, token);
+       if( result )
+         sprintf(buf, "%s: Added state %s to list", filename, token);
+       else
+         sprintf(buf, "%s: Could not add state %s to list", filename, token);
        syslog->AddSysLogEntry(buf);
        return(1);
        }
