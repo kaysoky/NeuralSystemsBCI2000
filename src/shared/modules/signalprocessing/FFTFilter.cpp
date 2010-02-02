@@ -97,7 +97,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
 }
 
 void
-FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& Output )
+FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
   mFFTWindowLength = Input.Elements()

@@ -229,7 +229,7 @@ FilterWrapper::HandleVisSignalProperties( istream& arIn )
   delete mpInputProperties;
   mpInputProperties = NULL;
   VisSignalProperties v;
-  if( v.ReadBinary( arIn ) && v.SourceID() == 0 )
+  if( v.ReadBinary( arIn ) && v.SourceID().empty() )
     mpInputProperties = new SignalProperties( v.SignalProperties() );
   return mpInputProperties != NULL;
 }
@@ -238,7 +238,7 @@ bool
 FilterWrapper::HandleVisSignal( istream& arIn )
 {
   VisSignal s;
-  if( s.ReadBinary( arIn ) && s.SourceID() == 0 )
+  if( s.ReadBinary( arIn ) && s.SourceID().empty() )
   {
     const GenericSignal& inputSignal = s;
     SignalProperties outputProperties;

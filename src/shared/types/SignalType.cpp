@@ -42,7 +42,11 @@ static struct
   { SignalType::int16,   "int16",   2, - ( 1 << 15 ), ( 1 << 15 ) - 1 },
   { SignalType::float24, "float24", 3, - numeric_limits<float>::max(), numeric_limits<float>::max() },
   { SignalType::float32, "float32", 4, - numeric_limits<float>::max(), numeric_limits<float>::max() },
+ #if defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) // bcc32 5.5.1 does not have LL type
+  { SignalType::int32,   "int32",   4, - ( 1i64 << 31 ), ( 1i64 << 31 ) - 1 },
+ #else // __BORLANDC__
   { SignalType::int32,   "int32",   4, - ( 1LL << 31 ), ( 1LL << 31 ) - 1 },
+ #endif // __BORLANDC__
 };
 
 static const int numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *SignalTypeProperties );

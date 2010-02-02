@@ -17,6 +17,10 @@
 
 #include <sstream>
 
+#ifdef _WIN32
+# include <Windows.h>
+#endif // _WIN32
+
 using namespace std;
 
 static const string cErrorVariable = "bci_Error";
@@ -394,6 +398,7 @@ MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 bool
 MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
 {
+#if !defined( __BORLANDC__ ) || ( __BORLANDC__ > 0x0560 ) // bcc32 5.5.1 comes without an assembler
   {
     // According to Mathworks Helpdesk, Solution Number: 1-1134M0,
     // this code works around a bug in Matlab R14Sp1 and R14Sp2
@@ -403,6 +408,7 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
     __asm  fnclex;             // clear fpu exceptions
     __asm  fldcw CtrlWord;     // load fpu control word
   }
+#endif // __BORLANDC__
   bool success = true;
   void* dllHandle = ::LoadLibrary( inName );
   if( !dllHandle )

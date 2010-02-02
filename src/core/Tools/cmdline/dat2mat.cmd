@@ -8,7 +8,8 @@ REM bci_dat2stream and the bci_stream2mat executables.
 if [%1]==[] goto info
 
 echo Processing...
-(for %%i in (%*) do @bci_dat2stream < "%%i")|bci_stream2mat > "%~dpn1.mat"
+pushd "%~dp0"
+(for %%i in (%*) do @bci_dat2stream < "%%i")| bci_stream2mat > "%~dpn1.mat"
 goto end
 
 :info

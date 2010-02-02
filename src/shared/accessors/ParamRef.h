@@ -15,6 +15,7 @@
 #include <string>
 #include <cmath>
 #include "Param.h"
+#include "defines.h"
 
 class ParamRef
 {
@@ -56,9 +57,9 @@ class ParamRef
     { return double( *this ); }
   operator unsigned long() const
     { return double( *this ); }
-  operator long long() const
+  operator sint64() const
     { return double( *this ); }
-  operator unsigned long long() const
+  operator uint64() const
     { return double( *this ); }
 
   // We also need to override operators to avoid ambiguities

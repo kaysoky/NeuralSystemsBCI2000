@@ -109,13 +109,14 @@ DLLDIR = ..\..\..\..\Tools\dll
 SCRIPTS = *.cmd *.bat load_bcimat.m
 DLLSUPPL = dll_example.m bci_dll.h
 
-DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT
-CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tW -tWM -w-par
+DEFINES = _DEBUG;BCI_TOOL;NO_STRICT;_NO_VCL;SIGNAL_BACK_COMPAT;NO_PCHINCLUDES
+CFLAGS = -Od -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c -tWC -w-par
 
 CPP = bcc32 ${CFLAGS} -D${DEFINES} -I${INCLUDEPATH}
 LD  = bcc32 -L${LIBPATH}
 AR  = tlib /C /P256 /0 >nul # If this fails, try a larger value for the /P argument.
-RM  = del 
+RM  = @del 
+MV  = @move
 
 .autodepend
 .path.cpp=${PATHCPP}
@@ -124,10 +125,12 @@ RM  = del
 	${MAKE} obj\bci_tool.lib
 	${MAKE} obj\bci_filtertool.obj
 	${LD} $< obj\bci_filtertool.obj obj\bci_tool.lib
+	${MV} ${PATHOBJ}\${*F}.exe . >nul 2>&1 ${OR} @echo.
 	
 {$(PATHOBJ)}.obj.dll:
 	${MAKE} obj\bci_dll.lib
 	${LD} -WD $< obj\bci_dll.lib
+	${MV} ${PATHOBJ}\${*F}.dll . >nul 2>&1 ${OR} @echo.
 
 .cpp.obj:
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}

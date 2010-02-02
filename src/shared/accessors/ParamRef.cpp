@@ -29,7 +29,7 @@ ParamRef::operator double() const
     result = std::atof( val.c_str() );
     if( result == 0.0 )
     {
-      long long n = 0;
+      uint64 n = 0;
       if( std::istringstream( val ) >> std::hex >> n )
         result = n;
     }

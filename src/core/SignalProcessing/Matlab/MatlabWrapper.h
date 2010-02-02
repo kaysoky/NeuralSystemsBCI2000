@@ -14,7 +14,16 @@
 #include <vector>
 #include "GenericSignal.h"
 #include "Param.h"
-#include "Engine.h"
+
+// BCB2009 defines char16_t but not __STDC_UTF_16__.
+// This leads to problems with recent Matlab headers.
+#if defined( __BORLANDC__ ) && ( __BORLANDC__ > 0x0600 )
+# ifndef __STDC_UTF_16__
+#  define __STDC_UTF_16__ true
+# endif // __STDC_UTF_16__
+#endif // __BORLANDC__
+
+#include "engine.h"
 
 class MatlabEngine
 {

@@ -13,14 +13,13 @@
 #include <algorithm>
 #include <numeric>
 
-class Detrend
+namespace Detrend
 {
- public:
   template<typename T>
    static const std::valarray<T>& MeanDetrend( const std::valarray<T>& );
   template<typename T>
    static const std::valarray<T>& LinearDetrend( const std::valarray<T>& );
-};
+}
 
 // Implementation
 template<typename T>

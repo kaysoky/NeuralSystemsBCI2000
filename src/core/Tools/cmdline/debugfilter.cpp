@@ -17,10 +17,10 @@ class DebugFilter : public GenericFilter
           DebugFilter();
   virtual ~DebugFilter();
   virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-  virtual void Initialize();
+  virtual void Initialize( const SignalProperties&, const SignalProperties& );
   virtual void StartRun();
   virtual void StopRun();
-  virtual void Process( const GenericSignal *Input, GenericSignal *Output );
+  virtual void Process( const GenericSignal& Input, GenericSignal& Output );
   virtual void Resting();
   virtual void Halt();
 
@@ -50,7 +50,8 @@ void DebugFilter::Preflight( const SignalProperties& inSignalProperties,
   outSignalProperties = inSignalProperties;
 }
 
-void DebugFilter::Initialize()
+void DebugFilter::Initialize( const SignalProperties& inSignalProperties,
+                              const SignalProperties& outSignalProperties )
 {
   REPORTFUNCTION;
 }
@@ -65,10 +66,10 @@ void DebugFilter::StopRun()
   REPORTFUNCTION;
 }
 
-void DebugFilter::Process( const GenericSignal *input, GenericSignal *output )
+void DebugFilter::Process( const GenericSignal& input, GenericSignal& output )
 {
   ++mProcessCount;
-  *output = *input;
+  output = input;
 }
 
 void DebugFilter::Resting()
@@ -85,7 +86,7 @@ void DebugFilter::ReportProcessCount() const
 {
   if( mProcessCount > 0 )
   {
-    __bciout << "DebugFilter::Process called "
+    bciout__ << "DebugFilter::Process called "
              << mProcessCount
              << " times"
              << endl;

@@ -85,7 +85,7 @@ template<typename T>
 const std::valarray<T>&
 TransferSpectrum<T>::Evaluate( const Ratpoly< std::complex<T> >& inFunction ) const
 {
-  static std::valarray<T> result( 0 );
+  static std::valarray<T> result( ( unsigned int )( 0 ) );
   result.resize( mNumBins );
   result = 0.0;
   for( int bin = 0; bin < mNumBins; ++bin )

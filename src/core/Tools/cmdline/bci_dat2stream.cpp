@@ -42,8 +42,13 @@ ToolResult ToolInit()
   return noError;
 }
 
-ToolResult ToolMain( const OptionSet& options, istream& in, ostream& out )
+ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
 {
+#if defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) // bug in STL coming with bcc32 5.5.1
+  OptionSet& options = const_cast<OptionSet&>( options_ );
+#else
+  const OptionSet& options = options_;
+#endif
   ToolResult result = noError;
   string transmissionList = options.getopt( "-t|-T|--transmit", "-spd" );
   bool transmitStates = ( transmissionList.find_first_of( "sS" ) != string::npos ),
