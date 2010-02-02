@@ -12,3 +12,4 @@ pushd "%~dp0"
   LinearClassifier     |(
   Normalizer           |(
 bci_stream2table       )))))))
+popd

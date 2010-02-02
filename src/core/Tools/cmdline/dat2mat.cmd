@@ -20,3 +20,4 @@ echo Please drop one or more *.dat files onto this program.
 :end
 echo.
 pause
+popd
