@@ -9,7 +9,7 @@
 //       Results have been tested against the mkfilter on-line version available at
 //       http://www-users.cs.york.ac.uk/~fisher/mkfilter/
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 /////////////////////////////////////////////////////////////////////////////////
 #ifndef FILTER_DESIGN_H

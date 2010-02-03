@@ -5,7 +5,7 @@
 //     autoregressive spectral analysis adapted from Press et. al.
 //     Numerical Recipes in C (chapter 13).
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MEM_PREDICTOR_H

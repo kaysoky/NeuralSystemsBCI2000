@@ -4,7 +4,7 @@
 // Description: geomObj holds common geometric properties of 3D scene objects,
 //   and provides an interface for hit testing (volume intersection).
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GEOM_OBJ_H

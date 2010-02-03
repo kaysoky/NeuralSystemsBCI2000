@@ -4,7 +4,7 @@
 // Description: A class template for objects that replace the mouse cursor
 //   during their lifetime, i.e. from construction to destruction.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MOUSE_CURSOR_H

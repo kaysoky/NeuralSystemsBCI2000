@@ -6,7 +6,7 @@
 //   When a sound string is enclosed in single quotes ('text'), it is rendered
 //   using the OS's text-to-speech engine.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef AUDIO_STIMULUS_H

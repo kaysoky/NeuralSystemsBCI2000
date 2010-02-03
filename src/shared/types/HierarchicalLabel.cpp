@@ -5,7 +5,7 @@
 //   section label, or a signal's channel labels.
 //   Hierarchy levels are separated by a single ':' character.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

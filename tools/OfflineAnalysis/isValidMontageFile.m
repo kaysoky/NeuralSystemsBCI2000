@@ -9,7 +9,7 @@
 %% a given montage file in order to make sure the file is in the approved
 %% format.
 %%
-%% (C) 2000-2009, BCI2000 Project
+%% (C) 2000-2010, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [isValid numChans] = isValidMontageFile(fn, settings, acqType)

@@ -4,7 +4,7 @@
 //  Description: A (working) tutorial low pass filter demonstrating
 //               parameter access, visualization, and unit conversion.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy

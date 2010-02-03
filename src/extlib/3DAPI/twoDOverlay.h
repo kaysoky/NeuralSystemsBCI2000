@@ -4,7 +4,7 @@
 // Description: This "twoDOverlay" class resembles the 2D overlay on top of the
 //   3D environment.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////////
 #ifndef TWO_D_OVERLAY_H

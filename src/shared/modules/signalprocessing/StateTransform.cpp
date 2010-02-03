@@ -5,7 +5,7 @@
 //              Whenever a given state's value changes, it replaces the new
 //              value by a user-defined expression.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

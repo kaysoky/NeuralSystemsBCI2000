@@ -6,7 +6,7 @@
 //   Data read from the UDP port are written to stdout; data written into the
 //   UDP port are read from stdin.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include <iostream>

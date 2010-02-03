@@ -12,7 +12,7 @@
 //              will create a new state vector using the states
 //              requested by the filter(s) present in the DLL.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include "bci_dll.h"

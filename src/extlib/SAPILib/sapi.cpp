@@ -4,7 +4,7 @@
 // Description: This file has been created to support the use of the
 //              Microsoft Speech API in conjunction with the sapi.lib which
 //              contains the imported Microsoft sapi.dll
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 

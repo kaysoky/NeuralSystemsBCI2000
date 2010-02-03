@@ -4,7 +4,7 @@
 // Description: Class that provides an interface to the data stored in BCI2000
 //   data files belonging to a session.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef BCI2000_SESSION_READER_H

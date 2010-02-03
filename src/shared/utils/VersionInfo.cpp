@@ -10,7 +10,7 @@
 //   Colons following keywords are mandatory.
 //   Any characters between closing and opening $ are ignored.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

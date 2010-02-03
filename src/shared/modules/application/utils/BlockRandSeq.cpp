@@ -7,7 +7,7 @@
 //   of the numbers [1..<block size>], unless the block size is 0.
 //   In the latter case, NextElement() will always return 0.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

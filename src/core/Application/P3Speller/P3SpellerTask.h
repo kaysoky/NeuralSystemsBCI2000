@@ -5,7 +5,7 @@
 // Description: The task filter for a P300 based speller providing multiple
 //   menus.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef P3_SPELLER_TASK_H

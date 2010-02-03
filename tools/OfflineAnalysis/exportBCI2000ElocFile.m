@@ -8,7 +8,7 @@
 %% Description: This function generates an electrode location file
 %% compatible with BCI2000.
 %%
-%% (C) 2000-2009, BCI2000 Project
+%% (C) 2000-2010, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function success = exportBCI2000ElocFile(elecData, fn, settings)

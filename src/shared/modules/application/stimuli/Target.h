@@ -7,7 +7,7 @@
 //   A speller target, for example, will enter its entry text in its OnSelect
 //   method.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef TARGET_H

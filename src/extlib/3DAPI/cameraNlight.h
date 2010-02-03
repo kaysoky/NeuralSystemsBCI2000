@@ -4,7 +4,7 @@
 // Description: This "cameraNLight" class encapsulate the camera and the light in the
 //   3D environment.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////////
 #ifndef CAMERA_N_LIGHT_H

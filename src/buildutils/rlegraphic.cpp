@@ -4,7 +4,7 @@
 // Description: A program that converts graphics files into rle-
 //   encoded C++ resource files.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////
 #include <string>

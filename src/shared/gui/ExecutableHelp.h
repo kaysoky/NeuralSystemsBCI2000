@@ -6,7 +6,7 @@
 //   The help file is a html file that has the same name as the executable,
 //   except that it bears a .html extension.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef EXECUTABLE_HELP_H

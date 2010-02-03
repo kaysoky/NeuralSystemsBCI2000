@@ -3,7 +3,7 @@
 // Description: A BCI2000 filter that computes epoch averages of its input
 //   signal, and displays these in a visualization window.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef AVERAGE_DISPLAY_H

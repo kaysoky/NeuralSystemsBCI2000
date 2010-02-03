@@ -4,7 +4,7 @@
 // Description: This class handles all of the loading code
 //   to load .3ds file
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef C_LOAD_3DS_H

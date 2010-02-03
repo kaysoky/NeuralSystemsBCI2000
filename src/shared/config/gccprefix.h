@@ -4,7 +4,7 @@
 /* Description: Compiler specific definitions for the GNU gcc compiler.
 /*   When compiling under gcc, this file should be specified as "prefix file".
 /*
-/* (C) 2000-2009, BCI2000 Project
+/* (C) 2000-2010, BCI2000 Project
 /* http://www.bci2000.org
 /*******************************************************************************/
 #ifndef GCC_PREFIX_H

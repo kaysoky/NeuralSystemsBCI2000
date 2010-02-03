@@ -6,7 +6,7 @@
 //   data, and reports averages when EpochsToAverage data have been accumulated.
 //   Associated stimulus codes are reported in the StimulusCodeRes state.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef P3_TEMPORAL_FILTER_H

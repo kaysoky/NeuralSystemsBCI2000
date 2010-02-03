@@ -5,7 +5,7 @@
 //              data format as defined in Kemp et al, 1992, and the
 //              GDF 2.10 data format as defined in Schloegl et al, 2008.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GDF_H

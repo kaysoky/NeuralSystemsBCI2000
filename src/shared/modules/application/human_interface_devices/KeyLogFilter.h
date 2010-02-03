@@ -8,7 +8,7 @@
 //   In the MouseKeys state, bit 0 represents left and bit 1 represents the
 //   right mouse button.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef KEY_LOG_FILTER_H

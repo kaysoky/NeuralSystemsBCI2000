@@ -5,7 +5,7 @@
 // Description: A class that encapsulates connection details of the BrainAmp
 //              RDA socket interface.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop

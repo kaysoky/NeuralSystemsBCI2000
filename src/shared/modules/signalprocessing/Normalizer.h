@@ -9,7 +9,7 @@
 //   unit range, i.e. a zero mean signal will be normalized to the
 //   range [-1,1].
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef NORMALIZER_H

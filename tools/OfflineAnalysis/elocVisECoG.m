@@ -8,7 +8,7 @@
 %% Description: This function generates a visualization plot of an ECoG
 %% electrode location file.
 %%
-%% (C) 2000-2009, BCI2000 Project
+%% (C) 2000-2010, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [elecInfo] = elocVisECoG(params, loc_file)

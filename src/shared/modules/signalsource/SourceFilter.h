@@ -3,7 +3,7 @@
 // Description: A notch filter for removing power line noise, and a high pass
 //   collected into a single filter.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SOURCE_FILTER_H

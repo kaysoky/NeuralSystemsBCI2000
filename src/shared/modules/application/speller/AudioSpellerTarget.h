@@ -4,7 +4,7 @@
 // Description: A speller target that optionally plays a sound or speaks a text
 //   when selected.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef AUDIO_SPELLER_TARGET_H

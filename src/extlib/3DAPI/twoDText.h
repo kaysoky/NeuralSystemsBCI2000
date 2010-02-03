@@ -4,7 +4,7 @@
 // Description: This "twoDText" class holds the variables of the 2D text that is
 //   going to lay on the top of the 2D overlay
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ///////////////////////////////////////////////////////////////////////////////////////
 #ifndef TWO_D_TEXT_H

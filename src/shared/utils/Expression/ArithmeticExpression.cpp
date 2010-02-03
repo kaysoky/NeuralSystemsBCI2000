@@ -6,7 +6,7 @@
 //   descendant, in addition, allows access to State and Signal values.
 //   For details about expression syntax, see Expression.h.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

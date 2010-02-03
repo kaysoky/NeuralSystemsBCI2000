@@ -4,7 +4,7 @@
 // Description: Main form for an application demonstrating the use of
 //   the 3D Scene GraphObject class.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include <vcl.h>

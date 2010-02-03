@@ -6,7 +6,7 @@
 //              Its operation is roughly equivalent to a short-term fourier
 //              transform followed by demodulation for selected frequency bins.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

@@ -4,7 +4,7 @@
 // Description: Class that provides an interface to the data stored in a
 //              BCI2000 data file.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

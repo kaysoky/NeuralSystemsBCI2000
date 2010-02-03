@@ -1,5 +1,5 @@
 function vers = eegplugin_BCI2000import(fig, trystrs, catchstrs)
-% (C) 2000-2009, BCI2000 Project
+% (C) 2000-2010, BCI2000 Project
 % http://www.bci2000.org
 
     vers = 'BCI2000import1.00';

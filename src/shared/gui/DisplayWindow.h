@@ -4,7 +4,7 @@
 // Description: A GraphDisplay descendant which is a frameless GUI window for
 //   an application's user display.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DISPLAY_WINDOW_H

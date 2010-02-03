@@ -6,7 +6,7 @@
 //     sceneObj representing 3D scene objects, and
 //     overlayObj representing objects in the 2D overlay.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef PRIM_OBJ_H

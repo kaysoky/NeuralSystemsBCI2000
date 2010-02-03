@@ -10,7 +10,7 @@ function [ out_signal_dim ] = bci_Preflight( in_signal_dim )
 
 % BCI2000 filter interface for Matlab
 % juergen.mellinger@uni-tuebingen.de, 2005
-% (C) 2000-2009, BCI2000 Project
+% (C) 2000-2010, BCI2000 Project
 % http://www.bci2000.org
 
 % Parameters and states are global variables.

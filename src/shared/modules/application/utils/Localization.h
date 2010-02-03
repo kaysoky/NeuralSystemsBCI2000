@@ -59,7 +59,7 @@
 //           to their UTF8 encoded string as in
 //             "Dansk Sm" oslash "rrebr" oslash "d".
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef LOCALIZATION_H

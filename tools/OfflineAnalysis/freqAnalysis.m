@@ -8,7 +8,7 @@
 %% Description: This function performs a frequency-domain analysis of the
 %% specified data.
 %%
-%% (C) 2000-2009, BCI2000 Project
+%% (C) 2000-2010, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [res1, res2, ressq, freq_bins] = freqAnalysis(analysisParams, ...

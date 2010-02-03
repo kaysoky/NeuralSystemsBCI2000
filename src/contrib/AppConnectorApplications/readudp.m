@@ -3,7 +3,7 @@ function readudp
 % a UDP socket from Matlab.
 %
 % This demo is part of the BCI2000 project.
-% (C) 2000-2009, BCI2000 Project
+% (C) 2000-2010, BCI2000 Project
 % http://www.bci2000.org
 % $Id$
 

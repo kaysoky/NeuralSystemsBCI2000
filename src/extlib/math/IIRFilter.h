@@ -24,7 +24,7 @@
 //   The filter's Initialize() method adapts the number of internal delays
 //   to the number of channels provided, and resets all delays to zero.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef IIR_FILTER_H

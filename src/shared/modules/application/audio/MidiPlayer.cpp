@@ -3,7 +3,7 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: The Win32 implementation of the MidiPlayer interface.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

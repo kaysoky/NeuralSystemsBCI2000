@@ -6,7 +6,7 @@
 //              This filter is intended for offline simulations of application
 //              module behavior.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef CONDITIONAL_INTEGRATOR_H

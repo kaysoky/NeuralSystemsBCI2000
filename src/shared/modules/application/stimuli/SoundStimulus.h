@@ -4,7 +4,7 @@
 // Description: A WavePlayer descendant that acts as a stimulus by playing
 //   a sound on the Stimulus::Present event.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SOUND_STIMULUS_H

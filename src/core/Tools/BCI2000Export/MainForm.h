@@ -4,7 +4,7 @@
 // Description: Main Form class for a drag and drop converter program that
 //   reads BCI2000 compliant EEG files and converts them into other formats.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MainFormH

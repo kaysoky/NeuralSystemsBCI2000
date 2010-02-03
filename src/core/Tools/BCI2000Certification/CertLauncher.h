@@ -11,7 +11,7 @@ It is designed to be as platform independent as possible, but
 #DEFINE statements are used where necessary, particularly when
 programs need to be launched, and in the process monitoring functions
 
-(C) 2000-2009, BCI2000 Project
+(C) 2000-2010, BCI2000 Project
 http://www.bci2000.org
 */
 //---------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 // Description: A simple expression parser for use within BCI2000.
 //              See Expression.h for details about expressions.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"

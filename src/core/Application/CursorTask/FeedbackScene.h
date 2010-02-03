@@ -4,7 +4,7 @@
 // Description: An abstract class interface for feedback scenes.
 //   A feedback scene consists of a cursor and a number of targets.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef FEEDBACK_SCENE_H

@@ -3,7 +3,7 @@
 // Author: schalk@wadsworth.org
 // Description: BCI2000 Source Module for gUSBamp devices.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GUSBAMP_ADC_H

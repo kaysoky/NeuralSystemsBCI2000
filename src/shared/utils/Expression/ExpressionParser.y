@@ -6,7 +6,7 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Bison grammar file for a simple expression parser.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////
 #include <sstream>

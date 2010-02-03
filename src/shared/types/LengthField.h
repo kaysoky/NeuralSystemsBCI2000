@@ -16,7 +16,7 @@
 //   the BCI2000 protocol as long as messages and signals have appropriate
 //   sizes/dimensions.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef LENGTH_FIELD_H

@@ -12,7 +12,7 @@
 // Changes: Feb 16, 2003, jm: Moved "ZeroBar" functionality into a
 //              "GUIGridView" class.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 //////////////////////////////////////////////////////////////////////////////
 

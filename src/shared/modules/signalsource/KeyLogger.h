@@ -11,7 +11,7 @@
 //   device coordinates (i.e. coordinates that are in units of screen pixels)
 //   with an additional offset of 32768 to cover negative coordinates.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef KEY_LOGGER_H

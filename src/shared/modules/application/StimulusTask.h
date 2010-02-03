@@ -48,7 +48,7 @@
 //   Progress from one state to the next will occur according to the sequencing
 //   parameters, or if requested by a handler via its doProgress output argument.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef STIMULUS_TASK_H

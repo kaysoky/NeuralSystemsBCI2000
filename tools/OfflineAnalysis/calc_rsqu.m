@@ -8,7 +8,7 @@
 %% Description: This function calclulates the r^2 values for two 3-D
 %% variables.
 %%
-%% (C) 2000-2009, BCI2000 Project
+%% (C) 2000-2010, BCI2000 Project
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [ressq, amp1, amp2] = calc_rsqu(data1, data2, rorrsqu)

@@ -13,7 +13,7 @@
 //                Configuration must take place before opening the interface
 //                from the serialstream class.
 //
-// (C) 2000-2009, BCI2000 Project
+// (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SERIAL_STREAM_H
