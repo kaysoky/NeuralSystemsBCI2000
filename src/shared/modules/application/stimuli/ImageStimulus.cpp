@@ -140,20 +140,22 @@ ImageStimulus::OnChange( DrawContext& ioDC )
       case GUI::AspectRatioModes::AdjustWidth:
         width = ( mpImage->Width * height ) / mpImage->Height;
         ioDC.rect.left = hCenter - width / 2;
-        ioDC.rect.right = hCenter + width / 2;
+        ioDC.rect.right = ioDC.rect.left + width;
         break;
 
       case GUI::AspectRatioModes::AdjustHeight:
         height = ( mpImage->Height * width ) / mpImage->Width;
         ioDC.rect.top = vCenter - height / 2;
-        ioDC.rect.bottom = vCenter + height / 2;
+        ioDC.rect.bottom = ioDC.rect.top + height;
         break;
 
       case GUI::AspectRatioModes::AdjustBoth:
-        ioDC.rect.left = hCenter - mpImage->Width / 2;
-        ioDC.rect.right = hCenter + mpImage->Width / 2;
-        ioDC.rect.top = vCenter - mpImage->Height / 2;
-        ioDC.rect.bottom = vCenter + mpImage->Height / 2;
+        width = mpImage->Width;
+        height = mpImage->Height;
+        ioDC.rect.left = hCenter - width / 2;
+        ioDC.rect.right = ioDC.rect.left + width;
+        ioDC.rect.top = vCenter - height / 2;
+        ioDC.rect.bottom = ioDC.rect.top + height;
         break;
 
       case GUI::AspectRatioModes::AdjustNone:

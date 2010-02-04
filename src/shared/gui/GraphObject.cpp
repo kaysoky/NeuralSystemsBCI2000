@@ -74,7 +74,7 @@ GraphObject::Paint()
 void
 GraphObject::Change()
 {
-  if( mRectSet && !EmptyRect( mDisplay.Context().rect ) )
+  if( mRectSet )
   {
     Invalidate();
     DrawContext dc =

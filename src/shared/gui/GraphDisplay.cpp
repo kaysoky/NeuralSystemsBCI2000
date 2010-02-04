@@ -204,6 +204,10 @@ GraphDisplay::NormalizedToPixelCoords( const GUI::Rect& inRect ) const
 GUI::Rect
 GraphDisplay::PixelToNormalizedCoords( const GUI::Rect& inRect ) const
 {
+  const GUI::Rect unitRect = { 0, 0, 1, 1 };
+  if( EmptyRect( mContext.rect ) )
+    return unitRect;
+
   float width = mContext.rect.right - mContext.rect.left,
         height = mContext.rect.bottom - mContext.rect.top;
   GUI::Rect result =
