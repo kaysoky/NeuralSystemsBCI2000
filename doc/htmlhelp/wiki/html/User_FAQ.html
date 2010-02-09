@@ -38,6 +38,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_FAQ.html#Startup"><span class="tocnumber">1.2</span> <span class="toctext">Startup</span></a></li>
 <li class='toclevel-2'><a href="User_FAQ.html#Feedback"><span class="tocnumber">1.3</span> <span class="toctext">Feedback</span></a></li>
 <li class='toclevel-2'><a href="User_FAQ.html#gUSBamp_not_recognized"><span class="tocnumber">1.4</span> <span class="toctext">gUSBamp not recognized</span></a></li>
+<li class='toclevel-2'><a href="User_FAQ.html#Matlab_Signal_Processing_shows_an_error_at_startup"><span class="tocnumber">1.5</span> <span class="toctext">Matlab Signal Processing shows an error at startup</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_FAQ.html#Configuration"><span class="tocnumber">2</span> <span class="toctext">Configuration</span></a>
@@ -60,7 +61,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 When this is the case, the jumping cursor is merely a cosmetic problem. 
 Otherwise, try the following:
 </p>
-<ul><li>Increase the "Source decimation" parameter on the "Visualize" tab to reduce the processor load associated with the source signal display.
+<ul><li>Increase the "VisualizeSourceDecimation" parameter on the "Visualize" tab to reduce the processor load associated with the source signal display.
 </li><li>Increase the "SampleBlockSize" parameter to reduce the system update rate.
 </li></ul>
 <a name="Startup"></a><h3>Startup</h3>
@@ -87,6 +88,10 @@ Q: When I start the gUSBamp source module, I get the error message: "Cannot find
 <a name="gUSBamp_not_recognized"></a><h3>gUSBamp not recognized</h3>
 <p>Q: The BCI2000 gUSBamp source module does not recognize my gUSBamp amplifier. When I click "Set Config", I get the an error message: <tt>gUSBampADC::Preflight: Could not detect any amplifier. Make sure there is a single gUSBamp amplifier connected to your system, and switched on.</tt> I made sure that the amplifier was attached, switched on, and would work with Guger's demonstration program.
 </p><p>A: The current version of the BCI2000 gUSBamp source module will not work with the first generation of gUSBamps. Please contact <a href="http://www.gtec.at/" class='external text' title="http://www.gtec.at/" rel="nofollow">gtec</a> for a firmware update, or amplifier replacement.
+</p>
+<a name="Matlab_Signal_Processing_shows_an_error_at_startup"></a><h3>Matlab Signal Processing shows an error at startup</h3>
+<p>Q: With Matlab R2009b installed, I cannot start up BCI2000 with the Matlab Signal Processing module. There is an error reported that the library "libeng" cannot be found.
+</p><p>A: It appears that the Matlab R2009b installer does not add Matlab's bin/win32 directory to the system's PATH variable. After manually adding this directory to the PATH variable, the Matlab Signal Processing module is able to find the libeng library.
 </p>
 <a name="Configuration"></a><h2>Configuration</h2>
 <a name="Using_a_Contributed_Source_Module"></a><h3>Using a Contributed Source Module</h3>

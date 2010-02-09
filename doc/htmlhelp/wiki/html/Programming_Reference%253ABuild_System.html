@@ -80,7 +80,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Click Ok, and click Ok again, and Ok again.
 </li></ol>
 </li><li><b>IF USING VISUAL STUDIO:</b> You need to build Qt from source to get Visual Studio ".lib"s
-<ol><li>Open a Visual Studio command prompt and navigate to C:\Qt\XXXX.XX\qt
+<ol><li>Add ";C:\Program Files\Microsoft Visual Studio XX\VC\bin\" to the "Path" variable
+</li><li>Copy "mspdb80.dll", "mspdbcore.dll", "mspdbsrv.exe" and "msobj80.dll" from "C:\Program Files\Microsoft Visual Studio XX\Common7\IDE"to the folder "C:\Program Files\Microsoft Visual Studio XX\VC\bin"
+</li><li>Open a Visual Studio command prompt and navigate to C:\Qt\XXXX.XX\qt 
+</li><li>Type "set INCLUDE=C:\Program Files\Microsoft Visual Studio XX\VC\include;C:\Program Files\Microsoft SDKs\Windows\vXX\Include;%INCLUDE%"
+</li><li>Type "set LIB=C:\Program Files\Microsoft Visual Studio XX\VC\lib;C:\Program Files\Microsoft SDKs\Windows\vXX\Lib;%LIB%"
 </li><li>Run the "configure" command
 </li><li>Type "o" for open source, type "y" for yes
 </li><li>Qt will now be configured to generate a Visual Studio Project.  This will take a while.

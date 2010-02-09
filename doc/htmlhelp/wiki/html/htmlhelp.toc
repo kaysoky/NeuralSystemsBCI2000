@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 December_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" rel="nofollow">December 2009 Build</a>
 4 November_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" rel="nofollow">November 2009 Build</a>
 4 August_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090827.exe" rel="nofollow">August 2009 Build</a>
 4 June_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_090629.exe" rel="nofollow">June 2009 Build</a>
@@ -574,6 +575,17 @@ Contributions%253Actfneurod.html
 3 --freqCorrection_.3Cfactor.3E <tt>--freqCorrection &lt;factor&gt;</tt>
 3 --outputFormat_.3Cnbits.3E <tt>--outputFormat &lt;nbits&gt;</tt>
 3 --disableHP <tt>--disableHP</tt>
+2 See_also See also
+
+Contributions%253Asplit_bcidat.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Compilation Compilation
 2 See_also See also
 
 Contributions%253AvAmpADC.html
@@ -1984,6 +1996,7 @@ User_FAQ.html
 3 Startup Startup
 3 Feedback Feedback
 3 gUSBamp_not_recognized gUSBamp not recognized
+3 Matlab_Signal_Processing_shows_an_error_at_startup Matlab Signal Processing shows an error at startup
 2 Configuration Configuration
 3 Using_a_Contributed_Source_Module Using a Contributed Source Module
 3 Replaying_Recorded_Data Replaying Recorded Data

@@ -121,7 +121,7 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 </p>
 <ul><li>Enter the following line under "After All Modules Connected" in the operator's preferences dialog (note the minus sign):
 </li></ul>
-<pre>-INSERT STATE Artifact 1 0
+<pre>-INSERT STATE Artifact 1 0 0 0
 </pre>
 <ul><li>Under "Function Buttons", enter "Set Artifact" as the name of button 1, and as its command, enter (note there is no minus sign):
 </li></ul>
@@ -131,8 +131,6 @@ Entries that start with a minus sign (-) are treated as one-line scripts, which 
 </li></ul>
 <pre>SET STATE Artifact 0
 </pre>
-<p><br />
-</p>
 <a name="2"></a><h4>2</h4>
 <p>The following example shows how to specify script commands from the command line.
 It fully automates BCI2000 operation by loading a parameter file, applying parameters, starting the system once the parameters are applied, and quitting the system once the run is over. For better readability, the example is broken across lines; for execution, the command needs to be entered as a single line.

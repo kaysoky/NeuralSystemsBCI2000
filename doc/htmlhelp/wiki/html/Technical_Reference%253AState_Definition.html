@@ -66,8 +66,8 @@ For each state present in that state list, its value is kept as a range of bits 
 BCI2000 modules and filters may read and write state values during processing.
 The state vector's content is saved, in its binary form, into <a href="Technical_Reference%253ABCI2000_File_Format.html" title="Technical Reference:BCI2000 File Format">BCI2000 data files</a> per-block.
 Using the ByteLocation, BitLocation, and Length fields from the state definitions present in a file, a state's value may be read from the data file.
-</p><p>A state vector is a narrowly packed bit field in <b>big endian</b> ordering.
-This implies that, for a state containing more than a single bit, <b>less</b> significant bits are placed at <b>higher</b> bit and byte locations.
+</p><p>A state vector is a narrowly packed bit field in <b>little endian</b> ordering.
+This implies that, for a state containing more than a single bit, <b>more</b> significant bits are placed at <b>higher</b> bit and byte locations.
 </p><p>As an example, consider a state vector consisting of a 1-bit state "Running", and a 16-bit state "SourceTime". This will result in a three-byte state vector layout like this:
 </p>
 <table border="1" cellspacing="0" cellpadding="1">
@@ -77,20 +77,18 @@ This implies that, for a state containing more than a single bit, <b>less</b> si
 </th><th colspan="8">State Vector Byte 3
 </th></tr>
 <tr>
-<th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
-</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
-</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+<th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7
+</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7
+</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7
 </th></tr>
 <tr>
 <th>Running</th><th colspan="16">SourceTime</th><th colspan="7">unused
 </th></tr>
 <tr>
 <th>0
-</th><th>15</th><th>14</th><th>13</th><th>12</th><th>11</th><th>10</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>0
+</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15
 </th><th colspan="7">&nbsp;
 </th></tr></table>
-<p><br />
-</p>
 <a name="State_Lines"></a><h2>State Lines</h2>
 <p>State lines are a human-readable format used to represent individual states in
 </p>
