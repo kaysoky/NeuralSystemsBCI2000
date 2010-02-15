@@ -141,7 +141,7 @@ RDAClientADC::Preflight( const SignalProperties&,
   }
 
   // Requested output signal properties.
-#ifdef RDA_FLOAT
+#if RDA_FLOAT
   outSignalProperties = SignalProperties(
        numInputChannels, Parameter( "SampleBlockSize" ), SignalType::float32 );
 #else

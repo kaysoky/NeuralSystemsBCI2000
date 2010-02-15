@@ -21,6 +21,17 @@
 #include <cassert>
 #include <string>
 
+#if RDA_FLOAT
+# define RDA_DATA RDAData32
+# define RDA_DATA_UNEXPECTED RDAData
+# define RDA_MESSAGE_DATA RDA_MessageData32
+#else
+# define RDA_DATA RDAData
+# define RDA_DATA_UNEXPECTED RDAData32
+# define RDA_MESSAGE_DATA RDA_MessageData
+#endif // RDA_FLOAT
+
+
 using namespace std;
 
 RDAQueue::RDAQueue()
@@ -189,24 +200,28 @@ RDAQueue::ReceiveData()
       break;
     case RDAStop:
       break;
-    case RDAData:
+    case RDA_DATA:
       {
-        const RDA_MessageData* dataMsg
-          = reinterpret_cast<const RDA_MessageData*>( msg );
+        const RDA_MESSAGE_DATA* dataMsg = reinterpret_cast<const RDA_MESSAGE_DATA*>( msg );
         switch( lastMessageType )
         {
-          case RDAData:
-            if( ( ++connectionInfo.blockNumber & blockNumberMask )
-                != ( dataMsg->nBlock & blockNumberMask ) )
+          case RDA_DATA:
+            if( connectionInfo.blockNumber != 0 )
             {
-              bciout << "Lost one or more data blocks" << endl;
+              int diff = dataMsg->nBlock & blockNumberMask
+                       - ( connectionInfo.blockNumber + 1 ) & blockNumberMask;
+              if( diff < 0 )
+                bciout << "Received data block(s) out of order" << endl;
+              else if( diff > 0 )
+                bciout << "Possibly lost " << diff << " data block(s)" << endl;
             }
-            break;
-          case RDAData32:
-                bcierr  << "Mixed 32 and 16 bit data types" << endl;
-                break;
-          case RDAStart:
             connectionInfo.blockNumber = dataMsg->nBlock;
+            break;
+          case RDA_DATA_UNEXPECTED:
+            bcierr  << "Mixed 32 and 16 bit data types" << endl;
+            break;
+          case RDAStart:
+            connectionInfo.blockNumber = 0; // dataMsg->nBlock is unreliable in the first data block
             connectionInfo.blockDuration = dataMsg->nPoints * connectionInfo.samplingInterval;
             break;
           case RDAStop:
@@ -217,125 +232,63 @@ RDAQueue::ReceiveData()
             assert( false ); // Only the named three values should ever be in lastMessageType.
         }
 
-        // Unlike explicitly stated in RecorderRDA's RDA_MessageData declaration,
-        // the "Markers[]" array is neither an array nor located where the
-        // struct says. What a mess...
-        const RDA_Marker* markersBegin =
-            ( RDA_Marker* )&dataMsg->nData[ dataMsg->nPoints * connectionInfo.numChannels ];
-
-        size_t dataIndex = 0;
-        for( size_t point = 0; point < dataMsg->nPoints; ++point )
+        // Check packet size for consistency to detect corrupt data packets.
+        size_t dataSize = dataMsg->nPoints * connectionInfo.numChannels * sizeof( *dataMsg->nData )
+                         + sizeof( *dataMsg )
+                         - sizeof( dataMsg->nData )
+                         - sizeof( dataMsg->Markers );
+        if( dataMsg->nSize < dataSize )
         {
-          for( size_t channel = 0; channel < connectionInfo.numChannels; ++channel )
-            push( dataMsg->nData[ dataIndex++ ] );
-
-          // Construct the marker channel for this data point.
-          // Markers are rare, so reading them into more efficient data
-          // structures _before_ the sample point loop would not pay out.
-          unsigned short markerState = 0;
-          // Loop through all markers (ugly data structures, ugly loops, sorry...)
-          size_t markerIndex;
-          const RDA_Marker* marker;
-          for( marker = markersBegin, markerIndex = 0;
-               markerIndex < dataMsg->nMarkers;
-               marker = (const RDA_Marker*)(((char*)marker) + marker->nSize),
-               ++markerIndex )
-            // Does the marker say anything about this point?
-            // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
-            // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
-            if( point == marker->nPosition || (point > marker->nPosition && point < marker->nPosition + marker->nPoints) )
-            {
-              const char* markerDesc = marker->sTypeDesc + ::strlen( marker->sTypeDesc ) + 1;
-              switch( *markerDesc )
-              {
-                case 'S':
-                  markerState |= ::atoi( markerDesc + 1 );
-                  break;
-                case 'R':
-                  markerState |= ( ::atoi( markerDesc + 1 ) ) << 8;
-                  break;
-              }
-            }
-          // After the data channels, write the marker state channel.
-          push( markerState );
+          bciout << "Received RDA message with inconsistent packet size" << endl;
         }
+        else
+        {
+          // Unlike explicitly stated in RecorderRDA's RDA_MessageData declaration,
+          // the "Markers[]" array is neither an array nor located where the
+          // struct says. What a mess...
+          const RDA_Marker* markersBegin =
+              ( RDA_Marker* )&dataMsg->nData[ dataMsg->nPoints * connectionInfo.numChannels ];
 
+          size_t dataIndex = 0;
+          for( size_t point = 0; point < dataMsg->nPoints; ++point )
+          {
+            for( size_t channel = 0; channel < connectionInfo.numChannels; ++channel )
+              push( dataMsg->nData[ dataIndex++ ] );
+
+            // Construct the marker channel for this data point.
+            // Markers are rare, so reading them into more efficient data
+            // structures _before_ the sample point loop would not pay out.
+            unsigned short markerState = 0;
+            // Loop through all markers (ugly data structures, ugly loops, sorry...)
+            size_t markerIndex;
+            const RDA_Marker* marker;
+            for( marker = markersBegin, markerIndex = 0;
+                 markerIndex < dataMsg->nMarkers;
+                 marker = (const RDA_Marker*)(((char*)marker) + marker->nSize),
+                 ++markerIndex )
+              // Does the marker say anything about this point?
+              // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
+              // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
+              if( point == marker->nPosition || (point > marker->nPosition && point < marker->nPosition + marker->nPoints) )
+              {
+                const char* markerDesc = marker->sTypeDesc + ::strlen( marker->sTypeDesc ) + 1;
+                switch( *markerDesc )
+                {
+                  case 'S':
+                    markerState |= ::atoi( markerDesc + 1 );
+                    break;
+                  case 'R':
+                    markerState |= ( ::atoi( markerDesc + 1 ) ) << 8;
+                    break;
+                }
+              }
+            // After the data channels, write the marker state channel.
+            push( markerState );
+          }
+        }
       }
       break;
 
-    case RDAData32:
-      {
-        const RDA_MessageData32* dataMsg
-          = reinterpret_cast<const RDA_MessageData32*>( msg );
-        switch( lastMessageType )
-        {
-          case RDAData:
-                bcierr  << "Mixed 32 and 16 bit data types" << endl;
-                break;
-          case RDAData32:
-            if( ( ++connectionInfo.blockNumber & blockNumberMask )
-                != ( dataMsg->nBlock & blockNumberMask ) )
-            {
-              bciout << "Lost one or more data blocks" << endl;
-            }
-            break;
-          case RDAStart:
-            connectionInfo.blockNumber = dataMsg->nBlock;
-            connectionInfo.blockDuration = dataMsg->nPoints * connectionInfo.samplingInterval;
-            break;
-          case RDAStop:
-            failstate |= connectionFail;
-            bcierr << "RDA server sent data block before start block" << endl;
-            return;
-          default:
-            assert( false ); // Only the named three values should ever be in lastMessageType.
-        }
-
-        // Unlike explicitly stated in RecorderRDA's RDA_MessageData declaration,
-        // the "Markers[]" array is neither an array nor located where the
-        // struct says. What a mess...
-        const RDA_Marker* markersBegin =
-            ( RDA_Marker* )&dataMsg->nData[ dataMsg->nPoints * connectionInfo.numChannels ];
-
-        size_t dataIndex = 0;
-        for( size_t point = 0; point < dataMsg->nPoints; ++point )
-        {
-          for( size_t channel = 0; channel < connectionInfo.numChannels; ++channel )
-            push( dataMsg->nData[ dataIndex++ ] );
-
-          // Construct the marker channel for this data point.
-          // Markers are rare, so reading them into more efficient data
-          // structures _before_ the sample point loop would not pay out.
-          unsigned short markerState = 0;
-          // Loop through all markers (ugly data structures, ugly loops, sorry...)
-          size_t markerIndex;
-          const RDA_Marker* marker;
-          for( marker = markersBegin, markerIndex = 0;
-               markerIndex < dataMsg->nMarkers;
-               marker = (const RDA_Marker*)(((char*)(marker)) + marker->nSize),
-               ++markerIndex )
-            // Does the marker say anything about this point?
-            // NB: contrary to what the RDA documentation implies, marker->nPoints can be 0 even when a marker occurs.
-            // Therefore treat a marker that appears to be valid for 0 points as valid for 1 point
-            if( point == marker->nPosition || (point > marker->nPosition && point < marker->nPosition + marker->nPoints) )
-            {
-              const char* markerDesc = marker->sTypeDesc + ::strlen( marker->sTypeDesc ) + 1;
-              switch( *markerDesc )
-              {
-                case 'S':
-                  markerState |= ::atoi( markerDesc + 1 );
-                  break;
-                case 'R':
-                  markerState |= ( ::atoi( markerDesc + 1 ) ) << 8;
-                  break;
-              }
-            }
-          // After the data channels, write the marker state channel.
-          push( markerState );
-        }
-
-      }
-      break;
     default:
       ; // Ignoring undocumented message types.
   }

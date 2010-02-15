@@ -19,7 +19,7 @@
 # define RDA_FLOAT 1
 #endif
 
-#ifdef RDA_FLOAT
+#if RDA_FLOAT
 // RDAPort Numbers: 51244 -> float data, 51234 -> short data
 # define RDAPORTNUMBER 51244
 #else
