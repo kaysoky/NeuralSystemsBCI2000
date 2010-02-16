@@ -1,15 +1,7 @@
 ####################################################################
 # $Id$
-# File:        Makefile
-# Date:        Jan 17, 2006
 # Author:      juergen.mellinger@uni-tuebingen.de
 # Description: Makefile for BCI2000 Matlab mex files.
-# $Log$
-# Revision 1.2  2006/08/10 15:36:23  mellinger
-# Extended parameter translation into Matlab; introduced partial file reading.
-#
-# Revision 1.1  2006/01/17 17:15:47  mellinger
-# Initial version.
 #
 # (C) 2000-2010, BCI2000 Project
 # http://www.bci2000.org
@@ -19,10 +11,10 @@ AND = &&
 OR  = ||
 
 TARGETS = obj\bci_mex.lib \
-          load_bcidat.dll \
-          save_bcidat.dll \
-          convert_bciprm.dll \
-          mem.dll \
+          load_bcidat.mexw32 \
+          save_bcidat.mexw32 \
+          convert_bciprm.mexw32 \
+          mem.mexw32 \
                     
 MEXOBJ  = obj\bci_stubs.obj \
           obj\BCI2000FileReader.obj \
@@ -91,22 +83,23 @@ RM  = del
 .autodepend
 .path.cpp=${PATHCPP}
 	
-{$(PATHOBJ)}.obj.dll:
+{$(PATHOBJ)}.obj.mexw32:
 	${MAKE} obj\bci_mex.lib
-	${LD} -WD $< obj\bci_mex.lib ${MATLIB}
+	${LD} -WD "$<" obj\bci_mex.lib ${MATLIB}
+	${SHELL} move "$&.dll" "$&.mexw32"
 
 .cpp.obj:
 	if not exist ${PATHOBJ} mkdir ${PATHOBJ}
 	${CPP} -c -o${PATHOBJ}\${*F}.obj $<
 
-.dll.install:
+.mexw32.install:
   ${SHELL} if not exist ${BINDIR} mkdir ${BINDIR}
   ${SHELL} move "$<" ${BINDIR}
   ${DONE}
 
 all: ${TARGETS} 
 
-install: all ${TARGETS:.dll=.install}
+install: all ${TARGETS:.mexw32=.install}
 	for %i in (${SUPPL}) do copy /y "%i" "${BINDIR}"
 
 obj\bci_mex.lib: ${MEXOBJ}
@@ -116,4 +109,4 @@ clean:
 	-${RM} ${PATHOBJ}\*.obj ${PATHOBJ}\*.lib ${PATHOBJ}\*.BAK *.tds
 
 distclean: clean
-	-${RM} *.exe *.~* *.il*
+	-${RM} *.exe *.mexw32 *.~* *.il*
