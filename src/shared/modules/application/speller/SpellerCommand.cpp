@@ -40,7 +40,7 @@ SpellerCommand::ReadFromStream( std::istream& is )
     is.ignore();
     getline( is, mCode, cCloseChar );
     string::iterator i = mCode.begin();
-    while( ::isalpha( *i ) )
+    while( i != mCode.end() && ::isalpha( *i ) )
     {
       *i = ::toupper( *i );
       ++i;

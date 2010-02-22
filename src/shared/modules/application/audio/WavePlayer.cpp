@@ -212,11 +212,11 @@ WavePlayer::SetFile( const string& inFileName )
       err = fileOpeningError;
   }
 
-  long dataLength = childChunkInfo.cksize;
-
+  long dataLength = 0;
   if( err == noError )
   {
     // Resize the file buffer to contain all data.
+    dataLength = childChunkInfo.cksize;
     sysErr = mmioSetBuffer( fileHandle, NULL, dataLength, 0 );
     if( sysErr != MMSYSERR_NOERROR )
       // The new buffer size could not be set. Should not happen
