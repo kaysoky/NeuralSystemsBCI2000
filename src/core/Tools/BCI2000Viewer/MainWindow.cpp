@@ -89,7 +89,8 @@ TMainForm::ActionEntry TMainForm::sActions[] =
 __fastcall TMainForm::TMainForm( TComponent* inOwner )
 : TForm( inOwner ),
   mSamplePos( 0 ),
-  mNumSignalChannels( 0 )
+  mNumSignalChannels( 0 ),
+  mShiftState( false )
 {
   mDefaultWindowProc = this->WindowProc;
   this->WindowProc = DragDropWindowProc;
@@ -99,6 +100,7 @@ __fastcall TMainForm::TMainForm( TComponent* inOwner )
   mDragDropHint->BoundsRect = mSignalArea->BoundsRect;
   mDragDropHint->Anchors = mSignalArea->Anchors;
   mChannelListBox->MultiSelect = true;
+  Screen->OnActiveControlChange = ScreenActiveControlChange;
 
   SetupActions();
   mDisplay.SetValueUnitVisible( true )
@@ -126,11 +128,11 @@ void __fastcall TMainForm::DragDropWindowProc( TMessage& msg )
         HDROP handle = ( HDROP )msg.WParam;
         size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
         if( numFiles > 1 )
-		  Application->MessageBox(
-			VCLSTR( "You can only drop one file at a time" ),
-			VCLSTR( "Warning" ),
-			MB_OK );
-		if( numFiles > 0 )
+          Application->MessageBox(
+            VCLSTR( "You can only drop one file at a time" ),
+            VCLSTR( "Warning" ),
+            MB_OK );
+        if( numFiles > 0 )
         {
           size_t nameLen = ::DragQueryFile( handle, 0, NULL, 0 );
           char* name = new char[ nameLen + 1 ];
@@ -177,18 +179,24 @@ void __fastcall TMainForm::EditPositionExit( TObject* inSender )
   TEdit* editField = dynamic_cast<TEdit*>( inSender );
   if( editField != NULL && editField->Modified )
   {
-	TimeValue t;
-	istringstream iss( AnsiString( editField->Text ).c_str() );
+    TimeValue t;
+    istringstream iss( AnsiString( editField->Text ).c_str() );
     if( iss >> t )
       SetSamplePos( t * mFile.SamplingRate() - mDisplay.NumSamples() / 2 );
   }
 }
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::EditPositionKeyUp(TObject *Sender, WORD &Key,
+void __fastcall TMainForm::EditPositionKeyUp(TObject* inSender, WORD& inKey,
       TShiftState )
 {
-  if( Key == VK_RETURN )
-    EditPositionExit( Sender );
+  if( inKey == VK_RETURN )
+    EditPositionExit( inSender );
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ScreenActiveControlChange( TObject* )
+{
+  if( Screen->ActiveControl == mVerticalScroller )
+    this->ActiveControl = NULL;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ChannelListBoxClickCheck( TObject* )
@@ -226,8 +234,8 @@ void TMainForm::FileOpen()
   pDialog->Filter = "BCI2000 data files (*.dat)|*.DAT";
   if( pDialog->Execute() )
   {
-	AnsiString name = pDialog->FileName;
-	DoFileOpen( name.c_str() );
+    AnsiString name = pDialog->FileName;
+    DoFileOpen( name.c_str() );
   }
   delete pDialog;
 }
@@ -467,10 +475,10 @@ TMainForm::DoFileOpen( const char* inName )
     {
       ostringstream oss;
       oss << "Could not open \n\"" << inName << "\"\nas a BCI2000 file." << endl;
-	  Application->MessageBox(
-		VCLSTR( oss.str().c_str() ),
-		VCLSTR( cProgramName ),
-		MB_OK | MB_ICONERROR );
+      Application->MessageBox(
+        VCLSTR( oss.str().c_str() ),
+        VCLSTR( cProgramName ),
+        MB_OK | MB_ICONERROR );
     }
     mDragDropHint->Visible = true;
     mSignalArea->Visible = false;
@@ -493,6 +501,7 @@ TMainForm::DoFileOpen( const char* inName )
   SetSamplePos( 0 );
   mDisplay.SetDisplayGroups( mFile.SignalProperties().Channels() );
   UpdateVerticalScroller();
+  this->ActiveControl = NULL;
 }
 
 void
@@ -534,7 +543,7 @@ TMainForm::SaveToRegistry() const
   TRegistry* pReg = NULL;
   try
   {
-	pReg = new TRegistry( KEY_WRITE );
+    pReg = new TRegistry( KEY_WRITE );
     pReg->RootKey = HKEY_CURRENT_USER;
     pReg->OpenKey( KEY_BCI2000 KEY_VIEWER KEY_CONFIG, true );
     if( this->WindowState == wsNormal )
@@ -646,9 +655,9 @@ TMainForm::UpdateChannelLabels()
   if( mFile.IsOpen() )
   {
     vector<string> signalLabels;
-    if( mFile.Parameters()->Exists( "ChannelLabels" ) )
+    if( mFile.Parameters()->Exists( "ChannelNames" ) )
     {
-      ParamRef labelParam = mFile.Parameter( "ChannelLabels" );
+      ParamRef labelParam = mFile.Parameter( "ChannelNames" );
       for( int k = 0; k < labelParam->NumValues(); ++k )
         signalLabels.push_back( labelParam( k ) );
     }
@@ -836,7 +845,7 @@ TMainForm::SetupActions()
     if( control != NULL )
     {
       int size = control->GetTextLen();
-	  VclCharType* caption = new VclCharType[ size + 1 ];
+      VclCharType* caption = new VclCharType[ size + 1 ];
       control->GetTextBuf( caption, size + 1 );
       action->Caption = caption;
       delete[] caption;
@@ -979,7 +988,7 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key, TShiftState Shift)
     case VK_HOME:
       if( ChannelUp_Enabled() )
         ChannelPageFirst();
-      break; 
+      break;
     case VK_END:
       if( ChannelDown_Enabled() )
         ChannelPageLast();
@@ -990,7 +999,7 @@ void __fastcall TMainForm::FormKeyDown(TObject*, WORD &Key, TShiftState Shift)
       ChannelPageFirst();
       for( int i = 1; i < acc; ++i )
         ChannelDown();
-      break;      
+      break;
     case '0':
     case '1':
     case '2':
@@ -1015,7 +1024,7 @@ void __fastcall TMainForm::HelpOnChannelClick(TObject *Sender)
   TMenuItem* pItem = dynamic_cast<TMenuItem*>( Sender );
   if( pItem )
   {
-	string name = AnsiString( pItem->Caption ).c_str();
+    string name = AnsiString( pItem->Caption ).c_str();
     size_t p1 = name.find( '\"' ),
            p2 = name.find( '\"', p1 + 1 );
     if( p1 != string::npos && p2 != string::npos )
@@ -1063,5 +1072,11 @@ void __fastcall TMainForm::mChannelListBoxContextPopup(TObject* Sender,
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
   SaveToRegistry();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TMainForm::mSignalAreaClick(TObject *Sender)
+{
+  this->ActiveControl = NULL;
 }
 

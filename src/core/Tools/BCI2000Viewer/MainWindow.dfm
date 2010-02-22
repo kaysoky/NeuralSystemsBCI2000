@@ -15,6 +15,7 @@ object MainForm: TMainForm
   Menu = mMainMenu
   OldCreateOrder = False
   OnCanResize = FormCanResize
+  OnClose = FormClose
   OnKeyDown = FormKeyDown
   OnResize = FormResize
   DesignSize = (
@@ -35,6 +36,7 @@ object MainForm: TMainForm
     Width = 557
     Height = 383
     Anchors = [akLeft, akTop, akRight, akBottom]
+    OnClick = mSignalAreaClick
     OnPaint = SignalAreaPaint
   end
   object mDragDropHint: TLabel
@@ -57,7 +59,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = '>>'
-    TabOrder = 7
+    TabOrder = 8
   end
   object mPageRew: TButton
     Left = 43
@@ -66,7 +68,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = '<<'
-    TabOrder = 1
+    TabOrder = 2
   end
   object mBlockRew: TButton
     Left = 83
@@ -75,7 +77,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = '<'
-    TabOrder = 2
+    TabOrder = 3
   end
   object mBlockFwd: TButton
     Left = 469
@@ -84,7 +86,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = '>'
-    TabOrder = 6
+    TabOrder = 7
   end
   object mToBegin: TButton
     Left = 3
@@ -93,7 +95,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = '|<<'
-    TabOrder = 0
+    TabOrder = 1
   end
   object mToEnd: TButton
     Left = 549
@@ -102,7 +104,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = '>>|'
-    TabOrder = 8
+    TabOrder = 9
   end
   object mEditPosition: TEdit
     Left = 251
@@ -112,7 +114,7 @@ object MainForm: TMainForm
     Anchors = [akRight, akBottom]
     BevelInner = bvSpace
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 5
     OnExit = EditPositionExit
     OnKeyUp = EditPositionKeyUp
   end
@@ -123,7 +125,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Zoom In'
-    TabOrder = 5
+    TabOrder = 6
   end
   object mSampleZoomOut: TButton
     Left = 176
@@ -132,7 +134,7 @@ object MainForm: TMainForm
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Zoom Out'
-    TabOrder = 3
+    TabOrder = 4
   end
   object mVerticalScroller: TScrollBar
     Left = 563
@@ -142,7 +144,7 @@ object MainForm: TMainForm
     Anchors = [akTop, akRight, akBottom]
     Kind = sbVertical
     PageSize = 0
-    TabOrder = 9
+    TabOrder = 0
     OnChange = VerticalScrollerChange
   end
   object mChannelListBox: TCheckListBox

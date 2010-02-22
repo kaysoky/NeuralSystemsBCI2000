@@ -81,6 +81,7 @@ class TMainForm : public TForm
     void __fastcall SignalAreaPaint(TObject *Sender);
     void __fastcall EditPositionExit(TObject *Sender);
     void __fastcall EditPositionKeyUp(TObject *Sender, WORD &Key, TShiftState Shift);
+    void __fastcall ScreenActiveControlChange(TObject *Sender);
     void __fastcall ChannelListBoxClickCheck(TObject *Sender);
     void __fastcall VerticalScrollerChange(TObject *Sender);
     void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
@@ -88,7 +89,8 @@ class TMainForm : public TForm
     void __fastcall HelpOnChannelClick(TObject *Sender);
     void __fastcall mChannelListBoxContextPopup(TObject *Sender,
           TPoint &MousePos, bool &Handled);
-	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+    void __fastcall mSignalAreaClick(TObject *Sender);
 
   private:
     void __fastcall WMEraseBkgnd( TWMEraseBkgnd& );
@@ -189,6 +191,7 @@ class TMainForm : public TForm
     BCI2000FileReader  mFile;
     long               mSamplePos;
     int                mNumSignalChannels;
+    bool               mShiftState;
     TWndMethod         mDefaultWindowProc;
 };
 //---------------------------------------------------------------------------
