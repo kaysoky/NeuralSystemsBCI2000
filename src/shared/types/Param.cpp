@@ -169,7 +169,7 @@ Param::SetSection( const std::string& s )
 // **************************************************************************
 // Function:   Value
 // Purpose:    bounds-checked access to a parameter's value
-// Parameters: value index
+// Parameters: value index/indices
 // Returns:    value reference
 // **************************************************************************
 const Param::ParamValue&
@@ -189,6 +189,25 @@ Param::Value( size_t idx )
   return mValues[idx];
 }
 
+const Param::ParamValue&
+Param::Value( size_t row, size_t col ) const
+{
+  if( row >= NumRows() )
+    throw "Row index out of range when accessing a parameter value";
+  if( col >= NumColumns() )
+    throw "Column index out of range when accessing a parameter value";
+  return Value( row * NumColumns() + col );
+}
+
+Param::ParamValue&
+Param::Value( size_t row, size_t col )
+{
+  if( row >= NumRows() )
+    throw "Row index out of range when accessing a parameter value";
+  if( col >= NumColumns() )
+    throw "Column index out of range when accessing a parameter value";
+  return Value( row * NumColumns() + col );
+}
 
 // **************************************************************************
 // Function:   ReadFromStream

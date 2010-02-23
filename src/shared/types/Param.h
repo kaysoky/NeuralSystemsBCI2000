@@ -185,10 +185,8 @@ class Param
   const ParamValue&  Value( size_t idx = 0 ) const;
   ParamValue&        Value( size_t idx = 0 );
 
-  const ParamValue&  Value( size_t row, size_t col ) const
-                     { return Value( row * NumColumns() + col ); }
-  ParamValue&        Value( size_t row, size_t col )
-                     { return Value( row * NumColumns() + col ); }
+  const ParamValue&  Value( size_t row, size_t col ) const;
+  ParamValue&        Value( size_t row, size_t col );
 
   const ParamValue&  Value( const std::string& label ) const
                      { return Value( mDim1Index[ label ] ); }
