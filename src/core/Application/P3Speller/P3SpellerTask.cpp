@@ -976,6 +976,13 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
     ParamRef TargetDefinitions = MultipleMenus() ?
                                   Parameter( "TargetDefinitions" )( inMenuIdx, 0 ) :
                                   Parameter( "TargetDefinitions" );
+    if( TargetDefinitions->NumColumns() <= Enter )
+    {
+      bcierr << "Number of TargetDefinition columns in menu #" << inMenuIdx + 1
+             << " must be " << Enter + 1 << " or greater"
+             << endl;
+      return;
+    }
     // Compute the enclosing rectangle's dimensions.
     // The speller matrix will be centered vertically and horizontally in the
     // rectangle as specified when LoadMenu() is called.
@@ -1016,12 +1023,15 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
                    << endl;
       }
 
-      AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
-      pTarget->SetSound( TargetDefinitions( i, SoundFile ) )
-              .SetEntryText( entryText )
-              .SetTag( i + 1 );
-      rowSet.Add( pTarget );
-      colSet.Add( pTarget );
+      if( TargetDefinitions->NumColumns() > SoundFile )
+      {
+        AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
+        pTarget->SetSound( TargetDefinitions( i, SoundFile ) )
+                .SetEntryText( entryText )
+                .SetTag( i + 1 );
+        rowSet.Add( pTarget );
+        colSet.Add( pTarget );
+      }
 
       TextStimulus* pTextStimulus = new TextStimulus( ioDisplay );
       GUI::Rect targetRect =
@@ -1031,8 +1041,11 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
         ioRect.left + ( targetCol + 1 ) * targetWidth,
         ioRect.top  + ( targetRow + 1 ) * targetHeight
       };
+      float displaySize = 1.0;
+      if( TargetDefinitions->NumColumns() > DisplaySize )
+        displaySize = TargetDefinitions( i, DisplaySize );
       pTextStimulus->SetText( TargetDefinitions( i, Display ) )
-                    .SetTextHeight( targetTextHeight * TargetDefinitions( i, DisplaySize ) )
+                    .SetTextHeight( targetTextHeight * displaySize )
                     .SetTextColor( textColor )
                     .SetColor( RGBColor::NullColor )
                     .SetDisplayRect( targetRect );
@@ -1042,18 +1055,21 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
       rowSet.Add( pTextStimulus );
       colSet.Add( pTextStimulus );
 
-      string iconFile = TargetDefinitions( i, IconFile );
-      if( !iconFile.empty() )
+      if( TargetDefinitions->NumColumns() > IconFile )
       {
-        ImageStimulus* pIcon = new ImageStimulus( ioDisplay );
-        pIcon->SetFile( iconFile )
-              .SetRenderingMode( GUI::RenderingMode::Transparent )
-              .SetDisplayRect( targetRect );
-        pIcon->SetPresentationMode( VisualStimulus::Mode( iconHighlightMode ) )
-              .SetDimFactor( 1.0 / iconHighlightFactor );
-        ioStimuli.insert( pIcon );
-        rowSet.Add( pIcon );
-        colSet.Add( pIcon );
+        string iconFile = TargetDefinitions( i, IconFile );
+        if( !iconFile.empty() )
+        {
+          ImageStimulus* pIcon = new ImageStimulus( ioDisplay );
+          pIcon->SetFile( iconFile )
+                .SetRenderingMode( GUI::RenderingMode::Transparent )
+                .SetDisplayRect( targetRect );
+          pIcon->SetPresentationMode( VisualStimulus::Mode( iconHighlightMode ) )
+                .SetDimFactor( 1.0 / iconHighlightFactor );
+          ioStimuli.insert( pIcon );
+          rowSet.Add( pIcon );
+          colSet.Add( pIcon );
+        }
       }
     }
     // Create audio stimuli for rows and columns.
