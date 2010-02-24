@@ -12,6 +12,7 @@
 #include "UOperatorUtils.h"
 #include "UPreferences.h"
 #include "Param.h"
+#include "ParamList.h"
 #include "Operator.h"
 #include "defines.h"
 
@@ -163,53 +164,89 @@ int
 OperatorUtils::LoadMatrix( const char* inFileName, Param& outParam )
 {
   if( inFileName == NULL )
-    return ERR_MATNOTFOUND;
+    return MatNotFound;
 
-  vector<vector<string> > matrix;
-
-  ifstream input( inFileName );
-  string line;
-  while( getline( input, line ) )
+  if( ExtractFileExt( inFileName ) == "." MATRIX_EXTENSION )
   {
-    istringstream is( line );
-    vector<string> row;
-    string value;
-    while( getline( is, value, '\t' ) )
-      row.push_back( value );
-    if( !row.empty() )
-      matrix.push_back( row );
+    ParamList paramsFromFile;
+    paramsFromFile.Load( inFileName, true );
+    if( paramsFromFile.Size() == 0 )
+      return MatNotFound;
+    if( paramsFromFile.Size() > 1 )
+      return MatMultipleParams;
+    Param p = paramsFromFile[0];
+    outParam.SetDimensions( p.NumRows(), p.NumColumns() );
+    for( int row = 0; row < p.NumRows(); ++row )
+      for( int col = 0; col < p.NumColumns(); ++col )
+        outParam.Value( row, col ) = p.Value( row, col );
+    outParam.RowLabels() = p.RowLabels();
+    outParam.ColumnLabels() = p.ColumnLabels();
   }
-  if( matrix.empty() )
-    return ERR_MATNOTFOUND;
+  else
+  {
+    ifstream input( inFileName );
+    string line;
+    vector<vector<string> > matrix;
+    while( getline( input, line ) )
+    {
+      istringstream is( line );
+      vector<string> row;
+      string value;
+      while( getline( is, value, '\t' ) )
+        row.push_back( value );
+      if( !row.empty() )
+        matrix.push_back( row );
+    }
+    if( matrix.empty() )
+      return MatNotFound;
 
-  size_t numRows = matrix.size(),
-         numCols = matrix[ 0 ].size();
-  for( size_t row = 1; row < numRows; ++row )
-    if( matrix[ row ].size() != numCols )
-      return ERR_MATLOADCOLSDIFF;
+    size_t numRows = matrix.size(),
+           numCols = matrix[ 0 ].size();
+    for( size_t row = 1; row < numRows; ++row )
+      if( matrix[ row ].size() != numCols )
+        return MatLoadColsDiff;
 
-  outParam.SetDimensions( numRows, numCols );
-  for( size_t row = 0; row < numRows; ++row )
-    for( size_t col = 0; col < numCols; ++col )
-      outParam.Value( row, col ) = matrix[ row ][ col ];
-
-  return ERR_NOERR;
+    outParam.SetDimensions( numRows, numCols );
+    for( size_t row = 0; row < numRows; ++row )
+      for( size_t col = 0; col < numCols; ++col )
+        outParam.Value( row, col ) = matrix[ row ][ col ];
+  }
+  return NoError;
 }
 
 int
 OperatorUtils::SaveMatrix( const char* inFileName, const Param& inParam )
 {
   if( inFileName == NULL )
-	return ERR_COULDNOTWRITE;
+    return CouldNotWrite;
+
+  bool saveAsMatrix = ( ExtractFileExt( inFileName ) == "." MATRIX_EXTENSION );
+  if( !saveAsMatrix )
+  {
+    bool isNested = false;
+    for( int row = 0; row < inParam.NumRows(); ++row )
+      for( int col = 0; col < inParam.NumColumns(); ++col )
+        isNested = isNested | ( inParam.Value( row, col ).Kind() != Param::ParamValue::Single );
+
+    if( isNested )
+      return CannotWriteNestedMatrixAsText;
+  }
 
   ofstream output( inFileName );
-  for( int row = 0; row < inParam.NumRows(); ++row )
+  if( saveAsMatrix )
   {
-    int col = 0;
-    while( col < inParam.NumColumns() - 1 )
-      output << inParam.Value( row, col++ ) << '\t';
-    output << inParam.Value( row, col ) << endl;
+    output << inParam;
   }
-  return output ? ERR_NOERR : ERR_COULDNOTWRITE;
+  else
+  {
+    for( int row = 0; row < inParam.NumRows(); ++row )
+    {
+      int col = 0;
+      while( col < inParam.NumColumns() - 1 )
+        output << inParam.Value( row, col++ ) << '\t';
+      output << inParam.Value( row, col ) << endl;
+    }
+  }
+  return output ? NoError : CouldNotWrite;
 }
 

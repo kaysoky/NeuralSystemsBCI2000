@@ -172,13 +172,22 @@ TfEditMatrix::EditLabels()
 {
   StringGrid->FixedCols = 0;
   StringGrid->FixedRows = 0;
+  StringGrid->Enabled = true;
 }
 
 void
 TfEditMatrix::EditEntries()
 {
+  if( StringGrid->RowCount == 1 )
+  {
+    StringGrid->Enabled = false;
+  }
+  else
+  {
+    StringGrid->FixedRows = 1;
+    StringGrid->Enabled = true;
+  }
   StringGrid->FixedCols = 1;
-  StringGrid->FixedRows = 1;
   AdaptColumnWidth();
   SelectTopLeftCell();
 }
@@ -207,7 +216,7 @@ TfEditMatrix::LabelEditing( int inRow, int inColumn )
 bool
 TfEditMatrix::LabelEditing_Checked(  int /*inRow*/, int /*inColumn*/ )
 {
-  return StringGrid->FixedCols == 0 || StringGrid->FixedRows == 0;
+  return StringGrid->FixedCols == 0 && StringGrid->FixedRows == 0;
 }
 
 void
@@ -311,10 +320,10 @@ TfEditMatrix::MatrixToPlainCell( int inRow, int inCol )
   message += "Proceed?";
 
   bool convert = (
-	IDYES == Application->MessageBox(
-	  VCLSTR( message.c_str() ),
-	  VCLSTR( "Confirmation" ),
-	  MB_YESNO | MB_ICONQUESTION )
+    IDYES == Application->MessageBox(
+      VCLSTR( message.c_str() ),
+      VCLSTR( "Confirmation" ),
+      MB_YESNO | MB_ICONQUESTION )
   );
   StringGrid->Canvas->DrawFocusRect( cellRect );
   if( convert )
@@ -411,7 +420,7 @@ TfEditMatrix::bChangeMatrixSizeClick( TObject* )
   int res, row, col;
 
   if( IDYES == Application->MessageBox(
-		VCLSTR( "Do you really want to change the size of the matrix?" ),
+        VCLSTR( "Do you really want to change the size of the matrix?" ),
         VCLSTR( "Confirmation" ),
         MB_YESNO | MB_ICONQUESTION ) )
   {

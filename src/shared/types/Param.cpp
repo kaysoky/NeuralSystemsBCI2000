@@ -190,7 +190,7 @@ Param::Value( size_t idx )
 }
 
 const Param::ParamValue&
-Param::Value( size_t row, size_t col ) const
+Param::Value( int row, int col ) const
 {
   if( row >= NumRows() )
     throw "Row index out of range when accessing a parameter value";
@@ -200,7 +200,7 @@ Param::Value( size_t row, size_t col ) const
 }
 
 Param::ParamValue&
-Param::Value( size_t row, size_t col )
+Param::Value( int row, int col )
 {
   if( row >= NumRows() )
     throw "Row index out of range when accessing a parameter value";

@@ -12,6 +12,8 @@
 
 #include <string>
 
+#define MATRIX_EXTENSION "bmt"
+
 class Controls::TControl;
 class Param;
 
@@ -57,6 +59,16 @@ namespace OperatorUtils
 // **************************************************************************
   void SetUserLevel( const char* Name, int UserLevel );
 
+
+enum {
+  NoError = 0,
+
+  MatLoadColsDiff,
+  MatNotFound,
+  MatMultipleParams,
+  CannotWriteNestedMatrixAsText,
+  CouldNotWrite,
+};
 // **************************************************************************
 // Function:   LoadMatrix
 // Purpose:    Loads a matrix that is delimited by white spaces

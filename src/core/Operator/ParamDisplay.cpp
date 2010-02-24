@@ -1,3 +1,16 @@
+//////////////////////////////////////////////////////////////////////
+// $Id$
+// Author: juergen.mellinger@uni-tuebingen.de
+// Description: A class that handles a single parameter's associated
+//       user interface, consisting of a group of VCL user interface
+//       elements arranged inside a VCL window control.
+//
+//       Various types of parameter displays are implemented as sub-
+//       classes transparent to user code.
+//
+// (C) 2000-2010, BCI2000 Project
+// http://www.bci2000.org
+////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -18,15 +31,16 @@
 #include <cassert>
 
 #define ALLFILES_FILTER "All files (*.*)|*.*"
-#define MATRIX_EXTENSION ".txt"
-#define MATRIX_FILTER "Tab delimited matrix file (*" MATRIX_EXTENSION ")"  \
-                                       "|*" MATRIX_EXTENSION "|" ALLFILES_FILTER
+#define SAVE_MATRIX_FILTER "BCI2000 matrix parameter (*." MATRIX_EXTENSION ")|*." MATRIX_EXTENSION \
+                           "|Tab delimited matrix file (*.txt)"  \
+                           "|" ALLFILES_FILTER
+#define LOAD_MATRIX_FILTER "Matrix file (*." MATRIX_EXTENSION " *.txt)|*." MATRIX_EXTENSION ";*.txt" \
+                           "|" ALLFILES_FILTER
+
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ParamDisplay definitions
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
 ////////////////////////////////////////////////////////////////////////////////
 std::map<ParamDisplay::DisplayBase*, int>&
 ParamDisplay::RefCount()
@@ -480,33 +494,33 @@ ParamDisplay::Matrix::OnLoadButtonClick( TObject* )
 {
   TOpenDialog* loadDialog = new TOpenDialog( static_cast<TComponent*>( NULL ) );
   loadDialog->DefaultExt = MATRIX_EXTENSION;
-  loadDialog->Filter = MATRIX_FILTER;
+  loadDialog->Filter = LOAD_MATRIX_FILTER;
   loadDialog->Options << ofFileMustExist;
   if( loadDialog->Execute() )
   {
-	AnsiString name = loadDialog->FileName;
-	int result = OperatorUtils::LoadMatrix( name.c_str(), mParam );
+    AnsiString name = loadDialog->FileName;
+    int result = OperatorUtils::LoadMatrix( name.c_str(), mParam );
     switch( result )
     {
-      case ERR_NOERR:
+      case OperatorUtils::NoError:
         break;
-      case ERR_MATLOADCOLSDIFF:
-		Application->MessageBox(
-		  VCLSTR( "Number of columns differs across rows" ),
-		  VCLSTR( "Error" ),
-		  MB_ICONERROR | MB_OK );
+      case OperatorUtils::MatLoadColsDiff:
+        Application->MessageBox(
+          VCLSTR( "Number of columns differs across rows" ),
+          VCLSTR( "Error" ),
+          MB_ICONERROR | MB_OK );
         break;
-      case ERR_MATNOTFOUND:
-		Application->MessageBox(
-		  VCLSTR( "Could not open matrix data file" ),
-		  VCLSTR( "Error" ),
-		  MB_ICONERROR | MB_OK );
+      case OperatorUtils::MatNotFound:
+        Application->MessageBox(
+          VCLSTR( "Could not open matrix data file" ),
+          VCLSTR( "Error" ),
+          MB_ICONERROR | MB_OK );
         break;
       default:
-		Application->MessageBox(
-		  VCLSTR( " Error loading the matrix file" ),
-		  VCLSTR( "Error" ),
-		  MB_ICONERROR | MB_OK );
+        Application->MessageBox(
+          VCLSTR( " Error loading the matrix file" ),
+          VCLSTR( "Error" ),
+          MB_ICONERROR | MB_OK );
     }
     DisplayBase::OnContentChange();
   }
@@ -518,26 +532,49 @@ __fastcall
 ParamDisplay::Matrix::OnSaveButtonClick( TObject* )
 {
   TSaveDialog* saveDialog = new TSaveDialog( static_cast<TComponent*>( NULL ) );
-  saveDialog->DefaultExt = MATRIX_EXTENSION;
-  saveDialog->Filter = MATRIX_FILTER;
+  saveDialog->DefaultExt = "";
+  saveDialog->Filter = SAVE_MATRIX_FILTER;
   if( saveDialog->Execute() )
   {
-	AnsiString name = saveDialog->FileName;
-	int result = OperatorUtils::SaveMatrix( name.c_str(), mParam );
+    AnsiString name = saveDialog->FileName;
+    if( ExtractFileExt( name ) == "" )
+    {
+      switch( saveDialog->FilterIndex )
+      {
+        case 1:
+          name = name + "." MATRIX_EXTENSION;
+          break;
+        case 2:
+          name = name + ".txt";
+          break;
+        default:
+          ;
+      }
+    }
+    int result = OperatorUtils::SaveMatrix( name.c_str(), mParam );
     switch( result )
     {
-      case ERR_NOERR:
+      case OperatorUtils::NoError:
         break;
-      case ERR_COULDNOTWRITE:
+      case OperatorUtils::CannotWriteNestedMatrixAsText:
+        Application->MessageBox(
+          VCLSTR(
+            "You are saving a \"nested\" matrix. Nested matrices cannot be written in text format.\n\n"
+            "Please choose \"BCI2000 matrix parameter\" as a file type.\n"
+          ),
+          VCLSTR( "Error" ),
+          MB_OK );
+        break;
+      case OperatorUtils::CouldNotWrite:
       default:
         {
           AnsiString message;
           message = "Could not write to file ";
           message += saveDialog->FileName;
-		  Application->MessageBox(
-			VCLSTR( message.c_str() ),
-			VCLSTR( "Error" ),
-			MB_OK );
+          Application->MessageBox(
+            VCLSTR( message.c_str() ),
+            VCLSTR( "Error" ),
+            MB_OK );
         }
         break;
     }

@@ -80,7 +80,6 @@ object fEditMatrix: TfEditMatrix
     Width = 41
     Height = 22
     MaxValue = 32767
-    MinValue = 1
     TabOrder = 2
     Value = 4
   end
