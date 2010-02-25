@@ -55,10 +55,10 @@ void __fastcall TfMain::DropPanelWindowProc( TMessage& msg )
         HDROP handle = ( HDROP )msg.WParam;
         size_t numFiles = ::DragQueryFile( handle, -1, NULL, 0 );
         if( numFiles > 1 )
-		  Application->MessageBox(
-			VCLSTR( "You can only drop one file at a time" ),
-			VCLSTR( "Warning" ),
-			MB_OK );
+          Application->MessageBox(
+            VCLSTR( "You can only drop one file at a time" ),
+            VCLSTR( "Warning" ),
+            MB_OK );
         if( numFiles > 0 )
         {
           size_t nameLen = ::DragQueryFile( handle, 0, NULL, 0 );
@@ -98,10 +98,10 @@ bool TfMain::RetrieveFileInfo( const char* inFileName )
   {
     ostringstream oss;
     oss << "Could not open \"" << inFileName << "\" as a BCI2000 data file.";
-	Application->MessageBox(
-	  VCLSTR( oss.str().c_str() ),
-	  VCLSTR( "Error" ),
-	  MB_OK );
+    Application->MessageBox(
+      VCLSTR( oss.str().c_str() ),
+      VCLSTR( "Error" ),
+      MB_OK );
     bShowParams->Enabled=false;
     return(false);
   }

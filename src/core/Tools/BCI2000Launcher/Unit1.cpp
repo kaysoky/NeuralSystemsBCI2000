@@ -59,14 +59,14 @@ void __fastcall TmainForm::FormCreate(TObject */*Sender*/)
     {
         in.close();
         in.clear();
-		boxDlg = Application->MessageBox(
-		  VCLSTR( "The BCI2000Launcher.ini file cannot be found, so a new one"
-				  " will be created in the BCI2000/prog folder. Press Ignore,"
-				  " and move the programs from the Others list to the"
-				  " appropriate list (a new ini file will be created),"
-				  " or press Retry to select a file." ),
-		  VCLSTR( "*.ini file not found" ),
-		  MB_ABORTRETRYIGNORE);
+        boxDlg = Application->MessageBox(
+          VCLSTR( "The BCI2000Launcher.ini file cannot be found, so a new one"
+                  " will be created in the BCI2000/prog folder. Press Ignore,"
+                  " and move the programs from the Others list to the"
+                  " appropriate list (a new ini file will be created),"
+                  " or press Retry to select a file." ),
+            VCLSTR( "*.ini file not found" ),
+            MB_ABORTRETRYIGNORE);
 
         switch (boxDlg)
         {
@@ -901,7 +901,7 @@ void __fastcall TmainForm::delParmButClick(TObject */*Sender*/)
 
 void __fastcall TmainForm::About1Click(TObject */*Sender*/)
 {
-    AboutBox().SetApplicationName( "BCI2000Launcher" )
+  AboutBox().SetApplicationName( "BCI2000Launcher" )
             .Display();    
 }
 //---------------------------------------------------------------------------
@@ -909,9 +909,9 @@ void __fastcall TmainForm::About1Click(TObject */*Sender*/)
 
 void __fastcall TmainForm::getDirBtnClick(TObject */*Sender*/)
 {
-	VclStringType Dir = "";
+  VclStringType Dir = "";
   if (SelectDirectory(Dir, TSelectDirOpts() << sdAllowCreate << sdPerformCreate << sdPrompt,SELDIRHELP))
-	directoryBox->Text = Dir;
+    directoryBox->Text = Dir;
     
 }
 //---------------------------------------------------------------------------

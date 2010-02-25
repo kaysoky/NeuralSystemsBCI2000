@@ -279,7 +279,7 @@ TfEditMatrix::PlainCellToMatrix( int inRow, int inCol )
   StringGrid->Canvas->DrawFocusRect( cellRect );
   bool convert = (
     IDYES == Application->MessageBox(
-	  VCLSTR( "You are about to change this cell into a 1x1-sub-matrix.\n"
+      VCLSTR( "You are about to change this cell into a 1x1-sub-matrix.\n"
               "Proceed?" ),
       VCLSTR( "Confirmation" ),
       MB_YESNO | MB_ICONQUESTION )

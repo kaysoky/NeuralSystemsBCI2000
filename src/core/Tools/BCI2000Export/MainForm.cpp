@@ -170,21 +170,21 @@ TImporterForm::ProcessFiles( StringSet& inFilesToProcess, bool scanOnly )
     if( OutContent.length() )
     {
       Application->BringToFront();
-	  AnsiString title = Application->Title;
-	  Application->MessageBox(
-		VCLSTR( OutContent.c_str() ),
-		VCLSTR( title.c_str() ),
-		MB_ICONWARNING|MB_OK );
+      AnsiString title = Application->Title;
+      Application->MessageBox(
+        VCLSTR( OutContent.c_str() ),
+        VCLSTR( title.c_str() ),
+        MB_ICONWARNING|MB_OK );
       OutContent = "";
     }
     if( ErrContent.length() )
     {
       Application->BringToFront();
-	  AnsiString title = Application->Title;
-	  Application->MessageBox(
-		VCLSTR( ErrContent.c_str() ),
-		VCLSTR( title.c_str() ),
-		MB_ICONERROR|MB_OK );
+      AnsiString title = Application->Title;
+      Application->MessageBox(
+        VCLSTR( ErrContent.c_str() ),
+        VCLSTR( title.c_str() ),
+        MB_ICONERROR|MB_OK );
       ErrContent = "";
       break;
     }
