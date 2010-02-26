@@ -27,11 +27,9 @@ class Status
 
   typedef enum
   {
-    firstPlainMessageCode = 200,
-    plainMessage = 200,
-    lastPlainMessageCode = 298,
-
-    debugMessage = 299,
+    firstPlainMessageCode = 100,
+    plainMessage = 100,
+    lastPlainMessageCode = 199,
 
     firstInitializedMessage = 200,
     sourceInitialized = 200,
@@ -47,6 +45,8 @@ class Status
     sourceSuspended = 204,
     sigprocSuspended = 206,
     appSuspended = 208,
+
+    debugMessage = 299,
 
     firstWarningCode = 300,
     warningMessage = 301,

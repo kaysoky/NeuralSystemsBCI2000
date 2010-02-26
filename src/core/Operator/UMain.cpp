@@ -352,13 +352,12 @@ TfMain::BroadcastParameters()
 void
 TfMain::BroadcastEndOfParameter()
 {
-  for( SetOfConnections::iterator i = mCoreConnections.begin();
-                                               i != mCoreConnections.end(); ++i )
-  {
+  for( SetOfConnections::iterator i = mCoreConnections.begin(); i != mCoreConnections.end(); ++i )
     mSysstatus.INI[ ( *i )->Origin() ] = false;
+    
+  for( SetOfConnections::iterator i = mCoreConnections.begin(); i != mCoreConnections.end(); ++i )
     if( ( *i )->PutMessage( SysCommand::EndOfParameter ) )
       ++mSysstatus.NumMessagesSent[ ( *i )->Origin() ];
-  }
 }
 
 void
@@ -411,12 +410,6 @@ TfMain::EnterState( SYSSTATUS::State inState )
       break;
 
     case TRANSITION( SYSSTATUS::Publishing, SYSSTATUS::Information ):
-      // Execute the script after all modules are connected ...
-      if( mPreferences.Script[ PREFERENCES::AfterModulesConnected ] != "" )
-      {
-        mSyslog.AddSysLogEntry( "Executing script after all modules connected ..." );
-        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::AfterModulesConnected ].c_str() );
-      }
       // Add the state vector's length to the system parameters.
       {
         mParameters.Add(
@@ -426,6 +419,12 @@ TfMain::EnterState( SYSSTATUS::State inState )
         mStates.AssignPositions();
         AnsiString length = StateVector( mStates ).Length();
         mParameters[ "StateVectorLength" ].Value() = length.c_str();
+      }
+      // Execute the script after all modules are connected ...
+      if( mPreferences.Script[ PREFERENCES::AfterModulesConnected ] != "" )
+      {
+        mSyslog.AddSysLogEntry( "Executing script after all modules connected ..." );
+        mScript.ExecuteScript( mPreferences.Script[ PREFERENCES::AfterModulesConnected ].c_str() );
       }
       break;
 
@@ -547,9 +546,9 @@ void
 TfMain::QuitOperator( bool inConfirm )
 {
   if( !inConfirm || ID_YES == Application->MessageBox(
-	VCLSTR( "Do you really want to quit BCI2000?" ),
-	VCLSTR( "Question" ),
-	MB_YESNO ) )
+    VCLSTR( "Do you really want to quit BCI2000?" ),
+    VCLSTR( "Question" ),
+    MB_YESNO ) )
   {
     // Execute the on-exit script ...
     if( mPreferences.Script[ PREFERENCES::OnExit ] != "" )
