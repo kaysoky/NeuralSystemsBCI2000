@@ -1,16 +1,18 @@
 /******************************************************************************
  * Module:    AmpServerProADC.CPP                                             *
  * Comment:   Definition for the AmpServerProADC class that facilitates       *
- *  communication with EGI's Amp Server Pro                                   *
+ *  communication with EGI's Amp Server Pro SDK                               *
  * Version:   1.00                                                            *
- * Author:    Joshua Fialkoff                                                 *
+ * Author:    Joshua Fialkoff, Robert Bell (EGI)                              *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
  *                                                                            *
- * V1.00 -                                                                    *
+ * V1.00 - Updated Joshua's code to work with Amp Server Pro SDK GM release   *
+ *         version 1.0.
  ******************************************************************************/
-//#include "PCHIncludes.h"
+
+ //#include "PCHIncludes.h"
 
 #pragma hdrstop
 
@@ -52,29 +54,32 @@ AmpServerProADC::AmpServerProADC()
   m_oDataConn.socket = NULL;
   m_oDataConn.stream= NULL;
   m_aLastDataPack = NULL;
-  //strcpy(m_sServerIP, "172.16.2.183"); //imac
-  strcpy(m_sServerIP, ASP_DEF_IP); //mac pro
+
+  strcpy(m_sServerIP, ASP_DEF_IP);
+  strcpy(m_sAmpState,ASP_CMD_DEFAULTACQUISITIONSTATE);
 
 #ifndef STANDALONE
-  //TODO: Replace max values with actual max values
+  // TODO: Replace max values with actual max values
   // add all the parameters that this ADC requests to the parameter list
   BEGIN_PARAMETER_DEFINITIONS
     "Source int SourceCh=      16 16 1 280 "
-        "// number of digitized channels",
+		"// number of digitized channels",
     "Source int SampleBlockSize= 32 32 1 128 "
         "// number of samples per block",
     "Source int SamplingRate=    256 256 1 40000 "
         "// the signal sampling rate",
-    "Source string ServerIP= 127.0.0.1 127.0.0.1"
-        "// address of Amp Server Pro",
+	"Source string ServerIP= 127.0.0.1 127.0.0.1"
+		"// Address of Amp Server Pro",
     "Source int CommandPort= 9877 9877 1 65535"
         "// port number corresponding to the command layer",
-    "Source int NotificationPort= 9878 9878 1 65535"
-        "// port number corresponding to the notification layer",
+	"Source int NotificationPort= 9878 9878 1 65535"
+		"// port number corresponding to the notification layer",
     "Source int StreamPort= 9879 9879 1 65535"
         "// port number corresponding to the stream layer",
     "Source string AmplifierID=  Auto Auto"
-        "// the ID of the Amplifier from which data should be collected",
+		"// the ID of the Amplifier from which data should be collected",
+	"Source int AmpState= 0 0 0 1"
+		"// command to set amp state: 0 DefaultAcquisitionState, 1 DefaultSignalGeneration (enumeration)",
   END_PARAMETER_DEFINITIONS
 #endif
 }
@@ -91,7 +96,7 @@ void AmpServerProADC::InitGlobalVars()
   m_nNumChans = 0; 
   m_nBlockSize = 0;
   
-  //if you change these, change param defaults - in constructor - as well
+  // If you change these, change param defaults - in constructor - as well
   m_nCmdPort = ASP_DEF_CMD_PORT;
   m_nNotifPort = ASP_DEF_NOTIF_PORT;
   m_nDataPort = ASP_DEF_DATA_PORT;
@@ -134,11 +139,11 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
   unsigned int nNotifPort, unsigned int nDataPort, Connection *pCmdConn,
   Connection *pNotifConn, Connection *pDataConn) const
 {
-  //here we have to establish a connection with all three communication ports
+  // Establish a connection with all three communication ports.
   int nAddrLen, nTmp;
   char *sCmdPort, *sNotifPort, *sDataPort, *sAddress;
 
-  //allocate memory for storage of host address
+  // Allocate memory for storage of host address.
   nAddrLen = ceil(log10((double)nCmdPort) + 1);
   nTmp = ceil(log10((double)nNotifPort) + 1);
   if( nTmp > nAddrLen)
@@ -150,7 +155,7 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
   nAddrLen += strlen(sServerIP) + 5;
   sAddress = new char[nAddrLen];
 
-  //Initialize command layer
+  // Initialize command layer.
   sprintf(sAddress, "%s:%d", sServerIP, nCmdPort);
   pCmdConn->socket = new client_tcpsocket(sAddress);
   (pCmdConn->socket)->set_tcpnodelay( true );
@@ -169,7 +174,7 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
 
   (pCmdConn->stream)->set_timeout(ASP_TIMEOUT);
 
-  //Initialize notification layer
+  // Initialize notification layer.
   sprintf(sAddress, "%s:%d", sServerIP, nNotifPort);
   pNotifConn->socket = new client_tcpsocket(sAddress);
   (pNotifConn->socket)->set_tcpnodelay( true );
@@ -188,7 +193,7 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
 
   (pNotifConn->stream)->set_timeout(ASP_TIMEOUT);
 
-  //Initialize data stream layer
+  // Initialize data stream layer.
   sprintf(sAddress, "%s:%d", sServerIP, nDataPort);
   pDataConn->socket = new client_tcpsocket(sAddress);
   (pDataConn->socket)->set_tcpnodelay( true );
@@ -222,7 +227,10 @@ bool AmpServerProADC::Connect(char *sServerIP, unsigned int nCmdPort,
 // **************************************************************************
 bool AmpServerProADC::BeginListening()
 {
-  //make sure amp is powered on
+
+  bool bResp; // Todo: Actually check this!
+
+  // Make sure amp is powered on.
   char *sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
   if(!SendCommand(sCmd))
   {
@@ -232,17 +240,37 @@ bool AmpServerProADC::BeginListening()
   }
   delete[] sCmd;
 
-  //start the amplifier
+  // Start the amplifier.
   sCmd = BuildCmdString(ASP_CMD_START, 0, 0);
   if(!SendCommand(sCmd))
   {
     delete[] sCmd;
     bcierr << "Unable to start the amplifier" << endl;
-    return false;
+	return false;
   }
   delete[] sCmd;
 
-  //make sure we haven't lost connection
+  // Always set the amp to the default acquisition state first.
+  sCmd = BuildCmdString(ASP_CMD_DEFAULTACQUISITIONSTATE, 0, 0, 0);
+  bResp = SendCommand(sCmd);
+  delete[] sCmd;
+
+  // Now send the desired start state (if not the already set default acquisition state).
+  if(m_nAmpState != 0){
+	switch(m_nAmpState){
+		case 1:
+			{
+            	sCmd = BuildCmdString(ASP_CMD_DEFAULTSIGNALGENERATION, 0, 0, 0);
+				bResp = SendCommand(sCmd);
+				delete[] sCmd;
+			}
+			break;
+		default:
+			break;
+	}
+  }
+
+  // Make sure we haven't lost connection.
   if (!m_oDataConn.stream)
   {
     bcierr << "Data layer stream not created." << endl;
@@ -254,19 +282,14 @@ bool AmpServerProADC::BeginListening()
     return false;
   }
 
-  //construct and send message to start streaming data.  This gets sent to the stream port
-  __int64 *aCmd = new __int64[ASP_DATA_MSG_SIZE/sizeof(__int64)];
-  aCmd[0] = 0; // This field is not really used yet.
-  aCmd[1] = ASP_DATAMSG_LISTENTOAMP; 
-  aCmd[2] = m_nAmpId;
+  sCmd = BuildCmdString(ASP_DATAMSG_LISTENTOAMP, 0, 0, m_nAmpId);
 
-  sCmd = reinterpret_cast<char *>(aCmd);
-  ReorderToNetworkOrder(sCmd, 3);
-
-  m_oDataConn.stream->write( sCmd, ASP_DATA_MSG_SIZE );
+  m_oDataConn.stream->write(sCmd, strlen(sCmd));
   m_oDataConn.stream->flush();
 
-  delete[] aCmd;
+  delete[] sCmd;
+
+  Sleep(3000);
 
   m_bListening = true;
 
@@ -353,6 +376,7 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   int nScanRes;
   bool bResp;
   char sServerIP[25];
+  int nAmpState;
   unsigned int nCmdPort, nNotifPort, nDataPort;
   unsigned int nAmpId;
   Connection oCmdConn, oNotifConn, oDataConn;
@@ -364,58 +388,59 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   nCmdPort = ASP_DEF_CMD_PORT;
   nNotifPort = ASP_DEF_NOTIF_PORT;
   nDataPort = ASP_DEF_DATA_PORT;
+  nAmpState = 0; // This corresponds to the default acquisition state in the display.
 #else
-  //Get connection info
+  // Get connection info.
   strcpy(sServerIP, Parameter("ServerIP").c_str());
   nScanRes = sscanf(Parameter("CommandPort").c_str(), "%d", &nCmdPort);
   nScanRes = sscanf(Parameter("NotificationPort").c_str(), "%d", &nNotifPort);
   nScanRes = sscanf(Parameter("StreamPort").c_str(), "%d", &nDataPort);
-  
-  //samples are always 4-byte floats
+
+  // Amp state.
+  nScanRes = sscanf(Parameter("AmpState").c_str(), "%d", &m_nAmpState);
+
+  // Samples are always 4-byte floats.
   outSignalProperties = SignalProperties(
-       Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32);
+	   Parameter( "SourceCh" ), Parameter( "SampleBlockSize" ), SignalType::float32);
   nScanRes = sscanf(Parameter( "SampleBlockSize" ).c_str(), "%d", &nBlockSize);
   if(nScanRes <= 0 || nScanRes == EOF)
   {
-    bcierr << "Invalid value specified for SampleBlockSize.  Please choose a positive integer value." << endl;
-    Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
-    return;
+	bcierr << "Invalid value specified for SampleBlockSize.  Please choose a positive integer value." << endl;
+	Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
+	return;
   }
 #endif
 
-  //Connect to the amp server
+  // Connect to the amp server.
   if(!Connect(sServerIP, nCmdPort, nNotifPort, nDataPort, &oCmdConn, &oNotifConn, &oDataConn))
   {
     return;
   }
 
-  //Make sure the amp is powered on
+  // Make sure the amp is powered on.
   sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
   bResp = SendCommand(sCmd, &oCmdConn, sCmdResp);
   delete[] sCmd;
 
-  //Allow amp to settle into stable state
-  //Sleep(1000);
-  sCmd = BuildCmdString(ASP_CMD_SETTEST1, 0, 0, 0);
-  //bResp = SendCommand(sCmd, &oCmdConn, sCmdResp);
-  delete[] sCmd;
+  // Allow amp to settle into stable state.
+  Sleep(3000);
 
   if(!bResp)
   {
     bcierr << "Unable to communicate via the command layer." << endl;
-    Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
+	Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
     return;
   }
 
 
-  //Figure out what the AmpId is
+  // Figure out what the AmpId is.
   if(!GetAmpId(&nAmpId, &oCmdConn))
   {
-    Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
+	Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
     return;
   }
 
-  //Done talking for now, stop server and close connections
+  // Done talking for now, stop server and close connections.
   Halt(&oCmdConn, &oNotifConn, &oDataConn, nAmpId);
 
 
@@ -427,8 +452,12 @@ void AmpServerProADC::Preflight( const SignalProperties&, SignalProperties& outS
   // also cross check SourceChGain and SourceChOffset
   for (int ch=0; ch<Parameter( "SourceCh" ); ch++)
   {
-    PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );        // we have to assume that the signal is already calibrated
-    PreflightCondition( fabs(Parameter( "SourceChGain" )( ch )-0.2)<(1E-3) );
+	PreflightCondition( Parameter( "SourceChOffset" )( ch ) == 0 );
+	PreflightCondition( fabs(Parameter( "SourceChGain" )( ch )-0.0238)<(1E-3) );
+
+	// EGI NA300 amps have a range of +/- 200,000uV that is digitized into
+	// a 24bit signed value. The values received in BCI 2000 are in float,
+	// but use these values when converting back to uV.ss
   }
 
 #endif
@@ -450,12 +479,12 @@ bool AmpServerProADC::GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const
   char sCmdResp[ASP_CMD_RESP_SIZE];
   int nScanRes, nNumAmps;
 
-  //Query server for number of amplifiers
+  // Query server for number of amplifiers.
   sCmd = BuildCmdString(ASP_CMD_NUMBEROFAMPS, 0, 0, nAmpId);
   if(!SendCommand(sCmd, pCmdConn, sCmdResp))
   {
-    delete[] sCmd;
-    bcierr << "Unable to determine the number of amplifiers connected." << endl;
+	delete[] sCmd;
+	bcierr << "Unable to determine the number of amplifiers connected." << endl;
     return false;
   }
   delete[] sCmd;
@@ -483,8 +512,8 @@ bool AmpServerProADC::GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const
   //find out what the user specified for amp ID and ensure it's valid
   if(stricmp(Parameter("AmplifierID").c_str(), "auto") == 0)
   {
-    //user entered "auto" - only valid if 1 amp is connected
-    if( nNumAmps == 1 )
+	//user entered "auto" - only valid if 1 amp is connected
+	if( nNumAmps == 1 )
       nAmpId = 0;
     else
     {
@@ -498,8 +527,8 @@ bool AmpServerProADC::GetAmpId(unsigned int *pAmpId, Connection *pCmdConn) const
     nScanRes = sscanf(Parameter("AmplifierID").c_str(), "%d", &nAmpId);
     if(nScanRes != 1)
     {
-      bcierr << "Invalid AmplifierID was specified.  Please choose an integer greater than or equal to 0." << endl;
-      return false;
+	  bcierr << "Invalid AmplifierID was specified.  Please choose an integer greater than or equal to 0." << endl;
+	  return false;
     }
     if( nAmpId > nNumAmps - 1 )
     {
@@ -548,13 +577,14 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
   sscanf(Parameter("StreamPort").c_str(), "%d", &m_nDataPort);
   sscanf(Parameter("SourceCh").c_str(), "%d", &m_nNumChans);
   sscanf(Parameter("SampleBlockSize").c_str(), "%d", &m_nBlockSize);
+  sscanf(m_sAmpState, Parameter("AmpState").c_str());
 #endif
 
   if(m_aLastDataPack != NULL)
-    delete[] m_aLastDataPack;
+	delete[] m_aLastDataPack;
   m_aLastDataPack = new char[ASP_SAMP_SIZE * m_nBlockSize];
 
-  //connect to the amplifier
+  // Connect to the amplifier
   if(!Connect())
   {
     bcierr << "Unable to connect to amp server" << endl;
@@ -562,7 +592,7 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
     return;
   }
   
-  //Make sure the amp is powered on
+  // Make sure the amp is powered on
   sCmd = BuildCmdString(ASP_CMD_SETPOWER, 0, 1, 0);
   if(!SendCommand(sCmd))
   {
@@ -572,7 +602,7 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
   }
   delete[] sCmd;
   
-  //Get the amp ID
+  // Get the amp ID
   if(!GetAmpId(&m_nAmpId, &m_oCmdConn))
   {
     bcierr << "Unable to set amplifier ID." << endl;
@@ -580,7 +610,7 @@ void AmpServerProADC::Initialize( const SignalProperties&, const SignalPropertie
     return;
   }
 
-  //Tell amplifier to start streaming data
+  // Tell amplifier to start streaming data
   BeginListening();
 }
 
@@ -696,7 +726,7 @@ bool AmpServerProADC::SendCommand(char *sCmd)
 // **************************************************************************
 bool AmpServerProADC::SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdResp) const
 {
-  //make sure connection is still valid
+  // Make sure connection is still valid.
   if (!(pCmdConn->stream))
   {
     bcierr << "Command layer stream not created." << endl;
@@ -708,17 +738,17 @@ bool AmpServerProADC::SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdRe
     return false;
   }
 
-  //send command
+  // Send command.
   (pCmdConn->stream)->write( sCmd, strlen(sCmd) );
   (pCmdConn->stream)->flush();
 
-  //get the response
+  // Get the response.
   int i;
   for(i=0; i<ASP_CMD_RESP_SIZE; i++)
   {
     (pCmdConn->stream)->get(*(sCmdResp + i));
 
-    //check for timeout
+	// Check for timeout.
     if( !( (pCmdConn->stream)->is_open() ) )
     {
       bcierr << "Lost connection to the server." << endl;
@@ -764,7 +794,7 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigne
   char *sCmdFull = NULL;
   int nCmdLen = 0;
 
-  //estimate amount of memory to allocate
+  // Estimate amount of memory to allocate.
   nCmdLen = strlen(ASP_CMD_SYNTAX);
   nCmdLen += strlen(sCmd);
   if (nAmpId <= 0)
@@ -782,7 +812,7 @@ char *AmpServerProADC::BuildCmdString(char *sCmd, int nChanId, int nArg, unsigne
   else
     nCmdLen += ceil(log10((double)nArg) + 1);
 
-  //create cmd string
+  // Create cmd string.
   sCmdFull = new char[nCmdLen];
   sprintf(sCmdFull, ASP_CMD_SYNTAX, sCmd, nAmpId, nChanId, nArg);
 
@@ -820,14 +850,14 @@ void AmpServerProADC::Halt(Connection *pCmdConn, Connection *pNotifConn,
 
    if (pCmdConn->stream && (pCmdConn->stream)->is_open())
    {
-     // send the command to stop sending data
+	 // Send the command to stop sending data.
      sCmd = BuildCmdString(ASP_CMD_STOP, 0, 0, nAmpId);
      SendCommand(sCmd, pCmdConn, sCmdResp);
      delete[] sCmd;
 
-     //close command layer connection
+	 // Close command layer connection.
      (pCmdConn->stream)->close();
-     (pCmdConn->socket)->close();
+	 (pCmdConn->socket)->close();
      delete pCmdConn->socket;
      delete pCmdConn->stream;
      pCmdConn->socket = NULL;
@@ -836,7 +866,7 @@ void AmpServerProADC::Halt(Connection *pCmdConn, Connection *pNotifConn,
 
   if (pNotifConn->stream && (pNotifConn->stream)->is_open())
   {
-     //close notification layer connection
+	 // Close notification layer connection.
     (pNotifConn->stream)->close();
     (pNotifConn->socket)->close();
     delete pNotifConn->socket;
@@ -847,11 +877,11 @@ void AmpServerProADC::Halt(Connection *pCmdConn, Connection *pNotifConn,
 
   if (pDataConn->stream && (pDataConn->stream)->is_open())
   {
-     //close data stream layer connection
+	 // Close data stream layer connection.
     (pDataConn->stream)->close();
     (pDataConn->socket)->close();
     delete pDataConn->socket;
-    delete pDataConn->stream;
+	delete pDataConn->stream;
     pDataConn->socket = NULL;
     pDataConn->stream = NULL;
   }
@@ -891,12 +921,12 @@ void AmpServerProADC::Process( const GenericSignal&, GenericSignal& signal )
     return;
   }
 
-  //read a full block of data
+  // Read a full block of data.
   while(nTotalSampsRead < m_nBlockSize)
   {
-    //read header if necessary
-    if( m_nLastDataPackOffset >= m_nLastDataPackSize )
-    {
+	// Read header if necessary.
+	if( m_nLastDataPackOffset >= m_nLastDataPackSize )
+	{
       bcidbg << "Reading header" << endl;
       if(!ReadDataHeader())
       {
@@ -905,42 +935,46 @@ void AmpServerProADC::Process( const GenericSignal&, GenericSignal& signal )
       }
     }
         
-    //read as many samples are in the current group but no more than is needed to fill the current block
-    if(!ReadDataBlock((m_nBlockSize-nTotalSampsRead) * ASP_SAMP_SIZE, &nBytesRead))
+	// Read as many samples are in the current group but no more than is needed to fill the current block.
+	if(!ReadDataBlock((m_nBlockSize-nTotalSampsRead) * ASP_SAMP_SIZE, &nBytesRead))
     {
       bcierr << "Received invalid data from the server.  Data may be corrupted." << endl;
       Halt();
       return;
     }
 
-    nSampsRead = nBytesRead / ASP_SAMP_SIZE;
+	nSampsRead = nBytesRead / ASP_SAMP_SIZE;
 
     bcidbg << nSampsRead << " samples read" << endl;
 
-    //load the samples into the return parameter
-    nOffset = 0;
-    for(unsigned int nSamp=nTotalSampsRead; nSamp< nTotalSampsRead + nSampsRead; nSamp++)
-    {
-      //reorder only the first m_nNumChans floats and ignore the preceding 32-byte header
-      //ReorderToHostOrder(m_aLastDataPack + nOffset, 32 + sizeof(float) * m_nNumChans);
+	// Load the samples into the return parameter.
+	nOffset = 0;
+	unsigned int loopCount = 0;
+	for(unsigned int nSamp=nTotalSampsRead; nSamp< nTotalSampsRead + nSampsRead; nSamp++)
+	{
+	  // Reorder only the first m_nNumChans floats and ignore the preceding 32-byte header.
+	  //ReorderToHostOrder(m_aLastDataPack + nOffset, 32 + sizeof(float) * m_nNumChans);
 
-      //there's a header in front of each sample - ignore it
-      nOffset += 32;
+	  // There's a header in front of each sample - ignore it.
+	  nOffset = (loopCount * ASP_SAMP_SIZE) + 32;
+	  //nOffset += 32;
 
-      for(unsigned int nChan=0; nChan<m_nNumChans; nChan++)
-      {
-        __int32* p = reinterpret_cast<__int32*>( m_aLastDataPack + nOffset );
-        *p = ntohl( *p );
+	  for(unsigned int nChan=0; nChan<m_nNumChans; nChan++)
+	  {
+		__int32* p = reinterpret_cast<__int32*>( m_aLastDataPack + nOffset );
+		*p = ntohl( *p );
 #ifdef STANDALONE
         sampBlock[nSamp][nChan] = *reinterpret_cast<float *>( p );
 #else
-        signal(nChan, nSamp) = *reinterpret_cast<float *>( p );
+		signal(nChan, nSamp) = *reinterpret_cast<float *>( p );
 #endif
-        nOffset += sizeof(float);
-      }
-    }
+		nOffset += sizeof(float);
+	  }
 
-    nTotalSampsRead += nSampsRead;
+      loopCount++;
+	}
+
+	nTotalSampsRead += nSampsRead;
 
   }
 
@@ -960,30 +994,33 @@ inline bool AmpServerProADC::ReadDataHeader()
 {
   char sData[16];
 
+  memset(sData, 0, 16);
+
   if(!m_oDataConn.stream->is_open())
   {
     bcierr << "Lost connection to the server." << endl;
     return false;
   }
   
-  //read the header
+  // Read the header.
   m_oDataConn.stream->read(sData, 15);
   sData[15] = m_oDataConn.stream->get();
 
   ReorderToHostOrder(sData, 2);
 
-  //save the header values into m_oLastHeader
+  // Save the header values into m_oLastHeader.
   m_oLastHeader.ampID = *(reinterpret_cast<__int64*>(sData));
   m_oLastHeader.length = *(reinterpret_cast<unsigned __int64*>(sData + 8));
 
-  //ensure data is valid
+  // Ensure data is valid.
   if(m_nAmpId != m_oLastHeader.ampID || m_oLastHeader.length == 0 )
   {
-    bcierr << "Received invalid data from amplifier.  Data may have been corrupted." << endl;
-    return false;
+	bcierr << "Received invalid data from amplifier.  Data may have been corrupted. m_nAmpId: " << m_nAmpId
+	<< " m_oLastHeader.ampID: " << m_oLastHeader.ampID << " length: " << m_oLastHeader.length << endl;
+	return false;
   }
 
-  //we're at the beginning of a new data pack, set offset and length
+  // We're at the beginning of a new data pack, set offset and length.
   m_nLastDataPackOffset = 0;
   m_nLastDataPackSize = m_oLastHeader.length;
 
@@ -1000,7 +1037,7 @@ inline bool AmpServerProADC::ReadDataHeader()
 // **************************************************************************
 inline bool AmpServerProADC::ReadDataBlock(unsigned int nMaxBytes, unsigned int *nBytesRead)
 {
-  //determine the number of bytes to read
+  // Determine the number of bytes to read.
   unsigned int nBytesLeft = m_nLastDataPackSize - m_nLastDataPackOffset; 
 
   if(nMaxBytes > nBytesLeft)
@@ -1008,14 +1045,14 @@ inline bool AmpServerProADC::ReadDataBlock(unsigned int nMaxBytes, unsigned int 
   else
     *nBytesRead = nMaxBytes;
 
-  //ensue connection is still open
+  // Ensure connection is still open.
   if(!m_oDataConn.stream->is_open())
   {
     bcierr << "Lost connection to the server." << endl;
     return false;
   }
 
-  //read data
+  // Read data.
   m_oDataConn.stream->read(m_aLastDataPack, *nBytesRead-1);
   m_aLastDataPack[*nBytesRead-1] = m_oDataConn.stream->get();
 
