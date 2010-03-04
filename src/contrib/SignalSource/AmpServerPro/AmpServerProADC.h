@@ -39,11 +39,12 @@
 #define ASP_CMD_GETSTARTTIME "GetStartTime"
 #define ASP_CMD_GETCURRENTTIME "GetCurrentTime"
 #define ASP_CMD_NUMBEROFAMPS "NumberOfAmps"
-#define ASP_CMD_SETTEST1 "SetTest1"
+#define ASP_CMD_DEFAULTACQUISITIONSTATE "DefaultAcquisitionState"
+#define ASP_CMD_DEFAULTSIGNALGENERATION "DefaultSignalGeneration"
 
 #define ASP_SEXP_NUMBEROFAMPS "number_of_amps \d+"
 
-#define ASP_DATAMSG_LISTENTOAMP 101
+#define ASP_DATAMSG_LISTENTOAMP "ListenToAmp"
 
 #define ASP_CMD_RESP_SIZE 4096
 #define ASP_DATA_MSG_SIZE 4096
@@ -82,6 +83,8 @@ class AmpServerProADC
   unsigned int m_nAmpId;
   unsigned int m_nBlockSize;
   char m_sServerIP[25];
+  char m_sAmpState[25];
+  int m_nAmpState;
   unsigned int m_nCmdPort, m_nNotifPort, m_nDataPort;
   bool m_bListening;
 
@@ -95,7 +98,7 @@ class AmpServerProADC
   char *GetCmdRespValue(char *sParamName);
   void InitGlobalVars();
 
-  //a number of functions must have const entry points for use from Preflight
+  // A number of functions must have const entry points for use from Preflight
   bool Connect(char *sServerIP, unsigned int nCmdPort, unsigned int nNotifPort, unsigned int nDataPort, Connection *pCmdConn, Connection *pNotifConn, Connection *pDataConn) const;
   bool SendCommand(char *sCmd, Connection *pCmdConn, char *sCmdResp) const;
   char *BuildCmdString(char *sCmd, int nChanId, int nArg, unsigned int nAmpId) const;
