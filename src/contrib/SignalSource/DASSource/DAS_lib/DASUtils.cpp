@@ -101,7 +101,7 @@ DASUtils::GetTransferBlockSize( int inBoardNumber, long& outBlockSize )
     return NOERRORS;
 
   // The board is not in the table -- try measuring the block size.
-  
+
   // Determine a ADRange parameter supported by the board.
   int result = BADRANGE,
       ADRange = NOTUSED;
@@ -211,14 +211,14 @@ DASUtils::GetBoardOptions( int   inBoardNumber,
          i < maxCount && ( result == BADCOUNT || result == CONTINUOUSCOUNT );
          ++i )
     {
-      HGLOBAL bufMem = ::cbWinBufAlloc( ioCount );
+      HGLOBAL bufMem = ::cbWinBufAlloc( i );
       // An allocation failure will show up as an error in cbAInScan.
       result = ::cbAInScan( inBoardNumber , 0, inChannels - 1, i,
                                 &ioSamplingRate, inADRange, bufMem, ioOptions );
       ::cbStopBackground( inBoardNumber, AIFUNCTION );
       ::cbWinBufFree( bufMem );
     }
-    ioCount = i - 1;
+    ioCount = i;
   }
   return result;
 }
