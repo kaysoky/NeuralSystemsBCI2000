@@ -21,8 +21,8 @@ WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
   try
   {
     Application->Initialize();
-    Application->Title = "BioSemi Signal Source";
-    CoreModuleVCL().Run( _argc, _argv );
+    Application->Title = "";
+                 CoreModuleVCL().Run( _argc, _argv );
   }
   catch (Exception &exception)
   {
