@@ -170,7 +170,14 @@ bool    ok;
        {
        while ((line[idx] == '\0') || (line[idx] == ' '))
         idx++;
-       bool result = statelist->Add(&line[idx]);
+       istringstream iss( &line[idx] );
+       string name;
+       int bitwidth = 1,
+           initialValue = 0;
+       iss >> name >> bitwidth >> initialValue;
+       ostringstream oss;
+       oss << name << ' ' << bitwidth << ' ' << initialValue << " 0 0";
+       bool result = statelist->Add(oss.str());
        idx=get_argument(idx, token, line, 256);
        if( result )
          sprintf(buf, "%s: Added state %s to list", filename, token);
