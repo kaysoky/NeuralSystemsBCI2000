@@ -24,7 +24,7 @@ startPos = 0;
 evCount = 1;
 signal = [];
 states = [];
-[signal, states, parms] = load_bcidat_(files.name);
+[signal, states, parms] = load_bcidat(files.name);
 signal = single(signal);
 
 stateNames = fieldnames(states);
