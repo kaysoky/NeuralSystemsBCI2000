@@ -49,7 +49,7 @@ StimulusTask::StimulusTask()
    "Application:Window string WindowBackgroundColor= 0xFFFFFF 0x505050 % % "
      "// background color (color)",
 
-   "Application:Sequencing float PreRunDuration= 0 0 0 % "
+   "Application:Sequencing float PreRunDuration= 1 1 % % "
      "// pause preceding first sequence",
    "Application:Sequencing float PostRunDuration= 0 0 0 % "
      "// pause following last sequence",
