@@ -127,6 +127,10 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
     }
   }
 
+  float preRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
+  if( preRunDuration < 1 )
+    bcierr << "PreRunDuration must be >= 1 data block" << endl;
+
   int epochLength = MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) );
   if( Parameter( "InterpretMode" ) != InterpretModes::None )
   {
@@ -189,7 +193,7 @@ StimulusTask::Initialize( const SignalProperties& Input,
 void
 StimulusTask::StartRun()
 {
-  mBlocksInPhase = 0;
+  mBlocksInPhase = 1;
   mBlocksSinceStimulus = 0;
   mISIDuration = 0;
   mClassResult.clear();
