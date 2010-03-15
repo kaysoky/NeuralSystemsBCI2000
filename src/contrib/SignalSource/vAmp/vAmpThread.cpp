@@ -176,7 +176,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   TransferFunction tf(1.0);
   float outGain = 1.0;
   TransferFunction lp =
-		  FilterDesign::Butterworth().Order( 2 ).Lowpass(.45).TransferFunction();
+		  FilterDesign::Butterworth().Order( 2 ).Lowpass(.45/mDecimate).TransferFunction();
   if (mHPcorner > 0){
 	TransferFunction hp  =
 		  FilterDesign::Butterworth().Order( 2 ).Highpass(mHPcorner).TransferFunction();
