@@ -15,7 +15,7 @@ geomObj::testResult
 sphere::contains( const CVector3& inPoint ) const
 {
   CVector3 center = getOrigin();
-  return ( inPoint - center ) * ( inPoint - center ) <= mRadius
+  return ( inPoint - center ) * ( inPoint - center ) <= mRadius * mRadius
          ? true_
          : false_;
 }
