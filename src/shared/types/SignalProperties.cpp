@@ -19,7 +19,7 @@ using namespace std;
 PhysicalUnit&
 SignalProperties::ValueUnit( size_t inCh )
 {
-  if( inCh > mValueUnits.size() && int( inCh ) < Channels() )
+  if( inCh >= mValueUnits.size() && int( inCh ) < Channels() )
     mValueUnits.resize( inCh + 1, *mValueUnits.rbegin() );
   return mValueUnits[ min( int( inCh ), Channels() ) ];
 }
