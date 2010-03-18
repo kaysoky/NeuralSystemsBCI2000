@@ -71,13 +71,14 @@ LinearClassifier::Preflight( const SignalProperties& Input,
 
       float ch = Input.ChannelIndex( Classifier( row, 0 ) );
       if( ch < 0 )
-        bcierr << DescribeEntry( row, 0 )
-               << "\npoints to negative input index"
+        bcierr << "Channel specification in\n\t"
+               << DescribeEntry( row, 0 )
+               << "\nis invalid"
                << endl;
       else if( ::floor( ch ) >= Input.Channels() )
-        bcierr << "Channel specification in "
+        bcierr << "Channel specification in\n\t"
                << DescribeEntry( row, 0 )
-               << " exceeds number of input channels"
+               << "\nexceeds number of input channels"
                << endl;
       if( ::fmod( ch, 1.0f ) > 1e-2 )
         bciout << "Channel specification in physical units:\n\t"
@@ -87,13 +88,14 @@ LinearClassifier::Preflight( const SignalProperties& Input,
 
       float el = Input.ElementIndex( Classifier( row, 1 ) );
       if( el < 0 )
-        bcierr << DescribeEntry( row, 1 )
-               << "\npoints to negative input index"
+        bcierr << "Element (bin) specification in\n\t"
+               << DescribeEntry( row, 1 )
+               << "\nis invalid"
                << endl;
       if( ::floor( el ) >= Input.Elements() )
-        bcierr << "Element (bin) specification in "
+        bcierr << "Element (bin) specification in\n\t"
                << DescribeEntry( row, 1 )
-               << " exceeds number of input elements"
+               << "\nexceeds number of input elements"
                << endl;
       if( ::fmod( el, 1.0f ) > 1e-2 )
         bciout << "Specification in physical units:\n\t"
