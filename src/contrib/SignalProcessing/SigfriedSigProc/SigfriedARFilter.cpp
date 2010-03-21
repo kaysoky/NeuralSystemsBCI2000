@@ -421,12 +421,7 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
   if( !output )
      outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
   else
-  {
-     // This requires LAVAFilter to be enabled
-     bcidbg( 0 ) << "Using SigfreidOutput = Display requires LAVAFilter to be compiled with SIGFREID. Checking..." << endl;
-     int numDisplays = Parameter( "NumberOfWindows" );
-     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax() *  numDisplays, num_models );
-  }
+     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax() *  num_electrodecondition_rows, num_models );
   outSignalProperties.SetName( "SIGFRIED feedback" );
 
 }
@@ -533,10 +528,6 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
 
     // get the number of channels in the model
     num_channels = vparameters_cfg[index_model].vchannels.getDimN();
-
-    // get the number of LAVA displays
-    if( OutputType )
-      num_displays = Parameter( "NumberOfWindows" );
 
     // allocate temporary memory for the parameter of this model 
     CVector<int>   vfeature_size(feature_size,3);
@@ -1138,8 +1129,8 @@ void SigfriedARFilter::Process(const GenericSignal& input, GenericSignal& output
       }
       else
       {
-        // go through all displays
-        for(int disp=0; disp<num_displays; disp++ )
+        // go through all conditions
+        for(int cond=0; cond<num_electrodecondition_rows; cond++ )
         {
           // go through all channels
           for(int ch=0; ch<num_channels; ch++) {
@@ -1147,9 +1138,9 @@ void SigfriedARFilter::Process(const GenericSignal& input, GenericSignal& output
             float cur_output;
 
             // finally set the output
-            int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
-            cur_output = velectrodecollections[index_model][disp]->GetElectrodeCircle(ch_out)->GetValueDevice() / CircleRadius;
-            output.SetValue((num_displays*num_channels)+ch_out, index_model, cur_output);
+            int ch_out = vparameters_cfg[index_model].vchannels(ch)-1; // Check this
+            cur_output = velectrodecollections[index_model][cond]->GetElectrodeCircle(ch_out)->GetValueDevice() / CircleRadius;
+            output.SetValue((cond*num_channels)+ch_out, index_model, cur_output);
           }
         }
       }

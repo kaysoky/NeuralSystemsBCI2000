@@ -315,9 +315,6 @@ private:
   /// Must match the number of channels in the parameter TransmitChList.
   int                                       num_channels;
 
-  /// Number of displays in LAVAFilter
-  int                                       num_displays;
-
   /// Holds the minimum distance between two electrodes.
   float                                     min_elect_dist;
 
