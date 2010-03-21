@@ -113,7 +113,7 @@ SigfriedARFilter::SigfriedARFilter()
      " // channels used to autoscale display or leave emtpy for all channels",
   "Filtering float LearningRateAutoScale= 0.99 1.0 0.0 512.0 "
       "// learningrate for realtime display histogram baseline",
-  "Filtering float SigfreidOutput= 0 0 0 1 "
+  "Filtering int SigfreidOutput= 0 0 0 1 "
       "// Output Activiations in realtime, or for display:"
           " 0: Real-Time,"
           " 1: Display,"
