@@ -113,6 +113,11 @@ SigfriedARFilter::SigfriedARFilter()
      " // channels used to autoscale display or leave emtpy for all channels",
   "Filtering float LearningRateAutoScale= 0.99 1.0 0.0 512.0 "
       "// learningrate for realtime display histogram baseline",
+  "Filtering float SigfreidOutput= 0 0 0 1 "
+      "// Output Activiations in realtime, or for display:"
+          " 0: Real-Time,"
+          " 1: Display,"
+          "(enumeration)",
  END_PARAMETER_DEFINITIONS
 
 
@@ -163,7 +168,7 @@ SigfriedARFilter::SigfriedARFilter()
     }
 
   }
-
+  OutputType         = 1;     // Display type = RealTime
   binitialized       = false;
 
 }
@@ -290,7 +295,7 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
   // check each model
   for (unsigned int index_model = 0; index_model < num_models; index_model++) {
 
-    sz_filename = Parameter("ModelFiles")->Value(index_model,0).c_str();
+    sz_filename = Parameter("ModelFiles")->Value((int)index_model,0).c_str();
 
     if (hinstLib != NULL) {
 
@@ -411,7 +416,17 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
     }
   }
 
-  outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
+  // check the output type
+  int output = Parameter( "SigfreidOutput" );
+  if( !output )
+     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
+  else
+  {
+     // This requires LAVAFilter to be enabled
+     bcidbg( 0 ) << "Using SigfreidOutput = Display requires LAVAFilter to be compiled with SIGFREID. Checking..." << endl;
+     int numDisplays = Parameter( "NumberOfWindows" );
+     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax() *  numDisplays, num_models );
+  }
   outSignalProperties.SetName( "SIGFRIED feedback" );
 
 }
@@ -456,6 +471,7 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   CircleRadius            = Parameter( "CircleRadius" );
   StatisticDisplayType    = Parameter( "StatisticDisplayType" );
   ScoreType               = Parameter( "ScoreType" );
+  OutputType              = Parameter( "SigfreidOutput" );
 
   // get the number of models and thus number identities for all vectors
   num_models = Parameter("ModelFiles")->NumRows();
@@ -482,7 +498,7 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   for (unsigned int index_model = 0; index_model < num_models; index_model++) {
 
     // get the model filename and label
-    vmodel_filename[index_model]       = Parameter("ModelFiles")->Value(index_model,0).c_str();
+    vmodel_filename[index_model]       = Parameter("ModelFiles")->Value((int)index_model,0).c_str();
     vmodel_label[index_model]          = Parameter("ModelFiles")->Value(index_model,1).c_str();
 
     // get the screen coordinates for the display associated with this model
@@ -517,6 +533,10 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
 
     // get the number of channels in the model
     num_channels = vparameters_cfg[index_model].vchannels.getDimN();
+
+    // get the number of LAVA displays
+    if( OutputType )
+      num_displays = Parameter( "NumberOfWindows" );
 
     // allocate temporary memory for the parameter of this model 
     CVector<int>   vfeature_size(feature_size,3);
@@ -1084,35 +1104,56 @@ void SigfriedARFilter::Process(const GenericSignal& input, GenericSignal& output
       for (int index_electrode = 0; index_electrode < num_electrodelocation_rows; index_electrode++)
         vscore_display[index_model](0,index_electrode) = velectrodecollections[index_model][0]->GetElectrodeCircle(index_electrode)->GetValue();
 
-      // go through all channels
-      for(int ch=0; ch<num_channels; ch++) {
+      if( !OutputType  )
+      {
+        // go through all channels
+        for(int ch=0; ch<num_channels; ch++) {
 
-        float cur_output;
+          float cur_output;
 
-        // feedback is the derived from the score
-        if (feedback_type == log_score) {
+          // feedback is the derived from the score
+          if (feedback_type == log_score) {
 
-          // feedback is the logarithmic mahalanobis distance score
-          if (ScoreType == mahalanobis_distance) {
-            cur_output=LOG(1+vscore[index_model](0,ch));
-          // feedback is the neg log probablity
-          } else if (ScoreType == neg_log_probability) {
-            cur_output=vscore[index_model](0,ch);
+            // feedback is the logarithmic mahalanobis distance score
+            if (ScoreType == mahalanobis_distance) {
+              cur_output=LOG(1+vscore[index_model](0,ch));
+            // feedback is the neg log probablity
+            } else if (ScoreType == neg_log_probability) {
+              cur_output=vscore[index_model](0,ch);
+            } else {
+              bcierr << "Unkown setting in ScoreType." << endl;
+            }
+
+          // feedback is the derived from the real time display
+          } else if (feedback_type == real_time_display) {
+            cur_output=vscore_display[index_model](0,ch);
           } else {
-            bcierr << "Unkown setting in ScoreType." << endl;
+            bcierr << "Unsupported setting in FeedbackType." << endl;
           }
 
-        // feedback is the derived from the real time display
-        } else if (feedback_type == real_time_display) {
-          cur_output=vscore_display[index_model](0,ch);
-        } else {
-          bcierr << "Unsupported setting in FeedbackType." << endl;
+          // finally set the output
+          int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
+          output.SetValue( ch_out, index_model, cur_output);
         }
-
-        // finally set the output
-        int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
-        output.SetValue( ch_out, index_model, cur_output);
       }
+      else
+      {
+        // go through all displays
+        for(int disp=0; disp<num_displays; disp++ )
+        {
+          // go through all channels
+          for(int ch=0; ch<num_channels; ch++) {
+
+            float cur_output;
+
+            // finally set the output
+            int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
+            cur_output = velectrodecollections[index_model][disp]->GetElectrodeCircle(ch_out)->GetValueDevice() / CircleRadius;
+            output.SetValue((num_displays*num_channels)+ch_out, index_model, cur_output);
+          }
+        }
+      }
+
 
 
       //
