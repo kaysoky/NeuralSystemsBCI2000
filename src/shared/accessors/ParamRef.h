@@ -14,13 +14,14 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <limits.h>
 #include "Param.h"
 #include "defines.h"
 
 class ParamRef
 {
  public:
-  enum { none = -1 };
+  enum { none = UINT_MAX / 2 };
 
  private:
   ParamRef& operator=( const ParamRef& );
