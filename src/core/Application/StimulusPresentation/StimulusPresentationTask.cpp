@@ -28,9 +28,6 @@ RegisterFilter( StimulusPresentationTask, 3 );
 StimulusPresentationTask::StimulusPresentationTask()
 : mNumberOfSequences( 0 ),
   mSequenceType( SequenceTypes::Deterministic ),
-  mStimulusDuration( 0 ),
-  mPreSequenceDuration( 0 ),
-  mPostSequenceDuration( 0 ),
   mBlockCount( 0 ),
   mToBeCopiedPos( mToBeCopied.begin() ),
   mSequencePos( mSequence.begin() )
@@ -308,11 +305,6 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
       presentFocusOn = false;
       presentResult = false;
   }
-
-  // This is used for announcement and results stimuli.
-  mStimulusDuration = MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) );
-  mPostSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) );
-  mPreSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) );
 
   // Create stimuli and targets
   mStimuli.DeleteObjects();

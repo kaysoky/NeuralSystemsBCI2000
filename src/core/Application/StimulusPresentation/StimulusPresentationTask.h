@@ -51,10 +51,7 @@ class StimulusPresentationTask : public StimulusTask
 
   // Configuration parameters.
   int mNumberOfSequences,
-      mSequenceType,
-      mStimulusDuration,
-      mPreSequenceDuration,
-      mPostSequenceDuration;
+      mSequenceType;
 
   // Internal state.
   int mBlockCount;

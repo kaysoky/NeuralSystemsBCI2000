@@ -37,7 +37,7 @@ P3SpellerTask::P3SpellerTask()
   mNumMatrixRows( 0 ),
   mNumMatrixCols( 0 ),
   mNumberOfSequences( 0 ),
-  mInterpretMode( InterpretModes::None ),
+  mInterpretMode_( InterpretModes::None ),
   mTestMode( false ),
   mSequenceCount( 0 ),
   mSequencePos( mSequence.begin() ),
@@ -305,8 +305,8 @@ P3SpellerTask::OnInitialize( const SignalProperties& /*Input*/ )
   mNumberOfSequences = Parameter( "NumberOfSequences" );
   mDisplayResults = ( Parameter( "DisplayResults" ) != 0 );
   mTestMode = ( Parameter( "TestMode" ) != 0 );
-  mInterpretMode = Parameter( "InterpretMode" );
-  switch( mInterpretMode )
+  mInterpretMode_ = Parameter( "InterpretMode" );
+  switch( mInterpretMode_ )
   {
     case InterpretModes::None:
     case InterpretModes::Free:
@@ -352,7 +352,7 @@ void
 P3SpellerTask::OnStartRun()
 {
   // Non-summary file
-  if( mInterpretMode == InterpretModes::Copy )
+  if( mInterpretMode_ == InterpretModes::Copy )
     ClearTextHistory();
   InitSequence();
   DetermineAttendedTarget();
@@ -398,7 +398,7 @@ P3SpellerTask::OnStartRun()
   }
 
   ++mRunCount;
-  if( mInterpretMode == InterpretModes::Free )
+  if( mInterpretMode_ == InterpretModes::Free )
   {
     AppLog << "Start of run " << mRunCount << " in online (free) mode\n";
     mSummaryFile << "*** START OF RUN " << mRunCount << " IN ONLINE MODE ***\n";
@@ -431,7 +431,7 @@ P3SpellerTask::OnStartRun()
 void
 P3SpellerTask::OnStopRun()
 {
-  if( mInterpretMode == InterpretModes::Free )
+  if( mInterpretMode_ == InterpretModes::Free )
     Parameter( "TextResult" ) = mTextHistory.top();
 
   DisplayMessage( LocalizableString( "TIME OUT !!!" ) );
@@ -443,7 +443,7 @@ P3SpellerTask::OnStopRun()
   mSummaryFile << "*** RUN SUMMARY ***\n"
                << "System Pause Duration (in seconds): " << mSleepDuration << '\n'
                << "Number of Selections = " << mNumSelections << '\n';
-  if( mInterpretMode == InterpretModes::Copy ) // in copy spelling
+  if( mInterpretMode_ == InterpretModes::Copy ) // in copy spelling
     mSummaryFile << "Expected Copy Spelling Characters: "
                  << mTextToSpell
                  << '\n';
@@ -849,7 +849,7 @@ P3SpellerTask::OnRetrieve()
 void
 P3SpellerTask::DetermineAttendedTarget()
 { // Determine the attended target if in copy spelling mode.
-  if( mInterpretMode == InterpretModes::Copy )
+  if( mInterpretMode_ == InterpretModes::Copy )
   {
     SpellerTarget* pSuggestedTarget = NULL;
     size_t curResultLength = mTextHistory.top().length();

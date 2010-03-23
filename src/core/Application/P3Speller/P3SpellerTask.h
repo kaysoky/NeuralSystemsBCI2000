@@ -83,7 +83,7 @@ class P3SpellerTask : public StimulusTask, public Speller
  private:
   // Configuration parameters.
   int  mNumberOfSequences,
-       mInterpretMode;
+       mInterpretMode_;
   bool mDisplayResults,
        mTestMode;
   std::string mTextToSpell;
