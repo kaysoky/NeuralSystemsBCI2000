@@ -23,7 +23,7 @@
   "The mem command estimates a power spectrum using Burg's MEM algorithm.\n" \
   "The calling syntax is:\n" \
   "[spectrum, frequencies] = mem(signal, parms)\n" \
-  " with <signal> and <spectrum> having dimensions channels x values, and\n" \
+  " with <signal> and <spectrum> having dimensions values x channels, and\n" \
   " with <parms> being a vector of parameter values:\n" \
   " model order,\n" \
   " first bin center,\n" \
