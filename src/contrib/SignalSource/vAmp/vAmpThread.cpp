@@ -33,7 +33,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mMode(mode),
   mHPcorner(hpCorner),
   mEvent( NULL )
-{			
+{
 
   mOk = true;
   mNumDevices = faGetCount();
@@ -83,7 +83,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 	  return;
 	}
 	switch (m_DeviceInfo[dev].Model)
-	{	
+	{
 		case FA_MODEL_8:
 			m_nChannelMode[dev] = DEVICE_CHANMODE_8;
 			m_nEEGChannels[dev] = FA_MODEL_8_CHANNELS_MAIN - 1; // without trigger
@@ -176,21 +176,21 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   TransferFunction tf(1.0);
   float outGain = 1.0;
   TransferFunction lp =
-		  FilterDesign::Butterworth().Order( 2 ).Lowpass(.45/mDecimate).TransferFunction();
-  if (mHPcorner > 0){
-	TransferFunction hp  =
-		  FilterDesign::Butterworth().Order( 2 ).Highpass(mHPcorner).TransferFunction();
-	tf *= hp;
-	outGain /= abs(hp.Evaluate(-1.0));
-  }
+        FilterDesign::Butterworth().Order( 2 ).Lowpass(.45/mDecimate).TransferFunction();
+  outGain /= abs( lp.Evaluate( 1.0 ) );
   tf *= lp;
 
-  outGain /= abs( lp.Evaluate( 1.0 ) ); 
+  if (mHPcorner > 0){
+    TransferFunction hp  =
+          FilterDesign::Butterworth().Order( 2 ).Highpass(mHPcorner/mDecimate).TransferFunction();
+    outGain /= abs(hp.Evaluate(-1.0));
+    tf *= hp;
+  }
 
   mFilter.SetZeros(tf.Numerator().Roots())
-		.SetPoles(tf.Denominator().Roots())
-		.SetGain(outGain)
-		.Initialize();
+         .SetPoles(tf.Denominator().Roots())
+         .SetGain(outGain)
+         .Initialize();
 
   acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
 
@@ -238,7 +238,7 @@ vAmpThread::Execute()
 	mWriteCursor = mReadCursor = 0;
 	short readTimes[25], blockSizes[25];
 	int readPos = 0;
-	
+
 	memset(mBuffer, 0, mBufSize);
 	for (int dev = 0; dev < mNumDevices; dev++){
 		mFilter.Initialize(mDataBuffer.Channels());
@@ -248,12 +248,12 @@ vAmpThread::Execute()
 			case 4:
 				faStartCalibration(mDevList[dev]);
 				break;
-			case 3:				
+			case 3:
 				faStartImpedance(mDevList[dev]);
 				break;
 		}
 	}
-	
+
 
 	bool doImpedance = (mMode == 3);
 	int curChOffset = 0;
@@ -309,9 +309,9 @@ vAmpThread::Execute()
 						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
 						return -1;
 					}
-					// Serving data successfully. 
+					// Serving data successfully.
 					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)	
+					if (returnLen >= nReadLen)
 					{
 						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
 							for (int ch = 0; ch < 16; ch++)
@@ -337,7 +337,7 @@ vAmpThread::Execute()
 						}
 						curChOffset += 19;
 					}
-					
+
 					break;
 				case DEVICE_CHANMODE_4:
 					pMaxBuffer = (char *)&tblMaxBuf4[dev][0];
@@ -356,9 +356,9 @@ vAmpThread::Execute()
 						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
 						return -1;
 					}
-					// Serving data successfully. 
+					// Serving data successfully.
 					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)	
+					if (returnLen >= nReadLen)
 					{
 						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
 							for (int ch = 0; ch < 5; ch++)
@@ -369,7 +369,7 @@ vAmpThread::Execute()
 										(tblMaxBuf4[dev][sample].Main[ch])*m_tblChanInfo[dev][ch].dResolution;
 								}
 							}
-							
+
 							//USHORT nTrigger = (tblMaxBuf4[dev][sample].Status >> 8) & 0x1;
 							//nTrigger |= (tblMaxBuf4[dev][sample].Status & 0xFF) << 1;
 							mapIt = mDevChMap[dev].find(curChOffset+4);
@@ -396,9 +396,9 @@ vAmpThread::Execute()
 						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
 						return -1;
 					}
-					// Serving data successfully. 
+					// Serving data successfully.
 					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)	
+					if (returnLen >= nReadLen)
 					{
 						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
 							for (int ch = 0; ch < 8; ch++)
@@ -428,7 +428,7 @@ vAmpThread::Execute()
 			}
 			//FILTER
 			mFilter.Process(mDataBuffer, mDataOutput);
-				
+
 			//DECIMATE
 			for (int sample = 0; sample < mDataOutput.Elements(); sample+=mDecimate)
 			{
@@ -487,7 +487,7 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate) )
 				Sleep(remTime);
 		} */
-		
+
 		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
 		nLenToRead -= nReturnLen;
 		readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
@@ -530,7 +530,7 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 	/*
 	int nReturnLen = 0,			// Current return length in bytes.
 		nLenToRead = nReadLen;	// len in bytes.
-	UINT nTimeOut = timeGetTime() + DEVICE_SERVE_TIMEOUT; 
+	UINT nTimeOut = timeGetTime() + DEVICE_SERVE_TIMEOUT;
 
 	do
 	{
@@ -541,7 +541,7 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 		}
 		else if (nReturnLen == 0)
 		{
-			Sleep(DEVICE_GET_DATA_INTERVAL); // previous 1 ms: causes trigger problem. 
+			Sleep(DEVICE_GET_DATA_INTERVAL); // previous 1 ms: causes trigger problem.
 		}
 		else
 		{
