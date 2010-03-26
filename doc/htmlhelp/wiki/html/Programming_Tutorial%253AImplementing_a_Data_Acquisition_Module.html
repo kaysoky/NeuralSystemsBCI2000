@@ -159,8 +159,7 @@ signal:
 void TachyonADC::Preflight( const SignalProperties&amp;,
                             SignalProperties&amp; outputProperties ) const
 {
-  if( TACHYON_NO_ERROR&nbsp;!= 
-        TachyonStart( Parameter( &quot;SamplingRate&quot; ), Parameter( &quot;SourceCh&quot; ) ) )
+  if( TACHYON_NO_ERROR&nbsp;!= TachyonStart( Parameter( &quot;SamplingRate&quot; ), Parameter( &quot;SourceCh&quot; ) ) )
     bcierr &lt;&lt; &quot;SamplingRate and/or SourceCh parameters are not compatible&quot;
            &lt;&lt; &quot; with the A/D card&quot;
            &lt;&lt; endl;

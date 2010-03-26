@@ -34,22 +34,44 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Line_Formatting"><span class="tocnumber">1</span> <span class="toctext">Line Formatting</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Naming"><span class="tocnumber">2</span> <span class="toctext">Naming</span></a>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#File_Header"><span class="tocnumber">1</span> <span class="toctext">File Header</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Line_Formatting"><span class="tocnumber">2</span> <span class="toctext">Line Formatting</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Naming"><span class="tocnumber">3</span> <span class="toctext">Naming</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253ACpp_Coding_Style.html#Name_prefixes"><span class="tocnumber">2.1</span> <span class="toctext">Name prefixes</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253ACpp_Coding_Style.html#Name_prefixes"><span class="tocnumber">3.1</span> <span class="toctext">Name prefixes</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Variable_Declaration"><span class="tocnumber">3</span> <span class="toctext">Variable Declaration</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Memory_Allocation"><span class="tocnumber">4</span> <span class="toctext">Memory Allocation</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Pointers_and_References"><span class="tocnumber">5</span> <span class="toctext">Pointers and References</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Control_Flow"><span class="tocnumber">6</span> <span class="toctext">Control Flow</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Example_Function"><span class="tocnumber">7</span> <span class="toctext">Example Function</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Variable_Declaration"><span class="tocnumber">4</span> <span class="toctext">Variable Declaration</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Memory_Allocation"><span class="tocnumber">5</span> <span class="toctext">Memory Allocation</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Pointers_and_References"><span class="tocnumber">6</span> <span class="toctext">Pointers and References</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Control_Flow"><span class="tocnumber">7</span> <span class="toctext">Control Flow</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#Example_Function"><span class="tocnumber">8</span> <span class="toctext">Example Function</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ACpp_Coding_Style.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
+<a name="File_Header"></a><h2>File Header</h2>
+<p>Source files should provide a file header containing the following information:
+</p>
+<ul><li> an SVN file Id tag, 
+</li><li> the file's original author(s), preferably identified by their email address,
+</li><li> a description of the file's contents, i.e. typically a short information about the class declared/defined in the file,
+</li><li> a copyright note.
+</li></ul>
+<p>An example header in a C++ source file might look like this:
+</p>
+<pre>///////////////////////////////////////////////////////////////////////
+// $Id$
+// Author: gerd.gurke@gemuesenet.de
+// Description: A file header example. The header contains
+//      an SVN Id tag, the author's email address, a short
+//      description of the file's content. and a copyright notice.
+//
+// (C) 2000-2010, BCI2000 Project
+// <a href="http://www.bci2000.org" class='external free' title="http://www.bci2000.org" rel="nofollow">http://www.bci2000.org</a>
+///////////////////////////////////////////////////////////////////////
+</pre>
 <a name="Line_Formatting"></a><h2> Line Formatting </h2>
-<ul><li> No tab characters (please configure your editor to insert spaces instead).
+<ul><li> <b>No tab characters</b> (please configure your editor to insert spaces instead).
 </li><li> Indentation in steps of 2 or 3 space characters.
 </li><li> Opening braces have their own line, aligned with the previous line; corresponding closing braces are placed on their own lines, at the same character position as the opening brace.
 </li><li> For function definitions, return types appear on their own line, such that the function name is first in its line.
@@ -85,15 +107,16 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> <b>io</b> for function arguments used for input and output.
 </li></ul>
 <a name="Variable_Declaration"></a><h2>Variable Declaration</h2>
-<ul><li> Always use the narrowest possible scope for a name to avoid side effects.
+<ul><li> Always use the narrowest possible scope for a name to avoid side effects. E.g., this means to declare variables immediately before their first use, and to define loop counter variables within the loop's &lt;for&gt; statement.
 </li><li> Always initialize variables of elementary type at declaration resp. constructor to avoid reading from uninitialized memory. Examples of elementary types are <tt>int</tt>, <tt>float</tt>, and <tt>const char*</tt>.
 </li></ul>
 <a name="Memory_Allocation"></a><h2>Memory Allocation</h2>
 <ul><li> Allocate objects from the <b>stack</b> rather than the <b>heap</b> unless there is a good reason to use the <b>new</b> operator. This avoids memory leaks.
 </li><li> Use STL containers rather than allocating arrays with <b>new[]</b>. This eliminates a number of possible errors (initialization, allocation, deallocation).
+</li><li> Make sure to deallocate arrays using the <b>delete[]</b> operator (mind the brackets).
 </li></ul>
 <a name="Pointers_and_References"></a><h2>Pointers and References</h2>
-<ul><li> When using pointers, treat the NULL case gracefully.
+<ul><li> When using pointers, treat the NULL case gracefully. Note that, unlike the C-library's <tt>free()</tt> function, the C++ <tt>delete</tt> and <tt>delete[]</tt> operators may be applied to NULL pointers without any effect, so no NULL check is required before applying <tt>delete/delete[]</tt>.
 </li><li> Use references rather than pointers wherever possible. When used in place of a pointer, a reference gives a number of hints about the code in question: 
 <ul><li>unlike a pointer, a reference always refers to a valid object,
 </li><li>the referred-to object will stay the same during the reference's lifetime,

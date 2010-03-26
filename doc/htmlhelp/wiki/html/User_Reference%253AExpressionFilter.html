@@ -61,7 +61,7 @@ As arithmetic expressions may contain <a href="BCI2000_Glossary.html#State" titl
 </li></ul>
 <p>For each signal block, each of the expressions is evaluated, and the result is entered into the corresponding element in the output signal.
 Expressions may contain references to the filter's input signal, and to state variables (see examples).
-</p><p>When the Expressions parameter is an empty matrix, the ExpressionFilter will copy its input into its output unchanged.
+</p><p>When the Expressions parameter is an empty matrix (a matrix with a row count of zero), the ExpressionFilter will copy its input into its output unchanged.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>Any available state may enter into one of the expressions.

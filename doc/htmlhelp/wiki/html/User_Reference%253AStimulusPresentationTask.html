@@ -296,10 +296,12 @@ To do this, for each parameter to be individualized, add an additional row to th
 preceded with a special announcement stimulus.
 This stimulus' properties are defined by the <i>FocusOn</i> parameter, which is a matrix in the same format as the <i>Stimuli</i> parameter.
 Usually, this matrix has a single column; when multiple columns are present, all stimuli are presented concurrently.
+To control the duration of the "FocusOn" announcement and the attended stimulus independently of the global <a href="User_Reference%253AStimulusPresentationTask.html#StimulusDuration" title="">StimulusDuration</a> parameter, a <i>StimulusDuration</i> column may be present in the <i>FocusOn</i> matrix.
 </p>
 <a name="Result"></a><h4>Result</h4>
 <p>In copy and free modes (see <a href="User_Reference%253AStimulusPresentationTask.html#InterpretMode" title="">InterpretMode</a>), the classification result is presented following the sequence (<a href="User_Reference%253AStimulusPresentationTask.html#PostSequenceTime" title="">PostSequenceTime</a>). Presentation of the predicted stimulus is preceded with an announcement stimulus.
 This stimulus' properties are defined by the <i>Result</i> parameter, which is a matrix in the same format as the <i>Stimuli</i> and <i>FocusOn</i> parameters.
+As for the "FocusOn" parameter, to control the duration of the "Result" announcement and the predicted stimulus independently of the global <a href="User_Reference%253AStimulusPresentationTask.html#StimulusDuration" title="">StimulusDuration</a> parameter, a <i>StimulusDuration</i> column may be present in the <i>Result</i> matrix.
 </p>
 <a name="StimulusWidth"></a><h4>StimulusWidth</h4>
 <p>For icon stimuli, stimulus width in percent of screen width.

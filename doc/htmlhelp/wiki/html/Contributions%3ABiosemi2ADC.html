@@ -65,21 +65,22 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>Beta Version of the BIOSEMI acquisition module.
+<p>Working Version of the BIOSEMI acquisition module.
 </p>
 <a name="Known_Issues"></a><h3>Known Issues</h3>
-<p>Pressing "Set Config" more than once per BCI2000 launch currently (svn revision 2190) results in unstable amp behaviour.
-</p><p>When acquiring at SamplingRate less than the hardware sampling rate, crude averaging of the EEG and AIB signals is performed over each batch of samples:  this is better anti-aliasing than the original simple decimation strategy, but still not ideal. Ideally a properly-designed FIR filter would be used prior to decimation.
+<p>When acquiring at SamplingRate less than the hardware sampling rate, crude averaging of the EEG and AIB signals is performed over each batch of samples:  this is better anti-aliasing than the original simple decimation strategy, but still not ideal. Ideally a properly-designed FIR filter would be used prior to decimation.
 </p>
 <a name="Location"></a><h2>Location</h2>
 <p><a href="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Biosemi" class='external free' title="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Biosemi" rel="nofollow">http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/Biosemi</a>
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Authors"></a><h3>Authors</h3>
-<p>Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen, Maria Laura Blefari, Jeremy Hill
+<p>Samuel A. Inverso (samuel.inverso@gmail.com), Yang Zhen, Maria Laura Blefari,  Jeremy Hill, Gerwin Schalk
 </p>
 <a name="Version_History"></a><h3>Version History</h3>
-<p>Revision 2.1   2009/05/27 jhill: 
+<p>Revision 2.2 2010/03/04 gschalk:
+Fixed nasty reinitialization bug. Now, pressing SetConfig more than once works.  There is a remaining problem in the Biosemi2Client code that prevents proper function when initialize is called more than once. As a workaround, we now simply delete and recreate the whole object in the ADC's Initialize() function. 
+</p><p>Revision 2.1   2009/05/27 jhill: 
 Bugged trigger signal acquisition fixed and tested. Also added an option to acquire trigger signals simultaneously in one 16-bit channel.
 </p><p>Revision 2.0   2008/11/07  jhill:
 Updated design, including support for an auxiliary Analog Input Box (AIB)
@@ -109,7 +110,7 @@ Version 1.0 tested with a MK1. Versions 1.2 and up tested on a MK2.
 <p>As of version 2.0 (svn revision 2189) the old parameters <b>PostFixTriggers</b> and <b>TriggerScaleMultiplier</b> have been removed. The functionality of the former is replaced by <b>TriggerChList</b> and the latter can be simulated by setting the corresponding elements of <b>SourceChGain</b> accordingly.
 </p>
 <a name="EEGChlist"></a><h3>EEGChlist</h3>
-<p>A list of (one-based) indices to the EEG channels to be acquired.  If there are n indices in this list, then the first n channels will be EEG channels.
+<p>A list of (one-based) indices to the EEG channels to be acquired. These EEG channels appear first in the final ordering, before AIB and trigger channels.
 </p>
 <a name="AIBChList"></a><h3>AIBChList</h3>
 <p>A list of indices (each in the range 1 through 32 inclusive) indicating which Analog Input Box channels are to be acquired. By default, none are acquired. AIB channels are postfixed immediately following the EEG channels.

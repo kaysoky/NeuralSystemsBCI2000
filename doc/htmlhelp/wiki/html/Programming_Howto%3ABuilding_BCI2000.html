@@ -4,7 +4,7 @@
 <head>
 <title>Programming Howto:Building BCI2000 - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Howto:Building BCI2000,BCI2000 Binaries,Contributions:Contents,User Reference:Command Line Processing,User Reference:Matlab MEX Files" />
+<meta name="keywords" content="Programming Howto:Building BCI2000,BCI2000 Binaries,User Reference:Command Line Processing,User Reference:Matlab MEX Files" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -41,7 +41,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_from_the_command_line"><span class="tocnumber">3.1</span> <span class="toctext">Building BCI2000 from the command line</span></a></li>
 <li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE"><span class="tocnumber">3.2</span> <span class="toctext">Building BCI2000 using the Borland C++ Builder 6 IDE</span></a></li>
 <li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Starting_up_BCI2000"><span class="tocnumber">3.3</span> <span class="toctext">Starting up BCI2000</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007"><span class="tocnumber">3.4</span> <span class="toctext">Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007</span></a></li>
+<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007.2F2009"><span class="tocnumber">3.4</span> <span class="toctext">Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007/2009</span></a></li>
 <li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions"><span class="tocnumber">3.5</span> <span class="toctext">Building Contributions</span></a>
 <ul>
 <li class='toclevel-3'><a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_command_line"><span class="tocnumber">3.5.1</span> <span class="toctext">From the command line</span></a></li>
@@ -56,8 +56,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Typically, you will install BCI2000 from its <a href="BCI2000_Binaries.html" title="BCI2000 Binaries">binary distribution</a>, and do not need to build BCI2000, unless
 </p>
 <ul><li>you want to always use its most current SVN version,
-</li><li>you want to use code from the <a href="Contributions%253AContents.html" title="Contributions:Contents">Contributions</a> section,
-</li><li>you create your own module by modifying an existing one, or create a new one from scratch.
+</li><li>you create your own module by modifying an existing one,
+</li><li>you create a new module from scratch.
 </li></ul>
 <a name="Tools_required"></a><h2> Tools required </h2>
 <p>As of BCI2000 version 2.0, building all parts of BCI2000 requires Borland's C++ Builder 6, or a more recent version.
@@ -87,20 +87,19 @@ The following non-GUI related parts of BCI2000 can be built using the freely ava
 <ol><li> After compilation, a desired configuration of BCI2000 may be started by executing an appropriate batch file from the top level "batch" directory. Once a particular configuration of BCI2000 is started, simply load a parameter file with the same name as the batch file from the "parms" directory.
 </li><li> If you need a configuration for which no batch file exists, just modify a copy of a batch file that is close to your needs.
 </li></ol>
-<a name="Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007"></a><h3>Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007</h3>
-<p>When using BCB 2006, please make sure to install all available updates from the <a href="http://cc.codegear.com/reg/bds" class='external text' title="http://cc.codegear.com/reg/bds" rel="nofollow">Borland Download Site</a>. The originally shipped version of BCB 2006 is defective and will not work without updating. We recommend updating to BCB 2007.
+<a name="Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007.2F2009"></a><h3>Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007/2009</h3>
+<p>When using BCB 2006, please make sure to install all available updates from the <a href="http://cc.codegear.com/reg/bds" class='external text' title="http://cc.codegear.com/reg/bds" rel="nofollow">Borland Download Site</a>. The originally shipped version of BCB 2006 is defective and will not work without updating. We recommend updating to BCB 2009.
 </p>
 <ol><li> Open the file "BCI2000.bpg" from within Borland Developer Studio. This will import all existing projects into BDS project files.
 </li><li> In the project manager (at the top right), right-click the topmost project and choose "Make all from here".
 </li><li> To get rid of possible inconsistencies from earlier builds, choose "Build all from here" rather than "Make all from here".
-</li><li> Command-line builds cannot be done with Borland C++ Builder 2007 because it lacks a project-to-makefile conversion utility. Still, <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> and <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a> may be compiled from the command line as described in their documentation.
-</li><li> The bpr2mak project-to-makefile conversion utility is available for download with the free <a href="http://dn.codegear.com/article/20997" class='external text' title="http://dn.codegear.com/article/20997" rel="nofollow">Borland Compiler 5.5 package</a>. You should be able to do command-line builds after copying <tt>bpr2mak.exe</tt> into the <tt>bin</tt> directory of your C++ Builder 2007 installation.
-</li><li> When using BCB 2006, you may experience "invalid property" runtime errors when running BCI2000. This may be due to imperfect import of *.dfm files. Make sure to install all available updates, then import a clean version of the BCI2000 source tree. If this doesn't help, consider updating to BCB2007.
+</li><li> Command-line builds cannot be done with Borland C++ Builder 2007/2009 because it lacks the bpr2mak project-to-makefile conversion utility. Still, <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> and <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a> may be compiled from the command line as described in their documentation.
+</li><li> When using BCB 2006, you may experience "invalid property" runtime errors when running BCI2000. This may be due to imperfect import of *.dfm files. Make sure to install all available updates, then import a clean version of the BCI2000 source tree. If this doesn't help, consider updating to BCB2009.
 </li></ol>
 <a name="Building_Contributions"></a><h3>Building Contributions</h3>
 <a name="From_the_command_line"></a><h4>From the command line</h4>
 <p>After building BCI2000 from the command line, the <tt>makefiles</tt> file in the <tt>src</tt> directory contains a full list of subprojects.
-Those from the contribution section are commented out with a # character in front. When you remove the # character, and do a "make all" or "make build", the additional project will be included into the build.
+Those from the contribution section are commented out with a # character in front. When you remove the # character in front of a project, and do a "make all" or "make build", the additional project will be included in the build.
 Likewise, you may speed up builds by commenting out parts of the core distribution that you don't need.
 </p>
 <a name="From_the_IDE"></a><h4>From the IDE</h4>

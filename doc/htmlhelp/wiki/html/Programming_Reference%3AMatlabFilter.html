@@ -170,7 +170,7 @@ This behavior is controlled by another command-line parameter, <tt>MatlabStayOpe
 </li><li>Switch to the minimized Matlab instance.
 </li><li>Type, e.g.,<br /><code>edit bci_Process.m</code><br />to open a Matlab editor window connected to the Matlab interactive window.
 </li><li>In the editor window, set breakpoints as you would normally.
-</li><li>Execution will be paused, and you may examine variables moving the mouse over them.
+</li><li>Execution will be paused, and you may examine variables hovering the mouse over them.
 </li></ol>
 <a name="Matlab_doesn.27t_find_your_functions"></a><h3>Matlab doesn't find your functions</h3>
 <p>Make sure to
@@ -184,7 +184,7 @@ This behavior is controlled by another command-line parameter, <tt>MatlabStayOpe
 <p>Execute<br /><code>matlab /regserver</code><br />from the command line when logged in with administrative privileges.
 </p>
 <a name="Changes_to_M-files_appear_to_have_no_effect"></a><h3>Changes to M-files appear to have no effect</h3>
-<p>Switch to the Matlab engine's command window, and enter<br /><code>clear;</code><br /> or <br /><code>clear scriptname;</code><br />each time you change a Matlab function.
+<p>Switch to the Matlab engine's command window, and enter<br /><code>clear;</code><br /> or <br /><code>clear functionname;</code><br />each time you change a Matlab function.
 </p>
 <a name="You_get_linker_errors_when_rebuilding_MatlabSignalProcessing"></a><h3>You get linker errors when rebuilding <i>MatlabSignalProcessing</i></h3>
 <p>If you get linker errors after editing <tt>PipeDefinition.cpp</tt>, make sure that all filters' cpp files are part of the <i>MatlabSignalProcessing</i> project.

@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:BCI2000Certification - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:BCI2000Certification" />
+<meta name="keywords" content="User Reference:BCI2000Certification,Programming Howto:Building BCI2000" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -36,14 +36,14 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="BCI2000Certification.html#Compiling_the_BCI2000Certification_Programs"><span class="tocnumber">2</span> <span class="toctext">Compiling the BCI2000Certification Programs</span></a></li>
 <li class='toclevel-1'><a href="BCI2000Certification.html#Using_the_BCI2000Certification_Procedure"><span class="tocnumber">3</span> <span class="toctext">Using the BCI2000Certification Procedure</span></a>
 <ul>
-<li class='toclevel-2'><a href="BCI2000Certification.html#Starting_the_User_Interface"><span class="tocnumber">3.1</span> <span class="toctext">Starting the User Interface</span></a></li>
+<li class='toclevel-2'><a href="BCI2000Certification.html#Starting_the_Tester_User_Interface"><span class="tocnumber">3.1</span> <span class="toctext">Starting the Tester User Interface</span></a></li>
 <li class='toclevel-2'><a href="BCI2000Certification.html#Loading_Configuration_Files"><span class="tocnumber">3.2</span> <span class="toctext">Loading Configuration Files</span></a></li>
 <li class='toclevel-2'><a href="BCI2000Certification.html#User_Interface_Components"><span class="tocnumber">3.3</span> <span class="toctext">User Interface Components</span></a>
 <ul>
-<li class='toclevel-3'><a href="BCI2000Certification.html#1._Task_List"><span class="tocnumber">3.3.1</span> <span class="toctext">1. Task List</span></a></li>
-<li class='toclevel-3'><a href="BCI2000Certification.html#2._Task_Details"><span class="tocnumber">3.3.2</span> <span class="toctext">2. Task Details</span></a></li>
-<li class='toclevel-3'><a href="BCI2000Certification.html#3._Global_Settings"><span class="tocnumber">3.3.3</span> <span class="toctext">3. Global Settings</span></a></li>
-<li class='toclevel-3'><a href="BCI2000Certification.html#4._Controls"><span class="tocnumber">3.3.4</span> <span class="toctext">4. Controls</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#1._Configuration:_Task_List"><span class="tocnumber">3.3.1</span> <span class="toctext">1. Configuration: Task List</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#2._Configuration:_Task_Details"><span class="tocnumber">3.3.2</span> <span class="toctext">2. Configuration: Task Details</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#3._Control:_Global_Settings"><span class="tocnumber">3.3.3</span> <span class="toctext">3. Control: Global Settings</span></a></li>
+<li class='toclevel-3'><a href="BCI2000Certification.html#4._Control:_Controls"><span class="tocnumber">3.3.4</span> <span class="toctext">4. Control: Controls</span></a></li>
 </ul>
 </li>
 <li class='toclevel-2'><a href="BCI2000Certification.html#Setting_Up_and_Running_the_Certification_Procedure"><span class="tocnumber">3.4</span> <span class="toctext">Setting Up and Running the Certification Procedure</span></a></li>
@@ -75,34 +75,27 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>Additionally, due to the extensibility of BCI2000, researchers who develop custom algorithms and applications, or use amplifiers not made by g.tec, can use the certification procedure to determine whether their custom modules are capable of running on a particular PC configuration.
 </p><p>The certification procedure works by comparing the differences in time of when BCI2000 <i>expects</i>  an event to occur to when that event <i>actually</i>  occurred. These events include a change in the display, an audio output through the system speakers, or an EEG sample being stored in the amplifier buffer. The times at which such events occur are recorded with the amplifier and stored in a data file. Changes in the display are found using an optical sensor in combination with the g.TRIGbox. The g.TRIGbox is a signal conditioner that generates trigger pulses for various sensors or input signals. When the sensor exceeds a threshold, the g.TRIGbox outputs a digital signal which is recorded on the amplifier. A similar procedure is used for audio detection: the sound output from the PC is input to the g.TRIGbox, and when the volume exceeds threshold, a high digital signal is output and recorded by the amplifier. This information can be used because BCI2000 stores a time-stamp for every event during an experiment. The difference between a time-stamp value and the time that the recorded event changes values are compared to find the latency for that particular event. 
 </p><p>These latencies can be affected by many external influences, including hardware deficiencies (such as low RAM, slow CPU speed, or a video card of low quality), and other software running in the background while the experiment is being run.
-</p><p>This document serves as the BCI2000Certification manual. A discussion and derivation of the specific system latencies are found at HERE.
+</p><p>This document serves as the BCI2000Certification manual. A discussion and derivation of the specific system latencies are found HERE.
 </p>
 <a name="Compiling_the_BCI2000Certification_Programs"></a><h2>Compiling the BCI2000Certification Programs</h2>
-<p>The BCI2000Certification procedure actually consists of two separate programs, including a graphical user interface that simplifies the task of selecting and starting tests, and a program that performs the data analysis and returns results. These programs are not compiled automatically with the other BCI2000 programs, and must therefore be compiled manually.
-</p><p>To do so:
+<p>The BCI2000Certification procedure actually consists of two separate programs, including a graphical user interface that simplifies the task of selecting and starting tests, and a program that performs the data analysis and returns results. These programs are compiled automatically with the other BCI2000 programs. Compilation is only supported in BCI2000 v3.0 with the Visual Studio or MinGW compilers. Instructions can be found at <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">Programming_Howto:Building_BCI2000</a>
 </p>
-<ol><li> Open the Borland IDE (e.g., Borland 6, Borland 2007, or Borland 2009)
-</li><li> In <code>File</code>, select <code>Open Project...</code>
-</li><li> Navigate to <code>BCI2000/src/core/Tools/BCI2000Certification</code>
-</li><li> Select <code>BCI2000CertGroup.bpg</code>
-</li><li> If Borland 6 is not used, then the projects will be updated to the most recent version.
-</li><li> Right-click the topmost project in the group, and select <code>Make All From Here</code> to compile the programs.
-</li></ol>
 <a name="Using_the_BCI2000Certification_Procedure"></a><h2>Using the BCI2000Certification Procedure</h2>
-<a name="Starting_the_User_Interface"></a><h3>Starting the User Interface</h3>
+<a name="Starting_the_Tester_User_Interface"></a><h3>Starting the Tester User Interface</h3>
 <ol><li> The compiled programs can be found in <code>BCI2000/tools/BCI2000Certification</code>. 
-</li><li> Navigate to this folder, and double-click the <code>BCI2000Certification.exe</code> file.
+</li><li> Navigate to this folder, and double-click the <code>BCI2000CertificationTester.exe</code> file.
 </li><li> The certification tool opens, as below.
 </li></ol>
 <p>This program shows a list of all of the procedures to be tested for the loaded configuration. Detailed instructions for using the interface follow.
 </p>
-<div class="thumb tnone"><div style="width:627px;"><a href="../images/c/cf/Certificationtool.png" class="internal" title="The BCI2000Certification user interface."><img src="../images/c/cf/Certificationtool.png" alt="The BCI2000Certification user interface." width="625" height="747" longdesc="/wiki/index.php/Image:Certificationtool.png" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface.</div></div></div>
+<div class="thumb tnone"><div style="width:771px;"><a href="../images/c/cf/Certificationtool.png" class="internal" title="The BCI2000Certification user interface."><img src="../images/c/cf/Certificationtool.png" alt="The BCI2000Certification user interface." width="769" height="626" longdesc="/wiki/index.php/Image:Certificationtool.png" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface.</div></div></div>
+<div class="thumb tnone"><div style="width:771px;"><a href="../images/8/87/Tester02.PNG" class="internal" title="The BCI2000Certification user interface."><img src="../images/8/87/Tester02.PNG" alt="The BCI2000Certification user interface." width="769" height="638" longdesc="/wiki/index.php/Image:Tester02.PNG" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface.</div></div></div>
 <a name="Loading_Configuration_Files"></a><h3>Loading Configuration Files</h3>
 <p>The BCI2000 certification procedure uses different combinations of BCI2000 parameter fragments to control the tests. While it is possible to edit these by hand, in most circumstances it is simpler to use the graphical user interface provided. 
 </p>
 <ol><li> In the BCI2000Certification tool, select <code>File-&gt;Open *.ini</code>
 </li><li> Navigate to the folder <code>BCI2000/tools/BCI2000Certification</code>.
-</li><li> Load the file named <code>BCI2000Certification_32ch_100ms.ini</code> if using a 32-channel system, or <code>BCI2000Certification_16ch_100ms.ini</code> if using 16 channels. (This tutorial assumes a 32-channel system). 
+</li><li> Load the file named <code>BCI2000Certification_16ch_100ms.ini</code> if using a 16-channel system, or <code>BCI2000Certification_32ch_100ms.ini</code> if using 32 channels. (This tutorial assumes a 16-channel system). 
 </li><li> If using more than 16 channels, then the amplifier parameter files must be modified.
 <ol><li> Navigate to <code>BCI2000/tools/BCI2000Certification/parms/</code>, and open the file <code>Certification_gUSBamp_24.prm</code> in Notepad.
 </li><li> Find the parameter titled <b>DeviceIDMaster</b>, and replace the existing device ID (e.g., <code>UA-2007.04.12</code> with the ID of your master device.
@@ -115,12 +108,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="User_Interface_Components"></a><h3>User Interface Components</h3>
 <p>This section describes each user interface component, referring to the figure below.
 </p>
-<div class="thumb tnone"><div style="width:627px;"><a href="../images/b/b4/Certificationtool2.png" class="internal" title="The BCI2000Certification user interface components."><img src="../images/b/b4/Certificationtool2.png" alt="The BCI2000Certification user interface components." width="625" height="747" longdesc="/wiki/index.php/Image:Certificationtool2.png" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface components.</div></div></div>
-<a name="1._Task_List"></a><h4>1. Task List</h4>
+<div class="thumb tnone"><div style="width:771px;"><a href="../images/b/b4/Certificationtool2.png" class="internal" title="The BCI2000Certification user interface components."><img src="../images/b/b4/Certificationtool2.png" alt="The BCI2000Certification user interface components." width="769" height="638" longdesc="/wiki/index.php/Image:Certificationtool2.png" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface components.</div></div></div>
+<a name="1._Configuration:_Task_List"></a><h4>1. Configuration: Task List</h4>
 <p>The task list shows all tasks that have been loaded from the configuration file, or created within the GUI. To run a specific test, it should have a check mark next to it. In order to select or deselect all tasks, press the <code>Select All</code> check box at the bottom of the list.
 </p><p>It is possible to create new tasks, remove tasks, and copy tasks within the interface as well. To create a new task, press the <code>+</code> button. A new task is created a the bottom of the list; the task details must be filled in (described next). It is often easier to copy a similar task than to create a new one from scratch. To do so, select the desired task, and press <code>Copy</code>. The new task should be renamed appropriately. To remove a task, select a task and press the <code>-</code> button.
 </p>
-<a name="2._Task_Details"></a><h4>2. Task Details</h4>
+<a name="2._Configuration:_Task_Details"></a><h4>2. Configuration: Task Details</h4>
 <p>The right side of the GUI displays the details of the currently selected task. Each option is described here.
 </p>
 <dl><dt>Task Name
@@ -131,6 +124,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 </dd></dl>
 <dl><dt>Signal Processing
 </dt><dd>The signal processing module that should be started and used for the given task. This should usually be either <code>ARSignalProcessing</code>, <code>P3SignalProcessing</code>, or <code>DummySignalProcessing</code>, depending on the specific application.
+</dd></dl>
+<dl><dt>Application
+</dt><dd>The application that is run for the task. This will typically be <code>CursorTask</code>, <code>P3Speller</code>, or <code>StimulusPresentation</code>
 </dd></dl>
 <dl><dt>Parameters
 </dt><dd>A list of the parameter fragments that should be used for this task. Typically, at least two parameter files are required. The first should be the amplifier-specific fragment that configures the amplifier for the correct number of channels. The second should be the application-specific fragment that configures how the application appears on the screen. Parameter files can be added and removed with the <code>+</code> and <code>-</code> buttons, respectively. All files should be placed in the <code>BCI2000/tools/BCI2000Certification/parms</code> folder.
@@ -165,7 +161,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <dl><dt>(Audio) State Values
 </dt><dd>A list of state change values that should be detected by the analysis. For example, if values <code>4 11</code> are used, then the analysis tool will examine when the StimulusCode state changes to either 4 or 11, and then examine when the Video Channel changes.
 </dd></dl>
-<a name="3._Global_Settings"></a><h4>3. Global Settings</h4>
+<a name="3._Control:_Global_Settings"></a><h4>3. Control: Global Settings</h4>
+<div class="thumb tnone"><div style="width:771px;"><a href="../images/8/87/Tester02.PNG" class="internal" title="The BCI2000Certification user interface."><img src="../images/8/87/Tester02.PNG" alt="The BCI2000Certification user interface." width="769" height="638" longdesc="/wiki/index.php/Image:Tester02.PNG" /></a>  <div class="thumbcaption" >The BCI2000Certification user interface.</div></div></div>
 <p>As the name suggests, the options under Global Settings are applied to all tasks, and are described here.
 </p>
 <dl><dt>Window Left, Top
@@ -175,22 +172,34 @@ a.new, #quickbar a.new { color: #CC2200; }
 </dt><dd>The width and height of the application window.
 </dd></dl>
 <dl><dt>Global Signal Source
-</dt><dd>The executable that should be used by all applications. This program should be located in the <code>BCI2000/prog</code> folder.
+</dt><dd>The executable that should be used by all applications. This value is overwritten by the Signal Source value set for individual tasks.
 </dd></dl>
-<dl><dt>Data Save Directory
-</dt><dd>The directory where all of the data should be saved during the task. This will appear in <code>BCI2000/tools/BCI2000Certification/</code>. <b>NOTE that if data already exists in this directory, additional data will be saved to it!</b> To avoid combining new data with earlier results, the existing directory with the same name should be renamed or deleted.
+<dl><dt>Data Output Directory
+</dt><dd>The directory where all of the data should be saved during the task. This will appear relative to <code>BCI2000/tools/BCI2000Certification/</code>, or at a given absolute path. <b>NOTE that if data already exists in this directory, additional data will be saved to it!</b> To avoid combining new data with earlier results, the existing directory with the same name should be renamed or deleted.
 </dd></dl>
-<a name="4._Controls"></a><h4>4. Controls</h4>
+<dl><dt>BCI2000 Directory
+</dt><dd>This is the directory containing the BCI2000 program files, e.g., <code>C:\BCI2000\prog</code>
+</dd></dl>
+<a name="4._Control:_Controls"></a><h4>4. Control: Controls</h4>
 <p>This panel handles starting and stopping the procedure, and running the analysis.
 </p>
-<dl><dt>Start
-</dt><dd>Starts the selected tasks.
+<dl><dt>Auto Set Config
+</dt><dd>Automatically press <b>Set Config</b> upon starting BCI2000. This is required for complete automation of the procedure.
 </dd></dl>
-<dl><dt>Cancel
-</dt><dd>Stops running tasks after the current task has completed. To stop immediately, press Cancel, and then press Quit in the BCI2000 program.
+<dl><dt>Auto Start
+</dt><dd>Automatically start the test after Set Config is pressed. This is required for complete automation of the procedure.
+</dd></dl>
+<dl><dt>Auto Quit
+</dt><dd>Automatically quit BCI2000 after each task. This is required for complete automation of the procedure.
+</dd></dl>
+<dl><dt>Start/Cancel
+</dt><dd>Starts the selected tasks. While running, this button changes to Cancel, which will stop the procedure after the current task finishes.
 </dd></dl>
 <dl><dt>Analysis
-</dt><dd>Start the analysis tool. This uses the directory entered in the <b>Data Save Directory</b> setting. See the documentation for the analysis tool for more information on the analysis procedure.
+</dt><dd>Start the analysis tool. This uses the directory entered in the <b>Data Output Directory</b> setting. See the documentation for the analysis tool for more information on the analysis procedure.
+</dd></dl>
+<dl><dt>Progress
+</dt><dd>The progress bar and text provide information about the current running task, and how many tasks remain.
 </dd></dl>
 <a name="Setting_Up_and_Running_the_Certification_Procedure"></a><h3>Setting Up and Running the Certification Procedure</h3>
 <ol><li> Load the appropriate configuration file, based on the number of amplifiers that you will be using and as described above.
@@ -219,8 +228,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> When all tasks are complete, press the <code>Analyze</code> button to analyze the collected data. This procedure is detailed later in this document.
 </li></ol>
 <a name="Analyzing_Data"></a><h3>Analyzing Data</h3>
-<div class="thumb tnone"><div style="width:582px;"><a href="../images/2/26/CertAnalysis.png" class="internal" title="The BCI2000 analysis tool."><img src="../images/2/26/CertAnalysis.png" alt="The BCI2000 analysis tool." width="580" height="701" longdesc="/wiki/index.php/Image:CertAnalysis.png" /></a>  <div class="thumbcaption" >The BCI2000 analysis tool.</div></div></div>
-<p>Simply pressing the <code>Analyze</code> button will start the Analysis program. It is also possible to run the program manually from the command line.
+<div class="thumb tnone"><div style="width:758px;"><a href="../images/2/26/CertAnalysis.png" class="internal" title="The BCI2000 analysis tool."><img src="../images/2/26/CertAnalysis.png" alt="The BCI2000 analysis tool." width="756" height="525" longdesc="/wiki/index.php/Image:CertAnalysis.png" /></a>  <div class="thumbcaption" >The BCI2000 analysis tool.</div></div></div>
+<p>Simply pressing the <code>Analyze</code> button in the Tester will start the Analysis program. It is also possible to run the program in the BCI2000Certification directory by starting <code>BCI2000CertificationAnalysis.exe</code>.
 </p>
 <ol><li> If using the GUI to analyze data, be sure to save the current <code>*.ini</code> file in the BCI2000Certification program prior to starting the analysis. The analysis program uses the information in this file to determine how to analyze and interpret the data files.
 </li><li> If the tasks have been altered in the BCI2000Certification program, go to <code>File-&gt;Save *.ini</code>, and create a new ini file. We recommend not overwriting the existing configuration files, and instead creating new ones if necessary.
@@ -231,8 +240,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li> Finally, set the directory for the output file. Typically, this should be the same folder that contains all of the data files.
 </li></ol>
 </li><li> When the parameters have been correctly configured, press "Run" to start the analysis, which can take several minutes.
-</li><li> When it is finished, the results are saved to a text file, which can be found in the BCI2000 Certification folder. The file name will have the format <code>results_(date)_(time).txt</code>. Additionally, this file will be opened automatically at the end of the process.
+</li><li> When it is finished, the results are saved to a text file, which can be found in the BCI2000 Certification folder. The file name will have the format <code>results_(date)_(time).txt</code>. Additionally, this contents of this file will be opened automatically at the end of the process in a new window.
 </li></ol>
+<div class="thumb tnone"><div style="width:764px;"><a href="../images/0/04/Analysis03.PNG" class="internal" title="BCI2000 analysis results."><img src="../images/0/04/Analysis03.PNG" alt="BCI2000 analysis results." width="762" height="634" longdesc="/wiki/index.php/Image:Analysis03.PNG" /></a>  <div class="thumbcaption" >BCI2000 analysis results.</div></div></div>
 <a name="Interpreting_Analysis_Results"></a><h3>Interpreting Analysis Results</h3>
 <p>The results text file contains detailed results for all tasks. A sample output for a single task is shown here:
 </p>
@@ -325,11 +335,8 @@ Warning: the following test configurations did not pass:
 <a name="Troubleshooting"></a><h2> Troubleshooting </h2>
 <p>Things to watch out for:
 </p>
-<ul><li><tt>BCI2000_Certification</tt> assumes BCI2000 path is <tt>C:\BCI2000\</tt>.  Please set your BCI2000 path to this.
-</li><li>Parameter files for gUSBamp with channels greater than 16 have pre-defined amplifier IDs.  Please set these to your amplifier IDs.
+<ul><li>Parameter files for gUSBamp with channels greater than 16 have pre-defined amplifier IDs.  Please set these to your amplifier IDs.
 </li><li>BCI2000Certification runs BCI2000 applications from the working directory: <tt>C:\BCI2000\tools\BCI2000Certification</tt>. The images folder there doesn't contain all required images for <tt>CursorTask</tt> or a sounds folder for "StimulusPresentation".  If necessary, paste the images and sounds folder from the <tt>BCI2000/prog</tt> directory into the <tt>BCI2000/tools/BCI2000Certification</tt> directory - overwriting what is currently in that directory.
-</li><li>Removing tasks from BCI2000 Certification using the "-" button causes an access violation.  This does not affect program execution, and can be safely ignored.
-</li><li>If you change the global Signal Source in the GUI, it isn't saved into .ini file.  This can be easily changed using a text editor and manually editing the .ini
 </li><li>Older versions of <tt>BCI2000_Certification</tt> required the Borland runtime.  This has since been fixed.
 </li></ul>
 

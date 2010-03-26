@@ -66,9 +66,15 @@ data sets, a large amount of RAM may also be required, due to resource requireme
 probably the minimum that allows the system to be usable. 
 </p>
 <a name="Installing_EEGLabImport"></a><h2>Installing EEGLabImport</h2>
-<p>Installation of the plugin is straightforward.
-Copy the <tt>BCI2000/tools/EEGLabImport</tt> folder to the <tt>eeglab/plugins</tt> folder. In either case, when EEGLAB is started, 
-the plugin will be automatically detected and installed. 
+<p>Installation of the plugin is straightforward, but may require compiling the <tt>load_bcidat</tt> MEX function for your platform.
+</p>
+<ol><li>If you are using a 32-bit version ofWindows, <tt>load_bcidat.mexw32</tt> is likely already compiled for your platform, and can be located in the <tt>BCI2000/tools/mex/</tt> folder. Copy this file to the <tt>BCI2000/tools/EEGLabImport</tt> folder, and skip to 5.
+</li><li>If you are using a platform for which a version of <tt>load_bcidat</tt> does not exist in the <tt>/tools/mex</tt> folder, the <tt>load_bcidat</tt> MEX file must be compiled.
+</li><li>Open Matlab, and navigate to <tt>BCI2000/src/core/Tools/mex/</tt>. Type <tt>buildmex</tt> at the command line; this will build the BCI2000 MEX functions for your platform.
+</li><li>Once the build process is complete, locate the <tt>load_bcidat</tt> file for your platform based on its extension (see the Matlab MEX documentation for more details), and copy it to <tt>BCI2000/tools/EEGLabImport</tt>.
+</li><li>Copy the folder <tt>BCI2000/tools/EEGLabImport</tt> to the EEGLab plugin folder, located at <tt>eeglab/plugins</tt>.
+</li></ol>
+<p>When EEGLAB is started, the plugin will be automatically detected and installed.
 </p>
 <a name="Using_EEGLabImport"></a><h2>Using EEGLabImport</h2>
 <p>Begin a Matlab session, and start EEGLAB by typing <i>eeglab</i> at the command prompt. EEGLabImport is 

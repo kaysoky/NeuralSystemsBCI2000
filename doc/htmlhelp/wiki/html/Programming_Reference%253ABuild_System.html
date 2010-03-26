@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:Build System - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:Build System" />
+<meta name="keywords" content="Programming Reference:Build System,Programming Reference:Building Qt for BCI2000" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,26 +30,25 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Build System</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><b>The majority of this documentation only applies to BCI2000 Ver 3.0</b>
+<h1 class="pagetitle">Build System</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><b>This documentation only applies to BCI2000 Ver 3.0</b>
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Dependencies"><span class="tocnumber">2</span> <span class="toctext">Dependencies</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Supported_Environments"><span class="tocnumber">3</span> <span class="toctext">Supported Environments</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#How_To_Build_Using_CMake"><span class="tocnumber">4</span> <span class="toctext">How To Build Using CMake</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Supported_Environments"><span class="tocnumber">2</span> <span class="toctext">Supported Environments</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#How_To_Build_Using_CMake"><span class="tocnumber">3</span> <span class="toctext">How To Build Using CMake</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"><span class="tocnumber">4</span> <span class="toctext">Building against a Qt distribution outside the BCI2000 source tree</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#How_To_Test"><span class="tocnumber">5</span> <span class="toctext">How To Test</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Known_Issues"><span class="tocnumber">6</span> <span class="toctext">Known Issues</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Conclusions"><span class="tocnumber">7</span> <span class="toctext">Conclusions</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Introduction"></a><h2> Introduction </h2>
 <p>BCI2000 was originally intended to be built only on the Borland compiler due to the fact that much of its architecture was built on the visual components library (VCL) by Borland.  By making BCI2000 compiler independent, we could no longer use VCL, and had to choose an open source and cross platform replacement.  Qt was chosen to replace VCL because it is not only compiler independent but is also platform independent, a future goal for BCI2000. 
-</p><p>As such, Qt is required for compiling the BCI2000 source on a non-Borland platform.  If Borland is still being used as the compiling environment, VCL is still temporary supported and the project will be built using the VCL for it's graphical elements.  If Visual Studio or MinGW is used to compile BCI2000, you will need to have the Qt SDK installed on your computer.
-</p><p>To support such a large number of platforms and compilers, BCI2000 has turned to CMake <a href="http://www.cmake.org" class='external free' title="http://www.cmake.org" rel="nofollow">http://www.cmake.org</a> to generate makefiles, project files, and visual studio solutions.  Cmake can be thought of as a meta-makefile, in that it examines your build environment, and sets up a Visual Studio project, or a Code::Blocks project which is custom tailored to your environment.  It is because of varying build environments, that BCI2000 can not come with a set Visual Studio solution file, or an Eclipse project file without giving the user a lot of headache in setting up the compiler to work correctly.  The number of platforms BCI2000 supports is only limited by the number of platforms and compilers that CMake has generators for.
-</p>
-<a name="Dependencies"></a><h2> Dependencies </h2>
-<p>Qt 4.5+ <a href="http://qt.nokia.com/products/" class='external free' title="http://qt.nokia.com/products/" rel="nofollow">http://qt.nokia.com/products/</a> is required. In case the Qt website goes down, or is changed in some drastic way, a mirror of a confirmed working version of Qt 4.5 is provided here: &lt;LINK&gt;
+</p><p>As such, Qt is required for compiling the BCI2000 source on a non-Borland platform.  If Borland is still being used as the compiling environment, VCL is still temporary supported and the project will be built using the VCL for it's graphical elements.  For Visual Studio or MinGW builds of BCI2000, a stripped-down version of the Qt SDK is provided in the BCI2000 source tree.
+</p><p>To support such a large number of platforms and compilers, BCI2000 has turned to CMake <a href="http://www.cmake.org" class='external free' title="http://www.cmake.org" rel="nofollow">http://www.cmake.org</a> to generate makefiles, project files, and visual studio solutions.  Cmake can be thought of as a meta-makefile, in that it examines your build environment, and sets up a Visual Studio project, or a Code::Blocks project which is custom tailored to your environment.  It is because of varying build environments, that BCI2000 can not come with a set Visual Studio solution file, or an Eclipse project file without giving the user a lot of headache in setting up the compiler to work correctly.  Once remaining dependencies on the Win32 API are removed, the number of platforms BCI2000 supports will only be limited by the number of platforms and compilers that CMake has generators for.
+</p><p><br />
 </p>
 <a name="Supported_Environments"></a><h2> Supported Environments </h2>
 <ul><li><b>Supported Operating Systems</b>
@@ -59,65 +58,47 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 </li><li><b>Supported Compilers</b>
 <ul><li>Borland 6, 2007, 2009
-</li><li>Visual Studio 8 (2005), 9 (2008)
+</li><li>Visual Studio  9 (2008)
 </li><li>MinGW
 </li></ul>
 </li><li><b>Supported IDEs</b>
 <ul><li>Borland 6, 2007, 2009 (Note: Use the project files in the src directory for Borland IDE support.  This support is being phased out)
-</li><li>Visual Studio 8 (2005), 9 (2008) (via CMake)
+</li><li>Visual Studio  9 (2008) (via CMake)
 </li><li>Code::Blocks - MinGW Makefiles (via CMake)
 </li><li>Any other IDE supported by CMake generators (Eclipse CDT, etc...)
 </li></ul>
 </li></ul>
 <a name="How_To_Build_Using_CMake"></a><h2> How To Build Using CMake </h2>
 <ol><li>Ensure that your compiler and IDE are installed on the computer.  This means that Visual Studio is installed if you intend to use Visual Studio, or that MinGW and Code::Blocks are installed if you intend to use Code::Blocks as your IDE and MinGW as your compiler.  
-</li><li>Download and install the Qt SDK from <a href="http://www.qtsoftware.com/" class='external free' title="http://www.qtsoftware.com/" rel="nofollow">http://www.qtsoftware.com/</a>
-<ol><li>After Installing, add the install path to your PATH environment variable.
-<ol><li>Right click on "My Computer" - select Properties. 
-</li><li>Go to the "Advanced" tab and click the "Environment Variables" button at the bottom.
-</li><li>In the system variables pane, locate the "Path" variable, highlight and click "Edit"
-</li><li>Move the cursor to the end of the "Variable value:" text box and type: ";C:\Qt\XXXX.XX\qt\bin\" (without the quotes, XXXX.XX is version. Replace) Adding paths to the "Path" variable is done using semicolon deliminations with no space between the previous path's semicolon and the new path.
-</li><li>Click Ok, and click Ok again, and Ok again.
-</li></ol>
-</li><li><b>IF USING VISUAL STUDIO:</b> You need to build Qt from source to get Visual Studio ".lib"s
-<ol><li>Add ";C:\Program Files\Microsoft Visual Studio XX\VC\bin\" to the "Path" variable
-</li><li>Copy "mspdb80.dll", "mspdbcore.dll", "mspdbsrv.exe" and "msobj80.dll" from "C:\Program Files\Microsoft Visual Studio XX\Common7\IDE"to the folder "C:\Program Files\Microsoft Visual Studio XX\VC\bin"
-</li><li>Open a Visual Studio command prompt and navigate to C:\Qt\XXXX.XX\qt 
-</li><li>Type "set INCLUDE=C:\Program Files\Microsoft Visual Studio XX\VC\include;C:\Program Files\Microsoft SDKs\Windows\vXX\Include;%INCLUDE%"
-</li><li>Type "set LIB=C:\Program Files\Microsoft Visual Studio XX\VC\lib;C:\Program Files\Microsoft SDKs\Windows\vXX\Lib;%LIB%"
-</li><li>Run the "configure" command
-</li><li>Type "o" for open source, type "y" for yes
-</li><li>Qt will now be configured to generate a Visual Studio Project.  This will take a while.
-</li><li>Build the libraries using the Visual Studio Compiler
-<ol><li>You have two choices here.  If you're looking for an easy, automated build process, but takes a very long time (3-4 Hours), simply run "nmake" from this dir.
-</li><li>If you're looking for a faster build, only build the necessary libraries.
-<ol><li>Cd into Qt/XXXX.XX/qt/src/corelib and run "nmake"
-</li><li>Cd into Qt/XXXX.XX/qt/src/gui and run "nmake"
-</li><li>Cd into Qt/XXXX.XX/qt/src/network and run "nmake"
-</li><li>Cd into Qt/XXXX.XX/qt/src/opengl and run "nmake"
-</li><li>Cd into Qt/XXXX.XX/qt/src/winmain and run "nmake"
-</li></ol>
-</li></ol>
-</li></ol>
-</li></ol>
 </li><li>Download and install cmake (Version 2.6 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b>
-</li><li>Go to the BCI2000/build directory and double click the .bat file which best describes your intnded platform.  (ie. if you plan to use Visual Studio 2008, run the Visual Studio 2008 .bat file)
+</li><li>Go to the BCI2000/build directory and double click the .bat file which best describes your intended platform.  (ie. if you plan to use Visual Studio 2008, run the Visual Studio 2008 .bat file)
 </li><li>Wait while cmake examines your computer, finds qt and your compiler, and generates applicable project files for your system
 </li><li>Open the generated project/solution in the IDE and build BCI2000, or - if makefiles were generated - run the make command from a command prompt.  Refer to the IDE help for IDE specific instructions on how to build an application.
 </li></ol>
+<a name="Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"></a><h2> Building against a Qt distribution outside the BCI2000 source tree </h2>
+<p>BCI2000 may be built against a standard Qt distribution. Depending on your compiler and desired configuration (e.g., when using Visual Studio), you might need to re-build that distribution from source before building BCI2000.
+</p><p>To enable the BCI2000 build system to use the external Qt distribution, open the file <tt>BCI2000/build/cmake/FindQt.cmake</tt>
+in a text editor.
+There, in line 10, replace
+</p>
+<pre>SET( USE_STD_QT FALSE )
+</pre>
+<p>with
+</p>
+<pre>SET( USE_STD_QT TRUE )
+</pre>
+<p>Then, go to the directory <tt>BCI2000/build</tt> and remove the file <tt>CMakeCache.txt</tt> before re-creating project files using the appropriate batch file in <tt>BCI2000/build</tt>.
+</p>
 <a name="How_To_Test"></a><h2> How To Test </h2>
-<p>It is important - especially if you're using an unsupported compiler/ide - to test your executables once they've been built to make sure they function properly. 
+<p>It is important - especially if you're using an unsupported compiler/IDE - to test your executables once they've been built to make sure they function properly. 
 </p><p><b>To run testing:</b>
 </p>
 <ol><li>Ensure that the entire BCI2000 project has built successfully and that executables exist in the <tt>BCI2000/prog</tt> directory, the <tt>BCI2000/tools/cmdline</tt> directory, and the <tt>BCI2000/build/buildutils/test</tt> directory.
-</li><li>Run <tt>run_tests.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory.
+</li><li>Run <tt>test_executables.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory.
 </li></ol>
 <p>The tests will run and report a message after they've finished whether they've failed or not.  You may see a message in the beginning of the test stating that a directory does not exist.  This is normal behavior and does not reflect whether or not your executables have failed testing or not.
-</p><p><b>A Note on found differences:</b> depending on how many differences found it may not indicate that you have a broken build.  Sometimes different compilers handle random number generation differently than others.  These can account for small differences in calculated state values. The default ref files were generated using Borland 2007.  If your compiler is different, this may not be a problem.
 </p>
 <a name="Known_Issues"></a><h2> Known Issues </h2>
-<ul><li><b>Visual Studio</b> tends to put executables into a Release or Debug directory within prog. This behavior is non-standard when compared to every other compiler.  Behavior may be changed by going into the specific project properties and deleting "$(Configuration Name) from the  "Output Directory" under the general sub-heading.  This behavior may be fixed by a future release of CMake.
-</li></ul>
 <ul><li><b>MinGW, Borland</b> and other single configuration generators within CMake only generate one configuration at CMake Run-time.  By default, this is set to the release configuration.  It can be set - along with specific compiler options - in <tt>BCI2000/build/cmake/BuildConfigurations.cmake</tt>.  The Visual Studio generator will ignore settings in this file.
 </li></ul>
 <ul><li><b>All Compilers</b> handle non standard characters, such as umlauts and characters with accents or tildes, differently.  Because BCI2000 currently has no standardized way of handling non standard characters in a cross-compiler environment, it is strongly recommended that - for the time being - special characters are not used in localizations during the development of BCI2000 Ver 3.0.
@@ -125,6 +106,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Conclusions"></a><h2> Conclusions </h2>
 <p>Now that BCI2000 is open to other compilers - and soon - other platforms, support may not exist for every possible compiler/platform available. Certain compilers do not optimize code as well as others, and this behavior may lead to poor system latencies during BCI2000 experiments. The supported compilers have been rigorously tested and confirmed to be adequate for compiling the BCI2000 sources.  If you wish to use a different compiler,
 be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake is a powerful tool, but in the end, ability to compile the sources is completely up to the IDE/compiler choice.  If your IDE/compiler choice is not listed above, it is strongly urged that you to consider using one which is supported.  If you run into problems using an unsupported IDE/compiler combination, you can try to find help at the BBS - <a href="http://www.bci2000.org/phpbb/index.php" class='external free' title="http://www.bci2000.org/phpbb/index.php" rel="nofollow">http://www.bci2000.org/phpbb/index.php</a>.  BCI2000 should compile as effortlessly as possible on supported platforms.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>
 </p>
 <div class="printfooter">
 </div>

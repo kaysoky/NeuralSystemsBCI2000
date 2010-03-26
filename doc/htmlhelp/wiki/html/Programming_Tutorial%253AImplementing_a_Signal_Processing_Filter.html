@@ -109,17 +109,17 @@ error
 conditions, and postponing efficiency considerations:
 </p>
 <pre>
-void LPFilter::Process( const GenericSignal&amp; input, GenericSignal&amp; output )
+void LPFilter::Process( const GenericSignal&amp; Input, GenericSignal&amp; Output )
 {
   // This implements the prescription's second line for all channels:
-  for( size_t channel = 0; channel &lt; input.Channels(); ++channel )
+  for( int channel = 0; channel &lt; Input.Channels(); ++channel )
   {
-    for( size_t sample = 0; sample &lt; input.Elements(); ++sample )
+    for( int sample = 0; sample &lt; Input.Elements(); ++sample )
     {
       mPreviousOutput[ channel ] *= mDecayFactor;
       mPreviousOutput[ channel ] +=
-           input( channel, sample ) * ( 1.0 - mDecayFactor );
-      output( channel, sample ) = mPreviousOutput[ channel ];
+           Input( channel, sample ) * ( 1.0 - mDecayFactor );
+      Output( channel, sample ) = mPreviousOutput[ channel ];
     }
   }
 }
@@ -134,8 +134,8 @@ after the <tt>Process</tt> declaration:
 </p>
 <pre>
   private:
-    float              mDecayFactor;
-    std::vector&lt;float&gt; mPreviousOutput;
+    double              mDecayFactor;
+    std::vector&lt;double&gt; mPreviousOutput;
 </pre>
 <p>The next step is to initialize these member variables, introducing
 filter
@@ -144,16 +144,16 @@ function --
 we write it down without considering possible error conditions:
 </p>
 <pre>
-void LPFilter::Initialize( const SignalProperties&amp; inputProperties,
-                           const SignalProperties&amp; outputProperties )
+void LPFilter::Initialize( const SignalProperties&amp; Input,
+                           const SignalProperties&amp; Output )
 {
   // This will initialize all elements with 0,
   // implementing the first line of the filter prescription:
-  mPreviousOutput.resize( inputProperties.Channels(), 0 );
-
-  float timeConstant = Parameter( &quot;LPTimeConstant&quot; );
-  mDecayFactor =&nbsp;::exp( -1.0 / timeConstant );
   mPreviousOutput.clear();
+  mPreviousOutput.resize( Input.Channels(), 0 );
+
+  double timeConstant = Parameter( &quot;LPTimeConstant&quot; );
+  mDecayFactor =&nbsp;::exp( -1.0 / timeConstant );
 }
 </pre>
 <p>Now this version is quite inconvenient for a user going to configure our filter
@@ -174,14 +174,13 @@ Thus, our user friendly version of <tt>Initialize</tt> reads
 <pre>
 void LPFilter::Initialize( const SignalProperties&amp;, const SignalProperties&amp; )
 {
+  mPreviousOutput.clear();
+  mPreviousOutput.resize( Input.Channels(), 0 );
   // Get the time constant in units of a sample block's duration:
-  float timeConstant = MeasurementUnits::ReadAsTime( Parameter(
-  &quot;LPTimeConstant&quot; ) );
+  double timeConstant = MeasurementUnits::ReadAsTime( Parameter( &quot;LPTimeConstant&quot; ) );
   // Convert it into units of a sample's duration:
   timeConstant *= Parameter( &quot;SampleBlockSize&quot; );
-
   mDecayFactor =&nbsp;::exp( -1.0 / timeConstant );
-  mPreviousOutput.clear();
 }
 </pre>
 <a name="The_Preflight_function"></a><h2>The <tt>Preflight</tt> function</h2>
@@ -206,17 +205,15 @@ the
 <tt>Preflight</tt> function. Thus, the <tt>Preflight</tt> code reads
 </p>
 <pre>
-void LPFilter::Preflight( const SignalProperties&amp; inputProperties,
-                                SignalProperties&amp; outputProperties ) const
+void LPFilter::Preflight( const SignalProperties&amp; Input,
+                                SignalProperties&amp; Output ) const
 {
-  float LPTimeConstant 
-    = MeasurementUnits::ReadAsTime( Parameter( &quot;LPTimeConstant&quot; ) );
+  double LPTimeConstant = MeasurementUnits::ReadAsTime( Parameter( &quot;LPTimeConstant&quot; ) );
   LPTimeConstant *= Parameter( &quot;SampleBlockSize&quot; );
   // The PreflightCondition macro will automatically generate an error
   // message if its argument evaluates to false.
   // However, we need to make sure that its argument is user-readable
-  // -- this is why we chose a variable name that matches the
-  parameter
+  // -- this is why we chose a variable name that matches the parameter
   // name.
   PreflightCondition( LPTimeConstant &gt; 0 );
   // Alternatively, we might write:
@@ -224,7 +221,7 @@ void LPFilter::Preflight( const SignalProperties&amp; inputProperties,
     bcierr &lt;&lt; &quot;The LPTimeConstant parameter must be greater 0&quot; &lt;&lt; endl;
 
   // Request output signal properties:
-  outputProperties = inputProperties;
+  Output = Input;
 }
 </pre>
 <a name="Constructor_and_destructor"></a><h2>Constructor and destructor</h2>
@@ -243,8 +240,7 @@ LPFilter::LPFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     &quot;Filtering float LPTimeConstant= 16s&quot;
-      &quot; 16s % % // time constant for the low pass filter in blocks or
-      seconds&quot;,
+      &quot; 16s % % // time constant for the low pass filter in blocks or seconds&quot;,
   END_PARAMETER_DEFINITIONS
 }
 
@@ -312,8 +308,7 @@ LPFilter::LPFilter()
 {
   BEGIN_PARAMETER_DEFINITIONS
     &quot;Filtering float LPTimeConstant= 16s&quot;
-      &quot; 16s % % // time constant for the low pass filter in blocks or
-      seconds&quot;,
+      &quot; 16s % % // time constant for the low pass filter in blocks or seconds&quot;,
     &quot;Visualize int VisualizeLowPass= 1&quot;
       &quot; 1 0 1 // visualize low pass output signal (0=no, 1=yes)&quot;,
   END_PARAMETER_DEFINITIONS
@@ -332,7 +327,7 @@ end of <tt>Process</tt>:
 </p>
 <pre>
   if( Parameter( &quot;VisualizeLowPass&quot; ) == 1 )
-    mSignalVis.Send( output );
+    mSignalVis.Send( Output );
 </pre>
 <p>We might also send data to the already existing task log memo window,
 adding

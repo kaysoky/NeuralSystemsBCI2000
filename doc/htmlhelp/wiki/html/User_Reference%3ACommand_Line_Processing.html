@@ -39,7 +39,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253ACommand_Line_Processing.html#Conversion_into_stream_format"><span class="tocnumber">4.1</span> <span class="toctext">Conversion into stream format</span></a>
 <ul>
-<li class='toclevel-3'><a href="User_Reference%253ACommand_Line_Processing.html#bci_dat2stream"><span class="tocnumber">4.1.1</span> <span class="toctext">bci_dat2stream</span></a></li>
+<li class='toclevel-3'><a href="User_Reference%253ACommand_Line_Processing.html#bci_dat2stream"><span class="tocnumber">4.1.1</span> <span class="toctext">bci_dat2stream</span></a>
+<ul>
+<li class='toclevel-4'><a href="User_Reference%253ACommand_Line_Processing.html#Input_format"><span class="tocnumber">4.1.1.1</span> <span class="toctext">Input format</span></a></li>
+<li class='toclevel-4'><a href="User_Reference%253ACommand_Line_Processing.html#Options"><span class="tocnumber">4.1.1.2</span> <span class="toctext">Options</span></a></li>
+</ul>
+</li>
 <li class='toclevel-3'><a href="User_Reference%253ACommand_Line_Processing.html#bci_prm2stream"><span class="tocnumber">4.1.2</span> <span class="toctext">bci_prm2stream</span></a></li>
 </ul>
 </li>
@@ -135,13 +140,17 @@ As the stream format is only used between tools, and generally not of interest t
 </pre>
 <a name="Conversion_into_stream_format"></a><h3>Conversion into stream format</h3>
 <a name="bci_dat2stream"></a><h4><tt>bci_dat2stream</tt></h4>
-<ul><li><b>Input format</b> <tt>bci_dat2stream</tt> converts a BCI2000 data (<tt>dat</tt>) file into a stream.
-</li><li><b>Options</b> The <tt>--transmit</tt> option may be used to select states, parameters, and data for transmission, as in
-</li></ul>
+<a name="Input_format"></a><h5>Input format</h5>
+<p><tt>bci_dat2stream</tt> converts a BCI2000 data (<tt>dat</tt>) file into a stream.
+</p>
+<a name="Options"></a><h5>Options</h5>
+<p>The <tt>--transmit</tt> option may be used to select states, parameters, and data for transmission, as in
+</p>
 <pre>bci_dat2stream --transmit-sp &lt; myfile.dat
 </pre>
 <p>In the above example, only states and parameters but no data will be contained in the resulting stream. "Data" comprises signal and state vector data.
-Omitting a <tt>--transmit</tt> option corresponds to<tt>--transmit-spd</tt>. This transmits all information contained in the <tt>dat</tt> file. 
+Omitting a <tt>--transmit</tt> option corresponds to<tt>--transmit-spd</tt>. This transmits all information contained in the <tt>dat</tt> file.
+</p><p>When the <tt>--raw</tt> option is given, data are transmitted in raw, i.e. uncalibrated, form. By default, data are transmitted in calibrated form, using the calibration information from the <tt>SourceChOffset</tt> and <tt>SourceChGain</tt> parameters.
 </p>
 <a name="bci_prm2stream"></a><h4><tt>bci_prm2stream</tt></h4>
 <p><tt>bci_prm2stream</tt> converts a BCI2000 parameter (<tt>prm</tt>) file into a stream.
@@ -212,7 +221,7 @@ Although the BCI2000 command line tools cannot be compiled with <tt>gcc</tt>, th
 <a name="Processing_data_with_BCI2000_filters_and_importing_the_results_into_Matlab"></a><h3>Processing data with BCI2000 filters and importing the results into Matlab</h3>
 <p>To process data with the filters used in the mu-training on-line system, saving the AR spectrum as Matlab file, execute 
 </p>
-<pre>bci_dat2stream &lt; mydata.dat | TransmissionFilter | CalibrationFilter | SpatialFilter | ARFilter | bci_stream2mat &gt; myspectra.mat
+<pre>bci_dat2stream &lt; mydata.dat | TransmissionFilter | SpatialFilter | ARFilter | bci_stream2mat &gt; myspectra.mat
 </pre>
 <p>Load the data into Matlab using
 </p>
@@ -223,12 +232,12 @@ Although the BCI2000 command line tools cannot be compiled with <tt>gcc</tt>, th
 <a name="Exporting_BCI2000_data_into_a_table_suitable_for_import_into_other_applications_.28MS_Excel.2C_SPSS.29"></a><h3>Exporting BCI2000 data into a table suitable for import into other applications (MS Excel, SPSS)</h3>
 <p>To process data with the filters used in the mu-training on-line system, saving the AR spectrum as a table in ASCII format, execute
 </p>
-<pre>bci_dat2stream &lt; mydata.dat | TransmissionFilter | CalibrationFilter | SpatialFilter | ARFilter | bci_stream2table &gt; mytable.txt
+<pre>bci_dat2stream &lt; mydata.dat | TransmissionFilter | SpatialFilter | ARFilter | bci_stream2table &gt; mytable.txt
 </pre>
 <a name="Testing_a_modified_filter_on_existing_data"></a><h3>Testing a modified filter on existing data</h3>
 <p>To verify that changes to a filter's code don't change its behavior with respect to existing data, apply both versions to a stream, convert the output stream into human readable format, and have a file comparison program display any differences. For the following example, we will compare a previous version of the ARFilter, renamed <tt>prev_ARFilter</tt>, to the current one.
 </p>
-<ol><li>Create a stream suitable for input to the ARFilter:<br /><code>bci_dat2stream &lt; mydata.dat | TransmissionFilter |   CalibrationFilter | SpatialFilter &gt; test.bcistream</code>
+<ol><li>Create a stream suitable for input to the ARFilter:<br /><code>bci_dat2stream &lt; mydata.dat | TransmissionFilter | SpatialFilter &gt; test.bcistream</code>
 </li><li>Apply both filter versions to the stream, and save the results in human readable format:<br /><code>ARFilter &lt; test.bcistream | bci_stream2asc &gt; ARresult.txt &amp;&amp;  prev_ARFilter &lt; test.bcistream | bci_stream2asc &gt; prev_ARresult.txt</code>
 </li><li>Compare the results (using the Windows NT analog to the <tt>diff</tt> program):<br /><code>comp /a /l prev_ARresult.txt ARresult.txt | more</code>
 </li></ol>
