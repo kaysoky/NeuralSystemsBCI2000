@@ -10,7 +10,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BCI2000_VERSION  "$Version: 2.0 $ " \
+#define BCI2000_VERSION  "$Version: 2.1 $ " \
                          "$Revision: $WCRANGE$ $ " \
                          "$Source Date: $WCDATE$ $ " \
                          "$Build Date: $WCNOW$ $ "
