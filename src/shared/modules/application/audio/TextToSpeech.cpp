@@ -31,10 +31,10 @@ TextToSpeech::TextToSpeech()
 
 TextToSpeech::~TextToSpeech()
 {
-  if( --sNumInstances < 1 )
-    ::CoUninitialize();
   if( mpVoice != NULL )
     mpVoice->Release();
+  if( --sNumInstances < 1 )
+    ::CoUninitialize();
 }
 
 TextToSpeech&
