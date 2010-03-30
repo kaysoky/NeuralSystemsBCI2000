@@ -9,8 +9,6 @@
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-    _control87(MCW_EM,MCW_EM);
-
         try
         {
                  Application->Initialize();

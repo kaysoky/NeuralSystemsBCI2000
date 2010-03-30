@@ -24,6 +24,7 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "Version.h"
+#include "FPExceptMask.h"
 
 #include <string>
 #include <sstream>
@@ -73,6 +74,7 @@ CoreModule::~CoreModule()
 bool
 CoreModule::Run( int inArgc, char** inArgv )
 {
+  FPExceptMask mask; // Disable FPU exceptions during Run().
   try
   {
     if( Initialize( inArgc, inArgv ) )
