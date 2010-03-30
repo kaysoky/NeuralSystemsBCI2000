@@ -89,12 +89,12 @@ typedef unsigned short uint16;
 typedef signed short sint16;
 typedef unsigned int uint32;
 typedef signed int sint32;
-#if( defined( __BORLANDC__ ) && ( __BORLANDC__ > 0x0560 ) ) // bcc32 > 5.5.1
-typedef unsigned long long uint64;
-typedef signed long long sint64;
-#else // __BORLANDC__
+#if( defined( __BORLANDC__ ) && ( __BORLANDC__ <= 0x0560 ) ) // bcc32 <= 5.5.1
 typedef unsigned __int64 uint64;
 typedef signed __int64 sint64;
+#else // __BORLANDC__
+typedef unsigned long long uint64;
+typedef signed long long sint64;
 #endif // __BORLANDC__
 typedef float float32;
 
