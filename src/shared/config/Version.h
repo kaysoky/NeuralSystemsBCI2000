@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: Version.h template to be processed using TortoiseSVN's SubWCRev
-//   tool.
+// Description: Default Version.h file. During a "make build", this file will
+//   be replaced with more accurate information.
 //
 // (C) 2000-2010, BCI2000 Project
 // http://www.bci2000.org
@@ -10,10 +10,9 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BCI2000_VERSION  "$Version: 2.1 $ " \
-                         "$Revision$ " \
-                         "$Build Date: Wed Mar 31 19:12:50 CEST 2010 $ "
-                         
+#define BCI2000_VERSION  "$Version: 2.x $ " \
+                         "$Build Date: " __TIME__ " " __DATE__ " $"
+
 #define BCI2000_COPYRIGHT "(C) 2000-2010, BCI2000 Project\n" \
                           "http://www.bci2000.org"
 
