@@ -79,7 +79,7 @@ We will use the event interface to record the wheel's position into a state call
  bcievent &lt;&lt; &quot;ThumbWheelPos &quot; &lt;&lt; ThumbWheelGetPos();
 </pre>
 <a name="Thread_Interface"></a><h3>Thread Interface</h3>
-<p>In order to observe the wheel's state independently of BCI2000's processing of data blocks, we create a thread that polls wheel state in regular intervals. We will use BCI2000 <a href="Programming_Reference%253AOSThread_Class.html" title="Programming Reference:OSThread Class">OSThread class</a> to implement that separate thread.
+<p>In order to observe the wheel's state independently of BCI2000's processing of data blocks, we create a thread that polls wheel state in regular intervals. We will use BCI2000's <a href="Programming_Reference%253AOSThread_Class.html" title="Programming Reference:OSThread Class">OSThread class</a> to implement that separate thread.
 </p>
 <pre>
  #include &quot;OSThread.h&quot;
@@ -212,7 +212,7 @@ We will use the event interface to record the wheel's position into a state call
    StopRun();
  }
 </pre>
-<p>Finally, to make sure there exists an object of our <tt>ThumbWheelLogger</tt> class, we use the <tt>RegisterExtension</tt> macro at the top of its <tt>.cpp</tt> file:
+<p>Finally, to make sure there exists an object of our <tt>ThumbWheelLogger</tt> class, we use the <tt>Extension</tt> macro at the top of its <tt>.cpp</tt> file:
 </p>
 <pre>Extension( ThumbWheelLogger );
 </pre>
