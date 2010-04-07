@@ -34,8 +34,9 @@ class P3TemporalFilter : public GenericFilter
   GenericSignal mVisSignal;
   bool mVisualize;
   long mTargetERPChannel;
-  
-  int mEpochsToAverage;
+
+  int mEpochsToAverage,
+      mNumberOfSequences;
 
   std::map<State::ValueType, State::ValueType> mStimulusTypes;
   State::ValueType mPreviousStimulusCode;
@@ -69,7 +70,6 @@ class P3TemporalFilter : public GenericFilter
    private:
     GenericSignal mData;
     int           mCursor;
-    int           mStimulusCode;
   };
 
   class EpochSet : public std::set<EpochBuffer*>

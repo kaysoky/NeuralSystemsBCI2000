@@ -24,6 +24,7 @@ P3TemporalFilter::P3TemporalFilter()
   mVisualize( false ),
   mTargetERPChannel( 0 ),
   mEpochsToAverage( 0 ),
+  mNumberOfSequences( 0 ),
   mPreviousStimulusCode( 0 )
 {
  BEGIN_PARAMETER_DEFINITIONS
@@ -61,6 +62,13 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
   State( "StimulusType" );
   OptionalState( "StimulusBegin" );
 
+  int epochsToAverage = Parameter( "EpochsToAverage" ),
+      numberOfSequences = OptionalParameter( "NumberOfSequences", epochsToAverage );
+  if( numberOfSequences < epochsToAverage )
+    bcierr << "The NumberOfSequences parameter must be "
+           << "greater than or equal to the EpochsToAverage parameter."
+           << endl;
+
   float outputSamples = MeasurementUnits::ReadAsTime( Parameter( "EpochLength" ) );
   outputSamples *= Input.Elements();
   outputSamples = ::ceil( outputSamples );
@@ -71,7 +79,7 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
         .SetType( SignalType::float32 )
         .ElementUnit().SetRawMin( 0 )
                       .SetRawMax( outputSamples - 1 );
-                      
+
   if( Parameter( "VisualizeP3TemporalFiltering" ) != 0 )
   {
     float targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
@@ -89,6 +97,7 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
 
   mOutputProperties = Output;
   mEpochsToAverage = Parameter( "EpochsToAverage" );
+  mNumberOfSequences = OptionalParameter( "NumberOfSequences", mEpochsToAverage );
 
   mVisualize = int( Parameter( "VisualizeP3TemporalFiltering" ) );
   if( mVisualize )
@@ -167,7 +176,6 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
                 Output( channel, sample ) = ( *mEpochSums[ stimulusCode ] )( channel, sample ) / mEpochsToAverage;
             State( "StimulusCodeRes" ) = stimulusCode;
             State( "StimulusTypeRes" ) = mStimulusTypes[ stimulusCode ];
-            *mEpochSums[ stimulusCode ] = DataSum( mOutputProperties );
 
             if( mVisualize && i->first - 1 < mVisSignal.Channels() )
             {
@@ -180,9 +188,17 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
       }
       for( EpochSet::iterator j = obsoleteEpochs.begin(); j != obsoleteEpochs.end(); ++j )
         i->second.erase( *j );
-      // Epochs will be deallocated from the obsoleteEpochs class destructor.
+      // Epochs will be deallocated from the obsoleteEpochs destructor.
+    }
+
+    for( DataSumMap::iterator i = mEpochSums.begin(); i != mEpochSums.end(); ++i )
+    {
+      if( i->second->Count() >= mNumberOfSequences )
+      { // Reset the data sum buffer.
+        bcidbg( 2 ) << "Clearing buffer for stimulus code #" << i->first
+                    << endl;
+        *i->second = DataSum( mOutputProperties );
+      }
     }
   }
 }
-
-
