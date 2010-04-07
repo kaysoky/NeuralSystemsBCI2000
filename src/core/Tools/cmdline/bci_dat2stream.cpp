@@ -141,7 +141,7 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     return illegalInput;
   }
 
-  SignalProperties outputProperties( sourceCh, sampleBlockSize, dataFormat );
+  SignalProperties inputProperties( sourceCh, sampleBlockSize, dataFormat );
   if( transmitData || transmitStates )
   {
     StateVector statevector( states, 1 );
@@ -152,7 +152,7 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     }
     if( calibrateData && parameters.Exists( "SamplingRate" ) )
     {
-      outputProperties
+      inputProperties
         .ElementUnit().SetOffset( 0 )
         .SetGain( 1.0 / atof( parameters[ "SamplingRate" ].Value().c_str() ) )
         .SetSymbol( "s" );
@@ -170,26 +170,35 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
       const Param& sourceChGain = parameters[ "SourceChGain" ];
       for( int ch = 0; ch < min( sourceCh, sourceChGain.NumValues() ); ++ch )
         gains[ ch ] = atof( sourceChGain.Value( ch ).c_str() );
-      outputProperties
+      inputProperties
         .ValueUnit().SetOffset( 0 )
         .SetGain( 1e-6 )
         .SetSymbol( "V" );
     }
     if( parameters.Exists( "ChannelNames" ) && parameters[ "ChannelNames" ].NumValues() > 0 )
     {
-      LabelIndex& outputLabels = outputProperties.ChannelLabels();
-      for( int i = 0; i < min( outputProperties.Channels(), parameters[ "ChannelNames" ].NumValues() ); ++i )
+      LabelIndex& outputLabels = inputProperties.ChannelLabels();
+      for( int i = 0; i < min( inputProperties.Channels(), parameters[ "ChannelNames" ].NumValues() ); ++i )
         outputLabels[ i ] = parameters[ "ChannelNames" ].Value( i ).c_str();
     }
     if( transmitData )
-      MessageHandler::PutMessage( out, outputProperties );
+    {
+      if( calibrateData )
+      {
+        SignalProperties outputProperties( inputProperties );
+        outputProperties.SetType( SignalType::float32 );
+        MessageHandler::PutMessage( out, outputProperties );
+      }
+      else
+        MessageHandler::PutMessage( out, inputProperties );
+    }
 
     int curSample = 0;
-    GenericSignal outputSignal( outputProperties );
+    GenericSignal inputSignal( inputProperties );
     while( in && in.peek() != EOF )
     {
       for( int i = 0; i < sourceCh; ++i )
-        outputSignal.ReadValueBinary( in, i, curSample );
+        inputSignal.ReadValueBinary( in, i, curSample );
       in.read( statevector( 0 ).Data(), statevector.Length() );
 
       if( ++curSample == sampleBlockSize )
@@ -202,12 +211,19 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
         if( transmitData )
         {
           if( calibrateData )
+          {
+            SignalProperties outputProperties( inputProperties );
+            outputProperties.SetType( SignalType::float32 );
+            GenericSignal outputSignal( outputProperties );
             for( int i = 0; i < sourceCh; ++i )
               for( int j = 0; j < sampleBlockSize; ++j )
                 outputSignal( i, j )
-                  = ( outputSignal( i, j ) - offsets[ i ] ) * gains[ i ];
-          // Send the data.
-          MessageHandler::PutMessage( out, outputSignal );
+                  = ( inputSignal( i, j ) - offsets[ i ] ) * gains[ i ];
+            // Send the data.
+            MessageHandler::PutMessage( out, outputSignal );
+          }
+          else
+            MessageHandler::PutMessage( out, inputSignal );
         }
       }
     }
