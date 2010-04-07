@@ -43,7 +43,7 @@ void TransmissionFilter::Preflight( const SignalProperties& Input,
       bcierr << "TransmitChList entry " << addressIn
              << " is not a valid channel specification"
              << endl;
-    else
+    else if( !Input.ChannelLabels().IsTrivial() )
       Output.ChannelLabels()[ idxOut ] = Input.ChannelLabels()[ idxIn ];
   }
 }

@@ -46,9 +46,9 @@ class GenericSignal
     // Value Accessors
     const ValueType&  Value( size_t inChannel, size_t inElement ) const;
     GenericSignal&    SetValue( size_t inChannel, size_t inElement, ValueType inValue );
-    // Bracket read access
+    // Read access
     const ValueType&  operator() ( size_t inChannel, size_t inElement ) const;
-    // Bracket write access
+    // Write access
     ValueType&        operator() ( size_t inChannel, size_t inElement );
 
     // Stream i/o
