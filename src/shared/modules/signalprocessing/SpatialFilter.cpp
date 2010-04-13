@@ -259,7 +259,8 @@ SpatialFilter::DoPreflight<SpatialFilter::commonAverage>( const SignalProperties
              << endl;
 
       // propagate the channel labels
-      Output.ChannelLabels()[ i ] = inputChannelAddress;
+      if( !Input.ChannelLabels().IsTrivial() )
+        Output.ChannelLabels()[ i ] = inputChannelAddress;
     }
   }
 }
