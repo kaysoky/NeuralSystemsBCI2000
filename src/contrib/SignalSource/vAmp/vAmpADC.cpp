@@ -120,7 +120,7 @@ void vAmpADC::Preflight( const SignalProperties&,
 	  bcierr <<"No vAmp devices were found."<<endl;
 	}
 	if (tNumDevices > MAX_ALLOWED_DEVICES) {
-		bcierr << "A maximum of 4 devices can be present on the system at a time."<<endl;
+		bcierr << "A maximum of " << MAX_ALLOWED_DEVICES << " devices can be present on the system at a time."<<endl;
 		return;     
 	}
 
@@ -191,7 +191,7 @@ void vAmpADC::Preflight( const SignalProperties&,
 		}
 		totalnumchannels += Parameter("SourceChDevices")(dev);
 		bool tFound = false || (tNumDevices == 1);
-		for (int d = 0; d < MAX_ALLOWED_DEVICES; d++){
+		for (int d = 0; d < tNumDevices; d++){
 			if (Parameter("DeviceIDs")(dev) == tDeviceInfo[d].SerialNumber)
 				tFound = true;
 		}
@@ -275,7 +275,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 		  bcierr <<"No vAmp devices were found."<<endl;
 	  }
 	  if (tNumDevices > MAX_ALLOWED_DEVICES) {
-			bcierr << "A maximum of 4 devices can be present on the system at a time."<<endl;
+			bcierr << "A maximum of " << MAX_ALLOWED_DEVICES << " devices can be present on the system at a time."<<endl;
 			return;     
 	  }
 	t_faInformation tDeviceInfo[MAX_ALLOWED_DEVICES];
@@ -292,6 +292,14 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 		for (int i = 0; i < tNumDevices; i++)
 			if (tDeviceInfo[i].SerialNumber == Parameter("DeviceIDs")(dev))
 				mDevList.push_back(faGetId(i));
+        if( tNumDevices == 1 && mDevList.empty() )
+        {
+          bciout << "Wrong serial # (" << Parameter( "DeviceIDs" )( 0 )
+                 << ") specified for single amplifier, using amplifier with serial # "
+                 << tDeviceInfo[0].SerialNumber
+                 << endl;
+          mDevList.push_back( faGetId(0) );
+        }
 
 		int devChs = Parameter("SourceChDevices")(dev);
 		mDevChList[dev] = devChs;
@@ -416,7 +424,7 @@ void vAmpADC::Halt()
 		//mAcquire->Suspend();
 		mAcquire->Terminate();
 		while (!mAcquire->IsTerminated())
-			Sleep(10); 
+			Sleep(10);
 		delete mAcquire;
 		mAcquire = NULL;
 	}

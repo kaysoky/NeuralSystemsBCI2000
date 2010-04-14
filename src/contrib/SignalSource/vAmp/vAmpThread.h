@@ -43,6 +43,10 @@ class vAmpThread : public OSThread
 	virtual int Execute();
 	bool init();
 
+    void CreateImpGUI();
+    void DeleteImpGUI();
+    void ImpGUISetGrid();
+
 	int    mBlockSize,
 		 mTimeout,
 		 mBufSize,
@@ -54,7 +58,6 @@ class vAmpThread : public OSThread
 		 mNumChannels,
 		 mAnalogChannels;
 	float  mSampleRate;
-	unsigned int mImpBuf[17];
 	unsigned short mPrevTime;
 	float mHPcorner;
 	stringstream mLastErr;
@@ -83,21 +86,18 @@ class vAmpThread : public OSThread
 	bool m_bOpen[MAX_ALLOWED_DEVICES];
 	int mStartMode;
 	int mBufferSize;
+    int m_nMaxPoints;
 	t_faInformation m_DeviceInfo[MAX_ALLOWED_DEVICES];		// Device info.
 	t_faProperty	m_DeviceProp[MAX_ALLOWED_DEVICES];		// Channel properties.
 	vector<CChannelInfo>
 					m_tblChanInfo[MAX_ALLOWED_DEVICES];
 
-
-	vector<t_faDataModel8>	
-					tblMaxBuf8[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer of 8 channel system + 2 add. samples.
-	vector<t_faDataModel16> 
-					tblMaxBuf16[MAX_ALLOWED_DEVICES];	// 1 read cycle buffer of 16 channel system + 2 add. samples.
-	vector<t_faDataFormatMode20kHz> 
-					tblMaxBuf4[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
-	vector<float>	tblEEGData[MAX_ALLOWED_DEVICES];		// 1 read cycle of only EEG and AUX signals.
-	vector<float>	tblTrigger[MAX_ALLOWED_DEVICES];		// 1 read cycle of only Trigger signals.
-	vector<float>	tblPacket[MAX_ALLOWED_DEVICES];		// 1 read cycle of EEG, AUX, Trigger signals.
+    t_faDataFormatMode20kHz* m_tblMaxBuf4[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
+    t_faDataModel8*          m_tblMaxBuf8[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer of 8 channel system + 2 add. samples.
+    t_faDataModel16*         m_tblMaxBuf16[MAX_ALLOWED_DEVICES];	// 1 read cycle buffer of 16 channel system + 2 add. samples.
+	vector<float>	m_tblEEGData[MAX_ALLOWED_DEVICES];		// 1 read cycle of only EEG and AUX signals.
+	vector<float>	m_tblTrigger[MAX_ALLOWED_DEVICES];		// 1 read cycle of only Trigger signals.
+	vector<float>	m_tblPacket[MAX_ALLOWED_DEVICES];		// 1 read cycle of EEG, AUX, Trigger signals.
 	t_faDataModeSettings mFastSettings[MAX_ALLOWED_DEVICES];
 	t_faDataMode mDataMode;
 	bool mHighSpeed;

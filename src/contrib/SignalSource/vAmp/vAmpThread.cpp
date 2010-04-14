@@ -32,8 +32,15 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mChList(chList),
   mMode(mode),
   mHPcorner(hpCorner),
-  mEvent( NULL )
+  mEvent( NULL ),
+  m_nMaxPoints( 0 )
 {
+  for( int i = 0; i < MAX_ALLOWED_DEVICES; ++i )
+  {
+    m_tblMaxBuf4[ i ] = NULL;
+    m_tblMaxBuf8[ i ] = NULL;
+    m_tblMaxBuf16[ i ] = NULL;
+  }
 
   mOk = true;
   mNumDevices = faGetCount();
@@ -55,12 +62,10 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mRingBufferSize = int(mBlockSize*1);
   mTrigBuffer.resize(MAX_ALLOWED_DEVICES);
 
-  int nMaxPoints = mBlockSize*decimate;
+  m_nMaxPoints = mBlockSize*decimate;
   if (mMode == 3){
-	nMaxPoints = 1;
-	mImpGui = new TimpGUI(NULL);
-	mImpGui->setSize(mNumDevices, 17);
-	mImpGui->Show();
+	m_nMaxPoints = 1;
+    CreateImpGUI();
 	mImpArray.resize(mNumDevices);
   }
 
@@ -88,13 +93,15 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 			m_nChannelMode[dev] = DEVICE_CHANMODE_8;
 			m_nEEGChannels[dev] = FA_MODEL_8_CHANNELS_MAIN - 1; // without trigger
 			m_nAUXChannels[dev] = FA_MODEL_8_CHANNELS_AUX;
-			tblMaxBuf8[dev].resize(nMaxPoints);
+            delete[] m_tblMaxBuf8[dev];
+            m_tblMaxBuf8[dev] = new t_faDataModel8[m_nMaxPoints];
 			m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
 			faSetDataMode(mDevList[dev], dmNormal, NULL);
 			break;
 		case FA_MODEL_16:
 			m_nChannelMode[dev] = DEVICE_CHANMODE_16;
-			tblMaxBuf16[dev].resize(nMaxPoints);
+            delete[] m_tblMaxBuf16[dev];
+            m_tblMaxBuf16[dev] = new t_faDataModel16[m_nMaxPoints];
 			m_nEEGChannels[dev] = FA_MODEL_16_CHANNELS_MAIN - 1; // without trigger
 			m_nAUXChannels[dev] = FA_MODEL_16_CHANNELS_AUX;
 			m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
@@ -109,7 +116,8 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 	if (mHighSpeed)
 	{
 		m_nChannelMode[dev] = DEVICE_CHANMODE_4;
-		tblMaxBuf4[dev].resize(nMaxPoints);
+        delete[] m_tblMaxBuf4[dev];
+        m_tblMaxBuf4[dev] = new t_faDataFormatMode20kHz[m_nMaxPoints];
 		m_nEEGChannels[dev] = FA_MODE_20_KHZ_CHANNELS_MAIN; // EEG
 		m_nAUXChannels[dev] = 0;	// no AUX.
 		m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
@@ -163,9 +171,9 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 			ci.dResolution = 1.0f;
 		}
 	}
-	tblEEGData[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev])*mBlockSize*decimate);
-	tblTrigger[dev].resize(mBlockSize);
-	tblPacket[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev]+1)*mBlockSize*decimate); // actual results.
+	m_tblEEGData[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev])*mBlockSize*decimate);
+	m_tblTrigger[dev].resize(mBlockSize);
+	m_tblPacket[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev]+1)*mBlockSize*decimate); // actual results.
 	mNumChannels += mChsPerDev[dev];
   }
   mDataBuffer.SetProperties(SignalProperties(mChList.size(), mBlockSize*decimate, SignalType::float32));
@@ -200,13 +208,41 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 vAmpThread::~vAmpThread()
 {
   delete[] mBuffer;
-  delete mImpGui;
+  DeleteImpGUI();
   CloseHandle(acquireEventRead);
   for (int dev = 0; dev < mNumDevices; dev++){
 		faStop(mDevList[dev]);
 		faClose(mDevList[dev]);
 	}
+  for( int dev = 0; dev < MAX_ALLOWED_DEVICES; ++dev )
+  {
+    delete[] m_tblMaxBuf4[dev];
+    delete[] m_tblMaxBuf8[dev];
+    delete[] m_tblMaxBuf16[dev];
+  }
   //fclose(logFile);
+}
+
+void vAmpThread::CreateImpGUI()
+{
+    mImpGui = new TimpGUI(NULL);
+    mImpGui->Canvas->Lock();
+    mImpGui->setSize(mNumDevices, 17);
+    mImpGui->Show();
+    mImpGui->Canvas->Unlock();
+}
+
+void vAmpThread::DeleteImpGUI()
+{
+    delete mImpGui;
+    mImpGui = NULL;
+}
+
+void vAmpThread::ImpGUISetGrid()
+{
+    mImpGui->Canvas->Lock();
+    mImpGui->setGrid(mImpArray);
+    mImpGui->Canvas->Unlock();
 }
 
 void vAmpThread::AdvanceReadBlock()
@@ -270,18 +306,16 @@ vAmpThread::Execute()
 			for (int dev = 0; dev < mNumDevices; dev++){
 				curChOffset = 0;
 				mImpArray[dev].clear();
-				switch (m_nChannelMode[dev]){
-					case DEVICE_CHANMODE_16:
-						for (int i = 0; i < 17; i++) mImpBuf[i] = 0;
-						int nErrorCode = faGetImpedance(mDevList[dev], mImpBuf,(m_nEEGChannels[dev]+1) * sizeof(UINT));
+                int nChannels = m_nEEGChannels[dev]+1;
+                unsigned int pBuf[17];
+                for (int i = 0; i < nChannels; i++) pBuf[i] = 0;
+                int nErrorCode = faGetImpedance(mDevList[dev], pBuf, sizeof(pBuf));
 
-						for (int i = 0; i < 17; i++){
-							mImpArray[dev].push_back(float(mImpBuf[i]));
-						}
-						break;
-				}
+                for (int i = 0; i < nChannels; i++){
+                    mImpArray[dev].push_back(float(pBuf[i]));
+                }
 			}
-			mImpGui->setGrid(mImpArray);
+            ImpGUISetGrid();
 			waitTime = max(mBlockSize/mSampleRate*1000 -
 				PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
 			if (waitTime > 0) Sleep(waitTime);
@@ -293,8 +327,8 @@ vAmpThread::Execute()
 			curChOffset = 0;
 			switch (m_nChannelMode[dev]){
 				case DEVICE_CHANMODE_16:
-					pMaxBuffer = (char *)&tblMaxBuf16[dev][0];
-					nReadLen = int(tblMaxBuf16[dev].size() * sizeof(t_faDataModel16)); // in bytes.
+					pMaxBuffer = (char *)&m_tblMaxBuf16[dev][0];
+					nReadLen = m_nMaxPoints * sizeof(t_faDataModel16); // in bytes.
 					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
 					if (returnLen < 0) // Device broken. Restart device.
 					{
@@ -319,29 +353,29 @@ vAmpThread::Execute()
 								mapIt = mDevChMap[dev].find(ch);
 								if (mapIt != mDevChMap[dev].end()){
 									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(tblMaxBuf16[dev][sample].Main[ch] -
-											((mMode == 2) ? 0 : tblMaxBuf16[dev][sample].Main[16]))*m_tblChanInfo[dev][ch].dResolution;
+										(m_tblMaxBuf16[dev][sample].Main[ch] -
+											((mMode == 2) ? 0 : m_tblMaxBuf16[dev][sample].Main[16]))*m_tblChanInfo[dev][ch].dResolution;
 								}
 							}
 							mapIt = mDevChMap[dev].find(curChOffset+16);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf16[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
 							mapIt = mDevChMap[dev].find(curChOffset+17);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf16[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
 							//USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
 							//nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
 							mapIt = mDevChMap[dev].find(curChOffset+18);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf16[dev][sample].Status & 0x1ff;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Status & 0x1ff;
 						}
 						curChOffset += 19;
 					}
 
 					break;
 				case DEVICE_CHANMODE_4:
-					pMaxBuffer = (char *)&tblMaxBuf4[dev][0];
-					nReadLen = int(tblMaxBuf4[dev].size() * sizeof(t_faDataFormatMode20kHz)); // in bytes.
+					pMaxBuffer = (char *)&m_tblMaxBuf4[dev][0];
+					nReadLen = m_nMaxPoints * sizeof(t_faDataFormatMode20kHz); // in bytes.
 					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
 					if (returnLen < 0) // Device broken. Restart device.
 					{
@@ -366,7 +400,7 @@ vAmpThread::Execute()
 								mapIt = mDevChMap[dev].find(ch);
 								if (mapIt != mDevChMap[dev].end()){
 									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(tblMaxBuf4[dev][sample].Main[ch])*m_tblChanInfo[dev][ch].dResolution;
+										(m_tblMaxBuf4[dev][sample].Main[ch])*m_tblChanInfo[dev][ch].dResolution;
 								}
 							}
 
@@ -374,14 +408,14 @@ vAmpThread::Execute()
 							//nTrigger |= (tblMaxBuf4[dev][sample].Status & 0xFF) << 1;
 							mapIt = mDevChMap[dev].find(curChOffset+4);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf4[dev][sample].Status & 0x1ff;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf4[dev][sample].Status & 0x1ff;
 						}
 					}
 					curChOffset += 5;
 					break;
 				default:
-					pMaxBuffer = (char *)&tblMaxBuf8[dev][0];
-					nReadLen = int(tblMaxBuf8[dev].size() * sizeof(t_faDataModel8)); // in bytes.
+					pMaxBuffer = (char *)&m_tblMaxBuf8[dev][0];
+					nReadLen = m_nMaxPoints * sizeof(t_faDataModel8); // in bytes.
 					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
 					if (returnLen < 0) // Device broken. Restart device.
 					{
@@ -406,21 +440,21 @@ vAmpThread::Execute()
 								mapIt = mDevChMap[dev].find(ch);
 								if (mapIt != mDevChMap[dev].end()){
 									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(tblMaxBuf8[dev][sample].Main[ch] -
-											((mMode == 2) ? 0 : tblMaxBuf8[dev][sample].Main[8]))*m_tblChanInfo[dev][ch].dResolution;
+										(m_tblMaxBuf8[dev][sample].Main[ch] -
+											((mMode == 2) ? 0 : m_tblMaxBuf8[dev][sample].Main[8]))*m_tblChanInfo[dev][ch].dResolution;
 								}
 							}
 							mapIt = mDevChMap[dev].find(curChOffset+8);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf8[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
 							mapIt = mDevChMap[dev].find(curChOffset+9);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf8[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
 							//USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
 							//nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
 							mapIt = mDevChMap[dev].find(curChOffset+10);
 							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = tblMaxBuf8[dev][sample].Status & 0x1ff;
+								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Status & 0x1ff;
 						}
 					}
 					curChOffset += 11;
@@ -491,8 +525,10 @@ int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
 		nLenToRead -= nReturnLen;
 		readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
+#if 0
 		if (readTime >(int)((float(2*mBlockSize)*1000)/(mSampleRate)) && nLenToRead > 0)
 			return -1;
+#endif
 		//fprintf(logFile,"%d ", readTime);
 		if (nReturnLen < 0) // Device error.
 		{

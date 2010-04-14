@@ -61,7 +61,7 @@ void TimpGUI::setGrid(vector< vector <float> > g)
 			}
 		}
 	}
-	impGrid->Repaint();
+    impGrid->Invalidate();
 }
 //---------------------------------------------------------------------------
 
