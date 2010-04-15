@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="..\..\..\..\prog\vAmpSource.exe"/>
+    <PROJECT value="vAmpSource.exe"/>
     <OBJFILES value="obj\vAmpSource.obj obj\vAmpADC.obj obj\vAmpThread.obj obj\ParamRef.obj 
       obj\Environment.obj obj\BCIError_module.obj obj\BCIError.obj 
       obj\BCIDirectory.obj obj\MessageHandler.obj obj\CoreModule.obj 
@@ -21,18 +21,18 @@
       obj\StateVectorSample.obj obj\EventQueue.obj obj\BCIEvent.obj 
       obj\JoystickLogger.obj obj\KeyLogger.obj obj\OSThread.obj obj\OSError.obj 
       obj\BCI2000OutputFormat.obj obj\GDFOutputFormat.obj obj\EDFOutputBase.obj 
-      obj\EDFOutputFormat.obj obj\GenericFileWriter.obj obj\impedanceGUI.obj 
-      obj\vAmpChannelInfo.obj obj\FilterDesign.obj"/>
+      obj\EDFOutputFormat.obj obj\GenericFileWriter.obj obj\vAmpChannelInfo.obj 
+      obj\FilterDesign.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) impedanceGUI.dfm"/>
+    <RESDEPEN value="$(RESFILES)"/>
     <LIBFILES value="..\..\..\extlib\brainproducts\vamp\FirstAmp.lib"/>
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\extlib\math"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\fileio;..\..\..\shared\fileio;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\utils\Expression;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\shared\modules\signalsource;..\..\..\shared\modules\signalsource;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\fileio\dat;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio;..\..\..\extlib\math"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -42,7 +42,7 @@
     <USERDEFINES value="MODTYPE=1;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="vAmpSource.cpp"/>
-    <INCLUDEPATH value="..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp"/>
+    <INCLUDEPATH value="..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\gui;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp"/>
     <LIBPATH value="..\..\..\extlib\math;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\lib;$(BCB)\lib\obj;$(BDS)\lib\psdk"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
     <WARNOPTSTR value=""/>
@@ -130,7 +130,6 @@
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputBase.cpp" FORMNAME="" UNITNAME="EDFOutputBase" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\edf_gdf\EDFOutputFormat.cpp" FORMNAME="" UNITNAME="EDFOutputFormat" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\fileio\GenericFileWriter.cpp" FORMNAME="" UNITNAME="GenericFileWriter" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="impedanceGUI.cpp" FORMNAME="impGUI" UNITNAME="impedanceGUI" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="vAmpChannelInfo.cpp" FORMNAME="" UNITNAME="vAmpChannelInfo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\math\FilterDesign.cpp" FORMNAME="" UNITNAME="FilterDesign" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
@@ -165,19 +164,24 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[Excluded Packages]
+c:\programme\borland\cbuilder6\Bin\dcl31w60.bpl=Delphi 1.0 Compatibility Components
+c:\programme\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlIncludePath]
-Count=11
-Item0=..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp
-Item1=..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp
-Item2=..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item6=..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item7=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
-Item8=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\shared\accessors;..\..\shared\bcistream;..\..\shared\modules;..\..\shared\utils;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl
-Item9=..;$(BCB)\include;$(BCB)\include\vcl
-Item10=..\..\shared\config;..\..\shared\accessors;..\..\shared\bcistream;..\..\shared\modules;..\..\shared\utils;..\..\shared\utils\Expression;..\..\shared\types;..;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
+Count=12
+Item0=..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\gui;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp
+Item1=..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp
+Item2=..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp
+Item3=..\..\..\shared;..\..\..\shared\config;..\..\..\extlib\gtec\gUSBamp;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item6=..\..\..\shared\modules\signalprocessing;..\..\..\extlib\math;..\..\..\shared\modules\signalsource;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item7=..\..\..\shared;..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item8=..\..\..\shared\config;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..;$(BCB)\include;$(BCB)\include\vcl
+Item9=..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\shared\accessors;..\..\shared\bcistream;..\..\shared\modules;..\..\shared\utils;..\..\shared\utils\Expression;..\..\shared\types;..\..\shared;..;$(BCB)\include;$(BCB)\include\vcl
+Item10=..;$(BCB)\include;$(BCB)\include\vcl
+Item11=..\..\shared\config;..\..\shared\accessors;..\..\shared\bcistream;..\..\shared\modules;..\..\shared\utils;..\..\shared\utils\Expression;..\..\shared\types;..;..\..;..\..\shared;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=9
@@ -229,10 +233,5 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
-
-[CORBA]
-AddServerUnit=1
-AddClientUnit=1
-PrecompiledHeaders=1
   </IDEOPTIONS>
 </PROJECT>

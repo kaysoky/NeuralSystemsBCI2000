@@ -24,7 +24,6 @@
 #include "vAmpChannelInfo.h"
 #include "vAmpDefines.h"
 #include "IIRFilter.h"
-#include "impedanceGUI.h"
 
 using namespace std;
 class vAmpThread : public OSThread
@@ -40,75 +39,74 @@ class vAmpThread : public OSThread
   HANDLE acquireEventRead;
 
  private:
-	virtual int Execute();
-	bool init();
+    virtual int Execute();
+    bool init();
 
-    void CreateImpGUI();
-    void DeleteImpGUI();
-    void ImpGUISetGrid();
+    void DisplayBCI2000Logo( int id );
+    void ClearAmpDisplay( int id );
+    void DisplayImpedances( int id, const std::vector<float>& );
+    void ValueToText( float inValue, std::string& outText, TColor& outColor );
+    Graphics::TBitmap* NewBitmap() const;
 
-	int    mBlockSize,
-		 mTimeout,
-		 mBufSize,
-		 mNumPoints,
-		 mWriteCursor,
-		 mReadCursor,
-		 mRingBufferSize,
-		 mDecimate,
-		 mNumChannels,
-		 mAnalogChannels;
-	float  mSampleRate;
-	unsigned short mPrevTime;
-	float mHPcorner;
-	stringstream mLastErr;
-	vector<int> mChList;
-	int mMode;
-	map<int, int> mDevChRevMap[MAX_ALLOWED_DEVICES], mDevChMap[MAX_ALLOWED_DEVICES];
-	int mDevChs[MAX_ALLOWED_DEVICES];
-	//int mDigChs[MAX_ALLOWED_DEVICES];
-	GenericSignal mDataBuffer, mDataOutput;
+    int   mBlockSize,
+          mTimeout,
+          mBufSize,
+          mNumPoints,
+          mWriteCursor,
+          mReadCursor,
+          mRingBufferSize,
+          mDecimate,
+          mNumChannels,
+          mAnalogChannels;
+    float mSampleRate;
+    unsigned short mPrevTime;
+    float mHPcorner;
+    stringstream mLastErr;
+    vector<int> mChList;
+    int mMode;
+    map<int, int> mDevChRevMap[MAX_ALLOWED_DEVICES], mDevChMap[MAX_ALLOWED_DEVICES];
+    int mDevChs[MAX_ALLOWED_DEVICES];
+    GenericSignal mDataBuffer, mDataOutput;
 
-	vector< vector<float> > mImpArray;
-	valarray< valarray<float> >	mTrigBuffer; //mdatabuffer[device][ch][sample]
-	float *mBuffer;
+    vector< vector<float> > mImpArray;
+    valarray< valarray<float> > mTrigBuffer; //mdatabuffer[device][ch][sample]
+    float *mBuffer;
 
-	HANDLE mEvent,
-		 mDev;
-	bool mOk;
-	TimpGUI *mImpGui;
-	int mChsPerDev[MAX_ALLOWED_DEVICES];
-	unsigned int mNumDevices;
-	int mDevIds[MAX_ALLOWED_DEVICES];
-	vector<int> mDevList;
-	int m_nChannelMode[MAX_ALLOWED_DEVICES];
-	int m_nEEGChannels[MAX_ALLOWED_DEVICES];
-	int m_nAUXChannels[MAX_ALLOWED_DEVICES];
-	bool m_bOpen[MAX_ALLOWED_DEVICES];
-	int mStartMode;
-	int mBufferSize;
+    HANDLE mEvent,
+           mDev;
+    bool mOk;
+    int mChsPerDev[MAX_ALLOWED_DEVICES];
+    unsigned int mNumDevices;
+    int mDevIds[MAX_ALLOWED_DEVICES];
+    vector<int> mDevList;
+    int m_nChannelMode[MAX_ALLOWED_DEVICES];
+    int m_nEEGChannels[MAX_ALLOWED_DEVICES];
+    int m_nAUXChannels[MAX_ALLOWED_DEVICES];
+    bool m_bOpen[MAX_ALLOWED_DEVICES];
+    int mStartMode;
+    int mBufferSize;
     int m_nMaxPoints;
-	t_faInformation m_DeviceInfo[MAX_ALLOWED_DEVICES];		// Device info.
-	t_faProperty	m_DeviceProp[MAX_ALLOWED_DEVICES];		// Channel properties.
-	vector<CChannelInfo>
-					m_tblChanInfo[MAX_ALLOWED_DEVICES];
+    t_faInformation m_DeviceInfo[MAX_ALLOWED_DEVICES];      // Device info.
+    t_faProperty    m_DeviceProp[MAX_ALLOWED_DEVICES];      // Channel properties.
+    vector<CChannelInfo>
+                    m_tblChanInfo[MAX_ALLOWED_DEVICES];
 
-    t_faDataFormatMode20kHz* m_tblMaxBuf4[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
-    t_faDataModel8*          m_tblMaxBuf8[MAX_ALLOWED_DEVICES];		// 1 read cycle buffer of 8 channel system + 2 add. samples.
-    t_faDataModel16*         m_tblMaxBuf16[MAX_ALLOWED_DEVICES];	// 1 read cycle buffer of 16 channel system + 2 add. samples.
-	vector<float>	m_tblEEGData[MAX_ALLOWED_DEVICES];		// 1 read cycle of only EEG and AUX signals.
-	vector<float>	m_tblTrigger[MAX_ALLOWED_DEVICES];		// 1 read cycle of only Trigger signals.
-	vector<float>	m_tblPacket[MAX_ALLOWED_DEVICES];		// 1 read cycle of EEG, AUX, Trigger signals.
-	t_faDataModeSettings mFastSettings[MAX_ALLOWED_DEVICES];
-	t_faDataMode mDataMode;
-	bool mHighSpeed;
-	set<int> mDigChs;
+    t_faDataFormatMode20kHz* m_tblMaxBuf4[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
+    t_faDataModel8*          m_tblMaxBuf8[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer of 8 channel system + 2 add. samples.
+    t_faDataModel16*         m_tblMaxBuf16[MAX_ALLOWED_DEVICES];    // 1 read cycle buffer of 16 channel system + 2 add. samples.
+    vector<float>   m_tblEEGData[MAX_ALLOWED_DEVICES];      // 1 read cycle of only EEG and AUX signals.
+    vector<float>   m_tblTrigger[MAX_ALLOWED_DEVICES];      // 1 read cycle of only Trigger signals.
+    vector<float>   m_tblPacket[MAX_ALLOWED_DEVICES];       // 1 read cycle of EEG, AUX, Trigger signals.
+    t_faDataModeSettings mFastSettings[MAX_ALLOWED_DEVICES];
+    t_faDataMode mDataMode;
+    bool mHighSpeed;
+    set<int> mDigChs;
 
-	int ReadData(int nDeviceId, char *pBuffer, int nReadLen);
-	IIRFilter<float> mFilter;
-	typedef Ratpoly<FilterDesign::Complex> TransferFunction;
-
-	FILE *logFile;
+    int ReadData(int nDeviceId, char *pBuffer, int nReadLen);
+    IIRFilter<float> mFilter;
+    typedef Ratpoly<FilterDesign::Complex> TransferFunction;
 };
 
 #endif // VAMP_THREAD_H
 //---------------------------------------------------------------------------
+

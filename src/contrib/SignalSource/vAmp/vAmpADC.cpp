@@ -114,7 +114,7 @@ void vAmpADC::Preflight( const SignalProperties&,
 	bcierr << "SourceChOffset is supposed to be zero" << endl;
 
 	//get the number of devices
-	UINT tNumDevices = FA_ID_INVALID;
+	int tNumDevices = FA_ID_INVALID;
 	tNumDevices = faGetCount();
 	if (tNumDevices < 1) {
 	  bcierr <<"No vAmp devices were found."<<endl;
@@ -269,7 +269,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 {
 	this->Halt();
 	mHighSpeed = Parameter("AcquisitionMode") == 1 || Parameter("AcquisitionMode") == 4;
-	UINT tNumDevices = FA_ID_INVALID;
+	int tNumDevices = FA_ID_INVALID;
 	  tNumDevices = faGetCount();
 	  if (tNumDevices < 1) {
 		  bcierr <<"No vAmp devices were found."<<endl;

@@ -12,10 +12,13 @@
 
 #include "BCIError.h"
 #include "PrecisionTime.h"
+#include "GUI.h"
+#include "images/BCI2000logo_small.h"
 #include "vAmpThread.h"
 #include "FirstAmp.h"
 
 using namespace std;
+using namespace GUI;
 
 vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<int> chList, int chsPerDev[MAX_ALLOWED_DEVICES], vector<int> devList, int mode, float hpCorner)
 : OSThread( true ),
@@ -24,7 +27,6 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mWriteCursor( 0 ),
   mReadCursor( 0 ),
   mBuffer(NULL),
-  mImpGui(NULL),
   mDecimate(decimate),
   acquireEventRead(NULL),
   mNumDevices(0),
@@ -52,7 +54,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 	  return;
   }
   if (mNumDevices > MAX_ALLOWED_DEVICES) {
-		mLastErr << "A maximum of 4 devices can be present on the system at a time."<<endl;
+		mLastErr << "A maximum of " << MAX_ALLOWED_DEVICES << " devices can be present on the system at a time."<<endl;
 		mOk =false;
 	  return;
   }
@@ -65,17 +67,17 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   m_nMaxPoints = mBlockSize*decimate;
   if (mMode == 3){
 	m_nMaxPoints = 1;
-    CreateImpGUI();
 	mImpArray.resize(mNumDevices);
   }
 
-  for (int dev = 0; dev < mDevList.size(); dev++)
+  for (size_t dev = 0; dev < mDevList.size(); dev++)
   {
 	if (faOpen(mDevList[dev]) != FA_ERR_OK){
 		mLastErr << "Error opening device " << mDevList[dev] << endl;
 		mOk =false;
 	  return;
 	}
+    DisplayBCI2000Logo( mDevList[dev] );
 	memset(&m_DeviceInfo[dev], 0, sizeof(m_DeviceInfo[dev]));
 	mChsPerDev[dev] = chsPerDev[dev];
 	mDevChMap[dev].clear();
@@ -123,7 +125,7 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 		m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
 		faSetDataMode(mDevList[dev], dm20kHz4Channels, mFastSettings);
 	}
-	for (int ch = 0; ch < mChList.size(); ch++)
+	for (size_t ch = 0; ch < mChList.size(); ch++)
 	{
 		if (mChList[ch] >= mNumChannels && mChList[ch] < (mNumChannels + m_nEEGChannels[dev] + m_nAUXChannels[dev]+1))
 		{
@@ -208,9 +210,8 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 vAmpThread::~vAmpThread()
 {
   delete[] mBuffer;
-  DeleteImpGUI();
   CloseHandle(acquireEventRead);
-  for (int dev = 0; dev < mNumDevices; dev++){
+  for (size_t dev = 0; dev < mNumDevices; dev++){
 		faStop(mDevList[dev]);
 		faClose(mDevList[dev]);
 	}
@@ -223,26 +224,155 @@ vAmpThread::~vAmpThread()
   //fclose(logFile);
 }
 
-void vAmpThread::CreateImpGUI()
+void
+vAmpThread::DisplayBCI2000Logo( int inID )
 {
-    mImpGui = new TimpGUI(NULL);
-    mImpGui->Canvas->Lock();
-    mImpGui->setSize(mNumDevices, 17);
-    mImpGui->Show();
-    mImpGui->Canvas->Unlock();
+    Graphics::TBitmap* pBitmap = NewBitmap();
+    int logoWidth = GraphicResource::Width( Resources::BCI2000logo_small ),
+        logoHeight = GraphicResource::Height( Resources::BCI2000logo_small );
+    pBitmap->Canvas->Brush->Color = clWhite;
+    pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
+    int left = ( pBitmap->Width - logoWidth ) / 2,
+        top = ( pBitmap->Height - logoHeight ) / 2;
+    DrawContext dc = { pBitmap->Canvas->Handle, { left, top, logoWidth, logoHeight } };
+    GraphicResource::Render<RenderingMode::Transparent>( Resources::BCI2000logo_small, dc );
+    faSetBitmap( inID, pBitmap->Handle );
+    delete pBitmap;
+
+    faSetContrast( inID, 100 );
+    faSetBrightness( inID, 100 );
 }
 
-void vAmpThread::DeleteImpGUI()
+void vAmpThread::ClearAmpDisplay( int inID )
 {
-    delete mImpGui;
-    mImpGui = NULL;
+    Graphics::TBitmap* pBitmap = NewBitmap();
+    pBitmap->Canvas->Brush->Color = clBlack;
+    pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
+    faSetBitmap( inID, pBitmap->Handle );
+    delete pBitmap;
 }
 
-void vAmpThread::ImpGUISetGrid()
+void vAmpThread::DisplayImpedances( int inID, const vector<float>& inImpedances )
 {
-    mImpGui->Canvas->Lock();
-    mImpGui->setGrid(mImpArray);
-    mImpGui->Canvas->Unlock();
+    Graphics::TBitmap* pBitmap = NewBitmap();
+    float deltaX = pBitmap->Width / 2.0,
+          deltaY = pBitmap->Height / 9.0;
+    TRect rects[17]; // 2 * 8 rects for channels, 1 rect for reference
+    for( int i = 0; i < 8; ++i )
+    {
+        rects[i].left = 0;
+        rects[i].right = deltaX;
+        rects[i + 8].left = deltaX;
+        rects[i + 8].right = pBitmap->Width;
+        rects[i].top = i * deltaY;
+        rects[i].bottom = ( i + 1 ) * deltaY;
+        rects[i + 8].top = rects[i].top;
+        rects[i + 8].bottom = rects[i].bottom;
+    }
+    rects[16].left = 0;
+    rects[16].right = pBitmap->Width;
+    rects[16].top = rects[15].bottom;
+    rects[16].bottom = pBitmap->Height;
+    const int numRects = sizeof( rects ) / sizeof( *rects );
+
+    // Background
+    pBitmap->Canvas->Brush->Color = clWhite;
+    pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
+    // Fields
+    const int frame = 1;
+    int idx[numRects];
+    string labels[numRects];
+    for( size_t i = 0; i < inImpedances.size() - 1; ++i )
+    {
+      idx[i] = i;
+      ostringstream oss;
+      oss << "Ch " << i + 1 << ": ";
+      labels[i] = oss.str();
+    }
+    for( int i = inImpedances.size() - 1; i < numRects - 1; ++i )
+      idx[i] = -1;
+    idx[numRects - 1] = inImpedances.size() - 1;
+    labels[numRects - 1] = "Ref: ";
+
+    pBitmap->Canvas->Font->Color = clWhite;
+    pBitmap->Canvas->Font->Height = -16;
+    pBitmap->Canvas->Font->Style = ( TFontStyles() << fsBold );
+    TSize size = pBitmap->Canvas->TextExtent( "w" );
+    
+    for( int i = 0; i < numRects; ++i )
+    {
+      TColor c;
+      string s;
+      if( idx[i] >= 0 )
+      {
+        ValueToText( inImpedances[idx[i]], s, c );
+      }
+      else
+      {
+        c = clGray;
+        s = "n/a";
+      }
+
+      TRect r = rects[i];
+      r.left += frame;
+      r.top += frame;
+      r.right -= frame;
+      r.bottom -= frame;
+      pBitmap->Canvas->Brush->Color = c;
+      pBitmap->Canvas->FillRect( r );
+      pBitmap->Canvas->TextRect(
+        r,
+        r.left + size.cx,
+        ( r.top + r.bottom - size.cy ) / 2,
+        ( labels[i] + s ).c_str()
+      );
+    }
+
+    faSetBitmap( inID, pBitmap->Handle );
+    delete pBitmap;
+}
+
+void
+vAmpThread::ValueToText( float inValue, string& outText, TColor& outColor )
+{
+  const int bufSize = 100;
+  char buf[bufSize];
+  if ( inValue < 1000 )
+  {
+    snprintf( buf, bufSize, "%1.0f Ohm", inValue );
+    outColor = clGreen;
+  }
+  else if ( inValue < 5000 )
+  {
+    snprintf( buf, bufSize, "%1.2f kOhm", inValue / 1e3 );
+    outColor = clGreen;
+  }
+  else if ( inValue < 30e5 )
+  {
+    snprintf( buf, bufSize, "%1.1f kOhm", inValue / 1e3 );
+    outColor = TColor( 0x0000a5FF );
+  }
+  else if ( inValue < 1e6 )
+  {
+    snprintf( buf, bufSize, "%1.1f kOhm", inValue / 1e3 );
+    outColor = clRed;
+  }
+  else
+  {
+    snprintf( buf, bufSize, ">1 MOhm" );
+    outColor = clPurple;
+  }
+  outText = buf;
+}
+
+Graphics::TBitmap*
+vAmpThread::NewBitmap() const
+{
+    Graphics::TBitmap* pBitmap = new Graphics::TBitmap;
+    pBitmap->PixelFormat = pf24bit;
+    pBitmap->Width = 320;
+    pBitmap->Height = 240;
+    return pBitmap;
 }
 
 void vAmpThread::AdvanceReadBlock()
@@ -276,7 +406,7 @@ vAmpThread::Execute()
 	int readPos = 0;
 
 	memset(mBuffer, 0, mBufSize);
-	for (int dev = 0; dev < mNumDevices; dev++){
+	for (size_t dev = 0; dev < mNumDevices; dev++){
 		mFilter.Initialize(mDataBuffer.Channels());
 		faStart(mDevList[dev]);
 		switch (mMode){
@@ -303,7 +433,7 @@ vAmpThread::Execute()
 		unsigned short tnow = PrecisionTime::Now();
 		if (mMode == 3){  // GET IMPEDANCE AND CONTINUE
 
-			for (int dev = 0; dev < mNumDevices; dev++){
+			for (size_t dev = 0; dev < mNumDevices; dev++){
 				curChOffset = 0;
 				mImpArray[dev].clear();
                 int nChannels = m_nEEGChannels[dev]+1;
@@ -314,16 +444,16 @@ vAmpThread::Execute()
                 for (int i = 0; i < nChannels; i++){
                     mImpArray[dev].push_back(float(pBuf[i]));
                 }
+                DisplayImpedances( mDevList[dev], mImpArray[dev] );
 			}
-            ImpGUISetGrid();
-			waitTime = max(mBlockSize/mSampleRate*1000 -
+			waitTime = min(mBlockSize/mSampleRate*1000 -
 				PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
 			if (waitTime > 0) Sleep(waitTime);
             SetEvent( acquireEventRead );
 			continue;
 		}
 		//ACQUIRE DATA
-		for (int dev = 0; dev < mNumDevices; dev++){
+		for (size_t dev = 0; dev < mNumDevices; dev++){
 			curChOffset = 0;
 			switch (m_nChannelMode[dev]){
 				case DEVICE_CHANMODE_16:
@@ -478,7 +608,7 @@ vAmpThread::Execute()
 			if (mMode == 3){
 				mMode= 0;
 				doImpedance = false;
-				for (int i = 0; i < mDevList.size(); i++)
+				for (size_t i = 0; i < mDevList.size(); i++)
 					faStopImpedance(mDevList[i]);
 			}
 
@@ -486,7 +616,7 @@ vAmpThread::Execute()
 		SetEvent( acquireEventRead );
 	}
 
- 	for (int dev = 0; dev < mNumDevices; dev++){
+ 	for (size_t dev = 0; dev < mNumDevices; dev++){
 		switch (mMode){
 			case 2:
 				faStopCalibration(mDevList[dev]);
@@ -496,6 +626,7 @@ vAmpThread::Execute()
 				faStopImpedance(mDevList[dev]);
 				break;
 		}
+        ClearAmpDisplay( mDevList[dev] );
 		faStop(mDevList[dev]);
 		faClose(mDevList[dev]);
 	}
