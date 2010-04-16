@@ -29,12 +29,13 @@ class FPExceptMask
   FPExceptMask( int inExceptions = _MCW_EM )
     : mPrevState( 0 )
     {
-      mPrevState = ::_controlfp( _MCW_EM, inExceptions );
+      mPrevState = ::_controlfp( 0, 0 );
+      ::_controlfp( inExceptions, _MCW_EM );
     }
 
   virtual ~FPExceptMask()
     {
-      ::_controlfp( _MCW_EM, mPrevState );
+      ::_controlfp( mPrevState, _MCW_EM );
     }
 
  private:
