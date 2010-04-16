@@ -3,7 +3,7 @@
 <PROJECT>
   <MACROS>
     <VERSION value="BCB.06.00"/>
-    <PROJECT value="vAmpSource.exe"/>
+    <PROJECT value="..\..\..\..\prog\vAmpSource.exe"/>
     <OBJFILES value="obj\vAmpSource.obj obj\vAmpADC.obj obj\vAmpThread.obj obj\ParamRef.obj 
       obj\Environment.obj obj\BCIError_module.obj obj\BCIError.obj 
       obj\BCIDirectory.obj obj\MessageHandler.obj obj\CoreModule.obj 
@@ -39,7 +39,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="ilink32"/>
-    <USERDEFINES value="MODTYPE=1;_DEBUG"/>
+    <USERDEFINES value="MODTYPE=1"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="vAmpSource.cpp"/>
     <INCLUDEPATH value="..\..\..\extlib\math;..\..\..\shared;..\..\..\shared\config;..\..\..\shared\fileio\edf_gdf;..\..\..\shared\fileio\dat;..\..\..\shared\modules\signalsource;..\..\..\shared\utils\Expression;..\..\..\shared\utils;..\..\..\shared\types;..\..\..\shared\modules;..\..\..\shared\fileio;..\..\..\shared\bcistream;..\..\..\shared\accessors;..\..\..\shared\gui;..;$(BCB)\include;$(BCB)\include\vcl;..\..\..\extlib\brainproducts\vamp"/>
@@ -57,11 +57,11 @@
       -I..\..\..\shared\bcistream -I..\..\..\shared\accessors -I.. 
       -I$(BCB)\include -I$(BCB)\include\vcl -I..\..\..\extlib\brainproducts\vamp 
       -src_suffix cpp -DMODTYPE=1 -D_DEBUG -boa"/>
-    <CFLAG1 value="-Od -Vx -Ve -xf -xp -X- -r- -a8 -6 -b- -k -y -v -vi- -c -tW -tWM"/>
-    <PFLAGS value="-N2obj -N0obj -$Y+ -$W -$O- -$A8 -v -JPHNE"/>
+    <CFLAG1 value="-O2 -Vx -Ve -xf -xp -X- -a8 -6 -b- -k- -vi -c -tW -tWM"/>
+    <PFLAGS value="-N2obj -N0obj -$Y- -$L- -$D- -$A8 -v -JPHNE"/>
     <RFLAGS value=""/>
-    <AFLAGS value="/mx /w2 /zi"/>
-    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-Iobj -D&quot;&quot; -aa -Tpe -x -Gn"/>
     <OTHERFILES value=""/>
   </OPTIONS>
   <LINKER>
@@ -201,8 +201,8 @@ Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=MODTYPE=1;_DEBUG
-Item1=MODTYPE=1
+Item0=MODTYPE=1
+Item1=MODTYPE=1;_DEBUG
 Item2=_DEBUG;MODTYPE=1
 
 [HistoryLists\hlIntOutputDir]

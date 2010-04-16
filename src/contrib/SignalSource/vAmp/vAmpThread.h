@@ -28,6 +28,8 @@
 using namespace std;
 class vAmpThread : public OSThread
 {
+  static const int cBlocksInRingBuffer = 10;
+  
  public:
   vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<int> chList, int chsPerDev[MAX_ALLOWED_DEVICES], vector<int> devList, int mode, float hpCorner);
   virtual ~vAmpThread();
@@ -40,7 +42,6 @@ class vAmpThread : public OSThread
 
  private:
     virtual int Execute();
-    bool init();
 
     void DisplayBCI2000Logo( int id );
     void ClearAmpDisplay( int id );

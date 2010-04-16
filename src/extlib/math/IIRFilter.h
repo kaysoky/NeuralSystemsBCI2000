@@ -19,6 +19,7 @@
 //   provide the following member functions:
 //     T::Channels() to return the number of channels,
 //     T::Elements() to return the number of elements (samples),
+//     T::operator()(channel, sample) for read/write access,
 //     T::operator=() to copy one instance of T into another.
 //
 //   The filter's Initialize() method adapts the number of internal delays

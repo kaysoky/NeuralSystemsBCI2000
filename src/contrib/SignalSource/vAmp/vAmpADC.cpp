@@ -294,8 +294,8 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 				mDevList.push_back(faGetId(i));
         if( tNumDevices == 1 && mDevList.empty() )
         {
-          bciout << "Wrong serial # (" << Parameter( "DeviceIDs" )( 0 )
-                 << ") specified for single amplifier, using amplifier with serial # "
+          bciout << "Wrong serial (" << Parameter( "DeviceIDs" )( 0 )
+                 << ") specified for single amplifier, using amplifier with serial "
                  << tDeviceInfo[0].SerialNumber
                  << endl;
           mDevList.push_back( faGetId(0) );

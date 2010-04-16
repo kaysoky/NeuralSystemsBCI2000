@@ -49,135 +49,134 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mLastErr.str("");
   mHighSpeed = mMode == 1 || mMode == 4;
   if (mNumDevices < 1) {
-	  mLastErr <<"No vAmp devices were found."<<endl;
-	  mOk =false;
-	  return;
+    mLastErr <<"No vAmp devices were found."<<endl;
+    mOk =false;
+    return;
   }
   if (mNumDevices > MAX_ALLOWED_DEVICES) {
-		mLastErr << "A maximum of " << MAX_ALLOWED_DEVICES << " devices can be present on the system at a time."<<endl;
-		mOk =false;
-	  return;
+    mLastErr << "A maximum of " << MAX_ALLOWED_DEVICES << " devices can be present on the system at a time."<<endl;
+    mOk =false;
+    return;
   }
 
   //open the devices
   mNumChannels = 0;
-  mRingBufferSize = int(mBlockSize*1);
+  mRingBufferSize = int(mBlockSize*cBlocksInRingBuffer);
   mTrigBuffer.resize(MAX_ALLOWED_DEVICES);
 
   m_nMaxPoints = mBlockSize*decimate;
   if (mMode == 3){
-	m_nMaxPoints = 1;
-	mImpArray.resize(mNumDevices);
+    m_nMaxPoints = 1;
+    mImpArray.resize(mNumDevices);
   }
-
   for (size_t dev = 0; dev < mDevList.size(); dev++)
   {
-	if (faOpen(mDevList[dev]) != FA_ERR_OK){
-		mLastErr << "Error opening device " << mDevList[dev] << endl;
-		mOk =false;
-	  return;
-	}
-    DisplayBCI2000Logo( mDevList[dev] );
-	memset(&m_DeviceInfo[dev], 0, sizeof(m_DeviceInfo[dev]));
-	mChsPerDev[dev] = chsPerDev[dev];
-	mDevChMap[dev].clear();
-	mDevChRevMap[dev].clear();
-	mDigChs.clear();
-	if (faGetInformation(mDevList[dev], &(m_DeviceInfo[dev])) != FA_ERR_OK)
-	{
-		mLastErr << "Failed getting device information for " << mDevList[dev]<<endl;
-		mOk =false;
-	  return;
-	}
-	switch (m_DeviceInfo[dev].Model)
-	{
-		case FA_MODEL_8:
-			m_nChannelMode[dev] = DEVICE_CHANMODE_8;
-			m_nEEGChannels[dev] = FA_MODEL_8_CHANNELS_MAIN - 1; // without trigger
-			m_nAUXChannels[dev] = FA_MODEL_8_CHANNELS_AUX;
+    if (faOpen(mDevList[dev]) != FA_ERR_OK){
+        mLastErr << "Error opening device " << mDevList[dev] << endl;
+        mOk =false;
+      return;
+    }
+    memset(&m_DeviceInfo[dev], 0, sizeof(m_DeviceInfo[dev]));
+    mChsPerDev[dev] = chsPerDev[dev];
+    mDevChMap[dev].clear();
+    mDevChRevMap[dev].clear();
+    mDigChs.clear();
+    if (faGetInformation(mDevList[dev], &(m_DeviceInfo[dev])) != FA_ERR_OK)
+    {
+        mLastErr << "Failed getting device information for " << mDevList[dev]<<endl;
+        mOk =false;
+      return;
+    }
+    switch (m_DeviceInfo[dev].Model)
+    {
+        case FA_MODEL_8:
+            m_nChannelMode[dev] = DEVICE_CHANMODE_8;
+            m_nEEGChannels[dev] = FA_MODEL_8_CHANNELS_MAIN - 1; // without trigger
+            m_nAUXChannels[dev] = FA_MODEL_8_CHANNELS_AUX;
             delete[] m_tblMaxBuf8[dev];
             m_tblMaxBuf8[dev] = new t_faDataModel8[m_nMaxPoints];
-			m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
-			faSetDataMode(mDevList[dev], dmNormal, NULL);
-			break;
-		case FA_MODEL_16:
-			m_nChannelMode[dev] = DEVICE_CHANMODE_16;
+            m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
+            faSetDataMode(mDevList[dev], dmNormal, NULL);
+            break;
+        case FA_MODEL_16:
+            m_nChannelMode[dev] = DEVICE_CHANMODE_16;
             delete[] m_tblMaxBuf16[dev];
             m_tblMaxBuf16[dev] = new t_faDataModel16[m_nMaxPoints];
-			m_nEEGChannels[dev] = FA_MODEL_16_CHANNELS_MAIN - 1; // without trigger
-			m_nAUXChannels[dev] = FA_MODEL_16_CHANNELS_AUX;
-			m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
-			faSetDataMode(mDevList[dev], dmNormal, NULL);
-			break;
-		default: // Unknow device (error).
-			mLastErr << "Unknown device model for device " << mDevList[dev] << endl;
-			mOk =false;
-		  return;
-	}
+            m_nEEGChannels[dev] = FA_MODEL_16_CHANNELS_MAIN - 1; // without trigger
+            m_nAUXChannels[dev] = FA_MODEL_16_CHANNELS_AUX;
+            m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
+            faSetDataMode(mDevList[dev], dmNormal, NULL);
+            break;
+        default: // Unknow device (error).
+            mLastErr << "Unknown device model for device " << mDevList[dev] << endl;
+            mOk =false;
+          return;
+    }
 
-	if (mHighSpeed)
-	{
-		m_nChannelMode[dev] = DEVICE_CHANMODE_4;
+    if (mHighSpeed)
+    {
+        m_nChannelMode[dev] = DEVICE_CHANMODE_4;
         delete[] m_tblMaxBuf4[dev];
         m_tblMaxBuf4[dev] = new t_faDataFormatMode20kHz[m_nMaxPoints];
-		m_nEEGChannels[dev] = FA_MODE_20_KHZ_CHANNELS_MAIN; // EEG
-		m_nAUXChannels[dev] = 0;	// no AUX.
-		m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
-		faSetDataMode(mDevList[dev], dm20kHz4Channels, mFastSettings);
-	}
-	for (size_t ch = 0; ch < mChList.size(); ch++)
-	{
-		if (mChList[ch] >= mNumChannels && mChList[ch] < (mNumChannels + m_nEEGChannels[dev] + m_nAUXChannels[dev]+1))
-		{
-			mDevChMap[dev][mChList[ch]] = mChList[ch] - mNumChannels;
-			mDevChRevMap[dev][mChList[ch] - mNumChannels] = ch;
-			if (mMode == 1){
-				mFastSettings[dev].Mode20kHz4Channels.ChannelsPos[int(mChList[ch] - mNumChannels)] = int(mChList[ch] - mNumChannels);
-				mFastSettings[dev].Mode20kHz4Channels.ChannelsNeg[int(mChList[ch] - mNumChannels)] = -1;
-			}
-			if (mChList[ch] == mNumChannels + m_nEEGChannels[dev] + m_nAUXChannels[dev])
-				mDigChs.insert(ch);
-		}
-	}
+        m_nEEGChannels[dev] = FA_MODE_20_KHZ_CHANNELS_MAIN; // EEG
+        m_nAUXChannels[dev] = 0;	// no AUX.
+        m_tblChanInfo[dev].resize(m_nEEGChannels[dev] + m_nAUXChannels[dev] + 1); // 1 Trigger.
+        faSetDataMode(mDevList[dev], dm20kHz4Channels, mFastSettings);
+    }
+    for (size_t ch = 0; ch < mChList.size(); ch++)
+    {
+        if (mChList[ch] >= mNumChannels && mChList[ch] < (mNumChannels + m_nEEGChannels[dev] + m_nAUXChannels[dev]+1))
+        {
+            mDevChMap[dev][mChList[ch]] = mChList[ch] - mNumChannels;
+            mDevChRevMap[dev][mChList[ch] - mNumChannels] = ch;
+            if (mMode == 1){
+                mFastSettings[dev].Mode20kHz4Channels.ChannelsPos[int(mChList[ch] - mNumChannels)] = int(mChList[ch] - mNumChannels);
+                mFastSettings[dev].Mode20kHz4Channels.ChannelsNeg[int(mChList[ch] - mNumChannels)] = -1;
+            }
+            if (mChList[ch] == mNumChannels + m_nEEGChannels[dev] + m_nAUXChannels[dev])
+                mDigChs.insert(ch);
+        }
+    }
 
-	//mDevMap[dev].clear();
+    //mDevMap[dev].clear();
 
 
-	// Retrieves device properties.
-	memset(&m_DeviceProp[dev], 0, sizeof(m_DeviceProp[dev]));
-	if (faGetProperty(mDevList[dev], &m_DeviceProp[dev]) != FA_ERR_OK)
-	{
-		mLastErr << "Error getting device properties for device " << mDevList[dev]<<endl;
-		mOk =false;
-	  return;
-	}
+    // Retrieves device properties.
+    memset(&m_DeviceProp[dev], 0, sizeof(m_DeviceProp[dev]));
+    if (faGetProperty(mDevList[dev], &m_DeviceProp[dev]) != FA_ERR_OK)
+    {
+        mLastErr << "Error getting device properties for device " << mDevList[dev]<<endl;
+        mOk =false;
+      return;
+    }
 
-	// Channel type, channel resolution.
-	for (UINT i = 0; i < m_tblChanInfo[dev].size(); i++)
-	{
-		CChannelInfo& ci = m_tblChanInfo[dev][i];
-		if (i < UINT(m_nEEGChannels[dev])) // EEG
-		{
-			ci.nType = DEVICE_CHAN_TYPE_EEG;
-			ci.dResolution = double(m_DeviceProp[dev].ResolutionEeg * 1e6); // V > µV
-		}
-		else if (m_nAUXChannels[dev] > 0 && // AUX present
-			i >= UINT(m_nEEGChannels[dev]) && i < m_tblChanInfo[dev].size() -1 ) // AUX
-		{
-			ci.nType = DEVICE_CHAN_TYPE_AUX;
-			ci.dResolution = double(m_DeviceProp[dev].ResolutionAux * 1e6); // V > µV
-		}
-		else // Digital port.
-		{
-			ci.nType = DEVICE_CHAN_TYPE_TRIGGER;
-			ci.dResolution = 1.0f;
-		}
-	}
-	m_tblEEGData[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev])*mBlockSize*decimate);
-	m_tblTrigger[dev].resize(mBlockSize);
-	m_tblPacket[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev]+1)*mBlockSize*decimate); // actual results.
-	mNumChannels += mChsPerDev[dev];
+    // Channel type, channel resolution.
+    for (UINT i = 0; i < m_tblChanInfo[dev].size(); i++)
+    {
+        CChannelInfo& ci = m_tblChanInfo[dev][i];
+        if (i < UINT(m_nEEGChannels[dev])) // EEG
+        {
+            ci.nType = DEVICE_CHAN_TYPE_EEG;
+            ci.dResolution = double(m_DeviceProp[dev].ResolutionEeg * 1e6); // V > µV
+        }
+        else if (m_nAUXChannels[dev] > 0 && // AUX present
+            i >= UINT(m_nEEGChannels[dev]) && i < m_tblChanInfo[dev].size() -1 ) // AUX
+        {
+            ci.nType = DEVICE_CHAN_TYPE_AUX;
+            ci.dResolution = double(m_DeviceProp[dev].ResolutionAux * 1e6); // V > µV
+        }
+        else // Digital port.
+        {
+            ci.nType = DEVICE_CHAN_TYPE_TRIGGER;
+            ci.dResolution = 1.0f;
+        }
+    }
+    m_tblEEGData[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev])*mBlockSize*decimate);
+    m_tblTrigger[dev].resize(mBlockSize);
+    m_tblPacket[dev].resize((m_nEEGChannels[dev] + m_nAUXChannels[dev]+1)*mBlockSize*decimate); // actual results.
+    mNumChannels += mChsPerDev[dev];
   }
+
   mDataBuffer.SetProperties(SignalProperties(mChList.size(), mBlockSize*decimate, SignalType::float32));
   mDataOutput = mDataBuffer;
   mBufSize = mChList.size()*mRingBufferSize;
@@ -204,24 +203,55 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
 
   acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
 
-  //logFile = fopen("c:\\vampthread.txt","w");
+  for (size_t dev = 0; dev < mNumDevices; dev++){
+      mFilter.Initialize(mDataBuffer.Channels());
+      DisplayBCI2000Logo( mDevList[dev] );
+      // faStart/faStop etc must be called from the main thread.
+      faStart(mDevList[dev]);
+      switch (mMode){
+          case 0:
+          case 1:
+              break;
+          case 2:
+          case 4:
+              faStartCalibration(mDevList[dev]);
+              break;
+          case 3:
+              faStartImpedance(mDevList[dev]);
+              break;
+      }
+  }
 }
 
 vAmpThread::~vAmpThread()
 {
   delete[] mBuffer;
   CloseHandle(acquireEventRead);
+  // faStart/faStop etc must be called from the main thread.
   for (size_t dev = 0; dev < mNumDevices; dev++){
-		faStop(mDevList[dev]);
-		faClose(mDevList[dev]);
-	}
+      ClearAmpDisplay( mDevList[dev] );
+      switch (mMode){
+          case 0:
+          case 1:
+              break;
+          case 2:
+          case 4:
+              faStopCalibration(mDevList[dev]);
+              break;
+          case 3:
+              faStopImpedance(mDevList[dev]);
+              break;
+      }
+      faStop(mDevList[dev]);
+      faClose(mDevList[dev]);
+  }
+
   for( int dev = 0; dev < MAX_ALLOWED_DEVICES; ++dev )
   {
     delete[] m_tblMaxBuf4[dev];
     delete[] m_tblMaxBuf8[dev];
     delete[] m_tblMaxBuf16[dev];
   }
-  //fclose(logFile);
 }
 
 void
@@ -253,83 +283,84 @@ void vAmpThread::ClearAmpDisplay( int inID )
 }
 
 void vAmpThread::DisplayImpedances( int inID, const vector<float>& inImpedances )
-{
-    Graphics::TBitmap* pBitmap = NewBitmap();
-    float deltaX = pBitmap->Width / 2.0,
-          deltaY = pBitmap->Height / 9.0;
-    TRect rects[17]; // 2 * 8 rects for channels, 1 rect for reference
-    for( int i = 0; i < 8; ++i )
+{ // Draw a two-column table for channel impedances, and a wide field for
+  // the reference's impedance below it.
+  Graphics::TBitmap* pBitmap = NewBitmap();
+  float deltaX = pBitmap->Width / 2.0,
+        deltaY = pBitmap->Height / 9.0;
+  TRect rects[17]; // 2 * 8 rects for channels, 1 rect for reference
+  for( int i = 0; i < 8; ++i )
+  {
+      rects[i].left = 0;
+      rects[i].right = deltaX;
+      rects[i + 8].left = deltaX;
+      rects[i + 8].right = pBitmap->Width;
+      rects[i].top = i * deltaY;
+      rects[i].bottom = ( i + 1 ) * deltaY;
+      rects[i + 8].top = rects[i].top;
+      rects[i + 8].bottom = rects[i].bottom;
+  }
+  rects[16].left = 0;
+  rects[16].right = pBitmap->Width;
+  rects[16].top = rects[15].bottom;
+  rects[16].bottom = pBitmap->Height;
+  const int numRects = sizeof( rects ) / sizeof( *rects );
+
+  // Background
+  pBitmap->Canvas->Brush->Color = clWhite;
+  pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
+  // Fields
+  const int frame = 1;
+  int idx[numRects];
+  string labels[numRects];
+  for( size_t i = 0; i < inImpedances.size() - 1; ++i )
+  {
+    idx[i] = i;
+    ostringstream oss;
+    oss << "Ch " << i + 1 << ": ";
+    labels[i] = oss.str();
+  }
+  for( int i = inImpedances.size() - 1; i < numRects - 1; ++i )
+    idx[i] = -1;
+  idx[numRects - 1] = inImpedances.size() - 1;
+  labels[numRects - 1] = "Ref: ";
+
+  pBitmap->Canvas->Font->Color = clWhite;
+  pBitmap->Canvas->Font->Height = -16;
+  pBitmap->Canvas->Font->Style = ( TFontStyles() << fsBold );
+  TSize size = pBitmap->Canvas->TextExtent( "w" );
+
+  for( int i = 0; i < numRects; ++i )
+  {
+    TColor c;
+    string s;
+    if( idx[i] >= 0 )
     {
-        rects[i].left = 0;
-        rects[i].right = deltaX;
-        rects[i + 8].left = deltaX;
-        rects[i + 8].right = pBitmap->Width;
-        rects[i].top = i * deltaY;
-        rects[i].bottom = ( i + 1 ) * deltaY;
-        rects[i + 8].top = rects[i].top;
-        rects[i + 8].bottom = rects[i].bottom;
+      ValueToText( inImpedances[idx[i]], s, c );
     }
-    rects[16].left = 0;
-    rects[16].right = pBitmap->Width;
-    rects[16].top = rects[15].bottom;
-    rects[16].bottom = pBitmap->Height;
-    const int numRects = sizeof( rects ) / sizeof( *rects );
-
-    // Background
-    pBitmap->Canvas->Brush->Color = clWhite;
-    pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
-    // Fields
-    const int frame = 1;
-    int idx[numRects];
-    string labels[numRects];
-    for( size_t i = 0; i < inImpedances.size() - 1; ++i )
+    else
     {
-      idx[i] = i;
-      ostringstream oss;
-      oss << "Ch " << i + 1 << ": ";
-      labels[i] = oss.str();
-    }
-    for( int i = inImpedances.size() - 1; i < numRects - 1; ++i )
-      idx[i] = -1;
-    idx[numRects - 1] = inImpedances.size() - 1;
-    labels[numRects - 1] = "Ref: ";
-
-    pBitmap->Canvas->Font->Color = clWhite;
-    pBitmap->Canvas->Font->Height = -16;
-    pBitmap->Canvas->Font->Style = ( TFontStyles() << fsBold );
-    TSize size = pBitmap->Canvas->TextExtent( "w" );
-    
-    for( int i = 0; i < numRects; ++i )
-    {
-      TColor c;
-      string s;
-      if( idx[i] >= 0 )
-      {
-        ValueToText( inImpedances[idx[i]], s, c );
-      }
-      else
-      {
-        c = clGray;
-        s = "n/a";
-      }
-
-      TRect r = rects[i];
-      r.left += frame;
-      r.top += frame;
-      r.right -= frame;
-      r.bottom -= frame;
-      pBitmap->Canvas->Brush->Color = c;
-      pBitmap->Canvas->FillRect( r );
-      pBitmap->Canvas->TextRect(
-        r,
-        r.left + size.cx,
-        ( r.top + r.bottom - size.cy ) / 2,
-        ( labels[i] + s ).c_str()
-      );
+      c = clGray;
+      s = "n/a";
     }
 
-    faSetBitmap( inID, pBitmap->Handle );
-    delete pBitmap;
+    TRect r = rects[i];
+    r.left += frame;
+    r.top += frame;
+    r.right -= frame;
+    r.bottom -= frame;
+    pBitmap->Canvas->Brush->Color = c;
+    pBitmap->Canvas->FillRect( r );
+    pBitmap->Canvas->TextRect(
+      r,
+      r.left + size.cx,
+      ( r.top + r.bottom - size.cy ) / 2,
+      ( labels[i] + s ).c_str()
+    );
+  }
+
+  faSetBitmap( inID, pBitmap->Handle );
+  delete pBitmap;
 }
 
 void
@@ -367,24 +398,24 @@ vAmpThread::ValueToText( float inValue, string& outText, TColor& outColor )
 
 Graphics::TBitmap*
 vAmpThread::NewBitmap() const
-{
-    Graphics::TBitmap* pBitmap = new Graphics::TBitmap;
-    pBitmap->PixelFormat = pf24bit;
-    pBitmap->Width = 320;
-    pBitmap->Height = 240;
-    return pBitmap;
+{ // Create a bitmap in a format suited for the vAmp display.
+  Graphics::TBitmap* pBitmap = new Graphics::TBitmap;
+  pBitmap->PixelFormat = pf24bit;
+  pBitmap->Width = 320;
+  pBitmap->Height = 240;
+  return pBitmap;
 }
 
 void vAmpThread::AdvanceReadBlock()
 {
-	mReadCursor += (mChList.size()*mBlockSize);
-	mReadCursor %= mBufSize;
+  mReadCursor += (mChList.size()*mBlockSize);
+  mReadCursor %= mBufSize;
 }
 
 float
 vAmpThread::ExtractData(int ch, int sample)
 {
-	return mBuffer[mReadCursor + sample*mChList.size() + ch];
+  return mBuffer[mReadCursor + sample*mChList.size() + ch];
 /*
   while( mReadCursor == mWriteCursor && mEvent != NULL )
     ::WaitForSingleObject( mEvent, mTimeout );
@@ -397,45 +428,29 @@ vAmpThread::ExtractData(int ch, int sample)
 int
 vAmpThread::Execute()
 {
-	char *pMaxBuffer = NULL;
-	mOk = true;
-	int returnLen = 0,
-		nReadLen = 0;
-	mWriteCursor = mReadCursor = 0;
-	short readTimes[25], blockSizes[25];
-	int readPos = 0;
+    char *pMaxBuffer = NULL;
+    mOk = true;
+    int returnLen = 0,
+        nReadLen = 0;
+    mWriteCursor = mReadCursor = 0;
+    short readTimes[25], blockSizes[25];
+    int readPos = 0;
 
-	memset(mBuffer, 0, mBufSize);
-	for (size_t dev = 0; dev < mNumDevices; dev++){
-		mFilter.Initialize(mDataBuffer.Channels());
-		faStart(mDevList[dev]);
-		switch (mMode){
-			case 2:
-			case 4:
-				faStartCalibration(mDevList[dev]);
-				break;
-			case 3:
-				faStartImpedance(mDevList[dev]);
-				break;
-		}
-	}
+    memset(mBuffer, 0, mBufSize);
 
+    int curChOffset = 0;
+    int curCh=0, curSample = 0, chCount;
+    map<int,int>::iterator mapIt;
+    int waitTime;
+    mPrevTime = PrecisionTime::Now();
 
-	bool doImpedance = (mMode == 3);
-	int curChOffset = 0;
-	int curCh=0, curSample = 0, chCount;
-	map<int,int>::iterator mapIt;
-	int waitTime;
-	mPrevTime = PrecisionTime::Now();
-
-	while (!this->IsTerminating() && mOk)
-	{
-		unsigned short tnow = PrecisionTime::Now();
-		if (mMode == 3){  // GET IMPEDANCE AND CONTINUE
-
-			for (size_t dev = 0; dev < mNumDevices; dev++){
-				curChOffset = 0;
-				mImpArray[dev].clear();
+    while (!this->IsTerminating() && mOk)
+    {
+        unsigned short tnow = PrecisionTime::Now();
+        if (mMode == 3){  // GET IMPEDANCE AND CONTINUE
+            for (size_t dev = 0; dev < mNumDevices; dev++){
+                curChOffset = 0;
+                mImpArray[dev].clear();
                 int nChannels = m_nEEGChannels[dev]+1;
                 unsigned int pBuf[17];
                 for (int i = 0; i < nChannels; i++) pBuf[i] = 0;
@@ -445,281 +460,261 @@ vAmpThread::Execute()
                     mImpArray[dev].push_back(float(pBuf[i]));
                 }
                 DisplayImpedances( mDevList[dev], mImpArray[dev] );
-			}
-			waitTime = min(mBlockSize/mSampleRate*1000 -
-				PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
-			if (waitTime > 0) Sleep(waitTime);
+            }
+            waitTime = min(mBlockSize/mSampleRate*1000 -
+                PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
+            if (waitTime > 0) Sleep(waitTime);
             SetEvent( acquireEventRead );
-			continue;
-		}
-		//ACQUIRE DATA
-		for (size_t dev = 0; dev < mNumDevices; dev++){
-			curChOffset = 0;
-			switch (m_nChannelMode[dev]){
-				case DEVICE_CHANMODE_16:
-					pMaxBuffer = (char *)&m_tblMaxBuf16[dev][0];
-					nReadLen = m_nMaxPoints * sizeof(t_faDataModel16); // in bytes.
-					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
-					if (returnLen < 0) // Device broken. Restart device.
-					{
-						// Restart the serving routing, reset the device.
-						mOk = false;
-						mLastErr << "Error reading data. Restart." <<endl;
-						return -1;
-					}
-					if (returnLen != nReadLen) // Device broken. Restart device.
-					{
-						mOk = false;
-						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
-						return -1;
-					}
-					// Serving data successfully.
-					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)
-					{
-						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
-							for (int ch = 0; ch < 16; ch++)
-							{
-								mapIt = mDevChMap[dev].find(ch);
-								if (mapIt != mDevChMap[dev].end()){
-									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(m_tblMaxBuf16[dev][sample].Main[ch] -
-											((mMode == 2) ? 0 : m_tblMaxBuf16[dev][sample].Main[16]))*m_tblChanInfo[dev][ch].dResolution;
-								}
-							}
-							mapIt = mDevChMap[dev].find(curChOffset+16);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
-							mapIt = mDevChMap[dev].find(curChOffset+17);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
-							//USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
-							//nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
-							mapIt = mDevChMap[dev].find(curChOffset+18);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Status & 0x1ff;
-						}
-						curChOffset += 19;
-					}
+            continue;
+        }
+        //ACQUIRE DATA
+        for (size_t dev = 0; dev < mNumDevices; dev++){
+            curChOffset = 0;
+            switch (m_nChannelMode[dev]){
+                case DEVICE_CHANMODE_16:
+                    pMaxBuffer = (char *)&m_tblMaxBuf16[dev][0];
+                    nReadLen = m_nMaxPoints * sizeof(t_faDataModel16); // in bytes.
+                    returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
+                    if (returnLen < 0) // Device broken. Restart device.
+                    {
+                        // Restart the serving routing, reset the device.
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart." <<endl;
+                        return -1;
+                    }
+                    if (returnLen != nReadLen) // Device broken. Restart device.
+                    {
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
+                        return -1;
+                    }
+                    // Serving data successfully.
+                    // Copy data to ring buffer.
+                    if (returnLen >= nReadLen)
+                    {
+                        for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
+                            for (int ch = 0; ch < 16; ch++)
+                            {
+                                mapIt = mDevChMap[dev].find(ch);
+                                if (mapIt != mDevChMap[dev].end()){
+                                    mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
+                                        (m_tblMaxBuf16[dev][sample].Main[ch] -
+                                            ((mMode == 2) ? 0 : m_tblMaxBuf16[dev][sample].Main[16]))*m_tblChanInfo[dev][ch].dResolution;
+                                }
+                            }
+                            mapIt = mDevChMap[dev].find(curChOffset+16);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
+                            mapIt = mDevChMap[dev].find(curChOffset+17);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
+                            //USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
+                            //nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
+                            mapIt = mDevChMap[dev].find(curChOffset+18);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf16[dev][sample].Status & 0x1ff;
+                        }
+                        curChOffset += 19;
+                    }
+                    break;
+                case DEVICE_CHANMODE_4:
+                    pMaxBuffer = (char *)&m_tblMaxBuf4[dev][0];
+                    nReadLen = m_nMaxPoints * sizeof(t_faDataFormatMode20kHz); // in bytes.
+                    returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
+                    if (returnLen < 0) // Device broken. Restart device.
+                    {
+                        // Restart the serving routing, reset the device.
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart." <<endl;
+                        return -1;
+                    }
+                    if (returnLen != nReadLen) // Device broken. Restart device.
+                    {
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
+                        return -1;
+                    }
+                    // Serving data successfully.
+                    // Copy data to ring buffer.
+                    if (returnLen >= nReadLen)
+                    {
+                        for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
+                            for (int ch = 0; ch < 5; ch++)
+                            {
+                                mapIt = mDevChMap[dev].find(ch);
+                                if (mapIt != mDevChMap[dev].end()){
+                                    mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
+                                        (m_tblMaxBuf4[dev][sample].Main[ch])*m_tblChanInfo[dev][ch].dResolution;
+                                }
+                            }
+                            //USHORT nTrigger = (tblMaxBuf4[dev][sample].Status >> 8) & 0x1;
+                            //nTrigger |= (tblMaxBuf4[dev][sample].Status & 0xFF) << 1;
+                            mapIt = mDevChMap[dev].find(curChOffset+4);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf4[dev][sample].Status & 0x1ff;
+                        }
+                    }
+                    curChOffset += 5;
+                    break;
+                default:
+                    pMaxBuffer = (char *)&m_tblMaxBuf8[dev][0];
+                    nReadLen = m_nMaxPoints * sizeof(t_faDataModel8); // in bytes.
+                    returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
+                    if (returnLen < 0) // Device broken. Restart device.
+                    {
+                        // Restart the serving routing, reset the device.
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart." <<endl;
+                        return -1;
+                    }
+                    if (returnLen != nReadLen) // Device broken. Restart device.
+                    {
+                        mOk = false;
+                        mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
+                        return -1;
+                    }
+                    // Serving data successfully.
+                    // Copy data to ring buffer.
+                    if (returnLen >= nReadLen)
+                    {
+                        for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
+                            for (int ch = 0; ch < 8; ch++)
+                            {
+                                mapIt = mDevChMap[dev].find(ch);
+                                if (mapIt != mDevChMap[dev].end()){
+                                    mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
+                                        (m_tblMaxBuf8[dev][sample].Main[ch] -
+                                            ((mMode == 2) ? 0 : m_tblMaxBuf8[dev][sample].Main[8]))*m_tblChanInfo[dev][ch].dResolution;
+                                }
+                            }
+                            mapIt = mDevChMap[dev].find(curChOffset+8);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
+                            mapIt = mDevChMap[dev].find(curChOffset+9);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
+                            //USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
+                            //nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
+                            mapIt = mDevChMap[dev].find(curChOffset+10);
+                            if (mapIt != mDevChMap[dev].end())
+                                mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Status & 0x1ff;
+                        }
+                    }
+                    curChOffset += 11;
+                    break;
+            }
+            //FILTER
+            mFilter.Process(mDataBuffer, mDataOutput);
 
-					break;
-				case DEVICE_CHANMODE_4:
-					pMaxBuffer = (char *)&m_tblMaxBuf4[dev][0];
-					nReadLen = m_nMaxPoints * sizeof(t_faDataFormatMode20kHz); // in bytes.
-					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
-					if (returnLen < 0) // Device broken. Restart device.
-					{
-						// Restart the serving routing, reset the device.
-						mOk = false;
-						mLastErr << "Error reading data. Restart." <<endl;
-						return -1;
-					}
-					if (returnLen != nReadLen) // Device broken. Restart device.
-					{
-						mOk = false;
-						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
-						return -1;
-					}
-					// Serving data successfully.
-					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)
-					{
-						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
-							for (int ch = 0; ch < 5; ch++)
-							{
-								mapIt = mDevChMap[dev].find(ch);
-								if (mapIt != mDevChMap[dev].end()){
-									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(m_tblMaxBuf4[dev][sample].Main[ch])*m_tblChanInfo[dev][ch].dResolution;
-								}
-							}
-
-							//USHORT nTrigger = (tblMaxBuf4[dev][sample].Status >> 8) & 0x1;
-							//nTrigger |= (tblMaxBuf4[dev][sample].Status & 0xFF) << 1;
-							mapIt = mDevChMap[dev].find(curChOffset+4);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf4[dev][sample].Status & 0x1ff;
-						}
-					}
-					curChOffset += 5;
-					break;
-				default:
-					pMaxBuffer = (char *)&m_tblMaxBuf8[dev][0];
-					nReadLen = m_nMaxPoints * sizeof(t_faDataModel8); // in bytes.
-					returnLen = ReadData(mDevList[dev], pMaxBuffer, nReadLen);
-					if (returnLen < 0) // Device broken. Restart device.
-					{
-						// Restart the serving routing, reset the device.
-						mOk = false;
-						mLastErr << "Error reading data. Restart." <<endl;
-						return -1;
-					}
-					if (returnLen != nReadLen) // Device broken. Restart device.
-					{
-						mOk = false;
-						mLastErr << "Error reading data. Restart. ("<<returnLen<<","<<nReadLen<<")" <<endl;
-						return -1;
-					}
-					// Serving data successfully.
-					// Copy data to ring buffer.
-					if (returnLen >= nReadLen)
-					{
-						for (int sample = 0; sample < mBlockSize*mDecimate; sample++){
-							for (int ch = 0; ch < 8; ch++)
-							{
-								mapIt = mDevChMap[dev].find(ch);
-								if (mapIt != mDevChMap[dev].end()){
-									mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) =
-										(m_tblMaxBuf8[dev][sample].Main[ch] -
-											((mMode == 2) ? 0 : m_tblMaxBuf8[dev][sample].Main[8]))*m_tblChanInfo[dev][ch].dResolution;
-								}
-							}
-							mapIt = mDevChMap[dev].find(curChOffset+8);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[0]*m_tblChanInfo[dev][16].dResolution;
-							mapIt = mDevChMap[dev].find(curChOffset+9);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Aux[1]*m_tblChanInfo[dev][16].dResolution;
-							//USHORT nTrigger = (tblMaxBuf16[dev][sample].Status >> 8) & 0x1;
-							//nTrigger |= (tblMaxBuf16[dev][sample].Status & 0xFF) << 1;
-							mapIt = mDevChMap[dev].find(curChOffset+10);
-							if (mapIt != mDevChMap[dev].end())
-								mDataBuffer(mDevChRevMap[dev][mapIt->second],sample) = m_tblMaxBuf8[dev][sample].Status & 0x1ff;
-						}
-					}
-					curChOffset += 11;
-					break;
-			}
-			//FILTER
-			mFilter.Process(mDataBuffer, mDataOutput);
-
-			//DECIMATE
-			for (int sample = 0; sample < mDataOutput.Elements(); sample+=mDecimate)
-			{
-				for (int ch = 0; ch < mDataOutput.Channels(); ch++)
-				{
-					if (mDigChs.find(ch)!= mDigChs.end())
-						mBuffer[mWriteCursor++] = mDataBuffer(ch, sample);
-					else
-						mBuffer[mWriteCursor++] = mDataOutput(ch, sample);
-					mWriteCursor %= mBufSize;
-				}
-			}
-			if (mMode == 3){
-				mMode= 0;
-				doImpedance = false;
-				for (size_t i = 0; i < mDevList.size(); i++)
-					faStopImpedance(mDevList[i]);
-			}
-
-		}
-		SetEvent( acquireEventRead );
-	}
-
- 	for (size_t dev = 0; dev < mNumDevices; dev++){
-		switch (mMode){
-			case 2:
-				faStopCalibration(mDevList[dev]);
-
-				break;
-			case 3:
-				faStopImpedance(mDevList[dev]);
-				break;
-		}
-        ClearAmpDisplay( mDevList[dev] );
-		faStop(mDevList[dev]);
-		faClose(mDevList[dev]);
-	}
-
-	return 0;
+            //DECIMATE
+            for (int sample = 0; sample < mDataOutput.Elements(); sample+=mDecimate)
+            {
+                for (int ch = 0; ch < mDataOutput.Channels(); ch++)
+                {
+                    if (mDigChs.find(ch)!= mDigChs.end())
+                        mBuffer[mWriteCursor++] = mDataBuffer(ch, sample);
+                    else
+                        mBuffer[mWriteCursor++] = mDataOutput(ch, sample);
+                    mWriteCursor %= mBufSize;
+                }
+            }
+        }
+        SetEvent( acquireEventRead );
+    }
+    return 0;
 }
 
 int vAmpThread::ReadData(int nDeviceId, char *pBuffer, int nReadLen)
 {
-	int nReturnLen = 0,			// Current return length in bytes.
-		nLenToRead = nReadLen;	// len in bytes.
-	int nLoops = 0;
-	unsigned short readTime, startTime = PrecisionTime::Now();
-	int tdiff, remTime;
-    DWORD sleepTime;
-	do
-	{
-		//wait until at least one block has passed
-
-		/*if (nLoops == 0){
-			tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
-			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
-			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate) )
-				Sleep(remTime);
-		} */
-
-		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
-		nLenToRead -= nReturnLen;
-		readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
+    int nReturnLen = 0,			// Current return length in bytes.
+        nLenToRead = nReadLen;	// len in bytes.
+    int nLoops = 0;
 #if 0
-		if (readTime >(int)((float(2*mBlockSize)*1000)/(mSampleRate)) && nLenToRead > 0)
-			return -1;
+    unsigned short readTime, startTime = PrecisionTime::Now();
 #endif
-		//fprintf(logFile,"%d ", readTime);
-		if (nReturnLen < 0) // Device error.
-		{
-			return -1;
-		}
+    int tdiff, remTime;
+    DWORD sleepTime;
+    do
+    {
+        //wait until at least one block has passed
 
-		if (nReturnLen == 0){
-			//fprintf(logFile,"(LEN=0)");
-			Sleep(3);
-			continue;
-		}
-		if (nLenToRead > 0)
-		{
-			 // decrement the read length.
-			pBuffer += nReturnLen;
-			tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
-			remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
-			if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate)) {
-				sleepTime = remTime;
-				Sleep(0);
-				//fprintf(logFile,"(S%d) ", remTime);
-			}
-		}
-		//nLoops++;
-		/*if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
-		{
-			return -1;
-		}  */
-	} while (nLenToRead > 0 && !this->IsTerminating());
-	//fprintf(logFile,"\n\n");
-	mPrevTime = PrecisionTime::Now();
-	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
+        /*if (nLoops == 0){
+            tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
+            remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
+            if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate) )
+                Sleep(remTime);
+        } */
 
-	//original FirstAmp code
-	/*
-	int nReturnLen = 0,			// Current return length in bytes.
-		nLenToRead = nReadLen;	// len in bytes.
-	UINT nTimeOut = timeGetTime() + DEVICE_SERVE_TIMEOUT;
+        nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
+        nLenToRead -= nReturnLen;
+#if 0
+        readTime = PrecisionTime::TimeDiff(startTime, PrecisionTime::Now());
+        if (readTime >(int)((float(2*mBlockSize)*1000)/(mSampleRate)) && nLenToRead > 0)
+            return -1;
+#endif
+        //fprintf(logFile,"%d ", readTime);
+        if (nReturnLen < 0) // Device error.
+        {
+            return -1;
+        }
 
-	do
-	{
-		nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
-		if (nReturnLen < 0) // Device error.
-		{
-			return -1;
-		}
-		else if (nReturnLen == 0)
-		{
-			Sleep(DEVICE_GET_DATA_INTERVAL); // previous 1 ms: causes trigger problem.
-		}
-		else
-		{
-			nLenToRead -= nReturnLen; // decrement the read length.
-			pBuffer += nReturnLen;
-		}
-		if (timeGetTime() >= nTimeOut) // Timeout
-		{
-			return -1;
-		}
-	} while (m_bRun && nLenToRead > 0);
-	return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
-	*/
+        if (nReturnLen == 0){
+            //fprintf(logFile,"(LEN=0)");
+            Sleep(3);
+            continue;
+        }
+        if (nLenToRead > 0)
+        {
+             // decrement the read length.
+            pBuffer += nReturnLen;
+#if 0
+            tdiff = PrecisionTime::TimeDiff(mPrevTime, PrecisionTime::Now());
+            remTime = (int)((float(mBlockSize)*1000)/(mSampleRate)) - (tdiff);
+            if (remTime >0 && remTime < (float(mBlockSize)*1000)/(mSampleRate)) {
+                sleepTime = remTime;
+                Sleep(0);
+                //fprintf(logFile,"(S%d) ", remTime);
+            }
+#endif
+        }
+        //nLoops++;
+        /*if (PrecisionTime::TimeDiff(nTimeStart, PrecisionTime::Now()) >= DEVICE_SERVE_TIMEOUT) // Timeout
+        {
+            return -1;
+        }  */
+    } while (nLenToRead > 0 && !this->IsTerminating());
+    //fprintf(logFile,"\n\n");
+    mPrevTime = PrecisionTime::Now();
+    return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
+
+    //original FirstAmp code
+    /*
+    int nReturnLen = 0,			// Current return length in bytes.
+        nLenToRead = nReadLen;	// len in bytes.
+    UINT nTimeOut = timeGetTime() + DEVICE_SERVE_TIMEOUT;
+
+    do
+    {
+        nReturnLen = faGetData(nDeviceId, pBuffer, nLenToRead);
+        if (nReturnLen < 0) // Device error.
+        {
+            return -1;
+        }
+        else if (nReturnLen == 0)
+        {
+            Sleep(DEVICE_GET_DATA_INTERVAL); // previous 1 ms: causes trigger problem.
+        }
+        else
+        {
+            nLenToRead -= nReturnLen; // decrement the read length.
+            pBuffer += nReturnLen;
+        }
+        if (timeGetTime() >= nTimeOut) // Timeout
+        {
+            return -1;
+        }
+    } while (m_bRun && nLenToRead > 0);
+    return (nLenToRead <= 0) ? nReadLen : (nReadLen - nLenToRead);
+    */
 }
+
