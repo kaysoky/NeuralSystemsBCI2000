@@ -28,7 +28,12 @@ RegisterFilter( vAmpADC, 1 );
 // Purpose:    The constructor for the vAmpADC
 // **************************************************************************
 vAmpADC::vAmpADC()
-: mAcquire(NULL)
+:
+ mNumEEGchannels( 0 ),
+ mTimeoutMs( 0 ),
+ mHighSpeed( false ),
+ mImpedanceMode( false ),
+ mAcquire(NULL)
 {
 
   // add all the parameters that this ADC requests to the parameter list
@@ -55,6 +60,9 @@ vAmpADC::vAmpADC()
 			" (enumeration)",
    "Source list DeviceIDs= 0 % "
        "// list of V-Amps to be used",
+   "Source matrix Impedances= 1 1 not%20measured % % % "
+        "// impedances as measured by the amplifier(s)"
+        "--rows represent amplifiers, columns represent channels",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -237,6 +245,8 @@ void vAmpADC::Preflight( const SignalProperties&,
 		}
 		sourceChListOffset += devChs;
 	}
+
+    Parameter( "Impedances" );
 	State("Running");
 }
 
@@ -269,6 +279,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 {
 	this->Halt();
 	mHighSpeed = Parameter("AcquisitionMode") == 1 || Parameter("AcquisitionMode") == 4;
+    mImpedanceMode = ( Parameter( "AcquisitionMode" ) == 3 );
 	int tNumDevices = FA_ID_INVALID;
 	  tNumDevices = faGetCount();
 	  if (tNumDevices < 1) {
@@ -330,6 +341,39 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 		}
 		sourceChListOffset += devChs;
 	}
+
+    ParamRef Impedances = Parameter( "Impedances" );
+    if( mImpedances.empty() )
+    {
+      Impedances->SetDimensions( 1, 1 );
+      Impedances = "not measured";
+    }
+    else
+    {
+      size_t maxChannels = 0;
+      for( size_t i = 0; i < mImpedances.size(); ++i )
+        if( mImpedances[i].size() > maxChannels )
+          maxChannels = mImpedances[i].size();
+      Impedances->SetDimensions( mImpedances.size(), maxChannels );
+      for( size_t i = 0; i < mImpedances.size(); ++i )
+      {
+        for( size_t j = 0; j < mImpedances[i].size(); ++j )
+        {
+          float value = mImpedances[i][j];
+          ostringstream oss;
+          if( value < 1e3 )
+            oss << value << "Ohm";
+          else if( value < 1e6 )
+            oss << value / 1e3 << "kOhm";
+          else
+            oss << ">1MOhm";
+          Impedances( i, j ) = oss.str();
+        }
+        for( size_t j = mImpedances[i].size(); j < maxChannels; ++j )
+          Impedances( i, j ) = "";
+      }
+    }
+
 	int decimate = 1;
 	float fs = Parameter("SamplingRate");
 	decimate= getDecimation();
@@ -348,7 +392,7 @@ void vAmpADC::Initialize(const SignalProperties&, const SignalProperties&)
 						hpCorner/fs);
 	if (!mAcquire->ok())
 	{
-		bcierr << mAcquire->lastErr() << endl;
+		bcierr << mAcquire->GetLastErr() << endl;
 		delete mAcquire;
 		return;
 	}
@@ -374,10 +418,18 @@ void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 		return;
 	}
 	if (!mAcquire->ok()){
-		bcierr << mAcquire->lastErr() << endl;
+		bcierr << mAcquire->GetLastErr() << endl;
 		State("Running") = 0;
 		return;
 	}
+
+    string s = mAcquire->GetLastWarning();
+    if( !s.empty() )
+      bciout << s << flush;
+
+    if( mImpedanceMode )
+      mImpedances = mAcquire->GetImpedances();
+      
 	if (mAcquire->IsTerminating())
 	{
 		for (int sample = 0; sample < signal.Elements(); sample++)
@@ -387,7 +439,7 @@ void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 		return;
 	}
 
-	
+
 	if (WaitForSingleObject(mAcquire->acquireEventRead, 1000) != WAIT_OBJECT_0)
 	{
 		for (int sample = 0; sample < signal.Elements(); sample++)
@@ -396,15 +448,16 @@ void vAmpADC::Process( const GenericSignal&, GenericSignal& signal )
 		ResetEvent( mAcquire->acquireEventRead );
 		return;
 	}
+
+    mAcquire->Lock();
 	for (int sample = 0; sample < signal.Elements(); sample++){
 		for (int ch = 0; ch < signal.Channels(); ch++)
 		{
 			signal(ch, sample) = mAcquire->ExtractData(ch, sample);
 		}
 	}
-
-
 	mAcquire->AdvanceReadBlock();
+    mAcquire->Unlock();
 	ResetEvent( mAcquire->acquireEventRead );
 
 }

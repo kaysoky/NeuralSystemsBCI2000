@@ -25,20 +25,37 @@
 #include "vAmpDefines.h"
 #include "IIRFilter.h"
 
-using namespace std;
 class vAmpThread : public OSThread
 {
   static const int cBlocksInRingBuffer = 10;
-  
+
  public:
-  vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<int> chList, int chsPerDev[MAX_ALLOWED_DEVICES], vector<int> devList, int mode, float hpCorner);
+  vAmpThread(
+    int inBlockSize,
+    float sampleRate,
+    int decimate,
+    const std::vector<int>& chList,
+    int chsPerDev[MAX_ALLOWED_DEVICES],
+    const std::vector<int>& devList,
+    int mode,
+    float hpCorner
+  );
   virtual ~vAmpThread();
 
   float ExtractData(int ch, int sample);
-  string lastErr(){return mLastErr.str();}
-  bool ok(){return mOk;}
+  std::vector< std::vector<float> > GetImpedances();
+  std::string GetLastErr() const {return mLastErr.str();}
+  std::string GetLastWarning();
+  bool ok() const {return mOk;}
   void AdvanceReadBlock();
   HANDLE acquireEventRead;
+
+  // Lock for data and message strings.
+  void Lock() { while( mLock ) Sleep( 0 ); mLock = true; }
+  void Unlock() { mLock = false; }
+
+ private:
+  volatile bool mLock;
 
  private:
     virtual int Execute();
@@ -61,16 +78,16 @@ class vAmpThread : public OSThread
           mAnalogChannels;
     float mSampleRate;
     unsigned short mPrevTime;
-    float mHPcorner;
-    stringstream mLastErr;
-    vector<int> mChList;
+    std::ostringstream mLastErr,
+                       mWarnings;
+    std::vector<int> mChList;
     int mMode;
-    map<int, int> mDevChRevMap[MAX_ALLOWED_DEVICES], mDevChMap[MAX_ALLOWED_DEVICES];
+    std::map<int, int> mDevChRevMap[MAX_ALLOWED_DEVICES], mDevChMap[MAX_ALLOWED_DEVICES];
     int mDevChs[MAX_ALLOWED_DEVICES];
     GenericSignal mDataBuffer, mDataOutput;
 
-    vector< vector<float> > mImpArray;
-    valarray< valarray<float> > mTrigBuffer; //mdatabuffer[device][ch][sample]
+    std::vector< std::vector<float> > mImpArray;
+    std::valarray< std::valarray<float> > mTrigBuffer; //mdatabuffer[device][ch][sample]
     float *mBuffer;
 
     HANDLE mEvent,
@@ -79,29 +96,30 @@ class vAmpThread : public OSThread
     int mChsPerDev[MAX_ALLOWED_DEVICES];
     unsigned int mNumDevices;
     int mDevIds[MAX_ALLOWED_DEVICES];
-    vector<int> mDevList;
+    std::vector<int> mDevList;
     int m_nChannelMode[MAX_ALLOWED_DEVICES];
     int m_nEEGChannels[MAX_ALLOWED_DEVICES];
     int m_nAUXChannels[MAX_ALLOWED_DEVICES];
     bool m_bOpen[MAX_ALLOWED_DEVICES];
+    unsigned int mDataCounterErrors[MAX_ALLOWED_DEVICES];
     int mStartMode;
     int mBufferSize;
     int m_nMaxPoints;
     t_faInformation m_DeviceInfo[MAX_ALLOWED_DEVICES];      // Device info.
     t_faProperty    m_DeviceProp[MAX_ALLOWED_DEVICES];      // Channel properties.
-    vector<CChannelInfo>
+    std::vector<CChannelInfo>
                     m_tblChanInfo[MAX_ALLOWED_DEVICES];
 
     t_faDataFormatMode20kHz* m_tblMaxBuf4[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
     t_faDataModel8*          m_tblMaxBuf8[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer of 8 channel system + 2 add. samples.
     t_faDataModel16*         m_tblMaxBuf16[MAX_ALLOWED_DEVICES];    // 1 read cycle buffer of 16 channel system + 2 add. samples.
-    vector<float>   m_tblEEGData[MAX_ALLOWED_DEVICES];      // 1 read cycle of only EEG and AUX signals.
-    vector<float>   m_tblTrigger[MAX_ALLOWED_DEVICES];      // 1 read cycle of only Trigger signals.
-    vector<float>   m_tblPacket[MAX_ALLOWED_DEVICES];       // 1 read cycle of EEG, AUX, Trigger signals.
+    std::vector<float>   m_tblEEGData[MAX_ALLOWED_DEVICES];      // 1 read cycle of only EEG and AUX signals.
+    std::vector<float>   m_tblTrigger[MAX_ALLOWED_DEVICES];      // 1 read cycle of only Trigger signals.
+    std::vector<float>   m_tblPacket[MAX_ALLOWED_DEVICES];       // 1 read cycle of EEG, AUX, Trigger signals.
     t_faDataModeSettings mFastSettings[MAX_ALLOWED_DEVICES];
     t_faDataMode mDataMode;
     bool mHighSpeed;
-    set<int> mDigChs;
+    std::set<int> mDigChs;
 
     int ReadData(int nDeviceId, char *pBuffer, int nReadLen);
     IIRFilter<float> mFilter;

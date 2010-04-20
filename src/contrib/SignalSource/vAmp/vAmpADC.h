@@ -27,7 +27,6 @@
 
 #include "vAmpDefines.h"
 
-using namespace std;
 
 class vAmpADC : public GenericADC
 {
@@ -42,10 +41,12 @@ class vAmpADC : public GenericADC
 
  private:
 	int mNumEEGchannels;
-	vector<int> mChList;
+	std::vector<int> mChList;
 	int mTimeoutMs;
-	vector<int> mDevList;
+	std::vector<int> mDevList;
 	bool mHighSpeed;
+    std::vector< std::vector<float> > mImpedances;
+    bool mImpedanceMode;
 
 	float getSampleRate(float);
 	int getDecimation() const;

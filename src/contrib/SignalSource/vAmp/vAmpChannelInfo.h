@@ -19,20 +19,19 @@
 #define DEVICE_CHANMODE_16			1	// 16 EEG channels system.
 #define DEVICE_CHANMODE_4			2	// 4 EEG channels, joints the FA systems.
 
-using namespace std;
 class CChannelInfo
 	//; Represents a single channel info.
 	{
 	public :
 		char	nType;			// Channel type.
 		int		nPhysIdx;		// Physical channel index.
-		string szLabel;		// Label of channel.
+		std::string szLabel;		// Label of channel.
 		double	dResolution;	// Resolution [µV] for all analog channels.
 		bool	bUsrUnit;		// User unit used if TRUE otherwise FALSE.
-		string szUnitName;		// Unit name.
+		std::string szUnitName;		// Unit name.
 		float	fGradient;		// Slope of equation for usr unit (e.g. [mV/C]).
 		float	fOffset;		// Offset of equation (constant) in [mV].
-		
+
 		CChannelInfo();
 			//; Constructor.
 		const CChannelInfo & operator = (const CChannelInfo &);
@@ -56,3 +55,4 @@ class CChannelInfo
 	};
 //---------------------------------------------------------------------------
 #endif
+

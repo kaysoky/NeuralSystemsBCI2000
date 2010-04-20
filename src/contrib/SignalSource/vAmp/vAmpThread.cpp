@@ -20,7 +20,16 @@
 using namespace std;
 using namespace GUI;
 
-vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<int> chList, int chsPerDev[MAX_ALLOWED_DEVICES], vector<int> devList, int mode, float hpCorner)
+vAmpThread::vAmpThread(
+  int inBlockSize,
+  float sampleRate,
+  int decimate,
+  const vector<int>& chList,
+  int chsPerDev[MAX_ALLOWED_DEVICES],
+  const vector<int>& devList,
+  int mode,
+  float hpCorner
+)
 : OSThread( true ),
   mBlockSize( inBlockSize ),
   mSampleRate(sampleRate),
@@ -33,15 +42,16 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mDevList(devList),
   mChList(chList),
   mMode(mode),
-  mHPcorner(hpCorner),
   mEvent( NULL ),
-  m_nMaxPoints( 0 )
+  m_nMaxPoints( 0 ),
+  mLock( false )
 {
   for( int i = 0; i < MAX_ALLOWED_DEVICES; ++i )
   {
     m_tblMaxBuf4[ i ] = NULL;
     m_tblMaxBuf8[ i ] = NULL;
     m_tblMaxBuf16[ i ] = NULL;
+    mDataCounterErrors[ i ] = 0;
   }
 
   mOk = true;
@@ -189,9 +199,9 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   outGain /= abs( lp.Evaluate( 1.0 ) );
   tf *= lp;
 
-  if (mHPcorner > 0){
+  if (hpCorner > 0){
     TransferFunction hp  =
-          FilterDesign::Butterworth().Order( 2 ).Highpass(mHPcorner/mDecimate).TransferFunction();
+          FilterDesign::Butterworth().Order( 2 ).Highpass(hpCorner/mDecimate).TransferFunction();
     outGain /= abs(hp.Evaluate(-1.0));
     tf *= hp;
   }
@@ -199,13 +209,15 @@ vAmpThread::vAmpThread( int inBlockSize, float sampleRate, int decimate, vector<
   mFilter.SetZeros(tf.Numerator().Roots())
          .SetPoles(tf.Denominator().Roots())
          .SetGain(outGain)
-         .Initialize();
+         .Initialize(mDataBuffer.Channels());
 
   acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
 
   for (size_t dev = 0; dev < mNumDevices; dev++){
-      mFilter.Initialize(mDataBuffer.Channels());
       DisplayBCI2000Logo( mDevList[dev] );
+      t_faDataState state = { sizeof( t_faDataState ), };
+      faGetDataState( mDevList[dev], &state );
+      mDataCounterErrors[dev] = state.DataCounterErrors;
       // faStart/faStop etc must be called from the main thread.
       faStart(mDevList[dev]);
       switch (mMode){
@@ -253,6 +265,26 @@ vAmpThread::~vAmpThread()
     delete[] m_tblMaxBuf16[dev];
   }
 }
+
+vector< vector<float> >
+vAmpThread::GetImpedances()
+{
+  Lock();
+  vector< vector<float> > impedances = mImpArray;
+  Unlock();
+  return impedances;
+}
+
+string
+vAmpThread::GetLastWarning()
+{
+  Lock();
+  string s = mWarnings.str();
+  mWarnings.str( "" );
+  Unlock();
+  return s;
+}
+
 
 void
 vAmpThread::DisplayBCI2000Logo( int inID )
@@ -603,22 +635,36 @@ vAmpThread::Execute()
                     curChOffset += 11;
                     break;
             }
-            //FILTER
-            mFilter.Process(mDataBuffer, mDataOutput);
-
-            //DECIMATE
-            for (int sample = 0; sample < mDataOutput.Elements(); sample+=mDecimate)
+            t_faDataState state = { sizeof( t_faDataState ), };
+            faGetDataState( mDevList[dev], &state );
+            if( state.DataCounterErrors != mDataCounterErrors[dev] )
             {
-                for (int ch = 0; ch < mDataOutput.Channels(); ch++)
-                {
-                    if (mDigChs.find(ch)!= mDigChs.end())
-                        mBuffer[mWriteCursor++] = mDataBuffer(ch, sample);
-                    else
-                        mBuffer[mWriteCursor++] = mDataOutput(ch, sample);
-                    mWriteCursor %= mBufSize;
-                }
+                Lock();
+                mWarnings << "Amplifier #" << dev << " reports data loss. "
+                          << "The total number of counter errors is "
+                          << state.DataCounterErrors
+                          << endl;
+                Unlock();
+                mDataCounterErrors[dev] = state.DataCounterErrors;
             }
         }
+        //FILTER
+        mFilter.Process(mDataBuffer, mDataOutput);
+
+        //DECIMATE
+        Lock();
+        for (int sample = 0; sample < mDataOutput.Elements(); sample+=mDecimate)
+        {
+            for (int ch = 0; ch < mDataOutput.Channels(); ch++)
+            {
+                if (mDigChs.find(ch)!= mDigChs.end())
+                    mBuffer[mWriteCursor++] = mDataBuffer(ch, sample);
+                else
+                    mBuffer[mWriteCursor++] = mDataOutput(ch, sample);
+                mWriteCursor %= mBufSize;
+            }
+        }
+        Unlock();
         SetEvent( acquireEventRead );
     }
     return 0;
