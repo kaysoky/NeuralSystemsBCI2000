@@ -79,10 +79,10 @@ namespace RenderingMode
 namespace GraphicResource
 {
   template<class T>
-   int Height( const T& t )
+   int Width( const T& t )
     { return t[ 0 ].count; }
   template<class T>
-   int Width( const T& t )
+   int Height( const T& t )
     { return t[ 1 ].count; }
   template<int Mode, class T>
    void Render( const T&, const DrawContext& );
@@ -98,7 +98,7 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
   TCanvas* pCanvas = new TCanvas;
   pCanvas->Handle = inDC.handle;
   int left = inDC.rect.left,
-      right = left + inGraphic[ 0 ].count,
+      right = left + Width( inGraphic ),
       run = 2,
       x = left,
       y = inDC.rect.top;

@@ -63,8 +63,8 @@ AboutBox::Display() const
   Graphics::TBitmap* pBitmap = new Graphics::TBitmap;
   int logoWidth = GraphicResource::Width( Resources::BCI2000logo_mini ),
       logoHeight = GraphicResource::Width( Resources::BCI2000logo_mini );
-  pBitmap->Width = logoWidth + 1;
-  pBitmap->Height = logoHeight + 1;
+  pBitmap->Width = logoWidth;
+  pBitmap->Height = logoHeight;
   pBitmap->Canvas->Brush->Color = pPanel->Color;
   pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
   DrawContext dc = { pBitmap->Canvas->Handle, { 0, 0, logoWidth, logoHeight } };
