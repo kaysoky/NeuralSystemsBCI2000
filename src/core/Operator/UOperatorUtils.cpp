@@ -209,7 +209,10 @@ OperatorUtils::LoadMatrix( const char* inFileName, Param& outParam )
     outParam.SetDimensions( numRows, numCols );
     for( size_t row = 0; row < numRows; ++row )
       for( size_t col = 0; col < numCols; ++col )
-        outParam.Value( row, col ) = matrix[ row ][ col ];
+      {
+        istringstream iss( matrix[ row ][ col ] );
+        iss >> outParam.Value( row, col );
+      }
   }
   return NoError;
 }
