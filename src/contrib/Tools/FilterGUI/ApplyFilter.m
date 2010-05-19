@@ -1,6 +1,15 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id$ 
+% Author: juergen.mellinger@uni-tuebingen.de
+% Description: Applies HP, LP, and Notch filtering to a BCI2000 data file,
+%   and saves the result.
+%
+% (C) 2000-2010, BCI2000 Project
+% http:%%www.bci2000.org 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ApplyFilter(infile, outfile, settings)
   if(~exist('load_bcidat')||~exist('save_bcidat'))
-    msgbox(['Could not find load_bcidat or save_bcidat mex file.\n' ...
+    msgbox(['Could not find load_bcidat or save_bcidat mex file. ' ...
             'Please add the BCI2000 tools/mex directory to your Matlab path.']);
     return;
   end

@@ -1,3 +1,12 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id$ 
+% Author: juergen.mellinger@uni-tuebingen.de
+% Description: A simple GUI to apply HP, LP, and Notch filtering to BCI2000 data 
+%   files.
+%
+% (C) 2000-2010, BCI2000 Project
+% http:%%www.bci2000.org 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function varargout = FilterGUI(varargin)
 % FILTERGUI M-file for FilterGUI.fig
 %      FILTERGUI, by itself, creates a new FILTERGUI or raises the existing
