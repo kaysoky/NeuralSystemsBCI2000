@@ -179,6 +179,8 @@ if(~isnumeric(files))
   switch( lp )
       case 'Off'
           settings.lp = 0;
+      case '9 Hz'
+          settings.lp = 9;
       case '30 Hz'
           settings.lp = 30;
       case '40 Hz'
