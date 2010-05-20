@@ -22,8 +22,10 @@ SourceFilter::SourceFilter()
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Source%20Filter int NotchFilter= 0 0 0 2 "
       "// Power line notch filter: 0: disabled, 1: at 50Hz, 2: at 60Hz (enumeration)",
-    "Source:Source%20Filter int HighPassFilter= 0 0 0 1 "
-      "// Source high pass filter: 0: disabled, 1: at 0.1Hz (enumeration)",
+    "Source:Source%20Filter int HighPassFilter= 0 0 0 2 "
+      "// Source high pass filter: 0: disabled, 1: at 0.1Hz, 2: at 1Hz (enumeration)",
+    "Source:Source%20Filter int LowPassFilter= 0 0 0 4 "
+      "// Source low pass filter: 0: disabled, 1: at 9Hz, 2: at 30Hz, 3: at 40Hz, 4: at 70Hz (enumeration)",
   END_PARAMETER_DEFINITIONS
 }
 
@@ -101,6 +103,7 @@ SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
     {
       disabled = 0,
       at01Hz,
+      at1Hz,
     };
     int highPassFilter = Parameter( "HighPassFilter" );
     Real corner = 0.0;
@@ -111,6 +114,10 @@ SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
 
       case at01Hz:
         corner = 0.1;
+        break;
+
+      case at1Hz:
+        corner = 1.0;
         break;
 
       default:
@@ -134,6 +141,63 @@ SourceFilter::DesignFilter( const SignalProperties& inSignalProperties,
           .TransferFunction();
         tf *= hp;
         outGain /= abs( hp.Evaluate( -1.0 ) ); // HF gain
+      }
+    }
+  }
+
+  { // Configure LP filter
+    enum
+    {
+      disabled = 0,
+      at9Hz,
+      at30Hz,
+      at40Hz,
+      at70Hz,
+    };
+    int lowPassFilter = Parameter( "LowPassFilter" );
+    Real corner = 0.0;
+    switch( lowPassFilter )
+    {
+      case disabled:
+        break;
+
+      case at9Hz:
+        corner = 9.0;
+        break;
+
+      case at30Hz:
+        corner = 30.0;
+        break;
+
+      case at40Hz:
+        corner = 40.0;
+        break;
+
+      case at70Hz:
+        corner = 70.0;
+        break;
+
+      default:
+        bcierr << "Unknown value of LowPassFilter parameter" << endl;
+    }
+    if( lowPassFilter != disabled )
+    {
+      corner /= samplingRate;
+      if( corner >= 0.5 )
+      {
+        bciout << "Low pass corner frequency is outside sampling bandwidth. "
+               << "No filtering will be performed"
+               << endl;
+      }
+      else
+      {
+        TransferFunction lp =
+          FilterDesign::Butterworth()
+          .Order( 2 )
+          .Lowpass( corner )
+          .TransferFunction();
+        tf *= lp;
+        outGain /= abs( lp.Evaluate( 1.0 ) ); // LF gain
       }
     }
   }
