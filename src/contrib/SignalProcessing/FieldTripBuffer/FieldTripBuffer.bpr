@@ -17,9 +17,9 @@
       obj\MeasurementUnits.obj obj\PrecisionTime.obj obj\SockStream.obj 
       obj\ExpressionParser.obj obj\Expression.obj obj\ArithmeticExpression.obj 
       obj\ExpressionFilter.obj obj\StateVectorSample.obj obj\EventQueue.obj 
-      obj\BCIEvent.obj obj\tcpserver.obj obj\property.obj obj\util.obj 
-      obj\clientrequest.obj obj\dmarequest.obj obj\tcprequest.obj 
-      obj\tcpsocket.obj obj\printstruct.obj obj\cleanup.obj obj\gettimeofday.obj"/>
+      obj\BCIEvent.obj obj\util.obj obj\dmarequest.obj obj\tcpserver.obj 
+      obj\tcpsocket.obj obj\printstruct.obj obj\endianutil.obj obj\extern.obj 
+      obj\cleanup.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -28,7 +28,7 @@
     <LIBRARIES value="vclx.lib vcl.lib rtl.lib"/>
     <SPARELIBS value="rtl.lib vcl.lib vclx.lib"/>
     <PACKAGES value="rtl.bpi vcl.bpi vclx.bpi vcljpg.bpi"/>
-    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src"/>
+    <PATHCPP value=".;..\..\..\shared\accessors;..\..\..\shared\accessors;..\..\..\shared\bcistream;..\..\..\shared\bcistream;..\..\..\shared\fileio;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\modules;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\utils\Expression;..\..\..\shared\modules\signalprocessing;..\..\..\shared\types;..\..\..\shared\utils;..\..\..\shared\accessors;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src;..\..\..\extlib\fieldtrip\buffer\src"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -101,17 +101,15 @@
       <FILE FILENAME="..\..\..\shared\types\StateVectorSample.cpp" FORMNAME="" UNITNAME="StateVectorSample" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\utils\EventQueue.cpp" FORMNAME="" UNITNAME="EventQueue" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\shared\accessors\BCIEvent.cpp" FORMNAME="" UNITNAME="BCIEvent" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\tcpserver.c" FORMNAME="" UNITNAME="tcpserver" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\property.c" FORMNAME="" UNITNAME="property" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\extlib\fieldtrip\pthreads-win32\lib\pthreadVC2.bcb.lib" FORMNAME="" UNITNAME="pthreadVC2.bcb.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\util.c" FORMNAME="" UNITNAME="util" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\clientrequest.c" FORMNAME="" UNITNAME="clientrequest" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\dmarequest.c" FORMNAME="" UNITNAME="dmarequest" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\tcprequest.c" FORMNAME="" UNITNAME="tcprequest" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\tcpserver.c" FORMNAME="" UNITNAME="tcpserver" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\tcpsocket.c" FORMNAME="" UNITNAME="tcpsocket" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\printstruct.c" FORMNAME="" UNITNAME="printstruct" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\endianutil.c" FORMNAME="" UNITNAME="endianutil" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\extern.c" FORMNAME="" UNITNAME="extern" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\cleanup.c" FORMNAME="" UNITNAME="cleanup" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\buffer\src\gettimeofday.c" FORMNAME="" UNITNAME="gettimeofday" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="..\..\..\extlib\fieldtrip\pthreads-win32\lib\pthreadVC2.bcb.lib" FORMNAME="" UNITNAME="pthreadVC2.bcb.lib" CONTAINERID="LibTool" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
