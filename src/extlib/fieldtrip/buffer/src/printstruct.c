@@ -3,17 +3,11 @@
  * F.C. Donders Centre for Cognitive Neuroimaging, Radboud University Nijmegen,
  * Kapittelweg 29, 6525 EN Nijmegen, The Netherlands
  *
- * $Log: printstruct.c,v $
- * Revision 1.1  2008/07/09 10:37:52  roboos
- * moved some printing functions to seperate file
- *
- *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "buffer.h"
-#include "message.h"
 
 void print_request(messagedef_t *request) {
 	fprintf(stderr, "request.version = 0x%04x\n", request->version);
@@ -63,18 +57,6 @@ void print_eventdef(eventdef_t *eventdef) {
 		fprintf(stderr, "eventdef.offset          = %d\n", eventdef->offset         );
 		fprintf(stderr, "eventdef.duration        = %d\n", eventdef->duration       );
 		fprintf(stderr, "eventdef.bufsize         = %u\n", eventdef->bufsize        );
-	}
-}
-
-void print_propertydef(propertydef_t *propertydef) {
-	if (propertydef==NULL) 
-		fprintf(stderr, "propertydef==NULL\n");
-	else {
-		fprintf(stderr, "propertydef.type_type       = %u\n", propertydef->type_type      );
-		fprintf(stderr, "propertydef.type_numel      = %u\n", propertydef->type_numel     );
-		fprintf(stderr, "propertydef.value_type      = %u\n", propertydef->value_type     );
-		fprintf(stderr, "propertydef.value_numel     = %u\n", propertydef->value_numel    );
-		fprintf(stderr, "propertydef.bufsize         = %u\n", propertydef->bufsize        );
 	}
 }
 

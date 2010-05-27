@@ -3,98 +3,9 @@
  * F.C. Donders Centre for Cognitive Neuroimaging, Radboud University Nijmegen,
  * Kapittelweg 29, 6525 EN Nijmegen, The Netherlands
  *
- * $Log: tcpserver.c,v $
- * Revision 1.10  2008/05/22 13:40:06  roboos
- * moved declarations to top
- *
- * Revision 1.9  2008/05/22 10:00:31  roboos
- * some small changes related to compatibility with Borland, thanks to Jurgen
- *
- * Revision 1.8  2008/05/21 19:45:20  roboos
- * only some changes in perror/fprintf output
- *
- * Revision 1.7  2008/03/26 14:36:12  thohar
- * made new code to unblock sockets portable
- *
- * Revision 1.6  2008/03/23 16:59:21  roboos
- * added a cleanup label -> goto there in case something is wrong: the thread cancelation is handled there
- *
- * Revision 1.5  2008/03/23 16:43:56  roboos
- * implemented thread cancelation: first put socket in non-blocking
- * mode, when accept returns an error do pthread_testcancel and pause
- * 1 milisecond, then continue with next accept. The socket that is
- * opened by the client and passed to tcpsocket is put back into
- * blocking mode, otherwise tcpclient/bufread do not detect correctly
- * that it gets closed at a certain point.
- *
- * Revision 1.4  2008/03/13 13:38:31  roboos
- * added cancel options for thread
- *
- * Revision 1.3  2008/03/13 12:34:22  thohar
- * added headers for win32 build
- * added functions to start sockets on win32
- *
- * Revision 1.2  2008/03/10 10:03:47  roboos
- * use *host_t as input argument
- *
- * Revision 1.1  2008/03/08 09:41:02  roboos
- * renamed buffer_thread function to tcpserver, idem for the c-file
- * renamed socket_thread function to tcpsocket, idem for the c-file
- *
- * Revision 1.7  2008/02/27 10:13:15  roboos
- * disabled fprintf statement
- *
- * Revision 1.6  2008/02/20 13:36:52  roboos
- * added counter for incoming connections
- *
- * Revision 1.5  2008/02/20 07:10:25  roboos
- * tried out some low-level tcp specific details
- *
- * Revision 1.4  2008/02/19 10:24:42  roboos
- * removed some old documentation from the comments
- *
- * Revision 1.3  2008/02/19 10:22:55  roboos
- * added consistent copyrights and log message to each of the files
- *
- * Revision 1.2  2008/02/18 12:13:46  roboos
- * moved executable from buffer to demo
- * fixed bugs in sinewave and socket for events
- * stripped down the eventdef_t fields
- * many small changes
- *
- * Revision 1.1  2008/02/18 10:05:25  roboos
- * restructured the directory layout, copied all code into src, added directory for external code
- *
- * Revision 1.8  2008/02/13 13:07:56  roboos
- * fixed numerous bugs
- * implemented append function, which after all does not seem to be neccessary (since the problem is in the TCP buffer size)
- *
- * Revision 1.7  2008/02/11 21:12:22  roboos
- * added check for each datatype wordsize
- * deleted global numevents numsamples
- *
- * Revision 1.6  2008/02/10 20:26:25  roboos
- * only some small changes
- *
- * Revision 1.5  2008/02/10 10:48:43  roboos
- * removed init function, changed data from double into void, reindented the complete file
- *
- * Revision 1.4  2008/02/09 16:45:47  roboos
- * moved declarations that are shared between threads to seperate header file
- * moved code that deals with incoming socket connection to seperate file (socket.c)
- *
- * Revision 1.3  2008/02/08 10:32:25  roboos
- * replaced the time and date code by some real buffer handling
- * this version compiles, but may not work (untested)
- *
- * Revision 1.2  2008/02/05 20:32:04  roboos
- * First woring implementation, based on daytimed example code from
- * http://www.freebsd.org/doc/en_US.ISO8859-1/books/developers-handbook/sockets-essential-functions.html
- * and on threads example code from https://computing.llnl.gov/tutorials/pthreads/fork_vs_thread.txt
  *
  */
- 
-#include <pthread.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -103,54 +14,85 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "message.h"
 #include "buffer.h"
-#include "socket_includes.h"
-#include "unix_includes.h"
+#include <pthread.h>
+#include "extern.h"
 
 #define ACCEPTSLEEP 1000
 
-//extern int errno;
+typedef struct {
+        int fd;
+} threadlocal_t;
 
-//pthread_attr_t attr; // this one would be  passed to the thread
+void cleanup_tcpserver(void *arg) {
+        threadlocal_t *threadlocal;
+        threadlocal = (threadlocal_t *)arg;
+        if (threadlocal && threadlocal->fd>0) {
+                closesocket(threadlocal->fd);
+                threadlocal->fd = -1;
+        }
+
+        pthread_mutex_lock(&mutexstatus);
+        tcpserverStatus = 0;
+        pthread_mutex_unlock(&mutexstatus);
+}
+
+/* pthread_attr_t attr; */ /* this one would be passed to the thread */
 
 /***********************************************************************
  * this thread listens to incoming TCP connections
  * if a connection is made by a client, it starts the tcpsocket function
  ***********************************************************************/
 void *tcpserver(void *arg) {
+    int verbose = 0;
+	host_t *host;
+
 	/* these variables are for the socket */
 	struct sockaddr_in sa;
-	int s, c, b;
+	int s, c;
+    int b;
 	int optval;
-	struct timeval timeout;
+	/* struct timeval timeout; */
 	int oldcancelstate, oldcanceltype;
 
 #ifdef WIN32
-        unsigned long enable = 0;
+    unsigned long enable = 0;
 	WSADATA wsa;
 #endif
+
 	/* these variables are for the threading */
 	int rc;
 	pthread_t tid;
 
+    threadlocal_t threadlocal;
+    threadlocal.fd = -1;
+
 	/* this determines the port on which the server will listen */
-	host_t *host = (host_t *)arg;
 	if (!arg)
 		exit(1);
+    else
+       host = (host_t *)arg;
 
-	fprintf(stderr, "host.name =  %s\n", host->name);
-	fprintf(stderr, "host.port =  %d\n", host->port);
+	if (verbose>0) fprintf(stderr, "tcpserver: host.name =  %s\n", host->name);
+	if (verbose>0) fprintf(stderr, "tcpserver: host.port =  %d\n", host->port);
 
-	/* the thread is allowed to be canceled at almost any moment */
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldcancelstate);
-	pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, &oldcanceltype);
-	pthread_cleanup_push(cleanup_socket, &s);
+    pthread_cleanup_push(cleanup_tcpserver, &threadlocal);
+
+    /* the status contains the thread id when running, or zero when not running */
+    pthread_mutex_lock(&mutexstatus);
+    if (tcpserverStatus==0) {
+            tcpserverStatus = 1;
+            pthread_mutex_unlock(&mutexstatus);
+    }
+    else {
+            pthread_mutex_unlock(&mutexstatus);
+            goto cleanup;
+    }
 
 #ifdef WIN32
  	if(WSAStartup(MAKEWORD(1, 1), &wsa))
 	{
-		fprintf(stderr, "Cannot start sockets...\n");
+		if (verbose>0) fprintf(stderr, "tcpserver: cannot start sockets\n");
 	}
 #endif
 
@@ -159,6 +101,9 @@ void *tcpserver(void *arg) {
 		perror("tcpserver socket");
 		goto cleanup;
 	}
+
+    /* this will be closed at cleanup */
+    threadlocal.fd = s;
 
 	/* place the socket in non-blocking mode, required to do thread cancelation */
 #ifdef WIN32
@@ -179,7 +124,7 @@ void *tcpserver(void *arg) {
 	   timeout.tv_usec = 1;
 	   if (setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(optval)) < 0) {
 	   perror("tcpserver setsockopt");
-	   fprintf(stderr, "errno = %d\n", errno);
+	   if (verbose>0) fprintf(stderr, "tcpserver: errno = %d\n", errno);
 	   goto cleanup;
 	   }
 	 */
@@ -192,7 +137,6 @@ void *tcpserver(void *arg) {
 	}
 
 	bzero(&sa, sizeof sa);
-
 	sa.sin_family = AF_INET;
 	sa.sin_port   = htons(host->port);
 
@@ -244,7 +188,20 @@ void *tcpserver(void *arg) {
 		}
 
 		else {
-			fprintf(stderr, "opened connection to client on socket %d\n", c);
+			if (verbose>0) fprintf(stderr, "tcpserver: opened connection to client on socket %d\n", c);
+			
+			/* SK: we could set socket option "SO_LINGER" so resources are freed up immediately 
+			   but we leave this at the default for now 
+			*/
+			if (0) {
+				struct linger lg;
+				
+				lg.l_onoff = 1;
+				lg.l_linger = 0;
+			
+				setsockopt(s, SOL_SOCKET, SO_LINGER, (char *) &lg, sizeof(lg));
+			}
+
 
 			/* set larger buffer */
 			optval = SO_RCVBUF_SIZE;
@@ -273,35 +230,37 @@ void *tcpserver(void *arg) {
 			}
 #endif
 
+#ifdef DISABLE_NAGLE
 			/* disable the Nagle buffering algorithm */
-			/*
-			   optval = 1;
-			   if (setsockopt(c, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval)) < 0) {
-			   perror("tcpserver setsockopt");
-			   goto cleanup;
-			   }
-			 */
+			optval = 1;
+			if (setsockopt(c, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval)) < 0) {
+				perror("tcpserver setsockopt");
+				goto cleanup;
+			}
+#endif
 
 			/* deal with the incoming connection on the TCP socket in a seperate thread */
-			//rc = pthread_create(&tid, &attr, tcpsocket, (void *)c);
+			/* rc = pthread_create(&tid, &attr, tcpsocket, (void *)c); */
 			rc = pthread_create(&tid, NULL, tcpsocket, (void *)c);
+
 			if (rc) {
-				printf("ERROR2: return code from pthread_create() is %d\n", rc);
+				if (verbose>0) fprintf(stderr, "tcpserver: return code from pthread_create() is %d\n", rc);
 				goto cleanup;
 			}
 			else {
+                /* this is for debugging */
+                pthread_mutex_lock(&mutexthreadcount);
+                threadcount++;
+                pthread_mutex_unlock(&mutexthreadcount);
+			    if (verbose>0) fprintf(stderr, "tcpserver: c = %d, threadcount = %d\n", c, threadcount);
 				pthread_detach(tid);
 			}
 		}
 	}
 
 cleanup:
-	/* from now on it is safe to cancel the thread */
-	pthread_setcancelstate(oldcancelstate, NULL);
-	pthread_setcanceltype(oldcanceltype, NULL);
-
-	pthread_cleanup_pop(1);  // socket
-	pthread_exit(NULL);
+    printf("");
+	pthread_cleanup_pop(1);
 	return NULL;
 }
 

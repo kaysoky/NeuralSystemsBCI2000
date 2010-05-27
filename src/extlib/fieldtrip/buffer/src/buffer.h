@@ -3,105 +3,6 @@
  * F.C. Donders Centre for Cognitive Neuroimaging, Radboud University Nijmegen,
  * Kapittelweg 29, 6525 EN Nijmegen, The Netherlands
  *
- * $Log: buffer.h,v $
- * Revision 1.27  2008/07/09 10:37:53  roboos
- * moved some printing functions to seperate file
- *
- * Revision 1.26  2008/07/01 17:08:24  thohar
- * added cleanup_buffer function
- *
- * Revision 1.25  2008/06/19 21:07:04  roboos
- * switched back to more reasonable numbers for the data and event buffers
- *
- * Revision 1.24  2008/06/19 20:32:08  roboos
- * fixed bug in WRAP due to missing () and only when pointers were involved
- *
- * Revision 1.23  2008/06/19 19:21:52  roboos
- * ensure that wrapping also works for N+x where x>1
- *
- * Revision 1.22  2008/05/29 07:54:59  roboos
- * moved checks for the packing of structs and wordsize to seperate function
- *
- * Revision 1.21  2008/05/22 09:50:54  roboos
- * moved win32 specific into seperate header file
- *
- * Revision 1.20  2008/03/26 14:34:43  thohar
- * defines closesocket now as close on non-win32 platforms
- *
- * Revision 1.19  2008/03/19 09:21:00  thohar
- * added extern "C" statement for c++ builds
- *
- * Revision 1.18  2008/03/17 13:43:12  roboos
- * added client helper functions set/get_property
- *
- * Revision 1.17  2008/03/13 13:37:26  roboos
- * added DEFAULT_HOSTNAME, renamed PORT to DEFAULT_PORT
- * removed declaration of functions that are currently not used (sorry Christian)
- *
- * Revision 1.16  2008/03/13 12:31:11  thohar
- * Added defines for implementations of poll.h that do not have e.g. POLLRDNORM
- *
- * Revision 1.15  2008/03/10 10:02:42  roboos
- * renamed host.host into host.name
- *
- * Revision 1.14  2008/03/10 09:40:18  roboos
- * added property details, added host structure (for name and port)
- *
- * Revision 1.13  2008/03/08 10:37:40  roboos
- * some changes to reflect the renaming of the low-level functions and associated files
- *
- * Revision 1.12  2008/03/07 14:48:43  roboos
- * added declaration for write_request
- *
- * Revision 1.11  2008/03/02 13:24:09  roboos
- * changed SO_RCVBUF_SIZE and SO_SNDBUF_SIZE to 16k
- * added declaration of handle_request function
- *
- * Revision 1.10  2008/02/27 10:13:27  roboos
- * added print_buf declaration
- *
- * Revision 1.9  2008/02/26 21:43:25  roboos
- * renamed packet_t structure definition into messagedef_t, added message_t structure (contains def+buf)
- *
- * Revision 1.8  2008/02/20 13:35:54  roboos
- * changed comments to ansi style, needed for matlab
- * modified declaration of append function
- *
- * Revision 1.7  2008/02/20 07:10:25  roboos
- * tried out some low-level tcp specific details
- *
- * Revision 1.6  2008/02/19 10:24:26  roboos
- * added copyright statement
- *
- * Revision 1.5  2008/02/19 08:29:13  roboos
- * added print_datasel and print_eventsel declarations
- * added bufread and bufwrite declarations
- *
- * Revision 1.4  2008/02/18 17:04:08  roboos
- * lots of small changes, debugging for brainamp
- *
- * Revision 1.3  2008/02/18 12:13:46  roboos
- * moved executable from buffer to demo
- * fixed bugs in sinewave and socket for events
- * stripped down the eventdef_t fields
- * many small changes
- *
- * Revision 1.2  2008/02/18 10:20:48  roboos
- * merged bufferlib.h into buffer.h
- *
- * Revision 1.1  2008/02/18 10:05:25  roboos
- * restructured the directory layout, copied all code into src, added directory for external code
- *
- * Revision 1.4  2008/02/13 13:59:03  roboos
- * made a start with implementing GET_EVT
- *
- * Revision 1.3  2008/02/13 13:07:56  roboos
- * fixed numerous bugs
- * implemented append function, which after all does not seem to be neccessary (since the problem is in the TCP buffer size)
- *
- * Revision 1.2  2008/02/10 10:47:52  roboos
- * redefined max number of data and sampels, added define for wrapping
- *
  */
 
 /* prevent double include */
@@ -111,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+#include "platform_includes.h"
 #include "message.h"
 
 #ifndef POLLRDNORM
@@ -136,10 +39,13 @@
 #define SO_RCVBUF_SIZE 16384
 #define SO_SNDBUF_SIZE 16384
 
+/* this is because the function  has been renamed, but is perhaps already in use in other software */
+#define open_remotehost open_connection
+
 /* FIXME these should be variable */
+#define MAXNUMBYTE      (512*1024*1024)
 #define MAXNUMSAMPLE    600000
 #define MAXNUMEVENT     100
-#define MAXNUMPROPERTY  100
 
 #define WRAP(x,y) ((x) - ((int)((float)(x)/(y)))*(y))
 #define FREE(x) {if (x) {free(x); x=NULL;}}
@@ -150,6 +56,7 @@ extern "C" {
 #endif
 
 /* declaration of "public" buffer API functions */
+/* SK: where are these, and what are they for ? */
 int read_header( const char *hostname, int port,           void **ppw);
 int read_data(   const char *hostname, int port, int *pnw, void **ppw);
 int read_event(  const char *hostname, int port, int *pnw, void **ppw);
@@ -169,13 +76,13 @@ void *tcpsocket(void *);
 void *sinewave_thread(void *);
 void *event_thread(void *);
 
-/* definition of the functions used in thread cancelation, see cancel.c */
-void cleanup_socket(void *arg);
-void cleanup_message(void *arg);
-void cleanup_header(void *arg);
-void cleanup_data(void *arg);
-void cleanup_event(void *arg);
-void cleanup_property(void *arg);
+/* definition of the functions used in thread cancelation, see cleanup.c */
+void cleanup_message(void **arg);
+void cleanup_header(void **arg);
+void cleanup_data(void **arg);
+void cleanup_event(void **arg);
+void cleanup_buf(void **arg);
+void cleanup_socket(int *);
 
 /* definition of helper functions for debugging and printing the content of various structures */
 void print_request(messagedef_t *);
@@ -183,25 +90,29 @@ void print_response(messagedef_t *);
 void print_headerdef(headerdef_t *);
 void print_datadef(datadef_t *);
 void print_eventdef(eventdef_t *);
-void print_propertydef(propertydef_t *);
 void print_datasel(datasel_t *);
 void print_eventsel(eventsel_t *);
-void print_propertydef(propertydef_t *);
 void print_buf(void *, int);
 
 /* definition of even more helper functions, see util.c */
-int open_localhost(void);
-int open_remotehost(const char*, int);
-int append(void **, int, void *, int);
-int bufread(int, void *, int);
-int bufwrite(int, void *, int);
-int clientrequest(int, message_t *, message_t**);
-int dmarequest(message_t *, message_t**);
-int tcprequest(int, message_t *, message_t**);
-int find_property(property_t *);
-int get_property(int, const char *, INT32_T *);
-int set_property(int, const char *, INT32_T *);
+int open_connection(const char*, int);
+int close_connection(int);
+unsigned int append(void **, unsigned int, void *, unsigned int);
+unsigned int bufread(int, void *, unsigned int);
+unsigned int bufwrite(int, const void *, unsigned int);
+int clientrequest(int, const message_t *, message_t**);
+int dmarequest(const message_t *, message_t**);
+int tcprequest(int, const message_t *, message_t**);
+unsigned int wordsize_from_type(UINT32_T data_type);
 void check_datatypes(void);
+const ft_chunk_t *find_chunk(const void *buf, int offset0, int size, UINT32_T chunk_type);
+
+void ft_swap16(unsigned int numel, void *data);
+void ft_swap32(unsigned int numel, void *data);
+void ft_swap64(unsigned int numel, void *data);
+int ft_swap_buf_to_native(UINT16_T command, UINT32_T bufsize, void *buf);
+int ft_convert_chunks_from_native(UINT32_T size, UINT32_T nchans, void *buf);
+int ft_swap_from_native(UINT16_T orgCommand, message_t *msg);
 
 typedef struct {
 	char name[256];
