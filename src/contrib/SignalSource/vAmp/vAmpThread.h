@@ -28,14 +28,13 @@
 class vAmpThread : public OSThread
 {
   static const int cBlocksInRingBuffer = 10;
-
+  static const unsigned short cDisplayUpdateTime = 333;
  public:
   vAmpThread(
     int inBlockSize,
     float sampleRate,
     int decimate,
-    const std::vector<int>& chList,
-    int chsPerDev[MAX_ALLOWED_DEVICES],
+    const std::vector<int>& chList,    
     const std::vector<int>& devList,
     int mode,
     float hpCorner
@@ -62,7 +61,7 @@ class vAmpThread : public OSThread
 
     void DisplayBCI2000Logo( int id );
     void ClearAmpDisplay( int id );
-    void DisplayImpedances( int id, const std::vector<float>& );
+    unsigned int DisplayImpedances( int id, const std::vector<float>& );
     void ValueToText( float inValue, std::string& outText, TColor& outColor );
     Graphics::TBitmap* NewBitmap() const;
 
@@ -75,33 +74,34 @@ class vAmpThread : public OSThread
           mRingBufferSize,
           mDecimate,
           mNumChannels,
-          mAnalogChannels;
+          mImpInitState;//contains the feedbackvalue from Impedance initialisation;
     float mSampleRate;
     unsigned short mPrevTime;
+	
     std::ostringstream mLastErr,
                        mWarnings;
     std::vector<int> mChList;
+    std::vector<unsigned int> mImpBuf;
     int mMode;
-    std::map<int, int> mDevChRevMap[MAX_ALLOWED_DEVICES], mDevChMap[MAX_ALLOWED_DEVICES];
-    int mDevChs[MAX_ALLOWED_DEVICES];
+  
     GenericSignal mDataBuffer, mDataOutput;
 
     std::vector< std::vector<float> > mImpArray;
     std::valarray< std::valarray<float> > mTrigBuffer; //mdatabuffer[device][ch][sample]
     float *mBuffer;
-
     HANDLE mEvent,
            mDev;
     bool mOk;
-    int mChsPerDev[MAX_ALLOWED_DEVICES];
+    bool mIs8Channel;
+   
     unsigned int mNumDevices;
     int mDevIds[MAX_ALLOWED_DEVICES];
     std::vector<int> mDevList;
-    int m_nChannelMode[MAX_ALLOWED_DEVICES];
-    int m_nEEGChannels[MAX_ALLOWED_DEVICES];
-    int m_nAUXChannels[MAX_ALLOWED_DEVICES];
-    bool m_bOpen[MAX_ALLOWED_DEVICES];
-    unsigned int mDataCounterErrors[MAX_ALLOWED_DEVICES];
+    int m_nChannelMode;
+    int m_nEEGChannels;
+    int m_nAUXChannels;    
+    unsigned int mDataCounterErrors;    
+    
     int mStartMode;
     int mBufferSize;
     int m_nMaxPoints;
@@ -113,9 +113,7 @@ class vAmpThread : public OSThread
     t_faDataFormatMode20kHz* m_tblMaxBuf4[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer (highspeed, 4 ch) + 2 add. samples.
     t_faDataModel8*          m_tblMaxBuf8[MAX_ALLOWED_DEVICES];     // 1 read cycle buffer of 8 channel system + 2 add. samples.
     t_faDataModel16*         m_tblMaxBuf16[MAX_ALLOWED_DEVICES];    // 1 read cycle buffer of 16 channel system + 2 add. samples.
-    std::vector<float>   m_tblEEGData[MAX_ALLOWED_DEVICES];      // 1 read cycle of only EEG and AUX signals.
-    std::vector<float>   m_tblTrigger[MAX_ALLOWED_DEVICES];      // 1 read cycle of only Trigger signals.
-    std::vector<float>   m_tblPacket[MAX_ALLOWED_DEVICES];       // 1 read cycle of EEG, AUX, Trigger signals.
+   
     t_faDataModeSettings mFastSettings[MAX_ALLOWED_DEVICES];
     t_faDataMode mDataMode;
     bool mHighSpeed;

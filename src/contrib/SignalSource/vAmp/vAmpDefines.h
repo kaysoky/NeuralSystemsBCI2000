@@ -43,7 +43,7 @@
 /*! Size of user data area, bytes */
 #define FA_USER_DATA_SIZE (512) /* do not change this */
 
-#define MAX_ALLOWED_DEVICES			4
+#define MAX_ALLOWED_DEVICES			1//#define MAX_ALLOWED_DEVICES			4
 
 
 
