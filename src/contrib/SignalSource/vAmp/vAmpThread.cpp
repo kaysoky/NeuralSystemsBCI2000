@@ -24,7 +24,7 @@ vAmpThread::vAmpThread(
   int inBlockSize,
   float sampleRate,
   int decimate,
-  const vector<int>& chList, 
+  const vector<int>& chList,
   const vector<int>& devList,
   int mode,
   float hpCorner
@@ -45,18 +45,18 @@ vAmpThread::vAmpThread(
   m_nMaxPoints( 0 ),
   mLock( false )
 {
-	
+
 	m_tblMaxBuf4[ 0 ] = NULL;
 	m_tblMaxBuf8[ 0 ] = NULL;
 	m_tblMaxBuf16[ 0 ] = NULL;
 	mDataCounterErrors = 0;
-	
+
 
 	mOk = true;
 	mNumDevices = faGetCount();
 	mLastErr.str("");
 	mHighSpeed = mMode == 1 || mMode == 4;
-	if (mNumDevices < 1) 
+	if (mNumDevices < 1)
 	{
 		mLastErr <<"No vAmp devices were found."<<endl;
 		mOk =false;
@@ -80,16 +80,16 @@ vAmpThread::vAmpThread(
 		m_nMaxPoints = 1;
 		mImpArray.resize(mNumDevices);
 	}
-	
+
 	if (faOpen(mDevList[0]) != FA_ERR_OK)
 	{
 		mLastErr << "Error opening device " << mDevList[0] << endl;
 		mOk =false;
 		return;
 	}
-   
-    memset(&m_DeviceInfo[0], 0, sizeof(m_DeviceInfo[0]));  
-   
+
+    memset(&m_DeviceInfo[0], 0, sizeof(m_DeviceInfo[0]));
+
     mDigChs.clear();
     if (faGetInformation(mDevList[0], &(m_DeviceInfo[0])) != FA_ERR_OK)
     {
@@ -105,12 +105,12 @@ vAmpThread::vAmpThread(
             m_nAUXChannels= FA_MODEL_8_CHANNELS_AUX;
             delete[] m_tblMaxBuf8[0];
             m_tblMaxBuf8[0] = new t_faDataModel8[m_nMaxPoints];
-            m_tblChanInfo[0].resize(m_nEEGChannels + m_nAUXChannels+ 1); // 1 Trigger.            
+            m_tblChanInfo[0].resize(m_nEEGChannels + m_nAUXChannels+ 1); // 1 Trigger.
             if(faSetDataMode(mDevList[0], dmNormal, NULL)!=FA_ERR_OK)
             {
                  mLastErr << "Error setting data mode."<<endl;
                  mOk =false;
-                 return;	
+                 return;
             }
             mIs8Channel  = true;
             break;
@@ -120,12 +120,12 @@ vAmpThread::vAmpThread(
             m_tblMaxBuf16[0] = new t_faDataModel16[m_nMaxPoints];
             m_nEEGChannels = FA_MODEL_16_CHANNELS_MAIN - 1; // without trigger
             m_nAUXChannels = FA_MODEL_16_CHANNELS_AUX;
-            m_tblChanInfo[0].resize(m_nEEGChannels + m_nAUXChannels + 1); // 1 Trigger.            
+            m_tblChanInfo[0].resize(m_nEEGChannels + m_nAUXChannels + 1); // 1 Trigger.
             if(faSetDataMode(mDevList[0], dmNormal, NULL)!=FA_ERR_OK)
             {
                  mLastErr << "Error setting data mode."<<endl;
                  mOk =false;
-                 return;	
+                 return;
             }
             mIs8Channel = false;
             break;
@@ -147,11 +147,11 @@ vAmpThread::vAmpThread(
         {
               mLastErr << "Error setting data mode."<<endl;
               mOk =false;
-              return;	
-        }    
+              return;
+        }
     }
     for (size_t ch = 0; ch < mChList.size(); ch++)
-    {    
+    {
 		if (mMode == 1)
 		{
 			mFastSettings[0].Mode20kHz4Channels.ChannelsPos[mChList[ch] ] = mChList[ch];
@@ -160,9 +160,9 @@ vAmpThread::vAmpThread(
 		if (mChList[ch] ==  (m_nEEGChannels + m_nAUXChannels))
 		{
 			mDigChs.insert(ch);
-		}              
+		}
 	}
-	
+
 	// Retrieves device properties.
     memset(&m_DeviceProp[0], 0, sizeof(m_DeviceProp[0]));
     if (faGetProperty(mDevList[0], &m_DeviceProp[0]) != FA_ERR_OK)
@@ -191,7 +191,7 @@ vAmpThread::vAmpThread(
         {
             ci.nType = DEVICE_CHAN_TYPE_TRIGGER;
             ci.dResolution = 1.0f;
-        }        
+        }
     }
 
 	mDataBuffer.SetProperties(SignalProperties(mChList.size(), mBlockSize*decimate, SignalType::float32));
@@ -219,7 +219,7 @@ vAmpThread::vAmpThread(
 			.Initialize(mDataBuffer.Channels());
 
 	acquireEventRead = CreateEvent(NULL, true, false, "ReadEvent");
-	
+
 	if(mMode!=3) DisplayBCI2000Logo( mDevList[0] );
 	t_faDataState state = { sizeof( t_faDataState ), };
 	faGetDataState( mDevList[0], &state );
@@ -227,11 +227,11 @@ vAmpThread::vAmpThread(
 	// faStart/faStop etc must be called from the main thread.
 	if (faStart(mDevList[0])!= FA_ERR_OK)
 	{
-	     {			   	
+	     {
                     mLastErr << "Error starting start vAmp device."<<endl;
                     mOk =false;
                     return;
-  	     }	
+  	     }
 	}
 	switch (mMode)
 	{
@@ -247,23 +247,23 @@ vAmpThread::vAmpThread(
                              return;
                         }
 			break;
-		case 3:			
+		case 3:
 			if(faStartImpedance(mDevList[0])!= FA_ERR_OK)
-			{			   	
+			{
                              mLastErr << "Error starting impedance measurement."<<endl;
                              mOk =false;
                              return;
-			}			
+			}
 			break;
-	}	
+	}
 }
 
 vAmpThread::~vAmpThread()
 {
 	delete[] mBuffer;
-	
+
 	CloseHandle(acquireEventRead);
-	// faStart/faStop etc must be called from the main thread.	
+	// faStart/faStop etc must be called from the main thread.
 	ClearAmpDisplay( mDevList[0] );
 	switch (mMode)
 	{
@@ -280,13 +280,13 @@ vAmpThread::~vAmpThread()
 	}
 	faStop(mDevList[0]);
 	faClose(mDevList[0]);
-	
 
-	
+
+
 	delete[] m_tblMaxBuf4[0];
 	delete[] m_tblMaxBuf8[0];
 	delete[] m_tblMaxBuf16[0];
-	
+
 }
 
 vector< vector<float> >
@@ -413,7 +413,7 @@ unsigned int  vAmpThread::DisplayImpedances( int inID, const vector<float>& inIm
       ( labels[i] + s ).c_str()
     );
   }
-  //vAmp API function 
+  //vAmp API function
   unsigned int status = faSetBitmap( inID, pBitmap->Handle );
   delete pBitmap;
   return status;
@@ -494,23 +494,23 @@ vAmpThread::Execute()
 
     memset(mBuffer, 0, mBufSize);
 
-    
-    int  curSample = 0, chCount;    
+
+    int  curSample = 0, chCount;
     int waitTime;
     mPrevTime = PrecisionTime::Now();
     unsigned short tLastDisplayUpdate = PrecisionTime::Now();
 	bool bIsStart = true;
-	
+
     while (!this->IsTerminating() && mOk)
     {
         unsigned short tnow = PrecisionTime::Now();
         if (mMode == 3)
-	{   
-	    // GET IMPEDANCE AND CONTINUE           
+	{
+	    // GET IMPEDANCE AND CONTINUE
             mImpArray[0].clear();
             if(mIs8Channel)
             {
-                unsigned int pBuf[FA_MODEL_8_CHANNELS_MAIN];
+                unsigned int pBuf[FA_MODEL_16_CHANNELS_MAIN]; // faGetImpedance() always assumes 17 entries in the buffer
                 for (int i = 0; i < FA_MODEL_8_CHANNELS_MAIN; i++) {pBuf[i] = 0;}
                 if(faGetImpedance(mDevList[0], pBuf, sizeof(pBuf))==FA_ERR_OK)
                 {
@@ -543,7 +543,7 @@ vAmpThread::Execute()
                    mLastErr << "Error reading impedances. Restart." <<endl;
                    return -1;
                 }
-	    }	
+	    }
             //This is done to prevent the display from being updated to often...paying attention to performance issues described in vAmp SDK.
 	    if(bIsStart||(PrecisionTime::TimeDiff(tLastDisplayUpdate , PrecisionTime::Now())>=cDisplayUpdateTime))
 	    {
@@ -554,15 +554,15 @@ vAmpThread::Execute()
 		      mOk = false;
                       mLastErr << "Error displaying impedances. Restart." <<endl;
                       return -1;
-		 }				   
-	    }            
+		 }
+	    }
             waitTime = min(mBlockSize/mSampleRate*1000 - PrecisionTime::TimeDiff(tnow, PrecisionTime::Now()),1000*mBlockSize/mSampleRate);
             if (waitTime > 0) Sleep(waitTime);
-            SetEvent( acquireEventRead );           
+            SetEvent( acquireEventRead );
             continue;
         }
 
-        //ACQUIRE DATA      
+        //ACQUIRE DATA
         switch (m_nChannelMode)
 	{
             case DEVICE_CHANMODE_16:
@@ -591,21 +591,21 @@ vAmpThread::Execute()
                         for (int chPos = 0; chPos < (int)mChList.size(); chPos++)
                         {
                             int nPos = mChList[chPos];//the channel of the device that should appear in this position according to parameter definition
-                            // Process input of normal data channels (subtract reference if not in calibration mode                            
+                            // Process input of normal data channels (subtract reference if not in calibration mode
                             if(0<=nPos&& nPos<16)
                             {
                                 mDataBuffer(chPos,sample) =
                                     (m_tblMaxBuf16[0][sample].Main[nPos] - ((mMode == 2) ? 0 : m_tblMaxBuf16[0][sample].Main[16]))*m_tblChanInfo[0][nPos].dResolution;
-                                	
+
                             }
                             //auxiliary channel 1
                             if(nPos ==16) mDataBuffer(chPos,sample) = m_tblMaxBuf16[0][sample].Aux[0]*m_tblChanInfo[0][16].dResolution;
                             //auxiliary channel 2
                             if(nPos ==17) mDataBuffer(chPos,sample) = m_tblMaxBuf16[0][sample].Aux[1]*m_tblChanInfo[0][16].dResolution;
                             //Trigger Channel
-                            if(nPos==18)  mDataBuffer(chPos,sample) = m_tblMaxBuf16[0][sample].Status & 0x1ff;                                
+                            if(nPos==18)  mDataBuffer(chPos,sample) = m_tblMaxBuf16[0][sample].Status & 0x1ff;
                         }
-                    }                                               
+                    }
                 }
                 break;
             case DEVICE_CHANMODE_4:
@@ -639,10 +639,10 @@ vAmpThread::Execute()
                                 mDataBuffer(chPos,sample) = (m_tblMaxBuf4[0][sample].Main[nPos])*m_tblChanInfo[0][nPos].dResolution;
                             }
                             //trigger channel
-                            if(nPos ==4)mDataBuffer(chPos,sample) = m_tblMaxBuf4[0][sample].Status & 0x1ff;                                
-                        }                           
+                            if(nPos ==4)mDataBuffer(chPos,sample) = m_tblMaxBuf4[0][sample].Status & 0x1ff;
+                        }
                     }
-                }                   
+                }
                 break;
             default:
                 pMaxBuffer = (char *)&m_tblMaxBuf8[0][0];
@@ -664,17 +664,17 @@ vAmpThread::Execute()
                 // Serving data successfully.
                 // Copy data to ring buffer.
                 if (returnLen >= nReadLen)
-                {                                            
+                {
                     for (int sample = 0; sample < mBlockSize*mDecimate; sample++)
                     {
                         for (int chPos = 0; chPos < (int)mChList.size(); chPos++)
                         {
-                            int nPos = mChList[chPos];                           
+                            int nPos = mChList[chPos];
                             //data channels
                             if(0<=nPos&& nPos<8)
-                            {                                	  
+                            {
                                 mDataBuffer(chPos,sample) =
-                                    (m_tblMaxBuf8[0][sample].Main[nPos] - ((mMode == 2) ? 0 : m_tblMaxBuf8[0][sample].Main[8]))*m_tblChanInfo[0][nPos].dResolution;                                
+                                    (m_tblMaxBuf8[0][sample].Main[nPos] - ((mMode == 2) ? 0 : m_tblMaxBuf8[0][sample].Main[8]))*m_tblChanInfo[0][nPos].dResolution;
                             }
                             // Auxiliary channel 1
                             if(nPos ==8)mDataBuffer(chPos,sample) = m_tblMaxBuf8[0][sample].Aux[0]*m_tblChanInfo[0][8].dResolution;
@@ -684,8 +684,8 @@ vAmpThread::Execute()
                             if(nPos ==10)mDataBuffer(chPos,sample) = m_tblMaxBuf8[0][sample].Status & 0x1ff;
                         }
                     }
-                        
-                }               
+
+                }
                 break;
         }
         t_faDataState state = { sizeof( t_faDataState ), };
@@ -700,7 +700,7 @@ vAmpThread::Execute()
             Unlock();
             mDataCounterErrors = state.DataCounterErrors;
         }
-        
+
         //FILTER
         mFilter.Process(mDataBuffer, mDataOutput);
 
