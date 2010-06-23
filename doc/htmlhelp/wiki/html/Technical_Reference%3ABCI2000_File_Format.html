@@ -96,7 +96,7 @@ Section3 DataType3 Name3= Value3 DefaultValue3 LowRange3 HighRange3 // Comment C
 CRLF
 </pre>
 <a name="Binary_Data"></a><h2>Binary Data</h2>
-<p>The binary data directly follows the last CRLF. (The end of the header is marked by CRLF CRLF.)
+<p>The end of the header is marked by CRLF CRLF, and the binary data directly follows the last CRLF. 
 For each sample, data values for all channels are stored, followed by <code>StateVectorLength</code> bytes for the state vector.
 Data samples are always stored in little endian byte ordering.
 Their format depends on the <code>DataFormat</code> field:

@@ -4,7 +4,7 @@
 <head>
 <title>User FAQ - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User FAQ,Contributions:ADCs,Contributions:How to use a Contributed Source Module,User Reference:Command Line Processing,User Reference:Contents,User Reference:ExpressionFilter,User Reference:LinearClassifier,User Reference:Module Command Line Options,User Reference:Timing" />
+<meta name="keywords" content="User FAQ,Contributions:ADCs,Contributions:FilterGUI,Contributions:How to use a Contributed Source Module,User Reference:Command Line Processing,User Reference:Contents,User Reference:ExpressionFilter,User Reference:LinearClassifier,User Reference:Matlab MEX Files,User Reference:Module Command Line Options,User Reference:Timing" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -50,7 +50,12 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_FAQ.html#Joystick_Control"><span class="tocnumber">2.5</span> <span class="toctext">Joystick Control</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="User_FAQ.html#See_also"><span class="tocnumber">3</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_FAQ.html#Data_Analysis"><span class="tocnumber">3</span> <span class="toctext">Data Analysis</span></a>
+<ul>
+<li class='toclevel-2'><a href="User_FAQ.html#Offline_Filtering"><span class="tocnumber">3.1</span> <span class="toctext">Offline Filtering</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="User_FAQ.html#See_also"><span class="tocnumber">4</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Troubleshooting"></a><h2>Troubleshooting</h2>
@@ -141,6 +146,12 @@ fclose(fp);
 JoystickYpos
 </pre>
 <p>By modifying the simple expression shown above, it would also be easy to use a combination of classified brain signals and states to drive an output such as the Cursor Task.
+</p>
+<a name="Data_Analysis"></a><h2>Data Analysis</h2>
+<a name="Offline_Filtering"></a><h3>Offline Filtering</h3>
+<p>Q: I would like to apply a filter to recorded data, and then use the BCI2000 OfflineAnalysis and P300Classifier tools for data analysis.
+</p><p>A: You may achieve this using Matlab. First, use the <a href="User_Reference%253AMatlab_MEX_Files.html#load_bcidat" title="User Reference:Matlab MEX Files">load_bcidat</a> mex file to load data into Matlab. Then, apply the desired filtering to the "signal" output variable. Finally, save the resulting filtered data using the <a href="User_Reference%253AMatlab_MEX_Files.html#save_bcidat" title="User Reference:Matlab MEX Files">save_bcidat</a> mex file.
+</p><p>For elementary filtering operations, this procedure has been wrapped up in a simple Matlab GUI. See <a href="Contributions%253AFilterGUI.html" title="Contributions:FilterGUI">Contributions:FilterGUI</a> for a description of this program.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AContents.html" title="User Reference:Contents">User Reference:Contents</a>

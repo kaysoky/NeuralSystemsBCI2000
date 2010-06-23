@@ -37,6 +37,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253ASourceFilter.html#NotchFilter"><span class="tocnumber">2.1</span> <span class="toctext">NotchFilter</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253ASourceFilter.html#HighPassFilter"><span class="tocnumber">2.2</span> <span class="toctext">HighPassFilter</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASourceFilter.html#LowPassFilter"><span class="tocnumber">2.3</span> <span class="toctext">LowPassFilter</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ASourceFilter.html#Remarks"><span class="tocnumber">3</span> <span class="toctext">Remarks</span></a></li>
@@ -65,8 +66,20 @@ it were a hardware filter built into the amplifier.
 </p>
 <ul><li>0: disabled, 
 </li><li>1: at 0.1Hz.
+</li><li>2: at 1Hz.
 </li></ul>
 <p>The high pass filter is realized as a 1st order IIR filter.
+</p>
+<a name="LowPassFilter"></a><h3>LowPassFilter</h3>
+<p>Configures the low pass filter:
+</p>
+<ul><li>0: disabled,
+</li><li>1: at 9Hz,
+</li><li>2: at 30Hz,
+</li><li>3: at 40Hz,
+</li><li>4: at 70Hz.
+</li></ul>
+<p>The low pass filter is realized as a 2nd order Butterworth IIR filter.
 </p>
 <a name="Remarks"></a><h2>Remarks</h2>
 <p>Generally, the <i>SourceFilter</i> will be available in source modules connecting to amplifiers that require it. Adding the <i>SourceFilter</i> to modules that do not yet contain it requires <a href="Programming_Howto%253ABuilding_BCI2000.html" title="Programming Howto:Building BCI2000">recompilation</a>.

@@ -41,13 +41,11 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Parameters"><span class="tocnumber">3</span> <span class="toctext">Parameters</span></a>
 <ul>
 <li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SamplingRate"><span class="tocnumber">3.1</span> <span class="toctext">SamplingRate</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#DeviceIDs"><span class="tocnumber">3.2</span> <span class="toctext">DeviceIDs</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#HPFilterCorner"><span class="tocnumber">3.3</span> <span class="toctext">HPFilterCorner</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SampleBlockSize"><span class="tocnumber">3.4</span> <span class="toctext">SampleBlockSize</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceCh"><span class="tocnumber">3.5</span> <span class="toctext">SourceCh</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChDevices"><span class="tocnumber">3.6</span> <span class="toctext">SourceChDevices</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChList"><span class="tocnumber">3.7</span> <span class="toctext">SourceChList</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#AcquisitionMode"><span class="tocnumber">3.8</span> <span class="toctext">AcquisitionMode</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#HPFilterCorner"><span class="tocnumber">3.2</span> <span class="toctext">HPFilterCorner</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SampleBlockSize"><span class="tocnumber">3.3</span> <span class="toctext">SampleBlockSize</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceCh"><span class="tocnumber">3.4</span> <span class="toctext">SourceCh</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#SourceChList"><span class="tocnumber">3.5</span> <span class="toctext">SourceChList</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253AvAmpADC.html#AcquisitionMode"><span class="tocnumber">3.6</span> <span class="toctext">AcquisitionMode</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253AvAmpADC.html#Additional_Information"><span class="tocnumber">4</span> <span class="toctext">Additional Information</span></a>
@@ -60,7 +58,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Function"></a><h2>Function</h2>
-<p>The <i>vAmpADC</i> filter acquires data from up to four <i>V-Amp</i> or <i>FirstAmp</i> EEG amplifiers. 
+<p>The <i>vAmpADC</i> filter acquires data from a <i>V-Amp</i> or <i>FirstAmp</i> EEG amplifier. 
 The <i>V-Amp</i> is an amplifier/digitizer combination from Brain Products.
 Support for this device in BCI2000 consists of a BCI2000-compatible Source Module (<i>vAmpSource.exe</i>).
 </p>
@@ -98,12 +96,7 @@ In addition, the <i>vAmpADC</i> provides the following parameters:
 </li></ul>
 <p>In 20 kHz mode, 10 times the above rates are valid.
 Prior to decimation, a 2nd-order anti-aliasing Butterworth filter with a corner frequency of 0.45 times the sample rate is applied to the signal.
-All sampling rates are supported for one or more amplifiers. If you are sampling at high rates and from multiple amplifiers, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize->VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display.
-</p>
-<a name="DeviceIDs"></a><h3>DeviceIDs</h3>
-<p>List of serial numbers (e.g., 70) of all devices.
-Serial numbers of found devices will be listed in the BCI2000 log window. 
-If you have more than one device, this list determines the order of the channels in the data file. 
+All sampling rates are supported for one or more amplifiers. If you are sampling at high rates, the CPU may be overloaded depending on the speed of your computer and the BCI2000 configuration. In case you are experiencing problems (e.g., data loss, jerky display, etc.), increase the SampleBlockSize so that you are updating the system less frequently (usually, updating the system 20-30 times per second is sufficient for most applications), and increase Visualize->VisualizeSourceDecimation. This parameter will decrease the number of samples per second that are actually drawn in the Source display.
 </p>
 <a name="HPFilterCorner"></a><h3>HPFilterCorner</h3>
 <p>A high-pass digital filter for removing DC offsets. This occurs after data has been read into BCI2000.
@@ -113,42 +106,23 @@ If you have more than one device, this list determines the order of the channels
 Together with the sampling rate, this parameter determines how often per second data are collected, processed, and feedback is updated. For example, at 600 Hz sampling and a SampleBlockSize of 20, the system (e.g., source signal display, signal processing, and stimulus presentation) will be updated 30 times per second.
 </p>
 <a name="SourceCh"></a><h3>SourceCh</h3>
-<p>The total number of channels across all vAmp devices.
-</p>
-<a name="SourceChDevices"></a><h3>SourceChDevices</h3>
-<p>The number of channels acquired from each device. 
-If there is only one device, this parameter has to equal <i>SourceCh</i>.
-For example, '16 8' will acquire channels from the first device listed under <i>DeviceIDs</i>, and 8 channels from the second device listed under <i>DeviceIDs</i>.
-Data acquisition always starts at channel 1.
-The sum of all channels (e.g., 24 in this example) has to 
-equal the value of <i>SourceCh</i>.
-In high-speed mode, this number may not be higher than 5 per device (4 channels + digital).
+<p>The total number of channels. In high-speed mode, this number may not be higher than 5 (4 channels + digital).
 </p>
 <a name="SourceChList"></a><h3>SourceChList</h3>
-<p>The list of channels that should be acquired from each device.
-The total number of channels listed should correspond to <i>SourceCh</i>. For more than one device, <i>SourceChDevices</i> determines how the <i>SourceChList</i> values are mapped to each device. For example if <i>SourceChDevices</i> = '8 8' and <i>SourceChList</i> = '1 2 3 4 13 14 15 16 5 6 7 8 9 10 11 12', then channels 1-4 and 13-16 will be acquired on the first device, and channels 5-12 will be acquired on the second device. These channels will be saved in the data file as 16 contiguous channels.
-The order of channels does not matter; i.e., '1 2 3 4' is the same as '2 3 1 4'. The channels are always in ascending order on a single device.
-Channels may not be listed twice on a single device; e.g., entering '1 2 3 4 5 6 7 1' if <i>SourceChDevices</i> = '8' will result in an error.
-If this parameter is left blank (the default), then all channels are acquired on all devices.
+<p>The list of channels that should be acquired from the vAmp device.
+The total number of channels listed should correspond to <i>SourceCh</i>. 
+The order of channels does not matter; i.e., '1 2 3 4' is the same as '2 3 1 4'. The channels are always in ascending order.
+Channels may not be listed twice; e.g., entering '1 2 3 4 5 6 7 1' if <i>SourceCh</i> = '8' will result in an error.
+If this parameter is left blank (the default), then all channels are acquired.
 For the V-Amp 16, channels 1-16 are EEG channels, 17-18 are Auxiliary channels, and 19 are the 8 digital channels stored in bits.
+For the V-Amp 8, channels 1-8 are EEG channels, 9-10 are Auxiliary channels and 11 is the digital channel.
 </p>
 <a name="AcquisitionMode"></a><h3>AcquisitionMode</h3>
 <ul><li>If set to <i>analog signal acquisition</i>, the V-Amp records analog signal voltages (default). 
 </li><li>If set to <i>high-speed acquisition</i>, the V-Amp records analog signals at 20 kHz instead of 2000 Hz.
-</li><li>If set to <i>Calibration</i>, the signal output is a square wave test signal generated by the V-amp (which can be used to verify correct system calibration). 
-</li><li>If set to <i>Impedance</i>, impedance data is recorded instead of the signal. 
-</li></ul>
-<p>This impedance test reports input impedances for each channel in a separate window. Values are color-coded according to the magnitude:
-</p>
-<ul><li> Green: 0-5 kOhm
-</li><li> Orange: 5-30 kOhm
-</li><li> Red: 30-1000 kOhm
-</li><li> Purple: > 1 MOhm
-</li></ul>
-<p>Values are updated in real-time. Channels are shown in columns, and devices in rows.
-<a href="../images/thumb/2/25/VAmpImpedanceChecker.jpg/700px-VAmpImpedanceChecker.jpg" class="image" title=""><img src="../images/thumb/2/25/VAmpImpedanceChecker.jpg/700px-VAmpImpedanceChecker.jpg" alt="" width="700" height="98" longdesc="/wiki/index.php/Image:VAmpImpedanceChecker.jpg" /></a>
-</p>
-<ul><li>If set to <i>high-speed calibration</i>, a square wave is generated at 20 kHz.
+</li><li>If set to <i>Calibration</i>, the signal output is a square wave test signal generated by the V-Amp (which can be used to verify correct system calibration). 
+</li><li>If set to <i>Impedance</i>, impedance data is recorded instead of the signal. The impedance values are showm in the V-Amp display. Values are currently updated 3 times per second. 
+</li><li>If set to <i>high-speed calibration</i>, a square wave is generated at 20 kHz.
 </li></ul>
 <a name="Additional_Information"></a><h2>Additional Information</h2>
 <a name="Data_Storage"></a><h3>Data Storage</h3>

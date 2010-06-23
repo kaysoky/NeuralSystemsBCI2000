@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 April_2010_Version_2.1_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" rel="nofollow">April 2010 Version 2.1 Release Build</a>
 4 February_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" rel="nofollow">February 2010 Build</a>
 4 December_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" rel="nofollow">December 2009 Build</a>
 4 November_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091110.exe" rel="nofollow">November 2009 Build</a>
@@ -291,6 +292,16 @@ Contributions%253AFieldTripBuffer.html
 Contributions%253AFileWriters.html
 2 See_also See also
 
+Contributions%253AFilterGUI.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 See_also See also
+
 Contributions%253AGenerateCalibration.html
 2 Synopsis Synopsis
 2 Location Location
@@ -416,6 +427,21 @@ Contributions%253ANeuroscanADC.html
 2 States States
 3 NeuroscanEvent1 NeuroscanEvent1
 2 The_neurogetparams_Command_Line_Tool The <tt>neurogetparams</tt> Command Line Tool
+2 See_also See also
+
+Contributions%253ANeuroscanAccessSDK.html
+2 Synopsis Synopsis
+3 Known_Issues Known Issues
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+2 States States
+2 Future_Work Future Work
 2 See_also See also
 
 Contributions%253AP300GUI.html
@@ -624,11 +650,9 @@ Contributions%253AvAmpADC.html
 2 Installation Installation
 2 Parameters Parameters
 3 SamplingRate SamplingRate
-3 DeviceIDs DeviceIDs
 3 HPFilterCorner HPFilterCorner
 3 SampleBlockSize SampleBlockSize
 3 SourceCh SourceCh
-3 SourceChDevices SourceChDevices
 3 SourceChList SourceChList
 3 AcquisitionMode AcquisitionMode
 2 Additional_Information Additional Information
@@ -893,6 +917,7 @@ Programming_Reference%253ABCI2000_Source_Code.html
 2 Version_Management Version Management
 2 Browsing_the_Source_Code_Repository_Online Browsing the Source Code Repository Online
 2 TortoiseSVN_Client  TortoiseSVN Client 
+2 Downloading_the_BCI2000_source_as_an_archive Downloading the BCI2000 source as an archive
 2 Howto_Pages Howto Pages
 2 Directory_Layout Directory Layout
 3 src.2Fbuildutils <tt>src/buildutils</tt>
@@ -1949,6 +1974,8 @@ Technical_Reference%253ABCI2000_Messages.html
 3 Descriptor.3D4:_Visualization_and_Brain_Signal_Data_Format Descriptor=4: Visualization and Brain Signal Data Format
 4 Descriptor_Supplement.3D1:_Signal_Data Descriptor Supplement=1: Signal Data
 4 Descriptor_Supplement.3D2:_ASCII_Text Descriptor Supplement=2: ASCII Text
+4 Descriptor_Supplement.3D3:_Signal_Properties Descriptor Supplement=3: Signal Properties
+4 Descriptor_Supplement.3D4:_Bitmap_Data Descriptor Supplement=4: Bitmap Data
 4 Descriptor_Supplement.3D255:_Visualization_Configuration Descriptor Supplement=255: Visualization Configuration
 4 Brain_Signal_Format Brain Signal Format
 4 Control_Signal_Format Control Signal Format
@@ -2042,6 +2069,8 @@ User_FAQ.html
 3 Random_Sequences Random Sequences
 3 Visual_Stimulation Visual Stimulation
 3 Joystick_Control Joystick Control
+2 Data_Analysis Data Analysis
+3 Offline_Filtering Offline Filtering
 2 See_also See also
 
 User_Reference%253AARFilter.html
@@ -2593,6 +2622,32 @@ User_Reference%253AOperator_Module_Scripting.html
 4 2 2
 2 See_also See also
 
+User_Reference%253AP300Classifier.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 e-mail e-mail
+3 Source_Code_Revisions Source Code Revisions
+2 Control_Panel Control Panel
+3 Data_Pane Data Pane
+3 Parameters_Pane Parameters Pane
+3 Details_Pane Details Pane
+2 Methodology Methodology
+3 Methodology_Concept Methodology Concept
+3 Methodology_Step_By_Step Methodology Step By Step
+4 Step_1:_Load_BCI2000_Data_Files Step 1: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Load BCI2000 Data Files</a>
+4 Step_2:_Get_P300_Responses Step 2: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Get P300 Responses</a> 
+4 Step_3:_Generate_Feature_Weights_for_a_Linear_Model_using_Stepwise_Linear_Discriminant_Analysis_.28SWLDA.29 Step 3: <a href="UserReference%253AP300ClassifierMethods.html" class='external text' title="http://www.bci2000.org/wiki/index.php/UserReference:P300ClassifierMethods" rel="nofollow">Generate Feature Weights for a Linear Model using Stepwise Linear Discriminant Analysis (SWLDA)</a>
+4 Step_4:_Apply_Linear_Classifier_to_Get_Scores Step 4: Apply Linear Classifier to Get Scores 
+4 Step_5:_Interpret_Scores Step 5: Interpret Scores 
+2 Tutorial Tutorial
+3 Training_the_SWLDA_Classifier Training the SWLDA Classifier
+3 Testing_the_SWLDA_Classifier Testing the SWLDA Classifier
+3 Example Example
+2 Future_work Future work
+2 References References
+
 User_Reference%253AP300_classifier.html
 2 Synopsis Synopsis
 2 Location Location
@@ -2735,6 +2790,7 @@ User_Reference%253ASourceFilter.html
 2 Parameters Parameters
 3 NotchFilter NotchFilter
 3 HighPassFilter HighPassFilter
+3 LowPassFilter LowPassFilter
 2 Remarks Remarks
 2 See_also See also
 

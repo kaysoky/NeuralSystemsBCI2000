@@ -2,9 +2,9 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>User Reference:P300 classifier - BCI2000 Help</title>
+<title>User Reference:P300Classifier - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:P300 classifier,User Reference:P300 classifier" />
+<meta name="keywords" content="User Reference:P300Classifier,User Reference:P300 classifier" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,7 +30,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">P300 classifier</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
+<h1 class="pagetitle">P300Classifier</h1><p class="subtitle">User Reference</p><hr class="sep" /><table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
 <li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Synopsis"><span class="tocnumber">1</span> <span class="toctext">Synopsis</span></a></li>
 <li class='toclevel-1'><a href="User_Reference%253AP300_classifier.html#Location"><span class="tocnumber">2</span> <span class="toctext">Location</span></a></li>
@@ -81,7 +81,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <dl><dt> Classifier Testing</dt><dd> Applies current feature weights to BCI2000 P3Speller or Stimuli Presentation data files and compares the results
 </dd></dl>
 <a name="Location"></a><h2>Location</h2>
-<p><a href="http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier" class='external free' title="http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier" rel="nofollow">http://www.bci2000.org/svn/trunk/src/private/Tools/P300_classifier</a>
+<p><a href="http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier" class='external free' title="http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier" rel="nofollow">http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier</a>
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Author"></a><h3>Author</h3>
@@ -240,7 +240,7 @@ Resp_window_ms = 0 800 // to set Response Window. The response window must be in
 <p>The <i>Data</i> pane contains the <i>Apply Feature Weights</i> <font color="red"> [5] </font> button for testing the generated feature weights to one or more BCI2000 testing data files.
 </p><p>The investigator must follow the next steps for applying feature weights to testing data files:
 </p>
-<ul><li> Once it has been successfully generated feature weights and there exists testing data files, the <i>Apply Feature Weights</i> button is enable. If there are not testing data files loaded, the investigator must press this button to load testing data file(s). One or more BCI2000 *.dat files can be selected from the same directory as a single 'test file group' each time the button is pressed. Selected files can be from different sessions of the same paradigm but must contain consistent parameters. Each testing data file is colored according to the color coded scheme explained in <a href="User_Reference%253AP300_classifier.html#Step_1:_Load_BCI2000_data_files" title="User Reference:P300 classifier">Load BCI2000 data files</a>. All testing files selected should have the same sampling rate and electrode montage as the training data files selected to generate the current feature weights set. 
+<ul><li> Once it has been successfully generated feature weights and there exists testing data files, the <i>Apply Feature Weights</i> button is enabled. If there are no testing data files loaded, the investigator must press this button to load testing data file(s). One or more BCI2000 *.dat files can be selected from the same directory as a single 'test file group' each time the button is pressed. Selected files can be from different sessions of the same paradigm but must contain consistent parameters. Each testing data file is colored according to the color coded scheme explained in <a href="User_Reference%253AP300_classifier.html#Step_1:_Load_BCI2000_data_files" title="User Reference:P300 classifier">Load BCI2000 data files</a>. All testing files selected should have the same sampling rate and electrode montage as the training data files selected to generate the current feature weights set. 
 </li></ul>
 <ul><li> After all the testing data files are correctly selected, press the <i>Apply Feature Weights</i> <font color="red"> [5] </font> button to perform the analysis. Results of the classification are displayed in the text editor <font color="red"> [20] </font>  of <i>Details</i> pane. The <i>Overall Progress</i> bar displayed in <i>Data</i> and <i>Details</i> panes will indicate the progress of the classification.
 </li></ul>

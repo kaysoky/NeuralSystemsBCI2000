@@ -58,7 +58,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 </li><li><b>Supported Compilers</b>
 <ul><li>Borland 6, 2007, 2009
-</li><li>Visual Studio  9 (2008)
+</li><li>Visual Studio  9 (2008), download Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a>
 </li><li>MinGW
 </li></ul>
 </li><li><b>Supported IDEs</b>
@@ -70,7 +70,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li></ul>
 <a name="How_To_Build_Using_CMake"></a><h2> How To Build Using CMake </h2>
 <ol><li>Ensure that your compiler and IDE are installed on the computer.  This means that Visual Studio is installed if you intend to use Visual Studio, or that MinGW and Code::Blocks are installed if you intend to use Code::Blocks as your IDE and MinGW as your compiler.  
-</li><li>Download and install cmake (Version 2.6 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b>
+</li><li>Download and install cmake (Version 2.8 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b> -- If you experience a problem with a version of cmake newer than 2.8.1, download cmake 2.8.1 from <a href="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" class='external text' title="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" rel="nofollow">here</a>.
 </li><li>Go to the BCI2000/build directory and double click the .bat file which best describes your intended platform.  (ie. if you plan to use Visual Studio 2008, run the Visual Studio 2008 .bat file)
 </li><li>Wait while cmake examines your computer, finds qt and your compiler, and generates applicable project files for your system
 </li><li>Open the generated project/solution in the IDE and build BCI2000, or - if makefiles were generated - run the make command from a command prompt.  Refer to the IDE help for IDE specific instructions on how to build an application.
@@ -97,6 +97,7 @@ There, in line 10, replace
 </li><li>Run <tt>test_executables.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory.
 </li></ol>
 <p>The tests will run and report a message after they've finished whether they've failed or not.  You may see a message in the beginning of the test stating that a directory does not exist.  This is normal behavior and does not reflect whether or not your executables have failed testing or not.
+</p><p><b>A Note on found differences:</b> depending on how many differences found it may not indicate that you have a broken build.  Sometimes different compilers handle the precision of floating point numbers differently than others.  These can account for small differences in calculated signal or state values. The default ref files were generated using Borland 2007.  If your compiler is different, this may not be a problem.
 </p>
 <a name="Known_Issues"></a><h2> Known Issues </h2>
 <ul><li><b>MinGW, Borland</b> and other single configuration generators within CMake only generate one configuration at CMake Run-time.  By default, this is set to the release configuration.  It can be set - along with specific compiler options - in <tt>BCI2000/build/cmake/BuildConfigurations.cmake</tt>.  The Visual Studio generator will ignore settings in this file.

@@ -48,9 +48,11 @@ As another example, when the operator module receives a visualization message, t
 <ul>
 <li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D1:_Signal_Data"><span class="tocnumber">7.1</span> <span class="toctext">Descriptor Supplement=1: Signal Data</span></a></li>
 <li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D2:_ASCII_Text"><span class="tocnumber">7.2</span> <span class="toctext">Descriptor Supplement=2: ASCII Text</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D255:_Visualization_Configuration"><span class="tocnumber">7.3</span> <span class="toctext">Descriptor Supplement=255: Visualization Configuration</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Brain_Signal_Format"><span class="tocnumber">7.4</span> <span class="toctext">Brain Signal Format</span></a></li>
-<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Control_Signal_Format"><span class="tocnumber">7.5</span> <span class="toctext">Control Signal Format</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D3:_Signal_Properties"><span class="tocnumber">7.3</span> <span class="toctext">Descriptor Supplement=3: Signal Properties</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D4:_Bitmap_Data"><span class="tocnumber">7.4</span> <span class="toctext">Descriptor Supplement=4: Bitmap Data</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor_Supplement.3D255:_Visualization_Configuration"><span class="tocnumber">7.5</span> <span class="toctext">Descriptor Supplement=255: Visualization Configuration</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Brain_Signal_Format"><span class="tocnumber">7.6</span> <span class="toctext">Brain Signal Format</span></a></li>
+<li class='toclevel-2'><a href="Technical_Reference%253ABCI2000_Messages.html#Control_Signal_Format"><span class="tocnumber">7.7</span> <span class="toctext">Control Signal Format</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="Technical_Reference%253ABCI2000_Messages.html#Descriptor.3D5:_State_Vector"><span class="tocnumber">8</span> <span class="toctext">Descriptor=5: State Vector</span></a></li>
@@ -139,6 +141,7 @@ represents a <a href="Technical_Reference%253AParameter_Definition.html" title="
 <p>State messages are used to transfer information about <a href="BCI2000_Glossary.html#State" title="BCI2000 Glossary">system state variables (event markers)</a> between modules.
 There, information is transferred as a sequence of ASCII characters representing a 
 <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">state definition</a> line.
+Note that, for transportation of state values between core modules during processing, state vector messages (Descriptor=5) are used rather than state messages. Typically, state messages are used to transfer information about states, or values of individual states, and state vector messages are used to transfer the values of all existing states at a given point in time.
 </p>
 <a name="Descriptor.3D4:_Visualization_and_Brain_Signal_Data_Format"></a><h3>Descriptor=4: Visualization and Brain Signal Data Format</h3>
 <p>When the core message
@@ -173,6 +176,20 @@ The <i>data type</i> can be
 The ASCII text field itself is of arbitrary length, and zero delimited.
 </p>
 <div class="center"><div class="thumb tnone"><div style="width:402px;"><a href="../images/thumb/4/49/BCI2000_Messages_vistype2(memo).png/400px-BCI2000_Messages_vistype2(memo).png" class="internal" title="One message if the visualization type is 2 (i.e., a text memo)."><img src="../images/thumb/4/49/BCI2000_Messages_vistype2(memo).png/400px-BCI2000_Messages_vistype2(memo).png" alt="One message if the visualization type is 2 (i.e., a text memo)." width="400" height="97" longdesc="/wiki/index.php/Image:BCI2000_Messages_vistype2%28memo%29.png" /></a>  <div class="thumbcaption" ><div class="magnify" style="float:right"><a href="../skins/common/images/magnify-clip.png" class="internal" title="Enlarge"><img src="../skins/common/images/magnify-clip.png" width="15" height="11" alt="Enlarge" /></a></div>One message if the visualization type is 2 (i.e., a text memo).</div></div></div></div>
+<a name="Descriptor_Supplement.3D3:_Signal_Properties"></a><h4>Descriptor Supplement=3: Signal Properties</h4>
+<p>For messages transferring Signal Properties, the <i>descriptor supplement</i> is 3.
+The Signal Properties type represents information about a signal, i.e. a signal name, channel and element (sample) indices, a signal type, and the physical units in the signal's dimensions (channels, elements, and values). 
+</p><p>For channels as well as elements, an index is defined, consisting of a label for each entry in the list of channels resp. elements. Labels may be either trivial, i.e. consist of the numbers from 1 to the number of entries, or nontrivial, consisting of arbitrary character strings. In the first, trivial, case, the index' representation in the message will be the number of its entries. In the second, nontrivial, case, it will be represented by a white-space separated list of its entries (labels), enclosed in curly braces.
+</p><p>In a message, the signal type is represented by its ID, which is one of int16, int32, float24, or float32.
+</p><p>Physical units are encoded as an offset <span class="texhtml"><i>a</i></span>, gain <span class="texhtml"><i>b</i></span>, and a symbol <span class="texhtml">&Sigma;</span>, such that a physical value <span class="texhtml">&phi;</span> is computed from the raw value <span class="texhtml"><i>r</i></span> as follows:
+</p><p><span class="texhtml">&phi; = (<i>r</i> &minus; <i>a</i>) * <i>b</i> * &Sigma;</span>
+</p><p>In a Signal Properties message, a physical unit is represented as a white-space separated list of offset, gain, and symbol, enclosed in curly braces.
+</p><p>All values are separated by white space. When containing braces or white space, these are encoded according to the URL convention, i.e. a character is encoded by its corresponding hexadecimal number in Latin-1 encoding, prepended with a percent sign.
+</p>
+<a name="Descriptor_Supplement.3D4:_Bitmap_Data"></a><h4>Descriptor Supplement=4: Bitmap Data</h4>
+<p>The Bitmap data type represents a bitmap picture. Bitmap pictures are transferred in the system, e.g. to display a miniaturized view of the user's screen on the operator's screen. For efficient transmission, a sequence of bitmap pictures is first color-reduced to 3x5-bit color depth. Then, difference frames are computed between subsequent frames. Finally, difference frames are transmitted in run-length encoding, with each difference frame corresponding to a separate bitmap message.
+</p><p>In a bitmap message, first width and height of the picture are transmitted as two-byte integers in little-endian format. Then, run-length data follow in this format: For each run, run-length reduced by 1 is transmitted as an unsigned byte first. Then, its associated color value follows, as a two-byte integer in little-endian format. Thus, maximum run length is 256. Runs are wrapped at the picture's right edge, and runs follow each other until the picture's specified height and width are filled with color data.
+</p>
 <a name="Descriptor_Supplement.3D255:_Visualization_Configuration"></a><h4>Descriptor Supplement=255: Visualization Configuration</h4>
 <p>The following figure illustrates the protocol when the visualization type is 255. Configuration IDs are defined in the <code>CfgID</code> enumeration in the  <a href="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" class='external text' title="http://www.bci2000.org/tracproj/browser/trunk/src/shared/defines.h" rel="nofollow">shared/defines.h</a>
 header file.
