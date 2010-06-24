@@ -32,7 +32,7 @@ __fastcall TmainForm::TmainForm(TComponent* Owner)
     char curdirTmp[200];
     current_directory(curdirTmp);
     progDir = curdirTmp;
-    curdir = curdirTmp;
+	curdir = curdirTmp;
     curdir.append("\\");
     iniFile = progDir + "\\BCI2000Launcher.ini";
     helpLoc = curdir.c_str();
@@ -277,30 +277,30 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
 	Sleep(500);
 
 	comm.str("");  
-    if (sourceList->ItemIndex < 0)
-    {
-        statusList->Items->Add("No Acquisition program selected...");
-    }
-    else
+	if (sourceList->ItemIndex < 0)
+	{
+		statusList->Items->Add("No Acquisition program selected...");
+	}
+	else
 	{
 		statusList->Items->Add("Launching " + sourceList->Items->Strings[sourceList->ItemIndex]);
-		comm << "\"" << curdir << sourceList->Items->Strings[sourceList->ItemIndex].c_str() << "\"";
-        if (sourceIPBox->Text.Length() > 0)
-        {
-            comm << " AUTOSTART " << sourceIPBox->Text.c_str();
+		comm << "\"" << curdir << AnsiString(sourceList->Items->Strings[sourceList->ItemIndex]).c_str() << "\"";
+		if (sourceIPBox->Text.Length() > 0)
+		{
+			comm << " AUTOSTART " << AnsiString(sourceIPBox->Text).c_str();
 		}
 
-        if (directoryBox->Text.Length() > 0)
-        {
-            comm << " --DataDirectory-" << EncodedString(AnsiString(directoryBox->Text).c_str());
-        }
-        if (subjectNameBox->Text.Length() > 0)
-        {
+		if (directoryBox->Text.Length() > 0)
+		{
+			comm << " --DataDirectory-" << EncodedString(AnsiString(directoryBox->Text).c_str());
+		}
+		if (subjectNameBox->Text.Length() > 0)
+		{
 			comm << " --SubjectName-" << EncodedString(AnsiString(subjectNameBox->Text).c_str());
-        }
-        if (sessionNumBox->Text.Length() > 0)
-        {
-            comm << " --SubjectSession-" << EncodedString(AnsiString(sessionNumBox->Text).c_str());
+		}
+		if (sessionNumBox->Text.Length() > 0)
+		{
+			comm << " --SubjectSession-" << EncodedString(AnsiString(sessionNumBox->Text).c_str());
 		}
 		strcpy(procName, comm.str().c_str());
 		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
@@ -321,9 +321,9 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
     else
     {
 		statusList->Items->Add("Launching " + sigProcList->Items->Strings[sigProcList->ItemIndex]);
-		comm << "\"" << curdir.c_str() << sigProcList->Items->Strings[sigProcList->ItemIndex].c_str() << "\"";
+		comm << "\"" << curdir.c_str() << AnsiString(sigProcList->Items->Strings[sigProcList->ItemIndex]).c_str() << "\"";
 		if (sigProcIPBox->Text.Length() > 0)
-			comm << " AUTOSTART" << sigProcIPBox->Text.c_str();
+			comm << " AUTOSTART" << AnsiString(sigProcIPBox->Text).c_str();
 		strcpy(procName, comm.str().c_str());
 		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
 			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
@@ -343,9 +343,9 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
     else
     {
 		statusList->Items->Add("Launching " + appList->Items->Strings[appList->ItemIndex]);
-        comm << "\"" << curdir.c_str() << appList->Items->Strings[appList->ItemIndex].c_str() << "\"";
-        if (appIPBox->Text.Length() > 0)
-			comm << " AUTOSTART" << appIPBox->Text.c_str();
+		comm << "\"" << curdir.c_str() << AnsiString(appList->Items->Strings[appList->ItemIndex]).c_str() << "\"";
+		if (appIPBox->Text.Length() > 0)
+			comm << " AUTOSTART" << AnsiString(appIPBox->Text).c_str();
 		strcpy(procName, comm.str().c_str());
 		int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
 			HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
@@ -364,7 +364,7 @@ void __fastcall TmainForm::launchButClick(TObject */*Sender*/)
         {
             if (othersList->Selected[i])
 			{
-				comm << "\"" << curdir << othersList->Items->Strings[i].c_str() << "\"";
+				comm << "\"" << curdir << AnsiString(othersList->Items->Strings[i]).c_str() << "\"";
 				strcpy(procName, comm.str().c_str());
 				int proc = CreateProcess(NULL,procName, NULL, NULL, FALSE,
 					HIGH_PRIORITY_CLASS | CREATE_NEW_CONSOLE, NULL, NULL, &operatSI, &operatPI);
@@ -760,17 +760,17 @@ bool TmainForm::updateINIFile()
 
     //now go through the source, sigProc, and app lists and output the names of each
     for (i = 0; i < sourceList->Items->Count; i++)
-        out << "source " << sourceList->Items->operator [](i).c_str() << endl;
+		out << "source " << AnsiString(sourceList->Items->operator [](i)).c_str() << endl;
 
     out << endl;
 
     for (i = 0; i < sigProcList->Items->Count; i++)
-        out << "sigproc " << sigProcList->Items->operator [](i).c_str() << endl;
+		out << "sigproc " << AnsiString(sigProcList->Items->operator [](i)).c_str() << endl;
 
     out <<endl;
 
     for (i = 0; i < appList->Items->Count; i++)
-        out << "app " << appList->Items->operator [](i).c_str() << endl;
+        out << "app " << AnsiString(appList->Items->operator [](i)).c_str() << endl;
 
     out.close();
     return true;

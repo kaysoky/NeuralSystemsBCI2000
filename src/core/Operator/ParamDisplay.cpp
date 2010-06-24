@@ -676,7 +676,7 @@ ParamDisplay::SingleEntryDirectory::ButtonClick()
   if( ::SHGetMalloc( &shellMalloc ) == NO_ERROR )
   {
     char buffer[ MAX_PATH ];
-    BROWSEINFO browseinfo =
+    ::BROWSEINFOA browseinfo =
     {
       mpEdit->Handle,
       NULL,
