@@ -76,7 +76,7 @@ def ReplaceStreams():
 			pyreadline.unicode_helper.pyreadline_codepage = enc
 		except:
 			pass
-		sys.stdout = IPython.genutils.Term.cout
+		sys.stdout = IPython.genutils.Term.cout.stream
 	else:
 		sys.stdout = original['stdout']
 		# TODO: On linux, something else in IPython obviously needs to be reset here too.
@@ -137,8 +137,9 @@ class tee:
 			# We can't capture the user's In [*]:  commands, so don't bother to output the
 			# (non-newline-terminated) prompt. Note that IPython has its own mechanisms
 			# for logging In and Out traffic.
-				
-							
+	def __getattr__(self, key):
+		if hasattr(self.streamlist[0], key): return getattr(self.streamlist[0], key)
+		raise AttributeError(key)
 
 ############################################################################
 # extremely annoying section to help stop the IPython thread from vying for

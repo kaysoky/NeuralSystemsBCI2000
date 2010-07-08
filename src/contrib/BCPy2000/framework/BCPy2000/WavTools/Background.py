@@ -26,7 +26,8 @@ __all__ = ['ongoing', 'background_queue', 'prectime']
 import thread
 from time import sleep
 try:
-	from PrecisionTiming import prectime
+	try: from PrecisionTiming import prectime
+	except ImportError: from BCPy2000.PrecisionTiming import prectime
 except:
 	print __name__, "module failed to import prectime: using less precise time.time() for timestamps"
 	from time import time

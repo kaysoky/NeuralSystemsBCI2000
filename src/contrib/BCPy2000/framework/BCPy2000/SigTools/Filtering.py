@@ -23,7 +23,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 __all__ = [
-	'applyfilter', 'causalfilter', 'fader',
+	'applyfilter', 'causalfilter', 'fader', 'firdesign',
 ]
 
 from Basic import getfs
@@ -64,6 +64,17 @@ def applyfilter(x,b=1.0,a=1.0,axis=-1,zi=None):
 		y[sub].flat[:]=v.real
 	if matrixformat: y = numpy.matrix(y, copy=False)
 	return y,zf
+
+def firdesign(N, Wn, btype='lowpass', width=None, window='hamming', output='ba'):
+	"""
+	Wrapper around scipy.signal.firwin to make it suitable for plugging in
+	as a <method> argument to the causalfilter() constructor.
+	"""###
+	btype = scipy.signal.filter_design.band_dict[btype]
+	if btype != 'lowpass': raise RuntimeError("only low-pass FIR filter design implemented so far") # TODO
+	a = [1.0]
+	b = scipy.signal.firwin(N=N*2, cutoff=Wn, width=width, window=window)
+	return b, a
 	
 class causalfilter(object):
 	def __init__(self, freq_hz, samplingfreq_hz, order=10, type='bandpass', method=scipy.signal.filter_design.butter, **kwargs):
@@ -85,13 +96,15 @@ class causalfilter(object):
 		"""###
 		self.type = scipy.signal.filter_design.band_dict[type]
 		self.order = int(order)
+		self.order -= self.order%2
 		if not isinstance(freq_hz,list) and not isinstance(freq_hz,tuple): freq_hz = [freq_hz]
 		self.freq_hz = map(float, freq_hz)
 		self.samplingfreq_hz = getfs(samplingfreq_hz)
 		self.method = method
 		self.kwargs = kwargs
 		lims = map((lambda x: x / self.samplingfreq_hz * 2.0), self.freq_hz);
-		self.b, self.a = method(N=self.order/2, Wn=tuple(lims), btype=self.type, output='ba', **kwargs)
+		# TODO:  for firwin, might need to transform optional arg <width> in the same way?
+		self.b, self.a = method(N=self.order/2.0, Wn=tuple(lims), btype=self.type, output='ba', **kwargs)
 		self.state = None
 		self.samples_filtered = 0
 		

@@ -90,7 +90,10 @@ class BciGenericApplication(Core.BciCore):
 		self._block_structure = {}
 		self._previous_srctime_stateval = None
 		self._creation_parameters = None
-
+		
+		self._transition_block_mode = None
+		self._transition_block = None
+		
 		self.forget('transition')
 		self.forget('packet')
 		self.forget('frame')
@@ -242,6 +245,12 @@ class BciGenericApplication(Core.BciCore):
 	#############################################################
 
 	def _Process(self, in_signal):
+		
+		if self._transition_block == 'waiting for packet':
+			message = '_Process waiting'
+			self._transition_block = message
+			while self._transition_block == message: pass
+		
 		self._lock.acquire('Process')
 		if self.states['EventOffset'] and self.since('transition')['packets'] > 0:
 			#self.debug('EventOffsetZeroed', val=self.states['EventOffset'])
@@ -489,7 +498,7 @@ class BciGenericApplication(Core.BciCore):
 			maxabsval = 2**(bits-1)-1 # for example, 127 for 8 bits
 			if EventOffset < -maxabsval or EventOffset > maxabsval:  # reserve -128 (will become 0, below)
 				r,firsttime = self.debug('BadEventOffsets', val=EventOffset, statename=state, bits=bits)
-				if firsttime: print "WARNING: %s out of range"%state
+				if firsttime: print "WARNING: %s out of range (offset=%d, to be coded in %d-bit state)"%(state,EventOffset,bits)
 				EventOffset = maxabsval * (EventOffset/abs(EventOffset))
 			val = 1 + maxabsval + EventOffset # add 1, because 0 is reserved for "no event"
 			self.states[state] = val
@@ -581,7 +590,23 @@ class BciGenericApplication(Core.BciCore):
 			self.current_presentation_phase = None
 			self.phase(name='idle', duration=None, next='idle', id=0)
 			while self.states['Running'] and not mythread.read('stop'):
+				if self._transition_block_mode != None:
+					message = 'waiting for ' + self._transition_block_mode
+					self._transition_block = message
+					starttime = self.prectime()
+					while self._transition_block == message:
+						t = self.prectime() - starttime
+						timeouts = {
+							'packet': 20*self.nominal['SecondsPerPacket']*1000,
+							'frame':  20*self.nominal['SecondsPerFrame']*1000,
+						}
+						if t >= timeouts.get(self._transition_block_mode, 0):
+							dbrec,firsttime = self.debug('TransitionBlockTimeout', waiting_for=self._transition_block_mode, timeout_msec=t)
+							if firsttime: sys.stderr.write("WARNING: transition-lock timed out waiting for \"%s\" after %g msec\n" % (self._transition_block_mode, t))
+							break
+							
 				self._lock.acquire('Transition')
+				self._transition_block = None
 				self.Phases()
 				self._trial_update()
 				if not self.states['Running']: break
@@ -598,8 +623,7 @@ class BciGenericApplication(Core.BciCore):
 				#self.debug('transition', from_phase=previous_phase, to_phase=self.current_presentation_phase, after=elapsed['msec'], pp=self.states['PresentationPhase'], eo=self.states['EventOffset'])
 				self.Transition(self.current_presentation_phase)
 				if elapsed['packets'] == 0 and previous_phase != None:
-					evt = 'MultipleTransitions'
-					dbrec,firsttime=self.debug(evt, from_phase=previous_phase, to_phase=self.current_presentation_phase, after_msec=elapsed['msec'])
+					dbrec,firsttime=self.debug('MultipleTransitions', from_phase=previous_phase, to_phase=self.current_presentation_phase, after_msec=elapsed['msec'])
 					if firsttime: sys.stderr.write("WARNING: multiple phase transitions per packet\n")
 				self._lock.release('Transition')
 				
@@ -611,7 +635,8 @@ class BciGenericApplication(Core.BciCore):
 					if not self.states['Running'] or mythread.read('stop'): break
 					if duration != None and next != None and not self._slave:
 						elapsed = self.since('transition')
-						if elapsed['msec'] >= duration: self.change_phase(next)
+						overhead = 2
+						if elapsed['msec'] >= duration - overhead: self.change_phase(next)
 					if not self._phase_must_change:
 						if self._safe_sleep_until_frame(safety_margin_msec=3.0) > 0.0: time.sleep(0.001)
 		except:
@@ -684,6 +709,11 @@ class BciGenericApplication(Core.BciCore):
 				if self.frame_count > 0: self._estimate_rate('FramesPerSecond', t)
 				self.remember('frame', t)
 				self.frame_count += 1
+				if self._transition_block == 'waiting for frame':
+					self.ftdb(label='transition_block') #--------------------
+					message = '_visual_display waiting'
+					self._transition_block = message
+					while self._transition_block == message: pass
 				mythread.read('init', remove=True, wait=False)
 		except:
 			if self.frame_count == 0 or self.states['Running']:
@@ -1254,6 +1284,23 @@ class BciGenericApplication(Core.BciCore):
 		"""###
 		if not self._slave: self._really_change_phase(phasename)
 			
+	#############################################################
+
+	def lock_transitions(self, to='packet'):
+		"""
+		This is an API method which allows you to force all
+		presentation phase transitions to be delayed until the
+		start of the next packet (to='packet') or video frame
+		(to='frame') after they are due. Note that this means that
+		the phase durations you set in Phases() will no longer be
+		respected exactly, and may jitter. It is possible to call
+		this during the previous phase, and remove the timelock
+		again (to=None) after transition.
+		"""###
+		if not to: to = None
+		if to == 'none' or to == 'None': to = None
+		self._transition_block_mode = to
+	
 	#############################################################
 	#### application-specific hooks (or hooks with application-
 	#### specific documentation) for the developer to overshadow

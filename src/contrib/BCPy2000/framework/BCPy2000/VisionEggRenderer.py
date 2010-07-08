@@ -29,6 +29,7 @@ import pygame #; pygame.init()
 import logging
 import VisionEgg.Core
 import VisionEgg.Text
+import VisionEgg.WrappedText
 
 try:    from BCI2000PythonApplication    import BciGenericRenderer,BciStimulus   # development copy
 except: from BCPy2000.GenericApplication import BciGenericRenderer,BciStimulus   # installed copy
@@ -114,6 +115,7 @@ class VisionEggRenderer(BciGenericRenderer):
 		supplied list of names. Returns None if no match is found.
 		"""###
 		if not isinstance(fontnames, (list,tuple)): fontnames = [fontnames]
+		fontnames = [f for f in fontnames if f != None]
 		f = (filter(None, map(pygame.font.match_font, fontnames)) + [None])[0]
 		if f == None and sys.platform == 'darwin': # pygame on OSX doesn't seem even to try to find fonts...
 			f = (filter(os.path.isfile, map(lambda x:os.path.realpath('/Library/Fonts/%s.ttf'%x),fontnames)) + [None])[0]
@@ -150,10 +152,17 @@ class VisionEggRenderer(BciGenericRenderer):
 			for k in kk:
 				if hasattr(VisionEgg.config, k):
 					setattr(VisionEgg.config, k, v)
+					#print "VisionEgg.config.%s = %s" % (k, repr(v))
 					break
 			else:
 				raise AttributeError, "VisionEgg.config has no attribute '%s'" % kk[0]
 
+	#############################################################
+
+	def GetDefaultFont(self):
+		d = VisionEgg.Text.Text.constant_parameters_and_defaults
+		return d['font_name'][0], d['font_size'][0]
+		
 	#############################################################
 	
 	def SetDefaultFont(self, name=None, size=None):
@@ -162,16 +171,19 @@ class VisionEggRenderer(BciGenericRenderer):
 		by default for Text stimuli. Returns True if the named font
 		can be found, False if not.
 		"""###
-		d = VisionEgg.Text.Text.constant_parameters_and_defaults
+		dd = [
+			VisionEgg.Text.Text.constant_parameters_and_defaults,
+			VisionEgg.WrappedText.WrappedText.constant_parameters_and_defaults,
+		]
 		if name != None:
 			if os.path.isabs(name) and os.path.isfile(name):
 				font = name
 			else: 
 				font = self.findfont(name)
 				if font == None: return False
-			d['font_name'] = (font,) + d['font_name'][1:]
+			for d in dd: d['font_name'] = (font,) + d['font_name'][1:]
 		if size != None:
-			d['font_size'] = (size,) + d['font_size'][1:]
+			for d in dd: d['font_size'] = (size,) + d['font_size'][1:]
 		return True
 	
 	#############################################################

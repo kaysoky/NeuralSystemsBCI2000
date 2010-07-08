@@ -46,7 +46,7 @@ if __name__.startswith('BCPy2000.'):
 	from BCPy2000 import __version__,__author__,__copyright__,__email__
 else:
 	__copyright__ = None
-	__version__ = '$Revision: 13521 $'.split(' ')[-2] # development version (NB: this is not so definitive:
+	__version__ = '$Revision: 17369 $'.split(' ')[-2] # development version (NB: this is not so definitive: 
 	                                                  # it only tracks changes to this particular file - see
 	                                                  # http://subversion.tigris.org/faq.html#version-value-in-source
 
@@ -246,6 +246,7 @@ SUCH DAMAGES.
 		self._lock = BciLock(record_timing=False, enable=True)
 		self.params = BciDict(lazy=True)
 		self.states = BciDict(lazy=True)
+		self.prevstates = None
 		self.bits = BciDict(lazy=True)
 		self.nominal = BciDict(lazy=True)
 		self.last = BciDict(lazy=True)
@@ -297,6 +298,7 @@ SUCH DAMAGES.
 			
 	def _get_states(self): # transfer states from Python to C++ after _Process
 		self.states.block = True
+		self.prevstates = self.states.copy()
 		self.packet_count += 1
 		s = dict(self.states) # makes a copy   TODO:  update _oldstates here instead of ^^^ ???
 		self.states.block = False
@@ -438,6 +440,7 @@ SUCH DAMAGES.
 		self._subclass_paramdefs = getattr(self, '_subclass_paramdefs', [])
 		self._subclass_paramdefs += list(subclass_paramdefs)
 		paramdefs += self._subclass_paramdefs
+		for i in range(len(paramdefs)): paramdefs[i] = paramdefs[i].replace('\n', ' ')
 		
 		self._subclass_statedefs = getattr(self, '_subclass_statedefs', [])
 		if isinstance(subclass_statedefs, dict):
@@ -447,6 +450,7 @@ SUCH DAMAGES.
 		else:
 			self._subclass_statedefs += list(subclass_statedefs)
 		statedefs += self._subclass_statedefs
+		for i in range(len(statedefs)): statedefs[i] = statedefs[i].replace('\n', ' ')
 
 	##########################################################
 	
@@ -498,6 +502,7 @@ SUCH DAMAGES.
 		self.in_signal  = self._zeros(*self.in_signal_dim)
 		self.out_signal = self._zeros(*self.out_signal_dim)
 		self.db.clear()
+		self._find_newest_file() # store the list of files that are in the directory before StartRun
 
 	#############################################################
 			
@@ -518,7 +523,7 @@ SUCH DAMAGES.
 			
 	def _Process(self, in_signal):
 		if self.data_file==0: # this is performed just once after StartRun (not in StartRun itself to avoid a race condition with the FileWriter)
-			self.data_file = self._find_newest_file(self.data_dir) # comes out as None, not 0, if not found
+			self.data_file = self._find_newest_file() # comes out as None, not 0, if not found
 			
 		self._check_threads()
 		self.in_signal = self._copy_signal(in_signal)
@@ -679,8 +684,11 @@ SUCH DAMAGES.
 		if x != None:
 			self.out_signal = x
 		if not isinstance(self.out_signal, numpy.ndarray):
-			print "Process() output is not a numpy.ndarray"
-			self.out_signal = fallback_signal
+			try:
+				self.out_signal = numpy.asmatrix(self.out_signal)
+			except:
+				print "Process() output is not a numpy.ndarray"
+				self.out_signal = fallback_signal
 		elif self.out_signal.shape != self.out_signal_dim:
 			print "Process() output has the wrong dimensions", self.out_signal.shape, "received,", self.out_signal_dim,"expected"
 			self.out_signal = fallback_signal
@@ -780,35 +788,29 @@ SUCH DAMAGES.
 			for z in ['Gain', 'Offset', 'RawMin', 'RawMax']:
 				if not isinstance(y[z], (float, int)):
 					return [False, x + 'Unit has no numeric value in ' + z]
-				 
+				
 		return [True, 'Everything is just fine']
 		
 	##########################################################
 
-	def _find_newest_file(self, directory):
-		#t = self.prectime()
-		if not os.path.isdir(directory):
+	def _find_newest_file(self):
+		
+		directory = self.data_dir
+		fileext = '.dat'
+		if not isinstance(directory, basestring) or not os.path.isdir(directory):
 			print "failed to find directory",directory
 			return None
-		files = os.listdir(directory)
-		files = [x for x in files if x.lower().endswith('.dat')]
-		datestamps = {}
-		for i in files:
-			fullfile = os.path.join(directory, i)
-			st = os.stat(fullfile)
-			datestamps[st.st_mtime] = (fullfile,st)
-		if len(datestamps) == 0:
-			return 0 # 0 means try again later
-		newestStamp = max(datestamps.keys())
-		newest,st = datestamps[newestStamp]
-		newest = os.path.realpath(newest)
-		age = time.time() - newestStamp
-		kb = st.st_size / 1024.0
-		if kb > 1024 or age < 0 or age > 10: # file is bigger than 1MB or believes it comes from the future or doesn't seem to have been modified in the last 10 seconds
-			print "_find_newest_file() would have chosen r'%s' but rejected it (size %gkb, age %gs)" % (newest,kb,age)
-			return None  # these aren't the files you're looking for: move along.
-		#print self.prectime() - t # takes about a millisecond for 10 files
-		return newest
+		prev = getattr(self, '_datafiles', set())
+		filelist = os.listdir(directory)
+		filelist = [x for x in filelist if x.lower().endswith(fileext.lower())]
+		fileset = set()
+		for f in filelist:
+			fullfile = os.path.realpath(os.path.join(directory, f))
+			fileset.add(fullfile)
+		self._datafiles = fileset
+		newfiles = sorted([(os.stat(f).st_mtime, f) for f in (fileset - prev)])
+		if len(newfiles) == 0: return None
+		return newfiles[0][1]
 
 	#############################################################
 	
@@ -839,7 +841,69 @@ SUCH DAMAGES.
 	#############################################################
 	#### useful callbacks for the developer
 	#############################################################
-			
+
+	def changed(self, statename, only=None, ignore=()):
+		"""
+		Return whether the state <statename> has changed since the
+		last packet.  If <only> is supplied, only accept changes
+		to one of the values listed there. If <ignore> is supplied,
+		ignore changes to any of the values listed there.
+		"""###
+		if self.prevstates == None or len(self.prevstates) == 0: return False
+		val = self.states[statename]
+		if val == self.prevstates[statename]: return False
+		if isinstance(only, (bool,int,float)): only = (int(only),)
+		if isinstance(ignore, (bool,int,float)): ignore = (int(ignore),)
+		if val in ignore: return False
+		if only != None and val not in only: return False
+		return True
+		
+	#############################################################
+	
+	def require_version(self, version):
+		"""
+		Allows you to assert a particular minimum version of BCPy2000
+		from inside your developer file.
+		"""###
+		if int(version) > int(__version__):
+			raise RuntimeError("You have version %s of the BCPy2000 installed, but the developer file requires version %s or later" %(str(__version__), str(version)) )
+	
+	#############################################################
+	
+	def detect_event(self):
+		"""
+		Decode the EventOffset state, set by the BCPy2000
+		application framework. If there is no event recorded on
+		this packet, the state value is 0 and this method returns
+		None.  If there is an event, this method returns the offset,
+		in samples, at which the event occurred. Note that this
+		may be before (negative) or after (positive) the current
+		packet.
+		"""###
+		eo = self.states.get('EventOffset', 0)
+		if eo == 0: return None
+		else: return eo - 2 ** (self.bits['EventOffset'] - 1)
+	
+	#############################################################
+	
+	def assert_matrixlabels(self, paramname, labels, dim='row'):
+		"""
+		A useful shortcut for checking that the row (or column)
+		labels of a matrix parameter <paramname> are what you
+		think they should be. If not, an EndUserError is thrown
+		with an appropriate message. <dim> is a string: either
+		'row' or 'column'. <labels> is a sequence of strings.
+		"""###
+		
+		p = self.params[paramname]
+		ind = {'row':0, 'column':1}[dim]
+		given = tuple(p.matrixlabels()[ind])
+		correct = tuple(labels)
+		if given != correct:
+			raise EndUserError("%s parameter must have %d %ss with headings %s" % (paramname, len(correct), dim, repr(correct)) )
+	
+	#############################################################
+	
 	def write_access(self, p):
 		"""
 		Call this during Preflight in order to ensure that changes
@@ -1047,6 +1111,37 @@ SUCH DAMAGES.
 				except: pass
 		return [(k,d[k]) for k,v in l]
 
+	#############################################################
+	
+	def find_data_files(self, xtn='.dat', runs=None, sessions=None):
+		"""
+		Find files in self.data_dir (which is set after the Initialize phase, but which
+		may not be valid if we're on a different computer from the source module) whose
+		names end with <xtn>.
+		
+		If <sessions> and/or <runs> are supplied, filter the results according to session
+		and run numbers, which are expected to be encoded in the filename in the BCI2000
+		style immediately before the <xtn> ending---so, assuming xtn=.dat, a filename
+		ending in ...S001R99.dat has where 001 recognized as its session number and 99
+		recognized as its run number.
+		"""###
+		d = getattr(self, 'data_dir', self)
+		if d == None: raise ValueError("self.data_dir is not set")
+		files = [f for f in os.listdir(d) if xtn == None or f.lower().endswith(xtn.lower())]
+		import re
+		pattern = r'.*s(?P<session>[0-9]+)r(?P<run>[0-9]+)' + xtn.replace('.', '\\.') + '$'
+		pattern = re.compile(pattern)
+		rrr = [None]  * len(files); sss = [None] * len(files)
+		for i,f in enumerate(files):
+			match = pattern.match(f.lower())
+			if match != None: sss[i],rrr[i] = int(match.group('session')),int(match.group('run'))
+		if runs == None: runs = rrr
+		if not isinstance(runs, (tuple,list)): runs = [runs]
+		if sessions == None: sessions = sss
+		if not isinstance(sessions, (tuple,list)): sessions = [sessions]
+		files = [os.path.join(d,f) for s,r,f in sorted(zip(sss,rrr,files)) if r in runs and s in sessions]
+		return files
+		
 	#############################################################
 	#### hooks for the developer to overshadow
 	#############################################################
@@ -1601,6 +1696,6 @@ class BciFunc:
 		s += func.__name__ + '('
 		s += ', '.join(['*'] * len(self.pargs) + map(lambda x:x+'=*', self.kwargs.keys())) + ')'
 		return s
-		
+
 #################################################################
 #################################################################

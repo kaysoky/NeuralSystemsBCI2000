@@ -132,8 +132,8 @@ class EQBars(object):
 		else:
 			raise ValueError, "freqs should be a vector or a 2-column array"
 		self.vals = numpy.array([[0.0,0.0]] * nfreqs)
-		self.gains = gains
-		self.baselines = baselines
+		self.gains = numpy.asarray(gains, dtype=numpy.float64)
+		self.baselines = numpy.asarray(baselines, dtype=numpy.float64)
 		y = numpy.arange(1,nfreqs+1) / float(nfreqs+1)
 		y = map(lambda h:boundingbox.map(h,'y'), y)
 		thickness *= boundingbox.map(1.0/float(nfreqs), 'height')

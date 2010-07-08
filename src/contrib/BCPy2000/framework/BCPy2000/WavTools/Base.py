@@ -277,7 +277,7 @@ class wav:
 		 +=  -=  *=  /=   %=   &=   also behave as you might expect
 			
 		"""###
-		y = numpy.array([], dtype='<i2')
+		y = numpy.array([], dtype='<f4')
 		y.shape=(0,nchan)
 		self.__dict__ = {
 		                 'y':y,

@@ -22,7 +22,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#!/cygdrive/c/Python24/python.exe
+#!/cygdrive/c/Python25/python.exe
 # This file was generated automatically by the 'freeze' script.
 import sys
 args = sys.argv[1:]
@@ -46,7 +46,7 @@ dependencies = {
 }
 setup(
 	name = 'BCPy2000',
-	version = '13718',
+	version = '17373',
 	packages = [
 		'BCPy2000',
 		'BCPy2000.AppTools',

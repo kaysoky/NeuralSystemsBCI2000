@@ -73,6 +73,7 @@ class BciSource(BciGenericSource):
 		self.use_env = int(self.params['UseAudioEnvelope'])
 		ringsize = WavTools.msec2samples(float(self.params['AudioBufferSizeMsec']), self.audiofs)
 		self.ring = SigTools.ring(ringsize, self.audiochannels)
+		self.ring.allow_overflow = True
 		self.nominal['AudioSamplesPerPacket'] = WavTools.msec2samples(self.nominal['SecondsPerPacket']*1000.0, self.audiofs)
 		self.dsind = numpy.linspace(0.0, self.nominal['AudioSamplesPerPacket'], self.nominal['SamplesPerPacket']+1, endpoint=True)
 		self.dsind = numpy.round(self.dsind).astype(numpy.int).tolist()

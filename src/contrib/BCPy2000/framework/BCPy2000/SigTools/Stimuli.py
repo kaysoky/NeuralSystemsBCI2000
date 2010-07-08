@@ -22,13 +22,14 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import Basic
-import WavTools.Base
 import numpy
+import Basic
+try: from WavTools.Base import wav
+except ImportError: from BCPy2000.WavTools.Base import wav
 
 def amstim(msec=1000, modfreq=20, carrierfreq=200, samplingfreq=1000, amplitude=1.0, carriershape=numpy.sin, modshape=numpy.sin):
 	"""create an amplitude-modulated periodic wave"""###
-	carrier = Basic.wavegen(freq_hz=carrierfreq, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav(), waveform=carriershape)
+	carrier = Basic.wavegen(freq_hz=carrierfreq, samplingfreq_hz=samplingfreq, duration_msec=msec, container=wav(), waveform=carriershape)
 	stim = Basic.ampmod(carrier, freq_hz=modfreq, waveform=modshape)
 	stim.autoscale(amplitude)
 	return stim
@@ -37,7 +38,7 @@ def zap(msec=10, samplingfreq=44100, amplitude=0.95, shape='sine'):
 	"""create a bipolar pulse"""###	
 	f = 1000.0 / float(msec)
 	if shape in ['sine', 'sin', 'square']:
-		carrier = Basic.wavegen(freq_hz=f, samplingfreq_hz=samplingfreq, duration_msec=msec, container=WavTools.Base.wav(), waveform=numpy.sin)
+		carrier = Basic.wavegen(freq_hz=f, samplingfreq_hz=samplingfreq, duration_msec=msec, container=wav(), waveform=numpy.sin)
 		stim = Basic.ampmod(carrier, freq_hz=f)
 	else:
 		raise ValueError, 'unrecognized shape "%s"' % shape
