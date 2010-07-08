@@ -5,7 +5,7 @@
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
 // 
-//   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner, 
+//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner, 
 //                         Christian Puzicha, Jason Farquhar
 //   
 //   bcpy2000@bci2000.org

@@ -4,8 +4,8 @@
 #   implementing modules that run on top of the BCI2000 <http://bci2000.org/>
 #   platform, for the purpose of realtime biosignal processing.
 # 
-#   Copyright (C) 2007-9  Jeremy Hill, Thomas Schreiner,
-#                         Christian Puzicha, Jason Farquhar
+#   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
+#                          Christian Puzicha, Jason Farquhar
 #   
 #   bcpy2000@bci2000.org
 #   
