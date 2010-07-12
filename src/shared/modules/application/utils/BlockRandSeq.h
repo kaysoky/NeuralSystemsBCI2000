@@ -57,7 +57,7 @@ BlockRandSeq::SetFrequencies( const Container& inFreq )
 {
   mSequence.resize( std::accumulate( inFreq.begin(), inFreq.end(), 0 ) );
   size_t curValue = 0;
-  Sequence::const_iterator curElement = mSequence.begin();
+  Sequence::iterator curElement = mSequence.begin();
   for( Container::const_iterator i = inFreq.begin(); i != inFreq.end(); ++i )
   {
     ++curValue;
