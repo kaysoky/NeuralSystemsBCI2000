@@ -607,7 +607,6 @@ P3SpellerTask::OnClassResult( const ClassResult& inResult )
                 << setprecision( 2 ) << fixed << mean
                 << "\n";
   }
-
   return pTarget;
 }
 
@@ -1023,15 +1022,13 @@ P3SpellerTask::LoadMenu( int                inMenuIdx,
                    << endl;
       }
 
+      AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
+      pTarget->SetEntryText( entryText )
+              .SetTag( i + 1 );
       if( TargetDefinitions->NumColumns() > SoundFile )
-      {
-        AudioSpellerTarget* pTarget = new AudioSpellerTarget( ioSpeller );
-        pTarget->SetSound( TargetDefinitions( i, SoundFile ) )
-                .SetEntryText( entryText )
-                .SetTag( i + 1 );
-        rowSet.Add( pTarget );
-        colSet.Add( pTarget );
-      }
+        pTarget->SetSound( TargetDefinitions( i, SoundFile ) );
+      rowSet.Add( pTarget );
+      colSet.Add( pTarget );
 
       TextStimulus* pTextStimulus = new TextStimulus( ioDisplay );
       GUI::Rect targetRect =

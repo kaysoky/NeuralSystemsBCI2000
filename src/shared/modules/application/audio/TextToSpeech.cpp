@@ -37,6 +37,19 @@ TextToSpeech::~TextToSpeech()
     ::CoUninitialize();
 }
 
+bool
+TextToSpeech::IsSpeaking() const
+{
+  bool result = false;
+  if( mpVoice != NULL )
+  {
+    SPVOICESTATUS status;
+    if( S_OK == mpVoice->GetStatus( &status, NULL ) )
+      result = ( SPRS_IS_SPEAKING == status.dwRunningState );
+  }
+  return result;
+}
+
 TextToSpeech&
 TextToSpeech::Speak()
 {

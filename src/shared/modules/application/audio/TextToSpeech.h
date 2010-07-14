@@ -9,6 +9,8 @@
 #ifndef TEXT_TO_SPEECH_H
 #define TEXT_TO_SPEECH_H
 
+#include <string>
+
 class TextToSpeech
 {
  public:
@@ -23,6 +25,7 @@ class TextToSpeech
     { mVolume = f; return *this; }
   float Volume() const
     { return mVolume; }
+  bool IsSpeaking() const;
   // Actions
   TextToSpeech& Speak();
   TextToSpeech& Stop();
