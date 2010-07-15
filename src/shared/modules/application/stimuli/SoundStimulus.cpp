@@ -19,7 +19,7 @@ WavePlayer*
 SoundStimulus::AllocateWavePlayer()
 {
   for( vector<WavePlayerEntry>::iterator i = sWavePlayerInstances.begin(); i != sWavePlayerInstances.end(); ++i )
-    if( !i->owned && !i->instance->IsPlaying() )
+    if( !i->owned && i->instance && !i->instance->IsPlaying() )
     {
       delete i->instance;
       i->instance = NULL;

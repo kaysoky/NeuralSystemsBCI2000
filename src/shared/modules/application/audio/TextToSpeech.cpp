@@ -19,7 +19,8 @@ using namespace std;
 int TextToSpeech::sNumInstances = 0;
 
 TextToSpeech::TextToSpeech()
-: mpVoice( NULL )
+: mVolume( 1.0 ),
+  mpVoice( NULL )
 {
   if( sNumInstances++ < 1 )
     ::CoInitialize( NULL );
@@ -45,7 +46,7 @@ TextToSpeech::IsSpeaking() const
   {
     SPVOICESTATUS status;
     if( S_OK == mpVoice->GetStatus( &status, NULL ) )
-      result = ( SPRS_IS_SPEAKING == status.dwRunningState );
+      result = ( SPRS_IS_SPEAKING == status.dwRunningState || 0 == status.dwRunningState );
   }
   return result;
 }

@@ -19,7 +19,7 @@ TextToSpeech*
 SpeechStimulus::AllocateTTS()
 {
   for( vector<TTSEntry>::iterator i = sTTSInstances.begin(); i != sTTSInstances.end(); ++i )
-    if( !i->owned && !i->instance->IsSpeaking() )
+    if( !i->owned && i->instance && !i->instance->IsSpeaking() )
     {
       delete i->instance;
       i->instance = NULL;
