@@ -58,10 +58,10 @@ KeyLogger::Publish()
       " // record keyboard to states (boolean)",
     END_PARAMETER_DEFINITIONS
 
-    BEGIN_STATE_DEFINITIONS
+    BEGIN_EVENT_DEFINITIONS
       "KeyDown 8 0 0 0",
       "KeyUp   8 0 0 0",
-    END_STATE_DEFINITIONS
+    END_EVENT_DEFINITIONS
   }
 
   if( ( OptionalParameter( "LogMouse", 0 ) != 0 ) )
@@ -71,11 +71,11 @@ KeyLogger::Publish()
       " // record mouse to states (boolean)",
     END_PARAMETER_DEFINITIONS
 
-    BEGIN_STATE_DEFINITIONS
+    BEGIN_EVENT_DEFINITIONS
       "MouseKeys  2 0 0 0",
       "MousePosX 16 0 0 0",
       "MousePosY 16 0 0 0",
-    END_STATE_DEFINITIONS
+    END_EVENT_DEFINITIONS
   }
 }
 

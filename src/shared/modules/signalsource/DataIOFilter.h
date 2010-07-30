@@ -39,6 +39,7 @@ class DataIOFilter: public GenericFilter
   static void Downsample( const GenericSignal& Input,
                                 GenericSignal& Output );
   void ProcessBCIEvents();
+  void ResetStates( int kind );
 
   GenericFilter*         mpADC,
                *         mpSourceFilter;

@@ -417,13 +417,12 @@ DataIOFilter::Process( const GenericSignal& Input,
       mTimingSignal( 2, 0 ) = stimulusTime - sourceTime; // source-to-stimulus delay
     mTimingVis.Send( mTimingSignal );
   }
-  mStatevectorBuffer = *Statevector;
-  mOutputBuffer = mInputBuffer;
-  int nextSample = Statevector->Samples() - 1;
-  for( int i = 0; i < nextSample ; ++i )
-    ( *Statevector )( i ) = ( *Statevector )( nextSample );
+  ResetStates( State::EventKind );
   State( "SourceTime" ) = now;
   ProcessBCIEvents();
+  mStatevectorBuffer = *Statevector;
+  mOutputBuffer = mInputBuffer;
+  ResetStates( State::StateKind );
 
   for( int i = 0; i < Output.Channels(); ++i )
     for( int j = 0; j < Output.Elements(); ++j )
@@ -503,6 +502,14 @@ DataIOFilter::ProcessBCIEvents()
     if( !( iss >> duration ) )
       duration = -1;
 
+    int kind = ( *States )[name].Kind();
+    if( kind != State::EventKind )
+      bcierr << "Trying to set state \"" << name << "\" from an event. "
+             << "This state was not defined as an event state. "
+             << "Use BEGIN_EVENT_DEFINITIONS/END_EVENT_DEFINITIONS to define states "
+             << "as event states."
+             << endl;
+
     bcidbg( 10 ) << "Setting State \"" << name
                  << "\" to " << value
                  << " at offset " << offset
@@ -541,4 +548,20 @@ DataIOFilter::ProcessBCIEvents()
   }
 }
 
-
+void
+DataIOFilter::ResetStates( int inKind )
+{ // For all states of the given kind, reset values to the value at the carry over position.
+  int nextSample = Statevector->Samples() - 1;
+  for( int state = 0; state < States->Size(); ++state )
+  {
+    const ::State& s = ( *States )[state];
+    if( s.Kind() == inKind )
+    {
+      int location = s.Location(),
+          length = s.Length();
+      State::ValueType value = ( *Statevector )( nextSample ).StateValue( location, length );
+      for( int sample = 0; sample < nextSample ; ++sample )
+        ( *Statevector )( sample ).SetStateValue( location, length, value );
+    }
+  }
+}

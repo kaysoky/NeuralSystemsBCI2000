@@ -23,6 +23,14 @@ class State
  public:
   typedef unsigned long ValueType;
 
+  enum
+  {
+    StateKind, // element of system state
+    EventKind, // event recording
+
+    numKinds
+  };
+
  public:
   State();
   ~State() {}
@@ -33,6 +41,10 @@ class State
 
   const std::string& Name() const
       { return mName; }
+  int Kind() const
+      { return mKind; }
+  State& SetKind( int k )
+      { mKind = k; return *this; }
   int Location() const
       { return mLocation; }
   int Length() const
@@ -76,6 +88,7 @@ class State
   ValueType   mValue;
   size_t      mLocation,
               mLength;
+  int         mKind;
   bool        mModified;
 };
 

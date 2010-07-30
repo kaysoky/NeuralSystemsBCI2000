@@ -74,7 +74,7 @@ void JoystickLogger::Publish()
       " // record joystick to states (boolean)",
     END_PARAMETER_DEFINITIONS
 
-    BEGIN_STATE_DEFINITIONS
+    BEGIN_EVENT_DEFINITIONS
       "JoystickXpos     16 0 0 0",
       "JoystickYpos     16 0 0 0",
       "JoystickZpos     16 0 0 0",
@@ -82,7 +82,7 @@ void JoystickLogger::Publish()
       "JoystickButtons2  1 0 0 0",
       "JoystickButtons3  1 0 0 0",
       "JoystickButtons4  1 0 0 0",
-    END_STATE_DEFINITIONS
+    END_EVENT_DEFINITIONS
   }
 }
 

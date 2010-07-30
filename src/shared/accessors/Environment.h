@@ -92,14 +92,69 @@ class FilterWrapper;
              << std::endl;                                             \
     else                                                               \
     {                                                                  \
+      s.SetKind( State::StateKind );                                   \
       if( States->Exists( s.Name() ) )                                 \
-        ( *States )[ s.Name() ].AssignValue( s );                      \
+      {                                                                \
+        if( ( *States )[ s.Name() ].Kind() == State::EventKind )       \
+          bcierr << "trying to define state "                          \
+                 << s.Name()                                           \
+                 << ", has been previously defined as an event"        \
+                 << std::endl;                                         \
+        else                                                           \
+          ( *States )[ s.Name() ].AssignValue( s );                    \
+      }                                                                \
       else                                                             \
         States->Add( s );                                              \
       OwnedStates()[ this ].insert( s.Name() );                        \
     }                                                                  \
   }                                                                    \
 };
+
+#define BEGIN_EVENT_DEFINITIONS                                        \
+{                                                                      \
+  const char* states_[] =                                              \
+  {
+
+#if( MODTYPE == 1 )
+
+#define END_EVENT_DEFINITIONS                                          \
+  };                                                                   \
+  for( size_t i = 0; i < sizeof( states_ ) / sizeof( *states_ ); ++i ) \
+  {                                                                    \
+    class State s;                                                     \
+    std::istringstream iss( states_[ i ] );                            \
+    if( !( iss >> s ) )                                                \
+      bcierr << "error in state definition:\n"                         \
+             << states_[ i ]                                           \
+             << std::endl;                                             \
+    else                                                               \
+    {                                                                  \
+      s.SetKind( State::EventKind );                                   \
+      if( States->Exists( s.Name() ) )                                 \
+      {                                                                \
+        if( ( *States )[ s.Name() ].Kind() == State::StateKind )       \
+          bcierr << "trying to define event "                          \
+                 << s.Name()                                           \
+                 << ", has been previously defined as a state"         \
+                 << std::endl;                                         \
+        else                                                           \
+          ( *States )[ s.Name() ].AssignValue( s );                    \
+      }                                                                \
+      else                                                             \
+        States->Add( s );                                              \
+      OwnedStates()[ this ].insert( s.Name() );                        \
+    }                                                                  \
+  }                                                                    \
+};
+
+#else // MODTYPE
+
+#define END_EVENT_DEFINITIONS                                           \
+  };                                                                    \
+  bcierr << "Trying to define events outside a source module." << endl; \
+};
+
+#endif // MODTYPE
 
 // This base class channels access to Parameter, State, and Communication
 // related objects that used to be arguments of member functions.
@@ -402,6 +457,7 @@ EnvironmentBase::ErrorContext( const std::string& inQualifier, const T* inFilter
 }
 
 #endif // ENVIRONMENT_H
+
 
 
 

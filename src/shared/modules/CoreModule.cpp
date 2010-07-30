@@ -609,8 +609,15 @@ CoreModule::HandleState( istream& is )
     }
     else
     {
+#ifdef TODO
+# error Remove saving of State::Kind once the protocol has been modified
+#endif // TODO
+      int kind = State::StateKind;
+      if( mStatelist.Exists( s.Name() ) )
+        kind = mStatelist[s.Name()].Kind();
       mStatelist.Delete( s.Name() );
       mStatelist.Add( s );
+      mStatelist[s.Name()].SetKind( kind );
     }
   }
   return is;
