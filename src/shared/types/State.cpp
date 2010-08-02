@@ -28,6 +28,7 @@ State::State()
 : mValue( 0 ),
   mLocation( 0 ),
   mLength( 0 ),
+  mKind( StateKind ),
   mModified( false )
 {
 }
@@ -44,7 +45,8 @@ State::operator==( const State& s ) const
   return this->Name() == s.Name()
       && this->Location() == s.Location()
       && this->Length() == s.Length()
-      && this->Value() == s.Value();
+      && this->Value() == s.Value()
+      && this->Kind() == s.Kind();
 }
 
 // **************************************************************************
@@ -68,6 +70,7 @@ State::ReadFromStream( istream& is )
     throw "State length exceeds size of State::ValueType";
   SetByteLocation( byteLocation );
   SetBitLocation( bitLocation );
+  mKind = StateKind;
   return is;
 }
 
