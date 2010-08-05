@@ -58,9 +58,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Known_Issues"></a><h3>Known Issues</h3>
 <ul><li> Starting the source module without the device connected causes system lockup on "Set Config", requiring force quit of Neuroscan.exe
-</li><li> Running 70 Channels at 100Hz causes module crash.
-</li><li> Conversion factor to uV is unknown
-</li><li> DC Offset is unknown
+</li><li> Small DC offsets can occur, especially when running the device at 20 kHz.  Running a high pass filter at 0.01 Hz is highly recommended.
 </li></ul>
 <a name="Location"></a><h2>Location</h2>
 <p><a href="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/NeuroscanAccessSDK" class='external free' title="http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/NeuroscanAccessSDK" rel="nofollow">http://www.bci2000.org/svn/trunk/src/contrib/SignalSource/NeuroscanAccessSDK</a>

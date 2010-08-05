@@ -261,13 +261,13 @@ Parameter( "TransmitCh" ) &lt;= Parameter( "SourceCh" )</tt>
 </p>
 <a name="Implementation_on_the_Framework_Side"></a><h3>Implementation on the Framework Side</h3>
 <p>The behaviour of the operator module in response to an error message that arrives from one of the modules depends on its context, i.e., on the execution phase the system is in. That way, no additional programming interface elements visible to a filter/module programmer are needed to implement an error handling scheme as described in the "Handling Errors"section. 
-</p><p>During the <b>preflight phase,</b>  errors are {Parameter Setup Errors}. A module's framework code behind <tt>bcierr</tt> just collects error messages; on return from the preflight function, it
+</p><p>During the <b>preflight phase,</b>  errors are <i>Configuration Errors</i>. A module's framework code behind <tt>bcierr</tt> just collects error messages; on return from the preflight function, it
 sends those messages to the operator module which then, from the contents of the message (i.e., whether it was empty or not), determines whether the preflight was successful; on not receiving any message after some timeout it assumes a broken connection or a crashed module.
 </p><p>(For now, a simple timeout scheme with a fixed timeout interval of 5s seems appropriate. In the future, one might consider a module requesting additional timeout periods if it expects lengthy calculations.)
-</p><p>During all <b>other phases,</b>  the code behind <tt>bcierr</tt> immediately (i.e., on flushing the <tt>std::ostream</tt>) sends its message buffer to a log file as well as to the operator module, indicating a {Runtime Error} to the operator module which will, in turn, halt the system,shut down the other modules, and display the message to the user.
+</p><p>During all <b>other phases,</b>  the code behind <tt>bcierr</tt> immediately (i.e., on flushing the <tt>std::ostream</tt>) sends its message buffer to a log file as well as to the operator module, indicating a <i>Runtime Error</i> to the operator module which will, in turn, halt the system,shut down the other modules, and display the message to the user.
 </p><p>In addition, the top level exception handling code of each module contains similar functionality,
 sending an exception's associated description string into a log file and to the operator module, if possible, then quitting the module in which the exception occurred. This not only ensures
-a proper general handling of exceptions within the framework but also allows a programmer to handle {Runtime Errors} by raising her own exceptions, eliminating the need to take care of the error
+a proper general handling of exceptions within the framework but also allows a programmer to handle <i>Runtime Errors</i> by raising her own exceptions, eliminating the need to take care of the error
 condition in the code following the detection of an error.
 </p>
 <hr />

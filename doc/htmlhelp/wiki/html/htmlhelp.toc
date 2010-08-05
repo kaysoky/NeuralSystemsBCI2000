@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 June_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" rel="nofollow">June 2010 Build</a>
 4 April_2010_Version_2.1_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" rel="nofollow">April 2010 Version 2.1 Release Build</a>
 4 February_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" rel="nofollow">February 2010 Build</a>
 4 December_2009_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_091203.exe" rel="nofollow">December 2009 Build</a>
@@ -132,9 +133,10 @@ Contributions%253ABCPy2000.html
 2 Versioning Versioning
 3 Author Author
 3 Version_History Version History
-4 2008-09-30:__BCPy2000_8570_.28also_known_as_1.0.29 2008-09-30:  BCPy2000 8570 (also known as 1.0)
-4 2009-03-16:__BCPy2000_11336 2009-03-16:  BCPy2000 11336
+4 2010-07-08:_BCPy2000_17374 2010-07-08: BCPy2000 17374
 4 2009-09-22:_BCPy2000_13637 2009-09-22: BCPy2000 13637
+4 2009-03-16:__BCPy2000_11336 2009-03-16:  BCPy2000 11336
+4 2008-09-30:__BCPy2000_8570_.28also_known_as_1.0.29 2008-09-30:  BCPy2000 8570 (also known as 1.0)
 3 Source_Code_Revisions Source Code Revisions
 2 Parameters Parameters
 4 ShowSignalTime ShowSignalTime
@@ -247,6 +249,20 @@ Contributions%253ADataGlove5DTUFilter.html
 2 State_Variables State Variables
 2 See_also See also
 
+Contributions%253AEmotiv.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Parameters Parameters
+2 States States
+2 Future_Work Future Work
+2 See_also See also
+
 Contributions%253AEnobioADC.html
 2 Synopsis Synopsis
 2 Location Location
@@ -287,6 +303,23 @@ Contributions%253AFieldTripBuffer.html
 3 FTStatesToBuffer FTStatesToBuffer
 3 FTStatesFromBuffer FTStatesFromBuffer
 2 States States
+2 See_also See also
+
+Contributions%253AFilePlayback.html
+2 Function Function
+2 Parameters Parameters
+3 SourceCh SourceCh
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceChList SourceChList
+3 Speedup Speedup
+3 FileName FileName
+3 SuspendAtEnd SuspendAtEnd
+3 StartTime StartTime
+2 Additional_Information Additional Information
+3 Data_Storage Data Storage
+3 Random_Sequences Random Sequences
+3 Data_Format Data Format
 2 See_also See also
 
 Contributions%253AFileWriters.html
@@ -396,6 +429,45 @@ Contributions%253ANIDAQ-MX.html
 2 Notes_on_recompiling Notes on recompiling
 2 See_also See also
 
+Contributions%253ANIDAQFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revision Source Code Revision
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 Command_Line_Parameters Command Line Parameters
+4 Initializing_the_NIDAQFilter Initializing the NIDAQFilter
+4 Device_Specification Device Specification
+4 Port_Specifications Port Specifications
+4 A_Completed_Flag A Completed Flag
+3 BCI2000_Parameters BCI2000 Parameters
+2 States States
+3 Template Template
+3 Example Example
+
+Contributions%253ANIDAQLogger.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Testing Testing
+2 Known_Issues Known Issues
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 Command_Line_Parameters Command Line Parameters
+4 Initializing_NIDAQLogger Initializing NIDAQLogger
+4 Device_Specification Device Specification
+4 Port_Specifications Port Specifications
+4 Example Example
+3 BCI2000_Parameters BCI2000 Parameters
+2 States States
+2 Acquired_Data Acquired Data
+
 Contributions%253ANeuroSky.html
 2 Synopsis Synopsis
 3 Known_Issues Known Issues
@@ -439,6 +511,22 @@ Contributions%253ANeuroscanAccessSDK.html
 3 Source_Code_Revisions Source Code Revisions
 2 Functional_Description Functional Description
 2 Installation Installation
+2 Parameters Parameters
+2 States States
+2 Future_Work Future Work
+2 See_also See also
+
+Contributions%253ANicoletOne.html
+2 Synopsis Synopsis
+3 Known_Issues Known Issues
+2 Location Location
+2 Versioning Versioning
+3 Authors Authors
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Installation Installation
+2 Compilation Compilation
 2 Parameters Parameters
 2 States States
 2 Future_Work Future Work
@@ -1419,6 +1507,54 @@ Programming_Reference%253AOSThread_Class.html
 3 bool_IsTerminated_.28r.29 bool IsTerminated (r)
 3 int_Result_.28r.29 int Result (r)
 
+Programming_Reference%253AParameters.html
+2 Param_Class Param Class
+3 Methods Methods
+4 Param.28_string_name.2C_string_section.2C_string_type.2C_string_value.2C_string_defaultvalue.2C_string_lowrange.2C_string_highrange.2C_string_comment_.29 Param( string name, string section, string type, string value, string defaultvalue, string lowrange, string highrange, string comment )
+4 Param.28_string_paramDefinition_.29 Param( string paramDefinition )
+4 Param_operator.3D.28_Param_.29 Param operator=( Param )
+4 Param_AssignValues.28_Param_.29 Param AssignValues( Param )
+4 Param_Unchanged.28.29 Param Unchanged()
+4 Param_SetDimensions.28_int_rows.2C_int_cols_.29 Param SetDimensions( int rows, int cols )
+4 ostream_WriteToStream.28_ostream_.29.2C_istream_ReadFromStream.28_istream_.29 ostream WriteToStream( ostream ), istream ReadFromStream( istream )
+4 ostream_WriteBinary.28_ostream_.29.2C_istream_ReadBinary.28_istream_.29 ostream WriteBinary( ostream ), istream ReadBinary( istream )
+3 Properties Properties
+4 HierarchicalLabel_Sections_.28rw.29 HierarchicalLabel Sections (rw)
+4 string_Section_.28rw.29 string Section (rw)
+4 string_Type_.28rw.29 string Type (rw)
+4 string_Name_.28r.29 string Name (r)
+4 string_DefaultValue_.28rw.29 string DefaultValue (rw)
+4 string_LowRange_.28rw.29 string LowRange (rw)
+4 string_HighRange_.28rw.29 string HighRange (rw)
+4 string_Comment_.28rw.29 string Comment (rw)
+4 bool_Changed_.28r.29 bool Changed (r)
+4 int_NumValues_.28rw.29 int NumValues (rw)
+4 int_NumRows_.28rw.29 int NumRows (rw)
+4 int_NumColumns_.28rw.29 int NumColumns (rw)
+4 ParamValue_Value.28_index_.3D_0_.29.2C_ParamValue_Value.28_row.2C_col_.29_.28rw.29 ParamValue Value( index = 0 ), ParamValue Value( row, col ) (rw)
+4 LabelIndex_Labels_.28rw.29 LabelIndex Labels (rw)
+4 LabelIndex_RowLabels_.28rw.29 LabelIndex RowLabels (rw)
+4 LabelIndex_ColumnLabels_.28rw.29 LabelIndex ColumnLabels (rw)
+2 ParamList_Class ParamList Class
+3 Methods_2 Methods
+4 Param_operator.5B.5D.28_string_name_.29 Param operator[]( string name )
+4 Param_operator.5B.5D.28_int_index_.29 Param operator[]( int index )
+4 Clear.28.29 Clear()
+4 bool_Exists.28_string_name_.29 bool Exists( string name )
+4 int_Index.28_string_name_.29 int Index( string name )
+4 Add.28_Param.2C_number_sortingHint_.3D_0.0_.29 Add( Param, number sortingHint = 0.0 )
+4 Add.28_string_paramDefinition_.29 Add( string paramDefinition )
+4 Delete.28_string_name_.29 Delete( string name )
+4 bool_Save.28_string_filename_.29 bool Save( string filename )
+4 bool_Load.28_string_filename.2C_bool_importNonexisting_.3D_true_.29 bool Load( string filename, bool importNonexisting = true )
+4 Sort.28.29 Sort()
+4 ostream_WriteToStream.28_ostream_.29.2C_istream_ReadFromStream.28_istream_.29_2 ostream WriteToStream( ostream ), istream ReadFromStream( istream )
+4 ostream_WriteBinary.28_ostream_.29.2C_istream_ReadBinary.28_istream_.29_2 ostream WriteBinary( ostream ), istream ReadBinary( istream )
+3 Properties_2 Properties
+4 int_Size_.28r.29 int Size (r)
+4 bool_Empty_.28r.29 bool Empty (r)
+2 See_also See also
+
 Programming_Reference%253APhysicalUnit_Class.html
 2 Location Location
 2 Synopsis Synopsis
@@ -1579,9 +1715,9 @@ Programming_Reference%253ASoundStimulus_Class.html
 3 float_Pan_.28rw.29 float Pan (rw)
 3 float_PlayingPos_.28r.29 float PlayingPos (r)
 3 bool_IsPlaying_.28r.29 bool IsPlaying (r)
-3 enum_Error_ErrorState_.28r.29 enum Error ErrorState (r)
+3 enum_WavePlayer::Error_ErrorState_.28r.29 enum WavePlayer::Error ErrorState (r)
 2 Enumerations Enumerations
-3 enum_Error enum Error
+3 enum_WavePlayer::Error enum WavePlayer::Error
 2 Methods Methods
 3 Present.28.29 Present()
 3 Conceal.28.29 Conceal()
@@ -1638,6 +1774,49 @@ Programming_Reference%253ASpeller_Class.html
 4 Select.28.29 Select()
 3 Properties Properties
 4 string_EntryText_.28rw.29 string EntryText (rw)
+2 See_also See also
+
+Programming_Reference%253AStates.html
+2 State_Class State Class
+3 Methods Methods
+4 bool_operator.3D.3D.28_State_.29.2C_bool_operator.21.3D.28_State_.29 bool operator==( State ), bool operator!=( State )
+4 State_AssignValue.28_State_.29 State AssignValue( State )
+4 ostream_WriteToStream.28_ostream_.29.2C_istream_ReadFromStream.28_istream_.29 ostream WriteToStream( ostream ), istream ReadFromStream( istream )
+4 ostream_WriteBinary.28_ostream_.29.2C_istream_ReadBinary.28_istream_.29 ostream WriteBinary( ostream ), istream ReadBinary( istream )
+3 Properties Properties
+4 string_Name_.28r.29 string Name (r)
+4 int_Location_.28r.29 int Location (r)
+4 int_Length_.28r.29 int Length (r)
+4 int_Value_.28w.29 int Value (w)
+2 StateList_Class StateList Class
+3 Methods_2 Methods
+4 bool_operator.3D.3D.28_StateList_.29.2C_bool_operator.21.3D.28_StateList_.29 bool operator==( StateList ), bool operator!=( StateList )
+4 State_operator.5B.5D.28_string_name_.29 State operator[]( string name )
+4 State_operator.5B.5D.28_int_index_.29 State operator[]( int index )
+4 Clear.28.29 Clear()
+4 bool_Exists.28_string_name_.29 bool Exists( string name )
+4 int_Index.28_string_name_.29 int Index( string name )
+4 Add.28_State_.29 Add( State )
+4 Add.28_string_stateDefinition_.29 Add( string stateDefinition )
+4 Delete.28_string_name_.29 Delete( string name )
+4 AssignPositions AssignPositions
+4 ostream_WriteToStream.28_ostream_.29.2C_istream_ReadFromStream.28_istream_.29_2 ostream WriteToStream( ostream ), istream ReadFromStream( istream )
+4 ostream_WriteBinary.28_ostream_.29.2C_istream_ReadBinary.28_istream_.29_2 ostream WriteBinary( ostream ), istream ReadBinary( istream )
+3 Properties_2 Properties
+4 int_Size_.28r.29 int Size (r)
+4 bool_Empty_.28r.29 bool Empty (r)
+2 StateVector_Class StateVector Class
+3 Methods_3 Methods
+4 StateVector.28_StateList.2C_int_numSamples_.3D_1_.29 StateVector( StateList, int numSamples = 1 )
+4 PostStateChange.28_string_name.2C_int_value_.29 PostStateChange( string name, int value )
+4 CommitStateChanges.28.29 CommitStateChanges()
+4 ostream_WriteToStream.28_ostream_.29.2C_istream_ReadFromStream.28_istream_.29_3 ostream WriteToStream( ostream ), istream ReadFromStream( istream )
+4 ostream_WriteBinary.28_ostream_.29.2C_istream_ReadBinary.28_istream_.29_3 ostream WriteBinary( ostream ), istream ReadBinary( istream )
+3 Properties_3 Properties
+4 int_Samples_.28r.29 int Samples (r)
+4 int_Length_.28r.29_2 int Length (r)
+4 StateList_.28r.29 StateList (r)
+4 int_StateValue.28_string_name.2C_int_sample_.3D_0_.29 int StateValue( string name, int sample = 0 )
 2 See_also See also
 
 Programming_Reference%253AStatusBar_Class.html
@@ -1816,6 +1995,7 @@ Programming_Reference%253ATextToSpeech_Class.html
 2 Properties Properties
 3 string_Text_.28rw.29 string Text (rw)
 3 float_Volume_.28rw.29 float Volume (rw)
+3 bool_IsSpeaking_.28r.29 bool IsSpeaking (r)
 2 Methods Methods
 3 Default_Constructor.2C_Destructor Default Constructor, Destructor
 3 Speak.28.29 Speak()
@@ -1860,9 +2040,9 @@ Programming_Reference%253AWavePlayer_Class.html
 3 float_Pan_.28rw.29 float Pan (rw)
 3 float_PlayingPos_.28r.29 float PlayingPos (r)
 3 bool_IsPlaying_.28r.29 bool IsPlaying (r)
-3 enum_Error_ErrorState_.28r.29 enum Error ErrorState (r)
+3 enum_WavePlayer::Error_ErrorState_.28r.29 enum WavePlayer::Error ErrorState (r)
 2 Enumerations Enumerations
-3 enum_Error enum Error
+3 enum_WavePlayer::Error enum WavePlayer::Error
 2 Methods Methods
 3 Default_Constructor.2C_Copy_Constructors.2C_Assignment_Operator.2C_Destructor Default Constructor, Copy Constructors, Assignment Operator, Destructor
 3 Play.28.29 Play()
@@ -2398,6 +2578,23 @@ User_Reference%253AFFTFilter.html
 3 FFTWindow FFTWindow
 3 VisualizeFFT VisualizeFFT
 2 States States
+2 See_also See also
+
+User_Reference%253AFilePlayback.html
+2 Function Function
+2 Parameters Parameters
+3 SourceCh SourceCh
+3 SampleBlockSize SampleBlockSize
+3 SamplingRate SamplingRate
+3 SourceChList SourceChList
+3 Speedup Speedup
+3 FileName FileName
+3 SuspendAtEnd SuspendAtEnd
+3 StartTime StartTime
+2 Additional_Information Additional Information
+3 Data_Storage Data Storage
+3 Random_Sequences Random Sequences
+3 Data_Format Data Format
 2 See_also See also
 
 User_Reference%253AFilters.html

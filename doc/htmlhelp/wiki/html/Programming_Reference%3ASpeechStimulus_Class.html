@@ -54,6 +54,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Synopsis"></a><h2>Synopsis</h2>
 <p>The <tt>SpeechStimulus</tt> class combines the <a href="Programming_Reference%253AStimulus_Class.html" title="Programming Reference:Stimulus Class">Stimulus Class</a> interface with the <a href="Programming_Reference%253ATextToSpeech_Class.html" title="Programming Reference:TextToSpeech Class">TextToSpeech Class</a>, resulting in a stimulus that uses a system-wide text-to-speech engine to render a given text.
+When a <tt>SpeechStimulus</tt> object is deallocated while a text is spoken, speech is not aborted. Rather, it continues to the end of the text.
 </p>
 <a name="Properties"></a><h2>Properties</h2>
 <a name="string_Text_.28rw.29"></a><h3>string Text (rw)</h3>
