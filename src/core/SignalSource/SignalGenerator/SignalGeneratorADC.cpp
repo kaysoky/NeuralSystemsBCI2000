@@ -69,7 +69,7 @@ SignalGeneratorADC::SignalGeneratorADC()
       "// DC offset (common to all channels)",
     "Source string OffsetMultiplier= % StimulusType % % "
       "// Expression to multiply offset by",
-    "Source int RandomSeed= 0 0 0 1 "
+    "Source int RandomSeed= 0 0 % % "
       "// Initialization value for random number generator (initialize from time if 0)",
     "Source int SignalType= 0 0 0 2 "
       "// numeric type of output signal: "
