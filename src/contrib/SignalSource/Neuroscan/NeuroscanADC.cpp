@@ -415,12 +415,6 @@ bool          retval;
         case DataTypeRaw32bit:
           {
             const unsigned char* pData = reinterpret_cast<unsigned char*>( pMsg->m_pBody );
-            // we also write the event marker channel into a state variable
-            // in the current implementation of BCI2000, we can only have one event marker
-            // per sample block, not per sample
-            // let's use the event marker of the first sample for the whole sample block
-            if( num_markerchannels > 0 )
-              State( "NeuroscanEvent1" ) = pData[ num_channels * ( bitspersample / 8 ) ]; // mask out lower 8 bits
 
             for( int sample = 0; sample < blocksize; ++sample )
             {
@@ -434,6 +428,10 @@ bool          retval;
                 value |= signedByte << ( bitspersample - 8 );
                 ( *signal )( channel, sample ) = value;
               }
+              // we also write the lower 8 bits of the event marker channel into a state variable
+              if( num_markerchannels > 0 )
+                State( "NeuroscanEvent1" )( sample ) = *pData;
+
               pData += num_markerchannels * ( bitspersample / 8 );
             }
           }
