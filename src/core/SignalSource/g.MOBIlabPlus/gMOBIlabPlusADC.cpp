@@ -40,7 +40,7 @@ gMOBIlabPlusADC::gMOBIlabPlusADC()
        "// the signal sampling rate",
    "Source int InfoMode= 0 0 0 1"
 		"// display information about the g.MOBIlabPlus",
-   "Source int TestMode= 0 0 0 1"
+   "Source int MobiLabTestMode= 0 0 0 1"
    		"// generate a test signal (boolean)",
    "Source int DigitalEnable= 0 0 0 1 "
         "// read digital inputs 1-8 as channels (boolean)",
@@ -177,7 +177,7 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
     return;
   }
 
-  if (Parameter("TestMode") == 1)
+  if (Parameter("MobiLabTestMode") == 1)
 	  GT_SetTestmode(mDev, true);
   else
   	GT_SetTestmode(mDev, false);
