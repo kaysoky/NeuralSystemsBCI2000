@@ -128,7 +128,7 @@ bool    ok;
        if (!paramlist->Load(paramFileName.c_str(), false))
           {
           sprintf(buf, "%s: Error in scriptfile on line %d: Couldn't load parameter file %s", filename, cur_line, token);
-          syslog->AddSysLogEntry(buf);
+          syslog->AddSysLogEntry(buf,SYSLOG::logEntryError);
           }
        else
           {

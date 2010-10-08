@@ -102,7 +102,7 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
   mVisualize = int( Parameter( "VisualizeP3TemporalFiltering" ) );
   if( mVisualize )
   {
-    mTargetERPChannel = Parameter( "TargetERPChannel" );
+    mTargetERPChannel = Parameter( "TargetERPChannel" ) - 1;
     SignalProperties visProperties = Output;
     visProperties.ChannelLabels().Clear();
     visProperties.SetChannels( 12 );

@@ -70,7 +70,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << endl;
 
       float ch = Input.ChannelIndex( Classifier( row, 0 ) );
-      if( ch < 0 )
+      if( ::ceil( ch ) < 0 )
         bcierr << "Channel specification in\n\t"
                << DescribeEntry( row, 0 )
                << "\nis invalid"
@@ -87,7 +87,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << endl;
 
       float el = Input.ElementIndex( Classifier( row, 1 ) );
-      if( el < 0 )
+      if( ::ceil( el ) < 0 )
         bcierr << "Element (bin) specification in\n\t"
                << DescribeEntry( row, 1 )
                << "\nis invalid"

@@ -247,6 +247,8 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   ifstream file( inFileName.c_str() );
   ParamList paramsFromFile;
   file >> paramsFromFile;
+  if( file.fail() )
+    return false;
 
   typedef set<string> NameSet;
   NameSet unwantedParams;
@@ -275,7 +277,7 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
                                        i != paramsFromFile.mParams.end(); ++i )
     ( *this )[ i->Param.mName ].AssignValues( i->Param );
 
-  return !file.fail();
+  return true;
 }
 
 // **************************************************************************

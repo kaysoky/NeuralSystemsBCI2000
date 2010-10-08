@@ -93,7 +93,7 @@ ARFilter::Preflight( const SignalProperties& Input,
       {
         int numBins = ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 );
         Output.SetElements( numBins );
-        Output.ElementUnit().SetOffset( firstBinCenter / binWidth )
+        Output.ElementUnit().SetOffset( -firstBinCenter / binWidth )
                             .SetGain( binWidth * Parameter( "SamplingRate" ) )
                             .SetSymbol( "Hz" );
         Output.ValueUnit().SetRawMin( 0 );
