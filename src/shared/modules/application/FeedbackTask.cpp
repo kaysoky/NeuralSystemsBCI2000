@@ -202,13 +202,13 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           bcidbg( 2 ) << "Event: FeedbackBegin" << endl;
           OnFeedbackBegin();
           mPhase = feedback;
+          doProgress = false; // The feedback phase lasts at least one block.
           break;
 
         case feedback:
           State( "Feedback" ) = false;
           bcidbg( 2 ) << "Event: FeedbackEnd" << endl;
           OnFeedbackEnd();
-          doProgress = false; // The feedback phase lasts at least one block.
           mPhase = postFeedback;
           break;
 
