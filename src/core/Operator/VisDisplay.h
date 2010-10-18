@@ -75,10 +75,9 @@ class VisDisplay
     enum ConfigState   // Possible states of properties ("configs").
     {
       Default = 0,     // May be overridden by a message or by user settings.
-      OnceUserDefined, // A previous user setting. Will become user defined if modified
-                       // by either MessageDefined or UserDefined information.
-      MessageDefined,  // Set by a message, user may override.
-      UserDefined,     // Set by the user, no override by a message.
+      OnceUserDefined, // A previous user setting.
+      UserDefined,     // Set by the user, may be overridden by a message.
+      MessageDefined,  // Set by a message.
     };
 
    protected:
@@ -345,10 +344,7 @@ VisDisplay::VisDisplayBase::ConfigSettings::Put( IDType id, const T& t, ConfigSt
 {
   if( State( id ) > state )
     return false;
-  if( State( id ) == OnceUserDefined )
-    State( id ) = UserDefined;
-  else
-    State( id ) = state;
+  State( id ) = state;
   stringstream os;
   os << t;
   ( *this )[ id ] = os.str();
