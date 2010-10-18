@@ -35,6 +35,7 @@ class LinearClassifier : public GenericFilter
 
  private:
   const std::string& DescribeEntry( int row, int col ) const;
+  static int Round( double );
   
   std::vector<size_t>  mInputChannels,
                        mInputElements,

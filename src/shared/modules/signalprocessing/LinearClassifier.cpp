@@ -80,7 +80,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << DescribeEntry( row, 0 )
                << "\nexceeds number of input channels"
                << endl;
-      if( ::fmod( ch, 1.0f ) > 1e-2 )
+      if( ::min( ::fmod( ch, 1.0f ), 1 - ::fmod( ch, 1.0f ) ) > 1e-2 )
         bciout << "Channel specification in physical units:\n\t"
                << DescribeEntry( row, 0 )
                << "\ndoes not exactly meet a single channel"
@@ -97,7 +97,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << DescribeEntry( row, 1 )
                << "\nexceeds number of input elements"
                << endl;
-      if( ::fmod( el, 1.0f ) > 1e-2 )
+      if( ::min( ::fmod( el, 1.0f ), 1 - ::fmod( el, 1.0f ) ) > 1e-2 )
         bciout << "Specification in physical units:\n\t"
                << DescribeEntry( row, 1 )
                << "\ndoes not exactly meet a single element"
@@ -133,8 +133,8 @@ LinearClassifier::Initialize( const SignalProperties& Input,
   mWeights.resize( numEntries );
   for( size_t entry = 0; entry < numEntries; ++entry )
   {
-    mInputChannels[ entry ] = Input.ChannelIndex( Classifier( entry, 0 ) );
-    mInputElements[ entry ] = Input.ElementIndex( Classifier( entry, 1 ) );
+    mInputChannels[ entry ] = Round( Input.ChannelIndex( Classifier( entry, 0 ) ) );
+    mInputElements[ entry ] = Round( Input.ElementIndex( Classifier( entry, 1 ) ) );
     mOutputChannels[ entry ] = Classifier( entry, 2 ) - 1;
     mWeights[ entry ] = Classifier( entry, 3 );
   }
@@ -166,5 +166,12 @@ LinearClassifier::DescribeEntry( int inRow, int inCol ) const
   static string result;
   result = oss.str();
   return result;
+}
+
+
+int
+LinearClassifier::Round( double inValue )
+{
+  return static_cast<int>( ::floor( inValue + 0.5 ) );
 }
 
