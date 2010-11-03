@@ -318,7 +318,13 @@ mexFunction( int nargout, mxArray* varargout[],
   }
   properties.SetElements( sampleBlockSize );
 
-  if( !Params.Exists( "SourceCh" ) )
+  if( Params.Exists( "SourceCh" ) )
+  {
+    ostringstream oss;
+    oss << properties.Channels();
+    Params["SourceCh"].Value() = oss.str();
+  }
+  else
   {
     ostringstream oss;
     oss << "save_bcidat int SourceCh= "
