@@ -107,8 +107,7 @@ DEFINES = { ...
   };
 
 switch( computer )
-  case 'PCWIN'
-  case 'PCWIN64'
+  case { 'PCWIN', 'PCWIN64' }
     build_version_header = 'cmd /c "cd ..\..\..\shared\config && "%ProgramFiles%\TortoiseSVN\bin\SubWCRev" ..\.. Version.h.in Version.h"';
     CXXFLAGS = {};
     LDFLAGS = {};
