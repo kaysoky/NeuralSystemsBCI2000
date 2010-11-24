@@ -42,23 +42,24 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#Functional_Description"><span class="tocnumber">4</span> <span class="toctext">Functional Description</span></a></li>
-<li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#Parameters"><span class="tocnumber">5</span> <span class="toctext">Parameters</span></a>
+<li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#Adding_and_Compiling"><span class="tocnumber">5</span> <span class="toctext">Adding and Compiling</span></a></li>
+<li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#Parameters"><span class="tocnumber">6</span> <span class="toctext">Parameters</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Command_Line_Parameters"><span class="tocnumber">5.1</span> <span class="toctext">Command Line Parameters</span></a>
+<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Command_Line_Parameters"><span class="tocnumber">6.1</span> <span class="toctext">Command Line Parameters</span></a>
 <ul>
-<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Initializing_the_NIDAQFilter"><span class="tocnumber">5.1.1</span> <span class="toctext">Initializing the NIDAQFilter</span></a></li>
-<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Device_Specification"><span class="tocnumber">5.1.2</span> <span class="toctext">Device Specification</span></a></li>
-<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Port_Specifications"><span class="tocnumber">5.1.3</span> <span class="toctext">Port Specifications</span></a></li>
-<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#A_Completed_Flag"><span class="tocnumber">5.1.4</span> <span class="toctext">A Completed Flag</span></a></li>
+<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Initializing_the_NIDAQFilter"><span class="tocnumber">6.1.1</span> <span class="toctext">Initializing the NIDAQFilter</span></a></li>
+<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Device_Specification"><span class="tocnumber">6.1.2</span> <span class="toctext">Device Specification</span></a></li>
+<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#Port_Specifications"><span class="tocnumber">6.1.3</span> <span class="toctext">Port Specifications</span></a></li>
+<li class='toclevel-3'><a href="Contributions%253ANIDAQFilter.html#A_Completed_Flag"><span class="tocnumber">6.1.4</span> <span class="toctext">A Completed Flag</span></a></li>
 </ul>
 </li>
-<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#BCI2000_Parameters"><span class="tocnumber">5.2</span> <span class="toctext">BCI2000 Parameters</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#BCI2000_Parameters"><span class="tocnumber">6.2</span> <span class="toctext">BCI2000 Parameters</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#States"><span class="tocnumber">6</span> <span class="toctext">States</span></a>
+<li class='toclevel-1'><a href="Contributions%253ANIDAQFilter.html#States"><span class="tocnumber">7</span> <span class="toctext">States</span></a>
 <ul>
-<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Template"><span class="tocnumber">6.1</span> <span class="toctext">Template</span></a></li>
-<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Example"><span class="tocnumber">6.2</span> <span class="toctext">Example</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Template"><span class="tocnumber">7.1</span> <span class="toctext">Template</span></a></li>
+<li class='toclevel-2'><a href="Contributions%253ANIDAQFilter.html#Example"><span class="tocnumber">7.2</span> <span class="toctext">Example</span></a></li>
 </ul>
 </li>
 </ul>
@@ -67,7 +68,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>A filter that outputs different statesr from BCI2000 to outputs connected to a National Instruments Board running DAQmx 8.5 or higher.
 </p>
 <a name="Location"></a><h2>Location</h2>
-<p>Not yet in the repository.
+<p>The file(s) should be in the following directory:
+<a href="http://www.bci2000.org/svn/trunk/src/shared/modules/signalsource/" class='external free' title="http://www.bci2000.org/svn/trunk/src/shared/modules/signalsource/" rel="nofollow">http://www.bci2000.org/svn/trunk/src/shared/modules/signalsource/</a>
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Author"></a><h3>Author</h3>
@@ -81,6 +83,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 </p>
 <a name="Functional_Description"></a><h2>Functional Description</h2>
 <p>The NIDAQFilter uses any DAQmx 8.5 or higher compliant board and allows the user to pipe state data from BCI2000 through the board. All necesary components must be connected to the BCI computer before initiating a module using the filter.
+</p>
+<a name="Adding_and_Compiling"></a><h2>Adding and Compiling</h2>
+<p>To add and compile the NIDAQFilter module, make sure the latest NIDAQ MX drivers are installed on your computer. When that is done, go into the C:\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\ folder. Inside are two folders: lib and include. The lib folder will contain the NIDAQmx.lib file (inside of the folder msvc). Copy that into the project's library folder. Inside of the include folder is the NIDAQmx.h file, which contains the function prototypes needed to use the NIDAQLogger module. Move this file into the project's include folder. Make sure the project links the new .lib file, and that the NIDAQFilter.h and NIDAQFilter.cpp files include the NIDAQmx.h file correctly. The NIDAQFiltershould now be able to compile normally.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>The NIDAQFilter uses command line parameters to initialize the device(s) and set up the active ports. It then uses BCI2000 parameters for finer controls over the device, such as changing the sampling rate of the device.

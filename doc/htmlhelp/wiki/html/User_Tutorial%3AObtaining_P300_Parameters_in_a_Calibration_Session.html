@@ -4,7 +4,7 @@
 <head>
 <title>User Tutorial:Obtaining P300 Parameters in a Calibration Session - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Tutorial:Obtaining P300 Parameters in a Calibration Session,User Reference:BCI2000 Offline Analysis,User Tutorial:P300 BCI Tutorial,User Tutorial:P300 GUI for Offline Analysis Tutorial,User Tutorial:Performing a P300 Spelling Session" />
+<meta name="keywords" content="User Tutorial:Obtaining P300 Parameters in a Calibration Session,User Reference:BCI2000 Offline Analysis,User Reference:P300Classifier,User Tutorial:P300 BCI Tutorial,User Tutorial:Performing a P300 Spelling Session" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -37,8 +37,9 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#Performing_the_Calibration_Session"><span class="tocnumber">3</span> <span class="toctext">Performing the Calibration Session</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#Analyzing_The_Calibration_Session_with_Offline_Analysis"><span class="tocnumber">4</span> <span class="toctext">Analyzing The Calibration Session with Offline Analysis</span></a></li>
 <li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#Creating_a_subject-specific_parameter_file"><span class="tocnumber">5</span> <span class="toctext">Creating a subject-specific parameter file</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#Next_Step"><span class="tocnumber">6</span> <span class="toctext">Next Step</span></a></li>
-<li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#See_also"><span class="tocnumber">7</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#P300Classifier"><span class="tocnumber">6</span> <span class="toctext">P300Classifier</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#Next_Step"><span class="tocnumber">7</span> <span class="toctext">Next Step</span></a></li>
+<li class='toclevel-1'><a href="User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Obtaining_P300_Parameters_in_the_Calibration_Session"></a><h2>Obtaining P300 Parameters in the Calibration Session</h2>
@@ -48,7 +49,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Design_of_Calibration_Session"></a><h2>Design of Calibration Session</h2>
 <p>During the calibration session, the subject is asked to spell out a given word by using a P300 character matrix, pictured below. During each run, the subject is asked to focus on the next letter in the word he is spelling, as the rows and columns flash randomly and successively so that sometimes the flashing corresponds to the column or row containing the target character and sometimes it will not. As the subject counts the number of times the desired letter in the word flashes, a P300 response is generated. The purpose of the calibration session is to identify those features that discriminate between the desired and undesired rows/columns. 
 </p><p><a href="../images/thumb/e/ea/P3SpellerMatrix.PNG/298px-P3SpellerMatrix.PNG" class="image" title=""><img src="../images/thumb/e/ea/P3SpellerMatrix.PNG/298px-P3SpellerMatrix.PNG" alt="" width="298" height="297" longdesc="/wiki/index.php/Image:P3SpellerMatrix.PNG" /></a>
-</p><p>After the first few runs are collected, an analysis tool will be used to generate a configuration file with weights that will determine what portions of the input data correspond to selecting the desired letter. These weights are applied to the configuration session for one more run, and then the data from this run is also analyzed with the analysis tool, and the number of flashes needed to ensure 100% accuracy is determined. This second configuration file constitutes the final set of parameters, and is saved as that subject's parameter file for future spelling sessions.
+</p><p>After the first few runs are collected, we will use the BCI2000 "Offline Analysis" tool to determine which features (in this case, signals at a particular location and time after the stimulus) correspond to the row or column of the desired character.
 </p>
 <a name="Performing_the_Calibration_Session"></a><h2>Performing the Calibration Session</h2>
 <ul><li>Start BCI2000 by running <tt>batch/P3Speller_&lt;Your_Amplifier&gt;.bat</tt>
@@ -81,7 +82,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Once this recording has finished, close BCI2000 and locate the saved data files below the BCI2000 <tt>data</tt> directory.
 </li></ul>
 <a name="Analyzing_The_Calibration_Session_with_Offline_Analysis"></a><h2>Analyzing The Calibration Session with Offline Analysis</h2>
-<p>We will now perform an ‘Offline Analysis’ with a tool that is provided with BCI2000.
+<p>We will now use the BCI2000 "Offline Analysis" tool to analyze the subject's initial session.
 </p>
 <ul><li>Start the <a href="User_Reference%253ABCI2000_Offline_Analysis.html" title="User Reference:BCI2000 Offline Analysis">BCI2000 Offline Analysis</a> tool:
 <ul><li>If you have a version of Matlab installed, run <tt>tools/OfflineAnalysis/OfflineAnalysis.bat</tt>.
@@ -147,15 +148,17 @@ a.new, #quickbar a.new { color: #CC2200; }
 </li><li>Set <i>InterpretMode</i> &rarr; <tt>online free mode</tt>
 </li><li>Make sure the <i>DisplayResults</i> box is checked
 </li><li>Click on <b>Edit Matrix</b> next to <i>TargetDefinitions</i> and scroll to the bottom:
-<ul><li>In the first column replace <tt>9</tt> with <tt>BS</tt> (for "BackSpace")
+<ul><li>In the first column replace <tt>9</tt> with <tt>BS</tt> (for "backspace")
 </li><li>In the second column replace <tt>9</tt> with <tt>&lt;BS&gt;</tt>
 </li></ul>
 </li></ul>
 </li><li>Click <b>Save Parameters</b>, and change the <tt>copy_spell</tt> portion of this parameter file name to <tt>free_spell</tt>
 </li><li>This parameter file is now ready to use for that specific subject for future P300 spelling experiments
 </li></ul>
-<p><br />
-One program contributed to, and provided with, the BCI2000 system is the P300 GUI. This Matlab-based program automatically sifts through data files for datapoints indicative of a positive P300 reaction, and builds a classifier matrix with those datapoints. The largest benefit to using this program is the obviated need for repeated configuration sessions, at the expense of decreased hands-on experience with the BCI2000 program itself. For a tutorial on how to perform the offline analysis with this GUI program, <a href="User_Tutorial%253AP300_GUI_for_Offline_Analysis_Tutorial.html" title="User Tutorial:P300 GUI for Offline Analysis Tutorial">please click here</a>.
+<a name="P300Classifier"></a><h2>P300Classifier</h2>
+<p>The use of the "Offline Analysis" program was provided to familiarize you with the characteristics of the P300 response.
+At the same time, manually selecting the best features will typically result in reduced performance compared to when the features are automatically selected. Such automatic selection is performed using the <i>P300Classifier</i> tool that is provided with BCI2000. This stand-alone program determines optimal features (i.e., signal times and channels) and corresponding weights automatically, and outputs those in a classifier matrix. Use of this program streamlines the configuration process at the expense of decreased hands-on experience with BCI data and the BCI2000 progra itself.
+</p><p>For instructions on using the P300Classifier, see <a href="User_Reference%253AP300Classifier.html" title="User Reference:P300Classifier">User Reference:P300Classifier</a>.
 </p>
 <a name="Next_Step"></a><h2>Next Step</h2>
 <p>To continue onto performing P300 spelling experiments, continue to <a href="User_Tutorial%253APerforming_a_P300_Spelling_Session.html" title="User Tutorial:Performing a P300 Spelling Session">Performing a P300 Spelling Session</a>.

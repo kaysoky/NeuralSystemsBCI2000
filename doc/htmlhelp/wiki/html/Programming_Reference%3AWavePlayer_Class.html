@@ -122,7 +122,7 @@ The path may be absolute, or relative to the current executable.
 <p>Stops playback, and resets the playback position to the beginning. This method does nothing when no audio is being played.
 </p>
 <a name="Remarks"></a><h2>Remarks</h2>
-<p>Copying or assigning <tt>WavePlayer</tt> instances may require re-loading audio data into memory. Write operations to STL containers may imply copying of a contained object, followed by destruction of the original object after copying. Consequently, manipulations to STL containers that contain <tt>WavePlayer</tt> objects are not advisable during playback from one or more of its contained objects, or in time-critical situations. Typically, one would set up such containers at initialization time, and use reading operations only during playback.
+<p>Copying or assigning <tt>WavePlayer</tt> instances may require re-loading audio data into memory. Write operations to STL containers may imply copying of a contained object, followed by destruction of the original object after copying. Consequently, manipulations to STL containers that contain <tt>WavePlayer</tt> objects are not advisable during playback from one or more of its contained objects, or in time-critical situations. Typically, one would set up such containers at initialization time, and perform only read operations on containers during playback.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ATextToSpeech_Class.html" title="Programming Reference:TextToSpeech Class">Programming Reference:TextToSpeech Class</a>, <a href="Programming_Reference%253AMidiPlayer_Class.html" title="Programming Reference:MidiPlayer Class">Programming Reference:MidiPlayer Class</a>

@@ -81,7 +81,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <dl><dt> Classifier Testing</dt><dd> Applies current feature weights to BCI2000 P3Speller or Stimuli Presentation data files and compares the results
 </dd></dl>
 <a name="Location"></a><h2>Location</h2>
-<p><a href="http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier" class='external free' title="http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier" rel="nofollow">http://www.bci2000.org/svn/trunk/src/Tools/P300Classifier</a>
+<p><a href="http://www.bci2000.org/svn/branches/3.0/src/core/Tools/P300Classifier" class='external free' title="http://www.bci2000.org/svn/branches/3.0/src/core/Tools/P300Classifier" rel="nofollow">http://www.bci2000.org/svn/branches/3.0/src/core/Tools/P300Classifier</a>
 </p>
 <a name="Versioning"></a><h2>Versioning</h2>
 <a name="Author"></a><h3>Author</h3>
@@ -144,7 +144,7 @@ Resp_window_ms = 0 800 // to set Response Window. The response window must be in
 </li></ul>
 <ul><li> <font color="red"> [10] </font> <b>Spatial Filter:</b> Selects the spatial filter applied to the training data. Select <b>RAW</b> or <b>CAR</b> from the drop-down menu. <b>RAW</b> is no spatial filter applied to the data, and <b>CAR</b> is a common average reference filter using all of the channels contained in the data file <b>(not just the channels specified in the GUI channel set)</b>. The default spatial filter is <b>RAW</b>.
 </li></ul>
-<ul><li> <font color="red"> [11] </font> <b>Decimation Frequency:</b> Used to specify the temporal decimation frequency of the data in Hz. Only a single value can be entered for evaluation. Set this parameter to the <a href="User_Reference%253AP300_classifier.html#Details_Pane" title="User Reference:P300 classifier">Sampling Rate</a> value for no decimation. The lower the Decimation Frequency, the less original data retained for processing.   
+<ul><li> <font color="red"> [11] </font> <b>Decimation Frequency:</b> Used to specify the temporal decimation frequency of the data in Hz. Only a single value can be entered for evaluation. Set this parameter to the <a href="User_Reference%253AP300_classifier.html#Details_Pane" title="User Reference:P300 classifier">Sampling Rate</a> value for no decimation. The lower the Decimation Frequency, the less original data retained for processing. Typically, 20 is a good choice for this parameter.
 </li></ul>
 <ul><li> <font color="red"> [12] </font> <b>Channel Set:</b> Used to specify the channel set that will be used to create feature weights. The specified channels must be a subset of the channels contained in the training data file. 
 </li></ul>

@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 August_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" rel="nofollow">August 2010 Build</a>
 4 June_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" rel="nofollow">June 2010 Build</a>
 4 April_2010_Version_2.1_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" rel="nofollow">April 2010 Version 2.1 Release Build</a>
 4 February_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100217.exe" rel="nofollow">February 2010 Build</a>
@@ -305,6 +306,21 @@ Contributions%253AFieldTripBuffer.html
 2 States States
 2 See_also See also
 
+Contributions%253AFieldTripBufferSource.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Functional_Description Functional Description
+2 Parameters Parameters
+3 HostName HostName
+3 Port Port
+3 SampleBlockSize SampleBlockSize
+3 EventStates EventStates
+2 States States
+
 Contributions%253AFilePlayback.html
 2 Function Function
 2 Parameters Parameters
@@ -356,6 +372,27 @@ Contributions%253AMFCdemo.html
 3 Author Author
 3 Source_Code_Revisions Source Code Revisions
 2 Remarks Remarks
+2 See_also See also
+
+Contributions%253AMicRecorderFilter.html
+2 Synopsis Synopsis
+2 Location Location
+2 Versioning Versioning
+3 Author Author
+3 Version_History Version History
+3 Source_Code_Revisions Source Code Revisions
+2 Platform_Limitations Platform Limitations
+2 Functional_Description Functional Description
+2 Supported_Microphones Supported Microphones
+2 Integration_into_BCI2000 Integration into BCI2000
+2 Parameters Parameters
+3 RecordMic RecordMic
+3 MicName MicName
+3 MicRecordingFre MicRecordingFre
+3 MicBitDepth MicBitDepth
+3 MicNumChannels MicNumChannels
+3 MicDebugInfo MicDebugInfo
+2 State_Variables State Variables
 2 See_also See also
 
 Contributions%253AMicromedADC.html
@@ -437,6 +474,7 @@ Contributions%253ANIDAQFilter.html
 3 Version_History Version History
 3 Source_Code_Revision Source Code Revision
 2 Functional_Description Functional Description
+2 Adding_and_Compiling Adding and Compiling
 2 Parameters Parameters
 3 Command_Line_Parameters Command Line Parameters
 4 Initializing_the_NIDAQFilter Initializing the NIDAQFilter
@@ -458,6 +496,7 @@ Contributions%253ANIDAQLogger.html
 2 Testing Testing
 2 Known_Issues Known Issues
 2 Functional_Description Functional Description
+2 Adding_and_Compiling Adding and Compiling
 2 Parameters Parameters
 3 Command_Line_Parameters Command Line Parameters
 4 Initializing_NIDAQLogger Initializing NIDAQLogger
@@ -1054,11 +1093,23 @@ Programming_Reference%253ABuild_System.html
 2 Conclusions  Conclusions 
 2 See_also See also
 
+Programming_Reference%253ABuilding_BCI2000_for_Win64.html
+2 Install_Qt_for_x64 Install Qt for x64
+2 Generate_the_Visual_Studio_Solution_file Generate the Visual Studio Solution file
+2 Limitations Limitations
+2 See_also See also
+
+Programming_Reference%253ABuilding_BCI2000_for_x64.html
+2 Install_Qt_for_x64 Install Qt for x64
+2 Generate_the_Visual_Studio_Solution_file Generate the Visual Studio Solution file
+2 Limitations Limitations
+2 See_also See also
+
 Programming_Reference%253ABuilding_Qt_for_BCI2000.html
-2 Copy_Qt_include_files_to_the_BCI2000_directory Copy Qt include files to the BCI2000 directory
 2 Build_and_copy_MSVC_libraries_and_auxiliary_files Build and copy MSVC libraries and auxiliary files
 3 Note:_Why_do_we_need_debug_libraries_and_pdb_files.3F Note: Why do we need debug libraries and pdb files?
 2 Build_and_copy_mingw_libraries_and_auxiliary_files Build and copy mingw libraries and auxiliary files
+2 Copy_Qt_include_files_to_the_BCI2000_directory Copy Qt include files to the BCI2000 directory
 2 See_also See also
 
 Programming_Reference%253AContents.html
@@ -3157,13 +3208,6 @@ User_Tutorial%253AAnalyzing_the_Initial_Mu_Rhythm_Session.html
 2 Next_Step Next Step
 2 See_also See also
 
-User_Tutorial%253AAnalyzing_the_Initial_P300_Session.html
-2 Generating_a_Feature_Plot Generating a Feature Plot
-2 Generating_Waveform_and_Topography_Plots Generating Waveform and Topography Plots
-2 Removing_Implausible_Features Removing Implausible Features
-2 Next_Step Next Step
-2 See_also See also
-
 User_Tutorial%253ABCI2000_Tour.html
 2 Starting_up_BCI2000 Starting up BCI2000
 2 BCI2000_Help BCI2000 Help
@@ -3186,13 +3230,6 @@ User_Tutorial%253AConfiguring_Online_Feedback.html
 2 The_Spatial_Filter The Spatial Filter
 2 The_Classifier_Matrix The Classifier Matrix
 2 Performing_Mu_Rhythm_Feedback_Sessions Performing Mu Rhythm Feedback Sessions
-2 See_also See also
-
-User_Tutorial%253AConfiguring_P300_Online_Classification.html
-2 Starting_up_BCI2000 Starting up BCI2000
-2 Subject-Specific_Parameters Subject-Specific Parameters
-2 Configuring_the_Classifier Configuring the Classifier
-2 Next_Step Next Step
 2 See_also See also
 
 User_Tutorial%253AData_Analysis.html
@@ -3266,19 +3303,7 @@ User_Tutorial%253AObtaining_P300_Parameters_in_a_Calibration_Session.html
 2 Performing_the_Calibration_Session Performing the Calibration Session
 2 Analyzing_The_Calibration_Session_with_Offline_Analysis Analyzing The Calibration Session with Offline Analysis
 2 Creating_a_subject-specific_parameter_file Creating a subject-specific parameter file
-2 Next_Step Next Step
-2 See_also See also
-
-User_Tutorial%253AObtaining_P300_Parameters_in_an_Calibration_Session.html
-2 Obtaining_P300_Parameters_in_the_Calibration_Session Obtaining P300 Parameters in the Calibration Session
-2 Design_of_Calibration_Session Design of Calibration Session
-2 Performing_the_Configuration_Session Performing the Configuration Session
-2 Analyzing_The_Calibration_Session_with_Offline_Analysis Analyzing The Calibration Session with Offline Analysis
-
-User_Tutorial%253AObtaining_P300_Parameters_in_an_Initial_Session.html
-2 Experimental_Design Experimental Design
-2 Performing_the_Initial_Session Performing the Initial Session
-2 Subject_instruction Subject instruction
+2 P300Classifier P300Classifier
 2 Next_Step Next Step
 2 See_also See also
 

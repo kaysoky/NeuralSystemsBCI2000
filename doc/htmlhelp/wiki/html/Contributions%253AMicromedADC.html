@@ -127,7 +127,7 @@ The header packet and the data packets are in the same format as in a Micromed t
 <p>The sample rate set by the acquisition unit.
 </p>
 <a name="ServerAddress"></a><h3>ServerAddress</h3>
-<p>Address and port of the Micromed BCI Server. The port number can be set in the acquisition unit by changing the registry setting "tcpPortNumber".
+<p>Address and port of the BCI Server. You can enter "*:5000" if your port number is 5000. This means that the server listens to all IP addresses, localhost and external. The port number can be set in the acquisition unit by changing the registry setting "tcpPortNumber".
 </p>
 <a name="Packet_Rate"></a><h3>Packet Rate</h3>
 <p>Number of TCP/IP packets per second: 32 for LTM,64 for SD
@@ -151,7 +151,11 @@ The header packet and the data packets are in the same format as in a Micromed t
 </p>
 <a name="States"></a><h2>States</h2>
 <a name="MicromedCode"></a><h3>MicromedCode</h3>
+<p>The serial code read into the Micromed acquisition computer.
+</p>
 <a name="MicromedCondition"></a><h3>MicromedCondition</h3>
+<p>The MicromedCode bitmasked with ConditionMask. This way you can use the first bits to flag a condition, while changing the MicromedCode for each trial.
+</p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253AFilters.html" title="User Reference:Filters">User Reference:Filters</a>, <a href="Contributions%253AADCs.html" title="Contributions:ADCs">Contributions:ADCs</a>
 </p>

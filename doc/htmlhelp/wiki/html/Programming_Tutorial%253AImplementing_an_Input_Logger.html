@@ -156,9 +156,9 @@ We will use the event interface to record the wheel's position into a state call
        &quot; // record thumb wheel to state (boolean)&quot;,
      END_PARAMETER_DEFINITIONS
 
-     BEGIN_STATE_DEFINITIONS
+     BEGIN_EVENT_DEFINITIONS
       &quot;ThumbWheelPos   15 0 0 0&quot;,
-     END_STATE_DEFINITIONS
+     END_EVENT_DEFINITIONS
    }
  }
 </pre>
@@ -167,7 +167,7 @@ We will use the event interface to record the wheel's position into a state call
 <pre>
  void ThumbWheelLogger::Preflight() const
  {
-   if( OptionalState( &quot;LogThumbWheel&quot; ) &gt; 0 )
+   if( OptionalParameter( &quot;LogThumbWheel&quot; ) &gt; 0 )
      if( ThumbOK&nbsp;!= ThumbWheelInit() )
        bcierr &lt;&lt; &quot;ThumbWheel device unavailable&quot; &lt;&lt; endl;
  }
@@ -186,7 +186,10 @@ We will use the event interface to record the wheel's position into a state call
  void ThumbWheelLogger::StartRun()
  {
    if( mLogThumbWheel )
-     mpThumbWheelThread = new ThumbWheelThread;
+   {
+      mpThumbWheelThread = new ThumbWheelThread;
+      mpThumbWheelThread-&gt;Start();
+   }
 }
 </pre>
 <p>Mirroring <tt>StartRun()</tt>, <tt>StopRun()</tt> disposes of the thumbwheel logging thread.
