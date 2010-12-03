@@ -108,7 +108,7 @@ FIRFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     // Compute buffer's convolution with coefficient vector.
     DataVector result( 0.0, inputLength );
     for( int sample = 0; sample < inputLength; ++sample )
-      result[sample] = inner_product( &mFilter[channel][0], &mFilter[channel][filterLength-1], &mBuffer[channel][sample], 0 );
+      result[sample] = inner_product( &mFilter[channel][0], &mFilter[channel][filterLength-1], &mBuffer[channel][sample], 0.0 );
     // Compute output.
     switch( mFIRIntegration )
     {
