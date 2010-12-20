@@ -103,7 +103,9 @@ BCIDirectory::FilePath() const
 const BCIDirectory&
 BCIDirectory::CreatePath() const
 {
+  string wd = GetCWD();
   ChangeForceDir( DirectoryPath() );
+  ::chdir( wd.c_str() );
   return *this;
 }
 
