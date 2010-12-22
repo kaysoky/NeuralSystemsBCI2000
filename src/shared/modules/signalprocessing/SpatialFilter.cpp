@@ -294,9 +294,9 @@ void
 SpatialFilter::DoProcess<SpatialFilter::commonAverage>( const GenericSignal& Input,
                                                               GenericSignal& Output )
 {
-  double meanVal = 0;
   for (int sample = 0; sample < Input.Elements(); ++sample)
   {
+    double meanVal = 0;
     for (int channel = 0; channel < Input.Channels(); ++channel)
       meanVal += Input(channel, sample);
     meanVal /= double(Input.Channels());
