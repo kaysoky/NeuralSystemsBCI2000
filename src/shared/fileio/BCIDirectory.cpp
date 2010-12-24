@@ -60,8 +60,12 @@ string
 BCIDirectory::DirectoryPath() const
 {
   string result = mDataDirectory;
-  if( result.length() < 2 || result[ 1 ] != DriveSeparator )
+  if( ! IsAbsolutePath(result) )
     result = InstallationDirectory() + result;
+  for (string::iterator i = result.begin(); i != result.end(); i++)
+  {
+    if( *i == '\\' || *i == '/') *i = DirSeparator;
+  }
   if( result.length() > 0 && result[ result.length() - 1 ] != DirSeparator )
     result += DirSeparator;
   result += mSubjectName;
@@ -234,7 +238,7 @@ bool
 BCIDirectory::IsAbsolutePath( const string& inPath )
 {
 #ifdef _WIN32
-  return inPath.length() > 1 && inPath[ 1 ] == DriveSeparator;
+  return inPath.length() > 1 && ( inPath[ 1 ] == DriveSeparator || inPath[ 0 ] == DirSeparator && inPath[ 1 ] == DirSeparator );
 #else
   return inPath.length() > 0 && inPath[ 0 ] == DirSeparator;
 #endif
