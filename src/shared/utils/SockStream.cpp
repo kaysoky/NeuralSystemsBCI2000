@@ -20,8 +20,25 @@
 //              sockbuf: A helper class that does the actual send/receive
 //                calls.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef __BORLANDC__
 # include "PCHIncludes.h"
@@ -157,12 +174,12 @@ streamsock::ip_compare::operator()( const string& inAddr1, const string& inAddr2
   unsigned long addr1 = htonl( ::inet_addr( inAddr1.c_str() ) ),
                 addr2 = htonl( ::inet_addr( inAddr2.c_str() ) );
 
-  const int priority[] = { 127, 169, 10, 192, NULL };
-  const int* p_begin = priority,
-           * p_end = priority + sizeof( priority ) / sizeof( *priority ) - 1;
+  const unsigned int priority[] = { 127, 169, 10, 192, 0 };
+  const unsigned int* p_begin = priority,
+                    * p_end = priority + sizeof( priority ) / sizeof( *priority ) - 1;
 
-  const int* p1 = find( p_begin, p_end, addr1 >> 24 ),
-           * p2 = find( p_begin, p_end, addr2 >> 24 );
+  const unsigned int* p1 = find( p_begin, p_end, addr1 >> 24 ),
+                    * p2 = find( p_begin, p_end, addr2 >> 24 );
 
   return ( p1 != p2 ) ? ( p1 < p2 ) : ( addr1 < addr2 );
 }
@@ -283,7 +300,7 @@ streamsock::wait_for_read( const streamsock::set_of_instances& inSockets,
     }
   if( max_fd < 0 )
   {
-    if( inTimeout > 0 )
+    if( inTimeout >= 0 )
     {
 #ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
       ::Sleep( inTimeout );
@@ -335,7 +352,7 @@ streamsock::wait_for_write( const streamsock::set_of_instances& inSockets,
     }
   if( max_fd < 0 )
   {
-    if( inTimeout > 0 )
+    if( inTimeout >= 0 )
     {
 #ifdef  _WIN32  // Achieve similar behavior for empty sets/invalid sockets across platforms.
       ::Sleep( inTimeout );

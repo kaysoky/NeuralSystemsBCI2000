@@ -5,8 +5,25 @@
 // Description: The task filter for a P300 based speller providing multiple
 //   menus.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -32,20 +49,21 @@ using namespace GUI;
 RegisterFilter( P3SpellerTask, 3 );
 
 P3SpellerTask::P3SpellerTask()
-: mpStatusBar( NULL ),
+: mNumberOfSequences( 0 ),
+  mInterpretMode_( InterpretModes::None ),
+  mDisplayResults( false ),
+  mTestMode( false ),
   mCurMenu( 0 ),
   mNumMatrixRows( 0 ),
   mNumMatrixCols( 0 ),
-  mNumberOfSequences( 0 ),
-  mInterpretMode_( InterpretModes::None ),
-  mTestMode( false ),
   mSequenceCount( 0 ),
   mSequencePos( mSequence.begin() ),
   mAvoidStimulusRepetition( false ),
+  mSleepMode( 0 ),
+  mPaused( false ),
+  mpStatusBar( NULL ),
   mpTextWindow( NULL ),
   mSummaryFile( SummaryFileExtension().c_str() ),
-  mPaused( false ),
-  mSleepMode( 0 ),
   mRunCount( 0 ),
   mNumSelections( 0 ),
   mSleepDuration( 0 )
@@ -161,11 +179,11 @@ P3SpellerTask::P3SpellerTask()
   "Waiting to start ...",
            "Warte ...",
   "Sleeping--Select SLEEP twice to resume",
-           "Angehalten: Zweimal SLEEP f" uuml "r Weiter",
+           "Angehalten: Zweimal SLEEP fur Weiter",
   "Select SLEEP once more to resume",
-           "Angehalten: Noch einmal SLEEP f" uuml "r Weiter",
+           "Angehalten: Noch einmal SLEEP fur Weiter",
   "Paused--Select PAUSE again to resume",
-           "Angehalten: Noch einmal PAUSE f" uuml "r Weiter",
+           "Angehalten: Noch einmal PAUSE fur Weiter",
  END_LOCALIZED_STRINGS
 }
 
@@ -281,7 +299,7 @@ P3SpellerTask::OnInitialize( const SignalProperties& /*Input*/ )
 
   ClearTextHistory();
 
-  mCurMenu = Parameter( "FirstActiveMenu" ) - 1;
+  mCurMenu = static_cast<int>( Parameter( "FirstActiveMenu" ) - 1 );
   while( !mMenuHistory.empty() )
     mMenuHistory.pop();
   mMenuHistory.push( mCurMenu );
@@ -313,7 +331,7 @@ P3SpellerTask::OnInitialize( const SignalProperties& /*Input*/ )
       mTextToSpell = "";
       break;
     case InterpretModes::Copy:
-      mTextToSpell = Parameter( "TextToSpell" );
+      mTextToSpell = ( string )Parameter( "TextToSpell" );
       break;
   }
 
@@ -739,7 +757,7 @@ P3SpellerTask::OnSleep()
     case dontSleep:
       State( "Recording" ) = 1;
       mpStatusBar->SetGoalText( mGoalText );
-      mSleepDuration += ::difftime( ::time( NULL ), mStartPause );
+      mSleepDuration += static_cast<int>( ::difftime( ::time( NULL ), mStartPause ) );
       break;
 
     case sleep1:
@@ -763,7 +781,7 @@ P3SpellerTask::OnPause()
   {
     State( "Recording" ) = 1;
     mpStatusBar->SetGoalText( mGoalText );
-    mSleepDuration += ::difftime( ::time( NULL ), mStartPause );
+    mSleepDuration += static_cast<int>( ::difftime( ::time( NULL ), mStartPause ) );
   }
   else
   {
@@ -1155,7 +1173,7 @@ P3SpellerTask::StringTime()
 {
   string result;
   time_t now;
-  const bufLen = 20;
+  const int bufLen = 20;
   char timeBuf[ bufLen + 1 ];
   ::tzset();
   ::time( &now );
@@ -1169,7 +1187,7 @@ P3SpellerTask::StringDate()
 {
   string result;
   time_t now;
-  const bufLen = 20;
+  const int bufLen = 20;
   char timeBuf[ bufLen + 1 ];
   ::tzset();
   ::time( &now );
@@ -1183,7 +1201,7 @@ P3SpellerTask::TimeStamp()
 {
   string result;
   time_t now;
-  const bufLen = 20;
+  const int bufLen = 20;
   char timeBuf[ bufLen + 1 ];
   ::tzset();
   ::time( &now );

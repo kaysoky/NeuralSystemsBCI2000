@@ -13,8 +13,25 @@
 //              are supposed to use a separate function Publish() for such
 //              purposes.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
@@ -247,14 +264,6 @@ class EnvironmentBase
  // Convenient accessor functions. These are not static, so we can identify
  // the caller by its "this" pointer.
  protected:
-#if 0
-  // Iteration over all available parameters.
-  // At the end of the list, NextParameter() will return NULL.
-  typedef int ParamIterator;
-  ParamIterator FirstParameter() const;
-  ParamIterator NextParameter( ParamIterator ) const;
-  ParamRef Parameter( ParamIterator ) const;
-#endif
   // The Parameter()/OptionalParameter() functions allow access to parameters by name.
   ParamRef Parameter( const std::string& name ) const;
   ParamRef OptionalParameter( const std::string& name,
@@ -271,19 +280,11 @@ class EnvironmentBase
   // A macro/function combination for convenient formulation of parameter checks.
   #define PreflightCondition( x )        (PreflightCondition_(#x,double(x)))
   bool PreflightCondition_( const char*, bool ) const;
-#if 0
-  // Iteration over all available state variables.
-  // At the end of the list, NextState() will return NULL.
-  typedef int StateIterator;
-  StateIterator FirstState() const;
-  StateIterator NextState( StateIterator ) const;
-  StateRef State( StateIterator ) const;
-#endif
   // Read/write access a state by its name.
   StateRef State( const std::string& name ) const;
   // Read-only access to states that are not required.
   // The second argument is a default value.
-  StateRef OptionalState( const std::string& name, short defaultValue = 0 ) const;
+  StateRef OptionalState( const std::string& name, State::ValueType defaultValue = 0 ) const;
 
  private:
   const StateList* StateListAccess() const;
@@ -398,6 +399,13 @@ class EnvironmentBase
 // later access to Parameters/States.
 class Environment : protected EnvironmentBase
 {
+  // Friends from framework classes.
+  friend class GenericVisualization;
+
+  friend class CoreModule;
+  friend class StatusMessage;
+  friend class FilterWrapper;
+
  protected:
   Environment() {}
   virtual ~Environment() {}

@@ -4,8 +4,25 @@
 // Description: A simple expression parser for use within BCI2000.
 //              See Expression.h for details about expressions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -65,7 +82,7 @@ Expression::Signal( const string& inChannelAddress, const string& inElementAddre
     Errors() << "Trying to access NULL signal" << endl;
     return 0;
   }
-  int channel = mpSignal->Properties().ChannelIndex( inChannelAddress );
+  int channel = static_cast<int>( mpSignal->Properties().ChannelIndex( inChannelAddress ) );
   if( channel < 0 || channel >= mpSignal->Channels() )
   {
     Errors() << "Channel index or address ("
@@ -73,7 +90,7 @@ Expression::Signal( const string& inChannelAddress, const string& inElementAddre
              << ") out of range";
     return 0;
   }
-  int element = mpSignal->Properties().ElementIndex( inElementAddress );
+  int element = static_cast<int>( mpSignal->Properties().ElementIndex( inElementAddress ) );
   if( element < 0 || element >= mpSignal->Elements() )
   {
     Errors() << "Element index or address ("

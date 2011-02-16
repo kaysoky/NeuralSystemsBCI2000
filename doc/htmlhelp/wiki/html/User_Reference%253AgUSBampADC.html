@@ -61,12 +61,13 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#SourceCh"><span class="tocnumber">2.16</span> <span class="toctext">SourceCh</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#SourceChDevices"><span class="tocnumber">2.17</span> <span class="toctext">SourceChDevices</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#SourceChList"><span class="tocnumber">2.18</span> <span class="toctext">SourceChList</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalInput"><span class="tocnumber">2.19</span> <span class="toctext">DigitalInput</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutput"><span class="tocnumber">2.20</span> <span class="toctext">DigitalOutput</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutputEx"><span class="tocnumber">2.21</span> <span class="toctext">DigitalOutputEx</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#AcquisitionMode"><span class="tocnumber">2.22</span> <span class="toctext">AcquisitionMode</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonGround"><span class="tocnumber">2.23</span> <span class="toctext">CommonGround</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonReference"><span class="tocnumber">2.24</span> <span class="toctext">CommonReference</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#BipolarChList"><span class="tocnumber">2.19</span> <span class="toctext">BipolarChList</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalInput"><span class="tocnumber">2.20</span> <span class="toctext">DigitalInput</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutput"><span class="tocnumber">2.21</span> <span class="toctext">DigitalOutput</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#DigitalOutputEx"><span class="tocnumber">2.22</span> <span class="toctext">DigitalOutputEx</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#AcquisitionMode"><span class="tocnumber">2.23</span> <span class="toctext">AcquisitionMode</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonGround"><span class="tocnumber">2.24</span> <span class="toctext">CommonGround</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AgUSBampADC.html#CommonReference"><span class="tocnumber">2.25</span> <span class="toctext">CommonReference</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AgUSBampADC.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
@@ -219,6 +220,13 @@ The total number of channels listed should correspond to <i>SourceCh</i>. For mo
 The order of channels does not matter; i.e., '1 2 3 4' is the same as '2 3 1 4'. The channels are always in ascending order on a single device.
 Channels may not be listed twice on a single device; e.g., entering '1 2 3 4 5 6 7 1' if <i>SourceChDevices</i> = '8' will result in an error.
 If this parameter is left blank (the default), then all channels are acquired on all devices.
+</p>
+<a name="BipolarChList"></a><h3>BipolarChList</h3>
+<p>A list of channels used for a bipolar montage. Each entry is configured as the reference for a source channel, based on the channel order. The number of values should equal both <i>SourceCh</i> and the number of values in <i>SourceChList</i> (if <i>SourceChList</i> is not empty). If <i>BipolarChList</i> is empty, then the standard referential recording montage is used. If a value of '0' is entered, then the reference channel is used for that channel. Finally, channel labels may be used.
+</p><p>As an example, a sequential bipolar montage for 8 channels could be configured like:
+</p><p><tt>2 3 4 5 6 7 8 1</tt>
+</p><p>meaning that channel 1 is referenced to channel 2, channel 2 is referenced to channel 3, and so on. For another example, 10 channels can be configured so that the first 6 are bipolar, and the last four are referential, e.g.:
+</p><p><tt>C3 F3 C4 F4 Pz Oz 0 0 0 0</tt>
 </p>
 <a name="DigitalInput"></a><h3>DigitalInput</h3>
 <p>Turn on digital input. 

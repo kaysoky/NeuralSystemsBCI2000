@@ -21,8 +21,25 @@
 //   JoystickButtons3
 //   JoystickButtons4
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 /////////////////////////////////////////////////////////////////////////////
 #ifndef JOYSTICK_LOGGER_H
 #define JOYSTICK_LOGGER_H
@@ -53,24 +70,19 @@ class JoystickLogger : public EnvironmentExtension
             JoystickThread( const JOYCAPS& );
     virtual ~JoystickThread();
     virtual int Execute();
-    void GetJoyPos( unsigned int& x, unsigned int& y, unsigned int& z,
-                    unsigned int& b1, unsigned int& b2, unsigned int& b3, unsigned int& b4 );
-
+    void GetJoyPos( int& x, int& y, int& z,
+                    int& b1, int& b2, int& b3, int& b4 );
    private:
-    JOYCAPS      m_joycaps;
-    unsigned int m_prevXPos,
-                 m_prevYPos,
-                 m_prevZPos,
-                 m_prevButton1,
-                 m_prevButton2,
-                 m_prevButton3,
-                 m_prevButton4;
+    JOYCAPS m_joycaps;
+    int     m_prevXPos,
+            m_prevYPos,
+            m_prevZPos,
+            m_prevButton1,
+            m_prevButton2,
+            m_prevButton3,
+            m_prevButton4;
 
   } *mpJoystickThread;
 };
 
 #endif // JOYSTICK_LOGGER_H
-
-
-
-

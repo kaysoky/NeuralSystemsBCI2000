@@ -18,6 +18,26 @@
  *                                                                            *
  * V2.00 - 16/01/2008 - Updated for BCI2000 v2.0                              *
  ******************************************************************************/
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -25,7 +45,7 @@
 #include "BCIError.h"
 #include "GenericSignal.h"
 #include "BCIDirectory.h"
-#include <cstdio.h>
+#include <cstdio>
 #include <math.h>
 #include <mmsystem.h>
 
@@ -60,7 +80,7 @@ MicromedADC::MicromedADC()
   BCIblocksize( 9 ),
   mTimerID( 0 ),
   mTimerDelay( 0 )
-  
+
 {
  // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
@@ -82,7 +102,7 @@ MicromedADC::MicromedADC()
             " 3: int32 "
             "(enumeration)",
     "Source int ConditionMask=   0x0F  1 0 0 "
-     "// Mask for conditions, other information is send as MicroMedCode",
+     "// Mask for conditions, other information is sent as MicroMedCode",
     "Source int Priority=   1 1 0 5 "
      "// Set CPU priority for Source Module"
  END_PARAMETER_DEFINITIONS
@@ -125,9 +145,6 @@ void MicromedADC::Preflight( const SignalProperties&,
   int signalType;
   HANDLE PH;
   DWORD Priority;
-  AnsiString FInit,SSes,SName,AName;
-  char FName[120];
-  BCIDirectory bcidtry;
 
 
   PH = GetCurrentProcess();
@@ -168,7 +185,7 @@ void MicromedADC::Preflight( const SignalProperties&,
   num_notes=0;
   waitforconn = false;
 
-  }
+}
 
 // **************************************************************************
 // Function:   ADInit
@@ -187,7 +204,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
   MICROMED_PACKET_RATE = Parameter( "PacketRate");
   samplerate = Parameter( "SamplingRate" );
   mSignalType = Parameter( "SignalType" );
-  MMblocksize=Parameter( "SamplingRate" ) / MICROMED_PACKET_RATE;
+  MMblocksize=static_cast<int>( Parameter( "SamplingRate" ) / MICROMED_PACKET_RATE );
   BCIblocksize=Parameter( "SampleBlocksize" );
   conditionmask = Parameter( "ConditionMask" );
   num_channels = Parameter( "SourceCh" );
@@ -204,7 +221,7 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
                 break;
             }
   const int blocksToWait = 10;
-  mTimerDelay = blocksToWait * 1000 * Parameter( "SampleBlockSize" )/ Parameter( "SamplingRate" );
+  mTimerDelay = static_cast<int>( blocksToWait * 1000 * Parameter( "SampleBlockSize" )/ Parameter( "SamplingRate" ) );
   // Micromed systemPLUS is the client, BCI is the server, it passively listens.
 
   // start the server
@@ -259,7 +276,6 @@ void MicromedADC::Initialize( const SignalProperties&, const SignalProperties& )
 void
 MicromedADC::StartRun()
 {
-  AnsiString FInit,SSes,SName,AName;
   char FName[120];
   BCIDirectory bcidtry;
 
@@ -270,32 +286,12 @@ MicromedADC::StartRun()
     .SetSessionNumber( Parameter( "SubjectSession" ) )
     .SetRunNumber( Parameter( "SubjectRun" ) );
 
-    /*
-    strcpy(FInit, ( const char* )Parameter( "FileInitials" )); //ASKGERV
-    SSes = ( const char* )Parameter( "SubjectSession" ); //ASKGERV
-    SName= ( const char* )Parameter( "SubjectName" ); //ASKGERV
-    bcidtry.SetDataDirectory( FInit.c_str() );
-    bcidtry.ProcPath(); //ASKGERV
-    bcidtry.SetName( SName.c_str() ); //ASKGERV
-    bcidtry.RunNumber( Parameter( "SubjectRun" ) ); //ASKGERV
-    bcidtry.SetSession( SSes.c_str() ); //ASKGERV
-    IntToStr(bcidtry.RunNumber());
-    strcpy(FName, bcidtry.ProcSubDir() ); //ASKGERV
+  strcpy(FName,( const char* ) bcidtry.FilePath().c_str());
+  strcat(FName,".txt");
+  bciout << "Notes in " << FName << endl;
 
-    //strcat(FName,"\\");
-
-    AName= SName + "S" + SSes;
-    strcat(FName, AName.c_str() );
-    strcat(FName,"R");
-    if (bcidtry.RunNumber()<10) strcat(FName,"0");
-    strcat(FName,IntToStr(bcidtry.RunNumber()).c_str());
-    */
-    strcpy(FName,( const char* ) bcidtry.FilePath().c_str());
-    strcat(FName,".txt");
-    bciout << "Notes in " << FName << endl;
-
-    hNotes = fopen(FName,"wt");
-    fprintf(hNotes,"%s\n",FName);
+  hNotes = fopen(FName,"wt");
+  fprintf(hNotes,"%s\n",FName);
 
 }
 
@@ -303,7 +299,7 @@ MicromedADC::StartRun()
 void
 MicromedADC::StopRun()
 {
-   fclose(hNotes);
+  fclose(hNotes);
 }
 
 // **************************************************************************
@@ -544,13 +540,13 @@ unsigned int nbyte;
                 if (bytespersample==2)
                 {
                   value=value-32768; //Micromed sends unsigned short integers
-                  sint16=value;
+                  sint16=static_cast<signed short>( value );
                   ( *signal )( channel, MMblocksize*packetnr+sample ) = sint16;
                 }
                 else
                 {
                  value=value-2097152; //Micromed sends unsigned long integers with 22bit data
-                  sint32=value;
+                  sint32=static_cast<signed long>( value );
                   ( *signal )( channel, MMblocksize*packetnr+sample ) = sint32;
                 }
             }

@@ -1,29 +1,52 @@
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+// Author: Adam Wilson
+//
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
+////////////////////////////////////////////////////////////////////////////////
 #ifndef STRUCTS_H
 #define STRUCTS_H
-#include <string>
-#include <sstream>
-#include <fstream>
+#include <QString>
 #include <vector>
-using namespace std;
+
 class basicStats
 {
 public:
     double mean, std, min, max, median;
-    vector<double> vals;
-	vector<double> sigProc;
-	vector<double> jitter;
-	vector<double> stim;
-	int size;
-    string taskName;
-    string desc;
+    std::vector<double> vals;
+    std::vector<int> samples;
+    std::vector<double> sigProc;
+    std::vector<double> jitter;
+    std::vector<double> stim;
+    int size;
+    QString taskName;
+    QString desc;
 };
 
 class analysisType
 {
 public:
     int ch;
-    std::string state;
+    QString state;
     std::vector<int> stateVal;
     bool flag;
 };
-#endif
+#endif // STRUCTS_H

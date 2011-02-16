@@ -4,8 +4,25 @@
 // Description: Class that provides an interface to the data stored in a
 //              BCI2000 data file.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef BCI2000_FILE_READER_H
 #define BCI2000_FILE_READER_H
@@ -40,7 +57,7 @@ class BCI2000FileReader
  public:
   BCI2000FileReader();
   explicit BCI2000FileReader( const char* fileName );
-  ~BCI2000FileReader();
+  virtual ~BCI2000FileReader();
 
  private:
   BCI2000FileReader( const BCI2000FileReader& );
@@ -56,9 +73,9 @@ class BCI2000FileReader
   // File access
   virtual BCI2000FileReader&
                 Open( const char* fileName, int bufferSize = cDefaultBufSize );
-  virtual long  NumSamples() const
+  virtual long long NumSamples() const
                 { return mNumSamples; }
-  float SamplingRate() const
+  double SamplingRate() const
         { return mSamplingRate; }
   const class SignalProperties&
         SignalProperties() const
@@ -85,11 +102,11 @@ class BCI2000FileReader
 
   // Data access
   virtual GenericSignal::ValueType
-        RawValue( int channel, long sample );
+        RawValue( int channel, long long sample );
   GenericSignal::ValueType
-        CalibratedValue( int channel, long sample );
+        CalibratedValue( int channel, long long sample );
   virtual BCI2000FileReader&
-        ReadStateVector( long sample );
+        ReadStateVector( long long sample );
 
  protected:
   void               Reset();
@@ -97,7 +114,7 @@ class BCI2000FileReader
  private:
   void               ReadHeader();
   void               CalculateNumSamples();
-  const char*        BufferSample( long sample );
+  const char*        BufferSample( long long sample );
 
  private:
   ParamList          mParamlist;
@@ -105,7 +122,7 @@ class BCI2000FileReader
   class StateVector* mpStatevector;
   bool               mInitialized;
 
-  std::ifstream      mFile;
+  FILE*              mpFile;
   std::string        mFilename,
                      mFileFormatVersion;
 
@@ -116,15 +133,15 @@ class BCI2000FileReader
   int                mChannels,
                      mHeaderLength,
                      mStatevectorLength;
-  float              mSamplingRate;
+  double             mSamplingRate;
   std::vector<GenericSignal::ValueType> mSourceOffsets,
                                         mSourceGains;
 
-  unsigned long      mNumSamples;
+  unsigned long long mNumSamples;
 
   char*              mpBuffer;
-  int                mBufferSize,
-                     mBufferBegin,
+  int                mBufferSize;
+  long long          mBufferBegin,
                      mBufferEnd;
 
   int                mErrorState;

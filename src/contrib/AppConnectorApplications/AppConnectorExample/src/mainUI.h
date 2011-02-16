@@ -1,3 +1,24 @@
+/*
+ * $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
@@ -10,10 +31,7 @@
 #include <map>
 #include <algorithm>
 
-/* TCPstream is included from the BCI2000 src/shared folder. It was modified
-slightly to work with linux/unix and gnu c++.
-*/
-#include "TCPStream.h"
+#include "Sockstream.h"
 
 //forward declare our qt classes to decrease compile time
 class QGridLayout;
@@ -40,21 +58,21 @@ class mainUI : public QWidget
 {
 	//this macro MUST be declared for any object which will use signals/slots
 	//it provides the ability to use the private slots: class declaration
-	
+
 	Q_OBJECT
-	
+
 public:
 	//the default constructor. In the implementation, this is where the form
 	//generation will occur
 	mainUI();
-	
+
 private slots:
 	//these are our slots; if you are used to borland, these are basically
 	//the callback functions for different actions, such as a button-click
 	void connectButCallback();
 	void timerUpdate();
 	void changeStateValue(int row, int column);
-	
+
 private:
 	//although Qt Designer allows us to graphically design our UI, it is helpful
 	// to know what is going on in the actual code. Therefore, this class will manually
@@ -71,31 +89,31 @@ private:
 	QLineEdit *sendBox;
 	QPushButton *connectBut;
 	QLineEdit *statusBox;
-	
+
 	//perturbations objects
 	QGroupBox *statesGroup;
 	QGridLayout *statesLayout;
 	QTableWidget *stateTable;
-	
+
 	//layout setup functions
 	void setupUI();
 	void setupConnectionGroup();
 	void setupStatesGroup();
-	
+
 	// data members ====================================================
 	string address;
 	//these are the objects used to connect to bci2000
 	receiving_udpsocket recSocket;
-	tcpstream recConnection;
+	sockstream recConnection;
 	sending_udpsocket sendSocket;
-	tcpstream sendConnection;
-	
+	sockstream sendConnection;
+
 	//this map holds the state names and associated values
-	map<string, int> states;	
-	
+	map<string, int> states;
+
 	//a timer to update the states
 	QTimer *timer;
-	
+
 	int prevTrigger, prevITI, prevFeedback;
 	string triggerType;
 	bool addMod;
@@ -105,9 +123,9 @@ private:
 	unsigned short modCount;
 	short massInit, FCinit;
 	bool initialized;
-	
+
 	int noGetStates;
-	
+
 	//more private helper functions
 	void updateVars();
 	void writeValue(string name, short value);

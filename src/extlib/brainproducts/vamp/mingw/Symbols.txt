@@ -1,0 +1,60 @@
+Microsoft (R) COFF/PE Dumper Version 9.00.30729.01
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file FirstAmp.dll
+
+File Type: DLL
+
+  Section contains the following exports for FirstAmp.dll
+
+    00000000 characteristics
+    46FA4E9B time date stamp Wed Sep 26 14:20:43 2007
+        0.00 version
+           1 ordinal base
+          33 number of functions
+          33 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00005930 faCalibrationDataEnable
+          2    1 00005130 faClose
+          3    2 00005750 faGetBootloader
+          4    3 00005610 faGetBrightness
+          5    4 00005890 faGetCalibrationData
+          6    5 00005570 faGetContrast
+          7    6 00005040 faGetCount
+          8    7 000051F0 faGetData
+          9    8 00005980 faGetDataMode
+         10    9 000058E0 faGetDataState
+         11    A 00005070 faGetId
+         12    B 00005360 faGetImpedance
+         13    C 00005240 faGetInformation
+         14    D 00005430 faGetIo
+         15    E 000057F0 faGetProductionData
+         16    F 00005290 faGetProperty
+         17   10 00005660 faGetUserData
+         18   11 000050B0 faOpen
+         19   12 000054D0 faSetBitmap
+         20   13 00005700 faSetBootloader
+         21   14 000055C0 faSetBrightness
+         22   15 00005840 faSetCalibrationData
+         23   16 00005520 faSetContrast
+         24   17 000059D0 faSetDataMode
+         25   18 00005480 faSetIo
+         26   19 000057A0 faSetProductionData
+         27   1A 000056B0 faSetUserData
+         28   1B 00005170 faStart
+         29   1C 000053B0 faStartCalibration
+         30   1D 000052E0 faStartImpedance
+         31   1E 000051B0 faStop
+         32   1F 000053F0 faStopCalibration
+         33   20 00005320 faStopImpedance
+
+  Summary
+
+       1B000 .data
+        2000 .rdata
+        2000 .reloc
+        1000 .rsrc
+        B000 .text

@@ -16,21 +16,41 @@
  * V0.04 - 03/04/2006 - Porti Synchro disbanded. Working on selecting channels*
  * V0.05 - 15/05/2006 - Using the features pull out unused channels from the  *
  *                      common reference pool                                 *
- * 
+ *
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
- *  
+ *
  * Revision 1.2  2006/07/05 15:20:10  mellinger
  * Minor formatting and naming changes; removed unneeded data members.
- * 
+ *
  * Revision 2.0  2009/10/25 jhill
  * - Allow selection of a subset of physical channels to acquire.
  * - Support impedance measurement and acquisition of digital channel values.
  * - Various OptionalParameters for tweaking performance.
  * - Crash fixes.
- * 
+ *
  ******************************************************************************/
 // MMS adaption from the TMSiDemo in driver
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 
 #ifndef TMSiADCH
 #define TMSiADCH
@@ -39,7 +59,7 @@
 
 #include "GenericADC.h"
 #include <windows.h>
-#include <vector.h>
+#include <vector>
 
 #include "RTDevice.h"     // from TMSi driver
 #include "Feature.h"      // from TMSi driver
@@ -88,7 +108,7 @@ class TMSiADC : public GenericADC
   std::vector<double> Offset;
 
   std::vector<int>    mPhysChanInd;
-  
+
   boolean             mMeasureImpedance;
 
   unsigned int mHardwareCh,

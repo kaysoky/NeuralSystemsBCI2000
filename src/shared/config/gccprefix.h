@@ -1,12 +1,29 @@
 /*******************************************************************************
-/* $Id$
-/* Author: juergen.mellinger@uni-tuebingen.de
-/* Description: Compiler specific definitions for the GNU gcc compiler.
-/*   When compiling under gcc, this file should be specified as "prefix file".
-/*
-/* (C) 2000-2010, BCI2000 Project
-/* http://www.bci2000.org
-/*******************************************************************************/
+ * $Id$
+ * Author: juergen.mellinger@uni-tuebingen.de
+ * Description: Compiler specific definitions for the GNU gcc compiler.
+ *   When compiling under gcc, this file should be specified as "prefix file".
+ *
+ * $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ *******************************************************************************/
 #ifndef GCC_PREFIX_H
 #define GCC_PREFIX_H
 
@@ -25,5 +42,11 @@
 #ifndef stricmp
 # define stricmp         strcasecmp
 #endif
+
+#ifndef strnicmp
+# define strnicmp        strncasecmp
+#endif
+
+#include <strings.h>
 
 #endif /* GCC_PREFIX_H */

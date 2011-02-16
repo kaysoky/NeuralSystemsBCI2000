@@ -1,10 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: vAmpAdc.h 1967 2008-05-19 15:00:13Z awilson $
+// $Id$
 // Author: jadamwilson2@gmail.com
 // Description: BCI2000 Source Module for BrainProducts V-Amp devices.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef VAMP_ADC_H
 #define VAMP_ADC_H
@@ -15,44 +32,37 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <Classes.hpp>
-#include <SyncObjs.hpp>
 #include "PrecisionTime.h"
 #include "FirstAmp.h"
 #include "vAmpChannelInfo.h"
 #include "vAmpThread.h"
 
-/*----------------------------------------------------------------------------*/
-/* Defines */
-
-#include "vAmpDefines.h"
-
 
 class vAmpADC : public GenericADC
 {
  public:
-			   vAmpADC();
-	virtual      ~vAmpADC();
+         vAmpADC();
+  virtual      ~vAmpADC();
 
-	virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
-	virtual void Initialize( const SignalProperties&, const SignalProperties& );
-	virtual void Process( const GenericSignal&, GenericSignal& );
-	virtual void Halt();
+  virtual void Preflight( const SignalProperties&, SignalProperties& ) const;
+  virtual void Initialize( const SignalProperties&, const SignalProperties& );
+  virtual void Process( const GenericSignal&, GenericSignal& );
+  virtual void Halt();
 
  private:
-	int mNumEEGchannels;
-	std::vector<int> mChList;
-	int mTimeoutMs;
-	std::vector<int> mDevList;
-	bool mHighSpeed;
-    std::vector< std::vector<float> > mImpedances;
-    bool mImpedanceMode;
+  int mNumEEGchannels;
+  std::vector<int> mChList;
+  int mTimeoutMs;
+  int mDevID;
+  bool mHighSpeed;
+  std::vector<float> mImpedances;
+  bool mImpedanceMode;
 
-	float getSampleRate(float);
-	int getDecimation() const;
+  float getSampleRate(float);
+  int getDecimation() const;
 
-	friend class vAmpThread;
-	vAmpThread *mAcquire;
+  friend class vAmpThread;
+  vAmpThread *mAcquire;
 };
 
 #endif // VAMP_ADC_H

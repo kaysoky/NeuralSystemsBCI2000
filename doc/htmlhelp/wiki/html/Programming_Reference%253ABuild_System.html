@@ -4,7 +4,7 @@
 <head>
 <title>Programming Reference:Build System - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Reference:Build System,Programming Reference:Building Qt for BCI2000" />
+<meta name="keywords" content="Programming Reference:Build System,Programming Reference:Building BCI2000 for Win64,Programming Reference:Building Qt for BCI2000" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -41,7 +41,8 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#How_To_Test"><span class="tocnumber">5</span> <span class="toctext">How To Test</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Known_Issues"><span class="tocnumber">6</span> <span class="toctext">Known Issues</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Conclusions"><span class="tocnumber">7</span> <span class="toctext">Conclusions</span></a></li>
-<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#See_also"><span class="tocnumber">8</span> <span class="toctext">See also</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#Platforms_tested_successfully_so_far"><span class="tocnumber">8</span> <span class="toctext">Platforms tested successfully so far</span></a></li>
+<li class='toclevel-1'><a href="Programming_Reference%253ABuild_System.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
 <a name="Introduction"></a><h2> Introduction </h2>
@@ -53,13 +54,14 @@ a.new, #quickbar a.new { color: #CC2200; }
 <a name="Supported_Environments"></a><h2> Supported Environments </h2>
 <ul><li><b>Supported Operating Systems</b>
 <ul><li>Windows XP, Windows 2000 (Vista and Windows 7 have poor Audio Video latencies - not recommended for BCI2000)
+</li><li><a href="Programming_Reference%253ABuilding_BCI2000_for_Win64.html" title="Programming Reference:Building BCI2000 for Win64">64-bit Windows systems</a>
 </li><li>Macintosh OSX support coming soon
 </li><li>Linux support coming soon 
 </li></ul>
 </li><li><b>Supported Compilers</b>
 <ul><li>Borland 6, 2007, 2009, 2010
 </li><li>Visual Studio  9 (2008), download free Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a> (although some BCI2000 modules require MFC, most modules may be built using the Express version)
-</li><li>MinGW with gcc 3.x (4.x when building against a recent version of Qt)
+</li><li>MinGW with gcc 4.x
 </li></ul>
 </li><li><b>Supported IDEs</b>
 <ul><li>Borland 6, 2007, 2009, 2010 (Note: Use the project files in the src directory for Borland IDE support.  This support is being phased out)
@@ -107,6 +109,31 @@ There, in line 10, replace
 <a name="Conclusions"></a><h2> Conclusions </h2>
 <p>Now that BCI2000 is open to other compilers - and soon - other platforms, support may not exist for every possible compiler/platform available. Certain compilers do not optimize code as well as others, and this behavior may lead to poor system latencies during BCI2000 experiments. The supported compilers have been rigorously tested and confirmed to be adequate for compiling the BCI2000 sources.  If you wish to use a different compiler,
 be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake is a powerful tool, but in the end, ability to compile the sources is completely up to the IDE/compiler choice.  If your IDE/compiler choice is not listed above, it is strongly urged that you to consider using one which is supported.  If you run into problems using an unsupported IDE/compiler combination, you can try to find help at the BBS - <a href="http://www.bci2000.org/phpbb/index.php" class='external free' title="http://www.bci2000.org/phpbb/index.php" rel="nofollow">http://www.bci2000.org/phpbb/index.php</a>.  BCI2000 should compile as effortlessly as possible on supported platforms.
+</p>
+<a name="Platforms_tested_successfully_so_far"></a><h2> Platforms tested successfully so far </h2>
+<table border="1" cellspacing="0" cellpadding="2">
+<tr>
+<th>Compiler</th><th>OS</th><th>Processors</th><th>Qt linkage
+</th></tr>
+<tr>
+<td>MSVC2008</td><td>Win XP SP3</td><td>2</td><td>static
+</td></tr>
+<tr>
+<td>MSVC2008</td><td>Win XP SP3</td><td>1</td><td>static
+</td></tr>
+<tr>
+<td>MSVC2008</td><td>Win 7 64bit</td><td>1</td><td>dynamic
+</td></tr>
+<tr>
+<td>MinGW &gt; 4</td><td>Win XP SP3</td><td>1</td><td>static
+</td></tr>
+<tr>
+<td>MinGW &gt; 4</td><td>Win XP SP3</td><td>1</td><td>dynamic
+</td></tr>
+<tr>
+<td>C++ Builder 2010*</td><td>Win XP SP3</td><td>2</td><td>n/a
+</td></tr></table>
+<p>*In version 3, the Operator module cannot be built with Borland C++ Builder (BCB). For the test, an MSVC-compiled Operator module was used in conjunction with BCB-compiled core modules.
 </p>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>

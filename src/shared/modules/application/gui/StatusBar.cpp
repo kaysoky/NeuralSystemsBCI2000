@@ -7,13 +7,37 @@
 //   For an empty GoalText, ResultText occupies the top as well, and the
 //   separator bar is not displayed.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "StatusBar.h"
+
+#ifdef __BORLANDC__
+#include "VCL.h"
+#else // __BORLANDC__
+#include <QPainter>
+#include <QFontMetrics>
+#endif // __BORLANDC__
 
 using namespace std;
 using namespace GUI;
@@ -132,7 +156,7 @@ StatusBar::OnPaint( const DrawContext& dc )
   TCanvas* pCanvas = new TCanvas;
   try
   {
-    pCanvas->Handle = dc.handle;
+    pCanvas->Handle = ( HDC )dc.handle;
     TRect winRect( dc.rect.left, dc.rect.top, dc.rect.right, dc.rect.bottom );
     if( backgroundColor != RGBColor::NullColor )
     {
@@ -189,6 +213,78 @@ StatusBar::OnPaint( const DrawContext& dc )
   {
     delete pCanvas;
   }
+#else // __BORLANDC__
+  // Create the painter
+  QPainter p( dc.handle );
+
+  // Paint the background if it exists
+  if( backgroundColor != RGBColor( RGBColor::NullColor ) )
+  {
+    QColor colorBackground( backgroundColor.R(), backgroundColor.G(), backgroundColor.B() );
+    QBrush brushBackground( colorBackground );
+    p.fillRect(
+      static_cast<int>( dc.rect.left ),
+      static_cast<int>( dc.rect.top ),
+      static_cast<int>( dc.rect.right - dc.rect.left ),
+      static_cast<int>( dc.rect.bottom - dc.rect.top ),
+      brushBackground
+    );
+  }
+
+  // Set up font
+  QFont font;
+  font.fromString( QString( "Arial" ) );
+  font.setPixelSize( static_cast<int>( mTextHeight * ( dc.rect.bottom - dc.rect.top ) ) );
+  font.setBold( true );
+  p.setFont( font );
+
+  // Color the font
+  QPen fontPen;
+  fontPen.setColor( QColor( textColor.R(), textColor.G(), textColor.B() ) );
+  p.setPen( fontPen );
+
+  QFontMetrics fm( font );
+  int charWidth = fm.width( QString( "x" ) );
+  int dividerPos = static_cast<int>( dc.rect.top + ( ( dc.rect.bottom - dc.rect.top ) * heightRatioGoal )
+                                     / ( heightRatioGoal + heightRatioResult ) );
+
+  if( !mGoalText.empty() )
+  {
+    QRect dividerRect(
+      static_cast<int>( dc.rect.left ),
+      dividerPos,
+      static_cast<int>( dc.rect.right - dc.rect.left ),
+      1
+    );
+    if( dividerColor != RGBColor( RGBColor::NullColor ) )
+    {
+      QColor colorDivider( dividerColor.R(), dividerColor.G(), dividerColor.B() );
+      QBrush brushDivider( colorDivider );
+      p.fillRect( dividerRect, brushDivider );
+    }
+  }
+
+  QRect line1Rect(
+    static_cast<int>( dc.rect.left ),
+    static_cast<int>( dc.rect.top ),
+    static_cast<int>( dc.rect.right - dc.rect.left ),
+    static_cast<int>( dividerPos - dc.rect.top )
+  );
+  int size = fm.width( QString( line1.c_str() ) );
+  while( size > line1Rect.width() - 2 * charWidth )
+    size = fm.width( QString( line1.substr( 2, line1.size() ).c_str() ) );
+  p.drawText( line1Rect, QString( line1.c_str() ) );
+
+  QRect line2Rect(
+    static_cast<int>( dc.rect.left ),
+    dividerPos,
+    static_cast<int>( dc.rect.right - dc.rect.left ),
+    static_cast<int>( dividerPos - dc.rect.top )
+  );
+  size = fm.width( QString( line2.c_str() ) );
+  while( size > line2Rect.width() - 2 * charWidth )
+    size = fm.width( QString( line2.substr( 2, line2.size() ).c_str() ) );
+  p.drawText( line2Rect, QString( line2.c_str() ) );
 #endif // __BORLANDC__
 }
 

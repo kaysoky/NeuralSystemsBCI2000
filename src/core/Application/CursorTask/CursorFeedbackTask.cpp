@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: The CursorFeedback Application's Task filter.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -17,6 +34,12 @@
 #include "FeedbackScene3D.h"
 #include "buffers.h"
 
+#include <algorithm>
+
+#ifndef __BORLANDC__
+#include <QImage>
+#endif // __BORLANDC__
+
 #define CURSOR_POS_BITS "12"
 const int cCursorPosBits = ::atoi( CURSOR_POS_BITS );
 
@@ -26,15 +49,15 @@ using namespace std;
 
 CursorFeedbackTask::CursorFeedbackTask()
 : FeedbackTask( &mWindow ),
-  mpMessage( NULL ),
-  mRenderingQuality( 0 ),
   mpFeedbackScene( NULL ),
+  mRenderingQuality( 0 ),
+  mpMessage( NULL ),
+  mCursorColorFront( RGBColor::Red ),
+  mCursorColorBack( RGBColor::Red ),
   mRunCount( 0 ),
   mTrialCount( 0 ),
   mCurFeedbackDuration( 0 ),
   mMaxFeedbackDuration( 0 ),
-  mCursorColorFront( RGBColor::Red ),
-  mCursorColorBack( RGBColor::Red ),
   mCursorSpeedX( 1.0 ),
   mCursorSpeedY( 1.0 ),
   mCursorSpeedZ( 1.0 )
@@ -106,10 +129,10 @@ CursorFeedbackTask::CursorFeedbackTask()
    "Be prepared ...",  "Achtung ...",
   END_LOCALIZED_STRINGS
 
-  GUI::Rect rect = { 0.5, 0.4, 0.5, 0.6 };
+  GUI::Rect rect = { 0.5f, 0.4f, 0.5f, 0.6f };
   mpMessage = new TextField( mWindow );
   mpMessage->SetTextColor( RGBColor::Lime )
-            .SetTextHeight( 0.8 )
+            .SetTextHeight( 0.8f )
             .SetColor( RGBColor::Gray )
             .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
             .SetDisplayRect( rect );
@@ -149,7 +172,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     // WorkspaceBoundaryColor may be NullColor to indicate invisibility
   };
   for( size_t i = 0; i < sizeof( colorParams ) / sizeof( *colorParams ); ++i )
-    if( RGBColor( Parameter( colorParams[ i ] ) == RGBColor::NullColor ) )
+    if( RGBColor( Parameter( colorParams[ i ] ) )  == RGBColor( RGBColor::NullColor ) )
       bcierr << "Invalid RGB value in " << colorParams[ i ] << endl;
 
   bool showTextures = ( Parameter( "RenderingQuality" ) > 0 );
@@ -168,6 +191,7 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       bool err = !ifstream( filename.c_str() ).is_open();
       if( !err )
       {
+#ifdef __BORLANDC__
         AUX_RGBImageRec* pImg = buffers::loadWindowsBitmap( filename );
         if( pImg != NULL )
         {
@@ -175,6 +199,10 @@ CursorFeedbackTask::OnPreflight( const SignalProperties& /*Input*/ ) const
           ::free( pImg );
         }
         err = ( pImg == NULL );
+#else // __BORLANDC__
+        QImage img;
+        err = !img.load( QString( filename.c_str() ) );
+#endif // __BORLANDC__
       }
       if( err )
         bcierr << "Invalid texture file \"" << filename << "\""
@@ -205,7 +233,7 @@ CursorFeedbackTask::OnInitialize( const SignalProperties& /*Input*/ )
   mCursorSpeedX = 100.0 / feedbackDuration / 2;
   mCursorSpeedY = 100.0 / feedbackDuration / 2;
   mCursorSpeedZ = 100.0 / feedbackDuration / 2;
-  mMaxFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "MaxFeedbackDuration" ) );
+  mMaxFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "MaxFeedbackDuration" ) ) );
 
   mWindow.SetLeft( Parameter( "WindowLeft" ) );
   mWindow.SetTop( Parameter( "WindowTop" ) );
@@ -355,15 +383,15 @@ CursorFeedbackTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProg
 
   // Restrict cursor movement to the inside of the bounding box:
   float r = mpFeedbackScene->CursorRadius();
-  x = std::max( r, std::min( 100 - r, x ) ),
-  y = std::max( r, std::min( 100 - r, y ) ),
-  z = std::max( r, std::min( 100 - r, z ) );
+  x = max( r, min( 100 - r, x ) ),
+  y = max( r, min( 100 - r, y ) ),
+  z = max( r, min( 100 - r, z ) );
   mpFeedbackScene->SetCursorPosition( x, y, z );
 
   const float coordToState = ( ( 1 << cCursorPosBits ) - 1 ) / 100.0;
-  State( "CursorPosX" ) = x * coordToState;
-  State( "CursorPosY" ) = y * coordToState;
-  State( "CursorPosZ" ) = z * coordToState;
+  State( "CursorPosX" ) = static_cast<int>( x * coordToState );
+  State( "CursorPosY" ) = static_cast<int>( y * coordToState );
+  State( "CursorPosZ" ) = static_cast<int>( z * coordToState );
 
   // Test for target hits
   if( Parameter( "TestAllTargets" ) != 0 )

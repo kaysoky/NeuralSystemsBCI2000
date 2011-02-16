@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A 3D feedback scene using the OpenGL-based 3D API.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -32,7 +49,7 @@ FeedbackScene3D&
 FeedbackScene3D::Initialize()
 {
   ClearObjects();
-  
+
   mpScene = new Scene( mDisplay );
   mpCursor = new sphere( *mpScene );
   mpBoundary = new invertedCuboid( *mpScene );
@@ -83,8 +100,8 @@ FeedbackScene3D::Initialize()
     lightSourceColor.G()/255.,
     lightSourceColor.B()/255.
   );
-  mpScene->CameraAndLight().setLightBri( 0.8 );
-  mpScene->CameraAndLight().setAmbLightBri( 0.2 );
+  mpScene->CameraAndLight().setLightBri( 0.8f );
+  mpScene->CameraAndLight().setAmbLightBri( 0.2f );
 
   bool showTextures = ( Parameter( "RenderingQuality" ) > 0 );
 
@@ -98,10 +115,10 @@ FeedbackScene3D::Initialize()
     boundaryColor.G()/255.,
     boundaryColor.B()/255.
   );
-  mpBoundary->setVisible( boundaryColor != RGBColor::NullColor );
+  mpBoundary->setVisible( boundaryColor != RGBColor( RGBColor::NullColor ) );
   string boundaryTexture;
   if( showTextures )
-    boundaryTexture = Parameter( "WorkspaceBoundaryTexture" );
+    boundaryTexture = ( string )Parameter( "WorkspaceBoundaryTexture" );
   if( !boundaryTexture.empty() )
     boundaryTexture = BCIDirectory::AbsolutePath( boundaryTexture );
   mpBoundary->setTexture( boundaryTexture );
@@ -114,7 +131,7 @@ FeedbackScene3D::Initialize()
   mpCursor->setBrightness( 1 );
   string cursorTexture;
   if( showTextures )
-    cursorTexture = Parameter( "CursorTexture" );
+    cursorTexture = ( string )Parameter( "CursorTexture" );
   if( !cursorTexture.empty() )
     cursorTexture = BCIDirectory::AbsolutePath( cursorTexture );
   mpCursor->setTexture( cursorTexture );
@@ -122,7 +139,7 @@ FeedbackScene3D::Initialize()
 
   string targetTexture;
   if( showTextures )
-    targetTexture = Parameter( "TargetTexture" );
+    targetTexture = ( string )Parameter( "TargetTexture" );
   if( !targetTexture.empty() )
     targetTexture = BCIDirectory::AbsolutePath( targetTexture );
   ParamRef Targets = Parameter( "Targets" );

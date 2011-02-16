@@ -9,8 +9,25 @@
 //   unit range, i.e. a zero mean signal will be normalized to the
 //   range [-1,1].
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h" // Make the compiler's Pre-Compiled Headers feature happy
 #pragma hdrstop
@@ -109,7 +126,7 @@ Normalizer::Preflight( const SignalProperties& Input,
       for( int col = 0; col < BufferConditions->NumColumns(); ++col )
         Expression( BufferConditions( row, col ) ).Evaluate( &preflightSignal );
 
-    int bufferSize = MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) );
+    double bufferSize = MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) );
     if( bufferSize < 1 )
       bciout << "The BufferLength parameter specifies a zero-sized buffer"
              << endl;
@@ -155,8 +172,8 @@ Normalizer::Initialize( const SignalProperties& Input,
     if( !UpdateTrigger.empty() )
       mpUpdateTrigger = new Expression( UpdateTrigger );
 
-    size_t bufferSize = MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) )
-                        * Input.Elements();
+    size_t bufferSize = static_cast<size_t>( 
+       MeasurementUnits::ReadAsTime( Parameter( "BufferLength" ) ) * Input.Elements() );
     ParamRef BufferConditions = Parameter( "BufferConditions" );
     mBufferConditions.resize( BufferConditions->NumColumns() );
     for( int col = 0; col < BufferConditions->NumColumns(); ++col )
@@ -182,7 +199,7 @@ Normalizer::Process( const GenericSignal& Input, GenericSignal& Output )
     for( size_t channel = 0; channel < mBufferConditions.size(); ++channel )
       for( size_t buffer = 0; buffer < mBufferConditions[ channel ].size(); ++buffer )
       {
-        float label = mBufferConditions[ channel ][ buffer ].Evaluate( &Input );
+        double label = mBufferConditions[ channel ][ buffer ].Evaluate( &Input );
         if( label != 0 )
           for( int sample = 0; sample < Input.Elements(); ++sample )
             mDataBuffers[ channel ][ buffer ].Put( Input( channel, sample ) );
@@ -256,7 +273,7 @@ Normalizer::Update()
           = accumulate( bufferMeans.begin(), bufferMeans.end(), 0.0 )
             / bufferMeans.size();
 
-        mOffsets[ channel ] = dataMean;
+        mOffsets[ channel ] = static_cast<float>( dataMean );
         bcidbg << "Channel " << channel
                << ": Set offset to " << mOffsets[ channel ] << " using information"
                << " from " << bufferMeans.size() << " buffers"
@@ -276,7 +293,7 @@ Normalizer::Update()
         const double eps = 1e-10;
         if( dataVar > eps )
         {
-          mGains[ channel ] = 1.0 / ::sqrt( dataVar );
+          mGains[ channel ] = 1.0f / ::sqrt( dataVar );
           bcidbg << "Set gain to " << mGains[ channel ]
                  << ", using data variance"
                  << endl;

@@ -6,8 +6,25 @@
 //    parameters, and states, thus providing the full BCI2000 filter interface
 //    to a Matlab filter implementation.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -70,7 +87,7 @@ MatlabFilter::MatlabFilter()
     if( CallMatlab( bci_Construct ) )
     {
       // Add the parameters and states requested by the Matlab bci_Construct function.
-      int numParamDefs = MatlabEngine::GetScalar( "max(size(" PARAM_DEFS "))" );
+      int numParamDefs = static_cast<int>( MatlabEngine::GetScalar( "max(size(" PARAM_DEFS "))" ) );
       for( int i = 1; i <= numParamDefs; ++i )
       {
         ostringstream expr;
@@ -79,7 +96,7 @@ MatlabFilter::MatlabFilter()
         if( !Parameters->Add( paramDef ) )
           bcierr << "Error in parameter definition: " << paramDef << endl;
       }
-      int numStateDefs = MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" );
+      int numStateDefs = static_cast<int>( MatlabEngine::GetScalar( "max(size(" STATE_DEFS "))" ) );
       for( int i = 1; i <= numStateDefs; ++i )
       {
         ostringstream expr;
@@ -259,7 +276,7 @@ MatlabFilter::MatlabWSToStates()
   for( int i = 0; i < States->Size(); ++i )
   {
     const string& name = ( *States )[ i ].Name();
-    State( name ) = MatlabEngine::GetScalar( string( STATES "." ) + name );
+    State( name ) = static_cast<int>( MatlabEngine::GetScalar( string( STATES "." ) + name ) );
   }
 }
 

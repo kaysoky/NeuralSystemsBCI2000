@@ -4,17 +4,38 @@
 //          halder@informatik.uni-tuebingen.de
 // Description: The Win32 implementation of the WavePlayer interface.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "WavePlayer.h"
 #include "BCIDirectory.h"
-#include <windows.h>
+#if !_WIN32
+# include "BCIError.h"
+#endif // !_WIN32
 
 using namespace std;
+
+#if _WIN32
 
 LPDIRECTSOUND       WavePlayer::sPDS = NULL;
 LPDIRECTSOUNDBUFFER WavePlayer::sPrimarySoundBuffer = NULL;
@@ -257,12 +278,14 @@ WavePlayer::SetFile( const string& inFileName )
     if( DS_OK == sPDS->CreateSoundBuffer( &bufdesc, &mSecondaryBuffer, NULL ) )
     {
       char* pWrite = NULL;
+      void* write = reinterpret_cast<void*>( pWrite );
       unsigned long length = 0;
       if( DS_OK == mSecondaryBuffer->Lock( 0, childChunkInfo.cksize,
-                     &reinterpret_cast<void*>( pWrite ), &length, NULL, NULL, DSBLOCK_ENTIREBUFFER ) )
+                     &write, &length, NULL, NULL, DSBLOCK_ENTIREBUFFER ) )
       {
+        pWrite = ( char* )write;
         ::mmioRead( fileHandle, pWrite, length );
-        if( DS_OK == mSecondaryBuffer->Unlock( pWrite, length, NULL, NULL ) )
+        if( DS_OK == mSecondaryBuffer->Unlock( pWrite, length, NULL, 0 ) )
           err = noError;
       }
     }
@@ -291,11 +314,12 @@ WavePlayer::Play()
 WavePlayer&
 WavePlayer::SetVolume( float inVolume )
 {
+  LONG value = static_cast<LONG>( DSBVOLUME_MIN + inVolume *( DSBVOLUME_MAX - DSBVOLUME_MIN ) );
   if( inVolume < 0 || inVolume > 1 )
     mErrorState = invalidParams;
   else if( mSecondaryBuffer == NULL )
     mErrorState = initError;
-  else if( DS_OK != mSecondaryBuffer->SetVolume( DSBVOLUME_MIN + inVolume *( DSBVOLUME_MAX - DSBVOLUME_MIN ) ) )
+  else if( DS_OK != mSecondaryBuffer->SetVolume( value ) )
     mErrorState = genError;
   else
     mErrorState = noError;
@@ -305,11 +329,12 @@ WavePlayer::SetVolume( float inVolume )
 WavePlayer&
 WavePlayer::SetPan( float inPan )
 {
+  LONG value = static_cast<LONG>( DSBPAN_CENTER + inPan * ( DSBPAN_RIGHT - DSBPAN_CENTER ) );
   if( inPan < -1 || inPan > 1 )
     mErrorState = invalidParams;
   else if( mSecondaryBuffer == NULL )
     mErrorState = initError;
-  else if( DS_OK != mSecondaryBuffer->SetPan( DSBPAN_CENTER + inPan * ( DSBPAN_RIGHT - DSBPAN_CENTER ) ) )
+  else if( DS_OK != mSecondaryBuffer->SetPan( value ) )
     mErrorState = genError;
   else
     mErrorState = noError;
@@ -345,7 +370,133 @@ WavePlayer::PlayingPos() const
 
   unsigned long pos;
   mSecondaryBuffer->GetCurrentPosition( &pos, NULL );
-  return 1e3 * ( pos * 8 ) / ( mSamplingRate * mBitsPerSample );
+  return 1e3f * ( pos * 8 ) / ( mSamplingRate * mBitsPerSample );
 }
 
+#else // _WIN32
 
+WavePlayer::WavePlayer()
+: mVolume( 1.0 ),
+mPan( 0.0 ),
+mErrorState( noError ),
+mpSound( NULL )
+{
+  Construct();
+}
+
+WavePlayer::WavePlayer( const WavePlayer& inOriginal )
+: mVolume( 1.0 ),
+mPan( 0.0 ),
+mErrorState( noError ),
+mpSound( NULL )
+{
+  Construct();
+  Assign( inOriginal );
+}
+
+WavePlayer&
+WavePlayer::operator=( const WavePlayer& inOriginal )
+{
+  if( &inOriginal != this )
+  {
+    Destruct();
+    Construct();
+    Assign( inOriginal );
+  }
+  return *this;
+}
+
+WavePlayer::~WavePlayer()
+{
+  Destruct();
+}
+
+void
+WavePlayer::Construct()
+{
+}
+
+void
+WavePlayer::Destruct()
+{
+  Clear();
+}
+
+void
+WavePlayer::Assign( const WavePlayer& inOriginal )
+{
+  SetFile( inOriginal.File() );
+  SetVolume( inOriginal.Volume() );
+  SetPan( inOriginal.Pan() );
+}
+
+void
+WavePlayer::Clear()
+{
+  if( IsPlaying() )
+    Stop();
+	
+  delete mpSound;
+	mpSound = NULL;
+  mFile = "";
+}
+
+WavePlayer&
+WavePlayer::SetFile( const string& inFileName )
+{
+	Clear();
+	if( !inFileName.empty() )
+	{
+		mFile = inFileName;
+		mpSound = new QSound( inFileName.c_str() );
+	}
+	return *this;
+}
+
+WavePlayer&
+WavePlayer::Play()
+{
+	if( mpSound )
+		mpSound->play();
+	return *this;
+}
+
+WavePlayer&
+WavePlayer::SetVolume( float inVolume )
+{
+	if( inVolume != 1.0 )
+		bciout << "Cannot adjust volume in non-windows builds" << endl;
+	mVolume = 1.0;
+	return *this;
+}
+
+WavePlayer&
+WavePlayer::SetPan( float inPan )
+{
+	if( inPan != 0.0 )
+		bciout << "Cannot adjust pan in non-windows builds" << endl;
+  mPan = 0.0;
+	return *this;
+}
+
+WavePlayer&
+WavePlayer::Stop()
+{
+	if( mpSound )
+	  mpSound->stop();
+  return *this;
+}
+
+bool
+WavePlayer::IsPlaying() const
+{
+	return mpSound && !mpSound->isFinished();
+}
+
+float
+WavePlayer::PlayingPos() const
+{
+	return IsPlaying() ? -1.0 : 0.0;
+}
+
+#endif // _WIN32

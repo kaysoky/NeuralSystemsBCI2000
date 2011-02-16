@@ -2,9 +2,9 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" >
 <head>
-<title>Programming Howto:Building BCI2000 - BCI2000 Help</title>
+<title>Programming Reference:Build System - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Programming Howto:Building BCI2000,BCI2000 Binaries,User Reference:Command Line Processing,User Reference:Matlab MEX Files" />
+<meta name="keywords" content="Programming Reference:Build System,Programming Reference:Building BCI2000 for Win64,Programming Reference:Building Qt for BCI2000" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -30,80 +30,113 @@ a.new, #quickbar a.new { color: #CC2200; }
 </div>
 
 <div id='article'>
-<h1 class="pagetitle">Building BCI2000</h1><p class="subtitle">Programming Howto</p><hr class="sep" /><p>This document describes how to build BCI2000, i.e. how to create the BCI2000 executables from their source code.
+<h1 class="pagetitle">Build System</h1><p class="subtitle">Programming Reference</p><hr class="sep" /><p><b>This documentation only applies to BCI2000 Ver 3.0</b>
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Why_to_build"><span class="tocnumber">1</span> <span class="toctext">Why to build</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Tools_required"><span class="tocnumber">2</span> <span class="toctext">Tools required</span></a></li>
-<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_to_build"><span class="tocnumber">3</span> <span class="toctext">How to build</span></a>
-<ul>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_from_the_command_line"><span class="tocnumber">3.1</span> <span class="toctext">Building BCI2000 from the command line</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE"><span class="tocnumber">3.2</span> <span class="toctext">Building BCI2000 using the Borland C++ Builder 6 IDE</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Starting_up_BCI2000"><span class="tocnumber">3.3</span> <span class="toctext">Starting up BCI2000</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007.2F2009"><span class="tocnumber">3.4</span> <span class="toctext">Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007/2009</span></a></li>
-<li class='toclevel-2'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_Contributions"><span class="tocnumber">3.5</span> <span class="toctext">Building Contributions</span></a>
-<ul>
-<li class='toclevel-3'><a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_command_line"><span class="tocnumber">3.5.1</span> <span class="toctext">From the command line</span></a></li>
-<li class='toclevel-3'><a href="Programming_Howto%253ABuilding_BCI2000.html#From_the_IDE"><span class="tocnumber">3.5.2</span> <span class="toctext">From the IDE</span></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Supported_Environments"><span class="tocnumber">2</span> <span class="toctext">Supported Environments</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Build_Using_CMake"><span class="tocnumber">3</span> <span class="toctext">How To Build Using CMake</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"><span class="tocnumber">4</span> <span class="toctext">Building against a Qt distribution outside the BCI2000 source tree</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#How_To_Test"><span class="tocnumber">5</span> <span class="toctext">How To Test</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Known_Issues"><span class="tocnumber">6</span> <span class="toctext">Known Issues</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Conclusions"><span class="tocnumber">7</span> <span class="toctext">Conclusions</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#Platforms_tested_successfully_so_far"><span class="tocnumber">8</span> <span class="toctext">Platforms tested successfully so far</span></a></li>
+<li class='toclevel-1'><a href="Programming_Howto%253ABuilding_BCI2000.html#See_also"><span class="tocnumber">9</span> <span class="toctext">See also</span></a></li>
 </ul>
 </td></tr></table>
-<a name="Why_to_build"></a><h2> Why to build </h2>
-<p>Typically, you will install BCI2000 from its <a href="BCI2000_Binaries.html" title="BCI2000 Binaries">binary distribution</a>, and do not need to build BCI2000, unless
+<a name="Introduction"></a><h2> Introduction </h2>
+<p>BCI2000 was originally intended to be built only on the Borland compiler due to the fact that much of its architecture was built on the visual components library (VCL) by Borland.  By making BCI2000 compiler independent, we could no longer use VCL, and had to choose an open source and cross platform replacement.  Qt was chosen to replace VCL because it is not only compiler independent but is also platform independent, a future goal for BCI2000. 
+</p><p>As such, Qt is required for compiling the BCI2000 source on a non-Borland platform.  If Borland is still being used as the compiling environment, VCL is still temporary supported and the project will be built using the VCL for it's graphical elements.  For Visual Studio or MinGW builds of BCI2000, a stripped-down version of the Qt SDK is provided in the BCI2000 source tree.
+</p><p>To support such a large number of platforms and compilers, BCI2000 has turned to CMake <a href="http://www.cmake.org" class='external free' title="http://www.cmake.org" rel="nofollow">http://www.cmake.org</a> to generate makefiles, project files, and visual studio solutions.  Cmake can be thought of as a meta-makefile, in that it examines your build environment, and sets up a Visual Studio project, or a Code::Blocks project which is custom tailored to your environment.  It is because of varying build environments, that BCI2000 can not come with a set Visual Studio solution file, or an Eclipse project file without giving the user a lot of headache in setting up the compiler to work correctly.  Once remaining dependencies on the Win32 API are removed, the number of platforms BCI2000 supports will only be limited by the number of platforms and compilers that CMake has generators for.
+</p><p><br />
 </p>
-<ul><li>you want to always use its most current SVN version,
-</li><li>you create your own module by modifying an existing one,
-</li><li>you create a new module from scratch.
+<a name="Supported_Environments"></a><h2> Supported Environments </h2>
+<ul><li><b>Supported Operating Systems</b>
+<ul><li>Windows XP, Windows 2000 (Vista and Windows 7 have poor Audio Video latencies - not recommended for BCI2000)
+</li><li><a href="Programming_Reference%253ABuilding_BCI2000_for_Win64.html" title="Programming Reference:Building BCI2000 for Win64">64-bit Windows systems</a>
+</li><li>Macintosh OSX support coming soon
+</li><li>Linux support coming soon 
 </li></ul>
-<a name="Tools_required"></a><h2> Tools required </h2>
-<p>As of BCI2000 version 2.0, building all parts of BCI2000 requires Borland's C++ Builder 6, or a more recent version.
-The operator GUI and Application modules currently require the Borland VCL library.
-The following non-GUI related parts of BCI2000 can be built using the freely available Borland C++ compiler:
-</p>
-<ul><li><a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> 
-</li><li><a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a>
+</li><li><b>Supported Compilers</b>
+<ul><li>Borland 6, 2007, 2009, 2010
+</li><li>Visual Studio  9 (2008), download free Express version from <a href="http://www.microsoft.com/express/downloads/" class='external text' title="http://www.microsoft.com/express/downloads/" rel="nofollow">here</a> (although some BCI2000 modules require MFC, most modules may be built using the Express version)
+</li><li>MinGW with gcc 4.x
 </li></ul>
-<a name="How_to_build"></a><h2>How to build</h2>
-<a name="Building_BCI2000_from_the_command_line"></a><h3>Building BCI2000 from the command line</h3>
-<p>Command-line builds require a working installation of Borland C++ Builder 6.
+</li><li><b>Supported IDEs</b>
+<ul><li>Borland 6, 2007, 2009, 2010 (Note: Use the project files in the src directory for Borland IDE support.  This support is being phased out)
+</li><li>Visual Studio  9 (2008) (via CMake)
+</li><li>Code::Blocks - MinGW Makefiles (via CMake)
+</li><li>Other IDEs supported by CMake generators (Eclipse CDT, ...), as long as these use the compilers listed above
+</li></ul>
+</li></ul>
+<a name="How_To_Build_Using_CMake"></a><h2> How To Build Using CMake </h2>
+<ol><li>Ensure that your compiler and IDE are installed on the computer.  This means that Visual Studio is installed if you intend to use Visual Studio, or that MinGW and Code::Blocks are installed if you intend to use Code::Blocks as your IDE and MinGW as your compiler.  
+</li><li>Download and install cmake (Version 2.8 or higher!) from <a href="http://www.cmake.org/" class='external free' title="http://www.cmake.org/" rel="nofollow">http://www.cmake.org/</a> - <b>Add to path for all users.</b> -- If you experience a problem with a version of cmake newer than 2.8.1, download cmake 2.8.1 from <a href="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" class='external text' title="http://www.bci2000.org/downloads/bin/cmake-2.8.1-win32-x86.exe" rel="nofollow">here</a>.
+</li><li>Go to the BCI2000/build directory and double click the .bat file which best describes your intended platform.  (ie. if you plan to use Visual Studio 2008, run the Visual Studio 2008 .bat file)
+</li><li>Wait while cmake examines your computer, finds qt and your compiler, and generates applicable project files for your system
+</li><li>Open the generated project/solution in the IDE and build BCI2000, or - if makefiles were generated - run the make command from a command prompt.  Refer to the IDE help for IDE specific instructions on how to build an application.
+</li></ol>
+<a name="Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree"></a><h2> Building against a Qt distribution outside the BCI2000 source tree </h2>
+<p>BCI2000 may be built against a standard Qt distribution. Depending on your compiler and desired configuration (e.g., when using Visual Studio), you might need to re-build that distribution from source before building BCI2000.
+</p><p>To enable the BCI2000 build system to use the external Qt distribution, open the file <tt>BCI2000/build/cmake/FindQt.cmake</tt>
+in a text editor.
+There, in line 10, replace
 </p>
-<ol><li> Open a Windows cmd shell, e.g. by choosing "Run..." from the Start Menu and entering "cmd". 
-</li><li> Change to the BCI2000 "src" directory.
-</li><li> Execute "make" from the command prompt.
-</li><li> If you updated or edited any of the source files, and experience linker errors or other unexpected behavior, execute "make clean &amp;&amp; make all".
-</li><li> For build versioning, execute "make build" rather than "make" or "make all". This will update the build information visible in the BCI2000 "Version" parameters, and in the "About" boxes of BCI2000 GUI applications.
-</li></ol>
-<a name="Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE"></a><h3>Building BCI2000 using the Borland C++ Builder 6 IDE</h3>
-<ol><li> Open the file "BCI2000.bpg" with the IDE by double-clicking it.
-</li><li> Make sure the "ProjectManager" view is visible to the left (choose "Project Manager" from the "View" menu to display it).
-</li><li> Right-click the topmost project (located immediately below the line reading "BCI2000"), and choose "Make all from here".
-</li><li> To get rid of possible inconsistencies from earlier builds, choose "Build all from here" rather than "Make all from here".
-</li></ol>
-<a name="Starting_up_BCI2000"></a><h3>Starting up BCI2000</h3>
-<ol><li> After compilation, a desired configuration of BCI2000 may be started by executing an appropriate batch file from the top level "batch" directory. Once a particular configuration of BCI2000 is started, simply load a parameter file with the same name as the batch file from the "parms" directory.
-</li><li> If you need a configuration for which no batch file exists, just modify a copy of a batch file that is close to your needs.
-</li></ol>
-<a name="Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007.2F2009"></a><h3>Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007/2009</h3>
-<p>When using BCB 2006, please make sure to install all available updates from the <a href="http://cc.codegear.com/reg/bds" class='external text' title="http://cc.codegear.com/reg/bds" rel="nofollow">Borland Download Site</a>. The originally shipped version of BCB 2006 is defective and will not work without updating. We recommend updating to BCB 2009.
+<pre>SET( USE_STD_QT FALSE )
+</pre>
+<p>with
 </p>
-<ol><li> Open the file "BCI2000.bpg" from within Borland Developer Studio. This will import all existing projects into BDS project files.
-</li><li> In the project manager (at the top right), right-click the topmost project and choose "Make all from here".
-</li><li> To get rid of possible inconsistencies from earlier builds, choose "Build all from here" rather than "Make all from here".
-</li><li> Command-line builds cannot be done with Borland C++ Builder 2007/2009 because it lacks the bpr2mak project-to-makefile conversion utility. Still, <a href="User_Reference%253ACommand_Line_Processing.html" title="User Reference:Command Line Processing">Command line tools</a> and <a href="User_Reference%253AMatlab_MEX_Files.html" title="User Reference:Matlab MEX Files">Matlab MEX files</a> may be compiled from the command line as described in their documentation.
-</li><li> When using BCB 2006, you may experience "invalid property" runtime errors when running BCI2000. This may be due to imperfect import of *.dfm files. Make sure to install all available updates, then import a clean version of the BCI2000 source tree. If this doesn't help, consider updating to BCB2009.
-</li></ol>
-<a name="Building_Contributions"></a><h3>Building Contributions</h3>
-<a name="From_the_command_line"></a><h4>From the command line</h4>
-<p>After building BCI2000 from the command line, the <tt>makefiles</tt> file in the <tt>src</tt> directory contains a full list of subprojects.
-Those from the contribution section are commented out with a # character in front. When you remove the # character in front of a project, and do a "make all" or "make build", the additional project will be included in the build.
-Likewise, you may speed up builds by commenting out parts of the core distribution that you don't need.
+<pre>SET( USE_STD_QT TRUE )
+</pre>
+<p>Then, go to the directory <tt>BCI2000/build</tt> and remove the file <tt>CMakeCache.txt</tt> before re-creating project files using the appropriate batch file in <tt>BCI2000/build</tt>.
 </p>
-<a name="From_the_IDE"></a><h4>From the IDE</h4>
-<p>Open the contrib project group in the <tt>src/contrib</tt> directory, and build the contributions you want.
+<a name="How_To_Test"></a><h2> How To Test </h2>
+<p>It is important - especially if you're using an unsupported compiler/IDE - to test your executables once they've been built to make sure they function properly. 
+</p><p><b>To run testing:</b>
+</p>
+<ol><li>Ensure that the entire BCI2000 project has built successfully and that executables exist in the <tt>BCI2000/prog</tt> directory, the <tt>BCI2000/tools/cmdline</tt> directory, and the <tt>BCI2000/build/buildutils/test</tt> directory.
+</li><li>Run <tt>test_executables.bat</tt> in the <tt>BCI2000/build/buildutils/test</tt> directory.
+</li></ol>
+<p>The tests will run and report a message after they've finished whether they've failed or not.  You may see a message in the beginning of the test stating that a directory does not exist.  This is normal behavior and does not reflect whether or not your executables have failed testing or not.
+</p><p><b>A Note on found differences:</b> depending on how many differences found it may not indicate that you have a broken build.  Sometimes different compilers handle the precision of floating point numbers differently than others.  These can account for small differences in calculated signal or state values. The default ref files were generated using Borland 2007.  If your compiler is different, this may not be a problem.
+</p>
+<a name="Known_Issues"></a><h2> Known Issues </h2>
+<ul><li><b>MinGW, Borland</b> and other single configuration generators within CMake only generate one configuration at CMake Run-time.  By default, this is set to the release configuration.  It can be set - along with specific compiler options - in <tt>BCI2000/build/cmake/BuildConfigurations.cmake</tt>.  The Visual Studio generator will ignore settings in this file.
+</li></ul>
+<ul><li><b>All Compilers</b> handle non standard characters, such as umlauts and characters with accents or tildes, differently.  Because BCI2000 currently has no standardized way of handling non standard characters in a cross-compiler environment, it is strongly recommended that - for the time being - special characters are not used in localizations during the development of BCI2000 Ver 3.0.
+</li></ul>
+<a name="Conclusions"></a><h2> Conclusions </h2>
+<p>Now that BCI2000 is open to other compilers - and soon - other platforms, support may not exist for every possible compiler/platform available. Certain compilers do not optimize code as well as others, and this behavior may lead to poor system latencies during BCI2000 experiments. The supported compilers have been rigorously tested and confirmed to be adequate for compiling the BCI2000 sources.  If you wish to use a different compiler,
+be sure to run tools/BCI2000Certification in order to confirm your setup.  CMake is a powerful tool, but in the end, ability to compile the sources is completely up to the IDE/compiler choice.  If your IDE/compiler choice is not listed above, it is strongly urged that you to consider using one which is supported.  If you run into problems using an unsupported IDE/compiler combination, you can try to find help at the BBS - <a href="http://www.bci2000.org/phpbb/index.php" class='external free' title="http://www.bci2000.org/phpbb/index.php" rel="nofollow">http://www.bci2000.org/phpbb/index.php</a>.  BCI2000 should compile as effortlessly as possible on supported platforms.
+</p>
+<a name="Platforms_tested_successfully_so_far"></a><h2> Platforms tested successfully so far </h2>
+<table border="1" cellspacing="0" cellpadding="2">
+<tr>
+<th>Compiler</th><th>OS</th><th>Processors</th><th>Qt linkage
+</th></tr>
+<tr>
+<td>MSVC2008</td><td>Win XP SP3</td><td>2</td><td>static
+</td></tr>
+<tr>
+<td>MSVC2008</td><td>Win XP SP3</td><td>1</td><td>static
+</td></tr>
+<tr>
+<td>MSVC2008</td><td>Win 7 64bit</td><td>1</td><td>dynamic
+</td></tr>
+<tr>
+<td>MinGW &gt; 4</td><td>Win XP SP3</td><td>1</td><td>static
+</td></tr>
+<tr>
+<td>MinGW &gt; 4</td><td>Win XP SP3</td><td>1</td><td>dynamic
+</td></tr>
+<tr>
+<td>C++ Builder 2010*</td><td>Win XP SP3</td><td>2</td><td>n/a
+</td></tr></table>
+<p>*In version 3, the Operator module cannot be built with Borland C++ Builder (BCB). For the test, an MSVC-compiled Operator module was used in conjunction with BCB-compiled core modules.
+</p>
+<a name="See_also"></a><h2>See also</h2>
+<p><a href="Programming_Reference%253ABuilding_Qt_for_BCI2000.html" title="Programming Reference:Building Qt for BCI2000">Programming Reference:Building Qt for BCI2000</a>
 </p>
 <div class="printfooter">
 </div>
@@ -121,12 +154,31 @@ Likewise, you may speed up builds by commenting out parts of the core distributi
 <a href="Technical_Reference%253AContents.html">Technical Reference</a><br />
 <a href="Programming_Reference%253AContents.html">Programming Manual</a><br />
 <ul><li>Concepts</li>
-<li>Reference</li>
-<li>Howtos</li>
-<ul><li>Building BCI2000</li>
-<li><a href="Programming_Howto%253ASVN_Client_Setup.html">SVN Client Setup</a></li>
-<li><a href="Programming_Howto%253AUsing_TortoiseSVN.html">Using Tortoise SVN</a></li>
-</ul><li><a href="Programming_FAQ.html">FAQ</a></li>
+<ul><li><a href="Programming_Reference%253AFilter_Chain.html">Filter Chain</a></li>
+<li><a href="Programming_Reference%253ASignals.html">Signals</a></li>
+<li><a href="Programming_Reference%253AError_Handling.html">Error Handling</a></li>
+<li><a href="Programming_Reference%253ALocalization.html">Localization</a></li>
+<li><a href="Programming_Reference%253ARapid_Development.html">Rapid Development</a></li>
+</ul><li>Reference</li>
+<ul><li><a href="Programming_Reference%253AGenericFilter_Class.html">GenericFilter</a></li>
+<li><a href="Programming_Reference%253AEnvironment_Class.html">Environment</a></li>
+<li><a href="Programming_Reference%253AGenericVisualization_Class.html">GenericVisuali-zation</a></li>
+<li><a href="Programming_Reference%253AErrors_and_Warnings.html">Errors and Warnings</a></li>
+<li><a href="Programming_Reference%253ADebug_Output.html">Debug Output</a></li>
+</ul><li>Data Acquisition</li>
+<ul><li><a href="Programming_Reference%253AGenericADC_Class.html">GenericADC</a></li>
+</ul><li>Data Storage</li>
+<ul><li><a href="Programming_Reference%253AGenericFileWriter_Class.html">GenericFileWriter</a></li>
+<li><a href="Programming_Reference%253ABCI2000FileReader_Class.html">BCI2000FileReader</a></li>
+</ul><li>Signal Processing</li>
+<ul><li><a href="Programming_Reference%253AIIRFilter_Class.html">IIR Filters</a></li>
+</ul><li>Application Modules</li>
+<ul><li><a href="Programming_Reference%253AApplicationBase_Class.html">ApplicationBase</a></li>
+<li><a href="Programming_Reference%253AFeedbackTask_Class.html">FeedbackTask</a></li>
+<li><a href="Programming_Reference%253AStimulusTask_Class.html">StimulusTask</a></li>
+<li><a href="Programming_Reference%253A3D_API.html">3D API</a></li>
+</ul><li>Howtos</li>
+<li><a href="Programming_FAQ.html">FAQ</a></li>
 <li>Tutorials</li>
 </ul><a href="Contributions%253AContents.html">Contributions</a><br />
 <hr class='sep' />

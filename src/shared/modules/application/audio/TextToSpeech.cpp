@@ -3,8 +3,25 @@
 // Authors: juergen.mellinger@uni-tuebingen.de
 // Description: A simple wrapper class for text-to-speech audio output.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -12,11 +29,15 @@
 #include "TextToSpeech.h"
 #include "BCIError.h"
 #include <string>
-#include <SAPI.h>
+#if _WIN32
+# include <SAPI.h>
+#endif // _WIN32
 
 using namespace std;
 
 int TextToSpeech::sNumInstances = 0;
+
+#if _WIN32
 
 TextToSpeech::TextToSpeech()
 : mVolume( 1.0 ),
@@ -60,7 +81,7 @@ TextToSpeech::Speak()
     wstring ws( mText.size(), '\0' );
     for( size_t i = 0; i < mText.size(); ++i )
         ws[i] = ct.widen( mText[i] );
-    mpVoice->SetVolume( mVolume * 100 );
+    mpVoice->SetVolume( static_cast<USHORT>( mVolume * 100 ) );
     if( S_OK != mpVoice->Speak(
                   ws.c_str(),
                   SPF_ASYNC | SPF_PURGEBEFORESPEAK,
@@ -78,3 +99,32 @@ TextToSpeech::Stop()
   return *this;
 }
 
+#else // _WIN32
+
+TextToSpeech::TextToSpeech()
+{
+}
+
+TextToSpeech::~TextToSpeech()
+{
+}
+
+bool
+TextToSpeech::IsSpeaking() const
+{
+  return false;
+}
+
+TextToSpeech&
+TextToSpeech::Speak()
+{
+	return *this;
+}
+
+TextToSpeech&
+TextToSpeech::Stop()
+{
+	return *this;
+}
+
+#endif // _WIN32

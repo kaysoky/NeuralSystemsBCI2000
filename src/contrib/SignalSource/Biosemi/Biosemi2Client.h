@@ -182,7 +182,7 @@ public:
 
     virtual bool isDataValid(const int * data, int position ) const;
 
-    virtual bool Biosemi2Client::isDataValid() const;
+    virtual bool isDataValid() const;
 
 
     /* Checks if the first sample  starting at startPos  in data is synced*/

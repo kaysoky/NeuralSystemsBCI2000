@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Command Line Processing - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Command Line Processing,Programming Howto:Building BCI2000" />
+<meta name="keywords" content="User Reference:Command Line Processing" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -114,19 +114,7 @@ The BCI2000 command line interface may prove useful for
 <pre>bci_dat2stream &lt; mydata.dat | bci_stream2prm | grep SamplingRate
 </pre>
 <a name="Building_BCI2000_command_line_tools"></a><h2>Building BCI2000 command line tools</h2>
-<p>Usually, command line tools are built automatically from the main makefile.
-You will need to manually build the command line tools in one of the following situations:
-</p>
-<ul><li>You are using the Borland C++ Builder 6 IDE rather than <tt>make</tt>. 
-</li><li>You are using Borland C++ Builder 2006/2007, and thus <a href="Programming_Howto%253ABuilding_BCI2000.html#Compiling_BCI2000_with_Borland_C.2B.2B_Builder_2006.2F2007" title="Programming Howto:Building BCI2000">cannot use make to build all of BCI2000</a>.
-</li><li>You are going create a command line executable from your own <tt>GenericFilter</tt> descendant class.
-</li></ul>
-<p>To do a manual build, open a shell (cmd) window. Change to the <tt>BCI2000/src/core/Tools/cmdline</tt> directory, and execute <tt>make install</tt> from there; this will also move the resulting executables to the <tt>BCI2000/Tools/cmdline</tt> directory. To build an executable from a file <tt>MyFilter.cpp</tt> containing a BCI2000 filter <tt>MyFilter</tt>, execute 
-</p>
-<pre>make MyFilter.install
-</pre>
-<p>This will build an executable <tt>MyFilter.exe</tt> and add it to the <tt>BCI2000/Tools/cmdline</tt> directory.
-</p><p>Building command line tools does not require the full Borland C++ Builder IDE; you may use the <a href="http://www.borland.com/downloads/download_cbuilder.html" class='external text' title="http://www.borland.com/downloads/download_cbuilder.html" rel="nofollow">freely available command line version</a> of the Borland C++ compiler instead. In this case, you will need to comment out the line reading <code>#include &lt;vcl.h&gt;</code> from the file <tt>BCI2000/src/shared/PCHIncludes.h</tt>
+<p>Command line tools are built automatically by the BCI2000 build system if building of BCI2000 tools is enabled.
 </p><p>In order to use the command line tools, you will need to add the full path 
 to the <tt>BCI2000/Tools/cmdline</tt> directory to your system's PATH environment variable. (Please consult your operating system documentation for details on environment variables.)
 </p>
@@ -184,16 +172,23 @@ Omitting a <tt>--transmit</tt> option corresponds to<tt>--transmit-spd</tt>. Thi
 </p>
 <a name="Applying_BCI2000_filters_to_streams"></a><h2>Applying BCI2000 filters to streams</h2>
 <a name="Compiling_an_existing_filter_as_a_command_line_tool"></a><h3>Compiling an existing filter as a command line tool</h3>
-<p>A filter defined in a file <tt>MyFilter.cpp</tt> may be compiled and linked into its own executable by executing
+<p>A filter defined in a file <tt>MyFilter.cpp</tt> may be compiled and linked into its own executable by adding it to the list of filter files in <tt>src/core/Tools/cmdline/CMakeLists.txt</tt>, line 42sqq.
+Then, re-create the BCI2000 solution file resp. makefiles using the appropriate batch file from the <tt>build</tt> directory, answering "yes" when asked whether to build BCI2000 tools.
+</p><p>If the filter's code depends on code not contained within its <tt>cpp</tt> file, you will get linker complaints about unresolved externals. To solve the problem, add the missing <tt>cpp</tt> files to a new filter entry in CMakeLists.txt, line 71sqq:
 </p>
-<pre>make MyFilter.exe
+<pre> IF( ${EXECUTABLE_NAME} STREQUAL MyFilter )
+   SET( SRC_PROJECT
+     ${SRC_PROJECT}
+     ${SIGPROC_DIR}/MyCode.cpp
+   )
+   SET( HDR_PROJECT
+     ${HDR_PROJECT}
+     ${SIGPROC_DIR}/MyCode.h
+   )
+ ENDIF()    
 </pre>
-<p>from the Windows command prompt when in <tt>BCI2000/Tools/cmdline</tt>. For this to work, it is necessary that the directory containing the filter's <tt>cpp</tt> file be contained in the makefile's <tt>SIGPROC</tt> variable; you may have to adapt it to fit your needs.
-</p><p>If the filter's code depends on code not contained within its <tt>cpp</tt> file, you will get linker complaints about unresolved externals. To solve the problem, add the missing <tt>cpp</tt> files to the makefile's <tt>BCIOBJ</tt> variable, and execute
-</p>
-<pre>make clean &amp;&amp; make MyFilter.exe
-</pre>
-<p>To check whether the executable works, enter 
+<p>Then, re-create the BCI2000 solution file resp. makefiles as described above.
+</p><p>After a successful build, to check whether the executable works, enter 
 </p>
 <pre>MyFilter --help
 </pre>
@@ -214,7 +209,7 @@ Although the BCI2000 command line tools cannot be compiled with <tt>gcc</tt>, th
 <pre>bci_dat2stream &lt; mydata.dat | bci_stream2prm &gt; myprms.prm
 </pre>
 <a name="Processing_data_with_parameters_different_from_the_ones_contained_in_the_file"></a><h3>Processing data with parameters different from the ones contained in the file</h3>
-<p>To combine a data file with parameters other than those contained in it, use tt&gt;bci_dat2stream&lt;/tt&gt;'s <tt>--transmit</tt> option to suppress parameters, and combine its output with <tt>bci_prm2stream</tt>'s into a single stream. To affect processing, parameters must precede the data in the stream. Combining the output is effected by the <code>( ... &amp;&amp; ... )</code> construct.
+<p>To combine a data file with parameters other than those contained in it, use <tt>bci_dat2stream</tt>'s <tt>--transmit</tt> option to suppress parameters, and combine its output with <tt>bci_prm2stream</tt>'s into a single stream. To affect processing, parameters must precede the data in the stream. Combining the output is effected by the <code>( ... &amp;&amp; ... )</code> construct.
 </p>
 <pre>(bci_prm2stream &lt; myparameters.prm &amp;&amp; bci_dat2stream --transmit-sd &lt; mydata.dat) | MyFilter | bci_stream2table &gt; mytable.txt
 </pre>

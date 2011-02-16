@@ -4,8 +4,25 @@
 // Description: A class that represents functionality common to all BCI2000
 //          core modules.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -24,7 +41,6 @@
 #include "BCIError.h"
 #include "VersionInfo.h"
 #include "Version.h"
-#include "FPExceptMask.h"
 
 #include <string>
 #include <sstream>
@@ -41,15 +57,19 @@
 using namespace std;
 
 CoreModule::CoreModule()
-: mpStatevector( NULL ),
+: mReceivingThread( *this ),
   mTerminated( false ),
+  mpStatevector( NULL ),
+  mFiltersInitialized( false ),
   mLastRunning( false ),
   mResting( false ),
-  mFiltersInitialized( false ),
   mStartRunPending( false ),
   mStopRunPending( false ),
   mFirstStatevectorPending( false ),
   mSampleBlockSize( 0 )
+#if _WIN32
+, mFPMask( cDisabledFPExceptions )
+#endif // _WIN32
 {
   mOperatorSocket.set_tcpnodelay( true );
   mNextModuleSocket.set_tcpnodelay( true );
@@ -74,7 +94,6 @@ CoreModule::~CoreModule()
 bool
 CoreModule::Run( int inArgc, char** inArgv )
 {
-  FPExceptMask mask; // Disable FPU exceptions during Run().
   try
   {
     if( Initialize( inArgc, inArgv ) )
@@ -125,9 +144,6 @@ CoreModule::Initialize( int inArgc, char** inArgv )
   }
   mMutex = reinterpret_cast<void*>( semaphore );
 #endif // _WIN32
-
-  mInputSockets.insert( &mOperatorSocket );
-  mInputSockets.insert( &mPreviousModuleSocket );
 
   string operatorAddress;
   bool   printVersion = false,
@@ -210,7 +226,38 @@ CoreModule::Initialize( int inArgc, char** inArgv )
     operatorAddress += ":" THISOPPORT;
 
   InitializeOperatorConnection( operatorAddress );
-  return ( bcierr__.Flushes() == 0 );
+  bool success = ( bcierr__.Flushes() == 0 );
+  if( success )
+    mReceivingThread.Start();
+  return success;
+}
+
+int
+CoreModule::ReceivingThread::Execute()
+{
+  const int cSocketTimeout = 105;
+  while( !mrParent.mTerminated )
+  {
+    mrParent.mConnectionLock.Acquire();
+    streamsock::set_of_instances inputSockets;
+    if( mrParent.mOperator.is_open() )
+      inputSockets.insert( &mrParent.mOperatorSocket );
+    if( mrParent.mPreviousModule.is_open() )
+      inputSockets.insert( &mrParent.mPreviousModuleSocket );
+    mrParent.mConnectionLock.Release();
+    if( !inputSockets.empty() )
+      streamsock::wait_for_read( inputSockets, cSocketTimeout );
+
+    mrParent.mConnectionLock.Acquire();
+    while( mrParent.mOperator && mrParent.mOperator.rdbuf()->in_avail() )
+      mrParent.mMessageQueue.QueueMessage( mrParent.mOperator );
+    while( mrParent.mPreviousModule && mrParent.mPreviousModule.rdbuf()->in_avail() )
+      mrParent.mMessageQueue.QueueMessage( mrParent.mPreviousModule );
+    mrParent.mConnectionLock.Release();
+
+    mrParent.mMessageEvent.Set();
+  }
+  return 0;
 }
 
 // This function contains the main event handling loop.
@@ -219,17 +266,16 @@ CoreModule::Initialize( int inArgc, char** inArgv )
 void
 CoreModule::MainMessageLoop()
 {
-  const int bciMessageTimeout = 100; // ms -- the maximum amount of time GUI
-                                     // messages must wait to be processed. GUI
-                                     // messages resulting from BCI2000 messages
-                                     // (e.g. WM_PAINT messages) will be processed
-                                     // without additional delay.
+  const int bciMessageTimeout = 100; // ms, is max time a GUI event needs to wait
+                                     // before it gets processed
   while( !mTerminated )
   {
-    if( !mResting && !GUIMessagesPending() )
-      streamsock::wait_for_read( mInputSockets, bciMessageTimeout );
+    mMessageEvent.Wait( bciMessageTimeout );
     ProcessBCIAndGUIMessages();
-    if( !mOperator.is_open() )
+    mConnectionLock.Acquire();
+    bool operatorOpen = mOperator.is_open();
+    mConnectionLock.Release();
+    if( !operatorOpen )
       Terminate();
   }
 }
@@ -238,33 +284,21 @@ CoreModule::MainMessageLoop()
 void
 CoreModule::ProcessBCIAndGUIMessages()
 {
-  while( mPreviousModule && mPreviousModule.rdbuf()->in_avail()
-        || mOperator && mOperator.rdbuf()->in_avail()
+  while( !mMessageQueue.empty()
         || mResting
         || GUIMessagesPending() )
   {
-    // If there is a message from the previous module, it has highest priority.
-    // For the SignalProcessing and the Application modules, these messages occur
-    // in pairs of StateVector and VisSignal messages, so we try processing two
-    // of them at once.
-    const int maxMsgFromPrevModule = 2;
-    for( int i = 0; i < maxMsgFromPrevModule
-                    && mPreviousModule && mPreviousModule.rdbuf()->in_avail(); ++i )
-      MessageHandler::HandleMessage( mPreviousModule );
-    // If there are messsages from the operator, all of them must be processed
-    // at once because there are message sequences that count as a single
-    // message, e.g. a sequence of Param messages followed by a SYSCMD::EndOfParameter
-    // message.
-    const int maxMsgFromOperator = 1000;
-    for( int i = 0; i < maxMsgFromOperator && mOperator && mOperator.rdbuf()->in_avail(); ++i )
-      MessageHandler::HandleMessage( mOperator );
+    while( !mMessageQueue.empty() )
+      MessageHandler::HandleMessage( mMessageQueue );
     // The mResting flag is treated as a pending message from the module to itself.
     // For non-source modules, it is cleared from the HandleResting() function
     // much as pending messages are cleared from the stream by the HandleMessage()
     // function.
     if( mResting )
       HandleResting();
+    mConnectionLock.Acquire();
     mResting &= mOperator.is_open();
+    mConnectionLock.Release();
     // Last of all, allow for the GUI to process messages from its message queue if there are any.
     ProcessGUIMessages();
   }
@@ -274,6 +308,7 @@ CoreModule::ProcessBCIAndGUIMessages()
 void
 CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 {
+  OSMutex::Lock lock( mConnectionLock );
   // creating connection to the operator
   mOperatorSocket.open( inOperatorAddress.c_str() );
   if( !mOperatorSocket.is_open() )
@@ -368,6 +403,8 @@ CoreModule::InitializeOperatorConnection( const string& inOperatorAddress )
 void
 CoreModule::InitializeCoreConnections()
 {
+  OSMutex::Lock lock( mConnectionLock );
+
   const char* ipParam = NEXTMODULE "IP",
             * portParam = NEXTMODULE "Port";
 
@@ -387,13 +424,15 @@ CoreModule::InitializeCoreConnections()
            << endl;
     return;
   }
+  OSThread::Sleep( 0 ); // This prevents mysterious closing of the mNextModuleSocket.
 
   mPreviousModule.close();
   mPreviousModule.clear();
-  if( mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected() )
+  bool waitForConnection = mPreviousModuleSocket.is_open() && !mPreviousModuleSocket.connected();
+  if( waitForConnection )
     mPreviousModuleSocket.wait_for_read( cInitialConnectionTimeout, true );
   mPreviousModule.open( mPreviousModuleSocket );
-  if( !mPreviousModule.is_open() )
+  if( waitForConnection && !mPreviousModule.is_open() )
   {
     BCIERR << "Connection to previous module timed out after "
            << float( cInitialConnectionTimeout ) / 1e3 << "s"
@@ -444,10 +483,12 @@ CoreModule::InitializeFilters( const SignalProperties& inputProperties )
   GenericFilter::PreflightFilters( inputProperties, outputProperties );
   EnvironmentBase::EnterNonaccessPhase();
   errorOccurred |= ( bcierr__.Flushes() > 0 );
+  OSMutex::Lock lock( mConnectionLock );
   if( !errorOccurred )
   {
 #if( MODTYPE != APP )
-    MessageHandler::PutMessage( mNextModule, outputProperties );
+    if( !MessageHandler::PutMessage( mNextModule, outputProperties ) )
+      BCIERR << "Could not send output properties to " NEXTMODULE " module" << endl;
 #endif // APP
     mOutputSignal = GenericSignal( outputProperties );
     EnvironmentBase::EnterInitializationPhase( &mParamlist, &mStatelist, mpStatevector, &mOperator );
@@ -489,6 +530,7 @@ CoreModule::StartRunFilters()
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
   {
+    OSMutex::Lock lock( mConnectionLock );
     MessageHandler::PutMessage( mOperator, Status( THISMODULE " running", Status::firstRunningMessage + 2 * ( MODTYPE - 1 ) ) );
     mResting = false;
   }
@@ -505,6 +547,7 @@ CoreModule::StopRunFilters()
   EnvironmentBase::EnterNonaccessPhase();
   if( bcierr__.Flushes() == 0 )
   {
+    OSMutex::Lock lock( mConnectionLock );
 #if( MODTYPE == SIGSRC ) // The operator wants an extra invitation from the source module.
     MessageHandler::PutMessage( mOperator, SysCommand::Suspend );
 #endif // SIGSRC
@@ -526,6 +569,7 @@ CoreModule::ProcessFilters( const GenericSignal& input )
     Terminate();
     return;
   }
+  OSMutex::Lock lock( mConnectionLock );
   MessageHandler::PutMessage( mNextModule, *mpStatevector );
 #if( MODTYPE != APP )
   MessageHandler::PutMessage( mNextModule, mOutputSignal );
@@ -540,6 +584,7 @@ CoreModule::RestingFilters()
   GenericFilter::RestingFilters();
   EnvironmentBase::EnterNonaccessPhase();
   bool errorOccurred = ( bcierr__.Flushes() > 0 );
+  OSMutex::Lock lock( mConnectionLock );
   if( errorOccurred || !mOperator.is_open() )
   {
     mResting = false;
@@ -568,7 +613,7 @@ CoreModule::HandleParam( istream& is )
   Param p;
   if( p.ReadBinary( is ) )
     mParamlist[ p.Name() ] = p;
-  return is;
+  return is ? true : false;
 }
 
 
@@ -620,7 +665,7 @@ CoreModule::HandleState( istream& is )
       mStatelist[s.Name()].SetKind( kind );
     }
   }
-  return is;
+  return is ? true : false;
 }
 
 
@@ -630,19 +675,19 @@ CoreModule::HandleVisSignal( istream& is )
   VisSignal s;
   if( s.ReadBinary( is ) && s.SourceID() == "" )
   {
-    const GenericSignal& inputSignal = s;
-    if( !mFiltersInitialized )
-      bcierr << "Unexpected VisSignal message" << endl;
-    else
-    {
-      if( mStartRunPending )
-        StartRunFilters();
-      ProcessFilters( inputSignal );
-      if( mStopRunPending )
-        StopRunFilters();
-    }
+  const GenericSignal& inputSignal = s;
+  if( !mFiltersInitialized )
+    bcierr << "Unexpected VisSignal message" << endl;
+  else
+  {
+    if( mStartRunPending )
+    StartRunFilters();
+    ProcessFilters( inputSignal );
+    if( mStopRunPending )
+    StopRunFilters();
   }
-  return is;
+  }
+  return is ? true : false;
 }
 
 
@@ -653,7 +698,7 @@ CoreModule::HandleVisSignalProperties( istream& is )
   if( s.ReadBinary( is ) && s.SourceID() == "" )
     if( !mFiltersInitialized )
       InitializeFilters( s );
-  return is;
+  return is ? true : false;
 }
 
 
@@ -702,7 +747,7 @@ CoreModule::HandleStateVector( istream& is )
     mLastRunning = running;
   }
 #endif // SIGSRC
-  return is;
+  return is ? true : false;
 }
 
 
@@ -760,7 +805,7 @@ CoreModule::HandleSysCommand( istream& is )
     else
       BCIERR << "Unexpected SysCommand" << endl;
   }
-  return is;
+  return is ? true : false;
 }
 
 

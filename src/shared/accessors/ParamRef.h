@@ -5,8 +5,25 @@
 //         parameter values, and allows for convenient automatic type
 //         conversions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #ifndef PARAM_REF_H
 #define PARAM_REF_H
@@ -42,26 +59,26 @@ class ParamRef
   // To-number conversion operators.
   operator double() const;
   operator float() const
-    { return double( *this ); }
+    { return static_cast<float>( double( *this ) ); }
   operator long double() const
     { return double( *this ); }
   // We omit a conversion to char to avoid ambiguities with std::string assignment operators.
   operator short() const
-    { return double( *this ); }
+    { return static_cast<short>( double( *this ) ); }
   operator unsigned short() const
-    { return double( *this ); }
+    { return static_cast<unsigned short>( double( *this ) ); }
   operator int() const
-    { return double( *this ); }
+    { return static_cast<int>( double( *this ) ); }
   operator unsigned int() const
-    { return double( *this ); }
+    { return static_cast<unsigned int>( double( *this ) ); }
   operator long() const
-    { return double( *this ); }
+    { return static_cast<long>( double( *this ) ); }
   operator unsigned long() const
-    { return double( *this ); }
+    { return static_cast<unsigned long>( double( *this ) ); }
   operator sint64() const
-    { return double( *this ); }
+    { return static_cast<long long>( double( *this ) ); }
   operator uint64() const
-    { return double( *this ); }
+    { return static_cast<unsigned long long>( double( *this ) ); }
 
   // We also need to override operators to avoid ambiguities
   // when the compiler resolves expressions.
@@ -155,6 +172,29 @@ class ParamRef
   bool operator<=( int i ) const
     { return double( *this ) <= i; }
   bool operator>=( int i ) const
+    { return double( *this ) >= i; }
+
+  // unsigned int
+  double operator-( unsigned int i ) const
+    { return double( *this ) - i; }
+  double operator+( unsigned int i ) const
+    { return double( *this ) + i; }
+  double operator*( unsigned int i ) const
+    { return double( *this ) * i; }
+  double operator/( unsigned int i ) const
+    { return double( *this ) / i; }
+
+  bool operator==( unsigned int i ) const
+    { return double( *this ) == i; }
+  bool operator!=( unsigned int i ) const
+    { return double( *this ) != i; }
+  bool operator<( unsigned int i ) const
+    { return double( *this ) < i; }
+  bool operator>( unsigned int i ) const
+    { return double( *this ) > i; }
+  bool operator<=( unsigned int i ) const
+    { return double( *this ) <= i; }
+  bool operator>=( unsigned int i ) const
     { return double( *this ) >= i; }
 #endif // !__BORLANDC__
 
@@ -255,6 +295,29 @@ inline bool operator>( int i, const ParamRef& p )
 inline bool operator<=( int i, const ParamRef& p )
   { return i <= double( p ); }
 inline bool operator>=( int i, const ParamRef& p )
+  { return i >= double( p ); }
+
+// unsigned int
+inline double operator-( unsigned int i, const ParamRef& p )
+  { return i - double( p ); }
+inline double operator+( unsigned int i, const ParamRef& p )
+  { return i + double( p ); }
+inline double operator*( unsigned int i, const ParamRef& p )
+  { return i * double( p ); }
+inline double operator/( unsigned int i, const ParamRef& p )
+  { return i / double( p ); }
+
+inline bool operator==( unsigned int i, const ParamRef& p )
+  { return i == double( p ); }
+inline bool operator!=( unsigned int i, const ParamRef& p )
+  { return i != double( p ); }
+inline bool operator<( unsigned int i, const ParamRef& p )
+  { return i < double( p ); }
+inline bool operator>( unsigned int i, const ParamRef& p )
+  { return i > double( p ); }
+inline bool operator<=( unsigned int i, const ParamRef& p )
+  { return i <= double( p ); }
+inline bool operator>=( unsigned int i, const ParamRef& p )
   { return i >= double( p ); }
 #endif // !__BORLANDC__
 

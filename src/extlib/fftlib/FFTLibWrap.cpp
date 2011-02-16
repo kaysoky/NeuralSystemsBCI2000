@@ -1,13 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: An interface layer to a FFT DLL that allows for user
-//        installation of the GPL protected FFTW library. Its sole purpose
-//        is to allow using FFTW from a non-GPLed project by requiring
-//        user interaction and avoiding references to copyrighted FFTW code.
+// Description: An interface to the FFTW library, loading the DLL dynamically.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+//
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+//
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "FFTLibWrap.h"
 
@@ -65,7 +79,7 @@ FFTLibWrapper::FFTLibWrapper()
     bool foundAllProcs = true;
     for( size_t i = 0; foundAllProcs && i < sizeof( sProcNames ) / sizeof( *sProcNames ); ++i )
     {
-      void* libProc = ::GetProcAddress( sLibRef, sProcNames[ i ].mName );
+      void* libProc = ( void* )::GetProcAddress( ( HMODULE )sLibRef, sProcNames[ i ].mName );
       if( libProc == NULL )
         foundAllProcs = false;
       *sProcNames[ i ].mProc = libProc;

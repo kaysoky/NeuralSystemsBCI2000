@@ -6,13 +6,35 @@
 //   The help file is a html file that has the same name as the executable,
 //   except that it bears a .html extension.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "ExecutableHelp.h"
+#if _WIN32
+# include <windows.h>
+#else
+# include <QtGui>
+#endif
 #include <fstream>
 #include <sstream>
 
@@ -46,21 +68,36 @@ bool
 ExecutableHelp::Display() const
 {
   bool result = false;
-#ifdef _WIN32
-  HINSTANCE err = ::ShellExecute( NULL, "open", mHelpFile.c_str(), NULL, mHelpFileDir.c_str(), SW_SHOWNORMAL );
-  result = ( reinterpret_cast<int>( err ) > 32 );
-  if( !result )
-  {
-    ::MessageBox(
-      NULL,
+  const char* errorText = 
       "The help file could not be found.\n\n"
       "Help files should be located in the\n"
       "executable's directory.\n\n"
       "Help files bear the executable's name,\n"
       "and a .html extension.",
-      "Error Opening Help File",
+  * errorCaption =
+      "Error Opening Help File";
+#if _WIN32
+  HINSTANCE err = ::ShellExecuteA( NULL, "open", mHelpFile.c_str(), NULL, mHelpFileDir.c_str(), SW_SHOWNORMAL );
+  result = ( reinterpret_cast<int>( err ) > 32 );
+  if( !result )
+  {
+    ::MessageBoxA(
+      NULL,
+      errorText,
+      errorCaption,
       MB_OK | MB_ICONERROR
     );
+  }
+#else // _WIN32
+  string url = string( "file://" ) + mHelpFile;
+  result = QDesktopServices::openUrl( QUrl( url.c_str(), QUrl::TolerantMode ) );
+  if( !result )
+  {
+    QMessageBox::critical( 
+      NULL, 
+      errorCaption,
+      errorText
+      );
   }
 #endif // _WIN32
   return result;
@@ -69,6 +106,8 @@ ExecutableHelp::Display() const
 void
 ExecutableHelp::Initialize()
 {
+  string helpFile;
+#if _WIN32
   const int increment = 512;
   char* buf = NULL;
   int bufSize = 0,
@@ -78,10 +117,13 @@ ExecutableHelp::Initialize()
     bufSize += increment;
     delete[] buf;
     buf = new char[ bufSize ];
-    bytesCopied = ::GetModuleFileName( NULL, buf, bufSize );
+    bytesCopied = ::GetModuleFileNameA( NULL, buf, bufSize );
   }
-  string helpFile = buf;
+  helpFile = buf;
   delete[] buf;
+#else // _WIN32
+  helpFile = QApplication::applicationFilePath().toStdString();
+#endif // _WIN32
 
   size_t pos = helpFile.find_last_of( ".\\/" );
   if( pos != string::npos && helpFile[ pos ] != '.' )
@@ -122,13 +164,13 @@ ExecutableHelp::InitializeContextHelp()
     }
   }
   htmlPath = mHelpFileDir + htmlPath;
-#ifdef _WIN32
+#if _WIN32
   for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
     if( *i == '/' )
       *i = '\\';
   int bufLen = htmlPath.length() + 1;
   char* pathBuffer = new char[ bufLen ];
-  if( ::GetFullPathName( htmlPath.c_str(), bufLen, pathBuffer, NULL ) )
+  if( ::GetFullPathNameA( htmlPath.c_str(), bufLen, pathBuffer, NULL ) )
     htmlPath = string( pathBuffer );
   delete[] pathBuffer;
   for( string::iterator i = htmlPath.begin(); i != htmlPath.end(); ++i )
@@ -207,6 +249,8 @@ ExecutableHelp::InitializeContextHelp()
                   if( level <= sectionLevel )
                     parserState = insideTOC;
                   break;
+                default:
+                  break;
               }
               string anchor,
                      heading;
@@ -247,16 +291,25 @@ ExecutableHelp::InitializeContextHelp()
                         case insideStates:
                           mStateHelp.Add( word, fileName + "#" + anchor );
                           break;
+                          
+                        default:
+                          break;
                       }
                     }
                     while( ( i != heading.end() ) && !::isalnum( *i ) )
                       ++i;
                   }
                 } break;
+                
+                default:
+                  break;
               }
               tocLevel = level;
             }
           }
+          
+        default:
+          break;
       }
     }
     if( parserState == error )
@@ -279,13 +332,13 @@ ExecutableHelp::HelpMap::Open( const string& inKey, const string& inContext ) co
         match = i;
   if( match != this->end() )
   {
-#ifdef _WIN32
     string helpFileURL = string( "file:///" ) + mPath + match->second;
+#if _WIN32
     // ShellExecute doesn't treat anchors properly, so we create a
     // temporary file containing a redirect.
     int bufLen = ::GetTempPath( 0, NULL );
     char* pathBuf = new char[ bufLen ];
-    ::GetTempPath( bufLen, pathBuf );
+    ::GetTempPathA( bufLen, pathBuf );
     string tempFileName = string( pathBuf ) + "BCI2000Help" + HelpExtension();
     delete[] pathBuf;
     {
@@ -295,8 +348,10 @@ ExecutableHelp::HelpMap::Open( const string& inKey, const string& inContext ) co
                << "\" />"
                << endl;
     }
-    HINSTANCE err = ::ShellExecute( NULL, "open", tempFileName.c_str(), NULL, NULL, SW_SHOWNORMAL );
+    HINSTANCE err = ::ShellExecuteA( NULL, "open", tempFileName.c_str(), NULL, NULL, SW_SHOWNORMAL );
     result = ( reinterpret_cast<int>( err ) > 32 );
+#else // _WIN32
+    result = QDesktopServices::openUrl( QUrl( helpFileURL.c_str(), QUrl::TolerantMode ) );
 #endif // _WIN32
   }
   return result;

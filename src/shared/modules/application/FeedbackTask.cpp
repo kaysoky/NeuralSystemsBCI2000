@@ -12,8 +12,25 @@
 //   phase. Child classes (descendants) of FeedbackTask implement event
 //   handlers by overriding its virtual functions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -23,6 +40,10 @@
 #include "PrecisionTime.h"
 
 using namespace std;
+
+#ifdef _MSC_VER
+#define __FUNC__ __FUNCTION__
+#endif // _MSC_VER
 
 FeedbackTask::FeedbackTask( const GUI::GraphDisplay* inDisplay )
 : ApplicationBase( inDisplay ),
@@ -92,12 +113,12 @@ FeedbackTask::Initialize( const SignalProperties& Input, const SignalProperties&
   if(!string(Parameter("NumberOfTrials")).empty())
     mNumberOfTrials = Parameter("NumberOfTrials");
 
-  mPreRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
-  mPreFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "PreFeedbackDuration" ) );
-  mFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
-  mPostFeedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "PostFeedbackDuration" ) );
-  mITIDuration = MeasurementUnits::ReadAsTime( Parameter( "ITIDuration" ) );
-  mMinRunLength = MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) );
+  mPreRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) ) );
+  mPreFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreFeedbackDuration" ) ) );
+  mFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) ) );
+  mPostFeedbackDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostFeedbackDuration" ) ) );
+  mITIDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ITIDuration" ) ) );
+  mMinRunLength = static_cast<long long>( MeasurementUnits::ReadAsTime( Parameter( "MinRunLength" ) ) );
   bcidbg( 2 ) << "Event: Initialize" << endl;
   OnInitialize( Input );
 }
@@ -181,7 +202,10 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw __FUNC__ ": Unknown phase value";
+        string fun( __FUNC__ );
+        string err( ": Unknown phase value" );
+        fun.append( err );
+        throw fun.c_str();
     }
     if( doProgress )
     {
@@ -237,7 +261,10 @@ FeedbackTask::Process( const GenericSignal& Input, GenericSignal& Output )
           break;
         }
         default:
-          throw __FUNC__ ": Unknown phase value";
+          string fun( __FUNC__ );
+          string err( ": Unknown phase value" );
+          fun.append( err );
+          throw fun.c_str();
       }
     }
   }

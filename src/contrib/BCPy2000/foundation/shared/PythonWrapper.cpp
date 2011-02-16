@@ -1,15 +1,15 @@
 //   $Id$
-//  
+//
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
-// 
-//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner, 
+//
+//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
 //                         Christian Puzicha, Jason Farquhar
-//   
+//
 //   bcpy2000@bci2000.org
-//   
+//
 //   The BCPy2000 foundation is free software: you can redistribute it
 //   and/or modify it under the terms of the GNU Lesser General Public
 //   License as published by the Free Software Foundation, either
@@ -156,7 +156,7 @@ int PyString_Check(PyObject* a)
 #define PyObject PyObject
 #define PyThreadState PyThreadState
 #define PyArrayObject PyArrayObject
-#define PYTHON_LINK_HEADER_MODE 0 // 
+#define PYTHON_LINK_HEADER_MODE 0 //
 #include "PythonWrapper.h"
 namespace PYTHON_API_NAMESPACE { ///////////////////////////////
 ////////////////////////////////////////////////////////////////
@@ -170,11 +170,11 @@ size_t  PyWrapMacro_PyArray_STRIDE(PyArrayObject* a, int n) {return  (size_t)PyA
  ////////////////////////////////////////////////////////////////
 void Macros2Functions(void)
 {
-	Py_DECREF = PyWrapMacro_Py_DECREF;
-	PyList_SET_ITEM = PyWrapMacro_PyList_SET_ITEM;
-	PyArray_DATA = PyWrapMacro_PyArray_DATA;
-	PyArray_DIM = PyWrapMacro_PyArray_DIM;
-	PyArray_STRIDE = PyWrapMacro_PyArray_STRIDE;
+  ::Py_DECREF = (void(*)(void*))PyWrapMacro_Py_DECREF;
+  ::PyList_SET_ITEM = (void(*)(void*,int,void*))PyWrapMacro_PyList_SET_ITEM;
+  ::PyArray_DATA = (double*(*)(void*))PyWrapMacro_PyArray_DATA;
+  ::PyArray_DIM = (size_t(*)(void*,int))PyWrapMacro_PyArray_DIM;
+  ::PyArray_STRIDE = (size_t(*)(void*,int))PyWrapMacro_PyArray_STRIDE;
 }
 ////////////////////////////////////////////////////////////////
 } // end of namespace PYTHON_API_NAMESPACE /////////////////////

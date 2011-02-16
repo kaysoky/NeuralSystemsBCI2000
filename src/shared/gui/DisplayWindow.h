@@ -4,8 +4,25 @@
 // Description: A GraphDisplay descendant which is a frameless GUI window for
 //   an application's user display.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef DISPLAY_WINDOW_H
 #define DISPLAY_WINDOW_H
@@ -14,9 +31,28 @@
 
 #ifdef __BORLANDC__
 # include "VCL.h"
+#else // __BORLANDC__
+# include <QWidget>
 #endif // __BORLANDC__
 
 namespace GUI {
+
+#ifndef __BORLANDC__
+class DisplayForm : public QWidget
+{
+  Q_OBJECT
+
+ public:
+  DisplayForm( GraphDisplay& );
+
+ protected:
+  virtual void paintEvent( QPaintEvent* );
+  virtual void mousePressEvent( QMouseEvent* );
+
+ private:
+  GraphDisplay& mDisplay;
+};
+#endif // __BORLANDC__
 
 class DisplayWindow : public GraphDisplay
 {
@@ -37,7 +73,7 @@ class DisplayWindow : public GraphDisplay
   DisplayWindow& Hide();
   bool Visible() const;
 
-#ifdef __BORLANDC__
+
  private:
   DisplayWindow& Restore();
   DisplayWindow& Clear();
@@ -47,7 +83,9 @@ class DisplayWindow : public GraphDisplay
         mLeft,
         mWidth,
         mHeight;
-  void* mWinDC;
+
+#ifdef __BORLANDC__
+  HDC mWinDC;
 
   class TDisplayForm : public TForm
   {
@@ -94,7 +132,13 @@ class DisplayWindow : public GraphDisplay
     HRGN          mUpdateRgn;
     GraphDisplay& mDisplay;
   }* mpForm;
+
+#else // __BORLANDC__
+
+  DisplayForm* mpForm;
+
 #endif // __BORLANDC__
+
 };
 
 } // namespace GUI

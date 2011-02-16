@@ -36,24 +36,27 @@ a.new, #quickbar a.new { color: #CC2200; }
 <li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Synopsis"><span class="tocnumber">2</span> <span class="toctext">Synopsis</span></a></li>
 <li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Methods"><span class="tocnumber">3</span> <span class="toctext">Methods</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#OSThread.28bool_createSuspended.3Dfalse.29"><span class="tocnumber">3.1</span> <span class="toctext">OSThread(bool createSuspended=false)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#OSThread.28.29"><span class="tocnumber">3.1</span> <span class="toctext">OSThread()</span></a></li>
 <li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#.7EOSThread.28.29"><span class="tocnumber">3.2</span> <span class="toctext">~OSThread()</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Suspend.28.29"><span class="tocnumber">3.3</span> <span class="toctext">Suspend()</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Resume.28.29"><span class="tocnumber">3.4</span> <span class="toctext">Resume()</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Terminate.28.29"><span class="tocnumber">3.5</span> <span class="toctext">Terminate()</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Start.28.29"><span class="tocnumber">3.3</span> <span class="toctext">Start()</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Terminate.28.29"><span class="tocnumber">3.4</span> <span class="toctext">Terminate()</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Events"><span class="tocnumber">4</span> <span class="toctext">Events</span></a>
+<li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Static_Methods"><span class="tocnumber">4</span> <span class="toctext">Static Methods</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#int_Execute"><span class="tocnumber">4.1</span> <span class="toctext">int Execute</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#Sleep.28_int_ms_.29"><span class="tocnumber">4.1</span> <span class="toctext">Sleep( int ms )</span></a></li>
 </ul>
 </li>
-<li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Properties"><span class="tocnumber">5</span> <span class="toctext">Properties</span></a>
+<li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Events"><span class="tocnumber">5</span> <span class="toctext">Events</span></a>
 <ul>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#int_ID_.28r.29"><span class="tocnumber">5.1</span> <span class="toctext">int ID (r)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#bool_IsTerminating_.28r.29"><span class="tocnumber">5.2</span> <span class="toctext">bool IsTerminating (r)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#bool_IsTerminated_.28r.29"><span class="tocnumber">5.3</span> <span class="toctext">bool IsTerminated (r)</span></a></li>
-<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#int_Result_.28r.29"><span class="tocnumber">5.4</span> <span class="toctext">int Result (r)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#int_Execute"><span class="tocnumber">5.1</span> <span class="toctext">int Execute</span></a></li>
+</ul>
+</li>
+<li class='toclevel-1'><a href="Programming_Reference%253AOSThread_Class.html#Properties"><span class="tocnumber">6</span> <span class="toctext">Properties</span></a>
+<ul>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#bool_IsTerminating_.28r.29"><span class="tocnumber">6.1</span> <span class="toctext">bool IsTerminating (r)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#bool_IsTerminated_.28r.29"><span class="tocnumber">6.2</span> <span class="toctext">bool IsTerminated (r)</span></a></li>
+<li class='toclevel-2'><a href="Programming_Reference%253AOSThread_Class.html#int_Result_.28r.29"><span class="tocnumber">6.3</span> <span class="toctext">int Result (r)</span></a></li>
 </ul>
 </li>
 </ul>
@@ -65,20 +68,21 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The <tt>OSThread</tt> class provides a wrapper for OS-dependent thread functionality.
 </p>
 <a name="Methods"></a><h2>Methods</h2>
-<a name="OSThread.28bool_createSuspended.3Dfalse.29"></a><h3>OSThread(bool createSuspended=false)</h3>
-<p>The thread's constructor's argument determines whether thread execution is started immediately, or whether the thread is initially put into suspended state. By default, the thread is created unsuspended.
+<a name="OSThread.28.29"></a><h3>OSThread()</h3>
+<p>All threads are created in suspended state, and resumed by calling their <i>Start()</i> function.
 </p>
 <a name=".7EOSThread.28.29"></a><h3>~OSThread()</h3>
 <p>Deleting an <tt>OSThread</tt> object with a running thread associated will kill the thread, resulting in an undefined state of the parent process. Make sure that the <tt>IsTerminated</tt> property is <i>true</i> before deleting the <tt>OSThread</tt> object.
 </p>
-<a name="Suspend.28.29"></a><h3>Suspend()</h3>
-<p>Puts the thread into suspended, i.e. halts execution.
-</p>
-<a name="Resume.28.29"></a><h3>Resume()</h3>
-<p>Resumes thread operation. For threads that have been created with the <tt>createSuspended</tt> argument set to <i>true</i>, <tt>Resume()</tt> will start thread execution.
+<a name="Start.28.29"></a><h3>Start()</h3>
+<p>Starts thread execution.
 </p>
 <a name="Terminate.28.29"></a><h3>Terminate()</h3>
 <p>Initiates thread termination by setting the <tt>Terminating</tt> property to <i>true</i>.
+</p>
+<a name="Static_Methods"></a><h2>Static Methods</h2>
+<a name="Sleep.28_int_ms_.29"></a><h3>Sleep( int ms )</h3>
+<p>Puts the current thread to sleep for the amount of time specified in ms.
 </p>
 <a name="Events"></a><h2>Events</h2>
 <a name="int_Execute"></a><h3>int Execute</h3>
@@ -95,9 +99,6 @@ int MyThread::Execute()
 }
 </pre>
 <a name="Properties"></a><h2>Properties</h2>
-<a name="int_ID_.28r.29"></a><h3>int ID (r)</h3>
-<p>The thread's OS thread id, or zero if the thread is not running.
-</p>
 <a name="bool_IsTerminating_.28r.29"></a><h3>bool IsTerminating (r)</h3>
 <p>True after <tt>Terminate()</tt> has been called on the thread.
 </p>

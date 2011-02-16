@@ -1,8 +1,27 @@
-/* (C) 2000-2010, BCI2000 Project
-/* http://www.bci2000.org
-/*/
-//---------------------------------------------------------------------------
-
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+// Author: Adam Wilson
+//
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
+////////////////////////////////////////////////////////////////////////////////
 #include <algorithm>
 #include "analysisClass.h"
 //---------------------------------------------------------------------------
@@ -26,7 +45,7 @@ analysis::analysis()
     //add some default ignoreStates, which may or may not be used eventually...
     ignoreStates.push_back("CursorPosX");
     ignoreStates.push_back("CursorPosY");
-    ignoreStates.push_back("Running");  
+    ignoreStates.push_back("Running");
 }
 
 
@@ -71,7 +90,7 @@ bool analysis::open(string file, Tasks &taskTypes)
     nChannels = dFile->SignalProperties().Channels();
     sampleRate = dFile->SamplingRate();
     SignalType dataType = dFile->SignalProperties().Type();
-    
+
     //get states -----------------------------
     nStates = dFile->States()->Size();
     for (int i = 0; i < nStates; i++)
@@ -83,7 +102,7 @@ bool analysis::open(string file, Tasks &taskTypes)
 
     const StateVector* stateVector = dFile->StateVector();
     //const StateList& curStateList = stateVector->StateList();
-    
+
     for (int s = 0; s < nSamples; s++)
     {
         dFile->ReadStateVector(s);
@@ -187,9 +206,9 @@ description: clear all of the variables/arrays, including the signal, states, an
 */
 void analysis::clear()
 {
-	
+
 	close();
-	
+
     //clear the statss
     latencyStats.clear();
 
@@ -311,7 +330,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	procStats.median = vMedian(&procLat);
     if (thisTask.exportData)
         procStats.vals = procLat;
-        
+
     procStats.taskName = "ProcLat ";
     procStats.desc = "StimulusTime - SourceTime";
 
@@ -324,7 +343,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 	metronome.std = vStd(&metronomeDiff);
     if (thisTask.exportData)
         metronome.vals = metronomeDiff;
-        
+
     metronome.taskName = "Jitter  ";
     metronome.desc = "SourceTime[t+1] - SourceTime[t]";
 
@@ -373,7 +392,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
 		audOutputStats.min = vMin(&audOutputStats.vals);
 		audOutputStats.max = vMax(&audOutputStats.vals);
 		audOutputStats.median = vMedian(&audOutputStats.vals);
-		
+
         if (thisTask.exportData)
             audOutputStats.vals.clear();
         audOutputStats.taskName = "AudOut  ";
@@ -381,7 +400,7 @@ bool analysis::doThreshAnalysis(double threshTmp)
         latencyStats.push_back(audOutputStats);
     }
 
-	//return our stats	
+	//return our stats
     return true;
 }
 
@@ -460,7 +479,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, vector<int> s
 {
 	vector<double> tDiff;
 	basicStats tmpStat;
-	tmpStat.mean = -1;   
+	tmpStat.mean = -1;
 	tmpStat.median = -1;
 	tmpStat.std = -1;
 	tmpStat.min = -1;
@@ -559,7 +578,7 @@ basicStats analysis::doThreshAnalysis(int chNum, string stateName, vector<int> s
 			str << ")" <<endl;
 		}
 	}
-        
+
     tmpStat.desc = str.str();
 
     return tmpStat;
@@ -641,7 +660,7 @@ bool analysis::print(FILE * out, vector<basicStats*> minReqs, int num)
 							tmpTask.mean >= 0){
 						fprintf(out, "%s\t\t","pass");
 					}
-					
+
 				}
                 else if (tmpTask.mean == -1)
                 {

@@ -14,7 +14,7 @@
   #define NOTE_TYPE		2
   #define DIGTRIG_TYPE		3
 
-  static const cMmConnectionTimeout = 60000; // ms
+  static const int cMmConnectionTimeout = 60000; // ms
   int MICROMED_PACKET_RATE;
   int    num_notes;
   unsigned long sampleNumber;

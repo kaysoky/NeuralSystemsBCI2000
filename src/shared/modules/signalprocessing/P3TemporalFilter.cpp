@@ -6,8 +6,25 @@
 //   data, and reports averages when EpochsToAverage data have been accumulated.
 //   Associated stimulus codes are reported in the StimulusCodeRes state.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -69,20 +86,20 @@ P3TemporalFilter::Preflight( const SignalProperties& Input,
            << "greater than or equal to the EpochsToAverage parameter."
            << endl;
 
-  float outputSamples = MeasurementUnits::ReadAsTime( Parameter( "EpochLength" ) );
+  double outputSamples = MeasurementUnits::ReadAsTime( Parameter( "EpochLength" ) );
   outputSamples *= Input.Elements();
   outputSamples = ::ceil( outputSamples );
   // Requested output signal properties.
   Output = Input;
   Output.SetChannels( Input.Channels() )
-        .SetElements( outputSamples )
+        .SetElements( static_cast<size_t>( outputSamples ) )
         .SetType( SignalType::float32 )
         .ElementUnit().SetRawMin( 0 )
                       .SetRawMax( outputSamples - 1 );
-
+                      
   if( Parameter( "VisualizeP3TemporalFiltering" ) != 0 )
   {
-    float targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
+    double targetERPChannel = Output.ChannelIndex( Parameter( "TargetERPChannel" ) );
     if( targetERPChannel < 0 || targetERPChannel >= Output.Channels() )
       bcierr << "Invalid channel specification in Parameter \"TargetERPChannel\"" << endl;
   }
@@ -102,7 +119,7 @@ P3TemporalFilter::Initialize( const SignalProperties& /*Input*/,
   mVisualize = int( Parameter( "VisualizeP3TemporalFiltering" ) );
   if( mVisualize )
   {
-    mTargetERPChannel = Parameter( "TargetERPChannel" ) - 1;
+    mTargetERPChannel = Parameter( "TargetERPChannel" );
     SignalProperties visProperties = Output;
     visProperties.ChannelLabels().Clear();
     visProperties.SetChannels( 12 );
@@ -180,7 +197,7 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
             if( mVisualize && i->first - 1 < mVisSignal.Channels() )
             {
               for( int sample = 0; sample < Output.Elements(); ++sample )
-                mVisSignal( stimulusCode - 1, sample ) = Output( mTargetERPChannel, sample );
+                mVisSignal( stimulusCode - 1, sample ) = Output( mTargetERPChannel - 1, sample );
               mVis.Send( mVisSignal );
             }
           }
@@ -198,7 +215,7 @@ P3TemporalFilter::Process( const GenericSignal& Input, GenericSignal& Output )
         bcidbg( 2 ) << "Clearing buffer for stimulus code #" << i->first
                     << endl;
         *i->second = DataSum( mOutputProperties );
-      }
-    }
+  }
+}
   }
 }

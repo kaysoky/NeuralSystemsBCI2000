@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Sending and dispatching of BCI2000 messages.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -25,6 +42,7 @@
 #include "BCIError.h"
 
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -35,45 +53,45 @@ using namespace std;
     Handle##x( iss );                                                    \
     break;
 
-// The main message handling function.
+// Main message handling functions.
+void
+MessageHandler::HandleMessage( MessageQueue& ioQueue )
+{
+  if( ioQueue.empty() )
+    return;
+
+  ioQueue.Lock();
+  MessageQueueEntry entry = ioQueue.front();
+  ioQueue.pop();
+  ioQueue.Unlock();
+
+  istringstream iss( string( entry.message, entry.length ) );
+  switch( entry.descSupp )
+  {
+    CONSIDER( ProtocolVersion );
+    CONSIDER( StateVector );
+    CONSIDER( VisSignal );
+    CONSIDER( Status );
+    CONSIDER( Param );
+    CONSIDER( State );
+    CONSIDER( SysCommand );
+    CONSIDER( VisMemo );
+    CONSIDER( VisSignalProperties );
+    CONSIDER( VisBitmap );
+    CONSIDER( VisCfg );
+    default:
+      bcierr << "Unknown message descriptor/supplement 0x" 
+             << hex << entry.descSupp << endl;
+  }
+  delete[] entry.message;
+}
+
 void
 MessageHandler::HandleMessage( istream& is )
 {
-  int descSupp = is.get() << 8;
-  descSupp |= is.get();
-  LengthField<2> length;
-  length.ReadBinary( is );
-  if( is )
-  {
-    char* messageBuffer = new char[ length ];
-    if( length > 0 )
-    {
-      is.read( messageBuffer, length - 1 );
-      messageBuffer[ length - 1 ] = is.get();
-    }
-    if( is )
-    {
-      istringstream iss( string( messageBuffer, length ) );
-      switch( descSupp )
-      {
-        CONSIDER( ProtocolVersion );
-        CONSIDER( StateVector );
-        CONSIDER( VisSignal );
-        CONSIDER( Status );
-        CONSIDER( Param );
-        CONSIDER( State );
-        CONSIDER( SysCommand );
-        CONSIDER( VisMemo );
-        CONSIDER( VisSignalProperties );
-        CONSIDER( VisBitmap );
-        CONSIDER( VisCfg );
-        default:
-          bcierr << "Unknown message descriptor/supplement" << endl;
-      }
-      is.setstate( iss.rdstate() & ~ios::eofbit );
-    }
-    delete[] messageBuffer;
-  }
+  MessageQueue queue;
+  queue.QueueMessage( is );
+  HandleMessage( queue );
 }
 
 // Functions that construct messages.
@@ -83,11 +101,9 @@ template<typename content_type>
 ostream&
 MessageHandler::PutMessage( ostream& os, const content_type& content )
 {
-  os.put( Header<content_type>::descSupp >> 8 );
-  os.put( Header<content_type>::descSupp & 0xff );
-  static ostringstream buffer;
-  buffer.str( "" );
-  buffer.clear();
+  os.put( char( Header<content_type>::descSupp >> 8 ) ); // the old-style cast will silence MSVC's irrelevant C4309 warning
+  os.put( char( Header<content_type>::descSupp & 0xff ) );
+  ostringstream buffer;
   content.WriteBinary( buffer );
   LengthField<2> length = buffer.str().length();
   length.WriteBinary( os );

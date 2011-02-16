@@ -6,8 +6,25 @@
 //   Data read from the UDP port are written to stdout; data written into the
 //   UDP port are read from stdin.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <string>
@@ -18,8 +35,15 @@ using namespace std;
 int
 main( int argc, char* argv[] )
 {
+  if( argc < 2 )
+  {
+    cerr << "Usage: SimpleExample <direction> <address>"
+         << endl;
+    return -1;
+  }
+  
   bool write = false;
-  if( argc > 2 )
+  if( argc > 1 )
   {
     string arg = string( argv[1] );
     if( arg == "-w" )
@@ -29,7 +53,7 @@ main( int argc, char* argv[] )
   }
 
   const char* address = "localhost:20320";
-  if( argc > 1 )
+  if( argc > 2 )
     address = argv[argc-1];
 
   if( write )

@@ -3,8 +3,25 @@
 // Description: A BCI2000 filter that applies a short-term FFT to its input
 //   signal.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+//
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+//
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -14,6 +31,10 @@
 #include <vector>
 #include <cassert>
 #include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.141592653589793238462643
+#endif
 
 using namespace std;
 
@@ -56,7 +77,7 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
 {
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
   {
-    int channelIndex = Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) );
+    double channelIndex = Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) );
     if( channelIndex < 0 || channelIndex >= Input.Channels() )
       bcierr << "Invalid channel specification \""
              << Parameter( "FFTInputChannels" )( i )
@@ -73,16 +94,13 @@ FFTFilter::Preflight( const SignalProperties& Input, SignalProperties& Output ) 
     if( mFFT.LibAvailable() )
     {
       FFTLibWrapper preflightFFT;
-      int fftWindowLength = Parameter( "SampleBlockSize" )
-                            * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
+      int fftWindowLength =
+        static_cast<int>( Parameter( "SampleBlockSize" ) * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
       if( !preflightFFT.Initialize( fftWindowLength ) )
         bcierr << "Requested parameters are not supported by FFT library" << endl;
     }
     else
-      bcierr << "The FFT Filter could not find the " << mFFT.LibName() << " library. "
-             << "For legal reasons, this library is not part of the BCI2000 distribution. "
-             << "Please download the latest version of fftw3.dll from "
-             << "http://www.fftw.org/install/windows.html"
+      bcierr << "The FFT Filter could not find the " << mFFT.LibName() << " library."
              << endl;
   }
 
@@ -100,8 +118,7 @@ void
 FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*Output*/ )
 {
   mFFTOutputSignal = ( eFFTOutputSignal )( int )Parameter( "FFTOutputSignal" );
-  mFFTWindowLength = Input.Elements()
-                     * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
+  mFFTWindowLength = static_cast<int>( Input.Elements() * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
   mFFTWindow = ( eFFTWindow )( int )Parameter( "FFTWindow" );
 
   mFFTInputChannels.clear();
@@ -124,7 +141,7 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*
   }
   for( int i = 0; i < Parameter( "FFTInputChannels" )->NumValues(); ++i )
   {
-    mFFTInputChannels.push_back( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) );
+    mFFTInputChannels.push_back( static_cast<size_t>( Input.ChannelIndex( Parameter( "FFTInputChannels" )( i ) ) ) );
     if( mVisualizeFFT )
     {
       ostringstream oss_i;
@@ -147,15 +164,15 @@ FFTFilter::Initialize( const SignalProperties& Input, const SignalProperties& /*
 
   mWindow.clear();
   mWindow.resize( mFFTWindowLength, 1.0 );
-  float phasePerSample = M_PI / float( mFFTWindowLength );
+  float phasePerSample = static_cast<float>( M_PI ) / static_cast<float>( mFFTWindowLength );
   // Window coefficients: None Hamming Hann Blackman
-  const float a1[] = {    0,   0.46,   0.5, 0.5, },
-              a2[] = {    0,   0,      0,   0.08 };
+  const float a1[] = {    0,   0.46f,  0.5f, 0.5f, },
+              a2[] = {    0,   0,      0,    0.08f };
 
   for( int i = 0; i < mFFTWindowLength; ++i )
-    mWindow[ i ] = 1.0 - a1[ mFFTWindow ] - a2[ mFFTWindow ]
-                   + a1[ mFFTWindow ] * cos( float( i ) * phasePerSample )
-                   + a2[ mFFTWindow ] * cos( float( i ) * 2 * phasePerSample );
+    mWindow[ i ] = 1.0f - a1[ mFFTWindow ] - a2[ mFFTWindow ]
+                   + a1[ mFFTWindow ] * cos( static_cast<float>( i ) * phasePerSample )
+                   + a2[ mFFTWindow ] * cos( static_cast<float>( i ) * 2.0f * phasePerSample );
 
   mValueBuffers.resize( mFFTInputChannels.size() );
   ResetValueBuffers( mFFTWindowLength );
@@ -173,7 +190,7 @@ FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   if( mFFTOutputSignal == eInput )
     Output = Input;
-    
+
   for( size_t i = 0; i < mFFTInputChannels.size(); ++i )
   {
     // Copy input signal values to the value buffer.
@@ -186,7 +203,7 @@ FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     // Copy new values to the end of the buffer;
     // buffer size may be greater or less than input size.
     for( int j = ::max( 0, bufferSize - inputSize ); j < bufferSize; ++j )
-      buffer[ j ] = Input( mFFTInputChannels[ i ], j + inputSize - bufferSize );
+      buffer[ j ] = static_cast<float>( Input( mFFTInputChannels[ i ], j + inputSize - bufferSize ) );
     // Prepare the buffer.
     if( mFFTWindow == eNone )
       for( int j = 0; j < bufferSize; ++j )
@@ -199,7 +216,7 @@ FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     if( mVisualizeFFT || mFFTOutputSignal == ePower )
     {
       int maxIdx = mPowerSpectrum.Channels() - 1;
-      float normFactor = 1.0 / bufferSize;
+      double normFactor = 1.0 / bufferSize;
       mPowerSpectrum( maxIdx, 0 ) = mFFT.Output( 0 ) * mFFT.Output( 0 ) * normFactor;
       for( int k = 1; k < ( bufferSize + 1 ) / 2; ++k )
         mPowerSpectrum( maxIdx - k, 0 ) = (
@@ -219,7 +236,7 @@ FFTFilter::Process( const GenericSignal& Input, GenericSignal& Output )
     }
     else if( mFFTOutputSignal == eHalfcomplex )
     {
-      float normFactor = 1.0 / ::sqrt( 1.0 * bufferSize );
+      double normFactor = 1.0 / ::sqrt( 1.0 * bufferSize );
       for( int j = 0; j < Output.Elements(); ++j )
         Output( i, j ) = mFFT.Output( j ) * normFactor;
     }
@@ -250,8 +267,7 @@ void
 FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTType ) const
 {
   int numChannels = Parameter( "FFTInputChannels" )->NumValues(),
-      fftWindowLength = Parameter( "SampleBlockSize" )
-                        * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) );
+      fftWindowLength = static_cast<int>( Parameter( "SampleBlockSize" ) * MeasurementUnits::ReadAsTime( Parameter( "FFTWindowLength" ) ) );
   if( numChannels > 0 && fftWindowLength == 0 )
     bcierr << "FFTWindowLength must exceed a single sample's duration" << endl;
 
@@ -265,11 +281,11 @@ FFTFilter::DetermineSignalProperties( SignalProperties& ioProperties, int inFFTT
       ioProperties.SetName( "FFT Power Spectrum" )
                   .SetChannels( numChannels )
                   .SetElements( fftWindowLength / 2 + 1 );
-      float freqScale = Parameter( "SamplingRate" ) / 2.0 / ioProperties.Elements();
+      double freqScale = Parameter( "SamplingRate" ) / 2.0 / ioProperties.Elements();
       ioProperties.ElementUnit().SetOffset( freqScale / 2 )
                                 .SetGain( freqScale )
                                 .SetSymbol( "Hz" );
-      float amplitude = ioProperties.ValueUnit().RawMax() - ioProperties.ValueUnit().RawMin();
+      double amplitude = ioProperties.ValueUnit().RawMax() - ioProperties.ValueUnit().RawMin();
       ioProperties.ValueUnit().SetRawMin( 0 )
                               .SetRawMax( amplitude * amplitude );
       ioProperties.ElementUnit().SetRawMin( 0 )

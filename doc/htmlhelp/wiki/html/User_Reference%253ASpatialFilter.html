@@ -43,6 +43,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </li>
 <li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SpatialFilterCAROutput"><span class="tocnumber">2.3</span> <span class="toctext">SpatialFilterCAROutput</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253ASpatialFilter.html#SFUseThreading"><span class="tocnumber">2.4</span> <span class="toctext">SFUseThreading</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253ASpatialFilter.html#States"><span class="tocnumber">3</span> <span class="toctext">States</span></a></li>
@@ -100,6 +101,9 @@ Also, specifying <i>row labels</i> to identify output channels allows you to use
 </p><p><code>C3 C4 CP3 CP4 Cz</code>
 </p><p>It is important to note that <b>all</b> channels passed to the spatial filter (typically defined in the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters">TransmitChList parameter</a>) are used in the CAR calculation, but only a subset of these channels are actually output and passed to the next step in the signal processing chain.
 </p><p>If this parameter is left blank, then all input channels are passed to the output, and the number of input channels equals the number of output channels.
+</p>
+<a name="SFUseThreading"></a><h3>SFUseThreading</h3>
+<p>When set to 1, computation of a full-matrix type spatial filter is performed by multiple threads. On multiprocessor systems, this should result in improved performance. For spatial filter types other than "full matrix", the setting has no effect.
 </p>
 <a name="States"></a><h2>States</h2>
 <p>None.
@@ -179,7 +183,7 @@ In your spatial filter, you will want to re-reference all channels against "link
 </table>
 <p>This results in:<br />
 <code>OutCh(1) = 0.25*InCh(1) + 0.25*InCh(2) + 0.25*InCh(3) + 0.25*InCh(4)</code><br />
-<code>OutCh(2) = (-0.25)*InCh(10) + (-0.25)*InCh(11) + (-0.25)*InCh(12) + (-0.25)*InCh(13)</code>
+<code>OutCh(2) = (-0.2)*InCh(10) + (-0.2)*InCh(11) + (-0.2)*InCh(12) + (-0.2)*InCh(13) + (-0.2)*InCh(14)</code>
 </p>
 <a name="Large_Laplacian_.28Sparse_Matrix.29"></a><h3>Large Laplacian (Sparse Matrix)</h3>
 <p>In this example, the spatial filter computes Large-Laplacian filtered versions of channels <i>C3</i> and <i>C4</i> by re-referencing them to the mean of their mid-range neighbors <i>Cz</i>, <i>P3/4</i>, <i>T7/8</i>, and <i>F3/4</i>:<br />
@@ -253,6 +257,7 @@ Compared to those, it is associated with a number of disadvantages:
 <ul><li>Complexity of matrix-vector multiplication is <span class="texhtml"><i>O</i>(<i>N</i><i>M</i>)</span>. In situations with large sampling rates and/or a large number of channels, this may result in real-time problems due to high CPU load.
 </li><li><a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">Channel labels</a> are not preserved across the filter. Due to the filter's general nature, no relation between input and output channel names can be inferred, and all output labels must be specified manually.
 </li><li>The filter's specification depends on the order of input channels, which makes it interdependent with the <a href="User_Reference%253AParameters.html#TransmitChList" title="User Reference:Parameters"><i>TransmitChList</i> parameter</a>.
+</li><li>On multi-processor machines, the performance of the full matrix spatial filter may be improved by setting the <a href="User_Reference%253ASpatialFilter.html#SFUseThreading" title="">SFUseThreading</a> parameter to 1.
 </li></ul>
 <a name="See_also"></a><h2>See also</h2>
 <p><a href="User_Reference%253ALinearClassifier.html" title="User Reference:LinearClassifier">User Reference:LinearClassifier</a>, <a href="User_Reference%253ADataIOFilter.html#ChannelNames" title="User Reference:DataIOFilter">User Reference:DataIOFilter#ChannelNames</a>

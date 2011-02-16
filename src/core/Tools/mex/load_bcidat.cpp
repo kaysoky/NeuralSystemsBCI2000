@@ -9,8 +9,25 @@
 //  loads signal, state, and parameter data from the files whose names are given
 //  as function arguments.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 
@@ -42,8 +59,8 @@ struct StateInfo
 
 struct FileInfo
 {
-  int begin, // range of samples to read
-      end;
+  long long begin, // range of samples to read
+            end;
   BCI2000FileReader* data;
 };
 
@@ -63,17 +80,17 @@ void
 ReadSignal( FileContainer& inFiles, mxArray* ioSignal )
 {
   T* data = reinterpret_cast<T*>( mxGetData( ioSignal ) );
-  int sampleOffset = 0,
-      totalSamples = 0;
+  long long sampleOffset = 0,
+            totalSamples = 0;
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
     totalSamples += i->end - i->begin;
 
   for( FileContainer::iterator i = inFiles.begin(); i != inFiles.end(); ++i )
   {
     BCI2000FileReader* file = i->data;
-    int numSamples = i->end - i->begin,
-        numChannels = file->SignalProperties().Channels();
-    for( int sample = 0; sample < numSamples; ++sample )
+    long long numSamples = i->end - i->begin;
+    int numChannels = file->SignalProperties().Channels();
+    for( long long sample = 0; sample < numSamples; ++sample )
       for( int channel = 0; channel < numChannels; ++channel )
         data[ totalSamples * channel + sample + sampleOffset ]
           = Raw ? file->RawValue( channel, sample + i->begin )
@@ -129,7 +146,7 @@ mexFunction( int nargout, mxArray* varargout[],
       BCI2000FileReader* file = new BCI2000FileReader;
       FileInfo fileInfo =
       {
-        0, numeric_limits<int>::max(),
+        0, numeric_limits<long long>::max(),
         file
       };
       files.push_back( fileInfo );
@@ -143,9 +160,9 @@ mexFunction( int nargout, mxArray* varargout[],
         mexErrMsgTxt( oss.str().c_str() );
       }
 
-      int samplesInFile = file->NumSamples(),
-          begin = 0,
-          end = numeric_limits<int>::max();
+      long long samplesInFile = file->NumSamples(),
+                begin = 0,
+                end = numeric_limits<long long>::max();
 
       if( ( i + 1 < nargin )
            && ( mxGetClassID( varargin[ i + 1 ] ) == mxDOUBLE_CLASS ) )
@@ -187,7 +204,7 @@ mexFunction( int nargout, mxArray* varargout[],
     ++i;
   }
 
-  size_t totalSamples = files[ 0 ].end - files[ 0 ].begin;
+  long long totalSamples = files[ 0 ].end - files[ 0 ].begin;
   int numChannels = files[ 0 ].data->SignalProperties().Channels();
   SignalType dataType = files[ 0 ].data->SignalProperties().Type();
   mxClassID classID = mxDOUBLE_CLASS;
@@ -323,7 +340,7 @@ mexFunction( int nargout, mxArray* varargout[],
         stateInfo[ i ].location = s.Location();
         stateInfo[ i ].length = s.Length();
       }
-      for( int sample = file->begin; sample < file->end; ++sample )
+      for( long long sample = file->begin; sample < file->end; ++sample )
       { // Iterating over samples in the outer loop will avoid scanning
         // the file multiple times.
         file->data->ReadStateVector( sample );
@@ -368,7 +385,7 @@ mexFunction( int nargout, mxArray* varargout[],
   // Return the total number of samples if requested.
   if( nargout > 3 )
   {
-    long numSamples = 0;
+    long long numSamples = 0;
     for( FileContainer::const_iterator i = files.begin(); i != files.end(); ++i )
       numSamples += i->data->NumSamples();
     varargout[ 3 ] = mxCreateDoubleScalar( numSamples );

@@ -6,17 +6,41 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Bison grammar file for a simple expression parser.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////
 #include <sstream>
 #include <string>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
 
-#pragma warn -8004
+// Disable compiler warnings for generated code.
+#ifdef __BORLANDC__
+# pragma warn -8004
+#elif defined( _MSC_VER )
+# pragma warning (disable:4065)
+#endif
+
 
 using namespace std;
 
@@ -39,7 +63,7 @@ namespace ExpressionParser
 
 /* Bison declarations.  */
 %token <value>   NUMBER
-%token <name>    NAME SIGNAL
+%token <name>    NAME SIGNAL_ /* avoid interference with Qt's SIGNAL macro */
 %left '?' ':'
 %left '&' '|'
 %left '=' '~' '!' '>' '<'
@@ -52,38 +76,38 @@ namespace ExpressionParser
 %type <str>   addr
 
 %% /* The grammar follows.  */
-input: /* empty */                  { pInstance->mValue = 0; }
-     | exp                          { pInstance->mValue = $1; }
+input: /* empty */                   { pInstance->mValue = 0; }
+     | exp                           { pInstance->mValue = $1; }
 ;
 
-exp:   NAME                         { $$ = pInstance->State( $1 ); }
-     | NUMBER                       { $$ = $1;       }
-     | exp '+' exp                  { $$ = $1 + $3;  }
-     | exp '-' exp                  { $$ = $1 - $3;  }
-     | exp '*' exp                  { $$ = $1 * $3;  }
-     | exp '/' exp                  { $$ = $1 / $3;  }
-     | '-' exp %prec NEG            { $$ = -$2;      }
-     | exp '^' exp                  { $$ = ::pow( $1, $3 ); }
-     | exp '&' '&' exp              { $$ = $1 && $4; }
-     | exp '|' '|' exp              { $$ = $1 || $4; }
-     | exp '=' '=' exp              { $$ = $1 == $4; }
-     | exp '!' '=' exp              { $$ = $1 != $4; }
-     | exp '~' '=' exp              { $$ = $1 != $4; }
-     | exp '>' exp                  { $$ = $1 > $3;  }
-     | exp '<' exp                  { $$ = $1 < $3;  }
-     | exp '>' '=' exp              { $$ = $1 >= $4; }
-     | exp '<' '=' exp              { $$ = $1 <= $4; }
-     | '~' exp %prec NEG            { $$ = !$2;      }
-     | '!' exp %prec NEG            { $$ = !$2;      }
-     | '(' exp ')'                  { $$ = $2;       }
-     | exp '?' exp ':' exp          { $$ = $1 ? $3 : $5 }
-     | SIGNAL '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); delete $3; delete $5; }
+exp:   NAME                          { $$ = pInstance->State( $1 ); }
+     | NUMBER                        { $$ = $1;       }
+     | exp '+' exp                   { $$ = $1 + $3;  }
+     | exp '-' exp                   { $$ = $1 - $3;  }
+     | exp '*' exp                   { $$ = $1 * $3;  }
+     | exp '/' exp                   { $$ = $1 / $3;  }
+     | '-' exp %prec NEG             { $$ = -$2;      }
+     | exp '^' exp                   { $$ = ::pow( $1, $3 ); }
+     | exp '&' '&' exp               { $$ = $1 && $4; }
+     | exp '|' '|' exp               { $$ = $1 || $4; }
+     | exp '=' '=' exp               { $$ = $1 == $4; }
+     | exp '!' '=' exp               { $$ = $1 != $4; }
+     | exp '~' '=' exp               { $$ = $1 != $4; }
+     | exp '>' exp                   { $$ = $1 > $3;  }
+     | exp '<' exp                   { $$ = $1 < $3;  }
+     | exp '>' '=' exp               { $$ = $1 >= $4; }
+     | exp '<' '=' exp               { $$ = $1 <= $4; }
+     | '~' exp %prec NEG             { $$ = !$2;      }
+     | '!' exp %prec NEG             { $$ = !$2;      }
+     | '(' exp ')'                   { $$ = $2;       }
+     | exp '?' exp ':' exp           { $$ = $1 ? $3 : $5 }
+     | SIGNAL_ '(' addr ',' addr ')' { $$ = pInstance->Signal( *$3, *$5 ); delete $3; delete $5; }
 ;
 
-addr:  exp                          { ostringstream oss; oss << $1; $$ = new string( oss.str() ); }
-     | exp NAME                     { ostringstream oss; oss << $1 << $2; $$ = new string( oss.str() ); }
-     | '"' NAME '"'                 { $$ = new string( $2 ); }
-     | '\'' NAME '\''               { $$ = new string( $2 ); }
+addr:  exp                           { ostringstream oss; oss << $1; $$ = new string( oss.str() ); }
+     | exp NAME                      { ostringstream oss; oss << $1 << $2; $$ = new string( oss.str() ); }
+     | '"' NAME '"'                  { $$ = new string( $2 ); }
+     | '\'' NAME '\''                { $$ = new string( $2 ); }
 ;
 
 %%
@@ -114,7 +138,7 @@ addr:  exp                          { ostringstream oss; oss << $1; $$ = new str
       }
       pLval->name = name.c_str();
       if( ::stricmp( pLval->name, "signal" ) == 0 )
-        token = SIGNAL;
+        token = SIGNAL_;
       else
         token = NAME;
     }

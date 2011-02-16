@@ -11,8 +11,25 @@
 //     OnClick:  The user clicked the area occupied by the object. The object
 //       considers itself clicked when it returns true (the default).
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GRAPH_OBJECT_H
 #define GRAPH_OBJECT_H
@@ -38,8 +55,9 @@ class GraphDisplay;
 
 class GraphObject
 {
- class CompareByZOrder;
- friend class GraphObject::CompareByZOrder;
+ public:
+  struct CompareByZOrder;
+  friend struct GraphObject::CompareByZOrder;
 
  protected:
   enum
@@ -101,17 +119,17 @@ class GraphObject
  public:
   // Sort order for drawing (smaller values correspond to top)
   struct CompareByZOrder
-  { bool operator()( const GraphObject* s1, const GraphObject* s2 )
+  { bool operator()( const GraphObject* s1, const GraphObject* s2 ) const
     { return ( s1->mZOrder == s2->mZOrder ) ? s1 > s2 : s1->mZOrder > s2->mZOrder; }
   };
 
  private:
+  GraphDisplay& mDisplay;
   bool          mVisible,
                 mRectSet;
   int           mZOrder,
                 mAspectRatioMode;
   Rect          mDisplayRect;
-  GraphDisplay& mDisplay;
 };
 
 } // namespace GUI

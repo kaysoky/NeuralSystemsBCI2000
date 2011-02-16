@@ -24,11 +24,30 @@
  * V1.05 - 07/01/2008 - Added documentation of each function                  *
  * V1.00 - 02/01/2008 - First start and also first functioning BETA version   *
  ******************************************************************************/
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include <stdio.h>
-#include "SyncObjs.hpp"
 
 #include "NIDAQmxADC.h"
 //#include "UBCIError.h"
@@ -41,7 +60,7 @@ using namespace std;
 RegisterFilter( NIADC, 1 );
 
 NIADC* NIADC::cur_adc = NULL;
-TEvent   *bufferdone;
+HANDLE bufferdone = NULL;
 
 // **************************************************************************
 // Function:   NIADC
@@ -62,8 +81,8 @@ NIADC::NIADC()
        "// The signal's sampling rate in Hz",
    "Source int   SampleBlockSize= 16 16 2 2048 "
        "// The number of samples in one block",
-   "Source int   SoftwareCh= 8 8 1 16 "
-       "// The number of channels",
+   "Source int   SourceCh= 8 8 1 16 "
+	   "// The number of channels",
    "Source int   BoardNumber= 1 1 1 16 "
        "// The NI-ADC board's device number",
  END_PARAMETER_DEFINITIONS
@@ -74,13 +93,8 @@ NIADC::NIADC()
    "Running 1 0 0 0",
    "SourceTime 16 2347 0 0",
  END_STATE_DEFINITIONS
-
- data_critsec=new TCriticalSection();
- #if( __BORLANDC__ >= 0x0570 ) // no VCL version macro available
- bufferdone = new TEvent( NULL, false, false, "", false );
- #else
- bufferdone=new TEvent(NULL, false, false, "");
- #endif
+ data_mutex = ::CreateMutex( NULL, false, NULL );
+ bufferdone = ::CreateEvent( NULL, false, false, NULL );
  piBuffer=NULL;
  for (int buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
   piHalfBuffer[buf]=NULL;
@@ -98,15 +112,22 @@ NIADC::NIADC()
 // **************************************************************************
 NIADC::~NIADC()
 {
- delete data_critsec;
- delete bufferdone;
- delete [] piBuffer;
-
+ ::CloseHandle( data_mutex );
+ if (piBuffer != NULL) {
+	delete [] piBuffer;
+ }
  // delete all buffers
  for (int buf=0; buf<NIDAQ_MAX_BUFFERS; buf++)
   delete [] piHalfBuffer[buf];
 
  cur_adc = NULL;
+ if (bufferdone)
+ {
+	 ::CloseHandle(bufferdone);
+//	delete bufferdone;
+ }
+ bufferdone = NULL;
+ piBuffer = NULL;
 }
 
 // **************************************************************************
@@ -123,34 +144,34 @@ void NIADC::Preflight( const SignalProperties&,
  unsigned long int serial;
  char devName[6]="Dev",devNum[3]="";
 
-  // Parameter consistency checks: Existence/Ranges and mutual Ranges.
-    //if( (Parameter("SampleBlockSize")%2.0) != 0)
-       // bcierr << "Sample block Size must be a power of 2" << endl;
+   //Parameter consistency checks: Existence/Ranges and mutual Ranges.
+//    if( (Parameter("SampleBlockSize")%2) != 0)
+  //      bcierr << "Sample block Size must be a power of 2" << endl;
 
-    //if( (Parameter("SoftwareCh") > 32) ){
+	//if( (Parameter("SourceCh") > 32) ){
       //  bcierr << "Number of channels requested, " << Parameter("SoftwareCh")
         //    << " exceeds maximum value." << endl;
-    //}
+//    }
 
-  // Resource availability checks.
+//   Resource availability checks.
   int boardNum = Parameter("BoardNumber");
   sprintf(devNum, "%i",boardNum);
   strcat(devName,devNum);
   DAQmxGetDevSerialNum(devName, &serial);
-//  int error = DAQmxGetDevSerialNum(devName, &serial);
+  int error = DAQmxGetDevSerialNum(devName, &serial);
   if( serial==0 ){
         bcierr <<"Board number " << Parameter("BoardNumber") << " not present"
         << endl << "or does not support DAQmx driver ver 8.0" << endl;
     }
 
-  // Input signal checks.
-
-
+//   Input signal checks.
+  Parameter("SourceChOffset");
+  Parameter("SourceChGain");
   // Requested output signal properties.
   outSignalProperties = SignalProperties(
-       Parameter( "SoftwareCh" ),
+	   Parameter( "SourceCh" ),
        Parameter( "SampleBlockSize" ),
-       SignalType::int16 );
+	   SignalType::int16 );
 }
 
 // **************************************************************************
@@ -173,7 +194,7 @@ int  buf;
 char devNum[3]="";
 // float   checkbackground;
 
- channels=Parameter("SoftwareCh");
+ channels=Parameter("SourceCh");
  samplingRate=Parameter("SamplingRate");
  blocksize=Parameter("SampleBlockSize");
  iDevice=Parameter("BoardNumber");
@@ -185,7 +206,7 @@ char devNum[3]="";
  // stop the data acquisition board; this call is required
  // in case iDevice is not initialized when Halt function is called
  Stop();
- bufferdone->ResetEvent();
+ ::ResetEvent( bufferdone );
 
  // create new buffers
  if (piBuffer)     delete [] piBuffer;
@@ -200,8 +221,8 @@ char devNum[3]="";
   }
 
  // re-configure the board and start it again
- ADConfig();
- Start();
+	ADConfig();
+	Start();
 }
 
 
@@ -222,7 +243,7 @@ int     time2wait, buf;
  // wait until we are notified that data is there
  // let's wait five times longer than what we are supposed to wait
  time2wait=5*(1000*blocksize)/samplingRate;
- if (bufferdone->WaitFor(time2wait) != wrSignaled)
+ if( ::WaitForSingleObject( bufferdone, time2wait ) != WAIT_OBJECT_0 )
  {
    // return an error when we had a time out
    bcierr << "Time out" << endl;
@@ -231,12 +252,15 @@ int     time2wait, buf;
 
  // we do not want simultaneous access to data[]
  // in case the driver notifies us twice in a row that data is there
- data_critsec->Acquire();
+ ::WaitForSingleObject( data_mutex, INFINITE );
 
  // let's get the "oldest" buffer
  for (sample=0; sample<blocksize; sample++)
   for (channel=0; channel<channels; channel++)
-   signal(channel, sample) = piHalfBuffer[0][channel*blocksize+sample];
+  {
+//    if (piHalfBuffer[0][channel*blocksize+sample] != NULL)
+     signal(channel,sample) = piHalfBuffer[0][(channel*blocksize)+sample];
+  }
 
  // delete the "oldest" buffer
  delete [] piHalfBuffer[0];
@@ -251,11 +275,11 @@ int     time2wait, buf;
  // otherwise, set it again (we want to jump right back into this function)
  cur_buffers--;
  if (cur_buffers == 0)
-    bufferdone->ResetEvent();
+   ::ResetEvent( bufferdone );
  else
-    bufferdone->SetEvent();
+   ::SetEvent( bufferdone );
 
- data_critsec->Release();
+ ::ReleaseMutex( data_mutex );
 }
 
 // **************************************************************************
@@ -290,19 +314,18 @@ long int NIADC::Callback (TaskHandle taskHandle, int32 everyNsamplesEventType, u
 
  try {   // I don't think we want a callback function to throw an exception
  if (cur_adc)
-    {
-    // do not add a buffer if we ran out of buffers
-    if (cur_adc->cur_buffers < NIDAQ_MAX_BUFFERS-1)
-       {
-       cur_adc->data_critsec->Acquire();
-       cur_adc->GetData();
-       cur_adc->data_critsec->Release();
-       bufferdone->SetEvent();
-       // set the event so that Process() gets notified
-       }
-    }
- } catch(...) { bufferdone->SetEvent(); }
-
+	{
+	// do not add a buffer if we ran out of buffers
+	if (cur_adc->cur_buffers < NIDAQ_MAX_BUFFERS-1)
+	   {
+	   ::WaitForSingleObject( cur_adc->data_mutex, INFINITE );
+	   cur_adc->GetData();
+	   ::ReleaseMutex( cur_adc->data_mutex );
+	   ::SetEvent( bufferdone );
+	   // set the event so that Process() gets notified
+	   }
+	}
+ } catch(...) { ::SetEvent( bufferdone ); }
  return(DAQmxSuccess);
 }
 
@@ -328,13 +351,12 @@ void NIADC::GetData()
 
  cur_buffers++;
 
-  Error:
+ Error:
 	if( DAQmxFailed(error) )
 	{
 		DAQmxGetExtendedErrorInfo(errBuff,2048);
-	        bcierr << errBuff << endl;
-       	}
-
+			bcierr << errBuff << endl;
+  }
 }
 
 
@@ -373,11 +395,11 @@ strcpy(errBuff,"");
 // Temporary variables needed in this function
 int count=0;
 const char taskName[7]="myTask";
-char chanName[9]="Dev1/ai0", numChan[3]="";
+char chanName[10], numChan[3]="";
 
 // Variables not needed but useful to change channel properties
 double max=5.0, min=-5.0;
-long int terminalConfig=DAQmx_Val_NRSE;
+long int terminalConfig=DAQmx_Val_RSE; // setting this to RSE ensures compatibility with other devices
 // Our hardware can be set either Not Referenced Single Ended or Differential
 /* Choises are DAQmx_Val_RSE    Referenced single-ended mode
                DAQmx_Val_NRSE   Nonreferenced single-ended mode
@@ -417,16 +439,18 @@ long int terminalConfig=DAQmx_Val_NRSE;
  // Note Hardware buffer MUST be a power of 2 for the next call to work
  // properly. Considering a max sample rate of 10000 Hz, next higher
  // power of 2 is 16384
-   DAQmxErrChk (DAQmxCfgSampClkTiming(taskHandle,"",samplingRate,
-                        DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384));
+
+//   DAQmxErrChk (DAQmxCfgSampClkTiming(taskHandle,"",samplingRate,
+//                        DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384));
+   DAQmxErrChk (DAQmxCfgSampClkTiming(taskHandle,"",samplingRate,DAQmx_Val_Rising,DAQmx_Val_ContSamps,16384));
 
  // configure the Event that activate our Callback function
   DAQmxErrChk (DAQmxRegisterEveryNSamplesEvent (taskHandle,
-         DAQmx_Val_Acquired_Into_Buffer, ulCount/(2*channels), 0,
+//         DAQmx_Val_Acquired_Into_Buffer, ulCount/(2*channels), 0,
+		DAQmx_Val_Acquired_Into_Buffer,ulCount/(2*channels),0,
          (DAQmxEveryNSamplesEventCallbackPtr) &Callback, NULL));
-
  // Here can take place the table for gain and offset
- /// iStatus = SCAN_Setup (iDevice, channels, chanVector, gainVector);
+ // iStatus = SCAN_Setup (iDevice, channels, chanVector, gainVector);
 
  Error:
 	if( DAQmxFailed(error) )

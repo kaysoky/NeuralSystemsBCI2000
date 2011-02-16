@@ -175,7 +175,7 @@ typedef int pid_t;
 #define Py_IS_INFINITY(X) (!_finite(X) && !_isnan(X))
 #define Py_IS_FINITE(X) _finite(X)
 
-/* Turn off warnings about deprecated C runtime functions in 
+/* Turn off warnings about deprecated C runtime functions in
    VisualStudio .NET 2005 */
 #if _MSC_VER >= 1400 && !defined _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
@@ -290,9 +290,9 @@ Py_NO_ENABLE_SHARED to find out.  Also support MS_NO_COREDLL for b/w compat */
 			their Makefile (other compilers are generally
 			taken care of by distutils.) */
 #			ifdef _DEBUG
-#				pragma comment(lib,"python25_d.lib")
+//#				pragma comment(lib,"python25_d.lib")
 #			else
-#				pragma comment(lib,"python25.lib")
+//#				pragma comment(lib,"python25.lib")
 #			endif /* _DEBUG */
 #		endif /* _MSC_VER */
 #	endif /* Py_BUILD_CORE */

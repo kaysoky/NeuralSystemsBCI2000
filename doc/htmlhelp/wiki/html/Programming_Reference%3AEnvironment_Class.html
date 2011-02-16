@@ -77,7 +77,14 @@ float nestedMatrixValue
 short feedbackState = State( &quot;Feedback&quot; );
 State( &quot;Feedback&quot; ) = 0;
 </pre>
-<p>State values are treated as unsigned integers.
+<p>State values are treated as unsigned integers, unless accessed with <tt>AsFloat()</tt> or <tt>AsSigned()</tt>:
+</p>
+<pre>
+float stateValue = State( &quot;Floatstate&quot; ).AsFloat();
+State( &quot;Floatstate&quot; ).AsFloat() = 1.2345e6;
+</pre>
+<p>When accessed with <tt>AsSigned()</tt>, a state's most significant bit is treated as a sign bit, and extended to all leading bits of the value returned.
+E.g., for a 3-bit-state, a unsigned value of 7 will be interpreted as a signed value of -1, and an unsigned value of 6 will be interpreted as a signed value of -2.
 </p><p>In more recent versions of BCI2000, state values are maintained individually for each sample position.
 Typically, this is used to record information such as mouse or keyboard input on a per-sample basis, while filter code acts per sample block, and will rarely need to access state information per-sample.
 Still, this is possible using an additional sample index in its own pair of brackets.
@@ -105,7 +112,6 @@ short itiState = OptionalState( &quot;IntertrialInterval&quot;, 0 );
 <p>Omitting the default value from the <tt>OptionalState</tt> or <tt>OptionalParameter</tt> call implies
 a default value of 0, or the empty string, whichever is appropriate.
 </p><p>The Environment class imposes <a href="Programming_Reference%253AGenericFilter_Class.html#Rules_for_Parameter_and_State_access" title="Programming Reference:GenericFilter Class">rules for parameter and state access</a> intended to help avoid parameterization inconsistencies.
-</p><p><br />
 </p>
 <a name="Working_around_Borland_VCL_Inheritance_Restrictions"></a><h2>Working around Borland VCL Inheritance Restrictions</h2>
 <p>Due to some non-standard conventions in Borland's VCL library, you

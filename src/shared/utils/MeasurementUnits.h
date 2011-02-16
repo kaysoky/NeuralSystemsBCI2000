@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: Utilities for handling measurement units and conversions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 //////////////////////////////////////////////////////////////////////////////
 #ifndef MEASUREMENT_UNITS_H
 #define MEASUREMENT_UNITS_H
@@ -17,21 +34,21 @@
 class MeasurementUnits
 {
   public:
-    static float ReadAsTime( const std::string& value )
+    static double ReadAsTime( const std::string& value )
     { return sTimeUnit.PhysicalToRaw( value ); }
     static std::string TimeUnit()
     { return sTimeUnit.RawToPhysical( 1 ); }
     static void InitializeTimeUnit( double inUnitsPerSec )
     { sTimeUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerSec ).SetSymbol( "s" ); }
 
-    static float ReadAsFreq( const std::string& value )
+    static double ReadAsFreq( const std::string& value )
     { return sFreqUnit.PhysicalToRaw( value ); }
     static std::string FreqUnit()
     { return sFreqUnit.RawToPhysical( 1 ); }
     static void InitializeFreqUnit( double inUnitsPerHertz )
     { sFreqUnit.SetOffset( 0 ).SetGain( 1.0 / inUnitsPerHertz ).SetSymbol( "Hz" ); }
 
-    static float ReadAsVoltage( const std::string& value )
+    static double ReadAsVoltage( const std::string& value )
     { return sVoltageUnit.PhysicalToRaw( value ); }
     static std::string VoltageUnit()
     { return sVoltageUnit.RawToPhysical( 1 ); }

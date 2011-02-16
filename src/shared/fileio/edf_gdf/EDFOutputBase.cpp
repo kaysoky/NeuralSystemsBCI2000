@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A base class for EDF/GDF type output formats.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -100,9 +117,11 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
     case SignalType::float32:
       typeCode = GDF::float32::Code;
       break;
+    default:
+      break;
   }
-  float digitalMin = inProperties.Type().Min(),
-        digitalMax = inProperties.Type().Max();
+  double digitalMin = inProperties.Type().Min(),
+         digitalMax = inProperties.Type().Max();
   ChannelInfo channel;
   channel.TransducerType = string( Parameter( "TransducerType" ) );
   channel.PhysicalDimension = string( Parameter( "SignalUnit" ) );
@@ -111,7 +130,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   channel.DataType = typeCode;
   channel.DigitalMinimum = digitalMin;
   channel.DigitalMaximum = digitalMax;
-  const float cNaN = ::strtod( "+NAN", NULL );
+  const float cNaN = static_cast<float>( ::strtod( "+NAN", NULL ) );
   for( size_t i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
     channel.ElectrodePosition[ i ] = cNaN;
   channel.ElectrodeImpedance = 255;
@@ -133,7 +152,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   }
   if( OptionalParameter( "NotchEnabled", 0 ) == 1 )
   {
-    channel.Notch = ( Parameter( "NotchHighPass" ) + Parameter( "NotchLowPass" ) ) / 2.0;
+    channel.Notch = static_cast<float>( ( Parameter( "NotchHighPass" ) + Parameter( "NotchLowPass" ) ) / 2.0 );
     filtering << "N:" << channel.Notch;
   }
   else if( OptionalParameter( "NotchEnabled", 1 ) == 0 )
@@ -167,7 +186,7 @@ EDFOutputBase::Initialize( const SignalProperties& inProperties,
   markerChannel.SamplesPerRecord = Parameter( "SampleBlockSize" );
   markerChannel.DataType = GDF::int16::Code;
   for( size_t i = 0; i < sizeof( channel.ElectrodePosition ) / sizeof( *channel.ElectrodePosition ); ++i )
-    markerChannel.ElectrodePosition[ i ] = cNaN;
+    markerChannel.ElectrodePosition[ i ] = static_cast<float>( cNaN );
   markerChannel.ElectrodeImpedance = 255;
   markerChannel.LowPass = cNaN;
   markerChannel.HighPass = cNaN;
@@ -216,11 +235,11 @@ EDFOutputBase::PutBlock( ostream& os, const GenericSignal& inSignal, const State
 {
   for( int i = 0; i < inSignal.Channels(); ++i )
     for( int j = 0; j < inSignal.Elements(); ++j )
-      GDF::Num<T>( inSignal( i, j ) ).WriteToStream( os );
+      GDF::Num<T>( static_cast<typename T::ValueType>( inSignal( i, j ) ) ).WriteToStream( os );
   for( size_t i = 0; i < mStateNames.size(); ++i )
     for( int j = 0; j < inSignal.Elements(); ++j )
       GDF::PutField< GDF::Num<GDF::int16> >(
-        os, inStatevector.StateValue( mStateNames[ i ], min( j, inStatevector.Samples() - 1 ) )
+        os, static_cast<GDF::int16::ValueType>( inStatevector.StateValue( mStateNames[ i ], min( j, inStatevector.Samples() - 1 ) ) )
       );
 }
 

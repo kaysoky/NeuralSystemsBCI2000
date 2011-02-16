@@ -4,8 +4,25 @@
 // Description: Class that provides an interface to the data stored in a
 //              BCI2000 data file.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -16,6 +33,17 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <cstdio>
+
+#if _MSC_VER
+# define ftello64 _ftelli64
+# define fseeko64 _fseeki64
+#endif // _MSC_VER
+
+#if __APPLE__
+# define ftello64 ftello
+# define fseeko64 fseeko
+#endif // __APPLE__
 
 using namespace std;
 
@@ -60,6 +88,7 @@ ReadValue_SwapBytes( const char* p )
 // **************************************************************************
 BCI2000FileReader::BCI2000FileReader()
 : mpStatevector( NULL ),
+  mpFile( NULL ),
   mpBuffer( NULL ),
   mErrorState( NoError )
 {
@@ -67,6 +96,7 @@ BCI2000FileReader::BCI2000FileReader()
 
 BCI2000FileReader::BCI2000FileReader( const char* inFileName )
 : mpStatevector( NULL ),
+  mpFile( NULL ),
   mpBuffer( NULL ),
   mErrorState( NoError )
 {
@@ -102,8 +132,11 @@ BCI2000FileReader::Reset()
   mpStatevector = NULL;
 
   mFilename = "";
-  mFile.close();
-  mFile.clear();
+  if( mpFile )
+  {
+    ::fclose( mpFile );
+    mpFile = NULL;
+  }
   delete[] mpBuffer;
   mpBuffer = NULL;
   mBufferSize = 0;
@@ -138,8 +171,8 @@ BCI2000FileReader::Open( const char* inFilename, int inBufSize )
   Reset();
 
   if( inFilename != NULL )
-    mFile.open( inFilename, ios::in | ios::binary );
-  if( !mFile.is_open() )
+    mpFile = ::fopen( inFilename, "rb" );
+  if( mpFile == NULL )
   {
     mErrorState = FileOpenError;
   }
@@ -197,7 +230,7 @@ BCI2000FileReader::State( const std::string& name ) const
 // Returns:    value requested
 // **************************************************************************
 GenericSignal::ValueType
-BCI2000FileReader::RawValue( int inChannel, long inSample )
+BCI2000FileReader::RawValue( int inChannel, long long inSample )
 {
   GenericSignal::ValueType value = 0;
   const char* address = BufferSample( inSample ) + mDataSize * inChannel;
@@ -217,6 +250,8 @@ BCI2000FileReader::RawValue( int inChannel, long inSample )
       case SignalType::float32:
         value = ReadValue_SwapBytes<float32>( address );
         break;
+      default:
+        break;
     }
   }
   else
@@ -231,6 +266,8 @@ BCI2000FileReader::RawValue( int inChannel, long inSample )
         break;
       case SignalType::float32:
         value = ReadValue<float32>( address );
+        break;
+      default:
         break;
     }
   }
@@ -248,7 +285,7 @@ BCI2000FileReader::RawValue( int inChannel, long inSample )
 // Returns:    value requested
 // **************************************************************************
 GenericSignal::ValueType
-BCI2000FileReader::CalibratedValue( int inChannel, long inSample )
+BCI2000FileReader::CalibratedValue( int inChannel, long long inSample )
 {
   return ( RawValue( inChannel, inSample ) - mSourceOffsets[ inChannel ] ) * mSourceGains[ inChannel ];
 }
@@ -261,7 +298,7 @@ BCI2000FileReader::CalibratedValue( int inChannel, long inSample )
 // Returns:    N/A
 // **************************************************************************
 BCI2000FileReader&
-BCI2000FileReader::ReadStateVector( long inSample )
+BCI2000FileReader::ReadStateVector( long long inSample )
 {
   ::memcpy( ( *mpStatevector )( 0 ).Data(),
             BufferSample( inSample ) + mDataSize * SignalProperties().Channels(),
@@ -278,11 +315,13 @@ BCI2000FileReader::ReadStateVector( long inSample )
 void
 BCI2000FileReader::ReadHeader()
 {
+  ifstream file( mFilename.c_str(), ios::in | ios::binary );
+
   mErrorState = MalformedHeader;
 
   // read the first line and do consistency checks
   string line, element;
-  if( !getline( mFile, line, '\n' ) )
+  if( !getline( file, line, '\n' ) )
     return;
   istringstream linestream( line );
   linestream >> element;
@@ -312,13 +351,13 @@ BCI2000FileReader::ReadHeader()
   mDataSize = mSignalType.Size();
 
   // now go through the header and read all parameters and states
-  getline( mFile >> ws, line, '\n' );
+  getline( file >> ws, line, '\n' );
   if( line.find( "[ State Vector Definition ]" ) != 0 )
     return;
-  while( getline( mFile, line, '\n' )
+  while( getline( file, line, '\n' )
          && line.find( "[ Parameter Definition ]" ) == line.npos )
     mStatelist.Add( line.c_str() );
-  while( getline( mFile, line, '\n' )
+  while( getline( file, line, '\n' )
          && line != "" && line != "\r" )
     mParamlist.Add( line );
 
@@ -326,7 +365,7 @@ BCI2000FileReader::ReadHeader()
   mpStatevector = new ( class StateVector )( mStatelist );
   if( !mParamlist.Exists( "SamplingRate" ) )
     return;
-  mSamplingRate = ::atoi( mParamlist[ "SamplingRate" ].Value().c_str() );
+  mSamplingRate = ::atof( mParamlist[ "SamplingRate" ].Value().c_str() );
 
   // Read information about signal dimensions.
   int sampleBlockSize = 1;
@@ -344,7 +383,7 @@ BCI2000FileReader::ReadHeader()
   }
   mSourceOffsets.resize( mChannels, defaultOffset );
 
-  const float defaultGain = 0.033;
+  const double defaultGain = 0.033;
   mSourceGains.clear();
   if( mParamlist.Exists( "SourceChGain" ) )
   {
@@ -354,7 +393,7 @@ BCI2000FileReader::ReadHeader()
   }
   mSourceGains.resize( mChannels, defaultGain );
 
-  if( mFile )
+  if( file )
     mErrorState = NoError;
 }
 
@@ -370,12 +409,13 @@ void
 BCI2000FileReader::CalculateNumSamples()
 {
   mNumSamples = 0;
-  if( mFile.is_open() )
+  if( mpFile )
   {
-    streampos curPos = mFile.tellg();
-    mFile.seekg( 0, ios_base::end );
-    long dataSize = static_cast<long>( mFile.tellg() ) - mHeaderLength;
-    mFile.seekg( curPos, ios_base::beg );
+    long long curPos = ::ftello64( mpFile );
+    ::fseeko64( mpFile, 0, SEEK_END );
+    long long dataSize = ::ftello64( mpFile );
+    dataSize -= mHeaderLength;
+    ::fseeko64( mpFile, curPos, SEEK_SET );
     mNumSamples = dataSize / ( mDataSize * mChannels + mStatevectorLength );
   }
 }
@@ -387,29 +427,28 @@ BCI2000FileReader::CalculateNumSamples()
 // Returns:    The sample's buffer position
 // **************************************************************************
 const char*
-BCI2000FileReader::BufferSample( long inSample )
+BCI2000FileReader::BufferSample( long long inSample )
 {
   if( inSample >= NumSamples() )
     throw "BCI2000FileReader::BufferSample: Sample position exceeds file size";
   int numChannels = SignalProperties().Channels();
-  long filepos = HeaderLength()
-               + inSample * ( mDataSize * numChannels + StateVectorLength() );
+  long long filepos = HeaderLength() + inSample * ( mDataSize * numChannels + StateVectorLength() );
   if( filepos < mBufferBegin || filepos + mDataSize * numChannels + StateVectorLength() >= mBufferEnd )
   {
-    if( !mFile.seekg( filepos, ios_base::beg ) )
+    if( 0 != ::fseeko64( mpFile, filepos, SEEK_SET ) )
       throw "BCI2000FileReader::BufferSample: Could not seek to sample position";
 
     mBufferBegin = filepos;
     mBufferEnd = mBufferBegin;
-    while( mFile && ( mBufferEnd - mBufferBegin < StateVectorLength() ) )
+    while( !::feof( mpFile ) && !::ferror( mpFile ) && ( mBufferEnd - mBufferBegin < StateVectorLength() ) )
     {
-      mFile.read( mpBuffer + mBufferEnd - mBufferBegin,
-        mBufferSize - ( mBufferEnd - mBufferBegin ) );
-      mBufferEnd += mFile.gcount();
+      int bytesRead = ::fread( mpBuffer + ( mBufferEnd - mBufferBegin ), 1, 
+                               mBufferSize - static_cast<size_t>( mBufferEnd - mBufferBegin ), mpFile );
+      mBufferEnd += bytesRead;
     }
-    mFile.clear();
+    ::clearerr( mpFile );
   }
-  return mpBuffer + filepos - mBufferBegin;
+  return mpBuffer + ( filepos - mBufferBegin );
 }
 
 

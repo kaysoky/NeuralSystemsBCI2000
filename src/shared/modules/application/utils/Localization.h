@@ -59,8 +59,25 @@
 //           to their UTF8 encoded string as in
 //             "Dansk Sm" oslash "rrebr" oslash "d".
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef LOCALIZATION_H
 #define LOCALIZATION_H
@@ -133,7 +150,7 @@
 #define ugrave "\xf9"
 #define uacute "\xfa"
 #define ucirc  "\xfb"
-#define uuml  "\xfc"
+#define uuml   "\xfc"
 #define yacute "\xfd"
 #define thorn  "\xfe"
 #define yuml   "\xff"
@@ -183,10 +200,10 @@ class Localization: public EnvironmentExtension
 
 // The Borland compiler appears to have difficulties with the using directive.
 // The inline function definitions should have the same effect.
-#ifndef __BORLANDC__
-using Localization::LocalizableString;
-using Localization::ApplyLocalizations;
-#else
+//#ifndef __BORLANDC__
+//using Localization::LocalizableString;
+//using Localization::ApplyLocalizations;
+//#else
 inline
 const char* LocalizableString( const char* s )
 { return Localization::LocalizableString( s ); }
@@ -194,6 +211,6 @@ const char* LocalizableString( const char* s )
 inline
 void ApplyLocalizations( void* p )
 { Localization::ApplyLocalizations( p ); }
-#endif // Borland workaround
+//#endif // Borland workaround
 
 #endif // LOCALIZATION_H

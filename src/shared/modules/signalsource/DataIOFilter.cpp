@@ -4,8 +4,25 @@
 // Description: A filter that handles data acquisition from a GenericADC,
 //   storing through a GenericFileWriter, and signal calibration into muV.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -26,6 +43,7 @@
 #include <iostream>
 #include <iomanip>
 #include <set>
+#include <numeric>
 
 using namespace std;
 using namespace bci;
@@ -39,13 +57,16 @@ DataIOFilter::DataIOFilter()
   mpFileWriter( NULL ),
   mStatevectorBuffer( *States ),
   mVisualizeSource( false ),
-  mVisualizeSourceDecimation( 1 ),
   mVisualizeTiming( false ),
+  mVisualizeSourceDecimation( 1 ),
+  mVisualizeSourceBufferSize( 1 ),
   mSourceVis( "SRCD" ),
   mTimingVis( "RNDT" ),
   mTimingSignal( 3, 1 ),
+  mBlockCount( 0 ),
   mBlockDuration( 0 ),
-  mSampleBlockSize( 0 )
+  mSampleBlockSize( 0 ),
+  mTimingBufferCursor( 0 )
 {
   BCIEvent::SetEventQueue( mBCIEvents );
 
@@ -95,8 +116,10 @@ DataIOFilter::DataIOFilter()
       "// visualize system timing (0=no, 1=yes) (boolean)",
     "Visualize:Source%20Signal int VisualizeSource= 1 1 0 1 "
       "// visualize raw brain signal (0=no, 1=yes) (boolean)",
-    "Visualize:Source%20Signal int VisualizeSourceDecimation= 1 1 1 % "
+    "Visualize:Source%20Signal int VisualizeSourceDecimation= auto auto % % "
       "// decimation factor for raw brain signal",
+    "Visualize:Source%20Signal int VisualizeSourceBufferSize= auto auto % % "
+      "// number of blocks to aggregate before sending to operator",
     "Visualize:Source%20Signal int VisualizeSourceTime= 2 2 0 % "
       "// how much time in Source visualization",
     "Visualize:Source%20Signal int SourceMin= -100muV -100muV % % "
@@ -200,20 +223,41 @@ DataIOFilter::Preflight( const SignalProperties& Input,
 
   if( Parameter( "VisualizeSource" ) == 1 )
   {
-    int SampleBlockSize = Parameter( "SampleBlockSize" ),
-        VisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+    int SampleBlockSize = Parameter( "SampleBlockSize" );
     PreflightCondition( SampleBlockSize > 0 );
-    if( VisualizeSourceDecimation <= 0 )
-      bcierr << "The VisualizationSourceDecimation parameter must be greater 0"
-             << endl;
-    else if( SampleBlockSize % VisualizeSourceDecimation != 0 )
-      bcierr << "The VisualizationSourceDecimation parameter "
-             << "(now " << VisualizeSourceDecimation << ") "
-             << "must be a divider of the sample block size "
-             << "(now " << SampleBlockSize << ")"
-             << endl;
+
+    if( Parameter( "VisualizeSourceDecimation" ) != string( "auto" ) )
+    {
+      int VisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+      if( VisualizeSourceDecimation <= 0 )
+        bcierr << "The VisualizeSourceDecimation parameter must be greater 0"
+               << endl;
+      if( Parameter( "VisualizeSourceBufferSize" ) != string( "auto" ) )
+      {
+        int VisualizeSourceBufferSize = Parameter( "VisualizeSourceBufferSize" ),
+            effectiveSampleBlockSize = SampleBlockSize * VisualizeSourceBufferSize;
+        if( effectiveSampleBlockSize % VisualizeSourceDecimation != 0 )
+          bcierr << "The VisualizeSourceDecimation parameter "
+                 << "(now " << VisualizeSourceDecimation << ") "
+                 << "must be a divider of VisualizeSourceDecimation times sample block size "
+                 << "(now " << effectiveSampleBlockSize << ")"
+                 << endl;
+      }
+    }
+    if( Parameter( "VisualizeSourceBufferSize" ) != string( "auto" ) )
+    {
+      int VisualizeSourceBufferSize = Parameter( "VisualizeSourceBufferSize" );
+      if( VisualizeSourceBufferSize <= 0 )
+        bcierr << "The VisualizeSourceBufferSize parameter must be greater 0"
+               << endl;
+    }
     Parameter( "SourceMin" );
     Parameter( "SourceMax" );
+  }
+  else
+  {
+    Parameter( "VisualizeSourceDecimation" );
+    Parameter( "VisualizeSourceBufferSize" );
   }
 
   // Sub-filter preflight/signal properties.
@@ -271,14 +315,14 @@ DataIOFilter::Preflight( const SignalProperties& Input,
   Output.ElementUnit().SetOffset( 0 )
                       .SetGain( 1.0 / Parameter( "SamplingRate" ) )
                       .SetSymbol( "s" );
-  int numSamplesInDisplay = Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" );
+  double numSamplesInDisplay = Parameter( "VisualizeSourceTime" ) * Parameter( "SamplingRate" );
   Output.ElementUnit().SetRawMin( 0 )
                       .SetRawMax( numSamplesInDisplay - 1 );
   Output.ValueUnit().SetOffset( 0 )
                     .SetGain( 1e-6 )
                     .SetSymbol( "V" );
-  float rangeMin = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMin" ) ),
-        rangeMax = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMax" ) );
+  double rangeMin = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMin" ) ),
+         rangeMax = Output.ValueUnit().PhysicalToRaw( Parameter( "SourceMax" ) );
   Output.ValueUnit().SetRawMin( rangeMin )
                     .SetRawMax( rangeMax );
 }
@@ -314,37 +358,73 @@ DataIOFilter::Initialize( const SignalProperties& Input,
   // Configure visualizations.
   mVisualizeSource = ( Parameter( "VisualizeSource" ) == 1 );
 
-  mVisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+  if( Parameter( "VisualizeSourceBufferSize" ) == string( "auto" ) )
+  {
+    // Choose visualization buffer size for an update rate of 30Hz.
+    mVisualizeSourceBufferSize = static_cast<int>( ::floor( 1000.0 / mBlockDuration / 30.0 ) );
+    if( mVisualizeSourceBufferSize < 1 )
+      mVisualizeSourceBufferSize = 1;
+    bcidbg( 5 ) << "Choosing a VisualizeSourceBufferSize of "
+                << mVisualizeSourceBufferSize << endl;
+  }
+  else
+  {
+    mVisualizeSourceBufferSize = Parameter( "VisualizeSourceBufferSize" );
+  }
+  SignalProperties v = Output;
+  v.SetElements( mVisualizeSourceBufferSize * v.Elements() );
+  mVisSourceBuffer.SetProperties( v );
+
+  if( Parameter( "VisualizeSourceDecimation" ) == string( "auto" ) )
+  {
+    mVisualizeSourceDecimation = static_cast<int>( ::floor( Parameter( "SamplingRate" ) / 256.0 ) );
+    if( mVisualizeSourceDecimation < 1 )
+      mVisualizeSourceDecimation = 1;
+    int numSamplesBuffered = static_cast<int>( mVisualizeSourceBufferSize * Parameter( "SampleBlockSize" ) );
+    while( numSamplesBuffered % mVisualizeSourceDecimation )
+      --mVisualizeSourceDecimation;
+    bcidbg( 5 ) << "Choosing a VisualizeSourceDecimation value of "
+                << mVisualizeSourceDecimation << endl;
+  }
+  else
+  {
+    mVisualizeSourceDecimation = Parameter( "VisualizeSourceDecimation" );
+  }
+  mBlockCount = 0;
+
   SignalProperties d = Output;
+  int newElements = Output.Elements() * mVisualizeSourceBufferSize / mVisualizeSourceDecimation;
+  double trueDecimation = ( Output.Elements() * mVisualizeSourceBufferSize ) / newElements;
   d.SetName( "Source Signal" )
-   .SetElements( Output.Elements() / mVisualizeSourceDecimation )
+   .SetElements( newElements )
    .SetType( SignalType::float32 )
-   .ElementUnit().SetGain( Output.ElementUnit().Gain() * mVisualizeSourceDecimation )
-                 .SetRawMax( Output.ElementUnit().RawMax() / mVisualizeSourceDecimation );
+   .ElementUnit().SetGain( Output.ElementUnit().Gain() * trueDecimation )
+                 .SetRawMax( Output.ElementUnit().RawMax() / trueDecimation );
   mDecimatedSignal.SetProperties( d );
   if( mVisualizeSource )
     mSourceVis.Send( mDecimatedSignal.Properties() );
 
   mVisualizeTiming = ( Parameter( "VisualizeTiming" ) == 1 );
+
+  bool measureStimulus = ( Parameter( "SignalSourceIP" ) == Parameter( "ApplicationIP" ) );
+  SignalProperties p = mTimingSignal.Properties();
+  p.SetChannels( measureStimulus ? 3 : 2 );
+  p.SetName( "Timing" );
+  // Roundtrip values are in ms, and we want a range that is twice the value
+  // of what we expect for the second signal (the time between subsequent
+  // completions of the ADC's Process()).
+  p.ValueUnit().SetRawMin( 0 ).SetRawMax( 2 * mBlockDuration )
+               .SetOffset( 0 ).SetGain( 1e-3 ).SetSymbol( "s" );
+  p.ChannelLabels()[ 0 ] = ":Block";
+  p.ChannelLabels()[ 1 ] = ":Roundtrip";
+  if( measureStimulus )
+    p.ChannelLabels()[ 2 ] = ":Stimulus";
+  p.ElementUnit().SetRawMin( 0 ).SetRawMax( 127 )
+                 .SetOffset( 0 ).SetGain( mBlockDuration / 1e3 ).SetSymbol( "s" );
+  mTimingSignal.SetProperties( p );
+
   if( mVisualizeTiming )
   {
-    bool measureStimulus = ( Parameter( "SignalSourceIP" ) == Parameter( "ApplicationIP" ) );
-    float blockDuration = Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
-    SignalProperties p = mTimingSignal.Properties();
-    p.SetChannels( measureStimulus ? 3 : 2 );
-    p.SetName( "Timing" );
-    // Roundtrip values are in ms, and we want a range that is twice the value
-    // of what we expect for the second signal (the time between subsequent
-    // completions of the ADC's Process()).
-    p.ValueUnit().SetRawMin( 0 ).SetRawMax( 2000 * blockDuration )
-                 .SetOffset( 0 ).SetGain( 1e-3 ).SetSymbol( "s" );
-    p.ChannelLabels()[ 0 ] = ":Block";
-    p.ChannelLabels()[ 1 ] = ":Roundtrip";
-    if( measureStimulus )
-      p.ChannelLabels()[ 2 ] = ":Stimulus";
-    p.ElementUnit().SetRawMin( 0 ).SetRawMax( 127 )
-                   .SetOffset( 0 ).SetGain( blockDuration ).SetSymbol( "s" );
-    mTimingSignal.SetProperties( p );
     mTimingVis.Send( mTimingSignal.Properties() );
 
     RGBColor colors[] = { RGBColor::White, RGBColor::LtGray, RGBColor::DkGray, ColorList::End };
@@ -367,6 +447,11 @@ DataIOFilter::StartRun()
   State( "SourceTime" ) = now;
   State( "StimulusTime" ) = now;
   State( "Recording" ) = 1;
+
+  // Reset timing evaluation buffer.
+  mTimingBuffer.resize( 0 );
+  mTimingBuffer.resize( static_cast<size_t>( MeasurementUnits::ReadAsTime( "10s" ) ), 0 );
+  mTimingBufferCursor = 0;
 }
 
 
@@ -407,16 +492,17 @@ DataIOFilter::Process( const GenericSignal& Input,
     GenericSignal sourceFilterInput( mInputBuffer );
     mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
   }
+
+  PrecisionTime sourceTime = static_cast<short>( State( "SourceTime" ) ),
+                stimulusTime = static_cast<short>( State( "StimulusTime" ) );
+  mTimingSignal( 0, 0 ) = now - sourceTime; // sample block duration
+  mTimingSignal( 1, 0 ) = functionEntry - sourceTime; // roundtrip
+  if( mTimingSignal.Channels() > 2 )
+    mTimingSignal( 2, 0 ) = stimulusTime - sourceTime; // source-to-stimulus delay
+  EvaluateTiming( mTimingSignal( 1, 0 ) );
   if( visualizeTiming )
-  {
-    PrecisionTime sourceTime = static_cast<short>( State( "SourceTime" ) ),
-                  stimulusTime = static_cast<short>( State( "StimulusTime" ) );
-    mTimingSignal( 0, 0 ) = now - sourceTime; // sample block duration
-    mTimingSignal( 1, 0 ) = functionEntry - sourceTime; // roundtrip
-    if( mTimingSignal.Channels() > 2 )
-      mTimingSignal( 2, 0 ) = stimulusTime - sourceTime; // source-to-stimulus delay
     mTimingVis.Send( mTimingSignal );
-  }
+
   ResetStates( State::EventKind );
   State( "SourceTime" ) = now;
   ProcessBCIEvents();
@@ -428,9 +514,13 @@ DataIOFilter::Process( const GenericSignal& Input,
     for( int j = 0; j < Output.Elements(); ++j )
       Output( i, j )  = ( mInputBuffer( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
 
-  if( mVisualizeSource )
+  CopyBlock( Output, mVisSourceBuffer, mBlockCount++ );
+  bool doSend = ( mBlockCount == mVisualizeSourceBufferSize );
+  if( doSend )
+    mBlockCount = 0;
+  if( mVisualizeSource && doSend )
   {
-    Downsample( Output, mDecimatedSignal );
+    Downsample( mVisSourceBuffer, mDecimatedSignal );
     mSourceVis.Send( mDecimatedSignal );
   }
 }
@@ -445,14 +535,18 @@ DataIOFilter::Resting()
     GenericSignal sourceFilterInput( mInputBuffer );
     mpSourceFilter->CallProcess( sourceFilterInput, mInputBuffer );
   }
-  if( mVisualizeSource )
+
+  for( int i = 0; i < mInputBuffer.Channels(); ++i )
+    for( int j = 0; j < mInputBuffer.Elements(); ++j )
+      mInputBuffer( i, j ) = ( mInputBuffer( i, j ) - mSourceChOffset[ i ] ) * mSourceChGain[ i ];
+
+  CopyBlock( mInputBuffer, mVisSourceBuffer, mBlockCount++ );
+  bool doSend = ( mBlockCount == mVisualizeSourceBufferSize );
+  if( doSend )
+    mBlockCount = 0;
+  if( mVisualizeSource && doSend )
   {
-    Downsample( mInputBuffer, mDecimatedSignal );
-    for( int i = 0; i < mDecimatedSignal.Channels(); ++i )
-      for( int j = 0; j < mDecimatedSignal.Elements(); ++j )
-        mDecimatedSignal( i, j )
-          = ( mDecimatedSignal( i, j ) - mSourceChOffset[ i ] )
-          * mSourceChGain[ i ];
+    Downsample( mVisSourceBuffer, mDecimatedSignal );
     mSourceVis.Send( mDecimatedSignal );
   }
 }
@@ -482,17 +576,57 @@ DataIOFilter::Downsample( const GenericSignal& Input, GenericSignal& Output )
 }
 
 void
+DataIOFilter::CopyBlock( const GenericSignal& Input, GenericSignal& Output, int inBlock )
+{
+  int blockSize = Input.Elements();
+  for( int ch = 0; ch < Input.Channels(); ++ch )
+    for( int sample = 0; sample < Input.Elements(); ++sample )
+      Output( ch, sample + blockSize * inBlock ) = Input( ch, sample );
+}
+
+void
+DataIOFilter::EvaluateTiming( double inRoundtrip )
+{
+  if( !mTimingBuffer.empty() )
+  {
+    mTimingBuffer[ mTimingBufferCursor++ ] = inRoundtrip;
+    if( mTimingBufferCursor == mTimingBuffer.size() / 2 || mTimingBufferCursor == mTimingBuffer.size() )
+    {
+      double avgRoundtrip = accumulate( mTimingBuffer.begin(), mTimingBuffer.end(), 0.0 ) / mTimingBuffer.size();
+      avgRoundtrip = avgRoundtrip / mBlockDuration;
+      if( avgRoundtrip >= 1.1 )
+        bcierr << "Roundtrip time consistently exceeds block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+      else if( avgRoundtrip >= 1.0 )
+        bciout << "Roundtrip time exceeds block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+      else if( avgRoundtrip >= 0.75 )
+        bciout << "Roundtrip time approaches block duration (currently "
+               << avgRoundtrip * 100
+               << "%)"
+               << endl;
+    }
+    mTimingBufferCursor %= mTimingBuffer.size();
+  }
+}
+
+void
 DataIOFilter::ProcessBCIEvents()
 {
   // When translating event time stamps into sample positions, we assume a block's
   // source time stamp to match the subsequent block's first sample.
-  PrecisionTime sourceTime = Statevector->StateValue( "SourceTime" );
+  PrecisionTime sourceTime = static_cast<PrecisionTime::NumType>( Statevector->StateValue( "SourceTime" ) );
 
   while( !mBCIEvents.IsEmpty()
          && PrecisionTime::SignedDiff( mBCIEvents.FrontTimeStamp(), sourceTime ) <= 0 )
   {
-    int offset = ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) )
-                 * mSampleBlockSize ) / mBlockDuration;
+    int offset = static_cast<int>( 
+        ( ( mBlockDuration - ( sourceTime - mBCIEvents.FrontTimeStamp() + 1 ) ) * mSampleBlockSize ) / mBlockDuration
+    );
     istringstream iss( mBCIEvents.FrontDescriptor() );
     string name;
     iss >> name;

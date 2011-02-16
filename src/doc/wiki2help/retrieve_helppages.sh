@@ -9,7 +9,7 @@
 #   Execute this script from the directory where it is located 
 #   in the BCI2000 source tree.
 #
-# (C) 2000-2008, BCI2000 Project
+# (C) 2000-2011, BCI2000 Project
 # http://www.bci2000.org
 #####################################################################
 

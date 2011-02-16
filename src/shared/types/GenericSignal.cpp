@@ -4,8 +4,25 @@
 // Description: GenericSignal is the BCI2000 type representing filter input and
 //              output data.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -19,6 +36,8 @@
 #include <limits>
 #include <cmath>
 #include <cassert>
+
+#undef DEBUG_GENERIC_SIGNAL
 
 using namespace std;
 
@@ -58,7 +77,7 @@ GenericSignal::SetValue( size_t inChannel, size_t inElement, ValueType inValue )
 const GenericSignal::ValueType&
 GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
 {
-#ifdef _DEBUG
+#if DEBUG_GENERIC_SIGNAL
    return mValues.at( inChannel ).at( inElement );
 #else
    return mValues[ inChannel ][ inElement ];
@@ -68,7 +87,7 @@ GenericSignal::operator() ( size_t inChannel, size_t inElement ) const
 GenericSignal::ValueType&
 GenericSignal::operator() ( size_t inChannel, size_t inElement )
 {
-#ifdef _DEBUG
+#if DEBUG_GENERIC_SIGNAL
    return mValues.at( inChannel ).at( inElement );
 #else
    return mValues[ inChannel ][ inElement ];
@@ -248,7 +267,7 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::int16>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  int value = Value( inChannel, inElement );
+  int value = static_cast<int>( Value( inChannel, inElement ) );
   os.put( value & 0xff ).put( value >> 8 );
 }
 
@@ -265,7 +284,7 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::int32>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  signed int value = Value( inChannel, inElement );
+  signed int value = static_cast<signed int>( Value( inChannel, inElement ) );
   PutLittleEndian( os, value );
 }
 
@@ -282,7 +301,7 @@ template<>
 void
 GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
-  float value = Value( inChannel, inElement );
+  GenericSignal::ValueType value = Value( inChannel, inElement );
   int mantissa,
       exponent;
   if( value == 0.0 )
@@ -292,8 +311,8 @@ GenericSignal::PutValueBinary<SignalType::float24>( std::ostream& os, size_t inC
   }
   else
   {
-    exponent = ::ceil( ::log10( ::fabs( value ) ) );
-    mantissa = ( value / ::pow( 10.0, exponent ) ) * 10000;
+    exponent = static_cast<int>( ::ceil( ::log10( ::fabs( value ) ) ) );
+    mantissa = static_cast<int>( value / ::pow( 10.0, exponent ) ) * 10000;
     exponent -= 4;
   }
   os.put( mantissa & 0xff ).put( mantissa >> 8 );
@@ -315,7 +334,7 @@ void
 GenericSignal::PutValueBinary<SignalType::float32>( std::ostream& os, size_t inChannel, size_t inElement ) const
 {
   assert( numeric_limits<float>::is_iec559 && sizeof( unsigned int ) == sizeof( float ) );
-  float floatvalue = Value( inChannel, inElement );
+  float floatvalue = static_cast<float>( Value( inChannel, inElement ) );
   unsigned int value = *reinterpret_cast<const uint32*>( &floatvalue );
   PutLittleEndian( os, value );
 }

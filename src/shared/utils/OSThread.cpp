@@ -6,8 +6,25 @@
 //   OSThread, and put your own functionality into its
 //   Execute() function.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -16,19 +33,20 @@
 #include "BCIError.h"
 #include "OSError.h"
 
+#if !_WIN32
+# include <unistd.h>
+#endif // !_WIN32
+
 using namespace std;
 
-OSThread::OSThread( bool inCreateSuspended )
+#if _WIN32
+
+OSThread::OSThread()
 : mHandle( NULL ),
   mThreadID( 0 ),
+  mResult( 0 ),
   mTerminating( false )
 {
-  int creationFlags = 0;
-  if( inCreateSuspended )
-    creationFlags |= CREATE_SUSPENDED;
-  mHandle = ::CreateThread( NULL, 0, OSThread::StartThread, this, creationFlags, &mThreadID );
-  if( mHandle == NULL )
-    bcierr << OSError().Message() << endl;
 }
 
 OSThread::~OSThread()
@@ -38,17 +56,11 @@ OSThread::~OSThread()
 }
 
 void
-OSThread::Suspend()
+OSThread::Start()
 {
-  if( mHandle != NULL )
-    ::SuspendThread( mHandle );
-}
-
-void
-OSThread::Resume()
-{
-  if( mHandle != NULL )
-    ::ResumeThread( mHandle );
+  mHandle = ::CreateThread( NULL, 0, OSThread::StartThread, this, 0, &mThreadID );
+  if( mHandle == NULL )
+    bcierr << OSError().Message() << endl;
 }
 
 void
@@ -59,6 +71,18 @@ OSThread::Terminate()
     while( !::PostThreadMessage( mThreadID, WM_QUIT, 0, 0 )
             && ::GetLastError() != ERROR_INVALID_THREAD_ID )
       ::Sleep( 0 );
+}
+
+bool 
+OSThread::IsTerminated() const
+{
+  return mHandle == NULL;
+}
+
+void
+OSThread::Sleep( int inMs )
+{
+  ::Sleep( inMs );
 }
 
 int
@@ -74,6 +98,55 @@ OSThread::Execute()
   return result;
 }
 
+#else // _WIN32
+
+OSThread::OSThread()
+: mTerminated( false ),
+  mResult( 0 ),
+  mTerminating( false )
+{
+}
+
+OSThread::~OSThread()
+{
+  if( !mTerminated )
+	  ::pthread_kill( mThread, SIGHUP );
+}
+
+void
+OSThread::Start()
+{
+  ::pthread_create( &mThread, NULL, OSThread::StartThread, this );
+}
+
+void
+OSThread::Terminate()
+{
+  mTerminating = true;
+}
+
+bool 
+OSThread::IsTerminated() const
+{
+  return mTerminated;
+}
+
+void
+OSThread::Sleep( int inMs )
+{
+  ::usleep( inMs * 1000 );
+}
+
+int
+OSThread::Execute()
+{ // No message handling in pthreads, so Execute() defaults to empty.
+  return 0;
+}
+
+#endif // _WIN32
+
+
+#if _WIN32
 
 DWORD WINAPI
 OSThread::StartThread( void* inInstance )
@@ -85,3 +158,15 @@ OSThread::StartThread( void* inInstance )
   return this_->mResult;
 }
 
+#else // _WIN32
+
+void*
+OSThread::StartThread( void* inInstance )
+{
+  OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
+  this_->mResult = this_->Execute();
+  this_->mTerminated = true;
+  return &this_->mResult;
+}
+
+#endif // _WIN32

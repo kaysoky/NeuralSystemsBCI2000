@@ -132,12 +132,11 @@ PYTHON_LINK(    PyObject*       ,   PyTuple_GetItem              , (PyObject*,in
 PYTHON_LINK(    int             ,   PyTuple_Size                 , (PyObject*)                       )
 PYTHON_LINK(    void            ,   Py_Initialize                , (void)                            )
 
-PYTHON_MACRO(   void            ,   Py_DECREF                    , (PyObject*)                       )
-PYTHON_MACRO(   void            ,   PyList_SET_ITEM              , (PyObject*,int,PyObject*)         )
-PYTHON_MACRO(   double*         ,   PyArray_DATA                 , (PyArrayObject*)                  )
-PYTHON_MACRO(   size_t          ,   PyArray_DIM                  , (PyArrayObject*,int)              )
-PYTHON_MACRO(   size_t          ,   PyArray_STRIDE               , (PyArrayObject*,int)              )
-
+PYTHON_MACRO(   void            ,   Py_DECREF                    , (void*)                           )
+PYTHON_MACRO(   void            ,   PyList_SET_ITEM              , (void*,int,void*)                 )
+PYTHON_MACRO(   double*         ,   PyArray_DATA                 , (void*)                           )
+PYTHON_MACRO(   size_t          ,   PyArray_DIM                  , (void*,int)                       )
+PYTHON_MACRO(   size_t          ,   PyArray_STRIDE               , (void*,int)                       )
 
 #if   PYTHON_LINK_HEADER_MODE == 1
 ////////////////////////////////////////////////////////////

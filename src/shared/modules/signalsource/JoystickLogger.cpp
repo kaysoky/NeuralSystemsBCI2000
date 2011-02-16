@@ -21,8 +21,25 @@
 //   JoystickButtons3
 //   JoystickButtons4
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 /////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -98,11 +115,10 @@ void JoystickLogger::Preflight() const
 {
   JOYINFO      joyinfo;
   JOYCAPS      joycaps;
-  MMRESULT     ret              = -1;
   bool         joystickenable   = false;
   unsigned int nNumFound        = 0;
 
-  joystickenable = ( ( int )OptionalParameter( "LogJoystick" ) != 0 );
+  joystickenable = ( OptionalParameter( "LogJoystick" ) != 0 );
   if( joystickenable )
   {
     nNumFound = ::joyGetNumDevs();
@@ -110,7 +126,7 @@ void JoystickLogger::Preflight() const
       bcierr << "No joystick driver installed" << endl;
     else
     {
-      ret = ::joyGetPos( JOYSTICKID1, &joyinfo );
+      MMRESULT ret = ::joyGetPos( JOYSTICKID1, &joyinfo );
       if (ret != JOYERR_NOERROR)
       {
         switch( ret )
@@ -203,8 +219,7 @@ void JoystickLogger::Halt()
 // Returns:    N/A
 // **************************************************************************
 JoystickLogger::JoystickThread::JoystickThread( const JOYCAPS& inJoycaps )
-: OSThread( false ),
-  m_joycaps( inJoycaps ),
+: m_joycaps( inJoycaps ),
   m_prevXPos( -1 ),
   m_prevYPos( -1 ),
   m_prevZPos( -1 ),
@@ -213,6 +228,7 @@ JoystickLogger::JoystickThread::JoystickThread( const JOYCAPS& inJoycaps )
   m_prevButton3( -1 ),
   m_prevButton4( -1 )
 {
+  OSThread::Start();
 }
 
 // **************************************************************************
@@ -235,8 +251,8 @@ int JoystickLogger::JoystickThread::Execute()
 {
   while( !IsTerminating() )
   {
-    unsigned int xPos, yPos, zPos,
-                 button1, button2, button3, button4;
+    int xPos, yPos, zPos,
+        button1, button2, button3, button4;
     GetJoyPos( xPos, yPos, zPos, button1, button2, button3, button4 );
 
     if( xPos != m_prevXPos )
@@ -269,16 +285,16 @@ int JoystickLogger::JoystickThread::Execute()
 
 void
 JoystickLogger::JoystickThread::GetJoyPos(
-                    unsigned int& outX, unsigned int& outY, unsigned int& outZ,
-                    unsigned int& outB1, unsigned int& outB2,
-                    unsigned int& outB3, unsigned int& outB4 )
+                    int& outX, int& outY, int& outZ,
+                    int& outB1, int& outB2,
+                    int& outB3, int& outB4 )
 {
   JOYINFO joyinfo;
   if( JOYERR_NOERROR == ::joyGetPos( JOYSTICKID1, &joyinfo ) )
   {
-    outX = ((float)(joyinfo.wXpos - m_joycaps.wXmin) / (float)(m_joycaps.wXmax - m_joycaps.wXmin) * MAXJOYSTICK);
-    outY = ((float)(joyinfo.wYpos - m_joycaps.wYmin) / (float)(m_joycaps.wYmax - m_joycaps.wYmin) * MAXJOYSTICK);
-    outZ = ((float)(joyinfo.wZpos - m_joycaps.wZmin) / (float)(m_joycaps.wZmax - m_joycaps.wZmin) * MAXJOYSTICK);
+    outX = ( (joyinfo.wXpos - m_joycaps.wXmin) * MAXJOYSTICK ) / (m_joycaps.wXmax - m_joycaps.wXmin);
+    outY = ( (joyinfo.wYpos - m_joycaps.wYmin) * MAXJOYSTICK ) / (m_joycaps.wYmax - m_joycaps.wYmin);
+    outZ = ( (joyinfo.wZpos - m_joycaps.wZmin) * MAXJOYSTICK ) / (m_joycaps.wZmax - m_joycaps.wZmin);
     outB1 = (joyinfo.wButtons & JOY_BUTTON1) == JOY_BUTTON1 ? 1 : 0;
     outB2 = (joyinfo.wButtons & JOY_BUTTON2) == JOY_BUTTON2 ? 1 : 0;
     outB3 = (joyinfo.wButtons & JOY_BUTTON3) == JOY_BUTTON3 ? 1 : 0;

@@ -4,8 +4,25 @@
 // Description: A class that represents properties of numeric types present
 //   in GenericSignals.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -54,7 +71,7 @@ static const int numSignalTypes = sizeof( SignalTypeProperties ) / sizeof( *Sign
 const char*
 SignalType::Name() const
 {
-  for( size_t i = 0; i < numSignalTypes; ++i )
+  for( int i = 0; i < numSignalTypes; ++i )
     if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].name;
   return "n/a";
@@ -63,7 +80,7 @@ SignalType::Name() const
 size_t
 SignalType::Size() const
 {
-  for( size_t i = 0; i < numSignalTypes; ++i )
+  for( int i = 0; i < numSignalTypes; ++i )
     if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].size;
   return sizeof( double );
@@ -72,7 +89,7 @@ SignalType::Size() const
 double
 SignalType::Min() const
 {
-  for( size_t i = 0; i < numSignalTypes; ++i )
+  for( int i = 0; i < numSignalTypes; ++i )
     if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].min;
   return -numeric_limits<double>::max();
@@ -81,7 +98,7 @@ SignalType::Min() const
 double
 SignalType::Max() const
 {
-  for( size_t i = 0; i < numSignalTypes; ++i )
+  for( int i = 0; i < numSignalTypes; ++i )
     if( SignalTypeProperties[ i ].type == mType )
       return SignalTypeProperties[ i ].max;
   return numeric_limits<double>::max();
@@ -115,7 +132,7 @@ SignalType::ReadFromStream( istream& is )
   mType = none;
   string s;
   if( is >> s )
-    for( size_t i = 0; mType == none && i < numSignalTypes; ++i )
+    for( int i = 0; mType == none && i < numSignalTypes; ++i )
       if( s == SignalTypeProperties[ i ].name )
         mType = SignalTypeProperties[ i ].type;
   if( mType == none )

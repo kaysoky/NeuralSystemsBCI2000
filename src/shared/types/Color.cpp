@@ -4,8 +4,25 @@
 // Description: A class that centralizes color types, conversion routines,
 //              and formatted/unformatted i/o.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -23,10 +40,10 @@ using namespace std;
 RGBColor
 RGBColor::operator*( float f ) const
 {
-  float r = f * R(),
-        g = f * G(),
-        b = f * B();
-  return RGBColor( min( r, float( 0xff ) ), min( g, float( 0xff ) ), min( b, float( 0xff ) ) );
+  int r = static_cast<int>( f * R() ),
+      g = static_cast<int>( f * G() ),
+      b = static_cast<int>( f * B() );
+  return RGBColor( min( r, 0xff ), min( g, 0xff ), min( b, 0xff ) );
 }
 
 ostream&
@@ -61,7 +78,7 @@ RGBColor::ToWinColor() const
 RGBColor
 RGBColor::FromWinColor( int c )
 {
-  if( c == RGBColor::InvalidColor )
+  if( c == static_cast<int>( RGBColor::InvalidColor ) )
     return RGBColor::NullColor;
     
   int r = c & 0xff,
@@ -82,16 +99,16 @@ RGBColor::FromHSV( float H, float S, float V )
 {
   // According to Foley and VanDam.
   // All input components range from 0 to 1 - EPS.
-  float h = 6.0 * ::fmod( H, 1.0f );
+  float h = 6.0f * ::fmod( H, 1.0f );
   if( h < 0.0 )
     h += 6.0;
-  int i = ::floor( h );
+  int i = static_cast<int>( ::floor( h ) );
   float f = h - i;
   if( !( i % 2 ) )
-    f = 1.0 - f;
-  unsigned int m = ( V * ( 1.0 - S ) ) * 0x100,
-               n = ( V * ( 1.0 - S * f ) ) * 0x100,
-               v = V * 0x100;
+    f = 1.0f - f;
+  int m = static_cast<int>( ( V * ( 1.0 - S ) ) * 0x100 ),
+      n = static_cast<int>( ( V * ( 1.0 - S * f ) ) * 0x100 ),
+      v = static_cast<int>( V * 0x100 );
   if( m > 0xff )
     m = 0xff;
   if( n > 0xff )
@@ -128,7 +145,7 @@ RGBColor::FromHSV( float H, float S, float V )
 ColorList::ColorList( const RGBColor* values )
 {
   const RGBColor* c = values;
-  while( *c != End )
+  while( *c != static_cast<RGBColor>( End ) )
     push_back( *c++ );
 }
 

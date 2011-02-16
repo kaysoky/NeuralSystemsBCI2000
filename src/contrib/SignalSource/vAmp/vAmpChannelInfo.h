@@ -1,3 +1,23 @@
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 //---------------------------------------------------------------------------
 
 #ifndef vAmpChannelInfoH
@@ -6,6 +26,8 @@
 
 #include <windows.h>
 #include <string>
+# include <math.h>
+
 #include "FirstAmp.h"
 
 #define DEVICE_DIGITMAX				9	// 9 bit trigger port.
@@ -23,14 +45,14 @@ class CChannelInfo
 	//; Represents a single channel info.
 	{
 	public :
-		char	nType;			// Channel type.
-		int		nPhysIdx;		// Physical channel index.
+		char	    nType;			// Channel type.
+		int		    nPhysIdx;		// Physical channel index.
 		std::string szLabel;		// Label of channel.
-		double	dResolution;	// Resolution [µV] for all analog channels.
-		bool	bUsrUnit;		// User unit used if TRUE otherwise FALSE.
+		double	    dResolution;	// Resolution [µV] for all analog channels.
+		bool	    bUsrUnit;		// User unit used if TRUE otherwise FALSE.
 		std::string szUnitName;		// Unit name.
-		float	fGradient;		// Slope of equation for usr unit (e.g. [mV/C]).
-		float	fOffset;		// Offset of equation (constant) in [mV].
+		float	    fGradient;		// Slope of equation for usr unit (e.g. [mV/C]).
+		float	    fOffset;		// Offset of equation (constant) in [mV].
 
 		CChannelInfo();
 			//; Constructor.
@@ -48,11 +70,11 @@ class CChannelInfo
 		{
 			// Conversion only allowed for AUX.
 			if (nType != DEVICE_CHAN_TYPE_AUX || !bUsrUnit) return fRawData;
-			if (abs(fGradient) < 1e-6) fGradient = 1; // default.
+			if (fabs(fGradient) < 1e-6) fGradient = 1; // default.
 			// [µV] => [mV] because of gradient.
 			return float(((fRawData * dResolution * 1e-3) - fOffset) / fGradient);
 		}
 	};
 //---------------------------------------------------------------------------
-#endif
+#endif // vAmpChannelInfoH
 

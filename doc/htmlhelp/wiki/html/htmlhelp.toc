@@ -40,6 +40,7 @@ BCI2000_Binaries.html
 2 BCPy2000_Contribution BCPy2000 Contribution
 2 Version_History Version History
 3 Version_2_Builds Version 2 Builds
+4 November_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_101124.exe" rel="nofollow">November 2010 Build</a>
 4 August_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100805.exe" rel="nofollow">August 2010 Build</a>
 4 June_2010_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100623.exe" rel="nofollow">June 2010 Build</a>
 4 April_2010_Version_2.1_Release_Build <a href="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" class='external text' title="http://bci2000.org/downloads/bin/BCI2000Setup_100401.exe" rel="nofollow">April 2010 Version 2.1 Release Build</a>
@@ -820,7 +821,7 @@ Main_Page.html
 2 User_Reference_Manual User Reference Manual
 2 Technical_Reference Technical Reference
 2 Programming_Reference Programming Reference
-2 Contributions Contributions
+2 System_Features System Features
 2 Additional_Information Additional Information
 2 BCI2000_Publications BCI2000 Publications
 
@@ -838,6 +839,14 @@ Mu_Rhythm_Off-line_Analysis_Tutorial.html
 2 Analyzing_the_Screening  Analyzing the Screening 
 2 Conclusions Conclusions
 2 Troubleshooting Troubleshooting
+
+Obtaining_or_creating_a_User_Account.html
+2 Do-it_yourself_Account_Management Do-it yourself Account Management
+3 Creating_a_new_account Creating a new account
+3 .22Upgrading.22_bciro "Upgrading" bciro
+2 Restrictions Restrictions
+3 Default_user_rights Default user rights
+3 Resetting.2Frecovering_a_password Resetting/recovering a password
 
 P300_GUI_Guide.html
 2 Introduction Introduction
@@ -877,16 +886,15 @@ Programming_FAQ.html
 2 Writing_Filter_Components Writing Filter Components
 
 Programming_Howto%253ABuilding_BCI2000.html
-2 Why_to_build  Why to build 
-2 Tools_required  Tools required 
-2 How_to_build How to build
-3 Building_BCI2000_from_the_command_line Building BCI2000 from the command line
-3 Building_BCI2000_using_the_Borland_C.2B.2B_Builder_6_IDE Building BCI2000 using the Borland C++ Builder 6 IDE
-3 Starting_up_BCI2000 Starting up BCI2000
-3 Compiling_BCI2000_with_Borland_C.2B.2B_Builder_.28BCB.29_2006.2F2007.2F2009 Compiling BCI2000 with Borland C++ Builder (BCB) 2006/2007/2009
-3 Building_Contributions Building Contributions
-4 From_the_command_line From the command line
-4 From_the_IDE From the IDE
+2 Introduction  Introduction 
+2 Supported_Environments  Supported Environments 
+2 How_To_Build_Using_CMake  How To Build Using CMake 
+2 Building_against_a_Qt_distribution_outside_the_BCI2000_source_tree  Building against a Qt distribution outside the BCI2000 source tree 
+2 How_To_Test  How To Test 
+2 Known_Issues  Known Issues 
+2 Conclusions  Conclusions 
+2 Platforms_tested_successfully_so_far  Platforms tested successfully so far 
+2 See_also See also
 
 Programming_Howto%253ASVN_Client_Setup.html
 2 Setting_up_TortoiseSVN_to_access_the_BCI2000_code_repository  Setting up TortoiseSVN to access the BCI2000 code repository 
@@ -1091,6 +1099,7 @@ Programming_Reference%253ABuild_System.html
 2 How_To_Test  How To Test 
 2 Known_Issues  Known Issues 
 2 Conclusions  Conclusions 
+2 Platforms_tested_successfully_so_far  Platforms tested successfully so far 
 2 See_also See also
 
 Programming_Reference%253ABuilding_BCI2000_for_Win64.html
@@ -1545,15 +1554,15 @@ Programming_Reference%253AOSThread_Class.html
 2 Location Location
 2 Synopsis Synopsis
 2 Methods Methods
-3 OSThread.28bool_createSuspended.3Dfalse.29 OSThread(bool createSuspended=false)
+3 OSThread.28.29 OSThread()
 3 .7EOSThread.28.29 ~OSThread()
-3 Suspend.28.29 Suspend()
-3 Resume.28.29 Resume()
+3 Start.28.29 Start()
 3 Terminate.28.29 Terminate()
+2 Static_Methods Static Methods
+3 Sleep.28_int_ms_.29 Sleep( int ms )
 2 Events Events
 3 int_Execute int Execute
 2 Properties Properties
-3 int_ID_.28r.29 int ID (r)
 3 bool_IsTerminating_.28r.29 bool IsTerminating (r)
 3 bool_IsTerminated_.28r.29 bool IsTerminated (r)
 3 int_Result_.28r.29 int Result (r)
@@ -2164,6 +2173,22 @@ Programming_Tutorial%253AWorking_with_the_FieldTrip_buffer.html
 
 Special%253AAllpages.html
 
+System_Features.html
+2 Data_Acquisition_Systems Data Acquisition Systems
+3 Hardware_Support Hardware Support
+3 Support_Through_User_Contributions Support Through User Contributions
+4 A.2FD_Converter_Boards A/D Converter Boards
+4 Amplifiers.2FDigitizers Amplifiers/Digitizers
+4 EEG_Systems EEG Systems
+4 MEG_Systems MEG Systems
+3 Miscellaneous Miscellaneous
+2 Brain_Signals Brain Signals
+2 Paradigms Paradigms
+3 Feedback_Applications Feedback Applications
+3 User_Contributions User Contributions
+3 User_Interface_Devices User Interface Devices
+2 See_also See also
+
 Technical_Reference%253AApp_Connector.html
 2 Introduction Introduction
 3 Scope Scope
@@ -2231,6 +2256,69 @@ Technical_Reference%253ACore_Modules.html
 2 Application_Module Application Module
 2 See_also See also
 
+Technical_Reference%253AOperator_Library.html
+2 System_State System State
+3 BCI_StateUnavailable BCI_StateUnavailable
+3 BCI_StateStartup BCI_StateStartup
+3 BCI_StateInitialization BCI_StateInitialization
+3 BCI_StateResting BCI_StateResting
+3 BCI_StateSuspended BCI_StateSuspended
+3 BCI_StateParamsModified BCI_StateParamsModified
+3 BCI_StateRunning BCI_StateRunning
+3 BCI_StateTermination BCI_StateTermination
+3 BCI_StateBusy BCI_StateBusy
+3 int_BCI_GetStateOfOperation.28.29 int BCI_GetStateOfOperation()
+3 int_BCI_SetConfig.28.29 int BCI_SetConfig()
+3 int_BCI_StartRun.28.29 int BCI_StartRun()
+3 int_BCI_StopRun.28.29 int BCI_StopRun()
+2 Parameterization Parameterization
+3 int_BCI_PutParameter.28_const_char.2A_parameterLine_.29 int BCI_PutParameter( const char* parameterLine )
+3 const_char.2A_BCI_GetParameter.28_long_index_.29 const char* BCI_GetParameter( long index )
+3 int_BCI_PutState.28_const_char.2A_stateLine_.29 int BCI_PutState( const char* stateLine )
+3 const_char.2A_BCI_GetState.28_long_index_.29 const char* BCI_GetState( long index )
+3 int_BCI_SetStateValue.28_const_char.2A_stateName.2C_long_value_.29 int BCI_SetStateValue( const char* stateName, long value )
+3 int_BCI_PutVisProperty.28_const_char.2A_visID.2C_int_cfgID.2C_const_char.2A_value_.29 int BCI_PutVisProperty( const char* visID, int cfgID, const char* value )
+3 const_char.2A_BCI_GetVisProperty.28_const_char.2A_visID.2C_int_cfgID_.29 const char* BCI_GetVisProperty( const char* visID, int cfgID )
+2 Callbacks Callbacks
+3 BCI_OnSystemStateChange.28_void.2A_refdata_.29  BCI_OnSystemStateChange( void* refdata )
+3 BCI_OnCoreInput.28_void.2A_refdata_.29 BCI_OnCoreInput( void* refdata )
+3 BCI_OnConnect.28_void.2A_refdata_.29 BCI_OnConnect( void* refdata )
+3 BCI_OnSetConfig.28_void.2A_refdata_.29 BCI_OnSetConfig( void* refdata )
+3 BCI_OnStart.28_void.2A_refdata_.29 BCI_OnStart( void* refdata )
+3 BCI_OnSuspend.28_void.2A_refdata_.29 BCI_OnSuspend( void* refdata )
+3 BCI_OnResume.28_void.2A_refdata_.29 BCI_OnResume( void* refdata )
+3 BCI_OnShutdown.28_void.2A_refdata_.29 BCI_OnShutdown( void* refdata )
+3 BCI_OnLogMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnLogMessage( void* refdata, const char* msg )
+3 BCI_OnWarningMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnWarningMessage( void* refdata, const char* msg )
+3 BCI_OnErrorMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnErrorMessage( void* refdata, const char* msg )
+3 BCI_OnDebugMessage.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnDebugMessage( void* refdata, const char* msg )
+3 BCI_OnParameter.28_void.2A_refdata.2C_const_char.2A_parameterline_.29 BCI_OnParameter( void* refdata, const char* parameterline )
+3 BCI_OnState.28_void.2A_refdata.2C_const_char.2A_stateline_.29 BCI_OnState( void* refdata, const char* stateline )
+3 BCI_OnVisPropertyMessage.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisPropertyMessage( void* refdata, const char* name, int cfgID, const char* value )
+3 BCI_OnVisProperty.28_void.2A_refdata.2C_const_char.2A_name.2C_int_cfgID.2C_const_char.2A_value_.29 BCI_OnVisProperty( void* refdata, const char* name, int cfgID, const char* value )
+3 BCI_OnInitializeVis.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_kind_.29 BCI_OnInitializeVis( void* refdata, const char* visID, const char* kind )
+3 BCI_OnVisMemo.28_void.2A_refdata.2C_const_char.2A_visID.2C_const_char.2A_msg_.29 BCI_OnVisMemo( void* refdata, const char* visID, const char* msg )
+3 BCI_OnVisSignal.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_channels.2C_int_elements.2C_float.2A_data_.29 BCI_OnVisSignal( void* refdata, const char* visID, int channels, int elements, float* data )
+3 BCI_OnVisBitmap.28_void.2A_refdata.2C_const_char.2A_visID.2C_int_width.2C_int_height.2C_unsigned_short.2A_data_.29 BCI_OnVisBitmap( void* refdata, const char* visID, int width, int height, unsigned short* data )
+3 BCI_OnUnknownCommand.28_void.2A_refdata.2C_const_char.2A_command_.29 BCI_OnUnknownCommand( void* refdata, const char* command )
+3 BCI_OnScriptError.28_void.2A_refdata.2C_const_char.2A_msg_.29 BCI_OnScriptError( void* refdata, const char* msg )
+3 int_BCI_SetCallback.28_long.2C_BCI_Function.2C_void.2A_.29 int BCI_SetCallback( long, BCI_Function, void* )
+3 int_BCI_SetExternalCallback.28_long.2C_BCI_Function.2C_void.2A_.29 int BCI_SetExternalCallback( long, BCI_Function, void* )
+3 int_BCI_CheckPendingCallback.28.29 int BCI_CheckPendingCallback()
+3 BCI_Function_BCI_GetCallbackFunction.28_long_.29 BCI_Function BCI_GetCallbackFunction( long )
+3 void.2A_BCI_GetCallbackData.28_long_.29 void* BCI_GetCallbackData( long )
+2 Miscellaneous_Functions Miscellaneous Functions
+3 const_char.2A_BCI_GetInfo.28_void_.29 const char* BCI_GetInfo( void )
+3 const_char.2A_BCI_GetConnectionInfo.28_int_index_.29 const char* BCI_GetConnectionInfo( int index )
+3 const_char.2A_BCI_GetCoreModuleStatus.28_int_index_.29 const char* BCI_GetCoreModuleStatus( int index )
+3 int_BCI_Startup.28_const_char.2A_moduleList_.29 int BCI_Startup( const char* moduleList )
+3 int_BCI_Shutdown.28_void_.29 int BCI_Shutdown( void )
+3 int_BCI_Initialize.28_void_.29  int BCI_Initialize( void )
+3 int_BCI_Dispose.28_void_.29  int BCI_Dispose( void )
+3 int_BCI_ExecuteScript.28_const_char.2A_script_.29 int BCI_ExecuteScript( const char* script )
+3 int_BCI_ReleaseObject.28_const_char.2A_.29 int BCI_ReleaseObject( const char* )
+2 See_also See also
+
 Technical_Reference%253AParameter_Definition.html
 2 Parameter_Concept Parameter Concept
 2 Parameter_Lines Parameter Lines
@@ -2280,6 +2368,40 @@ Technical_Reference%253ASystem_Design.html
 3 State_Vector_Messages State Vector Messages
 3 Brain_Signal_Messages Brain Signal Messages
 3 Control_Signal_Messages Control Signal Messages
+2 See_also See also
+
+Technical_Reference%253AVisualization_Properties.html
+2 Window_Properties Window Properties
+3 Top.2C_Left.2C_Width.2C_Height_.28number.29 Top, Left, Width, Height (number)
+3 WindowTitle_.28string.29 WindowTitle (string)
+3 Visible_.28boolean.29 Visible (boolean)
+2 Graph_Options Graph Options
+3 MinValue.2C_MaxValue_.28number.29 MinValue, MaxValue (number)
+3 NumSamples_.28number.29 NumSamples (number)
+3 ChannelGroupSize_.28number.29 ChannelGroupSize (number)
+3 GraphType_.28number.29 GraphType (number)
+3 ShowBaselines_.28boolean.29 ShowBaselines (boolean)
+3 ChannelColors_.28list_of_hex_values.29 ChannelColors (list of hex values)
+2 Units Units
+3 SampleUnit_.28string.29 SampleUnit (string)
+3 ChannelUnit_.28string.29 ChannelUnit (string)
+3 ValueUnit_.28string.29 ValueUnit (string)
+2 Memo_Options Memo Options
+3 NumLines_.28number.29 NumLines (number)
+2 Label_Lists Label Lists
+3 ChannelLabels_.28list_of_strings.29 ChannelLabels (list of strings)
+3 GroupLabels_.28list_of_strings.29 GroupLabels (list of strings)
+3 XAxisLabels_.28list_of_.7Bnumber.2Cstring.7D_pairs.29 XAxisLabels (list of {number,string} pairs)
+3 YAxisLabels_.28list_of_.7Bnumber.2Cstring.7D_pairs.29 YAxisLabels (list of {number,string} pairs)
+2 Marker_Lists Marker Lists
+3 XAxisMarkers_.28list_of_numbers.29 XAxisMarkers (list of numbers)
+3 YAxisMarkers_.28list_of_numbers.29 YAxisMarkers (list of numbers)
+2 Miscellaneous Miscellaneous
+3 ShowSampleUnit_.28boolean.29 ShowSampleUnit (boolean)
+3 ShowChannelUnit_.28boolean.29 ShowChannelUnit (boolean)
+3 ShowValueUnit_.28boolean.29 ShowValueUnit (boolean)
+3 SampleOffset_.28number.29 SampleOffset (number)
+3 InvertedDisplay_.28boolean.29 InvertedDisplay (boolean)
 2 See_also See also
 
 UserReference%253AP300ClassifierMethods.html
@@ -2378,6 +2500,7 @@ User_Reference%253ABCI2000Launcher.html
 2 Using_BCI2000Launcher Using BCI2000Launcher
 3 Organizing_BCI2000_Modules Organizing BCI2000 Modules
 3 Selecting_Parameter_Files Selecting Parameter Files
+3 Entering_Recording_Parameters Entering Recording Parameters
 3 Starting_a_BCI2000_Session Starting a BCI2000 Session
 
 User_Reference%253ABCI2000Viewer.html
@@ -2858,9 +2981,15 @@ User_Reference%253AOperator_Module_Scripting.html
 4 OnExit OnExit
 3 Commands Commands
 4 LOAD_PARAMETERFILE_.3Cfile.3E LOAD PARAMETERFILE &lt;file&gt;
-4 SETCONFIG SETCONFIG
 4 INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;
+4 INSERT_PARAMETER_.3Cparameter_definition.3E INSERT PARAMETER &lt;parameter definition&gt;
 4 SET_STATE_.3Cname.3E_.3Cvalue.3E SET STATE &lt;name&gt; &lt;value&gt;
+4 SET_PARAMETER_.3Cname.3E_.3Cvalue.3E SET PARAMETER &lt;name&gt; &lt;value&gt;
+4 SET_VISPROPERTY_.3CvisID.3E..3Cname.3E_.3Cvalue.3E SET VISPROPERTY &lt;visID&gt;.&lt;name&gt; &lt;value&gt;
+4 SET_VISPROPERTIES_.3Cproperty_set_ID.3E SET VISPROPERTIES &lt;property set ID&gt;
+4 SETCONFIG SETCONFIG
+4 START START
+4 STOP STOP
 4 QUIT QUIT
 4 SYSTEM_.3Ccommand_line.3E SYSTEM &lt;command line&gt;
 3 Syntax Syntax
@@ -3050,6 +3179,7 @@ User_Reference%253ASpatialFilter.html
 4 Full_Matrix_Filter_Type Full Matrix Filter Type
 4 Sparse_Matrix_Filter_Type Sparse Matrix Filter Type
 3 SpatialFilterCAROutput SpatialFilterCAROutput
+3 SFUseThreading SFUseThreading
 2 States States
 2 Examples Examples
 3 Linked_Mastoids_.28Full_Matrix.29 Linked Mastoids (Full Matrix)
@@ -3188,6 +3318,7 @@ User_Reference%253AgUSBampADC.html
 3 SourceCh SourceCh
 3 SourceChDevices SourceChDevices
 3 SourceChList SourceChList
+3 BipolarChList BipolarChList
 3 DigitalInput DigitalInput
 3 DigitalOutput DigitalOutput
 3 DigitalOutputEx DigitalOutputEx

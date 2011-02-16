@@ -1,15 +1,15 @@
 //   $Id$
-//  
+//
 //   This file is part of the BCPy2000 foundation, a set of modules for
 //   the BCI2000 <http://bci2000.org/> that allow communication with a
 //   Python framework built on top. It is distributed together with the
 //   BCPy2000 framework.
-// 
-//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner, 
+//
+//   Copyright (C) 2007-10  Jeremy Hill, Thomas Schreiner,
 //                         Christian Puzicha, Jason Farquhar
-//   
+//
 //   bcpy2000@bci2000.org
-//   
+//
 //   The BCPy2000 foundation is free software: you can redistribute it
 //   and/or modify it under the terms of the GNU Lesser General Public
 //   License as published by the Free Software Foundation, either
@@ -29,11 +29,17 @@
 #include "BCIDirectory.h"
 #include "PythonFilter.h"
 
+#include <cstdio>
+
 
 #ifdef _WIN32
 
 #define FILESEP "\\"
-#include <dir.h>
+#if _MSC_VER
+# include <direct.h>
+#else
+# include <dir.h>
+#endif
 
 #ifndef __BORLANDC__
 #define _WIN32_WINNT 0x500
@@ -92,7 +98,7 @@ FILTER_NAME::FILTER_NAME()
 			"StimulusTime 16 17528 0 0",
 		END_STATE_DEFINITIONS
 #endif
-		
+
 		std::string oldwd = BCIDirectory::GetCWD();
 
 		std::string dllname       = OptionalParameter(FILTER_ABBREV "DLL",       "");
@@ -101,7 +107,7 @@ FILTER_NAME::FILTER_NAME()
 		std::string workingDir    = OptionalParameter(FILTER_ABBREV "WD",        std::string("..") + FILESEP + "python");
 		std::string developerFile = OptionalParameter(FILTER_ABBREV "ClassFile", DEFAULT_CLASS_FILE);
 		int         ipshell       = OptionalParameter(FILTER_ABBREV "Shell",      1);
-				
+
 		std::string date_escape = "###";
 		int found = logFile.find(date_escape, 0);
 		if(found != std::string::npos) {
@@ -115,17 +121,17 @@ FILTER_NAME::FILTER_NAME()
 		}
 		use_console = (ipshell || !logFile.length());
 		if(use_console) OpenConsole(FILTER_ABBREV);
-	
+
 		if(frameworkDir.length()) {
 			ChangeDir(frameworkDir);  // for some strange reason this needs to be done before Py_Initialize, otherwise the frameworkDir is not found correctly...
 		}
-		
+
 #if DYNAMIC_PYTHON
 		if(LoadPythonLinks(dllname.c_str())!=0) return;
 #endif
 		Py_Initialize();
 		PyEval_InitThreads();
-		
+
 		ChangeDir(oldwd);             // ...so undo it...
 		if(logFile.length() && logFile != "-") {
 			std::string cmd;
@@ -140,16 +146,16 @@ FILTER_NAME::FILTER_NAME()
 			ChangeDir(frameworkDir); // ...and then redo it. <sigh>
 			EvalPythonString("import sys,os");
 			EvalPythonString("if not os.getcwd() in sys.path: sys.path.append(os.getcwd())");
-			conmod = PYTHON_CONSOLE;    
+			conmod = PYTHON_CONSOLE;
 			coremod = PYTHON_COREMODULE;
-			genmod = PYTHON_MODULE;     
-		}   
+			genmod = PYTHON_MODULE;
+		}
 		else {
 			conmod = PYTHON_CONSOLE_INSTALLED;
 			coremod = PYTHON_COREMODULE_INSTALLED;
 			genmod = PYTHON_MODULE_INSTALLED;
 		}
-				
+
 		if(use_console) {
 			PyImport_ImportModule((char*)conmod.c_str());
 			HandlePythonError("attempt to import " + conmod);
@@ -165,7 +171,7 @@ FILTER_NAME::FILTER_NAME()
 		EvalPythonString("from " + coremod + " import *");
 		EvalPythonString("from " + genmod + " import *");
 		CallModuleMember(coremod, "register_framework_dir"); //TODO: need to decref the result?
-		ChangeDir(oldwd); // change in two stages to cope with both absolute and relative paths	
+		ChangeDir(oldwd); // change in two stages to cope with both absolute and relative paths
 		if(workingDir.length()) ChangeDir(workingDir);
 		CallModuleMember(coremod, "register_working_dir"); //TODO: need to decref the result?
 		if(developerFile.length()) {
@@ -173,30 +179,30 @@ FILTER_NAME::FILTER_NAME()
 			PyObject *py_resolved = CallModuleMember(coremod, "search_for_file", py_devfile);
 			Py_DECREF(py_devfile);
 			string cpp_resolved = PyString_AsString(py_resolved);
-			Py_DECREF(py_resolved);			
+			Py_DECREF(py_resolved);
 			EvalPythonString("execfile('" + EscapePythonString(cpp_resolved) + "')");
 			bci2000_instance = CallModuleMember("__main__", PYTHON_SUBCLASS);
 		}
 		else {
-			bci2000_instance = CallModuleMember("__main__", PYTHON_SUPERCLASS);		
+			bci2000_instance = CallModuleMember("__main__", PYTHON_SUPERCLASS);
 		}
-		
+
 		if(ipshell) CallMethod("_enable_shell");
-		
+
 		PyObject*key,*val;
 		key = PyString_FromString("installation_dir");
 		val = PyString_FromString(BCIDirectory::InstallationDirectory().c_str());
 		CallMethod("__setattr__", key, val);
 		Py_DECREF(key); // Py_DECREF(val);
-	
+
 		CallMethod("_start");
-	
-		
+
+
 		PyObject *py_ret = CallHook("_Construct");
-		
+
 		PyObject *py_params = PyTuple_GetItem(py_ret, 0);
 		PyObject *py_states = PyTuple_GetItem(py_ret, 1);
-		
+
 		// Add the parameters and states requested by the Python _Construct function.
 		int numParamDefs = PyList_Size(py_params);
 		for( int i = 0; i < numParamDefs; ++i ) {
@@ -211,7 +217,7 @@ FILTER_NAME::FILTER_NAME()
 			// std::cerr << "registering state: " << stateDef << std::endl;
 			if(!States->Add( stateDef )) DoubleErr(("Error in state definition: " + stateDef).c_str(), "Construct");
 		}
-		UnblockThreads();		
+		UnblockThreads();
 		// std::cerr << "done creating engine." << std::endl;
 	}
 	catch(EndUserError& e) {
@@ -258,7 +264,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
 {
 	try {
 		BlockThreads();
-		
+
 		SendParametersToPython();
 		SendStatesToPython(); // NB: allows access to all states
 		SendStatePrecisionsToPython();
@@ -268,7 +274,7 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
 		Py_DECREF(pyInSignalProperties);
 		ConvertPyObjectToProperties(pyOutSignalProperties, outSignalProperties);
 		Py_DECREF(pyOutSignalProperties);
-		
+
  		PyObject* py_list;
  		py_list = PyObject_GetAttrString(bci2000_instance, (char*)"_writeable_params");
 		if(py_list && PyList_Check(py_list)) {
@@ -281,9 +287,9 @@ FILTER_NAME::Preflight( const SignalProperties& inSignalProperties,
 		Py_DECREF(py_list);
 
 		ReceiveStatesFromPython(); // NB: allows access to all states
-		
+
 		PreflightCondition(SignalType::ConversionIsSafe(inSignalProperties.Type(), outSignalProperties.Type()));
-		
+
 		UnblockThreads();
 	}
 	catch(EndUserError& e) {
@@ -300,10 +306,10 @@ FILTER_NAME::Initialize( const SignalProperties& inSignalProperties,
 {
 	try {
 		BlockThreads();
-		
+
 		PyObject* pyInSignalProperties = ConvertPropertiesToPyObject(inSignalProperties);
 		PyObject* pyOutSignalProperties = ConvertPropertiesToPyObject(outSignalProperties);
-		
+
 		CallHook( "_Initialize", pyInSignalProperties, pyOutSignalProperties);
 		SharingSetup(inSignalProperties, outSignalProperties);
 		UnblockThreads();
@@ -345,11 +351,11 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
 		}
 	}
 	catch(EndUserError& e) {
-		State("Running") = 0;  	
+		State("Running") = 0;
 		HandleEndUserError(e, "Process");
 	}
 	catch(Exception& e) {
-		State("Running") = 0;  	
+		State("Running") = 0;
 		HandleException(e, "Process");
 	}
 #if MODTYPE == 3
@@ -360,9 +366,9 @@ FILTER_NAME::Process( const GenericSignal& input, GenericSignal& output )
 void
 FILTER_NAME::StartRun()
 {
-	try {		  
-		BlockThreads();		
-		SendParametersToPython();		
+	try {
+		BlockThreads();
+		SendParametersToPython();
 		CallHook("_StartRun");
 		UnblockThreads();
 		if(shared_flag) *shared_flag = 0.0;
@@ -397,7 +403,7 @@ void
 FILTER_NAME::Resting()
 {
 	try {
-		BlockThreads();		
+		BlockThreads();
 		SendParametersToPython();
 		// BCI2000 doc seemed to suggest that params would propagate to other modules when StopRun returned
 		// but actually, this call seems to have no effect---params don't seem to propagate until StartRun
@@ -416,7 +422,7 @@ void
 FILTER_NAME::Halt()
 {
 	try {
-		BlockThreads();		
+		BlockThreads();
 		CallHook("_Halt");
 		UnblockThreads();
 	}
@@ -437,7 +443,7 @@ FILTER_NAME::SendParametersToPython() const
 {
 	PyObject* params = PyDict_New();
 	PyObject* value;
-	
+
 	for( int i = 0; i < Parameters->Size(); ++i ) {
 		const Param& p = ( *Parameters )[ i ];
 		if(p.NumRows() == 0 || p.NumColumns() == 0) {
@@ -449,9 +455,9 @@ FILTER_NAME::SendParametersToPython() const
 		if(p.Type().size() >= 6 && strcmp(p.Type().c_str() + p.Type().size() - 6, "matrix") == 0) {
 			int nrows = p.NumRows();
 			int ncols = p.NumColumns();
-			
+
 			PyObject* list = PyList_New(nrows);
-			
+
 			for( int i = 0; i < nrows; i++) {
 				PyObject* tempRow = PyList_New(ncols);
 				for( int j = 0; j < ncols; j++) {
@@ -465,9 +471,9 @@ FILTER_NAME::SendParametersToPython() const
 		}
 		else if(p.Type().size() >= 4 && strcmp(p.Type().c_str() + p.Type().size() - 4, "list") == 0) {
 			int entries = max(p.NumRows(),p.NumColumns());
-			
+
 			PyObject* list = PyList_New(entries);
-			
+
 			for( int i = 0; i < entries; i++) {
 				PyObject* val =  PyString_FromString(((std::string)p.Value(i)).c_str());
 				PyList_SetItem(list, i, val);
@@ -481,7 +487,7 @@ FILTER_NAME::SendParametersToPython() const
 			PyDict_SetItemString(params, p.Name().c_str(), value);
 			Py_DECREF(value);
 		}
-	}	
+	}
 	CallMethod("_set_parameters", params);
 	Py_DECREF(params);
 
@@ -503,7 +509,7 @@ FILTER_NAME::ReceiveParametersFromPython()
 {
 	PyObject* py_params = CallMethod("_get_parameters");
 	PyObject* py_value;
-	
+
 	for( int ip = 0; ip < Parameters->Size(); ++ip ) {
 
 		const Param& p = ( *Parameters )[ ip ];
@@ -518,7 +524,7 @@ FILTER_NAME::ReceiveParametersFromPython()
 		if(strcmp(p.Type().c_str(), "matrix") == 0) {
 			int nrows = p.NumRows();
 			int ncols = p.NumColumns();
-			
+
 			if(!PyList_Check(py_value)) {
 				bcierr << "failed to propagate self.params['" << name << "'] because of wrong type (python list was expected)" << endl;
 				stay_open = 1; return;
@@ -599,13 +605,13 @@ void
 FILTER_NAME::SendStatesToPython() const
 {
 	PyObject* states = PyDict_New();
-	PyObject* pyvalue;	
+	PyObject* pyvalue;
 	for( int i = 0; i < States->Size(); ++i ) {
 		const char* name = ( *States )[ i ].Name().c_str();
 		pyvalue = PyInt_FromLong(State(name));
 		PyDict_SetItemString(states, name, pyvalue);
 		Py_DECREF(pyvalue);
-	}	
+	}
 	CallMethod("_set_states", states);
 	Py_DECREF(states);
 }
@@ -616,14 +622,15 @@ FILTER_NAME::ReceiveStatesFromPython() const
 	PyObject *obj = CallMethod("_get_states");
 	PyObject *state_value;
 	long value;
-	
+
 	for( int i = 0; i < States->Size(); ++i ) {
 		const char* name = ( *States )[ i ].Name().c_str();
 		state_value = PyDict_GetItemString(obj, name); // state_value doesn't need to be DECREFfed - it returns only a *borrowed* reference
 		value = PyInt_AsLong(state_value); // must use PyInt_AsLong - Float_AsDouble returns strange numbers
 		if (value == -1 && PyErr_Occurred()) PyErr_Clear(); // in case of an exception, we set the state to -1 and ignore the exception.
-		State( name ) = value;
-	}	
+		StateRef s = State(name);
+		if(s != value) s = value;
+	}
 	Py_DECREF(obj);
 }
 
@@ -631,13 +638,13 @@ void
 FILTER_NAME::SendStatePrecisionsToPython() const
 {
 	PyObject* bits = PyDict_New();
-	PyObject* pyvalue;	
+	PyObject* pyvalue;
 	for( int i = 0; i < States->Size(); ++i ) {
 		const char* name = ( *States )[ i ].Name().c_str();
 		pyvalue = PyInt_FromLong( (*States )[ i ].Length() );
 		PyDict_SetItemString(bits, name, pyvalue);
 		Py_DECREF(pyvalue);
-	}	
+	}
 	CallMethod("_set_state_precisions", bits);
 }
 
@@ -659,7 +666,7 @@ FILTER_NAME::SharingSetup(const SignalProperties &inProp, const SignalProperties
 		PyList_SetItem(py_statelist, i, PyString_FromString(name)); // steals reference: don't decref element pointers
 	}
 
-	PyObject* py_result = CallMethod("_sharing_setup", py_indims, py_outdims, py_statelist);	
+	PyObject* py_result = CallMethod("_sharing_setup", py_indims, py_outdims, py_statelist);
 	if(PyTuple_Size(py_result) == 0) {
 		shared_insignal  = NULL;
 		shared_outsignal = NULL;
@@ -681,26 +688,25 @@ FILTER_NAME::SharingSetup(const SignalProperties &inProp, const SignalProperties
 int
 FILTER_NAME::Share(const GenericSignal &inSignal, GenericSignal &outSignal)
 {
-	double *p;
-	int i, j, nchan, nsamp;
+	int i;
 	int nstates = States->Size();
-	
+
 	while(*shared_flag != 0.0) {
 		if(*shared_flag < 0.0) return -1;
 		::Sleep(1);
 	}
-	
+
 	ConvertSignalToPyArrayObject(inSignal, shared_insignal);
-		
+
 	for(i = 0; i < nstates; i++ )
 		shared_statevals[i] = (double)State(  (*States)[i].Name().c_str()  );
 
 	*shared_flag = 1.0;
 	while(*shared_flag == 1.0) ::Sleep(1);
 	if(*shared_flag < 0.0) return -1;
-	
+
 	ConvertPyArrayObjectToSignal(shared_outsignal, outSignal);
-		
+
 	for(i = 0; i < nstates; i++ )
 		State(  (*States)[i].Name().c_str()  ) = (unsigned long)shared_statevals[i];
 
@@ -728,11 +734,11 @@ FILTER_NAME::ConvertSignalToPyArrayObject(const GenericSignal& sig, PyArrayObjec
 		std::ostringstream s;
 		s << "PyArrayObject (" << nrows << " by " << ncols << ") is the wrong shape for the expected incoming BCI2000 signal (" << sig.Channels() << " by " << sig.Elements() << ")";
 		throw Exception(s.str().c_str());
-	}	
+	}
 	for(size_t i = 0; i < nrows; ++i)
 		for(size_t j = 0; j < ncols; ++j)
 			*((double*)(data + i*rrstride + j*ccstride)) = sig(i, j);
-			
+
 	return array;
 }
 
@@ -744,7 +750,7 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
 	//    Check that it is a numpy array
 	//    Check that it has float64 precision
 	//    Check that it is 2-dimensional
-	
+
 	size_t nrows = PyArray_DIM(array, 0);
 	size_t ncols = PyArray_DIM(array, 1);
 	size_t rrstride = PyArray_STRIDE(array, 0);
@@ -761,14 +767,14 @@ FILTER_NAME::ConvertPyArrayObjectToSignal(PyArrayObject* array, GenericSignal& s
 			sig(i,j) = *((double*)(data + i*rrstride + j*ccstride));
 }
 
-PyObject* 
+PyObject*
 FILTER_NAME::ConvertPropertiesToPyObject(const SignalProperties& inSignalProperties) const
-{ 	
+{
 	PyObject* pyProperties = PyDict_New();
-	
+
 	PyDict_SetItem(pyProperties, PyString_FromString("Name"), PyString_FromString(inSignalProperties.Name().c_str()));
 	PyDict_SetItem(pyProperties, PyString_FromString("Type"), PyString_FromString(inSignalProperties.Type().Name()));
-		
+
 	PyDict_SetItem(pyProperties, PyString_FromString("ChannelLabels"), ConvertLabelIndexToPyList(inSignalProperties.ChannelLabels()));
 	PyDict_SetItem(pyProperties, PyString_FromString("ElementLabels"), ConvertLabelIndexToPyList(inSignalProperties.ElementLabels()));
 
@@ -786,24 +792,24 @@ FILTER_NAME::ConvertPyObjectToProperties(PyObject* pyOutSignalProperties, Signal
 	PyObject* value = PyDict_GetItemString(pyOutSignalProperties, "Name");
 	char* name = PyString_AsString(value);
 	outSignalProperties.SetName(string(name));
-	
+
 	//converting type
 	value = PyDict_GetItemString(pyOutSignalProperties, "Type");
-	name = PyString_AsString(value);	
+	name = PyString_AsString(value);
 	if( strcmp(name, "none") == 0){
-		outSignalProperties.SetType(SignalType::none);	
+		outSignalProperties.SetType(SignalType::none);
 	}
 	else if( strcmp(name, "int16") == 0){
-		outSignalProperties.SetType(SignalType::int16);	
+		outSignalProperties.SetType(SignalType::int16);
 	}
 	else if( strcmp(name, "float24") == 0){
-		outSignalProperties.SetType(SignalType::float24);	
-	}	
+		outSignalProperties.SetType(SignalType::float24);
+	}
 	else if( strcmp(name, "float32") == 0){
-		outSignalProperties.SetType(SignalType::float32);	
-	}	
+		outSignalProperties.SetType(SignalType::float32);
+	}
 	else if( strcmp(name, "int32") == 0){
-		outSignalProperties.SetType(SignalType::int32);	
+		outSignalProperties.SetType(SignalType::int32);
 	}
 	else {
 		std::string s;
@@ -833,11 +839,11 @@ void
 FILTER_NAME::ConvertPyListToLabelIndex(PyObject* from, LabelIndex& to) const
 {
 	stringstream converter;
-	
+
 	to.Resize(PyList_Size(from));
 	for(int i = 0; i < to.Size(); i++){
 		string channelName = PyString_AsString(PyList_GetItem(from, i));
-		
+
 		int converted;
 		converter << channelName;
 		converter >> converted;
@@ -850,13 +856,13 @@ PyObject*
 FILTER_NAME::ConvertPhysicalUnitToPyDict(PhysicalUnit from) const
 {
 	PyObject* valueUnit = PyDict_New();
-	
+
 	PyDict_SetItem(valueUnit, PyString_FromString("Offset"), PyFloat_FromDouble(from.Offset()));
 	PyDict_SetItem(valueUnit, PyString_FromString("Gain"),   PyFloat_FromDouble(from.Gain()));
 	PyDict_SetItem(valueUnit, PyString_FromString("Symbol"), PyString_FromString(from.Symbol().c_str()));
 	PyDict_SetItem(valueUnit, PyString_FromString("RawMin"), PyFloat_FromDouble(from.RawMin()));
 	PyDict_SetItem(valueUnit, PyString_FromString("RawMax"), PyFloat_FromDouble(from.RawMax()));
-	
+
 	return valueUnit;
 }
 
@@ -865,7 +871,7 @@ FILTER_NAME::ConvertPyDictToPhysicalUnit(PyObject* from, PhysicalUnit& to) const
 {
 	PyObject* valueUnit = PyDict_GetItemString(from, "Offset");
 	to.SetOffset(PyFloat_AsDouble(valueUnit));
-	valueUnit = PyDict_GetItemString(from, "Gain");	 
+	valueUnit = PyDict_GetItemString(from, "Gain");
 	to.SetGain(PyFloat_AsDouble(valueUnit));
 	valueUnit = PyDict_GetItemString(from, "Symbol");
 	to.SetSymbol(PyString_AsString(valueUnit));
@@ -969,11 +975,11 @@ FILTER_NAME::CallModuleMember(std::string module, std::string member, PyObject* 
 	PyObject* mod = PyImport_AddModule((char*)module.c_str());
 	HandlePythonError("PyImport_AddModule on " + module);
 	if(!mod){FAIL("module object for " + module + " is NULL"); return NULL;}
-	
+
 	PyObject* dict = PyModule_GetDict(mod);
 	HandlePythonError("PyModule_GetDict on " + module);
 	if(!dict){FAIL("dict object for module " + module + " is NULL"); return NULL;}
-	
+
 	PyObject* func  = PyDict_GetItemString(dict, member.c_str());
 	HandlePythonError("PyDict_GetItemString on " + member + " from " + module);
 	if(!func){FAIL("item " + member + " from module " + module + " is NULL"); return NULL;}
@@ -1035,13 +1041,13 @@ FILTER_NAME::HandlePythonError(std::string msg, bool errorCodeReturned) const
 		PyErr_Print();
 		PyErr_Clear();
 	}
-	if(error == 0) return; 
+	if(error == 0) return;
 
 	if(isForEndUser) throw EndUserError(report.c_str());
 
 	stay_open = 1;
 	if(msg.length()) msg = "Python error during " + msg;
-	else msg = "Python error";	
+	else msg = "Python error";
 	if(report.length()) msg = msg + ": " + report;
 	throw Exception(msg.c_str());
 }

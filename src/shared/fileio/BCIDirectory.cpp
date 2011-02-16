@@ -4,8 +4,25 @@
 // Description: A class that encapsulates BCI2000 directory and file naming
 //   conventions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -13,12 +30,19 @@
 #include "BCIDirectory.h"
 
 #ifdef _WIN32
-#include <dir.h>
-#else
-#include <sys/stat.h>
-#endif
+# include "windows.h"
+# ifdef _MSC_VER
+#  include <direct.h>
+#  include "dirent_win.h"
+# else // _MSC_VER
+#  include <dir.h>
+#  include <dirent.h>
+# endif // _MSC_VER
+#else // _WIN32
+# include <sys/stat.h>
+# include <dirent.h>
+#endif // _WIN32
 #include <stdlib.h>
-#include <dirent.h>
 #include <errno.h>
 #include <sstream>
 #include <iomanip>
@@ -122,6 +146,7 @@ BCIDirectory::ChangeForceDir( const string& inPath )
     fullPath = InstallationDirectory() + fullPath;
   if( fullPath.length() < 1 || fullPath[ fullPath.length() - 1 ] != DirSeparator )
     fullPath += DirSeparator;
+  // Changing directory is necessary to verify that the directory exists and is accessible.
   int err = ::chdir( fullPath.c_str() );
   if( err )
   {
@@ -243,5 +268,4 @@ BCIDirectory::IsAbsolutePath( const string& inPath )
   return inPath.length() > 0 && inPath[ 0 ] == DirSeparator;
 #endif
 }
-
 

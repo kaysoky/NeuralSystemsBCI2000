@@ -169,16 +169,24 @@ At this moment the handshake with the USB2 interface starts
 and the ringbuffer is filled with incoming data from the ActiveTwo.
 Your acquisition program should read the proper data for the ringbuffer.
 *******************************************************************************/
-    mpUsbdata[0]=1;
-    mfpUSB_WRITE(mDevice, mpUsbdata);
+                 mpUsbdata[0]=1;
+          mfpUSB_WRITE(mDevice, mpUsbdata);
 
-    // tells halt it can actually stop the device or bad things happen
+// tells halt it can actually stop the device or bad things happen
+
     mWasDriverSetup = true;
 }
 
-
+bool done_once = false; // This is a temporary hack until the re-initialization problem can be figured out.
+                        // When you press "set config" more than once per launch of bci2000, the Biosemi Mk2
+                        // seems to respond unstably with a lot of periodic broadband spikes.
+                        
 void Biosemi2Client::initialize( int desiredSamplingRate,
     int desiredSampleBlockSize, int desiredNumChannels ){
+    
+    
+    if(done_once) bciout << "re-initializing the biosemi module without restarting BCI2000 may lead to unpredictable amp behaviour, for reasons unknown..." << endl;
+    done_once = true;
 
 // Store the signal attributes the caller wants
 
@@ -294,7 +302,6 @@ Step 7:  "Close the drivers"
         mfpCLOSE_DRIVER_ASYNC(mDevice);
 
         mWasDriverSetup= false;
-        mDevice=NULL;
     }
 }
 

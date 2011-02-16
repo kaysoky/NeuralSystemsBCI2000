@@ -1,12 +1,29 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: FieldTripBufferFilter.cpp,v 1.12 2008/06/20 15:10:05 roboos Exp $
+// $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A filter that maintains a FieldTrip Realtime buffer, writes
 //   its input data into that buffer, and optionally gets its output data from
 //   buffered events. BCI2000 state variables are mapped to buffer events.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -34,7 +51,7 @@ FieldTripBufferFilter::FieldTripBufferFilter()
    "Filtering:FieldTrip%20Buffer stringlist FTStatesFromBuffer= 0 % % % // States to be read as events from buffer",
   END_PARAMETER_DEFINITIONS
 
-  mFTBufferAddress = Parameter( "FTBufferAddress" );
+  mFTBufferAddress = string( Parameter( "FTBufferAddress" ) );
   ParseHostAddress( mFTBufferAddress, mHostAddress );
   int result = pthread_create( &mServerThread, &mThreadAttr, tcpserver, &mHostAddress );
   if( 0 != result )
@@ -120,7 +137,7 @@ FieldTripBufferFilter::Initialize( const SignalProperties& Input,
   mHeaderdef.nchans    = numChannels;
   mHeaderdef.nsamples  = numSamples;
   mHeaderdef.nevents   = 0;
-  mHeaderdef.fsample   = Parameter( "SamplingRate" ) * numSamples / Parameter( "SampleBlockSize" );
+  mHeaderdef.fsample   = static_cast<FLOAT32_T>( Parameter( "SamplingRate" ) * numSamples / Parameter( "SampleBlockSize" ) );
   mHeaderdef.data_type = DATATYPE_FLOAT32;
   mHeaderdef.bufsize   = 0;
 
@@ -138,10 +155,10 @@ FieldTripBufferFilter::Initialize( const SignalProperties& Input,
     bcidbg( 2 ) << "State " << *i << " will be read from buffer" << endl;
   }
   bufferLength += sizeof( INT32_T );
-  mpEventBuffer = new INT8_T[ bufferLength ];
+  mpEventBuffer = new UINT8_T[ bufferLength ];
 
   mSignalBuffer = GenericSignal( 0, 0 );
-  mFTOutputEventType = Parameter( "FTOutputEventType" );
+  mFTOutputEventType = string( Parameter( "FTOutputEventType" ) );
   if( !mFTOutputEventType.empty() )
     mSignalBuffer = GenericSignal( Output );
 }
@@ -181,7 +198,7 @@ FieldTripBufferFilter::Process( const GenericSignal& Input, GenericSignal& Outpu
       numSamples = Input.Elements();
   for( int channel = 0; channel < numChannels; ++channel )
     for( int sample = 0; sample < numSamples; ++sample )
-      mpDataBuffer[ sample * numChannels + channel ] = Input( channel, sample );
+      mpDataBuffer[ sample * numChannels + channel ] = static_cast<float>( Input( channel, sample ) );
   DeleteMessage( SendRequest( PUT_DAT, &mDatadef, mpDataBuffer ) );
 
   // Process events present in the buffer.
@@ -257,7 +274,7 @@ FieldTripBufferFilter::ProcessEvent( const event_t& inEvent )
     if( i != mFTStatesFromBuffer.end() )
     {
       // the event value is assigned to the state value
-      UINT8_T* p = reinterpret_cast<char*>( inEvent.buf ) + inEvent.def->type_numel;
+      UINT8_T* p = reinterpret_cast<UINT8_T*>( inEvent.buf ) + inEvent.def->type_numel;
       State::ValueType value = 0;
       switch( inEvent.def->value_type )
       {
@@ -280,10 +297,10 @@ FieldTripBufferFilter::ProcessEvent( const event_t& inEvent )
           value = *reinterpret_cast<INT32_T*>( p );
           break;
         case DATATYPE_FLOAT32:
-          value = *reinterpret_cast<FLOAT32_T*>( p );
+          value = static_cast<State::ValueType>( *reinterpret_cast<FLOAT32_T*>( p ) );
           break;
         case DATATYPE_FLOAT64:
-          value = *reinterpret_cast<FLOAT64_T*>( p );
+          value = static_cast<State::ValueType>( *reinterpret_cast<FLOAT64_T*>( p ) );
           break;
         default:
           bcierr << "Unexpected value_type in " << type << " event" << endl;
@@ -413,7 +430,7 @@ FieldTripBufferFilter::ParseHostAddress( const string& inString, host_t& outHost
 {
   const char cSeparator = ':';
   string address = inString;
-  int separatorPos = address.rfind( cSeparator );
+  size_t separatorPos = address.rfind( cSeparator );
   if( separatorPos == string::npos )
   {
     address += ":1972";

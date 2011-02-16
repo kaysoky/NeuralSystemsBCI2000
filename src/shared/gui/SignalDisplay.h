@@ -1,11 +1,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
-// Authors: juergen.mellinger@uni-tuebingen.de
-// Description: A class that draws GenericSignal data into a given window,
-//          and maintains a context menu.
+// Author: juergen.mellinger@uni-tuebingen.de
+// Description: A SignalDisplay class that renders GenericSignal data into a
+//   given DisplayContext.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef SIGNAL_DISPLAY_H
 #define SIGNAL_DISPLAY_H
@@ -14,26 +31,41 @@
 #include "GenericSignal.h"
 #include "Color.h"
 #include "Label.h"
+#include "OSMutex.h"
 #include <set>
 #include <vector>
 
-#include <windows.h>
+#ifdef __BORLANDC__
+# include <windows.h>
+#else
+# include <QFont>
+# include <QPoint>
+# include <QPaintDevice>
+# include <QRect>
+# include <QRegion>
+# include <QColor>
+# include <QFont>
+# include <QPen>
+#endif // __BORLANDC__
 
 class SignalDisplay
 {
  private:
-  static const int cNumSamplesDefault = 128,
-                   cMinValueDefault = - ( 1 << 15 ),
-                   cMaxValueDefault = ( 1 << 16 ) - 1,
+  enum
+  {
+    cNumSamplesDefault = 128,
+    cMinValueDefault = - ( 1 << 15 ),
+    cMaxValueDefault = ( 1 << 16 ) - 1,
 
-                   cChannelBase = 1, // displayed number of first channel
-                   cSampleBase = 0,  // displayed number of first sample
+    cChannelBase = 1, // displayed number of first channel
+    cSampleBase = 0,  // displayed number of first sample
 
-                   cLabelWidth = 25,
-                   cAxisWidth = 2,
-                   cTickWidth = cAxisWidth,
-                   cTickLength = 4,
-                   cInitialMaxDisplayGroups = 32;
+    cLabelWidth = 25,
+    cAxisWidth = 2,
+    cTickWidth = cAxisWidth,
+    cTickLength = 4,
+    cInitialMaxDisplayGroups = 32,
+  };
 
   static const RGBColor cAxisColorDefault,
                         cChannelColorsDefault[];
@@ -173,39 +205,52 @@ class SignalDisplay
        mDataHeight,
        mLabelWidth,
        mMarkerHeight;
-  RECT mDataRect;
 
   void SyncLabelWidth();
   void SyncGraphics();
   void AdaptTo( const GenericSignal& );
 
+  inline
   int SampleLeft( int s )
     { return mLabelWidth + ( mNumSamples ? ( s * mDataWidth ) / int( mNumSamples ) : 0 ); }
+  inline
   int SampleRight( int s )
     { return SampleLeft( s + 1 ); }
+  inline
+  int PosToSample( int p )
+    { return mDataWidth ? ( ( p - mLabelWidth ) * mNumSamples ) / int( mDataWidth ) : 0; }
 
+  inline
   int MarkerChannelTop( int ch )
     { return mMarkerChannels != 0 ? mMarkerHeight * ch + cAxisWidth : 0; }
+  inline
   int MarkerChannelBottom( int ch )
     { return mMarkerChannels != 0 ? MarkerChannelTop( ch ) + mMarkerHeight : 0; }
 
+  inline
   int GroupTop( int g )
     { return MarkerChannelBottom( mMarkerChannels - 1 ) + cAxisWidth
              + ( mNumDisplayGroups ? ( g * mDataHeight ) / int( mNumDisplayGroups ) : 0 ); }
+  inline
   int GroupBottom( int g )
     { return GroupTop( g + 1 ); }
 
+  inline
   int ChannelTop( int ch )
     { return GroupTop( ChannelToGroup( ch ) ); }
+  inline
   int ChannelBottom( int ch )
     { return GroupBottom( ChannelToGroup( ch ) ); }
 
+  inline
   int ChannelToGroup( int ch )
     { return ch / mChannelGroupSize; }
 
+  inline
   float NormData( size_t i, size_t j )
     { return ( mData( i, j ) - mMinValue ) / ( mMaxValue - mMinValue ); }
 
+  inline
   RGBColor ChannelColor( int ch )
     { return mChannelColors[ ch % mChannelColors.size() ]; }
 
@@ -242,49 +287,86 @@ class SignalDisplay
   LabelList     mChannelLabels,
                 mXAxisMarkers;
   GenericSignal mData;
+  OSMutex       mDataLock;
 
- // Win32 Graphics details.
  private:
-  HGDIOBJ            AxisFont();
+  struct PaintInfo;
+  void SetupPainting( PaintInfo&, void* );
+  void ClearBackground( const PaintInfo& );
+  void DrawSignalPolyline( const PaintInfo& );
+  void DrawSignalField2d( const PaintInfo& );
+  void DrawMarkerChannels( const PaintInfo& );
+  void DrawCursor( const PaintInfo& );
+  void DrawXTicks( const PaintInfo& );
+  void DrawYTicks( const PaintInfo& );
+  void DrawAxes( const PaintInfo& );
+  void DrawMarkers( const PaintInfo& );
+  void DrawChannelLabels( const PaintInfo& );
+  void DrawValueUnit( const PaintInfo& );
+  void CleanupPainting( PaintInfo& );
 
-#ifdef BUNCH_OF_HANDLES
-  struct BunchOfHandles
+ #ifdef __BORLANDC__
+  // Win32 Graphics details.
+  HFONT    AxisFont();
+  HDC      mTargetDC;
+  RECT     mDisplayRect,
+           mDataRect;
+  HRGN     mDisplayRgn,
+           mRedrawRgn;
+  POINT*   mpSignalPoints;
+
+  struct PaintInfo
   {
-    BunchOfHandles( HDC inDC )
-      : targetWindow( ::WindowFromDC( inDC ) ),
-        targetDC( inDC )
-      {}
-    ~BunchOfHandles()
-      {}
+    HDC      dc;
+    COLORREF backgroundColor,
+             cursorColor,
+             axisColor,
+             markerColor,
+             labelColor;
+    HBRUSH   backgroundBrush,
+             cursorBrush,
+             axisBrush,
+             markerBrush;
+    HFONT    labelFont;
+    HPEN     baselinePen;
+    int      cursorWidth,
+             markerWidth,
+             axisY;
+    std::vector<HPEN>   signalPens;
+    std::vector<HBRUSH> signalBrushes;
+  };
+ #else // __BORLANDC__
+  // Qt graphics.
+  QFont          AxisFont();
+  QPaintDevice*  mTargetDC;
+  QRect          mDisplayRect,
+                 mDataRect,
+                 mCursorRect;
+  QRegion        mDisplayRgn;
+  QPoint*        mpSignalPoints;
 
-    HWND targetWindow;
-    HDC  targetDC;
-  }*                 mpHandles;
-
-#else
-  HDC mTargetDC;
-#endif // BUNCH_OF_HANDLES
-  RECT               mDisplayRect;
-  HRGN               mDisplayRgn,
-                     mRedrawRgn;
-  class PointBuf
+  struct PaintInfo
   {
-   public:
-    PointBuf()
-      : p( NULL ), s( 0 )
-      {}
-    ~PointBuf()
-      { delete[] p; }
-    POINT& operator[]( size_t i )
-      { return p[ i ]; }
-    operator const POINT* () const
-      { return p; }
-    void resize( size_t size )
-      { if( size > s ) { s = size; delete[] p; p = new POINT[ s ]; } }
-   private:
-    POINT* p;
-    size_t s;
-  } mSignalPoints;
+    QPainter* painter;
+    const QRegion* updateRgn;
+    QColor    backgroundColor,
+              cursorColor,
+              axisColor,
+              markerColor,
+              labelColor;
+    QBrush    backgroundBrush,
+              cursorBrush,
+              axisBrush,
+              markerBrush;
+    QFont     labelFont;
+    QPen      baselinePen;
+    int       cursorWidth,
+              markerWidth,
+              axisY;
+    std::vector<QPen>   signalPens;
+    std::vector<QBrush> signalBrushes;
+  };
+ #endif // __BORLANDC__
 };
 
 #endif // SIGNAL_DISPLAY_H

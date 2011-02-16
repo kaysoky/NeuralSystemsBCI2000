@@ -3,8 +3,25 @@
 // Author: schalk@wadsworth.org
 // Description: BCI2000 Source Module for gUSBamp devices.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -16,6 +33,7 @@
 #include "GenericSignal.h"
 
 #include <algorithm>
+#include <cstdio>
 
 using namespace std;
 
@@ -33,7 +51,6 @@ gUSBampADC::gUSBampADC()
   m_filterlowpass( 0 ),
   m_notchhighpass( 0 ),
   m_notchlowpass( 0 ),
-  NUM_BUFS(5),
   m_filtermodelorder( 0 ),
   m_filtertype( 0 ),
   m_notchmodelorder( 0 ),
@@ -45,9 +62,10 @@ gUSBampADC::gUSBampADC()
   m_acqmode( 0 ),
   m_digitalOut1(false),
   mpAcquireThread( NULL ),
-  acquireEventRead( NULL )
+  acquireEventRead( NULL ),
+  NUM_BUFS(5)
 {
-  
+
 
   // add all the parameters that this ADC requests to the parameter list
  BEGIN_PARAMETER_DEFINITIONS
@@ -74,7 +92,7 @@ gUSBampADC::gUSBampADC()
    "Source int FilterModelOrder= 8 8 1 12 "
        "// filter model order for pass band",
    "Source int FilterType= 1 1 1 2 "
-       "// filter type for pass band (1=BUTTERWORTH, 2=CHEBYSHEV)",     
+       "// filter type for pass band (1=BUTTERWORTH, 2=CHEBYSHEV)",
    "Source int NotchEnabled= 1 1 0 1 "
        "// Enable notch (0=no, 1=yes)",
    "Source float NotchHighPass=   58 58 0 70 "
@@ -94,6 +112,8 @@ gUSBampADC::gUSBampADC()
         " (enumeration)",
    "Source int DigitalOutput= 0 0 0 1 "
         "// enable digital output on block acquisition (boolean)",
+   "Source string DigitalOutputEx= % % % %"
+        "// expression for output on digital output 2 (expression)",
    "Source int SignalType=           1 0 0 1 "
         "// numeric type of output signal: "
             " 0: int16,"
@@ -142,12 +162,12 @@ gUSBampADC::~gUSBampADC()
 //             the output signal; checks whether resources are available.
 // Parameters: Input and output signal properties pointers.
 // **************************************************************************
-void gUSBampADC::Preflight( const SignalProperties&,
+void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
                                   SignalProperties& outSignalProperties ) const
 {
   // Requested output signal properties.
   SignalType signalType = SignalType::int16;
-  int driVer = GT_GetDriverVersion();
+  FLOAT driVer = GT_GetDriverVersion();
   bciout << "g.USBamp driver version = " << driVer <<endl;
   if( Parameter( "SignalType" ) == 1 )
     signalType = SignalType::float32;
@@ -333,6 +353,13 @@ void gUSBampADC::Preflight( const SignalProperties&,
      if (DetermineNotchNumber() == -1)
         bcierr << "Could not find appropriate notch filter in gUSBamp. Use gUSBampgetinfo tool." << endl;
 
+  // expression check
+  if( std::string( Parameter("DigitalOutputEx") ) != "" )
+  {
+    GenericSignal preflightInput( inSignalProperties );
+     Expression( Parameter("DigitalOutputEx") ).Evaluate( &preflightInput );
+  }
+
   //digital output check
   Parameter("DigitalOutput");
   Parameter("DeviceIDs");
@@ -349,18 +376,18 @@ void gUSBampADC::Preflight( const SignalProperties&,
 // **************************************************************************
 void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 {
-    static  oldfilternumber=-999, oldnotchnumber=-999;
-    int     filternumber, notchnumber;
-    GND     CommonGround;
-    REF     CommonReference;
-    bool    autoconfigure;
+    static int oldfilternumber=-999, oldnotchnumber=-999;
+    int        filternumber, notchnumber;
+    GND        CommonGround;
+    REF        CommonReference;
+    bool       autoconfigure;
 
     //stop the acquire thread
     if (mpAcquireThread != NULL)
     {
-        mpAcquireThread->Suspend();
         mpAcquireThread->Terminate();
-        //mpAcquireThread->WaitFor(); //wait for the thread to terminate
+        while( !mpAcquireThread->IsTerminated() ) //wait for the thread to terminate
+          OSThread::Sleep( 10 );
         delete mpAcquireThread;
         mpAcquireThread = NULL;
     }
@@ -373,11 +400,11 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 
     mpAcquireThread = new AcquireThread(this);
 
-    mTotalChs = Parameter("SourceCh");
-    int samplingrate=Parameter("SamplingRate");
-    mMasterDeviceID=Parameter("DeviceIDMaster");
-    mFloatOutput = ( Parameter( "SignalType" ) == 1 );
-    NUM_BUFS = Parameter("NumBuffers");
+    mTotalChs        =           Parameter( "SourceCh" );
+    int samplingrate =           Parameter( "SamplingRate" );
+    mMasterDeviceID  = ( string )Parameter( "DeviceIDMaster" );
+    mFloatOutput     =         ( Parameter( "SignalType" ) == 1 );
+    NUM_BUFS         =           Parameter( "NumBuffers" );
     //NUM_BUFS = 5; //overwriting for now
     mSampleBlockSize = Parameter("SampleBlockSize");
     // if we set DeviceIDs to auto and we only have one device, we can autoconfigure
@@ -502,7 +529,7 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
             mMasterDeviceID=m_DeviceIDs.at(dev);
         }
         else{
-            m_DeviceIDs.at(dev)=Parameter("DeviceIDs")(dev);
+            m_DeviceIDs.at( dev ) = ( string )Parameter( "DeviceIDs" )( dev );
         }
         m_hdev.at(dev) = GT_OpenDeviceEx((char *)m_DeviceIDs.at(dev).c_str());
 
@@ -586,10 +613,16 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
     if (m_digitalOutput)
         GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 1);
 
+    // expression check
+    if( std::string( Parameter("DigitalOutputEx") ) != "" )
+    {
+      mDigExpression = Expression( Parameter("DigitalOutputEx") );
+    }
+
     //start acquire thread
     mThreadBlock = mProcBlock = 0;
     ResetEvent( acquireEventRead );
-    mpAcquireThread->Resume();
+    mpAcquireThread->Start();
 }
 
 
@@ -601,10 +634,18 @@ void gUSBampADC::Initialize(const SignalProperties&, const SignalProperties&)
 // Parameters: References to input signal (ignored) and output signal
 // Returns:    N/A
 // **************************************************************************
-void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
+void gUSBampADC::Process( const GenericSignal& input, GenericSignal& signal )
 {
     if (m_digitalOutput)
         GT_SetDigitalOut(m_hdev.at(0),(UCHAR)1, (UCHAR) 0);
+
+    if ( mDigExpression.IsValid() )
+    {
+      if( mDigExpression.Evaluate( &input ) )
+        GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)1 );
+      else
+        GT_SetDigitalOut( m_hdev.at(0), (UCHAR)2, (UCHAR)0 );
+    }
 
     /*if (WaitForSingleObject(acquireEventRead, m_timeoutms) != WAIT_OBJECT_0)
     {
@@ -625,7 +666,6 @@ void gUSBampADC::Process( const GenericSignal&, GenericSignal& signal )
     while(mProcBlock >= mThreadBlock && acquireEventRead != NULL)
         WaitForSingleObject(acquireEventRead, m_timeoutms);
     ResetEvent( acquireEventRead );
-    float *cur_sampleptr, cur_sample;
 
     if (mFloatOutput)
     {
@@ -748,7 +788,7 @@ gUSBampADC::AcquireThread::Execute()
 
             dwOVret = WaitForSingleObject(m_hEvent[dev][curBuf],
                                     amp->m_timeoutms);
-                                    
+
             GetOverlappedResult(amp->m_hdev[dev],
                                     &(m_ov[dev][curBuf]),
                                     &dwBytesReceived,
@@ -822,12 +862,12 @@ gUSBampADC::AcquireThread::Execute()
 			GT_Stop(amp->m_hdev.at(dev));
 			GT_ResetTransfer(amp->m_hdev.at(dev));
 			GT_CloseDevice(&(amp->m_hdev.at(dev)));
-			
+
 			for (int buf = 0; buf < amp->NUM_BUFS; buf++)   {
 				CloseHandle(m_hEvent[dev][buf]);
 				delete [] buffers[dev][buf];
 			}
-		}		
+		}
 	}
 	for (unsigned int dev=0; dev<amp->m_hdev.size(); dev++)
 	{
@@ -836,14 +876,15 @@ gUSBampADC::AcquireThread::Execute()
 			GT_Stop(amp->m_hdev.at(dev));
 			GT_ResetTransfer(amp->m_hdev.at(dev));
 			GT_CloseDevice(&(amp->m_hdev.at(dev)));
-			
+
 			for (int buf = 0; buf < amp->NUM_BUFS; buf++){
 				CloseHandle(m_hEvent[dev][buf]);
 				delete [] buffers[dev][buf];
 			}
 		}
-		delete [] buffers[dev];		
+		delete [] buffers[dev];
 	}
+  return 0;
 }
 
 float gUSBampADC::AcquireThread::getNextValue()

@@ -4,8 +4,25 @@
 // Description: This class handles all of the loading code
 //   to load .3ds file
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -13,6 +30,11 @@
 #include "Load3DS.h"
 #include "buffers.h"
 #include <fstream>
+#if __BORLANDC__
+# include <windows.h>
+#else // __BORLANDC__
+# include <QMessagebox>
+#endif // __BORLANDC__
 
 using namespace std;
 /************************CHUNK ID DEFINITION***********************************/
@@ -47,9 +69,18 @@ using namespace std;
 
 
 //global varaibles
-int gBuffer[50000] = {0};					// This is used to read past unwanted data
-UINT g_Texture[MAX_TEXTURES] = {0};				// This holds the texture info, referenced by an ID
+int gBuffer[50000] = {0};					          // This is used to read past unwanted data
+unsigned int g_Texture[MAX_TEXTURES] = {0};	// This holds the texture info, referenced by an ID
 CLoad3DS g_Load3ds;										// This is 3DS class.  This should go in a good model class.
+
+static void ErrorMessage( const char* inText )
+{
+#if __BORLANDC__
+	MessageBox(NULL, inText, "Error", MB_OK);
+#else // __BORLANDC__
+	QMessageBox::critical( NULL, inText, "Error" );
+#endif // __BORLANDC__
+}
 
 /*************************** IMPORT 3DS ***************************************/
 //This is called by the Init Fucnction to open the .3ds file, read it, then clean up
@@ -65,7 +96,7 @@ bool CLoad3DS::Import3DS(t3DModel& outModel, const char *strFileName)
 	if(!m_FilePointer)
 	{
 		sprintf(strMessage, "Unable to find the file: %s!", strFileName);
-		MessageBox(NULL, strMessage, "Error", MB_OK);
+		ErrorMessage(strMessage);
 		return false;
 	}
 
@@ -79,8 +110,8 @@ bool CLoad3DS::Import3DS(t3DModel& outModel, const char *strFileName)
 	// Make sure this is a 3DS file
 	if (currentChunk.ID != PRIMARY)
 	{
-		sprintf(strMessage, "Unable to load PRIMARY chuck from file: %s!", strFileName);
-		MessageBox(NULL, strMessage, "Error", MB_OK);
+		sprintf(strMessage, "Unable to load PRIMARY chunk from file: %s!", strFileName);
+		ErrorMessage(strMessage);
 		return false;
 	}
 
@@ -150,7 +181,12 @@ void CLoad3DS::ProcessNextChunk(t3DModel& outModel, tChunk& ioPreviousChunk)
 
 			// If the file version is over 3, give a warning that there could be a problem
 			if ((currentChunk.length - currentChunk.bytesRead == 4) && (gBuffer[0] > 0x03)) {
-				MessageBox(NULL, "This 3DS file is over version 3 so it may load incorrectly", "Warning", MB_OK);
+				const char* msg = "This 3DS file is over version 3 so it may load incorrectly";
+#if __BORLANDC__
+				MessageBox(NULL, msg, "Warning", MB_OK);
+#else // __BORLANDC__
+				QMessageBox::warning( NULL, msg, "Warning" );
+#endif // __BORLANDC__
 			}
 			break;
 
@@ -712,7 +748,7 @@ void CLoad3DS::ReadVertexIndices(t3DObject& outObject, tChunk& ioPreviousChunk)
 
 
 /******************************DECLARATION*************************************/
-void Create3dsTexture(UINT textureArray[], LPSTR strFileName, int textureID);
+void Create3dsTexture(unsigned int textureArray[], const char* strFileName, int textureID);
 void Load3dsFile();
 
 
@@ -727,15 +763,19 @@ void Load3dsFile();
 
 /****************************** CREATE 3ds TEXTURE *********************************/
 //This creates a texture in OpenGL that we can texture map
-void Create3dsTexture(UINT textureArray[], LPSTR strFileName, int textureID)
+void Create3dsTexture(unsigned int textureArray[], const char* strFileName, int textureID)
 {
+#ifdef __BORLANDC__
 	AUX_RGBImageRec *pBitmap = NULL;
+#else // __BORLANDC__
+  QImage* pBitmap = NULL;
+#endif // __BORLANDC__
 
 	if(!strFileName)									// Return from the function if no file name was passed in
 		return;
 
-    if( !ifstream( strFileName ).is_open() ) // Does the file exist?
-      return;
+  if( !ifstream( strFileName ).is_open() ) // Does the file exist?
+    return;
 
 	pBitmap = buffers::loadWindowsBitmap(strFileName);				// Load the bitmap and store the data
 
@@ -752,7 +792,11 @@ void Create3dsTexture(UINT textureArray[], LPSTR strFileName, int textureID)
 	glBindTexture(GL_TEXTURE_2D, textureArray[textureID]);
 
 	// Build Mipmaps (builds different versions of the picture for distances - looks better)
+#ifdef __BORLANDC__
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pBitmap->sizeX, pBitmap->sizeY, GL_RGB, GL_UNSIGNED_BYTE, pBitmap->data);
+#else // __BORLANDC__
+  gluBuild2DMipmaps(GL_TEXTURE_2D, 3, pBitmap->width(), pBitmap->height(), GL_RGBA, GL_UNSIGNED_BYTE, pBitmap->bits());
+#endif // __BORLANDC__
 
 	// Lastly, we need to tell OpenGL the quality of our texture map.  GL_LINEAR_MIPMAP_LINEAR
 	// is the smoothest.  GL_LINEAR_MIPMAP_NEAREST is faster than GL_LINEAR_MIPMAP_LINEAR,
@@ -762,16 +806,18 @@ void Create3dsTexture(UINT textureArray[], LPSTR strFileName, int textureID)
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 
 	// Now we need to free the bitmap data that we loaded since openGL stored it as a texture
-
+#ifdef __BORLANDC__
 	if (pBitmap)										// If we loaded the bitmap
-	{
+  {
 		if (pBitmap->data)								// If there is texture data
-		{
 			free(pBitmap->data);						// Free the texture data, we don't need it anymore
-		}
-
 		free(pBitmap);									// Free the bitmap structure
 	}
+#else // __BORLANDC__
+  if( pBitmap )
+    delete pBitmap;
+  pBitmap = NULL;
+#endif // __BORLANDC__
 }//create texture
 
 

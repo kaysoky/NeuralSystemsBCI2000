@@ -3,13 +3,38 @@
 // Authors: juergen.mellinger@uni-tuebingen.de
 // Description: Platform-independent GUI data structures and functions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef GUI_H
 #define GUI_H
 
 #include "Color.h"
+
+#ifdef __BORLANDC__
+# include <vcl.h>
+#else
+# include <QPaintDevice>
+# include <QPainter>
+# include <QImage>
+#endif // __BORLANDC__
 
 namespace GUI
 {
@@ -41,29 +66,23 @@ struct Rect
 };
 
 // Test whether a point is contained in a rectangle.
-bool
-PointInRect( const Point& p, const Rect& r )
-{
-  return p.x >= r.left
-      && p.y >= r.top
-      && p.x < r.right
-      && p.y < r.bottom;
-}
-
-// Test whether a rectangle is empty.
-bool
-EmptyRect( const Rect& r )
-{
-  return r.left >= r.right || r.top >= r.bottom;
-}
+bool PointInRect( const Point& p, const Rect& r );
+bool EmptyRect( const Rect& r );
 
 // A draw context consists of an OS-dependent GUI device handle, and a target
 // rectangle in that device's coordinates.
 // For Win32, the GUI device handle is a HDC (device context handle), not a
 // window handle.
+// If we're using Qt, we rather pass around a QPaintDevice, as that
+// is the equivalent of an HDC for a QWidget (our main window), and we can
+// get a DC from this QPaintDevice.
 struct DrawContext
 {
+#ifdef __BORLANDC__
   void* handle;
+#else // __BORLANDC__
+  QPaintDevice* handle;
+#endif // __BORLANDC__
   Rect  rect;
 };
 
@@ -94,9 +113,9 @@ template<int Mode, class T>
 void
 GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
 {
-#ifdef _WIN32
+#ifdef __BORLANDC__
   TCanvas* pCanvas = new TCanvas;
-  pCanvas->Handle = inDC.handle;
+  pCanvas->Handle = reinterpret_cast<HDC>( inDC.handle );
   int left = inDC.rect.left,
       right = left + Width( inGraphic ),
       run = 2,
@@ -129,7 +148,42 @@ GUI::GraphicResource::Render( const T& inGraphic, const GUI::DrawContext& inDC )
     ++run;
   }
   delete pCanvas;
-#endif // _WIN32
+#else // __BORLANDC__
+  if( inDC.handle != NULL )
+  {
+    if( Mode != RenderingMode::Opaque )
+      throw "GUI::GraphicsResource::Render: Unsupported rendering mode.";
+
+    int width = Width( inGraphic ),
+        height = Height( inGraphic );
+    QImage image( width, height, QImage::Format_RGB888 );
+    int run = 2,
+        x = 0,
+        y = 0;
+    while( inGraphic[ run ].count > 0 )
+    {
+      int grayValue = inGraphic[ run ].color;
+      for( int i = 0; i < inGraphic[ run ].count; ++i )
+      {
+        image.setPixel( x, y, qRgb( grayValue, grayValue, grayValue ) );
+        if( ++x >= width )
+        {
+          ++y;
+          x = 0;
+        }
+      }
+      ++run;
+    }
+    QRect targetRect(
+      static_cast<int>( inDC.rect.left ),
+      static_cast<int>( inDC.rect.top ),
+      static_cast<int>( inDC.rect.right - inDC.rect.left ),
+      static_cast<int>( inDC.rect.bottom - inDC.rect.top )
+    );
+    QPainter p( inDC.handle );
+    p.drawImage( targetRect, image );
+  }
+#endif // __BORLANDC__
 }
 
 #endif // GUI_H

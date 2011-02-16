@@ -4,7 +4,7 @@
 <head>
 <title>User Reference:Operator Module Scripting - BCI2000 Help</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="User Reference:Operator Module Scripting,Technical Reference:State Definition,Technical Reference:States of Operation,User Reference:Module Command Line Options,User Reference:Operator Module" />
+<meta name="keywords" content="User Reference:Operator Module Scripting,Technical Reference:Operator Library,Technical Reference:Parameter Definition,Technical Reference:State Definition,Technical Reference:States of Operation,Technical Reference:Visualization Properties,User Reference:Module Command Line Options,User Reference:Operator Module" />
 <link rel="shortcut icon" href="../../favicon.ico" />
 <link rel='stylesheet' type='text/css' media='print' href='../skins/common/wikiprintable.css' />
 <link rel="stylesheet" href="../skins/common/wikistandard.css@1" type="text/css" />
@@ -32,7 +32,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <div id='article'>
 <h1 class="pagetitle">Operator Module Scripting</h1><p class="subtitle">User Reference</p><hr class="sep" /><p>Operator scripts automate actions that the otherwise would be performed by the user, e.g. starting or suspending system operation.
 Scripts may be contained in script files, or given immediately in the operator module's preferences dialog.
-There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module.
+There is also an option to specify scripts from the <a href="User_Reference%253AModule_Command_Line_Options.html#Operator_Module" title="User Reference:Module Command Line Options">command line</a> when starting the operator module. When using the <a href="Technical_Reference%253AOperator_Library.html" title="Technical Reference:Operator Library">Operator Library</a>, script execution may occur at any time.
 </p>
 <table id="toc" class="toc" summary="Contents"><tr><td><div id="toctitle"><h2>Contents</h2></div>
 <ul>
@@ -48,11 +48,17 @@ There is also an option to specify scripts from the <a href="User_Reference%253A
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Commands"><span class="tocnumber">2</span> <span class="toctext">Commands</span></a>
 <ul>
 <li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#LOAD_PARAMETERFILE_.3Cfile.3E"><span class="tocnumber">2.1</span> <span class="toctext">LOAD PARAMETERFILE &lt;file&gt;</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SETCONFIG"><span class="tocnumber">2.2</span> <span class="toctext">SETCONFIG</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E"><span class="tocnumber">2.3</span> <span class="toctext">INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E"><span class="tocnumber">2.2</span> <span class="toctext">INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#INSERT_PARAMETER_.3Cparameter_definition.3E"><span class="tocnumber">2.3</span> <span class="toctext">INSERT PARAMETER &lt;parameter definition&gt;</span></a></li>
 <li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SET_STATE_.3Cname.3E_.3Cvalue.3E"><span class="tocnumber">2.4</span> <span class="toctext">SET STATE &lt;name&gt; &lt;value&gt;</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#QUIT"><span class="tocnumber">2.5</span> <span class="toctext">QUIT</span></a></li>
-<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SYSTEM_.3Ccommand_line.3E"><span class="tocnumber">2.6</span> <span class="toctext">SYSTEM &lt;command line&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SET_PARAMETER_.3Cname.3E_.3Cvalue.3E"><span class="tocnumber">2.5</span> <span class="toctext">SET PARAMETER &lt;name&gt; &lt;value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SET_VISPROPERTY_.3CvisID.3E..3Cname.3E_.3Cvalue.3E"><span class="tocnumber">2.6</span> <span class="toctext">SET VISPROPERTY &lt;visID&gt;.&lt;name&gt; &lt;value&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SET_VISPROPERTIES_.3Cproperty_set_ID.3E"><span class="tocnumber">2.7</span> <span class="toctext">SET VISPROPERTIES &lt;property set ID&gt;</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SETCONFIG"><span class="tocnumber">2.8</span> <span class="toctext">SETCONFIG</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#START"><span class="tocnumber">2.9</span> <span class="toctext">START</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#STOP"><span class="tocnumber">2.10</span> <span class="toctext">STOP</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#QUIT"><span class="tocnumber">2.11</span> <span class="toctext">QUIT</span></a></li>
+<li class='toclevel-2'><a href="User_Reference%253AOperator_Module_Scripting.html#SYSTEM_.3Ccommand_line.3E"><span class="tocnumber">2.12</span> <span class="toctext">SYSTEM &lt;command line&gt;</span></a></li>
 </ul>
 </li>
 <li class='toclevel-1'><a href="User_Reference%253AOperator_Module_Scripting.html#Syntax"><span class="tocnumber">3</span> <span class="toctext">Syntax</span></a></li>
@@ -67,7 +73,7 @@ There is also an option to specify scripts from the <a href="User_Reference%253A
 </ul>
 </td></tr></table>
 <a name="Events"></a><h3>Events</h3>
-<p>Script execution is bound to a number of events that occur during various <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">stages of BCI2000 system operation</a>:
+<p>In the Operator GUI, script execution is bound to a number of events that occur during various <a href="Technical_Reference%253AStates_of_Operation.html" title="Technical Reference:States of Operation">stages of BCI2000 system operation</a>:
 </p>
 <a name="OnConnect"></a><h4>OnConnect</h4>
 <p>This event is triggered at startup, as soon as all modules are connected to the operator module.
@@ -82,21 +88,39 @@ There is also an option to specify scripts from the <a href="User_Reference%253A
 <p>Triggered when the system goes from running into suspended mode. This happens whenever the <i>Running</i> state variable changes from 1 to 0. This may happen when the user clicks <i>Suspend</i>, when the application module switches the system into suspended mode, or when a script sets the <i>Running</i> state variable to 0.
 </p>
 <a name="OnExit"></a><h4>OnExit</h4>
-<p>Triggered when the operator module quits. Execution of the <i>QUIT</i> command also triggers this event.
+<p>Triggered when the operator module exits. Execution of the <i>QUIT</i> command also triggers this event.
 </p>
 <a name="Commands"></a><h3>Commands</h3>
 <a name="LOAD_PARAMETERFILE_.3Cfile.3E"></a><h4>LOAD PARAMETERFILE &lt;file&gt;</h4>
 <p>Loads a parameter file specified by its path and name. Relative paths are interpreted relative to the operator module's working directory at startup. Usually, this matches the executable's location in the <tt>prog</tt> directory.
 As the parameter file name must not contain white space, please use HTML-type encoding for white space characters, such as <tt>Documents%20and%20Settings</tt> when referring to a user's "Documents and Settings" folder.
 </p>
-<a name="SETCONFIG"></a><h4>SETCONFIG</h4>
-<p>Applies current parameters to the system. Corresponds to the <i>SetConfig</i> button.
-</p>
 <a name="INSERT_STATE_.3Cname.3E_.3Cbit_width.3E_.3Cinitial_value.3E"></a><h4>INSERT STATE &lt;name&gt; &lt;bit width&gt; &lt;initial value&gt;</h4>
-<p>Adds a state variable to the system. State variables are defined by name, bit width, and initial value (see <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">Technical Reference:State Definition</a>). This command may not be used after system initialization has completed, i.e. its use is restricted to the <i>OnConnect</i> event.
+<p>Adds a state variable to the system. State variables are defined by name, bit width, and initial value (see <a href="Technical_Reference%253AState_Definition.html" title="Technical Reference:State Definition">Technical Reference:State Definition</a>). This command may not be used after system initialization has completed, i.e. its use is restricted to the "Idle" and "Publishing" <a href="Technical_Reference%253AStates_of_Operation.html#Publishing_Phase" title="Technical Reference:States of Operation">phases of system operation</a>. In terms of events, its use is restricted to the <i>OnConnect</i> event.
+</p>
+<a name="INSERT_PARAMETER_.3Cparameter_definition.3E"></a><h4>INSERT PARAMETER &lt;parameter definition&gt;</h4>
+<p>Adds a parameter to the system. The parameter is specified as a <a href="Technical_Reference%253AParameter_Definition.html#Parameter_Lines" title="Technical Reference:Parameter Definition">parameter line</a>. This command may not be used after system initialization has completed, i.e. its use is restricted to the "Idle" and "Publishing" <a href="Technical_Reference%253AStates_of_Operation.html#Publishing_Phase" title="Technical Reference:States of Operation">phases of system operation</a>. In terms of events, its use is restricted to the <i>OnConnect</i> event.
 </p>
 <a name="SET_STATE_.3Cname.3E_.3Cvalue.3E"></a><h4>SET STATE &lt;name&gt; &lt;value&gt;</h4>
 <p>Sets the named state variable to the specified integer value. Setting the <i>Running</i> state to 1 will start system operation, setting it to 0 will suspend the system.
+</p>
+<a name="SET_PARAMETER_.3Cname.3E_.3Cvalue.3E"></a><h4>SET PARAMETER &lt;name&gt; &lt;value&gt;</h4>
+<p>Sets the named parameter to the specified value. Values that contain special characters, or whitespace must use the <a href="Technical_Reference%253AParameter_Definition.html#Special_Characters" title="Technical Reference:Parameter Definition">parameter value encoding</a>.
+</p>
+<a name="SET_VISPROPERTY_.3CvisID.3E..3Cname.3E_.3Cvalue.3E"></a><h4>SET VISPROPERTY &lt;visID&gt;.&lt;name&gt; &lt;value&gt;</h4>
+<p>Sets the named <a href="Technical_Reference%253AVisualization_Properties.html" title="Technical Reference:Visualization Properties">visualization property</a> for the specified visualization ID to the given value. If the visualization ID contains a dot character, it must be encoded in <a href="Technical_Reference%253AParameter_Definition.html#Special_Characters" title="Technical Reference:Parameter Definition">parameter value encoding</a>. E.g., setting the window width for the visualization ID "2.D1" would be written <code>SET VISPROPERTY 2%2ED1.Width 200</code>.
+</p>
+<a name="SET_VISPROPERTIES_.3Cproperty_set_ID.3E"></a><h4>SET VISPROPERTIES &lt;property set ID&gt;</h4>
+<p>Applies a set of visualization property values as given in the <a href="User_Reference%253AOperator_Module_Scripting.html#VisPropertySets" title="">VisPropertySets</a> parameter. In that matrix-valued parameter, row labels specify visualization properties such as "SRCD.Left", and columns represent sets of property values. Column labels are IDs of the corresponding property sets.
+</p>
+<a name="SETCONFIG"></a><h4>SETCONFIG</h4>
+<p>Applies current parameters to the system. Corresponds to the <i>SetConfig</i> button in the GUI version of the Operator module.
+</p>
+<a name="START"></a><h4>START</h4>
+<p>Starts or resumes system operation, corresponding to the <i>Start/Resume</i> button in the GUI version of the Operator module.
+</p>
+<a name="STOP"></a><h4>STOP</h4>
+<p>Stops system operation. Corresponds to the <i>Stop</i> button in the GUI version of the Operator.
 </p>
 <a name="QUIT"></a><h4>QUIT</h4>
 <p>Quits the operator module after terminating all BCI2000 modules.
@@ -107,7 +131,7 @@ As the parameter file name must not contain white space, please use HTML-type en
 <a name="Syntax"></a><h3>Syntax</h3>
 <p>Scripts consist of sequences of the above commands, terminated with either a DOS line ending sequence, or a semicolon (;).
 When the semicolon is used to terminate commands, a line may contain multiple commands.
-Scripts are case-sensitive, and commands must be spelled uppercase as given above.
+Commands are case-insensitive, values are case-sensitive.
 </p>
 <a name="Specifying_Scripts"></a><h3>Specifying Scripts</h3>
 <p>In the operator module's preferences dialog, scripts may be entered for each of the events listed above.

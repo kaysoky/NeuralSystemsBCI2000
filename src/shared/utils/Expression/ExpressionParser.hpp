@@ -31,20 +31,20 @@
    enum yytokentype {
      NUMBER = 258,
      NAME = 259,
-     SIGNAL = 260,
+     SIGNAL_ = 260,
      NEG = 261
    };
 #endif
 #define NUMBER 258
 #define NAME 259
-#define SIGNAL 260
+#define SIGNAL_ 260
 #define NEG 261
 
 
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 29 "ExpressionParser.y"
+#line 35 "ExpressionParser.y"
 typedef union YYSTYPE {
   double       value;
   const char*  name;

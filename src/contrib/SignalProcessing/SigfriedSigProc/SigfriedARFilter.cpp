@@ -1,5 +1,22 @@
-/* (C) 2000-2010, BCI2000 Project
-/* http://www.bci2000.org
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
 /*/
 //---------------------------------------------------------------------------
 
@@ -113,11 +130,6 @@ SigfriedARFilter::SigfriedARFilter()
      " // channels used to autoscale display or leave emtpy for all channels",
   "Filtering float LearningRateAutoScale= 0.99 1.0 0.0 512.0 "
       "// learningrate for realtime display histogram baseline",
-  "Filtering int SigfreidOutput= 0 0 0 1 "
-      "// Output Activiations in realtime, or for display:"
-          " 0: Real-Time,"
-          " 1: Display,"
-          "(enumeration)",
  END_PARAMETER_DEFINITIONS
 
 
@@ -168,7 +180,7 @@ SigfriedARFilter::SigfriedARFilter()
     }
 
   }
-  OutputType         = 1;     // Display type = RealTime
+
   binitialized       = false;
 
 }
@@ -295,7 +307,7 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
   // check each model
   for (unsigned int index_model = 0; index_model < num_models; index_model++) {
 
-    sz_filename = Parameter("ModelFiles")->Value((int)index_model,0).c_str();
+    sz_filename = Parameter("ModelFiles")(index_model, 0).c_str();
 
     if (hinstLib != NULL) {
 
@@ -416,12 +428,7 @@ void SigfriedARFilter::Preflight( const SignalProperties& inSignalProperties,
     }
   }
 
-  // check the output type
-  int output = Parameter( "SigfreidOutput" );
-  if( !output )
-     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
-  else
-     outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax() *  num_electrodecondition_rows, num_models );
+  outSignalProperties = SignalProperties( parameters_cfg.vchannels.getMax(), num_models );
   outSignalProperties.SetName( "SIGFRIED feedback" );
 
 }
@@ -466,7 +473,6 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   CircleRadius            = Parameter( "CircleRadius" );
   StatisticDisplayType    = Parameter( "StatisticDisplayType" );
   ScoreType               = Parameter( "ScoreType" );
-  OutputType              = Parameter( "SigfreidOutput" );
 
   // get the number of models and thus number identities for all vectors
   num_models = Parameter("ModelFiles")->NumRows();
@@ -493,8 +499,8 @@ void SigfriedARFilter::Initialize( const SignalProperties&, const SignalProperti
   for (unsigned int index_model = 0; index_model < num_models; index_model++) {
 
     // get the model filename and label
-    vmodel_filename[index_model]       = Parameter("ModelFiles")->Value((int)index_model,0).c_str();
-    vmodel_label[index_model]          = Parameter("ModelFiles")->Value(index_model,1).c_str();
+    vmodel_filename[index_model]       = Parameter("ModelFiles")(index_model,0).c_str();
+    vmodel_label[index_model]          = Parameter("ModelFiles")(index_model,1).c_str();
 
     // get the screen coordinates for the display associated with this model
     if (Parameter("ModelFiles")->NumColumns() == 5) {
@@ -1095,56 +1101,35 @@ void SigfriedARFilter::Process(const GenericSignal& input, GenericSignal& output
       for (int index_electrode = 0; index_electrode < num_electrodelocation_rows; index_electrode++)
         vscore_display[index_model](0,index_electrode) = velectrodecollections[index_model][0]->GetElectrodeCircle(index_electrode)->GetValue();
 
-      if( !OutputType  )
-      {
-        // go through all channels
-        for(int ch=0; ch<num_channels; ch++) {
+      // go through all channels
+      for(int ch=0; ch<num_channels; ch++) {
 
-          float cur_output;
+        float cur_output;
 
-          // feedback is the derived from the score
-          if (feedback_type == log_score) {
+        // feedback is the derived from the score
+        if (feedback_type == log_score) {
 
-            // feedback is the logarithmic mahalanobis distance score
-            if (ScoreType == mahalanobis_distance) {
-              cur_output=LOG(1+vscore[index_model](0,ch));
-            // feedback is the neg log probablity
-            } else if (ScoreType == neg_log_probability) {
-              cur_output=vscore[index_model](0,ch);
-            } else {
-              bcierr << "Unkown setting in ScoreType." << endl;
-            }
-
-          // feedback is the derived from the real time display
-          } else if (feedback_type == real_time_display) {
-            cur_output=vscore_display[index_model](0,ch);
+          // feedback is the logarithmic mahalanobis distance score
+          if (ScoreType == mahalanobis_distance) {
+            cur_output=LOG(1+vscore[index_model](0,ch));
+          // feedback is the neg log probablity
+          } else if (ScoreType == neg_log_probability) {
+            cur_output=vscore[index_model](0,ch);
           } else {
-            bcierr << "Unsupported setting in FeedbackType." << endl;
+            bcierr << "Unkown setting in ScoreType." << endl;
           }
 
-          // finally set the output
-          int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
-          output.SetValue( ch_out, index_model, cur_output);
+        // feedback is the derived from the real time display
+        } else if (feedback_type == real_time_display) {
+          cur_output=vscore_display[index_model](0,ch);
+        } else {
+          bcierr << "Unsupported setting in FeedbackType." << endl;
         }
+
+        // finally set the output
+        int ch_out = vparameters_cfg[index_model].vchannels(ch)-1;
+        output.SetValue( ch_out, index_model, cur_output);
       }
-      else
-      {
-        // go through all conditions
-        for(int cond=0; cond<num_electrodecondition_rows; cond++ )
-        {
-          // go through all channels
-          for(int ch=0; ch<num_channels; ch++) {
-
-            float cur_output;
-
-            // finally set the output
-            int ch_out = vparameters_cfg[index_model].vchannels(ch)-1; // Check this
-            cur_output = velectrodecollections[index_model][cond]->GetElectrodeCircle(ch_out)->GetValueDevice() / CircleRadius;
-            output.SetValue((cond*num_channels)+ch_out, index_model, cur_output);
-          }
-        }
-      }
-
 
 
       //

@@ -18,10 +18,10 @@
  *                      common reference pool                                 *
  * Revision 1.1  2006/07/04 18:45:50  mellinger
  * Put files into CVS.
- * 
+ *
  * Revision 1.2  2006/07/05 15:20:10  mellinger
  * Minor formatting and naming changes; removed unneeded data members.
- * 
+ *
  * Revision 2.0  2009/10/25 jhill
  * - Allow selection of a subset of physical channels to acquire.
  * - Support impedance measurement and acquisition of digital channel values.
@@ -29,6 +29,26 @@
  * - Crash fixes.
  *                                                                            *
  ******************************************************************************/
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -42,6 +62,8 @@
 #include "BCIError.h"
 #include "GenericSignal.h"
 #include "MeasurementUnits.h"
+
+#include <tchar.h>
 
 using namespace std;
 
@@ -78,9 +100,9 @@ TMSiADC::TMSiADC()
         mBufferMulti = OptionalParameter("TMSiBufferSizeInSampleBlocks", 4);
         double x = 100.0 / (double)mBufferMulti;
         if(x != floor(x)) bcierr << "TMSiBufferSizeInSampleBlocks should be an integer factor of 100" << endl;
-        
+
         int priority = OptionalParameter("TMSiProcessPriority", 0);
-        switch(priority) 
+        switch(priority)
         {
             case +3: SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS); break;
             case +2: SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS); break;
@@ -95,7 +117,7 @@ TMSiADC::TMSiADC()
         mMeasureImpedance = bool(int(OptionalParameter("TMSiCheckImpedance", 0)));
 
         StartDriver();
-        
+
         mpMaster->Reference((BOOL)(OptionalParameter("TMSiAutoReference", 1)));
 }
 
@@ -142,7 +164,7 @@ TMSiADC::StartDriver()
                 for (unsigned int i=0; i< mHardwareCh; i++)
                 {
                         int Exponent=psf[i].UnitExponent;
-                        if (mMeasureImpedance) 
+                        if (mMeasureImpedance)
                         {
                             Gain[i]   = 1.0;
                             Offset[i] = 0.0;
@@ -150,7 +172,7 @@ TMSiADC::StartDriver()
                         else {
                             if (Exponent)
                             {
-                                    if (psf[i].UnitId==1) 
+                                    if (psf[i].UnitId==1)
                                     {     // if volts
                                             Gain[i]         = (psf[i].UnitGain  *(pow(10.0,Exponent)))*1000000;     // in uV
                                             Offset[i]       = (psf[i].UnitOffSet*(pow(10.0,Exponent)))*1000000;
@@ -201,17 +223,17 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
             int ind = int(Parameter("PhysicalChannels")(i)) - 1;
             if(ind < 0) bcierr << "A PhysicalChannels index of " << ind+1 << "is illegal" << endl;
             if(ind >= mHardwareCh) bcierr << "A PhysicalChannels index of " << ind+1 << "exceeds the hardware's maximum of " << mHardwareCh << endl;
-            
+
             //Impedance has gain/offset of 1/0, warn if different but set anyway
-            if ( mMeasureImpedance ) 
+            if ( mMeasureImpedance )
             {
-                if (float(Parameter("SourceChGain")(i)) != Gain[ind] && !gainWarning) 
+                if (float(Parameter("SourceChGain")(i)) != Gain[ind] && !gainWarning)
                 {
                     bciout << "Using user-defined SourceChGain values for impedance measurement, and assuming that you have correctly calibrated these ";
                     bciout << "(e.g. channel " << i+1 << " has gain " << Parameter("SourceChGain")(i) << ")." << std::endl;
                     gainWarning = true;
                 }
-                if (float(Parameter("SourceChOffset")(i)) != Offset[ind] && !offsetWarning) 
+                if (float(Parameter("SourceChOffset")(i)) != Offset[ind] && !offsetWarning)
                 {
                     bciout << "Using user-defined SourceChOffset values for impedance measurement, and assuming that you have correctly calibrated these ";
                     bciout << "(e.g. channel " << i+1 << " has offset " << Parameter("SourceChOffset")(i) << ")." << std::endl;
@@ -236,10 +258,10 @@ TMSiADC::Preflight( const SignalProperties&, SignalProperties& outputProperties 
           bcierr << "The SourceChGain values "
                  << "must match the hardware channel resolutions"
                  << endl;
-        
+
         //Sampling Rate has to be 8Hz (Check for other Amps?), warn if data is updated less than once a second
-        if ( mMeasureImpedance ) 
-        { 
+        if ( mMeasureImpedance )
+        {
             int trueSamplingRate = 8;
             if (int(Parameter("SamplingRate")) != trueSamplingRate){
                 bcierr << "For impedance checking sampling rate must be " << trueSamplingRate << "Hz, yours is " << int(Parameter("SamplingRate")) << "Hz." << std::endl;
@@ -283,7 +305,7 @@ TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
         mPhysChanInd.clear();
         for ( int i = 0; i < mSoftwareCh ; ++i) mPhysChanInd.push_back(int(Parameter("PhysicalChannels")(i)) - 1);
         mpMaster->SetSignalBuffer(&mSrate,&mBufferSize);
-        
+
         //I wonder where the difference to mBuffersize is...
         mValuesToRead         = mSampleBlockSize * mHardwareCh * 4;   // sizeof type? type dependent? TMS appears to only give 4 byte values.
 
@@ -291,7 +313,7 @@ TMSiADC::Initialize( const SignalProperties&, const SignalProperties& )
         {
             mpMaster->MeasuringMode( MEASURE_MODE_IMPEDANCE, 0);
         }
-        
+
         if (!mpMaster->Start())
                 bcierr << "TMSiADC Initialize returned an error (Device Start)" << endl;
 }

@@ -12,8 +12,25 @@
 //   Child classes (descendants) of StimulusTask implement event
 //   handlers by overriding its virtual functions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -25,6 +42,7 @@
 #include <iomanip>
 #include <set>
 #include <limits>
+
 
 using namespace std;
 
@@ -131,16 +149,16 @@ StimulusTask::Preflight( const SignalProperties& Input, SignalProperties& Output
   if( preRunDuration < 1 )
     bcierr << "PreRunDuration must be >= 1 data block" << endl;
 
-  int epochLength = MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) );
+  double epochLength = MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) );
   if( Parameter( "InterpretMode" ) != InterpretModes::None )
   {
-    int stimulusDuration = MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) ),
-        isiMinDuration = MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) ),
-        postSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ),
-        minStimToClassInterval =
-            stimulusDuration
-          + isiMinDuration
-          + postSequenceDuration;
+    double stimulusDuration = MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) ),
+           isiMinDuration = MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) ),
+           postSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ),
+           minStimToClassInterval =
+              stimulusDuration
+            + isiMinDuration
+            + postSequenceDuration;
 
     if( epochLength > minStimToClassInterval )
       bcierr << "EpochLength is " << epochLength / oneMillisecond << "ms, exceeds "
@@ -171,15 +189,15 @@ StimulusTask::Initialize( const SignalProperties& Input,
   mDisplay.SetHeight( Parameter( "WindowHeight" ) );
   mDisplay.SetColor( RGBColor( Parameter( "WindowBackgroundColor" ) ) );
 
-  mPreRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) );
-  mPostRunDuration = MeasurementUnits::ReadAsTime( Parameter( "PostRunDuration" ) );
-  mPreSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) );
-  mPostSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) );
-  mStimulusDuration = MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) );
-  mISIMinDuration = MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) );
-  mISIMaxDuration = MeasurementUnits::ReadAsTime( Parameter( "ISIMaxDuration" ) );
+  mPreRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreRunDuration" ) ) );
+  mPostRunDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostRunDuration" ) ) );
+  mPreSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) ) );
+  mPostSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ) );
+  mStimulusDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "StimulusDuration" ) ) );
+  mISIMinDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ISIMinDuration" ) ) );
+  mISIMaxDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "ISIMaxDuration" ) ) );
   mStimToClassDuration = 2 * ( mStimulusDuration + mISIMinDuration );
-  mStimToClassDuration = ::ceil( MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", mStimToClassDuration ) ) );
+  mStimToClassDuration = static_cast<int>( ::ceil( MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", mStimToClassDuration ) ) ) );
 
   mInterpretMode = Parameter( "InterpretMode" );
 
@@ -320,7 +338,7 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
         break;
 
       default:
-        throw __FUNC__ ": Unknown phase value";
+        throw "StimulusTask::Process: Unknown phase value";
     }
     if( doProgress )
     {
@@ -378,33 +396,32 @@ StimulusTask::Process( const GenericSignal& Input, GenericSignal& Output )
         } break;
 
         case stimulus:
-          { // Enter ISI phase
-            State( "StimulusCode" ) = 0;
-            State( "StimulusType" ) = 0;
-            bcidbg( 2 ) << "Event: StimulusEnd" << endl;
-            OnStimulusEnd( mStimulusCode );
-            int isiMinDuration = Associations()[ mStimulusCode ].ISIMinDuration(),
-                isiMaxDuration = Associations()[ mStimulusCode ].ISIMaxDuration();
-            if( isiMinDuration < 0 )
-              isiMinDuration = mISIMinDuration;
-            if( isiMaxDuration < 0 )
-              isiMaxDuration = mISIMaxDuration;
-            mISIDuration = isiMinDuration;
-            int durationDelta = isiMaxDuration - mISIDuration;
-            mISIDuration += ( RandomNumberGenerator.Random() * ( durationDelta + 1 ) )
-                                             / ( RandomNumberGenerator.RandMax() + 1 );
-            mStimulusCode = OnNextStimulusCode();
-            mPhase = ISI;
-          }
-          break;
+        { // Enter ISI phase
+          State( "StimulusCode" ) = 0;
+          State( "StimulusType" ) = 0;
+          bcidbg( 2 ) << "Event: StimulusEnd" << endl;
+          OnStimulusEnd( mStimulusCode );
+          int isiMinDuration = Associations()[ mStimulusCode ].ISIMinDuration(),
+              isiMaxDuration = Associations()[ mStimulusCode ].ISIMaxDuration();
+          if( isiMinDuration < 0 )
+            isiMinDuration = mISIMinDuration;
+          if( isiMaxDuration < 0 )
+            isiMaxDuration = mISIMaxDuration;
+          mISIDuration = isiMinDuration;
+          int durationDelta = isiMaxDuration - mISIDuration;
+          mISIDuration += ( RandomNumberGenerator.Random() * ( durationDelta + 1 ) )
+                                           / ( RandomNumberGenerator.RandMax() + 1 );
+          mStimulusCode = OnNextStimulusCode();
+          mPhase = ISI;
+        } break;
 
         case postRun:
-            State( "Running" ) = 0;
-            mPhase = none;
-            break;
+          State( "Running" ) = 0;
+          mPhase = none;
+          break;
 
         default:
-          throw __FUNC__ ": Unknown phase value";
+          throw "StimulusTask::Process: Unknown phase value";
       }
     }
   }
@@ -442,9 +459,9 @@ StimulusTask::DisplayMessage( const string& inMessage )
   if( !inMessage.empty() )
   {
     mpMessageField = new TextField( mDisplay );
-    GUI::Rect rect = { 0.5, 0.4, 0.5, 0.6 };
+    GUI::Rect rect = { 0.5f, 0.4f, 0.5f, 0.6f };
     mpMessageField->SetText( inMessage )
-                   .SetTextHeight( 0.8 )
+                   .SetTextHeight( 0.8f )
                    .SetColor( RGBColor::Gray )
                    .SetTextColor( RGBColor::Yellow )
                    .SetAspectRatioMode( GUI::AspectRatioModes::AdjustWidth )
@@ -453,4 +470,3 @@ StimulusTask::DisplayMessage( const string& inMessage )
       mpMessageField->SetTextHeight( mpMessageField->TextHeight() * 0.9 );
   }
 }
-

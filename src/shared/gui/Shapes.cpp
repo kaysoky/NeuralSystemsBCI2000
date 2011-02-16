@@ -3,15 +3,37 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A number of GraphObjects representing geometric shapes.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "Shapes.h"
-
 #include <limits>
+
+#ifdef __BORLANDC__
+# include <VCL.h>
+#else // __BORLANDC__
+# include <QPainter>
+#endif // __BORLANDC__
 
 using namespace std;
 using namespace GUI;
@@ -143,7 +165,7 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   TCanvas* pCanvas = new TCanvas;
   try
   {
-    pCanvas->Handle = inDC.handle;
+    pCanvas->Handle = ( HDC )inDC.handle;
     TRect winRect( inDC.rect.left, inDC.rect.top, inDC.rect.right, inDC.rect.bottom );
     if( this->FillColor() == RGBColor::NullColor )
     {
@@ -170,6 +192,41 @@ RectangularShape::OnPaint( const GUI::DrawContext& inDC )
   {
     delete pCanvas;
   }
+#else // __BORLANDC__
+  // Prepare the brush
+  QPainter p( inDC.handle );
+  QRect drawRect(
+    static_cast<int>( inDC.rect.left ),
+    static_cast<int>( inDC.rect.top ),
+    static_cast<int>( inDC.rect.right - inDC.rect.left ),
+    static_cast<int>( inDC.rect.bottom - inDC.rect.top )
+  );
+  QBrush fillBrush;
+  if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
+    fillBrush.setStyle( Qt::NoBrush );
+  else
+  {
+    QColor fillColor( this->FillColor().R(), this->FillColor().G(), this->FillColor().B() );
+    fillBrush.setStyle( Qt::SolidPattern );
+    fillBrush.setColor( fillColor );
+  }
+  p.setBrush( fillBrush );
+
+  // Prepare the pen
+  QPen outlinePen;
+  if( this->Color() == RGBColor( RGBColor::NullColor ) )
+    outlinePen.setStyle( Qt::NoPen );
+  else
+  {
+    QColor outlineColor( this->Color().R(), this->Color().G(), this->Color().B() );
+    outlinePen.setStyle( Qt::SolidLine );
+    outlinePen.setColor( outlineColor );
+    outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
+  }
+  p.setPen( outlinePen );
+
+  // Draw the rectangle
+  p.drawRect( drawRect );
 #endif // __BORLANDC__
 }
 
@@ -281,7 +338,7 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   TCanvas* pCanvas = new TCanvas;
   try
   {
-    pCanvas->Handle = inDC.handle;
+    pCanvas->Handle = ( HDC )inDC.handle;
     TRect winRect( inDC.rect.left, inDC.rect.top, inDC.rect.right, inDC.rect.bottom );
     if( this->FillColor() == RGBColor::NullColor )
     {
@@ -308,6 +365,41 @@ EllipticShape::OnPaint( const GUI::DrawContext& inDC )
   {
     delete pCanvas;
   }
+#else // __BORLANDC__
+  // Prepare the Brush
+  QPainter p( inDC.handle );
+  QRect drawRect(
+    static_cast<int>( inDC.rect.left ),
+    static_cast<int>( inDC.rect.top ),
+    static_cast<int>( inDC.rect.right - inDC.rect.left ),
+    static_cast<int>( inDC.rect.bottom - inDC.rect.top )
+  );
+  QBrush fillBrush;
+  if( this->FillColor() == RGBColor( RGBColor::NullColor ) )
+    fillBrush.setStyle( Qt::NoBrush );
+  else
+  {
+    QColor fillColor( this->FillColor().R(), this->FillColor().G(), this->FillColor().B() );
+    fillBrush.setStyle( Qt::SolidPattern );
+    fillBrush.setColor( fillColor );
+  }
+  p.setBrush( fillBrush );
+
+  // Prepare the Pen
+  QPen outlinePen;
+  if( this->Color() == RGBColor( RGBColor::NullColor ) )
+    outlinePen.setStyle( Qt::NoPen );
+  else
+  {
+    QColor outlineColor( this->Color().R(), this->Color().G(), this->Color().B() );
+    outlinePen.setStyle( Qt::SolidLine );
+    outlinePen.setColor( outlineColor );
+    outlinePen.setWidth( static_cast<int>( this->LineWidth() ) );
+  }
+  p.setPen( outlinePen );
+
+  // Draw the rectangle
+  p.drawEllipse( drawRect );
 #endif // __BORLANDC__
 }
 

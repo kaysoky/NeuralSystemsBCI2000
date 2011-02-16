@@ -9,8 +9,25 @@
 // Description: Functions that one would like to be part of MMC's Universal
 //              Library but that unfortunately aren't.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -25,20 +42,20 @@ std::map<int, HANDLE> DASUtils::threadHandles;
 
 DASUtils::ADRangeEntry DASUtils::ranges[] =
 {
-  { BIP10VOLTS,   -10,    10     }, { UNI10VOLTS,    0, 10    },
-  { BIP5VOLTS,     -5,     5     }, { UNI5VOLTS,     0,  5    },
-  { BIP2PT5VOLTS,  -2.5,   2.5   }, { UNI2PT5VOLTS,  0,  2.5  },
-                                    { UNI2VOLTS,     0,  2    },
-  { BIP1PT25VOLTS, -1.25,  1.25  }, { UNI1PT25VOLTS, 0,  1.25 },
-  { BIP1PT67VOLTS, -1.67,  1.67  }, { UNI1PT67VOLTS, 0,  1.67 },
-  { BIP1VOLTS,     -1,     1     }, { UNI1VOLTS,     0,  1    },
-  { BIPPT625VOLTS, -0.625, 0.625 },
-  { BIPPT5VOLTS,   -0.5,   0.5   },
-  { BIPPT1VOLTS,   -0.1,   0.1   }, { UNIPT1VOLTS,   0,  0.1  },
-  { BIPPT05VOLTS,  -0.05,  0.05  },
-                                    { UNIPT02VOLTS,  0,  0.02 },
-  { BIPPT01VOLTS,  -0.01,  0.01  }, { UNIPT01VOLTS,  0,  0.01 },
-  { BIPPT005VOLTS, -0.005, 0.005 },
+  { BIP10VOLTS,   -10.0f,  10.0f   }, { UNI10VOLTS,    0.0f, 10.0f  },
+  { BIP5VOLTS,     -5.0f,   5.0f   }, { UNI5VOLTS,     0.0f,  5.0f  },
+  { BIP2PT5VOLTS,  -2.5f,   2.5f   }, { UNI2PT5VOLTS,  0.0f,  2.5f  },
+                                      { UNI2VOLTS,     0.0f,  2.0f  },
+  { BIP1PT25VOLTS, -1.25f,  1.25f  }, { UNI1PT25VOLTS, 0.0f,  1.25f },
+  { BIP1PT67VOLTS, -1.67f,  1.67f  }, { UNI1PT67VOLTS, 0.0f,  1.67f },
+  { BIP1VOLTS,     -1.0f,   1.0f   }, { UNI1VOLTS,     0.0f,  1.0f  },
+  { BIPPT625VOLTS, -0.625f, 0.625f },
+  { BIPPT5VOLTS,   -0.5f,   0.5f   },
+  { BIPPT1VOLTS,   -0.1f,   0.1f   }, { UNIPT1VOLTS,   0.0f,  0.1f  },
+  { BIPPT05VOLTS,  -0.05f,  0.05f  },
+                                      { UNIPT02VOLTS,  0.0f,  0.02f },
+  { BIPPT01VOLTS,  -0.01f,  0.01f  }, { UNIPT01VOLTS,  0.0f,  0.01f },
+  { BIPPT005VOLTS, -0.005f, 0.005f },
 };
 
 // Try a number of options in the order of preferability.

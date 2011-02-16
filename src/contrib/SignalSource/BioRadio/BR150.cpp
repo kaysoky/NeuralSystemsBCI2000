@@ -20,6 +20,26 @@
  * Put files into CVS.
  *                                                                      *
  ******************************************************************************/
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+/*/
 #include "PCHIncludes.h"
 #pragma hdrstop
 
@@ -28,6 +48,7 @@
 #include "bioutils.h"
 
 #include <string>
+#include <float.h>
 
 using namespace std;
 using namespace bioutils;
@@ -73,14 +94,15 @@ BR150::Start(const char *pt)
     Stop();
 
   sBR150 = CreateBioRadio();
-  mFlags[COM_STATUS] = StartAcq(sBR150,DISPLAY_PROGRESS,const_cast<char*>(mpPort));
+  mFlags[COM_STATUS] = StartCommunication(sBR150,const_cast<char*>(mpPort));
+  StartAcq(sBR150,DISPLAY_PROGRESS);
 
   if(mFlags[COM_STATUS])
   {
     mFlags[PING_STATUS] = PingConfig(sBR150,DISPLAY_PROGRESS);
     if(mFlags[PING_STATUS])
     {
-      SetBadDataValue(sBR150,BAD_DATA);
+      SetBadDataValues(sBR150,-FLT_MAX,BAD_DATA);
       SetFreqHoppingMode(sBR150,HOP);
       sRunningState = RUNNING;
       return XNO_ERROR;
@@ -167,7 +189,7 @@ BR150::GetData(int block, int chans)
     while(TransferBuffer(sBR150) == ZERO)
       Sleep(SLEEP);
 
-    ReadScaled(sBR150,tempBuffer,BUFFER_SIZE,&mNumRead);
+    ReadScaledData(sBR150,tempBuffer,BUFFER_SIZE,&mNumRead);
     BufferMerge(mData,tempBuffer,countSamplesCollected,mNumRead);
     countSamplesCollected = mNumRead + countSamplesCollected;
   }
@@ -188,7 +210,7 @@ BR150::GetData(void)
   while(TransferBuffer(sBR150) == ZERO)
     Sleep(SLEEP);
 
-  ReadScaled(sBR150,mData,BUFFER_SIZE,&mNumRead);
+  ReadScaledData(sBR150,mData,BUFFER_SIZE,&mNumRead);
   return mData;
 }
 

@@ -35,8 +35,25 @@
 //              }
 //           };
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef CORE_MODULE_H
 #define CORE_MODULE_H
@@ -47,6 +64,12 @@
 #include "GenericSignal.h"
 #include "SockStream.h"
 #include "MessageHandler.h"
+#include "OSThread.h"
+#include "OSEvent.h"
+
+#if _WIN32
+# include "FPExceptMask.h"
+#endif // _WIN32
 
 #define SIGSRC  1
 #define SIGSRC_NAME  "SignalSource"
@@ -54,8 +77,6 @@
 #define SIGPROC_NAME "SignalProcessing"
 #define APP     3
 #define APP_NAME     "Application"
-
-#define THISVERSION "0.40"
 
 #if( MODTYPE == SIGSRC )
 # define THISMODULE SIGSRC_NAME
@@ -80,6 +101,9 @@
 class CoreModule : private MessageHandler
 {
   static const int cInitialConnectionTimeout = 20000; // ms
+#if _WIN32
+  static const int cDisabledFPExceptions = _MCW_EM; // disable all exceptions for core modules
+#endif // _WIN32
 
  public:
   CoreModule();
@@ -124,6 +148,19 @@ class CoreModule : private MessageHandler
   bool HandleStateVector( std::istream& );
   bool HandleSysCommand( std::istream& );
 
+  class ReceivingThread;
+  friend class ReceivingThread;
+  class ReceivingThread : public OSThread
+  {
+   public:
+    ReceivingThread( CoreModule& inParent ) : mrParent( inParent ) {}
+    virtual int Execute();
+   private:
+    CoreModule& mrParent;
+  }                mReceivingThread;
+  MessageQueue     mMessageQueue;
+  OSEvent          mMessageEvent;
+
   bool             mTerminated;
   ParamList        mParamlist;
   StateList        mStatelist;
@@ -132,11 +169,11 @@ class CoreModule : private MessageHandler
   GenericSignal    mOutputSignal;
   client_tcpsocket mOperatorSocket,
                    mNextModuleSocket;
-  streamsock::set_of_instances mInputSockets;
   server_tcpsocket mPreviousModuleSocket;
   sockstream       mOperator,
                    mNextModule,
                    mPreviousModule;
+  OSMutex          mConnectionLock;
   bool             mFiltersInitialized,
                    mLastRunning,
                    mResting,
@@ -145,6 +182,9 @@ class CoreModule : private MessageHandler
                    mFirstStatevectorPending;
   void*            mMutex;
   int              mSampleBlockSize;
+#if _WIN32
+  FPExceptMask     mFPMask;
+#endif // _WIN32
 };
 
 #endif // CORE_MODULE_H

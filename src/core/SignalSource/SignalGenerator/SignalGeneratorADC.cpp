@@ -3,8 +3,25 @@
 // Author: schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
 // Description: An ADC class for testing purposes.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -36,11 +53,11 @@ SignalGeneratorADC::SignalGeneratorADC()
   mSineChannelY( 0 ),
   mSineChannelZ( 0 ),
   mModulateAmplitude( 1 ),
-  mSinePhase( 0 ),
-  mLasttime( 0 ),
   mAmplitudeX( 1 ),
   mAmplitudeY( 1 ),
-  mAmplitudeZ( 1 )
+  mAmplitudeZ( 1 ),
+  mSinePhase( 0 ),
+  mLasttime( 0 )
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Source:Signal%20Properties int SourceCh= 16 "
@@ -177,21 +194,21 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
   }
 #endif // _WIN32
 
-  float maxVal = Output.Type().Max(),
-        minVal = Output.Type().Min();
+  double maxVal = Output.Type().Max(),
+         minVal = Output.Type().Min();
 
   for( int sample = 0; sample < Output.Elements(); ++sample )
   {
     mSinePhase += 2 * M_PI * mSineFrequency;
-    mSinePhase = ::fmod( mSinePhase, float( 2 * M_PI ) );
-    float sineValue = ::sin( mSinePhase ) * mSineAmplitude;
+    mSinePhase = ::fmod( mSinePhase, 2 * M_PI );
+    double sineValue = ::sin( mSinePhase ) * mSineAmplitude;
 
-    float offset = mDCOffset;
+    double offset = mDCOffset;
     if( offset != 0 )
       offset *= mOffsetMultiplier.Evaluate();
     for( int ch = 0; ch < Output.Channels(); ++ch )
     {
-      float value = offset;
+      double value = offset;
       value += ( mRandomGenerator.Random() * mNoiseAmplitude / mRandomGenerator.RandMax() - mNoiseAmplitude / 2 );
       if( mSineChannelX == ch + 1 )
         value += sineValue * mAmplitudeX;
@@ -209,13 +226,13 @@ SignalGeneratorADC::Process( const GenericSignal&, GenericSignal& Output )
 
   // Wait for the amount of time that corresponds to the length of a data block.
   PrecisionTime now = PrecisionTime::Now();
-  float blockDuration = 1e3 * Output.Elements() / mSamplingRate,
-        time2wait = blockDuration - ( now - mLasttime );
+  double blockDuration = 1e3 * Output.Elements() / mSamplingRate,
+         time2wait = blockDuration - ( now - mLasttime );
   if( time2wait < 0 )
     time2wait = 0;
 #ifdef _WIN32
   const float timeJitter = 5;
-  ::Sleep( ::floor( time2wait / timeJitter ) * timeJitter );
+  ::Sleep( static_cast<int>( ::floor( time2wait / timeJitter ) * timeJitter ) );
   while( PrecisionTime::Now() - mLasttime < blockDuration - 1 )
     ::Sleep( 0 );
 #else

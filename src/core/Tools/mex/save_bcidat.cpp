@@ -12,8 +12,25 @@
 //  Signal data is always interpreted as raw data, i.e. it will be written
 //  into the output file unchanged.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 
@@ -49,7 +66,7 @@ struct StateInfo
 
 template<typename T>
 void
-ReadSignal( void* inData, long inNumSamples, long inSampleOffset, GenericSignal& outSignal )
+ReadSignal( void* inData, long long inNumSamples, long long inSampleOffset, GenericSignal& outSignal )
 {
   for( int ch = 0; ch < outSignal.Channels(); ++ch )
   {
@@ -171,7 +188,7 @@ mexFunction( int nargout, mxArray* varargout[],
     bcierr__ << "Signal data must have two dimensions." << endl;
   mwSize totalSamples = dims[0];
 
-  void ( *fpReadSignal )( void*, long, long, GenericSignal& ) = NULL;
+  void ( *fpReadSignal )( void*, long long, long long, GenericSignal& ) = NULL;
   SignalType type = SignalType::int16;
   switch( mxGetClassID( pSignal ) )
   {
@@ -377,7 +394,7 @@ mexFunction( int nargout, mxArray* varargout[],
   wrapper.StartRun( outputFile, outputFileName );
 
   GenericSignal signal( properties );
-  for( long blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
+  for( long long blockStart = 0; blockStart + sampleBlockSize <= totalSamples; blockStart += sampleBlockSize )
   {
     fpReadSignal( pSignalData, totalSamples, blockStart, signal );
     for( StateInfoMap::const_iterator i = stateInfo.begin(); i != stateInfo.end(); ++i )

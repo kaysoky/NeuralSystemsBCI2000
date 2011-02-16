@@ -1,13 +1,30 @@
 ////////////////////////////////////////////////////////////////////////////////
-// $Id: gMOBIlabBTADC.cpp 1542 2007-09-14 18:06:49Z gschalk $
+// $Id$
 // Author: jawilson@cae.wisc.edu
 // Description: BCI2000 Source Module for gMOBIlab devices.
 //   This is the ADC module for the gMOBIlab bluetooth. It is based
 //   on the original gMOBIlab module by Gerwin Schalk and Juergen Mellinger,
 //   and is modified by Adam Wilson
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -31,21 +48,23 @@ gMOBIlabPlusADC::gMOBIlabPlusADC()
   // add all the parameters that this ADC requests to the parameter list
   BEGIN_PARAMETER_DEFINITIONS
    "Source string COMport=      COM3: COM2: a z "
-       "// COMport for MOBIlab",
+     "// COMport for MOBIlab",
    "Source int SourceCh=      8 16 1 16 "
-       "// number of digitized channels total",
+     "// number of digitized channels total",
    "Source int SampleBlockSize= 8 5 1 128 "
-       "// number of samples per block",
+     "// number of samples per block",
    "Source int SamplingRate=    256 256 1 40000 "
-       "// the signal sampling rate",
+     "// the signal sampling rate",
    "Source int InfoMode= 0 0 0 1"
-		"// display information about the g.MOBIlabPlus",
+	   "// display information about the g.MOBIlabPlus",
    "Source int MobiLabTestMode= 0 0 0 1"
-   		"// generate a test signal (boolean)",
+   	 "// generate a test signal (boolean)",
    "Source int DigitalEnable= 0 0 0 1 "
-        "// read digital inputs 1-8 as channels (boolean)",
+     "// read digital inputs 1-8 as channels (boolean)",
    "Source int DigitalOutBlock= 0 0 0 1 "
-        "//pulse digital output 7 during data reads (boolean)",
+     "// pulse digital output 7 during data reads (boolean)",
+   "Source string DigitalOutputEx= % % % % "
+     "// output high on digital output 4 when true (expression)",
   END_PARAMETER_DEFINITIONS
   /* perhaps this can be added later? Does it make sense to stream data to an
    SD card in a real-time BCI system?
@@ -70,7 +89,7 @@ gMOBIlabPlusADC::~gMOBIlabPlusADC()
 // Parameters: References to input and output signal properties.
 // Returns:    N/A
 // **************************************************************************
-void gMOBIlabPlusADC::Preflight( const SignalProperties&,
+void gMOBIlabPlusADC::Preflight( const SignalProperties& inSignalProperties,
                                        SignalProperties& Output ) const
 {
   int sourceCh = Parameter( "SourceCh" ),
@@ -89,6 +108,13 @@ void gMOBIlabPlusADC::Preflight( const SignalProperties&,
 
   // Requested output signal properties.
   Output = SignalProperties( sourceCh, sampleBlockSize, SignalType::int16 );
+
+  // DigitalOutputExpression check
+  if( std::string( Parameter("DigitalOutputEx") ) != "" )
+  {
+    GenericSignal preflightInput( inSignalProperties );
+     Expression( Parameter("DigitalOutputEx") ).Evaluate( &preflightInput );
+  }
 }
 
 
@@ -165,9 +191,17 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
   if (Parameter("DigitalOutBlock") == 1)
   {
     dio.dio7_direction = false;   //set to digital output
-	mEnableDigOut = true;
-	mDigState = 0;
-	GT_SetDigitalOut(mDev, 0x10);
+    mEnableDigOut = true;
+    GT_SetDigitalOut(mDev, 0x11);
+  }
+
+  // Set the digital output expression
+  // expression check
+  if( std::string( Parameter("DigitalOutputEx") ) != "" )
+  {
+    dio.dio4_direction = false; //set to digital output
+    mDigExpression = Expression( Parameter("DigitalOutputEx") );
+    //GT_SetDigitalOut(mDev, 0x88);
   }
 
   bool ret = GT_InitChannels(mDev, ain, dio); // init analog channels and digital lines on g.MOBIlab
@@ -187,7 +221,7 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 
   int numSamplesPerScan = (numAChans+numDChans) * Output.Elements(),
       blockSize = numSamplesPerScan * sizeof( sint16 ),
-      blockDuration = 1e3 * Output.Elements() / Parameter( "SamplingRate" );
+      blockDuration = static_cast<int>( 1e3 * Output.Elements() / Parameter( "SamplingRate" ) );
   mpAcquisitionThread = new gMOBIlabThread( blockSize, blockDuration, mDev );
 }
 
@@ -200,8 +234,22 @@ void gMOBIlabPlusADC::Initialize( const SignalProperties&,
 // Parameters: References to input signal (ignored) and output signal.
 // Returns:    N/A
 // **************************************************************************
-void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
+void gMOBIlabPlusADC::Process( const GenericSignal& Input, GenericSignal& Output )
 {
+  if (mEnableDigOut)
+    // Set DIO 4 low
+    GT_SetDigitalOut(mDev, 0x10); // 00010000 = 16 = 0x10 (in hex)
+
+  // Expression output
+  if( mDigExpression.IsValid() )
+  {
+    if( mDigExpression.Evaluate( &Input ) )
+      // Set DIO 5 high
+      GT_SetDigitalOut( mDev, 0x88 ); // 10001000 = 136 = 0x88 (in hex)
+    else
+      // Set DIO 5 low
+      GT_SetDigitalOut( mDev, 0x80 ); // 10000000 = 128 = 0x80 (in hex)
+  }
 
   const int cMaxAChans = 8;
   uint16 mask[] =
@@ -232,13 +280,8 @@ void gMOBIlabPlusADC::Process( const GenericSignal&, GenericSignal& Output )
     }
   }
 
-  if (mEnableDigOut){
-  	mDigState = (mDigState+1) % 2;
-	if (mDigState == 0)
-		GT_SetDigitalOut(mDev, 0x10);
-	else
-		GT_SetDigitalOut(mDev, 0x11);
-  }
+  if (mEnableDigOut)
+    GT_SetDigitalOut(mDev, 0x11);
 
   if( mpAcquisitionThread->IsTerminated() )
     bcierr << "Lost connection to device" << endl;

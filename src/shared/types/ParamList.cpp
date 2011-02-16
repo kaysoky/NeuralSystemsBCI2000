@@ -4,8 +4,25 @@
 // Description: ParamList is a BCI2000 type that represents a collection of
 //   parameters.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -231,11 +248,6 @@ ParamList::Save( const string& inFileName ) const
 //             It does NOT load system critical dynamic parameters (e.g., ports,
 //             IP addresses)
 // Parameters: char *filename - filename of the parameterlist
-//             usetags - if usetags is true, then the "tag" value in each parameter
-//                       determines whether the parameter should be loaded
-//                       if the tag value in the parameter is "true", then the
-//                       parameter will NOT be loaded
-//                       if usetags is false, then all parameters are loaded
 //             nonexisting - if true, load parameters, even if they currently do
 //                       not exist in the list
 // Returns:    true - successful
@@ -253,7 +265,6 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
   typedef set<string> NameSet;
   NameSet unwantedParams;
 
-#if 1 // This section's functionality will go into operator code.
   // Exclude parameters from unwanted sections.
   const char* unwantedSections[] = { "System", };
   for( size_t j = 0; j < sizeof( unwantedSections ) / sizeof( *unwantedSections ); ++j )
@@ -261,7 +272,6 @@ ParamList::Load( const string& inFileName, bool inImportNonexisting )
                                          i != paramsFromFile.mParams.end(); ++i )
       if( Param::strciequal( i->Param.Section(), unwantedSections[ j ] ) )
         unwantedParams.insert( i->Param.mName );
-#endif
 
   // If desired, exclude parameters missing from the main parameter list.
   if( !inImportNonexisting )

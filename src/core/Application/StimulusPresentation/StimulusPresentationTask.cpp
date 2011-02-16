@@ -4,8 +4,25 @@
 //   juergen.mellinger@uni-tuebingen.de
 // Description: The task filter for a stimulus presentation task.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -16,6 +33,7 @@
 #include "ImageStimulus.h"
 #include "AudioStimulus.h"
 #include "Localization.h"
+
 #include "MeasurementUnits.h"
 
 #include <algorithm>
@@ -150,6 +168,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
   ImageStimulus* pImageStimulus = NULL;
   if( Parameter( "IconSwitch" ) == 1 )
     pImageStimulus = new ImageStimulus( preflightDisplay );
+
   AudioStimulus* pAudioStimulus = NULL;
   if( Parameter( "AudioSwitch" ) == 1 )
     pAudioStimulus = new AudioStimulus;
@@ -175,12 +194,12 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
       presentFocusOn = false;
       presentResult = false;
   }
-  int focusDuration = MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( "FocusOn" ), 0, "StimulusDuration" ) ),
-      resultDuration = MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( "Result" ), 0, "StimulusDuration" ) ),
-      preSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) ),
-      postSequenceDuration = MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) );
+  int focusDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
+        StimulusProperty( Parameter( "FocusOn" ), 0, "StimulusDuration" ) ) ),
+      resultDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
+        StimulusProperty( Parameter( "Result" ), 0, "StimulusDuration" ) ) ),
+      preSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PreSequenceDuration" ) ) ),
+      postSequenceDuration = static_cast<int>( MeasurementUnits::ReadAsTime( Parameter( "PostSequenceDuration" ) ) );
 
   if( presentFocusOn && preSequenceDuration < 2 * focusDuration )
     bcierr << "When FocusOn message and target stimulus are presented, "
@@ -208,29 +227,29 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
     "ISIMinDuration",
     "ISIMaxDuration",
   };
-  float oneMillisecond = MeasurementUnits::ReadAsTime( "1ms" );
+  double oneMillisecond = MeasurementUnits::ReadAsTime( "1ms" );
   int minStimDuration = 0,
       minISIDuration = 0,
-      epochLength = MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) );
+      epochLength = static_cast<int>( MeasurementUnits::ReadAsTime( OptionalParameter( "EpochLength", 0 ) ) );
 
   enum { caption, icon, audio };
   for( size_t i = 0; i < stimParams.size(); ++i )
     for( int j = 0; j < Parameter( stimParams[ i ] )->NumColumns(); ++j )
     {
-      int stimDuration = MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ) ),
-      isiDuration = MeasurementUnits::ReadAsTime(
-        StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ) );
+      int stimDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
+        StimulusProperty( Parameter( stimParams[ i ] ), j, "StimulusDuration" ) ) ),
+      isiDuration = static_cast<int>( MeasurementUnits::ReadAsTime(
+        StimulusProperty( Parameter( stimParams[ i ] ), j, "ISIMinDuration" ) ) );
       if( minStimDuration > stimDuration )
         minStimDuration = stimDuration;
       if( minISIDuration > isiDuration )
         minISIDuration = isiDuration;
       for( size_t k = 0; k < sizeof( timeParams ) / sizeof( *timeParams ); ++k )
       { // Check individual stimulus durations.
-        float value = MeasurementUnits::ReadAsTime(
+        double value = MeasurementUnits::ReadAsTime(
           StimulusProperty( Parameter( stimParams[ i ] ), j, timeParams[ k ] )
         );
-        if( value < 1.0f || ::fmod( value, 1.0f ) > oneMillisecond )
+        if( value < 1.0 || ::fmod( value, 1.0 ) > oneMillisecond )
           bciout << "Due to a sample block duration of "
                  << 1.0f / oneMillisecond << "ms,"
                  << " the actual value of " << timeParams[ k ]
@@ -272,6 +291,7 @@ StimulusPresentationTask::OnPreflight( const SignalProperties& /*Input*/ ) const
 
   delete pImageStimulus;
   delete pAudioStimulus;
+
 }
 
 void
@@ -324,15 +344,15 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   for( int i = 0; i < Stimuli->NumColumns(); ++i )
   {
     Associations()[ i + 1 ].SetStimulusDuration(
-      MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "StimulusDuration" ) ) );
+      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "StimulusDuration" ) ) ) );
     Associations()[ i + 1 ].SetISIMinDuration(
-      MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMinDuration" ) ) );
+      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMinDuration" ) ) ) );
     Associations()[ i + 1 ].SetISIMaxDuration(
-      MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMaxDuration" ) ) );
+      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Stimuli, i, "ISIMaxDuration" ) ) ) );
 
-    float stimulusWidth = StimulusProperty( Stimuli, i, "StimulusWidth" ) / 100.0,
-          captionHeight = StimulusProperty( Stimuli, i, "CaptionHeight" ) / 100.0,
-          audioVolume = StimulusProperty( Stimuli, i, "AudioVolume" ) / 100.0;
+    double stimulusWidth = StimulusProperty( Stimuli, i, "StimulusWidth" ) / 100.0,
+           captionHeight = StimulusProperty( Stimuli, i, "CaptionHeight" ) / 100.0,
+           audioVolume = StimulusProperty( Stimuli, i, "AudioVolume" ) / 100.0;
     RGBColor captionColor = RGBColor( StimulusProperty( Stimuli, i, "CaptionColor" ) );
 
     if( captionSwitch )
@@ -392,7 +412,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   {
     ParamRef FocusOn = Parameter( "FocusOn" );
     mFocusAnnouncement.SetStimulusDuration(
-      MeasurementUnits::ReadAsTime( StimulusProperty( FocusOn, 0, "StimulusDuration" ) ) );
+      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( FocusOn, 0, "StimulusDuration" ) ) ) );
     for( int i = 0; i < FocusOn->NumColumns(); ++i )
     {
       float stimulusWidth = StimulusProperty( FocusOn, i, "StimulusWidth" ) / 100.0,
@@ -450,7 +470,7 @@ StimulusPresentationTask::OnInitialize( const SignalProperties& /*Input*/ )
   {
     ParamRef Result = Parameter( "Result" );
     mResultAnnouncement.SetStimulusDuration(
-      MeasurementUnits::ReadAsTime( StimulusProperty( Result, 0, "StimulusDuration" ) ) );
+      static_cast<int>( MeasurementUnits::ReadAsTime( StimulusProperty( Result, 0, "StimulusDuration" ) ) ) );
     for( int i = 0; i < Result->NumColumns(); ++i )
     {
       float stimulusWidth = StimulusProperty( Result, i, "StimulusWidth" ) / 100.0,

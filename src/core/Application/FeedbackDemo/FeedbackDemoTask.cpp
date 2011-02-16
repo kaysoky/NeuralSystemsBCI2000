@@ -3,8 +3,25 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A demo feedback task.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -13,7 +30,16 @@
 #include "Color.h"
 #include "MeasurementUnits.h"
 #include "Localization.h"
+#ifdef __BORLANDC__
 #include <vcl.h>
+#else // __BORLANDC__
+#include <QWidget>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsRectItem>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsSimpleTextItem>
+#endif // __BORLANDC__
 
 RegisterFilter( FeedbackDemoTask, 3 );
 
@@ -26,10 +52,19 @@ FeedbackDemoTask::FeedbackDemoTask()
   mCursorPosY( 0.0 ),
   mCursorSpeedX( 0.0 ),
   mCursorSpeedY( 0.0 ),
+#ifdef __BORLANDC__
   mpForm( new TForm( reinterpret_cast<TComponent*>( NULL ) ) ),
   mpLabel( new TLabel( mpForm ) ),
   mpTarget( new TShape( mpForm ) ),
   mpCursor( new TShape( mpForm ) )
+#else // __BORLANDC__
+  mpForm( new QWidget() ),
+  mpScene( new QGraphicsScene() ),
+  mpSceneView( new QGraphicsView( mpForm ) ),
+  mpLabel( new QGraphicsSimpleTextItem() ),
+  mpTarget( new QGraphicsRectItem() ),
+  mpCursor( new QGraphicsEllipseItem() )
+#endif // __BORLANDC__
 {
   BEGIN_PARAMETER_DEFINITIONS
     "Application:Cursor int CursorColor= 0xFF0000 0xFF0000 % % "
@@ -44,6 +79,7 @@ FeedbackDemoTask::FeedbackDemoTask()
    "Be prepared ...",  "Achtung ...",
   END_LOCALIZED_STRINGS
 
+#ifdef __BORLANDC__
   mpForm->BorderStyle = bsNone;
   mpForm->Color = clBlack;
   mpForm->DoubleBuffered = true;
@@ -65,11 +101,39 @@ FeedbackDemoTask::FeedbackDemoTask()
   mpCursor->Shape = stCircle;
   mpCursor->Pen->Width = 0;
   mpCursor->Hide();
+#else // __BORLANDC__
+  mpForm->setWindowFlags( Qt::FramelessWindowHint );
+  mpScene->setBackgroundBrush( QBrush( Qt::black ) );
+  mpSceneView->setScene( mpScene );
+  mpSceneView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+  mpSceneView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+  mpSceneView->show();
+
+  mpScene->addItem( mpLabel );
+  mpLabel->show();
+
+  mpScene->addItem( mpTarget );
+  mpTarget->setPen( Qt::NoPen );
+  mpTarget->hide();
+
+  mpScene->addItem( mpCursor );
+  mpCursor->setPen( Qt::NoPen );
+  mpCursor->hide();
+
+  mpForm->hide();
+#endif // __BORLANDC__
 }
 
 FeedbackDemoTask::~FeedbackDemoTask()
 {
-  delete mpForm;
+  if( mpForm )
+    delete mpForm;
+  mpForm = NULL;
+#ifndef __BORLANDC__
+  if( mpScene )
+    delete mpScene;
+  mpScene = NULL;
+#endif // __BORLANDC__
 }
 
 void
@@ -80,7 +144,7 @@ FeedbackDemoTask::OnPreflight( const SignalProperties& Input ) const
   Parameter( "WindowLeft" );
   Parameter( "WindowTop" );
 
-  if( RGBColor( Parameter( "CursorColor" ) ) == RGBColor::NullColor )
+  if( RGBColor( Parameter( "CursorColor" ) ) == RGBColor( RGBColor::NullColor ) )
     bcierr << "Invalid RGB value in CursorColor" << endl;
 
   if( MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) ) <= 0 )
@@ -96,6 +160,7 @@ FeedbackDemoTask::OnPreflight( const SignalProperties& Input ) const
 void
 FeedbackDemoTask::OnInitialize( const SignalProperties& /*Input*/ )
 {
+#ifdef __BORLANDC__
   mpForm->Height = Parameter( "WindowHeight" );
   mpForm->Width = Parameter( "WindowWidth" );
   mpForm->Left = Parameter( "WindowLeft" );
@@ -121,6 +186,41 @@ FeedbackDemoTask::OnInitialize( const SignalProperties& /*Input*/ )
   mCursorSpeedY = mpForm->Height / feedbackDuration / 2;
 
   mpForm->Show();
+#else // __BORLANDC__
+  mpForm->move( Parameter( "WindowLeft" ), Parameter( "WindowTop" ) );
+  mpForm->resize( Parameter( "WindowWidth" ), Parameter( "WindowHeight" ) );
+  mpSceneView->resize( Parameter( "WindowWidth" ), Parameter( "WindowHeight" ) );
+  mpSceneView->setSceneRect( 0, 0, Parameter( "WindowWidth"), Parameter( "WindowHeight" ) );
+  mpSceneView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+  mpSceneView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+  mpSceneView->show();
+
+  RGBColor textColor( RGBColor::Green );
+  SetLabel( LocalizableString( "Timeout" ), textColor );
+
+  QRectF cursorRect;
+  cursorRect.setWidth( mpForm->width() * Parameter( "CursorWidth" ) / 100.0 );
+  cursorRect.setHeight( cursorRect.width() );
+  RGBColor cursorColor = RGBColor( Parameter( "CursorColor" ) );
+  QBrush cursorBrush( QColor( cursorColor.R(), cursorColor.G(), cursorColor.B() ) );
+  mpCursor->setRect( cursorRect );
+  mpCursor->setBrush( cursorBrush );
+
+  QRectF targetRect;
+  targetRect.setLeft( mpForm->width() - mpCursor->rect().width() );
+  targetRect.setWidth( mpCursor->rect().width() );
+  if( Parameter( "NumberTargets" ) > 0 )
+    targetRect.setHeight( mpForm->height() / Parameter( "NumberTargets" ) );
+  mpTarget->setRect( targetRect );
+
+  // Cursor speed in pixels per signal block duration:
+  float feedbackDuration = MeasurementUnits::ReadAsTime( Parameter( "FeedbackDuration" ) );
+  mCursorSpeedX = ( mpForm->width() - mpTarget->rect().width() ) / feedbackDuration;
+  // In Y direction, we need only cross half the screen height during a trial.
+  mCursorSpeedY = mpForm->height() / feedbackDuration / 2;
+
+  mpForm->show();
+#endif // __BORLANDC__
 }
 
 void
@@ -131,8 +231,13 @@ FeedbackDemoTask::OnStartRun()
   mTrialStatistics.Reset();
   AppLog << "Run #" << mRunCount << " started" << endl;
 
+#ifdef __BORLANDC__
   mpLabel->Color = clWhite;
   mpLabel->Caption = LocalizableString( "Be prepared ..." );
+#else // __BORLANDC__
+  RGBColor textColor( RGBColor::White );
+  SetLabel( LocalizableString( "Be prepared ..." ), textColor );
+#endif // __BORLANDC__
 }
 
 void
@@ -148,8 +253,13 @@ FeedbackDemoTask::OnStopRun()
            << mTrialStatistics.Bits() << " bits transferred.\n";
   AppLog   << "====================="  << endl;
 
+#ifdef __BORLANDC__
   mpLabel->Font->Color = clGreen;
   mpLabel->Caption = LocalizableString( "Timeout" );
+#else // __BORLANDC__
+  RGBColor textColor( RGBColor::Green );
+  SetLabel( LocalizableString( "Timeout" ), textColor );
+#endif // __BORLANDC__
 }
 
 void
@@ -160,6 +270,7 @@ FeedbackDemoTask::OnTrialBegin()
                 << ", target: " << State( "TargetCode" )
                 << endl;
 
+#ifdef __BORLANDC__
   mpLabel->Caption = "";
   if( State( "TargetCode" ) > 0 )
   {
@@ -167,24 +278,50 @@ FeedbackDemoTask::OnTrialBegin()
     mpTarget->Brush->Color = mpCursor->Brush->Color;
     mpTarget->Show();
   }
+#else // __BORLANDC__
+  RGBColor textColor( RGBColor::Black );
+  SetLabel( "", textColor );
+  if( State( "TargetCode" ) > 0 )
+  {
+    QRectF targetRect = mpTarget->rect();
+    QRectF newTargetRect( targetRect.left(), targetRect.height() * ( State ( "TargetCode" ) - 1 ), targetRect.width(), targetRect.height() );
+    mpTarget->setRect( newTargetRect );
+    mpTarget->setBrush( mpCursor->brush() );
+    mpTarget->show();
+  }
+#endif // __BORLANDC__
 }
 
 void
 FeedbackDemoTask::OnTrialEnd()
 {
+#ifdef __BORLANDC__
   mpLabel->Caption = "";
   mpTarget->Hide();
   mpCursor->Hide();
+#else //__BORLANDC__
+  mpLabel->setText( QString( "" ) );
+  mpTarget->hide();
+  mpCursor->hide();
+#endif // __BORLANDC__
 }
 
 void
 FeedbackDemoTask::OnFeedbackBegin()
 {
   mCursorPosX = 0.0;
+#ifdef __BORLANDC__
   mCursorPosY = mpForm->Height / 2;
   mpCursor->Left = mCursorPosX;
   mpCursor->Top = mCursorPosY - mpCursor->Height / 2;
   mpCursor->Show();
+#else // __BORLANDC__
+  mCursorPosY = mpForm->height() / 2;
+  QRectF cursorRect = mpCursor->rect();
+  QRectF newCursorRect( mCursorPosX, mCursorPosY - cursorRect.height() / 2, cursorRect.width(), cursorRect.height() );
+  mpCursor->setRect( newCursorRect );
+  mpCursor->show();
+#endif // __BORLANDC__
 }
 
 void
@@ -200,8 +337,13 @@ FeedbackDemoTask::OnFeedbackEnd()
     mTrialStatistics.Update( State( "TargetCode" ), State( "ResultCode" ) );
     if( State( "TargetCode" ) == State( "ResultCode" ) )
     {
+#ifdef __BORLANDC__
       mpTarget->Brush->Color = clYellow;
       mpTarget->Invalidate();
+#else // __BORLANDC__
+      mpTarget->setBrush( QBrush( Qt::yellow ) );
+      mpTarget->update();
+#endif // __BORLANDC__
       AppLog.Screen << "-> hit" << endl;
     }
     else
@@ -226,6 +368,7 @@ FeedbackDemoTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgre
 {
   mCursorPosX += mCursorSpeedX;
   mCursorPosY -= mCursorSpeedY * ControlSignal( 0, 0 );
+#ifdef __BORLANDC__
   mpCursor->Left = mCursorPosX;
   mpCursor->Top = mCursorPosY - mpCursor->Height / 2;
   if( mpCursor->Top < 0 )
@@ -243,6 +386,30 @@ FeedbackDemoTask::DoFeedback( const GenericSignal& ControlSignal, bool& doProgre
       result = Parameter( "NumberTargets" );
     State( "ResultCode" ) = result;
   }
+#else // __BORLANDC__
+  QRectF cursorRect = mpCursor->rect();
+  QRectF newCursorRect;
+  newCursorRect.setLeft( mCursorPosX );
+  newCursorRect.setTop( mCursorPosY - cursorRect.height() / 2 );
+  if( newCursorRect.top() < 0 )
+    newCursorRect.setTop( 0 );
+  else if( newCursorRect.top() > mpForm->height() - cursorRect.height() )
+    newCursorRect.setTop( mpForm->height() - cursorRect.height() );
+  newCursorRect.setWidth( cursorRect.width() );
+  newCursorRect.setHeight( cursorRect.height() );
+  mpCursor->setRect( newCursorRect );
+
+  if( mCursorPosX + cursorRect.width() / 2 >= mpForm->width() - mpTarget->rect().width() )
+  { // Right margin hit:
+    doProgress = true;
+    int result = static_cast<int>( ::floor( mCursorPosY * Parameter( "NumberTargets" ) / mpForm->height() ) + 1 );
+    if( result < 1 )
+      result = 1;
+    else if( result > Parameter( "NumberTargets" ) )
+      result = Parameter( "NumberTargets" );
+    State( "ResultCode" ) = result;
+  }
+#endif // __BORLANDC__
 }
 
 void
@@ -254,5 +421,22 @@ void
 FeedbackDemoTask::DoITI( const GenericSignal&, bool& /*doProgress*/ )
 {
 }
+
+#ifndef __BORLANDC__
+void
+FeedbackDemoTask::SetLabel( const char *text, RGBColor &color )
+{
+  QFont labelFont;
+  labelFont.fromString( "Arial" );
+  labelFont.setPixelSize( mpForm->height() / 8 );
+  QFontMetrics fm( labelFont );
+  mpLabel->setFont( labelFont );
+  mpLabel->setPos( ( mpForm->width() / 2 ) - ( fm.width( text ) / 2 ),
+                   ( mpForm->height() / 2 ) - ( fm.height() / 2 ) );
+  mpLabel->setPen( QPen( QColor( color.R(), color.G(), color.B() ) ) );
+  mpLabel->setBrush( QBrush( QColor( color.R(), color.G(), color.B() ) ) );
+  mpLabel->setText( text );
+}
+#endif // __BORLANDC__
 
 

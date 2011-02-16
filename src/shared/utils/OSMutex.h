@@ -3,11 +3,16 @@
 // Author: juergen.mellinger@uni-tuebingen.de
 // Description: A wrapper for mutex objects.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// (C) 2000-2008, BCI2000 Project
 ///////////////////////////////////////////////////////////////////////
 #ifndef OS_MUTEX_H
 #define OS_MUTEX_H
+
+#ifdef _WIN32
+# include <windows.h>
+#else
+# include <pthread.h>
+#endif // _WIN32
 
 class OSMutex
 {
@@ -43,7 +48,11 @@ class OSMutex
   };
 
  private:
+#ifdef _WIN32
   HANDLE mHandle;
+#else // _WIN32
+	mutable pthread_mutex_t mMutex;
+#endif // _WIN32
 };
 
 #endif // OS_THREAD_H

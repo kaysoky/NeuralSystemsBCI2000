@@ -10,11 +10,10 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = BioRadio.exe Biosemi2.exe DASSource.exe DT2000.exe MicroMed.exe \
-  ModularEEG.exe Neuroscan.exe neurogetparams.exe NISource.exe \
-  NIDAQ_mx_Source.exe RDAClient.exe getparams.exe TMSi.exe TDTclient.exe \
-  TDTsampleRate.exe FIRProcessing.exe PeakDetectSignalProcessing.exe \
-  SWSignalProcessing.exe SWApp.exe SigfriedSigProc.exe FieldTripBuffer.exe \
-  SWSpeller.exe Speller.exe BCIBatch.exe BCIDiff.exe BCITimeFreq.exe calibgen.exe
+  ModularEEG.exe neurogetparams.exe NISource.exe NIDAQ_mx_Source.exe \
+  RDAClient.exe getparams.exe TMSi.exe FIRProcessing.exe \
+  PeakDetectSignalProcessing.exe SWSignalProcessing.exe SWApp.exe \
+  SigfriedSigProc.exe FieldTripBuffer.exe SWSpeller.exe Speller.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -43,19 +42,11 @@ ModularEEG.exe: SignalSource\ModularEEG\ModularEEG.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-Neuroscan.exe: SignalSource\Neuroscan\Neuroscan.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
 NISource.exe: SignalSource\NIDAQ\NISource.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
 TMSi.exe: SignalSource\TMSi\TMSi.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-TDTclient.exe: SignalSource\TuckerDavis\TDTclient.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
@@ -83,27 +74,7 @@ Speller.exe: Application\Speller\Speller.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 
-BCIBatch.exe: Tools\Batch\BCIBatch.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCIDiff.exe: Tools\BCIdiff\BCIDiff.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-BCITimeFreq.exe: Tools\BCITimeFrequency\BCITimeFreq.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-calibgen.exe: Tools\GenerateCalibration\calibgen.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
 neurogetparams.exe: SignalSource\Neuroscan\getparams\neurogetparams.bpr
-  $(ROOT)\bin\bpr2mak $**
-  $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
-
-TDTsampleRate.exe: SignalSource\TuckerDavis\TDTsampleRate\TDTsampleRate.bpr
   $(ROOT)\bin\bpr2mak $**
   $(ROOT)\bin\make -$(MAKEFLAGS) -f$*.mak
 

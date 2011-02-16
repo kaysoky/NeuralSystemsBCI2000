@@ -65,7 +65,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 </ul>
 </td></tr></table>
 <a name="Synopsis"></a><h2>Synopsis</h2>
-<p>A filter that outputs different statesr from BCI2000 to outputs connected to a National Instruments Board running DAQmx 8.5 or higher.
+<p>A filter that outputs different states from BCI2000 to outputs connected to a National Instruments Board running DAQmx 8.5 or higher.
 </p>
 <a name="Location"></a><h2>Location</h2>
 <p>The file(s) should be in the following directory:
@@ -85,7 +85,7 @@ a.new, #quickbar a.new { color: #CC2200; }
 <p>The NIDAQFilter uses any DAQmx 8.5 or higher compliant board and allows the user to pipe state data from BCI2000 through the board. All necesary components must be connected to the BCI computer before initiating a module using the filter.
 </p>
 <a name="Adding_and_Compiling"></a><h2>Adding and Compiling</h2>
-<p>To add and compile the NIDAQFilter module, make sure the latest NIDAQ MX drivers are installed on your computer. When that is done, go into the C:\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\ folder. Inside are two folders: lib and include. The lib folder will contain the NIDAQmx.lib file (inside of the folder msvc). Copy that into the project's library folder. Inside of the include folder is the NIDAQmx.h file, which contains the function prototypes needed to use the NIDAQLogger module. Move this file into the project's include folder. Make sure the project links the new .lib file, and that the NIDAQFilter.h and NIDAQFilter.cpp files include the NIDAQmx.h file correctly. The NIDAQFiltershould now be able to compile normally.
+<p>To add and compile the NIDAQFilter module, make sure the latest NIDAQ MX drivers are installed on your computer. When that is done, go into the C:\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\ folder. Inside are two folders: lib and include. The lib folder will contain the NIDAQmx.lib file (inside of the folder msvc). Copy that into the project's library folder. Inside of the include folder is the NIDAQmx.h file, which contains the function prototypes needed to use the NIDAQLogger module. Move this file into the project's include folder. Make sure the project links the new .lib file, and that the NIDAQFilter.h and NIDAQFilter.cpp files include the NIDAQmx.h file correctly. The NIDAQFilter should now be able to compile normally.
 </p>
 <a name="Parameters"></a><h2>Parameters</h2>
 <p>The NIDAQFilter uses command line parameters to initialize the device(s) and set up the active ports. It then uses BCI2000 parameters for finer controls over the device, such as changing the sampling rate of the device.

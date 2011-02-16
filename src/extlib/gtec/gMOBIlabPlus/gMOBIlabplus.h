@@ -3,11 +3,11 @@
 *
 *			g.MOBIlab+ - Function Prototypes
 *			API for g.MOBIlab+
-*			
+*
 *			Copyright (c) Guger Technologies OEG 1999-2007
-*			
+*
 *			Created: Laundl 29.03.2004
-*			Last Modified : Maresch 21.05.2007	
+*			Last Modified : Maresch 21.05.2007
 *
 ********************************************************************************/
 
@@ -33,8 +33,8 @@ typedef struct // structure used to define analog channels
 {
 	BOOL ain1; // TRUE: scan channel 1, FALSE: do not scan channel 1
 	BOOL ain2; // ...
-	BOOL ain3; 
-	BOOL ain4; 
+	BOOL ain3;
+	BOOL ain4;
 	BOOL ain5;
 	BOOL ain6;
 	BOOL ain7;
@@ -63,7 +63,7 @@ typedef struct // structure used to handle buffers
 {
 	SHORT   *pBuffer;    // Pointer to buffer
 	UINT	size;	     // Buffersize in bytes: max. 1024 bytes
-	UINT    validPoints; // number of data points returned from driver 
+	UINT    validPoints; // number of data points returned from driver
 }_BUFFER_ST;			 // (data point size is 2 bytes)
 
 typedef struct // structure used to retrieve error strings
@@ -88,7 +88,7 @@ typedef struct
 	__CHANNEL channels[8];
 }__CFG;
 
-typedef struct 
+typedef struct
 {
 	char serial[13];
 	__int8 AChSel;
@@ -109,7 +109,7 @@ typedef struct
 /////////////////////////////////////////////////
 // Open and init the serial interface
 // Input:   LPSTR lpPort: pointer to a String containing the serial port e.g."COM1:"
-// Output:  HANDLE needed for further function calls; 
+// Output:  HANDLE needed for further function calls;
 //			if call fails HANDLE == NULL
 
 GMOBILABPLUS_API HANDLE __stdcall GT_OpenDevice(LPSTR lpPort);
@@ -160,7 +160,7 @@ GMOBILABPLUS_API BOOL __stdcall GT_StopAcquisition(HANDLE hDevice);
 
 /////////////////////////////////////////////////
 // Retrieve data form g.MOBIlab+; this is a asynchronous function call;
-// for continuous acqusistion it is recommended to use this function 
+// for continuous acqusistion it is recommended to use this function
 // in a seperated thread
 // Input:	HANDLE hDevice: see OpenDevice
 //			_BUFFER_ST *buffer: structure to pass buffers
@@ -223,7 +223,7 @@ GMOBILABPLUS_API BOOL __stdcall GT_GetDeviceStatus(HANDLE hDevice, __DEVICESTATE
 ////////////////////////////////////////////////////////////////////////
 // Read the remaining size of the SDcard.
 // Input:	HANDLE hDevice: See OpenDevice
-// Output:	UINT containing the remaining size in Bytes. If no 
+// Output:	UINT containing the remaining size in Bytes. If no
 //			SDcard is inserted size = 0, if size < 2MB device
 //			will not start to stream.
 
@@ -239,7 +239,7 @@ GMOBILABPLUS_API BOOL __stdcall GT_SetTestmode(HANDLE hDevice, BOOL Testmode);
 
 ////////////////////////////////////////////////////////////////////////
 // Get the driver version of g.MOBIlab+.
-// Input:	
+// Input:
 // Output:	float variable to hold the version number
 
 GMOBILABPLUS_API float __stdcall GT_GetDriverVersion();

@@ -4,14 +4,33 @@
 // Description: A class that encapsulates a data acquisition thread for
 //   gMOBIlab and gMOBIlab+ devices.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
 
 #include "gMOBIlabThread.h"
 #include "gMOBIlabDriver.h"
+
+#include <algorithm>
 
 using namespace std;
 
@@ -21,8 +40,7 @@ const int cMinDataTimeout = 1000;  // Minimum data timeout in ms.
 const int cMaxVoidLoopCount = 3;   // Maximum number of zero reads in data acquisition loop.
 
 gMOBIlabThread::gMOBIlabThread( int inBlockSize, int inTimeout, HANDLE inDevice )
-: OSThread( true ),
-  mBlockSize( inBlockSize ),
+: mBlockSize( inBlockSize ),
   mTimeout( inTimeout ),
   mBufSize( inBlockSize * cBufBlocks ),
   mWriteCursor( 0 ),
@@ -33,7 +51,7 @@ gMOBIlabThread::gMOBIlabThread( int inBlockSize, int inTimeout, HANDLE inDevice 
 {
   mEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );
   mpBuffer = new uint8[mBufSize];
-  this->Resume();
+  this->Start();
 }
 
 gMOBIlabThread::~gMOBIlabThread()
@@ -72,8 +90,8 @@ gMOBIlabThread::Execute()
     {
       _BUFFER_ST buf;
       buf.pBuffer = reinterpret_cast<SHORT*>( mpBuffer + mWriteCursor );
-      buf.size = min( mBlockSize, mBufSize - mWriteCursor );
-      buf.size = min( buf.size, cMaxReadBuf );
+      buf.size = min<int>( mBlockSize, mBufSize - mWriteCursor );
+      buf.size = min<int>( buf.size, cMaxReadBuf );
       buf.validPoints = 0;
       if( !::GT_GetData( mDev, &buf, &ov ) )
         result = error;

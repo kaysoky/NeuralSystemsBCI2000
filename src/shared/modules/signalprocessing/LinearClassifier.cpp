@@ -16,8 +16,25 @@
 //   3) output channel,
 //   4) weight (value of the matrix entry).
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -69,7 +86,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
         bcierr << "Output channels must be positive integers"
                << endl;
 
-      float ch = Input.ChannelIndex( Classifier( row, 0 ) );
+      double ch = Input.ChannelIndex( Classifier( row, 0 ) );
       if( ::ceil( ch ) < 0 )
         bcierr << "Channel specification in\n\t"
                << DescribeEntry( row, 0 )
@@ -80,13 +97,13 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << DescribeEntry( row, 0 )
                << "\nexceeds number of input channels"
                << endl;
-      if( ::min( ::fmod( ch, 1.0f ), 1 - ::fmod( ch, 1.0f ) ) > 1e-2 )
+      if( ::min( ::fmod( ch, 1.0 ), 1 - ::fmod( ch, 1.0 ) ) > 1e-2 )
         bciout << "Channel specification in physical units:\n\t"
                << DescribeEntry( row, 0 )
                << "\ndoes not exactly meet a single channel"
                << endl;
 
-      float el = Input.ElementIndex( Classifier( row, 1 ) );
+      double el = Input.ElementIndex( Classifier( row, 1 ) );
       if( ::ceil( el ) < 0 )
         bcierr << "Element (bin) specification in\n\t"
                << DescribeEntry( row, 1 )
@@ -97,7 +114,7 @@ LinearClassifier::Preflight( const SignalProperties& Input,
                << DescribeEntry( row, 1 )
                << "\nexceeds number of input elements"
                << endl;
-      if( ::min( ::fmod( el, 1.0f ), 1 - ::fmod( el, 1.0f ) ) > 1e-2 )
+      if( ::min( ::fmod( el, 1.0 ), 1 - ::fmod( el, 1.0 ) ) > 1e-2 )
         bciout << "Specification in physical units:\n\t"
                << DescribeEntry( row, 1 )
                << "\ndoes not exactly meet a single element"
@@ -114,9 +131,9 @@ LinearClassifier::Preflight( const SignalProperties& Input,
   Output.ValueUnit().SetRawMin( Input.ValueUnit().RawMin() )
                     .SetRawMax( Input.ValueUnit().RawMax() );
 
-  float secsPerBlock = Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
+  double secsPerBlock = Parameter( "SampleBlockSize" ) / Parameter( "SamplingRate" );
   Output.ElementUnit().SetOffset( 0 ).SetGain( secsPerBlock ).SetSymbol( "s" );
-  int visualizationTime = Output.ElementUnit().PhysicalToRaw( "15s" );
+  double visualizationTime = Output.ElementUnit().PhysicalToRaw( "15s" );
   Output.ElementUnit().SetRawMin( 0 ).SetRawMax( visualizationTime - 1 );
 }
 
@@ -135,7 +152,7 @@ LinearClassifier::Initialize( const SignalProperties& Input,
   {
     mInputChannels[ entry ] = Round( Input.ChannelIndex( Classifier( entry, 0 ) ) );
     mInputElements[ entry ] = Round( Input.ElementIndex( Classifier( entry, 1 ) ) );
-    mOutputChannels[ entry ] = Classifier( entry, 2 ) - 1;
+    mOutputChannels[ entry ] = static_cast<size_t>( Classifier( entry, 2 ) - 1 );
     mWeights[ entry ] = Classifier( entry, 3 );
   }
 }
@@ -174,4 +191,3 @@ LinearClassifier::Round( double inValue )
 {
   return static_cast<int>( ::floor( inValue + 0.5 ) );
 }
-

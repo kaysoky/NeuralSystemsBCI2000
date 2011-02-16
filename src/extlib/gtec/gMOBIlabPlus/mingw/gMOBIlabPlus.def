@@ -1,0 +1,20 @@
+LIBRARY gMOBIlabplus.dll
+EXPORTS
+GT_CloseDevice@4=GT_CloseDevice
+GT_EnableSDcard
+GT_GetConfig
+GT_GetData@12=GT_GetData
+GT_GetDeviceStatus
+GT_GetDriverVersion
+GT_GetLastError@4=GT_GetLastError
+GT_GetSDcardStatus
+GT_InitChannels@84=GT_InitChannels
+GT_OpenDevice@4=GT_OpenDevice
+GT_PauseXfer
+GT_ResumeXfer
+GT_SetDigitalOut@8=GT_SetDigitalOut
+GT_SetFilename
+GT_SetTestmode@8=GT_SetTestmode
+GT_StartAcquisition@4=GT_StartAcquisition
+GT_StopAcquisition@4
+GT_TranslateErrorCode@8=GT_TranslateErrorCode

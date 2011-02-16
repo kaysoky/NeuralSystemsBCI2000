@@ -1,0 +1,32 @@
+
+Dump of file spa20a.dll
+
+File Type: DLL
+
+  Section contains the following exports for SPA20A.DLL
+
+    00000000 characteristics
+    434A24FD time date stamp Mon Oct 10 04:23:25 2005
+        0.00 version
+           1 ordinal base
+           9 number of functions
+           9 number of names
+
+    ordinal hint RVA      name
+
+          2    0 000012C0 GT_CloseDevice
+          7    1 00001890 GT_GetData
+          8    2 00001900 GT_GetLastError
+          4    3 000014A0 GT_InitChannels
+          1    4 00001020 GT_OpenDevice
+          3    5 00001300 GT_SetDigitalOut
+          5    6 000016F0 GT_StartAcquisition
+          6    7 000017C0 GT_StopAcquisition
+          9    8 00001920 GT_TranslateErrorCode
+
+  Summary
+
+        2000 .data
+        2000 .rdata
+        1000 .reloc
+        6000 .text

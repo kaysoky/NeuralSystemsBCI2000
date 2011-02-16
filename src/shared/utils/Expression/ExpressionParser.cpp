@@ -55,13 +55,13 @@
    enum yytokentype {
      NUMBER = 258,
      NAME = 259,
-     SIGNAL = 260,
+     SIGNAL_ = 260,
      NEG = 261
    };
 #endif
 #define NUMBER 258
 #define NAME 259
-#define SIGNAL 260
+#define SIGNAL_ 260
 #define NEG 261
 
 
@@ -75,17 +75,41 @@
 // Author:      juergen.mellinger@uni-tuebingen.de
 // Description: Bison grammar file for a simple expression parser.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////
 #include <sstream>
 #include <string>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 #include "ArithmeticExpression.h"
 #include "BCIError.h"
 
-#pragma warn -8004
+// Disable compiler warnings for generated code.
+#ifdef __BORLANDC__
+# pragma warn -8004
+#elif defined( _MSC_VER )
+# pragma warning (disable:4065)
+#endif
+
 
 using namespace std;
 
@@ -105,14 +129,14 @@ using namespace std;
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 29 "ExpressionParser.y"
+#line 35 "ExpressionParser.y"
 typedef union YYSTYPE {
   double       value;
   const char*  name;
   std::string* str;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 116 "ExpressionParser.cpp"
+#line 122 "ExpressionParser.cpp"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -121,14 +145,14 @@ typedef union YYSTYPE {
 
 
 /* Copy the second part of user declarations.  */
-#line 35 "ExpressionParser.y"
+#line 41 "ExpressionParser.y"
 
 namespace ExpressionParser
 {
 
 
 /* Line 214 of yacc.c.  */
-#line 132 "ExpressionParser.cpp"
+#line 138 "ExpressionParser.cpp"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
@@ -307,9 +331,9 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,    55,    55,    56,    59,    60,    61,    62,    63,    64,
-      65,    66,    67,    68,    69,    70,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,    83,    84,    85,    86
+       0,    61,    61,    62,    65,    66,    67,    68,    69,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
+      81,    82,    83,    84,    85,    86,    89,    90,    91,    92
 };
 #endif
 
@@ -318,7 +342,7 @@ static const unsigned char yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "NUMBER", "NAME", "SIGNAL", "'?'", "':'", 
+  "$end", "error", "$undefined", "NUMBER", "NAME", "SIGNAL_", "'?'", "':'", 
   "'&'", "'|'", "'='", "'~'", "'!'", "'>'", "'<'", "'-'", "'+'", "'*'", 
   "'/'", "NEG", "'^'", "'('", "')'", "','", "'\"'", "'''", "$accept", 
   "input", "exp", "addr", 0
@@ -1062,142 +1086,142 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 55 "ExpressionParser.y"
+#line 61 "ExpressionParser.y"
     { pInstance->mValue = 0; ;}
     break;
 
   case 3:
-#line 56 "ExpressionParser.y"
+#line 62 "ExpressionParser.y"
     { pInstance->mValue = yyvsp[0].value; ;}
     break;
 
   case 4:
-#line 59 "ExpressionParser.y"
+#line 65 "ExpressionParser.y"
     { yyval.value = pInstance->State( yyvsp[0].name ); ;}
     break;
 
   case 5:
-#line 60 "ExpressionParser.y"
+#line 66 "ExpressionParser.y"
     { yyval.value = yyvsp[0].value;       ;}
     break;
 
   case 6:
-#line 61 "ExpressionParser.y"
+#line 67 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value + yyvsp[0].value;  ;}
     break;
 
   case 7:
-#line 62 "ExpressionParser.y"
+#line 68 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value - yyvsp[0].value;  ;}
     break;
 
   case 8:
-#line 63 "ExpressionParser.y"
+#line 69 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value * yyvsp[0].value;  ;}
     break;
 
   case 9:
-#line 64 "ExpressionParser.y"
+#line 70 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value / yyvsp[0].value;  ;}
     break;
 
   case 10:
-#line 65 "ExpressionParser.y"
+#line 71 "ExpressionParser.y"
     { yyval.value = -yyvsp[0].value;      ;}
     break;
 
   case 11:
-#line 66 "ExpressionParser.y"
+#line 72 "ExpressionParser.y"
     { yyval.value = ::pow( yyvsp[-2].value, yyvsp[0].value ); ;}
     break;
 
   case 12:
-#line 67 "ExpressionParser.y"
+#line 73 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value && yyvsp[0].value; ;}
     break;
 
   case 13:
-#line 68 "ExpressionParser.y"
+#line 74 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value || yyvsp[0].value; ;}
     break;
 
   case 14:
-#line 69 "ExpressionParser.y"
+#line 75 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value == yyvsp[0].value; ;}
     break;
 
   case 15:
-#line 70 "ExpressionParser.y"
+#line 76 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
     break;
 
   case 16:
-#line 71 "ExpressionParser.y"
+#line 77 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value != yyvsp[0].value; ;}
     break;
 
   case 17:
-#line 72 "ExpressionParser.y"
+#line 78 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value > yyvsp[0].value;  ;}
     break;
 
   case 18:
-#line 73 "ExpressionParser.y"
+#line 79 "ExpressionParser.y"
     { yyval.value = yyvsp[-2].value < yyvsp[0].value;  ;}
     break;
 
   case 19:
-#line 74 "ExpressionParser.y"
+#line 80 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value >= yyvsp[0].value; ;}
     break;
 
   case 20:
-#line 75 "ExpressionParser.y"
+#line 81 "ExpressionParser.y"
     { yyval.value = yyvsp[-3].value <= yyvsp[0].value; ;}
     break;
 
   case 21:
-#line 76 "ExpressionParser.y"
+#line 82 "ExpressionParser.y"
     { yyval.value = !yyvsp[0].value;      ;}
     break;
 
   case 22:
-#line 77 "ExpressionParser.y"
+#line 83 "ExpressionParser.y"
     { yyval.value = !yyvsp[0].value;      ;}
     break;
 
   case 23:
-#line 78 "ExpressionParser.y"
+#line 84 "ExpressionParser.y"
     { yyval.value = yyvsp[-1].value;       ;}
     break;
 
   case 24:
-#line 79 "ExpressionParser.y"
+#line 85 "ExpressionParser.y"
     { yyval.value = yyvsp[-4].value ? yyvsp[-2].value : yyvsp[0].value ;}
     break;
 
   case 25:
-#line 80 "ExpressionParser.y"
+#line 86 "ExpressionParser.y"
     { yyval.value = pInstance->Signal( *yyvsp[-3].str, *yyvsp[-1].str ); delete yyvsp[-3].str; delete yyvsp[-1].str; ;}
     break;
 
   case 26:
-#line 83 "ExpressionParser.y"
+#line 89 "ExpressionParser.y"
     { ostringstream oss; oss << yyvsp[0].value; yyval.str = new string( oss.str() ); ;}
     break;
 
   case 27:
-#line 84 "ExpressionParser.y"
+#line 90 "ExpressionParser.y"
     { ostringstream oss; oss << yyvsp[-1].value << yyvsp[0].name; yyval.str = new string( oss.str() ); ;}
     break;
 
   case 28:
-#line 85 "ExpressionParser.y"
+#line 91 "ExpressionParser.y"
     { yyval.str = new string( yyvsp[-1].name ); ;}
     break;
 
   case 29:
-#line 86 "ExpressionParser.y"
+#line 92 "ExpressionParser.y"
     { yyval.str = new string( yyvsp[-1].name ); ;}
     break;
 
@@ -1205,7 +1229,7 @@ yyreduce:
     }
 
 /* Line 999 of yacc.c.  */
-#line 1209 "ExpressionParser.cpp"
+#line 1215 "ExpressionParser.cpp"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1411,7 +1435,7 @@ yyreturn:
 }
 
 
-#line 89 "ExpressionParser.y"
+#line 95 "ExpressionParser.y"
 
 
   int
@@ -1440,7 +1464,7 @@ yyreturn:
       }
       pLval->name = name.c_str();
       if( ::stricmp( pLval->name, "signal" ) == 0 )
-        token = SIGNAL;
+        token = SIGNAL_;
       else
         token = NAME;
     }

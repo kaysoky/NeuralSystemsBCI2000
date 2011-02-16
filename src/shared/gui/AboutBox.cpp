@@ -4,17 +4,37 @@
 // Description: A class that displays a dialog window showing
 //   the BCI2000 logo, and versioning information.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+//
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+//
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+//
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
-#pragma hdrstop
 
 #include "AboutBox.h"
 #include "Version.h"
 #include "GUI.h"
 #include "images/BCI2000logo_mini.h"
+#include "strings/BCI2000_credits.h"
 #include <sstream>
+
+#include <QtGui>
+#include <ctype.h>
 
 using namespace std;
 using namespace GUI;
@@ -32,7 +52,7 @@ AboutBox::SetVersionInfo( const std::string& s )
   return *this;
 }
 
-AboutBox&
+const AboutBox&
 AboutBox::Display() const
 {
   VersionInfo info = mVersionInfo;
@@ -43,86 +63,73 @@ AboutBox::Display() const
     versionDetails += ", " + i->first + ": " + i->second;
   versionDetails.erase( 0, 2 );
 
-#ifdef __BORLANDC__
-  TForm* pForm = new TForm( static_cast<TComponent*>( NULL ) );
-  pForm->BorderStyle = bsDialog;
-  pForm->Position = poScreenCenter;
-  pForm->Caption = ( string( "About " ) + mApplicationName + "..." ).c_str();
+  QDialog dialog;
+  dialog.setWindowTitle( ( string( "About " ) + mApplicationName + "..." ).c_str() );
+  dialog.setWindowFlags( Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint
+                         | Qt::CustomizeWindowHint | Qt::WindowTitleHint );
 
-  TPanel* pPanel = new TPanel( pForm );
-  pPanel->Parent = pForm;
-  pPanel->BorderStyle = bsNone;
-  pPanel->BorderWidth = 0;
-  pPanel->BevelOuter = bvLowered;
-  pPanel->BevelInner = bvNone;
-  pPanel->Color = clWhite;
-  pPanel->Left = 10;
-  pPanel->Top = 10;
-  pPanel->Width = pForm->ClientWidth - 2 * pPanel->Left;
-
-  Graphics::TBitmap* pBitmap = new Graphics::TBitmap;
   int logoWidth = GraphicResource::Width( Resources::BCI2000logo_mini ),
-      logoHeight = GraphicResource::Width( Resources::BCI2000logo_mini );
-  pBitmap->Width = logoWidth;
-  pBitmap->Height = logoHeight;
-  pBitmap->Canvas->Brush->Color = pPanel->Color;
-  pBitmap->Canvas->FillRect( TRect( 0, 0, pBitmap->Width, pBitmap->Height ) );
-  DrawContext dc = { pBitmap->Canvas->Handle, { 0, 0, logoWidth, logoHeight } };
-  GraphicResource::Render<RenderingMode::Transparent>( Resources::BCI2000logo_mini, dc );
+      logoHeight = GraphicResource::Height( Resources::BCI2000logo_mini );
+  QPixmap logo( logoWidth + 16, logoHeight + 16 );
+  logo.fill( Qt::white );
+  DrawContext dc = { &logo, { 8, 8, logoWidth + 8, logoHeight + 8 } };
+  GraphicResource::Render<RenderingMode::Opaque>( Resources::BCI2000logo_mini, dc );
 
-  TPicture* pPicture = new TPicture;
-  pPicture->Graphic = pBitmap;
-  TImage* pImage = new TImage( pForm );
-  pImage->Parent = pPanel;
-  pImage->Left = pPanel->Left;
-  pImage->Top = pPanel->Top;
-  pImage->Width = pBitmap->Width;
-  pImage->Height = pBitmap->Height;
-  pImage->Picture = pPicture;
+  QLabel* pVersionLabel = new QLabel( versionDetails.c_str() );
+  pVersionLabel->setWordWrap( true );
+  pVersionLabel->setAlignment( Qt::AlignHCenter );
 
-  TLabel* pNameLabel = new TLabel( pForm );
-  pNameLabel->Parent = pPanel;
-  pNameLabel->Top = pImage->Top;
-  pNameLabel->Left = 3 * pImage->Left + pImage->Width;
-  pNameLabel->Font->Size *= 2;
-  pNameLabel->Font->Style = pNameLabel->Font->Style << fsBold;
-  pNameLabel->Caption = mApplicationName.c_str();
+  QGraphicsScene* pGraphicsScene = new QGraphicsScene;
+  QGraphicsView* pGraphicsView = new QGraphicsView( pGraphicsScene );
+  QGraphicsPixmapItem* pLogoItem = pGraphicsScene->addPixmap( logo );
+  qreal textLeft = pLogoItem->boundingRect().right();
+  QFont font = pVersionLabel->font();
+  font.setWeight( QFont::Bold );
+  font.setPixelSize( 18 );
+  font.setStyleStrategy( QFont::PreferAntialias );
+  QGraphicsTextItem* pNameItem = pGraphicsScene->addText( mApplicationName.c_str(), font );
+  pNameItem->setPos( textLeft, pNameItem->y() );
+  QGraphicsTextItem* pVersionItem = pGraphicsScene->addText( versionNumber.c_str(), pVersionLabel->font() );
+  pVersionItem->setPos( textLeft, pNameItem->boundingRect().bottom() - 8 );
 
-  TLabel* pCopyrightLabel = new TLabel( pForm );
-  pCopyrightLabel->Parent = pPanel;
-  pCopyrightLabel->Alignment = taLeftJustify;
-  pCopyrightLabel->Caption = ( versionNumber + "\n\n" + BCI2000_COPYRIGHT ).c_str();
-  pCopyrightLabel->Top = pNameLabel->Top + pNameLabel->Height;
-  pCopyrightLabel->Left = pNameLabel->Left;
+  istringstream iss( Resources::BCI2000_credits );
+  string line;
+  int bottom = pVersionItem->boundingRect().bottom() + pVersionItem->boundingRect().height() 
+               + Resources::BCI2000_credits_emptyLineHeight;
+  for( int i = 0; i < Resources::BCI2000_credits_leadingLines; ++i )
+  {
+    getline( iss, line );
+    QGraphicsTextItem* pText = pGraphicsScene->addText( line.c_str(), pVersionLabel->font() );
+    pText->setPos( textLeft, bottom );
+    bottom += pText->boundingRect().height() - Resources::BCI2000_credits_emptyLineHeight;
+  }
+  
+  while( getline( iss, line ) )
+  {
+    QFont lineFont = pVersionLabel->font();
+    if( line.length() > 1 && !::isspace( line[0] ) && ::isupper( line[1] ) )
+      lineFont.setBold( true );
+    else if( !line.empty() && !::isspace( line[0] ) )
+      lineFont.setItalic( true );
+    QGraphicsTextItem* pText = pGraphicsScene->addText( line.c_str(), lineFont );
+    pText->setPos( textLeft, bottom );
+    if( line.empty() )
+      bottom += Resources::BCI2000_credits_emptyLineHeight;
+    else
+      bottom += pText->boundingRect().height() - Resources::BCI2000_credits_emptyLineHeight;
+  }
 
-  int textWidth = max( pCopyrightLabel->Width, pNameLabel->Width );
-  pPanel->ClientWidth = 4 * pImage->Left + pImage->Width + textWidth;
-  pPanel->ClientHeight = pImage->Height + 2 * pImage->Top;
-  pForm->ClientWidth = 2 * pPanel->Left + pPanel->Width;
+  QDialogButtonBox* pButtonBox = new QDialogButtonBox( QDialogButtonBox::Close );
+  QVBoxLayout* pVLayout = new QVBoxLayout;
 
-  TLabel* pVersionLabel = new TLabel( pForm );
-  pVersionLabel->Parent = pForm;
-  pVersionLabel->Alignment = taCenter;
-  pVersionLabel->Top = 2 * pPanel->Top + pPanel->Height;
-  pVersionLabel->WordWrap = true;
-  pVersionLabel->Left = pPanel->Left;
-  pVersionLabel->Width = pPanel->Width;
-  pVersionLabel->Caption = versionDetails.c_str();
-  pVersionLabel->Left = ( pForm->ClientWidth - pVersionLabel->Width ) / 2;
+  pVLayout->addWidget( pGraphicsView );
+  pVLayout->addWidget( pVersionLabel );
+  pVLayout->addWidget( pButtonBox );
+  dialog.setLayout( pVLayout );
+  dialog.connect( pButtonBox, SIGNAL(rejected()), &dialog, SLOT(reject()) );
+  dialog.exec();
 
-  TButton* pButton = new TButton( pForm );
-  pButton->Parent = pForm;
-  pButton->ModalResult = mrOk;
-  pButton->Caption = "Close";
-  pButton->Left = ( pForm->ClientWidth - pButton->Width ) / 2;
-  pButton->Top = pVersionLabel->Top + pVersionLabel->Height + pButton->Height / 2;
-
-  pForm->ClientHeight = pButton->Top + ( 3 * pButton->Height ) / 2;
-
-  pForm->ShowModal();
-  delete pForm;
-#endif // __BORLANDC__
-  return *const_cast<AboutBox*>( this );
+  return *this;
 }
 
 

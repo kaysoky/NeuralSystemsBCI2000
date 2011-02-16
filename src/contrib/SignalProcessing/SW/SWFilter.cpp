@@ -10,6 +10,25 @@
 //              Feb 8, 2004, jm: Adaptations to changes in BCI2000 framework,
 //              minor reformulations, reformatting.
 //
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -90,10 +109,10 @@ void
 TSWFilter::Initialize( const SignalProperties&, const SignalProperties& )
 {
   mBlockSize = Parameter( "SampleBlockSize" );
-  mBlocksInTrial = MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) );
+  mBlocksInTrial = static_cast<unsigned int>( MeasurementUnits::ReadAsTime( Parameter( "FeedbackEnd" ) ) );
   mBufferOffset = mBlocksInTrial;
   mAvgBufferSize = mBufferOffset + mBlocksInTrial + 1;
-  mAvgSpan = MeasurementUnits::ReadAsTime( Parameter( "SWAvgSpan" ) );
+  mAvgSpan = static_cast<unsigned int>( MeasurementUnits::ReadAsTime( Parameter( "SWAvgSpan" ) ) );
 
   mSWCh = Parameter( "SWInChList" )->NumValues();
   mSWInChList.resize( mSWCh );
@@ -101,8 +120,8 @@ TSWFilter::Initialize( const SignalProperties&, const SignalProperties& )
   mThresholdAmp.resize( mSWCh );
   for( int i = 0; i < mSWCh; ++i )
   {
-    mSWInChList[ i ] = Parameter( "SWInChList" )( i ) - 1;
-    mSWOutChList[ i ] = Parameter( "SWOutChList" )( i ) - 1;
+    mSWInChList[ i ] = static_cast<int>( Parameter( "SWInChList" )( i ) - 1 );
+    mSWOutChList[ i ] = static_cast<int>( Parameter( "SWOutChList" )( i ) - 1 );
     mThresholdAmp[ i ] = Parameter( "ThresholdAmp" )( i );
   }
 
@@ -118,7 +137,7 @@ TSWFilter::Initialize( const SignalProperties&, const SignalProperties& )
   mPosInBuffer = mBufferOffset - 1;
 
   // Tc-correction variables:
-  float timeConstant = MeasurementUnits::ReadAsTime( Parameter( "Tc" ) );
+  double timeConstant = MeasurementUnits::ReadAsTime( Parameter( "Tc" ) );
   if( timeConstant == 0 )
     mTcFactor = 0;
   else
@@ -168,7 +187,7 @@ TSWFilter::AvgToBuffer( const GenericSignal& InputSignal )
 {
   for( short m = 0; m < mSWCh; m++ )
   {
-    float zsum = 0;
+    double zsum = 0;
     for( unsigned int n = 0; n < mBlockSize; n++ )
       zsum += InputSignal( mSWInChList[ m ], n );
     mAvgBlockBuffer( m, mPosInBuffer ) = zsum / mBlockSize;
@@ -192,7 +211,7 @@ TSWFilter::AvgToSW( GenericSignal& OutputSignal )
 {
   for( short m = 0; m < mSWCh; m++ )
   {
-    float zsum = 0;
+    double zsum = 0;
     for( unsigned int n = 0; n < mAvgSpan; n++ )
       zsum += mAvgBlockBuffer( m, mPosInBuffer - n );
     OutputSignal( mSWOutChList[ m ], 0 ) = zsum / mAvgSpan;

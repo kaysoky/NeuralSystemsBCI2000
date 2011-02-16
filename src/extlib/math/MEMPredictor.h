@@ -5,8 +5,25 @@
 //     autoregressive spectral analysis adapted from Press et. al.
 //     Numerical Recipes in C (chapter 13).
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef MEM_PREDICTOR_H
 #define MEM_PREDICTOR_H
@@ -26,7 +43,7 @@ class MEMPredictor : public LinearPredictor<T>
   MEMPredictor();
   virtual ~MEMPredictor() {}
 
-  virtual const Ratpoly<Complex>& TransferFunction( const DataVector& ) const;
+  virtual void TransferFunction(DataVector&, Ratpoly<Complex>& ) const;
 };
 
 
@@ -43,13 +60,13 @@ MEMPredictor<T>::MEMPredictor()
 #endif // __GNUC__
 
 template<typename T>
-const TYPENAME Ratpoly<typename MEMPredictor<T>::Complex>&
-MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
+void
+MEMPredictor<T>::TransferFunction(DataVector& inData, Ratpoly<Complex>& outResult) const
 {
   typedef double D;
   const T eps = std::numeric_limits<T>::epsilon();
   DataVector  coeff, wkm, wk1, wk2;
-  int n = inData.size(), M = LinearPredictor<T>::mModelOrder;
+  int n = inData.size();
 
   coeff.resize( LinearPredictor<T>::mModelOrder + 1 );
   wkm.resize( coeff.size() );
@@ -74,22 +91,22 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
     for (int t = 0; t < n-k; t++)
         num += wk1[t+1]*wk2[t];
 
-	den = den*q - wk1[0]*wk1[0] - wk2[n-k]*wk2[n-k];
+    den = den*q - wk1[0]*wk1[0] - wk2[n-k]*wk2[n-k];
 
-	if (den < eps){
-		num = 0.5;
-		den = 1.0;
-	}
-	else{
-		if (coeff[k] >= 1 || coeff[k] <= -1){
-			den = 0;
-			for (int t = 0; t < n-k; t++)
-				den += wk1[t+1]*wk1[t+1] + wk2[t]*wk2[t];
-		}
-	}
+    if (den < eps){
+      num = 0.5;
+      den = 1.0;
+    }
+    else{
+      if (coeff[k] >= 1 || coeff[k] <= -1){
+        den = 0;
+        for (int t = 0; t < n-k; t++)
+          den += wk1[t+1]*wk1[t+1] + wk2[t]*wk2[t];
+      }
+    }
     coeff[k] = 2*num / den;
 
-	q = 1.0 - coeff[k] * coeff[k];
+    q = 1.0 - coeff[k] * coeff[k];
     meanPower *= q;
     for( int i = 1; i < k; ++i )
       coeff[i] = wkm[i] - coeff[k] * wkm[k-i];
@@ -112,54 +129,10 @@ MEMPredictor<T>::TransferFunction( const DataVector& inData ) const
   for (int k = 1; k <= LinearPredictor<T>::mModelOrder; k++)
       coeff[k] *= -1;
  
-  static Ratpoly<Complex> result;
-  result = Ratpoly<Complex>(
-             Polynomial<Complex>( std::sqrt( meanPower ) ),
-             Polynomial<Complex>::FromCoefficients( coeff )
-           );
-  return result;
-  /*
-  coeff[0] = 1.0;
-  for( int k = 1; k <= LinearPredictor<T>::mModelOrder; ++k )
-  {
-    D num   = ( n > k ) ?
-              2.0 * std::inner_product( &wk1[0], &wk1[n-k], &wk2[0], D( 0.0 ) ) :
-              0.0,
-      denom = ( n > k ) ?
-              std::inner_product( &wk1[0], &wk1[n-k], &wk1[0], D( 0.0 ) )
-              + std::inner_product( &wk2[0], &wk2[n-k], &wk2[0], D( 0.0 ) ) :
-              0.0;
-    if( denom < eps )
-    { // limit for zero data
-      num = 1.0;
-      denom = 1.0;
-    }
-    coeff[k] = - num / denom;
-    meanPower *= 1.0 - coeff[k] * coeff[k];
-    for( int i = 1; i < k; ++i )
-      coeff[i] = wkm[i] + coeff[k] * wkm[k-i];
-
-    if( k < LinearPredictor<T>::mModelOrder )
-    {
-      for( int i = 1; i <= k; ++i )
-        wkm[i] = coeff[i];
-
-      for( int j = 0; j < n-k-1; ++j )
-      {
-        wk1[j] += wkm[k] * wk2[j];
-        wk2[j] = wk2[j+1] + wkm[k] * wk1[j+1];
-      }
-    }
-  }
-  if( meanPower < 0.0 )
-    meanPower = 0.0;
-  static Ratpoly<Complex> result;
-  result = Ratpoly<Complex>(
-             Polynomial<Complex>( std::sqrt( meanPower ) ),
-             Polynomial<Complex>::FromCoefficients( coeff )
-           );
-  return result;
-  */
+  outResult = Ratpoly<Complex>(
+               Polynomial<Complex>( std::sqrt( meanPower ) ),
+               Polynomial<Complex>::FromCoefficients( coeff )
+              );
 }
 
 #undef TYPENAME

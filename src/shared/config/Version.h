@@ -1,19 +1,46 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Author: juergen.mellinger@uni-tuebingen.de
-// Description: Default Version.h file. During a "make build", this file will
-//   be replaced with more accurate information.
+// Description: Default Version.h file. By executing
+//   build/buildutils/UpdateVersionHeader, this file will be replaced with more
+//   accurate information.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BCI2000_VERSION  "$Version: 2.x $ " \
-                         "$Build Date: " __TIME__ " " __DATE__ " $"
+#ifndef COMPILER_NAME
+# define COMPILER_NAME "BCB"
+#endif
 
-#define BCI2000_COPYRIGHT "(C) 2000-2010, BCI2000 Project\n" \
+#ifndef BCI2000_VERSION_STRING
+# define BCI2000_VERSION_STRING "3.0"
+#endif
+
+#define BCI2000_VERSION  "$Version: " BCI2000_VERSION_STRING " $" \
+                         "$Build Date: " __DATE__ " " __TIME__ " $" \
+                         "$Compiler: " COMPILER_NAME " $"
+
+#define BCI2000_COPYRIGHT "(C) 2000-2011, BCI2000 Project\n" \
                           "http://www.bci2000.org"
 
 #endif // VERSION_H

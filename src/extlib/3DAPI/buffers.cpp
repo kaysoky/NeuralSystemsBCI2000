@@ -4,8 +4,25 @@
 // Description: A buffer class to make loading textures and fonts
 //   more efficient.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -20,17 +37,24 @@ using namespace std;
 map<string, GLuint> buffers::sTextureHandles;
 map<GLuint, int> buffers::sTextureUsage;
 
+#if _WIN32
 map<string, GLuint> buffers::sFontHandles2D;
 map<GLuint, buffers::Font2DEntry> buffers::sFontData2D;
 
 map<std::string, GLuint> buffers::sFontHandles3D;
 map<GLuint, buffers::Font3DEntry> buffers::sFontData3D;
+#endif // _WIN32
 
+#ifdef __BORLANDC__
 AUX_RGBImageRec*
+#else // __BORLANDC__
+QImage*
+#endif // __BORLANDC__
 buffers::loadWindowsBitmap( const std::string& inBitmapFile )
 {
+#ifdef __BORLANDC__
    AUX_RGBImageRec* result = NULL;
-   HBITMAP bmp = ::LoadImage( NULL, inBitmapFile.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+   HBITMAP bmp = ( HBITMAP )::LoadImage( NULL, inBitmapFile.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
    if( bmp != NULL )
    {
      result = reinterpret_cast<AUX_RGBImageRec*>( ::malloc( sizeof( AUX_RGBImageRec ) ) );
@@ -73,41 +97,60 @@ buffers::loadWindowsBitmap( const std::string& inBitmapFile )
      ::DeleteDC( dc );
      ::DeleteObject( bmp );
    }
+#else // __BORLANDC__
+   QImage img;
+   QImage* result = new QImage();
+   img.load( QString( inBitmapFile.c_str() ) );
+   *result = QGLWidget::convertToGLFormat( img );
+#endif // __BORLANDC__
    return result;
 }
 
 GLuint
 buffers::loadTexture( const std::string& inTextureFile )
 {
-  GLuint textureHandle = NULL;
+  GLuint textureHandle = 0;
   if( !inTextureFile.empty() )
   {
     textureHandle = sTextureHandles[inTextureFile];
-    if( textureHandle == NULL )
+    if( textureHandle == 0 )
     {
       bool fileExists = ifstream( inTextureFile.c_str() ).is_open();
       if( fileExists )
       {
+#ifdef __BORLANDC__
         AUX_RGBImageRec* texImg = loadWindowsBitmap( inTextureFile.c_str() );
+#else // __BORLANDC__
+        QImage* texImg = loadWindowsBitmap( inTextureFile.c_str() );
+#endif // __BORLANDC__
         if( texImg )
         {
           glGenTextures( 1, &textureHandle );
-          if( textureHandle != NULL )
+          if( textureHandle != 0 )
           {
             glBindTexture( GL_TEXTURE_2D, textureHandle );
+#ifdef __BORLANDC__
             gluBuild2DMipmaps( GL_TEXTURE_2D, 3, texImg->sizeX, texImg->sizeY, GL_RGB, GL_UNSIGNED_BYTE, texImg->data );
+#else // __BORLANDC__
+            gluBuild2DMipmaps( GL_TEXTURE_2D, 3, texImg->width(), texImg->height(), GL_RGBA, GL_UNSIGNED_BYTE, texImg->bits() );
+#endif // __BORLANDC__
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            glBindTexture( GL_TEXTURE_2D, NULL );
+            glBindTexture( GL_TEXTURE_2D, 0 );
           }
+#ifdef __BORLANDC__
           if( texImg->data )
             ::free( texImg->data );
           ::free( texImg );
+#else // __BORLANDC__
+          if( texImg )
+            delete texImg;
+#endif // __BORLANDC__
         }
       }
       sTextureHandles[inTextureFile] = textureHandle;
     }
-    if( textureHandle != NULL )
+    if( textureHandle != 0 )
       ++sTextureUsage[textureHandle];
   }
   return textureHandle;
@@ -125,7 +168,7 @@ buffers::releaseTexture( const std::string& inTextureFile )
   }
 }
 
-
+#if _WIN32
 std::string
 buffers::buildFontName2D( const std::string& inFontName, int inFontSize )
 {
@@ -139,7 +182,7 @@ buffers::loadFont2D( const std::string& inFontName, int inFontSize )
 {
   string name = buildFontName2D( inFontName, inFontSize );
   GLuint fontID = sFontHandles2D[name];
-  if( fontID == NULL )
+  if( fontID == 0 )
   {
     fontID = glGenLists(256); // Generate the list for the font
     HFONT hFont = ::CreateFont(
@@ -159,7 +202,7 @@ buffers::loadFont2D( const std::string& inFontName, int inFontSize )
       inFontName.c_str()          // The font name (Like "Arial", "Courier", etc...)
     );
     HDC hDC = ::CreateCompatibleDC( NULL );
-    HFONT oldFont = ::SelectObject(hDC, hFont);
+    HFONT oldFont = ( HFONT )::SelectObject(hDC, hFont);
     if( oldFont )
     {
       ::wglUseFontBitmaps(hDC, 0,255, fontID);  // Builds 255 bitmap characters
@@ -170,7 +213,7 @@ buffers::loadFont2D( const std::string& inFontName, int inFontSize )
     }
     else
     {
-      fontID = NULL;
+      fontID = 0;
       glDeleteLists( fontID, 256 );
     }
     ::DeleteObject(hFont);  // Delete The Font
@@ -184,7 +227,7 @@ buffers::releaseFont2D( const std::string& inFontName, int inFontSize )
 {
   string name = buildFontName2D( inFontName, inFontSize );
   GLuint fontID = sFontHandles2D[name];
-  if( fontID != NULL && --sFontData2D[fontID].usage < 1 )
+  if( fontID != 0 && --sFontData2D[fontID].usage < 1 )
   {
     glDeleteLists( fontID, 256 );
     sFontHandles2D.erase( name );
@@ -205,7 +248,7 @@ GLuint
 buffers::loadFont3D( const std::string& inFontName )
 {
   GLuint fontID = sFontHandles3D[inFontName];
-  if( fontID == NULL )
+  if( fontID == 0 )
   { //build the font
     fontID = glGenLists( 256 ); // Storage for 256 characters
     HDC hDC = ::CreateCompatibleDC( NULL );
@@ -224,13 +267,13 @@ buffers::loadFont3D( const std::string& inFontName )
                                 FF_DONTCARE|DEFAULT_PITCH,   // Family and pitch
                                 inFontName.c_str());         // Font name
 
-    HFONT prevFont = ::SelectObject( hDC, hFont ); // Selects the font we created
+    HFONT prevFont = ( HFONT )::SelectObject( hDC, hFont ); // Selects the font we created
     bool success = ::wglUseFontOutlines(  hDC,               // Select the temporary DC
                                           0,                 // Starting character
                                           256,               // Number of display lists to build
                                           fontID,            // Starting display lists
-                                          0.01,              // Deviation from the true outlines
-                                          0.3,               // Font thickness in the Z direction
+                                          0.01f,             // Deviation from the true outlines
+                                          0.3f,              // Font thickness in the Z direction
                                           WGL_FONT_POLYGONS, // Use polygons, not lines
                                           sFontData3D[ fontID ].gmf // Address of buffer to receive data
                                         );
@@ -246,7 +289,7 @@ buffers::loadFont3D( const std::string& inFontName )
     {
       glDeleteLists( fontID, 256 );
       sFontHandles3D.erase( inFontName );
-      fontID = NULL;
+      fontID = 0;
     }
   }
   return fontID;
@@ -256,7 +299,7 @@ void
 buffers::releaseFont3D( const std::string& inFontName )
 {
   GLuint fontID = sFontHandles3D[inFontName];
-  if( fontID != NULL && --sFontData3D[fontID].usage < 1 )
+  if( fontID != 0 && --sFontData3D[fontID].usage < 1 )
   {
     glDeleteLists( fontID, 256 );
     sFontHandles3D.erase( inFontName );
@@ -272,4 +315,4 @@ buffers::getFontData3D( GLuint inHandle )
          : NULL;
 }
 
-
+#endif // _WIN32

@@ -1,32 +1,39 @@
-/* (C) 2000-2010, BCI2000 Project
-/* http://www.bci2000.org
-/*/
-//---------------------------------------------------------------------------
-
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+// Author: Adam Wilson
+//
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
+////////////////////////////////////////////////////////////////////////////////
 #pragma hdrstop
 
 #include "Functions.h"
 #include <time.h>
 
-/*------------------------------------------
-shortFname
-description: removes the directory/path from a file name
-input: string fname - the file name, including the full path
-output: string - the file name, with the path removed
-*/
-string shortFname(string fname)
-{
-	//find the last directory separator position, and remove everything up to and including it
-	int pos = fname.find_last_of("\\");
-	//pos = fname.find_last_of("\\",pos-1);
-	return fname.substr(pos+1);
-}
+using namespace std;
 
 /*------------------------------------------
 parseDir
 description: recursively searches a directory, and stores all *.dat files found in a string vector
 input: string dir - the directory to search
-		vector<string> &fnames - the vector that stores the file names; this is passed by reference, 
+		vector<string> &fnames - the vector that stores the file names; this is passed by reference,
 			and is changed by this function
 output: bool - used by the recursion; returns true if the dir is a directory, and false if it is not
 	(and therefore is probably a file)
@@ -34,6 +41,7 @@ output: bool - used by the recursion; returns true if the dir is a directory, an
 bool parseDir(string dir, vector<string> *fnames)
 {
 	//first check that the directory exists
+	/*
 	DIR *dp;
 	struct dirent *ep;
 	dp = opendir(dir.c_str());
@@ -69,6 +77,8 @@ bool parseDir(string dir, vector<string> *fnames)
 		//is it a file?
 		return false;
 	}
+	*/
+	return true;
 }
 /*
 getFullDir
@@ -76,21 +86,22 @@ description: returns the full path of a directory (dirPath), whose path is relat
 input: string dirPath- the relative directory to find the full path for
 output: string - the full path of dirPath
 */
+/*
 string getFullDir(string dirPath)
 {
 	char curpath[512];
 	//get the current working directory
 	getcwd(curpath, 512);
 	//cout <<curpath<<endl;
-	
+
 	//create a new string to use (and return)
 	string fullpath(curpath);
-	
+
 	//go through the current dirPath, and find the first relative directory separator
     int pos = dirPath.find(".\\");
     if (pos != -1)
         dirPath.replace(pos, 2,"");
-        
+
 	pos = dirPath.find("..\\");
 	while (pos != -1)
 	{
@@ -106,13 +117,14 @@ string getFullDir(string dirPath)
 	fullpath.append(dirPath);
 	return fullpath;
 }
-
+*/
 /*---------------------------------------
 parseParm
 description: parses a bci2000 parameter file to find the save location for the file(s)
 input: string parmName - the path of the parameter file
 output: vector<string> - a string array containing every dat file in the location specified by the parm file
 */
+/*
 vector<string>* parseParm(string parmName)
 {
 	//open the parm file, and do initial error checking
@@ -124,7 +136,7 @@ vector<string>* parseParm(string parmName)
 		cout << "Unable to find parameter file: "<< parmName<<". Quitting."<<endl;
 		exit(0);
 	}
-	
+
 	//if the file was found, go through the file to find the DataDirectory parameter
 	string line, DataDirectory="";
 	bool DataDirFound = false;
@@ -155,141 +167,23 @@ vector<string>* parseParm(string parmName)
 	return fnames;
 }
 
-
+*/
 
 /*---------------------------------------
 parseCfg
 description: parse the configuration file, which should never really be touched by the user, and get default settings
 input: double thresh - the threshold that is used for detection in analysis; usually 0.25
 	string outfilepath - the path of the file that will contain the analysis results
-	string datDir - the default data directory 
+	string datDir - the default data directory
 output: vector<basicStats> - this array of basicStats contains the minimum requirements for each task
 	for the task to be considered bci2000 compliant
 		- additionally, all input parameters are passed by reference and are modified by this function
-*/
+
 bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicStats*> *minReqs)
 {
 	return parseCfg(thresh, outfilepath, datDir, minReqs, string("BCI2000Certification.cfg"));
 }
-bool parseCfg(double *thresh, string *outfilepath, string *datDir, vector<basicStats*> *minReqs, string fileLoc)
-{
-    *outfilepath = "";
-	*datDir = "";
-    *thresh = .25;
-	minReqs->clear();
-    
-	ifstream file;
-	file.open(fileLoc.c_str());
-	if (!file.is_open())
-	{
-		file.close();
-		//cout << "Error opening BCI2000Certification.cfg. Quitting."<<endl;
-		return false;
-	}
-
-	/*
-	The BCI2000Certification.cfg file contains definitions for the minimum requirements
-	for any BCI2000 system. It has a format of:
-	amp mval stdval
-	proc mval stdval
-	output mval stdval
-	system mval stdval
-	jitter mval stdval
-
-	in which the "vals" are the values in ms of the maximum value allowed for tha parameter,
-	and stdval is the standard deviation. The stdval can be left out if desired.
-	These values are NOT task specific; this must be true for all tests for a system
-	to be BCI2000 compatible.
-	*/
-	
-	//parse the file if it exists
-	string line;
-	datDir->clear();
-	while (getline(file, line))
-	{
-		//bool ok = true;
-		stringstream ss(line);
-		string strTok;
-		ss >> strTok;
-
-		//check the string tokens for acceptable keywords
-		if (tolower(strTok) == "threshold")
-		{
-			ss >> *thresh;
-			continue;
-		}
-		if (tolower(strTok) == "resultout")
-		{
-			ss >> *outfilepath;
-			continue;
-		}
-		if (tolower(strTok) == "datadir")
-		{
-			ss >> (*datDir);
-			continue;
-		}
-
-        if (tolower(strTok) == "task")
-        {
-            //if it is not one of the above tokens, then it describes a task component
-            ss >> strTok;
-            basicStats *tmpStat = new basicStats;
-		
-            //set default values for the mean and standard deviation
-            //generally, the mean is always set, but the stddev is not
-            //if we use the >> operator and ss is empty, then the values are not changed,
-            //and the acceptable "NA" values are stored
-            float sMean = 0, sStd = -1;
-            ss >> sMean;
-            ss >> sStd;
-            tmpStat->mean = sMean;
-			tmpStat->std = sStd;
-            tmpStat->taskName = strTok;
-            minReqs->push_back(tmpStat);
-            continue;
-        }
-
-        //if we get here, then the configuration file is not setup correctly
-        file.close();
-        return false;
-
-	}
-    file.close();
-    
-    //add the date+time to the outfilepath
-	string dateTime = getCurDateTime();
-    //remove the extension temporarily
-    int pos = 0;
-    string ext = "";
-    pos = outfilepath->find('.',0);
-    ext = outfilepath->substr(pos, string::npos);
-	outfilepath->erase(pos, string::npos);
-
-    *outfilepath = *outfilepath + "_" + dateTime + ext;
-    //replace slashes with -s
-    pos = 0;
-    while (pos != string::npos)
-    {
-		pos = outfilepath->find_first_of('/',pos);
-		if (pos != string::npos)
-            outfilepath->replace(pos, 1, "-");
-    }
-    pos = 0;
-    while (pos != string::npos)
-    {
-        pos = outfilepath->find_first_of(':',pos);
-        if (pos != string::npos)
-            outfilepath->replace(pos, 1, "-");
-    }
-
-    if (*outfilepath == "" || *datDir == "")
-    {
-        cout << "The BCI2000Certification.cfg file does not contain the required settings."<<endl;
-        return false;
-    }
-    
-	return true;
-}
+*/
 
 double getMin(double *d, int n)
 {
@@ -348,7 +242,7 @@ double vMax(vector<double> *a)
 {
     if (a->size() == 0)
         return 0;
-        
+
     double v = (*a)[0];
     for (int i=1; i < (int)a->size(); i++)
         v = ((*a)[i] > v) ? ((*a)[i]) : v;
@@ -360,12 +254,24 @@ double vMin(vector<double> *a)
 {
     if (a->size() == 0)
         return 0;
-        
+
     double v = (*a)[0];
     for (int i=1; i < (int)a->size(); i++)
         v = ((*a)[i] < v) ? ((*a)[i]) : v;
 
     return v;
+}
+
+void removeNPercentile(vector<double> *a, double perc)
+{
+	std::sort(a->begin(), a->end());
+	int s = a->size();
+	double b = (perc/100)*double(s)/2;
+	while (b > 0 && a->size() > 0){
+		a->erase(a->begin());
+		a->pop_back();
+		b--;
+	}
 }
 
 bool isMember(vector<string> strArr, string str)
@@ -378,18 +284,7 @@ bool isMember(vector<string> strArr, string str)
     return false;
 }
 
-string getCurDateTime()
-{
-	char dateStr[80];
-	time_t rawtime;
-	struct tm *timeInfo;
-	time(&rawtime);
-	timeInfo = localtime(&rawtime);
-	//char timeStr[10];
-	strftime(dateStr, 80,"%Y%m%d-%H%M%S", timeInfo);
-	string str(dateStr);
-	return str;
-}
+
 
 string tolower(string str)
 {
@@ -417,4 +312,6 @@ string strtrim(string str)
 
 
 //---------------------------------------------------------------------------
-#pragma package(smart_init)
+#ifdef __BORLANDC__
+# pragma package(smart_init)
+#endif // __BORLANDC__

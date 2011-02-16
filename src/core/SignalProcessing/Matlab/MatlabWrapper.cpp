@@ -5,8 +5,25 @@
 // Description: Wrapper classes for convenient creation and manipulation of
 //              Matlab workspace variables, and calling of Matlab functions.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -60,9 +77,9 @@ MatlabEngine::DoubleMatrix::operator SignalProperties() const
   if( !empty() )
   {
     if( !( *this )[ 0 ].empty() )
-      channels = ( *this )[ 0 ][ 0 ];
+      channels = static_cast<size_t>( ( *this )[ 0 ][ 0 ] );
     if( ( *this )[ 0 ].size() > 1 )
-      elements = ( *this )[ 0 ][ 1 ];
+      elements = static_cast<size_t>( ( *this )[ 0 ][ 1 ] );
   }
   return SignalProperties( channels, elements, SignalType::float32 );
 }
@@ -398,17 +415,26 @@ MatlabEngine::PutMxArray( const string& inExp, const mxArray* inArray )
 bool
 MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProcNames )
 {
-#if !defined( __BORLANDC__ ) || ( __BORLANDC__ > 0x0560 ) // bcc32 5.5.1 comes without an assembler
+  // According to Mathworks Helpdesk, Solution Number: 1-1134M0,
+  // this code works around a bug in Matlab R14Sp1 and R14Sp2
+  // by resetting the FPU.
+#if defined( __BORLANDC__ ) && ( __BORLANDC__ >= 0x0560 ) // bcc32 comes without an assembler
   {
-    // According to Mathworks Helpdesk, Solution Number: 1-1134M0,
-    // this code works around a bug in Matlab R14Sp1 and R14Sp2
-    // by resetting the FPU.
     static unsigned short CtrlWord = 0x123f;
     __asm  fninit;             // initialize fpu
     __asm  fnclex;             // clear fpu exceptions
     __asm  fldcw CtrlWord;     // load fpu control word
   }
 #endif // __BORLANDC__
+#if defined( _MSC_VER ) && !defined( _WIN64 )
+  {
+    static unsigned short CtrlWord = 0x123f;
+    __asm  fninit;             // initialize fpu
+    __asm  fnclex;             // clear fpu exceptions
+    __asm  fldcw CtrlWord;     // load fpu control word
+  }
+#endif // _MSC_VER && !_WIN64
+
   bool success = true;
   void* dllHandle = ::LoadLibrary( inName );
   if( !dllHandle )
@@ -421,7 +447,7 @@ MatlabEngine::LoadDLL( const char* inName, int inNumProcs, ProcNameEntry* inProc
   {
     for( int i = 0; i < inNumProcs; ++i )
     {
-      void* address = ::GetProcAddress( dllHandle, inProcNames[ i ].mName );
+      void* address = ( void* )::GetProcAddress( ( HMODULE )dllHandle, inProcNames[ i ].mName );
       if( !address )
       {
         success = false;
@@ -453,7 +479,7 @@ MatlabFunction::MatlabFunction( const string& inName )
       mxArray* ans = engGetVariable( spEngineRef, cAnsVariable.c_str() );
       if( ans )
       {
-        int result = mxGetPr( ans )[ 0 ];
+        int result = static_cast<int>( mxGetPr( ans )[ 0 ] );
         enum
         {
           mfile = 2,

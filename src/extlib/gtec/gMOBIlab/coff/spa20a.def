@@ -1,0 +1,11 @@
+LIBRARY spa20a.dll
+EXPORTS
+  GT_CloseDevice@4=GT_CloseDevice @2
+  GT_GetData@12=GT_GetData @7
+  GT_GetLastError @8
+  GT_InitChannels@48=GT_InitChannels @4
+  GT_OpenDevice@4=GT_OpenDevice @1
+  GT_SetDigitalOut @3
+  GT_StartAcquisition@4=GT_StartAcquisition @5
+  GT_StopAcquisition@4=GT_StopAcquisition @6
+  GT_TranslateErrorCode @9

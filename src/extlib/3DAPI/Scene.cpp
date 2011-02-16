@@ -3,8 +3,25 @@
 // Authors: shzeng, schalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
 // Description: A 3D scene viewed through a rectangular region.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -12,11 +29,22 @@
 #include "Scene.h"
 
 #include "GraphDisplay.h"
+#include "DisplayWindow.h"
 #include "BCIDirectory.h"
 #include "BCIError.h"
 #include "OSError.h"
 
-#include <dir.h>
+#if _MSC_VER
+# include <direct.h>
+#elif _WIN32
+# include <dir.h>
+#else
+# include <dirent.h>
+#endif
+
+#ifndef __BORLANDC__
+# include <QPainter>
+#endif // __BORLANDC__
 
 using namespace GUI;
 using namespace std;
@@ -24,7 +52,11 @@ using namespace std;
 Scene::Scene( GraphDisplay& inDisplay )
 : GraphObject( inDisplay, SceneDisplayZOrder ),
   mInitialized( false ),
+#ifdef __BORLANDC__
   mGLRC( NULL ),
+#else // __BORLANDC__
+  mpGLScene( NULL ),
+#endif // __BORLANDC__
   mContextHandle( NULL ),
   mBitDepth( 16 ),
   mDoubleBuffering( false ),
@@ -32,11 +64,27 @@ Scene::Scene( GraphDisplay& inDisplay )
   mHardwareAccelerated( false ),
   mfpOnCollide( NULL )
 {
+#ifndef __BORLANDC__
+  QWidget* parentWidget = NULL;
+  parentWidget = dynamic_cast<QWidget*>( Display().Context().handle );
+  if( parentWidget )
+  {
+    mpGLScene = new class GLScene( parentWidget );
+    mpGLScene->resize(
+      static_cast<int>( Display().Context().rect.right - Display().Context().rect.left ),
+      static_cast<int>( Display().Context().rect.bottom - Display().Context().rect.top - 1 )
+    );
+  }
+#endif // __BORLANDC__
 }
 
 Scene::~Scene()
 {
   DeleteObjects();
+#ifndef __BORLANDC__
+  delete mpGLScene;
+  mpGLScene = NULL;
+#endif // __BORLANDC__
 }
 
 void
@@ -73,11 +121,12 @@ Scene::DeleteObjects()
 void
 Scene::OnPaint( const DrawContext& inDC )
 {
+#ifdef __BORLANDC__
   // OpenGL is not compatible with clipping, so we remove the clipping region.
   // We also don't restore the clipping region to make sure that all objects
   // further to the top are drawn properly.
-  ::SelectClipRgn( inDC.handle, NULL );
-  if( !::wglMakeCurrent( inDC.handle, mGLRC ) )
+  ::SelectClipRgn( ( HDC )inDC.handle, NULL );
+  if( !::wglMakeCurrent( ( HDC )inDC.handle, mGLRC ) )
     throw OSError().Message();
   GUI::Rect fullRect = { 0, 0, 1, 1 };
   fullRect = Display().NormalizedToPixelCoords( fullRect );
@@ -104,11 +153,15 @@ Scene::OnPaint( const DrawContext& inDC )
 
   ::glFlush();
   ::wglMakeCurrent( NULL, NULL );
+#else // __BORLANDC__
+  mpGLScene->RenderObjects( mObjects, &mCameraAndLight );
+#endif // __BORLANDC__
 }
 
 void
 Scene::OnChange( DrawContext& inDC )
 {
+#ifdef __BORLANDC__
   if( mContextHandle != inDC.handle )
   {
     mHardwareAccelerated = false;
@@ -139,13 +192,13 @@ Scene::OnChange( DrawContext& inDC )
     if( mDoubleBuffering )
       pfd.dwFlags |= PFD_DOUBLEBUFFER;
 
-    int pixelFormat = ::ChoosePixelFormat( inDC.handle, &pfd );
-    ::SetPixelFormat( inDC.handle, pixelFormat, &pfd );
-    if( ::DescribePixelFormat( inDC.handle, pixelFormat, sizeof( PIXELFORMATDESCRIPTOR ), &pfd ) )
+    int pixelFormat = ::ChoosePixelFormat( ( HDC )inDC.handle, &pfd );
+    ::SetPixelFormat( ( HDC )inDC.handle, pixelFormat, &pfd );
+    if( ::DescribePixelFormat( ( HDC )inDC.handle, pixelFormat, sizeof( PIXELFORMATDESCRIPTOR ), &pfd ) )
       mHardwareAccelerated = ( ( pfd.dwFlags & PFD_GENERIC_FORMAT ) == 0 );
 
-    mGLRC = ::wglCreateContext( inDC.handle );
-    ::wglMakeCurrent( inDC.handle, mGLRC );
+    mGLRC = ::wglCreateContext( ( HDC )inDC.handle );
+    ::wglMakeCurrent( ( HDC )inDC.handle, mGLRC );
     Initialize();
 
     if( mDisableVsync )
@@ -174,6 +227,9 @@ Scene::OnChange( DrawContext& inDC )
     ::wglMakeCurrent( NULL, NULL );
   }
   mContextHandle = inDC.handle;
+#else // __BORLANDC__
+  Initialize();
+#endif // __BORLANDC__
 }
 
 
@@ -182,8 +238,10 @@ Scene::Initialize()
 {
   Cleanup();
 
+#ifdef __BORLANDC_
   ::glClearColor( 0, 0, 0, 0.5 ); // background color
   ::glClearDepth( 1 );
+#endif // __BORLANDC__
 
   string cwd = BCIDirectory::GetCWD();
   if( !mImagePath.empty() )
@@ -200,17 +258,23 @@ Scene::Initialize()
 void
 Scene::Cleanup()
 {
+#ifdef __BORLANDC__
   if( mInitialized )
   {
     HGLRC glrc = ::wglGetCurrentContext();
     HDC   dc = ::wglGetCurrentDC();
-    ::wglMakeCurrent( mContextHandle, mGLRC );
+    ::wglMakeCurrent( ( HDC )mContextHandle, mGLRC );
 
     for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
       ( *i )->cleanup();
 
     ::wglMakeCurrent( dc, glrc );
   }
+#else // __BORLANDC__
+  if( mInitialized )
+    for( ObjectIterator i = mObjects.begin(); i != mObjects.end(); ++i )
+      ( *i )->cleanup();
+#endif // __BORLANDC__
   mInitialized = false;
 }
 
@@ -236,5 +300,137 @@ Scene::Move( float inDeltaT )
         if( sceneObj::VolumeIntersection( **i, **j ) )
           mfpOnCollide( **i, **j );
 }
+
+// GL Scene
+#ifndef __BORLANDC__
+// Constructs GLScene
+// Parameters: Pointer to the Parent QWidget
+GLScene::GLScene( QWidget *parent )
+: QGLWidget( parent ),
+  mCameraAndLight( NULL )
+{
+  this->show();
+}
+
+// Deconstructs GLScene
+GLScene::~GLScene()
+{
+}
+
+// Divs up overlay and scene objects, then calls repaint
+// Parameters: Set of primObjects to render
+void
+GLScene::RenderObjects( SetOfObjects &objSet, cameraNLight* cl )
+{
+  mSceneObjectSet.clear();
+  mOverlayObjectSet.clear();
+
+  mCameraAndLight = cl;
+
+  // Divide the overlay objects and the scene objects
+  for( ObjectIterator itr = objSet.begin(); itr != objSet.end(); itr++ )
+  {
+    sceneObj* sObj = NULL;
+    sObj = dynamic_cast<sceneObj*>( *itr );
+    if( sObj )
+      mSceneObjectSet.insert( sObj );
+
+    overlayObj* oObj = NULL;
+    oObj = dynamic_cast<overlayObj*>( *itr );
+    if( oObj )
+      mOverlayObjectSet.insert( oObj );
+  }
+
+  // Ensure the paint functions are called
+  this->updateGL();
+}
+
+// Virtual interface of the initializeGL function from QGLWidget
+// Sets up the GLScene for rendering 3d objects
+void
+GLScene::initializeGL()
+{
+  ::glClearColor( 0, 0, 0, 0.5 ); // background color
+  ::glClearDepth( 1 );
+}
+
+// Virtual interface of the resizeGL function from QGLWidget
+// Resizes the GLScene viewport
+void
+GLScene::resizeGL( int w, int h )
+{
+  // resize the widget
+}
+
+// Virtual interface of the paintGL function from QGLWidget
+// Handles all GL related paint functions
+void
+GLScene::paintGL()
+{
+  glViewport(
+    this->pos().x(),
+    this->pos().y(),
+    this->width(),
+    this->height()
+  );
+
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glMatrixMode( GL_MODELVIEW );
+  glLoadIdentity();
+  if( mCameraAndLight )
+    mCameraAndLight->apply();
+  glEnable( GL_NORMALIZE );
+
+  if( !mSceneObjectSet.empty() )
+  {
+    DrawingOrderedSetOfObjects s;
+    for( SceneObjectIterator i = mSceneObjectSet.begin(); i != mSceneObjectSet.end(); ++i )
+      s.insert( *i );
+
+    for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
+      ( *i )->render();
+  }
+
+  glFlush();
+#if _WIN32
+  wglMakeCurrent( NULL, NULL );
+#endif
+}
+
+// Virtual interface of the paintOverlayGL function from QGLWidget
+// Handles all overlay related GL Paint functions
+void
+GLScene::paintOverlayGL()
+{
+  glViewport(
+    this->pos().x(),
+    this->pos().y(),
+    this->width(),
+    this->height()
+  );
+
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glMatrixMode( GL_MODELVIEW );
+  glLoadIdentity();
+  if( mCameraAndLight )
+    mCameraAndLight->apply();
+  glEnable( GL_NORMALIZE );
+
+  if( !mOverlayObjectSet.empty() )
+  {
+    DrawingOrderedSetOfObjects s;
+    for( OverlayObjectIterator i = mOverlayObjectSet.begin(); i != mOverlayObjectSet.end(); ++i )
+      s.insert( *i );
+
+    for( DrawingOrderedIterator i = s.begin(); i != s.end(); ++i )
+      ( *i )->render();
+  }
+
+  glFlush();
+#if _WIN32
+  wglMakeCurrent( NULL, NULL );
+#endif
+}
+#endif // __BORLANDC__
 
 

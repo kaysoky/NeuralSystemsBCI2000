@@ -3,8 +3,25 @@
 // Authors: gschalk@wadsworth.org, juergen.mellinger@uni-tuebingen.de
 // Description: A type that represents a single BCI2000 parameter.
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"                               
 #pragma hdrstop
@@ -13,6 +30,7 @@
 #include "Brackets.h"
 
 #include <sstream>
+#include <cstdio>
 #include <cassert>
 
 using namespace std;
@@ -58,23 +76,29 @@ Param::toupper( string& s )
 Param&
 Param::SetDimensions( size_t inRows, size_t inCols )
 {
-  if( inCols == 0 )
+  size_t newCols = inCols;
+  if( newCols == 0 )
+  {
     mType = "list";
+    newCols = 1;
+  }
   else
+  {
     mType = "matrix";
+  }
   // To preserve existing values' indices, insert/remove values as needed.
   size_t rows = NumRows(),
          cols = NumColumns();
-  if( inCols > cols )
+  if( newCols > cols )
     for( size_t i = 0; i < rows; ++i )
-      mValues.insert( mValues.begin() + i * inCols + cols,
-                                               inCols - cols, sDefaultValue );
+      mValues.insert( mValues.begin() + i * newCols + cols,
+                                               newCols - cols, sDefaultValue );
   else
     for( size_t i = 0; i < rows; ++i )
-      mValues.erase( mValues.begin() + ( i + 1 ) * inCols,
-                                   mValues.begin() + i * inCols + cols );
-  // mDim1Index will be resized from NumValues().
-  mDim2Index.Resize( inCols );
+      mValues.erase( mValues.begin() + ( i + 1 ) * newCols,
+                                   mValues.begin() + i * newCols + cols );
+  // mDim1Index will be resized from SetNumValues().
+  mDim2Index.Resize( newCols );
   return SetNumValues( inRows * inCols );
 }
 

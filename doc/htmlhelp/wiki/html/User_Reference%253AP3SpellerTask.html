@@ -189,10 +189,11 @@ In this mode, mouse clicks into matrix elements are registered during sequence p
 <p>There are two speller commands that allow the user to suspend operation of the <i>P3SpellerTask</i> either momentarily or for an extended period of time, &lt;PAUSE&gt; and &lt;SLEEP&gt;.
 To associate speller commands with certain matrix elements, specify them in the "Enter" column of the desired matrix element in the target definition matrix.
 </p><p>The &lt;PAUSE&gt; speller command pauses the <i>P3SpellerTask</i>: While the system is paused, the matrix will continue to flash but target selections shall be ignored until the user resumes system operation, which is achieved by selecting &lt;PAUSE&gt; again. 
-Data recording is also suspended while the system is paused. 
 The "goal text" line of the status bar indicates that the system is paused.
+Data recording continues while the system is paused.
 </p><p>For a matrix having N entries, one of which is &lt;PAUSE&gt;, the chance to erroneously resume system operation while paused is 1/N per selection. On average, this will happen after N selections in paused state. A second speller command, &lt;SLEEP&gt;, is provided as a safer option. Once in sleep state, the system will resume only after receiving two consecutive &lt;SLEEP&gt; selections, which requires N^2 selections on average to occur by chance.
 When in sleep mode, the "goal text" line of the status bar will instruct the user to select the &lt;SLEEP&gt; command twice to restart.
+Data recording is also suspended while the system is sleeping.
 </p>
 <a name="Text_Window"></a><h3>Text Window</h3>
 <p>The capability to display user selected text in a text window is available.

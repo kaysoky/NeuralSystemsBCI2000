@@ -13,7 +13,15 @@
 #define FIRSTAMP_API __declspec(dllexport)
 #else
 /*! FIRSTAMP_API functions as being imported from a DLL */
-#define FIRSTAMP_API extern "C" __declspec(dllimport)
+#if _MSC_VER
+// C++ mangled function names for MSVC lib file coming with the SDK, jm
+# define FIRSTAMP_API __declspec(dllimport)
+#elif __BORLANDC__
+// C function names for non-MSVC compilers
+# define FIRSTAMP_API extern "C" __declspec(dllimport)
+#else
+# define FIRSTAMP_API extern "C"
+#endif // _MSC_VER, __BORLANDC__
 #endif
 
 /*! Error codes */
@@ -55,8 +63,8 @@
 /*----------------------------------------------------------------------------*/
 /* Data Types */
 
-/*! 
-  Device information structure 
+/*!
+  Device information structure
   Note:
   If serial number = 0, it's means that device has not production information.
   In such case - production date also invalid (= 0) and can not be used.
@@ -124,20 +132,20 @@ typedef struct {
   unsigned int DataCounterErrors; /*!< Total cyclic counter errors (loss of data) */
 } t_faDataState;
 
-/*! 
+/*!
   Data acquisition modes settings.
 
   Note for 20 kHz mode:
     - device can acqusition 4 channels, monopolar or differential.
     - set channel's number for positive and negative input of differential pair.
     - device channels numbers starting from 0, i.e. at label channel 1 = internal 0.
-    - for mopolar set positive's channel to wishful, 
+    - for mopolar set positive's channel to wishful,
       and negative to invalid (any number not present in model, for example -1).
 
   Examples:
    - example for differential pair 0 (channel 1 - channel 2)
      var.Mode20kHz4Channels.ChannelsPos[0] = 1 - 1;
-     var.Mode20kHz4Channels.ChannelsNeg[0] = 2 - 1; 
+     var.Mode20kHz4Channels.ChannelsNeg[0] = 2 - 1;
    - example for monopolar pair 1 (channel REF)
      var.Mode20kHz4Channels.ChannelsPos[1] = FA_MODEL_16_CHANNELS_MAIN - 1;
      var.Mode20kHz4Channels.ChannelsNeg[1] = -1;
@@ -195,26 +203,26 @@ FIRSTAMP_API int WINAPI faOpen(int Id);
 */
 FIRSTAMP_API int WINAPI faClose(int Id);
 /*----------------------------------------------------------------------------*/
-/*!  
+/*!
   Function to start data acquisition
 \param Id - device ID
 \return - error code
 */
 FIRSTAMP_API int WINAPI faStart(int Id);
 
-/*!  
+/*!
   Function to stop data acquisition
 \param Id - device ID
 \return - error code
 */
 FIRSTAMP_API int WINAPI faStop(int Id);
 
-/*!  
+/*!
   Function return accusition data from internal buffer.
   If some channels is not connect, data values are equals to INT_MAX for its.
   Data return in format t_faDataModel16 or t_faDataModel8 or
   t_faDataFormatMode20kHz, depends from model and acquisition mode.
-  Needs call this function until not return <= 0, 
+  Needs call this function until not return <= 0,
   for prevent overflow of internal buffer.
 \param Id - device ID
 \param Buffer - pointer to buffer for device data.
@@ -222,16 +230,16 @@ FIRSTAMP_API int WINAPI faStop(int Id);
 \return
   if > 0 - count of bytes copied to buffer
   if = 0 - no more data in internal buffer
-  if < 0 - error code  
+  if < 0 - error code
 */
 FIRSTAMP_API int WINAPI faGetData(int Id, void *Buffer, unsigned int Size);
 
 /*----------------------------------------------------------------------------*/
-/*!  
+/*!
   Function return device information
   Note:
   - if device has not this information in EEPROM (for example not programming or
-    data corruption) than serial number in t_faInformation structure set to 0 
+    data corruption) than serial number in t_faInformation structure set to 0
     and device information structure return as for unprogramming device.
     See note for t_faInformation structure.
 \param Id - device ID
@@ -240,7 +248,7 @@ FIRSTAMP_API int WINAPI faGetData(int Id, void *Buffer, unsigned int Size);
 */
 FIRSTAMP_API int WINAPI faGetInformation(int Id, t_faInformation *Information);
 
-/*!  
+/*!
   Function return device property
 \param Id - device ID
 \param Property - address of t_faProperty structure for return data
@@ -248,10 +256,10 @@ FIRSTAMP_API int WINAPI faGetInformation(int Id, t_faInformation *Information);
 */
 FIRSTAMP_API int WINAPI faGetProperty(int Id, t_faProperty *Property);
 /*----------------------------------------------------------------------------*/
-/*!  
+/*!
   Function to start impedance measure.
   Note:
-    - for correct work of impedance measure (faGetImpedance()) needs to start 
+    - for correct work of impedance measure (faGetImpedance()) needs to start
       data acqusition (faStart()) before start of impedance measure (faStartImpedance()).
 \param Id - device ID
 \return - error code
@@ -278,17 +286,17 @@ FIRSTAMP_API int WINAPI faStopImpedance(int Id);
 \param Id - device ID
 \param Buffer - pointer to destination buffer for N (channels) + 1 (ground) values in Ohm
 \param Size - size of destination buffer, bytes
-\return - error code  
+\return - error code
 */
 FIRSTAMP_API int WINAPI faGetImpedance(int Id, unsigned int *Buffer, unsigned int Size);
 /*----------------------------------------------------------------------------*/
-/*!  
+/*!
   Function to start of calibration signal on EEG channles
   Note:
   - calibration signal is square signal with period 2 sec with amplitude 200 uV,
     (on-off time ratio 1 : 1)
   - amplitute correct only on unconnected channels.
-  - on connected electrodes amplitude of calibration signal uncorrect (devided 
+  - on connected electrodes amplitude of calibration signal uncorrect (devided
     between electrode impedance and channel output impedance )
 \param Id - device ID
 \return - error code
@@ -320,10 +328,10 @@ FIRSTAMP_API int WINAPI faSetIo(int Id, t_faIo *Io);
 /*----------------------------------------------------------------------------*/
 /*!
   Function to show Windows bitmap on device LCD display
-  Performance (for 24-bpp Windows bitmaps):  
+  Performance (for 24-bpp Windows bitmaps):
   ~ 220 - 230 ms - for bitmaps with real colors count > 256
   ~ 115 - 120 ms - for bitmaps with real colors count <= 256
-  - For max performance needs to use 24-bpp Windows bitmaps    
+  - For max performance needs to use 24-bpp Windows bitmaps
   - With 16-bit or 32-bit bitmaps time is increasing on ~50 ms
     due to Windows GDI function GetDIBits() overhead
   - Test Release version of the DLL on Windows XP, AMD Athlon 1.3 GHz, 512 MB
@@ -392,7 +400,7 @@ FIRSTAMP_API int WINAPI faSetBrightness(int Id, unsigned int Brightness);
 \param Count - pointer to count of reading data, bytes
 \return - error code
 */
-FIRSTAMP_API int WINAPI faGetUserData(int Id, void *Buffer, unsigned int Size, 
+FIRSTAMP_API int WINAPI faGetUserData(int Id, void *Buffer, unsigned int Size,
   unsigned int *Count);
 
 /*!
@@ -406,14 +414,14 @@ FIRSTAMP_API int WINAPI faGetUserData(int Id, void *Buffer, unsigned int Size,
 \param Count - pointer to count of writing data, bytes
 \return - error code
 */
-FIRSTAMP_API int WINAPI faSetUserData(int Id, void *Buffer, unsigned int Size, 
+FIRSTAMP_API int WINAPI faSetUserData(int Id, void *Buffer, unsigned int Size,
   unsigned int *Count);
 /*----------------------------------------------------------------------------*/
 /*!
   Function to get data state information
   Note:
   - for future modification (increasing) of t_faDataState structure needs to
-    set t_faDataState.Size field to size of actual t_faDataState format 
+    set t_faDataState.Size field to size of actual t_faDataState format
     before call this function.
 \param Id - device ID
 \param  DataState - pointer to buffer with t_faDataState structure format
@@ -428,7 +436,7 @@ FIRSTAMP_API int WINAPI faGetDataState(int Id, t_faDataState *DataState);
 \param Settings - pointer to optinal data acquisition mode settings buffer
 \return - error code
 */
-FIRSTAMP_API int WINAPI faGetDataMode(int Id, t_faDataMode *Mode, 
+FIRSTAMP_API int WINAPI faGetDataMode(int Id, t_faDataMode *Mode,
   t_faDataModeSettings *Settings);
 
 /*!
@@ -436,7 +444,7 @@ FIRSTAMP_API int WINAPI faGetDataMode(int Id, t_faDataMode *Mode,
   Warning:
     - do not change mode during acqusition, previous stop.
     - impedance measure in 20 kHz mode not working, needs set normal mode
-  Note:    
+  Note:
     - for set normal mode call faSetDataMode(Id, dmNormal, NULL)
     - for set 20 kHz mode call faSetDataMode(Id, dm20kHz4Channels, &settings)
 \param Id - device ID
@@ -444,7 +452,7 @@ FIRSTAMP_API int WINAPI faGetDataMode(int Id, t_faDataMode *Mode,
 \param Settings - optinal data acquisition mode settings
 \return - error code
 */
-FIRSTAMP_API int WINAPI faSetDataMode(int Id, t_faDataMode Mode, 
+FIRSTAMP_API int WINAPI faSetDataMode(int Id, t_faDataMode Mode,
   t_faDataModeSettings *Settings);
 /*----------------------------------------------------------------------------*/
 #endif /* ModID_XXX_H */

@@ -1,78 +1,120 @@
+/* $BEGIN_BCI2000_LICENSE$
+ * 
+ * This file is part of BCI2000, a platform for real-time bio-signal research.
+ * [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+ * 
+ * BCI2000 is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * BCI2000 is distributed in the hope that it will be useful, but
+ *                         WITHOUT ANY WARRANTY
+ * - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * $END_BCI2000_LICENSE$
+ */
 //---------------------------------------------------------------------------
-/*  TDTADC Class definition
-	Authors: Adam Wilson & Samuel Inverso
 
-    Description: The TDTADC class implements functions required for the TDT to
-    	operate, such as connect, start, stop, read data, etc.
-
-    Class Properties:
-    	(Necessary Internal Stuff)
-        currentIndex[] (float) - the current index into channel n
-        nChannels (short int) - number of channels
-        bufferSize (float) - the size of the buffer to read
-
-        (RCO Circuit Tag Properties)
-    	HPFfreq (float)- high pass filter frequency
-        LPFfreq (float)- lowpass filter frequency
-        notchBW (float)- bandwidth of 60 Hz notch filter
-        blkSize (float)- block size of each channel
-        scale~n (float)- scale factor for channel n
-        index~n (float)- index in data buffer for channel n
-        data~n - pointer to data buffer for channel n
-
-        (TDT device parms)
-        sampleFreq (float)- sample frequency of device
-        circuit (*Widestring) - circuit path
-        devType (*Widestring) - interface type ("GB")
-        devNum (long) - device number (1 for RX5)
-
-    Class Functions:
-    	(TDT Control)
-        connect(*devType, devNum) - connects to pentusa
-        loadRCO(circuit, sampleFreq) - loads the RCO file
-        run() - start TDT
-        halt() - halt TDT
-        getStatus() - get status
-        bool isConnected()
-        bool isCOFloaded()
-
-
-*/
 #ifndef TDTADCH
 #define TDTADCH
 
-#include <Classes.hpp>
-#include <SyncObjs.hpp>
-#include <string>
+#include "GenericADC.h"
+#import "RPcoX.ocx"
+#import "zBUSx.ocx"
+#include <stdio.h>
 #include <vector>
-#include <exception>
-#include <wstring.h>
+#include <string>
+#include "OSthread.h"
 
-#include "RPCOXLib_OCX.h"
-
-
-class TDTADC : public TThread{
-
+class TDTADC : public GenericADC
+{
 public:
-    __fastcall TDTADC(bool createSuspended);
-    __fastcall ~TDTADC();
+	TDTADC();
+    ~TDTADC();
 
-    bool isConnected();
-    void halt();
+    //
+    void Preflight(const SignalProperties&, SignalProperties&) const;
+    void Initialize(const SignalProperties&, const SignalProperties&);
+    void Process( const GenericSignal&, GenericSignal&);
+    void Halt();
 
+    void reset();
 
-protected:
+private:
+	RPCOXLib::_DRPcoXPtr RPcoX1;
+	ZBUSXLib::_DZBUSxPtr ZBus;
 
-    bool high;		// determines which block of data to retrieve
-    unsigned int samplesAcquired;
-    float curIndex;
+    void dropSamples(GenericSignal& outputSignal);
 
-    TEvent *acquire; // if we should be acquiring dignal from the adc
-    TEvent *executeSafe; // if set means execute is not currently
-                          // in the process of getting signal
+    int	mSourceCh;
+    int	mSampleBlockSize;
+    int mSamplingRate;
 
-	WideString* circuit;
+    int nChannels;
+    int nProcessors;
+    double LPFfreq;
+    double HPFfreq;
+    double notchBW;
+    double TDTsampleRate;
+    double TDTgain;
+    int TDTbufSize;
+    int blockSize;
+    int TDTbufBlocks;
+    short connectType;
+    int curindex, stopIndex, indexMult;
+    int devAddr[2];
+    bool use2RX5;
+    bool useECG;
+    float ECGgain;
+    int ECGchannel;
+    int ECGoffset;
+    int ECGstopIndex;
+    int mUseFrontPanel;
+    int mEEGchannels;
 
+    int mFrontPanelChannels;
+    float mDigitalGain;
+    float mFrontPanelGain;
+    FILE * logFile;
+	int mThreadBlock, mProcBlock;
+
+	std::vector<float*> mData;
+	std::vector<std::string> mDataTags, mDataIndex;
+
+	class AcquireThread;
+    HANDLE acquireEventRead;
+    friend class AcquireThread;
+    class AcquireThread : public OSThread
+    {
+      public:
+        AcquireThread( TDTADC * parent )
+        : amp( parent )
+        {
+            SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+            mData = NULL;
+        }
+        float getNextValue();
+        private:
+            int Execute();
+			void init();
+			void reset();
+            TDTADC *amp;
+            int mBufferReadPos, mBufferWritePos;
+            float *mData;
+			int mBufferSize;
+			std::vector< std::vector<HANDLE> >         m_hEvent;
+			std::vector<float*> mDataBuf;
+			std::vector<std::string> mDataTags;
+			int mOffset;
+			std::vector<int> mChList;
+
+	} *mpAcquireThread;
 };
+
 //---------------------------------------------------------------------------
 #endif

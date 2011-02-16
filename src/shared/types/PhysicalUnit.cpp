@@ -11,8 +11,25 @@
 //     PhysicalValue = ( RawValue - offset ) * gain * symbol
 //
 //
-// (C) 2000-2010, BCI2000 Project
-// http://www.bci2000.org
+// $BEGIN_BCI2000_LICENSE$
+// 
+// This file is part of BCI2000, a platform for real-time bio-signal research.
+// [ Copyright (C) 2000-2011: BCI2000 team and many external contributors ]
+// 
+// BCI2000 is free software: you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the Free Software
+// Foundation, either version 3 of the License, or (at your option) any later
+// version.
+// 
+// BCI2000 is distributed in the hope that it will be useful, but
+//                         WITHOUT ANY WARRANTY
+// - without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+// A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along with
+// this program.  If not, see <http://www.gnu.org/licenses/>.
+// 
+// $END_BCI2000_LICENSE$
 ////////////////////////////////////////////////////////////////////////////////
 #include "PCHIncludes.h"
 #pragma hdrstop
@@ -56,15 +73,15 @@ PhysicalUnit::ExtractUnit( string& ioValue ) const
       ValueType      value;
     } prefixes[] =
     {
-      "p", 1e-12,
-      "n", 1e-9,
-      "u", 1e-6, "mu", 1e-6,
-      "m", 1e-3,
-      "",  1.0,
-      "k", 1e3,
-      "M", 1e6,
-      "G", 1e9,
-      "T", 1e12,
+      { "p", 1e-12 },
+      { "n", 1e-9 },
+      { "u", 1e-6 }, { "mu", 1e-6 },
+      { "m", 1e-3 },
+      { "",  1.0 },
+      { "k", 1e3 },
+      { "M", 1e6 },
+      { "G", 1e9 },
+      { "T", 1e12 },
     };
     const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
     int i = 0;
@@ -115,22 +132,22 @@ PhysicalUnit::RawToPhysical( ValueType inRawValue ) const
   ValueType value = ( inRawValue - mOffset ) * mGain;
   if( ::fabs( value ) > 0 )
   {
-    int orderOfMagnitude = ::floor( ::log10( ::fabs( value ) ) );
+    int orderOfMagnitude = static_cast<int>( ::floor( ::log10( ::fabs( value ) ) ) );
     const struct
     {
       const char* name;
       int         order;
     } prefixes[] =
     {
-      "p",  -12,
-      "n",  -9,
-      "mu", -6,
-      "m",  -3,
-      "",   0,
-      "k",  3,
-      "M",  6,
-      "G",  9,
-      "T",  12,
+      { "p",  -12 },
+      { "n",  -9 },
+      { "mu", -6 },
+      { "m",  -3 },
+      { "",   0 },
+      { "k",  3 },
+      { "M",  6 },
+      { "G",  9 },
+      { "T",  12 },
     };
     const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
     int i = 0;

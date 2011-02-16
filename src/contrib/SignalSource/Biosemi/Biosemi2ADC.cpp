@@ -37,10 +37,6 @@
  *  Revison 2.1 2009/05/27  Jeremy Hill
  *  Trigger signal acquisition fixed and tested.
  *  Added option to acquire trigger signals simultaneously in one 16-bit channel.
- *
- *  Revison 2.2 2010/03/04  Gerwin Schalk
- *  Fixed reinitialization problem using workaround: now dynamically creating and
- *  deleting the biosemiclient object
  */
 
 #include "PCHIncludes.h"
@@ -93,7 +89,6 @@ Biosemi2ADC::Biosemi2ADC()
        "// gain for each channel (A/D units -> muV)",
  END_PARAMETER_DEFINITIONS
 
- mBiosemi=NULL;
 
  BEGIN_STATE_DEFINITIONS
    "Running    1 0 0 0",
@@ -151,15 +146,10 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
                << endl;
     }
 
-    // There is a remaining problem in the Biosemi2Client code
-    // that prevents proper function when initialize is called more than
-    // once. As a workaround, we now simply delete and recreate the whole object here
-    if (mBiosemi) delete mBiosemi;
-    mBiosemi=new Biosemi2Client;
-    mBiosemi->initialize(Parameter("SamplingRate"),
+    mBiosemi.initialize(Parameter("SamplingRate"),
             Parameter("SampleBlockSize"), reqChannels);
 
-    int eegChannelsAvailable = mBiosemi->getNumEEGChannels();
+    int eegChannelsAvailable = mBiosemi.getNumEEGChannels();
     for( int i = 0 ; i < nEegRequested ; ++i ) {
         int ind = Parameter( "EEGChList" )( i );
         if( ind < 1 || ind > eegChannelsAvailable ) {
@@ -175,7 +165,7 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
         }
     }
 
-    int aibChannelsAvailable = mBiosemi->getNumAIBChannels();
+    int aibChannelsAvailable = mBiosemi.getNumAIBChannels();
     if( aibChannelsAvailable == 0 && nAibRequested != 0 ) {
         bcierr << "AIBChList must be empty if AIB box is not connected" << endl;
     }
@@ -198,10 +188,10 @@ void Biosemi2ADC::Preflight( const SignalProperties&,
         } 
     }
 
-    if( 0 != (mBiosemi->getSamplingRate() % (int)Parameter("SamplingRate")) ){
+    if( 0 != (mBiosemi.getSamplingRate() % (int)Parameter("SamplingRate")) ){
         bcierr << "Sampling rate requested: " << Parameter("SamplingRate")
             << " does not evenly divide biosemi sampling rate: "
-            << mBiosemi->getSamplingRate() << endl;
+            << mBiosemi.getSamplingRate() << endl;
 
     }
 
@@ -222,7 +212,7 @@ Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 {
-    mpDataBlock = &mBiosemi->getDataBlock();
+    mpDataBlock = &mBiosemi.getDataBlock();
 
 // store the value of the needed parameters
 
@@ -240,7 +230,7 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
         mChInd[chInd_ind++] = Biosemi2Client::FIRST_EEG_CHANNEL + ind - 1;
     }
 
-	int first_aib = (mBiosemi->isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
+	int first_aib = (mBiosemi.isMK2() ? Biosemi2Client::FIRST_AIB_CHANNEL_MK2 : Biosemi2Client::FIRST_AIB_CHANNEL_MK1);
     int nAibRequested   = Parameter( "AIBChList" )->NumValues();
     for( int i = 0 ; i < nAibRequested ; ++i ) {
         int ind = Parameter( "AIBChList" )( i );
@@ -255,12 +245,12 @@ void Biosemi2ADC::Initialize( const SignalProperties&, const SignalProperties& )
 
     // Setup the State
 
-    State("BatteryLow") = mBiosemi->isBatteryLow();
+    State("BatteryLow") = mBiosemi.isBatteryLow();
     if( State("BatteryLow" ) ){
         bciout << "Warning: Battery low " << endl;
     }
-    State("MODE") =mBiosemi->getMode();
-    State("MK2") = mBiosemi->isMK2();
+    State("MODE") =mBiosemi.getMode();
+    State("MK2") = mBiosemi.isMK2();
 
 
 }
@@ -277,13 +267,13 @@ void Biosemi2ADC::Process( const GenericSignal&, GenericSignal& Output )
 
 // wait for data to become ready
 
-    mBiosemi->isDataReady();
+    mBiosemi.isDataReady();
 
 
 // Make sure the block is valid.
 
     if( !mpDataBlock->isDataValid() ){
-        if( mBiosemi->isBatteryLow() && !State("BatteryLow")){
+        if( mBiosemi.isBatteryLow() && !State("BatteryLow")){
             bciout << "Warning: Battery Low" << endl;
 
 // we don't want to send messages to bicout everytime Process function is called,
@@ -327,5 +317,5 @@ Returns:    N/A
 *******************************************************************************/
 void Biosemi2ADC::Halt()
 {
-    if (mBiosemi) mBiosemi->halt();
+    mBiosemi.halt();
 }
