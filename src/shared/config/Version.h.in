@@ -39,7 +39,7 @@
                          "$Revision: $WCRANGE$ $ " \
                          "$Source Date: $WCDATE$ $ " \
                          "$Build Date: $WCNOW$ $ " \
-                         "$Compiler: " COMPILER_NAME $ "
+                         "$Compiler: " COMPILER_NAME " $ "
                          
 #define BCI2000_COPYRIGHT "(C) 2000-2011, BCI2000 Project\n" \
                           "http://www.bci2000.org"
