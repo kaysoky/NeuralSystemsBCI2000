@@ -32,6 +32,11 @@ IF( WIN32 )
     "${SRC_PROJECT}" "${HDR_PROJECT}" 
     "${INC_EXTLIB}"
   )
+  ADD_CUSTOM_COMMAND(
+    TARGET "${EXECUTABLE_NAME}"
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${BCI2000_SRC_DIR}/extlib/brainproducts/vamp/FirstAmp.dll" "${BCI2000_ROOT_DIR}/prog"
+  )
 ELSE()
   MESSAGE( "-- vAmp SDK does not provide libraries for this OS, will not build" )
 ENDIF()
