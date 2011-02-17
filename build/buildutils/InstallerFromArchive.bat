@@ -13,7 +13,7 @@
 
 :doit
 pushd %~dp0
-for %%H in (%*) do copy ..\..\src\BCI2000.sfx /b + "%%H" /b "%%~dH%%~pH%%~nH.exe"
+for %%H in (%*) do copy ..\..\src\BCI2000.sfx /b + %%H /b "%%~dH%%~pH%%~nH.exe"
 popd
 pause
 :end
