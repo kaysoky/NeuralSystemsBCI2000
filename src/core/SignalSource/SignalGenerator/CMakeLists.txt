@@ -6,6 +6,8 @@
 # Set the executable name
 SET( EXECUTABLE_NAME SignalGenerator )
 
+ADD_DEFINITIONS ( -DTIME_IS_REAL=0 ) # permits --EvaluateTiming=0, to launch without realtime checking
+
 # Set the project specific sources
 SET( SRC_PROJECT
   SignalGenerator.cpp

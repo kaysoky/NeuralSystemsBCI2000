@@ -72,7 +72,8 @@ class DataIOFilter: public GenericFilter
   StateVector            mStatevectorBuffer;
 
   bool                   mVisualizeSource,
-                         mVisualizeTiming;
+                         mVisualizeTiming,
+                         mEvaluateTiming;
   int                    mVisualizeSourceDecimation,
                          mVisualizeSourceBufferSize;
   GenericVisualization   mSourceVis,

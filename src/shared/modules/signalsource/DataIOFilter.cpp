@@ -66,7 +66,8 @@ DataIOFilter::DataIOFilter()
   mBlockCount( 0 ),
   mBlockDuration( 0 ),
   mSampleBlockSize( 0 ),
-  mTimingBufferCursor( 0 )
+  mTimingBufferCursor( 0 ),
+  mEvaluateTiming( true )
 {
   BCIEvent::SetEventQueue( mBCIEvents );
 
@@ -219,7 +220,13 @@ DataIOFilter::Preflight( const SignalProperties& Input,
            << ")"
            << endl;
   }
-
+#ifndef TIME_IS_REAL
+#define TIME_IS_REAL 1
+#endif // #ifndef TIME_IS_REAL
+#if !TIME_IS_REAL
+  if( OptionalParameter( "EvaluateTiming", 1) == 0)
+    bciout << "WARNING: the EvaluateTiming parameter is false, so realtime operation will not be enforced" << endl;
+#endif // !TIME_IS_REAL
 
   if( Parameter( "VisualizeSource" ) == 1 )
   {
@@ -406,6 +413,10 @@ DataIOFilter::Initialize( const SignalProperties& Input,
 
   mVisualizeTiming = ( Parameter( "VisualizeTiming" ) == 1 );
 
+#if !TIME_IS_REAL
+  mEvaluateTiming = ( OptionalParameter( "EvaluateTiming", 1 ) != 0 );
+#endif // !TIME_IS_REAL
+
   bool measureStimulus = ( Parameter( "SignalSourceIP" ) == Parameter( "ApplicationIP" ) );
   SignalProperties p = mTimingSignal.Properties();
   p.SetChannels( measureStimulus ? 3 : 2 );
@@ -499,7 +510,8 @@ DataIOFilter::Process( const GenericSignal& Input,
   mTimingSignal( 1, 0 ) = functionEntry - sourceTime; // roundtrip
   if( mTimingSignal.Channels() > 2 )
     mTimingSignal( 2, 0 ) = stimulusTime - sourceTime; // source-to-stimulus delay
-  EvaluateTiming( mTimingSignal( 1, 0 ) );
+  if( mEvaluateTiming )
+    EvaluateTiming( mTimingSignal( 1, 0 ) );
   if( visualizeTiming )
     mTimingVis.Send( mTimingSignal );
 
