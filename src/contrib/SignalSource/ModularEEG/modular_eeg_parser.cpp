@@ -118,7 +118,7 @@ void read_channels (ser_t handle, int protocol)
     time1=PrecisionTime::Now();   // get timestamp for timeout-test
     do
     {
-       if (readSerial(handle, buf, 1)==1)  // read one byte from serial port
+       if (readSerial(handle, (char*)buf, 1)==1)  // read one byte from serial port
        {   // byte available: parse the selected protocol
            if (protocol==2)  parse_byte_P3(buf[0]);
            else parse_byte_P2(buf[0]);

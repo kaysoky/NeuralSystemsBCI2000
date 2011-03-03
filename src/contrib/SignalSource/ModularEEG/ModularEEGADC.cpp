@@ -1,9 +1,9 @@
 /******************************************************************************
  * Program:   EEGsource.EXE                                                   *
- * Module:    ModularEEGADC.CPP                                             *
+ * Module:    ModularEEGADC.CPP                                               *
  * Comment:   Definition for the GenericADC class                             *
  * Version:   0.01                                                            *
- * Author:    Gerwin Schalk, Christoph Veigl                                                   *
+ * Author:    Gerwin Schalk, Christoph Veigl                                  *
  * Copyright: (C) Wadsworth Center, NYSDOH                                    *
  ******************************************************************************
  * Version History:                                                           *
@@ -16,6 +16,10 @@
  * V0.05 - 09/28/2001 - can modulate samples based on mouse                   *
  * V0.06 - 03/28/2003 - juergen.mellinger@uni-tuebingen.de:                   *
  *                      now derived from GenericFilter                        *
+ * V0.07 - 03/03/2011 - jezhill@gmail.com: Integrated into CMake system for   *
+ *                      BCI2000 v3: removed mouse modulation (otherwise       *
+ *                      available in SignalGeneratorADC) to allow non-VCL     *
+ *                      compilation.  NB:   UNTESTED WITH ANY HARDWARE        *
  ******************************************************************************/
 /* $BEGIN_BCI2000_LICENSE$
  * 
@@ -64,7 +68,6 @@ RegisterFilter( ModularEEGADC, 1 );
 ModularEEGADC::ModularEEGADC()
 : samplerate( 0 ),
   comport( 0 ), protocol( 0 ),
-  modulateamplitude( 0 ),
   mCount(0)
 
 {
@@ -83,8 +86,6 @@ ModularEEGADC::ModularEEGADC()
        "// ModularEEG connected to: 1 COM1, 2 COM2, 3 COM3, 4 COM4, 5 COM5 (enumeration)",
    "Source int Protocol=    1 1 1 2"
        "// transmission protocol: 1 P2, 2 P3 (enumeration)",
-   "Source int SimulateEEG= 0 0 0 1"
-       "// generate sinewaves with mouse (boolean)",
  END_PARAMETER_DEFINITIONS
 
  // add all states that this ADC requests to the list of states
@@ -126,7 +127,7 @@ void ModularEEGADC::Preflight( const SignalProperties&,
   PreflightCondition( Parameter( "SampleBlockSize" ) <= 64 );
 
   // Resource availability checks.
-  strcpy(comname,"COM ");comname[3]=Parameter("ComPort")+'0';
+  strcpy(comname,"COM ");comname[3]='0'+(int)Parameter("ComPort");
   if ((testhandle=openSerialPort(comname))==INVALID_HANDLE_VALUE)
      bcierr<< "the selected Comport is not available" << endl;
   else  closeSerialPort (testhandle);
@@ -157,11 +158,10 @@ void ModularEEGADC::Initialize( const SignalProperties&, const SignalProperties&
   samplerate = Parameter( "SamplingRate" );
   comport = Parameter( "ComPort" );
   protocol = Parameter( "Protocol" );
-  modulateamplitude = ( ( int )Parameter( "SimulateEEG" ) != 0 );
   mCount=0;
 
   PACKET.readstate=0;
-  strcpy(comname,"COM ");comname[3]=comport+'0';
+  strcpy(comname,"COM ");comname[3]='0'+(int)comport;
 
   if ((devicehandle=openSerialPort(comname))==INVALID_HANDLE_VALUE)
      bcierr<< "Could not open Comport" << endl;
@@ -180,41 +180,17 @@ void ModularEEGADC::Initialize( const SignalProperties&, const SignalProperties&
 // **************************************************************************
 void ModularEEGADC::Process( const GenericSignal&, GenericSignal& signal )
 {
-int     time2wait;
 int     value;
-long    longvalue;
-double  t;
-double  cursorpos, cursorposx;
-const   maxvalue = ( 1 << 15 ) - 1,
-        minvalue = - ( 1 << 15 );
-float   sr = samplerate;
-
-  // if simulation was chosen, generate sinewaves using cursorpos and wait for sampling period
-  if (modulateamplitude)
-  {
-     cursorpos=Mouse->CursorPos.y/70.0+1.0;
-     if ((int)Mouse->CursorPos.x >= Screen->Width) // this fixes a problem with dual monitors (desktop can be larger than screen and thus screenposx could be 0; 04/19/05 GS)
-       cursorposx=1;
-     else cursorposx=(Screen->Width-Mouse->CursorPos.x)/70.0+1.0;
-     if( sr < 1.0 )  sr = 1.0;
-     time2wait = 1e3 * signal.Elements() / sr - 5.0;
-     ::Sleep(time2wait);
-  }
-
+const long  maxvalue = ( 1L << 15 ) - 1,
+            minvalue = - ( 1L << 15 );
 
   // generate the sine wave and write it into the signal
   for (int sample=0; sample<signal.Elements(); sample++)
   {
-    if (!modulateamplitude) read_channels(devicehandle,protocol);
+    read_channels(devicehandle,protocol);
     for (int channel=0; channel<signal.Channels(); channel++)
     {
-      if (modulateamplitude)
-      {
-        t=(double)(mCount+sample)/(double)samplerate*4.0*(double)cursorposx;
-        value=(int)((sin(t*2*3.14159265))*512.0/cursorpos+512.0);
-      }
-      else value = PACKET.buffer[channel];
-
+      value = PACKET.buffer[channel];
       if( value > maxvalue ) value = maxvalue;
       if( value < minvalue ) value = minvalue;
       signal(channel, sample) = (short)value;

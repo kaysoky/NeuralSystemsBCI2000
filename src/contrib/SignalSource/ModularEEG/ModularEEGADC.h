@@ -38,7 +38,6 @@ class ModularEEGADC : public GenericADC
  private:
   int    samplerate;
   short  comport, protocol;
-  bool   modulateamplitude;
   int mCount;
   ser_t devicehandle;
 };
