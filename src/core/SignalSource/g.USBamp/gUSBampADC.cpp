@@ -271,6 +271,7 @@ void gUSBampADC::Preflight( const SignalProperties& inSignalProperties,
             }
             tmpChList.push_back(curCh);
         }
+        sourceChListOffset += devChs;
     }
 
 
