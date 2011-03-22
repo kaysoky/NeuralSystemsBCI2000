@@ -24,7 +24,6 @@ vector<unsigned short int> stateSelectedTarget;
 vector<unsigned short int> stateSelectedStimulus;
 vector<short int> statePhaseInSequence;
 vector<unsigned char> stateStimulusBegin;
-vector<string> TargetDefinitions;
 vector<int> indTarget; 
 vector<int> SelectedRow;
 vector<int> SelectedCol;
@@ -45,7 +44,8 @@ sig.setbounds(0, NumSamples-1, 0, NumChannels-1);
 state.StimulusCode.setbounds(0, NumSamples-1);
 state.StimulusType.setbounds(0, NumSamples-1);
 state.Flashing.setbounds(0, NumSamples-1);
-state.trialnr.setbounds(0, NumSamples-1); 
+state.trialnr.setbounds(0, NumSamples-1);
+state.TargetDefinitions.clear(); // jm
 
 // Get the signal in float type //
 for (int j=0; j<NumChannels; j++)
@@ -155,8 +155,8 @@ if (CurrentFile->Parameters()->Exists("Stimuli"))
 {
 	const ParamRef parameter = CurrentFile->Parameter("Stimuli");
 
-	for (int i=0; i<parameter->NumValues(); i++)
-		state.TargetDefinitions.push_back(parameter->Value(i));
+	for (int i=0; i<parameter->NumColumns(); i++) // jm
+		state.TargetDefinitions.push_back(parameter(0,i));
 	
 }
 else
@@ -253,9 +253,11 @@ if (mode == 1 || mode == 2)
 			cum++;
 	}
 }
+
 // Create the state trialnr
 if (mode == 3 || mode == 4)
 {
+#if 0 // jm
 	cum = 1;
 	indTarget.clear();
 	indTarget.push_back(0);
@@ -271,6 +273,24 @@ if (mode == 3 || mode == 4)
 			state.trialnr(j) = cum;
 		cum++;
 	}
+}
+#else // jm
+  int trial = 1,
+      sequence = 0;
+
+  for( int i = 1; i < NumSamples; ++i )
+  {
+    state.trialnr( i - 1 ) = trial;
+    if( (statePhaseInSequence[ i - 1 ] == 1 ) && ( statePhaseInSequence[i] == 2 ) )
+    {
+      if( ++sequence == parms.NumberOfSequences + 1 )
+      {
+        sequence = 1;
+        ++trial;
+      }
+    }
+	}
+#endif // jm
 }
 
 delete CurrentFile;

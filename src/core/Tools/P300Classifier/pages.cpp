@@ -899,6 +899,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
       }
     }
 
+    IfMultipleMenusTrainingData = false; // make sure it is set correctly for StimulusPresentation files, jm
     // Check the NumMatrixRows. Cristhian Modification Oct 9, 2009
     if (CurrentFile->Parameters()->Exists("NumMatrixRows"))
     {
@@ -967,7 +968,7 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
     if (CurrentFile->Parameters()->Exists("Stimuli"))
     {
       const ParamRef parameter = CurrentFile->Parameter("Stimuli");
-      NumStimuli.push_back(parameter->NumValues());
+      NumStimuli.push_back(parameter->NumColumns());
     }
     else
     {
@@ -977,6 +978,23 @@ bool DataPage::ValidateTrainingDataFiles(vector<string> &fPathArr, int &numSampl
         oss << "The state stimuli for the Stimulus Presentation Task of file " << fPathArr[files].c_str()<< " does not exist";
         QMessageBox msgBox(QMessageBox::Warning, tr("Warning"),
         oss.str().c_str(), 0, this);
+        msgBox.addButton(tr("&Continue"), QMessageBox::AcceptRole);
+        if (msgBox.exec() == QMessageBox::AcceptRole)
+        {
+          this->TrainingDataFilesList->item(files)->setBackgroundColor(QColor(tr("lightpink")));
+          this->GenerateFeatureWeights->setEnabled(false);
+          return false;
+        }
+      }
+    }
+
+    // Validate stimulus frequencies, jm Mar 21, 2011
+    if( ApplicationFilterChain[files] == Experiment[1] )
+    {
+      ostringstream errors;
+      if( !ValidateStimulusFrequencies( *CurrentFile, fPathArr[ files ], errors ) )
+      {
+        QMessageBox msgBox(QMessageBox::Warning, tr("Warning"), errors.str().c_str(), 0, this);
         msgBox.addButton(tr("&Continue"), QMessageBox::AcceptRole);
         if (msgBox.exec() == QMessageBox::AcceptRole)
         {
@@ -1367,6 +1385,7 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
       }
     }
 
+    IfMultipleMenusTestingData = false; // make sure it is set correctly for StimulusPresentation files, jm
     // Check the NumMatrixRows
     if (CurrentFile->Parameters()->Exists("NumMatrixRows"))
     {
@@ -1435,7 +1454,7 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
     if (CurrentFile->Parameters()->Exists("Stimuli"))
     {
       const ParamRef parameter = CurrentFile->Parameter("Stimuli");
-      NumStimuli.push_back(parameter->NumValues());
+      NumStimuli.push_back(parameter->NumColumns());
     }
     else
     {
@@ -1445,6 +1464,23 @@ bool DataPage::ValidateTestingDataFiles(vector<string> &fPathArr, int &numSample
         oss << "The parameter stimuli for the Stimulus Presentation Task of file " << fPathArr[files].c_str()<< " does not exist";
         QMessageBox msgBox(QMessageBox::Warning, tr("Warning"),
         oss.str().c_str(), 0, this);
+        msgBox.addButton(tr("&Continue"), QMessageBox::AcceptRole);
+        if (msgBox.exec() == QMessageBox::AcceptRole)
+        {
+          this->TestingDataFilesList->item(files)->setBackgroundColor(QColor(tr("lightpink")));
+          this->GenerateFeatureWeights->setEnabled(false);
+          return false;
+        }
+      }
+    }
+
+    // Validate stimulus frequencies, jm Mar 21, 2011
+    if( ApplicationFilterChain[files] == Experiment[1] )
+    {
+      ostringstream errors;
+      if( !ValidateStimulusFrequencies( *CurrentFile, fPathArr[ files ], errors ) )
+      {
+        QMessageBox msgBox(QMessageBox::Warning, tr("Warning"), errors.str().c_str(), 0, this);
         msgBox.addButton(tr("&Continue"), QMessageBox::AcceptRole);
         if (msgBox.exec() == QMessageBox::AcceptRole)
         {
@@ -2181,6 +2217,56 @@ void DataPage::WriteParameterFragment()
     // Write PRM
     WritePRM(fileName.toStdString().c_str(), tMUD, IniParam.SF);
   }
+}
+
+bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& inFileName, ostream& ioErrors )
+{
+  bool errorOccurred = false;
+  const char* parameters[] = 
+  {
+    "Stimuli",
+    "SequenceType",
+    "Sequence",
+  };
+  for( int i = 0; i < sizeof( parameters ) / sizeof( *parameters ); ++i )
+    if( !ioFile.Parameters()->Exists( parameters[i] ) )
+    {
+      ioErrors << "Parameter \"" << parameters[i] << "\" does not exist in file " << inFileName << ".\n";
+      errorOccurred = true;
+    }
+  if( errorOccurred )
+    return false;
+
+  int numStimuli = ioFile.Parameter( "Stimuli" )->NumColumns();
+  vector<int> stimulusFrequencies( numStimuli, 0 );
+  const ParamRef Sequence = ioFile.Parameter( "Sequence" );
+  if( ioFile.Parameter( "SequenceType" ) == 0 ) // deterministic sequence
+  {
+    for( int i = 0; i < Sequence->NumValues(); ++i )
+      if( Sequence( i ) >= 1 && Sequence( i ) <= numStimuli )
+        ++stimulusFrequencies[static_cast<unsigned int>( Sequence( i ) ) - 1];
+  }
+  else if( ioFile.Parameter( "SequenceType" ) == 1 ) // random sequence
+  {
+    for( int i = 0; i < numStimuli; ++i )
+      stimulusFrequencies[i] = Sequence( i );
+  }
+  else // unknown sequence type
+  {
+    ioErrors << "Unknown sequence type in file " << inFileName << ".\n";
+    return false;
+  }
+
+  // Error if stimulus frequencies are not 1
+  for( int i = 0; i < numStimuli; ++i )
+    if( stimulusFrequencies[i] != 1 )
+    {
+      ioErrors << "Stimuli must appear exactly once per sequence "
+               << "(check the \"Sequence\" parameter in file " << inFileName << ").\n";
+      return false;
+    }
+
+  return true;
 }
 
 void GenerateFeatureWeightsThread::signalProgressTextCallBack(QString message)

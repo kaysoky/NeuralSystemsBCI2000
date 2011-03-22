@@ -127,11 +127,15 @@ matrixvectormultiply(DATA, 0, row_Responses-1, 0, dslen-1, FALSE, weights, 0, ds
 
 ///////////////////////////////////////////////////////////////////////
 // Section: Make sure that the epochs are not outside of the boundaries 
+#if 0 // jm Mar 18, 2011
 trial_copy = trial;
 it = unique(trial_copy.begin(), trial_copy.end());
 trial_copy.resize(it-trial_copy.begin());
 
 max = *max_element(trial_copy.begin(), trial_copy.end());
+#else // jm
+max = *max_element(trial.begin(), trial.end());
+#endif // jm
 
 count = 0;
 for (size_t i=0; i<trial.size(); i++)

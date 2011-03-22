@@ -153,6 +153,8 @@ public slots:
 	void ShowToolTip(QLineEdit *lineEdit, QString message);
 	void MarkEditColor(QLineEdit *lineEdit, bool result);
 
+private:
+  bool ValidateStimulusFrequencies( BCI2000FileReader&, std::string& inFileName, std::ostream& ioErrors );
 };
 
 class ParametersPage : public QWidget
