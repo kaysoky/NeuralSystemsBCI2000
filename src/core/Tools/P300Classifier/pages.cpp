@@ -2248,7 +2248,7 @@ bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& i
   }
   else if( ioFile.Parameter( "SequenceType" ) == 1 ) // random sequence
   {
-    for( int i = 0; i < numStimuli; ++i )
+    for( int i = 0; i < min( numStimuli, Sequence->NumValues() ); ++i )
       stimulusFrequencies[i] = Sequence( i );
   }
   else // unknown sequence type
@@ -2261,7 +2261,8 @@ bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& i
   for( int i = 0; i < numStimuli; ++i )
     if( stimulusFrequencies[i] != 1 )
     {
-      ioErrors << "Stimuli must appear exactly once per sequence "
+      ioErrors << "All stimuli defined in the \"Stimuli\" parameter "
+               << "must appear exactly once per sequence "
                << "(check the \"Sequence\" parameter in file " << inFileName << ").\n";
       return false;
     }
