@@ -2243,8 +2243,17 @@ bool DataPage::ValidateStimulusFrequencies( BCI2000FileReader& ioFile, string& i
   if( ioFile.Parameter( "SequenceType" ) == 0 ) // deterministic sequence
   {
     for( int i = 0; i < Sequence->NumValues(); ++i )
+    {
       if( Sequence( i ) >= 1 && Sequence( i ) <= numStimuli )
+      {
         ++stimulusFrequencies[static_cast<unsigned int>( Sequence( i ) ) - 1];
+      }
+      else
+      {
+        ioErrors << "Invalid stimulus code in the \"Sequence\" parameter of file " << inFileName << ".\n";
+        return false;
+      }
+    }
   }
   else if( ioFile.Parameter( "SequenceType" ) == 1 ) // random sequence
   {
