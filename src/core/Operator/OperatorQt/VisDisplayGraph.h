@@ -34,6 +34,8 @@
 class QMenu;
 class QAction;
 class QMouseEvent;
+class QLabel;
+class QStatusBar;
 
 class VisDisplayGraph : public VisDisplayBase
 {
@@ -44,6 +46,7 @@ class VisDisplayGraph : public VisDisplayBase
     cMaxUserScaling = 4, // The maximum number of scaling steps a user
                         // can take from the default.
     cDisplayOversampling = 10, // The number of data points drawn per pixel, if available.
+    cStatusBarHeight = 12, // The height of the status bar, in pixels.
   };
 
  public:
@@ -60,6 +63,7 @@ class VisDisplayGraph : public VisDisplayBase
 
   // User interaction.
  private:
+  void BuildStatusBar();
   void BuildContextMenu();
 
   QMenu*   mpContextMenu,
@@ -79,7 +83,8 @@ class VisDisplayGraph : public VisDisplayBase
          * mpActToggleColor,
          * mpActInvertDisplay,
          * mpActChooseColors;
-
+  QStatusBar* mpStatusBar;
+  QLabel* mpStatusLabel;
 
  private slots:
   // Custom popup menu slot
@@ -136,11 +141,24 @@ class VisDisplayGraph : public VisDisplayBase
   double NominalUnitsPerSample() const;
   void   SetNominalUnitsPerSample( double );
 
+  void SetHP( const std::string&, bool writeToConfig = false );
+  void SetLP( const std::string&, bool writeToConfig = false );
+  void SetNotch( const std::string&, bool writeToConfig = false );
+  void UpdateStatusBar();
+  QAction* SyncFilterMenu( const std::string&, QMenu* );
+  QAction* NextMenuItem( QMenu*, QAction* );
+
  private:
   int   mNumChannels,
         mSignalElements,
         mUserScaling,
         mUserZoom;
+  std::string mLastHP,
+              mLastLP,
+              mLastNotch;
+  QAction* mpCurrentHPItem,
+         * mpCurrentLPItem,
+         * mpCurrentNotchItem;
   DisplayFilter    mDisplayFilter;
   DecimationFilter mDecimationFilter;
   SignalDisplay    mDisplay;

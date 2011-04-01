@@ -40,6 +40,11 @@
 #include <QPainter>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QLayout>
+#include <QStatusBar>
+#include <QLabel>
+
+#define OFF "off"
 
 using namespace std;
 
@@ -65,9 +70,15 @@ VisDisplayGraph::VisDisplayGraph( const std::string& inSourceID )
   mNumChannels( 0 ),
   mSignalElements( 0 ),
   mUserScaling( 0 ),
-  mUserZoom( 0 )
+  mUserZoom( 0 ),
+  mpCurrentHPItem( NULL ),
+  mpCurrentLPItem( NULL ),
+  mpCurrentNotchItem( NULL ),
+  mpStatusBar( NULL ),
+  mpStatusLabel( NULL )
 {
-  this->setAttribute( Qt::WA_NoSystemBackground, true );
+  BuildStatusBar();
+  UpdateStatusBar();
   BuildContextMenu();
   Restore();
 }
@@ -194,6 +205,18 @@ VisDisplayGraph::SetConfig( ConfigSettings& inConfig )
     mDisplay.SetChannelLabelsVisible( !labels.empty() );
   }
 
+  string hpFilter = OFF;
+  if( inConfig.Get( CfgID::HPFilter, hpFilter ) )
+    SetHP( hpFilter );
+
+  string lpFilter = OFF;
+  if( inConfig.Get( CfgID::LPFilter, lpFilter ) )
+    SetLP( lpFilter );
+
+  string notchFilter = OFF;
+  if( inConfig.Get( CfgID::NotchFilter, notchFilter ) )
+    SetNotch( notchFilter );
+
   // Sanity checks.
   if( mDisplay.MinValue() == mDisplay.MaxValue() )
     mDisplay.SetMaxValue( mDisplay.MinValue() + 1 );
@@ -240,6 +263,19 @@ VisDisplayGraph::HandleSignal( const GenericSignal& s )
 }
 
 void
+VisDisplayGraph::BuildStatusBar()
+{
+  mpStatusBar = new QStatusBar( this );
+  mpStatusLabel = new QLabel( mpStatusBar );
+  mpStatusBar->addPermanentWidget( mpStatusLabel );
+  QVBoxLayout* pLayout = new QVBoxLayout( this );
+  pLayout->setContentsMargins( 0, 0, 0, 0 );
+  pLayout->insertStretch( 0 );
+  pLayout->addWidget( mpStatusBar );
+  this->setLayout( pLayout );
+}
+
+void
 VisDisplayGraph::BuildContextMenu()
 {
   mpContextMenu = new QMenu;
@@ -273,10 +309,11 @@ VisDisplayGraph::BuildContextMenu()
 
   mpHPMenu = new QMenu( tr("High Pass") );
   QActionGroup* pHPGroup = new QActionGroup( mpHPMenu );
-  QAction* pAct = mpHPMenu->addAction( tr("off"), this, SLOT(SetHPOff()) );
+  QAction* pAct = mpHPMenu->addAction( OFF, this, SLOT(SetHPOff()) );
   pAct->setCheckable( true );
   pHPGroup->addAction( pAct );
   pAct->setChecked( true );
+  mpCurrentHPItem = pAct;
   pAct = mpHPMenu->addAction( "0.1Hz", this, SLOT(SetHP01()) );
   pAct->setCheckable( true );
   pHPGroup->addAction( pAct );
@@ -290,9 +327,10 @@ VisDisplayGraph::BuildContextMenu()
 
   mpLPMenu = new QMenu( tr("Low Pass") );
   QActionGroup* pLPGroup = new QActionGroup( mpLPMenu );
-  pAct = mpLPMenu->addAction( tr("off"), this, SLOT(SetLPOff()) );
+  pAct = mpLPMenu->addAction( OFF, this, SLOT(SetLPOff()) );
   pAct->setCheckable( true );
   pAct->setChecked( true );
+  mpCurrentLPItem = pAct;
   pLPGroup->addAction( pAct );
   pAct = mpLPMenu->addAction( "30Hz", this, SLOT(SetLP30()) );
   pAct->setCheckable( true );
@@ -307,9 +345,10 @@ VisDisplayGraph::BuildContextMenu()
 
   mpNotchMenu = new QMenu( tr("Notch") );
   QActionGroup* pNotchGroup = new QActionGroup( mpNotchMenu );
-  pAct = mpNotchMenu->addAction( tr("off"), this, SLOT(SetNotchOff()) );
+  pAct = mpNotchMenu->addAction( OFF, this, SLOT(SetNotchOff()) );
   pAct->setCheckable( true );
   pAct->setChecked( true );
+  mpCurrentNotchItem = pAct;
   pNotchGroup->addAction( pAct );
   pAct = mpNotchMenu->addAction( "50Hz", this, SLOT(SetNotch50()) );
   pAct->setCheckable( true );
@@ -628,69 +667,176 @@ VisDisplayGraph::Filter_Enabled() const
 }
 
 void
+VisDisplayGraph::SetHP( const string& inCaption, bool inWriteToConfig )
+{
+  if( inCaption == OFF )
+  {
+    mDisplayFilter.HPCorner( 0 );
+  }
+  else
+  {
+    mDisplayFilter.HPCorner( FilterCaptionToValue( inCaption.c_str() ) );
+    mLastHP = inCaption;
+  }
+  mpCurrentHPItem = SyncFilterMenu( inCaption, mpHPMenu );
+  if( inWriteToConfig )
+    Visconfigs()[mSourceID].Put( CfgID::HPFilter, inCaption, UserDefined );
+  UpdateStatusBar();
+}
+
+void
 VisDisplayGraph::SetHPOff()
 {
-  mDisplayFilter.HPCorner( 0 );
+  SetHP( OFF, true );
 }
 
 void
 VisDisplayGraph::SetHP01()
 {
-  mDisplayFilter.HPCorner( FilterCaptionToValue( "0.1Hz" ) );
+  SetHP( "0.1Hz", true );
 }
 
 void
 VisDisplayGraph::SetHP1()
 {
-  mDisplayFilter.HPCorner( FilterCaptionToValue( "1Hz" ) );
+  SetHP( "1Hz", true );
 }
 
 void
 VisDisplayGraph::SetHP5()
 {
-  mDisplayFilter.HPCorner( FilterCaptionToValue( "5Hz" ) );
+  SetHP( "5Hz", true );
+}
+
+void
+VisDisplayGraph::SetLP( const string& inCaption, bool inWriteToConfig )
+{
+  if( inCaption == OFF )
+  {
+    mDisplayFilter.LPCorner( 0 );
+  }
+  else
+  {
+    mDisplayFilter.LPCorner( FilterCaptionToValue( inCaption.c_str() ) );
+    mLastLP = inCaption;
+  }
+  mpCurrentLPItem = SyncFilterMenu( inCaption, mpLPMenu );
+  if( inWriteToConfig )
+    Visconfigs()[mSourceID].Put( CfgID::LPFilter, inCaption, UserDefined );
+  UpdateStatusBar();
 }
 
 void
 VisDisplayGraph::SetLPOff()
 {
-  mDisplayFilter.LPCorner( 0 );
+  SetLP( OFF, true );
 }
 
 void
 VisDisplayGraph::SetLP30()
 {
-  mDisplayFilter.LPCorner( FilterCaptionToValue( "30Hz" ) );
+  SetLP( "30Hz", true );
 }
 
 void
 VisDisplayGraph::SetLP40()
 {
-  mDisplayFilter.LPCorner( FilterCaptionToValue( "40Hz" ) );
+  SetLP( "40Hz", true );
 }
 
 void
 VisDisplayGraph::SetLP70()
 {
-  mDisplayFilter.LPCorner( FilterCaptionToValue( "70Hz" ) );
+  SetLP( "70Hz", true );
+}
+
+void
+VisDisplayGraph::SetNotch( const string& inCaption, bool inWriteToConfig )
+{
+  if( inCaption == OFF )
+  {
+    mDisplayFilter.NotchCenter( 0 );
+  }
+  else
+  {
+    mDisplayFilter.NotchCenter( FilterCaptionToValue( inCaption.c_str() ) );
+    mLastNotch = inCaption;
+  }
+  mpCurrentNotchItem = SyncFilterMenu( inCaption, mpNotchMenu );
+  if( inWriteToConfig )
+    Visconfigs()[mSourceID].Put( CfgID::NotchFilter, inCaption, UserDefined );
+  UpdateStatusBar();
 }
 
 void
 VisDisplayGraph::SetNotchOff()
 {
-  mDisplayFilter.NotchCenter( 0 );
+  SetNotch( OFF, true );
 }
 
 void
 VisDisplayGraph::SetNotch50()
 {
-  mDisplayFilter.NotchCenter( FilterCaptionToValue( "50Hz" ) );
+  SetNotch( "50Hz", true );
 }
 
 void
 VisDisplayGraph::SetNotch60()
 {
-  mDisplayFilter.NotchCenter( FilterCaptionToValue( "60Hz" ) );
+  SetNotch( "60Hz", true );
+}
+
+void
+VisDisplayGraph::UpdateStatusBar()
+{
+  ostringstream oss;
+  oss << "HP: ";
+  if( mDisplayFilter.HPCorner() == 0.0 )
+    oss << OFF;
+  else
+    oss << mLastHP;
+  oss << "   LP: ";
+  if( mDisplayFilter.LPCorner() == 0.0 )
+    oss << OFF;
+  else
+    oss << mLastLP;
+  oss << "   Notch: ";
+  if( mDisplayFilter.NotchCenter() == 0.0 )
+    oss << OFF;
+  else
+    oss << mLastNotch;
+  mpStatusLabel->setText( oss.str().c_str() );
+}
+
+QAction*
+VisDisplayGraph::SyncFilterMenu( const string& inCaption, QMenu* inpMenu )
+{
+  QAction* result = NULL;
+  for( int i = 0; i < inpMenu->actions().size(); ++i )
+  {
+    QAction* pAction = inpMenu->actions()[i];
+    bool isCurrent = ( pAction->text().toStdString() == inCaption );
+    if( isCurrent )
+      result = pAction;
+    pAction->setChecked( isCurrent );
+  }
+  return result;
+}
+
+QAction*
+VisDisplayGraph::NextMenuItem( QMenu* inpMenu, QAction* inpItem )
+{ // Beginning from the position of the input item, and wrapping around at the end,
+  // get the next action item from the menu.
+  if( inpMenu->actions().empty() )
+    return NULL;
+
+  int idx = 0;
+  QAction* pAction = NULL;
+  while( idx < inpMenu->actions().size() && pAction != inpItem )
+    pAction = inpMenu->actions()[idx++];
+  if( idx == inpMenu->actions().size() )
+    idx = 0;
+  return inpMenu->actions()[idx];
 }
 
 void
@@ -699,7 +845,7 @@ VisDisplayGraph::SyncDisplay()
   GUI::DrawContext dc =
   {
     this,
-    { 0, 0, this->width(), this->height() }
+    { 0, 0, this->width(), this->height() - mpStatusBar->height() }
   };
   mDisplay.SetContext( dc );
 }
@@ -780,6 +926,7 @@ VisDisplayGraph::keyReleaseEvent( QKeyEvent* iopEvent )
         ReduceSignal();
       break;
     case Qt::Key_Plus:
+    case Qt::Key_Equal:
       if( EnlargeSignal_Enabled() )
         EnlargeSignal();
       break;
@@ -791,6 +938,51 @@ VisDisplayGraph::keyReleaseEvent( QKeyEvent* iopEvent )
       break;
     case Qt::Key_G:
       mDisplay.SetTopGroup( acc - 1 );
+      break;
+    case Qt::Key_H:
+      if( modkey & Qt::ShiftModifier )
+      {
+        QAction* pItem = NextMenuItem( mpHPMenu, mpCurrentHPItem );
+        if( pItem )
+          pItem->trigger();
+      }
+      else
+      {
+        if( mDisplayFilter.HPCorner() == 0.0 )
+          SetHP( mLastHP, true );
+        else
+          SetHP( OFF, true );
+      }
+      break;
+    case Qt::Key_L:
+      if( modkey & Qt::ShiftModifier )
+      {
+        QAction* pItem = NextMenuItem( mpLPMenu, mpCurrentLPItem );
+        if( pItem )
+          pItem->trigger();
+      }
+      else
+      {
+        if( mDisplayFilter.LPCorner() == 0.0 )
+          SetLP( mLastLP, true );
+        else
+          SetLP( OFF, true );
+      }
+      break;
+    case Qt::Key_N:
+      if( modkey & Qt::ShiftModifier )
+      {
+        QAction* pItem = NextMenuItem( mpNotchMenu, mpCurrentNotchItem );
+        if( pItem )
+          pItem->trigger();
+      }
+      else
+      {
+        if( mDisplayFilter.NotchCenter() == 0.0 )
+          SetNotch( mLastNotch, true );
+        else
+          SetNotch( OFF, true );
+      }
       break;
     case Qt::Key_0:
     case Qt::Key_1:

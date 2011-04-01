@@ -88,6 +88,11 @@ sCfgIDs[] =
 
   { "Visible", CfgID::Visible },
   { "InvertedDisplay", CfgID::InvertedDisplay },
+  // Filters: Set to "off" to disable a filter
+  { "HPFilter", CfgID::HPFilter },
+  { "LPFilter", CfgID::LPFilter },
+  { "NotchFilter", CfgID::NotchFilter },
+
 };
 
 

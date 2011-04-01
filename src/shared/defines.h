@@ -84,6 +84,10 @@ namespace CfgID
 
       Visible,
       InvertedDisplay,
+      // Set filter property to "off" to disable a filter
+      HPFilter,
+      LPFilter,
+      NotchFilter,
   };
 };
 
