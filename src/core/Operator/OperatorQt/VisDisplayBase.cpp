@@ -31,9 +31,9 @@
 #include "VisDisplayGraph.h"
 #include "VisDisplayMemo.h"
 #include "VisDisplayBitmap.h"
+#include "Settings.h"
 #include "defines.h"
 
-#include <QSettings>
 #include <QtGui>
 
 using namespace std;
@@ -60,7 +60,7 @@ static const QString cfgid_prefix = "CFGID";
 void
 VisDisplayBase::ConfigContainer::Save()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_VISUALIZATION );
   for( iterator i = begin(); i != end(); ++i )
   {
@@ -82,7 +82,7 @@ VisDisplayBase::ConfigContainer::Save()
 void
 VisDisplayBase::ConfigContainer::Restore()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_VISUALIZATION );
   QStringList visIDs = settings.childGroups();
   for( QStringList::iterator i = visIDs.begin(); i != visIDs.end(); ++i )

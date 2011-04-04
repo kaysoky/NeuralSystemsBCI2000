@@ -36,6 +36,7 @@
 #include "GenericSignal.h"
 #include "BitmapImage.h"
 #include "Version.h"
+#include "Settings.h"
 
 #include <sstream>
 
@@ -157,7 +158,7 @@ void BCI2000FileInfo::GetParameters()
 
 void BCI2000FileInfo::WriteSettings() const
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.setValue( "Geometry", this->saveGeometry() );
   settings.setValue( "WorkingDirectory", QDir::currentPath() );
@@ -165,7 +166,7 @@ void BCI2000FileInfo::WriteSettings() const
 
 void BCI2000FileInfo::ReadSettings()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   this->restoreGeometry( settings.value( "Geometry" ).toByteArray() );
   QDir::setCurrent( settings.value( "WorkingDirectory" ).toString() );

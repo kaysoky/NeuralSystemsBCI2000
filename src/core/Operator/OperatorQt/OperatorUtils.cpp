@@ -32,13 +32,13 @@
 #include "ParamList.h"
 #include "defines.h"
 #include "ClassName.h"
+#include "Settings.h"
 
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <string>
 #include <typeinfo>
-#include <QSettings>
 #include <QWidget>
 #include <QApplication>
 #include <QDesktopWidget>
@@ -53,7 +53,7 @@ extern Preferences* gpPreferences;
 void
 OperatorUtils::SaveWidget( const QWidget* inWidget )
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.beginGroup( ClassName( typeid( *inWidget ) ) );
   settings.setValue( "Size", inWidget->size() );
@@ -63,7 +63,7 @@ OperatorUtils::SaveWidget( const QWidget* inWidget )
 void
 OperatorUtils::RestoreWidget( QWidget* inWidget )
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.beginGroup( ClassName( typeid( *inWidget ) ) );
   QSize size = settings.value( "Size", QSize( 0, 0 ) ).toSize();
@@ -113,7 +113,7 @@ OperatorUtils::UserLevel()
 int
 OperatorUtils::GetUserLevel( const char* inName )
 {
-    QSettings settings;
+    Settings settings;
     settings.beginGroup( QString( KEY_PARAMETERS ) + "/" + inName );
     return settings.value( "UserLevel", Preferences::Advanced ).toInt();
 }
@@ -122,7 +122,7 @@ OperatorUtils::GetUserLevel( const char* inName )
 void
 OperatorUtils::SetUserLevel( const char* inName , int inUserlevel )
 {
-    QSettings settings;
+    Settings settings;
     settings.beginGroup( QString( KEY_PARAMETERS ) + "/" + inName );
     settings.setValue( "UserLevel", inUserlevel );
 }
@@ -134,7 +134,7 @@ OperatorUtils::SetUserLevel( const char* inName , int inUserlevel )
 int
 OperatorUtils::GetFilterStatus( const char* inName, int inFiltertype )
 {
-    QSettings settings;
+    Settings settings;
     int result = 0;
     settings.beginGroup( QString( KEY_PARAMETERS ) + "/" + inName );
     switch( inFiltertype )
@@ -156,7 +156,7 @@ OperatorUtils::GetFilterStatus( const char* inName, int inFiltertype )
 void
 OperatorUtils::SetFilterStatus( const char* inName, int inFiltertype, int inFilterstatus )
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( QString( KEY_PARAMETERS ) + "/" + inName );
   switch( inFiltertype )
   {

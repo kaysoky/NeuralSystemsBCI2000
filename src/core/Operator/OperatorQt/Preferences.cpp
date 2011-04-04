@@ -25,8 +25,8 @@
 ///////////////////////////////////////////////////////////////////////
 #include "Preferences.h"
 #include "defines.h"
+#include "Settings.h"
 #include <QApplication>
-#include <QSettings>
 #include <QStringList>
 
 Preferences::Preferences()
@@ -77,7 +77,7 @@ Preferences::ReadFromCommandLine()
 
 void Preferences::ReadSettings()
 {
-  QSettings settings;
+  Settings settings;
 
   mCurrentDir = settings.value( KEY_CONFIG "/WorkingDirectory" ).toString();
   mUserLevel = settings.value( KEY_CONFIG "/Various/GlobalUserLevel", Advanced ).toInt();
@@ -103,7 +103,7 @@ void Preferences::ReadSettings()
 
 void Preferences::WriteSettings()
 {
-  QSettings settings;
+  Settings settings;
 
   settings.setValue( KEY_CONFIG "/WorkingDirectory", mCurrentDir.canonicalPath() );
   settings.setValue( KEY_CONFIG "/Various/GlobalUserLevel", mUserLevel );

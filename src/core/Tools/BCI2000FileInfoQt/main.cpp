@@ -1,4 +1,5 @@
 #include <QtGui/QApplication>
+#include "Settings.h"
 #include "bci2000fileinfo.h"
 
 #ifdef _WIN32
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
   a.setOrganizationName( "BCI2000" );
   a.setOrganizationDomain( "bci2000.org" );
   a.setApplicationName( "BCI2000FileInfo" );
+  Settings::SetFile();
   BCI2000FileInfo w;
   w.show();
   return a.exec();

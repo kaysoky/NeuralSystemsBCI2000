@@ -24,6 +24,7 @@
 // $END_BCI2000_LICENSE$
 ///////////////////////////////////////////////////////////////////////
 #include <QtGui/QApplication>
+#include "Settings.h"
 #include "MetaTypes.h"
 #include "MainWindow.h"
 #include "GenericSignal.h"
@@ -72,6 +73,7 @@ main(int argc, char *argv[])
   a.setApplicationName( "Operator" );
   qRegisterMetaType< GenericSignal >();
   qRegisterMetaType< BitmapImage >();
+  Settings::SetFile();
   MainWindow w;
   VisDisplay::SetParentWindow( &w );
   w.show();

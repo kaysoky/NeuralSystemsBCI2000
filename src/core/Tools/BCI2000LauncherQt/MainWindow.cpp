@@ -31,6 +31,7 @@
 #include "EncodedString.h"
 #include "OSThread.h"
 #include "OSError.h"
+#include "Settings.h"
 #include "defines.h"
 
 #include <QtGui>
@@ -368,7 +369,7 @@ void MainWindow::on_actionTo_Signal_Source_triggered()
 void
 MainWindow::SaveSettings() const
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.setValue( "Geometry", this->saveGeometry() );
   settings.setValue( "WorkingDirectory", QDir::currentPath() );
@@ -427,7 +428,7 @@ MainWindow::SaveSettings() const
 void
 MainWindow::ReadSettings()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   this->restoreGeometry( settings.value( "Geometry" ).toByteArray() );
   QDir::setCurrent( settings.value( "WorkingDirectory" ).toString() );

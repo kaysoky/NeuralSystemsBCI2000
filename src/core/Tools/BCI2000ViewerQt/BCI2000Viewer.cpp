@@ -32,6 +32,7 @@
 #include "ExecutableHelp.h"
 #include "AboutBox.h"
 #include "ColorListChooser.h"
+#include "Settings.h"
 #include "defines.h"
 
 using namespace std;
@@ -978,7 +979,7 @@ BCI2000Viewer::FillChannelList()
 void
 BCI2000Viewer::SaveSettings() const
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.setValue( "Geometry", this->saveGeometry() );
   settings.setValue( "Splitter", ui->splitter->saveState() );
@@ -992,7 +993,7 @@ BCI2000Viewer::SaveSettings() const
 void
 BCI2000Viewer::ReadSettings()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   this->restoreGeometry( settings.value( "Geometry" ).toByteArray() );
   ui->splitter->restoreState( settings.value( "Splitter" ).toByteArray() );

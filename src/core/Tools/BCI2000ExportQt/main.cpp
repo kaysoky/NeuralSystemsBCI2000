@@ -1,4 +1,5 @@
 #include <QtGui/QApplication>
+#include "Settings.h"
 #include "MainWindow.h"
 
 #ifdef _WIN32
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     a.setOrganizationName( "BCI2000" );
     a.setOrganizationDomain( "bci2000.org" );
     a.setApplicationName( cProgramName );
+    Settings::SetFile();
     MainWindow w;
     w.show();
     return a.exec();

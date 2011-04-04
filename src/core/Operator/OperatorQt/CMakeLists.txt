@@ -78,6 +78,7 @@ SET( SRC_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.cpp
   ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.cpp
@@ -89,6 +90,7 @@ SET( HDR_BCI2000_FRAMEWORK
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
+  ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.h
   ${BCI2000_SRC_DIR}/shared/gui/AboutBox.h
   ${BCI2000_SRC_DIR}/shared/gui/ColorListChooser.h
@@ -105,6 +107,7 @@ SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp 
+  ${BCI2000_SRC_DIR}/shared/utils/Settings.cpp 
 )
 SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.cpp
@@ -119,6 +122,7 @@ SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\utils FILES
   ${BCI2000_SRC_DIR}/shared/utils/DecimationFilter.h
   ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h 
+  ${BCI2000_SRC_DIR}/shared/utils/Settings.h 
 )
 SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\gui FILES
   ${BCI2000_SRC_DIR}/shared/gui/SignalDisplay.h

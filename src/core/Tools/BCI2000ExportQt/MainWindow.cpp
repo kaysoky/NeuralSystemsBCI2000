@@ -3,6 +3,7 @@
 #include "BCI2000FileReader.h"
 #include "ExecutableHelp.h"
 #include "AboutBox.h"
+#include "Settings.h"
 #include "BCIError.h"
 #include "BCIReader.h"
 #include "Converters/ASCIIConverter.h"
@@ -313,7 +314,7 @@ MainWindow::DisableAll()
 void
 MainWindow::SaveSettings() const
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   settings.setValue( "Geometry", this->saveGeometry() );
   settings.setValue( "WorkingDirectory", QDir::currentPath() );
@@ -335,7 +336,7 @@ MainWindow::SaveSettings() const
 void
 MainWindow::ReadSettings()
 {
-  QSettings settings;
+  Settings settings;
   settings.beginGroup( KEY_CONFIG );
   this->restoreGeometry( settings.value( "Geometry" ).toByteArray() );
   QDir::setCurrent( settings.value( "WorkingDirectory" ).toString() );
