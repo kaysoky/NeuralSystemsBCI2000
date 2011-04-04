@@ -42,6 +42,7 @@ SET( SRC_FILTERS
   ${SIGPROC_DIR}/ARFilter
   ${SIGPROC_DIR}/ComplexDemodulator
   ${SIGPROC_DIR}/ConditionalIntegrator
+  ${SIGPROC_DIR}/ExpressionFilter
   ${SIGPROC_DIR}/FFTFilter
   ${SIGPROC_DIR}/LinearClassifier
   ${SIGPROC_DIR}/LPFilter
