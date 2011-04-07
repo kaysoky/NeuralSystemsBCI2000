@@ -66,8 +66,11 @@ class StreamToMat : public MessageHandler
     miUINT8 = 2,
     miUINT32 = 6,
     miSINGLE = 7,
+    miUTF16 = 17,
 
+    mxCELL_CLASS   = 1,
     mxSTRUCT_CLASS = 2,
+    mxCHAR_CLASS   = 4,
     mxDOUBLE_CLASS = 6,
     mxSINGLE_CLASS = 7,
     mxUINT32_CLASS = 13,
@@ -92,6 +95,11 @@ class StreamToMat : public MessageHandler
                       mDataSizePos,
                       mDataCols;
 
+  size_t BeginVar(size_t flags) const;
+  void FinishVar(size_t sizePos) const;
+  void WriteDims(size_t nRows, size_t nCols) const;
+  void WriteName(string name) const;
+  
   void WriteHeader();
   void WriteData( const GenericSignal& );
   void Write16( unsigned short value ) const
@@ -102,9 +110,10 @@ class StreamToMat : public MessageHandler
   { mrOut.write( reinterpret_cast<const char*>( &value ), sizeof( value ) ); }
   void Pad() const;
 
-  virtual bool HandleState(       istream& );
-  virtual bool HandleVisSignal(   istream& );
-  virtual bool HandleStateVector( istream& );
+  virtual bool HandleState(                 istream& );
+  virtual bool HandleVisSignal(             istream& );
+  virtual bool HandleVisSignalProperties(   istream& );
+  virtual bool HandleStateVector(           istream& );
 };
 
 ToolResult
@@ -134,6 +143,45 @@ StreamToMat::Pad() const
     mrOut.put( 0 );
 }
 
+
+size_t
+StreamToMat::BeginVar(size_t flags) const
+{
+  Write32( miMATRIX );
+  size_t sizePos = mrOut.tellp();
+  Write32( 0 ); // placeholder for size
+  Write32( miUINT32 ); Write32( 8 ); // flags are coming
+  Write32( flags ); Write32( 0 ); // here are the flags
+  return sizePos;
+}
+
+void
+StreamToMat::FinishVar(size_t sizePos) const
+{ // bounce back to sizePos, write the number of bytes between here and where you just came from - 4, bounce back to where you came from
+  size_t endPos = mrOut.tellp();
+  mrOut.seekp( sizePos );
+  Write32( endPos - sizePos - 4 );
+  mrOut.seekp( endPos );
+}
+
+void
+StreamToMat::WriteDims(size_t nRows, size_t nCols) const
+{
+  Write32( miINT32 ); Write32( 8 );
+  Write32( nRows ); Write32( nCols );
+}
+
+void
+StreamToMat::WriteName(string name) const
+{
+  Write32( miINT8 ); Write32( name.size() );
+  if( name.size() )
+  {
+    mrOut << name;
+    Pad();
+  }
+}
+
 void
 StreamToMat::WriteHeader()
 {
@@ -151,20 +199,10 @@ StreamToMat::WriteHeader()
   Write16( 0x0100 ); Write16( 'MI' );
   // Write a matlab structure containing arrays with state names
   // pointing to the associated columns.
-  Write32( miMATRIX );
-  size_t indexSizePos = mrOut.tellp();
-  Write32( 0 );
-  // Array flags
-  Write32( miUINT32 ); Write32( 8 );
-  Write32( mxSTRUCT_CLASS ); Write32( 0 );
-  // Dimensions array
-  Write32( miINT32 ); Write32( 8 );
-  Write32( 1 ); Write32( 1 );
-  // Array name
-  const char indexName[] = "Index";
-  Write32( miINT8 ); Write32( sizeof( indexName ) - 1 );
-  mrOut << indexName;
-  Pad();
+  size_t indexSizePos = BeginVar( mxSTRUCT_CLASS );
+  WriteDims( 1, 1 );
+  WriteName( "Index" );
+  
   // Field name length
   const char signalName[] = "Signal";
   size_t fieldNameLength = sizeof( signalName ) - 1;
@@ -188,72 +226,67 @@ StreamToMat::WriteHeader()
   // 1x1 arrays holding the states' column indices
   for( size_t i = 1; i <= mStateNames.size(); ++i )
   {
-    Write32( miMATRIX );
-    long sizePos = mrOut.tellp();
-    Write32( 0 );
-    // Array flags
-    Write32( miUINT32 ); Write32( 8 );
-    Write32( mxUINT32_CLASS ); Write32( 0 );
-    // Dimensions array
-    Write32( miINT32 ); Write32( 8 );
-    Write32( 1 ); Write32( 1 );
-    // Array name
-    Write32( miINT8 ); Write32( 0 );
+    long sizePos = BeginVar( mxUINT32_CLASS );
+    WriteDims( 1, 1 );
+    WriteName( "" );
     // Array data
     Write32( 4 << 16 | miUINT32 ); Write32( i );
 
-    long endPos = mrOut.tellp();
-    mrOut.seekp( sizePos );
-    Write32( endPos - sizePos - 4 );
-    mrOut.seekp( endPos );
+    FinishVar( sizePos );
   }
   // An array with the signal's dimensions holding the signal entries' row indices
   long numSignalEntries = mSignalProperties.Channels() * mSignalProperties.Elements();
   {
-    Write32( miMATRIX );
-    long sizePos = mrOut.tellp();
-    Write32( 0 );
-    // Array flags
-    Write32( miUINT32 ); Write32( 8 );
-    Write32( mxUINT32_CLASS ); Write32( 0 );
-    // Dimensions array
-    Write32( miINT32 ); Write32( 8 );
-    Write32( mSignalProperties.Channels() ); Write32( mSignalProperties.Elements() );
-    // Array name
-    Write32( miINT8 ); Write32( 0 );
+    long sizePos = BeginVar( mxUINT32_CLASS );
+    WriteDims( mSignalProperties.Channels(), mSignalProperties.Elements() );
+    WriteName( "" );
     // Array data
     Write32( miUINT32 ); Write32( 4 * numSignalEntries );
     for( int j = 0; j < mSignalProperties.Elements(); ++j )
       for( int i = 0; i < mSignalProperties.Channels(); ++i )
         Write32( mStateNames.size() + 1 + i * mSignalProperties.Elements() + j );
-    long endPos = mrOut.tellp();
-    mrOut.seekp( sizePos );
-    Write32( endPos - sizePos - 4 );
-    mrOut.seekp( endPos );
+    FinishVar( sizePos );
     Pad();
   }
-  long endPos = mrOut.tellp();
-  mrOut.seekp( indexSizePos );
-  Write32( endPos - indexSizePos - 4 );
-  mrOut.seekp( endPos );
+  FinishVar( indexSizePos );
+
+  // A cell array of channel labels
+  long channelLabelsSize = BeginVar( mxCELL_CLASS );
+  WriteDims( mSignalProperties.Channels(), 1 );
+  WriteName( "ChannelLabels" );
+  for( int i = 0; i < mSignalProperties.Channels(); i++ )
+  {
+    string label = mSignalProperties.ChannelLabels()[i];
+    size_t cellSizePos = BeginVar( mxCHAR_CLASS );
+    WriteDims( 1, label.size() );
+    WriteName( "" );
+    Write32( miUTF16 ); Write32( 2 * label.size() ); for( int j = 0; j < label.size(); j++ ) Write16( label[j] );
+    Pad();
+    FinishVar( cellSizePos );
+  }
+  FinishVar( channelLabelsSize );
+
+  // A cell array of element labels
+  long elementLabelsSize = BeginVar( mxCELL_CLASS );
+  WriteDims( mSignalProperties.Elements(), 1 );
+  WriteName( "ElementLabels" );
+  for( int i = 0; i < mSignalProperties.Elements(); i++ )
+  {
+    string label = mSignalProperties.ElementLabels()[i];
+    size_t cellSizePos = BeginVar( mxCHAR_CLASS );
+    WriteDims( 1, label.size() );
+    WriteName( "" );
+    Write32( miUTF16 ); Write32( 2 * label.size() ); for( int j = 0; j < label.size(); j++ ) Write16( label[j] );
+    Pad();
+    FinishVar( cellSizePos );
+  }
+  FinishVar( elementLabelsSize );
 
   // An array that holds the signal.
-  Write32( miMATRIX );
-  mDataElementSizePos = mrOut.tellp();
-  Write32( 0 );
-  // Array flags
-  Write32( miUINT32 ); Write32( 8 );
-  Write32( mxSINGLE_CLASS ); Write32( 0 );
-  // Dimensions array
-  Write32( miINT32 ); Write32( 8 );
-  Write32( mStateNames.size() + numSignalEntries );
-  mDataColsPos = mrOut.tellp();
-  Write32( 0 );
-  // Array name
-  const char dataName[] = "Data";
-  Write32( miINT8 ); Write32( sizeof( dataName ) - 1 );
-  mrOut << dataName;
-  Pad();
+  mDataElementSizePos = BeginVar( mxSINGLE_CLASS );
+  WriteDims( mStateNames.size() + numSignalEntries, 0 );
+  mDataColsPos = mrOut.tellp(); mDataColsPos -= 4;
+  WriteName( "Data" );
   Write32( miSINGLE );
   mDataSizePos = mrOut.tellp();
   Write32( 0 );
@@ -278,17 +311,11 @@ StreamToMat::WriteData( const GenericSignal& s )
 void
 StreamToMat::FinishHeader() const
 {
-  size_t endPos = mrOut.tellp();
-  mrOut.seekp( mDataSizePos );
-  Write32( endPos - mDataSizePos - 4 );
-  mrOut.seekp( endPos );
-
+  FinishVar( mDataSizePos );
   Pad();
-  endPos = mrOut.tellp();
-  mrOut.seekp( mDataElementSizePos );
-  Write32( endPos - mDataElementSizePos - 4 );
-  mrOut.seekp( endPos );
-
+  FinishVar( mDataElementSizePos );
+  
+  size_t endPos = mrOut.tellp();
   mrOut.seekp( mDataColsPos );
   Write32( mDataCols );
   mrOut.seekp( endPos );
@@ -318,21 +345,32 @@ StreamToMat::HandleVisSignal( istream& arIn )
   VisSignal v;
   v.ReadBinary( arIn );
   const GenericSignal& s = v;
-  // Write a header first.
   if( mSignalProperties.IsEmpty() )
-  {
-    mSignalProperties = s.Properties();
-    mStateNames.clear();
-    for( int i = 0; i < mStatelist.Size(); ++i )
-      mStateNames.insert( mStatelist[ i ].Name() );
-    WriteHeader();
-  }
+    bcierr << "Internal error: HandleVisSignalProperties should have written the header already, but has not" << endl;
   if( s.Properties() != mSignalProperties )
     bcierr << "Ignored signal with inconsistent properties" << endl;
   else
     WriteData( s );
   return true;
 }
+
+
+bool
+StreamToMat::HandleVisSignalProperties( istream& arIn )
+{
+  VisSignalProperties vsp;
+  vsp.ReadBinary( arIn );
+  mSignalProperties = vsp.SignalProperties();
+  
+  // Write a header first.
+  mStateNames.clear();
+  for( int i = 0; i < mStatelist.Size(); ++i )
+    mStateNames.insert( mStatelist[ i ].Name() );
+  WriteHeader();
+
+  return true;
+}
+
 
 bool
 StreamToMat::HandleStateVector( istream& arIn )
