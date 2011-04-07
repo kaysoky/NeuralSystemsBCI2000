@@ -272,17 +272,39 @@ StreamToMat::WriteHeader()
   WriteName( "ElementLabels" );
   for( int i = 0; i < mSignalProperties.Elements(); i++ )
   {
-    string label = mSignalProperties.ElementLabels()[i];
+    string str = mSignalProperties.ElementLabels()[i];
     size_t cellSizePos = BeginVar( mxCHAR_CLASS );
-    WriteDims( 1, label.size() );
+    WriteDims( 1, str.size() );
     WriteName( "" );
-    Write32( miUTF16 ); Write32( 2 * label.size() ); for( int j = 0; j < label.size(); j++ ) Write16( label[j] );
+    Write32( miUTF16 ); Write32( 2 * str.size() ); for( int j = 0; j < str.size(); j++ ) Write16( str[j] );
     Pad();
     FinishVar( cellSizePos );
   }
   FinishVar( elementLabelsSize );
 
-  // An array that holds the signal.
+  // A single-precision numeric array of element values
+  long elementValuesSize = BeginVar( mxSINGLE_CLASS );
+  WriteDims( mSignalProperties.Elements(), 1 );
+  WriteName( "ElementValues" );
+  Write32( miSINGLE ); Write32( 4 * mSignalProperties.Elements() );
+  for( int i = 0; i < mSignalProperties.Elements(); i++ )
+  {
+    float val = ( i - mSignalProperties.ElementUnit().Offset() ) * mSignalProperties.ElementUnit().Gain();
+    WriteFloat32(val);
+  }
+  Pad();
+  FinishVar( elementValuesSize );
+
+  // A string denoting the element unit
+  long elementUnitSize = BeginVar( mxCHAR_CLASS );
+  string symbol = mSignalProperties.ElementUnit().Symbol();
+  WriteDims( 1, symbol.size() );
+  WriteName( "ElementUnit" );
+  Write32( miUTF16 ); Write32( 2 * symbol.size() ); for( int j = 0; j < symbol.size(); j++ ) Write16( symbol[j] );
+  Pad();
+  FinishVar( elementUnitSize );
+  
+  // A single-precision numeric array that holds the signal.
   mDataElementSizePos = BeginVar( mxSINGLE_CLASS );
   WriteDims( mStateNames.size() + numSignalEntries, 0 );
   mDataColsPos = mrOut.tellp(); mDataColsPos -= 4;
