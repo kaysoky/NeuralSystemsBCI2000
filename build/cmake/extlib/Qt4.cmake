@@ -399,9 +399,12 @@ GET_FILENAME_COMPONENT(qt_install_version "[HKEY_CURRENT_USER\\Software\\trollte
 IF( MINGW )
   SET( QT_QMAKE_EXECUTABLE "${BCI2000_SRC_DIR}/extlib/qt/mingw/bin/qmake" )
   SET( ENV{QMAKESPEC} "win32-g++" )
-ELSEIF( MSVC )
+ELSEIF( MSVC90 )
   SET( QT_QMAKE_EXECUTABLE "${BCI2000_SRC_DIR}/extlib/qt/msvc/bin/qmake" )
   SET( ENV{QMAKESPEC} "win32-msvc2008" )
+ELSEIF( MSVC10 )
+  SET( QT_QMAKE_EXECUTABLE "${BCI2000_SRC_DIR}/extlib/qt/msvc10/bin/qmake" )
+  SET( ENV{QMAKESPEC} "win32-msvc2010" )
 ELSE()
   FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake qmake4 qmake-qt4 PATHS
     "[HKEY_CURRENT_USER\\Software\\Trolltech\\Qt3Versions\\4.0.0;InstallDir]/bin"
