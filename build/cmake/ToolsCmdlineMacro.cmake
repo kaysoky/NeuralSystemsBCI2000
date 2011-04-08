@@ -3,7 +3,7 @@
 ## Authors: griffin.milsap@gmail.com
 ## Description: Contains a macro for creating a commandline application
 
-MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS USEQT )
+MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
        
   # DEBUG
   MESSAGE( "-- Adding Commandline Project: " ${NAME} )
@@ -41,7 +41,11 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS USEQT )
   
   # If we're building a Qt project, we need to automoc the sources, generating new files
   IF( BORLAND )
-     SET( USEQT FALSE )
+     SET( USEQT "FALSE" )
+  ELSEIF( ${REQUESTQT} OR WIN32 )
+	 SET( USEQT "TRUE" )  # on Windows, use Qt whether it was requested or not (temporary hack to avoid 23 link errors: unresolved externals from streamsock methods in SockStream.obj: _WSAStartup@8 thru _gethostbyname@4) 
+  ELSE( BORLAND )
+     SET( USEQT "FALSE" )
   ENDIF( BORLAND )
   IF( ${USEQT} )
     QT4_AUTOMOC( ${SOURCES} )  
