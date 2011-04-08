@@ -67,14 +67,22 @@ ADD_DEFINITIONS(
 MESSAGE( "-- Creating Project files for BCI2000 Version " ${BCI2000_VERSION} )
 
 # Recurse down into all project subdirectories
+
+# src/private : stuff we use that is not released yet
 IF ( EXISTS ${BCI2000_SRC_DIR}/private )
   INCLUDE( "${BCI2000_SRC_DIR}/private/PrivateConfig.cmake" )
   ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/private "${CMAKE_CURRENT_BINARY_DIR}/private" )
 ENDIF( EXISTS ${BCI2000_SRC_DIR}/private )
+
+# the standard distro: build/buildutils, src/core and src/contrib
 ADD_SUBDIRECTORY( buildutils "${CMAKE_CURRENT_BINARY_DIR}/buildtesting")
 ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/core "${CMAKE_CURRENT_BINARY_DIR}/core" )
 ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/contrib "${CMAKE_CURRENT_BINARY_DIR}/contrib" )
 
+# src/custom : a convenient place for users' own development without causing svn chaos 
+IF ( EXISTS ${BCI2000_SRC_DIR}/custom ) 
+  ADD_SUBDIRECTORY( ${BCI2000_SRC_DIR}/custom "${CMAKE_CURRENT_BINARY_DIR}/custom" )
+ENDIF( EXISTS ${BCI2000_SRC_DIR}/custom )
 
 
 INCLUDE( ${BCI2000_CMAKE_DIR}/BCI2000Package.cmake )
