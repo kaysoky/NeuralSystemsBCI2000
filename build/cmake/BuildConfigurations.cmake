@@ -69,6 +69,20 @@ IF( MSVC )
     -D_CRT_NONSTDC_NO_WARNINGS
     -D_SCL_SECURE_NO_WARNINGS
   )
+  # Make sure the program is built statically against the MSVC runtime
+  FOREACH( flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    IF( ${flag_var} MATCHES "/MD" )
+      STRING( REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}" )
+    ENDIF( ${flag_var} MATCHES "/MD" )
+  ENDFOREACH( flag_var )
+  FOREACH( flag_var
+        CMAKE_EXE_LINKER_FLAGS
+        CMAKE_SHARED_LINKER_FLAGS
+        CMAKE_MODULE_LINKER_FLAGS )
+     SET( ${flag_var} "${${flag_var}} /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd" )
+  ENDFOREACH( flag_var )
 ENDIF( MSVC )
 
 # Build the compiler description string.
