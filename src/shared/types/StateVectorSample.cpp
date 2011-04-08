@@ -116,7 +116,15 @@ StateVectorSample::SetStateValue( size_t inLocation, size_t inLength, State::Val
 {
   State::ValueType valueMask = ( ULONG_MAX >> ( 8* sizeof( State::ValueType ) - inLength ) );
   if( inValue < 0 || ( inValue & valueMask ) != inValue )
-    throw "Value exceeds limit given by state length";
+  {
+    const size_t msglen = 127;
+	static char msg[msglen+1];
+	//sprintf(msg, "Illegal value %d was passed to %d-bit state at address %d", inValue, inLength, inLocation);
+	stringstream s;
+	s << "Illegal value " << inValue << " was passed to " << inLength << "-bit state at address " << inLocation; 
+	strncpy(msg, s.str().c_str(), msglen); msg[msglen] = 0;
+	throw msg;
+  }
   if( inLength > 8 * sizeof( State::ValueType ) )
     throw "Invalid state length";
   if( inLocation + inLength > 8 * mByteLength )

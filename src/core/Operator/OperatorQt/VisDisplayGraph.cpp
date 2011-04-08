@@ -913,10 +913,12 @@ VisDisplayGraph::keyReleaseEvent( QKeyEvent* iopEvent )
       if( MoreSamples_Enabled() )
         MoreSamples();
       break;
+    case Qt::Key_Less:
     case Qt::Key_Comma:
       if( FewerChannels_Enabled() )
         FewerChannels();
       break;
+    case Qt::Key_Greater:
     case Qt::Key_Period:
       if( MoreChannels_Enabled() )
         MoreChannels();
