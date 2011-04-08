@@ -274,11 +274,15 @@ FilterWrapper::HandleVisSignal( istream& arIn )
             arIn.setstate( ios::failbit );
             break;
           }
-          // Add the filter's parameters with their default values to the parameter
-          // list as far as they are missing from the input stream.
+          // Make sure the filter's parameters get their properties from the filter
+          // rather than the input stream.
           for( int i = 0; i < filterParams.Size(); ++i )
-            if( !mParamlist.Exists( filterParams[ i ].Name() ) )
-              mParamlist[ filterParams[ i ].Name() ] = filterParams[ i ];
+          {
+            const string& name = filterParams[i].Name();
+            if( mParamlist.Exists( name ) )
+              filterParams[i].AssignValues( mParamlist[name] );
+            mParamlist[name] = filterParams[i];
+          }
         }
         /* no break */
       case Environment::construction:
