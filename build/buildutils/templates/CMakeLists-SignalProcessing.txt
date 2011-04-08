@@ -13,12 +13,12 @@ SET( EXECUTABLE_NAME ` )
 SET( SRC_PROJECT
   `.cpp            # You probably will not need to edit this file
   PipeDefinition.cpp         # but you should certainly edit this one
-  # MyNewCustomFilter.cpp
-) # ^^^  ...and presumably you will be writing custom filters. This is where they go.
+  # MyNewCustomFilter.cpp    # and presumably you will be writing custom filters. This is where they go.
+)
 
 SET( HDR_PROJECT
-  # MyNewCustomFilter.h
-) # ^^^^ Don't forget the corresponding headers
+  # MyNewCustomFilter.h      # Don't forget the corresponding headers
+)
 
 # You may find it useful to produce a command-line version of your filters, for offline processing:
 # BCI2000_ADD_CMDLINE_FILTER( MyNewCustomFilter )
