@@ -1,5 +1,5 @@
 #!/bin/bash
-# Feasibility study for an automated "new project from template" utility 
+# Proof of concept for an automated "new project from template" utility 
 # To be implemented in C++, in the end
 
 MODTYPE="$1"
@@ -32,23 +32,23 @@ PROJ="$PARENT/$NAME"
 
 echo " "
 test -d "$PROJ" && echo "directory $PROJ already exists"
-test -d "$PROJ" || ( mkdir -p "$PROJ" && echo "A new $MODTYPE project has been created at $PROJ :")
+test -d "$PROJ" || ( mkdir -p "$PROJ" && echo "A new $MODTYPE project has been created at $PROJ")
 
 FILE="$PROJ/CMakeLists.txt"
-test -f "$FILE" && echo "file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
-cat "$TEMPLATES/CMakeLists-$MODTYPE.txt" | sed "s/\\\`/$NAME/g" > "$FILE"
+test -f "$FILE" && echo "    file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
+(cat "$TEMPLATES/CMakeLists-$MODTYPE.txt" | sed "s/\\\`/$NAME/g" > "$FILE" && echo "    created $FILE" )
 
 FILE="$PROJ/$NAME.cpp"
-test -f "$FILE" && echo "file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
-cat "$TEMPLATES/main.cpp"                | sed "s/\\\`/$NAME/g" > "$FILE"
+test -f "$FILE" && echo "    file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
+(cat "$TEMPLATES/main.cpp"                | sed "s/\\\`/$NAME/g" > "$FILE" && echo "    created $FILE" )
 
 FILE="$PROJ/PipeDefinition.cpp"
-test -f "$FILE" && echo "file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
+test -f "$FILE" && echo "    file $FILE already exists - leaving it unchanged" ; test -f "$FILE" || \
 test "$MODTYPE" == SignalProcessing && \
-cat "$TEMPLATES/PipeDefinition.cpp"      | sed "s/\\\`/$NAME/g" > "$FILE"
+(cat "$TEMPLATES/PipeDefinition.cpp"      | sed "s/\\\`/$NAME/g" > "$FILE" && echo "    created $FILE" )
 
-echo " "
-ls -lh "$PROJ" | grep -v '^total'
+#echo " "
+#ls -lh "$PROJ" | grep -v '^total'
 echo " "
 
 FILE="$PARENT/CMakeLists.txt"
@@ -66,3 +66,4 @@ echo "Run CMake again to ensure that this new project is included in the build. 
 echo "To expand the project, edit $PROJ/CMakeLists.txt"
 test "$MODTYPE" == SignalProcessing && \
 echo "                        and $PROJ/PipeDefinition.cpp"
+echo " "
