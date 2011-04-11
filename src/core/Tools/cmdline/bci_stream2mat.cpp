@@ -260,7 +260,7 @@ StreamToMat::WriteHeader()
     size_t cellSizePos = BeginVar( mxCHAR_CLASS );
     WriteDims( 1, label.size() );
     WriteName( "" );
-    Write32( miUTF16 ); Write32( 2 * label.size() ); for( int j = 0; j < label.size(); j++ ) Write16( label[j] );
+    Write32( miUTF16 ); Write32( 2 * label.size() ); for( size_t j = 0; j < label.size(); j++ ) Write16( label[j] );
     Pad();
     FinishVar( cellSizePos );
   }
@@ -276,7 +276,7 @@ StreamToMat::WriteHeader()
     size_t cellSizePos = BeginVar( mxCHAR_CLASS );
     WriteDims( 1, str.size() );
     WriteName( "" );
-    Write32( miUTF16 ); Write32( 2 * str.size() ); for( int j = 0; j < str.size(); j++ ) Write16( str[j] );
+    Write32( miUTF16 ); Write32( 2 * str.size() ); for( size_t j = 0; j < str.size(); j++ ) Write16( str[j] );
     Pad();
     FinishVar( cellSizePos );
   }
@@ -289,7 +289,7 @@ StreamToMat::WriteHeader()
   Write32( miSINGLE ); Write32( 4 * mSignalProperties.Elements() );
   for( int i = 0; i < mSignalProperties.Elements(); i++ )
   {
-    float val = ( i - mSignalProperties.ElementUnit().Offset() ) * mSignalProperties.ElementUnit().Gain();
+    float val = static_cast<float>( ( i - mSignalProperties.ElementUnit().Offset() ) * mSignalProperties.ElementUnit().Gain() );
     WriteFloat32(val);
   }
   Pad();
@@ -300,7 +300,7 @@ StreamToMat::WriteHeader()
   string symbol = mSignalProperties.ElementUnit().Symbol();
   WriteDims( 1, symbol.size() );
   WriteName( "ElementUnit" );
-  Write32( miUTF16 ); Write32( 2 * symbol.size() ); for( int j = 0; j < symbol.size(); j++ ) Write16( symbol[j] );
+  Write32( miUTF16 ); Write32( 2 * symbol.size() ); for( size_t j = 0; j < symbol.size(); j++ ) Write16( symbol[j] );
   Pad();
   FinishVar( elementUnitSize );
   
