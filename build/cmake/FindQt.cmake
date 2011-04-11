@@ -14,6 +14,5 @@ IF( USE_STD_QT )
 ELSE()
   INCLUDE( cmake/extlib/Qt4.cmake )
 ENDIF()
-INCLUDE( ${QT_USE_FILE} )
 
 ENDIF( NOT BORLAND )

@@ -40,11 +40,8 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
   
   # If we're building a Qt project, we need to automoc the sources, generating new files
+  SET( USEQT ${REQUESTQT} )
   IF( BORLAND )
-     SET( USEQT "FALSE" )
-  ELSEIF( ${REQUESTQT} OR WIN32 )
-	 SET( USEQT "TRUE" )  # on Windows, use Qt whether it was requested or not (temporary hack to avoid 23 link errors: unresolved externals from streamsock methods in SockStream.obj: _WSAStartup@8 thru _gethostbyname@4) 
-  ELSE( BORLAND )
      SET( USEQT "FALSE" )
   ENDIF( BORLAND )
   IF( ${USEQT} )
@@ -75,11 +72,12 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   # Link against the Qt/VCL Libraries
   IF( BORLAND )
     TARGET_LINK_LIBRARIES( ${NAME} vcl rtl ${VXL_VGUI_LIBRARIES} ${LIBS} )
-  ENDIF( BORLAND )
-  IF( ${USEQT} )
+  ELSEIF( ${USEQT} )
     #MESSAGE( "**  ${NAME} uses Qt" )
     TARGET_LINK_LIBRARIES( ${NAME} ${QT_LIBRARIES} ${LIBS} )
-  ENDIF( ${USEQT} )
+  ELSE()
+    TARGET_LINK_LIBRARIES( ${NAME} ${LIBS} )
+  ENDIF()
 
 ENDMACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS )
 

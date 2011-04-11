@@ -93,11 +93,10 @@ BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK L
 
 # If we're building a Qt project, we need to automoc the sources, generating new files
 IF( NOT BORLAND )
-#QT4_AUTOMOC( ${SOURCES} )
-#QT4_AUTOMOC( ${HEADERS} )
+QT4_AUTOMOC( ${SOURCES} )
 
 # Include Qt Modules specified elsewhere
-#INCLUDE ( ${QT_USE_FILE} )
+INCLUDE ( ${QT_USE_FILE} )
 ENDIF( NOT BORLAND )
 
 # Add Pre-processor defines

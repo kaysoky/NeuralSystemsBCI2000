@@ -33,6 +33,7 @@ SET(qtproject_SRCS
   "${SOURCES}"
 )
 QT4_AUTOMOC(${qtproject_SRCS})
+INCLUDE( ${QT_USE_FILE} )
 ENDIF( NOT BORLAND )
 
 # Add to our include directories
