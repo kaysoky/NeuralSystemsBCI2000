@@ -164,6 +164,8 @@ IF( WIN32 )
   )
 ENDIF( WIN32 )
 
+# Use Qt
+INCLUDE( ${QT_USE_FILE} )
 
 # Add the executable to the project
 ADD_EXECUTABLE( 
