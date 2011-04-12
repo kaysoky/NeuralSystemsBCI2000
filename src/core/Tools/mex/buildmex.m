@@ -138,16 +138,10 @@ LDFLAGS = 'LDFLAGS="\$LDFLAGS"';
 switch( computer )
   case { 'PCWIN', 'PCWIN64' }
     build_version_header = 'cmd /c "cd ..\..\..\shared\config && "%ProgramFiles%\TortoiseSVN\bin\SubWCRev" ..\.. Version.h.in Version.h"';
-    CXXFLAGS = {};
-    LDFLAGS = {};
   otherwise % we assume gcc on all other platforms
     build_version_header = '(cd ../../../buildutils && ./update_version_header.sh)';
-    CXXFLAGS = { ...
-      'CXXFLAGS="\$CXXFLAGS" -fPIC -include gccprefix.h' ...
-      };
-    LDFLAGS = { ...
-      'LDFLAGS="\$LDFLAGS" -dead_strip' ...
-      };
+    CXXFLAGS = 'CXXFLAGS="\$CXXFLAGS" -fPIC -include gccprefix.h';
+    LDFLAGS = 'LDFLAGS="\$LDFLAGS" -dead_strip';
 end;
 
 options = {};
@@ -253,19 +247,18 @@ switch( target )
                 end
             end
             clear signal states parameters spectrum ref;
-        catch
+        catch err
             success = false;
         end
         if( success )
             fprintf( 1, 'Mex files tested OK.\n' );
         else
-            err = lasterror;
             fprintf( 1, 'Error: %s.\n', err.message );
         end
         
     otherwise
         fprintf( 1, [ 'Building ' target ' ...\n' ] );
-        args = [options{:}, CXXFLAGS, LDFLAGS, INCLUDEPATHS{:}, LIBPATHS{:}, DEFINES{:}, [target '.cpp'], MEXSRC{:}];
+        args = { options{:}, CXXFLAGS, LDFLAGS, INCLUDEPATHS{:}, LIBPATHS{:}, DEFINES{:}, [target '.cpp'], MEXSRC{:} };
         mex( args{:} );
         if( ~exist( BINDIR ) )
             mkdir( BINDIR );
