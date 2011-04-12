@@ -151,7 +151,7 @@ PhysicalUnit::RawToPhysical( ValueType inRawValue ) const
     };
     const int numPrefixes = sizeof( prefixes ) / sizeof( *prefixes );
     int i = 0;
-    while( i < numPrefixes && prefixes[ i ].order < orderOfMagnitude - 1 )
+    while( i < numPrefixes && prefixes[ i ].order < orderOfMagnitude - 2 )
       ++i;
     value /= ::pow( 10.0f, prefixes[ i ].order );
 
