@@ -36,8 +36,6 @@
 
 #define MAX_USBAMPS     32
 
-#pragma argsused
-
 void print_info();
 
 int main(int argc, char* argv[])
