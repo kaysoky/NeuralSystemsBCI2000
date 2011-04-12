@@ -25,7 +25,6 @@
 #ifndef ARGROUP_H
 #define ARGROUP_H
 
-#include <iostream>
 #include <vector>
 #include "ARChannel.h"
 
@@ -34,19 +33,15 @@ class ARGroup
 public:
 	ARGroup();
 	~ARGroup();
-	void Init(int numChannels, ARparms parms);
+	void Init(int numChannels, const ARparms& parms);
 
-	void Calculate(const GenericSignal *, GenericSignal *);
-	void Calculate(double *, double *);
+	template<typename T> void Calculate(const T*, T*);
 
 	int GetOutputElements(){return mOutputElements;}
 	void setDoThreaded(bool doThreaded){mDoThreaded = doThreaded;}
 private:
 	void Clear();
 	std::vector<ARthread *> ARarray;
-	int mNumChannels, mOutChannels;
-	int mLength;
-	int mDataLength, mSFdataLength;
 	int mOutputElements;
 	ARparms mParms;
 	bool mDoThreaded;
@@ -54,5 +49,47 @@ private:
 	QThreadPool mThreadPool;
 #endif // QT_CORE_LIB
 };
+
+
+template<typename T>
+void ARGroup::Calculate(const T* inSignal, T* outSignal)
+{
+	if (mDoThreaded){
+		for (size_t ch = 0; ch < ARarray.size(); ch++){
+			ARarray[ch]->UpdateBuffer(inSignal);
+#if QT_CORE_LIB
+			mThreadPool.start(ARarray[ch]);
+#else // QT_CORE_LIB
+			ARarray[ch]->Process();
+#endif // QT_CORE_LIB
+		}
+#if QT_CORE_LIB
+		mThreadPool.waitForDone();
+#endif // QT_CORE_LIB
+	}
+	else{
+		for (size_t ch = 0; ch < ARarray.size(); ch++){
+			ARarray[ch]->UpdateBuffer(inSignal);
+			ARarray[ch]->Process();
+		}
+	}
+
+	switch (mParms.outputType)
+	{
+  case ARparms::SpectralAmplitude:
+  case ARparms::SpectralPower:
+		for (size_t ch = 0; ch < ARarray.size(); ch++){
+			ARarray[ch]->UpdatePower(outSignal);
+		}
+		break;
+
+  case ARparms::ARCoefficients:
+		for (size_t ch = 0; ch < ARarray.size(); ch++){
+			ARarray[ch]->UpdateCoeffs(outSignal);
+		}
+		break;
+	}
+}
+
 
 #endif // ARGROUP_H

@@ -26,19 +26,16 @@
 #pragma hdrstop
 
 #include "ARGroup.h"
-#include <math.h>
+#include <algorithm>
 
 ARGroup::ARGroup()
 {
 }
 
-void ARGroup::Init(int numChannels, ARparms parms)
+void ARGroup::Init(int numChannels, const ARparms& parms)
 {
 	Clear();
-	mNumChannels = numChannels;
-	mLength = parms.length;
 	mParms = parms;
-	mOutputElements = 0;
 
 	int threadCount = 1;
 
@@ -46,10 +43,10 @@ void ARGroup::Init(int numChannels, ARparms parms)
 	threadCount = QThreadPool::globalInstance()->maxThreadCount();
 #endif // QT_CORE_LIB
 
-	ARarray.resize(std::min(mNumChannels, threadCount));
+	ARarray.resize(std::min(numChannels, threadCount));
 	for (size_t t = 0; t < ARarray.size(); t++){
 		ARarray[t] = new ARthread();
-		ARarray[t]->Init(t, mNumChannels, threadCount, parms);
+		ARarray[t]->Init(t, numChannels, threadCount, parms);
 	}
 	mOutputElements = ARarray[0]->GetOutputElements();
 }
@@ -64,81 +61,4 @@ void ARGroup::Clear()
 ARGroup::~ARGroup()
 {
 	Clear();
-}
-
-void ARGroup::Calculate(const GenericSignal * inSignal, GenericSignal * outSignal)
-{
-	if (mDoThreaded){
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateBuffer(inSignal);
-#if QT_CORE_LIB
-			mThreadPool.start(ARarray[ch]);
-		}
-		mThreadPool.waitForDone();
-
-#else // QT_CORE_LIB
-			ARarray[ch]->Process();
-		}
-#endif // QT_CORE_LIB
-	}
-	else{
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateBuffer(inSignal);
-			ARarray[ch]->Process();
-		}
-	}
-
-	switch (mParms.outputType)
-	{
-	case 0:
-	case 1:
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdatePower(outSignal);
-		}
-
-		break;
-	case 2:
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateCoeffs(outSignal);
-		}
-		break;
-	}
-}
-
-void ARGroup::Calculate(double * inSignal, double * outSignal)
-{
-	if (mDoThreaded){
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateBuffer(inSignal);
-#ifdef QT_CORE_LIB
-			mThreadPool.start(ARarray[ch]);
-		}
-		mThreadPool.waitForDone();
-#else // QT_CORE_LIB
-			ARarray[ch]->Process();
-		}
-#endif // QT_CORE_LIB
-	}
-	else{
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateBuffer(inSignal);
-			ARarray[ch]->Process();
-		}
-	}
-
-	switch (mParms.outputType)
-	{
-	case 0:
-	case 1:
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdatePower(outSignal);
-		}
-
-		break;
-	case 2:
-		for (size_t ch = 0; ch < ARarray.size(); ch++){
-			ARarray[ch]->UpdateCoeffs(outSignal);
-		}
-		break;
-	}
 }

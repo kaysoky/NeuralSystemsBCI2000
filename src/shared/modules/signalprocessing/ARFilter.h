@@ -35,24 +35,8 @@
 #include "ARGroup.h"
 #include "GenericFilter.h"
 
-#include <vector>
-
 class ARFilter : public GenericFilter
 {
-  enum OutputTypes
-  {
-    SpectralAmplitude = 0,
-    SpectralPower = 1,
-    ARCoefficients = 2,
-  };
-
-  enum DetrendOptions
-  {
-    none = 0,
-    mean = 1,
-    linear = 2,
-  };
-
  public:
   ARFilter();
   virtual ~ARFilter();

@@ -26,17 +26,18 @@
 #pragma hdrstop
 
 #include "ARChannel.h"
+#include <limits>
 
 using namespace std;
 
 const float eps = std::numeric_limits<float>::epsilon();
-ARChannel::ARChannel(int channel, ARparms parms)
+ARChannel::ARChannel(int channel, const ARparms& parms)
 {
 	mChannel = channel;
 	mParms = parms;
 	mOutputElements = 0;
-	mSamples = static_cast<int>( mParms.SBS*mParms.numWindows );
-	mBuf.resize(mSamples, 0.0);
+	int samples = static_cast<int>( mParms.SBS*mParms.numWindows );
+	mBuf.resize(samples, 0.0);
 	mInputSignal.resize(mParms.SBS, 0.0);
 	mMEMPredictor.SetModelOrder(mParms.modelOrder);
 	int numBins, numCoefs;
@@ -44,8 +45,8 @@ ARChannel::ARChannel(int channel, ARparms parms)
 	numBins = static_cast<int>( ::floor( ( mParms.lastBinCenter - mParms.firstBinCenter + eps ) / mParms.binWidth + 1 ) );
 	switch (mParms.outputType)
 	{
-	case SpectralAmplitude:
-	case SpectralPower:
+  case ARparms::SpectralAmplitude:
+  case ARparms::SpectralPower:
 
 		mTransferSpectrum
 			.SetFirstBinCenter( mParms.firstBinCenter )
@@ -54,7 +55,8 @@ ARChannel::ARChannel(int channel, ARparms parms)
 			.SetEvaluationsPerBin( mParms.evalsPerBin );
 		mOutputElements = numBins;
 		break;
-	case ARCoefficients:
+
+  case ARparms::ARCoefficients:
 
 		mOutputElements = numCoefs;
 		break;
@@ -74,7 +76,7 @@ void ARChannel::UpdateBuffer(const GenericSignal *in)
 		mInputSignal[s] = (*in)(mChannel,s);
 }
 
-void ARChannel::UpdateBuffer(double *in)
+void ARChannel::UpdateBuffer(const double *in)
 {
 	int chOffset = mChannel*mParms.SBS;
 	for (int s = 0; s < mParms.SBS; s++)
@@ -95,51 +97,45 @@ void ARChannel::Calculate()
 	DataVector* inputData;
 	switch( mParms.detrend )
 	{
-	case none:
+  case ARparms::none:
 		inputData = &mBuf;
 		break;
 
-	case mean:
+	case ARparms::mean:
 		inputData = new DataVector;
 		Detrend::MeanDetrend( mBuf, *inputData );
 		break;
 
-	case linear:
+	case ARparms::linear:
 		inputData = new DataVector;
 		Detrend::LinearDetrend( mBuf, *inputData );
 		break;
 
-	default:
-		//bcierr << "Unknown detrend option" << endl;
-		break;
 	}
 
 	mMEMPredictor.TransferFunction( *inputData, mTransferFunction );
 
 	switch( mParms.outputType )
 	{
-	case SpectralAmplitude:
+	case ARparms::SpectralAmplitude:
 		{
 			mTransferSpectrum.Evaluate( mTransferFunction, mSpectrum );
 			for( size_t bin = 0; bin < mSpectrum.size(); ++bin )
 				mSpectrum[bin] = sqrt(mSpectrum[bin]);
 		} break;
 
-	case SpectralPower:
+	case ARparms::SpectralPower:
 		{
 			mTransferSpectrum.Evaluate( mTransferFunction, mSpectrum );
 		} break;
 
-	case ARCoefficients:
+	case ARparms::ARCoefficients:
 		{
 			const Polynomial<Complex>::Vector& coeff = mTransferFunction.Denominator().Coefficients();
 			for( size_t i = 1; i < coeff.size(); ++i )
 				mCoeff[i-1] = coeff[i].real();
 		} break;
 
-	default:
-		//bcierr << "Unknown output type" << endl;
-		break;
 	}
   if( mParms.detrend != 0 )
 	  delete inputData;
@@ -167,13 +163,9 @@ void ARthread::Clear()
 }
 
 
-void ARthread::Init(int startCh, int endCh, int blockSize, ARparms parms)
+void ARthread::Init(int startCh, int endCh, int blockSize, const ARparms& parms)
 {
-	mStartCh = startCh;
-	mEndCh = endCh;
-	mBlockSize = blockSize;
-
-	for (int ch = mStartCh; ch < mEndCh; ch += mBlockSize){
+	for (int ch = startCh; ch < endCh; ch += blockSize){
 		ARChannel *tmp = new ARChannel(ch, parms);
 		mAR.push_back(tmp);
 	}
@@ -192,7 +184,7 @@ void ARthread::UpdateBuffer(const GenericSignal *in)
 		mAR[i]->UpdateBuffer(in);
 }
 
-void ARthread::UpdateBuffer(double *in)
+void ARthread::UpdateBuffer(const double *in)
 {
 	for (size_t i = 0; i < mAR.size(); i++)
 		mAR[i]->UpdateBuffer(in);

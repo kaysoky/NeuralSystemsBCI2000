@@ -90,16 +90,15 @@ void mexFunction( int nlhs, mxArray* plhs[],
     double* inSignal = ::mxGetPr( inSignalArray ),
             * inParms  = ::mxGetPr( inParmsArray ),
             * p = inParms;
-    int     modelOrder        = *p++;
-    double  firstBinCenter    = *p++,
+    double  modelOrder        = *p++,
+            firstBinCenter    = *p++,
             lastBinCenter     = *p++,
-            binWidth          = *p++;
-    int     evaluationsPerBin = *p++;
-    int     detrendOption     = numParms > ( p - inParms ) ? *p++ : none;
-
-    double  frequency         = numParms > ( p - inParms ) ? *p++ : 1;
-    int     sampleBlockSize = (numParms > (p - inParms)) ? *p++ : numSamples;
-    double  numWindows = (numParms > (p - inParms)) ? *p++ : 1;
+            binWidth          = *p++,
+            evaluationsPerBin = *p++,
+            detrendOption     = numParms > ( p - inParms ) ? *p++ : none,
+            frequency         = numParms > ( p - inParms ) ? *p++ : 1.0,
+            sampleBlockSize = (numParms > (p - inParms)) ? *p++ : numSamples,
+            numWindows = (numParms > (p - inParms)) ? *p++ : 1;
 
     if( modelOrder >= numSamples )
         ::mexErrMsgTxt( "The number of input samples must exceed the model order." );
@@ -112,7 +111,7 @@ void mexFunction( int nlhs, mxArray* plhs[],
     if( evaluationsPerBin < 1 )
         ::mexErrMsgTxt( "There must be at least 1 evaluation per bin." );
 
-    switch( detrendOption ) {
+    switch( static_cast<int>( detrendOption ) ) {
         case none:
         case mean:
         case linear:
@@ -121,8 +120,9 @@ void mexFunction( int nlhs, mxArray* plhs[],
             ::mexErrMsgTxt( "Unknown detrend option." );
     }
 
-    int numBins = ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ),
-        numBlocks = numSamples / sampleBlockSize;
+    int numBins = static_cast<int>( ::floor( ( lastBinCenter - firstBinCenter + eps ) / binWidth + 1 ) ),
+        numBlocks = static_cast<int>( numSamples / sampleBlockSize ),
+        iSampleBlockSize = static_cast<int>( sampleBlockSize );
     const mwSize dims[]={numBins, numChannels, numBlocks};
     plhs[ 0 ] = ::mxCreateNumericArray( 3, dims, mxDOUBLE_CLASS, mxREAL );
     double* outSpectrum = ::mxGetPr( plhs[ 0 ] );
@@ -136,17 +136,14 @@ void mexFunction( int nlhs, mxArray* plhs[],
     ARparms parms;
 
     parms.binWidth = binWidth / frequency;
-    parms.detrend = detrendOption;
-    parms.evalsPerBin = evaluationsPerBin;
+    parms.detrend = static_cast<int>( detrendOption );
+    parms.evalsPerBin = static_cast<int>( evaluationsPerBin );
     parms.firstBinCenter = firstBinCenter / frequency;
     parms.lastBinCenter = lastBinCenter / frequency;
-    parms.modelOrder = modelOrder;
-    parms.SBS = sampleBlockSize;
+    parms.modelOrder = static_cast<int>( modelOrder );
+    parms.SBS = static_cast<int>( sampleBlockSize );
     parms.outputType = 1;
     parms.numWindows = numWindows;
-    parms.numBins = numBins;
-    parms.fs = frequency;
-    parms.length = sampleBlockSize*numWindows;
 
     ARGroup AR;
     AR.Init(numChannels, parms);
@@ -155,12 +152,12 @@ void mexFunction( int nlhs, mxArray* plhs[],
     double *input = inSignal,
            *output = outSpectrum;
 
-    double *tmpInBuf = (double*)mxCalloc(numChannels*sampleBlockSize, sizeof(double));
+    double *tmpInBuf = (double*)mxCalloc(numChannels*iSampleBlockSize, sizeof(double));
     double *tmpOutBuf = (double*)mxCalloc(numChannels*numBins, sizeof(double));
-    for (int block = 0,  blockNum=0; block <= numSamples - sampleBlockSize; block += sampleBlockSize, blockNum++){
-        for (int s = 0; s < sampleBlockSize; s++){
+    for (int block = 0,  blockNum=0; block <= numSamples - iSampleBlockSize; block += iSampleBlockSize, blockNum++){
+        for (int s = 0; s < iSampleBlockSize; s++){
             for (int ch = 0; ch < numChannels; ch++){
-                tmpInBuf[s + ch*sampleBlockSize] = input[s + block + ch*sampleBlockSize];
+                tmpInBuf[s + ch*iSampleBlockSize] = input[s + block + ch*iSampleBlockSize];
             }
         }
         AR.Calculate(tmpInBuf, tmpOutBuf);

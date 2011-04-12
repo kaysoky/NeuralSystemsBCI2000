@@ -83,7 +83,7 @@ ARFilter::Preflight( const SignalProperties& Input,
 {
   // Parameter consistency checks.
   double windowLength = MeasurementUnits::ReadAsTime( Parameter( "WindowLength" ) ),
-         samplesInWindow = windowLength * Parameter( "SampleBlockSize" );
+         samplesInWindow = windowLength * Input.Elements();
   if( samplesInWindow < Parameter( "ModelOrder" ) )
     bcierr << "WindowLength parameter must be large enough"
            << " for the number of samples to exceed the model order"
@@ -92,8 +92,8 @@ ARFilter::Preflight( const SignalProperties& Input,
   Output = Input;
   switch( int( Parameter( "OutputType" ) ) )
   {
-    case SpectralAmplitude:
-    case SpectralPower:
+    case ARparms::SpectralAmplitude:
+    case ARparms::SpectralPower:
     {
       double firstBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "FirstBinCenter" ) ),
              lastBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "LastBinCenter" ) ),
@@ -121,7 +121,7 @@ ARFilter::Preflight( const SignalProperties& Input,
              whiteNoisePowerPerBin = inputAmplitude * inputAmplitude / binWidth / 10;
       switch( int( Parameter( "OutputType" ) ) )
       {
-        case SpectralAmplitude:
+        case ARparms::SpectralAmplitude:
           Output.SetName( "AR Amplitude Spectrum" );
           Output.ValueUnit().SetOffset( 0 )
                             .SetGain( 1e-6 )
@@ -129,7 +129,7 @@ ARFilter::Preflight( const SignalProperties& Input,
                             .SetRawMax( ::sqrt( whiteNoisePowerPerBin ) );
           break;
 
-        case SpectralPower:
+        case ARparms::SpectralPower:
           Output.SetName( "AR Power Spectrum" );
           Output.ValueUnit().SetOffset( 0 )
                             .SetGain( 1 )
@@ -139,7 +139,7 @@ ARFilter::Preflight( const SignalProperties& Input,
       }
     } break;
 
-    case ARCoefficients:
+    case ARparms::ARCoefficients:
       Output.SetName( "AR Coefficients" );
       Output.SetElements( Parameter( "ModelOrder" ) );
       Output.ElementUnit().SetOffset( 0 )
@@ -176,12 +176,9 @@ ARFilter::Initialize( const SignalProperties& Input,
   parms.firstBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "FirstBinCenter" ));
   parms.lastBinCenter = MeasurementUnits::ReadAsFreq( Parameter( "LastBinCenter" ));
   parms.modelOrder = Parameter( "ModelOrder" );
-  parms.SBS = Parameter( "SampleBlockSize" );
+  parms.SBS = Input.Elements();
   parms.outputType = Parameter( "OutputType" );
   parms.numWindows = MeasurementUnits::ReadAsTime( Parameter( "WindowLength" ) );
-  parms.numBins = static_cast<int>( floor((parms.lastBinCenter-parms.firstBinCenter)/parms.binWidth+1) );
-  parms.fs = Parameter("SamplingRate");
-  parms.length = parms.SBS*parms.numWindows;
 
   delete mpAR;
   mpAR = new ARGroup;

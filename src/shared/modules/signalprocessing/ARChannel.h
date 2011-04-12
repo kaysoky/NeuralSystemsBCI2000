@@ -25,28 +25,35 @@
 #ifndef ARCHANNEL_H
 #define ARCHANNEL_H
 
-#include <limits>
-#include <vector>
 #if QT_CORE_LIB
 # include <QtCore>
 # include <QRunnable>
 #endif // QT_CORE_LIB
 
 #include "Detrend.h"
-#include "MeasurementUnits.h"
 #include "MEMPredictor.h"
 #include "TransferSpectrum.h"
 #include "GenericSignal.h"
-#include "BCIError.h"
 
 
 struct ARparms{
-	double fs;
+
+	enum OutputTypes
+	{
+		SpectralAmplitude = 0,
+		SpectralPower = 1,
+		ARCoefficients = 2,
+	};
+
+	enum DetrendOptions
+	{
+		none = 0,
+		mean = 1,
+		linear = 2,
+	};
+
 	int detrend;
 	double numWindows;
-	int length;
-	int numBins;
-	double **lookupTable;
 	int SBS;
 	int outputType;
 	int modelOrder;
@@ -62,10 +69,10 @@ class ARChannel
 	typedef std::complex<double> Complex;
 	typedef std::valarray<Real>  DataVector;
 public:
-	ARChannel(int channel, ARparms parms);
+	ARChannel(int channel, const ARparms& parms);
 	~ARChannel();
 	void UpdateBuffer(const GenericSignal *in);
-	void UpdateBuffer(double *in);
+	void UpdateBuffer(const double *in);
 	void Calculate();
 	int GetOutputElements(){return mOutputElements;}
 	int getChannel(){return mChannel;}
@@ -75,7 +82,6 @@ public:
 
 private:
 	unsigned short mChannel;
-	unsigned short mSamples;
 	int mOutputElements;
 	ARparms mParms;
 
@@ -84,19 +90,6 @@ private:
 	MEMPredictor<double>     mMEMPredictor;
 	TransferSpectrum<double> mTransferSpectrum;
 
-	enum OutputTypes
-	{
-		SpectralAmplitude = 0,
-		SpectralPower = 1,
-		ARCoefficients = 2,
-	};
-
-	enum DetrendOptions
-	{
-		none = 0,
-		mean = 1,
-		linear = 2,
-	};
 };
 
 #ifndef QT_CORE_LIB
@@ -106,22 +99,21 @@ class ARthread : public QRunnable
 #endif // !QT_CORE_LIB
 {
  public:
-  	void Init(int startCh, int endCh, int blockSize, ARparms parms);
+  	void Init(int startCh, int endCh, int blockSize, const ARparms& parms);
   	void UpdatePower(GenericSignal *out);
-	void UpdatePower(double *out);
+  	void UpdatePower(double *out);
   	void UpdateCoeffs(GenericSignal *out);
-	void UpdateCoeffs(double *out);
-	int GetOutputElements(){return mOutputElements;}
+  	void UpdateCoeffs(double *out);
+  	int GetOutputElements(){return mOutputElements;}
   	ARthread();
   	~ARthread();
  private:
-  	int mStartCh, mEndCh, mBlockSize;
-  	std::vector<ARChannel *> mAR;
   	void Clear();
+  	std::vector<ARChannel *> mAR;
   	int mOutputElements;
  public:
   	void UpdateBuffer(const GenericSignal *in);
-	void UpdateBuffer(double *in);
+  	void UpdateBuffer(const double *in);
   	void Process();
  protected:
   	void run(){Process();}
