@@ -79,12 +79,15 @@ class StreamToMat : public MessageHandler
  public:
   StreamToMat( ostream& arOut )
   : mrOut( arOut ), mpStatevector( NULL ), mSignalProperties( 0, 0 ),
-    mDataElementSizePos( 0 ), mDataColsPos( 0 ), mDataSizePos( 0 ), mDataCols( 0 ) {}
+    mDataElementSizePos( 0 ), mDataColsPos( 0 ), mDataSizePos( 0 ), mDataCols( 0 ),
+    mParamsDumped( false ) {}
   ~StreamToMat() { delete mpStatevector; }
   void FinishHeader() const;
 
  private:
   ostream&            mrOut;
+  stringstream        mParamsOut;
+  bool                mParamsDumped;
   StateList           mStatelist;
   StateVector*        mpStatevector;
   SignalProperties    mSignalProperties;
@@ -99,6 +102,7 @@ class StreamToMat : public MessageHandler
   void FinishVar(size_t sizePos) const;
   void WriteDims(size_t nRows, size_t nCols) const;
   void WriteName(string name) const;
+  void WriteString(string name, string str) const;
   
   void WriteHeader();
   void WriteData( const GenericSignal& );
@@ -114,6 +118,7 @@ class StreamToMat : public MessageHandler
   virtual bool HandleVisSignal(             istream& );
   virtual bool HandleVisSignalProperties(   istream& );
   virtual bool HandleStateVector(           istream& );
+  virtual bool HandleParam(                 istream& );
 };
 
 ToolResult
@@ -180,6 +185,19 @@ StreamToMat::WriteName(string name) const
     mrOut << name;
     Pad();
   }
+}
+
+void
+StreamToMat::WriteString(string name, string str) const
+{
+  long sizePos = BeginVar( mxCHAR_CLASS );
+  WriteDims( 1, str.size() );
+  WriteName( name );
+  Write32( miUTF16 );
+  Write32( 2 * str.size() );
+  for( size_t j = 0; j < str.size(); j++ ) Write16( str[j] );
+  Pad();
+  FinishVar( sizePos );
 }
 
 void
@@ -255,15 +273,7 @@ StreamToMat::WriteHeader()
   WriteDims( mSignalProperties.Channels(), 1 );
   WriteName( "ChannelLabels" );
   for( int i = 0; i < mSignalProperties.Channels(); i++ )
-  {
-    string label = mSignalProperties.ChannelLabels()[i];
-    size_t cellSizePos = BeginVar( mxCHAR_CLASS );
-    WriteDims( 1, label.size() );
-    WriteName( "" );
-    Write32( miUTF16 ); Write32( 2 * label.size() ); for( size_t j = 0; j < label.size(); j++ ) Write16( label[j] );
-    Pad();
-    FinishVar( cellSizePos );
-  }
+    WriteString( "", mSignalProperties.ChannelLabels()[i] );
   FinishVar( channelLabelsSize );
 
   // A cell array of element labels
@@ -271,15 +281,7 @@ StreamToMat::WriteHeader()
   WriteDims( mSignalProperties.Elements(), 1 );
   WriteName( "ElementLabels" );
   for( int i = 0; i < mSignalProperties.Elements(); i++ )
-  {
-    string str = mSignalProperties.ElementLabels()[i];
-    size_t cellSizePos = BeginVar( mxCHAR_CLASS );
-    WriteDims( 1, str.size() );
-    WriteName( "" );
-    Write32( miUTF16 ); Write32( 2 * str.size() ); for( size_t j = 0; j < str.size(); j++ ) Write16( str[j] );
-    Pad();
-    FinishVar( cellSizePos );
-  }
+    WriteString( "", mSignalProperties.ElementLabels()[i] );
   FinishVar( elementLabelsSize );
 
   // A single-precision numeric array of element values
@@ -296,14 +298,12 @@ StreamToMat::WriteHeader()
   FinishVar( elementValuesSize );
 
   // A string denoting the element unit
-  long elementUnitSize = BeginVar( mxCHAR_CLASS );
-  string symbol = mSignalProperties.ElementUnit().Symbol();
-  WriteDims( 1, symbol.size() );
-  WriteName( "ElementUnit" );
-  Write32( miUTF16 ); Write32( 2 * symbol.size() ); for( size_t j = 0; j < symbol.size(); j++ ) Write16( symbol[j] );
-  Pad();
-  FinishVar( elementUnitSize );
+  WriteString( "ElementUnit", mSignalProperties.ElementUnit().Symbol());
   
+  // A long string containing the prm text
+  WriteString( "Parms", mParamsOut.str() );
+  mParamsDumped = true;
+
   // A single-precision numeric array that holds the signal.
   mDataElementSizePos = BeginVar( mxSINGLE_CLASS );
   WriteDims( mStateNames.size() + numSignalEntries, 0 );
@@ -400,5 +400,19 @@ StreamToMat::HandleStateVector( istream& arIn )
   if( mpStatevector == NULL )
     mpStatevector = new StateVector( mStatelist );
   mpStatevector->ReadBinary( arIn );
+  return true;
+}
+
+bool
+StreamToMat::HandleParam( istream& arIn )
+{
+  Param p;
+  if( p.ReadBinary( arIn ) )
+  {
+    if( mParamsDumped )
+      bciout << "additional parameter arrived after parameters were written to mat-file";
+    else
+      mParamsOut << p << "\n";
+  }
   return true;
 }

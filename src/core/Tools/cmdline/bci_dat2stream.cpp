@@ -33,6 +33,7 @@
 #include "MessageHandler.h"
 #include "Version.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -52,6 +53,7 @@ string ToolInfo[] =
   "-t,       --transmit-{spd}\tSelect States, Parameters,",
   "                          \tand Data for transmission",
   "-r,       --raw           \tTransmit uncalibrated data",
+  "-p<file>, --parameters    \tIncorporate parameters from named file",
   ""
 };
 
@@ -75,7 +77,8 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
        calibrateData = ( options.find( "-r" ) == options.end()
                          && options.find( "-R" ) == options.end()
                          && options.find( "--raw" ) == options.end() );
-
+  string paramFileName = options.getopt( "-p|-P|--parameters", "" );
+  
   // Read the BCI2000 header.
   string token;
   int headerLength,
@@ -151,6 +154,20 @@ ToolResult ToolMain( const OptionSet& options_, istream& in, ostream& out )
     if( transmitParameters )
       MessageHandler::PutMessage( out, param );
   }
+  if( paramFileName.size() )
+  {
+    ifstream pIn( paramFileName.c_str(), ifstream::in );
+    while( pIn.good() && getline( pIn, token ) &&  token.length() > 1 )
+    {
+      istringstream is( token );
+      Param param;
+      if( is >> param )
+        parameters[ param.Name() ] = param;
+      if( transmitParameters )
+        MessageHandler::PutMessage( out, param );
+    }
+  }
+  
   int sampleBlockSize = atoi( parameters[ "SampleBlockSize" ].Value().c_str() );
   legalInput &= ( sampleBlockSize > 0 );
   if( !legalInput )

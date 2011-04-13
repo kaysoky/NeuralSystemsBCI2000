@@ -1,6 +1,11 @@
 #!/bin/bash
 # Proof of concept for an automated "new filter from template" utility 
 # To be implemented in C++, in the end
+# 
+# ./newfilter ../src/custom/MyProject/FooFilter.cpp
+# ./newfilter FooFilter ../src/custom/MyProject
+# 
+# the two syntaxes are equivalent
 
 set -e
 

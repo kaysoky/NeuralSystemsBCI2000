@@ -1,6 +1,11 @@
 #!/bin/bash
 # Proof of concept for an automated "new project from template" utility 
 # To be implemented in C++, in the end
+# 
+# ./newproject SignalProcessing Blah
+# ./newproject SignalProcessing Blah ../src/contrib
+# 
+# (if no location is specified,  ../src/custom is used)
 
 MODTYPE="$1"
 NAME="$2"
