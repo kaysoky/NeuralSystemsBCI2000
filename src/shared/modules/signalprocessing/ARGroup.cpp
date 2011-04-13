@@ -39,9 +39,9 @@ void ARGroup::Init(int numChannels, const ARparms& parms)
 
 	int threadCount = 1;
 
-#if QT_CORE_LIB
+#ifdef USE_QT
 	threadCount = QThreadPool::globalInstance()->maxThreadCount();
-#endif // QT_CORE_LIB
+#endif // USE_QT
 
 	ARarray.resize(std::min(numChannels, threadCount));
 	for (size_t t = 0; t < ARarray.size(); t++){

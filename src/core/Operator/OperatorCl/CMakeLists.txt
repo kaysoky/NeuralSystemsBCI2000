@@ -43,17 +43,6 @@ SOURCE_GROUP( Headers\\Project FILES ${HDR_PROJECT} )
 # Setup Extlib Dependencies
 BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
 
-# Add Pre-processor defines
-ADD_DEFINITIONS( 
-  -DNO_PCHINCLUDES
-)
-IF( WIN32 )
-  ADD_DEFINITIONS(
-    -D_WINDOWS
-  )
-ENDIF( WIN32 )
-
-
 # Add the executable to the project
 ADD_EXECUTABLE( 
   ${EXECUTABLE_NAME} 

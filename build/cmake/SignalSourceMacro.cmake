@@ -33,26 +33,19 @@ SET(qtproject_SRCS
   "${SOURCES}"
 )
 QT4_AUTOMOC(${qtproject_SRCS})
-INCLUDE( ${QT_USE_FILE} )
 ENDIF( NOT BORLAND )
 
 # Add to our include directories
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalsource ${INCLUDES} ${BCI2000_SIGSRCINCDIRS} )
-
-# Add Pre-processor defines
-ADD_DEFINITIONS( 
-  -DMODTYPE=1
-  -DNO_PCHINCLUDES
-)
-IF( WIN32 )
-ADD_DEFINITIONS( -D_WINDOWS )
-ENDIF( WIN32 )
 
 # Add link directories for signal source modules
 LINK_DIRECTORIES( ${BCI2000_SIGSRCLIBDIRS} )
 
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
+
+# Add Pre-processor defines
+SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DMODTYPE=1 -DUSE_QT" )
 
 # Set the output directories
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/prog )

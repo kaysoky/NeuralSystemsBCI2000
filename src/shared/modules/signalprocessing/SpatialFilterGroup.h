@@ -42,9 +42,9 @@ private:
   int mThreadCount;
   double *mFilterMatrix;
   int mInChannels, mOutChannels, mSamples;
-#if QT_CORE_LIB
+#ifdef USE_QT
   QThreadPool mThreadPool;
-#endif // QT_CORE_LIB
+#endif // USE_QT
 };
 
 #endif // SPATIALFILTERGROUP_H

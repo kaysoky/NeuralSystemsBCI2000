@@ -45,9 +45,9 @@ private:
 	int mOutputElements;
 	ARparms mParms;
 	bool mDoThreaded;
-#if QT_CORE_LIB
+#ifdef USE_QT
 	QThreadPool mThreadPool;
-#endif // QT_CORE_LIB
+#endif // USE_QT
 };
 
 
@@ -57,15 +57,15 @@ void ARGroup::Calculate(const T* inSignal, T* outSignal)
 	if (mDoThreaded){
 		for (size_t ch = 0; ch < ARarray.size(); ch++){
 			ARarray[ch]->UpdateBuffer(inSignal);
-#if QT_CORE_LIB
+#ifdef USE_QT
 			mThreadPool.start(ARarray[ch]);
-#else // QT_CORE_LIB
+#else // USE_QT
 			ARarray[ch]->Process();
-#endif // QT_CORE_LIB
+#endif // USE_QT
 		}
-#if QT_CORE_LIB
+#ifdef USE_QT
 		mThreadPool.waitForDone();
-#endif // QT_CORE_LIB
+#endif // USE_QT
 	}
 	else{
 		for (size_t ch = 0; ch < ARarray.size(); ch++){

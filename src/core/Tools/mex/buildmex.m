@@ -198,7 +198,7 @@ if( ~strcmp( target, 'all' ) && ~strcmp( target, 'test' ) )
                 LDFLAGS = [ LDFLAGS ' -lQtCore' ];
                 LIBPATHS = { LIBPATHS{:} [ '-L' QT_INSTALL_LIBS ] };
             end
-            DEFINES = { DEFINES{:} [ '-DQT_QTCORE_LIB' ] };
+            DEFINES = { DEFINES{:} [ '-DUSE_QT' ] };
         end
     else
         fprintf( 1, ['Mex file will be built without multithreading support.\n' ...

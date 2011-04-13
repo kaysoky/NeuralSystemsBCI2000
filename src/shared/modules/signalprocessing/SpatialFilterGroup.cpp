@@ -54,9 +54,9 @@ void SpatialFilterGroup::Init(int nInChannels, int nOutChannels, int nSamples, v
   mOutChannels = nOutChannels;
   mSamples = nSamples;
   mThreadCount = 1;
-#if QT_CORE_LIB
+#ifdef USE_QT
   mThreadCount = QThreadPool::globalInstance()->maxThreadCount();
-#endif // QT_CORE_LIB
+#endif // USE_QT
   mFilterMatrix = new double[mInChannels*mOutChannels];
   for (int inCh = 0; inCh < mInChannels; inCh++)
     for (int outCh = 0; outCh < mOutChannels; outCh++)
@@ -79,7 +79,7 @@ void SpatialFilterGroup::Calculate(const GenericSignal * in, GenericSignal * out
     }
   }
   else{
-  #if QT_CORE_LIB
+  #ifdef USE_QT
     for (size_t i = 0; i < mSF.size(); i++){
       //QThreadPool::globalInstance()->start(mSF[i]);
 		mThreadPool.start(mSF[i]);
@@ -88,10 +88,10 @@ void SpatialFilterGroup::Calculate(const GenericSignal * in, GenericSignal * out
     //QThreadPool::globalInstance()->waitForDone();
 	mThreadPool.waitForDone();
 
-  #else // QT_CORE_LIB
+  #else // USE_QT
     for (size_t i = 0; i < mSF.size(); i++){
       mSF[i]->Process();
     }
-  #endif // QT_CORE_LIB
+  #endif // USE_QT
   }
 }

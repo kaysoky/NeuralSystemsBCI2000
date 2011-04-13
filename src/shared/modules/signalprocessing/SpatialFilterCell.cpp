@@ -43,9 +43,9 @@ SpatialFilterCell::SpatialFilterCell()
   mFilterMatrix(NULL),
   mBuffer(NULL)
 {
-#if QT_CORE_LIB
+#ifdef USE_QT
   setAutoDelete(false);
-#endif // QT_CORE_LIB
+#endif // USE_QT
 }
 
 SpatialFilterCell::~SpatialFilterCell()

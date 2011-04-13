@@ -25,10 +25,10 @@
 #ifndef ARCHANNEL_H
 #define ARCHANNEL_H
 
-#if QT_CORE_LIB
+#ifdef USE_QT
 # include <QtCore>
 # include <QRunnable>
-#endif // QT_CORE_LIB
+#endif // USE_QT
 
 #include "Detrend.h"
 #include "MEMPredictor.h"
@@ -92,11 +92,11 @@ private:
 
 };
 
-#ifndef QT_CORE_LIB
+#ifndef USE_QT
 class ARthread
-#else // !QT_CORE_LIB
+#else // !USE_QT
 class ARthread : public QRunnable
-#endif // !QT_CORE_LIB
+#endif // !USE_QT
 {
  public:
   	void Init(int startCh, int endCh, int blockSize, const ARparms& parms);

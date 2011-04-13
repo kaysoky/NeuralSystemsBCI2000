@@ -93,24 +93,14 @@ BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK L
 
 # If we're building a Qt project, we need to automoc the sources, generating new files
 IF( NOT BORLAND )
-QT4_AUTOMOC( ${SOURCES} )
-
-# Include Qt Modules specified elsewhere
-INCLUDE ( ${QT_USE_FILE} )
+  QT4_AUTOMOC( ${SOURCES} )
 ENDIF( NOT BORLAND )
-
-# Add Pre-processor defines
-ADD_DEFINITIONS( 
-  -DNO_PCHINCLUDES
-)
-IF( WIN32 )
-ADD_DEFINITIONS(
-  -D_WINDOWS
-)
-ENDIF( WIN32 )
 
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} ${GEN} )
+
+# Add Pre-processor defines
+SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
 
 # Set the output directories
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/tools/${NAME} )

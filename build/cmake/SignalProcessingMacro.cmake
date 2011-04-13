@@ -25,28 +25,21 @@ BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK L
 
 # If we're building a Qt project, we need to automoc the sources
 IF( NOT BORLAND )
-SET(qtproject_SRCS
-  ${SRC_BCI2000_FRAMEWORK}
-  ${SOURCES}
-)
-QT4_AUTOMOC(${qtproject_SRCS})
-INCLUDE( ${QT_USE_FILE} )
+  SET(qtproject_SRCS
+    ${SRC_BCI2000_FRAMEWORK}
+    ${SOURCES}
+  )
+  QT4_AUTOMOC(${qtproject_SRCS})
 ENDIF( NOT BORLAND )
 
 # Add to our include directories
 INCLUDE_DIRECTORIES( ${BCI2000_SRC_DIR}/shared/modules/signalprocessing ${INCLUDES} )
 
-# Add Pre-processor defines
-ADD_DEFINITIONS( 
-  -DMODTYPE=2
-  -DNO_PCHINCLUDES
-)
-IF( WIN32 )
-ADD_DEFINITIONS( -D_WINDOWS )
-ENDIF( WIN32 )
-
 # Add the executable to the project
 ADD_EXECUTABLE( ${NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
+
+# Add Pre-processor defines
+SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DMODTYPE=2 -DUSE_QT" )
 
 # Set the output directories
 SET_TARGET_PROPERTIES( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/prog )

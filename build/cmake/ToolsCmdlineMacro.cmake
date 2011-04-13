@@ -46,18 +46,16 @@ MACRO( BCI2000_ADD_TOOLS_CMDLINE NAME SOURCES HEADERS REQUESTQT )
   ENDIF( BORLAND )
   IF( ${USEQT} )
     QT4_AUTOMOC( ${SOURCES} )  
-    # Include Qt Modules specified elsewhere
-    INCLUDE ( ${QT_USE_FILE} )
   ENDIF( ${USEQT} )
-  
-  # Add Pre-processor defines
-  ADD_DEFINITIONS( 
-    -DNO_PCHINCLUDES
-  )
   
   # Add the executable to the project
   ADD_EXECUTABLE( ${NAME} ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SOURCES} ${HEADERS} )
   
+  # Add Pre-processor defines
+  IF( ${USEQT} )
+    SET_PROPERTY( TARGET ${NAME} APPEND PROPERTY COMPILE_FLAGS "-DUSE_QT" )
+  ENDIF( ${USEQT} )
+
   # Set the output directories
   SET_TARGET_PROPERTIES( ${NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/tools/cmdline )
   SET_TARGET_PROPERTIES( ${NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/tools/cmdline )
