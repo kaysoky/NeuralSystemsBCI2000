@@ -18,7 +18,7 @@ BCI2000_ADD_CMDLINE_CONVERTER( bci_stream2table )
 
 SET( SIGPROC_DIR ${BCI2000_ROOT_DIR}/src/shared/modules/signalprocessing )
 
-BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} USING "MATH" #"QT"
+BCI2000_ADD_CMDLINE_FILTER( ARFilter              FROM ${SIGPROC_DIR} USING "MATH" "QT"
                             EXTRA_SOURCES ${SIGPROC_DIR}/ARChannel.cpp
                                           ${SIGPROC_DIR}/ARGroup.cpp
                             EXTRA_HEADERS ${SIGPROC_DIR}/ARChannel.h
