@@ -44,8 +44,11 @@
 # define RegisterFilter( name, pos )  RegisterFilter_( name, pos )
 #endif // MODTYPE
 
-#define RegisterFilter_( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
-
+#if( __GNUC__ )
+# define RegisterFilter_( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
+#else
+# define RegisterFilter_( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos) __attribute__(( used ));
+#endif // __GNUC__
 
 class GenericFilter : protected Environment
 {
