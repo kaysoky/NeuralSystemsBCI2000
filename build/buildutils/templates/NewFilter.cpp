@@ -34,12 +34,13 @@
 using namespace std;
 
 
-RegisterFilter( `, 2.M );
+#error Change the location token 2.X in the line below as required. Then, remove this error line.
+RegisterFilter( `, 2.X );
      // Change the location as appropriate, to determine where your filter gets
      // sorted into the chain. By convention:
      //  - filters locations for SignalSource modules begin with "1."
      //  - filters locations for SignalProcessing modules begin with "2."  
-     //       (but the order is often explicitly re-defined in a PipeDefinition.cpp file)
+     //       (but SignalProcessing modules should specify this with a Filter() command in their PipeDefinition.cpp file instead)
      //  - filters locations Application modules begin with "3."
 
 
@@ -73,9 +74,9 @@ void
 `::Halt()
 {
   // De-allocate any memory reserved in Initialize, stop any threads, etc.
-  // Good practice is to write this such that it is safe to call even *before* Initialize,
-  // or safe to call twice (e.g. make sure you do not delete [] pointers that have already been
-  // deleted:  set them to NULL after deletion).
+  // Good practice is to write the Halt() method such that it is safe to call it even *before*
+  // Initialize, and safe to call it twice (e.g. make sure you do not delete [] pointers that
+  // have already been deleted:  set them to NULL after deletion).
 }
 
 void
@@ -89,23 +90,23 @@ void
   //
   // Also check that the values of any parameters are sane:
   //
-  // if( (float)Parameter( "Karma" ) == 0.0f )
-  //      bcierr << "zero Karma is not allowed" << endl;
+  // if( (float)Parameter( "Denominator" ) == 0.0f )
+  //      bcierr << "Denominator cannot be zero" << endl;
   // 
   // Errors issued in this way, during Preflight, still allow the user to open
   // the Config dialog box, fix bad parameters and re-try.  By contrast, errors
-  // and C++ exceptions at any other stage will make the system stop, such that
-  // BCI2000 will need to be relaunched entirely.
+  // and C++ exceptions at any other stage (outside Preflight) will make the
+  // system stop, such that BCI2000 will need to be relaunched entirely.
   
   Output = Input; // this simply passes information about through SampleBlock dimensions, etc....
   
   // ... or alternatively, we could modify that info here:
 
-  // Let's say this filter has only one output, namely the amount of stuff detected in the signal.
+  // Let's imagine this filter has only one output, namely the amount of stuff detected in the signal:
   // Output.SetChannels( 1 );
   // Output.ChannelLabels()[0] = "Stuff";
 
-  // Just for fun, let's output twice as many samples (or bins) as we receive from the input.
+  // Imagine we want to output twice as many samples (or bins) as we receive from the input:
   // Output.SetElements( Input.Elements() * 2 );
   
   // Note that the ` instance itself, and its members, are read-only during
@@ -124,7 +125,7 @@ void
 }
 
 void
-`:StartRun()
+`::StartRun()
 {
   // The user has just pressed "Start" (or "Resume")
   bciout << "Hello World!" << endl;
@@ -136,6 +137,7 @@ void
 {
 
   // And now we're processing a single SampleBlock of data.
+  // Remember not to take too much CPU time here, or you will break the real-time constraint.
   
   Output = Input; // Pass the signal through unmodified.
                   // ( Obviously this will no longer fly if we modified the shape of the
@@ -154,10 +156,12 @@ void
 }
 
 void
-`:StopRun()
+`::StopRun()
 {
+  // The Running state has been set to 0, either because the user has pressed "Suspend",
+  // because the run has reached its natural end.
   bciout << "Goodbye World." << endl;
   // You know, you can delete methods if you're not using them.
-  // Remove the declaration from `.h too, if so.
+  // Remove the corresponding declaration from `.h too, if so.
 }
 

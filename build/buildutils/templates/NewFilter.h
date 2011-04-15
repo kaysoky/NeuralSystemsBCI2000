@@ -33,7 +33,7 @@
 class ` : public GenericFilter
 {
  public:
-          `();
+           `();
   virtual ~`();
   virtual void Halt();
   virtual void Preflight(  const SignalProperties& Input,       SignalProperties& Output ) const;

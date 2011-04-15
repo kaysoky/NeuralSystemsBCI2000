@@ -10,5 +10,6 @@ IF (MSVC OR XCODE)
 ENDIF(MSVC OR XCODE)
 
 ADD_SUBDIRECTORY( ParamGenerator )
+ADD_SUBDIRECTORY( BootstrapCustomProjects )
 
 MESSAGE( "-- Added Build Testing" )
