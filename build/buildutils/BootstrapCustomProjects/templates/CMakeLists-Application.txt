@@ -1,0 +1,49 @@
+###########################################################################
+## $Id:  $
+## Authors:
+## Description: Build information for the ` application module
+##              
+##              
+###########################################################################
+
+# Set the executable name
+SET( EXECUTABLE_NAME ` )
+
+# Set the project specific sources
+SET( SRC_PROJECT
+  `.cpp            # You probably will not need to edit this file
+  # MyNewCustomFilter.cpp    # but you should add new filters to specify the module's behaviour 
+)
+
+SET( HDR_PROJECT
+  # MyNewCustomFilter.h      # Don't forget the corresponding headers
+)
+
+# Perhaps it would be useful for your filter to be a subclass of FeedbackTask (for example)
+# instead of ApplicationBase or GenericFilter?
+# Uncomment/add any required parts of the existing BCI2000 application framework:
+SET( SRC_APPLICATION
+  # ${BCI2000_SRC_DIR}/shared/modules/application/FeedbackTask.cpp
+)
+SET( HDR_APPLICATION
+  # ${BCI2000_SRC_DIR}/shared/modules/application/FeedbackTask.h
+)
+SET( INCLUDES
+  # ${BCI2000_SRC_DIR}/shared/modules/application
+  # ${BCI2000_SRC_DIR}/shared/modules/application/utils
+)
+
+SOURCE_GROUP( Source\\BCI2000_Framework\\shared\\modules\\application FILES ${SRC_APPLICATION} )
+SOURCE_GROUP( Headers\\BCI2000_Framework\\shared\\modules\\application FILES ${HDR_APPLICATION} )
+
+
+# Use the BCI2000_USE macro if you need to link with frameworks from /src/extlib:
+# BCI2000_USE( "3DAPI" )
+
+# We're done. Add the application module to the Makefile or compiler project file:
+BCI2000_ADD_APPLICATION_MODULE( 
+  "${EXECUTABLE_NAME}" 
+  "${SRC_PROJECT}" "${HDR_PROJECT}" 
+  "${SRC_APPLICATION}" "${HDR_APPLICATION}" 
+  "${INCLUDES}"
+)

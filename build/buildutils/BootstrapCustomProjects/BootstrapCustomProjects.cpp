@@ -318,13 +318,31 @@ ParseName( string& name )
 
 int NewFilter(int argc, const char *argv[])
 {
-	string name, proj;
-	if( argc >= 2 )
+	string modtype, name, proj;
+	
+	if( argc >= 2 ) modtype = argv[1];
+	if( argc >= 3 ) { name = argv[2]; ParseName( name, proj ); }
+	if( argc >= 4 ) proj = argv[3];
+
+	for( int i = 0; ; i++)
 	{
-		name = argv[1];
-		ParseName( name, proj );
-	}
-	if( argc >= 3 ) proj = argv[2];
+		modtype = StripString( modtype );
+		if( modtype == "1" ) modtype = "GenericADC";
+		if( modtype == "2" ) modtype = "GenericFilter";
+		if( modtype == "3" ) modtype = "ApplicationBase";	
+		if( modtype == "GenericADC" || modtype == "GenericFilter" || modtype == "ApplicationBase" ) break;
+		
+		if( modtype.size() && i == 0 ) { cerr << "unrecognized filter type \"" << modtype << "\" - should be 1, 2 or 3\n"; return 1; }
+		if( modtype.size() ) cout << "ERROR: please enter one of the strings exactly, or one of the numbers\n\n";
+
+		cout << "1 GenericADC (for SignalSource modules)\n";
+		cout << "2 GenericFilter (for all modules, but usually SignalProcessing)\n";
+		cout << "3 ApplicationBase (for application modules)\n";
+		cout << "Enter filter type [default is 2]: ";
+		getline( cin, modtype );
+		if( modtype.size() == 0 ) modtype = "2";
+		cout << endl;
+	} 
 	
 	while( name.size() == 0 )
 	{
@@ -333,6 +351,7 @@ int NewFilter(int argc, const char *argv[])
 		getline( cin, name );
 		ParseName( name, p );
 		if( name.size() > 0 && proj.size() == 0 ) proj = p;
+		if( name.size() ) cout << endl;
 	}
 	while( proj.size() == 0 )
 	{
@@ -344,6 +363,7 @@ int NewFilter(int argc, const char *argv[])
 			cout << "directory " << proj << " does not exist\n";
 			proj = "";
 		}
+		if( proj.size() ) cout << endl;
 	}
 	proj = RealPath( proj );
 	if( !DirectoryExists( proj ) ) { cerr << "directory does not exist: " << proj << endl; return 1; }
@@ -359,9 +379,13 @@ int NewFilter(int argc, const char *argv[])
 	
 	string srcname = name + ".cpp";
 	string hdrname = name + ".h";
-
-	if( BackTickRep( Fullfile( proj, srcname ), Fullfile( gTemplatesDir, "NewFilter.cpp" ), name ) != 0 ) return 1;
-	if( BackTickRep( Fullfile( proj, hdrname ), Fullfile( gTemplatesDir, "NewFilter.h" ),   name ) != 0 ) return 1;
+	string templateStem;
+	if( modtype == "GenericADC" ) templateStem = "TemplateADC";
+	if( modtype == "GenericFilter" ) templateStem = "TemplateFilter";
+	if( modtype == "ApplicationBase" ) templateStem = "TemplateApplication";
+	
+	if( BackTickRep( Fullfile( proj, srcname ), Fullfile( gTemplatesDir, templateStem+".cpp" ), name ) != 0 ) return 1;
+	if( BackTickRep( Fullfile( proj, hdrname ), Fullfile( gTemplatesDir, templateStem+".h" ),   name ) != 0 ) return 1;
 
 	string cmFile = RealPath( Fullfile( proj, "CMakeLists.txt" ) );
 	cout << endl;
@@ -444,7 +468,7 @@ int NewModule(int argc, const char *argv[])
 		if( modtype == "3" ) modtype = "Application";	
 		if( modtype == "SignalSource" || modtype == "SignalProcessing" || modtype == "Application" ) break;
 		
-		if( modtype.size() && i == 0 ) { cerr << "unrecognized module type \"" << modtype << "\"\n"; return 1; }
+		if( modtype.size() && i == 0 ) { cerr << "unrecognized module type \"" << modtype << "\" - should be 1, 2, or 3\n"; return 1; }
 		if( modtype.size() ) cout << "ERROR: please enter one of the strings exactly, or one of the numbers\n\n";
 
 		cout << "1 SignalSource\n2 SignalProcessing\n3 Application\nEnter module type [default is 2]: ";
@@ -489,6 +513,23 @@ int NewModule(int argc, const char *argv[])
 	}	
 	if( BackTickRep( Fullfile( proj, "CMakeLists.txt" ), Fullfile( gTemplatesDir, "CMakeLists-"+modtype+".txt" ), name ) != 0 ) return 1;
 	
+	if( modtype == "SignalSource" && 0 ) // TODO: this segfaults. come up with a better alternative to this stupid const char* [] fiddling
+	{
+		int argc = 4;
+		char* argv[3];
+		string adcname = name;
+		if( name.size() > 6 && name.substr( name.size()-6 ) == "Source" ) adcname = name.substr( 0, name.size()-6 );
+		adcname += "ADC";
+		string one = "1";
+		argv[0] = new char[one.size()+2]; sprintf( argv[0], "%s", one.c_str() );
+		argv[1] = new char[adcname.size()+2]; sprintf( argv[1], "%s", adcname.c_str() );
+		argv[2] = new char[proj.size()+2]; sprintf( argv[2], "%s", proj.c_str() );
+		NewFilter( argc, (const char **)argv );
+		delete [] argv[0];
+		delete [] argv[1];
+		delete [] argv[2];
+	}	
+
 	cout << endl;
 	string pcmLine = "ADD_SUBDIRECTORY( " + name + " )";
 	string pcmFile = RealPath( Fullfile( parent, "CMakeLists.txt" ) );
@@ -519,6 +560,7 @@ int NewModule(int argc, const char *argv[])
 		cout << endl;
 		cout << "Run CMake again to ensure that this module is included in the build." << endl;
 	}
+	
 	cout << "To expand the module, edit " << RealPath( Fullfile( proj, "CMakeLists.txt" ) ) << endl;
 	if( modtype == "SignalProcessing" )
 		cout << "                       and " << RealPath( Fullfile( proj, "PipeDefinition.cpp" ) ) << endl;

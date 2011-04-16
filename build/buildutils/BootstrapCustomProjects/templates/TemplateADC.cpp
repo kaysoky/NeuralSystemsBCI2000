@@ -34,14 +34,13 @@
 using namespace std;
 
 
-#error Change the location token 2.X in the line below as required. Then, remove this error line.
-RegisterFilter( `, 2.X );
+RegisterFilter( `, 1 );
      // Change the location as appropriate, to determine where your filter gets
      // sorted into the chain. By convention:
-     //  - filters locations for SignalSource modules begin with "1."
-     //  - filters locations for SignalProcessing modules begin with "2."  
+     //  - filter locations within SignalSource modules begin with "1."
+     //  - filter locations within SignalProcessing modules begin with "2."  
      //       (NB: SignalProcessing modules must specify this with a Filter() command in their PipeDefinition.cpp file too)
-     //  - filters locations Application modules begin with "3."
+     //  - filter locations within Application modules begin with "3."
 
 
 `::`()
@@ -51,8 +50,14 @@ RegisterFilter( `, 2.X );
 	
  BEGIN_PARAMETER_DEFINITIONS
 
-   "Filtering:` int Enable`= 0 0 0 1 // enable `? (boolean)",                       // These are just examples:
-   "Filtering:` float SomeParameter=  0.0 0.0 -1.0 1.0 // a useless ` parameter",   //  change them, or remove them.
+    "Source:Signal%20Properties int SourceCh= 16 "
+       "16 1 % // number of digitized and stored channels",
+       
+    "Source:Signal%20Properties int SampleBlockSize= 32 "
+       "32 1 % // number of samples transmitted at a time",
+       
+    "Source:Signal%20Properties float SamplingRate= 256Hz "
+       "256Hz 0.0 % // sample rate",
 
  END_PARAMETER_DEFINITIONS
  
@@ -94,25 +99,20 @@ void
   //
   // Also check that the values of any parameters are sane:
   //
-  // if( (float)Parameter( "Denominator" ) == 0.0f )
-  //      bcierr << "Denominator cannot be zero" << endl;
+  if( MeasurementUnits::ReadAsFreq( Parameter( "SamplingRate" ) ) == 0.0f )
+    bcierr << "SamplingRate cannot be zero" << endl;
   // 
   // Errors issued in this way, during Preflight, still allow the user to open
   // the Config dialog box, fix bad parameters and re-try.  By contrast, errors
   // and C++ exceptions at any other stage (outside Preflight) will make the
   // system stop, such that BCI2000 will need to be relaunched entirely.
   
-  Output = Input; // this simply passes information about through SampleBlock dimensions, etc....
-  
-  // ... or alternatively, we could modify that info here:
+  int numberOfChannels = Parameter( "SourceCh" );
+  int samplesPerBlock  = Parameter( "SampleBlockSize" );
+  SignalType sigType = SignalType::float32;  // could also parameterize this
+  Output = SignalProperties( numberOfChannels, samplesPerBlock, sigType );
 
-  // Let's imagine this filter has only one output, namely the amount of stuff detected in the signal:
-  // Output.SetChannels( 1 );
-  // Output.ChannelLabels()[0] = "Stuff";
-
-  // Imagine we want to output twice as many samples (or bins) as we receive from the input:
-  // Output.SetElements( Input.Elements() * 2 );
-  
+  //  
   // Note that the ` instance itself, and its members, are read-only during
   // this phase, due to the "const" at the end of the Preflight prototype above.
   // Any methods called by Preflight must also be "const" in the same way.
@@ -140,23 +140,15 @@ void
 `::Process( const GenericSignal& Input, GenericSignal& Output )
 {
 
-  // And now we're processing a single SampleBlock of data.
+  // Now we're acquiring a single SampleBlock of data.
   // Remember not to take too much CPU time here, or you will break the real-time constraint.
+  // To avoid losing data, it is advisable to create a separate thread which reads from the
+  // hardware and writes into a ring buffer, and read from the buffer during Process.
   
-  Output = Input; // Pass the signal through unmodified.
-                  // ( Obviously this will no longer fly if we modified the shape of the
-                  //   output SignalProperties during Preflight ).
-                  
-  // Or we could do it one value at a time:
-  /*
+  // For now, we output flat lines:
   for( ch = 0; ch < Output.Channels(); ch++ )
-  {
     for( el = 0; el < Output.Elements(); el++ )
-    {
-      Output( ch, el ) = some_function( Input );
-    }
-  }
-  */
+      Output( ch, el ) = 0.0f;
 }
 
 void

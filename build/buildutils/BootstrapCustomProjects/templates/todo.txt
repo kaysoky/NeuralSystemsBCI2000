@@ -1,0 +1,9 @@
+In TemplateApplication.cpp:
+	in commented-out lines, maybe have one image stimulus and one sound stimulus which are simply played/made visible on StartRun
+In TemplateADC.cpp:
+	provide template ring-buffer code?
+
+In all:
+	provide links to the relevant wiki (or local html) documentation throughout
+
+test TemplateADC and TemplateApplication
