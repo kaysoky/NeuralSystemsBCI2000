@@ -1,3 +1,4 @@
+#include <cstdlib> // for system()
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -5,6 +6,7 @@
 using namespace std;
 
 #ifdef _WIN32
+string gDosLineEnding = "\n"; // looks paradoxical I know.  But *because* we're on windows, this will be auto-translated to \r\n during writing
 string gFileSeparator = "\\";
 # include "windows.h"
 # ifdef _MSC_VER
@@ -15,6 +17,7 @@ string gFileSeparator = "\\";
 #  include <dirent.h>
 # endif // _MSC_VER
 #else // _WIN32
+string gDosLineEnding = "\r\n"; // we're dealing with template files that have a DOS line-ending format. Let's keep them that way.
 string gFileSeparator = "/";
 # include <sys/stat.h>
 # include <dirent.h>
@@ -58,7 +61,7 @@ StandardizePath( string x )
 { // change all occurrences of either '\\' or '/' into the variant appropriate for the current platform, and eliminate multiple slashes (exception: allow Windows-style double slashes at the beginning of a path)
 	string y;
 	bool ignore = false;
-	for( int i = 0; i < x.size(); i++)
+	for( unsigned int i = 0; i < x.size(); i++)
 	{
 		char c = x[i];
 		if( c == '\\' || c == '/' )
@@ -99,11 +102,11 @@ FileParts( string fullpath, string& parent, string& stem, string& extension )
 { // break a string into three parts: directory (before the last slash), stem (after the last slash, before the last dot) and extension (after the last slash, from the last dot onwards)
 	fullpath = StandardizePath( fullpath );
 	parent = ""; stem = ""; extension = "";
-	int parentLength=fullpath.size();
-	for( parentLength == fullpath.size(); parentLength > 0; parentLength-- )
+	unsigned int parentLength = fullpath.size();
+	for( parentLength = fullpath.size(); parentLength > 0; parentLength-- )
 		if( fullpath[parentLength-1] == gFileSeparator[0] ) break;
-	int dotPos=fullpath.size();
-	for(  int i = parentLength; i < fullpath.size(); i++ )
+	unsigned int dotPos=fullpath.size();
+	for(  unsigned int i = parentLength; i < fullpath.size(); i++ )
 		if( fullpath[i] == '.' ) dotPos = i;
 		
 	parent = fullpath.substr( 0, parentLength );
@@ -155,7 +158,7 @@ ProcessCMakeLine( string x )
 	string y;
 	bool ignoreSpace = true;
 	string punct = "()<>=";
-	for( int i = 0; i < x.size(); i++)
+	for( unsigned int i = 0; i < x.size(); i++)
 	{
 		char c = x[i];
 		if( c == '#' )
@@ -187,7 +190,7 @@ ProcessCPPLine( string x )
 	string y;
 	bool ignoreSpace = true;
 	string punct = "()[]{}<>=!,*/-+;&|";
-	for( int i = 0; i < x.size(); i++)
+	for( unsigned int i = 0; i < x.size(); i++)
 	{
 		char c = x[i];
 		if( c == '/' && i+1 < x.size() && x[i+1] == '/' )
@@ -259,7 +262,7 @@ AppendToFile( string fileName, string line )
 {
 	ofstream sOut( fileName.c_str(), ofstream::app );
 	if( !sOut ) { cerr << "internal error: failed to open " << fileName << " for appending" << endl; return 1; }
-	sOut << line << "\r\n";
+	sOut << line << gDosLineEnding;
 	sOut.close();
 	return 0;
 }
@@ -276,7 +279,7 @@ RemoveLine( string fileName, string targetLine, string2string proc=NULL )
 		string line;
 		getline( sIn, line );
 		if( proc ) line = proc( line );
-		if( line != targetLine ) content << line << "\r\n";
+		if( line != targetLine ) content << line << gDosLineEnding;
 	}
 	sIn.close();
 	ofstream sOut( fileName.c_str() );
@@ -287,7 +290,7 @@ RemoveLine( string fileName, string targetLine, string2string proc=NULL )
 }
 
 string gDefaultParent = StandardizePath( "../src/custom" );
-string gTemplatesDir  = StandardizePath( "./buildutils/templates" );
+string gTemplatesDir  = StandardizePath( "./buildutils/BootstrapCustomProjects/templates" );
 string gPipeDefError  = "#error    The module will do nothing unless you declare some filters here. Add/uncomment them as appropriate, then remove this error line.";
 
 void
@@ -347,7 +350,7 @@ int NewFilter(int argc, const char *argv[])
 	ParseName( name );
 	cout << "\nAdding filter " << name << " to module " << proj << endl;
 	
-	for( int i = 0; i < name.size(); i++ )
+	for( unsigned int i = 0; i < name.size(); i++ )
 	{
 		char c = name[i];
 		if( !::isalpha( c ) && !::isdigit( c ) && c != '_' ) { cerr << "\"" << name << "\" is an illegal filter name (name may only contain alphanumeric characters and underscore)\n"; return 1; }
@@ -378,10 +381,10 @@ int NewFilter(int argc, const char *argv[])
 			if( lookingForSRC && pline == srcname ) { lookingForSRC = false; cout << "    SRC_PROJECT already contains " << srcname << " in " << cmFile << endl; }
 			if( lookingForHDR && pline == hdrname ) { lookingForHDR = false; cout << "    HDR_PROJECT already contains " << hdrname << "   in " << cmFile << endl; }
 			if( pline == "SET(SRC_PROJECT" ) lookingForSRC = true;
-			if( lookingForSRC && pline == ")" ) { content << "  " << srcname << "\r\n"; lookingForSRC = false; addedSRC = true; msg << "    added " << srcname << " to SRC_PROJECT in " << cmFile << endl; }
+			if( lookingForSRC && pline == ")" ) { content << "  " << srcname << gDosLineEnding; lookingForSRC = false; addedSRC = true; msg << "    added " << srcname << " to SRC_PROJECT in " << cmFile << endl; }
 			if( pline == "SET(HDR_PROJECT" ) lookingForHDR = true;
-			if( lookingForHDR && pline == ")" ) { content << "  " << hdrname << "\r\n"; lookingForHDR = false; addedHDR = true; msg << "    added " << hdrname << "   to HDR_PROJECT in " << cmFile << endl; }
-			content << line << "\r\n";
+			if( lookingForHDR && pline == ")" ) { content << "  " << hdrname << gDosLineEnding; lookingForHDR = false; addedHDR = true; msg << "    added " << hdrname << "   to HDR_PROJECT in " << cmFile << endl; }
+			content << line << gDosLineEnding;
 		}
 		sIn.close();
 		if( addedSRC || addedHDR )
@@ -413,8 +416,8 @@ int NewFilter(int argc, const char *argv[])
 		if( ContainsLine( pdFile, "Filter("+name+",", ProcessCPPLine, true ) ) cout << "    " << filterLine << " is already present in " << pdFile << endl;
 		else
 		{
-			if( AppendToFile( pdFile, filterLine+"\r\n"+errorLine+"\r\n" ) != 0 ) return 1;
-			cout << "    appended" << filterLine << " to " << pdFile << endl;
+			if( AppendToFile( pdFile, filterLine+gDosLineEnding+errorLine+gDosLineEnding ) != 0 ) return 1;
+			cout << "    appended " << filterLine << " to " << pdFile << endl;
 		}
 		if( RemoveLine( pdFile, gPipeDefError, StripString ) != 0 ) return 1;
 	}
@@ -500,7 +503,7 @@ int NewModule(int argc, const char *argv[])
 		ofstream cmOut( pcmFile.c_str(), ofstream::app );
 		if( cmOut )
 		{
-			cmOut << pcmLine << "\r\n";
+			cmOut << pcmLine << gDosLineEnding;
 			cmOut.close();
 			cout << "The following line has also been appended to " << pcmFile << endl << "    " << pcmLine << endl;
 			cmOK = true;
@@ -536,7 +539,7 @@ int main( int argc, const char* argv[] )
 	int result;
 	result = MAIN_FUNCTION( argc, argv );
 #ifdef _WIN32 // here be lameness
-	if( WAIT_AT_END ) system( "pause" );
+	if( WAIT_AT_END ) { cout << endl; system( "pause" ); }
 	return result;
 #endif
 }

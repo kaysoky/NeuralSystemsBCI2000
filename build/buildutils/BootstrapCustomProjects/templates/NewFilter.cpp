@@ -40,28 +40,32 @@ RegisterFilter( `, 2.X );
      // sorted into the chain. By convention:
      //  - filters locations for SignalSource modules begin with "1."
      //  - filters locations for SignalProcessing modules begin with "2."  
-     //       (but SignalProcessing modules should specify this with a Filter() command in their PipeDefinition.cpp file instead)
+     //       (NB: SignalProcessing modules must specify this with a Filter() command in their PipeDefinition.cpp file too)
      //  - filters locations Application modules begin with "3."
 
 
 `::`()
 {
-  // Declare any parameters that the filter needs....
 
+  // Declare any parameters that the filter needs....
+	
  BEGIN_PARAMETER_DEFINITIONS
 
-   // "Filtering int Enable`= 0 0 0 1 // enable `? (boolean)",
+   "Filtering:` int Enable`= 0 0 0 1 // enable `? (boolean)",                       // These are just examples:
+   "Filtering:` float SomeParameter=  0.0 0.0 -1.0 1.0 // a useless ` parameter",   //  change them, or remove them.
 
  END_PARAMETER_DEFINITIONS
+ 
+ 
+  // ...and likewise any state variables:
 
-  // ...and any state variables:
-  
  BEGIN_STATE_DEFINITIONS
  
-   // "SomeState 0 0 0 0",
+   "SomeState       8 0 0 0",    // These are just examples. Change them, or remove them.
+   "SomeOtherState 16 0 0 0",
    
  END_STATE_DEFINITIONS
-
+ 
 }
 
 
