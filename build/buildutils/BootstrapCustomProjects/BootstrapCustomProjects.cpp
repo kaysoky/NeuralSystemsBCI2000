@@ -316,14 +316,25 @@ ParseName( string& name )
 	ParseName( name, p );
 }
 
-int NewFilter(int argc, const char *argv[])
+int NewFilter( string modtype, string name, string proj, string extra )
 {
-	string modtype, name, proj;
+	string usage =
+		"NewBCI2000Filter CLASSTYPE NAME PROJECTDIR\n"
+		"\n"
+		"e.g. NewBCI2000Filter    2   MyCustomFilter  ../src/custom/VeryNiceSignalProcessing\n"
+		"\n"
+		"CLASSTYPE: 1 creates a subclass of GenericADC (for signal acquisition in SignalSource modules)\n"
+		"           2 creates a subclass of GenericFilter (for all modules, especially SignalProcessing)\n"
+		"           3 creates a subclass of ApplicationBase (for Application modules)\n"
+		"\n"
+		"NAME:      The name of the filter class, and of the .cpp and .h files in which it is implemented.\n"
+		"\n"
+		"PROJECT:   The directory for the project to which the filter should be added.\n"
+	;
 	
-	if( argc >= 2 ) modtype = argv[1];
-	if( argc >= 3 ) { name = argv[2]; ParseName( name, proj ); }
-	if( argc >= 4 ) proj = argv[3];
-
+	if( extra.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
+	if( modtype == "--help" ) { cout << endl << usage << endl; return 0; }
+	
 	for( int i = 0; ; i++)
 	{
 		modtype = StripString( modtype );
@@ -450,15 +461,26 @@ int NewFilter(int argc, const char *argv[])
 	return 0;
 }
 
-int NewModule(int argc, const char *argv[])
+int NewModule( string modtype, string name, string parent, string extra )
 {
-
-	string modtype;
-	if( argc >= 2 ) modtype = argv[1];
-	string name;
-	if( argc >= 3 ) name = argv[2];
-	string parent;
-	if( argc >= 4 ) parent = argv[3];
+	string usage =
+		"NewBCI2000Module MODTYPE NAME PARENT\n"
+		"\n"
+		"e.g. NewBCI2000Module    2  VeryNiceSignalProcessing   ../src/custom\n"
+		"\n"
+		"MODTYPE:   1 denotes SignalSource modules\n"
+		"           2 denotes SignalProcessing modules\n"
+		"           3 denotes Application modules\n"
+		"\n"
+		"NAME:      Used for the name of the project directory and resulting executable.\n"
+		"\n"
+		"PARENT:    The parent directory inside which the project directory is created.\n"
+		"           ../src/custom (relative to the \"build\" directory) is a good choice, since\n"
+		"           since the svn version-control system ignores it, but cmake will include it.\n"
+	;
+	
+	if( extra.size() ) { cerr << "Too many inputs. Usage is as follows:\n\n" << usage << endl; return 1; }
+	if( modtype == "--help" ) { cout << endl << usage << endl; return 0; }
 	
 	for( int i = 0; ; i++)
 	{
@@ -513,21 +535,12 @@ int NewModule(int argc, const char *argv[])
 	}	
 	if( BackTickRep( Fullfile( proj, "CMakeLists.txt" ), Fullfile( gTemplatesDir, "CMakeLists-"+modtype+".txt" ), name ) != 0 ) return 1;
 	
-	if( modtype == "SignalSource" && 0 ) // TODO: this segfaults. come up with a better alternative to this stupid const char* [] fiddling
+	if( modtype == "SignalSource" )
 	{
-		int argc = 4;
-		char* argv[3];
 		string adcname = name;
-		if( name.size() > 6 && name.substr( name.size()-6 ) == "Source" ) adcname = name.substr( 0, name.size()-6 );
-		adcname += "ADC";
-		string one = "1";
-		argv[0] = new char[one.size()+2]; sprintf( argv[0], "%s", one.c_str() );
-		argv[1] = new char[adcname.size()+2]; sprintf( argv[1], "%s", adcname.c_str() );
-		argv[2] = new char[proj.size()+2]; sprintf( argv[2], "%s", proj.c_str() );
-		NewFilter( argc, (const char **)argv );
-		delete [] argv[0];
-		delete [] argv[1];
-		delete [] argv[2];
+		if( adcname.size() > 6 && adcname.substr( adcname.size()-6 ) == "Source" ) adcname = adcname.substr( 0, adcname.size()-6 );
+		if( adcname.size() < 3 || adcname.substr( adcname.size()-3 ) != "ADC" )    adcname += "ADC";
+		NewFilter( "1", adcname, proj, "" );
 	}	
 
 	cout << endl;
@@ -579,7 +592,7 @@ int NewModule(int argc, const char *argv[])
 int main( int argc, const char* argv[] )
 {
 	int result;
-	result = MAIN_FUNCTION( argc, argv );
+	result = MAIN_FUNCTION( (argc>1?argv[1]:""), (argc>2?argv[2]:""), (argc>3?argv[3]:""), (argc>4?"x":"") );
 #ifdef _WIN32 // here be lameness
 	if( WAIT_AT_END ) { cout << endl; system( "pause" ); }
 	return result;

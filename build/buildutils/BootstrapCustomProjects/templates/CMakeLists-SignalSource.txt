@@ -12,12 +12,10 @@ SET( EXECUTABLE_NAME ` )
 # Set the project specific sources
 SET( SRC_PROJECT
   `.cpp            # You probably will not need to edit this file
-  `ADC.cpp         # but you should certainly edit this one
 )
 
 SET( HDR_PROJECT
-  `ADC.h
-  # perhaps you will need to add the manufacturer's SDK headers here too...
+  # perhaps you will need to add the manufacturer's SDK headers here...
 )
 
 INCLUDE_DIRECTORIES(
