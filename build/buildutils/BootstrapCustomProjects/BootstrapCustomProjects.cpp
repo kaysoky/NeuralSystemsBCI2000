@@ -44,7 +44,7 @@ FileExists( string x )
 
 int
 MakeDirectory( string x )
-{
+{ // mkdir (for mkdir -p see MakePath, below)
 	int err;
 #ifdef _WIN32
 	err = ::mkdir( x.c_str() );
@@ -108,10 +108,23 @@ FileParts( string fullpath, string& parent, string& stem, string& extension )
 	unsigned int dotPos=fullpath.size();
 	for(  unsigned int i = parentLength; i < fullpath.size(); i++ )
 		if( fullpath[i] == '.' ) dotPos = i;
-		
-	parent = fullpath.substr( 0, parentLength );
+	
+	parent = StandardizePath( fullpath.substr( 0, parentLength ) );
 	if( parentLength < fullpath.size() ) stem = fullpath.substr( parentLength, dotPos - parentLength );
 	if( dotPos < fullpath.size() ) extension = fullpath.substr( dotPos );
+}
+
+int
+MakePath( string x )
+{ // mkdir -p
+	if( DirectoryExists( x ) ) return 0;
+	string parent, name, extn;
+	FileParts( x, parent, name, extn);
+	if( parent.size() > 0 && !DirectoryExists( parent ) )
+	{
+		if(MakePath( parent ) != 0 ) { cerr << "failed to make directory " << parent << endl; return 1; }
+	}
+	return MakeDirectory( x );
 }
 
 string
@@ -133,9 +146,12 @@ RealPath( string x )
 }
 
 bool
-SamePath( string a, string b )
-{
-	return RealPath( a ) == RealPath( b );
+PathMatch( string a, string b, bool partial=false )
+{ // return true if a is the same directory as b according to RealPath (partial match means that path a is equal to, or is a subdirectory of, b)
+	a = RealPath( a );
+	b = RealPath( b );
+	if( partial && a.size() > b.size() ) a = a.substr( 0, b.size() );
+	return a == b;
 }
 
 string
@@ -154,7 +170,7 @@ StripString( string x )
 
 string
 ProcessCMakeLine( string x )
-{ // eliminate comments starting with #, remove whitespace from before and after parentheses and comparators, collapse muliple whitespace into one space, remove leading and trailing whitespace
+{ // eliminate comments starting with #, remove whitespace from before and after parentheses and comparators, collapse multiple whitespace into one space, remove leading and trailing whitespace
 	string y;
 	bool ignoreSpace = true;
 	string punct = "()<>=";
@@ -186,7 +202,7 @@ ProcessCMakeLine( string x )
 
 string
 ProcessCPPLine( string x )
-{
+{ // eliminate comments starting with //, remove whitespace from before and after parentheses, comparators and some other punctuation, collapse multiple whitespace into one space, remove leading and trailing whitespace
 	string y;
 	bool ignoreSpace = true;
 	string punct = "()[]{}<>=!,*/-+;&|";
@@ -259,12 +275,38 @@ ContainsLine( string fileName, string targetLine,  string2string proc=NULL, bool
 
 int
 AppendToFile( string fileName, string line )
-{
+{ // append a line to a text file, with a DOS line ending
 	ofstream sOut( fileName.c_str(), ofstream::app );
 	if( !sOut ) { cerr << "internal error: failed to open " << fileName << " for appending" << endl; return 1; }
 	sOut << line << gDosLineEnding;
 	sOut.close();
 	return 0;
+}
+
+int
+AddSubdirectory( string parentDir, string subDirName)
+{ // try to append the appropriate ADD_SUBDIRECTORY line to the CMakeLists.txt file in parentDir, if it is not already there 
+	string pcmLine = "ADD_SUBDIRECTORY( " + subDirName + " )";
+	string pcmFile = RealPath( Fullfile( parentDir, "CMakeLists.txt" ) );
+	bool cmOK = false;
+	if( ContainsLine( pcmFile, pcmLine, ProcessCMakeLine ) )
+	{
+		cout << pcmLine << " is already present in " << pcmFile << endl;
+		cmOK = true;
+	}
+	else
+	{
+		ofstream cmOut( pcmFile.c_str(), ofstream::app );
+		if( cmOut )
+		{
+			cmOut << pcmLine << gDosLineEnding;
+			cmOut.close();
+			cout << "The following line has also been appended to " << pcmFile << endl << "    " << pcmLine << endl;
+			cmOK = true;
+		}
+		else cout << "WARNING: failed to open " << pcmFile << " in order to append the line " << pcmLine << endl << endl;
+	}
+	return ( cmOK ? 0 : 1 );
 }
 
 int
@@ -289,6 +331,7 @@ RemoveLine( string fileName, string targetLine, string2string proc=NULL )
 	return 0;
 }
 
+string gSrcTree       = RealPath( "../src" );
 string gDefaultParent = StandardizePath( "../src/custom" );
 string gTemplatesDir  = StandardizePath( "./buildutils/BootstrapCustomProjects/templates" );
 string gPipeDefError  = "#error    The module will do nothing unless you declare some filters here. Add/uncomment them as appropriate, then remove this error line.";
@@ -461,6 +504,7 @@ int NewFilter( string modtype, string name, string proj, string extra )
 	return 0;
 }
 
+
 int NewModule( string modtype, string name, string parent, string extra )
 {
 	string usage =
@@ -515,7 +559,7 @@ int NewModule( string modtype, string name, string parent, string extra )
 	}
 	string proj = Fullfile( parent, name );
 
-	if( !DirectoryExists( parent ) && MakeDirectory( parent.c_str() ) != 0 ) return 1;
+	if( MakePath( parent.c_str() ) != 0 ) return 1;
 	cout << endl;
 	if( DirectoryExists( proj ) ) cout << "directory already exists: " << RealPath( proj ) << endl;
 	else
@@ -535,48 +579,49 @@ int NewModule( string modtype, string name, string parent, string extra )
 	}	
 	if( BackTickRep( Fullfile( proj, "CMakeLists.txt" ), Fullfile( gTemplatesDir, "CMakeLists-"+modtype+".txt" ), name ) != 0 ) return 1;
 	
+	
+	string adcname;
 	if( modtype == "SignalSource" )
 	{
-		string adcname = name;
+		adcname = name;
 		if( adcname.size() > 6 && adcname.substr( adcname.size()-6 ) == "Source" ) adcname = adcname.substr( 0, adcname.size()-6 );
 		if( adcname.size() < 3 || adcname.substr( adcname.size()-3 ) != "ADC" )    adcname += "ADC";
-		NewFilter( "1", adcname, proj, "" );
-	}	
-
+		if( NewFilter( "1", adcname, proj, "" ) != 0 ) adcname = "";
+	}
+	
+	bool cmOK = true;
 	cout << endl;
-	string pcmLine = "ADD_SUBDIRECTORY( " + name + " )";
-	string pcmFile = RealPath( Fullfile( parent, "CMakeLists.txt" ) );
-	bool cmOK = false;
-	if( ContainsLine( pcmFile, pcmLine, ProcessCMakeLine ) )
+	if( PathMatch( proj, gSrcTree, true ) )
 	{
-		cout << pcmLine << " is already present in " << pcmFile << endl;
-		cmOK = true;
+		string p = RealPath( proj );
+		while( p.size() > gSrcTree.size() )
+		{
+			string pp, stem, xtn;
+			FileParts(p, pp, stem, xtn);
+			if( pp == gSrcTree ) break;
+			cmOK &= ( AddSubdirectory( pp, stem+xtn ) == 0 );
+			if(p == pp ) break;			
+			p = pp;
+		}
 	}
 	else
 	{
-		ofstream cmOut( pcmFile.c_str(), ofstream::app );
-		if( cmOut )
-		{
-			cmOut << pcmLine << gDosLineEnding;
-			cmOut.close();
-			cout << "The following line has also been appended to " << pcmFile << endl << "    " << pcmLine << endl;
-			cmOK = true;
-		}
-		else cout << "WARNING: failed to open " << pcmFile << " in order to append the line " << pcmLine << endl << endl;
-	}
-	if( cmOK )
-	{
-		if( !SamePath( parent, gDefaultParent ) )
+		cmOK = ( AddSubdirectory( parent, name ) == 0 );
+		if( cmOK )
 			cout << "*** HOWEVER you may need to append ADD_SUBDIRECTORY lines in other locations to\n"
 				 << "ensure that cmake gets this far. To avoid this problem, you could have used the\n"
 				 << "default location " << gDefaultParent << endl;
+	}
+	if( cmOK )
+	{
 		cout << endl;
 		cout << "Run CMake again to ensure that this module is included in the build." << endl;
 	}
-	
 	cout << "To expand the module, edit " << RealPath( Fullfile( proj, "CMakeLists.txt" ) ) << endl;
 	if( modtype == "SignalProcessing" )
 		cout << "                       and " << RealPath( Fullfile( proj, "PipeDefinition.cpp" ) ) << endl;
+	if( adcname.size() )
+		cout << "                       and " << RealPath( Fullfile( proj, adcname+".cpp" ) ) << endl;
 	cout << endl;
 	
 	return 0;

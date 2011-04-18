@@ -29,6 +29,7 @@
 
 #include "`.h"
 #include "BCIError.h"
+#include "MeasurementUnits.h"
 
 
 using namespace std;
@@ -146,8 +147,8 @@ void
   // hardware and writes into a ring buffer, and read from the buffer during Process.
   
   // For now, we output flat lines:
-  for( ch = 0; ch < Output.Channels(); ch++ )
-    for( el = 0; el < Output.Elements(); el++ )
+  for( int ch = 0; ch < Output.Channels(); ch++ )
+    for( int el = 0; el < Output.Elements(); el++ )
       Output( ch, el ) = 0.0f;
 }
 
