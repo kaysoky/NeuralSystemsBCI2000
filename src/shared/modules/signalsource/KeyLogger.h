@@ -35,7 +35,6 @@
 #define KEY_LOGGER_H
 
 #include "Environment.h"
-#include "OSThread.h"
 #include <windows.h>
 
 class KeyLogger : public EnvironmentExtension
@@ -66,31 +65,23 @@ class KeyLogger : public EnvironmentExtension
   bool mLogKeyboard;
   bool mLogMouse;
 
-  class HookThread : public OSThread
-  {
-   public:
-    HookThread( bool logKeyboard, bool logMouse );
-    virtual ~HookThread();
+  HANDLE mThreadHandle;
+  DWORD  mThreadID;
 
-   private:
-    virtual int Execute();
-    bool InstallKeyboardHook();
-    bool InstallMouseHook();
-    void UninstallHooks();
+  static bool InstallKeyboardHook();
+  static bool InstallMouseHook();
+  static void UninstallHooks();
 
-    static LRESULT CALLBACK LowLevelKeyboardProc( int, WPARAM, LPARAM );
-    static LRESULT CALLBACK LowLevelMouseProc( int, WPARAM, LPARAM );
+  static DWORD WINAPI ThreadProc( void* );
 
-    static int  sInstances;
-    static bool sKeyPressed[ 1 << KeyboardBits ];
-    static int  sMouseKeys;
-    static HHOOK sKeyboardHook,
-                 sMouseHook;
+  static LRESULT CALLBACK LowLevelKeyboardProc( int, WPARAM, LPARAM );
+  static LRESULT CALLBACK LowLevelMouseProc( int, WPARAM, LPARAM );
 
-    bool  mLogKeyboard,
-          mLogMouse;
-  };
-  HookThread* mpThread;
+  static int  sInstances;
+  static bool sKeyPressed[ 1 << KeyboardBits ];
+  static int  sMouseKeys;
+  static HHOOK sKeyboardHook,
+               sMouseHook;
 };
 
 #endif // KEY_LOGGER_H

@@ -53,7 +53,7 @@ class OSThread
   static void Sleep( int ); // milliseconds
 
  protected:
-  virtual int Execute();
+  virtual int Execute() = 0;
 
  private:
 #ifdef _WIN32
@@ -62,10 +62,10 @@ class OSThread
   HANDLE mHandle;
   DWORD  mThreadID;
 #else // _WIN32
-	static void* StartThread( void* inInstance );
-	
-	pthread_t mThread;
-	bool      mTerminated;
+  static void* StartThread( void* inInstance );
+
+  pthread_t mThread;
+  bool      mTerminated;
 #endif // _WIN32
   int           mResult;
   volatile bool mTerminating;

@@ -47,16 +47,17 @@ Extension( KeyLogger );
 
 static const int cMouseOffset = 1 << 15;
 
-int  KeyLogger::HookThread::sInstances = 0;
-bool KeyLogger::HookThread::sKeyPressed[ 1 << KeyLogger::KeyboardBits ];
-int  KeyLogger::HookThread::sMouseKeys = 0;
-HHOOK KeyLogger::HookThread::sKeyboardHook = NULL;
-HHOOK KeyLogger::HookThread::sMouseHook = NULL;
+int  KeyLogger::sInstances = 0;
+bool KeyLogger::sKeyPressed[ 1 << KeyLogger::KeyboardBits ];
+int  KeyLogger::sMouseKeys = 0;
+HHOOK KeyLogger::sKeyboardHook = NULL;
+HHOOK KeyLogger::sMouseHook = NULL;
 
 KeyLogger::KeyLogger()
 : mLogKeyboard( false ),
   mLogMouse( false ),
-  mpThread( NULL )
+  mThreadHandle( NULL ),
+  mThreadID( 0 )
 {
 }
 
@@ -115,7 +116,11 @@ void
 KeyLogger::StartRun()
 {
   if( mLogKeyboard || mLogMouse )
-    mpThread = new HookThread( mLogKeyboard, mLogMouse );
+  {
+    mThreadHandle = ::CreateThread( NULL, 0, KeyLogger::ThreadProc, this, 0, &mThreadID );
+    if( mThreadHandle == NULL )
+      bcierr << OSError().Message() << endl;
+  }
 }
 
 void
@@ -127,52 +132,19 @@ KeyLogger::StopRun()
 void
 KeyLogger::Halt()
 {
-  if( mpThread != NULL )
+  if( mThreadHandle != NULL )
   {
-    mpThread->Terminate();
-    while( !mpThread->IsTerminated() )
+    while( !::PostThreadMessage( mThreadID, WM_QUIT, 0, 0 )
+            && ::GetLastError() != ERROR_INVALID_THREAD_ID )
       ::Sleep( 0 );
-    delete mpThread;
-    mpThread = NULL;
+    while( mThreadHandle != NULL )
+      ::Sleep( 0 );
   }
 }
 
-
-KeyLogger::HookThread::HookThread( bool inLogKeyboard, bool inLogMouse )
-: mLogKeyboard( inLogKeyboard ),
-  mLogMouse( inLogMouse )
-{
-  if( ++sInstances > 1 )
-    throw "Logic error: More than one instance of KeyLogger::HookThread";
-  OSThread::Start();
-}
-
-KeyLogger::HookThread::~HookThread()
-{
-  --sInstances;
-}
-
-int
-KeyLogger::HookThread::Execute()
-{
-  if( mLogKeyboard )
-    InstallKeyboardHook();
-  if( mLogMouse && InstallMouseHook() )
-  {
-    POINT p;
-    if( ::GetCursorPos( &p ) )
-    {
-      bcievent << "MousePosX " << p.x + cMouseOffset;
-      bcievent << "MousePosY " << p.y + cMouseOffset;
-    }
-  }
-  int result = OSThread::Execute();
-  UninstallHooks();
-  return result;
-}
 
 bool
-KeyLogger::HookThread::InstallKeyboardHook()
+KeyLogger::InstallKeyboardHook()
 {
   HINSTANCE module = ::GetModuleHandle( NULL );
   if( sKeyboardHook == NULL )
@@ -183,7 +155,7 @@ KeyLogger::HookThread::InstallKeyboardHook()
 
 
 bool
-KeyLogger::HookThread::InstallMouseHook()
+KeyLogger::InstallMouseHook()
 {
   HINSTANCE module = ::GetModuleHandle( NULL );
   if( sMouseHook == NULL )
@@ -197,7 +169,7 @@ KeyLogger::HookThread::InstallMouseHook()
 
 
 void
-KeyLogger::HookThread::UninstallHooks()
+KeyLogger::UninstallHooks()
 {
   if( sKeyboardHook != NULL )
   {
@@ -212,8 +184,36 @@ KeyLogger::HookThread::UninstallHooks()
 }
 
 
+DWORD WINAPI
+KeyLogger::ThreadProc( void* inInstance )
+{
+  KeyLogger* this_ = static_cast<KeyLogger*>( inInstance );
+  if( this_->mLogKeyboard )
+    InstallKeyboardHook();
+  if( this_->mLogMouse && InstallMouseHook() )
+  {
+    POINT p;
+    if( ::GetCursorPos( &p ) )
+    {
+      bcievent << "MousePosX " << p.x + cMouseOffset;
+      bcievent << "MousePosY " << p.y + cMouseOffset;
+    }
+  }
+  MSG msg;
+  int result = 0;
+  while( 1 == ( result = ::GetMessage( &msg, NULL, 0, 0 ) ) )
+  {
+    ::TranslateMessage( &msg );
+    ::DispatchMessage( &msg );
+  }
+  UninstallHooks();
+  ::CloseHandle( this_->mThreadHandle );
+  this_->mThreadHandle = NULL;
+  return result;
+}
+
 LRESULT CALLBACK
-KeyLogger::HookThread::LowLevelKeyboardProc( int inCode, WPARAM inWParam, LPARAM inLParam )
+KeyLogger::LowLevelKeyboardProc( int inCode, WPARAM inWParam, LPARAM inLParam )
 {
   if( inCode >= 0 )
   {
@@ -244,7 +244,7 @@ KeyLogger::HookThread::LowLevelKeyboardProc( int inCode, WPARAM inWParam, LPARAM
 
 
 LRESULT CALLBACK
-KeyLogger::HookThread::LowLevelMouseProc( int inCode, WPARAM inWParam, LPARAM inLParam )
+KeyLogger::LowLevelMouseProc( int inCode, WPARAM inWParam, LPARAM inLParam )
 {
   if( inCode >= 0 )
   {

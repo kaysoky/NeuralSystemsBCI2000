@@ -67,10 +67,6 @@ void
 OSThread::Terminate()
 {
   mTerminating = true;
-  if( mHandle != NULL )
-    while( !::PostThreadMessage( mThreadID, WM_QUIT, 0, 0 )
-            && ::GetLastError() != ERROR_INVALID_THREAD_ID )
-      ::Sleep( 0 );
 }
 
 bool 
@@ -85,19 +81,6 @@ OSThread::Sleep( int inMs )
   ::Sleep( inMs );
 }
 
-int
-OSThread::Execute()
-{
-  MSG msg;
-  int result = 0;
-  while( 1 == ( result = ::GetMessage( &msg, NULL, 0, 0 ) ) )
-  {
-    ::TranslateMessage( &msg );
-    ::DispatchMessage( &msg );
-  }
-  return result;
-}
-
 #else // _WIN32
 
 OSThread::OSThread()
@@ -110,7 +93,7 @@ OSThread::OSThread()
 OSThread::~OSThread()
 {
   if( !mTerminated )
-	  ::pthread_kill( mThread, SIGHUP );
+    ::pthread_kill( mThread, SIGHUP );
 }
 
 void
@@ -135,12 +118,6 @@ void
 OSThread::Sleep( int inMs )
 {
   ::usleep( inMs * 1000 );
-}
-
-int
-OSThread::Execute()
-{ // No message handling in pthreads, so Execute() defaults to empty.
-  return 0;
 }
 
 #endif // _WIN32
