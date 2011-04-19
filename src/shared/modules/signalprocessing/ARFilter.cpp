@@ -104,8 +104,8 @@ ARFilter::Preflight( const SignalProperties& Input,
         bcierr << "FirstBinCenter and LastBinCenter must be greater zero and"
                << " less than half the sampling rate"
                << endl;
-      if( firstBinCenter >= lastBinCenter )
-        bcierr << "FirstBinCenter must be less than LastBinCenter" << endl;
+      if( firstBinCenter > lastBinCenter )
+        bcierr << "FirstBinCenter cannot be greater than LastBinCenter" << endl;
       if( binWidth <= 0 )
         bcierr << "BinWidth must be greater zero" << endl;
       else

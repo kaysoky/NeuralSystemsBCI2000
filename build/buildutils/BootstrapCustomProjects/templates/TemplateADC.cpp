@@ -29,7 +29,6 @@
 
 #include "`.h"
 #include "BCIError.h"
-#include "MeasurementUnits.h"
 
 #ifdef _WIN32
 # include <windows.h> // for declaration of ::Sleep()
@@ -105,7 +104,7 @@ void
   //
   // Also check that the values of any parameters are sane:
   //
-  if( MeasurementUnits::ReadAsFreq( Parameter( "SamplingRate" ) ) == 0.0f )
+  if( (double)Parameter( "SamplingRate" ) == 0.0 )
     bcierr << "SamplingRate cannot be zero" << endl;
   // 
   // Errors issued in this way, during Preflight, still allow the user to open
@@ -166,7 +165,8 @@ void
 	
   
   // Here is a wait loop to ensure that we do not deliver the signal faster than real-time
-  // (you may wish to remove this, since the hardware will probably do this more precisely for you)
+  // (In your final implementation, you should remove this: the hardware will probably have a
+  //  much more precise way of doing this for you)
   while( PrecisionTime::TimeDiff( mLastTime, PrecisionTime::Now() ) < mMsecPerBlock ) ::Sleep(1);
   mLastTime = PrecisionTime::Now();
 }
