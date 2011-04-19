@@ -11,8 +11,8 @@
 
 # Let CMake know we plan to link against the Qt OPENGL libraries
 SET( QT_USE_QTOPENGL TRUE )
+INCLUDE(${QT_USE_FILE})
 FIND_PACKAGE( OpenGL REQUIRED )
-
 IF( OPENGL_FOUND )
   SET( LIBS_EXTLIB_3DAPI
     ${OPENGL_LIBRARIES}
