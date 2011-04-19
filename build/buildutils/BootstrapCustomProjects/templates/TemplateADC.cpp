@@ -31,6 +31,11 @@
 #include "BCIError.h"
 #include "MeasurementUnits.h"
 
+#ifdef _WIN32
+# include <windows.h> // for declaration of ::Sleep()
+#else
+# include <sys/socket.h>
+#endif
 
 using namespace std;
 
@@ -127,6 +132,12 @@ void
   // The signal properties can no longer be modified, but the const limitation has gone, so
   // the ` instance itself can be modified. Allocate any memory you need, start any
   // threads, store any information you need in private member variables.
+
+  double samplesPerSecond = Parameter( "SamplingRate" );
+  double samplesPerBlock  = Parameter( "SampleBlockSize" );
+  mMsecPerBlock = 1000.0 * samplesPerBlock / samplesPerSecond;
+  
+  mLastTime = PrecisionTime::Now();
 }
 
 void
@@ -134,6 +145,8 @@ void
 {
   // The user has just pressed "Start" (or "Resume")
   bciout << "Hello World!" << endl;
+  
+  mLastTime = PrecisionTime::Now();
 }
 
 
@@ -150,6 +163,12 @@ void
   for( int ch = 0; ch < Output.Channels(); ch++ )
     for( int el = 0; el < Output.Elements(); el++ )
       Output( ch, el ) = 0.0f;
+	
+  
+  // Here is a wait loop to ensure that we do not deliver the signal faster than real-time
+  // (you may wish to remove this, since the hardware will probably do this more precisely for you)
+  while( PrecisionTime::TimeDiff( mLastTime, PrecisionTime::Now() ) < mMsecPerBlock ) ::Sleep(1);
+  mLastTime = PrecisionTime::Now();
 }
 
 void

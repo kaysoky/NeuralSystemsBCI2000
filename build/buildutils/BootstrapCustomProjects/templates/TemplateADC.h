@@ -29,6 +29,7 @@
 #define INCLUDED_`_H
 
 #include "GenericADC.h"
+#include "PrecisionTime.h"
 
 class ` : public GenericADC
 {
@@ -44,6 +45,8 @@ class ` : public GenericADC
 
  private:
    // Use this space to declare any `-specific methods and member variables you'll need
+  PrecisionTime mLastTime;
+  double mMsecPerBlock;
 };
 
 #endif // INCLUDED_`_H
