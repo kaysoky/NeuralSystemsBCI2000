@@ -174,6 +174,7 @@ void WebcamLogger::Initialize()
 	}
 }
 
+
 // **************************************************************************
 // Function:   Process
 // Purpose:    Checks the thread and updates the Validity Log
