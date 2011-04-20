@@ -32,9 +32,6 @@ SET( GENERATED
   ${GENERATED_MOC}
 )
 QT4_AUTOMOC( certificationGUI.cpp ../progressClass.cpp )
-QT4_AUTOMOC( certificationGUI.h ../progressClass.h )
-
-INCLUDE(${QT_USE_FILE})
 
 
 # Create the signal processing module
