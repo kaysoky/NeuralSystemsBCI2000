@@ -30,6 +30,7 @@
 %% http:%%www.bci2000.org 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function varargout = OfflineAnalysis(varargin)
+addpath( '../mex' );
 verNum = sscanf(version, '%d.%s');
 verNum = verNum(1);
 if ~strncmp(computer, 'PCWIN', 5) || verNum < 7
