@@ -37,17 +37,18 @@
 #include "GenericSignal.h"
 #include "BCIError.h"
 
-#if( MODTYPE == 2 ) // Compiling for a Signal Processing module
-# define RegisterFilter( name, pos )
-# define Filter( name, pos )          RegisterFilter_( name, pos )
-#else // MODTYPE
-# define RegisterFilter( name, pos )  RegisterFilter_( name, pos )
-#endif // MODTYPE
+// Filter() and RegisterFilter() both register filters to the framework.
+// However, Filter() statements take precedence over RegisterFilter() statements:
+// When any Filter() statement is present in a module, all RegisterFilter() statements are ignored.
+#define Filter( name, pos )          RegisterFilter_( name, pos, 2 )
+#define RegisterFilter( name, pos )  RegisterFilter_( name, pos, 1 )
 
 #if( __GNUC__ )
-# define RegisterFilter_( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar __attribute__(( used ))(#pos);
+# define RegisterFilter_( name, pos, priority )  \
+  GenericFilter::FilterRegistrar<name> name##Registrar##priority __attribute__(( used ))(#pos, priority);
 #else
-# define RegisterFilter_( name, pos )  GenericFilter::FilterRegistrar<name> name##Registrar(#pos);
+# define RegisterFilter_( name, pos, priority )  \
+  GenericFilter::FilterRegistrar<name> name##Registrar##priority(#pos, priority);
 #endif // __GNUC__
 
 class GenericFilter : protected Environment
@@ -114,17 +115,31 @@ class GenericFilter : protected Environment
   class Registrar
   {
    public:
-    Registrar( const char* p ) : pos( p ), instance( createdInstances++ )
-    { Registrars().insert( this ); }
+    Registrar( const char* inPos, int inPriority ) 
+    : pos( inPos ),
+      priority( inPriority ),
+      instance( createdInstances++ )
+    {
+      RegistrarSet_::iterator i = Registrars().begin();
+      while( i != Registrars().end() )
+      {
+        RegistrarSet_::iterator j = i++;
+        if( (*j)->priority < inPriority )
+          Registrars().erase( j );
+      }
+      Registrars().insert( this ); 
+    }
     virtual ~Registrar()
-    { Registrars().erase( this ); }
+    {
+      Registrars().erase( this ); 
+    }
     const std::string& Position() const { return pos; }
     virtual const std::type_info& Typeid() const = 0;
     virtual GenericFilter* NewInstance() const = 0;
 
    private:
     std::string pos;
-    bool        vis;
+    int         priority;
 
    public:
     struct less;
@@ -132,7 +147,11 @@ class GenericFilter : protected Environment
     struct less
     {
       bool operator() ( const Registrar* a, const Registrar* b ) const
-      { return ( a->pos == b->pos ) ? ( a->instance < b->instance ) : ( a->pos < b->pos ); }
+      { 
+        if( a->pos != b->pos ) 
+          return ( a->pos < b->pos );
+        return ( a->instance < b->instance );
+      }
     };
 
     typedef std::set<Registrar*, Registrar::less> RegistrarSet_;
@@ -150,7 +169,7 @@ class GenericFilter : protected Environment
   template<typename T> class FilterRegistrar : public Registrar
   {
    public:
-    FilterRegistrar( const char* p ) : Registrar( p ) {}
+    FilterRegistrar( const char* inPos, int inPriority ) : Registrar( inPos, inPriority ) {}
     virtual const std::type_info& Typeid() const
     { return typeid( T ); }
     virtual GenericFilter* NewInstance() const
