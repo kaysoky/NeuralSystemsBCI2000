@@ -80,15 +80,15 @@ void CMFCdemoDlg::OnPaint()
 	}
 	else
 	{
-    // Draw the BCI cursor icon.
-    CPaintDC dc( this );
+		// Draw the BCI cursor icon.
+		CPaintDC dc( this );
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
-    CRect rect;
-    GetClientRect( &rect );
-    int xPos = rect.left + rect.Width() * mCursorX - cxIcon / 2,
-        yPos = rect.top + rect.Height() * mCursorY - cyIcon / 2;
-    dc.DrawIcon( xPos, yPos, mCursorIcon );
+		CRect rect;
+		GetClientRect( &rect );
+		int xPos = static_cast<int>( rect.left + rect.Width() * mCursorX - cxIcon / 2 ),
+			yPos = static_cast<int>( rect.top + rect.Height() * mCursorY - cyIcon / 2 );
+		dc.DrawIcon( xPos, yPos, mCursorIcon );
 		CDialog::OnPaint();
 	}
 }

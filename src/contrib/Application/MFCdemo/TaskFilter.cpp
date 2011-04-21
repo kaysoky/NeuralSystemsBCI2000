@@ -98,12 +98,12 @@ TaskFilter::Process( const GenericSignal& Input, GenericSignal& Output )
 {
   if( Input.Channels() > 0 )
   {
-    float cursorX = mWindow.CursorX() + mCursorSpeed * Input( 0, 0 );
+    double cursorX = mWindow.CursorX() + mCursorSpeed * Input( 0, 0 );
 	mWindow.SetCursorX( cursorX - ::floor( cursorX ) );
   }
   if( Input.Channels() > 1 )
   {
-    float cursorY = mWindow.CursorY() + mCursorSpeed * Input( 1, 0 );
+    double cursorY = mWindow.CursorY() + mCursorSpeed * Input( 1, 0 );
 	mWindow.SetCursorY( cursorY - ::floor( cursorY ) );
   }
   mWindow.RedrawWindow();

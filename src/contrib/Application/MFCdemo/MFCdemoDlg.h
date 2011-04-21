@@ -51,14 +51,14 @@ public:
 
 // Implementierung
 public:
-  void  SetCursorX( float x ) { mCursorX = x; }
-  float CursorX() const   { return mCursorX; }
-  void  SetCursorY( float y ) { mCursorY = y; }
-  float CursorY() const   { return mCursorY; }
+  void   SetCursorX( double x ) { mCursorX = x; }
+  double CursorX() const        { return mCursorX; }
+  void   SetCursorY( double y ) { mCursorY = y; }
+  double CursorY() const        { return mCursorY; }
 private:
-  float mCursorX,
-        mCursorY;
-  HICON mCursorIcon;
+  double mCursorX,
+         mCursorY;
+  HICON  mCursorIcon;
 
 protected:
 	HICON m_hIcon;

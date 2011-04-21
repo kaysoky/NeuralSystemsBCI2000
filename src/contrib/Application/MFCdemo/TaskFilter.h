@@ -47,7 +47,7 @@ class TaskFilter : public GenericFilter
 	virtual bool AllowsVisualization() const { return false; }
 
   private:
-    float       mCursorSpeed;
+    double      mCursorSpeed;
     CMFCdemoDlg mWindow;
 } ;
 

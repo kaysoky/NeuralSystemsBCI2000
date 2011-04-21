@@ -69,20 +69,36 @@ IF( MSVC )
     -D_CRT_NONSTDC_NO_WARNINGS
     -D_SCL_SECURE_NO_WARNINGS
   )
-  # Make sure the program is built statically against the MSVC runtime
-  FOREACH( flag_var
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+  # Adjust flags such that by default programs are built statically against the MSVC runtime;
+  # save defaults as "_DYNAMIC" for use with MFC-based projects.
+  # Support for statically linking MFC appears to be broken in CMake, see
+  # http://www.cmake.org/Wiki/CMake_FAQ#How_to_use_MFC_with_CMake, so
+  # we need to go back to dynamic linking for MFC.
+  SET( CXX_FLAG_VARS
+         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+         CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO
+  )
+  FOREACH( flag_var ${CXX_FLAG_VARS} )
+    SET( ${flag_var}_DYNAMIC "${${flag_var}}" )
     IF( ${flag_var} MATCHES "/MD" )
       STRING( REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}" )
     ENDIF( ${flag_var} MATCHES "/MD" )
+    SET( ${flag_var}_STATIC "${${flag_var}}" )
   ENDFOREACH( flag_var )
-  FOREACH( flag_var
+
+  SET( LINKER_FLAG_VARS
         CMAKE_EXE_LINKER_FLAGS
         CMAKE_SHARED_LINKER_FLAGS
-        CMAKE_MODULE_LINKER_FLAGS )
+        CMAKE_MODULE_LINKER_FLAGS 
+  )
+  FOREACH( flag_var ${LINKER_FLAG_VARS} )
+     SET( ${flag_var}_DYNAMIC "${${flag_var}}" )
      SET( ${flag_var} "${${flag_var}} /NODEFAULTLIB:msvcrt /NODEFAULTLIB:msvcrtd" )
+     SET( ${flag_var}_STATIC "${${flag_var}}" )
   ENDFOREACH( flag_var )
+  
+  SET( FLAG_VARS ${CXX_FLAG_VARS} ${LINKER_FLAG_VARS} )
+
 ENDIF( MSVC )
 
 # Build the compiler description string.

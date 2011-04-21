@@ -9,6 +9,10 @@ IF( MSVC )
 # Set the executable name
 SET( EXECUTABLE_NAME MFCDemo )
 
+# DEBUG
+MESSAGE( "-- Adding MFC Application Project: " ${EXECUTABLE_NAME} )
+
+
 # Set the project specific sources
 SET( SRC_PROJECT
   MFCdemo.cpp
@@ -27,10 +31,15 @@ SET( HDR_PROJECT
 
 # Set Application Modules Here.
 SET( SRC_APPLICATION 
-
+  ${BCI2000_SRC_DIR}/shared/modules/CoreModule.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/OSThread.cpp
+  ${BCI2000_SRC_DIR}/shared/bcistream/BCIError_module.cpp
 )
 SET( HDR_APPLICATION 
-
+  ${BCI2000_SRC_DIR}/shared/modules/CoreModule.h
+  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
+  ${BCI2000_SRC_DIR}/shared/utils/OSThread.h
 )
 
 # Define extra include directories
@@ -42,13 +51,47 @@ SET( INCLUDES
 ADD_DEFINITIONS( -D_AFXDLL )
 SET( CMAKE_MFC_FLAG 2 )
 
-# Create the signal source module
-BCI2000_ADD_APPLICATION_MODULE( 
-  "${EXECUTABLE_NAME}" 
-  "${SRC_PROJECT}" "${HDR_PROJECT}" 
-  "${SRC_APPLICATION}" "${HDR_APPLICATION}"
-  "${INCLUDES}"
+# Switch to dynamic linking
+FOREACH( flag_var ${FLAG_VARS} )
+   SET( ${flag_var} "${${flag_var}_DYNAMIC}" )
+ENDFOREACH( flag_var )
+
+# Generate the required framework
+INCLUDE( ${BCI2000_CMAKE_DIR}/frameworks/MinimalFramework.cmake )
+
+# Setup Global Application Modules
+INCLUDE( ${BCI2000_CMAKE_DIR}/ApplicationModules.cmake )
+
+# Add the global and specific application files into the framework for this project
+SET( SRC_BCI2000_FRAMEWORK "${SRC_BCI2000_FRAMEWORK}" "${SRC_APPLICATION}" "${BCI2000_APPSOURCES}" )
+SET( HDR_BCI2000_FRAMEWORK "${HDR_BCI2000_FRAMEWORK}" "${HDR_APPLICATION}" "${BCI2000_APPHEADERS}" )
+
+# Set the Project Source Groups
+SOURCE_GROUP( Source\\Project FILES ${SRC_PROJECT} )
+SOURCE_GROUP( Headers\\Project FILES ${HDR_PROJECT} )
+
+# Add in external required libraries
+BCI2000_SETUP_EXTLIB_DEPENDENCIES( SRC_BCI2000_FRAMEWORK HDR_BCI2000_FRAMEWORK LIBS )
+
+# Set Application Include Directories
+INCLUDE_DIRECTORIES( ${INCLUDES} )
+
+# Add the executable to the project
+ADD_EXECUTABLE( ${EXECUTABLE_NAME} WIN32 ${SRC_BCI2000_FRAMEWORK} ${HDR_BCI2000_FRAMEWORK} ${SRC_PROJECT} ${HDR_PROJECT} )
+
+# Add Pre-processor defines
+SET_PROPERTY( TARGET ${EXECUTABLE_NAME} APPEND PROPERTY COMPILE_FLAGS "-DMODTYPE=3" )
+
+# Set the output directories
+SET_TARGET_PROPERTIES( ${EXECUTABLE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/prog )
+SET_TARGET_PROPERTIES( ${EXECUTABLE_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/prog )
+SET_TARGET_PROPERTIES( ${EXECUTABLE_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${BCI2000_ROOT_DIR}/prog )
+SET_TARGET_PROPERTIES( ${EXECUTABLE_NAME} PROPERTIES 
+    PREFIX "../"
+    IMPORT_PREFIX "../" 
 )
+
+TARGET_LINK_LIBRARIES( ${EXECUTABLE_NAME} ${LIBS} )
 
 ENDIF( MSVC )
 

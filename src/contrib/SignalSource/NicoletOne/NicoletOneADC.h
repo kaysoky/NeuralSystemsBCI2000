@@ -26,8 +26,8 @@
 #ifndef NICOLETONE_ADC_H
 #define NICOLETONE_ADC_H
 
-#include "GenericADC.h"
 #include "StdAfx.h"
+#include "GenericADC.h"
 #include "NicoletThread.h"
 
 class NicoletOneADC : public GenericADC
