@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Description: BufferedADC is a base class for signal source filters that
-//   provides buffering for the data packets read from the ADC, to avoid data
+//   provides buffering for data packets read from the ADC, to avoid data
 //   loss when data isn't read timely enough.
 //   To interface with an ADC, you need to implement the following functions:
 //     Constructor:
@@ -51,9 +51,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "BufferedADC.h"
 #include "OSThread.h"
-#include "OSMutex.h"
 #include "OSEvent.h"
-#include <queue>
+#include <vector>
 
 class BufferedADC : public GenericADC, OSThread
 {
@@ -84,10 +83,10 @@ class BufferedADC : public GenericADC, OSThread
  private:
   virtual int Execute();
 
-  GenericSignal             mBuffer;
-  std::queue<GenericSignal> mQueue;
-  OSMutex                   mQueueMutex;
-  volatile bool             mStartupLock;
+  std::vector<GenericSignal> mBuffer;
+  size_t                     mReadCursor,
+                             mWriteCursor;
+  OSEvent                    mAcquisitionDone;
 };
 
 #endif // BUFFERED_ADC_H

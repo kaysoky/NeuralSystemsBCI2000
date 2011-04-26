@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 // Description: BufferedADC is a base class for signal source filters that
-//   provides buffering for the data packets read from the ADC, to avoid data
+//   provides buffering for data packets read from the ADC, to avoid data
 //   loss when data isn't read timely enough.
 //   See the accompagnying header file for more information.
 //
@@ -28,8 +28,13 @@
 #include "BufferedADC.h"
 
 BufferedADC::BufferedADC()
-: mStartupLock( false )
+: mReadCursor( 0 ),
+  mWriteCursor( 0 )
 {
+  BEGIN_PARAMETER_DEFINITIONS
+    "Source:Buffering int SourceBufferSize= 2s "
+      "2s 1 % // size of data acquisition ring buffer (in blocks or seconds)",
+  END_PARAMETER_DEFINITIONS
 }
 
 BufferedADC::~BufferedADC()
@@ -41,21 +46,20 @@ void
 BufferedADC::Preflight( const SignalProperties&,
                               SignalProperties& output ) const
 {
-  Preflight( output );
+  PreflightCondition( Parameter( "SourceBufferSize" ).InBlocks() >= 1 );
+  this->Preflight( output );
 }
 
 void
 BufferedADC::Initialize( const SignalProperties&,
                          const SignalProperties& output )
 {
-  mBuffer.SetSignalProperties( output );
-  mQueue.clear();
-  Initialize( output );
-
-  mStartupLock = false;
+  mBuffer.clear();
+  mBuffer.resize( Parameter( "SourceBufferSize" ).InBlocks(), output );
+  mReadCursor = 0;
+  mWriteCursor = 0;
+  this->Initialize( output );
   OSThread::Start();
-  while( !mStartupLock ) // Wait until the acquisition thread has acquired the queue mutex.
-    OSThread::Sleep( 0 );
 }
 
 // The Process() function is called from the main thread in regular intervals.
@@ -63,17 +67,10 @@ void
 BufferedADC::Process( const GenericSignal&,
                             GenericSignal& output )
 {
-  mQueueMutex.Acquire();
-  if( mQueue.empty() )
-  { // This should never happen.
-    bcierr << "Empty data queue in Process()" << endl;
-  }
-  else
-  {
-    output = mQueue.front();
-    mQueue.pop();
-  }
-  mQueueMutex.Release();
+  if( mReadCursor == mWriteCursor )
+    mAcquisitionDone.Wait();
+  output = mBuffer[mReadCursor];
+  ++mReadCursor %= mBuffer.size();
 }
 
 void
@@ -89,21 +86,13 @@ BufferedADC::Halt()
 int
 BufferedADC::Execute()
 {
-  mQueueMutex.Acquire(); // Acquire the mutex to make sure Process blocks until data is available.
-  mStartupLock = true;   // Now that the queue mutex is acquired, unblock the main thread.
-  StartDataAcquisition();
-  AcquireData( mBuffer );
+  this->StartDataAcquisition();
   while( !OSThread::Terminating() )
   {
-    mQueue.push( mBuffer );
-    if( !OSThread::Terminating() )
-    {
-      mQueueMutex.Release(); // Allow Process() to read from queue while AcquireData() is waiting for new data.
-      AcquireData( mBuffer );
-      mQueueMutex.Acquire();
-    }
+    this->AcquireData( mBuffer[mWriteCursor] );
+    mAcquisitionDone.Set();
+    ++mWriteCursor %= mBuffer.size();
   }
-  StopDataAcquisition();
-  mQueueMutex.Release(); // Process() is no longer called once we reach this point.
+  this->StopDataAcquisition();
 }
 
