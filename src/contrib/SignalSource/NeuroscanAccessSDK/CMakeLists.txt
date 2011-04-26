@@ -4,7 +4,7 @@
 ## Description: Build information for Neuroscan
 
 # Set the executable name
-SET( EXECUTABLE_NAME Neuroscan )
+SET( EXECUTABLE_NAME NeuroscanAccess )
 
 # Set the project specific sources
 SET( SRC_PROJECT
