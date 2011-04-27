@@ -32,6 +32,9 @@
 
 #include <string>
 #include <fstream>
+#include <queue>
+#include "OSThread.h"
+#include "OSMutex.h"
 
 class FileWriterBase: public GenericFileWriter
 {
@@ -49,10 +52,34 @@ class FileWriterBase: public GenericFileWriter
   virtual void Write( const GenericSignal& Signal,
                       const StateVector&   Statevector );
 
+	std::ofstream& File(){return mOutputFile;}
+	GenericOutputFormat &OutputFormat(){return mrOutputFormat;}
+	void WriteError();
  private:
   GenericOutputFormat&     mrOutputFormat;
   std::string              mFileName;
   std::ofstream            mOutputFile;
+	
+	std::queue<GenericSignal> mSignalQueue;
+	std::queue<StateVector> mSVQueue;
+	OSMutex mMutex;
+	HANDLE mEventWrite;	
+
+	class Writer : public OSThread
+	{
+	public:
+		Writer(FileWriterBase *parent);
+		~Writer();
+		int Execute();
+		void finish(){mFinish = true;}
+
+	private:
+		FileWriterBase *mParent;
+		bool mFinish;
+	};
+	Writer *mWriter;
+	friend class Writer;
+
 };
 
 #endif // FILE_WRITER_BASE_H

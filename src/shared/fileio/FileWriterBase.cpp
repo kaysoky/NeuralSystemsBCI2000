@@ -41,12 +41,22 @@ using namespace std;
 static const char* bciParameterExtension = ".prm";
 
 FileWriterBase::FileWriterBase( GenericOutputFormat& inOutputFormat )
-: mrOutputFormat( inOutputFormat )
+: mrOutputFormat( inOutputFormat ),
+mEventWrite(NULL)
 {
+	mWriter = NULL;
 }
 
 FileWriterBase::~FileWriterBase()
 {
+	if (mWriter)
+	{
+		mWriter->finish();
+		mWriter->Terminate();
+		delete mWriter;
+	}
+	if (mEventWrite)
+		CloseHandle(mEventWrite);
 }
 
 void
@@ -166,6 +176,18 @@ FileWriterBase::StartRun()
   }
 
   mrOutputFormat.StartRun( mOutputFile, mFileName );
+	if (mWriter){
+		delete mWriter;
+	}
+
+	while (!mSignalQueue.empty())
+		mSignalQueue.pop();
+	while (!mSVQueue.empty())
+		mSVQueue.pop();
+
+	ResetEvent( mEventWrite );
+	mWriter = new FileWriterBase::Writer(this);
+	mWriter->Start();
 }
 
 
@@ -176,6 +198,13 @@ FileWriterBase::StopRun()
 
   mOutputFile.close();
   mOutputFile.clear();
+
+	mWriter->finish();
+	mWriter->Terminate();
+	delete mWriter;
+	mWriter = NULL;
+	CloseHandle( mEventWrite );
+	mEventWrite = NULL;
 }
 
 
@@ -183,10 +212,50 @@ void
 FileWriterBase::Write( const GenericSignal& Signal,
                        const StateVector&   Statevector )
 {
-  mrOutputFormat.Write( mOutputFile, Signal, Statevector );
+	mMutex.Acquire();
+	mSignalQueue.push(Signal);
+	mSVQueue.push(Statevector);
+	mMutex.Release();
+	SetEvent(mEventWrite);
 
-  if( !mOutputFile )
+}
+void
+FileWriterBase::WriteError()
+{
     bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
-  State( "Recording" ) = ( mOutputFile ? 1 : 0 );
+	State( "Recording" ) = 0;
 }
 
+FileWriterBase::Writer::Writer(FileWriterBase *parent)
+{
+	mParent = parent;
+	mFinish = false;
+
+}
+FileWriterBase::Writer::~Writer()
+{
+	mFinish = true;
+}
+
+int FileWriterBase::Writer::Execute()
+{
+	while(!mFinish){
+		while (!mFinish && mParent->mSignalQueue.size() == 0){
+			if (mFinish) continue;
+			this->Sleep(10);
+		}
+		if (mFinish) continue;
+		mParent->mMutex.Acquire();
+		if (mParent->mSignalQueue.size() == 0) continue;
+		GenericSignal sig = mParent->mSignalQueue.front();
+		StateVector sv = mParent->mSVQueue.front();
+		mParent->mSignalQueue.pop();
+		mParent->mSVQueue.pop();
+		mParent->mMutex.Release();
+		mParent->OutputFormat().Write( mParent->File(), sig, sv);
+		if( !mParent->File() )
+			mParent->WriteError();
+		ResetEvent(mParent->mEventWrite);
+	}
+	return 0;
+}
