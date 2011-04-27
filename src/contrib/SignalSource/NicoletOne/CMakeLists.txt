@@ -81,13 +81,13 @@ IF( WIN32 )
 	
   SET( BCI2000_SIGSRCSOURCES
     ${BCI2000_SIGSRCSOURCES}
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/JoystickLogger.cpp
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/KeyLogger.cpp
+    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/JoystickLogger.cpp
+    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/KeyLogger.cpp
   )
   SET( BCI2000_SIGSRCHEADERS
     ${BCI2000_SIGSRCHEADERS}
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/JoystickLogger.h
-    ${BCI2000_SRC_DIR}/shared/modules/signalsource/KeyLogger.h
+    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/JoystickLogger.h
+    ${BCI2000_SRC_DIR}/shared/modules/signalsource/logging/KeyLogger.h
   )
 ENDIF( WIN32 )
 
