@@ -6,22 +6,22 @@
 //   To interface with an ADC, you need to implement the following functions:
 //     Constructor:
 //       Define configuration parameters as done in BCI2000 filters.
-//     Preflight( SignalProperties& output )
+//     OnPreflight( SignalProperties& output )
 //       The standard Preflight() function as documented for BCI2000 filters
 //       except that it takes a single output signal properties argument, and
 //       none for input.
 //       In addition to parameter checking and reporting of output dimensions,
 //       check whether the ADC is available for reading data.
-//     Initialize( const SignalProperties& output )
+//     OnInitialize( const SignalProperties& output )
 //        The standard Initialize() function, except that it only takes an
 //        argument for output properties, and none for input.
 //        From here, do all initialization except actually starting data
 //        acquisition.
-//     StartDataAcquisition()
+//     OnStartAcquisition()
 //       Perform initialization steps necessary to read from the ADC.
-//     StopDataAcquisition()
+//     OnStopAcquisition()
 //       Perform de-initialization of the ADC.
-//     AcquireData( GenericSignal& output )
+//     DoAcquire( GenericSignal& output )
 //       Read data from the ADC into the GenericSignal object provided as an
 //       argument.
 //    The last three functions are called from a reading thread, whereas the
@@ -74,11 +74,11 @@ class BufferedADC : public GenericADC, OSThread
 
  protected:
   // Virtual data acquisition interface.
-  virtual void Preflight( SignalProperties& ) const = 0;
-  virtual void Initialize( const SignalProperties& ) = 0;
-  virtual void StartDataAcquisition() = 0;
-  virtual void StopDataAcquisition() = 0;
-  virtual void AcquireData( GenericSignal& ) = 0;
+  virtual void OnPreflight( SignalProperties& ) const = 0;
+  virtual void OnInitialize( const SignalProperties& ) = 0;
+  virtual void OnStartAcquisition() = 0;
+  virtual void OnStopAcquisition() = 0;
+  virtual void DoAcquire( GenericSignal& ) = 0;
 
  private:
   virtual int Execute();

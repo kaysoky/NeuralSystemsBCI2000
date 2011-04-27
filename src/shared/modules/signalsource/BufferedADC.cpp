@@ -46,8 +46,11 @@ void
 BufferedADC::Preflight( const SignalProperties&,
                               SignalProperties& output ) const
 {
-  PreflightCondition( Parameter( "SourceBufferSize" ).InBlocks() >= 1 );
-  this->Preflight( output );
+  if( Parameter( "SourceBufferSize" ).InBlocks() < 1 )
+    bcierr << "The SourceBufferSize parameter must be greater or"
+           << " equal 1 in terms of sample blocks."
+           << endl;
+  this->OnPreflight( output );
 }
 
 void
@@ -58,7 +61,7 @@ BufferedADC::Initialize( const SignalProperties&,
   mBuffer.resize( Parameter( "SourceBufferSize" ).InBlocks(), output );
   mReadCursor = 0;
   mWriteCursor = 0;
-  this->Initialize( output );
+  this->OnInitialize( output );
   OSThread::Start();
 }
 
@@ -86,13 +89,13 @@ BufferedADC::Halt()
 int
 BufferedADC::Execute()
 {
-  this->StartDataAcquisition();
+  this->OnStartAcquisition();
   while( !OSThread::Terminating() )
   {
-    this->AcquireData( mBuffer[mWriteCursor] );
+    this->DoAcquire( mBuffer[mWriteCursor] );
     mAcquisitionDone.Set();
     ++mWriteCursor %= mBuffer.size();
   }
-  this->StopDataAcquisition();
+  this->OnStopAcquisition();
 }
 
