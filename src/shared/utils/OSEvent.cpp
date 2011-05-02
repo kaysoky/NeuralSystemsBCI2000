@@ -16,10 +16,12 @@
 OSEvent::OSEvent()
 {
 #if _WIN32
-  mHandle = ::CreateEvent( NULL, false, false, NULL );
+  // Create a manual-reset event in non-signaled state:
+  mHandle = ::CreateEvent( NULL, true, false, NULL );
 #else
   ::pthread_cond_init( &mCond, NULL );
   ::pthread_mutex_init( &mMutex, NULL );
+  mSignaled = false;
 #endif
 }
 
@@ -41,9 +43,23 @@ OSEvent::Set()
   return ::SetEvent( mHandle );
 #else // _WIN32
   ::pthread_mutex_lock( &mMutex );
-  int result = ::pthread_cond_signal( &mCond );
+  mSignaled = true;
+  int result = ::pthread_cond_broadcast( &mCond );
   ::pthread_mutex_unlock( &mMutex );
   return result == 0;
+#endif // _WIN32
+}
+
+bool
+OSEvent::Reset()
+{
+#if _WIN32
+  return ::ResetEvent( mHandle );
+#else // _WIN32
+  ::pthread_mutex_lock( &mMutex );
+  mSignaled = false;
+  ::pthread_mutex_unlock( &mMutex );
+  return true;
 #endif // _WIN32
 }
 
@@ -58,7 +74,8 @@ OSEvent::Wait( int inTimeoutMs )
   ::pthread_mutex_lock( &mMutex );
   if( inTimeoutMs < 0 )
   {
-    result = ::pthread_cond_wait( &mCond, &mMutex );
+    while( !mSignaled )
+      result = ::pthread_cond_wait( &mCond, &mMutex );
   }
   else
   {
@@ -67,7 +84,8 @@ OSEvent::Wait( int inTimeoutMs )
     struct timespec timeout;
     timeout.tv_sec = now.tv_sec + inTimeoutMs / 1000;
     timeout.tv_nsec = now.tv_usec * 1000 + ( inTimeoutMs % 1000 ) * 1000000;
-    result = ::pthread_cond_timedwait( &mCond, &mMutex, &timeout );
+    while( result == 0 && !mSignaled )
+      result = ::pthread_cond_timedwait( &mCond, &mMutex, &timeout );
   }
   ::pthread_mutex_unlock( &mMutex );
   return result == 0;

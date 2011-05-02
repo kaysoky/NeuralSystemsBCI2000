@@ -39,6 +39,7 @@ class OSEvent
   virtual ~OSEvent();
 
   bool Set();
+  bool Reset();
   bool Wait( int timeout_ms = -1 );
 
  private:
@@ -47,6 +48,7 @@ class OSEvent
 #else // _WIN32
   pthread_cond_t  mCond;
   pthread_mutex_t mMutex;
+  bool            mSignaled;
 #endif // _WIN32
 };
 

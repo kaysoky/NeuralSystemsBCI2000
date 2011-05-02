@@ -41,22 +41,13 @@ using namespace std;
 static const char* bciParameterExtension = ".prm";
 
 FileWriterBase::FileWriterBase( GenericOutputFormat& inOutputFormat )
-: mrOutputFormat( inOutputFormat ),
-mEventWrite(NULL)
+: mrOutputFormat( inOutputFormat )
 {
-	mWriter = NULL;
 }
 
 FileWriterBase::~FileWriterBase()
 {
-	if (mWriter)
-	{
-		mWriter->finish();
-		mWriter->Terminate();
-		delete mWriter;
-	}
-	if (mEventWrite)
-		CloseHandle(mEventWrite);
+  Halt();
 }
 
 void
@@ -176,86 +167,71 @@ FileWriterBase::StartRun()
   }
 
   mrOutputFormat.StartRun( mOutputFile, mFileName );
-	if (mWriter){
-		delete mWriter;
-	}
-
-	while (!mSignalQueue.empty())
-		mSignalQueue.pop();
-	while (!mSVQueue.empty())
-		mSVQueue.pop();
-
-	ResetEvent( mEventWrite );
-	mWriter = new FileWriterBase::Writer(this);
-	mWriter->Start();
+  OSThread::Start();
 }
 
 
 void
 FileWriterBase::StopRun()
 {
+  Halt();
   mrOutputFormat.StopRun( mOutputFile );
-
   mOutputFile.close();
   mOutputFile.clear();
 
-	mWriter->finish();
-	mWriter->Terminate();
-	delete mWriter;
-	mWriter = NULL;
-	CloseHandle( mEventWrite );
-	mEventWrite = NULL;
+  if( !mSignalQueue.empty() )
+    bcierr << "Nonempty buffering queue" << endl;
 }
 
+void
+FileWriterBase::Halt()
+{
+  OSEvent terminationEvent;
+  OSThread::Terminate( &terminationEvent );
+  mEvent.Set(); // Trigger a last execution of the thread's while loop.
+  terminationEvent.Wait(); // Wait for actual termination of the thread.
+}
 
 void
 FileWriterBase::Write( const GenericSignal& Signal,
                        const StateVector&   Statevector )
 {
-	mMutex.Acquire();
-	mSignalQueue.push(Signal);
-	mSVQueue.push(Statevector);
-	mMutex.Release();
-	SetEvent(mEventWrite);
-
-}
-void
-FileWriterBase::WriteError()
-{
-    bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
-	State( "Recording" ) = 0;
+  mMutex.Acquire();
+  mSignalQueue.push( Signal );
+  mStateVectorQueue.push( Statevector );
+  mEvent.Set();
+  mMutex.Release();
 }
 
-FileWriterBase::Writer::Writer(FileWriterBase *parent)
+int FileWriterBase::Execute()
 {
-	mParent = parent;
-	mFinish = false;
+  mMutex.Acquire();
+  while( !IsTerminating() || !mSignalQueue.empty() )
+  {
+    if( !IsTerminating() && mSignalQueue.empty() )
+    {
+      mMutex.Release();
+      mEvent.Wait();
+      mEvent.Reset();
+      mMutex.Acquire();
+    }
+    while( !mSignalQueue.empty() )
+    {
+      GenericSignal signal = mSignalQueue.front();
+      StateVector stateVector = mStateVectorQueue.front();
+      mSignalQueue.pop();
+      mStateVectorQueue.pop();
+      mMutex.Release(); // Allow queue buffering during file writes (which may block).
+      mrOutputFormat.Write( mOutputFile, signal, stateVector );
+      mMutex.Acquire();
+    }
+    if( !mOutputFile )
+    {
+      bcierr << "Error writing to file \"" << mFileName << "\"" << endl;
+      State( "Recording" ) = 0;
+    }
+  }
+  mMutex.Release();
+  return 0;
+}
 
-}
-FileWriterBase::Writer::~Writer()
-{
-	mFinish = true;
-}
-
-int FileWriterBase::Writer::Execute()
-{
-	while(!mFinish){
-		while (!mFinish && mParent->mSignalQueue.size() == 0){
-			if (mFinish) continue;
-			this->Sleep(10);
-		}
-		if (mFinish) continue;
-		mParent->mMutex.Acquire();
-		if (mParent->mSignalQueue.size() == 0) continue;
-		GenericSignal sig = mParent->mSignalQueue.front();
-		StateVector sv = mParent->mSVQueue.front();
-		mParent->mSignalQueue.pop();
-		mParent->mSVQueue.pop();
-		mParent->mMutex.Release();
-		mParent->OutputFormat().Write( mParent->File(), sig, sv);
-		if( !mParent->File() )
-			mParent->WriteError();
-		ResetEvent(mParent->mEventWrite);
-	}
-	return 0;
-}

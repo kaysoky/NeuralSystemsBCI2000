@@ -86,6 +86,7 @@ class BufferedADC : public GenericADC, OSThread
   std::vector<GenericSignal> mBuffer;
   size_t                     mReadCursor,
                              mWriteCursor;
+  OSMutex                    mMutex;
   OSEvent                    mAcquisitionDone;
 };
 

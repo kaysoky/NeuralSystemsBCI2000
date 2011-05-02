@@ -30,6 +30,7 @@
 #pragma hdrstop
 
 #include "OSThread.h"
+#include "OSEvent.h"
 #include "BCIError.h"
 #include "OSError.h"
 
@@ -45,6 +46,7 @@ OSThread::OSThread()
 : mHandle( NULL ),
   mThreadID( 0 ),
   mResult( 0 ),
+  mpTerminationEvent( NULL ),
   mTerminating( false )
 {
 }
@@ -64,9 +66,12 @@ OSThread::Start()
 }
 
 void
-OSThread::Terminate()
+OSThread::Terminate( OSEvent* inpEvent )
 {
+  mpTerminationEvent = inpEvent;
   mTerminating = true;
+  if( IsTerminated() && mpTerminationEvent )
+    mpTerminationEvent->Set();
 }
 
 bool 
@@ -84,8 +89,9 @@ OSThread::Sleep( int inMs )
 #else // _WIN32
 
 OSThread::OSThread()
-: mTerminated( false ),
+: mTerminated( true ),
   mResult( 0 ),
+  mpTerminationEvent( NULL ),
   mTerminating( false )
 {
 }
@@ -103,9 +109,12 @@ OSThread::Start()
 }
 
 void
-OSThread::Terminate()
+OSThread::Terminate( OSEvent* inpEvent )
 {
+  mpTerminationEvent = inpEvent;
   mTerminating = true;
+  if( IsTerminated() && mpTerminationEvent )
+    mpTerminationEvent->Set();
 }
 
 bool 
@@ -129,9 +138,13 @@ DWORD WINAPI
 OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
+  this_->mTerminating = false;
   this_->mResult = this_->Execute();
   ::CloseHandle( this_->mHandle );
   this_->mHandle = NULL;
+  if( this_->mpTerminationEvent )
+    this_->mpTerminationEvent->Set();
+  this_->mpTerminationEvent = NULL;
   return this_->mResult;
 }
 
@@ -141,8 +154,13 @@ void*
 OSThread::StartThread( void* inInstance )
 {
   OSThread* this_ = reinterpret_cast<OSThread*>( inInstance );
+  this_->mTerminating = false;
+  this_->mTerminated = false;
   this_->mResult = this_->Execute();
   this_->mTerminated = true;
+  if( this_->mpTerminationEvent )
+    this_->mpTerminationEvent->Set();
+  this_->mpTerminationEvent = NULL;
   return &this_->mResult;
 }
 

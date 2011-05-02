@@ -70,8 +70,13 @@ void
 BufferedADC::Process( const GenericSignal&,
                             GenericSignal& output )
 {
-  if( mReadCursor == mWriteCursor )
+  mMutex.Acquire();
+  bool waitForData = ( mReadCursor == mWriteCursor );
+  mAcquisitionDone.Reset();
+  mMutex.Release();
+  if( waitForData )
     mAcquisitionDone.Wait();
+
   output = mBuffer[mReadCursor];
   ++mReadCursor %= mBuffer.size();
 }
@@ -79,9 +84,9 @@ BufferedADC::Process( const GenericSignal&,
 void
 BufferedADC::Halt()
 {
-  OSThread::Terminate();
-  while( !OSThread::IsTerminated() )
-    OSThread::Sleep( 0 );
+  OSEvent terminationEvent;
+  OSThread::Terminate( &terminationEvent );
+  terminationEvent.Wait();
 }
 
 // The Execute() function runs in its own (producer) thread, concurrently with repeated calls to
@@ -93,8 +98,10 @@ BufferedADC::Execute()
   while( !OSThread::Terminating() )
   {
     this->DoAcquire( mBuffer[mWriteCursor] );
-    mAcquisitionDone.Set();
+    mMutex.Acquire();
     ++mWriteCursor %= mBuffer.size();
+    mAcquisitionDone.Set();
+    mMutex.Release();
   }
   this->OnStopAcquisition();
 }

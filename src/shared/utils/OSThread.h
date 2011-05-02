@@ -35,6 +35,8 @@
 # include <pthread.h>
 #endif // _WIN32
 
+class OSEvent;
+
 class OSThread
 {
  public:
@@ -42,7 +44,7 @@ class OSThread
   virtual ~OSThread();
 
   void Start();
-  void Terminate();
+  void Terminate( OSEvent* = NULL );
   bool IsTerminating() const
     { return mTerminating; }
   bool IsTerminated() const;
@@ -68,6 +70,7 @@ class OSThread
   bool      mTerminated;
 #endif // _WIN32
   int           mResult;
+  OSEvent*      mpTerminationEvent;
   volatile bool mTerminating;
 };
 
