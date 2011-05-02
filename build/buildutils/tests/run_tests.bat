@@ -58,6 +58,6 @@ start /wait P3Speller.exe 127.0.0.1
 
 cd ..\build\buildutils\tests
 echo Processing data files ...
-( process_test_data data\ref data\test && echo Success. ) || ( echo Executable test failed. && verify false 2> nul )
+( process_test_data data\test data\ref && echo Success. ) || ( echo Executable test failed. && verify false 2> nul )
 
 :end
