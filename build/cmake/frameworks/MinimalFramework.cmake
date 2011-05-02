@@ -40,6 +40,7 @@ SET( SRC_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/VersionInfo.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSError.cpp
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.cpp
+  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.cpp
 )
 SET( HDR_BCI2000_SHARED_UTILS 
   ${BCI2000_SRC_DIR}/shared/utils/ClassName.h
@@ -50,6 +51,7 @@ SET( HDR_BCI2000_SHARED_UTILS
   ${BCI2000_SRC_DIR}/shared/utils/VersionInfo.h
   ${BCI2000_SRC_DIR}/shared/utils/OSError.h
   ${BCI2000_SRC_DIR}/shared/utils/OSMutex.h
+  ${BCI2000_SRC_DIR}/shared/utils/OSEvent.h
 )
 SET( SRC_BCI2000_SHARED_UTILS_EXPRESSION  
   ${BCI2000_SRC_DIR}/shared/utils/Expression/ArithmeticExpression.cpp
