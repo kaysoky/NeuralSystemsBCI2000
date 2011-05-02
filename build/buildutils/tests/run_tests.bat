@@ -35,7 +35,7 @@ cd ..\..\..\prog
 echo Testing cursor task ...
 
 start Operator.exe --OnConnect "-LOAD PARAMETERFILE ..\build\buildutils\tests\CursorTask_test.prm; SETCONFIG" --OnSetConfig "-SET STATE Running 1" --OnSuspend "-QUIT"
-rem start SignalGenerator.exe 127.0.0.1
+start SignalGenerator.exe 127.0.0.1
 start ARSignalProcessing.exe 127.0.0.1
 start /wait CursorTask.exe 127.0.0.1
 
